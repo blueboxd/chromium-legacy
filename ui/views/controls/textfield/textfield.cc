@@ -176,8 +176,13 @@ ui::TextEditCommand GetCommandForKeyEvent(const ui::KeyEvent& event) {
                  ? ui::TextEditCommand::MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
                  : ui::TextEditCommand::INVALID_COMMAND;
     case ui::VKEY_BACK:
-      if (!control)
+      if (!control) {
+#if defined(OS_WIN)
+        if (alt)
+          return shift ? ui::TextEditCommand::REDO : ui::TextEditCommand::UNDO;
+#endif
         return ui::TextEditCommand::DELETE_BACKWARD;
+      }
 #if defined(OS_LINUX)
       // Only erase by line break on Linux and ChromeOS.
       if (shift)

@@ -10,13 +10,13 @@ import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.T
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE_NOT_SHOWN;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE_SHOWN;
 
-import org.chromium.chrome.browser.browserservices.BrowserServicesStore;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier.VerificationState;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier.VerificationStatus;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 
 import javax.inject.Inject;
 
@@ -26,20 +26,23 @@ import javax.inject.Inject;
  */
 public class TrustedWebActivityDisclosureController implements NativeInitObserver,
         TrustedWebActivityModel.DisclosureEventsCallback {
-    private final BrowserServicesStore mBrowserServicesStore;
+    private final ChromePreferenceManager mPreferenceManager;
     private final TrustedWebActivityModel mModel;
     private final CurrentPageVerifier mCurrentPageVerifier;
     private final TrustedWebActivityUmaRecorder mRecorder;
     private final ClientPackageNameProvider mClientPackageNameProvider;
 
     @Inject
-    TrustedWebActivityDisclosureController(BrowserServicesStore browserServicesStore,
-            TrustedWebActivityModel model, ActivityLifecycleDispatcher lifecycleDispatcher,
-            CurrentPageVerifier currentPageVerifier, TrustedWebActivityUmaRecorder recorder,
+    TrustedWebActivityDisclosureController(
+            ChromePreferenceManager preferenceManager,
+            TrustedWebActivityModel model,
+            ActivityLifecycleDispatcher lifecycleDispatcher,
+            CurrentPageVerifier currentPageVerifier,
+            TrustedWebActivityUmaRecorder recorder,
             ClientPackageNameProvider clientPackageNameProvider) {
-        mBrowserServicesStore = browserServicesStore;
-        mModel = model;
         mCurrentPageVerifier = currentPageVerifier;
+        mPreferenceManager = preferenceManager;
+        mModel = model;
         mRecorder = recorder;
         mClientPackageNameProvider = clientPackageNameProvider;
         model.set(DISCLOSURE_EVENTS_CALLBACK, this);
@@ -58,8 +61,7 @@ public class TrustedWebActivityDisclosureController implements NativeInitObserve
     @Override
     public void onDisclosureAccepted() {
         mRecorder.recordDisclosureAccepted();
-        mBrowserServicesStore.setUserAcceptedTwaDisclosureForPackage(
-                mClientPackageNameProvider.get());
+        mPreferenceManager.setUserAcceptedTwaDisclosureForPackage(mClientPackageNameProvider.get());
         mModel.set(DISCLOSURE_STATE, DISCLOSURE_STATE_DISMISSED_BY_USER);
     }
 
@@ -80,7 +82,7 @@ public class TrustedWebActivityDisclosureController implements NativeInitObserve
 
     /** Has a disclosure been dismissed for this client package before? */
     private boolean wasDismissed() {
-        return mBrowserServicesStore.hasUserAcceptedTwaDisclosureForPackage(
+        return mPreferenceManager.hasUserAcceptedTwaDisclosureForPackage(
                 mClientPackageNameProvider.get());
     }
 

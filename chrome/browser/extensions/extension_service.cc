@@ -914,9 +914,8 @@ void ExtensionService::PostDeactivateExtension(
   // Revoke external file access for the extension from its file system context.
   // It is safe to access the extension's storage partition at this point. The
   // storage partition may get destroyed only after the extension gets unloaded.
-  GURL site = util::GetSiteForExtensionId(extension->id(), profile_);
   storage::FileSystemContext* filesystem_context =
-      BrowserContext::GetStoragePartitionForSite(profile_, site)
+      util::GetStoragePartitionForExtensionId(extension->id(), profile_)
           ->GetFileSystemContext();
   if (filesystem_context && filesystem_context->external_backend()) {
     filesystem_context->external_backend()->RevokeAccessForExtension(

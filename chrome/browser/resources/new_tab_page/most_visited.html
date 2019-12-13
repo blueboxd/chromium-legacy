@@ -127,9 +127,10 @@
 <div id="container" style="--column-count: [[columnCount_]]">
   <dom-repeat id="tiles" items="[[tiles_]]">
     <template>
-      <a class="tile" draggable="true" href$="[[item.url]]"
+      <a class="tile" draggable="true" href$="[[item.url.url]]"
           title$="[[item.title]]"
-          hidden$="[[isHidden_(index, columnCount_)]]">
+          hidden$="[[isHidden_(index, columnCount_)]]"
+          on-keydown="onTileKeyDown_">
         <cr-icon-button class="icon-more-vert" on-click="onTileActionMenu_"
             tabindex="0"></cr-icon-button>
         <div class="tile-icon">
@@ -140,7 +141,7 @@
     </template>
   </dom-repeat>
   <a id="addShortcut" tabindex="0" on-click="onAdd_" hidden$="[[!showAdd_]]"
-      title="$i18n{addLinkTitle}" on-keydown="onAddShortcutKeydown_">
+      title="$i18n{addLinkTitle}" on-keydown="onAddShortcutKeyDown_">
     <div class="tile-icon">
       <img src="chrome://resources/images/add.svg" draggable="false"></img>
     </div>
@@ -175,3 +176,18 @@
     </button>
   </cr-action-menu>
 </div>
+<cr-toast id="toast" duration="10000">
+  <div>[[toastContent_]]</div>
+  <dom-if if="showToastButtons_">
+    <template>
+      <cr-button id="undo" aria-label="$i18n{undoDescription}"
+          on-click="onUndoClick_">
+        $i18n{undo}
+      </cr-button>
+      <cr-button id="restore" aria-label="$i18n{restoreDefaultLinks}"
+          on-click="onRestoreDefaultsClick_">
+        $i18n{restoreDefaultLinks}
+      </cr-button>
+    </template>
+  </dom-if>
+</cr-toast>

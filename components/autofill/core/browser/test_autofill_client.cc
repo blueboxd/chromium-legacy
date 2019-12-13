@@ -126,9 +126,6 @@ void TestAutofillClient::ShowWebauthnVerifyPendingDialog(
 
 void TestAutofillClient::UpdateWebauthnOfferDialogWithError() {}
 
-void TestAutofillClient::UpdateWebauthnVerifyPendingCancelButton(
-    bool should_be_enabled) {}
-
 bool TestAutofillClient::CloseWebauthnDialog() {
   return true;
 }

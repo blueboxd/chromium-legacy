@@ -237,11 +237,6 @@ void SetPpdReference(const Printer::PpdReference& ppd_ref, base::Value* info) {
   }
 }
 
-bool IsFilledPpdReference(const Printer::PpdReference& ppd_ref) {
-  return ppd_ref.autoconf || !ppd_ref.user_supplied_ppd_url.empty() ||
-         !ppd_ref.effective_make_and_model.empty();
-}
-
 Printer::PpdReference GetPpdReference(const base::Value* info) {
   const char ppd_ref_pathname[] = "printerPpdReference";
   auto* user_supplied_ppd_url =
@@ -736,7 +731,7 @@ void CupsPrintersHandler::AddOrReconfigurePrinter(const base::ListValue* args,
 
   // Check if the printer already has a valid ppd_reference.
   Printer::PpdReference ppd_ref = GetPpdReference(printer_dict);
-  if (IsFilledPpdReference(ppd_ref)) {
+  if (ppd_ref.IsFilled()) {
     *printer->mutable_ppd_reference() = ppd_ref;
   } else if (!printer_ppd_path.empty()) {
     GURL tmp = net::FilePathToFileURL(base::FilePath(printer_ppd_path));

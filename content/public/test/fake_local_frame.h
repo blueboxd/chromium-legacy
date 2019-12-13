@@ -37,6 +37,7 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
   void Collapse(bool collapsed) override;
   void EnableViewSourceMode() override;
   void Focus() override;
+  void ClearFocusedElement() override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

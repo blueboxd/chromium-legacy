@@ -24,7 +24,7 @@ const DRAG_THRESHOLD = 15;
  * @return {boolean}
  */
 function isBookmarkItem(element) {
-  return element.tagName == 'BOOKMARKS-ITEM';
+  return element.tagName === 'BOOKMARKS-ITEM';
 }
 
 /**
@@ -32,7 +32,7 @@ function isBookmarkItem(element) {
  * @return {boolean}
  */
 function isBookmarkFolderNode(element) {
-  return element.tagName == 'BOOKMARKS-FOLDER-NODE';
+  return element.tagName === 'BOOKMARKS-FOLDER-NODE';
 }
 
 /**
@@ -40,7 +40,7 @@ function isBookmarkFolderNode(element) {
  * @return {boolean}
  */
 function isBookmarkList(element) {
-  return element.tagName == 'BOOKMARKS-LIST';
+  return element.tagName === 'BOOKMARKS-LIST';
 }
 
 /**
@@ -103,7 +103,7 @@ function getBookmarkElement(path) {
 function getDragElement(path) {
   const dragElement = getBookmarkElement(path);
   for (let i = 0; i < path.length; i++) {
-    if (path[i].tagName == 'BUTTON') {
+    if (path[i].tagName === 'BUTTON') {
       return null;
     }
   }
@@ -162,7 +162,7 @@ export class DragInfo {
   isDraggingBookmark(bookmarkId) {
     return !!this.dragData && this.isSameProfile() &&
         this.dragData.elements.some(function(node) {
-          return node.id == bookmarkId;
+          return node.id === bookmarkId;
         });
   }
 
@@ -170,7 +170,7 @@ export class DragInfo {
   isDraggingChildBookmark(folderId) {
     return !!this.dragData && this.isSameProfile() &&
         this.dragData.elements.some(function(node) {
-          return node.parentId == folderId;
+          return node.parentId === folderId;
         });
   }
 
@@ -222,7 +222,7 @@ class AutoExpander {
 
     // If dragging over a new closed folder node with children reset the
     // expander. Falls through to reset the expander delay.
-    if (overElement && overElement != this.lastElement_ &&
+    if (overElement && overElement !== this.lastElement_ &&
         isClosedBookmarkFolderNode(overElement) &&
         hasChildFolders(/** @type {string} */ (itemId), store.data.nodes)) {
       this.reset();
@@ -230,7 +230,7 @@ class AutoExpander {
     }
 
     // If dragging over the same node, reset the expander delay.
-    if (overElement && overElement == this.lastElement_) {
+    if (overElement && overElement === this.lastElement_) {
       this.debouncer_.restartTimeout(this.EXPAND_FOLDER_DELAY);
       return;
     }
@@ -283,9 +283,9 @@ class DropIndicator {
    * @param {DropPosition} position
    */
   addDropIndicatorStyle(indicatorElement, position) {
-    const indicatorStyleName = position == DropPosition.ABOVE ?
+    const indicatorStyleName = position === DropPosition.ABOVE ?
         'drag-above' :
-        position == DropPosition.BELOW ? 'drag-below' : 'drag-on';
+        position === DropPosition.BELOW ? 'drag-below' : 'drag-on';
 
     this.lastIndicatorElement_ =
         /** @type {BookmarkElement} */ (indicatorElement);
@@ -431,7 +431,7 @@ export class DNDManager {
       // delay on large amount of bookmark dragging.
       for (const itemId of displayingItems) {
         for (const element of dragData.elements) {
-          if (element.id == itemId) {
+          if (element.id === itemId) {
             draggedNodes.push(element.id);
             break;
           }
@@ -441,10 +441,10 @@ export class DNDManager {
       draggedNodes = dragData.elements.map((item) => item.id);
     }
 
-    assert(draggedNodes.length == dragData.elements.length);
+    assert(draggedNodes.length === dragData.elements.length);
 
     const dragNodeIndex = draggedNodes.indexOf(dragElement.itemId);
-    assert(dragNodeIndex != -1);
+    assert(dragNodeIndex !== -1);
 
     chrome.bookmarkManagerPrivate.startDrag(
         draggedNodes, dragNodeIndex, this.lastPointerWasTouch_, e.clientX,
@@ -470,7 +470,7 @@ export class DNDManager {
 
     if (this.dropDestination_) {
       const dropInfo = this.calculateDropInfo_(this.dropDestination_);
-      const index = dropInfo.index != -1 ? dropInfo.index : undefined;
+      const index = dropInfo.index !== -1 ? dropInfo.index : undefined;
       const shouldHighlight = this.shouldHighlight_(this.dropDestination_);
 
       if (shouldHighlight) {
@@ -586,7 +586,7 @@ export class DNDManager {
     let index = -1;
     let parentId = node.id;
 
-    if (position != DropPosition.ON) {
+    if (position !== DropPosition.ON) {
       const state = Store.getInstance().data;
 
       // Drops between items in the normal list and the sidebar use the drop
@@ -594,7 +594,7 @@ export class DNDManager {
       parentId = assert(node.parentId);
       index = state.nodes[parentId].children.indexOf(node.id);
 
-      if (position == DropPosition.BELOW) {
+      if (position === DropPosition.BELOW) {
         index++;
       }
     }
@@ -622,7 +622,7 @@ export class DNDManager {
     // Change selection to the dragged node if the node is not part of the
     // existing selection.
     if (isBookmarkFolderNode(dragElement) ||
-        draggedNodes.indexOf(dragId) == -1) {
+        draggedNodes.indexOf(dragId) === -1) {
       store.dispatch(deselectItems());
       if (!isBookmarkFolderNode(dragElement)) {
         store.dispatch(selectItem(dragId, state, {
@@ -660,7 +660,7 @@ export class DNDManager {
    */
   calculateDropDestination_(elementClientY, overElement) {
     const validDropPositions = this.calculateValidDropPositions_(overElement);
-    if (validDropPositions == DropPosition.NONE) {
+    if (validDropPositions === DropPosition.NONE) {
       return null;
     }
 
@@ -740,7 +740,7 @@ export class DNDManager {
     }
 
     // We cannot drop between Bookmarks bar and Other bookmarks.
-    if (getBookmarkNode(overElement).parentId == ROOT_NODE_ID) {
+    if (getBookmarkNode(overElement).parentId === ROOT_NODE_ID) {
       return DropPosition.NONE;
     }
 
@@ -788,7 +788,7 @@ export class DNDManager {
     if (isBookmarkList(overElement)) {
       const state = Store.getInstance().data;
       return !!state.selectedFolder &&
-          state.nodes[state.selectedFolder].children.length == 0;
+          state.nodes[state.selectedFolder].children.length === 0;
     }
 
     // We can only drop on a folder.

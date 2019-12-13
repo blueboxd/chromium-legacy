@@ -18,7 +18,6 @@
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/signatures_util.h"
-#include "components/password_manager/core/browser/password_form_user_action.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -63,13 +62,6 @@ class PasswordFormMetricsRecorder
     kManagerActionAutofilled,
     kManagerActionBlacklisted_Obsolete,
     kManagerActionMax
-  };
-
-  // Same as above without the obsoleted 'Blacklisted' action.
-  enum ManagerActionNew {
-    kManagerActionNewNone = 0,
-    kManagerActionNewAutofilled,
-    kManagerActionNewMax
   };
 
   // Result - What happens to the form?
@@ -286,17 +278,6 @@ class PasswordFormMetricsRecorder
     kMaxValue = kAutofillOrUserInput,
   };
 
-  // The maximum number of combinations of the ManagerAction, UserAction and
-  // SubmitResult enums.
-  // This is used when recording the actions taken by the form in UMA.
-  static constexpr int kMaxNumActionsTaken =
-      kManagerActionMax * static_cast<int>(UserAction::kMax) * kSubmitResultMax;
-
-  // Same as above but for ManagerActionNew instead of ManagerAction.
-  static constexpr int kMaxNumActionsTakenNew =
-      kManagerActionNewMax * static_cast<int>(UserAction::kMax) *
-      kSubmitResultMax;
-
   // Called if the user could generate a password for this form.
   void MarkGenerationAvailable();
 
@@ -306,19 +287,6 @@ class PasswordFormMetricsRecorder
   // Stores the password manager action. During destruction the last
   // set value will be logged.
   void SetManagerAction(ManagerAction manager_action);
-
-  // Calculates the user's action depending on the submitted form and existing
-  // matches. Also inspects |manager_action_| to correctly detect if the
-  // user chose a credential.
-  void CalculateUserAction(
-      const std::vector<const autofill::PasswordForm*>& best_matches,
-      const autofill::PasswordForm& submitted_form);
-
-  // Allow tests to explicitly set a value for |user_action_|.
-  void SetUserActionForTesting(UserAction user_action);
-
-  // Gets the current value of |user_action_|.
-  UserAction GetUserAction() const;
 
   // Call these if/when we know the form submission worked or failed.
   // These routines are used to update internal statistics ("ActionsTaken").
@@ -348,11 +316,6 @@ class PasswordFormMetricsRecorder
 
   // Records that the password manager managed or failed to fill a form.
   void RecordFillEvent(ManagerAutofillEvent event);
-
-  // Converts the "ActionsTaken" fields (using ManagerActionNew) into an int so
-  // they can be logged to UMA.
-  // Public for testing.
-  int GetActionsTakenNew() const;
 
   // Records a DetailedUserAction UKM metric.
   void RecordDetailedUserAction(DetailedUserAction action);
@@ -434,10 +397,6 @@ class PasswordFormMetricsRecorder
   // RecordUkmMetric.
   ~PasswordFormMetricsRecorder();
 
-  // Converts the "ActionsTaken" fields into an int so they can be logged to
-  // UMA.
-  int GetActionsTaken() const;
-
   // True if the main frame's visible URL, at the time this PasswordFormManager
   // was created, is secure.
   const bool is_main_frame_secure_;
@@ -467,7 +426,6 @@ class PasswordFormMetricsRecorder
   // the user with this form, and the result. They are combined and
   // recorded in UMA when the PasswordFormMetricsRecorder is destroyed.
   ManagerAction manager_action_ = kManagerActionNone;
-  UserAction user_action_ = UserAction::kNone;
   SubmitResult submit_result_ = kSubmitResultNotSubmitted;
 
   // Form type of the form that the PasswordFormManager is managing. Set after

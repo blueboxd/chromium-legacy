@@ -283,6 +283,7 @@
 <translation id="1397500194120344683">사용 가능한 기기가 없습니다. <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">최대화</translation>
 <translation id="1399511500114202393">사용자 인증서 없음</translation>
+<translation id="1403519882106291341">Chrome OS 이용약관</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" />(관리 대상)</translation>
 <translation id="1405779994569073824">비정상 종료됨</translation>
 <translation id="1406500794671479665">확인 중...</translation>
@@ -2174,7 +2175,6 @@
 <translation id="4036778507053569103">서버에서 다운로드한 정책이 올바르지 않습니다.</translation>
 <translation id="4037084878352560732">말</translation>
 <translation id="4037889604535939429">사용자 수정</translation>
-<translation id="4042264909745389898">Google Chrome OS 이용약관</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{페이지 나가기}other{페이지 나가기}}</translation>
 <translation id="4044612648082411741">인증서 비밀번호를 입력하세요.</translation>
 <translation id="404493185430269859">기본 검색엔진</translation>

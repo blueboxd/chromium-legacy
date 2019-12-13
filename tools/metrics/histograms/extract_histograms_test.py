@@ -344,6 +344,21 @@ class ExtractHistogramsTest(unittest.TestCase):
         histogram_without_enum_or_unit, {})
     self.assertTrue(have_errors)
 
+  def testNewHistogramWithEnumAndUnit(self):
+    histogram_with_enum_and_unit = xml.dom.minidom.parseString("""
+<histogram-configuration>
+<histograms>
+ <histogram name="Test.Histogram" enum="MyEnumType" unit="things">
+  <owner>chrome-metrics-team@google.com</owner>
+  <summary> This is a summary </summary>
+ </histogram>
+</histograms>
+</histogram-configuration>
+""")
+    _, have_errors = extract_histograms._ExtractHistogramsFromXmlTree(
+        histogram_with_enum_and_unit, {})
+    self.assertTrue(have_errors)
+
   def testNewHistogramWithEnum(self):
     histogram_with_enum = xml.dom.minidom.parseString("""
 <histogram-configuration>

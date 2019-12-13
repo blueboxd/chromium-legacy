@@ -179,7 +179,7 @@ CALayerResult FromTileQuad(DisplayResourceProvider* resource_provider,
   return CA_LAYER_SUCCESS;
 }
 
-class CALayerOverlayProcessor {
+class CALayerOverlayProcessorInternal {
  public:
   CALayerResult FromDrawQuad(
       DisplayResourceProvider* resource_provider,
@@ -296,7 +296,7 @@ CALayerOverlay::CALayerOverlay(const CALayerOverlay& other) = default;
 
 CALayerOverlay::~CALayerOverlay() {}
 
-bool ProcessForCALayerOverlays(
+bool CALayerOverlayProcessor::ProcessForCALayerOverlays(
     DisplayResourceProvider* resource_provider,
     const gfx::RectF& display_rect,
     const QuadList& quad_list,
@@ -304,7 +304,7 @@ bool ProcessForCALayerOverlays(
         render_pass_filters,
     const base::flat_map<RenderPassId, cc::FilterOperations*>&
         render_pass_backdrop_filters,
-    CALayerOverlayList* ca_layer_overlays) {
+    CALayerOverlayList* ca_layer_overlays) const {
   CALayerResult result = CA_LAYER_SUCCESS;
 
   if (quad_list.size() < kTooManyQuads)
@@ -313,7 +313,7 @@ bool ProcessForCALayerOverlays(
     result = CA_LAYER_FAILED_TOO_MANY_QUADS;
 
   int render_pass_draw_quad_count = 0;
-  CALayerOverlayProcessor processor;
+  CALayerOverlayProcessorInternal processor;
   for (auto it = quad_list.BackToFrontBegin();
        result == CA_LAYER_SUCCESS && it != quad_list.BackToFrontEnd(); ++it) {
     const DrawQuad* quad = *it;

@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 
 namespace blink {
@@ -23,13 +24,13 @@ ScriptPromise NavigationPreloadManager::disable(ScriptState* script_state) {
 
 ScriptPromise NavigationPreloadManager::setHeaderValue(
     ScriptState* script_state,
-    const String& value) {
+    const String& value,
+    ExceptionState& exception_state) {
   if (!IsValidHTTPHeaderValue(value)) {
-    return ScriptPromise::Reject(
-        script_state, V8ThrowException::CreateTypeError(
-                          script_state->GetIsolate(),
-                          "The string provided to setHeaderValue ('" + value +
-                              "') is not a valid HTTP header field value."));
+    exception_state.ThrowTypeError(
+        "The string provided to setHeaderValue ('" + value +
+        "') is not a valid HTTP header field value.");
+    return ScriptPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);

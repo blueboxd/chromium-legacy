@@ -121,11 +121,6 @@ bool IsLoggingActive(const password_manager::PasswordManagerClient* client) {
 
 bool ManualPasswordGenerationEnabled(
     password_manager::PasswordManagerDriver* driver) {
-#if defined(OS_ANDROID)
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kManualPasswordGenerationAndroid))
-    return false;
-#endif  // defined(OS_ANDROID)
   password_manager::PasswordGenerationFrameHelper* password_generation_manager =
       driver ? driver->GetPasswordGenerationHelper() : nullptr;
   if (!password_generation_manager ||

@@ -428,27 +428,6 @@ bool ContextualSearchDelegate::CanSendPageURL(
   return anonymized_unified_consent_url_helper->IsEnabled();
 }
 
-// Gets the target language from the translate service using the user's profile.
-std::string ContextualSearchDelegate::GetTargetLanguage() {
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  LanguageModel* language_model =
-      LanguageModelManagerFactory::GetForBrowserContext(profile)
-          ->GetPrimaryModel();
-  DCHECK(language_model);
-  PrefService* pref_service = profile->GetPrefs();
-  std::string result =
-      TranslateService::GetTargetLanguage(pref_service, language_model);
-  DCHECK(!result.empty());
-  return result;
-}
-
-// Returns the accept languages preference string.
-std::string ContextualSearchDelegate::GetAcceptLanguages() {
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  PrefService* pref_service = profile->GetPrefs();
-  return pref_service->GetString(language::prefs::kAcceptLanguages);
-}
-
 // Decodes the given response from the search term resolution request and sets
 // the value of the given parameters.
 void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(

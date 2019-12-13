@@ -450,7 +450,7 @@ void View::SetVisible(bool visible) {
     if (parent_) {
       parent_->ChildVisibilityChanged(this);
       parent_->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged,
-                                        false);
+                                        true);
     }
 
     // This notifies all sub-views recursively.

@@ -237,12 +237,6 @@ void CreditCardFIDOAuthenticator::GetAssertion(
       return;
     }
   }
-  if (current_flow_ == AUTHENTICATION_FLOW) {
-    // The cancel button in the verify pending dialog should be disabled when
-    // the OS authentication dialog is visible.
-    autofill_client_->UpdateWebauthnVerifyPendingCancelButton(
-        /*should_be_enabled=*/false);
-  }
 #endif
   authenticator_->GetAssertion(
       std::move(request_options),
@@ -368,12 +362,6 @@ void CreditCardFIDOAuthenticator::OnDidGetAssertion(
   }
 
   if (current_flow_ == AUTHENTICATION_FLOW) {
-#if !defined(OS_ANDROID)
-    // On desktop, enables the cancel button in the verify pending dialog again.
-    autofill_client_->UpdateWebauthnVerifyPendingCancelButton(
-        /*should_be_enabled=*/true);
-#endif
-
     base::Value response =
         ParseAssertionResponse(std::move(assertion_response));
     full_card_request_.reset(new payments::FullCardRequest(

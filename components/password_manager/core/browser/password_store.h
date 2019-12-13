@@ -357,7 +357,9 @@ class PasswordStore : protected PasswordStoreSync,
       std::unique_ptr<PasswordStoreSigninNotifier> notifier);
 
   // Schedules the update of password hashes used by reuse detector.
-  void SchedulePasswordHashUpdate(bool should_log_metrics);
+  // |does_primary_account_exists| is only used if |should_log_metrics| is true.
+  void SchedulePasswordHashUpdate(bool should_log_metrics,
+                                  bool does_primary_account_exists);
 
   // Schedules the update of enterprise login and change password URLs.
   // These URLs are used in enterprise password reuse detection.
@@ -528,10 +530,12 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Synchronous implementation of SaveProtectedPasswordHash().
   // |should_log_metrics| indicates whether to log the counts of captured
-  // password hashes.
+  // password hashes. |does_primary_account_exists| is used to differentiate
+  // between the metrics.
   void SaveProtectedPasswordHashImpl(
       PasswordHashDataList protected_password_data_list,
-      bool should_log_metrics);
+      bool should_log_metrics,
+      bool does_primary_account_exists);
 
   // Propagates enterprise login urls and change password url to
   // |reuse_detector_|.

@@ -80,7 +80,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
 
   // D3D11VideoDecoderClient implementation.
   D3D11PictureBuffer* GetPicture() override;
-  void OutputResult(const CodecPicture* picture,
+  bool OutputResult(const CodecPicture* picture,
                     D3D11PictureBuffer* picture_buffer) override;
 
   static bool GetD3D11FeatureLevel(ComD3D11Device dev,

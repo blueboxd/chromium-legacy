@@ -16,7 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/device_service.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/common/extension.h"
@@ -25,9 +25,7 @@
 #include "services/device/public/cpp/hid/hid_device_filter.h"
 #include "services/device/public/cpp/hid/hid_usage_and_page.h"
 #include "services/device/public/cpp/usb/usb_utils.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -182,6 +180,11 @@ class HidDeviceInfo : public DevicePermissionsPrompt::Prompt::DeviceInfo {
   device::mojom::HidDeviceInfoPtr device_;
 };
 
+DevicePermissionsPrompt::HidManagerBinder& GetHidManagerBinderOverride() {
+  static base::NoDestructor<DevicePermissionsPrompt::HidManagerBinder> binder;
+  return *binder;
+}
+
 class HidDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
                                    public device::mojom::HidManagerClient {
  public:
@@ -214,10 +217,12 @@ class HidDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
     }
 
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    service_manager::Connector* connector = content::GetSystemConnector();
-    DCHECK(connector);
-    connector->Connect(device::mojom::kServiceName,
-                       hid_manager_.BindNewPipeAndPassReceiver());
+    auto receiver = hid_manager_.BindNewPipeAndPassReceiver();
+    const auto& binder = GetHidManagerBinderOverride();
+    if (binder)
+      binder.Run(std::move(receiver));
+    else
+      content::GetDeviceService().BindHidManager(std::move(receiver));
 
     hid_manager_->GetDevicesAndSetClient(
         receiver_.BindNewEndpointAndPassRemote(),
@@ -396,6 +401,12 @@ DevicePermissionsPrompt::CreateUsbPromptForTest(const Extension* extension,
   return base::MakeRefCounted<UsbDevicePermissionsPrompt>(
       extension, nullptr, multiple, std::vector<UsbDeviceFilterPtr>(),
       base::DoNothing());
+}
+
+// static
+void DevicePermissionsPrompt::OverrideHidManagerBinderForTesting(
+    HidManagerBinder binder) {
+  GetHidManagerBinderOverride() = std::move(binder);
 }
 
 }  // namespace extensions

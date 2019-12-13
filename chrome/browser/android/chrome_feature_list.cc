@@ -134,7 +134,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContextualSearchSecondTap,
     &kContextualSearchSimplifiedServer,
     &kContextualSearchTapDisableOverride,
-    &kContextualSearchTranslationModel,
     &kDirectActions,
     &kDownloadFileProvider,
     &kDownloadNotificationBadge,
@@ -406,9 +405,6 @@ const base::Feature kContextualSearchSimplifiedServer{
 
 const base::Feature kContextualSearchTapDisableOverride{
     "ContextualSearchTapDisableOverride", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kContextualSearchTranslationModel{
-    "ContextualSearchTranslationModel", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDarkenWebsitesCheckboxInThemesSetting{
     "DarkenWebsitesCheckboxInThemesSetting", base::FEATURE_DISABLED_BY_DEFAULT};

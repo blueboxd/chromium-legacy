@@ -17,7 +17,10 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/x/x11_drag_drop_client.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/platform/platform_event_dispatcher.h"
+#include "ui/events/x/x11_window_event_manager.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/x/x11.h"
@@ -40,7 +43,7 @@ namespace ui {
 class DropTargetEvent;
 class OSExchangeData;
 class OSExchangeDataProviderAuraX11;
-class SelectionFormatMap;
+class XDragContext;
 }
 
 namespace views {
@@ -52,7 +55,9 @@ class X11MoveLoop;
 // X11 events forwarded from DesktopWindowTreeHostLinux, while on the other, it
 // handles the views drag events.
 class VIEWS_EXPORT DesktopDragDropClientAuraX11
-    : public aura::client::DragDropClient,
+    : public ui::XDragDropClient,
+      public aura::client::DragDropClient,
+      public ui::PlatformEventDispatcher,
       public aura::WindowObserver,
       public X11MoveLoopDelegate {
  public:
@@ -92,6 +97,10 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   bool IsDragDropInProgress() override;
   void AddObserver(aura::client::DragDropClientObserver* observer) override;
   void RemoveObserver(aura::client::DragDropClientObserver* observer) override;
+
+  // PlatformEventDispatcher:
+  bool CanDispatchEvent(const ui::PlatformEvent& event) override;
+  uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
 
   // Overridden from aura::WindowObserver:
   void OnWindowDestroyed(aura::Window* window) override;
@@ -160,34 +169,16 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // longer dragging over it.
   void NotifyDragLeave();
 
-  // Converts our bitfield of actions into an Atom that represents what action
-  // we're most likely to take on drop.
-  ::Atom DragOperationToAtom(int drag_operation);
-
-  // Converts a single action atom to a drag operation.
-  ui::DragDropTypes::DragOperation AtomToDragOperation(::Atom atom);
-
-  // During the blocking StartDragAndDrop() call, this converts the views-style
-  // |drag_operation_| bitfield into a vector of Atoms to offer to other
-  // processes.
-  std::vector< ::Atom> GetOfferedDragOperations();
-
   // This returns a representation of the data we're offering in this
   // drag. This is done to bypass an asynchronous roundtrip with the X11
   // server.
   ui::SelectionFormatMap GetFormatMap() const;
 
-  // Returns the modifier state for the most recent mouse move. This is done to
-  // bypass an asynchronous roundtrip with the X11 server.
-  int current_modifier_state() const {
-    return current_modifier_state_;
-  }
-
   // Handling XdndPosition can be paused while waiting for more data; this is
   // called either synchronously from OnXdndPosition, or asynchronously after
   // we've received data requested from the other window.
   void CompleteXdndPosition(::Window source_window,
-                            const gfx::Point& screen_point);
+                            const gfx::Point& screen_point) override;
 
   void SendXdndEnter(::Window dest_window);
   void SendXdndLeave(::Window dest_window);
@@ -203,6 +194,8 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // with alpha > 32).
   bool IsValidDragImage(const gfx::ImageSkia& image);
 
+  void ResetDragContext();
+
   // A nested run loop that notifies this object of events through the
   // X11MoveLoopDelegate interface.
   std::unique_ptr<X11MoveLoop> move_loop_;
@@ -211,15 +204,10 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
 
   DesktopNativeCursorManager* cursor_manager_;
 
-  ::Display* xdisplay_;
-  ::Window xwindow_;
-
+  // Events that we have selected on |source_window_|.
+  std::unique_ptr<ui::XScopedEventSelector> source_window_events_;
   // Target side information.
-  class X11DragContext;
-  std::unique_ptr<X11DragContext> target_current_context_;
-
-  // The modifier state for the most recent mouse move.
-  int current_modifier_state_ = ui::EF_NONE;
+  std::unique_ptr<ui::XDragContext> target_current_context_;
 
   // The Aura window that is currently under the cursor. We need to manually
   // keep track of this because Windows will only call our drag enter method
@@ -261,9 +249,6 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // multiple root windows and multiple DesktopDragDropClientAuraX11 instances
   // it is important to maintain only one drag and drop operation at any time.
   static DesktopDragDropClientAuraX11* g_current_drag_drop_client;
-
-  // The operation bitfield as requested by StartDragAndDrop.
-  int drag_operation_ = 0;
 
   // We offer the other window a list of possible operations,
   // XdndActionsList. This is the requested action from the other window. This

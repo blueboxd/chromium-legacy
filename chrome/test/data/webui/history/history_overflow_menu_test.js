@@ -9,17 +9,30 @@ suite('#overflow-menu', function() {
   let target1;
   let target2;
 
-  suiteSetup(function() {
-    const app = $('history-app');
-    listContainer = app.$['history'];
-    const element1 = document.createElement('div');
-    const element2 = document.createElement('div');
-    document.body.appendChild(element1);
-    document.body.appendChild(element2);
+  setup(function() {
+    PolymerTest.clearBody();
+    const testService = new TestBrowserService();
+    history.BrowserService.instance_ = testService;
 
-    target1 = element1;
-    target2 = element2;
-    sharedMenu = listContainer.$.sharedMenu.get();
+    const app = document.createElement('history-app');
+    document.body.appendChild(app);
+    return Promise
+        .all([
+          testService.whenCalled('queryHistory'),
+          history.ensureLazyLoaded(),
+        ])
+        .then(function() {
+          element = app.$.history;
+          listContainer = app.$['history'];
+          const element1 = document.createElement('div');
+          const element2 = document.createElement('div');
+          document.body.appendChild(element1);
+          document.body.appendChild(element2);
+
+          target1 = element1;
+          target2 = element2;
+          sharedMenu = listContainer.$.sharedMenu.get();
+        });
   });
 
   test('opening and closing menu', function() {

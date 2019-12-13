@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/threading/thread_checker.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/api_resource_manager.h"
@@ -48,6 +49,11 @@ class SerialPortManager : public BrowserContextKeyedAPI {
   // Start the poilling process for the connection.
   void StartConnectionPolling(const std::string& extension_id,
                               int connection_id);
+
+  // Allows tests to override how this class binds SerialPortManager receivers.
+  using Binder = base::RepeatingCallback<void(
+      mojo::PendingReceiver<device::mojom::SerialPortManager>)>;
+  static void OverrideBinderForTesting(Binder binder);
 
  private:
   typedef ApiResourceManager<SerialConnection>::ApiResourceData ConnectionData;

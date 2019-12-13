@@ -312,7 +312,7 @@ public class MainPreferences extends PreferenceFragmentCompat
     }
 
     @VisibleForTesting
-    ManagedPreferenceDelegate getManagedPreferenceDelegateForTest() {
+    public ManagedPreferenceDelegate getManagedPreferenceDelegateForTest() {
         return mManagedPreferenceDelegate;
     }
 

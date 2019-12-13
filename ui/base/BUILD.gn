@@ -471,9 +471,12 @@ jumbo_component("base") {
     deps += [ "//ui/events" ]
   }
 
-  if (use_x11) {
+  if (is_desktop_linux && (use_x11 || ozone_platform_x11)) {
     public_deps += [ "//ui/base/x" ]
     configs += [ "//build/config/linux:x11" ]
+
+    # X11 drag and drop wants to use common drag and drop types.
+    allow_circular_includes_from = [ "//ui/base/x" ]
 
     if (!is_chromeos) {
       configs += [ "//build/config/linux:xscrnsaver" ]
@@ -492,8 +495,6 @@ jumbo_component("base") {
       "x/selection_owner.h",
       "x/selection_requestor.cc",
       "x/selection_requestor.h",
-      "x/selection_utils.cc",
-      "x/selection_utils.h",
     ]
     deps += [
       "//ui/events/platform/x11",

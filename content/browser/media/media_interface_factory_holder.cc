@@ -4,17 +4,12 @@
 
 #include "content/browser/media/media_interface_factory_holder.h"
 
-#include "base/bind.h"
-#include "content/public/common/service_manager_connection.h"
-#include "media/mojo/mojom/media_service.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
-
 namespace content {
 
 MediaInterfaceFactoryHolder::MediaInterfaceFactoryHolder(
-    const std::string& service_name,
+    MediaServiceGetter media_service_getter,
     CreateInterfaceProviderCB create_interface_provider_cb)
-    : service_name_(service_name),
+    : media_service_getter_(std::move(media_service_getter)),
       create_interface_provider_cb_(std::move(create_interface_provider_cb)) {}
 
 MediaInterfaceFactoryHolder::~MediaInterfaceFactoryHolder() {
@@ -31,18 +26,9 @@ media::mojom::InterfaceFactory* MediaInterfaceFactoryHolder::Get() {
 }
 
 void MediaInterfaceFactoryHolder::ConnectToMediaService() {
-  mojo::Remote<media::mojom::MediaService> media_service;
-
-  // TODO(slan): Use the BrowserContext Connector instead. See crbug.com/638950.
-  service_manager::Connector* connector =
-      ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(service_name_,
-                           media_service.BindNewPipeAndPassReceiver());
-
-  media_service->CreateInterfaceFactory(
+  media_service_getter_.Run().CreateInterfaceFactory(
       interface_factory_remote_.BindNewPipeAndPassReceiver(),
       create_interface_provider_cb_.Run());
-
   interface_factory_remote_.set_disconnect_handler(base::BindOnce(
       &MediaInterfaceFactoryHolder::OnMediaServiceConnectionError,
       base::Unretained(this)));

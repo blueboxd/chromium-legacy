@@ -13,7 +13,7 @@
 // creation and maintenance of the menu happens in the Bridge.
 @interface HistoryMenuCocoaController : NSObject<NSMenuDelegate> {
  @private
-  HistoryMenuBridge* bridge_;  // weak; owns us
+  HistoryMenuBridge* _bridge;  // weak; owns us
 }
 
 - (id)initWithBridge:(HistoryMenuBridge*)bridge;

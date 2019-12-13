@@ -38,7 +38,6 @@ class CastMojoMediaClient : public ::media::MojoMediaClient {
 #endif
 
   // MojoMediaClient implementation:
-  void Initialize(service_manager::Connector* connector) override;
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
   std::unique_ptr<::media::Renderer> CreateCastRenderer(
       service_manager::mojom::InterfaceProvider* host_interfaces,

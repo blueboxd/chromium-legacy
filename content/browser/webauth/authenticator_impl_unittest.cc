@@ -56,8 +56,6 @@
 #include "device/fido/virtual_fido_device_factory.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/url_util.h"
@@ -432,11 +430,10 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
   }
 
   mojo::Remote<blink::mojom::Authenticator> ConnectToAuthenticator(
-      service_manager::Connector* connector,
       std::unique_ptr<base::OneShotTimer> timer) {
     authenticator_impl_.reset(new AuthenticatorImpl(
-        main_rfh(), std::make_unique<AuthenticatorCommon>(main_rfh(), connector,
-                                                          std::move(timer))));
+        main_rfh(),
+        std::make_unique<AuthenticatorCommon>(main_rfh(), std::move(timer))));
     mojo::Remote<blink::mojom::Authenticator> authenticator;
     authenticator_impl_->Bind(authenticator.BindNewPipeAndPassReceiver());
     return authenticator;
@@ -444,19 +441,13 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
 
   mojo::Remote<blink::mojom::Authenticator> ConstructAuthenticatorWithTimer(
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner) {
-    connector_ = service_manager::Connector::Create(&receiver_);
     fake_hid_manager_ = std::make_unique<device::FakeFidoHidManager>();
-    connector_->OverrideBinderForTesting(
-        service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
-        device::mojom::HidManager::Name_,
-        base::BindRepeating(&device::FakeFidoHidManager::AddReceiver,
-                            base::Unretained(fake_hid_manager_.get())));
 
     // Set up a timer for testing.
     auto timer =
         std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
     timer->SetTaskRunner(task_runner);
-    return ConnectToAuthenticator(connector_.get(), std::move(timer));
+    return ConnectToAuthenticator(std::move(timer));
   }
 
   url::Origin GetTestOrigin() {
@@ -547,8 +538,6 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
 
  protected:
   std::unique_ptr<AuthenticatorImpl> authenticator_impl_;
-  mojo::PendingReceiver<service_manager::mojom::Connector> receiver_;
-  std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<device::FakeFidoHidManager> fake_hid_manager_;
   base::Optional<base::test::ScopedFeatureList> scoped_feature_list_;
   scoped_refptr<::testing::NiceMock<device::MockBluetoothAdapter>>
@@ -2572,10 +2561,9 @@ class FakeAuthenticatorCommon : public AuthenticatorCommon {
  public:
   explicit FakeAuthenticatorCommon(
       RenderFrameHost* render_frame_host,
-      service_manager::Connector* connector,
       std::unique_ptr<base::OneShotTimer> timer,
       std::unique_ptr<MockAuthenticatorRequestDelegateObserver> mock_delegate)
-      : AuthenticatorCommon(render_frame_host, connector, std::move(timer)),
+      : AuthenticatorCommon(render_frame_host, std::move(timer)),
         mock_delegate_(std::move(mock_delegate)) {}
   ~FakeAuthenticatorCommon() override = default;
 
@@ -2604,12 +2592,10 @@ class AuthenticatorImplRequestDelegateTest : public AuthenticatorImplTest {
 
   mojo::Remote<blink::mojom::Authenticator> ConnectToFakeAuthenticator(
       std::unique_ptr<MockAuthenticatorRequestDelegateObserver> delegate,
-      service_manager::Connector* connector,
       std::unique_ptr<base::OneShotTimer> timer) {
     authenticator_impl_.reset(new AuthenticatorImpl(
-        main_rfh(),
-        std::make_unique<FakeAuthenticatorCommon>(
-            main_rfh(), connector, std::move(timer), std::move(delegate))));
+        main_rfh(), std::make_unique<FakeAuthenticatorCommon>(
+                        main_rfh(), std::move(timer), std::move(delegate))));
     mojo::Remote<blink::mojom::Authenticator> authenticator;
     authenticator_impl_->Bind(authenticator.BindNewPipeAndPassReceiver());
     return authenticator;
@@ -2618,20 +2604,13 @@ class AuthenticatorImplRequestDelegateTest : public AuthenticatorImplTest {
   mojo::Remote<blink::mojom::Authenticator> ConstructFakeAuthenticatorWithTimer(
       std::unique_ptr<MockAuthenticatorRequestDelegateObserver> delegate,
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner) {
-    connector_ = service_manager::Connector::Create(&receiver_);
     fake_hid_manager_ = std::make_unique<device::FakeFidoHidManager>();
-    connector_->OverrideBinderForTesting(
-        service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
-        device::mojom::HidManager::Name_,
-        base::BindRepeating(&device::FakeFidoHidManager::AddReceiver,
-                            base::Unretained(fake_hid_manager_.get())));
 
     // Set up a timer for testing.
     auto timer =
         std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
     timer->SetTaskRunner(task_runner);
-    return ConnectToFakeAuthenticator(std::move(delegate), connector_.get(),
-                                      std::move(timer));
+    return ConnectToFakeAuthenticator(std::move(delegate), std::move(timer));
   }
 
  protected:
@@ -4400,12 +4379,10 @@ class InternalAuthenticatorImplTest : public AuthenticatorTestBase {
 
   mojo::Remote<blink::mojom::InternalAuthenticator> ConnectToAuthenticator(
       GURL effective_origin_url,
-      service_manager::Connector* connector,
       std::unique_ptr<base::OneShotTimer> timer) {
     internal_authenticator_impl_.reset(new InternalAuthenticatorImpl(
         main_rfh(), url::Origin::Create(effective_origin_url),
-        std::make_unique<AuthenticatorCommon>(main_rfh(), connector,
-                                              std::move(timer))));
+        std::make_unique<AuthenticatorCommon>(main_rfh(), std::move(timer))));
     mojo::Remote<blink::mojom::InternalAuthenticator> authenticator;
     internal_authenticator_impl_->Bind(
         authenticator.BindNewPipeAndPassReceiver());
@@ -4416,26 +4393,17 @@ class InternalAuthenticatorImplTest : public AuthenticatorTestBase {
   ConstructAuthenticatorWithTimer(
       GURL effective_origin_url,
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner) {
-    connector_ = service_manager::Connector::Create(&receiver_);
     fake_hid_manager_ = std::make_unique<device::FakeFidoHidManager>();
-    connector_->OverrideBinderForTesting(
-        service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
-        device::mojom::HidManager::Name_,
-        base::BindRepeating(&device::FakeFidoHidManager::AddReceiver,
-                            base::Unretained(fake_hid_manager_.get())));
 
     // Set up a timer for testing.
     auto timer =
         std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
     timer->SetTaskRunner(task_runner);
-    return ConnectToAuthenticator(effective_origin_url, connector_.get(),
-                                  std::move(timer));
+    return ConnectToAuthenticator(effective_origin_url, std::move(timer));
   }
 
  protected:
   std::unique_ptr<InternalAuthenticatorImpl> internal_authenticator_impl_;
-  mojo::PendingReceiver<service_manager::mojom::Connector> receiver_;
-  std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<device::FakeFidoHidManager> fake_hid_manager_;
 };
 

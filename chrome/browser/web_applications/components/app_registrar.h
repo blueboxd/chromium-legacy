@@ -104,6 +104,7 @@ class AppRegistrar {
   void RemoveObserver(AppRegistrarObserver* observer);
 
   void NotifyWebAppInstalled(const AppId& app_id);
+  void NotifyWebAppWillBeUninstalled(const AppId& app_id);
   void NotifyWebAppUninstalled(const AppId& app_id);
 
  protected:

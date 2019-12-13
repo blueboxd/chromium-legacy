@@ -180,8 +180,7 @@ base::Value HistoryEntryToValue(
   // Pass the timestamps in a list.
   base::Value timestamps(base::Value::Type::LIST);
   for (int64_t timestamp : entry.all_timestamps) {
-    timestamps.GetList().push_back(
-        base::Value(base::Time::FromInternalValue(timestamp).ToJsTime()));
+    timestamps.Append(base::Time::FromInternalValue(timestamp).ToJsTime());
   }
   result.SetKey("allTimestamps", std::move(timestamps));
 
@@ -259,28 +258,34 @@ BrowsingHistoryHandler::BrowsingHistoryHandler()
 
 BrowsingHistoryHandler::~BrowsingHistoryHandler() {}
 
+void BrowsingHistoryHandler::OnJavascriptAllowed() {
+  if (!browsing_history_service_ && initial_results_.is_none()) {
+    // Page was refreshed, so need to call StartQueryHistory here
+    StartQueryHistory();
+  }
+
+  for (auto& callback : deferred_callbacks_) {
+    std::move(callback).Run();
+  }
+  deferred_callbacks_.clear();
+}
+
 void BrowsingHistoryHandler::OnJavascriptDisallowed() {
   weak_factory_.InvalidateWeakPtrs();
+  browsing_history_service_ = nullptr;
+  initial_results_ = base::Value();
+  deferred_callbacks_.clear();
+  query_history_callback_id_.clear();
+  remove_visits_callback_.clear();
 }
 
 void BrowsingHistoryHandler::RegisterMessages() {
-  Profile* profile = GetProfile();
-  HistoryService* local_history = HistoryServiceFactory::GetForProfile(
-      profile, ServiceAccessType::EXPLICIT_ACCESS);
-  syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  browsing_history_service_ = std::make_unique<BrowsingHistoryService>(
-      this, local_history, sync_service);
-
   // Create our favicon data source.
+  Profile* profile = GetProfile();
   content::URLDataSource::Add(
       profile, std::make_unique<FaviconSource>(
                    profile, chrome::FaviconUrlFormat::kFavicon2));
 
-  web_ui()->RegisterMessageCallback(
-      "historyLoaded",
-      base::BindRepeating(&BrowsingHistoryHandler::HandleHistoryLoaded,
-                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "queryHistory",
       base::BindRepeating(&BrowsingHistoryHandler::HandleQueryHistory,
@@ -304,31 +309,70 @@ void BrowsingHistoryHandler::RegisterMessages() {
                           base::Unretained(this)));
 }
 
+void BrowsingHistoryHandler::StartQueryHistory() {
+  Profile* profile = GetProfile();
+  HistoryService* local_history = HistoryServiceFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
+  syncer::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile);
+  browsing_history_service_ = std::make_unique<BrowsingHistoryService>(
+      this, local_history, sync_service);
+
+  // 150 = RESULTS_PER_PAGE from chrome/browser/resources/history/constants.js
+  SendHistoryQuery(150, base::string16());
+}
+
 void BrowsingHistoryHandler::HandleQueryHistory(const base::ListValue* args) {
+  AllowJavascript();
   query_history_continuation_.Reset();
+  const base::Value& callback_id = args->GetList()[0];
+  if (!initial_results_.is_none()) {
+    ResolveJavascriptCallback(callback_id, std::move(initial_results_));
+    initial_results_ = base::Value();
+    return;
+  }
+
+  // Cancel the previous query if it is still in flight.
+  if (!query_history_callback_id_.empty()) {
+    RejectJavascriptCallback(base::Value(query_history_callback_id_),
+                             base::Value());
+  }
+  query_history_callback_id_ = callback_id.GetString();
 
   // Parse the arguments from JavaScript. There are two required arguments:
   // - the text to search for (may be empty)
   // - the maximum number of results to return (may be 0, meaning that there
   //   is no maximum).
-  const base::Value& search_text = args->GetList()[0];
+  const base::Value& search_text = args->GetList()[1];
 
-  history::QueryOptions options;
-  const base::Value& count = args->GetList()[1];
+  const base::Value& count = args->GetList()[2];
   if (!count.is_int()) {
     NOTREACHED() << "Failed to convert argument 2.";
     return;
   }
 
-  options.max_count = count.GetInt();
+  SendHistoryQuery(count.GetInt(), base::UTF8ToUTF16(search_text.GetString()));
+}
+
+void BrowsingHistoryHandler::SendHistoryQuery(int max_count,
+                                              const base::string16& query) {
+  history::QueryOptions options;
+  options.max_count = max_count;
   options.duplicate_policy = history::QueryOptions::REMOVE_DUPLICATES_PER_DAY;
-  browsing_history_service_->QueryHistory(
-      base::UTF8ToUTF16(search_text.GetString()), options);
+  browsing_history_service_->QueryHistory(query, options);
 }
 
 void BrowsingHistoryHandler::HandleQueryHistoryContinuation(
     const base::ListValue* args) {
-  DCHECK(args->empty());
+  CHECK(args->GetList().size() == 1);
+  const base::Value& callback_id = args->GetList()[0];
+  // Cancel the previous query if it is still in flight.
+  if (!query_history_callback_id_.empty()) {
+    RejectJavascriptCallback(base::Value(query_history_callback_id_),
+                             base::Value());
+  }
+  query_history_callback_id_ = callback_id.GetString();
+
   DCHECK(query_history_continuation_);
   std::move(query_history_continuation_).Run();
 }
@@ -412,7 +456,7 @@ void BrowsingHistoryHandler::OnQueryComplete(
   DCHECK(tracker);
   base::Value results_value(base::Value::Type::LIST);
   for (const BrowsingHistoryService::HistoryEntry& entry : results) {
-    results_value.GetList().push_back(
+    results_value.Append(
         HistoryEntryToValue(entry, bookmark_model, profile, tracker, clock_));
   }
 
@@ -424,8 +468,19 @@ void BrowsingHistoryHandler::OnQueryComplete(
   results_info.SetStringKey("term", query_results_info.search_text);
   results_info.SetBoolKey("finished", query_results_info.reached_beginning);
 
-  web_ui()->CallJavascriptFunctionUnsafe("historyResult", results_info,
-                                         results_value);
+  base::Value final_results(base::Value::Type::DICTIONARY);
+  final_results.SetKey("info", std::move(results_info));
+  final_results.SetKey("value", std::move(results_value));
+
+  if (query_history_callback_id_.empty()) {
+    // This can happen if JS isn't ready yet when the first query comes back.
+    initial_results_ = std::move(final_results);
+    return;
+  }
+
+  ResolveJavascriptCallback(base::Value(query_history_callback_id_),
+                            std::move(final_results));
+  query_history_callback_id_.clear();
 }
 
 void BrowsingHistoryHandler::OnRemoveVisitsComplete() {
@@ -448,14 +503,6 @@ void BrowsingHistoryHandler::HistoryDeleted() {
     deferred_callbacks_.push_back(base::BindOnce(
         &BrowsingHistoryHandler::HistoryDeleted, weak_factory_.GetWeakPtr()));
   }
-}
-
-void BrowsingHistoryHandler::HandleHistoryLoaded(const base::ListValue* args) {
-  AllowJavascript();
-  for (auto& callback : deferred_callbacks_) {
-    std::move(callback).Run();
-  }
-  deferred_callbacks_.clear();
 }
 
 void BrowsingHistoryHandler::HasOtherFormsOfBrowsingHistory(

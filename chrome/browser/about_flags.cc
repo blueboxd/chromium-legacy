@@ -1610,11 +1610,6 @@ const FeatureEntry kFeatureEntries[] = {
          kSimplifiedServerVariations,
          "ContextualSearchSimplifiedServer")},
 
-    {"contextual-search-translation-model",
-     flag_descriptions::kContextualSearchTranslationModelName,
-     flag_descriptions::kContextualSearchTranslationModelDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kContextualSearchTranslationModel)},
     {"direct-actions", flag_descriptions::kDirectActionsName,
      flag_descriptions::kDirectActionsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kDirectActions)},
@@ -1733,7 +1728,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
     {"webui-tab-strip", flag_descriptions::kWebUITabStripName,
      flag_descriptions::kWebUITabStripDescription, kOsDesktop,
-     SINGLE_VALUE_TYPE(switches::kWebUITabStrip)},
+     FEATURE_VALUE_TYPE(features::kWebUITabStrip)},
     {"webui-tab-strip-demo-options",
      flag_descriptions::kWebUITabStripDemoOptionsName,
      flag_descriptions::kWebUITabStripDemoOptionsDescription, kOsDesktop,
@@ -1906,14 +1901,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"debug-packed-apps", flag_descriptions::kDebugPackedAppName,
      flag_descriptions::kDebugPackedAppDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kDebugPackedApps)},
-    {"username-first-flow-filling",
-     flag_descriptions::kUsernameFirstFlowFillingName,
-     flag_descriptions::kUsernameFirstFlowFillingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(password_manager::features::kUsernameFirstFlowFilling)},
-    {"username-first-flow-saving",
-     flag_descriptions::kUsernameFirstFlowSavingName,
-     flag_descriptions::kUsernameFirstFlowSavingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(password_manager::features::kUsernameFirstFlowSaving)},
+    {"username-first-flow", flag_descriptions::kUsernameFirstFlowName,
+     flag_descriptions::kUsernameFirstFlowDescription, kOsAll,
+     FEATURE_VALUE_TYPE(password_manager::features::kUsernameFirstFlow)},
     {"enable-show-autofill-signatures",
      flag_descriptions::kShowAutofillSignaturesName,
      flag_descriptions::kShowAutofillSignaturesDescription, kOsAll,
@@ -4084,11 +4074,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
-    {"manual-password-generation-android",
-     flag_descriptions::kManualPasswordGenerationAndroidName,
-     flag_descriptions::kManualPasswordGenerationAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kManualPasswordGenerationAndroid)},
     {"mobile-identity-consistency",
      flag_descriptions::kMobileIdentityConsistencyName,
      flag_descriptions::kMobileIdentityConsistencyDescription, kOsAndroid,

@@ -21,17 +21,15 @@ using base::Time;
 
 WebDataServiceBase::WebDataServiceBase(
     scoped_refptr<WebDatabaseService> wdbs,
-    const ProfileErrorCallback& callback,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
     : base::RefCountedDeleteOnSequence<WebDataServiceBase>(ui_task_runner),
-      wdbs_(wdbs),
-      profile_error_callback_(callback) {}
+      wdbs_(wdbs) {}
 
 void WebDataServiceBase::ShutdownOnUISequence() {}
 
-void WebDataServiceBase::Init() {
+void WebDataServiceBase::Init(ProfileErrorCallback callback) {
   DCHECK(wdbs_);
-  wdbs_->RegisterDBErrorCallback(profile_error_callback_);
+  wdbs_->RegisterDBErrorCallback(std::move(callback));
   wdbs_->LoadDatabase();
 }
 
@@ -53,11 +51,10 @@ bool WebDataServiceBase::IsDatabaseLoaded() {
   return wdbs_->db_loaded();
 }
 
-void WebDataServiceBase::RegisterDBLoadedCallback(
-    const DBLoadedCallback& callback) {
+void WebDataServiceBase::RegisterDBLoadedCallback(DBLoadedCallback callback) {
   if (!wdbs_)
     return;
-  wdbs_->RegisterDBLoadedCallback(callback);
+  wdbs_->RegisterDBLoadedCallback(std::move(callback));
 }
 
 WebDatabase* WebDataServiceBase::GetDatabase() {

@@ -68,6 +68,14 @@ public class WebLayerShellActivity extends FragmentActivity {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         LinearLayout mainView = new LinearLayout(this);
+        mainView.setOrientation(LinearLayout.VERTICAL);
+        TextView versionText = new TextView(this);
+        versionText.setPadding(10, 0, 0, 0);
+        versionText.setText(getString(
+                R.string.version, WebLayer.getVersion(), WebLayer.getSupportedFullVersion(this)));
+        mainView.addView(versionText,
+                new LinearLayout.LayoutParams(
+                        LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         if (savedInstanceState == null) {
             mMainViewId = View.generateViewId();
         } else {

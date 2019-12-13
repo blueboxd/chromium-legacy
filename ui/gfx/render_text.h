@@ -85,6 +85,13 @@ class GFX_EXPORT SkiaTextRenderer {
   DISALLOW_COPY_AND_ASSIGN(SkiaTextRenderer);
 };
 
+struct TextToDisplayIndex {
+  size_t text_index = 0;
+  size_t display_index = 0;
+};
+using TextToDisplaySequence = std::vector<TextToDisplayIndex>;
+using GraphemeIterator = TextToDisplaySequence::const_iterator;
+
 // Internal helper class used to iterate colors, baselines, and styles.
 class StyleIterator {
  public:
@@ -489,8 +496,17 @@ class GFX_EXPORT RenderText {
   // Subsequent text, cursor, or bounds changes may invalidate returned values.
   const Rect& GetUpdatedCursorBounds();
 
+  // Returns a grapheme iterator that contains the codepoint at |index|.
+  internal::GraphemeIterator GetGraphemeIteratorAtTextIndex(size_t index) const;
+  internal::GraphemeIterator GetGraphemeIteratorAtDisplayTextIndex(
+      size_t index) const;
+
+  // For a given grapheme iterator, returns its index.
+  size_t GetTextIndex(internal::GraphemeIterator iter) const;
+  size_t GetDisplayTextIndex(internal::GraphemeIterator iter) const;
+
   // Returns true of the current index is at the start of a grapheme.
-  bool IsGraphemeBoundary(size_t index);
+  bool IsGraphemeBoundary(size_t index) const;
 
   // Given an |index| in text(), return the next or previous grapheme boundary
   // in logical order (i.e. the nearest cursorable index). The return value is
@@ -498,7 +514,7 @@ class GFX_EXPORT RenderText {
   // out of that range). Always moves by at least one character index unless the
   // supplied index is already at the boundary of the string.
   size_t IndexOfAdjacentGrapheme(size_t index,
-                                 LogicalCursorDirection direction);
+                                 LogicalCursorDirection direction) const;
 
   // Return a SelectionModel with the cursor at the current selection's start.
   // The returned value represents a cursor/caret position without a selection.
@@ -579,7 +595,7 @@ class GFX_EXPORT RenderText {
 
   // Returns the text used for layout (e.g. after rewriting, eliding and
   // obscuring characters).
-  const base::string16& GetLayoutText();
+  const base::string16& GetLayoutText() const;
 
   // NOTE: The value of these accessors may be stale. Please make sure
   // that these fields are up to date before accessing them.
@@ -589,7 +605,7 @@ class GFX_EXPORT RenderText {
   // Returns an iterator over the |text_| attributes.
   internal::StyleIterator GetTextStyleIterator() const;
   // Returns an iterator over the |layout_text_| attributes.
-  internal::StyleIterator GetLayoutTextStyleIterator();
+  internal::StyleIterator GetLayoutTextStyleIterator() const;
 
   const BreakList<SkColor>& colors() const { return colors_; }
   const BreakList<BaselineStyle>& baselines() const { return baselines_; }
@@ -675,8 +691,8 @@ class GFX_EXPORT RenderText {
   // Convert between indices into |text_| and indices into
   // GetDisplayText(), which differ when the text is obscured,
   // truncated or elided.
-  size_t TextIndexToDisplayIndex(size_t index);
-  size_t DisplayIndexToTextIndex(size_t index);
+  size_t TextIndexToDisplayIndex(size_t index) const;
+  size_t DisplayIndexToTextIndex(size_t index) const;
 
   // Notifies that layout text, or attributes that affect the layout text
   // shape have changed. |text_changed| is true if the content of the
@@ -763,10 +779,10 @@ class GFX_EXPORT RenderText {
   void OnTextAttributeChanged();
 
   // Computes the |layout_text_| by rewriting it from |text_|, if needed.
-  void EnsureLayoutTextUpdated();
+  void EnsureLayoutTextUpdated() const;
 
   // Computes the layout break lists, if needed.
-  void EnsuresLayoutTextAttributeUpdated();
+  void EnsureLayoutTextAttributeUpdated() const;
 
   // Elides |text| as needed to fit in the |available_width| using |behavior|.
   // |text_width| is the pre-calculated width of the text shaped by this render
@@ -785,6 +801,12 @@ class GFX_EXPORT RenderText {
 
   // Draws the specified range of text with a selected appearance.
   void DrawSelection(Canvas* canvas, const Range& selection);
+
+  // Returns a grapheme iterator that contains the codepoint at |index|.
+  internal::GraphemeIterator GetGraphemeIteratorAtIndex(
+      const base::string16& text,
+      const size_t internal::TextToDisplayIndex::*field,
+      size_t index) const;
 
   // Returns the nearest word start boundary for |index|. First searches in the
   // CURSOR_BACKWARD direction, then in the CURSOR_FORWARD direction. Returns
@@ -872,20 +894,16 @@ class GFX_EXPORT RenderText {
   BreakList<Font::Weight> weights_;
   std::vector<BreakList<bool> > styles_;
 
-  BreakList<SkColor> layout_colors_;
-  BreakList<BaselineStyle> layout_baselines_;
-  BreakList<int> layout_font_size_overrides_;
-  BreakList<Font::Weight> layout_weights_;
-  std::vector<BreakList<bool>> layout_styles_;
+  mutable BreakList<SkColor> layout_colors_;
+  mutable BreakList<BaselineStyle> layout_baselines_;
+  mutable BreakList<int> layout_font_size_overrides_;
+  mutable BreakList<Font::Weight> layout_weights_;
+  mutable std::vector<BreakList<bool>> layout_styles_;
 
   // A mapping from text to display text indices for each grapheme. The vector
   // contains an ordered sequence of indice pairs. Both sequence |text_index|
   // and |display_index| are sorted.
-  struct TextToDisplayIndex {
-    size_t text_index = 0;
-    size_t display_index = 0;
-  };
-  std::vector<TextToDisplayIndex> text_to_display_indices_;
+  mutable internal::TextToDisplaySequence text_to_display_indices_;
 
   // A flag to obscure actual text with asterisks for password fields.
   bool obscured_;
@@ -896,14 +914,14 @@ class GFX_EXPORT RenderText {
   size_t truncate_length_;
 
   // The obscured and/or truncated text used to layout the text to display.
-  base::string16 layout_text_;
+  mutable base::string16 layout_text_;
 
   // The elided text displayed visually. This is empty if the text
   // does not have to be elided, or became empty as a result of eliding.
   // TODO(oshima): When the text is elided, painting can be done only with
   // display text info, so it should be able to clear the |layout_text_| and
   // associated information.
-  base::string16 display_text_;
+  mutable base::string16 display_text_;
 
   // The behavior for eliding, fading, or truncating.
   ElideBehavior elide_behavior_;
@@ -974,10 +992,10 @@ class GFX_EXPORT RenderText {
   base::Optional<int> cached_cursor_x_;
 
   // Tell whether or not the |layout_text_| needs an update or is up to date.
-  bool layout_text_up_to_date_ = false;
+  mutable bool layout_text_up_to_date_ = false;
 
   // Tell whether or not the layout break lists need an update.
-  bool layout_text_attributes_up_to_date_ = false;
+  mutable bool layout_text_attributes_up_to_date_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(RenderText);
 };

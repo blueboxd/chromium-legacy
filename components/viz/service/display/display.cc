@@ -163,7 +163,7 @@ Display::Display(
     const RendererSettings& settings,
     const FrameSinkId& frame_sink_id,
     std::unique_ptr<OutputSurface> output_surface,
-    std::unique_ptr<DisplayScheduler> scheduler,
+    std::unique_ptr<DisplaySchedulerBase> scheduler,
     scoped_refptr<base::SingleThreadTaskRunner> current_task_runner)
     : bitmap_manager_(bitmap_manager),
       settings_(settings),
@@ -321,7 +321,7 @@ void Display::DisableSwapUntilResize(
     if (!swapped_since_resize_)
       scheduler_->ForceImmediateSwapIfPossible();
 
-    if (no_pending_swaps_callback && scheduler_->pending_swaps() > 0 &&
+    if (no_pending_swaps_callback && pending_swaps_ > 0 &&
         (output_surface_->context_provider() ||
          output_surface_->AsSkiaOutputSurface())) {
       no_pending_swaps_callback_ = std::move(no_pending_swaps_callback);
@@ -442,7 +442,7 @@ void Display::OnContextLost() {
   client_->DisplayOutputSurfaceLost();
 }
 
-bool Display::DrawAndSwap() {
+bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
   TRACE_EVENT0("viz", "Display::DrawAndSwap");
   gpu::ScopedAllowScheduleGpuTask allow_schedule_gpu_task;
 
@@ -488,15 +488,14 @@ bool Display::DrawAndSwap() {
   DisplayResourceProvider::ScopedBatchReturnResources returner(
       resource_provider_.get());
   base::ElapsedTimer aggregate_timer;
-  const base::TimeTicks now_time = aggregate_timer.Begin();
+  aggregate_timer.Begin();
   CompositorFrame frame;
   {
     FrameRateDecider::ScopedAggregate scoped_aggregate(
         frame_rate_decider_.get());
-    frame = aggregator_->Aggregate(
-        current_surface_id_,
-        scheduler_ ? scheduler_->current_frame_display_time() : now_time,
-        current_display_transform, ++swapped_trace_id_);
+    frame =
+        aggregator_->Aggregate(current_surface_id_, expected_display_time,
+                               current_display_transform, ++swapped_trace_id_);
   }
 
   UMA_HISTOGRAM_COUNTS_1M("Compositing.SurfaceAggregator.AggregateUs",
@@ -634,9 +633,14 @@ bool Display::DrawAndSwap() {
       last_top_controls_visible_height_ =
           *frame.metadata.top_controls_visible_height;
     }
-    renderer_->SwapBuffers(std::move(swap_frame_data));
+
+    // We must notify scheduler and increase |pending_swaps_| before calling
+    // SwapBuffers() as it can call DidReceiveSwapBuffersAck synchronously.
     if (scheduler_)
       scheduler_->DidSwapBuffers();
+    pending_swaps_++;
+
+    renderer_->SwapBuffers(std::move(swap_frame_data));
   } else {
     TRACE_EVENT_INSTANT0("viz", "Swap skipped.", TRACE_EVENT_SCOPE_THREAD);
 
@@ -693,11 +697,14 @@ void Display::DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings) {
       "viz,benchmark", "Graphics.Pipeline.DrawAndSwap", last_swap_ack_trace_id_,
       "WaitForPresentation", timings.swap_end);
 
+  DCHECK_GT(pending_swaps_, 0);
+  pending_swaps_--;
   if (scheduler_) {
     scheduler_->DidReceiveSwapBuffersAck();
-    if (no_pending_swaps_callback_ && scheduler_->pending_swaps() == 0)
-      std::move(no_pending_swaps_callback_).Run();
   }
+
+  if (no_pending_swaps_callback_ && pending_swaps_ == 0)
+    std::move(no_pending_swaps_callback_).Run();
 
   if (renderer_)
     renderer_->SwapBuffersComplete();
@@ -779,8 +786,7 @@ void Display::DidFinishFrame(const BeginFrameAck& ack) {
   // un-skewed frame if the last one had a de-jelly skew applied. This prevents
   // de-jelly skew from staying on screen for more than one frame.
   if (aggregator_->last_frame_had_jelly()) {
-    scheduler_->SetNeedsOneBeginFrame();
-    scheduler_->set_needs_draw();
+    scheduler_->SetNeedsOneBeginFrame(true);
   }
 }
 
@@ -811,7 +817,7 @@ void Display::ForceImmediateDrawAndSwapIfPossible() {
 
 void Display::SetNeedsOneBeginFrame() {
   if (scheduler_)
-    scheduler_->SetNeedsOneBeginFrame();
+    scheduler_->SetNeedsOneBeginFrame(false);
 }
 
 void Display::RemoveOverdrawQuads(CompositorFrame* frame) {

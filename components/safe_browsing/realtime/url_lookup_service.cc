@@ -28,7 +28,8 @@ const char kRealTimeLookupUrlPrefix[] =
 
 const size_t kMaxFailuresToEnforceBackoff = 3;
 
-const size_t kBackOffResetDurationInSeconds = 5 * 60;  // 5 minutes.
+const size_t kMinBackOffResetDurationInSeconds = 5 * 60;   //  5 minutes.
+const size_t kMaxBackOffResetDurationInSeconds = 30 * 60;  // 30 minutes.
 
 const size_t kURLLookupTimeoutDurationInSeconds = 10;  // 10 seconds.
 
@@ -182,37 +183,66 @@ std::unique_ptr<RTLookupRequest> RealTimeUrlLookupService::FillRequestProto(
   return request;
 }
 
-void RealTimeUrlLookupService::ExitBackoff() {
+size_t RealTimeUrlLookupService::GetBackoffDurationInSeconds() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  ResetFailures();
+  return did_successful_lookup_since_last_backoff_
+             ? kMinBackOffResetDurationInSeconds
+             : std::min(kMaxBackOffResetDurationInSeconds,
+                        2 * next_backoff_duration_secs_);
 }
 
 void RealTimeUrlLookupService::HandleLookupError() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   consecutive_failures_++;
 
+  // Any successful lookup clears both |consecutive_failures_| as well as
+  // |did_successful_lookup_since_last_backoff_|.
+  // On a failure, the following happens:
+  // 1) if |consecutive_failures_| < |kMaxFailuresToEnforceBackoff|:
+  //    Do nothing more.
+  // 2) if already in the backoff mode:
+  //    Do nothing more. This can happen if we had some outstanding real time
+  //    requests in flight when we entered the backoff mode.
+  // 3) if |did_successful_lookup_since_last_backoff_| is true:
+  //    Enter backoff mode for |kMinBackOffResetDurationInSeconds| seconds.
+  // 4) if |did_successful_lookup_since_last_backoff_| is false:
+  //    This indicates that we've had |kMaxFailuresToEnforceBackoff| since
+  //    exiting the last backoff with no successful lookups since so do an
+  //    exponential backoff.
+
+  if (consecutive_failures_ < kMaxFailuresToEnforceBackoff)
+    return;
+
   if (IsInBackoffMode()) {
-    reset_backoff_timer_.Stop();
-    reset_backoff_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromSeconds(kBackOffResetDurationInSeconds),
-        this, &RealTimeUrlLookupService::ExitBackoff);
+    return;
   }
+
+  // Enter backoff mode, calculate duration.
+  next_backoff_duration_secs_ = GetBackoffDurationInSeconds();
+  backoff_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(next_backoff_duration_secs_),
+      this, &RealTimeUrlLookupService::ResetFailures);
+  did_successful_lookup_since_last_backoff_ = false;
 }
 
 void RealTimeUrlLookupService::HandleLookupSuccess() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   ResetFailures();
+
+  // |did_successful_lookup_since_last_backoff_| is set to true only when we
+  // complete a lookup successfully.
+  did_successful_lookup_since_last_backoff_ = true;
 }
 
-bool RealTimeUrlLookupService::IsInBackoffMode() {
+bool RealTimeUrlLookupService::IsInBackoffMode() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  return consecutive_failures_ >= kMaxFailuresToEnforceBackoff;
+  return backoff_timer_.IsRunning();
 }
 
 void RealTimeUrlLookupService::ResetFailures() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   consecutive_failures_ = 0;
-  reset_backoff_timer_.Stop();
+  backoff_timer_.Stop();
 }
 
 // static

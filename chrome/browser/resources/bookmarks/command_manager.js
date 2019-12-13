@@ -80,7 +80,7 @@ export const CommandManager = Polymer({
   confirmOpenCallback_: null,
 
   attached: function() {
-    assert(CommandManager.instance_ == null);
+    assert(CommandManager.instance_ === null);
     CommandManager.instance_ = this;
 
     /** @private {!BrowserProxy} */
@@ -126,7 +126,7 @@ export const CommandManager = Polymer({
 
     const addDocumentListenerForCommand = (eventName, command) => {
       addDocumentListener(eventName, (e) => {
-        if (e.path[0].tagName == 'INPUT') {
+        if (e.path[0].tagName === 'INPUT') {
           return;
         }
 
@@ -232,7 +232,7 @@ export const CommandManager = Polymer({
               return !canEditNode(state, node.id);
             });
       case Command.PASTE:
-        return state.search.term == '' &&
+        return state.search.term === '' &&
             canReorderChildren(state, state.selectedFolder);
       default:
         return this.isCommandVisible_(command, itemIds) &&
@@ -249,7 +249,7 @@ export const CommandManager = Polymer({
   isCommandVisible_: function(command, itemIds) {
     switch (command) {
       case Command.EDIT:
-        return itemIds.size == 1 && this.globalCanEdit_;
+        return itemIds.size === 1 && this.globalCanEdit_;
       case Command.PASTE:
         return this.globalCanEdit_;
       case Command.CUT:
@@ -260,10 +260,10 @@ export const CommandManager = Polymer({
       case Command.DELETE:
         return itemIds.size > 0 && this.globalCanEdit_;
       case Command.SHOW_IN_FOLDER:
-        return this.menuSource_ == MenuSource.ITEM && itemIds.size == 1 &&
-            this.getState().search.term != '' &&
+        return this.menuSource_ === MenuSource.ITEM && itemIds.size === 1 &&
+            this.getState().search.term !== '' &&
             !this.containsMatchingNode_(itemIds, function(node) {
-              return !node.parentId || node.parentId == ROOT_NODE_ID;
+              return !node.parentId || node.parentId === ROOT_NODE_ID;
             });
       case Command.OPEN_NEW_TAB:
       case Command.OPEN_NEW_WINDOW:
@@ -299,7 +299,8 @@ export const CommandManager = Polymer({
         return this.expandUrls_(itemIds).length > 0;
       case Command.OPEN_INCOGNITO:
         return this.expandUrls_(itemIds).length > 0 &&
-            state.prefs.incognitoAvailability != IncognitoAvailability.DISABLED;
+            state.prefs.incognitoAvailability !==
+            IncognitoAvailability.DISABLED;
       case Command.SORT:
         return this.canChangeList_() &&
             state.nodes[state.selectedFolder].children.length > 1;
@@ -322,7 +323,7 @@ export const CommandManager = Polymer({
    */
   canChangeList_: function() {
     const state = this.getState();
-    return state.search.term == '' &&
+    return state.search.term === '' &&
         canReorderChildren(state, state.selectedFolder);
   },
 
@@ -344,10 +345,10 @@ export const CommandManager = Polymer({
         const idList = Array.from(itemIds);
         chrome.bookmarkManagerPrivate.copy(idList, () => {
           let labelPromise;
-          if (command == Command.COPY_URL) {
+          if (command === Command.COPY_URL) {
             labelPromise =
                 Promise.resolve(loadTimeData.getString('toastUrlCopied'));
-          } else if (idList.length == 1) {
+          } else if (idList.length === 1) {
             labelPromise =
                 Promise.resolve(loadTimeData.getString('toastItemCopied'));
           } else {
@@ -373,7 +374,7 @@ export const CommandManager = Polymer({
         const title = state.nodes[idList[0]].title;
         let labelPromise;
 
-        if (idList.length == 1) {
+        if (idList.length === 1) {
           labelPromise =
               Promise.resolve(loadTimeData.getString('toastItemDeleted'));
         } else {
@@ -511,7 +512,7 @@ export const CommandManager = Polymer({
     const nodes = this.getState().nodes;
     itemIds.forEach(function(itemId) {
       let currentId = itemId;
-      while (currentId != ROOT_NODE_ID) {
+      while (currentId !== ROOT_NODE_ID) {
         currentId = assert(nodes[currentId].parentId);
         if (itemIds.has(currentId)) {
           return;
@@ -531,20 +532,20 @@ export const CommandManager = Polymer({
    */
   openUrls_: function(urls, command) {
     assert(
-        command == Command.OPEN || command == Command.OPEN_NEW_TAB ||
-        command == Command.OPEN_NEW_WINDOW ||
-        command == Command.OPEN_INCOGNITO);
+        command === Command.OPEN || command === Command.OPEN_NEW_TAB ||
+        command === Command.OPEN_NEW_WINDOW ||
+        command === Command.OPEN_INCOGNITO);
 
-    if (urls.length == 0) {
+    if (urls.length === 0) {
       return;
     }
 
     const openUrlsCallback = function() {
-      const incognito = command == Command.OPEN_INCOGNITO;
-      if (command == Command.OPEN_NEW_WINDOW || incognito) {
+      const incognito = command === Command.OPEN_INCOGNITO;
+      if (command === Command.OPEN_NEW_WINDOW || incognito) {
         chrome.windows.create({url: urls, incognito: incognito});
       } else {
-        if (command == Command.OPEN) {
+        if (command === Command.OPEN) {
           chrome.tabs.create({url: urls.shift(), active: true});
         }
         urls.forEach(function(url) {
@@ -617,7 +618,7 @@ export const CommandManager = Polymer({
    * @private
    */
   isSingleBookmark_: function(itemIds) {
-    return itemIds.size == 1 &&
+    return itemIds.size === 1 &&
         this.containsMatchingNode_(itemIds, function(node) {
           return !!node.url;
         });
@@ -629,7 +630,7 @@ export const CommandManager = Polymer({
    * @private
    */
   isFolder_: function(itemIds) {
-    return itemIds.size == 1 &&
+    return itemIds.size === 1 &&
         this.containsMatchingNode_(itemIds, node => !node.url);
   },
 
@@ -646,7 +647,7 @@ export const CommandManager = Polymer({
     let label;
     switch (command) {
       case Command.EDIT:
-        if (this.menuIds_.size != 1) {
+        if (this.menuIds_.size !== 1) {
           return '';
         }
 
@@ -771,12 +772,12 @@ export const CommandManager = Polymer({
    * @private
    */
   computeHasAnySublabel_: function() {
-    if (this.menuIds_ == undefined || this.menuCommands_ == undefined) {
+    if (this.menuIds_ === undefined || this.menuCommands_ === undefined) {
       return false;
     }
 
     return this.menuCommands_.some(
-        (command) => this.getCommandSublabel_(command) != '');
+        (command) => this.getCommandSublabel_(command) !== '');
   },
 
   /**
@@ -790,7 +791,7 @@ export const CommandManager = Polymer({
       case Command.SORT:
       case Command.ADD_FOLDER:
       case Command.EXPORT:
-        return this.menuSource_ == MenuSource.TOOLBAR;
+        return this.menuSource_ === MenuSource.TOOLBAR;
       case Command.DELETE:
         return this.globalCanEdit_;
       case Command.PASTE:
@@ -806,7 +807,7 @@ export const CommandManager = Polymer({
    * @private
    */
   recordCommandHistogram_: function(itemIds, histogram, command) {
-    if (command == Command.OPEN) {
+    if (command === Command.OPEN) {
       command =
           this.isFolder_(itemIds) ? Command.OPEN_FOLDER : Command.OPEN_BOOKMARK;
     }
@@ -890,11 +891,11 @@ export const CommandManager = Polymer({
    */
   onKeydown_: function(e) {
     const path = e.composedPath();
-    if (path[0].tagName == 'INPUT') {
+    if (path[0].tagName === 'INPUT') {
       return;
     }
-    if ((e.target == document.body ||
-         path.some(el => el.tagName == 'BOOKMARKS-TOOLBAR')) &&
+    if ((e.target === document.body ||
+         path.some(el => el.tagName === 'BOOKMARKS-TOOLBAR')) &&
         !DialogFocusManager.getInstance().hasOpenDialog()) {
       this.handleKeyEvent(e, this.getState().selection.items);
     }
@@ -908,7 +909,7 @@ export const CommandManager = Polymer({
    * @private
    */
   onMenuMousedown_: function(e) {
-    if (e.path[0].tagName != 'DIALOG') {
+    if (e.path[0].tagName !== 'DIALOG') {
       return;
     }
 

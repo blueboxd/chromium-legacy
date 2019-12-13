@@ -62,7 +62,6 @@ extern const base::Feature kContextualSearchMlTapSuppression;
 extern const base::Feature kContextualSearchSecondTap;
 extern const base::Feature kContextualSearchSimplifiedServer;
 extern const base::Feature kContextualSearchTapDisableOverride;
-extern const base::Feature kContextualSearchTranslationModel;
 extern const base::Feature kDarkenWebsitesCheckboxInThemesSetting;
 extern const base::Feature kDirectActions;
 extern const base::Feature kDontPrefetchLibraries;

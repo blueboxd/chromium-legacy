@@ -39,10 +39,8 @@
 
 #if defined(MOJO_RENDERER)
 #include "media/mojo/clients/mojo_renderer.h"
-#include "media/mojo/mojom/constants.mojom.h"  // nogncheck
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "media/mojo/mojom/renderer.mojom.h"
-#include "media/mojo/services/media_manifest.h"                    // nogncheck
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"  // nogncheck
 #include "services/service_manager/public/cpp/test/test_service.h"  // nogncheck

@@ -232,7 +232,7 @@
 <translation id="2650751991977523696">要再次下載檔案嗎？</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# 個音訊檔案}other{# 個音訊檔案}}</translation>
 <translation id="2653659639078652383">提交</translation>
-<translation id="2669093958999339774">禁止網站顯示通知提示，改以無聲模式傳送訊息，以避免受到干擾</translation>
+<translation id="2669093958999339774">禁止網站顯示通知，以免干擾；改以低擾模式通知</translation>
 <translation id="2677748264148917807">離開</translation>
 <translation id="2704606927547763573">已複製</translation>
 <translation id="2707726405694321444">重新整理頁面</translation>
@@ -367,7 +367,7 @@
 <translation id="3739899004075612870">已加入 <ph name="PRODUCT_NAME" /> 書籤</translation>
 <translation id="3744111561329211289">背景同步處理</translation>
 <translation id="3749259744154402564">不支援</translation>
-<translation id="3767376082821709728">你造訪的新網站無法傳送通知</translation>
+<translation id="3767376082821709728">不允許造訪的新網站傳送通知給你</translation>
 <translation id="3771001275138982843">無法下載更新</translation>
 <translation id="3771033907050503522">無痕式分頁</translation>
 <translation id="3773755127849930740">如要允許配對，請<ph name="BEGIN_LINK" />開啟藍牙功能<ph name="END_LINK" /></translation>
@@ -957,7 +957,7 @@
 <translation id="8035133914807600019">新資料夾…</translation>
 <translation id="8037750541064988519">還剩 <ph name="DAYS" /> 天</translation>
 <translation id="804335162455518893">找不到 SD 卡</translation>
-<translation id="8046278916126163020">你造訪的新網站可以要求傳送推知</translation>
+<translation id="8046278916126163020">造訪的新網站可以要求傳送通知給你</translation>
 <translation id="805047784848435650">根據你的瀏覽記錄獨家推薦</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB 可用空間</translation>
 <translation id="8058746566562539958">在新的 Chrome 分頁中開啟</translation>

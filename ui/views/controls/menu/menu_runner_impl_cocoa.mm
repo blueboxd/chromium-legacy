@@ -160,6 +160,7 @@ void MenuRunnerImplCocoa::Release() {
     // prevent NSMenu attempting to access the weak pointer to the ui::MenuModel
     // it holds (which is not owned by |this|). Toolkit-views menus use
     // MenuRunnerImpl::empty_delegate_ to handle this case.
+    [menu_controller_ cancel];
     menu_controller_.reset();
   } else {
     delete this;

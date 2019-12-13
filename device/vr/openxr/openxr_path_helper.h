@@ -16,6 +16,7 @@ class OpenXRPathHelper {
  public:
   struct DeclaredPaths {
     XrPath microsoft_motion_controller_interaction_profile;
+    XrPath khronos_simple_controller_interaction_profile;
   };
 
   OpenXRPathHelper();

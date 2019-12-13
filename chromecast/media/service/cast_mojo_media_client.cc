@@ -26,9 +26,7 @@ CastMojoMediaClient::CastMojoMediaClient(
   DCHECK(backend_factory_);
 }
 
-CastMojoMediaClient::~CastMojoMediaClient() {}
-
-void CastMojoMediaClient::Initialize(service_manager::Connector* connector) {}
+CastMojoMediaClient::~CastMojoMediaClient() = default;
 
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
 void CastMojoMediaClient::SetVideoGeometrySetterService(

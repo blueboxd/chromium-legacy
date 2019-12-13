@@ -137,7 +137,7 @@ std::unique_ptr<DownloadJob> DownloadJobFactory::CreateJob(
     bool is_save_package_download,
     URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
         url_loader_factory_provider,
-    service_manager::Connector* connector) {
+    WakeLockProviderBinder wake_lock_provider_binder) {
   if (is_save_package_download) {
     return std::make_unique<SavePackageDownloadJob>(
         download_item, std::move(cancel_request_callback));
@@ -148,7 +148,8 @@ std::unique_ptr<DownloadJob> DownloadJobFactory::CreateJob(
   if (IsParallelDownloadEnabled() && is_parallelizable) {
     return std::make_unique<ParallelDownloadJob>(
         download_item, std::move(cancel_request_callback), create_info,
-        std::move(url_loader_factory_provider), connector);
+        std::move(url_loader_factory_provider),
+        std::move(wake_lock_provider_binder));
   }
 
   // An ordinary download job.

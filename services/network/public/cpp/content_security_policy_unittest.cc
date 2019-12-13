@@ -161,6 +161,8 @@ TEST(ContentSecurityPolicy, ParseFrameAncestors) {
       {"https://example.com:2345/some/path",
        {{{"https", "example.com", 2345, "/some/path"}}}},
       {"example.com example.org", {{{"", "example.com"}, {"", "example.org"}}}},
+      {"example.com\texample.org",
+       {{{"", "example.com"}, {"", "example.org"}}}},
       {"about:blank"},
       {""},
   };

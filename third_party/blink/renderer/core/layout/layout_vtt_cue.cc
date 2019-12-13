@@ -329,8 +329,7 @@ IntRect LayoutVTTCue::ComputeControlsRect() const {
   // the MediaControls.
   DCHECK(Parent()->GetNode()->IsTextTrackContainer());
 
-  HTMLMediaElement* media_element =
-      ToHTMLMediaElement(Parent()->Parent()->GetNode());
+  auto* media_element = To<HTMLMediaElement>(Parent()->Parent()->GetNode());
   DCHECK(media_element);
 
   MediaControls* controls = media_element->GetMediaControls();

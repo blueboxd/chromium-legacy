@@ -308,6 +308,10 @@ void LayoutText::InLayoutNGInlineFormattingContextWillChange(bool new_value) {
 }
 
 Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
+  // This function may kick the layout (e.g., |LocalRect()|), but Inspector may
+  // call this function outside of the layout phase.
+  FontCachePurgePreventer fontCachePurgePreventer;
+
   Vector<TextBoxInfo> results;
   if (const NGOffsetMapping* mapping = GetNGOffsetMapping()) {
     bool in_hidden_for_paint = false;

@@ -1,7 +1,7 @@
 group
 ++document Name='PDF document containing 1 page'
 ++++region Name='Page 1'
-++++++group
+++++++group IsControlElement=false
 ++++++++description Name='Hello,<newline> world!<newline><newline>Goodbye,<newline> world!<newline>'
-++++++group
+++++++group IsControlElement=false
 ++++++++description Name='This is some text abc<newline>def'

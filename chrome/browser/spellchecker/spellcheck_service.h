@@ -176,17 +176,22 @@ class SpellcheckService : public KeyedService,
   // prefs::kAcceptLanguages.
   void OnAcceptLanguagesChanged();
 
-  // Gets the user languages from the accept_languages pref and normalizes them
-  // to official language codes.
-  std::vector<std::string> GetNormalizedAcceptLanguages() const;
+  // Gets the user languages from the accept_languages pref and trims them of
+  // leading and trailing whitespaces. If |normalize_for_spellcheck| is |true|,
+  // also normalizes the format to xx or xx-YY based on the list of spell check
+  // languages supported by Hunspell. Note that if |normalize_for_spellcheck| is
+  // |true|, languages not supported by Hunspell will be returned as empty
+  // strings.
+  std::vector<std::string> GetNormalizedAcceptLanguages(
+      bool normalize_for_spellcheck = true) const;
 
-  // Records how many user languages are not supported by Hunspell, and how many
-  // user spellcheck languages are currently not supported by the Windows OS
-  // spellchecker (due to missing language packs).
 #if defined(OS_WIN)
-  void RecordMissingLanguagePacksCount();
-  void RecordHunspellUnsupportedLanguageCount(
-      const std::vector<std::string>& accept_languages);
+  // Records statistics about spell check support for the user's Chrome locales.
+  void RecordChromeLocalesStats();
+
+  // Records statistics about which spell checker supports which of the user's
+  // enabled spell check locales.
+  void RecordSpellcheckLocalesStats();
 #endif  // defined(OS_WIN)
 
   PrefChangeRegistrar pref_change_registrar_;

@@ -52,10 +52,10 @@ class CONTENT_EXPORT PepperVpnProviderMessageFilter
   void SendOnUnbind();
 
  private:
-  using SuccessCallback = base::Closure;
+  using SuccessCallback = base::OnceClosure;
   using FailureCallback =
-      base::Callback<void(const std::string& error_name,
-                          const std::string& error_message)>;
+      base::OnceCallback<void(const std::string& error_name,
+                              const std::string& error_message)>;
   ~PepperVpnProviderMessageFilter() override;
 
   // Message handlers

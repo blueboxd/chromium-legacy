@@ -17,11 +17,11 @@
 @interface DockIcon : NSObject {
  @private
   // The time that the icon was last updated.
-  base::TimeTicks lastUpdate_;
+  base::TimeTicks _lastUpdate;
 
   // If true, the state has changed in a significant way since the last icon
   // update and throttling should not prevent icon redraw.
-  BOOL forceUpdate_;
+  BOOL _forceUpdate;
 }
 
 + (DockIcon*)sharedDockIcon;

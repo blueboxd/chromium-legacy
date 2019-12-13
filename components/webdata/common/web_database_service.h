@@ -49,9 +49,9 @@ class WEBDATA_EXPORT WebDatabaseService
   using WriteTask = base::Callback<WebDatabase::State(WebDatabase*)>;
 
   // Types for managing DB loading callbacks.
-  using DBLoadedCallback = base::Closure;
+  using DBLoadedCallback = base::OnceClosure;
   using DBLoadErrorCallback =
-      base::Callback<void(sql::InitStatus, const std::string&)>;
+      base::OnceCallback<void(sql::InitStatus, const std::string&)>;
 
   // WebDatabaseService lives on the UI sequence and posts tasks to the DB
   // sequence.  |path| points to the WebDatabase file.
@@ -98,14 +98,14 @@ class WEBDATA_EXPORT WebDatabaseService
   // (following a successful database load), then cleared.
   // Note: if the database load is already complete, then the callback will NOT
   // be stored or called.
-  void RegisterDBLoadedCallback(const DBLoadedCallback& callback);
+  void RegisterDBLoadedCallback(DBLoadedCallback callback);
 
   // Register a callback to be notified that the database has failed to load.
   // Multiple callbacks may be registered, and each will be called at most once
   // (following a database load failure), then cleared.
   // Note: if the database load is already complete, then the callback will NOT
   // be stored or called.
-  void RegisterDBErrorCallback(const DBLoadErrorCallback& callback);
+  void RegisterDBErrorCallback(DBLoadErrorCallback callback);
 
   bool db_loaded() const { return db_loaded_; }
 

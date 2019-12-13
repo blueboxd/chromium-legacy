@@ -165,7 +165,8 @@ class BookmarkAppUninstallDialogViewInteractiveBrowserTest
   std::unique_ptr<web_app::WebAppUninstallDialog> dialog_;
 };
 
+// TODO(https://crbug.com/1033751): Flaking on all platforms.
 IN_PROC_BROWSER_TEST_F(BookmarkAppUninstallDialogViewInteractiveBrowserTest,
-                       InvokeUi_ManualUninstall) {
+                       DISABLED_InvokeUi_ManualUninstall) {
   RunTest();
 }

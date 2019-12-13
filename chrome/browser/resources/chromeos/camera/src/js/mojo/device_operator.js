@@ -32,7 +32,7 @@ cca.mojo.DeviceOperator = class {
      * @type {cros.mojom.CameraAppDeviceProviderRemote}
      * @private
      */
-    this.deviceProvider_ = cros.mojom.CameraAppDeviceProvider.getRemote();
+    this.deviceProvider_ = cros.mojom.CameraAppDeviceProvider.getRemote(true);
 
     /**
      * Flag that indicates if the direct communication between camera app and

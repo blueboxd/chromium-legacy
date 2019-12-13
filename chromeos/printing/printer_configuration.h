@@ -46,7 +46,12 @@ class CHROMEOS_EXPORT Printer {
   // At resolution time, we look for a cached PPD that used the same
   // PpdReference before.
   //
-  struct PpdReference {
+  class PpdReference {
+   public:
+    // Returns true when this PPD reference is filled in; true whenever any of
+    // the members is non-empty.
+    bool IsFilled() const;
+
     // If non-empty, this is the url of a specific PPD the user has specified
     // for use with this printer.  The ppd can be gzipped or uncompressed.  This
     // url must use a file:// scheme.

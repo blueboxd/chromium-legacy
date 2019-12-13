@@ -65,7 +65,6 @@ js_type_check("closure_compile") {
     ":browser_service",
     ":constants",
     ":externs",
-    ":history",
     ":history_item",
     ":history_list",
     ":history_toolbar",
@@ -132,17 +131,6 @@ js_library("history_toolbar") {
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:util",
   ]
-}
-
-js_library("history") {
-  deps = [
-    ":app",
-    ":constants",
-    ":externs",
-    "//ui/webui/resources/js:icon",
-    "//ui/webui/resources/js:load_time_data",
-  ]
-  externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
 js_library("app") {

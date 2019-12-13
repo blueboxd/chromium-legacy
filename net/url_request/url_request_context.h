@@ -27,18 +27,11 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
 
-class ChromeBrowserStateImplIOData;
-class ProfileImplIOData;
-
 namespace base {
 namespace trace_event {
 class ProcessMemoryDump;
 }
 }
-
-namespace safe_browsing {
-class SafeBrowsingURLRequestContextGetter;
-}  // namespace safe_browsing
 
 namespace net {
 class CertVerifier;
@@ -78,9 +71,7 @@ class ReportingService;
 class NET_EXPORT URLRequestContext
     : public base::trace_event::MemoryDumpProvider {
  public:
-  // Contexts that are known to not currently be copied should set |allow_copy|
-  // to false to prevent added copying.
-  explicit URLRequestContext(bool allow_copy = true);
+  URLRequestContext();
   ~URLRequestContext() override;
 
   // May return nullptr if this context doesn't have an associated network
@@ -317,25 +308,6 @@ class NET_EXPORT URLRequestContext
   }
 
  private:
-  // Allowed legacy usage of now-deprecated CopyFrom().
-  friend class ::ChromeBrowserStateImplIOData;
-  friend class ::ProfileImplIOData;
-  friend class safe_browsing::SafeBrowsingURLRequestContextGetter;
-
-  // Copies the state from |other| into this context.
-  //
-  // Due to complex interdependencies between various fields as well as fields
-  // that should be unique to each context, copy is fundamentally broken, and
-  // should not be done. If a modified context is needed (and that is not
-  // typical), a new context should always be fully created (via
-  // URLRequestContextBuilder) rather than copying from a previous one.
-  void CopyFrom(const URLRequestContext* other);
-
-  // ---------------------------------------------------------------------------
-  // Important: When adding any new members below, consider whether they need to
-  // be added to CopyFrom.
-  // ---------------------------------------------------------------------------
-
   // Ownership for these members are not defined here. Clients should either
   // provide storage elsewhere or have a subclass take ownership.
   NetLog* net_log_;
@@ -365,11 +337,6 @@ class NET_EXPORT URLRequestContext
   FtpAuthCache* ftp_auth_cache_;
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
-  // ---------------------------------------------------------------------------
-  // Important: When adding any new members below, consider whether they need to
-  // be added to CopyFrom.
-  // ---------------------------------------------------------------------------
-
   std::unique_ptr<std::set<const URLRequest*>> url_requests_;
 
   // Enables Brotli Content-Encoding support.
@@ -382,8 +349,6 @@ class NET_EXPORT URLRequestContext
   // Used in MemoryDumpProvier to annotate memory usage. The name does not need
   // to be unique.
   std::string name_;
-
-  const bool allow_copy_;
 
   THREAD_CHECKER(thread_checker_);
 

@@ -28,8 +28,8 @@ using content::Referrer;
 
 - (id)initWithBridge:(HistoryMenuBridge*)bridge {
   if ((self = [super init])) {
-    bridge_ = bridge;
-    DCHECK(bridge_);
+    _bridge = bridge;
+    DCHECK(_bridge);
   }
   return self;
 }
@@ -45,9 +45,9 @@ using content::Referrer;
   // If this item can be restored using TabRestoreService, do so. Otherwise,
   // just load the URL.
   sessions::TabRestoreService* service =
-      TabRestoreServiceFactory::GetForProfile(bridge_->profile());
+      TabRestoreServiceFactory::GetForProfile(_bridge->profile());
   if (node->session_id.is_valid() && service) {
-    Browser* browser = chrome::FindTabbedBrowser(bridge_->profile(), false);
+    Browser* browser = chrome::FindTabbedBrowser(_bridge->profile(), false);
     BrowserLiveTabContext* context =
         browser ? browser->live_tab_context() : NULL;
     service->RestoreEntryById(context, node->session_id,
@@ -56,7 +56,7 @@ using content::Referrer;
     DCHECK(node->url.is_valid());
     WindowOpenDisposition disposition =
         ui::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-    Profile* target_profile = bridge_->profile();
+    Profile* target_profile = _bridge->profile();
 
     // Allow a history menu item to open in an active incognito window.
     // Specifically, if the active window has the same root profile as the
@@ -76,7 +76,7 @@ using content::Referrer;
 
 - (IBAction)openHistoryMenuItem:(id)sender {
   const HistoryMenuBridge::HistoryItem* item =
-      bridge_->HistoryItemForMenuItem(sender);
+      _bridge->HistoryItemForMenuItem(sender);
 
   if ([sender tag] == HistoryMenuBridge::kRecentlyClosed) {
     base::RecordAction(
@@ -92,11 +92,11 @@ using content::Referrer;
 // NSMenuDelegate:
 
 - (void)menuWillOpen:(NSMenu*)menu {
-  bridge_->SetIsMenuOpen(true);
+  _bridge->SetIsMenuOpen(true);
 }
 
 - (void)menuDidClose:(NSMenu*)menu {
-  bridge_->SetIsMenuOpen(false);
+  _bridge->SetIsMenuOpen(false);
 }
 
 @end  // HistoryMenuCocoaController

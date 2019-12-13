@@ -312,8 +312,11 @@ class ContentsSeparator : public views::Separator {
   void AddedToWidget() override { UpdateColor(); }
 
   void UpdateColor() {
-    SetColor(GetThemeProvider()->GetColor(
-        ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR));
+    const ui::ThemeProvider* const theme_provider = GetThemeProvider();
+    SetColor(color_utils::GetResultingPaintColor(
+        theme_provider->GetColor(
+            ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR),
+        theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR)));
   }
 };
 

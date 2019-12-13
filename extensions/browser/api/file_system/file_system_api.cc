@@ -811,14 +811,14 @@ ExtensionFunction::ResponseAction FileSystemRetainEntryFunction::Run() {
     if (!storage::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id))
       return RespondNow(Error(kRetainEntryError));
 
-    const GURL site =
-        util::GetSiteForExtensionId(extension_id(), browser_context());
     storage::FileSystemContext* const context =
-        content::BrowserContext::GetStoragePartitionForSite(browser_context(),
-                                                            site)
+        util::GetStoragePartitionForExtensionId(extension_id(),
+                                                browser_context())
             ->GetFileSystemContext();
+    const GURL origin =
+        util::GetSiteForExtensionId(extension_id(), browser_context());
     const storage::FileSystemURL url = context->CreateCrackedFileSystemURL(
-        site, storage::kFileSystemTypeIsolated,
+        origin, storage::kFileSystemTypeIsolated,
         storage::IsolatedContext::GetInstance()
             ->CreateVirtualRootPath(filesystem_id)
             .Append(base::FilePath::FromUTF8Unsafe(filesystem_path)));

@@ -217,7 +217,7 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
     Keyframe* second = frame->CloneWithOffset(1);
 
     frames.push_back(frame);
-    frames.push_back(ToStringKeyframe(second));
+    frames.push_back(To<StringKeyframe>(second));
     return CanStartEffectOnCompositor(
         timing_, *MakeGarbageCollected<StringKeyframeEffectModel>(frames));
   }

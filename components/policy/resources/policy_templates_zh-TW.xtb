@@ -1552,6 +1552,7 @@
 
       這項政策可使用的設定值包括：「tls1」、「tls1.1」或「tls1.2」。設定後，<ph name="PRODUCT_NAME" /> 就不會使用低於指定版本的 SSL/TLS 版本。系統會忽略無法辨識的值。</translation>
 <translation id="34160070798637152">控管裝置通用的網路設定。</translation>
+<translation id="3417130629744653218">允許網站查詢可用的付款方式。</translation>
 <translation id="3417418267404583991">如果這項政策設為 True 或未設定，<ph name="PRODUCT_OS_NAME" /> 會啟用訪客登入。訪客登入是匿名的使用者工作階段，並且不需要密碼。
 
       如果這項政策設為 False，<ph name="PRODUCT_OS_NAME" /> 不會允許開啟訪客工作階段。</translation>
@@ -1897,6 +1898,13 @@
           設好這項政策後，使用者即無法變更或覆寫設定。
 
           如果不設定這項政策，系統會在初次顯示登入畫面時停用虛擬鍵盤，但使用者隨時可以啟用。</translation>
+<translation id="3913530489429898348">這項政策可讓 <ph name="PRODUCT_NAME" /> 將文件提交至 <ph name="CLOUD_PRINT_NAME" />進行列印。注意：這只會影響 <ph name="PRODUCT_NAME" /> 對於 <ph name="CLOUD_PRINT_NAME" />的支援，但不會禁止使用者在網站上提交列印工作。
+
+      如果啟用或不設定這項政策，使用者即可透過 <ph name="PRODUCT_NAME" /> 列印對話方塊將列印工作提交至 <ph name="CLOUD_PRINT_NAME" />。
+
+      如果停用這項政策，使用者就不能透過 <ph name="PRODUCT_NAME" /> 列印對話方塊將列印工作提交至 <ph name="CLOUD_PRINT_NAME" />。
+
+      如要讓系統搜尋到 <ph name="CLOUD_PRINT_NAME" /> 目的地，這項政策必須設為 True，且「<ph name="POLICY_PRINTERTYPEDENYLIST" />」政策中不得包含「<ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" />」。</translation>
 <translation id="391531815696899618">如果你設為 Ture，<ph name="PRODUCT_OS_NAME" />的「檔案」應用程式就會停用 Google 雲端硬碟同步功能。這種情形下，系統無法將資料上傳至 Google 雲端硬碟。
 
           如果你設為 False 或未設定，使用者即可將檔案傳輸至 Google 雲端硬碟。</translation>
@@ -2459,6 +2467,7 @@
       </translation>
 <translation id="4906194810004762807">裝置政策的重新整理頻率</translation>
 <translation id="4917385247580444890">強</translation>
+<translation id="4919122295221518724">使用較嚴格的混合內容處理方式</translation>
 <translation id="4923806312383904642">允許 WebDriver 覆寫不相容的政策</translation>
 <translation id="4929721861648439998">在登入畫面上啟用單聲道音訊無障礙功能。
 
@@ -2479,6 +2488,10 @@
 <translation id="4970855112942626932">禁止登入瀏覽器</translation>
 <translation id="4978405676361550165">如果設定了「OffHours」政策，系統會在指定的時間間隔忽略特定裝置政策 (採用這些政策的預設設定)。Chrome 會在「OffHours」期間開始或結束時，為所有事件重新套用裝置政策。系統會通知使用者，並強制使用者在「OffHours」時間結束以及裝置政策設定變更時 (也就是使用者登入未受到允許的帳戶時) 登出。</translation>
 <translation id="4980635395568992380">資料類型：</translation>
+<translation id="4980794848194997251">這項政策可控管瀏覽器處理混合內容 (HTTPS 網站中的 HTTP 內容) 的方式。
+       如果不設定這項政策或設為 True，系統會自動將音訊和影片混合內容升級為 HTTPS (亦即，如果無法透過 HTTPS 取得相關資源，系統便會將網址改寫為 HTTPS，且不提供備用選項)，並在圖片混合內容的網址列顯示「不安全」的警告訊息。
+       如果將這項政策設為 False，系統會停用音訊和影片的自動升級功能，且不會針對圖片顯示警告訊息。
+      這項政策只會影響類型為音訊、影片和圖片的混合內容。</translation>
 <translation id="4983201894483989687">允許執行過舊的外掛程式</translation>
 <translation id="4986560318567565414">從替代瀏覽器切換到 Chrome 所使用的路徑。</translation>
 <translation id="4988291787868618635">在達到閒置延遲時間時要採取的動作</translation>
@@ -2515,6 +2528,9 @@
 <translation id="5056708224511062314">已停用螢幕放大鏡</translation>
 <translation id="5058573563327660283">選取自動清理時用來釋出磁碟空間的策略 (已不適用)</translation>
 <translation id="5067143124345820993">登入使用者許可清單</translation>
+<translation id="5073609397321802133">如果將這項政策設為 False，系統將禁止使用者自訂新分頁的背景。即使日後將這項政策設為 True，系統仍會永久移除任何現有的自訂背景。
+
+      如果不設定這項政策或設為 True，使用者可以自訂新分頁的背景。</translation>
 <translation id="5075834892754086022">如果設定這項政策，系統會強制使用政策所設定的 PIN 碼長度
           下限。(PIN 碼長度的絕對下限為 1；系統會將低於 1
           的值視為 1 處理。)
@@ -3469,6 +3485,7 @@
 <translation id="6652197835259177259">本機管理化環境下的使用者設定</translation>
 <translation id="6658245400435704251">指定裝置可以任意延遲下載某項更新的秒數上限 (以該項更新初次被推送到伺服器的時間為準)。你可以將這項裝置等待時間的其中一部分設定為等待的時間長度，剩下的部分則設定為檢查更新的次數。不論採取哪種方式，分散時間皆不得超過固定時間長度，這樣就可以避免裝置由於持續等待下載某項更新而停止回應。</translation>
 <translation id="6665670272107384733">設定使用者使用快速解鎖功能時需輸入密碼的頻率</translation>
+<translation id="6672070613706645316">允許使用者自訂新分頁的背景</translation>
 <translation id="6672630473862787247">在一般工作階段、無痕模式工作階段和訪客工作階段中啟用背景驗證。</translation>
 <translation id="6681229465468164801">允許你設定網址模式清單，指定禁止要求使用者授予 USB 裝置存取權的網站。
 
@@ -3998,6 +4015,14 @@
       如果不設定這項政策或設為 0，當使用者前往指定網址時，系統會立即在替代瀏覽器中開啟該網址。
 
       如果將這項政策設為零以外的數值，Chrome 在開啟替代瀏覽器前會先顯示一則等待訊息，並依據該數值 (以毫秒為單位) 來設定這則訊息要顯示多久的時間。</translation>
+<translation id="7583419926951418342">這項政策可控管 <ph name="PRODUCT_NAME" /> 雲端報告功能，該功能會將瀏覽器運作資訊上傳到 Google 管理控制台。
+
+      如果不設定這項政策或設為 False，系統不會收集或上傳資料。
+      如果將這項政策設為 True，系統會收集資料並上傳到 Google 管理控制台。
+      如要控管上傳的資料類型，請使用「Chrome 資訊回報擴充功能」群組中的政策。
+
+      如果是 <ph name="PRODUCT_NAME" />，只有在電腦已註冊使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 的情況下，這項政策才會生效。
+      如果是 <ph name="PRODUCT_OS_NAME" />，這項政策會一律生效。</translation>
 <translation id="7586477707097444774">針對符合這些模式的網域所設定的 Cookie 會還原成舊版的 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 行為。還原成舊版的行為會導致系統將未指定 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 屬性的 Cookie 視為「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」，並移除「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」Cookie 必須帶有「<ph name="ATTRIBUTE_SECURE_NAME" />」屬性的要求。如需完整說明，請參閱 https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies。
 
           未設定這項政策或網域不符合這些模式時，系統會對 Cookie 套用 <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" /> 政策 (如已設定) 或個人配置中的全域預設值。
@@ -4296,6 +4321,11 @@
 
       如未設定這項政策，裝置在預設狀態下會使用 24 小時制時鐘格式。</translation>
 <translation id="8114382167597081590">不強制執行 YouTube 嚴格篩選模式</translation>
+<translation id="8117921351531866504">你可以設定網站是否能檢查使用者有沒有已儲存的付款方式。
+
+      如果將這項政策設為停用，系統會通知使用 PaymentRequest.canMakePayment 或 PaymentRequest.hasEnrolledInstrument API 的網站沒有可用的付款方式。
+
+      如果啟用或不設定這項政策，網站可以檢查使用者是否已有已儲存的付款方式。</translation>
 <translation id="8118665053362250806">設定媒體磁碟快取大小</translation>
 <translation id="8124468781472887384">裝置印表機設定存取權政策。</translation>
 <translation id="8138009212169037227">這項政策可控管系統是否要回報政策資料和政策擷取時間。
@@ -4659,6 +4689,17 @@
       如果啟用或未設定這項政策，使用者可刪除瀏覽和下載記錄項目。
 
       如果停用這項政策，則使用者無法刪除瀏覽和下載記錄項目。</translation>
+<translation id="8749803771700374502">系統不會搜尋拒絕清單上列出的印表機類型，也不會擷取這類印表機可支援的列印功能。
+
+      在拒絕清單上列出所有印表機類型的效果與停用列印功能相同，因為這樣一來，系統傳送文件進行列印時就沒有可用的目的地。
+
+      在拒絕清單上加入「<ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" />」的作用等同於將「<ph name="POLICY_CLOUDPRINTSUBMITENABLED" />」政策設定為 False。如要讓系統搜尋到 <ph name="CLOUD_PRINT_NAME" /> 目的地，「<ph name="POLICY_CLOUDPRINTSUBMITENABLED" />」政策必須設為 True，且拒絕清單中不得包含「<ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" />」。
+
+     如果不設定這項政策或將其設為空白，系統將可搜尋到所有印表機類型。
+
+      擴充印表機也稱為列印服務提供者目的地，其中包含所有屬於 <ph name="PRODUCT_NAME" /> 擴充功能的目的地。
+
+      本機印表機也稱為原生列印目的地，其中包含可供本機電腦和共用網路印表機使用的目的地。</translation>
 <translation id="8752541111574086388">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 82 版中移除。請改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
           指定電池供電時的閒置時間長度。如果使用者在這段時間內沒有任何動作，系統就會顯示警告對話方塊。

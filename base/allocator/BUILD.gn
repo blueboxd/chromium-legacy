@@ -121,7 +121,6 @@ if (use_allocator == "tcmalloc") {
       "$tcmalloc_dir/src/base/spinlock.h",
       "$tcmalloc_dir/src/base/spinlock_internal.cc",
       "$tcmalloc_dir/src/base/spinlock_internal.h",
-      "$tcmalloc_dir/src/base/synchronization_profiling.h",
       "$tcmalloc_dir/src/base/sysinfo.cc",
       "$tcmalloc_dir/src/base/sysinfo.h",
       "$tcmalloc_dir/src/base/vdso_support.cc",

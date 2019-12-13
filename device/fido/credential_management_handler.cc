@@ -19,15 +19,12 @@
 namespace device {
 
 CredentialManagementHandler::CredentialManagementHandler(
-    service_manager::Connector* connector,
     FidoDiscoveryFactory* fido_discovery_factory,
     const base::flat_set<FidoTransportProtocol>& supported_transports,
     ReadyCallback ready_callback,
     GetPINCallback get_pin_callback,
     FinishedCallback finished_callback)
-    : FidoRequestHandlerBase(connector,
-                             fido_discovery_factory,
-                             supported_transports),
+    : FidoRequestHandlerBase(fido_discovery_factory, supported_transports),
       ready_callback_(std::move(ready_callback)),
       get_pin_callback_(std::move(get_pin_callback)),
       finished_callback_(std::move(finished_callback)) {

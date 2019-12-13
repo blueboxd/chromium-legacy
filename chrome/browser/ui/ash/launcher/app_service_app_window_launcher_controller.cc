@@ -152,19 +152,17 @@ void AppServiceAppWindowLauncherController::OnWindowVisibilityChanging(
   if (shelf_id.IsNull())
     return;
 
+  if (app_service_instance_helper_->IsWebApp(shelf_id.app_id) ||
+      shelf_id.app_id == extension_misc::kChromeAppId) {
+    app_service_instance_helper_->OnWindowVisibilityChanging(shelf_id, window,
+                                                             visible);
+    return;
+  }
+
   // Update |state|. The app must be started, and running state. If visible,
   // set it as |kVisible|, otherwise, clear the visible bit.
-  apps::InstanceState state = apps::InstanceState::kUnknown;
-  proxy_->InstanceRegistry().ForOneInstance(
-      window,
-      [&state](const apps::InstanceUpdate& update) { state = update.State(); });
-  state = static_cast<apps::InstanceState>(
-      state | apps::InstanceState::kStarted | apps::InstanceState::kRunning);
-  state = (visible) ? static_cast<apps::InstanceState>(
-                          state | apps::InstanceState::kVisible)
-                    : static_cast<apps::InstanceState>(
-                          state & ~(apps::InstanceState::kVisible));
-
+  apps::InstanceState state =
+      app_service_instance_helper_->CalculateVisibilityState(window, visible);
   app_service_instance_helper_->OnInstances(shelf_id.app_id, window,
                                             shelf_id.launch_id, state);
 
@@ -187,6 +185,11 @@ void AppServiceAppWindowLauncherController::OnWindowDestroying(
   const ash::ShelfID shelf_id = GetShelfId(window);
   if (shelf_id.IsNull())
     return;
+
+  if (app_service_instance_helper_->IsWebApp(shelf_id.app_id) ||
+      shelf_id.app_id == extension_misc::kChromeAppId) {
+    return;
+  }
 
   // Delete the instance from InstanceRegistry.
   app_service_instance_helper_->OnInstances(
@@ -294,26 +297,14 @@ void AppServiceAppWindowLauncherController::SetWindowActivated(
   if (shelf_id.IsNull())
     return;
 
-  apps::InstanceState state = apps::InstanceState::kUnknown;
-  if (active) {
-    // If the app is active, it should be started, running, and visible.
-    state = static_cast<apps::InstanceState>(
-        apps::InstanceState::kStarted | apps::InstanceState::kRunning |
-        apps::InstanceState::kActive | apps::InstanceState::kVisible);
-  } else {
-    proxy_->InstanceRegistry().ForOneInstance(
-        window, [&state](const apps::InstanceUpdate& update) {
-          state = update.State();
-        });
-
-    // When sets the instance active state, the instance should be in started
-    // and running state.
-    state = static_cast<apps::InstanceState>(
-        state | apps::InstanceState::kStarted | apps::InstanceState::kRunning);
-
-    state =
-        static_cast<apps::InstanceState>(state & ~apps::InstanceState::kActive);
+  if (app_service_instance_helper_->IsWebApp(shelf_id.app_id) ||
+      shelf_id.app_id == extension_misc::kChromeAppId) {
+    app_service_instance_helper_->SetWindowActivated(shelf_id, window, active);
+    return;
   }
+
+  apps::InstanceState state =
+      app_service_instance_helper_->CalculateActivatedState(window, active);
   app_service_instance_helper_->OnInstances(shelf_id.app_id, window,
                                             std::string(), state);
 }
@@ -325,16 +316,6 @@ void AppServiceAppWindowLauncherController::RegisterWindow(
   // becomes visible again.
   auto app_window_it = aura_window_to_app_window_.find(window);
   if (app_window_it != aura_window_to_app_window_.end())
-    return;
-
-  // For Web apps, we don't need to register an app window, because
-  // BrowserShortcutLauncherItemController sets the window's property. If
-  // register app window for the app opened in a browser tab, the window is
-  // added to aura_window_to_app_window_, and when the window is destroyed, it
-  // could cause crash in RemoveFromShelf, because
-  // BrowserShortcutLauncherItemController manages the window, and sets
-  // related window properties, so it could cause the conflict settings.
-  if (app_service_instance_helper_->IsWebApp(shelf_id.app_id))
     return;
 
   if (arc_tracker_)

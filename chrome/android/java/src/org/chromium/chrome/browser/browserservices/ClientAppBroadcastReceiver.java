@@ -14,13 +14,12 @@ import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.NotificationPermissionUpdater;
 import org.chromium.chrome.browser.metrics.WebApkUma;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.inject.Inject;
 
 /**
  * A {@link android.content.BroadcastReceiver} that detects when a Trusted Web Activity client app
@@ -69,22 +68,22 @@ public class ClientAppBroadcastReceiver extends BroadcastReceiver {
 
     private final ClearDataStrategy mClearDataStrategy;
     private final ClientAppDataRegister mRegister;
-    private final BrowserServicesStore mStore;
+    private final ChromePreferenceManager mChromePreferenceManager;
     private final NotificationPermissionUpdater mNotificationPermissionUpdater;
 
     /** Constructor with default dependencies for Android. */
-    @Inject
-    public ClientAppBroadcastReceiver(BrowserServicesStore store) {
-        this(new ClearDataStrategy(), new ClientAppDataRegister(), store,
+    public ClientAppBroadcastReceiver() {
+        this(new ClearDataStrategy(), new ClientAppDataRegister(),
+                ChromeApplication.getComponent().resolvePreferenceManager(),
                 ChromeApplication.getComponent().resolveTwaPermissionUpdater());
     }
 
     /** Constructor to allow dependency injection in tests. */
     public ClientAppBroadcastReceiver(ClearDataStrategy strategy, ClientAppDataRegister register,
-            BrowserServicesStore store, NotificationPermissionUpdater permissionUpdater) {
+            ChromePreferenceManager manager, NotificationPermissionUpdater permissionUpdater) {
         mClearDataStrategy = strategy;
         mRegister = register;
-        mStore = store;
+        mChromePreferenceManager = manager;
         mNotificationPermissionUpdater = permissionUpdater;
     }
 
@@ -130,7 +129,7 @@ public class ClientAppBroadcastReceiver extends BroadcastReceiver {
 
     private void clearPreferences(int uid, boolean uninstalled) {
         String packageName = mRegister.getPackageNameForRegisteredUid(uid);
-        mStore.removeTwaDisclosureAcceptanceForPackage(packageName);
+        mChromePreferenceManager.removeTwaDisclosureAcceptanceForPackage(packageName);
         if (uninstalled) {
             mRegister.removePackage(uid);
         }

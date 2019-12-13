@@ -14,8 +14,6 @@
 #include "media/renderers/video_overlay_factory.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/service_manager/public/cpp/connect.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace media {
 

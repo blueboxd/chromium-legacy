@@ -7,7 +7,7 @@ document
 ++button Name='InnerText5' FullDescription='DescribedBy5'
 ++button Name='Outer inner'
 ++++description Name='Outer' IsControlElement=false
-++++group
+++++group IsControlElement=false
 ++++++description Name='inner' IsControlElement=false
 ++button Name='Outer inner1'
 ++++description Name='Outer' IsControlElement=false
@@ -16,5 +16,5 @@ document
 ++button Name='Outer grandchild'
 ++++description Name='Outer' IsControlElement=false
 ++++group
-++++++group
+++++++group IsControlElement=false
 ++++++++description Name='grandchild' IsControlElement=false

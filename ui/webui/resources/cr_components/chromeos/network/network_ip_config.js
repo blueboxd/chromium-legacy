@@ -166,13 +166,11 @@ Polymer({
           OncMojo.getIPConfigForType(properties, 'IPv4'));
       let ipv6 = this.getIPConfigUIProperties_(
           OncMojo.getIPConfigForType(properties, 'IPv6'));
-      // If connected and the IP address is automatic and set, show 'Loading' if
-      // the ipv6 address is not set.
-      if (OncMojo.connectionStateIsConnected(properties.connectionState) &&
-          this.automatic_ && ipv4 && ipv4.ipAddress) {
-        ipv6 = ipv6 || {};
-        ipv6.ipAddress = ipv6.ipAddress || this.i18n('loading');
-      }
+
+      // If ipv6 address is not set, show appropriate message.
+      ipv6 = ipv6 || {};
+      ipv6.ipAddress = ipv6.ipAddress || this.i18n('ipAddressNotAvailable');
+
       this.ipConfig_ = {ipv4: ipv4, ipv6: ipv6};
     } else {
       this.ipConfig_ = undefined;

@@ -17,6 +17,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.espresso.UiController;
 import android.support.test.espresso.ViewAction;
+import android.support.test.espresso.core.deps.guava.base.Preconditions;
 import android.support.test.espresso.matcher.BoundedMatcher;
 import android.text.SpannableString;
 import android.text.style.ClickableSpan;
@@ -24,6 +25,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -179,6 +181,35 @@ class AutofillAssistantUiTestUtil {
                 }
 
                 description.appendText("has tint with ID " + colorId);
+            }
+        };
+    }
+
+    public static Matcher<View> isNextAfterSibling(final Matcher<View> siblingMatcher) {
+        Preconditions.checkNotNull(siblingMatcher);
+        return new TypeSafeMatcher<View>() {
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("is next after sibling: ");
+                siblingMatcher.describeTo(description);
+            }
+
+            @Override
+            public boolean matchesSafely(View view) {
+                ViewParent parent = view.getParent();
+                if (!(parent instanceof ViewGroup)) {
+                    return false;
+                } else {
+                    ViewGroup parentGroup = (ViewGroup) parent;
+
+                    for (int i = 1; i < parentGroup.getChildCount(); ++i) {
+                        if (view == parentGroup.getChildAt(i)) {
+                            return siblingMatcher.matches(parentGroup.getChildAt(i - 1));
+                        }
+                    }
+
+                    return false;
+                }
             }
         };
     }

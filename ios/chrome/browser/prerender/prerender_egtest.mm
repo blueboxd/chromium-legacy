@@ -85,7 +85,11 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText([pageString stringByAppendingString:@"\n"])];
   [ChromeEarlGrey waitForPageToFinishLoading];
-  GREYAssertEqual(2, visitCounter, @"The page should have been loaded twice");
+  GREYAssertTrue(visitCounter == 2 || visitCounter == 1,
+                 @"The page should have been loaded once (if already "
+                 @"prerendered) or twice, but was loaded %d times",
+                 visitCounter);
+  static int visitCountBeforePrerender = visitCounter;
   [[self class] closeAllTabs];
   [ChromeEarlGrey openNewTab];
 
@@ -100,7 +104,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
   // Wait until prerender request reaches the server.
   bool prerendered = WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    return visitCounter == 3;
+    return visitCounter == visitCountBeforePrerender + 1;
   });
   GREYAssertTrue(prerendered, @"Prerender did not happen");
 
@@ -124,7 +128,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       performAction:grey_tap()];
 
   [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString];
-  GREYAssertEqual(3, visitCounter, @"Prerender should have been the last load");
+  GREYAssertEqual(visitCountBeforePrerender + 1, visitCounter,
+                  @"Prerender should have been the last load");
 }
 
 @end

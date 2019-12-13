@@ -934,7 +934,7 @@ void WebViewTest::TestTextInputType(WebTextInputType expected_type,
   web_view->SetInitialFocus(false);
   EXPECT_EQ(expected_type, controller->TextInputType());
   EXPECT_EQ(expected_type, controller->TextInputInfo().type);
-  web_view->ClearFocusedElement();
+  web_view->FocusedElement()->blur();
   EXPECT_EQ(kWebTextInputTypeNone, controller->TextInputType());
   EXPECT_EQ(kWebTextInputTypeNone, controller->TextInputInfo().type);
 }

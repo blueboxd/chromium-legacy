@@ -783,10 +783,8 @@ class PolicyProvidedCertsForSigninExtensionTest
 
   content::StoragePartition* GetStoragePartitionForSigninExtension(
       const std::string& extension_id) {
-    const GURL site =
-        extensions::util::GetSiteForExtensionId(extension_id, signin_profile_);
-    return content::BrowserContext::GetStoragePartitionForSite(
-        signin_profile_, site, /*can_create=*/false);
+    return extensions::util::GetStoragePartitionForExtensionId(
+        extension_id, signin_profile_, /*can_create=*/false);
   }
 
   Profile* signin_profile_ = nullptr;

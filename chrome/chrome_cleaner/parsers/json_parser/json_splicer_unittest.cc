@@ -48,7 +48,7 @@ bool IsDaysOfWeek(const base::DictionaryValue* dictionary) {
          dictionary->HasKey("saturday");
 }
 
-bool IsDaysOfWeek(const std::vector<base::Value>& list) {
+bool IsDaysOfWeek(base::Value::ConstListView list) {
   return base::Contains(list, base::Value("sunday")) &&
          base::Contains(list, base::Value("monday")) &&
          base::Contains(list, base::Value("tuesday")) &&
@@ -153,7 +153,7 @@ TEST_F(JsonSplicerImplTest, FailedJsonListSplice) {
              const base::Optional<std::string>& error) {
             ASSERT_FALSE(error.has_value());
             ASSERT_TRUE(value.has_value());
-            std::vector<base::Value>& list = value->GetList();
+            base::Value::ConstListView list = value->GetList();
             ASSERT_TRUE(IsDaysOfWeek(list));
             std::string blank = "";
             ASSERT_FALSE(RemoveValueFromList(&*value, blank));
@@ -177,18 +177,16 @@ TEST_F(JsonSplicerImplTest, JsonListSplice) {
              const base::Optional<std::string>& error) {
             ASSERT_FALSE(error.has_value());
             ASSERT_TRUE(value.has_value());
-            std::vector<base::Value>& list = value->GetList();
+            base::Value::ConstListView list = value->GetList();
             ASSERT_TRUE(IsDaysOfWeek(list));
             std::string monday = "monday";
             ASSERT_TRUE(RemoveValueFromList(&*value, monday));
             ASSERT_FALSE(IsDaysOfWeek(list));
-            ASSERT_FALSE(std::find(list.begin(), list.end(),
-                                   base::Value(monday)) != list.end());
+            ASSERT_FALSE(base::Contains(list, base::Value(monday)));
             std::string wednesday = "wednesday";
             ASSERT_TRUE(RemoveValueFromList(&*value, wednesday));
             ASSERT_FALSE(IsDaysOfWeek(list));
-            ASSERT_FALSE(std::find(list.begin(), list.end(),
-                                   base::Value(monday)) != list.end());
+            ASSERT_FALSE(base::Contains(list, base::Value(monday)));
             done->Signal();
           },
           &done));

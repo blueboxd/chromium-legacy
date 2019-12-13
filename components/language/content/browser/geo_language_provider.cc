@@ -6,18 +6,16 @@
 
 #include "base/bind.h"
 #include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/language/content/browser/language_code_locator_provider.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/device_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/device/public/mojom/geoposition.mojom.h"
-#include "services/device/public/mojom/public_ip_address_geolocation_provider.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace language {
 namespace {
@@ -25,6 +23,11 @@ namespace {
 // Don't start requesting updates to IP-based approximation geolocation until
 // this long after receiving the last one.
 constexpr base::TimeDelta kMinUpdatePeriod = base::TimeDelta::FromDays(1);
+
+GeoLanguageProvider::Binder& GetBinderOverride() {
+  static base::NoDestructor<GeoLanguageProvider::Binder> binder;
+  return *binder;
+}
 
 }  // namespace
 
@@ -65,9 +68,7 @@ void GeoLanguageProvider::RegisterLocalStatePrefs(
   registry->RegisterListPref(kCachedGeoLanguagesPref);
 }
 
-void GeoLanguageProvider::StartUp(
-    std::unique_ptr<service_manager::Connector> service_manager_connector,
-    PrefService* const prefs) {
+void GeoLanguageProvider::StartUp(PrefService* const prefs) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(creation_sequence_checker_);
 
   prefs_ = prefs;
@@ -78,7 +79,6 @@ void GeoLanguageProvider::StartUp(
     languages_.push_back(language_value.GetString());
   }
 
-  service_manager_connector_ = std::move(service_manager_connector);
   // Continue startup in the background.
   background_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&GeoLanguageProvider::BackgroundStartUp,
@@ -88,6 +88,11 @@ void GeoLanguageProvider::StartUp(
 std::vector<std::string> GeoLanguageProvider::CurrentGeoLanguages() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(creation_sequence_checker_);
   return languages_;
+}
+
+// static
+void GeoLanguageProvider::OverrideBinderForTesting(Binder binder) {
+  GetBinderOverride() = std::move(binder);
 }
 
 void GeoLanguageProvider::BackgroundStartUp() {
@@ -105,12 +110,16 @@ void GeoLanguageProvider::BindIpGeolocationService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(background_sequence_checker_);
   DCHECK(!geolocation_provider_.is_bound());
 
-  // Bind a PublicIpAddressGeolocationProvider.
   mojo::Remote<device::mojom::PublicIpAddressGeolocationProvider>
       ip_geolocation_provider;
-  service_manager_connector_->Connect(
-      device::mojom::kServiceName,
-      ip_geolocation_provider.BindNewPipeAndPassReceiver());
+  auto receiver = ip_geolocation_provider.BindNewPipeAndPassReceiver();
+  const auto& binder = GetBinderOverride();
+  if (binder) {
+    binder.Run(std::move(receiver));
+  } else {
+    content::GetDeviceService().BindPublicIpAddressGeolocationProvider(
+        std::move(receiver));
+  }
 
   net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
       net::DefinePartialNetworkTrafficAnnotation("geo_language_provider",

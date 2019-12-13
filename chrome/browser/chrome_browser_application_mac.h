@@ -16,7 +16,7 @@
 @interface BrowserCrApplication : NSApplication<CrAppProtocol,
                                                 CrAppControlProtocol> {
  @private
-  BOOL handlingSendEvent_;
+  BOOL _handlingSendEvent;
 }
 
 // Our implementation of |-terminate:| only attempts to terminate the

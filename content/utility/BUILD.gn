@@ -65,7 +65,6 @@ jumbo_source_set("utility") {
     deps += [
       "//media",
       "//media/mojo:buildflags",
-      "//media/mojo/mojom:constants",
       "//media/mojo/services",
     ]
   }

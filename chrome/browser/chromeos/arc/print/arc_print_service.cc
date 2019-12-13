@@ -179,10 +179,10 @@ void OnSetSettingsDoneOnIOThread(std::unique_ptr<printing::PrinterQuery> query,
 }
 
 std::unique_ptr<printing::PrinterSemanticCapsAndDefaults>
-FetchCapabilitiesOnBlockingTaskRunner(const std::string& printer_id) {
+FetchCapabilitiesOnBlockingTaskRunner(const std::string& printer_id,
+                                      const std::string& locale) {
   scoped_refptr<printing::PrintBackend> backend(
-      printing::PrintBackend::CreateInstance(
-          nullptr, g_browser_process->GetApplicationLocale()));
+      printing::PrintBackend::CreateInstance(nullptr, locale));
   auto caps = std::make_unique<printing::PrinterSemanticCapsAndDefaults>();
   if (!backend->GetPrinterSemanticCapsAndDefaults(printer_id, caps.get())) {
     LOG(ERROR) << "Failed to get caps for " << printer_id;
@@ -309,9 +309,12 @@ class PrinterDiscoverySessionHostImpl
   }
 
   void FetchCapabilities(const chromeos::Printer& printer) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
     base::PostTaskAndReplyWithResult(
         FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-        base::BindOnce(&FetchCapabilitiesOnBlockingTaskRunner, printer.id()),
+        base::BindOnce(&FetchCapabilitiesOnBlockingTaskRunner, printer.id(),
+                       g_browser_process->GetApplicationLocale()),
         base::BindOnce(&PrinterDiscoverySessionHostImpl::CapabilitiesReceived,
                        weak_ptr_factory_.GetWeakPtr(), printer));
   }

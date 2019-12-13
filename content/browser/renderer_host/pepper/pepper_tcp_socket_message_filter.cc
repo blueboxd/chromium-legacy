@@ -1207,9 +1207,10 @@ void PepperTCPSocketMessageFilter::SetStreams(
 void PepperTCPSocketMessageFilter::OpenFirewallHole(
     const ppapi::host::ReplyMessageContext& context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  pepper_socket_utils::FirewallHoleOpenCallback callback = base::BindRepeating(
-      &PepperTCPSocketMessageFilter::OnFirewallHoleOpened, this, context);
-  pepper_socket_utils::OpenTCPFirewallHole(bind_output_ip_endpoint_, callback);
+  pepper_socket_utils::OpenTCPFirewallHole(
+      bind_output_ip_endpoint_,
+      base::BindOnce(&PepperTCPSocketMessageFilter::OnFirewallHoleOpened, this,
+                     context));
 }
 
 void PepperTCPSocketMessageFilter::OnFirewallHoleOpened(

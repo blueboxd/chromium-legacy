@@ -283,6 +283,7 @@
 <translation id="1397500194120344683">Non hai ningún dispositivo apto. <ph name="LINK_BEGIN" />Máis información<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="1399511500114202393">Ningún certificado de usuario</translation>
+<translation id="1403519882106291341">Condicións de Google Chrome OS</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (supervisado)</translation>
 <translation id="1405779994569073824">Produciuse un fallo.</translation>
 <translation id="1406500794671479665">Verificando...</translation>
@@ -2173,7 +2174,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4036778507053569103">A política descargada do servidor non é válida.</translation>
 <translation id="4037084878352560732">Cabalo</translation>
 <translation id="4037889604535939429">Editar persoa</translation>
-<translation id="4042264909745389898">Condicións de Google Chrome OS</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Páxina de saída}other{Páxinas de saída}}</translation>
 <translation id="4044612648082411741">Introduce o contrasinal do certificado</translation>
 <translation id="404493185430269859">Motor de busca predeterminado</translation>

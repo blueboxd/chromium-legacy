@@ -1,5 +1,5 @@
 document
 ++description Name='this text is not ignored'
-++group
+++group IsControlElement=false
 ++++description Name='after selection'
 ++description Name='Done'

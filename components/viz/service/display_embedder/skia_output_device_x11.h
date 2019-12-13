@@ -20,6 +20,7 @@ class SkiaOutputDeviceX11 final : public SkiaOutputDeviceOffscreen {
   SkiaOutputDeviceX11(
       scoped_refptr<gpu::SharedContextState> context_state,
       gfx::AcceleratedWidget widget,
+      gpu::MemoryTracker* memory_tracker,
       DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
   ~SkiaOutputDeviceX11() override;
 

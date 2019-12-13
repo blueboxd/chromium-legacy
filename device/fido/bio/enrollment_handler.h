@@ -13,10 +13,6 @@
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/pin.h"
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace device {
 
 enum class BioEnrollmentStatus {
@@ -50,7 +46,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
       base::OnceCallback<void(CtapDeviceResponseCode, TemplateId)>;
 
   BioEnrollmentHandler(
-      service_manager::Connector* connector,
       const base::flat_set<FidoTransportProtocol>& supported_transports,
       base::OnceClosure ready_callback,
       ErrorCallback error_callback,

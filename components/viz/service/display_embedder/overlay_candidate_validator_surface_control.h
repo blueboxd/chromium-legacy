@@ -19,7 +19,8 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidatorSurfaceControl
   ~OverlayCandidateValidatorSurfaceControl() override;
 
   // OverlayCandidateValidator implementation.
-  void InitializeStrategies() override;
+  OverlayProcessorUsingStrategy::StrategyList InitializeStrategies(
+      OverlayProcessorUsingStrategy* processor) override;
   bool NeedsSurfaceOccludingDamageRect() const override;
   void CheckOverlaySupport(const PrimaryPlane* primary_plane,
                            OverlayCandidateList* surfaces) override;

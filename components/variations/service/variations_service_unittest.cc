@@ -69,10 +69,6 @@ std::unique_ptr<metrics::ClientInfo> StubLoadClientInfo() {
   return std::unique_ptr<metrics::ClientInfo>();
 }
 
-base::Version StubGetVersionForSimulation() {
-  return base::Version();
-}
-
 class TestVariationsServiceClient : public VariationsServiceClient {
  public:
   TestVariationsServiceClient() {
@@ -83,9 +79,8 @@ class TestVariationsServiceClient : public VariationsServiceClient {
   ~TestVariationsServiceClient() override {}
 
   // VariationsServiceClient:
-  base::Callback<base::Version(void)> GetVersionForSimulationCallback()
-      override {
-    return base::Bind(&StubGetVersionForSimulation);
+  VersionCallback GetVersionForSimulationCallback() override {
+    return base::BindOnce([] { return base::Version(); });
   }
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       override {

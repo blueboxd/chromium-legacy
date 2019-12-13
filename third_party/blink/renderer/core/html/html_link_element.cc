@@ -91,6 +91,16 @@ void HTMLLinkElement::ParseAttribute(
         }
       }
     }
+    if (rel_attribute_.IsMonetization() && !GetDocument().ParentDocument()) {
+      // TODO(1031476): The Web Monetization specification is an unofficial
+      // draft, available at https://webmonetization.org/specification.html
+      // Currently it relies on a <meta> tag but there is an open issue about
+      // whether the <link rel="monetization"> should be used instead:
+      // https://github.com/interledger/webmonetization.org/issues/19
+      // For now, only use counters are implemented in Blink.
+      UseCounter::Count(&GetDocument(),
+                        WebFeature::kHTMLLinkElementMonetization);
+    }
     rel_list_->DidUpdateAttributeValue(params.old_value, value);
     Process();
   } else if (name == html_names::kHrefAttr) {

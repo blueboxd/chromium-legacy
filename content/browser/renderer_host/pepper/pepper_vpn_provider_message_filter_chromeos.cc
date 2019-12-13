@@ -158,12 +158,12 @@ int32_t PepperVpnProviderMessageFilter::OnBind(
   configuration_id_ = configuration_id;
   configuration_name_ = configuration_name;
 
-  return DoBind(base::Bind(&PepperVpnProviderMessageFilter::OnBindSuccess,
-                           weak_factory_.GetWeakPtr(),
-                           context->MakeReplyMessageContext()),
-                base::Bind(&PepperVpnProviderMessageFilter::OnBindFailure,
-                           weak_factory_.GetWeakPtr(),
-                           context->MakeReplyMessageContext()));
+  return DoBind(base::BindOnce(&PepperVpnProviderMessageFilter::OnBindSuccess,
+                               weak_factory_.GetWeakPtr(),
+                               context->MakeReplyMessageContext()),
+                base::BindOnce(&PepperVpnProviderMessageFilter::OnBindFailure,
+                               weak_factory_.GetWeakPtr(),
+                               context->MakeReplyMessageContext()));
 }
 
 int32_t PepperVpnProviderMessageFilter::OnSendPacket(
@@ -179,12 +179,13 @@ int32_t PepperVpnProviderMessageFilter::OnSendPacket(
   std::vector<char> packet(packet_pointer, packet_pointer + packet_size);
 
   return DoSendPacket(
-      packet, base::Bind(&PepperVpnProviderMessageFilter::OnSendPacketSuccess,
-                         weak_factory_.GetWeakPtr(),
-                         context->MakeReplyMessageContext(), id),
-      base::Bind(&PepperVpnProviderMessageFilter::OnSendPacketFailure,
-                 weak_factory_.GetWeakPtr(), context->MakeReplyMessageContext(),
-                 id));
+      packet,
+      base::BindOnce(&PepperVpnProviderMessageFilter::OnSendPacketSuccess,
+                     weak_factory_.GetWeakPtr(),
+                     context->MakeReplyMessageContext(), id),
+      base::BindOnce(&PepperVpnProviderMessageFilter::OnSendPacketFailure,
+                     weak_factory_.GetWeakPtr(),
+                     context->MakeReplyMessageContext(), id));
 }
 
 int32_t PepperVpnProviderMessageFilter::OnPacketReceivedReply(
@@ -227,7 +228,7 @@ int32_t PepperVpnProviderMessageFilter::DoBind(
 
   vpn_service_proxy_->Bind(
       document_url_.host(), configuration_id_, configuration_name_,
-      success_callback, failure_callback,
+      std::move(success_callback), std::move(failure_callback),
       std::make_unique<PepperVpnProviderResourceHostProxyImpl>(
           weak_factory_.GetWeakPtr()));
 
@@ -274,8 +275,9 @@ int32_t PepperVpnProviderMessageFilter::DoSendPacket(
     const std::vector<char>& packet,
     SuccessCallback success_callback,
     FailureCallback failure_callback) {
-  vpn_service_proxy_->SendPacket(document_url_.host(), packet, success_callback,
-                                 failure_callback);
+  vpn_service_proxy_->SendPacket(document_url_.host(), packet,
+                                 std::move(success_callback),
+                                 std::move(failure_callback));
   return PP_OK_COMPLETIONPENDING;
 }
 

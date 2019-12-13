@@ -22,11 +22,9 @@
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/browser/vr/win/vr_browser_renderer_thread_win.h"
 #include "chrome/common/chrome_features.h"
+#include "content/public/browser/device_service.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/system_connector.h"
 #include "device/vr/buildflags/buildflags.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace vr {
@@ -138,8 +136,7 @@ VRUiHostImpl::VRUiHostImpl(
     runtime->AddObserver(this);
   }
 
-  content::GetSystemConnector()->Connect(
-      device::mojom::kServiceName,
+  content::GetDeviceService().BindGeolocationConfig(
       geolocation_config_.BindNewPipeAndPassReceiver());
 }
 

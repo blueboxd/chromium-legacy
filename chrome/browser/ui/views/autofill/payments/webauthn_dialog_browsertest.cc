@@ -4,7 +4,6 @@
 
 #include "base/run_loop.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_controller_impl.h"
-#include "chrome/browser/ui/autofill/payments/webauthn_dialog_state.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_view.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -132,28 +131,6 @@ IN_PROC_BROWSER_TEST_F(WebauthnDialogBrowserTest,
   VerifyUi();
   GetWebauthnDialog()->CancelDialog();
   base::RunLoop().RunUntilIdle();
-}
-
-// Ensures dialog cancel button is disabled when dialog state changed to
-// |kVerifyPendingButtonDisabled|.
-IN_PROC_BROWSER_TEST_F(WebauthnDialogBrowserTest,
-                       VerifyPendingDialog_CancelButtonDisabled) {
-  ShowUi(kVerifyDialogName);
-  VerifyUi();
-  controller()->UpdateDialog(WebauthnDialogState::kVerifyPendingButtonDisabled);
-  EXPECT_FALSE(
-      GetWebauthnDialog()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
-}
-
-// Ensures dialog cancel button is enabled when dialog state changed to
-// |kVerifyPending|.
-IN_PROC_BROWSER_TEST_F(WebauthnDialogBrowserTest,
-                       VerifyPendingDialog_CancelButtonEnabled) {
-  ShowUi(kVerifyDialogName);
-  VerifyUi();
-  controller()->UpdateDialog(WebauthnDialogState::kVerifyPending);
-  EXPECT_TRUE(
-      GetWebauthnDialog()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
 }
 
 }  // namespace autofill

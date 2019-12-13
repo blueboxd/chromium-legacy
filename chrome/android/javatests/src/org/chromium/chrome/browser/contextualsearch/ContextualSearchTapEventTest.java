@@ -103,7 +103,6 @@ public class ContextualSearchTapEventTest {
             selectionPopupController.setSelectionClient(this.getContextualSearchSelectionClient());
             MockContextualSearchPolicy policy = new MockContextualSearchPolicy();
             setContextualSearchPolicy(policy);
-            mTranslateController = new MockedCSTranslateController(policy, null);
         }
 
         @Override
@@ -140,31 +139,6 @@ public class ContextualSearchTapEventTest {
         @Override
         protected SelectionPopupController getSelectionPopupController() {
             return mPopupController;
-        }
-    }
-
-    // --------------------------------------------------------------------------------------------
-
-    /**
-     * Translate controller that mocks out native calls.
-     */
-    private static class MockedCSTranslateController extends ContextualSearchTranslateController {
-        private static final String ENGLISH_TARGET_LANGUAGE = "en";
-        private static final String ENGLISH_ACCEPT_LANGUAGES = "en-US,en";
-
-        MockedCSTranslateController(
-                ContextualSearchPolicy policy, ContextualSearchTranslateInterface hostInterface) {
-            super(policy, hostInterface);
-        }
-
-        @Override
-        protected String getNativeAcceptLanguages() {
-            return ENGLISH_ACCEPT_LANGUAGES;
-        }
-
-        @Override
-        protected String getNativeTranslateServiceTargetLanguage() {
-            return ENGLISH_TARGET_LANGUAGE;
         }
     }
 

@@ -9,6 +9,11 @@
     margin-bottom: 8px;
     margin-top: 24px;
   }
+
+  [slot='body'].searching {
+    padding-bottom: 20px;
+    padding-top: 20px;
+  }
 </style>
 <cr-dialog id="dialog" on-close="onCloseOrCancel_">
   <div slot="title">
@@ -21,7 +26,7 @@
         search-query="{{searchQuery_}}" autofocus>
     </print-preview-search-box>
   </div>
-  <div slot="body">
+  <div slot="body" class$="[[isSearching_(searchQuery_)]]">
     <template is="dom-repeat"
         items="[[destination.capabilities.printer.vendor_capability]]">
       <print-preview-advanced-settings-item capability="[[item]]"

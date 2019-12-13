@@ -14,7 +14,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/numerics/ranges.h"
-#include "chromecast/media/cma/backend/audio_fader.h"
+#include "chromecast/media/audio/audio_fader.h"
 #include "chromecast/media/cma/backend/mixer/audio_output_redirector_input.h"
 #include "chromecast/media/cma/backend/mixer/filter_group.h"
 #include "media/base/audio_bus.h"

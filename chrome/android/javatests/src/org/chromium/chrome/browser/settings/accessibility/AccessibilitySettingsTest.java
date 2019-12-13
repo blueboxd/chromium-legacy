@@ -21,11 +21,13 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.settings.SeekBarPreference;
 import org.chromium.chrome.browser.settings.SettingsActivityTest;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -37,6 +39,7 @@ import java.text.NumberFormat;
  * Tests for the Accessibility Settings menu.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@Features.EnableFeatures(ChromeFeatureList.CAPTION_SETTINGS)
 public class AccessibilitySettingsTest {
     /**
      * Tests setting FontScaleFactor and ForceEnableZoom in AccessibilitySettings and ensures

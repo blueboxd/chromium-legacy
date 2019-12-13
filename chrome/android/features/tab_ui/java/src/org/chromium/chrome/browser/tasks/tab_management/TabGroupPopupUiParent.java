@@ -12,6 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.widget.AnchoredPopupWindow;
@@ -119,5 +121,25 @@ public class TabGroupPopupUiParent {
     void setContentViewAlpha(float alpha) {
         if (mCurrentStripContainerView == null) return;
         mCurrentStripContainerView.setAlpha(alpha);
+    }
+
+    @VisibleForTesting
+    AnchoredPopupWindow getCurrentPopupWindowForTesting() {
+        return mCurrentPopupWindow;
+    }
+
+    @VisibleForTesting
+    ViewGroup getCurrentStripContainerViewForTesting() {
+        return getCurrentContainerView();
+    }
+
+    @VisibleForTesting
+    ViewGroup getTopStripContainerViewForTesting() {
+        return mTopStripContainerView;
+    }
+
+    @VisibleForTesting
+    ViewGroup getBottomStripContainerViewForTesting() {
+        return mBottomStripContainerView;
     }
 }

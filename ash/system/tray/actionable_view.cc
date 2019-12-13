@@ -95,14 +95,4 @@ void ActionableView::ButtonPressed(Button* sender, const ui::Event& event) {
   HandlePerformActionResult(action_performed, event);
 }
 
-ButtonListenerActionableView::ButtonListenerActionableView(
-    TrayPopupInkDropStyle ink_drop_style,
-    views::ButtonListener* listener)
-    : ActionableView(ink_drop_style), listener_(listener) {}
-
-bool ButtonListenerActionableView::PerformAction(const ui::Event& event) {
-  listener_->ButtonPressed(this, event);
-  return true;
-}
-
 }  // namespace ash

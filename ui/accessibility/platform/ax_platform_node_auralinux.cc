@@ -247,11 +247,13 @@ AtkObject* ComputeActiveTopLevelFrame() {
   return g_active_top_level_frame;
 }
 
-const char* GetUniqueAccessibilityGTypeName(int interface_mask) {
+const char* GetUniqueAccessibilityGTypeName(
+    ImplementedAtkInterfaces interface_mask) {
   // 37 characters is enough for "AXPlatformNodeAuraLinux%x" with any integer
   // value.
   static char name[37];
-  snprintf(name, sizeof(name), "AXPlatformNodeAuraLinux%x", interface_mask);
+  snprintf(name, sizeof(name), "AXPlatformNodeAuraLinux%x",
+           interface_mask.value());
   return name;
 }
 
@@ -2143,61 +2145,57 @@ void AXPlatformNodeAuraLinux::EnsureGTypeInit() {
 #endif
 }
 
-int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
-  int interface_mask = 0;
+// static
+ImplementedAtkInterfaces AXPlatformNodeAuraLinux::GetGTypeInterfaceMask(
+    const AXNodeData& data,
+    AtkRole atk_role) {
+  // The default implementation set includes the AtkComponent and AtkAction
+  // interfaces, which are provided by all the AtkObjects that we produce.
+  ImplementedAtkInterfaces interface_mask;
 
-  // Component interface is always supported.
-  interface_mask |= 1 << ATK_COMPONENT_INTERFACE;
-
-  // Action interface is basic one. It just relays on executing default action
-  // for each object.
-  interface_mask |= 1 << ATK_ACTION_INTERFACE;
-
-  if (!ui::IsImageOrVideo(GetData().role)) {
-    interface_mask |= 1 << ATK_TEXT_INTERFACE;
-    if (!IsPlainTextField())
-      interface_mask |= 1 << ATK_HYPERTEXT_INTERFACE;
+  if (!IsImageOrVideo(data.role)) {
+    interface_mask.Add(ImplementedAtkInterfaces::kText);
+    if (!data.IsPlainTextField())
+      interface_mask.Add(ImplementedAtkInterfaces::kHypertext);
   }
 
   // Value Interface
-  AtkRole role = GetAtkRole();
-  if (GetData().IsRangeValueSupported()) {
-    interface_mask |= 1 << ATK_VALUE_INTERFACE;
-  }
+  if (data.IsRangeValueSupported())
+    interface_mask.Add(ImplementedAtkInterfaces::kValue);
 
   // Document Interface
-  if (role == ATK_ROLE_DOCUMENT_WEB)
-    interface_mask |= 1 << ATK_DOCUMENT_INTERFACE;
+  if (atk_role == ATK_ROLE_DOCUMENT_WEB)
+    interface_mask.Add(ImplementedAtkInterfaces::kDocument);
 
   // Image Interface
-  if (role == ATK_ROLE_IMAGE || role == ATK_ROLE_IMAGE_MAP)
-    interface_mask |= 1 << ATK_IMAGE_INTERFACE;
+  if (atk_role == ATK_ROLE_IMAGE || atk_role == ATK_ROLE_IMAGE_MAP)
+    interface_mask.Add(ImplementedAtkInterfaces::kImage);
 
   // The AtkHyperlinkImpl interface allows getting a AtkHyperlink from an
   // AtkObject. It is indeed implemented by actual web hyperlinks, but also by
   // objects that will become embedded objects in ATK hypertext, so the name is
   // a bit of a misnomer from the ATK API.
-  if (role == ATK_ROLE_LINK || (!IsTextOnlyObject() && GetParent())) {
-    interface_mask |= 1 << ATK_HYPERLINK_INTERFACE;
-  }
+  if (atk_role == ATK_ROLE_LINK || !ui::IsText(data.role))
+    interface_mask.Add(ImplementedAtkInterfaces::kHyperlink);
 
-  if (role == ATK_ROLE_FRAME)
-    interface_mask |= 1 << ATK_WINDOW_INTERFACE;
+  if (atk_role == ATK_ROLE_FRAME)
+    interface_mask.Add(ImplementedAtkInterfaces::kWindow);
 
-  if (IsContainerWithSelectableChildren(GetData().role))
-    interface_mask |= 1 << ATK_SELECTION_INTERFACE;
+  if (IsContainerWithSelectableChildren(data.role))
+    interface_mask.Add(ImplementedAtkInterfaces::kSelection);
 
-  if (role == ATK_ROLE_TABLE || role == ATK_ROLE_TREE_TABLE)
-    interface_mask |= 1 << ATK_TABLE_INTERFACE;
+  if (atk_role == ATK_ROLE_TABLE || atk_role == ATK_ROLE_TREE_TABLE)
+    interface_mask.Add(ImplementedAtkInterfaces::kTable);
 
   // Because the TableCell Interface is only supported in ATK version 2.12 and
   // later, GetAccessibilityGType has a runtime check to verify we have a recent
   // enough version. If we don't, GetAccessibilityGType will exclude
   // AtkTableCell from the supported interfaces and none of its methods or
   // properties will be exposed to assistive technologies.
-  if (role == ATK_ROLE_TABLE_CELL || role == ATK_ROLE_COLUMN_HEADER ||
-      role == ATK_ROLE_ROW_HEADER)
-    interface_mask |= 1 << ATK_TABLE_CELL_INTERFACE;
+  if (atk_role == ATK_ROLE_TABLE_CELL || atk_role == ATK_ROLE_COLUMN_HEADER ||
+      atk_role == ATK_ROLE_ROW_HEADER) {
+    interface_mask.Add(ImplementedAtkInterfaces::kTableCell);
+  }
 
   return interface_mask;
 }
@@ -2223,31 +2221,33 @@ GType AXPlatformNodeAuraLinux::GetAccessibilityGType() {
 
   type = g_type_register_static(AX_PLATFORM_NODE_AURALINUX_TYPE, atk_type_name,
                                 &type_info, GTypeFlags(0));
-  if (interface_mask_ & (1 << ATK_COMPONENT_INTERFACE))
-    g_type_add_interface_static(type, ATK_TYPE_COMPONENT, &atk_component::Info);
-  if (interface_mask_ & (1 << ATK_ACTION_INTERFACE))
-    g_type_add_interface_static(type, ATK_TYPE_ACTION, &atk_action::Info);
-  if (interface_mask_ & (1 << ATK_DOCUMENT_INTERFACE))
+
+  // The AtkComponent and AtkAction interfaces are always supported.
+  g_type_add_interface_static(type, ATK_TYPE_COMPONENT, &atk_component::Info);
+  g_type_add_interface_static(type, ATK_TYPE_ACTION, &atk_action::Info);
+
+  if (interface_mask_.Implements(ImplementedAtkInterfaces::kDocument))
     g_type_add_interface_static(type, ATK_TYPE_DOCUMENT, &atk_document::Info);
-  if (interface_mask_ & (1 << ATK_IMAGE_INTERFACE))
+  if (interface_mask_.Implements(ImplementedAtkInterfaces::kImage))
     g_type_add_interface_static(type, ATK_TYPE_IMAGE, &atk_image::Info);
-  if (interface_mask_ & (1 << ATK_VALUE_INTERFACE))
+  if (interface_mask_.Implements(ImplementedAtkInterfaces::kValue))
     g_type_add_interface_static(type, ATK_TYPE_VALUE, &atk_value::Info);
-  if (interface_mask_ & (1 << ATK_HYPERLINK_INTERFACE))
+  if (interface_mask_.Implements(ImplementedAtkInterfaces::kHyperlink)) {
     g_type_add_interface_static(type, ATK_TYPE_HYPERLINK_IMPL,
                                 &atk_hyperlink::Info);
-  if (interface_mask_ & (1 << ATK_HYPERTEXT_INTERFACE))
+  }
+  if (interface_mask_.Implements(ImplementedAtkInterfaces::kHypertext))
     g_type_add_interface_static(type, ATK_TYPE_HYPERTEXT, &atk_hypertext::Info);
-  if (interface_mask_ & (1 << ATK_TEXT_INTERFACE))
+  if (interface_mask_.Implements(ImplementedAtkInterfaces::kText))
     g_type_add_interface_static(type, ATK_TYPE_TEXT, &atk_text::Info);
-  if (interface_mask_ & (1 << ATK_WINDOW_INTERFACE))
+  if (interface_mask_.Implements(ImplementedAtkInterfaces::kWindow))
     g_type_add_interface_static(type, ATK_TYPE_WINDOW, &atk_window::Info);
-  if (interface_mask_ & (1 << ATK_SELECTION_INTERFACE))
+  if (interface_mask_.Implements(ImplementedAtkInterfaces::kSelection))
     g_type_add_interface_static(type, ATK_TYPE_SELECTION, &atk_selection::Info);
-  if (interface_mask_ & (1 << ATK_TABLE_INTERFACE))
+  if (interface_mask_.Implements(ImplementedAtkInterfaces::kTable))
     g_type_add_interface_static(type, ATK_TYPE_TABLE, &atk_table::Info);
 
-  if (interface_mask_ & (1 << ATK_TABLE_CELL_INTERFACE)) {
+  if (interface_mask_.Implements(ImplementedAtkInterfaces::kTableCell)) {
     // Run-time check to ensure AtkTableCell is supported (requires ATK 2.12).
     if (AtkTableCellInterface::Exists()) {
       g_type_add_interface_static(type, AtkTableCellInterface::GetType(),
@@ -2302,7 +2302,7 @@ AtkObject* AXPlatformNodeAuraLinux::FindFirstWebContentDocument() {
 
 AtkObject* AXPlatformNodeAuraLinux::CreateAtkObject() {
   EnsureGTypeInit();
-  interface_mask_ = GetGTypeInterfaceMask();
+  interface_mask_ = GetGTypeInterfaceMask(GetData(), GetAtkRole());
   GType type = GetAccessibilityGType();
   AtkObject* atk_object = static_cast<AtkObject*>(g_object_new(type, nullptr));
 
@@ -3025,7 +3025,8 @@ void AXPlatformNodeAuraLinux::EnsureAtkObjectIsValid() {
     // If the object's role changes and that causes its
     // interface mask to change, we need to create a new
     // AtkObject for it.
-    int interface_mask = GetGTypeInterfaceMask();
+    ImplementedAtkInterfaces interface_mask =
+        GetGTypeInterfaceMask(GetData(), GetAtkRole());
     if (interface_mask != interface_mask_)
       DestroyAtkObjects();
   }

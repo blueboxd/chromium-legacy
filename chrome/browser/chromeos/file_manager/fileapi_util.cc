@@ -118,13 +118,8 @@ FileDefinitionListConverter::FileDefinitionListConverter(
       result_(new EntryDefinitionList) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // File browser APIs are meant to be used only from extension context, so
-  // the extension's site is the one in whose file system context the virtual
-  // path should be found.
-  GURL site = extensions::util::GetSiteForExtensionId(extension_id_, profile);
   file_system_context_ =
-      content::BrowserContext::GetStoragePartitionForSite(
-          profile, site)->GetFileSystemContext();
+      GetFileSystemContextForExtensionId(profile, extension_id_);
 
   // Deletes the converter, once the scoped pointer gets out of scope. It is
   // either, if the conversion is finished, or ResolveURL() is terminated, and
@@ -456,9 +451,9 @@ EntryDefinition::~EntryDefinition() = default;
 storage::FileSystemContext* GetFileSystemContextForExtensionId(
     Profile* profile,
     const std::string& extension_id) {
-  GURL site = extensions::util::GetSiteForExtensionId(extension_id, profile);
-  return content::BrowserContext::GetStoragePartitionForSite(profile, site)->
-      GetFileSystemContext();
+  return extensions::util::GetStoragePartitionForExtensionId(extension_id,
+                                                             profile)
+      ->GetFileSystemContext();
 }
 
 storage::FileSystemContext* GetFileSystemContextForRenderFrameHost(
@@ -489,13 +484,8 @@ bool ConvertAbsoluteFilePathToRelativeFileSystemPath(
     const std::string& extension_id,
     const base::FilePath& absolute_path,
     base::FilePath* virtual_path) {
-  // File browser APIs are meant to be used only from extension context, so the
-  // extension's site is the one in whose file system context the virtual path
-  // should be found.
-  GURL site = extensions::util::GetSiteForExtensionId(extension_id, profile);
   storage::ExternalFileSystemBackend* backend =
-      content::BrowserContext::GetStoragePartitionForSite(profile, site)
-          ->GetFileSystemContext()
+      GetFileSystemContextForExtensionId(profile, extension_id)
           ->external_backend();
   if (!backend)
     return false;

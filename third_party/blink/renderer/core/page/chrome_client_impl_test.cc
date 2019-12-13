@@ -29,6 +29,7 @@
  */
 
 #include "third_party/blink/renderer/core/page/chrome_client_impl.h"
+#include "base/run_loop.h"
 #include "cc/trees/layer_tree_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"

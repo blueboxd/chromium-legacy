@@ -59,33 +59,33 @@ enum class FullscreenToolbarStyle {
 @interface FullscreenToolbarController : NSObject {
  @private
   // Whether or not we are in fullscreen mode.
-  BOOL inFullscreenMode_;
+  BOOL _inFullscreenMode;
 
   // Updates the fullscreen toolbar layout for changes in the menubar. This
   // object is only set when the browser is in fullscreen mode.
-  base::scoped_nsobject<FullscreenMenubarTracker> menubarTracker_;
+  base::scoped_nsobject<FullscreenMenubarTracker> _menubarTracker;
 
   // Maintains the toolbar's visibility locks for the TOOLBAR_HIDDEN style.
   base::scoped_nsobject<FullscreenToolbarVisibilityLockController>
-      visibilityLockController_;
+      _visibilityLockController;
 
   // Manages the toolbar animations for the TOOLBAR_HIDDEN style.
-  std::unique_ptr<FullscreenToolbarAnimationController> animationController_;
+  std::unique_ptr<FullscreenToolbarAnimationController> _animationController;
 
   // When the menu bar and toolbar are visible, creates a tracking area which
   // is used to keep them visible until the mouse moves far enough away from
   // them. Only set when the browser is in fullscreen mode.
-  base::scoped_nsobject<FullscreenToolbarMouseTracker> mouseTracker_;
+  base::scoped_nsobject<FullscreenToolbarMouseTracker> _mouseTracker;
 
   // Controller for immersive fullscreen.
   base::scoped_nsobject<ImmersiveFullscreenController>
-      immersiveFullscreenController_;
+      _immersiveFullscreenController;
 
   // The style of the fullscreen toolbar.
-  FullscreenToolbarStyle toolbarStyle_;
+  FullscreenToolbarStyle _toolbarStyle;
 
   // Delegate for query fullscreen status and context. Weak.
-  id<FullscreenToolbarContextDelegate> delegate_;
+  id<FullscreenToolbarContextDelegate> _delegate;
 }
 
 // Designated initializer.

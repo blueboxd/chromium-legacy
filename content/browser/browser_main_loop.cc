@@ -99,18 +99,19 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/device_service.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/service_process_host.h"
 #include "content/public/browser/site_isolation_policy.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/service_names.mojom.h"
+#include "device/fido/hid/fido_hid_discovery.h"
 #include "device/gamepad/gamepad_service.h"
 #include "gpu/config/gpu_switches.h"
 #include "media/audio/audio_manager.h"
@@ -418,6 +419,18 @@ class OopDataDecoder : public data_decoder::ServiceProvider {
  private:
   DISALLOW_COPY_AND_ASSIGN(OopDataDecoder);
 };
+
+void BindHidManager(mojo::PendingReceiver<device::mojom::HidManager> receiver) {
+#if !defined(OS_ANDROID)
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&BindHidManager, std::move(receiver)));
+    return;
+  }
+
+  GetDeviceService().BindHidManager(std::move(receiver));
+#endif
+}
 
 }  // namespace
 
@@ -1305,9 +1318,13 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   }
 
   {
-    TRACE_EVENT0("startup", "BrowserThreadsStarted::Subsystem:GamepadService");
+    TRACE_EVENT0("startup", "BrowserThreadsStarted::Subsystem:Devices");
     device::GamepadService::GetInstance()->StartUp(
-        GetSystemConnector()->Clone());
+        base::BindRepeating(&BindHidManager));
+#if !defined(OS_ANDROID)
+    device::FidoHidDiscovery::SetHidManagerBinder(
+        base::BindRepeating(&BindHidManager));
+#endif
   }
 
 #if defined(OS_WIN)

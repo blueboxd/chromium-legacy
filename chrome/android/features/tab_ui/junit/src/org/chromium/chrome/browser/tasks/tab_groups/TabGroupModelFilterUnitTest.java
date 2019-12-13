@@ -36,13 +36,13 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,7 +51,7 @@ import java.util.List;
 /**
  * Tests for {@link TabGroupModelFilter}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class TabGroupModelFilterUnitTest {
     private static final int TAB1_ID = 456;
@@ -296,7 +296,7 @@ public class TabGroupModelFilterUnitTest {
         doReturn(TabLaunchType.FROM_CHROME_UI).when(newTab).getLaunchType();
         assertThat(mTabGroupModelFilter.getTabGroupCount(), equalTo(2));
 
-        mTabGroupModelFilter.addTab(newTab);
+        addTabToTabModel(POSITION1 + 1, newTab);
 
         assertThat(mTabGroupModelFilter.getTabGroupCount(), equalTo(3));
         assertThat(mTabGroupModelFilter.indexOf(newTab),
@@ -310,7 +310,7 @@ public class TabGroupModelFilterUnitTest {
         assertThat(mTabGroupModelFilter.getTabGroupCount(), equalTo(2));
         assertThat(mTabGroupModelFilter.getCount(), equalTo(4));
 
-        mTabGroupModelFilter.addTab(newTab);
+        addTabToTabModel(-1, newTab);
 
         assertThat(mTabGroupModelFilter.getTabGroupCount(), equalTo(2));
         assertThat(mTabGroupModelFilter.indexOf(newTab), equalTo(4));
@@ -322,7 +322,7 @@ public class TabGroupModelFilterUnitTest {
         TabImpl newTab = prepareTab(NEW_TAB_ID, NEW_TAB_ID, TAB1_ID);
         doReturn(TabLaunchType.FROM_CHROME_UI).when(newTab).getLaunchType();
 
-        mTabGroupModelFilter.addTab(newTab);
+        addTabToTabModel(POSITION1 + 1, newTab);
 
         assertThat(newTab.getRootId(), equalTo(TAB1_ROOT_ID));
     }
@@ -332,7 +332,7 @@ public class TabGroupModelFilterUnitTest {
         TabImpl newTab = prepareTab(NEW_TAB_ID, NEW_TAB_ID, TAB1_ID);
         doReturn(TabLaunchType.FROM_RESTORE).when(newTab).getLaunchType();
 
-        mTabGroupModelFilter.addTab(newTab);
+        addTabToTabModel(POSITION1 + 1, newTab);
 
         assertThat(newTab.getRootId(), equalTo(NEW_TAB_ID));
     }
@@ -346,6 +346,7 @@ public class TabGroupModelFilterUnitTest {
     @Test(expected = IllegalStateException.class)
     public void addTab_ToWrongModel() {
         TabImpl newTab = prepareTab(NEW_TAB_ID, NEW_TAB_ID, Tab.INVALID_TAB_ID);
+        addTabToTabModel(-1, newTab);
         doReturn(false).when(mTabModel).isIncognito();
         doReturn(true).when(newTab).isIncognito();
         mTabGroupModelFilter.addTab(newTab);
@@ -944,5 +945,11 @@ public class TabGroupModelFilterUnitTest {
                 mTabGroupModelFilter.getRelatedTabListForRootId(TAB5_ROOT_ID).toArray(), group2);
         assertArrayEquals(
                 mTabGroupModelFilter.getRelatedTabListForRootId(TAB6_ROOT_ID).toArray(), group2);
+    }
+
+    @Test
+    public void testIndexOfAnUndoableClosedTabNotCrashing() {
+        mTabGroupModelFilter.closeTab(mTab1);
+        mTabGroupModelFilter.indexOf(mTab1);
     }
 }

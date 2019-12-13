@@ -52,8 +52,7 @@ class IndexedRulesetPerftest : public testing::Test {
     base::ReadFileToString(request_path, &requests_);
 
     unindexed_path_ = dir_path.AppendASCII(
-        "components/subresource_filter/core/common/perftests/"
-        "data/UnindexedRules_8.0");
+        "third_party/subresource-filter-ruleset/data/UnindexedRules");
 
     ASSERT_TRUE(scoped_dir_.CreateUniqueTempDir());
     base::FilePath indexed_path =

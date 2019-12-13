@@ -775,9 +775,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_ViewChanged,
 IPC_MESSAGE_ROUTED1(FrameMsg_SetTextTrackSettings,
                     FrameMsg_TextTrackSettings_Params /* params */)
 
-// Tells the RenderFrame to clear the focused element (if any).
-IPC_MESSAGE_ROUTED0(FrameMsg_ClearFocusedElement)
-
 // Informs the parent renderer that the child has completed an autoresize
 // transaction and should update with the provided viz::LocalSurfaceId.
 IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateVisualProperties,

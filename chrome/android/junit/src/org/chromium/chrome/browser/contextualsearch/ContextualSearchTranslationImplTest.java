@@ -59,8 +59,7 @@ public class ContextualSearchTranslationImplTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        mImpl = new ContextualSearchTranslationImpl(mPolicy, mTranslateBridgeWrapperMock);
-        doReturn(false).when(mPolicy).isTranslationDisabled();
+        mImpl = new ContextualSearchTranslationImpl(mTranslateBridgeWrapperMock);
     }
 
     @Test

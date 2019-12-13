@@ -19,6 +19,7 @@
 #include "media/mojo/buildflags.h"
 #include "media/mojo/mojom/content_decryption_module.mojom.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
+#include "media/mojo/services/media_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -136,24 +137,21 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
   // See http://crbug.com/660573
   std::vector<std::unique_ptr<media::MediaInterfaceProvider>> media_registries_;
 
-  // InterfacePtr to the remote InterfaceFactory implementation
-  // in the service named kMediaServiceName hosted in the process specified by
-  // the "mojo_media_host" gn argument. Available options are browser, GPU and
-  // utility processes.
+  // InterfacePtr to the remote InterfaceFactory implementation in the Media
+  // Service hosted in the process specified by the "mojo_media_host" gn
+  // argument. Available options are browser, GPU and utility processes.
   std::unique_ptr<MediaInterfaceFactoryHolder> media_interface_factory_ptr_;
 
-#if BUILDFLAG(ENABLE_CAST_RENDERER)
-  // InterfacePtr to the remote InterfaceFactory implementation
-  // in the service named kMediaRendererServiceName hosted. It provides the
-  // remote implementation of media::Renderer and
-  // media::ContentDecryptionModule.
-  std::unique_ptr<MediaInterfaceFactoryHolder>
-      media_renderer_interface_factory_ptr_;
-#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
+  // An interface factory bound to a secondary instance of the Media Service,
+  // initialized only if the embedder provides an implementation of
+  // |ContentBrowserClient::RunSecondaryMediaService()|. This is used to bind to
+  // CDM interfaces as well as Cast-specific Renderer interfaces when available.
+  std::unique_ptr<MediaInterfaceFactoryHolder> secondary_interface_factory_;
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  // CDM GUID to CDM InterfaceFactoryRemote mapping, where the InterfaceFactory
-  // instances live in the standalone kCdmServiceName service instances.
+  // CDM GUID to CDM InterfaceFactory Remotes mapping, where the
+  // InterfaceFactory instances live in the standalone CDM Service instances.
+  // These map entries effectively own the corresponding service processes.
   std::map<base::Token, mojo::Remote<media::mojom::CdmFactory>>
       cdm_factory_map_;
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)

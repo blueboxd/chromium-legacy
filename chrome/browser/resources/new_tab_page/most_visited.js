@@ -8,10 +8,10 @@ import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_icons_css.m.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/cr_toast/cr_toast.m.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import './strings.m.js';
 
-import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
 import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
@@ -29,14 +29,6 @@ const ScreenWidth = {
   MEDIUM: 1,
   WIDE: 2,
 };
-
-/**
- * @param {string} msgId
- * @private
- */
-function toast(msgId) {
-  getToastManager().show(loadTimeData.getString(msgId));
-}
 
 class MostVisitedElement extends PolymerElement {
   static get is() {
@@ -83,11 +75,17 @@ class MostVisitedElement extends PolymerElement {
         computed: 'computeShowAdd_(tiles_, columnCount_)',
       },
 
+      /** @private */
+      showToastButtons_: Boolean,
+
       /** @private {!ScreenWidth} */
       screenWidth_: Number,
 
       /** @private {!Array<!newTabPage.mojom.MostVisitedTile>} */
       tiles_: Array,
+
+      /** @private */
+      toastContent_: String,
     };
   }
 
@@ -105,7 +103,7 @@ class MostVisitedElement extends PolymerElement {
     /** @private {?number} */
     this.setMostVisitedTilesListenerId_ = null;
     /** @private {number} */
-    this.targetIndex_ = -1;
+    this.actionMenuTargetIndex_ = -1;
   }
 
   /** @override */
@@ -129,6 +127,8 @@ class MostVisitedElement extends PolymerElement {
         assert(this.boundOnWidthChange_));
     this.mediaListenerMediumWidth_.removeListener(
         assert(this.boundOnWidthChange_));
+    this.ownerDocument.removeEventListener(
+        'keydown', this.boundOnDocumentKeyDown_);
   }
 
   /** @override */
@@ -144,6 +144,11 @@ class MostVisitedElement extends PolymerElement {
     this.mediaListenerMediumWidth_ = window.matchMedia('(min-width: 560px)');
     this.mediaListenerMediumWidth_.addListener(this.boundOnWidthChange_);
     this.updateScreenWidth_();
+    /** @private {!function(Event)} */
+    this.boundOnDocumentKeyDown_ = e =>
+        this.onDocumentKeyDown_(/** @type {!KeyboardEvent} */ (e));
+    this.ownerDocument.addEventListener(
+        'keydown', this.boundOnDocumentKeyDown_);
   }
 
   /**
@@ -210,7 +215,7 @@ class MostVisitedElement extends PolymerElement {
    * @param {!KeyboardEvent} e
    * @private
    */
-  onAddShortcutKeydown_(e) {
+  onAddShortcutKeyDown_(e) {
     if (e.altKey || e.shiftKey || e.metaKey || e.ctrlKey) {
       return;
     }
@@ -218,11 +223,19 @@ class MostVisitedElement extends PolymerElement {
       e.preventDefault();
       this.onAdd_();
     }
+
+    if (!this.tiles_ || this.tiles_.length === 0) {
+      return;
+    }
+    const backKey = this.isRtl_ ? 'ArrowRight' : 'ArrowLeft';
+    if (e.key === backKey || e.key == 'ArrowUp') {
+      this.tileFocus_(this.tiles_.length - 1);
+    }
   }
 
   /** @private */
   onDialogCancel_() {
-    this.targetIndex_ = -1;
+    this.actionMenuTargetIndex_ = -1;
     this.$.dialog.cancel();
   }
 
@@ -234,11 +247,27 @@ class MostVisitedElement extends PolymerElement {
     this.adding_ = false;
   }
 
+  /**
+   * @param {!KeyboardEvent} e
+   * @private
+   */
+  onDocumentKeyDown_(e) {
+    if (e.altKey || e.shiftKey) {
+      return;
+    }
+
+    const modifier = isMac ? e.metaKey && !e.ctrlKey : e.ctrlKey && !e.metaKey;
+    if (modifier && e.key == 'z') {
+      e.preventDefault();
+      this.pageHandler_.undoMostVisitedTileAction();
+    }
+  }
+
   /** @private */
   onEdit_() {
     this.$.actionMenu.close();
     this.dialogTitle_ = loadTimeData.getString('editLinkTitle');
-    const {title, url} = this.tiles_[this.targetIndex_];
+    const {title, url} = this.tiles_[this.actionMenuTargetIndex_];
     this.dialogTileTitle_ = title;
     this.dialogTileUrl_ = url.url;
     this.dialogTileUrlInvalid_ = false;
@@ -246,15 +275,16 @@ class MostVisitedElement extends PolymerElement {
   }
 
   /** @private */
+  onRestoreDefaultsClick_() {
+    this.$.toast.hide();
+    this.pageHandler_.restoreMostVisitedDefaults();
+  }
+
+  /** @private */
   async onRemove_() {
     this.$.actionMenu.close();
-    const {title, url} = this.tiles_[this.targetIndex_];
-    const {success} = await this.pageHandler_.deleteMostVisitedTile(url);
-    toast(success ? 'linkRemove' : 'linkCantRemove');
-    const focusIndex =
-        Math.min(this.tiles_.length, Math.max(0, this.targetIndex_));
-    this.shadowRoot.querySelectorAll('.tile, #addShortcut')[focusIndex].focus();
-    this.targetIndex_ = -1;
+    await this.tileRemove_(this.actionMenuTargetIndex_);
+    this.actionMenuTargetIndex_ = -1;
   }
 
   /** @private */
@@ -283,15 +313,15 @@ class MostVisitedElement extends PolymerElement {
     if (this.adding_) {
       const {success} = await this.pageHandler_.addMostVisitedTile(
           {url: newUrl.href}, newTitle);
-      toast(success ? 'linkAddedMsg' : 'linkCantCreate');
+      this.toast_(success ? 'linkAddedMsg' : 'linkCantCreate', success);
     } else {
-      const {url, title} = this.tiles_[this.targetIndex_];
+      const {url, title} = this.tiles_[this.actionMenuTargetIndex_];
       if (url.url !== newUrl.href || title !== newTitle) {
         const {success} = await this.pageHandler_.updateMostVisitedTile(
             url, {url: newUrl.href}, newTitle);
-        toast(success ? 'linkEditedMsg' : 'linkCantEdit');
+        this.toast_(success ? 'linkEditedMsg' : 'linkCantEdit', success);
       }
-      this.targetIndex_ = -1;
+      this.actionMenuTargetIndex_ = -1;
     }
   }
 
@@ -301,9 +331,77 @@ class MostVisitedElement extends PolymerElement {
    */
   onTileActionMenu_(e) {
     e.preventDefault();
-    this.targetIndex_ =
+    this.actionMenuTargetIndex_ =
         this.$.tiles.modelForElement(e.target.parentElement).index;
     this.$.actionMenu.showAt(e.target);
+  }
+
+  /**
+   * @param {!KeyboardEvent} e
+   * @private
+   */
+  onTileKeyDown_(e) {
+    if (e.altKey || e.shiftKey || e.metaKey || e.ctrlKey) {
+      return;
+    }
+
+    if (e.key != 'ArrowLeft' && e.key != 'ArrowRight' && e.key != 'ArrowUp' &&
+        e.key != 'ArrowDown' && e.key != 'Delete') {
+      return;
+    }
+
+    const {index} = this.$.tiles.modelForElement(e.target);
+    if (e.key == 'Delete') {
+      this.tileRemove_(index);
+      return;
+    }
+
+    const advanceKey = this.isRtl_ ? 'ArrowLeft' : 'ArrowRight';
+    const delta = (e.key == advanceKey || e.key == 'ArrowDown') ? 1 : -1;
+    this.tileFocus_(index + delta);
+  }
+
+  /** @private */
+  onUndoClick_() {
+    this.$.toast.hide();
+    this.pageHandler_.undoMostVisitedTileAction();
+  }
+
+  /**
+   * @param {number} index
+   * @private
+   */
+  tileFocus_(index) {
+    const tileCount = Math.min(
+        this.columnCount_ * 2, this.tiles_.length + (this.showAdd_ ? 1 : 0));
+    if (tileCount === 0) {
+      return;
+    }
+    const focusIndex = Math.min(Math.max(0, index), tileCount - 1);
+    this.shadowRoot.querySelectorAll('.tile, #addShortcut')[focusIndex].focus();
+  }
+
+  /**
+   * @param {string} msgId
+   * @param {boolean} showButtons
+   * @private
+   */
+  toast_(msgId, showButtons) {
+    this.toastContent_ = loadTimeData.getString(msgId);
+    this.showToastButtons_ = showButtons;
+    this.$.toast.show();
+  }
+
+  /**
+   * @param {number} index
+   * @return {!Promise}
+   * @private
+   */
+  async tileRemove_(index) {
+    const {title, url} = this.tiles_[index];
+    const {success} = await this.pageHandler_.deleteMostVisitedTile(url);
+    this.toast_(success ? 'linkRemove' : 'linkCantRemove', success);
+    this.tileFocus_(index);
   }
 
   /** @private */

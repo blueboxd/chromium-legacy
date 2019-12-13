@@ -60,8 +60,8 @@ void ChromeDevToolsSession::HandleCommand(
   int call_id;
   std::string unused;
   std::unique_ptr<protocol::DictionaryValue> value =
-      protocol::DictionaryValue::cast(
-          protocol::StringUtil::parseMessage(message, /*binary=*/true));
+      protocol::DictionaryValue::cast(protocol::Value::parseBinary(
+          reinterpret_cast<const uint8_t*>(message.data()), message.size()));
   if (!dispatcher_.parseCommand(value.get(), &call_id, &unused))
     return;
   pending_commands_[call_id] = std::move(callback);

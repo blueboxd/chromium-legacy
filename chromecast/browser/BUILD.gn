@@ -211,7 +211,6 @@ cast_source_set("browser") {
     "//gpu",
     "//ipc",
     "//media",
-    "//media/mojo/services:media_manifest",
     "//net",
     "//services/media_session/public/mojom",
     "//services/network/public/mojom",
@@ -296,10 +295,7 @@ cast_source_set("browser") {
   }
 
   if (enable_mojo_media) {
-    deps += [
-      "//media/mojo/mojom:constants",
-      "//media/mojo/services",
-    ]
+    deps += [ "//media/mojo/services" ]
   }
 
   if (enable_external_mojo_services) {

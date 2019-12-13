@@ -210,6 +210,8 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkia
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores);
 
+  virtual bool SupportsMultipleConcurrentReadAccess();
+
  protected:
   // Begin the write access. The implementations should insert semaphores into
   // begin_semaphores vector which client will wait on before writing the

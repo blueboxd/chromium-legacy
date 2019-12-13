@@ -49,11 +49,11 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 }  // end namespace
 
 @interface FullscreenMenubarTracker () {
-  FullscreenToolbarController* controller_;        // weak
-  id<FullscreenToolbarContextDelegate> delegate_;  // weak
+  FullscreenToolbarController* _controller;        // weak
+  id<FullscreenToolbarContextDelegate> _delegate;  // weak
 
   // A Carbon event handler that tracks the revealed fraction of the menubar.
-  EventHandlerRef menubarTrackingHandler_;
+  EventHandlerRef _menubarTrackingHandler;
 }
 
 // Returns YES if the mouse is on the same screen as the window.
@@ -63,15 +63,15 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 
 @implementation FullscreenMenubarTracker
 
-@synthesize state = state_;
-@synthesize menubarFraction = menubarFraction_;
+@synthesize state = _state;
+@synthesize menubarFraction = _menubarFraction;
 
 - (instancetype)initWithFullscreenToolbarController:
     (FullscreenToolbarController*)controller {
   if ((self = [super init])) {
-    controller_ = controller;
-    delegate_ = [controller delegate];
-    state_ = FullscreenMenubarState::HIDDEN;
+    _controller = controller;
+    _delegate = [controller delegate];
+    _state = FullscreenMenubarState::HIDDEN;
 
     // Install the Carbon event handler for the menubar show, hide and
     // undocumented reveal event.
@@ -88,7 +88,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 
     InstallApplicationEventHandler(NewEventHandlerUPP(&MenuBarRevealHandler),
                                    base::size(eventSpecs), eventSpecs, self,
-                                   &menubarTrackingHandler_);
+                                   &_menubarTrackingHandler);
 
     // Register for Active Space change notifications.
     [[[NSWorkspace sharedWorkspace] notificationCenter]
@@ -101,42 +101,42 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 }
 
 - (void)dealloc {
-  RemoveEventHandler(menubarTrackingHandler_);
+  RemoveEventHandler(_menubarTrackingHandler);
   [[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:self];
 
   [super dealloc];
 }
 
 - (CGFloat)menubarFraction {
-  return menubarFraction_;
+  return _menubarFraction;
 }
 
 - (void)setMenubarProgress:(CGFloat)progress {
-  if (![delegate_ isInAnyFullscreenMode] ||
-      [delegate_ isFullscreenTransitionInProgress]) {
+  if (![_delegate isInAnyFullscreenMode] ||
+      [_delegate isFullscreenTransitionInProgress]) {
     return;
   }
 
   // If the menubarFraction increases, check if we are in the right screen
   // so that the toolbar is not revealed on the wrong screen.
-  if (![self isMouseOnScreen] && progress > menubarFraction_)
+  if (![self isMouseOnScreen] && progress > _menubarFraction)
     return;
 
   // Ignore the menubarFraction changes if the Space is inactive.
-  if (![[delegate_ window] isOnActiveSpace])
+  if (![[_delegate window] isOnActiveSpace])
     return;
 
   if (ui::IsCGFloatEqual(progress, 1.0))
-    state_ = FullscreenMenubarState::SHOWN;
+    _state = FullscreenMenubarState::SHOWN;
   else if (ui::IsCGFloatEqual(progress, 0.0))
-    state_ = FullscreenMenubarState::HIDDEN;
-  else if (progress < menubarFraction_)
-    state_ = FullscreenMenubarState::HIDING;
-  else if (progress > menubarFraction_)
-    state_ = FullscreenMenubarState::SHOWING;
+    _state = FullscreenMenubarState::HIDDEN;
+  else if (progress < _menubarFraction)
+    _state = FullscreenMenubarState::HIDING;
+  else if (progress > _menubarFraction)
+    _state = FullscreenMenubarState::SHOWING;
 
-  menubarFraction_ = progress;
-  [controller_ layoutToolbar];
+  _menubarFraction = progress;
+  [_controller layoutToolbar];
 
   // AppKit drives the menu bar animation from a nested run loop. Flush
   // explicitly so that Chrome's UI updates during the animation.
@@ -145,15 +145,15 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 
 - (BOOL)isMouseOnScreen {
   return NSMouseInRect([NSEvent mouseLocation],
-                       [[delegate_ window] screen].frame, false);
+                       [[_delegate window] screen].frame, false);
 }
 
 - (void)activeSpaceDidChange:(NSNotification*)notification {
-  menubarFraction_ = 0.0;
-  state_ = FullscreenMenubarState::HIDDEN;
-  [[controller_ visibilityLockController] releaseToolbarVisibilityForOwner:self
+  _menubarFraction = 0.0;
+  _state = FullscreenMenubarState::HIDDEN;
+  [[_controller visibilityLockController] releaseToolbarVisibilityForOwner:self
                                                              withAnimation:NO];
-  [controller_ layoutToolbar];
+  [_controller layoutToolbar];
 }
 
 @end

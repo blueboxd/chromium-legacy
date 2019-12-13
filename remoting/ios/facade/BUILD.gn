@@ -36,6 +36,8 @@ source_set("facade") {
     "//ui/base",
   ]
 
+  libs = [ "CoreFoundation.framework" ]
+
   public_deps = [
     "//remoting/base",
     "//remoting/proto/remoting/v1:directory_proto",

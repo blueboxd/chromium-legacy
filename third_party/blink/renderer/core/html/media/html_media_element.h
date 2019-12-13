@@ -769,11 +769,21 @@ class CORE_EXPORT HTMLMediaElement
   Member<IntersectionObserver> lazy_load_intersection_observer_;
 };
 
-inline bool IsHTMLMediaElement(const HTMLElement& element) {
-  return IsA<HTMLAudioElement>(element) || IsA<HTMLVideoElement>(element);
+template <>
+inline bool IsElementOfType<const HTMLMediaElement>(const Node& node) {
+  return IsA<HTMLMediaElement>(node);
 }
-
-DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLMediaElement);
+template <>
+struct DowncastTraits<HTMLMediaElement> {
+  static bool AllowFrom(const Node& node) {
+    auto* html_element = DynamicTo<HTMLElement>(node);
+    return html_element && AllowFrom(*html_element);
+  }
+  static bool AllowFrom(const HTMLElement& html_element) {
+    return IsA<HTMLAudioElement>(html_element) ||
+           IsA<HTMLVideoElement>(html_element);
+  }
+};
 
 }  // namespace blink
 

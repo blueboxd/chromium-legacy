@@ -48,23 +48,6 @@ class MockMediaNotificationContainerObserver
   DISALLOW_COPY_AND_ASSIGN(MockMediaNotificationContainerObserver);
 };
 
-// Fake display::Screen implementation that allows us to set a cursor location.
-class FakeCursorLocationScreen : public display::test::TestScreen {
- public:
-  FakeCursorLocationScreen() = default;
-  ~FakeCursorLocationScreen() override = default;
-
-  void SetCursorScreenPoint(gfx::Point point) { cursor_position_ = point; }
-
-  // display::test::TestScreen implementation.
-  gfx::Point GetCursorScreenPoint() override { return cursor_position_; }
-
- private:
-  gfx::Point cursor_position_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeCursorLocationScreen);
-};
-
 }  // anonymous namespace
 
 class MediaNotificationContainerImplViewTest : public views::ViewsTestBase {
@@ -111,7 +94,7 @@ class MediaNotificationContainerImplViewTest : public views::ViewsTestBase {
   bool IsDismissButtonVisible() { return GetDismissButton()->IsDrawn(); }
 
   void SimulateHoverOverContainer() {
-    fake_screen_.SetCursorScreenPoint(
+    fake_screen_.set_cursor_screen_point(
         notification_container_->GetBoundsInScreen().CenterPoint());
 
     ui::MouseEvent event(ui::ET_MOUSE_ENTERED, gfx::Point(), gfx::Point(),
@@ -123,7 +106,7 @@ class MediaNotificationContainerImplViewTest : public views::ViewsTestBase {
     gfx::Rect container_bounds = notification_container_->GetBoundsInScreen();
     gfx::Point point_outside_container =
         container_bounds.bottom_right() + gfx::Vector2d(1, 1);
-    fake_screen_.SetCursorScreenPoint(point_outside_container);
+    fake_screen_.set_cursor_screen_point(point_outside_container);
 
     ui::MouseEvent event(ui::ET_MOUSE_EXITED, gfx::Point(), gfx::Point(),
                          ui::EventTimeForNow(), 0, 0);
@@ -257,7 +240,7 @@ class MediaNotificationContainerImplViewTest : public views::ViewsTestBase {
   // Set of actions currently enabled.
   base::flat_set<MediaSessionAction> actions_;
 
-  FakeCursorLocationScreen fake_screen_;
+  display::test::TestScreen fake_screen_;
   display::test::ScopedScreenOverride screen_override_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationContainerImplViewTest);

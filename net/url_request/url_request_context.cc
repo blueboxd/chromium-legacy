@@ -28,7 +28,7 @@
 
 namespace net {
 
-URLRequestContext::URLRequestContext(bool allow_copy)
+URLRequestContext::URLRequestContext()
     : net_log_(nullptr),
       host_resolver_(nullptr),
       cert_verifier_(nullptr),
@@ -55,8 +55,7 @@ URLRequestContext::URLRequestContext(bool allow_copy)
       url_requests_(std::make_unique<std::set<const URLRequest*>>()),
       enable_brotli_(false),
       check_cleartext_permitted_(false),
-      name_("unknown"),
-      allow_copy_(allow_copy) {
+      name_("unknown") {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "URLRequestContext", base::ThreadTaskRunnerHandle::Get());
 }
@@ -151,42 +150,6 @@ bool URLRequestContext::OnMemoryDump(
     cookie_store_->DumpMemoryStats(pmd, dump->absolute_name());
   }
   return true;
-}
-
-void URLRequestContext::CopyFrom(const URLRequestContext* other) {
-  // Copy disallowed in cases known to not currently need it. New copying should
-  // not be added as CopyFrom is fundamentally broken.
-  DCHECK(allow_copy_ && other->allow_copy_);
-
-  // Copy URLRequestContext parameters.
-  set_net_log(other->net_log_);
-  set_host_resolver(other->host_resolver_);
-  set_cert_verifier(other->cert_verifier_);
-  set_http_auth_handler_factory(other->http_auth_handler_factory_);
-  set_proxy_resolution_service(other->proxy_resolution_service_);
-  set_proxy_delegate(other->proxy_delegate_);
-  set_ssl_config_service(other->ssl_config_service_);
-  set_network_delegate(other->network_delegate_);
-  set_http_server_properties(other->http_server_properties_);
-  set_cookie_store(other->cookie_store_);
-  set_transport_security_state(other->transport_security_state_);
-  set_cert_transparency_verifier(other->cert_transparency_verifier_);
-  set_ct_policy_enforcer(other->ct_policy_enforcer_);
-  set_http_transaction_factory(other->http_transaction_factory_);
-  set_job_factory(other->job_factory_);
-  set_throttler_manager(other->throttler_manager_);
-  set_quic_context(other->quic_context_);
-  set_http_user_agent_settings(other->http_user_agent_settings_);
-  set_network_quality_estimator(other->network_quality_estimator_);
-#if BUILDFLAG(ENABLE_REPORTING)
-  set_reporting_service(other->reporting_service_);
-  set_network_error_logging_service(other->network_error_logging_service_);
-#endif  // BUILDFLAG(ENABLE_REPORTING)
-  set_enable_brotli(other->enable_brotli_);
-  set_check_cleartext_permitted(other->check_cleartext_permitted_);
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-  set_ftp_auth_cache(other->ftp_auth_cache_);
-#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 }
 
 }  // namespace net

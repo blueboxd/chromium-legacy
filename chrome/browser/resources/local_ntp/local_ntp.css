@@ -313,11 +313,11 @@ html[dir=rtl] :-webkit-any(.clock-icon, .search-icon) {
   right: 16px;
 }
 
-#realbox-matches a:-webkit-any(:hover, .selected) {
+#realbox-matches a:hover {
   background-color: var(--search-box-results-bg-hovered, rgb(232, 232, 233));
 }
 
-#realbox-matches a:focus-within {
+#realbox-matches a:-webkit-any(:focus-within, .selected) {
   background-color: var(--search-box-results-bg-selected, rgb(219, 219, 220));
 }
 

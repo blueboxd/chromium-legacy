@@ -7,13 +7,12 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 
 namespace policy {
 
@@ -21,14 +20,18 @@ namespace policy {
 // Releases the wake lock upon destruction. Movable only.
 class ScopedWakeLock {
  public:
-  ScopedWakeLock(service_manager::Connector* connector,
-                 device::mojom::WakeLockType type,
-                 const std::string& reason);
+  ScopedWakeLock(device::mojom::WakeLockType type, const std::string& reason);
   ~ScopedWakeLock();
 
   // Movable only.
   ScopedWakeLock(ScopedWakeLock&& other);
   ScopedWakeLock& operator=(ScopedWakeLock&& other);
+
+  // Allows tests to override how this class binds a WakeLockProvider receiver.
+  using WakeLockProviderBinder = base::RepeatingCallback<void(
+      mojo::PendingReceiver<device::mojom::WakeLockProvider>)>;
+  static void OverrideWakeLockProviderBinderForTesting(
+      WakeLockProviderBinder binder);
 
  private:
   mojo::Remote<device::mojom::WakeLock> wake_lock_;

@@ -48,16 +48,6 @@ class ContextualSearchManager
       const base::android::JavaParamRef<jobject>& j_contextual_search_context,
       const base::android::JavaParamRef<jobject>& j_base_web_contents);
 
-  // Gets the target language for translation purposes.
-  base::android::ScopedJavaLocalRef<jstring> GetTargetLanguage(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-
-  // Gets the accept-languages preference string.
-  base::android::ScopedJavaLocalRef<jstring> GetAcceptLanguages(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-
   // Whitelists the given |j_url| for injection of the Contextual Search
   // JavaScript API.  EnableContextualSearchJsApiForWebContents must also be
   // called with the WebContents that will host the page in the Overlay.

@@ -33,10 +33,10 @@ class WEBDATA_EXPORT WebDataServiceBase
   // takes a single parameter, the sql::InitStatus value from trying
   // to open the database.
   // TODO(joi): Should we combine this with WebDatabaseService::InitCallback?
-  typedef base::Callback<void(sql::InitStatus, const std::string&)>
-      ProfileErrorCallback;
+  using ProfileErrorCallback =
+      base::OnceCallback<void(sql::InitStatus, const std::string&)>;
 
-  typedef base::Closure DBLoadedCallback;
+  using DBLoadedCallback = base::OnceClosure;
 
   // |callback| will only be invoked on error, and only if
   // |callback.is_null()| evaluates to false.
@@ -49,7 +49,6 @@ class WEBDATA_EXPORT WebDataServiceBase
   // WebDataServiceBase is destroyed on the UI sequence.
   WebDataServiceBase(
       scoped_refptr<WebDatabaseService> wdbs,
-      const ProfileErrorCallback& callback,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
 
   // Cancel any pending request. You need to call this method if your
@@ -61,7 +60,7 @@ class WEBDATA_EXPORT WebDataServiceBase
   virtual void ShutdownOnUISequence();
 
   // Initializes the web data service.
-  virtual void Init();
+  virtual void Init(ProfileErrorCallback callback);
 
   // Unloads the database and shuts down service.
   void ShutdownDatabase();
@@ -71,7 +70,7 @@ class WEBDATA_EXPORT WebDataServiceBase
   // (following a successful database load), then cleared.
   // Note: if the database load is already complete, then the callback will NOT
   // be stored or called.
-  virtual void RegisterDBLoadedCallback(const DBLoadedCallback& callback);
+  virtual void RegisterDBLoadedCallback(DBLoadedCallback callback);
 
   // Returns true if the database load has completetd successfully, and
   // ShutdownOnUISequence() has not yet been called.
@@ -92,8 +91,6 @@ class WEBDATA_EXPORT WebDataServiceBase
   scoped_refptr<WebDatabaseService> wdbs_;
 
  private:
-  ProfileErrorCallback profile_error_callback_;
-
   DISALLOW_COPY_AND_ASSIGN(WebDataServiceBase);
 };
 

@@ -244,20 +244,23 @@ void StorageHandler::UpdateMyFilesSize() {
     return;
   updating_my_files_size_ = true;
 
+  const base::FilePath my_files_path =
+      file_manager::util::GetMyFilesFolderForProfile(profile_);
+
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&StorageHandler::ComputeLocalFilesSize,
-                 base::Unretained(this)),
+      base::Bind(&StorageHandler::ComputeLocalFilesSize, base::Unretained(this),
+                 my_files_path),
       base::Bind(&StorageHandler::OnGetMyFilesSize,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-int64_t StorageHandler::ComputeLocalFilesSize() {
+int64_t StorageHandler::ComputeLocalFilesSize(
+    const base::FilePath& my_files_path) {
   int64_t size = 0;
+
   // Compute directory size of My Files
-  const base::FilePath my_files_path =
-      file_manager::util::GetMyFilesFolderForProfile(profile_);
   size += base::ComputeDirectorySize(my_files_path);
 
   // Compute directory size of Play Files

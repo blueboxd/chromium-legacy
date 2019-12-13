@@ -21,7 +21,6 @@ suite('<history-toolbar>', function() {
   test('search bar is focused on load in wide mode', async () => {
     toolbar.$['main-toolbar'].narrow = false;
 
-    app.historyResult(createHistoryInfo(), []);
     await test_util.flushTasks();
 
     // Ensure the search bar is focused on load.
@@ -32,7 +31,6 @@ suite('<history-toolbar>', function() {
   test('search bar is not focused on load in narrow mode', async () => {
     toolbar.$['main-toolbar'].narrow = true;
 
-    app.historyResult(createHistoryInfo(), []);
     await test_util.flushTasks();
     // Ensure the search bar is focused on load.
     assertFalse(toolbar.$['main-toolbar'].getSearchField().isSearchFocused());

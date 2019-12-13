@@ -14,10 +14,6 @@
 #include "device/fido/fido_discovery_factory.h"
 #include "device/fido/fido_transport_protocol.h"
 
-namespace service_manager {
-class Connector;
-}
-
 namespace device {
 namespace test {
 
@@ -124,8 +120,7 @@ class FakeFidoDiscoveryFactory : public device::FidoDiscoveryFactory {
 
   // device::FidoDiscoveryFactory:
   std::unique_ptr<FidoDiscoveryBase> Create(
-      FidoTransportProtocol transport,
-      ::service_manager::Connector* connector) override;
+      FidoTransportProtocol transport) override;
 
  private:
   std::unique_ptr<FakeFidoDiscovery> next_hid_discovery_;

@@ -562,7 +562,7 @@ TEST_F(WorkspaceWindowResizerTest, MouseMoveWithTouchDrag) {
   resizer->RevertDrag();
 }
 
-// Assertions around dragging to the left/right edge of the screen.
+// Assertions around dragging near the left/right edge of the display.
 TEST_F(WorkspaceWindowResizerTest, Edge) {
   // Resize host window to force insets update.
   UpdateDisplay("800x700");
@@ -581,7 +581,8 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
     std::unique_ptr<WindowResizer> resizer(
         CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
-    resizer->Drag(CalculateDragPoint(*resizer, 0, 10), 0);
+    // Test tolerance of 32px for snapping.
+    resizer->Drag(CalculateDragPoint(*resizer, 32, 10), 0);
     resizer->CompleteDrag();
 
     EXPECT_EQ(expected_bounds_in_parent.ToString(),
@@ -598,7 +599,8 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
     std::unique_ptr<WindowResizer> resizer(
         CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
-    resizer->Drag(CalculateDragPoint(*resizer, 800, 10), 0);
+    // Test tolerance of 32px for snapping (measured from 799, not from 800).
+    resizer->Drag(CalculateDragPoint(*resizer, 767, 10), 0);
     resizer->CompleteDrag();
     EXPECT_EQ(expected_bounds_in_parent.ToString(),
               window_->bounds().ToString());
@@ -705,10 +707,10 @@ TEST_F(WorkspaceWindowResizerTest, DragSnapped) {
   // Dragging a side snapped window should unsnap it.
   std::unique_ptr<WindowResizer> resizer(
       CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
-  resizer->Drag(CalculateDragPoint(*resizer, 10, 0), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, 33, 0), 0);
   resizer->CompleteDrag();
   EXPECT_EQ(WindowStateType::kNormal, window_state->GetStateType());
-  EXPECT_EQ("10,0 100x100", window_->bounds().ToString());
+  EXPECT_EQ("33,0 100x100", window_->bounds().ToString());
   EXPECT_FALSE(window_state->HasRestoreBounds());
 }
 
@@ -1232,11 +1234,11 @@ TEST_F(WorkspaceWindowResizerTest, RestoreToPreMaximizeCoordinates) {
   std::unique_ptr<WindowResizer> resizer(
       CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
   ASSERT_TRUE(resizer.get());
-  // Drag the window to new position by adding (10, 10) to original point,
+  // Drag the window to new position by adding (33, 33) to original point,
   // the window should get restored.
-  resizer->Drag(CalculateDragPoint(*resizer, 10, 10), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, 33, 33), 0);
   resizer->CompleteDrag();
-  EXPECT_EQ("10,10 320x160", window_->bounds().ToString());
+  EXPECT_EQ("33,33 320x160", window_->bounds().ToString());
   // The restore rectangle should get cleared as well.
   EXPECT_FALSE(window_state->HasRestoreBounds());
 }

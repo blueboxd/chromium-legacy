@@ -162,11 +162,6 @@ class WebView {
   // Focus the first (last if reverse is true) focusable node.
   virtual void SetInitialFocus(bool reverse) = 0;
 
-  // Clears the focused element (and selection if a text field is focused)
-  // to ensure that a text field on the page is not eating keystrokes we
-  // send it.
-  virtual void ClearFocusedElement() = 0;
-
   // Smooth scroll the root layer to |targetX|, |targetY| in |duration|.
   virtual void SmoothScroll(int target_x,
                             int target_y,

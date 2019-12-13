@@ -99,8 +99,8 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
     ForgeDiscoveries();
 
     auto handler = std::make_unique<GetAssertionRequestHandler>(
-        nullptr /* connector */, fake_discovery_factory_.get(),
-        supported_transports_, std::move(request),
+        fake_discovery_factory_.get(), supported_transports_,
+        std::move(request),
         /*allow_skipping_pin_touch=*/true, get_assertion_cb_.callback());
     return handler;
   }
@@ -756,7 +756,7 @@ TEST(GetAssertionRequestHandlerTest, IncorrectTransportType) {
 
   TestGetAssertionRequestCallback cb;
   auto request_handler = std::make_unique<GetAssertionRequestHandler>(
-      nullptr /* connector */, &virtual_device_factory,
+      &virtual_device_factory,
       base::flat_set<FidoTransportProtocol>(
           {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
       std::move(request), /*allow_skipping_pin_touch=*/true, cb.callback());
@@ -824,7 +824,7 @@ TEST(GetAssertionRequestHandlerWinTest, TestWinUsbDiscovery) {
     FidoDiscoveryFactory fido_discovery_factory;
     fido_discovery_factory.set_win_webauthn_api(&api);
     auto handler = std::make_unique<GetAssertionRequestHandler>(
-        fake_hid_manager.service_manager_connector(), &fido_discovery_factory,
+        &fido_discovery_factory,
         base::flat_set<FidoTransportProtocol>(
             {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
         CtapGetAssertionRequest(test_data::kRelyingPartyId,

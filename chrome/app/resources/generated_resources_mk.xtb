@@ -283,6 +283,7 @@
 <translation id="1397500194120344683">Нема уреди што ги исполнуваат условите. <ph name="LINK_BEGIN" />Дознајте повеќе<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">Максимизирај</translation>
 <translation id="1399511500114202393">Нема сертификат на корисник</translation>
+<translation id="1403519882106291341">Услови на користење на Google Chrome OS</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (надгледуван)</translation>
 <translation id="1405779994569073824">Падна.</translation>
 <translation id="1406500794671479665">Се проверува…</translation>
@@ -2174,7 +2175,6 @@
 <translation id="4036778507053569103">Правилото преземено од серверот е неважечко.</translation>
 <translation id="4037084878352560732">Коњ</translation>
 <translation id="4037889604535939429">Уредете го лицето</translation>
-<translation id="4042264909745389898">Услови за користење на Google Chrome OS</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Излези од страницата}one{Излези од страниците}other{Излези од страниците}}</translation>
 <translation id="4044612648082411741">Внесете ја лозинката за сертификатот</translation>
 <translation id="404493185430269859">Стандарден пребарувач</translation>

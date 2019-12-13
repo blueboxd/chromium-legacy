@@ -14,6 +14,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/display/test/scoped_screen_override.h"
+#include "ui/display/test/test_screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
@@ -76,6 +78,9 @@ class OmniboxResultViewTest : public ChromeViewsTestBase {
     root_view->SetBoundsRect(gfx::Rect(0, 0, 500, 500));
     result_view_->SetBoundsRect(gfx::Rect(0, 0, 100, 100));
     root_view->AddChildView(result_view_);
+
+    // Start by not hovering over the result view.
+    FakeMouseEvent(ui::ET_MOUSE_MOVED, 0, 200, 200);
   }
 
   void TearDown() override {
@@ -83,11 +88,17 @@ class OmniboxResultViewTest : public ChromeViewsTestBase {
     ChromeViewsTestBase::TearDown();
   }
 
-  ui::MouseEvent CreateEvent(ui::EventType type, int flags) {
-    return CreateEvent(type, flags, 0, 0);
+  // Also sets the fake screen's mouse cursor to 0, 0.
+  ui::MouseEvent FakeMouseEvent(ui::EventType type, int flags) {
+    return FakeMouseEvent(type, flags, 0, 0);
   }
 
-  ui::MouseEvent CreateEvent(ui::EventType type, int flags, float x, float y) {
+  // Also sets the fake screen's mouse cursor to |x|, |y|.
+  ui::MouseEvent FakeMouseEvent(ui::EventType type,
+                                int flags,
+                                float x,
+                                float y) {
+    test_screen_.set_cursor_screen_point(gfx::Point(x, y));
     return ui::MouseEvent(type, gfx::Point(x, y), gfx::Point(),
                           ui::EventTimeForNow(), flags, 0);
   }
@@ -100,6 +111,9 @@ class OmniboxResultViewTest : public ChromeViewsTestBase {
   std::unique_ptr<TestOmniboxPopupContentsView> popup_view_;
   OmniboxResultView* result_view_;
   std::unique_ptr<views::Widget> widget_;
+
+  display::test::TestScreen test_screen_;
+  display::test::ScopedScreenOverride scoped_screen_override_{&test_screen_};
 };
 
 TEST_F(OmniboxResultViewTest, MousePressedWithLeftButtonSelectsThisResult) {
@@ -108,26 +122,26 @@ TEST_F(OmniboxResultViewTest, MousePressedWithLeftButtonSelectsThisResult) {
 
   // Right button press should not select.
   result_view()->OnMousePressed(
-      CreateEvent(ui::ET_MOUSE_PRESSED, ui::EF_RIGHT_MOUSE_BUTTON));
+      FakeMouseEvent(ui::ET_MOUSE_PRESSED, ui::EF_RIGHT_MOUSE_BUTTON));
   EXPECT_NE(OmniboxPartState::SELECTED, result_view()->GetThemeState());
   EXPECT_FALSE(popup_view()->IsSelectedIndex(kTestResultViewIndex));
 
   // Middle button press should not select.
   result_view()->OnMousePressed(
-      CreateEvent(ui::ET_MOUSE_PRESSED, ui::EF_MIDDLE_MOUSE_BUTTON));
+      FakeMouseEvent(ui::ET_MOUSE_PRESSED, ui::EF_MIDDLE_MOUSE_BUTTON));
   EXPECT_NE(OmniboxPartState::SELECTED, result_view()->GetThemeState());
   EXPECT_FALSE(popup_view()->IsSelectedIndex(kTestResultViewIndex));
 
   // Multi-button press should not select.
   result_view()->OnMousePressed(
-      CreateEvent(ui::ET_MOUSE_PRESSED,
-                  ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON));
+      FakeMouseEvent(ui::ET_MOUSE_PRESSED,
+                     ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON));
   EXPECT_NE(OmniboxPartState::SELECTED, result_view()->GetThemeState());
   EXPECT_FALSE(popup_view()->IsSelectedIndex(kTestResultViewIndex));
 
   // Left button press should select.
   result_view()->OnMousePressed(
-      CreateEvent(ui::ET_MOUSE_PRESSED, ui::EF_LEFT_MOUSE_BUTTON));
+      FakeMouseEvent(ui::ET_MOUSE_PRESSED, ui::EF_LEFT_MOUSE_BUTTON));
   EXPECT_EQ(OmniboxPartState::SELECTED, result_view()->GetThemeState());
   EXPECT_TRUE(popup_view()->IsSelectedIndex(kTestResultViewIndex));
 }
@@ -138,26 +152,26 @@ TEST_F(OmniboxResultViewTest, MouseDragWithLeftButtonSelectsThisResult) {
 
   // Right button drag should not select.
   result_view()->OnMouseDragged(
-      CreateEvent(ui::ET_MOUSE_DRAGGED, ui::EF_RIGHT_MOUSE_BUTTON));
+      FakeMouseEvent(ui::ET_MOUSE_DRAGGED, ui::EF_RIGHT_MOUSE_BUTTON));
   EXPECT_NE(OmniboxPartState::SELECTED, result_view()->GetThemeState());
   EXPECT_FALSE(popup_view()->IsSelectedIndex(kTestResultViewIndex));
 
   // Middle button drag should not select.
   result_view()->OnMouseDragged(
-      CreateEvent(ui::ET_MOUSE_DRAGGED, ui::EF_MIDDLE_MOUSE_BUTTON));
+      FakeMouseEvent(ui::ET_MOUSE_DRAGGED, ui::EF_MIDDLE_MOUSE_BUTTON));
   EXPECT_NE(OmniboxPartState::SELECTED, result_view()->GetThemeState());
   EXPECT_FALSE(popup_view()->IsSelectedIndex(kTestResultViewIndex));
 
   // Multi-button drag should not select.
   result_view()->OnMouseDragged(
-      CreateEvent(ui::ET_MOUSE_DRAGGED,
-                  ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON));
+      FakeMouseEvent(ui::ET_MOUSE_DRAGGED,
+                     ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON));
   EXPECT_NE(OmniboxPartState::SELECTED, result_view()->GetThemeState());
   EXPECT_FALSE(popup_view()->IsSelectedIndex(kTestResultViewIndex));
 
   // Left button drag should select.
   result_view()->OnMouseDragged(
-      CreateEvent(ui::ET_MOUSE_DRAGGED, ui::EF_LEFT_MOUSE_BUTTON));
+      FakeMouseEvent(ui::ET_MOUSE_DRAGGED, ui::EF_LEFT_MOUSE_BUTTON));
   EXPECT_EQ(OmniboxPartState::SELECTED, result_view()->GetThemeState());
   EXPECT_TRUE(popup_view()->IsSelectedIndex(kTestResultViewIndex));
 }
@@ -167,12 +181,12 @@ TEST_F(OmniboxResultViewTest, MouseDragWithNonLeftButtonSetsHoveredState) {
 
   // Right button drag should put the view in the HOVERED state.
   result_view()->OnMouseDragged(
-      CreateEvent(ui::ET_MOUSE_DRAGGED, ui::EF_RIGHT_MOUSE_BUTTON));
+      FakeMouseEvent(ui::ET_MOUSE_DRAGGED, ui::EF_RIGHT_MOUSE_BUTTON, 50, 50));
   EXPECT_EQ(OmniboxPartState::HOVERED, result_view()->GetThemeState());
 
   // Left button drag should take the view out of the HOVERED state.
   result_view()->OnMouseDragged(
-      CreateEvent(ui::ET_MOUSE_DRAGGED, ui::EF_LEFT_MOUSE_BUTTON));
+      FakeMouseEvent(ui::ET_MOUSE_DRAGGED, ui::EF_LEFT_MOUSE_BUTTON, 200, 200));
   EXPECT_NE(OmniboxPartState::HOVERED, result_view()->GetThemeState());
 }
 
@@ -181,28 +195,28 @@ TEST_F(OmniboxResultViewTest, MouseDragOutOfViewCancelsHoverState) {
 
   // Right button drag in the view should put the view in the HOVERED state.
   result_view()->OnMouseDragged(
-      CreateEvent(ui::ET_MOUSE_DRAGGED, ui::EF_RIGHT_MOUSE_BUTTON, 0, 0));
+      FakeMouseEvent(ui::ET_MOUSE_DRAGGED, ui::EF_RIGHT_MOUSE_BUTTON, 50, 50));
   EXPECT_EQ(OmniboxPartState::HOVERED, result_view()->GetThemeState());
 
   // Right button drag outside of the view should revert the HOVERED state.
-  result_view()->OnMouseDragged(
-      CreateEvent(ui::ET_MOUSE_DRAGGED, ui::EF_RIGHT_MOUSE_BUTTON, 200, 200));
+  result_view()->OnMouseDragged(FakeMouseEvent(
+      ui::ET_MOUSE_DRAGGED, ui::EF_RIGHT_MOUSE_BUTTON, 200, 200));
   EXPECT_NE(OmniboxPartState::HOVERED, result_view()->GetThemeState());
 }
 
-TEST_F(OmniboxResultViewTest, MouseMoveAndExitSetsHoveredState) {
+TEST_F(OmniboxResultViewTest, MouseEnterAndExitSetsHoveredState) {
   EXPECT_NE(OmniboxPartState::HOVERED, result_view()->GetThemeState());
 
-  // Moving the mouse over the view should put the view in the HOVERED state.
-  result_view()->OnMouseMoved(CreateEvent(ui::ET_MOUSE_MOVED, 0));
+  // The mouse entering the view should put the view in the HOVERED state.
+  result_view()->OnMouseMoved(FakeMouseEvent(ui::ET_MOUSE_MOVED, 0, 50, 50));
   EXPECT_EQ(OmniboxPartState::HOVERED, result_view()->GetThemeState());
 
   // Continuing to move over the view should not change the state.
-  result_view()->OnMouseMoved(CreateEvent(ui::ET_MOUSE_MOVED, 0));
+  result_view()->OnMouseMoved(FakeMouseEvent(ui::ET_MOUSE_MOVED, 0, 50, 50));
   EXPECT_EQ(OmniboxPartState::HOVERED, result_view()->GetThemeState());
 
   // But exiting should revert the HOVERED state.
-  result_view()->OnMouseExited(CreateEvent(ui::ET_MOUSE_MOVED, 0));
+  result_view()->OnMouseExited(FakeMouseEvent(ui::ET_MOUSE_MOVED, 0, 200, 200));
   EXPECT_NE(OmniboxPartState::HOVERED, result_view()->GetThemeState());
 }
 
@@ -238,7 +252,7 @@ TEST_F(OmniboxResultViewTest, AccessibleNodeData) {
   // Select it and check selected state.
   ui::AXNodeData result_after_click;
   result_view()->OnMousePressed(
-      CreateEvent(ui::ET_MOUSE_PRESSED, ui::EF_LEFT_MOUSE_BUTTON));
+      FakeMouseEvent(ui::ET_MOUSE_PRESSED, ui::EF_LEFT_MOUSE_BUTTON));
   result_view()->GetAccessibleNodeData(&result_after_click);
   EXPECT_TRUE(
       result_after_click.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));

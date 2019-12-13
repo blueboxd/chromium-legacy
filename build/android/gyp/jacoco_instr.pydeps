@@ -4,4 +4,3 @@
 jacoco_instr.py
 util/__init__.py
 util/build_utils.py
-util/md5_check.py

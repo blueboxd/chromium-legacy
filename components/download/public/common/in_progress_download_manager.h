@@ -21,17 +21,15 @@
 #include "components/download/public/common/download_utils.h"
 #include "components/download/public/common/simple_download_manager.h"
 #include "components/download/public/common/url_download_handler.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
 
 namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 namespace leveldb_proto {
 class ProtoDatabaseProvider;
@@ -81,15 +79,18 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   };
 
   using IsOriginSecureCallback = base::RepeatingCallback<bool(const GURL&)>;
+  using WakeLockProviderBinder = base::RepeatingCallback<void(
+      mojo::PendingReceiver<device::mojom::WakeLockProvider>)>;
   // Creates a new InProgressDownloadManager instance. If |in_progress_db_dir|
   // is empty then it will use an empty database and no history will be saved.
   // |db_provider| can be nullptr if |in_progress_db_dir| is empty.
+  // |wake_lock_provider_binder| may be null.
   InProgressDownloadManager(Delegate* delegate,
                             const base::FilePath& in_progress_db_dir,
                             leveldb_proto::ProtoDatabaseProvider* db_provider,
                             const IsOriginSecureCallback& is_origin_secure_cb,
                             const URLSecurityPolicy& url_security_policy,
-                            service_manager::Connector* connector);
+                            WakeLockProviderBinder wake_lock_provider_binder);
   ~InProgressDownloadManager() override;
 
   // SimpleDownloadManager implementation.
@@ -294,8 +295,8 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // Used to check if the URL is safe.
   URLSecurityPolicy url_security_policy_;
 
-  // Connector to the service manager.
-  service_manager::Connector* connector_;
+  // Callback used to bind WakeLockProvider receivers, if not null.
+  const WakeLockProviderBinder wake_lock_provider_binder_;
 
   base::WeakPtrFactory<InProgressDownloadManager> weak_factory_{this};
 

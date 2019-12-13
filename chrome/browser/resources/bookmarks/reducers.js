@@ -101,7 +101,7 @@ export function updateSelection(selection, action) {
       // Deselect items when they are moved to another folder, since they will
       // no longer be visible on screen (for simplicity, ignores items visible
       // in search results).
-      if (action.parentId != action.oldParentId &&
+      if (action.parentId !== action.oldParentId &&
           selection.items.has(action.id)) {
         return deselectItems(selection, new Set([action.id]));
       }
@@ -259,7 +259,7 @@ function moveBookmark(nodes, action) {
 
   // Add to new parent.
   const parentId = action.parentId;
-  const parentChildren = oldParentId == parentId ?
+  const parentChildren = oldParentId === parentId ?
       oldParentChildren :
       nodes[parentId].children.slice();
   parentChildren.splice(action.index, 0, action.id);
@@ -332,7 +332,7 @@ function isAncestorOf(nodes, ancestorId, childId) {
   let currentId = childId;
   // Work upwards through the tree from child.
   while (currentId) {
-    if (currentId == ancestorId) {
+    if (currentId === ancestorId) {
       return true;
     }
     currentId = nodes[currentId].parentId;

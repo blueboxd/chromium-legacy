@@ -611,6 +611,11 @@ class WebContents : public PageNavigator,
       RenderFrameHost* render_frame_host,
       bool is_full_page) = 0;
 
+  // Returns whether this WebContents is an inner WebContents for a guest.
+  // Important: please avoid using this in new callsites, and use
+  // GetOuterWebContents instead.
+  virtual bool IsInnerWebContentsForGuest() = 0;
+
   // Returns the outer WebContents frame, the same frame that this WebContents
   // was attached in AttachToOuterWebContentsFrame().
   virtual RenderFrameHost* GetOuterWebContentsFrame() = 0;

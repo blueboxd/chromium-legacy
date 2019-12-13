@@ -942,7 +942,9 @@ TEST_F(PdfAccessibilityTreeTest, TestClickActionDataConversion) {
   EXPECT_EQ(PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_NONE,
             pdf_action_data.vertical_scroll_alignment);
   EXPECT_EQ(0u, pdf_action_data.page_index);
-  EXPECT_EQ(1u, pdf_action_data.link_index);
+  EXPECT_EQ(PP_PdfAccessibilityAnnotationType::PP_PDF_LINK,
+            pdf_action_data.annotation_type);
+  EXPECT_EQ(1u, pdf_action_data.annotation_index);
   CompareRect({{0, 0}, {0, 0}}, pdf_action_data.target_rect);
 }
 

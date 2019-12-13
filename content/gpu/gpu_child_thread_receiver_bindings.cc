@@ -7,8 +7,14 @@
 #include "content/gpu/gpu_child_thread.h"
 
 #include "base/no_destructor.h"
+#include "media/mojo/buildflags.h"
 #include "services/shape_detection/public/mojom/shape_detection_service.mojom.h"
 #include "services/shape_detection/shape_detection_service.h"
+
+#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
+#include "content/gpu/gpu_service_factory.h"
+#include "media/mojo/mojom/media_service.mojom.h"
+#endif
 
 namespace content {
 
@@ -20,6 +26,13 @@ void GpuChildThread::BindServiceInterface(
         std::move(shape_detection_receiver)};
     return;
   }
+
+#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
+  if (auto r = receiver.As<media::mojom::MediaService>()) {
+    service_factory_->RunMediaService(std::move(r));
+    return;
+  }
+#endif
 }
 
 }  // namespace content

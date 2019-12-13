@@ -98,31 +98,35 @@ cr.define('history.history_routing_test_with_query_param', function() {
       let expectedQuery;
       let testService;
 
-      suiteSetup(function() {
+      setup(function() {
+        PolymerTest.clearBody();
         testService = new TestBrowserService();
         history.BrowserService.instance_ = testService;
-        app = $('history-app');
+        // Ignore the initial empty query so that we can correctly check the
+        // search term for the second call to queryHistory().
+        testService.ignoreNextQuery();
+
+        testService.setQueryResult({
+          info: createHistoryInfo('query'),
+          value: [],
+        });
+        app = document.createElement('history-app');
+        document.body.appendChild(app);
         toolbar = app.$['toolbar'];
         expectedQuery = 'query';
       });
 
       test('search initiated on load', function() {
-        const verifyFunction = function(info) {
-          assertEquals(expectedQuery, info[0]);
-          return test_util.flushTasks().then(function() {
-            assertEquals(
-                expectedQuery,
-                toolbar.$['main-toolbar'].getSearchField().getValue());
-          });
-        };
-
-        if (window.historyQueryInfo) {
-          return verifyFunction(window.historyQueryInfo);
-        } else {
-          return testService.whenCalled('queryHistory').then(query => {
-            return verifyFunction([query]);
-          });
-        }
+        return testService.whenCalled('queryHistory')
+            .then(query => {
+              assertEquals(expectedQuery, query);
+              return test_util.flushTasks();
+            })
+            .then(function() {
+              assertEquals(
+                  expectedQuery,
+                  toolbar.$['main-toolbar'].getSearchField().getValue());
+            });
       });
     });
   }

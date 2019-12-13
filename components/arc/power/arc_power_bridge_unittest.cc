@@ -16,9 +16,9 @@
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_power_instance.h"
 #include "content/public/common/service_manager_connection.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/cpp/test/test_wake_lock_provider.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace arc {
@@ -37,14 +37,16 @@ class ArcPowerBridgeTest : public testing::Test {
     chromeos::PowerManagerClient::InitializeFake();
     power_manager_client()->set_screen_brightness_percent(kInitialBrightness);
 
-    wake_lock_provider_ = std::make_unique<device::TestWakeLockProvider>(
-        connector_factory_.RegisterInstance(device::mojom::kServiceName));
+    wake_lock_provider_ = std::make_unique<device::TestWakeLockProvider>();
 
     bridge_service_ = std::make_unique<ArcBridgeService>();
     power_bridge_ = std::make_unique<ArcPowerBridge>(nullptr /* context */,
                                                      bridge_service_.get());
-    power_bridge_->set_connector_for_test(
-        connector_factory_.GetDefaultConnector());
+
+    mojo::Remote<device::mojom::WakeLockProvider> remote_provider;
+    wake_lock_provider_->BindReceiver(
+        remote_provider.BindNewPipeAndPassReceiver());
+    power_bridge_->SetWakeLockProviderForTesting(std::move(remote_provider));
     CreatePowerInstance();
   }
 
@@ -104,8 +106,6 @@ class ArcPowerBridgeTest : public testing::Test {
   }
 
   base::test::TaskEnvironment task_environment_;
-
-  service_manager::TestConnectorFactory connector_factory_;
 
   std::unique_ptr<ArcBridgeService> bridge_service_;
   std::unique_ptr<FakePowerInstance> power_instance_;

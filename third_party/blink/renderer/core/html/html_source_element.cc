@@ -88,7 +88,7 @@ Node::InsertionNotificationRequest HTMLSourceElement::InsertedInto(
     ContainerNode& insertion_point) {
   HTMLElement::InsertedInto(insertion_point);
   Element* parent = parentElement();
-  if (auto* media = ToHTMLMediaElementOrNull(parent))
+  if (auto* media = DynamicTo<HTMLMediaElement>(parent))
     media->SourceWasAdded(this);
 
   auto* html_picture_element = parent == insertion_point
@@ -105,7 +105,7 @@ void HTMLSourceElement::RemovedFrom(ContainerNode& removal_root) {
   bool was_removed_from_parent = !parent;
   if (was_removed_from_parent)
     parent = DynamicTo<Element>(&removal_root);
-  if (auto* media = ToHTMLMediaElementOrNull(parent))
+  if (auto* media = DynamicTo<HTMLMediaElement>(parent))
     media->SourceWasRemoved(this);
   if (auto* picture = DynamicTo<HTMLPictureElement>(parent)) {
     RemoveMediaQueryListListener();

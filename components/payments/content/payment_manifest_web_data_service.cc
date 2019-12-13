@@ -15,9 +15,8 @@ namespace payments {
 
 PaymentManifestWebDataService::PaymentManifestWebDataService(
     scoped_refptr<WebDatabaseService> wdbs,
-    const ProfileErrorCallback& callback,
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
-    : WebDataServiceBase(wdbs, callback, ui_task_runner) {}
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    : WebDataServiceBase(std::move(wdbs), std::move(ui_task_runner)) {}
 
 PaymentManifestWebDataService::~PaymentManifestWebDataService() {}
 

@@ -393,6 +393,16 @@ public final class ChromePreferenceKeys {
             "swap_pixel_format_to_fix_convert_from_translucent";
 
     /**
+     * Keys that indicates if an item in the context menu has been clicked or not.
+     * Used to hide the "new" tag for the items after they are clicked.
+     */
+    public static final String CONTEXT_MENU_OPEN_IN_EPHEMERAL_TAB_CLICKED =
+            "Chrome.Contextmenu.OpenInEphemeralTabClicked";
+    public static final String CONTEXT_MENU_OPEN_IMAGE_IN_EPHEMERAL_TAB_CLICKED =
+            "Chrome.Contextmenu.OpenImageInEphemeralTabClicked";
+    public static final String CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS_CLICKED =
+            "Chrome.ContextMenu.SearchWithGoogleLensClicked";
+    /**
      * These values are currently used as SharedPreferences keys.
      *
      * @return The list of [keys in use].
@@ -463,6 +473,9 @@ public final class ChromePreferenceKeys {
                 OFFLINE_INDICATOR_V2_ENABLED_KEY,
                 PREF_PERSONALIZED_SIGNIN_PROMO_DECLINED,
                 PREF_SIGNIN_AND_SYNC_PROMO_SHOW_COUNT,
+                CONTEXT_MENU_OPEN_IN_EPHEMERAL_TAB_CLICKED,
+                CONTEXT_MENU_OPEN_IMAGE_IN_EPHEMERAL_TAB_CLICKED,
+                CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS_CLICKED,
 
                 // Cached feature flags
                 SERVICE_MANAGER_FOR_DOWNLOAD_RESUMPTION_KEY,

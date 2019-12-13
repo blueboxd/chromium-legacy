@@ -2,7 +2,6 @@
 #   build/print_python_deps.py --root chrome/android/features --output chrome/android/features/create_stripped_java_factory.pydeps chrome/android/features/create_stripped_java_factory.py
 ../../../build/android/gyp/util/__init__.py
 ../../../build/android/gyp/util/build_utils.py
-../../../build/android/gyp/util/md5_check.py
 ../../../build/gn_helpers.py
 ../../../third_party/javalang/src/javalang/__init__.py
 ../../../third_party/javalang/src/javalang/ast.py

@@ -1,9 +1,9 @@
 document
-++group
+++group IsControlElement=false
 ++++description Name='Before.'
 ++separator Name='Dividing line'
-++group
+++group IsControlElement=false
 ++++description Name='Middle.'
 ++separator
-++group
+++group IsControlElement=false
 ++++description Name='After.'

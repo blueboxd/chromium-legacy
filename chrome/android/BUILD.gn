@@ -134,6 +134,7 @@ android_resources("chrome_app_java_resources") {
     "//chrome/browser/ui/android/appmenu:java_resources",
     "//chrome/browser/ui/android/strings:ui_strings_grd",
     "//chrome/browser/ui/android/widget:ui_widget_java_resources",
+    "//chrome/browser/ui/messages/android:java_resources",
     "//components/autofill/android:autofill_java_resources",
     "//components/browser_ui/styles/android:java_resources",
     "//components/browser_ui/widget/android:java_resources",

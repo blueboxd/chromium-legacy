@@ -33,10 +33,6 @@
 - (instancetype)initWithDelegate:(id<CRWJSNavigationHandlerDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
 
-// Set to YES when a hashchange event is manually dispatched for same-document
-// history navigations.
-@property(nonatomic, assign) BOOL dispatchingSameDocumentHashChangeEvent;
-
 // Whether the web page is currently performing window.history.pushState or
 // window.history.replaceState.
 @property(nonatomic, assign) BOOL changingHistoryState;

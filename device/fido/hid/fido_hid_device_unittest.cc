@@ -224,7 +224,7 @@ class FidoHidDeviceTest : public ::testing::Test {
  public:
   void SetUp() override {
     fake_hid_manager_ = std::make_unique<FakeFidoHidManager>();
-    fake_hid_manager_->AddReceiver2(hid_manager_.BindNewPipeAndPassReceiver());
+    fake_hid_manager_->AddReceiver(hid_manager_.BindNewPipeAndPassReceiver());
   }
 
  protected:

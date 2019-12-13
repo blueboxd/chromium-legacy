@@ -28,21 +28,21 @@ const int kMinWindowHeight = 17;
          prefService:(PrefService*)prefs
                 path:(const char*)path {
   if ((self = [super init])) {
-    window_ = window;
-    prefService_ = prefs;
-    path_ = path;
+    _window = window;
+    _prefService = prefs;
+    _path = path;
 
     [self restore];
     [[NSNotificationCenter defaultCenter]
       addObserver:self
          selector:@selector(save:)
              name:NSWindowDidMoveNotification
-           object:window_];
+           object:_window];
     [[NSNotificationCenter defaultCenter]
       addObserver:self
          selector:@selector(save:)
              name:NSWindowDidResizeNotification
-           object:window_];
+           object:_window];
   }
   return self;
 }
@@ -53,10 +53,10 @@ const int kMinWindowHeight = 17;
 }
 
 - (void)save:(NSNotification*)notification {
-  DictionaryPrefUpdate update(prefService_, path_);
+  DictionaryPrefUpdate update(_prefService, _path);
   base::DictionaryValue* windowPrefs = update.Get();
-  NSRect frame = [window_ frame];
-  if ([window_ styleMask] & NSResizableWindowMask) {
+  NSRect frame = [_window frame];
+  if ([_window styleMask] & NSResizableWindowMask) {
     // Save the origin of the window.
     windowPrefs->SetInteger("left", NSMinX(frame));
     windowPrefs->SetInteger("right", NSMaxX(frame));
@@ -74,8 +74,8 @@ const int kMinWindowHeight = 17;
 
 - (void)restore {
   // Get the positioning information.
-  const base::DictionaryValue* windowPrefs = prefService_->GetDictionary(path_);
-  if ([window_ styleMask] & NSResizableWindowMask) {
+  const base::DictionaryValue* windowPrefs = _prefService->GetDictionary(_path);
+  if ([_window styleMask] & NSResizableWindowMask) {
     int x1, x2, y1, y2;
     if (!windowPrefs->GetInteger("left", &x1) ||
         !windowPrefs->GetInteger("right", &x2) ||
@@ -85,17 +85,17 @@ const int kMinWindowHeight = 17;
     }
     if (x2 - x1 < kMinWindowWidth || y2 - y1 < kMinWindowHeight) {
       // Windows should never be very small.
-      DictionaryPrefUpdate update(prefService_, path_);
+      DictionaryPrefUpdate update(_prefService, _path);
       base::DictionaryValue* mutableWindowPrefs = update.Get();
       mutableWindowPrefs->Remove("left", NULL);
       mutableWindowPrefs->Remove("right", NULL);
       mutableWindowPrefs->Remove("top", NULL);
       mutableWindowPrefs->Remove("bottom", NULL);
     } else {
-      [window_ setFrame:NSMakeRect(x1, y1, x2 - x1, y2 - y1) display:YES];
+      [_window setFrame:NSMakeRect(x1, y1, x2 - x1, y2 - y1) display:YES];
 
       // Make sure the window is on-screen.
-      [window_ cascadeTopLeftFromPoint:NSZeroPoint];
+      [_window cascadeTopLeftFromPoint:NSZeroPoint];
     }
   } else {
     int x, y;
@@ -103,8 +103,8 @@ const int kMinWindowHeight = 17;
         !windowPrefs->GetInteger("y", &y))
        return;  // Nothing stored.
     // Turn the origin (lower-left) into an upper-left window point.
-    NSPoint upperLeft = NSMakePoint(x, y + NSHeight([window_ frame]));
-    [window_ cascadeTopLeftFromPoint:upperLeft];
+    NSPoint upperLeft = NSMakePoint(x, y + NSHeight([_window frame]));
+    [_window cascadeTopLeftFromPoint:upperLeft];
   }
 }
 

@@ -16,8 +16,6 @@
 #include "components/arc/test/fake_power_instance.h"
 #include "components/arc/test/fake_wake_lock_instance.h"
 #include "services/device/public/cpp/test/test_wake_lock_provider.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace arc {
@@ -27,14 +25,16 @@ using device::mojom::WakeLockType;
 class ArcWakeLockBridgeTest : public testing::Test {
  public:
   ArcWakeLockBridgeTest()
-      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
-        wake_lock_provider_(
-            connector_factory_.RegisterInstance(device::mojom::kServiceName)) {
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
     bridge_service_ = std::make_unique<ArcBridgeService>();
     wake_lock_bridge_ =
         std::make_unique<ArcWakeLockBridge>(nullptr, bridge_service_.get());
-    wake_lock_bridge_->set_connector_for_testing(
-        connector_factory_.GetDefaultConnector());
+
+    mojo::Remote<device::mojom::WakeLockProvider> remote_provider;
+    wake_lock_provider_.BindReceiver(
+        remote_provider.BindNewPipeAndPassReceiver());
+    wake_lock_bridge_->SetWakeLockProviderForTesting(
+        std::move(remote_provider));
     CreateWakeLockInstance();
   }
 
@@ -99,7 +99,6 @@ class ArcWakeLockBridgeTest : public testing::Test {
  private:
   base::test::TaskEnvironment task_environment_;
 
-  service_manager::TestConnectorFactory connector_factory_;
   device::TestWakeLockProvider wake_lock_provider_;
 
   std::unique_ptr<ArcBridgeService> bridge_service_;

@@ -4,18 +4,30 @@
 
 #include "chrome/browser/chromeos/policy/scheduled_update_checker/scoped_wake_lock.h"
 
-#include "services/device/public/mojom/constants.mojom.h"
+#include "base/no_destructor.h"
+#include "content/public/browser/device_service.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace policy {
 
-ScopedWakeLock::ScopedWakeLock(service_manager::Connector* connector,
-                               device::mojom::WakeLockType type,
+namespace {
+
+ScopedWakeLock::WakeLockProviderBinder& GetBinderOverride() {
+  static base::NoDestructor<ScopedWakeLock::WakeLockProviderBinder> binder;
+  return *binder;
+}
+
+}  // namespace
+
+ScopedWakeLock::ScopedWakeLock(device::mojom::WakeLockType type,
                                const std::string& reason) {
   mojo::Remote<device::mojom::WakeLockProvider> provider;
-  connector->Connect(device::mojom::kServiceName,
-                     provider.BindNewPipeAndPassReceiver());
+  auto receiver = provider.BindNewPipeAndPassReceiver();
+  const auto& binder = GetBinderOverride();
+  if (binder)
+    binder.Run(std::move(receiver));
+  else
+    content::GetDeviceService().BindWakeLockProvider(std::move(receiver));
   provider->GetWakeLockWithoutContext(
       type, device::mojom::WakeLockReason::kOther, reason,
       wake_lock_.BindNewPipeAndPassReceiver());
@@ -33,5 +45,11 @@ ScopedWakeLock::~ScopedWakeLock() {
 ScopedWakeLock::ScopedWakeLock(ScopedWakeLock&& other) = default;
 
 ScopedWakeLock& ScopedWakeLock::operator=(ScopedWakeLock&& other) = default;
+
+// static
+void ScopedWakeLock::OverrideWakeLockProviderBinderForTesting(
+    WakeLockProviderBinder binder) {
+  GetBinderOverride() = std::move(binder);
+}
 
 }  // namespace policy

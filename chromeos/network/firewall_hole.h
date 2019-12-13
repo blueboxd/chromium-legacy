@@ -25,7 +25,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) FirewallHole {
     TCP,
   };
 
-  typedef base::Callback<void(std::unique_ptr<FirewallHole>)> OpenCallback;
+  using OpenCallback = base::OnceCallback<void(std::unique_ptr<FirewallHole>)>;
 
   // Opens a port on the system firewall for the given network interface (or all
   // interfaces if |interface| is ""). The hole will be closed when the object
@@ -33,7 +33,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) FirewallHole {
   static void Open(PortType type,
                    uint16_t port,
                    const std::string& interface,
-                   const OpenCallback& callback);
+                   OpenCallback callback);
 
   ~FirewallHole();
 
@@ -42,7 +42,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) FirewallHole {
                                 uint16_t port,
                                 const std::string& interface,
                                 base::ScopedFD lifeline_fd,
-                                const FirewallHole::OpenCallback& callback,
+                                FirewallHole::OpenCallback callback,
                                 bool success);
 
   FirewallHole(PortType type,

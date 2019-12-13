@@ -42,6 +42,7 @@ js_library("tab") {
     "//ui/webui/resources/js:load_time_data.m",
     "//ui/webui/resources/js:util.m",
   ]
+  externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
 js_library("tab_list") {

@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "google_apis/gcm/base/gcm_util.h"
@@ -91,7 +92,7 @@ InstanceIDGetTokenRequestHandler::InstanceIDGetTokenRequestHandler(
 
 InstanceIDGetTokenRequestHandler::~InstanceIDGetTokenRequestHandler() {}
 
-void InstanceIDGetTokenRequestHandler::BuildRequestBody(std::string* body){
+void InstanceIDGetTokenRequestHandler::BuildRequestBody(std::string* body) {
   BuildFormEncoding(kScopeKey, scope_, body);
   BuildFormEncoding(kExtraScopeKey, scope_, body);
   for (auto iter = options_.begin(); iter != options_.end(); ++iter)
@@ -106,11 +107,16 @@ void InstanceIDGetTokenRequestHandler::BuildRequestBody(std::string* body){
   }
 }
 
-void InstanceIDGetTokenRequestHandler::ReportUMAs(
+void InstanceIDGetTokenRequestHandler::ReportStatusToUMA(
     RegistrationRequest::Status status) {
-  UMA_HISTOGRAM_ENUMERATION("InstanceID.GetToken.RequestStatus",
-                            status,
+  UMA_HISTOGRAM_ENUMERATION("InstanceID.GetToken.RequestStatus", status,
                             RegistrationRequest::STATUS_COUNT);
+}
+
+void InstanceIDGetTokenRequestHandler::ReportNetErrorCodeToUMA(
+    int net_error_code) {
+  base::UmaHistogramSparse("InstanceID.GetToken.NetErrorCode",
+                           std::abs(net_error_code));
 }
 
 }  // namespace gcm

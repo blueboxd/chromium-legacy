@@ -706,8 +706,8 @@ void MCSClient::HandlePacketFromWire(
       DVLOG(1) << "  Timestamp: " << login_response->server_timestamp();
       if (login_response->has_error() && login_response->error().code() != 0) {
         state_ = UNINITIALIZED;
-        DVLOG(1) << "  Error code: " << login_response->error().code();
-        DVLOG(1) << "  Error message: " << login_response->error().message();
+        LOG(ERROR) << "  Error code: " << login_response->error().code()
+                   << "  Error message: " << login_response->error().message();
         LOG(ERROR) << "Failed to log in to GCM, resetting connection.";
         connection_factory_->SignalConnectionReset(
             ConnectionFactory::LOGIN_FAILURE);

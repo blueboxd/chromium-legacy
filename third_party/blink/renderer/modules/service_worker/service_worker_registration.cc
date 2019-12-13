@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/modules/service_worker/service_worker_container.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_error.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
@@ -253,13 +254,15 @@ void ServiceWorkerRegistration::SetNavigationPreloadHeader(
       WTF::Bind(&DidSetNavigationPreloadHeader, WrapPersistent(resolver)));
 }
 
-ScriptPromise ServiceWorkerRegistration::update(ScriptState* script_state) {
+ScriptPromise ServiceWorkerRegistration::update(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   if (!GetExecutionContext()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "Failed to update a ServiceWorkerRegistration: No "
-                          "associated provider is available."));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Failed to update a ServiceWorkerRegistration: No associated provider "
+        "is available.");
+    return ScriptPromise();
   }
 
   // The fetcher is lazily loaded in a worker global scope.
@@ -286,14 +289,15 @@ ScriptPromise ServiceWorkerRegistration::update(ScriptState* script_state) {
   return resolver->Promise();
 }
 
-ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* script_state) {
+ScriptPromise ServiceWorkerRegistration::unregister(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   if (!GetExecutionContext()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "Failed to unregister a "
-                          "ServiceWorkerRegistration: No "
-                          "associated provider is available."));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Failed to unregister a "
+                                      "ServiceWorkerRegistration: No "
+                                      "associated provider is available.");
+    return ScriptPromise();
   }
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   host_->Unregister(WTF::Bind(&DidUnregister, WrapPersistent(resolver)));

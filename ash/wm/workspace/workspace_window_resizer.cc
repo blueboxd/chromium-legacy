@@ -183,6 +183,15 @@ namespace {
 // when resizing a window using touchscreen.
 const int kScreenEdgeInsetForTouchDrag = 32;
 
+// If an edge of the work area is at an edge of the display, then you can snap a
+// window by dragging to a point within this far inward from that edge. This
+// tolerance is helpful in cases where you can drag out of the display. For
+// mouse dragging, you may be able to drag out of the display because there is a
+// neighboring display. For touch dragging, you may be able to drag out of the
+// display because the physical device has a border around the display. Either
+// case makes it difficult to drag to the edge without this tolerance.
+const int kScreenEdgeInsetForSnapping = 32;
+
 // Current instance for use by the WorkspaceWindowResizerTest.
 WorkspaceWindowResizer* instance = NULL;
 
@@ -1105,22 +1114,18 @@ void WorkspaceWindowResizer::RestackWindows() {
 
 WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
     const gfx::Point& location) const {
-  // TODO: this likely only wants total display area, not the area of a single
-  // display.
   gfx::Rect area(screen_util::GetDisplayWorkAreaBoundsInParent(GetTarget()));
-  if (details().source == ::wm::WINDOW_MOVE_SOURCE_TOUCH) {
-    // Increase tolerance for touch-snapping near the screen edges. This is only
-    // necessary when the work area left or right edge is same as screen edge.
-    gfx::Rect display_bounds(
-        screen_util::GetDisplayBoundsInParent(GetTarget()));
-    int inset_left = 0;
-    if (area.x() == display_bounds.x())
-      inset_left = kScreenEdgeInsetForTouchDrag;
-    int inset_right = 0;
-    if (area.right() == display_bounds.right())
-      inset_right = kScreenEdgeInsetForTouchDrag;
-    area.Inset(inset_left, 0, inset_right, 0);
-  }
+  // Add tolerance for snapping near each display edge that is the same as the
+  // corresponding work area edge.
+  gfx::Rect display_bounds(screen_util::GetDisplayBoundsInParent(GetTarget()));
+  int inset_left = 0;
+  if (area.x() == display_bounds.x())
+    inset_left = kScreenEdgeInsetForSnapping;
+  int inset_right = 0;
+  if (area.right() == display_bounds.right())
+    inset_right = kScreenEdgeInsetForSnapping;
+  area.Inset(inset_left, 0, inset_right, 0);
+
   if (location.x() <= area.x())
     return SNAP_LEFT;
   if (location.x() >= area.right() - 1)

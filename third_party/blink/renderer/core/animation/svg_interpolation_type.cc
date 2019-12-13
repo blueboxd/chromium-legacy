@@ -22,7 +22,7 @@ InterpolationValue SVGInterpolationType::MaybeConvertSingle(
   SVGPropertyBase* svg_value =
       ToSVGInterpolationEnvironment(environment)
           .SvgBaseValue()
-          .CloneForAnimation(ToSVGPropertySpecificKeyframe(keyframe).Value());
+          .CloneForAnimation(To<SVGPropertySpecificKeyframe>(keyframe).Value());
   return MaybeConvertSVGValue(*svg_value);
 }
 

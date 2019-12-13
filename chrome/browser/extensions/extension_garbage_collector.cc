@@ -230,8 +230,7 @@ void ExtensionGarbageCollector::GarbageCollectIsolatedStorageIfNeeded() {
        ++iter) {
     if (AppIsolationInfo::HasIsolatedStorage(iter->get())) {
       active_paths->insert(
-          content::BrowserContext::GetStoragePartitionForSite(
-              context_, util::GetSiteForExtensionId((*iter)->id(), context_))
+          util::GetStoragePartitionForExtensionId((*iter)->id(), context_)
               ->GetPath());
     }
   }

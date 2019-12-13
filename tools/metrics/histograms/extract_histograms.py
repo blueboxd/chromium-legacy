@@ -469,6 +469,12 @@ def _ExtractHistogramsFromXmlTree(tree, enums):
       logging.error('histogram %s should have either units or enum', name)
       have_errors = True
 
+    # Histograms should not have both units and enum.
+    if (histogram.hasAttribute('units') and
+        histogram.hasAttribute('enum')):
+      logging.error('histogram %s should not have both units and enum', name)
+      have_errors = True
+
     # Handle units.
     if histogram.hasAttribute('units'):
       histogram_entry['units'] = histogram.getAttribute('units')

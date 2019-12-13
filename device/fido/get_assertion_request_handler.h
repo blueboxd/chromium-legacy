@@ -19,10 +19,6 @@
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace device {
 
 class FidoAuthenticator;
@@ -60,7 +56,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
       const FidoAuthenticator*)>;
 
   GetAssertionRequestHandler(
-      service_manager::Connector* connector,
       FidoDiscoveryFactory* fido_discovery_factory,
       const base::flat_set<FidoTransportProtocol>& supported_transports,
       CtapGetAssertionRequest request_parameter,

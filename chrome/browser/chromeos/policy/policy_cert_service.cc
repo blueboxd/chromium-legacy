@@ -140,16 +140,15 @@ void PolicyCertService::GetPolicyCertificatesForStoragePartition(
   std::set<std::string> extension_ids_with_policy_certificates =
       policy_certificate_provider_->GetExtensionIdsWithPolicyCertificates();
   for (const auto& extension_id : extension_ids_with_policy_certificates) {
-    const GURL extension_site =
-        extensions::util::GetSiteForExtensionId(extension_id, profile_);
     // Only allow policy-provided certificates for extensions with isolated
     // storage. Also sanity-check that it's not the default partition.
     content::StoragePartition* extension_partition =
-        content::BrowserContext::GetStoragePartitionForSite(
-            profile_, extension_site, /*can_create=*/false);
+        extensions::util::GetStoragePartitionForExtensionId(
+            extension_id, profile_,
+            /*can_create=*/false);
     if (!extension_partition)
       continue;
-    if (!extensions::util::SiteHasIsolatedStorage(extension_site, profile_) ||
+    if (!extensions::util::HasIsolatedStorage(extension_id, profile_) ||
         extension_partition->GetPath() == default_storage_partition_path) {
       LOG(ERROR) << "Ignoring policy certificates for " << extension_id
                  << " because it does not have isolated storage";

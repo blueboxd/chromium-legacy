@@ -258,7 +258,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
   EXPECT_FALSE(scheduler_->swapped());
   EXPECT_EQ(0u, output_surface_->num_sent_frames());
   EXPECT_EQ(gfx::ColorSpace(), output_surface_->last_reshape_color_space());
-  display_->DrawAndSwap();
+  display_->DrawAndSwap(base::TimeTicks::Now());
   EXPECT_EQ(color_space_1, output_surface_->last_reshape_color_space());
   EXPECT_TRUE(scheduler_->swapped());
   EXPECT_EQ(1u, output_surface_->num_sent_frames());
@@ -283,7 +283,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     scheduler_->reset_swapped_for_test();
     EXPECT_EQ(color_space_1, output_surface_->last_reshape_color_space());
     display_->SetColorSpace(color_space_2);
-    display_->DrawAndSwap();
+    display_->DrawAndSwap(base::TimeTicks::Now());
     EXPECT_EQ(color_space_2, output_surface_->last_reshape_color_space());
     EXPECT_TRUE(scheduler_->swapped());
     EXPECT_EQ(2u, output_surface_->num_sent_frames());
@@ -309,7 +309,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     EXPECT_TRUE(scheduler_->damaged());
 
     scheduler_->reset_swapped_for_test();
-    display_->DrawAndSwap();
+    display_->DrawAndSwap(base::TimeTicks::Now());
     EXPECT_TRUE(scheduler_->swapped());
     EXPECT_EQ(2u, output_surface_->num_sent_frames());
   }
@@ -337,7 +337,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     EXPECT_TRUE(scheduler_->damaged());
 
     scheduler_->reset_swapped_for_test();
-    display_->DrawAndSwap();
+    display_->DrawAndSwap(base::TimeTicks::Now());
     EXPECT_TRUE(scheduler_->swapped());
     EXPECT_EQ(2u, output_surface_->num_sent_frames());
   }
@@ -362,7 +362,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     EXPECT_TRUE(scheduler_->damaged());
 
     scheduler_->reset_swapped_for_test();
-    display_->DrawAndSwap();
+    display_->DrawAndSwap(base::TimeTicks::Now());
     EXPECT_TRUE(scheduler_->swapped());
     EXPECT_EQ(3u, output_surface_->num_sent_frames());
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100),
@@ -390,7 +390,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     EXPECT_TRUE(scheduler_->damaged());
 
     scheduler_->reset_swapped_for_test();
-    display_->DrawAndSwap();
+    display_->DrawAndSwap(base::TimeTicks::Now());
     EXPECT_TRUE(scheduler_->swapped());
     EXPECT_EQ(4u, output_surface_->num_sent_frames());
     EXPECT_TRUE(copy_called);
@@ -415,7 +415,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
     frame.metadata.latency_info.push_back(ui::LatencyInfo());
     scheduler_->reset_swapped_for_test();
-    display_->DrawAndSwap();
+    display_->DrawAndSwap(base::TimeTicks::Now());
     EXPECT_TRUE(scheduler_->swapped());
     EXPECT_EQ(4u, output_surface_->num_sent_frames());
   }
@@ -471,7 +471,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     EXPECT_TRUE(scheduler_->damaged());
 
     scheduler_->reset_swapped_for_test();
-    display_->DrawAndSwap();
+    display_->DrawAndSwap(base::TimeTicks::Now());
     EXPECT_TRUE(scheduler_->swapped());
     EXPECT_EQ(6u, output_surface_->num_sent_frames());
     EXPECT_EQ(gfx::Size(100, 100),
@@ -505,7 +505,7 @@ void DisplayTest::LatencyInfoCapTest(bool over_capacity) {
       CompositorFrameBuilder().AddRenderPass(kOutputRect, kDamageRect).Build();
   support_->SubmitCompositorFrame(local_surface_id, std::move(frame1));
 
-  display_->DrawAndSwap();
+  display_->DrawAndSwap(base::TimeTicks::Now());
   EXPECT_EQ(1u, output_surface_->num_sent_frames());
   EXPECT_EQ(0u, output_surface_->last_sent_frame()->latency_info.size());
 
@@ -526,7 +526,7 @@ void DisplayTest::LatencyInfoCapTest(bool over_capacity) {
                                .Build();
   support_->SubmitCompositorFrame(local_surface_id, std::move(frame2));
 
-  EXPECT_TRUE(display_->DrawAndSwap());
+  EXPECT_TRUE(display_->DrawAndSwap(base::TimeTicks::Now()));
   EXPECT_EQ(1u, output_surface_->num_sent_frames());
   EXPECT_EQ(0u, output_surface_->last_sent_frame()->latency_info.size());
 
@@ -535,7 +535,7 @@ void DisplayTest::LatencyInfoCapTest(bool over_capacity) {
   CompositorFrame frame3 =
       CompositorFrameBuilder().AddRenderPass(kOutputRect, kDamageRect).Build();
   support_->SubmitCompositorFrame(local_surface_id, std::move(frame3));
-  EXPECT_TRUE(display_->DrawAndSwap());
+  EXPECT_TRUE(display_->DrawAndSwap(base::TimeTicks::Now()));
 
   // Verify whether or not LatencyInfo was dropped.
   size_t expected_size = 0;
@@ -595,6 +595,8 @@ TEST_F(DisplayTest, DisableSwapUntilResize) {
   display_->DisableSwapUntilResize(base::BindLambdaForTesting(
       [&swap_callback_run]() { swap_callback_run = true; }));
   EXPECT_TRUE(scheduler_->swapped());
+
+  display_->DidReceiveSwapBuffersAck(GetTestSwapTimings());
   EXPECT_TRUE(swap_callback_run);
 
   display_->Resize(gfx::Size(150, 150));
@@ -619,7 +621,7 @@ TEST_F(DisplayTest, DisableSwapUntilResize) {
   }
 
   // DrawAndSwap() should trigger a swap at current size.
-  display_->DrawAndSwap();
+  display_->DrawAndSwap(base::TimeTicks::Now());
   EXPECT_TRUE(scheduler_->swapped());
   scheduler_->reset_swapped_for_test();
 
@@ -758,7 +760,7 @@ TEST_F(DisplayTest, BackdropFilterTest) {
       SubmitCompositorFrame(&pass_list, local_surface_id);
 
       scheduler_->reset_swapped_for_test();
-      display_->DrawAndSwap();
+      display_->DrawAndSwap(base::TimeTicks::Now());
       EXPECT_TRUE(scheduler_->swapped());
       EXPECT_EQ(frame_num, output_surface_->num_sent_frames());
       EXPECT_EQ(display_size, software_output_device_->viewport_pixel_size());
@@ -3444,7 +3446,7 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
 
     pass_list.push_back(std::move(pass));
     SubmitCompositorFrame(&pass_list, local_surface_id);
-    display_->DrawAndSwap();
+    display_->DrawAndSwap(base::TimeTicks::Now());
     RunAllPendingInMessageLoop();
   }
 
@@ -3458,7 +3460,7 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
     EXPECT_CALL(sub_client, DidReceiveCompositorFrameAck(_)).Times(1);
     sub_support->SubmitCompositorFrame(sub_local_surface_id, std::move(frame));
 
-    display_->DrawAndSwap();
+    display_->DrawAndSwap(base::TimeTicks::Now());
     RunAllPendingInMessageLoop();
 
     // Both frames with frame-tokens 1 and 2 requested presentation-feedback.
@@ -3476,7 +3478,7 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
     EXPECT_CALL(sub_client, DidReceiveCompositorFrameAck(_)).Times(1);
     sub_support->SubmitCompositorFrame(sub_local_surface_id, std::move(frame));
 
-    display_->DrawAndSwap();
+    display_->DrawAndSwap(base::TimeTicks::Now());
     RunAllPendingInMessageLoop();
   }
 
@@ -3528,7 +3530,7 @@ TEST_F(DisplayTest, BeginFrameThrottling) {
   UpdateBeginFrameTime(support_.get(), frame_time);
 
   // Drawing should unthrottle begin-frames.
-  display_->DrawAndSwap();
+  display_->DrawAndSwap(base::TimeTicks::Now());
   frame_time = base::TimeTicks::Now();
   EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
   UpdateBeginFrameTime(support_.get(), frame_time);
@@ -3603,7 +3605,7 @@ TEST_F(DisplayTest, BeginFrameThrottlingMultipleSurfaces) {
 
   // This only draws the first surface, so we should only be able to send one
   // more BeginFrame.
-  display_->DrawAndSwap();
+  display_->DrawAndSwap(base::TimeTicks::Now());
   frame_time = base::TimeTicks::Now();
   EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
   UpdateBeginFrameTime(support_.get(), frame_time);
@@ -3619,7 +3621,7 @@ TEST_F(DisplayTest, BeginFrameThrottlingMultipleSurfaces) {
   display_->SetLocalSurfaceId(
       id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
       1.f);
-  display_->DrawAndSwap();
+  display_->DrawAndSwap(base::TimeTicks::Now());
   id_allocator_.GenerateId();
   for (uint32_t i = 0; i < CompositorFrameSinkSupport::kUndrawnFrameLimit + 1;
        ++i) {
@@ -3744,7 +3746,7 @@ TEST_F(DisplayTest, InvalidPresentationTimestamps) {
             .AddRenderPass(gfx::Rect(25, 25), gfx::Rect(25, 25))
             .Build();
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
-    display_->DrawAndSwap();
+    display_->DrawAndSwap(base::TimeTicks::Now());
     display_->DidReceiveSwapBuffersAck(GetTestSwapTimings());
     display_->DidReceivePresentationFeedback({base::TimeTicks::Now(), {}, 0});
     EXPECT_THAT(histograms.GetAllSamples(
@@ -3763,7 +3765,7 @@ TEST_F(DisplayTest, InvalidPresentationTimestamps) {
             .AddRenderPass(gfx::Rect(25, 25), gfx::Rect(25, 25))
             .Build();
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
-    display_->DrawAndSwap();
+    display_->DrawAndSwap(base::TimeTicks::Now());
     display_->DidReceiveSwapBuffersAck(GetTestSwapTimings());
     display_->DidReceivePresentationFeedback(
         {base::TimeTicks::Now() - base::TimeDelta::FromSeconds(1), {}, 0});
@@ -3786,7 +3788,7 @@ TEST_F(DisplayTest, InvalidPresentationTimestamps) {
             .AddRenderPass(gfx::Rect(25, 25), gfx::Rect(25, 25))
             .Build();
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
-    display_->DrawAndSwap();
+    display_->DrawAndSwap(base::TimeTicks::Now());
     display_->DidReceiveSwapBuffersAck(GetTestSwapTimings());
     display_->DidReceivePresentationFeedback(
         {base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1), {}, 0});
@@ -4087,7 +4089,7 @@ TEST_F(DisplayTest, DisplayTransformHint) {
     frame.metadata.display_transform_hint = test.display_transform_hint;
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
 
-    display_->DrawAndSwap();
+    display_->DrawAndSwap(base::TimeTicks::Now());
     EXPECT_EQ(++expected_frame_sent, output_surface_->num_sent_frames());
     EXPECT_EQ(test.expected_size,
               software_output_device_->viewport_pixel_size());

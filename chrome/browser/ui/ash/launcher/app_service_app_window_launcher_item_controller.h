@@ -24,6 +24,10 @@ class AppServiceAppWindowLauncherItemController
       const AppServiceAppWindowLauncherItemController&) = delete;
 
   // AppWindowLauncherItemController:
+  void ItemSelected(std::unique_ptr<ui::Event> event,
+                    int64_t display_id,
+                    ash::ShelfLaunchSource source,
+                    ItemSelectedCallback callback) override;
   AppMenuItems GetAppMenuItems(int event_flags) override;
 
   // aura::WindowObserver overrides:

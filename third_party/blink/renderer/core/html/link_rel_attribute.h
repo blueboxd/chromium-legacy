@@ -60,6 +60,7 @@ class CORE_EXPORT LinkRelAttribute {
   bool IsModulePreload() const { return is_module_preload_; }
   bool IsServiceWorker() const { return is_service_worker_; }
   bool IsCanonical() const { return is_canonical_; }
+  bool IsMonetization() const { return is_monetization_; }
 
  private:
   IconType icon_type_;
@@ -76,6 +77,7 @@ class CORE_EXPORT LinkRelAttribute {
   bool is_module_preload_ : 1;
   bool is_service_worker_ : 1;
   bool is_canonical_ : 1;
+  bool is_monetization_ : 1;
 };
 
 }  // namespace blink

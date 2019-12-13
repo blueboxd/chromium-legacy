@@ -21,6 +21,7 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
+#include "chrome/browser/password_manager/chrome_biometric_authenticator.h"
 #include "chrome/browser/password_manager/field_info_manager_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prerender/prerender_contents.h"
@@ -430,6 +431,15 @@ void ChromePasswordManagerClient::ShowTouchToFill(
           .GetCredentials(),
       driver->AsWeakPtr());
 #endif
+}
+
+password_manager::BiometricAuthenticator*
+ChromePasswordManagerClient::GetBiometricAuthenticator() {
+#if defined(OS_ANDROID)
+  if (!biometric_authenticator_)
+    biometric_authenticator_ = ChromeBiometricAuthenticator::Create();
+#endif
+  return biometric_authenticator_.get();
 }
 
 void ChromePasswordManagerClient::GeneratePassword() {

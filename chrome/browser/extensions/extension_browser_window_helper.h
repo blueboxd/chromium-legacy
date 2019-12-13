@@ -29,9 +29,8 @@ class ExtensionBrowserWindowHelper : public ExtensionRegistryObserver {
                            const Extension* extension,
                            UnloadedExtensionReason reason) override;
 
-  // Closes any tabs owned by the extension with the given |extension_id| and
-  // unmutes others if necessary.
-  void CleanUpTabsOnUnload(const ExtensionId& extension_id);
+  // Closes any tabs owned by the extension and unmutes others if necessary.
+  void CleanUpTabsOnUnload(const Extension* extension);
 
   // The associated browser. Must outlive this object.
   Browser* const browser_ = nullptr;

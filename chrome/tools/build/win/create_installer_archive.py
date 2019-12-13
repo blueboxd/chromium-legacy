@@ -117,6 +117,14 @@ def CopyAllFilesToStagingDir(config, distribution, staging_dir, build_dir,
     CopySectionFilesToStagingDir(config, 'SNAPSHOTBLOB', staging_dir, build_dir,
                                  verbose)
 
+# The 'SafeConfigParser' makes all strings lowercase - which works fine on
+# a cases-insensitive NTFS partition, but makes no sense when trying to build
+# mini_installer.exe on a linux box. This function can be used to make glob
+# matches case insensitive to bypass this issue.
+def insensiglob(pattern):
+  def recase(c):
+    return '[{}{}]'.format(c.lower(), c.upper()) if c.isalpha() else c
+  return glob.glob(''.join(map(recase, pattern)))
 
 def CopySectionFilesToStagingDir(config, section, staging_dir, src_dir,
                                  verbose):
@@ -131,9 +139,12 @@ def CopySectionFilesToStagingDir(config, section, staging_dir, src_dir,
     src_subdir = option.replace('\\', os.sep)
     dst_dir = os.path.join(staging_dir, config.get(section, option))
     dst_dir = dst_dir.replace('\\', os.sep)
-    src_paths = glob.glob(os.path.join(src_dir, src_subdir))
+    # There are specific issues with libEGL.dll and libGLESv2.dll which require
+    # insensitive globbing on linux machines.
+    src_paths = insensiglob(os.path.join(src_dir, src_subdir))
     if verbose and not src_paths:
-      print('No matches found for %s' % option)
+      print('No matches found for {} in {}'.format(
+        option, os.path.join(os.getcwd(), src_dir)))
     if src_paths and not os.path.exists(dst_dir):
       os.makedirs(dst_dir)
     for src_path in src_paths:

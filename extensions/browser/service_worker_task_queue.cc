@@ -325,6 +325,7 @@ void ServiceWorkerTaskQueue::DeactivateExtension(const Extension* extension) {
   if (!sequence)
     return;
 
+  activation_sequences_.erase(extension_id);
   SequencedContextId context_id(
       LazyContextId(browser_context_, extension_id, extension->url()),
       *sequence);

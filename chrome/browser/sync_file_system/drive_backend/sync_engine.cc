@@ -47,9 +47,9 @@
 #include "components/drive/service/drive_service_interface.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/device_service.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/system_connector.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
@@ -58,9 +58,7 @@
 #include "google_apis/drive/drive_api_url_generator.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/blob/scoped_file.h"
 #include "storage/common/file_system/file_system_util.h"
 
@@ -280,9 +278,7 @@ void SyncEngine::Initialize() {
           identity_manager_, url_loader_factory_, drive_task_runner_.get());
 
   mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider;
-  DCHECK(content::GetSystemConnector());
-  content::GetSystemConnector()->Connect(
-      device::mojom::kServiceName,
+  content::GetDeviceService().BindWakeLockProvider(
       wake_lock_provider.InitWithNewPipeAndPassReceiver());
 
   std::unique_ptr<drive::DriveUploaderInterface> drive_uploader(

@@ -1,4 +1,3 @@
-
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -198,8 +197,9 @@ bool DevToolsSession::DispatchProtocolMessage(const std::string& message) {
     message_to_send = &converted_cbor_message;
   }
   std::unique_ptr<protocol::DictionaryValue> value =
-      protocol::DictionaryValue::cast(
-          protocol::StringUtil::parseMessage(*message_to_send, true));
+      protocol::DictionaryValue::cast(protocol::Value::parseBinary(
+          reinterpret_cast<const uint8_t*>(message_to_send->data()),
+          message_to_send->size()));
 
   std::string session_id;
   if (!value || !value->getString(kSessionId, &session_id))

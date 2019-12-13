@@ -120,14 +120,12 @@ void WebDatabaseService::CancelRequest(WebDataServiceBase::Handle h) {
   web_db_backend_->request_manager()->CancelRequest(h);
 }
 
-void WebDatabaseService::RegisterDBLoadedCallback(
-    const DBLoadedCallback& callback) {
-  loaded_callbacks_.push_back(callback);
+void WebDatabaseService::RegisterDBLoadedCallback(DBLoadedCallback callback) {
+  loaded_callbacks_.push_back(std::move(callback));
 }
 
-void WebDatabaseService::RegisterDBErrorCallback(
-    const DBLoadErrorCallback& callback) {
-  error_callbacks_.push_back(callback);
+void WebDatabaseService::RegisterDBErrorCallback(DBLoadErrorCallback callback) {
+  error_callbacks_.push_back(std::move(callback));
 }
 
 void WebDatabaseService::OnDatabaseLoadDone(sql::InitStatus status,
@@ -142,10 +140,10 @@ void WebDatabaseService::OnDatabaseLoadDone(sql::InitStatus status,
       // (posted from WebDatabaseBackend::Delegate::DBLoaded()). We need to make
       // sure that after the callback running the message box returns, it checks
       // |error_callbacks_| before it accesses it.
-      DBLoadErrorCallback error_callback = error_callbacks_.back();
+      DBLoadErrorCallback error_callback = std::move(error_callbacks_.back());
       error_callbacks_.pop_back();
-      if (!error_callback.is_null())
-        error_callback.Run(status, diagnostics);
+      if (error_callback)
+        std::move(error_callback).Run(status, diagnostics);
     }
   }
 
@@ -153,10 +151,10 @@ void WebDatabaseService::OnDatabaseLoadDone(sql::InitStatus status,
     db_loaded_ = true;
 
     while (!loaded_callbacks_.empty()) {
-      DBLoadedCallback loaded_callback = loaded_callbacks_.back();
+      DBLoadedCallback loaded_callback = std::move(loaded_callbacks_.back());
       loaded_callbacks_.pop_back();
-      if (!loaded_callback.is_null())
-        loaded_callback.Run();
+      if (loaded_callback)
+        std::move(loaded_callback).Run();
     }
   }
 }

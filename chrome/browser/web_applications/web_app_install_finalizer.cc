@@ -315,6 +315,8 @@ void WebAppInstallFinalizer::FinalizeUpdate(
 
 void WebAppInstallFinalizer::UninstallWebApp(const AppId& app_id,
                                              UninstallWebAppCallback callback) {
+  registrar().NotifyWebAppWillBeUninstalled(app_id);
+
   ScopedRegistryUpdate update(sync_bridge_);
   update->DeleteApp(app_id);
 

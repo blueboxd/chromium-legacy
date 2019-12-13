@@ -1,4 +1,5 @@
 document
-++group
+++group IsControlElement=false
+++++img IsControlElement=false
 ++++img
 ++++img Name='full'

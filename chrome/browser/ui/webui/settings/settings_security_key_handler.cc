@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/webui/settings/settings_security_key_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/service_manager_connection.h"
 #include "device/fido/bio/enrollment_handler.h"
@@ -103,7 +102,7 @@ void SecurityKeysPINHandler::HandleStartSetPIN(const base::ListValue* args) {
   callback_id_ = args->GetList()[0].GetString();
   state_ = State::kStartSetPIN;
   set_pin_ = std::make_unique<device::SetPINRequestHandler>(
-      content::GetSystemConnector(), supported_transports(),
+      supported_transports(),
       base::BindOnce(&SecurityKeysPINHandler::OnGatherPIN,
                      weak_factory_.GetWeakPtr()),
       base::BindRepeating(&SecurityKeysPINHandler::OnSetPINComplete,
@@ -203,7 +202,7 @@ void SecurityKeysResetHandler::HandleReset(const base::ListValue* args) {
 
   state_ = State::kStartReset;
   reset_ = std::make_unique<device::ResetRequestHandler>(
-      content::GetSystemConnector(), supported_transports(),
+      supported_transports(),
       base::BindOnce(&SecurityKeysResetHandler::OnResetSent,
                      weak_factory_.GetWeakPtr()),
       base::BindOnce(&SecurityKeysResetHandler::OnResetFinished,
@@ -334,7 +333,6 @@ void SecurityKeysCredentialHandler::HandleStart(const base::ListValue* args) {
   discovery_factory_ = std::make_unique<device::FidoDiscoveryFactory>();
   credential_management_ =
       std::make_unique<device::CredentialManagementHandler>(
-          content::ServiceManagerConnection::GetForProcess()->GetConnector(),
           discovery_factory_.get(), supported_transports(),
           base::BindOnce(
               &SecurityKeysCredentialHandler::OnCredentialManagementReady,
@@ -589,7 +587,6 @@ void SecurityKeysBioEnrollmentHandler::HandleStart(
   callback_id_ = args->GetList()[0].GetString();
   discovery_factory_ = std::make_unique<device::FidoDiscoveryFactory>();
   bio_ = std::make_unique<device::BioEnrollmentHandler>(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       supported_transports(),
       base::BindOnce(&SecurityKeysBioEnrollmentHandler::OnReady,
                      weak_factory_.GetWeakPtr()),

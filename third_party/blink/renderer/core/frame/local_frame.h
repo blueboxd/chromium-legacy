@@ -466,6 +466,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void Collapse(bool collapsed) final;
   void EnableViewSourceMode() final;
   void Focus() final;
+  void ClearFocusedElement() final;
 
  private:
   friend class FrameNavigationDisabler;

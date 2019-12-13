@@ -57,10 +57,9 @@ int32_t PepperGamepadHost::OnRequestMemory(
   // Don't send the shared memory back until the user has interacted with the
   // gamepad. This is to prevent fingerprinting and matches what the web
   // platform does.
-  gamepad_service_->RegisterForUserGesture(
-      base::Bind(&PepperGamepadHost::GotUserGesture,
-                 weak_factory_.GetWeakPtr(),
-                 context->MakeReplyMessageContext()));
+  gamepad_service_->RegisterForUserGesture(base::BindOnce(
+      &PepperGamepadHost::GotUserGesture, weak_factory_.GetWeakPtr(),
+      context->MakeReplyMessageContext()));
   return PP_OK_COMPLETIONPENDING;
 }
 

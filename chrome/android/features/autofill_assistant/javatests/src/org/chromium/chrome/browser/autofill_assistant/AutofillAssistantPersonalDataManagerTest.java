@@ -5,9 +5,11 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.action.ViewActions.clearText;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -22,6 +24,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.getElementValue;
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.isNextAfterSibling;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.startAutofillAssistant;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
@@ -214,6 +217,147 @@ public class AutofillAssistantPersonalDataManagerTest {
         assertThat(getElementValue("email", getWebContents()), is("johndoe@google.com"));
     }
 
+    /**
+     * A new profile added externally should not overwrite the current selection.
+     */
+    @Test
+    @MediumTest
+    public void testExternalAddNewProfile() throws Exception {
+        mHelper.addDummyProfile("John Doe", "johndoe@google.com");
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setCollectUserData(
+                                CollectUserDataProto.newBuilder()
+                                        .setContactDetails(ContactDetailsProto.newBuilder()
+                                                                   .setContactDetailsName("contact")
+                                                                   .setRequestPayerName(true)
+                                                                   .setRequestPayerEmail(true)
+                                                                   .setRequestPayerPhone(false))
+                                        .setThirdpartyPrivacyNoticeText("3rd party privacy text")
+                                        .setRequestTermsAndConditions(false))
+                        .build());
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setUseAddress(
+                                UseAddressProto.newBuilder().setName("contact").setFormFieldElement(
+                                        ElementReferenceProto.newBuilder().addSelectors(
+                                                "#profile_name")))
+                        .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
+                                 PromptProto.Choice.newBuilder()))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Address")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(
+                withId(R.id.contact_summary), allOf(withText("johndoe@google.com"), isDisplayed()));
+        onView(withText("Continue")).check(matches(isEnabled()));
+        // Add new entry that is not supposed to be selected.
+        mHelper.addDummyProfile("Adam West", "adamwest@google.com");
+        onView(withText("Contact info")).perform(click());
+        waitUntilViewMatchesCondition(withText(containsString("Adam West")), isDisplayed());
+        onView(withText("Contact info")).perform(click());
+        waitUntilViewMatchesCondition(
+                withId(R.id.contact_summary), allOf(withText("johndoe@google.com"), isDisplayed()));
+        waitUntilViewMatchesCondition(withText("Continue"), isEnabled());
+        onView(withText("Continue")).perform(click());
+        waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
+        // Make sure it's not Adam West that was selected.
+        assertThat(getElementValue("profile_name", getWebContents()), is("John Doe"));
+        assertThat(getElementValue("email", getWebContents()), is("johndoe@google.com"));
+    }
+
+    /**
+     * Editing the currently selected profile should keep selection.
+     */
+    @Test
+    @MediumTest
+    public void testEditOfSelectedProfile() throws Exception {
+        mHelper.addDummyProfile("Adam West", "adamwest@google.com");
+        mHelper.addDummyProfile("John Doe", "johndoe@google.com");
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setCollectUserData(
+                                CollectUserDataProto.newBuilder()
+                                        .setContactDetails(ContactDetailsProto.newBuilder()
+                                                                   .setContactDetailsName("contact")
+                                                                   .setRequestPayerName(true)
+                                                                   .setRequestPayerEmail(true)
+                                                                   .setRequestPayerPhone(false))
+                                        .setThirdpartyPrivacyNoticeText("3rd party privacy text")
+                                        .setRequestTermsAndConditions(false))
+                        .build());
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setUseAddress(
+                                UseAddressProto.newBuilder().setName("contact").setFormFieldElement(
+                                        ElementReferenceProto.newBuilder().addSelectors(
+                                                "#profile_name")))
+                        .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
+                                 PromptProto.Choice.newBuilder()))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Address")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withId(R.id.contact_summary),
+                allOf(withText("adamwest@google.com"), isDisplayed()));
+        onView(withText("Continue")).check(matches(isEnabled()));
+        // Select John Doe.
+        onView(withText("Contact info")).perform(click());
+        waitUntilViewMatchesCondition(withText(containsString("John Doe")), isDisplayed());
+        onView(withText(containsString("John Doe"))).perform(click());
+        waitUntilViewMatchesCondition(
+                withId(R.id.contact_summary), allOf(withText("johndoe@google.com"), isDisplayed()));
+        // Edit John Doe to Jane Doe (does not collapse the list after editing).
+        onView(withText("Contact info")).perform(click());
+        waitUntilViewMatchesCondition(withText(containsString("John Doe")), isDisplayed());
+        onView(allOf(withContentDescription("Edit contact info"),
+                       isNextAfterSibling(hasDescendant(withText(containsString("John Doe"))))))
+                .perform(click());
+        waitUntilViewMatchesCondition(
+                withContentDescription("Name*"), allOf(isDisplayed(), isEnabled()));
+        onView(withContentDescription("Name*")).perform(clearText()).perform(typeText("Jane Doe"));
+        waitUntilViewMatchesCondition(
+                withContentDescription("Email*"), allOf(isDisplayed(), isEnabled()));
+        onView(withContentDescription("Email*"))
+                .perform(clearText())
+                .perform(typeText("janedoe@google.com"));
+        onView(withId(org.chromium.chrome.R.id.editor_dialog_done_button)).perform(click());
+        waitUntilViewMatchesCondition(withText("Contact info"), isDisplayed());
+        // Continue.
+        waitUntilViewMatchesCondition(withText("Continue"), isEnabled());
+        onView(withText("Continue")).perform(click());
+        waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
+        // Make sure it's now Jane Doe.
+        assertThat(getElementValue("profile_name", getWebContents()), is("Jane Doe"));
+        assertThat(getElementValue("email", getWebContents()), is("janedoe@google.com"));
+    }
+
     // TODO(b/143265578): Add test where credit card is manually entered.
 
     /**
@@ -260,7 +404,7 @@ public class AutofillAssistantPersonalDataManagerTest {
      */
     @Test
     @MediumTest
-    public void testLiveInsertAndEnterCreditCardWithoutBillingZip() throws Exception {
+    public void testLiveInsertCreditCardWithoutBillingZip() throws Exception {
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add((ActionProto) ActionProto.newBuilder()
                          .setCollectUserData(

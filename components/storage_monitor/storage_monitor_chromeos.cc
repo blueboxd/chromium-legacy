@@ -26,8 +26,7 @@
 #include "components/storage_monitor/mtp_manager_client_chromeos.h"
 #include "components/storage_monitor/removable_device_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "content/public/browser/device_service.h"
 
 using chromeos::disks::Disk;
 using chromeos::disks::DiskMountManager;
@@ -120,9 +119,8 @@ void StorageMonitorCros::Init() {
   // Tests may have already set a MTP manager.
   if (!mtp_device_manager_) {
     // Set up the connection with mojofied MtpManager.
-    DCHECK(GetConnector());
-    GetConnector()->Connect(device::mojom::kServiceName,
-                            mtp_device_manager_.BindNewPipeAndPassReceiver());
+    content::GetDeviceService().BindMtpManager(
+        mtp_device_manager_.BindNewPipeAndPassReceiver());
   }
   // |mtp_manager_client_| needs to be initialized for both tests and
   // production code, so keep it out of the if condition.

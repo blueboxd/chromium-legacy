@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "services/device/binder_overrides.h"
 #include "services/device/bluetooth/bluetooth_system_factory.h"
 #include "services/device/fingerprint/fingerprint.h"
 #include "services/device/generic_sensor/platform_sensor_provider.h"
@@ -140,6 +141,12 @@ void DeviceService::SetPlatformSensorProviderForTesting(
     std::unique_ptr<PlatformSensorProvider> provider) {
   DCHECK(!sensor_provider_);
   sensor_provider_ = std::make_unique<SensorProviderImpl>(std::move(provider));
+}
+
+// static
+void DeviceService::OverrideGeolocationContextBinderForTesting(
+    GeolocationContextBinder binder) {
+  internal::GetGeolocationContextBinderOverride() = std::move(binder);
 }
 
 void DeviceService::OnStart() {
@@ -299,6 +306,12 @@ void DeviceService::BindGeolocationConfig(
 
 void DeviceService::BindGeolocationContext(
     mojo::PendingReceiver<mojom::GeolocationContext> receiver) {
+  const auto& binder_override = internal::GetGeolocationContextBinderOverride();
+  if (binder_override) {
+    binder_override.Run(std::move(receiver));
+    return;
+  }
+
   GeolocationContext::Create(std::move(receiver));
 }
 

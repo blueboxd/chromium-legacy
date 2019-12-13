@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
@@ -14,7 +15,10 @@ import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_TEXT_WATCHER;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_LEARN_MORE_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO_DESCRIPTION_INITIALIZED;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO_DESCRIPTION_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.VOICE_SEARCH_BUTTON_CLICK_LISTENER;
@@ -52,19 +56,24 @@ public class TasksSurfaceMediatorUnitTest {
     private FakeboxDelegate mFakeboxDelegate;
     @Mock
     private LocationBarVoiceRecognitionHandler mLocationBarVoiceRecognitionHandler;
+    @Mock
+    private View.OnClickListener mLearnMoreOnClickListener;
     @Captor
     private ArgumentCaptor<View.OnClickListener> mFakeboxClickListenerCaptor;
     @Captor
     private ArgumentCaptor<TextWatcher> mFakeboxTextWatcherCaptor;
     @Captor
     private ArgumentCaptor<View.OnClickListener> mVoiceSearchButtonClickListenerCaptor;
+    @Captor
+    private ArgumentCaptor<View.OnClickListener> mLearnMoreOnClickListenerCaptor;
 
     @Before
     public void setUp() {
         RecordUserAction.setDisabledForTests(true);
         MockitoAnnotations.initMocks(this);
 
-        mMediator = new TasksSurfaceMediator(mPropertyModel, mFakeboxDelegate, true);
+        mMediator = new TasksSurfaceMediator(
+                mPropertyModel, mFakeboxDelegate, mLearnMoreOnClickListener, true);
     }
 
     @After
@@ -85,6 +94,12 @@ public class TasksSurfaceMediatorUnitTest {
                         mVoiceSearchButtonClickListenerCaptor.capture());
         verify(mPropertyModel).set(eq(IS_FAKE_SEARCH_BOX_VISIBLE), eq(true));
         verify(mPropertyModel).set(eq(IS_VOICE_RECOGNITION_BUTTON_VISIBLE), eq(false));
+        verify(mPropertyModel)
+                .set(eq(INCOGNITO_LEARN_MORE_CLICK_LISTENER),
+                        mLearnMoreOnClickListenerCaptor.capture());
+        assertEquals(mLearnMoreOnClickListener, mLearnMoreOnClickListenerCaptor.getValue());
+        assertEquals(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_VISIBLE), false);
+        assertEquals(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_INITIALIZED), false);
     }
 
     @Test

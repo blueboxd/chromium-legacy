@@ -36,6 +36,48 @@ base::Optional<GamepadBuilder::ButtonData> GetAxisButtonData(
   data.y_axis = -axis.at(1);
   return data;
 }
+
+base::Optional<Gamepad> GetXrStandardGamepad(
+    const OpenXrController& controller) {
+  XRStandardGamepadBuilder builder(controller.GetHandness());
+
+  base::Optional<GamepadButton> trigger_button =
+      controller.GetButton(OpenXrButtonType::kTrigger);
+  if (!trigger_button)
+    return base::nullopt;
+
+  builder.SetPrimaryButton(trigger_button.value());
+
+  base::Optional<GamepadButton> squeeze_button =
+      controller.GetButton(OpenXrButtonType::kSqueeze);
+  if (squeeze_button)
+    builder.SetSecondaryButton(squeeze_button.value());
+
+  base::Optional<GamepadButton> trackpad_button =
+      controller.GetButton(OpenXrButtonType::kTrackpad);
+  std::vector<double> trackpad_axis =
+      controller.GetAxis(OpenXrAxisType::kTrackpad);
+  base::Optional<GamepadBuilder::ButtonData> trackpad_button_data =
+      GetAxisButtonData(OpenXrAxisType::kTrackpad, trackpad_button,
+                        trackpad_axis);
+
+  if (trackpad_button_data)
+    builder.SetTouchpadData(trackpad_button_data.value());
+
+  base::Optional<GamepadButton> thumbstick_button =
+      controller.GetButton(OpenXrButtonType::kThumbstick);
+  std::vector<double> thumbstick_axis =
+      controller.GetAxis(OpenXrAxisType::kThumbstick);
+  base::Optional<GamepadBuilder::ButtonData> thumbstick_button_data =
+      GetAxisButtonData(OpenXrAxisType::kThumbstick, thumbstick_button,
+                        thumbstick_axis);
+
+  if (thumbstick_button_data)
+    builder.SetThumbstickData(thumbstick_button_data.value());
+
+  return builder.GetGamepad();
+}
+
 }  // namespace
 
 XrResult OpenXRInputHelper::CreateOpenXRInputHelper(
@@ -86,7 +128,7 @@ XrResult OpenXRInputHelper::Initialize(XrInstance instance) {
 
   std::vector<XrActionSet> action_sets(controller_states_.size());
   for (size_t i = 0; i < controller_states_.size(); i++) {
-    action_sets[i] = controller_states_[i].controller.GetActionSet();
+    action_sets[i] = controller_states_[i].controller.action_set();
   }
 
   XrSessionActionSetsAttachInfo attach_info = {
@@ -111,12 +153,12 @@ std::vector<mojom::XRInputSourceStatePtr> OpenXRInputHelper::GetInputState(
   for (uint32_t i = 0; i < controller_states_.size(); i++) {
     device::OpenXrController* controller = &controller_states_[i].controller;
 
-    base::Optional<GamepadButton> trigger_button =
+    base::Optional<GamepadButton> primary_button =
         controller->GetButton(OpenXrButtonType::kTrigger);
 
     // Having a trigger button is the minimum for an webxr input.
     // No trigger button indicates input is not connected.
-    if (!trigger_button) {
+    if (!primary_button) {
       continue;
     }
 
@@ -134,7 +176,7 @@ std::vector<mojom::XRInputSourceStatePtr> OpenXRInputHelper::GetInputState(
 
     state->mojo_from_input = controller->GetMojoFromGripTransform(
         predicted_display_time, local_space_, &state->emulated_position);
-    state->primary_input_pressed = trigger_button.value().pressed;
+    state->primary_input_pressed = primary_button.value().pressed;
     state->primary_input_clicked =
         controller_states_[i].primary_button_pressed &&
         !state->primary_input_pressed;
@@ -159,45 +201,14 @@ base::WeakPtr<OpenXRInputHelper> OpenXRInputHelper::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-base::Optional<Gamepad> OpenXRInputHelper::GetWebXRGamepad(
-    const OpenXrController& controller) const {
-  XRStandardGamepadBuilder builder(controller.GetHandness());
-
-  base::Optional<GamepadButton> trigger_button =
-      controller.GetButton(OpenXrButtonType::kTrigger);
-  if (!trigger_button)
-    return base::nullopt;
-
-  builder.SetPrimaryButton(trigger_button.value());
-
-  base::Optional<GamepadButton> squeeze_button =
-      controller.GetButton(OpenXrButtonType::kSqueeze);
-  if (squeeze_button)
-    builder.SetSecondaryButton(squeeze_button.value());
-
-  base::Optional<GamepadButton> trackpad_button =
-      controller.GetButton(OpenXrButtonType::kTrackpad);
-  std::vector<double> trackpad_axis =
-      controller.GetAxis(OpenXrAxisType::kTrackpad);
-  base::Optional<GamepadBuilder::ButtonData> trackpad_button_data =
-      GetAxisButtonData(OpenXrAxisType::kTrackpad, trackpad_button,
-                        trackpad_axis);
-
-  if (trackpad_button_data)
-    builder.SetTouchpadData(trackpad_button_data.value());
-
-  base::Optional<GamepadButton> thumbstick_button =
-      controller.GetButton(OpenXrButtonType::kThumbstick);
-  std::vector<double> thumbstick_axis =
-      controller.GetAxis(OpenXrAxisType::kThumbstick);
-  base::Optional<GamepadBuilder::ButtonData> thumbstick_button_data =
-      GetAxisButtonData(OpenXrAxisType::kThumbstick, thumbstick_button,
-                        thumbstick_axis);
-
-  if (thumbstick_button_data)
-    builder.SetThumbstickData(thumbstick_button_data.value());
-
-  return builder.GetGamepad();
+base::Optional<Gamepad> OpenXRInputHelper ::GetWebXRGamepad(
+    const OpenXrController& controller) {
+  if (controller.interaction_profile() ==
+      path_helper_->GetDeclaredPaths()
+          .microsoft_motion_controller_interaction_profile) {
+    return GetXrStandardGamepad(controller);
+  }
+  return base::nullopt;
 }
 
 XrResult OpenXRInputHelper::SyncActions(XrTime predicted_display_time) {
@@ -205,7 +216,7 @@ XrResult OpenXRInputHelper::SyncActions(XrTime predicted_display_time) {
 
   for (size_t i = 0; i < controller_states_.size(); i++) {
     active_action_sets[i].actionSet =
-        controller_states_[i].controller.GetActionSet();
+        controller_states_[i].controller.action_set();
     active_action_sets[i].subactionPath = XR_NULL_PATH;
   }
 

@@ -231,7 +231,17 @@ void NetworkListView::UpdateNetworkListInternal() {
 
   views::View* selected_view = nullptr;
   for (const auto& iter : network_guid_map_) {
-    if (iter.second->IsMouseHovered()) {
+    // The within_bounds check is necessary when the network list goes beyond
+    // the visible area (i.e. scrolling) and the mouse is below the tray pop-up.
+    // The items not in view in the tray pop-up keep going down and have
+    // View::GetVisibility() == true but they are masked and not seen by the
+    // user. When the mouse is below the list where the item would be if the
+    // list continued downward, IsMouseHovered() is true and this will trigger
+    // an incorrect programmatic scroll if we don't stop it. The bounds check
+    // ensures the view is actually visible within the tray pop-up.
+    bool within_bounds =
+        this->GetBoundsInScreen().Intersects(iter.second->GetBoundsInScreen());
+    if (within_bounds && iter.second->IsMouseHovered()) {
       selected_view = iter.second;
       break;
     }

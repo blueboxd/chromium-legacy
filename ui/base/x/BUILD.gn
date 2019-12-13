@@ -12,6 +12,8 @@ jumbo_component("x") {
   output_name = "ui_base_x"
 
   sources = [
+    "selection_utils.cc",
+    "selection_utils.h",
     "x11_display_manager.cc",
     "x11_display_manager.h",
     "x11_display_util.cc",
@@ -43,6 +45,15 @@ jumbo_component("x") {
     ]
   }
 
+  if (is_desktop_linux) {
+    sources += [
+      "x11_drag_context.cc",
+      "x11_drag_context.h",
+      "x11_drag_drop_client.cc",
+      "x11_drag_drop_client.h",
+    ]
+  }
+
   configs += [
     "//build/config/linux:x11",
     "//build/config/linux:xrandr",
@@ -55,6 +66,7 @@ jumbo_component("x") {
     "//base:i18n",
     "//skia",
     "//ui/base:hit_test",
+    "//ui/base/clipboard:clipboard_types",
     "//ui/display/util",
     "//ui/events",
     "//ui/events/devices/x11",

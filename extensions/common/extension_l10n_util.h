@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/strings/string_piece.h"
 
 namespace base {
@@ -37,6 +38,10 @@ enum class GzippedMessagesPermission {
 // extensions, otherwise returns kDisallow.
 GzippedMessagesPermission GetGzippedMessagesPermissionForExtension(
     const extensions::Extension* extension);
+
+// Called from tests to temporarily allow loading gzipped messages for non
+// component test extensions.
+base::AutoReset<bool> AllowGzippedMessagesAllowedForTest();
 
 // Set the locale for this process to a fixed value, rather than using the
 // normal file-based lookup mechanisms. This is used to set the locale inside

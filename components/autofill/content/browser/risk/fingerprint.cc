@@ -30,6 +30,7 @@
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/device_service.h"
 #include "content/public/browser/font_list_async.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
@@ -43,11 +44,9 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/geolocation.mojom.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -197,8 +196,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
       const std::string& app_locale,
       const std::string& user_agent,
       const base::TimeDelta& timeout,
-      base::OnceCallback<void(std::unique_ptr<Fingerprint>)> callback,
-      service_manager::Connector* connector);
+      base::OnceCallback<void(std::unique_ptr<Fingerprint>)> callback);
 
  private:
   ~FingerprintDataLoader() override {}
@@ -274,8 +272,7 @@ FingerprintDataLoader::FingerprintDataLoader(
     const std::string& app_locale,
     const std::string& user_agent,
     const base::TimeDelta& timeout,
-    base::OnceCallback<void(std::unique_ptr<Fingerprint>)> callback,
-    service_manager::Connector* connector)
+    base::OnceCallback<void(std::unique_ptr<Fingerprint>)> callback)
     : gpu_data_manager_(content::GpuDataManager::GetInstance()),
       obfuscated_gaia_id_(obfuscated_gaia_id),
       window_bounds_(window_bounds),
@@ -316,9 +313,8 @@ FingerprintDataLoader::FingerprintDataLoader(
                                            weak_ptr_factory_.GetWeakPtr()));
 
   // Load geolocation data.
-  DCHECK(connector);
-  connector->Connect(device::mojom::kServiceName,
-                     geolocation_context_.BindNewPipeAndPassReceiver());
+  content::GetDeviceService().BindGeolocationContext(
+      geolocation_context_.BindNewPipeAndPassReceiver());
   geolocation_context_->BindGeolocation(
       geolocation_.BindNewPipeAndPassReceiver());
   geolocation_->SetHighAccuracy(false);
@@ -459,14 +455,13 @@ void GetFingerprintInternal(
     const std::string& app_locale,
     const std::string& user_agent,
     const base::TimeDelta& timeout,
-    base::OnceCallback<void(std::unique_ptr<Fingerprint>)> callback,
-    service_manager::Connector* connector) {
+    base::OnceCallback<void(std::unique_ptr<Fingerprint>)> callback) {
   // Begin loading all of the data that we need to load asynchronously.
   // This class is responsible for freeing its own memory.
   new FingerprintDataLoader(obfuscated_gaia_id, window_bounds, content_bounds,
                             screen_info, version, charset, accept_languages,
                             install_time, app_locale, user_agent, timeout,
-                            std::move(callback), connector);
+                            std::move(callback));
 }
 
 }  // namespace internal
@@ -481,8 +476,7 @@ void GetFingerprint(
     const base::Time& install_time,
     const std::string& app_locale,
     const std::string& user_agent,
-    base::OnceCallback<void(std::unique_ptr<Fingerprint>)> callback,
-    service_manager::Connector* connector) {
+    base::OnceCallback<void(std::unique_ptr<Fingerprint>)> callback) {
   gfx::Rect content_bounds = web_contents->GetContainerBounds();
 
   content::ScreenInfo screen_info;
@@ -494,8 +488,7 @@ void GetFingerprint(
   internal::GetFingerprintInternal(
       obfuscated_gaia_id, window_bounds, content_bounds, screen_info, version,
       charset, accept_languages, install_time, app_locale, user_agent,
-      base::TimeDelta::FromSeconds(kTimeoutSeconds), std::move(callback),
-      connector);
+      base::TimeDelta::FromSeconds(kTimeoutSeconds), std::move(callback));
 }
 
 }  // namespace risk

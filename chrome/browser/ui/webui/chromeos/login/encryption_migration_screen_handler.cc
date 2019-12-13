@@ -39,11 +39,9 @@
 #include "components/login/localized_values_builder.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/device_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -624,16 +622,10 @@ device::mojom::WakeLock* EncryptionMigrationScreenHandler::GetWakeLock() {
   mojo::PendingReceiver<device::mojom::WakeLock> receiver =
       wake_lock_.BindNewPipeAndPassReceiver();
 
-  // Service manager connection might be not initialized in some testing
-  // contexts.
-  if (!content::GetSystemConnector())
-    return wake_lock_.get();
-
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider;
-  content::GetSystemConnector()->Connect(
-      device::mojom::kServiceName,
+  content::GetDeviceService().BindWakeLockProvider(
       wake_lock_provider.BindNewPipeAndPassReceiver());
   wake_lock_provider->GetWakeLockWithoutContext(
       device::mojom::WakeLockType::kPreventAppSuspension,

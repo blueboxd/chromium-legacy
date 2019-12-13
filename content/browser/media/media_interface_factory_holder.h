@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
+#include "media/mojo/mojom/media_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
@@ -18,14 +19,17 @@
 namespace content {
 
 // Helper class to get mojo::PendingRemote<media::mojom::InterfaceFactory>.
-// Get() lazily connects to the media service specified by |service_name_|.
+// Get() lazily connects to the global Media Service instance.
 class MediaInterfaceFactoryHolder {
  public:
+  using MediaServiceGetter =
+      base::RepeatingCallback<media::mojom::MediaService&()>;
   using CreateInterfaceProviderCB = base::RepeatingCallback<
       mojo::PendingRemote<service_manager::mojom::InterfaceProvider>()>;
 
+  // |media_service_getter| will be called from the UI thread.
   MediaInterfaceFactoryHolder(
-      const std::string& service_name,
+      MediaServiceGetter media_service_getter,
       CreateInterfaceProviderCB create_interface_provider_cb);
   ~MediaInterfaceFactoryHolder();
 
@@ -39,7 +43,7 @@ class MediaInterfaceFactoryHolder {
   // Callback for connection error from |interface_factory_remote_|.
   void OnMediaServiceConnectionError();
 
-  const std::string service_name_;
+  MediaServiceGetter media_service_getter_;
   CreateInterfaceProviderCB create_interface_provider_cb_;
   mojo::Remote<media::mojom::InterfaceFactory> interface_factory_remote_;
 

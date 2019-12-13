@@ -92,7 +92,7 @@ class StorageHandler
   void UpdateMyFilesSize();
 
   // Computes the size of My Files and Play files.
-  int64_t ComputeLocalFilesSize();
+  int64_t ComputeLocalFilesSize(const base::FilePath& my_files_path);
 
   // Callback to update the UI about the size of Downloads directory.
   void OnGetMyFilesSize(int64_t size);

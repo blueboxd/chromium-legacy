@@ -95,10 +95,8 @@ bool DownloadItemImplDelegate::IsActiveNetworkMetered() const {
 
 void DownloadItemImplDelegate::ReportBytesWasted(DownloadItemImpl* download) {}
 
-service_manager::Connector*
-DownloadItemImplDelegate::GetServiceManagerConnector() {
-  return nullptr;
-}
+void DownloadItemImplDelegate::BindWakeLockProvider(
+    mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver) {}
 
 QuarantineConnectionCallback
 DownloadItemImplDelegate::GetQuarantineConnectionCallback() {

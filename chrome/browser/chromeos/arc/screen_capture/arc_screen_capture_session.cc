@@ -83,16 +83,16 @@ struct ArcScreenCaptureSession::DesktopTexture {
 };
 
 // static
-mojom::ScreenCaptureSessionPtr ArcScreenCaptureSession::Create(
-    mojom::ScreenCaptureSessionNotifierPtr notifier,
-    const std::string& display_name,
-    content::DesktopMediaID desktop_id,
-    const gfx::Size& size,
-    bool enable_notification) {
+mojo::PendingRemote<mojom::ScreenCaptureSession>
+ArcScreenCaptureSession::Create(mojom::ScreenCaptureSessionNotifierPtr notifier,
+                                const std::string& display_name,
+                                content::DesktopMediaID desktop_id,
+                                const gfx::Size& size,
+                                bool enable_notification) {
   // This will get cleaned up when the connection error handler is called.
   ArcScreenCaptureSession* session =
       new ArcScreenCaptureSession(std::move(notifier), size);
-  mojo::InterfacePtr<mojom::ScreenCaptureSession> result =
+  mojo::PendingRemote<mojom::ScreenCaptureSession> result =
       session->Initialize(desktop_id, display_name, enable_notification);
   if (!result)
     delete session;
@@ -102,22 +102,21 @@ mojom::ScreenCaptureSessionPtr ArcScreenCaptureSession::Create(
 ArcScreenCaptureSession::ArcScreenCaptureSession(
     mojom::ScreenCaptureSessionNotifierPtr notifier,
     const gfx::Size& size)
-    : binding_(this),
-      notifier_(std::move(notifier)),
+    : notifier_(std::move(notifier)),
       size_(size),
       client_native_pixmap_factory_(
           gfx::CreateClientNativePixmapFactoryDmabuf()) {}
 
-mojom::ScreenCaptureSessionPtr ArcScreenCaptureSession::Initialize(
-    content::DesktopMediaID desktop_id,
-    const std::string& display_name,
-    bool enable_notification) {
+mojo::PendingRemote<mojom::ScreenCaptureSession>
+ArcScreenCaptureSession::Initialize(content::DesktopMediaID desktop_id,
+                                    const std::string& display_name,
+                                    bool enable_notification) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   display_root_window_ =
       content::DesktopMediaID::GetNativeWindowById(desktop_id);
   if (!display_root_window_) {
     LOG(ERROR) << "Unable to find Aura desktop window";
-    return nullptr;
+    return mojo::NullRemote();
   }
 
   auto context_provider = GetContextProvider();
@@ -152,11 +151,11 @@ mojom::ScreenCaptureSessionPtr ArcScreenCaptureSession::Initialize(
   ash::Shell::Get()->display_manager()->inc_screen_capture_active_counter();
   ash::Shell::Get()->UpdateCursorCompositingEnabled();
 
-  mojom::ScreenCaptureSessionPtr interface_ptr;
-  binding_.Bind(mojo::MakeRequest(&interface_ptr));
-  binding_.set_connection_error_handler(
+  mojo::PendingRemote<mojom::ScreenCaptureSession> remote =
+      receiver_.BindNewPipeAndPassRemote();
+  receiver_.set_disconnect_handler(
       base::BindOnce(&ArcScreenCaptureSession::Close, base::Unretained(this)));
-  return interface_ptr;
+  return remote;
 }
 
 void ArcScreenCaptureSession::Close() {

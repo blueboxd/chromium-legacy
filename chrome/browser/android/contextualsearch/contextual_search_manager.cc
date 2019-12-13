@@ -92,25 +92,6 @@ void ContextualSearchManager::GatherSurroundingText(
                                           base_web_contents);
 }
 
-base::android::ScopedJavaLocalRef<jstring>
-ContextualSearchManager::GetTargetLanguage(JNIEnv* env,
-                                           const JavaParamRef<jobject>& obj) {
-  DCHECK(delegate_);
-  std::string target_language(delegate_->GetTargetLanguage());
-  base::android::ScopedJavaLocalRef<jstring> j_target_language =
-      base::android::ConvertUTF8ToJavaString(env, target_language);
-  return j_target_language;
-}
-
-base::android::ScopedJavaLocalRef<jstring>
-ContextualSearchManager::GetAcceptLanguages(JNIEnv* env,
-                                            const JavaParamRef<jobject>& obj) {
-  std::string accept_languages = delegate_->GetAcceptLanguages();
-  base::android::ScopedJavaLocalRef<jstring> j_accept_languages =
-      base::android::ConvertUTF8ToJavaString(env, accept_languages);
-  return j_accept_languages;
-}
-
 void ContextualSearchManager::OnSearchTermResolutionResponse(
     const ResolvedSearchTerm& resolved_search_term) {
   // Notify the Java UX of the result.

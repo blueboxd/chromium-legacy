@@ -83,15 +83,13 @@ class BaseTest : public testing::Test {
   }
 
   void AddUrlToList(const char* pref_name, const GURL& url) {
-    ListPrefUpdate updater(TestingBrowserProcess::GetGlobal()->local_state(),
-                           pref_name);
-    updater->GetList().emplace_back(url.host());
+    ListPrefUpdate(TestingBrowserProcess::GetGlobal()->local_state(), pref_name)
+        ->Append(url.host());
   }
 
   void AddUrlToList(const char* pref_name, const char* url) {
-    ListPrefUpdate updater(TestingBrowserProcess::GetGlobal()->local_state(),
-                           pref_name);
-    updater->GetList().emplace_back(url);
+    ListPrefUpdate(TestingBrowserProcess::GetGlobal()->local_state(), pref_name)
+        ->Append(url);
   }
 
   void SetUp() override {

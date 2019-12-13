@@ -67,16 +67,16 @@ bool ShouldUseViewsTaskManager() {
                   tableModel:(task_manager::TaskManagerTableModel*)tableModel {
   base::scoped_nsobject<NSWindow> window = [self createAndLayOutWindow];
   if ((self = [super initWithWindow:window])) {
-    taskManagerMac_ = taskManagerMac;
-    tableModel_ = tableModel;
+    _taskManagerMac = taskManagerMac;
+    _tableModel = tableModel;
 
     [window setDelegate:self];
 
-    [tableView_ setDelegate:self];
-    [tableView_ setDataSource:self];
+    [_tableView setDelegate:self];
+    [_tableView setDataSource:self];
 
     if (g_browser_process && g_browser_process->local_state()) {
-      size_saver_.reset([[WindowSizeAutosaver alloc]
+      _size_saver.reset([[WindowSizeAutosaver alloc]
           initWithWindow:[self window]
              prefService:g_browser_process->local_state()
                     path:prefs::kTaskManagerWindowPlacement]);
@@ -86,7 +86,7 @@ bool ShouldUseViewsTaskManager() {
     [self setUpTableColumns];
     [self setUpTableHeaderContextMenu];
     [self adjustSelectionAndEndProcessButton];
-    [tableView_ sizeToFit];
+    [_tableView sizeToFit];
 
     [self reloadData];
     [self showWindow:self];
@@ -95,15 +95,15 @@ bool ShouldUseViewsTaskManager() {
 }
 
 - (void)sortShuffleArray {
-  viewToModelMap_.resize(tableModel_->RowCount());
-  for (size_t i = 0; i < viewToModelMap_.size(); ++i)
-    viewToModelMap_[i] = i;
+  _viewToModelMap.resize(_tableModel->RowCount());
+  for (size_t i = 0; i < _viewToModelMap.size(); ++i)
+    _viewToModelMap[i] = i;
 
-  if (currentSortDescriptor_.sorted_column_id != -1) {
-    task_manager::TaskManagerTableModel* tableModel = tableModel_;
+  if (_currentSortDescriptor.sorted_column_id != -1) {
+    task_manager::TaskManagerTableModel* tableModel = _tableModel;
     task_manager::TableSortDescriptor currentSortDescriptor =
-        currentSortDescriptor_;
-    std::stable_sort(viewToModelMap_.begin(), viewToModelMap_.end(),
+        _currentSortDescriptor;
+    std::stable_sort(_viewToModelMap.begin(), _viewToModelMap.end(),
                      [tableModel, currentSortDescriptor](int a, int b) {
                        int aStart, aLength;
                        tableModel->GetRowsGroupRange(a, &aStart, &aLength);
@@ -127,9 +127,9 @@ bool ShouldUseViewsTaskManager() {
                      });
   }
 
-  modelToViewMap_.resize(viewToModelMap_.size());
-  for (size_t i = 0; i < viewToModelMap_.size(); ++i)
-    modelToViewMap_[viewToModelMap_[i]] = i;
+  _modelToViewMap.resize(_viewToModelMap.size());
+  for (size_t i = 0; i < _viewToModelMap.size(); ++i)
+    _modelToViewMap[_viewToModelMap[i]] = i;
 }
 
 - (void)reloadData {
@@ -138,12 +138,12 @@ bool ShouldUseViewsTaskManager() {
 
 - (void)reloadDataWithRows:(int)addedRows addedAtIndex:(int)addedRowIndex {
   // Store old view indices, and the model indices they map to.
-  NSIndexSet* viewSelection = [tableView_ selectedRowIndexes];
+  NSIndexSet* viewSelection = [_tableView selectedRowIndexes];
   std::vector<int> modelSelection;
   for (NSUInteger i = [viewSelection lastIndex];
        i != NSNotFound;
        i = [viewSelection indexLessThanIndex:i]) {
-    modelSelection.push_back(viewToModelMap_[i]);
+    modelSelection.push_back(_viewToModelMap[i]);
   }
 
   // Adjust for any added or removed rows.
@@ -170,21 +170,21 @@ bool ShouldUseViewsTaskManager() {
   [self sortShuffleArray];
 
   // Reload the data.
-  [tableView_ reloadData];
+  [_tableView reloadData];
 
   // Reload the selection.
   NSMutableIndexSet* indexSet = [NSMutableIndexSet indexSet];
   for (auto selectedItem : modelSelection) {
     if (selectedItem != -1)
-      [indexSet addIndex:modelToViewMap_[selectedItem]];
+      [indexSet addIndex:_modelToViewMap[selectedItem]];
   }
-  [tableView_ selectRowIndexes:indexSet byExtendingSelection:NO];
+  [_tableView selectRowIndexes:indexSet byExtendingSelection:NO];
 
   [self adjustSelectionAndEndProcessButton];
 }
 
 - (task_manager::TableSortDescriptor)sortDescriptor {
-  return currentSortDescriptor_;
+  return _currentSortDescriptor;
 }
 
 - (void)setSortDescriptor:
@@ -193,45 +193,45 @@ bool ShouldUseViewsTaskManager() {
       [[NSSortDescriptor alloc]
           initWithKey:ColumnIdentifier(sortDescriptor.sorted_column_id)
             ascending:sortDescriptor.is_ascending]);
-  [tableView_ setSortDescriptors:@[ nsSortDescriptor ]];
+  [_tableView setSortDescriptors:@[ nsSortDescriptor ]];
 }
 
 - (BOOL)visibilityOfColumnWithId:(int)columnId {
   NSTableColumn* column =
-      [tableView_ tableColumnWithIdentifier:ColumnIdentifier(columnId)];
+      [_tableView tableColumnWithIdentifier:ColumnIdentifier(columnId)];
   return column ? ![column isHidden] : NO;
 }
 
 - (void)setColumnWithId:(int)columnId toVisibility:(BOOL)visibility {
   NSTableColumn* column =
-      [tableView_ tableColumnWithIdentifier:ColumnIdentifier(columnId)];
+      [_tableView tableColumnWithIdentifier:ColumnIdentifier(columnId)];
   [column setHidden:!visibility];
 
-  [tableView_ sizeToFit];
-  [tableView_ setNeedsDisplay];
+  [_tableView sizeToFit];
+  [_tableView setNeedsDisplay];
 }
 
 - (IBAction)killSelectedProcesses:(id)sender {
-  NSIndexSet* selection = [tableView_ selectedRowIndexes];
+  NSIndexSet* selection = [_tableView selectedRowIndexes];
   for (NSUInteger i = [selection lastIndex];
        i != NSNotFound;
        i = [selection indexLessThanIndex:i]) {
-    tableModel_->KillTask(viewToModelMap_[i]);
+    _tableModel->KillTask(_viewToModelMap[i]);
   }
 }
 
 - (void)tableWasDoubleClicked:(id)sender {
-  NSInteger row = [tableView_ clickedRow];
+  NSInteger row = [_tableView clickedRow];
   if (row < 0)
     return;  // Happens e.g. if the table header is double-clicked.
-  tableModel_->ActivateTask(viewToModelMap_[row]);
+  _tableModel->ActivateTask(_viewToModelMap[row]);
 }
 
 - (void)dealloc {
   // Paranoia. These should have been nilled out in -windowWillClose: but let's
   // make sure we have no dangling references.
-  [tableView_ setDelegate:nil];
-  [tableView_ setDataSource:nil];
+  [_tableView setDelegate:nil];
+  [_tableView setDataSource:nil];
   [super dealloc];
 }
 
@@ -254,13 +254,13 @@ bool ShouldUseViewsTaskManager() {
   NSView* contentView = [window contentView];
 
   // Create the button that terminates the selected process in the table.
-  endProcessButton_ =
+  _endProcessButton =
       [ButtonUtils buttonWithTitle:l10n_util::GetNSString(IDS_TASK_MANAGER_KILL)
                             action:@selector(killSelectedProcesses:)
                             target:self];
-  [endProcessButton_ setAutoresizingMask:NSViewMinXMargin | NSViewMaxYMargin];
-  [endProcessButton_ sizeToFit];
-  NSRect buttonFrame = [endProcessButton_ frame];
+  [_endProcessButton setAutoresizingMask:NSViewMinXMargin | NSViewMaxYMargin];
+  [_endProcessButton sizeToFit];
+  NSRect buttonFrame = [_endProcessButton frame];
   buttonFrame.size.width += kMargin;
   // Adjust the button's origin so that it is flush with the right-hand side of
   // the table.
@@ -268,8 +268,8 @@ bool ShouldUseViewsTaskManager() {
       NSWidth([contentView frame]) - NSWidth(buttonFrame) - kMargin + 6;
   // Use only half the margin, since the full margin is too much whitespace.
   buttonFrame.origin.y = kMargin / 2;
-  [endProcessButton_ setFrame:buttonFrame];
-  [contentView addSubview:endProcessButton_];
+  [_endProcessButton setFrame:buttonFrame];
+  [contentView addSubview:_endProcessButton];
 
   // Create a scroll view to house the table view.
   CGFloat scrollViewY = NSMaxY(buttonFrame) + kMargin / 2;
@@ -299,7 +299,7 @@ bool ShouldUseViewsTaskManager() {
   [tableView setFocusRingType:NSFocusRingTypeNone];
   [tableView setIntercellSpacing:NSMakeSize(0, 0)];
   [tableView setUsesAlternatingRowBackgroundColors:YES];
-  tableView_ = tableView.get();
+  _tableView = tableView.get();
 
   [scrollView setDocumentView:tableView];
 
@@ -349,14 +349,14 @@ bool ShouldUseViewsTaskManager() {
   [column.get() setResizingMask:NSTableColumnAutoresizingMask |
                                 NSTableColumnUserResizingMask];
 
-  [tableView_ addTableColumn:column.get()];
+  [_tableView addTableColumn:column.get()];
   return column.get();  // Now retained by |tableView_|.
 }
 
 // Adds all the task manager's columns to the table.
 - (void)setUpTableColumns {
-  for (NSTableColumn* column in [tableView_ tableColumns])
-    [tableView_ removeTableColumn:column];
+  for (NSTableColumn* column in [_tableView tableColumns])
+    [_tableView removeTableColumn:column];
 
   for (size_t i = 0; i < task_manager::kColumnsSize; ++i) {
     const auto& columnData = task_manager::kColumns[i];
@@ -383,13 +383,13 @@ bool ShouldUseViewsTaskManager() {
   base::scoped_nsobject<NSMenu> contextMenu(
       [[NSMenu alloc] initWithTitle:@"Task Manager context menu"]);
   [contextMenu setDelegate:self];
-  [[tableView_ headerView] setMenu:contextMenu.get()];
+  [[_tableView headerView] setMenu:contextMenu.get()];
 }
 
 - (void)menuNeedsUpdate:(NSMenu*)menu {
   [menu removeAllItems];
 
-  for (NSTableColumn* column in [tableView_ tableColumns]) {
+  for (NSTableColumn* column in [_tableView tableColumns]) {
     NSMenuItem* item = [menu addItemWithTitle:[[column headerCell] stringValue]
                                        action:@selector(toggleColumn:)
                                 keyEquivalent:@""];
@@ -417,7 +417,7 @@ bool ShouldUseViewsTaskManager() {
     // Find the first column that will be visible after hiding |column|.
     NSTableColumn* firstRemainingVisibleColumn = nil;
 
-    for (NSTableColumn* nextColumn in [tableView_ tableColumns]) {
+    for (NSTableColumn* nextColumn in [_tableView tableColumns]) {
       if (nextColumn != column && ![nextColumn isHidden]) {
         firstRemainingVisibleColumn = nextColumn;
         break;
@@ -441,19 +441,19 @@ bool ShouldUseViewsTaskManager() {
     // If |column| is being used to sort the table (i.e. it's the primary sort
     // column), make the first remaining visible column the new primary sort
     // column.
-    int primarySortColumnId = currentSortDescriptor_.sorted_column_id;
+    int primarySortColumnId = _currentSortDescriptor.sorted_column_id;
     DCHECK(primarySortColumnId);
 
     if (primarySortColumnId == columnId) {
       NSSortDescriptor* newSortDescriptor =
           [firstRemainingVisibleColumn sortDescriptorPrototype];
-      [tableView_ setSortDescriptors:@[ newSortDescriptor ]];
+      [_tableView setSortDescriptors:@[ newSortDescriptor ]];
     }
   }
 
   // Make the change. (This will call back into the SetColumnVisibility()
   // function to actually do the visibility change.)
-  tableModel_->ToggleColumnVisibility(columnId);
+  _tableModel->ToggleColumnVisibility(columnId);
 }
 
 // This function appropriately sets the enabled states on the table's editing
@@ -462,30 +462,30 @@ bool ShouldUseViewsTaskManager() {
   bool allSelectionRowsAreKillableTasks = true;
   NSMutableIndexSet* groupIndexes = [NSMutableIndexSet indexSet];
 
-  NSIndexSet* selection = [tableView_ selectedRowIndexes];
+  NSIndexSet* selection = [_tableView selectedRowIndexes];
   for (NSUInteger i = [selection lastIndex];
        i != NSNotFound;
        i = [selection indexLessThanIndex:i]) {
-    int modelIndex = viewToModelMap_[i];
+    int modelIndex = _viewToModelMap[i];
 
-    if (!tableModel_->IsTaskKillable(modelIndex))
+    if (!_tableModel->IsTaskKillable(modelIndex))
       allSelectionRowsAreKillableTasks = false;
 
     int groupStart, groupLength;
-    tableModel_->GetRowsGroupRange(modelIndex, &groupStart, &groupLength);
+    _tableModel->GetRowsGroupRange(modelIndex, &groupStart, &groupLength);
     for (int j = 0; j < groupLength; ++j)
-      [groupIndexes addIndex:modelToViewMap_[groupStart + j]];
+      [groupIndexes addIndex:_modelToViewMap[groupStart + j]];
   }
 
-  [tableView_ selectRowIndexes:groupIndexes byExtendingSelection:YES];
+  [_tableView selectRowIndexes:groupIndexes byExtendingSelection:YES];
 
   bool enabled = [selection count] > 0 && allSelectionRowsAreKillableTasks &&
                  task_manager::TaskManagerInterface::IsEndProcessEnabled();
-  [endProcessButton_ setEnabled:enabled];
+  [_endProcessButton setEnabled:enabled];
 }
 
 - (void)deselectRows {
-  [tableView_ deselectAll:self];
+  [_tableView deselectAll:self];
 }
 
 // Table view delegate methods.
@@ -501,17 +501,17 @@ bool ShouldUseViewsTaskManager() {
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
-  if (taskManagerMac_) {
-    tableModel_->StoreColumnsSettings();
-    taskManagerMac_->WindowWasClosed();
-    taskManagerMac_ = nullptr;
-    tableModel_ = nullptr;
+  if (_taskManagerMac) {
+    _tableModel->StoreColumnsSettings();
+    _taskManagerMac->WindowWasClosed();
+    _taskManagerMac = nullptr;
+    _tableModel = nullptr;
 
     // Now that there is no model, ensure that this object gets no data requests
     // in the window of time between the autorelease and the actual dealloc.
     // https://crbug.com/763367
-    [tableView_ setDelegate:nil];
-    [tableView_ setDataSource:nil];
+    [_tableView setDelegate:nil];
+    [_tableView setDataSource:nil];
   }
   [self autorelease];
 }
@@ -521,14 +521,14 @@ bool ShouldUseViewsTaskManager() {
 @implementation TaskManagerWindowController (NSTableDataSource)
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView*)tableView {
-  DCHECK(tableView == tableView_ || tableView_ == nil);
-  return tableModel_->RowCount();
+  DCHECK(tableView == _tableView || _tableView == nil);
+  return _tableModel->RowCount();
 }
 
 - (NSString*)modelTextForRow:(int)row column:(int)columnId {
-  DCHECK_LT(static_cast<size_t>(row), viewToModelMap_.size());
+  DCHECK_LT(static_cast<size_t>(row), _viewToModelMap.size());
   return base::SysUTF16ToNSString(
-      tableModel_->GetText(viewToModelMap_[row], columnId));
+      _tableModel->GetText(_viewToModelMap[row], columnId));
 }
 
 - (id)tableView:(NSTableView*)tableView
@@ -568,7 +568,7 @@ bool ShouldUseViewsTaskManager() {
     buttonCell.attributedTitle = attributedTitle;
 
     buttonCell.image =
-        taskManagerMac_->GetImageForRow(viewToModelMap_[rowIndex]);
+        _taskManagerMac->GetImageForRow(_viewToModelMap[rowIndex]);
     buttonCell.refusesFirstResponder = YES;  // Don't push in like a button.
     buttonCell.highlightsBy = NSNoCellMask;
   }
@@ -578,7 +578,7 @@ bool ShouldUseViewsTaskManager() {
 
 - (void)tableView:(NSTableView*)tableView
     sortDescriptorsDidChange:(NSArray*)oldDescriptors {
-  if (withinSortDescriptorsDidChange_)
+  if (_withinSortDescriptorsDidChange)
     return;
 
   NSSortDescriptor* oldDescriptor = [oldDescriptors firstObject];
@@ -595,18 +595,18 @@ bool ShouldUseViewsTaskManager() {
                                       [[newDescriptor key] intValue])];
     NSSortDescriptor* initialDescriptor = [column sortDescriptorPrototype];
     if ([newDescriptor ascending] == [initialDescriptor ascending]) {
-      withinSortDescriptorsDidChange_ = YES;
-      [tableView_ setSortDescriptors:[NSArray array]];
+      _withinSortDescriptorsDidChange = YES;
+      [_tableView setSortDescriptors:[NSArray array]];
       newDescriptor = nil;
-      withinSortDescriptorsDidChange_ = NO;
+      _withinSortDescriptorsDidChange = NO;
     }
   }
 
   if (newDescriptor) {
-    currentSortDescriptor_.sorted_column_id = [[newDescriptor key] intValue];
-    currentSortDescriptor_.is_ascending = [newDescriptor ascending];
+    _currentSortDescriptor.sorted_column_id = [[newDescriptor key] intValue];
+    _currentSortDescriptor.is_ascending = [newDescriptor ascending];
   } else {
-    currentSortDescriptor_.sorted_column_id = -1;
+    _currentSortDescriptor.sorted_column_id = -1;
   }
 
   [self reloadData];  // Sorts.
@@ -617,11 +617,11 @@ bool ShouldUseViewsTaskManager() {
 @implementation TaskManagerWindowController (TestingAPI)
 
 - (NSTableView*)tableViewForTesting {
-  return tableView_;
+  return _tableView;
 }
 
 - (NSButton*)endProcessButtonForTesting {
-  return endProcessButton_;
+  return _endProcessButton;
 }
 
 @end

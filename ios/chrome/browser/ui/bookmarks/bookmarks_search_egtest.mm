@@ -7,6 +7,7 @@
 
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_utils.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -21,8 +22,16 @@
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::BookmarksSaveEditFolderButton;
+using chrome_test_util::BookmarksDeleteSwipeButton;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::CancelButton;
+using chrome_test_util::ContextBarCenterButtonWithLabel;
+using chrome_test_util::ContextBarLeadingButtonWithLabel;
+using chrome_test_util::ContextBarTrailingButtonWithLabel;
+using chrome_test_util::NavigateBackButtonTo;
+using chrome_test_util::SearchIconButton;
+using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 // Bookmark search integration tests for Chrome.
 @interface BookmarksSearchTestCase : ChromeTestCase
@@ -49,7 +58,7 @@ using chrome_test_util::CancelButton;
 // Tests that the search bar is shown on root.
 - (void)testSearchBarShownOnRoot {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
 
   // Verify the search bar is shown.
   [[EarlGrey selectElementWithMatcher:SearchIconButton()]
@@ -60,8 +69,8 @@ using chrome_test_util::CancelButton;
 // Tests that the search bar is shown on mobile list.
 - (void)testSearchBarShownOnMobileBookmarks {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Verify the search bar is shown.
   [[EarlGrey selectElementWithMatcher:SearchIconButton()]
@@ -72,8 +81,8 @@ using chrome_test_util::CancelButton;
 // Tests the search.
 - (void)testSearchResults {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Verify we have our 3 items.
   [[EarlGrey
@@ -134,8 +143,8 @@ using chrome_test_util::CancelButton;
 // Tests that you get 'No Results' when no matching bookmarks are found.
 - (void)testSearchWithNoResults {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Search 'zz'.
   [[EarlGrey selectElementWithMatcher:SearchIconButton()]
@@ -147,9 +156,9 @@ using chrome_test_util::CancelButton;
       assertWithMatcher:grey_notNil()];
 
   // Verify that Edit button is disabled.
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarSelectString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarSelectString])]
       assertWithMatcher:grey_accessibilityTrait(
                             UIAccessibilityTraitNotEnabled)];
 }
@@ -157,8 +166,8 @@ using chrome_test_util::CancelButton;
 // Tests that scrim is shown while search box is enabled with no queries.
 - (void)testSearchScrimShownWhenSearchBoxEnabled {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   [[EarlGrey selectElementWithMatcher:SearchIconButton()]
       performAction:grey_tap()];
@@ -199,8 +208,8 @@ using chrome_test_util::CancelButton;
 // controller.
 - (void)testSearchTapOnScrimCancelsSearchController {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   [[EarlGrey selectElementWithMatcher:SearchIconButton()]
       performAction:grey_tap()];
@@ -231,8 +240,8 @@ using chrome_test_util::CancelButton;
 // search controller.
 - (void)testSearchLongPressOnScrimCancelsSearchController {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   [[EarlGrey selectElementWithMatcher:SearchIconButton()]
       performAction:grey_tap()];
@@ -267,8 +276,8 @@ using chrome_test_util::CancelButton;
 // Tests cancelling search restores the node's bookmarks.
 - (void)testSearchCancelRestoresNodeBookmarks {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Search.
   [[EarlGrey selectElementWithMatcher:SearchIconButton()]
@@ -303,8 +312,8 @@ using chrome_test_util::CancelButton;
 // Tests that the navigation bar isn't shown when search is focused and empty.
 - (void)testSearchHidesNavigationBar {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Focus Search.
   [[EarlGrey selectElementWithMatcher:SearchIconButton()]
@@ -329,15 +338,15 @@ using chrome_test_util::CancelButton;
 // back to search.
 - (void)testSearchLongPressEditOnURL {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Search.
   [[EarlGrey selectElementWithMatcher:SearchIconButton()]
       performAction:grey_typeText(@"First")];
 
   // Invoke Edit through context menu.
-  [BookmarkEarlGreyUtils
+  [BookmarkEarlGreyUI
       tapOnLongPressContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
                                onItem:TappableBookmarkNodeWithLabel(
                                           @"First URL")
@@ -365,8 +374,8 @@ using chrome_test_util::CancelButton;
 // when going back to search.
 - (void)testSearchLongPressEditOnFolder {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   NSString* existingFolderTitle = @"Folder 1.1";
 
@@ -391,7 +400,7 @@ using chrome_test_util::CancelButton;
       assertWithMatcher:grey_notNil()];
 
   NSString* newFolderTitle = @"n7";
-  [BookmarkEarlGreyUtils renameBookmarkFolderWithFolderTitle:newFolderTitle];
+  [BookmarkEarlGreyUI renameBookmarkFolderWithFolderTitle:newFolderTitle];
 
   [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
       performAction:grey_tap()];
@@ -421,8 +430,8 @@ using chrome_test_util::CancelButton;
   }
 
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Search.
   [[EarlGrey selectElementWithMatcher:SearchIconButton()]
@@ -449,8 +458,8 @@ using chrome_test_util::CancelButton;
   }
 
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Search.
   [[EarlGrey selectElementWithMatcher:SearchIconButton()]
@@ -468,8 +477,8 @@ using chrome_test_util::CancelButton;
 // Tests that you can't search while in edit mode.
 - (void)testDisablesSearchOnEditMode {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Verify search bar is enabled.
   [[EarlGrey selectElementWithMatcher:grey_kindOfClassName(@"UISearchBar")]
@@ -486,7 +495,7 @@ using chrome_test_util::CancelButton;
       assertWithMatcher:grey_not(grey_userInteractionEnabled())];
 
   // Cancel edito mode.
-  [BookmarkEarlGreyUtils closeContextBarEditMode];
+  [BookmarkEarlGreyUI closeContextBarEditMode];
 
   // Verify search bar is enabled.
   [[EarlGrey selectElementWithMatcher:grey_kindOfClassName(@"UISearchBar")]
@@ -496,8 +505,8 @@ using chrome_test_util::CancelButton;
 // Tests that new Folder is disabled when search results are shown.
 - (void)testSearchDisablesNewFolderButtonOnNavigationBar {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Search and hide keyboard.
   [[EarlGrey selectElementWithMatcher:SearchIconButton()]
@@ -509,7 +518,7 @@ using chrome_test_util::CancelButton;
       assertWithMatcher:grey_notNil()];
 
   [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
+                                          [BookmarkEarlGreyUI
                                               contextBarNewFolderString])]
       assertWithMatcher:grey_accessibilityTrait(
                             UIAccessibilityTraitNotEnabled)];
@@ -519,8 +528,8 @@ using chrome_test_util::CancelButton;
 // URL in edit mode.
 - (void)testSearchEditModeEditOnSingleURL {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Search and hide keyboard.
   [[EarlGrey selectElementWithMatcher:SearchIconButton()]
@@ -538,7 +547,7 @@ using chrome_test_util::CancelButton;
       performAction:grey_tap()];
 
   // Invoke Edit through context menu.
-  [BookmarkEarlGreyUtils
+  [BookmarkEarlGreyUI
       tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
                   openEditor:kBookmarkEditViewContainerIdentifier
              modifyTextField:@"Title Field_textField"
@@ -562,8 +571,8 @@ using chrome_test_util::CancelButton;
 // Tests that multiple deletes on search results works.
 - (void)testSearchEditModeDeleteOnMultipleURL {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Search and hide keyboard.
   [[EarlGrey selectElementWithMatcher:SearchIconButton()]
@@ -584,9 +593,9 @@ using chrome_test_util::CancelButton;
       performAction:grey_tap()];
 
   // Delete.
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarDeleteString])]
       performAction:grey_tap()];
 
   // Should not find them anymore.
@@ -609,8 +618,8 @@ using chrome_test_util::CancelButton;
 // Tests that multiple moves on search results works.
 - (void)testMoveFunctionalityOnMultipleUrlSelection {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Search and hide keyboard.
   [[EarlGrey selectElementWithMatcher:SearchIconButton()]
@@ -631,9 +640,9 @@ using chrome_test_util::CancelButton;
       performAction:grey_tap()];
 
   // Tap context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarMoreString])]
       performAction:grey_tap()];
 
   // Tap on move, from context menu.
@@ -651,14 +660,14 @@ using chrome_test_util::CancelButton;
                             nil)] performAction:grey_tap()];
 
   // Verify all folder flow UI is now closed.
-  [BookmarkEarlGreyUtils verifyFolderFlowIsClosed];
+  [BookmarkEarlGreyUI verifyFolderFlowIsClosed];
 
   // Wait for Undo toast to go away from screen.
-  [BookmarkEarlGreyUtils waitForUndoToastToGoAway];
+  [BookmarkEarlGreyUI waitForUndoToastToGoAway];
 
   // Verify edit mode is closed (context bar back to default state).
-  [BookmarkEarlGreyUtils verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                                        newFolderEnabled:NO];
+  [BookmarkEarlGreyUI verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                     newFolderEnabled:NO];
 
   // Cancel search.
   [[EarlGrey selectElementWithMatcher:CancelButton()] performAction:grey_tap()];
@@ -680,7 +689,7 @@ using chrome_test_util::CancelButton;
 // Tests that a search and single edit is possible when searching over root.
 - (void)testSearchEditPossibleOnRoot {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
 
   // Search and hide keyboard.
   [[EarlGrey selectElementWithMatcher:SearchIconButton()]
@@ -698,7 +707,7 @@ using chrome_test_util::CancelButton;
       performAction:grey_tap()];
 
   // Invoke Edit through context menu.
-  [BookmarkEarlGreyUtils
+  [BookmarkEarlGreyUI
       tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
                   openEditor:kBookmarkEditViewContainerIdentifier
              modifyTextField:@"Title Field_textField"
@@ -730,8 +739,8 @@ using chrome_test_util::CancelButton;
 // Tests that you can search folders.
 - (void)testSearchFolders {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Go down Folder 1 / Folder 2 / Folder 3.
   [[EarlGrey

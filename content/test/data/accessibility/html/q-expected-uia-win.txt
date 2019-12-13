@@ -1,5 +1,5 @@
 document
-++group
+++group IsControlElement=false
 ++++description Name='This is '
 ++++description Name='"'
 ++++description Name='Chromium Blink'

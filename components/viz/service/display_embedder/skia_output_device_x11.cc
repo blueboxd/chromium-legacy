@@ -18,10 +18,12 @@ namespace viz {
 SkiaOutputDeviceX11::SkiaOutputDeviceX11(
     scoped_refptr<gpu::SharedContextState> context_state,
     gfx::AcceleratedWidget widget,
+    gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
     : SkiaOutputDeviceOffscreen(context_state,
                                 true /* flipped */,
                                 true /* has_alpha */,
+                                memory_tracker,
                                 did_swap_buffer_complete_callback),
       display_(gfx::GetXDisplay()),
       widget_(widget),

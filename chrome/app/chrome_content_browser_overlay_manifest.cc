@@ -38,8 +38,6 @@
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "chromeos/services/network_config/public/mojom/constants.mojom.h"  // nogncheck
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
-#include "components/chromeos_camera/common/camera_app_helper.mojom.h"
-#include "media/capture/video/chromeos/mojom/camera_app.mojom.h"
 #endif
 
 #if defined(OS_WIN)
@@ -109,7 +107,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
             "navigation:frame", "renderer",
             service_manager::Manifest::InterfaceList<
 #if defined(OS_CHROMEOS)
-                chromeos_camera::mojom::CameraAppHelper,
                 chromeos::cellular_setup::mojom::CellularSetup,
                 chromeos::crostini_installer::mojom::PageHandlerFactory,
                 chromeos::crostini_upgrader::mojom::PageHandlerFactory,
@@ -117,7 +114,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 chromeos::multidevice_setup::mojom::MultiDeviceSetup,
                 chromeos::multidevice_setup::mojom::PrivilegedHostDeviceSetter,
                 chromeos::network_config::mojom::CrosNetworkConfig,
-                cros::mojom::CameraAppDeviceProvider,
 #endif
                 media::mojom::MediaEngagementScoreDetailsProvider,
                 // WebUI-only interfaces go below this line. These should be

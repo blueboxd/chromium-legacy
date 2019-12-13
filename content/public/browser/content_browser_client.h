@@ -29,6 +29,7 @@
 #include "content/public/common/window_container_type.mojom-forward.h"
 #include "media/base/video_codecs.h"
 #include "media/cdm/cdm_proxy.h"
+#include "media/mojo/mojom/media_service.mojom.h"
 #include "media/mojo/mojom/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -974,6 +975,14 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void ExposeInterfacesToMediaService(
       service_manager::BinderRegistry* registry,
       RenderFrameHost* render_frame_host) {}
+
+  // The Media Service can run in many different types of configurations
+  // (typically in the GPU process or its own isolated process), but some
+  // clients want an additional dedicated instance to use for specific
+  // operations (e.g. for rendering protected content). Clients should override
+  // this to create such an instance, and return a bound Remote to control it.
+  // See MediaInterfaceProxy and MediaInterfaceFactoryHolder for usage.
+  virtual mojo::Remote<media::mojom::MediaService> RunSecondaryMediaService();
 
   // Allows to register browser interfaces exposed through the RenderFrameHost.
   // This mechanism will replace interface registries and binders used for

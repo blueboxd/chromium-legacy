@@ -17,6 +17,7 @@ source_set("lib") {
     ":test_support",
     ":tests",
     "//content/browser",
+    "//services/device/public/cpp:test_support",
   ]
   sources = [
     "device_service.cc",
@@ -26,6 +27,7 @@ source_set("lib") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   deps = [
+    ":binder_overrides",
     "//services/device/fingerprint",
     "//services/device/generic_sensor",
     "//services/device/geolocation",
@@ -68,6 +70,26 @@ source_set("lib") {
   if (is_serial_enabled_platform) {
     deps += [ "//services/device/serial" ]
   }
+}
+
+# NOTE: We use a separate component target to support global binder overrides,
+# since the service implementation itself may be linked into multiple
+# simultaneously loaded binary targets in a component build. The ":lib" target
+# cannot be a component target itself because it depends on generated JNI
+# headers that do not currently support component exports.
+component("binder_overrides") {
+  visibility = [ ":lib" ]
+  output_name = "device_service_binder_overrides"
+  sources = [
+    "binder_overrides.cc",
+    "binder_overrides.h",
+  ]
+  public_deps = [
+    "//base",
+    "//mojo/public/cpp/bindings",
+    "//services/device/public/mojom",
+  ]
+  defines = [ "IS_DEVICE_SERVICE_BINDER_OVERRIDES_IMPL" ]
 }
 
 is_linux_without_udev = is_linux && !use_udev

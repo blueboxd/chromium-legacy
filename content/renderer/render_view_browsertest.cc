@@ -2195,7 +2195,7 @@ TEST_F(RenderViewImplTest, FocusElementCallsFocusedNodeChanged) {
   EXPECT_TRUE(std::get<0>(params));
   render_thread_->sink().ClearMessages();
 
-  view()->webview()->ClearFocusedElement();
+  ExecuteJavaScriptForTests("document.getElementById('test2').blur();");
   const IPC::Message* msg3 = render_thread_->sink().GetFirstMessageMatching(
       FrameHostMsg_FocusedNodeChanged::ID);
   EXPECT_TRUE(msg3);

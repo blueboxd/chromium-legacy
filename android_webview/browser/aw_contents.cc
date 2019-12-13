@@ -1264,8 +1264,8 @@ void AwContents::InsertVisualStateCallback(
     const JavaParamRef<jobject>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   web_contents_->GetMainFrame()->InsertVisualStateCallback(
-      base::Bind(&InvokeVisualStateCallback, java_ref_, request_id,
-                 ScopedJavaGlobalRef<jobject>(env, callback)));
+      base::BindOnce(&InvokeVisualStateCallback, java_ref_, request_id,
+                     ScopedJavaGlobalRef<jobject>(env, callback)));
 }
 
 jint AwContents::GetEffectivePriority(

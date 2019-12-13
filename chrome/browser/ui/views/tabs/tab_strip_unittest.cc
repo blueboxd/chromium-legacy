@@ -1119,6 +1119,7 @@ TEST_P(TabStripTest, GroupHeaderMovesOnRegrouping) {
   // Change groups in a way so that the header should swap with the tab, without
   // an explicit MoveTab call.
   controller_->MoveTabIntoGroup(1, group0);
+  CompleteAnimationAndLayout();
 
   // Header is now right of tab 1.
   EXPECT_LT(tab_strip_->tab_at(1)->x(), view->header()->x());

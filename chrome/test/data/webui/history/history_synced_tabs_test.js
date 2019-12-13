@@ -30,13 +30,17 @@ suite('<history-synced-device-manager>', function() {
     testService = new TestBrowserService();
     history.BrowserService.instance_ = testService;
 
-    element = document.createElement('history-synced-device-manager');
-    // |signInState| is generally set after |searchTerm| in Polymer 2. Set in
-    // the same order in tests, in order to catch regressions like
-    // https://crbug.com/915641.
-    element.searchTerm = '';
-    element.signInState = true;
-    document.body.appendChild(element);
+    // Need to ensure lazy_load.html has been imported so that the device
+    // manager custom element is defined.
+    return history.ensureLazyLoaded().then(() => {
+      element = document.createElement('history-synced-device-manager');
+      // |signInState| is generally set after |searchTerm| in Polymer 2. Set in
+      // the same order in tests, in order to catch regressions like
+      // https://crbug.com/915641.
+      element.searchTerm = '';
+      element.signInState = true;
+      document.body.appendChild(element);
+    });
   });
 
   test('single card, single window', function() {

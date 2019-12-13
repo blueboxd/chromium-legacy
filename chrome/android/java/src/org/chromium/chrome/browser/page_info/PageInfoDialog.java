@@ -59,13 +59,13 @@ class PageInfoDialog {
      *
      * @param context The context used for creating the dialog.
      * @param view The view shown inside the dialog.
-     * @param tabView The view if the tab the dialog is shown in.
+     * @param containerView The view the dialog is shown in.
      * @param isSheet Whether the dialog should appear as a sheet.
      * @param manager The dialog's manager used for modal dialogs.
      * @param controller The dialog's controller.
      *
      */
-    public PageInfoDialog(Context context, @NonNull PageInfoView view, View tabView,
+    public PageInfoDialog(Context context, @NonNull PageInfoView view, View containerView,
             boolean isSheet, @NonNull ModalDialogManager manager,
             @NonNull ModalDialogProperties.Controller controller) {
         mView = view;
@@ -89,7 +89,7 @@ class PageInfoDialog {
         ViewGroup container;
         if (isSheet) {
             // On smaller screens, make the dialog fill the width of the screen.
-            container = createSheetContainer(context, tabView);
+            container = createSheetContainer(context, containerView);
         } else {
             // On larger screens, modal dialog already has an maximum width set.
             container = new ScrollView(context);
@@ -182,12 +182,12 @@ class PageInfoDialog {
                 .build();
     }
 
-    private ViewGroup createSheetContainer(Context context, View tabView) {
+    private ViewGroup createSheetContainer(Context context, View containerView) {
         return new ScrollView(context) {
             @Override
             protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
                 heightMeasureSpec = MeasureSpec.makeMeasureSpec(
-                        tabView != null ? tabView.getHeight() : 0, MeasureSpec.AT_MOST);
+                        containerView != null ? containerView.getHeight() : 0, MeasureSpec.AT_MOST);
                 super.onMeasure(widthMeasureSpec, heightMeasureSpec);
             }
         };

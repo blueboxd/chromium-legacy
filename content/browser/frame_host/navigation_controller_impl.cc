@@ -2196,8 +2196,7 @@ bool NavigationControllerImpl::StartHistoryNavigationInNewSubframe(
   if (!request)
     return false;
 
-  request->SetNavigationClient(std::move(*navigation_client),
-                               render_frame_host->GetSiteInstance()->GetId());
+  request->SetNavigationClient(std::move(*navigation_client));
 
   render_frame_host->frame_tree_node()->navigator()->Navigate(
       std::move(request), ReloadType::NONE, RestoreType::NONE);

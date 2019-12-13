@@ -185,9 +185,9 @@
       <!-- Drop down select menu for resolution -->
       <div class="settings-box indented two-line"
           hidden$="[[!showDropDownResolutionSetting_(selectedDisplay)]]">
-        <div class="start text-area layout vertical">
+        <div class="start text-area layout vertical" aria-hidden="true">
           <div>$i18n{displayResolutionTitle}</div>
-          <div class="secondary self-start">
+          <div class="secondary self-start" id="displayResolutionSublabel">
             $i18n{displayResolutionSublabel}
           </div>
         </div>
@@ -202,7 +202,8 @@
             pref="{{selectedModePref_}}"
             disabled="[[isDisplayResolutionMandatory_(
                 prefs.cros.device_display_resolution)]]"
-            label="Display Mode Menu"
+            label="$i18n{displayResolutionTitle}"
+            aria-describedby="displayResolutionSublabel"
             menu-options="[[displayModeList_]]">
         </settings-dropdown-menu>
       </div>
@@ -291,7 +292,7 @@
       </div>
       <!-- Schedule settings -->
       <div class="settings-box indented">
-        <div class="start text-area">
+        <div class="start text-area" aria-hidden="true">
           <div id="nightLightScheduleLabel" class="label">
             $i18n{displayNightLightScheduleLabel}
           </div>
@@ -302,7 +303,8 @@
         </div>
         <settings-dropdown-menu
             id="nightLightScheduleTypeDropDown"
-            aria-labelledby="nightLightScheduleLabel"
+            label="$i18n{displayNightLightScheduleLabel}"
+            aria-describedby="nightLightScheduleSubLabel"
             pref="{{prefs.ash.night_light.schedule_type}}"
             menu-options="[[scheduleTypesList_]]">
         </settings-dropdown-menu>

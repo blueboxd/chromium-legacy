@@ -118,15 +118,8 @@ GURL URLEscapedForHistory(const GURL& url) {
 
 // Handles the navigation.hashchange event emitted from |senderFrame|.
 - (void)handleNavigationHashChangeInFrame:(web::WebFrame*)senderFrame {
-  // Record that the current NavigationItem was created by a hash change, but
-  // ignore hashchange events that are manually dispatched for same-document
-  // navigations.
-  if (self.dispatchingSameDocumentHashChangeEvent) {
-    self.dispatchingSameDocumentHashChangeEvent = NO;
-  } else {
-    self.navigationManagerImpl->GetCurrentItemImpl()
-        ->SetIsCreatedFromHashChange(true);
-  }
+  self.navigationManagerImpl->GetCurrentItemImpl()->SetIsCreatedFromHashChange(
+      true);
 }
 
 // Handles the navigation.willChangeState message sent from |senderFrame|.

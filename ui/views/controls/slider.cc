@@ -23,18 +23,12 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
 
 namespace {
-
-// Color of slider at the active and the disabled state, respectively.
-constexpr SkColor kActiveColor = SkColorSetARGB(0xFF, 0x25, 0x81, 0xDF);
-constexpr SkColor kDisabledColor = SkColorSetARGB(0x6E, 0xF1, 0xF3, 0xF4);
-
-constexpr uint8_t kActiveColorAlpha = 0x40;
-constexpr uint8_t kDisabledColorAlpha = 0x19;
 
 // The thickness of the slider.
 constexpr int kLineThickness = 2;
@@ -87,17 +81,6 @@ void Slider::SetEnableAccessibilityEvents(bool enabled) {
     return;
   accessibility_events_enabled_ = enabled;
   OnPropertyChanged(&accessibility_events_enabled_, kPropertyEffectsNone);
-}
-
-bool Slider::GetIsActive() const {
-  return is_active_;
-}
-
-void Slider::SetIsActive(bool is_active) {
-  if (is_active == is_active_)
-    return;
-  is_active_ = is_active;
-  OnPropertyChanged(&is_active_, kPropertyEffectsPaint);
 }
 
 float Slider::GetAnimatingValue() const{
@@ -272,28 +255,18 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
   const int empty = width - full;
   const int y = content.height() / 2 - kLineThickness / 2;
   const int x = content.x() + full + kThumbRadius;
-  const SkColor current_thumb_color =
-      is_active_ ? kActiveColor : kDisabledColor;
-  const uint8_t current_color_alpha =
-      is_active_ ? kActiveColorAlpha : kDisabledColorAlpha;
-  const SkColor empty_slider_color =
-      SkColorSetA(current_thumb_color, current_color_alpha);
-
-  // Padding used to adjust space between slider ends and slider thumb.
-  // Value is negative when slider is active so that there is no separation
-  // between slider and thumb.
-  const int extra_padding = is_active_ ? -kSliderPadding : kSliderPadding;
 
   cc::PaintFlags slider_flags;
   slider_flags.setAntiAlias(true);
-  slider_flags.setColor(current_thumb_color);
+  slider_flags.setColor(GetThumbColor());
   canvas->DrawRoundRect(
-      gfx::Rect(content.x(), y, full - extra_padding, kLineThickness),
+      gfx::Rect(content.x(), y, full - GetSliderExtraPadding(), kLineThickness),
       kSliderRoundedRadius, slider_flags);
-  slider_flags.setColor(empty_slider_color);
-  canvas->DrawRoundRect(gfx::Rect(x + kThumbRadius + extra_padding, y,
-                                  empty - extra_padding, kLineThickness),
-                        kSliderRoundedRadius, slider_flags);
+  slider_flags.setColor(GetTroughColor());
+  canvas->DrawRoundRect(
+      gfx::Rect(x + kThumbRadius + GetSliderExtraPadding(), y,
+                empty - GetSliderExtraPadding(), kLineThickness),
+      kSliderRoundedRadius, slider_flags);
 
   gfx::Point thumb_center(x, content.height() / 2);
 
@@ -302,16 +275,14 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
       HasFocus() ? kThumbHighlightRadius : thumb_highlight_radius_;
   if (thumb_highlight_radius > kThumbRadius) {
     cc::PaintFlags highlight;
-    SkColor highlight_color =
-        SkColorSetA(current_thumb_color, current_color_alpha);
-    highlight.setColor(highlight_color);
+    highlight.setColor(GetTroughColor());
     highlight.setAntiAlias(true);
     canvas->DrawCircle(thumb_center, thumb_highlight_radius, highlight);
   }
 
   // Paint the thumb of the slider.
   cc::PaintFlags flags;
-  flags.setColor(current_thumb_color);
+  flags.setColor(GetThumbColor());
   flags.setAntiAlias(true);
 
   canvas->DrawCircle(thumb_center, kThumbRadius, flags);
@@ -369,11 +340,43 @@ void Slider::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
+SkColor Slider::GetThumbColor() const {
+  switch (style_) {
+    case RenderingStyle::kDefaultStyle:
+      return GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_SliderThumbDefault);
+    case RenderingStyle::kMinimalStyle:
+      return GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_SliderThumbMinimal);
+  }
+}
+
+SkColor Slider::GetTroughColor() const {
+  switch (style_) {
+    case RenderingStyle::kDefaultStyle:
+      return GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_SliderTroughDefault);
+    case RenderingStyle::kMinimalStyle:
+      return GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_SliderTroughMinimal);
+  }
+}
+
+int Slider::GetSliderExtraPadding() const {
+  // Padding is negative when slider style is default so that there is no
+  // separation between slider and thumb.
+  switch (style_) {
+    case RenderingStyle::kDefaultStyle:
+      return -kSliderPadding;
+    case RenderingStyle::kMinimalStyle:
+      return kSliderPadding;
+  }
+}
+
 BEGIN_METADATA(Slider)
 METADATA_PARENT_CLASS(View)
 ADD_PROPERTY_METADATA(Slider, float, Value)
 ADD_PROPERTY_METADATA(Slider, bool, EnableAccessibilityEvents)
-ADD_PROPERTY_METADATA(Slider, bool, IsActive)
 END_METADATA()
 
 }  // namespace views

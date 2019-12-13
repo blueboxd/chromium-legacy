@@ -614,8 +614,8 @@ bool VariationsService::StoreSeed(const std::string& seed_data,
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       client_->GetVersionForSimulationCallback(),
-      base::Bind(&VariationsService::PerformSimulationWithVersion,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&seed)));
+      base::BindOnce(&VariationsService::PerformSimulationWithVersion,
+                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&seed)));
   return true;
 }
 

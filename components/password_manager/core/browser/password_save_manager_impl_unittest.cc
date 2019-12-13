@@ -269,6 +269,7 @@ class PasswordSaveManagerImplTest : public testing::Test,
     saved_match_.password_element = ASCIIToUTF16("field2");
     saved_match_.is_public_suffix_match = false;
     saved_match_.scheme = PasswordForm::Scheme::kHtml;
+    saved_match_.in_store = PasswordForm::Store::kProfileStore;
 
     psl_saved_match_ = saved_match_;
     psl_saved_match_.origin = psl_origin;
@@ -405,8 +406,6 @@ TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsEmptyStore) {
       *password_save_manager_impl()->GetPendingCredentials();
   CheckPendingCredentials(parsed_submitted_form_, pending_credentials);
   EXPECT_GE(pending_credentials.date_last_used, kNow);
-  EXPECT_EQ(UserAction::kOverrideUsernameAndPassword,
-            metrics_recorder()->GetUserAction());
 }
 
 // Tests creating pending credentials when new credentials are submitted and the
@@ -421,8 +420,6 @@ TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsNewCredentials) {
   CheckPendingCredentials(
       parsed_submitted_form_,
       *password_save_manager_impl()->GetPendingCredentials());
-  EXPECT_EQ(UserAction::kOverrideUsernameAndPassword,
-            metrics_recorder()->GetUserAction());
 }
 
 // Tests that when submitted credentials are equal to already saved one then
@@ -467,7 +464,6 @@ TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsPSLMatchSaved) {
 
   CheckPendingCredentials(
       expected, *password_save_manager_impl()->GetPendingCredentials());
-  EXPECT_EQ(UserAction::kChoosePslMatch, metrics_recorder()->GetUserAction());
 }
 
 // Tests creating pending credentials when new credentials are different only in
@@ -489,7 +485,6 @@ TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsPasswordOverriden) {
 
   CheckPendingCredentials(
       expected, *password_save_manager_impl()->GetPendingCredentials());
-  EXPECT_EQ(UserAction::kOverridePassword, metrics_recorder()->GetUserAction());
 }
 
 // Tests that when submitted credentials are equal to already saved one then
@@ -511,7 +506,6 @@ TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsUpdate) {
 
   CheckPendingCredentials(
       expected, *password_save_manager_impl()->GetPendingCredentials());
-  EXPECT_EQ(UserAction::kOverridePassword, metrics_recorder()->GetUserAction());
 }
 
 // Tests creating pending credentials when a change password form is submitted

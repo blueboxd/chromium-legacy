@@ -856,6 +856,7 @@ if (!is_android) {
       "../browser/banners/test_app_banner_manager_desktop.h",
       "../browser/battery/battery_metrics_browsertest.cc",
       "../browser/bitmap_fetcher/bitmap_fetcher_browsertest.cc",
+      "../browser/bluetooth/web_bluetooth_browsertest.cc",
       "../browser/browser_encoding_browsertest.cc",
       "../browser/browsing_data/browsing_data_cache_storage_helper_browsertest.cc",
       "../browser/browsing_data/browsing_data_database_helper_browsertest.cc",
@@ -1067,6 +1068,7 @@ if (!is_android) {
       "../browser/plugins/plugin_power_saver_browsertest.cc",
       "../browser/plugins/plugin_response_interceptor_url_loader_throttle_browsertest.cc",
       "../browser/policy/autoplay_policy_browsertest.cc",
+      "../browser/policy/cast_policy_browsertest.cc",
       "../browser/policy/cloud/chrome_browser_cloud_management_browsertest.cc",
       "../browser/policy/cloud/cloud_policy_browsertest.cc",
       "../browser/policy/cloud/cloud_policy_manager_browsertest.cc",
@@ -1366,7 +1368,6 @@ if (!is_android) {
       "../browser/ui/zoom/zoom_controller_browsertest.cc",
       "../browser/unload_browsertest.cc",
       "../browser/usb/usb_browsertest.cc",
-      "../browser/web_bluetooth_browsertest.cc",
       "../common/mac/app_mode_chrome_locator_browsertest.mm",
       "../common/mac/mock_launchd.h",
       "../common/mac/mock_launchd.mm",
@@ -1489,6 +1490,7 @@ if (!is_android) {
       sources += [
         "../browser/policy/accessibility_policy_browsertest.cc",
         "../browser/policy/arc_policy_browsertest.cc",
+        "../browser/policy/assistant_policy_browsertest.cc",
       ]
     }
 

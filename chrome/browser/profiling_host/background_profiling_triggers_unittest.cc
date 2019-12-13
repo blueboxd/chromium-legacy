@@ -66,25 +66,15 @@ void PopulateMetrics(GlobalMemoryDumpPtr* global_dump,
 class FakeBackgroundProfilingTriggers : public BackgroundProfilingTriggers {
  public:
   explicit FakeBackgroundProfilingTriggers(ProfilingProcessHost* host)
-      : BackgroundProfilingTriggers(host),
-        was_report_triggered_(false),
-        should_trigger_control_report_(false) {}
+      : BackgroundProfilingTriggers(host), was_report_triggered_(false) {}
 
   using BackgroundProfilingTriggers::OnReceivedMemoryDump;
 
   void Reset() {
-    should_trigger_control_report_ = false;
     was_report_triggered_ = false;
     pmf_at_last_upload_.clear();
   }
   bool WasReportTriggered() const { return was_report_triggered_; }
-
-  bool ShouldTriggerControlReport(int content_process_type) const override {
-    return should_trigger_control_report_;
-  }
-  void SetControlTrigger(bool trigger_control_report) {
-    should_trigger_control_report_ = trigger_control_report;
-  }
 
  private:
   void TriggerMemoryReport(std::string trigger_name) override {
@@ -92,7 +82,6 @@ class FakeBackgroundProfilingTriggers : public BackgroundProfilingTriggers {
   }
 
   bool was_report_triggered_;
-  bool should_trigger_control_report_;
 };
 
 class BackgroundProfilingTriggersTest : public testing::Test {
@@ -205,15 +194,6 @@ TEST_F(BackgroundProfilingTriggersTest, OnReceivedMemoryDump_ProfiledPids) {
   dump = memory_instrumentation::mojom::GlobalMemoryDump::New();
   PopulateMetrics(&dump, 1, ProcessType::GPU, kProcessMallocTriggerKb,
                   kProcessMallocTriggerKb, kProcessMallocTriggerKb);
-  triggers_.OnReceivedMemoryDump(profiled_pids_, true,
-                                 GlobalMemoryDump::MoveFrom(std::move(dump)));
-  EXPECT_TRUE(triggers_.WasReportTriggered());
-
-  // Ensure control trigger work on browser process, no matter memory usage.
-  triggers_.Reset();
-  triggers_.SetControlTrigger(true);
-  dump = memory_instrumentation::mojom::GlobalMemoryDump::New();
-  PopulateMetrics(&dump, 1, ProcessType::BROWSER, 1, 1, 1);
   triggers_.OnReceivedMemoryDump(profiled_pids_, true,
                                  GlobalMemoryDump::MoveFrom(std::move(dump)));
   EXPECT_TRUE(triggers_.WasReportTriggered());

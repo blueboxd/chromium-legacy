@@ -64,8 +64,7 @@ class KeywordWebDataService : public WebDataServiceBase {
 
   KeywordWebDataService(
       scoped_refptr<WebDatabaseService> wdbs,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      const ProfileErrorCallback& callback);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   // As the database processes requests at a later date, all deletion is done on
   // the background sequence.

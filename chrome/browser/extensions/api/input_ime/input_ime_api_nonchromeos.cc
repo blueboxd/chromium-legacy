@@ -128,7 +128,7 @@ InputMethodEngine* GetEngineIfActive(content::BrowserContext* browser_context,
                                      std::string* error) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   InputImeEventRouter* event_router = GetInputImeEventRouter(profile);
-  CHECK(event_router) << kErrorRouterNotAvailable;
+  DCHECK(event_router) << kErrorRouterNotAvailable;
   InputMethodEngine* engine = static_cast<InputMethodEngine*>(
       event_router->GetEngineIfActive(extension_id, error));
   return engine;

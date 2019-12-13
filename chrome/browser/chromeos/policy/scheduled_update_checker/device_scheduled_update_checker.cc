@@ -20,7 +20,6 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/icu/source/i18n/unicode/gregocal.h"
 #include "third_party/icu/source/i18n/unicode/ucal.h"
 
@@ -269,10 +268,8 @@ std::unique_ptr<icu::Calendar> ConvertUtcToTzIcuTime(base::Time cur_time,
 // so it's safe to use "this" with any callbacks.
 DeviceScheduledUpdateChecker::DeviceScheduledUpdateChecker(
     chromeos::CrosSettings* cros_settings,
-    chromeos::NetworkStateHandler* network_state_handler,
-    service_manager::Connector* connector)
+    chromeos::NetworkStateHandler* network_state_handler)
     : cros_settings_(cros_settings),
-      connector_(connector),
       cros_settings_observer_(cros_settings_->AddSettingsObserver(
           chromeos::kDeviceScheduledUpdateCheck,
           base::BindRepeating(
@@ -328,8 +325,7 @@ void DeviceScheduledUpdateChecker::OnUpdateCheckTimerExpired() {
       base::BindOnce(
           &DeviceScheduledUpdateChecker::OnUpdateCheckCompletion,
           base::Unretained(this),
-          ScopedWakeLock(connector_,
-                         device::mojom::WakeLockType::kPreventAppSuspension,
+          ScopedWakeLock(device::mojom::WakeLockType::kPreventAppSuspension,
                          kWakeLockReason)),
       update_checker_internal::kOsAndPoliciesUpdateCheckHardTimeout);
 }
@@ -369,8 +365,7 @@ void DeviceScheduledUpdateChecker::OnScheduledUpdateCheckDataChanged() {
   // Policy has been updated, calculate and set |update_check_timer_| again.
   scheduled_update_check_data_ = std::move(scheduled_update_check_data);
   MaybeStartUpdateCheckTimer(
-      ScopedWakeLock(connector_,
-                     device::mojom::WakeLockType::kPreventAppSuspension,
+      ScopedWakeLock(device::mojom::WakeLockType::kPreventAppSuspension,
                      kWakeLockReason),
       false /* is_retry */);
 }

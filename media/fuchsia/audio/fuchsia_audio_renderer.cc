@@ -234,8 +234,8 @@ void FuchsiaAudioRenderer::StartTicking() {
     state_ = PlaybackState::kStarting;
   }
 
-  audio_consumer_->Start(flags, fuchsia::media::NO_TIMESTAMP,
-                         media_pos.ToZxDuration());
+  audio_consumer_->Start(flags, media_pos.ToZxDuration(),
+                         fuchsia::media::NO_TIMESTAMP);
 }
 
 void FuchsiaAudioRenderer::StopTicking() {
@@ -357,7 +357,7 @@ void FuchsiaAudioRenderer::OnAudioConsumerStatusChanged(
       reference_time_ = base::TimeTicks::FromZxTime(
           status.presentation_timeline().reference_time);
       media_pos_ = base::TimeDelta::FromZxDuration(
-          status.presentation_timeline().subject_delta);
+          status.presentation_timeline().subject_time);
       reference_delta_ = status.presentation_timeline().reference_delta;
       media_delta_ = status.presentation_timeline().subject_delta;
     }

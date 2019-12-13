@@ -1,6 +1,6 @@
 document
-++group
+++group IsControlElement=false
 ++++description Name='This test is to check '
-++++description LocalizedControlType='highlight'
+++++description LocalizedControlType='highlight' IsControlElement=false
 ++++++description Name='mark tag'
 ++++description Name='.'

@@ -40,6 +40,10 @@ bool SharedImageRepresentationGLTextureBase::BeginAccess(GLenum mode) {
   return true;
 }
 
+bool SharedImageRepresentationSkia::SupportsMultipleConcurrentReadAccess() {
+  return false;
+}
+
 SharedImageRepresentationSkia::ScopedWriteAccess::ScopedWriteAccess(
     util::PassKey<SharedImageRepresentationSkia> /* pass_key */,
     SharedImageRepresentationSkia* representation,

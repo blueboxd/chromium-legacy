@@ -828,8 +828,14 @@ public class TabGroupModelFilter extends TabModelFilter {
 
     @Override
     public int indexOf(Tab tab) {
-        if (tab == null || tab.isIncognito() != isIncognito()) return TabList.INVALID_TAB_INDEX;
-        return mGroupIdToGroupIndexMap.get(getRootId(tab));
+        if (tab == null || tab.isIncognito() != isIncognito()
+                || getTabModel().indexOf(tab) == TabList.INVALID_TAB_INDEX) {
+            return TabList.INVALID_TAB_INDEX;
+        }
+
+        int groupId = getRootId(tab);
+        if (!mGroupIdToGroupIndexMap.containsKey(groupId)) return TabList.INVALID_TAB_INDEX;
+        return mGroupIdToGroupIndexMap.get(groupId);
     }
 
     @Override

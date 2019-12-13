@@ -23,7 +23,7 @@ InterpolationValue CSSDefaultInterpolationType::MaybeConvertSingle(
     const InterpolationEnvironment& environment,
     const InterpolationValue&,
     ConversionCheckers&) const {
-  const CSSValue* css_value = ToCSSPropertySpecificKeyframe(keyframe).Value();
+  const CSSValue* css_value = To<CSSPropertySpecificKeyframe>(keyframe).Value();
 
   if (!css_value) {
     DCHECK(keyframe.IsNeutral());

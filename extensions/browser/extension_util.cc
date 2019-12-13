@@ -69,12 +69,12 @@ const std::string& GetPartitionDomainForExtension(const Extension* extension) {
 
 content::StoragePartition* GetStoragePartitionForExtensionId(
     const std::string& extension_id,
-    content::BrowserContext* browser_context) {
-  GURL site_url = content::SiteInstance::GetSiteForURL(
-      browser_context, Extension::GetBaseURLFromExtensionId(extension_id));
+    content::BrowserContext* browser_context,
+    bool can_create) {
+  GURL site_url = GetSiteForExtensionId(extension_id, browser_context);
   content::StoragePartition* storage_partition =
       content::BrowserContext::GetStoragePartitionForSite(browser_context,
-                                                          site_url);
+                                                          site_url, can_create);
   return storage_partition;
 }
 

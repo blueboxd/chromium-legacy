@@ -13,12 +13,9 @@
  * |                                                 |
  * |  optionLabel_                     ( O)          |
  * |  optionDescription_                             |
- * |                                                 |
- * |  subOptionLabel                   ( O)          |<-- SubOptionMode.TOGGLE
- * |  subOptionDescription                           |     (optional)
- * |                                                 |
- * |  subOptionLabel                                 |<-- SubOptionMode.CHECKBOX
- * |  [x] subOptionDescription                       |     (optional)
+ * |                                                 |    SubOptionMode.PREF or
+ * |  subOptionLabel                   ( O)          |<-- COOKIES_SESSION_ONLY
+ * |  subOptionDescription                           |    (optional)
  * |                                                 |
  * +-------------------------------------------------+
  *
@@ -30,19 +27,19 @@
  * |  optionDescription_                             |
  * |                                                 |
  * |  subOptionLabel                   (O )          |<-- Toggle is off and
- * |  subOptionDescription                           |    disabled
+ * |  subOptionDescription                           |    disabled; or hidden
  * |                                                 |
  * +-------------------------------------------------+
  *
  */
 
 /**
- * Display modes for a sub-option setting.
+ * The setting to display as a sub-option, if any.
  * @enum {string}
  */
 const SubOptionMode = {
-  TOGGLE: 'toggle',
-  CHECKBOX: 'checkbox',
+  COOKIES_SESSION_ONLY: 'cookies-session-only',
+  PREF: 'pref',
   NONE: 'none',
 };
 
@@ -72,9 +69,9 @@ Polymer({
     /* The valid sub-option modes. */
     subOptionMode: String,
 
-    /* The pref that sets the sub-option state, when the sub-option is shown
-    as a check-box. */
-    subOptionAsCheckboxPref: Boolean,
+    /* The pref that the sub-option state is bound to, when |subOptionMode| is
+     * set to SubOptionMode.PREF. */
+    subOptionPref: Boolean,
 
     /* Pref based
     /** @private {chrome.settingsPrivate.PrefObject} */
@@ -298,15 +295,15 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showSubOptionAsToggle_: function(subOptionMode) {
-    return (subOptionMode == SubOptionMode.TOGGLE);
+  showCookiesSubOption_: function(subOptionMode) {
+    return (subOptionMode == SubOptionMode.COOKIES_SESSION_ONLY);
   },
 
   /**
    * @return {boolean}
    * @private
    */
-  showSubOptionAsCheckbox_: function(subOptionMode) {
-    return (subOptionMode == SubOptionMode.CHECKBOX);
+  showPrefSubOption_: function(subOptionMode) {
+    return (subOptionMode == SubOptionMode.PREF);
   },
 });

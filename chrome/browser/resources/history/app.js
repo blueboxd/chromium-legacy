@@ -185,7 +185,7 @@ Polymer({
         'foreign-sessions-changed',
         sessionList => this.setForeignSessions_(sessionList));
     this.browserService_ = history.BrowserService.getInstance();
-    this.browserService_.historyLoaded();
+    this.$$('history-query-manager').initialize();
     this.browserService_.getForeignSessions().then(
         sessionList => this.setForeignSessions_(sessionList));
   },
@@ -196,7 +196,8 @@ Polymer({
     this.boundOnKeyDown_ = null;
   },
 
-  onFirstRender: function() {
+  /** @private */
+  onFirstRender_: function() {
     setTimeout(() => {
       this.browserService_.recordTime(
           'History.ResultsRenderedTime', window.performance.now());
@@ -275,17 +276,15 @@ Polymer({
     this.$.history.deleteSelectedWithPrompt();
   },
 
-  /**
-   * @param {HistoryQuery} info An object containing information about the
-   *    query.
-   * @param {!Array<HistoryEntry>} results A list of results.
-   */
-  historyResult: function(info, results) {
-    this.set('queryState_.querying', false);
-    this.set('queryResult_.info', info);
-    this.set('queryResult_.results', results);
+  /** @private */
+  onQueryFinished_: function() {
     const list = /** @type {HistoryListElement} */ (this.$['history']);
-    list.historyResult(info, results);
+    list.historyResult(
+        assert(this.queryResult_.info), assert(this.queryResult_.results));
+    if (document.body.classList.contains('loading')) {
+      document.body.classList.remove('loading');
+      this.onFirstRender_();
+    }
   },
 
   /**

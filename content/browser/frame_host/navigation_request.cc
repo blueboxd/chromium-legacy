@@ -929,8 +929,7 @@ NavigationRequest::NavigationRequest(
         frame_tree_node->current_frame_host()->GetSiteInstance();
 
     DCHECK(navigation_client.is_valid());
-    SetNavigationClient(std::move(navigation_client),
-                        source_site_instance_->GetId());
+    SetNavigationClient(std::move(navigation_client));
   } else if (entry) {
     DCHECK(!navigation_client.is_valid());
     FrameNavigationEntry* frame_navigation_entry =
@@ -2392,16 +2391,14 @@ void NavigationRequest::CommitErrorPage(
   commit_params_->origin_to_commit =
       url::Origin::Create(common_params_->url).DeriveNewOpaqueOrigin();
   if (request_navigation_client_.is_bound()) {
-    if (associated_site_instance_id_ ==
-        render_frame_host_->GetSiteInstance()->GetId()) {
+    if (render_frame_host_ == frame_tree_node()->current_frame_host()) {
       // Reuse the request NavigationClient for commit.
       commit_navigation_client_ = std::move(request_navigation_client_);
     } else {
+      // This navigation is cross-RenderFrameHost: the original document should
+      // no longer be able to cancel it.
       IgnoreInterfaceDisconnection();
-      // This navigation is cross-site: the original document should no longer
-      // be able to cancel it.
     }
-    associated_site_instance_id_.reset();
   }
 
   ReadyToCommitNavigation(true);
@@ -2468,16 +2465,14 @@ void NavigationRequest::CommitNavigation() {
   frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host_);
 
   if (request_navigation_client_.is_bound()) {
-    if (associated_site_instance_id_ ==
-        render_frame_host_->GetSiteInstance()->GetId()) {
+    if (render_frame_host_ == frame_tree_node()->current_frame_host()) {
       // Reuse the request NavigationClient for commit.
       commit_navigation_client_ = std::move(request_navigation_client_);
     } else {
-      // This navigation is cross-site: the original document should no longer
-      // be able to cancel it.
+      // This navigation is cross-RenderFrameHost: the original document should
+      // no longer be able to cancel it.
       IgnoreInterfaceDisconnection();
     }
-    associated_site_instance_id_.reset();
   }
 
   blink::mojom::ServiceWorkerProviderInfoForClientPtr
@@ -3338,8 +3333,7 @@ void NavigationRequest::UpdateStateFollowingRedirect(
 }
 
 void NavigationRequest::SetNavigationClient(
-    mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
-    int32_t associated_site_instance_id) {
+    mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client) {
   DCHECK(from_begin_navigation_ ||
          common_params_->is_history_navigation_in_new_child_frame);
   DCHECK(!request_navigation_client_);
@@ -3354,7 +3348,6 @@ void NavigationRequest::SetNavigationClient(
       &request_navigation_client_,
       base::BindOnce(&NavigationRequest::OnRendererAbortedNavigation,
                      base::Unretained(this)));
-  associated_site_instance_id_ = associated_site_instance_id;
 }
 
 bool NavigationRequest::NeedsUrlLoader() {

@@ -14,7 +14,6 @@
 #include "components/download/public/common/input_stream.h"
 #include "components/download/public/common/url_download_handler_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace download {
 namespace {
@@ -52,14 +51,14 @@ void CreateUrlDownloadHandler(
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
     URLLoaderFactoryProvider* url_loader_factory_provider,
     const URLSecurityPolicy& url_security_policy,
-    std::unique_ptr<service_manager::Connector> connector,
+    mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   auto downloader = UrlDownloadHandlerFactory::Create(
       std::move(params), delegate,
       url_loader_factory_provider
           ? url_loader_factory_provider->GetURLLoaderFactory()
           : nullptr,
-      url_security_policy, std::move(connector), task_runner);
+      url_security_policy, std::move(wake_lock_provider), task_runner);
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&UrlDownloadHandler::Delegate::OnUrlDownloadHandlerCreated,
@@ -83,7 +82,7 @@ DownloadWorker::~DownloadWorker() = default;
 void DownloadWorker::SendRequest(
     std::unique_ptr<DownloadUrlParameters> params,
     URLLoaderFactoryProvider* url_loader_factory_provider,
-    service_manager::Connector* connector) {
+    mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider) {
   GetIOTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&CreateUrlDownloadHandler, std::move(params),
                                 weak_factory_.GetWeakPtr(),
@@ -91,7 +90,7 @@ void DownloadWorker::SendRequest(
                                 // deleter is called on the same task sequence.
                                 base::Unretained(url_loader_factory_provider),
                                 base::BindRepeating(&IsURLSafe),
-                                connector ? connector->Clone() : nullptr,
+                                std::move(wake_lock_provider),
                                 base::ThreadTaskRunnerHandle::Get()));
 }
 

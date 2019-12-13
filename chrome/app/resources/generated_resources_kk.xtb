@@ -283,6 +283,7 @@
 <translation id="1397500194120344683">Жарамды құрылғы жоқ. <ph name="LINK_BEGIN" />Толығырақ ақпарат<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">Жаю</translation>
 <translation id="1399511500114202393">Пайдаланушы сертификаты жоқ</translation>
+<translation id="1403519882106291341">Google Chrome ОЖ-дың қызмет көрсету шарттары</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (Басқарылатын)</translation>
 <translation id="1405779994569073824">Бұзылды.</translation>
 <translation id="1406500794671479665">Расталуда…</translation>
@@ -2171,7 +2172,6 @@
 <translation id="4036778507053569103">Серверден жүктеп алынған саясат жарамсыз.</translation>
 <translation id="4037084878352560732">Жылқы</translation>
 <translation id="4037889604535939429">Пайдаланушы мәліметтерін өзгерту</translation>
-<translation id="4042264909745389898">Google Chrome ОЖ қызмет көрсету шарттары</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Беттен шығу}other{Беттерден шығу}}</translation>
 <translation id="4044612648082411741">Сертификат құпия сөзін енгізу</translation>
 <translation id="404493185430269859">Әдепкі іздеу механизмі</translation>

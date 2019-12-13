@@ -18,10 +18,6 @@
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace device {
 
 class FidoAuthenticator;
@@ -60,7 +56,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) SetPINRequestHandler
       base::RepeatingCallback<void(CtapDeviceResponseCode)>;
 
   SetPINRequestHandler(
-      service_manager::Connector* connector,
       const base::flat_set<FidoTransportProtocol>& supported_transports,
       GetPINCallback get_pin_callback,
       FinishedCallback finished_callback,

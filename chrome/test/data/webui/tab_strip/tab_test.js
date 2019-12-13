@@ -7,7 +7,7 @@ import 'chrome://tab-strip/tab.js';
 import {getFavicon} from 'chrome://resources/js/icon.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {TabStripEmbedderProxy} from 'chrome://tab-strip/tab_strip_embedder_proxy.js';
-import {TabNetworkState, TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
+import {CloseTabAction, TabNetworkState, TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
 
 import {TestTabStripEmbedderProxy} from './test_tab_strip_embedder_proxy.js';
 import {TestTabsApiProxy} from './test_tabs_api_proxy.js';
@@ -289,10 +289,23 @@ suite('Tab', function() {
     assertEquals('1001', tabElement.getAttribute('data-tab-id'));
   });
 
-  test('closes the tab', () => {
+  test('closes the tab when clicking close button', () => {
     tabElement.shadowRoot.querySelector('#close').click();
-    return testTabsApiProxy.whenCalled('closeTab').then(tabId => {
+    return testTabsApiProxy.whenCalled('closeTab').then(([
+                                                          tabId, closeTabAction
+                                                        ]) => {
       assertEquals(tabId, tab.id);
+      assertEquals(closeTabAction, CloseTabAction.CLOSE_BUTTON);
+    });
+  });
+
+  test('closes the tab on swipe', () => {
+    tabElement.dispatchEvent(new CustomEvent('swipe'));
+    return testTabsApiProxy.whenCalled('closeTab').then(([
+                                                          tabId, closeTabAction
+                                                        ]) => {
+      assertEquals(tabId, tab.id);
+      assertEquals(closeTabAction, CloseTabAction.SWIPED_TO_CLOSE);
     });
   });
 

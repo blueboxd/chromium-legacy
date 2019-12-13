@@ -6,13 +6,10 @@
 
 #include <algorithm>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "base/json/json_string_value_serializer.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -20,10 +17,8 @@
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/events/event.h"
-#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/transform.h"
@@ -70,51 +65,19 @@ const char* GetTouchEventLabel(ui::EventType type) {
   return "?";
 }
 
-int GetTrackingId(const ui::TouchEvent& event) {
-  return 0;
-}
-
 // A TouchPointLog represents a single touch-event of a touch point.
 struct TouchPointLog {
  public:
   explicit TouchPointLog(const ui::TouchEvent& touch)
-      : id(touch.pointer_details().id),
-        type(touch.type()),
+      : type(touch.type()),
         location(touch.root_location()),
-        timestamp((touch.time_stamp() - base::TimeTicks()).InMillisecondsF()),
         radius_x(touch.pointer_details().radius_x),
-        radius_y(touch.pointer_details().radius_y),
-        pressure(touch.pointer_details().force),
-        tracking_id(GetTrackingId(touch)),
-        source_device(touch.source_device_id()) {}
+        radius_y(touch.pointer_details().radius_y) {}
 
-  // Populates a dictionary value with all the information about the touch
-  // point.
-  std::unique_ptr<base::DictionaryValue> GetAsDictionary() const {
-    std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
-
-    value->SetInteger("id", id);
-    value->SetString("type", std::string(GetTouchEventLabel(type)));
-    value->SetString("location", location.ToString());
-    value->SetDouble("timestamp", timestamp);
-    value->SetDouble("radius_x", radius_x);
-    value->SetDouble("radius_y", radius_y);
-    value->SetDouble("pressure", pressure);
-    value->SetInteger("tracking_id", tracking_id);
-    value->SetInteger("source_device", source_device);
-
-    return value;
-  }
-
-  int id;
   ui::EventType type;
   gfx::Point location;
-  double timestamp;
   float radius_x;
   float radius_y;
-  float pressure;
-  int tracking_id;
-  int source_device;
 };
 
 // A TouchTrace keeps track of all the touch events of a single touch point
@@ -140,14 +103,6 @@ class TouchTrace {
            log_.back().type != ui::ET_TOUCH_CANCELLED;
   }
 
-  // Returns a list containing data from all events for the touch point.
-  std::unique_ptr<base::ListValue> GetAsList() const {
-    std::unique_ptr<base::ListValue> list(new base::ListValue());
-    for (const_iterator i = log_.begin(); i != log_.end(); ++i)
-      list->Append((*i).GetAsDictionary());
-    return list;
-  }
-
   void Reset() { log_.clear(); }
 
  private:
@@ -171,15 +126,6 @@ class TouchLog {
     next_trace_index_ = 0;
     for (int i = 0; i < kMaxPaths; ++i)
       traces_[i].Reset();
-  }
-
-  std::unique_ptr<base::ListValue> GetAsList() const {
-    std::unique_ptr<base::ListValue> list(new base::ListValue());
-    for (int i = 0; i < kMaxPaths; ++i) {
-      if (!traces_[i].log().empty())
-        list->Append(traces_[i].GetAsList());
-    }
-    return list;
   }
 
   int GetTraceIndex(int touch_id) const {
@@ -339,21 +285,6 @@ TouchHudDebug::TouchHudDebug(aura::Window* initial_root)
 
 TouchHudDebug::~TouchHudDebug() = default;
 
-// static
-std::unique_ptr<base::DictionaryValue> TouchHudDebug::GetAllAsDictionary() {
-  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
-  aura::Window::Windows roots = Shell::Get()->GetAllRootWindows();
-  for (RootWindowController* root : Shell::GetAllRootWindowControllers()) {
-    TouchHudDebug* hud = root->touch_hud_debug();
-    if (hud) {
-      std::unique_ptr<base::ListValue> list = hud->GetLogAsList();
-      if (!list->empty())
-        value->Set(base::NumberToString(hud->display_id()), std::move(list));
-    }
-  }
-  return value;
-}
-
 void TouchHudDebug::ChangeToNextMode() {
   switch (mode_) {
     case FULLSCREEN:
@@ -366,10 +297,6 @@ void TouchHudDebug::ChangeToNextMode() {
       SetMode(FULLSCREEN);
       break;
   }
-}
-
-std::unique_ptr<base::ListValue> TouchHudDebug::GetLogAsList() const {
-  return touch_log_->GetAsList();
 }
 
 void TouchHudDebug::Clear() {

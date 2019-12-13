@@ -122,7 +122,7 @@ base::Value SessionWindowToValue(const ::sessions::SessionWindow& window) {
     base::Value tab_value = SessionTabToValue(*tab.get());
     if (!tab_value.is_none()) {
       modification_time = std::max(modification_time, tab->timestamp);
-      tab_values.GetList().push_back(std::move(tab_value));
+      tab_values.Append(std::move(tab_value));
     }
   }
   if (tab_values.GetList().empty())
@@ -346,12 +346,12 @@ base::Value ForeignSessionHandler::GetForeignSessions() {
         base::Value window_data =
             SessionWindowToValue(window_pair.second->wrapped_window);
         if (!window_data.is_none()) {
-          window_list.GetList().push_back(std::move(window_data));
+          window_list.Append(std::move(window_data));
         }
       }
 
       session_data.SetKey("windows", std::move(window_list));
-      session_list.GetList().push_back(std::move(session_data));
+      session_list.Append(std::move(session_data));
     }
   }
   return session_list;

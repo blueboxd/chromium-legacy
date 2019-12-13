@@ -153,7 +153,7 @@ InterpolationValue CSSInterpolationType::MaybeConvertSingleInternal(
     const InterpolationEnvironment& environment,
     const InterpolationValue& underlying,
     ConversionCheckers& conversion_checkers) const {
-  const CSSValue* value = ToCSSPropertySpecificKeyframe(keyframe).Value();
+  const CSSValue* value = To<CSSPropertySpecificKeyframe>(keyframe).Value();
   const CSSInterpolationEnvironment& css_environment =
       ToCSSInterpolationEnvironment(environment);
   const StyleResolverState& state = css_environment.GetState();

@@ -19,7 +19,7 @@ DIST=sid
 # from sid.  It will be needed until gnome keyring is removed
 # (http://crbug.com/466975 and http://crbug.com/355223).
 ARCHIVE_URL="https://snapshot.debian.org/archive/debian"
-ARCHIVE_TIMESTAMP=20191205T152154Z
+ARCHIVE_TIMESTAMP=20191212T145612Z
 APT_SOURCES_LIST="${ARCHIVE_URL}/${ARCHIVE_TIMESTAMP}/ stretch main
 ${ARCHIVE_URL}/${ARCHIVE_TIMESTAMP}/ experimental main
 ${ARCHIVE_URL}/${ARCHIVE_TIMESTAMP}/ sid main"
@@ -103,6 +103,8 @@ DEBIAN_PACKAGES="\
   libelf1
   libepoxy-dev
   libepoxy0
+  libevdev-dev
+  libevdev2
   libevent-2.1-7
   libexpat1
   libexpat1-dev
@@ -158,6 +160,7 @@ DEBIAN_PACKAGES="\
   libgtk-4-0
   libgtk-4-dev
   libgtk2.0-0
+  libgudev-1.0-0
   libharfbuzz-dev
   libharfbuzz-gobject0
   libharfbuzz-icu0
@@ -171,6 +174,8 @@ DEBIAN_PACKAGES="\
   libidn2-0
   libindicator3-7
   libindicator7
+  libinput10
+  libinput-dev
   libjbig0
   libjpeg62-turbo
   libjpeg62-turbo-dev
@@ -194,6 +199,7 @@ DEBIAN_PACKAGES="\
   libminizip1
   libmount-dev
   libmount1
+  libmtdev1
   libnettle7
   libnspr4
   libnspr4-dev
@@ -223,6 +229,7 @@ DEBIAN_PACKAGES="\
   libpcre2-8-0
   libpcre2-dev
   libpcre2-posix0
+  libpcre2-posix2
   libpcre3
   libpcre3-dev
   libpcre32-3
@@ -279,6 +286,7 @@ DEBIAN_PACKAGES="\
   libvpx-dev
   libvpx6
   libvulkan1
+  libwacom2
   libwayland-client0
   libwayland-cursor0
   libwayland-dev

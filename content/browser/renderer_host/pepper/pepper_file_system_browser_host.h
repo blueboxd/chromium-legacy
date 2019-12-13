@@ -45,7 +45,7 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
   // given |root_url|. The file system at |root_url| must already be opened and
   // have the type given by GetType().
   // Calls |callback| when complete.
-  void OpenExisting(const GURL& root_url, const base::Closure& callback);
+  void OpenExisting(const GURL& root_url, base::OnceClosure callback);
 
   // ppapi::host::ResourceHost overrides.
   int32_t OnResourceMessageReceived(
@@ -69,10 +69,10 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
   bool ChecksQuota() const { return quota_reservation_.get() != NULL; }
   // Opens a file for writing with quota checks. Returns the file size in the
   // callback.
-  typedef base::Callback<void(int64_t)> OpenQuotaFileCallback;
+  using OpenQuotaFileCallback = base::OnceCallback<void(int64_t)>;
   void OpenQuotaFile(PepperFileIOHost* file_io_host,
                      const storage::FileSystemURL& url,
-                     const OpenQuotaFileCallback& callback);
+                     OpenQuotaFileCallback callback);
   // Closes the file. This must be called after OpenQuotaFile and before the
   // PepperFileIOHost is destroyed.
   void CloseQuotaFile(PepperFileIOHost* file_io_host,
@@ -82,7 +82,7 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
   friend class PepperFileSystemBrowserHostTest;
 
   void OpenExistingFileSystem(
-      const base::Closure& callback,
+      base::OnceClosure callback,
       scoped_refptr<storage::FileSystemContext> file_system_context);
   void OpenFileSystem(
       ppapi::host::ReplyMessageContext reply_context,
@@ -127,8 +127,8 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
       scoped_refptr<storage::FileSystemContext> file_system_context);
 
   bool ShouldCreateQuotaReservation() const;
-  void CreateQuotaReservation(const base::Closure& callback);
-  void GotQuotaReservation(const base::Closure& callback,
+  void CreateQuotaReservation(base::OnceClosure callback);
+  void GotQuotaReservation(base::OnceClosure callback,
                            scoped_refptr<QuotaReservation> quota_reservation);
 
   void GotReservedQuota(ppapi::host::ReplyMessageContext reply_context,

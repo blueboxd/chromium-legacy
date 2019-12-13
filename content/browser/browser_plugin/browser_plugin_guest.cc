@@ -43,7 +43,6 @@
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/guest_host.h"
-#include "content/public/browser/guest_mode.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -60,65 +59,16 @@
 
 namespace content {
 
-BrowserPluginGuest::InputEventShimImpl::InputEventShimImpl(
-    BrowserPluginGuest* browser_plugin_guest)
-    : browser_plugin_guest_(browser_plugin_guest) {}
-
-BrowserPluginGuest::InputEventShimImpl::~InputEventShimImpl() = default;
-
-void BrowserPluginGuest::InputEventShimImpl::DidSetHasTouchEventHandlers(
-    bool accept) {
-  browser_plugin_guest_->DidSetHasTouchEventHandlers(accept);
-}
-
-void BrowserPluginGuest::InputEventShimImpl::DidTextInputStateChange(
-    const TextInputState& params) {
-  browser_plugin_guest_->DidTextInputStateChange(params);
-}
-
-void BrowserPluginGuest::InputEventShimImpl::DidLockMouse(bool user_gesture,
-                                                          bool privileged) {
-  browser_plugin_guest_->DidLockMouse(user_gesture, privileged);
-}
-
-void BrowserPluginGuest::InputEventShimImpl::DidUnlockMouse() {
-  browser_plugin_guest_->DidUnlockMouse();
-}
-
-class BrowserPluginGuest::EmbedderVisibilityObserver
-    : public WebContentsObserver {
- public:
-  explicit EmbedderVisibilityObserver(BrowserPluginGuest* guest)
-      : WebContentsObserver(guest->embedder_web_contents()),
-        browser_plugin_guest_(guest) {
-  }
-
-  ~EmbedderVisibilityObserver() override {}
-
-  // WebContentsObserver implementation.
-  void OnVisibilityChanged(content::Visibility visibility) override {
-    browser_plugin_guest_->EmbedderVisibilityChanged(visibility);
-  }
-
- private:
-  BrowserPluginGuest* browser_plugin_guest_;
-
-  DISALLOW_COPY_AND_ASSIGN(EmbedderVisibilityObserver);
-};
-
 BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
                                        WebContentsImpl* web_contents,
                                        BrowserPluginGuestDelegate* delegate)
     : WebContentsObserver(web_contents),
-      input_event_shim_impl_(this),
       owner_web_contents_(nullptr),
       attached_(false),
       browser_plugin_instance_id_(browser_plugin::kInstanceIDNone),
       focused_(false),
       mouse_locked_(false),
       pending_lock_request_(false),
-      guest_visible_(false),
-      embedder_visibility_(Visibility::VISIBLE),
       is_full_page_plugin_(false),
       has_render_view_(has_render_view),
       is_in_destruction_(false),
@@ -137,7 +87,7 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
 int BrowserPluginGuest::LoadURLWithParams(
     const NavigationController::LoadURLParams& load_params) {
   GetWebContents()->GetController().LoadURLWithParams(load_params);
-  return GetGuestRenderViewRoutingID();
+  return MSG_ROUTING_NONE;
 }
 
 void BrowserPluginGuest::SizeContents(const gfx::Size& new_size) {
@@ -173,15 +123,6 @@ void BrowserPluginGuest::Init() {
       delegate_->GetOwnerWebContents());
   owner_web_contents->CreateBrowserPluginEmbedderIfNecessary();
   InitInternal(owner_web_contents);
-}
-
-InputEventShim* BrowserPluginGuest::GetInputEventShim() {
-  // In --site-per-process mode, the input event mechanics are handled by
-  // the RenderWidgetHost so there is no need to shim things.
-  if (GuestMode::IsCrossProcessFrameGuest(GetWebContents())) {
-    return nullptr;
-  }
-  return &input_event_shim_impl_;
 }
 
 base::WeakPtr<BrowserPluginGuest> BrowserPluginGuest::AsWeakPtr() {
@@ -230,9 +171,6 @@ void BrowserPluginGuest::InitInternal(WebContentsImpl* owner_web_contents) {
   OnSetFocus(browser_plugin::kInstanceIDNone, focused_,
              blink::kWebFocusTypeNone);
 
-  guest_visible_ = false;
-  UpdateVisibility();
-
   is_full_page_plugin_ = false;
   frame_rect_ = gfx::Rect();
 
@@ -259,8 +197,6 @@ void BrowserPluginGuest::InitInternal(WebContentsImpl* owner_web_contents) {
   renderer_prefs->browser_handles_all_top_level_requests = false;
   // Disable "client blocked" error page for browser plugin.
   renderer_prefs->disable_client_blocked_error_page = true;
-
-  embedder_visibility_observer_.reset(new EmbedderVisibilityObserver(this));
 
   DCHECK(GetWebContents()->GetRenderViewHost());
 
@@ -303,18 +239,9 @@ RenderWidgetHostView* BrowserPluginGuest::GetOwnerRenderWidgetHostView() {
   return nullptr;
 }
 
-void BrowserPluginGuest::UpdateVisibility() {
-  OnSetVisibility(browser_plugin_instance_id(), visible());
-}
-
 BrowserPluginGuestManager*
 BrowserPluginGuest::GetBrowserPluginGuestManager() const {
   return GetWebContents()->GetBrowserContext()->GetGuestManager();
-}
-
-void BrowserPluginGuest::EmbedderVisibilityChanged(Visibility visibility) {
-  embedder_visibility_ = visibility;
-  UpdateVisibility();
 }
 
 gfx::Point BrowserPluginGuest::GetCoordinatesInEmbedderWebContents(
@@ -441,23 +368,6 @@ void BrowserPluginGuest::DidFinishNavigation(
     RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.DidNavigate"));
 }
 
-void BrowserPluginGuest::RenderViewReady() {
-  if (GuestMode::IsCrossProcessFrameGuest(GetWebContents()))
-    return;
-
-  RenderViewHost* rvh = GetWebContents()->GetRenderViewHost();
-  // TODO(fsamuel): Investigate whether it's possible to update state earlier
-  // here (see http://crbug.com/158151).
-  RenderWidgetHostImpl::From(rvh->GetWidget())
-      ->GetWidgetInputHandler()
-      ->SetFocus(focused_);
-  UpdateVisibility();
-
-  RenderWidgetHostImpl::From(rvh->GetWidget())
-      ->set_hung_renderer_delay(
-          base::TimeDelta::FromMilliseconds(kHungRendererDelayMs));
-}
-
 void BrowserPluginGuest::RenderProcessGone(base::TerminationStatus status) {
   switch (status) {
 #if defined(OS_CHROMEOS)
@@ -514,23 +424,6 @@ void BrowserPluginGuest::DidLockMouse(bool user_gesture, bool privileged) {
 }
 
 void BrowserPluginGuest::DidUnlockMouse() {
-}
-
-bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  // In --site-per-process, we do not need most of BrowserPluginGuest to drive
-  // inner WebContents.
-  // TODO(lazyboy): Fix this as part of http://crbug.com/330264. The required
-  // parts of code from this class should be extracted to a separate class for
-  // --site-per-process.
-  if (GuestMode::IsCrossProcessFrameGuest(GetWebContents()))
-    return false;
-
-  IPC_BEGIN_MESSAGE_MAP(BrowserPluginGuest, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message,
@@ -701,24 +594,6 @@ void BrowserPluginGuest::OnSetEditCommandsForNextKeyEvent(
       ->SetEditCommandsForNextKeyEvent(edit_commands);
 }
 
-void BrowserPluginGuest::OnSetVisibility(int browser_plugin_instance_id,
-                                         bool visible) {
-  // For OOPIF-<webivew>, the remote frame will handle visibility state.
-  if (GuestMode::IsCrossProcessFrameGuest(GetWebContents()))
-    return;
-
-  guest_visible_ = visible;
-
-  // Do not use WebContents::UpdateWebContentsVisibility() because it ignores
-  // visibility changes that come before the first change to VISIBLE.
-  if (!guest_visible_ || embedder_visibility_ == Visibility::HIDDEN)
-    GetWebContents()->WasHidden();
-  else if (embedder_visibility_ == Visibility::VISIBLE)
-    GetWebContents()->WasShown();
-  else
-    GetWebContents()->WasOccluded();
-}
-
 void BrowserPluginGuest::OnUnlockMouseAck(int browser_plugin_instance_id) {
   // mouse_locked_ could be false here if the lock attempt was cancelled due
   // to window focus, or for various other reasons before the guest was informed
@@ -788,13 +663,9 @@ void BrowserPluginGuest::OnShowPopup(
     const FrameHostMsg_ShowPopup_Params& params) {
   gfx::Rect translated_bounds(params.bounds);
   WebContents* guest = web_contents();
-  if (GuestMode::IsCrossProcessFrameGuest(guest)) {
-    translated_bounds.set_origin(
-        guest->GetRenderWidgetHostView()->TransformPointToRootCoordSpace(
-            translated_bounds.origin()));
-  } else {
-    translated_bounds.Offset(frame_rect_.OffsetFromOrigin());
-  }
+  translated_bounds.set_origin(
+      guest->GetRenderWidgetHostView()->TransformPointToRootCoordSpace(
+          translated_bounds.origin()));
   BrowserPluginPopupMenuHelper popup_menu_helper(
       owner_web_contents_->GetMainFrame(), render_frame_host);
   popup_menu_helper.ShowPopupMenu(translated_bounds,
@@ -806,56 +677,5 @@ void BrowserPluginGuest::OnShowPopup(
                                   params.allow_multiple_selection);
 }
 #endif
-
-void BrowserPluginGuest::OnShowWidget(int widget_route_id,
-                                      const gfx::Rect& initial_rect) {
-  int process_id = GetWebContents()->GetMainFrame()->GetProcess()->GetID();
-  GetWebContents()->ShowCreatedWidget(process_id, widget_route_id,
-                                      initial_rect);
-}
-
-int BrowserPluginGuest::GetGuestRenderViewRoutingID() {
-  if (GuestMode::IsCrossProcessFrameGuest(GetWebContents())) {
-    // We don't use the proxy to send postMessage in --site-per-process, since
-    // we use the contentWindow directly from the frame element instead.
-    return MSG_ROUTING_NONE;
-  }
-
-  if (guest_render_view_routing_id_ != MSG_ROUTING_NONE)
-    return guest_render_view_routing_id_;
-
-  // In order to enable the embedder to post messages to the
-  // guest, we need to create a RenderFrameProxyHost in root node of guest
-  // WebContents' frame tree (i.e., create a RenderFrameProxy in the embedder
-  // process which can be used by the embedder to post messages to the guest).
-  // The creation of RFPH for the reverse path, which enables the guest to post
-  // messages to the embedder, will be postponed to when the embedder posts its
-  // first message to the guest.
-  //
-  // TODO(fsamuel): Make sure this works for transferring guests across
-  // owners in different processes. We probably need to clear the
-  // |guest_render_view_routing_id_| and perform any necessary cleanup on Detach
-  // to enable this.
-  //
-  // TODO(ekaramad): If the guest is embedded inside a cross-process <iframe>
-  // (e.g., <embed>-ed PDF), the reverse proxy will not be created and the
-  // posted message's source attribute will be null which in turn breaks the
-  // two-way messaging between the guest and the embedder. We should either
-  // create a RenderFrameProxyHost for the reverse path, or implement
-  // MimeHandlerViewGuest using OOPIF (https://crbug.com/659750).
-  SiteInstance* owner_site_instance = delegate_->GetOwnerSiteInstance();
-  if (!owner_site_instance)
-    return MSG_ROUTING_NONE;
-
-  RenderFrameHostManager* rfh_manager =
-      GetWebContents()->GetFrameTree()->root()->render_manager();
-  rfh_manager->CreateRenderFrameProxy(owner_site_instance);
-  guest_render_view_routing_id_ =
-      rfh_manager->GetRenderFrameProxyHost(owner_site_instance)
-          ->GetRenderViewHost()
-          ->GetRoutingID();
-
-  return guest_render_view_routing_id_;
-}
 
 }  // namespace content

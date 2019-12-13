@@ -18,7 +18,6 @@
 #include "components/zoom/page_zoom.h"
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/file_select_listener.h"
-#include "content/public/browser/guest_mode.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -132,14 +131,9 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
       return;
     destroyed_ = true;
 
-    bool also_delete = true;
-    WebContents* guest_web_contents = guest_->web_contents();
-    if (content::GuestMode::IsCrossProcessFrameGuest(guest_web_contents)) {
-      // The outer WebContents have ownership of attached OOPIF-based guests, so
-      // we are not responsible for their deletion.
-      if (guest_web_contents->GetOuterWebContents())
-        also_delete = false;
-    }
+    // The outer WebContents have ownership of attached OOPIF-based guests, so
+    // we are not responsible for their deletion.
+    bool also_delete = !guest_->web_contents()->GetOuterWebContents();
     guest_->Destroy(also_delete);
   }
 
@@ -547,19 +541,18 @@ void GuestViewBase::WillAttach(WebContents* embedder_web_contents,
 
   WillAttachToEmbedder();
 
-  if (content::GuestMode::IsCrossProcessFrameGuest(web_contents())) {
-    owner_web_contents_->AttachInnerWebContents(
-        base::WrapUnique<WebContents>(web_contents()), outer_contents_frame,
-        is_full_page_plugin);
-    // TODO(ekaramad): MimeHandlerViewGuest might not need this ACK
-    // (https://crbug.com/659750).
-    // We don't ACK until after AttachToOuterWebContentsFrame, so that
-    // |outer_contents_frame| gets swapped before the AttachIframeGuest callback
-    // is run. We also need to send the ACK before queued events are sent in
-    // DidAttach.
-    embedder_web_contents->GetMainFrame()->Send(
-        new GuestViewMsg_AttachToEmbedderFrame_ACK(element_instance_id));
-  }
+  owner_web_contents_->AttachInnerWebContents(
+      base::WrapUnique<WebContents>(web_contents()), outer_contents_frame,
+      is_full_page_plugin);
+  // TODO(ekaramad): MimeHandlerViewGuest might not need this ACK
+  // (https://crbug.com/659750).
+  // We don't ACK until after AttachToOuterWebContentsFrame, so that
+  // |outer_contents_frame| gets swapped before the AttachIframeGuest callback
+  // is run. We also need to send the ACK before queued events are sent in
+  // DidAttach.
+  embedder_web_contents->GetMainFrame()->Send(
+      new GuestViewMsg_AttachToEmbedderFrame_ACK(element_instance_id));
+
   // Completing attachment will resume suspended resource loads and then send
   // queued events.
   SignalWhenReady(std::move(completion_callback));
@@ -792,9 +785,7 @@ void GuestViewBase::DispatchEventToGuestProxy(
 }
 
 void GuestViewBase::DispatchEventToView(std::unique_ptr<GuestViewEvent> event) {
-  if ((attached() && pending_events_.empty()) ||
-      (can_owner_receive_events() &&
-       !content::GuestMode::IsCrossProcessFrameGuest(web_contents()))) {
+  if (attached() && pending_events_.empty()) {
     event->Dispatch(this, view_instance_id_);
     return;
   }

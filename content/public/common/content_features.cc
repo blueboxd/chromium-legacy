@@ -28,7 +28,7 @@ const base::Feature kAllowContentInitiatedDataUrlNavigations{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allows popups during page unloading.
-// TODO(https://crbug.com/937569): Remove this entirely in Chrome 82.
+// TODO(https://crbug.com/937569): Remove this entirely in Chrome 88.
 const base::Feature kAllowPopupsDuringPageUnload{
     "AllowPopupsDuringPageUnload", base::FEATURE_DISABLED_BY_DEFAULT};
 

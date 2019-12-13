@@ -14,7 +14,7 @@ import {CustomElement} from './custom_element.js';
 import {TabStripEmbedderProxy} from './tab_strip_embedder_proxy.js';
 import {tabStripOptions} from './tab_strip_options.js';
 import {TabSwiper} from './tab_swiper.js';
-import {TabData, TabNetworkState, TabsApiProxy} from './tabs_api_proxy.js';
+import {CloseTabAction, TabData, TabNetworkState, TabsApiProxy} from './tabs_api_proxy.js';
 
 const DEFAULT_ANIMATION_DURATION = 125;
 
@@ -234,14 +234,14 @@ export class TabElement extends CustomElement {
     }
 
     event.stopPropagation();
-    this.tabsApi_.closeTab(this.tab_.id);
+    this.tabsApi_.closeTab(this.tab_.id, CloseTabAction.CLOSE_BUTTON);
   }
 
   /** @private */
   onSwipe_() {
     // Prevent slideOut animation from playing.
     this.remove();
-    this.tabsApi_.closeTab(this.tab_.id);
+    this.tabsApi_.closeTab(this.tab_.id, CloseTabAction.SWIPED_TO_CLOSE);
   }
 
   /**

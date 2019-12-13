@@ -29,14 +29,14 @@ void FrameCallback(void* data, wl_callback* callback, uint32_t time) {
 }
 
 void WriteMixedPrimaries(gbm_bo* bo, const gfx::Size& size) {
-  CHECK_EQ(gbm_bo_get_plane_count(bo), 1);
+  CHECK_EQ(gbm_bo_get_plane_count(bo), 1u);
   uint32_t stride;
   void* mapped_data;
   void* void_data = gbm_bo_map(bo, 0, 0, size.width(), size.height(),
                                GBM_BO_TRANSFER_WRITE, &stride, &mapped_data, 0);
   CHECK_NE(void_data, MAP_FAILED);
   uint32_t* data = static_cast<uint32_t*>(void_data);
-  CHECK_EQ(stride % 4, 0);
+  CHECK_EQ(stride % 4, 0u);
   stride = stride / 4;
   // Draw rows that interpolate from R->G->B->R so we draw the outside edges of
   // the color gamut we are using and than ramp it from 0-255 going left to

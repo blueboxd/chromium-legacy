@@ -69,6 +69,10 @@ class DisplayInfoProviderChromeOS
       bool single_unified,
       base::OnceCallback<void(DisplayUnitInfoList result)> callback,
       ash::mojom::DisplayLayoutInfoPtr layout);
+  void OnGetDisplayUnitInfoList(
+      ash::mojom::DisplayLayoutInfoPtr layout,
+      base::OnceCallback<void(DisplayUnitInfoList)> callback,
+      std::vector<ash::mojom::DisplayUnitInfoPtr> info_list);
   void CallTouchCalibration(const std::string& id,
                             ash::mojom::DisplayConfigOperation op,
                             ash::mojom::TouchCalibrationPtr calibration,

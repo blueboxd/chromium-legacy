@@ -376,7 +376,7 @@ void GetFakeCrosHealthdData(
       block_device_info(std::move(storage_vector));
   chromeos::cros_healthd::mojom::TelemetryInfo fake_info(
       battery_info.Clone(), std::move(block_device_info),
-      cached_vpd_info.Clone());
+      cached_vpd_info.Clone(), base::nullopt);
 
   auto sample = std::make_unique<policy::SampledData>();
   sample->cpu_samples[cpu_sample.cpu_label()] = cpu_sample;

@@ -29,9 +29,9 @@ AwVariationsServiceClient::AwVariationsServiceClient() {}
 
 AwVariationsServiceClient::~AwVariationsServiceClient() {}
 
-base::Callback<base::Version(void)>
+AwVariationsServiceClient::VersionCallback
 AwVariationsServiceClient::GetVersionForSimulationCallback() {
-  return base::BindRepeating(&GetVersionForSimulation);
+  return base::BindOnce(&GetVersionForSimulation);
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

@@ -75,7 +75,6 @@ class TestAutofillClient : public AutofillClient {
   void ShowWebauthnVerifyPendingDialog(
       WebauthnDialogCallback verify_pending_dialog_callback) override;
   void UpdateWebauthnOfferDialogWithError() override;
-  void UpdateWebauthnVerifyPendingCancelButton(bool should_be_enabled) override;
   bool CloseWebauthnDialog() override;
   void ConfirmSaveUpiIdLocally(
       const std::string& upi_id,

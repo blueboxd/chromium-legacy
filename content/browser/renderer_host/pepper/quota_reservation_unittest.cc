@@ -105,7 +105,7 @@ class QuotaReservationTest : public testing::Test {
       const GURL& origin,
       storage::FileSystemType type) {
     // Sets reservation_ as a side effect.
-    return scoped_refptr<QuotaReservation>(
+    return base::WrapRefCounted(
         new QuotaReservation(reservation, origin, type));
   }
 
@@ -130,6 +130,7 @@ class QuotaReservationTest : public testing::Test {
 
 void GotReservedQuota(int64_t* reserved_quota_ptr,
                       ppapi::FileGrowthMap* file_growths_ptr,
+                      base::OnceClosure after_callback,
                       int64_t reserved_quota,
                       const ppapi::FileSizeMap& maximum_written_offsets) {
   *reserved_quota_ptr = reserved_quota;
@@ -138,17 +139,20 @@ void GotReservedQuota(int64_t* reserved_quota_ptr,
   for (auto it = maximum_written_offsets.begin();
        it != maximum_written_offsets.end(); ++it)
     (*file_growths_ptr)[it->first] = ppapi::FileGrowth(it->second, 0);
+
+  std::move(after_callback).Run();
 }
 
 void ReserveQuota(scoped_refptr<QuotaReservation> quota_reservation,
                   int64_t amount,
                   int64_t* reserved_quota,
                   ppapi::FileGrowthMap* file_growths) {
+  base::RunLoop loop;
   quota_reservation->ReserveQuota(
-      amount,
-      *file_growths,
-      base::Bind(&GotReservedQuota, reserved_quota, file_growths));
-  base::RunLoop().RunUntilIdle();
+      amount, *file_growths,
+      base::BindOnce(&GotReservedQuota, reserved_quota, file_growths,
+                     loop.QuitClosure()));
+  loop.Run();
 }
 
 // Tests that:

@@ -12,12 +12,60 @@ import os
 import sys
 import zipfile
 
+from util import build_utils
 
 # When set and a difference is detected, a diff of what changed is printed.
 PRINT_EXPLANATIONS = int(os.environ.get('PRINT_BUILD_EXPLANATIONS', 0))
 
 # An escape hatch that causes all targets to be rebuilt.
 _FORCE_REBUILD = int(os.environ.get('FORCE_REBUILD', 0))
+
+
+def CallAndWriteDepfileIfStale(on_stale_md5,
+                               options,
+                               record_path=None,
+                               input_paths=None,
+                               input_strings=None,
+                               output_paths=None,
+                               force=False,
+                               pass_changes=False,
+                               track_subpaths_whitelist=None,
+                               depfile_deps=None):
+  """Wraps CallAndRecordIfStale() and writes a depfile if applicable.
+
+  Depfiles are automatically added to output_paths when present in the |options|
+  argument. They are then created after |on_stale_md5| is called.
+
+  By default, only python dependencies are added to the depfile. If there are
+  other input paths that are not captured by GN deps, then they should be listed
+  in depfile_deps. It's important to write paths to the depfile that are already
+  captured by GN deps since GN args can cause GN deps to change, and such
+  changes are not immediately reflected in depfiles (http://crbug.com/589311).
+  """
+  if not output_paths:
+    raise Exception('At least one output_path must be specified.')
+  input_paths = list(input_paths or [])
+  input_strings = list(input_strings or [])
+  output_paths = list(output_paths or [])
+
+  input_paths += build_utils.ComputePythonDependencies()
+
+  CallAndRecordIfStale(
+      on_stale_md5,
+      record_path=record_path,
+      input_paths=input_paths,
+      input_strings=input_strings,
+      output_paths=output_paths,
+      force=force,
+      pass_changes=pass_changes,
+      track_subpaths_whitelist=track_subpaths_whitelist)
+
+  # Write depfile even when inputs have not changed to ensure build correctness
+  # on bots that build with & without patch, and the patch changes the depfile
+  # location.
+  if hasattr(options, 'depfile') and options.depfile:
+    build_utils.WriteDepfile(
+        options.depfile, output_paths[0], depfile_deps, add_pydeps=False)
 
 
 def CallAndRecordIfStale(function,

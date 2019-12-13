@@ -21,10 +21,6 @@
 #include "device/fido/mac/authenticator_config.h"
 #endif  // defined(OS_MACOSX)
 
-namespace service_manager {
-class Connector;
-}
-
 namespace device {
 
 #if defined(OS_WIN)
@@ -52,11 +48,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
 
   // Instantiates a FidoDiscoveryBase for the given transport.
   //
-  // FidoTransportProtocol::kUsbHumanInterfaceDevice requires specifying a
-  // valid |connector| on Desktop, and is not valid on Android.
+  // FidoTransportProtocol::kUsbHumanInterfaceDevice is not valid on Android.
   virtual std::unique_ptr<FidoDiscoveryBase> Create(
-      FidoTransportProtocol transport,
-      ::service_manager::Connector* connector);
+      FidoTransportProtocol transport);
 
   // set_cable_data configures caBLE obtained via a WebAuthn extension.
   void set_cable_data(std::vector<CableDiscoveryData> cable_data,

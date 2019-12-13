@@ -15,24 +15,14 @@
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/surface_id.h"
-#include "components/viz/service/display/display_damage_tracker.h"
+#include "components/viz/service/display/display_scheduler_base.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace viz {
 
 class BeginFrameSource;
 
-class VIZ_SERVICE_EXPORT DisplaySchedulerClient {
- public:
-  virtual ~DisplaySchedulerClient() {}
-
-  virtual bool DrawAndSwap() = 0;
-  virtual void DidFinishFrame(const BeginFrameAck& ack) = 0;
-};
-
-class VIZ_SERVICE_EXPORT DisplayScheduler
-    : public BeginFrameObserverBase,
-      public DisplayDamageTracker::Observer {
+class VIZ_SERVICE_EXPORT DisplayScheduler : public DisplaySchedulerBase {
  public:
   DisplayScheduler(BeginFrameSource* begin_frame_source,
                    base::SingleThreadTaskRunner* task_runner,
@@ -40,40 +30,29 @@ class VIZ_SERVICE_EXPORT DisplayScheduler
                    bool wait_for_all_surfaces_before_draw = false);
   ~DisplayScheduler() override;
 
-  int pending_swaps() const { return pending_swaps_; }
-
-  void SetClient(DisplaySchedulerClient* client);
-  void SetDamageTracker(DisplayDamageTracker* damage_tracker);
-
-  void SetVisible(bool visible);
-
-  void ForceImmediateSwapIfPossible();
-  void SetNeedsOneBeginFrame();
-  base::TimeTicks current_frame_time() const {
-    return current_begin_frame_args_.frame_time;
-  }
-  base::TimeTicks current_frame_display_time() const {
-    return current_begin_frame_args_.frame_time +
-           current_begin_frame_args_.interval;
-  }
-
-  virtual void DidSwapBuffers();
-  void DidReceiveSwapBuffersAck();
-
-  void OutputSurfaceLost();
-
-  // BeginFrameObserverBase implementation.
-  bool OnBeginFrameDerivedImpl(const BeginFrameArgs& args) override;
-  void OnBeginFrameSourcePausedChanged(bool paused) override;
+  // DisplaySchedulerBase implementation.
+  void SetVisible(bool visible) override;
+  void ForceImmediateSwapIfPossible() override;
+  void SetNeedsOneBeginFrame(bool needs_draw) override;
+  void DidSwapBuffers() override;
+  void DidReceiveSwapBuffersAck() override;
+  void OutputSurfaceLost() override;
 
   // DisplayDamageTrackerObserver implementation.
   void OnDisplayDamaged() override;
   void OnRootFrameMissing(bool missing) override;
   void OnPendingSurfacesChanged() override;
 
-  void set_needs_draw() { needs_draw_ = true; }
-
  protected:
+  class BeginFrameObserver;
+
+  bool OnBeginFrame(const BeginFrameArgs& args);
+
+  base::TimeTicks current_frame_display_time() const {
+    return current_begin_frame_args_.frame_time +
+           current_begin_frame_args_.interval;
+  }
+
   // These values inidicate how a response to the BeginFrame should be
   // scheduled.
   enum class BeginFrameDeadlineMode {
@@ -113,8 +92,7 @@ class VIZ_SERVICE_EXPORT DisplayScheduler
   // Updates |has_pending_surfaces_| and returns whether its value changed.
   bool UpdateHasPendingSurfaces();
 
-  DisplaySchedulerClient* client_;
-  DisplayDamageTracker* damage_tracker_ = nullptr;
+  std::unique_ptr<BeginFrameObserver> begin_frame_observer_;
   BeginFrameSource* begin_frame_source_;
   base::SingleThreadTaskRunner* task_runner_;
 
@@ -132,12 +110,6 @@ class VIZ_SERVICE_EXPORT DisplayScheduler
   bool inside_begin_frame_deadline_interval_;
   bool needs_draw_;
   bool has_pending_surfaces_;
-
-  struct SurfaceBeginFrameState {
-    BeginFrameArgs last_args;
-    BeginFrameAck last_ack;
-  };
-  base::flat_map<SurfaceId, SurfaceBeginFrameState> surface_states_;
 
   int next_swap_id_;
   int pending_swaps_;

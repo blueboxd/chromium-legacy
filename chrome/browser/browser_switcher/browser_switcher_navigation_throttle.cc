@@ -19,7 +19,6 @@
 #include "components/navigation_interception/intercept_navigation_throttle.h"
 #include "components/navigation_interception/navigation_params.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/guest_mode.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/url_util.h"
@@ -55,8 +54,9 @@ bool MaybeLaunchAlternativeBrowser(
     return false;
 
   // Redirect top-level navigations only. This excludes iframes and webviews
-  // in particular.
-  if (content::GuestMode::IsCrossProcessFrameGuest(web_contents))
+  // in particular. Since we can only navigate a guest after attaching to the
+  // outer WebContents, this check works for both guests and portals.
+  if (web_contents->GetOuterWebContents())
     return false;
 
   // If prerendering, don't launch the alternative browser but abort the

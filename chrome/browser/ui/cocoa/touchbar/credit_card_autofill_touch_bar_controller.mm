@@ -57,14 +57,14 @@ NSImage* GetCreditCardTouchBarImage(int iconId) {
 - (instancetype)initWithController:
     (autofill::AutofillPopupController*)controller {
   if ((self = [super init])) {
-    controller_ = controller;
+    _controller = controller;
   }
   return self;
 }
 
 - (NSTouchBar*)makeTouchBar {
-  if (!controller_->GetLineCount() ||
-      !controller_->layout_model().is_credit_card_popup()) {
+  if (!_controller->GetLineCount() ||
+      !_controller->layout_model().is_credit_card_popup()) {
     return nil;
   }
 
@@ -84,9 +84,9 @@ NSImage* GetCreditCardTouchBarImage(int iconId) {
     return nil;
 
   NSMutableArray* creditCardItems = [NSMutableArray array];
-  for (int i = 0; i < controller_->GetLineCount() && i < maxTouchBarItems;
+  for (int i = 0; i < _controller->GetLineCount() && i < maxTouchBarItems;
        i++) {
-    const autofill::Suggestion& suggestion = controller_->GetSuggestionAt(i);
+    const autofill::Suggestion& suggestion = _controller->GetSuggestionAt(i);
     if (suggestion.frontend_id < autofill::POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY)
       continue;
 
@@ -114,9 +114,9 @@ NSImage* GetCreditCardTouchBarImage(int iconId) {
 
 - (NSButton*)createCreditCardButtonAtRow:(int)row {
   NSString* label =
-      base::SysUTF16ToNSString(controller_->GetElidedValueAt(row));
+      base::SysUTF16ToNSString(_controller->GetElidedValueAt(row));
   NSString* subtext =
-      base::SysUTF16ToNSString(controller_->GetElidedLabelAt(row));
+      base::SysUTF16ToNSString(_controller->GetElidedLabelAt(row));
 
   // Create the button title based on the text direction.
   NSString* buttonTitle =
@@ -124,9 +124,9 @@ NSImage* GetCreditCardTouchBarImage(int iconId) {
                        : label;
 
   // Create the button.
-  const autofill::Suggestion& suggestion = controller_->GetSuggestionAt(row);
+  const autofill::Suggestion& suggestion = _controller->GetSuggestionAt(row);
   NSImage* cardIconImage = GetCreditCardTouchBarImage(
-      controller_->layout_model().GetIconResourceID(suggestion.icon));
+      _controller->layout_model().GetIconResourceID(suggestion.icon));
   NSButton* button = nil;
   if (cardIconImage) {
     button = [NSButton buttonWithTitle:buttonTitle
@@ -134,7 +134,7 @@ NSImage* GetCreditCardTouchBarImage(int iconId) {
                                 target:self
                                 action:@selector(acceptCreditCard:)];
     button.imageHugsTitle = YES;
-    button.imagePosition = controller_->IsRTL() ? NSImageLeft : NSImageRight;
+    button.imagePosition = _controller->IsRTL() ? NSImageLeft : NSImageRight;
   } else {
     button = [NSButton buttonWithTitle:buttonTitle
                                 target:self
@@ -171,7 +171,7 @@ NSImage* GetCreditCardTouchBarImage(int iconId) {
 
 - (void)acceptCreditCard:(id)sender {
   ui::LogTouchBarUMA(ui::TouchBarAction::CREDIT_CARD_AUTOFILL);
-  controller_->AcceptSuggestion([sender tag]);
+  _controller->AcceptSuggestion([sender tag]);
 }
 
 @end

@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/serial/serial_api.h"
 #include "extensions/browser/api/serial/serial_connection.h"
+#include "extensions/browser/api/serial/serial_port_manager.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/common/api/serial.h"
@@ -26,9 +27,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/serial.mojom.h"
-#include "services/service_manager/public/cpp/service_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 // Disable SIMULATE_SERIAL_PORTS only if all the following are true:
@@ -333,22 +332,14 @@ class SerialApiTest : public ExtensionApiTest {
  public:
   SerialApiTest() {
 #if SIMULATE_SERIAL_PORTS
-    // Because Device Service also runs in this process(browser process), we can
-    // set our binder to intercept requests for
-    // SerialPortManager/SerialPort interfaces to it.
-    service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
-        device::mojom::kServiceName,
-        base::BindRepeating(&SerialApiTest::BindSerialPortManager,
-                            base::Unretained(this)));
+    api::SerialPortManager::OverrideBinderForTesting(base::BindRepeating(
+        &SerialApiTest::BindSerialPortManager, base::Unretained(this)));
 #endif
   }
 
   ~SerialApiTest() override {
 #if SIMULATE_SERIAL_PORTS
-    service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
-        device::mojom::SerialPortManager>(device::mojom::kServiceName);
-    service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
-        device::mojom::SerialPort>(device::mojom::kServiceName);
+    api::SerialPortManager::OverrideBinderForTesting(base::NullCallback());
 #endif
   }
 

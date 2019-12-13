@@ -21,8 +21,8 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.settings.SearchEnginePreference;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.search_engine.SearchEngineSettings;
 import org.chromium.chrome.browser.ui.widget.PromoDialog;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
@@ -66,7 +66,7 @@ public class SogouPromoDialog extends PromoDialog {
         mLocaleManager = localeManager;
         mSpan = new NoUnderlineClickableSpan(activity.getResources(), (widget) -> {
             mChoice = UserChoice.SETTINGS;
-            SettingsLauncher.launchSettingsPage(getContext(), SearchEnginePreference.class);
+            SettingsLauncher.launchSettingsPage(getContext(), SearchEngineSettings.class);
             dismiss();
         });
         setOnDismissListener(this);

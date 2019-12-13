@@ -30,6 +30,7 @@
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/reflector.h"
 #include "ui/display/display_layout.h"
+#include "ui/display/display_transform.h"
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -271,9 +272,14 @@ void MirrorWindowController::UpdateWindow(
                                             ->layout_store()
                                             ->forced_mirror_mode_for_tablet();
       if (!should_undo_rotation) {
+        // Use the rotation from source display without panel orientation
+        // applied instead of the display transform hint in |source_compositor|
+        // so that panel orientation is not applied to the mirror host.
         mirroring_host_info->ash_host->AsWindowTreeHost()
             ->SetDisplayTransformHint(
-                source_compositor->display_transform_hint());
+                display::DisplayRotationToOverlayTransform(
+                    display_manager->GetDisplayInfo(reflecting_source_id_)
+                        .GetActiveRotation()));
       }
 
       aura::Window* mirror_window = mirroring_host_info->mirror_window;

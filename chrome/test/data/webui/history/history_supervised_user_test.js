@@ -15,12 +15,19 @@ suite('history-list supervised-user', function() {
     testService = new TestBrowserService();
     history.BrowserService.instance_ = testService;
 
+    testService.setQueryResult({
+      info: createHistoryInfo(),
+      value: TEST_HISTORY_RESULTS,
+    });
     app = document.createElement('history-app');
     document.body.appendChild(app);
 
     historyList = app.$.history;
     toolbar = app.$.toolbar;
-    app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
+    return Promise.all([
+      testService.whenCalled('queryHistory'),
+      history.ensureLazyLoaded(),
+    ]);
   });
 
   test('checkboxes disabled for supervised user', function() {

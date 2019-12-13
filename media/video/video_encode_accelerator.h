@@ -22,6 +22,7 @@
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/video/h264_parser.h"
+#include "media/video/video_encoder_info.h"
 
 namespace media {
 
@@ -220,6 +221,8 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
   // Returns a list of the supported codec profiles of the video encoder. This
   // can be called before Initialize().
   virtual SupportedProfiles GetSupportedProfiles() = 0;
+
+  virtual VideoEncoderInfo GetEncoderInfo();
 
   // Initializes the video encoder with specific configuration.  Called once per
   // encoder construction.  This call is synchronous and returns true iff

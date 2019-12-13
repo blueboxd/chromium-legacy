@@ -6,6 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
@@ -22,7 +23,9 @@ namespace web_app {
 WebAppBrowserController::WebAppBrowserController(Browser* browser)
     : AppBrowserController(browser,
                            GetAppIdFromApplicationName(browser->app_name())),
-      provider_(*WebAppProvider::Get(browser->profile())) {}
+      provider_(*WebAppProvider::Get(browser->profile())) {
+  registrar_observer_.Add(&provider_.registrar());
+}
 
 WebAppBrowserController::~WebAppBrowserController() = default;
 
@@ -37,6 +40,15 @@ bool WebAppBrowserController::HasMinimalUiButtons() const {
 
 bool WebAppBrowserController::IsHostedApp() const {
   return true;
+}
+
+void WebAppBrowserController::OnWebAppWillBeUninstalled(const AppId& app_id) {
+  if (HasAppId() && app_id == GetAppId())
+    chrome::CloseWindow(browser());
+}
+
+void WebAppBrowserController::OnAppRegistrarDestroyed() {
+  registrar_observer_.RemoveAll();
 }
 
 void WebAppBrowserController::SetReadIconCallbackForTesting(

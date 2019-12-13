@@ -9,6 +9,10 @@
 
 namespace quic {
 
+void QuicSaveTestOutputImpl(QuicStringPiece filename, QuicStringPiece data);
+
+bool QuicLoadTestOutputImpl(QuicStringPiece filename, std::string* data);
+
 void QuicRecordTraceImpl(QuicStringPiece identifier, QuicStringPiece data);
 
 }  // namespace quic

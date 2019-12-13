@@ -3,39 +3,6 @@
 // found in the LICENSE file.
 
 /**
- * Replace the current primary element of the test with a new element. Useful
- * as an alternative to PolymerTest.clearBody() which preserves styling.
- * @param {Element} element
- */
-function replaceBody(element) {
-  const body = document.body;
-  const app = body.querySelector('history-app');
-
-  const currentBody = app || body.querySelector('.test-body');
-  body.removeChild(currentBody);
-
-  // Clear any query in the URL.
-  window.history.replaceState({}, '', '/');
-
-  element.classList.add('test-body');
-  body.appendChild(element);
-}
-
-/**
- * Replace the document body with a new instance of <history-app>.
- * @return {HistoryAppElement} The app which was created.
- */
-function replaceApp() {
-  const app = document.createElement('history-app');
-  replaceBody(app);
-  app.id = 'history-app';
-  // Disable querying for tests by default.
-  app.queryState_.queryingDisabled = true;
-  Polymer.dom.flush();
-  return app;
-}
-
-/**
  * Create a fake history result with the given timestamp.
  * @param {number|string} timestamp Timestamp of the entry, as a number in ms or
  * a string which can be parsed by Date.parse().
@@ -82,10 +49,10 @@ function createSearchEntry(timestamp, urlStr) {
 }
 
 /**
- * Create a simple HistoryInfo.
+ * Create a simple HistoryQuery.
  * @param {?string} searchTerm The search term that the info has. Will be empty
  *     string if not specified.
- * @return {!HistoryInfo}
+ * @return {!HistoryQuery}
  */
 function createHistoryInfo(searchTerm) {
   return {finished: true, term: searchTerm || ''};

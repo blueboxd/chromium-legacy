@@ -173,7 +173,7 @@ Polymer({
   onClick_: function(e) {
     // Ignore double clicks so that Ctrl double-clicking an item won't deselect
     // the item before opening.
-    if (e.detail != 2) {
+    if (e.detail !== 2) {
       const addKey = isMac ? e.metaKey : e.ctrlKey;
       this.dispatch(selectItem(this.itemId, this.getState(), {
         clear: !addKey,
@@ -190,9 +190,9 @@ Polymer({
    * @param {KeyboardEvent} e
    */
   onKeydown_: function(e) {
-    if (e.key == 'ArrowLeft') {
+    if (e.key === 'ArrowLeft') {
       this.focus();
-    } else if (e.key == 'ArrowRight') {
+    } else if (e.key === 'ArrowRight') {
       this.$.menuButton.focus();
     }
   },
@@ -218,7 +218,7 @@ Polymer({
    * @private
    */
   onMiddleClick_: function(e) {
-    if (e.button != 1) {
+    if (e.button !== 1) {
       return;
     }
 
@@ -250,7 +250,7 @@ Polymer({
    * @private
    */
   cancelMiddleMouseBehavior_: function(e) {
-    if (e.button == 1) {
+    if (e.button === 1) {
       e.preventDefault();
     }
   },

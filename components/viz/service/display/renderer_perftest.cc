@@ -357,7 +357,7 @@ class RendererPerfTest : public testing::Test {
     support_->SubmitCompositorFrame(
         id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
         std::move(frame));
-    ASSERT_TRUE(display_->DrawAndSwap());
+    ASSERT_TRUE(display_->DrawAndSwap(base::TimeTicks::Now()));
   }
 
   void RunSingleTextureQuad() {

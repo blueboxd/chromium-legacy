@@ -153,8 +153,11 @@ void UnifiedVolumeView::Update(bool by_user) {
   bool is_muted = CrasAudioHandler::Get()->IsOutputMuted();
   float level = CrasAudioHandler::Get()->GetOutputVolumePercent() / 100.f;
 
-  // Indicate that the slider is inactive when it's muted.
-  slider()->SetIsActive(!is_muted);
+  // To indicate that the volume is muted, set the volume slider to the minimal
+  // visual style.
+  slider()->SetRenderingStyle(
+      is_muted ? views::Slider::RenderingStyle::kMinimalStyle
+               : views::Slider::RenderingStyle::kDefaultStyle);
 
   // The button should be gray when muted and colored otherwise.
   button()->SetToggled(!is_muted);

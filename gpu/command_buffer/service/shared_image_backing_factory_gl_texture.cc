@@ -330,6 +330,8 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
     // TODO(ericrk): Handle begin/end correctness checks.
   }
 
+  bool SupportsMultipleConcurrentReadAccess() override { return true; }
+
   sk_sp<SkPromiseImageTexture> promise_texture() { return promise_texture_; }
 
  private:

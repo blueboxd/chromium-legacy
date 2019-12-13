@@ -5,7 +5,6 @@
 import("//build/config/chromecast_build.gni")
 import("//build/config/jumbo.gni")
 import("//media/media_options.gni")
-import("//services/service_manager/public/cpp/service_executable.gni")
 import("//testing/test.gni")
 
 jumbo_component("services") {
@@ -151,39 +150,6 @@ jumbo_component("services") {
   }
 }
 
-source_set("cdm_manifest") {
-  sources = [
-    "cdm_manifest.cc",
-    "cdm_manifest.h",
-  ]
-  deps = [
-    "//base",
-    "//media/mojo/mojom",
-    "//media/mojo/mojom:constants",
-    "//services/service_manager/public/cpp",
-  ]
-}
-
-source_set("media_manifest") {
-  sources = [
-    "media_manifest.cc",
-    "media_manifest.h",
-  ]
-  deps = [
-    "//base",
-    "//build:chromecast_buildflags",
-    "//media/mojo:buildflags",
-    "//media/mojo/mojom",
-    "//media/mojo/mojom:constants",
-    "//services/service_manager/public/cpp",
-  ]
-  if (is_chromecast) {
-    deps += [ "//chromecast/common/mojom" ]
-  }
-}
-
-# Unit Tests
-
 source_set("unit_tests") {
   testonly = true
 
@@ -236,31 +202,6 @@ source_set("unit_tests") {
   }
 }
 
-# Service Tests
-
-# MediaService is tested by using a standalone "media" service, which runs the
-# service out-of-process. While CdmService is tested as a packaged service,
-# which runs the service in-process.
-
-service_executable("media") {
-  testonly = true
-
-  sources = [
-    "main.cc",
-  ]
-
-  public_deps = [
-    "//base",
-    "//media",
-  ]
-
-  deps = [
-    ":services",
-    "//mojo/public/c/system",
-    "//services/service_manager/public/cpp",
-  ]
-}
-
 test("media_service_unittests") {
   testonly = true
 
@@ -273,7 +214,6 @@ test("media_service_unittests") {
   }
 
   deps = [
-    ":media_manifest",
     ":services",
     "//base",
     "//base/test:test_support",
@@ -282,15 +222,10 @@ test("media_service_unittests") {
     "//media/mojo/clients",
     "//media/mojo/common",
     "//media/mojo/mojom",
-    "//media/mojo/mojom:constants",
     "//mojo/core/test:run_all_unittests",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
-  ]
-
-  data_deps = [
-    ":media",
   ]
 }

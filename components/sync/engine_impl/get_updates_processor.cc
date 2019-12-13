@@ -243,7 +243,9 @@ SyncerError GetUpdatesProcessor::ExecuteDownloadUpdates(
     // authorization. Therefore SYNC_AUTH_ERROR is excluded here to reduce the
     // ERROR messages in the log.
     if (result.value() != SyncerError::SYNC_AUTH_ERROR) {
-      LOG(ERROR) << "PostClientToServerMessage() failed during GetUpdates";
+      LOG(ERROR) << "PostClientToServerMessage() failed during GetUpdates "
+                    "with error "
+                 << result.value();
     }
 
     return result;

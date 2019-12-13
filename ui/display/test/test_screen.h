@@ -25,6 +25,9 @@ class TestScreen : public ScreenBase {
   TestScreen();
   ~TestScreen() override;
 
+  // Sets the fake cursor location for the TestScreen.
+  void set_cursor_screen_point(const gfx::Point& point);
+
   // Screen:
   gfx::Point GetCursorScreenPoint() override;
   bool IsWindowUnderCursor(gfx::NativeWindow window) override;
@@ -32,6 +35,8 @@ class TestScreen : public ScreenBase {
   Display GetDisplayNearestWindow(gfx::NativeWindow window) const override;
 
  private:
+  gfx::Point cursor_screen_point_;
+
   DISALLOW_COPY_AND_ASSIGN(TestScreen);
 };
 

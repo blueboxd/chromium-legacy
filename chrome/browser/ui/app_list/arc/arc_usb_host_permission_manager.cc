@@ -509,8 +509,7 @@ void ArcUsbHostPermissionManager::UpdateArcUsbAccessPermission(
                                          base::Value(base::Value::Type::LIST));
   }
   arc_app_list_prefs_->GetPackagePrefs(package_name, kUsbAccessPermission)
-      ->GetList()
-      .emplace_back(std::move(new_permission));
+      ->Append(std::move(new_permission));
 }
 
 void ArcUsbHostPermissionManager::ClearPermissionForTesting() {

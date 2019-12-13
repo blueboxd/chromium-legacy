@@ -39,10 +39,9 @@ int32_t PepperPrintingHost::OnResourceMessageReceived(
 
 int32_t PepperPrintingHost::OnGetDefaultPrintSettings(
     ppapi::host::HostMessageContext* context) {
-  print_settings_manager_->GetDefaultPrintSettings(
-      base::Bind(&PepperPrintingHost::PrintSettingsCallback,
-                 weak_factory_.GetWeakPtr(),
-                 context->MakeReplyMessageContext()));
+  print_settings_manager_->GetDefaultPrintSettings(base::BindOnce(
+      &PepperPrintingHost::PrintSettingsCallback, weak_factory_.GetWeakPtr(),
+      context->MakeReplyMessageContext()));
   return PP_OK_COMPLETIONPENDING;
 }
 

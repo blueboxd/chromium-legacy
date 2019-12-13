@@ -768,12 +768,12 @@ TEST_F(PermissionRequestManagerTest,
 
   ListPrefUpdate update(profile()->GetPrefs(),
                         prefs::kNotificationPermissionActions);
-  base::Value::ListStorage& permission_actions = update.Get()->GetList();
+  base::Value::ConstListView permissions_actions = update->GetList();
   permission_ui_enabler->ClearInteractionHistory(from_time, to_time);
 
   // Check that we have cleared all entries >= |from_time| and <|end_time|.
-  EXPECT_EQ(permission_actions.size(), 3u);
-  EXPECT_EQ((util::ValueToTime(permission_actions.begin()->FindKey("time")))
+  EXPECT_EQ(permissions_actions.size(), 3u);
+  EXPECT_EQ((util::ValueToTime(permissions_actions[0].FindKey("time")))
                 .value_or(base::Time()),
             recorded_time);
 }

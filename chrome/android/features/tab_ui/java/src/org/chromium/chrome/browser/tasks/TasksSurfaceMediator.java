@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks;
 
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_TEXT_WATCHER;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_LEARN_MORE_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
@@ -30,8 +31,8 @@ class TasksSurfaceMediator {
     private final FakeboxDelegate mFakeboxDelegate;
     private final PropertyModel mModel;
 
-    TasksSurfaceMediator(
-            PropertyModel model, FakeboxDelegate fakeboxDelegate, boolean isTabCarousel) {
+    TasksSurfaceMediator(PropertyModel model, FakeboxDelegate fakeboxDelegate,
+            View.OnClickListener incognitoLearnMoreClickListener, boolean isTabCarousel) {
         mFakeboxDelegate = fakeboxDelegate;
         assert mFakeboxDelegate != null;
 
@@ -71,6 +72,7 @@ class TasksSurfaceMediator {
                 RecordUserAction.record("TasksSurface.FakeBox.VoiceSearch");
             }
         });
+        model.set(INCOGNITO_LEARN_MORE_CLICK_LISTENER, incognitoLearnMoreClickListener);
 
         // Set the initial state.
         mModel.set(IS_FAKE_SEARCH_BOX_VISIBLE, true);

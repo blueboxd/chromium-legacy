@@ -8,7 +8,7 @@
 
 @interface BridgedNativeWindowTracker : NSObject {
  @private
-  NSWindow* window_;
+  NSWindow* _window;
 }
 
 - (id)initWithNSWindow:(NSWindow*)window;
@@ -20,12 +20,12 @@
 @implementation BridgedNativeWindowTracker
 
 - (id)initWithNSWindow:(NSWindow*)window {
-  window_ = window;
+  _window = window;
   NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
   [center addObserver:self
              selector:@selector(onWindowWillClose:)
                  name:NSWindowWillCloseNotification
-               object:window_];
+               object:_window];
   return self;
 }
 
@@ -35,15 +35,15 @@
 }
 
 - (bool)wasNSWindowClosed {
-  return window_ == nil;
+  return _window == nil;
 }
 
 - (void)onWindowWillClose:(NSNotification*)notification {
   [[NSNotificationCenter defaultCenter]
       removeObserver:self
                 name:NSWindowWillCloseNotification
-              object:window_];
-  window_ = nil;
+              object:_window];
+  _window = nil;
 }
 
 @end

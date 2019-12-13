@@ -166,6 +166,15 @@ class DragWindowResizerTest : public AshTestBase {
 
 // Verifies a window can be moved from the primary display to another.
 TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
+  // Prevent snapping |window_|. We will drag within 25px of a display edge, for
+  // the purpose of testing that a minimum visibility of 25px is enforced. When
+  // a drag ends at that distance (or up to 32px) from a left or right display
+  // edge, the dragged window is snapped. As that would only distract from the
+  // purposes of the test, we avoid it by making |window_| unsnappable.
+  window_->SetProperty(aura::client::kResizeBehaviorKey,
+                       aura::client::kResizeBehaviorNone);
+  ASSERT_FALSE(WindowState::Get(window_.get())->CanSnap());
+
   // The secondary display is logically on the right, but on the system (e.g. X)
   // layer, it's below the primary one. See UpdateDisplay() in ash_test_base.cc.
   UpdateDisplay("800x600,400x300");

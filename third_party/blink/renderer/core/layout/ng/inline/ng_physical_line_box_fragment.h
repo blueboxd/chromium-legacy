@@ -63,9 +63,8 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   // |ScrollableOverflow| is not precomputed/cached because it cannot be
   // computed when LineBox is generated because it needs container dimensions
   // to resolve relative position of its children.
-  PhysicalRect ScrollableOverflow(const LayoutObject* container,
-                                  const ComputedStyle* container_style,
-                                  PhysicalSize container_physical_size) const;
+  PhysicalRect ScrollableOverflow(const NGPhysicalBoxFragment& container,
+                                  const ComputedStyle& container_style) const;
 
   // Whether the content soft-wraps to the next line.
   bool HasSoftWrapToNextLine() const;

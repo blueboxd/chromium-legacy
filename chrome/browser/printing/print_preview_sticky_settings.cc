@@ -71,10 +71,9 @@ PrintPreviewStickySettings::GetPrinterRecentlyUsedRanks() {
   if (!recent_destinations)
     return {};
 
-  auto& recent_destinations_list = recent_destinations->GetList();
   base::flat_map<std::string, int> recently_used_ranks;
   int current_rank = 0;
-  for (const auto& recent_destination : recent_destinations_list) {
+  for (const auto& recent_destination : recent_destinations->GetList()) {
     const std::string* printer_id = recent_destination.FindStringKey(kId);
     if (!printer_id)
       continue;

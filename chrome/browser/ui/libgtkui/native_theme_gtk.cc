@@ -169,7 +169,6 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
         return ret_color;
       }
 #endif
-
       // Default color comes from gtklinkbutton.c.
       return SkColorSetRGB(0x00, 0x00, 0xEE);
     }
@@ -179,6 +178,16 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
       return GetBgColor("#GtkScrollbar#scrollbar #trough");
     case ui::NativeTheme::kColorId_OverlayScrollbarThumbForeground:
       return GetBgColor("#GtkScrollbar#scrollbar #slider");
+
+    // Slider
+    case ui::NativeTheme::kColorId_SliderThumbDefault:
+      return GetBgColor("GtkScale#scale #highlight");
+    case ui::NativeTheme::kColorId_SliderTroughDefault:
+      return GetBgColor("GtkScale#scale #trough");
+    case ui::NativeTheme::kColorId_SliderThumbMinimal:
+      return GetBgColor("GtkScale#scale:disabled #highlight");
+    case ui::NativeTheme::kColorId_SliderTroughMinimal:
+      return GetBgColor("GtkScale#scale:disabled #trough");
 
     // Separator
     case ui::NativeTheme::kColorId_SeparatorColor:

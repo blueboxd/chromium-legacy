@@ -61,11 +61,6 @@ const base::Feature kLeakDetection = {"PasswordLeakDetection",
 const base::Feature kLeakHistory = {"PasswordLeakHistory",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether to offer manual password generation in the accessory sheet
-// on Android.
-const base::Feature kManualPasswordGenerationAndroid{
-    "ManualPasswordGenerationAndroid", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables editing saved passwords for Android.
 const base::Feature kPasswordEditingAndroid = {
     "PasswordEditingAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -84,13 +79,9 @@ const base::Feature kPasswordManagerOnboardingAndroid = {
 const base::Feature kPasswordSaveIllustration = {
     "SavePasswordIllustration", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables support of filling on username first flow.
-const base::Feature kUsernameFirstFlowFilling = {
-    "UsernameFirstFlowFilling", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables support of saving on username first flow.
-const base::Feature kUsernameFirstFlowSaving = {
-    "UsernameFirstFlow", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables support of filling and saving on username first flow.
+const base::Feature kUsernameFirstFlow = {"UsernameFirstFlow",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Makes the password managaer save/update bubble sticky.
 const base::Feature kStickyBubble{"PasswordManagerStickyBubble",

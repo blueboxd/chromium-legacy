@@ -63,7 +63,7 @@ Polymer({
     inProgress_: {
       type: Boolean,
       value: false,
-      observer: 'pinOrProgressChange_',
+      observer: 'updateSubmitButtonEnabled_',
     },
 
     /**
@@ -73,6 +73,7 @@ Polymer({
     error_: {
       type: Object,
       value: ErrorType.NONE,
+      observer: 'updateSubmitButtonEnabled_',
     },
 
     /**
@@ -81,7 +82,7 @@ Polymer({
      */
     enterPinEnabled_: Boolean,
     changePinEnabled_: Boolean,
-    changePukEnabled_: Boolean,
+    enterPukEnabled_: Boolean,
 
     /**
      * Properties reflecting pin/puk inputs.
@@ -207,12 +208,13 @@ Polymer({
   },
 
   /** @private */
-  pinOrProgressChange_: function() {
-    this.enterPinEnabled_ = !this.inProgress_ && !!this.pin_;
+  updateSubmitButtonEnabled_: function() {
+    const hasError = this.error_ !== ErrorType.NONE;
+    this.enterPinEnabled_ = !this.inProgress_ && !!this.pin_ && !hasError;
     this.changePinEnabled_ = !this.inProgress_ && !!this.pin_ &&
-        !!this.pin_new1_ && !!this.pin_new2_;
-    this.changePukEnabled_ = !this.inProgress_ && !!this.puk_ &&
-        !!this.pin_new1_ && !!this.pin_new2_;
+        !!this.pin_new1_ && !!this.pin_new2_ && !hasError;
+    this.enterPukEnabled_ = !this.inProgress_ && !!this.puk_ &&
+        !!this.pin_new1_ && !!this.pin_new2_ && !hasError;
   },
 
   /**
@@ -221,7 +223,7 @@ Polymer({
    */
   pinOrPukChange_: function() {
     this.error_ = ErrorType.NONE;
-    this.pinOrProgressChange_();
+    this.updateSubmitButtonEnabled_();
   },
 
   /** @private */

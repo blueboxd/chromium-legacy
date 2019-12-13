@@ -267,6 +267,12 @@ class PLATFORM_EXPORT CanvasResourceProvider
   bool resource_recycling_enabled_ = true;
   bool is_single_buffered_ = false;
 
+  // The maximum number of in-flight resources waiting to be used for recycling.
+  static constexpr int kMaxRecycledCanvasResources = 2;
+  // The maximum number of draw ops executed on the canvas, after which the
+  // underlying GrContext is flushed.
+  static constexpr int kMaxDrawsBeforeContextFlush = 50;
+
   base::WeakPtrFactory<CanvasResourceProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CanvasResourceProvider);

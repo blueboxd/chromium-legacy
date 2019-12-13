@@ -100,6 +100,13 @@ void AuraLinuxAccessibilityInProcessBrowserTest::VerifyEmbedRelationships() {
 
 IN_PROC_BROWSER_TEST_F(AuraLinuxAccessibilityInProcessBrowserTest,
                        EmbeddedRelationship) {
+  // Force the creation of the document's native object which sets up the
+  // relationship.
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_NE(nullptr, active_web_contents->GetRenderWidgetHostView()
+                         ->GetNativeViewAccessible());
+
   GURL url(url::kAboutBlankURL);
   AddTabAtIndex(0, url, ui::PAGE_TRANSITION_LINK);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());

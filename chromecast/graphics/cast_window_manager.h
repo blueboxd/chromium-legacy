@@ -104,7 +104,9 @@ class CastWindowManager {
   virtual void RemoveTouchActivityObserver(
       CastTouchActivityObserver* observer) = 0;
 
-  // Turns on and off the root window rounded window corners decoration.
+  // Let the window manager that the current app needs explicit rounded window
+  // decorations.
+  // TODO(rdaum): Rename to "SetNeedsRoundedCorners"
   virtual void SetEnableRoundedCorners(bool enable) = 0;
 
   // Called when color inversion is turned on or off.

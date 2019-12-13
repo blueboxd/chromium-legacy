@@ -269,6 +269,8 @@ class WrappedSkImageRepresentation : public SharedImageRepresentationSkia {
     // TODO(ericrk): Handle begin/end correctness checks.
   }
 
+  bool SupportsMultipleConcurrentReadAccess() override { return true; }
+
  private:
   WrappedSkImage* wrapped_sk_image() {
     return static_cast<WrappedSkImage*>(backing());

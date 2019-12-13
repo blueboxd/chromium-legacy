@@ -18,11 +18,11 @@ class BookmarkNode;
 // bookmark item.
 @interface BookmarkNodeAppleScript : ElementAppleScript {
  @protected
-  const bookmarks::BookmarkNode* bookmarkNode_;  // weak.
+  const bookmarks::BookmarkNode* _bookmarkNode;  // weak.
   // Contains the temporary title when a scripter creates a new folder/item with
   // title specified like
   // |make new bookmark folder with properties {title:"foo"}|.
-  NSString* tempTitle_;
+  NSString* _tempTitle;
 }
 
 // Does not actually create a folder/item but just sets its ID, the folder is

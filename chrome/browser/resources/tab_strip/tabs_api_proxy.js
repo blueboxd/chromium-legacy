@@ -5,6 +5,16 @@
 import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 
 /**
+ * These values are persisted to logs and should not be renumbered or re-used.
+ * See tools/metrics/histograms/enums.xml.
+ * @enum {number}
+ */
+export const CloseTabAction = {
+  CLOSE_BUTTON: 0,
+  SWIPED_TO_CLOSE: 1,
+};
+
+/**
  * Must be kept in sync with TabNetworkState from
  * //chrome/browser/ui/tabs/tab_network_state.h.
  * @enum {number}
@@ -77,11 +87,15 @@ export class TabsApiProxy {
 
   /**
    * @param {number} tabId
+   * @param {!CloseTabAction} closeTabAction
    * @return {!Promise}
    */
-  closeTab(tabId) {
+  closeTab(tabId, closeTabAction) {
     return new Promise(resolve => {
       chrome.tabs.remove(tabId, resolve);
+      chrome.metricsPrivate.recordEnumerationValue(
+          'WebUITabStrip.CloseTabAction', closeTabAction,
+          Object.keys(CloseTabAction).length);
     });
   }
 

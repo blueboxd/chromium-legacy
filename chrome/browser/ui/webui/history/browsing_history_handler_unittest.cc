@@ -59,10 +59,20 @@ class BrowsingHistoryHandlerWithWebUIForTesting
     test_clock_.SetNow(PretendNow());
   }
 
+  void SendHistoryQuery(int count, const base::string16& query) override {
+    if (postpone_query_results_) {
+      return;
+    }
+    BrowsingHistoryHandler::SendHistoryQuery(count, query);
+  }
+
+  void PostponeResults() { postpone_query_results_ = true; }
+
   base::SimpleTestClock* test_clock() { return &test_clock_; }
 
  private:
   base::SimpleTestClock test_clock_;
+  bool postpone_query_results_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingHistoryHandlerWithWebUIForTesting);
 };
@@ -99,8 +109,7 @@ class BrowsingHistoryHandlerTest : public ChromeRenderViewHostTestHarness {
     };
   }
 
-  void VerifyHistoryDeletedFired() {
-    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+  void VerifyHistoryDeletedFired(content::TestWebUI::CallData& data) {
     EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
     std::string event_fired;
     ASSERT_TRUE(data.arg1()->GetAsString(&event_fired));
@@ -110,8 +119,10 @@ class BrowsingHistoryHandlerTest : public ChromeRenderViewHostTestHarness {
   void InitializeWebUI(BrowsingHistoryHandlerWithWebUIForTesting& handler) {
     // Send historyLoaded so that JS will be allowed.
     base::Value init_args(base::Value::Type::LIST);
-    init_args.Append("history-loaded-callback-id");
-    handler.HandleHistoryLoaded(&base::Value::AsListValue(init_args));
+    init_args.Append("query-history-callback-id");
+    init_args.Append("");
+    init_args.Append(150);
+    handler.HandleQueryHistory(&base::Value::AsListValue(init_args));
   }
 
   syncer::TestSyncService* sync_service() { return sync_service_; }
@@ -151,14 +162,21 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
         syncer::SyncService::TransportState::ACTIVE);
     BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
     handler.RegisterMessages();
+    handler.StartQueryHistory();
     InitializeWebUI(handler);
+
+    // QueryHistory triggers 2 calls to HasOtherFormsOfBrowsingHistory that fire
+    // before the callback is resolved if the sync service is active when the
+    // first query is sent. The handler should also resolve the initial
+    // queryHistory callback.
+    EXPECT_EQ(3U, web_ui()->call_data().size());
 
     web_history_service()->ExpireHistoryBetween(
         std::set<GURL>(), base::Time(), base::Time::Max(), callback,
         PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
 
-    EXPECT_EQ(1U, web_ui()->call_data().size());
-    VerifyHistoryDeletedFired();
+    EXPECT_EQ(4U, web_ui()->call_data().size());
+    VerifyHistoryDeletedFired(*web_ui()->call_data().back());
   }
 
   // BrowsingHistoryHandler will be informed about WebHistoryService deletions
@@ -168,6 +186,7 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
         syncer::SyncService::TransportState::INITIALIZING);
     BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
     handler.RegisterMessages();
+    handler.StartQueryHistory();
     sync_service()->SetTransportState(
         syncer::SyncService::TransportState::ACTIVE);
     sync_service()->FireStateChanged();
@@ -175,12 +194,20 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
     web_history_service()->ExpireHistoryBetween(
         std::set<GURL>(), base::Time(), base::Time::Max(), callback,
         PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
+    EXPECT_EQ(4U, web_ui()->call_data().size());
 
-    // Simulate initialization after history has been deleted.
+    // Simulate initialization after history has been deleted. The
+    // history-deleted event will happen before the historyResults() callback,
+    // since AllowJavascript is called before returning the results.
     InitializeWebUI(handler);
 
-    EXPECT_EQ(2U, web_ui()->call_data().size());
-    VerifyHistoryDeletedFired();
+    // QueryHistory triggers 1 call to HasOtherFormsOfBrowsingHistory that fire
+    // before the callback is resolved if the sync service is inactive when the
+    // first query is sent. The handler should also have fired history-deleted
+    // and resolved the initial queryHistory callback.
+    EXPECT_EQ(7U, web_ui()->call_data().size());
+    VerifyHistoryDeletedFired(
+        *web_ui()->call_data()[web_ui()->call_data().size() - 2]);
   }
 
   // BrowsingHistoryHandler does not fire historyDeleted while a web history
@@ -190,7 +217,13 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
         syncer::SyncService::TransportState::ACTIVE);
     BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
     handler.RegisterMessages();
+    handler.StartQueryHistory();
     InitializeWebUI(handler);
+    // QueryHistory triggers 2 calls to HasOtherFormsOfBrowsingHistory that fire
+    // before the callback is resolved if the sync service is active when the
+    // first query is sent. The handler should also resolve the initial
+    // queryHistory callback.
+    EXPECT_EQ(10U, web_ui()->call_data().size());
 
     // Simulate a delete request.
     base::Value args(base::Value::Type::LIST);
@@ -205,7 +238,7 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
     args.Append(std::move(to_remove));
     handler.HandleRemoveVisits(&base::Value::AsListValue(args));
 
-    EXPECT_EQ(3U, web_ui()->call_data().size());
+    EXPECT_EQ(11U, web_ui()->call_data().size());
     const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
     EXPECT_EQ("cr.webUIResponse", data.function_name());
     std::string callback_id;
@@ -224,13 +257,14 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
         syncer::SyncService::TransportState::INITIALIZING);
     BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
     handler.RegisterMessages();
+    handler.StartQueryHistory();
 
     web_history_service()->ExpireHistoryBetween(
         std::set<GURL>(), base::Time(), base::Time::Max(), callback,
         PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
 
     // No additional WebUI calls were made.
-    EXPECT_EQ(3U, web_ui()->call_data().size());
+    EXPECT_EQ(11U, web_ui()->call_data().size());
   }
 }
 
@@ -253,18 +287,45 @@ TEST_F(BrowsingHistoryHandlerTest, MdTruncatesTitles) {
   handler.OnQueryComplete({long_url_entry},
                           history::BrowsingHistoryService::QueryResultsInfo(),
                           base::OnceClosure());
+  InitializeWebUI(handler);
   ASSERT_FALSE(web_ui()->call_data().empty());
 
-  const base::ListValue* arg2;
-  ASSERT_TRUE(web_ui()->call_data().front()->arg2()->GetAsList(&arg2));
+  // Request should be resolved successfully.
+  ASSERT_TRUE(web_ui()->call_data().front()->arg2()->GetBool());
+  const base::Value* arg3 = web_ui()->call_data().front()->arg3();
+  ASSERT_TRUE(arg3->is_dict());
+  const base::Value* list = arg3->FindListKey("value");
+  ASSERT_TRUE(list->is_list());
 
-  const base::DictionaryValue* first_entry;
-  ASSERT_TRUE(arg2->GetDictionary(0, &first_entry));
+  const base::Value& first_entry = list->GetList()[0];
+  ASSERT_TRUE(first_entry.is_dict());
 
-  base::string16 title;
-  ASSERT_TRUE(first_entry->GetString("title", &title));
+  const std::string* title = first_entry.FindStringKey("title");
+  ASSERT_TRUE(title);
 
-  ASSERT_EQ(0u, title.find(base::ASCIIToUTF16("http://loooo")));
-  EXPECT_EQ(300u, title.size());
+  ASSERT_EQ(0u, title->find("http://loooo"));
+  EXPECT_EQ(300u, title->size());
+}
+
+TEST_F(BrowsingHistoryHandlerTest, Reload) {
+  BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
+  handler.RegisterMessages();
+  handler.PostponeResults();
+  handler.StartQueryHistory();
+  ASSERT_TRUE(web_ui()->call_data().empty());
+  InitializeWebUI(handler);
+  // Still empty, since no results are available yet.
+  ASSERT_TRUE(web_ui()->call_data().empty());
+
+  // Simulate page refresh and results being returned asynchronously.
+  handler.OnJavascriptDisallowed();
+  history::BrowsingHistoryService::HistoryEntry url_entry;
+  url_entry.url = GURL("https://www.chromium.org");
+  handler.OnQueryComplete({url_entry},
+                          history::BrowsingHistoryService::QueryResultsInfo(),
+                          base::OnceClosure());
+
+  // There should be no new Web UI calls, since JS is still disallowed.
+  ASSERT_TRUE(web_ui()->call_data().empty());
 }
 #endif

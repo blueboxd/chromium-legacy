@@ -735,13 +735,6 @@ void ShelfView::ButtonPressed(views::Button* sender,
   if (keyboard::KeyboardUIController::Get()->IsEnabled())
     keyboard::KeyboardUIController::Get()->HideKeyboardExplicitlyBySystem();
 
-  // Close the overflow bubble if an item on either shelf is clicked. Press
-  // events elsewhere will close the overflow shelf via OverflowBubble's
-  // EventHandler functionality.
-  ShelfView* shelf_view = main_shelf_ ? main_shelf_ : this;
-  if (shelf_view->IsShowingOverflowBubble())
-    shelf_view->ToggleOverflowBubble();
-
   // Record the index for the last pressed shelf item.
   last_pressed_index_ = view_model_->GetIndexOfView(sender);
   DCHECK_LT(-1, last_pressed_index_);
@@ -798,6 +791,15 @@ void ShelfView::ButtonPressed(views::Button* sender,
       base::BindOnce(&ShelfView::AfterItemSelected, weak_factory_.GetWeakPtr(),
                      item, sender, base::Passed(ui::Event::Clone(event)),
                      ink_drop));
+
+  // Close the overflow bubble if an item on either shelf is clicked and no
+  // context menu is showing on the overflow shelf. Press events elsewhere will
+  // close the overflow shelf via OverflowBubble's EventHandler functionality.
+  ShelfView* shelf_view = main_shelf_ ? main_shelf_ : this;
+  if (shelf_view->IsShowingOverflowBubble() &&
+      !overflow_shelf()->IsShowingMenu()) {
+    shelf_view->ToggleOverflowBubble();
+  }
 }
 
 bool ShelfView::IsShowingMenuForView(const views::View* view) const {

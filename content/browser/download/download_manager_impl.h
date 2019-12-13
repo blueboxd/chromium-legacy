@@ -229,7 +229,8 @@ class CONTENT_EXPORT DownloadManagerImpl
   void DownloadInterrupted(download::DownloadItemImpl* download) override;
   bool IsOffTheRecord() const override;
   void ReportBytesWasted(download::DownloadItemImpl* download) override;
-  service_manager::Connector* GetServiceManagerConnector() override;
+  void BindWakeLockProvider(
+      mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver) override;
   download::QuarantineConnectionCallback GetQuarantineConnectionCallback()
       override;
 

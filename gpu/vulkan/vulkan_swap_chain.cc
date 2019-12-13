@@ -112,10 +112,22 @@ gfx::SwapResult VulkanSwapChain::PresentBuffer() {
   }
   DLOG_IF(ERROR, result == VK_SUBOPTIMAL_KHR) << "Swapchian is suboptimal.";
 
-  acquired_image_.reset();
-  fence_helper->EnqueueSemaphoreCleanupForSubmittedWork(end_write_semaphore_);
+  if (current_image_data.present_wait_semaphore != VK_NULL_HANDLE) {
+    // |present_wait_semaphore| for the previous present for this image can be
+    // safely destroyed after semaphore got from vkAcquireNextImageHKR() is
+    // passed. That acquired semaphore should be already waited on for a
+    // submitted GPU work. So we can safely eunqueue the
+    // |present_wait_semaphore| for cleanup here (the enqueued semaphore will be
+    // destroyed when all submitted GPU work is finished).
+    fence_helper->EnqueueSemaphoreCleanupForSubmittedWork(
+        current_image_data.present_wait_semaphore);
+  }
+  // We are not sure when the semaphore is not used by present engine, so don't
+  // destroy the semaphore until the image is returned from present engine.
+  current_image_data.present_wait_semaphore = end_write_semaphore_;
   end_write_semaphore_ = VK_NULL_HANDLE;
 
+  acquired_image_.reset();
   return gfx::SwapResult::SWAP_ACK;
 }
 
@@ -221,10 +233,15 @@ void VulkanSwapChain::DestroySwapImages() {
   end_write_semaphore_ = VK_NULL_HANDLE;
 
   for (auto& image_data : images_) {
-    if (!image_data.command_buffer)
-      continue;
-    image_data.command_buffer->Destroy();
-    image_data.command_buffer = nullptr;
+    if (image_data.command_buffer) {
+      image_data.command_buffer->Destroy();
+      image_data.command_buffer = nullptr;
+    }
+    if (image_data.present_wait_semaphore != VK_NULL_HANDLE) {
+      vkDestroySemaphore(device_queue_->GetVulkanDevice(),
+                         image_data.present_wait_semaphore,
+                         nullptr /* pAllocator */);
+    }
   }
   images_.clear();
 

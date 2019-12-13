@@ -17,18 +17,14 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
 
 namespace device {
 
 // TestWakeLockProvider provides a fake implementation of
 // mojom::WakeLockProvider for use in unit tests.
-class TestWakeLockProvider : public mojom::WakeLockProvider,
-                             public service_manager::Service {
+class TestWakeLockProvider : public mojom::WakeLockProvider {
  public:
   TestWakeLockProvider();
-  explicit TestWakeLockProvider(service_manager::mojom::ServiceRequest request);
   ~TestWakeLockProvider() override;
 
   // For internal use only.
@@ -52,11 +48,6 @@ class TestWakeLockProvider : public mojom::WakeLockProvider,
       mojom::WakeLockType type,
       GetActiveWakeLocksForTestsCallback callback) override;
 
-  // service_manager::Service:
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override;
-
   void OnConnectionError(mojom::WakeLockType type, TestWakeLock* wake_lock);
 
  private:
@@ -70,8 +61,6 @@ class TestWakeLockProvider : public mojom::WakeLockProvider,
 
   // Called by a wake lock when the lock is canceled for the last time.
   void OnWakeLockDeactivated(mojom::WakeLockType type);
-
-  service_manager::ServiceBinding service_binding_{this};
 
   mojo::ReceiverSet<mojom::WakeLockProvider> receivers_;
 

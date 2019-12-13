@@ -52,6 +52,12 @@ const base::Feature kFreezeUserAgent{"FreezeUserAgent",
 const base::Feature kDoNotCompositeTrivial3D{"DoNotCompositeTrivial3D",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, enter assumed-overlap mode in compositing overlap testing
+// anytime a fixed or sticky position element is encountered.
+const base::Feature kAssumeOverlapAfterFixedOrStickyPosition{
+    "AssumeOverlapAfterFixedOrStickyPosition",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable Display Locking JavaScript APIs.
 const base::Feature kDisplayLocking{"DisplayLocking",
                                     base::FEATURE_DISABLED_BY_DEFAULT};

@@ -152,7 +152,7 @@ TEST_F(FakeFidoDiscoveryFactoryTest, ForgesUsbFactoryFunction) {
   ASSERT_EQ(FidoTransportProtocol::kUsbHumanInterfaceDevice,
             injected_fake_discovery->transport());
   auto produced_discovery = fake_fido_discovery_factory_.Create(
-      FidoTransportProtocol::kUsbHumanInterfaceDevice, nullptr);
+      FidoTransportProtocol::kUsbHumanInterfaceDevice);
   EXPECT_TRUE(produced_discovery);
   EXPECT_EQ(injected_fake_discovery, produced_discovery.get());
 }
@@ -164,7 +164,7 @@ TEST_F(FakeFidoDiscoveryFactoryTest, ForgesBleFactoryFunction) {
   ASSERT_EQ(FidoTransportProtocol::kBluetoothLowEnergy,
             injected_fake_discovery_1->transport());
   auto produced_discovery_1 = fake_fido_discovery_factory_.Create(
-      FidoTransportProtocol::kBluetoothLowEnergy, nullptr);
+      FidoTransportProtocol::kBluetoothLowEnergy);
   EXPECT_EQ(injected_fake_discovery_1, produced_discovery_1.get());
 
   auto* injected_fake_discovery_2 =
@@ -172,7 +172,7 @@ TEST_F(FakeFidoDiscoveryFactoryTest, ForgesBleFactoryFunction) {
   ASSERT_EQ(FidoTransportProtocol::kBluetoothLowEnergy,
             injected_fake_discovery_2->transport());
   auto produced_discovery_2 = fake_fido_discovery_factory_.Create(
-      FidoTransportProtocol::kBluetoothLowEnergy, nullptr);
+      FidoTransportProtocol::kBluetoothLowEnergy);
   EXPECT_EQ(injected_fake_discovery_2, produced_discovery_2.get());
 }
 

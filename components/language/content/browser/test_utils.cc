@@ -32,10 +32,10 @@ MockIpGeoLocationProvider::MockIpGeoLocationProvider(
 
 MockIpGeoLocationProvider::~MockIpGeoLocationProvider() {}
 
-void MockIpGeoLocationProvider::Bind(mojo::ScopedMessagePipeHandle handle) {
-  receiver_.Bind(
-      mojo::PendingReceiver<device::mojom::PublicIpAddressGeolocationProvider>(
-          std::move(handle)));
+void MockIpGeoLocationProvider::Bind(
+    mojo::PendingReceiver<device::mojom::PublicIpAddressGeolocationProvider>
+        receiver) {
+  receiver_.Bind(std::move(receiver));
 }
 
 void MockIpGeoLocationProvider::CreateGeolocation(

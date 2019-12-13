@@ -88,8 +88,7 @@ FakeFidoDiscovery* FakeFidoDiscoveryFactory::ForgeNextPlatformDiscovery(
 }
 
 std::unique_ptr<FidoDiscoveryBase> FakeFidoDiscoveryFactory::Create(
-    FidoTransportProtocol transport,
-    ::service_manager::Connector* connector) {
+    FidoTransportProtocol transport) {
   switch (transport) {
     case FidoTransportProtocol::kUsbHumanInterfaceDevice:
       return std::move(next_hid_discovery_);

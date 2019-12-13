@@ -412,4 +412,19 @@ TEST_F(FrameSequenceTrackerTest, ReportWithoutBeginImplFrame) {
   EXPECT_EQ(MainThroughput().frames_produced, 0u);
 }
 
+TEST_F(FrameSequenceTrackerTest, MainFrameTracking) {
+  const uint64_t source = 1;
+  uint64_t sequence = 0;
+
+  auto args = CreateBeginFrameArgs(source, ++sequence);
+  auto frame_1 = DispatchCompleteFrame(args, kImplDamage | kMainDamage);
+
+  args = CreateBeginFrameArgs(source, ++sequence);
+  auto frame_2 = DispatchCompleteFrame(args, kImplDamage);
+
+  gfx::PresentationFeedback feedback;
+  collection_.NotifyFramePresented(frame_1, feedback);
+  collection_.NotifyFramePresented(frame_2, feedback);
+}
+
 }  // namespace cc

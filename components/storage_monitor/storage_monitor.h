@@ -18,7 +18,6 @@
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "components/storage_monitor/storage_info.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_CHROMEOS)
 #include "services/device/public/mojom/mtp_manager.mojom-forward.h"
@@ -72,7 +71,7 @@ class StorageMonitor {
   // Instantiates the StorageMonitor singleton. This function does not
   // guarantee the complete initialization of the object. For that, see
   // |EnsureInitialized|.
-  static void Create(std::unique_ptr<service_manager::Connector> connector);
+  static void Create();
 
   // Destroys the StorageMonitor singleton.
   static void Destroy();
@@ -147,9 +146,6 @@ class StorageMonitor {
 
   StorageMonitor();
 
-  // Provides the connector for service access.
-  service_manager::Connector* GetConnector();
-
   virtual Receiver* receiver() const;
 
   // Called to initialize the storage monitor.
@@ -188,8 +184,6 @@ class StorageMonitor {
 
   // Map of all known storage devices,including fixed and removable storages.
   StorageMap storage_map_;
-
-  std::unique_ptr<service_manager::Connector> connector_;
 
   std::unique_ptr<TransientDeviceIds> transient_device_ids_;
 };

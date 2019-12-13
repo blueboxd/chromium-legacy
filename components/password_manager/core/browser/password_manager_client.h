@@ -56,6 +56,7 @@ namespace password_manager {
 
 class FieldInfoManager;
 class PasswordFeatureManager;
+class BiometricAuthenticator;
 class PasswordFormManagerForUI;
 class PasswordManager;
 class PasswordManagerDriver;
@@ -166,6 +167,10 @@ class PasswordManagerClient {
 
   // Instructs the client to show the Touch To Fill UI.
   virtual void ShowTouchToFill(PasswordManagerDriver* driver);
+
+  // Returns a pointer to a BiometricAuthenticator. Might be null if
+  // BiometricAuthentication is not available for a given platform.
+  virtual BiometricAuthenticator* GetBiometricAuthenticator();
 
   // Informs the embedder that the user has manually requested to generate a
   // password in the focused password field.

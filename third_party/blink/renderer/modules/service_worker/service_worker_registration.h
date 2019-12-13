@@ -22,6 +22,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class ScriptPromise;
 class ScriptState;
 
@@ -82,8 +83,8 @@ class ServiceWorkerRegistration final
   void SetNavigationPreloadHeader(const String& value,
                                   ScriptPromiseResolver* resolver);
 
-  ScriptPromise update(ScriptState*);
-  ScriptPromise unregister(ScriptState*);
+  ScriptPromise update(ScriptState*, ExceptionState&);
+  ScriptPromise unregister(ScriptState*, ExceptionState&);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(updatefound, kUpdatefound)
 

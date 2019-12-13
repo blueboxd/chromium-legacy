@@ -594,31 +594,23 @@ Value ArrayPolicyConversions::ToValue() {
     all_policies.Append(GetChromePolicies());
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    Value extension_policies = GetExtensionPolicies(POLICY_DOMAIN_EXTENSIONS);
-    all_policies.GetList().insert(
-        all_policies.GetList().end(),
-        std::make_move_iterator(extension_policies.GetList().begin()),
-        std::make_move_iterator(extension_policies.GetList().end()));
+    for (auto& policy :
+         GetExtensionPolicies(POLICY_DOMAIN_EXTENSIONS).TakeList()) {
+      all_policies.Append(std::move(policy));
+    }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS) && defined(OS_CHROMEOS)
-    Value login_screen_extension_policies =
-        GetExtensionPolicies(POLICY_DOMAIN_SIGNIN_EXTENSIONS);
-    all_policies.GetList().insert(
-        all_policies.GetList().end(),
-        std::make_move_iterator(
-            login_screen_extension_policies.GetList().begin()),
-        std::make_move_iterator(
-            login_screen_extension_policies.GetList().end()));
+    for (auto& policy :
+         GetExtensionPolicies(POLICY_DOMAIN_SIGNIN_EXTENSIONS).TakeList()) {
+      all_policies.Append(std::move(policy));
+    }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS) && defined(OS_CHROMEOS)
   }
 
 #if defined(OS_CHROMEOS)
-  Value device_policeis = GetDeviceLocalAccountPolicies();
-  all_policies.GetList().insert(
-      all_policies.GetList().end(),
-      std::make_move_iterator(device_policeis.GetList().begin()),
-      std::make_move_iterator(device_policeis.GetList().end()));
+  for (auto& device_policy : GetDeviceLocalAccountPolicies().TakeList())
+    all_policies.Append(std::move(device_policy));
 
   Value identity_fields = GetIdentityFields();
   if (!identity_fields.is_none())

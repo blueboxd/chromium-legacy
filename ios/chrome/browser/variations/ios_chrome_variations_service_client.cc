@@ -27,9 +27,9 @@ IOSChromeVariationsServiceClient::IOSChromeVariationsServiceClient() {}
 
 IOSChromeVariationsServiceClient::~IOSChromeVariationsServiceClient() {}
 
-base::Callback<base::Version()>
+IOSChromeVariationsServiceClient::VersionCallback
 IOSChromeVariationsServiceClient::GetVersionForSimulationCallback() {
-  return base::Bind(&GetVersionForSimulation);
+  return base::BindOnce(&GetVersionForSimulation);
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

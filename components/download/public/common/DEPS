@@ -14,11 +14,11 @@ include_rules = [
   # TODO(qinmin): remove this once network service is enabled.
   "+net/url_request/url_request_context_getter.h",
   "+net/traffic_annotation/network_traffic_annotation.h",
+  "+services/device/public",
   "+services/metrics/public/cpp",
   "+services/network/public/cpp",
   "+services/network/public/mojom",
   "+services/network/test",
-  "+services/service_manager/public/cpp/connector.h",
   "+storage/browser",
   "+ui/base",
 ]

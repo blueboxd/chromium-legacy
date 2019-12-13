@@ -145,20 +145,6 @@ AXObject* AXNodeObject::ActiveDescendant() {
   return ax_descendant;
 }
 
-bool HasAriaAttribute(Element* element) {
-  if (!element)
-    return false;
-
-  AttributeCollection attributes = element->AttributesWithoutUpdate();
-  for (const Attribute& attr : attributes) {
-    // Attributes cache their uppercase names.
-    if (attr.GetName().LocalNameUpper().StartsWith("ARIA-"))
-      return true;
-  }
-
-  return false;
-}
-
 AXObjectInclusion AXNodeObject::ShouldIncludeBasedOnSemantics(
     IgnoredReasons* ignored_reasons) const {
   // If this element is within a parent that cannot have children, it should not
@@ -303,7 +289,7 @@ AXObjectInclusion AXNodeObject::ShouldIncludeBasedOnSemantics(
   // These checks are simplified in the interest of execution speed;
   // for example, any element having an alt attribute will make it
   // not ignored, rather than just images.
-  if (HasAriaAttribute(GetElement()) || !GetAttribute(kTitleAttr).IsEmpty() ||
+  if (HasAriaAttribute() || !GetAttribute(kTitleAttr).IsEmpty() ||
       has_non_empty_alt_attribute)
     return kIncludeObject;
 
@@ -1118,7 +1104,7 @@ bool AXNodeObject::ComputeIsEditableRoot() const {
 }
 
 bool AXNodeObject::IsEmbeddedObject() const {
-  return IsHTMLPlugInElement(GetNode());
+  return IsA<HTMLPlugInElement>(GetNode());
 }
 
 bool AXNodeObject::IsFieldset() const {
@@ -1238,10 +1224,7 @@ bool AXNodeObject::IsNativeImage() const {
   if (!node)
     return false;
 
-  if (IsA<HTMLImageElement>(*node))
-    return true;
-
-  if (IsHTMLPlugInElement(*node))
+  if (IsA<HTMLImageElement>(*node) || IsA<HTMLPlugInElement>(*node))
     return true;
 
   if (const auto* input = DynamicTo<HTMLInputElement>(*node))
@@ -2115,6 +2098,25 @@ String AXNodeObject::StringValue() const {
 
 ax::mojom::Role AXNodeObject::AriaRoleAttribute() const {
   return aria_role_;
+}
+
+bool AXNodeObject::HasAriaAttribute() const {
+  Element* element = GetElement();
+  if (!element)
+    return false;
+
+  // Explicit ARIA role should be considered an aria attribute.
+  if (AriaRoleAttribute() != ax::mojom::Role::kUnknown)
+    return true;
+
+  AttributeCollection attributes = element->AttributesWithoutUpdate();
+  for (const Attribute& attr : attributes) {
+    // Attributes cache their uppercase names.
+    if (attr.GetName().LocalNameUpper().StartsWith("ARIA-"))
+      return true;
+  }
+
+  return false;
 }
 
 // Returns the nearest block-level LayoutBlockFlow ancestor

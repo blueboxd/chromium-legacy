@@ -1230,10 +1230,6 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
     Java_AssistantCollectUserDataModel_setGenericUserInterface(env, jmodel,
                                                                jview);
   }
-  Java_AssistantCollectUserDataModel_setDefaultEmail(
-      env, jmodel,
-      base::android::ConvertUTF8ToJavaString(
-          env, collect_user_data_options->default_email));
 
   Java_AssistantCollectUserDataModel_setVisible(env, jmodel, true);
 }
@@ -1256,9 +1252,6 @@ void UiControllerAndroid::OnUserDataChanged(
     return;
   }
 
-  // TODO(crbug.com/806868): Add |setContactDetails|, |setShippingAddress| and
-  // |setPaymentMethod|.
-
   if (field_change == UserData::FieldChange::ALL ||
       field_change == UserData::FieldChange::TERMS_AND_CONDITIONS) {
     Java_AssistantCollectUserDataModel_setTermsStatus(
@@ -1267,25 +1260,45 @@ void UiControllerAndroid::OnUserDataChanged(
 
   if (field_change == UserData::FieldChange::ALL ||
       field_change == UserData::FieldChange::AVAILABLE_PROFILES) {
+    auto sorted_profile_indices = SortByCompleteness(*collect_user_data_options,
+                                                     state->available_profiles);
     auto jlist =
         Java_AssistantCollectUserDataModel_createAutofillProfileList(env);
-    auto profile_indices = SortByCompleteness(*collect_user_data_options,
-                                              state->available_profiles);
-    for (int index : profile_indices) {
+    for (int index : sorted_profile_indices) {
       Java_AssistantCollectUserDataModel_addAutofillProfile(
           env, jlist,
           autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
               env, *state->available_profiles[index]));
     }
     Java_AssistantCollectUserDataModel_setAutofillProfiles(env, jmodel, jlist);
+
+    // Ignore changes to FieldChange::CONTACT_PROFILE, this is already coming
+    // from the view.
+    autofill::AutofillProfile* contact_profile = state->contact_profile.get();
+    Java_AssistantCollectUserDataModel_setContactDetails(
+        env, jmodel,
+        contact_profile == nullptr
+            ? nullptr
+            : autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
+                  env, *contact_profile));
+
+    // Ignore changes to FieldChange::SHIPPING_ADDRESS, this is already coming
+    // from the view.
+    autofill::AutofillProfile* shipping_address = state->shipping_address.get();
+    Java_AssistantCollectUserDataModel_setShippingAddress(
+        env, jmodel,
+        shipping_address == nullptr
+            ? nullptr
+            : autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
+                  env, *shipping_address));
   }
 
   if (field_change == UserData::FieldChange::ALL ||
       field_change == UserData::FieldChange::AVAILABLE_PAYMENT_INSTRUMENTS) {
-    auto jlist =
-        Java_AssistantCollectUserDataModel_createAutofillPaymentMethodList(env);
     auto sorted_payment_instrument_indices = SortByCompleteness(
         *collect_user_data_options, state->available_payment_instruments);
+    auto jlist =
+        Java_AssistantCollectUserDataModel_createAutofillPaymentMethodList(env);
     for (int index : sorted_payment_instrument_indices) {
       const auto& instrument = state->available_payment_instruments[index];
       Java_AssistantCollectUserDataModel_addAutofillPaymentMethod(
@@ -1300,7 +1313,23 @@ void UiControllerAndroid::OnUserDataChanged(
     }
     Java_AssistantCollectUserDataModel_setAutofillPaymentMethods(env, jmodel,
                                                                  jlist);
+
+    // Ignore changes to FieldChange::CARD, this is already coming from the
+    // view.
+    autofill::CreditCard* card = state->card.get();
+    autofill::AutofillProfile* billing_address = state->billing_address.get();
+    Java_AssistantCollectUserDataModel_setPaymentMethod(
+        env, jmodel,
+        card == nullptr ? nullptr
+                        : autofill::PersonalDataManagerAndroid::
+                              CreateJavaCreditCardFromNative(env, *card),
+        billing_address == nullptr
+            ? nullptr
+            : autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
+                  env, *billing_address));
   }
+
+  // TODO(crbug.com/806868): Add |setSelectedLogin|.
 }
 
 // FormProto related methods.

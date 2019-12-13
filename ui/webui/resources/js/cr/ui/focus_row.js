@@ -287,6 +287,7 @@ cr.define('cr.ui', function() {
 
       let index = -1;
 
+      let shouldStopPropagation = true;
       if (e.key == 'ArrowLeft') {
         index = elementIndex + (isRTL() ? 1 : -1);
       } else if (e.key == 'ArrowRight') {
@@ -295,12 +296,17 @@ cr.define('cr.ui', function() {
         index = 0;
       } else if (e.key == 'End') {
         index = elements.length - 1;
+      } else {
+        shouldStopPropagation = false;
       }
 
       const elementToFocus = elements[index];
       if (elementToFocus) {
         this.getEquivalentElement(elementToFocus).focus();
         e.preventDefault();
+      }
+      if (shouldStopPropagation) {
+        e.stopPropagation();
       }
     }
   }

@@ -11,10 +11,8 @@
 #include "components/download/public/common/url_loader_factory_provider.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace download {
 
@@ -66,14 +64,15 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
     const GURL& tab_referrer_url,
     bool is_new_download,
     bool is_parallel_request,
-    std::unique_ptr<service_manager::Connector> connector,
+    mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider,
     bool is_background_mode,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   auto downloader = std::make_unique<ResourceDownloader>(
       delegate, std::move(request), params->render_process_host_id(),
       params->render_frame_host_routing_id(), site_url, tab_url,
       tab_referrer_url, is_new_download, task_runner,
-      std::move(url_loader_factory), url_security_policy, std::move(connector));
+      std::move(url_loader_factory), url_security_policy,
+      std::move(wake_lock_provider));
 
   downloader->Start(std::move(params), is_parallel_request, is_background_mode);
   return downloader;
@@ -96,12 +95,13 @@ ResourceDownloader::InterceptNavigationResponse(
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const URLSecurityPolicy& url_security_policy,
-    std::unique_ptr<service_manager::Connector> connector,
+    mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   auto downloader = std::make_unique<ResourceDownloader>(
       delegate, std::move(resource_request), render_process_id, render_frame_id,
       site_url, tab_url, tab_referrer_url, true, task_runner,
-      std::move(url_loader_factory), url_security_policy, std::move(connector));
+      std::move(url_loader_factory), url_security_policy,
+      std::move(wake_lock_provider));
   downloader->InterceptResponse(
       std::move(url_chain), cert_status, std::move(response_head),
       std::move(response_body), std::move(url_loader_client_endpoints));
@@ -120,7 +120,7 @@ ResourceDownloader::ResourceDownloader(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const URLSecurityPolicy& url_security_policy,
-    std::unique_ptr<service_manager::Connector> connector)
+    mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider)
     : delegate_(delegate),
       resource_request_(std::move(resource_request)),
       is_new_download_(is_new_download),
@@ -133,7 +133,11 @@ ResourceDownloader::ResourceDownloader(
       url_loader_factory_(url_loader_factory),
       url_security_policy_(url_security_policy),
       is_content_initiated_(false) {
-  RequestWakeLock(connector.get());
+  if (wake_lock_provider) {
+    mojo::Remote<device::mojom::WakeLockProvider> provider(
+        std::move(wake_lock_provider));
+    RequestWakeLock(provider.get());
+  }
 }
 
 ResourceDownloader::~ResourceDownloader() = default;
@@ -276,13 +280,8 @@ void ResourceDownloader::Destroy() {
 }
 
 void ResourceDownloader::RequestWakeLock(
-    service_manager::Connector* connector) {
-  if (!connector)
-    return;
-  mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider;
-  connector->Connect(device::mojom::kServiceName,
-                     wake_lock_provider.BindNewPipeAndPassReceiver());
-  wake_lock_provider->GetWakeLockWithoutContext(
+    device::mojom::WakeLockProvider* provider) {
+  provider->GetWakeLockWithoutContext(
       device::mojom::WakeLockType::kPreventAppSuspension,
       device::mojom::WakeLockReason::kOther, "Download in progress",
       wake_lock_.BindNewPipeAndPassReceiver());

@@ -85,10 +85,10 @@ namespace ksr = keystone_registration;
 
 @interface FakeKeystoneGlue : KeystoneGlue {
  @public
-  BOOL upToDate_;
-  base::scoped_nsobject<NSString> latestVersion_;
-  BOOL successful_;
-  int installs_;
+  BOOL _upToDate;
+  base::scoped_nsobject<NSString> _latestVersion;
+  BOOL _successful;
+  int _installs;
 }
 
 - (void)fakeAboutWindowCallback:(NSNotification*)notification;
@@ -100,10 +100,10 @@ namespace ksr = keystone_registration;
 - (id)init {
   if ((self = [super init])) {
     // some lies
-    upToDate_ = YES;
-    latestVersion_.reset([@"foo bar" copy]);
-    successful_ = YES;
-    installs_ = 1010101010;
+    _upToDate = YES;
+    _latestVersion.reset([@"foo bar" copy]);
+    _successful = YES;
+    _installs = 1010101010;
 
     // Set up an observer that takes the notification that the About window
     // listens for.
@@ -139,18 +139,18 @@ namespace ksr = keystone_registration;
 
 // Confirms certain things are happy
 - (BOOL)dictReadCorrectly {
-  return ([url_ isEqual:@"http://foo.bar"] &&
-          [productID_ isEqual:@"com.google.whatever"] &&
-          [version_ isEqual:@"0.0.0.1"]);
+  return ([_url isEqual:@"http://foo.bar"] &&
+          [_productID isEqual:@"com.google.whatever"] &&
+          [_version isEqual:@"0.0.0.1"]);
 }
 
 // Confirms certain things are happy
 - (BOOL)hasATimer {
-  return timer_ ? YES : NO;
+  return _timer ? YES : NO;
 }
 
 - (void)addFakeRegistration {
-  registration_.reset([[FakeKeystoneRegistration alloc] init]);
+  _registration.reset([[FakeKeystoneRegistration alloc] init]);
 }
 
 - (void)fakeAboutWindowCallback:(NSNotification*)notification {
@@ -159,12 +159,12 @@ namespace ksr = keystone_registration;
       [[dictionary objectForKey:kAutoupdateStatusStatus] intValue]);
 
   if (status == kAutoupdateAvailable) {
-    upToDate_ = NO;
-    latestVersion_.reset(
+    _upToDate = NO;
+    _latestVersion.reset(
         [[dictionary objectForKey:kAutoupdateStatusVersion] copy]);
   } else if (status == kAutoupdateInstallFailed) {
-    successful_ = NO;
-    installs_ = 0;
+    _successful = NO;
+    _installs = 0;
   }
 }
 

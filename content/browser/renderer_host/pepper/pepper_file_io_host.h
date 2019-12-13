@@ -41,8 +41,6 @@ class PepperFileSystemBrowserHost;
 class PepperFileIOHost : public ppapi::host::ResourceHost,
                          public base::SupportsWeakPtr<PepperFileIOHost> {
  public:
-  typedef base::Callback<void(base::File::Error)> NotifyCloseFileCallback;
-
   PepperFileIOHost(BrowserPpapiHostImpl* host,
                    PP_Instance instance,
                    PP_Resource resource);

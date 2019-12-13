@@ -617,6 +617,11 @@ bool ContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs(
   return false;
 }
 
+mojo::Remote<media::mojom::MediaService>
+ContentBrowserClient::RunSecondaryMediaService() {
+  return mojo::Remote<media::mojom::MediaService>();
+}
+
 bool ContentBrowserClient::BindAssociatedReceiverFromFrame(
     RenderFrameHost* render_frame_host,
     const std::string& interface_name,

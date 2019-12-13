@@ -47,13 +47,13 @@ class FakePageHandler {
   /** @override */
   addMostVisitedTile(url, title) {
     this.callTracker_.methodCalled('addMostVisitedTile', [url, title]);
-    return true;
+    return {success: true};
   }
 
   /** @override */
   deleteMostVisitedTile(url) {
     this.callTracker_.methodCalled('deleteMostVisitedTile', url);
-    return true;
+    return {success: true};
   }
 
   /** @override */
@@ -75,6 +75,14 @@ class FakePageHandler {
   updateMostVisitedTile(url, newUrl, newTitle) {
     this.callTracker_.methodCalled(
         'updateMostVisitedTile', [url, newUrl, newTitle]);
-    return true;
+    return {success: true};
   }
+}
+
+/**
+ * @param {!HTMLElement} element
+ * @param {string} key
+ */
+export function keydown(element, key) {
+  element.dispatchEvent(new KeyboardEvent('keydown', {key: key}));
 }

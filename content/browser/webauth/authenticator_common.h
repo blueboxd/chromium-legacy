@@ -44,10 +44,6 @@ enum class MakeCredentialStatus;
 
 }  // namespace device
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace url {
 class Origin;
 }
@@ -68,9 +64,8 @@ CONTENT_EXPORT extern const char kGetType[];
 // Common code for any WebAuthn Authenticator interfaces.
 class CONTENT_EXPORT AuthenticatorCommon {
  public:
-  // Permits setting connector and timer for testing.
+  // Permits setting timer for testing.
   AuthenticatorCommon(RenderFrameHost* render_frame_host,
-                      service_manager::Connector*,
                       std::unique_ptr<base::OneShotTimer>);
   virtual ~AuthenticatorCommon();
 
@@ -192,7 +187,6 @@ class CONTENT_EXPORT AuthenticatorCommon {
   BrowserContext* browser_context() const;
 
   RenderFrameHost* const render_frame_host_;
-  service_manager::Connector* connector_ = nullptr;
   base::flat_set<device::FidoTransportProtocol> transports_;
   device::FidoDiscoveryFactory* discovery_factory_ = nullptr;
   std::unique_ptr<device::FidoRequestHandlerBase> request_;

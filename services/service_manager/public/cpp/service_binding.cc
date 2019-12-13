@@ -14,62 +14,6 @@
 
 namespace service_manager {
 
-namespace {
-
-// Thread-safe mapping of all registered binder overrides in the process.
-class BinderOverrides {
- public:
-  BinderOverrides() = default;
-  ~BinderOverrides() = default;
-
-  void SetOverride(const std::string& service_name,
-                   const std::string& interface_name,
-                   const ServiceBinding::BinderForTesting& binder) {
-    base::AutoLock lock(lock_);
-    binders_[service_name][interface_name] = binder;
-  }
-
-  ServiceBinding::BinderForTesting GetOverride(
-      const std::string& service_name,
-      const std::string& interface_name) {
-    base::AutoLock lock(lock_);
-    auto service_it = binders_.find(service_name);
-    if (service_it == binders_.end())
-      return ServiceBinding::BinderForTesting();
-    auto binder_it = service_it->second.find(interface_name);
-    if (binder_it == service_it->second.end())
-      return ServiceBinding::BinderForTesting();
-    return binder_it->second;
-  }
-
-  void ClearOverride(const std::string& service_name,
-                     const std::string& interface_name) {
-    base::AutoLock lock(lock_);
-    auto service_it = binders_.find(service_name);
-    if (service_it == binders_.end())
-      return;
-    service_it->second.erase(interface_name);
-    if (service_it->second.empty())
-      binders_.erase(service_it);
-  }
-
- private:
-  base::Lock lock_;
-
-  using InterfaceBinderMap =
-      std::map<std::string, ServiceBinding::BinderForTesting>;
-  std::map<std::string, InterfaceBinderMap> binders_;
-
-  DISALLOW_COPY_AND_ASSIGN(BinderOverrides);
-};
-
-BinderOverrides& GetBinderOverrides() {
-  static base::NoDestructor<BinderOverrides> overrides;
-  return *overrides;
-}
-
-}  // namespace
-
 ServiceBinding::ServiceBinding(service_manager::Service* service)
     : service_(service) {
   DCHECK(service_);
@@ -121,21 +65,6 @@ void ServiceBinding::Close() {
   connector_.reset();
 }
 
-// static
-void ServiceBinding::OverrideInterfaceBinderForTesting(
-    const std::string& service_name,
-    const std::string& interface_name,
-    const BinderForTesting& binder) {
-  GetBinderOverrides().SetOverride(service_name, interface_name, binder);
-}
-
-// static
-void ServiceBinding::ClearInterfaceBinderOverrideForTesting(
-    const std::string& service_name,
-    const std::string& interface_name) {
-  GetBinderOverrides().ClearOverride(service_name, interface_name);
-}
-
 void ServiceBinding::OnConnectionError() {
   service_->OnDisconnected();
 }
@@ -163,13 +92,6 @@ void ServiceBinding::OnBindInterface(
     OnBindInterfaceCallback callback) {
   // Acknowledge this request.
   std::move(callback).Run();
-
-  auto override =
-      GetBinderOverrides().GetOverride(identity_.name(), interface_name);
-  if (override) {
-    override.Run(source_info, std::move(interface_pipe));
-    return;
-  }
 
   service_->OnConnect(source_info, interface_name, std::move(interface_pipe));
 }

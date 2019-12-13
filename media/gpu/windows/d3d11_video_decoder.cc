@@ -546,6 +546,12 @@ void D3D11VideoDecoder::DoDecode() {
 
     media::AcceleratedVideoDecoder::DecodeResult result =
         accelerated_video_decoder_->Decode();
+    if (state_ == State::kError) {
+      // Transitioned to an error at some point.  The h264 accelerator can do
+      // this if picture output fails, at least.  Until that's fixed, check
+      // here and exit if so.
+      return;
+    }
     // TODO(liberato): switch + class enum.
     if (result == media::AcceleratedVideoDecoder::kRanOutOfStreamData) {
       current_buffer_ = nullptr;
@@ -691,7 +697,7 @@ D3D11PictureBuffer* D3D11VideoDecoder::GetPicture() {
   return nullptr;
 }
 
-void D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
+bool D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
                                      D3D11PictureBuffer* picture_buffer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(texture_selector_);
@@ -713,7 +719,7 @@ void D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
   MailboxHolderArray mailbox_holders;
   if (!picture_buffer->ProcessTexture(&mailbox_holders)) {
     NotifyError("Unable to process texture");
-    return;
+    return false;
   }
 
   scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
@@ -745,6 +751,7 @@ void D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
 
   frame->set_color_space(picture->get_colorspace().ToGfxColorSpace());
   output_cb_.Run(frame);
+  return true;
 }
 
 void D3D11VideoDecoder::OnCdmContextEvent(CdmContext::Event event) {

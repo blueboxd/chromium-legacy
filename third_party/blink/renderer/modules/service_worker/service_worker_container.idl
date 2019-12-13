@@ -33,7 +33,7 @@
     SecureContext
 ] interface ServiceWorkerContainer : EventTarget {
     readonly attribute ServiceWorker? controller;
-    [CallWith=ScriptState] readonly attribute Promise<ServiceWorkerRegistration> ready;
+    [CallWith=ScriptState, RaisesException] readonly attribute Promise<ServiceWorkerRegistration> ready;
 
     [CallWith=ScriptState, ImplementedAs=registerServiceWorker] Promise<ServiceWorkerRegistration> register(USVString url, optional RegistrationOptions options);
     [CallWith=ScriptState] Promise<ServiceWorkerRegistration> getRegistration(optional USVString documentURL = "");

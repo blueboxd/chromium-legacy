@@ -266,7 +266,7 @@ class CORE_EXPORT NGPhysicalFragment
   // ScrollableOverflow(), with transforms applied wrt container if needed.
   // This does not include any offsets from the parent (including relpos).
   PhysicalRect ScrollableOverflowForPropagation(
-      const LayoutObject* container) const;
+      const NGPhysicalBoxFragment& container) const;
 
   // The allowed touch action is the union of the effective touch action
   // (from style) and blocking touch event handlers.

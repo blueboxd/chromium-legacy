@@ -23,6 +23,7 @@
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/user_data_util.h"
 #include "components/autofill_assistant/browser/website_login_fetcher_impl.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
@@ -794,11 +795,52 @@ void CollectUserDataAction::UpdatePersonalDataManagerProfiles(
     return;
   }
 
+  bool found_profile = false;
+  bool found_shipping_address = false;
+
   user_data->available_profiles.clear();
   for (const auto* profile :
        delegate_->GetPersonalDataManager()->GetProfilesToSuggest()) {
     user_data->available_profiles.emplace_back(
         std::make_unique<autofill::AutofillProfile>(*profile));
+
+    if (user_data->contact_profile != nullptr &&
+        CompareContactDetails(*collect_user_data_options_, profile,
+                              user_data->contact_profile.get())) {
+      found_profile = true;
+    }
+    if (user_data->shipping_address != nullptr &&
+        profile->Compare(*user_data->shipping_address) == 0) {
+      found_shipping_address = true;
+    }
+  }
+
+  if (!found_profile) {
+    user_data->contact_profile.reset();
+  }
+  if (user_data->contact_profile == nullptr &&
+      (collect_user_data_options_->request_payer_name ||
+       collect_user_data_options_->request_payer_phone ||
+       collect_user_data_options_->request_payer_email)) {
+    int default_selection = GetDefaultProfile(*collect_user_data_options_,
+                                              user_data->available_profiles);
+    if (default_selection != -1) {
+      user_data->contact_profile = std::make_unique<autofill::AutofillProfile>(
+          *(user_data->available_profiles[default_selection]));
+    }
+  }
+
+  if (!found_shipping_address) {
+    user_data->shipping_address.reset();
+  }
+  if (user_data->shipping_address == nullptr &&
+      collect_user_data_options_->request_shipping) {
+    int default_selection = GetDefaultProfile(*collect_user_data_options_,
+                                              user_data->available_profiles);
+    if (default_selection != -1) {
+      user_data->shipping_address = std::make_unique<autofill::AutofillProfile>(
+          *(user_data->available_profiles[default_selection]));
+    }
   }
 
   if (field_change != nullptr) {
@@ -810,6 +852,9 @@ void CollectUserDataAction::UpdatePersonalDataManagerCards(
     UserData* user_data,
     UserData::FieldChange* field_change) {
   DCHECK(user_data != nullptr);
+
+  bool found_card = false;
+
   user_data->available_payment_instruments.clear();
   for (const auto* card :
        delegate_->GetPersonalDataManager()->GetCreditCardsToSuggest(true)) {
@@ -834,6 +879,31 @@ void CollectUserDataAction::UpdatePersonalDataManagerCards(
 
       user_data->available_payment_instruments.emplace_back(
           std::move(payment_instrument));
+
+      if (user_data->card != nullptr && card->Compare(*user_data->card) == 0) {
+        found_card = true;
+      }
+    }
+  }
+
+  if (!found_card) {
+    user_data->card.reset();
+    user_data->billing_address.reset();
+  }
+  if (user_data->card == nullptr &&
+      collect_user_data_options_->request_payment_method) {
+    int default_selection = GetDefaultPaymentInstrument(
+        *collect_user_data_options_, user_data->available_payment_instruments);
+    if (default_selection != -1) {
+      const auto& default_payment_instrument =
+          user_data->available_payment_instruments[default_selection];
+      user_data->card = std::make_unique<autofill::CreditCard>(
+          *(default_payment_instrument->card));
+      if (default_payment_instrument->billing_address != nullptr) {
+        user_data->billing_address =
+            std::make_unique<autofill::AutofillProfile>(
+                *(default_payment_instrument->billing_address));
+      }
     }
   }
 

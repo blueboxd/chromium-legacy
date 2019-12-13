@@ -1117,6 +1117,10 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
                                       role);
     }
 
+    // Presence of other ARIA attributes.
+    if (src.HasAriaAttribute())
+      dst->AddBoolAttribute(ax::mojom::BoolAttribute::kHasAriaAttribute, true);
+
     // Frames and iframes.
     WebFrame* frame = WebFrame::FromFrameOwnerElement(element);
     if (frame) {

@@ -381,9 +381,8 @@ ExtensionFunction::ResponseAction FileManagerPrivateGrantAccessFunction::Run() {
   for (auto* profile : profiles) {
     if (profile->IsOffTheRecord())
       continue;
-    const GURL site = util::GetSiteForExtensionId(extension_id(), profile);
     storage::FileSystemContext* const context =
-        content::BrowserContext::GetStoragePartitionForSite(profile, site)
+        util::GetStoragePartitionForExtensionId(extension_id(), profile)
             ->GetFileSystemContext();
     for (const auto& url : params->entry_urls) {
       const storage::FileSystemURL file_system_url =

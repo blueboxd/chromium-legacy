@@ -281,6 +281,7 @@
 <translation id="1397500194120344683">Uyğun cihaz yoxdur. <ph name="LINK_BEGIN" />Ətraflı məlumat<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">Artırın</translation>
 <translation id="1399511500114202393">İstifadəçi sertifikatı yoxdur</translation>
+<translation id="1403519882106291341">Google Chrome OS Şərtləri</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (Nəzarət olunan)</translation>
 <translation id="1405779994569073824">Xəta baş verdi.</translation>
 <translation id="1406500794671479665">Təsdiqlənir...</translation>
@@ -2169,7 +2170,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="4036778507053569103">Serverdən endirilmiş qayda yanlışdır.</translation>
 <translation id="4037084878352560732">At</translation>
 <translation id="4037889604535939429">Şəxsi redaktə edin</translation>
-<translation id="4042264909745389898">Google Chrome OS şərtləri</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Səhifədən Çıxın}other{Səhifələrdən Çıxın}}</translation>
 <translation id="4044612648082411741">Sertifikat parolunuzu daxil edin</translation>
 <translation id="404493185430269859">Defolt axtarış sistemi</translation>

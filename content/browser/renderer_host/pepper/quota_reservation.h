@@ -47,11 +47,11 @@ class CONTENT_EXPORT QuotaReservation
   // Refreshes the quota reservation to a new amount. A map that associates file
   // ids with maximum written offsets is provided as input. The callback will
   // receive a similar map with the updated file sizes.
-  typedef base::Callback<void(int64_t, const ppapi::FileSizeMap&)>
-      ReserveQuotaCallback;
+  using ReserveQuotaCallback =
+      base::OnceCallback<void(int64_t, const ppapi::FileSizeMap&)>;
   void ReserveQuota(int64_t amount,
                     const ppapi::FileGrowthMap& file_growth,
-                    const ReserveQuotaCallback& callback);
+                    ReserveQuotaCallback callback);
 
   // Notifies underlying QuotaReservation that the associated client crashed,
   // and that the reserved quota is no longer traceable.
@@ -77,8 +77,7 @@ class CONTENT_EXPORT QuotaReservation
 
   ~QuotaReservation();
 
-  void GotReservedQuota(const ReserveQuotaCallback& callback,
-                        base::File::Error error);
+  void GotReservedQuota(ReserveQuotaCallback callback, base::File::Error error);
 
   void DeleteOnCorrectThread() const;
 

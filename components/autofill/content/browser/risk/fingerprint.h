@@ -28,10 +28,6 @@ namespace content {
 class WebContents;
 }
 
-namespace service_manager {
-class Connector;
-}
-
 namespace gfx {
 class Rect;
 }
@@ -59,8 +55,7 @@ void GetFingerprint(
     const base::Time& install_time,
     const std::string& app_locale,
     const std::string& user_agent,
-    const base::OnceCallback<void(std::unique_ptr<Fingerprint>)> callback,
-    service_manager::Connector* connector);
+    const base::OnceCallback<void(std::unique_ptr<Fingerprint>)> callback);
 
 }  // namespace risk
 }  // namespace autofill

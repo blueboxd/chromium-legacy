@@ -439,24 +439,6 @@ TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest, GcmRegistrationFailed) {
       base::nullopt /* client_directive */)});
 }
 
-TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest, GcmRegistrationTimeout) {
-  CreateEnrollmentManager();
-  enrollment_manager()->Start();
-
-  fake_enrollment_scheduler()->RequestEnrollment(
-      cryptauthv2::ClientMetadata::INITIALIZATION /* invocation_reason */,
-      base::nullopt /* session_id */);
-
-  // Timeout waiting for GcmRegistration.
-  EXPECT_TRUE(mock_timer()->IsRunning());
-  mock_timer()->Fire();
-
-  VerifyEnrollmentResults(
-      {CryptAuthEnrollmentResult(CryptAuthEnrollmentResult::ResultCode::
-                                     kErrorTimeoutWaitingForGcmRegistration,
-                                 base::nullopt /* client_directive */)});
-}
-
 TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest,
        ClientAppMetadataFetchFailed) {
   CreateEnrollmentManager();

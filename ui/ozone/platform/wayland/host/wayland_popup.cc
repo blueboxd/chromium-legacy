@@ -22,18 +22,6 @@ bool WaylandPopup::CreateShellPopup() {
   if (GetBounds().IsEmpty())
     return false;
 
-  // TODO(jkim): Consider how to support DropArrow window on tabstrip.
-  // When it starts dragging, as described the protocol, https://goo.gl/1Mskq3,
-  // the client must have an active implicit grab. If we try to create a popup
-  // window while dragging is executed, it gets 'popup_done' directly from
-  // Wayland compositor and it's destroyed through 'popup_done'. It causes
-  // a crash when aura::Window is destroyed.
-  // https://crbug.com/875164
-  if (connection()->IsDragInProgress()) {
-    LOG(WARNING) << "Wayland can't create a popup window during dragging.";
-    return false;
-  }
-
   DCHECK(parent_window() && !shell_popup_);
 
   auto bounds_px = AdjustPopupWindowPosition();
@@ -55,12 +43,6 @@ void WaylandPopup::Show(bool inactive) {
 
   set_keyboard_focus(true);
 
-  // When showing a sub-menu after it has been previously shown and hidden,
-  // Wayland sends SetBounds prior to Show, and |bounds_px| takes the pixel
-  // bounds.  This makes a difference against the normal flow when the
-  // window is created (see |Initialize|).  To equalize things, rescale
-  // |bounds_px_| to DIP.  It will be adjusted while creating the popup.
-  SetBounds(gfx::ScaleToRoundedRect(GetBounds(), 1.0 / ui_scale()));
   if (!CreateShellPopup()) {
     Close();
     return;
@@ -180,8 +162,9 @@ gfx::Rect WaylandPopup::AdjustPopupWindowPosition() {
   // to be in local surface coordinates a.k.a relative to parent window.
   const gfx::Rect parent_bounds_dip =
       gfx::ScaleToRoundedRect(parent_window()->GetBounds(), 1.0 / ui_scale());
-  gfx::Rect new_bounds_dip =
-      wl::TranslateBoundsToParentCoordinates(GetBounds(), parent_bounds_dip);
+  gfx::Rect new_bounds_dip = wl::TranslateBoundsToParentCoordinates(
+      gfx::ScaleToRoundedRect(GetBounds(), 1.0 / ui_scale()),
+      parent_bounds_dip);
 
   // Chromium may decide to position nested menu windows on the left side
   // instead of the right side of parent menu windows when the size of the

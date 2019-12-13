@@ -170,6 +170,29 @@ std::map<std::string, std::vector<std::string>> SetAllowedURLs() {
 
 BackForwardCacheTestDelegate* g_bfcache_disabled_test_observer = nullptr;
 
+void RestoreBrowserControlsState(RenderFrameHostImpl* cached_rfh) {
+  auto* current_rfh =
+      cached_rfh->frame_tree_node()->render_manager()->current_frame_host();
+
+  DCHECK_NE(current_rfh, cached_rfh);
+
+  float prev_top_controls_shown_ratio = current_rfh->GetRenderWidgetHost()
+                                            ->render_frame_metadata_provider()
+                                            ->LastRenderFrameMetadata()
+                                            .top_controls_shown_ratio;
+  if (prev_top_controls_shown_ratio < 1) {
+    // Make sure the state in the restored renderer matches the current one.
+    // If we currently aren't showing the controls let the cached renderer
+    // know, so that it then reacts correctly to the SHOW controls message
+    // that might follow during DidCommitNavigation.
+    cached_rfh->UpdateBrowserControlsState(
+        BrowserControlsState::BROWSER_CONTROLS_STATE_BOTH,
+        BrowserControlsState::BROWSER_CONTROLS_STATE_HIDDEN,
+        // Do not animate as we want this to happen "instantaneously"
+        false);
+  }
+}
+
 }  // namespace
 
 BackForwardCacheImpl::Entry::Entry(
@@ -371,6 +394,9 @@ std::unique_ptr<BackForwardCacheImpl::Entry> BackForwardCacheImpl::RestoreEntry(
   std::unique_ptr<Entry> entry = std::move(*matching_entry);
   entries_.erase(matching_entry);
   entry->render_frame_host->LeaveBackForwardCache();
+
+  RestoreBrowserControlsState(entry->render_frame_host.get());
+
   return entry;
 }
 

@@ -78,12 +78,12 @@ Polymer({
       selectedId = BOOKMARKS_BAR_ID;
     }
 
-    if (searchTerm != this.searchTerm_) {
+    if (searchTerm !== this.searchTerm_) {
       this.searchTerm_ = searchTerm;
       this.dispatch(setSearchTerm(searchTerm));
     }
 
-    if (selectedId && selectedId != this.selectedId_) {
+    if (selectedId && selectedId !== this.selectedId_) {
       this.selectedId_ = selectedId;
       // Need to dispatch a deferred action so that during page load
       // `this.getState()` will only evaluate after the Store is initialized.
@@ -118,7 +118,7 @@ Polymer({
   updateQueryParams_: function() {
     if (this.searchTerm_) {
       this.queryParams_ = {q: this.searchTerm_};
-    } else if (this.selectedId_ != BOOKMARKS_BAR_ID) {
+    } else if (this.selectedId_ !== BOOKMARKS_BAR_ID) {
       this.queryParams_ = {id: this.selectedId_};
     } else {
       this.queryParams_ = {};

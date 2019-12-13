@@ -140,7 +140,7 @@ const base::Feature kThirdPartyModulesBlocking{
 // This is a MUST-level requirement of TLS 1.3, but may have compatibility
 // issues with some outdated buggy TLS-terminating proxies.
 const base::Feature kTLS13HardeningForLocalAnchors{
-    "TLS13HardeningForLocalAnchors", base::FEATURE_DISABLED_BY_DEFAULT};
+    "TLS13HardeningForLocalAnchors", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
 // Enables the dual certificate verification trial feature.

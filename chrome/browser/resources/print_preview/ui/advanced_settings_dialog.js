@@ -166,4 +166,12 @@ Polymer({
   close: function() {
     this.$.dialog.close();
   },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  isSearching_: function() {
+    return this.searchQuery_ ? 'searching' : '';
+  },
 });

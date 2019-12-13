@@ -30,6 +30,10 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/native_theme/native_theme_features.h"
 
+#if defined(OS_MACOSX)
+#include "ui/base/test/scoped_preferred_scroller_style_mac.h"
+#endif
+
 namespace {
 
 const char kDataURL[] =
@@ -275,6 +279,13 @@ class ScrollLatencyScrollbarBrowserTest : public ScrollLatencyBrowserTest {
 
   ~ScrollLatencyScrollbarBrowserTest() override {}
 
+ private:
+#if defined(OS_MACOSX)
+  // Native scrollbars on Mac are overlay scrollbars. Hence they need to be
+  // disabled.
+  ui::test::ScopedPreferredScrollerStyle scroller_style_override{false};
+#endif
+
  protected:
   void RunScrollbarButtonLatencyTest() {
     // We don't run tests that click the scrollbar on Android for a few reasons:
@@ -288,7 +299,6 @@ class ScrollLatencyScrollbarBrowserTest : public ScrollLatencyBrowserTest {
     // WebPreferences) but at that point, we're not really testing a shipping
     // configuration.
 #if !defined(OS_ANDROID)
-
     // Click on the forward scrollbar button to induce a compositor thread
     // scrollbar scroll.
     blink::WebFloatPoint scrollbar_forward_button(795, 595);
@@ -432,9 +442,8 @@ IN_PROC_BROWSER_TEST_F(ScrollLatencyScrollbarBrowserTest,
   RunScrollbarButtonLatencyTest();
 }
 
-// Disabled due to test failures (crbug.com/1026720).
 IN_PROC_BROWSER_TEST_F(ScrollLatencyScrollbarBrowserTest,
-                       DISABLED_ScrollbarThumbDragLatency) {
+                       ScrollbarThumbDragLatency) {
   LoadURL();
 
   RunScrollbarThumbDragLatencyTest();
@@ -460,7 +469,7 @@ class ScrollLatencyCompositedScrollbarBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_F(ScrollLatencyCompositedScrollbarBrowserTest,
-                       DISABLED_ScrollbarButtonLatency) {
+                       ScrollbarButtonLatency) {
   LoadURL();
 
   RunScrollbarButtonLatencyTest();

@@ -1378,7 +1378,7 @@ void SkiaOutputSurfaceImplOnGpu::SetCapabilitiesForTesting(
   DCHECK(dependency_->IsOffscreen());
   output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
       context_state_, capabilities.flipped_output_surface,
-      renderer_settings_.requires_alpha_channel,
+      renderer_settings_.requires_alpha_channel, memory_tracker_.get(),
       did_swap_buffer_complete_callback_);
 }
 
@@ -1426,7 +1426,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
 
     output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
         context_state_, true /* flipped */,
-        renderer_settings_.requires_alpha_channel,
+        renderer_settings_.requires_alpha_channel, memory_tracker_.get(),
         did_swap_buffer_complete_callback_);
     supports_alpha_ = renderer_settings_.requires_alpha_channel;
   } else {
@@ -1472,7 +1472,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
   if (dependency_->IsOffscreen()) {
     output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
         context_state_, false /* flipped */,
-        renderer_settings_.requires_alpha_channel,
+        renderer_settings_.requires_alpha_channel, memory_tracker_.get(),
         did_swap_buffer_complete_callback_);
     supports_alpha_ = renderer_settings_.requires_alpha_channel;
   } else {
@@ -1481,7 +1481,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
     if (gpu_preferences_.disable_vulkan_surface) {
       output_device_ = std::make_unique<SkiaOutputDeviceX11>(
           context_state_, dependency_->GetSurfaceHandle(),
-          did_swap_buffer_complete_callback_);
+          memory_tracker_.get(), did_swap_buffer_complete_callback_);
     } else {
       output_device_ = std::make_unique<SkiaOutputDeviceVulkan>(
           vulkan_context_provider_, dependency_->GetSurfaceHandle(),
@@ -1512,7 +1512,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
   if (dependency_->IsOffscreen()) {
     output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
         context_state_, false /* flipped */,
-        renderer_settings_.requires_alpha_channel,
+        renderer_settings_.requires_alpha_channel, memory_tracker_.get(),
         did_swap_buffer_complete_callback_);
     supports_alpha_ = renderer_settings_.requires_alpha_channel;
   } else {
@@ -1520,7 +1520,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
     // TODO(sgilhuly): Set up a Vulkan swapchain so that Linux can also use
     // SkiaOutputDeviceDawn.
     output_device_ = std::make_unique<SkiaOutputDeviceX11>(
-        context_state_, dependency_->GetSurfaceHandle(),
+        context_state_, dependency_->GetSurfaceHandle(), memory_tracker_.get(),
         did_swap_buffer_complete_callback_);
 #else
     output_device_ = std::make_unique<SkiaOutputDeviceDawn>(

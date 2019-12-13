@@ -283,6 +283,7 @@
 <translation id="1397500194120344683">Боломжтой төхөөрөмжүүд алга. <ph name="LINK_BEGIN" />Нэмэлт мэдээлэл авах<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">Хэмжээг ихэсгэх</translation>
 <translation id="1399511500114202393">Хэрэглэгчийн гэрчилгээ алга</translation>
+<translation id="1403519882106291341">Google Chrome үйлдлийн системийн нөхцөл</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (хяналтанд байна)</translation>
 <translation id="1405779994569073824">Эвдэрсэн.</translation>
 <translation id="1406500794671479665">Шалгаж байна...</translation>
@@ -2168,7 +2169,6 @@
 <translation id="4036778507053569103">Серверээс татсан удирдамж хүчингүй байна.</translation>
 <translation id="4037084878352560732">Морь</translation>
 <translation id="4037889604535939429">Хүн засах</translation>
-<translation id="4042264909745389898">Google Chrome үйлдлийн системийн нөхцөл</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Хуудаснаас гарах}other{Хуудаснуудаас гарах}}</translation>
 <translation id="4044612648082411741">Сертификатынхаа нууц үгийг оруулна уу</translation>
 <translation id="404493185430269859">Анхдагч хайлтын хөдөлгүүр</translation>

@@ -1,6 +1,6 @@
 document
-++group
-++++region
-++++++description
+++group IsControlElement=false
+++++region IsControlElement=false
+++++++description IsControlElement=false
 ++++++++description Name='ruby text'
 ++++++description Name='ruby base'

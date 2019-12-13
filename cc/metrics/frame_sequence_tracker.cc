@@ -444,8 +444,6 @@ void FrameSequenceTracker::ReportBeginMainFrame(
                        << args.sequence_number << ")";
   UpdateTrackedFrameData(&begin_main_frame_data_, args.source_id,
                          args.sequence_number);
-  if (first_received_main_sequence_ == 0)
-    first_received_main_sequence_ = args.sequence_number;
   main_throughput().frames_expected +=
       begin_main_frame_data_.previous_sequence_delta;
 }
@@ -469,9 +467,10 @@ void FrameSequenceTracker::ReportSubmitFrame(
     first_submitted_frame_ = frame_token;
   last_submitted_frame_ = frame_token;
 
+  TRACKER_TRACE_STREAM << 's';
   if (!ShouldIgnoreBeginFrameSource(origin_args.source_id) &&
-      first_received_main_sequence_ &&
-      origin_args.sequence_number >= first_received_main_sequence_) {
+      begin_main_frame_data_.previous_sequence &&
+      origin_args.sequence_number >= begin_main_frame_data_.previous_sequence) {
     if (last_submitted_main_sequence_ == 0 ||
         origin_args.sequence_number > last_submitted_main_sequence_) {
       TRACKER_TRACE_STREAM << 'S';
@@ -626,16 +625,8 @@ void FrameSequenceTracker::ReportMainFrameCausedNoDamage(
   if (ShouldIgnoreBeginFrameSource(args.source_id))
     return;
 
-  // ReportBeginMainFrame could be called without ReportBeginImplFrame, in that
-  // case we should ignore this call.
   if (ShouldIgnoreSequence(args.sequence_number))
     return;
-  // It is possible that this is called before a begin-main-frame has been
-  // dispatched for this frame-sequence. In such cases, ignore this call.
-  if (begin_main_frame_data_.previous_sequence == 0 ||
-      args.sequence_number < begin_main_frame_data_.previous_sequence) {
-    return;
-  }
 
   TRACKER_TRACE_STREAM << 'N';
   TRACKER_TRACE_STREAM << "(" << begin_main_frame_data_.previous_sequence << ","
@@ -665,6 +656,7 @@ void FrameSequenceTracker::UpdateTrackedFrameData(TrackedFrameData* frame_data,
   if (frame_data->previous_sequence &&
       frame_data->previous_source == source_id) {
     uint32_t current_latency = sequence_number - frame_data->previous_sequence;
+    DCHECK_GT(current_latency, 0u);
     frame_data->previous_sequence_delta = current_latency;
   } else {
     frame_data->previous_sequence_delta = 1;

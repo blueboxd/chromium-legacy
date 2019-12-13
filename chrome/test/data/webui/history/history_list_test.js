@@ -30,19 +30,32 @@ suite('<history-list>', function() {
     history.BrowserService.instance_ = testService;
 
     app = document.createElement('history-app');
+  });
+
+  /**
+   * @param {!Array<!HistoryEntry>} queryResults The query results to initialize
+   *     the page with.
+   * @param {string=} query The query to use in the QueryInfo.
+   * @return {!Promise} Promise that resolves when initialization is complete
+   *     and the lazy loaded module has been loaded.
+   */
+  function finishSetup(queryResults, query) {
+    testService.setQueryResult(
+        {info: createHistoryInfo(query), value: queryResults});
     document.body.appendChild(app);
 
     element = app.$.history;
     toolbar = app.$.toolbar;
     app.queryState_.incremental = true;
-  });
+    return Promise.all([
+      testService.whenCalled('queryHistory'),
+      history.ensureLazyLoaded(),
+    ]);
+  }
 
   test('deleting single item', function() {
-    app.historyResult(
-        createHistoryInfo(),
-        [createHistoryEntry('2015-01-01', 'http://example.com')]);
-
-    return test_util.flushTasks()
+    return finishSetup([createHistoryEntry('2015-01-01', 'http://example.com')])
+        .then(test_util.flushTasks)
         .then(function() {
           assertEquals(element.historyData_.length, 1);
           Polymer.dom.flush();
@@ -60,6 +73,7 @@ suite('<history-list>', function() {
         .then(function() {
           const dialog = element.$.dialog.get();
           assertTrue(dialog.open);
+          testService.resetResolver('queryHistory');
           element.$$('.action-button').click();
           return testService.whenCalled('removeVisits');
         })
@@ -67,141 +81,159 @@ suite('<history-list>', function() {
           assertEquals(1, visits.length);
           assertEquals('http://example.com', visits[0].url);
           assertEquals('2015-01-01 UTC', visits[0].timestamps[0]);
-          return test_util.flushTasks();
-        })
-        .then(test_util.flushTasks)
-        .then(function() {
-          assertEquals(element.historyData_.length, 0);
+
+          // The list should fire a query-history event which results in a
+          // queryHistory call, since deleting the only item results in an
+          // empty history list.
+          return testService.whenCalled('queryHistory');
         });
   });
 
   test('cancelling selection of multiple items', function() {
-    app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-    return test_util.flushTasks().then(function() {
-      Polymer.dom.flush();
-      const items = polymerSelectAll(element, 'history-item');
+    return finishSetup(TEST_HISTORY_RESULTS)
+        .then(test_util.flushTasks)
+        .then(function() {
+          Polymer.dom.flush();
+          const items = polymerSelectAll(element, 'history-item');
 
-      items[2].$.checkbox.click();
-      items[3].$.checkbox.click();
+          items[2].$.checkbox.click();
+          items[3].$.checkbox.click();
 
-      // Make sure that the array of data that determines whether or not an
-      // item is selected is what we expect after selecting the two items.
-      assertDeepEquals(
-          [false, false, true, true],
-          element.historyData_.map(i => i.selected));
+          // Make sure that the array of data that determines whether or not an
+          // item is selected is what we expect after selecting the two items.
+          assertDeepEquals(
+              [false, false, true, true],
+              element.historyData_.map(i => i.selected));
 
-      toolbar.clearSelectedItems();
+          toolbar.clearSelectedItems();
 
-      // Make sure that clearing the selection updates both the array and
-      // the actual history-items affected.
-      assertDeepEquals(
-          [false, false, false, false],
-          element.historyData_.map(i => i.selected));
+          // Make sure that clearing the selection updates both the array and
+          // the actual history-items affected.
+          assertDeepEquals(
+              [false, false, false, false],
+              element.historyData_.map(i => i.selected));
 
-      assertFalse(items[2].selected);
-      assertFalse(items[3].selected);
-    });
+          assertFalse(items[2].selected);
+          assertFalse(items[3].selected);
+        });
   });
 
   test('selection of multiple items using shift click', function() {
-    app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-    return test_util.flushTasks().then(function() {
-      Polymer.dom.flush();
-      const items = polymerSelectAll(element, 'history-item');
+    return finishSetup(TEST_HISTORY_RESULTS)
+        .then(test_util.flushTasks)
+        .then(function() {
+          Polymer.dom.flush();
+          const items = polymerSelectAll(element, 'history-item');
 
-      items[1].$.checkbox.click();
-      assertDeepEquals(
-          [false, true, false, false],
-          element.historyData_.map(i => i.selected));
-      assertDeepEquals([1], Array.from(element.selectedItems).sort());
+          items[1].$.checkbox.click();
+          assertDeepEquals(
+              [false, true, false, false],
+              element.historyData_.map(i => i.selected));
+          assertDeepEquals([1], Array.from(element.selectedItems).sort());
 
-      // Shift-select to the last item.
-      shiftClick(items[3].$.checkbox);
-      assertDeepEquals(
-          [false, true, true, true], element.historyData_.map(i => i.selected));
-      assertDeepEquals([1, 2, 3], Array.from(element.selectedItems).sort());
+          // Shift-select to the last item.
+          shiftClick(items[3].$.checkbox);
+          assertDeepEquals(
+              [false, true, true, true],
+              element.historyData_.map(i => i.selected));
+          assertDeepEquals([1, 2, 3], Array.from(element.selectedItems).sort());
 
-      // Shift-select back to the first item.
-      shiftClick(items[0].$.checkbox);
-      assertDeepEquals(
-          [true, true, true, true], element.historyData_.map(i => i.selected));
-      assertDeepEquals([0, 1, 2, 3], Array.from(element.selectedItems).sort());
+          // Shift-select back to the first item.
+          shiftClick(items[0].$.checkbox);
+          assertDeepEquals(
+              [true, true, true, true],
+              element.historyData_.map(i => i.selected));
+          assertDeepEquals(
+              [0, 1, 2, 3], Array.from(element.selectedItems).sort());
 
-      // Shift-deselect to the third item.
-      shiftClick(items[2].$.checkbox);
-      assertDeepEquals(
-          [false, false, false, true],
-          element.historyData_.map(i => i.selected));
-      assertDeepEquals([3], Array.from(element.selectedItems).sort());
+          // Shift-deselect to the third item.
+          shiftClick(items[2].$.checkbox);
+          assertDeepEquals(
+              [false, false, false, true],
+              element.historyData_.map(i => i.selected));
+          assertDeepEquals([3], Array.from(element.selectedItems).sort());
 
-      // Select the second item.
-      items[1].$.checkbox.click();
-      assertDeepEquals(
-          [false, true, false, true],
-          element.historyData_.map(i => i.selected));
-      assertDeepEquals([1, 3], Array.from(element.selectedItems).sort());
+          // Select the second item.
+          items[1].$.checkbox.click();
+          assertDeepEquals(
+              [false, true, false, true],
+              element.historyData_.map(i => i.selected));
+          assertDeepEquals([1, 3], Array.from(element.selectedItems).sort());
 
-      // Shift-deselect to the last item.
-      shiftClick(items[3].$.checkbox);
-      assertDeepEquals(
-          [false, false, false, false],
-          element.historyData_.map(i => i.selected));
-      assertDeepEquals([], Array.from(element.selectedItems).sort());
+          // Shift-deselect to the last item.
+          shiftClick(items[3].$.checkbox);
+          assertDeepEquals(
+              [false, false, false, false],
+              element.historyData_.map(i => i.selected));
+          assertDeepEquals([], Array.from(element.selectedItems).sort());
 
-      // Shift-select back to the third item.
-      shiftClick(items[2].$.checkbox);
-      assertDeepEquals(
-          [false, false, true, true],
-          element.historyData_.map(i => i.selected));
-      assertDeepEquals([2, 3], Array.from(element.selectedItems).sort());
+          // Shift-select back to the third item.
+          shiftClick(items[2].$.checkbox);
+          assertDeepEquals(
+              [false, false, true, true],
+              element.historyData_.map(i => i.selected));
+          assertDeepEquals([2, 3], Array.from(element.selectedItems).sort());
 
-      // Remove selected items.
-      element.removeItemsByIndex_(Array.from(element.selectedItems));
-      assertDeepEquals(
-          ['https://www.google.com', 'https://www.example.com'],
-          element.historyData_.map(i => i.title));
-    });
+          // Remove selected items.
+          element.removeItemsByIndex_(Array.from(element.selectedItems));
+          assertDeepEquals(
+              ['https://www.google.com', 'https://www.example.com'],
+              element.historyData_.map(i => i.title));
+        });
   });
 
   // See http://crbug.com/845802.
   test('disabling ctrl + a command on syncedTabs page', function() {
-    app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-    app.selectedPage_ = 'syncedTabs';
-    return test_util.flushTasks().then(function() {
-      const field = toolbar.$['main-toolbar'].getSearchField();
-      field.blur();
-      assertFalse(field.showingSearch);
+    return finishSetup(TEST_HISTORY_RESULTS)
+        .then(function() {
+          app.selectedPage_ = 'syncedTabs';
+          return test_util.flushTasks();
+        })
+        .then(function() {
+          const field = toolbar.$['main-toolbar'].getSearchField();
+          field.blur();
+          assertFalse(field.showingSearch);
 
-      const modifier = cr.isMac ? 'meta' : 'ctrl';
-      MockInteractions.pressAndReleaseKeyOn(document.body, 65, modifier, 'a');
+          const modifier = cr.isMac ? 'meta' : 'ctrl';
+          MockInteractions.pressAndReleaseKeyOn(
+              document.body, 65, modifier, 'a');
 
-      assertDeepEquals(
-          [false, false, false, false],
-          element.historyData_.map(i => i.selected));
-    });
+          assertDeepEquals(
+              [false, false, false, false],
+              element.historyData_.map(i => i.selected));
+        });
   });
 
   test('setting first and last items', function() {
-    app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-
-    return test_util.flushTasks().then(function() {
-      Polymer.dom.flush();
-      const items = polymerSelectAll(element, 'history-item');
-      assertTrue(items[0].isCardStart);
-      assertTrue(items[0].isCardEnd);
-      assertFalse(items[1].isCardEnd);
-      assertFalse(items[2].isCardStart);
-      assertTrue(items[2].isCardEnd);
-      assertTrue(items[3].isCardStart);
-      assertTrue(items[3].isCardEnd);
-    });
+    return finishSetup(TEST_HISTORY_RESULTS)
+        .then(test_util.flushTasks)
+        .then(function() {
+          Polymer.dom.flush();
+          const items = polymerSelectAll(element, 'history-item');
+          assertTrue(items[0].isCardStart);
+          assertTrue(items[0].isCardEnd);
+          assertFalse(items[1].isCardEnd);
+          assertFalse(items[2].isCardStart);
+          assertTrue(items[2].isCardEnd);
+          assertTrue(items[3].isCardStart);
+          assertTrue(items[3].isCardEnd);
+        });
   });
 
-  test('updating history results', function() {
-    app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-    app.historyResult(createHistoryInfo(), ADDITIONAL_RESULTS);
+  function loadWithAdditionalResults() {
+    return finishSetup(TEST_HISTORY_RESULTS)
+        .then(function() {
+          testService.resetResolver('queryHistory');
+          testService.setQueryResult(
+              {info: createHistoryInfo(), value: ADDITIONAL_RESULTS});
+          element.fire('query-history', true);
+          return testService.whenCalled('queryHistoryContinuation');
+        })
+        .then(test_util.flushTasks);
+  }
 
-    return test_util.flushTasks().then(function() {
+  test('updating history results', function() {
+    return loadWithAdditionalResults().then(function() {
       Polymer.dom.flush();
       const items = polymerSelectAll(element, 'history-item');
       assertTrue(items[3].isCardStart);
@@ -216,13 +248,9 @@ suite('<history-list>', function() {
   });
 
   test('deleting multiple items from view', function() {
-    app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-    app.historyResult(createHistoryInfo(), ADDITIONAL_RESULTS);
-    return test_util.flushTasks()
+    return loadWithAdditionalResults()
         .then(function() {
-
           element.removeItemsByIndex_([2, 5, 7]);
-
           return test_util.flushTasks();
         })
         .then(function() {
@@ -243,39 +271,42 @@ suite('<history-list>', function() {
   });
 
   test('search results display with correct item title', function() {
-    app.historyResult(
-        createHistoryInfo(),
-        [createHistoryEntry('2016-03-15', 'https://www.google.com')]);
-    element.searchedTerm = 'Google';
+    return finishSetup(
+               [createHistoryEntry('2016-03-15', 'https://www.google.com')])
+        .then(function() {
+          element.searchedTerm = 'Google';
+          test_util.flushTasks();
+        })
+        .then(function() {
+          Polymer.dom.flush();
+          const item = element.$$('history-item');
+          assertTrue(item.isCardStart);
+          const heading = item.$$('#date-accessed').textContent;
+          const title = item.$.link;
 
-    return test_util.flushTasks().then(function() {
-      Polymer.dom.flush();
-      const item = element.$$('history-item');
-      assertTrue(item.isCardStart);
-      const heading = item.$$('#date-accessed').textContent;
-      const title = item.$.link;
+          // Check that the card title displays the search term somewhere.
+          const index = heading.indexOf('Google');
+          assertTrue(index != -1);
 
-      // Check that the card title displays the search term somewhere.
-      const index = heading.indexOf('Google');
-      assertTrue(index != -1);
-
-      // Check that the search term is bolded correctly in the history-item.
-      assertGT(title.children[1].innerHTML.indexOf('<b>google</b>'), -1);
-    });
+          // Check that the search term is bolded correctly in the history-item.
+          assertGT(title.children[1].innerHTML.indexOf('<b>google</b>'), -1);
+        });
   });
 
   test('correct display message when no history available', function() {
-    app.historyResult(createHistoryInfo(), []);
-
-    return test_util.flushTasks()
+    return finishSetup([])
+        .then(test_util.flushTasks)
         .then(function() {
           assertFalse(element.$['no-results'].hidden);
           assertNotEquals('', element.$['no-results'].textContent.trim());
           assertTrue(element.$['infinite-list'].hidden);
 
-          app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-          return test_util.flushTasks();
+          testService.setQueryResult(
+              {info: createHistoryInfo(), value: TEST_HISTORY_RESULTS});
+          element.fire('query-history', false);
+          return testService.whenCalled('queryHistory');
         })
+        .then(test_util.flushTasks)
         .then(function() {
           assertTrue(element.$['no-results'].hidden);
           assertFalse(element.$['infinite-list'].hidden);
@@ -283,12 +314,16 @@ suite('<history-list>', function() {
   });
 
   test('more from this site sends and sets correct data', function() {
-    app.queryState_.queryingDisabled = false;
-    app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
     let items;
-    return test_util.flushTasks()
+    return finishSetup(TEST_HISTORY_RESULTS)
+        .then(test_util.flushTasks())
         .then(function() {
           Polymer.dom.flush();
+          testService.resetResolver('queryHistory');
+          testService.setQueryResult({
+            info: createHistoryInfo('www.google.com'),
+            value: TEST_HISTORY_RESULTS,
+          });
           items = polymerSelectAll(element, 'history-item');
           items[0].$['menu-button'].click();
           element.$.sharedMenu.get();
@@ -297,9 +332,6 @@ suite('<history-list>', function() {
         })
         .then(function(query) {
           assertEquals('www.google.com', query);
-          app.historyResult(
-              createHistoryInfo('www.google.com'), TEST_HISTORY_RESULTS);
-
           return test_util.flushTasks();
         })
         .then(function() {
@@ -320,11 +352,19 @@ suite('<history-list>', function() {
   // TODO(calamity): Reenable this test after fixing flakiness.
   // See http://crbug.com/640862.
   test.skip('scrolling history list causes toolbar shadow to appear', () => {
-    for (let i = 0; i < 10; i++) {
-      app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-    }
-    return test_util.flushTasks()
-        .then(function() {
+    const loadMoreResults = function(numReloads) {
+      testService.resetResolver('queryHistory');
+      testService.setQueryResult(
+          {info: createHistoryInfo(), value: TEST_HISTORY_RESULTS});
+      element.fire('query-history', true);
+      const promise = testService.whenCalled('queryHistoryContinuation');
+      return numReloads === 1 ? promise :
+                                promise.then(loadMoreResults(numReloads - 1));
+    };
+    return finishSetup(TEST_HISTORY_RESULTS)
+        .then(loadMoreResults(9))
+        .then(test_util.flushTasks)
+        .then(() => {
           assertFalse(app.toolbarShadow_);
           element.$['infinite-list'].scrollToIndex(20);
           return waitForEvent(app, 'toolbar-shadow_-changed');
@@ -340,29 +380,38 @@ suite('<history-list>', function() {
   });
 
   test('changing search deselects items', function() {
-    app.historyResult(
-        createHistoryInfo('ex'),
-        [createHistoryEntry('2016-06-9', 'https://www.example.com')]);
-    return test_util.flushTasks(20).then(function() {
-      Polymer.dom.flush();
-      const item = element.$$('history-item');
-      item.$.checkbox.click();
+    return finishSetup(
+               [createHistoryEntry('2016-06-9', 'https://www.example.com')],
+               'ex')
+        .then(test_util.flushTasks(20))
+        .then(function() {
+          Polymer.dom.flush();
+          const item = element.$$('history-item');
+          item.$.checkbox.click();
 
-      assertEquals(1, toolbar.count);
-      app.queryState_.incremental = false;
+          assertEquals(1, toolbar.count);
+          app.queryState_.incremental = false;
 
-      app.historyResult(
-          createHistoryInfo('ample'),
-          [createHistoryEntry('2016-06-9', 'https://www.example.com')]);
-      assertEquals(0, toolbar.count);
-    });
+          testService.resetResolver('queryHistory');
+          testService.setQueryResult({
+            info: createHistoryInfo('ample'),
+            value: [createHistoryEntry('2016-06-9', 'https://www.example.com')],
+          });
+          element.fire('query-history', false);
+          return testService.whenCalled('queryHistory');
+        })
+        .then(function() {
+          assertEquals(0, toolbar.count);
+        });
   });
 
   test('delete items end to end', function() {
-    const dialog = element.$.dialog.get();
-    app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-    app.historyResult(createHistoryInfo(), ADDITIONAL_RESULTS);
-    return test_util.flushTasks()
+    let dialog;
+    return loadWithAdditionalResults()
+        .then(function() {
+          dialog = element.$.dialog.get();
+          return test_util.flushTasks();
+        })
         .then(function() {
           Polymer.dom.flush();
           const items = polymerSelectAll(element, 'history-item');
@@ -419,9 +468,9 @@ suite('<history-list>', function() {
   });
 
   test('delete via menu button', function() {
-    app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
     let items;
-    return test_util.flushTasks()
+    return finishSetup(TEST_HISTORY_RESULTS)
+        .then(test_util.flushTasks())
         .then(function() {
           Polymer.dom.flush();
           items = polymerSelectAll(element, 'history-item');
@@ -458,10 +507,12 @@ suite('<history-list>', function() {
   });
 
   test('delete disabled while pending', function() {
-    app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
     let items;
-    testService.delayDelete();
-    return test_util.flushTasks()
+    return finishSetup(TEST_HISTORY_RESULTS)
+        .then(function() {
+          testService.delayDelete();
+          return test_util.flushTasks();
+        })
         .then(function() {
           Polymer.dom.flush();
           items = polymerSelectAll(element, 'history-item');
@@ -517,10 +568,13 @@ suite('<history-list>', function() {
   });
 
   test('deleting items using shortcuts', function() {
-    app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-    const dialog = element.$.dialog.get();
+    let dialog;
     let items;
-    return test_util.flushTasks()
+    return finishSetup(TEST_HISTORY_RESULTS)
+        .then(function() {
+          dialog = element.$.dialog.get();
+          test_util.flushTasks();
+        })
         .then(function() {
           Polymer.dom.flush();
           items = polymerSelectAll(element, 'history-item');
@@ -566,14 +620,31 @@ suite('<history-list>', function() {
 
   test('delete dialog closed on back navigation', function() {
     // Ensure that state changes are always mirrored to the URL.
-    app.$$('history-router').$$('iron-location').dwellTime = 0;
-    app.queryState_.queryingDisabled = false;
-    // Navigate from chrome://history/ to chrome://history/?q=something else.
-    app.fire('change-query', {search: 'something else'});
-    app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-    app.historyResult(createHistoryInfo(), ADDITIONAL_RESULTS);
+    return finishSetup([])
+        .then(function() {
+          testService.resetResolver('queryHistory');
+          app.$$('history-router').$$('iron-location').dwellTime = 0;
 
-    return test_util.flushTasks()
+          testService.setQueryResult({
+            info: createHistoryInfo('something else'),
+            value: TEST_HISTORY_RESULTS,
+          });
+
+          // Navigate from chrome://history/ to
+          // chrome://history/?q=something else.
+          app.fire('change-query', {search: 'something else'});
+          return testService.whenCalled('queryHistory');
+        })
+        .then(function() {
+          testService.resetResolver('queryHistory');
+          testService.setQueryResult({
+            info: createHistoryInfo('something else'),
+            value: ADDITIONAL_RESULTS
+          });
+          element.fire('query-history', true);
+          return testService.whenCalled('queryHistoryContinuation');
+        })
+        .then(test_util.flushTasks)
         .then(function() {
           Polymer.dom.flush();
           const items = polymerSelectAll(element, 'history-item');
@@ -601,10 +672,8 @@ suite('<history-list>', function() {
 
   test('clicking file:// url sends message to chrome', function() {
     const fileURL = 'file:///home/myfile';
-    app.historyResult(createHistoryInfo(), [
-      createHistoryEntry('2016-03-15', fileURL),
-    ]);
-    return test_util.flushTasks()
+    return finishSetup([createHistoryEntry('2016-03-15', fileURL)])
+        .then(test_util.flushTasks)
         .then(function() {
           Polymer.dom.flush();
           const items = polymerSelectAll(element, 'history-item');
@@ -617,21 +686,23 @@ suite('<history-list>', function() {
   });
 
   test('deleteHistory results in query-history event', function() {
-    app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
+    return finishSetup(TEST_HISTORY_RESULTS)
+        .then(function() {
+          testService.resetResolver('queryHistory');
+          cr.webUIListenerCallback('history-deleted');
+        })
+        .then(function() {
+          Polymer.dom.flush();
+          const items = polymerSelectAll(element, 'history-item');
 
-    cr.webUIListenerCallback('history-deleted');
-    return testService.whenCalled('queryHistory').then(() => {
-      Polymer.dom.flush();
-      const items = polymerSelectAll(element, 'history-item');
+          items[2].$.checkbox.click();
+          items[3].$.checkbox.click();
 
-      items[2].$.checkbox.click();
-      items[3].$.checkbox.click();
-
-      testService.resetResolver('queryHistory');
-      cr.webUIListenerCallback('history-deleted');
-      test_util.flushTasks();
-      assertEquals(0, testService.getCallCount('queryHistory'));
-    });
+          testService.resetResolver('queryHistory');
+          cr.webUIListenerCallback('history-deleted');
+          test_util.flushTasks();
+          assertEquals(0, testService.getCallCount('queryHistory'));
+        });
   });
 
   teardown(function() {

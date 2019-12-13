@@ -814,11 +814,21 @@ TEST_F(WebAppInstallManagerTest, DefaultAndUser_UninstallExternalAppByUser) {
   EXPECT_TRUE(finalizer().CanUserUninstallExternalApp(app_id));
   EXPECT_FALSE(finalizer().WasExternalAppUninstalledByUser(app_id));
 
-  bool observer_uninstall_called = false;
   WebAppInstallObserver observer(&registrar());
+
+  bool observer_will_be_uninstalled_called = false;
+  bool observer_uninstalled_called = false;
+
+  observer.SetWebAppWillBeUninstalledDelegate(
+      base::BindLambdaForTesting([&](const AppId& uninstalled_app_id) {
+        EXPECT_EQ(app_id, uninstalled_app_id);
+        observer_will_be_uninstalled_called = true;
+      }));
+
   observer.SetWebAppUninstalledDelegate(
       base::BindLambdaForTesting([&](const AppId& uninstalled_app_id) {
-        observer_uninstall_called = true;
+        EXPECT_EQ(app_id, uninstalled_app_id);
+        observer_uninstalled_called = true;
       }));
 
   file_utils().SetNextDeleteFileRecursivelyResult(true);
@@ -826,7 +836,8 @@ TEST_F(WebAppInstallManagerTest, DefaultAndUser_UninstallExternalAppByUser) {
   EXPECT_TRUE(UninstallExternalAppByUser(app_id));
 
   EXPECT_FALSE(registrar().GetAppById(app_id));
-  EXPECT_TRUE(observer_uninstall_called);
+  EXPECT_TRUE(observer_will_be_uninstalled_called);
+  EXPECT_TRUE(observer_uninstalled_called);
   EXPECT_FALSE(finalizer().CanUserUninstallExternalApp(app_id));
   EXPECT_TRUE(finalizer().WasExternalAppUninstalledByUser(app_id));
 }

@@ -11,10 +11,8 @@
 #include "device/gamepad/gamepad_pad_state_provider.h"
 #include "device/gamepad/public/cpp/gamepad.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "services/device/public/mojom/hid.mojom.h"
 
 namespace device {
 
@@ -47,9 +45,6 @@ class DEVICE_GAMEPAD_EXPORT GamepadDataFetcher {
   virtual bool DisconnectUnrecognizedGamepad(int source_id);
 
   GamepadPadStateProvider* provider() { return provider_; }
-  service_manager::Connector* connector() const {
-    return service_manager_connector_;
-  }
 
   PadState* GetPadState(int source_id, bool new_pad_recognized = true) {
     if (!provider_)
@@ -80,13 +75,20 @@ class DEVICE_GAMEPAD_EXPORT GamepadDataFetcher {
       scoped_refptr<base::SequencedTaskRunner> callback_runner,
       mojom::GamepadHapticsResult result);
 
+  // Sets a global callback for GamepadProviders to use when binding a
+  // HidManager interface.
+  using HidManagerBinder =
+      base::RepeatingCallback<void(mojo::PendingReceiver<mojom::HidManager>)>;
+  static void SetHidManagerBinder(HidManagerBinder binder);
+
  protected:
   friend GamepadPadStateProvider;
 
-  // To be called by the GamepadPadStateProvider on the polling thread;
-  void InitializeProvider(
-      GamepadPadStateProvider* provider,
-      service_manager::Connector* service_manager_connector);
+  // To be called by the GamepadPadStateProvider on the polling thread.
+  void InitializeProvider(GamepadPadStateProvider* provider);
+
+  // Binds a HidManager interface.
+  void BindHidManager(mojo::PendingReceiver<mojom::HidManager> receiver);
 
   // This call will happen on the gamepad polling thread. Any initialization
   // that needs to happen on that thread should be done here, not in the
@@ -97,10 +99,6 @@ class DEVICE_GAMEPAD_EXPORT GamepadDataFetcher {
   // GamepadPadStateProvider is the base class of GamepadProvider, which owns
   // this data fetcher.
   GamepadPadStateProvider* provider_ = nullptr;
-
-  // The service manager connector is owned by the provider, which destroys the
-  // data fetcher prior to destroying the connector.
-  service_manager::Connector* service_manager_connector_ = nullptr;
 };
 
 // Factory class for creating a GamepadDataFetcher. Used by the

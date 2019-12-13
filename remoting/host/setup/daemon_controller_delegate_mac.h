@@ -10,6 +10,8 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "remoting/base/auto_thread.h"
+#include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/setup/daemon_controller.h"
 
 namespace remoting {
@@ -38,6 +40,11 @@ class DaemonControllerDelegateMac : public DaemonController::Delegate {
 
  private:
   std::unique_ptr<mac::PermissionWizard> permission_wizard_;
+
+  // Task runner used to run blocking calls that would otherwise block the UI
+  // thread.
+  scoped_refptr<AutoThreadTaskRunner> io_task_runner_;
+  AutoThread io_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(DaemonControllerDelegateMac);
 };

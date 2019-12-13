@@ -110,8 +110,8 @@ export function isShowingSearch(state) {
  * @return {boolean}
  */
 export function canEditNode(state, itemId) {
-  return itemId != ROOT_NODE_ID &&
-      state.nodes[itemId].parentId != ROOT_NODE_ID &&
+  return itemId !== ROOT_NODE_ID &&
+      state.nodes[itemId].parentId !== ROOT_NODE_ID &&
       !state.nodes[itemId].unmodifiable && state.prefs.canEdit;
 }
 
@@ -123,7 +123,7 @@ export function canEditNode(state, itemId) {
  * @return {boolean}
  */
 export function canReorderChildren(state, itemId) {
-  return itemId != ROOT_NODE_ID && !state.nodes[itemId].unmodifiable &&
+  return itemId !== ROOT_NODE_ID && !state.nodes[itemId].unmodifiable &&
       state.prefs.canEdit;
 }
 

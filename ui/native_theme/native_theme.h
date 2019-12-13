@@ -358,6 +358,11 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_LinkPressed,
     kColorId_OverlayScrollbarThumbBackground,
     kColorId_OverlayScrollbarThumbForeground,
+    // Slider
+    kColorId_SliderThumbDefault,
+    kColorId_SliderTroughDefault,
+    kColorId_SliderThumbMinimal,
+    kColorId_SliderTroughMinimal,
     // Separator
     kColorId_SeparatorColor,
     // TabbedPane

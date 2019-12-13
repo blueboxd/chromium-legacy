@@ -16,7 +16,6 @@
 #include "services/device/hid/hid_manager_impl.h"
 #include "services/device/hid/mock_hid_service.h"
 #include "services/device/public/mojom/hid.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
@@ -28,6 +27,15 @@ const uint64_t kTestDeviceId = 123;
 #else
 const char* kTestDeviceId = "123";
 #endif
+
+void BindHidManager(mojom::DeviceService* service,
+                    scoped_refptr<base::SequencedTaskRunner> task_runner,
+                    mojo::PendingReceiver<mojom::HidManager> receiver) {
+  task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&mojom::DeviceService::BindHidManager,
+                     base::Unretained(service), std::move(receiver)));
+}
 
 }  // namespace
 
@@ -46,10 +54,12 @@ class NintendoDataFetcherTest : public DeviceServiceTestBase {
     // It is safe to use |mock_hid_service_| in this test.
     HidManagerImpl::SetHidServiceForTesting(std::move(mock_hid_service));
 
-    // Initialize the device service and pass a service connector to the gamepad
-    // service.
+    // Initialize the device service and pass a HidManager binder to
+    // GamepadService.
     DeviceServiceTestBase::SetUp();
-    GamepadService::GetInstance()->StartUp(connector()->Clone());
+    GamepadService::GetInstance()->StartUp(
+        base::BindRepeating(&BindHidManager, device_service(),
+                            base::SequencedTaskRunnerHandle::Get()));
 
     // Create the data fetcher and polling thread.
     auto fetcher = std::make_unique<NintendoDataFetcher>();
@@ -57,8 +67,8 @@ class NintendoDataFetcherTest : public DeviceServiceTestBase {
     auto polling_thread = std::make_unique<base::Thread>("polling thread");
     polling_thread_ = polling_thread.get();
     provider_ = std::make_unique<GamepadProvider>(
-        /*connection_change_client=*/nullptr, connector()->Clone(),
-        std::move(fetcher), std::move(polling_thread));
+        /*connection_change_client=*/nullptr, std::move(fetcher),
+        std::move(polling_thread));
 
     RunUntilIdle();
   }

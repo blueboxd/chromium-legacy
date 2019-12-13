@@ -5,11 +5,13 @@
 #include "device/gamepad/gamepad_data_fetcher.h"
 
 #include "base/bind.h"
+#include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 
 namespace device {
+
 namespace {
 
 void RunCallbackOnCallbackThread(
@@ -17,20 +19,35 @@ void RunCallbackOnCallbackThread(
     mojom::GamepadHapticsResult result) {
   std::move(callback).Run(result);
 }
+
+GamepadDataFetcher::HidManagerBinder& GetHidManagerBinder() {
+  static base::NoDestructor<GamepadDataFetcher::HidManagerBinder> binder;
+  return *binder;
+}
+
 }  // namespace
 
 GamepadDataFetcher::GamepadDataFetcher() = default;
 
 GamepadDataFetcher::~GamepadDataFetcher() = default;
 
-void GamepadDataFetcher::InitializeProvider(
-    GamepadPadStateProvider* provider,
-    service_manager::Connector* service_manager_connector) {
+// static
+void GamepadDataFetcher::SetHidManagerBinder(HidManagerBinder binder) {
+  GetHidManagerBinder() = std::move(binder);
+}
+
+void GamepadDataFetcher::InitializeProvider(GamepadPadStateProvider* provider) {
   DCHECK(provider);
 
   provider_ = provider;
-  service_manager_connector_ = service_manager_connector;
   OnAddedToProvider();
+}
+
+void GamepadDataFetcher::BindHidManager(
+    mojo::PendingReceiver<mojom::HidManager> receiver) {
+  const auto& binder = GetHidManagerBinder();
+  if (binder)
+    binder.Run(std::move(receiver));
 }
 
 void GamepadDataFetcher::PlayEffect(

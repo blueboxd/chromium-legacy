@@ -20,6 +20,7 @@
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/content_browser_client.h"
 #include "media/mojo/buildflags.h"
+#include "media/mojo/mojom/media_service.mojom.h"
 #include "media/mojo/mojom/renderer.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/url_request/url_request_context.h"
@@ -212,6 +213,8 @@ class CastContentBrowserClient
       content::RenderFrameHost* render_frame_host,
       service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)
       override;
+  mojo::Remote<::media::mojom::MediaService> RunSecondaryMediaService()
+      override;
   void RunServiceInstance(
       const service_manager::Identity& identity,
       mojo::PendingReceiver<service_manager::mojom::Service>* receiver)
@@ -325,7 +328,8 @@ class CastContentBrowserClient
   media::MediaResourceTracker* media_resource_tracker_ = nullptr;
 
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
-  void CreateMediaService(service_manager::mojom::ServiceRequest request);
+  void CreateMediaService(
+      mojo::PendingReceiver<::media::mojom::MediaService> receiver);
 
   // VideoGeometrySetterService must be constructed On a sequence, and later
   // runs and destructs on this sequence.

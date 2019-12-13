@@ -20,6 +20,9 @@ XrResult OpenXRPathHelper::Initialize(XrInstance instance) {
   RETURN_IF_XR_FAILED(xrStringToPath(
       instance, "/interaction_profiles/microsoft/motion_controller",
       &declared_paths_.microsoft_motion_controller_interaction_profile));
+  RETURN_IF_XR_FAILED(xrStringToPath(
+      instance, "/interaction_profiles/khr/simple_controller",
+      &declared_paths_.khronos_simple_controller_interaction_profile));
 
   initialized_ = true;
 
@@ -34,6 +37,10 @@ std::vector<std::string> OpenXRPathHelper::GetInputProfiles(
       declared_paths_.microsoft_motion_controller_interaction_profile) {
     return {"windows-mixed-reality",
             "generic-trigger-squeeze-touchpad-thumbstick"};
+  }
+  if (interaction_profile ==
+      declared_paths_.khronos_simple_controller_interaction_profile) {
+    return {"generic-button"};
   }
 
   return {};

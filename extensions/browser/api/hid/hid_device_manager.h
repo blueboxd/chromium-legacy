@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
@@ -80,8 +81,10 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
   // the first API customer makes a request or registers an event listener.
   virtual void LazyInitialize();
 
-  void SetFakeHidManagerForTesting(
-      mojo::PendingRemote<device::mojom::HidManager> fake_hid_manager);
+  // Allows tests to override where this class binds a HidManager receiver.
+  using HidManagerBinder = base::RepeatingCallback<void(
+      mojo::PendingReceiver<device::mojom::HidManager>)>;
+  static void OverrideHidManagerBinderForTesting(HidManagerBinder binder);
 
  private:
   friend class BrowserContextKeyedAPIFactory<HidDeviceManager>;

@@ -75,9 +75,8 @@ TemplateURLServiceTestUtil::TemplateURLServiceTestUtil() : changed_count_(0) {
   web_database_service->LoadDatabase();
 
   web_data_service_ = new KeywordWebDataService(
-      web_database_service.get(), base::ThreadTaskRunnerHandle::Get(),
-      KeywordWebDataService::ProfileErrorCallback());
-  web_data_service_->Init();
+      web_database_service.get(), base::ThreadTaskRunnerHandle::Get());
+  web_data_service_->Init(base::NullCallback());
 
   ResetModel(false);
 }

@@ -6,10 +6,14 @@ suite('<history-synced-device-manager>', function() {
   let element;
 
   setup(function() {
-    element = document.createElement('history-synced-device-manager');
-    element.signInState = true;
-    element.searchTerm = '';
-    replaceBody(element);
+    PolymerTest.clearBody();
+
+    return history.ensureLazyLoaded().then(() => {
+      element = document.createElement('history-synced-device-manager');
+      element.signInState = true;
+      element.searchTerm = '';
+      document.body.appendChild(element);
+    });
   });
 
   test('focus and keyboard nav', async () => {

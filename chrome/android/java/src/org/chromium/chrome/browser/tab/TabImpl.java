@@ -515,7 +515,8 @@ public class TabImpl implements Tab {
         if (OfflinePageUtils.isOfflinePage(this)) {
             // If current page is an offline page, reload it with custom behavior defined in extra
             // header respected.
-            OfflinePageUtils.reload(this);
+            OfflinePageUtils.reload(getWebContents(),
+                    /*loadUrlDelegate=*/new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(this));
         } else {
             if (getWebContents() != null) getWebContents().getNavigationController().reload(true);
         }

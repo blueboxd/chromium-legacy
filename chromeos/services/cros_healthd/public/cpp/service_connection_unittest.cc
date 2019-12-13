@@ -54,11 +54,24 @@ mojom::CachedVpdInfoPtr MakeCachedVpdInfo() {
   return mojom::CachedVpdInfo::New("fake_sku_number" /* sku_number */);
 }
 
+base::Optional<std::vector<mojom::CpuInfoPtr>> MakeCpuInfo() {
+  std::vector<mojom::CpuInfoPtr> cpu_info;
+  cpu_info.push_back(mojom::CpuInfo::New(
+      "Dank CPU 1" /* model_name */,
+      mojom::CpuArchitectureEnum::kX86_64 /* architecture */,
+      3400000 /* max_clock_speed_khz */));
+  cpu_info.push_back(mojom::CpuInfo::New(
+      "Dank CPU 2" /* model_name */,
+      mojom::CpuArchitectureEnum::kX86_64 /* architecture */,
+      2600000 /* max_clock_speed_khz */));
+  return cpu_info;
+}
+
 mojom::TelemetryInfoPtr MakeTelemetryInfo() {
   return mojom::TelemetryInfo::New(
       MakeBatteryInfo() /* battery_info */,
       MakeNonRemovableBlockDeviceInfo() /* block_device_info */,
-      MakeCachedVpdInfo() /* vpd_info */
+      MakeCachedVpdInfo() /* vpd_info */, MakeCpuInfo() /* cpu_info */
   );
 }
 
@@ -100,7 +113,7 @@ TEST_F(CrosHealthdServiceConnectionTest, ProbeTelemetryInfo) {
   const std::vector<mojom::ProbeCategoryEnum> categories_to_test = {
       mojom::ProbeCategoryEnum::kBattery,
       mojom::ProbeCategoryEnum::kNonRemovableBlockDevices,
-      mojom::ProbeCategoryEnum::kCachedVpdData};
+      mojom::ProbeCategoryEnum::kCachedVpdData, mojom::ProbeCategoryEnum::kCpu};
   callback_done = false;
   ServiceConnection::GetInstance()->ProbeTelemetryInfo(
       categories_to_test,

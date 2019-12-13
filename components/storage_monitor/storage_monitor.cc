@@ -52,15 +52,9 @@ void StorageMonitor::ReceiverImpl::MarkInitialized() {
 }
 
 // static
-void StorageMonitor::Create(
-    std::unique_ptr<service_manager::Connector> connector) {
+void StorageMonitor::Create() {
   delete g_storage_monitor;
   g_storage_monitor = CreateInternal();
-  g_storage_monitor->connector_ = std::move(connector);
-}
-
-service_manager::Connector* StorageMonitor::GetConnector() {
-  return connector_.get();
 }
 
 // static

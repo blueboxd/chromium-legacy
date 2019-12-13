@@ -26,10 +26,10 @@
         android:order="3"
         android:title="@string/prefs_section_basics"/>
     <org.chromium.chrome.browser.settings.ChromeBasePreference
-        android:fragment="org.chromium.chrome.browser.settings.SearchEnginePreference"
+        android:fragment="org.chromium.chrome.browser.settings.search_engine.SearchEngineSettings"
         android:key="search_engine"
         android:order="4"
-        android:title="@string/prefs_search_engine"/>
+        android:title="@string/search_engine_settings"/>
     <org.chromium.chrome.browser.settings.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.settings.password.SavePasswordsPreferences"
         android:key="saved_passwords"

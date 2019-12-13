@@ -108,11 +108,11 @@ IN_PROC_BROWSER_TEST_F(BlobStorageBrowserTest, BlobCombinations) {
         // Since this is basically random, we just check bounds.
         EXPECT_LT(0u, memory_controller.memory_usage());
         EXPECT_LT(0ul, memory_controller.disk_usage());
-        EXPECT_GT(memory_controller.disk_usage(),
+        EXPECT_GE(memory_controller.disk_usage(),
                   static_cast<uint64_t>(memory_controller.memory_usage()));
-        EXPECT_GT(limits_.max_blob_in_memory_space,
+        EXPECT_GE(limits_.max_blob_in_memory_space,
                   memory_controller.memory_usage());
-        EXPECT_GT(limits_.effective_max_disk_space,
+        EXPECT_GE(limits_.effective_max_disk_space,
                   memory_controller.disk_usage());
 
         loop.Quit();

@@ -140,9 +140,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // Return true if the mouse is locked.
   bool mouse_locked() const { return mouse_locked_; }
 
-  // Called when the embedder WebContents changes visibility.
-  void EmbedderVisibilityChanged(Visibility visibility);
-
   // Creates a new guest WebContentsImpl with the provided |params| with |this|
   // as the |opener|.
   WebContentsImpl* CreateNewGuestWindow(
@@ -170,7 +167,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   RenderFrameHostImpl* GetEmbedderFrame() const;
 
   bool focused() const { return focused_; }
-  bool visible() const { return guest_visible_; }
 
   // Returns the viz::LocalSurfaceIdAllocation propagated from the parent to be
   // used by this guest.
@@ -179,8 +175,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   }
 
   bool is_in_destruction() { return is_in_destruction_; }
-
-  void UpdateVisibility();
 
   BrowserPluginGuestManager* GetBrowserPluginGuestManager() const;
 
@@ -193,9 +187,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // WebContentsObserver implementation.
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
-  void RenderViewReady() override;
   void RenderProcessGone(base::TerminationStatus status) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
   bool OnMessageReceived(const IPC::Message& message,
                          RenderFrameHost* render_frame_host) override;
 
@@ -244,23 +236,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   }
 
  private:
-  class EmbedderVisibilityObserver;
-
-  // InputEventShim implementation.
-  class InputEventShimImpl : public InputEventShim {
-   public:
-    explicit InputEventShimImpl(BrowserPluginGuest* browser_plugin_guest);
-    ~InputEventShimImpl() override;
-
-    void DidSetHasTouchEventHandlers(bool accept) override;
-    void DidTextInputStateChange(const TextInputState& params) override;
-    void DidLockMouse(bool user_gesture, bool privileged) override;
-    void DidUnlockMouse() override;
-
-   private:
-    BrowserPluginGuest* browser_plugin_guest_;
-  };
-
   // The RenderWidgetHostImpl corresponding to the owner frame of BrowserPlugin.
   RenderWidgetHostImpl* GetOwnerRenderWidgetHost() const;
 
@@ -296,6 +271,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void OnSetEditCommandsForNextKeyEvent(
       int instance_id,
       const std::vector<EditCommand>& edit_commands);
+  // TODO(wjmaclean): Investigate how to update this comment.
   // The guest WebContents is visible if both its embedder is visible and
   // the browser plugin element is visible. If either one is not then the
   // WebContents is marked as hidden. A hidden WebContents will consume
@@ -312,7 +288,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // Additionally, it will slow down Javascript execution and garbage
   // collection. See RenderThreadImpl::IdleHandler (executed when hidden) and
   // RenderThreadImpl::IdleHandlerInForegroundTab (executed when visible).
-  void OnSetVisibility(int instance_id, bool visible);
   void OnUnlockMouseAck(int instance_id);
   void OnSynchronizeVisualProperties(
       int instance_id,
@@ -336,23 +311,15 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void OnShowPopup(RenderFrameHost* render_frame_host,
                    const FrameHostMsg_ShowPopup_Params& params);
 #endif
-  void OnShowWidget(int widget_route_id, const gfx::Rect& initial_rect);
   void OnUpdateFrameName(int frame_id,
                          bool is_top_level,
                          const std::string& name);
 
   void SendTextInputTypeChangedToView(RenderWidgetHostViewBase* guest_rwhv);
 
-  // Creates, if necessary, and returns the routing ID of a render view for the
-  // guest in the owner's renderer process.
-  int GetGuestRenderViewRoutingID();
-
   // The last tooltip that was set with SetTooltipText().
   base::string16 current_tooltip_text_;
 
-  InputEventShimImpl input_event_shim_impl_;
-
-  std::unique_ptr<EmbedderVisibilityObserver> embedder_visibility_observer_;
   WebContentsImpl* owner_web_contents_;
 
   // Indicates whether this guest has been attached to a container.
@@ -364,8 +331,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   bool focused_;
   bool mouse_locked_;
   bool pending_lock_request_;
-  bool guest_visible_;
-  Visibility embedder_visibility_;
   // Whether the browser plugin is inside a plugin document.
   bool is_full_page_plugin_;
 

@@ -72,10 +72,10 @@ PepperNetworkMonitorHost::PepperNetworkMonitorHost(BrowserPpapiHostImpl* host,
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&CanUseNetworkMonitor, host->external_plugin(),
-                 render_process_id, render_frame_id),
-      base::Bind(&PepperNetworkMonitorHost::OnPermissionCheckResult,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&CanUseNetworkMonitor, host->external_plugin(),
+                     render_process_id, render_frame_id),
+      base::BindOnce(&PepperNetworkMonitorHost::OnPermissionCheckResult,
+                     weak_factory_.GetWeakPtr()));
 }
 
 PepperNetworkMonitorHost::~PepperNetworkMonitorHost() {

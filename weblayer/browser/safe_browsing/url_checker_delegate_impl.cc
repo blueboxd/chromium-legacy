@@ -28,7 +28,7 @@ UrlCheckerDelegateImpl::UrlCheckerDelegateImpl(
 UrlCheckerDelegateImpl::~UrlCheckerDelegateImpl() = default;
 
 void UrlCheckerDelegateImpl::MaybeDestroyPrerenderContents(
-    const base::Callback<content::WebContents*()>& web_contents_getter) {}
+    content::WebContents::OnceGetter web_contents_getter) {}
 
 void UrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
     const security_interstitials::UnsafeResource& resource,

@@ -2455,6 +2455,7 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
     end_semaphores_.clear();
   }
 
+  shared_context_state_->UpdateSkiaOwnedMemorySize();
   sk_surface_ = nullptr;
   if (!shared_image_) {
     // Test only path for  SetUpForRasterCHROMIUMForTest.

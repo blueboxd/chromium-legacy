@@ -79,8 +79,8 @@ WebDataServiceWrapper::WebDataServiceWrapper(
   auto db_task_runner = base::CreateSingleThreadTaskRunner(
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
-  profile_database_ =
-      new WebDatabaseService(path, ui_task_runner, db_task_runner);
+  profile_database_ = base::MakeRefCounted<WebDatabaseService>(
+      path, ui_task_runner, db_task_runner);
 
   // All tables objects that participate in managing the database must
   // be added here.
@@ -95,26 +95,28 @@ WebDataServiceWrapper::WebDataServiceWrapper(
 #endif
   profile_database_->LoadDatabase();
 
-  profile_autofill_web_data_ = new autofill::AutofillWebDataService(
-      profile_database_, ui_task_runner, db_task_runner,
-      base::Bind(show_error_callback, ERROR_LOADING_AUTOFILL));
-  profile_autofill_web_data_->Init();
+  profile_autofill_web_data_ =
+      base::MakeRefCounted<autofill::AutofillWebDataService>(
+          profile_database_, ui_task_runner, db_task_runner);
+  profile_autofill_web_data_->Init(
+      base::BindOnce(show_error_callback, ERROR_LOADING_AUTOFILL));
 
-  keyword_web_data_ = new KeywordWebDataService(
-      profile_database_, ui_task_runner,
-      base::Bind(show_error_callback, ERROR_LOADING_KEYWORD));
-  keyword_web_data_->Init();
+  keyword_web_data_ = base::MakeRefCounted<KeywordWebDataService>(
+      profile_database_, ui_task_runner);
+  keyword_web_data_->Init(
+      base::BindOnce(show_error_callback, ERROR_LOADING_KEYWORD));
 
-  token_web_data_ =
-      new TokenWebData(profile_database_, ui_task_runner, db_task_runner,
-                       base::Bind(show_error_callback, ERROR_LOADING_TOKEN));
-  token_web_data_->Init();
+  token_web_data_ = base::MakeRefCounted<TokenWebData>(
+      profile_database_, ui_task_runner, db_task_runner);
+  token_web_data_->Init(
+      base::BindOnce(show_error_callback, ERROR_LOADING_TOKEN));
 
 #if !defined(OS_IOS)
-  payment_manifest_web_data_ = new payments::PaymentManifestWebDataService(
-      profile_database_,
-      base::Bind(show_error_callback, ERROR_LOADING_PAYMENT_MANIFEST),
-      ui_task_runner);
+  payment_manifest_web_data_ =
+      base::MakeRefCounted<payments::PaymentManifestWebDataService>(
+          profile_database_, ui_task_runner);
+  payment_manifest_web_data_->Init(
+      base::BindOnce(show_error_callback, ERROR_LOADING_PAYMENT_MANIFEST));
 #endif
 
   profile_autofill_web_data_->GetAutofillBackend(
@@ -126,16 +128,17 @@ WebDataServiceWrapper::WebDataServiceWrapper(
 
   if (base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableAccountWalletStorage)) {
-    account_database_ =
-        new WebDatabaseService(base::FilePath(WebDatabase::kInMemoryPath),
-                               ui_task_runner, db_task_runner);
+    account_database_ = base::MakeRefCounted<WebDatabaseService>(
+        base::FilePath(WebDatabase::kInMemoryPath), ui_task_runner,
+        db_task_runner);
     account_database_->AddTable(std::make_unique<autofill::AutofillTable>());
     account_database_->LoadDatabase();
 
-    account_autofill_web_data_ = new autofill::AutofillWebDataService(
-        account_database_, ui_task_runner, db_task_runner,
-        base::Bind(show_error_callback, ERROR_LOADING_ACCOUNT_AUTOFILL));
-    account_autofill_web_data_->Init();
+    account_autofill_web_data_ =
+        base::MakeRefCounted<autofill::AutofillWebDataService>(
+            account_database_, ui_task_runner, db_task_runner);
+    account_autofill_web_data_->Init(
+        base::BindOnce(show_error_callback, ERROR_LOADING_ACCOUNT_AUTOFILL));
     account_autofill_web_data_->GetAutofillBackend(base::Bind(
         &InitWalletSyncBridgesOnDBSequence, db_task_runner,
         account_autofill_web_data_, context_path, application_locale));

@@ -28,7 +28,7 @@ class TestMojoMediaClient : public MojoMediaClient {
   ~TestMojoMediaClient() final;
 
   // MojoMediaClient implementation.
-  void Initialize(service_manager::Connector* connector) final;
+  void Initialize() final;
   std::unique_ptr<Renderer> CreateRenderer(
       service_manager::mojom::InterfaceProvider* host_interfaces,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,

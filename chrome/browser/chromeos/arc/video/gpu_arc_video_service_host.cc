@@ -25,6 +25,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_service_registry.h"
 #include "content/public/common/service_manager_connection.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -131,10 +132,11 @@ void GpuArcVideoServiceHost::OnBootstrapVideoAcceleratorFactory(
       channel.TakeRemoteEndpoint().TakePlatformHandle());
   std::move(callback).Run(std::move(client_handle), pipe_name);
 
-  // The binding will be removed automatically, when the binding is destroyed.
-  video_accelerator_factory_bindings_.AddBinding(
+  // The receiver will be removed automatically, when the receiver is destroyed.
+  video_accelerator_factory_receivers_.Add(
       video_accelerator_factory_.get(),
-      mojom::VideoAcceleratorFactoryRequest(std::move(server_pipe)));
+      mojo::PendingReceiver<mojom::VideoAcceleratorFactory>(
+          std::move(server_pipe)));
 }
 
 }  // namespace arc

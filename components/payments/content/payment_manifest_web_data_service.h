@@ -29,8 +29,7 @@ class PaymentManifestWebDataService : public WebDataServiceBase {
  public:
   PaymentManifestWebDataService(
       scoped_refptr<WebDatabaseService> wdbs,
-      const ProfileErrorCallback& callback,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   // Adds the web app |manifest|.
   void AddPaymentWebAppManifest(std::vector<WebAppManifestSection> manifest);

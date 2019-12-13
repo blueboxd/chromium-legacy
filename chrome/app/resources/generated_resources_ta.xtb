@@ -283,6 +283,7 @@
 <translation id="1397500194120344683">தகுதியான சாதனங்கள் இல்லை. <ph name="LINK_BEGIN" />மேலும் அறிக<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">பெரிதாக்கு</translation>
 <translation id="1399511500114202393">பயனர் சான்றிதழ் இல்லை</translation>
+<translation id="1403519882106291341">Google Chrome OS விதிமுறைகள்</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (மேற்பார்வையிடப்படும் பயனர்)</translation>
 <translation id="1405779994569073824">சிதைந்துவிட்டது.</translation>
 <translation id="1406500794671479665">சரிபார்க்கிறது...</translation>
@@ -2174,7 +2175,6 @@
 <translation id="4036778507053569103">சேவையகத்திலிருந்து பதிவிறக்கிய கொள்கை தவறானது.</translation>
 <translation id="4037084878352560732">குதிரை</translation>
 <translation id="4037889604535939429">பயனரை மாற்று</translation>
-<translation id="4042264909745389898">Google Chrome OS விதிமுறைகள்</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{பக்கத்திலிருந்து வெளியேறு}other{பக்கங்களிலிருந்து வெளியேறு}}</translation>
 <translation id="4044612648082411741">சான்றிதழ் கடவுச்சொல்லை உள்ளிடவும்</translation>
 <translation id="404493185430269859">இயல்பு தேடல் இன்ஜின்</translation>
@@ -3985,7 +3985,7 @@
 <translation id="6757101664402245801">URL நகலெடுக்கப்பட்டது</translation>
 <translation id="6758056191028427665">எவ்வாறு செயல்படுகிறோம் என்பதை எங்களுக்குத் தெரிவிக்கவும்.</translation>
 <translation id="6759193508432371551">தொழிற்சாலை மீட்டமைவு</translation>
-<translation id="6767566652486411142">மற்றொறு மொழியைத் தேர்வுசெய்க...</translation>
+<translation id="6767566652486411142">மற்றொரு மொழியைத் தேர்வுசெய்க...</translation>
 <translation id="6767639283522617719">டொமைனுடன் இணைக்க முடியவில்லை. நிறுவன யூனிட்டின் அமைப்புகள் சரியாக இருப்பதை உறுதிசெய்யவும்.</translation>
 <translation id="6769712124046837540">பிரிண்டரைச் சேர்க்கிறது...</translation>
 <translation id="6770664076092644100">NFC வழியாகச் சரிபார்</translation>
@@ -5196,7 +5196,7 @@
 <translation id="8465252176946159372">தவறான உள்ளீடு</translation>
 <translation id="8465444703385715657"><ph name="PLUGIN_NAME" /> இயங்க, உங்கள் அனுமதி தேவை</translation>
 <translation id="8466417995783206254">இந்தத் தாவல், பிக்ச்சர்-இன்-பிக்ச்சர் பயன்முறையில் வீடியோவை இயக்குகிறது.</translation>
-<translation id="8467326454809944210">மற்றொறு மொழியைத் தேர்வுசெய்க</translation>
+<translation id="8467326454809944210">மற்றொரு மொழியைத் தேர்வுசெய்க</translation>
 <translation id="8468750959626135884"><ph name="DEVICE_TYPE" /> சாதனத்தை உங்கள் Android மொபைலைப் பயன்படுத்தித் திறக்கலாம்.</translation>
 <translation id="8470214316007448308">பிறர்</translation>
 <translation id="8470513973197838199"><ph name="ORIGIN" />க்கான சேமித்த கடவுச்சொற்கள்</translation>

@@ -6,6 +6,7 @@
 
 #include <numeric>
 #include "base/i18n/case_conversion.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 
 namespace autofill_assistant {
@@ -116,6 +117,25 @@ std::vector<int> SortByCompleteness(
   return profile_indices;
 }
 
+int GetDefaultProfile(
+    const CollectUserDataOptions& collect_user_data_options,
+    const std::vector<std::unique_ptr<autofill::AutofillProfile>>& profiles) {
+  if (profiles.empty()) {
+    return -1;
+  }
+  auto sorted_indices = SortByCompleteness(collect_user_data_options, profiles);
+  if (!collect_user_data_options.default_email.empty()) {
+    for (int index : sorted_indices) {
+      if (base::UTF16ToUTF8(
+              profiles[index]->GetRawInfo(autofill::EMAIL_ADDRESS)) ==
+          collect_user_data_options.default_email) {
+        return index;
+      }
+    }
+  }
+  return sorted_indices[0];
+}
+
 std::vector<int> SortByCompleteness(
     const CollectUserDataOptions& collect_user_data_options,
     const std::vector<std::unique_ptr<PaymentInstrument>>&
@@ -131,6 +151,49 @@ std::vector<int> SortByCompleteness(
                                          *payment_instruments[b]);
             });
   return payment_instrument_indices;
+}
+
+int GetDefaultPaymentInstrument(
+    const CollectUserDataOptions& collect_user_data_options,
+    const std::vector<std::unique_ptr<PaymentInstrument>>&
+        payment_instruments) {
+  if (payment_instruments.empty()) {
+    return -1;
+  }
+  auto sorted_indices =
+      SortByCompleteness(collect_user_data_options, payment_instruments);
+  return sorted_indices[0];
+}
+
+bool CompareContactDetails(
+    const CollectUserDataOptions& collect_user_data_options,
+    const autofill::AutofillProfile* a,
+    const autofill::AutofillProfile* b) {
+  std::vector<autofill::ServerFieldType> types;
+  if (collect_user_data_options.request_payer_name) {
+    types.emplace_back(autofill::NAME_FULL);
+    types.emplace_back(autofill::NAME_FIRST);
+    types.emplace_back(autofill::NAME_MIDDLE);
+    types.emplace_back(autofill::NAME_LAST);
+  }
+  if (collect_user_data_options.request_payer_phone) {
+    types.emplace_back(autofill::PHONE_HOME_WHOLE_NUMBER);
+  }
+  if (collect_user_data_options.request_payer_email) {
+    types.emplace_back(autofill::EMAIL_ADDRESS);
+  }
+  if (types.empty()) {
+    return a->guid() == b->guid();
+  }
+
+  for (auto type : types) {
+    int comparison = a->GetRawInfo(type).compare(b->GetRawInfo(type));
+    if (comparison != 0) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 }  // namespace autofill_assistant

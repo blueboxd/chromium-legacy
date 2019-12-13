@@ -2877,6 +2877,64 @@ TEST_F(RenderTextTest, MoveCursorLeftRight_MeiryoUILigatures) {
   EXPECT_EQ(6U, render_text->cursor_position());
 }
 
+TEST_F(RenderTextTest, GraphemeIterator) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(WideToUTF16(L"a\u0065\u0301b"));
+
+  internal::GraphemeIterator iterator =
+      render_text->GetGraphemeIteratorAtTextIndex(0);
+
+  EXPECT_EQ(0U, render_text->GetTextIndex(iterator));
+  EXPECT_EQ(0U, render_text->GetDisplayTextIndex(iterator));
+  ++iterator;
+  EXPECT_EQ(1U, render_text->GetTextIndex(iterator));
+  EXPECT_EQ(1U, render_text->GetDisplayTextIndex(iterator));
+  ++iterator;
+  EXPECT_EQ(3U, render_text->GetTextIndex(iterator));
+  EXPECT_EQ(3U, render_text->GetDisplayTextIndex(iterator));
+  ++iterator;
+  EXPECT_EQ(4U, render_text->GetTextIndex(iterator));
+  EXPECT_EQ(4U, render_text->GetDisplayTextIndex(iterator));
+
+  --iterator;
+  EXPECT_EQ(3U, render_text->GetTextIndex(iterator));
+  EXPECT_EQ(3U, render_text->GetDisplayTextIndex(iterator));
+  --iterator;
+  EXPECT_EQ(1U, render_text->GetTextIndex(iterator));
+  EXPECT_EQ(1U, render_text->GetDisplayTextIndex(iterator));
+  --iterator;
+  EXPECT_EQ(0U, render_text->GetTextIndex(iterator));
+  EXPECT_EQ(0U, render_text->GetDisplayTextIndex(iterator));
+
+  iterator = render_text->GetGraphemeIteratorAtTextIndex(0);
+  EXPECT_EQ(0U, render_text->GetTextIndex(iterator));
+  iterator = render_text->GetGraphemeIteratorAtTextIndex(1);
+  EXPECT_EQ(1U, render_text->GetTextIndex(iterator));
+  iterator = render_text->GetGraphemeIteratorAtTextIndex(2);
+  EXPECT_EQ(1U, render_text->GetTextIndex(iterator));
+  iterator = render_text->GetGraphemeIteratorAtTextIndex(3);
+  EXPECT_EQ(3U, render_text->GetTextIndex(iterator));
+
+  iterator = render_text->GetGraphemeIteratorAtDisplayTextIndex(0);
+  EXPECT_EQ(0U, render_text->GetDisplayTextIndex(iterator));
+  iterator = render_text->GetGraphemeIteratorAtDisplayTextIndex(1);
+  EXPECT_EQ(1U, render_text->GetDisplayTextIndex(iterator));
+  iterator = render_text->GetGraphemeIteratorAtDisplayTextIndex(2);
+  EXPECT_EQ(1U, render_text->GetDisplayTextIndex(iterator));
+  iterator = render_text->GetGraphemeIteratorAtDisplayTextIndex(3);
+  EXPECT_EQ(3U, render_text->GetDisplayTextIndex(iterator));
+
+  render_text->SetText(WideToUTF16(L"a\U0001F601b"));
+  render_text->SetObscured(true);
+
+  iterator = render_text->GetGraphemeIteratorAtDisplayTextIndex(0);
+  EXPECT_EQ(0U, render_text->GetDisplayTextIndex(iterator));
+  iterator = render_text->GetGraphemeIteratorAtDisplayTextIndex(1);
+  EXPECT_EQ(1U, render_text->GetDisplayTextIndex(iterator));
+  iterator = render_text->GetGraphemeIteratorAtDisplayTextIndex(2);
+  EXPECT_EQ(2U, render_text->GetDisplayTextIndex(iterator));
+}
+
 TEST_F(RenderTextTest, GraphemeBoundaries) {
   static const wchar_t text[] =
       L"\u0065\u0301"        // Letter 'e' U+0065 and acute accent U+0301

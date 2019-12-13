@@ -4,6 +4,8 @@
 <translation id="1075622780330595106"><ph name="NUMBER_OF_TABS" /> από τις καρτέλες σας δεν έχουν χρησιμοποιηθεί πρόσφατα. Κλείσιμο αυτών των καρτελών;</translation>
 <translation id="1181037720776840403">Κατάργηση</translation>
 <translation id="125153950246128346">Πατήστε για να δείτε μια άλλη καρτέλα</translation>
+<translation id="1657719826150349398">Μετακίνηση καρτέλας κάτω</translation>
+<translation id="1778290789805128794">Μετακίνηση καρτέλας επάνω</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> καρτέλα}other{<ph name="TABS_COUNT_MANY" /> καρτέλες}}</translation>
 <translation id="2569352796411618312">Πρόταση: <ph name="NUMBER_OF_TABS" /> από τις καρτέλες σας δεν έχουν χρησιμοποιηθεί πρόσφατα. Κλείσιμο αυτών των καρτελών;</translation>
 <translation id="257674075312929031">Ομάδα</translation>
@@ -20,11 +22,13 @@
 <translation id="58326064309361797">Σύρετε καρτέλες για να τις ομαδοποιήσετε.</translation>
 <translation id="6040143037577758943">Κλείσιμο</translation>
 <translation id="6193448654517602979">Επιλογή καρτελών</translation>
+<translation id="6562820390860419811">Μετακίνηση καρτέλας αριστερά</translation>
 <translation id="6615455863669487791">Εμφάνιση</translation>
 <translation id="6840760312327750441">Για την ομαδοποίηση καρτελών, αγγίξτε παρατεταμένα μια καρτέλα. Έπειτα, σύρετέ τη πάνω σε μια άλλη καρτέλα.</translation>
 <translation id="7151209024774799310">Κατάργηση καρτελών από την ομάδα</translation>
 <translation id="7559245342362162951">Εμφάνιση καρτελών ομάδας σε πλέγμα πλήρους οθόνης</translation>
 <translation id="7792771145871471484">Έλεγχος των προτάσεων.</translation>
+<translation id="7885132941432959125">Μετακίνηση καρτέλας δεξιά</translation>
 <translation id="7966321538264951561">Παράβλεψη των προτάσεων.</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Κλείσιμο <ph name="TABS_COUNT_ONE" /> επιλεγμένης καρτέλας}other{Κλείσιμο <ph name="TABS_COUNT_MANY" /> επιλεγμένων καρτελών}}</translation>
 <translation id="9150694013019234766">Κάντε εναλλαγή μεταξύ των καρτελών στην ομάδα καρτελών σας κοντά στο κάτω μέρος της οθόνης</translation>

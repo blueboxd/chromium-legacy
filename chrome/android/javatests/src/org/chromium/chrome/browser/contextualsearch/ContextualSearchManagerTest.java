@@ -2580,21 +2580,6 @@ public class ContextualSearchManagerTest {
     }
 
     /**
-     * Tests translation with a simple Tap can be disabled.
-     */
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @CommandLineFlags.Add(ContextualSearchFieldTrial.TRANSLATION_DISABLED + "=true")
-    public void testTapDisabled() throws InterruptedException, TimeoutException {
-        // Tapping a German word would normally trigger translation, but not with the above flag.
-        simulateTapSearch("german");
-
-        // Make sure we did not try to trigger translate.
-        Assert.assertFalse(mManager.getRequest().isTranslationForced());
-    }
-
-    /**
      * Tests that a simple Tap without language determination does not trigger translation.
      */
     @Test
@@ -2620,22 +2605,6 @@ public class ContextualSearchManagerTest {
 
         // Make sure we did try to trigger translate.
         Assert.assertTrue(mManager.getRequest().isTranslationForced());
-    }
-
-    /**
-     * Tests that a long-press does NOT trigger translation when disabled.
-     */
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @CommandLineFlags.Add(ContextualSearchFieldTrial.TRANSLATION_DISABLED + "=true")
-    public void testLongpressTranslateDisabledDoesNotTranslate()
-            throws InterruptedException, TimeoutException {
-        // When disabled, LongPress on any word should not trigger translation.
-        simulateLongPressSearch("search");
-
-        // Make sure we did not try to trigger translate.
-        Assert.assertFalse(mManager.getRequest().isTranslationForced());
     }
 
     /**

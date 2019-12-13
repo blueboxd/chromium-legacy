@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -21,9 +22,19 @@ namespace extensions {
 namespace {
 
 // Returns true if the given |web_contents| should be closed when the extension
-// with the given |extension_id| is unloaded.
-bool ShouldCloseTabOnExtensionUnload(const ExtensionId& extension_id,
+// is unloaded.
+bool ShouldCloseTabOnExtensionUnload(const Extension* extension,
+                                     Browser* browser,
                                      content::WebContents* web_contents) {
+  // Bookmark app extensions are handled by WebAppBrowserController, if enabled.
+  // TODO(crbug.com/877898): Remove app_controller() part of the condition after
+  // unified browser controller launch.
+  if (browser->app_controller() &&
+      browser->app_controller()->AsWebAppBrowserController() &&
+      extension->from_bookmark()) {
+    return false;
+  }
+
   // Case 1: A "regular" extension page, e.g. chrome-extension://<id>/page.html.
   // Note: we check the tuple or precursor tuple in order to close any
   // windows with opaque origins that were opened by extensions, and may
@@ -33,7 +44,7 @@ bool ShouldCloseTabOnExtensionUnload(const ExtensionId& extension_id,
           ->GetLastCommittedOrigin()
           .GetTupleOrPrecursorTupleIfOpaque();
   if (tuple_or_precursor_tuple.scheme() == extensions::kExtensionScheme &&
-      tuple_or_precursor_tuple.host() == extension_id) {
+      tuple_or_precursor_tuple.host() == extension->id()) {
     // Edge-case: Chrome URL overrides (such as NTP overrides) are handled
     // differently (reloaded), and managed by ExtensionWebUI. Ignore them.
     if (!web_contents->GetLastCommittedURL().SchemeIs(
@@ -45,7 +56,7 @@ bool ShouldCloseTabOnExtensionUnload(const ExtensionId& extension_id,
   // Case 2: Check if the page is a page associated with a hosted app, which
   // can have non-extension schemes. For example, the Gmail hosted app would
   // have a URL of https://mail.google.com.
-  if (TabHelper::FromWebContents(web_contents)->GetAppId() == extension_id) {
+  if (TabHelper::FromWebContents(web_contents)->GetAppId() == extension->id()) {
     return true;
   }
 
@@ -90,7 +101,7 @@ void ExtensionBrowserWindowHelper::OnExtensionUnloaded(
   // Clean up any tabs from |extension|, unless it was terminated. In the
   // terminated case (as when the extension crashed), we let the sad tabs stay.
   if (reason != extensions::UnloadedExtensionReason::TERMINATE)
-    CleanUpTabsOnUnload(extension->id());
+    CleanUpTabsOnUnload(extension);
 
   // If an extension page was active, the toolbar may need to be updated to hide
   // the extension name in the location icon.
@@ -98,15 +109,15 @@ void ExtensionBrowserWindowHelper::OnExtensionUnloaded(
 }
 
 void ExtensionBrowserWindowHelper::CleanUpTabsOnUnload(
-    const ExtensionId& extension_id) {
+    const Extension* extension) {
   TabStripModel* tab_strip_model = browser_->tab_strip_model();
   // Iterate backwards as we may remove items while iterating.
   for (int i = tab_strip_model->count() - 1; i >= 0; --i) {
     content::WebContents* web_contents = tab_strip_model->GetWebContentsAt(i);
-    if (ShouldCloseTabOnExtensionUnload(extension_id, web_contents))
+    if (ShouldCloseTabOnExtensionUnload(extension, browser_, web_contents))
       tab_strip_model->CloseWebContentsAt(i, TabStripModel::CLOSE_NONE);
     else
-      UnmuteIfMutedByExtension(web_contents, extension_id);
+      UnmuteIfMutedByExtension(web_contents, extension->id());
   }
 }
 

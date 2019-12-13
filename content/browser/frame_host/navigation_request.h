@@ -448,8 +448,7 @@ class CONTENT_EXPORT NavigationRequest
   // navigation in a subframe. This allows a browser-initiated NavigationRequest
   // to be canceled by the renderer.
   void SetNavigationClient(
-      mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
-      int32_t associated_site_instance_id);
+      mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client);
 
   // Whether the new document created by this navigation will be loaded from a
   // MHTML document. In this case, the navigation will commit in the main frame
@@ -943,9 +942,7 @@ class CONTENT_EXPORT NavigationRequest
   // The NavigationClient interface for that requested this navigation in the
   // case of a renderer initiated navigation. It is expected to be bound until
   // this navigation commits or is canceled.
-  // Only valid when PerNavigationMojoInterface is enabled.
   mojo::AssociatedRemote<mojom::NavigationClient> request_navigation_client_;
-  base::Optional<int32_t> associated_site_instance_id_;
 
   // The NavigationClient interface used to commit the navigation. For now, this
   // is only used for same-site renderer-initiated navigation.

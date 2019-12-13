@@ -12,9 +12,12 @@
 
 namespace web {
 
-WebTaskEnvironment::WebTaskEnvironment(int options)
-    : base::test::TaskEnvironment(options == IO_MAINLOOP ? MainThreadType::IO
-                                                         : MainThreadType::UI) {
+WebTaskEnvironment::WebTaskEnvironment(
+    int options,
+    base::test::TaskEnvironment::TimeSource time_source)
+    : base::test::TaskEnvironment(
+          options == IO_MAINLOOP ? MainThreadType::IO : MainThreadType::UI,
+          time_source) {
   Init(options);
 }
 

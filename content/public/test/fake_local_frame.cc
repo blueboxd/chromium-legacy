@@ -41,6 +41,8 @@ void FakeLocalFrame::EnableViewSourceMode() {}
 
 void FakeLocalFrame::Focus() {}
 
+void FakeLocalFrame::ClearFocusedElement() {}
+
 void FakeLocalFrame::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<blink::mojom::LocalFrame>(

@@ -585,6 +585,14 @@ void HTMLMetaElement::ProcessContent() {
   } else if (EqualIgnoringASCIICase(name_value, "mobileoptimized")) {
     ProcessViewportContentAttribute("width=device-width, initial-scale=1",
                                     ViewportDescription::kMobileOptimizedMeta);
+  } else if (EqualIgnoringASCIICase(name_value, "monetization")) {
+    // TODO(1031476): The Web Monetization specification is an unofficial draft,
+    // available at https://webmonetization.org/specification.html
+    // For now, only use counters are implemented in Blink.
+    if (!GetDocument().ParentDocument()) {
+      UseCounter::Count(&GetDocument(),
+                        WebFeature::kHTMLMetaElementMonetization);
+    }
   }
 }
 

@@ -267,7 +267,6 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
         ::switches::kPrefetchArgumentBrowserBackground);
 #endif
     base::Value args(base::Value::Type::LIST);
-    args.GetList().reserve(reconnect_command_line.argv().size());
     for (const auto& arg : reconnect_command_line.argv()) {
       args.Append(arg);
     }

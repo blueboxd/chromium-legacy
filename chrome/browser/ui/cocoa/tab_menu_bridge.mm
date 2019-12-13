@@ -55,18 +55,18 @@ void UpdateItemForWebContents(NSMenuItem* item,
 @end
 
 @implementation TabMenuListener {
-  MenuItemCallback callback_;
+  MenuItemCallback _callback;
 }
 
 - (instancetype)initWithCallback:(MenuItemCallback)callback {
   if ((self = [super init])) {
-    callback_ = callback;
+    _callback = callback;
   }
   return self;
 }
 
 - (IBAction)activateTab:(id)sender {
-  callback_.Run(sender);
+  _callback.Run(sender);
 }
 @end
 

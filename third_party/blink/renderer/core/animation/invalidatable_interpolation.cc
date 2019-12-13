@@ -204,9 +204,9 @@ void InvalidatableInterpolation::SetFlagIfInheritUsed(
   if (!state.ParentStyle())
     return;
   const CSSValue* start_value =
-      ToCSSPropertySpecificKeyframe(*start_keyframe_).Value();
+      To<CSSPropertySpecificKeyframe>(*start_keyframe_).Value();
   const CSSValue* end_value =
-      ToCSSPropertySpecificKeyframe(*end_keyframe_).Value();
+      To<CSSPropertySpecificKeyframe>(*end_keyframe_).Value();
   if ((start_value && start_value->IsInheritedValue()) ||
       (end_value && end_value->IsInheritedValue())) {
     state.ParentStyle()->SetHasExplicitlyInheritedProperties();

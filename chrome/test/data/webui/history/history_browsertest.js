@@ -22,22 +22,6 @@ HistoryBrowserTest.prototype = {
     '../test_util.js',
     'test_util.js',
   ],
-
-  /** @override */
-  setUp: function() {
-    PolymerTest.prototype.setUp.call(this);
-
-    suiteSetup(function() {
-      // Wait for the top-level app element to be upgraded.
-      return waitForAppUpgrade()
-          .then(function() {
-            return history.ensureLazyLoaded();
-          })
-          .then(function() {
-            $('history-app').queryState_.queryingDisabled = true;
-          });
-    });
-  },
 };
 
 function HistoryDrawerTest() {}
@@ -46,6 +30,8 @@ HistoryDrawerTest.prototype = {
   __proto__: HistoryBrowserTest.prototype,
 
   extraLibraries: HistoryBrowserTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
+    'test_browser_service.js',
     'history_drawer_test.js',
   ]),
 };
@@ -134,6 +120,8 @@ HistoryOverflowMenuTest.prototype = {
   __proto__: HistoryBrowserTest.prototype,
 
   extraLibraries: HistoryBrowserTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
+    'test_browser_service.js',
     'history_overflow_menu_test.js',
   ]),
 };
@@ -165,26 +153,6 @@ HistoryRoutingWithQueryParamTest.prototype = {
   __proto__: HistoryRoutingTest.prototype,
 
   browsePreload: 'chrome://history/?q=query',
-
-  /** @override */
-  setUp: function() {
-    PolymerTest.prototype.setUp.call(this);
-    // This message handler needs to be registered before the test since the
-    // query can happen immediately after the element is upgraded. However,
-    // since there may be a delay as well, the test might check the global var
-    // too early as well. In this case the test will have overtaken the
-    // callback.
-    registerMessageCallback('queryHistory', this, function(info) {
-      window.historyQueryInfo = info;
-    });
-
-    suiteSetup(function() {
-      // Wait for the top-level app element to be upgraded.
-      return waitForAppUpgrade().then(function() {
-        history.ensureLazyLoaded();
-      });
-    });
-  },
 };
 
 TEST_F('HistoryRoutingWithQueryParamTest', 'All', function() {
@@ -242,6 +210,7 @@ HistoryToolbarTest.prototype = {
   __proto__: HistoryBrowserTest.prototype,
 
   extraLibraries: HistoryBrowserTest.prototype.extraLibraries.concat([
+    '//ui/webui/resources/js/promise_resolver.js',
     '../test_browser_proxy.js',
     'test_browser_service.js',
     'history_toolbar_test.js',

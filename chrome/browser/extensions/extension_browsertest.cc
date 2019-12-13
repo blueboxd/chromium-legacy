@@ -339,7 +339,7 @@ bool ExtensionBrowserTest::CreateServiceWorkerBasedExtension(
   }
 
   // Number of JS scripts must be > 1.
-  base::Value::ListStorage& scripts_list = background_scripts_list->GetList();
+  base::Value::ConstListView scripts_list = background_scripts_list->GetList();
   if (scripts_list.size() < 1) {
     ADD_FAILURE() << path.value()
                   << ": Only event pages with JS script(s) can be loaded "

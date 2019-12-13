@@ -293,23 +293,31 @@ bool OfflineAudioDestinationHandler::RenderIfNotSuspended(
     return true;
   }
 
-  DCHECK_GE(NumberOfInputs(), 1u);
+  {
+    MutexTryLocker try_locker(Context()->GetTearDownMutex());
+    if (try_locker.Locked()) {
+      DCHECK_GE(NumberOfInputs(), 1u);
 
-  // This will cause the node(s) connected to us to process, which in turn will
-  // pull on their input(s), all the way backwards through the rendering graph.
-  AudioBus* rendered_bus = Input(0).Pull(destination_bus, number_of_frames);
+      // This will cause the node(s) connected to us to process, which in turn
+      // will pull on their input(s), all the way backwards through the
+      // rendering graph.
+      AudioBus* rendered_bus = Input(0).Pull(destination_bus, number_of_frames);
 
-  if (!rendered_bus) {
-    destination_bus->Zero();
-  } else if (rendered_bus != destination_bus) {
-    // in-place processing was not possible - so copy
-    destination_bus->CopyFrom(*rendered_bus);
+      if (!rendered_bus) {
+        destination_bus->Zero();
+      } else if (rendered_bus != destination_bus) {
+        // in-place processing was not possible - so copy
+        destination_bus->CopyFrom(*rendered_bus);
+      }
+    } else {
+      destination_bus->Zero();
+    }
+
+    // Process nodes which need a little extra help because they are not
+    // connected to anything, but still need to process.
+    Context()->GetDeferredTaskHandler().ProcessAutomaticPullNodes(
+        number_of_frames);
   }
-
-  // Process nodes which need a little extra help because they are not connected
-  // to anything, but still need to process.
-  Context()->GetDeferredTaskHandler().ProcessAutomaticPullNodes(
-      number_of_frames);
 
   // Let the context take care of any business at the end of each render
   // quantum.

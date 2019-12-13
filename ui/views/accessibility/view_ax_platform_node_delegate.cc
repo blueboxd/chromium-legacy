@@ -148,6 +148,8 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetNativeObject() {
 void ViewAXPlatformNodeDelegate::NotifyAccessibilityEvent(
     ax::mojom::Event event_type) {
   DCHECK(ax_platform_node_);
+  if (accessibility_events_callback_)
+    accessibility_events_callback_.Run(*this, event_type);
   if (g_is_queueing_events) {
     g_event_queue.Get().emplace_back(event_type, GetUniqueId());
     return;

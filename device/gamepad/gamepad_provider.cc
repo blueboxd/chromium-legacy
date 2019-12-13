@@ -26,28 +26,23 @@
 #include "device/gamepad/gamepad_user_gesture.h"
 #include "device/gamepad/public/cpp/gamepad_features.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace device {
 
 GamepadProvider::GamepadProvider(
-    GamepadConnectionChangeClient* connection_change_client,
-    std::unique_ptr<service_manager::Connector> service_manager_connector)
+    GamepadConnectionChangeClient* connection_change_client)
     : gamepad_shared_buffer_(std::make_unique<GamepadSharedBuffer>()),
-      connection_change_client_(connection_change_client),
-      service_manager_connector_(std::move(service_manager_connector)) {
+      connection_change_client_(connection_change_client) {
   Initialize(std::unique_ptr<GamepadDataFetcher>());
 }
 
 GamepadProvider::GamepadProvider(
     GamepadConnectionChangeClient* connection_change_client,
-    std::unique_ptr<service_manager::Connector> service_manager_connector,
     std::unique_ptr<GamepadDataFetcher> fetcher,
     std::unique_ptr<base::Thread> polling_thread)
     : gamepad_shared_buffer_(std::make_unique<GamepadSharedBuffer>()),
       polling_thread_(std::move(polling_thread)),
-      connection_change_client_(connection_change_client),
-      service_manager_connector_(std::move(service_manager_connector)) {
+      connection_change_client_(connection_change_client) {
   Initialize(std::move(fetcher));
 }
 
@@ -64,11 +59,6 @@ GamepadProvider::~GamepadProvider() {
   polling_thread_->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&GamepadFetcherVector::clear,
                                 base::Unretained(&data_fetchers_)));
-
-  // The service manager connector is bound to the polling thread and must be
-  // destroyed on that thread.
-  polling_thread_->task_runner()->DeleteSoon(
-      FROM_HERE, std::move(service_manager_connector_));
 
   // Use Stop() to join the polling thread, as there may be pending callbacks
   // which dereference |polling_thread_|.
@@ -264,7 +254,7 @@ void GamepadProvider::DoAddGamepadDataFetcher(
   if (!fetcher)
     return;
 
-  InitializeDataFetcher(fetcher.get(), service_manager_connector_.get());
+  InitializeDataFetcher(fetcher.get());
   data_fetchers_.push_back(std::move(fetcher));
 }
 

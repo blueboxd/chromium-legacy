@@ -105,7 +105,7 @@ class OmniboxResultView : public views::View,
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
-  void OnMouseMoved(const ui::MouseEvent& event) override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Size CalculatePreferredSize() const override;
@@ -117,8 +117,9 @@ class OmniboxResultView : public views::View,
 
   gfx::Image GetIcon() const;
 
-  // Sets the hovered state of this result.
-  void SetHovered(bool hovered);
+  // Updates the highlight state of the row, as well as conditionally shows
+  // controls that are only visible on row hover.
+  void UpdateHoverState();
 
   // Call model's OpenMatch() with the selected index and provided disposition
   // and timestamp the match was selected (base::TimeTicks() if unknown).
@@ -144,15 +145,6 @@ class OmniboxResultView : public views::View,
 
   // The theme provider associated with this view.
   const ui::ThemeProvider* theme_provider_;
-
-  // Whether this view is in the hovered state. Note: This is false when a
-  // child button is hovered, and therefore this is different from
-  // View::IsMouseHovered(). This is useful for a contrasting highlight between
-  // the tab-switch button and the row, but is a non-standard hover meaning.
-  //
-  // TODO(tommycli): Investigate if we can get the desired tab-switch button
-  // behavior while using just plain View::IsMouseHovered().
-  bool is_hovered_ = false;
 
   // The data this class is built to display (the "Omnibox Result").
   AutocompleteMatch match_;

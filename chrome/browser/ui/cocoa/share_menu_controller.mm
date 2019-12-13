@@ -55,12 +55,12 @@ NSString* const kRemindersSharingServiceName =
   // The following three ivars are provided to the system via NSSharingService
   // delegates. They're needed for the transition animation, and to provide a
   // screenshot of the shared site for services that support it.
-  NSWindow* windowForShare_;  // weak
-  NSRect rectForShare_;
-  base::scoped_nsobject<NSImage> snapshotForShare_;
+  NSWindow* _windowForShare;  // weak
+  NSRect _rectForShare;
+  base::scoped_nsobject<NSImage> _snapshotForShare;
   // The Reminders share extension reads title/URL from the currently active
   // activity.
-  base::scoped_nsobject<NSUserActivity> activity_;
+  base::scoped_nsobject<NSUserActivity> _activity;
 }
 
 // NSMenuDelegate
@@ -129,27 +129,27 @@ NSString* const kRemindersSharingServiceName =
 
 - (NSRect)sharingService:(NSSharingService*)service
     sourceFrameOnScreenForShareItem:(id)item {
-  return rectForShare_;
+  return _rectForShare;
 }
 
 - (NSWindow*)sharingService:(NSSharingService*)service
     sourceWindowForShareItems:(NSArray*)items
           sharingContentScope:(NSSharingContentScope*)scope {
   *scope = NSSharingContentScopeFull;
-  return windowForShare_;
+  return _windowForShare;
 }
 
 - (NSImage*)sharingService:(NSSharingService*)service
     transitionImageForShareItem:(id)item
                     contentRect:(NSRect*)contentRect {
-  return snapshotForShare_;
+  return _snapshotForShare;
 }
 
 // Private methods
 
 // Saves details required by delegate methods for the transition animation.
 - (void)saveTransitionDataFromBrowser:(Browser*)browser {
-  windowForShare_ = browser->window()->GetNativeWindow().GetNativeNSWindow();
+  _windowForShare = browser->window()->GetNativeWindow().GetNativeNSWindow();
   BrowserView* browserView = BrowserView::GetBrowserViewForBrowser(browser);
   if (!browserView)
     return;
@@ -161,22 +161,22 @@ NSString* const kRemindersSharingServiceName =
   gfx::Rect screenRect = contentsView->bounds();
   views::View::ConvertRectToScreen(browserView, &screenRect);
 
-  rectForShare_ = ScreenRectToNSRect(screenRect);
+  _rectForShare = ScreenRectToNSRect(screenRect);
 
   gfx::Rect rectInWidget =
       browserView->ConvertRectToWidget(contentsView->bounds());
   gfx::Image image;
-  if (ui::GrabWindowSnapshot(windowForShare_, rectInWidget, &image)) {
-    snapshotForShare_.reset([image.ToNSImage() retain]);
+  if (ui::GrabWindowSnapshot(_windowForShare, rectInWidget, &image)) {
+    _snapshotForShare.reset([image.ToNSImage() retain]);
   }
 }
 
 - (void)clearTransitionData {
-  windowForShare_ = nil;
-  rectForShare_ = NSZeroRect;
-  snapshotForShare_.reset();
-  [activity_ invalidate];
-  activity_.reset();
+  _windowForShare = nil;
+  _rectForShare = NSZeroRect;
+  _snapshotForShare.reset();
+  [_activity invalidate];
+  _activity.reset();
 }
 
 // Performs the share action using the sharing service represented by |sender|.
@@ -204,14 +204,14 @@ NSString* const kRemindersSharingServiceName =
 //    itemsToShare = @[ url ];
 //  }
 //  if ([[service name] isEqual:kRemindersSharingServiceName]) {
-//    activity_.reset([[NSUserActivity alloc]
+//    _activity.reset([[NSUserActivity alloc]
 //        initWithActivityType:NSUserActivityTypeBrowsingWeb]);
 //    // webpageURL must be http or https or an exception is thrown.
 //    if ([url.scheme hasPrefix:@"http"]) {
-//      [activity_ setWebpageURL:url];
+//      [_activity setWebpageURL:url];
 //    }
-//    [activity_ setTitle:title];
-//    [activity_ becomeCurrent];
+//    [_activity setTitle:title];
+//    [_activity becomeCurrent];
 //  }
 //  [service performWithItems:itemsToShare];
 }

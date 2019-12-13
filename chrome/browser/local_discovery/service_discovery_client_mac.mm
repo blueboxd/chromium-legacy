@@ -28,8 +28,8 @@ using local_discovery::ServiceResolverImplMac;
 @interface NetServiceBrowserDelegate
     : NSObject<NSNetServiceBrowserDelegate, NSNetServiceDelegate> {
  @private
-  ServiceWatcherImplMac::NetServiceBrowserContainer* container_;  // weak.
-  base::scoped_nsobject<NSMutableArray> services_;
+  ServiceWatcherImplMac::NetServiceBrowserContainer* _container;  // weak.
+  base::scoped_nsobject<NSMutableArray> _services;
 }
 
 - (id)initWithContainer:
@@ -40,7 +40,7 @@ using local_discovery::ServiceResolverImplMac;
 
 @interface NetServiceDelegate : NSObject <NSNetServiceDelegate> {
   @private
-   ServiceResolverImplMac::NetServiceContainer* container_;
+   ServiceResolverImplMac::NetServiceContainer* _container;
 }
 
 - (id)initWithContainer:
@@ -458,18 +458,18 @@ ServiceResolverImplMac::GetContainerForTesting() {
 - (id)initWithContainer:
           (ServiceWatcherImplMac::NetServiceBrowserContainer*)container {
   if ((self = [super init])) {
-    container_ = container;
-    services_.reset([[NSMutableArray alloc] initWithCapacity:1]);
+    _container = container;
+    _services.reset([[NSMutableArray alloc] initWithCapacity:1]);
   }
   return self;
 }
 
 - (void)clearDiscoveredServices {
-  for (NSNetService* netService in services_.get()) {
+  for (NSNetService* netService in _services.get()) {
     [netService stopMonitoring];
     [netService setDelegate:nil];
   }
-  [services_ removeAllObjects];
+  [_services removeAllObjects];
 }
 
 - (void)netServiceBrowser:(NSNetServiceBrowser*)netServiceBrowser
@@ -478,32 +478,32 @@ ServiceResolverImplMac::GetContainerForTesting() {
   // Start monitoring this service for updates.
   [netService setDelegate:self];
   [netService startMonitoring];
-  [services_ addObject:netService];
+  [_services addObject:netService];
 
-  container_->OnServicesUpdate(local_discovery::ServiceWatcher::UPDATE_ADDED,
+  _container->OnServicesUpdate(local_discovery::ServiceWatcher::UPDATE_ADDED,
                                base::SysNSStringToUTF8([netService name]));
 }
 
 - (void)netServiceBrowser:(NSNetServiceBrowser*)netServiceBrowser
          didRemoveService:(NSNetService*)netService
                moreComing:(BOOL)moreServicesComing {
-  NSUInteger index = [services_ indexOfObject:netService];
+  NSUInteger index = [_services indexOfObject:netService];
   if (index != NSNotFound) {
-    container_->OnServicesUpdate(
+    _container->OnServicesUpdate(
         local_discovery::ServiceWatcher::UPDATE_REMOVED,
         base::SysNSStringToUTF8([netService name]));
 
     // Stop monitoring this service for updates.
-    DCHECK_EQ(netService, [services_ objectAtIndex:index]);
+    DCHECK_EQ(netService, [_services objectAtIndex:index]);
     [netService stopMonitoring];
     [netService setDelegate:nil];
-    [services_ removeObjectAtIndex:index];
+    [_services removeObjectAtIndex:index];
   }
 }
 
 - (void)netService:(NSNetService*)sender
     didUpdateTXTRecordData:(NSData*)data {
-  container_->OnServicesUpdate(local_discovery::ServiceWatcher::UPDATE_CHANGED,
+  _container->OnServicesUpdate(local_discovery::ServiceWatcher::UPDATE_CHANGED,
                                base::SysNSStringToUTF8([sender name]));
 }
 
@@ -514,18 +514,18 @@ ServiceResolverImplMac::GetContainerForTesting() {
 - (id)initWithContainer:
           (ServiceResolverImplMac::NetServiceContainer*)container {
   if ((self = [super init])) {
-    container_ = container;
+    _container = container;
   }
   return self;
 }
 
 - (void)netServiceDidResolveAddress:(NSNetService*)sender {
-  container_->OnResolveUpdate(local_discovery::ServiceResolver::STATUS_SUCCESS);
+  _container->OnResolveUpdate(local_discovery::ServiceResolver::STATUS_SUCCESS);
 }
 
 - (void)netService:(NSNetService*)sender
         didNotResolve:(NSDictionary*)errorDict {
-  container_->OnResolveUpdate(
+  _container->OnResolveUpdate(
       local_discovery::ServiceResolver::STATUS_REQUEST_TIMEOUT);
 }
 

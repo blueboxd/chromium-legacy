@@ -27,6 +27,13 @@ Polymer({
       type: Boolean,
       value: true,
     },
+
+    /** Whether a shadow should appear over the button bar. */
+    shouldShowShadow: {
+      type: Boolean,
+      value: false,
+      observer: 'onShouldShowShadowChange_',
+    }
   },
 
   /** @private */
@@ -42,5 +49,10 @@ Polymer({
   /** @private */
   onBackwardButtonClicked_: function() {
     this.fire('backward-navigation-requested');
+  },
+
+  /** @private */
+  onShouldShowShadowChange_: function() {
+    this.$.shadow.hidden = !!this.shouldShowShadow;
   },
 });

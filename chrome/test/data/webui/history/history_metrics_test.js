@@ -24,17 +24,30 @@ suite('Metrics', function() {
     app = document.createElement('history-app');
   });
 
-  /** @return {!Promise} Promise that resolves when setup is complete. */
-  function finishSetup() {
+  /**
+   * @param {!Array<!HistoryEntry>} queryResults The query results to initialize
+   *     the page with.
+   * @param {string=} query The query to use in the QueryInfo.
+   * @return {!Promise} Promise that resolves when initialization is complete.
+   */
+  function finishSetup(queryResults, query) {
+    testService.setQueryResult(
+        {info: createHistoryInfo(query), value: queryResults});
     document.body.appendChild(app);
-    return testService.whenCalled('historyLoaded').then(() => {
-      cr.webUIListenerCallback('sign-in-state-changed', false);
-      return test_util.flushTasks();
-    });
+    return Promise
+        .all([
+          testService.whenCalled('queryHistory'),
+          history.ensureLazyLoaded(),
+        ])
+        .then(function() {
+          cr.webUIListenerCallback('sign-in-state-changed', false);
+          return test_util.flushTasks();
+        });
   }
 
+
   test('History.HistoryPageView', async () => {
-    await finishSetup();
+    await finishSetup([]);
     app.grouped_ = true;
 
     const histogram = histogramMap['History.HistoryPageView'];
@@ -54,8 +67,6 @@ suite('Metrics', function() {
   });
 
   test('history-list', async () => {
-    await finishSetup();
-
     // Create a history entry that is between 7 and 8 days in the past. For the
     // purposes of the tested functionality, we consider a day to be a 24 hour
     // period, with no regard to DST shifts.
@@ -64,8 +75,7 @@ suite('Metrics', function() {
 
     const historyEntry = createHistoryEntry(weekAgo, 'http://www.google.com');
     historyEntry.starred = true;
-    app.historyResult(
-        createHistoryInfo(),
+    await finishSetup(
         [createHistoryEntry(weekAgo, 'http://www.example.com'), historyEntry]);
     await test_util.flushTasks();
 
@@ -87,15 +97,21 @@ suite('Metrics', function() {
     assertEquals(1, histogramMap['HistoryPage.ClickAgeInDays'][8]);
     assertEquals(1, histogramMap['HistoryPage.ClickAgeInDaysSubset'][8]);
 
+    testService.setQueryResult({
+      info: createHistoryInfo('goog'),
+      value: [
+        createHistoryEntry(weekAgo, 'http://www.google.com'),
+        createHistoryEntry(weekAgo, 'http://www.google.com'),
+        createHistoryEntry(weekAgo, 'http://www.google.com')
+      ],
+    });
     app.fire('change-query', {search: 'goog'});
     assertEquals(1, actionMap['Search']);
     app.set('queryState_.incremental', true);
-    app.historyResult(createHistoryInfo('goog'), [
-      createHistoryEntry(weekAgo, 'http://www.google.com'),
-      createHistoryEntry(weekAgo, 'http://www.google.com'),
-      createHistoryEntry(weekAgo, 'http://www.google.com')
+    await Promise.all([
+      testService.whenCalled('queryHistory'),
+      test_util.flushTasks(),
     ]);
-    await test_util.flushTasks();
 
     items = polymerSelectAll(app.$.history, 'history-item');
     MockInteractions.tap(items[0].$.link);
@@ -146,7 +162,7 @@ suite('Metrics', function() {
           ]),
     ];
     testService.setForeignSessions(sessionList);
-    await finishSetup();
+    await finishSetup([]);
 
     app.selectedPage_ = 'syncedTabs';
     await test_util.flushTasks();

@@ -32,6 +32,8 @@ FILES_TO_SYNC = [
     'crdtp/serializable.h',
     'crdtp/serializable.cc',
     'crdtp/serializable_test.cc',
+    'crdtp/serializer_traits.h',
+    'crdtp/serializer_traits_test.cc',
     'crdtp/span.h',
     'crdtp/span_test.cc',
     'crdtp/status.cc',

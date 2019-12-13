@@ -38,7 +38,6 @@
 #include "media/mojo/mojom/provision_fetcher.mojom.h"
 #include "media/mojo/services/mojo_media_drm_storage.h"
 #include "media/mojo/services/mojo_provision_fetcher.h"
-#include "services/service_manager/public/cpp/connect.h"
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
@@ -126,8 +125,6 @@ GpuMojoMediaClient::GpuMojoMediaClient(
 }
 
 GpuMojoMediaClient::~GpuMojoMediaClient() = default;
-
-void GpuMojoMediaClient::Initialize(service_manager::Connector* connector) {}
 
 std::unique_ptr<AudioDecoder> GpuMojoMediaClient::CreateAudioDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {

@@ -9,6 +9,6 @@
 ] interface NavigationPreloadManager {
     [CallWith=ScriptState] Promise<void> enable();
     [CallWith=ScriptState] Promise<void> disable();
-    [CallWith=ScriptState] Promise<void> setHeaderValue(ByteString value);
+    [CallWith=ScriptState, RaisesException] Promise<void> setHeaderValue(ByteString value);
     [CallWith=ScriptState] Promise<NavigationPreloadState> getState();
 };

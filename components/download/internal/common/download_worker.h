@@ -13,10 +13,8 @@
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/url_download_handler.h"
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 
 namespace download {
 
@@ -44,9 +42,10 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadWorker
   int64_t offset() const { return offset_; }
 
   // Send network request to ask for a download.
-  void SendRequest(std::unique_ptr<DownloadUrlParameters> params,
-                   URLLoaderFactoryProvider* url_loader_factory_provider,
-                   service_manager::Connector* connector);
+  void SendRequest(
+      std::unique_ptr<DownloadUrlParameters> params,
+      URLLoaderFactoryProvider* url_loader_factory_provider,
+      mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider);
 
   // Download operations.
   void Pause();

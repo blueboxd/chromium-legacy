@@ -65,7 +65,7 @@ class FakeDisplaySchedulerClient : public DisplaySchedulerClient {
 
   ~FakeDisplaySchedulerClient() override {}
 
-  bool DrawAndSwap() override {
+  bool DrawAndSwap(base::TimeTicks expected_display_time) override {
     draw_and_swap_count_++;
 
     bool success = !next_draw_and_swap_fails_;
@@ -132,6 +132,10 @@ class TestDisplayScheduler : public DisplayScheduler {
 
   bool inside_begin_frame_deadline_interval() {
     return inside_begin_frame_deadline_interval_;
+  }
+
+  base::TimeTicks current_frame_time() const {
+    return current_begin_frame_args_.frame_time;
   }
 
   bool has_pending_surfaces() { return has_pending_surfaces_; }
@@ -731,9 +735,9 @@ TEST_F(DisplaySchedulerTest, DidSwapBuffers) {
   scheduler_.DidReceiveSwapBuffersAck();
   AdvanceTimeAndBeginFrameForTest({sid2});
   base::TimeTicks expected_deadline =
-      scheduler_.LastUsedBeginFrameArgs().deadline -
+      last_begin_frame_args_.deadline -
       BeginFrameArgs::DefaultEstimatedDisplayDrawTime(
-          scheduler_.LastUsedBeginFrameArgs().interval);
+          last_begin_frame_args_.interval);
   EXPECT_EQ(expected_deadline,
             scheduler_.DesiredBeginFrameDeadlineTimeForTest());
   // Still waiting for surface 2. Once it updates, deadline should trigger
@@ -825,7 +829,7 @@ TEST_F(DisplaySchedulerTest, SetNeedsOneBeginFrame) {
 
   // SetNeedsOneBeginFrame should make DisplayScheduler active for just a single
   // BeginFrame.
-  scheduler_.SetNeedsOneBeginFrame();
+  scheduler_.SetNeedsOneBeginFrame(false);
   EXPECT_TRUE(scheduler_.inside_begin_frame_deadline_interval());
   scheduler_.BeginFrameDeadlineForTest();
   EXPECT_EQ(BeginFrameAck(last_begin_frame_args_, false),

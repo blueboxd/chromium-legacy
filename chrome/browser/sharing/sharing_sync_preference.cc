@@ -332,7 +332,7 @@ void SharingSyncPreference::SetLocalSharingInfo(
   base::ListValue list_value;
   for (SharingSpecificFields::EnabledFeatures feature :
        sharing_info.enabled_features) {
-    list_value.GetList().emplace_back(feature);
+    list_value.Append(feature);
   }
 
   DictionaryPrefUpdate local_sharing_info_update(

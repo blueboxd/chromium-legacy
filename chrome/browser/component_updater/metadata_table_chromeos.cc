@@ -188,13 +188,9 @@ void MetadataTable::AddItem(const std::string& hashed_user_id,
 
 bool MetadataTable::DeleteItem(const std::string& hashed_user_id,
                                const std::string& component_name) {
-  size_t index = GetInstalledItemIndex(hashed_user_id, component_name);
-  if (index != installed_items_.GetList().size()) {
-    installed_items_.GetList().erase(installed_items_.GetList().begin() +
-                                     index);
-    return true;
-  }
-  return false;
+  return installed_items_.EraseListIter(
+      installed_items_.GetList().begin() +
+      GetInstalledItemIndex(hashed_user_id, component_name));
 }
 
 bool MetadataTable::HasComponentForUser(

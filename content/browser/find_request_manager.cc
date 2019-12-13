@@ -14,7 +14,6 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
-#include "content/public/browser/guest_mode.h"
 
 namespace content {
 
@@ -23,12 +22,8 @@ namespace {
 // The following functions allow traversal over all frames, including those
 // across WebContentses.
 //
-// Note that there are currently two different ways in which an inner
-// WebContents may be embedded in an outer WebContents:
-//
-// 1) As a guest of the outer WebContents's BrowserPluginEmbedder.
-// 2) Within an inner WebContentsTreeNode of the outer WebContents's
-//    WebContentsTreeNode.
+// An inner WebContents may be embedded in an outer WebContents via an inner
+// WebContentsTreeNode of the outer WebContents's WebContentsTreeNode.
 
 // Returns all child frames of |node|.
 std::vector<FrameTreeNode*> GetChildren(FrameTreeNode* node) {
@@ -45,16 +40,6 @@ std::vector<FrameTreeNode*> GetChildren(FrameTreeNode* node) {
     }
   }
 
-  for (auto* contents :
-       WebContentsImpl::FromFrameTreeNode(node)->GetInnerWebContents()) {
-    auto* contents_impl = static_cast<WebContentsImpl*>(contents);
-    auto* guest = contents_impl->GetBrowserPluginGuest();
-    if (!GuestMode::IsCrossProcessFrameGuest(contents) && guest &&
-        guest->GetEmbedderFrame() &&
-        guest->GetEmbedderFrame()->frame_tree_node() == node) {
-      children.push_back(contents_impl->GetFrameTree()->root());
-    }
-  }
   return children;
 }
 
@@ -100,11 +85,6 @@ FrameTreeNode* GetParent(FrameTreeNode* node) {
   if (!node->IsMainFrame() || !contents->GetOuterWebContents())
     return nullptr;
 
-  if (!GuestMode::IsCrossProcessFrameGuest(contents)) {
-    auto* guest = contents->GetBrowserPluginGuest();
-    if (guest && guest->GetEmbedderFrame())
-      return guest->GetEmbedderFrame()->frame_tree_node();
-  }
   return GetParent(FrameTreeNode::GloballyFindByID(
       contents->GetOuterDelegateFrameTreeNodeId()));
 }

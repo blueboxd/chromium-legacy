@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
-#include "content/common/content_switches_internal.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
@@ -100,14 +99,6 @@ void WebTestContentRendererClient::
   if (command_line->HasSwitch(
           switches::kDisableOriginTrialControlledBlinkFeatures)) {
     blink::WebRuntimeFeatures::EnableOriginTrialControlledFeatures(false);
-  }
-  // Re-disable WCv0 features, if specified on the command line.
-  for (const std::string& feature :
-       FeaturesFromSwitch(*command_line, switches::kDisableBlinkFeatures)) {
-    if (feature == "ShadowDOMV0" || feature == "CustomElementsV0" ||
-        feature == "HTMLImports") {
-      blink::WebRuntimeFeatures::EnableFeatureFromString(feature, false);
-    }
   }
 }
 

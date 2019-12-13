@@ -99,9 +99,8 @@ void UpdateRecurrentInterstitialPref(Profile* profile,
   if (list_value) {
     // Check that the values are in increasing order and wipe out the list if
     // not (presumably because the clock changed).
-    base::ListValue::ListStorage& error_list = list_value->GetList();
     double previous = 0;
-    for (const auto& error_instance : error_list) {
+    for (const auto& error_instance : list_value->GetList()) {
       double error_time = error_instance.GetDouble();
       if (error_time < previous) {
         list_value = nullptr;
@@ -118,19 +117,16 @@ void UpdateRecurrentInterstitialPref(Profile* profile,
     // (i.e. out of order). Save a new list composed of just this one error
     // instance.
     base::ListValue error_list;
-    error_list.Append(base::Value(now));
+    error_list.Append(now);
     pref_update->SetKey(net::ErrorToShortString(error), std::move(error_list));
   } else {
     // Only up to |threshold| values need to be stored. If the list already
     // contains |threshold| values, pop one off the front and append the new one
     // at the end; otherwise just append the new one.
-    base::ListValue::ListStorage& error_list = list_value->GetList();
-    while (base::MakeStrictNum(error_list.size()) >= threshold) {
-      error_list.erase(error_list.begin());
+    while (base::MakeStrictNum(list_value->GetList().size()) >= threshold) {
+      list_value->EraseListIter(list_value->GetList().begin());
     }
-    error_list.push_back(base::Value(now));
-    pref_update->SetKey(net::ErrorToShortString(error),
-                        base::ListValue(error_list));
+    list_value->Append(now);
   }
 }
 

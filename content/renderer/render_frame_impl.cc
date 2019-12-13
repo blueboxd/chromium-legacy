@@ -2221,7 +2221,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnGetSerializedHtmlWithLocalLinks)
     IPC_MESSAGE_HANDLER(FrameMsg_SuppressFurtherDialogs,
                         OnSuppressFurtherDialogs)
-    IPC_MESSAGE_HANDLER(FrameMsg_ClearFocusedElement, OnClearFocusedElement)
     IPC_MESSAGE_HANDLER(FrameMsg_BlinkFeatureUsageReport,
                         OnBlinkFeatureUsageReport)
     IPC_MESSAGE_HANDLER(FrameMsg_MixedContentFound, OnMixedContentFound)
@@ -6208,13 +6207,6 @@ void RenderFrameImpl::OnWriteMHTMLComplete(
 
 void RenderFrameImpl::OnSuppressFurtherDialogs() {
   suppress_further_dialogs_ = true;
-}
-
-void RenderFrameImpl::OnClearFocusedElement() {
-  // TODO(ekaramad): Should we add a method to WebLocalFrame instead and avoid
-  // calling this on the WebView?
-  if (auto* webview = render_view_->GetWebView())
-    webview->ClearFocusedElement();
 }
 
 void RenderFrameImpl::OnBlinkFeatureUsageReport(

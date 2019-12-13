@@ -343,6 +343,7 @@ class PasswordFormManagerTest : public testing::Test,
     saved_match_.password_element = ASCIIToUTF16("field2");
     saved_match_.is_public_suffix_match = false;
     saved_match_.scheme = PasswordForm::Scheme::kHtml;
+    saved_match_.in_store = PasswordForm::Store::kProfileStore;
 
     psl_saved_match_ = saved_match_;
     psl_saved_match_.origin = psl_origin;
@@ -714,8 +715,6 @@ TEST_P(PasswordFormManagerTest, CreatePendingCredentialsEmptyStore) {
       form_manager_->GetPendingCredentials();
   CheckPendingCredentials(parsed_submitted_form_, pending_credentials);
   EXPECT_GE(pending_credentials.date_last_used, kNow);
-  EXPECT_EQ(UserAction::kOverrideUsernameAndPassword,
-            form_manager_->GetMetricsRecorder()->GetUserAction());
 }
 
 // Tests creating pending credentials when new credentials are submitted and the
@@ -728,8 +727,6 @@ TEST_P(PasswordFormManagerTest, CreatePendingCredentialsNewCredentials) {
       form_manager_->ProvisionallySave(submitted_form_, &driver_, nullptr));
   CheckPendingCredentials(parsed_submitted_form_,
                           form_manager_->GetPendingCredentials());
-  EXPECT_EQ(UserAction::kOverrideUsernameAndPassword,
-            form_manager_->GetMetricsRecorder()->GetUserAction());
 }
 
 // Tests that when submitted credentials are equal to already saved one then
@@ -753,8 +750,6 @@ TEST_P(PasswordFormManagerTest, CreatePendingCredentialsAlreadySaved) {
         form_manager_->ProvisionallySave(submitted_form_, &driver_, nullptr));
     CheckPendingCredentials(/* expected */ saved_match_,
                             form_manager_->GetPendingCredentials());
-    EXPECT_EQ(is_incognito ? UserAction::kChoose : UserAction::kNone,
-              form_manager_->GetMetricsRecorder()->GetUserAction());
   }
 }
 
@@ -778,8 +773,6 @@ TEST_P(PasswordFormManagerTest, CreatePendingCredentialsPSLMatchSaved) {
   EXPECT_TRUE(
       form_manager_->ProvisionallySave(submitted_form_, &driver_, nullptr));
   CheckPendingCredentials(expected, form_manager_->GetPendingCredentials());
-  EXPECT_EQ(UserAction::kChoosePslMatch,
-            form_manager_->GetMetricsRecorder()->GetUserAction());
 }
 
 // Tests creating pending credentials when new credentials are different only in
@@ -797,8 +790,6 @@ TEST_P(PasswordFormManagerTest, CreatePendingCredentialsPasswordOverridden) {
   EXPECT_TRUE(
       form_manager_->ProvisionallySave(submitted_form_, &driver_, nullptr));
   CheckPendingCredentials(expected, form_manager_->GetPendingCredentials());
-  EXPECT_EQ(UserAction::kOverridePassword,
-            form_manager_->GetMetricsRecorder()->GetUserAction());
 }
 
 // Tests that when submitted credentials are equal to already saved one then
@@ -817,8 +808,6 @@ TEST_P(PasswordFormManagerTest, CreatePendingCredentialsUpdate) {
   EXPECT_TRUE(
       form_manager_->ProvisionallySave(submitted_form, &driver_, nullptr));
   CheckPendingCredentials(expected, form_manager_->GetPendingCredentials());
-  EXPECT_EQ(UserAction::kOverridePassword,
-            form_manager_->GetMetricsRecorder()->GetUserAction());
 }
 
 // Tests creating pending credentials when a change password form is submitted
@@ -2076,7 +2065,7 @@ TEST_P(PasswordFormManagerTest, UpdateGeneratedPasswordBeforePresaving) {
 TEST_P(PasswordFormManagerTest, UsernameFirstFlow) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kUsernameFirstFlowSaving);
+  feature_list.InitAndEnableFeature(features::kUsernameFirstFlow);
 
   CreateFormManager(observed_form_only_password_fields_);
   fetcher_->NotifyFetchCompleted();
@@ -2100,7 +2089,7 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlow) {
 TEST_P(PasswordFormManagerTest, UsernameFirstFlowDifferentDomains) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kUsernameFirstFlowSaving);
+  feature_list.InitAndEnableFeature(features::kUsernameFirstFlow);
 
   CreateFormManager(observed_form_only_password_fields_);
   fetcher_->NotifyFetchCompleted();
@@ -2124,7 +2113,7 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlowDifferentDomains) {
 TEST_P(PasswordFormManagerTest, UsernameFirstFlowVotes) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kUsernameFirstFlowSaving);
+  feature_list.InitAndEnableFeature(features::kUsernameFirstFlow);
 
   CreateFormManager(observed_form_only_password_fields_);
   fetcher_->NotifyFetchCompleted();
@@ -2177,7 +2166,7 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlowVotes) {
 // username on username first flow.
 TEST_P(PasswordFormManagerTest, PossibleUsernameServerPredictions) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kUsernameFirstFlowSaving);
+  feature_list.InitAndEnableFeature(features::kUsernameFirstFlow);
 
   const base::string16 possible_username = ASCIIToUTF16("possible_username");
   PossibleUsernameData possible_username_data(
@@ -2220,7 +2209,7 @@ TEST_P(PasswordFormManagerTest, PossibleUsernameServerPredictions) {
 // offering username on username first flow.
 TEST_P(PasswordFormManagerTest, PossibleUsernameFieldManager) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kUsernameFirstFlowSaving);
+  feature_list.InitAndEnableFeature(features::kUsernameFirstFlow);
 
   const base::string16 possible_username = ASCIIToUTF16("possible_username");
   PossibleUsernameData possible_username_data(
@@ -2683,7 +2672,7 @@ TEST_F(PasswordFormManagerTestWithMockedSaver, HTTPAuthAlreadySaved) {
 TEST_F(PasswordFormManagerTestWithMockedSaver, UsernameFirstFlow) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kUsernameFirstFlowSaving);
+  feature_list.InitAndEnableFeature(features::kUsernameFirstFlow);
   CreateFormManager(observed_form_only_password_fields_);
   fetcher_->NotifyFetchCompleted();
   const base::string16 possible_username = ASCIIToUTF16("possible_username");
@@ -2705,7 +2694,7 @@ TEST_F(PasswordFormManagerTestWithMockedSaver,
        UsernameFirstFlowDifferentDomains) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kUsernameFirstFlowSaving);
+  feature_list.InitAndEnableFeature(features::kUsernameFirstFlow);
   CreateFormManager(observed_form_only_password_fields_);
   fetcher_->NotifyFetchCompleted();
   base::string16 possible_username = ASCIIToUTF16("possible_username");

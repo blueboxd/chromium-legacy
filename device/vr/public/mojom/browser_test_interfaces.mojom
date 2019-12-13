@@ -85,12 +85,24 @@ enum EventType {
   kSessionLost,
   kVisibilityVisibleBlurred,
   kInstanceLost,
+  kInteractionProfileChanged,
   kNoEvent
+};
+
+// InteractionProfileType is used to indicate which interaction profile runtime
+// would like to change to
+enum InteractionProfileType {
+  // Windows Mixed Reality Motion Controller
+  kWMRMotion,
+  // Khronos Simple Controller
+  kKHRSimple,
+  kInvalid,
 };
 
 // EventData is used by test to pass all event related data.
 struct EventData {
   EventType type = kNoEvent;
+  InteractionProfileType interaction_profile = kInvalid;
 };
 
 // Tests may implement this, and register it to control behavior of devices for

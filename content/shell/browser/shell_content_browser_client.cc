@@ -17,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/sequence_local_storage_slot.h"
 #include "build/build_config.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/cors_exempt_headers.h"
@@ -47,6 +48,7 @@
 #include "content/test/data/mojo_web_test_helper_test.mojom.h"
 #include "device/bluetooth/public/mojom/test/fake_bluetooth.mojom.h"
 #include "media/mojo/buildflags.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/ssl/client_cert_identity.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/public/cpp/manifest.h"
@@ -81,9 +83,7 @@
 #include "services/service_manager/sandbox/win/sandbox_win.h"
 #endif
 
-#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS) || \
-    BUILDFLAG(ENABLE_CAST_RENDERER)
-#include "media/mojo/mojom/constants.mojom.h"      // nogncheck
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
 #include "media/mojo/services/media_service_factory.h"  // nogncheck
 #endif
 
@@ -231,29 +231,6 @@ bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
   return false;
 }
 
-void ShellContentBrowserClient::RunServiceInstance(
-    const service_manager::Identity& identity,
-    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
-#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS) || \
-    BUILDFLAG(ENABLE_CAST_RENDERER)
-  bool is_media_service = false;
-#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  if (identity.name() == media::mojom::kMediaServiceName)
-    is_media_service = true;
-#endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-#if BUILDFLAG(ENABLE_CAST_RENDERER)
-  if (identity.name() == media::mojom::kMediaRendererServiceName)
-    is_media_service = true;
-#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
-
-  if (is_media_service) {
-    service_manager::Service::RunAsyncUntilTermination(
-        media::CreateMediaServiceForTesting(std::move(*receiver)));
-  }
-#endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS) ||
-        // BUILDFLAG(ENABLE_CAST_RENDERER)
-}
-
 bool ShellContentBrowserClient::ShouldTerminateOnServiceQuit(
     const service_manager::Identity& id) {
   if (should_terminate_on_service_quit_callback_)
@@ -363,6 +340,19 @@ base::FilePath ShellContentBrowserClient::GetFontLookupTableCacheDir() {
 DevToolsManagerDelegate*
 ShellContentBrowserClient::GetDevToolsManagerDelegate() {
   return new ShellDevToolsManagerDelegate(browser_context());
+}
+
+mojo::Remote<::media::mojom::MediaService>
+ShellContentBrowserClient::RunSecondaryMediaService() {
+  mojo::Remote<::media::mojom::MediaService> remote;
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+  static base::NoDestructor<
+      base::SequenceLocalStorageSlot<std::unique_ptr<::media::MediaService>>>
+      service;
+  service->emplace(::media::CreateMediaServiceForTesting(
+      remote.BindNewPipeAndPassReceiver()));
+#endif
+  return remote;
 }
 
 void ShellContentBrowserClient::OpenURL(

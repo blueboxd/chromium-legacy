@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "chromeos/services/device_sync/cryptauth_gcm_manager.h"
 #include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/gcm_app_handler.h"
@@ -90,6 +91,9 @@ class CryptAuthGCMManagerImpl : public CryptAuthGCMManager,
 
   // Whether a GCM registration is currently being processed.
   bool registration_in_progress_;
+
+  // The time GCM registration starts. Used for execution time metrics.
+  base::TimeTicks gcm_registration_start_timestamp_;
 
   // List of observers.
   base::ObserverList<Observer>::Unchecked observers_;

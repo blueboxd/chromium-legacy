@@ -15,10 +15,7 @@ suite('NewTabPageAppTest', () => {
   /** @type {TestProxy} */
   let testProxy;
 
-  /** @type {CrToastManagerElement} */
-  let toastManager;
-
-  setup(() => {
+  setup(async () => {
     PolymerTest.clearBody();
 
     testProxy = new TestProxy();
@@ -26,28 +23,6 @@ suite('NewTabPageAppTest', () => {
 
     app = document.createElement('ntp-app');
     document.body.appendChild(app);
-
-    toastManager = app.shadowRoot.querySelector('cr-toast-manager');
-  });
-
-  test('toast restore defaults button', async () => {
-    const wait = testProxy.handler.whenCalled('restoreMostVisitedDefaults');
-    assertFalse(toastManager.isToastOpen);
-    toastManager.show('');
-    assertTrue(toastManager.isToastOpen);
-    app.$.restore.click();
-    await wait;
-    assertFalse(toastManager.isToastOpen);
-  });
-
-  test('toast undo button', async () => {
-    const wait = testProxy.handler.whenCalled('undoMostVisitedTileAction');
-    assertFalse(toastManager.isToastOpen);
-    toastManager.show('');
-    assertTrue(toastManager.isToastOpen);
-    app.$.undo.click();
-    await wait;
-    assertFalse(toastManager.isToastOpen);
   });
 
   test('clicking customize button opens customize dialog', async () => {

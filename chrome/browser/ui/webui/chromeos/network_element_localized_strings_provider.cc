@@ -31,6 +31,7 @@ constexpr webui::LocalizedString kElementLocalizedStrings[] = {
     {"OncTypeTether", IDS_NETWORK_TYPE_TETHER},
     {"OncTypeVPN", IDS_NETWORK_TYPE_VPN},
     {"OncTypeWiFi", IDS_NETWORK_TYPE_WIFI},
+    {"ipAddressNotAvailable", IDS_NETWORK_IP_ADDRESS_NA},
     {"networkListItemConnected", IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED},
     {"networkListItemConnecting", IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING},
     {"networkListItemConnectingTo", IDS_NETWORK_LIST_CONNECTING_TO},
@@ -204,7 +205,6 @@ void AddOncLocalizedStrings(content::WebUIDataSource* html_source) {
 
 void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"loading", IDS_SETTINGS_LOADING},
       {"hidePassword", IDS_SETTINGS_PASSWORD_HIDE},
       {"showPassword", IDS_SETTINGS_PASSWORD_SHOW},
       {"networkProxy", IDS_SETTINGS_INTERNET_NETWORK_PROXY_PROXY},

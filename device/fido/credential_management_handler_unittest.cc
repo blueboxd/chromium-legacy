@@ -35,7 +35,7 @@ class CredentialManagementHandlerTest : public ::testing::Test {
  protected:
   std::unique_ptr<CredentialManagementHandler> MakeHandler() {
     auto handler = std::make_unique<CredentialManagementHandler>(
-        /*connector=*/nullptr, &virtual_device_factory_,
+        &virtual_device_factory_,
         base::flat_set<FidoTransportProtocol>{
             FidoTransportProtocol::kUsbHumanInterfaceDevice},
         ready_callback_.callback(),

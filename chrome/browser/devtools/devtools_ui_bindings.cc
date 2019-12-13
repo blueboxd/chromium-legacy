@@ -955,9 +955,7 @@ void DevToolsUIBindings::IndexPath(
   base::Optional<base::Value> parsed_excluded_folders =
       base::JSONReader::Read(excluded_folders_message);
   if (parsed_excluded_folders && parsed_excluded_folders->is_list()) {
-    const std::vector<base::Value>& folder_paths =
-        parsed_excluded_folders->GetList();
-    for (const base::Value& folder_path : folder_paths) {
+    for (const base::Value& folder_path : parsed_excluded_folders->GetList()) {
       if (folder_path.is_string())
         excluded_folders.push_back(folder_path.GetString());
     }

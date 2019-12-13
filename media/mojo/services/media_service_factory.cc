@@ -17,21 +17,21 @@
 
 namespace media {
 
-std::unique_ptr<service_manager::Service> CreateMediaService(
-    service_manager::mojom::ServiceRequest request) {
+std::unique_ptr<MediaService> CreateMediaService(
+    mojo::PendingReceiver<mojom::MediaService> receiver) {
 #if defined(ENABLE_TEST_MOJO_MEDIA_CLIENT)
-  return CreateMediaServiceForTesting(std::move(request));
+  return CreateMediaServiceForTesting(std::move(receiver));
 #elif defined(OS_ANDROID)
   return std::make_unique<MediaService>(
-      std::make_unique<AndroidMojoMediaClient>(), std::move(request));
+      std::make_unique<AndroidMojoMediaClient>(), std::move(receiver));
 #else
   NOTREACHED() << "No MediaService implementation available.";
   return nullptr;
 #endif
 }
 
-std::unique_ptr<service_manager::Service> CreateGpuMediaService(
-    service_manager::mojom::ServiceRequest request,
+std::unique_ptr<MediaService> CreateGpuMediaService(
+    mojo::PendingReceiver<mojom::MediaService> receiver,
     const gpu::GpuPreferences& gpu_preferences,
     const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
     const gpu::GpuFeatureInfo& gpu_feature_info,
@@ -46,13 +46,13 @@ std::unique_ptr<service_manager::Service> CreateGpuMediaService(
           media_gpu_channel_manager, gpu_memory_buffer_factory,
           std::move(android_overlay_factory_cb),
           std::move(cdm_proxy_factory_cb)),
-      std::move(request));
+      std::move(receiver));
 }
 
-std::unique_ptr<service_manager::Service> CreateMediaServiceForTesting(
-    service_manager::mojom::ServiceRequest request) {
+std::unique_ptr<MediaService> CreateMediaServiceForTesting(
+    mojo::PendingReceiver<mojom::MediaService> receiver) {
   return std::make_unique<MediaService>(std::make_unique<TestMojoMediaClient>(),
-                                        std::move(request));
+                                        std::move(receiver));
 }
 
 }  // namespace media

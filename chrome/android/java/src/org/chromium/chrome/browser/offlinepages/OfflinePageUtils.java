@@ -43,6 +43,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -114,9 +115,9 @@ public class OfflinePageUtils {
         boolean isOfflinePage(Tab tab);
 
         /**
-         * Returns whether the tab is showing trusted offline page.
-         * @param tab The current tab.
-         * @return True if a trusted offline page is shown in the tab.
+         * Returns whether the WebContents is showing trusted offline page.
+         * @param webContents The current WebContents.
+         * @return True if a trusted offline page is shown in the webContents.
          */
         boolean isShowingTrustedOfflinePage(WebContents webContents);
 
@@ -708,11 +709,59 @@ public class OfflinePageUtils {
     }
 
     /**
-     * Reloads specified tab, which should allow to open an online version of the page.
-     * @param tab The tab to be reloaded.
+     * This interface delegates some WebContents-related and Tab-related methods to the callers.
+     * Since Tab wraps WebContents, the Tab-related methods sometimes have extra steps to take on
+     * top of WebContents' counterpart methods. This interface is designed to ensure these extra
+     * steps have been taken into account.
      */
-    public static void reload(Tab tab) {
-        WebContents webContents = tab.getWebContents();
+    public static interface OfflinePageLoadUrlDelegate {
+        /**
+         * Load the url of the given {@link LoadUrlParam} in WebContents.
+         * @param params The LoadUrlParams that has specified which url to load.
+         */
+        /* package */ void loadUrl(LoadUrlParams params);
+    }
+
+    /** This class defines the OfflinePageLoadUrlDelegate for a WebContents. */
+    public static class WebContentsOfflinePageLoadUrlDelegate
+            implements OfflinePageLoadUrlDelegate {
+        private final WebContents mWebContents;
+
+        /** Construct the class with a WebContents. */
+        public WebContentsOfflinePageLoadUrlDelegate(WebContents webContents) {
+            mWebContents = webContents;
+        }
+
+        @Override
+        public void loadUrl(LoadUrlParams params) {
+            mWebContents.getNavigationController().loadUrl(params);
+        }
+    }
+
+    /**
+     * This class defines the OfflinePageLoadUrlDelegate for a Tab. Since Tab wraps WebContents,
+     * these delegate methods ensures that the Tab's extra considerations on top of WebContents,
+     * like distilled url, TabObserver, etc., have been taken into account.
+     */
+    public static class TabOfflinePageLoadUrlDelegate implements OfflinePageLoadUrlDelegate {
+        private final Tab mTab;
+
+        /** Construct the class with a tab. */
+        public TabOfflinePageLoadUrlDelegate(Tab tab) {
+            mTab = tab;
+        }
+
+        @Override
+        public void loadUrl(LoadUrlParams params) {
+            mTab.loadUrl(params);
+        }
+    }
+
+    /**
+     * Reloads specified webContents, which should allow to open an online version of the page.
+     * @param loadUrlDelegate The delegate to load a page (e.g., WebContents, Tab).
+     */
+    public static void reload(WebContents webContents, OfflinePageLoadUrlDelegate loadUrlDelegate) {
         // Only the transition type with both RELOAD and FROM_ADDRESS_BAR set will force the
         // navigation to be treated as reload (see ShouldTreatNavigationAsReload()). Without this,
         // reloading an URL containing a hash will be treated as same document load and thus
@@ -720,18 +769,21 @@ public class OfflinePageUtils {
         int transitionTypeForReload = PageTransition.RELOAD | PageTransition.FROM_ADDRESS_BAR;
 
         OfflinePageItem offlinePage = getOfflinePage(webContents);
-        if (isShowingTrustedOfflinePage(tab.getWebContents()) || offlinePage == null) {
+        if (OfflinePageUtils.isShowingTrustedOfflinePage(webContents) || offlinePage == null) {
+            // TODO(crbug.com/1033178): dedupe the
+            // DomDistillerUrlUtils#getOriginalUrlFromDistillerUrl() calls.
+            String distilledUrl = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(
+                    webContents.getVisibleUrl());
             // If current page is an offline page, reload it with custom behavior defined in extra
             // header respected.
-            LoadUrlParams params =
-                    new LoadUrlParams(((TabImpl) tab).getOriginalUrl(), transitionTypeForReload);
+            LoadUrlParams params = new LoadUrlParams(distilledUrl, transitionTypeForReload);
             params.setVerbatimHeaders(getOfflinePageHeaderForReload(webContents));
-            tab.loadUrl(params);
+            loadUrlDelegate.loadUrl(params);
             return;
         }
 
         LoadUrlParams params = new LoadUrlParams(offlinePage.getUrl(), transitionTypeForReload);
-        tab.loadUrl(params);
+        loadUrlDelegate.loadUrl(params);
     }
 
     /**

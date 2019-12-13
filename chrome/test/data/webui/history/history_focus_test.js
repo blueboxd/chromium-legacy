@@ -22,20 +22,6 @@ const HistoryFocusTest = class extends PolymerInteractiveUITest {
       'test_util.js',
     ]);
   }
-
-  /** @override */
-  setUp() {
-    super.setUp();
-
-    suiteSetup(function() {
-      // Wait for the top-level app element to be upgraded.
-      return waitForAppUpgrade()
-          .then(() => history.ensureLazyLoaded())
-          .then(() => {
-            $('history-app').queryState_.queryingDisabled = true;
-          });
-    });
-  }
 };
 
 // eslint-disable-next-line no-var
@@ -81,5 +67,21 @@ var HistorySyncedDeviceManagerFocusTest = class extends HistoryFocusTest {
 };
 
 TEST_F('HistorySyncedDeviceManagerFocusTest', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var HistoryItemFocusTest = class extends HistoryFocusTest {
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../test_browser_proxy.js',
+      'test_browser_service.js',
+      'history_item_focus_test.js',
+    ]);
+  }
+};
+
+TEST_F('HistoryItemFocusTest', 'All', function() {
   mocha.run();
 });

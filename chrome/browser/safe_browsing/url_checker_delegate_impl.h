@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/safe_browsing/browser/url_checker_delegate.h"
+#include "content/public/browser/web_contents.h"
 
 namespace safe_browsing {
 
@@ -24,8 +25,7 @@ class UrlCheckerDelegateImpl : public UrlCheckerDelegate {
 
   // Implementation of UrlCheckerDelegate:
   void MaybeDestroyPrerenderContents(
-      const base::Callback<content::WebContents*()>& web_contents_getter)
-      override;
+      content::WebContents::OnceGetter web_contents_getter) override;
   // Only uses |resource| and ignores the rest of parameters.
   void StartDisplayingBlockingPageHelper(
       const security_interstitials::UnsafeResource& resource,

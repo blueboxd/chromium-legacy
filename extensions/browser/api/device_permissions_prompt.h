@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/hid.mojom.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
@@ -144,6 +145,11 @@ class DevicePermissionsPrompt {
   static scoped_refptr<Prompt> CreateUsbPromptForTest(
       const Extension* extension,
       bool multiple);
+
+  // Allows tests to override how the HidManager interface is bound.
+  using HidManagerBinder = base::RepeatingCallback<void(
+      mojo::PendingReceiver<device::mojom::HidManager> receiver)>;
+  static void OverrideHidManagerBinderForTesting(HidManagerBinder binder);
 
  protected:
   virtual void ShowDialog() = 0;

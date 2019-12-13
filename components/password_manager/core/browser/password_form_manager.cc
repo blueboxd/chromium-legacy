@@ -87,7 +87,7 @@ bool FormContainsFieldWithName(const FormData& form,
 }
 
 bool IsUsernameFirstFlowFeatureEnabled() {
-  return base::FeatureList::IsEnabled(features::kUsernameFirstFlowSaving);
+  return base::FeatureList::IsEnabled(features::kUsernameFirstFlow);
 }
 
 // Find a field in |predictions| with given renderer id.

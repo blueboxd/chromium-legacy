@@ -19,6 +19,7 @@ js2gtest("interactive_ui_tests_js_webui") {
     "cr_focus_row_behavior_v3_interactive_test.js",
     "extensions/cr_extensions_interactive_ui_tests.js",
     "history/history_focus_test.js",
+    "new_tab_page/new_tab_page_interactive_test.js",
     "print_preview/print_preview_interactive_ui_tests.js",
     "settings/cr_settings_interactive_ui_tests.js",
     "settings/settings_ui_browsertest.js",
@@ -202,9 +203,7 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/test_util.m.js",
   ]
   if (is_chromeos) {
-    data += [
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_searchable_drop_down_tests.m.js",
-    ]
+    data += [ "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_searchable_drop_down_tests.m.js" ]
   }
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 

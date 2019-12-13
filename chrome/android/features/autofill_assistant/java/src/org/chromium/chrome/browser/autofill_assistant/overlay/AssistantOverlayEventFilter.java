@@ -7,13 +7,11 @@ package org.chromium.chrome.browser.autofill_assistant.overlay;
 import android.content.Context;
 import android.graphics.RectF;
 import android.view.GestureDetector;
-import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 
 import java.lang.annotation.Retention;
@@ -26,7 +24,7 @@ import java.util.List;
 /**
  * Filters gestures that happen on the overlay.
  */
-class AssistantOverlayEventFilter extends EventFilter {
+class AssistantOverlayEventFilter extends GestureDetector {
     /** A mode that describes what's happening to the current gesture. */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({GestureMode.NONE, GestureMode.TRACKING, GestureMode.FORWARDING})
@@ -109,7 +107,7 @@ class AssistantOverlayEventFilter extends EventFilter {
 
     AssistantOverlayEventFilter(
             Context context, ChromeFullscreenManager fullscreenManager, View compositorView) {
-        super(context);
+        super(context, new SimpleOnGestureListener());
 
         mFullscreenManager = fullscreenManager;
         mCompositorView = compositorView;
@@ -182,13 +180,7 @@ class AssistantOverlayEventFilter extends EventFilter {
     }
 
     @Override
-    protected boolean onInterceptTouchEventInternal(MotionEvent event, boolean isKeyboardShowing) {
-        // All events should be sent to onTouchEvent().
-        return true;
-    }
-
-    @Override
-    protected boolean onTouchEventInternal(MotionEvent event) {
+    public boolean onTouchEvent(MotionEvent event) {
         if (mPartial) {
             return onTouchEventWithPartialOverlay(event);
         } else {

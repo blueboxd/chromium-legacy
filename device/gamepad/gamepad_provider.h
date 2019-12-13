@@ -28,10 +28,6 @@ class SingleThreadTaskRunner;
 class Thread;
 }  // namespace base
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace device {
 
 class GamepadDataFetcher;
@@ -47,15 +43,13 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
     : public GamepadPadStateProvider,
       public base::SystemMonitor::DevicesChangedObserver {
  public:
-  GamepadProvider(
-      GamepadConnectionChangeClient* connection_change_client,
-      std::unique_ptr<service_manager::Connector> service_manager_connector);
+  explicit GamepadProvider(
+      GamepadConnectionChangeClient* connection_change_client);
 
   // Manually specifies the data fetcher and polling thread. The polling thread
   // will be created normally if |polling_thread| is nullptr. Used for testing.
   GamepadProvider(
       GamepadConnectionChangeClient* connection_change_client,
-      std::unique_ptr<service_manager::Connector> service_manager_connector,
       std::unique_ptr<GamepadDataFetcher> fetcher,
       std::unique_ptr<base::Thread> polling_thread);
 
@@ -184,10 +178,6 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
   std::unique_ptr<base::Thread> polling_thread_;
 
   GamepadConnectionChangeClient* connection_change_client_;
-
-  // Service manager connector, to allow data fetchers to access the device
-  // service from the polling thread.
-  std::unique_ptr<service_manager::Connector> service_manager_connector_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadProvider);
 };

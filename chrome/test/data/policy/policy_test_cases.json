@@ -3931,6 +3931,18 @@
     ]
   },
 
+  "PrimaryMouseButtonSwitch": {
+    "os": ["chromeos"],
+    "test_policy": { "PrimaryMouseButtonSwitch": true },
+    "pref_mappings": [
+      { "pref": "settings.mouse.primary_right",
+        "indicator_tests": [
+          { "policy": { "PrimaryMouseButtonSwitch": true } }
+        ]
+      }
+    ]
+  },
+
   "KeyboardFocusHighlightEnabled": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [

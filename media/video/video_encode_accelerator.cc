@@ -100,6 +100,11 @@ VideoEncodeAccelerator::SupportedProfile::SupportedProfile(
 
 VideoEncodeAccelerator::SupportedProfile::~SupportedProfile() = default;
 
+VideoEncoderInfo VideoEncodeAccelerator::GetEncoderInfo() {
+  // TODO(hiroh): Implements this on each VideoEncodeAccelerator.
+  return VideoEncoderInfo();
+}
+
 void VideoEncodeAccelerator::Flush(FlushCallback flush_callback) {
   // TODO(owenlin): implements this https://crbug.com/755889.
   NOTIMPLEMENTED();

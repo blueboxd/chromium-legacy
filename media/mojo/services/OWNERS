@@ -1,12 +1,2 @@
-per-file cdm_manifest.cc=set noparent
-per-file cdm_manifest.cc=file://ipc/SECURITY_OWNERS
-per-file cdm_manifest.h=set noparent
-per-file cdm_manifest.h=file://ipc/SECURITY_OWNERS
-
-per-file media_manifest.cc=set noparent
-per-file media_manifest.cc=file://ipc/SECURITY_OWNERS
-per-file media_manifest.h=set noparent
-per-file media_manifest.h=file://ipc/SECURITY_OWNERS
-
 per-file mojo_audio_output*=file://media/audio/OWNERS
 per-file mojo_audio_input*=file://media/audio/OWNERS

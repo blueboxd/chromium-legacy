@@ -18,8 +18,8 @@ namespace content {
 // A class for getting the default print settings for the default printer.
 class CONTENT_EXPORT PepperPrintSettingsManager {
  public:
-  typedef std::pair<PP_PrintSettings_Dev, int32_t> Result;
-  typedef base::Callback<void(Result)> Callback;
+  using Result = std::pair<PP_PrintSettings_Dev, int32_t>;
+  using Callback = base::OnceCallback<void(Result)>;
 
   // The default print settings are obtained asynchronously and |callback|
   // is called with the the print settings when they are available. |callback|

@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "device/gamepad/gamepad_data_fetcher.h"
+#include "device/gamepad/gamepad_provider.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 
 namespace device {
@@ -80,9 +81,8 @@ void GamepadPadStateProvider::ClearPadState(PadState& state) {
 }
 
 void GamepadPadStateProvider::InitializeDataFetcher(
-    GamepadDataFetcher* fetcher,
-    service_manager::Connector* service_manager_connector) {
-  fetcher->InitializeProvider(this, service_manager_connector);
+    GamepadDataFetcher* fetcher) {
+  fetcher->InitializeProvider(this);
 }
 
 void GamepadPadStateProvider::MapAndSanitizeGamepadData(PadState* pad_state,

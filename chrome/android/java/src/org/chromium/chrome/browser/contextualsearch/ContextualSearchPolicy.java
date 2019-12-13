@@ -457,13 +457,6 @@ class ContextualSearchPolicy {
     }
 
     /**
-     * @return Whether any translation feature for Contextual Search is enabled.
-     */
-    boolean isTranslationDisabled() {
-        return ContextualSearchFieldTrial.getSwitch(ContextualSearchSwitch.IS_TRANSLATION_DISABLED);
-    }
-
-    /**
      * @return The ISO country code for the user's home country, or an empty string if not
      *         available or privacy-enabled.
      */

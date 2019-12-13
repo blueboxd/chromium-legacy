@@ -9,18 +9,12 @@
 
 cr.define('history', function() {
   class BrowserService {
-    historyLoaded() {
-      chrome.send('historyLoaded');
-    }
-
     /** @return {!Promise<!Array<!ForeignSession>>} */
     getForeignSessions() {
       return cr.sendWithPromise('getForeignSessions');
     }
 
-    /**
-     * @param {!string} url
-     */
+    /** @param {!string} url */
     removeBookmark(url) {
       chrome.send('removeBookmark', [url]);
     }
@@ -34,9 +28,7 @@ cr.define('history', function() {
       return cr.sendWithPromise('removeVisits', removalList);
     }
 
-    /**
-     * @param {string} sessionTag
-     */
+    /** @param {string} sessionTag */
     openForeignSessionAllTabs(sessionTag) {
       chrome.send('openForeignSession', [sessionTag]);
     }
@@ -54,9 +46,7 @@ cr.define('history', function() {
       ]);
     }
 
-    /**
-     * @param {string} sessionTag
-     */
+    /** @param {string} sessionTag */
     deleteForeignSession(sessionTag) {
       chrome.send('deleteForeignSession', [sessionTag]);
     }
@@ -112,13 +102,19 @@ cr.define('history', function() {
       chrome.send('otherDevicesInitialized');
     }
 
+    /**
+     * @return {!Promise<{info: !HistoryQuery, value: !Array<!HistoryEntry>}>}
+     */
     queryHistoryContinuation() {
-      chrome.send('queryHistoryContinuation');
+      return cr.sendWithPromise('queryHistoryContinuation');
     }
 
-    /** @param {string} searchTerm */
+    /**
+     * @param {string} searchTerm
+     * @return {!Promise<{info: !HistoryQuery, value: !Array<!HistoryEntry>}>}
+     */
     queryHistory(searchTerm) {
-      chrome.send('queryHistory', [searchTerm, RESULTS_PER_PAGE]);
+      return cr.sendWithPromise('queryHistory', searchTerm, RESULTS_PER_PAGE);
     }
 
     startSignInFlow() {

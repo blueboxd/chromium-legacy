@@ -23,10 +23,10 @@ class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace chromecast {
-class AudioResampler;
 class IOBufferPool;
 
 namespace media {
+class AudioResampler;
 class DecoderBufferBase;
 class MediaPipelineBackendForMixer;
 

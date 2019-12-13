@@ -140,9 +140,8 @@ void OnConsentReceived(
     return;
   }
 
-  const GURL site = util::GetSiteForExtensionId(extension_id, browser_context);
   scoped_refptr<storage::FileSystemContext> file_system_context =
-      content::BrowserContext::GetStoragePartitionForSite(browser_context, site)
+      util::GetStoragePartitionForExtensionId(extension_id, browser_context)
           ->GetFileSystemContext();
   storage::ExternalFileSystemBackend* const backend =
       file_system_context->external_backend();
@@ -365,10 +364,8 @@ void ChromeFileSystemDelegate::RequestFileSystem(
     return;
   }
 
-  const GURL site =
-      util::GetSiteForExtensionId(extension.id(), browser_context);
   scoped_refptr<storage::FileSystemContext> file_system_context =
-      content::BrowserContext::GetStoragePartitionForSite(browser_context, site)
+      util::GetStoragePartitionForExtensionId(extension.id(), browser_context)
           ->GetFileSystemContext();
   storage::ExternalFileSystemBackend* const backend =
       file_system_context->external_backend();

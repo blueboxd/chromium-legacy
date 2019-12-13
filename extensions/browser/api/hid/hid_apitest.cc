@@ -12,14 +12,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "extensions/browser/api/device_permissions_prompt.h"
+#include "extensions/browser/api/hid/hid_device_manager.h"
 #include "extensions/shell/browser/shell_extensions_api_client.h"
 #include "extensions/shell/test/shell_apitest.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "services/device/public/cpp/hid/fake_hid_manager.h"
 #include "services/device/public/cpp/hid/hid_report_descriptor.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/hid.mojom.h"
-#include "services/service_manager/public/cpp/service_binding.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/permission_broker/fake_permission_broker_client.h"
@@ -106,15 +105,14 @@ class HidApiTest : public ShellApiTest {
     // Because Device Service also runs in this process (browser process), we
     // can set our binder to intercept requests for HidManager interface to it.
     fake_hid_manager_ = std::make_unique<FakeHidManager>();
-    service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
-        device::mojom::kServiceName,
-        base::Bind(&FakeHidManager::Bind,
-                   base::Unretained(fake_hid_manager_.get())));
+    auto binder = base::BindRepeating(
+        &FakeHidManager::Bind, base::Unretained(fake_hid_manager_.get()));
+    HidDeviceManager::OverrideHidManagerBinderForTesting(binder);
+    DevicePermissionsPrompt::OverrideHidManagerBinderForTesting(binder);
   }
 
   ~HidApiTest() override {
-    service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
-        device::mojom::HidManager>(device::mojom::kServiceName);
+    HidDeviceManager::OverrideHidManagerBinderForTesting(base::NullCallback());
 #if defined(OS_CHROMEOS)
     chromeos::PermissionBrokerClient::Shutdown();
 #endif

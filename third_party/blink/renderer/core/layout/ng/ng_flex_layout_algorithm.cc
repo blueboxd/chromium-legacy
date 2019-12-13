@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_flex_child_iterator.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.h"
@@ -302,9 +303,9 @@ NGFlexLayoutAlgorithm::BuildConstraintSpaceForDeterminingFlexBasis(
 }
 
 void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
-  for (NGLayoutInputNode generic_child = Node().FirstChild(); generic_child;
-       generic_child = generic_child.NextSibling()) {
-    auto child = To<NGBlockNode>(generic_child);
+  NGFlexChildIterator iterator(Node());
+  for (NGBlockNode child = iterator.NextChild(); child;
+       child = iterator.NextChild()) {
     if (child.IsOutOfFlowPositioned()) {
       HandleOutOfFlowPositioned(child);
       continue;
@@ -793,9 +794,9 @@ base::Optional<MinMaxSize> NGFlexLayoutAlgorithm::ComputeMinMaxSize(
   //   - We want the child's border box MinMaxSize, which is the default.
   MinMaxSizeInput child_input(child_percentage_resolution_block_size);
 
-  for (NGLayoutInputNode generic_child = Node().FirstChild(); generic_child;
-       generic_child = generic_child.NextSibling()) {
-    auto child = To<NGBlockNode>(generic_child);
+  NGFlexChildIterator iterator(Node());
+  for (NGBlockNode child = iterator.NextChild(); child;
+       child = iterator.NextChild()) {
     if (child.IsOutOfFlowPositioned())
       continue;
 

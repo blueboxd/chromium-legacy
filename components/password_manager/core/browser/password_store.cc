@@ -468,7 +468,8 @@ void PasswordStore::CheckReuse(const base::string16& input,
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 void PasswordStore::PreparePasswordHashData(const std::string& sync_username) {
-  SchedulePasswordHashUpdate(/*should_log_metrics=*/true);
+  SchedulePasswordHashUpdate(/*should_log_metrics=*/true,
+                             !sync_username.empty());
   ScheduleEnterprisePasswordURLUpdate();
 }
 
@@ -498,7 +499,9 @@ void PasswordStore::SaveProtectedPasswordHash(const std::string& username,
     if (is_gaia_password) {
       metrics_util::LogGaiaPasswordHashChange(event, is_syncing);
     }
-    SchedulePasswordHashUpdate(/*should_log_metrics=*/false);
+    // This method is not being called on startup so it shouldn't log metrics.
+    SchedulePasswordHashUpdate(/*should_log_metrics=*/false,
+                               /*does_primary_account_exists=*/false);
   }
 }
 
@@ -508,7 +511,8 @@ void PasswordStore::SaveSyncPasswordHash(
   if (hash_password_manager_.SavePasswordHash(sync_password_data)) {
     metrics_util::LogGaiaPasswordHashChange(event,
                                             /*is_sync_password=*/true);
-    SchedulePasswordHashUpdate(/*should_log_metrics=*/false);
+    SchedulePasswordHashUpdate(/*should_log_metrics=*/false,
+                               /*does_primary_account_exists=*/false);
   }
 }
 
@@ -551,11 +555,13 @@ void PasswordStore::SetPasswordStoreSigninNotifier(
   notifier_->SubscribeToSigninEvents(this);
 }
 
-void PasswordStore::SchedulePasswordHashUpdate(bool should_log_metrics) {
+void PasswordStore::SchedulePasswordHashUpdate(
+    bool should_log_metrics,
+    bool does_primary_account_exists) {
   ScheduleTask(base::BindRepeating(
       &PasswordStore::SaveProtectedPasswordHashImpl, this,
       base::Passed(hash_password_manager_.RetrieveAllPasswordHashes()),
-      should_log_metrics));
+      should_log_metrics, does_primary_account_exists));
 }
 
 void PasswordStore::ScheduleEnterprisePasswordURLUpdate() {
@@ -671,7 +677,8 @@ void PasswordStore::CheckReuseImpl(std::unique_ptr<CheckReuseRequest> request,
 
 void PasswordStore::SaveProtectedPasswordHashImpl(
     PasswordHashDataList protected_password_data_list,
-    bool should_log_metrics) {
+    bool should_log_metrics,
+    bool does_primary_account_exists) {
   if (!reuse_detector_ || !protected_password_data_list.has_value())
     return;
 
@@ -686,7 +693,8 @@ void PasswordStore::SaveProtectedPasswordHashImpl(
 
   if (should_log_metrics) {
     metrics_util::LogProtectedPasswordHashCounts(
-        gaia_password_hash_list.size(), enterprise_password_hash_list.size());
+        gaia_password_hash_list.size(), enterprise_password_hash_list.size(),
+        does_primary_account_exists);
   }
   reuse_detector_->UseGaiaPasswordHash(std::move(gaia_password_hash_list));
   reuse_detector_->UseNonGaiaEnterprisePasswordHash(

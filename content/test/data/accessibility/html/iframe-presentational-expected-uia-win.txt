@@ -1,4 +1,4 @@
 document
-++group
+++group IsControlElement=false
 ++++group
 ++++++group

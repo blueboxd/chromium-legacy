@@ -148,6 +148,7 @@ class WebAXObject {
   BLINK_EXPORT bool IsVisible() const;
   BLINK_EXPORT bool IsVisited() const;
 
+  BLINK_EXPORT bool HasAriaAttribute() const;
   BLINK_EXPORT WebString AccessKey() const;
   BLINK_EXPORT unsigned BackgroundColor() const;
   BLINK_EXPORT bool CanPress() const;

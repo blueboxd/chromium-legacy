@@ -21,7 +21,7 @@
 // updates. It will be created and managed by VersionUpdaterMac.
 @interface KeystoneObserver : NSObject {
  @private
-  VersionUpdaterMac* versionUpdater_;  // Weak.
+  VersionUpdaterMac* _versionUpdater;  // Weak.
 }
 
 // Initialize an observer with an updater. The updater owns this object.
@@ -36,7 +36,7 @@
 
 - (id)initWithUpdater:(VersionUpdaterMac*)updater {
   if ((self = [super init])) {
-    versionUpdater_ = updater;
+    _versionUpdater = updater;
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
     [center addObserver:self
                selector:@selector(handleStatusNotification:)
@@ -52,7 +52,7 @@
 }
 
 - (void)handleStatusNotification:(NSNotification*)notification {
-  versionUpdater_->UpdateStatus([notification userInfo]);
+  _versionUpdater->UpdateStatus([notification userInfo]);
 }
 
 @end  // @implementation KeystoneObserver

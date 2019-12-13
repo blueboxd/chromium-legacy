@@ -403,9 +403,7 @@ bool AXPlatformNodeBase::IsDocument() const {
 }
 
 bool AXPlatformNodeBase::IsTextOnlyObject() const {
-  return GetData().role == ax::mojom::Role::kStaticText ||
-         GetData().role == ax::mojom::Role::kLineBreak ||
-         GetData().role == ax::mojom::Role::kInlineTextBox;
+  return ui::IsText(GetData().role);
 }
 
 bool AXPlatformNodeBase::IsPlainTextField() const {

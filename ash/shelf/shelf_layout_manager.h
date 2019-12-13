@@ -285,6 +285,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
  private:
   class UpdateShelfObserver;
+  friend class DimShelfLayoutManagerTest;
   friend class PanelLayoutManagerTest;
   friend class ShelfLayoutManagerTestBase;
   friend class ShelfLayoutManagerWindowDraggingTest;
@@ -401,6 +402,9 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   // Stops any animations and sets the bounds of the shelf and status widgets.
   void LayoutShelfAndUpdateBounds();
+
+  // Updates the shelf dim state.
+  void UpdateShelfIconOpacity();
 
   // Updates the bounds and opacity of the shelf and status widgets.
   // If |observer| is specified, it will be called back when the animations, if

@@ -40,8 +40,7 @@ class VirtualFidoDeviceFactory : public device::FidoDiscoveryFactory {
  protected:
   // device::FidoDiscoveryFactory:
   std::unique_ptr<FidoDiscoveryBase> Create(
-      FidoTransportProtocol transport,
-      ::service_manager::Connector* connector) override;
+      FidoTransportProtocol transport) override;
 
  private:
   ProtocolVersion supported_protocol_ = ProtocolVersion::kU2f;

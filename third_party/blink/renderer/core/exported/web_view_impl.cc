@@ -364,7 +364,7 @@ void WebViewImpl::HandleMouseDown(LocalFrame& main_frame,
     if (!result.GetScrollbar() && hit_node && hit_node->GetLayoutObject() &&
         hit_node->GetLayoutObject()->IsEmbeddedObject() && html_element &&
         html_element->IsPluginElement()) {
-      mouse_capture_element_ = ToHTMLPlugInElement(hit_node);
+      mouse_capture_element_ = To<HTMLPlugInElement>(hit_node);
       main_frame.Client()->SetMouseCapture(true);
       TRACE_EVENT_ASYNC_BEGIN0("input", "capturing mouse", this);
     }
@@ -2085,32 +2085,6 @@ void WebViewImpl::SetInitialFocus(bool reverse) {
   }
   GetPage()->GetFocusController().SetInitialFocus(
       reverse ? kWebFocusTypeBackward : kWebFocusTypeForward);
-}
-
-void WebViewImpl::ClearFocusedElement() {
-  Frame* frame = FocusedCoreFrame();
-
-  auto* local_frame = DynamicTo<LocalFrame>(frame);
-  if (!local_frame)
-    return;
-
-  Document* document = local_frame->GetDocument();
-  if (!document)
-    return;
-
-  Element* old_focused_element = document->FocusedElement();
-  document->ClearFocusedElement();
-  if (!old_focused_element)
-    return;
-
-  // If a text field has focus, we need to make sure the selection controller
-  // knows to remove selection from it. Otherwise, the text field is still
-  // processing keyboard events even though focus has been moved to the page and
-  // keystrokes get eaten as a result.
-  document->UpdateStyleAndLayoutTree();
-  if (HasEditableStyle(*old_focused_element) ||
-      old_focused_element->IsTextControl())
-    local_frame->Selection().Clear();
 }
 
 // TODO(dglazkov): Remove and replace with Node:hasEditableStyle.

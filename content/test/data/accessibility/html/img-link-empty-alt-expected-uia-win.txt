@@ -1,5 +1,5 @@
 document
-++group
+++group IsControlElement=false
 ++++link Name='unread '
 ++++++description Name='unread ' IsControlElement=false
 ++++link Name='read '

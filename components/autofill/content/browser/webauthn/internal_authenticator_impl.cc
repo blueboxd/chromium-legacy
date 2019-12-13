@@ -23,7 +23,6 @@ InternalAuthenticatorImpl::InternalAuthenticatorImpl(
                                 std::move(effective_origin),
                                 std::make_unique<AuthenticatorCommon>(
                                     render_frame_host,
-                                    nullptr /* connector */,
                                     std::make_unique<base::OneShotTimer>())) {}
 
 InternalAuthenticatorImpl::InternalAuthenticatorImpl(

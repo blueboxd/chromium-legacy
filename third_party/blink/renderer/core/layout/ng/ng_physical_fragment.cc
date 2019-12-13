@@ -406,14 +406,21 @@ PhysicalRect NGPhysicalFragment::ScrollableOverflow() const {
 }
 
 PhysicalRect NGPhysicalFragment::ScrollableOverflowForPropagation(
-    const LayoutObject* container) const {
-  DCHECK(container);
+    const NGPhysicalBoxFragment& container) const {
   PhysicalRect overflow = ScrollableOverflow();
-  if (GetLayoutObject() &&
-      GetLayoutObject()->ShouldUseTransformFromContainer(container)) {
+
+  DCHECK(!IsLineBox());
+  if (!IsCSSBox())
+    return overflow;
+
+  const LayoutObject* layout_object = GetLayoutObject();
+  DCHECK(layout_object);
+  const LayoutObject* container_layout_object = container.GetLayoutObject();
+  DCHECK(container_layout_object);
+  if (layout_object->ShouldUseTransformFromContainer(container_layout_object)) {
     TransformationMatrix transform;
-    GetLayoutObject()->GetTransformFromContainer(container, PhysicalOffset(),
-                                                 transform);
+    layout_object->GetTransformFromContainer(container_layout_object,
+                                             PhysicalOffset(), transform);
     overflow =
         PhysicalRect::EnclosingRect(transform.MapRect(FloatRect(overflow)));
   }

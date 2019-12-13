@@ -777,13 +777,16 @@ XrResult xrSuggestInteractionProfileBindings(
             "xrSetInteractionProfileSuggestedBindings next is not nullptr");
   RETURN_IF_XR_FAILED(
       g_test_helper.ValidatePath(suggested_bindings->interactionProfile));
+  std::string interaction_profile =
+      g_test_helper.PathToString(suggested_bindings->interactionProfile);
   RETURN_IF(
-      g_test_helper.PathToString(suggested_bindings->interactionProfile)
-              .compare("/interaction_profiles/microsoft/motion_controller") !=
-          0,
+      interaction_profile.compare(
+          interaction_profile::kMicrosoftMotionControllerInteractionProfile) !=
+              0 &&
+          interaction_profile.compare(
+              interaction_profile::kKHRSimpleControllerInteractionProfile) != 0,
       XR_ERROR_VALIDATION_FAILURE,
-      "xrSetInteractionProfileSuggestedBindings interactionProfile other than "
-      "microsoft is used, this is not currently supported.");
+      "xrSetInteractionProfileSuggestedBindings invalid interaction_profile");
   RETURN_IF(suggested_bindings->suggestedBindings == nullptr,
             XR_ERROR_VALIDATION_FAILURE,
             "XrInteractionProfileSuggestedBinding has nullptr "
@@ -795,7 +798,8 @@ XrResult xrSuggestInteractionProfileBindings(
   for (uint32_t i = 0; i < suggested_bindings->countSuggestedBindings; i++) {
     XrActionSuggestedBinding suggestedBinding =
         suggested_bindings->suggestedBindings[i];
-    RETURN_IF_XR_FAILED(g_test_helper.BindActionAndPath(suggestedBinding));
+    RETURN_IF_XR_FAILED(g_test_helper.BindActionAndPath(
+        suggested_bindings->interactionProfile, suggestedBinding));
   }
 
   return XR_SUCCESS;

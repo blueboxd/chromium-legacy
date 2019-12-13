@@ -18,7 +18,6 @@
 #include "gpu/config/gpu_feature_info.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
-#include "third_party/blink/renderer/platform/graphics/canvas_heuristic_parameters.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -993,10 +992,8 @@ void CanvasResourceProvider::InitializePaintCanvas() {
            ->ContextProvider()
            ->GetGpuFeatureInfo()
            .IsWorkaroundEnabled(gpu::DISABLE_2D_CANVAS_AUTO_FLUSH)) {
-    context_flushes.enable =
-        canvas_heuristic_parameters::kEnableGrContextFlushes;
-    context_flushes.max_draws_before_flush =
-        canvas_heuristic_parameters::kMaxDrawsBeforeContextFlush;
+    context_flushes.enable = true;
+    context_flushes.max_draws_before_flush = kMaxDrawsBeforeContextFlush;
   }
   canvas_ = std::make_unique<cc::SkiaPaintCanvas>(GetSkSurface()->getCanvas(),
                                                   canvas_image_provider_.get(),
@@ -1142,7 +1139,7 @@ void CanvasResourceProvider::RecycleResource(
     scoped_refptr<CanvasResource> resource) {
   // We don't want to keep an arbitrary large number of canvases.
   if (canvas_resources_.size() >
-      canvas_heuristic_parameters::kMaxRecycledCanvasResources)
+      static_cast<unsigned int>(kMaxRecycledCanvasResources))
     return;
 
   // Need to check HasOneRef() because if there are outstanding references to

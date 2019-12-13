@@ -33,7 +33,7 @@ export class DialogFocusManager {
     // Update the focus if there are no open dialogs or if this is the only
     // dialog and it's getting reshown.
     if (!this.dialogs_.size ||
-        (this.dialogs_.has(dialog) && this.dialogs_.size == 1)) {
+        (this.dialogs_.has(dialog) && this.dialogs_.size === 1)) {
       this.updatePreviousFocus_();
     }
 

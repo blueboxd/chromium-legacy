@@ -10,10 +10,15 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 
 class HTMLLinkElementTest : public PageTestBase {};
+class HTMLLinkElementSimTest : public SimTest {};
 
 // This tests that we should ignore empty string value
 // in href attribute value of the link element.
@@ -24,6 +29,60 @@ TEST_F(HTMLLinkElementTest, EmptyHrefAttribute) {
       "</head>");
   auto* link_element = To<HTMLLinkElement>(GetDocument().head()->firstChild());
   EXPECT_EQ(NullURL(), link_element->Href());
+}
+
+// This tests whether Web Monetization counter is properly triggered.
+TEST_F(HTMLLinkElementTest, WebMonetizationCounter) {
+  // A <link rel="icon"> is not counted.
+  GetDocument().head()->SetInnerHTMLFromString(R"HTML(
+    <link rel="icon" type="image/ico" href="">
+  )HTML");
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kHTMLLinkElementMonetization));
+
+  // A <link rel="monetization"> is counted.
+  GetDocument().head()->SetInnerHTMLFromString(R"HTML(
+    <link rel="monetization">
+  )HTML");
+  EXPECT_TRUE(
+      GetDocument().IsUseCounted(WebFeature::kHTMLLinkElementMonetization));
+
+  // However, it does not affect the counter for <meta name="monetization">.
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kHTMLMetaElementMonetization));
+}
+
+TEST_F(HTMLLinkElementSimTest, WebMonetizationNotCountedInSubFrame) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest child_frame_resource("https://example.com/subframe.html",
+                                  "text/html");
+
+  LoadURL("https://example.com/");
+
+  main_resource.Complete(String::Format(
+      R"HTML(
+        <body onload='console.log("main body onload");'>
+          <iframe src='https://example.com/subframe.html'
+                  onload='console.log("child frame element onload");'></iframe>
+        </body>)HTML"));
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  child_frame_resource.Complete(String::Format(R"HTML(
+    <link rel="monetization">
+  )HTML"));
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  // Ensure that main frame and subframe are loaded before checking the counter.
+  EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
+  EXPECT_TRUE(ConsoleMessages().Contains("child frame element onload"));
+
+  // <link rel="monetization"> is not counted in subframes.
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kHTMLLinkElementMonetization));
 }
 
 }  // namespace blink

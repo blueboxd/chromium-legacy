@@ -283,6 +283,7 @@
 <translation id="1397500194120344683">සුදුසු උපාංග නැත. <ph name="LINK_BEGIN" />තවත් දැන ගන්න<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">විශාල කරන්න</translation>
 <translation id="1399511500114202393">පරිශීලක සහතිකයක් නැත</translation>
+<translation id="1403519882106291341">Google Chrome OS නියම</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (අධීක්ෂණය කළ)</translation>
 <translation id="1405779994569073824">බිඳ වැටුණා.</translation>
 <translation id="1406500794671479665">තහවුරු කෙරෙමින්...</translation>
@@ -2172,7 +2173,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="4036778507053569103">සේවාදායකයෙන් බාගත් ප්‍රතිපත්තිය අවලංගුයි.</translation>
 <translation id="4037084878352560732">අශ්වයා</translation>
 <translation id="4037889604535939429">පුද්ගලයා සංස්කරණය කරන්න</translation>
-<translation id="4042264909745389898">Google Chrome OS නියම</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{පිටවීමේ පිටුව}one{පිටවීමේ පිටු}other{පිටවීමේ පිටු}}</translation>
 <translation id="4044612648082411741">ඔබේ සහතික මුරපදය ඇතුළු කරන්න</translation>
 <translation id="404493185430269859">පෙරනිමි සෙවුම් එන්ජිම</translation>

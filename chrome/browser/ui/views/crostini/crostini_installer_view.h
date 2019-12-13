@@ -30,8 +30,6 @@ class CrostiniInstallerView : public views::DialogDelegateView,
   static CrostiniInstallerView* GetActiveViewForTesting();
 
   // views::DialogDelegateView:
-  int GetDialogButtons() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   bool ShouldShowCloseButton() const override;
   bool ShouldShowWindowTitle() const override;
@@ -62,6 +60,11 @@ class CrostiniInstallerView : public views::DialogDelegateView,
   void OnInstallFinished(crostini::mojom::InstallerError error);
   void OnCanceled();
   void SetMessageLabel();
+
+  void UpdateDialogButtonsAfterStateChange();
+
+  int GetCurrentDialogButtons() const;
+  base::string16 GetCurrentDialogButtonLabel(ui::DialogButton button) const;
 
   State state_ = State::PROMPT;
   crostini::mojom::InstallerState installing_state_;

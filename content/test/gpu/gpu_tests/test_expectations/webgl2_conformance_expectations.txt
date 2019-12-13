@@ -113,6 +113,7 @@ crbug.com/792210 [ nvidia ] conformance/glsl/bugs/in-parameter-passed-as-inout-a
 crbug.com/945942 [ win passthrough intel ] conformance/uniforms/no-over-optimization-on-uniform-array-00.html [ RetryOnFailure ]
 crbug.com/620379 [ d3d11 win intel ] deqp/functional/gles3/lifetime.html [ RetryOnFailure ]
 crbug.com/912579 [ opengl win passthrough intel ] conformance2/rendering/out-of-bounds-index-buffers-after-copying.html [ RetryOnFailure ]
+crbug.com/1033662 [ opengl win passthrough intel ] deqp/functional/gles3/sync.html [ RetryOnFailure ]
 
 # It's unfortunate that these suppressions need to be so broad, but it
 # looks like the D3D11 device can be lost spontaneously on this

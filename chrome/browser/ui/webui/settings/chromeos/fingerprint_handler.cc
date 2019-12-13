@@ -20,9 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/system_connector.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "content/public/browser/device_service.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using session_manager::SessionManager;
@@ -57,8 +55,8 @@ std::unique_ptr<base::DictionaryValue> GetFingerprintsInfo(
 }  // namespace
 
 FingerprintHandler::FingerprintHandler(Profile* profile) : profile_(profile) {
-  content::GetSystemConnector()->Connect(
-      device::mojom::kServiceName, fp_service_.BindNewPipeAndPassReceiver());
+  content::GetDeviceService().BindFingerprint(
+      fp_service_.BindNewPipeAndPassReceiver());
   user_id_ = ProfileHelper::Get()->GetUserIdHashFromProfile(profile);
 }
 

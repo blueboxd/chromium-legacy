@@ -19,10 +19,15 @@ device::mojom::DeviceService& GetDeviceService() {
   mojo::Remote<device::mojom::DeviceService>& remote =
       remote_slot->GetOrCreateValue();
   if (!remote) {
+    auto receiver = remote.BindNewPipeAndPassReceiver();
+
     // TODO(https://crbug.com/977637): Start the service directly inside this
     // implementation once all clients are moved off of Service Manager APIs.
-    GetSystemConnector()->Connect(device::mojom::kServiceName,
-                                  remote.BindNewPipeAndPassReceiver());
+    // Note that in some test environments |GetSystemConnector()| may return
+    // null. The Device Service is not expected to function in this tests.
+    auto* connector = GetSystemConnector();
+    if (connector)
+      connector->Connect(device::mojom::kServiceName, std::move(receiver));
   }
   return *remote.get();
 }

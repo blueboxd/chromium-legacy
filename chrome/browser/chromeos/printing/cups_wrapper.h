@@ -10,15 +10,11 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
 #include "printing/backend/cups_connection.h"
 
 namespace chromeos {
 
-// A wrapper around the CUPS connection to ensure that it's always accessed on
-// the same sequence and run in the appropriate sequence off of the calling
-// sequence.
+// A wrapper around the CUPS connection.
 class CupsWrapper {
  public:
   // Container for results from CUPS queries.
@@ -32,38 +28,25 @@ class CupsWrapper {
     std::vector<::printing::QueueStatus> queues;
   };
 
-  CupsWrapper();
-  CupsWrapper(const CupsWrapper&) = delete;
-  CupsWrapper& operator=(const CupsWrapper&) = delete;
-  ~CupsWrapper();
+  static std::unique_ptr<CupsWrapper> Create();
+
+  virtual ~CupsWrapper();
 
   // Queries CUPS for the current jobs for the given |printer_ids|. Passes
   // the result to |callback|.
-  void QueryCupsPrintJobs(
+  virtual void QueryCupsPrintJobs(
       const std::vector<std::string>& printer_ids,
-      base::OnceCallback<void(std::unique_ptr<QueryResult>)> callback);
+      base::OnceCallback<void(std::unique_ptr<QueryResult>)> callback) = 0;
 
   // Cancels the print job on the blocking thread.
-  void CancelJob(const std::string& printer_id, int job_id);
+  virtual void CancelJob(const std::string& printer_id, int job_id) = 0;
 
   // Queries CUPS for the printer status for the given |printer_id|. Passes the
   // result to |callback|.
-  void QueryCupsPrinterStatus(
+  virtual void QueryCupsPrinterStatus(
       const std::string& printer_id,
       base::OnceCallback<void(std::unique_ptr<::printing::PrinterStatus>)>
-          callback);
-
- private:
-  class Backend;
-  // The |backend_| handles all communication with CUPS.
-  // It is instantiated on the thread |this| runs on but after that,
-  // must only be accessed and eventually destroyed via the
-  // |backend_task_runner_|.
-  std::unique_ptr<Backend> backend_;
-
-  scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
-
-  SEQUENCE_CHECKER(sequence_checker_);
+          callback) = 0;
 };
 
 }  // namespace chromeos

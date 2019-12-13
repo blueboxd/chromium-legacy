@@ -6,11 +6,9 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/lazy_instance.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/device_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 
@@ -32,16 +30,12 @@ WakeLockContextHost::WakeLockContextHost(WebContents* web_contents)
     : id_(g_unique_id.GetNext()), web_contents_(web_contents) {
   g_id_to_context_host.Get()[id_] = this;
 
-  // Connect to a WakeLockContext, associating it with |id_| (note that in some
-  // testing environments, the system Connector isn't initialized.
-  service_manager::Connector* connector = GetSystemConnector();
-  if (connector) {
-    mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider;
-    connector->Connect(device::mojom::kServiceName,
-                       wake_lock_provider.BindNewPipeAndPassReceiver());
-    wake_lock_provider->GetWakeLockContextForID(
-        id_, wake_lock_context_.BindNewPipeAndPassReceiver());
-  }
+  // Connect to a WakeLockContext, associating it with |id_|.
+  mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider;
+  GetDeviceService().BindWakeLockProvider(
+      wake_lock_provider.BindNewPipeAndPassReceiver());
+  wake_lock_provider->GetWakeLockContextForID(
+      id_, wake_lock_context_.BindNewPipeAndPassReceiver());
 }
 
 WakeLockContextHost::~WakeLockContextHost() {

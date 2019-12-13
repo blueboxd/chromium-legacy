@@ -50,6 +50,7 @@ import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.UrlBar;
@@ -595,8 +596,10 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
                 if (currentTab == null || currentTab.getWebContents() == null) return;
                 Activity activity = currentTab.getWindowAndroid().getActivity().get();
                 if (activity == null) return;
-                PageInfoController.show((ChromeActivity) activity, currentTab,
-                        getContentPublisher(), PageInfoController.OpenedFromSource.TOOLBAR);
+                PageInfoController.show((ChromeActivity) activity, currentTab.getWebContents(),
+                        getContentPublisher(), PageInfoController.OpenedFromSource.TOOLBAR,
+                        /*offlinePageLoadUrlDelegate=*/
+                        new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(currentTab));
             });
         }
 

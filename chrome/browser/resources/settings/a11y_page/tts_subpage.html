@@ -111,7 +111,7 @@
         filter="isPrimaryLanguage_"
         sort="alphabeticalSort_">
       <div class="settings-box first">
-        <div class="start settings-box-text">
+        <div class="start settings-box-text" aria-hidden="true">
           [[lang.language]]
         </div>
         <settings-dropdown-menu label="[[lang.language]]"
@@ -134,7 +134,7 @@
       <template is="dom-repeat" items="[[languagesToVoices]]"
           as="lang" sort="alphabeticalSort_" filter="isSecondaryLanguage_">
         <div class="settings-box continuation">
-          <div class="start settings-box-text">
+          <div class="start settings-box-text" aria-hidden="true">
             [[lang.language]]
           </div>
           <settings-dropdown-menu label="[[lang.language]]"

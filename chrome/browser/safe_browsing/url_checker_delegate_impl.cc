@@ -30,8 +30,8 @@ namespace {
 
 // Destroys the prerender contents associated with the web_contents, if any.
 void DestroyPrerenderContents(
-    const base::Callback<content::WebContents*()>& web_contents_getter) {
-  content::WebContents* web_contents = web_contents_getter.Run();
+    content::WebContents::OnceGetter web_contents_getter) {
+  content::WebContents* web_contents = std::move(web_contents_getter).Run();
   if (web_contents) {
     prerender::PrerenderContents* prerender_contents =
         prerender::PrerenderContents::FromWebContents(web_contents);
@@ -98,11 +98,11 @@ UrlCheckerDelegateImpl::UrlCheckerDelegateImpl(
 UrlCheckerDelegateImpl::~UrlCheckerDelegateImpl() = default;
 
 void UrlCheckerDelegateImpl::MaybeDestroyPrerenderContents(
-    const base::Callback<content::WebContents*()>& web_contents_getter) {
+    content::WebContents::OnceGetter web_contents_getter) {
   // Destroy the prefetch with FINAL_STATUS_SAFEBROSWING.
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&DestroyPrerenderContents, web_contents_getter));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&DestroyPrerenderContents,
+                                std::move(web_contents_getter)));
 }
 
 void UrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(

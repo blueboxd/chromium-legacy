@@ -69,6 +69,7 @@ class RoundedWindowCornersAura : public RoundedWindowCorners {
   ~RoundedWindowCornersAura() override;
 
   void SetEnabled(bool enable) override;
+  bool IsEnabled() const override;
   void SetColorInversion(bool enable) override;
 
  private:
@@ -124,6 +125,10 @@ void RoundedWindowCornersAura::SetEnabled(bool enable) {
   } else {
     widget_->Hide();
   }
+}
+
+bool RoundedWindowCornersAura::IsEnabled() const {
+  return widget_->IsVisible();
 }
 
 void RoundedWindowCornersAura::SetColorInversion(bool enable) {

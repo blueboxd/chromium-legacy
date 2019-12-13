@@ -14,6 +14,8 @@ class RendererSettings;
 
 // This class can be used to answer questions about possible overlay
 // configurations for a particular output device.
+// TODO(weiliangc): Its functionalities should be merged into subclass of
+// OverlayProcessor.
 class VIZ_SERVICE_EXPORT OverlayCandidateValidatorStrategy {
  public:
   static std::unique_ptr<OverlayCandidateValidatorStrategy> Create(
@@ -29,7 +31,8 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidatorStrategy {
 
   // Populates a list of strategies that may work with this validator. Should be
   // called at most once.
-  virtual void InitializeStrategies() = 0;
+  virtual OverlayProcessorUsingStrategy::StrategyList InitializeStrategies(
+      OverlayProcessorUsingStrategy* processor) = 0;
 
   // A list of possible overlay candidates is presented to this function.
   // The expected result is that those candidates that can be in a separate
@@ -49,23 +52,6 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidatorStrategy {
   // needed. Should only be called after the overlays are processed.
   virtual gfx::Rect GetOverlayDamageRectForOutputSurface(
       const OverlayCandidate& candidate) const;
-
-  // Iterate through a list of strategies and attempt to overlay with each.
-  // Returns true if one of the attempts is successful. Has to be called after
-  // InitializeStrategies(). A |primary_plane| represents the output surface's
-  // buffer that comes from |BufferQueue|. It is passed in here so it could be
-  // pass through to hardware through CheckOverlaySupport. It is not passed in
-  // as a const member because the underlay strategy changes the
-  // |primary_plane|'s blending setting.
-  bool AttemptWithStrategies(
-      const SkMatrix44& output_color_matrix,
-      const OverlayProcessorInterface::FilterOperationsMap&
-          render_pass_backdrop_filters,
-      DisplayResourceProvider* resource_provider,
-      RenderPassList* render_pass_list,
-      PrimaryPlane* primary_plane,
-      OverlayCandidateList* candidates,
-      std::vector<gfx::Rect>* content_bounds);
 
   // Returns true if the platform supports hw overlays and surface occluding
   // damage rect needs to be computed since it will be used by overlay
@@ -87,15 +73,8 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidatorStrategy {
   // transform and display rect.
   virtual void AdjustOutputSurfaceOverlay(PrimaryPlane* output_surface_plane) {}
 
-  // If the full screen strategy is successful, we no longer need to overlay the
-  // output surface since it will be fully covered.
-  bool StrategyNeedsOutputSurfacePlaneRemoved();
-
  protected:
   OverlayCandidateValidatorStrategy();
-
-  OverlayProcessorUsingStrategy::StrategyList strategies_;
-  OverlayProcessorUsingStrategy::Strategy* last_successful_strategy_;
 };
 
 }  // namespace viz

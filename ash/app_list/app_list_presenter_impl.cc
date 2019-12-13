@@ -463,7 +463,6 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
         view_->Back();
       }
 
-      OnVisibilityWillChange(visible, GetDisplayId());
       OnVisibilityChanged(visible, GetDisplayId());
     }
   }
@@ -512,7 +511,6 @@ void AppListPresenterImpl::OnWidgetDestroyed(views::Widget* widget) {
 void AppListPresenterImpl::OnWidgetVisibilityChanged(views::Widget* widget,
                                                      bool visible) {
   DCHECK_EQ(view_->GetWidget(), widget);
-  OnVisibilityWillChange(visible, GetDisplayId());
   OnVisibilityChanged(visible, GetDisplayId());
 }
 

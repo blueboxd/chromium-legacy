@@ -2,5 +2,5 @@ document
 ++group Name='label'
 ++group
 ++group Name='title'
-++group
+++group IsControlElement=false
 ++++description Name='description'

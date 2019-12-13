@@ -111,9 +111,8 @@ class WebDataServiceTest : public testing::Test {
     wdbs_->LoadDatabase();
 
     wds_ = new AutofillWebDataService(
-        wdbs_, base::ThreadTaskRunnerHandle::Get(), db_task_runner,
-        WebDataServiceBase::ProfileErrorCallback());
-    wds_->Init();
+        wdbs_, base::ThreadTaskRunnerHandle::Get(), db_task_runner);
+    wds_->Init(base::NullCallback());
   }
 
   void TearDown() override {

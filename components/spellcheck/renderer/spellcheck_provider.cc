@@ -4,6 +4,8 @@
 
 #include "components/spellcheck/renderer/spellcheck_provider.h"
 
+#include <unordered_map>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
@@ -13,6 +15,7 @@
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/renderer/spellcheck.h"
 #include "components/spellcheck/renderer/spellcheck_language.h"
+#include "components/spellcheck/renderer/spellcheck_renderer_metrics.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_frame.h"
@@ -165,6 +168,12 @@ void SpellCheckProvider::RequestTextChecking(
   last_identifier_ = text_check_completions_.Add(std::move(completion));
 
 #if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+  size_t enabled_count = spellcheck_->EnabledLanguageCount();
+  request_start_times_[last_identifier_] = {
+      enabled_count > 0,                              // used_hunspell
+      enabled_count != spellcheck_->LanguageCount(),  // used_native
+      base::TimeTicks::Now()};
+
   if (spellcheck::UseWinHybridSpellChecker()) {
     // Do a first spellcheck pass with Hunspell, then check the rest of the
     // locales with the native spellchecker.
@@ -231,13 +240,17 @@ void SpellCheckProvider::CheckSpelling(
   const int kWordStart = 0;
 
   if (optional_suggestions) {
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+    base::TimeTicks suggestions_start = base::TimeTicks::Now();
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
     spellcheck::PerLanguageSuggestions per_language_suggestions;
     spellcheck_->SpellCheckWord(word.c_str(), kWordStart, word.size(),
                                 routing_id(), &offset, &length,
                                 &per_language_suggestions);
 
 #if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-    if (spellcheck::UseWinHybridSpellChecker()) {
+    if (spellcheck::UseWinHybridSpellChecker() &&
+        spellcheck_->EnabledLanguageCount() < spellcheck_->LanguageCount()) {
       // Also fetch suggestions from the browser process (native spellchecker).
       // This is a synchronous Mojo call, because this method must return
       // synchronously.
@@ -249,6 +262,11 @@ void SpellCheckProvider::CheckSpelling(
       per_language_suggestions.insert(per_language_suggestions.end(),
                                       browser_suggestions.begin(),
                                       browser_suggestions.end());
+      spellcheck_renderer_metrics::RecordHybridSuggestionDuration(
+          base::TimeTicks::Now() - suggestions_start);
+    } else {
+      spellcheck_renderer_metrics::RecordHunspellSuggestionDuration(
+          base::TimeTicks::Now() - suggestions_start);
     }
 #endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
@@ -259,14 +277,15 @@ void SpellCheckProvider::CheckSpelling(
         suggestions.begin(), suggestions.end(), web_suggestions.begin(),
         [](const base::string16& s) { return WebString::FromUTF16(s); });
     *optional_suggestions = web_suggestions;
-    UMA_HISTOGRAM_COUNTS_1M("SpellCheck.api.check.suggestions",
-                            base::saturated_cast<int>(word.size()));
+    spellcheck_renderer_metrics::RecordCheckedTextLengthWithSuggestions(
+        base::saturated_cast<int>(word.size()));
   } else {
     spellcheck_->SpellCheckWord(word.c_str(), kWordStart, word.size(),
                                 routing_id(), &offset, &length,
                                 /* optional suggestions vector */ nullptr);
-    UMA_HISTOGRAM_COUNTS_1M("SpellCheck.api.check",
-                            base::saturated_cast<int>(word.size()));
+    spellcheck_renderer_metrics::RecordCheckedTextLengthNoSuggestions(
+        base::saturated_cast<int>(word.size()));
+
     // If optional_suggestions is not requested, the API is called
     // for marking. So we use this for counting markable words.
     GetSpellCheckHost().NotifyChecked(word, 0 < length);
@@ -277,8 +296,8 @@ void SpellCheckProvider::RequestCheckingOfText(
     const WebString& text,
     std::unique_ptr<WebTextCheckingCompletion> completion) {
   RequestTextChecking(text.Utf16(), std::move(completion));
-  UMA_HISTOGRAM_COUNTS_1M("SpellCheck.api.async",
-                          base::saturated_cast<int>(text.length()));
+  spellcheck_renderer_metrics::RecordAsyncCheckedTextLength(
+      base::saturated_cast<int>(text.length()));
 }
 
 #if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
@@ -304,6 +323,10 @@ void SpellCheckProvider::OnRespondSpellingService(
   blink::WebVector<blink::WebTextCheckingResult> textcheck_results;
   spellcheck_->CreateTextCheckingResults(SpellCheck::USE_NATIVE_CHECKER, 0,
                                          line, results, &textcheck_results);
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+  RecordRequestDuration(identifier);
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+
   completion->DidFinishCheckingText(textcheck_results);
 
   // Cache the request and the converted results.
@@ -344,6 +367,10 @@ void SpellCheckProvider::OnRespondTextCheck(
                                          line,
                                          results,
                                          &textcheck_results);
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+  RecordRequestDuration(identifier);
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+
   completion->DidFinishCheckingText(textcheck_results);
 
   // Cache the request and the converted results.
@@ -397,3 +424,17 @@ bool SpellCheckProvider::SatisfyRequestFromCache(
 void SpellCheckProvider::OnDestruct() {
   delete this;
 }
+
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+void SpellCheckProvider::RecordRequestDuration(int identifier) {
+  const auto& request_info = request_start_times_.find(identifier);
+  if (request_info == request_start_times_.end()) {
+    return;
+  }
+
+  spellcheck_renderer_metrics::RecordSpellcheckDuration(
+      base::TimeTicks::Now() - request_info->second.request_start_ticks,
+      request_info->second.used_hunspell, request_info->second.used_native);
+  request_start_times_.erase(request_info);
+}
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)

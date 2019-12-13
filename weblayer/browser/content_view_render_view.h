@@ -50,6 +50,7 @@ class ContentViewRenderView : public content::CompositorClient {
   void SurfaceDestroyed(JNIEnv* env, jboolean cache_back_buffer);
   void SurfaceChanged(JNIEnv* env,
                       jboolean can_be_used_with_surface_control,
+                      jint format,
                       jint width,
                       jint height,
                       const base::android::JavaParamRef<jobject>& surface);
@@ -74,6 +75,8 @@ class ContentViewRenderView : public content::CompositorClient {
   // Set as the root-layer of the compositor. Contains |web_contents_layer_|.
   scoped_refptr<cc::Layer> root_container_layer_;
   scoped_refptr<cc::Layer> web_contents_layer_;
+
+  int current_surface_format_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ContentViewRenderView);
 };

@@ -14,8 +14,8 @@
 namespace gcm {
 
 // Used to obtain a token based on Instance ID.
-class GCM_EXPORT InstanceIDGetTokenRequestHandler :
-    public RegistrationRequest::CustomRequestHandler {
+class GCM_EXPORT InstanceIDGetTokenRequestHandler
+    : public RegistrationRequest::CustomRequestHandler {
  public:
   InstanceIDGetTokenRequestHandler(
       const std::string& instance_id,
@@ -25,9 +25,10 @@ class GCM_EXPORT InstanceIDGetTokenRequestHandler :
       const std::map<std::string, std::string>& options);
   ~InstanceIDGetTokenRequestHandler() override;
 
-   // RegistrationRequest overrides:
+  // RegistrationRequest overrides:
   void BuildRequestBody(std::string* body) override;
-  void ReportUMAs(RegistrationRequest::Status status) override;
+  void ReportStatusToUMA(RegistrationRequest::Status status) override;
+  void ReportNetErrorCodeToUMA(int net_error_code) override;
 
  private:
   std::string instance_id_;

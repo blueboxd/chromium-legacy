@@ -1,6 +1,6 @@
 document
 ++group
-++++group
+++++group IsControlElement=false
 ++++++description Name='First blockquote has a child element.'
 ++group
 ++++description Name='Second blockquote has no child.'

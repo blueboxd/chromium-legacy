@@ -73,6 +73,16 @@ public class AssistantLoginSection extends AssistantCollectUserDataSection<Assis
         return mContext.getString(R.string.learn_more);
     }
 
+    @Override
+    protected boolean areEqual(
+            @Nullable AssistantLoginChoice optionA, @Nullable AssistantLoginChoice optionB) {
+        if (optionA == null || optionB == null) {
+            return optionA == optionB;
+        }
+        // Native ensures that each login choice has a unique identifier.
+        return TextUtils.equals(optionA.getIdentifier(), optionB.getIdentifier());
+    }
+
     /**
      * The login options have changed externally. This will rebuild the UI with the new/changed
      * set of login options, while keeping the selected item if possible.

@@ -44,6 +44,9 @@
 using media_gpu_v4l2::kModuleV4l2;
 using media_gpu_v4l2::InitializeStubs;
 using media_gpu_v4l2::StubPathMap;
+
+static const base::FilePath::CharType kV4l2Lib[] =
+    FILE_PATH_LITERAL("/usr/lib/libv4l2.so");
 #endif
 
 namespace media {
@@ -507,9 +510,6 @@ void GenericV4L2Device::CloseDevice() {
 // static
 bool GenericV4L2Device::PostSandboxInitialization() {
 #if BUILDFLAG(USE_LIBV4L2)
-  static const base::FilePath::CharType kV4l2Lib[] =
-    FILE_PATH_LITERAL("libv4l2.so");
-
   StubPathMap paths;
   paths[kModuleV4l2].push_back(kV4l2Lib);
 

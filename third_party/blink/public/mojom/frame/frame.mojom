@@ -163,6 +163,8 @@ interface LocalFrame {
   // support cross-process focused frame changes.
   Focus();
 
+  // Notifies this frame to clear the focused element (if any).
+  ClearFocusedElement();
 };
 
 // Implemented in Browser, this interface defines frame-specific methods that

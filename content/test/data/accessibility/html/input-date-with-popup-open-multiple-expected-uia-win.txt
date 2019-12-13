@@ -1,8 +1,8 @@
 document
-++group
+++group IsControlElement=false
 ++++textbox LocalizedControlType='date picker'
-++++++group
-++++++++group
+++++++group IsControlElement=false
+++++++++group IsControlElement=false
 ++++++++++spinbutton Name='Month' RangeValue.IsReadOnly=false RangeValue.LargeChange=0.00 RangeValue.SmallChange=0.00 RangeValue.Maximum=12.00 RangeValue.Minimum=1.00 RangeValue.Value=9.00 Value.Value='09'
 ++++++++++++description Name='09'
 ++++++++++description Name='/'
@@ -13,8 +13,8 @@ document
 ++++++++++++description Name='2008'
 ++++++menu Name='Show date picker' ExpandCollapse.ExpandCollapseState='Collapsed'
 ++++textbox LocalizedControlType='date picker'
-++++++group
-++++++++group
+++++++group IsControlElement=false
+++++++++group IsControlElement=false
 ++++++++++spinbutton Name='Month' RangeValue.IsReadOnly=false RangeValue.LargeChange=0.00 RangeValue.SmallChange=0.00 RangeValue.Maximum=12.00 RangeValue.Minimum=1.00 RangeValue.Value=9.00 Value.Value='09'
 ++++++++++++description Name='09'
 ++++++++++description Name='/'
@@ -25,8 +25,8 @@ document
 ++++++++++++description Name='2008'
 ++++++menu Name='Show date picker' ExpandCollapse.ExpandCollapseState='Collapsed'
 ++++textbox LocalizedControlType='date picker' Name='Third date picker' ControllerFor='{document}'
-++++++group
-++++++++group
+++++++group IsControlElement=false
+++++++++group IsControlElement=false
 ++++++++++spinbutton Name='Month Third date picker' RangeValue.IsReadOnly=false RangeValue.LargeChange=0.00 RangeValue.SmallChange=0.00 RangeValue.Maximum=12.00 RangeValue.Minimum=1.00 RangeValue.Value=9.00 Value.Value='09'
 ++++++++++++description Name='09'
 ++++++++++description Name='/'
@@ -38,33 +38,33 @@ document
 ++++++menu Name='Show date picker' ExpandCollapse.ExpandCollapseState='Collapsed'
 ++++++Name='Chrome Legacy Window' IsControlElement=false
 ++++++++document
-++++++++++group
-++++++++++++group
-++++++++++++++group
+++++++++++group IsControlElement=false
+++++++++++++group IsControlElement=false
+++++++++++++++group IsControlElement=false
 ++++++++++++++++button Name='Show month selection panel'
 ++++++++++++++++++description IsControlElement=false
 ++++++++++++++++++img
 ++++++++++++++button Name='Show previous month'
 ++++++++++++++++img
 ++++++++++++++button Name='Today'
-++++++++++++++++group
+++++++++++++++++group IsControlElement=false
 ++++++++++++++button Name='Show next month'
 ++++++++++++++++img
 ++++++++++++++grid Grid.ColumnCount=0 Grid.RowCount=0 Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false Table.RowOrColumnMajor='RowMajor'
-++++++++++++++++group
-++++++++++++++++++group
+++++++++++++++++group IsControlElement=false
+++++++++++++++++++group IsControlElement=false
 ++++++++++++++++++++description Name='Sun'
-++++++++++++++++++group
+++++++++++++++++++group IsControlElement=false
 ++++++++++++++++++++description Name='Mon'
-++++++++++++++++++group
+++++++++++++++++++group IsControlElement=false
 ++++++++++++++++++++description Name='Tue'
-++++++++++++++++++group
+++++++++++++++++++group IsControlElement=false
 ++++++++++++++++++++description Name='Wed'
-++++++++++++++++++group
+++++++++++++++++++group IsControlElement=false
 ++++++++++++++++++++description Name='Thu'
-++++++++++++++++++group
+++++++++++++++++++group IsControlElement=false
 ++++++++++++++++++++description Name='Fri'
-++++++++++++++++++group
+++++++++++++++++++group IsControlElement=false
 ++++++++++++++++++++description Name='Sat'
-++++++++++++++++group
-++++++++++++++++++group
+++++++++++++++++group IsControlElement=false
+++++++++++++++++++group IsControlElement=false

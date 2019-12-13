@@ -1719,7 +1719,7 @@ bool RenderViewImpl::CanHandleGestureEvent() {
   return true;
 }
 
-// TODO(https://crbug.com/937569): Remove this in Chrome 82.
+// TODO(https://crbug.com/937569): Remove this in Chrome 88.
 bool RenderViewImpl::AllowPopupsDuringPageUnload() {
   // The switch version is for enabling via enterprise policy. The feature
   // version is for enabling via about:flags and Finch policy.

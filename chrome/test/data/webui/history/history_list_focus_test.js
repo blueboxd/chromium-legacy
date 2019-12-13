@@ -18,15 +18,23 @@ suite('<history-list>', function() {
     PolymerTest.clearBody();
     testService = new TestBrowserService();
     history.BrowserService.instance_ = testService;
+    testService.setQueryResult({
+      info: createHistoryInfo(),
+      value: TEST_HISTORY_RESULTS,
+    });
 
     app = document.createElement('history-app');
     document.body.appendChild(app);
     element = app.$.history;
-    return test_util.flushTasks();
+    return Promise
+        .all([
+          testService.whenCalled('queryHistory'),
+          history.ensureLazyLoaded(),
+        ])
+        .then(test_util.flushTasks);
   });
 
   test('list focus and keyboard nav', async () => {
-    app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
     let focused;
     await test_util.flushTasks();
     Polymer.dom.flush();
@@ -82,9 +90,7 @@ suite('<history-list>', function() {
     assertTrue(items[3].row_.isActive());
   });
 
-  test('selection of all items using ctrl + a', async function() {
-    app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-    await test_util.flushTasks();
+  test('selection of all items using ctrl + a', async () => {
     const toolbar = app.$.toolbar;
     const field = toolbar.$['main-toolbar'].getSearchField();
     field.blur();

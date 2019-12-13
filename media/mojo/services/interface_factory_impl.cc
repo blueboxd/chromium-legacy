@@ -44,10 +44,8 @@ namespace media {
 InterfaceFactoryImpl::InterfaceFactoryImpl(
     mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
         host_interfaces,
-    std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref,
     MojoMediaClient* mojo_media_client)
     : host_interfaces_(std::move(host_interfaces)),
-      keepalive_ref_(std::move(keepalive_ref)),
       mojo_media_client_(mojo_media_client) {
   DVLOG(1) << __func__;
   DCHECK(mojo_media_client_);

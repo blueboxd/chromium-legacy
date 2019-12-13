@@ -15,12 +15,11 @@ namespace {
 
 std::unique_ptr<base::Value> CopyBinaryValueToIntegerList(
     const base::Value::BlobStorage& input) {
-  base::Value output(base::Value::Type::LIST);
-  auto& list = output.GetList();
+  base::Value::ListStorage list;
   list.reserve(input.size());
   for (int c : input)
     list.emplace_back(c);
-  return base::Value::ToUniquePtrValue(std::move(output));
+  return base::Value::ToUniquePtrValue(base::Value(std::move(list)));
 }
 
 }  // namespace

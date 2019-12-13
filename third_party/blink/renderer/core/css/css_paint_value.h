@@ -65,7 +65,9 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
   bool IsUsingCustomProperty(const AtomicString& custom_property_name,
                              const Document&) const;
 
-  void CreateGeneratorForTesting(const Document& document);
+  void CreateGeneratorForTesting(const Document& document) {
+    EnsureGenerator(document);
+  }
   unsigned NumberOfGeneratorsForTesting() const { return generators_.size(); }
 
   void TraceAfterDispatch(blink::Visitor*);
@@ -88,6 +90,7 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
+  CSSPaintImageGenerator& EnsureGenerator(const Document&);
   void PaintImageGeneratorReady();
 
   bool ParseInputArguments(const Document&);

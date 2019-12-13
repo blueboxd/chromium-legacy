@@ -470,12 +470,6 @@
     <dimen name="recent_tabs_foreign_session_group_item_height">64dp</dimen>
     <dimen name="recent_tabs_default_group_item_height">48dp</dimen>
 
-    <!-- Snackbars -->
-    <dimen name="snackbar_min_height">48dp</dimen>
-    <dimen name="snackbar_width_tablet">450dp</dimen>
-    <dimen name="snackbar_margin_tablet">24dp</dimen>
-    <dimen name="snackbar_shadow_height">8dp</dimen>
-
     <!-- Bookmarks dimensions -->
     <dimen name="bookmark_folder_item_left">16dp</dimen>
     <dimen name="bookmark_minimum_dialog_size_tablet">500dp</dimen>

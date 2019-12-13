@@ -855,8 +855,8 @@ ui::AXNodeData* PdfAccessibilityTree::CreateLinkNode(
   link_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
                                 std::string());
   link_node->relative_bounds.bounds = ToGfxRectF(link.bounds);
-  node_id_to_link_info_.emplace(link_node->id,
-                                LinkInfo(page_index, link.index_in_page));
+  node_id_to_annotation_info_.emplace(
+      link_node->id, AnnotationInfo(page_index, link.index_in_page));
 
   return link_node;
 }
@@ -1007,13 +1007,14 @@ void PdfAccessibilityTree::AddWordStartsAndEnds(
                                        word_ends);
 }
 
-PdfAccessibilityTree::LinkInfo::LinkInfo(uint32_t page_index,
-                                         uint32_t link_index)
-    : page_index(page_index), link_index(link_index) {}
+PdfAccessibilityTree::AnnotationInfo::AnnotationInfo(uint32_t page_index,
+                                                     uint32_t annotation_index)
+    : page_index(page_index), annotation_index(annotation_index) {}
 
-PdfAccessibilityTree::LinkInfo::LinkInfo(const LinkInfo& other) = default;
+PdfAccessibilityTree::AnnotationInfo::AnnotationInfo(
+    const AnnotationInfo& other) = default;
 
-PdfAccessibilityTree::LinkInfo::~LinkInfo() = default;
+PdfAccessibilityTree::AnnotationInfo::~AnnotationInfo() = default;
 
 //
 // AXTreeSource implementation.
@@ -1087,17 +1088,13 @@ void PdfAccessibilityTree::HandleAction(
   }
 }
 
-bool PdfAccessibilityTree::GetPdfLinkInfoFromAXNode(
-    int32_t ax_node_id,
-    uint32_t* page_index,
-    uint32_t* link_index_in_page) const {
-  auto iter = node_id_to_link_info_.find(ax_node_id);
-  if (iter == node_id_to_link_info_.end())
-    return false;
+base::Optional<PdfAccessibilityTree::AnnotationInfo>
+PdfAccessibilityTree::GetPdfAnnotationInfoFromAXNode(int32_t ax_node_id) const {
+  auto iter = node_id_to_annotation_info_.find(ax_node_id);
+  if (iter == node_id_to_annotation_info_.end())
+    return base::nullopt;
 
-  *page_index = iter->second.page_index;
-  *link_index_in_page = iter->second.link_index;
-  return true;
+  return AnnotationInfo(iter->second.page_index, iter->second.annotation_index);
 }
 
 }  // namespace pdf

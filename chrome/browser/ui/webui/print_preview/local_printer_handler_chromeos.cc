@@ -69,9 +69,9 @@ void AddPrintersToList(const std::vector<chromeos::Printer>& printers,
 
 base::Value FetchCapabilitiesAsync(const std::string& device_name,
                                    const PrinterBasicInfo& basic_info,
-                                   bool has_secure_protocol) {
-  auto print_backend = PrintBackend::CreateInstance(
-      nullptr, g_browser_process->GetApplicationLocale());
+                                   bool has_secure_protocol,
+                                   const std::string& locale) {
+  auto print_backend = PrintBackend::CreateInstance(nullptr, locale);
   return GetSettingsOnBlockingTaskRunner(
       device_name, basic_info, PrinterSemanticCapsAndDefaults::Papers(),
       has_secure_protocol, print_backend);
@@ -98,7 +98,8 @@ void FetchCapabilities(const chromeos::Printer& printer,
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&FetchCapabilitiesAsync, printer.id(), basic_info,
-                     has_secure_protocol),
+                     has_secure_protocol,
+                     g_browser_process->GetApplicationLocale()),
       base::BindOnce(&CapabilitiesFetched, std::move(policies), std::move(cb)));
 }
 

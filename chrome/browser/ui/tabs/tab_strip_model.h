@@ -127,8 +127,12 @@ class TabStripModel : public TabGroupController {
     // New tab was opened through the context menu on the tab strip.
     NEW_TAB_CONTEXT_MENU = 2,
 
+    // New tab was opened through the new tab button in the toolbar for the
+    // WebUI touch-optimized tab strip.
+    NEW_TAB_BUTTON_IN_TOOLBAR_FOR_TOUCH = 3,
+
     // Number of enum entries, used for UMA histogram reporting macros.
-    NEW_TAB_ENUM_COUNT = 3,
+    NEW_TAB_ENUM_COUNT = 4,
   };
 
   static constexpr int kNoTab = -1;

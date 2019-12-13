@@ -146,6 +146,7 @@ CertStatus CertStatusFromOSStatus(OSStatus status) {
       // TODO(wtc): Should we add CERT_STATUS_WRONG_USAGE?
       return CERT_STATUS_INVALID;
 
+    case errSecInternalError:
     case CSSMERR_APPLETP_CRL_BAD_URI:
     case CSSMERR_APPLETP_IDP_FAIL:
       return CERT_STATUS_INVALID;
@@ -536,6 +537,10 @@ CRLSetResult CheckRevocationWithCRLSet(CFArrayRef chain, CRLSet* crl_set) {
 // |verified_chain|, and |chain_info| with the verification results. On
 // failure, no output parameters are modified.
 //
+// WARNING: Beginning with macOS 10.13, if |trust_result| is equal to
+// kSecTrustResultInvalid, any further accesses via SecTrust APIs to |trust_ref|
+// may invalidate |chain_info|.
+//
 // Note: An OK return does not mean that |cert_array| is trusted, merely that
 // verification was performed successfully.
 //
@@ -639,6 +644,8 @@ int BuildAndEvaluateSecTrustRef(CFArrayRef cert_array,
     return NetErrorFromOSStatus(status);
   CFArrayRef tmp_verified_chain = NULL;
   CSSM_TP_APPLE_EVIDENCE_INFO* tmp_chain_info;
+  // WARNING: Beginning with OS X 10.13, |tmp_chain_info| may be freed by any
+  // other accesses via SecTrust APIs to |tmp_trust|.
   status = SecTrustGetResult(tmp_trust, &tmp_trust_result, &tmp_verified_chain,
                              &tmp_chain_info);
   if (status)
@@ -942,11 +949,21 @@ int VerifyWithGivenFlags(X509Certificate* cert,
   bool policy_fail_already_mapped = false;
   bool weak_key_or_signature_algorithm = false;
 
+  // As of macOS 10.13, if |trust_result| (from SecTrustGetResult) returns
+  // kSecTrustResultInvalid, subsequent invocations of SecTrust APIs may
+  // result in revalidating the SecTrust, invalidating the pointers such
+  // as |chain_info|. In releases earlier than 10.13, this call would have
+  // additional information, except that information is unused and
+  // irrelevant if the result was invalid, so the placeholder
+  // errSecInternalError is fine.
+  OSStatus cssm_result = errSecInternalError;
+  if (trust_result != kSecTrustResultInvalid) {
+    status = SecTrustGetCssmResultCode(trust_ref, &cssm_result);
+    if (status)
+      return NetErrorFromOSStatus(status);
+  }
+
   // Evaluate the results
-  OSStatus cssm_result;
-  status = SecTrustGetCssmResultCode(trust_ref, &cssm_result);
-  if (status)
-    return NetErrorFromOSStatus(status);
   switch (trust_result) {
     case kSecTrustResultUnspecified:
     case kSecTrustResultProceed:

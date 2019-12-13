@@ -9,6 +9,7 @@
 #import "base/test/ios/wait_util.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_service.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_utils.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
@@ -23,9 +24,15 @@
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::BookmarksDeleteSwipeButton;
+using chrome_test_util::BookmarksSaveEditFolderButton;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
+using chrome_test_util::ContextBarCenterButtonWithLabel;
+using chrome_test_util::ContextBarLeadingButtonWithLabel;
 using chrome_test_util::ContextMenuCopyButton;
+using chrome_test_util::NavigateBackButtonTo;
 using chrome_test_util::OmniboxText;
+using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 // Bookmark entries integration tests for Chrome.
 @interface BookmarksEntriesTestCase : ChromeTestCase
@@ -60,8 +67,8 @@ using chrome_test_util::OmniboxText;
   }
 
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Swipe action on the URL.
   [[EarlGrey
@@ -69,14 +76,14 @@ using chrome_test_util::OmniboxText;
       performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
 
   // Verify context bar does not change when "Delete" shows up.
-  [BookmarkEarlGreyUtils verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                                        newFolderEnabled:YES];
+  [BookmarkEarlGreyUI verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                     newFolderEnabled:YES];
   // Delete it.
   [[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
       performAction:grey_tap()];
 
   // Wait until it's gone.
-  [BookmarkEarlGreyUtils waitForDeletionOfBookmarkWithTitle:@"Second URL"];
+  [BookmarkEarlGreyUI waitForDeletionOfBookmarkWithTitle:@"Second URL"];
 
   // Press undo
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
@@ -87,8 +94,8 @@ using chrome_test_util::OmniboxText;
       assertWithMatcher:grey_notNil()];
 
   // Verify context bar remains in default state.
-  [BookmarkEarlGreyUtils verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                                        newFolderEnabled:YES];
+  [BookmarkEarlGreyUI verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                     newFolderEnabled:YES];
 }
 
 // TODO(crbug.com/781445): Re-enable this test on 32-bit.
@@ -110,8 +117,8 @@ using chrome_test_util::OmniboxText;
   }
 
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Swipe action on the URL.
   [[EarlGrey
@@ -146,7 +153,7 @@ using chrome_test_util::OmniboxText;
       assertWithMatcher:grey_nil()];
 
   // Cancel edit mode
-  [BookmarkEarlGreyUtils closeContextBarEditMode];
+  [BookmarkEarlGreyUI closeContextBarEditMode];
 
   // Swipe action on the URL.
   [[EarlGrey
@@ -162,8 +169,8 @@ using chrome_test_util::OmniboxText;
 
 - (void)testContextMenuForSingleURLSelection {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Change to edit mode
   [[EarlGrey
@@ -177,19 +184,19 @@ using chrome_test_util::OmniboxText;
       performAction:grey_tap()];
 
   // Tap context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarMoreString])]
       performAction:grey_tap()];
 
-  [BookmarkEarlGreyUtils verifyContextMenuForSingleURL];
+  [BookmarkEarlGreyUI verifyContextMenuForSingleURL];
 }
 
 // Verify Edit Text functionality on single URL selection.
 - (void)testEditTextOnSingleURL {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // 1. Edit the bookmark title at edit page.
 
@@ -204,7 +211,7 @@ using chrome_test_util::OmniboxText;
       performAction:grey_tap()];
 
   // Modify the title.
-  [BookmarkEarlGreyUtils
+  [BookmarkEarlGreyUI
       tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
                   openEditor:kBookmarkEditViewContainerIdentifier
              modifyTextField:@"Title Field_textField"
@@ -222,8 +229,8 @@ using chrome_test_util::OmniboxText;
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Verify edit mode is closed (context bar back to default state).
-  [BookmarkEarlGreyUtils verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                                        newFolderEnabled:YES];
+  [BookmarkEarlGreyUI verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                     newFolderEnabled:YES];
 
   // 2. Edit the bookmark url at edit page.
 
@@ -238,7 +245,7 @@ using chrome_test_util::OmniboxText;
       performAction:grey_tap()];
 
   // Modify the url.
-  [BookmarkEarlGreyUtils
+  [BookmarkEarlGreyUI
       tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
                   openEditor:kBookmarkEditViewContainerIdentifier
              modifyTextField:@"URL Field_textField"
@@ -255,15 +262,15 @@ using chrome_test_util::OmniboxText;
   [BookmarkEarlGreyUtils assertAbsenceOfBookmarkWithURL:@"http://www.b.fr/"];
 
   // Verify edit mode is closed (context bar back to default state).
-  [BookmarkEarlGreyUtils verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                                        newFolderEnabled:YES];
+  [BookmarkEarlGreyUI verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                     newFolderEnabled:YES];
 }
 
 // Verify Move functionality on single URL selection.
 - (void)testMoveOnSingleURL {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // 1. Move a single url at edit page.
 
@@ -279,17 +286,17 @@ using chrome_test_util::OmniboxText;
       performAction:grey_tap()];
 
   // Move the "Second URL" to "Folder 1.1".
-  [BookmarkEarlGreyUtils
+  [BookmarkEarlGreyUI
       tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
                   openEditor:kBookmarkEditViewContainerIdentifier
            setParentFolderTo:@"Folder 1.1"
                         from:@"Mobile Bookmarks"];
 
   // Verify edit mode remains.
-  [BookmarkEarlGreyUtils verifyContextBarInEditMode];
+  [BookmarkEarlGreyUI verifyContextBarInEditMode];
 
   // Close edit mode.
-  [BookmarkEarlGreyUtils closeContextBarEditMode];
+  [BookmarkEarlGreyUI closeContextBarEditMode];
 
   // Navigate to "Folder 1.1" and verify "Second URL" is under it.
   [[EarlGrey
@@ -315,7 +322,7 @@ using chrome_test_util::OmniboxText;
       performAction:grey_tap()];
 
   // Tap cancel after modifying the url.
-  [BookmarkEarlGreyUtils
+  [BookmarkEarlGreyUI
       tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
                   openEditor:kBookmarkEditViewContainerIdentifier
              modifyTextField:@"URL Field_textField"
@@ -326,14 +333,14 @@ using chrome_test_util::OmniboxText;
   [BookmarkEarlGreyUtils assertAbsenceOfBookmarkWithURL:@"http://www.b.fr/"];
 
   // Verify edit mode remains.
-  [BookmarkEarlGreyUtils verifyContextBarInEditMode];
+  [BookmarkEarlGreyUI verifyContextBarInEditMode];
 }
 
 // Verify Copy URL functionality on single URL selection.
 - (void)testCopyFunctionalityOnSingleURL {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Change to edit mode
   [[EarlGrey
@@ -346,9 +353,9 @@ using chrome_test_util::OmniboxText;
       performAction:grey_tap()];
 
   // Invoke Copy through context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarMoreString])]
       performAction:grey_tap()];
 
   // Select Copy URL.
@@ -364,14 +371,14 @@ using chrome_test_util::OmniboxText;
              @"Waiting for URL to be copied to pasteboard.");
 
   // Verify edit mode is closed (context bar back to default state).
-  [BookmarkEarlGreyUtils verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                                        newFolderEnabled:YES];
+  [BookmarkEarlGreyUI verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                     newFolderEnabled:YES];
 }
 
 - (void)testContextMenuForMultipleURLSelection {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Change to edit mode
   [[EarlGrey
@@ -388,9 +395,9 @@ using chrome_test_util::OmniboxText;
       performAction:grey_tap()];
 
   // Tap context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarMoreString])]
       performAction:grey_tap()];
 
   // Verify it shows the context menu.
@@ -417,12 +424,12 @@ using chrome_test_util::OmniboxText;
 // TODO(crbug.com/816699): Re-enable this test on simulators.
 - (void)FLAKY_testContextMenuForMultipleURLOpenAll {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Open 3 normal tabs from a normal session.
-  [BookmarkEarlGreyUtils selectUrlsAndTapOnContextBarButtonWithLabelId:
-                             IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN];
+  [BookmarkEarlGreyUI selectUrlsAndTapOnContextBarButtonWithLabelId:
+                          IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN];
 
   // Verify there are 3 normal tabs.
   [ChromeEarlGrey waitForMainTabCount:3];
@@ -435,11 +442,11 @@ using chrome_test_util::OmniboxText;
   // Switch to Incognito mode by adding a new incognito tab.
   [ChromeEarlGrey openNewIncognitoTab];
 
-  [BookmarkEarlGreyUtils openBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
 
   // Open 3 normal tabs from a incognito session.
-  [BookmarkEarlGreyUtils selectUrlsAndTapOnContextBarButtonWithLabelId:
-                             IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN];
+  [BookmarkEarlGreyUI selectUrlsAndTapOnContextBarButtonWithLabelId:
+                          IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN];
 
   // Verify there are 6 normal tabs and no new incognito tabs.
   [ChromeEarlGrey waitForMainTabCount:6];
@@ -460,12 +467,12 @@ using chrome_test_util::OmniboxText;
 // TODO(crbug.com/816699): Re-enable this test on simulators.
 - (void)FLAKY_testContextMenuForMultipleURLOpenAllInIncognito {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Open 3 incognito tabs from a normal session.
-  [BookmarkEarlGreyUtils selectUrlsAndTapOnContextBarButtonWithLabelId:
-                             IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO];
+  [BookmarkEarlGreyUI selectUrlsAndTapOnContextBarButtonWithLabelId:
+                          IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO];
 
   // Verify there are 3 incognito tabs and no new normal tab.
   [ChromeEarlGrey waitForIncognitoTabCount:3];
@@ -479,11 +486,11 @@ using chrome_test_util::OmniboxText;
   // Verify the order of open tabs.
   [BookmarkEarlGreyUtils verifyOrderOfTabsWithCurrentTabIndex:0];
 
-  [BookmarkEarlGreyUtils openBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
 
   // Open 3 incognito tabs from a incognito session.
-  [BookmarkEarlGreyUtils selectUrlsAndTapOnContextBarButtonWithLabelId:
-                             IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO];
+  [BookmarkEarlGreyUI selectUrlsAndTapOnContextBarButtonWithLabelId:
+                          IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO];
 
   // The 3rd tab will be re-used to open one of the selected bookmarks.  So
   // there will be 2 new tabs only.
@@ -500,8 +507,8 @@ using chrome_test_util::OmniboxText;
 // Verify the Open and Open in Incognito functionality on single url.
 - (void)testOpenSingleBookmarkInNormalAndIncognitoTab {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Open a bookmark in current tab in a normal session.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
@@ -511,7 +518,7 @@ using chrome_test_util::OmniboxText;
   [[EarlGrey selectElementWithMatcher:OmniboxText(GetFirstUrl().GetContent())]
       assertWithMatcher:grey_notNil()];
 
-  [BookmarkEarlGreyUtils openBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
 
   // Open a bookmark in new tab from a normal session (through a long press).
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
@@ -530,7 +537,7 @@ using chrome_test_util::OmniboxText;
   [[EarlGrey selectElementWithMatcher:OmniboxText(GetSecondUrl().GetContent())]
       assertWithMatcher:grey_notNil()];
 
-  [BookmarkEarlGreyUtils openBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
 
   // Open a bookmark in an incognito tab from a normal session (through a long
   // press).
@@ -554,7 +561,7 @@ using chrome_test_util::OmniboxText;
   [[EarlGrey selectElementWithMatcher:OmniboxText(GetFrenchUrl().GetContent())]
       assertWithMatcher:grey_notNil()];
 
-  [BookmarkEarlGreyUtils openBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
 
   // Open a bookmark in current tab from a incognito session.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
@@ -574,7 +581,7 @@ using chrome_test_util::OmniboxText;
   GREYAssertTrue([ChromeEarlGrey mainTabCount] == 2,
                  @"Main tab count should be 2");
 
-  [BookmarkEarlGreyUtils openBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
 
   // Open a bookmark in new incognito tab from a incognito session (through a
   // long press).
@@ -598,7 +605,7 @@ using chrome_test_util::OmniboxText;
   [[EarlGrey selectElementWithMatcher:OmniboxText(GetSecondUrl().GetContent())]
       assertWithMatcher:grey_notNil()];
 
-  [BookmarkEarlGreyUtils openBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
 
   // Open a bookmark in a new normal tab from a incognito session (through a
   // long press).
@@ -625,8 +632,8 @@ using chrome_test_util::OmniboxText;
 
 - (void)testContextMenuForMixedSelection {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Change to edit mode
   [[EarlGrey
@@ -643,32 +650,40 @@ using chrome_test_util::OmniboxText;
       performAction:grey_tap()];
 
   // Tap context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarMoreString])]
       performAction:grey_tap()];
 
-  [BookmarkEarlGreyUtils verifyContextMenuForMultiAndMixedSelection];
+  // Verify it shows the context menu.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"bookmark_context_menu")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Verify options on context menu.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
+      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 - (void)testLongPressOnSingleURL {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   [[EarlGrey
       selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
       performAction:grey_longPress()];
 
   // Verify context menu.
-  [BookmarkEarlGreyUtils verifyContextMenuForSingleURL];
+  [BookmarkEarlGreyUI verifyContextMenuForSingleURL];
 }
 
 // Verify Move functionality on mixed folder / url selection.
 - (void)testMoveFunctionalityOnMixedSelection {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Change to edit mode, using context menu.
   [[EarlGrey
@@ -688,9 +703,9 @@ using chrome_test_util::OmniboxText;
       performAction:grey_tap()];
 
   // Tap context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarMoreString])]
       performAction:grey_tap()];
 
   // Tap on move, from context menu.
@@ -715,7 +730,7 @@ using chrome_test_util::OmniboxText;
       performAction:grey_tap()];
 
   // Enter custom new folder name.
-  [BookmarkEarlGreyUtils
+  [BookmarkEarlGreyUI
       renameBookmarkFolderWithFolderTitle:@"Title For New Folder"];
 
   // Verify current parent folder for "Title For New Folder" folder is "Mobile
@@ -732,14 +747,14 @@ using chrome_test_util::OmniboxText;
       performAction:grey_tap()];
 
   // Verify all folder flow UI is now closed.
-  [BookmarkEarlGreyUtils verifyFolderFlowIsClosed];
+  [BookmarkEarlGreyUI verifyFolderFlowIsClosed];
 
   // Wait for Undo toast to go away from screen.
-  [BookmarkEarlGreyUtils waitForUndoToastToGoAway];
+  [BookmarkEarlGreyUI waitForUndoToastToGoAway];
 
   // Verify edit mode is closed (context bar back to default state).
-  [BookmarkEarlGreyUtils verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                                        newFolderEnabled:YES];
+  [BookmarkEarlGreyUI verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                     newFolderEnabled:YES];
 
   // Verify new folder "Title For New Folder" has two bookmark nodes.
   [BookmarkEarlGreyUtils assertChildCount:2
@@ -759,8 +774,8 @@ using chrome_test_util::OmniboxText;
 // Verify Move functionality on multiple url selection.
 - (void)testMoveFunctionalityOnMultipleUrlSelection {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Change to edit mode, using context menu.
   [[EarlGrey
@@ -777,9 +792,9 @@ using chrome_test_util::OmniboxText;
       performAction:grey_tap()];
 
   // Tap context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarMoreString])]
       performAction:grey_tap()];
 
   // Tap on move, from context menu.
@@ -797,14 +812,14 @@ using chrome_test_util::OmniboxText;
                             nil)] performAction:grey_tap()];
 
   // Verify all folder flow UI is now closed.
-  [BookmarkEarlGreyUtils verifyFolderFlowIsClosed];
+  [BookmarkEarlGreyUI verifyFolderFlowIsClosed];
 
   // Wait for Undo toast to go away from screen.
-  [BookmarkEarlGreyUtils waitForUndoToastToGoAway];
+  [BookmarkEarlGreyUI waitForUndoToastToGoAway];
 
   // Verify edit mode is closed (context bar back to default state).
-  [BookmarkEarlGreyUtils verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                                        newFolderEnabled:YES];
+  [BookmarkEarlGreyUI verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                     newFolderEnabled:YES];
 
   // Verify Folder 1 has three bookmark nodes.
   [BookmarkEarlGreyUtils assertChildCount:3 ofFolderWithName:@"Folder 1"];
@@ -824,8 +839,8 @@ using chrome_test_util::OmniboxText;
 // background.
 - (void)testMoveCancelledWhenAllSelectionDeleted {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Change to edit mode, using context menu.
   [[EarlGrey
@@ -842,9 +857,9 @@ using chrome_test_util::OmniboxText;
       performAction:grey_tap()];
 
   // Tap context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarMoreString])]
       performAction:grey_tap()];
 
   // Tap on move, from context menu.
@@ -863,14 +878,14 @@ using chrome_test_util::OmniboxText;
   [BookmarkEarlGreyUtils removeBookmarkWithTitle:@"Second URL"];
 
   // Verify folder picker is exited.
-  [BookmarkEarlGreyUtils verifyFolderFlowIsClosed];
+  [BookmarkEarlGreyUI verifyFolderFlowIsClosed];
 }
 
 // Try deleting a bookmark from the edit screen, then undoing that delete.
 - (void)testUndoDeleteBookmarkFromEditScreen {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Change to edit mode
   [[EarlGrey
@@ -884,9 +899,9 @@ using chrome_test_util::OmniboxText;
       performAction:grey_tap()];
 
   // Tap context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarMoreString])]
       performAction:grey_tap()];
 
   // Tap Edit Folder.
@@ -922,9 +937,9 @@ using chrome_test_util::OmniboxText;
 
   // Verify Delete is disabled (with visible Delete, it also means edit mode is
   // stayed).
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarDeleteString])]
       assertWithMatcher:grey_allOf(grey_notNil(),
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitNotEnabled),
@@ -933,8 +948,8 @@ using chrome_test_util::OmniboxText;
 
 - (void)testDeleteSingleURLNode {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Change to edit mode
   [[EarlGrey
@@ -948,13 +963,13 @@ using chrome_test_util::OmniboxText;
       performAction:grey_tap()];
 
   // Delete it.
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarDeleteString])]
       performAction:grey_tap()];
 
   // Wait until it's gone.
-  [BookmarkEarlGreyUtils waitForDeletionOfBookmarkWithTitle:@"Second URL"];
+  [BookmarkEarlGreyUI waitForDeletionOfBookmarkWithTitle:@"Second URL"];
 
   // Press undo
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
@@ -965,14 +980,14 @@ using chrome_test_util::OmniboxText;
       assertWithMatcher:grey_notNil()];
 
   // Verify edit mode is closed (context bar back to default state).
-  [BookmarkEarlGreyUtils verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                                        newFolderEnabled:YES];
+  [BookmarkEarlGreyUI verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                     newFolderEnabled:YES];
 }
 
 - (void)testDeleteMultipleNodes {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Change to edit mode
   [[EarlGrey
@@ -989,14 +1004,14 @@ using chrome_test_util::OmniboxText;
       performAction:grey_tap()];
 
   // Delete it.
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarDeleteString])]
       performAction:grey_tap()];
 
   // Wait until it's gone.
-  [BookmarkEarlGreyUtils waitForDeletionOfBookmarkWithTitle:@"Second URL"];
-  [BookmarkEarlGreyUtils waitForDeletionOfBookmarkWithTitle:@"Folder 1"];
+  [BookmarkEarlGreyUI waitForDeletionOfBookmarkWithTitle:@"Second URL"];
+  [BookmarkEarlGreyUI waitForDeletionOfBookmarkWithTitle:@"Folder 1"];
 
   // Press undo
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
@@ -1009,8 +1024,8 @@ using chrome_test_util::OmniboxText;
       assertWithMatcher:grey_notNil()];
 
   // Verify edit mode is closed (context bar back to default state).
-  [BookmarkEarlGreyUtils verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                                        newFolderEnabled:YES];
+  [BookmarkEarlGreyUI verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                     newFolderEnabled:YES];
 }
 
 - (void)testSwipeDownToDismissFromPushedVC {
@@ -1022,8 +1037,8 @@ using chrome_test_util::OmniboxText;
   }
 
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Open Edit Bookmark through long press.
   [[EarlGrey

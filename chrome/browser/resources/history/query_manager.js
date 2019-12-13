@@ -16,14 +16,16 @@ Polymer({
           incremental: false,
           // A query is initiated by page load.
           querying: true,
-          queryingDisabled: false,
           searchTerm: '',
         };
       },
     },
 
     /** @type {QueryResult} */
-    queryResult: Object,
+    queryResult: {
+      type: Object,
+      notify: true,
+    },
 
     /** @type {?HistoryRouterElement} */
     router: Object,
@@ -53,25 +55,24 @@ Polymer({
     }
   },
 
+  initialize: function() {
+    this.queryHistory_(false /* incremental */);
+  },
+
   /**
    * @param {boolean} incremental
    * @private
    */
   queryHistory_: function(incremental) {
-    const queryState = this.queryState;
-
-    if (queryState.queryingDisabled) {
-      return;
-    }
-
     this.set('queryState.querying', true);
     this.set('queryState.incremental', incremental);
 
-    if (incremental) {
-      history.BrowserService.getInstance().queryHistoryContinuation();
-    } else {
-      history.BrowserService.getInstance().queryHistory(queryState.searchTerm);
-    }
+    const browserService = history.BrowserService.getInstance();
+    const promise = incremental ?
+        browserService.queryHistoryContinuation() :
+        browserService.queryHistory(this.queryState.searchTerm);
+    // Ignore rejected (cancelled) queries.
+    promise.then(result => this.onQueryResult_(result), () => {});
   },
 
   /**
@@ -103,6 +104,19 @@ Polymer({
   onQueryHistory_: function(e) {
     this.queryHistory_(/** @type {boolean} */ (e.detail));
     return false;
+  },
+
+  /**
+   * @param {{info: !HistoryQuery,
+   *          value: !Array<!HistoryEntry>}} results List of results with
+   *     information about the query.
+   * @private
+   */
+  onQueryResult_: function(results) {
+    this.set('queryState.querying', false);
+    this.set('queryResult.info', results.info);
+    this.set('queryResult.results', results.value);
+    this.fire('query-finished');
   },
 
   /** @private */

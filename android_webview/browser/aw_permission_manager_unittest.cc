@@ -216,8 +216,8 @@ class AwPermissionManagerTest : public testing::Test {
 TEST_F(AwPermissionManagerTest, MIDIPermissionIsGrantedSynchronously) {
   int request_id = manager->RequestPermission(
       PermissionType::MIDI, render_frame_host, GURL(kRequestingOrigin1), true,
-      base::Bind(&AwPermissionManagerTest::PermissionRequestResponse,
-                 base::Unretained(this), 0));
+      base::BindOnce(&AwPermissionManagerTest::PermissionRequestResponse,
+                     base::Unretained(this), 0));
   EXPECT_EQ(kNoPendingOperation, request_id);
   ASSERT_EQ(1u, resolved_permission_status.size());
   EXPECT_EQ(PermissionStatus::GRANTED, resolved_permission_status[0]);
@@ -231,8 +231,9 @@ TEST_F(AwPermissionManagerTest, SinglePermissionRequestIsGrantedSynchronously) {
                                      PermissionType::GEOLOCATION, true);
   int request_id = manager->RequestPermission(
       PermissionType::GEOLOCATION, render_frame_host, GURL(kRequestingOrigin1),
-      true, base::Bind(&AwPermissionManagerTest::PermissionRequestResponse,
-                       base::Unretained(this), 0));
+      true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionRequestResponse,
+                     base::Unretained(this), 0));
   EXPECT_EQ(kNoPendingOperation, request_id);
   ASSERT_EQ(1u, resolved_permission_status.size());
   EXPECT_EQ(PermissionStatus::GRANTED, resolved_permission_status[0]);
@@ -242,8 +243,9 @@ TEST_F(AwPermissionManagerTest, SinglePermissionRequestIsGrantedSynchronously) {
                                      PermissionType::GEOLOCATION, false);
   request_id = manager->RequestPermission(
       PermissionType::GEOLOCATION, render_frame_host, GURL(kRequestingOrigin1),
-      true, base::Bind(&AwPermissionManagerTest::PermissionRequestResponse,
-                       base::Unretained(this), 0));
+      true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionRequestResponse,
+                     base::Unretained(this), 0));
   EXPECT_EQ(kNoPendingOperation, request_id);
   ASSERT_EQ(2u, resolved_permission_status.size());
   EXPECT_EQ(PermissionStatus::DENIED, resolved_permission_status[1]);
@@ -255,8 +257,9 @@ TEST_F(AwPermissionManagerTest,
        SinglePermissionRequestIsGrantedAsynchronously) {
   int request_id = manager->RequestPermission(
       PermissionType::GEOLOCATION, render_frame_host, GURL(kRequestingOrigin1),
-      true, base::Bind(&AwPermissionManagerTest::PermissionRequestResponse,
-                       base::Unretained(this), 0));
+      true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionRequestResponse,
+                     base::Unretained(this), 0));
   EXPECT_NE(kNoPendingOperation, request_id);
   EXPECT_EQ(0u, resolved_permission_status.size());
 
@@ -273,8 +276,9 @@ TEST_F(AwPermissionManagerTest,
 TEST_F(AwPermissionManagerTest, ManagerIsDeletedWhileDelegateProcesses) {
   int request_id = manager->RequestPermission(
       PermissionType::GEOLOCATION, render_frame_host, GURL(kRequestingOrigin1),
-      true, base::Bind(&AwPermissionManagerTest::PermissionRequestResponse,
-                       base::Unretained(this), 0));
+      true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionRequestResponse,
+                     base::Unretained(this), 0));
 
   EXPECT_NE(kNoPendingOperation, request_id);
   EXPECT_EQ(0u, resolved_permission_status.size());
@@ -292,14 +296,16 @@ TEST_F(AwPermissionManagerTest,
        MultiplePermissionRequestsAreGrantedTogether) {
   int request_1 = manager->RequestPermission(
       PermissionType::GEOLOCATION, render_frame_host, GURL(kRequestingOrigin1),
-      true, base::Bind(&AwPermissionManagerTest::PermissionRequestResponse,
-                       base::Unretained(this), 1));
+      true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionRequestResponse,
+                     base::Unretained(this), 1));
   EXPECT_NE(kNoPendingOperation, request_1);
 
   int request_2 = manager->RequestPermission(
       PermissionType::GEOLOCATION, render_frame_host, GURL(kRequestingOrigin1),
-      true, base::Bind(&AwPermissionManagerTest::PermissionRequestResponse,
-                       base::Unretained(this), 2));
+      true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionRequestResponse,
+                     base::Unretained(this), 2));
   EXPECT_NE(kNoPendingOperation, request_2);
 
   EXPECT_NE(request_1, request_2);
@@ -320,14 +326,16 @@ TEST_F(AwPermissionManagerTest,
        MultiplePermissionRequestsAreGrantedRespectively) {
   int request_1 = manager->RequestPermission(
       PermissionType::GEOLOCATION, render_frame_host, GURL(kRequestingOrigin1),
-      true, base::Bind(&AwPermissionManagerTest::PermissionRequestResponse,
-                       base::Unretained(this), 1));
+      true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionRequestResponse,
+                     base::Unretained(this), 1));
   EXPECT_NE(kNoPendingOperation, request_1);
 
   int request_2 = manager->RequestPermission(
       PermissionType::GEOLOCATION, render_frame_host, GURL(kRequestingOrigin2),
-      true, base::Bind(&AwPermissionManagerTest::PermissionRequestResponse,
-                       base::Unretained(this), 2));
+      true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionRequestResponse,
+                     base::Unretained(this), 2));
   EXPECT_NE(kNoPendingOperation, request_2);
 
   EXPECT_NE(request_1, request_2);
@@ -359,10 +367,9 @@ TEST_F(AwPermissionManagerTest,
                                              PermissionType::MIDI_SYSEX};
 
   int request_id = manager->RequestPermissions(
-      permissions,
-      render_frame_host, GURL(kRequestingOrigin1),
-      true, base::Bind(&AwPermissionManagerTest::PermissionsRequestResponse,
-                       base::Unretained(this), 0));
+      permissions, render_frame_host, GURL(kRequestingOrigin1), true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionsRequestResponse,
+                     base::Unretained(this), 0));
   EXPECT_EQ(kNoPendingOperation, request_id);
 
   ASSERT_EQ(2u, resolved_permission_status.size());
@@ -379,10 +386,9 @@ TEST_F(AwPermissionManagerTest,
                                              PermissionType::MIDI_SYSEX};
 
   int request_id = manager->RequestPermissions(
-      permissions,
-      render_frame_host, GURL(kRequestingOrigin1),
-      true, base::Bind(&AwPermissionManagerTest::PermissionsRequestResponse,
-                       base::Unretained(this), 0));
+      permissions, render_frame_host, GURL(kRequestingOrigin1), true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionsRequestResponse,
+                     base::Unretained(this), 0));
   EXPECT_NE(kNoPendingOperation, request_id);
 
   // PermissionType::MIDI is resolved synchronously, but all permissions result
@@ -408,17 +414,16 @@ TEST_F(AwPermissionManagerTest, ComplicatedRequestScenario1) {
                                                PermissionType::MIDI_SYSEX};
 
   int request_1 = manager->RequestPermissions(
-      permissions_1,
-      render_frame_host, GURL(kRequestingOrigin1),
-      true, base::Bind(&AwPermissionManagerTest::PermissionsRequestResponse,
-                       base::Unretained(this), 1));
+      permissions_1, render_frame_host, GURL(kRequestingOrigin1), true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionsRequestResponse,
+                     base::Unretained(this), 1));
   EXPECT_NE(kNoPendingOperation, request_1);
   EXPECT_EQ(0u, resolved_permission_status.size());
 
   int request_2 = manager->RequestPermission(
       PermissionType::MIDI, render_frame_host, GURL(kRequestingOrigin1), true,
-      base::Bind(&AwPermissionManagerTest::PermissionRequestResponse,
-                 base::Unretained(this), 2));
+      base::BindOnce(&AwPermissionManagerTest::PermissionRequestResponse,
+                     base::Unretained(this), 2));
   EXPECT_EQ(kNoPendingOperation, request_2);
   ASSERT_EQ(1u, resolved_permission_status.size());
   EXPECT_EQ(PermissionStatus::GRANTED, resolved_permission_status[0]);
@@ -439,10 +444,9 @@ TEST_F(AwPermissionManagerTest, ComplicatedRequestScenario1) {
                                                PermissionType::MIDI_SYSEX};
 
   int request_3 = manager->RequestPermissions(
-      permissions_2,
-      render_frame_host, GURL(kRequestingOrigin1),
-      true, base::Bind(&AwPermissionManagerTest::PermissionsRequestResponse,
-                       base::Unretained(this), 3));
+      permissions_2, render_frame_host, GURL(kRequestingOrigin1), true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionsRequestResponse,
+                     base::Unretained(this), 3));
   EXPECT_NE(kNoPendingOperation, request_3);
   ASSERT_EQ(3u, resolved_permission_status.size());
 
@@ -453,8 +457,9 @@ TEST_F(AwPermissionManagerTest, ComplicatedRequestScenario1) {
 
   int request_4 = manager->RequestPermission(
       PermissionType::GEOLOCATION, render_frame_host, GURL(kRequestingOrigin1),
-      true, base::Bind(&AwPermissionManagerTest::PermissionRequestResponse,
-                       base::Unretained(this), 4));
+      true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionRequestResponse,
+                     base::Unretained(this), 4));
   // The second request is finished first by using the resolved result for the
   // first request.
   EXPECT_EQ(kNoPendingOperation, request_4);
@@ -485,17 +490,16 @@ TEST_F(AwPermissionManagerTest, ComplicatedRequestScenario2) {
                                                PermissionType::MIDI_SYSEX};
 
   int request_1 = manager->RequestPermissions(
-      permissions_1,
-      render_frame_host, GURL(kRequestingOrigin1),
-      true, base::Bind(&AwPermissionManagerTest::PermissionsRequestResponse,
-                       base::Unretained(this), 1));
+      permissions_1, render_frame_host, GURL(kRequestingOrigin1), true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionsRequestResponse,
+                     base::Unretained(this), 1));
   EXPECT_NE(kNoPendingOperation, request_1);
   EXPECT_EQ(0u, resolved_permission_status.size());
 
   int request_2 = manager->RequestPermission(
       PermissionType::MIDI, render_frame_host, GURL(kRequestingOrigin2), true,
-      base::Bind(&AwPermissionManagerTest::PermissionRequestResponse,
-                 base::Unretained(this), 2));
+      base::BindOnce(&AwPermissionManagerTest::PermissionRequestResponse,
+                     base::Unretained(this), 2));
   EXPECT_EQ(kNoPendingOperation, request_2);
   ASSERT_EQ(1u, resolved_permission_status.size());
   EXPECT_EQ(PermissionStatus::GRANTED, resolved_permission_status[0]);
@@ -516,10 +520,9 @@ TEST_F(AwPermissionManagerTest, ComplicatedRequestScenario2) {
                                                PermissionType::MIDI_SYSEX};
 
   int request_3 = manager->RequestPermissions(
-      permissions_2,
-      render_frame_host, GURL(kRequestingOrigin1),
-      true, base::Bind(&AwPermissionManagerTest::PermissionsRequestResponse,
-                       base::Unretained(this), 3));
+      permissions_2, render_frame_host, GURL(kRequestingOrigin1), true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionsRequestResponse,
+                     base::Unretained(this), 3));
   EXPECT_NE(kNoPendingOperation, request_3);
   ASSERT_EQ(3u, resolved_permission_status.size());
 
@@ -534,8 +537,9 @@ TEST_F(AwPermissionManagerTest, ComplicatedRequestScenario2) {
                                      PermissionType::GEOLOCATION, true);
   int request_4 = manager->RequestPermission(
       PermissionType::GEOLOCATION, render_frame_host, GURL(kRequestingOrigin2),
-      true, base::Bind(&AwPermissionManagerTest::PermissionRequestResponse,
-                       base::Unretained(this), 4));
+      true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionRequestResponse,
+                     base::Unretained(this), 4));
   EXPECT_EQ(kNoPendingOperation, request_4);
   ASSERT_EQ(4u, resolved_permission_status.size());
   EXPECT_EQ(PermissionStatus::GRANTED, resolved_permission_status[3]);
@@ -563,17 +567,17 @@ TEST_F(AwPermissionManagerTest, ComplicatedRequestScenario3) {
                                                PermissionType::MIDI_SYSEX};
 
   int request_1 = manager->RequestPermissions(
-      permissions_1,
-      render_frame_host, GURL(kRequestingOrigin1),
-      true, base::Bind(&AwPermissionManagerTest::PermissionsRequestResponse,
-                       base::Unretained(this), 1));
+      permissions_1, render_frame_host, GURL(kRequestingOrigin1), true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionsRequestResponse,
+                     base::Unretained(this), 1));
   EXPECT_NE(kNoPendingOperation, request_1);
   EXPECT_EQ(0u, resolved_permission_status.size());
 
   int request_2 = manager->RequestPermission(
       PermissionType::MIDI_SYSEX, render_frame_host, GURL(kRequestingOrigin1),
-      true, base::Bind(&AwPermissionManagerTest::PermissionRequestResponse,
-                       base::Unretained(this), 2));
+      true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionRequestResponse,
+                     base::Unretained(this), 2));
   EXPECT_NE(kNoPendingOperation, request_2);
   EXPECT_EQ(0u, resolved_permission_status.size());
 
@@ -597,10 +601,9 @@ TEST_F(AwPermissionManagerTest, ComplicatedRequestScenario3) {
                                                PermissionType::MIDI_SYSEX};
 
   int request_3 = manager->RequestPermissions(
-      permissions_2,
-      render_frame_host, GURL(kRequestingOrigin1),
-      true, base::Bind(&AwPermissionManagerTest::PermissionsRequestResponse,
-                       base::Unretained(this), 3));
+      permissions_2, render_frame_host, GURL(kRequestingOrigin1), true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionsRequestResponse,
+                     base::Unretained(this), 3));
   EXPECT_NE(kNoPendingOperation, request_3);
   ASSERT_EQ(3u, resolved_permission_status.size());
 
@@ -611,8 +614,9 @@ TEST_F(AwPermissionManagerTest, ComplicatedRequestScenario3) {
 
   int request_4 = manager->RequestPermission(
       PermissionType::MIDI_SYSEX, render_frame_host, GURL(kRequestingOrigin1),
-      true, base::Bind(&AwPermissionManagerTest::PermissionRequestResponse,
-                       base::Unretained(this), 4));
+      true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionRequestResponse,
+                     base::Unretained(this), 4));
   EXPECT_NE(kNoPendingOperation, request_4);
   ASSERT_EQ(3u, resolved_permission_status.size());
 
@@ -641,17 +645,17 @@ TEST_F(AwPermissionManagerTest, ComplicatedRequestScenario4) {
                                                PermissionType::MIDI_SYSEX};
 
   int request_1 = manager->RequestPermissions(
-      permissions_1,
-      render_frame_host, GURL(kRequestingOrigin1),
-      true, base::Bind(&AwPermissionManagerTest::PermissionsRequestResponse,
-                       base::Unretained(this), 1));
+      permissions_1, render_frame_host, GURL(kRequestingOrigin1), true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionsRequestResponse,
+                     base::Unretained(this), 1));
   EXPECT_NE(kNoPendingOperation, request_1);
   EXPECT_EQ(0u, resolved_permission_status.size());
 
   int request_2 = manager->RequestPermission(
       PermissionType::MIDI_SYSEX, render_frame_host, GURL(kRequestingOrigin2),
-      true, base::Bind(&AwPermissionManagerTest::PermissionRequestResponse,
-                       base::Unretained(this), 2));
+      true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionRequestResponse,
+                     base::Unretained(this), 2));
   EXPECT_NE(kNoPendingOperation, request_2);
   EXPECT_EQ(0u, resolved_permission_status.size());
 
@@ -678,10 +682,9 @@ TEST_F(AwPermissionManagerTest, ComplicatedRequestScenario4) {
                                                PermissionType::MIDI_SYSEX};
 
   int request_3 = manager->RequestPermissions(
-      permissions_2,
-      render_frame_host, GURL(kRequestingOrigin1),
-      true, base::Bind(&AwPermissionManagerTest::PermissionsRequestResponse,
-                       base::Unretained(this), 3));
+      permissions_2, render_frame_host, GURL(kRequestingOrigin1), true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionsRequestResponse,
+                     base::Unretained(this), 3));
   EXPECT_NE(kNoPendingOperation, request_3);
   ASSERT_EQ(3u, resolved_permission_status.size());
 
@@ -692,8 +695,9 @@ TEST_F(AwPermissionManagerTest, ComplicatedRequestScenario4) {
 
   int request_4 = manager->RequestPermission(
       PermissionType::MIDI_SYSEX, render_frame_host, GURL(kRequestingOrigin2),
-      true, base::Bind(&AwPermissionManagerTest::PermissionRequestResponse,
-                       base::Unretained(this), 4));
+      true,
+      base::BindOnce(&AwPermissionManagerTest::PermissionRequestResponse,
+                     base::Unretained(this), 4));
   EXPECT_NE(kNoPendingOperation, request_4);
   ASSERT_EQ(3u, resolved_permission_status.size());
 

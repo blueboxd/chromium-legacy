@@ -49,6 +49,7 @@
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/snap_selection_strategy.h"
 #include "cc/layers/picture_layer.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
@@ -2309,11 +2310,14 @@ void PaintLayerScrollableArea::UpdateCompositingLayersAfterScroll() {
     // If we have fixed elements and we scroll the root layer we might
     // change compositing since the fixed elements might now overlap a
     // composited layer.
-    if (Layer()->IsRootLayer()) {
-      LocalFrame* frame = GetLayoutBox()->GetFrame();
-      if (frame && frame->View() &&
-          frame->View()->HasViewportConstrainedObjects()) {
-        Layer()->SetNeedsCompositingInputsUpdate();
+    if (!base::FeatureList::IsEnabled(
+            features::kAssumeOverlapAfterFixedOrStickyPosition)) {
+      if (Layer()->IsRootLayer()) {
+        LocalFrame* frame = GetLayoutBox()->GetFrame();
+        if (frame && frame->View() &&
+            frame->View()->HasViewportConstrainedObjects()) {
+          Layer()->SetNeedsCompositingInputsUpdate();
+        }
       }
     }
   } else {

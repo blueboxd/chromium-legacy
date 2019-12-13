@@ -327,6 +327,7 @@ def AddDiagnosticsToHistograms(test_result, test_suite_start, results_label,
       assert isinstance(diag, list)
       test_result['_histograms'].AddSharedDiagnosticToAllHistograms(
           name, generic_set.GenericSet(diag))
+    del artifacts[DIAGNOSTICS_NAME]
 
   test_suite, test_case = util.SplitTestPath(test_result, test_path_format)
   if 'startTime' in test_result:
@@ -396,6 +397,7 @@ def ExtractMeasurements(test_result):
     for name, measurement in measurements.iteritems():
       test_result['_histograms'].AddHistogram(
           MeasurementToHistogram(name, measurement))
+    del artifacts[MEASUREMENTS_NAME]
 
 
 def main(args=None):

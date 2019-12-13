@@ -16,8 +16,12 @@ TestScreen::TestScreen() {
 
 TestScreen::~TestScreen() {}
 
+void TestScreen::set_cursor_screen_point(const gfx::Point& point) {
+  cursor_screen_point_ = point;
+}
+
 gfx::Point TestScreen::GetCursorScreenPoint() {
-  return gfx::Point();
+  return cursor_screen_point_;
 }
 
 bool TestScreen::IsWindowUnderCursor(gfx::NativeWindow window) {

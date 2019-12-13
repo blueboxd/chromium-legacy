@@ -191,6 +191,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
  public:
   explicit CupsPrintJobManagerImpl(Profile* profile)
       : CupsPrintJobManager(profile),
+        cups_wrapper_(CupsWrapper::Create()),
         weak_ptr_factory_(this) {
     timer_.SetTaskRunner(
         base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}));
@@ -319,7 +320,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     // Stop montioring jobs after we cancel them.  The user no longer cares.
     jobs_.erase(job->GetUniqueId());
 
-    cups_wrapper_.CancelJob(printer_id, job_id);
+    cups_wrapper_->CancelJob(printer_id, job_id);
   }
 
   // Schedule a query of CUPS for print job status with a delay of |delay|.
@@ -339,7 +340,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     }
     std::vector<std::string> ids{printer_ids.begin(), printer_ids.end()};
 
-    cups_wrapper_.QueryCupsPrintJobs(
+    cups_wrapper_->QueryCupsPrintJobs(
         ids, base::BindOnce(&CupsPrintJobManagerImpl::UpdateJobs,
                             weak_ptr_factory_.GetWeakPtr()));
   }
@@ -482,7 +483,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
 
   base::RepeatingTimer timer_;
   content::NotificationRegistrar registrar_;
-  CupsWrapper cups_wrapper_;
+  std::unique_ptr<CupsWrapper> cups_wrapper_;
   base::WeakPtrFactory<CupsPrintJobManagerImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CupsPrintJobManagerImpl);

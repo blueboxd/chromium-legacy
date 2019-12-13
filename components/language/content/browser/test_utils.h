@@ -11,8 +11,6 @@
 #include "services/device/public/mojom/geolocation.mojom.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
 #include "services/device/public/mojom/public_ip_address_geolocation_provider.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/mojom/connector.mojom.h"
 
 namespace language {
 
@@ -49,7 +47,8 @@ class MockIpGeoLocationProvider
   explicit MockIpGeoLocationProvider(MockGeoLocation* mock_geo_location);
   ~MockIpGeoLocationProvider() override;
 
-  void Bind(mojo::ScopedMessagePipeHandle handle);
+  void Bind(
+      mojo::PendingReceiver<device::mojom::PublicIpAddressGeolocationProvider>);
 
   void CreateGeolocation(
       const net::MutablePartialNetworkTrafficAnnotationTag& /* unused */,

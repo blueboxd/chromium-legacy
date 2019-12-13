@@ -35,10 +35,9 @@ class OpenXRInputHelper {
   base::WeakPtr<OpenXRInputHelper> GetWeakPtr();
 
  private:
-  XrResult Initialize(XrInstance instance);
+  base::Optional<Gamepad> GetWebXRGamepad(const OpenXrController& controller);
 
-  base::Optional<Gamepad> GetWebXRGamepad(
-      const OpenXrController& controller) const;
+  XrResult Initialize(XrInstance instance);
 
   XrResult SyncActions(XrTime predicted_display_time);
 

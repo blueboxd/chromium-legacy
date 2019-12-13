@@ -283,6 +283,7 @@
 <translation id="1397500194120344683">沒有適用裝置。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">放到最大</translation>
 <translation id="1399511500114202393">不使用使用者憑證</translation>
+<translation id="1403519882106291341">Google Chrome 作業系統條款</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (受監管)</translation>
 <translation id="1405779994569073824">已停止運作。</translation>
 <translation id="1406500794671479665">驗證中...</translation>
@@ -1036,7 +1037,7 @@
 <translation id="2464089476039395325">HTTP Proxy</translation>
 <translation id="2468205691404969808">使用 Cookie 記住你的偏好設定 (即使你沒有造訪這些網頁)</translation>
 <translation id="2468402215065996499">電子寵物</translation>
-<translation id="2469259292033957819">沒有可供儲存的印表機。</translation>
+<translation id="2469259292033957819">沒有已儲存的印表機。</translation>
 <translation id="2469375675106140201">自訂拼字檢查</translation>
 <translation id="247051149076336810">檔案共用網址</translation>
 <translation id="2470702053775288986">已停用不支援的擴充功能</translation>
@@ -1188,7 +1189,7 @@
 <translation id="2665919335226618153">糟糕！格式化過程中發生錯誤。</translation>
 <translation id="2666990579225592931">開啟訪客視窗</translation>
 <translation id="2667463864537187133">管理拼字檢查</translation>
-<translation id="2669093958999339774">禁止網站顯示通知提示，改以無聲模式傳送訊息，以避免受到干擾</translation>
+<translation id="2669093958999339774">禁止網站顯示通知，以免干擾；改以低擾模式通知</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> 正在共用 Chrome 分頁。</translation>
 <translation id="2670429602441959756">這個網頁所含的功能目前與 VR 不相容。正在結束 VR 模式...</translation>
 <translation id="2671451824761031126">現在可以使用你的書籤和設定了</translation>
@@ -1925,7 +1926,7 @@
 <translation id="3714195043138862580">這個示範裝置已設為取消佈建狀態。</translation>
 <translation id="3714633008798122362">網路日曆</translation>
 <translation id="3719826155360621982">首頁</translation>
-<translation id="3721119614952978349">你與 Google 的關係</translation>
+<translation id="3721119614952978349">你與 Google</translation>
 <translation id="3722108462506185496">啟用虛擬機器服務時發生錯誤，請再試一次。</translation>
 <translation id="3725367690636977613">頁數</translation>
 <translation id="3726137731714254362">從這裡移除資料夾會停止與他人共用檔案，但不會刪除檔案。</translation>
@@ -1962,7 +1963,7 @@
 <translation id="37613671848467444">在無痕式視窗中開啟(&amp;I)</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{與 1 個 USB 裝置通訊}other{與 # 個 USB 裝置通訊}}</translation>
 <translation id="3765246971671567135">無法讀取離線示範模式的政策。</translation>
-<translation id="3767376082821709728">你造訪的新網站無法傳送通知</translation>
+<translation id="3767376082821709728">不允許造訪的新網站傳送通知給你</translation>
 <translation id="3768037234834996183">正在處理您的偏好設定...</translation>
 <translation id="377050016711188788">冰淇淋</translation>
 <translation id="3771294271822695279">影片檔</translation>
@@ -2172,7 +2173,6 @@
 <translation id="4036778507053569103">從伺服器下載的政策無效。</translation>
 <translation id="4037084878352560732">馬</translation>
 <translation id="4037889604535939429">編輯使用者</translation>
-<translation id="4042264909745389898">Google Chrome 作業系統條款</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{離開網頁}other{離開網頁}}</translation>
 <translation id="4044612648082411741">輸入您的憑證密碼</translation>
 <translation id="404493185430269859">預設搜尋引擎</translation>
@@ -3235,7 +3235,7 @@
 <translation id="5646558797914161501">商人</translation>
 <translation id="5648166631817621825">過去 7 天</translation>
 <translation id="5649053991847567735">自動下載</translation>
-<translation id="5653154844073528838">您有 <ph name="PRINTER_COUNT" /> 台已儲存的印表機。</translation>
+<translation id="5653154844073528838">你有 <ph name="PRINTER_COUNT" /> 台已儲存的印表機。</translation>
 <translation id="5656845498778518563">提供意見給 Google</translation>
 <translation id="5657667036353380798">這個外部擴充功能需要安裝 <ph name="MINIMUM_CHROME_VERSION" /> 版本以上的 Chrome 瀏覽器。</translation>
 <translation id="5658415415603568799">為了提升安全性，Smart Lock 會在經過 20 小時後要求您輸入密碼。</translation>
@@ -4905,7 +4905,7 @@
 <translation id="8044899503464538266">慢</translation>
 <translation id="8045253504249021590">已透過 Google 資訊主頁停止同步功能。</translation>
 <translation id="8045923671629973368">輸入應用程式 ID 或線上應用程式商店網址</translation>
-<translation id="8046278916126163020">你造訪的新網站可以要求傳送推知</translation>
+<translation id="8046278916126163020">造訪的新網站可以要求傳送通知給你</translation>
 <translation id="804786196054284061">使用者授權協議</translation>
 <translation id="8049705080247101012">Google 已將「<ph name="EXTENSION_NAME" />」標示為惡意擴充功能並禁止安裝</translation>
 <translation id="8050038245906040378">Microsoft 商用程式碼簽署</translation>

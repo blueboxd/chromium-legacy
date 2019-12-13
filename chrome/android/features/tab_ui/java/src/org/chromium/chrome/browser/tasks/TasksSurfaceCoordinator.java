@@ -10,7 +10,9 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.tab_ui.R;
@@ -41,7 +43,13 @@ public class TasksSurfaceCoordinator implements TasksSurface {
                     activity, mView.getBodyViewContainer());
         }
 
-        mMediator = new TasksSurfaceMediator(propertyModel, fakeboxDelegate, isTabCarousel);
+        View.OnClickListener incognitoLearnMoreClickListener = v -> {
+            HelpAndFeedback.getInstance().show(activity,
+                    activity.getString(R.string.help_context_incognito_learn_more),
+                    Profile.getLastUsedProfile(), null);
+        };
+        mMediator = new TasksSurfaceMediator(
+                propertyModel, fakeboxDelegate, incognitoLearnMoreClickListener, isTabCarousel);
 
         LinearLayout mvTilesLayout = mView.findViewById(R.id.mv_tiles_layout);
         mMostVisitedList = new MostVisitedListCoordinator(activity, mvTilesLayout, propertyModel);

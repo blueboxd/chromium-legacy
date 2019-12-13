@@ -283,6 +283,7 @@
 <translation id="1397500194120344683">Geen geskikte toestelle nie. <ph name="LINK_BEGIN" />Kom meer te wete<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">Maak groot</translation>
 <translation id="1399511500114202393">Geen gebruikersertifikaat nie</translation>
+<translation id="1403519882106291341">Google Chrome-OS-bepalings</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (onder toesig)</translation>
 <translation id="1405779994569073824">Omgeval.</translation>
 <translation id="1406500794671479665">Verifieer tans …</translation>
@@ -2174,7 +2175,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4036778507053569103">Die beleid wat van die bediener afgelaai is, is ongeldig.</translation>
 <translation id="4037084878352560732">Perd</translation>
 <translation id="4037889604535939429">Wysig persoon</translation>
-<translation id="4042264909745389898">Google Chrome-bedryfstelselbepalings</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Verlaat bladsy}other{Verlaat bladsye}}</translation>
 <translation id="4044612648082411741">Voer jou sertifikaatwagwoord in</translation>
 <translation id="404493185430269859">Versteksoekenjin</translation>

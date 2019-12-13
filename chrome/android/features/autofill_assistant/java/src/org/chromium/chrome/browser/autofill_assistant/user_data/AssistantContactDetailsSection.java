@@ -120,12 +120,30 @@ public class AssistantContactDetailsSection
         return mContext.getString(R.string.payments_edit_contact_details_label);
     }
 
+    @Override
+    protected boolean areEqual(
+            @Nullable AutofillContact optionA, @Nullable AutofillContact optionB) {
+        if (optionA == null || optionB == null) {
+            return optionA == optionB;
+        }
+        if (TextUtils.equals(optionA.getIdentifier(), optionB.getIdentifier())) {
+            return true;
+        }
+        if (optionA.getProfile() == null || optionB.getProfile() == null) {
+            return optionA.getProfile() == optionB.getProfile();
+        }
+        if (TextUtils.equals(optionA.getProfile().getGUID(), optionB.getProfile().getGUID())) {
+            return true;
+        }
+        return optionA.isEqualOrSupersetOf(optionB) && optionB.isEqualOrSupersetOf(optionA);
+    }
+
     /**
      * The Chrome profiles have changed externally. This will rebuild the UI with the new/changed
      * set of profiles, while keeping the selected item if possible.
      */
     void onProfilesChanged(List<AutofillProfile> profiles, boolean requestPayerEmail,
-            boolean requestPayerName, boolean requestPayerPhone, String defaultEmail) {
+            boolean requestPayerName, boolean requestPayerPhone) {
         if (mIgnoreProfileChangeNotifications) {
             return;
         }
@@ -138,7 +156,6 @@ public class AssistantContactDetailsSection
         // instead of using mEditor, which may be null.
         ContactEditor tempEditor =
                 new ContactEditor(requestPayerName, requestPayerPhone, requestPayerEmail, false);
-        AutofillContact previouslySelectedContact = mSelectedOption;
 
         // Convert profiles into a list of |AutofillContact|.
         int selectedContactIndex = -1;
@@ -151,21 +168,8 @@ public class AssistantContactDetailsSection
                 continue;
             }
             contacts.add(contact);
-            if (previouslySelectedContact != null
-                    && TextUtils.equals(
-                            contact.getIdentifier(), previouslySelectedContact.getIdentifier())) {
+            if (mSelectedOption != null && areEqual(contact, mSelectedOption)) {
                 selectedContactIndex = i;
-            }
-        }
-
-        // Default selection: select most complete profile with the default email, if possible.
-        if (selectedContactIndex == -1 && !defaultEmail.isEmpty()) {
-            // Note: contacts are already sorted by completeness.
-            for (int i = 0; i < contacts.size(); i++) {
-                if (TextUtils.equals(contacts.get(i).getPayerEmail(), defaultEmail)) {
-                    selectedContactIndex = i;
-                    break;
-                }
             }
         }
 

@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -132,6 +133,12 @@ class DeviceService : public service_manager::Service,
 
   void SetPlatformSensorProviderForTesting(
       std::unique_ptr<PlatformSensorProvider> provider);
+
+  // Supports global override of GeolocationContext binding within the service.
+  using GeolocationContextBinder = base::RepeatingCallback<void(
+      mojo::PendingReceiver<mojom::GeolocationContext>)>;
+  static void OverrideGeolocationContextBinderForTesting(
+      GeolocationContextBinder binder);
 
  private:
   // service_manager::Service:

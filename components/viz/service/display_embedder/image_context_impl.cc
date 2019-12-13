@@ -50,8 +50,6 @@ void ImageContextImpl::OnContextLost() {
 }
 
 ImageContextImpl::~ImageContextImpl() {
-  DCHECK(!representation_scoped_read_access_);
-
   if (fallback_context_state_)
     gpu::DeleteGrBackendTexture(fallback_context_state_, &fallback_texture_);
 }
@@ -236,6 +234,12 @@ bool ImageContextImpl::BindOrCopyTextureIfNecessary(
 void ImageContextImpl::EndAccessIfNecessary() {
   if (!representation_scoped_read_access_)
     return;
+
+  // Avoid unnecessary read access churn for representations that
+  // support multiple readers.
+  if (representation_->SupportsMultipleConcurrentReadAccess())
+    return;
+
   representation_scoped_read_access_.reset();
   promise_image_texture_ = nullptr;
 }

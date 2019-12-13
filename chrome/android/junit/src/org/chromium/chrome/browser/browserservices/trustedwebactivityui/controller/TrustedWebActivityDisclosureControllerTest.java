@@ -26,12 +26,12 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.browserservices.BrowserServicesStore;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier.VerificationState;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier.VerificationStatus;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 
 /**
  * Tests for {@link TrustedWebActivityDisclosureController}.
@@ -42,8 +42,7 @@ public class TrustedWebActivityDisclosureControllerTest {
     private static final String CLIENT_PACKAGE = "com.example.twaclient";
     private static final String SCOPE = "https://www.example.com";
 
-    @Mock
-    public BrowserServicesStore mStore;
+    @Mock public ChromePreferenceManager mPreferences;
     @Mock public ActivityLifecycleDispatcher mLifecycleDispatcher;
     @Mock public CurrentPageVerifier mCurrentPageVerifier;
     @Mock public TrustedWebActivityUmaRecorder mRecorder;
@@ -60,9 +59,9 @@ public class TrustedWebActivityDisclosureControllerTest {
         doReturn(CLIENT_PACKAGE).when(mClientPackageNameProvider).get();
         doNothing().when(mCurrentPageVerifier)
                 .addVerificationObserver(mVerificationObserverCaptor.capture());
-        doReturn(false).when(mStore).hasUserAcceptedTwaDisclosureForPackage(anyString());
+        doReturn(false).when(mPreferences).hasUserAcceptedTwaDisclosureForPackage(anyString());
 
-        new TrustedWebActivityDisclosureController(mStore, mModel, mLifecycleDispatcher,
+        new TrustedWebActivityDisclosureController(mPreferences, mModel, mLifecycleDispatcher,
                 mCurrentPageVerifier, mRecorder, mClientPackageNameProvider);
     }
 
@@ -93,7 +92,7 @@ public class TrustedWebActivityDisclosureControllerTest {
     @Test
     @Feature("TrustedWebActivities")
     public void noShowIfAlreadyAccepted() {
-        doReturn(true).when(mStore).hasUserAcceptedTwaDisclosureForPackage(anyString());
+        doReturn(true).when(mPreferences).hasUserAcceptedTwaDisclosureForPackage(anyString());
         enterVerifiedOrigin();
         assertSnackbarNotShown();
     }
@@ -103,7 +102,7 @@ public class TrustedWebActivityDisclosureControllerTest {
     public void recordDismiss() {
         enterVerifiedOrigin();
         dismissSnackbar();
-        verify(mStore).setUserAcceptedTwaDisclosureForPackage(CLIENT_PACKAGE);
+        verify(mPreferences).setUserAcceptedTwaDisclosureForPackage(CLIENT_PACKAGE);
     }
 
     private void enterVerifiedOrigin() {

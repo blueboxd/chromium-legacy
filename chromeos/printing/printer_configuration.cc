@@ -16,6 +16,11 @@
 
 namespace chromeos {
 
+bool Printer::PpdReference::IsFilled() const {
+  return autoconf || !user_supplied_ppd_url.empty() ||
+         !effective_make_and_model.empty();
+}
+
 // Returns true if the scheme is both valid and non-empty.
 bool IsSchemeValid(const url::Parsed& parsed) {
   return parsed.scheme.is_valid() && parsed.scheme.is_nonempty();

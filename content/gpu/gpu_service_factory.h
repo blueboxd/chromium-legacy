@@ -14,6 +14,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "media/base/android_overlay_mojo_factory.h"
 #include "media/mojo/buildflags.h"
+#include "media/mojo/mojom/media_service.mojom.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace gpu {
@@ -38,9 +39,8 @@ class GpuServiceFactory {
       media::AndroidOverlayMojoFactoryCB android_overlay_factory_cb);
   ~GpuServiceFactory();
 
-  void RunService(
-      const std::string& service_name,
-      mojo::PendingReceiver<service_manager::mojom::Service> receiver);
+  void RunMediaService(
+      mojo::PendingReceiver<media::mojom::MediaService> receiver);
 
  private:
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)

@@ -866,11 +866,11 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="7041173719775863268">Det valgte afsluttes</translation>
 <translation id="7043850226734279132">Mørk kaki</translation>
 <translation id="7048792632163898198">Følgende genveje er ikke kommandoer i ChromeVox, men de kan stadig hjælpe dig med at optimere din Chrome-oplevelse.
-Tryk på tabulatortasten for at gå fremad mellem elementer, der ved tryk eller klik medfører en handling, f.eks. knapper og links. Tryk på Shift+tabulatortast for at gå tilbage.
+Tryk på Tab-tasten for at gå fremad mellem elementer, der ved tryk eller klik medfører en handling, f.eks. knapper og links. Tryk på Shift+Tab for at gå tilbage.
 Tryk på Ctrl+L for at åbne Chrome-browserens adressefelt, der også kaldes omnifeltet.
 Tryk på Ctrl+T for automatisk at åbne og gå til en ny fane. Markøren er i omnifeltet.
 Tryk på Ctrl+W for at lukke en fane.
-Tryk på Ctrl+tabulatortast for at gå fremad mellem åbne faner.
+Tryk på Ctrl+Tab for at gå fremad mellem åbne faner.
 Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="7051308646573997571">Koralrød</translation>
 <translation id="7062635574500127092">Grønblå</translation>

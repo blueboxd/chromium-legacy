@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -73,6 +72,10 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   // Moves |view| to the specified |index|. A negative value for |index| moves
   // |view| to the end.
   void ReorderChildView(AXVirtualView* view, int index);
+
+  // Removes this virtual view from its parent, which could either be a virtual
+  // or a real view. Hands ownership of this view back to the caller.
+  std::unique_ptr<AXVirtualView> RemoveFromParentView();
 
   // Removes |view| from this virtual view. The view's parent will change to
   // nullptr. Hands ownership back to the caller.

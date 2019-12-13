@@ -223,9 +223,9 @@ void RegistrationRequest::RetryWithBackoff() {
   url_loader_.reset();
   backoff_entry_.InformOfRequest(false);
 
-  DVLOG(1) << "Delaying GCM registration of app: " << request_info_.app_id()
-           << ", for " << backoff_entry_.GetTimeUntilRelease().InMilliseconds()
-           << " milliseconds.";
+  VLOG(1) << "Delaying GCM registration of app: " << request_info_.app_id()
+          << ", for " << backoff_entry_.GetTimeUntilRelease().InMilliseconds()
+          << " milliseconds.";
   recorder_->RecordRegistrationRetryDelayed(
       request_info_.app_id(), source_to_record_,
       backoff_entry_.GetTimeUntilRelease().InMilliseconds(), retries_left_ + 1);
@@ -242,13 +242,13 @@ RegistrationRequest::Status RegistrationRequest::ParseResponse(
     std::unique_ptr<std::string> body,
     std::string* token) {
   if (source->NetError() != net::OK) {
-    DVLOG(1) << "Registration URL fetching failed.";
+    LOG(ERROR) << "Registration URL fetching failed.";
     return URL_FETCHING_FAILED;
   }
 
   std::string response;
   if (!body) {
-    DVLOG(1) << "Failed to get registration response body.";
+    LOG(ERROR) << "Failed to get registration response body.";
     return NO_RESPONSE_BODY;
   }
   response = std::move(*body);
@@ -259,21 +259,21 @@ RegistrationRequest::Status RegistrationRequest::ParseResponse(
   if (error_pos != std::string::npos) {
     std::string error =
         response.substr(error_pos + base::size(kErrorPrefix) - 1);
-    DVLOG(1) << "Registration response error message: " << error;
+    LOG(ERROR) << "Registration response error message: " << error;
     return GetStatusFromError(error);
   }
 
   // Can't even get any header info.
   if (!source->ResponseInfo() || !source->ResponseInfo()->headers) {
-    DVLOG(1) << "Registration HTTP response info or header missing";
+    LOG(ERROR) << "Registration HTTP response info or header missing";
     return HTTP_NOT_OK;
   }
 
   // If we cannot tell what the error is, but at least we know response code was
   // not OK.
   if (source->ResponseInfo()->headers->response_code() != net::HTTP_OK) {
-    DVLOG(1) << "Registration HTTP response code not OK: "
-             << source->ResponseInfo()->headers->response_code();
+    LOG(ERROR) << "Registration HTTP response code not OK: "
+               << source->ResponseInfo()->headers->response_code();
     return HTTP_NOT_OK;
   }
 
@@ -283,6 +283,7 @@ RegistrationRequest::Status RegistrationRequest::ParseResponse(
     return SUCCESS;
   }
 
+  LOG(ERROR) << "Registration HTTP response parsing failed";
   return RESPONSE_PARSING_FAILED;
 }
 
@@ -295,7 +296,8 @@ void RegistrationRequest::OnURLLoadComplete(
                                         source_to_record_, status);
 
   DCHECK(custom_request_handler_.get());
-  custom_request_handler_->ReportUMAs(status);
+  custom_request_handler_->ReportStatusToUMA(status);
+  custom_request_handler_->ReportNetErrorCodeToUMA(source->NetError());
 
   if (ShouldRetryWithStatus(status)) {
     if (retries_left_ > 0) {
@@ -308,7 +310,7 @@ void RegistrationRequest::OnURLLoadComplete(
                                           source_to_record_, status);
 
     DCHECK(custom_request_handler_.get());
-    custom_request_handler_->ReportUMAs(status);
+    custom_request_handler_->ReportStatusToUMA(status);
   }
 
   callback_.Run(status, token);

@@ -10,6 +10,6 @@
 ] interface USB : EventTarget {
     attribute EventHandler onconnect;
     attribute EventHandler ondisconnect;
-    [CallWith=ScriptState, MeasureAs=UsbGetDevices] Promise<sequence<USBDevice>> getDevices();
-    [CallWith=ScriptState, Exposed=Window, MeasureAs=UsbRequestDevice] Promise<sequence<USBDevice>> requestDevice(USBDeviceRequestOptions options);
+    [CallWith=ScriptState, RaisesException, MeasureAs=UsbGetDevices] Promise<sequence<USBDevice>> getDevices();
+    [CallWith=ScriptState, RaisesException, Exposed=Window, MeasureAs=UsbRequestDevice] Promise<sequence<USBDevice>> requestDevice(USBDeviceRequestOptions options);
 };

@@ -2064,8 +2064,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 RecordUserAction.record("MobileMenuReload");
             }
         } else if (id == R.id.info_menu_id) {
-            PageInfoController.show(
-                    this, currentTab, null, PageInfoController.OpenedFromSource.MENU);
+            PageInfoController.show(this, currentTab.getWebContents(), null,
+                    PageInfoController.OpenedFromSource.MENU,
+                    /*offlinePageLoadUrlDelegate=*/
+                    new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(currentTab));
         } else if (id == R.id.translate_id) {
             RecordUserAction.record("MobileMenuTranslate");
             Tracker tracker =

@@ -6,7 +6,6 @@
 
 #include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/cpp/connect.h"
 
 namespace media {
 

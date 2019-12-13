@@ -81,8 +81,7 @@ VirtualFidoDevice::State* VirtualFidoDeviceFactory::mutable_state() {
 }
 
 std::unique_ptr<FidoDiscoveryBase> VirtualFidoDeviceFactory::Create(
-    FidoTransportProtocol transport,
-    ::service_manager::Connector* connector) {
+    FidoTransportProtocol transport) {
   if (transport != transport_) {
     return nullptr;
   }

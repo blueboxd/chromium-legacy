@@ -75,9 +75,9 @@ void DistillerViewer::OnArticleReady(
         images.push_back(ImageInfo{GURL(image.url()), image.data()});
       }
     }
-    const std::string html = viewer::GetUnsafeArticleTemplateHtml(
-        url_.spec(), distilled_page_prefs_->GetTheme(),
-        distilled_page_prefs_->GetFontFamily());
+    const std::string html =
+        viewer::GetArticleTemplateHtml(distilled_page_prefs_->GetTheme(),
+                                       distilled_page_prefs_->GetFontFamily());
 
     std::string html_and_script(html);
     html_and_script +=

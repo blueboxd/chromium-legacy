@@ -2488,6 +2488,8 @@ enum WebFeature {
   kClientHintsUAMobile = 3116,
   kV8VideoPlaybackQuality_CorruptedVideoFrames_AttributeGetter = 3117,
   kLongTaskBufferFull = 3118,
+  kHTMLMetaElementMonetization = 3119,
+  kHTMLLinkElementMonetization = 3120,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

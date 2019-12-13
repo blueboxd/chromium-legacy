@@ -54,6 +54,7 @@
 namespace blink {
 
 class ExecutionContext;
+class ExceptionState;
 
 class MODULES_EXPORT ServiceWorkerContainer final
     : public EventTargetWithInlineData,
@@ -81,7 +82,7 @@ class MODULES_EXPORT ServiceWorkerContainer final
   void Trace(blink::Visitor*) override;
 
   ServiceWorker* controller() { return controller_; }
-  ScriptPromise ready(ScriptState*);
+  ScriptPromise ready(ScriptState*, ExceptionState&);
 
   ScriptPromise registerServiceWorker(ScriptState*,
                                       const String& pattern,

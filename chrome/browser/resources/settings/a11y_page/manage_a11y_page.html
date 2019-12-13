@@ -85,7 +85,7 @@
     </settings-toggle-button>
     <template is="dom-if" if="[[prefs.settings.a11y.screen_magnifier.value]]">
       <div class="settings-box continuation">
-        <div class="start sub-item settings-box-text">
+        <div class="start sub-item settings-box-text" aria-hidden="true">
           $i18n{screenMagnifierZoomLabel}
         </div>
         <settings-dropdown-menu label="$i18n{screenMagnifierZoomLabel}"
@@ -102,7 +102,7 @@
     </settings-toggle-button>
     <template is="dom-if" if="[[prefs.ash.docked_magnifier.enabled.value]]">
       <div class="settings-box continuation">
-        <div class="start sub-item settings-box-text">
+        <div class="start sub-item settings-box-text" aria-hidden="true">
           $i18n{dockedMagnifierZoomLabel}
         </div>
         <settings-dropdown-menu label="$i18n{dockedMagnifierZoomLabel}"
@@ -171,7 +171,7 @@
     </settings-toggle-button>
     <div class="settings-box continuation"
         hidden$="[[!prefs.settings.a11y.autoclick.value]]">
-      <div class="start sub-item settings-box-text">
+      <div class="start sub-item settings-box-text" aria-hidden="true">
         $i18n{delayBeforeClickLabel}
       </div>
       <settings-dropdown-menu label="$i18n{delayBeforeClickLabel}"
@@ -196,12 +196,11 @@
     </div>
     <div class="settings-box continuation"
         hidden$="[[!prefs.settings.a11y.autoclick.value]]">
-      <div class="start sub-item settings-box-text"
-          id="autoclickMovementThresholdLabel">
+      <div class="start sub-item settings-box-text" aria-hidden="true">
         $i18n{autoclickMovementThresholdLabel}
       </div>
       <settings-dropdown-menu
-          aria-labelledby="autoclickMovementThresholdLabel"
+          label="$i18n{autoclickMovementThresholdLabel}"
           pref="{{prefs.settings.a11y.autoclick_movement_threshold}}"
           menu-options="[[autoClickMovementThresholdOptions_]]"
           disabled="[[!prefs.settings.a11y.autoclick.value]]">

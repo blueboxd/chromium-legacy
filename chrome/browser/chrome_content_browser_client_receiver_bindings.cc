@@ -319,16 +319,3 @@ void ChromeContentBrowserClient::BindHostReceiverForRendererOnIOThread(
   }
 }
 
-void ChromeContentBrowserClient::RunServiceInstance(
-    const service_manager::Identity& identity,
-    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
-  const std::string& service_name = identity.name();
-  ALLOW_UNUSED_LOCAL(service_name);
-#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  if (service_name == media::mojom::kMediaServiceName) {
-    service_manager::Service::RunAsyncUntilTermination(
-        media::CreateMediaService(std::move(*receiver)));
-    return;
-  }
-#endif
-}

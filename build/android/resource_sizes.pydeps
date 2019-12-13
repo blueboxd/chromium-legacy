@@ -54,7 +54,6 @@ binary_size/apk_downloader.py
 devil_chromium.py
 gyp/util/__init__.py
 gyp/util/build_utils.py
-gyp/util/md5_check.py
 gyp/util/zipalign.py
 method_count.py
 pylib/__init__.py

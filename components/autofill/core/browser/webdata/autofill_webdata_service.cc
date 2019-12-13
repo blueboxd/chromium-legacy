@@ -29,11 +29,10 @@ namespace autofill {
 AutofillWebDataService::AutofillWebDataService(
     scoped_refptr<WebDatabaseService> wdbs,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> db_task_runner,
-    const ProfileErrorCallback& callback)
-    : WebDataServiceBase(wdbs, callback, ui_task_runner),
-      ui_task_runner_(ui_task_runner),
-      db_task_runner_(db_task_runner),
+    scoped_refptr<base::SingleThreadTaskRunner> db_task_runner)
+    : WebDataServiceBase(std::move(wdbs), ui_task_runner),
+      ui_task_runner_(std::move(ui_task_runner)),
+      db_task_runner_(std::move(db_task_runner)),
       autofill_backend_(nullptr) {
   base::Closure on_changed_callback =
       Bind(&AutofillWebDataService::NotifyAutofillMultipleChangedOnUISequence,
@@ -54,11 +53,9 @@ AutofillWebDataService::AutofillWebDataService(
 AutofillWebDataService::AutofillWebDataService(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_task_runner)
-    : WebDataServiceBase(nullptr,
-                         WebDataServiceBase::ProfileErrorCallback(),
-                         ui_task_runner),
-      ui_task_runner_(ui_task_runner),
-      db_task_runner_(db_task_runner),
+    : WebDataServiceBase(nullptr, ui_task_runner),
+      ui_task_runner_(std::move(ui_task_runner)),
+      db_task_runner_(std::move(db_task_runner)),
       autofill_backend_(new AutofillWebDataBackendImpl(
           nullptr,
           ui_task_runner_,

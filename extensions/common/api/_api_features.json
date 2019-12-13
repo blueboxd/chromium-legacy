@@ -330,6 +330,7 @@
       "chrome://os-settings/*",
       "chrome://settings/*",
       "chrome://sync-confirmation/*",
+      "chrome://tab-strip/*",
       "chrome://welcome/*"
     ]
   }],

@@ -7,8 +7,9 @@ suite('<history-searched-label> unit test', function() {
   let label;
 
   setup(function() {
+    PolymerTest.clearBody();
     label = document.createElement('history-searched-label');
-    replaceBody(label);
+    document.body.appendChild(label);
   });
 
   test('matching query sets bold', function() {

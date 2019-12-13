@@ -1,5 +1,5 @@
 document
-++group
+++group IsControlElement=false
 ++++menuitem Name='Button in menu element'
 ++menu Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false
 ++++menuitem Name='Button in element with menu role'

@@ -35,8 +35,10 @@ PACKAGE_FILTER = [
     "libcairo.so",
     "libcups.so",
     "libdbus-1.so",
+    "libdrm.so.2",
     "libdl.so",
     "libexpat.so",
+    "libgbm.so.1",
     "libgcc_s.so",
     "libgdk-3.so",
     "libgdk_pixbuf-2.0.so",
@@ -57,11 +59,12 @@ PACKAGE_FILTER = [
     "libstdc++.so",
     "libuuid.so",
     "libxcb.so",
+    "libxcb-dri3.so.0",
     "rtld(GNU_HASH)",
 ]
 
-SUPPORTED_FEDORA_RELEASES = ['25', '26', '27']
-SUPPORTED_OPENSUSE_LEAP_RELEASES = ['42.2', '42.3']
+SUPPORTED_FEDORA_RELEASES = ['30', '31']
+SUPPORTED_OPENSUSE_LEAP_RELEASES = ['15.1', '15.2']
 
 COMMON_NS = "http://linux.duke.edu/metadata/common"
 RPM_NS = "http://linux.duke.edu/metadata/rpm"
@@ -73,11 +76,11 @@ for version in SUPPORTED_FEDORA_RELEASES:
       "https://download.fedoraproject.org/pub/fedora/linux/releases/%s/Everything/x86_64/os/" % version,
       # 'updates' must appear after 'releases' since its entries
       # overwrite the originals.
-      "https://download.fedoraproject.org/pub/fedora/linux/updates/%s/x86_64/" % version,
+      "https://download.fedoraproject.org/pub/fedora/linux/updates/%s/Everything/x86_64/" % version,
   ]
 for version in SUPPORTED_OPENSUSE_LEAP_RELEASES:
     rpm_sources['openSUSE Leap ' + version] = [
-        "https://download.opensuse.org/distribution/leap/%s/repo/oss/suse/" % version,
+        "https://download.opensuse.org/distribution/leap/%s/repo/oss/" % version,
         # 'update' must appear after 'distribution' since its entries
         # overwrite the originals.
         "https://download.opensuse.org/update/leap/%s/oss/" % version,

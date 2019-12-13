@@ -5,7 +5,8 @@
 import 'chrome://new-tab-page/most_visited.js';
 
 import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
-import {TestProxy} from 'chrome://test/new_tab_page/test_support.js';
+import {isMac} from 'chrome://resources/js/cr.m.js';
+import {keydown, TestProxy} from 'chrome://test/new_tab_page/test_support.js';
 import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageMostVisitedTest', () => {
@@ -14,9 +15,6 @@ suite('NewTabPageMostVisitedTest', () => {
 
   /** @type {TestProxy} */
   let testProxy;
-
-  /** @type {CrToastManagerElement} */
-  let toastManager;
 
   /**
    * @param {string}
@@ -59,9 +57,6 @@ suite('NewTabPageMostVisitedTest', () => {
 
     mostVisited = document.createElement('ntp-most-visited');
     document.body.appendChild(mostVisited);
-
-    toastManager = document.createElement('cr-toast-manager');
-    document.body.appendChild(toastManager);
   });
 
   test('empty shows add shortcut only', () => {
@@ -78,16 +73,14 @@ suite('NewTabPageMostVisitedTest', () => {
   test('pressing enter when add shortcut has focus opens dialog', () => {
     mostVisited.$.addShortcut.focus();
     assertFalse(mostVisited.$.dialog.open);
-    mostVisited.$.addShortcut.dispatchEvent(
-        new KeyboardEvent('keydown', {key: 'Enter'}));
+    keydown(mostVisited.$.addShortcut, 'Enter');
     assertTrue(mostVisited.$.dialog.open);
   });
 
   test('pressing space when add shortcut has focus opens dialog', () => {
     mostVisited.$.addShortcut.focus();
     assertFalse(mostVisited.$.dialog.open);
-    mostVisited.$.addShortcut.dispatchEvent(
-        new KeyboardEvent('keydown', {key: ' '}));
+    keydown(mostVisited.$.addShortcut, ' ');
     assertTrue(mostVisited.$.dialog.open);
   });
 
@@ -230,11 +223,11 @@ suite('NewTabPageMostVisitedTest', () => {
 
     test('toast shown on save', async () => {
       inputUrl.value = 'url';
-      assertFalse(toastManager.isToastOpen);
+      assertFalse(mostVisited.$.toast.open);
       const addCalled = testProxy.handler.whenCalled('addMostVisitedTile');
       saveButton.click();
       await addCalled;
-      assertTrue(toastManager.isToastOpen);
+      assertTrue(mostVisited.$.toast.open);
     });
 
     test('save name and URL', async () => {
@@ -340,17 +333,17 @@ suite('NewTabPageMostVisitedTest', () => {
 
     test('toast shown when tile editted', async () => {
       inputUrl.value = 'updated-url';
-      assertFalse(toastManager.isToastOpen);
+      assertFalse(mostVisited.$.toast.open);
       saveButton.click();
       await flushTasks();
-      assertTrue(toastManager.isToastOpen);
+      assertTrue(mostVisited.$.toast.open);
     });
 
     test('no toast when not editted', async () => {
-      assertFalse(toastManager.isToastOpen);
+      assertFalse(mostVisited.$.toast.open);
       saveButton.click();
       await flushTasks();
-      assertFalse(toastManager.isToastOpen);
+      assertFalse(mostVisited.$.toast.open);
     });
 
     test('edit a tile title', async () => {
@@ -391,10 +384,64 @@ suite('NewTabPageMostVisitedTest', () => {
     actionMenuButton.click();
     assertTrue(actionMenu.open);
     const deleteCalled = testProxy.handler.whenCalled('deleteMostVisitedTile');
-    assertFalse(toastManager.isToastOpen);
+    assertFalse(mostVisited.$.toast.open);
     removeButton.click();
     assertFalse(actionMenu.open);
     assertEquals('https://b/', (await deleteCalled).url);
-    assertTrue(toastManager.isToastOpen);
+    assertTrue(mostVisited.$.toast.open);
+  });
+
+  test('tile url is set to href of <a>', async () => {
+    await addTiles(1);
+    const [tile] = queryTiles();
+    assertEquals('https://a/', tile.href);
+  });
+
+  test('delete first tile', async () => {
+    await addTiles(1);
+    const [tile] = queryTiles();
+    const deleteCalled = testProxy.handler.whenCalled('deleteMostVisitedTile');
+    assertFalse(mostVisited.$.toast.open);
+    keydown(tile, 'Delete');
+    assertEquals('https://a/', (await deleteCalled).url);
+    assertTrue(mostVisited.$.toast.open);
+  });
+
+  test('ctrl+z undo', async () => {
+    const undoCalled =
+        testProxy.handler.whenCalled('undoMostVisitedTileAction');
+    mostVisited.dispatchEvent(new KeyboardEvent('keydown', {
+      bubbles: true,
+      ctrlKey: !isMac,
+      key: 'z',
+      metaKey: isMac,
+    }));
+    await undoCalled;
+  });
+
+  test('toast restore defaults button', async () => {
+    const wait = testProxy.handler.whenCalled('restoreMostVisitedDefaults');
+    const {toast} = mostVisited.$;
+    toast.querySelector('dom-if').if = true;
+    await flushTasks();
+    assertFalse(toast.open);
+    toast.show('');
+    assertTrue(toast.open);
+    toast.querySelector('#restore').click();
+    await wait;
+    assertFalse(toast.open);
+  });
+
+  test('toast undo button', async () => {
+    const wait = testProxy.handler.whenCalled('undoMostVisitedTileAction');
+    const {toast} = mostVisited.$;
+    toast.querySelector('dom-if').if = true;
+    await flushTasks();
+    assertFalse(toast.open);
+    toast.show('');
+    assertTrue(toast.open);
+    toast.querySelector('#undo').click();
+    await wait;
+    assertFalse(toast.open);
   });
 });

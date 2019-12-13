@@ -1,5 +1,5 @@
 document
-++group
+++group IsControlElement=false
 ++++document
 ++++++document
 ++++++++group Name='iframe_onscreen'

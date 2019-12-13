@@ -83,6 +83,7 @@ void ContentViewRenderView::OnPhysicalBackingSizeChanged(
 
 void ContentViewRenderView::SurfaceCreated(JNIEnv* env) {
   InitCompositor();
+  current_surface_format_ = 0;
 }
 
 void ContentViewRenderView::SurfaceDestroyed(JNIEnv* env,
@@ -90,16 +91,20 @@ void ContentViewRenderView::SurfaceDestroyed(JNIEnv* env,
   if (cache_back_buffer)
     compositor_->CacheBackBufferForCurrentSurface();
   compositor_->SetSurface(nullptr, false);
+  current_surface_format_ = 0;
 }
 
 void ContentViewRenderView::SurfaceChanged(
     JNIEnv* env,
     jboolean can_be_used_with_surface_control,
+    jint format,
     jint width,
     jint height,
     const JavaParamRef<jobject>& surface) {
-  // TODO(boliu): Avoid SetSurface if only size changed.
-  compositor_->SetSurface(surface, can_be_used_with_surface_control);
+  if (current_surface_format_ != format) {
+    current_surface_format_ = format;
+    compositor_->SetSurface(surface, can_be_used_with_surface_control);
+  }
   compositor_->SetWindowBounds(gfx::Size(width, height));
 }
 

@@ -70,6 +70,8 @@ void BookmarkAppRegistrar::OnExtensionUnloaded(
   DCHECK_EQ(browser_context, profile());
   if (!extension->from_bookmark())
     return;
+
+  NotifyWebAppWillBeUninstalled(extension->id());
   // If a profile is removed, notify the web app that it is uninstalled, so it
   // can cleanup any state outside the profile dir (e.g., registry settings).
   if (reason == UnloadedExtensionReason::PROFILE_SHUTDOWN)

@@ -2385,6 +2385,7 @@ source_set("chromeos") {
       "printing/cups_proxy_service_manager_factory.h",
       "printing/cups_wrapper.cc",
       "printing/cups_wrapper.h",
+      "printing/cups_wrapper_impl.cc",
       "printing/printer_error_codes.cc",
       "printing/printer_error_codes.h",
       "printing/printer_info_cups.cc",
@@ -3024,6 +3025,8 @@ source_set("unit_tests") {
     sources += [
       "extensions/printing/printing_api_handler_unittest.cc",
       "extensions/printing/printing_api_utils_unittest.cc",
+      "printing/test_cups_wrapper.cc",
+      "printing/test_cups_wrapper.h",
     ]
   }
 

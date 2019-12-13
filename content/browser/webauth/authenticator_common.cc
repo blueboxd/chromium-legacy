@@ -28,7 +28,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -55,7 +54,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "url/url_constants.h"
 #include "url/url_util.h"
 
@@ -542,10 +540,8 @@ base::flat_set<device::FidoTransportProtocol> GetTransports(
 
 AuthenticatorCommon::AuthenticatorCommon(
     RenderFrameHost* render_frame_host,
-    service_manager::Connector* connector,
     std::unique_ptr<base::OneShotTimer> timer)
     : render_frame_host_(render_frame_host),
-      connector_(connector),
       transports_(GetTransportsEnabledByFlags()),
       timer_(std::move(timer)) {
   DCHECK(render_frame_host_);
@@ -603,8 +599,7 @@ void AuthenticatorCommon::StartMakeCredentialRequest(
   }
 
   request_ = std::make_unique<device::MakeCredentialRequestHandler>(
-      connector_, discovery_factory_,
-      GetTransports(caller_origin_, transports_),
+      discovery_factory_, GetTransports(caller_origin_, transports_),
       *ctap_make_credential_request_, *authenticator_selection_criteria_,
       allow_skipping_pin_touch,
       base::BindOnce(&AuthenticatorCommon::OnRegisterResponse,
@@ -669,9 +664,8 @@ void AuthenticatorCommon::StartGetAssertionRequest(
   }
 
   request_ = std::make_unique<device::GetAssertionRequestHandler>(
-      connector_, discovery_factory_,
-      GetTransports(caller_origin_, transports_), *ctap_get_assertion_request_,
-      allow_skipping_pin_touch,
+      discovery_factory_, GetTransports(caller_origin_, transports_),
+      *ctap_get_assertion_request_, allow_skipping_pin_touch,
       base::BindOnce(&AuthenticatorCommon::OnSignResponse,
                      weak_factory_.GetWeakPtr()));
 
@@ -886,9 +880,6 @@ void AuthenticatorCommon::MakeCredential(
   timer_->Start(
       FROM_HERE, options->adjusted_timeout,
       base::BindOnce(&AuthenticatorCommon::OnTimeout, base::Unretained(this)));
-  if (!connector_)
-    connector_ = GetSystemConnector();
-
   // Save client data to return with the authenticator response.
   // TODO(kpaulhamus): Fetch and add the Channel ID/Token Binding ID public key
   // used to communicate with the origin.
@@ -1067,9 +1058,6 @@ void AuthenticatorCommon::GetAssertion(
   timer_->Start(
       FROM_HERE, options->adjusted_timeout,
       base::BindOnce(&AuthenticatorCommon::OnTimeout, base::Unretained(this)));
-
-  if (!connector_)
-    connector_ = GetSystemConnector();
 
   ctap_get_assertion_request_ = CreateCtapGetAssertionRequest(
       client_data_json_, std::move(options), app_id_,

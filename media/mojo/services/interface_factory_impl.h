@@ -26,8 +26,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service_keepalive.h"
+#include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
 #if BUILDFLAG(ENABLE_CDM_PROXY)
 #include "media/mojo/mojom/cdm_proxy.mojom.h"
@@ -43,7 +42,6 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
   InterfaceFactoryImpl(
       mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
           host_interfaces,
-      std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref,
       MojoMediaClient* mojo_media_client);
   ~InterfaceFactoryImpl() final;
 
@@ -130,7 +128,6 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
 
   mojo::UniqueReceiverSet<mojom::Decryptor> decryptor_receivers_;
 
-  std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref_;
   MojoMediaClient* mojo_media_client_;
   base::OnceClosure destroy_cb_;
 

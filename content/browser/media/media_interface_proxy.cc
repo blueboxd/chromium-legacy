@@ -4,24 +4,26 @@
 
 #include "content/browser/media/media_interface_proxy.h"
 
+#include <map>
 #include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/media_service.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/service_process_host.h"
 #include "content/public/common/content_client.h"
 #include "media/mojo/buildflags.h"
-#include "media/mojo/mojom/constants.mojom.h"
 #include "media/mojo/mojom/media_service.mojom.h"
 #include "media/mojo/services/media_interface_provider.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 #if BUILDFLAG(ENABLE_MOJO_CDM)
 #include "content/public/browser/browser_context.h"
@@ -32,6 +34,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#include "base/threading/sequence_local_storage_slot.h"
+#include "base/time/time.h"
 #include "content/browser/media/cdm_storage_impl.h"
 #include "content/browser/media/key_system_support_impl.h"
 #include "content/public/common/cdm_info.h"
@@ -55,9 +59,42 @@
 
 namespace content {
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS) && defined(OS_MACOSX)
-
 namespace {
+
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+// How long an instance of the CDM service is allowed to sit idle before we
+// disconnect and effectively kill it.
+constexpr base::TimeDelta kCdmServiceIdleTimeout =
+    base::TimeDelta::FromSeconds(5);
+
+// Gets an instance of the CDM service for the CDM identified by |guid|.
+// Instances are started lazily as needed.
+media::mojom::CdmService& GetCdmServiceForGuid(const base::Token& guid) {
+  // NOTE: Sequence-local storage is used to limit the lifetime of these Remote
+  // objects to that of the UI-thread sequence. This ensures the Remotes are
+  // destroyed when the task environment is torn down and reinitialized, e.g.,
+  // between unit tests.
+  static base::NoDestructor<base::SequenceLocalStorageSlot<
+      std::map<base::Token, mojo::Remote<media::mojom::CdmService>>>>
+      slot;
+  auto& remotes = slot->GetOrCreateValue();
+  auto& remote = remotes[guid];
+  if (!remote) {
+    ServiceProcessHost::Launch(
+        remote.BindNewPipeAndPassReceiver(),
+        ServiceProcessHost::Options()
+            .WithDisplayName("Content Decryption Module Service")
+            .WithSandboxType(service_manager::SandboxType::kCdm)
+            .Pass());
+    remote.reset_on_disconnect();
+    remote.reset_on_idle_timeout(kCdmServiceIdleTimeout);
+  }
+
+  return *remote.get();
+}
+#endif
+
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS) && defined(OS_MACOSX)
 
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 // TODO(xhwang): Move this to a common place.
@@ -113,9 +150,42 @@ class SeatbeltExtensionTokenProviderImpl
   DISALLOW_COPY_AND_ASSIGN(SeatbeltExtensionTokenProviderImpl);
 };
 
-}  // namespace
-
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS) && defined(OS_MACOSX)
+
+// The amount of time to allow the secondary Media Service instance to idle
+// before tearing it down. Only used if the Content embedder defines how to
+// launch a secondary Media Service instance.
+constexpr base::TimeDelta kSecondaryInstanceIdleTimeout =
+    base::TimeDelta::FromSeconds(5);
+
+void MaybeLaunchSecondaryMediaService(
+    mojo::Remote<media::mojom::MediaService>* remote) {
+  *remote = GetContentClient()->browser()->RunSecondaryMediaService();
+  if (*remote) {
+    // If the embedder provides a secondary Media Service instance, it may run
+    // out-of-process. Make sure we reset on disconnect to allow restart of
+    // crashed instances, and reset on idle to allow for release of resources
+    // when the service instance goes unused for a while.
+    remote->reset_on_disconnect();
+    remote->reset_on_idle_timeout(kSecondaryInstanceIdleTimeout);
+  } else {
+    // The embedder doesn't provide a secondary Media Service instance. Bind
+    // permanently to a disconnected pipe which discards all calls.
+    ignore_result(remote->BindNewPipeAndPassReceiver());
+  }
+}
+
+// Returns a remote handle to the secondary Media Service instance, if the
+// Content embedder defines how to create one. If not, this returns a non-null
+// but non-functioning MediaService reference which discards all calls.
+media::mojom::MediaService& GetSecondaryMediaService() {
+  static base::NoDestructor<mojo::Remote<media::mojom::MediaService>> remote;
+  if (!*remote)
+    MaybeLaunchSecondaryMediaService(remote.get());
+  return *remote->get();
+}
+
+}  // namespace
 
 MediaInterfaceProxy::MediaInterfaceProxy(
     RenderFrameHost* render_frame_host,
@@ -131,14 +201,10 @@ MediaInterfaceProxy::MediaInterfaceProxy(
       base::BindRepeating(&MediaInterfaceProxy::GetFrameServices,
                           base::Unretained(this), base::Token(), std::string());
   media_interface_factory_ptr_ = std::make_unique<MediaInterfaceFactoryHolder>(
-      media::mojom::kMediaServiceName, create_interface_provider_cb);
-
-#if BUILDFLAG(ENABLE_CAST_RENDERER)
-  media_renderer_interface_factory_ptr_ =
-      std::make_unique<MediaInterfaceFactoryHolder>(
-          media::mojom::kMediaRendererServiceName,
-          std::move(create_interface_provider_cb));
-#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
+      base::BindRepeating(&GetMediaService), create_interface_provider_cb);
+  secondary_interface_factory_ = std::make_unique<MediaInterfaceFactoryHolder>(
+      base::BindRepeating(&GetSecondaryMediaService),
+      create_interface_provider_cb);
 
   receiver_.set_disconnect_handler(std::move(error_handler));
 
@@ -182,8 +248,10 @@ void MediaInterfaceProxy::CreateCastRenderer(
     mojo::PendingReceiver<media::mojom::Renderer> receiver) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // CastRenderer is always hosted in "media_renderer" service.
-  InterfaceFactory* factory = media_renderer_interface_factory_ptr_->Get();
+  // CastRenderer is always hosted in the secondary Media Service instance.
+  // This may not be running in some test environments (e.g.
+  // content_browsertests) even though renderers may still request to bind it.
+  InterfaceFactory* factory = secondary_interface_factory_->Get();
   if (factory)
     factory->CreateCastRenderer(overlay_plane_id, std::move(receiver));
 }
@@ -238,8 +306,10 @@ void MediaInterfaceProxy::CreateCdm(
   auto* factory = GetCdmFactory(key_system);
 #elif BUILDFLAG(ENABLE_CAST_RENDERER)
   // CDM service lives together with renderer service if cast renderer is
-  // enabled, because cast renderer creates its own audio/video decoder.
-  auto* factory = media_renderer_interface_factory_ptr_->Get();
+  // enabled, because cast renderer creates its own audio/video decoder. Note
+  // that in content_browsertests (and Content Shell in general) we don't have
+  // an a cast renderer and this interface will be unbound.
+  auto* factory = secondary_interface_factory_->Get();
 #else
   // CDM service lives together with audio/video decoder service.
   auto* factory = media_interface_factory_ptr_->Get();
@@ -352,11 +422,7 @@ media::mojom::CdmFactory* MediaInterfaceProxy::ConnectToCdmService(
 
   DCHECK(!cdm_factory_map_.count(cdm_guid));
 
-  // TODO(slan): Use the BrowserContext Connector instead. See crbug.com/638950.
-  mojo::Remote<media::mojom::CdmService> cdm_service;
-  GetSystemConnector()->Connect(service_manager::ServiceFilter::ByNameWithId(
-                                    media::mojom::kCdmServiceName, cdm_guid),
-                                cdm_service.BindNewPipeAndPassReceiver());
+  media::mojom::CdmService& cdm_service = GetCdmServiceForGuid(cdm_guid);
 
 #if defined(OS_MACOSX)
   // LoadCdm() should always be called before CreateInterfaceFactory().
@@ -366,14 +432,14 @@ media::mojom::CdmFactory* MediaInterfaceProxy::ConnectToCdmService(
       std::make_unique<SeatbeltExtensionTokenProviderImpl>(cdm_path),
       token_provider_remote.InitWithNewPipeAndPassReceiver());
 
-  cdm_service->LoadCdm(cdm_path, std::move(token_provider_remote));
+  cdm_service.LoadCdm(cdm_path, std::move(token_provider_remote));
 #else
-  cdm_service->LoadCdm(cdm_path);
+  cdm_service.LoadCdm(cdm_path);
 #endif  // defined(OS_MACOSX)
 
   mojo::Remote<media::mojom::CdmFactory> cdm_factory_remote;
-  cdm_service->CreateCdmFactory(cdm_factory_remote.BindNewPipeAndPassReceiver(),
-                                GetFrameServices(cdm_guid, cdm_file_system_id));
+  cdm_service.CreateCdmFactory(cdm_factory_remote.BindNewPipeAndPassReceiver(),
+                               GetFrameServices(cdm_guid, cdm_file_system_id));
   cdm_factory_remote.set_disconnect_handler(
       base::BindOnce(&MediaInterfaceProxy::OnCdmServiceConnectionError,
                      base::Unretained(this), cdm_guid));

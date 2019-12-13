@@ -284,6 +284,7 @@ xizmatlarini sizga moslashtirish maqsadlarida foydalanishi mumkin. Bu ruxsatni m
 <translation id="1397500194120344683">Mos telefon topilmadi. <ph name="LINK_BEGIN" />Batafsil axborot.<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">Yoyish</translation>
 <translation id="1399511500114202393">Foydalanuvchi sertifikati yo‘q</translation>
+<translation id="1403519882106291341">Google Chrome OS shartlari</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (boshqariladigan profil)</translation>
 <translation id="1405779994569073824">Ishdan chiqdi.</translation>
 <translation id="1406500794671479665">Tekshirilmoqda...</translation>
@@ -2075,7 +2076,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="3909791450649380159">&amp;Kesib olish</translation>
 <translation id="3911824782900911339">Yangi varaq sahifasi</translation>
 <translation id="3915280005470252504">Ovozli qidiruv</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> qaytadan urining. <ph name="ATTEMPTS_LEFT" /> ta urinish qoldi</translation>
+<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Qaytadan urining. <ph name="ATTEMPTS_LEFT" /> ta urinish qoldi</translation>
 <translation id="3916445069167113093">Bunday turdagi fayl kompyuteringizga zarar yetkazishi mumkin. <ph name="FILE_NAME" /> baribir saqlansinmi?</translation>
 <translation id="3918972485393593704">Tafsilotlarni Google’ga yuborish</translation>
 <translation id="3919145445993746351">Kengaytmalardan barcha qurilmalaringizda foydalanish uchun sinxronizatsiyani yoqing</translation>
@@ -2172,7 +2173,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="4036778507053569103">Serverdan yaroqsiz siyosat yuklab olindi.</translation>
 <translation id="4037084878352560732">Toychoq</translation>
 <translation id="4037889604535939429">Profilni almashtirish</translation>
-<translation id="4042264909745389898">Google Chrome OS shartlari</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Sahifani yopish}other{Sahifalarni yopish}}</translation>
 <translation id="4044612648082411741">Sertifikat parolini kiriting</translation>
 <translation id="404493185430269859">Birlamchi qidiruv tizimi</translation>
@@ -2992,7 +2992,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="5308380583665731573">Ulanish</translation>
 <translation id="5310281978693206542">Havolani qurilmalarimga yuborish</translation>
 <translation id="5311304534597152726">Kirish:</translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> qaytadan urining.</translation>
+<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Qaytadan urining.</translation>
 <translation id="5315738755890845852">Oʻng figurali qavs ortiqcha: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Alohida belgilari</translation>
 <translation id="5317780077021120954">Saqlash</translation>

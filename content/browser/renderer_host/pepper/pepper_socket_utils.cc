@@ -25,10 +25,6 @@
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
 #include "ppapi/shared_impl/private/ppb_x509_certificate_private_shared.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/network/firewall_hole.h"
-#endif  // defined(OS_CHROMEOS)
-
 namespace content {
 namespace pepper_socket_utils {
 
@@ -161,9 +157,9 @@ bool IsLoopbackAddress(const net::IPAddress& address) {
 
 void OpenFirewallHole(const net::IPEndPoint& address,
                       chromeos::FirewallHole::PortType type,
-                      FirewallHoleOpenCallback callback) {
+                      chromeos::FirewallHole::OpenCallback callback) {
   if (IsLoopbackAddress(address.address())) {
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
 
@@ -172,17 +168,20 @@ void OpenFirewallHole(const net::IPEndPoint& address,
   // can be resolved by the address, but the best solution would be to update
   // firewalld to allow filtering by destination address, not just destination
   // port. iptables already support it.
-  chromeos::FirewallHole::Open(type, address.port(), std::string(), callback);
+  chromeos::FirewallHole::Open(type, address.port(), std::string(),
+                               std::move(callback));
 }
 
 void OpenTCPFirewallHole(const net::IPEndPoint& address,
-                         FirewallHoleOpenCallback callback) {
-  OpenFirewallHole(address, chromeos::FirewallHole::PortType::TCP, callback);
+                         chromeos::FirewallHole::OpenCallback callback) {
+  OpenFirewallHole(address, chromeos::FirewallHole::PortType::TCP,
+                   std::move(callback));
 }
 
 void OpenUDPFirewallHole(const net::IPEndPoint& address,
-                         FirewallHoleOpenCallback callback) {
-  OpenFirewallHole(address, chromeos::FirewallHole::PortType::UDP, callback);
+                         chromeos::FirewallHole::OpenCallback callback) {
+  OpenFirewallHole(address, chromeos::FirewallHole::PortType::UDP,
+                   std::move(callback));
 }
 #endif  // defined(OS_CHROMEOS)
 

@@ -50,9 +50,9 @@ ChromeVariationsServiceClient::ChromeVariationsServiceClient() {}
 
 ChromeVariationsServiceClient::~ChromeVariationsServiceClient() {}
 
-base::Callback<base::Version(void)>
+ChromeVariationsServiceClient::VersionCallback
 ChromeVariationsServiceClient::GetVersionForSimulationCallback() {
-  return base::Bind(&GetVersionForSimulation);
+  return base::BindOnce(&GetVersionForSimulation);
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

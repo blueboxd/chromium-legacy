@@ -14,6 +14,8 @@ source_set("renderer") {
     "spellcheck_language.h",
     "spellcheck_provider.cc",
     "spellcheck_provider.h",
+    "spellcheck_renderer_metrics.cc",
+    "spellcheck_renderer_metrics.h",
     "spellcheck_worditerator.cc",
     "spellcheck_worditerator.h",
     "spelling_engine.cc",

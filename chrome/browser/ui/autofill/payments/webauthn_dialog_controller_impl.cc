@@ -55,26 +55,12 @@ bool WebauthnDialogControllerImpl::CloseDialog() {
 
 void WebauthnDialogControllerImpl::UpdateDialog(
     WebauthnDialogState dialog_state) {
-  if (!dialog_model_)
-    return;
-
-  switch (dialog_state) {
-    case WebauthnDialogState::kOfferError:
-      callback_.Reset();
-      break;
-    case WebauthnDialogState::kVerifyPending:
-    case WebauthnDialogState::kVerifyPendingButtonDisabled:
-      // Do not reset the |callback_| here since after the platform
-      // authentication is done, the cancel button will be enabled again.
-      break;
-    case WebauthnDialogState::kUnknown:
-    case WebauthnDialogState::kInactive:
-    case WebauthnDialogState::kOffer:
-    case WebauthnDialogState::kOfferPending:
-      NOTREACHED();
-      break;
-  }
   dialog_model_->SetDialogState(dialog_state);
+  // TODO(crbug.com/991037): Handle callback resetting for verify pending
+  // dialog. Right now this function should only be passed in
+  // WebauthnDialogState::kOfferError.
+  DCHECK_EQ(dialog_state, WebauthnDialogState::kOfferError);
+  callback_.Reset();
 }
 
 void WebauthnDialogControllerImpl::OnDialogClosed() {
@@ -109,7 +95,6 @@ void WebauthnDialogControllerImpl::OnCancelButtonClicked() {
     case WebauthnDialogState::kUnknown:
     case WebauthnDialogState::kInactive:
     case WebauthnDialogState::kOfferError:
-    case WebauthnDialogState::kVerifyPendingButtonDisabled:
       NOTREACHED();
       return;
   }

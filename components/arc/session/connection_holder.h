@@ -16,13 +16,13 @@
 #include "base/threading/thread_checker.h"
 #include "components/arc/session/connection_notifier.h"
 #include "components/arc/session/connection_observer.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 // A macro to call
 // ConnectionHolder<T>::GetInstanceForVersionDoNotCallDirectly(). In order to
-// avoid exposing method names from within the Mojo bindings, we will rely on
+// avoid exposing method names from within the Mojo receivers, we will rely on
 // stringification and the fact that the method min versions have a consistent
 // naming scheme.
 #define ARC_GET_INSTANCE_FOR_METHOD(holder, method_name)        \
@@ -70,8 +70,8 @@ class ConnectionHolderImpl {
     return IsConnected() ? instance_version_ : 0;
   }
 
-  // Returns true if |binding_| is set.
-  bool IsConnected() const { return binding_.get(); }
+  // Returns true if |receiver_| is set.
+  bool IsConnected() const { return receiver_.get(); }
 
   // Sets (or resets if |host| is nullptr) the host.
   void SetHost(HostType* host) {
@@ -119,9 +119,9 @@ class ConnectionHolderImpl {
     // from being notified of a spurious OnConnectionClosed() before an
     // OnConnectionReady() event.
     weak_ptr_factory_.InvalidateWeakPtrs();
-    if (binding_.get()) {
+    if (receiver_.get()) {
       // Regardless of what has changed, the old connection is now stale. Reset
-      // the current binding and notify any listeners. Since |binding_| is set
+      // the current receiver and notify any listeners. Since |receiver_| is set
       // just before the OnConnectionReady() event, we never notify observers of
       // OnConnectionClosed() without seeing the former event first.
       if (instance_ && host_)
@@ -132,35 +132,35 @@ class ConnectionHolderImpl {
       return;
     // When both the instance and host are ready, start connection.
     // TODO(crbug.com/750563): Fix the race issue.
-    auto binding = std::make_unique<mojo::Binding<HostType>>(host_);
+    auto receiver = std::make_unique<mojo::Receiver<HostType>>(host_);
     mojo::InterfacePtr<HostType> host_proxy;
-    binding->Bind(mojo::MakeRequest(&host_proxy));
+    receiver->Bind(mojo::MakeRequest(&host_proxy));
     instance_->Init(
         std::move(host_proxy),
         base::BindOnce(&ConnectionHolderImpl::OnConnectionReady,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(binding)));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(receiver)));
   }
 
-  // Resets the binding and notifies all the observers that the connection is
+  // Resets the receiver and notifies all the observers that the connection is
   // closed.
   void OnConnectionClosed() {
-    DCHECK(binding_);
-    binding_.reset();
+    DCHECK(receiver_);
+    receiver_.reset();
     connection_notifier_->NotifyConnectionClosed();
   }
 
   // Notifies all the observers that the connection is ready.
-  void OnConnectionReady(std::unique_ptr<mojo::Binding<HostType>> binding) {
-    DCHECK(!binding_);
+  void OnConnectionReady(std::unique_ptr<mojo::Receiver<HostType>> receiver) {
+    DCHECK(!receiver_);
     // Now that we can finally commit to this connection and will deliver the
     // OnConnectionReady() event, set the connection error handler to notify
     // Observers of connection closures.
-    // Note: because the callback will be destroyed with |binding_|,
+    // Note: because the callback will be destroyed with |receiver_|,
     // base::Unretained() can be safely used.
-    binding->set_connection_error_handler(base::BindOnce(
+    receiver->set_disconnect_handler(base::BindOnce(
         &ConnectionHolderImpl::OnConnectionClosed, base::Unretained(this)));
 
-    binding_ = std::move(binding);
+    receiver_ = std::move(receiver);
     connection_notifier_->NotifyConnectionReady();
   }
 
@@ -172,7 +172,7 @@ class ConnectionHolderImpl {
   HostType* host_ = nullptr;
 
   // Created when both |instance_| and |host_| ptr are set.
-  std::unique_ptr<mojo::Binding<HostType>> binding_;
+  std::unique_ptr<mojo::Receiver<HostType>> receiver_;
 
   base::WeakPtrFactory<ConnectionHolderImpl> weak_ptr_factory_{this};
 

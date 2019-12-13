@@ -18,8 +18,10 @@
 #include "components/download/public/common/in_progress_download_manager.h"
 #include "components/download/public/common/simple_download_manager_coordinator.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/device_service.h"
 #include "content/public/browser/download_request_utils.h"
-#include "content/public/browser/system_connector.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/path_utils.h"
@@ -29,6 +31,7 @@
 #endif
 
 namespace {
+
 // A map for owning InProgressDownloadManagers before DownloadManagerImpl gets
 // created.
 using InProgressManagerMap =
@@ -52,6 +55,11 @@ void GetDownloadManagerOnProfileCreation(Profile* profile) {
   content::DownloadManager* manager =
       content::BrowserContext::GetDownloadManager(profile);
   DCHECK(manager);
+}
+
+void BindWakeLockProvider(
+    mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver) {
+  content::GetDeviceService().BindWakeLockProvider(std::move(receiver));
 }
 
 }  // namespace
@@ -90,14 +98,13 @@ DownloadManagerUtils::GetInProgressDownloadManager(ProfileKey* key) {
   auto it = map.find(key);
   // Create the InProgressDownloadManager if it hasn't been created yet.
   if (it == map.end()) {
-    service_manager::Connector* connector = content::GetSystemConnector();
     auto in_progress_manager =
         std::make_unique<download::InProgressDownloadManager>(
             nullptr, key->IsOffTheRecord() ? base::FilePath() : key->GetPath(),
             key->IsOffTheRecord() ? nullptr : key->GetProtoDatabaseProvider(),
             base::BindRepeating(&IgnoreOriginSecurityCheck),
             base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe),
-            connector);
+            base::BindRepeating(&BindWakeLockProvider));
     download::SimpleDownloadManagerCoordinator* coordinator =
         SimpleDownloadManagerCoordinatorFactory::GetForKey(key);
     coordinator->SetSimpleDownloadManager(

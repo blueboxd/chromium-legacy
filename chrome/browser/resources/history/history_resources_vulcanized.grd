@@ -25,10 +25,6 @@
                preprocess="true"
                type="BINDATA"
                compress="gzip" />
-      <include name="IDR_HISTORY_HISTORY_JS"
-               file="history.js"
-               compress="gzip"
-               type="BINDATA" />
       <include name="IDR_HISTORY_IMAGES_SIGN_IN_PROMO_DARK_SVG"
                file="images\sign_in_promo_dark.svg"
                compress="gzip"

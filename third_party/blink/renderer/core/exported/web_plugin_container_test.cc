@@ -403,7 +403,7 @@ TEST_F(WebPluginContainerTest, CopyFromContextMenu) {
   // 1) open the context menu. This will focus the plugin.
   web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   // 2) document blurs the plugin, because it can.
-  web_view->ClearFocusedElement();
+  web_view->FocusedElement()->blur();
   // 3) Copy should still operate on the context node, even though the focus had
   //    shifted.
   EXPECT_TRUE(web_view->MainFrameImpl()->ExecuteCommand("Copy"));

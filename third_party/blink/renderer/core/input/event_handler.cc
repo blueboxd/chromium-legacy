@@ -1167,11 +1167,12 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
 }
 
 static LocalFrame* LocalFrameFromTargetNode(Node* target) {
-  if (!IsHTMLFrameElementBase(target))
+  auto* html_frame_base_element = DynamicTo<HTMLFrameElementBase>(target);
+  if (!html_frame_base_element)
     return nullptr;
 
   // Cross-process drag and drop is not yet supported.
-  return DynamicTo<LocalFrame>(ToHTMLFrameElementBase(target)->ContentFrame());
+  return DynamicTo<LocalFrame>(html_frame_base_element->ContentFrame());
 }
 
 WebInputEventResult EventHandler::UpdateDragAndDrop(

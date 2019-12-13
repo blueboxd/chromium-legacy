@@ -295,6 +295,16 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
                                          kOverlayScrollbarThumbNormalAlpha) *
                                             SK_AlphaOPAQUE);
 
+    // Slider
+    case NativeTheme::kColorId_SliderThumbDefault:
+      return SkColorSetARGB(0xFF, 0x25, 0x81, 0xDF);
+    case NativeTheme::kColorId_SliderTroughDefault:
+      return SkColorSetARGB(0x40, 0x25, 0x81, 0xDF);
+    case NativeTheme::kColorId_SliderThumbMinimal:
+      return SkColorSetARGB(0x6E, 0xF1, 0xF3, 0xF4);
+    case NativeTheme::kColorId_SliderTroughMinimal:
+      return SkColorSetARGB(0x19, 0xF1, 0xF3, 0xF4);
+
     // Separator
     case NativeTheme::kColorId_SeparatorColor:
       return gfx::kGoogleGrey300;

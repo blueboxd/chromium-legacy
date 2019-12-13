@@ -1275,6 +1275,7 @@ void TabStrip::OnGroupVisualsChanged(TabGroupId group) {
 }
 
 void TabStrip::OnGroupClosed(TabGroupId group) {
+  bounds_animator_.StopAnimatingView(group_header(group));
   layout_helper_->RemoveGroupHeader(group);
   UpdateIdealBounds();
   AnimateToIdealBounds();
@@ -2483,6 +2484,12 @@ void TabStrip::AnimateToIdealBounds(ClosingTabsBehavior closing_tabs_behavior) {
                         : std::make_unique<TabAnimationDelegate>(this, tab));
   }
 
+  for (const auto& header_pair : group_views_) {
+    bounds_animator_.AnimateViewTo(
+        header_pair.second->header(),
+        layout_helper_->group_header_ideal_bounds().at(header_pair.first));
+  }
+
   if (bounds_animator_.GetTargetBounds(new_tab_button_) !=
       new_tab_button_ideal_bounds_) {
     bounds_animator_.AnimateViewTo(new_tab_button_,
@@ -2662,8 +2669,6 @@ void TabStrip::StoppedDraggingView(TabSlotView* view, bool* is_first_view) {
     // Ensure the drag status is updated even if the view is not a valid tab.
     // This is primarily to make sure group headers are updated correctly.
     // Otherwise, tab drag status is only updated in PrepareForAnimation().
-    // TODO(crbug.com/1021689): Incorporate group headers in the normal
-    // animation flow instead of handling it here and then ignoring it.
     if (view)
       view->set_dragging(false);
 

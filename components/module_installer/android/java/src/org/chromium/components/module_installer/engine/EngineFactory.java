@@ -4,7 +4,7 @@
 
 package org.chromium.components.module_installer.engine;
 
-import org.chromium.base.BuildConfig;
+import org.chromium.base.BundleUtils;
 import org.chromium.base.CommandLine;
 
 /**
@@ -12,7 +12,7 @@ import org.chromium.base.CommandLine;
  */
 public class EngineFactory {
     public InstallEngine getEngine() {
-        if (!BuildConfig.IS_BUNDLE) {
+        if (!BundleUtils.isBundle()) {
             return new ApkEngine();
         }
         if (CommandLine.getInstance().hasSwitch("fake-feature-module-install")) {

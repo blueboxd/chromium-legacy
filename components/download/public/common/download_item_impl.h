@@ -28,6 +28,8 @@
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/resume_mode.h"
 #include "components/download/public/common/url_loader_factory_provider.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -656,6 +658,10 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
 
   // Whether strong validators are present.
   bool HasStrongValidators() const;
+
+  // Binds a device.mojom.WakeLockProvider receiver for any job that needs one.
+  void BindWakeLockProvider(
+      mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver);
 
   DownloadItem::DownloadRenameResult RenameDownloadedFile(
       const std::string& name);

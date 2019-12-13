@@ -251,8 +251,7 @@ void DomDistillerViewerSource::StartDataRequest(
       web_contents->GetContainerBounds().size());
 
   GURL current_url(url_utils::GetOriginalUrlFromDistillerUrl(request_url));
-  std::string unsafe_page_html = viewer::GetUnsafeArticleTemplateHtml(
-      current_url.spec(),
+  std::string unsafe_page_html = viewer::GetArticleTemplateHtml(
       dom_distiller_service_->GetDistilledPagePrefs()->GetTheme(),
       dom_distiller_service_->GetDistilledPagePrefs()->GetFontFamily());
 

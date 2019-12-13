@@ -1076,59 +1076,62 @@ const Rect& RenderText::GetUpdatedCursorBounds() {
   return cursor_bounds_;
 }
 
-bool RenderText::IsGraphemeBoundary(size_t index) {
-  if (index >= text().length())
-    return true;
-
-  EnsureLayout();
-
-  DCHECK(!text_to_display_indices_.empty());
-
-  // The function std::lower_bound(...) finds the first not less than |index|.
-  auto iter = std::lower_bound(text_to_display_indices_.begin(),
-                               text_to_display_indices_.end(), index,
-                               [](const TextToDisplayIndex& lhs, size_t rhs) {
-                                 return lhs.text_index < rhs;
-                               });
-
-  return (iter != text_to_display_indices_.end() && iter->text_index == index);
+internal::GraphemeIterator RenderText::GetGraphemeIteratorAtTextIndex(
+    size_t index) const {
+  EnsureLayoutTextAttributeUpdated();
+  return GetGraphemeIteratorAtIndex(
+      text_, &internal::TextToDisplayIndex::text_index, index);
 }
 
-size_t RenderText::IndexOfAdjacentGrapheme(size_t index,
-                                           LogicalCursorDirection direction) {
+internal::GraphemeIterator RenderText::GetGraphemeIteratorAtDisplayTextIndex(
+    size_t index) const {
+  EnsureLayoutTextAttributeUpdated();
+  return GetGraphemeIteratorAtIndex(
+      layout_text_, &internal::TextToDisplayIndex::display_index, index);
+}
+
+size_t RenderText::GetTextIndex(internal::GraphemeIterator iter) const {
+  DCHECK(layout_text_up_to_date_);
+  return iter == text_to_display_indices_.end() ? text_.length()
+                                                : iter->text_index;
+}
+
+size_t RenderText::GetDisplayTextIndex(internal::GraphemeIterator iter) const {
+  DCHECK(layout_text_up_to_date_);
+  return iter == text_to_display_indices_.end() ? layout_text_.length()
+                                                : iter->display_index;
+}
+
+bool RenderText::IsGraphemeBoundary(size_t index) const {
+  return index >= text_.length() ||
+         GetTextIndex(GetGraphemeIteratorAtTextIndex(index)) == index;
+}
+
+size_t RenderText::IndexOfAdjacentGrapheme(
+    size_t index,
+    LogicalCursorDirection direction) const {
+  // The input is clamped if it is out of that range.
   if (text_.empty())
     return 0;
   if (index > text_.length())
     return text_.length();
 
-  EnsureLayout();
+  EnsureLayoutTextAttributeUpdated();
 
-  DCHECK(!text_to_display_indices_.empty());
-
-  // The function std::lower_bound(...) finds the first not less than |index|.
-  auto iter = std::lower_bound(text_to_display_indices_.begin(),
-                               text_to_display_indices_.end(), index,
-                               [](const TextToDisplayIndex& lhs, size_t rhs) {
-                                 return lhs.text_index < rhs;
-                               });
-
+  internal::GraphemeIterator iter = index == text_.length()
+                                        ? text_to_display_indices_.end()
+                                        : GetGraphemeIteratorAtTextIndex(index);
   if (direction == CURSOR_FORWARD) {
-    // |index| is already a grapheme boundary. Move to the next grapheme.
-    if (iter != text_to_display_indices_.end() && iter->text_index == index)
+    if (iter != text_to_display_indices_.end())
       ++iter;
-    if (iter == text_to_display_indices_.end())
-      return text_.length();
-    DCHECK_LT(index, iter->text_index);
   } else {
     DCHECK_EQ(direction, CURSOR_BACKWARD);
-    if (iter != text_to_display_indices_.begin())
+    // If the index was not at the beginning of the grapheme, it will have been
+    // moved back to the grapheme start.
+    if (iter != text_to_display_indices_.begin() && GetTextIndex(iter) == index)
       --iter;
-    if (iter == text_to_display_indices_.begin())
-      return 0;
-    DCHECK_GT(index, iter->text_index);
   }
-
-  return iter->text_index;
+  return GetTextIndex(iter);
 }
 
 SelectionModel RenderText::GetSelectionModelForSelectionStart() const {
@@ -1316,8 +1319,8 @@ internal::StyleIterator RenderText::GetTextStyleIterator() const {
                                  &weights_, &styles_);
 }
 
-internal::StyleIterator RenderText::GetLayoutTextStyleIterator() {
-  EnsuresLayoutTextAttributeUpdated();
+internal::StyleIterator RenderText::GetLayoutTextStyleIterator() const {
+  EnsureLayoutTextAttributeUpdated();
   return internal::StyleIterator(&layout_colors_, &layout_baselines_,
                                  &layout_font_size_overrides_, &layout_weights_,
                                  &layout_styles_);
@@ -1393,6 +1396,14 @@ void RenderText::SetSelectionModel(const SelectionModel& model) {
   has_directed_selection_ = kSelectionIsAlwaysDirected;
 }
 
+size_t RenderText::TextIndexToDisplayIndex(size_t index) const {
+  return GetDisplayTextIndex(GetGraphemeIteratorAtTextIndex(index));
+}
+
+size_t RenderText::DisplayIndexToTextIndex(size_t index) const {
+  return GetTextIndex(GetGraphemeIteratorAtDisplayTextIndex(index));
+}
+
 void RenderText::OnTextColorChanged() {
 }
 
@@ -1400,7 +1411,7 @@ void RenderText::OnLayoutTextAttributeChanged(bool text_changed) {
   layout_text_attributes_up_to_date_ = false;
 }
 
-void RenderText::EnsureLayoutTextUpdated() {
+void RenderText::EnsureLayoutTextUpdated() const {
   if (layout_text_up_to_date_)
     return;
 
@@ -1444,7 +1455,7 @@ void RenderText::EnsureLayoutTextUpdated() {
   layout_text_up_to_date_ = true;
 }
 
-void RenderText::EnsuresLayoutTextAttributeUpdated() {
+void RenderText::EnsureLayoutTextAttributeUpdated() const {
   if (layout_text_attributes_up_to_date_)
     return;
 
@@ -1483,8 +1494,8 @@ void RenderText::EnsuresLayoutTextAttributeUpdated() {
       layout_grapheme_start_position = current_layout_text_position;
 
       // Keep track of the mapping between |text_| and |layout_text_| indices.
-      TextToDisplayIndex mapping = {text_grapheme_start_position,
-                                    layout_grapheme_start_position};
+      internal::TextToDisplayIndex mapping = {text_grapheme_start_position,
+                                              layout_grapheme_start_position};
       text_to_display_indices_.push_back(mapping);
     }
 
@@ -1523,7 +1534,7 @@ void RenderText::EnsuresLayoutTextAttributeUpdated() {
   layout_text_attributes_up_to_date_ = true;
 }
 
-const base::string16& RenderText::GetLayoutText() {
+const base::string16& RenderText::GetLayoutText() const {
   EnsureLayoutTextUpdated();
   return layout_text_;
 }
@@ -1809,60 +1820,6 @@ base::i18n::TextDirection RenderText::GetTextDirection(
   }
 
   return text_direction_;
-}
-
-size_t RenderText::TextIndexToDisplayIndex(size_t index) {
-  EnsuresLayoutTextAttributeUpdated();
-
-  // it is valid to query the index after the last character.
-  if (index == text_.length())
-    return layout_text_.size();
-
-  DCHECK_LT(index, text_.length());
-  DCHECK(!text_to_display_indices_.empty());
-
-  // The function std::lower_bound(...) finds the first not less than |index|.
-  // Handle the case where it's equal by returning the current element.
-  // Otherwise returns the previous element.
-  auto iter = std::lower_bound(text_to_display_indices_.begin(),
-                               text_to_display_indices_.end(), index,
-                               [](const TextToDisplayIndex& lhs, size_t rhs) {
-                                 return lhs.text_index < rhs;
-                               });
-
-  if (iter != text_to_display_indices_.end() && iter->text_index == index)
-    return iter->display_index;
-  --iter;
-
-  CHECK_LT(iter->display_index, layout_text_.length());
-  return iter->display_index;
-}
-
-size_t RenderText::DisplayIndexToTextIndex(size_t index) {
-  EnsuresLayoutTextAttributeUpdated();
-
-  // it is valid to query the index after the last character.
-  if (index == layout_text_.length())
-    return text_.size();
-
-  DCHECK_LT(index, layout_text_.length());
-  DCHECK(!text_to_display_indices_.empty());
-
-  // The function std::lower_bound(...) finds the first not less than |index|.
-  // Handle the case where it's equal by returning the current element.
-  // Otherwise returns the previous element.
-  auto iter = std::lower_bound(text_to_display_indices_.begin(),
-                               text_to_display_indices_.end(), index,
-                               [](const TextToDisplayIndex& lhs, size_t rhs) {
-                                 return lhs.display_index < rhs;
-                               });
-
-  if (iter != text_to_display_indices_.end() && iter->display_index == index)
-    return iter->text_index;
-  --iter;
-
-  CHECK_LT(iter->text_index, text().length());
-  return iter->text_index;
 }
 
 void RenderText::UpdateStyleLengths() {
@@ -2164,6 +2121,32 @@ void RenderText::UpdateCachedBoundsAndOffset() {
   }
 
   SetDisplayOffset(display_offset_.x() + delta_x);
+}
+
+internal::GraphemeIterator RenderText::GetGraphemeIteratorAtIndex(
+    const base::string16& text,
+    const size_t internal::TextToDisplayIndex::*field,
+    size_t index) const {
+  DCHECK_LE(index, text.length());
+  if (index == text.length())
+    return text_to_display_indices_.end();
+
+  DCHECK(layout_text_up_to_date_);
+  DCHECK(!text_to_display_indices_.empty());
+
+  // The function std::lower_bound(...) finds the first not less than |index|.
+  internal::GraphemeIterator iter = std::lower_bound(
+      text_to_display_indices_.begin(), text_to_display_indices_.end(), index,
+      [field](const internal::TextToDisplayIndex& lhs, size_t rhs) {
+        return lhs.*field < rhs;
+      });
+
+  if (iter == text_to_display_indices_.end() || *iter.*field != index) {
+    DCHECK(iter != text_to_display_indices_.begin());
+    --iter;
+  }
+
+  return iter;
 }
 
 void RenderText::DrawSelection(Canvas* canvas, const Range& selection) {

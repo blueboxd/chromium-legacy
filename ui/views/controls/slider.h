@@ -6,12 +6,11 @@
 #define UI_VIEWS_CONTROLS_SLIDER_H_
 
 #include "base/macros.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
-
-using SkColor = unsigned int;
 
 namespace views {
 
@@ -55,9 +54,12 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   bool GetEnableAccessibilityEvents() const;
   void SetEnableAccessibilityEvents(bool enabled);
 
-  // Gets/Sets IsActive state
-  bool GetIsActive() const;
-  void SetIsActive(bool is_active);
+  // Represents the visual style of the slider.
+  enum class RenderingStyle {
+    kDefaultStyle,
+    kMinimalStyle,
+  };
+  void SetRenderingStyle(RenderingStyle style) { style_ = style; }
 
  protected:
   // Returns the current position of the thumb on the slider.
@@ -112,6 +114,10 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
 
   void NotifyPendingAccessibilityValueChanged();
 
+  SkColor GetThumbColor() const;
+  SkColor GetTroughColor() const;
+  int GetSliderExtraPadding() const;
+
   SliderListener* listener_;
 
   std::unique_ptr<gfx::SlideAnimation> move_animation_;
@@ -126,8 +132,7 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   // button.
   int initial_button_offset_ = 0;
 
-  // Record whether the slider is in the active state or the disabled state.
-  bool is_active_ = true;
+  RenderingStyle style_ = RenderingStyle::kDefaultStyle;
 
   // Animating value of the current radius of the thumb's highlight.
   float thumb_highlight_radius_ = 0.f;

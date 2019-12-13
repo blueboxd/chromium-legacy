@@ -283,6 +283,7 @@
 <translation id="1397500194120344683">Нет подходящих устройств. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">Развернуть</translation>
 <translation id="1399511500114202393">Не использовать сертификат пользователя</translation>
+<translation id="1403519882106291341">Условия использования Google Chrome OS</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (контролируемый профиль)</translation>
 <translation id="1405779994569073824">Произошел сбой</translation>
 <translation id="1406500794671479665">Проверка…</translation>
@@ -2172,7 +2173,6 @@
 <translation id="4036778507053569103">Скачанная с сервера политика недействительна.</translation>
 <translation id="4037084878352560732">Лошадь</translation>
 <translation id="4037889604535939429">Сменить пользователя</translation>
-<translation id="4042264909745389898">Условия использования Google Chrome OS</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Закрыть страницу}one{Закрыть страницы}few{Закрыть страницы}many{Закрыть страницы}other{Закрыть страницы}}</translation>
 <translation id="4044612648082411741">Введите пароль сертификата</translation>
 <translation id="404493185430269859">Поисковая система по умолчанию</translation>

@@ -90,8 +90,6 @@ void ExtensionWebContentsObserver::InitializeRenderFrame(
   render_frame_host->Send(new ExtensionMsg_NotifyRenderViewType(
       render_frame_host->GetRoutingID(), GetViewType(web_contents())));
 
-  ExtensionsBrowserClient::Get()->RegisterExtensionInterfaces(
-      &registry_, render_frame_host, frame_extension);
   ProcessManager::Get(browser_context_)
       ->RegisterRenderFrameHost(web_contents(), render_frame_host,
                                 frame_extension);

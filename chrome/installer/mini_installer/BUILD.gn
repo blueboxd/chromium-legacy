@@ -176,7 +176,7 @@ template("generate_mini_installer") {
       #'--diff_algorithm=COURGETTE',
 
       # Optional argument for verbose archiving output.
-      #'--verbose',
+      #"--verbose",
     ]
 
     deps = [

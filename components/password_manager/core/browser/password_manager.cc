@@ -130,7 +130,7 @@ PasswordFormManager* FindMatchedManagerByRendererId(
 
 bool HasSingleUsernameVote(const FormPredictions& form) {
   if (!base::FeatureList::IsEnabled(
-          password_manager::features::kUsernameFirstFlowFilling)) {
+          password_manager::features::kUsernameFirstFlow)) {
     return false;
   }
   for (const auto& field : form.fields) {
@@ -145,9 +145,8 @@ bool HasSingleUsernameVote(const FormPredictions& form) {
 bool HasNewPasswordVote(const FormPredictions& form) {
   if (!base::FeatureList::IsEnabled(
           password_manager::features::
-              KEnablePasswordGenerationForClearTextFields)) {
+              KEnablePasswordGenerationForClearTextFields))
     return false;
-  }
   for (const auto& field : form.fields) {
     if (field.type == ACCOUNT_CREATION_PASSWORD || field.type == NEW_PASSWORD)
       return true;

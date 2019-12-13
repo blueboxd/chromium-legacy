@@ -124,32 +124,15 @@ const CGFloat kCellLabelsWidthProportion = 3.0f;
         constraintEqualToAnchor:_iconImageView.trailingAnchor
                        constant:kIconTrailingPadding];
 
-    // Rules between |_textLabel| width and |_detailTextLabel| width:
-    //   1. Widths are represented by the percentage according to the
-    //      available space inside |_labelContainerGuide|;
-    //   2. |_textLabel| has a width quota of 75%;
-    //   3. |_detailTextLabe| has a width quota of 25%;
-    //   4. When label A fits in A's quota, rest of A's quota can be used by
-    //      the other label(i.e. B can exceed B's quota), and vice versa;
-    //   5. When both labels exceed their quota, they occupy their quotas.
-    //
-    // Expected space allocation result:
-    //   Rows are |_textLabel|'s quota.
-    //   Columns are |_detailTextLabel|'s quota.
-    //   Pairs are actual width for (|_textLabel|, |_detailTextLabel|).
-    //
-    //                20%             60%             90%
-    //
-    //   20%       (20%, 20%)      (20%, 60%)      (20%, 80%)
-    //   60%       (60%, 20%)      (60%, 40%)      (60%, 30%)
-    //   90%       (80%, 20%)      (75%, 25%)      (75%, 25%)
-    //
+    // In case the two labels don't fit in width, have the |textLabel| be 3
+    // times the width of the |detailTextLabel| (so 75% / 25%).
     NSLayoutConstraint* widthConstraint = [_textLabel.widthAnchor
         constraintEqualToAnchor:_detailTextLabel.widthAnchor
                      multiplier:kCellLabelsWidthProportion];
     // Set low priority to the proportion constraint between |_textLabel| and
     // |_detailTextLabel|, so that it won't break other layouts.
     widthConstraint.priority = UILayoutPriorityDefaultLow;
+
     _standardConstraints = @[
       // Set up the vertical constraints and align the baselines of the two text
       // labels.
@@ -179,8 +162,7 @@ const CGFloat kCellLabelsWidthProportion = 3.0f;
           constraintLessThanOrEqualToAnchor:self.contentView.trailingAnchor
                                    constant:-kTableViewHorizontalSpacing],
       [_detailTextLabel.leadingAnchor
-          constraintEqualToAnchor:self.contentView.leadingAnchor
-                         constant:kTableViewHorizontalSpacing],
+          constraintEqualToAnchor:_textLabel.leadingAnchor],
       [_detailTextLabel.trailingAnchor
           constraintLessThanOrEqualToAnchor:_labelContainerGuide.trailingAnchor
                                    constant:-kTableViewHorizontalSpacing],

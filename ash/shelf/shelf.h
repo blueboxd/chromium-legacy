@@ -199,9 +199,14 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   void OnWorkAreaInsetsChanged() override;
 
  private:
-  class AutoHideEventHandler;
   class AutoDimEventHandler;
+  class AutoHideEventHandler;
+  friend class DimShelfLayoutManagerTest;
   friend class ShelfLayoutManagerTest;
+
+  // Uses Auto Dim Event Handler to update the shelf dim state.
+  void DimShelf();
+  void UndimShelf();
 
   // Returns work area insets object for the window with this shelf.
   WorkAreaInsets* GetWorkAreaInsets() const;

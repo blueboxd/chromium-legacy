@@ -20,6 +20,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class ScriptPromiseResolver;
 class ScriptState;
 class USBDevice;
@@ -43,8 +44,10 @@ class USB final : public EventTargetWithInlineData,
   void Dispose();
 
   // USB.idl
-  ScriptPromise getDevices(ScriptState*);
-  ScriptPromise requestDevice(ScriptState*, const USBDeviceRequestOptions*);
+  ScriptPromise getDevices(ScriptState*, ExceptionState&);
+  ScriptPromise requestDevice(ScriptState*,
+                              const USBDeviceRequestOptions*,
+                              ExceptionState&);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect, kDisconnect)
 

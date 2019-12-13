@@ -18,8 +18,8 @@ using bookmarks::BookmarkNode;
 
 @interface FakeBookmarkMenuController : BookmarkMenuCocoaController {
  @public
-  const BookmarkNode* nodes_[2];
-  BOOL opened_[2];
+  const BookmarkNode* _nodes[2];
+  BOOL _opened[2];
 }
 - (id)initWithProfile:(Profile*)profile;
 @end
@@ -31,8 +31,8 @@ using bookmarks::BookmarkNode;
     base::string16 empty;
     BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile);
     const BookmarkNode* bookmark_bar = model->bookmark_bar_node();
-    nodes_[0] = model->AddURL(bookmark_bar, 0, empty, GURL("http://0.com"));
-    nodes_[1] = model->AddURL(bookmark_bar, 1, empty, GURL("http://1.com"));
+    _nodes[0] = model->AddURL(bookmark_bar, 0, empty, GURL("http://0.com"));
+    _nodes[1] = model->AddURL(bookmark_bar, 1, empty, GURL("http://1.com"));
   }
   return self;
 }
@@ -40,15 +40,15 @@ using bookmarks::BookmarkNode;
 - (const BookmarkNode*)nodeForIdentifier:(int)identifier {
   if ((identifier < 0) || (identifier >= 2))
     return NULL;
-  return nodes_[identifier];
+  return _nodes[identifier];
 }
 
 - (void)openURLForNode:(const BookmarkNode*)node {
   std::string url = node->url().possibly_invalid_spec();
   if (url.find("http://0.com") != std::string::npos)
-    opened_[0] = YES;
+    _opened[0] = YES;
   if (url.find("http://1.com") != std::string::npos)
-    opened_[1] = YES;
+    _opened[1] = YES;
 }
 
 @end  // FakeBookmarkMenuController
@@ -74,8 +74,8 @@ TEST_F(BookmarkMenuCocoaControllerTest, TestOpenItem) {
   NSMenuItem *item = [[[NSMenuItem alloc] init] autorelease];
   for (int i = 0; i < 2; i++) {
     [item setTag:i];
-    ASSERT_EQ(c->opened_[i], NO);
+    ASSERT_EQ(c->_opened[i], NO);
     [c openBookmarkMenuItem:item];
-    ASSERT_NE(c->opened_[i], NO);
+    ASSERT_NE(c->_opened[i], NO);
   }
 }

@@ -41,9 +41,8 @@ StringType UTF8ToNative(base::StringPiece src) {
 base::ListValue UTF8VectorToListValue(
     const std::vector<base::StringPiece>& src) {
   base::ListValue out;
-  out.GetList().reserve(src.size());
   for (base::StringPiece str : src)
-    out.Append(base::Value(str));
+    out.Append(str);
   return out;
 }
 

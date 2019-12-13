@@ -142,6 +142,26 @@ public final class WebLayer {
     }
 
     /**
+     * Returns the Chrome version of the WebLayer implementation. This will return a full version
+     * string such as "79.0.3945.0", while {@link getSupportedMajorVersion} will only return the
+     * major version integer (79 in the example).
+     */
+    public static String getSupportedFullVersion(Context context) {
+        ThreadCheck.ensureOnUiThread();
+        context = context.getApplicationContext();
+        return getWebLayerLoader(context).getVersion();
+    }
+
+    /**
+     * Returns the Chrome version this client was built at. This will return a full version string
+     * such as "79.0.3945.0".
+     */
+    public static String getVersion() {
+        ThreadCheck.ensureOnUiThread();
+        return WebLayerClientVersionConstants.PRODUCT_VERSION;
+    }
+
+    /**
      * Encapsulates the state of WebLayer loading and initialization.
      */
     private static final class WebLayerLoader {

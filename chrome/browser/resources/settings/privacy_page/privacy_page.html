@@ -280,7 +280,7 @@
               toggle-off-label="$i18n{siteSettingsBlocked}"
               toggle-on-label="$i18n{siteSettingsCookiesAllowedRecommended}"
               sub-option-label="$i18n{deleteDataPostSession}"
-              sub-option-mode="toggle">
+              sub-option-mode="cookies-session-only">
           </category-default-setting>
           <settings-toggle-button
               pref="{{prefs.profile.block_third_party_cookies}}"
@@ -453,15 +453,13 @@
             search-term="{{searchFilter_}}">
           <template is="dom-if" if="[[enableQuietNotificationPromptsSetting_]]">
             <category-default-setting
-                toggle-off-label="$i18n{siteSettingsCategoryNotifications}"
-                toggle-on-label="$i18n{siteSettingsCategoryNotifications}"
-                toggle-off-description="$i18n{siteSettingsNotificationsBlock}"
-                toggle-on-description="$i18n{siteSettingsNotificationsAsk}"
+                toggle-off-label="$i18n{siteSettingsNotificationsAsk}"
+                toggle-on-label="$i18n{siteSettingsNotificationsAsk}"
                 category="{{ContentSettingsTypes.NOTIFICATIONS}}"
-                sub-option-as-checkbox-pref="{{prefs.profile.content_settings.enable_quiet_permission_ui.notifications}}"
+                sub-option-pref="{{prefs.profile.content_settings.enable_quiet_permission_ui.notifications}}"
                 sub-option-label=
                     "$i18n{siteSettingsEnableQuietNotificationPrompts}"
-                sub-option-mode="checkbox">
+                sub-option-mode="pref">
             </category-default-setting>
           </template>
           <template is="dom-if" if="[[!enableQuietNotificationPromptsSetting_]]">

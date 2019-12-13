@@ -255,7 +255,7 @@
 <translation id="1353980523955420967">No se puede encontrar el archivo PPD. Comprueba que tu Chromebook esté en línea y vuelve a intentarlo.</translation>
 <translation id="1355466263109342573"><ph name="PLUGIN_NAME" /> está bloqueado</translation>
 <translation id="1358741672408003399">Ortografía y gramática</translation>
-<translation id="1359923111303110318">Se puede desbloquear tu dispositivo mediante Smart Lock. Presiona Intro para permitir el acceso.</translation>
+<translation id="1359923111303110318">Puedes desbloquear tu dispositivo mediante Smart Lock. Presiona Intro para permitir el acceso.</translation>
 <translation id="1361164813881551742">Agregar manualmente</translation>
 <translation id="1361655923249334273">No utilizado</translation>
 <translation id="1361872463926621533">Reproducir sonidos en el inicio</translation>
@@ -283,6 +283,7 @@
 <translation id="1397500194120344683">No hay dispositivos compatibles. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="1399511500114202393">Sin certificado del usuario</translation>
+<translation id="1403519882106291341">Condiciones del Sistema operativo Google Chrome</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (supervisado)</translation>
 <translation id="1405779994569073824">Falló</translation>
 <translation id="1406500794671479665">Verificando...</translation>
@@ -602,7 +603,7 @@
 <translation id="1832511806131704864">Cambio de teléfono actualizado</translation>
 <translation id="1834503245783133039">No se pudo realizar la descarga: <ph name="FILE_NAME" /></translation>
 <translation id="1834583737373831634">Dispositivos MIDI</translation>
-<translation id="1835261175655098052">Se actualizó Linux</translation>
+<translation id="1835261175655098052">Actualizando Linux</translation>
 <translation id="1838374766361614909">Borrar la búsqueda</translation>
 <translation id="1841545962859478868">Es posible que el administrador de dispositivos supervise lo siguiente:</translation>
 <translation id="1841616161104323629">Falta un registro de dispositivo.</translation>
@@ -1232,7 +1233,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2725200716980197196">Conexión de red restaurada</translation>
 <translation id="2727633948226935816">No volver a recordarme</translation>
 <translation id="2727712005121231835">Tamaño real</translation>
-<translation id="2730029791981212295">Creando una copia de seguridad de las apps y los archivos de Linux</translation>
+<translation id="2730029791981212295">Creando la copia de seguridad de las apps y los archivos de Linux</translation>
 <translation id="273093730430620027">Esta página está accediendo a la cámara.</translation>
 <translation id="2731392572903530958">Volv&amp;er a abrir una ventana cerrada</translation>
 <translation id="2731700343119398978">Espera...</translation>
@@ -1674,7 +1675,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="338583716107319301">Separador</translation>
 <translation id="338691029516748599">Red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" />%, administrada por tu administrador, conectar</translation>
 <translation id="3387614642886316601">Usar el corrector ortográfico mejorado</translation>
-<translation id="3390741581549395454">Se realizó la copia de seguridad de los archivos y las apps de Linux. En breve, se iniciará la actualización.</translation>
+<translation id="3390741581549395454">Se realizó correctamente la copia de seguridad de los archivos y las apps de Linux. En breve, se iniciará la actualización.</translation>
 <translation id="3396800784455899911">Al hacer clic en el botón "Aceptar y continuar", confirmas el procesamiento descrito anteriormente para estos servicios de Google.</translation>
 <translation id="3399432415385675819">Se inhabilitarán las notificaciones</translation>
 <translation id="3400390787768057815"><ph name="WIDTH" /> × <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> Hertz) - entrelazado</translation>
@@ -2171,7 +2172,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4036778507053569103">La política descargada del servidor no es válida.</translation>
 <translation id="4037084878352560732">Caballo</translation>
 <translation id="4037889604535939429">Editar persona</translation>
-<translation id="4042264909745389898">Condiciones del Sistema operativo Google Chrome</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Salir de la página}other{Salir de las páginas}}</translation>
 <translation id="4044612648082411741">Ingresar la contraseña del certificado</translation>
 <translation id="404493185430269859">Motor de búsqueda predeterminado</translation>
@@ -2647,7 +2647,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4804756772600045300">Si continúas, se habilitará la depuración de adb a fin de crear y probar apps para Android. Ten en cuenta que la depuración de adb permite la instalación de apps de prueba que Google no verificó.</translation>
 <translation id="4804818685124855865">Desconectar</translation>
 <translation id="4804827417948292437">Aguacate</translation>
-<translation id="4805077164141082536">Te recomendamos que crees una copia de seguridad de tu contenedor actual de Linux antes de actualizarlo.</translation>
+<translation id="4805077164141082536">Te recomendamos crear una copia de seguridad de tu contenedor actual de Linux antes de actualizarlo.</translation>
 <translation id="4807098396393229769">Nombre en la tarjeta</translation>
 <translation id="4808319664292298116">¿Quieres ingresar a RV desde <ph name="DOMAIN" />?</translation>
 <translation id="4808667324955055115">Se bloquearon ventanas emergentes:</translation>
@@ -3428,7 +3428,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5925147183566400388">Puntero de declaración de práctica de certificación</translation>
 <translation id="592880897588170157">Descargar los archivos PDF en lugar de abrirlos de forma automática en Chrome</translation>
 <translation id="5931146425219109062">Leer y modificar todos los datos de los sitios web que visites</translation>
-<translation id="5932124097031739492">Se actualizó Linux correctamente.</translation>
+<translation id="5932124097031739492">Linux se actualizó correctamente.</translation>
 <translation id="5932224571077948991">El sitio muestra anuncios intrusivos o engañosos</translation>
 <translation id="59324397759951282">Dispositivo USB de <ph name="MANUFACTURER_NAME" /></translation>
 <translation id="5932881020239635062">Número de serie</translation>
@@ -4904,7 +4904,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8044899503464538266">Lento</translation>
 <translation id="8045253504249021590">La sincronización se detuvo mediante el Panel de control de Google.</translation>
 <translation id="8045923671629973368">Ingresa el ID de aplicación o la URL de la tienda web</translation>
-<translation id="8046278916126163020">Los nuevos sitios que visitas pueden preguntarte si quieres recibir notificaciones</translation>
+<translation id="8046278916126163020">Los nuevos sitios que visites pueden preguntarte si quieres recibir notificaciones</translation>
 <translation id="804786196054284061">Acuerdo de licencia de usuario final</translation>
 <translation id="8049705080247101012">Google marcó <ph name="EXTENSION_NAME" /> como extensión maliciosa y se canceló la instalación</translation>
 <translation id="8050038245906040378">Firma de código comercial de Microsoft</translation>

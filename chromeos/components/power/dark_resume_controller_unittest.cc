@@ -13,8 +13,6 @@
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/cpp/test/test_wake_lock_provider.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -31,9 +29,7 @@ using device::mojom::WakeLockType;
 class DarkResumeControllerTest : public testing::Test {
  public:
   DarkResumeControllerTest()
-      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
-        wake_lock_provider_(
-            connector_factory_.RegisterInstance(device::mojom::kServiceName)) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   ~DarkResumeControllerTest() override = default;
 
@@ -46,8 +42,11 @@ class DarkResumeControllerTest : public testing::Test {
 
     PowerManagerClient::InitializeFake();
 
-    dark_resume_controller_ = std::make_unique<DarkResumeController>(
-        connector_factory_.GetDefaultConnector());
+    mojo::PendingRemote<device::mojom::WakeLockProvider> provider_remote;
+    wake_lock_provider_.BindReceiver(
+        provider_remote.InitWithNewPipeAndPassReceiver());
+    dark_resume_controller_ =
+        std::make_unique<DarkResumeController>(std::move(provider_remote));
   }
 
   void TearDown() override {
@@ -77,7 +76,6 @@ class DarkResumeControllerTest : public testing::Test {
   }
 
   base::test::TaskEnvironment task_environment_;
-  service_manager::TestConnectorFactory connector_factory_;
   mojo::Remote<device::mojom::WakeLock> wake_lock_;
   std::unique_ptr<DarkResumeController> dark_resume_controller_;
 

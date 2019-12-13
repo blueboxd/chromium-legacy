@@ -55,7 +55,7 @@ QuotaReservation::~QuotaReservation() {
 int64_t QuotaReservation::OpenFile(int32_t id,
                                    const storage::FileSystemURL& url) {
   base::FilePath platform_file_path;
-  if (file_system_context_.get()) {
+  if (file_system_context_) {
     base::File::Error error =
         file_system_context_->operation_runner()->SyncGetPlatformPath(
             url, &platform_file_path);
@@ -96,7 +96,7 @@ void QuotaReservation::CloseFile(int32_t id,
 
 void QuotaReservation::ReserveQuota(int64_t amount,
                                     const ppapi::FileGrowthMap& file_growths,
-                                    const ReserveQuotaCallback& callback) {
+                                    ReserveQuotaCallback callback) {
   for (auto it = files_.begin(); it != files_.end(); ++it) {
     auto growth_it = file_growths.find(it->first);
     if (growth_it != file_growths.end()) {
@@ -109,32 +109,32 @@ void QuotaReservation::ReserveQuota(int64_t amount,
   }
 
   quota_reservation_->RefreshReservation(
-      amount, base::Bind(&QuotaReservation::GotReservedQuota, this, callback));
+      amount, base::BindOnce(&QuotaReservation::GotReservedQuota, this,
+                             std::move(callback)));
 }
 
 void QuotaReservation::OnClientCrash() { quota_reservation_->OnClientCrash(); }
 
-void QuotaReservation::GotReservedQuota(const ReserveQuotaCallback& callback,
+void QuotaReservation::GotReservedQuota(ReserveQuotaCallback callback,
                                         base::File::Error error) {
   ppapi::FileSizeMap file_sizes;
   for (auto it = files_.begin(); it != files_.end(); ++it)
     file_sizes[it->first] = it->second->GetMaxWrittenOffset();
 
-  if (file_system_context_.get()) {
+  if (file_system_context_) {
     base::PostTask(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(callback, quota_reservation_->remaining_quota(),
-                       file_sizes));
+        base::BindOnce(std::move(callback),
+                       quota_reservation_->remaining_quota(), file_sizes));
   } else {
     // Unit testing code path.
-    callback.Run(quota_reservation_->remaining_quota(), file_sizes);
+    std::move(callback).Run(quota_reservation_->remaining_quota(), file_sizes);
   }
 }
 
 void QuotaReservation::DeleteOnCorrectThread() const {
-  if (file_system_context_.get() &&
-      !file_system_context_->default_file_task_runner()
-           ->RunsTasksInCurrentSequence()) {
+  if (file_system_context_ && !file_system_context_->default_file_task_runner()
+                                   ->RunsTasksInCurrentSequence()) {
     file_system_context_->default_file_task_runner()->DeleteSoon(FROM_HERE,
                                                                  this);
   } else {

@@ -22,7 +22,7 @@ static id g_swizzled_main_bundle = nil;
 @end
 
 @implementation TestBundle {
-  base::scoped_nsobject<NSBundle> mainBundle_;
+  base::scoped_nsobject<NSBundle> _mainBundle;
 }
 
 + (NSBundle*)mainBundle {
@@ -30,7 +30,7 @@ static id g_swizzled_main_bundle = nil;
 }
 
 - (instancetype)initWithRealBundle:(NSBundle*)bundle {
-  mainBundle_.reset([bundle retain]);
+  _mainBundle.reset([bundle retain]);
   return self;
 }
 
@@ -39,12 +39,12 @@ static id g_swizzled_main_bundle = nil;
 }
 
 - (void)forwardInvocation:(NSInvocation*)invocation {
-  invocation.target = mainBundle_.get();
+  invocation.target = _mainBundle.get();
   [invocation invoke];
 }
 
 - (NSMethodSignature*)methodSignatureForSelector:(SEL)sel {
-  return [mainBundle_ methodSignatureForSelector:sel];
+  return [_mainBundle methodSignatureForSelector:sel];
 }
 
 @end

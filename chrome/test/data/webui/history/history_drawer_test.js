@@ -5,8 +5,16 @@
 suite('drawer-test', function() {
   let app;
 
-  suiteSetup(function() {
-    app = $('history-app');
+  setup(function() {
+    PolymerTest.clearBody();
+    const testService = new TestBrowserService();
+    history.BrowserService.instance_ = testService;
+    app = document.createElement('history-app');
+    document.body.appendChild(app);
+    return Promise.all([
+      testService.whenCalled('queryHistory'),
+      history.ensureLazyLoaded(),
+    ]);
   });
 
   test('drawer has correct selection', function() {

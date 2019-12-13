@@ -48,16 +48,6 @@ suite('<history-item> unit test', function() {
     assertEquals(2, selectionCount);
   });
 
-  test('refocus checkbox on click', function() {
-    return test_util.flushTasks().then(function() {
-      item.$['menu-button'].focus();
-      assertEquals(item.$['menu-button'], item.root.activeElement);
-
-      MockInteractions.tap(item.$['time-accessed']);
-      assertEquals(item.$['checkbox'], item.root.activeElement);
-    });
-  });
-
   test('title changes with item', function() {
     const time = item.$['time-accessed'];
     assertEquals('', time.title);
@@ -75,11 +65,13 @@ suite('<history-item> integration test', function() {
 
   setup(function() {
     PolymerTest.clearBody();
-    history.BrowserService.instance_ = new TestBrowserService();
+    const testService = new TestBrowserService();
+    history.BrowserService.instance_ = testService;
 
     const app = document.createElement('history-app');
     document.body.appendChild(app);
     element = app.$.history;
+    return testService.whenCalled('queryHistory');
   });
 
   test('basic separator insertion', function() {

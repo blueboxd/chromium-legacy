@@ -31,7 +31,7 @@ void UiDevToolsClient::Disconnect() {
 }
 
 void UiDevToolsClient::Dispatch(const std::string& json) {
-  std::string cbor;
+  std::vector<uint8_t> cbor;
   crdtp::Status status =
       crdtp::json::ConvertJSONToCBOR(crdtp::SpanFrom(json), &cbor);
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
@@ -39,7 +39,7 @@ void UiDevToolsClient::Dispatch(const std::string& json) {
   int call_id;
   std::string method;
   std::unique_ptr<protocol::Value> protocolCommand =
-      protocol::StringUtil::parseMessage(cbor, true);
+      protocol::Value::parseBinary(cbor.data(), cbor.size());
   if (dispatcher_.parseCommand(protocolCommand.get(), &call_id, &method)) {
     dispatcher_.dispatch(call_id, method, std::move(protocolCommand),
                          crdtp::SpanFrom(cbor));

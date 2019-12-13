@@ -64,14 +64,14 @@ std::string MakeStringList(int item) {
 
 base::Value MakeListValue(const std::string& item) {
   base::Value list(base::Value::Type::LIST);
-  list.GetList().push_back(base::Value(item));
+  list.Append(item);
   return list;
 }
 
 base::Value MakeListValue(const std::string& item1, const std::string& item2) {
   base::Value list(base::Value::Type::LIST);
-  list.GetList().push_back(base::Value(item1));
-  list.GetList().push_back(base::Value(item2));
+  list.Append(item1);
+  list.Append(item2);
   return list;
 }
 

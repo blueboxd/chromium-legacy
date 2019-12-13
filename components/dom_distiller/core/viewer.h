@@ -24,13 +24,10 @@ class ViewRequestDelegate;
 
 namespace viewer {
 
-// Returns an HTML template page based on the given |page_proto| which provides
-// basic information about the page (i.e. title, text direction, etc.). This is
-// supposed to be displayed to the end user. The returned HTML should be
-// considered unsafe, so callers must ensure rendering it does not compromise
-// Chrome.
-const std::string GetUnsafeArticleTemplateHtml(
-    const std::string& original_url,
+// Assembles a platform-specific HTML template page based on the given
+// parameters. Information from the original article has not yet been inserted,
+// so the returned HTML should be safe.
+const std::string GetArticleTemplateHtml(
     DistilledPagePrefs::Theme theme,
     DistilledPagePrefs::FontFamily font_family);
 

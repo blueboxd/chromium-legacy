@@ -16,6 +16,9 @@ namespace device {
 // service_manager::ServiceContext::SetGlobalBinderForTesting().
 // The override of the geolocation implementation will be in effect for the
 // duration of this object's lifetime.
+//
+// Note that for this override to work properly, it must be constructed in the
+// same process that runs the Device Service implementation.
 class ScopedGeolocationOverrider {
  public:
   explicit ScopedGeolocationOverrider(const mojom::Geoposition& position);

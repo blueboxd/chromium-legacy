@@ -30,7 +30,9 @@ SUPPORTED_DEBIAN_RELEASES = {
 SUPPORTED_UBUNTU_RELEASES = {
     'Ubuntu 14.04 (Trusty)': 'trusty',
     'Ubuntu 16.04 (Xenial)': 'xenial',
-    'Ubuntu 17.10 (Artful)': 'artful',
+    'Ubuntu 18.04 (Bionic)': 'bionic',
+    'Ubuntu 19.04 (Disco)': 'disco',
+    'Ubuntu 19.10 (Eoan)': 'eoan',
 }
 
 PACKAGE_FILTER = set([
@@ -43,7 +45,9 @@ PACKAGE_FILTER = set([
     "libcairo2",
     "libcups2",
     "libdbus-1-3",
+    "libdrm2",
     "libexpat1",
+    "libgbm1",
     "libgcc1",
     "libgdk-pixbuf2.0-0",
     "libglib2.0-0",
@@ -57,6 +61,7 @@ PACKAGE_FILTER = set([
     "libx11-6",
     "libx11-xcb1",
     "libxcb1",
+    "libxcb-dri3-0",
     "libxcomposite1",
     "libxcursor1",
     "libxdamage1",

@@ -6,5 +6,4 @@
 ../pylib/dex/dex_parser.py
 util/__init__.py
 util/build_utils.py
-util/md5_check.py
 validate_static_library_dex_references.py

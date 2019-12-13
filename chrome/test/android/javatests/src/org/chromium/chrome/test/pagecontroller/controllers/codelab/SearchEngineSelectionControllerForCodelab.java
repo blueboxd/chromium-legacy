@@ -6,14 +6,13 @@ package org.chromium.chrome.test.pagecontroller.controllers.codelab;
 
 import org.chromium.chrome.test.pagecontroller.controllers.PageController;
 
-// TODO: Implement page controller for SearchEnginePreferences.java.
+// TODO: Implement page controller for SearchEngineSettings.java.
 
 /**
  * Search Engine Selection Page Controller for the Code Lab, representing
  * SearchEnginePreferences.java.
  *
- * @see <a
- *         href="https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/src/org/chromium/chrome/browser/preferences/SearchEnginePreference.java">SearchEnginePreference.java</a>
+ * @see org.chromium.chrome.browser.settings.search_engine.SearchEngineSettings
  */
 
 public class SearchEngineSelectionControllerForCodelab extends PageController {

@@ -15,10 +15,11 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/device_service.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
@@ -26,9 +27,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/cpp/hid/hid_device_filter.h"
 #include "services/device/public/cpp/hid/hid_usage_and_page.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/hid.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace hid = extensions::api::hid;
 
@@ -83,6 +82,11 @@ bool WillDispatchDeviceEvent(base::WeakPtr<HidDeviceManager> device_manager,
     return device_manager->HasPermission(extension, device_info, false);
   }
   return false;
+}
+
+HidDeviceManager::HidManagerBinder& GetHidManagerBinderOverride() {
+  static base::NoDestructor<HidDeviceManager::HidManagerBinder> binder;
+  return *binder;
 }
 
 }  // namespace
@@ -288,10 +292,12 @@ void HidDeviceManager::LazyInitialize() {
     // connection is successful.
 
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    auto* connector = content::GetSystemConnector();
-    DCHECK(connector);
-    connector->Connect(device::mojom::kServiceName,
-                       hid_manager_.BindNewPipeAndPassReceiver());
+    auto receiver = hid_manager_.BindNewPipeAndPassReceiver();
+    const auto& binder = GetHidManagerBinderOverride();
+    if (binder)
+      binder.Run(std::move(receiver));
+    else
+      content::GetDeviceService().BindHidManager(std::move(receiver));
   }
   // Enumerate HID devices and set client.
   std::vector<device::mojom::HidDeviceInfoPtr> empty_devices;
@@ -305,13 +311,12 @@ void HidDeviceManager::LazyInitialize() {
   initialized_ = true;
 }
 
-void HidDeviceManager::SetFakeHidManagerForTesting(
-    mojo::PendingRemote<device::mojom::HidManager> fake_hid_manager) {
-  DCHECK(!hid_manager_);
-  DCHECK(fake_hid_manager);
-  hid_manager_.Bind(std::move(fake_hid_manager));
-  LazyInitialize();
+// static
+void HidDeviceManager::OverrideHidManagerBinderForTesting(
+    HidManagerBinder binder) {
+  GetHidManagerBinderOverride() = std::move(binder);
 }
+
 std::unique_ptr<base::ListValue> HidDeviceManager::CreateApiDeviceList(
     const Extension* extension,
     const std::vector<HidDeviceFilter>& filters) {

@@ -1499,6 +1499,9 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::BoolAttribute::kIsPageBreakingObject:
         result += " is_page_breaking_object=" + value;
         break;
+      case ax::mojom::BoolAttribute::kHasAriaAttribute:
+        result += " has_aria_attribute=" + value;
+        break;
       case ax::mojom::BoolAttribute::kNone:
         break;
     }

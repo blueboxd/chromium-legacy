@@ -28,10 +28,11 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   ~BrowsingHistoryHandler() override;
 
   // WebUIMessageHandler implementation.
+  void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
   void RegisterMessages() override;
 
-  void HandleHistoryLoaded(const base::ListValue* args);
+  void StartQueryHistory();
 
   // Handler for the "queryHistory" message.
   void HandleQueryHistory(const base::ListValue* args);
@@ -67,6 +68,9 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   // outlive the BrowsingHistoryHandler instance.
   void set_clock(base::Clock* clock) { clock_ = clock; }
 
+ protected:
+  virtual void SendHistoryQuery(int count, const base::string16& query);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowsingHistoryHandlerTest,
                            ObservingWebHistoryDeletions);
@@ -78,6 +82,10 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   std::unique_ptr<history::BrowsingHistoryService> browsing_history_service_;
 
   std::vector<base::OnceClosure> deferred_callbacks_;
+
+  base::Value initial_results_;
+
+  std::string query_history_callback_id_;
 
   base::OnceClosure query_history_continuation_;
 

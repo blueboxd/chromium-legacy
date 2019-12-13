@@ -642,8 +642,12 @@ void RootView::SetMouseHandler(View* new_mh) {
 }
 
 void RootView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->SetName(widget_->widget_delegate()->GetAccessibleWindowTitle());
-  node_data->role = widget_->widget_delegate()->GetAccessibleWindowRole();
+  DCHECK(GetWidget());
+  auto* widget_delegate = GetWidget()->widget_delegate();
+  if (!widget_delegate)
+    return;
+  node_data->SetName(widget_delegate->GetAccessibleWindowTitle());
+  node_data->role = widget_delegate->GetAccessibleWindowRole();
 }
 
 void RootView::UpdateParentLayer() {

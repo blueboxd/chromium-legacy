@@ -220,14 +220,12 @@ void ReportGetAssertionResponseTransport(FidoAuthenticator* authenticator) {
 }  // namespace
 
 GetAssertionRequestHandler::GetAssertionRequestHandler(
-    service_manager::Connector* connector,
     FidoDiscoveryFactory* fido_discovery_factory,
     const base::flat_set<FidoTransportProtocol>& supported_transports,
     CtapGetAssertionRequest request,
     bool allow_skipping_pin_touch,
     CompletionCallback completion_callback)
     : FidoRequestHandlerBase(
-          connector,
           fido_discovery_factory,
           base::STLSetIntersection<base::flat_set<FidoTransportProtocol>>(
               supported_transports,

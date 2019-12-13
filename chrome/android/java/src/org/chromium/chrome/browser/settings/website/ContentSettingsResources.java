@@ -166,8 +166,7 @@ public class ContentSettingsResources {
                             R.string.push_notifications_permission_title,
                             R.string.push_notifications_permission_title, ContentSettingValues.ASK,
                             ContentSettingValues.BLOCK,
-                            R.string.website_settings_category_notifications_ask,
-                            R.string.website_settings_category_notifications_block));
+                            R.string.website_settings_category_notifications_ask, 0));
             localMap.put(ContentSettingsType.POPUPS,
                     new ResourceItem(R.drawable.permission_popups, R.string.popup_permission_title,
                             R.string.popup_permission_title, ContentSettingValues.ALLOW,

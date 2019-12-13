@@ -411,10 +411,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       int render_process_id,
       mojo::GenericPendingReceiver* receiver) override;
   void WillStartServiceManager() override;
-  void RunServiceInstance(
-      const service_manager::Identity& identity,
-      mojo::PendingReceiver<service_manager::mojom::Service>* receiver)
-      override;
   base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
       base::StringPiece name) override;
   void OpenURL(

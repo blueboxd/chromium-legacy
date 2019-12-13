@@ -433,6 +433,8 @@ void AutocompleteControllerAndroid::NotifySuggestionsReceived(
   if (!java_bridge.obj())
     return;
 
+  autocomplete_controller_->InlineTailPrefixes();
+
   ScopedJavaLocalRef<jobject> suggestion_list_obj =
       Java_AutocompleteController_createOmniboxSuggestionList(
           env, autocomplete_result.size());

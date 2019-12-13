@@ -16,11 +16,8 @@
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/quarantine_connection.h"
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 
 namespace download {
 class DownloadItemImpl;
@@ -112,8 +109,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImplDelegate {
   // Report extra bytes wasted during resumption.
   virtual void ReportBytesWasted(DownloadItemImpl* download);
 
-  // Gets the ServiceManager connector that can be used on UI thread.
-  virtual service_manager::Connector* GetServiceManagerConnector();
+  // Binds a device.mojom.WakeLockProvider receiver from the UI thread.
+  virtual void BindWakeLockProvider(
+      mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver);
 
   // Gets a callback that can connect to the Quarantine Service if available.
   virtual QuarantineConnectionCallback GetQuarantineConnectionCallback();

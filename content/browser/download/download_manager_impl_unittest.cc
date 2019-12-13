@@ -385,7 +385,7 @@ TestInProgressManager::TestInProgressManager()
           nullptr,
           download::InProgressDownloadManager::IsOriginSecureCallback(),
           base::BindRepeating(&URLAlwaysSafe),
-          nullptr) {}
+          /*wake_lock_provider_binder*/ base::NullCallback()) {}
 
 void TestInProgressManager::AddDownloadItem(
     std::unique_ptr<download::DownloadItemImpl> item) {

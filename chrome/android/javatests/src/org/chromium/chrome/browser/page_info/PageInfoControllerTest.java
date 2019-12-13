@@ -19,6 +19,8 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -60,9 +62,11 @@ public class PageInfoControllerTest {
     @RetryOnFailure
     public void testShow() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PageInfoController.show(mActivityTestRule.getActivity(),
-                    mActivityTestRule.getActivity().getActivityTab(), null,
-                    PageInfoController.OpenedFromSource.MENU);
+            Tab tab = mActivityTestRule.getActivity().getActivityTab();
+            PageInfoController.show(mActivityTestRule.getActivity(), tab.getWebContents(), null,
+                    PageInfoController.OpenedFromSource.MENU,
+                    /*offlinePageLoadUrlDelegate=*/
+                    new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab));
         });
     }
 
@@ -78,10 +82,14 @@ public class PageInfoControllerTest {
         mActivityTestRule.loadUrlInTab(
                 testUrl, PageTransition.TYPED, mActivityTestRule.getActivity().getActivityTab());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Tab tab = mActivityTestRule.getActivity().getActivityTab();
             PageInfoController pageInfo = new PageInfoController(mActivityTestRule.getActivity(),
-                    mActivityTestRule.getActivity().getActivityTab(), ConnectionSecurityLevel.NONE,
-                    null, null, PageInfoController.OfflinePageState.NOT_OFFLINE_PAGE,
-                    PageInfoController.PreviewPageState.NOT_PREVIEW, null);
+                    tab.getWebContents(), ConnectionSecurityLevel.NONE, /*offlinePageUrl=*/null,
+                    /*offlinePageCreationDate=*/null,
+                    PageInfoController.OfflinePageState.NOT_OFFLINE_PAGE,
+                    PageInfoController.PreviewPageState.NOT_PREVIEW, /*publisher=*/null,
+                    /*offlinePageLoadUrlDelegate=*/
+                    new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab));
             PageInfoView pageInfoView = pageInfo.getPageInfoViewForTesting();
             // Test that the title contains the Unicode hostname rather than strict equality, as
             // the test server will be bound to a random port.

@@ -78,17 +78,17 @@ def make_dict_member_get_def(cg_context):
 
     member = cg_context.dict_member
 
-    func_name = "{}::{}".format(
-        blink_class_name(cg_context.dictionary),
-        _blink_member_name(member).get_api)
+    func_name = T(
+        _format("${class_name}::{}",
+                _blink_member_name(member).get_api))
     func_def = CxxFuncDefNode(
         name=func_name,
         arg_decls=[],
         return_type=blink_type_info(member.idl_type).ref_t,
         const=True)
+    func_def.add_template_vars(cg_context.template_bindings())
 
     body = func_def.body
-    body.add_template_vars(cg_context.template_bindings())
 
     _1 = _blink_member_name(member).has_api
     body.append(T(_format("DCHECK({_1}());", _1=_1)))
@@ -106,11 +106,12 @@ def make_dict_member_has_def(cg_context):
 
     member = cg_context.dict_member
 
-    func_name = "{}::{}".format(
-        blink_class_name(cg_context.dictionary),
-        _blink_member_name(member).has_api)
+    func_name = T(
+        _format("${class_name}::{}",
+                _blink_member_name(member).has_api))
     func_def = CxxFuncDefNode(
         name=func_name, arg_decls=[], return_type="bool", const=True)
+    func_def.add_template_vars(cg_context.template_bindings())
 
     body = func_def.body
 
@@ -127,9 +128,9 @@ def make_dict_member_set_def(cg_context):
 
     member = cg_context.dict_member
 
-    func_name = "{}::{}".format(
-        blink_class_name(cg_context.dictionary),
-        _blink_member_name(member).set_api)
+    func_name = T(
+        _format("${class_name}::{}",
+                _blink_member_name(member).set_api))
     func_def = CxxFuncDefNode(
         name=func_name,
         arg_decls=[
@@ -137,9 +138,9 @@ def make_dict_member_set_def(cg_context):
                     blink_type_info(member.idl_type).ref_t)
         ],
         return_type="void")
+    func_def.add_template_vars(cg_context.template_bindings())
 
     body = func_def.body
-    body.add_template_vars(cg_context.template_bindings())
 
     _1 = _blink_member_name(member).value_var
     body.append(T(_format("{_1} = value;", _1=_1)))
@@ -158,18 +159,18 @@ def make_get_v8_dict_member_names_def(cg_context):
 
     dictionary = cg_context.dictionary
 
-    func_name = _format("{}::GetV8MemberNames",
-                        blink_class_name(cg_context.dictionary))
     func_def = CxxFuncDefNode(
-        name=func_name,
+        name=T("${class_name}::GetV8MemberNames"),
         arg_decls=["v8::Isolate* isolate"],
         return_type="const v8::Eternal<v8::Name>*")
+    func_def.add_template_vars(cg_context.template_bindings())
 
     body = func_def.body
 
     pattern = ("static const char* kKeyStrings[] = {{{_1}}};")
     _1 = ", ".join(
-        _format("\"{}\"", member.identifier) for member in dictionary.members)
+        _format("\"{}\"", member.identifier)
+        for member in dictionary.own_members)
     body.extend([
         T(_format(pattern, _1=_1)),
         T("return V8PerIsolateData::From(isolate)"
@@ -187,10 +188,8 @@ def make_fill_with_dict_members_def(cg_context):
 
     dictionary = cg_context.dictionary
 
-    func_name = _format(
-        "{_1}::FillWithMembers", _1=blink_class_name(dictionary))
     func_def = CxxFuncDefNode(
-        name=func_name,
+        name=T("${class_name}::FillWithMembers"),
         arg_decls=[
             "v8::Isolate* isolate",
             "v8::Local<v8::Object> creation_context",
@@ -198,9 +197,9 @@ def make_fill_with_dict_members_def(cg_context):
         ],
         return_type="bool",
         const=True)
+    func_def.add_template_vars(cg_context.template_bindings())
 
     body = func_def.body
-    body.add_template_vars(cg_context.template_bindings())
 
     if dictionary.inherited:
         text = """\
@@ -224,10 +223,8 @@ def make_fill_with_own_dict_members_def(cg_context):
     dictionary = cg_context.dictionary
     own_members = dictionary.own_members
 
-    func_name = _format(
-        "{_1}::FillWithOwnMembers", _1=blink_class_name(dictionary))
     func_def = CxxFuncDefNode(
-        name=func_name,
+        name=T("${class_name}::FillWithOwnMembers"),
         arg_decls=[
             "v8::Isolate* isolate",
             "v8::Local<v8::Object> creation_context",
@@ -235,9 +232,9 @@ def make_fill_with_own_dict_members_def(cg_context):
         ],
         return_type="bool",
         const=True)
+    func_def.add_template_vars(cg_context.template_bindings())
 
     body = func_def.body
-    body.add_template_vars(cg_context.template_bindings())
 
     text = """\
 const v8::Eternal<v8::Name>* member_names = GetV8MemberNames(isolate);
@@ -284,28 +281,27 @@ def make_dict_create_def(cg_context):
     T = TextNode
 
     dictionary = cg_context.dictionary
-    class_name = blink_class_name(dictionary)
 
     func_def = CxxFuncDefNode(
-        name=_format("{_1}::Create", _1=class_name),
+        name=T("${class_name}::Create"),
         arg_decls=[
             "v8::Isolate* isolate",
             "v8::Local<v8::Object> v8_dictionary",
             "ExceptionState& exception_state",
         ],
-        return_type=_format("{_1}*", _1=class_name))
+        return_type=T("${class_name}*"))
+    func_def.add_template_vars(cg_context.template_bindings())
 
     body = func_def.body
-    body.add_template_vars(cg_context.template_bindings())
 
-    pattern = """\
-{_1}* dictionary = MakeGarbageCollected<{_1}>();
+    body.append(
+        T("""\
+${class_name}* dictionary = MakeGarbageCollected<${class_name}>();
 dictionary->FillMembers(isolate, v8_dictionary, exception_state);
 if (exception_state.HadException()) {
   return nullptr;
 }
-return dictionary;"""
-    body.append(T(_format(pattern, _1=class_name)))
+return dictionary;"""))
 
     return func_def
 
@@ -316,23 +312,21 @@ def make_fill_dict_members_def(cg_context):
     T = TextNode
 
     dictionary = cg_context.dictionary
-    class_name = blink_class_name(dictionary)
     own_members = dictionary.own_members
     required_own_members = list(
         member for member in own_members if member.is_required)
 
-    func_name = _format("{_1}::FillMembers", _1=class_name)
     func_def = CxxFuncDefNode(
-        name=func_name,
+        name=T("${class_name}::FillMembers"),
         arg_decls=[
             "v8::Isolate* isolate",
             "v8::Local<v8::Object> v8_dictionary",
             "ExceptionState& exception_state",
         ],
         return_type="void")
+    func_def.add_template_vars(cg_context.template_bindings())
 
     body = func_def.body
-    body.add_template_vars(cg_context.template_bindings())
 
     text = "if (v8_dictionary->IsUndefinedOrNull()) { return; }"
     if len(required_own_members) > 0:
@@ -375,20 +369,18 @@ def make_fill_dict_members_internal_def(cg_context):
 
     dictionary = cg_context.dictionary
     own_members = dictionary.own_members
-    class_name = blink_class_name(dictionary)
 
-    func_name = _format("{_1}::FillMembersInternal", _1=class_name)
     func_def = CxxFuncDefNode(
-        name=func_name,
+        name=T("${class_name}::FillMembersInternal"),
         arg_decls=[
             "v8::Isolate* isolate",
             "v8::Local<v8::Object> v8_dictionary",
             "ExceptionState& exception_state",
         ],
         return_type="void")
+    func_def.add_template_vars(cg_context.template_bindings())
 
     body = func_def.body
-    body.add_template_vars(cg_context.template_bindings())
     body.add_template_var("isolate", "isolate")
     body.add_template_var("exception_state", "exception_state")
 
@@ -475,15 +467,14 @@ def make_dict_trace_def(cg_context):
 
     dictionary = cg_context.dictionary
     own_members = dictionary.own_members
-    class_name = blink_class_name(dictionary)
 
     func_def = CxxFuncDefNode(
-        name=_format("{_1}::Trace", _1=class_name),
+        name=T("${class_name}::Trace"),
         arg_decls=["Visitor* visitor"],
         return_type="void")
+    func_def.add_template_vars(cg_context.template_bindings())
 
     body = func_def.body
-    body.add_template_vars(cg_context.template_bindings())
 
     def trace_member_node(member):
         pattern = "TraceIfNeeded<{_1}>::Trace(visitor, {_2});"
@@ -504,7 +495,13 @@ def generate_dictionaries(web_idl_database, output_dirs):
     filename = "example_dictionary.cc"
     filepath = os.path.join(output_dirs['core'], filename)
 
-    cg_context = CodeGenContext(dictionary=dictionary)
+    class_name = blink_class_name(dictionary)
+    base_class_name = (blink_class_name(dictionary.inherited)
+                       if dictionary.inherited else "bindings::DictionaryBase")
+    cg_context = CodeGenContext(
+        dictionary=dictionary,
+        class_name=class_name,
+        base_class_name=base_class_name)
 
     root_node = SymbolScopeNode(separator_last="\n")
     root_node.set_renderer(MakoRenderer())

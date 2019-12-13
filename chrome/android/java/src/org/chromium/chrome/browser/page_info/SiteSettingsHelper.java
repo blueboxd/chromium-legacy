@@ -12,9 +12,8 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.website.SingleWebsitePreferences;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.GURLUtils;
 
@@ -24,14 +23,18 @@ import org.chromium.net.GURLUtils;
  */
 public class SiteSettingsHelper {
     /**
-     * Whether site settings is available for a given {@link Tab}.
+     * Whether site settings is available for a given {@link WebContents}.
+     * @param webContents The WebContents for which to check the site settings.
      */
-    public static boolean isSiteSettingsAvailable(Tab tab) {
-        WebContents webContents = tab.getWebContents();
+    public static boolean isSiteSettingsAvailable(WebContents webContents) {
         boolean isOfflinePage = OfflinePageUtils.getOfflinePage(webContents) != null;
         boolean isPreviewPage =
                 PreviewsAndroidBridge.getInstance().shouldShowPreviewUI(webContents);
-        String scheme = GURLUtils.getScheme(((TabImpl) tab).getOriginalUrl());
+        // TODO(crbug.com/1033178): dedupe the DomDistillerUrlUtils#getOriginalUrlFromDistillerUrl()
+        // calls.
+        String url =
+                DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(webContents.getVisibleUrl());
+        String scheme = GURLUtils.getScheme(url);
         return !isOfflinePage && !isPreviewPage
                 && (UrlConstants.HTTP_SCHEME.equals(scheme)
                         || UrlConstants.HTTPS_SCHEME.equals(scheme));

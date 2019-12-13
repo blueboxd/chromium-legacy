@@ -29,6 +29,27 @@
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
 
+namespace {
+
+bool IsAppListBackground(ash::ShelfBackgroundType background_type) {
+  switch (background_type) {
+    case ash::ShelfBackgroundType::kAppList:
+    case ash::ShelfBackgroundType::kHomeLauncher:
+    case ash::ShelfBackgroundType::kMaximizedWithAppList:
+      return true;
+    case ash::ShelfBackgroundType::kDefaultBg:
+    case ash::ShelfBackgroundType::kMaximized:
+    case ash::ShelfBackgroundType::kOobe:
+    case ash::ShelfBackgroundType::kLogin:
+    case ash::ShelfBackgroundType::kLoginNonBlurredWallpaper:
+    case ash::ShelfBackgroundType::kOverview:
+    case ash::ShelfBackgroundType::kInApp:
+      return false;
+  }
+}
+
+}  // namespace
+
 namespace ash {
 
 // Shelf::AutoHideEventHandler -----------------------------------------------
@@ -110,7 +131,6 @@ class Shelf::AutoDimEventHandler : public ui::EventHandler {
     }
   }
 
- private:
   void DimShelf() { shelf_->shelf_layout_manager()->SetDimmed(true); }
 
   // Sets shelf as active and sets timer to mark shelf as inactive.
@@ -121,6 +141,7 @@ class Shelf::AutoDimEventHandler : public ui::EventHandler {
         base::BindOnce(&AutoDimEventHandler::DimShelf, base::Unretained(this)));
   }
 
+ private:
   // Unowned pointer to the shelf that owns this event handler.
   Shelf* shelf_;
   // OneShotTimer that dims shelf due to inactivity.
@@ -465,6 +486,11 @@ void Shelf::OnBackgroundUpdated(ShelfBackgroundType background_type,
                                 AnimationChangeType change_type) {
   if (background_type == GetBackgroundType())
     return;
+
+  // Shelf should undim when transitioning to show app list.
+  if (auto_dim_event_handler_ && IsAppListBackground(background_type))
+    UndimShelf();
+
   for (auto& observer : observers_)
     observer.OnBackgroundTypeChanged(background_type, change_type);
 }
@@ -472,6 +498,14 @@ void Shelf::OnBackgroundUpdated(ShelfBackgroundType background_type,
 void Shelf::OnWorkAreaInsetsChanged() {
   for (auto& observer : observers_)
     observer.OnShelfWorkAreaInsetsChanged();
+}
+
+void Shelf::DimShelf() {
+  auto_dim_event_handler_->DimShelf();
+}
+
+void Shelf::UndimShelf() {
+  auto_dim_event_handler_->UndimShelf();
 }
 
 WorkAreaInsets* Shelf::GetWorkAreaInsets() const {

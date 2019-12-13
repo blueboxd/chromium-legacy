@@ -23,6 +23,7 @@ include_rules = [
   "+gpu/command_buffer/common/texture_in_use_response.h",
   "+gpu/config/gpu_feature_info.h",
   "+gpu/config/gpu_finch_features.h",
+  "+gpu/config/gpu_info.h",
   "+gpu/vulkan",
   "+media",
   "+mojo/public/cpp/system/buffer.h",

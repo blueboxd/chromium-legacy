@@ -256,7 +256,7 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnoreAttribute(
   // If srcdoc attribute for frame elements will be rewritten as src attribute
   // containing link instead of html contents, don't ignore the attribute.
   // Bail out now to avoid the check in Element::isScriptingAttribute.
-  bool is_src_doc_attribute = IsHTMLFrameElementBase(element) &&
+  bool is_src_doc_attribute = IsA<HTMLFrameElementBase>(element) &&
                               attribute.GetName() == html_names::kSrcdocAttr;
   String new_link_for_the_element;
   if (is_src_doc_attribute && RewriteLink(element, new_link_for_the_element))

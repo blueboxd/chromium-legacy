@@ -905,6 +905,57 @@ IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestGamepadOptionalData) {
   EndTest();
 }
 
+// Ensure that if OpenXR Runtime receive interaction profile chagnes event,
+// input profile name will be changed accordingly.
+IN_PROC_BROWSER_TEST_F(WebXrVrOpenXrBrowserTest,
+                       TestInteractionProfileChanged) {
+  WebXrControllerInputMock my_mock;
+
+  // Create a controller that supports all reserved buttons.
+  uint64_t supported_buttons =
+      device::XrButtonMaskFromId(device::XrButtonId::kAxisTrigger) |
+      device::XrButtonMaskFromId(device::XrButtonId::kAxisTrackpad) |
+      device::XrButtonMaskFromId(device::XrButtonId::kAxisThumbstick) |
+      device::XrButtonMaskFromId(device::XrButtonId::kGrip);
+
+  std::map<device::XrButtonId, unsigned int> axis_types = {
+      {device::XrButtonId::kAxisTrackpad, device::XrAxisType::kTrackpad},
+      {device::XrButtonId::kAxisTrigger, device::XrAxisType::kTrigger},
+      {device::XrButtonId::kAxisThumbstick, device::XrAxisType::kJoystick},
+  };
+
+  my_mock.CreateAndConnectController(
+      device::ControllerRole::kControllerRoleRight, axis_types,
+      supported_buttons);
+
+  this->LoadUrlAndAwaitInitialization(
+      this->GetFileUrlForHtmlTestFile("test_webxr_input_same_object"));
+  this->EnterSessionWithUserGestureOrFail();
+
+  // We should only have seen the first change indicating we have input sources.
+  PollJavaScriptBooleanOrFail("inputChangeEvents === 1", kPollTimeoutShort);
+
+  // We only expect one input source, cache it.
+  this->RunJavaScriptOrFail("validateInputSourceLength(1)");
+  this->RunJavaScriptOrFail("updateCachedInputSource(0)");
+
+  // Simulate Runtimes Sends change interaction profile event to change from
+  // Windows motion controller to Khronos simple Controller.
+  device_test::mojom::EventData data = {};
+  data.type = device_test::mojom::EventType::kInteractionProfileChanged;
+  data.interaction_profile =
+      device_test::mojom::InteractionProfileType::kKHRSimple;
+  my_mock.PopulateEvent(data);
+
+  // Make sure change events happens again since interaction profile changedd
+  PollJavaScriptBooleanOrFail("inputChangeEvents === 2", kPollTimeoutShort);
+  this->RunJavaScriptOrFail("validateInputSourceLength(1)");
+  this->RunJavaScriptOrFail("validateCachedSourcePresence(false)");
+
+  this->RunJavaScriptOrFail("done()");
+  this->EndTest();
+}
+
 // Test that controller input is registered via WebXR's input method. This uses
 // multiple controllers to make sure the input is going to the correct one.
 WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestMultipleControllerInputRegistered) {

@@ -9,7 +9,6 @@ server-based spellcheck service.
 Use hunspell spellchecker rather than the operating system's spellchecker.
 
 ## Note on Windows:
-
 For most operating system except Windows, the decision to use the platform
 spellchecker or Hunspell spellchecker is made at build time. Therefore,
 use_browser_spellchecker and use_renderer_spellchecker are mutually

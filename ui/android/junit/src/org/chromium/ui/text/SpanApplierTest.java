@@ -137,6 +137,46 @@ public class SpanApplierTest {
         assertSpannableStringEquality(expectedOutput, actualOutput);
     }
 
+    @Test
+    public void testRemoveSpanText() {
+        String input = "<cons>consectetur adipiscing</cons>";
+        String expected = "";
+        SpanInfo span = new SpanInfo("<cons>", "</cons>");
+
+        String result = SpanApplier.removeSpanText(input, span);
+        Assert.assertEquals(expected, result);
+    }
+
+    @Test
+    public void testRemoveMultipleSpanText() {
+        String input = "Lorem <link>ipsum</link> dolor sit amet, "
+                + "<cons>consectetur adipiscing</cons><elit>elit. Proin<endElit> consectetur.";
+        String expected = "Lorem "
+                + " dolor sit amet, "
+                + " consectetur.";
+        SpanInfo linkSpan = new SpanInfo("<link>", "</link>");
+        SpanInfo consSpan = new SpanInfo("<cons>", "</cons>");
+        SpanInfo elitSpan = new SpanInfo("<elit>", "<endElit>");
+
+        // Span appearance order does not matter.
+        String result = SpanApplier.removeSpanText(input, consSpan, linkSpan, elitSpan);
+        Assert.assertEquals(expected, result);
+    }
+
+    @Test
+    public void testRemoveNestedSpans() {
+        String input = "<cons><link>ipsum</link>consectetur adipiscing</cons> dolor sit amet";
+        SpanInfo linkSpan = new SpanInfo("<link>", "</link>");
+        SpanInfo consSpan = new SpanInfo("<cons>", "</cons>");
+
+        try {
+            SpanApplier.removeSpanText(input, linkSpan, consSpan);
+            Assert.fail("Expected IllegalArgumentException to be thrown.");
+        } catch (IllegalArgumentException e) {
+            // success
+        }
+    }
+
     /*
      * Tests the attributes of two SpannableStrings and asserts expected equality.
      *

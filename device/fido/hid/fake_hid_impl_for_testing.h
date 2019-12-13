@@ -22,10 +22,6 @@
 #include "services/device/public/mojom/hid.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace service_manager {
-class Connector;
-}
-
 namespace device {
 
 class MockFidoHidConnection : public device::mojom::HidConnection {
@@ -115,8 +111,7 @@ class FakeFidoHidManager : public device::mojom::HidManager {
       mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
       mojo::PendingRemote<mojom::HidConnectionWatcher> watcher,
       ConnectCallback callback) override;
-  void AddReceiver(mojo::ScopedMessagePipeHandle handle);
-  void AddReceiver2(mojo::PendingReceiver<device::mojom::HidManager> receiver);
+  void AddReceiver(mojo::PendingReceiver<device::mojom::HidManager> receiver);
   void AddDevice(device::mojom::HidDeviceInfoPtr device);
   void AddDeviceAndSetConnection(
       device::mojom::HidDeviceInfoPtr device,
@@ -140,13 +135,7 @@ class ScopedFakeFidoHidManager : public FakeFidoHidManager {
   ScopedFakeFidoHidManager();
   ~ScopedFakeFidoHidManager() override;
 
-  service_manager::Connector* service_manager_connector() {
-    return connector_.get();
-  }
-
  private:
-  std::unique_ptr<service_manager::Connector> connector_;
-
   DISALLOW_COPY_AND_ASSIGN(ScopedFakeFidoHidManager);
 };
 

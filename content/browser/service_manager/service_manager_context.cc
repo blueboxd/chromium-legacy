@@ -47,9 +47,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
-#include "media/media_buildflags.h"
-#include "media/mojo/buildflags.h"
-#include "media/mojo/mojom/constants.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -116,9 +113,7 @@ void DestroyConnectorOnIOThread() { g_io_thread_connector.Get().reset(); }
 class ContentChildServiceProcessHost
     : public service_manager::ServiceProcessHost {
  public:
-  ContentChildServiceProcessHost(bool run_in_gpu_process,
-                                 base::Optional<int> child_flags)
-      : run_in_gpu_process_(run_in_gpu_process), child_flags_(child_flags) {}
+  ContentChildServiceProcessHost() = default;
   ~ContentChildServiceProcessHost() override = default;
 
   // service_manager::ServiceProcessHost:
@@ -129,27 +124,6 @@ class ContentChildServiceProcessHost
       LaunchCallback callback) override {
     mojo::PendingRemote<service_manager::mojom::Service> remote;
     auto receiver = remote.InitWithNewPipeAndPassReceiver();
-    if (run_in_gpu_process_) {
-      // TODO(https://crbug.com/781334): Services running in the GPU process
-      // should be packaged into the content_gpu manifest. Then this would be
-      // unnecessary.
-      GpuProcessHost* process_host = GpuProcessHost::Get();
-      if (!process_host) {
-        DLOG(ERROR) << "GPU process host not available.";
-        return mojo::NullRemote();
-      }
-
-      // TODO(xhwang): It's possible that |process_host| is non-null, but the
-      // actual process is dead. In that case the receiver will be dropped. Make
-      // sure we handle these cases correctly.
-      process_host->gpu_host()->RunService(identity.name(),
-                                           std::move(receiver));
-      base::ProcessId process_id = process_host->process_id();
-      std::move(callback).Run(process_id != base::kNullProcessId
-                                  ? process_id
-                                  : base::GetCurrentProcId());
-      return remote;
-    }
 
     // Start a new process for this service.
     UtilityProcessHost* process_host = new UtilityProcessHost();
@@ -157,8 +131,6 @@ class ContentChildServiceProcessHost
     process_host->SetMetricsName(identity.name());
     process_host->SetServiceIdentity(identity);
     process_host->SetSandboxType(sandbox_type);
-    if (child_flags_.has_value())
-      process_host->set_child_flags(child_flags_.value());
     process_host->Start();
     process_host->RunService(
         identity.name(), std::move(receiver),
@@ -172,8 +144,6 @@ class ContentChildServiceProcessHost
   }
 
  private:
-  const bool run_in_gpu_process_;
-  const base::Optional<int> child_flags_;
   DISALLOW_COPY_AND_ASSIGN(ContentChildServiceProcessHost);
 };
 
@@ -282,16 +252,7 @@ class BrowserServiceManagerDelegate
   std::unique_ptr<service_manager::ServiceProcessHost>
   CreateProcessHostForBuiltinServiceInstance(
       const service_manager::Identity& identity) override {
-    // TODO(crbug.com/895615): Package these services in content_gpu instead
-    // of using this hack.
-    bool run_in_gpu_process = false;
-    base::Optional<int> child_flags;
-#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-    if (identity.name() == media::mojom::kMediaServiceName)
-      run_in_gpu_process = true;
-#endif
-    return std::make_unique<ContentChildServiceProcessHost>(run_in_gpu_process,
-                                                            child_flags);
+    return std::make_unique<ContentChildServiceProcessHost>();
   }
 
   std::unique_ptr<service_manager::ServiceProcessHost>

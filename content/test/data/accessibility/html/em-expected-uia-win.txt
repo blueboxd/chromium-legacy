@@ -1,5 +1,5 @@
 document
-++group
+++group IsControlElement=false
 ++++description Name='One word is '
 ++++description Name='emphasized'
 ++++description Name='.'

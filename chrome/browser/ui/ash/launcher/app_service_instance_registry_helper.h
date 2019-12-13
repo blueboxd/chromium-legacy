@@ -60,17 +60,53 @@ class AppServiceInstanceRegistryHelper {
                    const std::string& launch_id,
                    apps::InstanceState state);
 
+  // Updates the apps state when the browser's visibility is changed.
+  void OnWindowVisibilityChanging(const ash::ShelfID& shelf_id,
+                                  aura::Window* window,
+                                  bool visible);
+
+  // Updates the apps state when the browser is inactivated.
+  void SetWindowActivated(const ash::ShelfID& shelf_id,
+                          aura::Window* window,
+                          bool active);
+
+  // Returns the instance state for |window| based on |visible|.
+  apps::InstanceState CalculateVisibilityState(aura::Window* window,
+                                               bool visible) const;
+
+  // Returns the instance state for |window| based on |active|.
+  apps::InstanceState CalculateActivatedState(aura::Window* window,
+                                              bool active) const;
+
   // Return true if the app is a Web app.
   bool IsWebApp(const std::string& app_id) const;
 
  private:
+  // Returns an app id to represent |contents| in InstanceRegistry. If there is
+  // no app in |contents|, returns the app id of the Chrome component
+  // application.
   std::string GetAppId(content::WebContents* contents) const;
+
+  // Returns a window to represent |contents| in InstanceRegistry. If |contents|
+  // is a Web app, returns the native window for it. If there is no app in
+  // |contents|, returns the toplevel window.
   aura::Window* GetWindow(content::WebContents* contents);
+
+  // Adds the tab's |window| to |browser_window_to_tab_window_|.
+  void AddTabWindow(const std::string& app_id, aura::Window* window);
+  // Removes the tab's |window| from |browser_window_to_tab_window_|.
+  void RemoveTabWindow(const std::string& app_id, aura::Window* window);
 
   apps::AppServiceProxy* proxy_ = nullptr;
 
   // Used to get app info for tabs.
   std::unique_ptr<LauncherControllerHelper> launcher_controller_helper_;
+
+  // Maps the browser window to tab windows in the browser. When the browser
+  // window is inactive or invisible, tab windows in the browser should be
+  // updated accordingly as well.
+  std::map<aura::Window*, std::set<aura::Window*>>
+      browser_window_to_tab_window_;
 
   DISALLOW_COPY_AND_ASSIGN(AppServiceInstanceRegistryHelper);
 };

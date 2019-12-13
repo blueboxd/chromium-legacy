@@ -4,4 +4,3 @@
 create_java_binary_script.py
 util/__init__.py
 util/build_utils.py
-util/md5_check.py

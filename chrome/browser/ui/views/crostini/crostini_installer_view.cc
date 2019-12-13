@@ -170,27 +170,6 @@ CrostiniInstallerView* CrostiniInstallerView::GetActiveViewForTesting() {
   return g_crostini_installer_view;
 }
 
-int CrostiniInstallerView::GetDialogButtons() const {
-  if (state_ == State::PROMPT || state_ == State::ERROR) {
-    return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-  }
-  return ui::DIALOG_BUTTON_CANCEL;
-}
-
-base::string16 CrostiniInstallerView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK) {
-    if (state_ == State::ERROR) {
-      return l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_RETRY_BUTTON);
-    }
-    return l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_INSTALL_BUTTON);
-  }
-  DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
-  if (state_ == State::SUCCESS)
-    return l10n_util::GetStringUTF16(IDS_APP_CLOSE);
-  return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
-}
-
 bool CrostiniInstallerView::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_CANCEL &&
@@ -224,7 +203,7 @@ bool CrostiniInstallerView::Accept() {
   SetMessageLabel();
   big_message_label_->SetText(
       l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_INSTALLING));
-  DialogModelChanged();
+  UpdateDialogButtonsAfterStateChange();
   GetWidget()->GetRootView()->Layout();
 
   VLOG(1) << "delegate_->Install()";
@@ -252,7 +231,7 @@ bool CrostiniInstallerView::Cancel() {
       message_label_->SetVisible(true);
       progress_bar_->SetValue(-1);
       progress_bar_->SetVisible(true);
-      DialogModelChanged();
+      UpdateDialogButtonsAfterStateChange();
       GetWidget()->GetRootView()->Layout();
       delegate_->Cancel(base::BindOnce(&CrostiniInstallerView::OnCanceled,
                                        weak_ptr_factory_.GetWeakPtr()));
@@ -412,7 +391,7 @@ void CrostiniInstallerView::OnInstallFinished(InstallerError error) {
   delete GetOkButton();
   delete GetCancelButton();
 
-  DialogModelChanged();
+  UpdateDialogButtonsAfterStateChange();
   GetWidget()->GetRootView()->Layout();
 }
 
@@ -469,4 +448,38 @@ void CrostiniInstallerView::SetMessageLabel() {
     message_label_->SetText(l10n_util::GetStringUTF16(message_id));
     message_label_->SetVisible(true);
   }
+}
+
+void CrostiniInstallerView::UpdateDialogButtonsAfterStateChange() {
+  DialogDelegate::set_buttons(GetCurrentDialogButtons());
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_CANCEL,
+      GetCurrentDialogButtonLabel(ui::DIALOG_BUTTON_CANCEL));
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK, GetCurrentDialogButtonLabel(ui::DIALOG_BUTTON_OK));
+  DialogModelChanged();
+}
+
+int CrostiniInstallerView::GetCurrentDialogButtons() const {
+  if (state_ == State::PROMPT || state_ == State::ERROR) {
+    return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
+  }
+  return ui::DIALOG_BUTTON_CANCEL;
+}
+
+base::string16 CrostiniInstallerView::GetCurrentDialogButtonLabel(
+    ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_OK) {
+    if (state_ == State::ERROR) {
+      return l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_RETRY_BUTTON);
+    } else if (state_ == State::PROMPT) {
+      return l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_INSTALL_BUTTON);
+    }
+  } else if (button == ui::DIALOG_BUTTON_CANCEL) {
+    if (state_ == State::SUCCESS)
+      return l10n_util::GetStringUTF16(IDS_APP_CLOSE);
+    else
+      return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
+  }
+  return {};
 }

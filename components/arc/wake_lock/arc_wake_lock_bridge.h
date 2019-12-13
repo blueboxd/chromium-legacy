@@ -13,9 +13,10 @@
 #include "components/arc/mojom/wake_lock.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/common/service_manager_connection.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 
 class BrowserContextKeyedServiceFactory;
 
@@ -47,8 +48,9 @@ class ArcWakeLockBridge : public KeyedService,
                     ArcBridgeService* bridge_service);
   ~ArcWakeLockBridge() override;
 
-  void set_connector_for_testing(service_manager::Connector* connector) {
-    connector_for_test_ = connector;
+  void SetWakeLockProviderForTesting(
+      mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider) {
+    wake_lock_provider_ = std::move(wake_lock_provider);
   }
 
   // ConnectionObserver<mojom::WakeLockInstance>::Observer overrides.
@@ -70,15 +72,14 @@ class ArcWakeLockBridge : public KeyedService,
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
-  // If non-null, used instead of the process-wide connector to fetch services.
-  service_manager::Connector* connector_for_test_ = nullptr;
+  mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider_;
 
   // Used to track Android wake lock requests and acquire and release device
   // service wake locks as needed.
   std::map<device::mojom::WakeLockType, std::unique_ptr<WakeLockRequester>>
       wake_lock_requesters_;
 
-  mojo::Binding<mojom::WakeLockHost> binding_;
+  mojo::Receiver<mojom::WakeLockHost> receiver_{this};
 
   base::WeakPtrFactory<ArcWakeLockBridge> weak_ptr_factory_{this};
 

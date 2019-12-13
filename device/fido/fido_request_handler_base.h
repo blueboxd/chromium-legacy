@@ -25,10 +25,6 @@
 #include "device/fido/fido_discovery_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace device {
 
 class BleAdapterManager;
@@ -157,12 +153,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     virtual void SetMightCreateResidentCredential(bool v) = 0;
   };
 
-  // TODO(https://crbug.com/769631): Remove the dependency on Connector once
-  // device/fido is servicified. The |available_transports| should be the
-  // intersection of transports supported by the client and allowed by the
-  // relying party.
+  // The |available_transports| should be the intersection of transports
+  // supported by the client and allowed by the relying party.
   FidoRequestHandlerBase(
-      service_manager::Connector* connector,
       FidoDiscoveryFactory* fido_discovery_factory,
       const base::flat_set<FidoTransportProtocol>& available_transports);
   ~FidoRequestHandlerBase() override;
@@ -255,12 +248,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
 
   void InitDiscoveries(
       FidoDiscoveryFactory* fido_discovery_factory,
-      service_manager::Connector* connector,
       const base::flat_set<FidoTransportProtocol>& available_transports);
 #if defined(OS_WIN)
   void InitDiscoveriesWin(
       FidoDiscoveryFactory* fido_discovery_factory,
-      service_manager::Connector* connector,
       const base::flat_set<FidoTransportProtocol>& available_transports);
 #endif
 

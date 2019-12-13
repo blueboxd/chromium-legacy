@@ -283,6 +283,7 @@ I-<ph name="EXTENSION_NAME" /></translation>
 <translation id="1397500194120344683">Awekho amadivayisi afanelekile. <ph name="LINK_BEGIN" />Funda kabanzi<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">Khulisa</translation>
 <translation id="1399511500114202393">Asikho isitifiketi somsebenzisi</translation>
+<translation id="1403519882106291341">Imigomo ye-Google Chrome OS</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (Ugadiwe)</translation>
 <translation id="1405779994569073824">Iphahlazekile.</translation>
 <translation id="1406500794671479665">Iyaqinisekisa...</translation>
@@ -2171,7 +2172,6 @@ Ungaphatha izilungiselelo zale akhawunti ngokufaka uhlelo lokusebenza lwe-Family
 <translation id="4036778507053569103">Inqubomgomo elandwe kusuka kuseva ayivumelekile.</translation>
 <translation id="4037084878352560732">Ihhashi</translation>
 <translation id="4037889604535939429">Hlela umuntu</translation>
-<translation id="4042264909745389898">Imigomo ye-Google Chrome OS</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Phuma ekhasini}one{Phuma emakhasini}other{Phuma emakhasini}}</translation>
 <translation id="4044612648082411741">Faka iphasiwedi yesitifiketi sakho</translation>
 <translation id="404493185430269859">Injini yokusesha ezenzakalelayo</translation>

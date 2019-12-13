@@ -29,6 +29,7 @@
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/config/gpu_finch_features.h"
+#include "gpu/config/gpu_info.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -241,6 +242,48 @@ void ComputeMippedUVPlaneSizes(const gfx::Size& target_raster_size,
 
   *scaled_u_size = MipMapUtil::GetSizeForLevel(unscaled_u_size, uv_mip_level);
   *scaled_v_size = *scaled_u_size;
+}
+
+// Estimates the byte size of the decoded data for an image that goes through
+// hardware decode acceleration. The actual byte size is only known once the
+// image is decoded in the service side because different drivers have different
+// pixel format and alignment requirements.
+size_t EstimateHardwareDecodedDataSize(
+    const ImageHeaderMetadata* image_metadata) {
+  gfx::Size dimensions = image_metadata->coded_size
+                             ? *(image_metadata->coded_size)
+                             : image_metadata->image_size;
+  base::CheckedNumeric<size_t> y_data_size(dimensions.width());
+  y_data_size *= dimensions.height();
+
+  static_assert(
+      // TODO(andrescj): refactor to instead have a static_assert at the
+      // declaration site of gpu::ImageDecodeAcceleratorSubsampling to make sure
+      // it has the same number of entries as YUVSubsampling.
+      static_cast<int>(gpu::ImageDecodeAcceleratorSubsampling::kMaxValue) == 2,
+      "EstimateHardwareDecodedDataSize() must be adapted to support all "
+      "subsampling factors in ImageDecodeAcceleratorSubsampling");
+  base::CheckedNumeric<size_t> uv_width(dimensions.width());
+  base::CheckedNumeric<size_t> uv_height(dimensions.height());
+  switch (image_metadata->yuv_subsampling) {
+    case YUVSubsampling::k420:
+      uv_width += 1u;
+      uv_width /= 2u;
+      uv_height += 1u;
+      uv_height /= 2u;
+      break;
+    case YUVSubsampling::k422:
+      uv_width += 1u;
+      uv_width /= 2u;
+      break;
+    case YUVSubsampling::k444:
+      break;
+    default:
+      NOTREACHED();
+      return 0u;
+  }
+  base::CheckedNumeric<size_t> uv_data_size(uv_width * uv_height);
+  return (y_data_size + 2 * uv_data_size).ValueOrDie();
 }
 
 // Draws and scales the provided |draw_image| into the |target_pixmap|. If the
@@ -2287,10 +2330,6 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
   // TODO(crbug.com/953367): currently, we don't support scaling with hardware
   // decode acceleration. Note that it's still okay for the image to be
   // downscaled by Skia using the GPU.
-  //
-  // TODO(crbug.com/981208): |data_size| needs to be set to the size of the
-  // decoded data, but for accelerated decodes we won't know until the driver
-  // gives us the result in the GPU process. Figure out what to do.
   const ImageHeaderMetadata* image_metadata =
       draw_image.paint_image().GetImageHeaderMetadata();
   bool can_do_hardware_accelerated_decode = false;
@@ -2309,10 +2348,12 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
     can_do_hardware_accelerated_decode = true;
     const bool is_jpeg = (image_metadata->image_type == ImageType::kJPEG);
     const bool is_webp = (image_metadata->image_type == ImageType::kWEBP);
-    do_hardware_accelerated_decode =
-        (is_jpeg && allow_accelerated_jpeg_decodes_) ||
-        (is_webp && allow_accelerated_webp_decodes_);
-    DCHECK(!do_hardware_accelerated_decode || !is_bitmap_backed);
+    if ((is_jpeg && allow_accelerated_jpeg_decodes_) ||
+        (is_webp && allow_accelerated_webp_decodes_)) {
+      do_hardware_accelerated_decode = true;
+      data_size = EstimateHardwareDecodedDataSize(image_metadata);
+      DCHECK(!is_bitmap_backed);
+    }
   }
 
   SkYUVASizeInfo target_yuva_size_info;

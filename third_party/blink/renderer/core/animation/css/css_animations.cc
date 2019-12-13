@@ -138,7 +138,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
     // The last keyframe specified at a given offset is used.
     for (wtf_size_t j = 1; j < offsets.size(); ++j) {
       keyframes.push_back(
-          ToStringKeyframe(keyframe->CloneWithOffset(offsets[j])));
+          To<StringKeyframe>(keyframe->CloneWithOffset(offsets[j])));
     }
   }
 

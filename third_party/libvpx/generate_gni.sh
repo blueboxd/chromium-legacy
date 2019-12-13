@@ -441,6 +441,7 @@ if [ -z $ONLY_CONFIGS ]; then
   convert_srcs_to_project_files libvpx_srcs.txt libvpx_srcs_x86
 
   # Copy vpx_version.h. The file should be the same for all platforms.
+  clang-format -i -style=Chromium vpx_version.h
   cp vpx_version.h $BASE_DIR/$LIBVPX_CONFIG_DIR
 
   echo "Generate X86_64 source list."

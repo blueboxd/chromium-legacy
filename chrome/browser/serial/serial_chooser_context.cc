@@ -9,10 +9,8 @@
 #include "base/base64.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/device_service.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace {
 
@@ -189,8 +187,8 @@ void SerialChooserContext::EnsurePortManagerConnection() {
     return;
 
   mojo::PendingRemote<device::mojom::SerialPortManager> manager;
-  content::GetSystemConnector()->Connect(
-      device::mojom::kServiceName, manager.InitWithNewPipeAndPassReceiver());
+  content::GetDeviceService().BindSerialPortManager(
+      manager.InitWithNewPipeAndPassReceiver());
   SetUpPortManagerConnection(std::move(manager));
 }
 

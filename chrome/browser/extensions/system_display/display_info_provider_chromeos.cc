@@ -478,22 +478,23 @@ void DisplayInfoProviderChromeOS::CallGetDisplayUnitInfoList(
     ash::mojom::DisplayLayoutInfoPtr layout) {
   cros_display_config_->GetDisplayUnitInfoList(
       single_unified,
-      base::BindOnce(
-          [](ash::mojom::DisplayLayoutInfoPtr layout,
-             base::OnceCallback<void(DisplayUnitInfoList)> callback,
-             std::vector<ash::mojom::DisplayUnitInfoPtr> info_list) {
-            DisplayUnitInfoList all_displays;
-            for (const ash::mojom::DisplayUnitInfoPtr& info : info_list) {
-              system_display::DisplayUnitInfo display =
-                  GetDisplayUnitInfoFromMojo(*info);
-              SetDisplayUnitInfoLayoutProperties(*layout, &display);
-              all_displays.emplace_back(std::move(display));
-            }
-            base::ThreadTaskRunnerHandle::Get()->PostTask(
-                FROM_HERE,
-                base::BindOnce(std::move(callback), std::move(all_displays)));
-          },
-          std::move(layout), std::move(callback)));
+      base::BindOnce(&DisplayInfoProviderChromeOS::OnGetDisplayUnitInfoList,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(layout),
+                     std::move(callback)));
+}
+
+void DisplayInfoProviderChromeOS::OnGetDisplayUnitInfoList(
+    ash::mojom::DisplayLayoutInfoPtr layout,
+    base::OnceCallback<void(DisplayUnitInfoList)> callback,
+    std::vector<ash::mojom::DisplayUnitInfoPtr> info_list) {
+  DisplayUnitInfoList all_displays;
+  for (const ash::mojom::DisplayUnitInfoPtr& info : info_list) {
+    system_display::DisplayUnitInfo display = GetDisplayUnitInfoFromMojo(*info);
+    SetDisplayUnitInfoLayoutProperties(*layout, &display);
+    all_displays.push_back(std::move(display));
+  }
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(all_displays)));
 }
 
 void DisplayInfoProviderChromeOS::GetDisplayLayout(

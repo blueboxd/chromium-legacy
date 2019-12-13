@@ -320,10 +320,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Returns true if there is context menu shown on page.
   virtual bool IsShowingContextMenuOnPage() const;
 
-  // Returns an object that will override handling of Text Input and Mouse
-  // Lock events from the renderer.
-  virtual InputEventShim* GetInputEventShim() const;
-
   // Returns the focused frame across all delegates, or nullptr if none.
   virtual RenderFrameHostImpl* GetFocusedFrameFromFocusedDelegate();
 

@@ -4331,7 +4331,7 @@ TEST_F(WebFrameTest, ClearFocusedNodeTest) {
                                     "iframe_clear_focused_node_test.html");
 
   // Clear the focused node.
-  web_view_helper.GetWebView()->ClearFocusedElement();
+  web_view_helper.GetWebView()->FocusedElement()->blur();
 
   // Now retrieve the FocusedNode and test it should be null.
   EXPECT_EQ(nullptr, web_view_helper.GetWebView()->FocusedElement());

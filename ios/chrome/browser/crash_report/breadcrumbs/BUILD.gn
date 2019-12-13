@@ -18,11 +18,17 @@ source_set("feature_flags") {
 source_set("breadcrumbs") {
   deps = [
     "//base",
+    "//components/keyed_service/core",
+    "//components/keyed_service/ios",
+    "//ios/chrome/browser/browser_state",
+    "//ios/web/public",
   ]
 
   sources = [
-    "breadcrumb_manager.cc",
-    "breadcrumb_manager.h",
+    "breadcrumb_manager_keyed_service.cc",
+    "breadcrumb_manager_keyed_service.h",
+    "breadcrumb_manager_keyed_service_factory.cc",
+    "breadcrumb_manager_keyed_service_factory.h",
     "breadcrumb_manager_observer.h",
   ]
 
@@ -36,11 +42,14 @@ source_set("unit_tests") {
     ":breadcrumbs",
     "//base",
     "//base/test:test_support",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/test:test_support",
+    "//ios/web/public/test",
     "//testing/gtest",
   ]
 
   sources = [
+    "breadcrumb_manager_keyed_service_unittest.mm",
     "breadcrumb_manager_observer_unittest.mm",
-    "breadcrumb_manager_unittest.mm",
   ]
 }

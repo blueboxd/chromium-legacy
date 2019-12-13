@@ -186,6 +186,9 @@ class WebUITabContextMenu : public ui::SimpleMenuModel::Delegate,
     DCHECK_LT(tab_index_, browser_->tab_strip_model()->count());
     if (command_id == IDC_NEW_TAB) {
       chrome::NewTab(browser_);
+      UMA_HISTOGRAM_ENUMERATION("Tab.NewTab",
+                                TabStripModel::NEW_TAB_CONTEXT_MENU,
+                                TabStripModel::NEW_TAB_ENUM_COUNT);
       return;
     }
     browser_->tab_strip_model()->ExecuteContextMenuCommand(

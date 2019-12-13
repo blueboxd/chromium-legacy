@@ -82,6 +82,38 @@ struct AX_EXPORT AtkTableCellInterface {
   static bool Exists();
 };
 
+// This class with an enum is used to generate a bitmask which tracks the ATK
+// interfaces that an AXPlatformNodeAuraLinux's ATKObject implements.
+class ImplementedAtkInterfaces {
+ public:
+  enum Value {
+    kDefault = 1 << 1,
+    kDocument = 1 << 1,
+    kHyperlink = 1 << 2,
+    kHypertext = 1 << 3,
+    kImage = 1 << 4,
+    kSelection = 1 << 5,
+    kTableCell = 1 << 6,
+    kTable = 1 << 7,
+    kText = 1 << 8,
+    kValue = 1 << 9,
+    kWindow = 1 << 10,
+  };
+
+  bool Implements(Value interface) { return value_ & interface; }
+
+  void Add(Value other) { value_ |= other; }
+
+  bool operator!=(const ImplementedAtkInterfaces& other) {
+    return value_ != other.value_;
+  }
+
+  int value() { return value_; }
+
+ private:
+  int value_ = kDefault;
+};
+
 // Implements accessibility on Aura Linux using ATK.
 class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
  public:
@@ -268,23 +300,11 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   using AXPositionInstanceType = typename AXPositionInstance::element_type;
   using AXNodeRange = AXRange<AXPositionInstanceType>;
 
-  enum AtkInterfaces {
-    ATK_ACTION_INTERFACE,
-    ATK_COMPONENT_INTERFACE,
-    ATK_DOCUMENT_INTERFACE,
-    ATK_EDITABLE_TEXT_INTERFACE,
-    ATK_HYPERLINK_INTERFACE,
-    ATK_HYPERTEXT_INTERFACE,
-    ATK_IMAGE_INTERFACE,
-    ATK_SELECTION_INTERFACE,
-    ATK_TABLE_INTERFACE,
-    ATK_TABLE_CELL_INTERFACE,
-    ATK_TEXT_INTERFACE,
-    ATK_VALUE_INTERFACE,
-    ATK_WINDOW_INTERFACE,
-  };
+  // This is static to ensure that we aren't trying to access the rest of the
+  // accessibility tree during node initialization.
+  static ImplementedAtkInterfaces GetGTypeInterfaceMask(const AXNodeData& data,
+                                                        AtkRole atk_role);
 
-  int GetGTypeInterfaceMask();
   GType GetAccessibilityGType();
   AtkObject* CreateAtkObject();
   gfx::NativeViewAccessible GetOrCreateAtkObject();
@@ -357,9 +377,9 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   gfx::Point ConvertPointToScreenCoordinates(const gfx::Point& point,
                                              AtkCoordType atk_coord_type);
 
-  // Keep information of latest AtkInterfaces mask to refresh atk object
-  // interfaces accordingly if needed.
-  int interface_mask_ = 0;
+  // Keep information of latest ImplementedAtkInterfaces mask to rebuild the
+  // ATK object accordingly when the platform node changes.
+  ImplementedAtkInterfaces interface_mask_;
 
   // We own a reference to these ref-counted objects.
   AtkObject* atk_object_ = nullptr;

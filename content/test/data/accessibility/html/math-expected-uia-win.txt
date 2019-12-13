@@ -1,6 +1,6 @@
 document
-++group
-++++group
+++group IsControlElement=false
+++++group IsControlElement=false
 ++++++description Name='a'
 ++++++description Name='2'
 ++++++description Name=' '

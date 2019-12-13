@@ -72,10 +72,9 @@ TokenResult::~TokenResult() {}
 TokenWebData::TokenWebData(
     scoped_refptr<WebDatabaseService> wdbs,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> db_task_runner,
-    const ProfileErrorCallback& callback)
-    : WebDataServiceBase(wdbs, callback, ui_task_runner),
-      token_backend_(new TokenWebDataBackend(db_task_runner)) {}
+    scoped_refptr<base::SingleThreadTaskRunner> db_task_runner)
+    : WebDataServiceBase(wdbs, std::move(ui_task_runner)),
+      token_backend_(new TokenWebDataBackend(std::move(db_task_runner))) {}
 
 void TokenWebData::SetTokenForService(const std::string& service,
                                       const std::string& token) {
@@ -106,7 +105,7 @@ WebDataServiceBase::Handle TokenWebData::GetAllTokens(
 TokenWebData::TokenWebData(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_task_runner)
-    : WebDataServiceBase(nullptr, ProfileErrorCallback(), ui_task_runner),
-      token_backend_(new TokenWebDataBackend(db_task_runner)) {}
+    : WebDataServiceBase(nullptr, std::move(ui_task_runner)),
+      token_backend_(new TokenWebDataBackend(std::move(db_task_runner))) {}
 
 TokenWebData::~TokenWebData() {}

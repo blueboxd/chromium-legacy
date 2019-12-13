@@ -1,11 +1,11 @@
 document Name='Table example - th rowheader'
 ++grid Grid.ColumnCount=2 Grid.RowCount=2 Table.RowOrColumnMajor='RowMajor'
-++++row
+++++row IsControlElement=false
 ++++++rowheader Name='Firstname' GridItem.Column=0 GridItem.ColumnSpan=1 GridItem.Row=0 GridItem.RowSpan=1
 ++++++++description Name='Firstname' IsControlElement=false
 ++++++gridcell Name='Jill' GridItem.Column=1 GridItem.ColumnSpan=1 GridItem.Row=0 GridItem.RowSpan=1
 ++++++++description Name='Jill' IsControlElement=false
-++++row
+++++row IsControlElement=false
 ++++++rowheader Name='Lastname' GridItem.Column=0 GridItem.ColumnSpan=1 GridItem.Row=1 GridItem.RowSpan=1
 ++++++++description Name='Lastname' IsControlElement=false
 ++++++gridcell Name='Smith' GridItem.Column=1 GridItem.ColumnSpan=1 GridItem.Row=1 GridItem.RowSpan=1

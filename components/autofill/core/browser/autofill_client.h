@@ -336,10 +336,6 @@ class AutofillClient : public RiskDataLoader {
   // challenge.
   virtual void UpdateWebauthnOfferDialogWithError() = 0;
 
-  // Will update the cancel button in the WebAuthn verify pending dialog.
-  virtual void UpdateWebauthnVerifyPendingCancelButton(
-      bool should_be_enabled) = 0;
-
   // Will close the current visible WebAuthn dialog. Returns true if dialog was
   // visible and has been closed.
   virtual bool CloseWebauthnDialog() = 0;

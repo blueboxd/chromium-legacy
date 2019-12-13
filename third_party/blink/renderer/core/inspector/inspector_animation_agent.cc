@@ -151,7 +151,7 @@ BuildObjectForAnimationKeyframes(const KeyframeEffect* effect) {
     // Ignore CSS Transitions
     if (!keyframe->IsStringKeyframe())
       continue;
-    const StringKeyframe* string_keyframe = ToStringKeyframe(keyframe);
+    const auto* string_keyframe = To<StringKeyframe>(keyframe);
     keyframes->emplace_back(
         BuildObjectForStringKeyframe(string_keyframe, computed_offsets.at(i)));
   }
@@ -286,7 +286,7 @@ blink::Animation* InspectorAnimationAgent::AnimationClone(
       KeyframeVector old_keyframes = old_string_keyframe_model->GetFrames();
       StringKeyframeVector new_keyframes;
       for (auto& old_keyframe : old_keyframes)
-        new_keyframes.push_back(ToStringKeyframe(old_keyframe));
+        new_keyframes.push_back(To<StringKeyframe>(*old_keyframe));
       new_model =
           MakeGarbageCollected<StringKeyframeEffectModel>(new_keyframes);
     } else if (old_model->IsTransitionKeyframeEffectModel()) {
@@ -295,7 +295,7 @@ blink::Animation* InspectorAnimationAgent::AnimationClone(
       KeyframeVector old_keyframes = old_transition_keyframe_model->GetFrames();
       TransitionKeyframeVector new_keyframes;
       for (auto& old_keyframe : old_keyframes)
-        new_keyframes.push_back(ToTransitionKeyframe(old_keyframe));
+        new_keyframes.push_back(To<TransitionKeyframe>(*old_keyframe));
       new_model =
           MakeGarbageCollected<TransitionKeyframeEffectModel>(new_keyframes);
     }

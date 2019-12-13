@@ -1340,15 +1340,6 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Logs that whether or not the conditions are met to perform a translation.
-     * @param isConditionMet Whether the translation conditions were met.
-     */
-    public static void logTranslateCondition(boolean isConditionMet) {
-        RecordHistogram.recordBooleanHistogram(
-                "Search.ContextualSearchTranslateCondition", isConditionMet);
-    }
-
-    /**
      * Logs whether Contextual Cards data was shown. Should be logged on tap if Contextual
      * Cards integration is enabled.
      * @param shown Whether Contextual Cards data was shown in the Bar.

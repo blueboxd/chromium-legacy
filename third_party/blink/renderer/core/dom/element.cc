@@ -334,23 +334,25 @@ bool CalculateStyleShouldForceLegacyLayout(const Element& element,
     return true;
 
   if (!RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled()) {
-    // Disable NG for the entire subtree if we're establishing a block
-    // fragmentation context.
+    // Disable NG for the entire subtree if we're establishing a multicol
+    // container.
     if (style.SpecifiesColumns())
       return true;
-    if (document.Printing() && element == document.documentElement())
-      return true;
-
-    // Fall back to legacy layout for frameset documents. The frameset itself
-    // (and the frames) can only create legacy layout objects anyway (no NG
-    // counterpart for them yet). However, the layout object for the HTML root
-    // element would be an NG one. If we'd then print the document, we'd fall
-    // back to legacy layout (because of the above check), which would re-attach
-    // all layout objects, which would cause the frameset to lose state of some
-    // sort, leaving everything blank when printed.
-    if (document.IsFrameSet())
-      return true;
   }
+
+  // No printing support in LayoutNG yet.
+  if (document.Printing() && element == document.documentElement())
+    return true;
+
+  // Fall back to legacy layout for frameset documents. The frameset itself (and
+  // the frames) can only create legacy layout objects anyway (no NG counterpart
+  // for them yet). However, the layout object for the HTML root element would
+  // be an NG one. If we'd then print the document, we'd fall back to legacy
+  // layout (because of the above check), which would re-attach all layout
+  // objects, which would cause the frameset to lose state of some sort, leaving
+  // everything blank when printed.
+  if (document.IsFrameSet())
+    return true;
 
   // 'text-combine-upright' property is not supported yet.
   if (style.HasTextCombine() && !style.IsHorizontalWritingMode())

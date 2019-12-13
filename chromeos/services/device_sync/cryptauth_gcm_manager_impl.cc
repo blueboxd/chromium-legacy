@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
@@ -148,6 +149,16 @@ bool IsDeviceSyncGroupNameValid(const gcm::IncomingMessage& message) {
                  CryptAuthKeyBundle::Name::kDeviceSyncBetterTogether);
 }
 
+void RecordGCMRegistrationMetrics(gcm::GCMClient::Result result,
+                                  base::TimeDelta execution_time) {
+  base::UmaHistogramCustomTimes(
+      "CryptAuth.Gcm.Registration.AttemptTimeWithRetries", execution_time,
+      base::TimeDelta::FromSeconds(1) /* min */,
+      base::TimeDelta::FromMinutes(10) /* max */, 100 /* buckets */);
+
+  base::UmaHistogramEnumeration("CryptAuth.Gcm.Registration.Result", result);
+}
+
 }  // namespace
 
 // static
@@ -206,6 +217,7 @@ void CryptAuthGCMManagerImpl::RegisterWithGCM() {
 
   PA_LOG(VERBOSE) << "Beginning GCM registration...";
   registration_in_progress_ = true;
+  gcm_registration_start_timestamp_ = base::TimeTicks::Now();
 
   std::vector<std::string> sender_ids(1, kCryptAuthGcmSenderId);
   gcm_driver_->Register(
@@ -295,8 +307,11 @@ void CryptAuthGCMManagerImpl::OnRegistrationCompleted(
     const std::string& registration_id,
     gcm::GCMClient::Result result) {
   registration_in_progress_ = false;
+  RecordGCMRegistrationMetrics(
+      result, base::TimeTicks::Now() -
+                  gcm_registration_start_timestamp_ /* execution_time */);
+
   if (result != gcm::GCMClient::SUCCESS) {
-    // TODO(https://crbug.com/956592): Add metrics.
     PA_LOG(WARNING) << "GCM registration failed with result="
                     << static_cast<int>(result);
     for (auto& observer : observers_)

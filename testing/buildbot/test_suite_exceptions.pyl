@@ -1835,12 +1835,6 @@
       'Win10 FYI x64 Exp Release (Intel HD 630)',
     ],
   },
-  'viz_unittests': {
-    'remove_from': [
-      # chromium.win
-      'Win10 Tests x64',
-    ],
-  },
   'vr_android_unittests': {
     'remove_from': [
       # chromium.android.fyi

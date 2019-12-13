@@ -43,7 +43,7 @@ base::Value FetchBrowserChildProcesses() {
                      process_data.process_type)));
     proc.SetPath("name", base::Value(process_data.name));
     proc.SetPath("metricsName", base::Value(process_data.metrics_name));
-    browser_processes.GetList().push_back(std::move(proc));
+    browser_processes.Append(std::move(proc));
   }
 
   return browser_processes;
@@ -64,7 +64,7 @@ base::Value FetchRenderHostProcesses() {
     proc.SetPath(
         "processId",
         base::Value(base::strict_cast<double>(host->GetProcess().Pid())));
-    renderer_processes.GetList().push_back(std::move(proc));
+    renderer_processes.Append(std::move(proc));
   }
 
   return renderer_processes;

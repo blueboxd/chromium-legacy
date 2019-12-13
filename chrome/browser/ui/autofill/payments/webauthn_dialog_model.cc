@@ -35,8 +35,7 @@ void WebauthnDialogModel::RemoveObserver(
 
 bool WebauthnDialogModel::IsActivityIndicatorVisible() const {
   return state_ == WebauthnDialogState::kOfferPending ||
-         state_ == WebauthnDialogState::kVerifyPending ||
-         state_ == WebauthnDialogState::kVerifyPendingButtonDisabled;
+         state_ == WebauthnDialogState::kVerifyPending;
 }
 
 bool WebauthnDialogModel::IsBackButtonVisible() const {
@@ -45,10 +44,6 @@ bool WebauthnDialogModel::IsBackButtonVisible() const {
 
 bool WebauthnDialogModel::IsCancelButtonVisible() const {
   return true;
-}
-
-bool WebauthnDialogModel::IsCancelButtonEnabled() const {
-  return state_ != WebauthnDialogState::kVerifyPendingButtonDisabled;
 }
 
 base::string16 WebauthnDialogModel::GetCancelButtonLabel() const {
@@ -61,7 +56,6 @@ base::string16 WebauthnDialogModel::GetCancelButtonLabel() const {
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_CANCEL_BUTTON_LABEL_ERROR);
     case WebauthnDialogState::kVerifyPending:
-    case WebauthnDialogState::kVerifyPendingButtonDisabled:
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_WEBAUTHN_VERIFY_PENDING_DIALOG_CANCEL_BUTTON_LABEL);
     case WebauthnDialogState::kInactive:
@@ -91,7 +85,6 @@ const gfx::VectorIcon& WebauthnDialogModel::GetStepIllustration(
     case WebauthnDialogState::kOffer:
     case WebauthnDialogState::kOfferPending:
     case WebauthnDialogState::kVerifyPending:
-    case WebauthnDialogState::kVerifyPendingButtonDisabled:
       return color_scheme == ImageColorScheme::kDark
                  ? kWebauthnDialogHeaderDarkIcon
                  : kWebauthnDialogHeaderIcon;
@@ -116,7 +109,6 @@ base::string16 WebauthnDialogModel::GetStepTitle() const {
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_TITLE_ERROR);
     case WebauthnDialogState::kVerifyPending:
-    case WebauthnDialogState::kVerifyPendingButtonDisabled:
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_WEBAUTHN_VERIFY_PENDING_DIALOG_TITLE);
     case WebauthnDialogState::kInactive:
@@ -137,7 +129,6 @@ base::string16 WebauthnDialogModel::GetStepDescription() const {
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_INSTRUCTION_ERROR);
     case WebauthnDialogState::kVerifyPending:
-    case WebauthnDialogState::kVerifyPendingButtonDisabled:
       return base::string16();
     case WebauthnDialogState::kInactive:
     case WebauthnDialogState::kUnknown:

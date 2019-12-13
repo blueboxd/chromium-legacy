@@ -84,7 +84,7 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
         std::move(credential_params));
 
     auto handler = std::make_unique<MakeCredentialRequestHandler>(
-        nullptr, fake_discovery_factory_.get(), supported_transports_,
+        fake_discovery_factory_.get(), supported_transports_,
         std::move(request_parameter),
         std::move(authenticator_selection_criteria),
         /*allow_skipping_pin_touch=*/true, cb_.callback());

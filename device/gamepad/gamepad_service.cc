@@ -17,7 +17,6 @@
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/gamepad_data_fetcher_manager.h"
 #include "device/gamepad/gamepad_provider.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace device {
 
@@ -33,7 +32,6 @@ GamepadService::GamepadService()
 GamepadService::GamepadService(std::unique_ptr<GamepadDataFetcher> fetcher)
     : provider_(std::make_unique<GamepadProvider>(
           /*connection_change_client=*/this,
-          /*service_manager_connector=*/nullptr,
           std::move(fetcher),
           /*polling_thread=*/nullptr)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
@@ -59,9 +57,8 @@ GamepadService* GamepadService::GetInstance() {
 }
 
 void GamepadService::StartUp(
-    std::unique_ptr<service_manager::Connector> service_manager_connector) {
-  if (!service_manager_connector_)
-    service_manager_connector_ = std::move(service_manager_connector);
+    GamepadDataFetcher::HidManagerBinder hid_manager_binder) {
+  GamepadDataFetcher::SetHidManagerBinder(std::move(hid_manager_binder));
 
   // Ensures GamepadDataFetcherManager is created on UI thread. Otherwise,
   // GamepadPlatformDataFetcherLinux::Factory would be created with the
@@ -74,7 +71,7 @@ bool GamepadService::ConsumerBecameActive(GamepadConsumer* consumer) {
 
   if (!provider_) {
     provider_ = std::make_unique<GamepadProvider>(
-        /*connection_change_client=*/this, service_manager_connector_->Clone());
+        /*connection_change_client=*/this);
   }
 
   std::pair<ConsumerSet::iterator, bool> insert_result =

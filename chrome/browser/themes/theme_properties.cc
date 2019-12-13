@@ -104,7 +104,7 @@ SkColor GetLightModeColor(int id) {
     case ThemeProperties::COLOR_TAB_PIP_PLAYING:
       return gfx::kGoogleBlue600;
     case ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR:
-      return SkColorSetRGB(0xB6, 0xB4, 0xB6);
+      return gfx::kGoogleGrey300;
     case ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR:
     case ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE:
       return SkColorSetA(SK_ColorBLACK, 0x40);

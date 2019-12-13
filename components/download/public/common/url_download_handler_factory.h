@@ -8,10 +8,8 @@
 #include "base/memory/ref_counted.h"
 #include "components/download/public/common/download_utils.h"
 #include "components/download/public/common/url_download_handler.h"
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 
 namespace download {
 class DownloadUrlParameters;
@@ -28,7 +26,7 @@ class COMPONENTS_DOWNLOAD_EXPORT UrlDownloadHandlerFactory {
       base::WeakPtr<download::UrlDownloadHandler::Delegate> delegate,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const URLSecurityPolicy& url_security_policy,
-      std::unique_ptr<service_manager::Connector> connector,
+      mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 };
 

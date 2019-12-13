@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 497 tests; 402 PASS, 95 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 497 tests; 401 PASS, 96 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Test driver for asyncInitCertificate
@@ -41,7 +41,7 @@ PASS RTCPeerConnection interface: attribute connectionState
 FAIL RTCPeerConnection interface: attribute canTrickleIceCandidates assert_true: The prototype object must have a property "canTrickleIceCandidates" expected true got false
 PASS RTCPeerConnection interface: operation restartIce()
 PASS RTCPeerConnection interface: operation getConfiguration()
-PASS RTCPeerConnection interface: operation setConfiguration(RTCConfiguration)
+FAIL RTCPeerConnection interface: operation setConfiguration(RTCConfiguration) assert_equals: property has wrong .length expected 0 but got 1
 PASS RTCPeerConnection interface: operation close()
 PASS RTCPeerConnection interface: attribute onnegotiationneeded
 PASS RTCPeerConnection interface: attribute onicecandidate

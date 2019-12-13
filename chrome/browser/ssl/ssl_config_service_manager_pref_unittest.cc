@@ -302,16 +302,19 @@ TEST_F(SSLConfigServiceManagerPrefTest,
   EXPECT_TRUE(observed_configs_[0]->rev_checking_required_local_anchors);
 }
 
-// Tests that the TLS 1.3 hardening pref correctly sets the corresponding value
-// in SSL configs.
-TEST_F(SSLConfigServiceManagerPrefTest, TLS13HardeningForLocalAnchors) {
+// Tests that the TLS 1.3 hardening pref correctly interacts with the feature
+// flag.
+TEST_F(SSLConfigServiceManagerPrefTest, TLS13HardeningForLocalAnchorsDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kTLS13HardeningForLocalAnchors);
+
   TestingPrefServiceSimple local_state;
   SSLConfigServiceManager::RegisterPrefs(local_state.registry());
 
   std::unique_ptr<SSLConfigServiceManager> config_manager =
       SetUpConfigServiceManager(&local_state);
 
-  // The hardening is disabled by default.
+  // With the feature disabled, the hardening is disabled by default.
   EXPECT_FALSE(initial_config_->tls13_hardening_for_local_anchors_enabled);
 
   // It can be enabled via preference.
@@ -327,20 +330,17 @@ TEST_F(SSLConfigServiceManagerPrefTest, TLS13HardeningForLocalAnchors) {
   EXPECT_FALSE(observed_configs_[1]->tls13_hardening_for_local_anchors_enabled);
 }
 
-// Tests that the TLS 1.3 hardening pref correctly interacts with the feature
-// flag.
+// Tests that the TLS 1.3 hardening pref correctly sets the corresponding value
+// in SSL configs.
 TEST_F(SSLConfigServiceManagerPrefTest,
        TLS13HardeningForLocalAnchorsFeatureEnabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kTLS13HardeningForLocalAnchors);
-
   TestingPrefServiceSimple local_state;
   SSLConfigServiceManager::RegisterPrefs(local_state.registry());
 
   std::unique_ptr<SSLConfigServiceManager> config_manager =
       SetUpConfigServiceManager(&local_state);
 
-  // With the feature enabled, the hardening is enabled by default.
+  // The hardening is enabled by default.
   EXPECT_TRUE(initial_config_->tls13_hardening_for_local_anchors_enabled);
 
   // It can be disabled via preferences.

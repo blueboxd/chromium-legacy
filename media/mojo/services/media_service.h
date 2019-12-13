@@ -14,42 +14,30 @@
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/cpp/service_keepalive.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
+#include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
 namespace media {
 
 class MojoMediaClient;
 
-class MEDIA_MOJO_EXPORT MediaService : public service_manager::Service,
-                                       public mojom::MediaService {
+class MEDIA_MOJO_EXPORT MediaService : public mojom::MediaService {
  public:
   MediaService(std::unique_ptr<MojoMediaClient> mojo_media_client,
-               service_manager::mojom::ServiceRequest request);
+               mojo::PendingReceiver<mojom::MediaService> receiver);
   ~MediaService() final;
 
  private:
-  // service_manager::Service implementation.
-  void OnStart() final;
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override;
-  void OnDisconnected() final;
-
   void Create(mojo::PendingReceiver<mojom::MediaService> receiver);
 
+  // mojom::MediaService implementation:
   void CreateInterfaceFactory(
       mojo::PendingReceiver<mojom::InterfaceFactory> receiver,
       mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
           host_interfaces) final;
 
-  service_manager::ServiceBinding service_binding_;
-  service_manager::ServiceKeepalive keepalive_;
+  mojo::Receiver<mojom::MediaService> receiver_;
 
   // Note: Since each instance runs on a different thread, do not share a common
   // MojoMediaClient with other instances to avoid threading issues. Hence using
@@ -60,9 +48,6 @@ class MEDIA_MOJO_EXPORT MediaService : public service_manager::Service,
   std::unique_ptr<MojoMediaClient> mojo_media_client_;
 
   mojo::UniqueReceiverSet<mojom::InterfaceFactory> interface_factory_receivers_;
-
-  service_manager::BinderRegistry registry_;
-  mojo::ReceiverSet<mojom::MediaService> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaService);
 };

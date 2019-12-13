@@ -469,11 +469,6 @@ TEST_F(ElementTest, OptionElementDisplayNoneComputedStyle) {
   EXPECT_FALSE(document.getElementById("inner-option")->GetComputedStyle());
 }
 
-template <>
-struct DowncastTraits<HTMLPlugInElement> {
-  static bool AllowFrom(const Node& n) { return IsHTMLPlugInElement(n); }
-};
-
 // A fake plugin which will assert that script is allowed in Destroy.
 class ScriptOnDestroyPlugin : public GarbageCollected<ScriptOnDestroyPlugin>,
                               public WebPlugin {

@@ -157,9 +157,8 @@ class TestVariationsServiceClient : public VariationsServiceClient {
   ~TestVariationsServiceClient() override = default;
 
   // VariationsServiceClient:
-  base::Callback<base::Version(void)> GetVersionForSimulationCallback()
-      override {
-    return base::Callback<base::Version(void)>();
+  VersionCallback GetVersionForSimulationCallback() override {
+    return base::NullCallback();
   }
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       override {

@@ -217,6 +217,7 @@
 /spirv-headers/src
 /SPIRV-Tools/src
 /sqlite4java/lib/
+/subresource-filter-ruleset/data/UnindexedRules
 /swiftshader/
 /syzygy
 /syzygy/binaries

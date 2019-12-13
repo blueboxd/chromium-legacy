@@ -19,7 +19,6 @@
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/make_credential_task.h"
 #include "device/fido/pin.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_WIN)
 #include "device/fido/win/authenticator.h"
@@ -173,7 +172,6 @@ void ReportMakeCredentialRequestTransport(FidoAuthenticator* authenticator) {
 }  // namespace
 
 MakeCredentialRequestHandler::MakeCredentialRequestHandler(
-    service_manager::Connector* connector,
     FidoDiscoveryFactory* fido_discovery_factory,
     const base::flat_set<FidoTransportProtocol>& supported_transports,
     CtapMakeCredentialRequest request,
@@ -181,7 +179,6 @@ MakeCredentialRequestHandler::MakeCredentialRequestHandler(
     bool allow_skipping_pin_touch,
     CompletionCallback completion_callback)
     : FidoRequestHandlerBase(
-          connector,
           fido_discovery_factory,
           base::STLSetIntersection<base::flat_set<FidoTransportProtocol>>(
               supported_transports,

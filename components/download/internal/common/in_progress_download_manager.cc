@@ -24,9 +24,10 @@
 #include "components/download/public/common/download_utils.h"
 #include "components/download/public/common/input_stream.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_ANDROID)
 #include "components/download/internal/common/android/download_collection_bridge.h"
@@ -91,7 +92,7 @@ void BeginResourceDownload(
     const GURL& site_url,
     const GURL& tab_url,
     const GURL& tab_referrer_url,
-    std::unique_ptr<service_manager::Connector> connector,
+    mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider,
     bool is_background_mode,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner) {
   DCHECK(GetIOTaskRunner()->BelongsToCurrentThread());
@@ -101,8 +102,8 @@ void BeginResourceDownload(
           network::SharedURLLoaderFactory::Create(
               std::move(pending_url_loader_factory)),
           url_security_policy, site_url, tab_url, tab_referrer_url,
-          is_new_download, false, std::move(connector), is_background_mode,
-          main_task_runner)
+          is_new_download, false, std::move(wake_lock_provider),
+          is_background_mode, main_task_runner)
           .release(),
       base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
 
@@ -126,7 +127,7 @@ void CreateDownloadHandlerForNavigation(
     std::unique_ptr<network::PendingSharedURLLoaderFactory>
         pending_url_loader_factory,
     const URLSecurityPolicy& url_security_policy,
-    std::unique_ptr<service_manager::Connector> connector,
+    mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner) {
   DCHECK(GetIOTaskRunner()->BelongsToCurrentThread());
   UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader(
@@ -138,7 +139,7 @@ void CreateDownloadHandlerForNavigation(
           std::move(url_loader_client_endpoints),
           network::SharedURLLoaderFactory::Create(
               std::move(pending_url_loader_factory)),
-          url_security_policy, std::move(connector), main_task_runner)
+          url_security_policy, std::move(wake_lock_provider), main_task_runner)
           .release(),
       base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
 
@@ -205,13 +206,13 @@ InProgressDownloadManager::InProgressDownloadManager(
     leveldb_proto::ProtoDatabaseProvider* db_provider,
     const IsOriginSecureCallback& is_origin_secure_cb,
     const URLSecurityPolicy& url_security_policy,
-    service_manager::Connector* connector)
+    WakeLockProviderBinder wake_lock_provider_binder)
     : delegate_(delegate),
       file_factory_(new DownloadFileFactory()),
       download_start_observer_(nullptr),
       is_origin_secure_cb_(is_origin_secure_cb),
       url_security_policy_(url_security_policy),
-      connector_(connector) {
+      wake_lock_provider_binder_(std::move(wake_lock_provider_binder)) {
   Initialize(in_progress_db_dir, db_provider);
 }
 
@@ -301,15 +302,20 @@ void InProgressDownloadManager::BeginDownload(
     const GURL& tab_referrer_url) {
   std::unique_ptr<network::ResourceRequest> request =
       CreateResourceRequest(params.get());
+  mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider;
+  if (wake_lock_provider_binder_) {
+    wake_lock_provider_binder_.Run(
+        wake_lock_provider.InitWithNewPipeAndPassReceiver());
+  }
   GetIOTaskRunner()->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &BeginResourceDownload, std::move(params), std::move(request),
-          std::move(pending_url_loader_factory), url_security_policy_,
-          is_new_download, weak_factory_.GetWeakPtr(), site_url, tab_url,
-          tab_referrer_url, connector_ ? connector_->Clone() : nullptr,
-          !delegate_ /* is_background_mode */,
-          base::ThreadTaskRunnerHandle::Get()));
+      base::BindOnce(&BeginResourceDownload, std::move(params),
+                     std::move(request), std::move(pending_url_loader_factory),
+                     url_security_policy_, is_new_download,
+                     weak_factory_.GetWeakPtr(), site_url, tab_url,
+                     tab_referrer_url, std::move(wake_lock_provider),
+                     !delegate_ /* is_background_mode */,
+                     base::ThreadTaskRunnerHandle::Get()));
 }
 
 void InProgressDownloadManager::InterceptDownloadFromNavigation(
@@ -326,6 +332,12 @@ void InProgressDownloadManager::InterceptDownloadFromNavigation(
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<network::PendingSharedURLLoaderFactory>
         pending_url_loader_factory) {
+  mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider;
+  if (wake_lock_provider_binder_) {
+    wake_lock_provider_binder_.Run(
+        wake_lock_provider.InitWithNewPipeAndPassReceiver());
+  }
+
   GetIOTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -335,8 +347,7 @@ void InProgressDownloadManager::InterceptDownloadFromNavigation(
           std::move(cert_status), std::move(response_head),
           std::move(response_body), std::move(url_loader_client_endpoints),
           std::move(pending_url_loader_factory), url_security_policy_,
-          connector_ ? connector_->Clone() : nullptr,
-          base::ThreadTaskRunnerHandle::Get()));
+          std::move(wake_lock_provider), base::ThreadTaskRunnerHandle::Get()));
 }
 
 void InProgressDownloadManager::Initialize(

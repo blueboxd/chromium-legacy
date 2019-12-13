@@ -107,7 +107,7 @@ Polymer({
    * @private
    */
   onSearchChanged_: function(e) {
-    if (e.detail != this.searchTerm_) {
+    if (e.detail !== this.searchTerm_) {
       this.dispatch(setSearchTerm(e.detail));
     }
   },

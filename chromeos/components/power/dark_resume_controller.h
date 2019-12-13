@@ -13,11 +13,11 @@
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 namespace system {
@@ -49,7 +49,8 @@ class COMPONENT_EXPORT(CHROMEOS_POWER) DarkResumeController
     : public chromeos::PowerManagerClient::Observer,
       public device::mojom::WakeLockObserver {
  public:
-  explicit DarkResumeController(service_manager::Connector* connector);
+  explicit DarkResumeController(
+      mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider);
   ~DarkResumeController() override;
 
   // Time after a dark resume when wake lock count is checked and a decision is
@@ -95,9 +96,6 @@ class COMPONENT_EXPORT(CHROMEOS_POWER) DarkResumeController
 
   // Used for acquiring, releasing and observing wake locks.
   mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider_;
-
-  // Not owned by this instance.
-  service_manager::Connector* const connector_;
 
   // Used when system is ready to suspend after a DarkSupendImminent i.e.
   // after a dark resume.

@@ -8,6 +8,7 @@
 #include "base/ios/ios_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_utils.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
@@ -27,8 +28,16 @@
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::BookmarkHomeDoneButton;
+using chrome_test_util::BookmarksSaveEditDoneButton;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
+using chrome_test_util::ContextBarCenterButtonWithLabel;
+using chrome_test_util::ContextBarLeadingButtonWithLabel;
+using chrome_test_util::ContextBarTrailingButtonWithLabel;
+using chrome_test_util::NavigateBackButtonTo;
 using chrome_test_util::OmniboxText;
+using chrome_test_util::StarButton;
+using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 // Bookmark integration tests for Chrome.
 @interface BookmarksTestCase : ChromeTestCase
@@ -148,8 +157,8 @@ using chrome_test_util::OmniboxText;
 // are saved to the bookmark only when saving the results.
 - (void)testMoveDoesSaveOnSave {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Invoke Edit through long press.
   [[EarlGrey
@@ -164,7 +173,7 @@ using chrome_test_util::OmniboxText;
       performAction:grey_tap()];
 
   // Create a new folder.
-  [BookmarkEarlGreyUtils addFolderWithName:nil];
+  [BookmarkEarlGreyUI addFolderWithName:nil];
 
   // Verify that the editor is present.  Uses notNil() instead of
   // sufficientlyVisible() because the large title in the navigation bar causes
@@ -198,7 +207,7 @@ using chrome_test_util::OmniboxText;
 // shows only a snackbar.
 - (void)testKeyboardCommandsRegistered_AddBookmark {
   // Add the bookmark.
-  [BookmarkEarlGreyUtils starCurrentTab];
+  [BookmarkEarlGreyUI starCurrentTab];
   GREYAssertTrue([ChromeEarlGrey registeredKeyCommandCount] > 0,
                  @"Some keyboard commands are registered.");
 }
@@ -207,8 +216,8 @@ using chrome_test_util::OmniboxText;
 // the edit screen is presented modally.
 - (void)testKeyboardCommandsNotRegistered_EditBookmark {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Select single URL.
   [[EarlGrey
@@ -255,8 +264,8 @@ using chrome_test_util::OmniboxText;
   }
 
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Make sure Mobile Bookmarks is not present. Also check the button Class to
   // avoid matching the "back" NavigationBar button.
@@ -289,8 +298,8 @@ using chrome_test_util::OmniboxText;
 // Tests that the bookmark context bar is shown in MobileBookmarks.
 - (void)testBookmarkContextBarShown {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Verify the context bar is shown.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -309,8 +318,8 @@ using chrome_test_util::OmniboxText;
 
 - (void)testBookmarkContextBarInSingleSelectionModes {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Verify the context bar is shown.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -325,23 +334,23 @@ using chrome_test_util::OmniboxText;
 
   // Verify context bar shows disabled "Delete" disabled "More" enabled
   // "Cancel".
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarDeleteString])]
       assertWithMatcher:grey_allOf(grey_notNil(),
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitNotEnabled),
                                    nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarMoreString])]
       assertWithMatcher:grey_allOf(grey_notNil(),
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitNotEnabled),
                                    nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarCancelString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarCancelString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Select single URL.
@@ -350,17 +359,17 @@ using chrome_test_util::OmniboxText;
       performAction:grey_tap()];
 
   // Verify context bar shows enabled "Delete" enabled "More" enabled "Cancel".
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarDeleteString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarMoreString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarCancelString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarCancelString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Unselect all.
@@ -370,23 +379,23 @@ using chrome_test_util::OmniboxText;
 
   // Verify context bar shows disabled "Delete" disabled "More" enabled
   // "Cancel".
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarDeleteString])]
       assertWithMatcher:grey_allOf(grey_notNil(),
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitNotEnabled),
                                    nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarMoreString])]
       assertWithMatcher:grey_allOf(grey_notNil(),
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitNotEnabled),
                                    nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarCancelString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarCancelString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Select single Folder.
@@ -395,17 +404,17 @@ using chrome_test_util::OmniboxText;
       performAction:grey_tap()];
 
   // Verify context bar shows enabled "Delete" enabled "More" enabled "Cancel".
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarDeleteString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarMoreString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarCancelString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarCancelString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Unselect all.
@@ -415,36 +424,36 @@ using chrome_test_util::OmniboxText;
 
   // Verify context bar shows disabled "Delete" disabled "More" enabled
   // "Cancel".
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarDeleteString])]
       assertWithMatcher:grey_allOf(grey_notNil(),
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitNotEnabled),
                                    nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarMoreString])]
       assertWithMatcher:grey_allOf(grey_notNil(),
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitNotEnabled),
                                    nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarCancelString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarCancelString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Cancel edit mode
-  [BookmarkEarlGreyUtils closeContextBarEditMode];
+  [BookmarkEarlGreyUI closeContextBarEditMode];
 
-  [BookmarkEarlGreyUtils verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                                        newFolderEnabled:YES];
+  [BookmarkEarlGreyUI verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                     newFolderEnabled:YES];
 }
 
 - (void)testBookmarkContextBarInMultipleSelectionModes {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Verify the context bar is shown.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -466,17 +475,17 @@ using chrome_test_util::OmniboxText;
       performAction:grey_tap()];
 
   // Verify context bar shows enabled "Delete" enabled "More" enabled "Cancel".
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarDeleteString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarMoreString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarCancelString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarCancelString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Unselect Folder 1, so that Second URL is selected.
@@ -486,17 +495,17 @@ using chrome_test_util::OmniboxText;
 
   // Verify context bar shows enabled "Delete" enabled "More" enabled
   // "Cancel".
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarDeleteString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarMoreString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarCancelString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarCancelString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Unselect all, but one Folder - Folder 1 is selected.
@@ -509,17 +518,17 @@ using chrome_test_util::OmniboxText;
       performAction:grey_tap()];
 
   // Verify context bar shows enabled "Delete" enabled "More" enabled "Cancel".
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarDeleteString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarMoreString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarCancelString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarCancelString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Unselect all.
@@ -529,37 +538,37 @@ using chrome_test_util::OmniboxText;
 
   // Verify context bar shows disabled "Delete" disabled "More" enabled
   // "Cancel".
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarDeleteString])]
       assertWithMatcher:grey_allOf(grey_notNil(),
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitNotEnabled),
                                    nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarMoreString])]
       assertWithMatcher:grey_allOf(grey_notNil(),
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitNotEnabled),
                                    nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarCancelString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarCancelString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Cancel edit mode
-  [BookmarkEarlGreyUtils closeContextBarEditMode];
+  [BookmarkEarlGreyUI closeContextBarEditMode];
 
-  [BookmarkEarlGreyUtils verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                                        newFolderEnabled:YES];
+  [BookmarkEarlGreyUI verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                     newFolderEnabled:YES];
 }
 
 // Tests when total height of bookmarks exceeds screen height.
 - (void)testBookmarksExceedsScreenHeight {
   [BookmarkEarlGreyUtils setupBookmarksWhichExceedsScreenHeight];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Verify bottom URL is not visible before scrolling to bottom (make sure
   // setupBookmarksWhichExceedsScreenHeight works as expected).
@@ -573,9 +582,9 @@ using chrome_test_util::OmniboxText;
   // Test new folder could be created.  This verifies bookmarks scrolled to
   // bottom successfully for folder name editng.
   NSString* newFolderTitle = @"New Folder 1";
-  [BookmarkEarlGreyUtils createNewBookmarkFolderWithFolderTitle:newFolderTitle
-                                                    pressReturn:YES];
-  [BookmarkEarlGreyUtils verifyFolderCreatedWithTitle:newFolderTitle];
+  [BookmarkEarlGreyUI createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                 pressReturn:YES];
+  [BookmarkEarlGreyUI verifyFolderCreatedWithTitle:newFolderTitle];
 }
 
 // TODO(crbug.com/801453): Folder name is not commited as expected in this test.
@@ -587,13 +596,13 @@ using chrome_test_util::OmniboxText;
     EARL_GREY_TEST_SKIPPED(@"Test not supported on iPhone");
   }
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Create a new folder and type "New Folder 1" without pressing return.
   NSString* newFolderTitle = @"New Folder 1";
-  [BookmarkEarlGreyUtils createNewBookmarkFolderWithFolderTitle:newFolderTitle
-                                                    pressReturn:NO];
+  [BookmarkEarlGreyUI createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                 pressReturn:NO];
 
   // Tap on the "hide keyboard" button.
   id<GREYMatcher> hideKeyboard = grey_accessibilityLabel(@"Hide keyboard");
@@ -606,20 +615,20 @@ using chrome_test_util::OmniboxText;
   // Verify the empty background appears. (If "New Folder 1" is commited,
   // tapping on it will enter it and see a empty background.  Instead of
   // re-editing it (crbug.com/794155)).
-  [BookmarkEarlGreyUtils verifyEmptyBackgroundAppears];
+  [BookmarkEarlGreyUI verifyEmptyBackgroundAppears];
 }
 
 - (void)testEmptyBackgroundAndSelectButton {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Enter Folder 1.1 (which is empty)
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1.1")]
       performAction:grey_tap()];
 
   // Verify the empty background appears.
-  [BookmarkEarlGreyUtils verifyEmptyBackgroundAppears];
+  [BookmarkEarlGreyUI verifyEmptyBackgroundAppears];
 
   // Come back to Mobile Bookmarks.
   [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Mobile Bookmarks")]
@@ -644,27 +653,27 @@ using chrome_test_util::OmniboxText;
       performAction:grey_tap()];
 
   // Tap delete on context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarDeleteString])]
       performAction:grey_tap()];
 
   // Wait for Undo toast to go away from screen.
-  [BookmarkEarlGreyUtils waitForUndoToastToGoAway];
+  [BookmarkEarlGreyUI waitForUndoToastToGoAway];
 
   // Verify edit mode is close automatically (context bar switched back to
   // default state) and select button is disabled.
-  [BookmarkEarlGreyUtils verifyContextBarInDefaultStateWithSelectEnabled:NO
-                                                        newFolderEnabled:YES];
+  [BookmarkEarlGreyUI verifyContextBarInDefaultStateWithSelectEnabled:NO
+                                                     newFolderEnabled:YES];
 
   // Verify the empty background appears.
-  [BookmarkEarlGreyUtils verifyEmptyBackgroundAppears];
+  [BookmarkEarlGreyUI verifyEmptyBackgroundAppears];
 }
 
 - (void)testCachePositionIsRecreated {
   [BookmarkEarlGreyUtils setupBookmarksWhichExceedsScreenHeight];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Select Folder 1.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
@@ -676,7 +685,7 @@ using chrome_test_util::OmniboxText;
       assertWithMatcher:grey_notVisible()];
 
   // Scroll to the bottom so that Bottom 1 is visible.
-  [BookmarkEarlGreyUtils scrollToBottom];
+  [BookmarkEarlGreyUI scrollToBottom];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Bottom 1")]
       assertWithMatcher:grey_sufficientlyVisible()];
 
@@ -685,7 +694,7 @@ using chrome_test_util::OmniboxText;
       performAction:grey_tap()];
 
   // Reopen bookmarks.
-  [BookmarkEarlGreyUtils openBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
 
   // Ensure the Bottom 1 of Folder 1 is visible.  That means both folder and
   // scroll position are restored successfully.
@@ -697,8 +706,8 @@ using chrome_test_util::OmniboxText;
 // Verify root node is opened when cache position is deleted.
 - (void)testCachePositionIsResetWhenNodeIsDeleted {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Select Folder 1.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
@@ -716,19 +725,19 @@ using chrome_test_util::OmniboxText;
   [BookmarkEarlGreyUtils removeBookmarkWithTitle:@"Folder 2"];
 
   // Reopen bookmarks.
-  [BookmarkEarlGreyUtils openBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
 
   // Ensure the root node is opened, by verifying Mobile Bookmarks is seen in a
   // table cell.
-  [BookmarkEarlGreyUtils verifyBookmarkFolderIsSeen:@"Mobile Bookmarks"];
+  [BookmarkEarlGreyUI verifyBookmarkFolderIsSeen:@"Mobile Bookmarks"];
 }
 
 // Verify root node is opened when cache position is a permanent node and is
 // empty.
 - (void)testCachePositionIsResetWhenNodeIsPermanentAndEmpty {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Close bookmarks, it will store Mobile Bookmarks as the cache position.
   [[EarlGrey selectElementWithMatcher:BookmarkHomeDoneButton()]
@@ -742,17 +751,17 @@ using chrome_test_util::OmniboxText;
   [BookmarkEarlGreyUtils removeBookmarkWithTitle:@"First URL"];
 
   // Reopen bookmarks.
-  [BookmarkEarlGreyUtils openBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
 
   // Ensure the root node is opened, by verifying Mobile Bookmarks is seen in a
   // table cell.
-  [BookmarkEarlGreyUtils verifyBookmarkFolderIsSeen:@"Mobile Bookmarks"];
+  [BookmarkEarlGreyUI verifyBookmarkFolderIsSeen:@"Mobile Bookmarks"];
 }
 
 - (void)testCachePositionIsRecreatedWhenNodeIsMoved {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Select Folder 1.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
@@ -775,14 +784,14 @@ using chrome_test_util::OmniboxText;
                              toFolderWithTitle:@"Folder 1"];
 
   // Reopen bookmarks.
-  [BookmarkEarlGreyUtils openBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
 
   // Go back 1 level to Folder 1.
   [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Folder 1")]
       performAction:grey_tap()];
 
   // Ensure we are at Folder 1, by verifying folders at this level.
-  [BookmarkEarlGreyUtils verifyBookmarkFolderIsSeen:@"Folder 2"];
+  [BookmarkEarlGreyUI verifyBookmarkFolderIsSeen:@"Folder 2"];
 }
 
 // Tests that chrome://bookmarks is disabled.
@@ -808,7 +817,7 @@ using chrome_test_util::OmniboxText;
   }
 
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
 
   // Check that the TableView is presented.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(

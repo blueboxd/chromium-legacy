@@ -21,23 +21,23 @@
 @interface AppShimMenuController : NSObject {
  @private
   // The extension id of the currently focused packaged app.
-  std::string appId_;
+  std::string _appId;
   // Items that need a doppelganger.
-  base::scoped_nsobject<DoppelgangerMenuItem> aboutDoppelganger_;
-  base::scoped_nsobject<DoppelgangerMenuItem> hideDoppelganger_;
-  base::scoped_nsobject<DoppelgangerMenuItem> quitDoppelganger_;
-  base::scoped_nsobject<DoppelgangerMenuItem> newDoppelganger_;
-  base::scoped_nsobject<DoppelgangerMenuItem> openDoppelganger_;
-  base::scoped_nsobject<DoppelgangerMenuItem> closeWindowDoppelganger_;
-  base::scoped_nsobject<DoppelgangerMenuItem> allToFrontDoppelganger_;
+  base::scoped_nsobject<DoppelgangerMenuItem> _aboutDoppelganger;
+  base::scoped_nsobject<DoppelgangerMenuItem> _hideDoppelganger;
+  base::scoped_nsobject<DoppelgangerMenuItem> _quitDoppelganger;
+  base::scoped_nsobject<DoppelgangerMenuItem> _newDoppelganger;
+  base::scoped_nsobject<DoppelgangerMenuItem> _openDoppelganger;
+  base::scoped_nsobject<DoppelgangerMenuItem> _closeWindowDoppelganger;
+  base::scoped_nsobject<DoppelgangerMenuItem> _allToFrontDoppelganger;
   // Menu items for the currently focused packaged app.
-  base::scoped_nsobject<NSMenuItem> appMenuItem_;
-  base::scoped_nsobject<NSMenuItem> fileMenuItem_;
-  base::scoped_nsobject<NSMenuItem> editMenuItem_;
-  base::scoped_nsobject<NSMenuItem> windowMenuItem_;
+  base::scoped_nsobject<NSMenuItem> _appMenuItem;
+  base::scoped_nsobject<NSMenuItem> _fileMenuItem;
+  base::scoped_nsobject<NSMenuItem> _editMenuItem;
+  base::scoped_nsobject<NSMenuItem> _windowMenuItem;
   // Additional menu items for hosted apps.
-  base::scoped_nsobject<NSMenuItem> viewMenuItem_;
-  base::scoped_nsobject<NSMenuItem> historyMenuItem_;
+  base::scoped_nsobject<NSMenuItem> _viewMenuItem;
+  base::scoped_nsobject<NSMenuItem> _historyMenuItem;
 }
 
 @end

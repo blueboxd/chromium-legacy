@@ -13,14 +13,12 @@
 #include "chrome/common/cast_messages.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/device_service.h"
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/net/udp_transport_impl.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace {
 
@@ -107,12 +105,10 @@ class RtcpClient : public media::cast::RtcpObserver {
   DISALLOW_COPY_AND_ASSIGN(RtcpClient);
 };
 
-void CastBindConnectorReceiver(
-    mojo::PendingReceiver<service_manager::mojom::Connector>
-        connector_receiver) {
+void BindWakeLockProviderOnUIThread(
+    mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::GetSystemConnector()->BindConnectorReceiver(
-      std::move(connector_receiver));
+  content::GetDeviceService().BindWakeLockProvider(std::move(receiver));
 }
 
 }  // namespace
@@ -401,15 +397,11 @@ device::mojom::WakeLock* CastTransportHostFilter::GetWakeLock() {
   if (wake_lock_)
     return wake_lock_.get();
 
-  mojo::PendingReceiver<service_manager::mojom::Connector> connector_receiver;
-  auto connector = service_manager::Connector::Create(&connector_receiver);
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&CastBindConnectorReceiver,
-                                std::move(connector_receiver)));
-
   mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider;
-  connector->Connect(device::mojom::kServiceName,
-                     wake_lock_provider.BindNewPipeAndPassReceiver());
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&BindWakeLockProviderOnUIThread,
+                     wake_lock_provider.BindNewPipeAndPassReceiver()));
   wake_lock_provider->GetWakeLockWithoutContext(
       device::mojom::WakeLockType::kPreventAppSuspension,
       device::mojom::WakeLockReason::kOther,

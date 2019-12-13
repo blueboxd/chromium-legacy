@@ -14,17 +14,15 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/download/android/local_media_data_source_factory.h"
 #include "content/public/browser/android/gpu_video_accelerator_factories_provider.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/media_service.h"
 #include "media/base/overlay_info.h"
 #include "media/base/video_thumbnail_decoder.h"
 #include "media/mojo/clients/mojo_video_decoder.h"
-#include "media/mojo/mojom/constants.mojom.h"
 #include "media/mojo/mojom/media_service.mojom.h"
 #include "media/mojo/services/media_interface_provider.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -269,11 +267,7 @@ DownloadMediaParser::GetMediaInterfaceFactory() {
     mojo::PendingRemote<service_manager::mojom::InterfaceProvider> interfaces;
     media_interface_provider_ = std::make_unique<media::MediaInterfaceProvider>(
         interfaces.InitWithNewPipeAndPassReceiver());
-    mojo::Remote<media::mojom::MediaService> media_service;
-    content::GetSystemConnector()->BindInterface(
-        media::mojom::kMediaServiceName,
-        media_service.BindNewPipeAndPassReceiver());
-    media_service->CreateInterfaceFactory(
+    content::GetMediaService().CreateInterfaceFactory(
         media_interface_factory_.BindNewPipeAndPassReceiver(),
         std::move(interfaces));
     media_interface_factory_.set_disconnect_handler(

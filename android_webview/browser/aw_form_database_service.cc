@@ -47,9 +47,8 @@ AwFormDatabaseService::AwFormDatabaseService(const base::FilePath path)
   web_database_->LoadDatabase();
 
   autofill_data_ = new autofill::AutofillWebDataService(
-      web_database_, ui_task_runner, db_task_runner,
-      base::Bind(&DatabaseErrorCallback));
-  autofill_data_->Init();
+      web_database_, ui_task_runner, db_task_runner);
+  autofill_data_->Init(base::BindOnce(&DatabaseErrorCallback));
 }
 
 AwFormDatabaseService::~AwFormDatabaseService() {

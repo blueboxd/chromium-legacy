@@ -1123,7 +1123,7 @@
 <translation id="6446163441502663861">Kahu (obálka)</translation>
 <translation id="6446608382365791566">Pridanie ďalších informácií</translation>
 <translation id="6447842834002726250">Súbory cookie</translation>
-<translation id="644931407731409778">{COUNT,plural, =1{1 stranový}few{#-stranový}many{#-stranový}other{#-stranový}} dokument PDF</translation>
+<translation id="644931407731409778">{COUNT,plural, =1{1-stranový}few{#-stranový}many{#-stranový}other{#-stranový}} dokument PDF</translation>
 <translation id="6451458296329894277">Potvrdiť opakované odoslanie formulára</translation>
 <translation id="6457206614190510200">Sedlová väzba</translation>
 <translation id="6465306955648956876">Spravovať heslá…</translation>

@@ -2012,12 +2012,15 @@ void PDFiumEngine::HandleAccessibilityAction(
     }
     case PP_PdfAccessibilityAction::PP_PDF_DO_DEFAULT_ACTION: {
       if (PageIndexInBounds(action_data.page_index)) {
-        PDFiumPage::LinkTarget target;
-        PDFiumPage::Area area =
-            pages_[action_data.page_index]->GetLinkTargetAtIndex(
-                action_data.link_index, &target);
-        NavigateToLinkDestination(area, target,
-                                  WindowOpenDisposition::CURRENT_TAB);
+        if (action_data.annotation_type ==
+            PP_PdfAccessibilityAnnotationType::PP_PDF_LINK) {
+          PDFiumPage::LinkTarget target;
+          PDFiumPage::Area area =
+              pages_[action_data.page_index]->GetLinkTargetAtIndex(
+                  action_data.annotation_index, &target);
+          NavigateToLinkDestination(area, target,
+                                    WindowOpenDisposition::CURRENT_TAB);
+        }
       }
       break;
     }
@@ -3507,8 +3510,9 @@ bool PDFiumEngine::IsPointInEditableFormTextArea(FPDF_PAGE page,
            form_type == FPDF_FORMFIELD_XFA_COMBOBOX;
 #endif  // defined(PDF_ENABLE_XFA)
 
+  const FS_POINTF point = {page_x, page_y};
   ScopedFPDFAnnotation annot(
-      FPDFAnnot_GetFormFieldAtPoint(form(), page, page_x, page_y));
+      FPDFAnnot_GetFormFieldAtPoint(form(), page, &point));
   if (!annot)
     return false;
 

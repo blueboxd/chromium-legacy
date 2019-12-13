@@ -50,7 +50,6 @@ if (enable_vr) {
       "//mojo/public/cpp/bindings",
       "//services/device/public/cpp/generic_sensor",
       "//services/metrics/public/cpp:ukm_builders",
-      "//services/service_manager/public/cpp",
       "//ui/display",
       "//ui/gfx",
       "//ui/gfx/mojom",
@@ -89,7 +88,7 @@ if (enable_vr) {
 
     if (enable_openvr) {
       if (!is_component_build) {
-        defines += ["OPENVR_BUILD_STATIC"]
+        defines += [ "OPENVR_BUILD_STATIC" ]
       }
 
       deps += [ "//third_party/openvr:openvr" ]

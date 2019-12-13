@@ -15,16 +15,14 @@
 #include "components/arc/mojom/power.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "ui/display/manager/display_configurator.h"
 
 namespace content {
 class BrowserContext;
 }  // namespace content
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 namespace arc {
 
@@ -45,10 +43,6 @@ class ArcPowerBridge : public KeyedService,
   ArcPowerBridge(content::BrowserContext* context,
                  ArcBridgeService* bridge_service);
   ~ArcPowerBridge() override;
-
-  void set_connector_for_test(service_manager::Connector* connector) {
-    connector_for_test_ = connector;
-  }
 
   // If |notify_brightness_timer_| is set, runs it and returns true. Returns
   // false otherwise.
@@ -78,6 +72,11 @@ class ArcPowerBridge : public KeyedService,
   void IsDisplayOn(IsDisplayOnCallback callback) override;
   void OnScreenBrightnessUpdateRequest(double percent) override;
 
+  void SetWakeLockProviderForTesting(
+      mojo::Remote<device::mojom::WakeLockProvider> provider) {
+    wake_lock_provider_ = std::move(provider);
+  }
+
  private:
   class WakeLockRequestor;
 
@@ -91,8 +90,7 @@ class ArcPowerBridge : public KeyedService,
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
-  // If non-null, used instead of the process-wide connector to fetch services.
-  service_manager::Connector* connector_for_test_ = nullptr;
+  mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider_;
 
   // Used to track Android wake lock requests and acquire and release device
   // service wake locks as needed.

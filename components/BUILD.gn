@@ -675,6 +675,7 @@ if (!is_ios && !is_fuchsia) {
       "$root_out_dir/components_tests_resources.pak",
       "$root_out_dir/ui_test.pak",
       "//components/subresource_filter/core/common/perftests/data/",
+      "//third_party/subresource-filter-ruleset/data/",
     ]
 
     if (is_android) {

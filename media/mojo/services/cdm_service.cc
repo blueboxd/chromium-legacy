@@ -13,7 +13,6 @@
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_MACOSX)
 #include <vector>
@@ -24,11 +23,6 @@ namespace media {
 
 namespace {
 
-using service_manager::ServiceKeepaliveRef;
-
-constexpr base::TimeDelta kKeepaliveIdleTimeout =
-    base::TimeDelta::FromSeconds(5);
-
 // Implementation of mojom::CdmFactory that creates and hosts MojoCdmServices
 // which then host CDMs created by the media::CdmFactory provided by the
 // CdmService::Client.
@@ -36,12 +30,10 @@ constexpr base::TimeDelta kKeepaliveIdleTimeout =
 // Lifetime Note:
 // 1. CdmFactoryImpl instances are owned by a DeferredDestroyUniqueReceiverSet
 //    directly, which is owned by CdmService.
-// 2. Note that CdmFactoryImpl also holds a ServiceKeepaliveRef tied to the
-//    CdmService.
-// 3. CdmFactoryImpl is destroyed in any of the following two cases:
+// 2. CdmFactoryImpl is destroyed in any of the following two cases:
 //   - CdmService is destroyed. Because of (2) this should not happen except for
 //     during browser shutdown, when the Cdservice could be destroyed directly,
-//     ignoring any outstanding ServiceKeepaliveRefs.
+//     ignoring any outstanding interface connections.
 //   - mojo::CdmFactory disconnection happens, AND CdmFactoryImpl doesn't own
 //     any CDMs (|cdm_receivers_| is empty). This is to prevent destroying the
 //     CDMs too early (e.g. during page navigation) which could cause errors
@@ -51,11 +43,8 @@ class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
  public:
   CdmFactoryImpl(
       CdmService::Client* client,
-      mojo::PendingRemote<service_manager::mojom::InterfaceProvider> interfaces,
-      std::unique_ptr<ServiceKeepaliveRef> keepalive_ref)
-      : client_(client),
-        interfaces_(std::move(interfaces)),
-        keepalive_ref_(std::move(keepalive_ref)) {
+      mojo::PendingRemote<service_manager::mojom::InterfaceProvider> interfaces)
+      : client_(client), interfaces_(std::move(interfaces)) {
     DVLOG(1) << __func__;
 
     // base::Unretained is safe because |cdm_receivers_| is owned by |this|. If
@@ -112,7 +101,6 @@ class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
   CdmService::Client* client_;
   mojo::Remote<service_manager::mojom::InterfaceProvider> interfaces_;
   mojo::UniqueReceiverSet<mojom::ContentDecryptionModule> cdm_receivers_;
-  std::unique_ptr<ServiceKeepaliveRef> keepalive_ref_;
   std::unique_ptr<media::CdmFactory> cdm_factory_;
   base::OnceClosure destroy_cb_;
 
@@ -121,51 +109,15 @@ class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
 
 }  // namespace
 
-CdmService::CdmService(
-    std::unique_ptr<Client> client,
-    mojo::PendingReceiver<service_manager::mojom::Service> receiver)
-    : service_binding_(this, std::move(receiver)),
-      keepalive_(std::make_unique<service_manager::ServiceKeepalive>(
-          &service_binding_,
-          kKeepaliveIdleTimeout)),
-      client_(std::move(client)) {
+CdmService::CdmService(std::unique_ptr<Client> client,
+                       mojo::PendingReceiver<mojom::CdmService> receiver)
+    : receiver_(this, std::move(receiver)), client_(std::move(client)) {
   DVLOG(1) << __func__;
   DCHECK(client_);
-  registry_.AddInterface<mojom::CdmService>(
-      base::BindRepeating(&CdmService::Create, base::Unretained(this)));
 }
 
 CdmService::~CdmService() {
   DVLOG(1) << __func__;
-}
-
-void CdmService::SetServiceReleaseDelayForTesting(base::TimeDelta delay) {
-  DCHECK(keepalive_->HasNoRefs());
-  keepalive_ = std::make_unique<service_manager::ServiceKeepalive>(
-      &service_binding_, delay);
-}
-
-void CdmService::OnStart() {
-  DVLOG(1) << __func__;
-}
-
-void CdmService::OnBindInterface(
-    const service_manager::BindSourceInfo& source_info,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  DVLOG(1) << __func__ << ": interface_name = " << interface_name;
-
-  registry_.BindInterface(interface_name, std::move(interface_pipe));
-}
-
-void CdmService::OnDisconnected() {
-  cdm_factory_receivers_.CloseAllReceivers();
-  client_.reset();
-  Terminate();
-}
-
-void CdmService::Create(mojo::PendingReceiver<mojom::CdmService> receiver) {
-  receivers_.Add(this, std::move(receiver));
 }
 
 #if defined(OS_MACOSX)
@@ -238,8 +190,8 @@ void CdmService::CreateCdmFactory(
     return;
 
   cdm_factory_receivers_.AddReceiver(
-      std::make_unique<CdmFactoryImpl>(
-          client_.get(), std::move(host_interfaces), keepalive_->CreateRef()),
+      std::make_unique<CdmFactoryImpl>(client_.get(),
+                                       std::move(host_interfaces)),
       std::move(receiver));
 }
 

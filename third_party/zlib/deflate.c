@@ -51,19 +51,12 @@
 #include <assert.h>
 #include "deflate.h"
 #include "x86.h"
-
-#if defined(CRC32_SIMD_SSE42_PCLMUL)
-#include <smmintrin.h>
-#endif
+#include "contrib/optimizations/insert_string.h"
 
 #if (defined(__ARM_NEON__) || defined(__ARM_NEON))
 #include "contrib/optimizations/slide_hash_neon.h"
 #endif
-/* We need crypto extension crc32 to implement optimized hash in
- * insert_string.
- */
 #if defined(CRC32_ARMV8_CRC32)
-#include "arm_features.h"
 #include "crc32_simd.h"
 #endif
 
@@ -121,38 +114,6 @@ extern void ZLIB_INTERNAL crc_reset(deflate_state *const s);
 extern void ZLIB_INTERNAL crc_finalize(deflate_state *const s);
 extern void ZLIB_INTERNAL copy_with_crc(z_streamp strm, Bytef *dst, long size);
 
-#ifdef _MSC_VER
-#define INLINE __inline
-#else
-#define INLINE inline
-#endif
-
-/* Intel optimized insert_string. */
-#if defined(CRC32_SIMD_SSE42_PCLMUL)
-
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((target("sse4.2")))
-#endif
-local INLINE Pos insert_string_sse(deflate_state *const s, const Pos str)
-{
-    Pos ret;
-    unsigned *ip, val, h = 0;
-
-    ip = (unsigned *)&s->window[str];
-    val = *ip;
-
-    if (s->level >= 6)
-        val &= 0xFFFFFF;
-
-    h = _mm_crc32_u32(h, val);
-
-    ret = s->head[h & s->hash_mask];
-    s->head[h & s->hash_mask] = str;
-    s->prev[str & s->w_mask] = ret;
-    return ret;
-}
-#endif
-
 /* ===========================================================================
  * Local data
  */
@@ -206,62 +167,6 @@ local const config configuration_table[10] = {
 
 /* rank Z_BLOCK between Z_NO_FLUSH and Z_PARTIAL_FLUSH */
 #define RANK(f) (((f) * 2) - ((f) > 4 ? 9 : 0))
-
-/* ===========================================================================
- * Update a hash value with the given input byte
- * IN  assertion: all calls to UPDATE_HASH are made with consecutive input
- *    characters, so that a running hash key can be computed from the previous
- *    key instead of complete recalculation each time.
- */
-#define UPDATE_HASH(s,h,c) (h = (((h)<<s->hash_shift) ^ (c)) & s->hash_mask)
-
-/* ===========================================================================
- * Insert string str in the dictionary and set match_head to the previous head
- * of the hash chain (the most recent string with same hash key). Return
- * the previous length of the hash chain.
- * If this file is compiled with -DFASTEST, the compression level is forced
- * to 1, and no hash chains are maintained.
- * IN  assertion: all calls to INSERT_STRING are made with consecutive input
- *    characters and the first MIN_MATCH bytes of str are valid (except for
- *    the last MIN_MATCH-1 bytes of the input file).
- */
-local INLINE Pos insert_string_c(deflate_state *const s, const Pos str)
-{
-    Pos ret;
-
-    UPDATE_HASH(s, s->ins_h, s->window[(str) + (MIN_MATCH-1)]);
-#ifdef FASTEST
-    ret = s->head[s->ins_h];
-#else
-    ret = s->prev[str & s->w_mask] = s->head[s->ins_h];
-#endif
-    s->head[s->ins_h] = str;
-
-    return ret;
-}
-
-local INLINE Pos insert_string(deflate_state *const s, const Pos str)
-{
-/* String dictionary insertion: faster symbol hashing has a positive impact
- * on data compression speeds (around 20% on Intel and 36% on ARM Cortex big
- * cores).
- * A misfeature is that the generated compressed output will differ from
- * vanilla zlib (even though it is still valid 'DEFLATE-d' content).
- *
- * We offer here a way to disable the optimization if there is the expectation
- * that compressed content should match when compared to vanilla zlib.
- */
-#if !defined(CHROMIUM_ZLIB_NO_CASTAGNOLI)
-#if defined(CRC32_ARMV8_CRC32)
-    if (arm_cpu_enable_crc32)
-        return insert_string_arm(s, str);
-#elif defined(CRC32_SIMD_SSE42_PCLMUL)
-    if (x86_cpu_enable_simd)
-        return insert_string_sse(s, str);
-#endif
-#endif
-    return insert_string_c(s, str);
-}
 
 /* ===========================================================================
  * Initialize the hash table (avoiding 64K overflow for 16 bit systems).

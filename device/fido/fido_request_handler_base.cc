@@ -16,7 +16,6 @@
 #include "device/fido/ble_adapter_manager.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_discovery_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_WIN)
 #include "device/fido/win/authenticator.h"
@@ -46,24 +45,22 @@ FidoRequestHandlerBase::Observer::~Observer() = default;
 // FidoRequestHandlerBase -----------------------------------------------------
 
 FidoRequestHandlerBase::FidoRequestHandlerBase(
-    service_manager::Connector* connector,
     FidoDiscoveryFactory* fido_discovery_factory,
     const base::flat_set<FidoTransportProtocol>& available_transports) {
 #if defined(OS_WIN)
-  InitDiscoveriesWin(fido_discovery_factory, connector, available_transports);
+  InitDiscoveriesWin(fido_discovery_factory, available_transports);
 #else
-  InitDiscoveries(fido_discovery_factory, connector, available_transports);
+  InitDiscoveries(fido_discovery_factory, available_transports);
 #endif  // !defined(OS_WIN)
 }
 
 void FidoRequestHandlerBase::InitDiscoveries(
     FidoDiscoveryFactory* fido_discovery_factory,
-    service_manager::Connector* connector,
     const base::flat_set<FidoTransportProtocol>& available_transports) {
   transport_availability_info_.available_transports = available_transports;
   for (const auto transport : available_transports) {
     std::unique_ptr<FidoDiscoveryBase> discovery =
-        fido_discovery_factory->Create(transport, connector);
+        fido_discovery_factory->Create(transport);
     if (discovery == nullptr) {
       // This can occur in tests when a ScopedVirtualU2fDevice is in effect and
       // HID transports are not configured or when caBLE discovery data isn't
@@ -109,14 +106,13 @@ void FidoRequestHandlerBase::InitDiscoveries(
 #if defined(OS_WIN)
 void FidoRequestHandlerBase::InitDiscoveriesWin(
     FidoDiscoveryFactory* fido_discovery_factory,
-    service_manager::Connector* connector,
     const base::flat_set<FidoTransportProtocol>& available_transports) {
   // Try to instantiate the discovery for proxying requests to the native
   // Windows WebAuthn API; or fall back to using the regular device transport
   // discoveries if the API is unavailable.
   auto discovery = fido_discovery_factory->MaybeCreateWinWebAuthnApiDiscovery();
   if (!discovery) {
-    InitDiscoveries(fido_discovery_factory, connector, available_transports);
+    InitDiscoveries(fido_discovery_factory, available_transports);
     return;
   }
 
@@ -144,7 +140,7 @@ void FidoRequestHandlerBase::InitDiscoveriesWin(
         FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
   }
 
-  InitDiscoveries(fido_discovery_factory, connector, other_transports);
+  InitDiscoveries(fido_discovery_factory, other_transports);
 }
 #endif  // defined(OS_WIN)
 

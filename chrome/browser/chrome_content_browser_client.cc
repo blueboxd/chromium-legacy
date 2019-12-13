@@ -555,11 +555,6 @@
 #endif
 #endif
 
-#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-#include "media/mojo/mojom/constants.mojom.h"           // nogncheck
-#include "media/mojo/services/media_service_factory.h"  // nogncheck
-#endif
-
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_navigation_throttle.h"
 #endif

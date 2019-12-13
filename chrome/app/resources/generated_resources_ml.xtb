@@ -283,6 +283,7 @@
 <translation id="1397500194120344683">യോഗ്യമായ ഉപകരണങ്ങളൊന്നുമില്ല. <ph name="LINK_BEGIN" />കൂടുതലറിയുക<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">വലുതാക്കുക</translation>
 <translation id="1399511500114202393">ഉപയോക്തൃ സർട്ടിഫിക്കറ്റ് പാടില്ല</translation>
+<translation id="1403519882106291341">Google Chrome OS നിബന്ധനകൾ</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (സൂപ്പർവൈസുചെയ്‌തു)</translation>
 <translation id="1405779994569073824">ക്രാഷായി.</translation>
 <translation id="1406500794671479665">സ്ഥിരീകരിക്കുന്നു...</translation>
@@ -2170,7 +2171,6 @@
 <translation id="4036778507053569103">സെർവറിൽ നിന്ന് ഡൗൺലോഡ് ചെയ്‌ത നയം അസാധുവാണ്.</translation>
 <translation id="4037084878352560732">കുതിര</translation>
 <translation id="4037889604535939429">വ്യക്തിയെ എഡിറ്റുചെയ്യുക</translation>
-<translation id="4042264909745389898">Google Chrome OS നിബന്ധനകൾ</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{പേജിൽ നിന്ന് പുറത്തുകടക്കുക}other{പേജുകളിൽ നിന്ന് പുറത്തുകടക്കുക}}</translation>
 <translation id="4044612648082411741">നിങ്ങളുടെ സർട്ടിഫിക്കറ്റ് പാസ്‌വേഡ് നൽകുക</translation>
 <translation id="404493185430269859">ഡിഫോൾട്ട് തിരയൽ യന്ത്രം</translation>

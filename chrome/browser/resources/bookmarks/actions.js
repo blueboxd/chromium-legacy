@@ -107,7 +107,7 @@ export function refreshNodes(nodeMap) {
  * @return {?Action}
  */
 export function selectFolder(id, nodes) {
-  if (nodes && (id == ROOT_NODE_ID || !nodes[id] || nodes[id].url)) {
+  if (nodes && (id === ROOT_NODE_ID || !nodes[id] || nodes[id].url)) {
     console.warn('Tried to select invalid folder: ' + id);
     return null;
   }
@@ -169,9 +169,9 @@ export function selectItem(id, state, config) {
   if (config.range && anchor) {
     const displayedList = getDisplayedList(state);
     const selectedIndex = displayedList.indexOf(id);
-    assert(selectedIndex != -1);
+    assert(selectedIndex !== -1);
     let anchorIndex = displayedList.indexOf(anchor);
-    if (anchorIndex == -1) {
+    if (anchorIndex === -1) {
       anchorIndex = selectedIndex;
     }
 
@@ -256,7 +256,7 @@ export function setSearchResults(ids) {
  * @return {!Action}
  */
 export function setIncognitoAvailability(availability) {
-  assert(availability != IncognitoAvailability.FORCED);
+  assert(availability !== IncognitoAvailability.FORCED);
   return {
     name: 'set-incognito-availability',
     value: availability,

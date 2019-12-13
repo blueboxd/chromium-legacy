@@ -5,14 +5,19 @@
 package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import android.app.Activity;
+import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantAdditionalSectionContainer;
 import org.chromium.chrome.browser.payments.AddressEditor;
+import org.chromium.chrome.browser.payments.AutofillAddress;
+import org.chromium.chrome.browser.payments.AutofillContact;
 import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
 import org.chromium.chrome.browser.payments.BasicCardUtils;
 import org.chromium.chrome.browser.payments.CardEditor;
@@ -87,6 +92,10 @@ class AssistantCollectUserDataBinder
             mGenericUserInterfaceContainer = genericUserInterfaceContainer;
             mDividerTag = dividerTag;
             mActivity = activity;
+        }
+
+        public Context getContext() {
+            return mActivity;
         }
     }
 
@@ -221,8 +230,7 @@ class AssistantCollectUserDataBinder
             }
             view.mPaymentMethodSection.onAvailablePaymentMethodsChanged(availablePaymentMethods);
             return true;
-        } else if (propertyKey == AssistantCollectUserDataModel.AVAILABLE_PROFILES
-                || propertyKey == AssistantCollectUserDataModel.DEFAULT_EMAIL) {
+        } else if (propertyKey == AssistantCollectUserDataModel.AVAILABLE_PROFILES) {
             List<PersonalDataManager.AutofillProfile> autofillProfiles =
                     model.get(AssistantCollectUserDataModel.AVAILABLE_PROFILES);
             if (autofillProfiles == null) {
@@ -232,8 +240,7 @@ class AssistantCollectUserDataBinder
                 view.mContactDetailsSection.onProfilesChanged(autofillProfiles,
                         model.get(AssistantCollectUserDataModel.REQUEST_EMAIL),
                         model.get(AssistantCollectUserDataModel.REQUEST_NAME),
-                        model.get(AssistantCollectUserDataModel.REQUEST_PHONE),
-                        model.get(AssistantCollectUserDataModel.DEFAULT_EMAIL));
+                        model.get(AssistantCollectUserDataModel.REQUEST_PHONE));
             }
             if (model.get(AssistantCollectUserDataModel.REQUEST_PAYMENT)) {
                 view.mPaymentMethodSection.onProfilesChanged(autofillProfiles);
@@ -366,16 +373,40 @@ class AssistantCollectUserDataBinder
     private boolean updateSectionSelectedItem(
             AssistantCollectUserDataModel model, PropertyKey propertyKey, ViewHolder view) {
         if (propertyKey == AssistantCollectUserDataModel.SHIPPING_ADDRESS) {
-            view.mShippingAddressSection.addOrUpdateItem(
-                    model.get(AssistantCollectUserDataModel.SHIPPING_ADDRESS), true);
+            if (model.get(AssistantCollectUserDataModel.REQUEST_SHIPPING_ADDRESS)) {
+                AutofillAddress shippingAddress = getAddressFromProfile(view.getContext(),
+                        model.get(AssistantCollectUserDataModel.SHIPPING_ADDRESS));
+                if (shippingAddress != null) {
+                    view.mShippingAddressSection.addOrUpdateItem(
+                            shippingAddress, /* select= */ true);
+                }
+                // No need to reset selection if null, this will be handled by setItems().
+            }
             return true;
         } else if (propertyKey == AssistantCollectUserDataModel.PAYMENT_METHOD) {
-            view.mPaymentMethodSection.addOrUpdateItem(
-                    model.get(AssistantCollectUserDataModel.PAYMENT_METHOD), true);
+            if (model.get(AssistantCollectUserDataModel.REQUEST_PAYMENT)) {
+                AutofillPaymentInstrument paymentInstrument = getPaymentInstrumentFromPaymentTuple(
+                        model.get(AssistantCollectUserDataModel.WEB_CONTENTS),
+                        model.get(AssistantCollectUserDataModel.PAYMENT_METHOD));
+                if (paymentInstrument != null) {
+                    view.mPaymentMethodSection.addOrUpdateItem(
+                            paymentInstrument, /* select= */ true);
+                }
+                // No need to reset selection if null, this will be handled by setItems().
+            }
             return true;
         } else if (propertyKey == AssistantCollectUserDataModel.CONTACT_DETAILS) {
-            view.mContactDetailsSection.addOrUpdateItem(
-                    model.get(AssistantCollectUserDataModel.CONTACT_DETAILS), true);
+            if (shouldShowContactDetails(model)) {
+                AutofillContact contact = getContactFromProfile(view.getContext(),
+                        model.get(AssistantCollectUserDataModel.CONTACT_DETAILS),
+                        model.get(AssistantCollectUserDataModel.REQUEST_NAME),
+                        model.get(AssistantCollectUserDataModel.REQUEST_PHONE),
+                        model.get(AssistantCollectUserDataModel.REQUEST_EMAIL));
+                if (contact != null) {
+                    view.mContactDetailsSection.addOrUpdateItem(contact, /* select= */ true);
+                }
+                // No need to reset selection if null, this will be handled by setItems().
+            }
             return true;
         } else if (propertyKey == AssistantCollectUserDataModel.TERMS_STATUS) {
             int termsStatus = model.get(AssistantCollectUserDataModel.TERMS_STATUS);
@@ -594,5 +625,42 @@ class AssistantCollectUserDataBinder
         }
 
         return paymentInstruments;
+    }
+
+    @Nullable
+    private AutofillAddress getAddressFromProfile(
+            Context context, @Nullable PersonalDataManager.AutofillProfile profile) {
+        if (profile == null) {
+            return null;
+        }
+        return new AutofillAddress(context, profile);
+    }
+
+    @Nullable
+    private AutofillContact getContactFromProfile(Context context,
+            @Nullable PersonalDataManager.AutofillProfile profile, boolean requestName,
+            boolean requestPhone, boolean requestEmail) {
+        if (profile == null) {
+            return null;
+        }
+        ContactEditor editor = new ContactEditor(requestName, requestPhone, requestEmail, false);
+        String name = profile.getFullName();
+        String phone = profile.getPhoneNumber();
+        String email = profile.getEmailAddress();
+        return new AutofillContact(context, profile, name, phone, email,
+                editor.checkContactCompletionStatus(name, phone, email), requestName, requestPhone,
+                requestEmail);
+    }
+
+    @Nullable
+    private AutofillPaymentInstrument getPaymentInstrumentFromPaymentTuple(
+            @Nullable WebContents webContents,
+            @Nullable AssistantCollectUserDataModel.PaymentTuple paymentTuple) {
+        if (webContents == null || paymentTuple == null) {
+            return null;
+        }
+        return new AutofillPaymentInstrument(webContents, paymentTuple.getCreditCard(),
+                paymentTuple.getBillingAddress(), MethodStrings.BASIC_CARD,
+                /* matchesMerchantCardTypeExactly= */ true);
     }
 }

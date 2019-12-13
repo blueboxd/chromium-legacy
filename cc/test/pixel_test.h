@@ -95,7 +95,6 @@ class PixelTest : public testing::Test {
 
   // For SkiaRenderer.
   viz::TestGpuServiceHolder* gpu_service_holder_ = nullptr;
-  std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
   viz::RendererSettings renderer_settings_;
   gfx::Size device_viewport_size_;

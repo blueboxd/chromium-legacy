@@ -1,15 +1,15 @@
 document
-++group
+++group IsControlElement=false
 ++++button Name='Button'
-++group
+++group IsControlElement=false
 ++++button Name='Button'
-++group
+++group IsControlElement=false
 ++++document
 ++++++document
-++++++++group
+++++++++group IsControlElement=false
 ++++++++++button Name='Ordinary Button'
-++group
+++group IsControlElement=false
 ++++document
 ++++++document
-++++++++group
+++++++++group IsControlElement=false
 ++++++++++button Name='Scrolled Button'

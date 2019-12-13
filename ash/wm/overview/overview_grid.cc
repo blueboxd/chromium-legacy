@@ -183,11 +183,9 @@ class ShutdownAnimationFpsCounterObserver : public OverviewObserver {
 };
 
 // Creates |drop_target_widget_|. It's created when a window or overview item is
-// dragged around, and destroyed when the drag ends. If |animate| is true, then
-// the drop target will fade in.
+// dragged around, and destroyed when the drag ends.
 std::unique_ptr<views::Widget> CreateDropTargetWidget(
-    aura::Window* dragged_window,
-    bool animate) {
+    aura::Window* dragged_window) {
   aura::Window* parent = dragged_window->parent();
   gfx::Rect bounds = dragged_window->bounds();
   ::wm::ConvertRectToScreen(parent, &bounds);
@@ -213,15 +211,6 @@ std::unique_ptr<views::Widget> CreateDropTargetWidget(
   aura::Window* drop_target_window = widget->GetNativeWindow();
   drop_target_window->parent()->StackChildAtBottom(drop_target_window);
   widget->Show();
-
-  if (animate) {
-    widget->SetOpacity(0.f);
-    ScopedOverviewAnimationSettings settings(
-        OVERVIEW_ANIMATION_DROP_TARGET_FADE, drop_target_window);
-    widget->SetOpacity(1.f);
-  } else {
-    widget->SetOpacity(1.f);
-  }
   return widget;
 }
 
@@ -657,8 +646,7 @@ void OverviewGrid::AddDropTargetForDraggingFromOverview(
     OverviewItem* dragged_item) {
   DCHECK_EQ(dragged_item->GetWindow()->GetRootWindow(), root_window_);
   DCHECK(!drop_target_widget_);
-  drop_target_widget_ =
-      CreateDropTargetWidget(dragged_item->GetWindow(), /*animate=*/false);
+  drop_target_widget_ = CreateDropTargetWidget(dragged_item->GetWindow());
   const size_t position = GetOverviewItemIndex(dragged_item) + 1u;
   overview_session_->AddItem(drop_target_widget_->GetNativeWindow(),
                              /*reposition=*/true, /*animate=*/false,
@@ -765,9 +753,15 @@ void OverviewGrid::OnWindowDragStarted(aura::Window* dragged_window,
   DCHECK_EQ(dragged_window->GetRootWindow(), root_window_);
   DCHECK(!drop_target_widget_);
   dragged_window_ = dragged_window;
-  drop_target_widget_ = CreateDropTargetWidget(dragged_window, animate);
-  overview_session_->AddItem(drop_target_widget_->GetNativeWindow(),
-                             /*reposition=*/true, animate);
+  drop_target_widget_ = CreateDropTargetWidget(dragged_window);
+  aura::Window* drop_target_window = drop_target_widget_->GetNativeWindow();
+  if (animate) {
+    drop_target_widget_->SetOpacity(0.f);
+    ScopedOverviewAnimationSettings settings(
+        OVERVIEW_ANIMATION_DROP_TARGET_FADE, drop_target_window);
+    drop_target_widget_->SetOpacity(1.f);
+  }
+  overview_session_->AddItem(drop_target_window, /*reposition=*/true, animate);
 
   // Stack the |dragged_window| at top during drag.
   dragged_window->parent()->StackChildAtTop(dragged_window);

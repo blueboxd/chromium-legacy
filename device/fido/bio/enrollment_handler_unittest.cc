@@ -41,7 +41,6 @@ class BioEnrollmentHandlerTest : public ::testing::Test {
  protected:
   std::unique_ptr<BioEnrollmentHandler> MakeHandler() {
     return std::make_unique<BioEnrollmentHandler>(
-        /*connector=*/nullptr,
         base::flat_set<FidoTransportProtocol>{
             FidoTransportProtocol::kUsbHumanInterfaceDevice},
         ready_callback_.callback(), error_callback_.callback(),

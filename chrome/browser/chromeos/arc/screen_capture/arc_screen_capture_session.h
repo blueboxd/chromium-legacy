@@ -12,7 +12,8 @@
 #include "base/macros.h"
 #include "components/arc/mojom/screen_capture.mojom.h"
 #include "components/viz/common/gl_helper.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/compositor/compositor_animation_observer.h"
 
 class ScreenCaptureNotificationUI;
@@ -39,10 +40,10 @@ namespace arc {
 class ArcScreenCaptureSession : public mojom::ScreenCaptureSession,
                                 public ui::CompositorAnimationObserver {
  public:
-  // Creates a new ScreenCaptureSession and returns the interface pointer for
-  // passing back across a Mojo pipe. This object will be automatically
-  // destructed when the Mojo connection is closed.
-  static mojom::ScreenCaptureSessionPtr Create(
+  // Creates a new ScreenCaptureSession and returns the remote for passing back
+  // across a Mojo pipe. This object will be automatically destructed when the
+  // Mojo connection is closed.
+  static mojo::PendingRemote<mojom::ScreenCaptureSession> Create(
       mojom::ScreenCaptureSessionNotifierPtr notifier,
       const std::string& display_name,
       content::DesktopMediaID desktop_id,
@@ -66,11 +67,12 @@ class ArcScreenCaptureSession : public mojom::ScreenCaptureSession,
                           const gfx::Size& size);
   ~ArcScreenCaptureSession() override;
 
-  // Does additional checks and upon success returns a valid InterfacePtr, null
-  // otherwise.
-  mojom::ScreenCaptureSessionPtr Initialize(content::DesktopMediaID desktop_id,
-                                            const std::string& display_name,
-                                            bool enable_notification);
+  // Does additional checks and upon success returns a valid remote,
+  // mojo::NullRemote() otherwise.
+  mojo::PendingRemote<mojom::ScreenCaptureSession> Initialize(
+      content::DesktopMediaID desktop_id,
+      const std::string& display_name,
+      bool enable_notification);
   // Copies the GL texture from a desktop capture to the corresponding GL
   // texture for a GPU buffer.
   void CopyDesktopTextureToGpuBuffer(
@@ -86,7 +88,7 @@ class ArcScreenCaptureSession : public mojom::ScreenCaptureSession,
   // Callback for a user clicking Stop on the notification for screen capture.
   void NotificationStop();
 
-  mojo::Binding<mojom::ScreenCaptureSession> binding_;
+  mojo::Receiver<mojom::ScreenCaptureSession> receiver_{this};
   mojom::ScreenCaptureSessionNotifierPtr notifier_;
   gfx::Size size_;
   // aura::Window of the display being captured. This corresponds to one of

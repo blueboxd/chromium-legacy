@@ -387,7 +387,7 @@ InputMethodEngine* GetEngineIfActive(Profile* profile,
                                      const std::string& extension_id,
                                      std::string* error) {
   InputImeEventRouter* event_router = GetInputImeEventRouter(profile);
-  CHECK(event_router) << kErrorRouterNotAvailable;
+  DCHECK(event_router) << kErrorRouterNotAvailable;
   InputMethodEngine* engine = static_cast<InputMethodEngine*>(
       event_router->GetEngineIfActive(extension_id, error));
   return engine;
@@ -398,7 +398,7 @@ InputMethodEngine* GetEngine(content::BrowserContext* browser_context,
                              std::string* error) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   InputImeEventRouter* event_router = GetInputImeEventRouter(profile);
-  CHECK(event_router) << kErrorRouterNotAvailable;
+  DCHECK(event_router) << kErrorRouterNotAvailable;
   InputMethodEngine* engine =
       static_cast<InputMethodEngine*>(event_router->GetEngine(extension_id));
   DCHECK(engine) << kErrorEngineNotAvailable;

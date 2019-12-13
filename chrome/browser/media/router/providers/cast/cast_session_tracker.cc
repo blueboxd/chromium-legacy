@@ -131,14 +131,13 @@ void CastSessionTracker::HandleMediaStatusMessage(const MediaSinkInternal& sink,
     return;
   }
 
-  auto& media_list = updated_status->GetList();
-
   // First filter out any idle media objects.
-  base::EraseIf(media_list, [](const base::Value& media) {
-    const base::Value* player_state =
-        media.FindKeyOfType("playerState", base::Value::Type::STRING);
-    return player_state && player_state->GetString() == "IDLE";
+  updated_status->EraseListValueIf([](const base::Value& media) {
+    const std::string* player_state = media.FindStringKey("playerState");
+    return player_state && *player_state == "IDLE";
   });
+
+  base::Value::ListView media_list = updated_status->GetList();
   if (media_list.size() > 1) {
     DVLOG(2) << "Media list unexpectedly contains more than one live media: "
              << media_list.size() << ", session: " << session_id;
@@ -157,7 +156,7 @@ void CastSessionTracker::HandleMediaStatusMessage(const MediaSinkInternal& sink,
         SupportedMediaRequestsToListValue(supported_media_requests->GetInt()));
   }
 
-  CopySavedMediaFieldsToMediaList(session, &media_list);
+  CopySavedMediaFieldsToMediaList(session, media_list);
 
   DVLOG(2) << "Final updated status: " << updated_status;
   session->UpdateMedia(*updated_status);
@@ -172,7 +171,7 @@ void CastSessionTracker::HandleMediaStatusMessage(const MediaSinkInternal& sink,
 
 void CastSessionTracker::CopySavedMediaFieldsToMediaList(
     CastSession* session,
-    std::vector<base::Value>* media_list) {
+    base::Value::ListView media_list) {
   // When |session| has saved media objects with a mediaSessionId corresponding
   // to a value in |media_list|, copy the 'media' field from the saved objects
   // to the corresponding objects in |media_list|.
@@ -181,7 +180,7 @@ void CastSessionTracker::CopySavedMediaFieldsToMediaList(
   if (!session_media_value)
     return;
   const auto& session_media_value_list = session_media_value->GetList();
-  for (auto& media : *media_list) {
+  for (auto& media : media_list) {
     const base::Value* media_session_id_value =
         media.FindKeyOfType("mediaSessionId", base::Value::Type::INTEGER);
     if (!media_session_id_value)

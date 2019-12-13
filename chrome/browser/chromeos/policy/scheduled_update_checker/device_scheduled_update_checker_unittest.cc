@@ -38,7 +38,6 @@
 #include "components/policy/core/common/policy_service.h"
 #include "services/device/public/cpp/test/test_wake_lock_provider.h"
 #include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
@@ -223,12 +222,9 @@ class DeviceScheduledUpdateCheckerForTest
   DeviceScheduledUpdateCheckerForTest(
       chromeos::CrosSettings* cros_settings,
       chromeos::NetworkStateHandler* network_state_handler,
-      service_manager::Connector* connector,
       const base::Clock* clock,
       const base::TickClock* tick_clock)
-      : DeviceScheduledUpdateChecker(cros_settings,
-                                     network_state_handler,
-                                     connector),
+      : DeviceScheduledUpdateChecker(cros_settings, network_state_handler),
         clock_(clock),
         tick_clock_(tick_clock) {
     // Set time zone so that tests are deterministic across different
@@ -311,9 +307,10 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
  public:
   DeviceScheduledUpdateCheckerTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO,
-                          base::test::TaskEnvironment::TimeSource::MOCK_TIME),
-        wake_lock_provider_(
-            connector_factory_.RegisterInstance(device::mojom::kServiceName)) {
+                          base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
+    ScopedWakeLock::OverrideWakeLockProviderBinderForTesting(
+        base::BindRepeating(&device::TestWakeLockProvider::BindReceiver,
+                            base::Unretained(&wake_lock_provider_)));
     auto fake_update_engine_client =
         std::make_unique<chromeos::FakeUpdateEngineClient>();
     fake_update_engine_client_ = fake_update_engine_client.get();
@@ -332,7 +329,6 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
         std::make_unique<DeviceScheduledUpdateCheckerForTest>(
             chromeos::CrosSettings::Get(),
             network_state_test_helper_->network_state_handler(),
-            connector_factory_.GetDefaultConnector(),
             task_environment_.GetMockClock(),
             task_environment_.GetMockTickClock());
   }
@@ -342,6 +338,8 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
     chromeos::PowerManagerClient::Shutdown();
     chromeos::DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
         nullptr);
+    ScopedWakeLock::OverrideWakeLockProviderBinderForTesting(
+        base::NullCallback());
   }
 
  protected:
@@ -590,7 +588,6 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
   chromeos::ScopedTestingCrosSettings cros_settings_;
   chromeos::FakeUpdateEngineClient* fake_update_engine_client_;
   std::unique_ptr<chromeos::NetworkStateTestHelper> network_state_test_helper_;
-  service_manager::TestConnectorFactory connector_factory_;
   device::TestWakeLockProvider wake_lock_provider_;
 
  private:

@@ -9,11 +9,35 @@
 
 namespace viz {
 
+class DisplayScheduler::BeginFrameObserver : public BeginFrameObserverBase {
+ public:
+  explicit BeginFrameObserver(DisplayScheduler* scheduler)
+      : scheduler_(scheduler) {
+    // The DisplayScheduler handles animate_only BeginFrames as if they were
+    // normal BeginFrames: Clients won't commit a CompositorFrame but will still
+    // acknowledge when they have completed the BeginFrame via BeginFrameAcks
+    // and the DisplayScheduler will still indicate when all clients have
+    // finished via DisplayObserver::OnDisplayDidFinishFrame.
+    wants_animate_only_begin_frames_ = true;
+  }
+  // BeginFrameObserverBase implementation.
+  void OnBeginFrameSourcePausedChanged(bool paused) override {
+    DCHECK(!paused);
+  }
+
+  bool OnBeginFrameDerivedImpl(const BeginFrameArgs& args) override {
+    return scheduler_->OnBeginFrame(args);
+  }
+
+ private:
+  DisplayScheduler* const scheduler_;
+};
+
 DisplayScheduler::DisplayScheduler(BeginFrameSource* begin_frame_source,
                                    base::SingleThreadTaskRunner* task_runner,
                                    int max_pending_swaps,
                                    bool wait_for_all_surfaces_before_draw)
-    : client_(nullptr),
+    : begin_frame_observer_(std::make_unique<BeginFrameObserver>(this)),
       begin_frame_source_(begin_frame_source),
       task_runner_(task_runner),
       inside_surface_damaged_(false),
@@ -29,13 +53,6 @@ DisplayScheduler::DisplayScheduler(BeginFrameSource* begin_frame_source,
       observing_begin_frame_source_(false) {
   begin_frame_deadline_closure_ = base::BindRepeating(
       &DisplayScheduler::OnBeginFrameDeadline, weak_ptr_factory_.GetWeakPtr());
-
-  // The DisplayScheduler handles animate_only BeginFrames as if they were
-  // normal BeginFrames: Clients won't commit a CompositorFrame but will still
-  // acknowledge when they have completed the BeginFrame via BeginFrameAcks and
-  // the DisplayScheduler will still indicate when all clients have finished via
-  // DisplayObserver::OnDisplayDidFinishFrame.
-  wants_animate_only_begin_frames_ = true;
 }
 
 DisplayScheduler::~DisplayScheduler() {
@@ -43,19 +60,6 @@ DisplayScheduler::~DisplayScheduler() {
   // in-flight swap. So always mark the gpu as not busy during destruction.
   begin_frame_source_->SetIsGpuBusy(false);
   StopObservingBeginFrames();
-  if (damage_tracker_)
-    damage_tracker_->RemoveObserver(this);
-}
-
-void DisplayScheduler::SetClient(DisplaySchedulerClient* client) {
-  client_ = client;
-}
-
-void DisplayScheduler::SetDamageTracker(DisplayDamageTracker* damage_tracker) {
-  DCHECK(!damage_tracker_);
-  DCHECK(damage_tracker);
-  damage_tracker_ = damage_tracker;
-  damage_tracker_->AddObserver(this);
 }
 
 void DisplayScheduler::SetVisible(bool visible) {
@@ -123,7 +127,7 @@ bool DisplayScheduler::DrawAndSwap() {
   DCHECK_LT(pending_swaps_, max_pending_swaps_);
   DCHECK(!output_surface_lost_);
 
-  bool success = client_ && client_->DrawAndSwap();
+  bool success = client_ && client_->DrawAndSwap(current_frame_display_time());
   if (!success)
     return false;
 
@@ -131,7 +135,7 @@ bool DisplayScheduler::DrawAndSwap() {
   return true;
 }
 
-bool DisplayScheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
+bool DisplayScheduler::OnBeginFrame(const BeginFrameArgs& args) {
   base::TimeTicks now = base::TimeTicks::Now();
   TRACE_EVENT2("viz", "DisplayScheduler::BeginFrame", "args", args.AsValue(),
                "now", now);
@@ -143,11 +147,11 @@ bool DisplayScheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
     // CompositorFrame for a SurfaceFactory).
     DCHECK_EQ(args.type, BeginFrameArgs::MISSED);
     DCHECK(missed_begin_frame_task_.IsCancelled());
-    missed_begin_frame_task_.Reset(base::BindOnce(
-        base::IgnoreResult(&DisplayScheduler::OnBeginFrameDerivedImpl),
-        // The CancelableCallback will not run after it is destroyed, which
-        // happens when |this| is destroyed.
-        base::Unretained(this), args));
+    missed_begin_frame_task_.Reset(
+        base::BindOnce(base::IgnoreResult(&DisplayScheduler::OnBeginFrame),
+                       // The CancelableCallback will not run after it is
+                       // destroyed, which happens when |this| is destroyed.
+                       base::Unretained(this), args));
     task_runner_->PostTask(FROM_HERE, missed_begin_frame_task_.callback());
     return true;
   }
@@ -177,10 +181,12 @@ bool DisplayScheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
   return true;
 }
 
-void DisplayScheduler::SetNeedsOneBeginFrame() {
+void DisplayScheduler::SetNeedsOneBeginFrame(bool needs_draw) {
   // If we are not currently observing BeginFrames because needs_draw_ is false,
   // we will stop observing again after one BeginFrame in AttemptDrawAndSwap().
   StartObservingBeginFrames();
+  if (needs_draw)
+    needs_draw_ = true;
 }
 
 void DisplayScheduler::MaybeStartObservingBeginFrames() {
@@ -190,14 +196,14 @@ void DisplayScheduler::MaybeStartObservingBeginFrames() {
 
 void DisplayScheduler::StartObservingBeginFrames() {
   if (!observing_begin_frame_source_) {
-    begin_frame_source_->AddObserver(this);
+    begin_frame_source_->AddObserver(begin_frame_observer_.get());
     observing_begin_frame_source_ = true;
   }
 }
 
 void DisplayScheduler::StopObservingBeginFrames() {
   if (observing_begin_frame_source_) {
-    begin_frame_source_->RemoveObserver(this);
+    begin_frame_source_->RemoveObserver(begin_frame_observer_.get());
     observing_begin_frame_source_ = false;
 
     // A missed BeginFrame may be queued, so drop that too if we're going to
@@ -211,13 +217,6 @@ bool DisplayScheduler::ShouldDraw() const {
   // must be called to ensure the draw will happen.
   return needs_draw_ && !output_surface_lost_ && visible_ &&
          !damage_tracker_->root_frame_missing();
-}
-
-void DisplayScheduler::OnBeginFrameSourcePausedChanged(bool paused) {
-  // BeginFrameSources used with DisplayScheduler do not make use of this
-  // feature.
-  if (paused)
-    NOTIMPLEMENTED();
 }
 
 base::TimeTicks DisplayScheduler::DesiredBeginFrameDeadlineTime() const {
@@ -374,7 +373,7 @@ void DisplayScheduler::OnBeginFrameDeadline() {
 
 void DisplayScheduler::DidFinishFrame(bool did_draw) {
   DCHECK(begin_frame_source_);
-  begin_frame_source_->DidFinishFrame(this);
+  begin_frame_source_->DidFinishFrame(begin_frame_observer_.get());
   BeginFrameAck ack(current_begin_frame_args_, did_draw);
   if (client_)
     client_->DidFinishFrame(ack);

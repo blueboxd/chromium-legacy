@@ -14,13 +14,11 @@
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "content/public/browser/gpu_data_manager.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/common/screen_info.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -46,8 +44,7 @@ void GetFingerprintInternal(
     const std::string& app_locale,
     const std::string& user_agent,
     const base::TimeDelta& timeout,
-    base::OnceCallback<void(std::unique_ptr<Fingerprint>)> callback,
-    service_manager::Connector* connector);
+    base::OnceCallback<void(std::unique_ptr<Fingerprint>)> callback);
 
 }  // namespace internal
 
@@ -215,8 +212,7 @@ IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, GetFingerprint) {
       kUserAgent,
       base::TimeDelta::FromDays(1),  // Ought to be longer than any test run.
       base::Bind(&AutofillRiskFingerprintTest::GetFingerprintTestCallback,
-                 base::Unretained(this), run_loop.QuitWhenIdleClosure()),
-      content::GetSystemConnector());
+                 base::Unretained(this), run_loop.QuitWhenIdleClosure()));
 
   // Wait for the callback to be called.
   run_loop.Run();

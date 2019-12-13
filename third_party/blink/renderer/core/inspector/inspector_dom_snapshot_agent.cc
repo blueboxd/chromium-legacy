@@ -226,6 +226,10 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
     std::unique_ptr<protocol::Array<protocol::DOMSnapshot::DocumentSnapshot>>*
         documents,
     std::unique_ptr<protocol::Array<String>>* strings) {
+  // This function may kick the layout, but external clients may call this
+  // function outside of the layout phase.
+  FontCachePurgePreventer fontCachePurgePreventer;
+
   Document* main_document = inspected_frames_->Root()->GetDocument();
   if (!main_document)
     return Response::Error("Document is not available");
@@ -309,12 +313,12 @@ void InspectorDOMSnapshotAgent::SetRare(
 }
 
 void InspectorDOMSnapshotAgent::VisitDocument(Document* document) {
-  // Update layout tree before traversal of document so that we inspect a
+  // Update layout before traversal of document so that we inspect a
   // current and consistent state of all trees. No need to do this if paint
   // order was calculated, since layout trees were already updated during
   // TraversePaintLayerTree().
   if (!paint_order_map_)
-    document->UpdateStyleAndLayoutTree();
+    document->UpdateStyleAndLayout();
 
   DocumentType* doc_type = document->doctype();
 
@@ -684,9 +688,9 @@ InspectorDOMSnapshotAgent::BuildPaintLayerTree(Document* document) {
 void InspectorDOMSnapshotAgent::TraversePaintLayerTree(
     Document* document,
     PaintOrderMap* paint_order_map) {
-  // Update layout tree before traversal of document so that we inspect a
+  // Update layout before traversal of document so that we inspect a
   // current and consistent state of all trees.
-  document->UpdateStyleAndLayoutTree();
+  document->UpdateStyleAndLayout();
 
   PaintLayer* root_layer = document->GetLayoutView()->Layer();
   // LayoutView requires a PaintLayer.

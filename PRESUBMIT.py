@@ -261,7 +261,6 @@ _BANNED_IOS_EGTEST_FUNCTIONS = (
 # RepeatingCallback, BindOnce, BindRepeating) in order to enable presubmit
 # checks for them and prevent regressions.
 _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
-  '^android_webview/browser/',
   '^apps/',
   '^base/callback.h',  # Intentional.
   '^chrome/app/',

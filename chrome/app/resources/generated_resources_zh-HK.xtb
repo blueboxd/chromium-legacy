@@ -283,6 +283,7 @@
 <translation id="1397500194120344683">沒有適用裝置。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">最大化</translation>
 <translation id="1399511500114202393">不使用使用者憑證</translation>
+<translation id="1403519882106291341">Google Chrome 作業系統條款</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (受管)</translation>
 <translation id="1405779994569073824">已當機。</translation>
 <translation id="1406500794671479665">驗證中…</translation>
@@ -2172,7 +2173,6 @@
 <translation id="4036778507053569103">從伺服器下載的政策無效。</translation>
 <translation id="4037084878352560732">馬</translation>
 <translation id="4037889604535939429">編輯使用者</translation>
-<translation id="4042264909745389898">Google Chrome 作業系統條款</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{離開網頁}other{離開網頁}}</translation>
 <translation id="4044612648082411741">輸入您的憑證密碼</translation>
 <translation id="404493185430269859">預設搜尋引擎</translation>

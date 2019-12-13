@@ -239,7 +239,6 @@ File::File(const String& name,
       has_backing_file_(false),
       user_visibility_(File::kIsNotUserVisible),
       name_(name),
-      snapshot_size_(Blob::size()),
       snapshot_modification_time_(modification_time) {
   uint64_t size = Blob::size();
   if (size != std::numeric_limits<uint64_t>::max())

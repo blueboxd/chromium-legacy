@@ -20,7 +20,6 @@ AuthenticatorImpl::AuthenticatorImpl(RenderFrameHost* render_frame_host)
     : AuthenticatorImpl(render_frame_host,
                         std::make_unique<AuthenticatorCommon>(
                             render_frame_host,
-                            nullptr /* connector */,
                             std::make_unique<base::OneShotTimer>())) {}
 
 AuthenticatorImpl::AuthenticatorImpl(

@@ -93,6 +93,8 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
  private:
   FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest,
                            ClearStateDuringRequestDevice);
+  FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest,
+                           ClearStateDuringRequestScanningStart);
   FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest, PermissionAllowed);
   FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest,
                            PermissionPromptCanceled);

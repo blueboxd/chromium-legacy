@@ -160,8 +160,8 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
   // Close the menu if it is still open. This could happen if a tab gets closed
   // while its context menu is still open.
   [self cancel];
-
   _model = nullptr;
+
   [super dealloc];
 }
 
@@ -262,34 +262,34 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
   NSInteger modelIndex = [item tag];
   ui::MenuModel* model =
       [WeakPtrToMenuModelAsNSObject getFrom:[(id)item representedObject]];
-  DCHECK(model);
-  if (model) {
-    BOOL checked = model->IsItemCheckedAt(modelIndex);
-    DCHECK([(id)item isKindOfClass:[NSMenuItem class]]);
-    [(id)item setState:(checked ? NSOnState : NSOffState)];
-    [(id)item setHidden:(!model->IsVisibleAt(modelIndex))];
-    if (model->IsItemDynamicAt(modelIndex)) {
-      // Update the label and the icon.
-      NSString* label =
-          l10n_util::FixUpWindowsStyleLabel(model->GetLabelAt(modelIndex));
-      [(id)item setTitle:label];
 
-      gfx::Image icon;
-      model->GetIconAt(modelIndex, &icon);
-      [(id)item setImage:icon.IsEmpty() ? nil : icon.ToNSImage()];
-    }
-    const gfx::FontList* font_list = model->GetLabelFontListAt(modelIndex);
-    if (font_list) {
-      NSDictionary* attributes =
-          @{NSFontAttributeName : font_list->GetPrimaryFont().GetNativeFont()};
-      base::scoped_nsobject<NSAttributedString> title(
-          [[NSAttributedString alloc] initWithString:[(id)item title]
-                                          attributes:attributes]);
-      [(id)item setAttributedTitle:title.get()];
-    }
-    return model->IsEnabledAt(modelIndex);
+  if (!model)
+    return NO;
+
+  BOOL checked = model->IsItemCheckedAt(modelIndex);
+  DCHECK([(id)item isKindOfClass:[NSMenuItem class]]);
+  [(id)item setState:(checked ? NSOnState : NSOffState)];
+  [(id)item setHidden:(!model->IsVisibleAt(modelIndex))];
+  if (model->IsItemDynamicAt(modelIndex)) {
+    // Update the label and the icon.
+    NSString* label =
+        l10n_util::FixUpWindowsStyleLabel(model->GetLabelAt(modelIndex));
+    [(id)item setTitle:label];
+
+    gfx::Image icon;
+    model->GetIconAt(modelIndex, &icon);
+    [(id)item setImage:icon.IsEmpty() ? nil : icon.ToNSImage()];
   }
-  return NO;
+  const gfx::FontList* font_list = model->GetLabelFontListAt(modelIndex);
+  if (font_list) {
+    NSDictionary* attributes =
+        @{NSFontAttributeName : font_list->GetPrimaryFont().GetNativeFont()};
+    base::scoped_nsobject<NSAttributedString> title([[NSAttributedString alloc]
+        initWithString:[(id)item title]
+            attributes:attributes]);
+    [(id)item setAttributedTitle:title.get()];
+  }
+  return model->IsEnabledAt(modelIndex);
 }
 
 - (void)itemWillBeSelected:(NSMenuItem*)sender {

@@ -16,9 +16,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "services/device/public/cpp/hid/fake_input_service_linux.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/input_service.mojom.h"
-#include "services/service_manager/public/cpp/service_binding.h"
 
 namespace chromeos {
 
@@ -33,15 +31,14 @@ class HIDDetectionScreenTest : public InProcessBrowserTest {
     fake_input_service_manager_ =
         std::make_unique<device::FakeInputServiceLinux>();
 
-    service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
-        device::mojom::kServiceName,
+    HIDDetectionScreen::OverrideInputDeviceManagerBinderForTesting(
         base::Bind(&device::FakeInputServiceLinux::Bind,
                    base::Unretained(fake_input_service_manager_.get())));
   }
 
   ~HIDDetectionScreenTest() override {
-    service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
-        device::mojom::InputDeviceManager>(device::mojom::kServiceName);
+    HIDDetectionScreen::OverrideInputDeviceManagerBinderForTesting(
+        base::NullCallback());
   }
 
   // InProcessBrowserTest:

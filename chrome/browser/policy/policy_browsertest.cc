@@ -114,7 +114,6 @@
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/component_updater/component_updater_service.h"
@@ -257,11 +256,9 @@
 #endif
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
-#include "chrome/browser/ui/toolbar/media_router_action_controller.h"
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
@@ -2192,84 +2189,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
   Mock::VerifyAndClearExpectations(&observer);
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, AssistantContextEnabled) {
-  PrefService* prefs = browser()->profile()->GetPrefs();
-  EXPECT_FALSE(prefs->IsManagedPreference(
-      chromeos::assistant::prefs::kAssistantContextEnabled));
-  EXPECT_FALSE(
-      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled));
-  prefs->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled, true);
-  EXPECT_TRUE(
-      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled));
-
-  // Verifies that the Assistant context can be forced to always disabled.
-  PolicyMap policies;
-  policies.Set(key::kVoiceInteractionContextEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(prefs->IsManagedPreference(
-      chromeos::assistant::prefs::kAssistantContextEnabled));
-  EXPECT_FALSE(
-      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled));
-  prefs->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled, true);
-  EXPECT_FALSE(
-      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled));
-
-  // Verifies that the Assistant context can be forced to always enabled.
-  policies.Set(key::kVoiceInteractionContextEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(true), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(prefs->IsManagedPreference(
-      chromeos::assistant::prefs::kAssistantContextEnabled));
-  EXPECT_TRUE(
-      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled));
-  prefs->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled,
-                    false);
-  EXPECT_TRUE(
-      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled));
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, AssistantHotwordEnabled) {
-  PrefService* prefs = browser()->profile()->GetPrefs();
-  EXPECT_FALSE(prefs->IsManagedPreference(
-      chromeos::assistant::prefs::kAssistantHotwordEnabled));
-  EXPECT_FALSE(
-      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantHotwordEnabled));
-  prefs->SetBoolean(chromeos::assistant::prefs::kAssistantHotwordEnabled, true);
-  EXPECT_TRUE(
-      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantHotwordEnabled));
-
-  // Verifies that the Assistant hotword can be forced to always disabled.
-  PolicyMap policies;
-  policies.Set(key::kVoiceInteractionHotwordEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(prefs->IsManagedPreference(
-      chromeos::assistant::prefs::kAssistantHotwordEnabled));
-  EXPECT_FALSE(
-      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantHotwordEnabled));
-  prefs->SetBoolean(chromeos::assistant::prefs::kAssistantHotwordEnabled, true);
-  EXPECT_FALSE(
-      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantHotwordEnabled));
-
-  // Verifies that the Assistant hotword can be forced to always enabled.
-  policies.Set(key::kVoiceInteractionHotwordEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(true), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(prefs->IsManagedPreference(
-      chromeos::assistant::prefs::kAssistantHotwordEnabled));
-  EXPECT_TRUE(
-      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantHotwordEnabled));
-  prefs->SetBoolean(chromeos::assistant::prefs::kAssistantHotwordEnabled,
-                    false);
-  EXPECT_TRUE(
-      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantHotwordEnabled));
-}
-
 #endif  // defined(OS_CHROMEOS)
 
 namespace {
@@ -3054,91 +2973,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TaskManagerEndProcessEnabled) {
   // Policy should allow ending tasks again.
   EXPECT_TRUE(task_manager::TaskManagerInterface::IsEndProcessEnabled());
 }
-
-// Sets the proper policy before the browser is started.
-template<bool enable>
-class MediaRouterPolicyTest : public PolicyTest {
- public:
-  void SetUpInProcessBrowserTestFixture() override {
-    PolicyTest::SetUpInProcessBrowserTestFixture();
-    PolicyMap policies;
-    policies.Set(key::kEnableMediaRouter, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(enable), nullptr);
-    provider_.UpdateChromePolicy(policies);
-  }
-};
-
-using MediaRouterEnabledPolicyTest = MediaRouterPolicyTest<true>;
-using MediaRouterDisabledPolicyTest = MediaRouterPolicyTest<false>;
-
-IN_PROC_BROWSER_TEST_F(MediaRouterEnabledPolicyTest, MediaRouterEnabled) {
-  EXPECT_TRUE(media_router::MediaRouterEnabled(browser()->profile()));
-}
-
-IN_PROC_BROWSER_TEST_F(MediaRouterDisabledPolicyTest, MediaRouterDisabled) {
-  EXPECT_FALSE(media_router::MediaRouterEnabled(browser()->profile()));
-}
-
-#if !defined(OS_ANDROID)
-template <bool enable>
-class MediaRouterActionPolicyTest : public PolicyTest {
- public:
-  void SetUpInProcessBrowserTestFixture() override {
-    PolicyTest::SetUpInProcessBrowserTestFixture();
-    PolicyMap policies;
-    policies.Set(key::kShowCastIconInToolbar, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(enable), nullptr);
-    provider_.UpdateChromePolicy(policies);
-  }
-};
-
-using MediaRouterActionEnabledPolicyTest = MediaRouterActionPolicyTest<true>;
-using MediaRouterActionDisabledPolicyTest = MediaRouterActionPolicyTest<false>;
-
-IN_PROC_BROWSER_TEST_F(MediaRouterActionEnabledPolicyTest,
-                       MediaRouterActionEnabled) {
-  EXPECT_TRUE(
-      MediaRouterActionController::IsActionShownByPolicy(browser()->profile()));
-}
-
-IN_PROC_BROWSER_TEST_F(MediaRouterActionDisabledPolicyTest,
-                       MediaRouterActionDisabled) {
-  EXPECT_FALSE(
-      MediaRouterActionController::IsActionShownByPolicy(browser()->profile()));
-}
-
-class MediaRouterCastAllowAllIPsPolicyTest
-    : public PolicyTest,
-      public testing::WithParamInterface<bool> {
- public:
-  void SetUpInProcessBrowserTestFixture() override {
-    PolicyTest::SetUpInProcessBrowserTestFixture();
-    PolicyMap policies;
-    policies.Set(key::kMediaRouterCastAllowAllIPs, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(is_enabled()), nullptr);
-    provider_.UpdateChromePolicy(policies);
-  }
-
-  bool is_enabled() const { return GetParam(); }
-};
-
-IN_PROC_BROWSER_TEST_P(MediaRouterCastAllowAllIPsPolicyTest, RunTest) {
-  PrefService* const pref = g_browser_process->local_state();
-  ASSERT_TRUE(pref);
-  EXPECT_EQ(is_enabled(),
-            pref->GetBoolean(media_router::prefs::kMediaRouterCastAllowAllIPs));
-  EXPECT_TRUE(pref->IsManagedPreference(
-      media_router::prefs::kMediaRouterCastAllowAllIPs));
-  EXPECT_EQ(is_enabled(), media_router::GetCastAllowAllIPsPref(pref));
-}
-
-INSTANTIATE_TEST_SUITE_P(MediaRouterCastAllowAllIPsPolicyTestInstance,
-                         MediaRouterCastAllowAllIPsPolicyTest,
-                         testing::Values(true, false));
-#endif  // !defined(OS_ANDROID)
 
 // Sets the proper policy before the browser is started.
 template <bool enable>

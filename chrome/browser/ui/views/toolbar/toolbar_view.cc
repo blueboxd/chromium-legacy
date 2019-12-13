@@ -540,13 +540,59 @@ bool ToolbarView::GetAcceleratorForCommandId(int command_id,
 // ToolbarView, views::View overrides:
 
 gfx::Size ToolbarView::CalculatePreferredSize() const {
-  gfx::Size size = View::CalculatePreferredSize();
+  gfx::Size size;
+  switch (display_mode_) {
+    case DisplayMode::CUSTOM_TAB:
+      size = custom_tab_bar_->GetPreferredSize();
+      break;
+    case DisplayMode::LOCATION:
+      size = location_bar_->GetPreferredSize();
+      break;
+    case DisplayMode::NORMAL:
+      size = View::CalculatePreferredSize();
+      // Because there are odd cases where something causes one of the views in
+      // the toolbar to report an unreasonable height (see crbug.com/985909), we
+      // cap the height at the size of known child views (location bar and back
+      // button) plus margins.
+      // TODO(crbug.com/1033627): Figure out why the height reports incorrectly
+      // on some installations.
+      if (layout_manager_ && location_bar_->GetVisible()) {
+        const int max_height =
+            std::max(location_bar_->GetPreferredSize().height(),
+                     back_->GetPreferredSize().height()) +
+            layout_manager_->interior_margin().height();
+        size.SetToMin({size.width(), max_height});
+      }
+  }
   size.set_height(size.height() * size_animation_.GetCurrentValue());
   return size;
 }
 
 gfx::Size ToolbarView::GetMinimumSize() const {
-  gfx::Size size = View::GetMinimumSize();
+  gfx::Size size;
+  switch (display_mode_) {
+    case DisplayMode::CUSTOM_TAB:
+      size = custom_tab_bar_->GetMinimumSize();
+      break;
+    case DisplayMode::LOCATION:
+      size = location_bar_->GetMinimumSize();
+      break;
+    case DisplayMode::NORMAL:
+      size = View::GetMinimumSize();
+      // Because there are odd cases where something causes one of the views in
+      // the toolbar to report an unreasonable height (see crbug.com/985909), we
+      // cap the height at the size of known child views (location bar and back
+      // button) plus margins.
+      // TODO(crbug.com/1033627): Figure out why the height reports incorrectly
+      // on some installations.
+      if (layout_manager_ && location_bar_->GetVisible()) {
+        const int max_height =
+            std::max(location_bar_->GetMinimumSize().height(),
+                     back_->GetMinimumSize().height()) +
+            layout_manager_->interior_margin().height();
+        size.SetToMin({size.width(), max_height});
+      }
+  }
   size.set_height(size.height() * size_animation_.GetCurrentValue());
   return size;
 }

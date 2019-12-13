@@ -6,7 +6,7 @@ package org.chromium.components.module_installer.builder;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.BuildConfig;
+import org.chromium.base.BundleUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -153,7 +153,7 @@ public class Module<T> {
      * @return The module's {@link ModuleDescriptor}.
      */
     private static ModuleDescriptor loadModuleDescriptor(String name) {
-        if (!BuildConfig.IS_BUNDLE) {
+        if (!BundleUtils.isBundle()) {
             return new ModuleDescriptor() {
                 @Override
                 public String[] getLibraries() {

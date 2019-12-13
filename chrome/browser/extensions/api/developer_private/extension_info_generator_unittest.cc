@@ -77,7 +77,6 @@ const developer::ExtensionInfo* GetInfoFromList(
 std::string SiteControlsToString(
     const std::vector<developer::SiteControl>& controls) {
   base::Value list(base::Value::Type::LIST);
-  list.GetList().reserve(controls.size());
   for (const auto& control : controls) {
     std::unique_ptr<base::Value> control_value = control.ToValue();
     list.Append(std::move(*control_value));

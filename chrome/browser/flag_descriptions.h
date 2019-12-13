@@ -805,11 +805,8 @@ extern const char kNewPasswordFormParsingForSavingDescription[];
 extern const char kOnlyNewPasswordFormParsingName[];
 extern const char kOnlyNewPasswordFormParsingDescription[];
 
-extern const char kUsernameFirstFlowFillingName[];
-extern const char kUsernameFirstFlowFillingDescription[];
-
-extern const char kUsernameFirstFlowSavingName[];
-extern const char kUsernameFirstFlowSavingDescription[];
+extern const char kUsernameFirstFlowName[];
+extern const char kUsernameFirstFlowDescription[];
 
 extern const char kUseSurfaceLayerForVideoName[];
 extern const char kUseSurfaceLayerForVideoDescription[];
@@ -1489,9 +1486,6 @@ extern const char kContextualSearchSecondTapDescription[];
 
 extern const char kContextualSearchSimplifiedServerName[];
 extern const char kContextualSearchSimplifiedServerDescription[];
-
-extern const char kContextualSearchTranslationModelName[];
-extern const char kContextualSearchTranslationModelDescription[];
 
 extern const char kDirectActionsName[];
 extern const char kDirectActionsDescription[];

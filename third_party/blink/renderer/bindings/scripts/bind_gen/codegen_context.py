@@ -52,6 +52,10 @@ class CodeGenContext(object):
             "operation": None,
             "operation_group": None,
 
+            # The names of the class being generated and its base class.
+            "base_class_name": None,
+            "class_name": None,
+
             # Main world or all worlds
             "for_world": cls.ALL_WORLDS,
         }

@@ -109,19 +109,32 @@ public class AssistantShippingAddressSection
         return mContext.getString(R.string.payments_edit_address);
     }
 
+    @Override
+    protected boolean areEqual(AutofillAddress optionA, AutofillAddress optionB) {
+        if (optionA == null || optionB == null) {
+            return optionA == optionB;
+        }
+        if (TextUtils.equals(optionA.getIdentifier(), optionB.getIdentifier())) {
+            return true;
+        }
+        if (optionA.getProfile() == null || optionB.getProfile() == null) {
+            return optionA.getProfile() == optionB.getProfile();
+        }
+        // TODO(crbug.com/806868): Implement better check for the case where PDM is disabled, we
+        //  won't have IDs.
+        return TextUtils.equals(optionA.getProfile().getGUID(), optionB.getProfile().getGUID());
+    }
+
     void onProfilesChanged(List<PersonalDataManager.AutofillProfile> profiles) {
         if (mIgnoreProfileChangeNotifications) {
             return;
         }
 
-        AutofillAddress previouslySelectedAddress = mSelectedOption;
         int selectedAddressIndex = -1;
         List<AutofillAddress> addresses = new ArrayList<>();
         for (int i = 0; i < profiles.size(); i++) {
             AutofillAddress autofillAddress = new AutofillAddress(mContext, profiles.get(i));
-            if (previouslySelectedAddress != null
-                    && TextUtils.equals(autofillAddress.getIdentifier(),
-                            previouslySelectedAddress.getIdentifier())) {
+            if (mSelectedOption != null && areEqual(mSelectedOption, autofillAddress)) {
                 selectedAddressIndex = i;
             }
             addresses.add(autofillAddress);

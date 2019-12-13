@@ -2211,15 +2211,9 @@ const char kUnsafeWebGPUDescription[] =
 const char kUiPartialSwapName[] = "Partial swap";
 const char kUiPartialSwapDescription[] = "Sets partial swap behavior.";
 
-const char kUsernameFirstFlowFillingName[] = "Filling on username first flow";
-const char kUsernameFirstFlowFillingDescription[] =
-    "Support of username filling on username first flow i.e. login "
-    "flows where a user has to type username first on one page and then "
-    "password on another page";
-
-const char kUsernameFirstFlowSavingName[] = "Saving on username first flow";
-const char kUsernameFirstFlowSavingDescription[] =
-    "Support of username saving on username first flow i.e. login "
+const char kUsernameFirstFlowName[] = "Username first flow";
+const char kUsernameFirstFlowDescription[] =
+    "Support of username saving and filling on username first flow i.e. login "
     "flows where a user has to type username first on one page and then "
     "password on another page";
 
@@ -2521,12 +2515,6 @@ const char kContextualSearchSecondTapName[] =
 const char kContextualSearchSecondTapDescription[] =
     "Enables triggering on a second tap gesture even when Ranker would "
     "normally suppress that tap.";
-
-const char kContextualSearchTranslationModelName[] =
-    "Contextual Search translation using the Chrome translate model.";
-const char kContextualSearchTranslationModelDescription[] =
-    "Enables triggering translation in Contextual Search according to the "
-    "Chrome translation model semantics.";
 
 const char kDirectActionsName[] = "Direct actions";
 const char kDirectActionsDescription[] =

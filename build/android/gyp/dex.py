@@ -14,6 +14,7 @@ import tempfile
 import zipfile
 
 from util import build_utils
+from util import md5_check
 from util import zipalign
 
 sys.path.insert(1, os.path.join(os.path.dirname(__file__), os.path.pardir))
@@ -423,7 +424,7 @@ def main(args):
   if options.min_api:
     dex_cmd += ['--min-api', options.min_api]
 
-  build_utils.CallAndWriteDepfileIfStale(
+  md5_check.CallAndWriteDepfileIfStale(
       lambda changes: _OnStaleMd5(changes, options, final_dex_inputs, dex_cmd),
       options,
       depfile_deps=options.class_inputs_filearg + options.dex_inputs_filearg,

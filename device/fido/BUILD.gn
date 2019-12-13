@@ -155,8 +155,6 @@ component("fido") {
     "//crypto",
     "//device/base",
     "//device/fido/strings",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/mojom",
     "//third_party/boringssl",
     "//third_party/microsoft_webauthn",
     "//ui/base",
@@ -340,8 +338,6 @@ source_set("test_support") {
     "//device/fido",
     "//mojo/public/cpp/bindings",
     "//services/device/public/mojom",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
   ]

@@ -5,6 +5,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+#import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_utils.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -20,6 +21,8 @@
 #endif
 
 using chrome_test_util::ButtonWithAccessibilityLabelId;
+using chrome_test_util::ContextBarLeadingButtonWithLabel;
+using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 // Bookmark accessibility tests for Chrome.
 @interface BookmarksAccessibilityTestCase : ChromeTestCase
@@ -46,7 +49,7 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 // Tests that all elements on the bookmarks landing page are accessible.
 - (void)testAccessibilityOnBookmarksLandingPage {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
 
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 }
@@ -54,8 +57,8 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 // Tests that all elements on mobile bookmarks are accessible.
 - (void)testAccessibilityOnMobileBookmarks {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 }
@@ -63,8 +66,8 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 // Tests that all elements on the bookmarks folder Edit page are accessible.
 - (void)testAccessibilityOnBookmarksFolderEditPage {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Invoke Edit through long press.
   [[EarlGrey
@@ -87,8 +90,8 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 // Tests that all elements on the bookmarks Edit page are accessible.
 - (void)testAccessibilityOnBookmarksEditPage {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Invoke Edit through long press.
   [[EarlGrey
@@ -106,8 +109,8 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 // Tests that all elements on the bookmarks Move page are accessible.
 - (void)testAccessibilityOnBookmarksMovePage {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Invoke Move through long press.
   [[EarlGrey
@@ -127,8 +130,8 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 // accessible.
 - (void)testAccessibilityOnBookmarksMoveToNewFolderPage {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Invoke Move through long press.
   [[EarlGrey
@@ -151,8 +154,8 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 // Tests that all elements on bookmarks Delete and Undo are accessible.
 - (void)testAccessibilityOnBookmarksDeleteUndo {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Change to edit mode
   [[EarlGrey
@@ -166,13 +169,13 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
       performAction:grey_tap()];
 
   // Delete it.
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarkEarlGreyUtils
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarkEarlGreyUI contextBarDeleteString])]
       performAction:grey_tap()];
 
   // Wait until it's gone.
-  [BookmarkEarlGreyUtils waitForDeletionOfBookmarkWithTitle:@"Second URL"];
+  [BookmarkEarlGreyUI waitForDeletionOfBookmarkWithTitle:@"Second URL"];
 
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 }
@@ -180,8 +183,8 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 // Tests that all elements on the bookmarks Select page are accessible.
 - (void)testAccessibilityOnBookmarksSelect {
   [BookmarkEarlGreyUtils setupStandardBookmarks];
-  [BookmarkEarlGreyUtils openBookmarks];
-  [BookmarkEarlGreyUtils openMobileBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
 
   // Change to edit mode
   [[EarlGrey

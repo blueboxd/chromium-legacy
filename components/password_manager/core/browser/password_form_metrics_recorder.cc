@@ -154,19 +154,6 @@ PasswordFormMetricsRecorder::PasswordFormMetricsRecorder(
       ukm_entry_builder_(source_id) {}
 
 PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.ActionsTakenV3", GetActionsTaken(),
-                            kMaxNumActionsTaken);
-  ukm_entry_builder_.SetUser_ActionSimplified(
-      static_cast<int64_t>(user_action_));
-
-  // Use the visible main frame URL at the time the PasswordFormManager
-  // is created, in case a navigation has already started and the
-  // visible URL has changed.
-  if (!is_main_frame_secure_) {
-    UMA_HISTOGRAM_ENUMERATION("PasswordManager.ActionsTakenOnNonSecureForm",
-                              GetActionsTaken(), kMaxNumActionsTaken);
-  }
-
   if (submit_result_ == kSubmitResultNotSubmitted) {
     if (HasGeneratedPassword(generated_password_status_)) {
       metrics_util::LogPasswordGenerationSubmissionEvent(
@@ -295,82 +282,6 @@ void PasswordFormMetricsRecorder::SetManagerAction(
   manager_action_ = manager_action;
 }
 
-void PasswordFormMetricsRecorder::CalculateUserAction(
-    const std::vector<const PasswordForm*>& best_matches,
-    const PasswordForm& submitted_form) {
-  const base::string16& submitted_password =
-      !submitted_form.new_password_value.empty()
-          ? submitted_form.new_password_value
-          : submitted_form.password_value;
-
-  if (submitted_form.username_value.empty()) {
-    // In case the submitted form does not have a username field we do not
-    // autofill. Thus the user either explicitly chose this credential from the
-    // dropdown, or created a new password.
-    for (const PasswordForm* match : best_matches) {
-      if (match->password_value == submitted_password) {
-        user_action_ = UserAction::kChoose;
-        return;
-      }
-    }
-
-    user_action_ = UserAction::kOverridePassword;
-    return;
-  }
-
-  // In case the submitted form has a username value, check if there is an
-  // existing match with the same username. If not, the user created a new
-  // credential.
-  const PasswordForm* existing_match =
-      password_manager_util::FindFormByUsername(best_matches,
-                                                submitted_form.username_value);
-  if (!existing_match) {
-    user_action_ = UserAction::kOverrideUsernameAndPassword;
-    return;
-  }
-
-  // Otherwise check if the user changed the password.
-  if (existing_match->password_value != submitted_password) {
-    user_action_ = UserAction::kOverridePassword;
-    return;
-  }
-
-  // If the existing match is a PSL match, the user purposefully chose it, since
-  // PSL credentials are not autofilled.
-  if (existing_match->is_public_suffix_match) {
-    user_action_ = UserAction::kChoosePslMatch;
-    return;
-  }
-
-  // In case the existing match is not the most recently used one, then the
-  // user purposefully chose a credential.
-  for (auto* const match : best_matches) {
-    if (match->date_last_used > existing_match->date_last_used) {
-      user_action_ = UserAction::kChoose;
-      return;
-    }
-  }
-
-  // Lastly, if the form was not filled on page load, the user purposefully
-  // chose a credential. Otherwise the user either did not do anything, or
-  // re-selected the default option.
-  if (manager_action_ != kManagerActionAutofilled) {
-    user_action_ = UserAction::kChoose;
-    return;
-  }
-
-  user_action_ = UserAction::kNone;
-}
-
-void PasswordFormMetricsRecorder::SetUserActionForTesting(
-    UserAction user_action) {
-  user_action_ = user_action;
-}
-
-UserAction PasswordFormMetricsRecorder::GetUserAction() const {
-  return user_action_;
-}
-
 void PasswordFormMetricsRecorder::LogSubmitPassed() {
   if (submit_result_ != kSubmitResultFailed) {
     if (HasGeneratedPassword(generated_password_status_)) {
@@ -420,19 +331,6 @@ void PasswordFormMetricsRecorder::SetSubmittedFormType(
 void PasswordFormMetricsRecorder::SetSubmissionIndicatorEvent(
     autofill::mojom::SubmissionIndicatorEvent event) {
   ukm_entry_builder_.SetSubmission_Indicator(static_cast<int>(event));
-}
-
-int PasswordFormMetricsRecorder::GetActionsTakenNew() const {
-  // Merge kManagerActionNone and kManagerActionBlacklisted_Obsolete. This
-  // lowers the number of histogram buckets used by 33%.
-  ManagerActionNew manager_action_new =
-      (manager_action_ == kManagerActionAutofilled)
-          ? kManagerActionNewAutofilled
-          : kManagerActionNewNone;
-
-  return static_cast<int>(user_action_) +
-         static_cast<int>(UserAction::kMax) *
-             (manager_action_new + kManagerActionNewMax * submit_result_);
 }
 
 void PasswordFormMetricsRecorder::RecordDetailedUserAction(
@@ -574,12 +472,6 @@ void PasswordFormMetricsRecorder::CalculateJsOnlyInput(
                        ? JsOnlyInput::kAutofillOrUserInput
                        : (had_focus ? JsOnlyInput::kOnlyJsInputWithFocus
                                     : JsOnlyInput::kOnlyJsInputNoFocus);
-}
-
-int PasswordFormMetricsRecorder::GetActionsTaken() const {
-  return static_cast<int>(user_action_) +
-         static_cast<int>(UserAction::kMax) *
-             (manager_action_ + kManagerActionMax * submit_result_);
 }
 
 void PasswordFormMetricsRecorder::RecordPasswordBubbleShown(

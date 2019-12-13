@@ -448,7 +448,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, NoPopupsLaunchWhenTabIsClosed) {
 }
 
 // This only exists for the AllowPopupsWhenTabIsClosedWithSpecialPolicy test.
-// Remove this in Chrome 82. https://crbug.com/937569
+// Remove this in Chrome 88. https://crbug.com/937569
 class PopupBlockerSpecialPolicyBrowserTest : public PopupBlockerBrowserTest {
  public:
   PopupBlockerSpecialPolicyBrowserTest() {}
@@ -481,7 +481,7 @@ class PopupBlockerSpecialPolicyBrowserTest : public PopupBlockerBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(PopupBlockerSpecialPolicyBrowserTest);
 };
 
-// Remove this in Chrome 82. https://crbug.com/937569
+// Remove this in Chrome 88. https://crbug.com/937569
 IN_PROC_BROWSER_TEST_F(PopupBlockerSpecialPolicyBrowserTest,
                        AllowPopupsWhenTabIsClosedWithSpecialPolicy) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(

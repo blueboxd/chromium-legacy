@@ -16,6 +16,8 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
@@ -173,15 +175,34 @@ public class ChromeContextMenuItem implements ContextMenuItem {
                                 .getDefaultSearchEngineTemplateUrl()
                                 .getShortName());
             case Item.OPEN_IN_EPHEMERAL_TAB:
+                return addOrRemoveNewLabel(
+                        context, ChromePreferenceKeys.CONTEXT_MENU_OPEN_IN_EPHEMERAL_TAB_CLICKED);
             case Item.OPEN_IMAGE_IN_EPHEMERAL_TAB:
+                return addOrRemoveNewLabel(context,
+                        ChromePreferenceKeys.CONTEXT_MENU_OPEN_IMAGE_IN_EPHEMERAL_TAB_CLICKED);
             case Item.SEARCH_WITH_GOOGLE_LENS:
-                return SpanApplier.applySpans(context.getString(getStringId(mItem)),
-                        new SpanInfo("<new>", "</new>", new SuperscriptSpan(),
-                                new RelativeSizeSpan(0.75f),
-                                new ForegroundColorSpan(ApiCompatibilityUtils.getColor(
-                                        context.getResources(), R.color.default_text_color_blue))));
+                return addOrRemoveNewLabel(
+                        context, ChromePreferenceKeys.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS_CLICKED);
             default:
                 return context.getString(getStringId(mItem));
         }
+    }
+
+    /**
+     * Modify the menu title by applying span attributes or removing the 'New' label if the menu
+     * has already been selected before.
+     */
+    private CharSequence addOrRemoveNewLabel(Context context, String prefKey) {
+        String menuTitle = context.getString(getStringId(mItem));
+
+        // TODO(jinsukkim): Consider removing the preference keys and hooking this up to
+        //     the feature engagement system.
+        if (SharedPreferencesManager.getInstance().readBoolean(prefKey, false)) {
+            return SpanApplier.removeSpanText(menuTitle, new SpanInfo("<new>", "</new>"));
+        }
+        return SpanApplier.applySpans(menuTitle,
+                new SpanInfo("<new>", "</new>", new SuperscriptSpan(), new RelativeSizeSpan(0.75f),
+                        new ForegroundColorSpan(ApiCompatibilityUtils.getColor(
+                                context.getResources(), R.color.default_text_color_blue))));
     }
 }

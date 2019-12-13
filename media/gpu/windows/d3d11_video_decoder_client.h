@@ -17,7 +17,7 @@ class D3D11PictureBuffer;
 class D3D11VideoDecoderClient {
  public:
   virtual D3D11PictureBuffer* GetPicture() = 0;
-  virtual void OutputResult(const CodecPicture* picture,
+  virtual bool OutputResult(const CodecPicture* picture,
                             D3D11PictureBuffer* picture_buffer) = 0;
 
  protected:

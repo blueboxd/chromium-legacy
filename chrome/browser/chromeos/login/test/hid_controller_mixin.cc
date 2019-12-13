@@ -7,11 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "services/device/public/cpp/hid/fake_input_service_linux.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/input_service.mojom.h"
-#include "services/service_manager/public/cpp/service_binding.h"
 
 using testing::_;
 
@@ -47,15 +46,14 @@ HIDControllerMixin::HIDControllerMixin(InProcessBrowserTestMixinHost* host)
   fake_input_service_manager_ =
       std::make_unique<device::FakeInputServiceLinux>();
 
-  service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
-      device::mojom::kServiceName,
+  HIDDetectionScreen::OverrideInputDeviceManagerBinderForTesting(
       base::BindRepeating(&device::FakeInputServiceLinux::Bind,
                           base::Unretained(fake_input_service_manager_.get())));
 }
 
 HIDControllerMixin::~HIDControllerMixin() {
-  service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
-      device::mojom::InputDeviceManager>(device::mojom::kServiceName);
+  HIDDetectionScreen::OverrideInputDeviceManagerBinderForTesting(
+      base::NullCallback());
 }
 
 void HIDControllerMixin::SetUpInProcessBrowserTestFixture() {

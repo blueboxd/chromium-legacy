@@ -68,8 +68,8 @@ public class ContentViewRenderView extends FrameLayout {
     // Common interface to listen to surface related events.
     private interface SurfaceEventListener {
         void surfaceCreated();
-        void surfaceChanged(
-                Surface surface, boolean canBeUsedWithSurfaceControl, int width, int height);
+        void surfaceChanged(Surface surface, boolean canBeUsedWithSurfaceControl, int format,
+                int width, int height);
         // |cacheBackBuffer| will delay destroying the EGLSurface until after the next swap.
         void surfaceDestroyed(boolean cacheBackBuffer);
     }
@@ -125,12 +125,12 @@ public class ContentViewRenderView extends FrameLayout {
         }
 
         @Override
-        public void surfaceChanged(
-                Surface surface, boolean canBeUsedWithSurfaceControl, int width, int height) {
+        public void surfaceChanged(Surface surface, boolean canBeUsedWithSurfaceControl, int format,
+                int width, int height) {
             assert mNativeContentViewRenderView != 0;
             assert mSurfaceData == ContentViewRenderView.this.mCurrent;
             ContentViewRenderViewJni.get().surfaceChanged(mNativeContentViewRenderView,
-                    canBeUsedWithSurfaceControl, width, height, surface);
+                    canBeUsedWithSurfaceControl, format, width, height, surface);
             if (mWebContents != null) {
                 ContentViewRenderViewJni.get().onPhysicalBackingSizeChanged(
                         mNativeContentViewRenderView, mWebContents, width, height);
@@ -416,10 +416,10 @@ public class ContentViewRenderView extends FrameLayout {
         }
 
         @Override
-        public void surfaceChanged(
-                Surface surface, boolean canBeUsedWithSurfaceControl, int width, int height) {
+        public void surfaceChanged(Surface surface, boolean canBeUsedWithSurfaceControl, int format,
+                int width, int height) {
             if (mMarkedForDestroy) return;
-            mListener.surfaceChanged(surface, canBeUsedWithSurfaceControl, width, height);
+            mListener.surfaceChanged(surface, canBeUsedWithSurfaceControl, format, width, height);
             mNumSurfaceViewSwapsUntilVisible = 2;
         }
 
@@ -468,7 +468,7 @@ public class ContentViewRenderView extends FrameLayout {
 
         @Override
         public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-            mListener.surfaceChanged(holder.getSurface(), true, width, height);
+            mListener.surfaceChanged(holder.getSurface(), true, format, width, height);
         }
 
         @Override
@@ -509,7 +509,7 @@ public class ContentViewRenderView extends FrameLayout {
                 mCurrentSurfaceTexture = surfaceTexture;
                 mCurrentSurface = new Surface(mCurrentSurfaceTexture);
             }
-            mListener.surfaceChanged(mCurrentSurface, false, width, height);
+            mListener.surfaceChanged(mCurrentSurface, false, PixelFormat.OPAQUE, width, height);
         }
 
         @Override
@@ -688,7 +688,7 @@ public class ContentViewRenderView extends FrameLayout {
         void surfaceCreated(long nativeContentViewRenderView);
         void surfaceDestroyed(long nativeContentViewRenderView, boolean cacheBackBuffer);
         void surfaceChanged(long nativeContentViewRenderView, boolean canBeUsedWithSurfaceControl,
-                int width, int height, Surface surface);
+                int format, int width, int height, Surface surface);
         void evictCachedSurface(long nativeContentViewRenderView);
         ResourceManager getResourceManager(long nativeContentViewRenderView);
     }

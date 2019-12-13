@@ -12,6 +12,7 @@
 #include "components/download/internal/common/parallel_download_utils.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_stats.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace download {
@@ -25,7 +26,7 @@ ParallelDownloadJob::ParallelDownloadJob(
     const DownloadCreateInfo& create_info,
     URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
         url_loader_factory_provider,
-    service_manager::Connector* connector)
+    DownloadJobFactory::WakeLockProviderBinder wake_lock_provider_binder)
     : DownloadJobImpl(download_item, std::move(cancel_request_callback), true),
       initial_request_offset_(create_info.offset),
       initial_received_slices_(download_item->GetReceivedSlices()),
@@ -34,7 +35,7 @@ ParallelDownloadJob::ParallelDownloadJob(
       is_canceled_(false),
       range_support_(create_info.accept_range),
       url_loader_factory_provider_(std::move(url_loader_factory_provider)),
-      connector_(connector) {}
+      wake_lock_provider_binder_(std::move(wake_lock_provider_binder)) {}
 
 ParallelDownloadJob::~ParallelDownloadJob() = default;
 
@@ -287,8 +288,12 @@ void ParallelDownloadJob::CreateRequest(int64_t offset) {
       network::mojom::RedirectMode::kError);
 
   // Send the request.
+  mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider;
+  wake_lock_provider_binder_.Run(
+      wake_lock_provider.InitWithNewPipeAndPassReceiver());
   worker->SendRequest(std::move(download_params),
-                      url_loader_factory_provider_.get(), connector_);
+                      url_loader_factory_provider_.get(),
+                      std::move(wake_lock_provider));
   DCHECK(workers_.find(offset) == workers_.end());
   workers_[offset] = std::move(worker);
 }

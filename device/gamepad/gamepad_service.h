@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/singleton.h"
+#include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/gamepad_export.h"
 #include "device/gamepad/gamepad_provider.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
@@ -24,13 +25,8 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace device {
 class GamepadConsumer;
-class GamepadDataFetcher;
 class GamepadProvider;
 
 // Owns the GamepadProvider (the background polling thread) and keeps track of
@@ -45,11 +41,9 @@ class DEVICE_GAMEPAD_EXPORT GamepadService
   // Sets the GamepadService instance. Exposed for tests.
   static void SetInstance(GamepadService*);
 
-  // Initializes the GamepadService. |service_manager_connector| will be
-  // passed to the GamepadProvider once it is created, to allow data fetchers
-  // to access the device service from the polling thread.
-  void StartUp(
-      std::unique_ptr<service_manager::Connector> service_manager_connector);
+  // Initializes the GamepadService. |hid_manager_binder| should be callable
+  // from any sequence.
+  void StartUp(GamepadDataFetcher::HidManagerBinder hid_manager_binder);
 
   // Increments the number of users of the provider. The Provider is running
   // when there's > 0 users, and is paused when the count drops to 0.
@@ -166,9 +160,6 @@ class DEVICE_GAMEPAD_EXPORT GamepadService
   int num_active_consumers_ = 0;
 
   bool gesture_callback_pending_ = false;
-
-  // Service manager connector. Must be used only on the main thread.
-  std::unique_ptr<service_manager::Connector> service_manager_connector_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadService);
 };

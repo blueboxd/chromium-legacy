@@ -39,7 +39,6 @@
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/text_input_state.h"
 #include "content/common/widget_messages.h"
-#include "content/public/browser/guest_mode.h"
 #include "content/public/browser/render_process_host.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "third_party/blink/public/platform/web_touch_event.h"

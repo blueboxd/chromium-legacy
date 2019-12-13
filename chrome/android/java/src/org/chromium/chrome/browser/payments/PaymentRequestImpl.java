@@ -111,10 +111,9 @@ import java.util.Set;
  * third_party/blink/public/mojom/payments/payment_request.mojom.
  */
 public class PaymentRequestImpl
-        implements PaymentRequest, PaymentRequestUI.Client, PaymentApp.InstrumentsCallback,
-                   PaymentApp.PaymentRequestUpdateEventCallback, PaymentInstrument.AbortCallback,
-                   PaymentInstrument.InstrumentDetailsCallback,
-                   PaymentAppFactory.PaymentAppCreatedCallback,
+        implements PaymentRequest, PaymentRequestUI.Client, PaymentAppFactoryDelegate,
+                   PaymentAppFactoryParams, PaymentApp.PaymentRequestUpdateEventCallback,
+                   PaymentInstrument.AbortCallback, PaymentInstrument.InstrumentDetailsCallback,
                    PaymentResponseHelper.PaymentResponseRequesterDelegate, FocusChangedObserver,
                    NormalizedAddressRequestDelegate, SettingsAutofillAndPaymentsObserver.Observer,
                    PaymentHandlerHostDelegate, PaymentDetailsConverter.MethodChecker,
@@ -477,9 +476,9 @@ public class PaymentRequestImpl
     private int mShippingType;
     private SectionInformation mShippingAddressesSection;
     private ContactDetailsSection mContactSection;
-    private List<PaymentApp> mApps;
-    private List<PaymentApp> mPendingApps;
-    private List<PaymentInstrument> mPendingInstruments;
+    private boolean mIsFinishedQueryingPaymentApps;
+    private AutofillPaymentApp mAutofillPaymentAppFactory;
+    private List<PaymentInstrument> mPendingInstruments = new ArrayList<>();
     private int mPaymentMethodsSectionAdditionalTextResourceId;
     private SectionInformation mPaymentMethodsSection;
     private PaymentRequestUI mUI;
@@ -526,7 +525,7 @@ public class PaymentRequestImpl
     private boolean mDidRecordShowEvent;
 
     /** True if any of the requested payment methods are supported. */
-    private boolean mArePaymentMethodsSupported;
+    private boolean mCanMakePayment;
 
     /**
      * True after at least one usable payment instrument has been found and the setting allows
@@ -596,8 +595,6 @@ public class PaymentRequestImpl
 
         mCertificateChain = CertificateChainHelper.getCertificateChain(mWebContents);
 
-        mApps = new ArrayList<>();
-
         mIsIncognito = mDelegate.isIncognito(ChromeActivity.fromWebContents(mWebContents));
 
         // Do not persist changes on disk in incognito mode.
@@ -662,7 +659,7 @@ public class PaymentRequestImpl
             // Don't show any UI. Resolve .canMakePayment() with "false". Reject .show() with
             // "NotSupportedError".
             mQueryForQuota = new HashMap<>();
-            onAllPaymentAppsCreated();
+            onDoneCreatingPaymentApps(/*factory=*/null);
             return;
         }
 
@@ -678,7 +675,7 @@ public class PaymentRequestImpl
             // Don't show any UI. Resolve .canMakePayment() with "false". Reject .show() with
             // "NotSupportedError".
             mQueryForQuota = new HashMap<>();
-            onAllPaymentAppsCreated();
+            onDoneCreatingPaymentApps(/*factory=*/null);
             return;
         }
 
@@ -762,11 +759,7 @@ public class PaymentRequestImpl
             mHaveRequestedAutofillData &= haveCompleteContactInfo;
         }
 
-        boolean mayCrawl = !mUserCanAddCreditCard
-                || PaymentsExperimentalFeatures.isEnabled(
-                        ChromeFeatureList.WEB_PAYMENTS_ALWAYS_ALLOW_JUST_IN_TIME_PAYMENT_APP);
-        PaymentAppFactory.getInstance().create(mWebContents,
-                Collections.unmodifiableMap(mMethodData), mayCrawl, this /* callback */);
+        PaymentAppService.getInstance().create(/*delegate=*/this);
 
         // Log the various types of payment methods that were requested by the merchant.
         boolean requestedMethodGoogle = false;
@@ -794,7 +787,7 @@ public class PaymentRequestImpl
     private void calculateWhetherShouldSkipShowingPaymentRequestUi() {
         // This should be called after all payment instruments are ready and request.show() is
         // called, since only then whether or not should skip payment sheet UI is determined.
-        assert isFinishedQueryingPaymentApps();
+        assert mIsFinishedQueryingPaymentApps;
         assert mIsCurrentPaymentRequestShowing;
 
         assert mPaymentMethodsSection != null;
@@ -1030,7 +1023,7 @@ public class PaymentRequestImpl
             return;
         }
 
-        if (isFinishedQueryingPaymentApps()) {
+        if (mIsFinishedQueryingPaymentApps) {
             // Calculate skip ui and build ui only after all payment instruments are ready and
             // request.show() is called.
             calculateWhetherShouldSkipShowingPaymentRequestUi();
@@ -1062,7 +1055,7 @@ public class PaymentRequestImpl
         // If we are skipping showing the Payment Request UI, we should call into the
         // PaymentApp immediately after we determine the instruments are ready and UI is shown.
         if ((mShouldSkipShowingPaymentRequestUi || mSkipToGPayHelper != null)
-                && isFinishedQueryingPaymentApps() && mIsCurrentPaymentRequestShowing
+                && mIsFinishedQueryingPaymentApps && mIsCurrentPaymentRequestShowing
                 && !mWaitForUpdatedDetails) {
             assert !mPaymentMethodsSection.isEmpty();
             assert mUI != null;
@@ -1177,127 +1170,6 @@ public class PaymentRequestImpl
         return Collections.unmodifiableMap(result);
     }
 
-    @Override
-    public void onPaymentAppCreated(PaymentApp paymentApp) {
-        mApps.add(paymentApp);
-    }
-
-    @Override
-    public void onGetPaymentAppsError(String errorMessage) {
-        if (TextUtils.isEmpty(mRejectShowErrorMessage)) mRejectShowErrorMessage = errorMessage;
-    }
-
-    @Override
-    public void onAllPaymentAppsCreated() {
-        if (mClient == null) return;
-
-        assert mPendingApps == null;
-
-        dedupePaymentApps();
-
-        mPendingApps = new ArrayList<>(mApps);
-        mPendingInstruments = new ArrayList<>();
-
-        Map<PaymentApp, Map<String, PaymentMethodData>> queryApps = new ArrayMap<>();
-        for (int i = 0; i < mApps.size(); i++) {
-            PaymentApp app = mApps.get(i);
-            Map<String, PaymentMethodData> appMethods =
-                    filterMerchantMethodData(mMethodData, app.getAppMethodNames());
-            if (appMethods == null || !app.supportsMethodsAndData(appMethods)) {
-                mPendingApps.remove(app);
-            } else {
-                mArePaymentMethodsSupported = true;
-                queryApps.put(app, appMethods);
-            }
-        }
-
-        if (mIsCanMakePaymentResponsePending) {
-            // canMakePayment doesn't need to wait for all apps to be queried because it only needs
-            // to test the existence of a payment handler.
-            respondCanMakePaymentQuery();
-        }
-
-        if (mIsHasEnrolledInstrumentResponsePending && queryApps.isEmpty()) {
-            respondHasEnrolledInstrumentQuery(mHasEnrolledInstrument);
-        }
-
-        if (disconnectIfNoPaymentMethodsSupported()) return;
-
-        for (Map.Entry<PaymentApp, Map<String, PaymentMethodData>> q : queryApps.entrySet()) {
-            q.getKey().setPaymentRequestUpdateEventCallback(this);
-            q.getKey().getInstruments(mId, q.getValue(), mTopLevelOrigin, mPaymentRequestOrigin,
-                    mCertificateChain,
-                    mModifiers == null ? new HashMap<>() : Collections.unmodifiableMap(mModifiers),
-                    this);
-        }
-    }
-
-    // Dedupe payment apps according to preferred related applications and can deduped application.
-    // Note that this is only work for deduping service worker based payment app from native Android
-    // payment app for now. The identifier of a native Android payment app is its package name. The
-    // identifier of a service worker based payment app is its registration scope which equals to
-    // corresponding native android payment app's default method name.
-    private void dedupePaymentApps() {
-        // Dedupe ServiceWorkerPaymentApp according to preferred related applications from
-        // ServiceWorkerPaymentApps.
-        Set<String> appIdentifiers = new HashSet<>();
-        for (int i = 0; i < mApps.size(); i++) {
-            appIdentifiers.add(mApps.get(i).getAppIdentifier());
-        }
-        List<PaymentApp> appsToDedupe = new ArrayList<>();
-        for (int i = 0; i < mApps.size(); i++) {
-            Set<String> applicationIds = mApps.get(i).getPreferredRelatedApplicationIds();
-            if (applicationIds == null || applicationIds.isEmpty()) continue;
-            for (String id : applicationIds) {
-                if (appIdentifiers.contains(id)) {
-                    appsToDedupe.add(mApps.get(i));
-                    break;
-                }
-            }
-        }
-        if (!appsToDedupe.isEmpty()) mApps.removeAll(appsToDedupe);
-
-        // Dedupe ServiceWorkerPaymentApp according to can deduped applications from native android
-        // payment apps.
-        Set<String> canDedupedApplicationIds = new HashSet<>();
-        for (int i = 0; i < mApps.size(); i++) {
-            URI canDedupedApplicationIdUri = mApps.get(i).getCanDedupedApplicationId();
-            if (canDedupedApplicationIdUri == null) continue;
-            String canDedupedApplicationId = canDedupedApplicationIdUri.toString();
-            if (TextUtils.isEmpty(canDedupedApplicationId)) continue;
-            canDedupedApplicationIds.add(canDedupedApplicationId);
-            // Add the trailing slash, because Service worker registration scope is a directory path
-            // that must end with a '/' (e.g., "https://google.com/pay/"), whereas
-            // "canDedupedApplicationIdUri" is derived from the native Android payment app's default
-            // URL-based payment method name that may not necessarily specify the trailing slash
-            // (e.g., "https://google.com/pay").
-            if (canDedupedApplicationId.charAt(canDedupedApplicationId.length() - 1) != '/') {
-                canDedupedApplicationIds.add(canDedupedApplicationId + '/');
-            }
-        }
-        for (String appId : canDedupedApplicationIds) {
-            for (int i = 0; i < mApps.size(); i++) {
-                if (appId.equals(mApps.get(i).getAppIdentifier())) {
-                    mApps.remove(i);
-                    break;
-                }
-            }
-        }
-    }
-
-    /** Filter out merchant method data that's not relevant to a payment app. Can return null. */
-    private static Map<String, PaymentMethodData> filterMerchantMethodData(
-            Map<String, PaymentMethodData> merchantMethodData, Set<String> appMethods) {
-        Map<String, PaymentMethodData> result = null;
-        for (String method : appMethods) {
-            if (merchantMethodData.containsKey(method)) {
-                if (result == null) result = new ArrayMap<>();
-                result.put(method, merchantMethodData.get(method));
-            }
-        }
-        return result == null ? null : Collections.unmodifiableMap(result);
-    }
-
     /** Called by the payment app to get updated total based on the billing address, for example. */
     @Override
     public boolean changePaymentMethodFromInvokedApp(String methodName, String stringifiedDetails) {
@@ -1410,8 +1282,8 @@ public class PaymentRequestImpl
         assert mInvokedPaymentInstrument instanceof ServiceWorkerPaymentApp;
         assert Origin.create(url.toString())
                 .equals(Origin.create(((ServiceWorkerPaymentApp) mInvokedPaymentInstrument)
-                        .getScope()
-                        .toString()));
+                                              .getScope()
+                                              .toString()));
 
         if (mPaymentHandlerUi != null) return false;
         mPaymentHandlerUi = new PaymentHandlerCoordinator();
@@ -1544,7 +1416,7 @@ public class PaymentRequestImpl
 
         triggerPaymentAppUiSkipIfApplicable(chromeActivity);
 
-        if (isFinishedQueryingPaymentApps() && !mShouldSkipShowingPaymentRequestUi) {
+        if (mIsFinishedQueryingPaymentApps && !mShouldSkipShowingPaymentRequestUi) {
             enableUserInterfaceAfterPaymentRequestUpdateEvent();
         }
     }
@@ -1824,7 +1696,7 @@ public class PaymentRequestImpl
         // mUI.show() is called only after request.show() is called and all payment instruments are
         // ready.
         assert mIsCurrentPaymentRequestShowing;
-        assert isFinishedQueryingPaymentApps();
+        assert mIsFinishedQueryingPaymentApps;
 
         if (mWaitForUpdatedDetails) return;
 
@@ -2437,19 +2309,20 @@ public class PaymentRequestImpl
 
     @Override
     public void onCreditCardUpdated(CreditCard card) {
-        if (mClient == null) return;
-        if (!mMerchantSupportsAutofillPaymentInstruments || mPaymentMethodsSection == null) return;
-
-        PaymentInstrument updatedAutofillPaymentInstruments = null;
-        for (PaymentApp app : mApps) {
-            if (app instanceof AutofillPaymentApp) {
-                updatedAutofillPaymentInstruments =
-                        ((AutofillPaymentApp) app).getInstrumentForCard(card);
-            }
+        if (mClient == null || !mMerchantSupportsAutofillPaymentInstruments
+                || mPaymentMethodsSection == null || mAutofillPaymentAppFactory == null) {
+            return;
         }
-        if (updatedAutofillPaymentInstruments == null) return;
 
-        mPaymentMethodsSection.addAndSelectOrUpdateItem(updatedAutofillPaymentInstruments);
+        PaymentInstrument updatedAutofillPaymentInstrument =
+                mAutofillPaymentAppFactory.getInstrumentForCard(card);
+
+        // Can be null when the card added through settings does not match the requested card
+        // network or is invalid, because autofill settings do not perform the same level of
+        // validation as Basic Card implementation in Chrome.
+        if (updatedAutofillPaymentInstrument == null) return;
+
+        mPaymentMethodsSection.addAndSelectOrUpdateItem(updatedAutofillPaymentInstrument);
 
         updateInstrumentModifiedTotals();
 
@@ -2481,7 +2354,7 @@ public class PaymentRequestImpl
 
         if (mNativeObserverForTest != null) mNativeObserverForTest.onCanMakePaymentCalled();
 
-        if (isFinishedQueryingPaymentApps()) {
+        if (mIsFinishedQueryingPaymentApps) {
             respondCanMakePaymentQuery();
         } else {
             mIsCanMakePaymentResponsePending = true;
@@ -2493,7 +2366,7 @@ public class PaymentRequestImpl
 
         mIsCanMakePaymentResponsePending = false;
 
-        boolean response = mArePaymentMethodsSupported && mDelegate.prefsCanMakePayment();
+        boolean response = mCanMakePayment && mDelegate.prefsCanMakePayment();
         mClient.onCanMakePayment(response ? CanMakePaymentQueryResult.CAN_MAKE_PAYMENT
                                           : CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
 
@@ -2516,7 +2389,7 @@ public class PaymentRequestImpl
 
         mHasEnrolledInstrumentUsesPerMethodQuota = perMethodQuota;
 
-        if (isFinishedQueryingPaymentApps()) {
+        if (mIsFinishedQueryingPaymentApps) {
             respondHasEnrolledInstrumentQuery(mHasEnrolledInstrument);
         } else {
             mIsHasEnrolledInstrumentResponsePending = true;
@@ -2589,60 +2462,139 @@ public class PaymentRequestImpl
         if (mNativeObserverForTest != null) mNativeObserverForTest.onConnectionTerminated();
     }
 
-    /**
-     * Called after retrieving the list of payment instruments in an app.
-     */
+    // PaymentAppFactoryParams implementation.
     @Override
-    public void onInstrumentsReady(PaymentApp app, List<PaymentInstrument> instruments) {
+    public WebContents getWebContents() {
+        return mWebContents;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public Map<String, PaymentMethodData> getMethodData() {
+        return mMethodData;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public String getId() {
+        return mId;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public String getTopLevelOrigin() {
+        return mTopLevelOrigin;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public String getPaymentRequestOrigin() {
+        return mPaymentRequestOrigin;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    @Nullable
+    public byte[][] getCertificateChain() {
+        return mCertificateChain;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public Map<String, PaymentDetailsModifier> getModifiers() {
+        return mModifiers == null ? new HashMap<>() : Collections.unmodifiableMap(mModifiers);
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public boolean getMayCrawl() {
+        return !mUserCanAddCreditCard
+                || PaymentsExperimentalFeatures.isEnabled(
+                        ChromeFeatureList.WEB_PAYMENTS_ALWAYS_ALLOW_JUST_IN_TIME_PAYMENT_APP);
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public PaymentApp.PaymentRequestUpdateEventCallback getPaymentRequestUpdateEventCallback() {
+        return this;
+    }
+
+    // PaymentAppFactoryDelegate implementation.
+    @Override
+    public PaymentAppFactoryParams getParams() {
+        return this;
+    }
+
+    // PaymentAppFactoryDelegate implementation.
+    @Override
+    public void onCanMakePaymentCalculated(boolean canMakePayment) {
         if (mClient == null) return;
-        mPendingApps.remove(app);
 
-        if (instruments != null) {
-            for (int i = 0; i < instruments.size(); i++) {
-                PaymentInstrument instrument = instruments.get(i);
-                Set<String> instrumentMethodNames =
-                        new HashSet<>(instrument.getInstrumentMethodNames());
-                instrumentMethodNames.retainAll(mMethodData.keySet());
-                if (!instrumentMethodNames.isEmpty()) {
-                    mHideServerAutofillInstruments |=
-                            instrument.isServerAutofillInstrumentReplacement();
-                    instrument.setHaveRequestedAutofillData(mHaveRequestedAutofillData);
-                    mHasEnrolledInstrument |= instrument.canMakePayment();
-                    mHasNonAutofillInstrument |= !instrument.isAutofillInstrument();
-                    mPendingInstruments.add(instrument);
+        mCanMakePayment = canMakePayment;
 
-                    if (instrument.isAutofillInstrument()) {
-                        mJourneyLogger.setEventOccurred(Event.AVAILABLE_METHOD_BASIC_CARD);
-                    } else if (instrumentMethodNames.contains(MethodStrings.GOOGLE_PAY)
-                            || instrumentMethodNames.contains(MethodStrings.ANDROID_PAY)) {
-                        mJourneyLogger.setEventOccurred(Event.AVAILABLE_METHOD_GOOGLE);
-                    } else {
-                        mJourneyLogger.setEventOccurred(Event.AVAILABLE_METHOD_OTHER);
-                    }
-                } else {
-                    instrument.dismissInstrument();
-                }
-            }
+        if (!mIsCanMakePaymentResponsePending) return;
+
+        // canMakePayment doesn't need to wait for all apps to be queried because it only needs to
+        // test the existence of a payment handler.
+        respondCanMakePaymentQuery();
+    }
+
+    // PaymentAppFactoryDelegate implementation.
+    @Override
+    public void onAdditionalTextResourceId(int additionalTextResourceId) {
+        assert additionalTextResourceId != 0;
+        assert mPaymentMethodsSectionAdditionalTextResourceId == 0;
+        mPaymentMethodsSectionAdditionalTextResourceId = additionalTextResourceId;
+    }
+
+    // PaymentAppFactoryDelegate implementation.
+    @Override
+    public void onAutofillPaymentAppFactoryCreated(AutofillPaymentApp factory) {
+        mAutofillPaymentAppFactory = factory;
+    }
+
+    // PaymentAppFactoryDelegate implementation.
+    @Override
+    public void onPaymentAppCreated(PaymentInstrument paymentApp) {
+        if (mClient == null) return;
+
+        mHideServerAutofillInstruments |= paymentApp.isServerAutofillInstrumentReplacement();
+        paymentApp.setHaveRequestedAutofillData(mHaveRequestedAutofillData);
+        mHasEnrolledInstrument |= paymentApp.canMakePayment();
+        mHasNonAutofillInstrument |= !paymentApp.isAutofillInstrument();
+
+        if (paymentApp.isAutofillInstrument()) {
+            mJourneyLogger.setEventOccurred(Event.AVAILABLE_METHOD_BASIC_CARD);
+        } else if (paymentApp.getInstrumentMethodNames().contains(MethodStrings.GOOGLE_PAY)
+                || paymentApp.getInstrumentMethodNames().contains(MethodStrings.ANDROID_PAY)) {
+            mJourneyLogger.setEventOccurred(Event.AVAILABLE_METHOD_GOOGLE);
+        } else {
+            mJourneyLogger.setEventOccurred(Event.AVAILABLE_METHOD_OTHER);
         }
+
+        mPendingInstruments.add(paymentApp);
+    }
+
+    // PaymentAppFactoryDelegate implementation.
+    @Override
+    public void onPaymentAppCreationError(String errorMessage) {
+        if (TextUtils.isEmpty(mRejectShowErrorMessage)) mRejectShowErrorMessage = errorMessage;
+    }
+
+    // PaymentAppFactoryDelegate implementation.
+    @Override
+    public void onDoneCreatingPaymentApps(PaymentAppFactoryInterface factory /* Unused */) {
+        mIsFinishedQueryingPaymentApps = true;
+
+        if (mClient == null || disconnectIfNoPaymentMethodsSupported()) return;
 
         // Always return false when can make payment is disabled.
         mHasEnrolledInstrument &= mDelegate.prefsCanMakePayment();
 
-        int additionalTextResourceId = app.getAdditionalAppTextResourceId();
-        if (additionalTextResourceId != 0) {
-            assert mPaymentMethodsSectionAdditionalTextResourceId == 0;
-            assert app instanceof AutofillPaymentApp;
-            mPaymentMethodsSectionAdditionalTextResourceId = additionalTextResourceId;
-        }
-
-        // Some payment apps still have not responded. Continue waiting for them.
-        if (!mPendingApps.isEmpty()) return;
-
-        if (disconnectIfNoPaymentMethodsSupported()) return;
-
         if (mHideServerAutofillInstruments) {
             List<PaymentInstrument> nonServerAutofillInstruments = new ArrayList<>();
-            for (int i = 0; i < mPendingInstruments.size(); i++) {
+            int numberOfPendingInstruments = mPendingInstruments.size();
+            for (int i = 0; i < numberOfPendingInstruments; i++) {
                 if (!mPendingInstruments.get(i).isServerAutofillInstrument()) {
                     nonServerAutofillInstruments.add(mPendingInstruments.get(i));
                 }
@@ -2719,8 +2671,6 @@ public class PaymentRequestImpl
 
         mPendingInstruments.clear();
 
-        if (disconnectIfNoPaymentMethodsSupported()) return;
-
         updateInstrumentModifiedTotals();
 
         SettingsAutofillAndPaymentsObserver.getInstance().registerObserver(this);
@@ -2743,20 +2693,20 @@ public class PaymentRequestImpl
      * @return Whether client has been disconnected.
      */
     private boolean disconnectIfNoPaymentMethodsSupported() {
-        if (!isFinishedQueryingPaymentApps() || !mIsCurrentPaymentRequestShowing) return false;
+        if (!mIsFinishedQueryingPaymentApps || !mIsCurrentPaymentRequestShowing) return false;
         if (mNativeObserverForTest != null) {
             mNativeObserverForTest.onShowAppsReady();
         }
 
-        boolean foundPaymentMethods =
-                mPaymentMethodsSection != null && !mPaymentMethodsSection.isEmpty();
+        boolean havePaymentInstruments = !mPendingInstruments.isEmpty()
+                || (mPaymentMethodsSection != null && !mPaymentMethodsSection.isEmpty());
 
-        if (!mArePaymentMethodsSupported
-                || (!foundPaymentMethods && !mMerchantSupportsAutofillPaymentInstruments)) {
+        if (!mCanMakePayment
+                || (!havePaymentInstruments && !mMerchantSupportsAutofillPaymentInstruments)) {
             // All payment apps have responded, but none of them have instruments. It's possible to
             // add credit cards, but the merchant does not support them either. The payment request
             // must be rejected.
-            mJourneyLogger.setNotShown(mArePaymentMethodsSupported
+            mJourneyLogger.setNotShown(mCanMakePayment
                             ? NotShownReason.NO_MATCHING_PAYMENT_METHOD
                             : NotShownReason.NO_SUPPORTED_PAYMENT_METHOD);
             if (mIsProhibitedOriginOrInvalidSsl) {
@@ -2805,11 +2755,6 @@ public class PaymentRequestImpl
                 PaymentErrorReason.NOT_SUPPORTED);
 
         return true;
-    }
-
-    /** @return True after payment apps have been queried. */
-    private boolean isFinishedQueryingPaymentApps() {
-        return mPendingApps != null && mPendingApps.isEmpty() && mPendingInstruments.isEmpty();
     }
 
     /**

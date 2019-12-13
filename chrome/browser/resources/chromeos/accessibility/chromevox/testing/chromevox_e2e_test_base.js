@@ -39,12 +39,14 @@ ChromeVoxE2ETest.prototype = {
 #include "base/callback.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "extensions/common/extension_l10n_util.h"
     `);
   },
 
   /** @override */
   testGenPreamble: function() {
     GEN(`
+  auto allow = extension_l10n_util::AllowGzippedMessagesAllowedForTest();
   base::Closure load_cb =
       base::Bind(&chromeos::AccessibilityManager::EnableSpokenFeedback,
           base::Unretained(chromeos::AccessibilityManager::Get()),

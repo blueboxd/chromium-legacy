@@ -36,6 +36,26 @@ void QuicRecordTestOutputToFile(QuicStringPiece filename,
   QUIC_LOG(INFO) << "Recorded test output into " << path;
 }
 
+void QuicSaveTestOutputImpl(QuicStringPiece filename, QuicStringPiece data) {
+  QuicRecordTestOutputToFile(filename, data);
+}
+
+bool QuicLoadTestOutputImpl(QuicStringPiece filename, std::string* data) {
+  std::string output_dir;
+  if (!base::Environment::Create()->GetVar("QUIC_TEST_OUTPUT_DIR",
+                                           &output_dir) ||
+      output_dir.empty()) {
+    QUIC_LOG(WARNING) << "Failed to load " << filename
+                      << " because QUIC_TEST_OUTPUT_DIR is not set";
+    return false;
+  }
+
+  auto path = base::FilePath::FromUTF8Unsafe(output_dir)
+                  .Append(base::FilePath::FromUTF8Unsafe(filename));
+
+  return base::ReadFileToString(path, data);
+}
+
 void QuicRecordTraceImpl(QuicStringPiece identifier, QuicStringPiece data) {
   const testing::TestInfo* test_info =
       testing::UnitTest::GetInstance()->current_test_info();

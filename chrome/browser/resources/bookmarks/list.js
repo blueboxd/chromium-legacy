@@ -130,10 +130,11 @@ Polymer({
     if (this.matches(':focus-within')) {
       if (this.selectedItems_.size > 0) {
         const selectedId = Array.from(this.selectedItems_)[0];
-        skipFocus = newValue.some(id => id == selectedId);
-        selectIndex = this.displayedList_.findIndex(({id}) => selectedId == id);
+        skipFocus = newValue.some(id => id === selectedId);
+        selectIndex =
+            this.displayedList_.findIndex(({id}) => selectedId === id);
       }
-      if (selectIndex == -1 && updatedList.length > 0) {
+      if (selectIndex === -1 && updatedList.length > 0) {
         selectIndex = 0;
       } else {
         selectIndex = Math.min(selectIndex, updatedList.length - 1);
@@ -192,7 +193,7 @@ Polymer({
 
   /** @private */
   isEmptyList_: function() {
-    return this.displayedList_.length == 0;
+    return this.displayedList_.length === 0;
   },
 
   /** @private */
@@ -209,12 +210,12 @@ Polymer({
   },
 
   /**
-   * @param {Event} e
+   * @param {!CustomEvent<{source: !MenuSource}>} e
    * @private
    */
   onOpenCommandMenu_: function(e) {
     // If the item is not visible, scroll to it before rendering the menu.
-    if (e.source == MenuSource.ITEM) {
+    if (e.detail.source === MenuSource.ITEM) {
       this.scrollToId_(
           /** @type {BookmarksItemElement} */ (e.composedPath()[0]).itemId);
     }
@@ -231,7 +232,7 @@ Polymer({
     // This should only matter if an unrelated update to the bookmark model
     // happens with the perfect timing to end up in a tracked batch update.
     const toHighlight = /** @type {!Array<string>} */
-        (e.detail.filter((item) => this.displayedIds_.indexOf(item) != -1));
+        (e.detail.filter((item) => this.displayedIds_.indexOf(item) !== -1));
 
     if (toHighlight.length <= 0) {
       return;
@@ -244,7 +245,7 @@ Polymer({
     this.async(function() {
       this.scrollToId_(leadId);
       const leadIndex = this.displayedIds_.indexOf(leadId);
-      assert(leadIndex != -1);
+      assert(leadIndex !== -1);
       this.$.list.focusItem(leadIndex);
     });
   },
@@ -261,20 +262,20 @@ Polymer({
         this.getIndexForItemElement_(/** @type {HTMLElement} */ (e.target));
     const oldFocusedIndex = focusedIndex;
     const cursorModifier = isMac ? e.metaKey : e.ctrlKey;
-    if (e.key == 'ArrowUp') {
+    if (e.key === 'ArrowUp') {
       focusedIndex--;
       focusMoved = true;
-    } else if (e.key == 'ArrowDown') {
+    } else if (e.key === 'ArrowDown') {
       focusedIndex++;
       focusMoved = true;
       e.preventDefault();
-    } else if (e.key == 'Home') {
+    } else if (e.key === 'Home') {
       focusedIndex = 0;
       focusMoved = true;
-    } else if (e.key == 'End') {
+    } else if (e.key === 'End') {
       focusedIndex = list.items.length - 1;
       focusMoved = true;
-    } else if (e.key == ' ' && cursorModifier) {
+    } else if (e.key === ' ' && cursorModifier) {
       this.dispatch(
           selectItem(this.displayedIds_[focusedIndex], this.getState(), {
             clear: false,
@@ -293,7 +294,7 @@ Polymer({
         this.dispatch(updateAnchor(this.displayedIds_[focusedIndex]));
       } else {
         // If shift-selecting with no anchor, use the old focus index.
-        if (e.shiftKey && this.getState().selection.anchor == null) {
+        if (e.shiftKey && this.getState().selection.anchor === null) {
           this.dispatch(updateAnchor(this.displayedIds_[oldFocusedIndex]));
         }
 
@@ -311,8 +312,8 @@ Polymer({
     }
 
     // Prevent the iron-list from changing focus on enter.
-    if (e.key == 'Enter') {
-      if (e.composedPath()[0].tagName == 'CR-ICON-BUTTON') {
+    if (e.key === 'Enter') {
+      if (e.composedPath()[0].tagName === 'CR-ICON-BUTTON') {
         return;
       }
       if (e.composedPath()[0] instanceof HTMLButtonElement) {

@@ -951,6 +951,9 @@ component("net") {
       "quiche/common/platform/impl/quiche_endian_impl.h",
       "quiche/common/platform/impl/quiche_export_impl.h",
       "quiche/common/platform/impl/quiche_logging_impl.h",
+      "quiche/common/platform/impl/quiche_str_cat_impl.h",
+      "quiche/common/platform/impl/quiche_string_piece_impl.h",
+      "quiche/common/platform/impl/quiche_text_utils_impl.h",
       "quiche/common/platform/impl/quiche_unordered_containers_impl.h",
       "socket/client_socket_factory.cc",
       "socket/client_socket_factory.h",
@@ -1043,7 +1046,6 @@ component("net") {
       "spdy/platform/impl/spdy_string_utils_impl.cc",
       "spdy/platform/impl/spdy_string_utils_impl.h",
       "spdy/platform/impl/spdy_test_utils_prod_impl.h",
-      "spdy/platform/impl/spdy_unsafe_arena_impl.h",
       "spdy/server_push_delegate.h",
       "spdy/spdy_buffer.cc",
       "spdy/spdy_buffer.h",
@@ -1081,6 +1083,9 @@ component("net") {
       "third_party/quiche/src/common/platform/api/quiche_endian.h",
       "third_party/quiche/src/common/platform/api/quiche_export.h",
       "third_party/quiche/src/common/platform/api/quiche_logging.h",
+      "third_party/quiche/src/common/platform/api/quiche_str_cat.h",
+      "third_party/quiche/src/common/platform/api/quiche_string_piece.h",
+      "third_party/quiche/src/common/platform/api/quiche_text_utils.h",
       "third_party/quiche/src/common/platform/api/quiche_unordered_containers.h",
       "third_party/quiche/src/common/simple_linked_hash_map.h",
       "third_party/quiche/src/http2/decoder/decode_buffer.cc",
@@ -1630,6 +1635,8 @@ component("net") {
       "third_party/quiche/src/spdy/core/spdy_framer.h",
       "third_party/quiche/src/spdy/core/spdy_header_block.cc",
       "third_party/quiche/src/spdy/core/spdy_header_block.h",
+      "third_party/quiche/src/spdy/core/spdy_header_storage.cc",
+      "third_party/quiche/src/spdy/core/spdy_header_storage.h",
       "third_party/quiche/src/spdy/core/spdy_headers_handler_interface.h",
       "third_party/quiche/src/spdy/core/spdy_intrusive_list.h",
       "third_party/quiche/src/spdy/core/spdy_pinnable_buffer_piece.cc",
@@ -1656,7 +1663,6 @@ component("net") {
       "third_party/quiche/src/spdy/platform/api/spdy_ptr_util.h",
       "third_party/quiche/src/spdy/platform/api/spdy_string_piece.h",
       "third_party/quiche/src/spdy/platform/api/spdy_string_utils.h",
-      "third_party/quiche/src/spdy/platform/api/spdy_unsafe_arena.h",
       "url_request/redirect_info.cc",
       "url_request/redirect_info.h",
       "url_request/redirect_util.cc",
@@ -2330,6 +2336,7 @@ source_set("net_public_deps") {
     ":buildflags",
     ":net_nqe_proto",
     ":net_quic_proto",
+    ":net_quic_test_tools_proto",
     "//crypto",
     "//crypto:platform",
     "//net/traffic_annotation",
@@ -2384,6 +2391,25 @@ proto_library("net_quic_proto") {
     "third_party/quiche/src/quic/core/proto/cached_network_parameters.proto",
     "third_party/quiche/src/quic/core/proto/crypto_server_config.proto",
     "third_party/quiche/src/quic/core/proto/source_address_token.proto",
+  ]
+  cc_generator_options = "dllexport_decl=NET_EXPORT_PRIVATE:"
+  cc_include = "net/base/net_export.h"
+  component_build_force_source_set = true
+
+  deps = [
+    ":net_export_header",
+  ]
+
+  defines = [ "NET_IMPLEMENTATION" ]
+
+  extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
+}
+
+proto_library("net_quic_test_tools_proto") {
+  visibility = [ ":net_public_deps" ]
+
+  sources = [
+    "third_party/quiche/src/quic/test_tools/send_algorithm_test_result.proto",
   ]
   cc_generator_options = "dllexport_decl=NET_EXPORT_PRIVATE:"
   cc_include = "net/base/net_export.h"
@@ -3160,7 +3186,6 @@ if (is_linux) {
 
   executable("epoll_quic_client") {
     sources = [
-      "third_party/quiche/src/quic/tools/fake_proof_verifier.h",
       "third_party/quiche/src/quic/tools/quic_client_bin.cc",
       "third_party/quiche/src/quic/tools/quic_epoll_client_factory.cc",
       "third_party/quiche/src/quic/tools/quic_epoll_client_factory.h",
@@ -3198,7 +3223,6 @@ if (is_linux) {
   executable("quic_client_interop_test") {
     testonly = true
     sources = [
-      "third_party/quiche/src/quic/tools/fake_proof_verifier.h",
       "third_party/quiche/src/quic/tools/quic_client_interop_test_bin.cc",
     ]
     deps = [
@@ -3418,6 +3442,8 @@ source_set("quic_test_tools") {
     "third_party/quiche/src/quic/test_tools/quic_unacked_packet_map_peer.h",
     "third_party/quiche/src/quic/test_tools/rtt_stats_peer.cc",
     "third_party/quiche/src/quic/test_tools/rtt_stats_peer.h",
+    "third_party/quiche/src/quic/test_tools/send_algorithm_test_utils.cc",
+    "third_party/quiche/src/quic/test_tools/send_algorithm_test_utils.h",
     "third_party/quiche/src/quic/test_tools/simple_data_producer.cc",
     "third_party/quiche/src/quic/test_tools/simple_data_producer.h",
     "third_party/quiche/src/quic/test_tools/simple_quic_framer.cc",
@@ -3517,6 +3543,7 @@ source_set("simple_quic_tools") {
     "third_party/quiche/src/quic/core/quic_time_wait_list_manager.h",
     "third_party/quiche/src/quic/platform/api/quic_default_proof_providers.h",
     "third_party/quiche/src/quic/platform/api/quic_system_event_loop.h",
+    "third_party/quiche/src/quic/tools/fake_proof_verifier.h",
     "third_party/quiche/src/quic/tools/quic_backend_response.cc",
     "third_party/quiche/src/quic/tools/quic_backend_response.h",
     "third_party/quiche/src/quic/tools/quic_client_base.cc",
@@ -3578,7 +3605,6 @@ source_set("simple_quic_tools") {
 if (!is_ios) {
   executable("quic_client") {
     sources = [
-      "third_party/quiche/src/quic/tools/fake_proof_verifier.h",
       "third_party/quiche/src/quic/tools/quic_toy_client.cc",
       "third_party/quiche/src/quic/tools/quic_toy_client.h",
       "tools/quic/quic_simple_client_bin.cc",
@@ -5319,7 +5345,6 @@ test("net_unittests") {
     "spdy/http2_priority_dependencies_unittest.cc",
     "spdy/http2_push_promise_index_test.cc",
     "spdy/platform/impl/spdy_test_helpers_impl.h",
-    "spdy/platform/impl/spdy_unsafe_arena_impl_test.cc",
     "spdy/spdy_buffer_unittest.cc",
     "spdy/spdy_http_stream_unittest.cc",
     "spdy/spdy_http_utils_unittest.cc",
@@ -5431,6 +5456,7 @@ test("net_unittests") {
     # TODO(rch): Re-enable once the SLOW_TEST annotation is added.
     # "third_party/quiche/src/quic/core/congestion_control/bbr2_simulator_test.cc",
     "third_party/quiche/src/common/platform/api/quiche_endian_test.cc",
+    "third_party/quiche/src/common/platform/api/quiche_text_utils_test.cc",
     "third_party/quiche/src/quic/core/congestion_control/bbr_sender_test.cc",
     "third_party/quiche/src/quic/core/congestion_control/cubic_bytes_test.cc",
     "third_party/quiche/src/quic/core/congestion_control/general_loss_algorithm_test.cc",

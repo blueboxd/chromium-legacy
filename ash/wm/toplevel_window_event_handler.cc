@@ -119,6 +119,25 @@ bool CanStartGoingBackFromSplitViewDivider(const gfx::Point& screen_location) {
   if (!split_view_controller->InTabletSplitViewMode())
     return false;
 
+  // Do not enable back gesture if |screen_location| is inside the extended
+  // hotseat, let the hotseat handle the event instead.
+  Shelf* shelf = Shelf::ForWindow(root_window);
+  if (shelf->shelf_layout_manager()->hotseat_state() ==
+          HotseatState::kExtended &&
+      shelf->shelf_widget()
+          ->hotseat_widget()
+          ->GetWindowBoundsInScreen()
+          .Contains(screen_location)) {
+    return false;
+  }
+
+  // Do not enable back gesture if |screen_location| is inside the shelf widget,
+  // let the shelf handle the event instead.
+  if (shelf->shelf_widget()->GetWindowBoundsInScreen().Contains(
+          screen_location)) {
+    return false;
+  }
+
   gfx::Rect divider_bounds =
       split_view_controller->split_view_divider()->GetDividerBoundsInScreen(
           /*is_dragging=*/false);

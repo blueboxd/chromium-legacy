@@ -598,8 +598,7 @@ void D3D11H264Accelerator::Reset() {
 bool D3D11H264Accelerator::OutputPicture(scoped_refptr<H264Picture> pic) {
   D3D11H264Picture* our_pic = static_cast<D3D11H264Picture*>(pic.get());
 
-  client_->OutputResult(our_pic, our_pic->picture);
-  return true;
+  return client_->OutputResult(our_pic, our_pic->picture);
 }
 
 void D3D11H264Accelerator::RecordFailure(const std::string& reason,

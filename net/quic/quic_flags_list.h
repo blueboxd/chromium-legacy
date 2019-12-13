@@ -75,9 +75,6 @@ QUIC_FLAG(int32_t, FLAGS_quic_anti_amplification_factor, 3)
 // Enables 3 new connection options to make PROBE_RTT more aggressive
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt, false)
 
-// If true, enable QUIC v99.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_99, true)
-
 // When true, set the initial congestion control window from connection options
 // in QuicSentPacketManager rather than TcpCubicSenderBytes.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_unified_iw_options, false)
@@ -95,6 +92,12 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_ack_decimation, false)
 
 // If true, QUIC offload pacing when using USPS as egress method.
 QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_offload_pacing_to_usps2, false)
+
+// If true, default on IETF style loss detection with 1/4 RTT time threshold and
+// adaptive packet threshold.
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_default_on_ietf_loss_detection,
+          false)
 
 // Max time that QUIC can pace packets into the future in ms.
 QUIC_FLAG(int32_t, FLAGS_quic_max_pace_time_into_future_ms, 10)
@@ -232,10 +235,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pto, true)
 
 // The maximum amount of CRYPTO frame data that can be buffered.
 QUIC_FLAG(int32_t, FLAGS_quic_max_buffered_crypto_bytes, 16 * 1024)
-
-// If true, QUIC supports both QUIC Crypto and TLS 1.3 for the handshake
-// protocol.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_supports_tls_handshake, true)
 
 // If true, enable IETF loss detection as described in
 // https://tools.ietf.org/html/draft-ietf-quic-recovery-22#section-6.1.
@@ -376,3 +375,38 @@ QUIC_FLAG(bool,
 // If true, QUIC crypto handshaker uses handshaker delegate to notify session
 // about handshake events.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_handshaker_delegate2, false)
+
+// If true, disable QUIC version Q043.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q043, false)
+
+// If true, disable QUIC version Q046.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q046, false)
+
+// If true, disable QUIC version Q048.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q048, false)
+
+// If true, disable QUIC version Q049.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q049, false)
+
+// If true, disable QUIC version Q050.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q050, false)
+
+// If true, enable QUIC version Q099.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_q099, false)
+
+// If true, enable QUIC version T050.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_t050, false)
+
+// If true, enable QUIC version T099.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_t099, false)
+
+// A testonly reloadable flag that will always default to false.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_testonly_default_false, false)
+
+// If true, quic::BandwidthSampler will solely rely on RemoveObsoletePackets,
+// which is called once per congestion event, to remove packets from its
+// connection_state_map_.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_bw_sampler_remove_packets_once_per_congestion_event,
+    false)

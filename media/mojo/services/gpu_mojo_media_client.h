@@ -49,7 +49,6 @@ class GpuMojoMediaClient : public MojoMediaClient {
 
   // MojoMediaClient implementation.
   SupportedVideoDecoderConfigMap GetSupportedVideoDecoderConfigs() final;
-  void Initialize(service_manager::Connector* connector) final;
   std::unique_ptr<AudioDecoder> CreateAudioDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) final;
   std::unique_ptr<VideoDecoder> CreateVideoDecoder(

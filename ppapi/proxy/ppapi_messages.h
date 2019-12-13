@@ -157,6 +157,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(PP_PdfAccessibilityAction,
                           PP_PDF_ACCESSIBILITYACTION_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_PdfAccessibilityScrollAlignment,
                           PP_PDF_ACCESSIBILITYSCROLLALIGNMENT_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(PP_PdfAccessibilityAnnotationType,
+                          PP_PDF_ACCESSIBILITY_ANNOTATIONTYPE_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(PP_Point)
   IPC_STRUCT_TRAITS_MEMBER(x)
@@ -234,8 +236,9 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(PP_PdfAccessibilityActionData)
   IPC_STRUCT_TRAITS_MEMBER(action)
+  IPC_STRUCT_TRAITS_MEMBER(annotation_type)
   IPC_STRUCT_TRAITS_MEMBER(target_rect)
-  IPC_STRUCT_TRAITS_MEMBER(link_index)
+  IPC_STRUCT_TRAITS_MEMBER(annotation_index)
   IPC_STRUCT_TRAITS_MEMBER(page_index)
   IPC_STRUCT_TRAITS_MEMBER(horizontal_scroll_alignment)
   IPC_STRUCT_TRAITS_MEMBER(vertical_scroll_alignment)

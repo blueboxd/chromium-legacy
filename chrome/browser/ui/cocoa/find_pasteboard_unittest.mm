@@ -15,9 +15,9 @@
 // A subclass of FindPasteboard that doesn't write to the real find pasteboard.
 @interface FindPasteboardTesting : FindPasteboard {
  @public
-  int notificationCount_;
+  int _notificationCount;
  @private
-  scoped_refptr<ui::UniquePasteboard> pboard_;
+  scoped_refptr<ui::UniquePasteboard> _pboard;
 }
 - (NSPasteboard*)findPboard;
 
@@ -34,23 +34,23 @@
 - (NSPasteboard*)findPboard {
   // This method is called by the super class's -init, otherwise initialization
   // would go into this class's -init.
-  if (!pboard_)
-    pboard_ = new ui::UniquePasteboard;
-  return pboard_->get();
+  if (!_pboard)
+    _pboard = new ui::UniquePasteboard;
+  return _pboard->get();
 }
 
 - (void)callback:(id)sender {
-  ++notificationCount_;
+  ++_notificationCount;
 }
 
 - (void)setFindPboardText:(NSString*)text {
-  [pboard_->get() declareTypes:[NSArray arrayWithObject:NSStringPboardType]
+  [_pboard->get() declareTypes:[NSArray arrayWithObject:NSStringPboardType]
                          owner:nil];
-  [pboard_->get() setString:text forType:NSStringPboardType];
+  [_pboard->get() setString:text forType:NSStringPboardType];
 }
 
 - (NSString*)findPboardText {
-  return [pboard_->get() stringForType:NSStringPboardType];
+  return [_pboard->get() stringForType:NSStringPboardType];
 }
 @end
 
@@ -96,21 +96,21 @@ TEST_F(FindPasteboardTest, SendsNotificationWhenTextChanges) {
          selector:@selector(callback:)
              name:kFindPasteboardChangedNotification
            object:pboard_.get()];
-  EXPECT_EQ(0, pboard_.get()->notificationCount_);
+  EXPECT_EQ(0, pboard_.get()->_notificationCount);
   [pboard_.get() setFindText:@"text"];
-  EXPECT_EQ(1, pboard_.get()->notificationCount_);
+  EXPECT_EQ(1, pboard_.get()->_notificationCount);
   [pboard_.get() setFindText:@"text"];
-  EXPECT_EQ(1, pboard_.get()->notificationCount_);
+  EXPECT_EQ(1, pboard_.get()->_notificationCount);
   [pboard_.get() setFindText:@"other text"];
-  EXPECT_EQ(2, pboard_.get()->notificationCount_);
+  EXPECT_EQ(2, pboard_.get()->_notificationCount);
 
   [pboard_.get() setFindPboardText:@"other text"];
   [pboard_.get() loadTextFromPasteboard:nil];
-  EXPECT_EQ(2, pboard_.get()->notificationCount_);
+  EXPECT_EQ(2, pboard_.get()->_notificationCount);
 
   [pboard_.get() setFindPboardText:@"otherer text"];
   [pboard_.get() loadTextFromPasteboard:nil];
-  EXPECT_EQ(3, pboard_.get()->notificationCount_);
+  EXPECT_EQ(3, pboard_.get()->_notificationCount);
 
   [[NSNotificationCenter defaultCenter] removeObserver:pboard_.get()];
 }

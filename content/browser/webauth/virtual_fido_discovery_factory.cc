@@ -100,8 +100,7 @@ void VirtualFidoDiscoveryFactory::OnDiscoveryDestroyed(
 }
 
 std::unique_ptr<::device::FidoDiscoveryBase>
-VirtualFidoDiscoveryFactory::Create(device::FidoTransportProtocol transport,
-                                    ::service_manager::Connector* connector) {
+VirtualFidoDiscoveryFactory::Create(device::FidoTransportProtocol transport) {
   auto discovery = std::make_unique<VirtualFidoDiscovery>(transport);
 
   if (receivers_.empty() && authenticators_.empty() &&

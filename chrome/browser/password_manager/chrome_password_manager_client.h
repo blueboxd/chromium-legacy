@@ -45,6 +45,7 @@ class PasswordAccessoryController;
 class TouchToFillController;
 #endif
 
+class ChromeBiometricAuthenticator;
 class PasswordGenerationPopupObserver;
 class PasswordGenerationPopupControllerImpl;
 class Profile;
@@ -97,6 +98,11 @@ class ChromePasswordManagerClient
       const CredentialsCallback& callback) override;
   void ShowTouchToFill(
       password_manager::PasswordManagerDriver* driver) override;
+  // Returns a pointer to the BiometricAuthenticator which is created on demand.
+  // This is currently only implemented for Android, on all other platforms this
+  // will always be null.
+  password_manager::BiometricAuthenticator* GetBiometricAuthenticator()
+      override;
   void GeneratePassword() override;
   void NotifyUserAutoSignin(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
@@ -314,6 +320,8 @@ class ChromePasswordManagerClient
   // reset when ime finish composing text event is triggered.
   base::string16 last_composing_text_;
 #endif
+
+  std::unique_ptr<ChromeBiometricAuthenticator> biometric_authenticator_;
 
   password_manager::ContentPasswordManagerDriverFactory* driver_factory_;
 

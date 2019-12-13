@@ -53,7 +53,10 @@ class WebTaskEnvironment : public base::test::TaskEnvironment {
     REAL_IO_THREAD = 1 << 1,
   };
 
-  explicit WebTaskEnvironment(int options = Options::DEFAULT);
+  explicit WebTaskEnvironment(
+      int options = Options::DEFAULT,
+      base::test::TaskEnvironment::TimeSource time_source =
+          base::test::TaskEnvironment::TimeSource::DEFAULT);
 
   ~WebTaskEnvironment() override;
 

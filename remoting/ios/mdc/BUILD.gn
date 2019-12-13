@@ -12,6 +12,8 @@ source_set("mdc") {
     "MDCActionImageView.m",
   ]
 
+  libs = [ "UIKit.framework" ]
+
   deps = [
     "//ios/third_party/material_components_ios",
   ]

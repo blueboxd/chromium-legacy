@@ -13,7 +13,7 @@
 #include "ppapi/c/pp_stdint.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/callback_forward.h"
+#include "chromeos/network/firewall_hole.h"
 #include "net/base/ip_endpoint.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -62,15 +62,13 @@ bool GetCertificateFields(const char* der,
                           ppapi::PPB_X509Certificate_Fields* fields);
 
 #if defined(OS_CHROMEOS)
-typedef base::Callback<void(std::unique_ptr<chromeos::FirewallHole>)>
-    FirewallHoleOpenCallback;
 
 // Returns true if the open operation is in progress.
 void OpenTCPFirewallHole(const net::IPEndPoint& address,
-                         FirewallHoleOpenCallback callback);
+                         chromeos::FirewallHole::OpenCallback callback);
 
 void OpenUDPFirewallHole(const net::IPEndPoint& address,
-                         FirewallHoleOpenCallback callback);
+                         chromeos::FirewallHole::OpenCallback callback);
 #endif  // defined(OS_CHROMEOS)
 
 // Annotations for TCP and UDP network requests. Defined here to make it easier

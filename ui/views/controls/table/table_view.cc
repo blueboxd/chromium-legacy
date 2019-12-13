@@ -1347,7 +1347,6 @@ void TableView::UpdateAccessibilityFocus() {
   if (selection_model_.active() == ui::ListSelectionModel::kUnselectedIndex ||
       active_visible_column_index_ == -1) {
     GetViewAccessibility().OverrideFocus(nullptr);
-    NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
     return;
   }
 
@@ -1356,14 +1355,12 @@ void TableView::UpdateAccessibilityFocus() {
     AXVirtualView* ax_row = GetVirtualAccessibilityRow(active_row);
     if (ax_row) {
       GetViewAccessibility().OverrideFocus(ax_row);
-      ax_row->NotifyAccessibilityEvent(ax::mojom::Event::kFocus);
     }
   } else {
     AXVirtualView* ax_cell =
         GetVirtualAccessibilityCell(active_row, active_visible_column_index_);
     if (ax_cell) {
       GetViewAccessibility().OverrideFocus(ax_cell);
-      ax_cell->NotifyAccessibilityEvent(ax::mojom::Event::kFocus);
     }
   }
 }

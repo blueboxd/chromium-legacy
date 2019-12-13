@@ -53,6 +53,12 @@ class HIDDetectionScreen : public BaseScreen,
   // otherwise.
   void CheckIsScreenRequired(const base::Callback<void(bool)>& on_check_done);
 
+  // Allows tests to override how this class binds InputDeviceManager receivers.
+  using InputDeviceManagerBinder = base::RepeatingCallback<void(
+      mojo::PendingReceiver<device::mojom::InputDeviceManager>)>;
+  static void OverrideInputDeviceManagerBinderForTesting(
+      InputDeviceManagerBinder binder);
+
  private:
   friend class HIDDetectionScreenTest;
 

@@ -1270,15 +1270,6 @@ CanCommitStatus ChildProcessSecurityPolicyImpl::CanCommitOriginAndUrl(
     if (actual_origin_lock == expected_origin_lock)
       return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
 
-    // Allow about: pages to commit in a process that does not match the opaque
-    // origin's precursor information.
-    // TODO(acolwell): Remove this once process selection for about: URLs has
-    // been fixed to always match the precursor info.
-    if (url_origin.opaque() && url.IsAboutBlank() &&
-        !actual_origin_lock.is_empty()) {
-      return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
-    }
-
     return CanCommitStatus::CANNOT_COMMIT_URL;
   }
 

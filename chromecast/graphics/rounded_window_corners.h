@@ -21,7 +21,7 @@ class RoundedWindowCorners {
   virtual ~RoundedWindowCorners();
 
   virtual void SetEnabled(bool enable) = 0;
-
+  virtual bool IsEnabled() const = 0;
   virtual void SetColorInversion(bool enable) = 0;
 };
 

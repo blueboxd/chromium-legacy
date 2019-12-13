@@ -9,7 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chromecast/media/cma/backend/interleaved_channel_mixer.h"
+#include "chromecast/media/audio/interleaved_channel_mixer.h"
 #include "chromecast/media/cma/backend/mixer/mixer_input.h"
 #include "chromecast/media/cma/backend/mixer/post_processing_pipeline.h"
 #include "media/base/audio_bus.h"

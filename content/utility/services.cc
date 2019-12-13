@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "content/public/utility/content_utility_client.h"
 #include "content/public/utility/utility_thread.h"
+#include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/service_factory.h"
 #include "services/audio/service_factory.h"
@@ -29,9 +30,61 @@
 #include "services/service_manager/sandbox/sandbox_type.h"
 #endif
 
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#include "media/cdm/cdm_adapter_factory.h"          // nogncheck
+#include "media/mojo/services/cdm_service.h"        // nogncheck
+#include "media/mojo/services/mojo_cdm_helper.h"    // nogncheck
+#include "media/mojo/services/mojo_media_client.h"  // nogncheck
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+#include "media/cdm/cdm_host_file.h"
+#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+
+#if defined(OS_WIN)
+#include "sandbox/win/src/sandbox.h"
+
+extern sandbox::TargetServices* g_utility_target_services;
+#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
 namespace content {
 
 namespace {
+
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+std::unique_ptr<media::CdmAuxiliaryHelper> CreateCdmHelper(
+    service_manager::mojom::InterfaceProvider* interface_provider) {
+  return std::make_unique<media::MojoCdmHelper>(interface_provider);
+}
+
+class ContentCdmServiceClient final : public media::CdmService::Client {
+ public:
+  ContentCdmServiceClient() = default;
+  ~ContentCdmServiceClient() override = default;
+
+  void EnsureSandboxed() override {
+#if defined(OS_WIN)
+    // |g_utility_target_services| can be null if --no-sandbox is specified.
+    if (g_utility_target_services)
+      g_utility_target_services->LowerToken();
+#endif
+  }
+
+  std::unique_ptr<media::CdmFactory> CreateCdmFactory(
+      service_manager::mojom::InterfaceProvider* host_interfaces) override {
+    return std::make_unique<media::CdmAdapterFactory>(
+        base::BindRepeating(&CreateCdmHelper, host_interfaces));
+  }
+
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+  void AddCdmHostFilePaths(
+      std::vector<media::CdmHostFilePath>* cdm_host_file_paths) override {
+    GetContentClient()->AddContentDecryptionModules(nullptr,
+                                                    cdm_host_file_paths);
+  }
+#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+};
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 auto RunNetworkService(
     mojo::PendingReceiver<network::mojom::NetworkService> receiver) {
@@ -75,6 +128,13 @@ auto RunAudio(mojo::PendingReceiver<audio::mojom::AudioService> receiver) {
   return audio::CreateStandaloneService(std::move(receiver));
 }
 
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+auto RunCdmService(mojo::PendingReceiver<media::mojom::CdmService> receiver) {
+  return std::make_unique<media::CdmService>(
+      std::make_unique<ContentCdmServiceClient>(), std::move(receiver));
+}
+#endif
+
 auto RunDataDecoder(
     mojo::PendingReceiver<data_decoder::mojom::DataDecoderService> receiver) {
   UtilityThread::Get()->EnsureBlinkInitialized();
@@ -102,10 +162,11 @@ mojo::ServiceFactory& GetIOThreadServiceFactory() {
 
 mojo::ServiceFactory& GetMainThreadServiceFactory() {
   static base::NoDestructor<mojo::ServiceFactory> factory{
-      RunAudio,
-      RunDataDecoder,
-      RunTracing,
-      RunVideoCapture,
+    RunAudio,
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+        RunCdmService,
+#endif
+        RunDataDecoder, RunTracing, RunVideoCapture,
   };
   return *factory;
 }

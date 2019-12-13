@@ -1546,6 +1546,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    // clang-format off
     @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
             ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID,
             ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
@@ -1634,6 +1635,52 @@ public class TabListMediatorUnitTest {
         assertThat(mModel.get(1).model.get(TabProperties.TAB_ID), equalTo(TAB2_ID));
     }
 
+    @Test
+    // clang-format off
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+            ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID,
+            ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    public void
+    testTabObserverRemovedFromClosedTab() {
+        // clang-format on
+        initAndAssertAllProperties();
+        mMediator.setActionOnAllRelatedTabsForTesting(true);
+
+        assertThat(mModel.size(), equalTo(2));
+        mTabModelObserverCaptor.getValue().willCloseTab(mTab2, false);
+        verify(mTab2).removeObserver(mTabObserverCaptor.getValue());
+        assertThat(mModel.size(), equalTo(1));
+        assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB1_ID));
+    }
+
+    @Test
+    // clang-format off
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+            ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID,
+            ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    public void testTabObserverReattachToUndoClosedTab() {
+        // clang-format on
+        initAndAssertAllProperties();
+        mMediator.setActionOnAllRelatedTabsForTesting(true);
+
+        assertThat(mModel.size(), equalTo(2));
+        mTabModelObserverCaptor.getValue().willCloseTab(mTab2, false);
+        assertThat(mModel.size(), equalTo(1));
+
+        // Assume that TabModelFilter is already updated to reflect closed tab is undone.
+        doReturn(2).when(mTabModelFilter).getCount();
+        doReturn(mTab1).when(mTabModelFilter).getTabAt(POSITION1);
+        doReturn(mTab2).when(mTabModelFilter).getTabAt(POSITION2);
+        when(mTabModelFilter.getRelatedTabList(TAB1_ID)).thenReturn(Arrays.asList(mTab1));
+        when(mTabModelFilter.getRelatedTabList(TAB2_ID)).thenReturn(Arrays.asList(mTab2));
+
+        mTabModelObserverCaptor.getValue().tabClosureUndone(mTab2);
+        assertThat(mModel.size(), equalTo(2));
+        // First time is when mTab2 initially added to mModel; second time is when mTab2 added back
+        // to mModel because of undo action.
+        verify(mTab2, times(2)).addObserver(mTabObserverCaptor.getValue());
+    }
+
     private void initAndAssertAllProperties() {
         List<Tab> tabs = new ArrayList<>();
         for (int i = 0; i < mTabModel.getCount(); i++) {
@@ -1719,6 +1766,9 @@ public class TabListMediatorUnitTest {
         doNothing()
                 .when(mTabGroupModelFilter)
                 .addTabGroupObserver(mTabGroupModelFilterObserverCaptor.capture());
+        doNothing()
+                .when(mTabModelFilterProvider)
+                .addTabModelFilterObserver(mTabModelObserverCaptor.capture());
 
         TabListMediator.TabGridDialogHandler handler =
                 type == TabListMediatorType.TAB_GRID_DIALOG ? mTabGridDialogHandler : null;

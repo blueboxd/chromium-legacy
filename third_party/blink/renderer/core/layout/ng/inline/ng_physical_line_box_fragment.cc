@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
@@ -68,11 +69,10 @@ NGLineHeightMetrics NGPhysicalLineBoxFragment::BaselineMetrics(
 }
 
 PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
-    const LayoutObject* container,
-    const ComputedStyle* container_style,
-    PhysicalSize container_physical_size) const {
-  WritingMode container_writing_mode = container_style->GetWritingMode();
-  TextDirection container_direction = container_style->Direction();
+    const NGPhysicalBoxFragment& container,
+    const ComputedStyle& container_style) const {
+  WritingMode container_writing_mode = container_style.GetWritingMode();
+  TextDirection container_direction = container_style.Direction();
   PhysicalRect overflow;
   for (const auto& child : Children()) {
     PhysicalRect child_scroll_overflow =
@@ -103,7 +103,7 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
     if (!child->IsText()) {
       child_scroll_overflow.offset +=
           ComputeRelativeOffset(child->Style(), container_writing_mode,
-                                container_direction, container_physical_size);
+                                container_direction, container.Size());
     }
     overflow.Unite(child_scroll_overflow);
   }

@@ -6,7 +6,7 @@
 
 #include "media/mojo/services/mojo_media_drm_storage.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/service_manager/public/cpp/connect.h"
+#include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
 namespace media {
 namespace android_mojo_util {

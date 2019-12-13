@@ -111,7 +111,6 @@ SkColor OmniboxResultView::GetColor(OmniboxPart part) const {
 void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   match_ = match.GetMatchWithContentsAndDescriptionPossiblySwapped();
   animation_->Reset();
-  is_hovered_ = false;
 
   suggestion_view_->OnMatchUpdate(this, match_);
   keyword_view_->OnMatchUpdate(this, match_);
@@ -245,7 +244,13 @@ bool OmniboxResultView::MaybeTriggerSecondaryButton(const ui::Event& event) {
 OmniboxPartState OmniboxResultView::GetThemeState() const {
   if (IsSelected())
     return OmniboxPartState::SELECTED;
-  return is_hovered_ ? OmniboxPartState::HOVERED : OmniboxPartState::NORMAL;
+
+  // If we don't highlight the whole row when the user has the mouse over the
+  // remove suggestion button, it's unclear which suggestion is being removed.
+  // That does not apply to the tab switch button, which is much larger.
+  bool highlight_row =
+      IsMouseHovered() && !suggestion_tab_switch_button_->IsMouseHovered();
+  return highlight_row ? OmniboxPartState::HOVERED : OmniboxPartState::NORMAL;
 }
 
 void OmniboxResultView::OnMatchIconUpdated() {
@@ -381,14 +386,14 @@ bool OmniboxResultView::OnMouseDragged(const ui::MouseEvent& event) {
         }
       }
     } else {
-      SetHovered(true);
+      UpdateHoverState();
     }
     return true;
   }
 
   // When the drag leaves the bounds of this view, cancel the hover state and
   // pass control to the popup view.
-  SetHovered(false);
+  UpdateHoverState();
   SetMouseHandler(popup_contents_view_);
   return false;
 }
@@ -406,12 +411,12 @@ void OmniboxResultView::OnMouseReleased(const ui::MouseEvent& event) {
   }
 }
 
-void OmniboxResultView::OnMouseMoved(const ui::MouseEvent& event) {
-  SetHovered(true);
+void OmniboxResultView::OnMouseEntered(const ui::MouseEvent& event) {
+  UpdateHoverState();
 }
 
 void OmniboxResultView::OnMouseExited(const ui::MouseEvent& event) {
-  SetHovered(false);
+  UpdateHoverState();
 }
 
 void OmniboxResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -433,7 +438,7 @@ void OmniboxResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
   node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
                               IsSelected());
-  if (is_hovered_)
+  if (IsMouseHovered())
     node_data->AddState(ax::mojom::State::kHovered);
 }
 
@@ -489,12 +494,9 @@ gfx::Image OmniboxResultView::GetIcon() const {
       match_, GetColor(OmniboxPart::RESULTS_ICON));
 }
 
-void OmniboxResultView::SetHovered(bool hovered) {
-  if (is_hovered_ != hovered) {
-    is_hovered_ = hovered;
-    UpdateRemoveSuggestionVisibility();
-    Invalidate();
-  }
+void OmniboxResultView::UpdateHoverState() {
+  UpdateRemoveSuggestionVisibility();
+  Invalidate();
 }
 
 void OmniboxResultView::OpenMatch(WindowOpenDisposition disposition,

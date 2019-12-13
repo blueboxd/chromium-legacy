@@ -114,6 +114,8 @@ class VULKAN_EXPORT VulkanSwapChain {
     VkImage image = VK_NULL_HANDLE;
     VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED;
     std::unique_ptr<VulkanCommandBuffer> command_buffer;
+    // Semaphore passed to vkQueuePresentKHR to wait on.
+    VkSemaphore present_wait_semaphore = VK_NULL_HANDLE;
   };
   std::vector<ImageData> images_;
 

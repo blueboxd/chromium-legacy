@@ -8,15 +8,14 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/no_destructor.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/device_service.h"
 #include "extensions/browser/api/serial/serial_connection.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace extensions {
 
@@ -33,6 +32,11 @@ bool ShouldPauseOnReceiveError(serial::ReceiveError error) {
          error == serial::RECEIVE_ERROR_OVERRUN ||
          error == serial::RECEIVE_ERROR_BUFFER_OVERFLOW ||
          error == serial::RECEIVE_ERROR_PARITY_ERROR;
+}
+
+SerialPortManager::Binder& GetBinderOverride() {
+  static base::NoDestructor<SerialPortManager::Binder> binder;
+  return *binder;
 }
 
 }  // namespace
@@ -104,6 +108,11 @@ void SerialPortManager::StartConnectionPolling(const std::string& extension_id,
 }
 
 // static
+void SerialPortManager::OverrideBinderForTesting(Binder binder) {
+  GetBinderOverride() = std::move(binder);
+}
+
+// static
 void SerialPortManager::DispatchReceiveEvent(const ReceiveParams& params,
                                              std::vector<uint8_t> data,
                                              serial::ReceiveError error) {
@@ -159,12 +168,16 @@ void SerialPortManager::EnsureConnection() {
   if (port_manager_)
     return;
 
-  DCHECK(content::GetSystemConnector());
-  content::GetSystemConnector()->Connect(
-      device::mojom::kServiceName, port_manager_.BindNewPipeAndPassReceiver());
+  auto receiver = port_manager_.BindNewPipeAndPassReceiver();
   port_manager_.set_disconnect_handler(
       base::BindOnce(&SerialPortManager::OnPortManagerConnectionError,
                      weak_factory_.GetWeakPtr()));
+
+  const auto& binder = GetBinderOverride();
+  if (binder)
+    binder.Run(std::move(receiver));
+  else
+    content::GetDeviceService().BindSerialPortManager(std::move(receiver));
 }
 
 void SerialPortManager::OnGotDevicesToGetPort(

@@ -25,12 +25,18 @@ class CC_ANIMATION_EXPORT ScrollOffsetAnimationCurveFactory {
   static std::unique_ptr<ScrollOffsetAnimationCurve>
   CreateLinearAnimationForTesting(const gfx::ScrollOffset& target_value);
 
+  static std::unique_ptr<ScrollOffsetAnimationCurve>
+  CreateImpulseAnimationForTesting(const gfx::ScrollOffset& target_value);
+
  private:
   static std::unique_ptr<ScrollOffsetAnimationCurve> CreateEaseInOutAnimation(
       const gfx::ScrollOffset& target_value,
       ScrollOffsetAnimationCurve::DurationBehavior duration_hint);
 
   static std::unique_ptr<ScrollOffsetAnimationCurve> CreateLinearAnimation(
+      const gfx::ScrollOffset& target_value);
+
+  static std::unique_ptr<ScrollOffsetAnimationCurve> CreateImpulseAnimation(
       const gfx::ScrollOffset& target_value);
 };
 }  // namespace cc

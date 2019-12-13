@@ -281,6 +281,7 @@
 <translation id="1397500194120344683">कुनै पनि योग्य यन्त्र छैन। <ph name="LINK_BEGIN" />थप जान्नुहोस्।<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">अधिकतम बनाउनुहोस्</translation>
 <translation id="1399511500114202393">प्रयोगकर्ताको प्रमाणपत्र छैन</translation>
+<translation id="1403519882106291341">Google Chrome OS का सर्तहरू</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (निरीक्षण गरिएको)</translation>
 <translation id="1405779994569073824">क्र्यास भयो।</translation>
 <translation id="1406500794671479665">रुजू गर्दै...</translation>
@@ -2170,7 +2171,6 @@
 <translation id="4036778507053569103">सर्भरबाट डाउनलोड गरिएको नीति अमान्य छ।</translation>
 <translation id="4037084878352560732">घोडा</translation>
 <translation id="4037889604535939429">व्यक्तिलाई सम्पादन गर्नुहोस्</translation>
-<translation id="4042264909745389898">Google Chrome OS का सर्तहरू</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{पृष्ठबाट बाहिरिनुहोस्}other{पृष्ठहरूबाट बाहिरिनुहोस्}}</translation>
 <translation id="4044612648082411741">आफ्नो प्रमाणपत्रको पासवर्ड प्रविष्टि गर्नुहोस्</translation>
 <translation id="404493185430269859">पूर्वनिर्धारित खोज इन्जिन</translation>
@@ -2358,7 +2358,7 @@
 <translation id="4349828822184870497">उपयोगी लाग्यो</translation>
 <translation id="4350019051035968019">यो यन्त्रलाई तपाईंको खाताको सम्बन्धनमा भएको डोमेनमा नामांकन गर्न सकिंदैन किनकी यन्त्र फरक डोमेनद्वारा व्यवस्थापनका लागि चिन्हित छ।</translation>
 <translation id="4351060348582610152"><ph name="ORIGIN" /> वरपरका ब्लुटुथ यन्त्रहरू खोज्न स्क्यान गर्न चाहन्छ। निम्न यन्त्रहरू फेला परेका छन्:</translation>
-<translation id="4353114845960720315">तपाईं VR मा हुँदा यो साइटले निम्न कुराबारे जानकारी सङकलन गर्न सक्छ:</translation>
+<translation id="4353114845960720315">तपाईं VR मा हुँदा यो साइटले निम्न कुराबारे सिक्न सक्छ:</translation>
 <translation id="4354344420232759511">तपाईंले भ्रमण गर्ने साइटहरू यहाँ देखिने छन्</translation>
 <translation id="435527878592612277">आफ्नो तस्बिर चयन गर्नुहोस्</translation>
 <translation id="4358313196493694334">क्लिक गरिने स्थान स्थिर राख्नुहोस्</translation>
@@ -3342,7 +3342,7 @@
 <translation id="5815645614496570556">X.400 ठेगाना</translation>
 <translation id="5816434091619127343">अनुरोध गरिएका प्रिन्टरसम्बन्धी परिवर्तनहरूले यस प्रिन्टरलाई काम नलाग्ने बनाउने छ।</translation>
 <translation id="5817918615728894473">जोडा  बनाउनुहोस्</translation>
-<translation id="5819762621475381970">- तपाईंको कोठाको लेआउट</translation>
+<translation id="5819762621475381970">- तपाईंको कोठाको प्रारूप</translation>
 <translation id="5821565227679781414">सर्टकट सिर्जना गर्नुहोस्</translation>
 <translation id="5825412242012995131">सक्रिय (सिफारिस गरिएको)</translation>
 <translation id="5826395379250998812">आफ्नो <ph name="DEVICE_TYPE" /> आफ्नो फोनमा जोड्नुहोस्। <ph name="LINK_BEGIN" />थप जान्नुहोस्<ph name="LINK_END" /></translation>

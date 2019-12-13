@@ -17,6 +17,7 @@ import zipfile
 
 from util import build_utils
 from util import manifest_utils
+from util import md5_check
 from util import resource_utils
 
 _AAPT_IGNORE_PATTERN = ':'.join([
@@ -301,7 +302,7 @@ def main(args):
   # This matters if a file is renamed but not changed (http://crbug.com/597126).
   input_strings.extend(sorted(resource_names))
 
-  build_utils.CallAndWriteDepfileIfStale(
+  md5_check.CallAndWriteDepfileIfStale(
       lambda: _OnStaleMd5(options),
       options,
       input_paths=input_paths,

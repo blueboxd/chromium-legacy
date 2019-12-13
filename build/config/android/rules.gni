@@ -1958,7 +1958,9 @@ if (enable_java_templates) {
   #       variables must not be set.
   #   enable_multidex: Value for ENABLE_MULTIDEX.
   #   min_sdk_version: Value for MIN_SDK_VERSION.
-  #
+  #   bundles_supported: Whether or not this target can be treated as a bundle.
+  #   resources_version_variable:
+  #   is_incremental_install:
   template("generate_build_config_srcjar") {
     java_cpp_template(target_name) {
       package_path = "org/chromium/base"
@@ -1982,8 +1984,8 @@ if (enable_java_templates) {
         defines += [ "_IS_CHROME_BRANDED" ]
       }
 
-      if (defined(invoker.is_bundle_module) && invoker.is_bundle_module) {
-        defines += [ "_IS_BUNDLE" ]
+      if (defined(invoker.bundles_supported) && invoker.bundles_supported) {
+        defines += [ "_BUNDLES_SUPPORTED" ]
       }
 
       if (defined(invoker.is_incremental_install) &&
@@ -2020,15 +2022,17 @@ if (enable_java_templates) {
   #
   # Variables:
   #   build_config: Path to build_config used for locale lists.
+  #   is_bundle_module: Whether or not this target is part of a bundle build.
   #   java_package: Java package for the generated class.
   #   use_chromium_linker:
   #   use_modern_linker:
   template("generate_product_config_srcjar") {
     java_cpp_template(target_name) {
       defines = []
-      _use_final = defined(invoker.build_config) ||
-                   defined(invoker.use_chromium_linker) ||
-                   defined(invoker.use_modern_linker)
+      _use_final =
+          defined(invoker.build_config) ||
+          defined(invoker.use_chromium_linker) ||
+          defined(invoker.use_modern_linker) || defined(invoker.is_bundle)
       if (_use_final) {
         defines += [ "USE_FINAL" ]
       }
@@ -2043,9 +2047,11 @@ if (enable_java_templates) {
           defined(invoker.use_chromium_linker) && invoker.use_chromium_linker
       _use_modern_linker =
           defined(invoker.use_modern_linker) && invoker.use_modern_linker
+      _is_bundle = defined(invoker.is_bundle_module) && invoker.is_bundle_module
       defines += [
         "USE_CHROMIUM_LINKER_VALUE=$_use_chromium_linker",
         "USE_MODERN_LINKER_VALUE=$_use_modern_linker",
+        "IS_BUNDLE_VALUE=$_is_bundle",
       ]
       if (defined(invoker.build_config)) {
         forward_variables_from(invoker,
@@ -2743,11 +2749,9 @@ if (enable_java_templates) {
 
     if (_generate_buildconfig_java) {
       generate_build_config_srcjar("${_template_name}__build_config_srcjar") {
-        forward_variables_from(invoker,
-                               [
-                                 "is_bundle_module",
-                                 "min_sdk_version",
-                               ])
+        forward_variables_from(invoker, [ "min_sdk_version" ])
+        bundles_supported = _is_bundle_module || _is_static_library_provider ||
+                            (defined(testonly) && testonly)
         use_final_fields = true
         enable_multidex = _enable_multidex
         is_incremental_install = _incremental_apk
@@ -2767,6 +2771,7 @@ if (enable_java_templates) {
         _locale_target_name =
             "${_template_name}_${_package}__product_config_srcjar"
         generate_product_config_srcjar("$_locale_target_name") {
+          forward_variables_from(invoker, [ "is_bundle_module" ])
           build_config = _build_config
           java_package = _package
           use_chromium_linker = _use_chromium_linker

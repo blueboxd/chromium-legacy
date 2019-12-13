@@ -45,7 +45,7 @@
 // profile menu NSMenuItems) and C++ (the mojo methods called by
 // AppShimController).
 @interface ProfileMenuTarget : NSObject {
-  AppShimController* controller_;
+  AppShimController* _controller;
 }
 - (id)initWithController:(AppShimController*)controller;
 - (void)clearController;
@@ -54,17 +54,17 @@
 @implementation ProfileMenuTarget
 - (id)initWithController:(AppShimController*)controller {
   if (self = [super init])
-    controller_ = controller;
+    _controller = controller;
   return self;
 }
 
 - (void)clearController {
-  controller_ = nullptr;
+  _controller = nullptr;
 }
 
 - (void)profileMenuItemSelected:(id)sender {
-  if (controller_)
-    controller_->ProfileMenuItemSelected([sender tag]);
+  if (_controller)
+    _controller->ProfileMenuItemSelected([sender tag]);
 }
 
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
@@ -157,12 +157,11 @@ void AppShimController::FindOrLaunchChrome() {
   // Otherwise, launch Chrome.
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitch(switches::kSilentLaunch);
-  command_line.AppendSwitchPath(switches::kProfileDirectory,
-                                params_.profile_dir);
   command_line.AppendSwitchPath(switches::kUserDataDir, params_.user_data_dir);
   chrome_launched_by_app_.reset(base::mac::OpenApplicationWithPath(
-      base::mac::OuterBundlePath(), command_line,
-      NSWorkspaceLaunchNewInstance));
+                                    base::mac::OuterBundlePath(), command_line,
+                                    NSWorkspaceLaunchNewInstance),
+                                base::scoped_policy::RETAIN);
   if (!chrome_launched_by_app_)
     LOG(FATAL) << "Failed to launch Chrome.";
 }

@@ -252,9 +252,8 @@ class FormDataImporterTest : public FormDataImporterTestBase,
     web_database_->LoadDatabase();
     autofill_database_service_ = new AutofillWebDataService(
         web_database_, base::ThreadTaskRunnerHandle::Get(),
-        base::ThreadTaskRunnerHandle::Get(),
-        WebDataServiceBase::ProfileErrorCallback());
-    autofill_database_service_->Init();
+        base::ThreadTaskRunnerHandle::Get());
+    autofill_database_service_->Init(base::NullCallback());
 
     autofill_client_ = std::make_unique<TestAutofillClient>();
 

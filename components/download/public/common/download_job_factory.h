@@ -7,16 +7,15 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_job.h"
 #include "components/download/public/common/url_loader_factory_provider.h"
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 
 namespace download {
 class DownloadItem;
@@ -24,6 +23,11 @@ class DownloadItem;
 // Factory class to create different kinds of DownloadJob.
 class COMPONENTS_DOWNLOAD_EXPORT DownloadJobFactory {
  public:
+  // A callback that can be called to bind a device.mojom.WakeLockProvider
+  // receiver.
+  using WakeLockProviderBinder = base::RepeatingCallback<void(
+      mojo::PendingReceiver<device::mojom::WakeLockProvider>)>;
+
   static std::unique_ptr<DownloadJob> CreateJob(
       DownloadItem* download_item,
       DownloadJob::CancelRequestCallback cancel_request_callback,
@@ -31,7 +35,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadJobFactory {
       bool is_save_package_download,
       URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
           url_loader_factory_provider,
-      service_manager::Connector* connector);
+      WakeLockProviderBinder wake_lock_provider_binder);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadJobFactory);

@@ -245,7 +245,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
                       false),
         random_generator_(0),
         printer_(version_) {
-    SetQuicReloadableFlag(quic_supports_tls_handshake, true);
+    quic::QuicEnableVersion(version_);
     IPAddress ip(192, 0, 2, 33);
     peer_addr_ = IPEndPoint(ip, 443);
     self_addr_ = IPEndPoint(ip, 8435);

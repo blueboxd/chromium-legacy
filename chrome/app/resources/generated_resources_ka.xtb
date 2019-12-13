@@ -283,6 +283,7 @@
 <translation id="1397500194120344683">შესაფერისი მოწყობილობები არ არის. <ph name="LINK_BEGIN" />შეიტყვეთ მეტი<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">გაშლა</translation>
 <translation id="1399511500114202393">მომხმარებლის სერტიფიკატის გარეშე</translation>
+<translation id="1403519882106291341">Google Chrome OS-ის პირობები</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (კონტროლის ქვეშ მყოფი)</translation>
 <translation id="1405779994569073824">ავარიულად გათიშული.</translation>
 <translation id="1406500794671479665">გადამოწმება…</translation>
@@ -2173,7 +2174,6 @@
 <translation id="4036778507053569103">სერვერიდან ჩამოტვირთული წესები არასწორია.</translation>
 <translation id="4037084878352560732">ცხენი</translation>
 <translation id="4037889604535939429">პიროვნების რედაქტირება</translation>
-<translation id="4042264909745389898">Google Chrome OS-ის პირობები</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{გვერდიდან გასვლა}other{გვერდებიდან გასვლა}}</translation>
 <translation id="4044612648082411741">შეიყვანეთ თქვენი სერტიფიკატის პაროლი</translation>
 <translation id="404493185430269859">ნაგულისხმევი საძიებო სისტემა</translation>

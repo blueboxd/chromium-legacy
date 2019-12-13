@@ -29,7 +29,6 @@ class ColorSpace;
 }  // namespace gfx
 
 namespace service_manager {
-class Connector;
 namespace mojom {
 class InterfaceProvider;
 }  // namespace mojom
@@ -57,9 +56,8 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
   // up tasks requiring the message loop must be completed before returning.
   virtual ~MojoMediaClient();
 
-  // Called exactly once before any other method. |connector| can be used by
-  // |this| to connect to other services. It is guaranteed to outlive |this|.
-  virtual void Initialize(service_manager::Connector* connector);
+  // Called exactly once before any other method.
+  virtual void Initialize();
 
   virtual std::unique_ptr<AudioDecoder> CreateAudioDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);

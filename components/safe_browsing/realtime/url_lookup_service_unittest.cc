@@ -129,6 +129,215 @@ TEST_F(RealTimeUrlLookupServiceTest, TestBackoffAndLookupSuccessReset) {
   EXPECT_FALSE(IsInBackoffMode());
 }
 
+TEST_F(RealTimeUrlLookupServiceTest, TestExponentialBackoff) {
+  ///////////////////////////////
+  // Initial backoff: 300 seconds
+  ///////////////////////////////
+
+  // Not in backoff at the beginning.
+  ASSERT_FALSE(IsInBackoffMode());
+
+  // Failure 1: No backoff.
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+
+  // Failure 2: No backoff.
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+
+  // Failure 3: Entered backoff.
+  HandleLookupError();
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 1 second.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 299 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(298));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff should have been reset after 300 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(IsInBackoffMode());
+
+  /////////////////////////////////////
+  // Exponential backoff 1: 600 seconds
+  /////////////////////////////////////
+
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+  HandleLookupError();
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 1 second.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 599 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(598));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff should have been reset after 600 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(IsInBackoffMode());
+
+  //////////////////////////////////////
+  // Exponential backoff 2: 1200 seconds
+  //////////////////////////////////////
+
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+  HandleLookupError();
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 1 second.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 1199 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1198));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff should have been reset after 1200 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(IsInBackoffMode());
+
+  ///////////////////////////////////////////////////
+  // Exponential backoff 3: 1800 seconds (30 minutes)
+  ///////////////////////////////////////////////////
+
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+  HandleLookupError();
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 1 second.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 1799 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1798));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff should have been reset after 1800 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(IsInBackoffMode());
+
+  ///////////////////////////////////////////////////
+  // Exponential backoff 4: 1800 seconds (30 minutes)
+  ///////////////////////////////////////////////////
+
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+  HandleLookupError();
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 1 second.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 1799 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1798));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff should have been reset after 1800 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(IsInBackoffMode());
+}
+
+TEST_F(RealTimeUrlLookupServiceTest, TestExponentialBackoffWithResetOnSuccess) {
+  ///////////////////////////////
+  // Initial backoff: 300 seconds
+  ///////////////////////////////
+
+  // Not in backoff at the beginning.
+  ASSERT_FALSE(IsInBackoffMode());
+
+  // Failure 1: No backoff.
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+
+  // Failure 2: No backoff.
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+
+  // Failure 3: Entered backoff.
+  HandleLookupError();
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 1 second.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 299 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(298));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff should have been reset after 300 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(IsInBackoffMode());
+
+  /////////////////////////////////////
+  // Exponential backoff 1: 600 seconds
+  /////////////////////////////////////
+
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+  HandleLookupError();
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 1 second.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 599 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(598));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff should have been reset after 600 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(IsInBackoffMode());
+
+  // The next lookup is a success. This should reset the backoff duration to
+  // |kMinBackOffResetDurationInSeconds|
+  HandleLookupSuccess();
+
+  // Failure 1: No backoff.
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+
+  // Failure 2: No backoff.
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+
+  // Failure 3: Entered backoff.
+  HandleLookupError();
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 1 second.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 299 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(298));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff should have been reset after 300 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(IsInBackoffMode());
+}
+
 TEST_F(RealTimeUrlLookupServiceTest, TestGetSBThreatTypeForRTThreatType) {
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE,
             RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(

@@ -8,10 +8,7 @@ import './customize_dialog.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 
-import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-
-import {BrowserProxy} from './browser_proxy.js';
 
 class NewTabPageAppElement extends PolymerElement {
   static get is() {
@@ -27,22 +24,6 @@ class NewTabPageAppElement extends PolymerElement {
       /** @private */
       showCustomizeDialog_: Boolean,
     };
-  }
-
-  get pageHandler_() {
-    return BrowserProxy.getInstance().handler;
-  }
-
-  /** @private */
-  onRestoreDefaultsClick_() {
-    getToastManager().hide();
-    this.pageHandler_.restoreMostVisitedDefaults();
-  }
-
-  /** @private */
-  onUndoClick_() {
-    getToastManager().hide();
-    this.pageHandler_.undoMostVisitedTileAction();
   }
 
   /** @private */

@@ -31,6 +31,9 @@
 
 namespace blink {
 
+// Delay nodes have a max allowed delay time of this many seconds.
+const float kMaxDelayTimeSeconds = 30;
+
 AudioDelayDSPKernel::AudioDelayDSPKernel(AudioDSPKernelProcessor* processor,
                                          size_t processing_size_in_frames)
     : AudioDSPKernel(processor),
@@ -42,8 +45,9 @@ AudioDelayDSPKernel::AudioDelayDSPKernel(double max_delay_time,
     : AudioDSPKernel(sample_rate),
       max_delay_time_(max_delay_time),
       write_index_(0) {
-  DCHECK_GT(max_delay_time, 0.0);
-  DCHECK(!std::isnan(max_delay_time));
+  DCHECK_GT(max_delay_time_, 0.0);
+  DCHECK_LE(max_delay_time_, kMaxDelayTimeSeconds);
+  DCHECK(std::isfinite(max_delay_time_));
 
   size_t buffer_length = BufferLengthForDelay(max_delay_time, sample_rate);
   DCHECK(buffer_length);
@@ -81,6 +85,8 @@ void AudioDelayDSPKernel::Process(const float* source,
   DCHECK(buffer_length);
   DCHECK(source);
   DCHECK(destination);
+  DCHECK_GE(write_index_, 0);
+  DCHECK_LT(static_cast<size_t>(write_index_), buffer_length);
 
   float sample_rate = this->SampleRate();
   double max_time = MaxDelayTime();
@@ -105,9 +111,13 @@ void AudioDelayDSPKernel::Process(const float* source,
 
       // Linearly interpolate in-between delay times.
       int read_index1 = static_cast<int>(read_position);
+      DCHECK_GE(read_index1, 0);
+      DCHECK_LT(static_cast<size_t>(read_index1), buffer_length);
       int read_index2 = read_index1 + 1;
       if (read_index2 >= static_cast<int>(buffer_length))
         read_index2 -= buffer_length;
+      DCHECK_GE(read_index2, 0);
+      DCHECK_LT(static_cast<size_t>(read_index2), buffer_length);
 
       double interpolation_factor = read_position - read_index1;
 

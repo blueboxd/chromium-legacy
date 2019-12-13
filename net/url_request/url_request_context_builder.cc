@@ -128,8 +128,7 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
 // it's not safe to subclass this.
 class ContainerURLRequestContext final : public URLRequestContext {
  public:
-  explicit ContainerURLRequestContext(bool allow_copy)
-      : URLRequestContext(allow_copy), storage_(this) {}
+  explicit ContainerURLRequestContext() : storage_(this) {}
 
   ~ContainerURLRequestContext() override {
 #if BUILDFLAG(ENABLE_REPORTING)
@@ -369,7 +368,7 @@ void URLRequestContextBuilder::SetCreateHttpTransactionFactoryCallback(
 
 std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   std::unique_ptr<ContainerURLRequestContext> context(
-      new ContainerURLRequestContext(allow_copy_));
+      new ContainerURLRequestContext());
   URLRequestContextStorage* storage = context->storage();
 
   if (!name_.empty())

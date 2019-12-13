@@ -315,23 +315,27 @@ bool GetFallbackFont(const Font& font,
       prefered_entry = &entry;
     }
 
-    // The font is a valid fallback font for the given text.
+    // The font has coverage for the given text and is a valid fallback font.
     if (missing_glyphs == 0)
       break;
   }
 
-  if (prefered_entry) {
-    sk_sp<SkTypeface> typeface = GetSkTypefaceFromPathAndIndex(
-        prefered_entry->font_path(), prefered_entry->ttc_index());
+  // No fonts can be used as font fallback.
+  if (!prefered_entry)
+    return false;
 
-    Font fallback_font(PlatformFont::CreateFromSkTypeface(
-        typeface, font.GetFontSize(), prefered_entry->font_params()));
+  sk_sp<SkTypeface> typeface = GetSkTypefaceFromPathAndIndex(
+      prefered_entry->font_path(), prefered_entry->ttc_index());
+  // The file can't be parsed (e.g. corrupt). This font can't be used as a
+  // fallback font.
+  if (!typeface)
+    return false;
 
-    *result = fallback_font;
-    return true;
-  }
+  Font fallback_font(PlatformFont::CreateFromSkTypeface(
+      typeface, font.GetFontSize(), prefered_entry->font_params()));
 
-  return false;
+  *result = fallback_font;
+  return true;
 }
 
 std::vector<Font> GetFallbackFonts(const Font& font) {

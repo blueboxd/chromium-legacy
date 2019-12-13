@@ -17,10 +17,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
-namespace service_manager {
-class InterfaceProvider;
-}
-
 namespace media {
 
 class MojoRenderer;

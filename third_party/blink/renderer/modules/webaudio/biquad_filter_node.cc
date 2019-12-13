@@ -245,35 +245,37 @@ void BiquadFilterNode::getFrequencyResponse(
     NotShared<DOMFloat32Array> mag_response,
     NotShared<DOMFloat32Array> phase_response,
     ExceptionState& exception_state) {
-  unsigned frequency_hz_length =
-      frequency_hz.View()->deprecatedLengthAsUnsigned();
+  size_t frequency_hz_length = frequency_hz.View()->lengthAsSizeT();
 
-  if (mag_response.View()->deprecatedLengthAsUnsigned() !=
-      frequency_hz_length) {
+  if (mag_response.View()->lengthAsSizeT() != frequency_hz_length) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
         ExceptionMessages::IndexOutsideRange(
-            "magResponse length",
-            mag_response.View()->deprecatedLengthAsUnsigned(),
+            "magResponse length", mag_response.View()->lengthAsSizeT(),
             frequency_hz_length, ExceptionMessages::kInclusiveBound,
             frequency_hz_length, ExceptionMessages::kInclusiveBound));
     return;
   }
 
-  if (phase_response.View()->deprecatedLengthAsUnsigned() !=
-      frequency_hz_length) {
+  if (phase_response.View()->lengthAsSizeT() != frequency_hz_length) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
         ExceptionMessages::IndexOutsideRange(
-            "phaseResponse length",
-            phase_response.View()->deprecatedLengthAsUnsigned(),
+            "phaseResponse length", phase_response.View()->lengthAsSizeT(),
             frequency_hz_length, ExceptionMessages::kInclusiveBound,
             frequency_hz_length, ExceptionMessages::kInclusiveBound));
     return;
   }
 
+  int frequency_hz_length_as_int;
+  if (!base::CheckedNumeric<int>(frequency_hz_length)
+           .AssignIfValid(&frequency_hz_length_as_int)) {
+    exception_state.ThrowRangeError(
+        "frequencyHz length exceeds the maximum supported length");
+    return;
+  }
   GetBiquadProcessor()->GetFrequencyResponse(
-      frequency_hz_length, frequency_hz.View()->Data(),
+      frequency_hz_length_as_int, frequency_hz.View()->Data(),
       mag_response.View()->Data(), phase_response.View()->Data());
 }
 

@@ -13,8 +13,10 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.page_info.PageInfoController;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -188,8 +190,11 @@ public class StatusViewCoordinator implements View.OnClickListener, TextWatcher 
             return;
         }
 
-        PageInfoController.show(((TabImpl) mToolbarDataProvider.getTab()).getActivity(),
-                mToolbarDataProvider.getTab(), null, PageInfoController.OpenedFromSource.TOOLBAR);
+        Tab tab = mToolbarDataProvider.getTab();
+        PageInfoController.show(((TabImpl) tab).getActivity(), tab.getWebContents(), null,
+                PageInfoController.OpenedFromSource.TOOLBAR,
+                /*offlinePageLoadUrlDelegate=*/
+                new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab));
     }
 
     /**

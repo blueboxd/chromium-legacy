@@ -48,8 +48,7 @@ class TokenWebData : public WebDataServiceBase {
  public:
   TokenWebData(scoped_refptr<WebDatabaseService> wdbs,
                scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-               scoped_refptr<base::SingleThreadTaskRunner> db_task_runner,
-               const ProfileErrorCallback& callback);
+               scoped_refptr<base::SingleThreadTaskRunner> db_task_runner);
 
   TokenWebData(scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
                scoped_refptr<base::SingleThreadTaskRunner> db_task_runner);

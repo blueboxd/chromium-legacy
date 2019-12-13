@@ -342,7 +342,6 @@ std::string GetLocalNtpPath() {
 base::Value ConvertCollectionInfoToDict(
     const std::vector<CollectionInfo>& collection_info) {
   base::Value collections(base::Value::Type::LIST);
-  collections.GetList().reserve(collection_info.size());
   for (const CollectionInfo& collection : collection_info) {
     base::Value dict(base::Value::Type::DICTIONARY);
     dict.SetKey("collectionId", base::Value(collection.collection_id));
@@ -357,7 +356,6 @@ base::Value ConvertCollectionInfoToDict(
 base::Value ConvertCollectionImageToDict(
     const std::vector<CollectionImage>& collection_image) {
   base::Value images(base::Value::Type::LIST);
-  images.GetList().reserve(collection_image.size());
   for (const CollectionImage& image : collection_image) {
     base::Value dict(base::Value::Type::DICTIONARY);
     dict.SetKey("thumbnailImageUrl",

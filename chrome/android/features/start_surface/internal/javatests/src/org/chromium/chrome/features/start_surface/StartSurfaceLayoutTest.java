@@ -31,6 +31,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -70,6 +71,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -143,6 +145,12 @@ public class StartSurfaceLayoutTest {
                         .getCurrentTabModelFilter()::isTabModelRestored));
 
         assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting());
+    }
+
+    @After
+    public void tearDown() {
+        FeatureUtilities.setGridTabSwitcherEnabledForTesting(null);
+        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(null);
     }
 
     @Test
@@ -589,6 +597,7 @@ public class StartSurfaceLayoutTest {
     @DisabledTest(message = "http://crbug/1005865 - Test was previously flaky but only on bots."
             + "Was not locally reproducible. Disabling until verified that it's deflaked on bots.")
     public void testIncognitoEnterGts() throws InterruptedException {
+        // clang-format on
         prepareTabs(1, 1, null);
         enterGTSWithThumbnailChecking();
         onView(withId(R.id.tab_list_view))
@@ -659,6 +668,32 @@ public class StartSurfaceLayoutTest {
             oldFetchCount = currentFetchCount;
         }
         leaveGTSAndVerifyThumbnailsAreReleased();
+    }
+
+    @Test
+    @MediumTest
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS})
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+                    ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    public void testUrlUpdatedForUndoableClosedTabNotCrashing() throws Exception {
+        // clang-format on
+        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
+
+        // Restart Chrome to have Group.
+        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
+        mActivityTestRule.startMainActivityFromLauncher();
+        mActivityTestRule.getActivity().getSnackbarManager().disableForTesting();
+        prepareTabs(2, 0, null);
+        enterGTSWithThumbnailChecking();
+
+        Tab tab = mActivityTestRule.getActivity().getTabModelSelector().getCurrentTab();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel().closeTab(
+                    tab, false, false, true);
+        });
+        mActivityTestRule.loadUrlInTab(
+                mUrl, PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR, tab);
     }
 
     private static class TabCountAssertion implements ViewAssertion {

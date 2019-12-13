@@ -38,9 +38,10 @@ class SafeBrowsingDatabaseManager;
 class UrlCheckerDelegate
     : public base::RefCountedThreadSafe<UrlCheckerDelegate> {
  public:
-  // Destroys prerender contents if necessary.
+  // Destroys prerender contents if necessary. The parameter is a
+  // WebContents::OnceGetter, but that type is not visible from here.
   virtual void MaybeDestroyPrerenderContents(
-      const base::Callback<content::WebContents*()>& web_contents_getter) = 0;
+      base::OnceCallback<content::WebContents*()> web_contents_getter) = 0;
 
   // Starts displaying the SafeBrowsing interstitial page.
   virtual void StartDisplayingBlockingPageHelper(

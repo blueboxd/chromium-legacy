@@ -4034,7 +4034,8 @@ TEST_P(HotseatShelfLayoutManagerTest, SwipeOnHotseatInOverview) {
 }
 
 TEST_P(HotseatShelfLayoutManagerTest, SwipeOnHotseatInSplitViewWithOverview) {
-  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  Shelf* const shelf = GetPrimaryShelf();
+  shelf->SetAutoHideBehavior(GetParam());
   TabletModeControllerTestApi().EnterTabletMode();
 
   std::unique_ptr<aura::Window> window =
@@ -4048,19 +4049,7 @@ TEST_P(HotseatShelfLayoutManagerTest, SwipeOnHotseatInSplitViewWithOverview) {
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
 
-  Shelf* const shelf = GetPrimaryShelf();
-
-  // TODO(https://crbug.com/1032669): Replace the drag with SwipeUpOnShelf()
-  //     once the issue is fixed - for now offset the drag start point to ensure
-  //     it's not over the split view divider.
-  gfx::Rect display_bounds =
-      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
-  gfx::Point start = display_bounds.bottom_center() + gfx::Vector2d(100, 0);
-  gfx::Point end = start + gfx::Vector2d(0, -80);
-  const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
-  const int kNumScrollSteps = 4;
-  GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
-                                             kNumScrollSteps);
+  SwipeUpOnShelf();
 
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
@@ -4072,20 +4061,7 @@ TEST_P(HotseatShelfLayoutManagerTest, SwipeOnHotseatInSplitViewWithOverview) {
     EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
   }
 
-  // Drag from the hotseat to the bezel, the hotseat should hide.
-  // TODO(https://crbug.com/1032669): Replace the drag with
-  // DragHotseatDownToBezel()
-  //     once the issue is fixed - for now offset the drag start point to ensure
-  //     it's not over the split view divider.
-  gfx::Rect shelf_widget_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
-  gfx::Rect hotseat_bounds =
-      GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen();
-  start = hotseat_bounds.top_center() + gfx::Vector2d(100, 0);
-  end = gfx::Point(shelf_widget_bounds.x() + shelf_widget_bounds.width() / 2,
-                   shelf_widget_bounds.bottom() + 1) +
-        gfx::Vector2d(100, 0);
-  GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
-                                             kNumScrollSteps);
+  DragHotseatDownToBezel();
 
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
@@ -4097,14 +4073,7 @@ TEST_P(HotseatShelfLayoutManagerTest, SwipeOnHotseatInSplitViewWithOverview) {
     EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
   }
 
-  // Swiping up on shelf should move hotseat back into extended state.
-  // TODO(https://crbug.com/1032669): Replace the drag with SwipeUpOnShelf()
-  //     once the issue is fixed - for now offset the drag start point to ensure
-  //     it's not over the split view divider.
-  start = display_bounds.bottom_center() + gfx::Vector2d(100, 0);
-  end = start + gfx::Vector2d(0, -80);
-  GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
-                                             kNumScrollSteps);
+  SwipeUpOnShelf();
 
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
@@ -4118,7 +4087,8 @@ TEST_P(HotseatShelfLayoutManagerTest, SwipeOnHotseatInSplitViewWithOverview) {
 }
 
 TEST_P(HotseatShelfLayoutManagerTest, SwipeOnHotseatInSplitView) {
-  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  Shelf* const shelf = GetPrimaryShelf();
+  shelf->SetAutoHideBehavior(GetParam());
   TabletModeControllerTestApi().EnterTabletMode();
 
   std::unique_ptr<aura::Window> window1 =
@@ -4133,19 +4103,7 @@ TEST_P(HotseatShelfLayoutManagerTest, SwipeOnHotseatInSplitView) {
   split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
 
-  Shelf* const shelf = GetPrimaryShelf();
-
-  // TODO(https://crbug.com/1032669): Replace the drag with SwipeUpOnShelf()
-  //     once the issue is fixed - for now offset the drag start point to ensure
-  //     it's not over the split view divider.
-  gfx::Rect display_bounds =
-      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
-  gfx::Point start = display_bounds.bottom_center() + gfx::Vector2d(100, 0);
-  gfx::Point end = start + gfx::Vector2d(0, -80);
-  const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
-  const int kNumScrollSteps = 4;
-  GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
-                                             kNumScrollSteps);
+  SwipeUpOnShelf();
 
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
@@ -4156,20 +4114,7 @@ TEST_P(HotseatShelfLayoutManagerTest, SwipeOnHotseatInSplitView) {
     EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
   }
 
-  // Drag from the hotseat to the bezel, the hotseat and shelf should hide.
-  // TODO(https://crbug.com/1032669): Replace the drag with
-  // DragHotseatDownToBezel()
-  //     once the issue is fixed - for now offset the drag start point to ensure
-  //     it's not over the split view divider.
-  gfx::Rect shelf_widget_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
-  gfx::Rect hotseat_bounds =
-      GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen();
-  start = hotseat_bounds.top_center() + gfx::Vector2d(100, 0);
-  end = gfx::Point(shelf_widget_bounds.x() + shelf_widget_bounds.width() / 2,
-                   shelf_widget_bounds.bottom() + 1) +
-        gfx::Vector2d(100, 0);
-  GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
-                                             kNumScrollSteps);
+  DragHotseatDownToBezel();
 
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
   EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
@@ -4180,14 +4125,7 @@ TEST_P(HotseatShelfLayoutManagerTest, SwipeOnHotseatInSplitView) {
     EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
   }
 
-  // Swiping up on shelf should move hotseat back into extended state.
-  // TODO(https://crbug.com/1032669): Replace the drag with SwipeUpOnShelf()
-  //     once the issue is fixed - for now offset the drag start point to ensure
-  //     it's not over the split view divider.
-  start = display_bounds.bottom_center() + gfx::Vector2d(100, 0);
-  end = start + gfx::Vector2d(0, -80);
-  GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
-                                             kNumScrollSteps);
+  SwipeUpOnShelf();
 
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
@@ -5756,6 +5694,193 @@ TEST_P(ShelfLayoutManagerTest, ScrollUpFromShelfToShowPeekingAppList) {
                                        AppListShowSource::kScrollFromShelf,
                                        bucket_count);
   }
+}
+
+// Paramaterized tests for shelf with and without shelf dimming enabled.
+class DimShelfLayoutManagerTest : public ShelfLayoutManagerTestBase,
+                                  public testing::WithParamInterface<bool> {
+ public:
+  DimShelfLayoutManagerTest() = default;
+
+  // testing::Test:
+  void SetUp() override {
+    if (GetParam()) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          ash::switches::kEnableDimShelf);
+    }
+    AshTestBase::SetUp();
+  }
+
+  bool AutoDimEventHandlerInitialized() {
+    return GetPrimaryShelf()->auto_dim_event_handler_ ? true : false;
+  }
+
+  bool ShelfDimmed() { return GetShelfLayoutManager()->dimmed_for_inactivity_; }
+
+  void TriggerDimShelf() { GetPrimaryShelf()->DimShelf(); }
+
+  void ResetDimShelf() { GetPrimaryShelf()->UndimShelf(); }
+
+  float GetWidgetOpacity(views::Widget* widget) {
+    return widget->GetNativeView()->layer()->opacity();
+  }
+
+  // Expected opacity for floating shelf.
+  const float kExpectedFloatingShelfDimOpacity = 0.74f;
+
+  // Expected opacity for shelf when shelf is in the maximized state.
+  const float kExpectedMaximizedShelfDimOpacity = 0.6f;
+
+  // Expected opacity for shelf without dimming.
+  const float kExpectedDefaultShelfOpacity = 1.0f;
+};
+
+// Used to test shelf dimming.
+INSTANTIATE_TEST_SUITE_P(All, DimShelfLayoutManagerTest, testing::Bool());
+
+// Tests that the auto dim handler is initialized and shelf is not dim on
+// startup.
+TEST_P(DimShelfLayoutManagerTest, AutoDimHandlerInitialized) {
+  ASSERT_FALSE(ShelfDimmed());
+  ASSERT_EQ(GetParam(), AutoDimEventHandlerInitialized());
+
+  EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()),
+            kExpectedDefaultShelfOpacity);
+  EXPECT_EQ(
+      GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->navigation_widget()),
+      kExpectedDefaultShelfOpacity);
+  EXPECT_EQ(
+      GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->hotseat_widget()),
+      kExpectedDefaultShelfOpacity);
+  EXPECT_EQ(
+      GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->status_area_widget()),
+      kExpectedDefaultShelfOpacity);
+}
+
+// Tests that the auto dim handler dims the shelf when called.
+TEST_P(DimShelfLayoutManagerTest, AutoDimHandlerSetDim) {
+  const bool dim_shelf_enabled = GetParam();
+  ASSERT_EQ(dim_shelf_enabled, AutoDimEventHandlerInitialized());
+  ASSERT_FALSE(ShelfDimmed());
+  if (!dim_shelf_enabled)
+    return;
+  TriggerDimShelf();
+  ASSERT_TRUE(ShelfDimmed());
+  ResetDimShelf();
+  ASSERT_FALSE(ShelfDimmed());
+}
+
+// Tests that the auto dim handler sets the shelf opacity correctly for floating
+// shelf.
+TEST_P(DimShelfLayoutManagerTest, FloatingShelfDimAlpha) {
+  const bool dim_shelf_enabled = GetParam();
+  ASSERT_EQ(dim_shelf_enabled, AutoDimEventHandlerInitialized());
+
+  if (dim_shelf_enabled)
+    TriggerDimShelf();
+
+  EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()),
+            kExpectedDefaultShelfOpacity);
+  EXPECT_EQ(
+      GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->navigation_widget()),
+      dim_shelf_enabled ? kExpectedFloatingShelfDimOpacity
+                        : kExpectedDefaultShelfOpacity);
+  EXPECT_EQ(
+      GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->hotseat_widget()),
+      dim_shelf_enabled ? kExpectedFloatingShelfDimOpacity
+                        : kExpectedDefaultShelfOpacity);
+  EXPECT_EQ(
+      GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->status_area_widget()),
+      dim_shelf_enabled ? kExpectedFloatingShelfDimOpacity
+                        : kExpectedDefaultShelfOpacity);
+}
+
+// Tests that the auto dim handler sets the shelf opacity correctly in the
+// special case of maximized shelf.
+TEST_P(DimShelfLayoutManagerTest, MaximizedShelfDimAlpha) {
+  const bool dim_shelf_enabled = GetParam();
+  ASSERT_EQ(dim_shelf_enabled, AutoDimEventHandlerInitialized());
+  ASSERT_FALSE(ShelfDimmed());
+
+  if (dim_shelf_enabled) {
+    TriggerDimShelf();
+    views::Widget* widget = CreateTestWidget();
+    widget->Maximize();
+  }
+
+  EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()),
+            kExpectedDefaultShelfOpacity);
+  EXPECT_EQ(
+      GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->navigation_widget()),
+      dim_shelf_enabled ? kExpectedMaximizedShelfDimOpacity
+                        : kExpectedDefaultShelfOpacity);
+  EXPECT_EQ(
+      GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->hotseat_widget()),
+      dim_shelf_enabled ? kExpectedMaximizedShelfDimOpacity
+                        : kExpectedDefaultShelfOpacity);
+  EXPECT_EQ(
+      GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->status_area_widget()),
+      dim_shelf_enabled ? kExpectedMaximizedShelfDimOpacity
+                        : kExpectedDefaultShelfOpacity);
+}
+
+// Paramaterized tests for shelf dimming with hotseat enabled or disabled.
+class HotseatDimShelfLayoutManagerTest : public DimShelfLayoutManagerTest {
+ public:
+  HotseatDimShelfLayoutManagerTest() = default;
+
+  // testing::Test:
+  void SetUp() override {
+    if (GetParam()) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          chromeos::switches::kShelfHotseat);
+    }
+
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ash::switches::kEnableDimShelf);
+    AshTestBase::SetUp();
+  }
+};
+
+// Used to test shelf dimming in conjunction with hotseat.
+INSTANTIATE_TEST_SUITE_P(All,
+                         HotseatDimShelfLayoutManagerTest,
+                         testing::Bool());
+
+// Tests that hotseat is not dimmed but other components are dimmed when
+// kShelfHotseat switch is on.
+TEST_P(HotseatDimShelfLayoutManagerTest, TabletModeShelfDimAlpha) {
+  ASSERT_TRUE(AutoDimEventHandlerInitialized());
+  TabletModeControllerTestApi().EnterTabletMode();
+  views::Widget* widget = CreateTestWidget();
+  widget->Maximize();
+  ASSERT_FALSE(ShelfDimmed());
+
+  const bool shelf_hotseat_enabled = GetParam();
+  EXPECT_EQ(shelf_hotseat_enabled,
+            chromeos::switches::ShouldShowShelfHotseat());
+
+  if (shelf_hotseat_enabled) {
+    EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+    SwipeUpOnShelf();
+  } else {
+    EXPECT_EQ(HotseatState::kShown, GetShelfLayoutManager()->hotseat_state());
+  }
+
+  TriggerDimShelf();
+
+  EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()),
+            kExpectedDefaultShelfOpacity);
+  EXPECT_EQ(
+      GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->navigation_widget()),
+      kExpectedFloatingShelfDimOpacity);
+  EXPECT_EQ(
+      GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->hotseat_widget()),
+      shelf_hotseat_enabled ? kExpectedDefaultShelfOpacity
+                            : kExpectedFloatingShelfDimOpacity);
+  EXPECT_EQ(
+      GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->status_area_widget()),
+      kExpectedFloatingShelfDimOpacity);
 }
 
 }  // namespace ash

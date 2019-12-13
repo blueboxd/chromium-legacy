@@ -311,17 +311,6 @@ void ChromeAutofillClient::UpdateWebauthnOfferDialogWithError() {
     controller->UpdateDialog(WebauthnDialogState::kOfferError);
 }
 
-void ChromeAutofillClient::UpdateWebauthnVerifyPendingCancelButton(
-    bool should_be_enabled) {
-  WebauthnDialogControllerImpl* controller =
-      autofill::WebauthnDialogControllerImpl::FromWebContents(web_contents());
-  if (controller) {
-    controller->UpdateDialog(
-        should_be_enabled ? WebauthnDialogState::kVerifyPending
-                          : WebauthnDialogState::kVerifyPendingButtonDisabled);
-  }
-}
-
 bool ChromeAutofillClient::CloseWebauthnDialog() {
   WebauthnDialogControllerImpl* controller =
       autofill::WebauthnDialogControllerImpl::FromWebContents(web_contents());

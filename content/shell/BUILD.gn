@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromecast_build.gni")
 import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
@@ -380,11 +381,8 @@ jumbo_static_library("content_shell_lib") {
       "//gpu/vulkan/init",
     ]
   }
-  if (mojo_media_host == "browser") {
-    deps += [
-      "//media/mojo/mojom:constants",
-      "//media/mojo/services",
-    ]
+  if (enable_cast_renderer) {
+    deps += [ "//media/mojo/services" ]
   }
 
   if (is_win) {
@@ -476,10 +474,6 @@ jumbo_static_library("content_shell_lib") {
       "browser/shell_plugin_service_filter.cc",
       "browser/shell_plugin_service_filter.h",
     ]
-  }
-
-  if (enable_cast_renderer) {
-    deps += [ "//media/mojo/mojom:constants" ]
   }
 }
 

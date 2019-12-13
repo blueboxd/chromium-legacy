@@ -11,16 +11,14 @@
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/device_service.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/common/api/usb.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace usb = extensions::api::usb;
 
@@ -194,8 +192,7 @@ void UsbDeviceManager::EnsureConnectionWithDeviceManager() {
 
   // Receive mojo::Remote<UsbDeviceManager> from DeviceService.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::GetSystemConnector()->Connect(
-      device::mojom::kServiceName,
+  content::GetDeviceService().BindUsbDeviceManager(
       device_manager_.BindNewPipeAndPassReceiver());
 
   SetUpDeviceManagerConnection();

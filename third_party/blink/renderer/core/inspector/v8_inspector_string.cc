@@ -7,6 +7,7 @@
 #include <utility>
 #include "third_party/blink/renderer/core/inspector/protocol/Protocol.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
+#include "third_party/inspector_protocol/crdtp/cbor.h"
 
 namespace blink {
 
@@ -124,6 +125,11 @@ class BinaryBasedOnCachedData : public Binary::Impl {
   std::unique_ptr<v8::ScriptCompiler::CachedData> data_;
 };
 }  // namespace
+
+// Implements Serializable.
+void Binary::AppendSerialized(std::vector<uint8_t>* out) const {
+  crdtp::cbor::EncodeBinary(crdtp::span<uint8_t>(data(), size()), out);
+}
 
 String Binary::toBase64() const {
   return impl_ ? Base64Encode(*impl_) : String();

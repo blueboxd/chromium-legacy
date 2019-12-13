@@ -4,7 +4,7 @@
 
 package org.chromium.components.module_installer.util;
 
-import org.chromium.base.BuildConfig;
+import org.chromium.base.BundleUtils;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.components.module_installer.logger.SplitAvailabilityLogger;
 
@@ -20,7 +20,7 @@ public class ModuleUtil {
      * unnecessary code (modules are not supported in APKs).
      */
     public static void recordStartupTime() {
-        if (!BuildConfig.IS_BUNDLE) return;
+        if (!BundleUtils.isBundle()) return;
 
         Timer.recordStartupTime();
     }
@@ -29,7 +29,7 @@ public class ModuleUtil {
      * Records the start time in order to later report the install duration via UMA.
      */
     public static void recordModuleAvailability() {
-        if (!BuildConfig.IS_BUNDLE) return;
+        if (!BundleUtils.isBundle()) return;
 
         try (Timer timer = new Timer()) {
             initApplication();
@@ -41,7 +41,7 @@ public class ModuleUtil {
      * Updates the CrashKey report containing modules currently present.
      */
     public static void updateCrashKeys() {
-        if (!BuildConfig.IS_BUNDLE) return;
+        if (!BundleUtils.isBundle()) return;
 
         try (Timer timer = new Timer()) {
             CrashKeyRecorder.updateCrashKeys();
@@ -52,7 +52,7 @@ public class ModuleUtil {
      * Initializes the PlayCore SplitCompat framework.
      */
     public static void initApplication() {
-        if (!BuildConfig.IS_BUNDLE) return;
+        if (!BundleUtils.isBundle()) return;
 
         try (Timer timer = new Timer()) {
             SplitCompatInitializer.initApplication();

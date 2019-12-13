@@ -8,12 +8,12 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "services/device/device_service.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/geolocation.mojom.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
-#include "services/service_manager/public/cpp/service_binding.h"
 
 namespace device {
 
@@ -100,15 +100,14 @@ ScopedGeolocationOverrider::ScopedGeolocationOverrider(double latitude,
 }
 
 ScopedGeolocationOverrider::~ScopedGeolocationOverrider() {
-  service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
-      mojom::GeolocationContext>(mojom::kServiceName);
+  DeviceService::OverrideGeolocationContextBinderForTesting(
+      base::NullCallback());
 }
 
 void ScopedGeolocationOverrider::OverrideGeolocation(
     const mojom::Geoposition& position) {
   geolocation_context_ = std::make_unique<FakeGeolocationContext>(position);
-  service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
-      mojom::kServiceName,
+  DeviceService::OverrideGeolocationContextBinderForTesting(
       base::BindRepeating(&FakeGeolocationContext::BindForOverrideService,
                           base::Unretained(geolocation_context_.get())));
 }

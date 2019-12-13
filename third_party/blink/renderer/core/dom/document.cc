@@ -7299,15 +7299,11 @@ void Document::AddConsoleMessageImpl(ConsoleMessage* console_message,
 }
 
 void Document::TasksWerePaused() {
-  GetScriptRunner()->Suspend();
-
   if (scripted_animation_controller_)
     scripted_animation_controller_->Pause();
 }
 
 void Document::TasksWereUnpaused() {
-  GetScriptRunner()->Resume();
-
   if (scripted_animation_controller_)
     scripted_animation_controller_->Unpause();
 }

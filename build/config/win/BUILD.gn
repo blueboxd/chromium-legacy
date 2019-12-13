@@ -240,7 +240,6 @@ config("runtime_library") {
       defines += [ "WINAPI_FAMILY=WINAPI_FAMILY_DESKTOP_APP" ]
     }
     cflags_cc += [
-      "/ZW",
       "/EHsc",
     ]
 

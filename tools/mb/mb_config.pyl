@@ -661,6 +661,7 @@
       'mac10.12-blink-rel': 'release_bot_minimal_symbols',
       'mac10.13-blink-rel': 'release_bot_minimal_symbols',
       'mac10.13_retina-blink-rel': 'release_bot_minimal_symbols',
+      'mac10.14-blink-rel': 'release_bot_minimal_symbols',
       'win7-blink-rel': 'release_bot_x86_minimal_symbols',
       'win10-blink-rel': 'release_bot_x86_minimal_symbols',
     },
@@ -822,6 +823,7 @@
       'linux-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
       'linux-trusty-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange',
       'linux-viz-rel': 'release_trybot',
+      'linux-wpt-fyi-rel': 'release_trybot',
       'linux-webkit-msan-rel': 'msan_release_bot',
       'linux_arm': 'release_trybot_arm',
       'linux_chromium_archive_rel_ng': 'release_bot',
@@ -1194,7 +1196,8 @@
     ],
 
     'android_release_trybot_fastbuild': [
-      'android', 'release_trybot', 'strip_debug_info', 'android_fastbuild'
+      'android', 'release_trybot', 'strip_debug_info', 'android_fastbuild',
+      'android_no_proguard',
     ],
 
     'android_release_trybot_x86': [

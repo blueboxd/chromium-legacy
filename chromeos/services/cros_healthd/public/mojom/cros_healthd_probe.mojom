@@ -10,12 +10,20 @@
 
 module chromeos.cros_healthd.mojom;
 
+// An enumeration of CPU architectures.
+[Extensible]
+enum CpuArchitectureEnum {
+  kUnknown,
+  kX86_64,
+};
+
 // An enumeration of each category of information that cros_healthd can report.
 [Extensible]
 enum ProbeCategoryEnum {
   kBattery,
   kNonRemovableBlockDevices,
   kCachedVpdData,
+  kCpu,
 };
 
 // Information related to the main battery.
@@ -70,6 +78,16 @@ struct CachedVpdInfo {
   string sku_number;
 };
 
+// Information related to a device's CPU.
+struct CpuInfo {
+  // The CPU model name.
+  string model_name;
+  // The CPU architecture.
+  CpuArchitectureEnum architecture;
+  // The max CPU clock speed in khz.
+  uint32 max_clock_speed_khz;
+};
+
 // A collection of all the device's telemetry information that cros_healthd is
 // capable of reporting. Note that every field in TelemetryInfo is nullable, and
 // the response for a particular ProbeTelemetryInfo request will only contain
@@ -86,4 +104,7 @@ struct TelemetryInfo {
   // Only present when kCachedVpdData was included in the categories input to
   // ProbeTelemetryInfo.
   CachedVpdInfo? vpd_info;
+  // Information about each of the device's CPUs. Only present when kCpu was
+  // included in the categories input to ProbeTelemetryInfo.
+  array<CpuInfo>? cpu_info;
 };

@@ -20,6 +20,17 @@ bool PathContainsString(const std::string& path, const std::string& s) {
 
 }  // namespace
 
+OpenXrTestHelper::ActionProperties::ActionProperties()
+    : type(XR_ACTION_TYPE_MAX_ENUM) {}
+
+OpenXrTestHelper::ActionProperties::~ActionProperties() = default;
+
+OpenXrTestHelper::ActionProperties::ActionProperties(
+    const ActionProperties& other) {
+  this->type = other.type;
+  this->profile_binding_map = other.profile_binding_map;
+}
+
 OpenXrTestHelper::OpenXrTestHelper()
     // since openxr_statics is created first, so the first instance returned
     // should be a fake one since openxr_statics does not need to use
@@ -32,7 +43,9 @@ OpenXrTestHelper::OpenXrTestHelper()
       frame_begin_(false),
       acquired_swapchain_texture_(0),
       next_space_(0),
-      next_predicted_display_time_(0) {}
+      next_predicted_display_time_(0),
+      interaction_profile_(
+          interaction_profile::kMicrosoftMotionControllerInteractionProfile) {}
 
 OpenXrTestHelper::~OpenXrTestHelper() = default;
 
@@ -288,9 +301,7 @@ XrResult OpenXrTestHelper::CreateActionSpace(
   return XR_SUCCESS;
 }
 
-XrPath OpenXrTestHelper::GetPath(const char* path_string) {
-  RETURN_IF(path_string == nullptr, XR_ERROR_VALIDATION_FAILURE,
-            "path_string is nullptr");
+XrPath OpenXrTestHelper::GetPath(std::string path_string) {
   for (auto it = paths_.begin(); it != paths_.end(); it++) {
     if (it->compare(path_string) == 0) {
       return it - paths_.begin();
@@ -301,7 +312,7 @@ XrPath OpenXrTestHelper::GetPath(const char* path_string) {
 }
 
 XrPath OpenXrTestHelper::GetCurrentInteractionProfile() {
-  return GetPath("/interaction_profiles/microsoft/motion_controller");
+  return GetPath(interaction_profile_);
 }
 
 XrResult OpenXrTestHelper::BeginSession() {
@@ -349,13 +360,11 @@ XrResult OpenXrTestHelper::EndFrame() {
   return XR_SUCCESS;
 }
 
-XrResult OpenXrTestHelper::BindActionAndPath(XrActionSuggestedBinding binding) {
+XrResult OpenXrTestHelper::BindActionAndPath(XrPath interaction_profile_path,
+                                             XrActionSuggestedBinding binding) {
   ActionProperties& current_action = actions_[binding.action];
-  RETURN_IF(current_action.binding != XR_NULL_PATH, XR_ERROR_VALIDATION_FAILURE,
-            "BindActionAndPath action is bind to more than one path, this is "
-            "not cupported with current test");
-  current_action.binding = binding.binding;
-  std::string path_string = PathToString(current_action.binding);
+  current_action.profile_binding_map[interaction_profile_path] =
+      binding.binding;
   return XR_SUCCESS;
 }
 
@@ -422,8 +431,19 @@ XrResult OpenXrTestHelper::SyncActionData(XrActionSet action_set) {
 
 XrResult OpenXrTestHelper::UpdateAction(XrAction action) {
   RETURN_IF_XR_FAILED(ValidateAction(action));
-  const ActionProperties& cur_action_properties = actions_[action];
-  std::string path_string = PathToString(cur_action_properties.binding);
+  ActionProperties& cur_action_properties = actions_[action];
+  XrPath interaction_profile_path = GetPath(interaction_profile_);
+
+  if (cur_action_properties.profile_binding_map.count(
+          interaction_profile_path) == 0) {
+    // Only update actions that have binding for current interaction_profile_
+    return XR_SUCCESS;
+  }
+
+  XrPath action_path =
+      cur_action_properties.profile_binding_map[interaction_profile_path];
+  std::string path_string = PathToString(action_path);
+
   bool support_path =
       PathContainsString(path_string, "/user/hand/left/input") ||
       PathContainsString(path_string, "/user/hand/right/input");
@@ -453,6 +473,9 @@ XrResult OpenXrTestHelper::UpdateAction(XrAction action) {
         button_id = device::kGrip;
       } else if (PathContainsString(path_string, "/menu/")) {
         button_id = device::kMenu;
+      } else if (PathContainsString(path_string, "/select/")) {
+        // for WMR simple controller select is mapped to test type trigger
+        button_id = device::kAxisTrigger;
       } else {
         NOTREACHED() << "Curently test does not support this button";
       }
@@ -574,9 +597,19 @@ void OpenXrTestHelper::UpdateEventQueue() {
         XrEventDataBuffer event_data = {
             XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING};
         event_queue_.push(event_data);
+      } else if (data.type ==
+                 device_test::mojom::EventType::kInteractionProfileChanged) {
+        UpdateInteractionProfile(data.interaction_profile);
+        XrEventDataBuffer event_data;
+        XrEventDataInteractionProfileChanged* interaction_profile_changed =
+            reinterpret_cast<XrEventDataInteractionProfileChanged*>(
+                &event_data);
+        interaction_profile_changed->type =
+            XR_TYPE_EVENT_DATA_INTERACTION_PROFILE_CHANGED;
+        interaction_profile_changed->session = session_;
+        event_queue_.push(event_data);
       } else if (data.type != device_test::mojom::EventType::kNoEvent) {
-        NOTREACHED() << "Event changed tests other than session lost and "
-                        "instance lost is not implemented";
+        NOTREACHED() << "Event changed event type not implemented for test";
       }
     } while (data.type != device_test::mojom::EventType::kNoEvent);
   }
@@ -618,6 +651,23 @@ bool OpenXrTestHelper::IsSessionRunning() const {
          session_state_ == XR_SESSION_STATE_FOCUSED;
 }
 
+void OpenXrTestHelper::UpdateInteractionProfile(
+    device_test::mojom::InteractionProfileType type) {
+  switch (type) {
+    case device_test::mojom::InteractionProfileType::kWMRMotion:
+      interaction_profile_ =
+          interaction_profile::kMicrosoftMotionControllerInteractionProfile;
+      break;
+    case device_test::mojom::InteractionProfileType::kKHRSimple:
+      interaction_profile_ =
+          interaction_profile::kKHRSimpleControllerInteractionProfile;
+      break;
+    case device_test::mojom::InteractionProfileType::kInvalid:
+      NOTREACHED() << "Invalid EventData interaction_profile type";
+      break;
+  }
+}
+
 void OpenXrTestHelper::LocateSpace(XrSpace space, XrPosef* pose) {
   DCHECK(pose != nullptr);
   *pose = device::PoseIdentity();
@@ -639,8 +689,11 @@ void OpenXrTestHelper::LocateSpace(XrSpace space, XrPosef* pose) {
   } else if (action_spaces_.count(space) == 1) {
     XrAction cur_action = action_spaces_.at(space);
     ActionProperties cur_action_properties = actions_[cur_action];
-    std::string path_string = PathToString(cur_action_properties.binding);
-    device::ControllerFrameData data = GetControllerDataFromPath(path_string);
+    std::string path_string =
+        PathToString(cur_action_properties
+                         .profile_binding_map[GetPath(interaction_profile_)]);
+    device::ControllerFrameData data =
+        GetControllerDataFromPath(std::move(path_string));
     if (data.pose_data.is_valid) {
       transform = PoseFrameDataToTransform(data.pose_data);
     }

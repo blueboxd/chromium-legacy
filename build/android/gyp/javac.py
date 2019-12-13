@@ -598,7 +598,7 @@ def main(argv):
   input_strings = javac_cmd + options.classpath + java_files
   if options.jar_info_exclude_globs:
     input_strings.append(options.jar_info_exclude_globs)
-  build_utils.CallAndWriteDepfileIfStale(
+  md5_check.CallAndWriteDepfileIfStale(
       lambda: _OnStaleMd5(options, javac_cmd, java_files, options.classpath),
       options,
       depfile_deps=depfile_deps,

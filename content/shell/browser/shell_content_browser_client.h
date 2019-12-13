@@ -37,10 +37,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   std::unique_ptr<BrowserMainParts> CreateBrowserMainParts(
       const MainFunctionParams& parameters) override;
   bool IsHandledURL(const GURL& url) override;
-  void RunServiceInstance(
-      const service_manager::Identity& identity,
-      mojo::PendingReceiver<service_manager::mojom::Service>* receiver)
-      override;
   bool ShouldTerminateOnServiceQuit(
       const service_manager::Identity& id) override;
   base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
@@ -68,6 +64,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       override;
   base::FilePath GetFontLookupTableCacheDir() override;
   DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
+  mojo::Remote<::media::mojom::MediaService> RunSecondaryMediaService()
+      override;
   void OpenURL(SiteInstance* site_instance,
                const OpenURLParams& params,
                base::OnceCallback<void(WebContents*)> callback) override;

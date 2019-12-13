@@ -10,6 +10,8 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
+#include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chromecast/browser/application_media_info_manager.h"
@@ -27,7 +29,6 @@
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
 #include "chromecast/media/service/cast_mojo_media_client.h"
 #include "chromecast/media/service/video_geometry_setter_service.h"
-#include "media/mojo/mojom/constants.mojom.h"   // nogncheck
 #include "media/mojo/services/media_service.h"  // nogncheck
 #endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
 
@@ -149,10 +150,21 @@ void CastContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
       base::BindRepeating(&BindNetworkHintsHandler));
 }
 
+mojo::Remote<::media::mojom::MediaService>
+CastContentBrowserClient::RunSecondaryMediaService() {
+  mojo::Remote<::media::mojom::MediaService> remote;
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+  GetMediaTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&CastContentBrowserClient::CreateMediaService,
+                                base::Unretained(this),
+                                remote.BindNewPipeAndPassReceiver()));
+#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
+  return remote;
+}
+
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
 void CastContentBrowserClient::CreateMediaService(
-    service_manager::mojom::ServiceRequest request) {
-  std::unique_ptr<::media::MediaService> service;
+    mojo::PendingReceiver<::media::mojom::MediaService> receiver) {
   DCHECK(GetMediaTaskRunner() &&
          GetMediaTaskRunner()->BelongsToCurrentThread());
   if (!video_geometry_setter_service_) {
@@ -160,14 +172,16 @@ void CastContentBrowserClient::CreateMediaService(
   }
   auto mojo_media_client = std::make_unique<media::CastMojoMediaClient>(
       GetCmaBackendFactory(),
-      base::Bind(&CastContentBrowserClient::CreateCdmFactory,
-                 base::Unretained(this)),
+      base::BindRepeating(&CastContentBrowserClient::CreateCdmFactory,
+                          base::Unretained(this)),
       GetVideoModeSwitcher(), GetVideoResolutionPolicy());
   mojo_media_client->SetVideoGeometrySetterService(
       video_geometry_setter_service_.get());
-  service = std::make_unique<::media::MediaService>(
-      std::move(mojo_media_client), std::move(request));
-  service_manager::Service::RunAsyncUntilTermination(std::move(service));
+
+  static base::NoDestructor<
+      base::SequenceLocalStorageSlot<::media::MediaService>>
+      service;
+  service->emplace(std::move(mojo_media_client), std::move(receiver));
 }
 
 void CastContentBrowserClient::CreateVideoGeometrySetterServiceOnMediaThread() {
@@ -206,16 +220,6 @@ void CastContentBrowserClient::BindGpuHostReceiver(
 void CastContentBrowserClient::RunServiceInstance(
     const service_manager::Identity& identity,
     mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
-#if BUILDFLAG(ENABLE_CAST_RENDERER)
-  if (identity.name() == ::media::mojom::kMediaRendererServiceName) {
-    service_manager::mojom::ServiceRequest request(std::move(*receiver));
-    GetMediaTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&CastContentBrowserClient::CreateMediaService,
-                                  base::Unretained(this), std::move(request)));
-    return;
-  }
-#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
-
 #if BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
   if (identity.name() == external_mojo::BrokerService::kServiceName) {
     StartExternalMojoBrokerService(std::move(*receiver));

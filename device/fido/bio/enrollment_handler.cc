@@ -13,13 +13,12 @@
 namespace device {
 
 BioEnrollmentHandler::BioEnrollmentHandler(
-    service_manager::Connector* connector,
     const base::flat_set<FidoTransportProtocol>& supported_transports,
     base::OnceClosure ready_callback,
     ErrorCallback error_callback,
     GetPINCallback get_pin_callback,
     FidoDiscoveryFactory* factory)
-    : FidoRequestHandlerBase(connector, factory, supported_transports),
+    : FidoRequestHandlerBase(factory, supported_transports),
       ready_callback_(std::move(ready_callback)),
       error_callback_(std::move(error_callback)),
       get_pin_callback_(std::move(get_pin_callback)) {

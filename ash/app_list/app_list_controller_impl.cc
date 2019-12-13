@@ -129,7 +129,7 @@ bool HasVisibleWindows() {
       Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal(
           DesksMruType::kActiveDesk);
   for (auto* window : window_list) {
-    if (window->TargetVisibility())
+    if (window->TargetVisibility() && !WindowState::Get(window)->IsMinimized())
       return true;
   }
   return false;
@@ -535,7 +535,6 @@ void AppListControllerImpl::OnAppListStateChanged(AppListState new_state,
   if (app_list_window) {
     const bool app_list_visible = app_list_window->TargetVisibility();
     if (app_list_visible != IsVisible()) {
-      OnVisibilityWillChange(app_list_visible, last_visible_display_id_);
       OnVisibilityChanged(app_list_visible, last_visible_display_id_);
     }
   }
@@ -630,7 +629,7 @@ void AppListControllerImpl::OnShellDestroying() {
 void AppListControllerImpl::OnOverviewModeStarting() {
   if (IsTabletMode()) {
     const int64_t display_id = last_visible_display_id_;
-    OnHomeLauncherPositionChanged(0 /* percent_shown */, display_id);
+    OnVisibilityWillChange(false /*shown*/, display_id);
   } else {
     DismissAppList();
   }
@@ -640,26 +639,38 @@ void AppListControllerImpl::OnOverviewModeStartingAnimationComplete(
     bool canceled) {
   if (!IsTabletMode())
     return;
-  OnHomeLauncherAnimationComplete(canceled && !HasVisibleWindows() /* shown */,
-                                  last_visible_display_id_);
+
+  // If overview start was canceled, overview end animations are about to start.
+  // Preemptively update the target app list visibility.
+  if (canceled) {
+    OnVisibilityWillChange(!HasVisibleWindows(), last_visible_display_id_);
+    return;
+  }
+
+  OnVisibilityChanged(false /* shown */, last_visible_display_id_);
 }
 
 void AppListControllerImpl::OnOverviewModeEnding(OverviewSession* session) {
   if (!IsTabletMode())
     return;
-  const int64_t display_id = last_visible_display_id_;
-  bool target_visibility = GetTargetVisibility();
-  if (home_launcher_transition_state_ == HomeLauncherTransitionState::kFinished)
-    target_visibility &= !HasVisibleWindows();
-  OnHomeLauncherPositionChanged(target_visibility ? 100 : 0, display_id);
+
+  // Overview state might end during home launcher transition - if that is the
+  // case, respect the final state set by in-progress home launcher transition.
+  if (home_launcher_transition_state_ != HomeLauncherTransitionState::kFinished)
+    return;
+
+  OnVisibilityWillChange(!HasVisibleWindows() /*shown*/,
+                         last_visible_display_id_);
 }
 
 void AppListControllerImpl::OnOverviewModeEnded() {
   if (!IsTabletMode())
     return;
-  const int64_t display_id = last_visible_display_id_;
-  const bool app_list_visible = IsVisible();
-  OnHomeLauncherAnimationComplete(app_list_visible, display_id);
+  // Overview state might end during home launcher transition - if that is the
+  // case, respect the final state set by in-progress home launcher transition.
+  if (home_launcher_transition_state_ != HomeLauncherTransitionState::kFinished)
+    return;
+  OnVisibilityChanged(!HasVisibleWindows(), last_visible_display_id_);
 }
 
 void AppListControllerImpl::OnTabletModeStarted() {
@@ -813,7 +824,6 @@ void AppListControllerImpl::OnHomeLauncherAnimationComplete(
                          : AssistantExitPoint::kLauncherClose);
   // Animations can be reversed (e.g. in a drag). Let's ensure the target
   // visibility is correct first.
-  OnVisibilityWillChange(shown, display_id);
   OnVisibilityChanged(shown, display_id);
 
   if (!home_launcher_animation_callback_.is_null())
@@ -1367,8 +1377,11 @@ void AppListControllerImpl::OnVisibilityChanged(bool visible,
   // launcher state transition finished - delay the visibility change until the
   // home launcher stops animating, so observers do not miss the animation state
   // update.
-  if (home_launcher_transition_state_ != HomeLauncherTransitionState::kFinished)
+  if (home_launcher_transition_state_ !=
+      HomeLauncherTransitionState::kFinished) {
+    OnVisibilityWillChange(visible, display_id);
     return;
+  }
 
   bool real_visibility = visible;
   // HomeLauncher is only visible when no other app windows are visible,
@@ -1377,9 +1390,10 @@ void AppListControllerImpl::OnVisibilityChanged(bool visible,
   if (IsTabletMode() && ShouldLauncherShowBehindApps())
     real_visibility &= !HasVisibleWindows();
 
-  DCHECK_EQ(last_target_visible_, real_visibility)
-      << "Visibility notifications should follow target visibility "
-         "notifications.";
+  aura::Window* app_list_window = GetWindow();
+  real_visibility &= app_list_window && app_list_window->TargetVisibility();
+
+  OnVisibilityWillChange(real_visibility, display_id);
 
   // Skip adjacent same changes.
   if (last_visible_ == real_visibility &&

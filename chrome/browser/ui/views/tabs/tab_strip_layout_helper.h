@@ -54,6 +54,11 @@ class TabStripLayoutHelper {
   // Returns the number of pinned tabs in the tabstrip.
   int GetPinnedTabCount() const;
 
+  // Returns a map of all tab groups and their bounds.
+  const std::map<TabGroupId, gfx::Rect>& group_header_ideal_bounds() const {
+    return group_header_ideal_bounds_;
+  }
+
   // Inserts a new tab at |index|, without animation. |tab_removed_callback|
   // will be invoked if the tab is removed at the end of a remove animation.
   void InsertTabAtNoAnimation(int model_index,
@@ -204,6 +209,9 @@ class TabStripLayoutHelper {
   // Current collation of tabs and group headers, along with necessary data to
   // run layout and animations for those Views.
   std::vector<TabSlot> slots_;
+
+  // Contains the ideal bounds of tab group headers.
+  std::map<TabGroupId, gfx::Rect> group_header_ideal_bounds_;
 
   // When in tab closing mode, if we want the next tab to the right to end up
   // under the cursor, each tab needs to stay the same size. When defined,

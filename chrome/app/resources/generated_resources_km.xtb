@@ -283,6 +283,7 @@
 <translation id="1397500194120344683">គ្មានឧបករណ៍​ដែលមានសិទ្ធិទេ។ <ph name="LINK_BEGIN" />ស្វែងយល់បន្ថែម<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">ពង្រីក</translation>
 <translation id="1399511500114202393">មិនមាន​វិញ្ញាបនបត្រ​អ្នកប្រើប្រាស់​ទេ</translation>
+<translation id="1403519882106291341">លក្ខខណ្ឌ Google Chrome OS</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (បានគ្រប់គ្រង)</translation>
 <translation id="1405779994569073824">បានគាំង។</translation>
 <translation id="1406500794671479665">កំពុងផ្ទៀងផ្ទាត់...</translation>
@@ -2174,7 +2175,6 @@
 <translation id="4036778507053569103">គោលការណ៍ដែលបានទាញយកពីម៉ាស៊ីនមេ​គ្មាន​សុពលភាពទេ។</translation>
 <translation id="4037084878352560732">សេះ</translation>
 <translation id="4037889604535939429">កែសម្រួលមនុស្ស</translation>
-<translation id="4042264909745389898">លក្ខខណ្ឌ Google Chrome OS</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{ចាកចេញ​ពី​ទំព័រ}other{ចាកចេញ​ពី​ទំព័រ}}</translation>
 <translation id="4044612648082411741">បញ្ចូលពាក្យសម្ងាត់វិញ្ញាបនបត្ររបស់អ្នក</translation>
 <translation id="404493185430269859">ម៉ាស៊ីនស្វែងរកលំនាំដើម</translation>

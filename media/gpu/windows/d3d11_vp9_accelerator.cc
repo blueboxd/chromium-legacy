@@ -379,8 +379,7 @@ bool D3D11VP9Accelerator::SubmitDecode(
 
 bool D3D11VP9Accelerator::OutputPicture(scoped_refptr<VP9Picture> picture) {
   D3D11VP9Picture* pic = static_cast<D3D11VP9Picture*>(picture.get());
-  client_->OutputResult(picture.get(), pic->picture_buffer());
-  return true;
+  return client_->OutputResult(picture.get(), pic->picture_buffer());
 }
 
 bool D3D11VP9Accelerator::IsFrameContextRequired() const {

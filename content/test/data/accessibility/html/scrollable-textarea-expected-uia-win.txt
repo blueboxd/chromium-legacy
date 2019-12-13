@@ -1,4 +1,4 @@
 document
-++group
+++group IsControlElement=false
 ++++textbox Value.Value='little'
 ++++textbox Value.Value='lots+of+text+ lots+of+text+ lots+of+text+ lots+of+text+ lots+of+text+ lots+of+text+ lots+of+text+ lots+of+text+ lots+of+text+ lots+of+text+ lots+of+text+ lots+of+text'

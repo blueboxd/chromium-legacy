@@ -15,11 +15,9 @@
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/device_service.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -50,6 +48,14 @@ bool DeviceIsKeyboard(device::BluetoothDeviceType device_type) {
          device_type == device::BluetoothDeviceType::KEYBOARD_MOUSE_COMBO;
 }
 
+chromeos::HIDDetectionScreen::InputDeviceManagerBinder&
+GetInputDeviceManagerBinderOverride() {
+  static base::NoDestructor<
+      chromeos::HIDDetectionScreen::InputDeviceManagerBinder>
+      binder;
+  return *binder;
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -76,6 +82,12 @@ HIDDetectionScreen::~HIDDetectionScreen() {
     discovery_session_->Stop(base::DoNothing(), base::DoNothing());
   if (adapter_.get())
     adapter_->RemoveObserver(this);
+}
+
+// static
+void HIDDetectionScreen::OverrideInputDeviceManagerBinderForTesting(
+    InputDeviceManagerBinder binder) {
+  GetInputDeviceManagerBinderOverride() = std::move(binder);
 }
 
 void HIDDetectionScreen::OnContinueButtonClicked() {
@@ -483,10 +495,12 @@ void HIDDetectionScreen::TryInitiateBTDevicesUpdate() {
 
 void HIDDetectionScreen::ConnectToInputDeviceManager() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  service_manager::Connector* connector = content::GetSystemConnector();
-  DCHECK(connector);
-  connector->Connect(device::mojom::kServiceName,
-                     input_device_manager_.BindNewPipeAndPassReceiver());
+  auto receiver = input_device_manager_.BindNewPipeAndPassReceiver();
+  const auto& binder = GetInputDeviceManagerBinderOverride();
+  if (binder)
+    binder.Run(std::move(receiver));
+  else
+    content::GetDeviceService().BindInputDeviceManager(std::move(receiver));
 }
 
 void HIDDetectionScreen::OnGetInputDevicesListForCheck(

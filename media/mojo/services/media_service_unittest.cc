@@ -22,21 +22,17 @@
 #include "media/mojo/clients/mojo_decryptor.h"
 #include "media/mojo/clients/mojo_demuxer_stream_impl.h"
 #include "media/mojo/common/media_type_converters.h"
-#include "media/mojo/mojom/constants.mojom.h"
 #include "media/mojo/mojom/content_decryption_module.mojom.h"
 #include "media/mojo/mojom/decryptor.mojom.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "media/mojo/mojom/media_service.mojom.h"
 #include "media/mojo/mojom/renderer.mojom.h"
 #include "media/mojo/services/media_interface_provider.h"
-#include "media/mojo/services/media_manifest.h"
+#include "media/mojo/services/media_service_factory.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/cpp/manifest_builder.h"
-#include "services/service_manager/public/cpp/test/test_service.h"
-#include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -125,16 +121,6 @@ ACTION_P(QuitLoop, run_loop) {
   base::PostTask(FROM_HERE, run_loop->QuitClosure());
 }
 
-service_manager::Manifest MakeMediaManifestForExecutable() {
-  service_manager::Manifest manifest = GetMediaManifest();
-  manifest.options.sandbox_type = "none";
-  manifest.options.execution_mode =
-      service_manager::Manifest::ExecutionMode::kStandaloneExecutable;
-  return manifest;
-}
-
-const char kTestServiceName[] = "media_service_unittests";
-
 // Tests MediaService built into a standalone mojo service binary (see
 // ServiceMain() in main.cc) where MediaService uses TestMojoMediaClient.
 // TestMojoMediaClient supports CDM creation using DefaultCdmFactory (only
@@ -143,14 +129,7 @@ const char kTestServiceName[] = "media_service_unittests";
 class MediaServiceTest : public testing::Test {
  public:
   MediaServiceTest()
-      : test_service_manager_(
-            {MakeMediaManifestForExecutable(),
-             service_manager::ManifestBuilder()
-                 .WithServiceName(kTestServiceName)
-                 .RequireCapability(mojom::kMediaServiceName, "media:media")
-                 .Build()}),
-        test_service_(
-            test_service_manager_.RegisterTestInstance(kTestServiceName)),
+      :
 #if BUILDFLAG(ENABLE_CDM_PROXY)
         cdm_proxy_client_receiver_(&cdm_proxy_client_),
 #endif
@@ -159,18 +138,17 @@ class MediaServiceTest : public testing::Test {
   }
   ~MediaServiceTest() override = default;
 
-  service_manager::Connector* connector() { return test_service_.connector(); }
-
   void SetUp() override {
     mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
         host_interfaces;
     auto provider = std::make_unique<MediaInterfaceProvider>(
         host_interfaces.InitWithNewPipeAndPassReceiver());
 
-    connector()->Connect(mojom::kMediaServiceName,
-                         media_service_.BindNewPipeAndPassReceiver());
-    media_service_.set_disconnect_handler(
-        base::BindRepeating(&MediaServiceTest::MediaServiceConnectionClosed,
+    media_service_impl_ = CreateMediaServiceForTesting(
+        media_service_.BindNewPipeAndPassReceiver());
+    media_service_.set_idle_handler(
+        base::TimeDelta(),
+        base::BindRepeating(&MediaServiceTest::OnMediaServiceIdle,
                             base::Unretained(this)));
     media_service_->CreateInterfaceFactory(
         interface_factory_.BindNewPipeAndPassReceiver(),
@@ -288,17 +266,17 @@ class MediaServiceTest : public testing::Test {
     run_loop.Run();
   }
 
-  MOCK_METHOD0(MediaServiceConnectionClosed, void());
+  MOCK_METHOD0(OnMediaServiceIdle, void());
 
  protected:
   base::test::TaskEnvironment task_environment_;
-  service_manager::TestServiceManager test_service_manager_;
-  service_manager::TestService test_service_;
 
   mojo::Remote<mojom::MediaService> media_service_;
   mojo::Remote<mojom::InterfaceFactory> interface_factory_;
   mojo::Remote<mojom::ContentDecryptionModule> cdm_;
   mojo::Remote<mojom::Renderer> renderer_;
+
+  std::unique_ptr<MediaService> media_service_impl_;
 
 #if BUILDFLAG(ENABLE_CDM_PROXY)
   mojo::Remote<mojom::CdmProxy> cdm_proxy_;
@@ -363,7 +341,7 @@ TEST_F(MediaServiceTest, Decryptor_WrongCdmId) {
   CreateDecryptor(cdm_id + 1, false);
 }
 
-TEST_F(MediaServiceTest, DeferredDestruction_CdmProxy) {
+TEST_F(MediaServiceTest, CdmProxyPreventsIdling) {
   InitializeCdmProxy(kClearKeyCdmGuid);
 
   // Disconnecting InterfaceFactory should not terminate the MediaService since
@@ -371,10 +349,10 @@ TEST_F(MediaServiceTest, DeferredDestruction_CdmProxy) {
   interface_factory_.reset();
   cdm_proxy_.FlushForTesting();
 
-  // Disconnecting CdmProxy will now terminate the MediaService.
+  // Disconnecting CdmProxy will cause the service to idle since no other
+  // connections should be active.
   base::RunLoop run_loop;
-  EXPECT_CALL(*this, MediaServiceConnectionClosed())
-      .WillOnce(QuitLoop(&run_loop));
+  EXPECT_CALL(*this, OnMediaServiceIdle()).WillOnce(QuitLoop(&run_loop));
   cdm_proxy_.reset();
   run_loop.Run();
 }
@@ -385,21 +363,15 @@ TEST_F(MediaServiceTest, Decryptor_WithoutCdmOrCdmProxy) {
   CreateDecryptor(1, false);
 }
 
-TEST_F(MediaServiceTest, Lifetime_DestroyMediaService) {
-  // Disconnecting |media_service_| doesn't terminate MediaService
-  // since |interface_factory_| is still alive. This is ensured here since
-  // MediaServiceConnectionClosed() is not called.
-  EXPECT_CALL(*this, MediaServiceConnectionClosed()).Times(0);
-  media_service_.reset();
+TEST_F(MediaServiceTest, InterfaceFactoryPreventsIdling) {
+  // The service should not idle during this operation.
   interface_factory_.FlushForTesting();
-}
 
-TEST_F(MediaServiceTest, Lifetime_DestroyInterfaceFactory) {
-  // Disconnecting InterfaceFactory will now terminate the MediaService since
-  // there's no media components hosted.
+  // Disconnecting InterfaceFactory will cause the service to idle since there
+  // are no media components hosted and so no other interfaces should be
+  // connected.
   base::RunLoop run_loop;
-  EXPECT_CALL(*this, MediaServiceConnectionClosed())
-      .WillOnce(QuitLoop(&run_loop));
+  EXPECT_CALL(*this, OnMediaServiceIdle()).WillOnce(QuitLoop(&run_loop));
   interface_factory_.reset();
   run_loop.Run();
 }
@@ -409,7 +381,7 @@ TEST_F(MediaServiceTest, Lifetime_DestroyInterfaceFactory) {
 // MediaService stays alive as long as there are InterfaceFactory impls, which
 // are then deferred destroyed until no media components (e.g. CDM or Renderer)
 // are hosted.
-TEST_F(MediaServiceTest, Lifetime) {
+TEST_F(MediaServiceTest, Idling) {
 #if BUILDFLAG(ENABLE_MOJO_CDM) && !defined(OS_ANDROID)
   InitializeCdm(kClearKeyKeySystem, true);
 #endif
@@ -424,15 +396,15 @@ TEST_F(MediaServiceTest, Lifetime) {
   renderer_.reset();
   interface_factory_.FlushForTesting();
 
-  // Disconnecting InterfaceFactory will now terminate the MediaService.
+  // Disconnecting InterfaceFactory will cause the service to idle since no
+  // other interfaces are connected.
   base::RunLoop run_loop;
-  EXPECT_CALL(*this, MediaServiceConnectionClosed())
-      .WillOnce(QuitLoop(&run_loop));
+  EXPECT_CALL(*this, OnMediaServiceIdle()).WillOnce(QuitLoop(&run_loop));
   interface_factory_.reset();
   run_loop.Run();
 }
 
-TEST_F(MediaServiceTest, DeferredDestruction) {
+TEST_F(MediaServiceTest, MoreIdling) {
 #if BUILDFLAG(ENABLE_MOJO_CDM) && !defined(OS_ANDROID)
   InitializeCdm(kClearKeyKeySystem, true);
 #endif
@@ -453,10 +425,10 @@ TEST_F(MediaServiceTest, DeferredDestruction) {
   else
     NOTREACHED();
 
-  // Disconnecting CDM and Renderer will now terminate the MediaService.
+  // Disconnecting CDM and Renderer will cause the service to idle since no
+  // other interfaces are connected.
   base::RunLoop run_loop;
-  EXPECT_CALL(*this, MediaServiceConnectionClosed())
-      .WillOnce(QuitLoop(&run_loop));
+  EXPECT_CALL(*this, OnMediaServiceIdle()).WillOnce(QuitLoop(&run_loop));
   cdm_.reset();
   renderer_.reset();
   run_loop.Run();

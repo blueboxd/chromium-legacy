@@ -2203,7 +2203,7 @@ class HttpStreamFactoryBidirectionalQuicTest
         ssl_config_service_(new SSLConfigServiceDefaults) {
     quic_context_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(20));
     if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
-      SetQuicReloadableFlag(quic_supports_tls_handshake, true);
+      quic::QuicEnableVersion(version_);
     }
   }
 

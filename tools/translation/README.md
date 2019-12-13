@@ -31,7 +31,14 @@ The presubmit automatically runs all files named `*_unittest.py `:
 git cl presubmit --force
 ```
 
-python
+Alternatively, you can run each test individually:
+
+```
+# Run from this directory (//tools/translation):
+python helper/grd_helper_unittest.py
+python helper/translation_helper_unittest.py
+python upload_screenshots_unittest.py
+```
 
 # Run sanity checks
 

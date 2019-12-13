@@ -276,6 +276,50 @@ bool IsMenuRelated(const ax::mojom::Role role) {
   }
 }
 
+bool IsReadOnlySupported(const ax::mojom::Role role) {
+  // https://www.w3.org/TR/wai-aria-1.1/#aria-readonly
+  // Roles that support aria-readonly
+  switch (role) {
+    case ax::mojom::Role::kCheckBox:
+    case ax::mojom::Role::kComboBoxGrouping:
+    case ax::mojom::Role::kComboBoxMenuButton:
+    case ax::mojom::Role::kGrid:
+    case ax::mojom::Role::kListBox:
+    case ax::mojom::Role::kMenuItemCheckBox:
+    case ax::mojom::Role::kMenuItemRadio:
+    case ax::mojom::Role::kMenuListPopup:
+    case ax::mojom::Role::kPopUpButton:
+    case ax::mojom::Role::kRadioButton:
+    case ax::mojom::Role::kRadioGroup:
+    case ax::mojom::Role::kSearchBox:
+    case ax::mojom::Role::kSlider:
+    case ax::mojom::Role::kSpinButton:
+    case ax::mojom::Role::kSwitch:
+    case ax::mojom::Role::kTextField:
+    case ax::mojom::Role::kTextFieldWithComboBox:
+    case ax::mojom::Role::kTreeGrid:
+      return true;
+
+    // https://www.w3.org/TR/wai-aria-1.1/#aria-readonly
+    // ARIA-1.1+ 'gridcell', supports aria-readonly, but 'cell' does not
+    //
+    // https://www.w3.org/TR/wai-aria-1.1/#columnheader
+    // https://www.w3.org/TR/wai-aria-1.1/#rowheader
+    // While the [columnheader|rowheader] role can be used in both interactive
+    // grids and non-interactive tables, the use of aria-readonly and
+    // aria-required is only applicable to interactive elements.
+    // Therefore, [...] user agents SHOULD NOT expose either property to
+    // assistive technologies unless the columnheader descends from a grid.
+    case ax::mojom::Role::kCell:
+    case ax::mojom::Role::kRowHeader:
+    case ax::mojom::Role::kColumnHeader:
+      return false;
+    default:
+      break;
+  }
+  return false;
+}
+
 bool IsRowContainer(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kGrid:
@@ -380,48 +424,15 @@ bool IsTextOrLineBreak(ax::mojom::Role role) {
   }
 }
 
-bool IsReadOnlySupported(const ax::mojom::Role role) {
-  // https://www.w3.org/TR/wai-aria-1.1/#aria-readonly
-  // Roles that support aria-readonly
+bool IsText(ax::mojom::Role role) {
   switch (role) {
-    case ax::mojom::Role::kCheckBox:
-    case ax::mojom::Role::kComboBoxGrouping:
-    case ax::mojom::Role::kComboBoxMenuButton:
-    case ax::mojom::Role::kGrid:
-    case ax::mojom::Role::kListBox:
-    case ax::mojom::Role::kMenuItemCheckBox:
-    case ax::mojom::Role::kMenuItemRadio:
-    case ax::mojom::Role::kMenuListPopup:
-    case ax::mojom::Role::kPopUpButton:
-    case ax::mojom::Role::kRadioButton:
-    case ax::mojom::Role::kRadioGroup:
-    case ax::mojom::Role::kSearchBox:
-    case ax::mojom::Role::kSlider:
-    case ax::mojom::Role::kSpinButton:
-    case ax::mojom::Role::kSwitch:
-    case ax::mojom::Role::kTextField:
-    case ax::mojom::Role::kTextFieldWithComboBox:
-    case ax::mojom::Role::kTreeGrid:
+    case ax::mojom::Role::kInlineTextBox:
+    case ax::mojom::Role::kLineBreak:
+    case ax::mojom::Role::kStaticText:
       return true;
-
-    // https://www.w3.org/TR/wai-aria-1.1/#aria-readonly
-    // ARIA-1.1+ 'gridcell', supports aria-readonly, but 'cell' does not
-    //
-    // https://www.w3.org/TR/wai-aria-1.1/#columnheader
-    // https://www.w3.org/TR/wai-aria-1.1/#rowheader
-    // While the [columnheader|rowheader] role can be used in both interactive
-    // grids and non-interactive tables, the use of aria-readonly and
-    // aria-required is only applicable to interactive elements.
-    // Therefore, [...] user agents SHOULD NOT expose either property to
-    // assistive technologies unless the columnheader descends from a grid.
-    case ax::mojom::Role::kCell:
-    case ax::mojom::Role::kRowHeader:
-    case ax::mojom::Role::kColumnHeader:
-      return false;
     default:
-      break;
+      return false;
   }
-  return false;
 }
 
 bool SupportsExpandCollapse(const ax::mojom::Role role) {

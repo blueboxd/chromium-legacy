@@ -242,7 +242,6 @@ void TabStripLayoutHelper::InsertGroupHeader(
     TabGroupId group,
     TabGroupHeader* header,
     base::OnceClosure header_removed_callback) {
-  // TODO(958173): Animate open.
   std::vector<int> tabs_in_group = controller_->ListTabsInGroup(group);
   const int header_slot_index =
       GetSlotIndexForTabModelIndex(tabs_in_group[0], group);
@@ -250,6 +249,11 @@ void TabStripLayoutHelper::InsertGroupHeader(
       slots_.begin() + header_slot_index,
       TabSlot::CreateForGroupHeader(group, header, TabPinned::kUnpinned,
                                     std::move(header_removed_callback)));
+
+  // Set the starting location of the header to something reasonable for the
+  // animation.
+  slots_[header_slot_index].view->SetBoundsRect(
+      GetTabs()[tabs_in_group[0]]->bounds());
 }
 
 void TabStripLayoutHelper::RemoveGroupHeader(TabGroupId group) {
@@ -357,7 +361,11 @@ void TabStripLayoutHelper::UpdateIdealBounds(int available_width) {
         }
         break;
       case ViewType::kGroupHeader:
-        slot.view->SetBoundsRect(bounds[i]);
+        if (slot.view->dragging()) {
+          slot.view->SetBoundsRect(bounds[i]);
+        } else {
+          group_header_ideal_bounds_[slot.view->group().value()] = bounds[i];
+        }
         break;
     }
   }

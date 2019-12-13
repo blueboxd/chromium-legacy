@@ -3282,6 +3282,39 @@ TEST_P(OverviewSessionNewLayoutTest, StackingOrderSplitviewWindow) {
             IndexOf(window1.get(), window1->parent()));
 }
 
+// Tests the windows are remain stacked underneath the split view window after
+// dragging or long pressing.
+TEST_P(OverviewSessionNewLayoutTest, StackingOrderAfterGestureEvent) {
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+
+  ToggleOverview();
+  ASSERT_TRUE(InOverviewSession());
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+
+  // Tests that if we long press, but cancel the event, the window stays stacked
+  // under the snapped window.
+  OverviewItem* item = GetOverviewItemForWindow(window2.get());
+  const gfx::PointF item_center = item->target_bounds().CenterPoint();
+  DispatchLongPress(item);
+  ui::GestureEvent gesture_end(item_center.x(), item_center.y(), 0,
+                               ui::EventTimeForNow(),
+                               ui::GestureEventDetails(ui::ET_GESTURE_END));
+  item->HandleGestureEvent(&gesture_end);
+  EXPECT_GT(IndexOf(window1.get(), window1->parent()),
+            IndexOf(window2.get(), window2->parent()));
+
+  // Tests that if we drag the window around, then release, the window also
+  // stays stacked under the snapped window.
+  ASSERT_TRUE(InOverviewSession());
+  const gfx::Vector2dF delta(15.f, 15.f);
+  DispatchLongPress(item);
+  overview_session()->Drag(item, item_center + delta);
+  overview_session()->CompleteDrag(item, item_center + delta);
+  EXPECT_GT(IndexOf(window1.get(), window1->parent()),
+            IndexOf(window2.get(), window2->parent()));
+}
+
 // Test that scrolling occurs if started on top of a window using the window's
 // center-point as a start.
 TEST_P(OverviewSessionNewLayoutTest, HorizontalScrollingOnOverviewItem) {

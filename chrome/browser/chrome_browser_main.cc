@@ -1554,7 +1554,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       language::GetOverrideLanguageModel() ==
           language::OverrideLanguageModel::GEO) {
     language::GeoLanguageProvider::GetInstance()->StartUp(
-        content::GetSystemConnector()->Clone(),
         browser_process_->local_state());
   }
 

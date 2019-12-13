@@ -15,7 +15,7 @@
 #include "ui/message_center/public/cpp/notifier_id.h"
 
 @interface StatusItemController : NSObject {
-  StatusIconMac* statusIcon_; // weak
+  StatusIconMac* _statusIcon; // weak
 }
 - (id)initWithIcon:(StatusIconMac*)icon;
 - (void)handleClick:(id)sender;
@@ -25,17 +25,17 @@
 @implementation StatusItemController
 
 - (id)initWithIcon:(StatusIconMac*)icon {
-  statusIcon_ = icon;
+  _statusIcon = icon;
   return self;
 }
 
 - (void)handleClick:(id)sender {
   // Pass along the click notification to our owner.
-  DCHECK(statusIcon_);
+  DCHECK(_statusIcon);
   // Bring up the status icon menu if there is one, relay the click event
   // otherwise.
-  if (!statusIcon_->HasStatusIconMenu())
-    statusIcon_->DispatchClickEvent();
+  if (!_statusIcon->HasStatusIconMenu())
+    _statusIcon->DispatchClickEvent();
 }
 
 @end

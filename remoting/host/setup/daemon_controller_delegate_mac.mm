@@ -19,6 +19,7 @@
 #include "base/mac/scoped_authorizationref.h"
 #include "base/mac/scoped_launch_data.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -34,6 +35,8 @@
 namespace remoting {
 
 namespace {
+
+constexpr char kIoThreadName[] = "DaemonControllerDelegateMac IO thread";
 
 // Simple RAII class to ensure that waitpid() gets called on a child process.
 // Neither std::unique_ptr nor base::ScopedGeneric are well suited, because the
@@ -206,8 +209,10 @@ void ElevateAndStopHost(const DaemonController::CompletionCallback& done) {
 
 }  // namespace
 
-DaemonControllerDelegateMac::DaemonControllerDelegateMac() {
+DaemonControllerDelegateMac::DaemonControllerDelegateMac()
+    : io_thread_(kIoThreadName) {
   LoadResources(std::string());
+  io_task_runner_ = io_thread_.StartWithType(base::MessagePumpType::IO);
 }
 
 DaemonControllerDelegateMac::~DaemonControllerDelegateMac() {
@@ -247,8 +252,7 @@ void DaemonControllerDelegateMac::CheckPermission(
     bool it2me,
     DaemonController::BoolCallback callback) {
   auto checker = std::make_unique<mac::PermissionChecker>(
-      it2me ? mac::HostMode::IT2ME : mac::HostMode::ME2ME,
-      base::ThreadTaskRunnerHandle::Get());
+      it2me ? mac::HostMode::IT2ME : mac::HostMode::ME2ME, io_task_runner_);
   permission_wizard_ =
       std::make_unique<mac::PermissionWizard>(std::move(checker));
   permission_wizard_->SetCompletionCallback(std::move(callback));

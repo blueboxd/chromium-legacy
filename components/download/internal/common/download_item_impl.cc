@@ -59,7 +59,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_ANDROID)
 #include "components/download/internal/common/android/download_collection_bridge.h"
@@ -446,7 +445,8 @@ DownloadItemImpl::DownloadItemImpl(
       is_updating_observers_(false) {
   job_ = DownloadJobFactory::CreateJob(
       this, std::move(cancel_request_callback), DownloadCreateInfo(), true,
-      URLLoaderFactoryProvider::GetNullPtr(), nullptr);
+      URLLoaderFactoryProvider::GetNullPtr(),
+      /*wake_lock_provider_binder*/ base::NullCallback());
   delegate_->Attach();
   Init(true /* actively downloading */, TYPE_SAVE_PAGE_AS);
 }
@@ -1216,6 +1216,12 @@ bool DownloadItemImpl::HasStrongValidators() const {
   return !etag_.empty() || !last_modified_time_.empty();
 }
 
+void DownloadItemImpl::BindWakeLockProvider(
+    mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver) {
+  if (delegate_)
+    delegate_->BindWakeLockProvider(std::move(receiver));
+}
+
 void DownloadItemImpl::UpdateValidatorsOnResumption(
     const DownloadCreateInfo& new_create_info) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -1470,7 +1476,8 @@ void DownloadItemImpl::Start(
   job_ = DownloadJobFactory::CreateJob(
       this, std::move(cancel_request_callback), new_create_info, false,
       std::move(url_loader_factory_provider),
-      delegate_ ? delegate_->GetServiceManagerConnector() : nullptr);
+      base::BindRepeating(&DownloadItemImpl::BindWakeLockProvider,
+                          weak_ptr_factory_.GetWeakPtr()));
   if (job_->IsParallelizable()) {
     RecordParallelizableDownloadCount(START_COUNT, IsParallelDownloadEnabled());
   }

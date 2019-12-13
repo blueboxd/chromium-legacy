@@ -191,6 +191,7 @@ NGPaintFragment::NGPaintFragment(
     : physical_fragment_(std::move(fragment)),
       offset_(offset),
       parent_(parent),
+      is_layout_object_destroyed_(false),
       is_dirty_inline_(false) {
   // TODO(crbug.com/924449): Once we get the caller passes null physical
   // fragment, we'll change to DCHECK().
@@ -567,7 +568,9 @@ NGPaintFragment* NGPaintFragment::LastForSameLayoutObject() {
 void NGPaintFragment::LayoutObjectWillBeDestroyed() {
   for (NGPaintFragment* fragment = this; fragment;
        fragment = fragment->next_for_same_layout_object_) {
-    fragment->PhysicalFragment().LayoutObjectWillBeDestroyed();
+    fragment->is_layout_object_destroyed_ = true;
+    // TODO(crbug.com/1033203): We should call this, but this seems to crash.
+    // fragment->PhysicalFragment().LayoutObjectWillBeDestroyed();
   }
 }
 

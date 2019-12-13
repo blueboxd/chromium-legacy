@@ -240,31 +240,4 @@ uint32_t ZLIB_INTERNAL armv8_crc32_little(unsigned long crc,
     return ~c;
 }
 
-TARGET_ARMV8_WITH_CRC
-Pos ZLIB_INTERNAL insert_string_arm(deflate_state *const s, const Pos str)
-{
-    Pos ret;
-    unsigned *ip, val, h = 0;
-
-    ip = (unsigned *)&s->window[str];
-    val = *ip;
-
-    if (s->level >= 6)
-        val &= 0xFFFFFF;
-
-    /* We use CRC32C (Castagnoli) to ensure that the compressed output
-     * will match between Intel x ARM.
-     * Unlike the case of data integrity checks for GZIP format where the
-     * polynomial used is defined (https://tools.ietf.org/html/rfc1952#page-11),
-     * here it is just a hash function for the hash table used while
-     * performing compression.
-     */
-    h = __crc32cw(h, val);
-
-    ret = s->head[h & s->hash_mask];
-    s->head[h & s->hash_mask] = str;
-    s->prev[str & s->w_mask] = ret;
-    return ret;
-}
-
 #endif

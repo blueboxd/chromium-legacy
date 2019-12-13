@@ -190,9 +190,8 @@ class PersonalDataManagerTestBase {
     profile_web_database_->LoadDatabase();
     profile_database_service_ = new AutofillWebDataService(
         profile_web_database_, base::ThreadTaskRunnerHandle::Get(),
-        base::ThreadTaskRunnerHandle::Get(),
-        WebDataServiceBase::ProfileErrorCallback());
-    profile_database_service_->Init();
+        base::ThreadTaskRunnerHandle::Get());
+    profile_database_service_->Init(base::NullCallback());
 
     account_web_database_ =
         new WebDatabaseService(base::FilePath(WebDatabase::kInMemoryPath),
@@ -204,9 +203,8 @@ class PersonalDataManagerTestBase {
     account_web_database_->LoadDatabase();
     account_database_service_ = new AutofillWebDataService(
         account_web_database_, base::ThreadTaskRunnerHandle::Get(),
-        base::ThreadTaskRunnerHandle::Get(),
-        WebDataServiceBase::ProfileErrorCallback());
-    account_database_service_->Init();
+        base::ThreadTaskRunnerHandle::Get());
+    account_database_service_->Init(base::NullCallback());
 
     test::DisableSystemServices(prefs_.get());
   }

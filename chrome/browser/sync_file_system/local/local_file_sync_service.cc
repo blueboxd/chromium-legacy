@@ -248,11 +248,9 @@ void LocalFileSyncService::PrepareForProcessRemoteChange(
                    SyncFileMetadata(), FileChangeList());
       return;
     }
-    GURL site_url =
-        extensions::util::GetSiteForExtensionId(extension->id(), profile_);
-    DCHECK(!site_url.is_empty());
     scoped_refptr<storage::FileSystemContext> file_system_context =
-        content::BrowserContext::GetStoragePartitionForSite(profile_, site_url)
+        extensions::util::GetStoragePartitionForExtensionId(extension->id(),
+                                                            profile_)
             ->GetFileSystemContext();
     MaybeInitializeFileSystemContext(
         url.origin().GetURL(), file_system_context.get(),

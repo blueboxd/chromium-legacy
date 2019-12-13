@@ -16,9 +16,6 @@ import org.chromium.chrome.browser.autofill_assistant.user_data.additional_secti
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantTextInputSection;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantTextInputSection.TextInputFactory;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantTextInputType;
-import org.chromium.chrome.browser.payments.AutofillAddress;
-import org.chromium.chrome.browser.payments.AutofillContact;
-import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -31,12 +28,11 @@ import java.util.List;
  */
 @JNINamespace("autofill_assistant")
 public class AssistantCollectUserDataModel extends PropertyModel {
-    // TODO(crbug.com/806868): add |setAvailableProfiles| and |setAvailablePaymentMethods| from
-    // native. Implement |setShippingAddress|, |setContactDetails| and |setPaymentMethod|.
+    // TODO(crbug.com/806868): Add |setSelectedLogin|.
 
     /**
      * This class holds a the credit card and billing address information required to create an
-     * AutofillPaymentInstrument
+     * {@code AutofillPaymentInstrument}.
      */
     public static class PaymentTuple {
         private final PersonalDataManager.CreditCard mCreditCard;
@@ -69,16 +65,16 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     public static final WritableBooleanPropertyKey VISIBLE = new WritableBooleanPropertyKey();
 
     /** The chosen shipping address. */
-    public static final WritableObjectPropertyKey<AutofillAddress> SHIPPING_ADDRESS =
-            new WritableObjectPropertyKey<>();
+    public static final WritableObjectPropertyKey<PersonalDataManager.AutofillProfile>
+            SHIPPING_ADDRESS = new WritableObjectPropertyKey<>();
 
     /** The chosen payment method (including billing address). */
-    public static final WritableObjectPropertyKey<AutofillPaymentInstrument> PAYMENT_METHOD =
-            new WritableObjectPropertyKey<>();
+    public static final WritableObjectPropertyKey<AssistantCollectUserDataModel.PaymentTuple>
+            PAYMENT_METHOD = new WritableObjectPropertyKey<>();
 
     /** The chosen contact details. */
-    public static final WritableObjectPropertyKey<AutofillContact> CONTACT_DETAILS =
-            new WritableObjectPropertyKey<>();
+    public static final WritableObjectPropertyKey<PersonalDataManager.AutofillProfile>
+            CONTACT_DETAILS = new WritableObjectPropertyKey<>();
 
     /** The login section title. */
     public static final WritableObjectPropertyKey<String> LOGIN_SECTION_TITLE =
@@ -90,10 +86,6 @@ public class AssistantCollectUserDataModel extends PropertyModel {
 
     /** The status of the third party terms & conditions. */
     public static final WritableIntPropertyKey TERMS_STATUS = new WritableIntPropertyKey();
-
-    /** The email address of the preferred profile. */
-    public static final WritableObjectPropertyKey<String> DEFAULT_EMAIL =
-            new WritableObjectPropertyKey<>();
 
     public static final WritableBooleanPropertyKey REQUEST_NAME = new WritableBooleanPropertyKey();
     public static final WritableBooleanPropertyKey REQUEST_EMAIL = new WritableBooleanPropertyKey();
@@ -164,8 +156,8 @@ public class AssistantCollectUserDataModel extends PropertyModel {
 
     public AssistantCollectUserDataModel() {
         super(DELEGATE, WEB_CONTENTS, VISIBLE, SHIPPING_ADDRESS, PAYMENT_METHOD, CONTACT_DETAILS,
-                LOGIN_SECTION_TITLE, SELECTED_LOGIN, TERMS_STATUS, DEFAULT_EMAIL, REQUEST_NAME,
-                REQUEST_EMAIL, REQUEST_PHONE, REQUEST_SHIPPING_ADDRESS, REQUEST_PAYMENT,
+                LOGIN_SECTION_TITLE, SELECTED_LOGIN, TERMS_STATUS, REQUEST_NAME, REQUEST_EMAIL,
+                REQUEST_PHONE, REQUEST_SHIPPING_ADDRESS, REQUEST_PAYMENT,
                 ACCEPT_TERMS_AND_CONDITIONS_TEXT, SHOW_TERMS_AS_CHECKBOX, REQUEST_LOGIN_CHOICE,
                 AVAILABLE_PROFILES, AVAILABLE_AUTOFILL_PAYMENT_METHODS,
                 SUPPORTED_BASIC_CARD_NETWORKS, AVAILABLE_LOGINS, EXPANDED_SECTION,
@@ -187,7 +179,6 @@ public class AssistantCollectUserDataModel extends PropertyModel {
         set(REQUEST_SHIPPING_ADDRESS, false);
         set(REQUEST_LOGIN_CHOICE, false);
         set(REQUIRE_BILLING_POSTAL_CODE, false);
-        set(DEFAULT_EMAIL, "");
         set(DATE_RANGE_START_LABEL, "");
         set(DATE_RANGE_END_LABEL, "");
         set(PREPENDED_SECTIONS, new ArrayList<>());
@@ -272,6 +263,26 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     @CalledByNative
     private void setDelegate(AssistantCollectUserDataDelegate delegate) {
         set(DELEGATE, delegate);
+    }
+
+    @CalledByNative
+    private void setContactDetails(@Nullable PersonalDataManager.AutofillProfile contact) {
+        set(CONTACT_DETAILS, contact);
+    }
+
+    @CalledByNative
+    private void setShippingAddress(@Nullable PersonalDataManager.AutofillProfile shippingAddress) {
+        set(SHIPPING_ADDRESS, shippingAddress);
+    }
+
+    @CalledByNative
+    private void setPaymentMethod(@Nullable PersonalDataManager.CreditCard card,
+            @Nullable PersonalDataManager.AutofillProfile billingAddress) {
+        if (card == null) {
+            set(PAYMENT_METHOD, null);
+        } else {
+            set(PAYMENT_METHOD, new PaymentTuple(card, billingAddress));
+        }
     }
 
     /** Creates an empty list of login options. */
@@ -383,11 +394,6 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     @CalledByNative
     private void setThirdPartyPrivacyNoticeText(String text) {
         set(THIRDPARTY_PRIVACY_NOTICE_TEXT, text);
-    }
-
-    @CalledByNative
-    private void setDefaultEmail(String email) {
-        set(DEFAULT_EMAIL, email);
     }
 
     @CalledByNative

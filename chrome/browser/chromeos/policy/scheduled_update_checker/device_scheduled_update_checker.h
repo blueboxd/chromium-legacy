@@ -23,10 +23,6 @@
 #include "third_party/icu/source/i18n/unicode/calendar.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace policy {
 
 // This class listens for changes in the scheduled update check policy and then
@@ -36,8 +32,7 @@ class DeviceScheduledUpdateChecker
  public:
   DeviceScheduledUpdateChecker(
       chromeos::CrosSettings* cros_settings,
-      chromeos::NetworkStateHandler* network_state_handler,
-      service_manager::Connector* connector);
+      chromeos::NetworkStateHandler* network_state_handler);
   ~DeviceScheduledUpdateChecker() override;
 
   // Frequency at which the update check should occur.
@@ -133,9 +128,6 @@ class DeviceScheduledUpdateChecker
 
   // Used to retrieve Chrome OS settings. Not owned.
   chromeos::CrosSettings* const cros_settings_;
-
-  // Owned by chromeos::assistant::Service.
-  service_manager::Connector* const connector_;
 
   // Used to observe when settings change.
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>

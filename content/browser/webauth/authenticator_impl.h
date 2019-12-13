@@ -32,10 +32,6 @@ enum class FidoReturnCode : uint8_t;
 
 }  // namespace device
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace url {
 class Origin;
 }
@@ -51,9 +47,8 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
   explicit AuthenticatorImpl(RenderFrameHost* render_frame_host);
 
   // By being able to set AuthenticatorCommon, this constructor permits setting
-  // the connector and timer for testing. Using this constructor will also empty
-  // out the protocol set, since no device discovery will take place during
-  // tests.
+  // the timer for testing. Using this constructor will also empty out the
+  // protocol set, since no device discovery will take place during tests.
   AuthenticatorImpl(RenderFrameHost* render_frame_host,
                     std::unique_ptr<AuthenticatorCommon> authenticator_common);
   ~AuthenticatorImpl() override;

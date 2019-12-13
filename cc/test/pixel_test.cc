@@ -34,10 +34,8 @@
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/software_output_device.h"
 #include "components/viz/service/display/software_renderer.h"
-#include "components/viz/service/display_embedder/in_process_gpu_memory_buffer_manager.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency_impl.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
-#include "components/viz/service/display_embedder/viz_process_context_provider.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "components/viz/test/paths.h"
 #include "components/viz/test/test_in_process_context_provider.h"
@@ -287,26 +285,11 @@ void PixelTest::SetUpSkiaRenderer(bool flipped_output_surface,
   renderer_->SetVisible(true);
 
   // Set up the client side context provider, etc
-  gpu_memory_buffer_manager_ =
-      std::make_unique<viz::InProcessGpuMemoryBufferManager>(
-          gpu_service()->gpu_memory_buffer_factory(),
-          gpu_service()->sync_point_manager());
-  gpu::ImageFactory* image_factory = gpu_service()->gpu_image_factory();
-  auto* gpu_channel_manager_delegate =
-      gpu_service()->gpu_channel_manager()->delegate();
-  viz::RendererSettings renderer_settings;
-  renderer_settings.requires_alpha_channel = false;
-#if defined(OS_ANDROID)
-  // Pick a reasonable arbitrary size for tests - used to set memory limits.
-  renderer_settings.initial_screen_size = gfx::Size(1920, 1080);
-  renderer_settings.color_space = gfx::ColorSpace::CreateSRGB();
-#endif
   child_context_provider_ =
-      base::MakeRefCounted<viz::VizProcessContextProvider>(
-          task_executor(), gpu::kNullSurfaceHandle,
-          gpu_memory_buffer_manager_.get(), image_factory,
-          gpu_channel_manager_delegate, renderer_settings);
-  child_context_provider_->BindToCurrentThread();
+      base::MakeRefCounted<viz::TestInProcessContextProvider>(
+          /*enable_oop_rasterization=*/false, /*support_locking=*/false);
+  gpu::ContextResult result = child_context_provider_->BindToCurrentThread();
+  DCHECK_EQ(result, gpu::ContextResult::kSuccess);
   constexpr bool sync_token_verification = false;
   child_resource_provider_ =
       std::make_unique<viz::ClientResourceProvider>(sync_token_verification);
@@ -317,7 +300,6 @@ void PixelTest::TearDown() {
   child_resource_provider_->ShutdownAndReleaseAllResources();
   child_resource_provider_.reset();
   child_context_provider_.reset();
-  gpu_memory_buffer_manager_.reset();
 
   // Tear down the skia renderer.
   renderer_.reset();

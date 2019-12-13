@@ -131,30 +131,34 @@ const int kInvalidLanguageIndex = -1;
   }
   NSMutableArray<TableViewTextItem*>* items = [NSMutableArray array];
   for (size_t i = 0; i < self.translateInfobarDelegate->num_languages(); ++i) {
+    TableViewTextItem* item =
+        [[TableViewTextItem alloc] initWithType:kItemTypeEnumZero];
+    item.text = base::SysUTF16ToNSString(
+        self.translateInfobarDelegate->language_name_at((int(i))));
+
     if (self.translateInfobarDelegate->language_code_at(i) ==
         originalLanguageCode) {
       originalLanguageIndex = i;
       if (!sourceLanguage) {
-        // Skip creating item for source language if selecting the target
-        // language to prevent same language translation.
-        continue;
+        // Disable for source language if selecting the target
+        // language to prevent same language translation. Need to add item,
+        // because the row number needs to match language's index in
+        // translateInfobarDelegate.
+        item.enabled = NO;
       }
     }
     if (self.translateInfobarDelegate->language_code_at(i) ==
         targetLanguageCode) {
       targetLanguageIndex = i;
       if (sourceLanguage) {
-        // Skip creating item for target language if selecting the source
-        // language to prevent same language translation.
-        continue;
+        // Disable for target language if selecting the source
+        // language to prevent same language translation. Need to add item,
+        // because the row number needs to match language's index in
+        // translateInfobarDelegate.
+        item.enabled = NO;
       }
     }
 
-    // TODO(crbug.com/1014959): Add selected index property
-    TableViewTextItem* item =
-        [[TableViewTextItem alloc] initWithType:kItemTypeEnumZero];
-    item.text = base::SysUTF16ToNSString(
-        self.translateInfobarDelegate->language_name_at((int(i))));
     if ((sourceLanguage && originalLanguageIndex == (int)i) ||
         (!sourceLanguage && targetLanguageIndex == (int)i)) {
       item.checked = YES;

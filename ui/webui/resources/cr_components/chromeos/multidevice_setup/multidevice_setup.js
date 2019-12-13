@@ -117,10 +117,22 @@ cr.define('multidevice_setup', function() {
        * Provider of an interface to the MultiDeviceSetup Mojo service.
        * @private {!multidevice_setup.MojoInterfaceProvider}
        */
-      mojoInterfaceProvider_: Object
+      mojoInterfaceProvider_: Object,
+
+      /**
+       * Whether a shadow should appear over the button bar; the shadow is
+       * intended to appear when the contents are not scrolled to the bottom to
+       * indicate that more contents can be viewed below.
+       * @private
+       */
+      isScrolledToBottom_: {
+        type: Boolean,
+        value: false,
+      },
     },
 
     listeners: {
+      'scroll': 'onWindowContentUpdate_',
       'backward-navigation-requested': 'onBackwardNavigationRequested_',
       'cancel-requested': 'onCancelRequested_',
       'forward-navigation-requested': 'onForwardNavigationRequested_',
@@ -137,6 +149,21 @@ cr.define('multidevice_setup', function() {
       this.addWebUIListener(
           'multidevice_setup.initializeSetupFlow',
           this.initializeSetupFlow.bind(this));
+    },
+
+    /** @override */
+    attached: function() {
+      window.addEventListener(
+          'orientationchange', this.onWindowContentUpdate_.bind(this));
+      window.addEventListener('resize', this.onWindowContentUpdate_.bind(this));
+    },
+
+    /** @override */
+    detached: function() {
+      window.removeEventListener(
+          'orientationchange', this.onWindowContentUpdate_.bind(this));
+      window.removeEventListener(
+          'resize', this.onWindowContentUpdate_.bind(this));
     },
 
     updateLocalizedContent: function() {
@@ -164,6 +191,23 @@ cr.define('multidevice_setup', function() {
     /** @private */
     onCancelRequested_: function() {
       this.exitSetupFlow_(false /* didUserCompleteSetup */);
+    },
+
+    /**
+     * Called when contents are scrolled, the window is resized, or the window's
+     * orientation is updated.
+     * @private
+     */
+    onWindowContentUpdate_: function() {
+      // (scrollHeight - scrollTop) represents the visible height of the
+      // contents, not including scrollbars. Math.ceil() is used to round this
+      // value, since it can be fractional depending on browser zoom and/or
+      // display density.
+      const visibleHeight = Math.ceil(this.scrollHeight - this.scrollTop);
+
+      // If these two heights are equal, the contents are scrolled to the
+      // bottom.
+      this.isScrolledToBottom_ = this.clientHeight === visibleHeight;
     },
 
     /** @private */

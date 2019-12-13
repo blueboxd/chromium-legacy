@@ -96,7 +96,7 @@ public class SettingsControllerForCodelab extends PageController {
     // TODO: (Hint, you may need more IUi2Locators than just LOCATOR_SETTINGS,
     // add them here.
     private static final IUi2Locator LOCATOR_SEARCH_ENGINE =
-            Ui2Locators.withTextString(R.string.prefs_search_engine);
+            Ui2Locators.withTextString(R.string.search_engine_settings);
 
     // The next 5 lines are boilerplate, no need to modify.
     private static final SettingsControllerForCodelab sInstance =
@@ -150,13 +150,13 @@ import java.util.List;
 
 /**
  * Search Engine Selection Page Controller for the Code Lab, corresponds to
- * {@link org.chromium.chrome.browser.settings.SearchEnginePreference}.
+ * {@link org.chromium.chrome.browser.settings.search_engine.SearchEngineSettings}.
  */
 public class SearchEngineSelectionControllerForCodelab extends PageController {
     // TODO: Put locators here.
     private static final IUi2Locator LOCATOR_SEARCH_ENGINE =
             Ui2Locators.withPath(Ui2Locators.withAnyResEntry(R.id.action_bar),
-                    Ui2Locators.withTextString(R.string.prefs_search_engine));
+                    Ui2Locators.withTextString(R.string.search_engine_settings));
     private static final IUi2Locator LOCATOR_ALL_ENGINES = Ui2Locators.withPath(
             Ui2Locators.withAnyResEntry(R.id.name), Ui2Locators.withTextRegex("^(.+)$"));
     private class EngineSelectionIndicator

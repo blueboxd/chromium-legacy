@@ -1652,6 +1652,9 @@
     'source_idls': {
       'filepath': 'third_party/blink/renderer/(core|modules|platform)/.*\.idl',
     },
+    'speed_metrics_changelog': {
+      'filepath': 'docs/speed/metrics_changelog/.*.md',
+    },
     'spellcheck': {
       'filepath': 'chrome/browser/spellchecker/'\
                   '|chrome/browser/renderer_context_menu/spelling_'\
@@ -2659,6 +2662,9 @@
                   'vecore+watch-smartlock@google.com'],
     'smb': ['cros-enterprise-lax+smbwatch@chromium.org'],
     'source_idls': ['jmedley+watch@chromium.org'],
+    'speed_metrics_changelog': ['igrigorik@chromium.org',
+                                'kayce@chromium.org',
+                                'sullivan@chromium.org'],
     'spellcheck': ['rlp+watch@chromium.org',
                    'rouslan+spell@chromium.org',
                    'timvolodine@chromium.org'],

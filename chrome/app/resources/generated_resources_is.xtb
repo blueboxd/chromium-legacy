@@ -283,6 +283,7 @@
 <translation id="1397500194120344683">Engin gjaldgeng tæki. <ph name="LINK_BEGIN" />Frekari upplýsingar<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">Stækka</translation>
 <translation id="1399511500114202393">Ekkert notandavottorð</translation>
+<translation id="1403519882106291341">Skilmálar stýrikerfis Google Chrome</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (stýrður)</translation>
 <translation id="1405779994569073824">Hrundi.</translation>
 <translation id="1406500794671479665">Staðfestir…</translation>
@@ -1189,7 +1190,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2665919335226618153">Obbosí! Villa kom upp við að sníða.</translation>
 <translation id="2666990579225592931">Opna gestaglugga</translation>
 <translation id="2667463864537187133">Stjórna ritvilluleit</translation>
-<translation id="2669093958999339774">Komdu í veg fyrir að tilkynningar trufli þig og notaðu hljóðlátari skilaboð í staðinn</translation>
+<translation id="2669093958999339774">Koma í veg fyrir að tilkynningar trufli þig og nota hljóðlátari skilaboð í staðinn</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> deilir flipa í Chrome.</translation>
 <translation id="2670429602441959756">Þessi síða inniheldur eiginleika sem ekki eru enn studdir í VR. Hættir...</translation>
 <translation id="2671451824761031126">Bókamerki og stillingar eru til reiðu</translation>
@@ -2174,7 +2175,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4036778507053569103">Reglan sem sótt var frá þjóninum er ógild.</translation>
 <translation id="4037084878352560732">Hestur</translation>
 <translation id="4037889604535939429">Breyta aðila</translation>
-<translation id="4042264909745389898">Skilmálar stýrikerfis Google Chrome</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Loka síðu}one{Loka síðum}other{Loka síðum}}</translation>
 <translation id="4044612648082411741">Sláðu inn aðgangsorð vottorðs</translation>
 <translation id="404493185430269859">Sjálfgefin leitarvél</translation>

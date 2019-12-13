@@ -378,6 +378,7 @@ public class AutofillAssistantCollectUserDataUiTest {
             model.set(AssistantCollectUserDataModel.REQUEST_NAME, true);
             model.set(AssistantCollectUserDataModel.REQUEST_EMAIL, true);
             model.set(AssistantCollectUserDataModel.AVAILABLE_PROFILES, Collections.emptyList());
+            model.set(AssistantCollectUserDataModel.CONTACT_DETAILS, null);
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
         });
 
@@ -388,10 +389,12 @@ public class AutofillAssistantCollectUserDataUiTest {
         assertThat(viewHolder.mContactList.getItemCount(), is(0));
 
         // Add profile to the list and send the updated model.
+        PersonalDataManager.AutofillProfile profile =
+                mHelper.createDummyProfile("John Doe", "john@gmail.com");
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             model.set(AssistantCollectUserDataModel.AVAILABLE_PROFILES,
-                    Collections.singletonList(
-                            mHelper.createDummyProfile("John Doe", "john@gmail.com")));
+                    Collections.singletonList(profile));
+            model.set(AssistantCollectUserDataModel.CONTACT_DETAILS, profile);
         });
 
         // Contact details section should now contain and have pre-selected the new contact.
@@ -406,6 +409,7 @@ public class AutofillAssistantCollectUserDataUiTest {
         // Remove profile from the list and send the updated model. Section should be empty again.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             model.set(AssistantCollectUserDataModel.AVAILABLE_PROFILES, Collections.emptyList());
+            model.set(AssistantCollectUserDataModel.CONTACT_DETAILS, null);
         });
 
         onView(allOf(withId(R.id.section_title_add_button),
@@ -440,6 +444,7 @@ public class AutofillAssistantCollectUserDataUiTest {
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
             model.set(AssistantCollectUserDataModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS,
                     Collections.emptyList());
+            model.set(AssistantCollectUserDataModel.PAYMENT_METHOD, null);
         });
 
         // Payment method section should be empty and show the 'add' button in the title.
@@ -453,15 +458,13 @@ public class AutofillAssistantCollectUserDataUiTest {
                 mHelper.createDummyProfile("Jill Doe", "jill@gmail.com");
         String billingAddressId = mHelper.setProfile(billingAddress);
         PersonalDataManager.CreditCard creditCard = mHelper.createDummyCreditCard(billingAddressId);
+        AssistantCollectUserDataModel.PaymentTuple paymentTuple =
+                new AssistantCollectUserDataModel.PaymentTuple(creditCard, billingAddress);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             model.set(AssistantCollectUserDataModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS,
-                    new ArrayList<AssistantCollectUserDataModel.PaymentTuple>() {
-                        {
-                            add(new AssistantCollectUserDataModel.PaymentTuple(
-                                    creditCard, billingAddress));
-                        }
-                    });
+                    Collections.singletonList(paymentTuple));
+            model.set(AssistantCollectUserDataModel.PAYMENT_METHOD, paymentTuple);
         });
 
         // Payment method section contains the new credit card, which should be pre-selected.
@@ -477,6 +480,7 @@ public class AutofillAssistantCollectUserDataUiTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             model.set(AssistantCollectUserDataModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS,
                     Collections.emptyList());
+            model.set(AssistantCollectUserDataModel.PAYMENT_METHOD, null);
         });
         onView(allOf(withId(R.id.section_title_add_button),
                        isDescendantOfA(is(viewHolder.mPaymentSection))))
@@ -503,6 +507,8 @@ public class AutofillAssistantCollectUserDataUiTest {
                 mHelper.createDummyProfile("Jill Doe", "jill@gmail.com");
         String billingAddressId = mHelper.setProfile(billingAddress);
         PersonalDataManager.CreditCard creditCard = mHelper.createDummyCreditCard(billingAddressId);
+        AssistantCollectUserDataModel.PaymentTuple paymentTuple =
+                new AssistantCollectUserDataModel.PaymentTuple(creditCard, billingAddress);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // WEB_CONTENTS are necessary for the creation of the editors.
@@ -510,8 +516,8 @@ public class AutofillAssistantCollectUserDataUiTest {
             model.set(AssistantCollectUserDataModel.REQUEST_PAYMENT, true);
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
             model.set(AssistantCollectUserDataModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS,
-                    Collections.singletonList(new AssistantCollectUserDataModel.PaymentTuple(
-                            creditCard, billingAddress)));
+                    Collections.singletonList(paymentTuple));
+            model.set(AssistantCollectUserDataModel.PAYMENT_METHOD, paymentTuple);
         });
 
         // Payment method section contains the new credit card, which should be pre-selected.
@@ -563,6 +569,8 @@ public class AutofillAssistantCollectUserDataUiTest {
                 new PersonalDataManager.CreditCard("", "https://example.com", true, true, "Jon Doe",
                         "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
                         CardType.UNKNOWN, /* billingAddressId= */ "GUID", /* serverId= */ "");
+        AssistantCollectUserDataModel.PaymentTuple paymentTuple =
+                new AssistantCollectUserDataModel.PaymentTuple(creditCard, profile);
 
         AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
         AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
@@ -584,9 +592,11 @@ public class AutofillAssistantCollectUserDataUiTest {
             model.set(AssistantCollectUserDataModel.REQUEST_SHIPPING_ADDRESS, true);
             model.set(AssistantCollectUserDataModel.AVAILABLE_PROFILES,
                     Collections.singletonList(profile));
+            model.set(AssistantCollectUserDataModel.CONTACT_DETAILS, profile);
+            model.set(AssistantCollectUserDataModel.SHIPPING_ADDRESS, profile);
             model.set(AssistantCollectUserDataModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS,
-                    Collections.singletonList(
-                            new AssistantCollectUserDataModel.PaymentTuple(creditCard, profile)));
+                    Collections.singletonList(paymentTuple));
+            model.set(AssistantCollectUserDataModel.PAYMENT_METHOD, paymentTuple);
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
             model.set(AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE, true);
             model.set(AssistantCollectUserDataModel.AVAILABLE_LOGINS,
@@ -658,64 +668,6 @@ public class AutofillAssistantCollectUserDataUiTest {
         assertThat(delegate.mAddress.getProfile().getStreetAddress(), containsString("123 Main"));
         assertThat(delegate.mTermsStatus, is(AssistantTermsAndConditionsState.NOT_SELECTED));
         assertThat(delegate.mLoginChoice.getIdentifier(), is("id"));
-    }
-
-    /**
-     * When the last contact info, payment method or shipping address is removed from the personal
-     * data manager, the user's selection has implicitly changed (from whatever it was before to
-     * null).
-     */
-    @Test
-    @MediumTest
-    public void testRemoveLastItemImplicitSelection() throws Exception {
-        AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
-        AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
-        AutofillAssistantCollectUserDataTestHelper.MockDelegate delegate =
-                new AutofillAssistantCollectUserDataTestHelper.MockDelegate();
-
-        // Add complete profile and credit card to the personal data manager.
-        PersonalDataManager.AutofillProfile profile =
-                mHelper.createDummyProfile("John Doe", "john@gmail.com");
-        String profileId = mHelper.setProfile(profile);
-        PersonalDataManager.CreditCard creditCard = mHelper.createDummyCreditCard(profileId);
-
-        // Request all PR sections.
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // WEB_CONTENTS are necessary for the creation of AutofillPaymentInstrument.
-            model.set(AssistantCollectUserDataModel.WEB_CONTENTS, mTestRule.getWebContents());
-            model.set(AssistantCollectUserDataModel.DELEGATE, delegate);
-            model.set(AssistantCollectUserDataModel.REQUEST_NAME, true);
-            model.set(AssistantCollectUserDataModel.REQUEST_PHONE, true);
-            model.set(AssistantCollectUserDataModel.REQUEST_EMAIL, true);
-            model.set(AssistantCollectUserDataModel.REQUEST_PAYMENT, true);
-            model.set(AssistantCollectUserDataModel.REQUEST_SHIPPING_ADDRESS, true);
-            model.set(AssistantCollectUserDataModel.AVAILABLE_PROFILES,
-                    Collections.singletonList(profile));
-            model.set(AssistantCollectUserDataModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS,
-                    Collections.singletonList(
-                            new AssistantCollectUserDataModel.PaymentTuple(creditCard, profile)));
-            model.set(AssistantCollectUserDataModel.VISIBLE, true);
-        });
-
-        // Profile and payment method should be automatically selected.
-        assertThat(delegate.mContact, not(nullValue()));
-        assertThat(delegate.mAddress, not(nullValue()));
-        assertThat(delegate.mPaymentMethod, not(nullValue()));
-
-        // Remove payment method and profile
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            model.set(AssistantCollectUserDataModel.AVAILABLE_PROFILES, Collections.emptyList());
-            model.set(AssistantCollectUserDataModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS,
-                    Collections.emptyList());
-        });
-
-        // Note: before asserting that the delegate was updated, we need to ensure that the
-        // UI thread has processed all events.
-        onView(is(coordinator.getView())).check(matches(isDisplayed()));
-
-        assertThat(delegate.mContact, nullValue());
-        assertThat(delegate.mAddress, nullValue());
-        assertThat(delegate.mPaymentMethod, nullValue());
     }
 
     @Test
@@ -887,6 +839,8 @@ public class AutofillAssistantCollectUserDataUiTest {
         AutofillAssistantCollectUserDataTestHelper
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
                 () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
+        AssistantCollectUserDataModel.PaymentTuple paymentTuple =
+                new AssistantCollectUserDataModel.PaymentTuple(creditCard, profile);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // WEB_CONTENTS are necessary for the creation of AutofillPaymentInstrument.
@@ -898,60 +852,12 @@ public class AutofillAssistantCollectUserDataUiTest {
                     "Billing postcode missing");
             model.set(AssistantCollectUserDataModel.REQUEST_PAYMENT, true);
             model.set(AssistantCollectUserDataModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS,
-                    Collections.singletonList(
-                            new AssistantCollectUserDataModel.PaymentTuple(creditCard, profile)));
+                    Collections.singletonList(paymentTuple));
+            model.set(AssistantCollectUserDataModel.PAYMENT_METHOD, paymentTuple);
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
         });
 
         return viewHolder;
-    }
-
-    /**
-     * If the default email is set, the most complete profile with that email address should be
-     * default-selected.
-     */
-    @Test
-    @MediumTest
-    public void testDefaultEmail() throws Exception {
-        AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
-        AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
-        AutofillAssistantCollectUserDataTestHelper.MockDelegate delegate =
-                new AutofillAssistantCollectUserDataTestHelper.MockDelegate();
-        AutofillAssistantCollectUserDataTestHelper
-                .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
-                () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
-
-        /* Set up fake profiles such that the correct default choice is last. */
-        List<PersonalDataManager.AutofillProfile> profiles =
-                new ArrayList<PersonalDataManager.AutofillProfile>() {
-                    {
-                        add(mHelper.createDummyProfile("Jane Doe", "jane@gmail.com", "98004"));
-                        add(mHelper.createDummyProfile("", "joe@gmail.com", ""));
-                        add(mHelper.createDummyProfile("Joe Doe", "joe@gmail.com", "98004"));
-                    }
-                };
-
-        /* Request all PR sections. */
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            model.set(AssistantCollectUserDataModel.DELEGATE, delegate);
-            model.set(AssistantCollectUserDataModel.REQUEST_NAME, true);
-            model.set(AssistantCollectUserDataModel.REQUEST_EMAIL, true);
-            model.set(AssistantCollectUserDataModel.DEFAULT_EMAIL, "joe@gmail.com");
-            model.set(AssistantCollectUserDataModel.AVAILABLE_PROFILES, profiles);
-            model.set(AssistantCollectUserDataModel.VISIBLE, true);
-        });
-
-        for (int i = 0; i < viewHolder.mContactList.getItemCount(); i++) {
-            if (viewHolder.mContactList.isChecked(viewHolder.mContactList.getItem(i))) {
-                testContact("joe@gmail.com", "Joe Doe\njoe@gmail.com",
-                        viewHolder.mContactSection.getCollapsedView(),
-                        viewHolder.mContactList.getItem(i));
-                break;
-            }
-        }
-
-        assertThat(delegate.mContact.getPayerEmail(), is("joe@gmail.com"));
-        assertThat(delegate.mContact.getPayerName(), is("Joe Doe"));
     }
 
     @Test

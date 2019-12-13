@@ -202,7 +202,7 @@ void HardwareRendererViz::OnViz::DrawAndSwapOnViz(
   without_gpu_->support()->SubmitCompositorFrame(
       root_id_allocation_.local_surface_id(), std::move(frame));
   display_->Resize(viewport);
-  display_->DrawAndSwap();
+  display_->DrawAndSwap(base::TimeTicks::Now());
 }
 
 void HardwareRendererViz::OnViz::PostDrawOnViz(

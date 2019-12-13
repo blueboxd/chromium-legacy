@@ -55,13 +55,20 @@ bool PdfAXActionTarget::ClearAccessibilityFocus() const {
 bool PdfAXActionTarget::Click() const {
   PP_PdfAccessibilityActionData pdf_action_data = {};
 
-  if ((target_plugin_node_.data().role != ax::mojom::Role::kLink) ||
-      !pdf_accessibility_tree_source_->GetPdfLinkInfoFromAXNode(
-          target_plugin_node_.data().id, &pdf_action_data.page_index,
-          &pdf_action_data.link_index)) {
+  if (target_plugin_node_.data().role != ax::mojom::Role::kLink)
     return false;
-  }
 
+  base::Optional<PdfAccessibilityTree::AnnotationInfo> annotation_info_result =
+      pdf_accessibility_tree_source_->GetPdfAnnotationInfoFromAXNode(
+          target_plugin_node_.data().id);
+  if (!annotation_info_result.has_value())
+    return false;
+
+  const auto& annotation_info = annotation_info_result.value();
+  pdf_action_data.page_index = annotation_info.page_index;
+  pdf_action_data.annotation_index = annotation_info.annotation_index;
+  pdf_action_data.annotation_type =
+      PP_PdfAccessibilityAnnotationType::PP_PDF_LINK;
   pdf_action_data.action = PP_PdfAccessibilityAction::PP_PDF_DO_DEFAULT_ACTION;
   pdf_accessibility_tree_source_->HandleAction(pdf_action_data);
   return true;

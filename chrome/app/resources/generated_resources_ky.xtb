@@ -283,6 +283,7 @@
 <translation id="1397500194120344683">Жарамдуу түзмөктөр жок. <ph name="LINK_BEGIN" />Кеңири маалымат<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">Чоңойтуу</translation>
 <translation id="1399511500114202393">Колдонуучунун тастыктамасы колдонулбасын</translation>
+<translation id="1403519882106291341">Google Chrome OS шарттары</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (Көзөмөлдөнгөн)</translation>
 <translation id="1405779994569073824">Бузулду.</translation>
 <translation id="1406500794671479665">Текшерүүдө…</translation>
@@ -2174,7 +2175,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="4036778507053569103">Серверден жүктөлүп алынган саясат жараксыз.</translation>
 <translation id="4037084878352560732">Жылкы</translation>
 <translation id="4037889604535939429">Колдонуучуну алмаштыруу</translation>
-<translation id="4042264909745389898">Google Chrome OS шарттары</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Барактан чыгуу}other{Барактардан чыгуу}}</translation>
 <translation id="4044612648082411741">Тастыктамаңыздын сырсөзүн киргизиңиз</translation>
 <translation id="404493185430269859">Демейки издөө каражаты</translation>

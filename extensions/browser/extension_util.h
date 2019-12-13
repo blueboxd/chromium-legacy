@@ -52,7 +52,8 @@ const std::string& GetPartitionDomainForExtension(const Extension* extension);
 
 content::StoragePartition* GetStoragePartitionForExtensionId(
     const std::string& extension_id,
-    content::BrowserContext* browser_context);
+    content::BrowserContext* browser_context,
+    bool can_create = true);
 
 // Maps a |file_url| to a |file_path| on the local filesystem, including
 // resources in extensions. Returns true on success. See NaClBrowserDelegate for

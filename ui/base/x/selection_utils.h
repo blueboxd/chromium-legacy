@@ -8,47 +8,52 @@
 #include <stddef.h>
 #include <map>
 
+#include "base/component_export.h"
 #include "base/memory/ref_counted_memory.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/gfx/x/x11.h"
 
 namespace ui {
 class SelectionData;
 
-UI_BASE_EXPORT extern const char kString[];
-UI_BASE_EXPORT extern const char kText[];
-UI_BASE_EXPORT extern const char kUtf8String[];
+COMPONENT_EXPORT(UI_BASE_X) extern const char kString[];
+COMPONENT_EXPORT(UI_BASE_X) extern const char kText[];
+COMPONENT_EXPORT(UI_BASE_X) extern const char kUtf8String[];
 
 // Returns a list of all text atoms that we handle.
-UI_BASE_EXPORT std::vector<::Atom> GetTextAtomsFrom();
+COMPONENT_EXPORT(UI_BASE_X) std::vector<::Atom> GetTextAtomsFrom();
 
-UI_BASE_EXPORT std::vector<::Atom> GetURLAtomsFrom();
+COMPONENT_EXPORT(UI_BASE_X) std::vector<::Atom> GetURLAtomsFrom();
 
-UI_BASE_EXPORT std::vector<::Atom> GetURIListAtomsFrom();
+COMPONENT_EXPORT(UI_BASE_X) std::vector<::Atom> GetURIListAtomsFrom();
 
 // Places the intersection of |desired| and |offered| into |output|.
-UI_BASE_EXPORT void GetAtomIntersection(const std::vector< ::Atom>& desired,
-                                        const std::vector< ::Atom>& offered,
-                                        std::vector< ::Atom>* output);
+COMPONENT_EXPORT(UI_BASE_X)
+void GetAtomIntersection(const std::vector<::Atom>& desired,
+                         const std::vector<::Atom>& offered,
+                         std::vector<::Atom>* output);
 
 // Takes the raw bytes of the base::string16 and copies them into |bytes|.
-UI_BASE_EXPORT void AddString16ToVector(const base::string16& str,
-                                        std::vector<unsigned char>* bytes);
+COMPONENT_EXPORT(UI_BASE_X)
+void AddString16ToVector(const base::string16& str,
+                         std::vector<unsigned char>* bytes);
 
 // Tokenizes and parses the Selection Data as if it is a URI List.
-UI_BASE_EXPORT std::vector<std::string> ParseURIList(const SelectionData& data);
+COMPONENT_EXPORT(UI_BASE_X)
+std::vector<std::string> ParseURIList(const SelectionData& data);
 
-UI_BASE_EXPORT std::string RefCountedMemoryToString(
+COMPONENT_EXPORT(UI_BASE_X)
+std::string RefCountedMemoryToString(
     const scoped_refptr<base::RefCountedMemory>& memory);
 
-UI_BASE_EXPORT base::string16 RefCountedMemoryToString16(
+COMPONENT_EXPORT(UI_BASE_X)
+base::string16 RefCountedMemoryToString16(
     const scoped_refptr<base::RefCountedMemory>& memory);
 
 ///////////////////////////////////////////////////////////////////////////////
 
 // Represents the selection in different data formats. Binary data passed in is
 // assumed to be allocated with new char[], and is owned by SelectionFormatMap.
-class UI_BASE_EXPORT SelectionFormatMap {
+class COMPONENT_EXPORT(UI_BASE_X) SelectionFormatMap {
  public:
   // Our internal data store, which we only expose through iterators.
   typedef std::map< ::Atom, scoped_refptr<base::RefCountedMemory> > InternalMap;
@@ -83,7 +88,7 @@ class UI_BASE_EXPORT SelectionFormatMap {
 ///////////////////////////////////////////////////////////////////////////////
 
 // A holder for data with optional X11 deletion semantics.
-class UI_BASE_EXPORT SelectionData {
+class COMPONENT_EXPORT(UI_BASE_X) SelectionData {
  public:
   // |atom_cache| is still owned by caller.
   SelectionData();

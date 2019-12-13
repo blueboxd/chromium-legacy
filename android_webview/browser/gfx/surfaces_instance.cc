@@ -185,7 +185,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
   }
   output_surface_provider_.gl_surface()->SetSize(viewport);
   display_->Resize(viewport);
-  display_->DrawAndSwap();
+  display_->DrawAndSwap(base::TimeTicks::Now());
   // SkiaRenderer generates DidReceiveSwapBuffersAck calls.
   if (!features::IsUsingSkiaRenderer()) {
     // Metrics tracking in CompositorFrameReporter expects that every frame

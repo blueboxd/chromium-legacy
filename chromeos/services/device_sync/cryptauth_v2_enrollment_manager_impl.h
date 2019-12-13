@@ -109,10 +109,6 @@ class CryptAuthV2EnrollmentManagerImpl
 
   friend std::ostream& operator<<(std::ostream& stream, const State& state);
 
-  static base::Optional<base::TimeDelta> GetTimeoutForState(State state);
-  static base::Optional<CryptAuthEnrollmentResult::ResultCode>
-  ResultCodeErrorFromTimeoutDuringState(State state);
-
   // CryptAuthEnrollmentManager:
   void Start() override;
   void ForceEnrollmentNow(

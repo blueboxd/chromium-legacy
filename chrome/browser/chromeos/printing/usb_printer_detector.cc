@@ -30,14 +30,12 @@
 #include "chromeos/printing/usb_printer_id.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/device_service.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "services/device/public/mojom/usb_manager_client.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 namespace {
@@ -194,8 +192,7 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
 std::unique_ptr<UsbPrinterDetector> UsbPrinterDetector::Create() {
   // Bind to the DeviceService for USB device manager.
   mojo::PendingRemote<device::mojom::UsbDeviceManager> usb_manager;
-  content::GetSystemConnector()->Connect(
-      device::mojom::kServiceName,
+  content::GetDeviceService().BindUsbDeviceManager(
       usb_manager.InitWithNewPipeAndPassReceiver());
   return std::make_unique<UsbPrinterDetectorImpl>(std::move(usb_manager));
 }

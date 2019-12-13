@@ -1070,6 +1070,12 @@ void OverviewItem::OnPostWindowStateTypeChange(WindowState* window_state,
   if (!minimized)
     EnsureVisible();
 
+  // Ensures the item widget is visible. |item_widget_| opacity is set to 0.f
+  // and shown at either |SetBounds| or |OnStartingAnimationComplete| based on
+  // the minimized state. It's possible the minimized state changes in between
+  // for ARC apps, so just force show it here.
+  item_widget_->GetLayer()->SetOpacity(1.f);
+
   overview_grid_->PositionWindows(/*animate=*/false);
   // If |activate_on_unminimized_| is true, then this code path is from an
   // unminimizing an ARC app async from |OverviewSession::SelectWindow|.
@@ -1371,6 +1377,10 @@ void OverviewItem::HandleGestureEndEvent() {
   if (!IsDragItem())
     return;
 
+  // Gesture end events come from a long press getting canceled. Long press
+  // alters the stacking order, so on gesture end, make sure we restore the
+  // stacking order on the next reposition.
+  set_should_restack_on_animation_end(true);
   overview_session_->ResetDraggedWindowGesture();
 }
 

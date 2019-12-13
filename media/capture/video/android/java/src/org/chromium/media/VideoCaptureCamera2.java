@@ -1016,7 +1016,12 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 (CameraManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.CAMERA_SERVICE);
         try {
-            return manager.getCameraCharacteristics(manager.getCameraIdList()[id]);
+            final String[] cameraIdList = manager.getCameraIdList();
+            if (id >= cameraIdList.length) {
+                Log.e(TAG, "Invalid camera Id: ", id);
+                return null;
+            }
+            return manager.getCameraCharacteristics(cameraIdList[id]);
         } catch (CameraAccessException | IllegalArgumentException | AssertionError ex) {
             Log.e(TAG, "getCameraCharacteristics: ", ex);
         }
@@ -1519,9 +1524,14 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
         final CrStateListener stateListener = new CrStateListener();
         try {
+            final String[] cameraIdList = manager.getCameraIdList();
+            if (mId >= cameraIdList.length) {
+                Log.e(TAG, "Invalid camera Id: ", mId);
+                return false;
+            }
             TraceEvent.instant("VideoCaptureCamera2.java",
                     "VideoCaptureCamera2.startCaptureMaybeAsync calling manager.openCamera");
-            manager.openCamera(manager.getCameraIdList()[mId], stateListener, mCameraThreadHandler);
+            manager.openCamera(cameraIdList[mId], stateListener, mCameraThreadHandler);
         } catch (CameraAccessException | IllegalArgumentException | SecurityException ex) {
             Log.e(TAG, "allocate: manager.openCamera: ", ex);
             return false;

@@ -16,6 +16,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/autofill/mock_address_accessory_controller.h"
 #include "chrome/browser/autofill/mock_manual_filling_view.h"
@@ -30,6 +31,7 @@
 #include "components/autofill/core/browser/logging/log_receiver.h"
 #include "components/autofill/core/browser/logging/log_router.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
@@ -40,6 +42,7 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -753,6 +756,46 @@ TEST_F(ChromePasswordManagerClientTest, MissingUIDelegate) {
   client->ShowManualFallbackForSaving(nullptr, false, false);
   client->HideManualFallbackForSaving();
 }
+
+// Parameterized Touch To Fill features test.
+class ChromePasswordManagerClientTouchToFillFeatureTest
+    : public ChromePasswordManagerClientTest,
+      public ::testing::WithParamInterface<std::tuple<bool, bool>> {
+ public:
+  ChromePasswordManagerClientTouchToFillFeatureTest() {
+    std::vector<base::Feature> enabled;
+    std::vector<base::Feature> disabled;
+
+    (IsTouchToFillEnabled() ? enabled : disabled)
+        .push_back(autofill::features::kAutofillTouchToFill);
+    (IsBiometricTouchToFillEnabled() ? enabled : disabled)
+        .push_back(password_manager::features::kBiometricTouchToFill);
+
+    feature_list_.InitWithFeatures(enabled, disabled);
+  }
+
+ protected:
+  bool IsTouchToFillEnabled() const { return std::get<0>(GetParam()); }
+  bool IsBiometricTouchToFillEnabled() const { return std::get<1>(GetParam()); }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_P(ChromePasswordManagerClientTouchToFillFeatureTest,
+       GetBiometricAuthenticator) {
+#if defined(OS_ANDROID)
+  EXPECT_EQ(IsTouchToFillEnabled() && IsBiometricTouchToFillEnabled(),
+            GetClient()->GetBiometricAuthenticator() != nullptr);
+#else
+  EXPECT_EQ(nullptr, GetClient()->GetBiometricAuthenticator());
+#endif
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ChromePasswordManagerClientTouchToFillFeatureTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool()));
 
 #if defined(OS_ANDROID)
 class ChromePasswordManagerClientAndroidTest

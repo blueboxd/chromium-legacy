@@ -124,8 +124,6 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
                           IDR_HISTORY_LAZY_LOAD_CRISPER_JS);
   source->AddResourcePath("constants.html", IDR_HISTORY_CONSTANTS_HTML);
   source->AddResourcePath("constants.js", IDR_HISTORY_CONSTANTS_JS);
-  source->AddResourcePath("history.js", IDR_HISTORY_HISTORY_JS);
-  source->AddResourcePath("history.js", IDR_HISTORY_HISTORY_JS);
   source->AddResourcePath("images/sign_in_promo.svg",
                           IDR_HISTORY_IMAGES_SIGN_IN_PROMO_SVG);
   source->AddResourcePath("images/sign_in_promo_dark.svg",
@@ -153,7 +151,11 @@ HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   content::WebUIDataSource::Add(profile, data_source);
 
   web_ui->AddMessageHandler(std::make_unique<webui::NavigationHandler>());
-  web_ui->AddMessageHandler(std::make_unique<BrowsingHistoryHandler>());
+  auto browsing_history_handler = std::make_unique<BrowsingHistoryHandler>();
+  BrowsingHistoryHandler* browsing_history_handler_ptr =
+      browsing_history_handler.get();
+  web_ui->AddMessageHandler(std::move(browsing_history_handler));
+  browsing_history_handler_ptr->StartQueryHistory();
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
 
   auto foreign_session_handler =

@@ -203,6 +203,21 @@ void TabGroupEditorBubbleView::TitleFieldController::ContentsChanged(
   parent_->UpdateGroup();
 }
 
+bool TabGroupEditorBubbleView::TitleFieldController::HandleKeyEvent(
+    views::Textfield* sender,
+    const ui::KeyEvent& key_event) {
+  DCHECK_EQ(sender, parent_->title_field_);
+
+  const ui::KeyboardCode key_code = key_event.key_code();
+  if (key_code == ui::VKEY_RETURN || key_code == ui::VKEY_ESCAPE) {
+    parent_->GetWidget()->CloseWithReason(
+        views::Widget::ClosedReason::kUnspecified);
+    return true;
+  }
+
+  return false;
+}
+
 TabGroupEditorBubbleView::ButtonListener::ButtonListener(
     TabController* tab_controller,
     TabGroupHeader* anchor_view,

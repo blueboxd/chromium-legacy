@@ -93,13 +93,25 @@ typedef enum {
 } PP_PdfAccessibilityScrollAlignment;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_PdfAccessibilityScrollAlignment, 4);
 
+typedef enum {
+  // No annotation type defined.
+  PP_PDF_TYPE_NONE = 0,
+  // Link annotation.
+  PP_PDF_LINK = 1,
+  // Last enum value marker.
+  PP_PDF_ACCESSIBILITY_ANNOTATIONTYPE_LAST = PP_PDF_LINK
+} PP_PdfAccessibilityAnnotationType;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_PdfAccessibilityAnnotationType, 4);
+
 struct PP_PdfAccessibilityActionData {
   // Accessibility action type.
   PP_PdfAccessibilityAction action;
+  // Annotation type on which the action is to be performed.
+  PP_PdfAccessibilityAnnotationType annotation_type;
   // Target rect on which the action is to be performed.
   struct PP_Rect target_rect;
-  // Index of link in page.
-  uint32_t link_index;
+  // Index of annotation in page.
+  uint32_t annotation_index;
   // Page index on which the link is present.
   uint32_t page_index;
   // Horizontal scroll alignment with respect to the viewport
@@ -107,7 +119,7 @@ struct PP_PdfAccessibilityActionData {
   // Vertical scroll alignment with respect to the viewport
   PP_PdfAccessibilityScrollAlignment vertical_scroll_alignment;
 };
-PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_PdfAccessibilityActionData, 36);
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_PdfAccessibilityActionData, 40);
 
 struct PPP_Pdf_1_1 {
   // Returns an absolute URL if the position is over a link.

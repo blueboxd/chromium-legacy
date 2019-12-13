@@ -71,6 +71,7 @@ public class ContextualSearchFieldTrial {
      */
     @interface ContextualSearchSwitch {
         /**
+         * @deprecated
          * Whether all translate code is disabled (master switch, needed to disable all translate
          * code for Contextual Search in case of an emergency).
          */

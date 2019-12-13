@@ -23,8 +23,8 @@ enum ServiceWorkerUpdateViaCache {
     readonly attribute USVString scope;
     readonly attribute ServiceWorkerUpdateViaCache updateViaCache;
 
-    [CallWith=ScriptState] Promise<ServiceWorkerRegistration> update();
-    [CallWith=ScriptState] Promise<boolean> unregister();
+    [CallWith=ScriptState, RaisesException] Promise<ServiceWorkerRegistration> update();
+    [CallWith=ScriptState, RaisesException] Promise<boolean> unregister();
 
     attribute EventHandler onupdatefound;
 };

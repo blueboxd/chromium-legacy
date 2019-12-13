@@ -17,9 +17,13 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 
@@ -78,6 +82,7 @@ class HTMLMetaElementTest : public PageTestBase,
         "</head>");
   }
 };
+class HTMLMetaElementSimTest : public SimTest {};
 
 TEST_F(HTMLMetaElementTest, ViewportFit_Auto) {
   EXPECT_EQ(mojom::ViewportFit::kAuto,
@@ -249,6 +254,62 @@ TEST_F(HTMLMetaElementTest, ReferrerPolicyWithoutContent) {
   )HTML");
   EXPECT_EQ(network::mojom::ReferrerPolicy::kStrictOrigin,
             GetDocument().GetReferrerPolicy());
+}
+
+// This tests whether Web Monetization counter is properly triggered.
+TEST_F(HTMLMetaElementTest, WebMonetizationCounter) {
+  // <meta> elements that don't have name equal to "monetization" or that lack
+  // a content attribute are not counted.
+  GetDocument().head()->SetInnerHTMLFromString(R"HTML(
+    <meta name="color-scheme" content="dark">
+    <meta name="monetization">
+  )HTML");
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kHTMLMetaElementMonetization));
+
+  // A <link rel="monetization"> with a content attribute is counted.
+  GetDocument().head()->SetInnerHTMLFromString(R"HTML(
+    <meta name="monetization" content="$payment.pointer.url">
+  )HTML");
+  EXPECT_TRUE(
+      GetDocument().IsUseCounted(WebFeature::kHTMLMetaElementMonetization));
+
+  // However, it does not affect the counter for <link rel="monetization">.
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kHTMLLinkElementMonetization));
+}
+
+TEST_F(HTMLMetaElementSimTest, WebMonetizationNotCountedInSubFrame) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest child_frame_resource("https://example.com/subframe.html",
+                                  "text/html");
+
+  LoadURL("https://example.com/");
+
+  main_resource.Complete(String::Format(
+      R"HTML(
+        <body onload='console.log("main body onload");'>
+          <iframe src='https://example.com/subframe.html'
+                  onload='console.log("child frame element onload");'></iframe>
+        </body>)HTML"));
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  child_frame_resource.Complete(String::Format(R"HTML(
+    <meta name="monetization" content="$payment.pointer.url">
+  )HTML"));
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  // Ensure that main frame and subframe are loaded before checking the counter.
+  EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
+  EXPECT_TRUE(ConsoleMessages().Contains("child frame element onload"));
+
+  // <meta name="monetization"> is not counted in subframes.
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kHTMLMetaElementMonetization));
 }
 
 }  // namespace blink

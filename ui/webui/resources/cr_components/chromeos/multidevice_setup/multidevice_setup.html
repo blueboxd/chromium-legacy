@@ -16,6 +16,13 @@
   <template>
     <style include="multidevice-setup-shared">
       :host {
+        display: block;
+        height: 100%;
+        overflow: scroll;
+        width: 100%;
+      }
+
+      #container {
         @apply --layout-vertical;
         box-sizing: border-box;
         color: var(--google-grey-700);
@@ -34,9 +41,11 @@
 
       @media screen and (max-width: 767px) {
         /* On narrow screens, decrease width/padding. */
-        :host {
+        #container {
           height: auto;
-          margin-bottom: calc(4 * var(--narrow-button-bar-padding));
+          /* Add height of buttons plus padding on top and bottom of buttons. */
+          margin-bottom: calc(var(--narrow-button-bar-height) +
+                              calc(2 * var(--narrow-button-bar-spacing)));
           padding: 32px 32px 0 32px;
         }
 
@@ -52,48 +61,48 @@
         button-bar {
           background: rgba(255, 255, 255, 0.9);
           bottom: 0;
-          height: var(--narrow-button-bar-padding);
-          left: var(--narrow-button-bar-margin);
-          padding: var(--narrow-button-bar-padding)
-                   0
-                   calc(2 * var(--narrow-button-bar-padding))
-                   0;
-          position: fixed;
-          right: var(--narrow-button-bar-margin);
+          height: var(--narrow-button-bar-height);
+          left: 0;
+          padding: var(--narrow-button-bar-spacing);
+          position: absolute;
+          right: 0;
         }
       }
     </style>
-    <iron-pages id="ironPages"
-        attr-for-selected="is"
-        selected="[[visiblePageName]]"
-        selected-item="{{visiblePage_}}">
-      <template is="dom-if" if="[[shouldPasswordPageBeIncluded_(delegate)]]"
-          restamp>
-        <password-page class="ui-page"
-            auth-token="{{authToken_}}"
-            forward-button-disabled="{{passwordPageForwardButtonDisabled_}}"
-            password-field-valid="{{passwordFieldValid}}"
-            on-user-submitted-password="onUserSubmittedPassword_">
-        </password-page>
-      </template>
-      <template is="dom-if"
-          if="[[shouldSetupSucceededPageBeIncluded_(delegate)]]" restamp>
-        <setup-succeeded-page class="ui-page"></setup-succeeded-page>
-      </template>
-      <start-setup-page class="ui-page"
-          devices="[[devices_]]"
-          selected-device-id="{{selectedDeviceId_}}"
-          delegate="[[delegate]]">
-      </start-setup-page>
-    </iron-pages>
-    <div class="flex"></div>
-    <button-bar forward-button-hidden="[[!forwardButtonTextId]]"
-        backward-button-hidden="[[!backwardButtonTextId]]"
-        cancel-button-hidden="[[!cancelButtonTextId]]">
-      <slot name="backward-button" slot="backward-button"></slot>
-      <slot name="cancel-button" slot="cancel-button"></slot>
-      <slot name="forward-button" slot="forward-button"></slot>
-    </button-bar>
+    <div id="container">
+      <iron-pages id="ironPages"
+          attr-for-selected="is"
+          selected="[[visiblePageName]]"
+          selected-item="{{visiblePage_}}">
+        <template is="dom-if" if="[[shouldPasswordPageBeIncluded_(delegate)]]"
+            restamp>
+          <password-page class="ui-page"
+              auth-token="{{authToken_}}"
+              forward-button-disabled="{{passwordPageForwardButtonDisabled_}}"
+              password-field-valid="{{passwordFieldValid}}"
+              on-user-submitted-password="onUserSubmittedPassword_">
+          </password-page>
+        </template>
+        <template is="dom-if"
+            if="[[shouldSetupSucceededPageBeIncluded_(delegate)]]" restamp>
+          <setup-succeeded-page class="ui-page"></setup-succeeded-page>
+        </template>
+        <start-setup-page class="ui-page"
+            devices="[[devices_]]"
+            selected-device-id="{{selectedDeviceId_}}"
+            delegate="[[delegate]]">
+        </start-setup-page>
+      </iron-pages>
+      <div class="flex"></div>
+      <button-bar forward-button-hidden="[[!forwardButtonTextId]]"
+          backward-button-hidden="[[!backwardButtonTextId]]"
+          cancel-button-hidden="[[!cancelButtonTextId]]"
+          should-show-shadow="[[isScrolledToBottom_]]">
+        <slot name="backward-button" slot="backward-button"></slot>
+        <slot name="cancel-button" slot="cancel-button"></slot>
+        <slot name="forward-button" slot="forward-button"></slot>
+      </button-bar>
+    </div>
   </template>
   <script src="chrome://resources/cr_components/chromeos/multidevice_setup/multidevice_setup.js">
   </script>

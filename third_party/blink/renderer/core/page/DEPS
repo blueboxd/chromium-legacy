@@ -2,3 +2,9 @@ include_rules = [
   # For validation_message_overlay_delegate_test.cc
   "+base/strings/utf_string_conversions.h",
 ]
+
+specific_include_rules = {
+  "chrome_client_impl_test\.cc": [
+    "+base/run_loop.h",
+  ],
+}

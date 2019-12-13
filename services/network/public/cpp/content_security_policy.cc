@@ -243,7 +243,8 @@ mojom::CSPSourceListPtr ParseFrameAncestorsSourceList(
     return directive;
 
   for (const auto& expression : base::SplitStringPiece(
-           value, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+           value, base::kWhitespaceASCII, base::TRIM_WHITESPACE,
+           base::SPLIT_WANT_NONEMPTY)) {
     if (base::EqualsCaseInsensitiveASCII(expression, "'self'")) {
       directive->allow_self = true;
       continue;
@@ -276,8 +277,9 @@ bool ParseReportDirective(const GURL& request_url,
                           base::StringPiece value,
                           bool using_reporting_api,
                           std::vector<std::string>* report_endpoints) {
-  for (const auto& uri : base::SplitStringPiece(
-           value, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+  for (const auto& uri : base::SplitStringPiece(value, base::kWhitespaceASCII,
+                                                base::TRIM_WHITESPACE,
+                                                base::SPLIT_WANT_NONEMPTY)) {
     // There are two types of reporting directive:
     //
     // - "report-uri (uri)+"

@@ -462,8 +462,8 @@ CHAR-LIMIT guidelines:
         Cancel sync
       </message>
 
-      <!-- Search engine preferences -->
-      <message name="IDS_PREFS_SEARCH_ENGINE" desc="Title for Search Engine preferences. [CHAR-LIMIT=32]">
+      <!-- Search engine settings -->
+      <message name="IDS_SEARCH_ENGINE_SETTINGS" desc="Title for Search Engine settings. [CHAR-LIMIT=32]">
         Search engine
       </message>
       <message name="IDS_SEARCH_ENGINE_LOCATION_AND_NOTIFICATIONS_ALLOWED" desc="The text of a link displayed when location and notifications permissions for a particular search engine are allowed.">
@@ -1137,13 +1137,13 @@ Your Google account may have other forms of browsing history like searches and a
         Ask before allowing sites to know your location (recommended)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NOTIFICATIONS_ASK" desc="Summary text explaining that sites need to ask for permission before sending notifications.">
-        New sites you visit can ask to send you notifications
+        Sites can ask to send notifications
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NOTIFICATIONS_BLOCK" desc="Summary text explaining that sites will not be able to send notifications.">
-        New sites you visit can't send you notifications
+        Sites can't ask to send notifications
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NOTIFICATIONS_QUIET" desc="A setting that, if turned on will enable a quieter permission prompt for notifications.">
-        Block notification prompts from interrupting you, and use a quieter message instead
+        Use quieter messaging (blocks notification prompts from interrupting you)
       </message>
       <message name="IDS_NOTIFICATIONS_IPH" desc="A message that explains to the users that notification permission requests will appear as an infobar from now on because the user repeatedly denied the notification permission in the past.">
         You usually block notifications. To allow, tap Details.

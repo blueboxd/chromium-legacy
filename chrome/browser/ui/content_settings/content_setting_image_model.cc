@@ -883,11 +883,8 @@ bool ContentSettingNotificationsImageModel::UpdateAndGetVisibility(
     return false;
   // |manager| may be null in tests.
   // Show promo the first time a quiet prompt is shown to the user.
-  // TODO(hkamila) Check that this is only shown the first time the promo is
-  // shown.
-  if (QuietNotificationPermissionUiState::ShouldShowPromo(profile)) {
-    set_should_show_promo(true);
-  }
+  set_should_show_promo(
+      QuietNotificationPermissionUiState::ShouldShowPromo(profile));
   if (manager->ReasonForUsingQuietUi() ==
       PermissionRequestManager::QuietUiReason::kTriggeredByCrowdDeny) {
     set_explanatory_string_id(0);

@@ -1,5 +1,5 @@
 document
-++group
+++group IsControlElement=false
 ++++description Name='Some LTR text'
 ++++description Name=' '
 ++++description Name='Some RTL text '

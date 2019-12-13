@@ -16,6 +16,17 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 
+#if defined(OS_WIN)
+// Simple struct to keep track of how many languages are supported by which
+// spell checker.
+struct LocalesSupportInfo {
+  size_t locales_supported_by_hunspell_and_native;
+  size_t locales_supported_by_hunspell_only;
+  size_t locales_supported_by_native_only;
+  size_t unsupported_locales;
+};
+#endif  // defined(OS_WIN)
+
 // A helper object for recording spell-check related histograms.
 // This class encapsulates histogram names and metrics API.
 // This also carries a set of counters for collecting histograms
@@ -63,13 +74,13 @@ class SpellCheckHostMetrics {
   void RecordSpellingServiceStats(bool enabled);
 
 #if defined(OS_WIN)
-  // Records how many user spellcheck languages are currently not supported by
-  // the Windows OS spellchecker due to missing language packs.
-  void RecordMissingLanguagePacksCount(int count);
+  // Records spell check support for user-added Chrome languages that are not
+  // eligible for spell checking (due to the hard-coded spell check locales
+  // list).
+  void RecordAcceptLanguageStats(const LocalesSupportInfo& locales_info);
 
-  // Records how many user languages are not supported by Hunspell for
-  // spellchecking.
-  void RecordHunspellUnsupportedLanguageCount(int count);
+  // Records which spell checker can handle which enabled spell check locales.
+  void RecordSpellcheckLanguageStats(const LocalesSupportInfo& locales_info);
 #endif  // defined(OS_WIN)
 
  private:

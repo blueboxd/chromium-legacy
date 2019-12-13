@@ -13,8 +13,8 @@
 // A view that paints a solid color. Used to change the title bar background.
 @interface TitlebarBackgroundView : NSView {
  @private
-  base::scoped_nsobject<NSColor> color_;
-  base::scoped_nsobject<NSColor> inactiveColor_;
+  base::scoped_nsobject<NSColor> _color;
+  base::scoped_nsobject<NSColor> _inactiveColor;
 }
 
 // Adds a TitlebarBackgroundView to the [[window contentView] superView].

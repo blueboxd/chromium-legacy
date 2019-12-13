@@ -21,10 +21,16 @@ android_assets("weblayer_shell_assets") {
   ]
 }
 
+android_resources("weblayer_shell_resources") {
+  resource_dirs = [ "shell_apk/res" ]
+  custom_package = "org.chromium.weblayer.shell"
+}
+
 android_library("weblayer_shell_java") {
   testonly = true
 
   deps = [
+    ":weblayer_shell_resources",
     "//third_party/android_deps:android_support_v4_java",
     "//weblayer/public/java",
   ]

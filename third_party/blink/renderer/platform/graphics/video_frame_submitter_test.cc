@@ -307,8 +307,8 @@ TEST_F(VideoFrameSubmitterTest, StopRenderingSkipsUpdateCurrentFrame) {
 
   // No frames should be produced after StopRendering().
   EXPECT_CALL(*sink_, DidNotProduceFrame(_));
-  begin_frame_source_->CreateBeginFrameArgs(BEGINFRAME_FROM_HERE,
-                                            now_src_.get());
+  args = begin_frame_source_->CreateBeginFrameArgs(BEGINFRAME_FROM_HERE,
+                                                   now_src_.get());
   submitter_->OnBeginFrame(args, {});
   task_environment_.RunUntilIdle();
 }
@@ -498,6 +498,8 @@ TEST_F(VideoFrameSubmitterTest, RotationInformationPassedToResourceProvider) {
   EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
   EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
 
+  args = begin_frame_source_->CreateBeginFrameArgs(BEGINFRAME_FROM_HERE,
+                                                   now_src_.get());
   submitter_->OnBeginFrame(args, {});
   task_environment_.RunUntilIdle();
 }
@@ -893,6 +895,8 @@ TEST_F(VideoFrameSubmitterTest, NoDuplicateFramesOnBeginFrame) {
       .WillOnce(Return(true));
   EXPECT_CALL(*video_frame_provider_, GetCurrentFrame()).WillOnce(Return(vf));
   EXPECT_CALL(*sink_, DidNotProduceFrame(_));
+  args = begin_frame_source_->CreateBeginFrameArgs(BEGINFRAME_FROM_HERE,
+                                                   now_src_.get());
   submitter_->OnBeginFrame(args, {});
   task_environment_.RunUntilIdle();
 }

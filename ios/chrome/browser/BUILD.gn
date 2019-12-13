@@ -53,8 +53,6 @@ source_set("browser") {
     "ios_first_run_field_trials.h",
     "notification_promo.cc",
     "notification_promo.h",
-    "pref_names.cc",
-    "pref_names.h",
   ]
 
   deps = [
@@ -132,6 +130,7 @@ source_set("browser") {
   public_deps = [
     ":chrome_paths",
     ":chrome_url_constants",
+    ":pref_names",
     ":utils",
   ]
   allow_circular_includes_from = [
@@ -174,6 +173,14 @@ source_set("chrome_url_constants") {
     "//base",
   ]
   libs = [ "UIKit.framework" ]
+}
+
+source_set("pref_names") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "pref_names.cc",
+    "pref_names.h",
+  ]
 }
 
 source_set("browser_impl") {

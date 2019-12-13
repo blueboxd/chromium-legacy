@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import android.content.Context;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -141,28 +140,13 @@ public abstract class AssistantCollectUserDataSection<T extends EditableOption> 
      * Replaces the set of displayed items.
      *
      * @param options The new items.
-     * @param selectedItemIndex The index of the item in |items| to select. If < 0, the first
-     * complete item will automatically be selected.
+     * @param selectedItemIndex The index of the item in |items| to select.
      */
     void setItems(List<T> options, int selectedItemIndex) {
-        // Automatically pre-select unless already specified outside.
-        if (selectedItemIndex < 0 && !options.isEmpty()) {
-            for (int i = 0; i < options.size(); i++) {
-                if (options.get(i).isComplete()) {
-                    selectedItemIndex = i;
-                    break;
-                }
-            }
-            // Fallback: if there are no complete items, select the first (incomplete) one.
-            if (selectedItemIndex < 0) {
-                selectedItemIndex = 0;
-            }
-        }
-
-        Item initiallySelectedItem = null;
         mItems.clear();
         mItemsView.clearItems();
         mSelectedOption = null;
+        Item initiallySelectedItem = null;
         for (int i = 0; i < options.size(); i++) {
             Item item = createItem(options.get(i));
             addItem(item);
@@ -177,8 +161,6 @@ public abstract class AssistantCollectUserDataSection<T extends EditableOption> 
             mIgnoreItemSelectedNotifications = true;
             selectItem(initiallySelectedItem);
             mIgnoreItemSelectedNotifications = false;
-        } else if (mListener != null) {
-            mListener.onResult(null);
         }
     }
 
@@ -207,7 +189,7 @@ public abstract class AssistantCollectUserDataSection<T extends EditableOption> 
         // Update existing item if possible.
         Item item = null;
         for (int i = 0; i < mItems.size(); i++) {
-            if (TextUtils.equals(mItems.get(i).mOption.getIdentifier(), option.getIdentifier())) {
+            if (areEqual(mItems.get(i).mOption, option)) {
                 item = mItems.get(i);
                 item.mOption = option;
                 updateFullView(item.mFullView, item.mOption);
@@ -358,6 +340,9 @@ public abstract class AssistantCollectUserDataSection<T extends EditableOption> 
 
     /** Asks the subclass for the content description of {@code option}. */
     protected abstract String getEditButtonContentDescription(T option);
+
+    /** Ask the subclass if two {@code option} instances should be considered equal. */
+    protected abstract boolean areEqual(@Nullable T optionA, @Nullable T optionB);
 
     /**
      * For convenience. Hides {@code view} if it is empty.

@@ -8,18 +8,16 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "device/fido/fido_device_discovery.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/cpp/hid/hid_device_filter.h"
 #include "services/device/public/mojom/hid.mojom.h"
-
-namespace service_manager {
-class Connector;
-}
 
 namespace device {
 
@@ -30,8 +28,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDiscovery
     : public FidoDeviceDiscovery,
       device::mojom::HidManagerClient {
  public:
-  explicit FidoHidDiscovery(::service_manager::Connector* connector);
+  FidoHidDiscovery();
   ~FidoHidDiscovery() override;
+
+  // Sets a callback for this class to use when binding a HidManager receiver.
+  using HidManagerBinder =
+      base::RepeatingCallback<void(mojo::PendingReceiver<mojom::HidManager>)>;
+  static void SetHidManagerBinder(HidManagerBinder binder);
 
  private:
   // FidoDeviceDiscovery:
@@ -43,7 +46,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDiscovery
 
   void OnGetDevices(std::vector<device::mojom::HidDeviceInfoPtr> devices);
 
-  service_manager::Connector* connector_;
   mojo::Remote<device::mojom::HidManager> hid_manager_;
   mojo::AssociatedReceiver<device::mojom::HidManagerClient> receiver_{this};
   HidDeviceFilter filter_;

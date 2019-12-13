@@ -1,5 +1,5 @@
 document
-++group
+++group IsControlElement=false
 ++++img Name='svg' HelpText='SVG Title Tag'
-++++++group
+++++++group IsControlElement=false
 ++++++++description Name='Test'

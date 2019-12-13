@@ -337,8 +337,8 @@ template("monochrome_public_common_apk_or_module_tmpl") {
     secondary_abi_loadable_modules = []
 
     _deps = [
-      "//components/crash/android:handler_java",
       "//chrome/android:chrome_public_non_pak_assets",
+      "//components/crash/android:handler_java",
     ]
 
     if (is_monochrome) {
@@ -380,8 +380,8 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       }
 
       _deps += [
-        "//android_webview/nonembedded:nonembedded_java",
         "//android_webview/glue",
+        "//android_webview/nonembedded:nonembedded_java",
         "//chrome/android:monochrome_java",
       ]
 

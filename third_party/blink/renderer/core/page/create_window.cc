@@ -228,7 +228,7 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
   DCHECK_EQ(kNavigationPolicyCurrentTab, request.GetNavigationPolicy());
 
   // Exempting window.open() from this check here is necessary to support a
-  // special policy that will be removed in Chrome 82.
+  // special policy that will be removed in Chrome 88.
   // See https://crbug.com/937569
   if (!request.IsWindowOpen() &&
       opener_frame.GetDocument()->PageDismissalEventBeingDispatched() !=

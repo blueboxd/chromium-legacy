@@ -389,7 +389,8 @@ TEST_F(AccessibilityTest, TestWebLinkClickActionHandling) {
   PP_PdfAccessibilityActionData action_data;
   action_data.action = PP_PdfAccessibilityAction::PP_PDF_DO_DEFAULT_ACTION;
   action_data.page_index = 0;
-  action_data.link_index = 0;
+  action_data.annotation_type = PP_PdfAccessibilityAnnotationType::PP_PDF_LINK;
+  action_data.annotation_index = 0;
   engine->HandleAccessibilityAction(action_data);
   EXPECT_EQ("http://yahoo.com", client.url());
   EXPECT_EQ(WindowOpenDisposition::CURRENT_TAB, client.disposition());
@@ -404,7 +405,8 @@ TEST_F(AccessibilityTest, TestInternalLinkClickActionHandling) {
   PP_PdfAccessibilityActionData action_data;
   action_data.action = PP_PdfAccessibilityAction::PP_PDF_DO_DEFAULT_ACTION;
   action_data.page_index = 0;
-  action_data.link_index = 1;
+  action_data.annotation_type = PP_PdfAccessibilityAnnotationType::PP_PDF_LINK;
+  action_data.annotation_index = 1;
   engine->HandleAccessibilityAction(action_data);
   EXPECT_EQ(1, client.page());
   EXPECT_EQ(266, client.x_in_pixels());

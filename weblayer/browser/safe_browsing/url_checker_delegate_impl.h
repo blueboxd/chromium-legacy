@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/safe_browsing/browser/url_checker_delegate.h"
+#include "content/public/browser/web_contents.h"
 
 namespace security_interstitials {
 struct UnsafeResource;
@@ -29,8 +30,7 @@ class UrlCheckerDelegateImpl : public safe_browsing::UrlCheckerDelegate {
 
   // Implementation of UrlCheckerDelegate:
   void MaybeDestroyPrerenderContents(
-      const base::Callback<content::WebContents*()>& web_contents_getter)
-      override;
+      content::WebContents::OnceGetter web_contents_getter) override;
   void StartDisplayingBlockingPageHelper(
       const security_interstitials::UnsafeResource& resource,
       const std::string& method,

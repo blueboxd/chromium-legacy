@@ -6,6 +6,8 @@ package org.chromium.chrome.features.start_surface;
 
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO_DESCRIPTION_INITIALIZED;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO_DESCRIPTION_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MORE_TABS_CLICK_LISTENER;
@@ -288,6 +290,11 @@ class StartSurfaceMediator
         } else if (mOverviewModeState == OverviewModeState.NOT_SHOWN) {
             if (mSecondaryTasksSurfaceController != null) setSecondaryTasksSurfaceVisibility(false);
         }
+
+        if (mOverviewModeState != OverviewModeState.NOT_SHOWN) {
+            setIncognitoModeDescriptionVisibility(
+                    mIsIncognito && mTabModelSelector.getModel(true).getCount() <= 0);
+        }
     }
 
     @VisibleForTesting
@@ -510,7 +517,6 @@ class StartSurfaceMediator
     }
 
     private void setTabCarouselVisibility(boolean isVisible) {
-
         if (isVisible == mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE)) return;
 
         // Hide the more Tabs view when the last Tab is closed.
@@ -528,8 +534,23 @@ class StartSurfaceMediator
         mPropertyModel.set(MV_TILES_VISIBLE, isVisible);
     }
 
+    private void setIncognitoModeDescriptionVisibility(boolean isVisible) {
+        if (isVisible == mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_VISIBLE)) return;
+
+        if (!mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_INITIALIZED)) {
+            mPropertyModel.set(IS_INCOGNITO_DESCRIPTION_INITIALIZED, true);
+        }
+        mPropertyModel.set(IS_INCOGNITO_DESCRIPTION_VISIBLE, isVisible);
+        if (mSecondaryTasksSurfacePropertyModel != null) {
+            if (!mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO_DESCRIPTION_INITIALIZED)) {
+                mSecondaryTasksSurfacePropertyModel.set(IS_INCOGNITO_DESCRIPTION_INITIALIZED, true);
+            }
+            mSecondaryTasksSurfacePropertyModel.set(IS_INCOGNITO_DESCRIPTION_VISIBLE, isVisible);
+        }
+    }
+
     @OverviewModeState
-    public int computeOverviewStateShown() {
+    private int computeOverviewStateShown() {
         if (mSurfaceMode == SurfaceMode.SINGLE_PANE) return OverviewModeState.SHOWN_HOMEPAGE;
         if (mSurfaceMode == SurfaceMode.TWO_PANES) return OverviewModeState.SHOWN_TWO_PANES;
         if (mSurfaceMode == SurfaceMode.TASKS_ONLY) return OverviewModeState.SHOWN_TASKS_ONLY;

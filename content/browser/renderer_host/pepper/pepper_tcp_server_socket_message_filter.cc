@@ -266,9 +266,10 @@ void PepperTCPServerSocketMessageFilter::OpenFirewallHole(
     const net::IPEndPoint& local_addr) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  pepper_socket_utils::FirewallHoleOpenCallback callback = base::BindRepeating(
-      &PepperTCPServerSocketMessageFilter::OnFirewallHoleOpened, this, context);
-  pepper_socket_utils::OpenTCPFirewallHole(local_addr, callback);
+  pepper_socket_utils::OpenTCPFirewallHole(
+      local_addr,
+      base::BindOnce(&PepperTCPServerSocketMessageFilter::OnFirewallHoleOpened,
+                     this, context));
 }
 
 void PepperTCPServerSocketMessageFilter::OnFirewallHoleOpened(

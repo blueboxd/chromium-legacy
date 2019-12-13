@@ -19,6 +19,9 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/inspector_protocol/crdtp/cbor.h"
+#include "third_party/inspector_protocol/crdtp/serializable.h"
+#include "third_party/inspector_protocol/crdtp/serializer_traits.h"
 #include "v8/include/v8-inspector.h"
 
 namespace blink {
@@ -100,7 +103,7 @@ class CORE_EXPORT StringUtil {
 };
 
 // A read-only sequence of uninterpreted bytes with reference-counted storage.
-class CORE_EXPORT Binary {
+class CORE_EXPORT Binary : public crdtp::Serializable {
  public:
   class Impl : public RefCounted<Impl> {
    public:
@@ -111,6 +114,9 @@ class CORE_EXPORT Binary {
   };
 
   Binary() = default;
+
+  // Implements Serializable.
+  void AppendSerialized(std::vector<uint8_t>* out) const override;
 
   const uint8_t* data() const { return impl_ ? impl_->data() : nullptr; }
   size_t size() const { return impl_ ? impl_->size() : 0; }
@@ -143,5 +149,29 @@ struct hash<WTF::String> {
   }
 };
 }  // namespace std
+
+// See third_party/inspector_protocol/crdtp/serializer_traits.h.
+namespace crdtp {
+template <>
+struct SerializerTraits<WTF::String> {
+  static void Serialize(const WTF::String& str, std::vector<uint8_t>* out) {
+    if (str.length() == 0) {
+      cbor::EncodeString8(span<uint8_t>(nullptr, 0), out);  // Empty string.
+      return;
+    }
+    if (str.Is8Bit()) {
+      cbor::EncodeFromLatin1(
+          span<uint8_t>(reinterpret_cast<const uint8_t*>(str.Characters8()),
+                        str.length()),
+          out);
+      return;
+    }
+    cbor::EncodeFromUTF16(
+        span<uint16_t>(reinterpret_cast<const uint16_t*>(str.Characters16()),
+                       str.length()),
+        out);
+  }
+};
+}  // namespace crdtp
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_V8_INSPECTOR_STRING_H_

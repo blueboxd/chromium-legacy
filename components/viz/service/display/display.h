@@ -81,7 +81,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
           const RendererSettings& settings,
           const FrameSinkId& frame_sink_id,
           std::unique_ptr<OutputSurface> output_surface,
-          std::unique_ptr<DisplayScheduler> scheduler,
+          std::unique_ptr<DisplaySchedulerBase> scheduler,
           scoped_refptr<base::SingleThreadTaskRunner> current_task_runner);
 
   ~Display() override;
@@ -132,7 +132,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   const SurfaceId& CurrentSurfaceId();
 
   // DisplaySchedulerClient implementation.
-  bool DrawAndSwap() override;
+  bool DrawAndSwap(base::TimeTicks expected_display_time) override;
   void DidFinishFrame(const BeginFrameAck& ack) override;
 
   // OutputSurfaceClient implementation.
@@ -233,7 +233,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   std::unique_ptr<OutputSurface> output_surface_;
   SkiaOutputSurface* const skia_output_surface_;
   std::unique_ptr<DisplayDamageTracker> damage_tracker_;
-  std::unique_ptr<DisplayScheduler> scheduler_;
+  std::unique_ptr<DisplaySchedulerBase> scheduler_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
   std::unique_ptr<SurfaceAggregator> aggregator_;
   std::unique_ptr<FrameRateDecider> frame_rate_decider_;
@@ -255,6 +255,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   int64_t swapped_trace_id_ = 0;
   int64_t last_swap_ack_trace_id_ = 0;
   int64_t last_presented_trace_id_ = 0;
+  int pending_swaps_ = 0;
 
   // The height of the top-controls in the previously drawn frame.
   float last_top_controls_visible_height_ = 0.f;

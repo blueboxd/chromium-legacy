@@ -23,11 +23,13 @@ SkiaOutputDeviceOffscreen::SkiaOutputDeviceOffscreen(
     scoped_refptr<gpu::SharedContextState> context_state,
     bool flipped,
     bool has_alpha,
+    gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
     : SkiaOutputDevice(false /*need_swap_semaphore */,
                        did_swap_buffer_complete_callback),
       context_state_(context_state),
-      has_alpha_(has_alpha) {
+      has_alpha_(has_alpha),
+      memory_tracker_(memory_tracker) {
   capabilities_.flipped_output_surface = flipped;
   capabilities_.supports_post_sub_buffer = true;
 }
@@ -86,6 +88,20 @@ void SkiaOutputDeviceOffscreen::EnsureBackbuffer() {
         GrMipMapped::kNo, GrRenderable::kYes);
   }
   DCHECK(backend_texture_.isValid());
+
+  DCHECK(!backbuffer_estimated_size_);
+  if (backend_texture_.backend() == GrBackendApi::kVulkan) {
+    GrVkImageInfo vk_image_info;
+    bool result = backend_texture_.getVkImageInfo(&vk_image_info);
+    DCHECK(result);
+    backbuffer_estimated_size_ = vk_image_info.fAlloc.fSize;
+  } else {
+    auto info = SkImageInfo::Make(size_.width(), size_.height(),
+                                  kSurfaceColorType, kUnpremul_SkAlphaType);
+    size_t estimated_size = info.computeMinByteSize();
+    backbuffer_estimated_size_ = estimated_size;
+  }
+  memory_tracker_->TrackMemoryAllocatedChange(backbuffer_estimated_size_);
 }
 
 void SkiaOutputDeviceOffscreen::DiscardBackbuffer() {
@@ -93,6 +109,8 @@ void SkiaOutputDeviceOffscreen::DiscardBackbuffer() {
     sk_surface_.reset();
     DeleteGrBackendTexture(context_state_.get(), &backend_texture_);
     backend_texture_ = GrBackendTexture();
+    memory_tracker_->TrackMemoryAllocatedChange(-backbuffer_estimated_size_);
+    backbuffer_estimated_size_ = 0u;
   }
 }
 

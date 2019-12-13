@@ -6,6 +6,7 @@
 #define DEVICE_VR_OPENXR_OPENXR_CONTROLLER_H_
 
 #include <stdint.h>
+#include <string.h>
 #include <map>
 #include <unordered_map>
 #include <vector>
@@ -56,9 +57,10 @@ class OpenXrController {
       const OpenXRPathHelper* path_helper,
       std::map<XrPath, std::vector<XrActionSuggestedBinding>>* bindings);
 
-  XrActionSet GetActionSet() const;
+  XrActionSet action_set() const { return action_set_; }
   uint32_t GetId() const;
   device::mojom::XRHandedness GetHandness() const;
+  XrPath interaction_profile() const { return interaction_profile_; }
 
   mojom::XRInputSourceDescriptionPtr GetDescription(
       XrTime predicted_display_time);
@@ -87,21 +89,26 @@ class OpenXrController {
           value_action(XR_NULL_HANDLE) {}
   };
 
-  XrResult InitializeMicrosoftMotionControllerActions(
-      const std::string& type_string,
+  XrResult InitializeControllerActions();
+
+  XrResult SuggestMicrosoftMotionControllerBindings(
       std::map<XrPath, std::vector<XrActionSuggestedBinding>>* bindings);
 
-  XrResult InitializeMicrosoftMotionControllerSpaces();
-
-  XrResult CreateAction(
-      XrActionType type,
-      XrPath profilePath,
-      const std::string& binding_string,
-      const std::string& action_name,
-      XrAction* action,
+  XrResult SuggestKHRSimpleControllerBindings(
       std::map<XrPath, std::vector<XrActionSuggestedBinding>>* bindings);
+
+  XrResult InitializeControllerSpaces();
+
+  XrResult CreateAction(XrActionType type,
+                        const std::string& action_name,
+                        XrAction* action);
 
   XrResult CreateActionSpace(XrAction action, XrSpace* space);
+
+  XrResult SuggestInteractionProfileBindings(
+      std::map<XrPath, std::vector<XrActionSuggestedBinding>>* bindings,
+      XrPath interaction_profile_path,
+      std::unordered_map<XrAction, std::string> action_binding_map);
 
   base::Optional<gfx::Transform> GetPointerFromGripTransform(
       XrTime predicted_display_time) const;
@@ -111,8 +118,6 @@ class OpenXrController {
       XrSpace target,
       XrSpace origin,
       bool* emulated_position) const;
-
-  std::vector<std::string> GetProfiles() const;
 
   template <typename T>
   XrResult QueryState(XrAction action, T* action_state) const {
@@ -174,7 +179,6 @@ class OpenXrController {
   XrSpace pointer_pose_space_;
 
   XrPath interaction_profile_;
-  std::string top_level_user_path_string_;
 
   std::unordered_map<OpenXrButtonType, ActionButton> button_action_map_;
   std::unordered_map<OpenXrAxisType, XrAction> axis_action_map_;

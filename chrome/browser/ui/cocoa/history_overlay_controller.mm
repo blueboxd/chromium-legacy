@@ -34,9 +34,9 @@ const CGFloat kShieldHeightCompletionAdjust = 10;
 // The content view that draws the semicircle and the arrow.
 @interface HistoryOverlayView : NSView {
  @private
-  HistoryOverlayMode mode_;
-  CGFloat shieldAlpha_;
-  base::scoped_nsobject<CAShapeLayer> shapeLayer_;
+  HistoryOverlayMode _mode;
+  CGFloat _shieldAlpha;
+  base::scoped_nsobject<CAShapeLayer> _shapeLayer;
 }
 @property(nonatomic) CGFloat shieldAlpha;
 - (id)initWithMode:(HistoryOverlayMode)mode
@@ -45,23 +45,23 @@ const CGFloat kShieldHeightCompletionAdjust = 10;
 
 @implementation HistoryOverlayView
 
-@synthesize shieldAlpha = shieldAlpha_;
+@synthesize shieldAlpha = _shieldAlpha;
 
 - (id)initWithMode:(HistoryOverlayMode)mode
              image:(NSImage*)image {
   NSRect frame = NSMakeRect(0, 0, kShieldWidth, kShieldHeight);
   if ((self = [super initWithFrame:frame])) {
-    mode_ = mode;
-    shieldAlpha_ = 1.0;  // CAShapeLayer's fillColor defaults to opaque black.
+    _mode = mode;
+    _shieldAlpha = 1.0;  // CAShapeLayer's fillColor defaults to opaque black.
 
     // A layer-hosting view.
-    shapeLayer_.reset([[CAShapeLayer alloc] init]);
-    [self setLayer:shapeLayer_];
+    _shapeLayer.reset([[CAShapeLayer alloc] init]);
+    [self setLayer:_shapeLayer];
     [self setWantsLayer:YES];
 
     // If going backward, the arrow needs to be in the right half of the circle,
     // so offset the X position.
-    CGFloat offset = mode_ == kHistoryOverlayModeBack ? kShieldRadius : 0;
+    CGFloat offset = _mode == kHistoryOverlayModeBack ? kShieldRadius : 0;
     NSRect arrowRect = NSMakeRect(offset, 0, kShieldRadius, kShieldHeight);
     arrowRect = NSInsetRect(arrowRect, 10, 0);  // Give a little padding.
 
@@ -78,20 +78,20 @@ const CGFloat kShieldHeightCompletionAdjust = 10;
   NSSize oldSize = [self frame].size;
   [super setFrameSize:newSize];
 
-  if (![shapeLayer_ path] || !NSEqualSizes(oldSize, newSize))  {
+  if (![_shapeLayer path] || !NSEqualSizes(oldSize, newSize))  {
     base::ScopedCFTypeRef<CGMutablePathRef> oval(CGPathCreateMutable());
     CGRect ovalRect = CGRectMake(0, 0, newSize.width, newSize.height);
     CGPathAddEllipseInRect(oval, nullptr, ovalRect);
-    [shapeLayer_ setPath:oval];
+    [_shapeLayer setPath:oval];
   }
 }
 
 - (void)setShieldAlpha:(CGFloat)shieldAlpha {
-  if (shieldAlpha != shieldAlpha_) {
-    shieldAlpha_ = shieldAlpha;
+  if (shieldAlpha != _shieldAlpha) {
+    _shieldAlpha = shieldAlpha;
     base::ScopedCFTypeRef<CGColorRef> fillColor(
         CGColorCreateGenericGray(0, shieldAlpha));
-    [shapeLayer_ setFillColor:fillColor];
+    [_shapeLayer setFillColor:fillColor];
   }
 }
 
@@ -103,7 +103,7 @@ const CGFloat kShieldHeightCompletionAdjust = 10;
 
 - (id)initForMode:(HistoryOverlayMode)mode {
   if ((self = [super init])) {
-    mode_ = mode;
+    _mode = mode;
     DCHECK(mode == kHistoryOverlayModeBack ||
            mode == kHistoryOverlayModeForward);
   }
@@ -113,16 +113,16 @@ const CGFloat kShieldHeightCompletionAdjust = 10;
 - (void)loadView {
   const gfx::Image& image =
       ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-          mode_ == kHistoryOverlayModeBack ? IDR_SWIPE_BACK
+          _mode == kHistoryOverlayModeBack ? IDR_SWIPE_BACK
                                            : IDR_SWIPE_FORWARD);
-  contentView_.reset(
-      [[HistoryOverlayView alloc] initWithMode:mode_
+  _contentView.reset(
+      [[HistoryOverlayView alloc] initWithMode:_mode
                                          image:image.ToNSImage()]);
-  self.view = contentView_;
+  self.view = _contentView;
 }
 
 - (void)setProgress:(CGFloat)gestureAmount finished:(BOOL)finished {
-  NSRect parentFrame = [parent_ frame];
+  NSRect parentFrame = [_parent frame];
   // When tracking the gesture, the height is constant and the alpha value
   // changes from [0.25, 0.65].
   CGFloat height = kShieldHeight;
@@ -143,19 +143,19 @@ const CGFloat kShieldHeightCompletionAdjust = 10;
   frame.origin.y = (NSHeight(parentFrame) / 2) - (height / 2);
 
   CGFloat width = std::min(kShieldRadius * gestureAmount, kShieldRadius);
-  if (mode_ == kHistoryOverlayModeForward)
+  if (_mode == kHistoryOverlayModeForward)
     frame.origin.x = NSMaxX(parentFrame) - width;
-  else if (mode_ == kHistoryOverlayModeBack)
+  else if (_mode == kHistoryOverlayModeBack)
     frame.origin.x = NSMinX(parentFrame) - kShieldWidth + width;
 
   self.view.frame = frame;
-  [contentView_ setShieldAlpha:shieldAlpha];
+  [_contentView setShieldAlpha:shieldAlpha];
 }
 
 - (void)showPanelForView:(NSView*)view {
-  parent_.reset([view retain]);
+  _parent.reset([view retain]);
   [self setProgress:0 finished:NO];  // Set initial view position.
-  [parent_ addSubview:self.view];
+  [_parent addSubview:self.view];
 }
 
 - (void)dismiss {

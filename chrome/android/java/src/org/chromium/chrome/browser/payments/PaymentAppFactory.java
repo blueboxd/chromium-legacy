@@ -4,13 +4,19 @@
 
 package org.chromium.chrome.browser.payments;
 
+import android.support.v4.util.ArrayMap;
+import android.text.TextUtils;
+
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.payments.PaymentApp.InstrumentsCallback;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentMethodData;
 
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +25,7 @@ import java.util.Set;
 /**
  * Builds instances of payment apps.
  */
-public class PaymentAppFactory {
+public class PaymentAppFactory implements PaymentAppFactoryInterface {
     private static PaymentAppFactory sInstance;
 
     /**
@@ -137,6 +143,177 @@ public class PaymentAppFactory {
                 }
             };
             additionalFactory.create(webContents, methodData, mayCrawl, cb);
+        }
+    }
+
+    // PaymentAppFactoryInterface implementation.
+    @Override
+    public void create(PaymentAppFactoryDelegate delegate) {
+        create(delegate.getParams().getWebContents(), delegate.getParams().getMethodData(),
+                delegate.getParams().getMayCrawl(), /*callback=*/new Aggregator(delegate));
+    }
+
+    /** Collects, filters, and returns payment apps to the PaymentAppFactoryDelegate. */
+    private final class Aggregator implements PaymentAppCreatedCallback, InstrumentsCallback {
+        private final PaymentAppFactoryDelegate mDelegate;
+        private final List<PaymentApp> mApps = new ArrayList<>();
+        private List<PaymentApp> mPendingApps;
+
+        private Aggregator(PaymentAppFactoryDelegate delegate) {
+            mDelegate = delegate;
+        }
+
+        // PaymentAppCreatedCallback implementation.
+        @Override
+        public void onPaymentAppCreated(PaymentApp paymentApp) {
+            mApps.add(paymentApp);
+            if (paymentApp instanceof AutofillPaymentApp) {
+                mDelegate.onAutofillPaymentAppFactoryCreated((AutofillPaymentApp) paymentApp);
+            }
+        }
+
+        // PaymentAppCreatedCallback implementation.
+        @Override
+        public void onGetPaymentAppsError(String errorMessage) {
+            mDelegate.onPaymentAppCreationError(errorMessage);
+        }
+
+        // PaymentAppCreatedCallback implementation.
+        @Override
+        public void onAllPaymentAppsCreated() {
+            assert mPendingApps == null;
+
+            dedupePaymentApps();
+
+            mPendingApps = new ArrayList<>(mApps);
+
+            Map<PaymentApp, Map<String, PaymentMethodData>> queryApps = new ArrayMap<>();
+            for (int i = 0; i < mApps.size(); i++) {
+                PaymentApp app = mApps.get(i);
+                Map<String, PaymentMethodData> appMethods = filterMerchantMethodData(
+                        mDelegate.getParams().getMethodData(), app.getAppMethodNames());
+                if (appMethods == null || !app.supportsMethodsAndData(appMethods)) {
+                    mPendingApps.remove(app);
+                } else {
+                    queryApps.put(app, appMethods);
+                }
+            }
+
+            mDelegate.onCanMakePaymentCalculated(!queryApps.isEmpty());
+
+            if (queryApps.isEmpty()) {
+                mDelegate.onDoneCreatingPaymentApps(PaymentAppFactory.this);
+                return;
+            }
+
+            for (Map.Entry<PaymentApp, Map<String, PaymentMethodData>> q : queryApps.entrySet()) {
+                PaymentApp app = q.getKey();
+                Map<String, PaymentMethodData> paymentMethods = q.getValue();
+                app.setPaymentRequestUpdateEventCallback(
+                        mDelegate.getParams().getPaymentRequestUpdateEventCallback());
+                app.getInstruments(mDelegate.getParams().getId(), paymentMethods,
+                        mDelegate.getParams().getTopLevelOrigin(),
+                        mDelegate.getParams().getPaymentRequestOrigin(),
+                        mDelegate.getParams().getCertificateChain(),
+                        mDelegate.getParams().getModifiers(), /*callback=*/this);
+            }
+        }
+
+        // Dedupe payment apps according to preferred related applications and can deduped
+        // application. Note that this is only work for deduping service worker based payment app
+        // from native Android payment app for now. The identifier of a native Android payment app
+        // is its package name. The identifier of a service worker based payment app is its
+        // registration scope which equals to corresponding native android payment app's default
+        // method name.
+        private void dedupePaymentApps() {
+            // Dedupe ServiceWorkerPaymentApp according to preferred related applications from
+            // ServiceWorkerPaymentApps.
+            Set<String> appIdentifiers = new HashSet<>();
+            for (int i = 0; i < mApps.size(); i++) {
+                appIdentifiers.add(mApps.get(i).getAppIdentifier());
+            }
+            List<PaymentApp> appsToDedupe = new ArrayList<>();
+            for (int i = 0; i < mApps.size(); i++) {
+                Set<String> applicationIds = mApps.get(i).getPreferredRelatedApplicationIds();
+                if (applicationIds == null || applicationIds.isEmpty()) continue;
+                for (String id : applicationIds) {
+                    if (appIdentifiers.contains(id)) {
+                        appsToDedupe.add(mApps.get(i));
+                        break;
+                    }
+                }
+            }
+            if (!appsToDedupe.isEmpty()) mApps.removeAll(appsToDedupe);
+
+            // Dedupe ServiceWorkerPaymentApp according to can deduped applications from native
+            // android payment apps.
+            Set<String> canDedupedApplicationIds = new HashSet<>();
+            for (int i = 0; i < mApps.size(); i++) {
+                URI canDedupedApplicationIdUri = mApps.get(i).getCanDedupedApplicationId();
+                if (canDedupedApplicationIdUri == null) continue;
+                String canDedupedApplicationId = canDedupedApplicationIdUri.toString();
+                if (TextUtils.isEmpty(canDedupedApplicationId)) continue;
+                canDedupedApplicationIds.add(canDedupedApplicationId);
+                // Add the trailing slash, because Service worker registration scope is a directory
+                // path that must end with a '/' (e.g., "https://google.com/pay/"), whereas
+                // "canDedupedApplicationIdUri" is derived from the native Android payment app's
+                // default URL-based payment method name that may not necessarily specify the
+                // trailing slash (e.g., "https://google.com/pay").
+                if (canDedupedApplicationId.charAt(canDedupedApplicationId.length() - 1) != '/') {
+                    canDedupedApplicationIds.add(canDedupedApplicationId + '/');
+                }
+            }
+            for (String appId : canDedupedApplicationIds) {
+                for (int i = 0; i < mApps.size(); i++) {
+                    if (appId.equals(mApps.get(i).getAppIdentifier())) {
+                        mApps.remove(i);
+                        break;
+                    }
+                }
+            }
+        }
+
+        /**
+         * Filter out merchant method data that's not relevant to a payment app. Can return null.
+         */
+        private Map<String, PaymentMethodData> filterMerchantMethodData(
+                Map<String, PaymentMethodData> merchantMethodData, Set<String> appMethods) {
+            Map<String, PaymentMethodData> result = null;
+            for (String method : appMethods) {
+                if (merchantMethodData.containsKey(method)) {
+                    if (result == null) result = new ArrayMap<>();
+                    result.put(method, merchantMethodData.get(method));
+                }
+            }
+            return result == null ? null : Collections.unmodifiableMap(result);
+        }
+
+        // InstrumentsCallback implementation.
+        @Override
+        public void onInstrumentsReady(PaymentApp app, List<PaymentInstrument> instruments) {
+            mPendingApps.remove(app);
+
+            if (instruments != null) {
+                for (int i = 0; i < instruments.size(); i++) {
+                    PaymentInstrument instrument = instruments.get(i);
+                    Set<String> instrumentMethodNames =
+                            new HashSet<>(instrument.getInstrumentMethodNames());
+                    instrumentMethodNames.retainAll(mDelegate.getParams().getMethodData().keySet());
+                    if (!instrumentMethodNames.isEmpty()) {
+                        mDelegate.onPaymentAppCreated(instrument);
+                    } else {
+                        instrument.dismissInstrument();
+                    }
+                }
+            }
+
+            int additionalTextResourceId = app.getAdditionalAppTextResourceId();
+            if (additionalTextResourceId != 0) {
+                assert app instanceof AutofillPaymentApp;
+                mDelegate.onAdditionalTextResourceId(additionalTextResourceId);
+            }
+
+            if (mPendingApps.isEmpty()) mDelegate.onDoneCreatingPaymentApps(PaymentAppFactory.this);
         }
     }
 }

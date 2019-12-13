@@ -582,9 +582,10 @@ void LogIsSyncPasswordHashSaved(IsSyncPasswordHashSaved state,
                                 bool is_under_advanced_protection);
 
 // Log the number of Gaia password hashes saved, and the number of enterprise
-// password hashes saved.
+// password hashes saved. Currently only called on profile start up.
 void LogProtectedPasswordHashCounts(size_t gaia_hash_count,
-                                    size_t enterprise_hash_count);
+                                    size_t enterprise_hash_count,
+                                    bool does_primary_account_exists);
 
 #endif
 

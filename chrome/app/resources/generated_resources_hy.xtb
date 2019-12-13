@@ -283,6 +283,7 @@
 <translation id="1397500194120344683">Համապատասխան սարքեր չկան: <ph name="LINK_BEGIN" />Իմանալ ավելին<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">Առավելացնել</translation>
 <translation id="1399511500114202393">Առանց օգտատիրոջ հավաստագրի</translation>
+<translation id="1403519882106291341">Google Chrome OS-ի օգտագործման պայմաններ</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (վերահսկվող)</translation>
 <translation id="1405779994569073824">Չհաջողվեց բեռնել:</translation>
 <translation id="1406500794671479665">Հաստատում…</translation>
@@ -2174,7 +2175,6 @@
 <translation id="4036778507053569103">Սերվերից ներբեռնված քաղաքականությունն անվավեր է:</translation>
 <translation id="4037084878352560732">Ձի</translation>
 <translation id="4037889604535939429">Փոխել օգտատիրոջը</translation>
-<translation id="4042264909745389898">Google Chrome OS-ի օգտագործման պայմաններ</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Փակել էջը}one{Փակել էջը}other{Փակել էջը}}</translation>
 <translation id="4044612648082411741">Մուտքագրեք հավաստագրի գաղտնաբառը</translation>
 <translation id="404493185430269859">Կանխադրված որոնիչ</translation>

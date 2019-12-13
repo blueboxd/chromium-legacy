@@ -34,13 +34,12 @@ bool RemoveValueFromList(base::Value* list, const std::string& key) {
                << " but expected a list.";
     return false;
   }
-  std::vector<base::Value>& entries = list->GetList();
-  auto iter = std::remove(entries.begin(), entries.end(), base::Value(key));
-  if (iter == entries.end()) {
+
+  if (!list->EraseListValue(base::Value(key))) {
     LOG(ERROR) << key << " was not found in the list";
     return false;
   }
-  entries.erase(iter);
+
   return true;
 }
 

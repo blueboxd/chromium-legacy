@@ -283,6 +283,7 @@
 <translation id="1397500194120344683">သတ်မှတ်ချက် ပြည့်မီသည့် စက်မရှိပါ။ <ph name="LINK_BEGIN" />ပိုမိုလေ့လာရန်<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">ချဲ့</translation>
 <translation id="1399511500114202393">အသုံးပြုသူ အသိအမှတ်ပြုလက်မှတ် မရှိပါ</translation>
+<translation id="1403519882106291341">Google Chrome OS စည်းမျဉ်းများ</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (ကြီးကြပ်ထား)</translation>
 <translation id="1405779994569073824">ရပ်တန့်သွားသည်။</translation>
 <translation id="1406500794671479665">စိစစ်နေ...</translation>
@@ -2174,7 +2175,6 @@
 <translation id="4036778507053569103">ဆာဗာမှနေ၍ ဒေါင်းလုဒ်လုပ်ထားသည့် မူဝါဒသည် မမှန်ကန်ပါ။</translation>
 <translation id="4037084878352560732">မြင်း</translation>
 <translation id="4037889604535939429">လူပုဂ္ဂိုလ်ကို တည်းဖြတ်ပါ</translation>
-<translation id="4042264909745389898">Google Chrome OS စည်းမျဉ်းများ</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{စာမျက်နှာကို ပိတ်ရန်}other{စာမျက်နှာများကို ပိတ်ရန်}}</translation>
 <translation id="4044612648082411741">သင်၏ အသိအမှတ်ပြုလက်မှတ် စကားဝှက်ကို ထည့်ပါ</translation>
 <translation id="404493185430269859">ပုံသေ ရှာဖွေရေး အင်ဂျင်</translation>

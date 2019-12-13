@@ -94,6 +94,12 @@ bool SiteHasIsolatedStorage(const GURL& extension_site_url,
   return extension && AppIsolationInfo::HasIsolatedStorage(extension);
 }
 
+bool HasIsolatedStorage(const std::string& extension_id,
+                        content::BrowserContext* context) {
+  const GURL extension_site_url = GetSiteForExtensionId(extension_id, context);
+  return SiteHasIsolatedStorage(extension_site_url, context);
+}
+
 void SetIsIncognitoEnabled(const std::string& extension_id,
                            content::BrowserContext* context,
                            bool enabled) {

@@ -25,6 +25,14 @@ namespace gfx {
 class Transform;
 }  // namespace gfx
 
+namespace interaction_profile {
+constexpr char kMicrosoftMotionControllerInteractionProfile[] =
+    "/interaction_profiles/microsoft/motion_controller";
+
+constexpr char kKHRSimpleControllerInteractionProfile[] =
+    "/interaction_profiles/khr/simple_controller";
+}  // namespace interaction_profile
+
 class OpenXrTestHelper : public device::ServiceTestHook {
  public:
   OpenXrTestHelper();
@@ -60,7 +68,7 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   XrResult CreateActionSpace(
       const XrActionSpaceCreateInfo& action_space_create_info,
       XrSpace* space);
-  XrPath GetPath(const char* path_string);
+  XrPath GetPath(std::string path_string);
   XrPath GetCurrentInteractionProfile();
 
   XrResult GetSession(XrSession* session);
@@ -68,8 +76,10 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   XrResult EndSession();
   XrResult BeginFrame();
   XrResult EndFrame();
+  XrSession session() { return session_; }
 
-  XrResult BindActionAndPath(XrActionSuggestedBinding binding);
+  XrResult BindActionAndPath(XrPath interaction_profile_path,
+                             XrActionSuggestedBinding binding);
 
   void SetD3DDevice(ID3D11Device* d3d_device);
   XrResult AttachActionSets(const XrSessionActionSetsAttachInfo& attach_info);
@@ -146,9 +156,11 @@ class OpenXrTestHelper : public device::ServiceTestHook {
 
  private:
   struct ActionProperties {
-    XrPath binding;
+    std::unordered_map<XrPath, XrPath> profile_binding_map;
     XrActionType type;
-    ActionProperties() : binding(XR_NULL_PATH), type(XR_ACTION_TYPE_MAX_ENUM) {}
+    ActionProperties();
+    ~ActionProperties();
+    ActionProperties(const ActionProperties& other);
   };
 
   XrResult UpdateAction(XrAction action);
@@ -156,6 +168,8 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   base::Optional<gfx::Transform> GetPose();
   device::ControllerFrameData GetControllerDataFromPath(
       std::string path_string) const;
+  void UpdateInteractionProfile(
+      device_test::mojom::InteractionProfileType type);
   bool IsSessionRunning() const;
 
   bool create_fake_instance_;
@@ -177,6 +191,7 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   uint32_t acquired_swapchain_texture_;
   uint32_t next_space_;
   XrTime next_predicted_display_time_;
+  std::string interaction_profile_;
 
   // paths_ is used to keep tracked of strings that already has a corresponding
   // path.

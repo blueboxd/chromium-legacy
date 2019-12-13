@@ -1,5 +1,5 @@
 document
-++group
+++group IsControlElement=false
 ++++combobox ExpandCollapse.ExpandCollapseState='Collapsed' Value.IsReadOnly=false Value.Value='Mercedes Label'
 ++++++list Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false Value.IsReadOnly=false
 ++++++++listitem Name='Volvo Label' SelectionItem.IsSelected=false

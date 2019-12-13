@@ -30,6 +30,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
@@ -42,7 +43,10 @@ class PendingScript;
 class ScriptLoader;
 
 class CORE_EXPORT ScriptRunner final : public GarbageCollected<ScriptRunner>,
+                                       public ContextLifecycleStateObserver,
                                        public NameClient {
+  USING_GARBAGE_COLLECTED_MIXIN(ScriptRunner);
+
  public:
   explicit ScriptRunner(Document*);
 
@@ -51,14 +55,14 @@ class CORE_EXPORT ScriptRunner final : public GarbageCollected<ScriptRunner>,
     return !pending_in_order_scripts_.IsEmpty() ||
            !pending_async_scripts_.IsEmpty();
   }
-  void Suspend();
-  void Resume();
   void SetForceDeferredExecution(bool force_deferred);
   void NotifyScriptReady(PendingScript*);
 
+  void ContextLifecycleStateChanged(mojom::FrameLifecycleState) final;
+
   static void MovePendingScript(Document&, Document&, ScriptLoader*);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "ScriptRunner"; }
 
  private:
@@ -81,7 +85,7 @@ class CORE_EXPORT ScriptRunner final : public GarbageCollected<ScriptRunner>,
 
   void ExecuteTask();
 
-  bool IsExecutionSuspended() { return is_suspended_ || is_force_deferred_; }
+  bool IsExecutionSuspended();
 
   Member<Document> document_;
 
@@ -95,8 +99,6 @@ class CORE_EXPORT ScriptRunner final : public GarbageCollected<ScriptRunner>,
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   int number_of_in_order_scripts_with_pending_notification_ = 0;
-
-  bool is_suspended_ = false;
 
   // Whether script execution is suspended due to there being force deferred
   // scripts that have not yet been executed. This is expected to be in sync

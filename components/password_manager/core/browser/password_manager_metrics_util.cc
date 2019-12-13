@@ -292,12 +292,22 @@ void LogIsSyncPasswordHashSaved(IsSyncPasswordHashSaved state,
 }
 
 void LogProtectedPasswordHashCounts(size_t gaia_hash_count,
-                                    size_t enterprise_hash_count) {
+                                    size_t enterprise_hash_count,
+                                    bool does_primary_account_exists) {
   base::UmaHistogramCounts100("PasswordManager.SavedGaiaPasswordHashCount",
                               static_cast<int>(gaia_hash_count));
   base::UmaHistogramCounts100(
       "PasswordManager.SavedEnterprisePasswordHashCount",
       static_cast<int>(enterprise_hash_count));
+
+  // Log parallel metrics for sync and signed-in non-sync accounts in addition
+  // to above to be able to tell what fraction of signed-in non-sync users we
+  // are protecting compared to syncing users.
+  base::UmaHistogramCounts100(
+      does_primary_account_exists
+          ? "PasswordManager.SavedGaiaPasswordHashCount.Sync"
+          : "PasswordManager.SavedGaiaPasswordHashCount.SignedInNonSync",
+      static_cast<int>(gaia_hash_count));
 }
 
 void LogProtectedPasswordReuse(PasswordType reused_password_type) {}

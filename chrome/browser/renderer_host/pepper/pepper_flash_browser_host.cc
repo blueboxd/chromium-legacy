@@ -15,8 +15,8 @@
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/device_service.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/system_connector.h"
 #include "ipc/ipc_message_macros.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -26,9 +26,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_message_params.h"
 #include "ppapi/shared_impl/time_conversion.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
 
 #if defined(OS_WIN)
@@ -57,13 +55,10 @@ scoped_refptr<content_settings::CookieSettings> GetCookieSettings(
   return nullptr;
 }
 
-void PepperBindConnectorReceiver(
-    mojo::PendingReceiver<service_manager::mojom::Connector>
-        connector_receiver) {
+void BindWakeLockProviderOnUIThread(
+    mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(content::GetSystemConnector());
-  content::GetSystemConnector()->BindConnectorReceiver(
-      std::move(connector_receiver));
+  content::GetDeviceService().BindWakeLockProvider(std::move(receiver));
 }
 
 }  // namespace
@@ -182,23 +177,11 @@ device::mojom::WakeLock* PepperFlashBrowserHost::GetWakeLock() {
   if (wake_lock_)
     return wake_lock_.get();
 
-  // The system Connector might be not initialized in some testing environments.
-  if (!content::GetSystemConnector())
-    return wake_lock_.get();
-
-  mojo::PendingReceiver<service_manager::mojom::Connector> connector_receiver;
-  auto connector = service_manager::Connector::Create(&connector_receiver);
-
-  // The existing connector is bound to the UI thread, the current thread is
-  // IO thread. So bind the Connector receiver of IO thread to the connector
-  // in UI thread.
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&PepperBindConnectorReceiver,
-                                std::move(connector_receiver)));
-
   mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider;
-  connector->Connect(device::mojom::kServiceName,
-                     wake_lock_provider.BindNewPipeAndPassReceiver());
+  base::PostTask(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&BindWakeLockProviderOnUIThread,
+                     wake_lock_provider.BindNewPipeAndPassReceiver()));
   wake_lock_provider->GetWakeLockWithoutContext(
       device::mojom::WakeLockType::kPreventDisplaySleep,
       device::mojom::WakeLockReason::kOther, "Requested By PepperFlash",

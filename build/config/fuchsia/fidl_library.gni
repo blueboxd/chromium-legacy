@@ -60,7 +60,7 @@ template("fidl_library") {
   _json_representation = "$target_gen_dir/${_library_name}.fidl.json"
   _output_gen_dir = "$target_gen_dir/fidl"
   _output_base = "$_output_gen_dir/${_library_path}/cpp/fidl"
-  _tables_file = "$_output_gen_dir/${_library_name}.fidl-tables.cc"
+  _tables_file = "$_output_gen_dir/${_library_name}.fidl-tables.c"
 
   action("${target_name}_response_file") {
     script = "//third_party/fuchsia-sdk/gen_fidl_response_file.py"

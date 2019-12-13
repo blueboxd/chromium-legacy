@@ -44,7 +44,7 @@ AwUrlCheckerDelegateImpl::AwUrlCheckerDelegateImpl(
 AwUrlCheckerDelegateImpl::~AwUrlCheckerDelegateImpl() = default;
 
 void AwUrlCheckerDelegateImpl::MaybeDestroyPrerenderContents(
-    const base::Callback<content::WebContents*()>& web_contents_getter) {}
+    content::WebContents::OnceGetter web_contents_getter) {}
 
 void AwUrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
     const security_interstitials::UnsafeResource& resource,

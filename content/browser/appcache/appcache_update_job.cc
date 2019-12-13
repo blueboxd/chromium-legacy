@@ -240,6 +240,7 @@ AppCacheUpdateJob::AppCacheUpdateJob(AppCacheServiceImpl* service,
       fetched_manifest_parser_version_(-1),
       cached_manifest_scope_(""),
       fetched_manifest_scope_(""),
+      refetched_manifest_scope_(""),
       manifest_scope_checks_enabled_(true),
       group_(group),
       update_type_(UNKNOWN_TYPE),
@@ -470,10 +471,14 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLFetcher* url_fetcher,
       CheckIfManifestChanged();  // continues asynchronously
     else
       ContinueHandleManifestFetchCompleted(true);
+  } else if (manifest_scope_checks_enabled_ && response_code == 304 &&
+             update_type_ == UPGRADE_ATTEMPT &&
+             (fetched_manifest_scope_ != cached_manifest_scope_)) {
+    // We don't check if |cached_manifest_parser_version_| is 0 here since in
+    // that case we didn't add conditional headers and don't expect a 304
+    // response.
+    ReadManifestFromCacheAndContinue();
   } else if (response_code == 304 && update_type_ == UPGRADE_ATTEMPT) {
-    // Note: Scope changes aren't considered if the server sends a 304 response.
-    // The response cannot contain a body (per HTTP spec), so we treat these
-    // cases as implying that the scope also hasn't changed.
     ContinueHandleManifestFetchCompleted(false);
   } else if ((response_code == 404 || response_code == 410) &&
              update_type_ == UPGRADE_ATTEMPT) {
@@ -534,6 +539,11 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
     // and scope to match their initial values.
     fetched_manifest_parser_version_ = cached_manifest_parser_version_;
     fetched_manifest_scope_ = cached_manifest_scope_;
+
+    // Set |refetched_manifest_scope_| to match |fetched_manifest_scope_| so
+    // StoreGroupAndCache() can verify the overall state of the
+    // AppCacheUpdateJob is correct.
+    refetched_manifest_scope_ = fetched_manifest_scope_;
 
     // Wait for pending master entries to download.
     FetchMasterEntries();
@@ -835,11 +845,20 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLFetcher* url_fetcher,
   DCHECK_EQ(manifest_fetcher_.get(), url_fetcher);
   std::unique_ptr<URLFetcher> manifest_fetcher = std::move(manifest_fetcher_);
 
-  int response_code = net_error == net::OK
-                          ? manifest_fetcher->request()->GetResponseCode()
-                          : -1;
-  if (response_code == 304 ||
-      manifest_data_ == manifest_fetcher->manifest_data()) {
+  UpdateURLLoaderRequest* request = manifest_fetcher->request();
+  int response_code = -1;
+  std::string optional_manifest_scope;
+  if (net_error == net::OK) {
+    response_code = request->GetResponseCode();
+    optional_manifest_scope = request->GetAppCacheAllowedHeader();
+  }
+  refetched_manifest_scope_ =
+      AppCache::GetManifestScope(manifest_url_, optional_manifest_scope);
+
+  if ((manifest_scope_checks_enabled_ && response_code == 304 &&
+       fetched_manifest_scope_ == refetched_manifest_scope_) ||
+      (!manifest_scope_checks_enabled_ && response_code == 304) ||
+      (manifest_data_ == manifest_fetcher->manifest_data())) {
     // Only need to store response in storage if manifest is not already
     // an entry in the cache.
     AppCacheEntry* entry = nullptr;
@@ -960,6 +979,7 @@ void AppCacheUpdateJob::StoreGroupAndCache() {
   if (manifest_scope_checks_enabled_) {
     DCHECK_GE(fetched_manifest_parser_version_,
               cached_manifest_parser_version_);
+    DCHECK_EQ(fetched_manifest_scope_, refetched_manifest_scope_);
   }
   DCHECK(AppCache::CheckValidManifestScope(manifest_url_,
                                            fetched_manifest_scope_));
@@ -1078,6 +1098,7 @@ void AppCacheUpdateJob::OnServiceReinitialized(
 }
 
 void AppCacheUpdateJob::CheckIfManifestChanged() {
+  DCHECK_EQ(internal_state_, FETCH_MANIFEST);
   DCHECK_EQ(update_type_, UPGRADE_ATTEMPT);
   AppCacheEntry* entry = nullptr;
   if (group_->newest_complete_cache())
@@ -1143,6 +1164,67 @@ void AppCacheUpdateJob::OnManifestDataReadComplete(int result) {
     manifest_response_reader_.reset();
     ContinueHandleManifestFetchCompleted(
         result < 0 || manifest_data_ != loaded_manifest_data_);
+  }
+}
+
+void AppCacheUpdateJob::ReadManifestFromCacheAndContinue() {
+  DCHECK_EQ(internal_state_, FETCH_MANIFEST);
+  DCHECK_EQ(update_type_, UPGRADE_ATTEMPT);
+  DCHECK(manifest_scope_checks_enabled_);
+  DCHECK_NE(fetched_manifest_scope_, cached_manifest_scope_);
+  // |manifest_response_info_| should have been saved in OnResponseInfoLoaded(),
+  // we'll reuse it later in ContinueHandleManifestFetchCompleted() so make sure
+  // it's still there.
+  DCHECK(manifest_response_info_.get());
+  AppCacheEntry* entry = nullptr;
+  if (group_->newest_complete_cache())
+    entry = group_->newest_complete_cache()->GetEntry(manifest_url_);
+  if (!entry) {
+    // TODO(pwnall): Old documentation said this avoided the crash at
+    //               https://crbug.com/95101. A removed histogram shows that
+    //               this path is hit very rarely.
+    if (service_->storage() == storage_) {
+      // Use a local variable because service_ is reset in HandleCacheFailure.
+      AppCacheServiceImpl* service = service_;
+      HandleCacheFailure(
+          blink::mojom::AppCacheErrorDetails(
+              "Manifest entry not found in existing cache",
+              blink::mojom::AppCacheErrorReason::APPCACHE_UNKNOWN_ERROR, GURL(),
+              0, false /*is_cross_origin*/),
+          DB_ERROR, GURL());
+      service->DeleteAppCacheGroup(manifest_url_,
+                                   net::CompletionOnceCallback());
+    }
+    return;
+  }
+
+  // Load manifest data from storage so we can continue parsing using the new
+  // scope.
+  manifest_response_reader_ =
+      storage_->CreateResponseReader(manifest_url_, entry->response_id());
+  read_manifest_buffer_ =
+      base::MakeRefCounted<net::IOBuffer>(kAppCacheFetchBufferSize);
+  manifest_response_reader_->ReadData(
+      read_manifest_buffer_.get(), kAppCacheFetchBufferSize,
+      base::BindOnce(&AppCacheUpdateJob::OnManifestFromCacheDataReadComplete,
+                     base::Unretained(this)));  // async read
+}
+
+void AppCacheUpdateJob::OnManifestFromCacheDataReadComplete(int result) {
+  DCHECK_EQ(internal_state_, FETCH_MANIFEST);
+  DCHECK_EQ(update_type_, UPGRADE_ATTEMPT);
+  DCHECK(manifest_scope_checks_enabled_);
+  if (result > 0) {
+    loaded_manifest_data_.append(read_manifest_buffer_->data(), result);
+    manifest_response_reader_->ReadData(
+        read_manifest_buffer_.get(), kAppCacheFetchBufferSize,
+        base::BindOnce(&AppCacheUpdateJob::OnManifestFromCacheDataReadComplete,
+                       base::Unretained(this)));  // read more
+  } else {
+    manifest_data_ = loaded_manifest_data_;
+    read_manifest_buffer_ = nullptr;
+    manifest_response_reader_.reset();
+    ContinueHandleManifestFetchCompleted(true);
   }
 }
 
@@ -1390,12 +1472,23 @@ void AppCacheUpdateJob::OnResponseInfoLoaded(
 
   // Needed response info for a manifest fetch request.
   if (internal_state_ == FETCH_MANIFEST) {
-    if ((manifest_scope_checks_enabled_ && http_info &&
-         cached_manifest_parser_version_ >= 1) ||
-        (!manifest_scope_checks_enabled_ && http_info &&
-         cached_manifest_parser_version_ <= 0)) {
-      manifest_fetcher_->set_existing_response_headers(
-          http_info->headers.get());
+    if (http_info) {
+      // Save a copy of the HttpResponseInfo in case we need it later.  We would
+      // use it if we attach conditional headers and the server replies with a
+      // 304.  In that case, we would use these same headers again to refetch
+      // the manifest.  In the case that the server replies with 200 OK, this
+      // manifest_response_info_ will be overwritten with that response's
+      // HttpResponseInfo and since it's a unique_ptr this HttpResponseInfo will
+      // be deleted.
+      manifest_response_info_ =
+          std::make_unique<net::HttpResponseInfo>(*http_info);
+      if ((manifest_scope_checks_enabled_ &&
+           cached_manifest_parser_version_ >= 1) ||
+          (!manifest_scope_checks_enabled_ &&
+           cached_manifest_parser_version_ <= 0)) {
+        manifest_fetcher_->set_existing_response_headers(
+            http_info->headers.get());
+      }
     }
     manifest_fetcher_->Start();
     return;

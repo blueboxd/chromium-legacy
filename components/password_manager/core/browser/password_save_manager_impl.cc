@@ -138,9 +138,6 @@ void PasswordSaveManagerImpl::CreatePendingCredentials(
     bool is_credential_api_save) {
   DCHECK(votes_uploader_);
 
-  metrics_recorder_->CalculateUserAction(form_fetcher_->GetBestMatches(),
-                                         parsed_submitted_form);
-
   // This function might be called multiple times so set variables that are
   // changed in this function to initial states.
   pending_credentials_state_ = PendingCredentialsState::NONE;

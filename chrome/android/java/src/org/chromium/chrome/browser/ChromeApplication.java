@@ -16,6 +16,7 @@ import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.BuildInfo;
+import org.chromium.base.BundleUtils;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.JNIUtils;
@@ -146,6 +147,7 @@ public class ChromeApplication extends Application {
                 ProductConfig.COMPRESSED_LOCALES, ProductConfig.UNCOMPRESSED_LOCALES);
         LibraryLoader.getInstance().setLinkerImplementation(
                 ProductConfig.USE_CHROMIUM_LINKER, ProductConfig.USE_MODERN_LINKER);
+        BundleUtils.setIsBundle(ProductConfig.IS_BUNDLE);
 
         if (isBrowserProcess) {
             TraceEvent.end("ChromeApplication.attachBaseContext");

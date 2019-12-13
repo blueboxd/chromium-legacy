@@ -1,13 +1,13 @@
 document
 ++article
 ++++group LocalizedControlType='header'
-++++++group
+++++++group IsControlElement=false
 ++++++++description Name='Header inside article.'
 ++group
 ++++group LocalizedControlType='header'
-++++++group
+++++++group IsControlElement=false
 ++++++++description Name='Header inside section.'
 ++main
 ++++group LocalizedControlType='header'
-++++++group
+++++++group IsControlElement=false
 ++++++++description Name='Header inside main.'

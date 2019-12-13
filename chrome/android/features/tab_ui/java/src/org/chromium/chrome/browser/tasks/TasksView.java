@@ -11,6 +11,7 @@ import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -18,6 +19,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.coordinator.CoordinatorLayoutForPointer;
+import org.chromium.chrome.browser.ntp.IncognitoDescriptionView;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 
@@ -29,6 +31,8 @@ class TasksView extends CoordinatorLayoutForPointer {
     private AppBarLayout mHeaderView;
     private View mSearchBox;
     private TextView mSearchBoxText;
+    private IncognitoDescriptionView mIncognitoDescriptionView;
+    private View.OnClickListener mIncognitoDescriptionLearnMoreListener;
 
     /** Default constructor needed to inflate via XML. */
     public TasksView(Context context, AttributeSet attrs) {
@@ -136,5 +140,39 @@ class TasksView extends CoordinatorLayoutForPointer {
                 ? ApiCompatibilityUtils.getColor(resources, R.color.locationbar_light_hint_text)
                 : ApiCompatibilityUtils.getColor(resources, R.color.locationbar_dark_hint_text);
         mSearchBoxText.setHintTextColor(hintTextColor);
+    }
+
+    /**
+     * Initialize incognito description view.
+     * Note that this interface is supposed to be called only once.
+     */
+    void initializeIncognitoDescriptionView() {
+        assert mIncognitoDescriptionView == null;
+        ViewStub stub = (ViewStub) findViewById(R.id.incognito_description_layout_stub);
+        mIncognitoDescriptionView = (IncognitoDescriptionView) stub.inflate();
+        if (mIncognitoDescriptionLearnMoreListener != null) {
+            setIncognitoDescriptionLearnMoreClickListener(mIncognitoDescriptionLearnMoreListener);
+            mIncognitoDescriptionLearnMoreListener = null;
+        }
+    }
+
+    /**
+     * Set the visibility of the incognito description.
+     * @param isVisible Whether it's visible or not.
+     */
+    void setIncognitoDescriptionVisibility(boolean isVisible) {
+        mIncognitoDescriptionView.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * Set the incognito description learn more click listener.
+     * @param listener The given click listener.
+     */
+    void setIncognitoDescriptionLearnMoreClickListener(View.OnClickListener listener) {
+        if (mIncognitoDescriptionView == null) {
+            mIncognitoDescriptionLearnMoreListener = listener;
+            return;
+        }
+        mIncognitoDescriptionView.findViewById(R.id.learn_more).setOnClickListener(listener);
     }
 }

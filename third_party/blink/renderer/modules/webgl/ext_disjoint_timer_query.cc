@@ -8,16 +8,12 @@
 #include "third_party/blink/renderer/bindings/modules/v8/webgl_any.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_timer_query_ext.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 WebGLExtensionName EXTDisjointTimerQuery::GetName() const {
   return kEXTDisjointTimerQueryName;
-}
-
-EXTDisjointTimerQuery* EXTDisjointTimerQuery::Create(
-    WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<EXTDisjointTimerQuery>(context);
 }
 
 bool EXTDisjointTimerQuery::Supported(WebGLRenderingContextBase* context) {
@@ -34,7 +30,7 @@ WebGLTimerQueryEXT* EXTDisjointTimerQuery::createQueryEXT() {
   if (scoped.IsLost())
     return nullptr;
 
-  return WebGLTimerQueryEXT::Create(scoped.Context());
+  return MakeGarbageCollected<WebGLTimerQueryEXT>(scoped.Context());
 }
 
 void EXTDisjointTimerQuery::deleteQueryEXT(WebGLTimerQueryEXT* query) {

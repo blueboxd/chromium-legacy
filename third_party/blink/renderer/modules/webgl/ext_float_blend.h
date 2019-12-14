@@ -13,7 +13,6 @@ class EXTFloatBlend final : public WebGLExtension {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static EXTFloatBlend* Create(WebGLRenderingContextBase*);
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 

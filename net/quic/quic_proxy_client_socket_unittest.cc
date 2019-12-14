@@ -89,7 +89,7 @@ struct TestParams {
 
 // Used by ::testing::PrintToStringParamName().
 std::string PrintToString(const TestParams& p) {
-  return quic::QuicStrCat(
+  return quiche::QuicheStrCat(
       ParsedQuicVersionToString(p.version), "_",
       (p.client_headers_include_h2_stream_dependency ? "" : "No"),
       "Dependency");
@@ -384,7 +384,7 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructDataPacket(
       uint64_t packet_number,
-      quic::QuicStringPiece data) {
+      quiche::QuicheStringPiece data) {
     return client_maker_.MakeDataPacket(packet_number, client_data_stream_id1_,
                                         !kIncludeVersion, !kFin, data);
   }
@@ -394,7 +394,7 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
       uint64_t largest_received,
       uint64_t smallest_received,
       uint64_t least_unacked,
-      quic::QuicStringPiece data) {
+      quiche::QuicheStringPiece data) {
     return client_maker_.MakeAckAndDataPacket(
         packet_number, !kIncludeVersion, client_data_stream_id1_,
         largest_received, smallest_received, least_unacked, !kFin, data);
@@ -422,14 +422,14 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructServerDataPacket(
       uint64_t packet_number,
-      quic::QuicStringPiece data) {
+      quiche::QuicheStringPiece data) {
     return server_maker_.MakeDataPacket(packet_number, client_data_stream_id1_,
                                         !kIncludeVersion, !kFin, data);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructServerDataFinPacket(
       uint64_t packet_number,
-      quic::QuicStringPiece data) {
+      quiche::QuicheStringPiece data) {
     return server_maker_.MakeDataPacket(packet_number, client_data_stream_id1_,
                                         !kIncludeVersion, kFin, data);
   }

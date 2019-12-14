@@ -34,7 +34,6 @@ class OESTextureFloatLinear final : public WebGLExtension {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static OESTextureFloatLinear* Create(WebGLRenderingContextBase*);
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 

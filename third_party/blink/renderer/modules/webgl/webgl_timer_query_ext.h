@@ -21,8 +21,6 @@ class WebGLTimerQueryEXT : public WebGLContextObject {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebGLTimerQueryEXT* Create(WebGLRenderingContextBase*);
-
   WebGLTimerQueryEXT(WebGLRenderingContextBase*);
   ~WebGLTimerQueryEXT() override;
 

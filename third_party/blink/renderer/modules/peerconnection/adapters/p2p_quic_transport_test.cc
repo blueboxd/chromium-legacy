@@ -9,13 +9,13 @@
 #include "net/quic/quic_chromium_alarm_factory.h"
 #include "net/quic/test_task_runner.h"
 #include "net/test/gtest_util.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/quic/core/crypto/proof_verifier.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_compressed_certs_cache.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_server_config.h"
 #include "net/third_party/quiche/src/quic/core/quic_server_id.h"
 #include "net/third_party/quiche/src/quic/core/quic_session.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_mem_slice_span.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -352,7 +352,7 @@ class FailingProofVerifierStub : public quic::ProofVerifier {
       const uint16_t port,
       const std::string& server_config,
       quic::QuicTransportVersion transport_version,
-      quic::QuicStringPiece chlo_hash,
+      quiche::QuicheStringPiece chlo_hash,
       const std::vector<std::string>& certs,
       const std::string& cert_sct,
       const std::string& signature,
@@ -391,7 +391,7 @@ class ProofSourceStub : public quic::ProofSource {
                 const std::string& hostname,
                 const std::string& server_config,
                 quic::QuicTransportVersion transport_version,
-                quic::QuicStringPiece chlo_hash,
+                quiche::QuicheStringPiece chlo_hash,
                 std::unique_ptr<Callback> callback) override {
     quic::QuicCryptoProof proof;
     proof.signature = "Test signature";
@@ -412,7 +412,7 @@ class ProofSourceStub : public quic::ProofSource {
       const quic::QuicSocketAddress& server_address,
       const std::string& hostname,
       uint16_t signature_algorithm,
-      quic::QuicStringPiece in,
+      quiche::QuicheStringPiece in,
       std::unique_ptr<SignatureCallback> callback) override {
     callback->Run(true, "Test signature");
   }
@@ -1400,7 +1400,7 @@ class P2PQuicTransportMockConnectionTest : public testing::Test {
 TEST_F(P2PQuicTransportMockConnectionTest, OnDatagramReceived) {
   EXPECT_TRUE(transport()->CanSendDatagram());
   EXPECT_CALL(*delegate(), OnDatagramReceived(ElementsAreArray(kMessage)));
-  transport()->OnMessageReceived(quic::QuicStringPiece(
+  transport()->OnMessageReceived(quiche::QuicheStringPiece(
       reinterpret_cast<const char*>(kMessage), sizeof(kMessage)));
 }
 

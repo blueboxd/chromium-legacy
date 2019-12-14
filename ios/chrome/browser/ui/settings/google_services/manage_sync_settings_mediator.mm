@@ -33,9 +33,6 @@
 
 using l10n_util::GetNSString;
 
-NSString* const kDataFromChromeSyncAccessibilityIdentifier =
-    @"DataFromChromeSyncAccessibilityIdentifier";
-
 namespace {
 
 // List of sections.

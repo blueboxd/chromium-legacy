@@ -15,11 +15,6 @@ WebGLExtensionName OESFboRenderMipmap::GetName() const {
   return kOESFboRenderMipmapName;
 }
 
-OESFboRenderMipmap* OESFboRenderMipmap::Create(
-    WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<OESFboRenderMipmap>(context);
-}
-
 bool OESFboRenderMipmap::Supported(WebGLRenderingContextBase* context) {
   return context->ExtensionsUtil()->SupportsExtension(
       "GL_OES_fbo_render_mipmap");

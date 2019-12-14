@@ -38,8 +38,6 @@ class WebGLRenderbuffer final : public WebGLSharedPlatform3DObject {
   explicit WebGLRenderbuffer(WebGLRenderingContextBase*);
   ~WebGLRenderbuffer() override;
 
-  static WebGLRenderbuffer* Create(WebGLRenderingContextBase*);
-
   void SetInternalFormat(GLenum internalformat) {
     internal_format_ = internalformat;
   }

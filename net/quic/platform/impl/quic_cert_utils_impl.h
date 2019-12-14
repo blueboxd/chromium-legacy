@@ -10,14 +10,15 @@
 #define NET_QUIC_PLATFORM_IMPL_QUIC_CERT_UTILS_IMPL_H_
 
 #include "net/cert/asn1_util.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
 class QuicCertUtilsImpl {
  public:
-  static bool ExtractSubjectNameFromDERCert(QuicStringPiece cert,
-                                            QuicStringPiece* subject_out) {
+  static bool ExtractSubjectNameFromDERCert(
+      quiche::QuicheStringPiece cert,
+      quiche::QuicheStringPiece* subject_out) {
     return net::asn1::ExtractSubjectFromDERCert(cert, subject_out);
   }
 };

@@ -13,7 +13,6 @@ class EXTColorBufferFloat final : public WebGLExtension {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static EXTColorBufferFloat* Create(WebGLRenderingContextBase*);
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 

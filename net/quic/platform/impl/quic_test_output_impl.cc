@@ -10,14 +10,14 @@
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace quic {
 
-void QuicRecordTestOutputToFile(QuicStringPiece filename,
-                                QuicStringPiece data) {
+void QuicRecordTestOutputToFile(quiche::QuicheStringPiece filename,
+                                quiche::QuicheStringPiece data) {
   std::string output_dir;
   if (!base::Environment::Create()->GetVar("QUIC_TEST_OUTPUT_DIR",
                                            &output_dir) ||
@@ -36,11 +36,13 @@ void QuicRecordTestOutputToFile(QuicStringPiece filename,
   QUIC_LOG(INFO) << "Recorded test output into " << path;
 }
 
-void QuicSaveTestOutputImpl(QuicStringPiece filename, QuicStringPiece data) {
+void QuicSaveTestOutputImpl(quiche::QuicheStringPiece filename,
+                            quiche::QuicheStringPiece data) {
   QuicRecordTestOutputToFile(filename, data);
 }
 
-bool QuicLoadTestOutputImpl(QuicStringPiece filename, std::string* data) {
+bool QuicLoadTestOutputImpl(quiche::QuicheStringPiece filename,
+                            std::string* data) {
   std::string output_dir;
   if (!base::Environment::Create()->GetVar("QUIC_TEST_OUTPUT_DIR",
                                            &output_dir) ||
@@ -56,7 +58,8 @@ bool QuicLoadTestOutputImpl(QuicStringPiece filename, std::string* data) {
   return base::ReadFileToString(path, data);
 }
 
-void QuicRecordTraceImpl(QuicStringPiece identifier, QuicStringPiece data) {
+void QuicRecordTraceImpl(quiche::QuicheStringPiece identifier,
+                         quiche::QuicheStringPiece data) {
   const testing::TestInfo* test_info =
       testing::UnitTest::GetInstance()->current_test_info();
 
@@ -72,9 +75,9 @@ void QuicRecordTraceImpl(QuicStringPiece identifier, QuicStringPiece data) {
   char timestamp[2048];
   strftime(timestamp, sizeof(timestamp), "%Y%m%d%H%M%S", &now);
 
-  std::string filename = QuicStringPrintf("%s.%s.%s.%s.qtr", test_info->name(),
-                                          test_info->test_case_name(),
-                                          identifier.data(), timestamp);
+  std::string filename = quiche::QuicheStringPrintf(
+      "%s.%s.%s.%s.qtr", test_info->name(), test_info->test_case_name(),
+      identifier.data(), timestamp);
 
   QuicRecordTestOutputToFile(filename, data);
 }

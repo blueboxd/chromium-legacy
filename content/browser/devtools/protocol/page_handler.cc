@@ -1175,5 +1175,12 @@ void PageHandler::GetInstallabilityErrors(
   callback->sendSuccess(std::move(errors));
 }
 
+void PageHandler::GetManifestIcons(
+    std::unique_ptr<GetManifestIconsCallback> callback) {
+  // TODO: Use InstallableManager once it moves into content/.
+  // Until then, this code is only used to return no image data in the tests.
+  callback->sendSuccess(Maybe<Binary>());
+}
+
 }  // namespace protocol
 }  // namespace content

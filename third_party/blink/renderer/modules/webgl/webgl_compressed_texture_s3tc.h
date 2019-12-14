@@ -34,7 +34,6 @@ class WebGLCompressedTextureS3TC final : public WebGLExtension {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebGLCompressedTextureS3TC* Create(WebGLRenderingContextBase*);
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 

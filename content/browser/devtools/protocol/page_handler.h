@@ -166,6 +166,9 @@ class PageHandler : public DevToolsDomainHandler,
   void GetInstallabilityErrors(
       std::unique_ptr<GetInstallabilityErrorsCallback> callback) override;
 
+  void GetManifestIcons(
+      std::unique_ptr<GetManifestIconsCallback> callback) override;
+
  private:
   enum EncodingFormat { PNG, JPEG };
 

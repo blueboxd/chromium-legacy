@@ -131,8 +131,8 @@ void P2PQuicStreamImpl::WriteData(Vector<uint8_t> data, bool fin) {
   DCHECK_GE(write_buffer_size_, data.size() + write_buffered_amount_);
   write_buffered_amount_ += data.size();
   QuicStream::WriteOrBufferData(
-      quic::QuicStringPiece(reinterpret_cast<const char*>(data.data()),
-                            data.size()),
+      quiche::QuicheStringPiece(reinterpret_cast<const char*>(data.data()),
+                                data.size()),
       fin, nullptr);
 }
 

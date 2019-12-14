@@ -371,9 +371,9 @@ Polymer({
         break;
       case 'PAC':
         elementToFocus = this.$$('#pacInput');
-        // If a PAC is already defined, send the type change now, otherwise wait
+        // If a PAC is already set, send the type change now, otherwise wait
         // until the user provides a PAC value.
-        proxyTypeChangeIsReady = !!this.proxy_.pac;
+        proxyTypeChangeIsReady = !!OncMojo.getActiveString(this.proxy_.pac);
         break;
       case 'Manual':
         // Manual proxy configuration includes multiple input fields, so wait

@@ -8,9 +8,9 @@
         "options": [
             {
                 "domain": "Page",
-                "include": [ "enable", "disable", "setAdBlockingEnabled", "getInstallabilityErrors" ],
+                "include": [ "enable", "disable", "setAdBlockingEnabled", "getInstallabilityErrors", "getManifestIcons" ],
                 "include_events": [],
-                "async": ["getInstallabilityErrors"]
+                "async": ["getInstallabilityErrors", "getManifestIcons"]
             },
             {
                 "domain": "Browser",

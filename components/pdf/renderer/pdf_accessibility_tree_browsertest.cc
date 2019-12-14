@@ -876,6 +876,38 @@ TEST_F(PdfAccessibilityTreeTest, TestActionDataConversion) {
   CompareRect({{0, 0}, {1, 1}}, action_data.target_rect);
 }
 
+TEST_F(PdfAccessibilityTreeTest, TestScrollToGlobalPointDataConversion) {
+  content::RenderFrame* render_frame = view_->GetMainRenderFrame();
+  render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility());
+
+  ActionHandlingFakePepperPluginInstance fake_pepper_instance;
+  FakeRendererPpapiHost host(view_->GetMainRenderFrame(),
+                             &fake_pepper_instance);
+  PP_Instance instance = 0;
+  PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+
+  pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
+  pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
+  pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
+                                                  chars_, page_objects_);
+
+  ui::AXNode* root_node = pdf_accessibility_tree.GetRoot();
+  std::unique_ptr<ui::AXActionTarget> pdf_action_target =
+      pdf_accessibility_tree.CreateActionTarget(*root_node);
+  ASSERT_TRUE(pdf_action_target);
+  EXPECT_EQ(ui::AXActionTarget::Type::kPdf, pdf_action_target->GetType());
+  EXPECT_TRUE(pdf_action_target->ScrollToGlobalPoint(gfx::Point(50, 50)));
+
+  PP_PdfAccessibilityActionData action_data =
+      fake_pepper_instance.GetReceivedActionData();
+  EXPECT_EQ(PP_PdfAccessibilityAction::PP_PDF_SCROLL_TO_GLOBAL_POINT,
+            action_data.action);
+  EXPECT_EQ(50, action_data.target_point.x);
+  EXPECT_EQ(50, action_data.target_point.y);
+  CompareRect({{0, 0}, {1, 1}}, action_data.target_rect);
+}
+
 TEST_F(PdfAccessibilityTreeTest, TestClickActionDataConversion) {
   text_runs_.emplace_back(kFirstTextRun);
   text_runs_.emplace_back(kSecondTextRun);
@@ -997,7 +1029,6 @@ TEST_F(PdfAccessibilityTreeTest, TestEmptyPdfAxActions) {
   EXPECT_FALSE(pdf_action_target->SetValue("test"));
   EXPECT_FALSE(pdf_action_target->ShowContextMenu());
   EXPECT_FALSE(pdf_action_target->ScrollToMakeVisible());
-  EXPECT_FALSE(pdf_action_target->ScrollToGlobalPoint(gfx::Point()));
 }
 
 TEST_F(PdfAccessibilityTreeTest, TestZoomAndScaleChanges) {

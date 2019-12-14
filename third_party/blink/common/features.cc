@@ -230,7 +230,7 @@ const base::Feature kTextFragmentAnchor{"TextFragmentAnchor",
 // and the origin lock of the renderer that is requesting the resource. When
 // this flag is enabled, content/GeneratedCodeCache handles code cache requests.
 const base::Feature kWasmCodeCache = {"WasmCodeCache",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Writable files and native file system access. https://crbug.com/853326
 const base::Feature kNativeFileSystemAPI{"NativeFileSystemAPI",

@@ -26,8 +26,6 @@ class WebGLQuery : public WebGLSharedPlatform3DObject {
   explicit WebGLQuery(WebGL2RenderingContextBase*);
   ~WebGLQuery() override;
 
-  static WebGLQuery* Create(WebGL2RenderingContextBase*);
-
   void SetTarget(GLenum);
   bool HasTarget() const { return target_ != 0; }
   GLenum GetTarget() const { return target_; }

@@ -583,7 +583,8 @@ void P2PQuicTransportImpl::OnCanWrite() {
   QuicSession::OnCanWrite();
 }
 
-void P2PQuicTransportImpl::OnMessageReceived(quic::QuicStringPiece message) {
+void P2PQuicTransportImpl::OnMessageReceived(
+    quiche::QuicheStringPiece message) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // This will never overflow because of the datagram size limit.
   Vector<uint8_t> datagram(static_cast<wtf_size_t>(message.size()));

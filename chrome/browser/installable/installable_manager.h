@@ -66,6 +66,9 @@ class InstallableManager
   void GetAllErrors(
       base::OnceCallback<void(std::vector<std::string> errors)> callback);
 
+  void GetPrimaryIcon(
+      base::OnceCallback<void(const SkBitmap* primaryIcon)> callback);
+
  protected:
   // For mocking in tests.
   virtual void OnWaitingForServiceWorker() {}

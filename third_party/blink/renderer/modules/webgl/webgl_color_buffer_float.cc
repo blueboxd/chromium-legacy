@@ -38,11 +38,6 @@ WebGLExtensionName WebGLColorBufferFloat::GetName() const {
   return kWebGLColorBufferFloatName;
 }
 
-WebGLColorBufferFloat* WebGLColorBufferFloat::Create(
-    WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<WebGLColorBufferFloat>(context);
-}
-
 bool WebGLColorBufferFloat::Supported(WebGLRenderingContextBase* context) {
   return context->ExtensionsUtil()->SupportsExtension("GL_OES_texture_float") &&
          context->ExtensionsUtil()->SupportsExtension(

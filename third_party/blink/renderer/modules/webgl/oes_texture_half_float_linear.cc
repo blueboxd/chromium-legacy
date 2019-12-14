@@ -38,11 +38,6 @@ WebGLExtensionName OESTextureHalfFloatLinear::GetName() const {
   return kOESTextureHalfFloatLinearName;
 }
 
-OESTextureHalfFloatLinear* OESTextureHalfFloatLinear::Create(
-    WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<OESTextureHalfFloatLinear>(context);
-}
-
 bool OESTextureHalfFloatLinear::Supported(WebGLRenderingContextBase* context) {
   return context->ExtensionsUtil()->SupportsExtension(
       "GL_OES_texture_half_float_linear");

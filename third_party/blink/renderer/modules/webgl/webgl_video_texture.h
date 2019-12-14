@@ -16,7 +16,6 @@ class WebGLVideoTexture final : public WebGLExtension {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebGLVideoTexture* Create(WebGLRenderingContextBase*);
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 

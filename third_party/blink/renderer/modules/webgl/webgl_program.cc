@@ -31,10 +31,6 @@
 
 namespace blink {
 
-WebGLProgram* WebGLProgram::Create(WebGLRenderingContextBase* ctx) {
-  return MakeGarbageCollected<WebGLProgram>(ctx);
-}
-
 WebGLProgram::WebGLProgram(WebGLRenderingContextBase* ctx)
     : WebGLSharedPlatform3DObject(ctx),
       link_status_(false),

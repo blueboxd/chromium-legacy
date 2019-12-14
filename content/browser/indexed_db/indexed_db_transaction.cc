@@ -244,6 +244,12 @@ void IndexedDBTransaction::UnregisterOpenCursor(IndexedDBCursor* cursor) {
 }
 
 void IndexedDBTransaction::Start() {
+  // The transaction has the potential to be aborted after the Start() task was
+  // posted.
+  if (state_ == FINISHED) {
+    DCHECK(locks_receiver_.locks.empty());
+    return;
+  }
   DCHECK_EQ(CREATED, state_);
   state_ = STARTED;
   DCHECK(!locks_receiver_.locks.empty());

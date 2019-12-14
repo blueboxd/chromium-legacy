@@ -34,7 +34,6 @@ class OESTextureHalfFloatLinear final : public WebGLExtension {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static OESTextureHalfFloatLinear* Create(WebGLRenderingContextBase*);
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 

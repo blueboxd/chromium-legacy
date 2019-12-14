@@ -13,10 +13,6 @@ class WebGL2RenderingContextBase;
 
 class WebGLFenceSync : public WebGLSync {
  public:
-  static WebGLSync* Create(WebGL2RenderingContextBase*,
-                           GLenum condition,
-                           GLbitfield flags);
-
   WebGLFenceSync(WebGL2RenderingContextBase*,
                  GLenum condition,
                  GLbitfield flags);

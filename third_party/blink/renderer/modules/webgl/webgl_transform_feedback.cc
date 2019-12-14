@@ -9,12 +9,6 @@
 
 namespace blink {
 
-WebGLTransformFeedback* WebGLTransformFeedback::Create(
-    WebGL2RenderingContextBase* ctx,
-    TFType type) {
-  return MakeGarbageCollected<WebGLTransformFeedback>(ctx, type);
-}
-
 WebGLTransformFeedback::WebGLTransformFeedback(WebGL2RenderingContextBase* ctx,
                                                TFType type)
     : WebGLContextObject(ctx),

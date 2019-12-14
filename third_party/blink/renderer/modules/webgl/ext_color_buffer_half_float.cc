@@ -35,11 +35,6 @@ WebGLExtensionName EXTColorBufferHalfFloat::GetName() const {
   return kEXTColorBufferHalfFloatName;
 }
 
-EXTColorBufferHalfFloat* EXTColorBufferHalfFloat::Create(
-    WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<EXTColorBufferHalfFloat>(context);
-}
-
 bool EXTColorBufferHalfFloat::Supported(WebGLRenderingContextBase* context) {
   return context->ExtensionsUtil()->SupportsExtension(
              "GL_OES_texture_half_float") &&

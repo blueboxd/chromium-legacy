@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_transform_feedback.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_uniform_location.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_vertex_array_object.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 using WTF::String;
@@ -210,7 +211,7 @@ void WebGL2RenderingContextBase::InitializeNewContext() {
                            &max_transform_feedback_separate_attribs_);
   // Create a default transform feedback object so there is a place to
   // hold any bound buffers.
-  default_transform_feedback_ = WebGLTransformFeedback::Create(
+  default_transform_feedback_ = MakeGarbageCollected<WebGLTransformFeedback>(
       this, WebGLTransformFeedback::TFTypeDefault);
   transform_feedback_binding_ = default_transform_feedback_;
 
@@ -3816,7 +3817,7 @@ void WebGL2RenderingContextBase::UpdateBuffersToAutoClear(
 WebGLQuery* WebGL2RenderingContextBase::createQuery() {
   if (isContextLost())
     return nullptr;
-  return WebGLQuery::Create(this);
+  return MakeGarbageCollected<WebGLQuery>(this);
 }
 
 void WebGL2RenderingContextBase::deleteQuery(WebGLQuery* query) {
@@ -4044,7 +4045,7 @@ ScriptValue WebGL2RenderingContextBase::getQueryParameter(
 WebGLSampler* WebGL2RenderingContextBase::createSampler() {
   if (isContextLost())
     return nullptr;
-  return WebGLSampler::Create(this);
+  return MakeGarbageCollected<WebGLSampler>(this);
 }
 
 void WebGL2RenderingContextBase::deleteSampler(WebGLSampler* sampler) {
@@ -4261,7 +4262,7 @@ WebGLSync* WebGL2RenderingContextBase::fenceSync(GLenum condition,
     SynthesizeGLError(GL_INVALID_VALUE, "fenceSync", "flags must be zero");
     return nullptr;
   }
-  return WebGLFenceSync::Create(this, condition, flags);
+  return MakeGarbageCollected<WebGLFenceSync>(this, condition, flags);
 }
 
 GLboolean WebGL2RenderingContextBase::isSync(WebGLSync* sync) {
@@ -4355,8 +4356,8 @@ ScriptValue WebGL2RenderingContextBase::getSyncParameter(
 WebGLTransformFeedback* WebGL2RenderingContextBase::createTransformFeedback() {
   if (isContextLost())
     return nullptr;
-  return WebGLTransformFeedback::Create(this,
-                                        WebGLTransformFeedback::TFTypeUser);
+  return MakeGarbageCollected<WebGLTransformFeedback>(
+      this, WebGLTransformFeedback::TFTypeUser);
 }
 
 void WebGL2RenderingContextBase::deleteTransformFeedback(
@@ -4552,7 +4553,7 @@ WebGLActiveInfo* WebGL2RenderingContextBase::getTransformFeedbackVarying(
     return nullptr;
   }
 
-  return WebGLActiveInfo::Create(
+  return MakeGarbageCollected<WebGLActiveInfo>(
       String(name.get(), static_cast<uint32_t>(length)), type, size);
 }
 
@@ -4945,7 +4946,7 @@ WebGLVertexArrayObject* WebGL2RenderingContextBase::createVertexArray() {
   if (isContextLost())
     return nullptr;
 
-  return WebGLVertexArrayObject::Create(
+  return MakeGarbageCollected<WebGLVertexArrayObject>(
       this, WebGLVertexArrayObjectBase::kVaoTypeUser);
 }
 

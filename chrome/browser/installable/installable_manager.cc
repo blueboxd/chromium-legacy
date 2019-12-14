@@ -192,6 +192,12 @@ void OnDidCompleteGetAllErrors(
   std::move(callback).Run(std::move(error_messages));
 }
 
+void OnDidCompleteGetPrimaryIcon(
+    base::OnceCallback<void(const SkBitmap*)> callback,
+    const InstallableData& data) {
+  std::move(callback).Run(data.primary_icon);
+}
+
 }  // namespace
 
 InstallableManager::EligiblityProperty::EligiblityProperty() = default;
@@ -297,6 +303,14 @@ void InstallableManager::GetAllErrors(
   params.is_debug_mode = true;
   GetData(params,
           base::BindOnce(OnDidCompleteGetAllErrors, std::move(callback)));
+}
+
+void InstallableManager::GetPrimaryIcon(
+    base::OnceCallback<void(const SkBitmap*)> callback) {
+  InstallableParams params;
+  params.valid_primary_icon = true;
+  GetData(params,
+          base::BindOnce(OnDidCompleteGetPrimaryIcon, std::move(callback)));
 }
 
 bool InstallableManager::IsIconFetched(const IconPurpose purpose) const {

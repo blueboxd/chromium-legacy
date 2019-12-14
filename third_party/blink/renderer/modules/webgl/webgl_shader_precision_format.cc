@@ -28,15 +28,6 @@
 
 namespace blink {
 
-// static
-WebGLShaderPrecisionFormat* WebGLShaderPrecisionFormat::Create(
-    GLint range_min,
-    GLint range_max,
-    GLint precision) {
-  return MakeGarbageCollected<WebGLShaderPrecisionFormat>(range_min, range_max,
-                                                          precision);
-}
-
 GLint WebGLShaderPrecisionFormat::rangeMin() const {
   return range_min_;
 }

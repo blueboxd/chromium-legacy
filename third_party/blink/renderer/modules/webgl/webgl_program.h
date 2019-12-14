@@ -39,8 +39,6 @@ class WebGLProgram final : public WebGLSharedPlatform3DObject {
   explicit WebGLProgram(WebGLRenderingContextBase*);
   ~WebGLProgram() override;
 
-  static WebGLProgram* Create(WebGLRenderingContextBase*);
-
   bool LinkStatus(WebGLRenderingContextBase*);
   void setLinkStatus(bool link_status);
 

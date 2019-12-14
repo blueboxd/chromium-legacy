@@ -14,10 +14,6 @@ WebGLMultiDraw::WebGLMultiDraw(WebGLRenderingContextBase* context)
   context->ExtensionsUtil()->EnsureExtensionEnabled("GL_ANGLE_multi_draw");
 }
 
-WebGLMultiDraw* WebGLMultiDraw::Create(WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<WebGLMultiDraw>(context);
-}
-
 WebGLExtensionName WebGLMultiDraw::GetName() const {
   return kWebGLMultiDrawName;
 }

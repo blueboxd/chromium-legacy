@@ -10,7 +10,7 @@
 using quic::DiversificationNonce;
 using quic::Perspective;
 using quic::QuicPacketNumber;
-using quic::QuicStringPiece;
+using quiche::QuicheStringPiece;
 
 namespace net {
 
@@ -22,11 +22,11 @@ const size_t kPaddingSize = 12;
 
 MockDecrypter::MockDecrypter(Perspective perspective) {}
 
-bool MockDecrypter::SetKey(QuicStringPiece key) {
+bool MockDecrypter::SetKey(quiche::QuicheStringPiece key) {
   return key.empty();
 }
 
-bool MockDecrypter::SetHeaderProtectionKey(QuicStringPiece key) {
+bool MockDecrypter::SetHeaderProtectionKey(quiche::QuicheStringPiece key) {
   return key.empty();
 }
 
@@ -35,15 +35,15 @@ std::string MockDecrypter::GenerateHeaderProtectionMask(
   return std::string(5, 0);
 }
 
-bool MockDecrypter::SetNoncePrefix(QuicStringPiece nonce_prefix) {
+bool MockDecrypter::SetNoncePrefix(quiche::QuicheStringPiece nonce_prefix) {
   return nonce_prefix.empty();
 }
 
-bool MockDecrypter::SetIV(QuicStringPiece iv) {
+bool MockDecrypter::SetIV(quiche::QuicheStringPiece iv) {
   return iv.empty();
 }
 
-bool MockDecrypter::SetPreliminaryKey(QuicStringPiece key) {
+bool MockDecrypter::SetPreliminaryKey(quiche::QuicheStringPiece key) {
   QUIC_BUG << "Should not be called";
   return false;
 }
@@ -54,8 +54,8 @@ bool MockDecrypter::SetDiversificationNonce(const DiversificationNonce& nonce) {
 }
 
 bool MockDecrypter::DecryptPacket(uint64_t /*packet_number*/,
-                                  QuicStringPiece associated_data,
-                                  QuicStringPiece ciphertext,
+                                  quiche::QuicheStringPiece associated_data,
+                                  quiche::QuicheStringPiece ciphertext,
                                   char* output,
                                   size_t* output_length,
                                   size_t max_output_length) {
@@ -84,12 +84,12 @@ size_t MockDecrypter::GetIVSize() const {
   return 0;
 }
 
-QuicStringPiece MockDecrypter::GetKey() const {
-  return QuicStringPiece();
+quiche::QuicheStringPiece MockDecrypter::GetKey() const {
+  return quiche::QuicheStringPiece();
 }
 
-QuicStringPiece MockDecrypter::GetNoncePrefix() const {
-  return QuicStringPiece();
+quiche::QuicheStringPiece MockDecrypter::GetNoncePrefix() const {
+  return quiche::QuicheStringPiece();
 }
 
 uint32_t MockDecrypter::cipher_id() const {

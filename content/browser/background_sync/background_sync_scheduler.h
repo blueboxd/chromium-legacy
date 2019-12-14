@@ -21,6 +21,9 @@ namespace content {
 
 class StoragePartitionImpl;
 
+// Key name on BrowserContext.
+extern const char kBackgroundSyncSchedulerKey[];
+
 // This contains the logic to schedule delayed processing of (periodic)
 // Background Sync registrations.
 // It keeps track of all storage partitions, and the soonest time we should

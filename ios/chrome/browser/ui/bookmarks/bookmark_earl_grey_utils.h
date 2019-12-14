@@ -7,18 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-class GURL;
-@protocol GREYMatcher;
-
-// GURL for the testing bookmark "First URL".
-const GURL GetFirstUrl();
-
-// GURL for the testing bookmark "Second URL".
-const GURL GetSecondUrl();
-
-// GURL for the testing bookmark "French URL".
-const GURL GetFrenchUrl();
-
 // Methods used for the EarlGrey tests.
 @interface BookmarkEarlGreyUtils : NSObject
 
@@ -49,9 +37,6 @@ const GURL GetFrenchUrl();
 
 // Checks that the promo has already been seen or not.
 + (void)setPromoAlreadySeen:(BOOL)seen;
-
-// Waits for the bookmark model to be loaded in memory.
-+ (void)waitForBookmarkModelLoaded:(BOOL)loaded;
 
 + (void)assertExistenceOfBookmarkWithURL:(NSString*)URL name:(NSString*)name;
 

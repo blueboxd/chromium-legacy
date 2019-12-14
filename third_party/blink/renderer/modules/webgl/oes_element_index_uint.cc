@@ -37,11 +37,6 @@ WebGLExtensionName OESElementIndexUint::GetName() const {
   return kOESElementIndexUintName;
 }
 
-OESElementIndexUint* OESElementIndexUint::Create(
-    WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<OESElementIndexUint>(context);
-}
-
 bool OESElementIndexUint::Supported(WebGLRenderingContextBase* context) {
   return context->ExtensionsUtil()->SupportsExtension(
       "GL_OES_element_index_uint");

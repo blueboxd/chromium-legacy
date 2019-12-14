@@ -21,6 +21,7 @@
 #include "net/log/net_log_values.h"
 #include "net/quic/address_utils.h"
 #include "net/quic/quic_address_mismatch.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake_message.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
@@ -28,7 +29,6 @@
 #include "net/third_party/quiche/src/quic/core/quic_socket_address_coder.h"
 #include "net/third_party/quiche/src/quic/core/quic_time.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 
 using std::string;
 
@@ -938,7 +938,7 @@ void QuicConnectionLogger::OnVersionNegotiationPacket(
 void QuicConnectionLogger::OnCryptoHandshakeMessageReceived(
     const quic::CryptoHandshakeMessage& message) {
   if (message.tag() == quic::kSHLO) {
-    quic::QuicStringPiece address;
+    quiche::QuicheStringPiece address;
     quic::QuicSocketAddressCoder decoder;
     if (message.GetStringPiece(quic::kCADR, &address) &&
         decoder.Decode(address.data(), address.size())) {

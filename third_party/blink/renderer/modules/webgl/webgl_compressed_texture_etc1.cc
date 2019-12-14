@@ -21,11 +21,6 @@ WebGLExtensionName WebGLCompressedTextureETC1::GetName() const {
   return kWebGLCompressedTextureETC1Name;
 }
 
-WebGLCompressedTextureETC1* WebGLCompressedTextureETC1::Create(
-    WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<WebGLCompressedTextureETC1>(context);
-}
-
 bool WebGLCompressedTextureETC1::Supported(WebGLRenderingContextBase* context) {
   Extensions3DUtil* extensions_util = context->ExtensionsUtil();
   return extensions_util->SupportsExtension(

@@ -44,11 +44,6 @@ WebGLExtensionName ANGLEInstancedArrays::GetName() const {
   return kANGLEInstancedArraysName;
 }
 
-ANGLEInstancedArrays* ANGLEInstancedArrays::Create(
-    WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<ANGLEInstancedArrays>(context);
-}
-
 bool ANGLEInstancedArrays::Supported(WebGLRenderingContextBase* context) {
   return context->ExtensionsUtil()->SupportsExtension(
       "GL_ANGLE_instanced_arrays");

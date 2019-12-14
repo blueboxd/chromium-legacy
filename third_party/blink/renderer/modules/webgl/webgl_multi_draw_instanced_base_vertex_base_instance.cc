@@ -20,13 +20,6 @@ WebGLMultiDrawInstancedBaseVertexBaseInstance::
   context->ExtensionsUtil()->EnsureExtensionEnabled("GL_ANGLE_multi_draw");
 }
 
-WebGLMultiDrawInstancedBaseVertexBaseInstance*
-WebGLMultiDrawInstancedBaseVertexBaseInstance::Create(
-    WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<WebGLMultiDrawInstancedBaseVertexBaseInstance>(
-      context);
-}
-
 WebGLExtensionName WebGLMultiDrawInstancedBaseVertexBaseInstance::GetName()
     const {
   return kWebGLMultiDrawInstancedBaseVertexBaseInstanceName;

@@ -30,10 +30,6 @@
 
 namespace blink {
 
-WebGLBuffer* WebGLBuffer::Create(WebGLRenderingContextBase* ctx) {
-  return MakeGarbageCollected<WebGLBuffer>(ctx);
-}
-
 WebGLBuffer::WebGLBuffer(WebGLRenderingContextBase* ctx)
     : WebGLSharedPlatform3DObject(ctx), initial_target_(0), size_(0) {
   GLuint buffer;

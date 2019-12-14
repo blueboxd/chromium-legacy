@@ -24,7 +24,17 @@ class ViewModelUtils;
 // the correct View subclass.
 class VIEWS_EXPORT ViewModelBase {
  public:
+  struct Entry {
+    Entry() = default;
+
+    View* view = nullptr;
+    gfx::Rect ideal_bounds;
+  };
+  using Entries = std::vector<Entry>;
+
   ~ViewModelBase();
+
+  const Entries& entries() const { return entries_; }
 
   // Removes the view at the specified index. This does not actually remove the
   // view from the view hierarchy.
@@ -79,13 +89,6 @@ class VIEWS_EXPORT ViewModelBase {
   // For access to ViewAtBase().
   friend class ViewModelUtils;
 
-  struct Entry {
-    Entry() = default;
-
-    View* view = nullptr;
-    gfx::Rect ideal_bounds;
-  };
-  using Entries = std::vector<Entry>;
 
 #if !defined(NDEBUG)
   void check_index(int index) const {

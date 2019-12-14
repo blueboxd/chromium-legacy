@@ -7,13 +7,12 @@
 
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
+#import "ios/chrome/browser/ui/settings/google_services/google_services_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_consumer.h"
 
 @class GoogleServicesSettingsViewController;
 @protocol GoogleServicesSettingsServiceDelegate;
 @protocol GoogleServicesSettingsViewControllerModelDelegate;
-
-extern NSString* const kGoogleServicesSettingsViewIdentifier;
 
 // Delegate for presentation events related to
 // GoogleServicesSettingsViewController.

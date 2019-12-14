@@ -15,13 +15,13 @@
 
 #include "base/macros.h"
 #include "net/base/request_priority.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/quic/core/http/http_encoder.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_encoder.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_stream_frame_data_producer.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_clock.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
@@ -100,13 +100,13 @@ class QuicTestPacketMaker {
       quic::QuicStreamId rst_stream_id,
       quic::QuicRstStreamErrorCode rst_error_code,
       quic::QuicStreamId data_stream_id,
-      quic::QuicStringPiece data);
+      quiche::QuicheStringPiece data);
 
   std::unique_ptr<quic::QuicReceivedPacket> MakeDataAndRstPacket(
       uint64_t num,
       bool include_version,
       quic::QuicStreamId data_stream_id,
-      quic::QuicStringPiece data,
+      quiche::QuicheStringPiece data,
       quic::QuicStreamId rst_stream_id,
       quic::QuicRstStreamErrorCode rst_error_code);
 
@@ -151,7 +151,7 @@ class QuicTestPacketMaker {
       uint64_t num,
       bool include_version,
       quic::QuicStreamId data_stream_id,
-      quic::QuicStringPiece data,
+      quiche::QuicheStringPiece data,
       quic::QuicStreamId rst_stream_id,
       quic::QuicRstStreamErrorCode error_code,
       quic::QuicErrorCode quic_error,
@@ -161,7 +161,7 @@ class QuicTestPacketMaker {
       uint64_t num,
       bool include_version,
       quic::QuicStreamId data_stream_id,
-      quic::QuicStringPiece data,
+      quiche::QuicheStringPiece data,
       quic::QuicStreamId rst_stream_id,
       quic::QuicRstStreamErrorCode error_code,
       uint64_t largest_received,
@@ -221,14 +221,14 @@ class QuicTestPacketMaker {
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      quic::QuicStringPiece data);
+      quiche::QuicheStringPiece data);
   std::unique_ptr<quic::QuicReceivedPacket> MakeForceHolDataPacket(
       uint64_t packet_number,
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
       quic::QuicStreamOffset* offset,
-      quic::QuicStringPiece data);
+      quiche::QuicheStringPiece data);
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndDataPacket(
       uint64_t packet_number,
       bool include_version,
@@ -237,7 +237,7 @@ class QuicTestPacketMaker {
       uint64_t smallest_received,
       uint64_t least_unacked,
       bool fin,
-      quic::QuicStringPiece data);
+      quiche::QuicheStringPiece data);
 
   std::unique_ptr<quic::QuicReceivedPacket>
   MakeRequestHeadersAndMultipleDataFramesPacket(
@@ -361,7 +361,7 @@ class QuicTestPacketMaker {
    public:
     ~DecoderStreamErrorDelegate() override = default;
 
-    void OnDecoderStreamError(quic::QuicStringPiece error_message) override;
+    void OnDecoderStreamError(quiche::QuicheStringPiece error_message) override;
   };
 
   // QpackEncoderStreamSender::Delegate implementation that does nothing.
@@ -369,7 +369,7 @@ class QuicTestPacketMaker {
    public:
     ~EncoderStreamSenderDelegate() override = default;
 
-    void WriteStreamData(quic::QuicStringPiece data) override;
+    void WriteStreamData(quiche::QuicheStringPiece data) override;
   };
 
   std::unique_ptr<quic::QuicReceivedPacket> MakePacket(
@@ -398,7 +398,7 @@ class QuicTestPacketMaker {
 
   quic::QuicFrame GenerateNextStreamFrame(quic::QuicStreamId stream_id,
                                           bool fin,
-                                          quic::QuicStringPiece data);
+                                          quiche::QuicheStringPiece data);
 
   std::vector<quic::QuicFrame> GenerateNextStreamFrames(
       quic::QuicStreamId stream_id,

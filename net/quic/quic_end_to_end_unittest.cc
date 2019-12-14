@@ -36,7 +36,7 @@
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_task_environment.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quiche/src/quic/tools/quic_memory_cache_backend.h"
@@ -169,10 +169,10 @@ class QuicEndToEndTest : public ::testing::Test, public WithTaskEnvironment {
 
   // Adds an entry to the cache used by the QUIC server to serve
   // responses.
-  void AddToCache(quic::QuicStringPiece path,
+  void AddToCache(quiche::QuicheStringPiece path,
                   int response_code,
-                  quic::QuicStringPiece response_detail,
-                  quic::QuicStringPiece body) {
+                  quiche::QuicheStringPiece response_detail,
+                  quiche::QuicheStringPiece body) {
     memory_cache_backend_.AddSimpleResponse("test.example.com", path,
                                             response_code, body);
   }

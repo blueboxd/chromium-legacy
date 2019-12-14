@@ -6,11 +6,11 @@
 
 #include <ostream>
 
+#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 #include "net/third_party/quiche/src/quic/core/crypto/null_decrypter.h"
 #include "net/third_party/quiche/src/quic/core/quic_framer.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
 
 namespace quic {
 
@@ -40,7 +40,7 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
   }
   void OnRetryPacket(QuicConnectionId original_connection_id,
                      QuicConnectionId new_connection_id,
-                     QuicStringPiece retry_token) override {
+                     quiche::QuicheStringPiece retry_token) override {
     *output_ << "OnRetryPacket\n";
   }
   bool OnUnauthenticatedPublicHeader(const QuicPacketHeader& header) override {
@@ -70,14 +70,16 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
   bool OnStreamFrame(const QuicStreamFrame& frame) override {
     *output_ << "OnStreamFrame: " << frame;
     *output_ << "         data: { "
-             << QuicTextUtils::HexEncode(frame.data_buffer, frame.data_length)
+             << quiche::QuicheTextUtils::HexEncode(frame.data_buffer,
+                                                   frame.data_length)
              << " }\n";
     return true;
   }
   bool OnCryptoFrame(const QuicCryptoFrame& frame) override {
     *output_ << "OnCryptoFrame: " << frame;
     *output_ << "         data: { "
-             << QuicTextUtils::HexEncode(frame.data_buffer, frame.data_length)
+             << quiche::QuicheTextUtils::HexEncode(frame.data_buffer,
+                                                   frame.data_length)
              << " }\n";
     return true;
   }

@@ -194,8 +194,9 @@ id<GREYMatcher> SearchIconButton() {
                     error:&error];
     return error == nil;
   };
-  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(10, condition),
-             @"Waiting for undo toast to go away");
+  EG_TEST_HELPER_ASSERT_TRUE(
+      base::test::ios::WaitUntilConditionOrTimeout(10, condition),
+      @"Waiting for undo toast to go away");
 }
 
 - (void)renameBookmarkFolderWithFolderTitle:(NSString*)folderTitle {
@@ -336,23 +337,6 @@ id<GREYMatcher> SearchIconButton() {
                                    grey_descendant(grey_text(bookmarkFolder)),
                                    nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
-}
-
-- (void)scrollToTop {
-  // On iOS 13 the settings menu appears as a card that can be dismissed with a
-  // downward swipe, for this reason we need to swipe up programatically to
-  // avoid dismissin the VC.
-  GREYPerformBlock scrollToTopBlock =
-      ^BOOL(id element, __strong NSError** error) {
-        UIScrollView* view = base::mac::ObjCCastStrict<UIScrollView>(element);
-        view.contentOffset = CGPointZero;
-        return YES;
-      };
-
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kBookmarkHomeTableViewIdentifier)]
-      performAction:[GREYActionBlock actionWithName:@"Scroll to top"
-                                       performBlock:scrollToTopBlock]];
 }
 
 - (void)scrollToBottom {

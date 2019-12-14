@@ -545,7 +545,7 @@ TEST_F(IndexedDBTransactionTest, AbortCancelsLockRequest) {
   EXPECT_EQ(transaction->state(), IndexedDBTransaction::CREATED);
 
   // Abort the transaction, which should cancel the
-  // |RegisterAndScheduleTransaction()| pending lock request.
+  // RegisterAndScheduleTransaction() pending lock request.
   transaction->Abort(
       IndexedDBDatabaseError(blink::mojom::IDBException::kUnknownError));
   EXPECT_EQ(transaction->state(), IndexedDBTransaction::FINISHED);
@@ -561,6 +561,48 @@ TEST_F(IndexedDBTransactionTest, AbortCancelsLockRequest) {
                                temp_lock_receiver.weak_factory.GetWeakPtr(),
                                base::BindOnce(SetToTrue, &locks_recieved));
   EXPECT_TRUE(locks_recieved);
+}
+
+TEST_F(IndexedDBTransactionTest, PostedStartTaskRunAfterAbort) {
+  int64_t id = 0;
+  const int64_t object_store_id = 1ll;
+  const std::set<int64_t> scope = {object_store_id};
+  std::unique_ptr<IndexedDBConnection> connection = CreateConnection();
+
+  IndexedDBTransaction* transaction1 = connection->CreateTransaction(
+      id, scope, blink::mojom::IDBTransactionMode::ReadWrite,
+      new IndexedDBFakeBackingStore::FakeTransaction(leveldb::Status::OK()));
+
+  db_->RegisterAndScheduleTransaction(transaction1);
+  EXPECT_EQ(transaction1->state(), IndexedDBTransaction::STARTED);
+
+  // Register another transaction, which will block on the first transaction.
+  IndexedDBTransaction* transaction2 = connection->CreateTransaction(
+      ++id, scope, blink::mojom::IDBTransactionMode::ReadWrite,
+      new IndexedDBFakeBackingStore::FakeTransaction(leveldb::Status::OK()));
+
+  db_->RegisterAndScheduleTransaction(transaction2);
+  EXPECT_EQ(transaction2->state(), IndexedDBTransaction::CREATED);
+
+  // Flush posted tasks before making the Abort calls since there are
+  // posted RunTasksForDatabase() tasks which, if we waited to run them
+  // until after Abort is called, would destroy our transactions and mask
+  // a potential race condition.
+  RunPostedTasks();
+
+  // Abort all of the transactions, which should cause the second transaction's
+  // posted Start() task to run.
+  connection->AbortAllTransactions(
+      IndexedDBDatabaseError(blink::mojom::IDBException::kUnknownError));
+
+  EXPECT_EQ(transaction2->state(), IndexedDBTransaction::FINISHED);
+
+  // Run tasks to ensure Start() is called but does not DCHECK.
+  RunPostedTasks();
+
+  // It's not safe to check the state of the transaction at this point since it
+  // is freed when the IndexedDBDatabase::RunTasks call happens via the posted
+  // RunTasksForDatabase task.
 }
 
 }  // namespace indexed_db_transaction_unittest

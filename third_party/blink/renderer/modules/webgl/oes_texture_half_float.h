@@ -34,7 +34,6 @@ class OESTextureHalfFloat final : public WebGLExtension {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static OESTextureHalfFloat* Create(WebGLRenderingContextBase*);
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 

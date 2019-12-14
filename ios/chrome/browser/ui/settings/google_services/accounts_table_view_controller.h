@@ -5,17 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_ACCOUNTS_TABLE_VIEW_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_ACCOUNTS_TABLE_VIEW_CONTROLLER_H_
 
+#import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
-
-// The accessibility identifier of the view controller's view.
-extern NSString* const kSettingsAccountsTableViewId;
-// The accessibility identifier of the add account cell.
-extern NSString* const kSettingsAccountsTableViewAddAccountCellId;
-// The accessibility identifier of the signout cell.
-extern NSString* const kSettingsAccountsTableViewSignoutCellId;
-// The accessibility identifier of the sync account cell.
-extern NSString* const kSettingsAccountsTableViewSyncCellId;
 
 @protocol ApplicationCommands;
 @protocol ApplicationSettingsCommands;

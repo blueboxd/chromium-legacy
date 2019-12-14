@@ -35,9 +35,6 @@ class WebGLActiveInfo final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebGLActiveInfo* Create(const String& name, GLenum type, GLint size) {
-    return MakeGarbageCollected<WebGLActiveInfo>(name, type, size);
-  }
   WebGLActiveInfo(const String& name, GLenum type, GLint size)
       : name_(name), type_(type), size_(size) {
     DCHECK(name.length());

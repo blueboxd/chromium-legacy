@@ -32,11 +32,6 @@
 
 using l10n_util::GetNSString;
 
-NSString* const kSyncSettingsConfirmButtonId =
-    @"kAdvancedSyncSettingsConfirmButtonId";
-NSString* const kSyncSettingsCancelButtonId =
-    @"kAdvancedSyncSettingsCancelButtonId";
-
 // Advanced sign-in settings result.
 typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
   // The user confirmed the advanced sync settings.

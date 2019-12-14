@@ -229,7 +229,7 @@ int QuicProxyClientSocket::Write(
                                 buf->data());
 
   int rv = stream_->WriteStreamData(
-      quic::QuicStringPiece(buf->data(), buf_len), false,
+      quiche::QuicheStringPiece(buf->data(), buf_len), false,
       base::BindOnce(&QuicProxyClientSocket::OnWriteComplete,
                      weak_factory_.GetWeakPtr()));
   if (rv == OK)

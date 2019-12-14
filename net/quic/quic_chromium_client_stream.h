@@ -22,8 +22,8 @@
 #include "net/http/http_response_info.h"
 #include "net/http/http_stream.h"
 #include "net/log/net_log_with_source.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_stream.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace quic {
@@ -240,7 +240,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
   // Writes |data| to the peer and closes the write side if |fin| is true.
   // Returns true if the data have been fully written. If the data was not fully
   // written, returns false and OnCanWrite() will be invoked later.
-  bool WriteStreamData(quic::QuicStringPiece data, bool fin);
+  bool WriteStreamData(quiche::QuicheStringPiece data, bool fin);
   // Same as WriteStreamData except it writes data from a vector of IOBuffers,
   // with the length of each buffer at the corresponding index in |lengths|.
   bool WritevStreamData(const std::vector<scoped_refptr<IOBuffer>>& buffers,

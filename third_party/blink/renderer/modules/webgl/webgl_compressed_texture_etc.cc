@@ -31,11 +31,6 @@ WebGLExtensionName WebGLCompressedTextureETC::GetName() const {
   return kWebGLCompressedTextureETCName;
 }
 
-WebGLCompressedTextureETC* WebGLCompressedTextureETC::Create(
-    WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<WebGLCompressedTextureETC>(context);
-}
-
 bool WebGLCompressedTextureETC::Supported(WebGLRenderingContextBase* context) {
   Extensions3DUtil* extensions_util = context->ExtensionsUtil();
   return extensions_util->SupportsExtension("GL_ANGLE_compressed_texture_etc");

@@ -37,8 +37,6 @@ class WebGLShader final : public WebGLSharedPlatform3DObject {
  public:
   ~WebGLShader() override;
 
-  static WebGLShader* Create(WebGLRenderingContextBase*, GLenum);
-
   WebGLShader(WebGLRenderingContextBase*, GLenum);
 
   GLenum GetType() const { return type_; }

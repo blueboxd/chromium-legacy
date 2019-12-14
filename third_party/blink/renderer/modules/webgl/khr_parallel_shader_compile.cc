@@ -45,11 +45,6 @@ WebGLExtensionName KHRParallelShaderCompile::GetName() const {
   return kKHRParallelShaderCompileName;
 }
 
-KHRParallelShaderCompile* KHRParallelShaderCompile::Create(
-    WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<KHRParallelShaderCompile>(context);
-}
-
 bool KHRParallelShaderCompile::Supported(WebGLRenderingContextBase* context) {
   return context->ExtensionsUtil()->SupportsExtension(
       "GL_KHR_parallel_shader_compile");

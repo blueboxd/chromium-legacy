@@ -28,11 +28,6 @@
 
 namespace blink {
 
-WebGLUniformLocation* WebGLUniformLocation::Create(WebGLProgram* program,
-                                                   GLint location) {
-  return MakeGarbageCollected<WebGLUniformLocation>(program, location);
-}
-
 WebGLUniformLocation::WebGLUniformLocation(WebGLProgram* program,
                                            GLint location)
     : program_(program), location_(location) {

@@ -37,10 +37,6 @@ class WebGLShaderPrecisionFormat final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebGLShaderPrecisionFormat* Create(GLint range_min,
-                                            GLint range_max,
-                                            GLint precision);
-
   WebGLShaderPrecisionFormat(GLint range_min, GLint range_max, GLint precision);
 
   GLint rangeMin() const;

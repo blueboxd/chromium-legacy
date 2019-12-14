@@ -57,7 +57,7 @@ void RunVerification(quic::ProofVerifier* verifier,
                      const uint16_t port,
                      const string& server_config,
                      quic::QuicTransportVersion quic_version,
-                     quic::QuicStringPiece chlo_hash,
+                     quiche::QuicheStringPiece chlo_hash,
                      const std::vector<string>& certs,
                      const string& proof,
                      bool expected_ok) {

@@ -41,8 +41,6 @@ const char kIncompleteOpaque[] =
 class WebGLRenderbufferAttachment final
     : public WebGLFramebuffer::WebGLAttachment {
  public:
-  static WebGLFramebuffer::WebGLAttachment* Create(WebGLRenderbuffer*);
-
   explicit WebGLRenderbufferAttachment(WebGLRenderbuffer*);
 
   void Trace(blink::Visitor*) override;
@@ -62,11 +60,6 @@ class WebGLRenderbufferAttachment final
 
   Member<WebGLRenderbuffer> renderbuffer_;
 };
-
-WebGLFramebuffer::WebGLAttachment* WebGLRenderbufferAttachment::Create(
-    WebGLRenderbuffer* renderbuffer) {
-  return MakeGarbageCollected<WebGLRenderbufferAttachment>(renderbuffer);
-}
 
 void WebGLRenderbufferAttachment::Trace(blink::Visitor* visitor) {
   visitor->Trace(renderbuffer_);
@@ -109,11 +102,6 @@ void WebGLRenderbufferAttachment::Unattach(gpu::gles2::GLES2Interface* gl,
 
 class WebGLTextureAttachment final : public WebGLFramebuffer::WebGLAttachment {
  public:
-  static WebGLFramebuffer::WebGLAttachment* Create(WebGLTexture*,
-                                                   GLenum target,
-                                                   GLint level,
-                                                   GLint layer);
-
   WebGLTextureAttachment(WebGLTexture*,
                          GLenum target,
                          GLint level,
@@ -141,15 +129,6 @@ class WebGLTextureAttachment final : public WebGLFramebuffer::WebGLAttachment {
   GLint level_;
   GLint layer_;
 };
-
-WebGLFramebuffer::WebGLAttachment* WebGLTextureAttachment::Create(
-    WebGLTexture* texture,
-    GLenum target,
-    GLint level,
-    GLint layer) {
-  return MakeGarbageCollected<WebGLTextureAttachment>(texture, target, level,
-                                                      layer);
-}
 
 void WebGLTextureAttachment::Trace(blink::Visitor* visitor) {
   visitor->Trace(texture_);
@@ -203,10 +182,6 @@ void WebGLTextureAttachment::Unattach(gpu::gles2::GLES2Interface* gl,
 }  // anonymous namespace
 
 WebGLFramebuffer::WebGLAttachment::WebGLAttachment() = default;
-
-WebGLFramebuffer* WebGLFramebuffer::Create(WebGLRenderingContextBase* ctx) {
-  return MakeGarbageCollected<WebGLFramebuffer>(ctx, false);
-}
 
 WebGLFramebuffer* WebGLFramebuffer::CreateOpaque(
     WebGLRenderingContextBase* ctx) {
@@ -459,8 +434,9 @@ void WebGLFramebuffer::SetAttachmentInternal(GLenum target,
   DCHECK(object_);
   RemoveAttachmentInternal(target, attachment);
   if (texture && texture->Object()) {
-    attachments_.insert(attachment, WebGLTextureAttachment::Create(
-                                        texture, tex_target, level, layer));
+    attachments_.insert(attachment,
+                        MakeGarbageCollected<WebGLTextureAttachment>(
+                            texture, tex_target, level, layer));
     DrawBuffersIfNecessary(false);
     texture->OnAttached();
   }
@@ -473,8 +449,9 @@ void WebGLFramebuffer::SetAttachmentInternal(GLenum target,
   DCHECK(object_);
   RemoveAttachmentInternal(target, attachment);
   if (renderbuffer && renderbuffer->Object()) {
-    attachments_.insert(attachment,
-                        WebGLRenderbufferAttachment::Create(renderbuffer));
+    attachments_.insert(
+        attachment,
+        MakeGarbageCollected<WebGLRenderbufferAttachment>(renderbuffer));
     DrawBuffersIfNecessary(false);
     renderbuffer->OnAttached();
   }

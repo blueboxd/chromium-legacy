@@ -78,8 +78,26 @@ source_set("google_services") {
     "//ios/public/provider/chrome/browser/signin",
     "//ui/base",
   ]
+  public_deps = [
+    ":constants",
+  ]
   allow_circular_includes_from =
       [ "//ios/chrome/browser/ui/signin_interaction" ]
+}
+
+source_set("constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "accounts_table_view_controller_constants.h",
+    "accounts_table_view_controller_constants.mm",
+    "advanced_signin_settings_constants.h",
+    "advanced_signin_settings_constants.mm",
+    "google_services_settings_constants.h",
+    "google_services_settings_constants.mm",
+    "manage_sync_settings_constants.h",
+    "manage_sync_settings_constants.mm",
+  ]
+  deps = []
 }
 
 source_set("eg_tests") {

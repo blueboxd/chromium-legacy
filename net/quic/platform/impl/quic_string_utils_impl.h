@@ -11,14 +11,14 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/hex_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
 template <typename... Args>
 inline void QuicStrAppendImpl(std::string* output, const Args&... args) {
-  output->append(QuicStrCatImpl(args...));
+  output->append(quiche::QuicheStrCatImpl(args...));
 }
 
 }  // namespace quic

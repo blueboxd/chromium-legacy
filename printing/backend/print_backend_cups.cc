@@ -234,11 +234,15 @@ scoped_refptr<PrintBackend> PrintBackend::CreateInstanceImpl(
 #endif  // !defined(OS_CHROMEOS)
 
 int PrintBackendCUPS::GetDests(cups_dest_t** dests) {
-  if (print_server_url_.is_empty())  // Use default (local) print server.
-    return cupsGetDests(dests);
+  // Default to the local print server (CUPS scheduler)
+  if (print_server_url_.is_empty())
+    return cupsGetDests2(CUPS_HTTP_DEFAULT, dests);
 
   HttpConnectionCUPS http(print_server_url_, cups_encryption_);
   http.SetBlocking(blocking_);
+
+  // This call must be made in the same scope as |http| because its destructor
+  // closes the connection.
   return cupsGetDests2(http.http(), dests);
 }
 

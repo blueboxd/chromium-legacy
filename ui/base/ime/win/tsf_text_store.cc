@@ -216,11 +216,13 @@ STDMETHODIMP TSFTextStore::GetSelection(ULONG selection_index,
 STDMETHODIMP TSFTextStore::GetStatus(TS_STATUS* status) {
   if (!status)
     return E_INVALIDARG;
-
-  if (input_panel_policy_manual_)
-    status->dwDynamicFlags |= TS_SD_INPUTPANEMANUALDISPLAYENABLE;
-  else
-    status->dwDynamicFlags &= ~TS_SD_INPUTPANEMANUALDISPLAYENABLE;
+  // TODO(snianu): Uncomment this once TSF fix for input pane policy is
+  // serviced.
+  // if (input_panel_policy_manual_)
+  //   status->dwDynamicFlags |= TS_SD_INPUTPANEMANUALDISPLAYENABLE;
+  // else
+  //   status->dwDynamicFlags &= ~TS_SD_INPUTPANEMANUALDISPLAYENABLE;
+  status->dwDynamicFlags |= TS_SD_INPUTPANEMANUALDISPLAYENABLE;
   // We don't support hidden text.
   // TODO(IME): Remove TS_SS_TRANSITORY to support Korean reconversion
   status->dwStaticFlags = TS_SS_TRANSITORY | TS_SS_NOHIDDENTEXT;

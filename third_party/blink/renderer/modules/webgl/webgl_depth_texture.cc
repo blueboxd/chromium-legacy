@@ -37,11 +37,6 @@ WebGLExtensionName WebGLDepthTexture::GetName() const {
   return kWebGLDepthTextureName;
 }
 
-WebGLDepthTexture* WebGLDepthTexture::Create(
-    WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<WebGLDepthTexture>(context);
-}
-
 bool WebGLDepthTexture::Supported(WebGLRenderingContextBase* context) {
   Extensions3DUtil* extensions_util = context->ExtensionsUtil();
   // Emulating the UNSIGNED_INT_24_8_WEBGL texture internal format in terms

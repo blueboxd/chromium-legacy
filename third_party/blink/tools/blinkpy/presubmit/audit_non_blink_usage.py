@@ -920,6 +920,7 @@ _CONFIG = [
             'rtc::.+',
             'webrtc::.+',
             'quic::.+',
+            'quiche::.+',
         ]
     },
     {

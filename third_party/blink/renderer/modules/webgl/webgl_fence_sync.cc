@@ -10,18 +10,13 @@
 
 namespace blink {
 
-WebGLSync* WebGLFenceSync::Create(WebGL2RenderingContextBase* ctx,
-                                  GLenum condition,
-                                  GLbitfield flags) {
-  DCHECK(condition == GL_SYNC_GPU_COMMANDS_COMPLETE);
-  DCHECK(flags == 0);
-  return MakeGarbageCollected<WebGLFenceSync>(ctx, condition, flags);
-}
-
 WebGLFenceSync::WebGLFenceSync(WebGL2RenderingContextBase* ctx,
                                GLenum condition,
                                GLbitfield flags)
-    : WebGLSync(ctx, insertQuery(ctx), GL_SYNC_FENCE) {}
+    : WebGLSync(ctx, insertQuery(ctx), GL_SYNC_FENCE) {
+  DCHECK(condition == GL_SYNC_GPU_COMMANDS_COMPLETE);
+  DCHECK_EQ(flags, 0u);
+}
 
 GLuint WebGLFenceSync::insertQuery(WebGL2RenderingContextBase* ctx) {
   auto* gl = ctx->ContextGL();

@@ -20,10 +20,6 @@ WebGLExtensionName OVRMultiview2::GetName() const {
   return kOVRMultiview2Name;
 }
 
-OVRMultiview2* OVRMultiview2::Create(WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<OVRMultiview2>(context);
-}
-
 void OVRMultiview2::framebufferTextureMultiviewOVR(GLenum target,
                                                    GLenum attachment,
                                                    WebGLTexture* texture,

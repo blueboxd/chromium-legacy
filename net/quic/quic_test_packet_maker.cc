@@ -108,12 +108,12 @@ quic::QuicFrames CloneFrames(const quic::QuicFrames& frames) {
 }  // namespace
 
 void QuicTestPacketMaker::DecoderStreamErrorDelegate::OnDecoderStreamError(
-    quic::QuicStringPiece error_message) {
+    quiche::QuicheStringPiece error_message) {
   LOG(FATAL) << error_message;
 }
 
 void QuicTestPacketMaker::EncoderStreamSenderDelegate::WriteStreamData(
-    quic::QuicStringPiece data) {
+    quiche::QuicheStringPiece data) {
   LOG(FATAL) << "data.length: " << data.length();
 }
 
@@ -342,7 +342,7 @@ QuicTestPacketMaker::MakeRstAndDataPacket(
     quic::QuicStreamId rst_stream_id,
     quic::QuicRstStreamErrorCode rst_error_code,
     quic::QuicStreamId data_stream_id,
-    quic::QuicStringPiece data) {
+    quiche::QuicheStringPiece data) {
   InitializeHeader(num, include_version);
   quic::QuicFrames frames;
 
@@ -371,7 +371,7 @@ QuicTestPacketMaker::MakeDataAndRstPacket(
     uint64_t num,
     bool include_version,
     quic::QuicStreamId data_stream_id,
-    quic::QuicStringPiece data,
+    quiche::QuicheStringPiece data,
     quic::QuicStreamId rst_stream_id,
     quic::QuicRstStreamErrorCode rst_error_code) {
   InitializeHeader(num, include_version);
@@ -550,7 +550,7 @@ QuicTestPacketMaker::MakeDataRstAndConnectionClosePacket(
     uint64_t num,
     bool include_version,
     quic::QuicStreamId data_stream_id,
-    quic::QuicStringPiece data,
+    quiche::QuicheStringPiece data,
     quic::QuicStreamId rst_stream_id,
     quic::QuicRstStreamErrorCode error_code,
     quic::QuicErrorCode quic_error,
@@ -592,7 +592,7 @@ QuicTestPacketMaker::MakeDataRstAckAndConnectionClosePacket(
     uint64_t num,
     bool include_version,
     quic::QuicStreamId data_stream_id,
-    quic::QuicStringPiece data,
+    quiche::QuicheStringPiece data,
     quic::QuicStreamId rst_stream_id,
     quic::QuicRstStreamErrorCode error_code,
     uint64_t largest_received,
@@ -807,7 +807,7 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeDataPacket(
     quic::QuicStreamId stream_id,
     bool should_include_version,
     bool fin,
-    quic::QuicStringPiece data) {
+    quiche::QuicheStringPiece data) {
   InitializeHeader(packet_number, should_include_version);
   return MakePacket(header_, GenerateNextStreamFrame(stream_id, fin, data));
 }
@@ -820,7 +820,7 @@ QuicTestPacketMaker::MakeAckAndDataPacket(uint64_t packet_number,
                                           uint64_t smallest_received,
                                           uint64_t least_unacked,
                                           bool fin,
-                                          quic::QuicStringPiece data) {
+                                          quiche::QuicheStringPiece data) {
   InitializeHeader(packet_number, include_version);
 
   quic::QuicAckFrame ack(MakeAckFrame(largest_received));
@@ -888,7 +888,7 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
   quic::QuicFrames frames;
   frames.push_back(GenerateNextStreamFrame(
       GetHeadersStreamId(), false,
-      quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size())));
+      quiche::QuicheStringPiece(spdy_frame.data(), spdy_frame.size())));
 
   // quic::QuicFrame takes a raw pointer. Use a std::vector here so we keep
   // StreamFrames alive until MakeMultipleFramesPacket is done.
@@ -896,7 +896,7 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
   for (size_t i = 0; i < data_writes.size(); ++i) {
     bool is_fin = fin && (i == data_writes.size() - 1);
     frames.push_back(GenerateNextStreamFrame(
-        stream_id, is_fin, quic::QuicStringPiece(data_writes[i])));
+        stream_id, is_fin, quiche::QuicheStringPiece(data_writes[i])));
   }
   return MakeMultipleFramesPacket(header_, frames, nullptr);
 }
@@ -939,8 +939,8 @@ QuicTestPacketMaker::MakeRequestHeadersPacket(
 
   return MakePacket(header_, GenerateNextStreamFrame(
                                  GetHeadersStreamId(), false,
-                                 quic::QuicStringPiece(spdy_frame.data(),
-                                                       spdy_frame.size())));
+                                 quiche::QuicheStringPiece(spdy_frame.data(),
+                                                           spdy_frame.size())));
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -990,7 +990,7 @@ QuicTestPacketMaker::MakeRequestHeadersAndRstPacket(
   quic::QuicFrames frames;
   frames.push_back(GenerateNextStreamFrame(
       GetHeadersStreamId(), false,
-      quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size())));
+      quiche::QuicheStringPiece(spdy_frame.data(), spdy_frame.size())));
   DVLOG(1) << "Adding frame: " << frames.back();
 
   quic::QuicRstStreamFrame rst_frame(1, stream_id, error_code,
@@ -1072,8 +1072,8 @@ QuicTestPacketMaker::MakePushPromisePacket(
   }
   return MakePacket(header_, GenerateNextStreamFrame(
                                  GetHeadersStreamId(), false,
-                                 quic::QuicStringPiece(spdy_frame.data(),
-                                                       spdy_frame.size())));
+                                 quiche::QuicheStringPiece(spdy_frame.data(),
+                                                           spdy_frame.size())));
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -1082,7 +1082,7 @@ QuicTestPacketMaker::MakeForceHolDataPacket(uint64_t packet_number,
                                             bool should_include_version,
                                             bool fin,
                                             quic::QuicStreamOffset* offset,
-                                            quic::QuicStringPiece data) {
+                                            quiche::QuicheStringPiece data) {
   spdy::SpdyDataIR spdy_data(stream_id, data);
   spdy_data.set_fin(fin);
   spdy::SpdySerializedFrame spdy_frame(
@@ -1090,7 +1090,7 @@ QuicTestPacketMaker::MakeForceHolDataPacket(uint64_t packet_number,
   InitializeHeader(packet_number, should_include_version);
   quic::QuicStreamFrame quic_frame(
       GetHeadersStreamId(), false, *offset,
-      quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
+      quiche::QuicheStringPiece(spdy_frame.data(), spdy_frame.size()));
   *offset += spdy_frame.size();
   return MakePacket(header_, quic::QuicFrame(quic_frame));
 }
@@ -1125,8 +1125,8 @@ QuicTestPacketMaker::MakeResponseHeadersPacket(
   }
   return MakePacket(header_, GenerateNextStreamFrame(
                                  GetHeadersStreamId(), false,
-                                 quic::QuicStringPiece(spdy_frame.data(),
-                                                       spdy_frame.size())));
+                                 quiche::QuicheStringPiece(spdy_frame.data(),
+                                                           spdy_frame.size())));
 }
 
 spdy::SpdyHeaderBlock QuicTestPacketMaker::GetRequestHeaders(
@@ -1274,8 +1274,8 @@ QuicTestPacketMaker::MakeInitialSettingsPacket(uint64_t packet_number) {
     InitializeHeader(packet_number, /*should_include_version*/ true);
     return MakePacket(header_, GenerateNextStreamFrame(
                                    GetHeadersStreamId(), false,
-                                   quic::QuicStringPiece(spdy_frame.data(),
-                                                         spdy_frame.size())));
+                                   quiche::QuicheStringPiece(
+                                       spdy_frame.data(), spdy_frame.size())));
   }
   quic::QuicFrames frames;
 
@@ -1308,8 +1308,8 @@ QuicTestPacketMaker::MakePriorityPacket(uint64_t packet_number,
     InitializeHeader(packet_number, should_include_version);
     return MakePacket(header_, GenerateNextStreamFrame(
                                    GetHeadersStreamId(), false,
-                                   quic::QuicStringPiece(spdy_frame.data(),
-                                                         spdy_frame.size())));
+                                   quiche::QuicheStringPiece(
+                                       spdy_frame.data(), spdy_frame.size())));
   }
   quic::PriorityFrame frame;
   frame.weight = weight;
@@ -1444,7 +1444,7 @@ std::string QuicTestPacketMaker::MaybePrependErrorCode(
 quic::QuicFrame QuicTestPacketMaker::GenerateNextStreamFrame(
     quic::QuicStreamId stream_id,
     bool fin,
-    quic::QuicStringPiece data) {
+    quiche::QuicheStringPiece data) {
   // Save the stream data so that callers can use temporary objects for data.
   saved_stream_data_.push_back(std::make_unique<std::string>(data));
   data = *saved_stream_data_.back();

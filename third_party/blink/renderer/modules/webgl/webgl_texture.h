@@ -38,8 +38,6 @@ class WebGLTexture final : public WebGLSharedPlatform3DObject {
   explicit WebGLTexture(WebGLRenderingContextBase*);
   ~WebGLTexture() override;
 
-  static WebGLTexture* Create(WebGLRenderingContextBase*);
-
   void SetTarget(GLenum);
 
   GLenum GetTarget() const { return target_; }

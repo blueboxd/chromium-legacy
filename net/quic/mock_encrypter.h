@@ -9,10 +9,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 
 namespace net {
 
@@ -25,25 +25,25 @@ class MockEncrypter : public quic::QuicEncrypter {
   ~MockEncrypter() override {}
 
   // QuicEncrypter implementation
-  bool SetKey(quic::QuicStringPiece key) override;
-  bool SetNoncePrefix(quic::QuicStringPiece nonce_prefix) override;
-  bool SetHeaderProtectionKey(quic::QuicStringPiece key) override;
-  bool SetIV(quic::QuicStringPiece iv) override;
+  bool SetKey(quiche::QuicheStringPiece key) override;
+  bool SetNoncePrefix(quiche::QuicheStringPiece nonce_prefix) override;
+  bool SetHeaderProtectionKey(quiche::QuicheStringPiece key) override;
+  bool SetIV(quiche::QuicheStringPiece iv) override;
   bool EncryptPacket(uint64_t packet_number,
-                     quic::QuicStringPiece associated_data,
-                     quic::QuicStringPiece plaintext,
+                     quiche::QuicheStringPiece associated_data,
+                     quiche::QuicheStringPiece plaintext,
                      char* output,
                      size_t* output_length,
                      size_t max_output_length) override;
   std::string GenerateHeaderProtectionMask(
-      quic::QuicStringPiece sample) override;
+      quiche::QuicheStringPiece sample) override;
   size_t GetKeySize() const override;
   size_t GetNoncePrefixSize() const override;
   size_t GetIVSize() const override;
   size_t GetMaxPlaintextSize(size_t ciphertext_size) const override;
   size_t GetCiphertextSize(size_t plaintext_size) const override;
-  quic::QuicStringPiece GetKey() const override;
-  quic::QuicStringPiece GetNoncePrefix() const override;
+  quiche::QuicheStringPiece GetKey() const override;
+  quiche::QuicheStringPiece GetNoncePrefix() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockEncrypter);

@@ -37,8 +37,6 @@ class WebGLBuffer final : public WebGLSharedPlatform3DObject {
   explicit WebGLBuffer(WebGLRenderingContextBase*);
   ~WebGLBuffer() override;
 
-  static WebGLBuffer* Create(WebGLRenderingContextBase*);
-
   GLenum GetInitialTarget() const { return initial_target_; }
   void SetInitialTarget(GLenum);
 

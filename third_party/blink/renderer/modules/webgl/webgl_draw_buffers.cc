@@ -39,10 +39,6 @@ WebGLExtensionName WebGLDrawBuffers::GetName() const {
   return kWebGLDrawBuffersName;
 }
 
-WebGLDrawBuffers* WebGLDrawBuffers::Create(WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<WebGLDrawBuffers>(context);
-}
-
 // static
 bool WebGLDrawBuffers::Supported(WebGLRenderingContextBase* context) {
   return context->ExtensionsUtil()->SupportsExtension("GL_EXT_draw_buffers");

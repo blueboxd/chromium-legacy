@@ -48,14 +48,6 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kSettingsAccountsTableViewId = @"kSettingsAccountsTableViewId";
-NSString* const kSettingsAccountsTableViewAddAccountCellId =
-    @"kSettingsAccountsTableViewAddAccountCellId";
-NSString* const kSettingsAccountsTableViewSignoutCellId =
-    @"kSettingsAccountsTableViewSignoutCellId";
-NSString* const kSettingsAccountsTableViewSyncCellId =
-    @"kSettingsAccountsTableViewSyncCellId";
-
 namespace {
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {

@@ -13,7 +13,6 @@ class OVRMultiview2 final : public WebGLExtension {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static OVRMultiview2* Create(WebGLRenderingContextBase*);
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 

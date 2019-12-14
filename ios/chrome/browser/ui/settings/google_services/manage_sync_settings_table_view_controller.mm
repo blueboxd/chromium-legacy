@@ -16,9 +16,6 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kManageSyncTableViewAccessibilityIdentifier =
-    @"ManageSyncTableViewAccessibilityIdentifier";
-
 @implementation ManageSyncSettingsTableViewController
 
 #pragma mark - UIViewController

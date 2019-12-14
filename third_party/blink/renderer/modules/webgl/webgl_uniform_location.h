@@ -36,8 +36,6 @@ class WebGLUniformLocation final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebGLUniformLocation* Create(WebGLProgram*, GLint location);
-
   WebGLUniformLocation(WebGLProgram*, GLint location);
 
   WebGLProgram* Program() const;

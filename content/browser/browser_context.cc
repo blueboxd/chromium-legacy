@@ -34,6 +34,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
+#include "content/browser/background_sync/background_sync_scheduler.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/browsing_data/browsing_data_remover_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -619,6 +620,11 @@ BrowserContext::~BrowserContext() {
 }
 
 void BrowserContext::ShutdownStoragePartitions() {
+  // The BackgroundSyncScheduler keeps raw pointers to partitions; clear it
+  // first.
+  if (GetUserData(kBackgroundSyncSchedulerKey))
+    RemoveUserData(kBackgroundSyncSchedulerKey);
+
   if (GetUserData(kStoragePartitionMapKeyName))
     RemoveUserData(kStoragePartitionMapKeyName);
 }

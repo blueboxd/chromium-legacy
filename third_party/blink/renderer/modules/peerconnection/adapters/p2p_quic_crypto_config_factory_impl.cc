@@ -36,7 +36,7 @@ class InsecureProofVerifier : public quic::ProofVerifier {
       const uint16_t port,
       const std::string& server_config,
       quic::QuicTransportVersion transport_version,
-      quic::QuicStringPiece chlo_hash,
+      quiche::QuicheStringPiece chlo_hash,
       const std::vector<std::string>& certs,
       const std::string& cert_sct,
       const std::string& signature,
@@ -78,7 +78,7 @@ class DummyProofSource : public quic::ProofSource {
                 const std::string& hostname,
                 const std::string& server_config,
                 quic::QuicTransportVersion transport_version,
-                quic::QuicStringPiece chlo_hash,
+                quiche::QuicheStringPiece chlo_hash,
                 std::unique_ptr<Callback> callback) override {
     quic::QuicCryptoProof proof;
     proof.signature = "Dummy signature";
@@ -99,7 +99,7 @@ class DummyProofSource : public quic::ProofSource {
       const quic::QuicSocketAddress& server_address,
       const std::string& hostname,
       uint16_t signature_algorithm,
-      quic::QuicStringPiece in,
+      quiche::QuicheStringPiece in,
       std::unique_ptr<SignatureCallback> callback) override {
     callback->Run(true, "Dummy signature");
   }

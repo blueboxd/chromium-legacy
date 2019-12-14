@@ -34,7 +34,6 @@ class KHRParallelShaderCompile final : public WebGLExtension {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static KHRParallelShaderCompile* Create(WebGLRenderingContextBase*);
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 

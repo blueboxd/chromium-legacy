@@ -22,11 +22,6 @@ WebGLExtensionName WebGLVideoTexture::GetName() const {
   return kWebGLVideoTextureName;
 }
 
-WebGLVideoTexture* WebGLVideoTexture::Create(
-    WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<WebGLVideoTexture>(context);
-}
-
 // We only need GL_OES_EGL_image_external extension on Android.
 bool WebGLVideoTexture::Supported(WebGLRenderingContextBase* context) {
 #if defined(OS_ANDROID)

@@ -303,6 +303,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void OnLegacyWindowDestroyed();
 
   gfx::NativeViewAccessible GetParentNativeViewAccessible();
+
+  void SetVirtualKeyboardRequested(bool virtual_keyboard_requested) {
+    virtual_keyboard_requested_ = virtual_keyboard_requested;
+  }
 #endif
 
   // Method to indicate if this instance is shutting down or closing.
@@ -629,6 +633,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Contains a copy of the last context menu request parameters. Only set when
   // we receive a request to show the context menu on a long press.
   std::unique_ptr<ContextMenuParams> last_context_menu_params_;
+
+  // Set to true if we requested the on screen keyboard to be displayed.
+  bool virtual_keyboard_requested_;
 
   friend class WinScreenKeyboardObserver;
   std::unique_ptr<WinScreenKeyboardObserver> keyboard_observer_;

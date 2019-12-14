@@ -28,8 +28,6 @@ class WebGLTransformFeedback : public WebGLContextObject {
 
   GLuint Object() const { return object_; }
 
-  static WebGLTransformFeedback* Create(WebGL2RenderingContextBase*, TFType);
-
   bool IsDefaultObject() const { return type_ == TFTypeDefault; }
 
   GLenum GetTarget() const { return target_; }

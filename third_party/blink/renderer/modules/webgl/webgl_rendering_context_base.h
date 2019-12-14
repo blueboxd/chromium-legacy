@@ -886,13 +886,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   template <typename T>
   class TypedExtensionTracker final : public ExtensionTracker {
    public:
-    static TypedExtensionTracker<T>* Create(Member<T>& extension_field,
-                                            ExtensionFlags flags,
-                                            const char* const* prefixes) {
-      return MakeGarbageCollected<TypedExtensionTracker<T>>(extension_field,
-                                                            flags, prefixes);
-    }
-
     TypedExtensionTracker(Member<T>& extension_field,
                           ExtensionFlags flags,
                           const char* const* prefixes)
@@ -901,7 +894,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
     WebGLExtension* GetExtension(WebGLRenderingContextBase* context) override {
       if (!extension_) {
-        extension_ = T::Create(context);
+        extension_ = MakeGarbageCollected<T>(context);
         extension_field_ = extension_;
       }
 
@@ -947,8 +940,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void RegisterExtension(Member<T>& extension_ptr,
                          ExtensionFlags flags = kApprovedExtension,
                          const char* const* prefixes = nullptr) {
-    extensions_.push_back(
-        TypedExtensionTracker<T>::Create(extension_ptr, flags, prefixes));
+    extensions_.push_back(MakeGarbageCollected<TypedExtensionTracker<T>>(
+        extension_ptr, flags, prefixes));
   }
 
   bool ExtensionSupportedAndAllowed(const ExtensionTracker*);

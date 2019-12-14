@@ -36,10 +36,6 @@ WebGLExtensionName EXTFragDepth::GetName() const {
   return kEXTFragDepthName;
 }
 
-EXTFragDepth* EXTFragDepth::Create(WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<EXTFragDepth>(context);
-}
-
 bool EXTFragDepth::Supported(WebGLRenderingContextBase* context) {
   return context->ExtensionsUtil()->SupportsExtension("GL_EXT_frag_depth");
 }

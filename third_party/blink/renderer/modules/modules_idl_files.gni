@@ -384,6 +384,7 @@ modules_idl_files =
           "webaudio/script_processor_node.idl",
           "webaudio/stereo_panner_node.idl",
           "webaudio/wave_shaper_node.idl",
+          "webcodecs/encoded_video_chunk.idl",
           "webcodecs/video_decoder.idl",
           "webcodecs/video_frame.idl",
           "webdatabase/database.idl",

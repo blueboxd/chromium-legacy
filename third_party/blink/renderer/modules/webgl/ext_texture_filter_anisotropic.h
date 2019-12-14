@@ -34,7 +34,6 @@ class EXTTextureFilterAnisotropic final : public WebGLExtension {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static EXTTextureFilterAnisotropic* Create(WebGLRenderingContextBase*);
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 

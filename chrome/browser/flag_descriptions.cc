@@ -1988,6 +1988,11 @@ const char kSiteIsolationOptOutDescription[] =
 const char kSiteIsolationOptOutChoiceDefault[] = "Default";
 const char kSiteIsolationOptOutChoiceOptOut[] = "Disabled (not recommended)";
 
+const char kSlowDCTimerInterruptsWinName[] = "Slow maximum DC interrupt timer";
+const char kSlowDCTimerInterruptsWinDescription[] =
+    "Slow the maximum interrupt timer on battery power to 8 ms, instead of the "
+    "default 4 ms.";
+
 const char kSmoothScrollingName[] = "Smooth Scrolling";
 const char kSmoothScrollingDescription[] =
     "Animate smoothly when scrolling page content.";

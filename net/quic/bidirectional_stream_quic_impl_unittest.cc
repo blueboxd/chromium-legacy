@@ -41,6 +41,8 @@
 #include "net/socket/socket_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_task_environment.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quiche/src/quic/core/crypto/null_decrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
@@ -48,8 +50,6 @@
 #include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_connection.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_arraysize.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
@@ -89,7 +89,7 @@ struct TestParams {
 
 // Used by ::testing::PrintToStringParamName().
 std::string PrintToString(const TestParams& p) {
-  return quic::QuicStrCat(
+  return quiche::QuicheStrCat(
       ParsedQuicVersionToString(p.version), "_",
       (p.client_headers_include_h2_stream_dependency ? "" : "No"),
       "Dependency");
@@ -602,24 +602,23 @@ class BidirectionalStreamQuicImplTest
     return server_maker_.GetResponseHeaders(response_code);
   }
 
-
   std::unique_ptr<quic::QuicReceivedPacket> ConstructServerDataPacket(
       uint64_t packet_number,
       bool should_include_version,
       bool fin,
-      quic::QuicStringPiece data) {
+      quiche::QuicheStringPiece data) {
     std::unique_ptr<quic::QuicReceivedPacket> packet(
         server_maker_.MakeDataPacket(packet_number, stream_id_,
                                      should_include_version, fin, data));
     DVLOG(2) << "packet(" << packet_number << "): " << std::endl
-             << quic::QuicTextUtils::HexDump(packet->AsStringPiece());
+             << quiche::QuicheTextUtils::HexDump(packet->AsStringPiece());
     return packet;
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructClientDataPacket(
       bool should_include_version,
       bool fin,
-      quic::QuicStringPiece data) {
+      quiche::QuicheStringPiece data) {
     return client_maker_.MakeDataPacket(++packet_number_, stream_id_,
                                         should_include_version, fin, data);
   }
@@ -655,7 +654,7 @@ class BidirectionalStreamQuicImplTest
             std::move(request_headers_), parent_stream_id,
             spdy_headers_frame_length));
     DVLOG(2) << "packet(" << packet_number_ << "): " << std::endl
-             << quic::QuicTextUtils::HexDump(packet->AsStringPiece());
+             << quiche::QuicheTextUtils::HexDump(packet->AsStringPiece());
     return packet;
   }
 
@@ -672,7 +671,7 @@ class BidirectionalStreamQuicImplTest
             ++packet_number_, stream_id_, kIncludeVersion, fin, priority,
             std::move(request_headers_), 0, spdy_headers_frame_length, data));
     DVLOG(2) << "packet(" << packet_number_ << "): " << std::endl
-             << quic::QuicTextUtils::HexDump(packet->AsStringPiece());
+             << quiche::QuicheTextUtils::HexDump(packet->AsStringPiece());
     return packet;
   }
 
@@ -732,7 +731,7 @@ class BidirectionalStreamQuicImplTest
         packet_number, include_version, stream_id_, quic::QUIC_STREAM_CANCELLED,
         /*include_stop_sending_if_v99=*/true));
     DVLOG(2) << "packet(" << packet_number << "): " << std::endl
-             << quic::QuicTextUtils::HexDump(packet->AsStringPiece());
+             << quiche::QuicheTextUtils::HexDump(packet->AsStringPiece());
     return packet;
   }
 
@@ -753,14 +752,14 @@ class BidirectionalStreamQuicImplTest
       uint64_t smallest_received,
       uint64_t least_unacked,
       bool fin,
-      quic::QuicStringPiece data,
+      quiche::QuicheStringPiece data,
       QuicTestPacketMaker* maker) {
     std::unique_ptr<quic::QuicReceivedPacket> packet(
         maker->MakeAckAndDataPacket(
             packet_number, should_include_version, stream_id_, largest_received,
             smallest_received, least_unacked, fin, data));
     DVLOG(2) << "packet(" << packet_number << "): " << std::endl
-             << quic::QuicTextUtils::HexDump(packet->AsStringPiece());
+             << quiche::QuicheTextUtils::HexDump(packet->AsStringPiece());
     return packet;
   }
 

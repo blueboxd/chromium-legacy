@@ -16,10 +16,6 @@ WebGLExtensionName EXTsRGB::GetName() const {
   return kEXTsRGBName;
 }
 
-EXTsRGB* EXTsRGB::Create(WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<EXTsRGB>(context);
-}
-
 bool EXTsRGB::Supported(WebGLRenderingContextBase* context) {
   Extensions3DUtil* extensions_util = context->ExtensionsUtil();
   return extensions_util->SupportsExtension("GL_EXT_sRGB");

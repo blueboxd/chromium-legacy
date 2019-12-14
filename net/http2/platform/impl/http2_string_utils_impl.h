@@ -13,8 +13,8 @@
 #include "base/strings/stringprintf.h"
 #include "net/base/escape.h"
 #include "net/base/hex_utils.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/http2/platform/api/http2_export.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_string_piece.h"
 
 namespace http2 {
 
@@ -40,18 +40,18 @@ inline std::string Http2HexEncodeImpl(const void* bytes, size_t size) {
   return base::HexEncode(bytes, size);
 }
 
-inline std::string Http2HexDecodeImpl(Http2StringPiece data) {
+inline std::string Http2HexDecodeImpl(quiche::QuicheStringPiece data) {
   std::string result;
   if (!base::HexStringToString(data, &result))
     result.clear();
   return result;
 }
 
-inline std::string Http2HexDumpImpl(Http2StringPiece data) {
+inline std::string Http2HexDumpImpl(quiche::QuicheStringPiece data) {
   return net::HexDump(data);
 }
 
-inline std::string Http2HexEscapeImpl(Http2StringPiece data) {
+inline std::string Http2HexEscapeImpl(quiche::QuicheStringPiece data) {
   return net::EscapeQueryParamValue(data, false);
 }
 

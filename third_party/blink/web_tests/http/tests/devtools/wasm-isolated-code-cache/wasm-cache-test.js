@@ -52,6 +52,10 @@ v8.wasm.cachedModule: 2 .wasm modules are cached
 v8.wasm.streamFromResponseCallback: 8 .wasm resources are fetched
 v8.wasm.compiledModule: 2 for large.wasm, 4 for small.wasm
 v8.wasm.moduleCacheHit: 2 for large.wasm
+
+If the baseline compiler is enabled, then only the small wasm modules will fully
+compile before the test ends. In that case, we expect 4 v8.wasm.compiledModule
+events.
 `
 );
 

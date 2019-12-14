@@ -7,17 +7,12 @@
 
 #import "base/ios/block_types.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
+#import "ios/chrome/browser/ui/settings/google_services/advanced_signin_settings_constants.h"
 
 @class AdvancedSigninSettingsCoordinator;
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @protocol BrowsingDataCommands;
-
-// The accessibility identifier for the navigation "Confirm" button.
-extern NSString* const kSyncSettingsConfirmButtonId;
-
-// The accessibility identifier for the navigation "Cancel" button.
-extern NSString* const kSyncSettingsCancelButtonId;
 
 // AdvancedSigninSettingsCoordinator delegate.
 @protocol AdvancedSigninSettingsCoordinatorDelegate <NSObject>

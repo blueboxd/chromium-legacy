@@ -17,7 +17,6 @@ class WebGLMultiDraw final : public WebGLExtension,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebGLMultiDraw* Create(WebGLRenderingContextBase*);
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 

@@ -13,13 +13,9 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace {
+namespace content {
 
 const char kBackgroundSyncSchedulerKey[] = "background-sync-scheduler";
-
-}  // namespace
-
-namespace content {
 
 using DelayedProcessingInfoMap =
     std::map<StoragePartitionImpl*, std::unique_ptr<base::OneShotTimer>>;

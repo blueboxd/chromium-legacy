@@ -21,7 +21,7 @@
 
 namespace quiche {
 
-// Chromium implementation of QuicTextUtils.
+// Chromium implementation of quiche::QuicheTextUtils.
 class QuicheTextUtilsImpl {
  public:
   // Returns true of |data| starts with |prefix|, case sensitively.

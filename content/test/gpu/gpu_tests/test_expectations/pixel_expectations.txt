@@ -234,3 +234,6 @@ crbug.com/1027518 [ mac nvidia ] Pixel_Video_Context_Loss_VP9 [ Skip ]
 crbug.com/1028975 [ linux ] Pixel_PrecisionRoundedCorner [ RetryOnFailure ]
 crbug.com/1028975 [ mac ] Pixel_PrecisionRoundedCorner [ RetryOnFailure ]
 crbug.com/1028975 [ win ] Pixel_PrecisionRoundedCorner [ RetryOnFailure ]
+
+# VP9 appears to not recover correctly after GPU process crashes on Windows.
+crbug.com/1033982 [ win nvidia ] Pixel_Video_Context_Loss_VP9 [ RetryOnFailure ]

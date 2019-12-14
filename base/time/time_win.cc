@@ -46,6 +46,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time_override.h"
+#include "base/time/time_win_features.h"
 
 namespace base {
 
@@ -86,9 +87,6 @@ void InitializeClock() {
   g_initial_time = CurrentWallclockMicroseconds();
 }
 
-const base::Feature kSlowDCTimerInterruptsFeature{
-    "SlowDCTimerInterrups", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // The two values that ActivateHighResolutionTimer uses to set the systemwide
 // timer interrupt frequency on Windows. It controls how precise timers are
 // but also has a big impact on battery life.
@@ -103,7 +101,7 @@ UINT MinTimerIntervalLowResMs() {
   // interval on modern CPUs - it wastes non-trivial power - so this experiment
   // tests an interval of 8 ms, recommended by Intel.
   static const UINT s_interval =
-      base::FeatureList::IsEnabled(kSlowDCTimerInterruptsFeature) ? 8 : 4;
+      base::FeatureList::IsEnabled(base::kSlowDCTimerInterruptsWin) ? 8 : 4;
   return s_interval;
 }
 

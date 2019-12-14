@@ -37290,6 +37290,7 @@ from previous Chrome versions.
   <int value="-560114351" label="OfflinePagesRenovations:disabled"/>
   <int value="-558471324" label="PreviewsCoinFlipHoldback_UKMOnly:disabled"/>
   <int value="-557742250" label="ContentSuggestionsCategories:disabled"/>
+  <int value="-556218705" label="SlowDCTimerInterruptsWin:enabled"/>
   <int value="-555341956" label="AutofillSaveAndFillVPA:enabled"/>
   <int value="-548082154" label="protect-sync-credential:disabled"/>
   <int value="-547301855" label="SyncPseudoUSSSupervisedUsers:enabled"/>
@@ -39056,6 +39057,7 @@ from previous Chrome versions.
   <int value="1714922056" label="GlobalMediaControls:disabled"/>
   <int value="1715338237" label="ContextualSearchSecondTap:disabled"/>
   <int value="1716104463" label="enable-fullscreen-app-list"/>
+  <int value="1717788959" label="SlowDCTimerInterruptsWin:disabled"/>
   <int value="1717987538" label="NTPTilesLowerResolutionFavicons:enabled"/>
   <int value="1718341860" label="NTPButton:enabled"/>
   <int value="1719189460" label="EnablePasswordSelection:disabled"/>
@@ -45249,6 +45251,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Lock screen - swipe gesture"/>
   <int value="3" label="Lock screen - button activated by keyboard"/>
   <int value="4" label="Stylus ejected"/>
+</enum>
+
+<enum name="NewTabPage.ExploreOffline.Action">
+  <int value="0" label="Displayed explore offline card on NTP"/>
+  <int value="1" label="Clicked confirm button"/>
+  <int value="2" label="Clicked cancel button"/>
 </enum>
 
 <enum name="NewTabPageActionAndroid">

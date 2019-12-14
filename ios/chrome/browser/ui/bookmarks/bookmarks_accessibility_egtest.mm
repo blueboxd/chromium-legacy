@@ -5,16 +5,17 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+#import "base/test/ios/wait_util.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_utils.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -41,14 +42,14 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 - (void)tearDown {
   [super tearDown];
   [ChromeEarlGrey clearBookmarks];
-  [BookmarkEarlGreyUtils clearBookmarksPositionCache];
+  [BookmarkEarlGrey clearBookmarksPositionCache];
 }
 
 #pragma mark - BookmarksAccessibilityTestCase Tests
 
 // Tests that all elements on the bookmarks landing page are accessible.
 - (void)testAccessibilityOnBookmarksLandingPage {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
 
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
@@ -56,7 +57,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 // Tests that all elements on mobile bookmarks are accessible.
 - (void)testAccessibilityOnMobileBookmarks {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -65,7 +66,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 // Tests that all elements on the bookmarks folder Edit page are accessible.
 - (void)testAccessibilityOnBookmarksFolderEditPage {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -89,7 +90,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 // Tests that all elements on the bookmarks Edit page are accessible.
 - (void)testAccessibilityOnBookmarksEditPage {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -101,14 +102,27 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
                                           IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT)]
       performAction:grey_tap()];
-  // TODO(crbug.com/976930): to support EG2 need to use [ChromeEarlGrey
-  // verifyAccessibilityForCurrentScreen]
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+
+  // Wait until screen appears.
+  id<GREYMatcher> screenTitleMatcher =
+      grey_accessibilityID(kBookmarkEditViewContainerIdentifier);
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:screenTitleMatcher]
+        assertWithMatcher:grey_sufficientlyVisible()
+                    error:&error];
+    return error == nil;
+  };
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 base::test::ios::kWaitForUIElementTimeout, condition),
+             @"Waiting for Edit screen to appear.");
+
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 }
 
 // Tests that all elements on the bookmarks Move page are accessible.
 - (void)testAccessibilityOnBookmarksMovePage {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -121,15 +135,27 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
                                           IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
       performAction:grey_tap()];
 
-  // TODO(crbug.com/976930): to support EG2 need to use [ChromeEarlGrey
-  // verifyAccessibilityForCurrentScreen]
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  // Wait until screen appears.
+  id<GREYMatcher> screenTitleMatcher = grey_accessibilityLabel(
+      l10n_util::GetNSString(IDS_IOS_BOOKMARK_CHOOSE_GROUP_BUTTON));
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:screenTitleMatcher]
+        assertWithMatcher:grey_sufficientlyVisible()
+                    error:&error];
+    return error == nil;
+  };
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 base::test::ios::kWaitForUIElementTimeout, condition),
+             @"Waiting for Choose Folder screen to appear.");
+
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 }
 
 // Tests that all elements on the bookmarks Move to New Folder page are
 // accessible.
 - (void)testAccessibilityOnBookmarksMoveToNewFolderPage {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -153,7 +179,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 // Tests that all elements on bookmarks Delete and Undo are accessible.
 - (void)testAccessibilityOnBookmarksDeleteUndo {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -182,7 +208,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 // Tests that all elements on the bookmarks Select page are accessible.
 - (void)testAccessibilityOnBookmarksSelect {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 

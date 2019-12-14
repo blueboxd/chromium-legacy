@@ -65,10 +65,8 @@ class WebGLFramebuffer final : public WebGLContextObject {
     WebGLAttachment();
   };
 
-  explicit WebGLFramebuffer(WebGLRenderingContextBase*, bool opaque);
+  explicit WebGLFramebuffer(WebGLRenderingContextBase*, bool opaque = false);
   ~WebGLFramebuffer() override;
-
-  static WebGLFramebuffer* Create(WebGLRenderingContextBase*);
 
   // An opaque framebuffer is one whose attachments are created and managed by
   // the browser and not inspectable or alterable via Javascript. This is

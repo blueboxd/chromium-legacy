@@ -1,3 +1,5 @@
 include_rules = [
     "+media/base/video_frame.h",
+    "+ui/gfx/geometry/rect.h",
+    "+ui/gfx/geometry/size.h",
 ]

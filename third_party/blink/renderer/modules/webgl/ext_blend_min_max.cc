@@ -15,10 +15,6 @@ WebGLExtensionName EXTBlendMinMax::GetName() const {
   return kEXTBlendMinMaxName;
 }
 
-EXTBlendMinMax* EXTBlendMinMax::Create(WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<EXTBlendMinMax>(context);
-}
-
 bool EXTBlendMinMax::Supported(WebGLRenderingContextBase* context) {
   return context->ExtensionsUtil()->SupportsExtension("GL_EXT_blend_minmax");
 }

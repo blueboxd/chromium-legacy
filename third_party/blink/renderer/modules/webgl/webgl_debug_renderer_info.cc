@@ -35,11 +35,6 @@ WebGLExtensionName WebGLDebugRendererInfo::GetName() const {
   return kWebGLDebugRendererInfoName;
 }
 
-WebGLDebugRendererInfo* WebGLDebugRendererInfo::Create(
-    WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<WebGLDebugRendererInfo>(context);
-}
-
 bool WebGLDebugRendererInfo::Supported(WebGLRenderingContextBase*) {
   return true;
 }

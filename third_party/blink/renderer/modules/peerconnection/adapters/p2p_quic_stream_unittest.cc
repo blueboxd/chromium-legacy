@@ -56,9 +56,10 @@ class P2PQuicStreamTest : public testing::Test {
   }
 
   template <wtf_size_t Size>
-  static quic::QuicStringPiece StringPieceFromArray(
+  static quiche::QuicheStringPiece StringPieceFromArray(
       const uint8_t (&array)[Size]) {
-    return quic::QuicStringPiece(reinterpret_cast<const char*>(array), Size);
+    return quiche::QuicheStringPiece(reinterpret_cast<const char*>(array),
+                                     Size);
   }
 
   template <wtf_size_t Size>

@@ -66,7 +66,7 @@ class ProofVerifierChromium::Job {
       const uint16_t port,
       const std::string& server_config,
       quic::QuicTransportVersion quic_version,
-      quic::QuicStringPiece chlo_hash,
+      quiche::QuicheStringPiece chlo_hash,
       const std::vector<std::string>& certs,
       const std::string& cert_sct,
       const std::string& signature,
@@ -116,7 +116,7 @@ class ProofVerifierChromium::Job {
 
   bool VerifySignature(const std::string& signed_data,
                        quic::QuicTransportVersion quic_version,
-                       quic::QuicStringPiece chlo_hash,
+                       quiche::QuicheStringPiece chlo_hash,
                        const std::string& signature,
                        const std::string& cert);
 
@@ -206,7 +206,7 @@ quic::QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
     const uint16_t port,
     const string& server_config,
     quic::QuicTransportVersion quic_version,
-    quic::QuicStringPiece chlo_hash,
+    quiche::QuicheStringPiece chlo_hash,
     const std::vector<string>& certs,
     const std::string& cert_sct,
     const string& signature,
@@ -299,9 +299,9 @@ bool ProofVerifierChromium::Job::GetX509Certificate(
   }
 
   // Convert certs to X509Certificate.
-  std::vector<quic::QuicStringPiece> cert_pieces(certs.size());
+  std::vector<quiche::QuicheStringPiece> cert_pieces(certs.size());
   for (unsigned i = 0; i < certs.size(); i++) {
-    cert_pieces[i] = quic::QuicStringPiece(certs[i]);
+    cert_pieces[i] = quiche::QuicheStringPiece(certs[i]);
   }
   cert_ = X509Certificate::CreateFromDERCertChain(cert_pieces);
   if (!cert_.get()) {
@@ -529,7 +529,7 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
 bool ProofVerifierChromium::Job::VerifySignature(
     const string& signed_data,
     quic::QuicTransportVersion quic_version,
-    quic::QuicStringPiece chlo_hash,
+    quiche::QuicheStringPiece chlo_hash,
     const string& signature,
     const string& cert) {
   size_t size_bits;
@@ -596,7 +596,7 @@ quic::QuicAsyncStatus ProofVerifierChromium::VerifyProof(
     const uint16_t port,
     const std::string& server_config,
     quic::QuicTransportVersion quic_version,
-    quic::QuicStringPiece chlo_hash,
+    quiche::QuicheStringPiece chlo_hash,
     const std::vector<std::string>& certs,
     const std::string& cert_sct,
     const std::string& signature,

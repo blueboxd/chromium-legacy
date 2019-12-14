@@ -30,10 +30,6 @@
 
 namespace blink {
 
-WebGLShader* WebGLShader::Create(WebGLRenderingContextBase* ctx, GLenum type) {
-  return MakeGarbageCollected<WebGLShader>(ctx, type);
-}
-
 WebGLShader::WebGLShader(WebGLRenderingContextBase* ctx, GLenum type)
     : WebGLSharedPlatform3DObject(ctx), type_(type), source_("") {
   SetObject(ctx->ContextGL()->CreateShader(type));

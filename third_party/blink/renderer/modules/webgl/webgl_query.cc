@@ -11,10 +11,6 @@
 
 namespace blink {
 
-WebGLQuery* WebGLQuery::Create(WebGL2RenderingContextBase* ctx) {
-  return MakeGarbageCollected<WebGLQuery>(ctx);
-}
-
 WebGLQuery::WebGLQuery(WebGL2RenderingContextBase* ctx)
     : WebGLSharedPlatform3DObject(ctx),
       target_(0),

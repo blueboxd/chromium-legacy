@@ -47,10 +47,6 @@ WebGLExtensionName OESTextureFloat::GetName() const {
   return kOESTextureFloatName;
 }
 
-OESTextureFloat* OESTextureFloat::Create(WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<OESTextureFloat>(context);
-}
-
 bool OESTextureFloat::Supported(WebGLRenderingContextBase* context) {
   return context->ExtensionsUtil()->SupportsExtension("GL_OES_texture_float");
 }

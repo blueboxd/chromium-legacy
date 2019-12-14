@@ -17,8 +17,6 @@ class WebGLMultiDrawInstancedBaseVertexBaseInstance final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebGLMultiDrawInstancedBaseVertexBaseInstance* Create(
-      WebGLRenderingContextBase*);
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 

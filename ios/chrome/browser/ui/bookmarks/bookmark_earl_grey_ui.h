@@ -111,9 +111,6 @@ id<GREYMatcher> SearchIconButton();
 
 - (void)verifyBookmarkFolderIsSeen:(NSString*)bookmarkFolder;
 
-// Scroll the bookmarks to top.
-- (void)scrollToTop;
-
 // Scroll the bookmarks to bottom.
 - (void)scrollToBottom;
 

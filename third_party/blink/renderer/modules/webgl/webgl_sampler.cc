@@ -9,10 +9,6 @@
 
 namespace blink {
 
-WebGLSampler* WebGLSampler::Create(WebGL2RenderingContextBase* ctx) {
-  return MakeGarbageCollected<WebGLSampler>(ctx);
-}
-
 WebGLSampler::WebGLSampler(WebGL2RenderingContextBase* ctx)
     : WebGLSharedPlatform3DObject(ctx) {
   GLuint sampler;

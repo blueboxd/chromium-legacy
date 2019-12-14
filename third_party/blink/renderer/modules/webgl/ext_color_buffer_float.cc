@@ -20,11 +20,6 @@ WebGLExtensionName EXTColorBufferFloat::GetName() const {
   return kEXTColorBufferFloatName;
 }
 
-EXTColorBufferFloat* EXTColorBufferFloat::Create(
-    WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<EXTColorBufferFloat>(context);
-}
-
 bool EXTColorBufferFloat::Supported(WebGLRenderingContextBase* context) {
   return context->ExtensionsUtil()->SupportsExtension(
       "GL_EXT_color_buffer_float");

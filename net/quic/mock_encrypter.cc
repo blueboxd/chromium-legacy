@@ -10,7 +10,7 @@
 using quic::DiversificationNonce;
 using quic::Perspective;
 using quic::QuicPacketNumber;
-using quic::QuicStringPiece;
+using quiche::QuicheStringPiece;
 
 namespace net {
 
@@ -22,21 +22,21 @@ const size_t kPaddingSize = 12;
 
 MockEncrypter::MockEncrypter(Perspective perspective) {}
 
-bool MockEncrypter::SetKey(QuicStringPiece key) {
+bool MockEncrypter::SetKey(quiche::QuicheStringPiece key) {
   return key.empty();
 }
 
-bool MockEncrypter::SetNoncePrefix(QuicStringPiece nonce_prefix) {
+bool MockEncrypter::SetNoncePrefix(quiche::QuicheStringPiece nonce_prefix) {
   return nonce_prefix.empty();
 }
 
-bool MockEncrypter::SetIV(QuicStringPiece iv) {
+bool MockEncrypter::SetIV(quiche::QuicheStringPiece iv) {
   return iv.empty();
 }
 
 bool MockEncrypter::EncryptPacket(uint64_t /*packet_number*/,
-                                  QuicStringPiece associated_data,
-                                  QuicStringPiece plaintext,
+                                  quiche::QuicheStringPiece associated_data,
+                                  quiche::QuicheStringPiece plaintext,
                                   char* output,
                                   size_t* output_length,
                                   size_t max_output_length) {
@@ -49,12 +49,12 @@ bool MockEncrypter::EncryptPacket(uint64_t /*packet_number*/,
   return true;
 }
 
-bool MockEncrypter::SetHeaderProtectionKey(QuicStringPiece key) {
+bool MockEncrypter::SetHeaderProtectionKey(quiche::QuicheStringPiece key) {
   return key.empty();
 }
 
 std::string MockEncrypter::GenerateHeaderProtectionMask(
-    QuicStringPiece sample) {
+    quiche::QuicheStringPiece sample) {
   return std::string(5, 0);
 }
 
@@ -78,12 +78,12 @@ size_t MockEncrypter::GetCiphertextSize(size_t plaintext_size) const {
   return plaintext_size + kPaddingSize;
 }
 
-QuicStringPiece MockEncrypter::GetKey() const {
-  return QuicStringPiece();
+quiche::QuicheStringPiece MockEncrypter::GetKey() const {
+  return quiche::QuicheStringPiece();
 }
 
-QuicStringPiece MockEncrypter::GetNoncePrefix() const {
-  return QuicStringPiece();
+quiche::QuicheStringPiece MockEncrypter::GetNoncePrefix() const {
+  return quiche::QuicheStringPiece();
 }
 
 }  // namespace net

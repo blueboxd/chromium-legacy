@@ -15,6 +15,7 @@
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
@@ -44,23 +45,9 @@ using chrome_test_util::OmniboxText;
 using chrome_test_util::PrimarySignInButton;
 using chrome_test_util::SecondarySignInButton;
 
-const GURL GetFirstUrl() {
-  return web::test::HttpServer::MakeUrl(
-      "http://ios/testing/data/http_server_files/pony.html");
-}
-
-const GURL GetSecondUrl() {
-  return web::test::HttpServer::MakeUrl(
-      "http://ios/testing/data/http_server_files/destination.html");
-}
-
-const GURL GetFrenchUrl() {
-  return web::test::HttpServer::MakeUrl("http://www.a.fr/");
-}
-
 @implementation BookmarkEarlGreyUtils
 
-#pragma mark - Model Calls
+#pragma mark - Public Interface
 
 + (void)clearBookmarksPositionCache {
   ios::ChromeBrowserState* browser_state =
@@ -222,18 +209,6 @@ const GURL GetFrenchUrl() {
   prefs->SetBoolean(prefs::kIosBookmarkPromoAlreadySeen, seen);
 }
 
-+ (void)waitForBookmarkModelLoaded:(BOOL)loaded {
-  bookmarks::BookmarkModel* bookmarkModel =
-      ios::BookmarkModelFactory::GetForBrowserState(
-          chrome_test_util::GetOriginalBrowserState());
-  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
-                 base::test::ios::kWaitForUIElementTimeout,
-                 ^{
-                   return bookmarkModel->loaded() == loaded;
-                 }),
-             @"Bookmark model was not loaded");
-}
-
 + (void)assertExistenceOfBookmarkWithURL:(NSString*)URL name:(NSString*)name {
   bookmarks::BookmarkModel* bookmarkModel =
       ios::BookmarkModelFactory::GetForBrowserState(
@@ -343,6 +318,20 @@ const GURL GetFrenchUrl() {
   std::set<const bookmarks::BookmarkNode*> toMove;
   toMove.insert(bookmark);
   bookmark_utils_ios::MoveBookmarks(toMove, bookmarkModel, folder);
+}
+
+#pragma mark - Helpers
+
++ (void)waitForBookmarkModelLoaded:(BOOL)loaded {
+  bookmarks::BookmarkModel* bookmarkModel =
+      ios::BookmarkModelFactory::GetForBrowserState(
+          chrome_test_util::GetOriginalBrowserState());
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 base::test::ios::kWaitForUIElementTimeout,
+                 ^{
+                   return bookmarkModel->loaded() == loaded;
+                 }),
+             @"Bookmark model was not loaded");
 }
 
 @end

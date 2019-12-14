@@ -67,12 +67,12 @@
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_task_environment.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quiche/src/quic/core/quic_framer.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
@@ -125,7 +125,7 @@ struct TestParams {
 
 // Used by ::testing::PrintToStringParamName().
 std::string PrintToString(const TestParams& p) {
-  return quic::QuicStrCat(
+  return quiche::QuicheStrCat(
       ParsedQuicVersionToString(p.version), "_",
       (p.client_headers_include_h2_stream_dependency ? "" : "No"),
       "Dependency");
@@ -153,7 +153,7 @@ std::string PrintToString(const PoolingTestParams& p) {
       destination_string = "DIFFERENT";
       break;
   }
-  return quic::QuicStrCat(
+  return quiche::QuicheStrCat(
       ParsedQuicVersionToString(p.version), "_", destination_string, "_",
       (p.client_headers_include_h2_stream_dependency ? "" : "No"),
       "Dependency");
@@ -508,7 +508,7 @@ class QuicNetworkTransactionTest
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      quic::QuicStringPiece data) {
+      quiche::QuicheStringPiece data) {
     return server_maker_.MakeDataPacket(packet_number, stream_id,
                                         should_include_version, fin, data);
   }
@@ -518,7 +518,7 @@ class QuicNetworkTransactionTest
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      quic::QuicStringPiece data) {
+      quiche::QuicheStringPiece data) {
     return client_maker_.MakeDataPacket(packet_number, stream_id,
                                         should_include_version, fin, data);
   }
@@ -531,7 +531,7 @@ class QuicNetworkTransactionTest
       uint64_t smallest_received,
       uint64_t least_unacked,
       bool fin,
-      quic::QuicStringPiece data) {
+      quiche::QuicheStringPiece data) {
     return client_maker_.MakeAckAndDataPacket(
         packet_number, include_version, stream_id, largest_received,
         smallest_received, least_unacked, fin, data);
@@ -543,7 +543,7 @@ class QuicNetworkTransactionTest
       bool should_include_version,
       bool fin,
       quic::QuicStreamOffset* offset,
-      quic::QuicStringPiece data) {
+      quiche::QuicheStringPiece data) {
     return client_maker_.MakeForceHolDataPacket(
         packet_number, stream_id, should_include_version, fin, offset, data);
   }
@@ -6826,8 +6826,8 @@ TEST_P(QuicNetworkTransactionTest, NoMigrationForMsgTooBig) {
   context_.params()->origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));
   const std::string error_details =
-      quic::QuicStrCat("Write failed with error: ", ERR_MSG_TOO_BIG, " (",
-                       strerror(ERR_MSG_TOO_BIG), ")");
+      quiche::QuicheStrCat("Write failed with error: ", ERR_MSG_TOO_BIG, " (",
+                           strerror(ERR_MSG_TOO_BIG), ")");
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
@@ -8136,7 +8136,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectHttpsServer) {
         SYNCHRONOUS,
         ConstructClientAckAndDataPacket(
             packet_num++, false, GetNthClientInitiatedBidirectionalStreamId(0),
-            1, 1, 1, false, quic::QuicStringPiece(get_request)));
+            1, 1, 1, false, quiche::QuicheStringPiece(get_request)));
   } else {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
@@ -8239,7 +8239,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectSpdyServer) {
         ConstructClientAckAndDataPacket(
             packet_num++, false, GetNthClientInitiatedBidirectionalStreamId(0),
             1, 1, 1, false,
-            quic::QuicStringPiece(get_frame.data(), get_frame.size())));
+            quiche::QuicheStringPiece(get_frame.data(), get_frame.size())));
   } else {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
@@ -8347,7 +8347,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseTransportSocket) {
         SYNCHRONOUS, ConstructClientAckAndDataPacket(
                          write_packet_index++, false,
                          GetNthClientInitiatedBidirectionalStreamId(0), 1, 1, 1,
-                         false, quic::QuicStringPiece(get_request_1)));
+                         false, quiche::QuicheStringPiece(get_request_1)));
   } else {
     mock_quic_data.AddWrite(
         SYNCHRONOUS, ConstructClientAckAndDataPacket(
@@ -8392,7 +8392,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseTransportSocket) {
         SYNCHRONOUS,
         ConstructClientDataPacket(
             write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(0),
-            false, false, quic::QuicStringPiece(get_request_2)));
+            false, false, quiche::QuicheStringPiece(get_request_2)));
   }
 
   const char get_response_2[] =
@@ -8509,7 +8509,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
         SYNCHRONOUS,
         ConstructClientAckAndDataPacket(
             packet_num++, false, GetNthClientInitiatedBidirectionalStreamId(0),
-            1, 1, 1, false, quic::QuicStringPiece(get_request)));
+            1, 1, 1, false, quiche::QuicheStringPiece(get_request)));
   } else {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
@@ -8558,7 +8558,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
         ConstructClientAckAndDataPacket(
             packet_num++, false, GetNthClientInitiatedBidirectionalStreamId(1),
             4, 4, 1, false,
-            quic::QuicStringPiece(get_frame.data(), get_frame.size())));
+            quiche::QuicheStringPiece(get_frame.data(), get_frame.size())));
   } else {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
@@ -8816,7 +8816,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectBadCertificate) {
         SYNCHRONOUS,
         ConstructClientAckAndDataPacket(
             packet_num++, false, GetNthClientInitiatedBidirectionalStreamId(1),
-            2, 2, 1, false, quic::QuicStringPiece(get_request)));
+            2, 2, 1, false, quiche::QuicheStringPiece(get_request)));
   } else {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
@@ -9813,7 +9813,7 @@ TEST_P(QuicNetworkTransactionTest, NetworkIsolationTunnel) {
           SYNCHRONOUS, client_maker.MakeAckAndDataPacket(
                            packet_num++, false,
                            GetNthClientInitiatedBidirectionalStreamId(0), 1, 1,
-                           1, false, quic::QuicStringPiece(kGetRequest)));
+                           1, false, quiche::QuicheStringPiece(kGetRequest)));
     } else {
       mock_quic_data[index]->AddWrite(
           SYNCHRONOUS, client_maker.MakeAckAndDataPacket(

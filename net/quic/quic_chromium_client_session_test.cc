@@ -85,7 +85,7 @@ struct TestParams {
 
 // Used by ::testing::PrintToStringParamName().
 std::string PrintToString(const TestParams& p) {
-  return quic::QuicStrCat(
+  return quiche::QuicheStrCat(
       ParsedQuicVersionToString(p.version), "_",
       (p.client_headers_include_h2_stream_dependency ? "" : "No"),
       "Dependency");
@@ -1137,7 +1137,7 @@ TEST_P(QuicChromiumClientSessionTest, PushStreamTimedOutWithResponse) {
       GetNthServerInitiatedUnidirectionalStreamId(0), spdy::SpdyHeaderBlock());
   // Read data on the pushed stream.
   quic::QuicStreamFrame data(GetNthServerInitiatedUnidirectionalStreamId(0),
-                             false, 0, quic::QuicStringPiece("SP"));
+                             false, 0, quiche::QuicheStringPiece("SP"));
   session_->OnStreamFrame(data);
 
   quic::QuicClientPromisedInfo* promised =
@@ -1175,7 +1175,7 @@ TEST_P(QuicChromiumClientSessionTest, PendingStreamOnRst) {
   CompleteCryptoHandshake();
 
   quic::QuicStreamFrame data(GetNthServerInitiatedUnidirectionalStreamId(0),
-                             false, 1, quic::QuicStringPiece("SP"));
+                             false, 1, quiche::QuicheStringPiece("SP"));
   session_->OnStreamFrame(data);
   EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
   quic::QuicRstStreamFrame rst(quic::kInvalidControlFrameId,
@@ -1207,7 +1207,7 @@ TEST_P(QuicChromiumClientSessionTest, ClosePendingStream) {
   CompleteCryptoHandshake();
 
   quic::QuicStreamId id = GetNthServerInitiatedUnidirectionalStreamId(0);
-  quic::QuicStreamFrame data(id, false, 1, quic::QuicStringPiece("SP"));
+  quic::QuicStreamFrame data(id, false, 1, quiche::QuicheStringPiece("SP"));
   session_->OnStreamFrame(data);
   EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
   session_->CloseStream(id);
@@ -1378,7 +1378,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushAfterReceivingResponse) {
       GetNthServerInitiatedUnidirectionalStreamId(0), spdy::SpdyHeaderBlock());
   // Read data on the pushed stream.
   quic::QuicStreamFrame data(GetNthServerInitiatedUnidirectionalStreamId(0),
-                             false, 0, quic::QuicStringPiece("SP"));
+                             false, 0, quiche::QuicheStringPiece("SP"));
   session_->OnStreamFrame(data);
 
   quic::QuicClientPromisedInfo* promised =
@@ -1712,7 +1712,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
   }
   ack_and_data_out = client_maker_.MakeDataPacket(
       packet_num++, GetNthClientInitiatedBidirectionalStreamId(0), true, false,
-      quic::QuicStringPiece(data));
+      quiche::QuicheStringPiece(data));
   std::unique_ptr<quic::QuicEncryptedPacket> server_ping(
       server_maker_.MakePingPacket(1, /*include_version=*/false));
   MockRead reads[] = {

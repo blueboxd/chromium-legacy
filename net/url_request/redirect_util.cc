@@ -43,11 +43,17 @@ void RedirectUtil::UpdateHttpRequest(
     // See also: https://crbug.com/760487
     request_headers->RemoveHeader(HttpRequestHeaders::kOrigin);
 
-    // The inclusion of a multipart Content-Type header can cause problems with
-    // some servers:
-    // http://code.google.com/p/chromium/issues/detail?id=843
+    // This header should only be present further down the stack, but remove it
+    // here just in case.
     request_headers->RemoveHeader(HttpRequestHeaders::kContentLength);
+
+    // These are "request-body-headers" and should be removed on redirects that
+    // change the method, per the fetch spec.
+    // https://fetch.spec.whatwg.org/
     request_headers->RemoveHeader(HttpRequestHeaders::kContentType);
+    request_headers->RemoveHeader("Content-Encoding");
+    request_headers->RemoveHeader("Content-Language");
+    request_headers->RemoveHeader("Content-Location");
 
     *should_clear_upload = true;
   }

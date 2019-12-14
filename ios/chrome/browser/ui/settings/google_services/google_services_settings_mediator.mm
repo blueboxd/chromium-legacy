@@ -44,9 +44,6 @@
 
 using l10n_util::GetNSString;
 
-NSString* const kManageSyncCellAccessibilityIdentifier =
-    @"ManageSyncCellAccessibilityIdentifier";
-
 typedef NSArray<TableViewItem*>* ItemArray;
 
 namespace {

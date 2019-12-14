@@ -38,6 +38,7 @@ mojom("mojom") {
     "video_decode_stats_recorder.mojom",
     "video_decoder.mojom",
     "video_encode_accelerator.mojom",
+    "video_encoder_info.mojom",
     "watch_time_recorder.mojom",
   ]
 
@@ -126,6 +127,7 @@ source_set("unit_tests") {
     "audio_decoder_config_mojom_traits_unittest.cc",
     "cdm_key_information_mojom_traits_unittest.cc",
     "video_decoder_config_mojom_traits_unittest.cc",
+    "video_encoder_info_mojom_traits_unittest.cc",
     "video_frame_mojom_traits_unittest.cc",
   ]
 
@@ -134,6 +136,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//media:test_support",
     "//media/mojo:test_support",
+    "//mojo/public/cpp/test_support:test_utils",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx:test_support",

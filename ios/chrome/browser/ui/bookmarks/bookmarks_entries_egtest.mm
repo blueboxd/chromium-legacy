@@ -9,6 +9,7 @@
 #import "base/test/ios/wait_util.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_service.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_utils.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"

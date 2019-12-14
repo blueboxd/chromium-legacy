@@ -157,7 +157,17 @@ bool PdfAXActionTarget::ScrollToMakeVisibleWithSubFocus(
 }
 
 bool PdfAXActionTarget::ScrollToGlobalPoint(const gfx::Point& point) const {
-  return false;
+  PP_PdfAccessibilityActionData pdf_action_data = {};
+  pdf_action_data.action =
+      PP_PdfAccessibilityAction::PP_PDF_SCROLL_TO_GLOBAL_POINT;
+  pdf_action_data.target_point = {point.x(), point.y()};
+  pdf_action_data.target_rect = {
+      {target_plugin_node_.data().relative_bounds.bounds.x(),
+       target_plugin_node_.data().relative_bounds.bounds.y()},
+      {target_plugin_node_.data().relative_bounds.bounds.width(),
+       target_plugin_node_.data().relative_bounds.bounds.height()}};
+  pdf_accessibility_tree_source_->HandleAction(pdf_action_data);
+  return true;
 }
 
 }  // namespace pdf

@@ -15,10 +15,6 @@ WebGLExtensionName EXTFloatBlend::GetName() const {
   return kEXTFloatBlendName;
 }
 
-EXTFloatBlend* EXTFloatBlend::Create(WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<EXTFloatBlend>(context);
-}
-
 bool EXTFloatBlend::Supported(WebGLRenderingContextBase* context) {
   return context->ExtensionsUtil()->SupportsExtension("GL_EXT_float_blend");
 }

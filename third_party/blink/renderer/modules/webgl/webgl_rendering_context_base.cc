@@ -108,6 +108,7 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -1178,7 +1179,7 @@ void WebGLRenderingContextBase::InitializeNewContext() {
 
   read_buffer_of_default_framebuffer_ = GL_BACK;
 
-  default_vertex_array_object_ = WebGLVertexArrayObject::Create(
+  default_vertex_array_object_ = MakeGarbageCollected<WebGLVertexArrayObject>(
       this, WebGLVertexArrayObjectBase::kVaoTypeDefault);
 
   bound_vertex_array_object_ = default_vertex_array_object_;
@@ -2302,31 +2303,31 @@ void WebGLRenderingContextBase::copyTexSubImage2D(GLenum target,
 WebGLBuffer* WebGLRenderingContextBase::createBuffer() {
   if (isContextLost())
     return nullptr;
-  return WebGLBuffer::Create(this);
+  return MakeGarbageCollected<WebGLBuffer>(this);
 }
 
 WebGLFramebuffer* WebGLRenderingContextBase::createFramebuffer() {
   if (isContextLost())
     return nullptr;
-  return WebGLFramebuffer::Create(this);
+  return MakeGarbageCollected<WebGLFramebuffer>(this);
 }
 
 WebGLTexture* WebGLRenderingContextBase::createTexture() {
   if (isContextLost())
     return nullptr;
-  return WebGLTexture::Create(this);
+  return MakeGarbageCollected<WebGLTexture>(this);
 }
 
 WebGLProgram* WebGLRenderingContextBase::createProgram() {
   if (isContextLost())
     return nullptr;
-  return WebGLProgram::Create(this);
+  return MakeGarbageCollected<WebGLProgram>(this);
 }
 
 WebGLRenderbuffer* WebGLRenderingContextBase::createRenderbuffer() {
   if (isContextLost())
     return nullptr;
-  return WebGLRenderbuffer::Create(this);
+  return MakeGarbageCollected<WebGLRenderbuffer>(this);
 }
 
 void WebGLRenderingContextBase::SetBoundVertexArrayObject(
@@ -2344,7 +2345,7 @@ WebGLShader* WebGLRenderingContextBase::createShader(GLenum type) {
     return nullptr;
   }
 
-  return WebGLShader::Create(this, type);
+  return MakeGarbageCollected<WebGLShader>(this, type);
 }
 
 void WebGLRenderingContextBase::cullFace(GLenum mode) {
@@ -2829,7 +2830,8 @@ WebGLActiveInfo* WebGLRenderingContextBase::getActiveAttrib(
                                reinterpret_cast<GLchar*>(name_ptr));
   if (size < 0)
     return nullptr;
-  return WebGLActiveInfo::Create(name_impl->Substring(0, length), type, size);
+  return MakeGarbageCollected<WebGLActiveInfo>(name_impl->Substring(0, length),
+                                               type, size);
 }
 
 WebGLActiveInfo* WebGLRenderingContextBase::getActiveUniform(
@@ -2859,7 +2861,8 @@ WebGLActiveInfo* WebGLRenderingContextBase::getActiveUniform(
                                 reinterpret_cast<GLchar*>(name_ptr));
   if (size < 0)
     return nullptr;
-  return WebGLActiveInfo::Create(name_impl->Substring(0, length), type, size);
+  return MakeGarbageCollected<WebGLActiveInfo>(name_impl->Substring(0, length),
+                                               type, size);
 }
 
 base::Optional<HeapVector<Member<WebGLShader>>>
@@ -3608,7 +3611,8 @@ WebGLShaderPrecisionFormat* WebGLRenderingContextBase::getShaderPrecisionFormat(
   GLint precision = 0;
   ContextGL()->GetShaderPrecisionFormat(shader_type, precision_type, range,
                                         &precision);
-  return WebGLShaderPrecisionFormat::Create(range[0], range[1], precision);
+  return MakeGarbageCollected<WebGLShaderPrecisionFormat>(range[0], range[1],
+                                                          precision);
 }
 
 String WebGLRenderingContextBase::getShaderSource(WebGLShader* shader) {
@@ -3972,7 +3976,7 @@ WebGLUniformLocation* WebGLRenderingContextBase::getUniformLocation(
       ObjectOrZero(program), name.Utf8().c_str());
   if (uniform_location == -1)
     return nullptr;
-  return WebGLUniformLocation::Create(program, uniform_location);
+  return MakeGarbageCollected<WebGLUniformLocation>(program, uniform_location);
 }
 
 ScriptValue WebGLRenderingContextBase::getVertexAttrib(

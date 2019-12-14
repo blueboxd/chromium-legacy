@@ -16,10 +16,6 @@
 #error "This file requires ARC support."
 #endif
 
-// Accessibility identifier for the Google services settings table view.
-NSString* const kGoogleServicesSettingsViewIdentifier =
-    @"google_services_settings_view_controller";
-
 @implementation GoogleServicesSettingsViewController
 
 - (void)viewDidLoad {

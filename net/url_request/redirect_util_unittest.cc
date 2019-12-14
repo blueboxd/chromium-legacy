@@ -16,11 +16,19 @@ namespace {
 
 TEST(RedirectUtilTest, UpdateHttpRequest) {
   const GURL original_url("https://www.example.com/test.php");
-  const char* kOriginalMethod = "POST";
-  const char* kCustomHeader = "Custom-Header-For-Test";
-  const char* kCustomHeaderValue = "custom header value";
+  const char kContentLengthValue[] = "100";
+  const char kContentTypeValue[] = "text/plain; charset=utf-8";
+  const char kContentEncoding[] = "Content-Encoding";
+  const char kContentEncodingValue[] = "gzip";
+  const char kContentLanguage[] = "Content-Language";
+  const char kContentLanguageValue[] = "tlh";
+  const char kContentLocation[] = "Content-Location";
+  const char kContentLocationValue[] = "https://somewhere.test/";
+  const char kCustomHeader[] = "Custom-Header-For-Test";
+  const char kCustomHeaderValue[] = "custom header value";
 
   struct TestCase {
+    const char* original_method;
     const char* new_method;
     const char* new_url;
     const char* modified_headers;
@@ -30,37 +38,54 @@ TEST(RedirectUtilTest, UpdateHttpRequest) {
   };
   const TestCase kTests[] = {
       {
-          "POST" /* new_method */,
+          "POST" /* original_method */, "POST" /* new_method */,
           "https://www.example.com/redirected.php" /* new_url */,
           "Header1: Value1\r\nHeader2: Value2" /* modified_headers */,
           false /* expected_should_clear_upload */,
           "https://origin.example.com" /* expected_origin_header */
       },
       {
-          "GET" /* new_method */,
+          "POST" /* original_method */, "GET" /* new_method */,
           "https://www.example.com/redirected.php" /* new_url */,
           "Header1: Value1\r\nHeader2: Value2" /* modified_headers */,
           true /* expected_should_clear_upload */,
           nullptr /* expected_origin_header */
       },
       {
-          "POST" /* new_method */,
+          "POST" /* original_method */, "POST" /* new_method */,
           "https://other.example.com/redirected.php" /* new_url */,
           "Header1: Value1\r\nHeader2: Value2" /* modified_headers */,
           false /* expected_should_clear_upload */,
           "null" /* expected_origin_header */
       },
       {
-          "GET" /* new_method */,
+          "POST" /* original_method */, "GET" /* new_method */,
           "https://other.example.com/redirected.php" /* new_url */,
           "Header1: Value1\r\nHeader2: Value2" /* modified_headers */,
           true /* expected_should_clear_upload */,
           nullptr /* expected_origin_header */
-      }};
+      },
+      {
+          "PUT" /* original_method */, "GET" /* new_method */,
+          "https://www.example.com/redirected.php" /* new_url */,
+          "Header1: Value1\r\nHeader2: Value2" /* modified_headers */,
+          true /* expected_should_clear_upload */,
+          nullptr /* expected_origin_header */
+      },
+      {
+          "FOOT" /* original_method */, "GET" /* new_method */,
+          "https://www.example.com/redirected.php" /* new_url */,
+          "Header1: Value1\r\nHeader2: Value2" /* modified_headers */,
+          true /* expected_should_clear_upload */,
+          nullptr /* expected_origin_header */
+      },
+  };
 
   for (const auto& test : kTests) {
-    SCOPED_TRACE(::testing::Message() << "new_method: " << test.new_method
-                                      << " new_url: " << test.new_url);
+    SCOPED_TRACE(::testing::Message()
+                 << "original_method: " << test.original_method
+                 << " new_method: " << test.new_method
+                 << " new_url: " << test.new_url);
     RedirectInfo redirect_info;
     redirect_info.new_method = test.new_method;
     redirect_info.new_url = GURL(test.new_url);
@@ -74,24 +99,52 @@ TEST(RedirectUtilTest, UpdateHttpRequest) {
     HttpRequestHeaders request_headers;
     request_headers.SetHeader(HttpRequestHeaders::kOrigin,
                               "https://origin.example.com");
-    request_headers.SetHeader(HttpRequestHeaders::kContentLength, "100");
+    request_headers.SetHeader(HttpRequestHeaders::kContentLength,
+                              kContentLengthValue);
     request_headers.SetHeader(HttpRequestHeaders::kContentType,
-                              "text/plain; charset=utf-8");
+                              kContentTypeValue);
+    request_headers.SetHeader(kContentEncoding, kContentEncodingValue);
+    request_headers.SetHeader(kContentLanguage, kContentLanguageValue);
+    request_headers.SetHeader(kContentLocation, kContentLocationValue);
     request_headers.SetHeader(kCustomHeader, kCustomHeaderValue);
     request_headers.SetHeader("Header1", "Initial-Value1");
 
     bool should_clear_upload = !test.expected_should_clear_upload;
 
     RedirectUtil::UpdateHttpRequest(
-        original_url, kOriginalMethod, redirect_info,
+        original_url, test.original_method, redirect_info,
         base::nullopt /* removed_headers */, modified_headers, &request_headers,
         &should_clear_upload);
     EXPECT_EQ(test.expected_should_clear_upload, should_clear_upload);
+
+    std::string content_length;
     EXPECT_EQ(!test.expected_should_clear_upload,
-              request_headers.HasHeader(HttpRequestHeaders::kContentLength));
+              request_headers.GetHeader(HttpRequestHeaders::kContentLength,
+                                        &content_length));
+    std::string content_type;
     EXPECT_EQ(!test.expected_should_clear_upload,
-              request_headers.HasHeader(HttpRequestHeaders::kContentType));
-    EXPECT_TRUE(request_headers.HasHeader(kCustomHeader));
+              request_headers.GetHeader(HttpRequestHeaders::kContentType,
+                                        &content_type));
+    std::string content_encoding;
+    EXPECT_EQ(!test.expected_should_clear_upload,
+              request_headers.GetHeader(kContentEncoding, &content_encoding));
+    std::string content_language;
+    EXPECT_EQ(!test.expected_should_clear_upload,
+              request_headers.GetHeader(kContentLanguage, &content_language));
+    std::string content_location;
+    EXPECT_EQ(!test.expected_should_clear_upload,
+              request_headers.GetHeader(kContentLocation, &content_location));
+    if (!test.expected_should_clear_upload) {
+      EXPECT_EQ(kContentLengthValue, content_length);
+      EXPECT_EQ(kContentTypeValue, content_type);
+      EXPECT_EQ(kContentEncodingValue, content_encoding);
+      EXPECT_EQ(kContentLanguageValue, content_language);
+      EXPECT_EQ(kContentLocationValue, content_location);
+    }
+
+    std::string custom_header;
+    EXPECT_TRUE(request_headers.GetHeader(kCustomHeader, &custom_header));
+    EXPECT_EQ(kCustomHeaderValue, custom_header);
 
     std::string origin_header_value;
     EXPECT_EQ(test.expected_origin_header != nullptr,

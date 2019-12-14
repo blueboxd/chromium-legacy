@@ -30,10 +30,6 @@
 
 namespace blink {
 
-WebGLRenderbuffer* WebGLRenderbuffer::Create(WebGLRenderingContextBase* ctx) {
-  return MakeGarbageCollected<WebGLRenderbuffer>(ctx);
-}
-
 WebGLRenderbuffer::WebGLRenderbuffer(WebGLRenderingContextBase* ctx)
     : WebGLSharedPlatform3DObject(ctx),
       internal_format_(GL_RGBA4),

@@ -6,6 +6,7 @@
 #import <XCTest/XCTest.h>
 
 #include "base/ios/ios_util.h"
+#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
@@ -210,7 +211,16 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
                                                  pressReturn:NO];
 
   // Scroll to top to navigate away from the folder being created.
-  [BookmarkEarlGreyUI scrollToTop];
+  GREYPerformBlock scrollToTopBlock =
+      ^BOOL(id element, __strong NSError** error) {
+        UIScrollView* view = base::mac::ObjCCastStrict<UIScrollView>(element);
+        view.contentOffset = CGPointZero;
+        return YES;
+      };
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeTableViewIdentifier)]
+      performAction:[GREYActionBlock actionWithName:@"Scroll to top"
+                                       performBlock:scrollToTopBlock]];
 
   // Scroll back to the Folder being created.
   [BookmarkEarlGreyUI scrollToBottom];
@@ -914,7 +924,17 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
                                                  pressReturn:NO];
 
   // Interrupt the folder name editing by entering Folder 1
-  [BookmarkEarlGreyUI scrollToTop];
+  GREYPerformBlock scrollToTopBlock =
+      ^BOOL(id element, __strong NSError** error) {
+        UIScrollView* view = base::mac::ObjCCastStrict<UIScrollView>(element);
+        view.contentOffset = CGPointZero;
+        return YES;
+      };
+
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeTableViewIdentifier)]
+      performAction:[GREYActionBlock actionWithName:@"Scroll to top"
+                                       performBlock:scrollToTopBlock]];
 
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_tap()];
@@ -931,7 +951,10 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
                                                  pressReturn:NO];
 
   // Interrupt the folder name editing by tapping on First URL.
-  [BookmarkEarlGreyUI scrollToTop];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeTableViewIdentifier)]
+      performAction:[GREYActionBlock actionWithName:@"Scroll to top"
+                                       performBlock:scrollToTopBlock]];
 
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"French URL")]
       performAction:grey_tap()];

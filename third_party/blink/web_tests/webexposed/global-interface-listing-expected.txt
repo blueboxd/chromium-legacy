@@ -2298,6 +2298,13 @@ interface ElementInternals
     setter ariaValueNow
     setter ariaValueText
     setter role
+interface EncodedVideoChunk
+    attribute @@toStringTag
+    getter data
+    getter duration
+    getter timestamp
+    getter type
+    method constructor
 interface EnterPictureInPictureEvent : Event
     attribute @@toStringTag
     getter pictureInPictureWindow

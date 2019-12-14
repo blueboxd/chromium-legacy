@@ -63,7 +63,6 @@ class EnrollmentScreen
   // EnrollmentScreenView::Controller implementation:
   void OnLoginDone(const std::string& user,
                    const std::string& auth_code) override;
-  void OnLicenseTypeSelected(const std::string& license_type) override;
   void OnRetry() override;
   void OnCancel() override;
   void OnConfirmationClosed() override;
@@ -77,8 +76,6 @@ class EnrollmentScreen
 
   // EnterpriseEnrollmentHelper::EnrollmentStatusConsumer implementation:
   void OnAuthError(const GoogleServiceAuthError& error) override;
-  void OnMultipleLicensesAvailable(
-      const EnrollmentLicenseMap& licenses) override;
   void OnEnrollmentError(policy::EnrollmentStatus status) override;
   void OnOtherError(EnterpriseEnrollmentHelper::OtherError error) override;
   void OnDeviceEnrolled() override;
@@ -103,7 +100,6 @@ class EnrollmentScreen
   ScreenExitCallback* exit_callback() { return &exit_callback_; }
 
  private:
-  friend class MultiLicenseEnrollmentScreenUnitTest;
   friend class ZeroTouchEnrollmentScreenUnitTest;
   friend class AutomaticReenrollmentScreenUnitTest;
   friend class test::EnrollmentHelperMixin;

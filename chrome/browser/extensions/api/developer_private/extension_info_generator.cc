@@ -34,6 +34,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_frame_host.h"
 #include "extensions/browser/extension_error.h"
+#include "extensions/browser/extension_icon_placeholder.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -711,7 +712,7 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
                                  extension_misc::EXTENSION_ICON_MEDIUM,
                                  ExtensionIconSet::MATCH_BIGGER);
   if (icon.empty()) {
-    info->icon_url = GetDefaultIconUrl(extension.is_app(), !is_enabled);
+    info->icon_url = GetDefaultIconUrl(extension.name());
     list_.push_back(std::move(*info));
   } else {
     ++pending_image_loads_;
@@ -726,25 +727,9 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   }
 }
 
-const std::string& ExtensionInfoGenerator::GetDefaultIconUrl(
-    bool is_app,
-    bool is_greyscale) {
-  std::string* str;
-  if (is_app) {
-    str = is_greyscale ? &default_disabled_app_icon_url_ :
-        &default_app_icon_url_;
-  } else {
-    str = is_greyscale ? &default_disabled_extension_icon_url_ :
-        &default_extension_icon_url_;
-  }
-
-  if (str->empty()) {
-    *str = GetIconUrlFromImage(
-        ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-            is_app ? IDR_APP_DEFAULT_ICON : IDR_EXTENSION_DEFAULT_ICON));
-  }
-
-  return *str;
+std::string ExtensionInfoGenerator::GetDefaultIconUrl(const std::string& name) {
+  return GetIconUrlFromImage(ExtensionIconPlaceholder::CreateImage(
+      extension_misc::EXTENSION_ICON_MEDIUM, name));
 }
 
 std::string ExtensionInfoGenerator::GetIconUrlFromImage(
@@ -764,12 +749,7 @@ void ExtensionInfoGenerator::OnImageLoaded(
   if (!icon.IsEmpty()) {
     info->icon_url = GetIconUrlFromImage(icon);
   } else {
-    bool is_app =
-        info->type == developer::EXTENSION_TYPE_HOSTED_APP ||
-        info->type == developer::EXTENSION_TYPE_LEGACY_PACKAGED_APP ||
-        info->type == developer::EXTENSION_TYPE_PLATFORM_APP;
-    info->icon_url = GetDefaultIconUrl(
-        is_app, info->state != developer::EXTENSION_STATE_ENABLED);
+    info->icon_url = GetDefaultIconUrl(info->name);
   }
 
   list_.push_back(std::move(*info));

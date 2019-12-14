@@ -8,6 +8,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/system/message_center/ash_message_popup_collection.h"
 #include "ash/system/message_center/unified_message_center_bubble.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"
@@ -152,8 +153,15 @@ TEST_F(TrayEventFilterTest, ClickingOnMenuContainerDoesNotCloseBubble) {
 
 TEST_F(TrayEventFilterTest, ClickingOnPopupDoesNotCloseBubble) {
   // Set up a popup window.
-  std::unique_ptr<views::Widget> popup_widget =
-      CreateTestWidget(nullptr, kShellWindowId_StatusContainer, gfx::Rect());
+  auto popup_widget = std::make_unique<views::Widget>();
+  views::Widget::InitParams popup_params;
+  popup_params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  auto ash_message_center_popup_collection =
+      std::make_unique<AshMessagePopupCollection>(GetPrimaryShelf());
+  ash_message_center_popup_collection->ConfigureWidgetInitParamsForContainer(
+      popup_widget.get(), &popup_params);
+  popup_widget->Init(std::move(popup_params));
+
   std::unique_ptr<aura::Window> popup_window =
       CreateTestWindow(gfx::Rect(), aura::client::WINDOW_TYPE_POPUP);
   popup_window->set_owned_by_parent(false);

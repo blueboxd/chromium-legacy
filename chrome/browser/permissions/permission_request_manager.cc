@@ -14,6 +14,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string16.h"
 #include "base/task/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
 #include "chrome/browser/permissions/contextual_notification_permission_ui_selector.h"
@@ -391,8 +392,8 @@ void PermissionRequestManager::DequeueRequestIfNeeded() {
 }
 
 void PermissionRequestManager::ScheduleDequeueRequestIfNeeded() {
-  base::PostTask(
-      FROM_HERE, {base::CurrentThread()},
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
       base::BindOnce(&PermissionRequestManager::DequeueRequestIfNeeded,
                      weak_factory_.GetWeakPtr()));
 }

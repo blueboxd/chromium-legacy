@@ -42,10 +42,10 @@
  @private
   // Map associating the tab id to the breakpad key used to keep track of the
   // loaded URL.
-  NSMutableDictionary* breakpadKeyByTabId_;
+  NSMutableDictionary* _breakpadKeyByTabId;
   // List of keys to use for recording URLs. This list is sorted such that a new
   // tab must use the first key in this list to record its URLs.
-  NSMutableArray* breakpadKeys_;
+  NSMutableArray* _breakpadKeys;
   // The WebStateObserverBridge used to register self as a WebStateObserver
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
   // Forwards observer methods for all WebStates in the WebStateList monitored
@@ -83,7 +83,7 @@
  @private
   // Map associating the tab id to an object describing the current state of the
   // tab.
-  NSMutableDictionary* tabCurrentStateByTabId_;
+  NSMutableDictionary* _tabCurrentStateByTabId;
   // The WebStateObserverBridge used to register self as a WebStateObserver
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
   // Bridges C++ WebStateListObserver methods to this
@@ -147,12 +147,12 @@ const NSString* kDocumentMimeType = @"application/pdf";
 
 - (id)init {
   if ((self = [super init])) {
-    breakpadKeyByTabId_ =
+    _breakpadKeyByTabId =
         [[NSMutableDictionary alloc] initWithCapacity:kNumberOfURLsToSend];
-    breakpadKeys_ =
+    _breakpadKeys =
         [[NSMutableArray alloc] initWithCapacity:kNumberOfURLsToSend];
     for (int i = 0; i < kNumberOfURLsToSend; ++i)
-      [breakpadKeys_ addObject:[NSString stringWithFormat:@"url%d", i]];
+      [_breakpadKeys addObject:[NSString stringWithFormat:@"url%d", i]];
     _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
   }
@@ -160,34 +160,34 @@ const NSString* kDocumentMimeType = @"application/pdf";
 }
 
 - (void)removeTabId:(NSString*)tabId {
-  NSString* key = [breakpadKeyByTabId_ objectForKey:tabId];
+  NSString* key = [_breakpadKeyByTabId objectForKey:tabId];
   if (!key)
     return;
   breakpad_helper::RemoveReportParameter(key);
   breakpad_helper::RemoveReportParameter(PendingURLKeyForKey(key));
-  [breakpadKeyByTabId_ removeObjectForKey:tabId];
-  [breakpadKeys_ removeObject:key];
-  [breakpadKeys_ insertObject:key atIndex:0];
+  [_breakpadKeyByTabId removeObjectForKey:tabId];
+  [_breakpadKeys removeObject:key];
+  [_breakpadKeys insertObject:key atIndex:0];
 }
 
 - (void)recordURL:(NSString*)url
          forTabId:(NSString*)tabId
           pending:(BOOL)pending {
-  NSString* breakpadKey = [breakpadKeyByTabId_ objectForKey:tabId];
+  NSString* breakpadKey = [_breakpadKeyByTabId objectForKey:tabId];
   BOOL reusingKey = NO;
   if (!breakpadKey) {
     // Get the first breakpad key and push it back at the end of the keys.
-    breakpadKey = [breakpadKeys_ objectAtIndex:0];
-    [breakpadKeys_ removeObject:breakpadKey];
-    [breakpadKeys_ addObject:breakpadKey];
+    breakpadKey = [_breakpadKeys objectAtIndex:0];
+    [_breakpadKeys removeObject:breakpadKey];
+    [_breakpadKeys addObject:breakpadKey];
     // Remove the current mapping to the breakpad key.
     for (NSString* tabId in
-         [breakpadKeyByTabId_ allKeysForObject:breakpadKey]) {
+         [_breakpadKeyByTabId allKeysForObject:breakpadKey]) {
       reusingKey = YES;
-      [breakpadKeyByTabId_ removeObjectForKey:tabId];
+      [_breakpadKeyByTabId removeObjectForKey:tabId];
     }
     // Associate the breakpad key to the tab id.
-    [breakpadKeyByTabId_ setObject:breakpadKey forKey:tabId];
+    [_breakpadKeyByTabId setObject:breakpadKey forKey:tabId];
   }
   NSString* pendingKey = PendingURLKeyForKey(breakpadKey);
   if (pending) {
@@ -295,7 +295,7 @@ const NSString* kDocumentMimeType = @"application/pdf";
 
 - (id)init {
   if ((self = [super init])) {
-    tabCurrentStateByTabId_ = [[NSMutableDictionary alloc] init];
+    _tabCurrentStateByTabId = [[NSMutableDictionary alloc] init];
     _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
   }
@@ -313,28 +313,28 @@ const NSString* kDocumentMimeType = @"application/pdf";
          withValue:(const NSString*)value
             forTab:(NSString*)tabId {
   NSMutableDictionary* tabCurrentState =
-      [tabCurrentStateByTabId_ objectForKey:tabId];
+      [_tabCurrentStateByTabId objectForKey:tabId];
   if (tabCurrentState == nil) {
     NSMutableDictionary* currentStateOfNewTab =
         [[NSMutableDictionary alloc] init];
-    [tabCurrentStateByTabId_ setObject:currentStateOfNewTab forKey:tabId];
-    tabCurrentState = [tabCurrentStateByTabId_ objectForKey:tabId];
+    [_tabCurrentStateByTabId setObject:currentStateOfNewTab forKey:tabId];
+    tabCurrentState = [_tabCurrentStateByTabId objectForKey:tabId];
   }
   [tabCurrentState setObject:value forKey:key];
 }
 
 - (id)getTabInfo:(NSString*)key forTab:(NSString*)tabId {
-  NSMutableDictionary* tabValues = [tabCurrentStateByTabId_ objectForKey:tabId];
+  NSMutableDictionary* tabValues = [_tabCurrentStateByTabId objectForKey:tabId];
   return [tabValues objectForKey:key];
 }
 
 - (void)removeTabInfo:(NSString*)key forTab:(NSString*)tabId {
-  [[tabCurrentStateByTabId_ objectForKey:tabId] removeObjectForKey:key];
+  [[_tabCurrentStateByTabId objectForKey:tabId] removeObjectForKey:key];
 }
 
 - (void)removeTabId:(NSString*)tabId {
   [self closingDocumentInTab:tabId];
-  [tabCurrentStateByTabId_ removeObjectForKey:tabId];
+  [_tabCurrentStateByTabId removeObjectForKey:tabId];
 }
 
 - (void)observeWebState:(web::WebState*)webState {

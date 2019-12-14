@@ -756,7 +756,7 @@ HWND ClipboardWin::GetClipboardWindow() const {
     return nullptr;
 
   if (clipboard_owner_->hwnd() == nullptr)
-    clipboard_owner_->Create(base::Bind(&ClipboardOwnerWndProc));
+    clipboard_owner_->Create(base::BindRepeating(&ClipboardOwnerWndProc));
 
   return clipboard_owner_->hwnd();
 }

@@ -630,8 +630,8 @@ template("test_runner_script") {
       "@WrappedPath(.)",
     ]
     data_deps += [
-      "//build/android:test_runner_py",
       "//build/android:logdog_wrapper_py",
+      "//build/android:test_runner_py",
     ]
 
     if (_runtime_deps) {
@@ -3387,7 +3387,7 @@ if (enable_java_templates) {
             }
             javac_args += invoker.errorprone_args
           }
-          javac_jar_path = _javac_jar_path + ".errorprone.stamp"
+          javac_jar_path = _javac_jar_path + ".errorprone_stamp"
         }
         _analysis_public_deps += [ ":$_compile_java_errorprone_target" ]
       }

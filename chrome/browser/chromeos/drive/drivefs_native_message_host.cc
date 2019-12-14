@@ -7,8 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
-#include "base/task/task_traits.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -64,7 +63,7 @@ class DriveFsNativeMessageHost : public extensions::NativeMessageHost {
   Client* client_ = nullptr;
 
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_ =
-      base::CreateSingleThreadTaskRunner({base::CurrentThread()});
+      base::ThreadTaskRunnerHandle::Get();
 
   base::WeakPtrFactory<DriveFsNativeMessageHost> weak_ptr_factory_{this};
 

@@ -51,7 +51,7 @@ component("stack_unwinder") {
 # two sets of registration targets, so that the feature module template can
 # selectively pull in the real version or a stub.
 generate_jni_registration("jni_registration") {
-  target = "//chrome/android:chrome_modern_public_bundle__stack_unwinder_bundle_module"
+  targets = [ "//chrome/android:chrome_modern_public_bundle__stack_unwinder_bundle_module" ]
   header_output = "$target_gen_dir/jni_registration.h"
   namespace = "stack_unwinder"
 }

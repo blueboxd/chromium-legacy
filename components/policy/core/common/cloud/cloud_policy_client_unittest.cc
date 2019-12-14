@@ -109,17 +109,6 @@ class MockRemoteCommandsObserver {
                     const std::vector<em::SignedData>&));
 };
 
-// A mock class to allow us to set expectations on available licenses fetch
-// callback
-class MockAvailableLicensesObserver {
- public:
-  MockAvailableLicensesObserver() {}
-
-  MOCK_METHOD2(OnAvailableLicensesFetched,
-               void(DeviceManagementStatus,
-                    const CloudPolicyClient::LicenseMap&));
-};
-
 class MockDeviceDMTokenCallbackObserver {
  public:
   MockDeviceDMTokenCallbackObserver() {}
@@ -266,23 +255,6 @@ class CloudPolicyClientTest : public testing::Test {
             em::DeviceAttributeUpdateResponse_ResultType_ATTRIBUTE_UPDATE_SUCCESS);
 
     gcm_id_update_request_.mutable_gcm_id_update_request()->set_gcm_id(kGcmID);
-
-    check_device_license_request_.mutable_check_device_license_request();
-
-    em::CheckDeviceLicenseResponse* device_license_response =
-        check_device_license_response_.mutable_check_device_license_response();
-    device_license_response->set_license_selection_mode(
-        em::CheckDeviceLicenseResponse_LicenseSelectionMode_USER_SELECTION);
-    em::LicenseAvailability* license_one =
-        device_license_response->add_license_availabilities();
-    license_one->mutable_license_type()->set_license_type(
-        em::LicenseType_LicenseTypeEnum_CDM_PERPETUAL);
-    license_one->set_available_licenses(10);
-    em::LicenseAvailability* license_two =
-        device_license_response->add_license_availabilities();
-    license_two->mutable_license_type()->set_license_type(
-        em::LicenseType_LicenseTypeEnum_KIOSK);
-    license_two->set_available_licenses(0);
 
     upload_app_install_report_response_.mutable_app_install_report_response();
 
@@ -520,17 +492,6 @@ class CloudPolicyClientTest : public testing::Test {
                                    gcm_id_update_response_)));
   }
 
-  void ExpectCheckDeviceLicense(const std::string& oauth_token,
-                                const em::DeviceManagementResponse& response) {
-    EXPECT_CALL(service_, StartJob(_))
-        .WillOnce(
-            DoAll(service_.CaptureJobType(&job_type_),
-                  service_.CaptureQueryParams(&query_params_),
-                  service_.CaptureRequest(&job_request_),
-                  service_.StartJobAsync(
-                      net::OK, DeviceManagementService::kSuccess, response)));
-  }
-
   // Expects an TYPE_UPLOAD_APP_INSTALL_REPORT job to be started.  The job
   // completes at the next call to base::RunLoop().RunUntilIdle() using the
   // supplied |request|.
@@ -575,7 +536,6 @@ class CloudPolicyClientTest : public testing::Test {
   em::DeviceManagementRequest attribute_update_permission_request_;
   em::DeviceManagementRequest attribute_update_request_;
   em::DeviceManagementRequest gcm_id_update_request_;
-  em::DeviceManagementRequest check_device_license_request_;
   em::DeviceManagementRequest upload_policy_validation_report_request_;
 
   // Protobufs used in successful responses.
@@ -590,8 +550,6 @@ class CloudPolicyClientTest : public testing::Test {
   em::DeviceManagementResponse attribute_update_permission_response_;
   em::DeviceManagementResponse attribute_update_response_;
   em::DeviceManagementResponse gcm_id_update_response_;
-  em::DeviceManagementResponse check_device_license_response_;
-  em::DeviceManagementResponse check_device_license_broken_response_;
   em::DeviceManagementResponse upload_app_install_report_response_;
   em::DeviceManagementResponse upload_policy_validation_report_response_;
 
@@ -605,7 +563,6 @@ class CloudPolicyClientTest : public testing::Test {
   MockDeviceManagementService service_;
   StrictMock<MockCloudPolicyClientObserver> observer_;
   StrictMock<MockStatusCallbackObserver> callback_observer_;
-  StrictMock<MockAvailableLicensesObserver> license_callback_observer_;
   StrictMock<MockDeviceDMTokenCallbackObserver>
       device_dmtoken_callback_observer_;
   FakeSigningService fake_signing_service_;
@@ -1861,48 +1818,6 @@ TEST_F(CloudPolicyClientTest, RequestGcmIdUpdate) {
             job_type_);
   EXPECT_EQ(job_request_.SerializePartialAsString(),
             gcm_id_update_request_.SerializePartialAsString());
-}
-
-TEST_F(CloudPolicyClientTest, RequestAvailableLicenses) {
-  ExpectCheckDeviceLicense(kOAuthToken, check_device_license_response_);
-
-  EXPECT_CALL(license_callback_observer_,
-              OnAvailableLicensesFetched(DM_STATUS_SUCCESS, _))
-      .Times(1);
-
-  CloudPolicyClient::LicenseRequestCallback callback =
-      base::Bind(&MockAvailableLicensesObserver::OnAvailableLicensesFetched,
-                 base::Unretained(&license_callback_observer_));
-
-  client_->RequestAvailableLicenses(kOAuthToken, callback);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(
-      DeviceManagementService::JobConfiguration::TYPE_REQUEST_LICENSE_TYPES,
-      job_type_);
-  EXPECT_EQ(job_request_.SerializePartialAsString(),
-            check_device_license_request_.SerializePartialAsString());
-  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
-}
-
-TEST_F(CloudPolicyClientTest, RequestAvailableLicensesBrokenResponse) {
-  ExpectCheckDeviceLicense(kOAuthToken, check_device_license_broken_response_);
-
-  EXPECT_CALL(license_callback_observer_,
-              OnAvailableLicensesFetched(DM_STATUS_RESPONSE_DECODING_ERROR, _))
-      .Times(1);
-
-  CloudPolicyClient::LicenseRequestCallback callback =
-      base::Bind(&MockAvailableLicensesObserver::OnAvailableLicensesFetched,
-                 base::Unretained(&license_callback_observer_));
-
-  client_->RequestAvailableLicenses(kOAuthToken, callback);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(
-      DeviceManagementService::JobConfiguration::TYPE_REQUEST_LICENSE_TYPES,
-      job_type_);
-  EXPECT_EQ(job_request_.SerializePartialAsString(),
-            check_device_license_request_.SerializePartialAsString());
-  EXPECT_EQ(DM_STATUS_RESPONSE_DECODING_ERROR, client_->status());
 }
 
 TEST_F(CloudPolicyClientTest, UploadAppInstallReport) {

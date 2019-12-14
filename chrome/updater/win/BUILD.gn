@@ -107,8 +107,8 @@ source_set("com") {
   configs += [ ":winver" ]
 
   deps = [
-    ":base",
     ":updater_idl_idl",
+    "//base",
   ]
 }
 
@@ -135,6 +135,7 @@ source_set("core") {
 
   deps = [
     ":base",
+    ":updater_idl_idl",
     "//base",
     "//chrome/installer/util:with_no_strings",
     "//chrome/updater:common",

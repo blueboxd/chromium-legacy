@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.signin;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
@@ -136,6 +137,8 @@ public class ConfirmSyncDataStateMachineDelegate {
     private static final String PROGRESS_DIALOG_TAG = "ConfirmSyncTimeoutDialog";
     private static final String TIMEOUT_DIALOG_TAG = "ConfirmSyncProgressDialog";
     private static final String CONFIRM_IMPORT_SYNC_DATA_DIALOG_TAG = "ConfirmImportSyncDataDialog";
+    private static final String CONFIRM_MANAGED_SYNC_DATA_DIALOG_TAG =
+            "ConfirmManagedSyncDataDialog";
 
     private final FragmentManager mFragmentManager;
 
@@ -181,6 +184,20 @@ public class ConfirmSyncDataStateMachineDelegate {
         showAllowingStateLoss(dialog, CONFIRM_IMPORT_SYNC_DATA_DIALOG_TAG);
     }
 
+    /**
+     * Shows {@link ConfirmManagedSyncDataDialog} when signing in to a managed account
+     * (either through sign in or when switching accounts).
+     * @param listener Callback for result.
+     * @param resources Resources to load the strings.
+     * @param domain The domain of the managed account.
+     */
+    void showSignInToManagedAccountDialog(
+            ConfirmManagedSyncDataDialog.Listener listener, Resources resources, String domain) {
+        dismissAllDialogs();
+        showAllowingStateLoss(ConfirmManagedSyncDataDialog.create(listener, resources, domain),
+                CONFIRM_MANAGED_SYNC_DATA_DIALOG_TAG);
+    }
+
     private void showAllowingStateLoss(DialogFragment dialogFragment, String tag) {
         FragmentTransaction transaction = mFragmentManager.beginTransaction();
         transaction.add(dialogFragment, tag);
@@ -194,6 +211,7 @@ public class ConfirmSyncDataStateMachineDelegate {
         dismissDialog(PROGRESS_DIALOG_TAG);
         dismissDialog(TIMEOUT_DIALOG_TAG);
         dismissDialog(CONFIRM_IMPORT_SYNC_DATA_DIALOG_TAG);
+        dismissDialog(CONFIRM_MANAGED_SYNC_DATA_DIALOG_TAG);
     }
 
     private void dismissDialog(String tag) {

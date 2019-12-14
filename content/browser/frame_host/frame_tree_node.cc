@@ -365,9 +365,11 @@ void FrameTreeNode::SetPendingFramePolicy(blink::FramePolicy frame_policy) {
   if (parent()) {
     // Subframes should always inherit their parent's sandbox flags.
     pending_frame_policy_.sandbox_flags |= parent()->active_sandbox_flags();
-    // This is only applied on subframes; container policy is not mutable on
-    // main frame.
+    // This is only applied on subframes; container policy and required document
+    // policy are not mutable on main frame.
     pending_frame_policy_.container_policy = frame_policy.container_policy;
+    pending_frame_policy_.required_document_policy =
+        frame_policy.required_document_policy;
   }
 }
 
@@ -402,15 +404,23 @@ bool FrameTreeNode::CommitFramePolicy(
   bool did_change_container_policy =
       new_frame_policy.container_policy !=
       replication_state_.frame_policy.container_policy;
+  bool did_change_required_document_policy =
+      pending_frame_policy_.required_document_policy !=
+      replication_state_.frame_policy.required_document_policy;
   if (did_change_flags)
     replication_state_.frame_policy.sandbox_flags =
         new_frame_policy.sandbox_flags;
   if (did_change_container_policy)
     replication_state_.frame_policy.container_policy =
         new_frame_policy.container_policy;
+  if (did_change_required_document_policy)
+    replication_state_.frame_policy.required_document_policy =
+        new_frame_policy.required_document_policy;
+
   UpdateFramePolicyHeaders(new_frame_policy.sandbox_flags,
                            replication_state_.feature_policy_header);
-  return did_change_flags || did_change_container_policy;
+  return did_change_flags || did_change_container_policy ||
+         did_change_required_document_policy;
 }
 
 void FrameTreeNode::TransferNavigationRequestOwnership(

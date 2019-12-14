@@ -15,13 +15,9 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_fence_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_texture.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_texture_copy_view.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
-
-// static
-GPUQueue* GPUQueue::Create(GPUDevice* device, WGPUQueue queue) {
-  return MakeGarbageCollected<GPUQueue>(device, queue);
-}
 
 GPUQueue::GPUQueue(GPUDevice* device, WGPUQueue queue)
     : DawnObject<WGPUQueue>(device, queue) {}
@@ -60,8 +56,8 @@ GPUFence* GPUQueue::createFence(const GPUFenceDescriptor* descriptor) {
     desc.label = descriptor->label().Utf8().data();
   }
 
-  return GPUFence::Create(device_,
-                          GetProcs().queueCreateFence(GetHandle(), &desc));
+  return MakeGarbageCollected<GPUFence>(
+      device_, GetProcs().queueCreateFence(GetHandle(), &desc));
 }
 
 // TODO(shaobo.yan@intel.com): Implement this function

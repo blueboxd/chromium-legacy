@@ -17,16 +17,16 @@
 #endif
 
 @implementation BrowserViewControllerDependencyFactory {
-  ios::ChromeBrowserState* browserState_;
-  WebStateList* webStateList_;
+  ios::ChromeBrowserState* _browserState;
+  WebStateList* _webStateList;
 }
 
 - (id)initWithBrowserState:(ios::ChromeBrowserState*)browserState
               webStateList:(WebStateList*)webStateList {
   self = [super init];
   if (self) {
-    browserState_ = browserState;
-    webStateList_ = webStateList;
+    _browserState = browserState;
+    _webStateList = webStateList;
   }
   return self;
 }

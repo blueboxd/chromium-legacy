@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/memory/singleton.h"
+#include "base/time/default_clock.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/games/core/catalog_store.h"
 #include "components/games/core/games_service_impl.h"
@@ -40,7 +41,8 @@ KeyedService* GamesServiceFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
 
   return new GamesServiceImpl(std::make_unique<CatalogStore>(),
-                              std::make_unique<HighlightedGamesStore>(),
+                              std::make_unique<HighlightedGamesStore>(
+                                  base::DefaultClock::GetInstance()),
                               profile->GetPrefs());
 }
 

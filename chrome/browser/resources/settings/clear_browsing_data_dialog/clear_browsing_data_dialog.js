@@ -6,6 +6,23 @@
  * @fileoverview 'settings-clear-browsing-data-dialog' allows the user to
  * delete browsing data that has been cached by Chromium.
  */
+
+(function() {
+/**
+ * @param {!Object} oldDialog the dialog to close
+ * @param {!Object} newDialog the dialog to open
+ * @private
+ */
+function replaceDialog(oldDialog, newDialog) {
+  oldDialog.addEventListener('close', e => {
+    e.stopPropagation();
+  }, {once: true});
+  oldDialog.close();
+  if (!newDialog.open) {
+    newDialog.showModal();
+  }
+}
+
 Polymer({
   is: 'settings-clear-browsing-data-dialog',
 
@@ -142,6 +159,22 @@ Polymer({
           [loadTimeData.getString('basicPageTitle'),
            loadTimeData.getString('advancedPageTitle'),
 ],
+    },
+
+    /**
+     * Installed apps that might be cleared if the user clears browsing data
+     * for the selected time period.
+     * @private {!Array<!InstalledApp>}
+     */
+    installedApps_: {
+      type: Array,
+      value: () => [],
+    },
+
+    /** @private */
+    installedAppsFlagEnabled_: {
+      type: Boolean,
+      value: () => loadTimeData.getBoolean('installedAppsInCbd'),
     },
   },
 
@@ -311,10 +344,40 @@ Polymer({
   },
 
   /**
-   * Clears browsing data and maybe shows a history notice.
+   * Gets a list of top 5 installed apps that have been launched
+   * within the time period selected. This is used to warn the user
+   * that data for these apps will be cleared as well, and offers
+   * them the option to exclude deletion of this data.
+   * @return {!Promise}
    * @private
    */
-  clearBrowsingData_: function() {
+  getInstalledApps_: async function() {
+    const tab = this.$.tabs.selectedItem;
+    const timePeriod = tab.querySelector('.time-range-select').pref.value;
+    this.installedApps_ = await this.browserProxy_.getInstalledApps(timePeriod);
+  },
+
+  /** @private */
+  shouldShowInstalledApps_: function() {
+    if(!this.installedAppsFlagEnabled_) {
+      return false;
+    }
+    const haveInstalledApps = this.installedApps_.length > 0;
+    chrome.send(
+       'metricsHandler:recordBooleanHistogram',
+        [
+          'History.ClearBrowsingData.InstalledAppsDialogShown',
+          haveInstalledApps
+        ]);
+    return haveInstalledApps;
+  },
+
+  /**
+   * Clears browsing data and maybe shows a history notice.
+   * @return {!Promise}
+   * @private
+   */
+  clearBrowsingData_: async function() {
     this.clearingInProgress_ = true;
     const tab = this.$.tabs.selectedItem;
     const dataTypes = this.getSelectedDataTypes_(tab);
@@ -326,17 +389,28 @@ Polymer({
       chrome.metricsPrivate.recordUserAction('ClearBrowsingData_AdvancedTab');
     }
 
-    this.browserProxy_.clearBrowsingData(dataTypes, timePeriod)
-        .then(shouldShowNotice => {
-          this.clearingInProgress_ = false;
-          this.showHistoryDeletionDialog_ = shouldShowNotice;
-          chrome.metricsPrivate.recordMediumTime(
-              'History.ClearBrowsingData.TimeSpentInDialog',
-              Date.now() - this.dialogOpenedTime_);
-          if (!shouldShowNotice) {
-            this.$.clearBrowsingDataDialog.close();
-          }
-        });
+    const shouldShowNotice = await this.browserProxy_.clearBrowsingData(
+        dataTypes, timePeriod, this.installedApps_);
+    this.clearingInProgress_ = false;
+    this.showHistoryDeletionDialog_ = shouldShowNotice;
+    chrome.metricsPrivate.recordMediumTime(
+        'History.ClearBrowsingData.TimeSpentInDialog',
+        Date.now() - this.dialogOpenedTime_);
+    if (!shouldShowNotice) {
+      this.closeDialogs_();
+    }
+  },
+
+  /** Closes clear brtowsing data or installed app dialog if they are open.
+   * @private
+   */
+  closeDialogs_: function() {
+    if(this.$.clearBrowsingDataDialog.open) {
+      this.$.clearBrowsingDataDialog.close();
+    }
+    if(this.$.installedAppsDialog.open) {
+      this.$.installedAppsDialog.close();
+    }
   },
 
   /** @private */
@@ -350,7 +424,7 @@ Polymer({
    */
   onHistoryDeletionDialogClose_: function() {
     this.showHistoryDeletionDialog_ = false;
-    this.$.clearBrowsingDataDialog.close();
+    this.closeDialogs_();
   },
 
   /**
@@ -434,4 +508,33 @@ Polymer({
     // </if>
     return showFooter;
   },
+
+  /**
+   * @return {!Promise}
+   * @private
+   */
+  onClearBrowsingDataClick_: async function() {
+    await this.getInstalledApps_();
+    if (this.shouldShowInstalledApps_()) {
+      replaceDialog(
+          this.$.clearBrowsingDataDialog, this.$.installedAppsDialog);
+    } else {
+      await this.clearBrowsingData_();
+    }
+  },
+
+  /** @private */
+  hideInstalledApps_: function() {
+    replaceDialog(
+        this.$.installedAppsDialog, this.$.clearBrowsingDataDialog);
+  },
+
+  /**
+   * Handles the tap confirm button in installed apps.
+   * @private
+   */
+  onInstalledAppsConfirmClick_: async function () {
+    await this.clearBrowsingData_();
+  }
 });
+})();

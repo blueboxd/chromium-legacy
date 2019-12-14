@@ -93,8 +93,9 @@ class CONTENT_EXPORT IndexedDBBackingStore {
 
   class CONTENT_EXPORT Transaction {
    public:
-    explicit Transaction(base::WeakPtr<IndexedDBBackingStore> backing_store,
-                         blink::mojom::IDBTransactionDurability durability);
+    Transaction(base::WeakPtr<IndexedDBBackingStore> backing_store,
+                blink::mojom::IDBTransactionDurability durability,
+                blink::mojom::IDBTransactionMode mode);
     virtual ~Transaction();
 
     virtual void Begin(std::vector<ScopeLock> locks);
@@ -138,6 +139,8 @@ class CONTENT_EXPORT IndexedDBBackingStore {
         IndexedDBValue* value);
 
     base::WeakPtr<Transaction> AsWeakPtr();
+
+    blink::mojom::IDBTransactionMode mode() const { return mode_; }
 
     class ChainedBlobWriterImpl;
 
@@ -200,6 +203,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     // This flag is passed to LevelDBScopes as |sync_on_commit|, converted
     // via ShouldSyncOnCommit.
     blink::mojom::IDBTransactionDurability durability_;
+    const blink::mojom::IDBTransactionMode mode_;
 
     base::WeakPtrFactory<Transaction> ptr_factory_{this};
 
@@ -225,6 +229,8 @@ class CONTENT_EXPORT IndexedDBBackingStore {
       bool high_open;
       bool forward;
       bool unique;
+      blink::mojom::IDBTransactionMode mode =
+          blink::mojom::IDBTransactionMode::ReadWrite;
     };
 
     const blink::IndexedDBKey& key() const { return *current_key_; }
@@ -488,7 +494,8 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   bool is_incognito() const { return backing_store_mode_ == Mode::kInMemory; }
 
   virtual std::unique_ptr<Transaction> CreateTransaction(
-      blink::mojom::IDBTransactionDurability durability);
+      blink::mojom::IDBTransactionDurability durability,
+      blink::mojom::IDBTransactionMode mode);
 
   base::WeakPtr<IndexedDBBackingStore> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();

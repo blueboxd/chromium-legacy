@@ -480,8 +480,7 @@ void TestScopedKeyboardHook::LockSpecificKey(ui::DomCode dom_code) {
 
 class RenderWidgetHostViewAuraTest : public testing::Test {
  public:
-  RenderWidgetHostViewAuraTest()
-      : widget_host_uses_shutdown_to_destroy_(false) {
+  RenderWidgetHostViewAuraTest() {
     ui::GestureConfiguration::GetInstance()->set_scroll_debounce_interval_in_ms(
         0);
   }
@@ -493,8 +492,6 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     // no valid frame sink id.
     if (!view->frame_sink_id_.is_valid())
       return;
-
-    view->delegated_frame_host_client_ = std::move(delegated_frame_host_client);
     view->delegated_frame_host_ = nullptr;
     view->delegated_frame_host_ = std::make_unique<DelegatedFrameHost>(
         view->frame_sink_id_, view->delegated_frame_host_client_.get(),
@@ -518,10 +515,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     view->Destroy();
     EXPECT_EQ(nullptr, host->GetView());
 
-    if (widget_host_uses_shutdown_to_destroy_)
-      host->ShutdownAndDestroyWidget(true);
-    else
-      delete host;
+    delete host;
   }
 
   void SetUpEnvironment() {
@@ -578,10 +572,6 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   }
 
   void TearDown() override { TearDownEnvironment(); }
-
-  void set_widget_host_uses_shutdown_to_destroy(bool use) {
-    widget_host_uses_shutdown_to_destroy_ = use;
-  }
 
   void SimulateMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel level) {
@@ -656,9 +646,6 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     view->TextInputStateChanged(state_with_type_text);
   }
 
-  // If true, then calls RWH::Shutdown() instead of deleting RWH.
-  bool widget_host_uses_shutdown_to_destroy_;
-
   BrowserTaskEnvironment task_environment_;
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
   std::unique_ptr<BrowserContext> browser_context_;
@@ -691,27 +678,6 @@ void InstallDelegatedFrameHostClient(
   RenderWidgetHostViewAuraTest::InstallDelegatedFrameHostClient(
       render_widget_host_view, std::move(delegated_frame_host_client));
 }
-
-// Helper class to instantiate RenderWidgetHostViewGuest which is backed
-// by an aura platform view.
-class RenderWidgetHostViewGuestAuraTest : public RenderWidgetHostViewAuraTest {
- public:
-  RenderWidgetHostViewGuestAuraTest() {
-    // Use RWH::Shutdown to destroy RWH, instead of deleting.
-    // This will ensure that the RenderWidgetHostViewGuest is not leaked and
-    // is deleted properly upon RWH going away.
-    set_widget_host_uses_shutdown_to_destroy(true);
-  }
-
-  void TearDown() override {
-    // Internal override to do nothing, we clean up ourselves in the test body.
-    // This helps us test that |guest_view_weak_| does not leak.
-  }
-
- private:
-
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewGuestAuraTest);
-};
 
 // TODO(mohsen): Consider moving these tests to OverscrollControllerTest if
 // appropriate.

@@ -1936,6 +1936,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
            internalRole != ax::mojom::Role::kCaption &&
            internalRole != ax::mojom::Role::kGroup &&
            internalRole != ax::mojom::Role::kListItem &&
+           internalRole != ax::mojom::Role::kMark &&
            internalRole != ax::mojom::Role::kParagraph) ||
           internalRole == ax::mojom::Role::kTab) {
         // TODO(dtseng): This is not localized; see crbug/84814.

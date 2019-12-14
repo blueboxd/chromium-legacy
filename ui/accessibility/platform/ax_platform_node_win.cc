@@ -4867,7 +4867,7 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kMark:
-      return ROLE_SYSTEM_TEXT;
+      return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kMarquee:
       return ROLE_SYSTEM_ANIMATION;
@@ -5210,9 +5210,11 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
 
   switch (GetData().role) {
     case ax::mojom::Role::kComment:
+      return IA2_ROLE_COMMENT;
+    case ax::mojom::Role::kSuggestion:
+      return IA2_ROLE_SUGGESTION;
     case ax::mojom::Role::kCommentSection:
     case ax::mojom::Role::kRevision:
-    case ax::mojom::Role::kSuggestion:
       return IA2_ROLE_SECTION;
     case ax::mojom::Role::kBanner:
     case ax::mojom::Role::kHeader:
@@ -5334,7 +5336,7 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
       ia2_role = IA2_ROLE_LANDMARK;
       break;
     case ax::mojom::Role::kMark:
-      ia2_role = IA2_ROLE_TEXT_FRAME;
+      ia2_role = IA2_ROLE_MARK;
       break;
     case ax::mojom::Role::kMenuItemCheckBox:
       ia2_role = IA2_ROLE_CHECK_MENU_ITEM;

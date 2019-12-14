@@ -53,6 +53,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.StrictModeContext;
@@ -234,6 +235,7 @@ public class WebViewBrowserActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ContextUtils.initApplicationContext(getApplicationContext());
         WebView.setWebContentsDebuggingEnabled(true);
         setContentView(R.layout.activity_webview_browser);
         setSupportActionBar((Toolbar) findViewById(R.id.browser_toolbar));

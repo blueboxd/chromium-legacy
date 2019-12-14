@@ -1725,25 +1725,6 @@
         },
         'os_type': 'chromeos',
       },
-      'chromeos-vm-code-coverage': {
-        'mixins': [
-            'code-coverage',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromeos_vm_gtests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'kvm': '1',
-              'os': 'Ubuntu-16.04',
-              'pool': 'Chrome-CrOS-VM',
-            },
-          ],
-          'hard_timeout': 3600,
-          'io_timeout': 3600,
-        },
-      },
       'fuchsia-fyi-arm64-rel': {
         'additional_compile_targets': [
           'all',
@@ -4420,18 +4401,6 @@
   {
     'name': 'tryserver.chromium.android',
     'machines': {
-      'android-marshmallow-arm64-coverage-rel': {
-        'mixins': [
-          'code-coverage',
-          'marshmallow',
-          'bullhead',
-        ],
-        'test_suites': {
-          'gtest_tests': 'android_instrumentation_tests',
-          'junit_tests': 'chromium_junit_tests',
-        },
-        'os_type': 'android',
-      },
       'android-opus-kitkat-arm-rel': {
         'mixins': [
           'kitkat',

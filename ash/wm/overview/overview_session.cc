@@ -183,7 +183,7 @@ void OverviewSession::Init(const WindowList& windows,
   params.layer_type = ui::LAYER_NOT_DRAWN;
   params.name = "OverviewModeFocusedWidget";
   params.parent = Shell::GetPrimaryRootWindow()->GetChildById(
-      kShellWindowId_StatusContainer);
+      kShellWindowId_OverviewFocusContainer);
   overview_focus_widget_->Init(std::move(params));
 
   UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.Items", num_items_);

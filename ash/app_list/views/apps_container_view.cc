@@ -522,6 +522,17 @@ void AppsContainerView::UpdateSuggestionChips() {
           ->results());
 }
 
+base::ScopedClosureRunner AppsContainerView::DisableSuggestionChipsBlur() {
+  ++suggestion_chips_blur_disabler_count_;
+
+  if (suggestion_chips_blur_disabler_count_ == 1)
+    suggestion_chip_container_view_->SetBlurDisabled(true);
+
+  return base::ScopedClosureRunner(
+      base::BindOnce(&AppsContainerView::OnSuggestionChipsBlurDisablerReleased,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
 const AppListConfig& AppsContainerView::GetAppListConfig() const {
   return contents_view_->app_list_view()->GetAppListConfig();
 }
@@ -614,6 +625,14 @@ AppsContainerView::GridLayout AppsContainerView::CalculateGridLayout() const {
     result.rows = config.preferred_rows();
   }
   return result;
+}
+
+void AppsContainerView::OnSuggestionChipsBlurDisablerReleased() {
+  DCHECK_GT(suggestion_chips_blur_disabler_count_, 0u);
+  --suggestion_chips_blur_disabler_count_;
+
+  if (suggestion_chips_blur_disabler_count_ == 0)
+    suggestion_chip_container_view_->SetBlurDisabled(false);
 }
 
 }  // namespace ash

@@ -217,7 +217,7 @@ void JNI_Clipboard_AddMapEntry(JNIEnv* env,
 
 void ClipboardMap::UpdateLastModifiedTime(base::Time time) {
   last_modified_time_ = time;
-  // |modified_callback_| may be null in tests.
+  // |modified_cb_| may be null in tests.
   if (modified_cb_)
     modified_cb_.Run(time);
 }

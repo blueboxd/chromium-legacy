@@ -1190,7 +1190,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2665919335226618153">Kurza twarz! Podczas formatowania wystąpił błąd.</translation>
 <translation id="2666990579225592931">Otwórz okno trybu gościa</translation>
 <translation id="2667463864537187133">Zarządzanie sprawdzaniem pisowni</translation>
-<translation id="2669093958999339774">Blokuj prośby o zgodę na wysyłanie powiadomień, by Ci nie przeszkadzały, i zamiast nich wyświetlaj dyskretny komunikat</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> udostępnia kartę Chrome.</translation>
 <translation id="2670429602441959756">Strona zawiera funkcje, które nie są jeszcze obsługiwane w rzeczywistości wirtualnej. Zamykam…</translation>
 <translation id="2671451824761031126">Zakładki i ustawienia są gotowe</translation>
@@ -1964,7 +1963,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="37613671848467444">Otwórz w oknie &amp;incognito</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Komunikuje się z urządzeniem USB}few{Komunikuje się z # urządzeniami USB}many{Komunikuje się z # urządzeniami USB}other{Komunikuje się z # urządzenia USB}}</translation>
 <translation id="3765246971671567135">Nie udało się odczytać zasad trybu demonstracyjnego offline.</translation>
-<translation id="3767376082821709728">Strony internetowe, na które wchodzisz po raz pierwszy, nie mogą wysyłać Ci powiadomień</translation>
 <translation id="3768037234834996183">Synchronizuję ustawienia...</translation>
 <translation id="377050016711188788">Lody</translation>
 <translation id="3771294271822695279">Pliki wideo</translation>
@@ -3032,7 +3030,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5370819323174483825">&amp;Odśwież</translation>
 <translation id="5372529912055771682">Ta wersja systemu operacyjnego nie obsługuje podanego trybu rejestrowania. Upewnij się, że używasz najnowszej wersji i spróbuj ponownie.</translation>
 <translation id="5372579129492968947">Odepnij rozszerzenie</translation>
-<translation id="5374359983950678924">Zmień zdjęcie</translation>
 <translation id="5376169624176189338">Kliknij, aby przejść wstecz. Przytrzymaj, aby wyświetlić historię</translation>
 <translation id="5376931455988532197">Plik jest za duży</translation>
 <translation id="537813040452600081">Strony wyświetlane w tym oknie nie pojawią się w historii przeglądarki. Po wylogowaniu się nie zostanie po nich na komputerze żaden ślad (np. w postaci plików cookie). Nie zostaną też zachowane pobrane pliki ani utworzone zakładki.</translation>
@@ -4907,7 +4904,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8044899503464538266">Powoli</translation>
 <translation id="8045253504249021590">Synchronizacja została zatrzymana przez Panel Google.</translation>
 <translation id="8045923671629973368">Wpisz identyfikator aplikacji lub URL sklepu internetowego</translation>
-<translation id="8046278916126163020">Strony internetowe, na które wchodzisz po raz pierwszy, mogą prosić o zgodę na wysyłanie Ci powiadomień</translation>
 <translation id="804786196054284061">Umowa licencyjna użytkownika</translation>
 <translation id="8049705080247101012">Google uznaje rozszerzenie „<ph name="EXTENSION_NAME" />” za złośliwe, dlatego nie dopuściliśmy do jego zainstalowania</translation>
 <translation id="8050038245906040378">Podpisywanie kodu handlowego firmy Microsoft</translation>

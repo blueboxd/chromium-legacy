@@ -28,7 +28,7 @@
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
 #import "ios/chrome/browser/infobars/infobar_manager_impl.h"
-#import "ios/chrome/browser/infobars/overlays/infobar_banner_overlay_request_factory_impl.h"
+#import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_factory_impl.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_tab_helper.h"
 #import "ios/chrome/browser/itunes_urls/itunes_urls_handler_tab_helper.h"
 #import "ios/chrome/browser/network_activity/network_activity_indicator_tab_helper.h"
@@ -94,7 +94,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
 
   if (base::FeatureList::IsEnabled(kInfobarOverlayUI)) {
     InfobarOverlayTabHelper::CreateForWebState(
-        web_state, std::make_unique<InfobarBannerOverlayRequestFactoryImpl>());
+        web_state, std::make_unique<InfobarOverlayRequestFactoryImpl>());
   }
 
   if (base::FeatureList::IsEnabled(kCaptivePortalMetrics)) {

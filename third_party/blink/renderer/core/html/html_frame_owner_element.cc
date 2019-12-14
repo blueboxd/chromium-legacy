@@ -307,6 +307,26 @@ void HTMLFrameOwnerElement::UpdateContainerPolicy(Vector<String>* messages) {
   }
 }
 
+void HTMLFrameOwnerElement::UpdateRequiredPolicy() {
+  const DocumentPolicy::FeatureState self_required_policy =
+      ConstructRequiredPolicy();
+  const auto* frame = GetDocument().GetFrame();
+  DCHECK(frame);
+  // TODO(chenleihu): unify the logic of getting parent required policy after
+  // frame policy gets moved from FrameOwner to Frame.
+  frame_policy_.required_document_policy =
+      frame->IsMainFrame()
+          ? self_required_policy
+          : DocumentPolicy::MergeFeatureState(
+                self_required_policy,
+                frame->Owner()
+                    ->GetFramePolicy()
+                    .required_document_policy /* parent required policy */);
+  if (ContentFrame()) {
+    frame->Client()->DidChangeFramePolicy(ContentFrame(), frame_policy_);
+  }
+}
+
 void HTMLFrameOwnerElement::FrameOwnerPropertiesChanged() {
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet; or if we are in the middle of
@@ -423,6 +443,7 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   }
 
   UpdateContainerPolicy();
+  UpdateRequiredPolicy();
 
   KURL url_to_request = url.IsNull() ? BlankURL() : url;
   ResourceRequest request(url_to_request);

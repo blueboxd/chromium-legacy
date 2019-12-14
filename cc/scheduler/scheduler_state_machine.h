@@ -121,7 +121,8 @@ class CC_EXPORT SchedulerStateMachine {
   }
 
   bool NewActiveTreeLikely() const {
-    return needs_begin_main_frame_ || CommitPending() || has_pending_tree_;
+    return (needs_begin_main_frame_ && !last_commit_had_no_updates_) ||
+           CommitPending() || has_pending_tree_;
   }
 
   bool RedrawPending() const { return needs_redraw_; }

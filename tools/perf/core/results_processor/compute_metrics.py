@@ -22,7 +22,7 @@ CONCATENATED_PROTO_NAME = 'trace.pb'
 def _RunMetric(test_result, metrics):
   html_trace = test_result['outputArtifacts'][HTML_TRACE_NAME]
   html_local_path = html_trace['filePath']
-  html_remote_url = html_trace.get('remoteUrl')
+  html_remote_url = html_trace.get('viewUrl')
 
   # The timeout needs to be coordinated with the Swarming IO timeout for the
   # task that runs this code. If this timeout is longer or close in length

@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Letölti újra a fájlt?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# hangfájl}other{# hangfájl}}</translation>
 <translation id="2653659639078652383">Elküldés</translation>
-<translation id="2669093958999339774">Letilthatja a zavaró értesítési engedélykéréseket, és kérhet helyettük kevésbé zavaró üzenetet</translation>
 <translation id="2677748264148917807">Lap elhagyása</translation>
 <translation id="2704606927547763573">Másolt</translation>
 <translation id="2707726405694321444">Oldal frissítése</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Felvéve a(z) <ph name="PRODUCT_NAME" /> könyvjelzői közé</translation>
 <translation id="3744111561329211289">Szinkronizálás a háttérben</translation>
 <translation id="3749259744154402564">Nem támogatott</translation>
-<translation id="3767376082821709728">Az újonnan meglátogatott webhelyek nem küldhetnek értesítéseket</translation>
 <translation id="3771001275138982843">Nem sikerült letölteni a frissítést</translation>
 <translation id="3771033907050503522">Inkognitólapok</translation>
 <translation id="3773755127849930740">A párosítás engedélyezéséhez <ph name="BEGIN_LINK" />kapcsolja be a Bluetooth funkciót<ph name="END_LINK" /></translation>
@@ -957,7 +955,6 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="8035133914807600019">Új mappa…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> nap van hátra</translation>
 <translation id="804335162455518893">Az SD-kártya nem található</translation>
-<translation id="8046278916126163020">Az újonnan meglátogatott webhelyek engedélyt kérhetnek, hogy értesítéseket küldjenek</translation>
 <translation id="805047784848435650">A böngészési előzményei alapján</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB áll rendelkezésre</translation>
 <translation id="8058746566562539958">Megnyitás új Chrome-lapon</translation>

@@ -215,6 +215,12 @@ void WebsiteSettingsRegistry::Init() {
            WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE,
            DESKTOP | PLATFORM_ANDROID,
            WebsiteSettingsInfo::DONT_INHERIT_IN_INCOGNITO);
+  Register(ContentSettingsType::SAFE_BROWSING_URL_CHECK_DATA,
+           "safe-browsing-url-check-data", nullptr,
+           WebsiteSettingsInfo::UNSYNCABLE, WebsiteSettingsInfo::NOT_LOSSY,
+           WebsiteSettingsInfo::SINGLE_ORIGIN_ONLY_SCOPE,
+           DESKTOP | PLATFORM_ANDROID,
+           WebsiteSettingsInfo::INHERIT_IN_INCOGNITO);
 }
 
 }  // namespace content_settings

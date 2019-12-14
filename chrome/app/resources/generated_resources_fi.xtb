@@ -1190,7 +1190,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="2665919335226618153">Harmin paikka! Alustuksen aikana tapahtui virhe.</translation>
 <translation id="2666990579225592931">Avaa vierasikkuna</translation>
 <translation id="2667463864537187133">Hallitse oikeinkirjoituksen tarkistusta</translation>
-<translation id="2669093958999339774">Estä ilmoituskehotteita keskeyttämästä sinua ja käytä niiden sijaan hiljaisempaa viestiä</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> jakaa Chrome-välilehden.</translation>
 <translation id="2670429602441959756">Tämä sivu sisältää ominaisuuksia, joita ei vielä tueta virtuaalitodellisuudessa. Jännittävää…</translation>
 <translation id="2671451824761031126">Kirjanmerkkisi ja asetuksesi ovat valmiina.</translation>
@@ -1964,7 +1963,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="37613671848467444">Avaa incognito-ikkunassa</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Käyttää USB-laitetta}other{Käyttää # USB-laitetta}}</translation>
 <translation id="3765246971671567135">Esittelytilan offline-käytäntöjä ei voitu lukea.</translation>
-<translation id="3767376082821709728">Uudet avaamasi sivustot eivät voi lähettää sinulle ilmoituksia</translation>
 <translation id="3768037234834996183">Asetuksia synkronoidaan…</translation>
 <translation id="377050016711188788">Jäätelö</translation>
 <translation id="3771294271822695279">Videotiedostot </translation>
@@ -3029,7 +3027,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="5370819323174483825">&amp;Lataa uudelleen</translation>
 <translation id="5372529912055771682">Tämä käyttöjärjestelmän versio ei tue annettua käyttöönottotilaa. Varmista, että käytössä on uusin versio, ja yritä uudelleen.</translation>
 <translation id="5372579129492968947">Irrota laajennus</translation>
-<translation id="5374359983950678924">Vaihda kuva</translation>
 <translation id="5376169624176189338">Siirry taaksepäin klikkaamalla, tarkastele historiaa pitämällä alhaalla</translation>
 <translation id="5376931455988532197">Tiedosto on liian suuri</translation>
 <translation id="537813040452600081">Tässä ikkunassa katselemiasi sivuja ei lisätä selaushistoriaan, eikä niistä jää tietokoneelle muita jälkiä, kuten evästeitä, kirjauduttuasi ulos. Lataamiasi tiedostoja ja luomiasi kirjanmerkkejä ei tallenneta.</translation>
@@ -4905,7 +4902,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8044899503464538266">Hidas</translation>
 <translation id="8045253504249021590">Synkronointi on keskeytetty Google Hallintapaneelin kautta.</translation>
 <translation id="8045923671629973368">Anna sovellustunnus tai verkkokaupan URL-osoite.</translation>
-<translation id="8046278916126163020">Avaamasi uudet sivustot voivat pyytää lupaa lähettää sinulle ilmoituksia</translation>
 <translation id="804786196054284061">Käyttölupasopimus</translation>
 <translation id="8049705080247101012"><ph name="EXTENSION_NAME" /> on Googlen haitalliseksi merkitsemä, joten sen asennus on estetty.</translation>
 <translation id="8050038245906040378">Microsoftin kaupallinen koodin allekirjoitus</translation>

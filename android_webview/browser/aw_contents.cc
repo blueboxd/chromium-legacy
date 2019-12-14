@@ -1165,6 +1165,10 @@ void AwContents::SetDipScale(JNIEnv* env,
   SetDipScaleInternal(dip_scale);
 }
 
+void AwContents::OnInputEvent(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+  browser_view_renderer_.OnInputEvent();
+}
+
 void AwContents::SetDipScaleInternal(float dip_scale) {
   browser_view_renderer_.SetDipScale(dip_scale);
 }

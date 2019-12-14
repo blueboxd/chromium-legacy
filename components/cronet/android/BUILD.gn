@@ -48,7 +48,7 @@ generate_jni("cronet_jni_headers") {
 }
 
 generate_jni_registration("cronet_jni_registration") {
-  target = ":cronet_impl_native_base_java"
+  targets = [ ":cronet_impl_native_base_java" ]
   header_output = _jni_registration_header
   sources_blacklist = [
     "//base/android/java/src/org/chromium/base/library_loader/LibraryLoader.java",

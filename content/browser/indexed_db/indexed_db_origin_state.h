@@ -53,12 +53,12 @@ class CONTENT_EXPORT IndexedDBOriginState {
   // occurs after backing store close.
   // Visible for testing.
   static constexpr const base::TimeDelta kMaxEarliestGlobalSweepFromNow =
-      base::TimeDelta::FromHours(2);
+      base::TimeDelta::FromHours(1);
   // Maximum time interval between runs of the IndexedDBSweeper for a given
   // origin. Sweeping only occurs after backing store close.
   // Visible for testing.
   static constexpr const base::TimeDelta kMaxEarliestOriginSweepFromNow =
-      base::TimeDelta::FromDays(7);
+      base::TimeDelta::FromDays(3);
 
   enum class ClosingState {
     // IndexedDBOriginState isn't closing.

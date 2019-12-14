@@ -44,7 +44,7 @@ class RapporServiceImpl : public RapporService {
   // |pref_service| is longer than the lifetime of RapporServiceImpl.
   // |is_incognito_callback| will be called to test if incognito mode is active.
   RapporServiceImpl(PrefService* pref_service,
-                    const base::Callback<bool(void)> is_incognito_callback);
+                    base::RepeatingCallback<bool(void)> is_incognito_callback);
   virtual ~RapporServiceImpl();
 
   // Add an observer for collecting daily metrics.
@@ -137,7 +137,7 @@ class RapporServiceImpl : public RapporService {
   PrefService* pref_service_;
 
   // A callback for testing if incognito mode is active;
-  const base::Callback<bool(void)> is_incognito_callback_;
+  const base::RepeatingCallback<bool(void)> is_incognito_callback_;
 
   // Client-side secret used to generate fake bits.
   std::string secret_;

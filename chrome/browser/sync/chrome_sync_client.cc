@@ -122,6 +122,7 @@
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
+#include "chrome/browser/chromeos/sync/apps_model_type_controller.h"
 #include "chrome/browser/chromeos/sync/os_sync_model_type_controller.h"
 #include "chrome/browser/chromeos/sync/os_syncable_service_model_type_controller.h"
 #include "chrome/browser/sync/wifi_configuration_sync_service_factory.h"
@@ -173,6 +174,11 @@ syncer::ModelTypeSet GetDisabledTypesFromCommandLine() {
 base::WeakPtr<syncer::SyncableService> GetWeakPtrOrNull(
     syncer::SyncableService* service) {
   return service ? service->AsWeakPtr() : nullptr;
+}
+
+base::RepeatingClosure GetDumpStackClosure() {
+  return base::BindRepeating(&syncer::ReportUnrecoverableError,
+                             chrome::GetChannel());
 }
 
 }  // namespace
@@ -306,8 +312,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
       component_factory_->CreateCommonDataTypeControllers(disabled_types,
                                                           sync_service);
 
-  const base::RepeatingClosure dump_stack = base::BindRepeating(
-      &syncer::ReportUnrecoverableError, chrome::GetChannel());
+  const base::RepeatingClosure dump_stack = GetDumpStackClosure();
 
   syncer::RepeatingModelTypeStoreFactory model_type_store_factory =
       GetModelTypeStoreService()->GetStoreFactory();
@@ -340,9 +345,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   // App sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::APPS)) {
-    controllers.push_back(std::make_unique<ExtensionModelTypeController>(
-        syncer::APPS, model_type_store_factory,
-        GetSyncableServiceForType(syncer::APPS), dump_stack, profile_));
+    controllers.push_back(CreateAppsModelTypeController(sync_service));
   }
 
   // Extension sync is enabled by default.  Register unless explicitly
@@ -366,6 +369,8 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   // App setting sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::APP_SETTINGS)) {
+    // TODO(https://crbug.com/1031549): Run in transport-mode on Chrome OS with
+    // SplitSettingsSync.
     controllers.push_back(std::make_unique<ExtensionSettingModelTypeController>(
         syncer::APP_SETTINGS, model_type_store_factory,
         extensions::settings_sync_util::GetSyncableServiceProvider(
@@ -378,6 +383,8 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
       base::FeatureList::IsEnabled(features::kDesktopPWAsUSS) &&
       web_app::WebAppProvider::Get(profile_)) {
     if (!disabled_types.Has(syncer::WEB_APPS)) {
+      // TODO(https://crbug.com/1031549): Run in transport-mode on Chrome OS
+      // with SplitSettingsSync.
       controllers.push_back(std::make_unique<syncer::ModelTypeController>(
           syncer::WEB_APPS,
           std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
@@ -690,5 +697,24 @@ syncer::SyncTypePreferenceProvider* ChromeSyncClient::GetPreferenceProvider() {
   return nullptr;
 #endif
 }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+std::unique_ptr<syncer::ModelTypeController>
+ChromeSyncClient::CreateAppsModelTypeController(
+    syncer::SyncService* sync_service) {
+#if defined(OS_CHROMEOS)
+  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+    return AppsModelTypeController::Create(
+        GetModelTypeStoreService()->GetStoreFactory(),
+        GetSyncableServiceForType(syncer::APPS), GetDumpStackClosure(),
+        sync_service, profile_);
+  }
+  // Fall through.
+#endif
+  return std::make_unique<ExtensionModelTypeController>(
+      syncer::APPS, GetModelTypeStoreService()->GetStoreFactory(),
+      GetSyncableServiceForType(syncer::APPS), GetDumpStackClosure(), profile_);
+}
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 }  // namespace browser_sync

@@ -354,6 +354,14 @@ class CleanerTest
       command_line.AppendSwitch(
           chrome_cleaner::kRunWithoutSandboxForTestingSwitch);
     }
+
+    // Scan only the SHELL location, where test UwS are created. This has little
+    // impact on the TestOnly engine (which is very fast) but a large impact
+    // with the real engine. Official cleaner builds still scan all locations
+    // in case there's an issue with the other scan locations.
+    command_line.AppendSwitchASCII(
+        chrome_cleaner::kScanLocationsSwitch,
+        base::NumberToString(chrome_cleaner::UwS::FOUND_IN_SHELL));
 #endif  // BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
 
     return command_line;

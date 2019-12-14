@@ -19,7 +19,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/net_errors.h"
-#include "net/base/network_isolation_key.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "url/gurl.h"
@@ -46,6 +45,7 @@ class ProxyLookupRequest : public network::mojom::ProxyLookupClient {
   ProxyLookupRequest(
       network::mojom::NetworkContext* network_context,
       const GURL& source_url,
+      const net::NetworkIsolationKey& network_isolation_key,
       ProxyResolutionServiceProvider::NotifyCallback notify_callback)
       : notify_callback_(std::move(notify_callback)) {
     mojo::PendingRemote<network::mojom::ProxyLookupClient> proxy_lookup_client =
@@ -54,9 +54,7 @@ class ProxyLookupRequest : public network::mojom::ProxyLookupClient {
         &ProxyLookupRequest::OnProxyLookupComplete, base::Unretained(this),
         net::ERR_ABORTED, base::nullopt));
 
-    // TODO(https://crbug.com/1021661): Pass in a non-empty NetworkIsolationKey.
-    network_context->LookUpProxyForURL(source_url,
-                                       net::NetworkIsolationKey::Todo(),
+    network_context->LookUpProxyForURL(source_url, network_isolation_key,
                                        std::move(proxy_lookup_client));
   }
 
@@ -92,7 +90,8 @@ class ProxyLookupRequest : public network::mojom::ProxyLookupClient {
 }  // namespace
 
 ProxyResolutionServiceProvider::ProxyResolutionServiceProvider()
-    : origin_thread_(base::ThreadTaskRunnerHandle::Get()) {}
+    : origin_thread_(base::ThreadTaskRunnerHandle::Get()),
+      network_isolation_key_(net::NetworkIsolationKey::CreateTransient()) {}
 
 ProxyResolutionServiceProvider::~ProxyResolutionServiceProvider() {
   DCHECK(OnOriginThread());
@@ -169,7 +168,8 @@ void ProxyResolutionServiceProvider::ResolveProxyInternal(
   }
 
   VLOG(1) << "Starting network proxy resolution for " << url;
-  new ProxyLookupRequest(network_context, url, std::move(callback));
+  new ProxyLookupRequest(network_context, url, network_isolation_key_,
+                         std::move(callback));
 }
 
 void ProxyResolutionServiceProvider::NotifyProxyResolved(

@@ -7,6 +7,7 @@ package org.chromium.chromecast.base;
 import android.annotation.SuppressLint;
 
 import org.chromium.base.Consumer;
+import org.chromium.base.Function;
 
 import java.util.Objects;
 

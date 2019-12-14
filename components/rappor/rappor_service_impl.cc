@@ -38,9 +38,9 @@ const char kDefaultServerUrl[] = "https://clients4.google.com/rappor";
 
 RapporServiceImpl::RapporServiceImpl(
     PrefService* pref_service,
-    const base::Callback<bool(void)> is_incognito_callback)
+    base::RepeatingCallback<bool(void)> is_incognito_callback)
     : pref_service_(pref_service),
-      is_incognito_callback_(is_incognito_callback),
+      is_incognito_callback_(std::move(is_incognito_callback)),
       cohort_(-1),
       daily_event_(pref_service,
                    prefs::kRapporLastDailySample,

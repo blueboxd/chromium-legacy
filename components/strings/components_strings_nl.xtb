@@ -5,10 +5,10 @@
 <translation id="1010200102790553230">Pagina later laden</translation>
 <translation id="1015730422737071372">Aanvullende gegevens verzenden</translation>
 <translation id="1021110881106174305">Geaccepteerde passen</translation>
+<translation id="1021753677514347426">Dit probleem doet zich voor als gevolg van een certificaat dat jij of iemand anders heeft geïnstalleerd op je apparaat. Het certificaat staat erom bekend dat het wordt gebruikt voor netwerkmonitoring en -onderschepping en wordt niet vertrouwd door Chromium. Hoewel er ook legitieme certificaten bestaan, bijvoorbeeld op een school- of zakelijk netwerk, wil Chromium zeker weten dat je begrijpt wat er gebeurt, ook als je het niet kunt tegenhouden. Monitoring kan plaatsvinden in elke browser of app met toegang tot internet.</translation>
 <translation id="1032854598605920125">Rechtsom draaien</translation>
 <translation id="1036348656032585052">Uitschakelen</translation>
 <translation id="1038842779957582377">onbekende naam</translation>
-<translation id="1039626062703039346">Chrome kan je helpen je Google-account te beschermen en je wachtwoord te wijzigen. Hiermee ontvangt Google een melding over deze site.</translation>
 <translation id="1050038467049342496">Andere apps sluiten</translation>
 <translation id="1055184225775184556">&amp;Toevoegen ongedaan maken</translation>
 <translation id="1056898198331236512">Waarschuwing</translation>
@@ -68,6 +68,7 @@
 <translation id="1264126396475825575">Crashrapport vastgelegd op <ph name="CRASH_TIME" /> (nog niet geüpload of genegeerd)</translation>
 <translation id="1270502636509132238">Ophaalmethode</translation>
 <translation id="1285320974508926690">Deze site nooit vertalen</translation>
+<translation id="1285400217480592994">De content scannen van de bestanden die je downloadt of uploadt in Chrome.</translation>
 <translation id="1292701964462482250">'Software op je computer voorkomt dat Chrome veilig verbinding kan maken met internet' (alleen Windows-computers)</translation>
 <translation id="1294154142200295408">Opdrachtregelvarianten</translation>
 <translation id="129553762522093515">Recent gesloten</translation>
@@ -285,6 +286,7 @@
 <translation id="2270484714375784793">Telefoonnummer</translation>
 <translation id="2277103315734023688">Vooruit zoeken</translation>
 <translation id="2283340219607151381">Adressen opslaan en invullen</translation>
+<translation id="2288422996159078444">Alles wat je typt, pagina's die je bekijkt en andere activiteiten op internet worden in de gaten gehouden. Content op sites kan zonder jouw medeweten worden gewijzigd.</translation>
 <translation id="2289385804009217824">Bijsnijden</translation>
 <translation id="2292556288342944218">Je toegang tot internet wordt geblokkeerd</translation>
 <translation id="2297722699537546652">B5 (envelop)</translation>
@@ -299,7 +301,6 @@
 <translation id="2354001756790975382">Andere bladwijzers</translation>
 <translation id="2354430244986887761">Google Safe Browsing heeft onlangs <ph name="BEGIN_LINK" />schadelijke apps gevonden<ph name="END_LINK" /> op <ph name="SITE" />.</translation>
 <translation id="2355395290879513365">Aanvallers kunnen mogelijk de afbeeldingen zien die je op deze site bekijkt en je misleiden door de afbeeldingen aan te passen.</translation>
-<translation id="2355474962185559967">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chromium raadt je aan naar <ph name="WEBSITE_1" /> te gaan en je wachtwoord nu te wijzigen.</translation>
 <translation id="2356070529366658676">Vragen</translation>
 <translation id="2359629602545592467">Meerdere</translation>
 <translation id="2359808026110333948">Doorgaan</translation>
@@ -332,7 +333,6 @@
 <translation id="2495083838625180221">JSON Parser</translation>
 <translation id="2495093607237746763">Als deze optie is aangevinkt, bewaart Chromium een exemplaar van je pas op dit apparaat om formulieren sneller te kunnen invullen.</translation>
 <translation id="2498091847651709837">Nieuwe pas scannen</translation>
-<translation id="249825481377667906">Chromium kan je helpen je Google-account te beschermen en je wachtwoord te wijzigen. Hiermee ontvangt Google een melding over deze site.</translation>
 <translation id="2501278716633472235">Terug</translation>
 <translation id="2503184589641749290">Geaccepteerde betaalpassen en prepaidkaarten</translation>
 <translation id="2505268675989099013">Account beschermen</translation>
@@ -429,6 +429,7 @@
 <translation id="2989742184762224133">Twee nietjes boven</translation>
 <translation id="2991174974383378012">Delen met websites</translation>
 <translation id="2991571918955627853">Je kunt <ph name="SITE" /> momenteel niet bezoeken, omdat de website HSTS gebruikt. Netwerkfouten en aanvallen zijn doorgaans tijdelijk, dus deze pagina werkt later waarschijnlijk correct.</translation>
+<translation id="2996674880327704673">Suggesties van Google</translation>
 <translation id="3005723025932146533">Opgeslagen kopie weergeven</translation>
 <translation id="3008447029300691911">Geef de CVC-code voor <ph name="CREDIT_CARD" /> op. Zodra je bevestigt, worden je creditcardgegevens gedeeld met deze site.</translation>
 <translation id="3010559122411665027">Lijstitem '<ph name="ENTRY_INDEX" />': <ph name="ERROR" /></translation>
@@ -441,6 +442,7 @@
 <translation id="3060227939791841287">C9 (envelop)</translation>
 <translation id="3061707000357573562">Patchservice</translation>
 <translation id="3064966200440839136">Je verlaat de incognitomodus om te betalen via een externe app. Doorgaan?</translation>
+<translation id="3086579638707268289">Je activiteit op internet wordt in de gaten gehouden</translation>
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Ophaaladres toevoegen</translation>
 <translation id="3105172416063519923">Item-ID:</translation>
@@ -472,7 +474,6 @@
 <translation id="3228969707346345236">De vertaling is mislukt omdat de pagina al in het <ph name="LANGUAGE" /> is.</translation>
 <translation id="3229041911291329567">Versie-informatie over je apparaat en browser</translation>
 <translation id="323107829343500871">De CVC-code voor <ph name="CREDIT_CARD" /> opgeven</translation>
-<translation id="3234392465377209614">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chromium raadt je aan naar <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> en <ph name="WEBSITE_3" /> te gaan en je wachtwoord nu te wijzigen.</translation>
 <translation id="3234666976984236645">Altijd belangrijke content op deze site detecteren</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> lijkt op <ph name="SUGGESTED_DOMAIN" />. Aanvallers maken sites soms na door vergelijkbare URL's te gebruiken.</translation>
 <translation id="3270847123878663523">&amp;Volgorde wijzigen ongedaan maken</translation>
@@ -491,6 +492,7 @@
 <translation id="3369192424181595722">Klokfout</translation>
 <translation id="337363190475750230">Uitgeschreven</translation>
 <translation id="3377188786107721145">Fout bij het parseren van beleid</translation>
+<translation id="3377736046129930310">Gebruik schermvergrendeling om kaarten sneller te bevestigen</translation>
 <translation id="3380365263193509176">Onbekende fout</translation>
 <translation id="3380864720620200369">Klant-ID:</translation>
 <translation id="3387261909427947069">Betaalmethoden</translation>
@@ -504,7 +506,6 @@
 <translation id="342781501876943858">Chromium raadt je aan je wachtwoord te resetten als je het voor andere sites hebt hergebruikt.</translation>
 <translation id="3428151540071562330">Een of meer van de servertemplate-URI's voor DnsOverHttpsTemplates zijn ongeldig en worden niet gebruikt.</translation>
 <translation id="3431636764301398940">Deze creditcard opslaan op dit apparaat</translation>
-<translation id="3438790640050632698">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chrome raadt je aan naar <ph name="WEBSITE_1" /> en <ph name="WEBSITE_2" /> te gaan en je wachtwoord nu te wijzigen.</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">De eigenaar van dit apparaat heeft de dinosaurusgame uitgeschakeld.</translation>
 <translation id="3447884698081792621">Certificaat weergeven (uitgegeven door <ph name="ISSUER" />)</translation>
@@ -518,7 +519,6 @@
 <translation id="3484560055331845446">Je kunt de toegang tot je Google-account kwijtraken. Chrome raadt je aan je wachtwoord nu te wijzigen. Je wordt gevraagd in te loggen op je account.</translation>
 <translation id="3495081129428749620">Zoeken op pagina <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Dit beleid wordt genegeerd omdat een ander beleid in dezelfde beleidsgroep een hogere prioriteit heeft.</translation>
-<translation id="3525469219100414032">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chrome raadt je aan naar <ph name="WEBSITE_1" /> te gaan en je wachtwoord nu te wijzigen.</translation>
 <translation id="3528171143076753409">Het servercertificaat is niet betrouwbaar.</translation>
 <translation id="3528485271872257980">Donkerbruin</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Ten minste één item op gesynchroniseerde apparaten}=1{1 item (en meer op gesynchroniseerde apparaten)}other{# items (en meer op gesynchroniseerde apparaten)}}</translation>
@@ -651,6 +651,7 @@
 <translation id="4194250254487269611">Je kaart kan op dit moment niet worden opgeslagen</translation>
 <translation id="4196861286325780578">&amp;Opnieuw verplaatsen</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Controleer firewall- en antivirusconfiguraties<ph name="END_LINK" /></translation>
+<translation id="4214357935346142455">profiel inlogscherm</translation>
 <translation id="4215751373031079683">7x9 (envelop)</translation>
 <translation id="4220128509585149162">Crashes</translation>
 <translation id="422022731706691852">Cybercriminelen op <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> proberen je mogelijk te misleiden om programma's te installeren die schadelijk zijn voor de browserfunctionaliteit (door bijvoorbeeld je homepage te wijzigen of extra advertenties weer te geven op sites die je bezoekt). <ph name="BEGIN_LEARN_MORE_LINK" />Meer informatie<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -733,6 +734,7 @@
 <translation id="4515275063822566619">Passen en adressen zijn afkomstig uit Chrome en je Google-account (<ph name="ACCOUNT_EMAIL" />). Je kunt ze beheren in <ph name="BEGIN_LINK" />Instellingen<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (envelop)</translation>
 <translation id="4522570452068850558">Details</translation>
+<translation id="4524138615196389145">Bevestig je kaarten sneller door vanaf nu WebAuthn te gebruiken</translation>
 <translation id="4524805452350978254">Passen beheren</translation>
 <translation id="455113658016510503">A9</translation>
 <translation id="4552089082226364758">Flash</translation>
@@ -843,6 +845,7 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-bits)</translation>
+<translation id="5121469660360593280">Deel gegevens over beveiligingsgebeurtenissen die zijn gemarkeerd door Chrome Enterprise User Protect met je beheerder. Deze gegevens zijn bijvoorbeeld URL's van pagina's die je hebt bezocht, bestandsnamen of metadata en de gebruikersnaam die je gebruikt om in te loggen op je apparaat en bij Chrome.</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Je kaart verifiëren</translation>
 <translation id="5135404736266831032">Adressen beheren...</translation>
@@ -854,6 +857,7 @@
 <translation id="5159010409087891077">Pagina openen in een nieuw incognitovenster (⇧⌘N)</translation>
 <translation id="516920405563544094">Geef de CVC-code voor <ph name="CREDIT_CARD" /> op. Nadat je hebt bevestigd, worden de creditcardgegevens uit je Google-account gedeeld met deze site.</translation>
 <translation id="5169827969064885044">Je kunt de toegang tot het account van je organisatie kwijtraken of slachtoffer worden van identiteitsdiefstal. Chrome raadt je aan je wachtwoord nu te wijzigen.</translation>
+<translation id="5170017743895942767">Chrome Enterprise User Protect</translation>
 <translation id="5171045022955879922">Zoek of typ een URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Computer</translation>
@@ -940,7 +944,6 @@
 <translation id="5565735124758917034">Actief</translation>
 <translation id="5570825185877910964">Account beschermen</translation>
 <translation id="5571083550517324815">Kan niet ophalen van dit adres. Selecteer een ander adres.</translation>
-<translation id="5572009199897554128">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chromium raadt je aan naar <ph name="WEBSITE_1" /> en <ph name="WEBSITE_2" /> te gaan en je wachtwoord nu te wijzigen.</translation>
 <translation id="5580958916614886209">Controleer de vervalmaand en probeer het opnieuw</translation>
 <translation id="5586446728396275693">Geen opgeslagen adressen</translation>
 <translation id="5595485650161345191">Adres bewerken</translation>
@@ -975,6 +978,7 @@
 <translation id="5730040223043577876">Chrome raadt je aan je wachtwoord opnieuw in te stellen als je het voor andere sites hebt hergebruikt.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Pas opslaan in je Google-account}other{Passen opslaan in je Google-account}}</translation>
 <translation id="5763042198335101085">Geef een geldig e-mailadres op</translation>
+<translation id="5763703224595565476">Je beheerder heeft Chrome Enterprise User Protect ingeschakeld in je browser. Chrome Enterprise User Protect heeft toegang tot sommige van je gegevens.</translation>
 <translation id="5765072501007116331">Selecteer een adres om bezorgingsmethoden en vereisten te bekijken</translation>
 <translation id="5778550464785688721">Volledige controle voor MIDI-apparaten</translation>
 <translation id="5781136890105823427">Experiment ingeschakeld</translation>
@@ -1054,6 +1058,7 @@
 <translation id="6094273045989040137">Aantekeningen maken</translation>
 <translation id="6104072995492677441">JIS B6</translation>
 <translation id="610911394827799129">Er kunnen andere vormen van browsegeschiedenis zijn opgeslagen voor je Google-account op <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="6120179357481664955">Weet je je UPI-ID nog?</translation>
 <translation id="6132597952260690497">Informatie over geïnstalleerde extensies en plug-ins</translation>
 <translation id="6146055958333702838">Controleer alle kabels en start alle routers, modems of andere netwerkapparaten die je gebruikt, opnieuw op.</translation>
 <translation id="614940544461990577">Probeer dit eens:</translation>
@@ -1068,6 +1073,7 @@
 <translation id="6221345481584921695">Google Safe Browsing heeft onlangs <ph name="BEGIN_LINK" />malware gedetecteerd<ph name="END_LINK" /> op <ph name="SITE" />. Websites die normaal gesproken veilig zijn, worden soms geïnfecteerd met malware. De schadelijke content is afkomstig van <ph name="SUBRESOURCE_HOST" />, een bekende distributeur van malware.</translation>
 <translation id="6234122620015464377">Bijsnijden na elk document</translation>
 <translation id="6240447795304464094">Google Pay-logo</translation>
+<translation id="6241121617266208201">Suggesties verbergen</translation>
 <translation id="6251924700383757765">Privacybeleid</translation>
 <translation id="6254436959401408446">Onvoldoende geheugen om deze pagina te openen</translation>
 <translation id="625755898061068298">Je hebt ervoor gekozen beveiligingswaarschuwingen voor deze site uit te schakelen.</translation>
@@ -1114,6 +1120,7 @@
 <translation id="6409754798200046165">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chrome raadt je aan om je wachtwoord nu te wijzigen.</translation>
 <translation id="6410264514553301377">Geef de vervaldatum en CVC-code op voor <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium kan je helpen je Google-account te beschermen en je wachtwoord te wijzigen.</translation>
+<translation id="6423385022588644828">Bevestig je kaarten sneller door vanaf nu Touch ID te gebruiken</translation>
 <translation id="6427730057873428458">Luikvouw</translation>
 <translation id="6433490469411711332">Contactgegevens bewerken</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> heeft de verbinding geweigerd.</translation>
@@ -1184,12 +1191,14 @@
 <translation id="6786747875388722282">Extensies</translation>
 <translation id="6790428901817661496">Spelen</translation>
 <translation id="679355240208270552">Genegeerd omdat de standaard zoekoptie door het beleid is uitgeschakeld.</translation>
+<translation id="6794951432696553238">Bevestig je kaarten sneller door vanaf nu Windows Hello te gebruiken</translation>
 <translation id="681021252041861472">Verplicht veld</translation>
 <translation id="6810899417690483278">Aanpassings-ID</translation>
 <translation id="6825578344716086703">Je probeert <ph name="DOMAIN" /> te bereiken. De server heeft echter een certificaat geretourneerd dat een zwak ondertekeningsalgoritme (zoals SHA-1) gebruikt. Dit houdt in dat de betrouwbaarheidsverklaring van de server kan zijn vervalst. Het is mogelijk dat de server zelf een imitatie is (wellicht een server die je schade probeert te berokkenen).</translation>
 <translation id="6826370046007623921">Gegevensverlies voorkomen</translation>
 <translation id="6831043979455480757">Vertalen</translation>
 <translation id="6839929833149231406">Gebied</translation>
+<translation id="6846340164947227603">Een virtueel kaartnummer gebruiken…</translation>
 <translation id="6852204201400771460">App opnieuw laden?</translation>
 <translation id="6865412394715372076">Deze pas kan momenteel niet worden geverifieerd</translation>
 <translation id="6868206169573555318">Opnieuw starten om te updaten</translation>
@@ -1218,6 +1227,7 @@
 <translation id="6989763994942163495">Geavanceerde instellingen weergeven...</translation>
 <translation id="6993898126790112050">6x9 (envelop)</translation>
 <translation id="6996312675313362352"><ph name="ORIGINAL_LANGUAGE" /> altijd vertalen</translation>
+<translation id="7004583254764674281">Gebruik Windows Hello om kaarten sneller te bevestigen</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Dit kunnen eenmalige of terugkerende kosten zijn die misschien niet duidelijk worden aangegeven.</translation>
 <translation id="7029809446516969842">Wachtwoorden</translation>
@@ -1228,6 +1238,7 @@
 <translation id="7064851114919012435">Contactgegevens</translation>
 <translation id="7075452647191940183">Verzoek is te groot</translation>
 <translation id="7079718277001814089">Deze site bevat malware</translation>
+<translation id="7081308185095828845">Deze functie is niet beschikbaar op je apparaat</translation>
 <translation id="7087282848513945231">County</translation>
 <translation id="7090678807593890770">Zoek op Google naar <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Verbergen</translation>
@@ -1281,9 +1292,11 @@ Aanvullende informatie:
 <translation id="733923710415886693">Het certificaat van de server is niet bekendgemaakt via Certificaattransparantie.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Is gelieerd:</translation>
+<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> heeft Chrome Enterprise User Protect ingeschakeld in je browser. Chrome Enterprise User Protect heeft toegang tot sommige van je gegevens.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Opdrachtregel</translation>
 <translation id="7372973238305370288">zoekresultaat</translation>
+<translation id="7374733840632556089">Dit probleem doet zich voor als gevolg van een certificaat dat jij of iemand anders heeft geïnstalleerd op je apparaat. Het certificaat staat erom bekend dat het wordt gebruikt voor netwerkmonitoring en -onderschepping en wordt niet vertrouwd door Chrome. Hoewel er ook legitieme certificaten bestaan, bijvoorbeeld op een school- of zakelijk netwerk, wil Chrome zeker weten dat je begrijpt wat er gebeurt, ook als je het niet kunt tegenhouden. Monitoring kan plaatsvinden in elke browser of app met toegang tot internet.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Mediabediening</translation>
 <translation id="7378627244592794276">Nee</translation>
@@ -1312,6 +1325,7 @@ Aanvullende informatie:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /> over dit probleem.</translation>
 <translation id="7455133967321480974">Algemene standaardinstelling gebruiken (Blokkeren)</translation>
 <translation id="7460618730930299168">De screening verschilt van wat je hebt geselecteerd. Doorgaan?</translation>
+<translation id="7464821087936825778">Zoekmodus afsluiten</translation>
 <translation id="7473891865547856676">Nee, bedankt</translation>
 <translation id="7481312909269577407">Vooruit</translation>
 <translation id="7485870689360869515">Geen gegevens gevonden.</translation>
@@ -1533,6 +1547,7 @@ Aanvullende informatie:
 <translation id="8559762987265718583">Er kan geen privéverbinding met <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tot stand worden gebracht, omdat de datum en tijd van je apparaat (<ph name="DATE_AND_TIME" />) onjuist zijn.</translation>
 <translation id="8564985650692024650">Chromium raadt je aan het wachtwoord voor <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> opnieuw in te stellen als je het voor andere sites hebt hergebruikt.</translation>
 <translation id="8571890674111243710">Pagina wordt vertaald in het <ph name="LANGUAGE" />...</translation>
+<translation id="8574899947864779331">Gebruik Touch ID om kaarten sneller te bevestigen</translation>
 <translation id="858637041960032120">Telnr. toevoegen</translation>
 <translation id="860043288473659153">Naam kaarthouder</translation>
 <translation id="8616822740383114808">Deze instelling wordt afgedwongen door <ph name="ENFORCING_SETTING" /> in <ph name="SETTINGS_PAGE" /></translation>
@@ -1654,7 +1669,6 @@ Aanvullende informatie:
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">Je kunt de toegang tot je Google-account kwijtraken. Chromium raadt je aan je wachtwoord nu te wijzigen. Je wordt gevraagd in te loggen op je account.</translation>
 <translation id="939736085109172342">Nieuwe map</translation>
-<translation id="940786960229275114">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chrome raadt je aan naar <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> en <ph name="WEBSITE_3" /> te gaan en je wachtwoord nu te wijzigen.</translation>
 <translation id="945855313015696284">Controleer de informatie hieronder en verwijder alle ongeldige passen</translation>
 <translation id="950736567201356821">Drie perforaties boven</translation>
 <translation id="951104842009476243">Geaccepteerde betaalpassen en prepaidkaarten</translation>

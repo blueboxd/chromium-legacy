@@ -58,7 +58,18 @@ void* AllocateNearTo(void* source, size_t size) {
   const char* top_address = base + kMaxSize;
 
   while (base < top_address) {
+    // Initialize all fields to avoid memset with init_stack_vars = true.
+    // "= {}" or  -ftrivial-auto-var-init=pattern may insert memset or memcpy
+    // here. However if memset was used here even "init_stack_vars = false
+    // is_debug = true" on x86_64 crashes in GPU process.
     MEMORY_BASIC_INFORMATION mem_info;
+    mem_info.BaseAddress = nullptr;
+    mem_info.AllocationBase = nullptr;
+    mem_info.AllocationProtect = 0;
+    mem_info.RegionSize = 0;
+    mem_info.State = 0;
+    mem_info.Protect = 0;
+    mem_info.Type = 0;
     NTSTATUS status =
         g_nt.QueryVirtualMemory(NtCurrentProcess, base, MemoryBasicInformation,
                                 &mem_info, sizeof(mem_info), nullptr);

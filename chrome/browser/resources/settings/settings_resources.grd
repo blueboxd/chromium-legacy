@@ -390,6 +390,12 @@
                  file="clear_browsing_data_dialog/clear_browsing_data_dialog.js"
                  type="chrome_html"
                  preprocess="true" />
+      <structure name="IDR_SETTINGS_CLEAR_BROWSING_DATA_INSTALLED_APP_CHECKBOX_HTML"
+                 file="clear_browsing_data_dialog/installed_app_checkbox.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CLEAR_BROWSING_DATA_INSTALLED_APP_CHECKBOX_JS"
+                 file="clear_browsing_data_dialog/installed_app_checkbox.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_HISTORY_DELETION_DIALOG_HTML"
                  file="clear_browsing_data_dialog/history_deletion_dialog.html"
                  type="chrome_html" />
@@ -541,6 +547,12 @@
                    type="chrome_html" />
       </if>
       <if expr="chromeos">
+        <structure name="IDR_SETTINGS_LOCALIZED_STRING_WITH_LINK_JS"
+                   file="chromeos/localized_string_with_link/localized_string_with_link.js"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_LOCALIZED_STRING_WITH_LINK_HTML"
+                   file="chromeos/localized_string_with_link/localized_string_with_link.html"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_DEVICE_BROWSER_PROXY_HTML"
                    file="device_page/device_page_browser_proxy.html"
                    type="chrome_html" />

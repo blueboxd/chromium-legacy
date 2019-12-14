@@ -20,7 +20,7 @@
     : NSObject <SuccessfulReauthTimeAccessor> {
   // Object storing the time of a fake previous successful re-authentication
   // to be used by the |ReauthenticationModule|.
-  NSDate* successfulReauthTime_;
+  NSDate* _successfulReauthTime;
 }
 
 @end
@@ -28,15 +28,15 @@
 @implementation TestingSuccessfulReauthTimeAccessor
 
 - (void)updateSuccessfulReauthTime {
-  successfulReauthTime_ = [[NSDate alloc] init];
+  _successfulReauthTime = [[NSDate alloc] init];
 }
 
 - (void)updateSuccessfulReauthTime:(NSDate*)time {
-  successfulReauthTime_ = time;
+  _successfulReauthTime = time;
 }
 
 - (NSDate*)lastSuccessfulReauthTime {
-  return successfulReauthTime_;
+  return _successfulReauthTime;
 }
 
 @end

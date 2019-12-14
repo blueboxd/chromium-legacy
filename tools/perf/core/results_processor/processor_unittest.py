@@ -67,8 +67,9 @@ class ResultsProcessorUnitTests(unittest.TestCase):
         },
     )
 
-    with mock.patch('py_utils.cloud_storage.Insert') as cloud_patch:
-      cloud_patch.return_value = 'gs://url'
+    with mock.patch('py_utils.cloud_storage.Upload') as cloud_patch:
+      cloud_patch.return_value = processor.cloud_storage.CloudFilepath(
+          'bucket', 'path')
       processor.UploadArtifacts(test_result, 'bucket', 'run1')
       cloud_patch.assert_has_calls([
           mock.call('bucket', 'run1/benchmark/story/logs', '/log.log'),
@@ -80,7 +81,11 @@ class ResultsProcessorUnitTests(unittest.TestCase):
       )
 
     for artifact in test_result['outputArtifacts'].itervalues():
-      self.assertEqual(artifact['remoteUrl'], 'gs://url')
+      self.assertEqual(artifact['fetchUrl'], 'gs://bucket/path')
+      self.assertEqual(
+          artifact['viewUrl'],
+          'https://console.developers.google.com'
+          '/m/cloudstorage/b/bucket/o/path')
 
   def testRunIdentifier(self):
     with mock.patch('random.randint') as randint_patch:

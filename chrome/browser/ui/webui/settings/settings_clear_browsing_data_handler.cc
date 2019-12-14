@@ -72,6 +72,7 @@ const char* kCounterPrefsBasic[] = {
 const char kRegisterableDomainField[] = "registerableDomain";
 const char kReasonBitfieldField[] = "reasonBitfield";
 const char kIsCheckedField[] = "isChecked";
+const char kAppName[] = "appName";
 
 } // namespace
 
@@ -91,7 +92,7 @@ ClearBrowsingDataHandler::~ClearBrowsingDataHandler() {
 
 void ClearBrowsingDataHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "getImportantInstalledApps",
+      "getInstalledApps",
       base::BindRepeating(
           &ClearBrowsingDataHandler::GetRecentlyLaunchedInstalledApps,
           base::Unretained(this)));
@@ -150,10 +151,14 @@ void ClearBrowsingDataHandler::HandleClearBrowsingDataForTest() {
       std::make_unique<base::ListValue>();
   data_types->AppendString("browser.clear_data.browsing_history");
 
+  std::unique_ptr<base::ListValue> installed_apps =
+      std::make_unique<base::ListValue>();
+
   base::ListValue list_args;
   list_args.AppendString("webui_callback_id");
   list_args.Append(std::move(data_types));
   list_args.AppendInteger(1u);
+  list_args.Append(std::move(installed_apps));
   HandleClearBrowsingData(&list_args);
 }
 
@@ -178,7 +183,7 @@ void ClearBrowsingDataHandler::OnGotInstalledApps(
     const std::string& webui_callback_id,
     std::vector<ImportantSitesUtil::ImportantDomainInfo> installed_apps) {
   base::ListValue installed_apps_list;
-  for (auto info : installed_apps) {
+  for (const auto& info : installed_apps) {
     auto entry = std::make_unique<base::DictionaryValue>();
     // Used to get favicon in ClearBrowsingDataDialog and display URL next to
     // app name in the dialog.
@@ -188,15 +193,56 @@ void ClearBrowsingDataHandler::OnGotInstalledApps(
     entry->SetInteger(kReasonBitfieldField, info.reason_bitfield);
     // Initially all sites are selected for deletion.
     entry->SetBoolean(kIsCheckedField, true);
+    // User friendly name for the installed app.
+    DCHECK(info.app_name);
+    entry->SetString(kAppName, info.app_name.value());
     installed_apps_list.Append(std::move(entry));
   }
   ResolveJavascriptCallback(base::Value(webui_callback_id),
                             installed_apps_list);
 }
 
+std::unique_ptr<content::BrowsingDataFilterBuilder>
+ClearBrowsingDataHandler::ProcessInstalledApps(
+    const base::ListValue* installed_apps) {
+  std::vector<std::string> excluded_domains;
+  std::vector<int32_t> excluded_domain_reasons;
+  std::vector<std::string> ignored_domains;
+  std::vector<int32_t> ignored_domain_reasons;
+  for (const auto& item : *installed_apps) {
+    const base::DictionaryValue* site = nullptr;
+    CHECK(item.GetAsDictionary(&site));
+    bool is_checked = false;
+    CHECK(site->GetBoolean(kIsCheckedField, &is_checked));
+    std::string domain;
+    CHECK(site->GetString(kRegisterableDomainField, &domain));
+    int domain_reason = -1;
+    CHECK(site->GetInteger(kReasonBitfieldField, &domain_reason));
+    if (is_checked) {  // Selected installed apps should be deleted.
+      ignored_domains.push_back(domain);
+      ignored_domain_reasons.push_back(domain_reason);
+    } else {  // Unselected sites should be kept.
+      excluded_domains.push_back(domain);
+      excluded_domain_reasons.push_back(domain_reason);
+    }
+  }
+  if (!excluded_domains.empty() || !ignored_domains.empty()) {
+    ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(
+        profile_->GetOriginalProfile(), excluded_domains,
+        excluded_domain_reasons, ignored_domains, ignored_domain_reasons);
+  }
+
+  std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder(
+      content::BrowsingDataFilterBuilder::Create(
+          content::BrowsingDataFilterBuilder::BLACKLIST));
+  for (const std::string& domain : excluded_domains)
+    filter_builder->AddRegisterableDomain(domain);
+  return filter_builder;
+}
+
 void ClearBrowsingDataHandler::HandleClearBrowsingData(
     const base::ListValue* args) {
-  CHECK_EQ(3U, args->GetSize());
+  CHECK_EQ(4U, args->GetSize());
   std::string webui_callback_id;
   CHECK(args->GetString(0, &webui_callback_id));
 
@@ -311,6 +357,11 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
   int period_selected;
   CHECK(args->GetInteger(2, &period_selected));
 
+  const base::ListValue* installed_apps = nullptr;
+  CHECK(args->GetList(3, &installed_apps));
+  std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder =
+      ProcessInstalledApps(installed_apps);
+
   content::BrowsingDataRemover* remover =
       content::BrowserContext::GetBrowsingDataRemover(profile_);
 
@@ -322,10 +373,8 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
       static_cast<browsing_data::TimePeriod>(period_selected);
 
   browsing_data_important_sites_util::Remove(
-      remove_mask, origin_mask, time_period,
-      content::BrowsingDataFilterBuilder::Create(
-          content::BrowsingDataFilterBuilder::BLACKLIST),
-      remover, std::move(callback));
+      remove_mask, origin_mask, time_period, std::move(filter_builder), remover,
+      std::move(callback));
 
 #if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
   feature_engagement::IncognitoWindowTrackerFactory::GetInstance()

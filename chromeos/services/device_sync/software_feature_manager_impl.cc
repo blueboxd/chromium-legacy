@@ -4,11 +4,13 @@
 
 #include "chromeos/services/device_sync/software_feature_manager_impl.h"
 
-#include <memory>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
+#include "chromeos/services/device_sync/cryptauth_client.h"
+#include "chromeos/services/device_sync/cryptauth_feature_status_setter_impl.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "chromeos/services/device_sync/proto/enum_util.h"
 
@@ -23,12 +25,15 @@ SoftwareFeatureManagerImpl::Factory*
 // static
 std::unique_ptr<SoftwareFeatureManager>
 SoftwareFeatureManagerImpl::Factory::NewInstance(
-    CryptAuthClientFactory* cryptauth_client_factory) {
+    CryptAuthClientFactory* cryptauth_client_factory,
+    CryptAuthFeatureStatusSetter* feature_status_setter) {
   if (test_factory_instance_)
-    return test_factory_instance_->BuildInstance(cryptauth_client_factory);
+    return test_factory_instance_->BuildInstance(cryptauth_client_factory,
+                                                 feature_status_setter);
 
   static base::NoDestructor<Factory> factory;
-  return factory->BuildInstance(cryptauth_client_factory);
+  return factory->BuildInstance(cryptauth_client_factory,
+                                feature_status_setter);
 }
 
 void SoftwareFeatureManagerImpl::Factory::SetInstanceForTesting(
@@ -40,18 +45,36 @@ SoftwareFeatureManagerImpl::Factory::~Factory() = default;
 
 std::unique_ptr<SoftwareFeatureManager>
 SoftwareFeatureManagerImpl::Factory::BuildInstance(
-    CryptAuthClientFactory* cryptauth_client_factory) {
-  return base::WrapUnique(
-      new SoftwareFeatureManagerImpl(cryptauth_client_factory));
+    CryptAuthClientFactory* cryptauth_client_factory,
+    CryptAuthFeatureStatusSetter* feature_status_setter) {
+  return base::WrapUnique(new SoftwareFeatureManagerImpl(
+      cryptauth_client_factory, feature_status_setter));
 }
 
 SoftwareFeatureManagerImpl::Request::Request(
     std::unique_ptr<cryptauth::ToggleEasyUnlockRequest> toggle_request,
     const base::Closure& set_software_success_callback,
     const base::Callback<void(NetworkRequestError)> error_callback)
-    : error_callback(error_callback),
+    : request_type(RequestType::kSetSoftwareFeature),
+      error_callback(error_callback),
       toggle_request(std::move(toggle_request)),
       set_software_success_callback(set_software_success_callback) {}
+
+SoftwareFeatureManagerImpl::Request::Request(
+    const std::string& device_id,
+    multidevice::SoftwareFeature feature,
+    FeatureStatusChange status_change,
+    base::OnceClosure set_feature_status_success_callback,
+    base::OnceCallback<void(NetworkRequestError)>
+        set_feature_status_error_callback)
+    : request_type(RequestType::kSetFeatureStatus),
+      device_id(device_id),
+      feature(feature),
+      status_change(status_change),
+      set_feature_status_success_callback(
+          std::move(set_feature_status_success_callback)),
+      set_feature_status_error_callback(
+          std::move(set_feature_status_error_callback)) {}
 
 SoftwareFeatureManagerImpl::Request::Request(
     std::unique_ptr<cryptauth::FindEligibleUnlockDevicesRequest> find_request,
@@ -59,15 +82,18 @@ SoftwareFeatureManagerImpl::Request::Request(
                               const std::vector<cryptauth::IneligibleDevice>&)>
         find_hosts_success_callback,
     const base::Callback<void(NetworkRequestError)> error_callback)
-    : error_callback(error_callback),
+    : request_type(RequestType::kFindEligibleMultideviceHosts),
+      error_callback(error_callback),
       find_request(std::move(find_request)),
       find_hosts_success_callback(find_hosts_success_callback) {}
 
 SoftwareFeatureManagerImpl::Request::~Request() = default;
 
 SoftwareFeatureManagerImpl::SoftwareFeatureManagerImpl(
-    CryptAuthClientFactory* cryptauth_client_factory)
-    : crypt_auth_client_factory_(cryptauth_client_factory) {}
+    CryptAuthClientFactory* cryptauth_client_factory,
+    CryptAuthFeatureStatusSetter* feature_status_setter)
+    : crypt_auth_client_factory_(cryptauth_client_factory),
+      feature_status_setter_(feature_status_setter) {}
 
 SoftwareFeatureManagerImpl::~SoftwareFeatureManagerImpl() = default;
 
@@ -97,6 +123,18 @@ void SoftwareFeatureManagerImpl::SetSoftwareFeatureState(
 
   pending_requests_.emplace(std::make_unique<Request>(
       std::move(request), success_callback, error_callback));
+  ProcessRequestQueue();
+}
+
+void SoftwareFeatureManagerImpl::SetFeatureStatus(
+    const std::string& device_id,
+    multidevice::SoftwareFeature feature,
+    FeatureStatusChange status_change,
+    base::OnceClosure success_callback,
+    base::OnceCallback<void(NetworkRequestError)> error_callback) {
+  pending_requests_.emplace(std::make_unique<Request>(
+      device_id, feature, status_change, std::move(success_callback),
+      std::move(error_callback)));
   ProcessRequestQueue();
 }
 
@@ -131,10 +169,17 @@ void SoftwareFeatureManagerImpl::ProcessRequestQueue() {
   current_request_ = std::move(pending_requests_.front());
   pending_requests_.pop();
 
-  if (current_request_->toggle_request)
-    ProcessSetSoftwareFeatureStateRequest();
-  else
-    ProcessFindEligibleDevicesRequest();
+  switch (current_request_->request_type) {
+    case RequestType::kSetSoftwareFeature:
+      ProcessSetSoftwareFeatureStateRequest();
+      break;
+    case RequestType::kSetFeatureStatus:
+      ProcessSetFeatureStatusRequest();
+      break;
+    case RequestType::kFindEligibleMultideviceHosts:
+      ProcessFindEligibleDevicesRequest();
+      break;
+  }
 }
 
 void SoftwareFeatureManagerImpl::ProcessSetSoftwareFeatureStateRequest() {
@@ -147,6 +192,18 @@ void SoftwareFeatureManagerImpl::ProcessSetSoftwareFeatureStateRequest() {
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&SoftwareFeatureManagerImpl::OnErrorResponse,
                  weak_ptr_factory_.GetWeakPtr()));
+}
+
+void SoftwareFeatureManagerImpl::ProcessSetFeatureStatusRequest() {
+  DCHECK(feature_status_setter_);
+
+  feature_status_setter_->SetFeatureStatus(
+      current_request_->device_id, current_request_->feature,
+      current_request_->status_change,
+      base::BindOnce(&SoftwareFeatureManagerImpl::OnSetFeatureStatusSuccess,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&SoftwareFeatureManagerImpl::OnSetFeatureStatusError,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SoftwareFeatureManagerImpl::ProcessFindEligibleDevicesRequest() {
@@ -166,6 +223,19 @@ void SoftwareFeatureManagerImpl::OnToggleEasyUnlockResponse(
     const cryptauth::ToggleEasyUnlockResponse& response) {
   current_cryptauth_client_.reset();
   current_request_->set_software_success_callback.Run();
+  current_request_.reset();
+  ProcessRequestQueue();
+}
+
+void SoftwareFeatureManagerImpl::OnSetFeatureStatusSuccess() {
+  std::move(current_request_->set_feature_status_success_callback).Run();
+  current_request_.reset();
+  ProcessRequestQueue();
+}
+
+void SoftwareFeatureManagerImpl::OnSetFeatureStatusError(
+    NetworkRequestError error) {
+  std::move(current_request_->set_feature_status_error_callback).Run(error);
   current_request_.reset();
   ProcessRequestQueue();
 }

@@ -1190,7 +1190,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="2665919335226618153">Oh, Tidak! Terdapat ralat semasa memformat.</translation>
 <translation id="2666990579225592931">Buka Tetingkap Tetamu</translation>
 <translation id="2667463864537187133">Urus semakan ejaan</translation>
-<translation id="2669093958999339774">Sekat gesaan pemberitahuan daripada mengganggu anda, sebaliknya gunakan mesej yang lebih senyap</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> berkongsi tab Chrome.</translation>
 <translation id="2670429602441959756">Halaman ini mengandungi ciri yang belum disokong dalam VR. Meninggalkan halaman...</translation>
 <translation id="2671451824761031126">Penanda halaman dan tetapan anda sudah sedia</translation>
@@ -1964,7 +1963,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="37613671848467444">Buka dalam Tetingkap &amp;Inkognito</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Berkomunikasi dengan peranti USB}other{Berkomunikasi dengan # peranti USB}}</translation>
 <translation id="3765246971671567135">Tidak dapat membaca dasar mod tunjuk cara luar talian.</translation>
-<translation id="3767376082821709728">Tapak baharu yang anda lawati tidak boleh menghantar pemberitahuan kepada anda</translation>
 <translation id="3768037234834996183">Menyegerakkan pilihan anda...</translation>
 <translation id="377050016711188788">Aiskrim</translation>
 <translation id="3771294271822695279">Fail Video</translation>
@@ -3032,7 +3030,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="5370819323174483825">&amp;Muat semula</translation>
 <translation id="5372529912055771682">Mod pendaftaran yang diberikan tidak disokong oleh versi sistem pengendalian ini. Sila pastikan anda menjalankan versi terbaharu dan cuba lagi.</translation>
 <translation id="5372579129492968947">Nyahsemat sambungan</translation>
-<translation id="5374359983950678924">Tukar gambar</translation>
 <translation id="5376169624176189338">Klik untuk kembali, tahan untuk lihat sejarah</translation>
 <translation id="5376931455988532197">Fail terlalu besar</translation>
 <translation id="537813040452600081">Halaman yang anda lihat dalam tetingkap ini tidak akan dipaparkan dalam sejarah penyemak imbas dan halaman ini tidak akan meninggalkan kesan lain, seperti kuki, pada komputer selepas anda log keluar. Fail yang anda muat turun dan penanda halaman yang anda buat tidak akan disimpan.</translation>
@@ -4907,7 +4904,6 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8044899503464538266">Perlahan</translation>
 <translation id="8045253504249021590">Penyegerakan telah dihentikan melalui Papan Pemuka Google.</translation>
 <translation id="8045923671629973368">Masukkan ID aplikasi atau URL gedung web</translation>
-<translation id="8046278916126163020">Tapak baharu yang anda lawati boleh meminta untuk menghantar pemberitahuan kepada anda</translation>
 <translation id="804786196054284061">Perjanjian Lesen Pengguna Akhir</translation>
 <translation id="8049705080247101012">Google telah menandai <ph name="EXTENSION_NAME" /> sebagai berhasad dan pemasangan telah dihalang</translation>
 <translation id="8050038245906040378">Menandatangani Kod Komersial Microsoft</translation>

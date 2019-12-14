@@ -325,11 +325,11 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
   EXPECT_EQ(1, main_delegate->mouse_presses());
 
   EventTestWindow* status_delegate = new EventTestWindow(false);
-  std::unique_ptr<aura::Window> status(
+  std::unique_ptr<aura::Window> status_control(
       status_delegate->OpenTestWindowWithParent(
           Shell::GetPrimaryRootWindowController()->GetContainer(
-              ash::kShellWindowId_StatusContainer)));
-  status->SetBounds(main->bounds());
+              ash::kShellWindowId_ShelfControlContainer)));
+  status_control->SetBounds(main->bounds());
 
   // Make sure that status window can receive event.
   e1.ClickLeftButton();
@@ -346,7 +346,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
   EXPECT_EQ(0, transient_delegate->mouse_presses());
   EXPECT_EQ(1, status_delegate->mouse_presses());
 
-  status->Hide();
+  status_control->Hide();
   e1.ClickLeftButton();
   EXPECT_EQ(1, transient_delegate->mouse_presses());
   EXPECT_EQ(1, status_delegate->mouse_presses());
@@ -386,7 +386,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
     EXPECT_EQ(1, transient_delegate->mouse_presses());
 
     // Showing status will block events.
-    status->Show();
+    status_control->Show();
     e1.ClickLeftButton();
 
     // Verify that none of the other containers received any more mouse presses.
@@ -395,7 +395,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
     EXPECT_EQ(1, status_delegate->mouse_presses());
     EXPECT_EQ(1, main_delegate->mouse_presses());
     EXPECT_EQ(1, transient_delegate->mouse_presses());
-    status->Hide();
+    status_control->Hide();
 
     // Close |lock| before unlocking so that Shell::OnLockStateChanged does
     // not DCHECK on finding a system modal in Lock layer when unlocked.
@@ -415,14 +415,14 @@ TEST_F(SystemModalContainerLayoutManagerTest,
       main_delegate->OpenTestWindowWithContext(CurrentContext()));
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), main.get());
 
-  // A window in status area container to test if it could receive an event
+  // A window for status area to test if it could receive an event
   // under each condition.
   EventTestWindow* status_delegate = new EventTestWindow(false);
-  std::unique_ptr<aura::Window> status(
+  std::unique_ptr<aura::Window> status_control(
       status_delegate->OpenTestWindowWithParent(
           Shell::GetPrimaryRootWindowController()->GetContainer(
-              ash::kShellWindowId_StatusContainer)));
-  status->SetBounds(main->bounds());
+              ash::kShellWindowId_ShelfControlContainer)));
+  status_control->SetBounds(main->bounds());
 
   // Events are blocked on all windows because status window is above the modal
   // window.

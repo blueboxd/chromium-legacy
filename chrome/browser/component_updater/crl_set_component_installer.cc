@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/containers/span.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
@@ -91,7 +92,8 @@ void CRLSetData::UpdateCRLSetOnUI(const std::string& crl_set_bytes) {
 
   network::mojom::NetworkService* network_service =
       network_service_ ? network_service_ : content::GetNetworkService();
-  network_service->UpdateCRLSet(base::as_bytes(base::make_span(crl_set_bytes)));
+  network_service->UpdateCRLSet(base::as_bytes(base::make_span(crl_set_bytes)),
+                                base::DoNothing());
 }
 
 }  // namespace

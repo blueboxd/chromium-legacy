@@ -65,84 +65,90 @@ class OnDeviceHeadModelTest : public testing::Test {
     base::FilePath file_path = GetTestModelPath();
     ASSERT_TRUE(base::PathExists(file_path));
 #if defined(OS_WIN)
-    model_ = OnDeviceHeadModel::Create(base::WideToUTF8(file_path.value()), 4);
+    model_filename_ = base::WideToUTF8(file_path.value());
 #else
-    model_ = OnDeviceHeadModel::Create(file_path.value(), 4);
+    model_filename_ = file_path.value();
 #endif
-    ASSERT_TRUE(model_);
+    ASSERT_FALSE(model_filename_.empty());
   }
 
-  void TearDown() override { model_.reset(); }
+  void TearDown() override { model_filename_.clear(); }
 
-  std::unique_ptr<OnDeviceHeadModel> model_;
+  std::string model_filename_;
 };
 
-TEST_F(OnDeviceHeadModelTest, SizeOfScoreAndAddress) {
-  EXPECT_EQ((int)model_->num_bytes_of_score(), 2);
-  EXPECT_EQ((int)model_->num_bytes_of_address(), 3);
-}
-
 TEST_F(OnDeviceHeadModelTest, GetSuggestions) {
-  auto suggestions = model_->GetSuggestionsForPrefix("go");
+  auto suggestions =
+      OnDeviceHeadModel::GetSuggestionsForPrefix(model_filename_, 4, "go");
   EXPECT_THAT(suggestions,
               ElementsAre(Pair("google maps", 32765), Pair("google", 32764),
                           Pair("googler", 32762)));
 
-  suggestions = model_->GetSuggestionsForPrefix("ge");
+  suggestions =
+      OnDeviceHeadModel::GetSuggestionsForPrefix(model_filename_, 4, "ge");
   EXPECT_THAT(suggestions, ElementsAre(Pair("get out", 32763)));
 
-  suggestions = model_->GetSuggestionsForPrefix("ga");
+  suggestions =
+      OnDeviceHeadModel::GetSuggestionsForPrefix(model_filename_, 4, "ga");
   EXPECT_THAT(suggestions, ElementsAre(Pair("gamestop", 32761)));
 }
 
 TEST_F(OnDeviceHeadModelTest, NoMatch) {
-  auto suggestions = model_->GetSuggestionsForPrefix("x");
+  auto suggestions =
+      OnDeviceHeadModel::GetSuggestionsForPrefix(model_filename_, 4, "x");
   EXPECT_TRUE(suggestions.empty());
 }
 
 TEST_F(OnDeviceHeadModelTest, MatchTheEndOfSuggestion) {
-  auto suggestions = model_->GetSuggestionsForPrefix("ap");
+  auto suggestions =
+      OnDeviceHeadModel::GetSuggestionsForPrefix(model_filename_, 4, "ap");
   EXPECT_TRUE(suggestions.empty());
 }
 
 TEST_F(OnDeviceHeadModelTest, MatchAtTheMiddleOfSuggestion) {
-  auto suggestions = model_->GetSuggestionsForPrefix("st");
+  auto suggestions =
+      OnDeviceHeadModel::GetSuggestionsForPrefix(model_filename_, 4, "st");
   EXPECT_TRUE(suggestions.empty());
 }
 
 TEST_F(OnDeviceHeadModelTest, EmptyInput) {
-  auto suggestions = model_->GetSuggestionsForPrefix("");
+  auto suggestions =
+      OnDeviceHeadModel::GetSuggestionsForPrefix(model_filename_, 4, "");
   EXPECT_TRUE(suggestions.empty());
 }
 
 TEST_F(OnDeviceHeadModelTest, SetMaxSuggestionsToReturn) {
-  model_->set_max_num_matches_to_return(5);
-  auto suggestions = model_->GetSuggestionsForPrefix("g");
+  auto suggestions =
+      OnDeviceHeadModel::GetSuggestionsForPrefix(model_filename_, 5, "g");
   EXPECT_THAT(suggestions,
               ElementsAre(Pair("g", 32767), Pair("gmail", 32766),
                           Pair("google maps", 32765), Pair("google", 32764),
                           Pair("get out", 32763)));
 
-  model_->set_max_num_matches_to_return(2);
-  suggestions = model_->GetSuggestionsForPrefix("ma");
+  suggestions =
+      OnDeviceHeadModel::GetSuggestionsForPrefix(model_filename_, 2, "ma");
   EXPECT_THAT(suggestions,
               ElementsAre(Pair("maps", 32761), Pair("mail", 32760)));
 }
 
 TEST_F(OnDeviceHeadModelTest, NonEnglishLanguage) {
   // Chinese.
-  auto suggestions = model_->GetSuggestionsForPrefix("谷");
+  auto suggestions =
+      OnDeviceHeadModel::GetSuggestionsForPrefix(model_filename_, 4, "谷");
   EXPECT_THAT(suggestions, ElementsAre(Pair("谷歌", 32759)));
 
   // Japanese.
-  suggestions = model_->GetSuggestionsForPrefix("ガツガツ");
+  suggestions = OnDeviceHeadModel::GetSuggestionsForPrefix(model_filename_, 4,
+                                                           "ガツガツ");
   EXPECT_THAT(suggestions, ElementsAre(Pair("ガツガツしてる人", 32759)));
 
   // Korean.
-  suggestions = model_->GetSuggestionsForPrefix("비데 ");
+  suggestions =
+      OnDeviceHeadModel::GetSuggestionsForPrefix(model_filename_, 4, "비데 ");
   EXPECT_THAT(suggestions, ElementsAre(Pair("비데 두꺼비", 32759)));
 
   // Russian.
-  suggestions = model_->GetSuggestionsForPrefix("пере");
+  suggestions =
+      OnDeviceHeadModel::GetSuggestionsForPrefix(model_filename_, 4, "пере");
   EXPECT_THAT(suggestions, ElementsAre(Pair("переводчик", 32759)));
 }

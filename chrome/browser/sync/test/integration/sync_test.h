@@ -360,13 +360,6 @@ class SyncTest : public InProcessBrowserTest {
   // a profile then registers it as a testing profile.
   Profile* MakeTestProfile(base::FilePath profile_path, int index);
 
-  // Helper method used to create a Gaia account at runtime.
-  // This function should only be called when running against external servers
-  // which support this functionality.
-  // Returns true if account creation was successful, false otherwise.
-  bool CreateGaiaAccount(const std::string& username,
-                         const std::string& password);
-
   // Helper to block the current thread while the data models sync depends on
   // finish loading.
   void WaitForDataModels(Profile* profile);
@@ -500,11 +493,6 @@ class SyncTest : public InProcessBrowserTest {
   // Indicates whether to use a new user data dir.
   // Only used for external server tests with two clients.
   bool use_new_user_data_dir_ = false;
-
-  // Indicates the need to create Gaia user account at runtime. This can only
-  // be set if tests are run against external servers with support for user
-  // creation via http requests.
-  bool create_gaia_account_at_runtime_;
 
   // Disable extension install verification.
   extensions::ScopedInstallVerifierBypassForTest ignore_install_verification_;

@@ -28,7 +28,7 @@ WeakContainer::~WeakContainer() {}
 
 @implementation CRBWeakNSProtocolSentinel
 
-@synthesize container = container_;
+@synthesize container = _container;
 
 + (scoped_refptr<base::WeakContainer>)containerForObject:(id)object {
   if (object == nil)
@@ -57,7 +57,7 @@ WeakContainer::~WeakContainer() {}
   DCHECK(container.get());
   self = [super init];
   if (self)
-    container_ = container;
+    _container = container;
   return self;
 }
 

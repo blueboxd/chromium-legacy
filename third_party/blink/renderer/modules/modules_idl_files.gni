@@ -583,6 +583,7 @@ modules_dictionary_idl_files =
           "canvas/canvas2d/canvas_rendering_context_2d_settings.idl",
           "canvas/canvas2d/hit_region_options.idl",
           "canvas/htmlcanvas/canvas_context_creation_attributes_module.idl",
+          "clipboard/clipboard_item_options.idl",
           "contacts_picker/contact_info.idl",
           "contacts_picker/contacts_select_options.idl",
           "content_index/content_description.idl",

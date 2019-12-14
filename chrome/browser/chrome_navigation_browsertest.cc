@@ -17,6 +17,8 @@
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 #include "chrome/common/chrome_features.h"
@@ -26,6 +28,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/url_formatter/url_formatter.h"
@@ -364,9 +367,8 @@ class ChromeNavigationPortMappedBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ChromeNavigationPortMappedBrowserTest);
 };
 
-// Test to verify that a malformed URL set as the virtual URL of a
-// NavigationEntry will result in the navigation being dropped.
-// See https://crbug.com/657720.
+// Test to verify that spoofing a URL via a redirect from a slightly malformed
+// URL doesn't work.  See also https://crbug.com/657720.
 IN_PROC_BROWSER_TEST_F(ChromeNavigationPortMappedBrowserTest,
                        ContextMenuNavigationToInvalidUrl) {
   GURL initial_url = embedded_test_server()->GetURL("/title1.html");
@@ -392,20 +394,16 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationPortMappedBrowserTest,
   menu.Init();
   menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB, 0);
 
-  // Wait for the new tab to be created and for loading to stop. The
-  // navigation should not be allowed, therefore there should not be a last
-  // committed URL in the new tab.
+  // Wait for the new tab to be created and for loading to stop.
   tab_add.Wait();
+  int index_of_new_tab = browser()->tab_strip_model()->count() - 1;
   content::WebContents* new_web_contents =
-      browser()->tab_strip_model()->GetWebContentsAt(
-          browser()->tab_strip_model()->count() - 1);
+      browser()->tab_strip_model()->GetWebContentsAt(index_of_new_tab);
   WaitForLoadStop(new_web_contents);
 
-  // If the test is unsuccessful, the return value from GetLastCommittedURL
-  // will be the virtual URL for the created NavigationEntry.
-  // Note: Before the bug was fixed, the URL was the new_tab_url with a scheme
-  // prepended and one less ":" character after the host.
-  EXPECT_EQ(GURL(), new_web_contents->GetLastCommittedURL());
+  // Verify that the final URL after the redirects gets committed.
+  EXPECT_EQ(GURL("http://bar.com/title2.html"),
+            new_web_contents->GetLastCommittedURL());
 }
 
 // Ensure that a failed navigation in a new tab will not leave an invalid

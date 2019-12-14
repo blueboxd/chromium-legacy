@@ -11,7 +11,7 @@
 #include "components/infobars/core/infobar_manager.h"
 #import "ios/web/public/web_state_user_data.h"
 
-class InfobarBannerOverlayRequestFactory;
+class InfobarOverlayRequestFactory;
 class OverlayRequestQueue;
 
 // Helper class that creates OverlayRequests for the banner UI for InfoBars
@@ -26,12 +26,12 @@ class InfobarOverlayTabHelper
   // using |request_factory|.
   static void CreateForWebState(
       web::WebState* web_state,
-      std::unique_ptr<InfobarBannerOverlayRequestFactory> request_factory);
+      std::unique_ptr<InfobarOverlayRequestFactory> request_factory);
 
  private:
   InfobarOverlayTabHelper(
       web::WebState* web_state,
-      std::unique_ptr<InfobarBannerOverlayRequestFactory> request_factory);
+      std::unique_ptr<InfobarOverlayRequestFactory> request_factory);
   friend class web::WebStateUserData<InfobarOverlayTabHelper>;
   WEB_STATE_USER_DATA_KEY_DECL();
 
@@ -41,7 +41,7 @@ class InfobarOverlayTabHelper
    public:
     OverlayRequestScheduler(
         web::WebState* web_state,
-        std::unique_ptr<InfobarBannerOverlayRequestFactory> request_factory);
+        std::unique_ptr<InfobarOverlayRequestFactory> request_factory);
     ~OverlayRequestScheduler() override;
 
    private:
@@ -54,7 +54,7 @@ class InfobarOverlayTabHelper
     OverlayRequestQueue* queue_ = nullptr;
     // The request factory passed on initialization.  Used to create
     // OverlayRequests for InfoBars added to the InfoBarManager.
-    std::unique_ptr<InfobarBannerOverlayRequestFactory> request_factory_;
+    std::unique_ptr<InfobarOverlayRequestFactory> request_factory_;
 
     ScopedObserver<infobars::InfoBarManager, infobars::InfoBarManager::Observer>
         scoped_observer_;

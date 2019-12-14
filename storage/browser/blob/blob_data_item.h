@@ -178,6 +178,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataItem
     expected_modification_time_ = time;
   }
 
+  static void SetFileModificationTimes(
+      std::vector<scoped_refptr<BlobDataItem>> items,
+      std::vector<base::Time> times);
+
   Type type_;
   uint64_t offset_;
   uint64_t length_;

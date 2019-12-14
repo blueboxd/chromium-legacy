@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Επανάληψη λήψης αρχείου;</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# Αρχείο ήχου}other{# Αρχεία ήχου}}</translation>
 <translation id="2653659639078652383">Υποβολή</translation>
-<translation id="2669093958999339774">Αποκλείστε τις διακοπές από τα μηνύματα ειδοποιήσεων και χρησιμοποιήσετε εναλλακτικά ένα πιο διακριτικό μήνυμα.</translation>
 <translation id="2677748264148917807">Αποχώρηση</translation>
 <translation id="2704606927547763573">Αντιγράφ.</translation>
 <translation id="2707726405694321444">Ανανέωση σελίδας</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Ο σελιδοδείκτης προστέθηκε στο <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Συγχρονισμός παρασκηνίου</translation>
 <translation id="3749259744154402564">Δεν υποστηρίζεται</translation>
-<translation id="3767376082821709728">Οι νέοι ιστότοποι που επισκέπτεστε δεν μπορούν να σας στείλουν ειδοποιήσεις</translation>
 <translation id="3771001275138982843">Δεν ήταν δυνατή η λήψη της ενημέρωσης</translation>
 <translation id="3771033907050503522">Καρτ.αν.περιήγ.</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Ενεργοποιήστε το Bluetooth<ph name="END_LINK" />, για να επιτρέψετε τη σύζευξη</translation>
@@ -959,7 +957,6 @@
 <translation id="8035133914807600019">Νέος φάκελος…</translation>
 <translation id="8037750541064988519">Απομένουν <ph name="DAYS" /> ημέρες</translation>
 <translation id="804335162455518893">Δεν βρέθηκε κάρτα SD</translation>
-<translation id="8046278916126163020">Οι νέοι ιστότοποι που επισκέπτεστε μπορεί να σας ζητήσουν να σας στείλουν ειδοποιήσεις.</translation>
 <translation id="805047784848435650">Βάσει του ιστορικού περιήγησής σας</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB διαθέσιμα</translation>
 <translation id="8058746566562539958">Άνοιγμα σε νέα καρτέλα Chrome</translation>

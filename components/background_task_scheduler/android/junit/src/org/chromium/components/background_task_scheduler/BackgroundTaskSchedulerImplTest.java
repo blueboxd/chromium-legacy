@@ -90,9 +90,6 @@ public class BackgroundTaskSchedulerImplTest {
         doReturn(true).when(mDelegate).schedule(eq(RuntimeEnvironment.application), eq(mTask));
         BackgroundTaskSchedulerFactory.getScheduler().schedule(
                 RuntimeEnvironment.application, mTask);
-        assertEquals(mTask.getBackgroundTaskClass(),
-                BackgroundTaskSchedulerFactory.getBackgroundTaskFromTaskId(mTask.getTaskId())
-                        .getClass());
         verify(mDelegate, times(1)).schedule(eq(RuntimeEnvironment.application), eq(mTask));
         verify(mAlarmManagerDelegate, times(0))
                 .schedule(eq(RuntimeEnvironment.application), eq(mExactTask));
@@ -134,9 +131,6 @@ public class BackgroundTaskSchedulerImplTest {
         doReturn(false).when(mDelegate).schedule(eq(RuntimeEnvironment.application), eq(mTask));
         BackgroundTaskSchedulerFactory.getScheduler().schedule(
                 RuntimeEnvironment.application, mTask);
-        assertEquals(mTask.getBackgroundTaskClass(),
-                BackgroundTaskSchedulerFactory.getBackgroundTaskFromTaskId(mTask.getTaskId())
-                        .getClass());
         verify(mDelegate, times(1)).schedule(eq(RuntimeEnvironment.application), eq(mTask));
     }
 
@@ -148,9 +142,6 @@ public class BackgroundTaskSchedulerImplTest {
         doNothing().when(mDelegate).cancel(eq(RuntimeEnvironment.application), eq(TaskIds.TEST));
         BackgroundTaskSchedulerFactory.getScheduler().cancel(
                 RuntimeEnvironment.application, TaskIds.TEST);
-        assertEquals(mTask.getBackgroundTaskClass(),
-                BackgroundTaskSchedulerFactory.getBackgroundTaskFromTaskId(mTask.getTaskId())
-                        .getClass());
         verify(mDelegate, times(1)).cancel(eq(RuntimeEnvironment.application), eq(TaskIds.TEST));
         verify(mAlarmManagerDelegate, times(0))
                 .cancel(eq(RuntimeEnvironment.application), eq(TaskIds.TEST));

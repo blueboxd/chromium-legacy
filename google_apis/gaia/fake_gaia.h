@@ -5,12 +5,12 @@
 #ifndef GOOGLE_APIS_GAIA_FAKE_GAIA_H_
 #define GOOGLE_APIS_GAIA_FAKE_GAIA_H_
 
-#include <map>
 #include <memory>
 #include <set>
 #include <string>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "net/http/http_status_code.h"
@@ -193,11 +193,11 @@ class FakeGaia {
   void FormatOkJSONResponse(const base::Value& value,
                             net::test_server::BasicHttpResponse* http_response);
 
-  typedef base::Callback<void(
+  using HttpRequestHandlerCallback = base::RepeatingCallback<void(
       const net::test_server::HttpRequest& request,
-      net::test_server::BasicHttpResponse* http_response)>
-          HttpRequestHandlerCallback;
-  typedef std::map<std::string, HttpRequestHandlerCallback> RequestHandlerMap;
+      net::test_server::BasicHttpResponse* http_response)>;
+  using RequestHandlerMap =
+      base::flat_map<std::string, HttpRequestHandlerCallback>;
 
   // Finds the handler for the specified |request_path| by prefix.
   // Used as a backup for situations where an exact match doesn't

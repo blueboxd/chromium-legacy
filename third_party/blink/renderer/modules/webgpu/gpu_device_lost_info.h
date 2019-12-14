@@ -14,8 +14,7 @@ class GPUDeviceLostInfo : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GPUDeviceLostInfo* Create(const String& message);
-  GPUDeviceLostInfo(const String& message);
+  explicit GPUDeviceLostInfo(const String& message);
 
   // gpu_device_lost_info.idl
   const String& message() const;

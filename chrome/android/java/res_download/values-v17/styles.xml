@@ -20,15 +20,7 @@
         <item name="android:layout_marginStart">8dp</item>
         <item name="android:layout_marginTop">8dp</item>
     </style>
-    <style name="CardPaginationHeaderText">
-        <item name="android:paddingTop">0dp</item>
-        <item name="android:paddingBottom">0dp</item>
-        <item name="android:paddingStart">16dp</item>
-        <item name="android:textAppearance">@style/TextAppearance.BlueButtonText2</item>
-    </style>
     <style name="ListPaginationHeaderText">
-        <item name="android:paddingTop">0dp</item>
-        <item name="android:paddingBottom">16dp</item>
         <item name="android:textAppearance">@style/TextAppearance.BlueButtonText2</item>
     </style>
 

@@ -5,22 +5,41 @@
 source_set("overlays") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "infobar_banner_overlay_request_factory.h",
-    "infobar_banner_overlay_request_factory_impl.h",
-    "infobar_banner_overlay_request_factory_impl.mm",
     "infobar_overlay_request_cancel_handler.h",
     "infobar_overlay_request_cancel_handler.mm",
+    "infobar_overlay_request_factory.h",
+    "infobar_overlay_request_factory_impl.h",
+    "infobar_overlay_request_factory_impl.mm",
     "infobar_overlay_tab_helper.h",
     "infobar_overlay_tab_helper.mm",
+    "infobar_overlay_type.h",
   ]
   deps = [
     "//base",
     "//components/infobars/core",
     "//ios/chrome/browser/infobars",
+    "//ios/chrome/browser/infobars:public",
     "//ios/chrome/browser/overlays",
+    "//ios/chrome/browser/overlays/public/common/infobars",
     "//ios/chrome/browser/overlays/public/infobar_banner",
     "//ios/chrome/browser/passwords:infobar_delegates",
+    "//ios/chrome/browser/ui/infobars:infobars_ui",
     "//ios/web/public",
+  ]
+}
+
+source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "fake_infobar_overlay_request_factory.h",
+    "fake_infobar_overlay_request_factory.mm",
+  ]
+  deps = [
+    ":overlays",
+    "//base",
+    "//ios/chrome/browser/overlays",
+    "//ios/chrome/browser/overlays/public/common/infobars",
   ]
 }
 
@@ -29,17 +48,26 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "infobar_overlay_request_cancel_handler_unittest.mm",
+    "infobar_overlay_request_factory_impl_unittest.mm",
     "infobar_overlay_tab_helper_unittest.mm",
   ]
   deps = [
     ":overlays",
+    ":test_support",
     "//base/test:test_support",
+    "//base/test:test_support",
+    "//components/password_manager/core/browser:test_support",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/infobars:public",
     "//ios/chrome/browser/infobars/test",
     "//ios/chrome/browser/overlays",
+    "//ios/chrome/browser/overlays/public/common/infobars",
+    "//ios/chrome/browser/overlays/public/infobar_banner",
     "//ios/chrome/browser/overlays/test",
+    "//ios/chrome/browser/passwords:infobar_delegates",
+    "//ios/chrome/browser/ui/infobars:feature_flags",
+    "//ios/chrome/browser/ui/infobars/test",
     "//ios/chrome/test:test_support",
     "//ios/web/public/test/fakes",
     "//testing/gtest",

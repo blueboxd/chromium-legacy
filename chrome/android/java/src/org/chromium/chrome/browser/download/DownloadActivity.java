@@ -15,9 +15,9 @@ import org.chromium.chrome.browser.download.home.DownloadManagerCoordinatorFacto
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.filter.Filters;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotificationBridgeUiFactory;
-import org.chromium.chrome.browser.modaldialog.AppModalPresenter;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.ui.base.ActivityAndroidPermissionDelegate;
 import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.modaldialog.ModalDialogManager;

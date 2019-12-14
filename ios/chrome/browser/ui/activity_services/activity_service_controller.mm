@@ -53,11 +53,11 @@ NSString* const kActivityServicesSnackbarCategory =
 }  // namespace
 
 @interface ActivityServiceController () {
-  BOOL active_;
-  __weak id<ActivityServicePassword> passwordProvider_;
-  __weak id<ActivityServicePresentation> presentationProvider_;
-  UIActivityViewController* activityViewController_;
-  __weak id<SnackbarCommands> dispatcher_;
+  BOOL _active;
+  __weak id<ActivityServicePassword> _passwordProvider;
+  __weak id<ActivityServicePresentation> _presentationProvider;
+  UIActivityViewController* _activityViewController;
+  __weak id<SnackbarCommands> _dispatcher;
 }
 
 // Resets the controller's user interface and delegate.
@@ -96,14 +96,14 @@ NSString* const kActivityServicesSnackbarCategory =
 #pragma mark - ShareProtocol
 
 - (BOOL)isActive {
-  return active_;
+  return _active;
 }
 
 - (void)cancelShareAnimated:(BOOL)animated {
-  if (!active_) {
+  if (!_active) {
     return;
   }
-  DCHECK(activityViewController_);
+  DCHECK(_activityViewController);
   // There is no guarantee that the completion callback will be called because
   // the |activityViewController_| may have been dismissed already. For example,
   // if the user selects Facebook Share Extension, the UIActivityViewController
@@ -116,7 +116,7 @@ NSString* const kActivityServicesSnackbarCategory =
   // -shareFinishedWithActivityType:completed:returnedItems:error: must be
   // called explicitly to do the clean up or else future attempts to use
   // Share will fail.
-  [activityViewController_ dismissViewControllerAnimated:animated
+  [_activityViewController dismissViewControllerAnimated:animated
                                               completion:nil];
   [self shareFinishedWithActivityType:nil
                             completed:NO
@@ -131,7 +131,7 @@ NSString* const kActivityServicesSnackbarCategory =
         positionProvider:(id<ActivityServicePositioner>)positionProvider
     presentationProvider:(id<ActivityServicePresentation>)presentationProvider {
   DCHECK(data);
-  DCHECK(!active_);
+  DCHECK(!_active);
 
   CGRect fromRect = CGRectZero;
   UIView* inView = nil;
@@ -144,12 +144,12 @@ NSString* const kActivityServicesSnackbarCategory =
     DCHECK(inView);
   }
 
-  DCHECK(!passwordProvider_);
-  DCHECK(!presentationProvider_);
-  passwordProvider_ = passwordProvider;
-  presentationProvider_ = presentationProvider;
+  DCHECK(!_passwordProvider);
+  DCHECK(!_presentationProvider);
+  _passwordProvider = passwordProvider;
+  _presentationProvider = presentationProvider;
 
-  dispatcher_ = dispatcher;
+  _dispatcher = dispatcher;
 
   bookmarks::BookmarkModel* bookmarkModel =
       ios::BookmarkModelFactory::GetForBrowserState(browserState);
@@ -157,8 +157,8 @@ NSString* const kActivityServicesSnackbarCategory =
   BOOL canSendTabToSelf =
       send_tab_to_self::ShouldOfferFeature(browserState, data.shareURL);
 
-  DCHECK(!activityViewController_);
-  activityViewController_ = [[UIActivityViewController alloc]
+  DCHECK(!_activityViewController);
+  _activityViewController = [[UIActivityViewController alloc]
       initWithActivityItems:[self activityItemsForData:data]
       applicationActivities:[self
                                 applicationActivitiesForData:data
@@ -174,10 +174,10 @@ NSString* const kActivityServicesSnackbarCategory =
     UIActivityTypeAddToReadingList, UIActivityTypeCopyToPasteboard,
     UIActivityTypePrint, UIActivityTypeSaveToCameraRoll
   ];
-  [activityViewController_ setExcludedActivityTypes:excludedActivityTypes];
+  [_activityViewController setExcludedActivityTypes:excludedActivityTypes];
 
   __weak ActivityServiceController* weakSelf = self;
-  [activityViewController_ setCompletionWithItemsHandler:^(
+  [_activityViewController setCompletionWithItemsHandler:^(
                                NSString* activityType, BOOL completed,
                                NSArray* returnedItems, NSError* activityError) {
     [weakSelf shareFinishedWithActivityType:activityType
@@ -186,30 +186,30 @@ NSString* const kActivityServicesSnackbarCategory =
                                       error:activityError];
   }];
 
-  active_ = YES;
-  activityViewController_.modalPresentationStyle = UIModalPresentationPopover;
-  activityViewController_.popoverPresentationController.sourceView = inView;
-  activityViewController_.popoverPresentationController.sourceRect = fromRect;
-  [presentationProvider_
-      presentActivityServiceViewController:activityViewController_];
+  _active = YES;
+  _activityViewController.modalPresentationStyle = UIModalPresentationPopover;
+  _activityViewController.popoverPresentationController.sourceView = inView;
+  _activityViewController.popoverPresentationController.sourceRect = fromRect;
+  [_presentationProvider
+      presentActivityServiceViewController:_activityViewController];
 }
 
 #pragma mark - Private
 
 - (void)resetUserInterface {
-  passwordProvider_ = nil;
-  presentationProvider_ = nil;
-  activityViewController_ = nil;
-  active_ = NO;
+  _passwordProvider = nil;
+  _presentationProvider = nil;
+  _activityViewController = nil;
+  _active = NO;
 }
 
 - (void)shareFinishedWithActivityType:(NSString*)activityType
                             completed:(BOOL)completed
                         returnedItems:(NSArray*)returnedItems
                                 error:(NSError*)activityError {
-  DCHECK(active_);
-  DCHECK(passwordProvider_);
-  DCHECK(presentationProvider_);
+  DCHECK(_active);
+  DCHECK(_passwordProvider);
+  DCHECK(_presentationProvider);
 
   BOOL shouldResetUI = YES;
   if (activityType) {
@@ -410,7 +410,7 @@ NSString* const kActivityServicesSnackbarCategory =
       // Flag to limit user feedback after form filled to just once.
       __block BOOL shown = NO;
       id<PasswordFormFiller> passwordFormFiller =
-          [passwordProvider_ currentPasswordFormFiller];
+          [_passwordProvider currentPasswordFormFiller];
       [passwordFormFiller findAndFillPasswordForms:username
                                           password:password
                                  completionHandler:^(BOOL completed) {
@@ -433,7 +433,7 @@ NSString* const kActivityServicesSnackbarCategory =
   // The shareTo dialog dismisses itself instead of through
   // |-dismissViewControllerAnimated:completion:| so we must notify the
   // presentation provider here so that it can clear its presenting state.
-  [presentationProvider_ activityServiceDidEndPresenting];
+  [_presentationProvider activityServiceDidEndPresenting];
 
   switch (shareStatus) {
     case ShareTo::SHARE_SUCCESS:
@@ -465,7 +465,7 @@ NSString* const kActivityServicesSnackbarCategory =
 - (void)showErrorAlert:(int)titleMessageId message:(int)messageId {
   NSString* title = l10n_util::GetNSString(titleMessageId);
   NSString* message = l10n_util::GetNSString(messageId);
-  [presentationProvider_ showActivityServiceErrorAlertWithStringTitle:title
+  [_presentationProvider showActivityServiceErrorAlertWithStringTitle:title
                                                               message:message];
 }
 
@@ -474,7 +474,7 @@ NSString* const kActivityServicesSnackbarCategory =
   message.accessibilityLabel = text;
   message.duration = 2.0;
   message.category = kActivityServicesSnackbarCategory;
-  [dispatcher_ showSnackbarMessage:message];
+  [_dispatcher showSnackbarMessage:message];
 }
 
 #pragma mark - For Testing
@@ -482,9 +482,9 @@ NSString* const kActivityServicesSnackbarCategory =
 - (void)setProvidersForTesting:
             (id<ActivityServicePassword, ActivityServicePresentation>)provider
                     dispatcher:(id<SnackbarCommands>)dispatcher {
-  passwordProvider_ = provider;
-  presentationProvider_ = provider;
-  dispatcher_ = dispatcher;
+  _passwordProvider = provider;
+  _presentationProvider = provider;
+  _dispatcher = dispatcher;
 }
 
 @end

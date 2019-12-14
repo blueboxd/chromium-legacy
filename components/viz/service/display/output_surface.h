@@ -213,10 +213,6 @@ class VIZ_SERVICE_EXPORT OutputSurface {
 
   virtual base::ScopedClosureRunner GetCacheBackBufferCb();
 
-  // Only used for pre-OOP-D code path of BrowserCompositorOutputSurface.
-  // TODO(weiliangc): Remove it when reflector code is removed.
-  virtual bool IsSoftwareMirrorMode() const;
-
   // If set to true, the OutputSurface must deliver
   // OutputSurfaceclient::DidSwapWithSize notifications to its client.
   // OutputSurfaces which support delivering swap size notifications should

@@ -46,6 +46,10 @@ void StatusChangeChecker::StopWaiting() {
 }
 
 void StatusChangeChecker::CheckExitCondition() {
+  if (!run_loop_.running()) {
+    return;
+  }
+
   std::ostringstream s;
   if (IsExitConditionSatisfied(&s)) {
     DVLOG(1) << "Await -> Condition met: " << s.str();
@@ -67,6 +71,8 @@ void StatusChangeChecker::StartBlockingWait() {
 }
 
 void StatusChangeChecker::OnTimeout() {
+  timed_out_ = true;
+
   std::ostringstream s;
   if (IsExitConditionSatisfied(&s)) {
     ADD_FAILURE() << "Await -> Timed out despite conditions being satisfied.";
@@ -74,6 +80,5 @@ void StatusChangeChecker::OnTimeout() {
     ADD_FAILURE() << "Await -> Timed out: " << s.str();
   }
 
-  timed_out_ = true;
   StopWaiting();
 }

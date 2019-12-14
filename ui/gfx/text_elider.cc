@@ -222,12 +222,7 @@ base::string16 ElideText(const base::string16& text,
 #if !defined(OS_IOS)
   DCHECK_NE(behavior, FADE_TAIL);
   std::unique_ptr<RenderText> render_text = RenderText::CreateRenderText();
-
   render_text->SetCursorEnabled(false);
-  // TODO(bshe): 5000 is out dated. We should remove it. See crbug.com/551660.
-  // Do not bother accurately sizing strings over 5000 characters here, for
-  // performance purposes. This matches the behavior of Canvas::SizeStringFloat.
-  render_text->set_truncate_length(5000);
   render_text->SetFontList(font_list);
   available_pixel_width = std::ceil(available_pixel_width);
   render_text->SetDisplayRect(

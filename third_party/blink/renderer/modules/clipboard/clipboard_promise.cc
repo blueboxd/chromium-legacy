@@ -9,6 +9,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
@@ -17,6 +18,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/clipboard/clipboard_item_options.h"
 #include "third_party/blink/renderer/modules/clipboard/clipboard_reader.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -28,9 +30,9 @@
 // * clipboard-write
 // See https://w3c.github.io/clipboard-apis/#clipboard-permissions
 //
-// Write access is granted by default, whereas read access is gated behind a
-// permission prompt. Both read and write require the tab to be focused (and
-// Chrome must be the foreground app) for the operation to be allowed.
+// These permissions map to these ContentSettings:
+// * CLIPBOARD_READ_WRITE, for sanitized read, and unsanitized read/write.
+// * CLIPBOARD_SANITIZED_WRITE, for sanitized write only.
 
 namespace blink {
 
@@ -115,7 +117,7 @@ void ClipboardPromise::StartWriteRepresentation() {
       clipboard_item_data_[clipboard_representation_index_].second;
 
   DCHECK(!clipboard_writer_);
-  clipboard_writer_ = ClipboardWriter::Create(type, this);
+  clipboard_writer_ = ClipboardWriter::Create(type, is_raw_, this);
   clipboard_writer_->WriteToSystem(blob);
 }
 
@@ -161,8 +163,12 @@ void ClipboardPromise::HandleWrite(
   // For now, we only process the first ClipboardItem.
   ClipboardItem* clipboard_item = (*clipboard_items)[0];
   clipboard_item_data_ = clipboard_item->GetItems();
+  is_raw_ = clipboard_item->raw();
 
-  RequestPermission(mojom::blink::PermissionName::CLIPBOARD_WRITE, false,
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kRawClipboard) ||
+         !is_raw_);
+
+  RequestPermission(mojom::blink::PermissionName::CLIPBOARD_WRITE, is_raw_,
                     WTF::Bind(&ClipboardPromise::HandleWriteWithPermission,
                               WrapPersistent(this)));
 }
@@ -200,8 +206,11 @@ void ClipboardPromise::HandleReadWithPermission(PermissionStatus status) {
     return;
   }
 
+  ClipboardItemOptions* options = ClipboardItemOptions::Create();
+  options->setRaw(false);
+
   HeapVector<Member<ClipboardItem>> clipboard_items = {
-      MakeGarbageCollected<ClipboardItem>(items)};
+      MakeGarbageCollected<ClipboardItem>(items, options)};
   script_promise_resolver_->Resolve(clipboard_items);
 }
 
@@ -232,10 +241,10 @@ void ClipboardPromise::HandleWriteWithPermission(PermissionStatus status) {
   for (const auto& type_and_blob : clipboard_item_data_) {
     String type = type_and_blob.first;
     String type_with_args = type_and_blob.second->type();
-    if (!ClipboardWriter::IsValidType(type)) {
+    if (!is_raw_ && !ClipboardWriter::IsValidType(type)) {
       script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotAllowedError,
-          "Write type " + type + " not supported."));
+          "Sanitized MIME type " + type + " not supported on write."));
       return;
     }
     if (!type_with_args.Contains(type)) {

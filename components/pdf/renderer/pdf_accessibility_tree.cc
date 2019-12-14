@@ -31,19 +31,19 @@ namespace {
 
 // Don't try to apply font size thresholds to automatically identify headings
 // if the median font size is not at least this many points.
-const double kMinimumFontSize = 5;
+const float kMinimumFontSize = 5.0f;
 
 // Don't try to apply paragraph break thresholds to automatically identify
 // paragraph breaks if the median line break is not at least this many points.
-const double kMinimumLineSpacing = 5;
+const float kMinimumLineSpacing = 5.0f;
 
 // Ratio between the font size of one text run and the median on the page
 // for that text run to be considered to be a heading instead of normal text.
-const double kHeadingFontSizeRatio = 1.2;
+const float kHeadingFontSizeRatio = 1.2f;
 
 // Ratio between the line spacing between two lines and the median on the
 // page for that line spacing to be considered a paragraph break.
-const double kParagraphLineSpacingRatio = 1.2;
+const float kParagraphLineSpacingRatio = 1.2f;
 
 gfx::RectF ToGfxRectF(const PP_FloatRect& r) {
   return gfx::RectF(r.point.x, r.point.y, r.size.width, r.size.height);
@@ -105,7 +105,7 @@ class LineHelper {
 
  private:
   void AddRun(const PP_FloatRect& run_bounds) {
-    float run_width = fabs(run_bounds.size.width);
+    float run_width = fabsf(run_bounds.size.width);
     accumulated_width_ += run_width;
     accumulated_weight_top_ += run_bounds.point.y * run_width;
     accumulated_weight_bottom_ +=
@@ -113,7 +113,7 @@ class LineHelper {
   }
 
   void RemoveRun(const PP_FloatRect& run_bounds) {
-    float run_width = fabs(run_bounds.size.width);
+    float run_width = fabsf(run_bounds.size.width);
     accumulated_width_ -= run_width;
     accumulated_weight_top_ -= run_bounds.point.y * run_width;
     accumulated_weight_bottom_ -=
@@ -143,6 +143,43 @@ class LineHelper {
   DISALLOW_COPY_AND_ASSIGN(LineHelper);
 };
 
+void ComputeParagraphAndHeadingThresholds(
+    const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
+    float* out_heading_font_size_threshold,
+    float* out_paragraph_spacing_threshold) {
+  // Scan over the font sizes and line spacing within this page and
+  // set heuristic thresholds so that text larger than the median font
+  // size can be marked as a heading, and spacing larger than the median
+  // line spacing can be a paragraph break.
+  std::vector<float> font_sizes;
+  std::vector<float> line_spacings;
+  for (size_t i = 0; i < text_runs.size(); ++i) {
+    font_sizes.push_back(text_runs[i].style.font_size);
+    if (i > 0) {
+      const auto& cur = text_runs[i].bounds;
+      const auto& prev = text_runs[i - 1].bounds;
+      if (cur.point.y > prev.point.y + prev.size.height / 2)
+        line_spacings.push_back(cur.point.y - prev.point.y);
+    }
+  }
+  if (font_sizes.size() > 2) {
+    std::sort(font_sizes.begin(), font_sizes.end());
+    float median_font_size = font_sizes[font_sizes.size() / 2];
+    if (median_font_size > kMinimumFontSize) {
+      *out_heading_font_size_threshold =
+          median_font_size * kHeadingFontSizeRatio;
+    }
+  }
+  if (line_spacings.size() > 4) {
+    std::sort(line_spacings.begin(), line_spacings.end());
+    float median_line_spacing = line_spacings[line_spacings.size() / 2];
+    if (median_line_spacing > kMinimumLineSpacing) {
+      *out_paragraph_spacing_threshold =
+          median_line_spacing * kParagraphLineSpacingRatio;
+    }
+  }
+}
+
 void FinishStaticNode(ui::AXNodeData** static_text_node,
                       std::string* static_text) {
   // If we're in the middle of building a static text node, finish it before
@@ -166,12 +203,12 @@ void ConnectPreviousAndNextOnLine(ui::AXNodeData* previous_on_line_node,
 bool BreakParagraph(
     const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
     uint32_t text_run_index,
-    double paragraph_spacing_threshold) {
+    float paragraph_spacing_threshold) {
   // Check to see if its also a new paragraph, i.e., if the distance between
   // lines is greater than the threshold.  If there's no threshold, that
   // means there weren't enough lines to compute an accurate median, so
   // we compare against the line size instead.
-  double line_spacing = fabs(text_runs[text_run_index + 1].bounds.point.y -
+  float line_spacing = fabsf(text_runs[text_run_index + 1].bounds.point.y -
                              text_runs[text_run_index].bounds.point.y);
   return ((paragraph_spacing_threshold > 0 &&
            line_spacing > paragraph_spacing_threshold) ||
@@ -401,8 +438,8 @@ void PdfAccessibilityTree::AddPageContent(
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
     const ppapi::PdfAccessibilityPageObjects& page_objects) {
   DCHECK(page_node);
-  double heading_font_size_threshold = 0;
-  double paragraph_spacing_threshold = 0;
+  float heading_font_size_threshold = 0;
+  float paragraph_spacing_threshold = 0;
   ComputeParagraphAndHeadingThresholds(text_runs, &heading_font_size_threshold,
                                        &paragraph_spacing_threshold);
 
@@ -690,43 +727,6 @@ void PdfAccessibilityTree::FindNodeOffset(uint32_t page_index,
   }
 }
 
-void PdfAccessibilityTree::ComputeParagraphAndHeadingThresholds(
-    const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
-    double* out_heading_font_size_threshold,
-    double* out_paragraph_spacing_threshold) {
-  // Scan over the font sizes and line spacing within this page and
-  // set heuristic thresholds so that text larger than the median font
-  // size can be marked as a heading, and spacing larger than the median
-  // line spacing can be a paragraph break.
-  std::vector<double> font_sizes;
-  std::vector<double> line_spacings;
-  for (size_t i = 0; i < text_runs.size(); ++i) {
-    font_sizes.push_back(text_runs[i].style.font_size);
-    if (i > 0) {
-      const auto& cur = text_runs[i].bounds;
-      const auto& prev = text_runs[i - 1].bounds;
-      if (cur.point.y > prev.point.y + prev.size.height / 2)
-        line_spacings.push_back(cur.point.y - prev.point.y);
-    }
-  }
-  if (font_sizes.size() > 2) {
-    std::sort(font_sizes.begin(), font_sizes.end());
-    double median_font_size = font_sizes[font_sizes.size() / 2];
-    if (median_font_size > kMinimumFontSize) {
-      *out_heading_font_size_threshold =
-          median_font_size * kHeadingFontSizeRatio;
-    }
-  }
-  if (line_spacings.size() > 4) {
-    std::sort(line_spacings.begin(), line_spacings.end());
-    double median_line_spacing = line_spacings[line_spacings.size() / 2];
-    if (median_line_spacing > kMinimumLineSpacing) {
-      *out_paragraph_spacing_threshold =
-          median_line_spacing * kParagraphLineSpacingRatio;
-    }
-  }
-}
-
 std::string PdfAccessibilityTree::GetTextRunCharsAsUTF8(
     const ppapi::PdfAccessibilityTextRunInfo& text_run,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
@@ -780,8 +780,8 @@ ui::AXNodeData* PdfAccessibilityTree::CreateNode(ax::mojom::Role role) {
 }
 
 ui::AXNodeData* PdfAccessibilityTree::CreateParagraphNode(
-    double font_size,
-    double heading_font_size_threshold) {
+    float font_size,
+    float heading_font_size_threshold) {
   ui::AXNodeData* para_node = CreateNode(ax::mojom::Role::kParagraph);
   para_node->AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
                               true);

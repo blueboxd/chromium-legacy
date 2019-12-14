@@ -178,7 +178,6 @@ feed_lib_java_sources = [
   "common/feedobservable/Observable.java",
   "common/feedobservable/ObservableNotifier.java",
   "common/functional/Committer.java",
-  "common/functional/Function.java",
   "common/functional/Predicate.java",
   "common/functional/Suppliers.java",
   "common/intern/HashPoolInterner.java",

@@ -324,13 +324,17 @@ void BrowsingHistoryHandler::StartQueryHistory() {
 
 void BrowsingHistoryHandler::HandleQueryHistory(const base::ListValue* args) {
   AllowJavascript();
-  query_history_continuation_.Reset();
   const base::Value& callback_id = args->GetList()[0];
   if (!initial_results_.is_none()) {
     ResolveJavascriptCallback(callback_id, std::move(initial_results_));
     initial_results_ = base::Value();
     return;
   }
+
+  // Reset the query history continuation callback. Since it is repopulated in
+  // OnQueryComplete(), it cannot be reset earlier, as the early return above
+  // prevents the QueryHistory() call to the browsing history service.
+  query_history_continuation_.Reset();
 
   // Cancel the previous query if it is still in flight.
   if (!query_history_callback_id_.empty()) {

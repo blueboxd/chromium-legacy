@@ -4,12 +4,10 @@
 
 #include "ash/system/tray/tray_bubble_wrapper.h"
 
-#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_event_filter.h"
-#include "ash/wm/container_finder.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/transient_window_manager.h"
@@ -106,23 +104,6 @@ void TrayBubbleWrapper::OnWindowActivated(ActivationReason reason,
                                           aura::Window* lost_active) {
   if (!gained_active)
     return;
-
-  int container_id = GetContainerForWindow(gained_active)->id();
-  int lost_container_id =
-      lost_active != nullptr ? GetContainerForWindow(lost_active)->id() : -1;
-
-  // Don't close the bubble if a popup notification is activated.
-  //
-  // When the settings button in a notification popup is clicked,
-  // the notification is activated and hidden almost at the same time.
-  // In such case, the notification is deactivated without OnWindowActivated for
-  // the activation being called.
-  // We also have to ignore such case by checking |lost_container_id|.
-  if (container_id == kShellWindowId_StatusContainer ||
-      lost_container_id == kShellWindowId_StatusContainer ||
-      container_id == kShellWindowId_SettingBubbleContainer) {
-    return;
-  }
 
   views::Widget* bubble_widget = bubble_view()->GetWidget();
   // Don't close the bubble if a transient child is gaining or losing

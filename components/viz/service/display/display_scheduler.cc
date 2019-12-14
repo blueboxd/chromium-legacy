@@ -22,7 +22,11 @@ class DisplayScheduler::BeginFrameObserver : public BeginFrameObserverBase {
   }
   // BeginFrameObserverBase implementation.
   void OnBeginFrameSourcePausedChanged(bool paused) override {
-    DCHECK(!paused);
+    // TODO(1033847): DisplayScheduler doesn't handle BeginFrameSource pause but
+    // it can happen on WebXR.
+    if (paused) {
+      NOTIMPLEMENTED();
+    }
   }
 
   bool OnBeginFrameDerivedImpl(const BeginFrameArgs& args) override {

@@ -67,10 +67,13 @@ MediaNotificationService::Session::Session(
 }
 
 MediaNotificationService::Session::~Session() {
-  base::UmaHistogramEnumeration(
-      "Media.GlobalMediaControls.DismissReason",
-      dismiss_reason_.value_or(
-          GlobalMediaControlsDismissReason::kMediaSessionStopped));
+  // If we've been marked inactive, then we've already recorded inactivity as
+  // the dismiss reason.
+  if (is_marked_inactive_)
+    return;
+
+  RecordDismissReason(dismiss_reason_.value_or(
+      GlobalMediaControlsDismissReason::kMediaSessionStopped));
 }
 
 void MediaNotificationService::Session::WebContentsDestroyed() {
@@ -82,18 +85,26 @@ void MediaNotificationService::Session::WebContentsDestroyed() {
 
 void MediaNotificationService::Session::MediaSessionInfoChanged(
     media_session::mojom::MediaSessionInfoPtr session_info) {
-  bool playing =
+  is_playing_ =
       session_info && session_info->playback_state ==
                           media_session::mojom::MediaPlaybackState::kPlaying;
 
   // If we've started playing, we don't want the inactive timer to be running.
-  if (playing) {
-    if (inactive_timer_.IsRunning()) {
+  if (is_playing_) {
+    if (inactive_timer_.IsRunning() || is_marked_inactive_) {
+      MarkActiveIfNecessary();
       RecordInteractionDelayAfterPause();
       inactive_timer_.Stop();
     }
     return;
   }
+
+  // If we're in an overlay, then we don't want to count the session as
+  // inactive.
+  // TODO(https://crbug.com/1032841): This means we won't record interaction
+  // delays. Consider changing to record them.
+  if (is_in_overlay_)
+    return;
 
   // If the timer is already running, we don't need to do anything.
   if (inactive_timer_.IsRunning())
@@ -124,8 +135,10 @@ void MediaNotificationService::Session::set_dismiss_reason(
 
 void MediaNotificationService::Session::OnSessionInteractedWith() {
   // If we're not currently tracking inactive time, then no action is needed.
-  if (!inactive_timer_.IsRunning())
+  if (!inactive_timer_.IsRunning() && !is_marked_inactive_)
     return;
+
+  MarkActiveIfNecessary();
 
   RecordInteractionDelayAfterPause();
   last_interaction_time_ = base::TimeTicks::Now();
@@ -133,6 +146,31 @@ void MediaNotificationService::Session::OnSessionInteractedWith() {
   // Otherwise, reset the timer.
   inactive_timer_.Stop();
   StartInactiveTimer();
+}
+
+void MediaNotificationService::Session::OnSessionOverlayStateChanged(
+    bool is_in_overlay) {
+  is_in_overlay_ = is_in_overlay;
+
+  if (is_in_overlay_) {
+    // If we enter an overlay, then we don't want the session to be marked
+    // inactive.
+    if (inactive_timer_.IsRunning()) {
+      RecordInteractionDelayAfterPause();
+      inactive_timer_.Stop();
+    }
+  } else if (!is_playing_ && !inactive_timer_.IsRunning()) {
+    // If we exit an overlay and the session is paused, then the session is
+    // inactive.
+    StartInactiveTimer();
+  }
+}
+
+// static
+void MediaNotificationService::Session::RecordDismissReason(
+    GlobalMediaControlsDismissReason reason) {
+  base::UmaHistogramEnumeration("Media.GlobalMediaControls.DismissReason",
+                                reason);
 }
 
 void MediaNotificationService::Session::StartInactiveTimer() {
@@ -147,11 +185,14 @@ void MediaNotificationService::Session::StartInactiveTimer() {
 }
 
 void MediaNotificationService::Session::OnInactiveTimerFired() {
-  set_dismiss_reason(GlobalMediaControlsDismissReason::kInactiveTimeout);
+  // Overlay notifications should never be marked as inactive.
+  DCHECK(!is_in_overlay_);
 
-  // If the session has been paused and inactive for long enough, then
-  // dismiss it.
-  item_->Dismiss();
+  // If the session has been paused and inactive for long enough, then mark it
+  // as inactive.
+  is_marked_inactive_ = true;
+  RecordDismissReason(GlobalMediaControlsDismissReason::kInactiveTimeout);
+  owner_->OnSessionBecameInactive(id_);
 }
 
 void MediaNotificationService::Session::RecordInteractionDelayAfterPause() {
@@ -161,6 +202,14 @@ void MediaNotificationService::Session::RecordInteractionDelayAfterPause() {
       "Media.GlobalMediaControls.InteractionDelayAfterPause",
       time_since_last_interaction, base::TimeDelta::FromMinutes(1),
       base::TimeDelta::FromDays(1), 100);
+}
+
+void MediaNotificationService::Session::MarkActiveIfNecessary() {
+  if (!is_marked_inactive_)
+    return;
+  is_marked_inactive_ = false;
+
+  owner_->OnSessionBecameActive(id_);
 }
 
 MediaNotificationService::MediaNotificationService(Profile* profile)
@@ -270,8 +319,14 @@ void MediaNotificationService::OnFocusLost(
 }
 
 void MediaNotificationService::ShowNotification(const std::string& id) {
-  if (!base::Contains(dragged_out_session_ids_, id))
-    active_controllable_session_ids_.insert(id);
+  // If the notification is currently hidden because it's inactive or because
+  // it's in an overlay notification, then do nothing.
+  if (base::Contains(dragged_out_session_ids_, id) ||
+      base::Contains(inactive_session_ids_, id)) {
+    return;
+  }
+
+  active_controllable_session_ids_.insert(id);
 
   for (auto& observer : observers_)
     observer.OnNotificationListChanged();
@@ -317,6 +372,7 @@ MediaNotificationService::GetTaskRunner() const {
 void MediaNotificationService::RemoveItem(const std::string& id) {
   active_controllable_session_ids_.erase(id);
   frozen_session_ids_.erase(id);
+  inactive_session_ids_.erase(id);
 
   if (base::Contains(dragged_out_session_ids_, id)) {
     overlay_media_notifications_manager_.CloseOverlayNotification(id);
@@ -397,6 +453,15 @@ void MediaNotificationService::OnContainerDestroyed(const std::string& id) {
 
 void MediaNotificationService::OnContainerDraggedOut(const std::string& id,
                                                      gfx::Rect bounds) {
+  // If the session has been destroyed, no action is needed.
+  auto it = sessions_.find(id);
+  if (it == sessions_.end())
+    return;
+
+  // Inform the Session that it's in an overlay so should not timeout as
+  // inactive.
+  it->second.OnSessionOverlayStateChanged(/*is_in_overlay=*/true);
+
   if (!dialog_delegate_)
     return;
 
@@ -426,6 +491,8 @@ void MediaNotificationService::OnOverlayNotificationClosed(
   auto it = sessions_.find(id);
   if (it == sessions_.end())
     return;
+
+  it->second.OnSessionOverlayStateChanged(/*is_in_overlay=*/false);
 
   // Since the overlay is closing, we no longer need to observe the associated
   // container.
@@ -500,6 +567,46 @@ bool MediaNotificationService::HasFrozenNotifications() const {
 
 bool MediaNotificationService::HasOpenDialog() const {
   return !!dialog_delegate_;
+}
+
+void MediaNotificationService::OnSessionBecameActive(const std::string& id) {
+  DCHECK(base::Contains(inactive_session_ids_, id));
+
+  auto it = sessions_.find(id);
+  DCHECK(it != sessions_.end());
+
+  inactive_session_ids_.erase(id);
+
+  if (it->second.item()->frozen())
+    frozen_session_ids_.insert(id);
+  else
+    active_controllable_session_ids_.insert(id);
+
+  for (auto& observer : observers_)
+    observer.OnNotificationListChanged();
+
+  // If there's a dialog currently open, then we should show the item in the
+  // dialog.
+  if (!dialog_delegate_)
+    return;
+
+  MediaNotificationContainerImpl* container =
+      dialog_delegate_->ShowMediaSession(id, it->second.item()->GetWeakPtr());
+
+  if (container) {
+    container->AddObserver(this);
+    observed_containers_[id] = container;
+  }
+}
+
+void MediaNotificationService::OnSessionBecameInactive(const std::string& id) {
+  // If this session is already marked inactive, then there's nothing to do.
+  if (base::Contains(inactive_session_ids_, id))
+    return;
+
+  inactive_session_ids_.insert(id);
+
+  HideNotification(id);
 }
 
 void MediaNotificationService::OnReceivedAudioFocusRequests(

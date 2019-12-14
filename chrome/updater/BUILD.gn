@@ -68,7 +68,7 @@ if (is_win || is_mac) {
     ]
 
     if (is_win) {
-      deps += [ "//chrome/updater/win:updater_idl_idl" ]
+      deps += [ "//chrome/updater/win:com" ]
     }
   }
 

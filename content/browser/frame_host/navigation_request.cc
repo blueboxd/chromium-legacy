@@ -1681,14 +1681,6 @@ void NavigationRequest::OnResponseStarted(
             network::mojom::CrossOriginEmbedderPolicy::kRequireCorp) {
       // Some special URLs not loaded using the network are inheriting the
       // Cross-Origin-Embedder-Policy header from their parent.
-      //
-      // TODO(ahemery): Find a way for navigation with no responses to
-      // inherit the COEP header. Example of such a URLs:
-      //  - about:blank
-      //  - about:srcdoc.
-      // Currently, it is possible for a main document with the COEP header to
-      // host an iframe without it by adding an about:srcdoc iframe in
-      // between.
       if (common_params_->url.SchemeIsBlob() ||
           common_params_->url.SchemeIs(url::kDataScheme)) {
         cross_origin_embedder_policy =

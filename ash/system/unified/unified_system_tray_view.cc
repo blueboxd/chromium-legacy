@@ -91,8 +91,6 @@ class SystemTrayContainer : public views::View {
   SystemTrayContainer() {
     SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical));
-    SetBackground(UnifiedSystemTrayView::CreateBackground());
-
     if (!features::IsUnifiedMessageCenterRefactorEnabled())
       SetBorder(std::make_unique<TopCornerBorder>());
   }
@@ -113,8 +111,6 @@ class SystemTrayContainer : public views::View {
 class DetailedViewContainer : public views::View {
  public:
   DetailedViewContainer() {
-    SetBackground(UnifiedSystemTrayView::CreateBackground());
-
     if (!features::IsUnifiedMessageCenterRefactorEnabled())
       SetBorder(std::make_unique<TopCornerBorder>());
   }
@@ -272,9 +268,11 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
 
-  SetBackground(CreateBackground());
-  SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(false);
+  auto add_layered_child = [](views::View* parent, views::View* child) {
+    parent->AddChildView(child);
+    child->SetPaintToLayer();
+    child->layer()->SetFillsBoundsOpaquely(false);
+  };
 
   SessionControllerImpl* session_controller =
       Shell::Get()->session_controller();
@@ -282,7 +280,7 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
   if (!features::IsUnifiedMessageCenterRefactorEnabled()) {
     message_center_view_ = new UnifiedMessageCenterView(
         this, controller->model(), nullptr /* message_center_bubble */);
-    AddChildView(message_center_view_);
+    add_layered_child(this, message_center_view_);
     layout->SetFlexForView(message_center_view_, 1);
   }
 
@@ -290,15 +288,15 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
       session_controller->GetUserSession(0) &&
       session_controller->IsScreenLocked() &&
       !AshMessageCenterLockScreenController::IsEnabled());
-  AddChildView(notification_hidden_view_);
+  add_layered_child(this, notification_hidden_view_);
 
   AddChildView(system_tray_container_);
 
-  system_tray_container_->AddChildView(top_shortcuts_view_);
+  add_layered_child(system_tray_container_, top_shortcuts_view_);
   system_tray_container_->AddChildView(feature_pods_container_);
   system_tray_container_->AddChildView(page_indicator_view_);
   system_tray_container_->AddChildView(sliders_container_);
-  system_tray_container_->AddChildView(system_info_view_);
+  add_layered_child(system_tray_container_, system_info_view_);
 
   if (features::IsManagedDeviceUIRedesignEnabled()) {
     managed_device_view_ = new UnifiedManagedDeviceView();
@@ -306,7 +304,7 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
   }
 
   detailed_view_container_->SetVisible(false);
-  AddChildView(detailed_view_container_);
+  add_layered_child(this, detailed_view_container_);
 
   // UnifiedSystemTrayView::FocusSearch makes focus traversal start from
   // |system_tray_container_|, but we have to complete the cycle by setting

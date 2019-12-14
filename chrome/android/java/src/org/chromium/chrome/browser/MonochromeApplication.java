@@ -43,4 +43,9 @@ public class MonochromeApplication extends ChromeApplication {
                 LibraryProcessType.PROCESS_CHILD, bindToCaller, ignoreVisibilityForImportance,
                 null /* privilegedServicesName */, null /* sandboxedServicesName */);
     }
+
+    @Override
+    protected boolean isWebViewProcess() {
+        return WebViewApkApplication.isWebViewProcess();
+    }
 }

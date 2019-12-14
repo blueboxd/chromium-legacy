@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">ଫାଇଲ୍‌ଟି ପୁଣି ଡାଉନ୍‌ଲୋଡ୍ କରିବେ?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{#ଟି ଅଡିଓ ଫାଇଲ୍‌}other{#ଟି ଅଡିଓ ଫାଇଲ୍‌}}</translation>
 <translation id="2653659639078652383">ଉପସ୍ଥାପନ</translation>
-<translation id="2669093958999339774">ଆପଣଙ୍କ ପାଇଁ ବାଧା ସୃଷ୍ଟି କରିବାରୁ ବିଜ୍ଞପ୍ତି ପ୍ରମ୍ପ୍ଟଗୁଡ଼ିକ ବ୍ଲକ୍ କରନ୍ତୁ ଏବଂ ଏହା ପରିବର୍ତ୍ତେ ଏକ ନୀରବ ମେସେଜ୍ ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="2677748264148917807">ଛାଡ଼ନ୍ତୁ</translation>
 <translation id="2704606927547763573">କପି କରାଯାଇଛି</translation>
 <translation id="2707726405694321444">ପୃଷ୍ଠା ରିଫ୍ରେସ୍ କରନ୍ତୁ</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" />ରେ ବୁକ୍‌ମାର୍କ କରାଗଲା</translation>
 <translation id="3744111561329211289">ପୃଷ୍ଠପଟ ସିଙ୍କ୍‌</translation>
 <translation id="3749259744154402564">ସମର୍ଥିତ ନୁହେଁ</translation>
-<translation id="3767376082821709728">ଆପଣ ଯାଉଥିବା ନୂଆ ସାଇଟ୍‍ଗୁଡ଼ିକ ଆପଣଙ୍କୁ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ପଠାଇ ପାରିବେ ନାହିଁ</translation>
 <translation id="3771001275138982843">ଅପ୍‌ଡେଟ୍ ଡାଉନ୍‌ଲୋଡ୍ କରିପାରିଲା ନାହିଁ</translation>
 <translation id="3771033907050503522">ଇନ୍‍କଗ୍ନିଟୋ ଟାବ୍‍</translation>
 <translation id="3773755127849930740">ପେୟାରିଂକୁ ଅନୁମତି ଦେବା ପାଇଁ <ph name="BEGIN_LINK" />ବ୍ଲୁଟୁଥ୍ ଚାଲୁ କରନ୍ତୁ<ph name="END_LINK" /></translation>
@@ -957,7 +955,6 @@
 <translation id="8035133914807600019">ନୂଆ ଫୋଲ୍ଡର…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> ଦିନ ବାକି ଅଛି</translation>
 <translation id="804335162455518893">SD କାର୍ଡ ମିଳିଲା ନାହିଁ</translation>
-<translation id="8046278916126163020">ଆପଣ ଯାଉଥିବା ନୂଆ ସାଇଟ୍‍ଗୁଡ଼ିକ ଆପଣଙ୍କୁ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ପଠାଇବାକୁ କହିପାରନ୍ତି</translation>
 <translation id="805047784848435650">ଆପଣଙ୍କର ବ୍ରାଉଜିଂ ଗତିବିଧି ଆଧାରରେ</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB ଉପଲବ୍ଧ ଅଛି</translation>
 <translation id="8058746566562539958">ନୂଆ Chrome ଟାବ୍‍‍ରେ ଖୋଲନ୍ତୁ</translation>

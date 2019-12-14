@@ -189,7 +189,8 @@ TEST_F(IndexedDBDatabaseTest, ForcedClose) {
       blink::mojom::IDBTransactionMode::ReadOnly,
       new IndexedDBBackingStore::Transaction(
           backing_store_->AsWeakPtr(),
-          blink::mojom::IDBTransactionDurability::Relaxed));
+          blink::mojom::IDBTransactionDurability::Relaxed,
+          blink::mojom::IDBTransactionMode::ReadWrite));
   db_->RegisterAndScheduleTransaction(transaction);
 
   request->connection()->CloseAndReportForceClose();

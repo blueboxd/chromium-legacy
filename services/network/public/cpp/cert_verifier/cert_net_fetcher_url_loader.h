@@ -40,19 +40,14 @@ class COMPONENT_EXPORT(CERT_VERIFIER_CPP) CertNetFetcherURLLoader
 
   // CertNetFetcher impl:
   void Shutdown() override;
-  std::unique_ptr<Request> FetchCaIssuers(
-      const GURL& url,
-      const net::NetworkIsolationKey& network_isolation_key,
-      int timeout_milliseconds,
-      int max_response_bytes) override;
-  std::unique_ptr<Request> FetchCrl(
-      const GURL& url,
-      const net::NetworkIsolationKey& network_isolation_key,
-      int timeout_milliseconds,
-      int max_response_bytes) override;
+  std::unique_ptr<Request> FetchCaIssuers(const GURL& url,
+                                          int timeout_milliseconds,
+                                          int max_response_bytes) override;
+  std::unique_ptr<Request> FetchCrl(const GURL& url,
+                                    int timeout_milliseconds,
+                                    int max_response_bytes) override;
   WARN_UNUSED_RESULT std::unique_ptr<Request> FetchOcsp(
       const GURL& url,
-      const net::NetworkIsolationKey& network_isolation_key,
       int timeout_milliseconds,
       int max_response_bytes) override;
 

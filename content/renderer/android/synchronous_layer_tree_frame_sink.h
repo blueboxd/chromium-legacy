@@ -153,6 +153,10 @@ class SynchronousLayerTreeFrameSink
   void CancelFallbackTick();
   void FallbackTickFired();
 
+  // Sends DidNotProduceFrame to CompositorFrameSink for the previous BeginFrame
+  // if we didn't send DidNotProduceFrame/SubmitCompositorFrame already.
+  void SendAckToLastBeginFrameIfNeeded();
+
   const int routing_id_;
   const uint32_t layer_tree_frame_sink_id_;
   SynchronousCompositorRegistry* const registry_;         // Not owned.
@@ -229,6 +233,9 @@ class SynchronousLayerTreeFrameSink
   // Indicates that webview using viz
   bool viz_for_webview_enabled_;
   bool begin_frames_paused_ = false;
+  bool needs_begin_frames_ = false;
+
+  viz::BeginFrameArgs last_unconfirmed_begin_frame_args_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousLayerTreeFrameSink);
 };

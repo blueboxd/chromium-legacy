@@ -67,6 +67,7 @@
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
+#include "net/third_party/quiche/src/quic/test_tools/qpack/qpack_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
@@ -379,8 +380,14 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
         base::ThreadTaskRunnerHandle::Get().get(),
         /*socket_performance_watcher=*/nullptr, net_log_.bound().net_log()));
     session_->Initialize();
-    TestCompletionCallback callback;
 
+    // Blackhole QPACK decoder stream instead of constructing mock writes.
+    if (VersionUsesHttp3(version_.transport_version)) {
+      session_->qpack_decoder()->set_qpack_stream_sender_delegate(
+          &noop_qpack_stream_sender_delegate_);
+    }
+
+    TestCompletionCallback callback;
     session_->CryptoConnect(callback.callback());
     stream_ = std::make_unique<QuicHttpStream>(
         session_->CreateHandle(HostPortPair("www.example.org", 443)));
@@ -409,17 +416,6 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
   void SetResponse(const string& status, const string& body) {
     response_headers_ = server_maker_.GetResponseHeaders(status);
     response_data_ = body;
-  }
-
-  std::unique_ptr<quic::QuicReceivedPacket> InnerConstructDataPacket(
-      uint64_t packet_number,
-      quic::QuicStreamId stream_id,
-      bool should_include_version,
-      bool fin,
-      quic::QuicStringPiece data,
-      QuicTestPacketMaker* maker) {
-    return maker->MakeDataPacket(packet_number, stream_id,
-                                 should_include_version, fin, data);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructClientDataPacket(
@@ -503,16 +499,6 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
         spdy_headers_frame_length, error_code);
   }
 
-  std::unique_ptr<quic::QuicReceivedPacket> ConstructRequestHeadersPacket(
-      uint64_t packet_number,
-      bool fin,
-      RequestPriority request_priority,
-      size_t* spdy_headers_frame_length) {
-    return InnerConstructRequestHeadersPacket(
-        packet_number, stream_id_, kIncludeVersion, fin, request_priority,
-        spdy_headers_frame_length);
-  }
-
   std::unique_ptr<quic::QuicReceivedPacket> InnerConstructResponseHeadersPacket(
       uint64_t packet_number,
       quic::QuicStreamId stream_id,
@@ -541,54 +527,6 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
         spdy_headers_frame_length);
   }
 
-  std::unique_ptr<quic::QuicReceivedPacket> ConstructClientRstStreamPacket(
-      uint64_t packet_number) {
-    return client_maker_.MakeRstPacket(packet_number, true, stream_id_,
-                                       quic::QUIC_RST_ACKNOWLEDGEMENT);
-  }
-
-  std::unique_ptr<quic::QuicReceivedPacket>
-  ConstructClientRstStreamCancelledPacket(uint64_t packet_number) {
-    return client_maker_.MakeRstPacket(packet_number, !kIncludeVersion,
-                                       stream_id_, quic::QUIC_STREAM_CANCELLED);
-  }
-
-  std::unique_ptr<quic::QuicReceivedPacket>
-  ConstructClientRstStreamVaryMismatchPacket(uint64_t packet_number) {
-    return client_maker_.MakeRstPacket(packet_number, !kIncludeVersion,
-                                       promise_id_,
-                                       quic::QUIC_PROMISE_VARY_MISMATCH);
-  }
-
-  std::unique_ptr<quic::QuicReceivedPacket>
-  ConstructClientRstStreamVaryMismatchAndRequestHeadersPacket(
-      uint64_t packet_number,
-      quic::QuicStreamId stream_id,
-      bool should_include_version,
-      bool fin,
-      RequestPriority request_priority,
-      quic::QuicStreamId parent_stream_id,
-      size_t* spdy_headers_frame_length) {
-    spdy::SpdyPriority priority =
-        ConvertRequestPriorityToQuicPriority(request_priority);
-    return client_maker_.MakeRstAndRequestHeadersPacket(
-        packet_number, should_include_version, promise_id_,
-        quic::QUIC_PROMISE_VARY_MISMATCH, stream_id, fin, priority,
-        std::move(request_headers_), parent_stream_id,
-        spdy_headers_frame_length);
-  }
-
-  std::unique_ptr<quic::QuicReceivedPacket> ConstructAckAndRstStreamPacket(
-      uint64_t packet_number,
-      uint64_t largest_received,
-      uint64_t smallest_received,
-      uint64_t least_unacked) {
-    return client_maker_.MakeAckAndRstPacket(
-        packet_number, !kIncludeVersion, stream_id_,
-        quic::QUIC_STREAM_CANCELLED, largest_received, smallest_received,
-        least_unacked, !kIncludeCongestionFeedback);
-  }
-
   std::unique_ptr<quic::QuicReceivedPacket> ConstructClientRstStreamErrorPacket(
       uint64_t packet_number,
       bool include_version) {
@@ -599,7 +537,9 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructAckAndRstStreamPacket(
       uint64_t packet_number) {
-    return ConstructAckAndRstStreamPacket(packet_number, 2, 1, 2);
+    return client_maker_.MakeAckAndRstPacket(
+        packet_number, !kIncludeVersion, stream_id_,
+        quic::QUIC_STREAM_CANCELLED, 2, 1, 2, !kIncludeCongestionFeedback);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructClientAckPacket(
@@ -620,17 +560,6 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
     return server_maker_.MakeAckPacket(packet_number, largest_received,
                                        smallest_received, least_unacked,
                                        !kIncludeCongestionFeedback);
-  }
-
-  std::unique_ptr<quic::QuicReceivedPacket> ConstructClientPriorityPacket(
-      uint64_t packet_number,
-      bool should_include_version,
-      quic::QuicStreamId id,
-      quic::QuicStreamId parent_stream_id,
-      RequestPriority request_priority) {
-    return client_maker_.MakePriorityPacket(
-        packet_number, should_include_version, id, parent_stream_id,
-        ConvertRequestPriorityToQuicPriority(request_priority));
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructInitialSettingsPacket() {
@@ -732,6 +661,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
   std::unique_ptr<StaticSocketDataProvider> socket_data_;
   QuicPacketPrinter printer_;
   std::vector<PacketToWrite> writes_;
+  quic::test::NoopQpackStreamSenderDelegate noop_qpack_stream_sender_delegate_;
 };
 
 INSTANTIATE_TEST_SUITE_P(VersionIncludeStreamDependencySequence,

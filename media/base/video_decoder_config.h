@@ -146,24 +146,38 @@ class MEDIA_EXPORT VideoDecoderConfig {
   EncryptionScheme encryption_scheme() const { return encryption_scheme_; }
 
   // Color space of the image data.
-  void set_color_space_info(const VideoColorSpace& color_space);
-  const VideoColorSpace& color_space_info() const;
+  void set_color_space_info(const VideoColorSpace& color_space) {
+    color_space_info_ = color_space;
+  }
+  const VideoColorSpace& color_space_info() const { return color_space_info_; }
 
   // Dynamic range of the image data.
-  void set_hdr_metadata(const HDRMetadata& hdr_metadata);
-  const base::Optional<HDRMetadata>& hdr_metadata() const;
+  void set_hdr_metadata(const HDRMetadata& hdr_metadata) {
+    hdr_metadata_ = hdr_metadata;
+  }
+  const base::Optional<HDRMetadata>& hdr_metadata() const {
+    return hdr_metadata_;
+  }
+
+  // Codec level.
+  void set_level(VideoCodecLevel level) { level_ = level; }
+  VideoCodecLevel level() const { return level_; }
 
   // Sets the config to be encrypted or not encrypted manually. This can be
   // useful for decryptors that decrypts an encrypted stream to a clear stream.
   void SetIsEncrypted(bool is_encrypted);
 
  private:
-  VideoCodec codec_;
-  VideoCodecProfile profile_;
+  VideoCodec codec_ = kUnknownVideoCodec;
+  VideoCodecProfile profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;
 
-  AlphaMode alpha_mode_;
+  // Optional video codec level. kNoVideoCodecLevel means the field is not
+  // available.
+  VideoCodecLevel level_ = kNoVideoCodecLevel;
 
-  VideoTransformation transformation_;
+  AlphaMode alpha_mode_ = AlphaMode::kIsOpaque;
+
+  VideoTransformation transformation_ = kNoTransformation;
 
   // Deprecated. TODO(wolenetz): Remove. See https://crbug.com/665539.
   gfx::Size coded_size_;

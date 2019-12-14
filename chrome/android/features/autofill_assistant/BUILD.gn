@@ -38,6 +38,7 @@ android_library("java") {
     "//chrome/browser/image_fetcher:java",
     "//chrome/browser/ui/android/widget:java",
     "//chrome/browser/util:java",
+    "//components/browser_ui/modaldialog/android:java",
     "//components/policy/android:policy_java",
     "//components/signin/core/browser/android:java",
     "//components/signin/public/identity_manager/android:java",

@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">要重新下載檔案嗎？</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# 個音訊檔案}other{# 個音訊檔案}}</translation>
 <translation id="2653659639078652383">提交</translation>
-<translation id="2669093958999339774">使用較靜態的訊息功能，免受通知提示打擾</translation>
 <translation id="2677748264148917807">離開</translation>
 <translation id="2704606927547763573">已複製</translation>
 <translation id="2707726405694321444">重新整理網頁</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">已在 <ph name="PRODUCT_NAME" /> 中新增書籤</translation>
 <translation id="3744111561329211289">背景同步處理</translation>
 <translation id="3749259744154402564">不支援</translation>
-<translation id="3767376082821709728">最新瀏覽的網站將無法向您傳送通知</translation>
 <translation id="3771001275138982843">無法下載更新</translation>
 <translation id="3771033907050503522">無痕式分頁</translation>
 <translation id="3773755127849930740">請<ph name="BEGIN_LINK" />開啟藍牙功能<ph name="END_LINK" />以允許配對</translation>
@@ -956,7 +954,6 @@
 <translation id="8035133914807600019">新增資料夾…</translation>
 <translation id="8037750541064988519">尚餘 <ph name="DAYS" /> 天</translation>
 <translation id="804335162455518893">找不到 SD 卡</translation>
-<translation id="8046278916126163020">最新瀏覽的網站可以要求向您傳送通知</translation>
 <translation id="805047784848435650">根據您的瀏覽記錄</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB 可用空間</translation>
 <translation id="8058746566562539958">在 Chrome 新分頁中開啟</translation>

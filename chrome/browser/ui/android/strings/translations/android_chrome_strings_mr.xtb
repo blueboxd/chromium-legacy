@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">फाइल पुन्हा डाउनलोड करायची?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ऑडिओ फाइल}other{# ऑडिओ फायली}}</translation>
 <translation id="2653659639078652383">सबमिट करा</translation>
-<translation id="2669093958999339774">तुम्हाला व्यत्यय आणणे थांबवण्यासाठी सूचना ब्लॉक करा आणि कमी आवाजाचा मेसेज वापरा</translation>
 <translation id="2677748264148917807">सोडा</translation>
 <translation id="2704606927547763573">कॉपी केले</translation>
 <translation id="2707726405694321444">पृष्ठ रिफ्रेश करा</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> मध्ये बुकमार्क केले</translation>
 <translation id="3744111561329211289">पार्श्वभूमी संकालन</translation>
 <translation id="3749259744154402564">सपोर्ट नसलेली</translation>
-<translation id="3767376082821709728">तुम्ही भेट देत असलेल्या नवीन साइट तुम्हाला सूचना पाठवू शकत नाहीत</translation>
 <translation id="3771001275138982843">अपडेट डाउनलोड करता आले नाही</translation>
 <translation id="3771033907050503522">गुप्त टॅब</translation>
 <translation id="3773755127849930740">पेअरिंगला अनुमती देण्‍यासाठी <ph name="BEGIN_LINK" />ब्लूटूथ सुरू करा<ph name="END_LINK" /></translation>
@@ -957,7 +955,6 @@
 <translation id="8035133914807600019">नवीन फोल्डर…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> दिवस शिल्लक</translation>
 <translation id="804335162455518893">SD कार्ड आढळले नाही</translation>
-<translation id="8046278916126163020">तुम्ही भेट दिलेल्या नवीन साइट तुम्हाला सूचना पाठवण्यास सांगू शकतात</translation>
 <translation id="805047784848435650">तुमच्या ब्राउझ करण्याच्या इतिहासावर आधारित</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB उपलब्ध</translation>
 <translation id="8058746566562539958">नवीन Chrome टॅबमध्‍ये उघडा</translation>

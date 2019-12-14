@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Download file again?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# Audio file}other{# Audio files}}</translation>
 <translation id="2653659639078652383">Submit</translation>
-<translation id="2669093958999339774">Block notification prompts from interrupting you, and use a quieter message instead</translation>
 <translation id="2677748264148917807">Leave</translation>
 <translation id="2704606927547763573">Copied</translation>
 <translation id="2707726405694321444">Refresh page</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Bookmarked in <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Background sync</translation>
 <translation id="3749259744154402564">Unsupported</translation>
-<translation id="3767376082821709728">New sites that you visit can't send you notifications</translation>
 <translation id="3771001275138982843">Couldn’t download the update</translation>
 <translation id="3771033907050503522">Incognito Tabs</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Turn on Bluetooth<ph name="END_LINK" /> to allow pairing</translation>
@@ -755,6 +753,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6545017243486555795">Clear All Data</translation>
 <translation id="6545864417968258051">Bluetooth scanning</translation>
 <translation id="6560414384669816528">Search with Sogou</translation>
+<translation id="656065428026159829">See more</translation>
 <translation id="6566259936974865419">Chrome has saved you <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">Always allow</translation>
 <translation id="6573431926118603307">Tabs that you've opened in Chrome on your other devices will appear here.</translation>
@@ -851,6 +850,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7293171162284876153">To start sync, turn on 'Sync your Chrome data'.</translation>
 <translation id="729975465115245577">Your device doesn’t have an app to store the passwords file.</translation>
 <translation id="7302081693174882195">Details: Sorted by amount of data saved</translation>
+<translation id="7302486331832100261">You usually block notifications. To allow, tap Details.</translation>
 <translation id="7328017930301109123">In Lite mode, Chrome loads pages faster and uses up to 60 per cent less data.</translation>
 <translation id="7333031090786104871">Still adding previous site</translation>
 <translation id="7352939065658542140">VIDEO</translation>
@@ -957,7 +957,6 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="8035133914807600019">New folder…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> days left</translation>
 <translation id="804335162455518893">SD card not found</translation>
-<translation id="8046278916126163020">New sites that you visit can ask to send you notifications</translation>
 <translation id="805047784848435650">Based on your browsing history</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB available</translation>
 <translation id="8058746566562539958">Open in new Chrome tab</translation>

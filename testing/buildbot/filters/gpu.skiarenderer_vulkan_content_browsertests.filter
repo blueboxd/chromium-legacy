@@ -1,5 +1,12 @@
 # MediaBrowserTest error during playback. https://crbug.com/985387
 -DevToolsVideoConsumerTest.SetMinAndMaxFramesChangesDimensions
+-File/MediaTest*
+-Http/MediaTest*
+-MediaRedirectTest.*
+-MediaSourceTest.*
+-MediaTest.*
+-MSE_*ClearKey/EncryptedMediaTest.*
+-SRC_*ClearKey/EncryptedMediaTest.*
 
 # SkiaOutputSurfaceImplOnGpu::MakeCurrent Fails. https://crbug.com/1012282
 -*CompositorImplLowEndBrowserTest.CompositorImplDropsResourcesOnBackground*

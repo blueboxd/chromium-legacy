@@ -978,14 +978,28 @@ class QuicNetworkTransactionTest
     EXPECT_TRUE(quic_data.AllReadDataConsumed());
   }
 
-  quic::QuicStreamId GetNthClientInitiatedBidirectionalStreamId(int n) {
+  quic::QuicStreamId GetNthClientInitiatedBidirectionalStreamId(int n) const {
     return quic::test::GetNthClientInitiatedBidirectionalStreamId(
         version_.transport_version, n);
   }
 
-  quic::QuicStreamId GetNthServerInitiatedUnidirectionalStreamId(int n) {
+  quic::QuicStreamId GetNthServerInitiatedUnidirectionalStreamId(int n) const {
     return quic::test::GetNthServerInitiatedUnidirectionalStreamId(
         version_.transport_version, n);
+  }
+
+  quic::QuicStreamId GetQpackDecoderStreamId() const {
+    return quic::test::GetNthClientInitiatedUnidirectionalStreamId(
+        version_.transport_version, 1);
+  }
+
+  std::string StreamCancellationQpackDecoderInstruction(int n) const {
+    const quic::QuicStreamId cancelled_stream_id =
+        GetNthClientInitiatedBidirectionalStreamId(n);
+    EXPECT_LT(cancelled_stream_id, 63u);
+
+    const unsigned char opcode = 0x40;
+    return {opcode | static_cast<unsigned char>(cancelled_stream_id)};
   }
 
   static void AddCertificate(SSLSocketDataProvider* ssl_data) {
@@ -3360,114 +3374,116 @@ TEST_P(QuicNetworkTransactionTest,
                            GetNthClientInitiatedBidirectionalStreamId(0),
                            quic::QUIC_STREAM_CANCELLED));
     // TLP 1
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 3, true));
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                        1, packet_number++, true));
     // TLP 2
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(2, 4, true));
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                        2, packet_number++, true));
     // RTO 1
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 5, true));
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(2, 6, true));
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                        1, packet_number++, true));
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                        2, packet_number++, true));
     // RTO 2
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 7, true));
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(2, 8, true));
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                        1, packet_number++, true));
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                        2, packet_number++, true));
     // RTO 3
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 9, true));
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(2, 10, true));
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                        1, packet_number++, true));
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                        2, packet_number++, true));
     // RTO 4
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 11, true));
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(2, 12, true));
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                        1, packet_number++, true));
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                        2, packet_number++, true));
     // RTO 5
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeConnectionClosePacket(
-                           13, true, quic::QUIC_TOO_MANY_RTOS,
-                           "5 consecutive retransmission timeouts"));
-  } else if (FLAGS_quic_allow_http3_priority) {
-    quic_data.AddWrite(
-        SYNCHRONOUS, client_maker_.MakeRstPacket(
-                         3, true, GetNthClientInitiatedBidirectionalStreamId(0),
-                         quic::QUIC_STREAM_CANCELLED));
-    client_maker_.RemoveSavedStreamFrames(
-        GetNthClientInitiatedBidirectionalStreamId(0));
-    // TLP 1
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 4, true));
-    // TLP 2
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(2, 5, true));
-    // RTO 1
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(3, 6, true));
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 7, true));
-    // RTO 2
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(2, 8, true));
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(3, 9, true));
-    // RTO 3
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 10, true));
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(2, 11, true));
-    // RTO 4
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(3, 12, true));
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 13, true));
-    // RTO 5
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeConnectionClosePacket(
-                           14, true, quic::QUIC_TOO_MANY_RTOS,
+                           packet_number++, true, quic::QUIC_TOO_MANY_RTOS,
                            "5 consecutive retransmission timeouts"));
   } else {
     quic_data.AddWrite(
-        SYNCHRONOUS, client_maker_.MakeRstPacket(
-                         3, true, GetNthClientInitiatedBidirectionalStreamId(0),
-                         quic::QUIC_STREAM_CANCELLED));
+        SYNCHRONOUS, ConstructClientDataPacket(
+                         packet_number++, GetQpackDecoderStreamId(), true,
+                         false, StreamCancellationQpackDecoderInstruction(0)));
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRstPacket(
+                           packet_number++, true,
+                           GetNthClientInitiatedBidirectionalStreamId(0),
+                           quic::QUIC_STREAM_CANCELLED));
     client_maker_.RemoveSavedStreamFrames(
         GetNthClientInitiatedBidirectionalStreamId(0));
-    // When PRIORITY is disabled, packet 2 only contains request headers. And
-    // since the request stream is reset, packet 2 will not be retransmitted.
-    // TLP 1
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 4, true));
-    // TLP 2
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(3, 5, true));
-    // RTO 1
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 6, true));
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(3, 7, true));
-    // RTO 2
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 8, true));
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(3, 9, true));
-    // RTO 3
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 10, true));
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(3, 11, true));
-    // RTO 4
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 12, true));
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(3, 13, true));
-    // RTO 5
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeConnectionClosePacket(
-                           14, true, quic::QUIC_TOO_MANY_RTOS,
-                           "5 consecutive retransmission timeouts"));
+
+    if (FLAGS_quic_allow_http3_priority) {
+      // TLP 1
+      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                          1, packet_number++, true));
+      // TLP 2
+      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                          2, packet_number++, true));
+      // RTO 1
+      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                          3, packet_number++, true));
+      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                          4, packet_number++, true));
+      // RTO 2
+      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                          1, packet_number++, true));
+      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                          2, packet_number++, true));
+      // RTO 3
+      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                          3, packet_number++, true));
+      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                          4, packet_number++, true));
+      // RTO 4
+      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                          1, packet_number++, true));
+      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                          2, packet_number++, true));
+      // RTO 5
+      quic_data.AddWrite(SYNCHRONOUS,
+                         client_maker_.MakeConnectionClosePacket(
+                             packet_number++, true, quic::QUIC_TOO_MANY_RTOS,
+                             "5 consecutive retransmission timeouts"));
+    } else {
+      // When PRIORITY is disabled, packet 2 only contains request headers. And
+      // since the request stream is reset, packet 2 will not be retransmitted.
+      // TLP 1
+      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                          1, packet_number++, true));
+      // TLP 2
+      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                          3, packet_number++, true));
+      // RTO 1
+      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                          4, packet_number++, true));
+      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                          1, packet_number++, true));
+      // RTO 2
+      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                          3, packet_number++, true));
+      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                          4, packet_number++, true));
+      // RTO 3
+      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                          1, packet_number++, true));
+      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                          3, packet_number++, true));
+      // RTO 4
+      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                          4, packet_number++, true));
+      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+                                          1, packet_number++, true));
+      // RTO 5
+      quic_data.AddWrite(SYNCHRONOUS,
+                         client_maker_.MakeConnectionClosePacket(
+                             packet_number++, true, quic::QUIC_TOO_MANY_RTOS,
+                             "5 consecutive retransmission timeouts"));
+    }
   }
 
   quic_data.AddRead(ASYNC, OK);
@@ -4002,6 +4018,13 @@ TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
                         1, false, GetNthClientInitiatedBidirectionalStreamId(0),
                         quic::QUIC_HEADERS_TOO_LARGE));
 
+  if (VersionUsesHttp3(version_.transport_version)) {
+    quic_data.AddWrite(SYNCHRONOUS,
+                       ConstructClientDataPacket(
+                           packet_num++, GetQpackDecoderStreamId(), true, false,
+                           StreamCancellationQpackDecoderInstruction(0)));
+  }
+
   quic_data.AddRead(ASYNC, OK);
   quic_data.AddSocketDataToFactory(&socket_factory_);
 
@@ -4263,6 +4286,14 @@ TEST_P(QuicNetworkTransactionTest,
       ASYNC, ConstructServerRstPacket(
                  3, false, GetNthClientInitiatedBidirectionalStreamId(1),
                  quic::QUIC_HEADERS_TOO_LARGE));
+
+  if (VersionUsesHttp3(version_.transport_version)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientDataPacket(
+                         packet_num++, GetQpackDecoderStreamId(), true, false,
+                         StreamCancellationQpackDecoderInstruction(1)));
+  }
+
   mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
   mock_quic_data.AddRead(ASYNC, 0);               // EOF
 
@@ -5377,11 +5408,24 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithTooEarlyResponse) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("425 TOO_EARLY")));
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS,
-      ConstructClientAckAndRstPacket(
-          packet_number++, GetNthClientInitiatedBidirectionalStreamId(0),
-          quic::QUIC_STREAM_CANCELLED, 1, 1, 1));
+  if (VersionUsesHttp3(version_.transport_version)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS,
+        ConstructClientAckAndDataPacket(
+            packet_number++, false, GetQpackDecoderStreamId(), 1, 1, 1, false,
+            StreamCancellationQpackDecoderInstruction(0)));
+    mock_quic_data.AddWrite(SYNCHRONOUS,
+                            client_maker_.MakeRstPacket(
+                                packet_number++, false,
+                                GetNthClientInitiatedBidirectionalStreamId(0),
+                                quic::QUIC_STREAM_CANCELLED));
+  } else {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS,
+        ConstructClientAckAndRstPacket(
+            packet_number++, GetNthClientInitiatedBidirectionalStreamId(0),
+            quic::QUIC_STREAM_CANCELLED, 1, 1, 1));
+  }
 
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
 
@@ -5465,11 +5509,24 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithMultipleTooEarlyResponse) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("425 TOO_EARLY")));
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS,
-      ConstructClientAckAndRstPacket(
-          packet_number++, GetNthClientInitiatedBidirectionalStreamId(0),
-          quic::QUIC_STREAM_CANCELLED, 1, 1, 1));
+  if (VersionUsesHttp3(version_.transport_version)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS,
+        ConstructClientAckAndDataPacket(
+            packet_number++, false, GetQpackDecoderStreamId(), 1, 1, 1, false,
+            StreamCancellationQpackDecoderInstruction(0)));
+    mock_quic_data.AddWrite(SYNCHRONOUS,
+                            client_maker_.MakeRstPacket(
+                                packet_number++, false,
+                                GetNthClientInitiatedBidirectionalStreamId(0),
+                                quic::QUIC_STREAM_CANCELLED));
+  } else {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS,
+        ConstructClientAckAndRstPacket(
+            packet_number++, GetNthClientInitiatedBidirectionalStreamId(0),
+            quic::QUIC_STREAM_CANCELLED, 1, 1, 1));
+  }
 
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
 
@@ -5483,11 +5540,24 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithMultipleTooEarlyResponse) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(1), false, false,
                  GetResponseHeaders("425 TOO_EARLY")));
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS,
-      ConstructClientAckAndRstPacket(
-          packet_number++, GetNthClientInitiatedBidirectionalStreamId(1),
-          quic::QUIC_STREAM_CANCELLED, 2, 1, 1));
+  if (VersionUsesHttp3(version_.transport_version)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS,
+        ConstructClientAckAndDataPacket(
+            packet_number++, false, GetQpackDecoderStreamId(), 2, 1, 1, false,
+            StreamCancellationQpackDecoderInstruction(1)));
+    mock_quic_data.AddWrite(SYNCHRONOUS,
+                            client_maker_.MakeRstPacket(
+                                packet_number++, false,
+                                GetNthClientInitiatedBidirectionalStreamId(1),
+                                quic::QUIC_STREAM_CANCELLED));
+  } else {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS,
+        ConstructClientAckAndRstPacket(
+            packet_number++, GetNthClientInitiatedBidirectionalStreamId(1),
+            quic::QUIC_STREAM_CANCELLED, 2, 1, 1));
+  }
   mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
   mock_quic_data.AddRead(ASYNC, 0);               // EOF
 
@@ -5692,8 +5762,17 @@ TEST_P(QuicNetworkTransactionTest, RstStreamErrorHandling) {
       ASYNC, ConstructServerRstPacket(
                  2, false, GetNthClientInitiatedBidirectionalStreamId(0),
                  quic::QUIC_STREAM_CANCELLED));
-  mock_quic_data.AddWrite(SYNCHRONOUS,
-                          ConstructClientAckPacket(packet_num++, 2, 1, 1));
+
+  if (VersionUsesHttp3(version_.transport_version)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS,
+        ConstructClientAckAndDataPacket(
+            packet_num++, false, GetQpackDecoderStreamId(), 2, 1, 1, false,
+            StreamCancellationQpackDecoderInstruction(0)));
+  } else {
+    mock_quic_data.AddWrite(SYNCHRONOUS,
+                            ConstructClientAckPacket(packet_num++, 2, 1, 1));
+  }
   mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more read data.
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
@@ -5762,6 +5841,14 @@ TEST_P(QuicNetworkTransactionTest, RstStreamBeforeHeaders) {
       ASYNC, ConstructServerRstPacket(
                  1, false, GetNthClientInitiatedBidirectionalStreamId(0),
                  quic::QUIC_STREAM_CANCELLED));
+
+  if (VersionUsesHttp3(version_.transport_version)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientDataPacket(
+                         packet_num++, GetQpackDecoderStreamId(), true, false,
+                         StreamCancellationQpackDecoderInstruction(0)));
+  }
+
   mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more read data.
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
@@ -8075,6 +8162,13 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectHttpsServer) {
                           ConstructClientAckPacket(packet_num++, 3, 2, 1));
   mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
 
+  if (VersionUsesHttp3(version_.transport_version)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientDataPacket(
+                         packet_num++, GetQpackDecoderStreamId(), true, false,
+                         StreamCancellationQpackDecoderInstruction(0)));
+  }
+
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
       ConstructClientRstPacket(packet_num++,
@@ -8173,6 +8267,13 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectSpdyServer) {
   mock_quic_data.AddWrite(SYNCHRONOUS,
                           ConstructClientAckPacket(packet_num++, 3, 2, 1));
   mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
+
+  if (VersionUsesHttp3(version_.transport_version)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientDataPacket(
+                         packet_num++, GetQpackDecoderStreamId(), true, false,
+                         StreamCancellationQpackDecoderInstruction(0)));
+  }
 
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
@@ -8314,6 +8415,13 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseTransportSocket) {
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructClientAckPacket(write_packet_index++, 5, 4, 1));
   mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
+
+  if (VersionUsesHttp3(version_.transport_version)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientDataPacket(
+                         write_packet_index++, GetQpackDecoderStreamId(), true,
+                         false, StreamCancellationQpackDecoderInstruction(0)));
+  }
 
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
@@ -8480,11 +8588,26 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
                           ConstructClientAckPacket(packet_num++, 6, 5, 1));
   mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
 
+  if (VersionUsesHttp3(version_.transport_version)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientDataPacket(
+                         packet_num++, GetQpackDecoderStreamId(), true, false,
+                         StreamCancellationQpackDecoderInstruction(0)));
+  }
+
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
       ConstructClientRstPacket(packet_num++,
                                GetNthClientInitiatedBidirectionalStreamId(0),
                                quic::QUIC_STREAM_CANCELLED));
+
+  if (VersionUsesHttp3(version_.transport_version)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientDataPacket(
+                         packet_num++, GetQpackDecoderStreamId(), true, false,
+                         StreamCancellationQpackDecoderInstruction(1)));
+  }
+
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
       ConstructClientRstPacket(packet_num++,
@@ -8652,11 +8775,24 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectBadCertificate) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS,
-      ConstructClientAckAndRstPacket(
-          packet_num++, GetNthClientInitiatedBidirectionalStreamId(0),
-          quic::QUIC_STREAM_CANCELLED, 1, 1, 1));
+  if (VersionUsesHttp3(version_.transport_version)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS,
+        ConstructClientAckAndDataPacket(
+            packet_num++, false, GetQpackDecoderStreamId(), 1, 1, 1, false,
+            StreamCancellationQpackDecoderInstruction(0)));
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS,
+        ConstructClientRstPacket(packet_num++,
+                                 GetNthClientInitiatedBidirectionalStreamId(0),
+                                 quic::QUIC_STREAM_CANCELLED));
+  } else {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS,
+        ConstructClientAckAndRstPacket(
+            packet_num++, GetNthClientInitiatedBidirectionalStreamId(0),
+            quic::QUIC_STREAM_CANCELLED, 1, 1, 1));
+  }
 
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
@@ -8706,6 +8842,12 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectBadCertificate) {
                           ConstructClientAckPacket(packet_num++, 4, 3, 1));
   mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
 
+  if (VersionUsesHttp3(version_.transport_version)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientDataPacket(
+                         packet_num++, GetQpackDecoderStreamId(), true, false,
+                         StreamCancellationQpackDecoderInstruction(1)));
+  }
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
       ConstructClientRstPacket(packet_num++,
@@ -8924,23 +9066,20 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {
   const base::string16 kBaz(base::ASCIIToUTF16("baz"));
   const base::string16 kFoo(base::ASCIIToUTF16("foo"));
 
-  std::unique_ptr<QuicTestPacketMaker> client_maker;
-  std::unique_ptr<QuicTestPacketMaker> server_maker;
-
   // On the second pass, the body read of the auth challenge is synchronous, so
   // IsConnectedAndIdle returns false.  The socket should still be drained and
   // reused. See http://crbug.com/544255.
   for (int i = 0; i < 2; ++i) {
-    client_maker.reset(new QuicTestPacketMaker(
+    QuicTestPacketMaker client_maker(
         version_,
         quic::QuicUtils::CreateRandomConnectionId(context_.random_generator()),
         context_.clock(), kDefaultServerHostName, quic::Perspective::IS_CLIENT,
-        client_headers_include_h2_stream_dependency_));
-    server_maker.reset(new QuicTestPacketMaker(
+        client_headers_include_h2_stream_dependency_);
+    QuicTestPacketMaker server_maker(
         version_,
         quic::QuicUtils::CreateRandomConnectionId(context_.random_generator()),
         context_.clock(), kDefaultServerHostName, quic::Perspective::IS_SERVER,
-        false));
+        false);
 
     session_params_.enable_quic = true;
     session_params_.enable_quic_proxies_for_https_urls = true;
@@ -8954,56 +9093,65 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {
     int packet_num = 1;
     if (VersionUsesHttp3(version_.transport_version)) {
       mock_quic_data.AddWrite(
-          SYNCHRONOUS, client_maker->MakeInitialSettingsPacket(packet_num++));
+          SYNCHRONOUS, client_maker.MakeInitialSettingsPacket(packet_num++));
     }
 
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
-        client_maker->MakeRequestHeadersPacket(
+        client_maker.MakeRequestHeadersPacket(
             packet_num++, GetNthClientInitiatedBidirectionalStreamId(0), true,
             false,
             ConvertRequestPriorityToQuicPriority(
                 HttpProxyConnectJob::kH2QuicTunnelPriority),
-            client_maker->ConnectRequestHeaders("mail.example.org:443"), 0,
+            client_maker.ConnectRequestHeaders("mail.example.org:443"), 0,
             nullptr));
 
     spdy::SpdyHeaderBlock headers =
-        server_maker->GetResponseHeaders("407 Proxy Authentication Required");
+        server_maker.GetResponseHeaders("407 Proxy Authentication Required");
     headers["proxy-authenticate"] = "Basic realm=\"MyRealm1\"";
     headers["content-length"] = "10";
     mock_quic_data.AddRead(
-        ASYNC, server_maker->MakeResponseHeadersPacket(
+        ASYNC, server_maker.MakeResponseHeadersPacket(
                    1, GetNthClientInitiatedBidirectionalStreamId(0), false,
                    false, std::move(headers), nullptr));
 
     if (i == 0) {
       mock_quic_data.AddRead(
-          ASYNC, server_maker->MakeDataPacket(
+          ASYNC, server_maker.MakeDataPacket(
                      2, GetNthClientInitiatedBidirectionalStreamId(0), false,
                      false, "0123456789"));
     } else {
       mock_quic_data.AddRead(
-          SYNCHRONOUS, server_maker->MakeDataPacket(
+          SYNCHRONOUS, server_maker.MakeDataPacket(
                            2, GetNthClientInitiatedBidirectionalStreamId(0),
                            false, false, "0123456789"));
     }
     server_data_offset += 10;
 
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, client_maker->MakeAckPacket(packet_num++, 2, 1, 1, true));
+        SYNCHRONOUS, client_maker.MakeAckPacket(packet_num++, 2, 1, 1, true));
+
+    if (VersionUsesHttp3(version_.transport_version)) {
+      mock_quic_data.AddWrite(
+          SYNCHRONOUS,
+          client_maker.MakeDataPacket(
+              packet_num++, GetQpackDecoderStreamId(),
+              /* should_include_version = */ true,
+              /* fin = */ false, StreamCancellationQpackDecoderInstruction(0)));
+    }
 
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
-        client_maker->MakeRstPacket(
+        client_maker.MakeRstPacket(
             packet_num++, false, GetNthClientInitiatedBidirectionalStreamId(0),
             quic::QUIC_STREAM_CANCELLED,
             /*include_stop_sending_if_v99=*/true));
 
-    headers = client_maker->ConnectRequestHeaders("mail.example.org:443");
+    headers = client_maker.ConnectRequestHeaders("mail.example.org:443");
     headers["proxy-authorization"] = "Basic Zm9vOmJheg==";
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
-        client_maker->MakeRequestHeadersPacket(
+        client_maker.MakeRequestHeadersPacket(
             packet_num++, GetNthClientInitiatedBidirectionalStreamId(1), false,
             false,
             ConvertRequestPriorityToQuicPriority(
@@ -9013,21 +9161,34 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {
 
     // Response to wrong password
     headers =
-        server_maker->GetResponseHeaders("407 Proxy Authentication Required");
+        server_maker.GetResponseHeaders("407 Proxy Authentication Required");
     headers["proxy-authenticate"] = "Basic realm=\"MyRealm1\"";
     headers["content-length"] = "10";
     mock_quic_data.AddRead(
-        ASYNC, server_maker->MakeResponseHeadersPacket(
+        ASYNC, server_maker.MakeResponseHeadersPacket(
                    3, GetNthClientInitiatedBidirectionalStreamId(1), false,
                    false, std::move(headers), nullptr));
     mock_quic_data.AddRead(SYNCHRONOUS,
                            ERR_IO_PENDING);  // No more data to read
 
-    mock_quic_data.AddWrite(
-        SYNCHRONOUS,
-        client_maker->MakeAckAndRstPacket(
-            packet_num++, false, GetNthClientInitiatedBidirectionalStreamId(1),
-            quic::QUIC_STREAM_CANCELLED, 3, 3, 1, true));
+    if (VersionUsesHttp3(version_.transport_version)) {
+      mock_quic_data.AddWrite(
+          SYNCHRONOUS,
+          client_maker.MakeAckAndDataPacket(
+              packet_num++, false, GetQpackDecoderStreamId(), 3, 3, 1, false,
+              StreamCancellationQpackDecoderInstruction(1)));
+      mock_quic_data.AddWrite(SYNCHRONOUS,
+                              client_maker.MakeRstPacket(
+                                  packet_num++, false,
+                                  GetNthClientInitiatedBidirectionalStreamId(1),
+                                  quic::QUIC_STREAM_CANCELLED));
+    } else {
+      mock_quic_data.AddWrite(SYNCHRONOUS,
+                              client_maker.MakeAckAndRstPacket(
+                                  packet_num++, false,
+                                  GetNthClientInitiatedBidirectionalStreamId(1),
+                                  quic::QUIC_STREAM_CANCELLED, 3, 3, 1, true));
+    }
 
     mock_quic_data.AddSocketDataToFactory(&socket_factory_);
     mock_quic_data.GetSequencedSocketData()->set_busy_before_sync_reads(true);

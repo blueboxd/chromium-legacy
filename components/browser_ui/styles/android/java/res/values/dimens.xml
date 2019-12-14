@@ -7,4 +7,11 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
     <!-- Standard width for overflow menu in Chrome. -->
     <dimen name="menu_width">258dp</dimen>
+
+    <!-- Button bar dimensions -->
+    <dimen name="button_bar_stacked_margin">8dp</dimen>
+
+    <!-- Alert dialog -->
+    <dimen name="dialog_padding_top">@dimen/abc_dialog_padding_top_material</dimen>
+    <dimen name="dialog_padding_sides">@dimen/abc_dialog_padding_material</dimen>
 </resources>

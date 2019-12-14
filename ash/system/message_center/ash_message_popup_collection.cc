@@ -28,6 +28,9 @@ const int kToastMarginX = 7;
 
 }  // namespace
 
+const char AshMessagePopupCollection::kMessagePopupWidgetName[] =
+    "ash/message_center/MessagePopup";
+
 AshMessagePopupCollection::AshMessagePopupCollection(Shelf* shelf)
     : screen_(nullptr), shelf_(shelf), tray_bubble_height_(0) {
   set_inverse();
@@ -117,11 +120,12 @@ void AshMessagePopupCollection::ConfigureWidgetInitParamsForContainer(
   init_params->shadow_elevation = ::wm::kShadowElevationInactiveWindow;
   // On ash, popups go in the status container.
   init_params->parent = shelf_->GetWindow()->GetRootWindow()->GetChildById(
-      kShellWindowId_StatusContainer);
+      kShellWindowId_ShelfControlContainer);
 
   // Make the widget activatable so it can receive focus when cycling through
   // windows (i.e. pressing ctrl + forward/back).
   init_params->activatable = views::Widget::InitParams::ACTIVATABLE_YES;
+  init_params->name = kMessagePopupWidgetName;
   Shell::Get()->focus_cycler()->AddWidget(widget);
   widget->AddObserver(this);
   tracked_widgets_.insert(widget);

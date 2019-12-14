@@ -11,6 +11,9 @@
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/backdrop_controller.h"
+#include "ash/wm/workspace/workspace_layout_manager.h"
+#include "ash/wm/workspace_controller.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -45,7 +48,11 @@ WindowScaleAnimation::WindowScaleAnimation(
     : window_(window),
       original_backdrop_mode_(original_backdrop_mode),
       opt_callback_(std::move(opt_callback)),
-      scale_type_(scale_type) {
+      scale_type_(scale_type),
+      scoped_backdrop_update_pause_(GetWorkspaceControllerForContext(window)
+                                        ->layout_manager()
+                                        ->backdrop_controller()
+                                        ->PauseUpdates()) {
   window_observer_.Add(window);
 
   ui::ScopedLayerAnimationSettings settings(window_->layer()->GetAnimator());

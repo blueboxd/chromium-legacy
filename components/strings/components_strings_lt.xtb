@@ -8,7 +8,6 @@
 <translation id="1032854598605920125">Pasukti pagal laikrodžio rodyklę</translation>
 <translation id="1036348656032585052">Išjungti</translation>
 <translation id="1038842779957582377">nežinomas pavadinimas</translation>
-<translation id="1039626062703039346">„Chrome“ gali padėti apsaugoti „Google“ paskyrą ir pakeisti slaptažodį. Bus pranešama „Google“ apie šią svetainę.</translation>
 <translation id="1050038467049342496">Uždarykite kitas programas</translation>
 <translation id="1055184225775184556">&amp;Anuliuoti pridėjimą</translation>
 <translation id="1056898198331236512">Įspėjimas</translation>
@@ -299,7 +298,6 @@
 <translation id="2354001756790975382">Kitos žymės</translation>
 <translation id="2354430244986887761">„Google“ saugaus naršymo technologija svetainėje <ph name="SITE" /> neseniai <ph name="BEGIN_LINK" />aptiko kenkėjiškų programų<ph name="END_LINK" />.</translation>
 <translation id="2355395290879513365">Užpuolikai galbūt galės matyti, kuriuos šios svetainės vaizdus peržiūrite, ir juos pakeis siekdami jus suklaidinti.</translation>
-<translation id="2355474962185559967">Ką tik savo slaptažodį įvedėte apgaulingoje svetainėje. „Chromium“ rekomenduoja dabar apsilankyti <ph name="WEBSITE_1" /> ir pakeisti slaptažodį.</translation>
 <translation id="2356070529366658676">Paklausti</translation>
 <translation id="2359629602545592467">Kelios</translation>
 <translation id="2359808026110333948">Tęskite</translation>
@@ -332,7 +330,6 @@
 <translation id="2495083838625180221">JSON analizavimo įrankis</translation>
 <translation id="2495093607237746763">Jei pažymėta, „Chromium“ išsaugos kortelės kopiją įrenginyje, kad galėtumėte greičiau užpildyti formas.</translation>
 <translation id="2498091847651709837">Nuskaityti naują kortelę</translation>
-<translation id="249825481377667906">„Chromium“ gali padėti apsaugoti „Google“ paskyrą ir pakeisti slaptažodį. Bus pranešama „Google“ apie šią svetainę.</translation>
 <translation id="2501278716633472235">Grįžti</translation>
 <translation id="2503184589641749290">Tinkamos debeto ir išankstinio mokėjimo kortelės</translation>
 <translation id="2505268675989099013">Apsaugoti paskyrą</translation>
@@ -486,7 +483,6 @@
 <translation id="3228969707346345236">Išversti nepavyko, nes puslapis jau yra <ph name="LANGUAGE" />.</translation>
 <translation id="3229041911291329567">Įrenginio ir naršyklės versijos informacija</translation>
 <translation id="323107829343500871">Įveskite „<ph name="CREDIT_CARD" />“ kortelės saugos kodą (CVC)</translation>
-<translation id="3234392465377209614">Ką tik savo slaptažodį įvedėte apgaulingoje svetainėje. „Chromium“ rekomenduoja dabar apsilankyti <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> bei <ph name="WEBSITE_3" /> ir pakeisti slaptažodį.</translation>
 <translation id="3234666976984236645">Visada aptikti svarbų turinį šioje svetainėje</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> atrodo panašiai į <ph name="SUGGESTED_DOMAIN" />. Kartais užpuolėjai kuria svetainių kopijas naudodami panašius URL.</translation>
 <translation id="3270847123878663523">&amp;Anuliuoti pertvarkymą</translation>
@@ -518,7 +514,6 @@
 <translation id="342781501876943858">„Chromium“ rekomenduoja iš naujo nustatyti slaptažodį, jei naudojate jį kitose svetainėse.</translation>
 <translation id="3428151540071562330">Vienas arba keli „DnsOverHttpsTemplates“ serverio šablono URI yra netinkami ir nebus naudojami.</translation>
 <translation id="3431636764301398940">Išsaugoti šią kortelę šiame įrenginyje</translation>
-<translation id="3438790640050632698">Ką tik savo slaptažodį įvedėte apgaulingoje svetainėje. „Chrome“ rekomenduoja dabar apsilankyti <ph name="WEBSITE_1" /> bei <ph name="WEBSITE_2" /> ir pakeisti slaptažodį.</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Įrenginio savininkas išjungė dinozauro žaidimą.</translation>
 <translation id="3447884698081792621">Rodyti sertifikatą (išdavė „<ph name="ISSUER" />“)</translation>
@@ -533,7 +528,6 @@
 <translation id="3495081129428749620">Rasti puslapyje
     „<ph name="PAGE_TITLE" />“</translation>
 <translation id="3512163584740124171">Šios politikos nepaisoma, nes kitos politikos toje pačioje politikos grupėje prioritetas yra didesnis.</translation>
-<translation id="3525469219100414032">Ką tik savo slaptažodį įvedėte apgaulingoje svetainėje. „Chrome“ rekomenduoja dabar apsilankyti <ph name="WEBSITE_1" /> ir pakeisti slaptažodį.</translation>
 <translation id="3528171143076753409">Serverio sertifikatas nepatikimas.</translation>
 <translation id="3528485271872257980">Tamsiai ruda</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Mažiausiai 1 elementas sinchronizuotuose įrenginiuose}=1{1 elementas (ir daugiau sinchronizuotuose įrenginiuose)}one{# elementas (ir daugiau sinchronizuotuose įrenginiuose)}few{# elementai (ir daugiau sinchronizuotuose įrenginiuose)}many{# elemento (ir daugiau sinchronizuotuose įrenginiuose)}other{# elementų (ir daugiau sinchronizuotuose įrenginiuose)}}</translation>
@@ -962,7 +956,6 @@
 <translation id="5565735124758917034">Aktyvus</translation>
 <translation id="5570825185877910964">Apsaugoti paskyrą</translation>
 <translation id="5571083550517324815">Negalima paimti šiuo adresu. Pasirinkite kitą adresą.</translation>
-<translation id="5572009199897554128">Ką tik savo slaptažodį įvedėte apgaulingoje svetainėje. „Chromium“ rekomenduoja dabar apsilankyti <ph name="WEBSITE_1" /> bei <ph name="WEBSITE_2" /> ir pakeisti slaptažodį.</translation>
 <translation id="5580958916614886209">Patikrinkite galiojimo pabaigos mėnesį ir bandykite dar kartą</translation>
 <translation id="5586446728396275693">Nėra išsaugotų adresų</translation>
 <translation id="5595485650161345191">Adreso redagavimas</translation>
@@ -1678,7 +1671,6 @@ Papildoma išsami informacija:
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">Galite prarasti prieigą prie „Google“ paskyros. „Chromium“ rekomenduoja pakeisti slaptažodį dabar. Bus prašoma prisijungti.</translation>
 <translation id="939736085109172342">Naujas aplankas</translation>
-<translation id="940786960229275114">Ką tik savo slaptažodį įvedėte apgaulingoje svetainėje. „Chrome“ rekomenduoja dabar apsilankyti <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> bei <ph name="WEBSITE_3" /> ir pakeisti slaptažodį.</translation>
 <translation id="945855313015696284">Patikrinkite toliau pateiktą informaciją ir ištrinkite visas netinkamas korteles</translation>
 <translation id="950736567201356821">Trys skylės viršuje</translation>
 <translation id="951104842009476243">Tinkamos debeto ir išankstinio mokėjimo kortelės</translation>

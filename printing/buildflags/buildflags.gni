@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/chromecast_build.gni")
+import("//build/config/chromeos/args.gni")
 import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 
@@ -20,6 +21,7 @@ declare_args() {
     # For fuzzing, just restrict to chromeos and linux.
     use_cups = true
   } else {
-    use_cups = (is_desktop_linux || is_mac) && !is_chromecast && !is_fuchsia
+    use_cups = (is_chromeos_device || is_desktop_linux || is_mac) &&
+               !is_chromecast && !is_fuchsia
   }
 }

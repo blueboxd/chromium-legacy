@@ -190,6 +190,7 @@ class PageHandler : public DevToolsDomainHandler,
 
   void GotManifest(std::unique_ptr<GetAppManifestCallback> callback,
                    const GURL& manifest_url,
+                   const ::blink::Manifest& parsed_manifest,
                    blink::mojom::ManifestDebugInfoPtr debug_info);
 
   // RenderWidgetHostObserver overrides.

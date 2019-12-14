@@ -23,6 +23,7 @@ import org.mockito.Mock;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Consumer;
+import org.chromium.base.Function;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentMetadata;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentRemoval;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.KnownContent;
@@ -30,7 +31,6 @@ import org.chromium.chrome.browser.feed.library.api.internal.common.ThreadUtils;
 import org.chromium.chrome.browser.feed.library.api.internal.sessionmanager.FeedSessionManager;
 import org.chromium.chrome.browser.feed.library.common.Result;
 import org.chromium.chrome.browser.feed.library.common.concurrent.testing.FakeMainThreadRunner;
-import org.chromium.chrome.browser.feed.library.common.functional.Function;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamFeature;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamPayload;
 import org.chromium.components.feed.core.proto.ui.stream.StreamStructureProto.Content;

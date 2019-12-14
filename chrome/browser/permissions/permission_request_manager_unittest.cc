@@ -8,10 +8,10 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/util/values/values_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -794,8 +794,8 @@ class MockNotificationPermissionUiSelector
     if (ui_to_use_ == UiToUse::kQuietUi)
       reason = QuietUiReason::kEnabledInPrefs;
     if (async_) {
-      base::PostTask(FROM_HERE, {base::CurrentThread()},
-                     base::BindOnce(std::move(callback), ui_to_use_, reason));
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), ui_to_use_, reason));
     } else {
       std::move(callback).Run(ui_to_use_, reason);
     }

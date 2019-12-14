@@ -75,6 +75,7 @@ public abstract class SigninFragmentBase
             "SigninFragmentBase.AccountPickerDialogFragment";
 
     private static final int ADD_ACCOUNT_REQUEST_CODE = 1;
+    private static final int ACCOUNT_PICKER_DIALOG_REQUEST_CODE = 2;
 
     @IntDef({SigninFlowType.DEFAULT, SigninFlowType.FORCED, SigninFlowType.CHOOSE_ACCOUNT,
             SigninFlowType.ADD_ACCOUNT})
@@ -492,13 +493,14 @@ public abstract class SigninFragmentBase
 
         AccountPickerDialogFragment dialog =
                 AccountPickerDialogFragment.create(mSelectedAccountName);
-        FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+        dialog.setTargetFragment(this, ACCOUNT_PICKER_DIALOG_REQUEST_CODE);
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
         transaction.add(dialog, ACCOUNT_PICKER_DIALOG_TAG);
         transaction.commitAllowingStateLoss();
     }
 
     private AccountPickerDialogFragment getAccountPickerDialogFragment() {
-        return (AccountPickerDialogFragment) getChildFragmentManager().findFragmentByTag(
+        return (AccountPickerDialogFragment) getFragmentManager().findFragmentByTag(
                 ACCOUNT_PICKER_DIALOG_TAG);
     }
 

@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Fitxategia berriro deskargatu nahi duzu?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# audio-fitxategi}other{# audio-fitxategi}}</translation>
 <translation id="2653659639078652383">Bidali</translation>
-<translation id="2669093958999339774">Blokeatu jakinarazpenak arretarik galaraz ez diezazuten eta erabili mezu isilagoak</translation>
 <translation id="2677748264148917807">Irten</translation>
 <translation id="2704606927547763573">Kopiatuta</translation>
 <translation id="2707726405694321444">Freskatu orria</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Egin da laster-marka <ph name="PRODUCT_NAME" />-n</translation>
 <translation id="3744111561329211289">Atzeko planoko sinkronizazioa</translation>
 <translation id="3749259744154402564">Ez da onartzen</translation>
-<translation id="3767376082821709728">Lehen aldiz irekitzen dituzun webguneek ezin dizute bidali jakinarazpenik</translation>
 <translation id="3771001275138982843">Ezin izan da deskargatu eguneratzea</translation>
 <translation id="3771033907050503522">Ezkutuko moduko fitxak</translation>
 <translation id="3773755127849930740">Parekatzeko, <ph name="BEGIN_LINK" />aktibatu Bluetooth konexioa<ph name="END_LINK" /></translation>
@@ -957,7 +955,6 @@ Webguneak EZ du izango kamera atzitzeko baimenik. Zeuk soilik ikus ditzakezu kam
 <translation id="8035133914807600019">Karpeta berria…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> egun gelditzen dira</translation>
 <translation id="804335162455518893">Ez da aurkitu SD txartela</translation>
-<translation id="8046278916126163020">Lehen aldiz irekitzen dituzun webguneek jakinarazpenak bidaltzeko baimena eska diezazukete</translation>
 <translation id="805047784848435650">Arakatze-historian oinarrituta</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB erabilgarri</translation>
 <translation id="8058746566562539958">Ireki Chrome-ko beste fitxa batean</translation>

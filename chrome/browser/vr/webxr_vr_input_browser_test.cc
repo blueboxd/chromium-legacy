@@ -905,6 +905,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestGamepadOptionalData) {
   EndTest();
 }
 
+#if BUILDFLAG(ENABLE_OPENXR)
 // Ensure that if OpenXR Runtime receive interaction profile chagnes event,
 // input profile name will be changed accordingly.
 IN_PROC_BROWSER_TEST_F(WebXrVrOpenXrBrowserTest,
@@ -955,6 +956,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrOpenXrBrowserTest,
   this->RunJavaScriptOrFail("done()");
   this->EndTest();
 }
+#endif  // BUILDFLAG(ENABLE_OPENXR)
 
 // Test that controller input is registered via WebXR's input method. This uses
 // multiple controllers to make sure the input is going to the correct one.

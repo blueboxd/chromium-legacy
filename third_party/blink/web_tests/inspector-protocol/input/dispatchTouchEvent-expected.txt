@@ -249,6 +249,13 @@ radiusX: 1
 radiusY: 1
 rotationAngle: 0
 force: 1
+
+Dispatching event:
+{
+    touchPoints : [
+    ]
+    type : touchEnd
+}
 -----Event-----
 type: touchend
 ----Touches----
@@ -259,13 +266,6 @@ radiusX: 1
 radiusY: 1
 rotationAngle: 0
 force: 1
-
-Dispatching event:
-{
-    touchPoints : [
-    ]
-    type : touchEnd
-}
 -----Event-----
 type: touchend
 ----Touches----
@@ -337,32 +337,12 @@ Dispatching event:
             y : 100
         }
     ]
-    type : touchEnd
-}
-{
-    error : {
-        code : -32602
-        message : TouchEnd and TouchCancel must not have any touch points.
-    }
-    id : <number>
-    sessionId : <string>
-}
-
-
-Dispatching event:
-{
-    touchPoints : [
-        [0] : {
-            x : 100
-            y : 100
-        }
-    ]
     type : touchCancel
 }
 {
     error : {
         code : -32602
-        message : TouchEnd and TouchCancel must not have any touch points.
+        message : TouchCancel must not have any touch points.
     }
     id : <number>
     sessionId : <string>
@@ -482,16 +462,6 @@ radiusY: 1
 rotationAngle: 0
 force: 1
 id: 1
-pageX: 100
-pageY: 100
-radiusX: 1
-radiusY: 1
-rotationAngle: 0
-force: 1
------Event-----
-type: touchend
-----Touches----
-id: 0
 pageX: 100
 pageY: 100
 radiusX: 1
@@ -600,4 +570,194 @@ radiusX: 1
 radiusY: 1
 rotationAngle: 0
 force: 1
+
+Dispatching event:
+{
+    touchPoints : [
+    ]
+    type : touchEnd
+}
+-----Event-----
+type: touchend
+----Touches----
+id: 0
+pageX: 150
+pageY: 150
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+-----Event-----
+type: touchend
+----Touches----
+
+------- Sequence ------
+
+Dispatching event:
+{
+    touchPoints : [
+        [0] : {
+            id : <number>
+            x : 100
+            y : 100
+        }
+        [1] : {
+            id : <number>
+            x : 150
+            y : 100
+        }
+    ]
+    type : touchStart
+}
+-----Event-----
+type: touchstart
+----Touches----
+id: 0
+pageX: 100
+pageY: 100
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+-----Event-----
+type: touchstart
+----Touches----
+id: 0
+pageX: 100
+pageY: 100
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+id: 1
+pageX: 150
+pageY: 100
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+
+Dispatching event:
+{
+    touchPoints : [
+    ]
+    type : touchCancel
+}
+-----Event-----
+type: touchcancel
+----Touches----
+
+------- Sequence ------
+
+Dispatching event:
+{
+    touchPoints : [
+        [0] : {
+            id : <number>
+            x : 100
+            y : 100
+        }
+    ]
+    type : touchStart
+}
+-----Event-----
+type: touchstart
+----Touches----
+id: 0
+pageX: 100
+pageY: 100
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+
+Dispatching event:
+{
+    touchPoints : [
+        [0] : {
+            id : <number>
+            x : 150
+            y : 100
+        }
+    ]
+    type : touchStart
+}
+-----Event-----
+type: touchstart
+----Touches----
+id: 0
+pageX: 100
+pageY: 100
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+id: 1
+pageX: 150
+pageY: 100
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+
+Dispatching event:
+{
+    touchPoints : [
+        [0] : {
+            id : <number>
+            x : 100
+            y : 150
+        }
+    ]
+    type : touchMove
+}
+-----Event-----
+type: touchmove
+----Touches----
+id: 0
+pageX: 100
+pageY: 150
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+id: 1
+pageX: 150
+pageY: 100
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+
+Dispatching event:
+{
+    touchPoints : [
+        [0] : {
+            id : <number>
+            x : 150
+            y : 100
+        }
+    ]
+    type : touchEnd
+}
+-----Event-----
+type: touchend
+----Touches----
+id: 0
+pageX: 100
+pageY: 150
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+
+Dispatching event:
+{
+    touchPoints : [
+    ]
+    type : touchEnd
+}
+-----Event-----
+type: touchend
+----Touches----
 

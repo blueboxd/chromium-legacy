@@ -37,9 +37,21 @@ class SuggestionChipContainerView : public SearchResultContainerView {
   // Called when tablet mode starts and ends.
   void OnTabletModeChanged(bool started);
 
+  // Sets whether blur is disabled on suggestion chip views.
+  void SetBlurDisabled(bool blur_disabled);
+
  private:
+  // Enables or disables suggestion chips blur depending on the container state.
+  void UpdateBlurState();
+
   ContentsView* contents_view_ = nullptr;  // Not owned
   views::BoxLayout* layout_manager_ = nullptr;  // Not owned
+
+  // Whether tablet mode is active - tracked by OnTabletModeChanged().
+  bool in_tablet_mode_ = false;
+
+  // Whether suggestion chip blur has been explicitly disabled.
+  bool blur_disabled_ = false;
 
   std::vector<SearchResultSuggestionChipView*> suggestion_chip_views_;  // Owned
 

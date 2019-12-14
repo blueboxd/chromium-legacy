@@ -124,7 +124,14 @@
       <property name="message" value="Avoid android.app.AlertDialog; if possible, use android.support.v7.app.AlertDialog instead, which has a Material look on all devices. (Some parts of the codebase can’t depend on the support library, in which case android.app.AlertDialog is the only option)"/>
     </module>
     <module name="RegexpSinglelineJava">
-      <property name="id" value="SharedPreferencesCheck"/>
+      <property name="id" value="UseSharedPreferencesManagerFromChromeCheck"/>
+      <property name="severity" value="error"/>
+      <property name="format" value="(getAppSharedPreferences|getDefaultSharedPreferences)"/>
+      <property name="ignoreComments" value="true"/>
+      <property name="message" value="Use SharedPreferencesManager instead to access app-wide SharedPreferences from //src/chrome."/>
+    </module>
+    <module name="RegexpSinglelineJava">
+      <property name="id" value="DefaultSharedPreferencesCheck"/>
       <property name="severity" value="error"/>
       <property name="format" value="getDefaultSharedPreferences"/>
       <property name="ignoreComments" value="true"/>

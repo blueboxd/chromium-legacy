@@ -68,6 +68,8 @@ EngineFileRequestsProxy::EngineFileRequestsProxy(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : file_requests_(std::move(file_requests)), task_runner_(task_runner) {}
 
+EngineFileRequestsProxy::EngineFileRequestsProxy() = default;
+
 EngineFileRequestsProxy::~EngineFileRequestsProxy() = default;
 
 uint32_t EngineFileRequestsProxy::FindFirstFile(

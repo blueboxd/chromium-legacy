@@ -13,8 +13,6 @@ class GPUCommandBuffer : public DawnObject<WGPUCommandBuffer> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GPUCommandBuffer* Create(GPUDevice* device,
-                                  WGPUCommandBuffer command_buffer);
   explicit GPUCommandBuffer(GPUDevice* device,
                             WGPUCommandBuffer command_buffer);
   ~GPUCommandBuffer() override;

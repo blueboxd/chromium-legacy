@@ -28,7 +28,7 @@ class PDF {
     std::string font_name;
     int font_weight;
     PP_TextRenderingMode render_mode;
-    double font_size;
+    float font_size;
     // Colors are ARGB.
     uint32_t fill_color;
     uint32_t stroke_color;

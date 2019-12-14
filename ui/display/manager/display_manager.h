@@ -664,7 +664,9 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // this is a counter to enable multiple active sessions at once.
   int screen_capture_active_counter_ = 0;
 
-  base::Closure created_mirror_window_;
+  // Holds a callback to help RunPendingTasksForTest() to exit at the correct
+  // time.
+  base::OnceClosure created_mirror_window_;
 
   base::ObserverList<DisplayObserver> observers_;
 

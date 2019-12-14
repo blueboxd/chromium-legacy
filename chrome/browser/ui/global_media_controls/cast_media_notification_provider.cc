@@ -13,15 +13,18 @@ CastMediaNotificationProvider::CastMediaNotificationProvider(
     media_message_center::MediaNotificationController* notification_controller,
     base::RepeatingClosure items_changed_callback)
     : CastMediaNotificationProvider(
+          profile,
           media_router::MediaRouterFactory::GetApiForBrowserContext(profile),
           notification_controller,
           std::move(items_changed_callback)) {}
 
 CastMediaNotificationProvider::CastMediaNotificationProvider(
+    Profile* profile,
     media_router::MediaRouter* router,
     media_message_center::MediaNotificationController* notification_controller,
     base::RepeatingClosure items_changed_callback)
     : media_router::MediaRoutesObserver(router),
+      profile_(profile),
       router_(router),
       notification_controller_(notification_controller),
       items_changed_callback_(std::move(items_changed_callback)) {}
@@ -57,7 +60,8 @@ void CastMediaNotificationProvider::OnRoutesUpdated(
           std::forward_as_tuple(route.media_route_id()),
           std::forward_as_tuple(route, notification_controller_,
                                 std::make_unique<CastMediaSessionController>(
-                                    std::move(controller_remote))));
+                                    std::move(controller_remote)),
+                                profile_));
       router_->GetMediaController(
           route.media_route_id(), std::move(controller_receiver),
           it_pair.first->second.GetObserverPendingRemote());

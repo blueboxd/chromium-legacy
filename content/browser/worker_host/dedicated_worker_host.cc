@@ -293,13 +293,8 @@ DedicatedWorkerHost::CreateNetworkFactoryForSubresources(
           pending_default_factory.InitWithNewPipeAndPassReceiver();
 
   network::mojom::URLLoaderFactoryParamsPtr factory_params =
-      URLLoaderFactoryParamsHelper::Create(
-          worker_process_host, origin_,
-          ancestor_render_frame_host->GetTopFrameToken(),
-          network_isolation_key_,
-          ancestor_render_frame_host->cross_origin_embedder_policy(),
-          ancestor_render_frame_host->GetRenderViewHost()
-              ->GetWebkitPreferences());
+      URLLoaderFactoryParamsHelper::CreateForFrame(
+          ancestor_render_frame_host, origin_, worker_process_host);
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       worker_process_host->GetBrowserContext(),
       /*frame=*/nullptr, worker_process_id_,

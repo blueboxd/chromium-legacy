@@ -124,11 +124,7 @@ int ContextualSearchFieldTrial::GetIntParamValueOrDefault(
       param_string = base::GetFieldTrialParamValueByFeature(
           chrome::android::kContextualSearchDefinitions, name);
     }
-    if (param_string.empty()) {
-      // Now check for the Contextual Search Simplified Server feature.
-      param_string = base::GetFieldTrialParamValueByFeature(
-          chrome::android::kContextualSearchSimplifiedServer, name);
-    }
+    // TODO(donnd): check for a Translation feature once that's been added.
 
     int param_int;
     if (!param_string.empty() && base::StringToInt(param_string, &param_int))

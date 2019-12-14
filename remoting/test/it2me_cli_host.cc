@@ -41,7 +41,8 @@ constexpr char kCRDDebugLog[] = "_debug_log";
 // Connect message parameters:
 constexpr char kCRDConnectUserName[] = "userName";
 constexpr char kCRDConnectAuth[] = "authServiceWithToken";
-constexpr char kCRDConnectNoDialogs[] = "noDialogs";
+constexpr char kCRDConnectSuppressUserDialogs[] = "suppressUserDialogs";
+constexpr char kCRDConnectSuppressNotifications[] = "suppressNotifications";
 
 // CRD host states we care about:
 constexpr char kCRDStateKey[] = "state";
@@ -212,7 +213,8 @@ void It2MeCliHost::StartCRDHostAndGetCode(OAuthTokenGetter::Status status,
 
   connect_params.SetKey(kCRDConnectUserName, base::Value(user_email));
   connect_params.SetKey(kCRDConnectAuth, base::Value("oauth2:" + access_token));
-  connect_params.SetKey(kCRDConnectNoDialogs, base::Value(true));
+  connect_params.SetKey(kCRDConnectSuppressUserDialogs, base::Value(true));
+  connect_params.SetKey(kCRDConnectSuppressNotifications, base::Value(true));
   connect_params_ = std::move(connect_params);
 
   remote_connected_ = false;

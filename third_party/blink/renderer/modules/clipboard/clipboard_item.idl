@@ -5,12 +5,16 @@
 // https://w3c.github.io/clipboard-apis/#clipboard-interface
 
 [
-  Constructor(record<DOMString, Blob> items),
+  Constructor(record<DOMString, Blob> items,
+              optional ClipboardItemOptions options),
   RaisesException=Constructor,
   Exposed=Window,
   RuntimeEnabled=AsyncClipboard
 ] interface ClipboardItem {
   readonly attribute FrozenArray<DOMString> types;
+
+  [RuntimeEnabled=RawClipboard]
+  readonly attribute boolean raw;
 
   [
     CallWith=ScriptState

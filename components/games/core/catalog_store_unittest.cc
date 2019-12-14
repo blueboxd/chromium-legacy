@@ -61,8 +61,7 @@ TEST_F(CatalogStoreTest, UpdateCatalogAsync_Success_WithCache_AndClearCache) {
   run_loop.Run();
 
   ASSERT_TRUE(catalog_store_->cached_catalog());
-  EXPECT_TRUE(
-      test::AreProtosEqual(fake_catalog, *catalog_store_->cached_catalog()));
+  test::ExpectProtosEqual(fake_catalog, *catalog_store_->cached_catalog());
 
   catalog_store_->ClearCache();
 

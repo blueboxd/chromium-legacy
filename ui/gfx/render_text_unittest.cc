@@ -954,6 +954,131 @@ TEST_F(RenderTextTest, AppendTextKeepsStyles) {
       test_api()->font_size_overrides().EqualsForTesting(expected_font_size));
 }
 
+TEST_F(RenderTextTest, SelectRangeColored) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(ASCIIToUTF16("abcdef"));
+  render_text->SetColor(SK_ColorBLACK);
+  render_text->set_selection_color(SK_ColorRED);
+
+  std::vector<TestSkiaTextRenderer::TextLog> text_log;
+
+  render_text->SelectRange(Range(0, 1));
+  DrawVisualText();
+  renderer()->GetTextLogAndReset(&text_log);
+  ASSERT_EQ(2u, text_log.size());
+  EXPECT_EQ(1u, text_log[0].glyph_count);
+  EXPECT_EQ(5u, text_log[1].glyph_count);
+  EXPECT_EQ(SK_ColorRED, text_log[0].color);
+  EXPECT_EQ(SK_ColorBLACK, text_log[1].color);
+
+  render_text->SelectRange(Range(1, 3));
+  DrawVisualText();
+  renderer()->GetTextLogAndReset(&text_log);
+  ASSERT_EQ(3u, text_log.size());
+  EXPECT_EQ(1u, text_log[0].glyph_count);
+  EXPECT_EQ(2u, text_log[1].glyph_count);
+  EXPECT_EQ(3u, text_log[2].glyph_count);
+  EXPECT_EQ(SK_ColorBLACK, text_log[0].color);
+  EXPECT_EQ(SK_ColorRED, text_log[1].color);
+  EXPECT_EQ(SK_ColorBLACK, text_log[2].color);
+
+  render_text->ClearSelection();
+  DrawVisualText();
+  renderer()->GetTextLogAndReset(&text_log);
+  ASSERT_EQ(1u, text_log.size());
+  EXPECT_EQ(6u, text_log[0].glyph_count);
+  EXPECT_EQ(SK_ColorBLACK, text_log[0].color);
+}
+
+TEST_F(RenderTextTest, SelectRangeColoredGrapheme) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(WideToUTF16(L"x\u0065\u0301y"));
+  render_text->SetColor(SK_ColorBLACK);
+  render_text->set_selection_color(SK_ColorRED);
+
+  std::vector<TestSkiaTextRenderer::TextLog> text_log;
+
+  render_text->SelectRange(Range(0, 1));
+  DrawVisualText();
+  renderer()->GetTextLogAndReset(&text_log);
+  ASSERT_EQ(2u, text_log.size());
+  EXPECT_EQ(1u, text_log[0].glyph_count);
+  EXPECT_EQ(2u, text_log[1].glyph_count);
+  EXPECT_EQ(SK_ColorRED, text_log[0].color);
+  EXPECT_EQ(SK_ColorBLACK, text_log[1].color);
+
+  render_text->SelectRange(Range(2, 3));
+  DrawVisualText();
+  renderer()->GetTextLogAndReset(&text_log);
+  ASSERT_EQ(1u, text_log.size());
+  EXPECT_EQ(3u, text_log[0].glyph_count);
+  EXPECT_EQ(SK_ColorBLACK, text_log[0].color);
+
+  render_text->SelectRange(Range(2, 4));
+  DrawVisualText();
+  renderer()->GetTextLogAndReset(&text_log);
+  ASSERT_EQ(2u, text_log.size());
+  EXPECT_EQ(2u, text_log[0].glyph_count);
+  EXPECT_EQ(1u, text_log[1].glyph_count);
+  EXPECT_EQ(SK_ColorBLACK, text_log[0].color);
+  EXPECT_EQ(SK_ColorRED, text_log[1].color);
+}
+
+TEST_F(RenderTextTest, SetCompositionRangeColored) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(ASCIIToUTF16("abcdef"));
+
+  std::vector<TestSkiaTextRenderer::TextLog> text_log;
+
+  render_text->SetCompositionRange(Range(0, 1));
+  DrawVisualText();
+  renderer()->GetTextLogAndReset(&text_log);
+  ASSERT_EQ(2u, text_log.size());
+  EXPECT_EQ(1u, text_log[0].glyph_count);
+  EXPECT_EQ(5u, text_log[1].glyph_count);
+
+  render_text->SetCompositionRange(Range(1, 3));
+  DrawVisualText();
+  renderer()->GetTextLogAndReset(&text_log);
+  ASSERT_EQ(3u, text_log.size());
+  EXPECT_EQ(1u, text_log[0].glyph_count);
+  EXPECT_EQ(2u, text_log[1].glyph_count);
+  EXPECT_EQ(3u, text_log[2].glyph_count);
+
+  render_text->SetCompositionRange(Range::InvalidRange());
+  DrawVisualText();
+  renderer()->GetTextLogAndReset(&text_log);
+  ASSERT_EQ(1u, text_log.size());
+  EXPECT_EQ(6u, text_log[0].glyph_count);
+}
+
+TEST_F(RenderTextTest, SetCompositionRangeColoredGrapheme) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(WideToUTF16(L"x\u0065\u0301y"));
+
+  std::vector<TestSkiaTextRenderer::TextLog> text_log;
+
+  render_text->SetCompositionRange(Range(0, 1));
+  DrawVisualText();
+  renderer()->GetTextLogAndReset(&text_log);
+  ASSERT_EQ(2u, text_log.size());
+  EXPECT_EQ(1u, text_log[0].glyph_count);
+  EXPECT_EQ(2u, text_log[1].glyph_count);
+
+  render_text->SetCompositionRange(Range(2, 3));
+  DrawVisualText();
+  renderer()->GetTextLogAndReset(&text_log);
+  ASSERT_EQ(1u, text_log.size());
+  EXPECT_EQ(3u, text_log[0].glyph_count);
+
+  render_text->SetCompositionRange(Range(2, 4));
+  DrawVisualText();
+  renderer()->GetTextLogAndReset(&text_log);
+  ASSERT_EQ(2u, text_log.size());
+  EXPECT_EQ(2u, text_log[0].glyph_count);
+  EXPECT_EQ(1u, text_log[1].glyph_count);
+}
+
 void TestVisualCursorMotionInObscuredField(
     RenderText* render_text,
     const base::string16& text,
@@ -2055,13 +2180,13 @@ TEST_F(RenderTextTest, TruncatedText) {
   } cases[] = {
       // Strings shorter than the truncation length should be laid out in full.
       {L"", L""},
-      {L" . ", L" . "},  // a wide kWeak
-      {L"abc", L"abc"},  // a wide kLtr
+      {L" . ", L" . "},                                // a wide kWeak
+      {L"abc", L"abc"},                                // a wide kLtr
       {L"\u05d0\u05d1\u05d2", L"\u05d0\u05d1\u05d2"},  // a wide kRtl
-      {L"a\u05d0\u05d1", L"a\u05d0\u05d1"},  // a wide kLtrRtl
-      {L"a\u05d1b", L"a\u05d1b"},  // a wide kLtrRtlLtr
-      {L"\u05d0\u05d1a", L"\u05d0\u05d1a"},  // a wide kRtlLtr
-      {L"\u05d0a\u05d1", L"\u05d0a\u05d1"},  // a wide kRtlLtrRtl
+      {L"a\u05d0\u05d1", L"a\u05d0\u05d1"},            // a wide kLtrRtl
+      {L"a\u05d1b", L"a\u05d1b"},                      // a wide kLtrRtlLtr
+      {L"\u05d0\u05d1a", L"\u05d0\u05d1a"},            // a wide kRtlLtr
+      {L"\u05d0a\u05d1", L"\u05d0a\u05d1"},            // a wide kRtlLtrRtl
       {L"01234", L"01234"},
       // Long strings should be truncated with an ellipsis appended at the end.
       {L"012345", L"0123\u2026"},
@@ -2074,13 +2199,29 @@ TEST_F(RenderTextTest, TruncatedText) {
       {L"012\u05d0a\u05d1", L"012\u05d0\u2026"},
       // Surrogate pairs should be truncated reasonably enough.
       {L"0123\u0915\u093f", L"0123\u2026"},
+      {L"\u05e9\u05bc\u05c1\u05b8", L"\u05e9\u05bc\u05c1\u05b8"},
       {L"0\u05e9\u05bc\u05c1\u05b8", L"0\u05e9\u05bc\u05c1\u05b8"},
-      {L"01\u05e9\u05bc\u05c1\u05b8", L"01\u05e9\u05bc\u2026"},
-      {L"012\u05e9\u05bc\u05c1\u05b8", L"012\u05e9\u2026"},
-      {L"0123\u05e9\u05bc\u05c1\u05b8", L"0123\u2026"},
-      {L"01234\u05e9\u05bc\u05c1\u05b8", L"0123\u2026"},
-      // Windows requires wide strings for \Unnnnnnnn universal character names.
-      {L"0123\U0001D11E", L"0123\u2026"},
+      {L"01\u05e9\u05bc\u05c1\u05b8", L"01\u2026"},
+      {L"012\u05e9\u05bc\u05c1\u05b8", L"012\u2026"},
+      // Codepoint U+0001D11E is using 2x 16-bit characters.
+      {L"0\U0001D11Eaaa", L"0\U0001D11Ea\u2026"},
+      {L"01\U0001D11Eaaa", L"01\U0001D11E\u2026"},
+      {L"012\U0001D11Eaaa", L"012\u2026"},
+      {L"0123\U0001D11Eaaa", L"0123\u2026"},
+      {L"01234\U0001D11Eaaa", L"0123\u2026"},
+      // Combining codepoint should stay together.
+      // (Letter 'e' U+0065 and acute accent U+0301).
+      {L"0e\u0301aaa", L"0e\u0301a\u2026"},
+      {L"01e\u0301aaa", L"01e\u0301\u2026"},
+      {L"012e\u0301aaa", L"012\u2026"},
+      // Emoji 'keycap letter 6'.
+      {L"\u0036\uFE0F\u20E3aaa", L"\u0036\uFE0F\u20E3a\u2026"},
+      {L"0\u0036\uFE0F\u20E3aaa", L"0\u0036\uFE0F\u20E3\u2026"},
+      {L"01\u0036\uFE0F\u20E3aaa", L"01\u2026"},
+      // Emoji 'pilot'.
+      {L"\U0001F468\u200D\u2708\uFE0F", L"\U0001F468\u200D\u2708\uFE0F"},
+      {L"\U0001F468\u200D\u2708\uFE0F0", L"\u2026"},
+      {L"0\U0001F468\u200D\u2708\uFE0F", L"0\u2026"},
   };
 
   RenderText* render_text = GetRenderText();
@@ -3800,6 +3941,8 @@ TEST_F(RenderTextTest, StringSizeSanity) {
 
 TEST_F(RenderTextTest, StringSizeLongStrings) {
   RenderText* render_text = GetRenderText();
+  // Remove the default 100000 characters limit.
+  render_text->set_truncate_length(0);
   Size previous_string_size;
   for (size_t length = 10; length < 1000000; length *= 10) {
     render_text->SetText(base::string16(length, 'a'));
@@ -6306,14 +6449,14 @@ TEST_F(RenderTextTest, ColorChange) {
 
   std::vector<TestSkiaTextRenderer::TextLog> text_log;
   renderer()->GetTextLogAndReset(&text_log);
-  EXPECT_EQ(1u, text_log.size());
+  ASSERT_EQ(1u, text_log.size());
   EXPECT_EQ(SK_ColorBLACK, text_log[0].color);
 
   render_text->SetColor(SK_ColorRED);
   DrawVisualText();
   renderer()->GetTextLogAndReset(&text_log);
 
-  EXPECT_EQ(1u, text_log.size());
+  ASSERT_EQ(1u, text_log.size());
   EXPECT_EQ(SK_ColorRED, text_log[0].color);
 }
 
@@ -7151,7 +7294,7 @@ TEST_F(RenderTextTest, DrawVisualText_WithSelection) {
   std::vector<TestSkiaTextRenderer::TextLog> text_log;
   renderer()->GetTextLogAndReset(&text_log);
 
-  EXPECT_EQ(text_log.size(), 3u);
+  ASSERT_EQ(text_log.size(), 3u);
   EXPECT_EQ(text_log[0].glyph_count, 3u);
   EXPECT_EQ(text_log[0].color, SK_ColorBLACK);
   EXPECT_EQ(text_log[1].glyph_count, 11u);

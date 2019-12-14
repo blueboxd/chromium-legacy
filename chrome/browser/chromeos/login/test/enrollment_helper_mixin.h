@@ -46,14 +46,6 @@ class EnrollmentHelperMixin : public InProcessBrowserTestMixin {
   // without license selection.
   void ExpectSuccessfulOAuthEnrollment();
 
-  // Configures and sets expectations for auth-token based flow with license
-  // selection. Non-negative values indicate number of available licenses.
-  // There should be at least two license types (although some can have zero
-  // licenses available), otherwise license is selected automatically.
-  void ExpectAvailableLicenseCount(int perpetual, int annual, int kiosk);
-
-  void ExpectSuccessfulEnrollmentWithLicense(policy::LicenseType license_type);
-
   // Configures and sets expectations for successful attestation-based flow.
   void ExpectAttestationEnrollmentSuccess();
   // Configures and sets expectations for attestation-based flow resulting in

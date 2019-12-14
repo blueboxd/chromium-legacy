@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
 
   // TODO(b/141956135): Use CrKey version provided by the Agent.
   create_context_params.set_user_agent_product("CrKey");
-  create_context_params.set_user_agent_version("0");
+  create_context_params.set_user_agent_version("1.43");
 
   const uint16_t kRemoteDebuggingPort = 9222;
   create_context_params.set_remote_debugging_port(kRemoteDebuggingPort);

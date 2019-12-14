@@ -1190,7 +1190,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="2665919335226618153">Waduh! Terjadi kesalahan saat proses pemformatan.</translation>
 <translation id="2666990579225592931">Buka Jendela Tamu</translation>
 <translation id="2667463864537187133">Kelola pemeriksa ejaan</translation>
-<translation id="2669093958999339774">Blokir pop-up notifikasi agar tidak mengganggu, dan gunakan indikator terblokir sebagai gantinya</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> membagikan tab Chrome.</translation>
 <translation id="2670429602441959756">Halaman ini berisi fitur yang belum didukung dalam VR. Keluar...</translation>
 <translation id="2671451824761031126">Bookmark dan setelan Anda sudah siap</translation>
@@ -1962,7 +1961,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="37613671848467444">Buka di &amp;Jendela Samaran</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Berkomunikasi dengan satu perangkat USB}other{Berkomunikasi dengan # perangkat USB}}</translation>
 <translation id="3765246971671567135">Tidak dapat membaca kebijakan mode demo offline.</translation>
-<translation id="3767376082821709728">Situs baru yang Anda kunjungi tidak dapat mengirimkan notifikasi kepada Anda</translation>
 <translation id="3768037234834996183">Menyinkronkan preferensi Anda...</translation>
 <translation id="377050016711188788">Es krim</translation>
 <translation id="3771294271822695279">File Video</translation>
@@ -3030,7 +3028,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5370819323174483825">&amp;Muat ulang</translation>
 <translation id="5372529912055771682">Mode pendaftaran yang disediakan tidak didukung oleh versi sistem operasi ini.  Pastikan Anda menjalankan versi terbaru dan coba lagi.</translation>
 <translation id="5372579129492968947">Lepas pin ekstensi</translation>
-<translation id="5374359983950678924">Ubah gambar</translation>
 <translation id="5376169624176189338">Klik untuk mundur, tahan untuk melihat histori</translation>
 <translation id="5376931455988532197">File terlalu besar</translation>
 <translation id="537813040452600081">Halaman yang Anda lihat di jendela ini tidak akan muncul di histori browser dan tidak akan meninggalkan jejak lain, seperti cookie, di komputer setelah Anda keluar. File yang didownload dan bookmark yang dibuat tidak akan disimpan.</translation>
@@ -4905,7 +4902,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8044899503464538266">Lambat</translation>
 <translation id="8045253504249021590">Sinkronisasi telah dihentikan melalui Dasbor Google.</translation>
 <translation id="8045923671629973368">Masukan ID aplikasi atau URL toko web</translation>
-<translation id="8046278916126163020">Situs baru yang Anda kunjungi dapat meminta izin untuk mengirimkan notifikasi kepada Anda</translation>
 <translation id="804786196054284061">Perjanjian Lisensi Pengguna Akhir</translation>
 <translation id="8049705080247101012">Google telah menandai "<ph name="EXTENSION_NAME" />" sebagai berbahaya dan penginstalannya telah dicegah</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>

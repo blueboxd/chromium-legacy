@@ -601,19 +601,21 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListOsSyncTest, DisableOsSync) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameAppList());
 
+  // Disable OS sync on the second client.
+  PrefService* prefs = GetProfile(1)->GetPrefs();
+  prefs->SetBoolean(syncer::prefs::kOsSyncFeatureEnabled, false);
+
   // Install a Chrome app and sync.
   InstallApp(GetProfile(0), 0);
-  AwaitQuiescenceAndInstallAppsPendingForSync();
-  ASSERT_TRUE(AllProfilesHaveSameAppList());
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
-  // Disable OS sync on the second client.
-  GetProfile(1)->GetPrefs()->SetBoolean(syncer::prefs::kOsSyncFeatureEnabled,
-                                        false);
+  // App list didn't sync because OS sync is off.
+  ASSERT_FALSE(AllProfilesHaveSameAppList());
 
-  // Install another Chrome app and sync.
-  InstallApp(GetProfile(0), 1);
+  // Enable OS sync on the second client.
+  prefs->SetBoolean(syncer::prefs::kOsSyncFeatureEnabled, true);
   AwaitQuiescenceAndInstallAppsPendingForSync();
 
-  // App list sync still occurs.
+  // App list has synced.
   ASSERT_TRUE(AllProfilesHaveSameAppList());
 }

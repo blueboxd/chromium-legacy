@@ -4,6 +4,8 @@
 <translation id="1075622780330595106"><ph name="NUMBER_OF_TABS" /> ትሮችዎ በቅርቡ ስራ ላይ አልዋሉም። ይዘጉ?</translation>
 <translation id="1181037720776840403">አስወግድ</translation>
 <translation id="125153950246128346">ሌላ ትር ለመመልከት መታ ያድርጉ</translation>
+<translation id="1657719826150349398">ትርን ወደ ታች ያንቀሳቅሱ</translation>
+<translation id="1778290789805128794">ትርን ወደ ላይ አንቀሳቅስ</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> ትር}one{<ph name="TABS_COUNT_MANY" /> ትሮች}other{<ph name="TABS_COUNT_MANY" /> ትሮች}}</translation>
 <translation id="2569352796411618312">ጥቆማ ሐሳብ፦ ከእርስዎ ትሮች <ph name="NUMBER_OF_TABS" /> ያክሉ በቅርቡ ጥቅም ላይ አልዋሉም። ይዘጉ?</translation>
 <translation id="257674075312929031">ቡድን</translation>
@@ -20,11 +22,13 @@
 <translation id="58326064309361797">ለመቦደን ትሮችን ይጎትቱ</translation>
 <translation id="6040143037577758943">ዝጋ</translation>
 <translation id="6193448654517602979">ትሮችን ምረጥ</translation>
+<translation id="6562820390860419811">ትርን ወደ ግራ አንቀሳቅስ</translation>
 <translation id="6615455863669487791">አሳየኝ</translation>
 <translation id="6840760312327750441">ትሮችን ለመቦደን፣ ትርን ነካ አድርገው ይያዙ። በመቀጠል፣ ወደ ሌላ ትር ይጎትቱት።</translation>
 <translation id="7151209024774799310">ትሮችን ከቡድን ያስወግዱ</translation>
 <translation id="7559245342362162951">የቡድን ትሮች በሙሉ ማያ ፍርግርግ አሳይ</translation>
 <translation id="7792771145871471484">ጥቆማ ሐሳቦችን ይገምግሙ።</translation>
+<translation id="7885132941432959125">ቅርን ወደ ቀኝ አንቀሳቅስ</translation>
 <translation id="7966321538264951561">ጥቆማ ሐሳቦችን ያሰናብቱ።</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{የተመረጠ <ph name="TABS_COUNT_ONE" /> ትር ዝጋ}one{የተመረጡ <ph name="TABS_COUNT_MANY" /> ትሮችን ዝጋ}other{የተመረጡ <ph name="TABS_COUNT_MANY" /> ትሮችን ዝጋ}}</translation>
 <translation id="9150694013019234766">ከማያው ግርጌ አጠገብ በትር ቡድንዎ ውስጥ ባሉ ትሮች መካከይ ይቀያይሩ</translation>

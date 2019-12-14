@@ -92,11 +92,11 @@ void UkmManager::RecordRenderingUkm() {
 
 void UkmManager::RecordThroughputUKM(
     FrameSequenceTrackerType tracker_type,
-    FrameSequenceTracker::ThreadType thread_type,
+    FrameSequenceMetrics::ThreadType thread_type,
     int64_t throughput) const {
   ukm::builders::Graphics_Smoothness_Throughput builder(source_id_);
   switch (thread_type) {
-    case FrameSequenceTracker::ThreadType::kMain: {
+    case FrameSequenceMetrics::ThreadType::kMain: {
       switch (tracker_type) {
 #define CASE_FOR_MAIN_THREAD_TRACKER(name)    \
   case FrameSequenceTrackerType::k##name:     \
@@ -119,7 +119,7 @@ void UkmManager::RecordThroughputUKM(
       break;
     }
 
-    case FrameSequenceTracker::ThreadType::kCompositor: {
+    case FrameSequenceMetrics::ThreadType::kCompositor: {
       switch (tracker_type) {
 #define CASE_FOR_COMPOSITOR_THREAD_TRACKER(name)    \
   case FrameSequenceTrackerType::k##name:           \
@@ -141,7 +141,7 @@ void UkmManager::RecordThroughputUKM(
       break;
     }
 
-    case FrameSequenceTracker::ThreadType::kSlower: {
+    case FrameSequenceMetrics::ThreadType::kSlower: {
       switch (tracker_type) {
 #define CASE_FOR_SLOWER_THREAD_TRACKER(name)    \
   case FrameSequenceTrackerType::k##name:       \

@@ -359,10 +359,10 @@ android_fyi_builder(
 )
 
 
-def chromium_builder(*, name, **kwargs):
+def chromium_builder(*, name, goma_backend=goma.backend.RBE_PROD, **kwargs):
   return builder(
       name = name,
-      goma_backend = goma.backend.RBE_PROD,
+      goma_backend = goma_backend,
       mastername = 'chromium',
       **kwargs
   )
@@ -418,14 +418,16 @@ chromium_builder(
 chromium_builder(
     name = 'win32-archive-dbg',
     cores = 32,
-    goma_enable_ats = True,
+    goma_backend = None,
+    goma_enable_ats = False,
     os = os.WINDOWS_DEFAULT,
 )
 
 chromium_builder(
     name = 'win32-archive-rel',
     cores = 32,
-    goma_enable_ats = True,
+    goma_backend = None,
+    goma_enable_ats = False,
     os = os.WINDOWS_DEFAULT,
 )
 
@@ -832,10 +834,10 @@ dawn_builder(
 )
 
 
-def fuzz_builder(*, name, **kwargs):
+def fuzz_builder(*, name, goma_backend=goma.backend.RBE_PROD, **kwargs):
   return builder(
       name = name,
-      goma_backend = goma.backend.RBE_PROD,
+      goma_backend = goma_backend,
       mastername = 'chromium.fuzz',
       notifies = ['chromesec-lkgr-failures'],
       **kwargs
@@ -989,7 +991,8 @@ fuzz_libfuzzer_builder(
 
 fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Windows ASan',
-    goma_enable_ats = True,
+    goma_backend = None,
+    goma_enable_ats = False,
     os = os.WINDOWS_DEFAULT,
 )
 
@@ -1118,7 +1121,8 @@ fyi_builder(
 
 fyi_builder(
     name = 'win-pixel-builder-rel',
-    goma_enable_ats = True,
+    goma_backend = None,
+    goma_enable_ats = False,
     os = None,
 )
 
@@ -1145,7 +1149,8 @@ def fyi_celab_builder(*, name, **kwargs):
 
 fyi_celab_builder(
     name = 'win-celab-builder-rel',
-    goma_enable_ats = True,
+    goma_backend = None,
+    goma_enable_ats = False,
 )
 
 fyi_celab_builder(
@@ -1179,12 +1184,6 @@ fyi_coverage_builder(
     name = 'android-code-coverage-native',
     use_clang_coverage = True,
     ssd = True,
-)
-
-fyi_coverage_builder(
-    name = 'chromeos-vm-code-coverage',
-    ssd = True,
-    use_clang_coverage = True,
 )
 
 fyi_coverage_builder(
@@ -1351,6 +1350,7 @@ fyi_windows_builder(
 
 fyi_windows_builder(
     name = 'win-annotator-rel',
+    builderless = True,
     execution_timeout = 16 * time.hour,
 )
 
@@ -1961,19 +1961,16 @@ mac_ios_builder(
     name = 'ios-simulator-xcode-clang',
 )
 
-mac_ios_builder(
-    name = 'ios-slimnav',
-)
-
 
 def memory_builder(
     *,
     name,
+    goma_backend=goma.backend.RBE_PROD,
     goma_jobs=goma.jobs.MANY_JOBS_FOR_CI,
     **kwargs):
   return builder(
       name = name,
-      goma_backend = goma.backend.RBE_PROD,
+      goma_backend = goma_backend,
       goma_jobs = goma_jobs,
       mastername = 'chromium.memory',
       **kwargs
@@ -2078,7 +2075,9 @@ memory_builder(
 memory_builder(
     name = 'win-asan',
     cores = 32,
-    goma_enable_ats = True,
+    goma_backend = None,
+    goma_enable_ats = False,
+    builderless = True,
     os = os.WINDOWS_DEFAULT,
 )
 
@@ -2129,37 +2128,49 @@ swangle_linux_builder(
 )
 
 
-def swangle_windows_builder(*, name, **kwargs):
+def swangle_windows_builder(*, name, goma_backend=goma.backend.RBE_PROD, goma_enable_ats=True, **kwargs):
   return swangle_builder(
       name = name,
-      goma_backend = goma.backend.RBE_PROD,
-      goma_enable_ats = True,
+      goma_backend = goma_backend,
+      goma_enable_ats = goma_enable_ats,
       os = os.WINDOWS_DEFAULT,
       **kwargs
   )
 
 swangle_windows_builder(
     name = 'win-swangle-tot-angle-x64',
+    goma_backend = None,
+    goma_enable_ats = False,
 )
 
 swangle_windows_builder(
     name = 'win-swangle-tot-angle-x86',
+    goma_backend = None,
+    goma_enable_ats = False,
 )
 
 swangle_windows_builder(
     name = 'win-swangle-tot-swiftshader-x64',
+    goma_backend = None,
+    goma_enable_ats = False,
 )
 
 swangle_windows_builder(
     name = 'win-swangle-tot-swiftshader-x86',
+    goma_backend = None,
+    goma_enable_ats = False,
 )
 
 swangle_windows_builder(
     name = 'win-swangle-x64',
+    goma_backend = None,
+    goma_enable_ats = False,
 )
 
 swangle_windows_builder(
     name = 'win-swangle-x86',
+    goma_backend = None,
+    goma_enable_ats = False,
 )
 
 
@@ -2192,6 +2203,7 @@ win_builder(
 win_builder(
     name = 'Win x64 Builder (dbg)',
     cores = 32,
+    builderless = True,
     os = os.WINDOWS_ANY,
 )
 

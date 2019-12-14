@@ -25,30 +25,21 @@ namespace {
 // quit.
 class BookmarkLoadObserver : public BaseBookmarkModelObserver {
  public:
-  explicit BookmarkLoadObserver(const base::Closure& quit_task);
-  ~BookmarkLoadObserver() override;
+  explicit BookmarkLoadObserver(base::OnceClosure quit_task)
+      : quit_task_(std::move(quit_task)) {}
+  ~BookmarkLoadObserver() override = default;
 
  private:
   // BaseBookmarkModelObserver:
-  void BookmarkModelChanged() override;
-  void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
+  void BookmarkModelChanged() override {}
+  void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override {
+    std::move(quit_task_).Run();
+  }
 
-  base::Closure quit_task_;
+  base::OnceClosure quit_task_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkLoadObserver);
 };
-
-BookmarkLoadObserver::BookmarkLoadObserver(const base::Closure& quit_task)
-    : quit_task_(quit_task) {}
-
-BookmarkLoadObserver::~BookmarkLoadObserver() {}
-
-void BookmarkLoadObserver::BookmarkModelChanged() {}
-
-void BookmarkLoadObserver::BookmarkModelLoaded(BookmarkModel* model,
-                                               bool ids_reassigned) {
-  quit_task_.Run();
-}
 
 // Helper function which does the actual work of creating the nodes for
 // a particular level in the hierarchy.

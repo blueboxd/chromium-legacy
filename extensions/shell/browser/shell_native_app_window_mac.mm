@@ -17,11 +17,11 @@
 
 @implementation ShellNativeAppWindowController
 
-@synthesize appWindow = appWindow_;
+@synthesize appWindow = _appWindow;
 
 - (void)windowWillClose:(NSNotification*)notification {
-  if (appWindow_)
-    appWindow_->WindowWillClose();
+  if (_appWindow)
+    _appWindow->WindowWillClose();
 }
 
 @end

@@ -19,9 +19,9 @@
 // Handles the ContinueWindow.
 @interface ContinueWindowMacController : NSObject {
  @private
-  base::scoped_nsobject<NSMutableArray> shades_;
-  base::scoped_nsobject<NSAlert> continue_alert_;
-  remoting::ContinueWindow* continue_window_;
+  base::scoped_nsobject<NSMutableArray> _shades;
+  base::scoped_nsobject<NSAlert> _continue_alert;
+  remoting::ContinueWindow* _continue_window;
 }
 
 - (id)initWithWindow:(remoting::ContinueWindow*)continue_window;
@@ -87,7 +87,7 @@ std::unique_ptr<HostWindow> HostWindow::CreateContinueWindow() {
 
 - (id)initWithWindow:(remoting::ContinueWindow*)continue_window {
   if ((self = [super init])) {
-    continue_window_ = continue_window;
+    _continue_window = continue_window;
   }
   return self;
 }
@@ -95,7 +95,7 @@ std::unique_ptr<HostWindow> HostWindow::CreateContinueWindow() {
 - (void)show {
   // Generate window shade
   NSArray* screens = [NSScreen screens];
-  shades_.reset([[NSMutableArray alloc] initWithCapacity:[screens count]]);
+  _shades.reset([[NSMutableArray alloc] initWithCapacity:[screens count]]);
   for (NSScreen *screen in screens) {
     NSWindow* shade =
       [[[NSWindow alloc] initWithContentRect:[screen frame]
@@ -112,21 +112,21 @@ std::unique_ptr<HostWindow> HostWindow::CreateContinueWindow() {
     // of control (like they can quit Chromium).
     [shade setLevel:NSModalPanelWindowLevel - 1];
     [shade orderFront:nil];
-    [shades_ addObject:shade];
+    [_shades addObject:shade];
   }
 
   // Create alert.
-  continue_alert_.reset([[NSAlert alloc] init]);
-  [continue_alert_ setMessageText:l10n_util::GetNSString(IDS_CONTINUE_PROMPT)];
+  _continue_alert.reset([[NSAlert alloc] init]);
+  [_continue_alert setMessageText:l10n_util::GetNSString(IDS_CONTINUE_PROMPT)];
 
   NSButton* continue_button =
-      [continue_alert_ addButtonWithTitle:l10n_util::GetNSString(
+      [_continue_alert addButtonWithTitle:l10n_util::GetNSString(
           IDS_CONTINUE_BUTTON)];
   [continue_button setAction:@selector(onContinue:)];
   [continue_button setTarget:self];
 
   NSButton* cancel_button =
-      [continue_alert_ addButtonWithTitle:l10n_util::GetNSString(
+      [_continue_alert addButtonWithTitle:l10n_util::GetNSString(
           IDS_STOP_SHARING_BUTTON)];
   [cancel_button setAction:@selector(onCancel:)];
   [cancel_button setTarget:self];
@@ -135,38 +135,38 @@ std::unique_ptr<HostWindow> HostWindow::CreateContinueWindow() {
   NSString *imagePath = [bundle pathForResource:@"chromoting128" ofType:@"png"];
   base::scoped_nsobject<NSImage> image(
       [[NSImage alloc] initByReferencingFile:imagePath]);
-  [continue_alert_ setIcon:image];
-  [continue_alert_ layout];
+  [_continue_alert setIcon:image];
+  [_continue_alert layout];
 
   // Force alert to be at the proper level and location.
-  NSWindow* continue_window = [continue_alert_ window];
+  NSWindow* continue_window = [_continue_alert window];
   [continue_window center];
   [continue_window setLevel:NSModalPanelWindowLevel];
   [continue_window orderWindow:NSWindowAbove
-                    relativeTo:[[shades_ lastObject] windowNumber]];
+                    relativeTo:[[_shades lastObject] windowNumber]];
   [continue_window makeKeyWindow];
 }
 
 - (void)hide {
   // Remove window shade.
-  for (NSWindow* window in shades_.get()) {
+  for (NSWindow* window in _shades.get()) {
     [window close];
   }
-  shades_.reset();
-  if (continue_alert_) {
-    [[continue_alert_ window] close];
-    continue_alert_.reset();
+  _shades.reset();
+  if (_continue_alert) {
+    [[_continue_alert window] close];
+    _continue_alert.reset();
   }
 }
 
 - (void)onCancel:(id)sender {
   [self hide];
-  continue_window_->DisconnectSession();
+  _continue_window->DisconnectSession();
 }
 
 - (void)onContinue:(id)sender {
   [self hide];
-  continue_window_->ContinueSession();
+  _continue_window->ContinueSession();
 }
 
 @end

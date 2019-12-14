@@ -1189,7 +1189,6 @@
 <translation id="2665919335226618153">糟糕！格式化過程中發生錯誤。</translation>
 <translation id="2666990579225592931">開啟訪客視窗</translation>
 <translation id="2667463864537187133">管理拼字檢查</translation>
-<translation id="2669093958999339774">使用較靜態的訊息功能，免受通知提示打擾</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> 正在共用 Chrome 分頁。</translation>
 <translation id="2670429602441959756">此網頁包含尚未支援 VR 模式的功能。即將退出…</translation>
 <translation id="2671451824761031126">現在可以使用您的書籤和設定了</translation>
@@ -1962,7 +1961,6 @@
 <translation id="37613671848467444">在無痕式視窗中開啟(&amp;I)</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{與 1 個 USB 裝置通訊}other{與 # 個 USB 裝置通訊}}</translation>
 <translation id="3765246971671567135">無法讀取離線示範模式的政策。</translation>
-<translation id="3767376082821709728">最新瀏覽的網站將無法向您傳送通知</translation>
 <translation id="3768037234834996183">正在同步您的偏好設定…</translation>
 <translation id="377050016711188788">雪糕</translation>
 <translation id="3771294271822695279">影片檔</translation>
@@ -3030,7 +3028,6 @@
 <translation id="5370819323174483825">重新載入(&amp;R)</translation>
 <translation id="5372529912055771682">這個版本的作業系統不支援提供註冊模式。請確保您使用的是最新版本，然後再試一次。</translation>
 <translation id="5372579129492968947">取消固定擴充程式</translation>
-<translation id="5374359983950678924">變更圖片</translation>
 <translation id="5376169624176189338">輕按即可返回上一頁，按住可查看記錄</translation>
 <translation id="5376931455988532197">檔案太大</translation>
 <translation id="537813040452600081">您在這個視窗瀏覽的網頁不會在瀏覽器記錄中顯示，而在登出之後，電腦也不會保留 Cookie 等資料。此外，系統不會保留您下載的檔案和建立的書籤。</translation>
@@ -4905,7 +4902,6 @@
 <translation id="8044899503464538266">慢</translation>
 <translation id="8045253504249021590">已透過「Google 資訊主頁」停用同步功能。</translation>
 <translation id="8045923671629973368">請輸入應用程式 ID 或網上商店網址</translation>
-<translation id="8046278916126163020">最新瀏覽的網站可以要求向您傳送通知</translation>
 <translation id="804786196054284061">使用者授權協議</translation>
 <translation id="8049705080247101012">Google 已將「<ph name="EXTENSION_NAME" />」標示為惡意程式並已阻止其安裝</translation>
 <translation id="8050038245906040378">Microsoft 商用程式碼簽署</translation>

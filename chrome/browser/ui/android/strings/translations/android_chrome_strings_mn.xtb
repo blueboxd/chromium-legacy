@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Файлыг дахин татаж авах уу?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# Аудио файл}other{# Аудио файл}}</translation>
 <translation id="2653659639078652383">Илгээх</translation>
-<translation id="2669093958999339774">Мэдэгдлийн сануулгад танд саад болохыг хориглож, оронд нь илүү чимээгүй зурвас ашиглах</translation>
 <translation id="2677748264148917807">Үлдээх</translation>
 <translation id="2704606927547763573">Хуулсан</translation>
 <translation id="2707726405694321444">Хуудсыг дахин шинэчлэх</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" />-д хавчуулсан</translation>
 <translation id="3744111561329211289">Дэвсгэрт синк хийх</translation>
 <translation id="3749259744154402564">Дэмждэггүй</translation>
-<translation id="3767376082821709728">Таны зочлох шинэ сайтууд нь танд мэдэгдэл илгээх боломжгүй</translation>
 <translation id="3771001275138982843">Шинэчлэлтийг татаж чадсангүй</translation>
 <translation id="3771033907050503522">Мэдээний нууцлалтай цонх</translation>
 <translation id="3773755127849930740">Холбохыг зөвшөөрөхийн тулд <ph name="BEGIN_LINK" />Bluetooth-г асаана уу<ph name="END_LINK" /></translation>
@@ -956,7 +954,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="8035133914807600019">Шинэ хавтас...</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> өдөр үлдсэн</translation>
 <translation id="804335162455518893">SD карт олдсонгүй</translation>
-<translation id="8046278916126163020">Таны зочлох шинэ сайтууд нь танд мэдэгдэл илгээх зөвшөөрөл асуух боломжтой</translation>
 <translation id="805047784848435650">Таны хайлтын түүхэнд тулгуурласан</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> мегабайт боломжтой</translation>
 <translation id="8058746566562539958">Chrome-н шинэ чихтэй хуудсанд нээх</translation>

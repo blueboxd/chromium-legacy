@@ -34,6 +34,11 @@ class ASH_EXPORT AshMessagePopupCollection
       public display::DisplayObserver,
       public views::WidgetObserver {
  public:
+  // The name that will set for the message popup widget in
+  // ConfigureWidgetInitParamsForContainer(), and that can be used to identify a
+  // message popup widget.
+  static const char kMessagePopupWidgetName[];
+
   explicit AshMessagePopupCollection(Shelf* shelf);
   ~AshMessagePopupCollection() override;
 

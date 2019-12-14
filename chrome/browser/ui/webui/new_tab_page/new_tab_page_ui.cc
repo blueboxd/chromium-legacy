@@ -55,6 +55,7 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource() {
       {"linkRemovedMsg", IDS_NTP_CONFIRM_MSG_SHORTCUT_REMOVED},
       {"nameField", IDS_NTP_CUSTOM_LINKS_NAME},
       {"restoreDefaultLinks", IDS_NTP_CONFIRM_MSG_RESTORE_DEFAULTS},
+      {"restoreThumbnailsShort", IDS_NEW_TAB_RESTORE_THUMBNAILS_SHORT_LINK},
       {"urlField", IDS_NTP_CUSTOM_LINKS_URL},
 
       // Customize button and dialog.

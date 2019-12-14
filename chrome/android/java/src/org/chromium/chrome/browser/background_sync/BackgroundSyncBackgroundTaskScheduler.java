@@ -14,7 +14,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
@@ -95,26 +94,6 @@ public class BackgroundSyncBackgroundTaskScheduler {
             default:
                 assert false : "Incorrect Background Sync task type";
                 return -1;
-        }
-    }
-
-    /**
-     * Returns the appropriate task class to use based on the Background
-     * Sync task we're working with.
-     *
-     * @param taskType The Background Sync task to get the task class for.
-     */
-    @VisibleForTesting
-    public static Class<? extends NativeBackgroundTask> getAppropriateTaskClass(
-            @BackgroundSyncTask int taskType) {
-        switch (taskType) {
-            case BackgroundSyncTask.ONE_SHOT_SYNC_CHROME_WAKE_UP:
-                return BackgroundSyncBackgroundTask.class;
-            case BackgroundSyncTask.PERIODIC_SYNC_CHROME_WAKE_UP:
-                return PeriodicBackgroundSyncChromeWakeUpTask.class;
-            default:
-                assert false : "Incorrect Background Sync task type";
-                return null;
         }
     }
 

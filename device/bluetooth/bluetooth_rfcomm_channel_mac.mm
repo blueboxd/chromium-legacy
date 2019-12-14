@@ -15,7 +15,7 @@
 @interface BluetoothRfcommChannelDelegate
     : NSObject <IOBluetoothRFCOMMChannelDelegate> {
  @private
-  device::BluetoothRfcommChannelMac* channel_;  // weak
+  device::BluetoothRfcommChannelMac* _channel;  // weak
 }
 
 - (id)initWithChannel:(device::BluetoothRfcommChannelMac*)channel;
@@ -26,30 +26,30 @@
 
 - (id)initWithChannel:(device::BluetoothRfcommChannelMac*)channel {
   if ((self = [super init]))
-    channel_ = channel;
+    _channel = channel;
 
   return self;
 }
 
 - (void)rfcommChannelOpenComplete:(IOBluetoothRFCOMMChannel*)rfcommChannel
                            status:(IOReturn)error {
-  channel_->OnChannelOpenComplete(rfcommChannel, error);
+  _channel->OnChannelOpenComplete(rfcommChannel, error);
 }
 
 - (void)rfcommChannelWriteComplete:(IOBluetoothRFCOMMChannel*)rfcommChannel
                             refcon:(void*)refcon
                             status:(IOReturn)error {
-  channel_->OnChannelWriteComplete(rfcommChannel, refcon, error);
+  _channel->OnChannelWriteComplete(rfcommChannel, refcon, error);
 }
 
 - (void)rfcommChannelData:(IOBluetoothRFCOMMChannel*)rfcommChannel
                      data:(void*)dataPointer
                    length:(size_t)dataLength {
-  channel_->OnChannelDataReceived(rfcommChannel, dataPointer, dataLength);
+  _channel->OnChannelDataReceived(rfcommChannel, dataPointer, dataLength);
 }
 
 - (void)rfcommChannelClosed:(IOBluetoothRFCOMMChannel*)rfcommChannel {
-  channel_->OnChannelClosed(rfcommChannel);
+  _channel->OnChannelClosed(rfcommChannel);
 }
 
 @end

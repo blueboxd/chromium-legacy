@@ -1013,6 +1013,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
       bookmark_builder.BuildBookmark(url, /*is_legacy=*/false);
   const std::string old_guid = bookmark.get()->GetSpecifics().bookmark().guid();
   fake_server_->InjectEntity(std::move(bookmark));
+  SCOPED_TRACE(std::string("old_guid=") + old_guid);
 
   // Start syncing.
   DisableVerifier();
@@ -1056,6 +1057,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
   const BookmarkNode* local_folder = AddFolder(
       kSingleProfileIndex, GetBookmarkBarNode(kSingleProfileIndex), 0, title);
   const std::string old_guid = local_folder->guid();
+  SCOPED_TRACE(std::string("old_guid=") + old_guid);
+
   ASSERT_TRUE(local_folder);
   ASSERT_TRUE(BookmarksGUIDChecker(kSingleProfileIndex, old_guid).Wait());
   ASSERT_EQ(1u, CountFoldersWithTitlesMatching(kSingleProfileIndex, title));

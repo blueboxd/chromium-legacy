@@ -114,6 +114,8 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
 
   class FakeTransaction : public IndexedDBBackingStore::Transaction {
    public:
+    FakeTransaction(leveldb::Status phase_two_result,
+                    blink::mojom::IDBTransactionMode mode);
     explicit FakeTransaction(leveldb::Status phase_two_result);
     void Begin(std::vector<ScopeLock> locks) override;
     leveldb::Status CommitPhaseOne(BlobWriteCallback) override;
@@ -128,7 +130,8 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
   };
 
   std::unique_ptr<IndexedDBBackingStore::Transaction> CreateTransaction(
-      blink::mojom::IDBTransactionDurability durability) override;
+      blink::mojom::IDBTransactionDurability durability,
+      blink::mojom::IDBTransactionMode mode) override;
 
  protected:
  private:

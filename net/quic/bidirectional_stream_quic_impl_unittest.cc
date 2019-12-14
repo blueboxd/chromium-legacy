@@ -53,6 +53,7 @@
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
+#include "net/third_party/quiche/src/quic/test_tools/qpack/qpack_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
@@ -573,6 +574,13 @@ class BidirectionalStreamQuicImplTest
         base::ThreadTaskRunnerHandle::Get().get(),
         /*socket_performance_watcher=*/nullptr, net_log().bound().net_log()));
     session_->Initialize();
+
+    // Blackhole QPACK decoder stream instead of constructing mock writes.
+    if (VersionUsesHttp3(version_.transport_version)) {
+      session_->qpack_decoder()->set_qpack_stream_sender_delegate(
+          &noop_qpack_stream_sender_delegate_);
+    }
+
     TestCompletionCallback callback;
     session_->CryptoConnect(callback.callback());
     EXPECT_TRUE(session_->IsEncryptionEstablished());
@@ -844,6 +852,7 @@ class BidirectionalStreamQuicImplTest
   std::vector<PacketToWrite> writes_;
   quic::QuicClientPushPromiseIndex push_promise_index_;
   HostPortPair destination_;
+  quic::test::NoopQpackStreamSenderDelegate noop_qpack_stream_sender_delegate_;
 };
 
 INSTANTIATE_TEST_SUITE_P(Version,

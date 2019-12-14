@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/optional.h"
+#include "base/time/clock.h"
 #include "components/games/core/catalog_store.h"
 #include "components/games/core/data_files_parser.h"
 #include "components/games/core/games_types.h"
@@ -56,6 +57,21 @@ class MockHighlightedGamesStore : public HighlightedGamesStore {
   MOCK_METHOD0(TryGetFromCache, base::Optional<Game>());
   MOCK_METHOD1(SetPendingCallback, void(HighlightedGameCallback));
   MOCK_METHOD1(HandleCatalogFailure, void(ResponseCode));
+};
+
+class MockClock : public base::Clock {
+ public:
+  explicit MockClock();
+  ~MockClock() override;
+
+  void MockNow(const base::Time& fake_time);
+
+  base::Time Now() const override;
+
+  void AdvanceDays(int days);
+
+ protected:
+  base::Time mock_now_;
 };
 
 }  // namespace test

@@ -247,7 +247,7 @@ class MockLoopbackAudioObserver
 
   MOCK_METHOD6(OnLoopbackAudio,
                void(int64_t, SampleFormat, int, int, uint8_t*, int));
-  MOCK_METHOD0(OnLoopbackInterrupted, void());
+  MOCK_METHOD1(OnLoopbackInterrupted, void(LoopbackInterruptReason));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLoopbackAudioObserver);

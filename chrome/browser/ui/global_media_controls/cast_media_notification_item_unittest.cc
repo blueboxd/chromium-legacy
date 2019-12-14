@@ -4,11 +4,15 @@
 
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_item.h"
 
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/common/media_router/media_route.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/media_message_center/media_notification_controller.h"
 #include "components/media_message_center/media_notification_view.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 using media_router::mojom::MediaStatus;
 using media_session::mojom::MediaPlaybackState;
@@ -28,6 +32,21 @@ media_router::MediaRoute CreateMediaRoute() {
       kRouteId, media_router::MediaSource("source_id"), "sink_id", kRouteDesc,
       /* is_local */ true, /* for_display */ true);
 }
+
+class MockBitmapFetcher : public BitmapFetcher {
+ public:
+  MockBitmapFetcher(const GURL& url,
+                    BitmapFetcherDelegate* delegate,
+                    const net::NetworkTrafficAnnotationTag& traffic_annotation)
+      : BitmapFetcher(url, delegate, traffic_annotation) {}
+  ~MockBitmapFetcher() override = default;
+
+  MOCK_METHOD3(Init,
+               void(const std::string& referrer,
+                    net::URLRequest::ReferrerPolicy referrer_policy,
+                    network::mojom::CredentialsMode credentials_mode));
+  MOCK_METHOD1(Start, void(network::mojom::URLLoaderFactory* loader_factory));
+};
 
 class MockMediaNotificationController
     : public media_message_center::MediaNotificationController {
@@ -75,7 +94,10 @@ class CastMediaNotificationItemTest : public testing::Test {
     session_controller_ = session_controller.get();
     item_ = std::make_unique<CastMediaNotificationItem>(
         CreateMediaRoute(), &notification_controller_,
-        std::move(session_controller));
+        std::move(session_controller), &profile_);
+    item_->set_bitmap_fetcher_factory_for_testing_(
+        base::BindRepeating(&CastMediaNotificationItemTest::CreateBitmapFetcher,
+                            base::Unretained(this)));
   }
 
   void SetView() {
@@ -101,6 +123,14 @@ class CastMediaNotificationItemTest : public testing::Test {
   }
 
  protected:
+  MOCK_METHOD3(CreateBitmapFetcher,
+               std::unique_ptr<BitmapFetcher>(
+                   const GURL& url,
+                   BitmapFetcherDelegate* delegate,
+                   const net::NetworkTrafficAnnotationTag& traffic_annotation));
+
+  content::BrowserTaskEnvironment task_environment_;
+  TestingProfile profile_;
   MockMediaNotificationController notification_controller_;
   MockSessionController* session_controller_ = nullptr;
   MockMediaNotificationView view_;
@@ -210,4 +240,35 @@ TEST_F(CastMediaNotificationItemTest, SendActionToController) {
 
   EXPECT_CALL(*session_controller_, Send(MediaSessionAction::kPlay));
   item_->OnMediaSessionActionButtonPressed(MediaSessionAction::kPlay);
+}
+
+TEST_F(CastMediaNotificationItemTest, DownloadImage) {
+  SetView();
+  GURL image_url("https://example.com/image.png");
+  gfx::Size image_size(123, 456);
+  auto image = media_router::mojom::MediaImage::New();
+  image->url = image_url;
+  image->size = image_size;
+  auto status = MediaStatus::New();
+  status->images.push_back(std::move(image));
+
+  BitmapFetcherDelegate* bitmap_fetcher_delegate = nullptr;
+  EXPECT_CALL(*this, CreateBitmapFetcher(_, _, _))
+      .WillOnce(
+          [&](const GURL& url, BitmapFetcherDelegate* delegate,
+              const net::NetworkTrafficAnnotationTag& traffic_annotation) {
+            auto bitmap_fetcher = std::make_unique<MockBitmapFetcher>(
+                url, delegate, traffic_annotation);
+            bitmap_fetcher_delegate = delegate;
+
+            EXPECT_EQ(url, image_url);
+            EXPECT_CALL(*bitmap_fetcher, Init(_, _, _));
+            EXPECT_CALL(*bitmap_fetcher, Start(_));
+            return bitmap_fetcher;
+          });
+  item_->OnMediaStatusUpdated(std::move(status));
+
+  SkBitmap bitmap;
+  EXPECT_CALL(view_, UpdateWithMediaArtwork(_));
+  bitmap_fetcher_delegate->OnFetchComplete(image_url, &bitmap);
 }

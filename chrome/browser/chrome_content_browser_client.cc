@@ -3931,8 +3931,8 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   throttles.push_back(std::make_unique<SSLErrorNavigationThrottle>(
       handle,
       std::make_unique<CertificateReportingServiceCertReporter>(web_contents),
-      base::Bind(&SSLErrorHandler::HandleSSLError),
-      base::Bind(&IsInHostedApp)));
+      base::BindOnce(&SSLErrorHandler::HandleSSLError),
+      base::BindOnce(&IsInHostedApp)));
 
   throttles.push_back(std::make_unique<LoginNavigationThrottle>(handle));
 

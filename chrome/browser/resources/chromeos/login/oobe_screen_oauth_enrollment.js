@@ -8,7 +8,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       'showStep',
       'showError',
       'doReload',
-      'setAvailableLicenseTypes',
       'showAttributePromptStep',
       'showAttestationBasedEnrollmentSuccess',
       'setAdJoinParams',
@@ -53,13 +52,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       $('enterprise-enrollment')
           .showAttestationBasedEnrollmentSuccess(
               device, enterpriseEnrollmentDomain);
-    },
-
-    /**
-     * Updates the list of available license types in license selection dialog.
-     */
-    setAvailableLicenseTypes: function(licenseTypes) {
-      $('enterprise-enrollment').setAvailableLicenseTypes(licenseTypes);
     },
 
     /**
@@ -132,10 +124,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
 
     onAdUnlockConfiguration_: function(unlock_password) {
       chrome.send('oauthEnrollAdUnlockConfiguration', [unlock_password]);
-    },
-
-    onLicenseTypeSelected_: function(license_type) {
-      chrome.send('onLicenseTypeSelected', [license_type]);
     },
   };
 });

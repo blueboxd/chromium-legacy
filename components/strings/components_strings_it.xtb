@@ -5,10 +5,10 @@
 <translation id="1010200102790553230">Carica la pagina più tardi</translation>
 <translation id="1015730422737071372">Fornisci ulteriori dettagli</translation>
 <translation id="1021110881106174305">Carte di credito accettate</translation>
+<translation id="1021753677514347426">Questo problema si verifica a causa di un certificato installato sul dispositivo da te o da un'altra persona. È noto che il certificato viene usato per monitorare e intercettare le reti e non è considerato attendibile da Chromium. Esistono alcuni casi leciti per il monitoraggio, ad esempio su una rete scolastica o aziendale, ma Chromium vuole assicurarsi che tu sappia che viene effettuato, anche se non puoi interromperlo. Il monitoraggio potrebbe essere effettuato in qualsiasi browser o applicazione che accede al Web.</translation>
 <translation id="1032854598605920125">Ruota in senso orario</translation>
 <translation id="1036348656032585052">Disattiva</translation>
 <translation id="1038842779957582377">nome sconosciuto</translation>
-<translation id="1039626062703039346">Chrome può aiutarti a proteggere il tuo Account Google e a modificare la password. Questa operazione invierà una notifica a Google a proposito di questo sito.</translation>
 <translation id="1050038467049342496">Chiudi altre app</translation>
 <translation id="1055184225775184556">&amp;Annulla aggiunta</translation>
 <translation id="1056898198331236512">Avviso</translation>
@@ -68,6 +68,7 @@
 <translation id="1264126396475825575">Rapporto sugli arresti anomali generato il giorno <ph name="CRASH_TIME" /> (non ancora caricato o ignorato)</translation>
 <translation id="1270502636509132238">Metodo di ritiro</translation>
 <translation id="1285320974508926690">Non tradurre mai questo sito</translation>
+<translation id="1285400217480592994">Consente di analizzare i contenuti dei file scaricati o caricati in Chrome.</translation>
 <translation id="1292701964462482250">"Il software installato sul computer sta impedendo a Chrome di connettersi in sicurezza a Internet" (solo su computer Windows)</translation>
 <translation id="1294154142200295408">Variazioni nella riga di comando</translation>
 <translation id="129553762522093515">Chiuse di recente</translation>
@@ -285,6 +286,7 @@
 <translation id="2270484714375784793">Numero di telefono</translation>
 <translation id="2277103315734023688">Vai avanti</translation>
 <translation id="2283340219607151381">Salva e compila gli indirizzi</translation>
+<translation id="2288422996159078444">Tutto ciò che digiti, tutte le pagine che visualizzi e ogni altra attività che svolgi sul Web vengono monitorati. I contenuti sui siti potrebbero essere modificati a tua insaputa.</translation>
 <translation id="2289385804009217824">Taglio</translation>
 <translation id="2292556288342944218">L'accesso a Internet è bloccato</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
@@ -299,7 +301,6 @@
 <translation id="2354001756790975382">Altri Preferiti</translation>
 <translation id="2354430244986887761">La funzione Navigazione sicura di Google ha recentemente <ph name="BEGIN_LINK" />rilevato app dannose<ph name="END_LINK" /> sul sito <ph name="SITE" />.</translation>
 <translation id="2355395290879513365">Gli utenti malintenzionati potrebbero riuscire a vedere le immagini che visualizzi in questo sito e ingannarti modificandole.</translation>
-<translation id="2355474962185559967">Hai appena inserito la tua password su un sito ingannevole. Chromium ti consiglia di visitare il sito <ph name="WEBSITE_1" /> e modificare subito la tua password.</translation>
 <translation id="2356070529366658676">Chiedi</translation>
 <translation id="2359629602545592467">Multiple</translation>
 <translation id="2359808026110333948">Continua</translation>
@@ -332,7 +333,6 @@
 <translation id="2495083838625180221">JSON Parser</translation>
 <translation id="2495093607237746763">Se questa opzione viene selezionata, Chromium memorizza una copia della carta sul dispositivo per velocizzare la compilazione dei moduli.</translation>
 <translation id="2498091847651709837">Esegui scansione nuova carta</translation>
-<translation id="249825481377667906">Chromium può aiutarti a proteggere il tuo Account Google e a modificare la password. Questa operazione invierà una notifica a Google a proposito di questo sito.</translation>
 <translation id="2501278716633472235">Indietro</translation>
 <translation id="2503184589641749290">Carte di debito e prepagate accettate</translation>
 <translation id="2505268675989099013">Proteggi account</translation>
@@ -439,6 +439,7 @@
 <translation id="2989742184762224133">Doppia pinzatura in alto</translation>
 <translation id="2991174974383378012">Condivisione con i siti web</translation>
 <translation id="2991571918955627853">Al momento non puoi visitare il sito web <ph name="SITE" /> perché utilizza HSTS. In genere gli errori di rete e gli attacchi sono temporanei, pertanto questa pagina potrebbe funzionare più tardi.</translation>
+<translation id="2996674880327704673">Suggerimenti di Google</translation>
 <translation id="3005723025932146533">Mostra copia salvata</translation>
 <translation id="3008447029300691911">Inserisci il codice CVC della carta <ph name="CREDIT_CARD" />. Dopo essere stati confermati, i dettagli della carta saranno condivisi con questo sito.</translation>
 <translation id="3010559122411665027">Voce "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -451,6 +452,7 @@
 <translation id="3060227939791841287">C9 (Envelope)</translation>
 <translation id="3061707000357573562">Servizio di applicazione patch</translation>
 <translation id="3064966200440839136">Per procedere al pagamento tramite un'applicazione esterna, uscirai dalla modalità di navigazione in incognito. Continuare?</translation>
+<translation id="3086579638707268289">La tua attività sul Web viene monitorata</translation>
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Aggiungi l'indirizzo di ritiro</translation>
 <translation id="3105172416063519923">ID asset:</translation>
@@ -482,7 +484,6 @@
 <translation id="3228969707346345236">La traduzione non è riuscita perché la pagina è già in <ph name="LANGUAGE" />.</translation>
 <translation id="3229041911291329567">Informazioni sulla versione del dispositivo e del browser</translation>
 <translation id="323107829343500871">Inserisci il codice CVC della carta <ph name="CREDIT_CARD" /></translation>
-<translation id="3234392465377209614">Hai appena inserito la tua password su un sito ingannevole. Chromium ti consiglia di visitare i siti <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e <ph name="WEBSITE_3" /> e modificare subito la tua password.</translation>
 <translation id="3234666976984236645">Rileva sempre contenuti importanti di questo sito</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> è simile a <ph name="SUGGESTED_DOMAIN" />. A volte i malintenzionati imitano i siti usando URL simili.</translation>
 <translation id="3270847123878663523">&amp;Annulla ridisposizione</translation>
@@ -501,6 +502,7 @@
 <translation id="3369192424181595722">Errore dell'orologio</translation>
 <translation id="337363190475750230">Deprovisioning effettuato</translation>
 <translation id="3377188786107721145">Errore di analisi del criterio</translation>
+<translation id="3377736046129930310">Usa il blocco schermo per verificare più velocemente le carte</translation>
 <translation id="3380365263193509176">Errore sconosciuto</translation>
 <translation id="3380864720620200369">ID client:</translation>
 <translation id="3387261909427947069">Metodi di pagamento</translation>
@@ -514,7 +516,6 @@
 <translation id="342781501876943858">Chromium ti consiglia di reimpostare la password, se l'hai utilizzata su altri siti.</translation>
 <translation id="3428151540071562330">Uno o più URI del modello server DnsOverHttpsTemplates non sono validi e non verranno utilizzati.</translation>
 <translation id="3431636764301398940">Salva la carta per questo dispositivo</translation>
-<translation id="3438790640050632698">Hai appena inserito la tua password su un sito ingannevole. Chrome ti consiglia di visitare i siti <ph name="WEBSITE_1" /> e <ph name="WEBSITE_2" /> e modificare subito la tua password.</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Il proprietario del dispositivo ha disattivato il gioco dei dinosauri.</translation>
 <translation id="3447884698081792621">Mostra certificato (rilasciato da <ph name="ISSUER" />)</translation>
@@ -529,7 +530,6 @@
 <translation id="3495081129428749620">Trova nella pagina
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Questo criterio viene ignorato perché un altro criterio dello stesso gruppo ha una priorità più elevata.</translation>
-<translation id="3525469219100414032">Hai appena inserito la tua password su un sito ingannevole. Chrome ti consiglia di visitare il sito <ph name="WEBSITE_1" /> e modificare subito la tua password.</translation>
 <translation id="3528171143076753409">Il certificato del server non è affidabile.</translation>
 <translation id="3528485271872257980">Marrone scuro</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Almeno 1 elemento sui dispositivi sincronizzati}=1{1 elemento (e altri sui dispositivi sincronizzati)}other{# elementi (e altri sui dispositivi sincronizzati)}}</translation>
@@ -668,6 +668,7 @@
 <translation id="4194250254487269611">Al momento non è possibile salvare la carta</translation>
 <translation id="4196861286325780578">&amp;Ripeti spostamento</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Controllare le configurazioni del firewall e antivirus<ph name="END_LINK" /></translation>
+<translation id="4214357935346142455">profilo della schermata di accesso</translation>
 <translation id="4215751373031079683">7x9 (Envelope)</translation>
 <translation id="4220128509585149162">Arresti anomali</translation>
 <translation id="422022731706691852">Gli utenti malintenzionati presenti sul sito <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> potrebbero cercare di indurti con l'inganno a installare programmi che danneggiano la tua esperienza di navigazione (ad esempio cambiando la tua pagina iniziale o mostrando annunci extra sui siti che visiti). <ph name="BEGIN_LEARN_MORE_LINK" />Ulteriori informazioni<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -750,6 +751,7 @@
 <translation id="4515275063822566619">Carte di credito e indirizzi provengono da Chrome e dall'Account Google (<ph name="ACCOUNT_EMAIL" />). Puoi gestirli in <ph name="BEGIN_LINK" />Impostazioni<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (Envelope)</translation>
 <translation id="4522570452068850558">Dettagli</translation>
+<translation id="4524138615196389145">Verifica più velocemente le tue carte usando WebAuthn d'ora in poi</translation>
 <translation id="4524805452350978254">Gestisci le carte</translation>
 <translation id="455113658016510503">A9</translation>
 <translation id="4552089082226364758">Flash</translation>
@@ -861,6 +863,7 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(a 64 bit)</translation>
+<translation id="5121469660360593280">Consente di condividere con l'amministratore i dati relativi agli eventi di sicurezza segnalati da Chrome Enterprise User Protect. Tali dati potrebbero includere URL delle pagine visitate, metadati o nomi dei file e il nome utente che usi per accedere al tuo dispositivo e a Chrome.</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Verifica la carta</translation>
 <translation id="5135404736266831032">Gestisci indirizzi…</translation>
@@ -872,6 +875,7 @@
 <translation id="5159010409087891077">Apri la pagina in un'altra finestra di navigazione in incognito (⇧⌘N)</translation>
 <translation id="516920405563544094">Inserisci il codice CVC della carta <ph name="CREDIT_CARD" />. Dopo essere stati confermati, i dati della carta del tuo Account Google saranno condivisi con questo sito.</translation>
 <translation id="5169827969064885044">Potresti perdere l'accesso all'account della tua organizzazione o subire un furto d'identità. Chrome ti consiglia di cambiare subito la password.</translation>
+<translation id="5170017743895942767">Chrome Enterprise User Protect</translation>
 <translation id="5171045022955879922">Cerca o digita un URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Computer</translation>
@@ -958,7 +962,6 @@
 <translation id="5565735124758917034">Attivo</translation>
 <translation id="5570825185877910964">Proteggi account</translation>
 <translation id="5571083550517324815">Impossibile ritirare dall'indirizzo specificato. Seleziona un indirizzo diverso.</translation>
-<translation id="5572009199897554128">Hai appena inserito la tua password su un sito ingannevole. Chromium ti consiglia di visitare i siti <ph name="WEBSITE_1" /> e <ph name="WEBSITE_2" /> e modificare subito la tua password.</translation>
 <translation id="5580958916614886209">Controlla il mese di scadenza e riprova</translation>
 <translation id="5586446728396275693">Nessun indirizzo salvato</translation>
 <translation id="5595485650161345191">Modifica indirizzo</translation>
@@ -993,6 +996,7 @@
 <translation id="5730040223043577876">Chrome ti consiglia di reimpostare la password, se l'hai utilizzata su altri siti.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Salva la carta nel tuo Account Google}other{Salva carte nel tuo Account Google}}</translation>
 <translation id="5763042198335101085">Inserisci un indirizzo email valido</translation>
+<translation id="5763703224595565476">L'amministratore ha attivato Chrome Enterprise User Protect sul tuo browser. Chrome Enterprise User Protect ha accesso ad alcuni tuoi dati.</translation>
 <translation id="5765072501007116331">Seleziona un indirizzo per conoscere i requisiti e i metodi di consegna</translation>
 <translation id="5778550464785688721">Controllo completo di dispositivi MIDI</translation>
 <translation id="5781136890105823427">Esperimento attivato</translation>
@@ -1072,6 +1076,7 @@
 <translation id="6094273045989040137">Consente di inserire l'annotazione</translation>
 <translation id="6104072995492677441">JIS B6</translation>
 <translation id="610911394827799129">Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione all'indirizzo <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
+<translation id="6120179357481664955">Ricordi il tuo ID UPI?</translation>
 <translation id="6132597952260690497">Informazioni su estensioni e plug-in installati</translation>
 <translation id="6146055958333702838">Controlla eventuali cavi e riavvia eventuali router, modem o altri dispositivi di rete in uso.</translation>
 <translation id="614940544461990577">Prova a:</translation>
@@ -1086,6 +1091,7 @@
 <translation id="6221345481584921695">La funzione Navigazione sicura di Google ha <ph name="BEGIN_LINK" />rilevato malware<ph name="END_LINK" /> di recente sul sito <ph name="SITE" />. I siti web che in genere sono sicuri a volte vengono infettati da malware. I contenuti dannosi provengono da <ph name="SUBRESOURCE_HOST" />, un noto distributore di malware.</translation>
 <translation id="6234122620015464377">Taglia le pagine dopo la stampa di ciascun documento</translation>
 <translation id="6240447795304464094">Logo Google Pay</translation>
+<translation id="6241121617266208201">Nascondi suggerimenti</translation>
 <translation id="6251924700383757765">Norme sulla privacy</translation>
 <translation id="6254436959401408446">Impossibile aprire la pagina. Memoria insufficiente.</translation>
 <translation id="625755898061068298">Hai scelto di disattivare gli avvisi di sicurezza per questo sito.</translation>
@@ -1132,6 +1138,7 @@
 <translation id="6409754798200046165">Hai appena inserito la tua password su un sito ingannevole. Chrome consiglia di cambiare subito la password.</translation>
 <translation id="6410264514553301377">Inserisci la data di scadenza e il codice CVC della carta <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium può aiutarti a proteggere il tuo Account Google e a modificare la password.</translation>
+<translation id="6423385022588644828">Verifica più velocemente le tue carte usando Touch ID d'ora in poi</translation>
 <translation id="6427730057873428458">Piegatura a finestra</translation>
 <translation id="6433490469411711332">Modifica informazioni di contatto</translation>
 <translation id="6433595998831338502">Connessione negata da <ph name="HOST_NAME" />.</translation>
@@ -1202,12 +1209,14 @@
 <translation id="6786747875388722282">Estensioni</translation>
 <translation id="6790428901817661496">Play</translation>
 <translation id="679355240208270552">Ignorato perché la ricerca predefinita non è attiva secondo la norma.</translation>
+<translation id="6794951432696553238">Verifica più velocemente le tue carte usando Windows Hello d'ora in poi</translation>
 <translation id="681021252041861472">Campo obbligatorio</translation>
 <translation id="6810899417690483278">ID personalizzazione</translation>
 <translation id="6825578344716086703">Hai tentato di accedere al sito <ph name="DOMAIN" />, ma il server ha presentato un certificato firmato utilizzando un algoritmo di firma debole (ad esempio SHA-1). Ciò significa che le credenziali di sicurezza presentate dal server potrebbero essere state falsificate e il server potrebbe non essere quello previsto (è possibile che tu stia comunicando con un malintenzionato).</translation>
 <translation id="6826370046007623921">Prevenzione della perdita dei dati</translation>
 <translation id="6831043979455480757">Traduci</translation>
 <translation id="6839929833149231406">Area</translation>
+<translation id="6846340164947227603">Usa un numero di carta virtuale…</translation>
 <translation id="6852204201400771460">Ricaricare l'app?</translation>
 <translation id="6865412394715372076">Al momento non è possibile verificare questa carta.</translation>
 <translation id="6868206169573555318">Riavvia per aggiornare</translation>
@@ -1236,6 +1245,7 @@
 <translation id="6989763994942163495">Mostra impostazioni avanzate...</translation>
 <translation id="6993898126790112050">6x9 (Envelope)</translation>
 <translation id="6996312675313362352">Traduci sempre questa lingua: <ph name="ORIGINAL_LANGUAGE" /></translation>
+<translation id="7004583254764674281">Usa Windows Hello per verificare più velocemente le carte</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">L'addebito potrebbe essere singolo oppure ricorrente e potrebbe non essere evidente.</translation>
 <translation id="7029809446516969842">Password</translation>
@@ -1246,6 +1256,7 @@
 <translation id="7064851114919012435">Informazioni di contatto</translation>
 <translation id="7075452647191940183">La richiesta è troppo grande</translation>
 <translation id="7079718277001814089">Questo sito contiene malware</translation>
+<translation id="7081308185095828845">Questa funzionalità non è disponibile sul tuo dispositivo</translation>
 <translation id="7087282848513945231">Contea</translation>
 <translation id="7090678807593890770">Cerca <ph name="LINK" /> con Google</translation>
 <translation id="7108338896283013870">Nascondi</translation>
@@ -1299,9 +1310,11 @@ Ulteriori dettagli:
 <translation id="733923710415886693">Il certificato del server non è stato reso pubblico tramite Certificate Transparency.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Con affiliazione:</translation>
+<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> ha attivato Chrome Enterprise User Protect sul tuo browser. Chrome Enterprise User Protect ha accesso ad alcuni tuoi dati.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Riga di comando</translation>
 <translation id="7372973238305370288">risultato della ricerca</translation>
+<translation id="7374733840632556089">Questo problema si verifica a causa di un certificato installato sul dispositivo da te o da un'altra persona. È noto che il certificato viene usato per monitorare e intercettare le reti e non è considerato attendibile da Chrome. Esistono alcuni casi leciti per il monitoraggio, ad esempio su una rete scolastica o aziendale, ma Chrome vuole assicurarsi che tu sappia che viene effettuato, anche se non puoi interromperlo. Il monitoraggio potrebbe essere effettuato in qualsiasi browser o applicazione che accede al Web.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Controlli multimediali</translation>
 <translation id="7378627244592794276">No</translation>
@@ -1330,6 +1343,7 @@ Ulteriori dettagli:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Leggere ulteriori informazioni<ph name="END_LINK" /> sul problema.</translation>
 <translation id="7455133967321480974">Usa predefinita globale (Blocca)</translation>
 <translation id="7460618730930299168">I contenuti mostrati sono diversi da quelli che hai selezionato. Continuare?</translation>
+<translation id="7464821087936825778">Uscita dalla modalità di ricerca</translation>
 <translation id="7473891865547856676">No grazie</translation>
 <translation id="7481312909269577407">Avanti</translation>
 <translation id="7485870689360869515">Nessun dato trovato.</translation>
@@ -1551,6 +1565,7 @@ Ulteriori dettagli:
 <translation id="8559762987265718583">Impossibile stabilire una connessione privata con il sito <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> perché data e ora del dispositivo (<ph name="DATE_AND_TIME" />) sono sbagliate.</translation>
 <translation id="8564985650692024650">Chromium ti consiglia di reimpostare la password di <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />, se l'hai utilizzata su altri siti.</translation>
 <translation id="8571890674111243710">Traduzione della pagina in <ph name="LANGUAGE" /> in corso...</translation>
+<translation id="8574899947864779331">Usa Touch ID per verificare più velocemente le carte</translation>
 <translation id="858637041960032120">Aggiungi telefono</translation>
 <translation id="860043288473659153">Nome del titolare della carta</translation>
 <translation id="8616822740383114808">Questa impostazione è stata applicata da "<ph name="ENFORCING_SETTING" />" in "<ph name="SETTINGS_PAGE" />"</translation>
@@ -1672,7 +1687,6 @@ Ulteriori dettagli:
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">Potresti non riuscire più ad accedere al tuo Account Google. Chromium consiglia di cambiare subito la password. Ti verrà chiesto di eseguire l'accesso.</translation>
 <translation id="939736085109172342">Nuova cartella</translation>
-<translation id="940786960229275114">Hai appena inserito la tua password su un sito ingannevole. Chrome ti consiglia di visitare i siti <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e <ph name="WEBSITE_3" /> e modificare subito la tua password.</translation>
 <translation id="945855313015696284">Controlla le informazioni riportate di seguito ed elimina le schede non valide</translation>
 <translation id="950736567201356821">Tripla perforatura in alto</translation>
 <translation id="951104842009476243">Carte di debito e prepagate accettate</translation>

@@ -3,11 +3,14 @@
 // found in the LICENSE file.
 
 var onMessageReply = function(message) {
+  var menuId = 'my_id';
   var enabled = (message == 'start enabled');
-  var id = chrome.contextMenus.create({'title': 'Extension Item 1',
-                                       'enabled': enabled}, function() {
+  chrome.contextMenus.create({title: 'Extension Item 1',
+                              id: menuId,
+                              enabled: enabled}, function() {
     chrome.test.sendMessage('create', function(message) {
-      chrome.contextMenus.update(id, {'enabled': !enabled}, function() {
+      chrome.test.assertEq('go', message);
+      chrome.contextMenus.update(menuId, {'enabled': !enabled}, function() {
         chrome.test.sendMessage('update');
       });
     });

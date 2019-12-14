@@ -221,7 +221,7 @@ void Shelf::CreateShelfWidget(aura::Window* root) {
   // constructors call back into Shelf::shelf_widget().
   DCHECK(!shelf_widget_->status_area_widget());
   aura::Window* status_container =
-      root->GetChildById(kShellWindowId_StatusContainer);
+      root->GetChildById(kShellWindowId_ShelfControlContainer);
   shelf_widget_->CreateStatusAreaWidget(status_container);
   shelf_widget_->Initialize(shelf_container);
 

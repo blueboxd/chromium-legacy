@@ -1125,6 +1125,7 @@ void AppListView::SetChildViewsForStateTransition(
     // Reset the search box to be shown again. This is done after the animation
     // is complete normally, but there is no animation when |is_side_shelf_|.
     search_box_view_->ClearSearchAndDeactivateSearchBox();
+    SelectInitialAppsPage();
   }
 }
 
@@ -1855,15 +1856,14 @@ void AppListView::SetIsInDrag(bool is_in_drag) {
 void AppListView::OnHomeLauncherGainingFocusWithoutAnimation() {
   if (GetFocusManager()->GetFocusedView() != GetInitiallyFocusedView())
     GetInitiallyFocusedView()->RequestFocus();
+}
 
+void AppListView::SelectInitialAppsPage() {
   if (GetAppsPaginationModel()->total_pages() > 0 &&
       GetAppsPaginationModel()->selected_page() != 0) {
     GetAppsPaginationModel()->SelectPage(0, false /* animate */);
   }
-
-  app_list_main_view_->contents_view()->ResetForShow();
 }
-
 int AppListView::GetScreenBottom() const {
   return GetDisplayNearestView().bounds().bottom();
 }

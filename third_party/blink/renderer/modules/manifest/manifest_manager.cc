@@ -81,6 +81,9 @@ void ManifestManager::RequestManifestDebugInfo(
          const mojom::blink::ManifestPtr& manifest,
          const mojom::blink::ManifestDebugInfo* debug_info) {
         std::move(callback).Run(manifest_url,
+                                manifest.is_null()
+                                    ? mojom::blink::Manifest::New()
+                                    : manifest->Clone(),
                                 debug_info ? debug_info->Clone() : nullptr);
       },
       std::move(callback)));

@@ -12,6 +12,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
+
 // On device head suggest feature uses an on device model which encodes some
 // top queries into a radix tree (https://en.wikipedia.org/wiki/Radix_tree), to
 // help users quickly get head suggestions when they are under poor network
@@ -66,36 +68,18 @@
 // The size of score and address will be given in the first two bytes of the
 // model file.
 
+// TODO(crbug.com/925072): make some cleanups after converting this class into
+// a static class, e.g. move private class functions into anonymous namespace.
 class OnDeviceHeadModel {
  public:
-  // Creates and returns an on device head model instance.
-  static std::unique_ptr<OnDeviceHeadModel> Create(
-      const std::string& model_filename,
-      int max_num_matches_to_return);
-
-  void set_max_num_matches_to_return(uint32_t max_num_matches_to_return) {
-    max_num_matches_to_return_ = max_num_matches_to_return;
-  }
-
-  uint32_t max_num_matches_to_return() const {
-    return max_num_matches_to_return_;
-  }
-
-  uint32_t num_bytes_of_score() const { return score_size_; }
-
-  uint32_t num_bytes_of_address() const { return address_size_; }
-
   // Gets top "max_num_matches_to_return" suggestions and their scores which
   // matches given prefix.
-  std::vector<std::pair<std::string, uint32_t>> GetSuggestionsForPrefix(
+  static std::vector<std::pair<std::string, uint32_t>> GetSuggestionsForPrefix(
+      const std::string& model_filename,
+      const uint32_t max_num_matches_to_return,
       const std::string& prefix);
 
-  ~OnDeviceHeadModel();
-
  private:
-  OnDeviceHeadModel(const std::string& model_filename,
-                    uint32_t max_num_matches_to_return);
-
   // A useful data structure to keep track of the tree nodes should be and have
   // been visited during tree traversal.
   struct MatchCandidate {
@@ -126,59 +110,92 @@ class OnDeviceHeadModel {
   // small, using linked list shall be okay.
   using CandidateQueue = std::list<MatchCandidate>;
 
-  void InsertCandidateToQueue(const MatchCandidate& candidate,
-                              CandidateQueue* leaf_queue,
-                              CandidateQueue* non_leaf_queue);
+  // A mini class holds all parameters needed to access the model on disk.
+  class OnDeviceModelParams {
+   public:
+    static std::unique_ptr<OnDeviceModelParams> Create(
+        const std::string& model_filename,
+        const uint32_t max_num_matches_to_return);
 
-  uint32_t GetMinScoreFromQueues(const CandidateQueue& queue_1,
-                                 const CandidateQueue& queue_2);
+    std::ifstream* GetModelFileStream() { return &model_filestream_; }
+    uint32_t score_size() const { return score_size_; }
+    uint32_t address_size() const { return address_size_; }
+    uint32_t max_num_matches_to_return() const {
+      return max_num_matches_to_return_;
+    }
+
+    ~OnDeviceModelParams();
+
+   private:
+    OnDeviceModelParams();
+
+    std::ifstream model_filestream_;
+    uint32_t score_size_;
+    uint32_t address_size_;
+    uint32_t max_num_matches_to_return_;
+
+    DISALLOW_COPY_AND_ASSIGN(OnDeviceModelParams);
+  };
+
+  static void InsertCandidateToQueue(const MatchCandidate& candidate,
+                                     CandidateQueue* leaf_queue,
+                                     CandidateQueue* non_leaf_queue);
+
+  static uint32_t GetMinScoreFromQueues(OnDeviceModelParams* params,
+                                        const CandidateQueue& queue_1,
+                                        const CandidateQueue& queue_2);
 
   // Finds start node which matches given prefix, returns true if found and
   // the start node using param match_candidate.
-  bool FindStartNode(const std::string& prefix,
-                     MatchCandidate* match_candidate);
+  static bool FindStartNode(OnDeviceModelParams* params,
+                            const std::string& prefix,
+                            MatchCandidate* match_candidate);
 
   // Reads tree node from given match candidate, convert all possible
   // suggestions and children of this node into structure MatchCandidate.
-  std::vector<MatchCandidate> ReadTreeNode(const MatchCandidate& current);
+  static std::vector<MatchCandidate> ReadTreeNode(
+      OnDeviceModelParams* params,
+      const MatchCandidate& current);
 
   // Reads block max_score_as_root at the beginning of the node from the given
   // address. If there is a leaf score at the end of the block, return the leaf
   // score using param leaf_candidate;
-  uint32_t ReadMaxScoreAsRoot(uint32_t address,
-                              MatchCandidate* leaf_candidate,
-                              bool* is_successful);
+  static uint32_t ReadMaxScoreAsRoot(OnDeviceModelParams* params,
+                                     uint32_t address,
+                                     MatchCandidate* leaf_candidate,
+                                     bool* is_successful);
 
   // Reads a child block and move ifstream cursor to next child; returns false
   // when reaching the end of the node or ifstream read error happens.
-  bool ReadNextChild(MatchCandidate* candidate);
+  static bool ReadNextChild(OnDeviceModelParams* params,
+                            MatchCandidate* candidate);
 
   // Performs a search starting from the address specified by start_match and
   // returns max_num_matches_to_return_ number of complete suggestions with
   // highest scores.
-  std::vector<std::pair<std::string, uint32_t>> DoSearch(
+  static std::vector<std::pair<std::string, uint32_t>> DoSearch(
+      OnDeviceModelParams* params,
       const MatchCandidate& start_match);
 
   // Reads next num_bytes from the file stream.
-  bool ReadNextNumBytes(uint32_t num_bytes, char* buf);
-  uint32_t ReadNextNumBytesAsInt(uint32_t num_bytes, bool* is_successful);
+  static bool ReadNextNumBytes(OnDeviceModelParams* params,
+                               uint32_t num_bytes,
+                               char* buf);
+  static uint32_t ReadNextNumBytesAsInt(OnDeviceModelParams* params,
+                                        uint32_t num_bytes,
+                                        bool* is_successful);
 
   // Checks if size of score and size of address read from the model file are
   // valid.
   // For score, we use size of 2 bytes (15 bits), 3 bytes (23 bits) or 4 bytes
   // (31 bits); For address, we use size of 3 bytes (23 bits) or 4 bytes
   // (31 bits).
-  bool AreSizesValid();
+  static bool AreSizesValid(OnDeviceModelParams* params);
 
-  bool OpenModelFileStream(const uint32_t start_address);
-  void MaybeCloseModelFileStream();
-
-  std::string model_filename_;
-  std::ifstream model_filestream_;
-
-  uint32_t score_size_;
-  uint32_t address_size_;
-  uint32_t max_num_matches_to_return_;
+  static bool OpenModelFileStream(OnDeviceModelParams* params,
+                                  const std::string& model_filename,
+                                  const uint32_t start_address);
+  static void MaybeCloseModelFileStream(OnDeviceModelParams* params);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_ON_DEVICE_HEAD_MODEL_H_

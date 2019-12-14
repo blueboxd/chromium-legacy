@@ -62,7 +62,7 @@ class BluetoothLowEnergyCentralManagerBridge {
           (device::BluetoothLowEnergyDiscoveryManagerMac*)discovery_manager
                     andAdapter:(device::BluetoothAdapterMac*)adapter {
   if ((self = [super init])) {
-    bridge_.reset(new device::BluetoothLowEnergyCentralManagerBridge(
+    _bridge.reset(new device::BluetoothLowEnergyCentralManagerBridge(
         discovery_manager, adapter));
   }
   return self;
@@ -73,29 +73,29 @@ class BluetoothLowEnergyCentralManagerBridge {
      advertisementData:(NSDictionary*)advertisementData
                   RSSI:(NSNumber*)RSSI {
   // Notifies the discovery of a device.
-  bridge_->DiscoveredPeripheral(peripheral, advertisementData, [RSSI intValue]);
+  _bridge->DiscoveredPeripheral(peripheral, advertisementData, [RSSI intValue]);
 }
 
 - (void)centralManagerDidUpdateState:(CBCentralManager*)central {
   // Notifies when the powered state of the central manager changed.
-  bridge_->UpdatedState();
+  _bridge->UpdatedState();
 }
 
 - (void)centralManager:(CBCentralManager*)central
     didConnectPeripheral:(CBPeripheral*)peripheral {
-  bridge_->DidConnectPeripheral(peripheral);
+  _bridge->DidConnectPeripheral(peripheral);
 }
 
 - (void)centralManager:(CBCentralManager*)central
     didFailToConnectPeripheral:(CBPeripheral*)peripheral
                          error:(nullable NSError*)error {
-  bridge_->DidFailToConnectPeripheral(peripheral, error);
+  _bridge->DidFailToConnectPeripheral(peripheral, error);
 }
 
 - (void)centralManager:(CBCentralManager*)central
     didDisconnectPeripheral:(CBPeripheral*)peripheral
                       error:(nullable NSError*)error {
-  bridge_->DidDisconnectPeripheral(peripheral, error);
+  _bridge->DidDisconnectPeripheral(peripheral, error);
 }
 
 @end

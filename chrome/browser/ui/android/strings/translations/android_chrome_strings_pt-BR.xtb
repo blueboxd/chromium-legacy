@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Fazer o download do arquivo novamente?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# arquivo de áudio}one{# arquivo de áudio}other{# arquivos de áudio}}</translation>
 <translation id="2653659639078652383">Enviar</translation>
-<translation id="2669093958999339774">Impedir que prompts de notificação interrompam você e usar uma forma de mensagem mais silenciosa</translation>
 <translation id="2677748264148917807">Sair</translation>
 <translation id="2704606927547763573">Copiado</translation>
 <translation id="2707726405694321444">Atualizar página</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Adicionado aos favoritos no <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Sincronização em segundo plano</translation>
 <translation id="3749259744154402564">Incompatível</translation>
-<translation id="3767376082821709728">Os sites que você visita pela primeira vez não podem enviar notificações</translation>
 <translation id="3771001275138982843">Não foi possível fazer o download da atualização</translation>
 <translation id="3771033907050503522">Guias anônimas</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Ativar o Bluetooth<ph name="END_LINK" /> para permitir o pareamento</translation>
@@ -958,7 +956,6 @@ O site NÃO terá acesso à câmera. As imagens da câmera são visíveis apenas
 <translation id="8035133914807600019">Nova pasta...</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dias restantes</translation>
 <translation id="804335162455518893">Cartão SD não encontrado</translation>
-<translation id="8046278916126163020">Os sites que você visita pela primeira vez podem pedir para enviar notificações</translation>
 <translation id="805047784848435650">Com base no seu histórico de navegação</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB disponíveis</translation>
 <translation id="8058746566562539958">Abrir em nova guia do Chrome</translation>

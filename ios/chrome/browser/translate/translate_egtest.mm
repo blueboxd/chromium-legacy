@@ -426,10 +426,10 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 // Tests for translate.
 @interface TranslateTestCase : ChromeTestCase {
   std::unique_ptr<FakeLanguageDetectionTabHelperObserver>
-      language_detection_tab_helper_observer_;
+      _language_detection_tab_helper_observer;
   std::unique_ptr<net::NetworkChangeNotifier::DisableForTest>
-      network_change_notifier_disabler_;
-  std::unique_ptr<FakeNetworkChangeNotifier> network_change_notifier_;
+      _network_change_notifier_disabler;
+  std::unique_ptr<FakeNetworkChangeNotifier> _network_change_notifier;
 }
 @end
 
@@ -441,7 +441,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Allow offering translate in builds without an API key.
   translate::TranslateManager::SetIgnoreMissingKeyForTesting(true);
 
-  language_detection_tab_helper_observer_ =
+  _language_detection_tab_helper_observer =
       std::make_unique<FakeLanguageDetectionTabHelperObserver>(
           chrome_test_util::GetCurrentWebState());
 
@@ -455,14 +455,14 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
   // Disable the net::NetworkChangeNotifier singleton and replace it with a
   // FakeNetworkChangeNotifier to simulate a WIFI network connection.
-  network_change_notifier_disabler_ =
+  _network_change_notifier_disabler =
       std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
-  network_change_notifier_ = std::make_unique<FakeNetworkChangeNotifier>(
+  _network_change_notifier = std::make_unique<FakeNetworkChangeNotifier>(
       net::NetworkChangeNotifier::CONNECTION_WIFI);
 }
 
 - (void)tearDown {
-  language_detection_tab_helper_observer_.reset();
+  _language_detection_tab_helper_observer.reset();
 
   // Reset translate prefs to default.
   std::unique_ptr<translate::TranslatePrefs> translatePrefs(
@@ -553,7 +553,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
   // Check that no language has been detected.
   GREYAssert(
-      !language_detection_tab_helper_observer_->GetLanguageDetectionDetails(),
+      !_language_detection_tab_helper_observer->GetLanguageDetectionDetails(),
       @"A language has been detected");
 
   // Load some french page with |value="notranslate"| meta tag.
@@ -561,7 +561,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
   // Check that no language has been detected.
   GREYAssert(
-      !language_detection_tab_helper_observer_->GetLanguageDetectionDetails(),
+      !_language_detection_tab_helper_observer->GetLanguageDetectionDetails(),
       @"A language has been detected");
 }
 
@@ -732,7 +732,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   [ChromeEarlGrey loadURL:URL];
   // Check that no language has been detected.
   GREYAssert(
-      !language_detection_tab_helper_observer_->GetLanguageDetectionDetails(),
+      !_language_detection_tab_helper_observer->GetLanguageDetectionDetails(),
       @"A language has been detected");
 
   // Enable translate.
@@ -843,7 +843,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       base::StringPrintf("http://%s", kFrenchPagePath));
   // Stop observing the current IOSLanguageDetectionTabHelper before opening the
   // incognito tab.
-  language_detection_tab_helper_observer_.reset();
+  _language_detection_tab_helper_observer.reset();
   [ChromeEarlGrey openNewIncognitoTab];
   [ChromeEarlGrey loadURL:URL];
 
@@ -1718,7 +1718,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
   // Make sure no language has been detected.
   GREYAssert(
-      !language_detection_tab_helper_observer_->GetLanguageDetectionDetails(),
+      !_language_detection_tab_helper_observer->GetLanguageDetectionDetails(),
       @"A language has been detected");
 
   // Make sure the Translate manual trigger button is not enabled.
@@ -1738,7 +1738,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
   // Make sure no language has been detected.
   GREYAssert(
-      !language_detection_tab_helper_observer_->GetLanguageDetectionDetails(),
+      !_language_detection_tab_helper_observer->GetLanguageDetectionDetails(),
       @"A language has been detected");
 
   // Make sure the Translate manual trigger button is not enabled.
@@ -1811,12 +1811,12 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   GREYAssert(WaitUntilConditionOrTimeout(
                  kWaitForJSCompletionTimeout,
                  ^{
-                   return language_detection_tab_helper_observer_
+                   return _language_detection_tab_helper_observer
                               ->GetLanguageDetectionDetails() != nullptr;
                  }),
              @"Language not detected");
   translate::LanguageDetectionDetails* details =
-      language_detection_tab_helper_observer_->GetLanguageDetectionDetails();
+      _language_detection_tab_helper_observer->GetLanguageDetectionDetails();
 
   NSString* contentLanguageError =
       [NSString stringWithFormat:@"Wrong content-language: %s (expected %s)",
@@ -1839,7 +1839,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   GREYAssert(expectedDetails.adopted_language == details->adopted_language,
              adoptedLanguageError);
 
-  language_detection_tab_helper_observer_->ResetLanguageDetectionDetails();
+  _language_detection_tab_helper_observer->ResetLanguageDetectionDetails();
 }
 
 @end

@@ -15,7 +15,7 @@ cr.define('settings_privacy_page', function() {
   /** @implements {settings.ClearBrowsingDataBrowserProxy} */
   class TestClearBrowsingDataBrowserProxy extends TestBrowserProxy {
     constructor() {
-      super(['initialize', 'clearBrowsingData']);
+      super(['initialize', 'clearBrowsingData', 'getInstalledApps']);
 
       /**
        * The promise to return from |clearBrowsingData|.
@@ -24,6 +24,12 @@ cr.define('settings_privacy_page', function() {
        * @private {?Promise}
        */
       this.clearBrowsingDataPromise_ = null;
+
+      /**
+       * Response for |getInstalledApps|.
+       * @private {!Array<!InstalledApp>}
+       */
+      this.installedApps_ = [];
     }
 
     /** @param {!Promise} promise */
@@ -32,12 +38,24 @@ cr.define('settings_privacy_page', function() {
     }
 
     /** @override */
-    clearBrowsingData(dataTypes, timePeriod) {
-      this.methodCalled('clearBrowsingData', [dataTypes, timePeriod]);
+    clearBrowsingData(dataTypes, timePeriod, installedApps) {
+      this.methodCalled(
+          'clearBrowsingData', [dataTypes, timePeriod, installedApps]);
       cr.webUIListenerCallback('browsing-data-removing', true);
       return this.clearBrowsingDataPromise_ !== null ?
           this.clearBrowsingDataPromise_ :
           Promise.resolve();
+    }
+
+    /** @param {!Array<!InstalledApp>} apps */
+    setInstalledApps(apps) {
+      this.installedApps_ = apps;
+    }
+
+    /** @override */
+    getInstalledApps(timePeriod) {
+      this.methodCalled('getInstalledApps');
+      return Promise.resolve(this.installedApps_);
     }
 
     /** @override */
@@ -569,6 +587,7 @@ cr.define('settings_privacy_page', function() {
 
       test('ClearBrowsingDataTap', function() {
         assertTrue(element.$$('#clearBrowsingDataDialog').open);
+        assertFalse(element.$$('#installedAppsDialog').open);
 
         const cancelButton = element.$$('.cancel-button');
         assertTrue(!!cancelButton);
@@ -594,12 +613,14 @@ cr.define('settings_privacy_page', function() {
             .then(function(args) {
               const dataTypes = args[0];
               const timePeriod = args[1];
+              const installedApps = args[2];
               assertEquals(1, dataTypes.length);
               assertEquals('browser.clear_data.cookies_basic', dataTypes[0]);
               assertTrue(element.$$('#clearBrowsingDataDialog').open);
               assertTrue(cancelButton.disabled);
               assertTrue(actionButton.disabled);
               assertTrue(spinner.active);
+              assertTrue(installedApps.length == 0);
 
               // Simulate signal from browser indicating that clearing has
               // completed.
@@ -615,6 +636,9 @@ cr.define('settings_privacy_page', function() {
               assertFalse(actionButton.disabled);
               assertFalse(spinner.active);
               assertFalse(!!element.$$('#notice'));
+
+              // Check that the dialog didn't switch to installed apps.
+              assertFalse(element.$$('#installedAppsDialog').open);
             });
       });
 
@@ -889,10 +913,78 @@ cr.define('settings_privacy_page', function() {
     });
   }
 
+  function registerInstalledAppsTests() {
+    suite('InstalledApps', function() {
+      /** @type {settings.TestClearBrowsingDataBrowserProxy} */
+      let testBrowserProxy;
+
+      /** @type {SettingsClearBrowsingDataDialogElement} */
+      let element;
+
+      /** @type {Array<InstalledApp>} */
+      const installedApps = [
+        {registerableDomain: 'google.com', isChecked: true},
+        {registerableDomain: 'yahoo.com', isChecked: true},
+      ];
+
+      setup(() => {
+        loadTimeData.overrideValues({installedAppsInCbd: true});
+        testBrowserProxy = new TestClearBrowsingDataBrowserProxy();
+        testBrowserProxy.setInstalledApps(installedApps);
+        settings.ClearBrowsingDataBrowserProxyImpl.instance_ = testBrowserProxy;
+        PolymerTest.clearBody();
+        element = document.createElement('settings-clear-browsing-data-dialog');
+        element.set('prefs', getClearBrowsingDataPrefs());
+        document.body.appendChild(element);
+        return testBrowserProxy.whenCalled('initialize');
+      });
+
+      teardown(() => {
+        element.remove();
+      });
+
+      test('getInstalledApps', async function() {
+        assertTrue(element.$.clearBrowsingDataDialog.open);
+        assertFalse(element.$.installedAppsDialog.open);
+
+        // Select cookie checkbox.
+        element.$.cookiesCheckboxBasic.$.checkbox.click();
+        assertTrue(element.$.cookiesCheckboxBasic.checked);
+        // Clear browsing data.
+        element.$.clearBrowsingDataConfirm.click();
+        assertTrue(element.$.clearBrowsingDataDialog.open);
+
+        await testBrowserProxy.whenCalled('getInstalledApps');
+        await test_util.whenAttributeIs(
+            element.$.installedAppsDialog, 'open', '');
+        const firstInstalledApp = element.$$('installed-app-checkbox');
+        assertTrue(!!firstInstalledApp);
+        assertEquals(
+            'google.com', firstInstalledApp.installed_app.registerableDomain);
+        assertTrue(firstInstalledApp.installed_app.isChecked);
+        // Choose to keep storage for google.com.
+        firstInstalledApp.$.checkbox.click();
+        assertFalse(firstInstalledApp.installed_app.isChecked);
+        // Confirm deletion.
+        element.$.installedAppsConfirm.click();
+        const [dataTypes, timePeriod, apps] =
+            await testBrowserProxy.whenCalled('clearBrowsingData');
+        assertEquals(1, dataTypes.length);
+        assertEquals('browser.clear_data.cookies_basic', dataTypes[0]);
+        assertEquals(2, apps.length);
+        assertEquals('google.com', apps[0].registerableDomain);
+        assertFalse(apps[0].isChecked);
+        assertEquals('yahoo.com', apps[1].registerableDomain);
+        assertTrue(apps[1].isChecked);
+      });
+    });
+  }
+
   return {
     registerNativeCertificateManagerTests,
     registerClearBrowsingDataTestsDesktop,
     registerClearBrowsingDataTests,
+    registerInstalledAppsTests,
     registerPrivacyPageTests,
     registerPrivacyPageSoundTests,
     registerPrivacySettingsRedesignTests,

@@ -499,33 +499,6 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
 }
 
-// Shows the enrollment screen and mocks the enrollment helper to show license
-// selection step. Selects an option with non-zero license count, and uses that
-// license for enrollment.
-IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest, TestLicenseSelection) {
-  ShowEnrollmentScreen();
-  enrollment_helper_.ExpectEnrollmentMode(
-      policy::EnrollmentConfig::MODE_MANUAL);
-
-  enrollment_helper_.DisableAttributePromptUpdate();
-  enrollment_helper_.ExpectAvailableLicenseCount(1 /* perpetual */,
-                                                 0 /* annual */, 3 /* kiosk */);
-  enrollment_helper_.ExpectSuccessfulEnrollmentWithLicense(
-      policy::LicenseType::KIOSK);
-
-  SubmitEnrollmentCredentials();
-
-  // Make sure the license selection screen is open.
-  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepLicenses);
-  // Click on Kiosk option.
-  enrollment_ui_.SelectEnrollmentLicense(test::values::kLicenseTypeKiosk);
-  // Click on second option. As there is 0 annual licenses, it should not be
-  // selected.
-  enrollment_ui_.SelectEnrollmentLicense(test::values::kLicenseTypeAnnual);
-  enrollment_ui_.UseSelectedLicense();
-  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
-}
-
 // Verifies that the storage partition is updated when the enrollment screen is
 // shown again.
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest, StoragePartitionUpdated) {

@@ -32,6 +32,8 @@ class SharingDeviceSource {
   // Returns all devices found.
   virtual std::vector<std::unique_ptr<syncer::DeviceInfo>> GetAllDevices() = 0;
 
+  // Adds a callback to be run when the SharingDeviceSource is ready. If a
+  // callback is added when it is already ready, it will be run immediately.
   void AddReadyCallback(base::OnceClosure callback);
 
  protected:

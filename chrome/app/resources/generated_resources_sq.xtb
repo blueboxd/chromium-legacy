@@ -1187,7 +1187,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2665919335226618153">Mos! Kishte një gabim gjatë formatimit.</translation>
 <translation id="2666990579225592931">Hap dritaren e vizitorit</translation>
 <translation id="2667463864537187133">Menaxho kontrollin ortografik</translation>
-<translation id="2669093958999339774">Blloko ndërprerjet e dritareve të njoftimeve dhe përdor një mesazh më të qetë në vend të saj</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> po ndan një skedë të Chrome.</translation>
 <translation id="2670429602441959756">Kjo faqe përmban funksione që nuk mbështeten ende në realitetin virtual. Po del...</translation>
 <translation id="2671451824761031126">Faqeshënuesit dhe cilësimet e tua janë gati</translation>
@@ -1961,7 +1960,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="37613671848467444">Hape në &amp;dritare "të fshehtë"</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Komuniko me një pajisje me USB}other{Komuniko me # pajisje me USB}}</translation>
 <translation id="3765246971671567135">Politika jashtë linje e modalitetit të demonstrimit nuk mund të lexohej.</translation>
-<translation id="3767376082821709728">Sajtet e reja që viziton nuk mund të të dërgojnë njoftime</translation>
 <translation id="3768037234834996183">Po sinkronizon preferencat e tua...</translation>
 <translation id="377050016711188788">Akullore</translation>
 <translation id="3771294271822695279">Skedarët video</translation>
@@ -3029,7 +3027,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5370819323174483825">&amp;Ringarko</translation>
 <translation id="5372529912055771682">Modaliteti i dhënë i regjistrimit nuk mbështetet nga ky version i sistemit operativ. Sigurohu që po përdor versionin më të fundit dhe provo sërish.</translation>
 <translation id="5372579129492968947">Zhgozhdo shtesën</translation>
-<translation id="5374359983950678924">Ndrysho fotografinë</translation>
 <translation id="5376169624176189338">Kliko për t'u kthyer prapa, mbaje të shtypur për të parë historikun</translation>
 <translation id="5376931455988532197">Skedari është tepër i madh</translation>
 <translation id="537813040452600081">Faqet që shikon në këtë dritare nuk do të shfaqen në historikun e shfletuesit dhe nuk do të lënë gjurmë të tjera në kompjuter, siç janë kukit, pasi del. Skedarët që shkarkon dhe faqeshënuesit që krijon nuk do të ruhen.</translation>
@@ -4902,7 +4899,6 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="8044899503464538266">I ngadaltë</translation>
 <translation id="8045253504249021590">Sinkronizimi është ndaluar nëpërmjet "Panelit të Google".</translation>
 <translation id="8045923671629973368">Fut ID-në e aplikacionit ose URL-në e dyqanit të uebit</translation>
-<translation id="8046278916126163020">Sajtet e reja që viziton mund të kërkojnë të të dërgojnë njoftime</translation>
 <translation id="804786196054284061">Marrëveshje Licence për Përdoruesin</translation>
 <translation id="8049705080247101012">Google e ka raportuar "<ph name="EXTENSION_NAME" />" si keqdashës dhe instalimi është penguar</translation>
 <translation id="8050038245906040378">Nënshkrimi tregtar i kodit nga Microsoft</translation>

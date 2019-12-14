@@ -1189,7 +1189,6 @@
 <translation id="2665919335226618153">ओहो! फॉरमॅटिंग करताना एरर आली.</translation>
 <translation id="2666990579225592931">अतिथी विंडो उघडा</translation>
 <translation id="2667463864537187133">स्पेल चेक व्यवस्थापित करा</translation>
-<translation id="2669093958999339774">तुम्हाला व्यत्यय आणणे थांबवण्यासाठी सूचना ब्लॉक करा आणि कमी आवाजाचा मेसेज वापरा</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> Chrome टॅब शेअर करीत आहे.</translation>
 <translation id="2670429602441959756">या पेजमध्ये अद्याप VR मध्ये समर्थित नसलेले वैशिष्ट्ये सामावलेली आहेत. बाहेर पडत आहे...</translation>
 <translation id="2671451824761031126">तुमचे बुकमार्क आणि सेटिंग्ज तयार आहेत</translation>
@@ -1963,7 +1962,6 @@
 <translation id="37613671848467444">&amp;गुप्त विंडोमध्ये उघडा</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{एका USB डिव्हाइससह संवाद प्रस्थापित करा}other{# USB डिव्हाइसेससह संवाद प्रस्थापित करा}}</translation>
 <translation id="3765246971671567135">ऑफलाइन डेमो मोड धोरण रीड करता आले नाही.</translation>
-<translation id="3767376082821709728">तुम्ही भेट देत असलेल्या नवीन साइट तुम्हाला सूचना पाठवू शकत नाहीत</translation>
 <translation id="3768037234834996183">तुमची प्राधान्ये संकालित करत आहे...</translation>
 <translation id="377050016711188788">आईस्क्रीम</translation>
 <translation id="3771294271822695279">व्हिडिओ फायली</translation>
@@ -3030,7 +3028,6 @@
 <translation id="5370819323174483825">&amp;रीलोड करा</translation>
 <translation id="5372529912055771682">प्रदान केलेला नोंदणी प्रकार ऑपरेटिंग सिस्टमच्या या आवृत्तीमध्‍येला सपोर्ट नाही. कृपया तुम्ही नवीनतम आवृत्ती चालवत असल्याची खात्री करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="5372579129492968947">एक्स्टेंशन अनपिन करा</translation>
-<translation id="5374359983950678924">चित्र बदला</translation>
 <translation id="5376169624176189338">परत जाण्यासाठी क्लिक करा, इतिहास पाहण्यासाठी होल्ड करा</translation>
 <translation id="5376931455988532197">फाईल खूप मोठी आहे</translation>
 <translation id="537813040452600081">या विंडोमध्ये तुम्ही पाहत असलेली पेज ब्राउझर इतिहासात दिसणार नाहीत आणि तुम्ही साइन आउट केल्यानंतर, कॉंप्युटरवर कुकीज सारखे, अन्य ट्रेस ते सोडणार नाहीत. तुम्ही डाउनलोड करता त्या फायली आणि तुम्ही तयार करता ते बुकमार्क संरक्षित केले जाणार नाहीत.</translation>
@@ -4904,7 +4901,6 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="8044899503464538266">धीमी</translation>
 <translation id="8045253504249021590">Google डॅशबोर्ड द्वारे संकालन थांबविले गेले आहे.</translation>
 <translation id="8045923671629973368">ॲप्लिकेशन आयडी किंवा वेबस्टोअर URL टाका</translation>
-<translation id="8046278916126163020">तुम्ही भेट दिलेल्या नवीन साइट तुम्हाला सूचना पाठवण्यास सांगू शकतात</translation>
 <translation id="804786196054284061">अंतिम वापरकर्ता परवाना करारनामा</translation>
 <translation id="8049705080247101012">Google ने "<ph name="EXTENSION_NAME" />" ला दुर्भावनापूर्ण म्हणून फ्लॅग केले आहे आणि इंस्टॉल करणे रोखले गेले आहे</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>

@@ -1675,7 +1675,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsElementNode() const =
       delete;  // This will catch anyone doing an unnecessary check.
 
-  ScriptedAnimationController& EnsureScriptedAnimationController();
   ScriptedIdleTaskController& EnsureScriptedIdleTaskController();
   void InitSecurityContext(const DocumentInit&,
                            const SecurityContextInit& security_initializer);

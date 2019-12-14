@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Vill du ladda ned filen igen?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ljudfil}other{# ljudfiler}}</translation>
 <translation id="2653659639078652383">Skicka</translation>
-<translation id="2669093958999339774">Blockera störande aviseringar och använd ett tystare meddelande i stället</translation>
 <translation id="2677748264148917807">Lämna</translation>
 <translation id="2704606927547763573">Kopierat</translation>
 <translation id="2707726405694321444">Uppdatera sidan</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Bokmärket har lagts till i <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Synkronisera i bakgrunden</translation>
 <translation id="3749259744154402564">Stöds inte</translation>
-<translation id="3767376082821709728">Nya webbplatser som du besöker kan inte skicka aviseringar till dig.</translation>
 <translation id="3771001275138982843">Det gick inte att ladda ned uppdateringen</translation>
 <translation id="3771033907050503522">Inkognitoflikar</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Aktivera Bluetooth<ph name="END_LINK" /> om du vill tillåta koppling</translation>
@@ -957,7 +955,6 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="8035133914807600019">Ny mapp …</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dagar kvar</translation>
 <translation id="804335162455518893">Det gick inte att hitta SD-kortet</translation>
-<translation id="8046278916126163020">Nya webbplatser som du besöker kan be dig om tillåtelse innan aviseringar skickas ut</translation>
 <translation id="805047784848435650">Utifrån din webbhistorik</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB tillgängliga</translation>
 <translation id="8058746566562539958">Öppna på ny flik i Chrome</translation>

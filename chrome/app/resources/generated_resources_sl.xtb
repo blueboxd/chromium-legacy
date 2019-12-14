@@ -1190,7 +1190,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2665919335226618153">Ti, šment! Napaka med formatiranjem.</translation>
 <translation id="2666990579225592931">Odpri okno načina za goste</translation>
 <translation id="2667463864537187133">Upravljanje preverjanja črkovanja</translation>
-<translation id="2669093958999339774">Preprečevanje, da bi vas motili pozivi za pošiljanje obvestil, in uporaba manj vsiljivega sporočila</translation>
 <translation id="2670102641511624474">Aplikacija <ph name="APP_NAME" /> je v skupno rabo dala Chromov zavihek.</translation>
 <translation id="2670429602441959756">Ta stran ima funkcije, ki jih navidezna resničnost še ne podpira. Zapiranje ...</translation>
 <translation id="2671451824761031126">Zaznamki in nastavitve so pripravljeni</translation>
@@ -1964,7 +1963,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="37613671848467444">Odpri v oknu &amp;brez beleženja zgodovine</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Komuniciranje z napravo USB}one{Komuniciranje z # napravo USB}two{Komuniciranje z # napravama USB}few{Komuniciranje z # napravami USB}other{Komuniciranje z # napravami USB}}</translation>
 <translation id="3765246971671567135">Pravilnika za predstavitveni način brez povezave ni bilo mogoče prebrati.</translation>
-<translation id="3767376082821709728">Nova spletna mesta, ki jih obiščete, vam ne morejo pošiljati obvestil</translation>
 <translation id="3768037234834996183">Sinhroniziranje nastavitev ...</translation>
 <translation id="377050016711188788">Sladoled</translation>
 <translation id="3771294271822695279">Videodatoteke</translation>
@@ -3032,7 +3030,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="5370819323174483825">&amp;Znova naloži</translation>
 <translation id="5372529912055771682">Ta različica operacijskega sistema ne podpira navedenega načina včlanitve. Poskrbite, da imate nameščeno najnovejšo različico, in poskusite znova.</translation>
 <translation id="5372579129492968947">Odpenjanje razširitve</translation>
-<translation id="5374359983950678924">Spremeni sliko</translation>
 <translation id="5376169624176189338">Kliknite, če se želite vrniti nazaj, za ogled zgodovine pa zadržite</translation>
 <translation id="5376931455988532197">Datoteka je prevelika</translation>
 <translation id="537813040452600081">Strani, ki si jih ogledujete v tem oknu, ne bodo prikazane v zgodovini brskalnika in po odjavi v računalniku ne bodo pustile drugih sledi, na primer piškotkov. Datoteke, ki jih prenesete, in zaznamki, ki jih ustvarite, se ne bodo ohranili.</translation>
@@ -4909,7 +4906,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8044899503464538266">Počasi</translation>
 <translation id="8045253504249021590">Sinhronizacija je bila ustavljena prek Google Nadzorne plošče.</translation>
 <translation id="8045923671629973368">Vnesite ID aplikacije ali URL spletne trgovine</translation>
-<translation id="8046278916126163020">Nova spletna mesta, ki jih obiščete, vas lahko vprašajo, ali želite, da vam pošiljajo obvestila</translation>
 <translation id="804786196054284061">Licenčna pogodba za končnega uporabnika</translation>
 <translation id="8049705080247101012">Google je z zastavico označil razširitev »<ph name="EXTENSION_NAME" />« kot zlonamerno in preprečil namestitev</translation>
 <translation id="8050038245906040378">Microsoftovo komercialno podpisovanje kode</translation>

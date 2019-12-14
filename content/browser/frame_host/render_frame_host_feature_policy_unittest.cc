@@ -76,8 +76,9 @@ class RenderFrameHostFeaturePolicyTest
       blink::mojom::FeaturePolicyFeature feature,
       const std::map<std::string, blink::PolicyValue>& values) {
     static_cast<TestRenderFrameHost*>(parent)->OnDidChangeFramePolicy(
-        child->GetRoutingID(),
-        {blink::WebSandboxFlags::kNone, CreateFPHeader(feature, values)});
+        child->GetRoutingID(), {blink::WebSandboxFlags::kNone,
+                                CreateFPHeader(feature, values),
+                                {} /* required_document_policy */});
   }
 
   void SimulateNavigation(RenderFrameHost** rfh, const GURL& url) {

@@ -13,6 +13,7 @@
 #include "components/viz/service/display/overlay_processor_win.h"
 #elif defined(OS_ANDROID)
 #include "components/viz/service/display/overlay_candidate_validator_strategy.h"
+#include "components/viz/service/display/overlay_processor_android.h"
 #include "components/viz/service/display/overlay_processor_using_strategy.h"
 #elif defined(USE_OZONE)
 #include "components/viz/service/display/overlay_processor_ozone.h"
@@ -106,7 +107,26 @@ OverlayProcessorInterface::CreateOverlayProcessor(
   return std::make_unique<OverlayProcessorOzone>(
       overlay_enabled, std::move(overlay_candidates),
       std::move(renderer_settings.overlay_strategies));
-#else  // defined(OS_ANDROID) || Default
+#elif defined(OS_ANDROID)
+  if (capabilities.supports_surfaceless) {
+    // This is for Android SurfaceControl case.
+    auto validator = OverlayCandidateValidatorStrategy::Create(
+        surface_handle, capabilities, renderer_settings);
+    return base::WrapUnique(new OverlayProcessorUsingStrategy(
+        skia_output_surface, std::move(validator)));
+  } else {
+    bool overlay_enabled = surface_handle != gpu::kNullSurfaceHandle;
+    // When SurfaceControl is enabled, any resource backed by an
+    // AHardwareBuffer can be marked as an overlay candidate but it requires
+    // that we use a SurfaceControl backed GLSurface. If we're creating a
+    // native window backed GLSurface, the overlay processing code will
+    // incorrectly assume these resources can be overlaid. So we disable all
+    // overlay processing for this OutputSurface.
+    overlay_enabled &= !capabilities.android_surface_control_feature_enabled;
+    return std::make_unique<OverlayProcessorAndroid>(skia_output_surface,
+                                                     overlay_enabled);
+  }
+#else  // Default
   // TODO(weiliangc): Add a stub class for the default case for platforms where
   // we could not overlay.
   auto validator = OverlayCandidateValidatorStrategy::Create(

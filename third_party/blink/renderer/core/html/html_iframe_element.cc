@@ -251,6 +251,11 @@ void HTMLIFrameElement::ParseAttribute(
     disallow_document_access_ = !value.IsNull();
     // We don't need to call tell the client frame properties
     // changed since this attribute only stays inside the renderer.
+  } else if (name == html_names::kPolicyAttr) {
+    if (required_policy_ != value) {
+      required_policy_ = value;
+      UpdateRequiredPolicy();
+    }
   } else {
     // Websites picked up a Chromium article that used this non-specified
     // attribute which ended up changing shape after the specification process.
@@ -275,6 +280,12 @@ void HTMLIFrameElement::ParseAttribute(
       LogUpdateAttributeIfIsolatedWorldAndInDocument("iframe", params);
     HTMLFrameElementBase::ParseAttribute(params);
   }
+}
+
+DocumentPolicy::FeatureState HTMLIFrameElement::ConstructRequiredPolicy()
+    const {
+  return DocumentPolicy::Parse(required_policy_.Ascii())
+      .value_or(DocumentPolicy::FeatureState{});
 }
 
 ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(

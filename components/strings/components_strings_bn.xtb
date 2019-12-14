@@ -8,7 +8,6 @@
 <translation id="1032854598605920125">ঘড়ির কাঁটার দিকে ঘোরান</translation>
 <translation id="1036348656032585052">বন্ধ করুন</translation>
 <translation id="1038842779957582377">অজানা নাম</translation>
-<translation id="1039626062703039346">পাসওয়ার্ড পরিবর্তন করে আপনার Google অ্যাকাউন্ট সুরক্ষিত রাখতে Chrome সাহায্য করতে পারবে। সাইটটি সম্পর্কে Google-কে বিজ্ঞপ্তি দেওয়া হবে।</translation>
 <translation id="1050038467049342496">অন্যান্য অ্যাপ্লিকেশানগুলি বন্ধ করুন</translation>
 <translation id="1055184225775184556">&amp;যোগ করাকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="1056898198331236512">সতর্কতা</translation>
@@ -300,7 +299,6 @@
 <translation id="2354001756790975382">অন্য বুকমার্ক</translation>
 <translation id="2354430244986887761">Google নিরাপদ ব্রাউজিং সম্প্রতি <ph name="SITE" /> এ <ph name="BEGIN_LINK" />ক্ষতিকারক অ্যাপ<ph name="END_LINK" /> খুঁজে পেয়েছে।</translation>
 <translation id="2355395290879513365">আপনি এই সাইটে যেসব ছবি দেখছেন, আক্রমণকারীরা সেগুলি দেখতে পেতে পারে এবং সেগুলি পরিবর্তন করে আপনাকে বোকা বানাতে পারে।</translation>
-<translation id="2355474962185559967">আপনি এখনই প্রতারণামূলক একটি সাইটে আপনার পাসওয়ার্ড লিখেছেন। Chromium <ph name="WEBSITE_1" />-এ গিয়ে এখনই পাসওয়ার্ড পরিবর্তন করার জন্য সাজেস্ট করছে।</translation>
 <translation id="2356070529366658676">জিজ্ঞাসা করুন</translation>
 <translation id="2359629602545592467">একাধিক</translation>
 <translation id="2359808026110333948">চালিয়ে যান</translation>
@@ -333,7 +331,6 @@
 <translation id="2495083838625180221">JSON বিশ্লেষক</translation>
 <translation id="2495093607237746763">টিক চিহ্ণ দেওয়া থাকলে, ফর্ম পূরণের কাজ দ্রুত করতে Chromium এই ডিভাইসে আপনার কার্ডের একটি কপি স্টোর করবে।</translation>
 <translation id="2498091847651709837">নতুন কার্ড স্ক্যান করুন</translation>
-<translation id="249825481377667906">আপনার পাসওয়ার্ড পরিবর্তন করে Google অ্যাকাউন্ট সুরক্ষিত রাখতে Chromium সাহায্য করতে পারবে। সাইটটি সম্পর্কে Google-কে বিজ্ঞপ্তি দেওয়া হবে।</translation>
 <translation id="2501278716633472235">ফিরে যান</translation>
 <translation id="2503184589641749290">ডেবিট ও প্রিপেড কার্ড গ্রহণ করা হয়</translation>
 <translation id="2505268675989099013">অ্যাকাউন্ট সুরক্ষিত রাখা</translation>
@@ -486,7 +483,6 @@
 <translation id="3228969707346345236">পৃষ্ঠাটি ইতিমধ্যে <ph name="LANGUAGE" />-এ থাকার কারণে অনুবাদ ব্যর্থ হয়েছে৷</translation>
 <translation id="3229041911291329567">আপনার ডিভাইস এবং ব্রাউজারের ভার্সন সম্বন্ধীয় তথ্য</translation>
 <translation id="323107829343500871"><ph name="CREDIT_CARD" />-এর CVC লিখুন</translation>
-<translation id="3234392465377209614">আপনি এখনই প্রতারণামূলক একটি সাইটে আপনার পাসওয়ার্ড লিখেছেন। Chromium <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> এবং <ph name="WEBSITE_3" />-এ গিয়ে এখনই পাসওয়ার্ড পরিবর্তন করার জন্য সাজেস্ট করছে।</translation>
 <translation id="3234666976984236645">এই সাইটে সবসময় গুরুত্বপূর্ণ কন্টেন্ট শনাক্ত করুন</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> ইউআরএলটি <ph name="SUGGESTED_DOMAIN" />-এর মতই মনে হচ্ছে। আক্রমণকারীরা কখনও কখনও একই রকম ইউআরএল বানিয়ে নকল করে।</translation>
 <translation id="3270847123878663523">&amp;পুনর্বিন্যাসকে পূর্বাবস্থায় ফেরান</translation>
@@ -518,7 +514,6 @@
 <translation id="342781501876943858">Chromium-এর নীতি অনুযায়ী আপনার পাসওয়ার্ড বদলে ফেলা উচিত যদি আপনি সেটি অন্য কোনও সাইটে ব্যবহার করে থাকেন।</translation>
 <translation id="3428151540071562330">DnsOverHttpsTemplates সার্ভারের এক বা একাধিক টেমপ্লেট ইউআরআই সঠিক নয় এবং ব্যবহার করা যাবে না।</translation>
 <translation id="3431636764301398940">এই ডিভাইসে এই কার্ডটি সেভ করুন</translation>
-<translation id="3438790640050632698">আপনি এখনই প্রতারণামূলক একটি সাইটে আপনার পাসওয়ার্ড লিখেছেন। Chrome <ph name="WEBSITE_1" /> এবং <ph name="WEBSITE_2" />-এ গিয়ে এখনই পাসওয়ার্ড পরিবর্তন করার জন্য সাজেস্ট করছে।</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">এই ডিভাইসের মালিক ডাইনোসর গেমটি বন্ধ করেছেন৷</translation>
 <translation id="3447884698081792621">সার্টিফিকেট দেখান (<ph name="ISSUER" /> এর দ্বারা জারি করা)</translation>
@@ -533,7 +528,6 @@
 <translation id="3495081129428749620">এই পৃষ্ঠাতে খুঁজুন
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">একই নীতির গ্রুপের অন্য একটি নীতি অগ্রাধিকার পেয়েছে, তাই এই নীতি অগ্রাহ্য করা হয়েছে।</translation>
-<translation id="3525469219100414032">আপনি এখনই প্রতারণামূলক একটি সাইটে আপনার পাসওয়ার্ড লিখেছেন। Chrome <ph name="WEBSITE_1" />-এ গিয়ে এখনই পাসওয়ার্ড পরিবর্তন করার জন্য সাজেস্ট করছে।</translation>
 <translation id="3528171143076753409">সার্ভারের সার্টিফিকেট বিশ্বস্ত নয়৷</translation>
 <translation id="3528485271872257980">গাঢ় বাদামি</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{সিঙ্ক করা ডিভাইসে কমপক্ষে ১টি আইটেম}=1{১টি আইটেম (এবং সিঙ্ক করা ডিভাইসে আরও)}one{#টি আইটেম (এবং সিঙ্ক করা ডিভাইসে আরও)}other{#টি আইটেম (এবং সিঙ্ক করা ডিভাইসে আরও)}}</translation>
@@ -962,7 +956,6 @@
 <translation id="5565735124758917034">সক্রিয়</translation>
 <translation id="5570825185877910964">অ্যাকাউন্ট সুরক্ষিত রাখুন</translation>
 <translation id="5571083550517324815">এই ঠিকানা থেকে পিক-আপ করা যাবে না। অন্য ঠিকানা বেছে নিন।</translation>
-<translation id="5572009199897554128">আপনি এখনই প্রতারণামূলক একটি সাইটে আপনার পাসওয়ার্ড লিখেছেন। Chromium <ph name="WEBSITE_1" /> এবং <ph name="WEBSITE_2" />-এ গিয়ে এখনই পাসওয়ার্ড পরিবর্তন করার জন্য সাজেস্ট করছে।</translation>
 <translation id="5580958916614886209">আপনার মেয়াদ শেষের মাস পরীক্ষা করে আবার চেষ্টা করুন</translation>
 <translation id="5586446728396275693">কোনও ঠিকানা সংরক্ষণ করা নেই</translation>
 <translation id="5595485650161345191">ঠিকানা সম্পাদনা করুন</translation>
@@ -1676,7 +1669,6 @@
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">আপনি আপনার Google অ্যাকাউন্টে অ্যাক্সেস হারাতে পারেন। Chromium-এর প্রস্তাব হল যে আপনি আপনার পাসওয়ার্ড এখনই পরিবর্তন করুন। আপনাকে আবার সাইন-ইন করতে বলা হবে।</translation>
 <translation id="939736085109172342">নতুন ফোল্ডার</translation>
-<translation id="940786960229275114">আপনি এখনই প্রতারণামূলক একটি সাইটে আপনার পাসওয়ার্ড লিখেছেন। Chrome <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> এবং <ph name="WEBSITE_3" />-এ গিয়ে এখনই পাসওয়ার্ড পরিবর্তন করার জন্য সাজেস্ট করছে।</translation>
 <translation id="945855313015696284">নিচে দেওয়া তথ্য পরীক্ষা করুন এবং কোনও ভুল কার্ড থাকলে তা মুছে ফেলুন</translation>
 <translation id="950736567201356821">উপরে তিনটি পাঞ্চ</translation>
 <translation id="951104842009476243">এই ডেবিট ও প্রিপেড কার্ডগুলি গ্রহণ করা হয়</translation>

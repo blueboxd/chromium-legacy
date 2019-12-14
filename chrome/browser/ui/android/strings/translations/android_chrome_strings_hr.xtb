@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Želite li ponovo preuzeti datoteku?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# audiodatoteka}one{# audiodatoteka}few{# audiodatoteke}other{# audiodatoteka}}</translation>
 <translation id="2653659639078652383">Pošalji</translation>
-<translation id="2669093958999339774">Blokirajte upite za obavijesti kako vas ne bi ometali i umjesto njih koristite nenametljive poruke</translation>
 <translation id="2677748264148917807">Napusti</translation>
 <translation id="2704606927547763573">Kopirano</translation>
 <translation id="2707726405694321444">Osvježavanje stranice</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Označeno u pregledniku <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Sinkronizacija u pozadini</translation>
 <translation id="3749259744154402564">Nije podržano</translation>
-<translation id="3767376082821709728">Nove web-lokacije koje posjetite ne mogu vam slati obavijesti</translation>
 <translation id="3771001275138982843">Preuzimanje ažuriranja nije uspjelo</translation>
 <translation id="3771033907050503522">Anonimne kartice</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Uključite Bluetooth<ph name="END_LINK" /> da biste omogućili uparivanje</translation>
@@ -957,7 +955,6 @@ Web-lokacija NE dobiva pristup fotoaparatu. Slike fotoaparata možete vidjeti sa
 <translation id="8035133914807600019">Nova mapa…</translation>
 <translation id="8037750541064988519">Preostalo dana: <ph name="DAYS" /></translation>
 <translation id="804335162455518893">SD kartica nije pronađena</translation>
-<translation id="8046278916126163020">Nove web-lokacije koje posjetite mogu zatražiti da vam šalju obavijesti</translation>
 <translation id="805047784848435650">Na temelju vaše povijesti pregledavanja</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB dostupno</translation>
 <translation id="8058746566562539958">Otvori u novoj Chrome kartici</translation>

@@ -46,7 +46,6 @@
 #include "third_party/blink/renderer/core/timing/layout_shift.h"
 #include "third_party/blink/renderer/core/timing/performance_element_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
-#include "third_party/blink/renderer/core/timing/performance_long_task_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_timing.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
@@ -65,7 +64,6 @@ namespace {
 // regarded as long-latency events by event-timing. Shorter-latency events are
 // ignored to reduce performance impact.
 constexpr int kEventTimingDurationThresholdInMs = 104;
-constexpr size_t kDefaultLongTaskSize = 200;
 
 String GetFrameAttribute(HTMLFrameOwnerElement* frame_owner,
                          const QualifiedName& attr_name,
@@ -160,12 +158,7 @@ WindowPerformance::WindowPerformance(LocalDOMWindow* window)
     : Performance(
           ToTimeOrigin(window),
           window->document()->GetTaskRunner(TaskType::kPerformanceTimeline)),
-      DOMWindowClient(window) {
-  DCHECK(GetFrame());
-  DCHECK(GetFrame()->GetPerformanceMonitor());
-  GetFrame()->GetPerformanceMonitor()->Subscribe(
-      PerformanceMonitor::kLongTask, kLongTaskObserverThreshold, this);
-}
+      DOMWindowClient(window) {}
 
 WindowPerformance::~WindowPerformance() = default;
 
@@ -228,29 +221,9 @@ void WindowPerformance::UpdateLongTaskInstrumentation() {
     UseCounter::Count(GetFrame()->GetDocument(), WebFeature::kLongTaskObserver);
     GetFrame()->GetPerformanceMonitor()->Subscribe(
         PerformanceMonitor::kLongTask, kLongTaskObserverThreshold, this);
-  } else if (longtask_buffer_.size() == kDefaultLongTaskSize) {
+  } else {
     GetFrame()->GetPerformanceMonitor()->UnsubscribeAll(this);
   }
-}
-
-void WindowPerformance::AddLongTaskTiming(base::TimeTicks start_time,
-                                          base::TimeTicks end_time,
-                                          const AtomicString& name,
-                                          const AtomicString& container_type,
-                                          const String& container_src,
-                                          const String& container_id,
-                                          const String& container_name) {
-  auto* entry = MakeGarbageCollected<PerformanceLongTaskTiming>(
-      MonotonicTimeToDOMHighResTimeStamp(start_time),
-      MonotonicTimeToDOMHighResTimeStamp(end_time), name, container_type,
-      container_src, container_id, container_name);
-  if (longtask_buffer_.size() < kDefaultLongTaskSize) {
-    longtask_buffer_.push_back(entry);
-  } else {
-    UseCounter::Count(GetFrame()->GetDocument(),
-                      WebFeature::kLongTaskBufferFull);
-  }
-  NotifyObserversOfEntry(*entry);
 }
 
 void WindowPerformance::BuildJSONValue(V8ObjectBuilder& builder) const {

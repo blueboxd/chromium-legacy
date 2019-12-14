@@ -841,15 +841,6 @@
 
       Als HardwareAccelerationModeEnabled is ingesteld op 'false', wordt Disable3DAPIs genegeerd en is dit equivalent aan Disable3DAPIs met de instelling 'true'.</translation>
 <translation id="2258126710006312594">Toestaan dat gebruikers met externe toegang bestanden overzetten van/naar de host</translation>
-<translation id="2265214338421787313">Via dit beleid kan een beheerder opgeven dat een pagina pop-upvensters mag weergegeven tijdens het unloaden.
-
-      Wanneer het beleid is ingesteld op ingeschakeld, kunnen pagina's pop-upvensters weergeven terwijl ze worden geünload.
-
-      Wanneer het beleid is ingesteld op uitgeschakeld of niet is ingesteld, mogen pagina's geen pop-upvensters weergeven terwijl ze worden geünload. Dit is volgens de specificatie (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
-
-      Dit beleid wordt verwijderd in Chrome 82.
-
-      Zie https://www.chromestatus.com/feature/5989473649164288.</translation>
 <translation id="2269319728625047531">Weergave van synchronisatietoestemming inschakelen tijdens het inloggen</translation>
 <translation id="2270747976331889601">Een TLS 1.3-beveiligingsfunctie voor lokale vertrouwensinstanties inschakelen.</translation>
 <translation id="2274864612594831715">Dit beleid configureert de inschakeling van het virtuele toetsenbord als invoerapparaat in ChromeOS. Gebruikers kunnen dit beleid niet overschrijven.
@@ -4515,15 +4506,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Als dit beleid niet is ingesteld, worden er geen uitzonderingen opgegeven voor de zwarte lijst van het beleid 'URLBlacklist'.</translation>
 <translation id="8176035528522326671">Toestaan dat Enterprise-gebruiker alleen primair gebruiker van meerdere profielen is (standaardgedrag voor beheerde Enterprise-gebruikers)</translation>
-<translation id="8176620453475617465">Via dit beleid kan een beheerder opgeven dat een pagina synchrone XHR-verzoeken mag versturen tijdens de afwijzing van de pagina.
-
-      Als het beleid is ingeschakeld, mogen pagina's synchrone XHR-verzoeken versturen tijdens de afwijzing van de pagina.
-
-      Als het beleid is uitgeschakeld of niet is ingesteld, mogen pagina's geen synchrone XHR-verzoeken verzenden tijdens de afwijzing van de pagina.
-
-      Dit beleid wordt verwijderd in Chrome 82.
-
-      Zie https://www.chromestatus.com/feature/4664843055398912 .</translation>
 <translation id="8183108371184777472">Lancering van browservenster onderdrukken</translation>
 <translation id="8186911565834244165">Gebruikersfeedback toestaan</translation>
 <translation id="8214600119442850823">Hiermee wordt Wachtwoordmanager geconfigureerd.</translation>

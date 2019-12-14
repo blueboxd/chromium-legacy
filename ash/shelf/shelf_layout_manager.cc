@@ -2390,9 +2390,17 @@ void ShelfLayoutManager::MaybeSetupHotseatDrag(
     const ui::LocatedEvent& event_in_screen) {
   if (!IsHotseatEnabled())
     return;
+
   // Do not allow Hotseat dragging when the hotseat is shown within the shelf.
   if (hotseat_state() == HotseatState::kShown)
     return;
+
+  if (hotseat_is_in_drag_)
+    return;
+
+  // Make sure hotseat is stacked above other shelf control windows when the
+  // hotseat drag starts.
+  shelf_widget_->hotseat_widget()->StackAtTop();
 
   hotseat_is_in_drag_ = true;
 }

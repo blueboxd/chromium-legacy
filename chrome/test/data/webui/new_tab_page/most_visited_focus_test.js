@@ -44,7 +44,11 @@ suite('NewTabPageMostVisitedFocusTest', () => {
       return {title: char, url: {url: `https://${char}/`}};
     });
     const tilesRendered = eventToPromise('dom-change', mostVisited.$.tiles);
-    testProxy.callbackRouterRemote.setMostVisitedTiles(tiles);
+    testProxy.callbackRouterRemote.setMostVisitedInfo({
+      customLinksEnabled: true,
+      tiles: tiles,
+      visible: true,
+    });
     await testProxy.callbackRouterRemote.$.flushForTesting();
     await tilesRendered;
   }

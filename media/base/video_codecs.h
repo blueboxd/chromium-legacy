@@ -96,10 +96,13 @@ enum VideoCodecProfile {
   VIDEO_CODEC_PROFILE_MAX = DOLBYVISION_PROFILE9,
 };
 
+using VideoCodecLevel = uint32_t;
+constexpr VideoCodecLevel kNoVideoCodecLevel = 0;
+
 struct CodecProfileLevel {
   VideoCodec codec;
   VideoCodecProfile profile;
-  int level;
+  VideoCodecLevel level;
 };
 
 std::string MEDIA_EXPORT GetCodecName(VideoCodec codec);

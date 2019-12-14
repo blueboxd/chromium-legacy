@@ -38,8 +38,6 @@ def _call_profdata_tool(profile_input_file_paths,
   Raises:
     CalledProcessError: An error occurred merging profiles.
   """
-  logging.info('Merging profiles.')
-
   try:
     subprocess_cmd = [
         profdata_tool_path, 'merge', '-o', profile_output_file_path,
@@ -121,8 +119,6 @@ def _validate_and_convert_profraws(profraw_files, profdata_tool_path):
       A list of *invalid* profraw files.
       A list of profraw files that have counter overflows.
   """
-  logging.info('Validating and converting .profraw files: %r', profraw_files)
-
   for profraw_file in profraw_files:
     if not profraw_file.endswith('.profraw'):
       raise RuntimeError('%r is expected to be a .profraw file.' % profraw_file)

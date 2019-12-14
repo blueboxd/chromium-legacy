@@ -68,6 +68,8 @@ def _group_builders_by_section(builders):
       experimental.append(builder)
     elif builder.location_regexp or builder.location_regexp_exclude:
       optional.append(builder)
+    elif builder.includable_only:
+      continue
     else:
       required.append(builder)
 

@@ -57,43 +57,6 @@ bool IsChromePolicy(const std::string& type) {
          type == dm_protocol::kChromeMachineLevelUserCloudPolicyType;
 }
 
-LicenseType TranslateLicenseType(em::LicenseType type) {
-  switch (type.license_type()) {
-    case em::LicenseType::UNDEFINED:
-      LOG(ERROR) << "Unknown License type: " << type.license_type();
-      return LicenseType::UNKNOWN;
-    case em::LicenseType::CDM_PERPETUAL:
-      return LicenseType::PERPETUAL;
-    case em::LicenseType::CDM_ANNUAL:
-      return LicenseType::ANNUAL;
-    case em::LicenseType::KIOSK:
-      return LicenseType::KIOSK;
-  }
-  NOTREACHED();
-  return LicenseType::UNKNOWN;
-}
-
-void ExtractLicenseMap(const em::CheckDeviceLicenseResponse& license_response,
-                       CloudPolicyClient::LicenseMap& licenses) {
-  for (int i = 0; i < license_response.license_availabilities_size(); i++) {
-    const em::LicenseAvailability& license =
-        license_response.license_availabilities(i);
-    if (!license.has_license_type() || !license.has_available_licenses())
-      continue;
-    auto license_type = TranslateLicenseType(license.license_type());
-    if (license_type == LicenseType::UNKNOWN)
-      continue;
-    bool duplicate =
-        licenses
-            .insert(std::make_pair(license_type, license.available_licenses()))
-            .second;
-    if (duplicate) {
-      LOG(WARNING) << "Duplicate license type in response :"
-                   << static_cast<int>(license_type);
-    }
-  }
-}
-
 em::PolicyValidationReportRequest::ValidationResultType
 TranslatePolicyValidationResult(CloudPolicyValidatorBase::Status status) {
   using report = em::PolicyValidationReportRequest;
@@ -704,24 +667,6 @@ void CloudPolicyClient::UpdateDeviceAttributes(
   request_jobs_.push_back(service_->CreateJob(std::move(config)));
 }
 
-void CloudPolicyClient::RequestAvailableLicenses(
-    const std::string& oauth_token,
-    const LicenseRequestCallback& callback) {
-  DCHECK(!oauth_token.empty());
-
-  std::unique_ptr<DMServerJobConfiguration> config =
-      std::make_unique<DMServerJobConfiguration>(
-          DeviceManagementService::JobConfiguration::TYPE_REQUEST_LICENSE_TYPES,
-          this,
-          /*critical=*/false, DMAuth::FromDMToken(dm_token_), oauth_token,
-          base::BindOnce(&CloudPolicyClient::OnAvailableLicensesRequested,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-
-  config->request()->mutable_check_device_license_request();
-
-  request_jobs_.push_back(service_->CreateJob(std::move(config)));
-}
-
 void CloudPolicyClient::UpdateGcmId(
     const std::string& gcm_id,
     const CloudPolicyClient::StatusCallback& callback) {
@@ -1052,44 +997,6 @@ void CloudPolicyClient::OnDeviceAttributeUpdated(
   RemoveJob(job);
 }
 
-void CloudPolicyClient::OnAvailableLicensesRequested(
-    const CloudPolicyClient::LicenseRequestCallback& callback,
-    DeviceManagementService::Job* job,
-    DeviceManagementStatus status,
-    int net_error,
-    const em::DeviceManagementResponse& response) {
-  CloudPolicyClient::LicenseMap licenses;
-
-  if (status != DM_STATUS_SUCCESS) {
-    LOG(WARNING) << "Could not get available license types";
-    status_ = status;
-    callback.Run(status, licenses);
-    RemoveJob(job);
-    return;
-  }
-
-  if (!response.has_check_device_license_response()) {
-    LOG(WARNING) << "Invalid license request response.";
-    status_ = DM_STATUS_RESPONSE_DECODING_ERROR;
-    callback.Run(DM_STATUS_RESPONSE_DECODING_ERROR, licenses);
-    RemoveJob(job);
-    return;
-  }
-
-  status_ = status;
-  const em::CheckDeviceLicenseResponse& license_response =
-      response.check_device_license_response();
-
-  if (license_response.has_license_selection_mode() &&
-      (license_response.license_selection_mode() ==
-       em::CheckDeviceLicenseResponse::USER_SELECTION)) {
-    ExtractLicenseMap(license_response, licenses);
-  }
-
-  callback.Run(DM_STATUS_SUCCESS, licenses);
-  RemoveJob(job);
-}
-
 void CloudPolicyClient::RemoveJob(DeviceManagementService::Job* job) {
   if (app_install_report_request_job_ == job) {
     app_install_report_request_job_ = nullptr;
@@ -1215,8 +1122,6 @@ void CloudPolicyClient::CreateDeviceRegisterRequest(
     request->set_requisition(params.requisition);
   if (!params.current_state_key.empty())
     request->set_server_backed_state_key(params.current_state_key);
-  if (params.license_type != em::LicenseType::UNDEFINED)
-    request->mutable_license_type()->set_license_type(params.license_type);
 }
 
 }  // namespace policy

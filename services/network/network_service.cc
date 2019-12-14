@@ -606,8 +606,10 @@ void NetworkService::GetNetworkList(
                      std::move(callback)));
 }
 
-void NetworkService::UpdateCRLSet(base::span<const uint8_t> crl_set) {
-  crl_set_distributor_->OnNewCRLSet(crl_set);
+void NetworkService::UpdateCRLSet(
+    base::span<const uint8_t> crl_set,
+    mojom::NetworkService::UpdateCRLSetCallback callback) {
+  crl_set_distributor_->OnNewCRLSet(crl_set, std::move(callback));
 }
 
 void NetworkService::OnCertDBChanged() {

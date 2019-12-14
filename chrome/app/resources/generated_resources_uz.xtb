@@ -1188,7 +1188,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2665919335226618153">Ana xolos! Formatlash paytida xatolik ro‘y berdi.</translation>
 <translation id="2666990579225592931">Mehmon rejimida oyna ochish</translation>
 <translation id="2667463864537187133">Imlo tekshirgichni boshqarish</translation>
-<translation id="2669093958999339774">Bildirgilarni bloklash va ular haqida manzillar qatorida belgi chiqarish</translation>
 <translation id="2670102641511624474">“<ph name="APP_NAME" />” ilovasi Chrome sahifasini translatsiya qilmoqda.</translation>
 <translation id="2670429602441959756">Bu sahifada VR qurilmasida ishlamaydigan kontent bor. VR rejimidan chiqilmoqda...</translation>
 <translation id="2671451824761031126">Xatcho‘plar va sozlamalaringiz tayyor</translation>
@@ -1962,7 +1961,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="37613671848467444">&amp;Inkognito rejimida ochish</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{USB qurilma mavjud}other{# ta USB qurilma mavjud}}</translation>
 <translation id="3765246971671567135">Demo rejim parametrini oflayn rejimda oʻqib boʻlmadi.</translation>
-<translation id="3767376082821709728">Yangi ochiladigan saytlar bildirgi yubormaydi</translation>
 <translation id="3768037234834996183">Sozlamalar sinxronlanmoqda...</translation>
 <translation id="377050016711188788">Muzqaymoq</translation>
 <translation id="3771294271822695279">Video fayllar</translation>
@@ -3030,7 +3028,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="5370819323174483825">&amp;Qayta yuklash</translation>
 <translation id="5372529912055771682">Taqdim etilgan ro‘yxatdan o‘tish rejimi joriy operatsion tizim versiyasida qo‘llab-quvvatlanmaydi. OT versiyasini yangilab, qayta urinib ko‘ring.</translation>
 <translation id="5372579129492968947">Kengaytmani yechib olish</translation>
-<translation id="5374359983950678924">Rasmni o‘zgartirish</translation>
 <translation id="5376169624176189338">Orqaga qaytish uchun bosing, tarixini ko‘rish uchun bosing va ushlab turing</translation>
 <translation id="5376931455988532197">Fayl juda katta</translation>
 <translation id="537813040452600081">Bu oynada ko‘riladigan sahifalar brauzer tarixida qolmaydi, barcha ochiq turgan Mehmon oynalarini yopganingizdan keyin ular kompyuterda cookie fayllari singari iz ham qoldirmaydi. Ammo, yuklab olingan fayllar saqlanib qoladi.</translation>
@@ -4903,7 +4900,6 @@ Kalit faylini ishonchli joyda saqlang. U kengaytmaning yangi versiyalarini yarat
 <translation id="8044899503464538266">Sekin</translation>
 <translation id="8045253504249021590">Sinxronizatsiya Google Shaxsiy kabinet orqali to‘xtatildi.</translation>
 <translation id="8045923671629973368">Dastur identifikatori yoki internet-do‘kon URL manzilini kiriting</translation>
-<translation id="8046278916126163020">Yangi saytlar sizga bildirishnoma yuborishga ruxsat soʻrashi mumkin</translation>
 <translation id="804786196054284061">Yakuniy foydalanuvchi litsenziyasi kelishuvi</translation>
 <translation id="8049705080247101012">Google “<ph name="EXTENSION_NAME" />” kengaytmasini zararli deb belgilagan, o‘rnatish to‘xtatildi</translation>
 <translation id="8050038245906040378">Microsoft tijorat kodini imzolash</translation>

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
@@ -26,7 +27,9 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace chromeos {
 
@@ -49,9 +52,14 @@ void MultiDeviceSetupDialog::Show() {
     return;
 
   current_instance_ = new MultiDeviceSetupDialog();
-  chrome::ShowWebDialog(nullptr /* parent */,
-                        ProfileManager::GetActiveUserProfile(),
-                        current_instance_);
+  gfx::NativeWindow window = chrome::ShowWebDialog(
+      nullptr /* parent */, ProfileManager::GetActiveUserProfile(),
+      current_instance_);
+
+  // Remove the black backdrop behind the dialog window which appears in tablet
+  // and full-screen mode.
+  window->SetProperty(ash::kBackdropWindowMode,
+                      ash::BackdropWindowMode::kDisabled);
 }
 
 // static

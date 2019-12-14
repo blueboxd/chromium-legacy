@@ -23,7 +23,6 @@
 namespace performance_monitor {
 
 class MetricEvaluatorsHelper;
-class SystemMonitorMetricsLogger;
 
 // Monitors various various system metrics such as free memory, disk idle time,
 // etc.
@@ -76,13 +75,7 @@ class SystemMonitor {
       SamplingFrequency free_phys_memory_mb_frequency =
           SamplingFrequency::kNoSampling;
 
-      SamplingFrequency disk_idle_time_percent_frequency =
-          SamplingFrequency::kNoSampling;
-
       SamplingFrequency system_metrics_sampling_frequency =
-          SamplingFrequency::kNoSampling;
-
-      SamplingFrequency chrome_total_resident_set_sampling_frequency =
           SamplingFrequency::kNoSampling;
 
       // A builder used to create instances of this object.
@@ -94,18 +87,9 @@ class SystemMonitor {
     // Reports the amount of free physical memory, in MB.
     virtual void OnFreePhysicalMemoryMbSample(int free_phys_memory_mb);
 
-    // Reports the disk idle time during the last observation interval, in
-    // percent (between 0.0 and 1.0).
-    virtual void OnDiskIdleTimePercent(float disk_idle_time_percent);
-
     // Called when a new |base::SystemMetrics| sample is available.
     virtual void OnSystemMetricsStruct(
         const base::SystemMetrics& system_metrics);
-
-    // Reports an estimate of the sum of resident set of all the Chrome
-    // processes.
-    virtual void OnChromeTotalResidentSetEstimateMb(
-        int chrome_total_resident_set_estimate);
   };
   using ObserverToFrequenciesMap =
       base::flat_map<SystemObserver*, SystemObserver::MetricRefreshFrequencies>;
@@ -137,15 +121,9 @@ class SystemMonitor {
     enum class Type : size_t {
       // The amount of free physical memory, in megabytes.
       kFreeMemoryMb,
-      // The percentage of time the disk has been idle since the sample.
-      kDiskIdleTimePercent,
       // A |base::SystemMetrics| instance.
       // TODO(sebmarchand): Split this struct into some smaller ones.
       kSystemMetricsStruct,
-      // The sum of the resident set for all the Chrome processes. This value
-      // is based on the most recent per-process estimates and might not reflect
-      // the exact current state.
-      kChromeTotalResidentSetEstimateMb,
 
       kMax,
     };
@@ -296,9 +274,6 @@ class SystemMonitor {
   // |MetricEvaluator::Type|.
   MetricMetadataArray metric_evaluators_metadata_;
 
-  // The logger responsible of logging the system metrics.
-  std::unique_ptr<SystemMonitorMetricsLogger> metrics_logger_;
-
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<SystemMonitor> weak_factory_{this};
@@ -313,10 +288,7 @@ class SystemMonitor::SystemObserver::MetricRefreshFrequencies::Builder {
   ~Builder() = default;
 
   Builder& SetFreePhysMemoryMbFrequency(SamplingFrequency freq);
-  Builder& SetDiskIdleTimePercentFrequency(SamplingFrequency freq);
   Builder& SetSystemMetricsSamplingFrequency(SamplingFrequency freq);
-  Builder& SetChromeTotalResidentSetEstimateMbSamplingFrequency(
-      SamplingFrequency freq);
 
   // Returns the initialized MetricRefreshFrequencies instance.
   MetricRefreshFrequencies Build();
@@ -337,19 +309,11 @@ class MetricEvaluatorsHelper {
   // Returns the free physical memory, in megabytes.
   virtual base::Optional<int> GetFreePhysicalMemoryMb() = 0;
 
-  // Return the disk idle time, in percentage of time since the last call to
-  // this function (returns nullopt on the first call).
-  virtual base::Optional<float> GetDiskIdleTimePercent() = 0;
-
   // Return a |base::SystemMetrics| snapshot.
   //
   // NOTE: This function doesn't have to be virtual, the base::SystemMetrics
   // struct is an abstraction that already has a per-platform definition.
   base::Optional<base::SystemMetrics> GetSystemMetricsStruct();
-
-  // Returns an estimate of the sum of the resident set of all the Chrome
-  // processes currently running.
-  virtual base::Optional<int> GetChromeTotalResidentSetEstimateMb() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MetricEvaluatorsHelper);

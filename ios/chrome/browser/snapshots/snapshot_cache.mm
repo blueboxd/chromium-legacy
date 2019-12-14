@@ -229,37 +229,37 @@ void ConvertAndSaveGreyImage(NSString* session_id,
 @implementation SnapshotCache {
   // Cache to hold color snapshots in memory. n.b. Color snapshots are not
   // kept in memory on tablets.
-  SnapshotLRUCache* lruCache_;
+  SnapshotLRUCache* _lruCache;
 
   // Temporary dictionary to hold grey snapshots for tablet side swipe. This
   // will be nil before -createGreyCache is called and after -removeGreyCache
   // is called.
-  NSMutableDictionary<NSString*, UIImage*>* greyImageDictionary_;
+  NSMutableDictionary<NSString*, UIImage*>* _greyImageDictionary;
 
   // Session ID of most recent pending grey snapshot request.
-  NSString* mostRecentGreySessionId_;
+  NSString* _mostRecentGreySessionId;
   // Block used by pending request for a grey snapshot.
-  void (^mostRecentGreyBlock_)(UIImage*);
+  void (^_mostRecentGreyBlock)(UIImage*);
 
   // Session ID and corresponding UIImage for the snapshot that will likely
   // be requested to be saved to disk when the application is backgrounded.
-  NSString* backgroundingImageSessionId_;
-  UIImage* backgroundingColorImage_;
+  NSString* _backgroundingImageSessionId;
+  UIImage* _backgroundingColorImage;
 
   // Scale for snapshot images. May be smaller than the screen scale in order
   // to save memory on some devices.
-  ImageScale snapshotsScale_;
+  ImageScale _snapshotsScale;
 
   // Directory where the thumbnails are saved.
-  base::FilePath cacheDirectory_;
+  base::FilePath _cacheDirectory;
 
   // Task runner used to run tasks in the background. Will be invalidated when
   // -shutdown is invoked. Code should support this value to be null (generally
   // by not posting the task).
-  scoped_refptr<base::SequencedTaskRunner> taskRunner_;
+  scoped_refptr<base::SequencedTaskRunner> _taskRunner;
 
   // Check that public API is called from the correct sequence.
-  SEQUENCE_CHECKER(sequenceChecker_);
+  SEQUENCE_CHECKER(_sequenceChecker);
 }
 
 @synthesize pinnedIDs = _pinnedIDs;
@@ -277,14 +277,14 @@ void ConvertAndSaveGreyImage(NSString* session_id,
 
 - (instancetype)initWithCacheDirectory:(const base::FilePath&)cacheDirectory
                         snapshotsScale:(ImageScale)snapshotsScale {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
   if ((self = [super init])) {
-    lruCache_ =
+    _lruCache =
         [[SnapshotLRUCache alloc] initWithCacheSize:kLRUCacheMaxCapacity];
-    cacheDirectory_ = cacheDirectory;
-    snapshotsScale_ = snapshotsScale;
+    _cacheDirectory = cacheDirectory;
+    _snapshotsScale = snapshotsScale;
 
-    taskRunner_ =
+    _taskRunner =
         base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
                                          base::TaskPriority::USER_VISIBLE});
 
@@ -311,7 +311,7 @@ void ConvertAndSaveGreyImage(NSString* session_id,
 }
 
 - (void)dealloc {
-  DCHECK(!taskRunner_) << "-shutdown must be called before -dealloc";
+  DCHECK(!_taskRunner) << "-shutdown must be called before -dealloc";
 
   [[NSNotificationCenter defaultCenter]
       removeObserver:self
@@ -328,32 +328,32 @@ void ConvertAndSaveGreyImage(NSString* session_id,
 }
 
 - (CGFloat)snapshotScaleForDevice {
-  return ScaleFromImageScale(snapshotsScale_);
+  return ScaleFromImageScale(_snapshotsScale);
 }
 
 - (void)retrieveImageForSessionID:(NSString*)sessionID
                          callback:(void (^)(UIImage*))callback {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
   DCHECK(sessionID);
   DCHECK(callback);
 
-  if (UIImage* image = [lruCache_ objectForKey:sessionID]) {
+  if (UIImage* image = [_lruCache objectForKey:sessionID]) {
     callback(image);
     return;
   }
 
-  if (!taskRunner_) {
+  if (!_taskRunner) {
     callback(nil);
     return;
   }
 
   // Copy ivars used by the block so that it does not reference |self|.
-  const base::FilePath cacheDirectory = cacheDirectory_;
-  const ImageScale snapshotsScale = snapshotsScale_;
+  const base::FilePath cacheDirectory = _cacheDirectory;
+  const ImageScale snapshotsScale = _snapshotsScale;
 
-  __weak SnapshotLRUCache* weakLRUCache = lruCache_;
+  __weak SnapshotLRUCache* weakLRUCache = _lruCache;
   base::PostTaskAndReplyWithResult(
-      taskRunner_.get(), FROM_HERE,
+      _taskRunner.get(), FROM_HERE,
       base::BindOnce(^base::scoped_nsobject<UIImage>() {
         // Retrieve the image on a high priority thread.
         return base::scoped_nsobject<UIImage>(ReadImageForSessionFromDisk(
@@ -367,20 +367,20 @@ void ConvertAndSaveGreyImage(NSString* session_id,
 }
 
 - (void)setImage:(UIImage*)image withSessionID:(NSString*)sessionID {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
-  if (!image || !sessionID || !taskRunner_)
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
+  if (!image || !sessionID || !_taskRunner)
     return;
 
-  [lruCache_ setObject:image forKey:sessionID];
+  [_lruCache setObject:image forKey:sessionID];
 
   [self.observers snapshotCache:self didUpdateSnapshotForIdentifier:sessionID];
 
   // Copy ivars used by the block so that it does not reference |self|.
-  const base::FilePath cacheDirectory = cacheDirectory_;
-  const ImageScale snapshotsScale = snapshotsScale_;
+  const base::FilePath cacheDirectory = _cacheDirectory;
+  const ImageScale snapshotsScale = _snapshotsScale;
 
   // Save the image to disk.
-  taskRunner_->PostTask(
+  _taskRunner->PostTask(
       FROM_HERE, base::BindOnce(^{
         WriteImageToDisk(image, ImagePath(sessionID, IMAGE_TYPE_COLOR,
                                           snapshotsScale, cacheDirectory));
@@ -388,23 +388,23 @@ void ConvertAndSaveGreyImage(NSString* session_id,
 }
 
 - (void)removeImageWithSessionID:(NSString*)sessionID {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
   // Do not immediately delete if the ID is marked.
   if ([self.markedIDs containsObject:sessionID])
     return;
 
-  [lruCache_ removeObjectForKey:sessionID];
+  [_lruCache removeObjectForKey:sessionID];
 
   [self.observers snapshotCache:self didUpdateSnapshotForIdentifier:sessionID];
 
-  if (!taskRunner_)
+  if (!_taskRunner)
     return;
 
   // Copy ivars used by the block so that it does not reference |self|.
-  const base::FilePath cacheDirectory = cacheDirectory_;
-  const ImageScale snapshotsScale = snapshotsScale_;
+  const base::FilePath cacheDirectory = _cacheDirectory;
+  const ImageScale snapshotsScale = _snapshotsScale;
 
-  taskRunner_->PostTask(
+  _taskRunner->PostTask(
       FROM_HERE, base::BindOnce(^{
         for (size_t index = 0; index < base::size(kImageTypes); ++index) {
           base::DeleteFile(ImagePath(sessionID, kImageTypes[index],
@@ -431,30 +431,30 @@ void ConvertAndSaveGreyImage(NSString* session_id,
 }
 
 - (base::FilePath)imagePathForSessionID:(NSString*)sessionID {
-  return ImagePath(sessionID, IMAGE_TYPE_COLOR, snapshotsScale_,
-                   cacheDirectory_);
+  return ImagePath(sessionID, IMAGE_TYPE_COLOR, _snapshotsScale,
+                   _cacheDirectory);
 }
 
 - (base::FilePath)greyImagePathForSessionID:(NSString*)sessionID {
-  return ImagePath(sessionID, IMAGE_TYPE_GREYSCALE, snapshotsScale_,
-                   cacheDirectory_);
+  return ImagePath(sessionID, IMAGE_TYPE_GREYSCALE, _snapshotsScale,
+                   _cacheDirectory);
 }
 
 - (void)purgeCacheOlderThan:(const base::Time&)date
                     keeping:(NSSet*)liveSessionIds {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
 
-  if (!taskRunner_)
+  if (!_taskRunner)
     return;
 
   // Copying the date, as the block must copy the value, not the reference.
   const base::Time dateCopy = date;
 
   // Copy ivars used by the block so that it does not reference |self|.
-  const base::FilePath cacheDirectory = cacheDirectory_;
-  const ImageScale snapshotsScale = snapshotsScale_;
+  const base::FilePath cacheDirectory = _cacheDirectory;
+  const ImageScale snapshotsScale = _snapshotsScale;
 
-  taskRunner_->PostTask(
+  _taskRunner->PostTask(
       FROM_HERE, base::BindOnce(^{
         if (!base::DirectoryExists(cacheDirectory))
           return;
@@ -483,34 +483,34 @@ void ConvertAndSaveGreyImage(NSString* session_id,
 }
 
 - (void)willBeSavedGreyWhenBackgrounding:(NSString*)sessionID {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
   if (!sessionID)
     return;
-  backgroundingImageSessionId_ = [sessionID copy];
-  backgroundingColorImage_ = [lruCache_ objectForKey:sessionID];
+  _backgroundingImageSessionId = [sessionID copy];
+  _backgroundingColorImage = [_lruCache objectForKey:sessionID];
 }
 
 - (void)handleLowMemory {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
   NSMutableDictionary<NSString*, UIImage*>* dictionary =
       [NSMutableDictionary dictionaryWithCapacity:2];
   for (NSString* sessionID in self.pinnedIDs) {
-    UIImage* image = [lruCache_ objectForKey:sessionID];
+    UIImage* image = [_lruCache objectForKey:sessionID];
     if (image)
       [dictionary setObject:image forKey:sessionID];
   }
-  [lruCache_ removeAllObjects];
+  [_lruCache removeAllObjects];
   for (NSString* sessionID in self.pinnedIDs)
-    [lruCache_ setObject:[dictionary objectForKey:sessionID] forKey:sessionID];
+    [_lruCache setObject:[dictionary objectForKey:sessionID] forKey:sessionID];
 }
 
 - (void)handleEnterBackground {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
-  [lruCache_ removeAllObjects];
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
+  [_lruCache removeAllObjects];
 }
 
 - (void)handleBecomeActive {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
   for (NSString* sessionID in self.pinnedIDs)
     [self retrieveImageForSessionID:sessionID
                            callback:^(UIImage*){
@@ -518,32 +518,32 @@ void ConvertAndSaveGreyImage(NSString* session_id,
 }
 
 - (void)saveGreyImage:(UIImage*)greyImage forKey:(NSString*)sessionID {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
   if (greyImage)
-    [greyImageDictionary_ setObject:greyImage forKey:sessionID];
-  if ([sessionID isEqualToString:mostRecentGreySessionId_]) {
-    mostRecentGreyBlock_(greyImage);
+    [_greyImageDictionary setObject:greyImage forKey:sessionID];
+  if ([sessionID isEqualToString:_mostRecentGreySessionId]) {
+    _mostRecentGreyBlock(greyImage);
     [self clearGreySessionInfo];
   }
 }
 
 - (void)loadGreyImageAsync:(NSString*)sessionID {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
   // Don't call -retrieveImageForSessionID here because it caches the colored
   // image, which we don't need for the grey image cache. But if the image is
   // already in the cache, use it.
-  UIImage* image = [lruCache_ objectForKey:sessionID];
+  UIImage* image = [_lruCache objectForKey:sessionID];
 
-  if (!taskRunner_)
+  if (!_taskRunner)
     return;
 
   // Copy ivars used by the block so that it does not reference |self|.
-  const base::FilePath cacheDirectory = cacheDirectory_;
-  const ImageScale snapshotsScale = snapshotsScale_;
+  const base::FilePath cacheDirectory = _cacheDirectory;
+  const ImageScale snapshotsScale = _snapshotsScale;
 
   __weak SnapshotCache* weakSelf = self;
   base::PostTaskAndReplyWithResult(
-      taskRunner_.get(), FROM_HERE,
+      _taskRunner.get(), FROM_HERE,
       base::BindOnce(^base::scoped_nsobject<UIImage>() {
         // If the image is not in the cache, load it from disk.
         UIImage* localImage = image;
@@ -561,66 +561,66 @@ void ConvertAndSaveGreyImage(NSString* session_id,
 }
 
 - (void)createGreyCache:(NSArray*)sessionIDs {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
-  greyImageDictionary_ =
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
+  _greyImageDictionary =
       [NSMutableDictionary dictionaryWithCapacity:kGreyInitialCapacity];
   for (NSString* sessionID in sessionIDs)
     [self loadGreyImageAsync:sessionID];
 }
 
 - (void)removeGreyCache {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
-  greyImageDictionary_ = nil;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
+  _greyImageDictionary = nil;
   [self clearGreySessionInfo];
 }
 
 - (void)clearGreySessionInfo {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
-  mostRecentGreySessionId_ = nil;
-  mostRecentGreyBlock_ = nil;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
+  _mostRecentGreySessionId = nil;
+  _mostRecentGreyBlock = nil;
 }
 
 - (void)greyImageForSessionID:(NSString*)sessionID
                      callback:(void (^)(UIImage*))callback {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
-  DCHECK(greyImageDictionary_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
+  DCHECK(_greyImageDictionary);
   DCHECK(sessionID);
   DCHECK(callback);
 
-  if (UIImage* image = [greyImageDictionary_ objectForKey:sessionID]) {
+  if (UIImage* image = [_greyImageDictionary objectForKey:sessionID]) {
     callback(image);
     [self clearGreySessionInfo];
   } else {
-    mostRecentGreySessionId_ = [sessionID copy];
-    mostRecentGreyBlock_ = [callback copy];
+    _mostRecentGreySessionId = [sessionID copy];
+    _mostRecentGreyBlock = [callback copy];
   }
 }
 
 - (void)retrieveGreyImageForSessionID:(NSString*)sessionID
                              callback:(void (^)(UIImage*))callback {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
   DCHECK(sessionID);
   DCHECK(callback);
 
-  if (greyImageDictionary_) {
-    if (UIImage* image = [greyImageDictionary_ objectForKey:sessionID]) {
+  if (_greyImageDictionary) {
+    if (UIImage* image = [_greyImageDictionary objectForKey:sessionID]) {
       callback(image);
       return;
     }
   }
 
-  if (!taskRunner_) {
+  if (!_taskRunner) {
     callback(nil);
     return;
   }
 
   // Copy ivars used by the block so that it does not reference |self|.
-  const base::FilePath cacheDirectory = cacheDirectory_;
-  const ImageScale snapshotsScale = snapshotsScale_;
+  const base::FilePath cacheDirectory = _cacheDirectory;
+  const ImageScale snapshotsScale = _snapshotsScale;
 
   __weak SnapshotCache* weakSelf = self;
   base::PostTaskAndReplyWithResult(
-      taskRunner_.get(), FROM_HERE,
+      _taskRunner.get(), FROM_HERE,
       base::BindOnce(^base::scoped_nsobject<UIImage>() {
         // Retrieve the image on a high priority thread.
         return base::scoped_nsobject<UIImage>(ReadImageForSessionFromDisk(
@@ -641,27 +641,27 @@ void ConvertAndSaveGreyImage(NSString* session_id,
 }
 
 - (void)saveGreyInBackgroundForSessionID:(NSString*)sessionID {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
   if (!sessionID)
     return;
 
   // The color image may still be in memory.  Verify the sessionID matches.
-  if (backgroundingColorImage_) {
-    if (![backgroundingImageSessionId_ isEqualToString:sessionID]) {
-      backgroundingImageSessionId_ = nil;
-      backgroundingColorImage_ = nil;
+  if (_backgroundingColorImage) {
+    if (![_backgroundingImageSessionId isEqualToString:sessionID]) {
+      _backgroundingImageSessionId = nil;
+      _backgroundingColorImage = nil;
     }
   }
 
-  if (!taskRunner_)
+  if (!_taskRunner)
     return;
 
   // Copy ivars used by the block so that it does not reference |self|.
-  UIImage* backgroundingColorImage = backgroundingColorImage_;
-  const base::FilePath cacheDirectory = cacheDirectory_;
-  const ImageScale snapshotsScale = snapshotsScale_;
+  UIImage* backgroundingColorImage = _backgroundingColorImage;
+  const base::FilePath cacheDirectory = _cacheDirectory;
+  const ImageScale snapshotsScale = _snapshotsScale;
 
-  taskRunner_->PostTask(
+  _taskRunner->PostTask(
       FROM_HERE, base::BindOnce(^{
         ConvertAndSaveGreyImage(sessionID, snapshotsScale,
                                 backgroundingColorImage, cacheDirectory);
@@ -677,7 +677,7 @@ void ConvertAndSaveGreyImage(NSString* session_id,
 }
 
 - (void)shutdown {
-  taskRunner_ = nullptr;
+  _taskRunner = nullptr;
 }
 
 @end
@@ -685,15 +685,15 @@ void ConvertAndSaveGreyImage(NSString* session_id,
 @implementation SnapshotCache (TestingAdditions)
 
 - (BOOL)hasImageInMemory:(NSString*)sessionID {
-  return [lruCache_ objectForKey:sessionID] != nil;
+  return [_lruCache objectForKey:sessionID] != nil;
 }
 
 - (BOOL)hasGreyImageInMemory:(NSString*)sessionID {
-  return [greyImageDictionary_ objectForKey:sessionID] != nil;
+  return [_greyImageDictionary objectForKey:sessionID] != nil;
 }
 
 - (NSUInteger)lruCacheMaxSize {
-  return [lruCache_ maxCacheSize];
+  return [_lruCache maxCacheSize];
 }
 
 @end

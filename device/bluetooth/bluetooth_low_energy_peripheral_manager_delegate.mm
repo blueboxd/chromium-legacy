@@ -41,7 +41,7 @@ class BluetoothLowEnergyPeripheralManagerBridge {
 // Delegate for CBPeripheralManager, which forwards CoreBluetooth callbacks to
 // their appropriate handler.
 @implementation BluetoothLowEnergyPeripheralManagerDelegate {
-  std::unique_ptr<device::BluetoothLowEnergyPeripheralManagerBridge> bridge_;
+  std::unique_ptr<device::BluetoothLowEnergyPeripheralManagerBridge> _bridge;
 }
 
 - (id)initWithAdvertisementManager:
@@ -49,19 +49,19 @@ class BluetoothLowEnergyPeripheralManagerBridge {
               advertisementManager
                         andAdapter:(device::BluetoothAdapterMac*)adapter {
   if ((self = [super init])) {
-    bridge_.reset(new device::BluetoothLowEnergyPeripheralManagerBridge(
+    _bridge.reset(new device::BluetoothLowEnergyPeripheralManagerBridge(
         advertisementManager, adapter));
   }
   return self;
 }
 
 - (void)peripheralManagerDidUpdateState:(CBPeripheralManager*)peripheral {
-  bridge_->UpdatedState();
+  _bridge->UpdatedState();
 }
 
 - (void)peripheralManagerDidStartAdvertising:(CBPeripheralManager*)peripheral
                                        error:(NSError*)error {
-  bridge_->DidStartAdvertising(error);
+  _bridge->DidStartAdvertising(error);
 }
 
 @end

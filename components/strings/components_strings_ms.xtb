@@ -8,7 +8,6 @@
 <translation id="1032854598605920125">Putar ikut arah jam</translation>
 <translation id="1036348656032585052">Matikan</translation>
 <translation id="1038842779957582377">nama tidak diketahui</translation>
-<translation id="1039626062703039346">Chrome boleh membantu anda melindungi Akaun Google anda dan menukar kata laluan anda. Tindakan ini akan memberitahu Google tentang tapak ini.</translation>
 <translation id="1050038467049342496">Tutup apl lain</translation>
 <translation id="1055184225775184556">&amp;Buat Asal Tambahkan</translation>
 <translation id="1056898198331236512">Amaran</translation>
@@ -299,7 +298,6 @@
 <translation id="2354001756790975382">Penanda halaman lain</translation>
 <translation id="2354430244986887761">Penyemakan Imbas Selamat Google <ph name="BEGIN_LINK" />menemui apl yang memudaratkan<ph name="END_LINK" /> di <ph name="SITE" /> baru-baru ini.</translation>
 <translation id="2355395290879513365">Penyerang mungkin dapat melihat imej yang anda lihat di tapak ini dan menipu anda dengan mengubah suainya.</translation>
-<translation id="2355474962185559967">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chromium mengesyorkan anda pergi ke <ph name="WEBSITE_1" /> dan menukar kata laluan anda sekarang.</translation>
 <translation id="2356070529366658676">Tanya</translation>
 <translation id="2359629602545592467">Berbilang</translation>
 <translation id="2359808026110333948">Teruskan</translation>
@@ -332,7 +330,6 @@
 <translation id="2495083838625180221">Penghurai JSON</translation>
 <translation id="2495093607237746763">Jika ditandai, Chromium akan menyimpan salinan kad anda pada peranti ini untuk pengisian borang yang lebih cepat.</translation>
 <translation id="2498091847651709837">Imbas kad baharu</translation>
-<translation id="249825481377667906">Chromium boleh membantu anda melindungi Akaun Google anda dan menukar kata laluan anda. Tindakan ini akan memberitahu Google tentang tapak ini.</translation>
 <translation id="2501278716633472235">Kembali</translation>
 <translation id="2503184589641749290">Kad debit dan prabayar yang diterima</translation>
 <translation id="2505268675989099013">Lindungi Akaun</translation>
@@ -485,7 +482,6 @@
 <translation id="3228969707346345236">Gagal terjemah kerana halaman sudah dalam <ph name="LANGUAGE" />.</translation>
 <translation id="3229041911291329567">Maklumat versi tentang peranti dan penyemak imbas anda</translation>
 <translation id="323107829343500871">Masukkan CVC untuk <ph name="CREDIT_CARD" /></translation>
-<translation id="3234392465377209614">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chromium mengesyorkan anda pergi ke <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> dan <ph name="WEBSITE_3" /> serta menukar kata laluan anda sekarang.</translation>
 <translation id="3234666976984236645">Sentiasa kesan kandungan penting di tapak web ini</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> kelihatan serupa dengan <ph name="SUGGESTED_DOMAIN" />. Kadangkala penyerang meniru tapak dengan menggunakan URL serupa.</translation>
 <translation id="3270847123878663523">&amp;Buat asal Susun semula</translation>
@@ -517,7 +513,6 @@
 <translation id="342781501876943858">Chromium mengesyorkan penetapan semula kata laluan jika anda menggunakan semula kata laluan itu di tapak lain.</translation>
 <translation id="3428151540071562330">Satu atau beberapa URI templat pelayan DnsOverHttpsTemplates URI tidak sah dan tidak akan digunakan.</translation>
 <translation id="3431636764301398940">Simpan kad ini pada peranti ini</translation>
-<translation id="3438790640050632698">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chrome mengesyorkan anda pergi ke <ph name="WEBSITE_1" /> dan <ph name="WEBSITE_2" /> serta menukar kata laluan anda sekarang.</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Pemilik peranti ini telah mematikan permainan dinosaur.</translation>
 <translation id="3447884698081792621">Tunjukkan sijil (yang dikeluarkan oleh <ph name="ISSUER" />)</translation>
@@ -532,7 +527,6 @@
 <translation id="3495081129428749620">Cari dalam halaman
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Dasar ini diabaikan kerana dasar lain daripada kumpulan dasar yang sama mempunyai keutamaan yang lebih tinggi.</translation>
-<translation id="3525469219100414032">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chrome mengesyorkan anda pergi ke <ph name="WEBSITE_1" /> dan menukar kata laluan anda sekarang.</translation>
 <translation id="3528171143076753409">Sijil pelayan tidak dipercayai.</translation>
 <translation id="3528485271872257980">Coklat Gelap</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Sekurang-kurangnya 1 item pada peranti yang disegerakkan}=1{1 item (dan beberapa lagi pada peranti yang disegerakkan)}other{# item (dan beberapa lagi pada peranti yang disegerakkan)}}</translation>
@@ -962,7 +956,6 @@
 <translation id="5565735124758917034">Aktif</translation>
 <translation id="5570825185877910964">Lindungi akaun</translation>
 <translation id="5571083550517324815">Tidak boleh mengambil dari alamat ini. Pilih alamat lain.</translation>
-<translation id="5572009199897554128">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chromium mengesyorkan anda pergi ke <ph name="WEBSITE_1" /> dan <ph name="WEBSITE_2" /> serta menukar kata laluan anda sekarang.</translation>
 <translation id="5580958916614886209">Semak bulan tamat tempoh anda dan cuba lagi</translation>
 <translation id="5586446728396275693">Tiada alamat yang disimpan</translation>
 <translation id="5595485650161345191">Edit alamat</translation>
@@ -1678,7 +1671,6 @@ Butiran tambahan:
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">Anda mungkin akan kehilangan akses kepada Akaun Google anda. Chromium mengesyorkan supaya anda menukar kata laluan sekarang. Anda akan diminta untuk log masuk.</translation>
 <translation id="939736085109172342">Folder baharu</translation>
-<translation id="940786960229275114">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chrome mengesyorkan anda pergi ke <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> dan <ph name="WEBSITE_3" /> serta menukar kata laluan anda sekarang.</translation>
 <translation id="945855313015696284">Semak maklumat di bawah dan padamkan sebarang kad yang tidak sah</translation>
 <translation id="950736567201356821">Tiga tebukan atas</translation>
 <translation id="951104842009476243">Kad Debit dan Prabayar yang Diterima</translation>

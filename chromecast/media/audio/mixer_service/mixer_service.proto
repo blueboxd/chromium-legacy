@@ -117,6 +117,19 @@ message StreamConfig {
 // this connection.
 message LoopbackDataRequest {}
 
+// Sent when a loopback audio stream is interrupted (ie, is discontinuous).
+message StreamInterruption {
+  enum InterruptionReason {
+    INTERRUPTED_UNKNOWN = 0;
+    INTERRUPTED_DISCONNECTED = 1;    // Disconnected from mixer.
+    INTERRUPTED_UNDERRUN = 2;        // Mixer output underrun.
+    INTERRUPTED_CONFIG_CHANGE = 3;   // Mixer output config changed.
+    INTERRUPTED_OUTPUT_STOPPED = 4;  // Mixer stopped playing out audio.
+  }
+
+  optional InterruptionReason reason = 1;
+}
+
 // Sent to indicate that the mixer should redirect specific audio output
 // stream data back over this connection.
 message RedirectionRequest {
@@ -211,4 +224,5 @@ message Generic {
   optional StreamCount stream_count = 19;
   optional Error error = 20;
   optional NumOutputChannels set_num_output_channels = 21;
+  optional StreamInterruption stream_interruption = 22;
 }

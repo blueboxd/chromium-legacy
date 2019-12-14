@@ -55,6 +55,7 @@ class CORE_EXPORT HTMLIFrameElement final
 
   ParsedFeaturePolicy ConstructContainerPolicy(
       Vector<String>* /* messages */) const override;
+  DocumentPolicy::FeatureState ConstructRequiredPolicy() const override;
 
   FrameOwnerElementType OwnerType() const final {
     return FrameOwnerElementType::kIframe;
@@ -95,6 +96,7 @@ class CORE_EXPORT HTMLIFrameElement final
   AtomicString name_;
   AtomicString required_csp_;
   AtomicString allow_;
+  AtomicString required_policy_;  // policy attribute
   bool allow_fullscreen_;
   bool allow_payment_request_;
   bool collapsed_by_client_;

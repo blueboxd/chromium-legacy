@@ -654,9 +654,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   std::unique_ptr<RenderWidgetHostViewEventHandler> event_handler_;
 
   // If this object is the main view of a RenderWidgetHostImpl, this value
-  // equals to the FrameSinkId of that widget. If this object is the platform
-  // view of a RenderWidgetHostViewGuest, a new FrameSinkId will be created but
-  // it won't be used to actually put anything on screen.
+  // equals to the FrameSinkId of that widget.
   const viz::FrameSinkId frame_sink_id_;
 
   std::unique_ptr<CursorManager> cursor_manager_;

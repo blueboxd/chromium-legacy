@@ -43,9 +43,10 @@ class EnrollmentStatus {
     ACTIVE_DIRECTORY_POLICY_FETCH_FAILED = 17,  // Failed to fetch Active
                                                 // Directory policy via
                                                 // authpolicyd.
-    DM_TOKEN_STORE_FAILED = 18,   // Failed to store DM token into the
-                                  // local state.
-    LICENSE_REQUEST_FAILED = 19,  // Failed to get available license types.
+    DM_TOKEN_STORE_FAILED = 18,         // Failed to store DM token into the
+                                        // local state.
+    /* LICENSE_REQUEST_FAILED = 19, */  // Unused: Failed to get available
+                                        // license types.
     OFFLINE_POLICY_LOAD_FAILED = 20,  // Failed to load the policy data for the
                                       // offline demo mode.
     OFFLINE_POLICY_DECODING_FAILED = 21,  // Failed when the policy data fails

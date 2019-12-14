@@ -15,6 +15,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class ScriptPromiseResolver;
 
 class KeyboardLock final : public GarbageCollected<KeyboardLock>,
@@ -25,7 +26,7 @@ class KeyboardLock final : public GarbageCollected<KeyboardLock>,
   explicit KeyboardLock(ExecutionContext*);
   ~KeyboardLock();
 
-  ScriptPromise lock(ScriptState*, const Vector<String>&);
+  ScriptPromise lock(ScriptState*, const Vector<String>&, ExceptionState&);
   void unlock(ScriptState*);
 
   // ContextLifecycleObserver override.

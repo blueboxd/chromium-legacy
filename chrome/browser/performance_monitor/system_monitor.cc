@@ -12,7 +12,6 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/performance_monitor/system_monitor_metrics_logger.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/performance_monitor/metric_evaluator_helper_win.h"
@@ -34,9 +33,6 @@ SystemMonitor* g_system_metrics_monitor = nullptr;
 constexpr base::TimeDelta kDefaultRefreshInterval =
     base::TimeDelta::FromSeconds(2);
 
-const base::Feature kSystemMonitorMetricLogger{
-    "SystemMonitorMetricLogger", base::FEATURE_DISABLED_BY_DEFAULT};
-
 }  // namespace
 
 SystemMonitor::SystemMonitor(
@@ -50,11 +46,6 @@ SystemMonitor::SystemMonitor(
       metric_evaluators_metadata_(CreateMetricMetadataArray()) {
   DCHECK(!g_system_metrics_monitor);
   g_system_metrics_monitor = this;
-
-  if (base::FeatureList::IsEnabled(kSystemMonitorMetricLogger)) {
-    // This has to be created after initializing |g_system_metrics_monitor|.
-    metrics_logger_ = std::make_unique<SystemMonitorMetricsLogger>();
-  }
 }
 
 SystemMonitor::~SystemMonitor() {
@@ -88,23 +79,9 @@ MetricRefreshFrequencies::Builder::SetFreePhysMemoryMbFrequency(
 }
 
 MetricRefreshFrequencies::Builder&
-MetricRefreshFrequencies::Builder::SetDiskIdleTimePercentFrequency(
-    SamplingFrequency freq) {
-  metrics_and_frequencies_.disk_idle_time_percent_frequency = freq;
-  return *this;
-}
-
-MetricRefreshFrequencies::Builder&
 MetricRefreshFrequencies::Builder::SetSystemMetricsSamplingFrequency(
     SamplingFrequency freq) {
   metrics_and_frequencies_.system_metrics_sampling_frequency = freq;
-  return *this;
-}
-
-MetricRefreshFrequencies::Builder& MetricRefreshFrequencies::Builder::
-    SetChromeTotalResidentSetEstimateMbSamplingFrequency(
-        SamplingFrequency freq) {
-  metrics_and_frequencies_.chrome_total_resident_set_sampling_frequency = freq;
   return *this;
 }
 
@@ -124,18 +101,8 @@ void SystemMonitor::SystemObserver::OnFreePhysicalMemoryMbSample(
   NOTREACHED();
 }
 
-void SystemMonitor::SystemObserver::OnDiskIdleTimePercent(
-    float disk_idle_time_percent) {
-  NOTREACHED();
-}
-
 void SystemMonitor::SystemObserver::OnSystemMetricsStruct(
     const base::SystemMetrics& system_metrics) {
-  NOTREACHED();
-}
-
-void SystemMonitor::SystemObserver::OnChromeTotalResidentSetEstimateMb(
-    int chrome_total_resident_set_estimate) {
   NOTREACHED();
 }
 
@@ -201,16 +168,9 @@ SystemMonitor::MetricMetadataArray SystemMonitor::CreateMetricMetadataArray() {
       CREATE_METRIC_METADATA(kFreeMemoryMb, int, GetFreePhysicalMemoryMb,
                              OnFreePhysicalMemoryMbSample,
                              free_phys_memory_mb_frequency),
-      CREATE_METRIC_METADATA(kDiskIdleTimePercent, float,
-                             GetDiskIdleTimePercent, OnDiskIdleTimePercent,
-                             disk_idle_time_percent_frequency),
       CREATE_METRIC_METADATA(kSystemMetricsStruct, base::SystemMetrics,
                              GetSystemMetricsStruct, OnSystemMetricsStruct,
                              system_metrics_sampling_frequency),
-      CREATE_METRIC_METADATA(kChromeTotalResidentSetEstimateMb, int,
-                             GetChromeTotalResidentSetEstimateMb,
-                             OnChromeTotalResidentSetEstimateMb,
-                             chrome_total_resident_set_sampling_frequency),
   };
 
 #undef CREATE_METRIC_METADATA

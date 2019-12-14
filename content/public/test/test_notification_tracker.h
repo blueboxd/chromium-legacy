@@ -39,11 +39,10 @@ class TestNotificationTracker : public NotificationObserver {
   ~TestNotificationTracker() override;
 
   // Makes this object listen for the given notification with the given source.
+  //
+  // To listen for all sources, pass
+  // NotificationService::AllBrowserContextsAndSources() as the |source|.
   void ListenFor(int type, const NotificationSource& source);
-
-  // Makes this object listen for notifications of the given type coming from
-  // any source.
-  void ListenForAll(int type);
 
   // Clears the list of events.
   void Reset();

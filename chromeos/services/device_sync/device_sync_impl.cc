@@ -484,6 +484,8 @@ void DeviceSyncImpl::SetSoftwareFeatureState(
     bool enabled,
     bool is_exclusive,
     SetSoftwareFeatureStateCallback callback) {
+  DCHECK(!features::ShouldDeprecateV1DeviceSync());
+
   if (status_ != Status::READY) {
     PA_LOG(WARNING) << "DeviceSyncImpl::SetSoftwareFeatureState() invoked "
                     << "before initialization was complete. Cannot set state.";
@@ -517,6 +519,7 @@ void DeviceSyncImpl::SetFeatureStatus(const std::string& device_instance_id,
                                       multidevice::SoftwareFeature feature,
                                       FeatureStatusChange status_change,
                                       SetFeatureStatusCallback callback) {
+  DCHECK(features::ShouldUseV2DeviceSync);
   DCHECK(!device_instance_id.empty());
 
   if (status_ != Status::READY) {
@@ -534,17 +537,40 @@ void DeviceSyncImpl::SetFeatureStatus(const std::string& device_instance_id,
                       device_instance_id, feature, status_change,
                       remote_device_provider_.get(), std::move(callback)));
 
-  feature_status_setter_->SetFeatureStatus(
-      device_instance_id, feature, status_change,
-      base::BindOnce(&DeviceSyncImpl::OnSetFeatureStatusSuccess,
-                     weak_ptr_factory_.GetWeakPtr()),
-      base::BindOnce(&DeviceSyncImpl::OnSetFeatureStatusError,
-                     weak_ptr_factory_.GetWeakPtr(), request_id));
+  // Before v1 DeviceSync is deprecated, we need to use the
+  // CryptAuthFeatureStatusSetter indirectly via the SoftwareFeatureManager to
+  // ensure an ordering of SetSoftwareFeatureState() and SetFeatureStatus()
+  // calls. These two functions have similar effects on the CryptAuth backend,
+  // so the order of the calls matters. For example, say that, during setup, we
+  // select a device without an Instance ID to be the multi-device host, then we
+  // change our mind and select a device with an Instance ID. These calls to
+  // SetSoftwareFeatureState() and SetFeatureStatus(), respectively, need to be
+  // ordered so that the device with the Instance ID will always be set as the
+  // multi-device host. When v1 DeviceSync is deprecated,
+  // SetSoftwareFeatureState() will not longer be called, and the queue
+  // maintained by the FeatureStatusSetter will be sufficient.
+  if (features::ShouldDeprecateV1DeviceSync()) {
+    feature_status_setter_->SetFeatureStatus(
+        device_instance_id, feature, status_change,
+        base::BindOnce(&DeviceSyncImpl::OnSetFeatureStatusSuccess,
+                       weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&DeviceSyncImpl::OnSetFeatureStatusError,
+                       weak_ptr_factory_.GetWeakPtr(), request_id));
+  } else {
+    software_feature_manager_->SetFeatureStatus(
+        device_instance_id, feature, status_change,
+        base::BindOnce(&DeviceSyncImpl::OnSetFeatureStatusSuccess,
+                       weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&DeviceSyncImpl::OnSetFeatureStatusError,
+                       weak_ptr_factory_.GetWeakPtr(), request_id));
+  }
 }
 
 void DeviceSyncImpl::FindEligibleDevices(
     multidevice::SoftwareFeature software_feature,
     FindEligibleDevicesCallback callback) {
+  DCHECK(!features::ShouldDeprecateV1DeviceSync());
+
   if (status_ != Status::READY) {
     PA_LOG(WARNING) << "DeviceSyncImpl::FindEligibleDevices() invoked before "
                     << "initialization was complete. Cannot find devices.";
@@ -568,6 +594,8 @@ void DeviceSyncImpl::NotifyDevices(
     cryptauthv2::TargetService target_service,
     multidevice::SoftwareFeature feature,
     NotifyDevicesCallback callback) {
+  DCHECK(features::ShouldUseV2DeviceSync);
+
   if (status_ != Status::READY) {
     PA_LOG(WARNING) << "DeviceSyncImpl::NotifyDevices() invoked before "
                     << "initialization was complete. Cannot notify devices.";
@@ -687,15 +715,16 @@ void DeviceSyncImpl::OnSyncDeviceListChanged() {
 }
 
 void DeviceSyncImpl::Shutdown() {
+  cryptauth_device_activity_getter_.reset();
   software_feature_manager_.reset();
   feature_status_setter_.reset();
   device_notifier_.reset();
   remote_device_provider_.reset();
-  cryptauth_v2_device_manager_.reset();
   cryptauth_device_manager_.reset();
   cryptauth_enrollment_manager_.reset();
-  cryptauth_scheduler_.reset();
+  cryptauth_v2_device_manager_.reset();
   cryptauth_device_registry_.reset();
+  cryptauth_scheduler_.reset();
   cryptauth_key_registry_.reset();
   cryptauth_client_factory_.reset();
   cryptauth_gcm_manager_.reset();
@@ -829,17 +858,21 @@ void DeviceSyncImpl::CompleteInitializationAfterSuccessfulEnrollment() {
       cryptauth_enrollment_manager_->GetUserPrivateKey());
   remote_device_provider_->AddObserver(this);
 
+  if (features::ShouldUseV2DeviceSync()) {
+    feature_status_setter_ =
+        CryptAuthFeatureStatusSetterImpl::Factory::Get()->BuildInstance(
+            client_app_metadata_provider_, cryptauth_client_factory_.get(),
+            cryptauth_gcm_manager_.get());
+
+    device_notifier_ =
+        CryptAuthDeviceNotifierImpl::Factory::Get()->BuildInstance(
+            client_app_metadata_provider_, cryptauth_client_factory_.get(),
+            cryptauth_gcm_manager_.get());
+  }
+
+  // |feature_status_setter_| is null if v2 DeviceSync is disabled.
   software_feature_manager_ = SoftwareFeatureManagerImpl::Factory::NewInstance(
-      cryptauth_client_factory_.get());
-
-  feature_status_setter_ =
-      CryptAuthFeatureStatusSetterImpl::Factory::Get()->BuildInstance(
-          client_app_metadata_provider_, cryptauth_client_factory_.get(),
-          cryptauth_gcm_manager_.get());
-
-  device_notifier_ = CryptAuthDeviceNotifierImpl::Factory::Get()->BuildInstance(
-      client_app_metadata_provider_, cryptauth_client_factory_.get(),
-      cryptauth_gcm_manager_.get());
+      cryptauth_client_factory_.get(), feature_status_setter_.get());
 
   status_ = Status::READY;
 

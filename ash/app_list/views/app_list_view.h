@@ -240,8 +240,12 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   void SetIsInDrag(bool is_in_drag);
 
   // Home launcher can become the focused window without being reset when all
-  // open windows are closed in tablet mode. Reset the view in this case.
+  // open windows are closed in tablet mode. Ensures that correct initial view
+  // is focused in this case.
   void OnHomeLauncherGainingFocusWithoutAnimation();
+
+  // Ensures that apps grid pagination model has selected the initial page.
+  void SelectInitialAppsPage();
 
   // Gets the PaginationModel owned by this view's apps grid.
   ash::PaginationModel* GetAppsPaginationModel();

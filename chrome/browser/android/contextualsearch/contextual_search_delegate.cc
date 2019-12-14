@@ -272,8 +272,7 @@ std::string ContextualSearchDelegate::BuildRequestUrl(
       TemplateURLRef::SearchTermsArgs(base::string16());
 
   // Set the Coca-integration version.
-  // This is based on our current active feature, or an override param from a
-  // field trial, possibly augmented by using simplified server logic.
+  // This is based on our current active feature.
   int contextual_cards_version =
       contextual_search::kContextualCardsUrlActionsIntegration;
   if (base::FeatureList::IsEnabled(
@@ -284,15 +283,6 @@ std::string ContextualSearchDelegate::BuildRequestUrl(
   // Let the field-trial override.
   if (field_trial_->GetContextualCardsVersion() != 0) {
     contextual_cards_version = field_trial_->GetContextualCardsVersion();
-  }
-  // Add the simplified-server mixin, if enabled.
-  if (base::FeatureList::IsEnabled(
-          chrome::android::kContextualSearchSimplifiedServer) &&
-      contextual_cards_version <
-          contextual_search::kContextualCardsSimplifiedServerMixin) {
-    contextual_cards_version =
-        contextual_cards_version +
-        contextual_search::kContextualCardsSimplifiedServerMixin;
   }
 
   TemplateURLRef::SearchTermsArgs::ContextualSearchParams params(

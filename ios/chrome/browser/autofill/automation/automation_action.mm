@@ -22,7 +22,7 @@
 #endif
 
 @interface AutomationAction () {
-  std::unique_ptr<const base::DictionaryValue> actionDictionary_;
+  std::unique_ptr<const base::DictionaryValue> _actionDictionary;
 }
 
 @property(nonatomic, readonly)
@@ -175,7 +175,7 @@
     (const base::DictionaryValue&)actionDictionary {
   self = [super init];
   if (self) {
-    actionDictionary_ = actionDictionary.DeepCopyWithoutEmptyChildren();
+    _actionDictionary = actionDictionary.DeepCopyWithoutEmptyChildren();
   }
   return self;
 }
@@ -185,7 +185,7 @@
 }
 
 - (const std::unique_ptr<const base::DictionaryValue>&)actionDictionary {
-  return actionDictionary_;
+  return _actionDictionary;
 }
 
 // A shared flow across many actions, this waits for the target element to be

@@ -103,7 +103,8 @@ void SyncUserSettingsImpl::SetSelectedTypes(bool sync_everything,
                                             UserSelectableTypeSet types) {
   UserSelectableTypeSet registered_types = GetRegisteredSelectableTypes();
   DCHECK(registered_types.HasAll(types))
-      << UserSelectableTypeSetToString(types);
+      << "\n registered: " << UserSelectableTypeSetToString(registered_types)
+      << "\n setting to: " << UserSelectableTypeSetToString(types);
   prefs_->SetSelectedTypes(sync_everything, registered_types, types);
 }
 

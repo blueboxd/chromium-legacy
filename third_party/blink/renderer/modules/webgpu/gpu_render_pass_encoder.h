@@ -22,9 +22,6 @@ class GPURenderPassEncoder : public DawnObject<WGPURenderPassEncoder>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GPURenderPassEncoder* Create(
-      GPUDevice* device,
-      WGPURenderPassEncoder render_pass_encoder);
   explicit GPURenderPassEncoder(GPUDevice* device,
                                 WGPURenderPassEncoder render_pass_encoder);
   ~GPURenderPassEncoder() override;

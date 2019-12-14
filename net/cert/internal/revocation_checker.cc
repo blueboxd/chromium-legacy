@@ -8,7 +8,6 @@
 
 #include "base/strings/string_piece.h"
 #include "crypto/sha2.h"
-#include "net/base/network_isolation_key.h"
 #include "net/cert/cert_net_fetcher.h"
 #include "net/cert/internal/common_cert_errors.h"
 #include "net/cert/internal/crl.h"
@@ -122,8 +121,7 @@ bool CheckCertRevocation(const ParsedCertificateList& certs,
       //               bytes?
       // TODO(eroman): Improve interplay with HTTP cache.
       std::unique_ptr<CertNetFetcher::Request> net_ocsp_request =
-          net_fetcher->FetchOcsp(get_url, NetworkIsolationKey::Todo(),
-                                 CertNetFetcher::DEFAULT,
+          net_fetcher->FetchOcsp(get_url, CertNetFetcher::DEFAULT,
                                  CertNetFetcher::DEFAULT);
 
       Error net_error;
@@ -196,8 +194,7 @@ bool CheckCertRevocation(const ParsedCertificateList& certs,
           // CRL is too old, nor is there a separate CRL cache. It is assumed
           // the CRL server will send reasonable HTTP caching headers.
           std::unique_ptr<CertNetFetcher::Request> net_crl_request =
-              net_fetcher->FetchCrl(parsed_crl_url, NetworkIsolationKey::Todo(),
-                                    CertNetFetcher::DEFAULT,
+              net_fetcher->FetchCrl(parsed_crl_url, CertNetFetcher::DEFAULT,
                                     CertNetFetcher::DEFAULT);
 
           Error net_error;

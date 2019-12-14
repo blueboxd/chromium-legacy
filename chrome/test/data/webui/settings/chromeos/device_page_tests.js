@@ -591,7 +591,8 @@ cr.define('device_page_tests', function() {
         const naturalScrollOff =
             pointersPage.$$('cr-radio-button[name="false"]');
         const naturalScrollOn = pointersPage.$$('cr-radio-button[name="true"]');
-        const a = naturalScrollOn.querySelector('a');
+        const a = naturalScrollOn.querySelector('localized-string-with-link')
+                      .$.container.querySelector('a');
 
         // Prevent actually opening a link, which would block test.
         a.removeAttribute('href');

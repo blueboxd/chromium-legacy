@@ -554,11 +554,28 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
     // launch time, but this cannot be done for spare RenderProcessHosts, which
     // are started before it is known which navigation might use them.  So, a
     // spare RenderProcessHost should not be used in such cases.
+    //
+    // Note that exempting NTP and extensions from using the spare process might
+    // also happen via HasProcess check below (which returns true for
+    // process-per-site SiteInstances if the given process-per-site process
+    // already exists).  Despite this potential overlap, it is important to do
+    // both kinds of checks (to account for other non-ntp/extension
+    // process-per-site scenarios + to work correctly even if
+    // ShouldUseSpareRenderProcessHost starts covering non-process-per-site
+    // scenarios).
     bool embedder_allows_spare_usage =
         GetContentClient()->browser()->ShouldUseSpareRenderProcessHost(
             browser_context, site_instance->GetSiteURL());
 
+    // We shouldn't use the spare if:
+    // 1. The SiteInstance has already got an associated process.  This is
+    //    important to avoid taking and then immediately discarding the spare
+    //    for process-per-site scenarios (which the HasProcess call below
+    //    accounts for).  Note that HasProcess will return false and allow using
+    //    the spare if the given process-per-site process hasn't been launched.
+    // 2. The SiteInstance has opted out of using the spare process.
     bool site_instance_allows_spare_usage =
+        !site_instance->HasProcess() &&
         site_instance->CanAssociateWithSpareProcess();
 
     // Get the StoragePartition for |site_instance|.  Note that this might be
@@ -2821,8 +2838,7 @@ void RenderProcessHostImpl::NotifySpareManagerAboutRecentlyUsedBrowserContext(
 }
 
 // static
-RenderProcessHost*
-RenderProcessHostImpl::GetSpareRenderProcessHostForTesting() {
+RenderProcessHost* RenderProcessHost::GetSpareRenderProcessHostForTesting() {
   return SpareRenderProcessHostManager::GetInstance()
       .spare_render_process_host();
 }
@@ -4334,6 +4350,15 @@ void RenderProcessHostImpl::ResetIPC() {
   // away first, since deleting the channel proxy will post a
   // OnChannelClosed() to IPC::ChannelProxy::Context on the IO thread.
   ResetChannelProxy();
+
+  // The PermissionServiceContext holds PermissionSubscriptions originating from
+  // service workers. These subscriptions observe the PermissionControllerImpl
+  // that is owned by the Profile corresponding to |this|. At this point, IPC
+  // are unbound so no new subscriptions can be made. Existing subscriptions
+  // need to be released here, as the Profile, and with it, the
+  // PermissionControllerImpl, can be destroyed anytime after
+  // RenderProcessHostImpl::Cleanup() returns.
+  permission_service_context_.reset();
 }
 
 size_t RenderProcessHost::GetActiveViewCount() {

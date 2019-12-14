@@ -53,11 +53,6 @@ class GPUDevice final : public EventTargetWithInlineData,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GPUDevice* Create(
-      ExecutionContext* execution_context,
-      scoped_refptr<DawnControlClientHolder> dawn_control_client,
-      GPUAdapter* adapter,
-      const GPUDeviceDescriptor* descriptor);
   explicit GPUDevice(ExecutionContext* execution_context,
                      scoped_refptr<DawnControlClientHolder> dawn_control_client,
                      GPUAdapter* adapter,

@@ -25,6 +25,7 @@
 <translation id="7209941495304122410">Inserisci la password di Windows</translation>
 <translation id="7357241217513796177">Assicurati di disporre di connessione di rete e riprova.</translation>
 <translation id="7536769223115622137">Aggiungi account di lavoro</translation>
+<translation id="7811865856574012727">L'amministratore ha limitato l'accesso al dispositivo ai seguenti domini: <ph name="EMAIL_DOMAINS" />. Riprova usando un account di lavoro valido.</translation>
 <translation id="7856245195110636219">Impossibile continuare senza inserire l'attuale password di Windows. Contatta un amministratore di sistema.</translation>
 <translation id="8639729688781680518">Password di Windows dimenticata</translation>
 <translation id="866458870819756755">Impossibile creare un utente.</translation>

@@ -73,35 +73,6 @@
       },
     },
 
-    'android_instrumentation_tests': {
-      'chrome_public_test_apk': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
-      'chrome_public_test_vr_apk': {
-        'args': [
-          '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
-          '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
-        ],
-        'swarming': {
-          'shards': 2,
-        },
-      },
-      'content_shell_test_apk': {
-        'swarming': {
-          'shards': 3,
-        },
-      },
-      'mojo_test_apk': {},
-      'weblayer_instrumentation_test_apk': {},
-      'webview_instrumentation_test_apk': {
-        'swarming': {
-          'shards': 7,
-        },
-      },
-    },
-
     'android_isolated_scripts': {
       'content_shell_crash_test': {
         'args': [
@@ -3339,7 +3310,7 @@
           '-v',
         ],
         'android_args': [
-          '--shard-timeout=600',
+          '--shard-timeout=800',
         ],
         'merge': {
           'script': '//tools/perf/process_perf_results.py',
@@ -3358,7 +3329,7 @@
           '--one-frame-only',
         ],
         'android_args': [
-          '--shard-timeout=500',
+          '--shard-timeout=800',
         ],
         'merge': {
           'script': '//tools/perf/process_perf_results.py',

@@ -148,6 +148,9 @@ UnifiedSliderView::UnifiedSliderView(UnifiedSliderListener* listener,
   layout->SetFlexForView(slider_, 1);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
+
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
 }
 
 void UnifiedSliderView::SetSliderValue(float value, bool by_user) {

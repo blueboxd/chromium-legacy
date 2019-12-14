@@ -477,7 +477,7 @@ public class PaymentRequestImpl
     private SectionInformation mShippingAddressesSection;
     private ContactDetailsSection mContactSection;
     private boolean mIsFinishedQueryingPaymentApps;
-    private AutofillPaymentApp mAutofillPaymentAppFactory;
+    private AutofillPaymentAppCreator mAutofillPaymentAppCreator;
     private List<PaymentInstrument> mPendingInstruments = new ArrayList<>();
     private int mPaymentMethodsSectionAdditionalTextResourceId;
     private SectionInformation mPaymentMethodsSection;
@@ -716,7 +716,7 @@ public class PaymentRequestImpl
 
         // Checks whether the merchant supports autofill payment instrument before show is called.
         mMerchantSupportsAutofillPaymentInstruments =
-                AutofillPaymentApp.merchantSupportsAutofillPaymentInstruments(mMethodData);
+                AutofillPaymentAppFactory.merchantSupportsAutofillPaymentInstruments(mMethodData);
         // If in strict mode, don't give user an option to add an autofill card during the checkout
         // to avoid the "unhappy" basic-card flow.
         mUserCanAddCreditCard = mMerchantSupportsAutofillPaymentInstruments
@@ -1093,8 +1093,7 @@ public class PaymentRequestImpl
             return false;
         }
 
-        return PaymentsExperimentalFeatures.isEnabled(
-                ChromeFeatureList.WEB_PAYMENT_MICROTRANSACTION);
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_PAYMENTS_MINIMAL_UI);
     }
 
     /**
@@ -2310,12 +2309,12 @@ public class PaymentRequestImpl
     @Override
     public void onCreditCardUpdated(CreditCard card) {
         if (mClient == null || !mMerchantSupportsAutofillPaymentInstruments
-                || mPaymentMethodsSection == null || mAutofillPaymentAppFactory == null) {
+                || mPaymentMethodsSection == null || mAutofillPaymentAppCreator == null) {
             return;
         }
 
         PaymentInstrument updatedAutofillPaymentInstrument =
-                mAutofillPaymentAppFactory.getInstrumentForCard(card);
+                mAutofillPaymentAppCreator.createPaymentAppForCard(card);
 
         // Can be null when the card added through settings does not match the requested card
         // network or is invalid, because autofill settings do not perform the same level of
@@ -2549,8 +2548,8 @@ public class PaymentRequestImpl
 
     // PaymentAppFactoryDelegate implementation.
     @Override
-    public void onAutofillPaymentAppFactoryCreated(AutofillPaymentApp factory) {
-        mAutofillPaymentAppFactory = factory;
+    public void onAutofillPaymentAppCreatorAvailable(AutofillPaymentAppCreator creator) {
+        mAutofillPaymentAppCreator = creator;
     }
 
     // PaymentAppFactoryDelegate implementation.

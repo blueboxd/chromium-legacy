@@ -14,6 +14,7 @@ import android.text.TextUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
@@ -82,36 +83,46 @@ public class SharedClipboardMessageHandler {
                 NotificationConstants.GROUP_SHARED_CLIPBOARD,
                 NotificationConstants.NOTIFICATION_ID_SHARED_CLIPBOARD_OUTGOING, name);
 
-        SharingServiceProxy.getInstance().sendSharedClipboardMessage(
-                guid, lastUpdatedTimestampMillis, text, result -> {
-            if (result == SharingSendMessageResult.SUCCESSFUL) {
-                SharingNotificationUtil.dismissNotification(
-                        NotificationConstants.GROUP_SHARED_CLIPBOARD,
-                        NotificationConstants.NOTIFICATION_ID_SHARED_CLIPBOARD_OUTGOING);
-            } else {
-                String contentTitle = getErrorNotificationTitle(result);
-                String contentText = getErrorNotificationText(result, name);
-                PendingIntentProvider tryAgainIntent = null;
+        // After this point the native browser process must be fully initialized in order to use
+        // the profile, which is accessed by SharingServiceProxy. It might not yet be fully
+        // initialized if a user clicked retry on the error notification after sending a shared
+        // clipboard message failed, and Chrome was killed in the meantime.
+        ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
 
-                if (result == SharingSendMessageResult.ACK_TIMEOUT
-                        || result == SharingSendMessageResult.NETWORK_ERROR) {
-                    Context context = ContextUtils.getApplicationContext();
-                    tryAgainIntent = PendingIntentProvider.getBroadcast(context, /*requestCode=*/0,
-                            new Intent(context, TryAgainReceiver.class)
-                                    .putExtra(Intent.EXTRA_TEXT, text)
-                                    .putExtra(EXTRA_DEVICE_GUID, guid)
-                                    .putExtra(EXTRA_DEVICE_CLIENT_NAME, name)
-                                    .putExtra(EXTRA_DEVICE_LAST_UPDATED_TIMESTAMP_MILLIS,
-                                            lastUpdatedTimestampMillis),
-                            PendingIntent.FLAG_UPDATE_CURRENT);
+        // TODO(crbug.com/1015411): Wait for device info in a more central place.
+        SharingServiceProxy.getInstance().addDeviceCandidatesInitializedObserver(() -> {
+            SharingServiceProxy.getInstance().sendSharedClipboardMessage(
+                    guid, lastUpdatedTimestampMillis, text, result -> {
+                if (result == SharingSendMessageResult.SUCCESSFUL) {
+                    SharingNotificationUtil.dismissNotification(
+                            NotificationConstants.GROUP_SHARED_CLIPBOARD,
+                            NotificationConstants.NOTIFICATION_ID_SHARED_CLIPBOARD_OUTGOING);
+                } else {
+                    String contentTitle = getErrorNotificationTitle(result);
+                    String contentText = getErrorNotificationText(result, name);
+                    PendingIntentProvider tryAgainIntent = null;
+
+                    if (result == SharingSendMessageResult.ACK_TIMEOUT
+                            || result == SharingSendMessageResult.NETWORK_ERROR) {
+                        Context context = ContextUtils.getApplicationContext();
+                        tryAgainIntent = PendingIntentProvider.getBroadcast(
+                                context, /*requestCode=*/0,
+                                new Intent(context, TryAgainReceiver.class)
+                                        .putExtra(Intent.EXTRA_TEXT, text)
+                                        .putExtra(EXTRA_DEVICE_GUID, guid)
+                                        .putExtra(EXTRA_DEVICE_CLIENT_NAME, name)
+                                        .putExtra(EXTRA_DEVICE_LAST_UPDATED_TIMESTAMP_MILLIS,
+                                                lastUpdatedTimestampMillis),
+                                PendingIntent.FLAG_UPDATE_CURRENT);
+                    }
+
+                    SharingNotificationUtil.showSendErrorNotification(
+                            NotificationUmaTracker.SystemNotificationType.SHARED_CLIPBOARD,
+                            NotificationConstants.GROUP_SHARED_CLIPBOARD,
+                            NotificationConstants.NOTIFICATION_ID_SHARED_CLIPBOARD_OUTGOING,
+                            contentTitle, contentText, tryAgainIntent);
                 }
-
-                SharingNotificationUtil.showSendErrorNotification(
-                        NotificationUmaTracker.SystemNotificationType.SHARED_CLIPBOARD,
-                        NotificationConstants.GROUP_SHARED_CLIPBOARD,
-                        NotificationConstants.NOTIFICATION_ID_SHARED_CLIPBOARD_OUTGOING,
-                        contentTitle, contentText, tryAgainIntent);
-            }
+            });
         });
     }
 

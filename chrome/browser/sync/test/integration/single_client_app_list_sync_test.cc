@@ -226,43 +226,26 @@ class SingleClientAppListOsSyncTest : public OsSyncTest {
 };
 
 IN_PROC_BROWSER_TEST_F(SingleClientAppListOsSyncTest,
-                       AppListSyncedForAllAppTypes) {
+                       AppListSyncedByOsSettings) {
   ASSERT_TRUE(SetupSync());
   syncer::SyncService* service = GetSyncService(0);
   syncer::SyncUserSettings* settings = service->GetUserSettings();
 
-  // Initially all app types are enabled.
+  // Initially app list is enabled.
   ASSERT_TRUE(settings->IsSyncEverythingEnabled());
   ASSERT_TRUE(settings->IsSyncAllOsTypesEnabled());
   ASSERT_TRUE(service->GetActiveDataTypes().Has(syncer::APP_LIST));
-  ASSERT_TRUE(service->GetActiveDataTypes().Has(syncer::APPS));
-  ASSERT_TRUE(service->GetActiveDataTypes().Has(syncer::ARC_PACKAGE));
 
-  // Disable all browser types, which disables Chrome apps.
+  // Disable all browser types.
   settings->SetSelectedTypes(false, UserSelectableTypeSet());
   GetClient(0)->AwaitSyncSetupCompletion();
-  EXPECT_FALSE(service->GetActiveDataTypes().Has(syncer::APPS));
-  EXPECT_TRUE(service->GetActiveDataTypes().Has(syncer::ARC_PACKAGE));
 
-  // APP_LIST is still synced because ARC apps affect it.
+  // APP_LIST is still synced because it is an OS setting.
   EXPECT_TRUE(service->GetActiveDataTypes().Has(syncer::APP_LIST));
 
-  // Enable browser types and disable OS types, which disables ARC apps.
-  settings->SetSelectedTypes(true, UserSelectableTypeSet());
+  // Disable OS types.
   settings->SetSelectedOsTypes(false, UserSelectableOsTypeSet());
   GetClient(0)->AwaitSyncSetupCompletion();
-  EXPECT_TRUE(service->GetActiveDataTypes().Has(syncer::APPS));
-  EXPECT_FALSE(service->GetActiveDataTypes().Has(syncer::ARC_PACKAGE));
-
-  // APP_LIST is still synced because Chrome apps affect it.
-  EXPECT_TRUE(service->GetActiveDataTypes().Has(syncer::APP_LIST));
-
-  // Disable both browser and OS types.
-  settings->SetSelectedTypes(false, UserSelectableTypeSet());
-  settings->SetSelectedOsTypes(false, UserSelectableOsTypeSet());
-  GetClient(0)->AwaitSyncSetupCompletion();
-  EXPECT_FALSE(service->GetActiveDataTypes().Has(syncer::APPS));
-  EXPECT_FALSE(service->GetActiveDataTypes().Has(syncer::ARC_PACKAGE));
 
   // APP_LIST is not synced.
   EXPECT_FALSE(service->GetActiveDataTypes().Has(syncer::APP_LIST));

@@ -43,6 +43,9 @@ class CleanerEngineRequestsProxy
   void UnbindRequestsRemote();
 
  protected:
+  // Tests can subclass this create a proxy that's not bound to anything.
+  CleanerEngineRequestsProxy();
+
   virtual ~CleanerEngineRequestsProxy();
 
  private:

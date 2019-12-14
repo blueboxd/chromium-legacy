@@ -96,10 +96,6 @@ void WebTestContentRendererClient::
   if (command_line->HasSwitch(switches::kEnableFontAntialiasing)) {
     blink::SetFontAntialiasingEnabledForTest(true);
   }
-  if (command_line->HasSwitch(
-          switches::kDisableOriginTrialControlledBlinkFeatures)) {
-    blink::WebRuntimeFeatures::EnableOriginTrialControlledFeatures(false);
-  }
 }
 
 bool WebTestContentRendererClient::IsIdleMediaSuspendEnabled() {

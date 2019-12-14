@@ -245,23 +245,29 @@ int StringToRRectFType(const std::string& str) {
 base::Value RRectFToDict(const gfx::RRectF& rect) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetStringKey("type", RRectFTypeToString(rect.GetType()));
-  dict.SetKey("rect", RectFToDict(rect.rect()));
-  dict.SetDoubleKey("upper_left.x",
-                    rect.GetCornerRadii(gfx::RRectF::Corner::kUpperLeft).x());
-  dict.SetDoubleKey("upper_left.y",
-                    rect.GetCornerRadii(gfx::RRectF::Corner::kUpperLeft).y());
-  dict.SetDoubleKey("upper_right.x",
-                    rect.GetCornerRadii(gfx::RRectF::Corner::kUpperRight).x());
-  dict.SetDoubleKey("upper_right.y",
-                    rect.GetCornerRadii(gfx::RRectF::Corner::kUpperRight).y());
-  dict.SetDoubleKey("lower_right.x",
-                    rect.GetCornerRadii(gfx::RRectF::Corner::kLowerRight).x());
-  dict.SetDoubleKey("lower_right.y",
-                    rect.GetCornerRadii(gfx::RRectF::Corner::kLowerRight).y());
-  dict.SetDoubleKey("lower_left.x",
-                    rect.GetCornerRadii(gfx::RRectF::Corner::kLowerLeft).x());
-  dict.SetDoubleKey("lower_left.y",
-                    rect.GetCornerRadii(gfx::RRectF::Corner::kLowerLeft).y());
+  if (rect.GetType() != gfx::RRectF::Type::kEmpty) {
+    dict.SetKey("rect", RectFToDict(rect.rect()));
+    dict.SetDoubleKey("upper_left.x",
+                      rect.GetCornerRadii(gfx::RRectF::Corner::kUpperLeft).x());
+    dict.SetDoubleKey("upper_left.y",
+                      rect.GetCornerRadii(gfx::RRectF::Corner::kUpperLeft).y());
+    dict.SetDoubleKey(
+        "upper_right.x",
+        rect.GetCornerRadii(gfx::RRectF::Corner::kUpperRight).x());
+    dict.SetDoubleKey(
+        "upper_right.y",
+        rect.GetCornerRadii(gfx::RRectF::Corner::kUpperRight).y());
+    dict.SetDoubleKey(
+        "lower_right.x",
+        rect.GetCornerRadii(gfx::RRectF::Corner::kLowerRight).x());
+    dict.SetDoubleKey(
+        "lower_right.y",
+        rect.GetCornerRadii(gfx::RRectF::Corner::kLowerRight).y());
+    dict.SetDoubleKey("lower_left.x",
+                      rect.GetCornerRadii(gfx::RRectF::Corner::kLowerLeft).x());
+    dict.SetDoubleKey("lower_left.y",
+                      rect.GetCornerRadii(gfx::RRectF::Corner::kLowerLeft).y());
+  }
   return dict;
 }
 
@@ -270,6 +276,17 @@ bool RRectFFromDict(const base::Value& dict, gfx::RRectF* out) {
   if (!dict.is_dict())
     return false;
   const std::string* type = dict.FindStringKey("type");
+  if (!type)
+    return false;
+  int type_index = StringToRRectFType(*type);
+  if (type_index < 0)
+    return false;
+  gfx::RRectF::Type t_type = static_cast<gfx::RRectF::Type>(type_index);
+  if (t_type == gfx::RRectF::Type::kEmpty) {
+    *out = gfx::RRectF();
+    DCHECK_EQ(gfx::RRectF::Type::kEmpty, out->GetType());
+    return true;
+  }
   const base::Value* rect = dict.FindDictKey("rect");
   base::Optional<double> upper_left_x = dict.FindDoubleKey("upper_left.x");
   base::Optional<double> upper_left_y = dict.FindDoubleKey("upper_left.y");
@@ -279,14 +296,11 @@ bool RRectFFromDict(const base::Value& dict, gfx::RRectF* out) {
   base::Optional<double> lower_right_y = dict.FindDoubleKey("lower_right.y");
   base::Optional<double> lower_left_x = dict.FindDoubleKey("lower_left.x");
   base::Optional<double> lower_left_y = dict.FindDoubleKey("lower_left.y");
-  if (!type || !rect || !upper_left_x || !upper_left_y || !upper_right_x ||
+  if (!rect || !upper_left_x || !upper_left_y || !upper_right_x ||
       !upper_right_y || !lower_right_x || !lower_right_y || !lower_left_x ||
       !lower_left_y) {
     return false;
   }
-  int type_index = StringToRRectFType(*type);
-  if (type_index < 0)
-    return false;
   gfx::RectF rect_f;
   if (!RectFFromDict(*rect, &rect_f))
     return false;
@@ -298,7 +312,7 @@ bool RRectFFromDict(const base::Value& dict, gfx::RRectF* out) {
                      static_cast<float>(lower_right_y.value()),
                      static_cast<float>(lower_left_x.value()),
                      static_cast<float>(lower_left_y.value()));
-  if (rrectf.GetType() != static_cast<gfx::RRectF::Type>(type_index))
+  if (rrectf.GetType() != t_type)
     return false;
   *out = rrectf;
   return true;

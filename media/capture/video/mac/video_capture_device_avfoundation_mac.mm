@@ -249,10 +249,10 @@ void ExtractBaseAddressAndLength(char** base_address,
 
 - (id)initWithFrameReceiver:(media::VideoCaptureDeviceMac*)frameReceiver {
   if ((self = [super init])) {
-    DCHECK(main_thread_checker_.CalledOnValidThread());
+    DCHECK(_main_thread_checker.CalledOnValidThread());
     DCHECK(frameReceiver);
     [self setFrameReceiver:frameReceiver];
-    captureSession_.reset([[AVCaptureSession alloc] init]);
+    _captureSession.reset([[AVCaptureSession alloc] init]);
   }
   return self;
 }
@@ -263,36 +263,36 @@ void ExtractBaseAddressAndLength(char** base_address,
 }
 
 - (void)setFrameReceiver:(media::VideoCaptureDeviceMac*)frameReceiver {
-  base::AutoLock lock(lock_);
-  frameReceiver_ = frameReceiver;
+  base::AutoLock lock(_lock);
+  _frameReceiver = frameReceiver;
 }
 
 - (BOOL)setCaptureDevice:(NSString*)deviceId
             errorMessage:(NSString**)outMessage {
-  DCHECK(captureSession_);
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(_captureSession);
+  DCHECK(_main_thread_checker.CalledOnValidThread());
 
   if (!deviceId) {
     // First stop the capture session, if it's running.
     [self stopCapture];
     // Now remove the input and output from the capture session.
-    [captureSession_ removeOutput:captureVideoDataOutput_];
-    if (stillImageOutput_)
-      [captureSession_ removeOutput:stillImageOutput_];
-    if (captureDeviceInput_) {
-      DCHECK(captureDevice_);
-      [captureSession_ stopRunning];
-      [captureSession_ removeInput:captureDeviceInput_];
-      captureDeviceInput_.reset();
-      captureDevice_.reset();
+    [_captureSession removeOutput:_captureVideoDataOutput];
+    if (_stillImageOutput)
+      [_captureSession removeOutput:_stillImageOutput];
+    if (_captureDeviceInput) {
+      DCHECK(_captureDevice);
+      [_captureSession stopRunning];
+      [_captureSession removeInput:_captureDeviceInput];
+      _captureDeviceInput.reset();
+      _captureDevice.reset();
     }
     return YES;
   }
 
   // Look for input device with requested name.
-  captureDevice_.reset([AVCaptureDevice deviceWithUniqueID:deviceId],
+  _captureDevice.reset([AVCaptureDevice deviceWithUniqueID:deviceId],
                        base::scoped_policy::RETAIN);
-  if (!captureDevice_) {
+  if (!_captureDevice) {
     *outMessage =
         [NSString stringWithUTF8String:"Could not open video capture device."];
     return NO;
@@ -300,40 +300,40 @@ void ExtractBaseAddressAndLength(char** base_address,
 
   // Create the capture input associated with the device. Easy peasy.
   NSError* error = nil;
-  captureDeviceInput_.reset(
-      [AVCaptureDeviceInput deviceInputWithDevice:captureDevice_ error:&error],
+  _captureDeviceInput.reset(
+      [AVCaptureDeviceInput deviceInputWithDevice:_captureDevice error:&error],
       base::scoped_policy::RETAIN);
-  if (!captureDeviceInput_) {
-    captureDevice_.reset();
+  if (!_captureDeviceInput) {
+    _captureDevice.reset();
     *outMessage = [NSString
         stringWithFormat:@"Could not create video capture input (%@): %@",
                          [error localizedDescription],
                          [error localizedFailureReason]];
     return NO;
   }
-  [captureSession_ addInput:captureDeviceInput_];
+  [_captureSession addInput:_captureDeviceInput];
 
   // Create and plug the still image capture output. This should happen in
   // advance of the actual picture to allow for the 3A to stabilize.
-  stillImageOutput_.reset([[AVCaptureStillImageOutput alloc] init]);
-  if (stillImageOutput_ && [captureSession_ canAddOutput:stillImageOutput_])
-    [captureSession_ addOutput:stillImageOutput_];
+  _stillImageOutput.reset([[AVCaptureStillImageOutput alloc] init]);
+  if (_stillImageOutput && [_captureSession canAddOutput:_stillImageOutput])
+    [_captureSession addOutput:_stillImageOutput];
 
   // Create a new data output for video. The data output is configured to
   // discard late frames by default.
-  captureVideoDataOutput_.reset([[AVCaptureVideoDataOutput alloc] init]);
-  if (!captureVideoDataOutput_) {
-    [captureSession_ removeInput:captureDeviceInput_];
+  _captureVideoDataOutput.reset([[AVCaptureVideoDataOutput alloc] init]);
+  if (!_captureVideoDataOutput) {
+    [_captureSession removeInput:_captureDeviceInput];
     *outMessage =
         [NSString stringWithUTF8String:"Could not create video data output."];
     return NO;
   }
-  [captureVideoDataOutput_ setAlwaysDiscardsLateVideoFrames:true];
-  [captureVideoDataOutput_
+  [_captureVideoDataOutput setAlwaysDiscardsLateVideoFrames:true];
+  [_captureVideoDataOutput
       setSampleBufferDelegate:self
                         queue:dispatch_get_global_queue(
                                   DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)];
-  [captureSession_ addOutput:captureVideoDataOutput_];
+  [_captureSession addOutput:_captureVideoDataOutput];
 
   return YES;
 }
@@ -341,17 +341,17 @@ void ExtractBaseAddressAndLength(char** base_address,
 - (BOOL)setCaptureHeight:(int)height
                    width:(int)width
                frameRate:(float)frameRate {
-  DCHECK(![captureSession_ isRunning] &&
-         main_thread_checker_.CalledOnValidThread());
+  DCHECK(![_captureSession isRunning] &&
+         _main_thread_checker.CalledOnValidThread());
 
-  frameWidth_ = width;
-  frameHeight_ = height;
-  frameRate_ = frameRate;
+  _frameWidth = width;
+  _frameHeight = height;
+  _frameRate = frameRate;
 
   FourCharCode best_fourcc = kCMPixelFormat_422YpCbCr8_yuvs;
   const bool prefer_mjpeg =
       width > kMjpegWidthThreshold || height > kMjpegHeightThreshold;
-  for (AVCaptureDeviceFormat* format in [captureDevice_ formats]) {
+  for (AVCaptureDeviceFormat* format in [_captureDevice formats]) {
     const FourCharCode fourcc =
         CMFormatDescriptionGetMediaSubType([format formatDescription]);
     if (prefer_mjpeg && fourcc == kCMVideoCodecType_JPEG_OpenDML) {
@@ -368,8 +368,8 @@ void ExtractBaseAddressAndLength(char** base_address,
   }
 
   if (best_fourcc == kCMVideoCodecType_JPEG_OpenDML) {
-    [captureSession_ removeOutput:stillImageOutput_];
-    stillImageOutput_.reset();
+    [_captureSession removeOutput:_stillImageOutput];
+    _stillImageOutput.reset();
   }
 
   // The capture output has to be configured, despite Mac documentation
@@ -384,10 +384,10 @@ void ExtractBaseAddressAndLength(char** base_address,
     (NSString*)kCVPixelBufferPixelFormatTypeKey : @(best_fourcc),
     AVVideoScalingModeKey : AVVideoScalingModeResizeAspectFill
   };
-  [captureVideoDataOutput_ setVideoSettings:videoSettingsDictionary];
+  [_captureVideoDataOutput setVideoSettings:videoSettingsDictionary];
 
   AVCaptureConnection* captureConnection =
-      [captureVideoDataOutput_ connectionWithMediaType:AVMediaTypeVideo];
+      [_captureVideoDataOutput connectionWithMediaType:AVMediaTypeVideo];
   // Check selector existence, related to bugs http://crbug.com/327532 and
   // http://crbug.com/328096.
   // CMTimeMake accepts integer argumenst but |frameRate| is float, round it.
@@ -411,8 +411,8 @@ void ExtractBaseAddressAndLength(char** base_address,
 }
 
 - (BOOL)startCapture {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  if (!captureSession_) {
+  DCHECK(_main_thread_checker.CalledOnValidThread());
+  if (!_captureSession) {
     DLOG(ERROR) << "Video capture session not initialized.";
     return NO;
   }
@@ -421,39 +421,39 @@ void ExtractBaseAddressAndLength(char** base_address,
   [nc addObserver:self
          selector:@selector(onVideoError:)
              name:AVCaptureSessionRuntimeErrorNotification
-           object:captureSession_];
-  [captureSession_ startRunning];
+           object:_captureSession];
+  [_captureSession startRunning];
   return YES;
 }
 
 - (void)stopCapture {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  if ([captureSession_ isRunning])
-    [captureSession_ stopRunning];  // Synchronous.
+  DCHECK(_main_thread_checker.CalledOnValidThread());
+  if ([_captureSession isRunning])
+    [_captureSession stopRunning];  // Synchronous.
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void)takePhoto {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  DCHECK([captureSession_ isRunning]);
-  if (!stillImageOutput_)
+  DCHECK(_main_thread_checker.CalledOnValidThread());
+  DCHECK([_captureSession isRunning]);
+  if (!_stillImageOutput)
     return;
 
-  DCHECK_EQ(1u, [[stillImageOutput_ connections] count]);
+  DCHECK_EQ(1u, [[_stillImageOutput connections] count]);
   AVCaptureConnection* const connection =
-      [[stillImageOutput_ connections] firstObject];
+      [[_stillImageOutput connections] firstObject];
   if (!connection) {
-    base::AutoLock lock(lock_);
-    frameReceiver_->OnPhotoError();
+    base::AutoLock lock(_lock);
+    _frameReceiver->OnPhotoError();
     return;
   }
 
   const auto handler = ^(CMSampleBufferRef sampleBuffer, NSError* error) {
-    base::AutoLock lock(lock_);
-    if (!frameReceiver_)
+    base::AutoLock lock(_lock);
+    if (!_frameReceiver)
       return;
     if (error != nil) {
-      frameReceiver_->OnPhotoError();
+      _frameReceiver->OnPhotoError();
       return;
     }
 
@@ -467,11 +467,11 @@ void ExtractBaseAddressAndLength(char** base_address,
     char* baseAddress = 0;
     size_t length = 0;
     ExtractBaseAddressAndLength(&baseAddress, &length, sampleBuffer);
-    frameReceiver_->OnPhotoTaken(reinterpret_cast<uint8_t*>(baseAddress),
+    _frameReceiver->OnPhotoTaken(reinterpret_cast<uint8_t*>(baseAddress),
                                  length, "image/jpeg");
   };
 
-  [stillImageOutput_ captureStillImageAsynchronouslyFromConnection:connection
+  [_stillImageOutput captureStillImageAsynchronouslyFromConnection:connection
                                                  completionHandler:handler];
 }
 
@@ -490,7 +490,7 @@ void ExtractBaseAddressAndLength(char** base_address,
   const CMVideoDimensions dimensions =
       CMVideoFormatDescriptionGetDimensions(formatDescription);
   const media::VideoCaptureFormat captureFormat(
-      gfx::Size(dimensions.width, dimensions.height), frameRate_,
+      gfx::Size(dimensions.width, dimensions.height), _frameRate,
       FourCCToChromiumPixelFormat(fourcc));
   gfx::ColorSpace colorSpace;
 
@@ -527,7 +527,7 @@ void ExtractBaseAddressAndLength(char** base_address,
   }
 
   {
-    base::AutoLock lock(lock_);
+    base::AutoLock lock(_lock);
     const CMTime cm_timestamp =
         CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
     const base::TimeDelta timestamp =
@@ -537,8 +537,8 @@ void ExtractBaseAddressAndLength(char** base_address,
                   cm_timestamp.timescale)
             : media::kNoTimestamp;
 
-    if (frameReceiver_ && baseAddress) {
-      frameReceiver_->ReceiveFrame(reinterpret_cast<uint8_t*>(baseAddress),
+    if (_frameReceiver && baseAddress) {
+      _frameReceiver->ReceiveFrame(reinterpret_cast<uint8_t*>(baseAddress),
                                    frameSize, captureFormat, colorSpace, 0, 0,
                                    timestamp);
     }
@@ -559,9 +559,9 @@ void ExtractBaseAddressAndLength(char** base_address,
 
 - (void)sendErrorString:(NSString*)error {
   DLOG(ERROR) << base::SysNSStringToUTF8(error);
-  base::AutoLock lock(lock_);
-  if (frameReceiver_)
-    frameReceiver_->ReceiveError(
+  base::AutoLock lock(_lock);
+  if (_frameReceiver)
+    _frameReceiver->ReceiveError(
         media::VideoCaptureError::
             kMacAvFoundationReceivedAVCaptureSessionRuntimeErrorNotification,
         FROM_HERE, base::SysNSStringToUTF8(error));

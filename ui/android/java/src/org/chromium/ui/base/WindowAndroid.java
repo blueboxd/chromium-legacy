@@ -222,15 +222,6 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
             };
 
     /**
-     * @return true if onVSync handler is executing.
-     *
-     * @see org.chromium.ui.VSyncMonitor#isInsideVSync()
-     */
-    public boolean isInsideVSync() {
-        return mVSyncMonitor.isInsideVSync();
-    }
-
-    /**
      * @return The time interval between two consecutive vsync pulses in milliseconds.
      */
     public long getVsyncPeriodInMillis() {

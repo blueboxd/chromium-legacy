@@ -4,6 +4,8 @@
 
 #include "components/games/core/test/test_utils.h"
 
+#include "testing/gtest/include/gtest/gtest.h"
+
 namespace games {
 namespace test {
 
@@ -19,6 +21,11 @@ GamesCatalog CreateGamesCatalog(std::vector<Game> games) {
 
 GamesCatalog CreateGamesCatalogWithOneGame() {
   return CreateGamesCatalog({CreateGame()});
+}
+
+GamesCatalog CreateCatalogWithTwoGames() {
+  return test::CreateGamesCatalog(
+      {test::CreateGame(/*id=*/1), test::CreateGame(/*id=*/2)});
 }
 
 Game CreateGame(int id) {
@@ -55,9 +62,9 @@ HighlightedGamesResponse CreateHighlightedGamesResponse() {
   return highlighted_games;
 }
 
-bool AreProtosEqual(const google::protobuf::MessageLite& lhs,
-                    const google::protobuf::MessageLite& rhs) {
-  return lhs.SerializeAsString() == rhs.SerializeAsString();
+void ExpectProtosEqual(const google::protobuf::MessageLite& expected,
+                       const google::protobuf::MessageLite& actual) {
+  EXPECT_EQ(expected.SerializeAsString(), actual.SerializeAsString());
 }
 
 }  // namespace test

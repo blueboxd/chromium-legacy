@@ -15,5 +15,6 @@ static_library("test_support") {
     "//components/games/core",
     "//components/games/core/proto",
     "//testing/gmock",
+    "//testing/gtest",
   ]
 }

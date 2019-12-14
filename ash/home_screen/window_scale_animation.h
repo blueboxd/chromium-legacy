@@ -6,6 +6,7 @@
 #define ASH_HOME_SCREEN_WINDOW_SCALE_ANIMATION_H_
 
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
@@ -55,6 +56,10 @@ class WindowScaleAnimation : public ui::ImplicitAnimationObserver,
   base::OnceClosure opt_callback_;
 
   const WindowScaleType scale_type_;
+
+  // When the window scale animation is in progress, we should pause the
+  // backdrop update.
+  base::ScopedClosureRunner scoped_backdrop_update_pause_;
 
   ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
 

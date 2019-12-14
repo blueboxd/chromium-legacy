@@ -5,12 +5,17 @@
 <dom-module id="site-favicon">
   <template>
     <style>
+      :host {
+        --site-favicon-height: 16px;
+        --site-favicon-width: 16px;
+      }
+
       #favicon {
         background-repeat: no-repeat;
         background-size: contain;
         display: block;
-        height: 16px;
-        width: 16px;
+        height: var(--site-favicon-height);
+        width: var(--site-favicon-width);
       }
     </style>
     <div

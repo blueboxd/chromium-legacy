@@ -145,6 +145,8 @@ bool CleanerEngineRequestsProxy::TerminateProcess(base::ProcessId process_id) {
   return result;
 }
 
+CleanerEngineRequestsProxy::CleanerEngineRequestsProxy() = default;
+
 CleanerEngineRequestsProxy::~CleanerEngineRequestsProxy() = default;
 
 MojoCallStatus CleanerEngineRequestsProxy::SandboxDeleteFile(

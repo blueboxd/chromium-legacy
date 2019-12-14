@@ -115,6 +115,7 @@
 <translation id="4812940957355064477">Voer een getal in.</translation>
 <translation id="4912536737030637138">bibliografievermelding</translation>
 <translation id="492244087561876220">reactie</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> geselecteerd</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> geselecteerd</translation>
 <translation id="4992066212339426712">Dempen opheffen</translation>
 <translation id="49969490063480558">Geef een adresgedeelte op na '<ph name="ATSIGN" />'. '<ph name="INVALIDADDRESS" />' is onvolledig.</translation>
@@ -219,6 +220,7 @@
 <translation id="7888071071722539607">Gebruik een '<ph name="ATSIGN" />' in het e-mailadres. In '<ph name="INVALIDADDRESS" />' ontbreekt een '<ph name="ATSIGN" />'.</translation>
 <translation id="7891486169920085145">splitser</translation>
 <translation id="795667975304826397">Geen bestand gekozen</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> niet geselecteerd</translation>
 <translation id="8034303206267677282">sterk</translation>
 <translation id="8053789581856978548">zoektekstveld</translation>
 <translation id="8057695513531652401">kennisgeving</translation>

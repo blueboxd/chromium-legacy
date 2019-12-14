@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">ਕੀ ਫ਼ਾਈਲ ਦੁਬਾਰਾ ਡਾਊਨਲੋਡ ਕਰਨੀ ਹੈ?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ਆਡੀਓ ਫ਼ਾਈਲ}one{# ਆਡੀਓ ਫ਼ਾਈਲ}other{# ਆਡੀਓ ਫ਼ਾਈਲਾਂ}}</translation>
 <translation id="2653659639078652383">ਪ੍ਰਸਤੁਤ ਕਰੋ</translation>
-<translation id="2669093958999339774">ਤੁਹਾਡਾ ਧਿਆਨ ਭਟਕਾਉਣ ਵਾਲੇ ਸੂਚਨਾ ਉਤਪ੍ਰੇਰਕਾਂ ਨੂੰ ਬਲਾਕ ਕਰੋ, ਅਤੇ ਇਸਦੀ ਬਜਾਏ ਵਧੇਰੇ ਸ਼ਾਂਤ ਸੁਨੇਹਾ ਵਰਤੋ</translation>
 <translation id="2677748264148917807">ਛੱਡੋ</translation>
 <translation id="2704606927547763573">ਕਾਪੀ ਕੀਤਾ</translation>
 <translation id="2707726405694321444">ਪੰਨੇ ਰਿਫ੍ਰੈਸ਼ ਕਰੋ</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> ਵਿੱਚ ਬੁੱਕਮਾਰਕ ਕੀਤਾ</translation>
 <translation id="3744111561329211289">ਬੈਕਗ੍ਰਾਊਂਡ ਸਮਕਾਲੀਕਰਨ</translation>
 <translation id="3749259744154402564">ਅਸਮਰਥਿਤ</translation>
-<translation id="3767376082821709728">ਤੁਹਾਡੇ ਦੇਖੇ ਜਾਣ ਵਾਲੀਆਂ ਨਵੀਆਂ ਸਾਈਟਾਂ ਤੁਹਾਨੂੰ ਸੂਚਨਾਵਾਂ ਨਹੀਂ ਭੇਜ ਸਕਦੀਆਂ ਹਨ</translation>
 <translation id="3771001275138982843">ਅੱਪਡੇਟ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ</translation>
 <translation id="3771033907050503522">ਗੁਮਨਾਮ ਟੈਬਸ</translation>
 <translation id="3773755127849930740">ਜੋੜਾਬੱਧ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਦੇਣ ਲਈ <ph name="BEGIN_LINK" />ਬਲੂਟੁੱਥ ਚਾਲੂ ਕਰੋ<ph name="END_LINK" /></translation>
@@ -957,7 +955,6 @@
 <translation id="8035133914807600019">ਨਵਾਂ ਫੋਲਡਰ…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> ਦਿਨ ਬਾਕੀ</translation>
 <translation id="804335162455518893">SD ਕਾਰਡ ਨਹੀਂ ਮਿਲਿਆ</translation>
-<translation id="8046278916126163020">ਤੁਹਾਡੇ ਦੇਖੇ ਜਾਣ ਵਾਲੀਆਂ ਨਵੀਆਂ ਸਾਈਟਾਂ ਤੁਹਾਨੂੰ ਸੂਚਨਾਵਾਂ ਭੇਜਣ ਲਈ ਪੁੱਛ ਸਕਦੀਆਂ ਹਨ</translation>
 <translation id="805047784848435650">ਤੁਹਾਡੇ ਬ੍ਰਾਊਜ਼ਿੰਗ ਇਤਿਹਾਸ 'ਤੇ ਅਧਾਰਿਤ</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB ਉਪਲਬਧ ਹੈ</translation>
 <translation id="8058746566562539958">ਨਵੀਂ Chrome ਟੈਬ ਵਿੱਚ ਖੋਲ੍ਹੋ</translation>

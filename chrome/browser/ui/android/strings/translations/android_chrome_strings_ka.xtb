@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">გსურთ ფაილის ხელახლა ჩამოტვირთვა?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# აუდიოფაილი}other{# აუდიოფაილი}}</translation>
 <translation id="2653659639078652383">გაგზავნა</translation>
-<translation id="2669093958999339774">შეტყობინებებთან დაკავშირებული ხელისშემშლელი მოთხოვნების დაბლოკვა და უფრო ჩუმი ვერსიის გამოყენება</translation>
 <translation id="2677748264148917807">დატოვება</translation>
 <translation id="2704606927547763573">დაკოპირდა</translation>
 <translation id="2707726405694321444">გვერდის განახლება</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">სანიშნე შენახულია „<ph name="PRODUCT_NAME" />“-ში</translation>
 <translation id="3744111561329211289">ფონური სინქრონიზაცია</translation>
 <translation id="3749259744154402564">მხარდაუჭერელი</translation>
-<translation id="3767376082821709728">თქვენ მიერ მონახულებული ახალი საიტები ვერ გამოგიგზავნით შეტყობინებებს</translation>
 <translation id="3771001275138982843">განახლების ჩამოტვირთვა ვერ მოხერხდა</translation>
 <translation id="3771033907050503522">ინკოგნიტო ჩანართები</translation>
 <translation id="3773755127849930740">დაწყვილების დასაშვებად, <ph name="BEGIN_LINK" />ჩართეთ Bluetooth<ph name="END_LINK" /></translation>
@@ -957,7 +955,6 @@
 <translation id="8035133914807600019">ახალი საქაღალდე…</translation>
 <translation id="8037750541064988519">დარჩენილია <ph name="DAYS" /> დღე</translation>
 <translation id="804335162455518893">SD ბარათი ვერ მოიძებნა</translation>
-<translation id="8046278916126163020">თქვენ მიერ მონახულებულმა ახალმა საიტებმა შეიძლება გთხოვოთ თქვენთვის შეტყობინებების გამოგზავნის ნებართვა</translation>
 <translation id="805047784848435650">თქვენი დათვალიერების ისტორიის საფუძველზე</translation>
 <translation id="8051695050440594747">ხელმისაწვდომია <ph name="MEGABYTES" /> მბაიტი</translation>
 <translation id="8058746566562539958">Chrome-ის ახალ ჩანართში გახსნა</translation>

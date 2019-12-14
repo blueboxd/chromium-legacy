@@ -191,6 +191,7 @@ public class AccountPickerDialogFragment extends DialogFragment {
     private ProfileDataCache mProfileDataCache;
     private List<String> mAccounts;
     private Adapter mAdapter;
+    private Callback mCallback;
 
     /**
      * Creates an instance and sets its arguments.
@@ -211,7 +212,8 @@ public class AccountPickerDialogFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        assert getCallback() != null : "No callback for AccountPickerDialogFragment";
+        mCallback = (Callback) getTargetFragment();
+        assert mCallback != null : "No callback for AccountPickerDialogFragment";
 
         mProfileDataCache = new ProfileDataCache(
                 getActivity(), getResources().getDimensionPixelSize(R.dimen.user_picture_size));
@@ -260,13 +262,13 @@ public class AccountPickerDialogFragment extends DialogFragment {
 
     private void onAccountSelected(String accountName, boolean isDefaultAccount) {
         if (!isResumed() || isStateSaved()) return;
-        getCallback().onAccountSelected(accountName, isDefaultAccount);
+        mCallback.onAccountSelected(accountName, isDefaultAccount);
         dismissAllowingStateLoss();
     }
 
     private void addAccount() {
         if (!isResumed() || isStateSaved()) return;
-        getCallback().addAccount();
+        mCallback.addAccount();
     }
 
     private void updateAccounts() {
@@ -288,9 +290,5 @@ public class AccountPickerDialogFragment extends DialogFragment {
             profileDataList.add(mProfileDataCache.getProfileDataOrDefault(accountName));
         }
         mAdapter.setProfileDataList(profileDataList);
-    }
-
-    private Callback getCallback() {
-        return (Callback) getParentFragment();
     }
 }

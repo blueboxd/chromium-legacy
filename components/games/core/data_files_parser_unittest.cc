@@ -48,7 +48,7 @@ TEST_F(DataFilesParserTest, TryParseCatalog_Success) {
   base::Optional<GamesCatalog> test_catalog =
       parser_.TryParseCatalog(temp_dir_.GetPath());
   ASSERT_TRUE(test_catalog.has_value());
-  EXPECT_TRUE(test::AreProtosEqual(expected_catalog, test_catalog.value()));
+  test::ExpectProtosEqual(expected_catalog, test_catalog.value());
 }
 
 TEST_F(DataFilesParserTest, TryParseHighlightedGames_FileDoesNotExist) {
@@ -71,7 +71,7 @@ TEST_F(DataFilesParserTest, TryParseHighlightedGames_Success) {
   base::Optional<HighlightedGamesResponse> test_response =
       parser_.TryParseHighlightedGames(temp_dir_.GetPath());
   ASSERT_TRUE(test_response.has_value());
-  EXPECT_TRUE(test::AreProtosEqual(expected_response, test_response.value()));
+  test::ExpectProtosEqual(expected_response, test_response.value());
 }
 
 }  // namespace games

@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">ດາວໂຫຼດໄຟລ໌ອີກຄັ້ງບໍ?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ໄຟລ໌ສຽງ}other{# ໄຟລ໌ສຽງ}}</translation>
 <translation id="2653659639078652383">ສົ່ງ</translation>
-<translation id="2669093958999339774">ບລັອກບໍ່ໃຫ້ການເຕືອນການແຈ້ງເຕືອນຂັດຈັງຫວະທ່ານ ແລະ ໃຫ້ໃຊ້ຂໍ້ຄວາມທີ່ມິດກວ່າແທນ</translation>
 <translation id="2677748264148917807">ອອກ​ໄປ</translation>
 <translation id="2704606927547763573">ອັດ​ສຳ​ເນົາ​ແລ້ວ</translation>
 <translation id="2707726405694321444">ຣີ​ເຟ​ຣ​ຊຫນ້າ</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">ເພີ່ມບຸກມາກໃສ່ໃນ <ph name="PRODUCT_NAME" /> ແລ້ວ</translation>
 <translation id="3744111561329211289">ການຊິ້ງຂໍ້ມູນໃນພື້ນຫຼັງ</translation>
 <translation id="3749259744154402564">ບໍ່ຮອງຮັບ</translation>
-<translation id="3767376082821709728">ເວັບໄຊໃໝ່ທີ່ທ່ານເຂົ້າເບິ່ງບໍ່ສາມາດສົ່ງການແຈ້ງເຕືອນໃຫ້ທ່ານໄດ້</translation>
 <translation id="3771001275138982843">ບໍ່ສາມາດດາວໂຫຼດການອັບເດດໄດ້</translation>
 <translation id="3771033907050503522">ແຖບບໍ່ເຜີຍຕົນຕົວ</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />ເປີດ Bluetooth<ph name="END_LINK" /> ເພື່ອອະນຸຍາດການຈັບຄູ່</translation>
@@ -957,7 +955,6 @@
 <translation id="8035133914807600019">ໂຟ​ລ​ເດີ​ໃໝ່...</translation>
 <translation id="8037750541064988519">ຍັງເຫຼືອ <ph name="DAYS" /> ມື້</translation>
 <translation id="804335162455518893">ບໍ່ພົບແຜ່ນ SD</translation>
-<translation id="8046278916126163020">ເວັບໄຊໃໝ່ທີ່ທ່ານເຂົ້າເບິ່ງສາມາດຂໍສົ່ງການແຈ້ງເຕືອນໃຫ້ທ່ານໄດ້</translation>
 <translation id="805047784848435650">ອີງໃສ່ປະຫວັດການທ່ອງເວັບຂອງທ່ານ</translation>
 <translation id="8051695050440594747">ຍັງເຫຼືອ <ph name="MEGABYTES" /> MB</translation>
 <translation id="8058746566562539958">ເປີດໃນແຖບໃໝ່ຂອງ Chrome</translation>

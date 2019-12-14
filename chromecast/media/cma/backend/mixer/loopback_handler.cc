@@ -14,6 +14,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
+#include "chromecast/media/audio/mixer_service/loopback_interrupt_reason.h"
 #include "chromecast/media/cma/backend/mixer/mixer_loopback_connection.h"
 #include "chromecast/net/io_buffer_pool.h"
 #include "chromecast/public/media/external_audio_pipeline_shlib.h"
@@ -57,6 +58,12 @@ class LoopbackHandler::LoopbackIO {
                 int64_t timestamp) {
     for (const auto& c : connections_) {
       c.second->SendAudio(audio_buffer, data_size_bytes, timestamp);
+    }
+  }
+
+  void SendInterrupt(LoopbackInterruptReason reason) {
+    for (const auto& c : connections_) {
+      c.second->SendInterrupt(reason);
     }
   }
 
@@ -114,7 +121,7 @@ class LoopbackHandler::ExternalLoopbackHandler
   void OnLoopbackInterrupted() override {
     base::AutoLock lock(lock_);
     if (!destroyed_) {
-      owner_->SendInterruptInternal();
+      owner_->SendInterruptInternal(LoopbackInterruptReason::kUnderrun);
     }
   }
 
@@ -181,11 +188,11 @@ void LoopbackHandler::SendData(int64_t timestamp,
                    data_size_bytes);
 }
 
-void LoopbackHandler::SendInterrupt() {
+void LoopbackHandler::SendInterrupt(LoopbackInterruptReason reason) {
   if (external_handler_) {
     return;
   }
-  SendInterruptInternal();
+  SendInterruptInternal(reason);
 }
 
 bool LoopbackHandler::SetDataSizeInternal(int data_size_bytes) {
@@ -226,12 +233,12 @@ void LoopbackHandler::SendDataInternal(int64_t timestamp,
            timestamp);
 }
 
-void LoopbackHandler::SendInterruptInternal() {
+void LoopbackHandler::SendInterruptInternal(LoopbackInterruptReason reason) {
   if (!buffer_pool_) {
     return;
   }
 
-  io_.Post(FROM_HERE, &LoopbackIO::SendData, buffer_pool_->GetBuffer(), 0, 0);
+  io_.Post(FROM_HERE, &LoopbackIO::SendInterrupt, reason);
 }
 
 }  // namespace media

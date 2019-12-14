@@ -44,9 +44,33 @@ suite('NewTabPageMostVisitedTest', () => {
       return {title: char, url: {url: `https://${char}/`}};
     });
     const tilesRendered = eventToPromise('dom-change', mostVisited.$.tiles);
-    testProxy.callbackRouterRemote.setMostVisitedTiles(tiles);
+    testProxy.callbackRouterRemote.setMostVisitedInfo({
+      customLinksEnabled: true,
+      tiles: tiles,
+      visible: true,
+    });
     await testProxy.callbackRouterRemote.$.flushForTesting();
     await tilesRendered;
+  }
+
+  /**
+   * @param {boolean} enabled
+   * @return {!Promise}
+   * @private
+   */
+  async function setCustomLinksEnabled(enabled) {
+    testProxy.callbackRouterRemote.setCustomLinksEnabled(enabled);
+    await testProxy.callbackRouterRemote.$.flushForTesting();
+  }
+
+  /**
+   * @param {boolean} visible
+   * @return {!Promise}
+   * @private
+   */
+  async function setMostVisitedVisible(visible) {
+    testProxy.callbackRouterRemote.setMostVisitedVisible(visible);
+    await testProxy.callbackRouterRemote.$.flushForTesting();
   }
 
   setup(() => {
@@ -150,6 +174,41 @@ suite('NewTabPageMostVisitedTest', () => {
     await addTiles(11);
     assertEquals(10, queryTiles().length);
     assertTrue(mostVisited.$.addShortcut.hidden);
+  });
+
+  test('eight tiles is the max (customLinksEnabled=false)', async () => {
+    await addTiles(11);
+    assertEquals(10, queryTiles().length);
+    assertEquals(0, queryAll('.tile[hidden]').length);
+    assertTrue(mostVisited.$.addShortcut.hidden);
+    await setCustomLinksEnabled(false);
+    assertEquals(10, queryTiles().length);
+    assertEquals(2, queryAll('.tile[hidden]').length);
+    assertTrue(mostVisited.$.addShortcut.hidden);
+    await setCustomLinksEnabled(true);
+    assertEquals(10, queryTiles().length);
+    assertEquals(0, queryAll('.tile[hidden]').length);
+  });
+
+  test('7 tiles and no add shortcut (customLinksEnabled=false)', async () => {
+    await addTiles(7);
+    assertFalse(mostVisited.$.addShortcut.hidden);
+    await setCustomLinksEnabled(false);
+    assertTrue(mostVisited.$.addShortcut.hidden);
+    await setCustomLinksEnabled(true);
+    assertFalse(mostVisited.$.addShortcut.hidden);
+  });
+
+  test('no tiles shown when (visible=false)', async () => {
+    await addTiles(1);
+    assertEquals(1, queryTiles().length);
+    assertEquals(0, queryAll('.tile[hidden]').length);
+    await setMostVisitedVisible(false);
+    assertEquals(1, queryTiles().length);
+    assertEquals(1, queryAll('.tile[hidden]').length);
+    await setMostVisitedVisible(true);
+    assertEquals(1, queryTiles().length);
+    assertEquals(0, queryAll('.tile[hidden]').length);
   });
 
   test('dialog opens when add shortcut clicked', () => {
@@ -389,6 +448,15 @@ suite('NewTabPageMostVisitedTest', () => {
     assertFalse(actionMenu.open);
     assertEquals('https://b/', (await deleteCalled).url);
     assertTrue(mostVisited.$.toast.open);
+  });
+
+  test('remove with icon button (customLinksEnabled=false)', async () => {
+    await addTiles(1);
+    await setCustomLinksEnabled(false);
+    const removeButton = queryTiles()[0].querySelector('cr-icon-button');
+    const deleteCalled = testProxy.handler.whenCalled('deleteMostVisitedTile');
+    removeButton.click();
+    assertEquals('https://a/', (await deleteCalled).url);
   });
 
   test('tile url is set to href of <a>', async () => {

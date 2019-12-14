@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -42,28 +43,26 @@ KeyboardLock::KeyboardLock(ExecutionContext* context)
 KeyboardLock::~KeyboardLock() = default;
 
 ScriptPromise KeyboardLock::lock(ScriptState* state,
-                                 const Vector<String>& keycodes) {
+                                 const Vector<String>& keycodes,
+                                 ExceptionState& exception_state) {
   DCHECK(state);
 
   if (!IsLocalFrameAttached()) {
-    return ScriptPromise::RejectWithDOMException(
-        state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
-                                           kKeyboardLockFrameDetachedErrorMsg));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kKeyboardLockFrameDetachedErrorMsg);
+    return ScriptPromise();
   }
 
   if (!CalledFromSupportedContext(ExecutionContext::From(state))) {
-    return ScriptPromise::RejectWithDOMException(
-        state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
-                                           kKeyboardLockChildFrameErrorMsg));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kKeyboardLockChildFrameErrorMsg);
+    return ScriptPromise();
   }
 
   if (!EnsureServiceConnected()) {
-    return ScriptPromise::RejectWithDOMException(
-        state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
-                                           kKeyboardLockRequestFailedErrorMsg));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kKeyboardLockRequestFailedErrorMsg);
+    return ScriptPromise();
   }
 
   request_keylock_resolver_ =

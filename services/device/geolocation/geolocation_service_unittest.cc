@@ -15,7 +15,6 @@
 #include "services/device/device_service_test_base.h"
 #include "services/device/geolocation/geolocation_provider_impl.h"
 #include "services/device/geolocation/network_location_request.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/geolocation.mojom.h"
 #include "services/device/public/mojom/geolocation_config.mojom.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
@@ -48,12 +47,12 @@ class GeolocationServiceUnitTest : public DeviceServiceTestBase {
     // the device service.
     DeviceServiceTestBase::SetUp();
 
-    connector()->Connect(mojom::kServiceName,
-                         geolocation_control_.BindNewPipeAndPassReceiver());
+    device_service()->BindGeolocationControl(
+        geolocation_control_.BindNewPipeAndPassReceiver());
     geolocation_control_->UserDidOptIntoLocationServices();
 
-    connector()->Connect(mojom::kServiceName,
-                         geolocation_context_.BindNewPipeAndPassReceiver());
+    device_service()->BindGeolocationContext(
+        geolocation_context_.BindNewPipeAndPassReceiver());
     geolocation_context_->BindGeolocation(
         geolocation_.BindNewPipeAndPassReceiver());
   }
@@ -76,8 +75,8 @@ class GeolocationServiceUnitTest : public DeviceServiceTestBase {
   }
 
   void BindGeolocationConfig() {
-    connector()->Connect(mojom::kServiceName,
-                         geolocation_config_.BindNewPipeAndPassReceiver());
+    device_service()->BindGeolocationConfig(
+        geolocation_config_.BindNewPipeAndPassReceiver());
   }
 
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;

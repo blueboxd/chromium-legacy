@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Завантажити файл ще раз?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аудіофайл}one{# аудіофайл}few{# аудіофайли}many{# аудіофайлів}other{# аудіофайлу}}</translation>
 <translation id="2653659639078652383">Надіслати</translation>
-<translation id="2669093958999339774">Блокувати сповіщення й показувати натомість значок блокування в адресному рядку</translation>
 <translation id="2677748264148917807">Вийти</translation>
 <translation id="2704606927547763573">Скопійов.</translation>
 <translation id="2707726405694321444">Оновити сторінку</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Створено закладку в продукті <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Фонова синхронізація</translation>
 <translation id="3749259744154402564">Не підтримується</translation>
-<translation id="3767376082821709728">Нові веб-сайти, які ви відвідуєте, не можуть надсилати сповіщення</translation>
 <translation id="3771001275138982843">Не вдалося завантажити оновлення</translation>
 <translation id="3771033907050503522">Анонімні вкладки</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Увімкніть Bluetooth<ph name="END_LINK" />, щоб підключити</translation>
@@ -957,7 +955,6 @@
 <translation id="8035133914807600019">Нова папка…</translation>
 <translation id="8037750541064988519">Залишилося <ph name="DAYS" /> дн.</translation>
 <translation id="804335162455518893">Карту SD не знайдено</translation>
-<translation id="8046278916126163020">Нові сайти, які ви відвідуєте, можуть запитувати дозвіл надсилати вам сповіщення</translation>
 <translation id="805047784848435650">На основі історії веб-перегляду</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> МБ доступно</translation>
 <translation id="8058746566562539958">Відкрити в новій вкладці Chrome</translation>

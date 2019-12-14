@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_bundle_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_bundle_encoder_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_pipeline.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -159,7 +160,7 @@ GPURenderBundle* GPURenderBundleEncoder::finish(
 
   WGPURenderBundle render_bundle =
       GetProcs().renderBundleEncoderFinish(GetHandle(), &dawn_desc);
-  return GPURenderBundle::Create(device_, render_bundle);
+  return MakeGarbageCollected<GPURenderBundle>(device_, render_bundle);
 }
 
 }  // namespace blink

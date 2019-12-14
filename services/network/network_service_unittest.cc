@@ -1197,15 +1197,21 @@ TEST_F(NetworkServiceTestWithService, CRLSetIsApplied) {
       net::GetTestCertsDirectory().AppendASCII("crlset_by_leaf_spki.raw"),
       &crl_set_bytes));
 
-  service()->UpdateCRLSet(base::as_bytes(base::make_span(crl_set_bytes)));
-  network_service_.FlushForTesting();
+  {
+    base::RunLoop run_loop;
+    service()->UpdateCRLSet(base::as_bytes(base::make_span(crl_set_bytes)),
+                            run_loop.QuitClosure());
+    run_loop.Run();
+  }
 
   // Flush all connections in the context, to force a new connection. A new
   // verification should be attempted, due to the configuration having
   // changed, thus forcing the CRLSet to be checked.
-  base::RunLoop run_loop;
-  context()->CloseAllConnections(run_loop.QuitClosure());
-  run_loop.Run();
+  {
+    base::RunLoop run_loop;
+    context()->CloseAllConnections(run_loop.QuitClosure());
+    run_loop.Run();
+  }
 
   // Make sure the connection fails, due to the certificate being revoked.
   LoadURL(test_server.GetURL("/echo"), options);
@@ -1231,8 +1237,10 @@ TEST_F(NetworkServiceTestWithService, CRLSetIsPassedToNewContexts) {
       net::GetTestCertsDirectory().AppendASCII("crlset_by_leaf_spki.raw"),
       &crl_set_bytes));
 
-  service()->UpdateCRLSet(base::as_bytes(base::make_span(crl_set_bytes)));
-  network_service_.FlushForTesting();
+  base::RunLoop run_loop;
+  service()->UpdateCRLSet(base::as_bytes(base::make_span(crl_set_bytes)),
+                          run_loop.QuitClosure());
+  run_loop.Run();
 
   // Configure a new NetworkContext.
   CreateNetworkContext();
@@ -1262,8 +1270,12 @@ TEST_F(NetworkServiceTestWithService, CRLSetIsUpdatedIfNewer) {
       net::GetTestCertsDirectory().AppendASCII("crlset_by_root_subject.raw"),
       &crl_set_bytes));
 
-  service()->UpdateCRLSet(base::as_bytes(base::make_span(crl_set_bytes)));
-  network_service_.FlushForTesting();
+  {
+    base::RunLoop run_loop;
+    service()->UpdateCRLSet(base::as_bytes(base::make_span(crl_set_bytes)),
+                            run_loop.QuitClosure());
+    run_loop.Run();
+  }
 
   CreateNetworkContext();
 
@@ -1278,15 +1290,21 @@ TEST_F(NetworkServiceTestWithService, CRLSetIsUpdatedIfNewer) {
                                          "crlset_by_root_subject_no_spki.raw"),
                                      &crl_set_bytes));
 
-  service()->UpdateCRLSet(base::as_bytes(base::make_span(crl_set_bytes)));
-  network_service_.FlushForTesting();
+  {
+    base::RunLoop run_loop;
+    service()->UpdateCRLSet(base::as_bytes(base::make_span(crl_set_bytes)),
+                            run_loop.QuitClosure());
+    run_loop.Run();
+  }
 
   // Flush all connections in the context, to force a new connection. A new
   // verification should be attempted, due to the configuration having
   // changed, thus forcing the CRLSet to be checked.
-  base::RunLoop run_loop;
-  context()->CloseAllConnections(run_loop.QuitClosure());
-  run_loop.Run();
+  {
+    base::RunLoop run_loop;
+    context()->CloseAllConnections(run_loop.QuitClosure());
+    run_loop.Run();
+  }
 
   // Make sure the connection fails, due to the certificate being revoked.
   LoadURL(test_server.GetURL("/echo"), options);
@@ -1311,8 +1329,12 @@ TEST_F(NetworkServiceTestWithService, CRLSetDoesNotDowngrade) {
                                          "crlset_by_root_subject_no_spki.raw"),
                                      &crl_set_bytes));
 
-  service()->UpdateCRLSet(base::as_bytes(base::make_span(crl_set_bytes)));
-  network_service_.FlushForTesting();
+  {
+    base::RunLoop run_loop;
+    service()->UpdateCRLSet(base::as_bytes(base::make_span(crl_set_bytes)),
+                            run_loop.QuitClosure());
+    run_loop.Run();
+  }
 
   CreateNetworkContext();
 
@@ -1331,15 +1353,21 @@ TEST_F(NetworkServiceTestWithService, CRLSetDoesNotDowngrade) {
       net::GetTestCertsDirectory().AppendASCII("crlset_by_root_subject.raw"),
       &crl_set_bytes));
 
-  service()->UpdateCRLSet(base::as_bytes(base::make_span(crl_set_bytes)));
-  network_service_.FlushForTesting();
+  {
+    base::RunLoop run_loop;
+    service()->UpdateCRLSet(base::as_bytes(base::make_span(crl_set_bytes)),
+                            run_loop.QuitClosure());
+    run_loop.Run();
+  }
 
   // Flush all connections in the context, to force a new connection. A new
   // verification should be attempted, due to the configuration having
   // changed, thus forcing the CRLSet to be checked.
-  base::RunLoop run_loop;
-  context()->CloseAllConnections(run_loop.QuitClosure());
-  run_loop.Run();
+  {
+    base::RunLoop run_loop;
+    context()->CloseAllConnections(run_loop.QuitClosure());
+    run_loop.Run();
+  }
 
   // Make sure the connection still fails, due to the newer CRLSet still
   // applying.

@@ -785,6 +785,13 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return [ChromeEarlGreyAppInterface registeredKeyCommandCount];
 }
 
+#pragma mark - Pref Utilities (EG2)
+
+- (void)setBoolValue:(BOOL)value forUserPref:(const std::string&)UTF8PrefName {
+  NSString* prefName = base::SysUTF8ToNSString(UTF8PrefName);
+  return [ChromeEarlGreyAppInterface setBoolValue:value forUserPref:prefName];
+}
+
 @end
 
 // The helpers below only compile under EarlGrey1.

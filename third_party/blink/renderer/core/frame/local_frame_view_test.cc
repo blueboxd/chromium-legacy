@@ -325,6 +325,28 @@ TEST_F(LocalFrameViewTest, PurgeSignalHistogram) {
   histogram_tester.ExpectBucketCount(kHistogramName, 1 /* kMultiple */, 2);
 }
 
+// The inner frame used for SVG images does not support compositing should not
+// receive compositing memory pressure signals.
+TEST_F(LocalFrameViewTest, NoSVGImagePurgeSignalHistogram) {
+  const char* kHistogramName =
+      "Memory.Experimental.Renderer.LocalFrameRootPurgeSignal";
+  base::HistogramTester histogram_tester;
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+      }
+    </style>
+    <div></div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  histogram_tester.ExpectTotalCount(kHistogramName, 0);
+  MemoryPressureListenerRegistry::Instance().OnPurgeMemory();
+  histogram_tester.ExpectTotalCount(kHistogramName, 1);
+}
+
 // Ensure the fragment navigation "scroll into view and focus" behavior doesn't
 // activate synchronously while rendering is blocked waiting on a stylesheet.
 // See https://crbug.com/851338.

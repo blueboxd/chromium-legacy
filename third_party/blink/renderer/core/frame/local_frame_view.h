@@ -957,7 +957,8 @@ class CORE_EXPORT LocalFrameView final
   // For testing.
   bool is_tracking_raster_invalidations_ = false;
 
-  bool received_memory_pressure_purge_signal_ = false;
+  // True if a memory pressure signal for compositing has been received.
+  bool received_compositor_memory_pressure_purge_signal_ = false;
 
   // Currently used in PushPaintArtifactToCompositor() to collect composited
   // layers as foreign layers. It's transient, but may live across frame updates

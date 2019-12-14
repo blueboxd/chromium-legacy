@@ -17,7 +17,6 @@
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace device {
 
@@ -32,21 +31,21 @@ std::unique_ptr<DeviceService> CreateTestDeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    service_manager::mojom::ServiceRequest request) {
+    mojo::PendingReceiver<mojom::DeviceService> receiver) {
 #if defined(OS_ANDROID)
   return CreateDeviceService(
       file_task_runner, io_task_runner, url_loader_factory,
       network::TestNetworkConnectionTracker::GetInstance(),
       kTestGeolocationApiKey, false, WakeLockContextCallback(),
       base::BindRepeating(&GetCustomLocationProviderForTest), nullptr,
-      std::move(request));
+      std::move(receiver));
 #else
   return CreateDeviceService(
       file_task_runner, io_task_runner, url_loader_factory,
       network::TestNetworkConnectionTracker::GetInstance(),
       kTestGeolocationApiKey,
       base::BindRepeating(&GetCustomLocationProviderForTest),
-      std::move(request));
+      std::move(receiver));
 #endif
 }
 
@@ -59,11 +58,7 @@ DeviceServiceTestBase::DeviceServiceTestBase()
       io_task_runner_(base::CreateSingleThreadTaskRunner(
           {base::ThreadPool(), base::TaskPriority::USER_VISIBLE})),
       network_connection_tracker_(
-          network::TestNetworkConnectionTracker::CreateInstance()),
-      connector_(test_connector_factory_.CreateConnector()) {
-  connector_->Connect(mojom::kServiceName,
-                      service_remote_.BindNewPipeAndPassReceiver());
-}
+          network::TestNetworkConnectionTracker::CreateInstance()) {}
 
 DeviceServiceTestBase::~DeviceServiceTestBase() = default;
 
@@ -72,7 +67,7 @@ void DeviceServiceTestBase::SetUp() {
       file_task_runner_, io_task_runner_,
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &test_url_loader_factory_),
-      test_connector_factory_.RegisterInstance(mojom::kServiceName));
+      service_remote_.BindNewPipeAndPassReceiver());
 }
 
 void DeviceServiceTestBase::DestroyDeviceService() {

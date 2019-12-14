@@ -10,8 +10,6 @@ import android.os.Bundle;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 
-import org.chromium.base.Log;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -461,20 +459,6 @@ public class TaskInfo {
      */
     public int getTaskId() {
         return mTaskId;
-    }
-
-    /**
-     * @return the {@link BackgroundTask} class that will be instantiated for this task.
-     */
-    @NonNull
-    public Class<? extends BackgroundTask> getBackgroundTaskClass() {
-        BackgroundTask backgroundTask =
-                BackgroundTaskSchedulerFactory.getBackgroundTaskFromTaskId(mTaskId);
-        if (backgroundTask == null) {
-            Log.w(TAG, "Cannot get BackgorundTask class from task id " + mTaskId);
-            return null;
-        }
-        return backgroundTask.getClass();
     }
 
     /**

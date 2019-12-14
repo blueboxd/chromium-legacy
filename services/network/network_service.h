@@ -142,7 +142,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void GetNetworkList(
       uint32_t policy,
       mojom::NetworkService::GetNetworkListCallback callback) override;
-  void UpdateCRLSet(base::span<const uint8_t> crl_set) override;
+  void UpdateCRLSet(
+      base::span<const uint8_t> crl_set,
+      mojom::NetworkService::UpdateCRLSetCallback callback) override;
   void OnCertDBChanged() override;
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   void SetCryptConfig(mojom::CryptConfigPtr crypt_config) override;

@@ -41,7 +41,6 @@ namespace content {
 class FrameConnectorDelegate;
 class RenderWidgetHost;
 class RenderWidgetHostViewChildFrameTest;
-class RenderWidgetHostViewGuestSurfaceTest;
 class TouchSelectionControllerClientChildFrame;
 
 // RenderWidgetHostViewChildFrame implements the view for a RenderWidgetHost
@@ -226,7 +225,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
  protected:
   friend class RenderWidgetHostView;
   friend class RenderWidgetHostViewChildFrameTest;
-  friend class RenderWidgetHostViewGuestSurfaceTest;
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewChildFrameTest,
                            ForwardsBeginFrameAcks);
 

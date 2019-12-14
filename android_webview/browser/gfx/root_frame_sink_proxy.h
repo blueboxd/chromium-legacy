@@ -35,6 +35,7 @@ class RootFrameSinkProxy : public viz::BeginFrameObserverBase {
 
   void AddChildFrameSinkId(const viz::FrameSinkId& frame_sink_id);
   void RemoveChildFrameSinkId(const viz::FrameSinkId& frame_sink_id);
+  void OnInputEvent();
   // The returned callback can only be called on viz thread.
   RootFrameSinkGetter GetRootFrameSinkCallback();
 
@@ -46,7 +47,9 @@ class RootFrameSinkProxy : public viz::BeginFrameObserverBase {
   void DestroyOnViz();
   void AddChildFrameSinkIdOnViz(const viz::FrameSinkId& frame_sink_id);
   void RemoveChildFrameSinkIdOnViz(const viz::FrameSinkId& frame_sink_id);
-  void BeginFrameOnViz(const viz::BeginFrameArgs& args, bool* invalidate);
+  void BeginFrameOnViz(const viz::BeginFrameArgs& args,
+                       bool had_input_event,
+                       bool* invalidate);
   void SetNeedsBeginFramesOnViz(bool needs_begin_frames);
   void SetNeedsBeginFramesOnUI(bool needs_begin_frames);
   bool BeginFrame(const viz::BeginFrameArgs& args);
@@ -59,6 +62,7 @@ class RootFrameSinkProxy : public viz::BeginFrameObserverBase {
   RootFrameSinkProxyClient* const client_;
   scoped_refptr<RootFrameSink> without_gpu_;
   std::unique_ptr<viz::ExternalBeginFrameSource> begin_frame_source_;
+  bool had_input_event_ = false;
 
   THREAD_CHECKER(ui_thread_checker_);
   THREAD_CHECKER(viz_thread_checker_);

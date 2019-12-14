@@ -59,7 +59,7 @@ const base::FilePath::CharType kExtensionFilePath[] = FILE_PATH_LITERAL("/oo");
 
 class FakeThemeService : public ThemeService {
  public:
-  FakeThemeService() {}
+  FakeThemeService() : ThemeService(nullptr) {}
 
   // ThemeService implementation
   void DoSetTheme(const extensions::Extension* extension,

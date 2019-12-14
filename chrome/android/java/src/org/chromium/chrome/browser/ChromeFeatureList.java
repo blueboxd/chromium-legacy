@@ -224,8 +224,6 @@ public abstract class ChromeFeatureList {
             "ContextualSearchMlTapSuppression";
     public static final String CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE =
             "ContextualSearchLongpressResolve";
-    public static final String CONTEXTUAL_SEARCH_SIMPLIFIED_SERVER =
-            "ContextualSearchSimplifiedServer";
     public static final String CONTEXTUAL_SEARCH_SECOND_TAP = "ContextualSearchSecondTap";
     public static final String CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE =
             "ContextualSearchTapDisableOverride";
@@ -362,7 +360,6 @@ public abstract class ChromeFeatureList {
     public static final String VR_BROWSING_FEEDBACK = "VrBrowsingFeedback";
     public static final String WEBAPK_ADAPTIVE_ICON = "WebApkAdaptiveIcon";
     public static final String WEB_AUTH = "WebAuthentication";
-    public static final String WEB_PAYMENT_MICROTRANSACTION = "WebPaymentMicrotransaction";
     public static final String WEB_PAYMENTS = "WebPayments";
     public static final String WEB_PAYMENTS_ALWAYS_ALLOW_JUST_IN_TIME_PAYMENT_APP =
             "AlwaysAllowJustInTimePaymentApp";
@@ -370,6 +367,7 @@ public abstract class ChromeFeatureList {
             "WebPaymentsExperimentalFeatures";
     public static final String WEB_PAYMENTS_METHOD_SECTION_ORDER_V2 =
             "WebPaymentsMethodSectionOrderV2";
+    public static final String WEB_PAYMENTS_MINIMAL_UI = "WebPaymentsMinimalUI";
     public static final String WEB_PAYMENTS_MODIFIERS = "WebPaymentsModifiers";
     public static final String WEB_PAYMENTS_REDACT_SHIPPING_ADDRESS =
             "WebPaymentsRedactShippingAddress";

@@ -141,8 +141,6 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
       const net::SSLInfo& ssl_info,
       const GURL& request_url,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-      const base::Callback<void(content::CertificateRequestResultType)>&
-          decision_callback,
       BlockingPageReadyCallback blocking_page_ready_callback);
 
   // Sets the binary proto for SSL error assistant. The binary proto

@@ -1620,11 +1620,6 @@ target(_mdc_target_type, "material_components_ios_impl") {
     deps += [ ":mdc_components_ios_public_headers" ]
   }
 
-  public_deps = [
-    "//ios/third_party/motion_animator_objc",
-    "//ios/third_party/motion_transitioning_objc",
-  ]
-
   if (ios_third_party_material_components_built_as_framework) {
     public_configs = [ ":public_configs" ]
   } else {

@@ -199,8 +199,10 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
 
       wifi_service_->SetEventObservers(
           executor.task_runner(),
-          base::Bind(&WiFiTest::OnNetworksChanged, base::Unretained(this)),
-          base::Bind(&WiFiTest::OnNetworkListChanged, base::Unretained(this)));
+          base::BindRepeating(&WiFiTest::OnNetworksChanged,
+                              base::Unretained(this)),
+          base::BindRepeating(&WiFiTest::OnNetworkListChanged,
+                              base::Unretained(this)));
 
       wifi_service_->StartConnect(network_guid, &error);
       VLOG(0) << error;
@@ -232,8 +234,10 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
   if (parsed_command_line.HasSwitch("scan")) {
     wifi_service_->SetEventObservers(
         executor.task_runner(),
-        base::Bind(&WiFiTest::OnNetworksChanged, base::Unretained(this)),
-        base::Bind(&WiFiTest::OnNetworkListChanged, base::Unretained(this)));
+        base::BindRepeating(&WiFiTest::OnNetworksChanged,
+                            base::Unretained(this)),
+        base::BindRepeating(&WiFiTest::OnNetworkListChanged,
+                            base::Unretained(this)));
     wifi_service_->RequestNetworkScan();
     base::RunLoop().Run();
     return true;

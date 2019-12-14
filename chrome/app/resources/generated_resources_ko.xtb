@@ -1190,7 +1190,6 @@
 <translation id="2665919335226618153">포맷 중에 오류가 발생했습니다.</translation>
 <translation id="2666990579225592931">게스트 창 열기</translation>
 <translation id="2667463864537187133">맞춤법 검사 관리</translation>
-<translation id="2669093958999339774">방해가 되는 알림 허용 요청 팝업 대신 눈에 덜 띄는 메시지를 사용합니다.</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" />이(가) Chrome 탭을 공유합니다.</translation>
 <translation id="2670429602441959756">이 페이지에는 아직 VR에서 지원되지 않는 기능이 있습니다. 종료합니다...</translation>
 <translation id="2671451824761031126">북마크와 설정을 가져왔습니다.</translation>
@@ -1964,7 +1963,6 @@
 <translation id="37613671848467444">시크릿 창에서 열기(&amp;I)</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{USB 기기 1개와 통신}other{USB 기기 #개와 통신}}</translation>
 <translation id="3765246971671567135">오프라인 데모 모드 정책을 읽을 수 없습니다.</translation>
-<translation id="3767376082821709728">새로 방문하는 사이트에서 알림을 보낼 수 없습니다.</translation>
 <translation id="3768037234834996183">환경설정 동기화 중...</translation>
 <translation id="377050016711188788">아이스크림</translation>
 <translation id="3771294271822695279">동영상 파일</translation>
@@ -3030,7 +3028,6 @@
 <translation id="5370819323174483825">새로고침(&amp;R)</translation>
 <translation id="5372529912055771682">제공된 등록 모드는 해당 버전의 운영 체제에서 지원되지 않습니다. 최신 버전을 실행하고 있는지 확인한 뒤 다시 시도하세요.</translation>
 <translation id="5372579129492968947">확장 프로그램 고정 해제</translation>
-<translation id="5374359983950678924">사진 변경</translation>
 <translation id="5376169624176189338">클릭하면 이전 페이지로 가고 누르고 있으면 방문 기록이 나타납니다.</translation>
 <translation id="5376931455988532197">파일이 너무 큼</translation>
 <translation id="537813040452600081">이 창에서 보는 페이지는 브라우저 기록에 나타나지 않으며 로그아웃한 후에도 컴퓨터에 쿠키와 같은 다른 흔적을 남기지 않습니다. 다운로드한 파일과 생성한 북마크는 보관되지 않습니다.</translation>
@@ -4905,7 +4902,6 @@
 <translation id="8044899503464538266">느리게</translation>
 <translation id="8045253504249021590">Google 대시보드를 통해 동기화가 중지되었습니다.</translation>
 <translation id="8045923671629973368">애플리케이션 ID 또는 웹 스토어 URL 입력</translation>
-<translation id="8046278916126163020">새로 방문하는 사이트에서 알림 표시 허용을 요청할 수 있습니다.</translation>
 <translation id="804786196054284061">최종 사용자 라이선스 계약</translation>
 <translation id="8049705080247101012">Google에서 '<ph name="EXTENSION_NAME" />'을(를) 악성 프로그램으로 분류했으며 설치가 금지되었습니다</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>

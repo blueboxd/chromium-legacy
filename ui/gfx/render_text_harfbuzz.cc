@@ -1367,7 +1367,6 @@ RenderTextHarfBuzz::RenderTextHarfBuzz()
     : RenderText(),
       update_layout_run_list_(false),
       update_display_run_list_(false),
-      update_grapheme_iterator_(false),
       update_display_text_(false),
       locale_(internal::GetApplicationLocale()) {
   set_truncate_length(kMaxTextLength);
@@ -1756,7 +1755,6 @@ void RenderTextHarfBuzz::OnLayoutTextAttributeChanged(bool text_changed) {
 
 void RenderTextHarfBuzz::OnDisplayTextAttributeChanged() {
   update_display_text_ = true;
-  update_grapheme_iterator_ = true;
 }
 
 void RenderTextHarfBuzz::EnsureLayout() {

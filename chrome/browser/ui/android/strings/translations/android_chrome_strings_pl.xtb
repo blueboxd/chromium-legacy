@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Czy pobrać plik ponownie?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# plik dźwiękowy}few{# pliki dźwiękowe}many{# plików dźwiękowych}other{# pliku dźwiękowego}}</translation>
 <translation id="2653659639078652383">Prześlij</translation>
-<translation id="2669093958999339774">Blokuj prośby o zgodę na wysyłanie powiadomień, by Ci nie przeszkadzały, i zamiast nich wyświetlaj dyskretny komunikat</translation>
 <translation id="2677748264148917807">Wyjdź</translation>
 <translation id="2704606927547763573">Skopiowane</translation>
 <translation id="2707726405694321444">Odśwież stronę</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Utworzono zakładkę w: <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Synchronizacja w tle</translation>
 <translation id="3749259744154402564">Nieobsługiwane</translation>
-<translation id="3767376082821709728">Strony internetowe, na które wchodzisz po raz pierwszy, nie mogą wysyłać Ci powiadomień</translation>
 <translation id="3771001275138982843">Nie udało się pobrać aktualizacji</translation>
 <translation id="3771033907050503522">Karty incognito</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Włącz Bluetooth<ph name="END_LINK" />, by umożliwić parowanie</translation>
@@ -957,7 +955,6 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="8035133914807600019">Nowy folder…</translation>
 <translation id="8037750541064988519">Pozostało: <ph name="DAYS" /> dni</translation>
 <translation id="804335162455518893">Nie znaleziono karty SD</translation>
-<translation id="8046278916126163020">Strony internetowe, na które wchodzisz po raz pierwszy, mogą prosić o zgodę na wysyłanie Ci powiadomień</translation>
 <translation id="805047784848435650">Na podstawie Twojej historii przeglądania</translation>
 <translation id="8051695050440594747">Dostępne: <ph name="MEGABYTES" /> MB</translation>
 <translation id="8058746566562539958">Otwórz w nowej karcie Chrome</translation>

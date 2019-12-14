@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/spellcheck/renderer/empty_local_interface_provider.h"
 #include "components/spellcheck/renderer/spellcheck_provider.h"
@@ -17,10 +18,6 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_text_checking_completion.h"
 #include "third_party/blink/public/web/web_text_checking_result.h"
-
-namespace base {
-class MessageLoop;
-}
 
 struct FakeTextCheckingResult {
   size_t completion_count_ = 0;
@@ -118,9 +115,6 @@ class TestingSpellCheckProvider : public SpellCheckProvider,
   void DisconnectSessionBridge() override;
 #endif
 
-  // Message loop (if needed) to deliver the SpellCheckHost request flow.
-  std::unique_ptr<base::MessageLoop> loop_;
-
   // Receiver to receive the SpellCheckHost request flow.
   mojo::Receiver<spellcheck::mojom::SpellCheckHost> receiver_{this};
 };
@@ -132,6 +126,7 @@ class SpellCheckProviderTest : public testing::Test {
   ~SpellCheckProviderTest() override;
 
  protected:
+  base::test::SingleThreadTaskEnvironment task_environment_;
   spellcheck::EmptyLocalInterfaceProvider embedder_provider_;
   TestingSpellCheckProvider provider_;
 };

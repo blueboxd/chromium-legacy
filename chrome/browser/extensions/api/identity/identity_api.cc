@@ -52,6 +52,14 @@ IdentityTokenCacheValue::IdentityTokenCacheValue(
                               identity_constants::kCachedIssueAdviceTTLSeconds);
 }
 
+IdentityTokenCacheValue::IdentityTokenCacheValue(
+    const RemoteConsentResolutionData& resolution_data)
+    : status_(CACHE_STATUS_REMOTE_CONSENT), resolution_data_(resolution_data) {
+  expiration_time_ =
+      base::Time::Now() + base::TimeDelta::FromSeconds(
+                              identity_constants::kCachedIssueAdviceTTLSeconds);
+}
+
 IdentityTokenCacheValue::IdentityTokenCacheValue(const std::string& token,
                                                  base::TimeDelta time_to_live)
     : status_(CACHE_STATUS_TOKEN), token_(token) {
@@ -81,6 +89,11 @@ IdentityTokenCacheValue::CacheValueStatus IdentityTokenCacheValue::status()
 
 const IssueAdviceInfo& IdentityTokenCacheValue::issue_advice() const {
   return issue_advice_;
+}
+
+const RemoteConsentResolutionData& IdentityTokenCacheValue::resolution_data()
+    const {
+  return resolution_data_;
 }
 
 const std::string& IdentityTokenCacheValue::token() const { return token_; }

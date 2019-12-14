@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Ladataanko tiedosto uudelleen?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# äänitiedosto}other{# äänitiedostoa}}</translation>
 <translation id="2653659639078652383">Lähetä</translation>
-<translation id="2669093958999339774">Estä ilmoituskehotteita keskeyttämästä sinua ja käytä niiden sijaan hiljaisempaa viestiä</translation>
 <translation id="2677748264148917807">Poistu</translation>
 <translation id="2704606927547763573">Kopioitu</translation>
 <translation id="2707726405694321444">Päivitä sivu</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Lisätty kirjanmerkkeihin: <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Taustasynkronointi</translation>
 <translation id="3749259744154402564">Ei tuettu</translation>
-<translation id="3767376082821709728">Uudet avaamasi sivustot eivät voi lähettää sinulle ilmoituksia</translation>
 <translation id="3771001275138982843">Päivityksen lataaminen epäonnistui</translation>
 <translation id="3771033907050503522">Incognito</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Ota Bluetooth käyttöön<ph name="END_LINK" />, jotta laiteparin muodostus onnistuu.</translation>
@@ -957,7 +955,6 @@ Sivusto EI saa kameran käyttöoikeutta. Kamerakuvat näkyvät vain sinulle.</tr
 <translation id="8035133914807600019">Uusi kansio…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> päivää jäljellä</translation>
 <translation id="804335162455518893">SD-korttia ei löydy</translation>
-<translation id="8046278916126163020">Avaamasi uudet sivustot voivat pyytää lupaa lähettää sinulle ilmoituksia</translation>
 <translation id="805047784848435650">Selaushistoriasi perusteella</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> Mt käytettävissä</translation>
 <translation id="8058746566562539958">Avaa, uusi Chrome-välilehti</translation>

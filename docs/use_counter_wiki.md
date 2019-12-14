@@ -62,7 +62,7 @@ OR
 
 Not all features collect URL-keyed metrics. To opt in your feature to UKM,
 simply add your feature to
-[UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures()](https://cs.chromium.org/chromium/src/chrome/browser/page_load_metrics/observers/use_counter/ukm_features.cc)
+[UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures()](https://cs.chromium.org/chromium/src/components/page_load_metrics/browser/observers/use_counter/ukm_features.cc)
 and get approval from one of the privacy owners.
 
 You can quickly verify that your feature is added to UMA histograms and UKM by

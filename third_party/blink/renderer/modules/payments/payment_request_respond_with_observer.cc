@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/payments/payment_address.h"
 #include "third_party/blink/renderer/modules/payments/payment_address_init.h"
+#include "third_party/blink/renderer/modules/payments/payment_address_init_type_converter.h"
 #include "third_party/blink/renderer/modules/payments/payment_handler_response.h"
 #include "third_party/blink/renderer/modules/payments/payment_handler_utils.h"
 #include "third_party/blink/renderer/modules/payments/payments_validators.h"
@@ -133,21 +134,10 @@ void PaymentRequestRespondWithObserver::OnResponseFulfilled(
   }
 
   payments::mojom::blink::PaymentAddressPtr shipping_address_ptr =
-      should_have_shipping_info_ ? payments::mojom::blink::PaymentAddress::New()
+      should_have_shipping_info_ ? payments::mojom::blink::PaymentAddress::From(
+                                       response->shippingAddress())
                                  : nullptr;
   if (should_have_shipping_info_) {
-    auto* shipping_address = response->shippingAddress();
-    shipping_address_ptr->country = shipping_address->country();
-    shipping_address_ptr->address_line = shipping_address->addressLine();
-    shipping_address_ptr->region = shipping_address->region();
-    shipping_address_ptr->city = shipping_address->city();
-    shipping_address_ptr->dependent_locality =
-        shipping_address->dependentLocality();
-    shipping_address_ptr->postal_code = shipping_address->postalCode();
-    shipping_address_ptr->sorting_code = shipping_address->sortingCode();
-    shipping_address_ptr->organization = shipping_address->organization();
-    shipping_address_ptr->recipient = shipping_address->recipient();
-    shipping_address_ptr->phone = shipping_address->phone();
     if (!PaymentsValidators::IsValidShippingAddress(
             shipping_address_ptr, nullptr /* = optional_error_message */)) {
       BlankResponseWithError(

@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Fayl yenidən endirilsin?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# Audio fayl}other{# Audio fayl}}</translation>
 <translation id="2653659639078652383">Təqdim edin</translation>
-<translation id="2669093958999339774">Bildiriş dəvətlərinin sizi narahat etməsini bloklayın, əvəzində səssiz bildirişlər alın</translation>
 <translation id="2677748264148917807">Tərk edin</translation>
 <translation id="2704606927547763573">Kopyalandı</translation>
 <translation id="2707726405694321444">Səhifəni yeniləyin</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> məhsulunda əlfəcinlənib</translation>
 <translation id="3744111561329211289">Arxa fon sinx</translation>
 <translation id="3749259744154402564">Dəstəklənmir</translation>
-<translation id="3767376082821709728">Daxil olduğunuz yeni saytlar sizə bildirişlər göndərə bilməz</translation>
 <translation id="3771001275138982843">Güncəlləməni endirmək mümkün olmadı</translation>
 <translation id="3771033907050503522">Gizli Panellər</translation>
 <translation id="3773755127849930740">Qoşalaşdırmağa icazə vermək üçün <ph name="BEGIN_LINK" />Bluetooth'u aktiv edin<ph name="END_LINK" /></translation>
@@ -955,7 +953,6 @@ Bu sayt kameraya daxil olmur. Kamera şəkillərini yalnız Siz görürsünüz.<
 <translation id="8035133914807600019">Yeni qovluq...</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> gün qaldı</translation>
 <translation id="804335162455518893">SD kart tapılmadı</translation>
-<translation id="8046278916126163020">Daxil olduğunuz yeni saytlar bildirişlər göndərmək üçün icazə istəyə bilər</translation>
 <translation id="805047784848435650">Axtarış tarixçəsinə əsasən</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB əlçatandır</translation>
 <translation id="8058746566562539958">Yeni Chrome tabında açın</translation>

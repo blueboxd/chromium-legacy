@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/task/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 
 namespace chromeos {
 namespace disks {
@@ -57,8 +57,8 @@ class MountWatcher : public DiskMountManager::Observer {
 
     // Post a task to guarantee the callback isn't called inline with the
     // Mount() call.
-    base::PostTask(FROM_HERE, {base::CurrentThread()},
-                   base::BindOnce(std::move(callback_), error_code,
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback_), error_code,
                                   std::move(mount_point)));
 
     delete this;

@@ -40,14 +40,14 @@ using device::BluetoothSocket;
 @interface SDPQueryListener : NSObject {
  @private
   // The socket that registered for notifications.
-  scoped_refptr<device::BluetoothSocketMac> socket_;
+  scoped_refptr<device::BluetoothSocketMac> _socket;
 
   // Callbacks associated with the request that triggered this SDP query.
-  base::OnceClosure success_callback_;
-  BluetoothSocket::ErrorCompletionCallback error_callback_;
+  base::OnceClosure _success_callback;
+  BluetoothSocket::ErrorCompletionCallback _error_callback;
 
   // The device being queried.
-  IOBluetoothDevice* device_;  // weak
+  IOBluetoothDevice* _device;  // weak
 }
 
 - (id)initWithSocket:(scoped_refptr<device::BluetoothSocketMac>)socket
@@ -65,19 +65,19 @@ using device::BluetoothSocket;
     success_callback:(base::OnceClosure)success_callback
       error_callback:(BluetoothSocket::ErrorCompletionCallback)error_callback {
   if ((self = [super init])) {
-    socket_ = socket;
-    device_ = device;
-    success_callback_ = std::move(success_callback);
-    error_callback_ = error_callback;
+    _socket = socket;
+    _device = device;
+    _success_callback = std::move(success_callback);
+    _error_callback = error_callback;
   }
 
   return self;
 }
 
 - (void)sdpQueryComplete:(IOBluetoothDevice*)device status:(IOReturn)status {
-  DCHECK_EQ(device, device_);
-  socket_->OnSDPQueryComplete(status, device, std::move(success_callback_),
-                              error_callback_);
+  DCHECK_EQ(device, _device);
+  _socket->OnSDPQueryComplete(status, device, std::move(_success_callback),
+                              _error_callback);
 }
 
 @end
@@ -87,11 +87,11 @@ using device::BluetoothSocket;
 @interface BluetoothRfcommConnectionListener : NSObject {
  @private
   // The socket that owns |self|.
-  device::BluetoothSocketMac* socket_;  // weak
+  device::BluetoothSocketMac* _socket;  // weak
 
   // The OS mechanism used to subscribe to and unsubscribe from RFCOMM channel
   // creation notifications.
-  IOBluetoothUserNotification* rfcommNewChannelNotification_;  // weak
+  IOBluetoothUserNotification* _rfcommNewChannelNotification;  // weak
 }
 
 - (id)initWithSocket:(device::BluetoothSocketMac*)socket
@@ -106,12 +106,12 @@ using device::BluetoothSocket;
 - (id)initWithSocket:(device::BluetoothSocketMac*)socket
            channelID:(BluetoothRFCOMMChannelID)channelID {
   if ((self = [super init])) {
-    socket_ = socket;
+    _socket = socket;
 
     SEL selector = @selector(rfcommChannelOpened:channel:);
     const auto kIncomingDirection =
         kIOBluetoothUserNotificationChannelDirectionIncoming;
-    rfcommNewChannelNotification_ =
+    _rfcommNewChannelNotification =
         [IOBluetoothRFCOMMChannel
           registerForChannelOpenNotifications:self
                                      selector:selector
@@ -123,13 +123,13 @@ using device::BluetoothSocket;
 }
 
 - (void)dealloc {
-  [rfcommNewChannelNotification_ unregister];
+  [_rfcommNewChannelNotification unregister];
   [super dealloc];
 }
 
 - (void)rfcommChannelOpened:(IOBluetoothUserNotification*)notification
                     channel:(IOBluetoothRFCOMMChannel*)rfcommChannel {
-  if (notification != rfcommNewChannelNotification_) {
+  if (notification != _rfcommNewChannelNotification) {
     // This case is reachable if there are pre-existing RFCOMM channels open at
     // the time that the listener is created. In that case, each existing
     // channel calls into this method with a different notification than the one
@@ -138,7 +138,7 @@ using device::BluetoothSocket;
     return;
   }
 
-  socket_->OnChannelOpened(std::unique_ptr<device::BluetoothChannelMac>(
+  _socket->OnChannelOpened(std::unique_ptr<device::BluetoothChannelMac>(
       new device::BluetoothRfcommChannelMac(NULL, [rfcommChannel retain])));
 }
 
@@ -149,11 +149,11 @@ using device::BluetoothSocket;
 @interface BluetoothL2capConnectionListener : NSObject {
  @private
   // The socket that owns |self|.
-  device::BluetoothSocketMac* socket_;  // weak
+  device::BluetoothSocketMac* _socket;  // weak
 
   // The OS mechanism used to subscribe to and unsubscribe from L2CAP channel
   // creation notifications.
-  IOBluetoothUserNotification* l2capNewChannelNotification_;  // weak
+  IOBluetoothUserNotification* _l2capNewChannelNotification;  // weak
 }
 
 - (id)initWithSocket:(device::BluetoothSocketMac*)socket
@@ -168,12 +168,12 @@ using device::BluetoothSocket;
 - (id)initWithSocket:(device::BluetoothSocketMac*)socket
                  psm:(BluetoothL2CAPPSM)psm {
   if ((self = [super init])) {
-    socket_ = socket;
+    _socket = socket;
 
     SEL selector = @selector(l2capChannelOpened:channel:);
     const auto kIncomingDirection =
         kIOBluetoothUserNotificationChannelDirectionIncoming;
-    l2capNewChannelNotification_ =
+    _l2capNewChannelNotification =
         [IOBluetoothL2CAPChannel
           registerForChannelOpenNotifications:self
                                      selector:selector
@@ -185,13 +185,13 @@ using device::BluetoothSocket;
 }
 
 - (void)dealloc {
-  [l2capNewChannelNotification_ unregister];
+  [_l2capNewChannelNotification unregister];
   [super dealloc];
 }
 
 - (void)l2capChannelOpened:(IOBluetoothUserNotification*)notification
                    channel:(IOBluetoothL2CAPChannel*)l2capChannel {
-  if (notification != l2capNewChannelNotification_) {
+  if (notification != _l2capNewChannelNotification) {
     // This case is reachable if there are pre-existing L2CAP channels open at
     // the time that the listener is created. In that case, each existing
     // channel calls into this method with a different notification than the one
@@ -200,7 +200,7 @@ using device::BluetoothSocket;
     return;
   }
 
-  socket_->OnChannelOpened(std::unique_ptr<device::BluetoothChannelMac>(
+  _socket->OnChannelOpened(std::unique_ptr<device::BluetoothChannelMac>(
       new device::BluetoothL2capChannelMac(NULL, [l2capChannel retain])));
 }
 

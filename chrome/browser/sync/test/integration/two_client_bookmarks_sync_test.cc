@@ -42,7 +42,6 @@ using bookmarks_helper::AddFolder;
 using bookmarks_helper::AddURL;
 using bookmarks_helper::AllModelsMatch;
 using bookmarks_helper::AllModelsMatchVerifier;
-using bookmarks_helper::BookmarksGUIDChecker;
 using bookmarks_helper::BookmarksMatchChecker;
 using bookmarks_helper::BookmarksMatchVerifierChecker;
 using bookmarks_helper::BookmarksTitleChecker;

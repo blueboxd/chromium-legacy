@@ -294,10 +294,6 @@ const char kEnableTouchpadThreeFingerClick[] =
 // Disables ARC for managed accounts.
 const char kEnterpriseDisableArc[] = "enterprise-disable-arc";
 
-// Disable license type selection by user during enrollment.
-const char kEnterpriseDisableLicenseTypeSelection[] =
-    "enterprise-disable-license-type-selection";
-
 // Whether to enable forced enterprise re-enrollment.
 const char kEnterpriseEnableForcedReEnrollment[] =
     "enterprise-enable-forced-re-enrollment";

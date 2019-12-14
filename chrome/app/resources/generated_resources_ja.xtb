@@ -1190,7 +1190,6 @@
 <translation id="2665919335226618153">フォーマット中にエラーが発生しました。</translation>
 <translation id="2666990579225592931">ゲスト ウィンドウを開く</translation>
 <translation id="2667463864537187133">スペルチェックの管理</translation>
-<translation id="2669093958999339774">妨げになる形での通知の確認をブロックし、代わりに目立たない形でメッセージを表示します</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> が Chrome タブを共有しています。</translation>
 <translation id="2670429602441959756">このページには VR でまだご利用いただけない機能が含まれています。VR モードを終了します...</translation>
 <translation id="2671451824761031126">ブックマークと設定をインポートしました</translation>
@@ -1964,7 +1963,6 @@
 <translation id="37613671848467444">シークレット ウィンドウで開く(&amp;I)</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{1 台の USB デバイスと通信します}other{# 台の USB デバイスと通信します}}</translation>
 <translation id="3765246971671567135">オフライン デモモード ポリシーを読み取ることができませんでした。</translation>
-<translation id="3767376082821709728">初めてアクセスしたサイトは通知を表示できません</translation>
 <translation id="3768037234834996183">設定を同期しています...</translation>
 <translation id="377050016711188788">アイスクリーム</translation>
 <translation id="3771294271822695279">動画ファイル</translation>
@@ -3032,7 +3030,6 @@
 <translation id="5370819323174483825">再読み込み(&amp;R)</translation>
 <translation id="5372529912055771682">指定の登録モードは、このバージョンのオペレーティング システムではサポートされていません。最新バージョンであることを確認してから、もう一度お試しください。</translation>
 <translation id="5372579129492968947">拡張機能の固定を解除します</translation>
-<translation id="5374359983950678924">画像を変更</translation>
 <translation id="5376169624176189338">クリックすると前に戻ります。押したまま待つと履歴が表示されます。</translation>
 <translation id="5376931455988532197">ファイル サイズが大きすぎます</translation>
 <translation id="537813040452600081">このウィンドウで開いたページはブラウザ履歴には記録されません。Cookie などの記録も、ログアウトするとパソコンから消去されます。ダウンロードしたファイルや追加したブックマークは保持されません。</translation>
@@ -4907,7 +4904,6 @@
 <translation id="8044899503464538266">遅い</translation>
 <translation id="8045253504249021590">同期は Google ダッシュボードで停止されています。</translation>
 <translation id="8045923671629973368">アプリケーション ID またはウェブストアの URL を入力します</translation>
-<translation id="8046278916126163020">初めてアクセスしたサイトは通知を表示するかどうか確認できます</translation>
 <translation id="804786196054284061">エンドユーザー使用許諾契約</translation>
 <translation id="8049705080247101012">「<ph name="EXTENSION_NAME" />」は、不正な拡張機能として認識されているためインストールされませんでした</translation>
 <translation id="8050038245906040378">Microsoft 商用コード署名</translation>

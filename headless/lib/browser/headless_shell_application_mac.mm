@@ -11,7 +11,7 @@
 
 @interface HeadlessShellCrApplication ()<NativeEventProcessor> {
   base::ObserverList<content::NativeEventProcessorObserver>::Unchecked
-      observers_;
+      _observers;
 }
 @end
 
@@ -28,18 +28,18 @@
 
 - (void)sendEvent:(NSEvent*)event {
   content::ScopedNotifyNativeEventProcessorObserver scopedObserverNotifier(
-      &observers_, event);
+      &_observers, event);
   [super sendEvent:event];
 }
 
 - (void)addNativeEventProcessorObserver:
     (content::NativeEventProcessorObserver*)observer {
-  observers_.AddObserver(observer);
+  _observers.AddObserver(observer);
 }
 
 - (void)removeNativeEventProcessorObserver:
     (content::NativeEventProcessorObserver*)observer {
-  observers_.RemoveObserver(observer);
+  _observers.RemoveObserver(observer);
 }
 
 @end

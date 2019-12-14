@@ -29,7 +29,6 @@ class Profile;
 
 namespace safe_browsing {
 
-extern const base::Feature kDeepScanningOfUploads;
 extern const base::Feature kDeepScanningOfUploadsUI;
 
 // A tab modal dialog delegate that informs the user of a background deep

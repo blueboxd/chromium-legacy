@@ -13,9 +13,12 @@ public interface PaymentAppFactoryDelegate {
     PaymentAppFactoryParams getParams();
 
     /**
+     * Called when the "can make payment" value has been calculated. A factory should call this
+     * method exactly once.
+     *
      * @param canMakePayment Whether a payment app can support requested payment method.
      */
-    void onCanMakePaymentCalculated(boolean canMakePayment);
+    default void onCanMakePaymentCalculated(boolean canMakePayment) {}
 
     /**
      * Called when a payment app factory has a resource identifier for text to be displayed to the
@@ -24,14 +27,14 @@ public interface PaymentAppFactoryDelegate {
      * @param additionalTextResourceId The resource identifier for text to be displayed to the user.
      * Never 0, which is invalid.
      */
-    void onAdditionalTextResourceId(int additionalTextResourceId);
+    default void onAdditionalTextResourceId(int additionalTextResourceId) {}
 
     /**
-     * Called when the autofill payment app factory has been created.
+     * Called when the autofill payment app creator is available.
      *
-     * @param factory The factory that creates autofill payment apps.
+     * @param creator The object that can create payment apps from Autofill cards.
      */
-    void onAutofillPaymentAppFactoryCreated(AutofillPaymentApp factory);
+    default void onAutofillPaymentAppCreatorAvailable(AutofillPaymentAppCreator creator) {}
 
     /**
      * Called when a payment app factory has created a payment app.
@@ -46,12 +49,13 @@ public interface PaymentAppFactoryDelegate {
      * @param errorMessage The error message for the web developer, e.g., "Failed to download the
      * web app manifest file."
      */
-    void onPaymentAppCreationError(String errorMessage);
+    default void onPaymentAppCreationError(String errorMessage) {}
 
     /**
-     * Called when the payment app factory has finished creating all payment apps.
+     * Called when the factory has finished creating all payment apps. A factory should call this
+     * method exactly once.
      *
      * @param factory The factory that has finished creating all payment apps.
      */
-    void onDoneCreatingPaymentApps(PaymentAppFactoryInterface factory);
+    default void onDoneCreatingPaymentApps(PaymentAppFactoryInterface factory) {}
 }

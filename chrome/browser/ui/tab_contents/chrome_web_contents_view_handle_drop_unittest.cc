@@ -20,6 +20,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/features.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/test/browser_task_environment.h"
@@ -53,7 +54,7 @@ class ChromeWebContentsViewDelegateHandleOnPerformDrop : public testing::Test {
     if (!enable)
       return;
 
-    EnableFeature(safe_browsing::kDeepScanningOfUploads);
+    EnableFeature(safe_browsing::kContentComplianceEnabled);
 
     run_loop_.reset(new base::RunLoop());
 

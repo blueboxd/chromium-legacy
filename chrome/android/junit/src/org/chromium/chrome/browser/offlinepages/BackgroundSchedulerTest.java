@@ -61,7 +61,6 @@ public class BackgroundSchedulerTest {
 
     private void verifyFixedTaskInfoValues(TaskInfo info) {
         assertEquals(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID, info.getTaskId());
-        assertEquals(OfflineBackgroundTask.class, info.getBackgroundTaskClass());
         assertTrue(info.isPersisted());
         assertFalse(info.isPeriodic());
         assertEquals(DateUtils.WEEK_IN_MILLIS, info.getOneOffInfo().getWindowEndTimeMs());

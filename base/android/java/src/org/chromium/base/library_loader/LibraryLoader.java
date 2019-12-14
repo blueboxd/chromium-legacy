@@ -486,7 +486,7 @@ public class LibraryLoader {
         if (mLoadState >= LoadState.MAIN_DEX_LOADED) return;
         try (TraceEvent te = TraceEvent.scoped("LibraryLoader.loadMainDexAlreadyLocked")) {
             assert !mInitialized;
-            assert mLibraryProcessType != LibraryProcessType.PROCESS_UNINITIALIZED;
+            assert mLibraryProcessType != LibraryProcessType.PROCESS_UNINITIALIZED || inZygote;
             setLinkerImplementationIfNeededAlreadyLocked();
 
             long startTime = SystemClock.uptimeMillis();

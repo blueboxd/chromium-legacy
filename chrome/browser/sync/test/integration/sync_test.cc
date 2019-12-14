@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
@@ -234,8 +233,7 @@ SyncTest::SyncTest(TestType test_type)
       server_type_(SERVER_TYPE_UNDECIDED),
       previous_profile_(nullptr),
       num_clients_(-1),
-      use_verifier_(true),
-      create_gaia_account_at_runtime_(false) {
+      use_verifier_(true) {
   sync_datatype_helper::AssociateWithTest(this);
   switch (test_type_) {
     case SINGLE_CLIENT: {
@@ -262,12 +260,7 @@ void SyncTest::SetUp() {
     // Decide on username to use or create one.
     if (cl->HasSwitch(switches::kSyncUserForTest)) {
       username_ = cl->GetSwitchValueASCII(switches::kSyncUserForTest);
-    } else if (UsingExternalServers()) {
-      // We assume the need to automatically create a Gaia account which
-      // requires URL navigation and needs to be done outside SetUp() function.
-      create_gaia_account_at_runtime_ = true;
-      username_ = base::GenerateGUID();
-    } else {
+    } else if (!UsingExternalServers()) {
       username_ = "user@gmail.com";
     }
     // Decide on password to use.
@@ -326,24 +319,6 @@ void SyncTest::AddTestSwitches(base::CommandLine* cl) {
   // should be removed.
   if (!cl->HasSwitch(switches::kSyncEnableGetUpdatesBeforeCommit))
     cl->AppendSwitch(switches::kSyncEnableGetUpdatesBeforeCommit);
-}
-
-bool SyncTest::CreateGaiaAccount(const std::string& username,
-                                 const std::string& password) {
-  std::string relative_url = base::StringPrintf(
-      "/CreateUsers?%s=%s", username.c_str(), password.c_str());
-  GURL create_user_url =
-      GaiaUrls::GetInstance()->gaia_url().Resolve(relative_url);
-  // NavigateToURL blocks until the navigation finishes.
-  ui_test_utils::NavigateToURL(browser(), create_user_url);
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
-  EXPECT_TRUE(entry)
-      << "Could not get a hold on NavigationEntry post URL navigate.";
-  DVLOG(1) << "Create Gaia account request return code = "
-           << entry->GetHttpStatusCode();
-  return entry->GetHttpStatusCode() == 200;
 }
 
 void SyncTest::BeforeSetupClient(int index,
@@ -545,16 +520,6 @@ bool SyncTest::SetupClients() {
   profile_delegates_.resize(num_clients_ + 1);  // + 1 for the verifier.
   clients_.resize(num_clients_);
   fake_server_invalidation_observers_.resize(num_clients_);
-
-  if (create_gaia_account_at_runtime_) {
-    if (!UsingExternalServers()) {
-      ADD_FAILURE() << "Cannot create Gaia accounts without external "
-                       "authentication servers.";
-      return false;
-    }
-    if (!CreateGaiaAccount(username_, password_))
-      LOG(FATAL) << "Could not create Gaia account.";
-  }
 
   auto* cl = base::CommandLine::ForCurrentProcess();
   if (!cl->HasSwitch(switches::kSyncDeferredStartupTimeoutSeconds)) {

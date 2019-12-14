@@ -197,6 +197,8 @@ class CodeGenContext(object):
         if (self.attribute_get
                 and "ReflectOnly" in self.attribute.extended_attributes):
             return True
+        if self.constructor:
+            return True
         return False
 
     @property
@@ -226,6 +228,8 @@ class CodeGenContext(object):
             return self.attribute.idl_type
         if self.callback_function:
             return self.callback_function.return_type
+        if self.constructor:
+            return self.constructor.return_type
         if self.operation:
             return self.operation.return_type
         return None

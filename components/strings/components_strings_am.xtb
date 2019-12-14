@@ -5,10 +5,10 @@
 <translation id="1010200102790553230">በኋላ ላይ ገጽ ጫን</translation>
 <translation id="1015730422737071372">ተጨማሪ ዝርዝሮችን ያቅርቡ</translation>
 <translation id="1021110881106174305">ተቀባይነት ያላቸው ካርዶች</translation>
+<translation id="1021753677514347426">ይህ ችግር የተፈጠረው በእርስዎ ወይም በሌላ ሰው በእርስዎ መሣሪያ ላይ በተጫነ የዕውቅና ማረጋገጫ ምክንያት ነው። ይህ የዕውቅና ማረጋገጫ አውታረ መረቦችን እንደሚከታተል እና አቋርጦ እንደሚገባ የታወቀ ነው እና በChromium የታመነ አይደለም። ክትትል ለማድረግ እንደ ትምህርት ቤት ወይም የኩባንያ አውታረ መረብ በመሳሰሉ አንዳንድ ሕጋዊ አስፈላጊ ምክንያቶች ቢኖሩም Chromium ይህ እየተፈጠረ እንዳለ ምንም እንኳ እርስዎ ሊያስቆሙት ባይችሉም እንዲያውቁት ማድረግ ይፈልጋል። ክትትል ማድረግ በማናቸውም ድሩን በሚደርስ አሳሽ ወይም መተግበሪያ ላይ ሊያጋጥም ይችል ይሆናል።</translation>
 <translation id="1032854598605920125">በሰዓት አቅጣጫ አሽከርክር</translation>
 <translation id="1036348656032585052">አጥፋ</translation>
 <translation id="1038842779957582377">ያልታወቀ ስም</translation>
-<translation id="1039626062703039346">Chrome የGoogle መለያዎን እንዲጠብቁ እና የይለፍ ቃልዎን እንዲቀይሩት ያግዘዎታል። ይህ ስለጣቢያው Googleን ያሳውቀዋል።</translation>
 <translation id="1050038467049342496">ሌሎች መተግበሪያዎችን ይዝጉ</translation>
 <translation id="1055184225775184556">&amp;አክልን ቀልብስ</translation>
 <translation id="1056898198331236512">ማስጠንቀቂያ</translation>
@@ -68,6 +68,7 @@
 <translation id="1264126396475825575">በ<ph name="CRASH_TIME" /> ላይ የብልሽት ሪፖርት ተይዟል (እስካሁን አልተሰቀለም ወይም ችላ አልተባለም)</translation>
 <translation id="1270502636509132238">የመውሰጃ ስልት</translation>
 <translation id="1285320974508926690">ይህን ጣቢያ በጭራሽ አትተርጉም</translation>
+<translation id="1285400217480592994">በ Chrome ውስጥ ያወረዱዋቸውን ወይም የሰቀሉዋቸውን ፋይሎች ይዘቶች ይቃኙ።</translation>
 <translation id="1292701964462482250">«በእርስዎ ኮምፒውተር ላይ ያለ ሶፍትዌር Chrome ደህንነቱ በተጠበቀ ሁኔታ ከድር ጋር እንዳይገናኝ እያስቆመው ነው» (የWindows ኮምፒውተሮች ብቻ)</translation>
 <translation id="1294154142200295408">የትእዛዝ መስመር ልዩነቶች</translation>
 <translation id="129553762522093515">በቅርብ ጊዜ የተዘጉ</translation>
@@ -285,6 +286,7 @@
 <translation id="2270484714375784793">ስልክ ቁጥር</translation>
 <translation id="2277103315734023688">ወደ ፊት ፈልግ</translation>
 <translation id="2283340219607151381">አድራሻዎችን አስቀምጥ እና ሙላ</translation>
+<translation id="2288422996159078444">ማናቸውም እርስዎ የሚተይቡት፣ የሚመለከቱት ማናቸውም ገጽ፣ ወይም ማናቸውም በድር ላይ ያለ ሌላ እንቅስቃሴ እየታየ ነው። በጣቢያዎች ላይ ያለ ይዘት እርስዎ ሳያውቁት ሊለወጥ ይችላል።</translation>
 <translation id="2289385804009217824">ከርክም</translation>
 <translation id="2292556288342944218">የእርስዎ የበየነመረብ መዳረሻ ታግዷል</translation>
 <translation id="2297722699537546652">B5 (የደብዳቤ ፖስታ)</translation>
@@ -299,7 +301,6 @@
 <translation id="2354001756790975382">ሌላ እልባቶች</translation>
 <translation id="2354430244986887761">Google የጥንቃቄ አሰሳ በቅርብ ጊዜ በ<ph name="SITE" /> ላይ <ph name="BEGIN_LINK" />ጎጂ መተግበሪያዎችን አግኝቷል<ph name="END_LINK" />።</translation>
 <translation id="2355395290879513365">አጥቂዎች በዚህ ጣቢያ ላይ እርስዎ እየተመለከቱዋቸው ያሉ ምስሎችን ማየት እና በላያቸው ላይ ለውጦችን በማድረግ ሊያታልልዎት ይችሉ ይሆናል።</translation>
-<translation id="2355474962185559967">አሁን የይለፍ ቃልዎን በአንድ አታላይ ጣቢያ ላይ አስገብተዋል። Chromium ወደ <ph name="WEBSITE_1" /> መሄድን እና የእርስዎን የይለፍ ቃል አሁን መለወጥን ይመክራል።</translation>
 <translation id="2356070529366658676">ጠይቅ</translation>
 <translation id="2359629602545592467">በርካታ</translation>
 <translation id="2359808026110333948">ቀጥል</translation>
@@ -332,7 +333,6 @@
 <translation id="2495083838625180221">JSON ተንታኝ</translation>
 <translation id="2495093607237746763">ምልክት ከተደረገበት Chromium ለተሻለ የቅጽ አሞላል ፍጥነት የካርድዎን ቅጂ በዚህ መሣሪያ ላይ ያከማቻል።</translation>
 <translation id="2498091847651709837">አዲስ ካርድ ቃኝ</translation>
-<translation id="249825481377667906">Chromium የGoogle መለያዎን እንዲጠብቁ እና የይለፍ ቃልዎን እንዲቀይሩት ያግዘዎታል። ይህ ስለጣቢያው Googleን ያሳውቀዋል።</translation>
 <translation id="2501278716633472235">ወደ ኋላ ተመለስ</translation>
 <translation id="2503184589641749290">ተቀባይነት ያላቸው የዴቢት እና የቅድመ-ክፍያ ካርዶች</translation>
 <translation id="2505268675989099013">መለያን ጠብቅ</translation>
@@ -435,6 +435,7 @@
 <translation id="2989742184762224133">ድርብ ከላይ ስቴፕለር ምታ</translation>
 <translation id="2991174974383378012">ከድረ ገጾች ጋር ማጋራት</translation>
 <translation id="2991571918955627853">የድር ጣቢያው HSTS ስለሚጠቀም አሁን <ph name="SITE" />ን መጎብኘት አይችሉም። የአውታረ መረብ ስህተቶች እና ጥቃቶች አብዛኛው ጊዜ ጊዜያዊ ናቸው፣ ስለዚህ ይህ ገጽ በኋላ ላይ ሳይሠራ አይቀርም።</translation>
+<translation id="2996674880327704673">በGoogle የቀረቡ ጥቆማ ሐሳቦች</translation>
 <translation id="3005723025932146533">የተቀመጠ ቅጂ አሳይ</translation>
 <translation id="3008447029300691911">የ<ph name="CREDIT_CARD" /> ሲቪሲ ያስገቡ። አንዴ ካረጋገጡ በኋላ የካርድ ዝርዝሮችዎ ለዚህ ጣቢያ ይጋራሉ።</translation>
 <translation id="3010559122411665027">የዝርዝር ግቤት «<ph name="ENTRY_INDEX" />»፦ <ph name="ERROR" /></translation>
@@ -447,6 +448,7 @@
 <translation id="3060227939791841287">C9 (የደብዳቤ ፖስታ)</translation>
 <translation id="3061707000357573562">የመጠገኛ አገልግሎት</translation>
 <translation id="3064966200440839136">በውጫዊ ማከማቻ በኩል ለማጫወት ማንነት ከማያሳውቅ ሁነታ በመውጣት ላይ። ይቀጥል?</translation>
+<translation id="3086579638707268289">የእርስዎ በድር ላይ ያለ እንቅስቃሴ ክትትል እየተደረገበት ነው</translation>
 <translation id="3095940652251934233">መግለጫ</translation>
 <translation id="3096100844101284527">የመውሰጃ አድራሻ ያክሉ</translation>
 <translation id="3105172416063519923">የእሴት መታወቂያ፦</translation>
@@ -480,7 +482,6 @@
 <translation id="3228969707346345236">ገጹ አስቀድሞ በ<ph name="LANGUAGE" /> ስለሆነ ትርጉሙ አልተሳካም።</translation>
 <translation id="3229041911291329567">የእርስዎ መሣሪያ እና አሳሽ የስሪት መረጃ</translation>
 <translation id="323107829343500871">የ<ph name="CREDIT_CARD" /> ሲቪሲ ያስገቡ</translation>
-<translation id="3234392465377209614">አሁን የይለፍ ቃልዎን በአንድ አታላይ ጣቢያ ላይ አስገብተዋል። Chromium ወደ <ph name="WEBSITE_1" />፣ <ph name="WEBSITE_2" />፣ እና <ph name="WEBSITE_3" /> መሄድን እና የእርስዎን የይለፍ ቃል አሁን መለወጥን ይመክራል።</translation>
 <translation id="3234666976984236645">ሁልጊዜ በዚህ ጣቢያ ላይ ያለ አስፈላጊ ይዘትን አግኝ</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> ከ<ph name="SUGGESTED_DOMAIN" /> ጋር ይመሳሰላል። አጥቂዎች አንዳንድ ጊዜ ተመሳሳይ ዩአርኤሎችን በመጠቀም ጣቢያዎችን ያስመስላሉ።</translation>
 <translation id="3270847123878663523">&amp;ዳግም ደርድርን ቀልብስ</translation>
@@ -499,6 +500,7 @@
 <translation id="3369192424181595722">የሰዓት ስህተት</translation>
 <translation id="337363190475750230">አቅርቦት ተቋርጧል</translation>
 <translation id="3377188786107721145">የመምሪያ ትንተና ስህተት</translation>
+<translation id="3377736046129930310">ካርዶችን በበለጠ ፍጥነት ለማረጋገጥ የማያ ገጽ መቆለፊያን ይጠቀሙ</translation>
 <translation id="3380365263193509176">ያልታወቀ ስህተት</translation>
 <translation id="3380864720620200369">የደንበኛ መታወቂያ፦</translation>
 <translation id="3387261909427947069">የመክፈያ ዘዴዎች</translation>
@@ -512,7 +514,6 @@
 <translation id="342781501876943858">Chromium የእርስዎን ይለፍ ቃል በሌሎች ጣቢያዎች ላይ ዳግም ከተጠቀሙበት እንደገና እንዲያዋቅሩት ይመክራል።</translation>
 <translation id="3428151540071562330">አንድ ወይም ተጨማሪ የDnsOverHttpsTemplates አገልጋይ ቅንብር ደንብ ዩአርአዮች ልክ ያልሆኑ ናቸው፣ እና ስራ ላይ አይውሉም።</translation>
 <translation id="3431636764301398940">ይህን ካርድ ወደዚህ መሣሪያ አስቀምጥ</translation>
-<translation id="3438790640050632698">አሁን የይለፍ ቃልዎን በአንድ አታላይ ጣቢያ ላይ አስገብተዋል። Chrome ወደ <ph name="WEBSITE_1" /> እና <ph name="WEBSITE_2" /> መሄድን እና የእርስዎን የይለፍ ቃል አሁን መለወጥን ይመክራል።</translation>
 <translation id="3443726618221119081">ጁሮ-ኩ-ካይ</translation>
 <translation id="3447661539832366887">የዚህ መሣሪያ ባለቤት የዳይኖሰር ጨዋታውን አጥፍቶታል።</translation>
 <translation id="3447884698081792621">የእውቅና ማረጋገጫን አሳይ (በ<ph name="ISSUER" /> የሚሰጥ)</translation>
@@ -527,7 +528,6 @@
 <translation id="3495081129428749620">በገጽ ውስጥ ያግኙ
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">ይህ መመሪያ ከተመሳሳይ የመመሪያ ቡድን የመጣ ሌላ መመሪያ ከፍተኛ ተቀዳሚነት ስላለው ችላ ተብሏል።</translation>
-<translation id="3525469219100414032">አሁን የይለፍ ቃልዎን በአንድ አታላይ ጣቢያ ላይ አስገብተዋል። Chrome ወደ <ph name="WEBSITE_1" /> መሄድን እና የእርስዎን የይለፍ ቃል አሁን መለወጥን ይመክራል።</translation>
 <translation id="3528171143076753409">የአገልጋይ እውቅና ማረጋገጫ የታመነ አይደለም።</translation>
 <translation id="3528485271872257980">ደማቅ ቡናማ</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{በተሰመሩ መሣሪያዎች ላይ ቢያንስ 1 ንጥል}=1{1 ንጥል (እና ተጨማሪ የተሰመሩ መሣሪያዎች ላይ)}one{# ንጥሎች (እና ተጨማሪ የተሰመሩ መሣሪያዎች ላይ)}other{# ንጥሎች (እና ተጨማሪ የተሰመሩ መሣሪያዎች ላይ)}}</translation>
@@ -664,6 +664,7 @@
 <translation id="4194250254487269611">ይቅርታ፣ የእርስዎ ካርድ አሁን ላይ ሊቀመጥ አይችልም</translation>
 <translation id="4196861286325780578">&amp;ውሰድን ድገም</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />የኬላ እና የጸረ-ቫይረስ ውቅረቶችን መፈተሽ<ph name="END_LINK" /></translation>
+<translation id="4214357935346142455">በማያ ገጽ መግቢያ መገለጫ</translation>
 <translation id="4215751373031079683">7x9 (የደብዳቤ ፖስታ)</translation>
 <translation id="4220128509585149162">ብልሽቶች</translation>
 <translation id="422022731706691852">በ<ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ላይ ያሉ አጥቂዎች (የአሰሳ ተሞክሮዎን የሚጎዱ ፕሮግራሞችን እንዲጭኑ ሊያታልልዎት ሊሞክሩ ይችላሉ ለምሳሌ፦ የእርስዎን የመነሻ ገጽ በመለወጥ ወይም እርስዎ በሚጎበኙዋቸው ጣቢያዎች ላይ ትርፍ ማስታወቂያዎችን ማሳየት የመሳሰሉ በማድረግ)። <ph name="BEGIN_LEARN_MORE_LINK" />የበለጠ ለመረዳት<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -746,6 +747,7 @@
 <translation id="4515275063822566619">ካርዶች እና አድራሻዎች ከChrome እና ከGoogle መለያዎ (<ph name="ACCOUNT_EMAIL" />) የተገኙ ናቸው። በ<ph name="BEGIN_LINK" />ቅንብሮች<ph name="END_LINK" /> ውስጥ ሊያቀናብሯቸው ይችላሉ።</translation>
 <translation id="4517607026994743406">Comm-10 (የደብዳቤ ፖስታ)</translation>
 <translation id="4522570452068850558">ዝርዝሮች</translation>
+<translation id="4524138615196389145">ከአሁን በኋላ WebAuthnን በመጠቀም የእርስዎን ካርዶች በበለጠ ፍጥነት ያረጋግጡ</translation>
 <translation id="4524805452350978254">ካርዶችን አቀናብር</translation>
 <translation id="455113658016510503">A9</translation>
 <translation id="4552089082226364758">ብልጭታ</translation>
@@ -857,6 +859,7 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">የአውሮፓ-Edp</translation>
 <translation id="5115563688576182185">(64-ቢት)</translation>
+<translation id="5121469660360593280">በChrome የድርጅት ተጠቃሚ የጥቃት መከላከያ ከእርስዎ አስተዳዳሪ ጋር የተጠቆሙ የደህንነት ክስተቶች ውሂብ ያጋሩ። ይህ እርስዎ የጎበኟቸው የገጾች ዩአርኤሎች፣ የፋይል ስሞች ወይም ዲበ ውሂብ፣ እና ወደ የእርስዎ መሣሪያ እና Chrome ለመግባት የተጠቀሙበት የተጠቃሚ ስም ሊያካትት ይችላል።</translation>
 <translation id="5125394840236832993">B-ፕላስ</translation>
 <translation id="5126510351761255129">የእርስዎን ኮርድ ያረጋግጡ</translation>
 <translation id="5135404736266831032">አድራሻዎችን ያቀናብሩ...</translation>
@@ -868,6 +871,7 @@
 <translation id="5159010409087891077">ገጹን ማንነት በማያሳውቅ አዲስ መስኮት ውስጥ ይክፈቱ (⇧⌘N)</translation>
 <translation id="516920405563544094">የ<ph name="CREDIT_CARD" /> CVC ያስገቡ። ካረጋገጡ በኋላ የGoogle መለያዎ ካርድ ዝርዝሮች ለዚህ ጣቢያ ይጋራሉ።</translation>
 <translation id="5169827969064885044">የድርጅት መለያዎን መዳረሻ ሊያጡ ወይም የማንነት ስርቆት ሊያጋጥመዎት ይችላሉ። Chrome የይለፍ ቃልዎን አሁን እንዲቀይሩ ይመክራል።</translation>
+<translation id="5170017743895942767">Chrome የድርጅት ተጠቃሚ ጥቃት መከላከያ</translation>
 <translation id="5171045022955879922">ይፈልጉ ወይም ዩአርኤል ይጻፉ</translation>
 <translation id="5171689220826475070">ፋንፎልድ-አውሮፓ</translation>
 <translation id="5172758083709347301">ማሽን</translation>
@@ -954,7 +958,6 @@
 <translation id="5565735124758917034">ገባሪ</translation>
 <translation id="5570825185877910964">መለያን ጠብቅ</translation>
 <translation id="5571083550517324815">ከዚህ አድራሻ ላይ መውሰድ አይቻልም። የተለየ አድራሻ ይምረጡ።</translation>
-<translation id="5572009199897554128">አሁን የይለፍ ቃልዎን በአንድ አታላይ ጣቢያ ላይ አስገብተዋል። Chromium ወደ <ph name="WEBSITE_1" /> እና <ph name="WEBSITE_2" /> መሄድን እና የእርስዎን የይለፍ ቃል አሁን መለወጥን ይመክራል።</translation>
 <translation id="5580958916614886209">የእርስዎን የአገልግሎት ማብቂያ ወር ይመልከቱ እና እንደገና ይሞክሩ</translation>
 <translation id="5586446728396275693">ምንም የተቀመጡ አድራሻዎች የሉም</translation>
 <translation id="5595485650161345191">አድራሻ አርትዕ</translation>
@@ -989,6 +992,7 @@
 <translation id="5730040223043577876">Chrome የእርስዎን ይለፍ ቃል በሌሎች ጣቢያዎች ላይ ዳግም ከተጠቀሙበት እንደገና እንዲያዋቅሩት ይመክራል።</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{ካርድ በGoogle መለያዎ ውስጥ ያስቀምጡ}one{ካርዶችን ወደ የእርስዎ የGoogle መለያ ያስቀምጡ}other{ካርዶችን ወደ የእርስዎ የGoogle መለያ ያስቀምጡ}}</translation>
 <translation id="5763042198335101085">ትክክለኛ የኢሜይል አድራሻ ያስገቡ</translation>
+<translation id="5763703224595565476">የእርስዎ አስተዳዳሪ በእርስዎ አሳሽ ላይ Chrome የድርጅት ተጠቃሚ ጥቃት መከላከያን አንቅቷል። የChrome የድርጅት ተጠቃሚ የጥቃት መከላከያ ወደ የእርስዎ አንዳንድ ውሂብ መዳረሻ ይኖረዋል።</translation>
 <translation id="5765072501007116331">የማድረሻ ዘዴዎችን እና መስፈርቶችን ለመመልከት አድራሻ ይምረጡ</translation>
 <translation id="5778550464785688721">MIDI መሣሪያዎች ሙሉ ቁጥጥር</translation>
 <translation id="5781136890105823427">ሙከራ ነቅቷል</translation>
@@ -1068,6 +1072,7 @@
 <translation id="6094273045989040137">አብራራ</translation>
 <translation id="6104072995492677441">JIS B6</translation>
 <translation id="610911394827799129">የእርስዎ Google መለያ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ላይ ሌሎች የአሰሳ ታሪክ ዓይነቶች ሊኖረው ይችላል።</translation>
+<translation id="6120179357481664955">የእርስዎን UPI መታወቂያ ያስታውሳሉ?</translation>
 <translation id="6132597952260690497">ስለተጫኑ ቅጥያዎች እና ተሰኪዎች መረጃ</translation>
 <translation id="6146055958333702838">ማናቸውም ገመዶችን ይፈትሹና እየተጠቀሙ ሊሆኑ የሚችሏቸውን ማንኛውም ራውተሮች፣
         ሞደሞችን ወይም ሌላ አውታረ መረብ መሣሪያዎችን ዳግም ያስጀምሩ።</translation>
@@ -1083,6 +1088,7 @@
 <translation id="6221345481584921695">Google የጥንቃቄ አሰሳ በቅርብ ጊዜ <ph name="SITE" /> ላይ <ph name="BEGIN_LINK" />ተንኮል-አዘል ዌር<ph name="END_LINK" /> አግኝቷል። በመደበኛ ጊዜ ደህንነታቸው የተጠበቁ ድር ጣቢያዎች አንዳንድ ጊዜ በተንኮል-አዘል ዌር ሊጠቁ ይችላሉ። ተንኮል-አዘል ይዘቱ የሚታወቅ የተንኮል-አዘል ዌር አሰራጭ ከሆነው <ph name="SUBRESOURCE_HOST" /> ነው የመጣው።</translation>
 <translation id="6234122620015464377">ከእያንዳንዱ ሰነድ በኋላ ከርክም</translation>
 <translation id="6240447795304464094">የGoogle Pay አርማ</translation>
+<translation id="6241121617266208201">የአስተያየት ጥቆማዎችን ደብቅ</translation>
 <translation id="6251924700383757765">የግላዊነት መመሪያ</translation>
 <translation id="6254436959401408446">ይህን ገጽ ለመክፈት በቂ ማህደረ ትውስታ የለም</translation>
 <translation id="625755898061068298">ለዚህ ጣቢያ የደህንነት ማስጠንቀቂያዎችን ለማሰናከል መርጠዋል።</translation>
@@ -1129,6 +1135,7 @@
 <translation id="6409754798200046165">አሁን የይለፍ ቃልዎን በአንድ አታላይ ጣቢያ ላይ አስገብተዋል። Chrome የይለፍ ቃልዎን አሁኑኑ እንዲቀይሩት ይመክራል።</translation>
 <translation id="6410264514553301377">የ<ph name="CREDIT_CARD" /> የአገልግሎት ማብቂያ ቀን እና ሲቪሲ ያስገቡ</translation>
 <translation id="6415778972515849510">Chromium የGoogle መለያዎን እንዲጠብቁ እና የይለፍ ቃልዎን እንዲቀይሩት ያግዘዎታል።</translation>
+<translation id="6423385022588644828">ከአሁን በኋላ የንኪ መታወቂያን በመጠቀም የእርስዎን ካርዶች በበለጠ ፍጥነት ያረጋግጡ</translation>
 <translation id="6427730057873428458">የበር እጥፋት</translation>
 <translation id="6433490469411711332">የዕውቂያ መረጃን ያርትዑ</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> ማገናኘት አሻፈረኝ ብሏል።</translation>
@@ -1199,12 +1206,14 @@
 <translation id="6786747875388722282">ቅጥያዎች</translation>
 <translation id="6790428901817661496">አጫውት</translation>
 <translation id="679355240208270552">ነባሪው ፍለጋ በመምሪያ ስላልነቃ ችላ ተብሏል።</translation>
+<translation id="6794951432696553238">ከአሁን በኋላ Windows Helloን በመጠቀም የእርስዎን ካርዶች በበለጠ ፍጥነት ያረጋግጡ</translation>
 <translation id="681021252041861472">የሚያስፈልግ መስክ</translation>
 <translation id="6810899417690483278">የብጁነት መታወቂያ</translation>
 <translation id="6825578344716086703">እርስዎ <ph name="DOMAIN" />ን ለመድረስ ሞክረዋል፣ ነገር ግን አገልጋዩ ደካማ የፊርማ ስልተ-ቀመር (እንደ SHA-1 ያለ) በመጠቀም የተፈረመ የዕውቅና ማረጋገጫ ነው ያቀረበው። ይህ ማለት አገልጋዩ ያቀረበው የደህንነት ምስክርነቶች የተጭበረበሩ ሊሆኑ ይችላሉ፣ እናም አገልጋዩ እርስዎ የሚጠብቁት አገልጋይ ላይሆን ይችላል (ከአጥቂ ጋር እየተገናኙ ሊሆን ይችላል)።</translation>
 <translation id="6826370046007623921">የውሂብ መጥፋትን መከላከያ</translation>
 <translation id="6831043979455480757">መተርጎም</translation>
 <translation id="6839929833149231406">አካባቢ</translation>
+<translation id="6846340164947227603">ምናባዊ የካርድ ቁጥርን ይጠቀሙ...</translation>
 <translation id="6852204201400771460">መተግበሪያ ዳግም ይጫን?</translation>
 <translation id="6865412394715372076">ይህ ካርድ አሁን ላይ ሊረጋገጥ አይችልም</translation>
 <translation id="6868206169573555318">ለማዘመን ዳግም ያስነሱት</translation>
@@ -1233,6 +1242,7 @@
 <translation id="6989763994942163495">የላቁ ቅንብሮችን አሳይ...</translation>
 <translation id="6993898126790112050">6x9 (የደብዳቤ ፖስታ)</translation>
 <translation id="6996312675313362352">ሁልጊዜ <ph name="ORIGINAL_LANGUAGE" />ን ተርጉም</translation>
+<translation id="7004583254764674281">ካርዶችን በበለጠ ፍጥነት ለማረጋገጥ Windows Helloን ይጠቀሙ</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">እነዚህ ክፍያዎች የአንድ ጊዜ ወይም ተደጋጋሚ፣ እና የማያስታውቁ ሊሆኑ ይችላሉ።</translation>
 <translation id="7029809446516969842">የይለፍ ቃላት</translation>
@@ -1243,6 +1253,7 @@
 <translation id="7064851114919012435">የእውቂያ መረጃ</translation>
 <translation id="7075452647191940183">ጥያቄ ከልክ በላይ ግዙፍ ነው</translation>
 <translation id="7079718277001814089">ይህ ጣቢያ ተንኮል-አዘል ዌር ይዟል</translation>
+<translation id="7081308185095828845">ይህ ባህሪ በእርስዎ መሣሪያ ላይ አይገኝም</translation>
 <translation id="7087282848513945231">ክፍለ ሀገር</translation>
 <translation id="7090678807593890770"><ph name="LINK" />ን በGoogle ላይ ይፈልጉ</translation>
 <translation id="7108338896283013870">ደብቅ</translation>
@@ -1296,9 +1307,11 @@
 <translation id="733923710415886693">የአገልጋዩ የእውቅና ማረጋገጫ በእውቅና ማረጋገጫ ግልጽነት በኩል አልተገለጸም።</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">ከዚህ ጋር ግንኙነት አለው፦</translation>
+<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> በእርስዎአ አሳሽ ላይ የChromeን የድርጅት ተጠቃሚ ጥቃት መከላከያ አንቅቷል። የChrome የድርጅት ተጠቃሚ የጥቃት መከላከያ ወደ የእርስዎ አንዳንድ ውሂብ መዳረሻ ይኖረዋል።</translation>
 <translation id="7349430561505560861">A4-ተጨማሪ</translation>
 <translation id="7353601530677266744">የትእዛዝ መስመር</translation>
 <translation id="7372973238305370288">የፍለጋ ውጤት</translation>
+<translation id="7374733840632556089">ይህ ችግር የተፈጠረው በእርስዎ ወይም በሌላ ሰው በእርስዎ መሣሪያ ላይ በተጫነ የዕውቅና ማረጋገጫ ምክንያት ነው። ይህ የዕውቅና ማረጋገጫ አውታረ መረቦችን እንደሚከታተል እና አቋርጦ እንደሚገባ የታወቀ ነው እና በChrome የታመነ አይደለም። ክትትል ለማድረግ እንደ ትምህርት ቤት ወይም የኩባንያ አውታረ መረብ በመሳሰሉ አንዳንድ ሕጋዊ አስፈላጊ ምክንያቶች ቢኖሩም Chrome ይህ እየተፈጠረ እንዳለ ምንም እንኳ እርስዎ ሊያስቆሙት ባይችሉም እንዲያውቁት ማድረግ ይፈልጋል። ክትትል ማድረግ በማናቸውም ድሩን በሚደርስ አሳሽ ወይም መተግበሪያ ላይ ሊያጋጥም ይችል ይሆናል።</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">የሚዲያ መቆጣጠሪያዎች</translation>
 <translation id="7378627244592794276">አይ</translation>
@@ -1327,6 +1340,7 @@
 <translation id="7451311239929941790">ስለዚህ ችግር <ph name="BEGIN_LINK" />ይበልጥ በመረዳት ላይ<ph name="END_LINK" />።</translation>
 <translation id="7455133967321480974">ሁለንተናዊ ነባሪውን ተጠቀም (አግድ)</translation>
 <translation id="7460618730930299168">ማያ ገጹ አቀራረብ እርስዎ ከመረጡት የተለየ ነው። ይቀጥል?</translation>
+<translation id="7464821087936825778">ከፍለጋ ሁነታ በመውጣት ላይ</translation>
 <translation id="7473891865547856676">አይ፣ አመሰግናለሁ</translation>
 <translation id="7481312909269577407">ወደ ፊት</translation>
 <translation id="7485870689360869515">ምንም ውሂብ አልተገኘም።</translation>
@@ -1548,6 +1562,7 @@
 <translation id="8559762987265718583">የእርስዎ መሣሪያ ቀን (<ph name="DATE_AND_TIME" />) ልክ ስላልሆነ ወደ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> የግል ግንኙነት መመስረት አይቻልም።</translation>
 <translation id="8564985650692024650">Chromium የእርስዎን የ<ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> ይለፍ ቃል በሌሎች ጣቢያዎች ላይ ዳግም ከተጠቀሙበት እንደገና እንዲያዋቅሩት ይመክራል።</translation>
 <translation id="8571890674111243710">ገጽ ወደ <ph name="LANGUAGE" /> በመተርጎም ላይ...</translation>
+<translation id="8574899947864779331">ካርዶችን በበለጠ ፍጥነት ለማረጋገጥ የንኪ መታወቂያን ይጠቀሙ</translation>
 <translation id="858637041960032120">ስልክ ቁጥር ያክሉ
 </translation>
 <translation id="860043288473659153">የካርድ ያዢ ስም</translation>
@@ -1670,7 +1685,6 @@
 <translation id="936474030629450166">ልዕለ-B</translation>
 <translation id="936602727769022409">የGoogle መለያዎን መዳረሻ ሊያጡ ይችላሉ። Chromium የይለፍ ቃልዎን አሁኑኑ እንዲቀይሩት ይመክራል። በመለያ እንዲገቡ ይጠየቃሉ።</translation>
 <translation id="939736085109172342">አዲስ ዓቃፊ</translation>
-<translation id="940786960229275114">አሁን የይለፍ ቃልዎን በአንድ አታላይ ጣቢያ ላይ አስገብተዋል። Chrome ወደ <ph name="WEBSITE_1" />፣ <ph name="WEBSITE_2" />፣ እና <ph name="WEBSITE_3" /> መሄድን እና የእርስዎን የይለፍ ቃል አሁን መለወጥን ይመክራል።</translation>
 <translation id="945855313015696284">ከዚህ በታች ያለውን መረጃ ይፈትሹ እና ማናቸውንም ልክ ያልሆኑ ካርዶች ይሰርዙ</translation>
 <translation id="950736567201356821">ሦስቴ ከላይ ብሳ</translation>
 <translation id="951104842009476243">ተቀባይነት ያላቸው የዴቢት እና የቅድመ-ክፍያ ካርዶች</translation>

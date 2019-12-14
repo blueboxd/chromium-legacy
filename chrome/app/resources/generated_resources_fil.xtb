@@ -1190,7 +1190,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="2665919335226618153">Naku! Nagkaroon ng error habang nagpo-format.</translation>
 <translation id="2666990579225592931">Buksan ang Window ng Bisita</translation>
 <translation id="2667463864537187133">Pamahalaan ang pang-check ng pagbabaybay</translation>
-<translation id="2669093958999339774">I-block ang mga prompt ng notification na gumagambala sa iyo, at gumamit na lang ng mas tahimik na mensahe</translation>
 <translation id="2670102641511624474">Nagbabahagi ang <ph name="APP_NAME" /> ng isang tab ng Chrome.</translation>
 <translation id="2670429602441959756">Naglalaman ang page na ito ng mga feature na hindi pa sinusuportahan sa VR. Lumalabas...</translation>
 <translation id="2671451824761031126">Handa na ang iyong mga bookmark at setting</translation>
@@ -1964,7 +1963,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="37613671848467444">Buksan sa &amp;Incognito Window</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Kumonekta sa isang USB device}one{Kumonekta sa # USB device}other{Kumonekta sa # na USB device}}</translation>
 <translation id="3765246971671567135">Hindi ma-read ang patakaran ng offline na demo mode.</translation>
-<translation id="3767376082821709728">Hindi makakapagpadala sa iyo ng mga notification ang mga bagong site</translation>
 <translation id="3768037234834996183">Nagsi-sync ng iyong mga kagustuhan...</translation>
 <translation id="377050016711188788">Icecream</translation>
 <translation id="3771294271822695279">Mga Video File</translation>
@@ -3032,7 +3030,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5370819323174483825">I-&amp;reload</translation>
 <translation id="5372529912055771682">Hindi sinusuportahan ng bersyong ito ng operating system ang ibinigay na mode ng pagpapatala.  Pakitiyak na pinapatakbo mo ang pinakabagong bersyon at subukang muli.</translation>
 <translation id="5372579129492968947">I-unpin ang extension</translation>
-<translation id="5374359983950678924">Palitan ang larawan</translation>
 <translation id="5376169624176189338">I-click upang bumalik, pindutin nang matagal upang makita ang history</translation>
 <translation id="5376931455988532197">Masyadong malaki ang file</translation>
 <translation id="537813040452600081">Hindi lalabas sa history ng browser ang mga page na tiningnan mo sa window na ito at hindi mag-iiwan ang mga ito ng iba pang mga palatandaan, tulad ng cookies, sa computer pagkatapos mong mag-sign out. Hindi papanatilihin ang iyong mga na-download na file at ginawang bookmark.</translation>
@@ -4907,7 +4904,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8044899503464538266">Mabagal</translation>
 <translation id="8045253504249021590">Inihinto ang pag-sync sa pamamagitan ng Google Dashboard.</translation>
 <translation id="8045923671629973368">Maglagay ng application ID o URL ng webstore</translation>
-<translation id="8046278916126163020">Puwedeng humiling ang mga bagong site na binibisita mo na magpadala sa iyo ng mga notification</translation>
 <translation id="804786196054284061">Kasunduan sa Lisensya ng End User</translation>
 <translation id="8049705080247101012">Na-flag ng Google ang "<ph name="EXTENSION_NAME" />" bilang nakakahamak at pinigilan ang pag-install</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>

@@ -323,7 +323,7 @@ std::vector<const BookmarkNode*> GetMostRecentlyModifiedUserFolders(
     size_t max_count) {
   std::vector<const BookmarkNode*> nodes;
   ui::TreeNodeIterator<const BookmarkNode> iterator(
-      model->root_node(), base::Bind(&PruneInvisibleFolders));
+      model->root_node(), base::BindRepeating(&PruneInvisibleFolders));
 
   while (iterator.has_next()) {
     const BookmarkNode* parent = iterator.Next();

@@ -135,6 +135,9 @@ void HostContextFactoryPrivate::ConfigureCompositor(
   if (command_line->HasSwitch(switches::kDisableFrameRateLimit))
     root_params->disable_frame_rate_limit = true;
 
+  root_params->use_preferred_interval_for_video =
+      features::IsUsingPreferredIntervalForVideo();
+
   // Connects the viz process end of CompositorFrameSink message pipes. The
   // browser compositor may request a new CompositorFrameSink on context loss,
   // which will destroy the existing CompositorFrameSink.

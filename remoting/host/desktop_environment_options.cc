@@ -79,6 +79,14 @@ void DesktopEnvironmentOptions::set_enable_user_interface(bool enabled) {
   enable_user_interface_ = enabled;
 }
 
+bool DesktopEnvironmentOptions::enable_notifications() const {
+  return enable_notifications_;
+}
+
+void DesktopEnvironmentOptions::set_enable_notifications(bool enabled) {
+  enable_notifications_ = enabled;
+}
+
 bool DesktopEnvironmentOptions::terminate_upon_input() const {
   return terminate_upon_input_;
 }

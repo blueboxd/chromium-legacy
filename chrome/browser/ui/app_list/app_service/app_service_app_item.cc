@@ -110,7 +110,7 @@ void AppServiceAppItem::OnAppUpdate(const apps::AppUpdate& app_update,
 }
 
 void AppServiceAppItem::Activate(int event_flags) {
-  // For Chrome apps or Web apps, if it is non-platform app, it could be
+  // For Crostini apps, non-platform Chrome apps, Web apps, it could be
   // selecting an existing delegate for the app, so call
   // ChromeLauncherController's ActivateApp interface. Platform apps or ARC
   // apps, Crostini apps treat activations as a launch. The app can decide
@@ -125,9 +125,10 @@ void AppServiceAppItem::Activate(int event_flags) {
   bool is_active_app = false;
   proxy->AppRegistryCache().ForOneApp(
       id(), [&is_active_app](const apps::AppUpdate& update) {
-        if ((update.AppType() == apps::mojom::AppType::kExtension ||
-             update.AppType() == apps::mojom::AppType::kWeb) &&
-            update.IsPlatformApp() == apps::mojom::OptionalBool::kFalse) {
+        if (update.AppType() == apps::mojom::AppType::kCrostini ||
+            ((update.AppType() == apps::mojom::AppType::kExtension ||
+              update.AppType() == apps::mojom::AppType::kWeb) &&
+             update.IsPlatformApp() == apps::mojom::OptionalBool::kFalse)) {
           is_active_app = true;
         }
       });

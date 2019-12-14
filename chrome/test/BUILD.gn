@@ -769,8 +769,8 @@ if (!is_android) {
       # content_browsertests uses the non-copied files instead.
       "//ppapi:copy_test_files",
       "//ppapi:copy_test_files2",
-      "//ppapi:ppapi_tests",
       "//ppapi:power_saver_test_plugin",
+      "//ppapi:ppapi_tests",
       "//testing/buildbot/filters:browser_tests_filters",
       "//testing/buildbot/filters:linux_trusty_rel_browser_tests_filters",
       "//third_party/mesa_headers",
@@ -1060,6 +1060,7 @@ if (!is_android) {
       "../browser/pdf/pdf_extension_test_util.h",
       "../browser/performance_manager/graph/page_node_impl_browsertest.cc",
       "../browser/permissions/permission_delegation_browsertest.cc",
+      "../browser/permissions/permission_manager_browsertest.cc",
       "../browser/permissions/permission_request_manager_browsertest.cc",
       "../browser/permissions/permissions_browsertest.cc",
       "../browser/permissions/permissions_browsertest.h",
@@ -1443,8 +1444,8 @@ if (!is_android) {
       ]
 
       data_deps += [
-        "//chrome",
         "//ash/keyboard/ui:resources",
+        "//chrome",
         "//testing/buildbot/filters:chromeos_filters",
         "//ui/file_manager:unit_test_data",
       ]
@@ -1562,8 +1563,8 @@ if (!is_android) {
 
       data_deps += [
         "//chrome/test/data/nacl",
-        "//ppapi/native_client:irt",
         "//ppapi:ppapi_nacl_tests_all",
+        "//ppapi/native_client:irt",
         "//ppapi/tests/extensions",
       ]
       if (is_chromeos) {
@@ -1573,9 +1574,9 @@ if (!is_android) {
         ]
         deps += [ "//chrome/browser/chromeos" ]
         data_deps += [
-          "//third_party/liblouis:liblouis_test_data",
           "//components/nacl/loader:nacl_helper",
           "//ppapi/native_client:irt",
+          "//third_party/liblouis:liblouis_test_data",
         ]
         if (enable_nacl_nonsfi) {
           data_deps += [ "//components/nacl/loader:helper_nonsfi" ]
@@ -3831,8 +3832,6 @@ test("unit_tests") {
       "../browser/media_galleries/win/mtp_device_delegate_impl_win_unittest.cc",
       "../browser/media_galleries/win/mtp_device_object_enumerator_unittest.cc",
       "../browser/memory/enterprise_memory_limit_evaluator_unittest.cc",
-      "../browser/memory/memory_pressure_monitor_utils_unittest.cc",
-      "../browser/memory/memory_pressure_monitor_win_unittest.cc",
       "../browser/memory/swap_thrashing_monitor_delegate_win_unittest.cc",
       "../browser/metrics/desktop_session_duration/desktop_session_duration_tracker_unittest.cc",
       "../browser/metrics/tab_stats_data_store_unittest.cc",
@@ -4098,6 +4097,7 @@ test("unit_tests") {
       "../browser/devtools/protocol/cast_handler_unittest.cc",
       "../browser/devtools/serialize_host_descriptions_unittest.cc",
       "../browser/download/download_dir_policy_handler_unittest.cc",
+      "../browser/local_search_service/local_search_service_proxy_unittest.cc",
       "../browser/media/webrtc/webrtc_log_uploader_unittest.cc",
       "../browser/media/webrtc/webrtc_rtp_dump_handler_unittest.cc",
       "../browser/media/webrtc/webrtc_rtp_dump_writer_unittest.cc",
@@ -4142,6 +4142,7 @@ test("unit_tests") {
     ]
 
     deps += [
+      "//chrome/services/local_search_service:test_utils",
       "//components/bubble:test_support",
       "//services/network:test_support",
     ]
@@ -5050,7 +5051,6 @@ test("unit_tests") {
     sources += [
       "../browser/notifications/win/notification_image_retainer_unittest.cc",
       "../browser/notifications/win/notification_template_builder_unittest.cc",
-      "../browser/performance_monitor/wmi_refresher_unittest.cc",
       "../browser/ui/input_method/input_method_engine_unittest.cc",
     ]
     deps += [
@@ -6056,6 +6056,7 @@ if (!is_android && !is_fuchsia) {
     deps = [
       ":test_support",
       "//base",
+      "//components/bookmarks/browser:test_support",
       "//components/invalidation/impl",
       "//components/invalidation/impl:test_support",
       "//components/signin/public/identity_manager:test_support",
@@ -6190,8 +6191,8 @@ if (!is_android && !is_fuchsia) {
     ]
 
     data_deps = [
-      "//third_party/mesa_headers",
       "//testing/buildbot/filters:e2e_sync_integration_tests_filters",
+      "//third_party/mesa_headers",
     ]
 
     if (is_mac) {

@@ -14,7 +14,7 @@
 // are relevant to earlier versions of Windows.
 class ThemeServiceWin : public ThemeService {
  public:
-  ThemeServiceWin();
+  explicit ThemeServiceWin(Profile* profile);
   ~ThemeServiceWin() override;
 
  private:

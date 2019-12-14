@@ -52,7 +52,6 @@ namespace {
 // Enrollment step names.
 const char kEnrollmentStepSignin[] = "signin";
 const char kEnrollmentStepAdJoin[] = "ad-join";
-const char kEnrollmentStepPickLicense[] = "license";
 const char kEnrollmentStepSuccess[] = "success";
 const char kEnrollmentStepWorking[] = "working";
 
@@ -214,8 +213,6 @@ void EnrollmentScreenHandler::RegisterMessages() {
               &EnrollmentScreenHandler::HandleDeviceAttributesProvided);
   AddCallback("oauthEnrollOnLearnMore",
               &EnrollmentScreenHandler::HandleOnLearnMore);
-  AddCallback("onLicenseTypeSelected",
-              &EnrollmentScreenHandler::HandleLicenseTypeSelected);
 }
 
 // EnrollmentScreenHandler
@@ -242,12 +239,6 @@ void EnrollmentScreenHandler::Hide() {
 void EnrollmentScreenHandler::ShowSigninScreen() {
   observe_network_failure_ = true;
   ShowStep(kEnrollmentStepSignin);
-}
-
-void EnrollmentScreenHandler::ShowLicenseTypeSelectionScreen(
-    const base::DictionaryValue& license_types) {
-  CallJS("login.OAuthEnrollmentScreen.setAvailableLicenseTypes", license_types);
-  ShowStep(kEnrollmentStepPickLicense);
 }
 
 void EnrollmentScreenHandler::ShowActiveDirectoryScreen(
@@ -520,9 +511,6 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
       ShowError(IDS_ENTERPRISE_ENROLLMENT_ERROR_SAVE_DEVICE_CONFIGURATION,
                 false);
       return;
-    case policy::EnrollmentStatus::LICENSE_REQUEST_FAILED:
-      ShowError(IDS_ENTERPRISE_ENROLLMENT_ERROR_LICENSE_REQUEST, false);
-      return;
     case policy::EnrollmentStatus::OFFLINE_POLICY_LOAD_FAILED:
     case policy::EnrollmentStatus::OFFLINE_POLICY_DECODING_FAILED:
       // OFFLINE_POLICY_LOAD_FAILED and OFFLINE_POLICY_DECODING_FAILED happen
@@ -598,18 +586,6 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
   builder->Add("selectConfiguration", IDS_AD_CONFIG_SELECTION_SELECT);
   /* End of Active Directory strings */
 
-  builder->Add("licenseSelectionCardTitle",
-               IDS_ENTERPRISE_ENROLLMENT_LICENSE_SELECTION);
-  builder->Add("licenseSelectionCardExplanation",
-               IDS_ENTERPRISE_ENROLLMENT_LICENSE_SELECTION_EXPLANATION);
-  builder->Add("perpetualLicenseTypeTitle",
-               IDS_ENTERPRISE_ENROLLMENT_PERPETUAL_LICENSE_TYPE);
-  builder->Add("annualLicenseTypeTitle",
-               IDS_ENTERPRISE_ENROLLMENT_ANNUAL_LICENSE_TYPE);
-  builder->Add("kioskLicenseTypeTitle",
-               IDS_ENTERPRISE_ENROLLMENT_KIOSK_LICENSE_TYPE);
-  builder->Add("licenseCountTemplate",
-               IDS_ENTERPRISE_ENROLLMENT_LICENSES_REMAINING_TEMPLATE);
 }
 
 void EnrollmentScreenHandler::GetAdditionalParameters(
@@ -859,11 +835,6 @@ void EnrollmentScreenHandler::HandleOnLearnMore() {
     help_app_ = new HelpAppLauncher(
         LoginDisplayHost::default_host()->GetNativeWindow());
   help_app_->ShowHelpTopic(HelpAppLauncher::HELP_DEVICE_ATTRIBUTES);
-}
-
-void EnrollmentScreenHandler::HandleLicenseTypeSelected(
-    const std::string& licenseType) {
-  controller_->OnLicenseTypeSelected(licenseType);
 }
 
 void EnrollmentScreenHandler::ShowStep(const char* step) {

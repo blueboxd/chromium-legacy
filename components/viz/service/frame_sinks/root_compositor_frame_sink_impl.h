@@ -13,6 +13,7 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/service/display/display_client.h"
+#include "components/viz/service/display/frame_rate_decider.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -99,7 +100,8 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
       mojo::Remote<mojom::DisplayClient> display_client,
       std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
       std::unique_ptr<ExternalBeginFrameSource> external_begin_frame_source,
-      std::unique_ptr<Display> display);
+      std::unique_ptr<Display> display,
+      bool use_preferred_interval_for_video);
 
   // DisplayClient:
   void DisplayOutputSurfaceLost() override;
@@ -112,6 +114,7 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   void SetPreferredFrameInterval(base::TimeDelta interval) override;
   base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
       const FrameSinkId& id) override;
+  void UpdateVSyncParameters();
 
   BeginFrameSource* begin_frame_source();
 
@@ -137,6 +140,14 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   // Should be destroyed before begin frame sources since it can issue callbacks
   // to the BFS.
   std::unique_ptr<Display> display_;
+
+  // |use_preferred_interval_| indicates if we should use the preferred interval
+  // from FrameRateDecider to tick.
+  bool use_preferred_interval_ = false;
+  base::TimeTicks display_frame_timebase_;
+  base::TimeDelta display_frame_interval_ = BeginFrameArgs::DefaultInterval();
+  base::TimeDelta preferred_frame_interval_ =
+      FrameRateDecider::UnspecifiedFrameInterval();
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   gfx::Size last_swap_pixel_size_;

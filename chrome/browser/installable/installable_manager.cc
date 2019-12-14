@@ -11,8 +11,7 @@
 #include "base/callback.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
-#include "base/task/task_traits.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
@@ -502,8 +501,8 @@ void InstallableManager::WorkOnTask() {
   if ((!check_passed && !params.is_debug_mode) || IsComplete(params)) {
     // Yield the UI thread before processing the next task. If this object is
     // deleted in the meantime, the next task naturally won't run.
-    base::PostTask(FROM_HERE, {base::CurrentThread()},
-                   base::BindOnce(&InstallableManager::CleanupAndStartNextTask,
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&InstallableManager::CleanupAndStartNextTask,
                                   weak_factory_.GetWeakPtr()));
 
     auto task = std::move(task_queue_.Current());

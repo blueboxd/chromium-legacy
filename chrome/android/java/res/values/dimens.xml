@@ -211,18 +211,7 @@
     <dimen name="autofill_tooltip_horizontal_padding">16dp</dimen>
     <dimen name="autofill_tooltip_vertical_padding">16dp</dimen>
 
-    <!-- Button bar dimensions -->
-    <dimen name="button_bar_stacked_margin">8dp</dimen>
-
-    <!-- Alert dialog -->
-    <dimen name="dialog_padding_top">@dimen/abc_dialog_padding_top_material</dimen>
-    <dimen name="dialog_padding_sides">@dimen/abc_dialog_padding_material</dimen>
-
     <!-- ModalDialogView dimensions -->
-    <dimen name="modal_dialog_control_vertical_padding">2dp</dimen>
-    <dimen name="modal_dialog_control_horizontal_padding">8dp</dimen>
-    <dimen name="modal_dialog_control_vertical_padding_filled">10dp</dimen>
-    <dimen name="modal_dialog_control_horizontal_padding_filled">16dp</dimen>
     <dimen name="tab_modal_scrim_vertical_margin">16dp</dimen>
 
     <!-- Tab Strip Dimensions -->

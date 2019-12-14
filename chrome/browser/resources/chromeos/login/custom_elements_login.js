@@ -43,6 +43,5 @@
 // <include src="marketing_opt_in.js">
 // <include src="../assistant_optin/assistant_optin_flow.js">
 // <include src="multidevice_setup_first_run.js">
-// <include src="enrollment_license_card.js">
 // <include src="enterprise_enrollment.js">
 // <include src="security_token_pin.js">

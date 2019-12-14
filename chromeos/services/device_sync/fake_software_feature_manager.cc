@@ -4,6 +4,8 @@
 
 #include "chromeos/services/device_sync/fake_software_feature_manager.h"
 
+#include <utility>
+
 namespace chromeos {
 
 namespace device_sync {
@@ -25,6 +27,21 @@ FakeSoftwareFeatureManager::SetSoftwareFeatureStateArgs::
 
 FakeSoftwareFeatureManager::SetSoftwareFeatureStateArgs::
     ~SetSoftwareFeatureStateArgs() = default;
+
+FakeSoftwareFeatureManager::SetFeatureStatusArgs::SetFeatureStatusArgs(
+    const std::string& device_id,
+    multidevice::SoftwareFeature feature,
+    FeatureStatusChange status_change,
+    base::OnceClosure success_callback,
+    base::OnceCallback<void(NetworkRequestError)> error_callback)
+    : device_id(device_id),
+      feature(feature),
+      status_change(status_change),
+      success_callback(std::move(success_callback)),
+      error_callback(std::move(error_callback)) {}
+
+FakeSoftwareFeatureManager::SetFeatureStatusArgs::~SetFeatureStatusArgs() =
+    default;
 
 FakeSoftwareFeatureManager::FindEligibleDevicesArgs::FindEligibleDevicesArgs(
     multidevice::SoftwareFeature software_feature,
@@ -57,6 +74,20 @@ void FakeSoftwareFeatureManager::SetSoftwareFeatureState(
 
   if (delegate_)
     delegate_->OnSetSoftwareFeatureStateCalled();
+}
+
+void FakeSoftwareFeatureManager::SetFeatureStatus(
+    const std::string& device_id,
+    multidevice::SoftwareFeature feature,
+    FeatureStatusChange status_change,
+    base::OnceClosure success_callback,
+    base::OnceCallback<void(NetworkRequestError)> error_callback) {
+  set_feature_status_calls_.emplace_back(std::make_unique<SetFeatureStatusArgs>(
+      device_id, feature, status_change, std::move(success_callback),
+      std::move(error_callback)));
+
+  if (delegate_)
+    delegate_->OnSetFeatureStatusCalled();
 }
 
 void FakeSoftwareFeatureManager::FindEligibleDevices(

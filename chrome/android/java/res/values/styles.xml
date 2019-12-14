@@ -174,50 +174,6 @@
         <item name="android:windowAnimationStyle">@null</item>
     </style>
 
-    <!-- Dialog themes -->
-    <style name="Base.Theme.Chromium.AlertDialog" parent="Theme.AppCompat.DayNight.Dialog.Alert">
-        <item name="android:textColorPrimary">@color/default_text_color</item>
-        <item name="android:windowBackground">@drawable/popup_bg_tinted</item>
-        <item name="android:windowTitleStyle">@style/TextAppearance.AlertDialogTitleStyle</item>
-        <item name="android:textColorHighlight">@color/text_highlight_color</item>
-
-        <!--  Overriding AppCompat values -->
-        <item name="colorAccent">@color/light_active_color</item>
-        <item name="colorControlActivated">@color/light_active_color</item>
-        <item name="colorControlNormal">@color/control_normal_color</item>
-        <item name="colorControlHighlight">@color/control_highlight_color</item>
-        <item name="colorPrimary">@color/light_active_color</item>
-        <item name="buttonBarButtonStyle">@style/AlertDialogButtonStyle</item>
-        <item name="spinnerStyle">@style/SpinnerStyle</item>
-    </style>
-
-    <style name="Theme.Chromium.AlertDialog" parent="Base.Theme.Chromium.AlertDialog" />
-
-    <style name="Theme.Chromium.AlertDialog.NoActionBar">
-        <item name="windowNoTitle">true</item>
-        <item name="windowActionBar">false</item>
-    </style>
-
-    <!-- The dim amount should match the alpha of modal_dialog_scrim_color. -->
-    <style name="Theme.Chromium.ModalDialog" parent="Theme.Chromium.AlertDialog">
-        <item name="android:windowFrame">@null</item>
-        <item name="android:backgroundDimAmount">0.65</item>
-        <item name="android:windowSoftInputMode">adjustResize|stateHidden</item>
-    </style>
-
-    <style name="Theme.Chromium.ModalDialog.TextPrimaryButton" parent="Theme.Chromium.ModalDialog">
-        <item name="buttonBarButtonStyle">@style/TextButton</item>
-        <item name="dualControlLayoutVerticalPadding">@dimen/modal_dialog_control_vertical_padding</item>
-        <item name="dualControlLayoutHorizontalPadding">@dimen/modal_dialog_control_horizontal_padding</item>
-    </style>
-
-    <style name="Theme.Chromium.ModalDialog.FilledPrimaryButton" parent="Theme.Chromium.ModalDialog">
-        <item name="buttonBarPositiveButtonStyle">@style/FilledButton</item>
-        <item name="buttonBarNegativeButtonStyle">@style/TextButton</item>
-        <item name="dualControlLayoutVerticalPadding">@dimen/modal_dialog_control_vertical_padding_filled</item>
-        <item name="dualControlLayoutHorizontalPadding">@dimen/modal_dialog_control_horizontal_padding_filled</item>
-    </style>
-
     <!-- First Run and Bookmark/recent-tabs dialogs.
         TODO(https://crbug.com/819142): Remove textAppearance when all TextViews have text style
         explicitly specified. -->
@@ -371,37 +327,7 @@
       <item name="android:maxLines">1</item>
     </style>
 
-    <!-- Alert dialog styles -->
-    <style name="AlertDialogButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
-        <item name="android:textAppearance">@style/TextAppearance.BlueButtonText2</item>
-    </style>
-
-    <!-- Styled to match BlackHeadline but setup to override values in the app compat parent theme.
-         Note that the fontFamily doesn't get applied on older versions of Android.
-         See https://crbug.com/918697.-->
-    <style name="TextAppearance.AlertDialogTitleStyle"
-        parent="RtlOverlay.DialogWindowTitle.AppCompat">
-        <item name="android:textColor">@color/default_text_color_list</item>
-        <item name="android:textSize">@dimen/headline_size</item>
-        <item name="android:fontFamily">@font/accent_font</item>
-        <item name="android:textStyle">normal</item>
-    </style>
-
-    <style name="AlertDialogContent">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:textAlignment">viewStart</item>
-        <item name="android:paddingStart">@dimen/dialog_padding_sides</item>
-        <item name="android:paddingEnd">@dimen/dialog_padding_sides</item>
-        <item name="android:paddingTop">@dimen/dialog_padding_top</item>
-    </style>
-    <style name="AlertDialogSummaryViewItem" parent="@android:style/TextAppearance.Small">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:textAlignment">viewStart</item>
-        <item name="android:paddingTop">10dp</item>
-    </style>
-
+    <!-- Distilled Page styles -->
     <style name="DistilledPagePrefThemeButton">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
@@ -444,12 +370,6 @@
         <item name="android:layout_weight">1</item>
         <item name="android:paddingStart">4dp</item>
         <item name="android:paddingEnd">4dp</item>
-    </style>
-
-    <!-- Spinner styles -->
-    <style name="SpinnerStyle" parent="Widget.AppCompat.Spinner">
-        <item name="android:popupBackground">@drawable/popup_bg_tinted</item>
-        <item name="android:popupElevation" tools:targetApi="21">0dp</item>
     </style>
 
     <!-- Popup and long-press context popup menu style -->

@@ -79,10 +79,9 @@ class ManagedBookmarksTrackerTest : public testing::Test {
         static_cast<TestBookmarkClient*>(model_->client());
     managed_node_ = client_ptr->managed_node();
 
-    managed_bookmarks_tracker_.reset(new ManagedBookmarksTracker(
-        model_.get(),
-        &prefs_,
-        base::Bind(&ManagedBookmarksTrackerTest::GetManagementDomain)));
+    managed_bookmarks_tracker_ = std::make_unique<ManagedBookmarksTracker>(
+        model_.get(), &prefs_,
+        base::BindRepeating(&ManagedBookmarksTrackerTest::GetManagementDomain));
     managed_bookmarks_tracker_->Init(managed_node_);
   }
 

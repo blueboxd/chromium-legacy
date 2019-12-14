@@ -23,11 +23,13 @@ sys.path.append(os.path.join(os.path.dirname(__file__),
                              os.pardir, os.pardir, os.pardir))
 import gn_helpers
 
-# Definition copied from pylib/constants/__init__.py to avoid adding
-# a dependency on pylib.
-DIR_SOURCE_ROOT = os.environ.get('CHECKOUT_SOURCE_ROOT',
-    os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                 os.pardir, os.pardir, os.pardir, os.pardir)))
+# Use relative paths to improved hermetic property of build scripts.
+DIR_SOURCE_ROOT = os.path.relpath(
+    os.environ.get(
+        'CHECKOUT_SOURCE_ROOT',
+        os.path.join(
+            os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
+            os.pardir)))
 JAVA_PATH = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'jdk', 'current',
                          'bin', 'java')
 JAVAC_PATH = JAVA_PATH + 'c'
@@ -546,9 +548,11 @@ def ComputePythonDependencies():
                   if m is not None and hasattr(m, '__file__'))
   abs_module_paths = map(os.path.abspath, module_paths)
 
-  assert os.path.isabs(DIR_SOURCE_ROOT)
+  abs_dir_source_root = os.path.abspath(DIR_SOURCE_ROOT)
   non_system_module_paths = [
-      p for p in abs_module_paths if p.startswith(DIR_SOURCE_ROOT)]
+      p for p in abs_module_paths if p.startswith(abs_dir_source_root)
+  ]
+
   def ConvertPycToPy(s):
     if s.endswith('.pyc'):
       return s[:-1]

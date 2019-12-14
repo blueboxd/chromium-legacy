@@ -34,6 +34,8 @@ void EngineScanResultsProxy::ScanDone(uint32_t result) {
       FROM_HERE, base::BindOnce(&EngineScanResultsProxy::OnDone, this, result));
 }
 
+EngineScanResultsProxy::EngineScanResultsProxy() = default;
+
 EngineScanResultsProxy::~EngineScanResultsProxy() = default;
 
 // Invokes scan_results_->FoundUwS from the IPC thread.

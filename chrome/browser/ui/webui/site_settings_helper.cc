@@ -124,6 +124,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::INSTALLED_WEB_APP_METADATA, nullptr},
     {ContentSettingsType::NFC, nullptr},
     {ContentSettingsType::BLUETOOTH_CHOOSER_DATA, nullptr},
+    {ContentSettingsType::SAFE_BROWSING_URL_CHECK_DATA, nullptr},
 };
 static_assert(base::size(kContentSettingsTypeGroupNames) ==
                   // ContentSettingsType starts at -1, so add 1 here.

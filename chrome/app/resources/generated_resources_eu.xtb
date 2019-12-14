@@ -1190,7 +1190,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="2665919335226618153">Errore bat gertatu da formateatzean.</translation>
 <translation id="2666990579225592931">Ireki gonbidatuentzako leiho bat</translation>
 <translation id="2667463864537187133">Kudeatu ortografia-zuzentzailea</translation>
-<translation id="2669093958999339774">Blokeatu jakinarazpenak arretarik galaraz ez diezazuten eta erabili mezu isilagoak</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> Chrome fitxa bat partekatzen ari da.</translation>
 <translation id="2670429602441959756">Oraingoz errealitate birtualean onartzen ez diren eginbideak ditu orri honek. Irteten…</translation>
 <translation id="2671451824761031126">Prest dituzu laster-markak eta ezarpenak</translation>
@@ -1964,7 +1963,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="37613671848467444">Ireki &amp;ezkutuko nabigazio-leihoan</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Komunikatu USB gailu batekin}other{Komunikatu # USB gailurekin}}</translation>
 <translation id="3765246971671567135">Ezin izan da irakurri konexiorik gabeko demo moduaren gidalerroa.</translation>
-<translation id="3767376082821709728">Lehen aldiz irekitzen dituzun webguneek ezin dizute bidali jakinarazpenik</translation>
 <translation id="3768037234834996183">Hobespenak sinkronizatzen...</translation>
 <translation id="377050016711188788">Izozkia</translation>
 <translation id="3771294271822695279">Bideo-fitxategiak</translation>
@@ -3032,7 +3030,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5370819323174483825">&amp;Kargatu berriro</translation>
 <translation id="5372529912055771682">Sistema eragilearen bertsio honek ez du onartzen erregistratzeko adierazitako modua. Egiaztatu bertsiorik berriena erabiltzen ari zarela eta saiatu berriro.</translation>
 <translation id="5372579129492968947">Kendu aingura luzapenari</translation>
-<translation id="5374359983950678924">Aldatu argazkia</translation>
 <translation id="5376169624176189338">Sakatu itzultzeko; eduki sakatuta historia ikusteko</translation>
 <translation id="5376931455988532197">Fitxategia handiegia da</translation>
 <translation id="537813040452600081">Leiho honetan ikusten dituzun orriak ez dira arakatzailearen historian agertuko eta ez dute bestelako aztarnarik utziko (adibidez, cookieak) saioa amaitu ondoren. Deskargatzen dituzun fitxategiak eta sortzen dituzun laster-markak ez dira gordeko.</translation>
@@ -4906,7 +4903,6 @@ Horrek ez die eragiten beste gailu batzuetako aplikazioei edo edukiei.</translat
 <translation id="8044899503464538266">Motela</translation>
 <translation id="8045253504249021590">Sinkronizazioa gelditu egin da Google Panela atalean.</translation>
 <translation id="8045923671629973368">Idatzi aplikazioaren IDa edo sareko dendaren URLa</translation>
-<translation id="8046278916126163020">Lehen aldiz irekitzen dituzun webguneek jakinarazpenak bidaltzeko baimena eska diezazukete</translation>
 <translation id="804786196054284061">Azken erabiltzailearen lizentzia-kontratua</translation>
 <translation id="8049705080247101012">Google-k intentzio txarreko programa gisa markatu du "<ph name="EXTENSION_NAME" />", eta hura instalatzea ekidin da</translation>
 <translation id="8050038245906040378">Microsoft kode komertzialen sinadurak</translation>

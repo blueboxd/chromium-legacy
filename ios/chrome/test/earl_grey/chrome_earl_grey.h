@@ -468,6 +468,11 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // The count of key commands registered with the currently active BVC.
 - (NSInteger)registeredKeyCommandCount;
 
+#pragma mark - Pref Utilities (EG2)
+
+// Sets the value of a boolean user pref in the original browser state.
+- (void)setBoolValue:(BOOL)value forUserPref:(const std::string&)UTF8PrefName;
+
 @end
 
 // Helpers that only compile under EarlGrey 1 are included in this "EG1"

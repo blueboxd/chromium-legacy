@@ -42,5 +42,11 @@ QuicChromiumClientStream* QuicChromiumClientSessionPeer::CreateOutgoingStream(
              : nullptr;
 }
 
+// static
+bool QuicChromiumClientSessionPeer::GetSessionGoingAway(
+    QuicChromiumClientSession* session) {
+  return session->going_away_;
+}
+
 }  // namespace test
 }  // namespace net

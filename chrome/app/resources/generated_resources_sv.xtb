@@ -1190,7 +1190,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2665919335226618153">Ett fel uppstod vid formateringen.</translation>
 <translation id="2666990579225592931">Öppna ett gästfönster</translation>
 <translation id="2667463864537187133">Hantera stavningskontrollen</translation>
-<translation id="2669093958999339774">Blockera störande aviseringar och använd ett tystare meddelande i stället</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> delar en Chrome-flik.</translation>
 <translation id="2670429602441959756">Den här sidan har funktioner som inte stöds i VR ännu. VR-läget avslutas …</translation>
 <translation id="2671451824761031126">Dina bokmärken och inställningar är klara</translation>
@@ -1964,7 +1963,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="37613671848467444">Öppna i &amp;inkognitofönster</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Kommunicera med en USB-enhet}other{Kommunicera med # USB-enheter}}</translation>
 <translation id="3765246971671567135">Det gick inte att läsa in offlinepolicyn för demoläge.</translation>
-<translation id="3767376082821709728">Nya webbplatser som du besöker kan inte skicka aviseringar till dig.</translation>
 <translation id="3768037234834996183">Inställningarna synkroniseras ...</translation>
 <translation id="377050016711188788">Glass</translation>
 <translation id="3771294271822695279">Videofiler</translation>
@@ -3032,7 +3030,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5370819323174483825">&amp;Läs in igen</translation>
 <translation id="5372529912055771682">Det angivna registreringsläget stöds inte av den här versionen av operativsystemet. Kontrollera att du har den senaste versionen och försök igen.</translation>
 <translation id="5372579129492968947">Lossa tillägg</translation>
-<translation id="5374359983950678924">Byt bild</translation>
 <translation id="5376169624176189338">Klicka för att återvända, håll ned för att se historik</translation>
 <translation id="5376931455988532197">Filen är för stor</translation>
 <translation id="537813040452600081">Sidor du visar i det här fönstret syns inte i webbläsarhistoriken och de lämnar inga andra spår efter sig (till exempel cookies) på datorn när du har loggat ut till. Filer som du laddar ned och bokmärken du skapar sparas inte.</translation>
@@ -4907,7 +4904,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8044899503464538266">Långsamt</translation>
 <translation id="8045253504249021590">Synkronisering har stoppats via Google Översikt.</translation>
 <translation id="8045923671629973368">Ange program-id eller adress i webbutik</translation>
-<translation id="8046278916126163020">Nya webbplatser som du besöker kan be dig om tillåtelse innan aviseringar skickas ut</translation>
 <translation id="804786196054284061">Licensavtal för slutanvändare</translation>
 <translation id="8049705080247101012">Google har flaggat <ph name="EXTENSION_NAME" /> som skadligt och installationen har förhindrats</translation>
 <translation id="8050038245906040378">Microsofts kommersiella kodsignering</translation>

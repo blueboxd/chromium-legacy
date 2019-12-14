@@ -63,8 +63,11 @@
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/controls/throbber.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/style/platform_style.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -874,92 +877,40 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewTab() {
   UpdateLanguageNames(&original_language_name, &target_language_name);
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+
   auto view = std::make_unique<views::View>();
-  views::GridLayout* layout =
-      view->SetLayoutManager(std::make_unique<views::GridLayout>());
+  view->SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(views::LayoutOrientation::kVertical);
+
+  auto inner_view = std::make_unique<views::View>();
+  inner_view->SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(views::LayoutOrientation::kHorizontal);
+  auto* horizontal_view = view->AddChildView(std::move(inner_view));
+
+  views::View* icon = nullptr;
+  if (!UseGoogleTranslateBranding()) {
+    icon = horizontal_view->AddChildView(CreateTranslateIcon());
+  }
 
   // Tabbed pane for language selection. Can't use unique_ptr because
   // tabs have to be added after the tabbed_pane is added to the parent,
   // when we release ownership of the unique_ptr.
-  // TODO(crbug.com/963148): Initial auto translate doesn't trigger tabbed pane
-  // to highlight the correct pane.
   auto tabbed_pane = std::make_unique<views::TabbedPane>();
-
-  // Three dots options menu button
-  const SkColor option_icon_color = gfx::kChromeIconGrey;
-  const gfx::VectorIcon* option_icon_id = &kBrowserToolsIcon;
-  std::unique_ptr<views::MenuButton> tab_translate_options_button =
-      std::make_unique<views::MenuButton>(
-          base::string16(base::ASCIIToUTF16("")), this);
-  tab_translate_options_button->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(*option_icon_id, 16, option_icon_color));
-  tab_translate_options_button->set_ink_drop_base_color(gfx::kChromeIconGrey);
-  tab_translate_options_button->SetInkDropMode(views::Button::InkDropMode::ON);
-  InstallCircleHighlightPathGenerator(tab_translate_options_button.get());
-  tab_translate_options_button->SetID(BUTTON_ID_OPTIONS_MENU_TAB);
-  tab_translate_options_button->SetFocusForPlatform();
-  tab_translate_options_button->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON));
-  tab_translate_options_button->set_request_focus_on_press(true);
-
-  enum {
-    COLUMN_SET_ID_TABS,
-    COLUMN_SET_ID_ALWAYS_CHECKBOX,
-  };
-
-  views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_ID_TABS);
-  if (!UseGoogleTranslateBranding()) {
-    // Column and padding for the optional translate icon.
-    cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                  views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                  0);
-    cs->AddPaddingColumn(
-        views::GridLayout::kFixedSize,
-        provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
-  }
-  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1.0f,
-                views::GridLayout::FIXED, 8, 0);
-  cs->AddPaddingColumn(
-      views::GridLayout::kFixedSize,
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
-  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
-  cs->AddPaddingColumn(
-      views::GridLayout::kFixedSize,
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
-  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
-
-  cs = layout->AddColumnSet(COLUMN_SET_ID_ALWAYS_CHECKBOX);
-  cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
-
-  layout->StartRow(1, COLUMN_SET_ID_TABS);
-  if (!UseGoogleTranslateBranding()) {
-    // If the bottom branding isn't showing, display the leading translate icon
-    // otherwise it's not obvious what the bubble is about. This should only
-    // happen on non-Chrome-branded builds.
-    const int language_icon_id = IDR_TRANSLATE_BUBBLE_ICON;
-    std::unique_ptr<views::ImageView> language_icon =
-        std::make_unique<views::ImageView>();
-    gfx::ImageSkia* language_icon_image =
-        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            language_icon_id);
-    language_icon->SetImage(*language_icon_image);
-    layout->AddView(std::move(language_icon));
-  }
-  tabbed_pane_ = layout->AddView(std::move(tabbed_pane));
-  layout->AddView(std::move(tab_translate_options_button));
-  layout->AddView(CreateCloseButton());
+  tabbed_pane_ = horizontal_view->AddChildView(std::move(tabbed_pane));
 
   // NOTE: Panes must be added after |tabbed_pane| has been added to its parent.
   tabbed_pane_->AddTab(original_language_name, CreateEmptyPane());
   tabbed_pane_->AddTab(target_language_name, CreateEmptyPane());
+  tabbed_pane_->GetTabAt(0)->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(2, 20)));
+  tabbed_pane_->GetTabAt(1)->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(2, 20)));
   tabbed_pane_->set_listener(this);
+
+  auto* padding_view =
+      horizontal_view->AddChildView(std::make_unique<views::View>());
+  auto* options_menu = horizontal_view->AddChildView(CreateOptionsMenuButton());
+  horizontal_view->AddChildView(CreateCloseButton());
 
   // Don't show the the always translate checkbox if the original language is
   // unknown.
@@ -967,12 +918,6 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewTab() {
       model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex());
   if (model_->ShouldShowAlwaysTranslateShortcut() &&
       !original_language.empty()) {
-    layout->AddPaddingRow(
-        views::GridLayout::kFixedSize,
-        provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL) +
-            4);
-    layout->StartRow(views::GridLayout::kFixedSize,
-                     COLUMN_SET_ID_ALWAYS_CHECKBOX);
     auto before_always_translate_checkbox = std::make_unique<views::Checkbox>(
         l10n_util::GetStringFUTF16(
             IDS_TRANSLATE_BUBBLE_ALWAYS_TRANSLATE_LANG,
@@ -980,8 +925,38 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewTab() {
         this);
     before_always_translate_checkbox->SetID(BUTTON_ID_ALWAYS_TRANSLATE);
     before_always_translate_checkbox_ =
-        layout->AddView(std::move(before_always_translate_checkbox));
-    layout->AddPaddingRow(views::GridLayout::kFixedSize, 2);
+        view->AddChildView(std::move(before_always_translate_checkbox));
+  }
+
+  if (icon) {
+    icon->SetProperty(
+        views::kMarginsKey,
+        gfx::Insets(0, 0, 0,
+                    provider->GetDistanceMetric(
+                        views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
+  }
+  tabbed_pane_->SetProperty(views::kFlexBehaviorKey,
+                            views::FlexSpecification::ForSizeRule(
+                                views::MinimumFlexSizeRule::kScaleToMinimum,
+                                views::MaximumFlexSizeRule::kPreferred));
+  padding_view->SetProperty(views::kFlexBehaviorKey,
+                            views::FlexSpecification::ForSizeRule(
+                                views::MinimumFlexSizeRule::kScaleToZero,
+                                views::MaximumFlexSizeRule::kUnbounded)
+                                .WithOrder(2));
+  options_menu->SetProperty(
+      views::kMarginsKey,
+      gfx::Insets(0, provider->GetDistanceMetric(
+                         views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
+  if (before_always_translate_checkbox_) {
+    horizontal_view->SetProperty(
+        views::kMarginsKey,
+        gfx::Insets(0, 0,
+                    provider->GetDistanceMetric(
+                        views::DISTANCE_RELATED_CONTROL_VERTICAL),
+                    0));
+    before_always_translate_checkbox_->SetProperty(views::kMarginsKey,
+                                                   gfx::Insets(2, 0));
   }
 
   return view;
@@ -1384,17 +1359,11 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
     std::unique_ptr<views::Label> language_title_label,
     std::unique_ptr<views::Button> advanced_done_button,
     std::unique_ptr<views::Checkbox> advanced_always_translate_checkbox) {
-  const int language_icon_id = IDR_TRANSLATE_BUBBLE_ICON;
-  std::unique_ptr<views::ImageView> language_icon =
-      std::make_unique<views::ImageView>();
-  gfx::ImageSkia* language_icon_image =
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          language_icon_id);
-  language_icon->SetImage(*language_icon_image);
-
   auto view = std::make_unique<AdvancedViewContainer>();
   views::GridLayout* layout =
       view->SetLayoutManager(std::make_unique<views::GridLayout>());
+
+  std::unique_ptr<views::ImageView> language_icon = CreateTranslateIcon();
 
   enum {
     COLUMN_SET_ID_TITLE,
@@ -1518,6 +1487,38 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
   UpdateAdvancedView();
 
   return view;
+}
+
+std::unique_ptr<views::ImageView> TranslateBubbleView::CreateTranslateIcon() {
+  const int language_icon_id = IDR_TRANSLATE_BUBBLE_ICON;
+  std::unique_ptr<views::ImageView> language_icon =
+      std::make_unique<views::ImageView>();
+  gfx::ImageSkia* language_icon_image =
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          language_icon_id);
+  language_icon->SetImage(*language_icon_image);
+  return language_icon;
+}
+
+std::unique_ptr<views::Button> TranslateBubbleView::CreateOptionsMenuButton() {
+  // Three dots options menu button
+  const SkColor option_icon_color = gfx::kChromeIconGrey;
+  const gfx::VectorIcon* option_icon_id = &kBrowserToolsIcon;
+  std::unique_ptr<views::MenuButton> tab_translate_options_button =
+      std::make_unique<views::MenuButton>(
+          base::string16(base::ASCIIToUTF16("")), this);
+  tab_translate_options_button->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(*option_icon_id, 16, option_icon_color));
+  tab_translate_options_button->set_ink_drop_base_color(gfx::kChromeIconGrey);
+  tab_translate_options_button->SetInkDropMode(views::Button::InkDropMode::ON);
+  InstallCircleHighlightPathGenerator(tab_translate_options_button.get());
+  tab_translate_options_button->SetID(BUTTON_ID_OPTIONS_MENU_TAB);
+  tab_translate_options_button->SetFocusForPlatform();
+  tab_translate_options_button->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON));
+  tab_translate_options_button->set_request_focus_on_press(true);
+  return tab_translate_options_button;
 }
 
 std::unique_ptr<views::Button> TranslateBubbleView::CreateCloseButton() {

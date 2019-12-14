@@ -34,12 +34,9 @@ public class SharedPreferencesManager {
         return LazyHolder.INSTANCE;
     }
 
-    private SharedPreferences mSharedPreferences;
     private BaseChromePreferenceKeyChecker mKeyChecker;
 
     private SharedPreferencesManager() {
-        mSharedPreferences = ContextUtils.getAppSharedPreferences();
-
         maybeInitializeChecker();
         // In production builds, use a dummy key checker.
         if (mKeyChecker == null) {
@@ -48,9 +45,7 @@ public class SharedPreferencesManager {
     }
 
     @VisibleForTesting
-    SharedPreferencesManager(
-            SharedPreferences sharedPreferences, BaseChromePreferenceKeyChecker keyChecker) {
-        mSharedPreferences = sharedPreferences;
+    SharedPreferencesManager(BaseChromePreferenceKeyChecker keyChecker) {
         mKeyChecker = keyChecker;
     }
 
@@ -58,6 +53,14 @@ public class SharedPreferencesManager {
     private void maybeInitializeChecker() {
         // Create a working key checker, which does not happen in production builds.
         mKeyChecker = ChromePreferenceKeyChecker.getInstance();
+    }
+
+    @VisibleForTesting
+    BaseChromePreferenceKeyChecker swapKeyCheckerForTesting(
+            BaseChromePreferenceKeyChecker newChecker) {
+        BaseChromePreferenceKeyChecker swappedOut = mKeyChecker;
+        mKeyChecker = newChecker;
+        return swappedOut;
     }
 
     /**
@@ -81,7 +84,7 @@ public class SharedPreferencesManager {
         SharedPreferences.OnSharedPreferenceChangeListener listener =
                 (SharedPreferences sharedPreferences, String s) -> observer.onPreferenceChanged(s);
         mObservers.put(observer, listener);
-        mSharedPreferences.registerOnSharedPreferenceChangeListener(listener);
+        ContextUtils.getAppSharedPreferences().registerOnSharedPreferenceChangeListener(listener);
     }
 
     /**
@@ -90,7 +93,7 @@ public class SharedPreferencesManager {
     public void removeObserver(Observer observer) {
         SharedPreferences.OnSharedPreferenceChangeListener listener = mObservers.get(observer);
         if (listener == null) return;
-        mSharedPreferences.unregisterOnSharedPreferenceChangeListener(listener);
+        ContextUtils.getAppSharedPreferences().unregisterOnSharedPreferenceChangeListener(listener);
     }
 
     /**
@@ -109,7 +112,7 @@ public class SharedPreferencesManager {
      */
     public Set<String> readStringSet(String key, Set<String> defaultValue) {
         mKeyChecker.assertIsKeyInUse(key);
-        return mSharedPreferences.getStringSet(key, defaultValue);
+        return ContextUtils.getAppSharedPreferences().getStringSet(key, defaultValue);
     }
 
     /**
@@ -117,8 +120,8 @@ public class SharedPreferencesManager {
      */
     public void addToStringSet(String key, String value) {
         mKeyChecker.assertIsKeyInUse(key);
-        Set<String> values =
-                new HashSet<>(mSharedPreferences.getStringSet(key, Collections.emptySet()));
+        Set<String> values = new HashSet<>(
+                ContextUtils.getAppSharedPreferences().getStringSet(key, Collections.emptySet()));
         values.add(value);
         writeStringSetUnchecked(key, values);
     }
@@ -128,8 +131,8 @@ public class SharedPreferencesManager {
      */
     public void removeFromStringSet(String key, String value) {
         mKeyChecker.assertIsKeyInUse(key);
-        Set<String> values =
-                new HashSet<>(mSharedPreferences.getStringSet(key, Collections.emptySet()));
+        Set<String> values = new HashSet<>(
+                ContextUtils.getAppSharedPreferences().getStringSet(key, Collections.emptySet()));
         if (values.remove(value)) {
             writeStringSetUnchecked(key, values);
         }
@@ -144,7 +147,7 @@ public class SharedPreferencesManager {
     }
 
     private void writeStringSetUnchecked(String key, Set<String> values) {
-        mSharedPreferences.edit().putStringSet(key, values).apply();
+        ContextUtils.getAppSharedPreferences().edit().putStringSet(key, values).apply();
     }
 
     /**
@@ -158,7 +161,7 @@ public class SharedPreferencesManager {
     }
 
     private void writeIntUnchecked(String key, int value) {
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
+        SharedPreferences.Editor ed = ContextUtils.getAppSharedPreferences().edit();
         ed.putInt(key, value);
         ed.apply();
     }
@@ -181,7 +184,7 @@ public class SharedPreferencesManager {
     public int readInt(String key, int defaultValue) {
         mKeyChecker.assertIsKeyInUse(key);
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return mSharedPreferences.getInt(key, defaultValue);
+            return ContextUtils.getAppSharedPreferences().getInt(key, defaultValue);
         }
     }
 
@@ -193,7 +196,7 @@ public class SharedPreferencesManager {
      */
     public int incrementInt(String key) {
         mKeyChecker.assertIsKeyInUse(key);
-        int value = mSharedPreferences.getInt(key, 0);
+        int value = ContextUtils.getAppSharedPreferences().getInt(key, 0);
         writeIntUnchecked(key, ++value);
         return value;
     }
@@ -206,7 +209,7 @@ public class SharedPreferencesManager {
      */
     public void writeLong(String key, long value) {
         mKeyChecker.assertIsKeyInUse(key);
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
+        SharedPreferences.Editor ed = ContextUtils.getAppSharedPreferences().edit();
         ed.putLong(key, value);
         ed.apply();
     }
@@ -231,7 +234,7 @@ public class SharedPreferencesManager {
     public long readLong(String key, long defaultValue) {
         mKeyChecker.assertIsKeyInUse(key);
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return mSharedPreferences.getLong(key, defaultValue);
+            return ContextUtils.getAppSharedPreferences().getLong(key, defaultValue);
         }
     }
 
@@ -243,7 +246,7 @@ public class SharedPreferencesManager {
      */
     public void writeBoolean(String key, boolean value) {
         mKeyChecker.assertIsKeyInUse(key);
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
+        SharedPreferences.Editor ed = ContextUtils.getAppSharedPreferences().edit();
         ed.putBoolean(key, value);
         ed.apply();
     }
@@ -258,7 +261,7 @@ public class SharedPreferencesManager {
     public boolean readBoolean(String key, boolean defaultValue) {
         mKeyChecker.assertIsKeyInUse(key);
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return mSharedPreferences.getBoolean(key, defaultValue);
+            return ContextUtils.getAppSharedPreferences().getBoolean(key, defaultValue);
         }
     }
 
@@ -270,7 +273,7 @@ public class SharedPreferencesManager {
      */
     public void writeString(String key, String value) {
         mKeyChecker.assertIsKeyInUse(key);
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
+        SharedPreferences.Editor ed = ContextUtils.getAppSharedPreferences().edit();
         ed.putString(key, value);
         ed.apply();
     }
@@ -285,7 +288,7 @@ public class SharedPreferencesManager {
     public String readString(String key, @Nullable String defaultValue) {
         mKeyChecker.assertIsKeyInUse(key);
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return mSharedPreferences.getString(key, defaultValue);
+            return ContextUtils.getAppSharedPreferences().getString(key, defaultValue);
         }
     }
 
@@ -296,7 +299,7 @@ public class SharedPreferencesManager {
      */
     public void removeKey(String key) {
         mKeyChecker.assertIsKeyInUse(key);
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
+        SharedPreferences.Editor ed = ContextUtils.getAppSharedPreferences().edit();
         ed.remove(key);
         ed.apply();
     }

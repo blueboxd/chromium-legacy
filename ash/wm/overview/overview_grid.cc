@@ -186,25 +186,27 @@ class ShutdownAnimationFpsCounterObserver : public OverviewObserver {
 // dragged around, and destroyed when the drag ends.
 std::unique_ptr<views::Widget> CreateDropTargetWidget(
     aura::Window* dragged_window) {
-  aura::Window* parent = dragged_window->parent();
-  gfx::Rect bounds = dragged_window->bounds();
-  ::wm::ConvertRectToScreen(parent, &bounds);
-  bounds.Inset(/*left=*/0,
-               /*top=*/dragged_window->GetProperty(aura::client::kTopViewInset),
-               /*right=*/0, /*bottom=*/0);
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.activatable = views::Widget::InitParams::Activatable::ACTIVATABLE_NO;
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.accept_events = false;
-  params.parent = parent;
-  params.bounds = bounds;
+  params.parent = dragged_window->parent();
   params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
   auto widget = std::make_unique<views::Widget>();
   widget->set_focus_on_creation(false);
   widget->Init(std::move(params));
-
+  widget->SetVisibilityAnimationTransition(views::Widget::ANIMATE_NONE);
+  // |OverviewGrid::PositionWindows| will set the bounds of the drop target,
+  // overwriting the size that we set here. However, the drop target bounds
+  // computation will use the aspect ratio from the size that we set here.
+  gfx::Size size_for_aspect_ratio = dragged_window->bounds().size();
+  DCHECK_GT(size_for_aspect_ratio.height(),
+            dragged_window->GetProperty(aura::client::kTopViewInset));
+  size_for_aspect_ratio.Enlarge(
+      0, -dragged_window->GetProperty(aura::client::kTopViewInset));
+  widget->SetSize(size_for_aspect_ratio);
   // Show plus icon if drag a tab from a multi-tab window.
   widget->SetContentsView(new DropTargetView(
       dragged_window->GetProperty(ash::kTabDraggingSourceWindowKey)));

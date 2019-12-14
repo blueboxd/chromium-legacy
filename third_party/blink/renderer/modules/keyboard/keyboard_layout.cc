@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -32,7 +33,9 @@ constexpr char kKeyboardMapRequestFailedErrorMsg[] =
 KeyboardLayout::KeyboardLayout(ExecutionContext* context)
     : ContextLifecycleObserver(context) {}
 
-ScriptPromise KeyboardLayout::GetKeyboardLayoutMap(ScriptState* script_state) {
+ScriptPromise KeyboardLayout::GetKeyboardLayoutMap(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   DCHECK(script_state);
 
   if (script_promise_resolver_) {
@@ -40,24 +43,21 @@ ScriptPromise KeyboardLayout::GetKeyboardLayoutMap(ScriptState* script_state) {
   }
 
   if (!IsLocalFrameAttached()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
-                                           kKeyboardMapFrameDetachedErrorMsg));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kKeyboardMapFrameDetachedErrorMsg);
+    return ScriptPromise();
   }
 
   if (!CalledFromSupportedContext(ExecutionContext::From(script_state))) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
-                                           kKeyboardMapChildFrameErrorMsg));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kKeyboardMapChildFrameErrorMsg);
+    return ScriptPromise();
   }
 
   if (!EnsureServiceConnected()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
-                                           kKeyboardMapRequestFailedErrorMsg));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kKeyboardMapRequestFailedErrorMsg);
+    return ScriptPromise();
   }
 
   script_promise_resolver_ =

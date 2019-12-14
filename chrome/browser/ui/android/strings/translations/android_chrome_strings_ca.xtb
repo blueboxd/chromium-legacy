@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Vols tornar a baixar el fitxer?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# fitxer d'àudio}other{# fitxers d'àudio}}</translation>
 <translation id="2653659639078652383">Envia</translation>
-<translation id="2669093958999339774">Bloqueja les sol·licituds de notificacions per evitar interrupcions i utilitza un missatge més silenciós</translation>
 <translation id="2677748264148917807">Surt</translation>
 <translation id="2704606927547763573">Copiada</translation>
 <translation id="2707726405694321444">Actualitza la pàgina</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Afegit a les adreces de: <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Sincronització en segon pla</translation>
 <translation id="3749259744154402564">No s'admet</translation>
-<translation id="3767376082821709728">Els llocs web nous que visitis no et poden enviar notificacions</translation>
 <translation id="3771001275138982843">No s'ha pogut baixar l'actualització</translation>
 <translation id="3771033907050503522">Pestanyes d'incògnit</translation>
 <translation id="3773755127849930740">Per permetre la vinculació, <ph name="BEGIN_LINK" />activa el Bluetooth<ph name="END_LINK" /></translation>
@@ -755,6 +753,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6545017243486555795">Esborra totes les dades</translation>
 <translation id="6545864417968258051">Cerca de dispositius Bluetooth</translation>
 <translation id="6560414384669816528">Cerca amb Sogou</translation>
+<translation id="656065428026159829">Mostra'n més</translation>
 <translation id="6566259936974865419">Chrome t'ha estalviat <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">Permet sempre</translation>
 <translation id="6573431926118603307">Les pestanyes que tingueu obertes a Chrome als altres dispositius es mostraran aquí.</translation>
@@ -851,6 +850,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7293171162284876153">Per iniciar la sincronització, activa l'opció Sincronitza les dades de Chrome.</translation>
 <translation id="729975465115245577">El dispositiu no té cap aplicació per emmagatzemar el fitxer de contrasenyes.</translation>
 <translation id="7302081693174882195">Detalls: files ordenades per quantitat de dades estalviades</translation>
+<translation id="7302486331832100261">Normalment bloqueges les notificacions. Per permetre-les, toca Detalls.</translation>
 <translation id="7328017930301109123">En el mode bàsic, Chrome carrega les pàgines més ràpidament i utilitza fins a un 60 per cent menys de dades.</translation>
 <translation id="7333031090786104871">Encara s'hi està afegint el lloc anterior</translation>
 <translation id="7352939065658542140">VÍDEO</translation>
@@ -957,7 +957,6 @@ El lloc web NO obté accés a la càmera. Només tu pots veure les imatges de la
 <translation id="8035133914807600019">Carpeta nova…</translation>
 <translation id="8037750541064988519">Queden <ph name="DAYS" /> dies</translation>
 <translation id="804335162455518893">La targeta SD no s'ha trobat</translation>
-<translation id="8046278916126163020">Pot ser que els llocs web nous que visitis et preguntin si et poden enviar notificacions</translation>
 <translation id="805047784848435650">Segons l'historial de navegació</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB disponibles</translation>
 <translation id="8058746566562539958">Obre en pestanya nova a Chrome</translation>

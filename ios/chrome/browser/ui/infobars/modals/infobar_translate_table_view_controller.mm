@@ -84,7 +84,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.view.backgroundColor = [UIColor colorNamed:kBackgroundColor];
-  self.styler.cellBackgroundColor = [UIColor colorNamed:kBackgroundColor];
+  self.styler.cellBackgroundColor = [UIColor clearColor];
   self.tableView.sectionHeaderHeight = 0;
   [self.tableView
       setSeparatorInset:UIEdgeInsetsMake(0, kTableViewHorizontalSpacing, 0, 0)];

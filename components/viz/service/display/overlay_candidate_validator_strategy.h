@@ -63,10 +63,6 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidatorStrategy {
   virtual void SetDisplayTransform(gfx::OverlayTransform transform) {}
   virtual void SetViewportSize(const gfx::Size& size) {}
 
-  // Disables overlays when software mirroring display. This only needs to be
-  // implemented for Chrome OS.
-  virtual void SetSoftwareMirrorMode(bool enabled) {}
-
   // This is used to adjust properties of the |primary_plane|, which is the
   // overlay candidate for the output surface. This is called after we process
   // for overlay. Surface Control uses this function to adjust the display

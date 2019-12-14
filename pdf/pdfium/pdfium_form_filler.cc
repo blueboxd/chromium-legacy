@@ -449,7 +449,7 @@ void PDFiumFormFiller::Form_UploadTo(FPDF_FORMFILLINFO* param,
 }
 
 // static
-FPDF_LPFILEHANDLER PDFiumFormFiller::Form_DownloadFromURL(
+FPDF_FILEHANDLER* PDFiumFormFiller::Form_DownloadFromURL(
     FPDF_FORMFILLINFO* param,
     FPDF_WIDESTRING url) {
   // NOTE: Think hard about the security implications before allowing

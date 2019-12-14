@@ -907,8 +907,8 @@ crbug.com/1033611 external/wpt/webxr/events_referenceSpace_reset_inline.https.ht
 crbug.com/1033611 external/wpt/webxr/events_session_select.https.html [ Failure ]
 crbug.com/1033611 external/wpt/webxr/events_session_select_subframe.https.html [ Failure ]
 crbug.com/1033611 external/wpt/webxr/exclusive_requestFrame_nolayer.https.html [ Failure ]
-crbug.com/1033611 external/wpt/webxr/gamepads-module/xrInputSource_gamepad_disconnect.https.html
-crbug.com/1033611 external/wpt/webxr/gamepads-module/xrInputSource_gamepad_input_registered.https.html
+crbug.com/1033611 external/wpt/webxr/gamepads-module/xrInputSource_gamepad_disconnect.https.html [ Failure ]
+crbug.com/1033611 external/wpt/webxr/gamepads-module/xrInputSource_gamepad_input_registered.https.html [ Failure ]
 crbug.com/1033611 external/wpt/webxr/getInputPose_handedness.https.html [ Failure ]
 crbug.com/1033611 external/wpt/webxr/getInputPose_pointer.https.html [ Failure ]
 crbug.com/1033611 external/wpt/webxr/getViewerPose_emulatedPosition.https.html [ Failure ]

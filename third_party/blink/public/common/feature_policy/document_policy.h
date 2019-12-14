@@ -109,6 +109,10 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
   // Parse document policy header to FeatureState
   static base::Optional<FeatureState> Parse(const std::string& header);
 
+  // Merge two FeatureState map. Take stricter value when there is conflict.
+  static FeatureState MergeFeatureState(const FeatureState& policy1,
+                                        const FeatureState& policy2);
+
  private:
   friend class DocumentPolicyTest;
 

@@ -170,6 +170,8 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
                           int time_to_live) override;
   void OnMintTokenFailure(const GoogleServiceAuthError& error) override;
   void OnIssueAdviceSuccess(const IssueAdviceInfo& issue_advice) override;
+  void OnRemoteConsentSuccess(
+      const RemoteConsentResolutionData& resolution_data) override;
 
 #if defined(OS_CHROMEOS)
   // Starts a login access token request for device robot account. This method
@@ -184,6 +186,8 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   // Methods for invoking UI. Overridable for testing.
   virtual void ShowExtensionLoginPrompt();
   virtual void ShowOAuthApprovalDialog(const IssueAdviceInfo& issue_advice);
+  virtual void ShowRemoteConsentDialog(
+      const RemoteConsentResolutionData& resolution_data);
 
   // Checks if there is a master login token to mint tokens for the extension.
   bool HasRefreshTokenForTokenKeyAccount() const;
@@ -213,6 +217,8 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   // a permissions prompt will be popped up to the user.
   IssueAdviceInfo issue_advice_;
   std::unique_ptr<GaiaWebAuthFlow> gaia_web_auth_flow_;
+  // The browser resolution consent flow.
+  RemoteConsentResolutionData resolution_data_;
 
   // Invoked when IdentityAPI is shut down.
   std::unique_ptr<base::CallbackList<void()>::Subscription>

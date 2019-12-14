@@ -61,6 +61,9 @@ bool IsVizDisplayCompositorEnabled() {
 #endif
 }
 
+const base::Feature kUsePreferredIntervalForVideo{
+    "UsePreferredIntervalForVideo", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsVizHitTestingDebugEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableVizHitTestDebug);
@@ -101,6 +104,10 @@ bool IsUsingVizForWebView() {
     return true;
   }
   return false;
+}
+
+bool IsUsingPreferredIntervalForVideo() {
+  return base::FeatureList::IsEnabled(kUsePreferredIntervalForVideo);
 }
 
 }  // namespace features

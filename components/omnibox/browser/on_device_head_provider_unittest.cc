@@ -58,7 +58,7 @@ class OnDeviceHeadProviderTest : public testing::Test,
 
   void ResetModelInstance() {
     if (provider_) {
-      provider_->model_.reset();
+      provider_->model_filename_.clear();
     }
   }
 

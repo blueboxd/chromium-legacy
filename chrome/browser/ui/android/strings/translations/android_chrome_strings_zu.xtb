@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Landa ifayela futhi?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# Ifayela lomsindo}one{# Amafayela omsindo}other{# Amafayela omsindo}}</translation>
 <translation id="2653659639078652383">Hambisa</translation>
-<translation id="2669093958999339774">Vimbela ukwaziswa kwesaziso kusukela ekukuphazamiseni, uphinde usebenzise umlayezo othulile kunalokho</translation>
 <translation id="2677748264148917807">Hamba</translation>
 <translation id="2704606927547763573">Kukopishiwe</translation>
 <translation id="2707726405694321444">Vuselela ikhasi</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Kubekwe uphawu ku-<ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Ukuvumelanisa ngemuva</translation>
 <translation id="3749259744154402564">Akusekelwe</translation>
-<translation id="3767376082821709728">Amasayithi amasha owavakashelayo angakuthumelela izaziso</translation>
 <translation id="3771001275138982843">Ayikwazanga ukulanda isibuyekezo</translation>
 <translation id="3771033907050503522">Amathebhu e-Incognito</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Vula i-Bluetooth<ph name="END_LINK" /> ukuvumela ukumatanisa</translation>
@@ -957,7 +955,6 @@ Isayithi ALITHOLI ukufinyelela kukhamera. Izithombe zekhamera zibonakala kuwe ku
 <translation id="8035133914807600019">Ifolda entsha…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> izinsuku ezisele</translation>
 <translation id="804335162455518893">Ikhadi le-SD alitholiwe</translation>
-<translation id="8046278916126163020">Amasayithi amasha owavakashelayo angakucela ukukuthumelela izaziso</translation>
 <translation id="805047784848435650">Ngokususelwe kumlando wakho wokuphequlula</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB etholakalayo</translation>
 <translation id="8058746566562539958">Vula kuthebhu ye-Chrome entsha</translation>

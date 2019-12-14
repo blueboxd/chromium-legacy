@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Descarci din nou fișierul?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{Un fișier audio}few{# fișiere audio}other{# de fișiere audio}}</translation>
 <translation id="2653659639078652383">Trimite</translation>
-<translation id="2669093958999339774">Blochează solicitările de notificări astfel încât să nu te întrerupă și alege un mesaj mai discret</translation>
 <translation id="2677748264148917807">Ieși</translation>
 <translation id="2704606927547763573">Copiat</translation>
 <translation id="2707726405694321444">Actualizează pagina</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Marcat în <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Sincronizare în fundal</translation>
 <translation id="3749259744154402564">Nu se acceptă</translation>
-<translation id="3767376082821709728">Site-urile noi pe care le accesezi nu îți pot trimite notificări</translation>
 <translation id="3771001275138982843">Nu s-a putut descărca actualizarea</translation>
 <translation id="3771033907050503522">File incognito</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Activează Bluetooth<ph name="END_LINK" /> pentru a permite asocierea</translation>
@@ -957,7 +955,6 @@ Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar p
 <translation id="8035133914807600019">Dosar nou…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> zile rămase</translation>
 <translation id="804335162455518893">Nu s-a găsit cardul SD</translation>
-<translation id="8046278916126163020">Site-urile noi pe care le accesezi îți pot solicita să îți trimită notificări</translation>
 <translation id="805047784848435650">Pe baza istoricului de navigare</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MO disponibili</translation>
 <translation id="8058746566562539958">Deschide în filă Chrome nouă</translation>

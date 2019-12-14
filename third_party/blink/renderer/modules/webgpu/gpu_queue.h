@@ -22,7 +22,6 @@ class GPUQueue : public DawnObject<WGPUQueue> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GPUQueue* Create(GPUDevice* device, WGPUQueue queue);
   explicit GPUQueue(GPUDevice* device, WGPUQueue queue);
   ~GPUQueue() override;
 

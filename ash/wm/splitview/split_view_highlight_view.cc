@@ -233,7 +233,7 @@ void SplitViewHighlightView::OnWindowDraggingStateChanged(
     } else {
       // This code is for the other highlight. If |previews_only|, just stay
       // hidden (in other words, do nothing). Else fade in.
-      DCHECK_EQ(0.f, layer()->opacity());
+      DCHECK_EQ(0.f, layer()->GetTargetOpacity());
       if (!previews_only) {
         DoSplitviewOpacityAnimation(
             layer(), SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_IN);
@@ -246,7 +246,7 @@ void SplitViewHighlightView::OnWindowDraggingStateChanged(
   // nothing to do. Else fade in.
   DCHECK_EQ(SplitViewDragIndicators::WindowDraggingState::kNoDrag,
             previous_window_dragging_state);
-  DCHECK_EQ(0.f, layer()->opacity());
+  DCHECK_EQ(0.f, layer()->GetTargetOpacity());
   if (!previews_only) {
     DoSplitviewOpacityAnimation(layer(), SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN);
     return;

@@ -39,6 +39,7 @@ source_set("unit_tests") {
     "data_files_parser_unittest.cc",
     "games_prefs_unittest.cc",
     "games_service_impl_unittest.cc",
+    "games_utils_unittest.cc",
     "highlighted_games_store_unittest.cc",
   ]
   deps = [

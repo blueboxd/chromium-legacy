@@ -26,6 +26,6 @@
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/favicon"
         android:gravity="center_vertical"
-        android:layout_marginStart="12dp"
+        android:layout_marginStart="8dp"
         android:textAppearance="@style/TextAppearance.BlackCaption" />
 </RelativeLayout>

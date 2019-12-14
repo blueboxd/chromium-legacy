@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Bestand opnieuw downloaden?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# audiobestand}other{# audiobestanden}}</translation>
 <translation id="2653659639078652383">Verzenden</translation>
-<translation id="2669093958999339774">Meldingsprompts blokkeren zodat ze je niet storen en in plaats daarvan een zachter bericht gebruiken</translation>
 <translation id="2677748264148917807">Verlaten</translation>
 <translation id="2704606927547763573">Gekopieerd</translation>
 <translation id="2707726405694321444">Pagina vernieuwen</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Bladwijzer toegevoegd in <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Synchronisatie op de achtergrond</translation>
 <translation id="3749259744154402564">Niet ondersteund</translation>
-<translation id="3767376082821709728">Nieuwe sites die je bezoekt, kunnen je geen meldingen sturen</translation>
 <translation id="3771001275138982843">Kan de update niet downloaden</translation>
 <translation id="3771033907050503522">Incognitotabbladen</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Schakel Bluetooth in<ph name="END_LINK" /> om te koppelen</translation>
@@ -755,6 +753,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6545017243486555795">Alle gegevens wissen</translation>
 <translation id="6545864417968258051">Bluetooth-scannen</translation>
 <translation id="6560414384669816528">Zoeken met Sogou</translation>
+<translation id="656065428026159829">Meer weergeven</translation>
 <translation id="6566259936974865419">Chrome bespaart je <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">Altijd toestaan</translation>
 <translation id="6573431926118603307">Tabbladen die je op andere apparaten in Chrome hebt geopend, worden hier weergegeven.</translation>
@@ -851,6 +850,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7293171162284876153">Schakel 'Je Chrome-gegevens synchroniseren' in om de synchronisatie te starten.</translation>
 <translation id="729975465115245577">Je apparaat bevat geen app om het wachtwoordbestand in op te slaan.</translation>
 <translation id="7302081693174882195">Details: gesorteerd op de hoeveelheid bespaarde data</translation>
+<translation id="7302486331832100261">Meestal blokkeer je meldingen. Tik op Details om meldingen toe te staan.</translation>
 <translation id="7328017930301109123">In de Lite-versie van Chrome worden pagina's sneller geladen en wordt tot wel 60 procent minder data verbruikt.</translation>
 <translation id="7333031090786104871">Nog steeds bezig met toevoegen van vorige site</translation>
 <translation id="7352939065658542140">VIDEO</translation>
@@ -957,7 +957,6 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="8035133914807600019">Nieuwe map…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dagen resterend</translation>
 <translation id="804335162455518893">SD-kaart niet gevonden</translation>
-<translation id="8046278916126163020">Nieuwe sites die je bezoekt, kunnen vragen of ze je meldingen mogen sturen</translation>
 <translation id="805047784848435650">Op basis van je browsegeschiedenis</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB beschikbaar</translation>
 <translation id="8058746566562539958">Openen op nieuw Chrome-tabblad</translation>

@@ -26,6 +26,7 @@
 #include "chromecast/base/thread_health_checker.h"
 #include "chromecast/media/audio/audio_io_thread.h"
 #include "chromecast/media/audio/interleaved_channel_mixer.h"
+#include "chromecast/media/audio/mixer_service/loopback_interrupt_reason.h"
 #include "chromecast/media/base/audio_device_ids.h"
 #include "chromecast/media/cma/backend/cast_audio_json.h"
 #include "chromecast/media/cma/backend/mixer/audio_output_redirector.h"
@@ -388,7 +389,7 @@ StreamMixer::~StreamMixer() {
 
 void StreamMixer::FinalizeOnMixerThread() {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
-  Stop();
+  Stop(LoopbackInterruptReason::kOutputStopped);
 
   inputs_.clear();
   ignored_inputs_.clear();
@@ -404,7 +405,7 @@ void StreamMixer::SetNumOutputChannelsOnThread(int num_channels) {
   fixed_num_output_channels_ = num_channels;
 
   if (state_ == kStateRunning && num_channels != num_output_channels_) {
-    Stop();
+    Stop(LoopbackInterruptReason::kConfigChange);
     Start();
   }
 }
@@ -454,7 +455,7 @@ void StreamMixer::Start() {
   }
 
   if (!output_->Start(requested_sample_rate, requested_output_channels)) {
-    Stop();
+    Stop(LoopbackInterruptReason::kOutputStopped);
     return;
   }
 
@@ -530,12 +531,12 @@ void StreamMixer::Start() {
   mixer_task_runner_->PostTask(FROM_HERE, playback_loop_task_);
 }
 
-void StreamMixer::Stop() {
+void StreamMixer::Stop(LoopbackInterruptReason reason) {
   LOG(INFO) << __func__;
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
 
   weak_factory_.InvalidateWeakPtrs();
-  loopback_handler_->SendInterrupt();
+  loopback_handler_->SendInterrupt(reason);
 
   if (output_) {
     output_->Stop();
@@ -578,7 +579,7 @@ void StreamMixer::CheckChangeOutputParams(int num_input_channels,
   requested_output_samples_per_second_ = input_samples_per_second;
 
   // Restart the output so that the new output params take effect.
-  Stop();
+  Stop(LoopbackInterruptReason::kConfigChange);
   Start();
 }
 
@@ -757,7 +758,7 @@ void StreamMixer::PlaybackLoop() {
   if (inputs_.empty() && base::TimeTicks::Now() >= close_timestamp_ &&
       !mixer_pipeline_->IsRinging()) {
     LOG(INFO) << "Close timeout";
-    Stop();
+    Stop(LoopbackInterruptReason::kOutputStopped);
     return;
   }
 
@@ -823,7 +824,7 @@ void StreamMixer::WriteMixedPcm(int frames, int64_t expected_playback_time) {
                  &playback_interrupted);
 
   if (playback_interrupted) {
-    loopback_handler_->SendInterrupt();
+    loopback_handler_->SendInterrupt(LoopbackInterruptReason::kUnderrun);
   }
 }
 

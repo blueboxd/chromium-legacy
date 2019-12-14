@@ -23,6 +23,7 @@ public class PaymentAppService implements PaymentAppFactoryInterface {
     /** Prevent instantiation. */
     private PaymentAppService() {
         mFactories.add(PaymentAppFactory.getInstance());
+        mFactories.add(new AutofillPaymentAppFactory());
     }
 
     // PaymentAppFactoryInterface implementation.
@@ -73,8 +74,8 @@ public class PaymentAppService implements PaymentAppFactoryInterface {
         }
 
         @Override
-        public void onAutofillPaymentAppFactoryCreated(AutofillPaymentApp factory) {
-            mDelegate.onAutofillPaymentAppFactoryCreated(factory);
+        public void onAutofillPaymentAppCreatorAvailable(AutofillPaymentAppCreator creator) {
+            mDelegate.onAutofillPaymentAppCreatorAvailable(creator);
         }
 
         @Override

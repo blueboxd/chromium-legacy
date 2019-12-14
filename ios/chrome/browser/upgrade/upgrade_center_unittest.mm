@@ -33,19 +33,19 @@ class UpgradeCenterTest : public PlatformTest {
 @end
 
 @implementation FakeUpgradeCenterClient {
-  UpgradeCenterTest* test_;
+  UpgradeCenterTest* _test;
 }
 
 - (instancetype)initWithTest:(UpgradeCenterTest*)test {
   self = [super init];
   if (self) {
-    test_ = test;
+    _test = test;
   }
   return self;
 }
 
 - (void)showUpgrade:(UpgradeCenter*)center {
-  test_->count_ += 1;
+  _test->count_ += 1;
 }
 
 @end

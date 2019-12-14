@@ -22,6 +22,8 @@
 
 namespace blink {
 
+class ExceptionState;
+
 class IdleDetector final : public EventTargetWithInlineData,
                            public ActiveScriptWrappable<IdleDetector>,
                            public ContextClient,
@@ -50,7 +52,7 @@ class IdleDetector final : public EventTargetWithInlineData,
   bool HasPendingActivity() const final;
 
   // IdleDetector IDL interface.
-  ScriptPromise start(ScriptState*);
+  ScriptPromise start(ScriptState*, ExceptionState&);
   void stop();
   blink::IdleState* state() const;
   DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange)

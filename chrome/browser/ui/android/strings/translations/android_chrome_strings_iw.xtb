@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">האם להוריד את הקובץ שוב?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{קובץ אודיו אחד (#)}two{# קובצי אודיו}many{# קובצי אודיו}other{# קובצי אודיו}}</translation>
 <translation id="2653659639078652383">שלח</translation>
-<translation id="2669093958999339774">חסימה של בקשות קופצות למשלוח התראות: במקומן יוצג חיווי על החסימה בסרגל הכתובות</translation>
 <translation id="2677748264148917807">יציאה</translation>
 <translation id="2704606927547763573">הועתק</translation>
 <translation id="2707726405694321444">רענן את הדף</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">נוסף לסימניות ב-<ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">סינכרון ברקע</translation>
 <translation id="3749259744154402564">הפעולה לא נתמכת</translation>
-<translation id="3767376082821709728">אתרים חדשים שאליהם נכנסים לא יכולים לשלוח התראות</translation>
 <translation id="3771001275138982843">לא ניתן היה להוריד את העדכון</translation>
 <translation id="3771033907050503522">כרטיסיות גלישה בסתר</translation>
 <translation id="3773755127849930740">‏<ph name="BEGIN_LINK" />הפעל את Bluetooth<ph name="END_LINK" /> כדי לאפשר התאמה</translation>
@@ -957,7 +955,6 @@
 <translation id="8035133914807600019">תיקייה חדשה…</translation>
 <translation id="8037750541064988519">נותרו <ph name="DAYS" /> ימים</translation>
 <translation id="804335162455518893">‏לא נמצא כרטיס SD</translation>
-<translation id="8046278916126163020">אתרים חדשים שאליהם נכנסים יכולים לבקש הרשאה לשליחת התראות</translation>
 <translation id="805047784848435650">על סמך היסטוריית הגלישה שלך</translation>
 <translation id="8051695050440594747">‏‎<ph name="MEGABYTES" /> MB זמינים</translation>
 <translation id="8058746566562539958">‏פתיחה בכרטיסייה חדשה של Chrome</translation>

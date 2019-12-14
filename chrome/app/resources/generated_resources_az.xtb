@@ -1185,7 +1185,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="2665919335226618153">Başımıza daş! Formatlama zamanı xəta oldu!</translation>
 <translation id="2666990579225592931">Qonaq Pəncərəsini Açın</translation>
 <translation id="2667463864537187133">Orfoqrafik yoxlanışı idarə edin</translation>
-<translation id="2669093958999339774">Bildiriş dəvətlərinin sizi narahat etməsini bloklayın, əvəzində səssiz bildirişlər alın</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> tətbiqi Chrome panelini paylaşır.</translation>
 <translation id="2670429602441959756">Bu səhifədə hələ də VR'də dəstəklənməyən funksiyalar var. Çıxılır...</translation>
 <translation id="2671451824761031126">Əlfəcin və ayarlar hazırdır</translation>
@@ -1959,7 +1958,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="37613671848467444">Gizli Pəncərədə Açın</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{USB cihaz ilə ünsiyyətdə olun}other{# USB cihaz ilə ünsiyyətdə olun}}</translation>
 <translation id="3765246971671567135">Oflayn demo rejim qaydalarını oxutmaq mümkün olmadı.</translation>
-<translation id="3767376082821709728">Daxil olduğunuz yeni saytlar sizə bildirişlər göndərə bilməz</translation>
 <translation id="3768037234834996183">Tərcihləriniz sinxronizasiya olunur...</translation>
 <translation id="377050016711188788">Dondurma</translation>
 <translation id="3771294271822695279">Video Fayllar</translation>
@@ -3025,7 +3023,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="5370819323174483825">Yenidən yükləyin</translation>
 <translation id="5372529912055771682">Təchiz olunmuş qeydiyyat rejimi əməliyyat sisteminin bu versiyası tərəfindən dəstəklənmir. Lütfən, ən yeni versiyanı istifadə etdiyinizə əmin olun və yenidən cəhd edin.</translation>
 <translation id="5372579129492968947">Artırmanı tabdan çıxarın</translation>
-<translation id="5374359983950678924">Şəkli dəyişin</translation>
 <translation id="5376169624176189338">Qayıtmaq üçün klikləyin, tarixçəni görmək üçün basıb saxlayın</translation>
 <translation id="5376931455988532197">Fayl çox böyükdür</translation>
 <translation id="537813040452600081">Bu pəncərədə baxdığınız səhifələr brauzer tarixçəsində görünməyəcək və onlar heç bir iz buraxmayacaq. Endirdiyiniz fayllar və yaratdığınız əlfəcinlər saxlanmayacaq.</translation>
@@ -4897,7 +4894,6 @@ Açar faylınızı güvənli yerdə saxlayın.</translation>
 <translation id="8044899503464538266">Yavaş</translation>
 <translation id="8045253504249021590">Sinxronizasiya Google Alətlər Paneli vasitəsilə dayandırıldı.</translation>
 <translation id="8045923671629973368">Tətbiqin ID və ya veb mağaza linkini daxil edin</translation>
-<translation id="8046278916126163020">Daxil olduğunuz yeni saytlar bildirişlər göndərmək üçün icazə istəyə bilər</translation>
 <translation id="804786196054284061">Son İstifadəçinin Lisenziya Müqaviləsi</translation>
 <translation id="8049705080247101012">Google <ph name="EXTENSION_NAME" /> adlı artırmanı zərərli qeyd edərək quraşdırmanı ləğv etdi</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>

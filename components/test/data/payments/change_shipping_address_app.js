@@ -9,6 +9,20 @@ self.addEventListener('canmakepayment', (event) => {
 });
 
 /**
+ * @param {Object} address - The shipping address to be redacted.
+ * @return {Object} - The redacted address.
+ */
+function redactShippingAddress(address) {
+  return {
+    country: address.country,
+    region: address.region,
+    city: address.city,
+    postalCode: address.postalCode,
+    sortingCode: address.sortingCode,
+  };
+}
+
+/**
  * Responds to the PaymentRequest |event| by calling its changeShippingAddress()
  * method and returning its result, thus allowing for testing without user
  * interaction with a skip-UI flow.
@@ -45,7 +59,8 @@ async function responder(event) {
     };
   }
   try {
-    const response = await event.changeShippingAddress(shippingAddress);
+    const response = await event.changeShippingAddress(
+        redactShippingAddress(shippingAddress));
     changeShippingReturnedValue = response;
   } catch (err) {
     changeShippingReturnedValue = err.message;

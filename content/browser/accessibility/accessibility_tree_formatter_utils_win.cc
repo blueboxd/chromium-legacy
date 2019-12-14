@@ -153,6 +153,10 @@ CONTENT_EXPORT base::string16 IAccessible2RoleToString(int32_t ia2_role) {
       QUOTE(IA2_ROLE_LEVEL_BAR),
       QUOTE(IA2_ROLE_CONTENT_DELETION),
       QUOTE(IA2_ROLE_CONTENT_INSERTION),
+      QUOTE(IA2_ROLE_BLOCK_QUOTE),
+      QUOTE(IA2_ROLE_MARK),
+      QUOTE(IA2_ROLE_SUGGESTION),
+      QUOTE(IA2_ROLE_COMMENT),
   };
 
   return GetNameForPlatformConstant(ia2_table, base::size(ia2_table), ia2_role);
@@ -229,6 +233,7 @@ CONTENT_EXPORT base::string16 AccessibilityEventToString(int32_t event) {
       QUOTE(IA2_EVENT_TEXT_UPDATED),
       QUOTE(IA2_EVENT_TEXT_SELECTION_CHANGED),
       QUOTE(IA2_EVENT_VISIBLE_DATA_CHANGED),
+      QUOTE(IA2_EVENT_ROLE_CHANGED),
   };
 
   return GetNameForPlatformConstant(event_table, base::size(event_table),

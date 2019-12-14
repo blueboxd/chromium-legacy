@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Նորի՞ց ներբեռնել ֆայլը</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# աուդիո ֆայլ}one{# աուդիո ֆայլ}other{# աուդիո ֆայլ}}</translation>
 <translation id="2653659639078652383">Ուղարկել</translation>
-<translation id="2669093958999339774">Արգելափակել շեղող ծանուցումները և դրանց փոխարեն օգտագործել անձայն հաղորդագրությունները</translation>
 <translation id="2677748264148917807">Դուրս գալ էջից</translation>
 <translation id="2704606927547763573">Պատճենվեց</translation>
 <translation id="2707726405694321444">Թարմացնել էջը</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Էջանշվեց <ph name="PRODUCT_NAME" />-ում</translation>
 <translation id="3744111561329211289">Ֆոնային համաժամացում</translation>
 <translation id="3749259744154402564">Չի աջակցվում</translation>
-<translation id="3767376082821709728">Ձեր այցելած նոր կայքերը չեն կարող ձեզ ծանուցումներ ուղարկել</translation>
 <translation id="3771001275138982843">Չհաջողվեց ներբեռնել թարմացումը</translation>
 <translation id="3771033907050503522">Ինկոգնիտո ներդիրներ</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Միացրեք Bluetooth-ը<ph name="END_LINK" />` զուգակցումը թույլատրելու համար</translation>
@@ -957,7 +955,6 @@
 <translation id="8035133914807600019">Նոր պանակ...</translation>
 <translation id="8037750541064988519">Մնացել է <ph name="DAYS" /> օր</translation>
 <translation id="804335162455518893">SD քարտը չհաջողվեց գտնել</translation>
-<translation id="8046278916126163020">Ձեր այցելած նոր կայքերը կարող են թույլտվություն խնդրել՝ ձեզ ծանուցումներ ուղարկելու համար։</translation>
 <translation id="805047784848435650">Ձեր այցելությունների պատմության հիման վրա</translation>
 <translation id="8051695050440594747">Հասանելի է <ph name="MEGABYTES" /> ՄԲ</translation>
 <translation id="8058746566562539958">Բացել Chrome-ի նոր ներդիրում</translation>

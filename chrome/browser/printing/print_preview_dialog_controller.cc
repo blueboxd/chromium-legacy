@@ -155,7 +155,11 @@ void PrintPreviewDialogDelegate::GetDialogSize(gfx::Size* size) const {
   size->Enlarge(-2 * kBorder, -kBorder);
 
   static const gfx::Size kMaxDialogSize(1000, 660);
-  size->SetToMin(kMaxDialogSize);
+  int max_width = std::max(size->width() * 7 / 10, kMaxDialogSize.width());
+  int max_height =
+      std::max(max_width * kMaxDialogSize.height() / kMaxDialogSize.width(),
+               kMaxDialogSize.height());
+  size->SetToMin(gfx::Size(max_width, max_height));
 }
 
 std::string PrintPreviewDialogDelegate::GetDialogArgs() const {

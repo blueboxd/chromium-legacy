@@ -50,10 +50,6 @@ Example:
   "robot_api_auth_code": "",
   "invalidation_source": 1025,
   "invalidation_name": "UENUPOL",
-  "available_licenses" : {
-      "annual": 10,
-      "perpetual": 20
-   },
    "token_enrollment": {
       "token": "abcd-ef01-123123123",
       "username": "admin@example.com"
@@ -199,12 +195,6 @@ SIGNING_KEYS = [
        },
     },
 ]
-
-LICENSE_TYPES = {
-  'perpetual': dm.LicenseType.CDM_PERPETUAL,
-  'annual': dm.LicenseType.CDM_ANNUAL,
-  'kiosk': dm.LicenseType.KIOSK,
-}
 
 INVALID_ENROLLMENT_TOKEN = 'invalid_enrollment_token'
 
@@ -357,8 +347,6 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       response = self.ProcessDeviceAttributeUpdatePermissionRequest()
     elif request_type == 'device_attribute_update':
       response = self.ProcessDeviceAttributeUpdateRequest()
-    elif request_type == 'check_device_license':
-      response = self.ProcessCheckDeviceLicenseRequest()
     elif request_type == 'remote_commands':
       response = self.ProcessRemoteCommandsRequest()
     elif request_type == 'check_android_management':
@@ -802,27 +790,6 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     response = dm.DeviceManagementResponse()
     response.device_attribute_update_response.result = (
         dm.DeviceAttributeUpdateResponse.ATTRIBUTE_UPDATE_SUCCESS)
-
-    return (200, response)
-
-  def ProcessCheckDeviceLicenseRequest(self):
-    """Handles a device license check request.
-
-    Returns:
-      A tuple of HTTP status code and response data to send to the client.
-    """
-    response = dm.DeviceManagementResponse()
-    license_response = response.check_device_license_response
-    policy = self.server.GetPolicies()
-    selection_mode = dm.CheckDeviceLicenseResponse.ADMIN_SELECTION
-    if ('available_licenses' in policy):
-      available_licenses = policy['available_licenses']
-      selection_mode = dm.CheckDeviceLicenseResponse.USER_SELECTION
-      for license_type in available_licenses:
-        license = license_response.license_availabilities.add()
-        license.license_type.license_type = LICENSE_TYPES[license_type]
-        license.available_licenses = available_licenses[license_type]
-    license_response.license_selection_mode = (selection_mode)
 
     return (200, response)
 

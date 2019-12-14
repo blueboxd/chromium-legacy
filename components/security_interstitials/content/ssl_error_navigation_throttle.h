@@ -38,8 +38,6 @@ class SSLErrorNavigationThrottle : public content::NavigationThrottle {
       const net::SSLInfo& ssl_info,
       const GURL& request_url,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-      const base::Callback<void(content::CertificateRequestResultType)>&
-          decision_callback,
       base::OnceCallback<void(
           std::unique_ptr<security_interstitials::SecurityInterstitialPage>)>
           blocking_page_ready_callback)>

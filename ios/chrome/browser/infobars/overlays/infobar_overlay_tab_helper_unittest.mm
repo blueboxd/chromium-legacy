@@ -6,11 +6,12 @@
 
 #import <Foundation/Foundation.h>
 
-#include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
-#import "ios/chrome/browser/infobars/overlays/infobar_banner_overlay_request_factory.h"
+#import "ios/chrome/browser/infobars/overlays/fake_infobar_overlay_request_factory.h"
+#import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_factory.h"
 #include "ios/chrome/browser/infobars/test/fake_infobar_delegate.h"
+#import "ios/chrome/browser/infobars/test/fake_infobar_ios.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #include "ios/chrome/browser/overlays/test/fake_overlay_user_data.h"
@@ -27,29 +28,6 @@ using infobars::InfoBar;
 using infobars::InfoBarDelegate;
 using infobars::InfoBarManager;
 
-namespace {
-// The pointer value stored in FakeOverlayRequestUserData used to configure
-// banner OverlayRequests created for InfoBars using a fake InfoBarDelegate with
-// kFakeInfoBarMessage.
-void* kOverlayRequestConfigValue = &kOverlayRequestConfigValue;
-
-// Test version of InfobarBannerOverlayRequestFactory.
-class FakeInfobarBannerOverlayRequestFactory
-    : public InfobarBannerOverlayRequestFactory {
- public:
-  FakeInfobarBannerOverlayRequestFactory() = default;
-  ~FakeInfobarBannerOverlayRequestFactory() override = default;
-
-  // InfobarBannerOverlayRequestFactory:
-  std::unique_ptr<OverlayRequest> CreateBannerRequest(
-      InfoBar* infobar) override {
-    return OverlayRequest::CreateWithConfig<FakeOverlayUserData>(
-        kOverlayRequestConfigValue);
-  }
-};
-
-}  // namespace
-
 // Test fixture for InfobarOverlayTabHelper.
 class InfobarOverlayTabHelperTest : public PlatformTest {
  public:
@@ -58,8 +36,7 @@ class InfobarOverlayTabHelperTest : public PlatformTest {
         std::make_unique<web::TestNavigationManager>());
     InfoBarManagerImpl::CreateForWebState(&web_state_);
     InfobarOverlayTabHelper::CreateForWebState(
-        &web_state_,
-        std::make_unique<FakeInfobarBannerOverlayRequestFactory>());
+        &web_state_, std::make_unique<FakeInfobarOverlayRequestFactory>());
   }
 
   // Returns the front request of |web_state_|'s OverlayRequestQueue.
@@ -79,8 +56,6 @@ class InfobarOverlayTabHelperTest : public PlatformTest {
 // Tests that adding an InfoBar to the manager creates a fake banner request.
 TEST_F(InfobarOverlayTabHelperTest, AddInfoBar) {
   ASSERT_FALSE(front_request());
-  std::unique_ptr<InfoBar> infobar =
-      std::make_unique<InfoBar>(std::make_unique<FakeInfobarDelegate>());
-  manager()->AddInfoBar(std::move(infobar));
+  manager()->AddInfoBar(std::make_unique<FakeInfobarIOS>());
   ASSERT_TRUE(front_request());
 }

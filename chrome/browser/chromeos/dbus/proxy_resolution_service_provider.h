@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/exported_object.h"
+#include "net/base/network_isolation_key.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -111,6 +112,15 @@ class ProxyResolutionServiceProvider
   scoped_refptr<base::SingleThreadTaskRunner> origin_thread_;
   network::mojom::NetworkContext* network_context_for_test_ = nullptr;
   bool use_network_context_for_test_ = false;
+
+  // A transient NetworkIsolationKey used for all requests. This prevents what
+  // hostnames have been resolved using any PAC scripts to websites, while
+  // allowing cached host resolutions between DBus calls. Since only Chrome OS
+  // system daemons have access to DBus, don't have to worry about information
+  // leaks between them. In the case no PAC script is in use, the
+  // NetworkIsolationKey has no effect.
+  const net::NetworkIsolationKey network_isolation_key_;
+
   base::WeakPtrFactory<ProxyResolutionServiceProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolutionServiceProvider);

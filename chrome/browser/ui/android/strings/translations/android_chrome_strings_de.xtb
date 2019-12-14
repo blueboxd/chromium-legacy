@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Datei noch einmal herunterladen?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# Audiodatei}other{# Audiodateien}}</translation>
 <translation id="2653659639078652383">Senden</translation>
-<translation id="2669093958999339774">Störende Aufforderungen zum Anzeigen von Benachrichtigungen blockieren und stattdessen ein Symbol in der Adressleiste einblenden</translation>
 <translation id="2677748264148917807">Verlassen</translation>
 <translation id="2704606927547763573">Kopiert</translation>
 <translation id="2707726405694321444">Seite aktualisieren</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Als Lesezeichen in <ph name="PRODUCT_NAME" /> gespeichert</translation>
 <translation id="3744111561329211289">Hintergrundsynchronisierung</translation>
 <translation id="3749259744154402564">Nicht unterstützt</translation>
-<translation id="3767376082821709728">Neue Websites, die Sie besuchen, können Ihnen keine Benachrichtigungen senden</translation>
 <translation id="3771001275138982843">Update konnte nicht heruntergeladen werden</translation>
 <translation id="3771033907050503522">Inkognito-Tabs</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Aktivieren Sie Bluetooth<ph name="END_LINK" />, um die Kopplung zu ermöglichen</translation>
@@ -957,7 +955,6 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="8035133914807600019">Neuer Ordner…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> Tage übrig</translation>
 <translation id="804335162455518893">SD-Karte nicht gefunden</translation>
-<translation id="8046278916126163020">Auf neuen Websites, die Sie besuchen, können Sie gefragt werden, ob Sie Benachrichtigungen erhalten möchten</translation>
 <translation id="805047784848435650">Basierend auf Ihrem Browserverlauf</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB verfügbar</translation>
 <translation id="8058746566562539958">In neuem Chrome-Tab öffnen</translation>

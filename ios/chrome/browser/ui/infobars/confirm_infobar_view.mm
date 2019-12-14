@@ -352,40 +352,40 @@ UIImage* InfoBarCloseImage() {
 
 @implementation ConfirmInfoBarView {
   // The height of this infobar when fully visible.
-  CGFloat targetHeight_;
+  CGFloat _targetHeight;
   // View containing the icon.
-  UIImageView* imageView_;
+  UIImageView* _imageView;
   // Close button.
-  UIButton* closeButton_;
+  UIButton* _closeButton;
   // View containing the label and maybe switch.
-  InfobarFooterView* InfobarFooterView_;
+  InfobarFooterView* _InfobarFooterView;
   // We are using a LabelLinkController with an UILabel to be able to have
   // parts of the label underlined and clickable. This label_ may be nil if
   // the delegate returns an empty string for GetMessageText().
-  LabelLinkController* labelLinkController_;
-  UILabel* label_;
+  LabelLinkController* _labelLinkController;
+  UILabel* _label;
   // Array of range information. The first element of the pair is the tag of
   // the action and the second element is the range defining the link.
-  std::vector<std::pair<NSUInteger, NSRange>> linkRanges_;
+  std::vector<std::pair<NSUInteger, NSRange>> _linkRanges;
   // Text for the label with link markers included.
-  NSString* markedLabel_;
+  NSString* _markedLabel;
   // Buttons.
   // button1_ is tagged with ConfirmInfoBarDelegate::BUTTON_OK .
   // button2_ is tagged with ConfirmInfoBarDelegate::BUTTON_CANCEL .
-  UIButton* button1_;
-  UIButton* button2_;
+  UIButton* _button1;
+  UIButton* _button2;
   // Drop shadow.
-  UIImageView* shadow_;
+  UIImageView* _shadow;
   // Layout metrics for calculating item placement.
-  const LayoutMetrics* metrics_;
+  const LayoutMetrics* _metrics;
 }
 
-@synthesize visibleHeight = visibleHeight_;
+@synthesize visibleHeight = _visibleHeight;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    metrics_ = &kLayoutMetrics;
+    _metrics = &kLayoutMetrics;
     [self setAccessibilityViewIsModal:YES];
 
     // Add a separator above the view separating it from the web content.
@@ -397,17 +397,17 @@ UIImage* InfoBarCloseImage() {
 }
 
 - (NSString*)markedLabel {
-  return markedLabel_;
+  return _markedLabel;
 }
 
 // Returns the width reserved for the icon.
 - (CGFloat)leftMarginOnFirstLine {
   CGFloat leftMargin = 0;
-  if (imageView_) {
+  if (_imageView) {
     leftMargin += CGRectGetMaxX([self frameOfIcon]);
-    leftMargin += metrics_->horizontal_space_between_icon_and_text;
+    leftMargin += _metrics->horizontal_space_between_icon_and_text;
   } else {
-    leftMargin += metrics_->left_margin_on_first_line_when_icon_absent;
+    leftMargin += _metrics->left_margin_on_first_line_when_icon_absent;
     leftMargin += self.safeAreaInsets.left;
   }
   return leftMargin;
@@ -415,8 +415,8 @@ UIImage* InfoBarCloseImage() {
 
 // Returns the width reserved for the close button.
 - (CGFloat)rightMarginOnFirstLine {
-  return [closeButton_ imageView].image.size.width +
-         metrics_->close_button_inner_padding * 2 + self.safeAreaInsets.right;
+  return [_closeButton imageView].image.size.width +
+         _metrics->close_button_inner_padding * 2 + self.safeAreaInsets.right;
 }
 
 // Returns the horizontal space available between the icon and the close
@@ -428,15 +428,15 @@ UIImage* InfoBarCloseImage() {
 
 // Returns the height taken by a label constrained by a width of |width|.
 - (CGFloat)heightRequiredForLabelWithWidth:(CGFloat)width {
-  return [label_ sizeThatFits:CGSizeMake(width, CGFLOAT_MAX)].height;
+  return [_label sizeThatFits:CGSizeMake(width, CGFLOAT_MAX)].height;
 }
 
 // Returns the width required by a label if it was displayed on a single line.
 - (CGFloat)widthOfLabelOnASingleLine {
   // |label_| can be nil when delegate returns "" for GetMessageText().
-  if (!label_)
+  if (!_label)
     return 0.0;
-  CGSize rect = [[label_ text] cr_pixelAlignedSizeWithFont:[label_ font]];
+  CGSize rect = [[_label text] cr_pixelAlignedSizeWithFont:[_label font]];
   return rect.width;
 }
 
@@ -448,42 +448,42 @@ UIImage* InfoBarCloseImage() {
   // multiple of 8 to fit Material grid spacing requirements.
   CGFloat labelWidth =
       [button sizeThatFits:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)].width;
-  return ceil(labelWidth / metrics_->button_width_units) *
-         metrics_->button_width_units;
+  return ceil(labelWidth / _metrics->button_width_units) *
+         _metrics->button_width_units;
 }
 
 // Returns the width of the buttons if they are laid out on the first line.
 - (CGFloat)widthOfButtonsOnFirstLine {
-  CGFloat width = [self narrowestWidthOfButton:button1_] +
-                  [self narrowestWidthOfButton:button2_];
-  if (button1_ && button2_) {
-    width += metrics_->space_between_widgets;
+  CGFloat width = [self narrowestWidthOfButton:_button1] +
+                  [self narrowestWidthOfButton:_button2];
+  if (_button1 && _button2) {
+    width += _metrics->space_between_widgets;
   }
   return width;
 }
 
 // Returns the width needed for the switch.
 - (CGFloat)preferredWidthOfSwitch {
-  return [InfobarFooterView_ preferredWidth];
+  return [_InfobarFooterView preferredWidth];
 }
 
 // Returns the space required to separate the left aligned widgets (label) from
 // the right aligned widgets (switch, buttons), assuming they fit on one line.
 - (CGFloat)widthToSeparateRightAndLeftWidgets {
-  BOOL leftWidgetsArePresent = (label_ != nil);
-  BOOL rightWidgetsArePresent = button1_ || button2_ || InfobarFooterView_;
+  BOOL leftWidgetsArePresent = (_label != nil);
+  BOOL rightWidgetsArePresent = _button1 || _button2 || _InfobarFooterView;
   if (!leftWidgetsArePresent || !rightWidgetsArePresent)
     return 0;
-  return metrics_->minimum_space_between_right_and_left_aligned_widgets;
+  return _metrics->minimum_space_between_right_and_left_aligned_widgets;
 }
 
 // Returns the space required to separate the switch and the buttons.
 - (CGFloat)widthToSeparateSwitchAndButtons {
-  BOOL buttonsArePresent = button1_ || button2_;
-  BOOL switchIsPresent = (InfobarFooterView_ != nil);
+  BOOL buttonsArePresent = _button1 || _button2;
+  BOOL switchIsPresent = (_InfobarFooterView != nil);
   if (!buttonsArePresent || !switchIsPresent)
     return 0;
-  return metrics_->space_between_widgets;
+  return _metrics->space_between_widgets;
 }
 
 // Lays out |button| at the height |y| and in the position |position|.
@@ -521,7 +521,7 @@ UIImage* InfoBarCloseImage() {
   CGFloat minWidth =
       std::min([self narrowestWidthOfButton:button], maxX - minX);
   CGFloat left = midpoint - minWidth / 2;
-  CGRect frame = CGRectMake(left, y, minWidth, metrics_->button_height);
+  CGRect frame = CGRectMake(left, y, minWidth, _metrics->button_height);
   frame = AlignRectOriginAndSizeToPixels(frame);
   [button setFrame:frame];
 }
@@ -531,7 +531,7 @@ UIImage* InfoBarCloseImage() {
                                     y:(CGFloat)y {
   CGFloat width = [self narrowestWidthOfButton:button];
   CGFloat leftEdge = rightEdge - width;
-  CGRect frame = CGRectMake(leftEdge, y, width, metrics_->button_height);
+  CGRect frame = CGRectMake(leftEdge, y, width, _metrics->button_height);
   frame = AlignRectOriginAndSizeToPixels(frame);
   [button setFrame:frame];
   return leftEdge;
@@ -539,52 +539,52 @@ UIImage* InfoBarCloseImage() {
 
 - (CGFloat)heightThatFitsButtonsUnderOtherWidgets:(CGFloat)heightOfFirstLine
                                            layout:(BOOL)layout {
-  if (button1_ && button2_) {
+  if (_button1 && _button2) {
     CGFloat halfWidthOfScreen = [self frame].size.width / 2.0;
-    if ([self narrowestWidthOfButton:button1_] <= halfWidthOfScreen &&
-        [self narrowestWidthOfButton:button2_] <= halfWidthOfScreen) {
+    if ([self narrowestWidthOfButton:_button1] <= halfWidthOfScreen &&
+        [self narrowestWidthOfButton:_button2] <= halfWidthOfScreen) {
       // Each button can fit in half the screen's width.
       if (layout) {
         // When there are two buttons on one line, they are positioned aligned
         // right in the available space, spaced apart by
         // metrics_->button_spacing.
         CGFloat leftOfRightmostButton =
-            [self layoutWideButtonAlignRight:button1_
+            [self layoutWideButtonAlignRight:_button1
                                    rightEdge:CGRectGetWidth(self.bounds) -
-                                             metrics_->button_margin -
+                                             _metrics->button_margin -
                                              self.safeAreaInsets.right
                                            y:heightOfFirstLine];
-        [self layoutWideButtonAlignRight:button2_
+        [self layoutWideButtonAlignRight:_button2
                                rightEdge:leftOfRightmostButton -
-                                         metrics_->button_spacing
+                                         _metrics->button_spacing
                                        y:heightOfFirstLine];
       }
-      return metrics_->button_height;
+      return _metrics->button_height;
     } else {
       // At least one of the two buttons is larger than half the screen's width,
       // so |button2_| is placed underneath |button1_|.
       if (layout) {
-        [self layoutWideButton:button1_ y:heightOfFirstLine position:CENTER];
-        [self layoutWideButton:button2_
-                             y:heightOfFirstLine + metrics_->button_height
+        [self layoutWideButton:_button1 y:heightOfFirstLine position:CENTER];
+        [self layoutWideButton:_button2
+                             y:heightOfFirstLine + _metrics->button_height
                       position:CENTER];
       }
-      return 2 * metrics_->button_height;
+      return 2 * _metrics->button_height;
     }
   }
   // There is at most 1 button to layout.
-  UIButton* button = button1_ ? button1_ : button2_;
+  UIButton* button = _button1 ? _button1 : _button2;
   if (button) {
     if (layout) {
       // Where is there is just one button it is positioned aligned right in the
       // available space.
       [self layoutWideButtonAlignRight:button
                              rightEdge:CGRectGetWidth(self.bounds) -
-                                       metrics_->button_margin -
+                                       _metrics->button_margin -
                                        self.safeAreaInsets.right
                                      y:heightOfFirstLine];
     }
-    return metrics_->button_height;
+    return _metrics->button_height;
   }
   return 0;
 }
@@ -605,52 +605,52 @@ UIImage* InfoBarCloseImage() {
   // Tests if the label, switch, and buttons can fit on a single line.
   if (widthOfLabel + widthOfButtonAndSwitch < spaceAvailableOnFirstLine) {
     // The label, switch, and buttons can fit on a single line.
-    requiredHeight = metrics_->minimum_infobar_height;
+    requiredHeight = _metrics->minimum_infobar_height;
     if (layout) {
       // Lays out the close button.
       CGRect buttonFrame = [self frameOfCloseButton:YES];
-      [closeButton_ setFrame:buttonFrame];
+      [_closeButton setFrame:buttonFrame];
       // Lays out the label.
       CGFloat labelHeight = [self heightRequiredForLabelWithWidth:widthOfLabel];
       CGRect frame =
           CGRectMake([self leftMarginOnFirstLine],
-                     (metrics_->minimum_infobar_height - labelHeight) / 2,
+                     (_metrics->minimum_infobar_height - labelHeight) / 2,
                      [self widthOfLabelOnASingleLine], labelHeight);
       frame = AlignRectOriginAndSizeToPixels(frame);
-      [label_ setFrame:frame];
+      [_label setFrame:frame];
       // Layouts the buttons.
       CGFloat buttonMargin =
-          rightMarginOnFirstLine + metrics_->extra_button_margin_on_single_line;
-      if (button1_) {
-        CGFloat width = [self narrowestWidthOfButton:button1_];
+          rightMarginOnFirstLine + _metrics->extra_button_margin_on_single_line;
+      if (_button1) {
+        CGFloat width = [self narrowestWidthOfButton:_button1];
         CGFloat offset = width;
         frame = CGRectMake(
             widthOfScreen - buttonMargin - offset,
-            (metrics_->minimum_infobar_height - metrics_->button_height) / 2,
-            width, metrics_->button_height);
+            (_metrics->minimum_infobar_height - _metrics->button_height) / 2,
+            width, _metrics->button_height);
         frame = AlignRectOriginAndSizeToPixels(frame);
-        [button1_ setFrame:frame];
+        [_button1 setFrame:frame];
       }
-      if (button2_) {
-        CGFloat width = [self narrowestWidthOfButton:button2_];
+      if (_button2) {
+        CGFloat width = [self narrowestWidthOfButton:_button2];
         CGFloat offset = widthOfButtons;
         frame = CGRectMake(
             widthOfScreen - buttonMargin - offset,
-            (metrics_->minimum_infobar_height - metrics_->button_height) / 2,
-            width, frame.size.height = metrics_->button_height);
+            (_metrics->minimum_infobar_height - _metrics->button_height) / 2,
+            width, frame.size.height = _metrics->button_height);
         frame = AlignRectOriginAndSizeToPixels(frame);
-        [button2_ setFrame:frame];
+        [_button2 setFrame:frame];
       }
       // Lays out the switch view to the left of the buttons.
-      if (InfobarFooterView_) {
+      if (_InfobarFooterView) {
         frame = CGRectMake(
             widthOfScreen - buttonMargin - widthOfButtonAndSwitch,
-            (metrics_->minimum_infobar_height -
-             [InfobarFooterView_ frame].size.height) /
+            (_metrics->minimum_infobar_height -
+             [_InfobarFooterView frame].size.height) /
                 2.0,
-            preferredWidthOfSwitch, [InfobarFooterView_ frame].size.height);
+            preferredWidthOfSwitch, [_InfobarFooterView frame].size.height);
         frame = AlignRectOriginAndSizeToPixels(frame);
-        [InfobarFooterView_ setFrame:frame];
+        [_InfobarFooterView setFrame:frame];
       }
     }
   } else {
@@ -662,11 +662,11 @@ UIImage* InfoBarCloseImage() {
     if (layout) {
       // Lays out the close button.
       CGRect buttonFrame = [self frameOfCloseButton:NO];
-      [closeButton_ setFrame:buttonFrame];
+      [_closeButton setFrame:buttonFrame];
     }
     if (widthOfLabel + preferredWidthOfSwitch < spaceAvailableOnFirstLine) {
       // The label and switch can fit on the first line.
-      heightOfLabelAndSwitch = metrics_->minimum_infobar_height;
+      heightOfLabelAndSwitch = _metrics->minimum_infobar_height;
       if (layout) {
         CGFloat labelHeight =
             [self heightRequiredForLabelWithWidth:widthOfLabel];
@@ -675,57 +675,57 @@ UIImage* InfoBarCloseImage() {
                        (heightOfLabelAndSwitch - labelHeight) / 2,
                        [self widthOfLabelOnASingleLine], labelHeight);
         labelFrame = AlignRectOriginAndSizeToPixels(labelFrame);
-        [label_ setFrame:labelFrame];
-        if (InfobarFooterView_) {
+        [_label setFrame:labelFrame];
+        if (_InfobarFooterView) {
           CGRect switchRect = CGRectMake(
               widthOfScreen - rightMarginOnFirstLine - preferredWidthOfSwitch,
               (heightOfLabelAndSwitch -
-               [InfobarFooterView_ frame].size.height) /
+               [_InfobarFooterView frame].size.height) /
                   2,
-              preferredWidthOfSwitch, [InfobarFooterView_ frame].size.height);
+              preferredWidthOfSwitch, [_InfobarFooterView frame].size.height);
           switchRect = AlignRectOriginAndSizeToPixels(switchRect);
-          [InfobarFooterView_ setFrame:switchRect];
+          [_InfobarFooterView setFrame:switchRect];
         }
       }
     } else {
       // The label and switch can't fit on the first line, so lay them out on
       // different lines.
       // Computes the height of the label, and optionally lays it out.
-      CGFloat labelMarginBottom = metrics_->label_margin_bottom;
-      if (button1_ || button2_) {
+      CGFloat labelMarginBottom = _metrics->label_margin_bottom;
+      if (_button1 || _button2) {
         // Material features more padding between the label and the button than
         // the label and the bottom of the dialog when there is no button.
-        labelMarginBottom += metrics_->extra_margin_between_label_and_button;
+        labelMarginBottom += _metrics->extra_margin_between_label_and_button;
       }
       CGFloat heightOfLabelWithPadding =
           [self heightRequiredForLabelWithWidth:spaceAvailableOnFirstLine] +
-          metrics_->label_margin_top + labelMarginBottom;
+          _metrics->label_margin_top + labelMarginBottom;
       if (layout) {
         CGRect labelFrame =
-            CGRectMake([self leftMarginOnFirstLine], metrics_->label_margin_top,
+            CGRectMake([self leftMarginOnFirstLine], _metrics->label_margin_top,
                        spaceAvailableOnFirstLine,
-                       heightOfLabelWithPadding - metrics_->label_margin_top -
+                       heightOfLabelWithPadding - _metrics->label_margin_top -
                            labelMarginBottom);
         labelFrame = AlignRectOriginAndSizeToPixels(labelFrame);
-        [label_ setFrame:labelFrame];
+        [_label setFrame:labelFrame];
       }
       // Computes the height of the switch view (if any), and optionally lays it
       // out.
       CGFloat heightOfSwitchWithPadding = 0;
-      if (InfobarFooterView_ != nil) {
+      if (_InfobarFooterView != nil) {
         // The switch view is aligned with the first line's label, hence the
         // call to |leftMarginOnFirstLine|.
         CGFloat widthAvailableForSwitchView = [self frame].size.width -
                                               [self leftMarginOnFirstLine] -
-                                              metrics_->right_margin;
-        CGFloat heightOfSwitch = [InfobarFooterView_
+                                              _metrics->right_margin;
+        CGFloat heightOfSwitch = [_InfobarFooterView
             heightRequiredForFooterWithWidth:widthAvailableForSwitchView
                                       layout:layout];
         // If there are buttons underneath the switch, add padding.
-        if (button1_ || button2_) {
+        if (_button1 || _button2) {
           heightOfSwitchWithPadding =
-              heightOfSwitch + metrics_->space_between_widgets +
-              metrics_->extra_margin_between_label_and_button;
+              heightOfSwitch + _metrics->space_between_widgets +
+              _metrics->extra_margin_between_label_and_button;
         } else {
           heightOfSwitchWithPadding = heightOfSwitch;
         }
@@ -734,12 +734,12 @@ UIImage* InfoBarCloseImage() {
               CGRectMake([self leftMarginOnFirstLine], heightOfLabelWithPadding,
                          widthAvailableForSwitchView, heightOfSwitch);
           switchRect = AlignRectOriginAndSizeToPixels(switchRect);
-          [InfobarFooterView_ setFrame:switchRect];
+          [_InfobarFooterView setFrame:switchRect];
         }
       }
       heightOfLabelAndSwitch =
           std::max(heightOfLabelWithPadding + heightOfSwitchWithPadding,
-                   metrics_->minimum_infobar_height);
+                   _metrics->minimum_infobar_height);
     }
     // Lays out the button(s) under the label and switch.
     CGFloat heightOfButtons =
@@ -747,7 +747,7 @@ UIImage* InfoBarCloseImage() {
                                               layout:layout];
     requiredHeight = heightOfLabelAndSwitch;
     if (heightOfButtons > 0)
-      requiredHeight += heightOfButtons + metrics_->button_margin;
+      requiredHeight += heightOfButtons + _metrics->button_margin;
   }
   // Take into account the bottom safe area.
   // The top safe area is ignored because at rest (i.e. not during animations)
@@ -794,7 +794,7 @@ UIImage* InfoBarCloseImage() {
   }
 
   // Lays out the position of the icon.
-  [imageView_ setFrame:[self frameOfIcon]];
+  [_imageView setFrame:[self frameOfIcon]];
   self.visibleHeight = [self computeRequiredHeightAndLayoutSubviews:YES];
   [self resetBackground];
 
@@ -807,27 +807,27 @@ UIImage* InfoBarCloseImage() {
 - (void)resetBackground {
   self.backgroundColor = [UIColor colorNamed:kBackgroundColor];
   CGFloat shadowY = 0;
-  shadowY = -[shadow_ image].size.height;  // Shadow above the infobar.
-  [shadow_ setFrame:CGRectMake(0, shadowY, self.bounds.size.width,
-                               [shadow_ image].size.height)];
-  [shadow_ setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
+  shadowY = -[_shadow image].size.height;  // Shadow above the infobar.
+  [_shadow setFrame:CGRectMake(0, shadowY, self.bounds.size.width,
+                               [_shadow image].size.height)];
+  [_shadow setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
 }
 
 - (void)addCloseButtonWithTag:(NSInteger)tag
                        target:(id)target
                        action:(SEL)action {
-  DCHECK(!closeButton_);
+  DCHECK(!_closeButton);
   UIImage* image = InfoBarCloseImage();
-  closeButton_ = [UIButton buttonWithType:UIButtonTypeSystem];
-  [closeButton_ setExclusiveTouch:YES];
-  [closeButton_ setImage:image forState:UIControlStateNormal];
-  [closeButton_ addTarget:target
+  _closeButton = [UIButton buttonWithType:UIButtonTypeSystem];
+  [_closeButton setExclusiveTouch:YES];
+  [_closeButton setImage:image forState:UIControlStateNormal];
+  [_closeButton addTarget:target
                    action:action
          forControlEvents:UIControlEventTouchUpInside];
-  [closeButton_ setTag:tag];
-  [closeButton_ setAccessibilityLabel:l10n_util::GetNSString(IDS_CLOSE)];
-  closeButton_.tintColor = [UIColor colorNamed:kToolbarButtonColor];
-  [self addSubview:closeButton_];
+  [_closeButton setTag:tag];
+  [_closeButton setAccessibilityLabel:l10n_util::GetNSString(IDS_CLOSE)];
+  _closeButton.tintColor = [UIColor colorNamed:kToolbarButtonColor];
+  [self addSubview:_closeButton];
 }
 
 - (void)addSwitchWithLabel:(NSString*)label
@@ -837,27 +837,27 @@ UIImage* InfoBarCloseImage() {
                     action:(SEL)action {
   SwitchView* switchView = [[SwitchView alloc] initWithText:label isOn:isOn];
   [switchView setTag:tag target:target action:action];
-  InfobarFooterView_ = switchView;
-  [self addSubview:InfobarFooterView_];
+  _InfobarFooterView = switchView;
+  [self addSubview:_InfobarFooterView];
 }
 
 - (void)addFooterLabel:(NSString*)label {
-  InfobarFooterView_ = [[InfobarFooterView alloc] initWithText:label];
-  [self addSubview:InfobarFooterView_];
+  _InfobarFooterView = [[InfobarFooterView alloc] initWithText:label];
+  [self addSubview:_InfobarFooterView];
 }
 
 - (void)addLeftIcon:(UIImage*)image {
-  if (imageView_) {
-    [imageView_ removeFromSuperview];
+  if (_imageView) {
+    [_imageView removeFromSuperview];
   }
   UIImage* templateImage =
       [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  imageView_ = [[UIImageView alloc] initWithImage:templateImage];
-  [self addSubview:imageView_];
+  _imageView = [[UIImageView alloc] initWithImage:templateImage];
+  [self addSubview:_imageView];
 }
 
 - (NSString*)stripMarkersFromString:(NSString*)string {
-  linkRanges_.clear();
+  _linkRanges.clear();
   for (;;) {
     // Find the opening marker, followed by the tag between parentheses.
     NSRange startingRange =
@@ -889,7 +889,7 @@ UIImage* InfoBarCloseImage() {
     NSRange rangeOfLinkInStrippedString =
         NSMakeRange(startingRange.location,
                     endingRange.location - NSMaxRange(startingRange));
-    linkRanges_.push_back(std::make_pair(tag, rangeOfLinkInStrippedString));
+    _linkRanges.push_back(std::make_pair(tag, rangeOfLinkInStrippedString));
     // Creates a new string without the markers.
     NSString* beforeLink = [string substringToIndex:startingRange.location];
     NSRange rangeOfLink =
@@ -906,37 +906,37 @@ UIImage* InfoBarCloseImage() {
 }
 
 - (void)addLabel:(NSString*)text action:(void (^)(NSUInteger))action {
-  markedLabel_ = [text copy];
+  _markedLabel = [text copy];
   if (action)
     text = [self stripMarkersFromString:text];
-  if ([label_ superview]) {
-    [label_ removeFromSuperview];
+  if ([_label superview]) {
+    [_label removeFromSuperview];
   }
 
-  label_ = [[UILabel alloc] initWithFrame:CGRectZero];
-  label_.textColor = [UIColor colorNamed:kTextPrimaryColor];
+  _label = [[UILabel alloc] initWithFrame:CGRectZero];
+  _label.textColor = [UIColor colorNamed:kTextPrimaryColor];
 
   NSMutableParagraphStyle* paragraphStyle =
       [[NSMutableParagraphStyle alloc] init];
   paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
-  paragraphStyle.lineSpacing = metrics_->label_line_spacing;
+  paragraphStyle.lineSpacing = _metrics->label_line_spacing;
   NSDictionary* attributes = @{
     NSParagraphStyleAttributeName : paragraphStyle,
     NSFontAttributeName : InfoBarLabelFont(),
   };
-  [label_ setNumberOfLines:0];
+  [_label setNumberOfLines:0];
 
-  [label_
+  [_label
       setAttributedText:[[NSAttributedString alloc] initWithString:text
                                                         attributes:attributes]];
 
-  [self addSubview:label_];
+  [self addSubview:_label];
 
-  if (linkRanges_.empty())
+  if (_linkRanges.empty())
     return;
 
-  labelLinkController_ = [[LabelLinkController alloc]
-      initWithLabel:label_
+  _labelLinkController = [[LabelLinkController alloc]
+      initWithLabel:_label
              action:^(const GURL& gurl) {
                if (action) {
                  NSUInteger actionTag = [base::SysUTF8ToNSString(
@@ -945,16 +945,16 @@ UIImage* InfoBarCloseImage() {
                }
              }];
 
-  [labelLinkController_ setLinkUnderlineStyle:NSUnderlineStyleSingle];
-  [labelLinkController_ setLinkColor:[UIColor colorNamed:kTextPrimaryColor]];
+  [_labelLinkController setLinkUnderlineStyle:NSUnderlineStyleSingle];
+  [_labelLinkController setLinkColor:[UIColor colorNamed:kTextPrimaryColor]];
 
   std::vector<std::pair<NSUInteger, NSRange>>::const_iterator it;
-  for (it = linkRanges_.begin(); it != linkRanges_.end(); ++it) {
+  for (it = _linkRanges.begin(); it != _linkRanges.end(); ++it) {
     // The last part of the URL contains the tag, so it can be retrieved in the
     // callback. This tag is generally a command ID.
     std::string url = std::string(kChromeInfobarURL) +
                       std::string(std::to_string((int)it->first));
-    [labelLinkController_ addLinkWithRange:it->second url:GURL(url)];
+    [_labelLinkController addLinkWithRange:it->second url:GURL(url)];
   }
 }
 
@@ -964,25 +964,25 @@ UIImage* InfoBarCloseImage() {
               tag2:(NSInteger)tag2
             target:(id)target
             action:(SEL)action {
-  button1_ = [self infoBarButton:title1
+  _button1 = [self infoBarButton:title1
                  backgroundColor:[UIColor colorNamed:kBlueColor]
                 customTitleColor:[UIColor colorNamed:kSolidButtonTextColor]
                              tag:tag1
                           target:target
                           action:action];
-  [button1_
+  [_button1
       setAccessibilityIdentifier:kConfirmInfobarButton1AccessibilityIdentifier];
-  [self addSubview:button1_];
+  [self addSubview:_button1];
 
-  button2_ = [self infoBarButton:title2
+  _button2 = [self infoBarButton:title2
                  backgroundColor:nil
                 customTitleColor:[UIColor colorNamed:kBlueColor]
                              tag:tag2
                           target:target
                           action:action];
-  [button2_
+  [_button2
       setAccessibilityIdentifier:kConfirmInfobarButton2AccessibilityIdentifier];
-  [self addSubview:button2_];
+  [self addSubview:_button2];
 }
 
 - (void)addButton:(NSString*)title
@@ -991,13 +991,13 @@ UIImage* InfoBarCloseImage() {
            action:(SEL)action {
   if (![title length])
     return;
-  button1_ = [self infoBarButton:title
+  _button1 = [self infoBarButton:title
                  backgroundColor:[UIColor colorNamed:kBlueColor]
                 customTitleColor:[UIColor colorNamed:kSolidButtonTextColor]
                              tag:tag
                           target:target
                           action:action];
-  [self addSubview:button1_];
+  [self addSubview:_button1];
 }
 
 // Initializes and returns a button for the infobar, with the specified
@@ -1036,11 +1036,11 @@ UIImage* InfoBarCloseImage() {
 }
 
 - (CGRect)frameOfCloseButton:(BOOL)singleLineMode {
-  DCHECK(closeButton_);
+  DCHECK(_closeButton);
   // Add padding to increase the touchable area.
-  CGSize closeButtonSize = [closeButton_ imageView].image.size;
-  closeButtonSize.width += metrics_->close_button_inner_padding * 2;
-  closeButtonSize.height += metrics_->close_button_inner_padding * 2;
+  CGSize closeButtonSize = [_closeButton imageView].image.size;
+  closeButtonSize.width += _metrics->close_button_inner_padding * 2;
+  closeButtonSize.height += _metrics->close_button_inner_padding * 2;
   CGFloat x = CGRectGetMaxX(self.frame) - closeButtonSize.width -
               self.safeAreaInsets.right;
   // Aligns the close button at the top (height includes touch padding).
@@ -1048,15 +1048,15 @@ UIImage* InfoBarCloseImage() {
   if (singleLineMode) {
     // On single-line mode the button is centered vertically.
     y = ui::AlignValueToUpperPixel(
-        (metrics_->minimum_infobar_height - closeButtonSize.height) * 0.5);
+        (_metrics->minimum_infobar_height - closeButtonSize.height) * 0.5);
   }
   return CGRectMake(x, y, closeButtonSize.width, closeButtonSize.height);
 }
 
 - (CGRect)frameOfIcon {
-  CGSize iconSize = [imageView_ image].size;
-  CGFloat y = metrics_->buttons_margin_top;
-  CGFloat x = metrics_->close_button_margin_left + self.safeAreaInsets.left;
+  CGSize iconSize = [_imageView image].size;
+  CGFloat y = _metrics->buttons_margin_top;
+  CGFloat x = _metrics->close_button_margin_left + self.safeAreaInsets.left;
   return CGRectMake(AlignValueToPixel(x), AlignValueToPixel(y), iconSize.width,
                     iconSize.height);
 }
@@ -1080,19 +1080,19 @@ UIImage* InfoBarCloseImage() {
 #pragma mark - Testing
 
 - (CGFloat)minimumInfobarHeight {
-  return metrics_->minimum_infobar_height;
+  return _metrics->minimum_infobar_height;
 }
 
 - (CGFloat)buttonsHeight {
-  return metrics_->button_height;
+  return _metrics->button_height;
 }
 
 - (CGFloat)buttonMargin {
-  return metrics_->button_margin;
+  return _metrics->button_margin;
 }
 
 - (const std::vector<std::pair<NSUInteger, NSRange>>&)linkRanges {
-  return linkRanges_;
+  return _linkRanges;
 }
 
 @end

@@ -85,8 +85,6 @@ class VIZ_SERVICE_EXPORT OverlayProcessorUsingStrategy
   // Override OverlayProcessor.
   void SetDisplayTransformHint(gfx::OverlayTransform transform) override;
   void SetValidatorViewportSize(const gfx::Size& size) override;
-  // Only used by Ozone.
-  void SetSoftwareMirrorMode(bool software_mirror_mode) override {}
 
   // Attempt to replace quads from the specified root render pass with overlays.
   // This must be called every frame.

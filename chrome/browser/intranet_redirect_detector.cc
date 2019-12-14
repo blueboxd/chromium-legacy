@@ -35,6 +35,7 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
+// TODO(crbug.com/181671): Write test to verify we handle the policy toggling.
 IntranetRedirectDetector::IntranetRedirectDetector()
     : redirect_origin_(g_browser_process->local_state()->GetString(
           prefs::kLastKnownIntranetRedirectOrigin)) {
@@ -75,8 +76,16 @@ void IntranetRedirectDetector::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 void IntranetRedirectDetector::Restart() {
+  if (!IsEnabledByPolicy()) {
+    if (redirect_origin_.is_valid()) {
+      g_browser_process->local_state()->SetString(
+          prefs::kLastKnownIntranetRedirectOrigin, std::string());
+    }
+    redirect_origin_ = GURL();
+    return;
+  }
   // If a request is already scheduled, do not scheduled yet another one.
-  if (!IsEnabledByPolicy() || in_sleep_)
+  if (in_sleep_)
     return;
 
   // Since presumably many programs open connections after network changes,
@@ -93,8 +102,14 @@ void IntranetRedirectDetector::Restart() {
 
 void IntranetRedirectDetector::FinishSleep() {
   in_sleep_ = false;
-  if (!IsEnabledByPolicy())
+  if (!IsEnabledByPolicy()) {
+    if (redirect_origin_.is_valid()) {
+      g_browser_process->local_state()->SetString(
+          prefs::kLastKnownIntranetRedirectOrigin, std::string());
+    }
+    redirect_origin_ = GURL();
     return;
+  }
 
   // If another fetch operation is still running, cancel it.
   simple_loaders_.clear();

@@ -185,6 +185,43 @@ base::Optional<DocumentPolicy::FeatureState> DocumentPolicy::Parse(
   return policy;
 }
 
+// static
+DocumentPolicy::FeatureState DocumentPolicy::MergeFeatureState(
+    const DocumentPolicy::FeatureState& policy1,
+    const DocumentPolicy::FeatureState& policy2) {
+  DocumentPolicy::FeatureState result;
+  auto i1 = policy1.begin();
+  auto i2 = policy2.begin();
+
+  // Because std::map is by default ordered in ascending order based on key
+  // value, we can run 2 iterators simultaneously through both maps to merge
+  // them.
+  while (i1 != policy1.end() || i2 != policy2.end()) {
+    if (i1 == policy1.end()) {
+      result.insert(*i2);
+      i2++;
+    } else if (i2 == policy2.end()) {
+      result.insert(*i1);
+      i1++;
+    } else {
+      if (i1->first == i2->first) {
+        // Take the stricter policy when there is a key conflict.
+        result.emplace(i1->first, std::min(i1->second, i2->second));
+        i1++;
+        i2++;
+      } else if (i1->first < i2->first) {
+        result.insert(*i1);
+        i1++;
+      } else {
+        result.insert(*i2);
+        i2++;
+      }
+    }
+  }
+
+  return result;
+}
+
 bool DocumentPolicy::IsFeatureEnabled(
     mojom::FeaturePolicyFeature feature) const {
   mojom::PolicyValueType feature_type = GetFeatureDefaults().at(feature).Type();

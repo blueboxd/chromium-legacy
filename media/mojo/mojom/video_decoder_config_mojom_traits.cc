@@ -61,6 +61,8 @@ bool StructTraits<media::mojom::VideoDecoderConfigDataView,
   if (hdr_metadata)
     output->set_hdr_metadata(hdr_metadata.value());
 
+  output->set_level(input.level());
+
   if (!output->IsValidConfig())
     return false;
 

@@ -16,6 +16,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -318,14 +319,14 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  void EnableFeature(const base::Feature& feature) {
+  void EnableFeatures(const std::vector<base::Feature>& features) {
     scoped_feature_list_.Reset();
-    scoped_feature_list_.InitAndEnableFeature(feature);
+    scoped_feature_list_.InitWithFeatures(features, {});
   }
 
-  void DisableFeature(const base::Feature& feature) {
+  void DisableFeatures(const std::vector<base::Feature>& features) {
     scoped_feature_list_.Reset();
-    scoped_feature_list_.InitAndDisableFeature(feature);
+    scoped_feature_list_.InitWithFeatures({}, features);
   }
 
   void SetWhitelistedDownloadSampleRate(double target_rate) {
@@ -673,10 +674,11 @@ class DeepScanningDownloadTest : public DownloadProtectionServiceTest,
     // Enable the feature early to prevent race condition trying to access
     // the enabled features set.  This happens for example when the history
     // service is started below.
-    if (GetParam())
-      EnableFeature(kDeepScanningOfDownloads);
-    else
-      DisableFeature(kDeepScanningOfDownloads);
+    if (GetParam()) {
+      EnableFeatures({kMalwareScanEnabled, kContentComplianceEnabled});
+    } else {
+      DisableFeatures({kMalwareScanEnabled, kContentComplianceEnabled});
+    }
   }
 };
 
@@ -2856,7 +2858,8 @@ TEST_F(DownloadProtectionServiceTest, DoesNotSendPingForCancelledDownloads) {
 }
 
 TEST_P(DeepScanningDownloadTest, PasswordProtectedArchivesBlockedByPreference) {
-  if (!base::FeatureList::IsEnabled(kDeepScanningOfDownloads))
+  if (!base::FeatureList::IsEnabled(kMalwareScanEnabled) &&
+      !base::FeatureList::IsEnabled(kContentComplianceEnabled))
     return;
 
   base::FilePath test_zip;
@@ -2907,7 +2910,8 @@ TEST_P(DeepScanningDownloadTest, PasswordProtectedArchivesBlockedByPreference) {
 }
 
 TEST_P(DeepScanningDownloadTest, LargeFileBlockedByPreference) {
-  if (!base::FeatureList::IsEnabled(kDeepScanningOfDownloads))
+  if (!base::FeatureList::IsEnabled(kMalwareScanEnabled) &&
+      !base::FeatureList::IsEnabled(kContentComplianceEnabled))
     return;
 
   base::FilePath test_zip;
@@ -3335,7 +3339,8 @@ TEST_F(DownloadProtectionServiceTest,
 }
 
 TEST_P(DeepScanningDownloadTest, FailedDeepScanningPreservesWarnings) {
-  if (!base::FeatureList::IsEnabled(kDeepScanningOfDownloads))
+  if (!base::FeatureList::IsEnabled(kMalwareScanEnabled) &&
+      !base::FeatureList::IsEnabled(kContentComplianceEnabled))
     return;
 
   NiceMockDownloadItem item;

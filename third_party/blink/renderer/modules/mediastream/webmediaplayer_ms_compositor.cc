@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
@@ -422,7 +423,11 @@ void WebMediaPlayerMSCompositor::PutCurrentFrame() {
 
 base::TimeDelta WebMediaPlayerMSCompositor::GetPreferredRenderInterval() {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
-  return viz::BeginFrameArgs::MinInterval();
+  if (!rendering_frame_buffer_) {
+    return last_render_length_;
+  } else {
+    return rendering_frame_buffer_->average_frame_duration();
+  }
 }
 
 void WebMediaPlayerMSCompositor::StartRendering() {
@@ -526,6 +531,8 @@ void WebMediaPlayerMSCompositor::RenderWithoutAlgorithmOnCompositor(
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
   {
     base::AutoLock auto_lock(current_frame_lock_);
+    if (current_frame_)
+      last_render_length_ = frame->timestamp() - current_frame_->timestamp();
     SetCurrentFrame(std::move(frame));
   }
   if (video_frame_provider_client_)

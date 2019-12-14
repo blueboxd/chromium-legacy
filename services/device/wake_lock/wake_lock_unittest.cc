@@ -15,7 +15,6 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/device_service_test_base.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
@@ -74,8 +73,8 @@ class WakeLockTest : public DeviceServiceTestBase {
  protected:
   void SetUp() override {
     DeviceServiceTestBase::SetUp();
-    connector()->Connect(mojom::kServiceName,
-                         wake_lock_provider_.BindNewPipeAndPassReceiver());
+    device_service()->BindWakeLockProvider(
+        wake_lock_provider_.BindNewPipeAndPassReceiver());
 
     wake_lock_provider_->GetWakeLockWithoutContext(
         mojom::WakeLockType::kPreventAppSuspension,
@@ -288,8 +287,8 @@ TEST_F(WakeLockTest, OnWakeLockProviderConnectionError) {
 
   // Instantiate wake lock provider and check if the wake lock count remains the
   // same as before since the provider implementation is a singleton.
-  connector()->Connect(mojom::kServiceName,
-                       wake_lock_provider_.BindNewPipeAndPassReceiver());
+  device_service()->BindWakeLockProvider(
+      wake_lock_provider_.BindNewPipeAndPassReceiver());
   EXPECT_EQ(count,
             GetActiveWakeLocks(mojom::WakeLockType::kPreventAppSuspension));
 

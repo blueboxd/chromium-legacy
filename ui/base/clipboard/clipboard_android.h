@@ -23,7 +23,7 @@ class ClipboardAndroid : public Clipboard {
  public:
   // Callback called whenever the clipboard is modified.  The parameter
   // represents the time of the modification.
-  using ModifiedCallback = base::Callback<void(base::Time)>;
+  using ModifiedCallback = base::RepeatingCallback<void(base::Time)>;
 
   // Called by Java when the Java Clipboard is notified that the clipboard has
   // changed.

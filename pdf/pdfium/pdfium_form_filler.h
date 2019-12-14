@@ -115,8 +115,8 @@ class PDFiumFormFiller : public FPDF_FORMFILLINFO, public IPDF_JSPLATFORM {
                             FPDF_FILEHANDLER* file_handler,
                             int file_flag,
                             FPDF_WIDESTRING dest);
-  static FPDF_LPFILEHANDLER Form_DownloadFromURL(FPDF_FORMFILLINFO* param,
-                                                 FPDF_WIDESTRING url);
+  static FPDF_FILEHANDLER* Form_DownloadFromURL(FPDF_FORMFILLINFO* param,
+                                                FPDF_WIDESTRING url);
   static FPDF_FILEHANDLER* Form_OpenFile(FPDF_FORMFILLINFO* param,
                                          int file_flag,
                                          FPDF_WIDESTRING url,

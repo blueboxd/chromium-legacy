@@ -9,6 +9,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/system/message_center/ash_message_popup_collection.h"
 #include "ash/system/message_center/unified_message_center_bubble.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_background_view.h"
@@ -69,9 +70,10 @@ void TrayEventFilter::ProcessPressedEvent(const ui::LocatedEvent& event) {
       return;
     // Don't process events that occurred inside a popup notification
     // from message center.
-    if (container_id == kShellWindowId_StatusContainer &&
-        target->type() == aura::client::WINDOW_TYPE_POPUP && target_widget &&
-        target_widget->GetZOrderLevel() != ui::ZOrderLevel::kNormal) {
+    if (container_id == kShellWindowId_ShelfControlContainer &&
+        target->type() == aura::client::WINDOW_TYPE_POPUP &&
+        target_widget->GetName() ==
+            AshMessagePopupCollection::kMessagePopupWidgetName) {
       return;
     }
     // Don't process events that occurred inside a virtual keyboard.

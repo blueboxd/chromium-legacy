@@ -17,8 +17,8 @@ CSS_PROPERTIES_CC_TMPL = 'core/css/properties/templates/css_properties.cc.tmpl'
 class CSSPropertiesWriter(json5_generator.Writer):
     def __init__(self, json5_file_paths, output_dir):
         super(CSSPropertiesWriter, self).__init__([], output_dir)
-        assert len(json5_file_paths) == 3,\
-            ('CSSPropertiesWriter requires 3 input json5 files, ' +
+        assert len(json5_file_paths) == 4,\
+            ('CSSPropertiesWriter requires 4 input json5 files, ' +
              'got {}.'.format(len(json5_file_paths)))
 
         self._css_properties = css_properties.CSSProperties(json5_file_paths)
@@ -26,7 +26,7 @@ class CSSPropertiesWriter(json5_generator.Writer):
         # Map of property method name -> (return_type, parameters)
         self._property_methods = {}
         property_methods = json5_generator.Json5File.load_from_files(
-            [json5_file_paths[2]])
+            [json5_file_paths[3]])
         for property_method in property_methods.name_dictionaries:
             self._property_methods[property_method['name'].original] = property_method
 

@@ -305,7 +305,7 @@ if (enable_java_templates) {
   # about the format of the header file.
   #
   # Variables
-  #   target: The Apk target to use for the java sources list.
+  #   targets: List of .build_config supported targets to provide java sources.
   #   header_output: Path to the generated .h file (optional).
   #   sources_blacklist: List of .java files that should be skipped. (optional)
   #   namespace: Registration functions will be wrapped into this. (optional)
@@ -318,7 +318,7 @@ if (enable_java_templates) {
   #
   # Example
   #   generate_jni_registration("chrome_jni_registration") {
-  #     target = ":chrome_public_apk"
+  #     targets = [ ":chrome_public_apk" ]
   #     header_output = "$target_gen_dir/$target_name.h"
   #     sources_blacklist = [
   #       "//path/to/Exception.java",
@@ -327,33 +327,35 @@ if (enable_java_templates) {
   template("generate_jni_registration") {
     action_with_pydeps(target_name) {
       forward_variables_from(invoker, [ "testonly" ])
-      _build_config = get_label_info("${invoker.target}($default_toolchain)",
-                                     "target_gen_dir") + "/" +
-                      get_label_info("${invoker.target}($default_toolchain)",
-                                     "name") + ".build_config"
-      _rebased_build_config = rebase_path(_build_config, root_build_dir)
-      _srcjar_output = "$target_gen_dir/$target_name.srcjar"
 
       script = "//base/android/jni_generator/jni_registration_generator.py"
-      deps = [
-        "${invoker.target}$build_config_target_suffix($default_toolchain)",
-      ]
-      inputs = [
-        _build_config,
-      ]
+      inputs = []
+      deps = []
+      _srcjar_output = "$target_gen_dir/$target_name.srcjar"
       outputs = [
         _srcjar_output,
       ]
       depfile = "$target_gen_dir/$target_name.d"
 
       args = [
-        # This is a list of .sources files.
-        "--sources-files=@FileArg($_rebased_build_config:deps_info:jni:all_source)",
         "--srcjar-path",
         rebase_path(_srcjar_output, root_build_dir),
         "--depfile",
         rebase_path(depfile, root_build_dir),
       ]
+      foreach(_target, invoker.targets) {
+        deps += [ "${_target}$build_config_target_suffix($default_toolchain)" ]
+        _build_config =
+            get_label_info("${_target}($default_toolchain)", "target_gen_dir") +
+            "/" + get_label_info("${_target}($default_toolchain)", "name") +
+            ".build_config"
+        _rebased_build_config = rebase_path(_build_config, root_build_dir)
+        inputs += [ _build_config ]
+        args += [
+          # This is a list of .sources files.
+          "--sources-files=@FileArg($_rebased_build_config:deps_info:jni:all_source)",
+        ]
+      }
 
       if (use_hashed_jni_names) {
         args += [ "--use_proxy_hash" ]
@@ -1414,7 +1416,7 @@ if (enable_java_templates) {
     generate_jni_registration(_jni_srcjar_target) {
       enable_native_mocks = true
       require_native_mocks = true
-      target = ":$_outer_target_name"
+      targets = [ ":$_outer_target_name" ]
     }
 
     java_library_impl(_java_binary_target_name) {
@@ -2792,9 +2794,14 @@ if (enable_java_templates) {
                                  "require_native_mocks",
                                ])
         if (defined(invoker.bundle_target)) {
-          target = invoker.bundle_target
+          targets = [ invoker.bundle_target ]
         } else {
-          target = ":$_template_name"
+          targets = [ ":$_template_name" ]
+        }
+        if (_is_static_library_provider) {
+          foreach(_target, invoker.static_library_dependent_targets) {
+            targets += [ _target.name ]
+          }
         }
         if (defined(invoker.jni_registration_header)) {
           header_output = invoker.jni_registration_header

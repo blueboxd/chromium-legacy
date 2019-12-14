@@ -395,6 +395,9 @@ void LocalFrameView::Dispose() {
   ukm_aggregator_.reset();
   layout_shift_tracker_->Dispose();
 
+  if (frame_->IsLocalRoot())
+    MemoryPressureListenerRegistry::Instance().UnregisterClient(this);
+
 #if DCHECK_IS_ON()
   has_been_disposed_ = true;
 #endif
@@ -2918,6 +2921,8 @@ void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursive() {
     SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
                              LocalFrameUkmAggregator::kLayout);
     UpdateLayout();
+  } else {
+    UpdateGeometriesIfNeeded();
   }
 
   CheckDoesNotNeedLayout();
@@ -4414,14 +4419,18 @@ enum LocalFrameRootPurgeSignal {
 void LocalFrameView::OnPurgeMemory() {
   DCHECK(frame_->IsLocalRoot());
 
-  auto initial_or_multiple = received_memory_pressure_purge_signal_
-                                 ? LocalFrameRootPurgeSignal::kMultiple
-                                 : LocalFrameRootPurgeSignal::kInitial;
-  UMA_HISTOGRAM_ENUMERATION(
-      "Memory.Experimental.Renderer.LocalFrameRootPurgeSignal",
-      initial_or_multiple, LocalFrameRootPurgeSignal::kSignalCount);
-  if (!received_memory_pressure_purge_signal_)
-    received_memory_pressure_purge_signal_ = true;
+  // Only record compositor memory purge signals for frames with accelerated
+  // compositing.
+  if (frame_->GetSettings()->GetAcceleratedCompositingEnabled()) {
+    auto initial_or_multiple = received_compositor_memory_pressure_purge_signal_
+                                   ? LocalFrameRootPurgeSignal::kMultiple
+                                   : LocalFrameRootPurgeSignal::kInitial;
+    UMA_HISTOGRAM_ENUMERATION(
+        "Memory.Experimental.Renderer.LocalFrameRootPurgeSignal",
+        initial_or_multiple, LocalFrameRootPurgeSignal::kSignalCount);
+    if (!received_compositor_memory_pressure_purge_signal_)
+      received_compositor_memory_pressure_purge_signal_ = true;
+  }
 }
 
 }  // namespace blink

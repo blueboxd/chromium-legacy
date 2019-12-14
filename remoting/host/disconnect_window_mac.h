@@ -14,8 +14,8 @@
 // quickly disconnect a session.
 @interface DisconnectWindowController : NSWindowController {
  @private
-  base::Closure disconnect_callback_;
-  base::string16 username_;
+  base::Closure _disconnect_callback;
+  base::string16 _username;
 }
 
 - (id)initWithCallback:(const base::Closure&)disconnect_callback

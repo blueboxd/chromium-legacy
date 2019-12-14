@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_PDF_RENDERER_PDF_ACCESSIBILITY_TREE_H_
 #define COMPONENTS_PDF_RENDERER_PDF_ACCESSIBILITY_TREE_H_
 
+#include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/optional.h"
@@ -115,10 +117,6 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
       base::span<const ppapi::PdfAccessibilityImageInfo> images,
       ui::AXNodeData* para_node);
 
-  void ComputeParagraphAndHeadingThresholds(
-      const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
-      double* out_heading_font_size_threshold,
-      double* out_paragraph_spacing_threshold);
   std::string GetTextRunCharsAsUTF8(
       const ppapi::PdfAccessibilityTextRunInfo& text_run,
       const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
@@ -130,8 +128,8 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
   gfx::Vector2dF ToVector2dF(const PP_Point& p);
   gfx::RectF ToRectF(const PP_Rect& r);
   ui::AXNodeData* CreateNode(ax::mojom::Role role);
-  ui::AXNodeData* CreateParagraphNode(double font_size,
-                                      double heading_font_size_threshold);
+  ui::AXNodeData* CreateParagraphNode(float font_size,
+                                      float heading_font_size_threshold);
   ui::AXNodeData* CreateStaticTextNode(uint32_t char_index);
   ui::AXNodeData* CreateInlineTextBoxNode(
       const ppapi::PdfAccessibilityTextRunInfo& text_run,
@@ -193,6 +191,6 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
   bool invalid_plugin_message_received_ = false;
 };
 
-}  // namespace pdf;
+}  // namespace pdf
 
 #endif  // COMPONENTS_PDF_RENDERER_PDF_ACCESSIBILITY_TREE_H_

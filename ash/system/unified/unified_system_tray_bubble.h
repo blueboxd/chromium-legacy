@@ -19,10 +19,6 @@
 #include "ui/views/widget/widget_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
-namespace ui {
-class LayerOwner;
-}  // namespace ui
-
 namespace views {
 class Widget;
 }  // namespace views
@@ -140,9 +136,8 @@ class ASH_EXPORT UnifiedSystemTrayBubble
 
   void UpdateBubbleBounds();
 
-  // Create / destroy background blur layer that is used during animation.
-  void CreateBlurLayerForAnimation();
-  void DestroyBlurLayerForAnimation();
+  // Called when the tray animation is finished.
+  void OnAnimationFinished();
 
   // Set visibility of bubble frame border. Used for disabling the border during
   // animation.
@@ -171,9 +166,6 @@ class ASH_EXPORT UnifiedSystemTrayBubble
   // The time the bubble is created. If the bubble is not created by button
   // click (|show_by_click| in ctor is false), it is not set.
   base::Optional<base::TimeTicks> time_shown_by_click_;
-
-  // Background blur layer that is used during animation.
-  std::unique_ptr<ui::LayerOwner> blur_layer_;
 
   TrayBubbleView* bubble_view_ = nullptr;
   UnifiedSystemTrayView* unified_view_ = nullptr;

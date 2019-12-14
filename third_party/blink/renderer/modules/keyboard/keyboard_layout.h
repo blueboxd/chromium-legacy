@@ -15,6 +15,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class ScriptPromiseResolver;
 
 class KeyboardLayout final : public GarbageCollected<KeyboardLayout>,
@@ -25,7 +26,7 @@ class KeyboardLayout final : public GarbageCollected<KeyboardLayout>,
   explicit KeyboardLayout(ExecutionContext*);
   virtual ~KeyboardLayout() = default;
 
-  ScriptPromise GetKeyboardLayoutMap(ScriptState*);
+  ScriptPromise GetKeyboardLayoutMap(ScriptState*, ExceptionState&);
 
   // ContextLifecycleObserver override.
   void Trace(blink::Visitor*) override;

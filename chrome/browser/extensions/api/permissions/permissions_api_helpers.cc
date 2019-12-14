@@ -123,10 +123,10 @@ bool UnpackAPIPermissions(const std::vector<std::string>& permissions_input,
       continue;
     }
 
-    if (!api_permission->info()->supports_optional()) {
-      result->unsupported_optional_apis.insert(api_permission->Clone());
-      continue;
-    }
+    // Permissions that don't support being optional are filtered out during
+    // manifest parsing, so between that and filtering out APIs that aren't in
+    // the optional set, all of these should support being optional.
+    DCHECK(api_permission->info()->supports_optional());
 
     result->optional_apis.insert(api_permission->Clone());
   }

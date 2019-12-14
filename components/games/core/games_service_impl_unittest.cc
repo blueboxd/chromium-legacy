@@ -81,7 +81,7 @@ TEST_F(GamesServiceImplTest, GetHighlightedGame_NotInstalled) {
   games_service_->GetHighlightedGame(base::BindLambdaForTesting(
       [&run_loop](ResponseCode code, const Game game) {
         EXPECT_EQ(ResponseCode::kFileNotFound, code);
-        EXPECT_TRUE(test::AreProtosEqual(game, Game()));
+        test::ExpectProtosEqual(Game(), game);
         run_loop.Quit();
       }));
 
@@ -99,7 +99,7 @@ TEST_F(GamesServiceImplTest, GetHighlightedGame_RetrievesFromCache) {
   games_service_->GetHighlightedGame(base::BindLambdaForTesting(
       [&fake_game, &run_loop](ResponseCode code, const Game game) {
         EXPECT_EQ(ResponseCode::kSuccess, code);
-        EXPECT_TRUE(test::AreProtosEqual(game, fake_game));
+        test::ExpectProtosEqual(fake_game, game);
         run_loop.Quit();
       }));
 
@@ -136,7 +136,7 @@ TEST_F(GamesServiceImplTest, GetHighlightedGame_Success) {
                     const games::GamesCatalog& catalog,
                     base::OnceClosure done_callback) {
         EXPECT_TRUE(games_service_->is_updating());
-        ASSERT_TRUE(test::AreProtosEqual(fake_catalog, catalog));
+        test::ExpectProtosEqual(fake_catalog, catalog);
 
         // Invoke the done callback to signal that the HighlightedStore is done
         // processing.

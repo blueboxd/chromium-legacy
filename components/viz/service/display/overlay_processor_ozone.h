@@ -28,9 +28,6 @@ class VIZ_SERVICE_EXPORT OverlayProcessorOzone
   // Override OverlayProcessorUsingStrategy.
   void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
   void SetValidatorViewportSize(const gfx::Size& size) override {}
-  // Disables overlays when software mirroring display. This only needs to be
-  // implemented for Chrome OS.
-  void SetSoftwareMirrorMode(bool software_mirror_mode) override;
 
   void CheckOverlaySupport(
       const OverlayProcessorInterface::OutputSurfaceOverlayPlane* primary_plane,
@@ -43,7 +40,6 @@ class VIZ_SERVICE_EXPORT OverlayProcessorOzone
 
   std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates_;
   const std::vector<OverlayStrategy> available_strategies_;
-  bool software_mirror_active_ = false;
 };
 }  // namespace viz
 

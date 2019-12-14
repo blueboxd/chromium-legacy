@@ -23,11 +23,11 @@
 @end
 
 @implementation RetryableURLFetcher {
-  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
-  std::unique_ptr<net::BackoffEntry> backoffEntry_;
-  std::unique_ptr<network::SimpleURLLoader> simple_loader_;
-  int retryCount_;
-  __weak id<RetryableURLFetcherDelegate> delegate_;
+  scoped_refptr<network::SharedURLLoaderFactory> _shared_url_loader_factory;
+  std::unique_ptr<net::BackoffEntry> _backoffEntry;
+  std::unique_ptr<network::SimpleURLLoader> _simple_loader;
+  int _retryCount;
+  __weak id<RetryableURLFetcherDelegate> _delegate;
 }
 
 - (instancetype)
@@ -39,25 +39,25 @@ initWithURLLoaderFactory:
   if (self) {
     DCHECK(shared_url_loader_factory);
     DCHECK(delegate);
-    shared_url_loader_factory_ = shared_url_loader_factory;
-    delegate_ = delegate;
+    _shared_url_loader_factory = shared_url_loader_factory;
+    _delegate = delegate;
     if (policy)
-      backoffEntry_.reset(new net::BackoffEntry(policy));
+      _backoffEntry.reset(new net::BackoffEntry(policy));
   }
   return self;
 }
 
 - (void)startFetch {
-  DCHECK(shared_url_loader_factory_.get());
-  GURL url(base::SysNSStringToUTF8([delegate_ urlToFetch]));
+  DCHECK(_shared_url_loader_factory.get());
+  GURL url(base::SysNSStringToUTF8([_delegate urlToFetch]));
   if (url.is_valid()) {
     auto resource_request = std::make_unique<network::ResourceRequest>();
     resource_request->url = url;
-    simple_loader_ = network::SimpleURLLoader::Create(
+    _simple_loader = network::SimpleURLLoader::Create(
         std::move(resource_request), NO_TRAFFIC_ANNOTATION_YET);
 
-    simple_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-        shared_url_loader_factory_.get(),
+    _simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+        _shared_url_loader_factory.get(),
         base::BindOnce(^(std::unique_ptr<std::string> response) {
           [self urlFetchDidComplete:std::forward<std::unique_ptr<std::string>>(
                                         response)];
@@ -65,18 +65,18 @@ initWithURLLoaderFactory:
   } else {
     // Invalid URLs returned from delegate method are considered a permanent
     // failure. Delegate method is called with nil to indicate failure.
-    [delegate_ processSuccessResponse:nil];
+    [_delegate processSuccessResponse:nil];
   }
 }
 
 - (int)failureCount {
-  return backoffEntry_ ? backoffEntry_->failure_count() : 0;
+  return _backoffEntry ? _backoffEntry->failure_count() : 0;
 }
 
 - (void)urlFetchDidComplete:(std::unique_ptr<std::string>)response_body {
-  if (!response_body && backoffEntry_) {
-    backoffEntry_->InformOfRequest(false);
-    double nextRetry = backoffEntry_->GetTimeUntilRelease().InSecondsF();
+  if (!response_body && _backoffEntry) {
+    _backoffEntry->InformOfRequest(false);
+    double nextRetry = _backoffEntry->GetTimeUntilRelease().InSecondsF();
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, nextRetry * NSEC_PER_SEC),
                    dispatch_get_main_queue(), ^{
                      [self startFetch];
@@ -86,7 +86,7 @@ initWithURLLoaderFactory:
   NSString* response = nil;
   if (response_body)
     response = base::SysUTF8ToNSString(*response_body);
-  [delegate_ processSuccessResponse:response];
+  [_delegate processSuccessResponse:response];
 }
 
 @end

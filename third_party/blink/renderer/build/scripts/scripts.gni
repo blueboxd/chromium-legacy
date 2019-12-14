@@ -220,6 +220,7 @@ template("css_properties") {
     in_files = [
       "css/css_properties.json5",
       "css/computed_style_field_aliases.json5",
+      "../platform/runtime_enabled_features.json5",
     ]
     if (defined(invoker.in_files)) {
       in_files += invoker.in_files

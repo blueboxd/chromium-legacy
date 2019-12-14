@@ -20,7 +20,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/device/device_service_test_base.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/serial.mojom.h"
 #include "services/device/serial/fake_serial_device_enumerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -70,8 +69,8 @@ class SerialPortManagerImplTest : public DeviceServiceTestBase {
 // hanging or crashing.
 TEST_F(SerialPortManagerImplTest, SimpleConnectTest) {
   mojo::Remote<mojom::SerialPortManager> port_manager;
-  connector()->Connect(mojom::kServiceName,
-                       port_manager.BindNewPipeAndPassReceiver());
+  device_service()->BindSerialPortManager(
+      port_manager.BindNewPipeAndPassReceiver());
 
   base::RunLoop loop;
   port_manager->GetDevices(base::BindLambdaForTesting(

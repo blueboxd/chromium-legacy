@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">ഫയൽ വീണ്ടും ഡൗൺലോഡ് ചെയ്യണോ?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ഓഡിയോ ഫയൽ}other{# ഓഡിയോ ഫയലുകള്‍}}</translation>
 <translation id="2653659639078652383">സമര്‍പ്പിക്കൂ</translation>
-<translation id="2669093958999339774">നിങ്ങൾക്ക് തടസ്സം സൃഷ്‌ടിക്കുന്നതിൽ നിന്ന് അറിയിപ്പ് നിർദ്ദേശങ്ങൾ ബ്ലോക്ക് ചെയ്യുക, പകരം ഒരു നിശബ്‌ദ സന്ദേശം ഉപയോഗിക്കുക</translation>
 <translation id="2677748264148917807">ഉപേക്ഷിക്കുക</translation>
 <translation id="2704606927547763573">പകർത്തി</translation>
 <translation id="2707726405694321444">പേജ് പുതുക്കുക</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> എന്നതിൽ ബുക്ക്‌മാർക്ക് ചെയ്‌തു</translation>
 <translation id="3744111561329211289">പശ്ചാത്തല സമന്വയിപ്പിക്കൽ</translation>
 <translation id="3749259744154402564">പിന്തുണയ്‌ക്കുന്നില്ല</translation>
-<translation id="3767376082821709728">നിങ്ങൾ സന്ദർശിക്കുന്ന പുതിയ സൈറ്റുകൾക്ക് നിങ്ങൾക്ക് അറിയിപ്പുകൾ അയയ്‌ക്കാനാവില്ല</translation>
 <translation id="3771001275138982843">അപ്‌ഡേറ്റ് ഡൗൺലോഡ് ചെയ്യാനായില്ല</translation>
 <translation id="3771033907050503522">ആൾമാറാട്ട ടാബുകൾ</translation>
 <translation id="3773755127849930740">ജോടിയാക്കാൻ, <ph name="BEGIN_LINK" />Bluetooth ഓണാക്കുക<ph name="END_LINK" /></translation>
@@ -957,7 +955,6 @@
 <translation id="8035133914807600019">പുതിയ ഫോൾഡർ…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> ദിവസം ശേഷിക്കുന്നു</translation>
 <translation id="804335162455518893">SD കാർഡ് കണ്ടെത്തിയില്ല</translation>
-<translation id="8046278916126163020">നിങ്ങൾ സന്ദർശിക്കുന്ന പുതിയ സൈറ്റുകൾ നിങ്ങൾക്ക് അറിയിപ്പുകൾ അയയ്ക്കാൻ അനുമതി ആവശ്യപ്പെട്ടേക്കാം</translation>
 <translation id="805047784848435650">നിങ്ങളുടെ ബ്രൗസിംഗ്‌ ചരിത്രം അടിസ്ഥാനമാക്കിയുള്ളത്</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB ലഭ്യമാണ്</translation>
 <translation id="8058746566562539958">പുതിയ Chrome ടാബിൽ തുറക്കുക</translation>

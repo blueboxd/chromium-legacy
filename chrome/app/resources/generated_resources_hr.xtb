@@ -1190,7 +1190,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="2665919335226618153">O, ne! Došlo je do pogreške prilikom formatiranja.</translation>
 <translation id="2666990579225592931">Otvori prozor u načinu rada za goste</translation>
 <translation id="2667463864537187133">Upravljanje provjerom pravopisa</translation>
-<translation id="2669093958999339774">Blokirajte upite za obavijesti kako vas ne bi ometali i umjesto njih koristite nenametljive poruke</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> dijeli Chromeovu karticu.</translation>
 <translation id="2670429602441959756">Ova stranica sadrži značajke koje VR još ne podržava. Izlaz...</translation>
 <translation id="2671451824761031126">Oznake i postavke su spremne</translation>
@@ -1964,7 +1963,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="37613671848467444">Otvori u &amp;anonimnom prozoru</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Komuniciranje s USB uređajem}one{Komuniciranje s # USB uređajem}few{Komuniciranje s # USB uređaja}other{Komuniciranje s # USB uređaja}}</translation>
 <translation id="3765246971671567135">Nije bilo moguće pročitati pravila izvanmrežnog demo načina.</translation>
-<translation id="3767376082821709728">Nove web-lokacije koje posjetite ne mogu vam slati obavijesti</translation>
 <translation id="3768037234834996183">Sinkroniziranje postavki...</translation>
 <translation id="377050016711188788">Sladoled</translation>
 <translation id="3771294271822695279">Datoteke videozapisa</translation>
@@ -3032,7 +3030,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="5370819323174483825">&amp;Ponovo učitaj</translation>
 <translation id="5372529912055771682">Ova verzija operativnog sustava ne podržava uneseni način prijave. Svakako pokrenite najnoviju verziju i pokušajte ponovo.</translation>
 <translation id="5372579129492968947">Otkvači proširenje</translation>
-<translation id="5374359983950678924">Promijeni sliku</translation>
 <translation id="5376169624176189338">Kliknite da biste se vratili natrag, zadržite da biste vidjeli povijest</translation>
 <translation id="5376931455988532197">Datoteka je prevelika</translation>
 <translation id="537813040452600081">Stranice koje gledate u ovom prozoru neće se pojaviti u povijesti preglednika niti će ostaviti druge tragove, na primjer, kolačiće, na računalu nakon što se odjavite. Datoteke koje preuzmete i oznake koje stvorite neće se sačuvati.</translation>
@@ -4907,7 +4904,6 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="8044899503464538266">Sporo</translation>
 <translation id="8045253504249021590">Sinkronizacija je zaustavljena putem Google nadzorne ploče.</translation>
 <translation id="8045923671629973368">Unesite ID aplikacije ili URL web-trgovine</translation>
-<translation id="8046278916126163020">Nove web-lokacije koje posjetite mogu zatražiti da vam šalju obavijesti</translation>
 <translation id="804786196054284061">Licencni ugovor za krajnjeg korisnika</translation>
 <translation id="8049705080247101012">Google je označio proširenje "<ph name="EXTENSION_NAME" />" kao zlonamjerno, pa je instalacija spriječena</translation>
 <translation id="8050038245906040378">Microsoftovo komercijalno kodno potpisivanje</translation>

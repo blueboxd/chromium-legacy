@@ -73,7 +73,7 @@ Page reloaded.
                         value : "y"
                     }
                     {
-                        domain : undefined
+                        domain : "127.0.0.1"
                         expires : null
                         httpOnly : false
                         name : "x1"
@@ -83,7 +83,7 @@ Page reloaded.
                         value : "y1"
                     }
                     {
-                        domain : undefined
+                        domain : "127.0.0.1"
                         expires : null
                         httpOnly : false
                         name : "z2"

@@ -127,6 +127,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
                             const viz::FrameSinkId& frame_sink_id) override;
   void PostInvalidate(content::SynchronousCompositor* compositor) override;
   void DidUpdateContent(content::SynchronousCompositor* compositor) override;
+  void OnInputEvent();
 
   // |total_scroll_offset|, |total_max_scroll_offset|, and |scrollable_size| are
   // in DIP scale when --use-zoom-for-dsf is disabled. Otherwise, they are in

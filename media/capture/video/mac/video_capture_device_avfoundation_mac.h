@@ -54,25 +54,25 @@ class VideoCaptureDeviceMac;
     : NSObject<AVCaptureVideoDataOutputSampleBufferDelegate> {
  @private
   // The following attributes are set via -setCaptureHeight:width:frameRate:.
-  int frameWidth_;
-  int frameHeight_;
-  float frameRate_;
+  int _frameWidth;
+  int _frameHeight;
+  float _frameRate;
 
-  base::Lock lock_;  // Protects concurrent setting and using |frameReceiver_|.
-  media::VideoCaptureDeviceMac* frameReceiver_;  // weak.
+  base::Lock _lock;  // Protects concurrent setting and using |frameReceiver_|.
+  media::VideoCaptureDeviceMac* _frameReceiver;  // weak.
 
-  base::scoped_nsobject<AVCaptureSession> captureSession_;
+  base::scoped_nsobject<AVCaptureSession> _captureSession;
 
   // |captureDevice_| is an object coming from AVFoundation, used only to be
   // plugged in |captureDeviceInput_| and to query for session preset support.
-  base::scoped_nsobject<AVCaptureDevice> captureDevice_;
-  base::scoped_nsobject<AVCaptureDeviceInput> captureDeviceInput_;
-  base::scoped_nsobject<AVCaptureVideoDataOutput> captureVideoDataOutput_;
+  base::scoped_nsobject<AVCaptureDevice> _captureDevice;
+  base::scoped_nsobject<AVCaptureDeviceInput> _captureDeviceInput;
+  base::scoped_nsobject<AVCaptureVideoDataOutput> _captureVideoDataOutput;
 
   // An AVDataOutput specialized for taking pictures out of |captureSession_|.
-  base::scoped_nsobject<AVCaptureStillImageOutput> stillImageOutput_;
+  base::scoped_nsobject<AVCaptureStillImageOutput> _stillImageOutput;
 
-  base::ThreadChecker main_thread_checker_;
+  base::ThreadChecker _main_thread_checker;
 }
 
 // Returns a dictionary of capture devices with friendly name and unique id.

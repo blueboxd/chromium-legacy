@@ -81,8 +81,6 @@ SystemThemeX11::~SystemThemeX11() {}
 
 }  // namespace
 
-ThemeServiceAuraLinux::ThemeServiceAuraLinux() = default;
-
 ThemeServiceAuraLinux::~ThemeServiceAuraLinux() = default;
 
 bool ThemeServiceAuraLinux::ShouldInitWithSystemTheme() const {

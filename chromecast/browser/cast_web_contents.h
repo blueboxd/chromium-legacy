@@ -150,6 +150,9 @@ class CastWebContents {
         service_manager::InterfaceProvider* frame_interfaces,
         blink::AssociatedInterfaceProvider* frame_associated_interfaces) {}
 
+    // A navigation has finished in the WebContents' main frame.
+    virtual void MainFrameFinishedNavigation() {}
+
     // These methods are calls forwarded from WebContentsObserver.
     virtual void MainFrameResized(const gfx::Rect& bounds) {}
     virtual void UpdateTitle(const base::string16& title) {}
@@ -253,6 +256,9 @@ class CastWebContents {
   // Returns QueryableDataHost that is used to push values to the renderer.
   // Returns nullptr if the new queryable data bindings is enabled.
   virtual QueryableDataHost* queryable_data_host() const = 0;
+
+  // Returns the PID of the main frame process if valid.
+  virtual base::Optional<pid_t> GetMainFrameRenderProcessPid() const = 0;
 
   // ===========================================================================
   // Initialization and Setup

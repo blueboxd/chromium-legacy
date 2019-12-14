@@ -52,7 +52,7 @@ void LoopbackConnection::OnConnected(std::unique_ptr<MixerSocket> socket) {
 }
 
 void LoopbackConnection::OnConnectionError() {
-  delegate_->OnLoopbackInterrupted();
+  delegate_->OnLoopbackInterrupted(LoopbackInterruptReason::kDisconnected);
   socket_.reset();
   MixerConnection::Connect();
 }
@@ -63,18 +63,17 @@ bool LoopbackConnection::HandleMetadata(const Generic& message) {
     sample_rate_ = message.stream_config().sample_rate();
     num_channels_ = message.stream_config().num_channels();
   }
+  if (message.has_stream_interruption()) {
+    delegate_->OnLoopbackInterrupted(static_cast<LoopbackInterruptReason>(
+        message.stream_interruption().reason()));
+  }
   return true;
 }
 
 bool LoopbackConnection::HandleAudioData(char* data,
                                          int size,
                                          int64_t timestamp) {
-  if (size == 0) {
-    delegate_->OnLoopbackInterrupted();
-    return true;
-  }
-
-  if (format_ != kUnknownSampleFormat) {
+  if (format_ != kUnknownSampleFormat && size > 0) {
     delegate_->OnLoopbackAudio(timestamp, format_, sample_rate_, num_channels_,
                                reinterpret_cast<uint8_t*>(data), size);
   }

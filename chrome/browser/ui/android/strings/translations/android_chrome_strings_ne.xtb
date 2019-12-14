@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">फाइल पुनः डाउनलोड गर्ने हो?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# अडियो फाइल}other{# अडियो फाइलहरू}}</translation>
 <translation id="2653659639078652383">पेश गर्नुहोस्</translation>
-<translation id="2669093958999339774">सूचनाका प्रम्प्टहरूलाई आफूलाई बाधा पुर्‍याउनबाट रोकी यसको सट्टा तपाईंलाई सुटुक्क सूचित गर्ने सुविधा प्रयोग गर्नुहोस्।</translation>
 <translation id="2677748264148917807">छोड्नुहोस्</translation>
 <translation id="2704606927547763573">प्रतिलिपि गरियो</translation>
 <translation id="2707726405694321444">पृष्ठ ताजा गर्नुहोस्</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> मा पुस्तक चिन्ह लगाइयो</translation>
 <translation id="3744111561329211289">पृष्ठभूमिमा सिंक गर्ने सुविधा</translation>
 <translation id="3749259744154402564">असमर्थित</translation>
-<translation id="3767376082821709728">तपाईं जाने नयाँ साइटहरूले तपाईंलाई सूचना पठाउन सक्दैनन्</translation>
 <translation id="3771001275138982843">अद्यावधिक डाउनलोड गर्न सकिएन</translation>
 <translation id="3771033907050503522">इन्कग्निटो ट्याबहरू</translation>
 <translation id="3773755127849930740">जोडा बनाउने प्रक्रियालाई अनुमति दिन <ph name="BEGIN_LINK" />ब्लुटुथ<ph name="END_LINK" /> लाई सक्रिय गर्नुहोस्</translation>
@@ -956,7 +954,6 @@
 <translation id="8035133914807600019">नयाँ फोल्डर...</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> दिन बाँकी छ</translation>
 <translation id="804335162455518893">SD कार्ड फेला परेन</translation>
-<translation id="8046278916126163020">तपाईं जाने नयाँ साइटहरूले तपाईंलाई सूचनाहरू पठाउन तपाईंसँग अनुमति माग्न सक्छन्।</translation>
 <translation id="805047784848435650">तपाईंको ब्राउजिङसम्बन्धी इतिहासमा आधारित</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> एम.बि.उपलब्ध छ</translation>
 <translation id="8058746566562539958">Chrome को नयाँ ट्याबमा खोल्नुहोस्</translation>

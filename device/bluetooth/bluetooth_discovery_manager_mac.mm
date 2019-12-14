@@ -22,7 +22,7 @@ class BluetoothDiscoveryManagerMacClassic;
 @interface BluetoothDeviceInquiryDelegate
     : NSObject<IOBluetoothDeviceInquiryDelegate> {
  @private
-  device::BluetoothDiscoveryManagerMacClassic* manager_;  // weak
+  device::BluetoothDiscoveryManagerMacClassic* _manager;  // weak
 }
 
 - (id)initWithManager:(device::BluetoothDiscoveryManagerMacClassic*)manager;
@@ -204,24 +204,24 @@ BluetoothDiscoveryManagerMac* BluetoothDiscoveryManagerMac::CreateClassic(
 - (id)initWithManager:
           (device::BluetoothDiscoveryManagerMacClassic*)manager {
   if ((self = [super init]))
-    manager_ = manager;
+    _manager = manager;
 
   return self;
 }
 
 - (void)deviceInquiryStarted:(IOBluetoothDeviceInquiry*)sender {
-  manager_->DeviceInquiryStarted(sender);
+  _manager->DeviceInquiryStarted(sender);
 }
 
 - (void)deviceInquiryDeviceFound:(IOBluetoothDeviceInquiry*)sender
                           device:(IOBluetoothDevice*)device {
-  manager_->DeviceFound(sender, device);
+  _manager->DeviceFound(sender, device);
 }
 
 - (void)deviceInquiryComplete:(IOBluetoothDeviceInquiry*)sender
                         error:(IOReturn)error
                       aborted:(BOOL)aborted {
-  manager_->DeviceInquiryComplete(sender, error, aborted);
+  _manager->DeviceInquiryComplete(sender, error, aborted);
 }
 
 @end

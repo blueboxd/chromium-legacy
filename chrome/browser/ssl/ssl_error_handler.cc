@@ -591,14 +591,9 @@ void SSLErrorHandler::HandleSSLError(
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-    const base::Callback<void(content::CertificateRequestResultType)>&
-        decision_callback,
     base::OnceCallback<
         void(std::unique_ptr<security_interstitials::SecurityInterstitialPage>)>
         blocking_page_ready_callback) {
-  // TODO(estade): remove |decision_callback| after the churn would no longer
-  // harm WebLayer, approx Dec 2019.
-  DCHECK(decision_callback.is_null());
   DCHECK(!FromWebContents(web_contents));
 
   Profile* profile =

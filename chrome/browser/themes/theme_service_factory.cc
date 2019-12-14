@@ -61,17 +61,16 @@ ThemeServiceFactory::~ThemeServiceFactory() {}
 
 KeyedService* ThemeServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
-  ThemeService* provider = NULL;
 #if defined(OS_WIN)
-  provider = new ThemeServiceWin;
+  using ThemeService = ThemeServiceWin;
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  provider = new ThemeServiceAuraLinux;
-#else
-  provider = new ThemeService;
+  using ThemeService = ThemeServiceAuraLinux;
 #endif
-  provider->Init(static_cast<Profile*>(profile));
 
-  return provider;
+  auto provider =
+      std::make_unique<ThemeService>(static_cast<Profile*>(profile));
+  provider->Init();
+  return provider.release();
 }
 
 void ThemeServiceFactory::RegisterProfilePrefs(

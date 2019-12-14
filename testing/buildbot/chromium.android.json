@@ -22263,7 +22263,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 20
+          "shards": 25
         },
         "test": "chrome_public_test_apk"
       },
@@ -22537,7 +22537,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 9
+          "shards": 16
         },
         "test": "content_browsertests"
       },
@@ -23737,50 +23737,6 @@
           "shards": 3
         },
         "test": "net_unittests"
-      },
-      {
-        "args": [
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "perfetto_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
-              "location": "bin",
-              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "device_os": "MMB29Q",
-              "device_os_type": "userdebug",
-              "device_type": "bullhead",
-              "os": "Android"
-            }
-          ],
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ]
-        },
-        "test": "perfetto_unittests"
       },
       {
         "args": [

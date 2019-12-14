@@ -167,8 +167,6 @@ std::string DeviceManagementService::JobConfiguration::GetJobTypeAsString(
     case DeviceManagementService::JobConfiguration::
         TYPE_ACTIVE_DIRECTORY_PLAY_ACTIVITY:
       return "ActiveDirectoryPlayActivity";
-    case DeviceManagementService::JobConfiguration::TYPE_REQUEST_LICENSE_TYPES:
-      return "RequestLicenseTypes";
     case DeviceManagementService::JobConfiguration::
         TYPE_UPLOAD_APP_INSTALL_REPORT:
       return "UploadAppInstallReport";

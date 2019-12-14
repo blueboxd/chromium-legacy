@@ -8,6 +8,11 @@
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/sync/driver/profile_sync_service.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/sync/test/integration/os_sync_test.h"
+#include "chromeos/constants/chromeos_features.h"
+#endif
+
 namespace {
 
 using apps_helper::AllProfilesHaveSameApps;
@@ -111,5 +116,29 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, MAYBE_InstallSomeApps) {
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
   ASSERT_TRUE(AllProfilesHaveSameApps());
 }
+
+#if defined(OS_CHROMEOS)
+// Tests for SplitSettingsSync.
+class SingleClientAppsOsSyncTest : public OsSyncTest {
+ public:
+  SingleClientAppsOsSyncTest() : OsSyncTest(SINGLE_CLIENT) {}
+  ~SingleClientAppsOsSyncTest() override = default;
+};
+
+IN_PROC_BROWSER_TEST_F(SingleClientAppsOsSyncTest,
+                       DisablingOsSyncFeatureDisablesDataType) {
+  ASSERT_TRUE(chromeos::features::IsSplitSettingsSyncEnabled());
+  ASSERT_TRUE(SetupSync());
+  syncer::SyncService* service = GetSyncService(0);
+  syncer::SyncUserSettings* settings = service->GetUserSettings();
+
+  EXPECT_TRUE(settings->GetOsSyncFeatureEnabled());
+  EXPECT_TRUE(service->GetActiveDataTypes().Has(syncer::APPS));
+
+  settings->SetOsSyncFeatureEnabled(false);
+  EXPECT_FALSE(settings->GetOsSyncFeatureEnabled());
+  EXPECT_FALSE(service->GetActiveDataTypes().Has(syncer::APPS));
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace

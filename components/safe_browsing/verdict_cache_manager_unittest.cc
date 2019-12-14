@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/safe_browsing/proto/csd.pb.h"
+#include "components/safe_browsing/proto/realtimeapi.pb.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,6 +50,19 @@ class VerdictCacheManagerTest : public ::testing::Test {
     response.set_cache_duration_sec(cache_duration_sec);
     cache_manager_->CachePhishGuardVerdict(url, trigger, password_type,
                                            response, verdict_received_time);
+  }
+
+  void AddThreatInfoToResponse(
+      RTLookupResponse& response,
+      RTLookupResponse::ThreatInfo::VerdictType verdict_type,
+      RTLookupResponse::ThreatInfo::ThreatType threat_type,
+      int cache_duration_sec,
+      const std::string& cache_expression) {
+    RTLookupResponse::ThreatInfo* new_threat_info = response.add_threat_info();
+    new_threat_info->set_verdict_type(verdict_type);
+    new_threat_info->set_threat_type(threat_type);
+    new_threat_info->set_cache_duration_sec(cache_duration_sec);
+    new_threat_info->set_cache_expression(cache_expression);
   }
 
  protected:
@@ -326,12 +340,24 @@ TEST_F(VerdictCacheManagerTest, TestCleanUpExpiredVerdict) {
   ASSERT_EQ(2u, cache_manager_->GetStoredPhishGuardVerdictCount(
                     LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
 
+  RTLookupResponse response;
+  AddThreatInfoToResponse(response, RTLookupResponse::ThreatInfo::DANGEROUS,
+                          RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING, 0,
+                          "www.example.com/");
+  AddThreatInfoToResponse(response, RTLookupResponse::ThreatInfo::DANGEROUS,
+                          RTLookupResponse::ThreatInfo::UNWANTED_SOFTWARE, 60,
+                          "www.example.com/path");
+  cache_manager_->CacheRealTimeUrlVerdict(GURL("https://www.example.com/"),
+                                          response, base::Time::Now());
+  ASSERT_EQ(2, cache_manager_->GetStoredRealTimeUrlCheckVerdictCount());
+
   cache_manager_->CleanUpExpiredVerdicts();
 
   ASSERT_EQ(1u, cache_manager_->GetStoredPhishGuardVerdictCount(
                     LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
   ASSERT_EQ(1u, cache_manager_->GetStoredPhishGuardVerdictCount(
                     LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
+  ASSERT_EQ(1, cache_manager_->GetStoredRealTimeUrlCheckVerdictCount());
   LoginReputationClientResponse actual_verdict;
   password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
   // Has cached PASSWORD_REUSE_EVENT verdict for foo.com/abc/.
@@ -426,6 +452,98 @@ TEST_F(VerdictCacheManagerTest, TestCleanUpExpiredVerdictWithInvalidEntry) {
                                     std::string(), nullptr)
                 ->FindDictKey("1")
                 ->DictSize());
+}
+
+TEST_F(VerdictCacheManagerTest, TestCanRetrieveCachedRealTimeUrlCheckVerdict) {
+  GURL url("https://www.example.com/path");
+
+  RTLookupResponse response;
+  AddThreatInfoToResponse(response, RTLookupResponse::ThreatInfo::SAFE,
+                          RTLookupResponse::ThreatInfo::THREAT_TYPE_UNSPECIFIED,
+                          60, "www.example.com/");
+  AddThreatInfoToResponse(response, RTLookupResponse::ThreatInfo::DANGEROUS,
+                          RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING, 60,
+                          "www.example.com/path");
+  cache_manager_->CacheRealTimeUrlVerdict(url, response, base::Time::Now());
+
+  RTLookupResponse::ThreatInfo out_verdict;
+  EXPECT_EQ(RTLookupResponse::ThreatInfo::DANGEROUS,
+            cache_manager_->GetCachedRealTimeUrlVerdict(url, &out_verdict));
+  EXPECT_EQ("www.example.com/path", out_verdict.cache_expression());
+  EXPECT_EQ(60, out_verdict.cache_duration_sec());
+  EXPECT_EQ(RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING,
+            out_verdict.threat_type());
+}
+
+TEST_F(VerdictCacheManagerTest,
+       TestCanRetrieveCachedRealTimeUrlCheckVerdictWithMultipleThreatInfos) {
+  GURL url1("https://www.example.com/");
+  GURL url2("https://www.example.com/path");
+
+  RTLookupResponse response;
+  AddThreatInfoToResponse(response, RTLookupResponse::ThreatInfo::DANGEROUS,
+                          RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING, 60,
+                          "www.example.com/");
+  AddThreatInfoToResponse(response, RTLookupResponse::ThreatInfo::DANGEROUS,
+                          RTLookupResponse::ThreatInfo::UNWANTED_SOFTWARE, 60,
+                          "www.example.com/");
+  AddThreatInfoToResponse(response, RTLookupResponse::ThreatInfo::DANGEROUS,
+                          RTLookupResponse::ThreatInfo::UNWANTED_SOFTWARE, 60,
+                          "www.example.com/path");
+  AddThreatInfoToResponse(response, RTLookupResponse::ThreatInfo::DANGEROUS,
+                          RTLookupResponse::ThreatInfo::UNCLEAR_BILLING, 60,
+                          "www.example.com/path");
+  cache_manager_->CacheRealTimeUrlVerdict(url2, response, base::Time::Now());
+
+  RTLookupResponse::ThreatInfo out_verdict;
+  EXPECT_EQ(RTLookupResponse::ThreatInfo::DANGEROUS,
+            cache_manager_->GetCachedRealTimeUrlVerdict(url1, &out_verdict));
+  EXPECT_EQ("www.example.com/", out_verdict.cache_expression());
+  EXPECT_EQ(RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING,
+            out_verdict.threat_type());
+
+  EXPECT_EQ(RTLookupResponse::ThreatInfo::DANGEROUS,
+            cache_manager_->GetCachedRealTimeUrlVerdict(url2, &out_verdict));
+  EXPECT_EQ("www.example.com/path", out_verdict.cache_expression());
+  EXPECT_EQ(RTLookupResponse::ThreatInfo::UNWANTED_SOFTWARE,
+            out_verdict.threat_type());
+}
+
+TEST_F(VerdictCacheManagerTest,
+       TestCannotRetrieveRealTimeUrlCheckExpiredVerdict) {
+  GURL url("https://www.example.com/path");
+
+  RTLookupResponse response;
+  AddThreatInfoToResponse(response, RTLookupResponse::ThreatInfo::DANGEROUS,
+                          RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING, 0,
+                          "www.example.com/path");
+  cache_manager_->CacheRealTimeUrlVerdict(url, response, base::Time::Now());
+
+  RTLookupResponse::ThreatInfo out_verdict;
+  EXPECT_EQ(RTLookupResponse::ThreatInfo::VERDICT_TYPE_UNSPECIFIED,
+            cache_manager_->GetCachedRealTimeUrlVerdict(url, &out_verdict));
+}
+
+TEST_F(VerdictCacheManagerTest,
+       TestRemoveRealTimeUrlCheckCachedVerdictOnURLsDeleted) {
+  GURL url("https://www.example.com/path");
+
+  RTLookupResponse response;
+  AddThreatInfoToResponse(response, RTLookupResponse::ThreatInfo::DANGEROUS,
+                          RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING, 60,
+                          "www.example.com/path");
+  cache_manager_->CacheRealTimeUrlVerdict(url, response, base::Time::Now());
+  RTLookupResponse::ThreatInfo out_verdict;
+  EXPECT_EQ(RTLookupResponse::ThreatInfo::DANGEROUS,
+            cache_manager_->GetCachedRealTimeUrlVerdict(url, &out_verdict));
+
+  history::URLRows deleted_urls;
+  deleted_urls.push_back(history::URLRow(GURL("https://www.example.com/path")));
+
+  cache_manager_->RemoveContentSettingsOnURLsDeleted(false /* all_history */,
+                                                     deleted_urls);
+  EXPECT_EQ(RTLookupResponse::ThreatInfo::VERDICT_TYPE_UNSPECIFIED,
+            cache_manager_->GetCachedRealTimeUrlVerdict(url, &out_verdict));
 }
 
 }  // namespace safe_browsing

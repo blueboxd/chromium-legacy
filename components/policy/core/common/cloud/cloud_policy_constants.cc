@@ -56,7 +56,6 @@ const char kValueRequestActiveDirectoryEnrollPlayUser[] =
     "active_directory_enroll_play_user";
 const char kValueRequestActiveDirectoryPlayActivity[] =
     "active_directory_play_activity";
-const char kValueRequestCheckDeviceLicense[] = "check_device_license";
 const char kValueRequestAppInstallReport[] = "app_install_report";
 const char kValueRequestTokenEnrollment[] = "register_browser";
 const char kValueRequestChromeDesktopReport[] = "chrome_desktop_report";

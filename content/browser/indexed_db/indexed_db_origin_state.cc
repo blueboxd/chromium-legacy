@@ -48,7 +48,7 @@ static_assert(kMinEarliestOriginSweepFromNow <
               "Min < Max");
 
 constexpr const base::TimeDelta kMinEarliestGlobalSweepFromNow =
-    base::TimeDelta::FromMinutes(10);
+    base::TimeDelta::FromMinutes(5);
 static_assert(kMinEarliestGlobalSweepFromNow <
                   IndexedDBOriginState::kMaxEarliestGlobalSweepFromNow,
               "Min < Max");

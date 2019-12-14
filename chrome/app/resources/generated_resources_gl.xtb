@@ -1189,7 +1189,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2665919335226618153">Produciuse un erro durante o formatado.</translation>
 <translation id="2666990579225592931">Abrir ventá de sesión de invitado</translation>
 <translation id="2667463864537187133">Xestionar corrector ortográfico</translation>
-<translation id="2669093958999339774">Impedir solicitudes de notificacións para evitar interrupcións e así utilizar mensaxes máis discretas</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> está compartindo unha pestana de Chrome.</translation>
 <translation id="2670429602441959756">Esta páxina contén funcións que aínda non son compatibles co modo de realidade virtual. Abandonando o modo...</translation>
 <translation id="2671451824761031126">Os marcadores e a configuración están listos</translation>
@@ -1963,7 +1962,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="37613671848467444">Abrir nunha ventá de &amp;incógnito</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Comunicar cun dispositivo USB}other{Comunicar con # dispositivos USB}}</translation>
 <translation id="3765246971671567135">Non se puido ler a política do modo de demostración sen conexión.</translation>
-<translation id="3767376082821709728">Os sitios aos que accedas por primeira vez non che poden enviar notificacións</translation>
 <translation id="3768037234834996183">Sincronizando as túas preferencias...</translation>
 <translation id="377050016711188788">Xeado</translation>
 <translation id="3771294271822695279">Ficheiros de vídeo</translation>
@@ -3031,7 +3029,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5370819323174483825">Vo&amp;lver cargar</translation>
 <translation id="5372529912055771682">O modo de inscrición fornecido non é compatible con esta versión do sistema operativo. Asegúrate de dispoñer da versión máis recente e téntao de novo.</translation>
 <translation id="5372579129492968947">Deixar de fixar a extensión</translation>
-<translation id="5374359983950678924">Cambiar imaxe</translation>
 <translation id="5376169624176189338">Fai clic para volver ou mantén premido para ver o historial</translation>
 <translation id="5376931455988532197">O ficheiro é demasiado grande</translation>
 <translation id="537813040452600081">As páxinas que visualices nesta ventá non aparecerán no historial de navegación e non deixarán outros rastros, como cookies, no ordenador unha vez peches sesión. Non se conservarán os ficheiros que descargues nin os marcadores que crees.</translation>
@@ -4905,7 +4902,6 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8044899503464538266">Lento</translation>
 <translation id="8045253504249021590">Detívose a sincronización a través do Panel de control de Google.</translation>
 <translation id="8045923671629973368">Introduce o código da aplicación ou o URL de almacenamento web.</translation>
-<translation id="8046278916126163020">Os sitios aos que accedas por primeira vez poden solicitar enviarche notificacións</translation>
 <translation id="804786196054284061">Acordo de licenza de usuario final</translation>
 <translation id="8049705080247101012">Google marcou a extensión "<ph name="EXTENSION_NAME" />" como maliciosa e impediuse a instalación</translation>
 <translation id="8050038245906040378">Sinatura de código comercial de Microsoft</translation>

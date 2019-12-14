@@ -94,7 +94,7 @@ GPUTextureView* GPUTexture::createView(
   DCHECK(webgpu_desc);
 
   WGPUTextureViewDescriptor dawn_desc = AsDawnType(webgpu_desc);
-  return GPUTextureView::Create(
+  return MakeGarbageCollected<GPUTextureView>(
       device_, GetProcs().textureCreateView(GetHandle(), &dawn_desc));
 }
 

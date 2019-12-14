@@ -274,12 +274,6 @@ QUIC_FLAG(int32_t,
 // the packet is serialized.
 QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_coalesce_stream_frames_2, true)
 
-// If true, connection will be closed if a stream receives stream frame or
-// RESET_STREAM frame with bad close offset.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_close_connection_on_wrong_offset,
-          true)
-
 // If true, re-calculate pacing rate when cwnd gets bootstrapped.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_fix_pacing_rate, true)
 
@@ -334,7 +328,7 @@ QUIC_FLAG(double, FLAGS_quic_bbr2_default_inflight_hi_headroom, 0.01)
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_close_connection_and_discard_data_on_wrong_offset,
-    false)
+    true)
 
 // If true, log number of ack aggregation epochs in QUIC transport connection
 // stats.
@@ -392,13 +386,13 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q049, false)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q050, false)
 
 // If true, enable QUIC version Q099.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_q099, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_q099, true)
 
 // If true, enable QUIC version T050.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_t050, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_t050, true)
 
 // If true, enable QUIC version T099.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_t099, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_t099, true)
 
 // A testonly reloadable flag that will always default to false.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_testonly_default_false, false)

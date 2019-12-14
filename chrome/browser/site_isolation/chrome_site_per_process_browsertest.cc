@@ -23,6 +23,7 @@
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/site_isolation/chrome_site_per_process_test.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -37,6 +38,7 @@
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -48,6 +50,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/test_notification_tracker.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -1475,4 +1478,69 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTestWithVerifiedUserActivation,
   EXPECT_EQ(true, content::EvalJs(web_contents, "!!window.w"));
 
   EXPECT_EQ(false, content::EvalJs(frame_b, "!!window.w"));
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, NtpProcesses) {
+  // Listen for notifications about renderer processes being terminated - this
+  // shouldn't happen during the test.
+  content::TestNotificationTracker process_termination_tracker;
+  process_termination_tracker.ListenFor(
+      content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+      content::NotificationService::AllBrowserContextsAndSources());
+
+  // Open a new tab and capture the initial state of the browser.
+  chrome::NewTab(browser());
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
+  content::WebContents* tab1 =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_NO_FATAL_FAILURE(content::WaitForLoadStop(tab1));
+  int tab1_process_id = tab1->GetMainFrame()->GetProcess()->GetID();
+  int initial_spare_process_id = -1;
+  {
+    content::RenderProcessHost* spare =
+        content::RenderProcessHost::GetSpareRenderProcessHostForTesting();
+    ASSERT_TRUE(spare);
+    initial_spare_process_id = spare->GetID();
+  }
+  // NTP cannot reuse the spare process.
+  EXPECT_NE(tab1_process_id, initial_spare_process_id);
+  // No processes should be unnecessarily terminated.
+  EXPECT_EQ(0u, process_termination_tracker.size());
+
+  // Open another new tab and capture the resulting state of the browser.
+  chrome::NewTab(browser());
+  EXPECT_EQ(3, browser()->tab_strip_model()->count());
+  EXPECT_EQ(2, browser()->tab_strip_model()->active_index());
+  content::WebContents* tab2 =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_NO_FATAL_FAILURE(content::WaitForLoadStop(tab2));
+  EXPECT_EQ(tab1->GetLastCommittedURL(), tab2->GetLastCommittedURL());
+  EXPECT_EQ(tab1->GetVisibleURL(), tab2->GetVisibleURL());
+  int tab2_process_id = tab2->GetMainFrame()->GetProcess()->GetID();
+  int current_spare_process_id = -1;
+  {
+    content::RenderProcessHost* spare =
+        content::RenderProcessHost::GetSpareRenderProcessHostForTesting();
+    ASSERT_TRUE(spare);
+    current_spare_process_id = spare->GetID();
+  }
+  EXPECT_NE(tab1_process_id, current_spare_process_id);
+  EXPECT_NE(tab2_process_id, current_spare_process_id);
+
+  // Verify that:
+  // 1. Process-per-site is used for NTP.  This just captures the current
+  //    behavior without any value judgement.  Process-per-site translates into:
+  //      1.1. |tab1| and |tab2| share the same process
+  //      1.2. |tab2| does not use the spare process
+  // 2. The initial spare process wasn't replaced with a new spare process
+  //    The churn is undesirable since (per item 1.2. above) the initial spare
+  //    is not used for |tab2|.  This is the main part of the verification and a
+  //    regression test for https://crbug.com/1029345.
+  EXPECT_EQ(tab1_process_id, tab2_process_id);                    // 1.1.
+  EXPECT_NE(initial_spare_process_id, tab2_process_id);           // 1.2.
+  EXPECT_EQ(initial_spare_process_id, current_spare_process_id);  // 2.
+
+  // Verify that no processes were be unnecessarily terminated.
+  EXPECT_EQ(0u, process_termination_tracker.size());
 }

@@ -20,8 +20,23 @@ void MockCatalogStore::set_cached_catalog(const GamesCatalog* catalog) {
 }
 
 MockHighlightedGamesStore::MockHighlightedGamesStore()
-    : HighlightedGamesStore(nullptr) {}
+    : HighlightedGamesStore(nullptr, nullptr) {}
 MockHighlightedGamesStore::~MockHighlightedGamesStore() = default;
+
+MockClock::MockClock() {}
+MockClock::~MockClock() = default;
+
+void MockClock::MockNow(const base::Time& fake_time) {
+  mock_now_ = fake_time;
+}
+
+base::Time MockClock::Now() const {
+  return mock_now_;
+}
+
+void MockClock::AdvanceDays(int days) {
+  mock_now_ += base::TimeDelta::FromDays(days);
+}
 
 }  // namespace test
 }  // namespace games

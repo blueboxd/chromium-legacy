@@ -69,15 +69,18 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
       return {
           kExtensionsTypeName, EXTENSIONS, {EXTENSIONS, EXTENSION_SETTINGS}};
     case UserSelectableType::kApps: {
-      ModelTypeSet model_types = {APPS, APP_SETTINGS, WEB_APPS};
 #if defined(OS_CHROMEOS)
-      // App list must sync if either Chrome apps or ARC apps are synced.
-      model_types.Put(APP_LIST);
-      // SplitSettingsSync moves ARC apps under a separate OS setting.
-      if (!chromeos::features::IsSplitSettingsSyncEnabled())
-        model_types.Put(ARC_PACKAGE);
+      // SplitSettingsSync moves apps to Chrome OS settings.
+      if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+        return {kAppsTypeName, UNSPECIFIED};
+      } else {
+        return {kAppsTypeName,
+                APPS,
+                {APP_LIST, APPS, APP_SETTINGS, ARC_PACKAGE, WEB_APPS}};
+      }
+#else
+      return {kAppsTypeName, APPS, {APPS, APP_SETTINGS, WEB_APPS}};
 #endif
-      return {kAppsTypeName, APPS, model_types};
     }
     case UserSelectableType::kReadingList:
       return {kReadingListTypeName, READING_LIST, {READING_LIST}};
@@ -97,8 +100,9 @@ UserSelectableTypeInfo GetUserSelectableOsTypeInfo(UserSelectableOsType type) {
   // changed without updating js part.
   switch (type) {
     case UserSelectableOsType::kOsApps:
-      // App list must sync if either Chrome apps or ARC apps are synced.
-      return {"osApps", ARC_PACKAGE, {ARC_PACKAGE, APP_LIST}};
+      return {"osApps",
+              APPS,
+              {APP_LIST, APPS, APP_SETTINGS, ARC_PACKAGE, WEB_APPS}};
     case UserSelectableOsType::kOsPreferences:
       return {"osPreferences",
               OS_PREFERENCES,

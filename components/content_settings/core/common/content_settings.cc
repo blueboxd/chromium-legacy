@@ -82,6 +82,7 @@ constexpr HistogramValue kHistogramValue[] = {
     {ContentSettingsType::BLUETOOTH_CHOOSER_DATA, 60},
     {ContentSettingsType::CLIPBOARD_READ_WRITE, 61},
     {ContentSettingsType::CLIPBOARD_SANITIZED_WRITE, 62},
+    {ContentSettingsType::SAFE_BROWSING_URL_CHECK_DATA, 63},
 };
 
 }  // namespace

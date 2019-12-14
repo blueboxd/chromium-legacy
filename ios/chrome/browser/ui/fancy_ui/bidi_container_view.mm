@@ -21,8 +21,8 @@ enum AdjustSubviewsForRTLType {
 }  // namespace ios
 
 @interface BidiContainerView () {
-  ios::rtl::AdjustSubviewsForRTLType adjustSubviewsType_;
-  NSMutableSet* subviewsToBeAdjustedForRTL_;
+  ios::rtl::AdjustSubviewsForRTLType _adjustSubviewsType;
+  NSMutableSet* _subviewsToBeAdjustedForRTL;
 }
 // Changes the autoresizing mask by mirroring it horizontally so that the RTL
 // layout is bind to opposite sites than LRT one.
@@ -53,15 +53,15 @@ enum AdjustSubviewsForRTLType {
 
   NSArray* viewsToAdjust;
   BOOL adjustAutoresizingMask;
-  switch (adjustSubviewsType_) {
+  switch (_adjustSubviewsType) {
     case ios::rtl::ADJUST_FRAME_AND_AUTOROTATION_MASK_FOR_ALL_SUBVIEWS:
       viewsToAdjust = self.subviews;
       adjustAutoresizingMask = YES;
-      adjustSubviewsType_ = ios::rtl::ADJUST_FRAME_FOR_UPDATED_SUBVIEWS;
+      _adjustSubviewsType = ios::rtl::ADJUST_FRAME_FOR_UPDATED_SUBVIEWS;
       break;
 
     case ios::rtl::ADJUST_FRAME_FOR_UPDATED_SUBVIEWS:
-      viewsToAdjust = [subviewsToBeAdjustedForRTL_ allObjects];
+      viewsToAdjust = [_subviewsToBeAdjustedForRTL allObjects];
       adjustAutoresizingMask = NO;
       break;
   }
@@ -79,16 +79,16 @@ enum AdjustSubviewsForRTLType {
       [subview setAutoresizingMask:mirroredAutoresizingMask];
     }
   }
-  [subviewsToBeAdjustedForRTL_ removeAllObjects];
+  [_subviewsToBeAdjustedForRTL removeAllObjects];
 }
 
 - (void)setSubviewNeedsAdjustmentForRTL:(UIView*)subview {
   DCHECK([self.subviews containsObject:subview]);
   if (!base::i18n::IsRTL())
     return;
-  if (!subviewsToBeAdjustedForRTL_)
-    subviewsToBeAdjustedForRTL_ = [[NSMutableSet alloc] init];
-  [subviewsToBeAdjustedForRTL_ addObject:subview];
+  if (!_subviewsToBeAdjustedForRTL)
+    _subviewsToBeAdjustedForRTL = [[NSMutableSet alloc] init];
+  [_subviewsToBeAdjustedForRTL addObject:subview];
 }
 
 @end

@@ -1116,13 +1116,6 @@ const FeatureEntry::FeatureVariation kExploreSitesVariations[] = {
      base::size(kExploreSitesDenseTitleBottom), nullptr},
     {"Dense Title Right", kExploreSitesDenseTitleRight,
      base::size(kExploreSitesDenseTitleRight), nullptr}};
-
-const FeatureEntry::FeatureParam kSimplifiedServerAllCocaCards = {
-    contextual_search::kContextualCardsVersionParamName,
-    contextual_search::kContextualCardsSimplifiedServerWithDiagnosticChar};
-const FeatureEntry::FeatureVariation kSimplifiedServerVariations[] = {
-    {"and allow all CoCa cards", &kSimplifiedServerAllCocaCards, 1, nullptr}};
-
 const FeatureEntry::FeatureParam kLongpressResolvePreserveTap = {
     contextual_search::kLongpressResolveParamName,
     contextual_search::kLongpressResolvePreserveTap};
@@ -1482,6 +1475,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTintGlCompositedContentName,
      flag_descriptions::kTintGlCompositedContentDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kTintGlCompositedContent)},
+    {"show-overdraw-feedback", flag_descriptions::kShowOverdrawFeedbackName,
+     flag_descriptions::kShowOverdrawFeedbackDescription, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kShowOverdrawFeedback)},
     {"ui-disable-partial-swap", flag_descriptions::kUiPartialSwapName,
      flag_descriptions::kUiPartialSwapDescription, kOsAll,
      SINGLE_DISABLE_VALUE_TYPE(switches::kUIDisablePartialSwap)},
@@ -1600,16 +1596,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSearchSecondTapName,
      flag_descriptions::kContextualSearchSecondTapDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchSecondTap)},
-
-    {"contextual-search-simplified-server",
-     flag_descriptions::kContextualSearchSimplifiedServerName,
-     flag_descriptions::kContextualSearchSimplifiedServerDescription,
-     kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         chrome::android::kContextualSearchSimplifiedServer,
-         kSimplifiedServerVariations,
-         "ContextualSearchSimplifiedServer")},
-
     {"direct-actions", flag_descriptions::kDirectActionsName,
      flag_descriptions::kDirectActionsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kDirectActions)},
@@ -2661,6 +2647,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebPaymentsExperimentalFeaturesName,
      flag_descriptions::kWebPaymentsExperimentalFeaturesDescription, kOsAll,
      FEATURE_VALUE_TYPE(payments::features::kWebPaymentsExperimentalFeatures)},
+    {"enable-web-payments-minimal-ui",
+     flag_descriptions::kWebPaymentsMinimalUIName,
+     flag_descriptions::kWebPaymentsMinimalUIDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(payments::features::kWebPaymentsMinimalUI)},
     {"fill-on-account-select", flag_descriptions::kFillOnAccountSelectName,
      flag_descriptions::kFillOnAccountSelectDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kFillOnAccountSelect)},
@@ -3300,6 +3290,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSimplifyHttpsIndicatorDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kSimplifyHttpsIndicator)},
 
+    {"use-preferred-interval-for-video",
+     flag_descriptions::kUsePreferredIntervalForVideoName,
+     flag_descriptions::kUsePreferredIntervalForVideoDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kUsePreferredIntervalForVideo)},
+
 #if defined(OS_WIN)
     {"enable-gpu-appcontainer", flag_descriptions::kEnableGpuAppcontainerName,
      flag_descriptions::kEnableGpuAppcontainerDescription, kOsWin,
@@ -3337,6 +3332,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"use-xps-for-printing", flag_descriptions::kUseXpsForPrintingName,
      flag_descriptions::kUseXpsForPrintingDescription, kOsWin,
      FEATURE_VALUE_TYPE(printing::features::kUseXpsForPrinting)},
+
+    {"use-xps-for-printing-from-pdf",
+     flag_descriptions::kUseXpsForPrintingFromPdfName,
+     flag_descriptions::kUseXpsForPrintingFromPdfDescription, kOsWin,
+     FEATURE_VALUE_TYPE(printing::features::kUseXpsForPrintingFromPdf)},
 #endif // defined(OS_WIN)
 #endif // BUILDFLAG(ENABLE_PRINTING)
 
@@ -4831,6 +4831,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAccountIdMigrationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(switches::kAccountIdMigration)},
 #endif  // defined(OS_CHROMEOS)
+
+    // TODO(https://crbug.com/1032161): Implement and enable for ChromeOS.
+    {"raw-clipboard", flag_descriptions::kRawClipboardName,
+     flag_descriptions::kRawClipboardDescription, kOsMac | kOsWin | kOsLinux,
+     FEATURE_VALUE_TYPE(blink::features::kRawClipboard)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

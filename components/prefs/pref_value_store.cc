@@ -108,10 +108,6 @@ std::unique_ptr<PrefValueStore> PrefValueStore::CloneAndSpecialize(
       std::move(delegate));
 }
 
-void PrefValueStore::set_callback(const PrefChangedCallback& callback) {
-  pref_changed_callback_ = callback;
-}
-
 bool PrefValueStore::GetValue(const std::string& name,
                               base::Value::Type type,
                               const base::Value** out_value) const {

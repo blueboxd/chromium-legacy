@@ -52,6 +52,13 @@ def try_builder(
         location_regexp = tryjob.location_regexp,
         location_regexp_exclude = tryjob.location_regexp_exclude,
     )
+  else:
+    # Allow CQ to trigger this builder if user opts in via CQ-Include-Trybots.
+    luci.cq_tryjob_verifier(
+        builder = 'try/' + name,
+        cq_group = 'cq',
+        includable_only = True,
+    )
 
   return builder(
       name = name,
@@ -131,14 +138,6 @@ android_builder(
     name = 'android-deterministic-rel',
     executable = luci.recipe(name = 'swarming/deterministic_build'),
     execution_timeout = 6 * time.hour,
-)
-
-android_builder(
-    name = 'android-marshmallow-arm64-coverage-rel',
-    cores = 16,
-    goma_jobs = goma.jobs.J300,
-    ssd = True,
-    use_java_coverage = True,
 )
 
 android_builder(
@@ -405,15 +404,11 @@ blink_builder(
 
 blink_builder(
     name = 'win10-blink-rel',
-    goma_backend = goma.backend.RBE_PROD,
-    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
 blink_builder(
     name = 'win7-blink-rel',
-    goma_backend = goma.backend.RBE_PROD,
-    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
@@ -1228,7 +1223,7 @@ linux_builder(
 
 linux_builder(
     name = 'linux_upload_clang',
-    builderless = False,
+    builderless = True,
     cores = 32,
     executable = luci.recipe(name = 'chromium_upload_clang'),
     goma_backend = None,
@@ -1421,10 +1416,6 @@ mac_ios_builder(
 )
 
 mac_ios_builder(
-    name = 'ios-slimnav',
-)
-
-mac_ios_builder(
     name = 'ios13-beta-simulator',
 )
 
@@ -1476,37 +1467,49 @@ swangle_linux_builder(
 )
 
 
-def swangle_windows_builder(*, name, **kwargs):
+def swangle_windows_builder(*, name, goma_backend=goma.backend.RBE_PROD, goma_enable_ats=True, **kwargs):
   return swangle_builder(
       name = name,
       os = os.WINDOWS_DEFAULT,
-      goma_backend = goma.backend.RBE_PROD,
-      goma_enable_ats = True,
+      goma_backend = goma_backend,
+      goma_enable_ats = goma_enable_ats,
       **kwargs
   )
 
 swangle_windows_builder(
     name = 'win-swangle-try-tot-angle-x64',
+    goma_backend = None,
+    goma_enable_ats = False,
 )
 
 swangle_windows_builder(
     name = 'win-swangle-try-tot-angle-x86',
+    goma_backend = None,
+    goma_enable_ats = False,
 )
 
 swangle_windows_builder(
     name = 'win-swangle-try-tot-swiftshader-x64',
+    goma_backend = None,
+    goma_enable_ats = False,
 )
 
 swangle_windows_builder(
     name = 'win-swangle-try-tot-swiftshader-x86',
+    goma_backend = None,
+    goma_enable_ats = False,
 )
 
 swangle_windows_builder(
     name = 'win-swangle-try-x64',
+    goma_backend = None,
+    goma_enable_ats = False,
 )
 
 swangle_windows_builder(
     name = 'win-swangle-try-x86',
+    goma_backend = None,
+    goma_enable_ats = False,
 )
 
 
@@ -1580,6 +1583,8 @@ win_builder(
 
 win_builder(
     name = 'win_chromium_compile_dbg_ng',
+    goma_backend = None,
+    goma_enable_ats = False,
     goma_jobs = goma.jobs.J150,
     tryjob = tryjob(),
 )

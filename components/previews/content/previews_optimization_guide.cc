@@ -19,6 +19,24 @@ namespace previews {
 
 namespace {
 
+// Returns false if the optimization guide decision is false. If unknown, it
+// depends on the preview type whether the preview should be applied. Currently,
+// only DeferAllScript may be applied in the unknown case.
+bool ShouldApplyPreviewWithDecision(
+    PreviewsType type,
+    optimization_guide::OptimizationGuideDecision decision) {
+  switch (decision) {
+    case optimization_guide::OptimizationGuideDecision::kFalse:
+      return false;
+    case optimization_guide::OptimizationGuideDecision::kTrue:
+      return true;
+    case optimization_guide::OptimizationGuideDecision::kUnknown:
+      return type == PreviewsType::DEFER_ALL_SCRIPT
+                 ? params::ApplyDeferWhenOptimizationGuideDecisionUnknown()
+                 : false;
+  }
+}
+
 // The default max size of the cache holding resource loading hints by URL.
 size_t kDefaultMaxResourceLoadingHintsCacheSize = 10;
 
@@ -134,9 +152,7 @@ bool PreviewsOptimizationGuide::CanApplyPreview(
       optimization_guide_decider_->CanApplyOptimization(
           navigation_handle, *optimization_type, &optimization_metadata);
 
-  // Return false if we are even unsure if we can apply the optimization (i.e.
-  // hint not loaded yet or just not applicable).
-  if (decision != optimization_guide::OptimizationGuideDecision::kTrue)
+  if (!ShouldApplyPreviewWithDecision(type, decision))
     return false;
 
   // If we can apply it, populate information from metadata.

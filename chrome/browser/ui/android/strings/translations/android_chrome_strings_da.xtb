@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Vil du downloade filen igen?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# lydfil}one{# lydfil}other{# lydfiler}}</translation>
 <translation id="2653659639078652383">Indsend</translation>
-<translation id="2669093958999339774">Undgå forstyrrelser ved at blokere notifikationsprompts og i stedet vælge lydløse meddelelser</translation>
 <translation id="2677748264148917807">Forlad</translation>
 <translation id="2704606927547763573">Kopieret</translation>
 <translation id="2707726405694321444">Opdater siden</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Tilføjet som bogmærke i <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Synkronisering i baggrunden</translation>
 <translation id="3749259744154402564">Understøttes ikke</translation>
-<translation id="3767376082821709728">Eventuelle nye websites, du besøger, kan ikke sende dig notifikationer</translation>
 <translation id="3771001275138982843">Opdateringen kunne ikke downloades</translation>
 <translation id="3771033907050503522">Inkognitofaner</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Slå Bluetooth til<ph name="END_LINK" /> for at tillade parring</translation>
@@ -957,7 +955,6 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="8035133914807600019">Ny mappe…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dage tilbage</translation>
 <translation id="804335162455518893">SD-kortet blev ikke fundet</translation>
-<translation id="8046278916126163020">Eventuelle nye websites, du besøger, kan spørge dig, om de må sende dig notifikationer</translation>
 <translation id="805047784848435650">Baseret på din browserhistorik</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB er ledig</translation>
 <translation id="8058746566562539958">Åbn på ny fane i Chrome</translation>

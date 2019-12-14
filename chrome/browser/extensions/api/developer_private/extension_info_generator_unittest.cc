@@ -298,6 +298,8 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
   EXPECT_FALSE(info->file_access.is_active);
   EXPECT_TRUE(info->incognito_access.is_enabled);
   EXPECT_FALSE(info->incognito_access.is_active);
+  EXPECT_TRUE(
+      base::StringPiece(info->icon_url).starts_with("data:image/png;base64,"));
 
   // Strip out the kHostReadWrite permission created by the extension requesting
   // host permissions above; runtime host permissions mean these are always

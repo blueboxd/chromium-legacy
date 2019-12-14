@@ -155,6 +155,7 @@ struct AudioDecoderConfig {
 struct VideoDecoderConfig {
   VideoCodec codec;
   VideoCodecProfile profile;
+  uint32 level;
   bool has_alpha;
   VideoTransformation transformation;
   gfx.mojom.Size coded_size;

@@ -13,6 +13,7 @@
 namespace blink {
 
 class ScriptState;
+class ClipboardItemOptions;
 
 class ClipboardItem final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -20,10 +21,14 @@ class ClipboardItem final : public ScriptWrappable {
  public:
   static ClipboardItem* Create(
       const HeapVector<std::pair<String, Member<Blob>>>& items,
+      const ClipboardItemOptions* options,
       ExceptionState& exception_state);
+
   explicit ClipboardItem(
-      const HeapVector<std::pair<String, Member<Blob>>>& items);
+      const HeapVector<std::pair<String, Member<Blob>>>& items,
+      const ClipboardItemOptions* options);
   Vector<String> types() const;
+  bool raw() const;
   ScriptPromise getType(ScriptState* script_state, const String& type) const;
 
   const HeapVector<std::pair<String, Member<Blob>>>& GetItems() const {
@@ -34,6 +39,7 @@ class ClipboardItem final : public ScriptWrappable {
 
  private:
   HeapVector<std::pair<String, Member<Blob>>> items_;
+  const bool is_raw_;
 };
 
 }  // namespace blink

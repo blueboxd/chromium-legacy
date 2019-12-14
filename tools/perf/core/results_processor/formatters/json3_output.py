@@ -121,8 +121,8 @@ def _GetTagValue(tags, key, default=None, as_type=None):
 
 def _ArtifactPath(artifact, base_dir):
   """Extract either remote or local path of an artifact."""
-  if 'remoteUrl' in artifact:
-    return artifact['remoteUrl']
+  if 'fetchUrl' in artifact:
+    return artifact['fetchUrl']
   else:
     # The spec calls for paths to be relative to the output directory and
     # '/'-delimited on all platforms.

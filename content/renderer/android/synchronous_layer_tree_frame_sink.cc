@@ -399,6 +399,7 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
         child_local_surface_id_allocation_.allocation_time();
 
     if (viz_for_webview_enabled_) {
+      last_unconfirmed_begin_frame_args_ = viz::BeginFrameArgs();
       // For hardware draws with viz we send frame to compositor_frame_sink_
       compositor_frame_sink_->SubmitCompositorFrame(
           local_surface_id_, std::move(frame), client_->BuildHitTestData(), 0);
@@ -417,8 +418,9 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
 
 void SynchronousLayerTreeFrameSink::DidNotProduceFrame(
     const viz::BeginFrameAck& ack) {
-  if (compositor_frame_sink_)
-    compositor_frame_sink_->DidNotProduceFrame(ack);
+  // We do not call CompositorFrameSink::DidNotProduceFrame here because
+  // submission of frame depends on DemandDraw calls. DidNotProduceFrame will be
+  // called there or during OnBeginFrame as fallback.
 }
 
 void SynchronousLayerTreeFrameSink::DidAllocateSharedBitmap(
@@ -527,11 +529,17 @@ void SynchronousLayerTreeFrameSink::InvokeComposite(
   client_->OnDraw(adjusted_transform, gfx::Rect(viewport.size()),
                   in_software_draw_, false /*skip_draw*/);
 
-  if (did_submit_frame_ && !viz_for_webview_enabled_) {
-    // This must happen after unwinding the stack and leaving the compositor.
-    // Usually it is a separate task but we just defer it until OnDraw completes
-    // instead.
-    client_->DidReceiveCompositorFrameAck();
+  if (in_software_draw_ || !viz_for_webview_enabled_) {
+    if (did_submit_frame_) {
+      // This must happen after unwinding the stack and leaving the compositor.
+      // Usually it is a separate task but we just defer it until OnDraw
+      // completes instead.
+      client_->DidReceiveCompositorFrameAck();
+    }
+  } else {
+    if (!did_submit_frame_) {
+      SendAckToLastBeginFrameIfNeeded();
+    }
   }
 }
 
@@ -606,13 +614,27 @@ void SynchronousLayerTreeFrameSink::OnBeginFrame(
     const viz::FrameTimingDetailsMap& timing_details) {
   DCHECK(viz_for_webview_enabled_);
 
+  // We must reply to every BeginFrame we receive. If there was no DemandDrwaHw
+  // (e.g no draw at all or we're in software mode) we don't reply during this
+  // time, so we should reply before processing new BeginFrame.
+  SendAckToLastBeginFrameIfNeeded();
+
+  last_unconfirmed_begin_frame_args_ = args;
+
   if (client_) {
     for (const auto& pair : timing_details) {
       client_->DidPresentCompositorFrame(pair.first, pair.second);
     }
   }
-  if (external_begin_frame_source_)
-    external_begin_frame_source_->OnBeginFrame(args);
+
+  // We could receive BeginFrame when we don't need one (as race with
+  // SetNeedsBeginFrame(false) or because of presentation feedback). In this
+  // case we should not send it further. We do not call DidNotProduceFrame here
+  // as we still might get onDraw() and BeginFrameAck will be sent then.
+  if (needs_begin_frames_) {
+    if (external_begin_frame_source_)
+      external_begin_frame_source_->OnBeginFrame(args);
+  }
 }
 
 void SynchronousLayerTreeFrameSink::ReclaimResources(
@@ -624,6 +646,10 @@ void SynchronousLayerTreeFrameSink::ReclaimResources(
 
 void SynchronousLayerTreeFrameSink::OnBeginFramePausedChanged(bool paused) {
   DCHECK(viz_for_webview_enabled_);
+  // If we have unconfirmed BeginFrame we need to send ack now because there
+  // will be no BeginFrame in nearest future.
+  if (paused)
+    SendAckToLastBeginFrameIfNeeded();
   begin_frames_paused_ = paused;
   if (external_begin_frame_source_)
     external_begin_frame_source_->OnSetBeginFrameSourcePaused(paused);
@@ -631,6 +657,7 @@ void SynchronousLayerTreeFrameSink::OnBeginFramePausedChanged(bool paused) {
 
 void SynchronousLayerTreeFrameSink::OnNeedsBeginFrames(
     bool needs_begin_frames) {
+  needs_begin_frames_ = needs_begin_frames;
   if (!viz_for_webview_enabled_ && sync_client_) {
     sync_client_->SetNeedsBeginFrames(needs_begin_frames);
   }
@@ -661,6 +688,15 @@ void SynchronousLayerTreeFrameSink::SetBeginFrameSourcePaused(bool paused) {
   DCHECK(!viz_for_webview_enabled_);
   if (external_begin_frame_source_)
     external_begin_frame_source_->OnSetBeginFrameSourcePaused(paused);
+}
+
+void SynchronousLayerTreeFrameSink::SendAckToLastBeginFrameIfNeeded() {
+  DCHECK(viz_for_webview_enabled_);
+  if (last_unconfirmed_begin_frame_args_.IsValid()) {
+    compositor_frame_sink_->DidNotProduceFrame(
+        viz::BeginFrameAck(last_unconfirmed_begin_frame_args_, false));
+    last_unconfirmed_begin_frame_args_ = viz::BeginFrameArgs();
+  }
 }
 
 }  // namespace content

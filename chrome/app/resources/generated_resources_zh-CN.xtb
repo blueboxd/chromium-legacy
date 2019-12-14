@@ -1186,7 +1186,6 @@
 <translation id="2665919335226618153">糟糕！格式化过程中出现错误。</translation>
 <translation id="2666990579225592931">以访客身份打开一个窗口</translation>
 <translation id="2667463864537187133">管理拼写检查</translation>
-<translation id="2669093958999339774">不直接弹出提示询问能否向您发送通知，改用更加静默的提示方式，以免造成打扰</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> 正在共享 Chrome 标签页。</translation>
 <translation id="2670429602441959756">此网页包含尚不受虚拟现实模式支持的功能。即将退出…</translation>
 <translation id="2671451824761031126">您的书签和设置已就绪</translation>
@@ -1960,7 +1959,6 @@
 <translation id="37613671848467444">在隐身窗口中打开(&amp;I)</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{可与 1 部 USB 设备通信}other{可与 # 部 USB 设备通信}}</translation>
 <translation id="3765246971671567135">无法读取离线演示模式政策。</translation>
-<translation id="3767376082821709728">您访问的新网站无法向您发送通知</translation>
 <translation id="3768037234834996183">正在同步您的偏好设置…</translation>
 <translation id="377050016711188788">冰淇淋</translation>
 <translation id="3771294271822695279">视频文件</translation>
@@ -3027,7 +3025,6 @@
 <translation id="5370819323174483825">重新加载(&amp;R)</translation>
 <translation id="5372529912055771682">此版本的操作系统不支持所提供的注册模式。请确保您运行的是最新版本，然后重试。</translation>
 <translation id="5372579129492968947">取消固定扩展程序</translation>
-<translation id="5374359983950678924">更改照片</translation>
 <translation id="5376169624176189338">点击可后退，按住可查看历史记录</translation>
 <translation id="5376931455988532197">文件过大</translation>
 <translation id="537813040452600081">当您退出后，您在此窗口中浏览的网页将不会显示在浏览器历史记录中，也不会在计算机上留下其他痕迹（例如Cookie）。您下载的文件和创建的书签将不会保留。</translation>
@@ -4902,7 +4899,6 @@
 <translation id="8044899503464538266">慢</translation>
 <translation id="8045253504249021590">已通过 Google 信息中心阻止同步。</translation>
 <translation id="8045923671629973368">输入应用 ID 或网上应用店网址</translation>
-<translation id="8046278916126163020">您访问的新网站可询问能否向您发送通知</translation>
 <translation id="804786196054284061">最终用户许可协议</translation>
 <translation id="8049705080247101012">Google 已将“<ph name="EXTENSION_NAME" />”标记为恶意扩展程序并已阻止系统安装它</translation>
 <translation id="8050038245906040378">Microsoft 商业代码签名</translation>

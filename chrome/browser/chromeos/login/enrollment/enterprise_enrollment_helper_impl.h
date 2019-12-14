@@ -42,7 +42,6 @@ class EnterpriseEnrollmentHelperImpl
   void EnrollForOfflineDemo() override;
   void RestoreAfterRollback() override;
   void ClearAuth(base::OnceClosure callback) override;
-  void UseLicenseType(policy::LicenseType type) override;
   void GetDeviceAttributeUpdatePermission() override;
   void UpdateDeviceAttributes(const std::string& asset_id,
                               const std::string& location) override;
@@ -67,18 +66,12 @@ class EnterpriseEnrollmentHelperImpl
   FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
                            TestAttributePromptPageGetsLoaded);
 
-  // Checks if license type selection should be performed during enrollment.
-  bool ShouldCheckLicenseType() const;
-
   // Attempt enrollment using |auth_data| for authentication.
   void DoEnroll(std::unique_ptr<policy::DMAuth> auth_data);
 
   // Handles completion of the OAuth2 token fetch attempt.
   void OnTokenFetched(const std::string& token,
                       const GoogleServiceAuthError& error);
-
-  // Handles multiple license types case.
-  void OnLicenseMapObtained(const EnrollmentLicenseMap& licenses);
 
   // Handles completion of the enrollment attempt.
   void OnEnrollmentFinished(policy::EnrollmentStatus status);

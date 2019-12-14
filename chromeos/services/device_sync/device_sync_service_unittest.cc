@@ -130,7 +130,7 @@ class FakeSoftwareFeatureManagerDelegate
   void OnSetSoftwareFeatureStateCalled() override {
     on_delegate_call_closure_.Run();
   }
-
+  void OnSetFeatureStatusCalled() override { on_delegate_call_closure_.Run(); }
   void OnFindEligibleDevicesCalled() override {
     on_delegate_call_closure_.Run();
   }
@@ -625,7 +625,8 @@ class FakeSoftwareFeatureManagerFactory
 
   // SoftwareFeatureManagerImpl::Factory:
   std::unique_ptr<SoftwareFeatureManager> BuildInstance(
-      CryptAuthClientFactory* cryptauth_client_factory) override {
+      CryptAuthClientFactory* cryptauth_client_factory,
+      CryptAuthFeatureStatusSetter* feature_status_setter) override {
     // Only one instance is expected to be created per test.
     EXPECT_FALSE(instance_);
 
@@ -644,7 +645,7 @@ class FakeSoftwareFeatureManagerFactory
 // TODO(jamescook): Rename to DeviceSyncImplTest because it's actually testing
 // the DeviceSync implementation.
 class DeviceSyncServiceTest
-    : public ::testing::TestWithParam<std::tuple<bool, bool>> {
+    : public ::testing::TestWithParam<std::tuple<bool, bool, bool>> {
  public:
   class FakeDeviceSyncImplFactory : public DeviceSyncImpl::Factory {
    public:
@@ -688,21 +689,35 @@ class DeviceSyncServiceTest
     std::vector<base::Feature> disabled_features;
 
     // Choose between v1 and v2 Enrollment infrastructure based on the first
-    // parameter provided by ::testing::TestWithParam<std::tuple<bool, bool>>.
+    // parameter provided by ::testing::TestWithParam<std::tuple<bool, bool,
+    // bool>>.
     if (std::get<0>(GetParam())) {
       enabled_features.push_back(chromeos::features::kCryptAuthV2Enrollment);
     } else {
       disabled_features.push_back(chromeos::features::kCryptAuthV2Enrollment);
     }
 
-    // Choose whether or not to enabled v2 DeviceSync feature flag based on the
+    // Choose whether or not to enable v2 DeviceSync feature flag based on the
     // second parameter provided by ::testing::TestWithParam<std::tuple<bool,
-    // bool>>. Even if the flag is enabled, v2 DeviceSync should only be used if
-    // v2 Enrollment is also enabled.
+    // bool, bool>>. Even if the flag is enabled, v2 DeviceSync should only be
+    // used if v2 Enrollment is also enabled.
     if (std::get<1>(GetParam())) {
       enabled_features.push_back(chromeos::features::kCryptAuthV2DeviceSync);
     } else {
       disabled_features.push_back(chromeos::features::kCryptAuthV2DeviceSync);
+    }
+
+    // Choose whether or not to enable the v1 DeviceSync deprecation flag based
+    // on the third parameter provided by
+    // ::testing::TestWithParam<std::tuple<bool, bool, bool>>. Even if the flag
+    // is enabled, v1 DeviceSync should only be deprecated if v2 Enrollment and
+    // v2 DeviceSync are enabled.
+    if (std::get<2>(GetParam())) {
+      enabled_features.push_back(
+          chromeos::features::kCryptAuthV1DeviceSyncDeprecate);
+    } else {
+      disabled_features.push_back(
+          chromeos::features::kCryptAuthV1DeviceSyncDeprecate);
     }
 
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
@@ -754,20 +769,23 @@ class DeviceSyncServiceTest
         fake_cryptauth_v2_enrollment_manager_factory_.get());
     // ---------- End: Only used for v2 Enrollment ----------
 
-    // ---------- Only used for v1 Enrollment ----------
+    // ---------- Begin: Only used for v1 Enrollment ----------
     fake_cryptauth_enrollment_manager_factory_ =
         std::make_unique<FakeCryptAuthEnrollmentManagerFactory>(
             simple_test_clock_.get(), fake_cryptauth_gcm_manager_factory_.get(),
             test_pref_service_.get());
     CryptAuthEnrollmentManagerImpl::Factory::SetInstanceForTesting(
         fake_cryptauth_enrollment_manager_factory_.get());
+    // ---------- End: Only used for v1 Enrollment ----------
 
+    // ---------- Begin: Only used for v1 DeviceSync ----------
     fake_cryptauth_device_manager_factory_ =
         std::make_unique<FakeCryptAuthDeviceManagerFactory>(
             simple_test_clock_.get(), fake_cryptauth_gcm_manager_factory_.get(),
             test_pref_service_.get());
     CryptAuthDeviceManagerImpl::Factory::SetInstanceForTesting(
         fake_cryptauth_device_manager_factory_.get());
+    // ---------- Begin: Only used for v1 DeviceSync ----------
 
     // ---------- Begin: Only used for v2 DeviceSync ----------
     fake_cryptauth_device_registry_factory_ =
@@ -785,6 +803,16 @@ class DeviceSyncServiceTest
             fake_cryptauth_scheduler_factory_.get());
     CryptAuthV2DeviceManagerImpl::Factory::SetFactoryForTesting(
         fake_cryptauth_v2_device_manager_factory_.get());
+
+    fake_device_notifier_factory_ =
+        std::make_unique<FakeCryptAuthDeviceNotifierFactory>();
+    CryptAuthDeviceNotifierImpl::Factory::SetFactoryForTesting(
+        fake_device_notifier_factory_.get());
+
+    fake_feature_status_setter_factory_ =
+        std::make_unique<FakeCryptAuthFeatureStatusSetterFactory>();
+    CryptAuthFeatureStatusSetterImpl::Factory::SetFactoryForTesting(
+        fake_feature_status_setter_factory_.get());
     // ---------- End: Only used for v2 DeviceSync ----------
 
     fake_remote_device_provider_factory_ =
@@ -801,16 +829,6 @@ class DeviceSyncServiceTest
         std::make_unique<FakeSoftwareFeatureManagerFactory>();
     SoftwareFeatureManagerImpl::Factory::SetInstanceForTesting(
         fake_software_feature_manager_factory_.get());
-
-    fake_feature_status_setter_factory_ =
-        std::make_unique<FakeCryptAuthFeatureStatusSetterFactory>();
-    CryptAuthFeatureStatusSetterImpl::Factory::SetFactoryForTesting(
-        fake_feature_status_setter_factory_.get());
-
-    fake_device_notifier_factory_ =
-        std::make_unique<FakeCryptAuthDeviceNotifierFactory>();
-    CryptAuthDeviceNotifierImpl::Factory::SetFactoryForTesting(
-        fake_device_notifier_factory_.get());
 
     auto mock_timer = std::make_unique<base::MockOneShotTimer>();
     mock_timer_ = mock_timer.get();
@@ -1073,42 +1091,51 @@ class DeviceSyncServiceTest
     // initialization.
     EXPECT_FALSE(CallGetLocalDeviceMetadata());
 
-    // SetSoftwareFeatureState() should return a struct with the special
-    // kErrorNotInitialized error code.
-    CallSetSoftwareFeatureState(
-        test_devices()[0].public_key,
-        multidevice::SoftwareFeature::kBetterTogetherHost, true /* enabled */,
-        true /* is_exclusive */);
-    auto last_set_response = GetLastSetSoftwareFeatureStateResponseAndReset();
-    EXPECT_EQ(mojom::NetworkRequestResult::kServiceNotYetInitialized,
-              *last_set_response);
+    if (!features::ShouldDeprecateV1DeviceSync()) {
+      // SetSoftwareFeatureState() should return a struct with the special
+      // kErrorNotInitialized error code.
+      CallSetSoftwareFeatureState(
+          test_devices()[0].public_key,
+          multidevice::SoftwareFeature::kBetterTogetherHost, true /* enabled */,
+          true /* is_exclusive */);
+      auto last_set_response = GetLastSetSoftwareFeatureStateResponseAndReset();
+      EXPECT_EQ(mojom::NetworkRequestResult::kServiceNotYetInitialized,
+                *last_set_response);
+    }
 
-    // SetFeatureStatus() should return a struct with the special
-    // kErrorNotInitialized error code.
-    CallSetFeatureStatus(test_devices()[0].instance_id,
-                         multidevice::SoftwareFeature::kBetterTogetherHost,
-                         FeatureStatusChange::kEnableExclusively);
-    EXPECT_EQ(1u, set_feature_status_results_.size());
-    EXPECT_EQ(mojom::NetworkRequestResult::kServiceNotYetInitialized,
-              set_feature_status_results_[0]);
+    if (features::ShouldUseV2DeviceSync()) {
+      // SetFeatureStatus() should return a struct with the special
+      // kErrorNotInitialized error code.
+      CallSetFeatureStatus(test_devices()[0].instance_id,
+                           multidevice::SoftwareFeature::kBetterTogetherHost,
+                           FeatureStatusChange::kEnableExclusively);
+      EXPECT_EQ(1u, set_feature_status_results_.size());
+      EXPECT_EQ(mojom::NetworkRequestResult::kServiceNotYetInitialized,
+                set_feature_status_results_[0]);
+    }
 
-    // FindEligibleDevices() should return a struct with the special
-    // kErrorNotInitialized error code.
-    CallFindEligibleDevices(multidevice::SoftwareFeature::kBetterTogetherHost);
-    auto last_find_response = GetLastFindEligibleDevicesResponseAndReset();
-    EXPECT_EQ(mojom::NetworkRequestResult::kServiceNotYetInitialized,
-              last_find_response->first);
-    EXPECT_FALSE(last_find_response->second /* response */);
+    if (!features::ShouldDeprecateV1DeviceSync()) {
+      // FindEligibleDevices() should return a struct with the special
+      // kErrorNotInitialized error code.
+      CallFindEligibleDevices(
+          multidevice::SoftwareFeature::kBetterTogetherHost);
+      auto last_find_response = GetLastFindEligibleDevicesResponseAndReset();
+      EXPECT_EQ(mojom::NetworkRequestResult::kServiceNotYetInitialized,
+                last_find_response->first);
+      EXPECT_FALSE(last_find_response->second /* response */);
+    }
 
-    // NotifyDevices() should return a struct with the special
-    // kErrorNotInitialized error code.
-    CallNotifyDevices(
-        {test_devices()[0].instance_id, test_devices()[1].instance_id},
-        cryptauthv2::TargetService::DEVICE_SYNC,
-        multidevice::SoftwareFeature::kBetterTogetherHost);
-    EXPECT_EQ(1u, notify_devices_results_.size());
-    EXPECT_EQ(mojom::NetworkRequestResult::kServiceNotYetInitialized,
-              notify_devices_results_[0]);
+    if (features::ShouldUseV2DeviceSync()) {
+      // NotifyDevices() should return a struct with the special
+      // kErrorNotInitialized error code.
+      CallNotifyDevices(
+          {test_devices()[0].instance_id, test_devices()[1].instance_id},
+          cryptauthv2::TargetService::DEVICE_SYNC,
+          multidevice::SoftwareFeature::kBetterTogetherHost);
+      EXPECT_EQ(1u, notify_devices_results_.size());
+      EXPECT_EQ(mojom::NetworkRequestResult::kServiceNotYetInitialized,
+                notify_devices_results_[0]);
+    }
 
     // GetDebugInfo() returns a null DebugInfo before initialization.
     EXPECT_FALSE(CallGetDebugInfo());
@@ -1228,29 +1255,14 @@ class DeviceSyncServiceTest
   void CallSetFeatureStatus(const std::string& device_instance_id,
                             multidevice::SoftwareFeature software_feature,
                             FeatureStatusChange status_change) {
-    base::RunLoop run_loop;
-
-    // If the feature setter has not yet been created, the service has not been
-    // initialized. SetFeatureStatus() is expected to respond synchronously with
-    // an error.
-    if (!fake_feature_status_setter()) {
-      device_sync_->SetFeatureStatus(
-          device_instance_id, software_feature, status_change,
-          base::Bind(
-              &DeviceSyncServiceTest::OnSetFeatureStatusCompletedSynchronously,
-              base::Unretained(this), run_loop.QuitClosure()));
-      run_loop.Run();
+    if (features::ShouldDeprecateV1DeviceSync()) {
+      CallSetFeatureStatusV2DeviceSyncOnly(device_instance_id, software_feature,
+                                           status_change);
       return;
     }
 
-    FakeCryptAuthFeatureStatusSetterDelegate delegate(run_loop.QuitClosure());
-    fake_feature_status_setter()->set_delegate(&delegate);
-    device_sync_->SetFeatureStatus(
-        device_instance_id, software_feature, status_change,
-        base::Bind(&DeviceSyncServiceTest::OnSetFeatureStatusCompleted,
-                   base::Unretained(this)));
-    run_loop.Run();
-    fake_feature_status_setter()->set_delegate(nullptr);
+    CallSetFeatureStatusV1andV2DeviceSync(device_instance_id, software_feature,
+                                          status_change);
   }
 
   void CallFindEligibleDevices(multidevice::SoftwareFeature software_feature) {
@@ -1325,6 +1337,69 @@ class DeviceSyncServiceTest
   }
 
  private:
+  void CallSetFeatureStatusV1andV2DeviceSync(
+      const std::string& device_instance_id,
+      multidevice::SoftwareFeature software_feature,
+      FeatureStatusChange status_change) {
+    base::RunLoop run_loop;
+    FakeSoftwareFeatureManager* manager = fake_software_feature_manager();
+
+    // If the manager has not yet been created, the service has not been
+    // initialized. SetFeatureStatus() is expected to respond synchronously with
+    // an error.
+    if (!manager) {
+      device_sync_->SetFeatureStatus(
+          device_instance_id, software_feature, status_change,
+          base::Bind(
+              &DeviceSyncServiceTest::OnSetFeatureStatusCompletedSynchronously,
+              base::Unretained(this), run_loop.QuitClosure()));
+      run_loop.Run();
+      return;
+    }
+
+    // If the manager has been created, the service responds asynchronously.
+    FakeSoftwareFeatureManagerDelegate delegate(run_loop.QuitClosure());
+    fake_software_feature_manager_factory_->instance()->set_delegate(&delegate);
+
+    device_sync_->SetFeatureStatus(
+        device_instance_id, software_feature, status_change,
+        base::Bind(&DeviceSyncServiceTest::OnSetFeatureStatusCompleted,
+                   base::Unretained(this)));
+    run_loop.Run();
+
+    fake_software_feature_manager_factory_->instance()->set_delegate(nullptr);
+  }
+
+  void CallSetFeatureStatusV2DeviceSyncOnly(
+      const std::string& device_instance_id,
+      multidevice::SoftwareFeature software_feature,
+      FeatureStatusChange status_change) {
+    base::RunLoop run_loop;
+
+    // If the feature setter has not yet been created, the service has not been
+    // initialized. SetFeatureStatus() is expected to respond synchronously with
+    // an error.
+    if (!fake_feature_status_setter()) {
+      device_sync_->SetFeatureStatus(
+          device_instance_id, software_feature, status_change,
+          base::Bind(
+              &DeviceSyncServiceTest::OnSetFeatureStatusCompletedSynchronously,
+              base::Unretained(this), run_loop.QuitClosure()));
+      run_loop.Run();
+      return;
+    }
+
+    FakeCryptAuthFeatureStatusSetterDelegate delegate(run_loop.QuitClosure());
+    fake_feature_status_setter()->set_delegate(&delegate);
+    device_sync_->SetFeatureStatus(
+        device_instance_id, software_feature, status_change,
+        base::Bind(&DeviceSyncServiceTest::OnSetFeatureStatusCompleted,
+                   base::Unretained(this)));
+    run_loop.Run();
+
+    fake_feature_status_setter()->set_delegate(nullptr);
+  }
+
   void OnAddObserverCompleted(base::OnceClosure quit_closure) {
     std::move(quit_closure).Run();
   }
@@ -1439,6 +1514,10 @@ class DeviceSyncServiceTest
       fake_cryptauth_scheduler_factory_;
   std::unique_ptr<FakeCryptAuthV2EnrollmentManagerFactory>
       fake_cryptauth_v2_enrollment_manager_factory_;
+  std::unique_ptr<FakeCryptAuthDeviceNotifierFactory>
+      fake_device_notifier_factory_;
+  std::unique_ptr<FakeCryptAuthFeatureStatusSetterFactory>
+      fake_feature_status_setter_factory_;
   std::unique_ptr<FakeCryptAuthDeviceManagerFactory>
       fake_cryptauth_device_manager_factory_;
   std::unique_ptr<FakeCryptAuthDeviceRegistryFactory>
@@ -1449,10 +1528,6 @@ class DeviceSyncServiceTest
       fake_remote_device_provider_factory_;
   std::unique_ptr<FakeSoftwareFeatureManagerFactory>
       fake_software_feature_manager_factory_;
-  std::unique_ptr<FakeCryptAuthFeatureStatusSetterFactory>
-      fake_feature_status_setter_factory_;
-  std::unique_ptr<FakeCryptAuthDeviceNotifierFactory>
-      fake_device_notifier_factory_;
 
   std::unique_ptr<signin::IdentityTestEnvironment> identity_test_environment_;
   std::unique_ptr<gcm::FakeGCMDriver> fake_gcm_driver_;
@@ -1638,6 +1713,9 @@ TEST_P(DeviceSyncServiceTest, SyncedDeviceUpdates) {
 }
 
 TEST_P(DeviceSyncServiceTest, SetSoftwareFeatureState_Success) {
+  if (features::ShouldDeprecateV1DeviceSync())
+    return;
+
   InitializeServiceSuccessfully();
 
   const auto& set_software_calls =
@@ -1696,6 +1774,9 @@ TEST_P(DeviceSyncServiceTest, SetSoftwareFeatureState_Success) {
 
 TEST_P(DeviceSyncServiceTest,
        SetSoftwareFeatureState_RequestSucceedsButDoesNotTakeEffect) {
+  if (features::ShouldDeprecateV1DeviceSync())
+    return;
+
   InitializeServiceSuccessfully();
 
   const auto& set_software_calls =
@@ -1744,6 +1825,9 @@ TEST_P(DeviceSyncServiceTest,
 }
 
 TEST_P(DeviceSyncServiceTest, SetSoftwareFeatureState_Error) {
+  if (features::ShouldDeprecateV1DeviceSync())
+    return;
+
   InitializeServiceSuccessfully();
 
   const auto& set_software_calls =
@@ -1789,9 +1873,17 @@ TEST_P(DeviceSyncServiceTest, SetSoftwareFeatureState_Error) {
 }
 
 TEST_P(DeviceSyncServiceTest, SetFeatureStatus_Success) {
+  if (!features::ShouldUseV2DeviceSync())
+    return;
+
   InitializeServiceSuccessfully();
 
-  EXPECT_EQ(0u, fake_feature_status_setter()->requests().size());
+  if (features::ShouldDeprecateV1DeviceSync()) {
+    EXPECT_EQ(0u, fake_feature_status_setter()->requests().size());
+  } else {
+    EXPECT_EQ(
+        0u, fake_software_feature_manager()->set_feature_status_calls().size());
+  }
 
   multidevice::RemoteDevice device_for_test = test_devices()[0];
 
@@ -1799,19 +1891,52 @@ TEST_P(DeviceSyncServiceTest, SetFeatureStatus_Success) {
   CallSetFeatureStatus(device_for_test.instance_id,
                        multidevice::SoftwareFeature::kBetterTogetherHost,
                        FeatureStatusChange::kEnableExclusively);
-  EXPECT_EQ(1u, fake_feature_status_setter()->requests().size());
-  EXPECT_EQ(multidevice::SoftwareFeature::kBetterTogetherHost,
-            fake_feature_status_setter()->requests()[0].feature);
-  EXPECT_EQ(FeatureStatusChange::kEnableExclusively,
-            fake_feature_status_setter()->requests()[0].status_change);
-  EXPECT_TRUE(fake_feature_status_setter()->requests()[0].success_callback);
-  EXPECT_TRUE(fake_feature_status_setter()->requests()[0].error_callback);
+
+  if (features::ShouldDeprecateV1DeviceSync()) {
+    EXPECT_EQ(1u, fake_feature_status_setter()->requests().size());
+    EXPECT_EQ(device_for_test.instance_id,
+              fake_feature_status_setter()->requests()[0].device_id);
+    EXPECT_EQ(multidevice::SoftwareFeature::kBetterTogetherHost,
+              fake_feature_status_setter()->requests()[0].feature);
+    EXPECT_EQ(FeatureStatusChange::kEnableExclusively,
+              fake_feature_status_setter()->requests()[0].status_change);
+    EXPECT_TRUE(fake_feature_status_setter()->requests()[0].success_callback);
+    EXPECT_TRUE(fake_feature_status_setter()->requests()[0].error_callback);
+  } else {
+    EXPECT_EQ(
+        1u, fake_software_feature_manager()->set_feature_status_calls().size());
+    EXPECT_EQ(device_for_test.instance_id, fake_software_feature_manager()
+                                               ->set_feature_status_calls()[0]
+                                               ->device_id);
+    EXPECT_EQ(multidevice::SoftwareFeature::kBetterTogetherHost,
+              fake_software_feature_manager()
+                  ->set_feature_status_calls()[0]
+                  ->feature);
+    EXPECT_EQ(FeatureStatusChange::kEnableExclusively,
+              fake_software_feature_manager()
+                  ->set_feature_status_calls()[0]
+                  ->status_change);
+    EXPECT_TRUE(fake_software_feature_manager()
+                    ->set_feature_status_calls()[0]
+                    ->success_callback);
+    EXPECT_TRUE(fake_software_feature_manager()
+                    ->set_feature_status_calls()[0]
+                    ->error_callback);
+  }
 
   // The DeviceSyncImpl::SetFeatureStatus() callback has not yet been invoked.
   EXPECT_TRUE(set_feature_status_results().empty());
 
-  // Now, invoke the CryptAuthFeatureStatusSetter success callback.
-  std::move(fake_feature_status_setter()->requests()[0].success_callback).Run();
+  // Now, invoke the success callback.
+  if (features::ShouldDeprecateV1DeviceSync()) {
+    std::move(fake_feature_status_setter()->requests()[0].success_callback)
+        .Run();
+  } else {
+    std::move(fake_software_feature_manager()
+                  ->set_feature_status_calls()[0]
+                  ->success_callback)
+        .Run();
+  }
 
   // The DeviceSyncImpl::SetFeatureStatus() callback still has not yet been
   // invoked since a device sync has not confirmed the feature state change yet.
@@ -1831,6 +1956,9 @@ TEST_P(DeviceSyncServiceTest, SetFeatureStatus_Success) {
 
 TEST_P(DeviceSyncServiceTest,
        SetFeatureStatus_RequestSucceedsButDoesNotTakeEffect) {
+  if (!features::ShouldUseV2DeviceSync())
+    return;
+
   InitializeServiceSuccessfully();
 
   // Expected device feature states after SetFeatureStatus() calls:
@@ -1872,17 +2000,29 @@ TEST_P(DeviceSyncServiceTest,
   CallSetFeatureStatus(expected_remote_devices[4].instance_id,
                        multidevice::SoftwareFeature::kMessagesForWebHost,
                        FeatureStatusChange::kDisable);
-  EXPECT_EQ(5u, fake_feature_status_setter()->requests().size());
+
+  if (features::ShouldDeprecateV1DeviceSync()) {
+    EXPECT_EQ(5u, fake_feature_status_setter()->requests().size());
+  } else {
+    EXPECT_EQ(
+        5u, fake_software_feature_manager()->set_feature_status_calls().size());
+  }
 
   // The DeviceSyncImpl::SetFeatureStatus() callbacks have not yet been invoked.
   EXPECT_TRUE(set_feature_status_results().empty());
 
-  // Now, invoke the CryptAuthFeatureStatusSetter success callbacks.
-  std::move(fake_feature_status_setter()->requests()[0].success_callback).Run();
-  std::move(fake_feature_status_setter()->requests()[1].success_callback).Run();
-  std::move(fake_feature_status_setter()->requests()[2].success_callback).Run();
-  std::move(fake_feature_status_setter()->requests()[3].success_callback).Run();
-  std::move(fake_feature_status_setter()->requests()[4].success_callback).Run();
+  // Now, invoke the success callbacks.
+  for (size_t i = 0; i < 5u; ++i) {
+    if (features::ShouldDeprecateV1DeviceSync()) {
+      std::move(fake_feature_status_setter()->requests()[i].success_callback)
+          .Run();
+    } else {
+      std::move(fake_software_feature_manager()
+                    ->set_feature_status_calls()[i]
+                    ->success_callback)
+          .Run();
+    }
+  }
 
   // The DeviceSyncImpl::SetFeatureStatus() callbacks still have not been
   // invoked since a DeviceSync has not confirmed any of the requested feature
@@ -1931,6 +2071,9 @@ TEST_P(DeviceSyncServiceTest,
 }
 
 TEST_P(DeviceSyncServiceTest, SetFeatureStatus_Error) {
+  if (!features::ShouldUseV2DeviceSync())
+    return;
+
   InitializeServiceSuccessfully();
 
   multidevice::RemoteDevice device_for_test = test_devices()[0];
@@ -1943,9 +2086,16 @@ TEST_P(DeviceSyncServiceTest, SetFeatureStatus_Error) {
   // The DeviceSyncImpl::SetFeatureStatus() callback has not yet been invoked.
   EXPECT_TRUE(set_feature_status_results().empty());
 
-  // Now, invoke the CryptAuthFeatureStatusSetter error callback.
-  std::move(fake_feature_status_setter()->requests()[0].error_callback)
-      .Run(NetworkRequestError::kBadRequest);
+  // Now, invoke the error callback.
+  if (features::ShouldDeprecateV1DeviceSync()) {
+    std::move(fake_feature_status_setter()->requests()[0].error_callback)
+        .Run(NetworkRequestError::kBadRequest);
+  } else {
+    std::move(fake_software_feature_manager()
+                  ->set_feature_status_calls()[0]
+                  ->error_callback)
+        .Run(NetworkRequestError::kBadRequest);
+  }
 
   // The DeviceSyncImpl::SetFeatureStatus() callback is invoked with the same
   // error code.
@@ -1955,6 +2105,9 @@ TEST_P(DeviceSyncServiceTest, SetFeatureStatus_Error) {
 }
 
 TEST_P(DeviceSyncServiceTest, FindEligibleDevices) {
+  if (features::ShouldDeprecateV1DeviceSync())
+    return;
+
   InitializeServiceSuccessfully();
 
   const auto& find_eligible_calls =
@@ -2022,6 +2175,9 @@ TEST_P(DeviceSyncServiceTest, FindEligibleDevices) {
 }
 
 TEST_P(DeviceSyncServiceTest, NotifyDevices_Success) {
+  if (!features::ShouldUseV2DeviceSync())
+    return;
+
   InitializeServiceSuccessfully();
 
   EXPECT_EQ(0u, fake_device_notifier()->requests().size());
@@ -2054,6 +2210,9 @@ TEST_P(DeviceSyncServiceTest, NotifyDevices_Success) {
 }
 
 TEST_P(DeviceSyncServiceTest, NotifyDevices_Error) {
+  if (!features::ShouldUseV2DeviceSync())
+    return;
+
   InitializeServiceSuccessfully();
 
   CallNotifyDevices(
@@ -2120,11 +2279,12 @@ TEST_P(DeviceSyncServiceTest, GetDebugInfo) {
   EXPECT_FALSE(result->is_sync_in_progress);
 }
 
-// Runs tests four times with all possible combinations of v2 Enrollment and v2
-// DeviceSync flags.
+// Runs tests 8 times with all possible combinations of v2 Enrollment, v2
+// DeviceSync, and v1 DeviceSync-deprecation flags.
 INSTANTIATE_TEST_SUITE_P(All,
                          DeviceSyncServiceTest,
                          ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool(),
                                             ::testing::Bool()));
 
 }  // namespace device_sync

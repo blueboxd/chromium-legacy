@@ -47,19 +47,19 @@ const NSTimeInterval kUploadTotalTime = 5;
 @end
 
 @implementation SafeModeViewController {
-  __weak id<SafeModeViewControllerDelegate> delegate_;
-  UIView* innerView_;
-  PrimaryActionButton* startButton_;
-  UILabel* uploadDescription_;
-  UIProgressView* uploadProgress_;
-  NSDate* uploadStartTime_;
-  NSTimer* uploadTimer_;
+  __weak id<SafeModeViewControllerDelegate> _delegate;
+  UIView* _innerView;
+  PrimaryActionButton* _startButton;
+  UILabel* _uploadDescription;
+  UIProgressView* _uploadProgress;
+  NSDate* _uploadStartTime;
+  NSTimer* _uploadTimer;
 }
 
 - (id)initWithDelegate:(id<SafeModeViewControllerDelegate>)delegate {
   self = [super init];
   if (self) {
-    delegate_ = delegate;
+    _delegate = delegate;
   }
   return self;
 }
@@ -103,7 +103,7 @@ const NSTimeInterval kUploadTotalTime = 5;
 // Since we are still supporting iOS5, this is a helper for basic flow layout.
 - (void)centerView:(UIView*)view afterView:(UIView*)afterView {
   CGPoint center = [view center];
-  center.x = [innerView_ frame].size.width / 2;
+  center.x = [_innerView frame].size.width / 2;
   [view setCenter:center];
 
   if (afterView) {
@@ -158,9 +158,9 @@ const NSTimeInterval kUploadTotalTime = 5;
   const CGFloat kIPadInset =
       (mainBounds.size.width - kIPadWidth - kHorizontalSpacing) / 2;
   const CGFloat widthInset = IsIPadIdiom() ? kIPadInset : kHorizontalSpacing;
-  innerView_ = [[UIView alloc]
+  _innerView = [[UIView alloc]
       initWithFrame:CGRectInset(mainBounds, widthInset, kVerticalSpacing * 2)];
-  [scrollView addSubview:innerView_];
+  [scrollView addSubview:_innerView];
 
   UIImage* fatalImage = [[UIImage imageNamed:@"fatal_error.png"]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
@@ -171,7 +171,7 @@ const NSTimeInterval kUploadTotalTime = 5;
   imageFrame.origin.y = kVerticalSpacing;
   [imageView setFrame:imageFrame];
   [self centerView:imageView afterView:nil];
-  [innerView_ addSubview:imageView];
+  [_innerView addSubview:imageView];
 
   UILabel* awSnap = [[UILabel alloc] init];
   [awSnap setText:NSLocalizedString(@"IDS_IOS_SAFE_MODE_AW_SNAP", @"")];
@@ -179,7 +179,7 @@ const NSTimeInterval kUploadTotalTime = 5;
   [awSnap setFont:[UIFont boldSystemFontOfSize:21]];
   [awSnap sizeToFit];
   [self centerView:awSnap afterView:imageView];
-  [innerView_ addSubview:awSnap];
+  [_innerView addSubview:awSnap];
 
   UILabel* description = [[UILabel alloc] init];
   [description setText:[self startupCrashModuleText]];
@@ -196,58 +196,58 @@ const NSTimeInterval kUploadTotalTime = 5;
           .height;
   [description setFrame:frame];
   [self centerView:description afterView:awSnap];
-  [innerView_ addSubview:description];
+  [_innerView addSubview:description];
 
-  startButton_ = [[PrimaryActionButton alloc] init];
+  _startButton = [[PrimaryActionButton alloc] init];
   NSString* startText =
       NSLocalizedString(@"IDS_IOS_SAFE_MODE_RELOAD_CHROME", @"");
-  [startButton_ setTitle:startText forState:UIControlStateNormal];
-  [startButton_ titleLabel].textAlignment = NSTextAlignmentCenter;
-  [startButton_ titleLabel].lineBreakMode = NSLineBreakByWordWrapping;
-  frame = [startButton_ frame];
+  [_startButton setTitle:startText forState:UIControlStateNormal];
+  [_startButton titleLabel].textAlignment = NSTextAlignmentCenter;
+  [_startButton titleLabel].lineBreakMode = NSLineBreakByWordWrapping;
+  frame = [_startButton frame];
   frame.size.width = IsIPadIdiom() ? kIPadWidth : kIPhoneWidth;
   maxSize = CGSizeMake(frame.size.width, 999999.0f);
   const CGFloat kButtonBuffer = kVerticalSpacing / 2;
   CGSize startTextBoundingSize =
       [startText cr_boundingSizeWithSize:maxSize
-                                    font:[startButton_ titleLabel].font];
+                                    font:[_startButton titleLabel].font];
   frame.size.height = startTextBoundingSize.height + kButtonBuffer;
-  [startButton_ setFrame:frame];
-  [startButton_ addTarget:self
+  [_startButton setFrame:frame];
+  [_startButton addTarget:self
                    action:@selector(startBrowserFromSafeMode)
          forControlEvents:UIControlEventTouchUpInside];
-  [self centerView:startButton_ afterView:description];
-  [innerView_ addSubview:startButton_];
+  [self centerView:_startButton afterView:description];
+  [_innerView addSubview:_startButton];
 
-  UIView* lastView = startButton_;
+  UIView* lastView = _startButton;
   if ([SafeModeViewController hasReportToUpload]) {
     breakpad_helper::StartUploadingReportsInRecoveryMode();
 
     // If there are no jailbreak modifications, then present the "Sending crash
     // report..." UI.
     if (![SafeModeViewController detectedThirdPartyMods]) {
-      [startButton_ setEnabled:NO];
+      [_startButton setEnabled:NO];
 
-      uploadDescription_ = [[UILabel alloc] init];
-      [uploadDescription_
+      _uploadDescription = [[UILabel alloc] init];
+      [_uploadDescription
           setText:NSLocalizedString(@"IDS_IOS_SAFE_MODE_SENDING_CRASH_REPORT",
                                     @"")];
-      [uploadDescription_ setFont:[UIFont systemFontOfSize:13]];
-      uploadDescription_.textColor = [UIColor colorNamed:kTextSecondaryColor];
-      [uploadDescription_ sizeToFit];
-      [self centerView:uploadDescription_ afterView:startButton_];
-      [innerView_ addSubview:uploadDescription_];
+      [_uploadDescription setFont:[UIFont systemFontOfSize:13]];
+      _uploadDescription.textColor = [UIColor colorNamed:kTextSecondaryColor];
+      [_uploadDescription sizeToFit];
+      [self centerView:_uploadDescription afterView:_startButton];
+      [_innerView addSubview:_uploadDescription];
 
-      uploadProgress_ = [[UIProgressView alloc]
+      _uploadProgress = [[UIProgressView alloc]
           initWithProgressViewStyle:UIProgressViewStyleDefault];
-      [self centerView:uploadProgress_ afterView:nil];
-      frame = [uploadProgress_ frame];
+      [self centerView:_uploadProgress afterView:nil];
+      frame = [_uploadProgress frame];
       frame.origin.y =
-          CGRectGetMaxY([uploadDescription_ frame]) + kUploadProgressSpacing;
-      [uploadProgress_ setFrame:frame];
-      [innerView_ addSubview:uploadProgress_];
+          CGRectGetMaxY([_uploadDescription frame]) + kUploadProgressSpacing;
+      [_uploadProgress setFrame:frame];
+      [_innerView addSubview:_uploadProgress];
 
-      lastView = uploadProgress_;
+      lastView = _uploadProgress;
       [self startUploadProgress];
     }
   }
@@ -255,9 +255,9 @@ const NSTimeInterval kUploadTotalTime = 5;
   CGSize scrollSize =
       CGSizeMake(mainBounds.size.width,
                  CGRectGetMaxY([lastView frame]) + kVerticalSpacing);
-  frame = [innerView_ frame];
+  frame = [_innerView frame];
   frame.size.height = scrollSize.height;
-  [innerView_ setFrame:frame];
+  [_innerView setFrame:frame];
   scrollSize.height += frame.origin.y;
   [scrollView setContentSize:scrollSize];
 }
@@ -269,8 +269,8 @@ const NSTimeInterval kUploadTotalTime = 5;
 #pragma mark - Private
 
 - (void)startUploadProgress {
-  uploadStartTime_ = [NSDate date];
-  uploadTimer_ =
+  _uploadStartTime = [NSDate date];
+  _uploadTimer =
       [NSTimer scheduledTimerWithTimeInterval:kUploadPumpInterval
                                        target:self
                                      selector:@selector(pumpUploadProgress)
@@ -280,28 +280,28 @@ const NSTimeInterval kUploadTotalTime = 5;
 
 - (void)pumpUploadProgress {
   NSTimeInterval elapsed =
-      [[NSDate date] timeIntervalSinceDate:uploadStartTime_];
+      [[NSDate date] timeIntervalSinceDate:_uploadStartTime];
   // Theoretically we could stop early when the value returned by
   // breakpad::GetCrashReportCount() changes, but this is simpler. If we decide
   // to look for a change in crash report count, then we also probably want to
   // replace the UIProgressView with a UIActivityIndicatorView.
   if (elapsed <= kUploadTotalTime) {
-    [uploadProgress_ setProgress:elapsed / kUploadTotalTime animated:YES];
+    [_uploadProgress setProgress:elapsed / kUploadTotalTime animated:YES];
   } else {
-    [uploadTimer_ invalidate];
+    [_uploadTimer invalidate];
 
-    [startButton_ setEnabled:YES];
-    [uploadDescription_
+    [_startButton setEnabled:YES];
+    [_uploadDescription
         setText:NSLocalizedString(@"IDS_IOS_SAFE_MODE_CRASH_REPORT_SENT", @"")];
-    [uploadDescription_ sizeToFit];
-    [self centerView:uploadDescription_ afterView:startButton_];
-    [uploadProgress_ setHidden:YES];
+    [_uploadDescription sizeToFit];
+    [self centerView:_uploadDescription afterView:_startButton];
+    [_uploadProgress setHidden:YES];
   }
 }
 
 - (void)startBrowserFromSafeMode {
   breakpad_helper::RestoreDefaultConfiguration();
-  [delegate_ startBrowserFromSafeMode];
+  [_delegate startBrowserFromSafeMode];
 }
 
 @end

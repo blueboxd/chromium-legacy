@@ -76,6 +76,10 @@ public class VrConsentDialog
         onUserGesture(false);
     }
 
+    private static String bulletedString(Resources resources, int id) {
+        return resources.getString(R.string.xr_consent_bullet, resources.getString(id));
+    }
+
     public void show(@NonNull ChromeActivity activity, @NonNull VrConsentListener listener) {
         mListener = listener;
 
@@ -84,16 +88,19 @@ public class VrConsentDialog
         String dialogTitle = resources.getString(R.string.xr_consent_dialog_title,
                 UrlFormatter.formatUrlForSecurityDisplayOmitScheme(mUrl));
 
-        String dialogBody = resources.getString(R.string.xr_consent_dialog_description_default);
+        String dialogBody =
+                resources.getString(R.string.xr_consent_dialog_description_default) + "\n";
         switch (mConsentLevel) {
             case XrConsentPromptLevel.VR_FLOOR_PLAN:
-                dialogBody += resources.getString(
+                dialogBody += bulletedString(resources,
                                       R.string.xr_consent_dialog_description_physical_features)
-                        + resources.getString(R.string.xr_consent_dialog_description_floor_plan);
+                        + "\n"
+                        + bulletedString(
+                                resources, R.string.xr_consent_dialog_description_floor_plan);
                 break;
             case XrConsentPromptLevel.VR_FEATURES:
-                dialogBody += resources.getString(
-                        R.string.xr_consent_dialog_description_physical_features);
+                dialogBody += bulletedString(
+                        resources, R.string.xr_consent_dialog_description_physical_features);
                 break;
             case XrConsentPromptLevel.DEFAULT:
             default:

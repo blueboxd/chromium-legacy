@@ -8,6 +8,7 @@ js_type_check("closure_compile") {
   deps = [
     ":clear_browsing_data_browser_proxy",
     ":clear_browsing_data_dialog",
+    ":installed_app_checkbox",
   ]
 }
 
@@ -28,5 +29,12 @@ js_library("clear_browsing_data_dialog") {
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:web_ui_listener_behavior",
+  ]
+}
+
+js_library("installed_app_checkbox") {
+  deps = [
+    ":clear_browsing_data_browser_proxy",
+    "../controls:settings_boolean_control_behavior",
   ]
 }

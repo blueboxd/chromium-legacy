@@ -1190,7 +1190,6 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2665919335226618153">Hay aksi! Biçimlendirme sırasında bir hata oluştu.</translation>
 <translation id="2666990579225592931">Misafir Penceresi Aç</translation>
 <translation id="2667463864537187133">Yazım denetimini yönet</translation>
-<translation id="2669093958999339774">Bildirim istemlerinin sizi rahatsız etmesini engelleyin ve bunun yerine bilgiyi daha az rahatsız edici bir şekilde alın.</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" />, bir Chrome sekmesini paylaşıyor.</translation>
 <translation id="2670429602441959756">Bu sayfa henüz Sanal Gerçeklik'te desteklenmeyen özellikler içeriyor. Sayfadan çıkılıyor...</translation>
 <translation id="2671451824761031126">Yer işaretleriniz ve ayarlarınız hazır</translation>
@@ -1964,7 +1963,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="37613671848467444">&amp;Gizli Pencerede Aç</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Bir USB cihazla iletişim kurma}other{# USB cihazla iletişim kurma}}</translation>
 <translation id="3765246971671567135">Çevrimdışı demo modu politikası okunamadı.</translation>
-<translation id="3767376082821709728">Ziyaret ettiğiniz yeni siteler size bildirim gönderemez</translation>
 <translation id="3768037234834996183">Tercihleriniz senkronize ediliyor...</translation>
 <translation id="377050016711188788">Dondurma</translation>
 <translation id="3771294271822695279">Video Dosyaları</translation>
@@ -3032,7 +3030,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5370819323174483825">&amp;Yeniden Yükle</translation>
 <translation id="5372529912055771682">Sağlanan kayıt modu işletim sisteminin bu sürümü tarafından desteklenmiyor. Lütfen en yeni sürümü kullandığınızdan emin olun ve tekrar deneyin.</translation>
 <translation id="5372579129492968947">Uzantının sabitlemesini kaldır</translation>
-<translation id="5374359983950678924">Resmi değiştir</translation>
 <translation id="5376169624176189338">Geri dönmek için tıkla, geçmişi görmek için tıklayıp tut</translation>
 <translation id="5376931455988532197">Dosya çok büyük</translation>
 <translation id="537813040452600081">Bu pencerede görüntülediğiniz sayfalar tarayıcı geçmişinde görünmez ve oturumu kapatmanızdan sonra bilgisayarda çerezler gibi başka izler bırakmaz. İndirdiğiniz dosyalar ve oluşturduğunuz yer işaretleri saklanmaz.</translation>
@@ -4907,7 +4904,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8044899503464538266">Yavaş</translation>
 <translation id="8045253504249021590">Senkronizasyon Google Hesap Özeti tarafından durduruldu.</translation>
 <translation id="8045923671629973368">Uygulama kimliğini veya web mağazası URL'sini girin</translation>
-<translation id="8046278916126163020">Ziyaret ettiğiniz yeni siteler sizden bildirim göndermeye izin vermenizi isteyebilir</translation>
 <translation id="804786196054284061">Son Kullanıcı Lisans Sözleşmesi</translation>
 <translation id="8049705080247101012">Google <ph name="EXTENSION_NAME" /> uzantısını kötü amaçlı olarak işaretledi ve yükleme işlemi engellendi</translation>
 <translation id="8050038245906040378">Microsoft Ticari Kod İmzalama</translation>

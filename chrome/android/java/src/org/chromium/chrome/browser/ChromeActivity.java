@@ -105,7 +105,6 @@ import org.chromium.chrome.browser.media.PictureInPictureController;
 import org.chromium.chrome.browser.metrics.ActivityTabStartupMetricsTracker;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
-import org.chromium.chrome.browser.modaldialog.AppModalPresenter;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.nfc.BeamController;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -161,6 +160,7 @@ import org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenCoordi
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.module_installer.builder.Module;

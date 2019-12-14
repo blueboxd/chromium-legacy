@@ -185,7 +185,9 @@ std::string IdentityInternalsUIMessageHandler::GetStatus(
     const extensions::IdentityTokenCacheValue& token_cache_value) {
   switch (token_cache_value.status()) {
     case extensions::IdentityTokenCacheValue::CACHE_STATUS_ADVICE:
-      // Fallthrough to NOT FOUND case, as ADVICE is short lived.
+    case extensions::IdentityTokenCacheValue::CACHE_STATUS_REMOTE_CONSENT:
+      // Fallthrough to NOT FOUND case, as ADVICE and REMOTE_CONSENT are short
+      // lived.
     case extensions::IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND:
       return "Not Found";
     case extensions::IdentityTokenCacheValue::CACHE_STATUS_TOKEN:

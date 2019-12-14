@@ -1187,7 +1187,6 @@
 <translation id="2665919335226618153">אוי, לא! היתה שגיאה במהלך הפרמוט.</translation>
 <translation id="2666990579225592931">פתיחת חלון במצב אורח</translation>
 <translation id="2667463864537187133">ניהול בדיקת איות</translation>
-<translation id="2669093958999339774">חסימה של בקשות קופצות למשלוח התראות: במקומן יוצג חיווי על החסימה בסרגל הכתובות</translation>
 <translation id="2670102641511624474">‏<ph name="APP_NAME" /> משתף כרטיסיית Chrome.</translation>
 <translation id="2670429602441959756">‏הדף הזה מכיל תכונות שעדיין אינן נתמכות ב-VR. אי אפשר להישאר כאן...</translation>
 <translation id="2671451824761031126">הסימניות וההגדרות שלך מוכנות</translation>
@@ -1961,7 +1960,6 @@
 <translation id="37613671848467444">פתח בחלון &amp;גלישה בסתר</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{‏תקשורת עם מכשיר USB אחד}two{‏תקשורת עם # מכשירי USB}many{‏תקשורת עם # מכשירי USB}other{‏תקשורת עם # מכשירי USB}}</translation>
 <translation id="3765246971671567135">לא ניתן לקרוא מדיניות של מצב הדגמה לא מקוון.</translation>
-<translation id="3767376082821709728">אתרים חדשים שאליהם נכנסים לא יכולים לשלוח התראות</translation>
 <translation id="3768037234834996183">מסנכרן את ההעדפות שלך...</translation>
 <translation id="377050016711188788">גלידה</translation>
 <translation id="3771294271822695279">קובצי וידאו</translation>
@@ -3029,7 +3027,6 @@
 <translation id="5370819323174483825">&amp;טען מחדש</translation>
 <translation id="5372529912055771682">מצב ההרשמה שסופק אינו נתמך על ידי גרסה זו של מערכת ההפעלה. ודא שאתה מפעיל את הגרסה החדשה ביותר ונסה שוב.</translation>
 <translation id="5372579129492968947">ביטול הצמדת התוסף</translation>
-<translation id="5374359983950678924">שנה תמונה</translation>
 <translation id="5376169624176189338">לחץ כדי לחזור, לחץ והחזק כדי לראות את ההיסטוריה</translation>
 <translation id="5376931455988532197">הקובץ גדול מדי</translation>
 <translation id="537813040452600081">‏דפים שתעיין בהם בחלון זה לא יופיעו בהיסטוריה של הדפדפן, והם לא ישאירו במחשב עקבות אחרים, כגון קובצי Cookie, לאחר שתצא. קבצים שתוריד וסימניות שתיצור לא יישמרו.</translation>
@@ -4903,7 +4900,6 @@
 <translation id="8044899503464538266">אטי</translation>
 <translation id="8045253504249021590">‏הסינכרון הושבת באמצעות מרכז השליטה של Google.</translation>
 <translation id="8045923671629973368">הזנה של מזהה יישום או כתובת אתר של חנות אינטרנט</translation>
-<translation id="8046278916126163020">אתרים חדשים שאליהם נכנסים יכולים לבקש הרשאה לשליחת התראות</translation>
 <translation id="804786196054284061">הסכם רישיון למשתמש קצה</translation>
 <translation id="8049705080247101012">‏Google סימנה את "<ph name="EXTENSION_NAME" />" כזדוני, וההתקנה נמנעה</translation>
 <translation id="8050038245906040378">‏חתימת קוד מסחרי של Microsoft</translation>

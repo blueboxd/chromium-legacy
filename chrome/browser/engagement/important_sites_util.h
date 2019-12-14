@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
+#include "build/build_config.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "url/gurl.h"
 
@@ -29,6 +31,9 @@ class ImportantSitesUtil {
 #endif
 
   struct ImportantDomainInfo {
+    ImportantDomainInfo();
+    ~ImportantDomainInfo();
+    ImportantDomainInfo(const ImportantDomainInfo&);
     std::string registerable_domain;
     GURL example_origin;
     double engagement_score = 0;
@@ -36,6 +41,8 @@ class ImportantSitesUtil {
     // |usage| has to be initialized by ImportantSitesUsageCounter before it
     // will contain the number of bytes used for quota and localstorage.
     int64_t usage = 0;
+    // Only set if the domain belongs to an installed app.
+    base::Optional<std::string> app_name;
   };
 
   // Do not change the values here, as they are used for UMA histograms.
@@ -66,12 +73,14 @@ class ImportantSitesUtil {
       Profile* profile,
       size_t max_results);
 
+#if !defined(OS_ANDROID)
   // Return the top |<=max_results| important registrable domains that have an
   // associated installed app. |max_results| is assumed to be small.
   static std::vector<ImportantDomainInfo> GetInstalledRegisterableDomains(
       browsing_data::TimePeriod time_period,
       Profile* profile,
       size_t max_results);
+#endif
 
   // Record the sites that the user chose to blacklist from clearing (in the
   // Clear Browsing Dialog) and the sites they ignored. The blacklisted sites

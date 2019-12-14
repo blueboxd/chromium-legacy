@@ -48,7 +48,7 @@ void CompareTextRuns(
   EXPECT_EQ(expected_style.font_name, actual_style.font_name);
   EXPECT_EQ(expected_style.font_weight, actual_style.font_weight);
   EXPECT_EQ(expected_style.render_mode, actual_style.render_mode);
-  EXPECT_EQ(expected_style.font_size, actual_style.font_size);
+  EXPECT_FLOAT_EQ(expected_style.font_size, actual_style.font_size);
   EXPECT_EQ(expected_style.fill_color, actual_style.fill_color);
   EXPECT_EQ(expected_style.stroke_color, actual_style.stroke_color);
   EXPECT_EQ(expected_style.is_italic, actual_style.is_italic);

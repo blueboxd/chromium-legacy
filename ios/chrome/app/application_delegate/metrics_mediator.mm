@@ -75,7 +75,7 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 
   // Observer for the connection type.  Contains a valid object only if the
   // metrics setting is set to wifi-only.
-  std::unique_ptr<ConnectionTypeObserverBridge> connectionTypeObserverBridge_;
+  std::unique_ptr<ConnectionTypeObserverBridge> _connectionTypeObserverBridge;
 }
 
 // Starts or stops metrics recording and/or uploading.
@@ -316,12 +316,12 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 
 - (void)setWatchWWANEnabled:(BOOL)enabled {
   if (!enabled) {
-    connectionTypeObserverBridge_.reset();
+    _connectionTypeObserverBridge.reset();
     return;
   }
 
-  if (!connectionTypeObserverBridge_) {
-    connectionTypeObserverBridge_.reset(new ConnectionTypeObserverBridge(self));
+  if (!_connectionTypeObserverBridge) {
+    _connectionTypeObserverBridge.reset(new ConnectionTypeObserverBridge(self));
   }
 }
 

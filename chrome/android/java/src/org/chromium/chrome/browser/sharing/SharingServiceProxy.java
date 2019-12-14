@@ -114,6 +114,10 @@ public class SharingServiceProxy {
         return deviceInfo;
     }
 
+    /**
+     * Adds a callback to be run when the SharingDeviceSource is ready. If a callback is added when
+     * it is already ready, it will be run immediately.
+     */
     public void addDeviceCandidatesInitializedObserver(Runnable callback) {
         if (sNativeSharingServiceProxyAndroid == 0) {
             callback.run();

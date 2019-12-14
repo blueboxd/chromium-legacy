@@ -25,7 +25,7 @@ class BluetoothLowEnergyPeripheralBridge;
 // This class will serve as the Objective-C delegate of CBPeripheral.
 @interface BluetoothLowEnergyPeripheralDelegate
     : NSObject<CBPeripheralDelegate> {
-  std::unique_ptr<device::BluetoothLowEnergyPeripheralBridge> bridge_;
+  std::unique_ptr<device::BluetoothLowEnergyPeripheralBridge> _bridge;
 }
 
 - (id)initWithBluetoothLowEnergyDeviceMac:

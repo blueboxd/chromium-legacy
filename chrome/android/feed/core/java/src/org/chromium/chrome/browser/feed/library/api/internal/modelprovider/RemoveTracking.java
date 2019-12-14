@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.feed.library.api.internal.modelprovider;
 
 import org.chromium.base.Consumer;
-import org.chromium.chrome.browser.feed.library.common.functional.Function;
+import org.chromium.base.Function;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamFeature;
 
 import java.util.ArrayList;

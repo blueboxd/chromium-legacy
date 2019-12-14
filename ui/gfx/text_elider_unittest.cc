@@ -375,16 +375,20 @@ TEST(TextEliderTest, ElideTextLongStrings) {
   }
 
   size_t number_of_trailing_as = (data_scheme_length + number_of_as) / 2;
-  base::string16 long_string_middle(data_scheme +
-      base::string16(number_of_as - number_of_trailing_as, 'a') + kEllipsisStr +
-      base::string16(number_of_trailing_as, 'a'));
+  base::string16 long_string_middle(
+      data_scheme + base::string16(number_of_as - number_of_trailing_as, 'a') +
+      kEllipsisStr + base::string16(number_of_trailing_as, 'a'));
+#if !defined(OS_IOS)
+  long_string_middle += kEllipsisStr;
+#endif
+
   UTF16Testcase testcases_middle[] = {
-     { data_scheme + ten_a,              data_scheme + ten_a },
-     { data_scheme + hundred_a,          data_scheme + hundred_a },
-     { data_scheme + thousand_a,         long_string_middle },
-     { data_scheme + ten_thousand_a,     long_string_middle },
-     { data_scheme + hundred_thousand_a, long_string_middle },
-     { data_scheme + million_a,          long_string_middle },
+      {data_scheme + ten_a, data_scheme + ten_a},
+      {data_scheme + hundred_a, data_scheme + hundred_a},
+      {data_scheme + thousand_a, long_string_middle},
+      {data_scheme + ten_thousand_a, long_string_middle},
+      {data_scheme + hundred_thousand_a, long_string_middle},
+      {data_scheme + million_a, long_string_middle},
   };
 
   for (size_t i = 0; i < base::size(testcases_middle); ++i) {
@@ -393,21 +397,25 @@ TEST(TextEliderTest, ElideTextLongStrings) {
     EXPECT_EQ(testcases_middle[i].output.size(),
               ElideText(testcases_middle[i].input, font_list,
                         GetStringWidthF(testcases_middle[i].output, font_list),
-                        ELIDE_MIDDLE).size());
-    EXPECT_EQ(kEllipsisStr,
-              ElideText(testcases_middle[i].input, font_list, ellipsis_width,
-                        ELIDE_MIDDLE));
+                        ELIDE_MIDDLE)
+                  .size());
+    EXPECT_EQ(kEllipsisStr, ElideText(testcases_middle[i].input, font_list,
+                                      ellipsis_width, ELIDE_MIDDLE));
   }
 
   base::string16 long_string_beginning(
       kEllipsisStr + base::string16(number_of_as, 'a'));
+#if !defined(OS_IOS)
+  long_string_beginning += kEllipsisStr;
+#endif
+
   UTF16Testcase testcases_beginning[] = {
-     { data_scheme + ten_a,              data_scheme + ten_a },
-     { data_scheme + hundred_a,          data_scheme + hundred_a },
-     { data_scheme + thousand_a,         long_string_beginning },
-     { data_scheme + ten_thousand_a,     long_string_beginning },
-     { data_scheme + hundred_thousand_a, long_string_beginning },
-     { data_scheme + million_a,          long_string_beginning },
+      {data_scheme + ten_a, data_scheme + ten_a},
+      {data_scheme + hundred_a, data_scheme + hundred_a},
+      {data_scheme + thousand_a, long_string_beginning},
+      {data_scheme + ten_thousand_a, long_string_beginning},
+      {data_scheme + hundred_thousand_a, long_string_beginning},
+      {data_scheme + million_a, long_string_beginning},
   };
   for (size_t i = 0; i < base::size(testcases_beginning); ++i) {
     EXPECT_EQ(testcases_beginning[i].output.size(),
@@ -415,9 +423,8 @@ TEST(TextEliderTest, ElideTextLongStrings) {
                   testcases_beginning[i].input, font_list,
                   GetStringWidthF(testcases_beginning[i].output, font_list),
                   ELIDE_HEAD).size());
-    EXPECT_EQ(kEllipsisStr,
-              ElideText(testcases_beginning[i].input, font_list, ellipsis_width,
-                        ELIDE_HEAD));
+    EXPECT_EQ(kEllipsisStr, ElideText(testcases_beginning[i].input, font_list,
+                                      ellipsis_width, ELIDE_HEAD));
   }
 }
 

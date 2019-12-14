@@ -1190,7 +1190,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2665919335226618153">Ah, não! Ocorreu um erro durante a formatação.</translation>
 <translation id="2666990579225592931">Abrir janela de visitante</translation>
 <translation id="2667463864537187133">Gerenciar a verificação ortográfica</translation>
-<translation id="2669093958999339774">Impedir que prompts de notificação interrompam você e usar uma forma de mensagem mais silenciosa</translation>
 <translation id="2670102641511624474">O app <ph name="APP_NAME" /> está compartilhando uma guia do Chrome.</translation>
 <translation id="2670429602441959756">Esta página contém recursos que ainda não são compatíveis com a realidade virtual. Saindo…</translation>
 <translation id="2671451824761031126">Seus favoritos e configurações estão prontos</translation>
@@ -1964,7 +1963,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="37613671848467444">Abrir em &amp;janela anônima</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Comunicar-se com um dispositivo USB}one{Comunicar-se com # dispositivos USB}other{Comunicar-se com # dispositivos USB}}</translation>
 <translation id="3765246971671567135">Não foi possível ler a política do modo de demonstração off-line.</translation>
-<translation id="3767376082821709728">Os sites que você visita pela primeira vez não podem enviar notificações</translation>
 <translation id="3768037234834996183">Sincronizando suas preferências...</translation>
 <translation id="377050016711188788">Sorvete</translation>
 <translation id="3771294271822695279">Arquivos de vídeo</translation>
@@ -3032,7 +3030,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="5370819323174483825">&amp;Recarregar</translation>
 <translation id="5372529912055771682">O modo de inscrição fornecido não é compatível com esta versão do sistema operacional. Verifique se você está executando a versão mais recente e tente novamente.</translation>
 <translation id="5372579129492968947">Libere a extensão</translation>
-<translation id="5374359983950678924">Alterar imagem</translation>
 <translation id="5376169624176189338">Clique para voltar, mantenha pressionado para ver o histórico</translation>
 <translation id="5376931455988532197">Arquivo muito grande</translation>
 <translation id="537813040452600081">As páginas que você visualiza nesta janela não aparecerão no histórico do navegador nem deixarão outros rastros, como cookies, no computador depois que você sair. Os downloads que você fizer e os favoritos que criar não serão preservados.</translation>
@@ -4909,7 +4906,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8044899503464538266">Lento</translation>
 <translation id="8045253504249021590">A sincronização foi interrompida por meio do Painel do Google.</translation>
 <translation id="8045923671629973368">Informe o ID do aplicativo ou o URL da loja on-line</translation>
-<translation id="8046278916126163020">Os sites que você visita pela primeira vez podem pedir para enviar notificações</translation>
 <translation id="804786196054284061">Contrato de licença do usuário final</translation>
 <translation id="8049705080247101012">O Google sinalizou a extensão "<ph name="EXTENSION_NAME" />" como maliciosa e impediu a instalação</translation>
 <translation id="8050038245906040378">Assinatura do código comercial da Microsoft</translation>

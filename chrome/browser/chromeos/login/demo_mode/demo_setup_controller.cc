@@ -263,9 +263,6 @@ DemoSetupController::DemoSetupError::CreateFromEnrollmentStatus(
     case policy::EnrollmentStatus::DM_TOKEN_STORE_FAILED:
       return DemoSetupError(ErrorCode::kDMTokenStoreError,
                             RecoveryMethod::kUnknown, debug_message);
-    case policy::EnrollmentStatus::LICENSE_REQUEST_FAILED:
-      return DemoSetupError(ErrorCode::kLicenseError, RecoveryMethod::kUnknown,
-                            debug_message);
     case policy::EnrollmentStatus::OFFLINE_POLICY_LOAD_FAILED:
     case policy::EnrollmentStatus::OFFLINE_POLICY_DECODING_FAILED:
       return DemoSetupError(ErrorCode::kOfflinePolicyError,
@@ -650,11 +647,6 @@ void DemoSetupController::OnDeviceEnrolled() {
   StartupUtils::MarkDeviceRegistered(
       base::BindOnce(&DemoSetupController::OnDeviceRegistered,
                      weak_ptr_factory_.GetWeakPtr()));
-}
-
-void DemoSetupController::OnMultipleLicensesAvailable(
-    const EnrollmentLicenseMap& licenses) {
-  NOTREACHED();
 }
 
 void DemoSetupController::OnDeviceAttributeUploadCompleted(bool success) {

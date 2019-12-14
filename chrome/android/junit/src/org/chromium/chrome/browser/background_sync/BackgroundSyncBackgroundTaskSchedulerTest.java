@@ -30,7 +30,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.background_sync.BackgroundSyncBackgroundTaskScheduler.BackgroundSyncTask;
 import org.chromium.chrome.browser.background_task_scheduler.ChromeBackgroundTaskFactory;
-import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;
@@ -70,11 +69,8 @@ public class BackgroundSyncBackgroundTaskSchedulerTest {
     private void verifyFixedTaskInfoValues(
             TaskInfo info, @BackgroundSyncBackgroundTaskScheduler.BackgroundSyncTask int taskType) {
         int taskId = BackgroundSyncBackgroundTaskScheduler.getAppropriateTaskId(taskType);
-        Class<? extends NativeBackgroundTask> taskClass =
-                BackgroundSyncBackgroundTaskScheduler.getAppropriateTaskClass(taskType);
 
         assertEquals(taskId, info.getTaskId());
-        assertEquals(taskClass, info.getBackgroundTaskClass());
         assertTrue(info.isPersisted());
         assertFalse(info.isPeriodic());
         assertTrue(info.getOneOffInfo().expiresAfterWindowEndTime());

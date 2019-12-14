@@ -347,17 +347,20 @@ def _make_blink_api_call(code_node, cg_context, num_of_args=None):
                  or name_style.api_func(cg_context.member_like.identifier))
     if cg_context.attribute_set:
         func_name = name_style.api_func("set", func_name)
+    if cg_context.constructor:
+        func_name = "Create"
     if "Reflect" in ext_attrs:  # [Reflect]
         func_name = _make_reflect_accessor_func_name(cg_context)
 
     is_partial_or_mixin = (code_generator_info.defined_in_partial
                            or code_generator_info.defined_in_mixin)
-    if cg_context.member_like.is_static or is_partial_or_mixin:
+    if (cg_context.constructor or cg_context.member_like.is_static
+            or is_partial_or_mixin):
         class_like = cg_context.member_like.owner_mixin or cg_context.class_like
         class_name = (code_generator_info.receiver_implemented_as
                       or name_style.class_(class_like.identifier))
         func_designator = "{}::{}".format(class_name, func_name)
-        if not cg_context.member_like.is_static:
+        if not (cg_context.constructor or cg_context.member_like.is_static):
             arguments.insert(0, "*${blink_receiver}")
     else:
         func_designator = _format("${blink_receiver}->{}", func_name)
@@ -466,6 +469,26 @@ def make_check_argument_length(cg_context):
         ])
 
 
+def make_check_constructor_call(cg_context):
+    assert isinstance(cg_context, CodeGenContext)
+
+    T = TextNode
+
+    return SequenceNode([
+        CxxUnlikelyIfNode(
+            cond="!${info}.IsConstructCall()",
+            body=T("${exception_state}.ThrowTypeError("
+                   "ExceptionMessages::ConstructorNotCallableAsFunction("
+                   "${class_like_name}));\n"
+                   "return;")),
+        CxxLikelyIfNode(
+            cond=("ConstructorMode::Current(${isolate}) == "
+                  "ConstructorMode::kWrapExistingObject"),
+            body=T("V8SetReturnValue(${info}, ${v8_receiver});\n"
+                   "return;")),
+    ])
+
+
 def make_check_receiver(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
@@ -524,6 +547,13 @@ def make_check_security_of_return_value(cg_context):
         T("// [CheckSecurity=ReturnValue]"),
         UnlikelyExitNode(cond=cond, body=body),
     ])
+
+
+def make_cooperative_scheduling_safepoint(cg_context):
+    assert isinstance(cg_context, CodeGenContext)
+
+    return TextNode("scheduler::CooperativeSchedulingManager::Instance()"
+                    "->Safepoint();")
 
 
 def make_log_activity(cg_context):
@@ -1160,6 +1190,85 @@ def make_attribute_set_callback_def(cg_context, function_name):
     return func_def
 
 
+def make_overload_dispatcher_function_def(cg_context, function_name):
+    assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
+
+    T = TextNode
+
+    func_def = _make_empty_callback_def(cg_context, function_name)
+    body = func_def.body
+
+    if cg_context.operation_group:
+        body.append(make_cooperative_scheduling_safepoint(cg_context))
+        body.append(T(""))
+
+    if cg_context.constructor_group:
+        body.append(make_check_constructor_call(cg_context))
+        body.append(T(""))
+
+    body.append(make_overload_dispatcher(cg_context))
+
+    return func_def
+
+
+def make_constructor_function_def(cg_context, function_name):
+    assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
+
+    T = TextNode
+
+    func_def = _make_empty_callback_def(cg_context, function_name)
+    body = func_def.body
+
+    body.extend([
+        make_runtime_call_timer_scope(cg_context),
+        make_report_deprecate_as(cg_context),
+        make_report_measure_as(cg_context),
+        make_log_activity(cg_context),
+        T(""),
+    ])
+
+    if "HTMLConstructor" in cg_context.constructor.extended_attributes:
+        body.append(T("// [HTMLConstructor]"))
+        text = _format(
+            "V8HTMLConstructor::HtmlConstructor("
+            "${info}, *${class_name}::GetWrapperTypeInfo(), "
+            "HTMLElementType::{});",
+            name_style.constant(cg_context.class_like.identifier))
+        body.append(T(text))
+    else:
+        body.append(
+            T("v8::Local<v8::Object> v8_wrapper = "
+              "${return_value}->AssociateWithWrapper(${isolate}, "
+              "${class_name}::GetWrapperTypeInfo(), ${v8_receiver});"))
+        body.append(T("V8SetReturnValue(${info}, v8_wrapper);"))
+
+    return func_def
+
+
+def make_constructor_callback_def(cg_context, function_name):
+    assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
+
+    constructor_group = cg_context.constructor_group
+
+    if len(constructor_group) == 1:
+        return make_constructor_function_def(
+            cg_context.make_copy(constructor=constructor_group[0]),
+            function_name)
+
+    node = SequenceNode()
+    for constructor in constructor_group:
+        node.append(
+            make_constructor_function_def(
+                cg_context.make_copy(constructor=constructor),
+                _make_overloaded_function_name(constructor)))
+    node.append(
+        make_overload_dispatcher_function_def(cg_context, function_name))
+    return node
+
+
 def make_operation_function_def(cg_context, function_name):
     assert isinstance(cg_context, CodeGenContext)
     assert isinstance(function_name, str)
@@ -1177,20 +1286,11 @@ def make_operation_function_def(cg_context, function_name):
         T(""),
         make_check_receiver(cg_context),
         T(""),
+        make_steps_of_ce_reactions(cg_context),
+        T(""),
+        make_check_security_of_return_value(cg_context),
         make_v8_set_return_value(cg_context),
     ])
-
-    return func_def
-
-
-def make_overload_dispatcher_function_def(cg_context, function_name):
-    assert isinstance(cg_context, CodeGenContext)
-    assert isinstance(function_name, str)
-
-    func_def = _make_empty_callback_def(cg_context, function_name)
-    body = func_def.body
-
-    body.append(make_overload_dispatcher(cg_context))
 
     return func_def
 
@@ -1199,7 +1299,7 @@ def make_operation_callback_def(cg_context, function_name):
     assert isinstance(cg_context, CodeGenContext)
     assert isinstance(function_name, str)
 
-    operation_group = cg_context.constructor_group or cg_context.operation_group
+    operation_group = cg_context.operation_group
 
     if len(operation_group) == 1:
         return make_operation_function_def(
@@ -1319,7 +1419,7 @@ def generate_interfaces(web_idl_database, output_dirs):
     filename = "v8_example_interface.cc"
     filepath = os.path.join(output_dirs['core'], filename)
 
-    interface = web_idl_database.find("WorkerGlobalScope")
+    interface = web_idl_database.find("TestInterfaceConstructor")
 
     cg_context = CodeGenContext(
         interface=interface, class_name=v8_bridge_class_name(interface))
@@ -1348,7 +1448,7 @@ def generate_interfaces(web_idl_database, output_dirs):
     for constructor_group in interface.constructor_groups:
         func_name = name_style.func("ConstructorCallback")
         code_node.append(
-            make_operation_callback_def(
+            make_constructor_callback_def(
                 cg_context.make_copy(constructor_group=constructor_group),
                 func_name))
 

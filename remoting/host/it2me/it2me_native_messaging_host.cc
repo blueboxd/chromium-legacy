@@ -242,8 +242,11 @@ void It2MeNativeMessagingHost::ProcessConnect(
   std::string username;
   message->GetString("userName", &username);
 
-  bool no_dialogs = false;
-  message->GetBoolean("noDialogs", &no_dialogs);
+  bool suppress_user_dialogs = false;
+  message->GetBoolean("suppressUserDialogs", &suppress_user_dialogs);
+
+  bool suppress_notifications = false;
+  message->GetBoolean("suppressNotifications", &suppress_notifications);
 
   bool terminate_upon_input = false;
   message->GetBoolean("terminateUponInput", &terminate_upon_input);
@@ -299,7 +302,8 @@ void It2MeNativeMessagingHost::ProcessConnect(
   // only supported on ChromeOS.
   it2me_host_ = factory_->CreateIt2MeHost();
 #if defined(OS_CHROMEOS) || !defined(NDEBUG)
-  it2me_host_->set_enable_dialogs(!no_dialogs);
+  it2me_host_->set_enable_dialogs(!suppress_user_dialogs);
+  it2me_host_->set_enable_notifications(!suppress_notifications);
   it2me_host_->set_terminate_upon_input(terminate_upon_input);
 #endif
   it2me_host_->Connect(host_context_->Copy(), std::move(policies),

@@ -83,37 +83,37 @@ void ContentSettingsObserverBridge::OnContentSettingChanged(
 }  // namespace
 
 @implementation ContentSettingBackedBoolean {
-  ContentSettingsType settingID_;
-  scoped_refptr<HostContentSettingsMap> settingsMap_;
-  std::unique_ptr<ContentSettingsObserverBridge> adaptor_;
-  std::unique_ptr<ContentSettingsObserver> content_settings_observer_;
+  ContentSettingsType _settingID;
+  scoped_refptr<HostContentSettingsMap> _settingsMap;
+  std::unique_ptr<ContentSettingsObserverBridge> _adaptor;
+  std::unique_ptr<ContentSettingsObserver> _content_settings_observer;
 }
 
-@synthesize settingID = settingID_;
-@synthesize observer = observer_;
-@synthesize inverted = inverted_;
-@synthesize isModifyingContentSetting = isModifyingContentSetting_;
+@synthesize settingID = _settingID;
+@synthesize observer = _observer;
+@synthesize inverted = _inverted;
+@synthesize isModifyingContentSetting = _isModifyingContentSetting;
 
 - (id)initWithHostContentSettingsMap:(HostContentSettingsMap*)settingsMap
                            settingID:(ContentSettingsType)settingID
                             inverted:(BOOL)inverted {
   self = [super init];
   if (self) {
-    settingID_ = settingID;
-    settingsMap_ = settingsMap;
-    inverted_ = inverted;
+    _settingID = settingID;
+    _settingsMap = settingsMap;
+    _inverted = inverted;
     // Listen for changes to the content setting.
-    adaptor_.reset(new ContentSettingsObserverBridge(self));
-    content_settings_observer_.reset(
-        new ContentSettingsObserver(adaptor_.get()));
-    content_settings_observer_->Add(settingsMap);
+    _adaptor.reset(new ContentSettingsObserverBridge(self));
+    _content_settings_observer.reset(
+        new ContentSettingsObserver(_adaptor.get()));
+    _content_settings_observer->Add(settingsMap);
   }
   return self;
 }
 
 - (BOOL)value {
   ContentSetting setting =
-      settingsMap_->GetDefaultContentSetting(settingID_, NULL);
+      _settingsMap->GetDefaultContentSetting(_settingID, NULL);
   return self.inverted ^ (setting == CONTENT_SETTING_ALLOW);
 }
 
@@ -121,7 +121,7 @@ void ContentSettingsObserverBridge::OnContentSettingChanged(
   ContentSetting setting =
       (self.inverted ^ value) ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
   self.isModifyingContentSetting = YES;
-  settingsMap_->SetDefaultContentSetting(settingID_, setting);
+  _settingsMap->SetDefaultContentSetting(_settingID, setting);
   self.isModifyingContentSetting = NO;
 }
 

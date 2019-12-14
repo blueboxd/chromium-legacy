@@ -738,8 +738,11 @@ class GFX_EXPORT RenderText {
   // |text|.
   base::i18n::TextDirection GetTextDirection(const base::string16& text);
 
-  // Adjust ranged styles to accommodate a new text length.
+  // Adjust ranged styles to accommodate a new |text_| length.
   void UpdateStyleLengths();
+
+  // Adjust ranged styles to accommodate a new |layout_text_| length.
+  void UpdateLayoutStyleLengths(size_t max_length) const;
 
   // Returns the line index for the given argument. |text_y| is relative to
   // the text bounds. Returns -1 if |text_y| is above the text and
@@ -779,10 +782,8 @@ class GFX_EXPORT RenderText {
   void OnTextAttributeChanged();
 
   // Computes the |layout_text_| by rewriting it from |text_|, if needed.
-  void EnsureLayoutTextUpdated() const;
-
   // Computes the layout break lists, if needed.
-  void EnsureLayoutTextAttributeUpdated() const;
+  void EnsureLayoutTextUpdated() const;
 
   // Elides |text| as needed to fit in the |available_width| using |behavior|.
   // |text_width| is the pre-calculated width of the text shaped by this render
@@ -993,9 +994,6 @@ class GFX_EXPORT RenderText {
 
   // Tell whether or not the |layout_text_| needs an update or is up to date.
   mutable bool layout_text_up_to_date_ = false;
-
-  // Tell whether or not the layout break lists need an update.
-  mutable bool layout_text_attributes_up_to_date_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(RenderText);
 };

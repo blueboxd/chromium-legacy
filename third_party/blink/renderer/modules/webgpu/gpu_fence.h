@@ -17,7 +17,6 @@ class GPUFence : public DawnObject<WGPUFence> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GPUFence* Create(GPUDevice* device, WGPUFence fence);
   explicit GPUFence(GPUDevice* device, WGPUFence fence);
   ~GPUFence() override;
 

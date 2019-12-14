@@ -502,10 +502,10 @@ class ComputedStyleBaseWriter(json5_generator.Writer):
 
         self._input_files = json5_file_paths
 
-        # Reads css_properties.json5, computed_style_field_aliases.json5 and
-        # computed_style_extra_fields.json5
+        # Reads css_properties.json5, computed_style_field_aliases.json5,
+        # runtime_enabled_features.json5 and computed_style_extra_fields.json5
         self._css_properties = css_properties.CSSProperties(
-            json5_file_paths[0:3])
+            json5_file_paths[0:4])
 
         # We sort the enum values based on each value's position in
         # the keywords as listed in css_properties.json5. This will ensure that
@@ -516,7 +516,7 @@ class ComputedStyleBaseWriter(json5_generator.Writer):
         # Thereby reduce the switch case statement to the minimum.
         properties = keyword_utils.sort_keyword_properties_by_canonical_order(
             self._css_properties.longhands,
-            json5_file_paths[4],
+            json5_file_paths[5],
             self.default_parameters)
         self._properties = properties + self._css_properties.extra_fields
 
@@ -527,11 +527,11 @@ class ComputedStyleBaseWriter(json5_generator.Writer):
         group_parameters = dict([
             (conf["name"], conf["cumulative_distribution"]) for conf in
             json5_generator.Json5File.load_from_files(
-                [json5_file_paths[6]]).name_dictionaries])
+                [json5_file_paths[7]]).name_dictionaries])
 
         properties_ranking = [
             x["name"].original for x in json5_generator.Json5File.load_from_files(
-                [json5_file_paths[5]]).name_dictionaries
+                [json5_file_paths[6]]).name_dictionaries
         ]
         _evaluate_rare_non_inherited_group(
             self._properties,
@@ -546,7 +546,7 @@ class ComputedStyleBaseWriter(json5_generator.Writer):
         self._root_group = _create_groups(self._properties)
         self._diff_functions_map = _create_diff_groups_map(
             json5_generator.Json5File.load_from_files(
-                [json5_file_paths[3]]).name_dictionaries,
+                [json5_file_paths[4]]).name_dictionaries,
             self._root_group)
 
         self._include_paths = _get_include_paths(self._properties)

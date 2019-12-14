@@ -114,11 +114,12 @@ enum ShellWindowId {
   // The container for the lock screen modal windows.
   kShellWindowId_LockSystemModalContainer,
 
-  // The container for shelf control widgets (navigation, hotseat).
+  // The container for shelf control widgets (navigation, hotseat, status area).
   kShellWindowId_ShelfControlContainer,
 
-  // The container for the status area.
-  kShellWindowId_StatusContainer,
+  // The container for the overview focus widget - widget that gets focused
+  // while overview session is active for accessibility purposes.
+  kShellWindowId_OverviewFocusContainer,
 
   // A parent container that holds the virtual keyboard container and ime
   // windows if any. This is to ensure that the virtual keyboard or ime window

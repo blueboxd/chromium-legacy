@@ -93,7 +93,7 @@
           "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only",
-          "--shard-timeout=500"
+          "--shard-timeout=800"
         ],
         "isolate_name": "angle_perftests",
         "merge": {
@@ -2285,7 +2285,7 @@
           "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only",
-          "--shard-timeout=500"
+          "--shard-timeout=800"
         ],
         "isolate_name": "angle_perftests",
         "merge": {
@@ -2649,7 +2649,7 @@
         "args": [
           "--gtest-benchmark-name=angle_perftests",
           "-v",
-          "--shard-timeout=600"
+          "--shard-timeout=800"
         ],
         "isolate_name": "angle_perftests",
         "merge": {
@@ -2769,7 +2769,7 @@
           "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only",
-          "--shard-timeout=500"
+          "--shard-timeout=800"
         ],
         "isolate_name": "angle_perftests",
         "merge": {
@@ -3344,7 +3344,7 @@
           "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only",
-          "--shard-timeout=500"
+          "--shard-timeout=800"
         ],
         "isolate_name": "angle_perftests",
         "merge": {
@@ -4366,7 +4366,7 @@
           "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only",
-          "--shard-timeout=500"
+          "--shard-timeout=800"
         ],
         "isolate_name": "angle_perftests",
         "merge": {
@@ -5516,7 +5516,7 @@
           "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only",
-          "--shard-timeout=500"
+          "--shard-timeout=800"
         ],
         "isolate_name": "angle_perftests",
         "merge": {
@@ -6061,7 +6061,7 @@
           "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only",
-          "--shard-timeout=500"
+          "--shard-timeout=800"
         ],
         "isolate_name": "angle_perftests",
         "merge": {

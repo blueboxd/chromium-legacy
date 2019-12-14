@@ -14,7 +14,7 @@ class Profile;
 // provides the native Linux theme.
 class ThemeServiceAuraLinux : public ThemeService {
  public:
-  ThemeServiceAuraLinux();
+  using ThemeService::ThemeService;
   ~ThemeServiceAuraLinux() override;
 
   // Overridden from ThemeService:

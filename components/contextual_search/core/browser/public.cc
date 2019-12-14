@@ -24,8 +24,4 @@ const int kContextualCardsDefinitionsIntegration = 4;
 const int kContextualCardsTranslationsIntegration = 5;
 const int kContextualCardsDiagnosticIntegration = 99;
 
-const int kContextualCardsSimplifiedServerMixin = 100;
-const char kContextualCardsSimplifiedServerMixinChar[] = "100";
-const char kContextualCardsSimplifiedServerWithDiagnosticChar[] = "199";
-
 }  // namespace contextual_search

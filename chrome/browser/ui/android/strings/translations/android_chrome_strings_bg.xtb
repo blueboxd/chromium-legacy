@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Да се изтегли ли отново файлът?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аудиофайл}other{# аудиофайла}}</translation>
 <translation id="2653659639078652383">Изпращане</translation>
-<translation id="2669093958999339774">Блокиране на подканите за известия, така че да не ви прекъсват, и вместо това използване на по-малко натрапчиво съобщение</translation>
 <translation id="2677748264148917807">Излизане</translation>
 <translation id="2704606927547763573">Копирано</translation>
 <translation id="2707726405694321444">Опресняване на страницата</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Отметката бе запазена в/ъв <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Синхронизиране на заден план</translation>
 <translation id="3749259744154402564">Не се поддържа</translation>
-<translation id="3767376082821709728">Новите сайтове, които посещавате, не могат да ви изпращат известия</translation>
 <translation id="3771001275138982843">Актуализацията не можа да бъде изтеглена</translation>
 <translation id="3771033907050503522">Раздели „инкогнито“</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Включете Bluetooth<ph name="END_LINK" />, за да разрешите сдвояването</translation>
@@ -957,7 +955,6 @@
 <translation id="8035133914807600019">Нова папка…</translation>
 <translation id="8037750541064988519">Остават <ph name="DAYS" /> дни</translation>
 <translation id="804335162455518893">SD картата не е намерена</translation>
-<translation id="8046278916126163020">Новите сайтове, които посещавате, може да поискат да ви изпращат известия</translation>
 <translation id="805047784848435650">Въз основа на историята ви на сърфиране</translation>
 <translation id="8051695050440594747">Налице: <ph name="MEGABYTES" /> МБ</translation>
 <translation id="8058746566562539958">Отваряне в нов раздел в Chrome</translation>

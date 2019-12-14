@@ -16,7 +16,6 @@
 #include "services/device/hid/hid_manager_impl.h"
 #include "services/device/hid/mock_hid_connection.h"
 #include "services/device/hid/mock_hid_service.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/hid.mojom.h"
 
 namespace device {
@@ -132,8 +131,7 @@ class HidManagerTest : public DeviceServiceTestBase {
     // Transfer the ownership of the |mock_hid_service| to HidManagerImpl.
     // It is safe to use the |mock_hid_service_| in this test.
     HidManagerImpl::SetHidServiceForTesting(std::move(mock_hid_service));
-    connector()->Connect(mojom::kServiceName,
-                         hid_manager_.BindNewPipeAndPassReceiver());
+    device_service()->BindHidManager(hid_manager_.BindNewPipeAndPassReceiver());
   }
 
   void TearDown() override { HidManagerImpl::SetHidServiceForTesting(nullptr); }

@@ -61,6 +61,9 @@ class CORE_EXPORT SystemClipboard {
   // Write the image only.
   void WriteImage(const SkBitmap&);
 
+  // Arbitrary unsanitized data from renderer.
+  void WriteRawData(const String& type, mojo_base::BigBuffer data);
+
   String ReadCustomData(const String& type);
   void WriteDataObject(DataObject*);
 

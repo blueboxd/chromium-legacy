@@ -16,15 +16,15 @@
 #endif
 
 @implementation MemoryDebuggerManager {
-  __weak UIView* debuggerParentView_;
-  MemoryDebugger* memoryDebugger_;
-  BooleanPrefMember showMemoryDebugger_;
+  __weak UIView* _debuggerParentView;
+  MemoryDebugger* _memoryDebugger;
+  BooleanPrefMember _showMemoryDebugger;
 }
 
 - (instancetype)initWithView:(UIView*)debuggerParentView
                        prefs:(PrefService*)prefs {
   if (self = [super init]) {
-    debuggerParentView_ = debuggerParentView;
+    _debuggerParentView = debuggerParentView;
 
     // Set up the callback for when the pref to show/hide the debugger changes.
     __weak MemoryDebuggerManager* weakSelf = self;
@@ -34,7 +34,7 @@
         [self onShowMemoryDebuggingToolsChange];
       }
     });
-    showMemoryDebugger_.Init(prefs::kShowMemoryDebuggingTools, prefs, callback);
+    _showMemoryDebugger.Init(prefs::kShowMemoryDebuggingTools, prefs, callback);
     // Invoke the pref change callback once to show the debugger on start up,
     // if necessary.
     [self onShowMemoryDebuggingToolsChange];
@@ -55,9 +55,9 @@
 
 // Shows or hides the debugger when the pref changes.
 - (void)onShowMemoryDebuggingToolsChange {
-  if (showMemoryDebugger_.GetValue()) {
-    memoryDebugger_ = [[MemoryDebugger alloc] init];
-    [debuggerParentView_ addSubview:memoryDebugger_];
+  if (_showMemoryDebugger.GetValue()) {
+    _memoryDebugger = [[MemoryDebugger alloc] init];
+    [_debuggerParentView addSubview:_memoryDebugger];
   } else {
     [self tearDownDebugger];
   }
@@ -65,9 +65,9 @@
 
 // Tears down the debugger so it can be deallocated.
 - (void)tearDownDebugger {
-  showMemoryDebugger_.Destroy();
-  [memoryDebugger_ invalidateTimers];
-  [memoryDebugger_ removeFromSuperview];
-  memoryDebugger_ = nil;
+  _showMemoryDebugger.Destroy();
+  [_memoryDebugger invalidateTimers];
+  [_memoryDebugger removeFromSuperview];
+  _memoryDebugger = nil;
 }
 @end

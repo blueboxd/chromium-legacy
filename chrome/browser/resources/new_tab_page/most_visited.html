@@ -17,7 +17,6 @@
       + 1px);
     display: flex;
     flex-wrap: wrap;
-    height: calc(2 * (var(--tile-size) + var(--tile-margin)));
     justify-content: center;
     margin: 10px auto;
     overflow: hidden;
@@ -131,8 +130,8 @@
           title$="[[item.title]]"
           hidden$="[[isHidden_(index, columnCount_)]]"
           on-keydown="onTileKeyDown_">
-        <cr-icon-button class="icon-more-vert" on-click="onTileActionMenu_"
-            tabindex="0"></cr-icon-button>
+        <cr-icon-button class$="[[getTileIconButtonIcon_(customLinksEnabled_)]]"
+            on-click="onTileIconButtonClick_" tabindex="0"></cr-icon-button>
         <div class="tile-icon">
           <img src$="[[getFaviconUrl_(item.url)]]" draggable="false"></img>
         </div>
@@ -184,9 +183,10 @@
           on-click="onUndoClick_">
         $i18n{undo}
       </cr-button>
-      <cr-button id="restore" aria-label="$i18n{restoreDefaultLinks}"
+      <cr-button id="restore"
+          aria-label$="[[getRestoreButtonText_(customLinksEnabled_)]]"
           on-click="onRestoreDefaultsClick_">
-        $i18n{restoreDefaultLinks}
+        [[getRestoreButtonText_(customLinksEnabled_)]]
       </cr-button>
     </template>
   </dom-if>

@@ -552,6 +552,12 @@ bool OverrideShouldShowPreviewCheck() {
       features::kPreviews, "override_should_show_preview_check", false);
 }
 
+bool ApplyDeferWhenOptimizationGuideDecisionUnknown() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kPreviews, "apply_deferallscript_when_guide_decision_unknown",
+      false);
+}
+
 }  // namespace params
 
 std::string GetStringNameForType(PreviewsType type) {

@@ -20,27 +20,6 @@ component("device_features") {
   defines = [ "DEVICE_FEATURES_IMPLEMENTATION" ]
 }
 
-source_set("manifest") {
-  sources = [
-    "manifest.cc",
-    "manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//services/device/public/mojom",
-    "//services/device/public/mojom:device_service",
-    "//services/device/public/mojom:generic_sensor",
-    "//services/device/public/mojom:usb",
-    "//services/device/public/mojom:usb_test",
-    "//services/service_manager/public/cpp",
-  ]
-
-  if (is_chromeos && use_dbus) {
-    defines = [ "USE_DBUS=1" ]
-  }
-}
-
 source_set("test_support") {
   testonly = true
 

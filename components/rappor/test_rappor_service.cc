@@ -60,11 +60,11 @@ TestSample::Shadow::Shadow(const TestSample::Shadow& other) {
   uint64_fields = other.uint64_fields;
 }
 
-TestSample::Shadow::~Shadow() {}
+TestSample::Shadow::~Shadow() = default;
 
 TestRapporServiceImpl::TestRapporServiceImpl()
     : RapporServiceImpl(&test_prefs_,
-                        base::Bind(&MockIsIncognito, &is_incognito_)),
+                        base::BindRepeating(&MockIsIncognito, &is_incognito_)),
       next_rotation_(base::TimeDelta()),
       is_incognito_(false) {
   RegisterPrefs(test_prefs_.registry());

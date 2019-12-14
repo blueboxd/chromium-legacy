@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">ファイルをもう一度ダウンロードしますか？</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# 件の音声ファイル}other{# 件の音声ファイル}}</translation>
 <translation id="2653659639078652383">送信</translation>
-<translation id="2669093958999339774">妨げになる形での通知の確認をブロックし、代わりに目立たない形でメッセージを表示します</translation>
 <translation id="2677748264148917807">このページを離れる</translation>
 <translation id="2704606927547763573">コピーしました</translation>
 <translation id="2707726405694321444">ページを更新</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> にブックマークしました</translation>
 <translation id="3744111561329211289">バックグラウンド同期</translation>
 <translation id="3749259744154402564">サポートされていません</translation>
-<translation id="3767376082821709728">初めてアクセスしたサイトは通知を表示できません</translation>
 <translation id="3771001275138982843">アップデートをダウンロードできませんでした</translation>
 <translation id="3771033907050503522">シークレットタブ</translation>
 <translation id="3773755127849930740">ペア設定するには <ph name="BEGIN_LINK" />Bluetooth をオン<ph name="END_LINK" />にしてください</translation>
@@ -957,7 +955,6 @@
 <translation id="8035133914807600019">新しいフォルダ...</translation>
 <translation id="8037750541064988519">残り <ph name="DAYS" /> 日</translation>
 <translation id="804335162455518893">SD カードが見つかりません</translation>
-<translation id="8046278916126163020">初めてアクセスしたサイトは通知を表示するかどうか確認できます</translation>
 <translation id="805047784848435650">閲覧履歴から</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB 利用可</translation>
 <translation id="8058746566562539958">新しい Chrome タブで開く</translation>

@@ -33,18 +33,18 @@
 
 - (id)initWithName:(NSString*)deviceName transportType:(int32_t)transportType {
   if (self = [super init]) {
-    deviceName_.reset([deviceName copy]);
-    transportType_ = transportType;
+    _deviceName.reset([deviceName copy]);
+    _transportType = transportType;
   }
   return self;
 }
 
 - (NSString*)deviceName {
-  return deviceName_;
+  return _deviceName;
 }
 
 - (int32_t)transportType {
-  return transportType_;
+  return _transportType;
 }
 
 @end  // @implementation DeviceNameAndTransportType

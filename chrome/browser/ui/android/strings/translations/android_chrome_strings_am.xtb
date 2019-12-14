@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">ፋይሉ እንደገና ይውረድ?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ኦዲዮ ፋይል}one{# ኦዲዮ ፋይሎች}other{# ኦዲዮ ፋይሎች}}</translation>
 <translation id="2653659639078652383">አስገባ</translation>
-<translation id="2669093958999339774">የማሳወቂያ ጥያቄዎች እርስዎን እንዳያቋርጥዎት ያግዱ እና በምትኩ ጸጥ ያለ መልዕክትን ይጠቀሙ</translation>
 <translation id="2677748264148917807">ለቅቀህ ውጣ</translation>
 <translation id="2704606927547763573">ተቀድቷል</translation>
 <translation id="2707726405694321444">ገጹን አድስ</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">በ<ph name="PRODUCT_NAME" /> ውስጥ ዕልባት ተቀምጦለታል</translation>
 <translation id="3744111561329211289">የዳራ ስምረት</translation>
 <translation id="3749259744154402564">የማይደገፍ</translation>
-<translation id="3767376082821709728">እርስዎ የሚጎበኙዋቸው አዳዲስ ጣቢያዎች ለእርስዎ ማሳወቂያዎችን መላክ አይችሉም</translation>
 <translation id="3771001275138982843">ዝማኔውን ማውረድ አልተቻለምም</translation>
 <translation id="3771033907050503522">ማንነት የማያሳውቁ ትሮች</translation>
 <translation id="3773755127849930740">ማጣመርን ለመፍቀድ <ph name="BEGIN_LINK" />ብሉቱዝን ያብሩ<ph name="END_LINK" /></translation>
@@ -755,6 +753,7 @@
 <translation id="6545017243486555795">ሁሉንም ውሂብ አጽዳ</translation>
 <translation id="6545864417968258051">የብሉቱዝ ቅኝት</translation>
 <translation id="6560414384669816528">ከSogou ጋር ይፈልጉ</translation>
+<translation id="656065428026159829">ተጨማሪ ይመልከቱ</translation>
 <translation id="6566259936974865419">Chrome <ph name="GIGABYTES" /> ጊባ ቆጥቦልዎታል</translation>
 <translation id="6573096386450695060">ሁልጊዜ ፍቀድ</translation>
 <translation id="6573431926118603307">በሌሎች መሣሪያዎችዎ ላይ ባለ Chrome ላይ የከፈቷቸው ትሮች እዚህ ይመጣሉ።</translation>
@@ -851,6 +850,7 @@
 <translation id="7293171162284876153">ስምረትን ለመጀመር «የChrome ውሂብዎን ያስምሩ»ን ያብሩት።</translation>
 <translation id="729975465115245577">የእርስዎ መሣሪያ የይለፍ ቃላት ፋይሉን የሚያከማችበት መተግበሪያ የለውም።</translation>
 <translation id="7302081693174882195">ዝርዝሮች፦ በተቀመጠው የውሂብ መጠን ተደርድረዋል</translation>
+<translation id="7302486331832100261">ማሳወቂያዎችን ብዙውን ጊዜ ያግዳሉ። ለመፍቀድ፣ ዝርዝሮች ላይ መታ ያድርጉ።</translation>
 <translation id="7328017930301109123">በቀላል ሁነታ ላይ Chrome ገጾችን በበለጠ ፍጥነት የሚጭን ሲሆን እስከ 60 በመቶ ያነሰ ውሂብ ይጠቀማል።</translation>
 <translation id="7333031090786104871">አሁንም ቀዳሚ ጣቢያን በማከል ላይ</translation>
 <translation id="7352939065658542140">ቪድዮ</translation>
@@ -957,7 +957,6 @@
 <translation id="8035133914807600019">አዲስ አቃፊ…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> ቀኖች ይቀራሉ</translation>
 <translation id="804335162455518893">ኤስዲ ካርድ አልተገኘም</translation>
-<translation id="8046278916126163020">እርስዎ የጎበኙዋቸው አዳዲስ ጣቢያዎች ማሳወቂያዎችን ለእርስዎ ለመላክ ሊጠይቁ ይችላሉ</translation>
 <translation id="805047784848435650">በእርስዎ የአሰሳ ታሪክ ላይ በመመስረት</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> ሜባ አለ</translation>
 <translation id="8058746566562539958">በአዲስ የChrome ትር ውስጥ ክፈት</translation>

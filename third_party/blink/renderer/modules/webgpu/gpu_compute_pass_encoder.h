@@ -20,9 +20,6 @@ class GPUComputePassEncoder : public DawnObject<WGPUComputePassEncoder>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GPUComputePassEncoder* Create(
-      GPUDevice* device,
-      WGPUComputePassEncoder compute_pass_encoder);
   explicit GPUComputePassEncoder(GPUDevice* device,
                                  WGPUComputePassEncoder compute_pass_encoder);
   ~GPUComputePassEncoder() override;

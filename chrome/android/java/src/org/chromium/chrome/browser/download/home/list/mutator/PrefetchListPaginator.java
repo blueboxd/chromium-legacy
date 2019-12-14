@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.download.home.list.mutator;
 
 import org.chromium.chrome.browser.download.home.list.ListItem;
+import org.chromium.chrome.browser.download.home.list.ListItem.CardDividerListItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +57,7 @@ public class PrefetchListPaginator implements DateOrderedListMutator.ListPaginat
                 }
             }
 
-            seenCardHeader |= item instanceof ListItem.CardHeaderListItem;
+            seenCardHeader |= isCardHeader(item);
             if (isCardFooter(item)) {
                 seenCardHeader = false;
             }
@@ -69,9 +70,13 @@ public class PrefetchListPaginator implements DateOrderedListMutator.ListPaginat
         return outputList;
     }
 
+    private boolean isCardHeader(ListItem listItem) {
+        return listItem instanceof CardDividerListItem
+                && ((CardDividerListItem) listItem).position == CardDividerListItem.Position.TOP;
+    }
+
     private boolean isCardFooter(ListItem listItem) {
-        if (!(listItem instanceof ListItem.CardDividerListItem)) return false;
-        ListItem.CardDividerListItem item = (ListItem.CardDividerListItem) listItem;
-        return item.position == ListItem.CardDividerListItem.Position.BOTTOM;
+        return listItem instanceof CardDividerListItem
+                && ((CardDividerListItem) listItem).position == CardDividerListItem.Position.BOTTOM;
     }
 }

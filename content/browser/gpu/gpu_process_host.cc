@@ -107,9 +107,8 @@ namespace content {
 
 base::subtle::Atomic32 GpuProcessHost::gpu_crash_count_ = 0;
 bool GpuProcessHost::crashed_before_ = false;
-int GpuProcessHost::hardware_accelerated_recent_crash_count_ = 0;
-int GpuProcessHost::swiftshader_recent_crash_count_ = 0;
-int GpuProcessHost::display_compositor_recent_crash_count_ = 0;
+int GpuProcessHost::recent_crash_count_ = 0;
+gpu::GpuMode GpuProcessHost::last_crash_mode_ = gpu::GpuMode::UNKNOWN;
 
 namespace {
 
@@ -121,12 +120,33 @@ constexpr char kProcessLifetimeEventsSwiftShader[] =
 constexpr char kProcessLifetimeEventsDisplayCompositor[] =
     "GPU.ProcessLifetimeEvents.DisplayCompositor";
 
+// Returns the UMA histogram name for the given GPU mode.
+const char* GetProcessLifetimeUmaName(gpu::GpuMode gpu_mode) {
+  switch (gpu_mode) {
+    case gpu::GpuMode::HARDWARE_ACCELERATED:
+      return kProcessLifetimeEventsHardwareAccelerated;
+    case gpu::GpuMode::SWIFTSHADER:
+      return kProcessLifetimeEventsSwiftShader;
+    case gpu::GpuMode::DISPLAY_COMPOSITOR:
+      return kProcessLifetimeEventsDisplayCompositor;
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
 // Forgive one GPU process crash after this many minutes.
 constexpr int kForgiveGpuCrashMinutes = 60;
 
 // Forgive one GPU process crash, when the GPU process is launched to run only
 // the display compositor, after this many minutes.
 constexpr int kForgiveDisplayCompositorCrashMinutes = 10;
+
+int GetForgiveMinutes(gpu::GpuMode gpu_mode) {
+  return gpu_mode == gpu::GpuMode::DISPLAY_COMPOSITOR
+             ? kForgiveDisplayCompositorCrashMinutes
+             : kForgiveGpuCrashMinutes;
+}
 
 #if !defined(OS_ANDROID)
 // Feature controlling whether or not memory pressure signals will be forwarded
@@ -613,24 +633,31 @@ int GpuProcessHost::GetGpuCrashCount() {
 }
 
 // static
-void GpuProcessHost::IncrementCrashCount(int forgive_minutes,
-                                         int* crash_count) {
+void GpuProcessHost::IncrementCrashCount(gpu::GpuMode gpu_mode) {
+  int forgive_minutes = GetForgiveMinutes(gpu_mode);
   DCHECK_GT(forgive_minutes, 0);
 
   // Last time the process crashed.
   static base::TimeTicks last_crash_time;
 
-  // Remove one crash per |forgive_minutes| from the crash count, so occasional
-  // crashes won't add up and eventually prevent using the GPU process.
   base::TimeTicks current_time = base::TimeTicks::Now();
-  if (crashed_before_) {
+  if (gpu_mode != last_crash_mode_) {
+    // Reset the crash count when the GPU starts crashing in a different mode.
+    recent_crash_count_ = 0;
+  } else if (crashed_before_) {
+    // Remove one crash per |forgive_minutes| from the crash count, so
+    // occasional crashes won't add up and eventually prevent using the GPU
+    // process.
     int minutes_delta = (current_time - last_crash_time).InMinutes();
     int crashes_to_forgive = minutes_delta / forgive_minutes;
-    *crash_count = std::max(0, *crash_count - crashes_to_forgive);
+    recent_crash_count_ = std::max(0, recent_crash_count_ - crashes_to_forgive);
   }
-  ++(*crash_count);
+  recent_crash_count_ =
+      std::min(recent_crash_count_ + 1,
+               static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX) - 1);
 
   crashed_before_ = true;
+  last_crash_mode_ = gpu_mode;
   last_crash_time = current_time;
 }
 
@@ -965,7 +992,7 @@ void GpuProcessHost::DidInitialize(
   // Android may kill the GPU process to free memory, especially when the app
   // is the background, so Android cannot have a hard limit on GPU starts.
   // Reset crash count on Android when context creation succeeds.
-  hardware_accelerated_recent_crash_count_ = 0;
+  recent_crash_count_ = 0;
 #endif
 }
 
@@ -980,7 +1007,7 @@ void GpuProcessHost::DidCreateContextSuccessfully() {
   // Android may kill the GPU process to free memory, especially when the app
   // is the background, so Android cannot have a hard limit on GPU starts.
   // Reset crash count on Android when context creation succeeds.
-  hardware_accelerated_recent_crash_count_ = 0;
+  recent_crash_count_ = 0;
 #endif
 }
 
@@ -1136,16 +1163,8 @@ bool GpuProcessHost::LaunchGpuProcess() {
   process_launched_ = true;
 
   if (kind_ == GPU_PROCESS_KIND_SANDBOXED) {
-    if (mode_ == gpu::GpuMode::HARDWARE_ACCELERATED) {
-      UMA_HISTOGRAM_ENUMERATION(kProcessLifetimeEventsHardwareAccelerated,
-                                LAUNCHED, GPU_PROCESS_LIFETIME_EVENT_MAX);
-    } else if (mode_ == gpu::GpuMode::SWIFTSHADER) {
-      UMA_HISTOGRAM_ENUMERATION(kProcessLifetimeEventsSwiftShader, LAUNCHED,
-                                GPU_PROCESS_LIFETIME_EVENT_MAX);
-    } else if (mode_ == gpu::GpuMode::DISPLAY_COMPOSITOR) {
-      UMA_HISTOGRAM_ENUMERATION(kProcessLifetimeEventsDisplayCompositor,
-                                LAUNCHED, GPU_PROCESS_LIFETIME_EVENT_MAX);
-    }
+    base::UmaHistogramEnumeration(GetProcessLifetimeUmaName(mode_), LAUNCHED,
+                                  GPU_PROCESS_LIFETIME_EVENT_MAX);
   }
 
   return true;
@@ -1181,32 +1200,13 @@ void GpuProcessHost::RecordProcessCrash() {
   LOG(WARNING) << "The GPU process has crashed " << GetGpuCrashCount()
                << " time(s)";
 
-  int recent_crash_count = 0;
-  if (mode_ == gpu::GpuMode::HARDWARE_ACCELERATED) {
-    IncrementCrashCount(kForgiveGpuCrashMinutes,
-                        &hardware_accelerated_recent_crash_count_);
-    UMA_HISTOGRAM_EXACT_LINEAR(
-        kProcessLifetimeEventsHardwareAccelerated,
-        DIED_FIRST_TIME + hardware_accelerated_recent_crash_count_ - 1,
-        static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX));
-    recent_crash_count = hardware_accelerated_recent_crash_count_;
-  } else if (mode_ == gpu::GpuMode::SWIFTSHADER) {
-    IncrementCrashCount(kForgiveGpuCrashMinutes,
-                        &swiftshader_recent_crash_count_);
-    UMA_HISTOGRAM_EXACT_LINEAR(
-        kProcessLifetimeEventsSwiftShader,
-        DIED_FIRST_TIME + swiftshader_recent_crash_count_ - 1,
-        static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX));
-    recent_crash_count = swiftshader_recent_crash_count_;
-  } else if (mode_ == gpu::GpuMode::DISPLAY_COMPOSITOR) {
-    IncrementCrashCount(kForgiveDisplayCompositorCrashMinutes,
-                        &display_compositor_recent_crash_count_);
-    UMA_HISTOGRAM_EXACT_LINEAR(
-        kProcessLifetimeEventsDisplayCompositor,
-        DIED_FIRST_TIME + display_compositor_recent_crash_count_ - 1,
-        static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX));
-    recent_crash_count = display_compositor_recent_crash_count_;
-  }
+  // It's possible GPU mode fallback has already happened. In this case, |mode_|
+  // will still be the mode of the failed process.
+  IncrementCrashCount(mode_);
+  base::UmaHistogramExactLinear(
+      GetProcessLifetimeUmaName(mode_),
+      DIED_FIRST_TIME + recent_crash_count_ - 1,
+      static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX));
 
   // GPU process initialization failed and fallback already happened.
   if (did_fail_initialize_)
@@ -1217,7 +1217,7 @@ void GpuProcessHost::RecordProcessCrash() {
 
   // GPU process crashed too many times, fallback on a different GPU process
   // mode.
-  if (recent_crash_count >= kGpuFallbackCrashCount && !disable_crash_limit)
+  if (recent_crash_count_ >= kGpuFallbackCrashCount && !disable_crash_limit)
     GpuDataManagerImpl::GetInstance()->FallBackToNextGpuMode();
 }
 

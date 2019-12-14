@@ -16,7 +16,7 @@
 @interface BluetoothL2capChannelDelegate
     : NSObject <IOBluetoothL2CAPChannelDelegate> {
  @private
-  device::BluetoothL2capChannelMac* channel_;  // weak
+  device::BluetoothL2capChannelMac* _channel;  // weak
 }
 
 - (id)initWithChannel:(device::BluetoothL2capChannelMac*)channel;
@@ -27,30 +27,30 @@
 
 - (id)initWithChannel:(device::BluetoothL2capChannelMac*)channel {
   if ((self = [super init]))
-    channel_ = channel;
+    _channel = channel;
 
   return self;
 }
 
 - (void)l2capChannelOpenComplete:(IOBluetoothL2CAPChannel*)l2capChannel
                           status:(IOReturn)error {
-  channel_->OnChannelOpenComplete(l2capChannel, error);
+  _channel->OnChannelOpenComplete(l2capChannel, error);
 }
 
 - (void)l2capChannelWriteComplete:(IOBluetoothL2CAPChannel*)l2capChannel
                            refcon:(void*)refcon
                            status:(IOReturn)error {
-  channel_->OnChannelWriteComplete(l2capChannel, refcon, error);
+  _channel->OnChannelWriteComplete(l2capChannel, refcon, error);
 }
 
 - (void)l2capChannelData:(IOBluetoothL2CAPChannel*)l2capChannel
                     data:(void*)dataPointer
                   length:(size_t)dataLength {
-  channel_->OnChannelDataReceived(l2capChannel, dataPointer, dataLength);
+  _channel->OnChannelDataReceived(l2capChannel, dataPointer, dataLength);
 }
 
 - (void)l2capChannelClosed:(IOBluetoothL2CAPChannel*)l2capChannel {
-  channel_->OnChannelClosed(l2capChannel);
+  _channel->OnChannelClosed(l2capChannel);
 }
 
 @end

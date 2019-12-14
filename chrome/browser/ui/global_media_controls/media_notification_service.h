@@ -93,6 +93,12 @@ class MediaNotificationService
   // True if there is an open MediaDialogView associated with this service.
   bool HasOpenDialog() const;
 
+  // Called by a |MediaNotificationService::Session| when it becomes active.
+  void OnSessionBecameActive(const std::string& id);
+
+  // Called by a |MediaNotificationService::Session| when it becomes inactive.
+  void OnSessionBecameInactive(const std::string& id);
+
  private:
   friend class MediaNotificationServiceTest;
   friend class MediaToolbarButtonControllerTest;
@@ -160,12 +166,20 @@ class MediaNotificationService
     // Called when a session is interacted with (to reset |inactive_timer_|).
     void OnSessionInteractedWith();
 
+    // Called when the notification associated with this session is pulled out
+    // into an overlay or it's overlay is closed.
+    void OnSessionOverlayStateChanged(bool is_in_overlay);
+
    private:
+    static void RecordDismissReason(GlobalMediaControlsDismissReason reason);
+
     void StartInactiveTimer();
 
     void OnInactiveTimerFired();
 
     void RecordInteractionDelayAfterPause();
+
+    void MarkActiveIfNecessary();
 
     MediaNotificationService* owner_;
     const std::string id_;
@@ -178,6 +192,15 @@ class MediaNotificationService
 
     // The reason why this session was dismissed/removed.
     base::Optional<GlobalMediaControlsDismissReason> dismiss_reason_;
+
+    // True if the session's playback state is "playing".
+    bool is_playing_ = false;
+
+    // True if we're currently marked inactive.
+    bool is_marked_inactive_ = false;
+
+    // True if we're in an overlay notification.
+    bool is_in_overlay_ = false;
 
     // Used to receive updates to the Media Session playback state.
     mojo::Receiver<media_session::mojom::MediaControllerObserver>
@@ -207,6 +230,12 @@ class MediaNotificationService
   // should not be shown in the dialog and will be ignored for showing the
   // toolbar icon.
   std::unordered_set<std::string> dragged_out_session_ids_;
+
+  // Tracks the sessions that are currently inactive. Sessions become inactive
+  // after a period of time of being paused with no user interaction. Inactive
+  // sessions are hidden from the dialog until the user interacts with them
+  // again (e.g. by playing the session).
+  std::unordered_set<std::string> inactive_session_ids_;
 
   // Stores a Session for each media session keyed by its |request_id| in string
   // format.

@@ -20,6 +20,7 @@ class IOBuffer;
 
 namespace chromecast {
 namespace media {
+enum class LoopbackInterruptReason;
 
 namespace mixer_service {
 class Generic;
@@ -41,6 +42,8 @@ class MixerLoopbackConnection : public mixer_service::MixerSocket::Delegate {
   void SendAudio(scoped_refptr<net::IOBuffer> audio_buffer,
                  int data_size_bytes,
                  int64_t timestamp);
+
+  void SendInterrupt(LoopbackInterruptReason reason);
 
  private:
   // mixer_service::MixerSocket::Delegate implementation:

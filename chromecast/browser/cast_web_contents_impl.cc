@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/no_destructor.h"
+#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -179,6 +180,21 @@ CastWebContents::PageState CastWebContentsImpl::page_state() const {
 
 QueryableDataHost* CastWebContentsImpl::queryable_data_host() const {
   return queryable_data_host_.get();
+}
+
+base::Optional<pid_t> CastWebContentsImpl::GetMainFrameRenderProcessPid()
+    const {
+  // Returns empty value if |web_contents_| is (being) destroyed or the main
+  // frame is not available yet.
+  if (!web_contents_ || !web_contents_->GetMainFrame()) {
+    return base::nullopt;
+  }
+
+  auto* rph = web_contents_->GetMainFrame()->GetProcess();
+  if (!rph || rph->GetProcess().Handle() == base::kNullProcessHandle) {
+    return base::nullopt;
+  }
+  return base::make_optional(rph->GetProcess().Handle());
 }
 
 void CastWebContentsImpl::AddRendererFeatures(
@@ -567,6 +583,13 @@ void CastWebContentsImpl::DidFinishNavigation(
     }
 
     return;
+  }
+
+  // Notifies observers that the navigation of the main frame has finished.
+  if (!navigation_handle->IsErrorPage() && navigation_handle->IsInMainFrame()) {
+    for (Observer& observer : observer_list_) {
+      observer.MainFrameFinishedNavigation();
+    }
   }
 
   // Return early if we didn't navigate to an error page. Note that even if we

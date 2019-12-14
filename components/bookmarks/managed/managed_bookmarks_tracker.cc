@@ -33,11 +33,11 @@ const char ManagedBookmarksTracker::kFolderName[] = "toplevel_name";
 ManagedBookmarksTracker::ManagedBookmarksTracker(
     BookmarkModel* model,
     PrefService* prefs,
-    const GetManagementDomainCallback& callback)
+    GetManagementDomainCallback callback)
     : model_(model),
       managed_node_(nullptr),
       prefs_(prefs),
-      get_management_domain_callback_(callback) {}
+      get_management_domain_callback_(std::move(callback)) {}
 
 ManagedBookmarksTracker::~ManagedBookmarksTracker() {}
 
@@ -76,9 +76,10 @@ int64_t ManagedBookmarksTracker::LoadInitial(BookmarkNode* folder,
 void ManagedBookmarksTracker::Init(BookmarkPermanentNode* managed_node) {
   managed_node_ = managed_node;
   registrar_.Init(prefs_);
-  registrar_.Add(prefs::kManagedBookmarks,
-                 base::Bind(&ManagedBookmarksTracker::ReloadManagedBookmarks,
-                            base::Unretained(this)));
+  registrar_.Add(
+      prefs::kManagedBookmarks,
+      base::BindRepeating(&ManagedBookmarksTracker::ReloadManagedBookmarks,
+                          base::Unretained(this)));
   // Reload now just in case something changed since the initial load started.
   // Note that  we must not load managed bookmarks until the cloud policy system
   // has been fully initialized (which will make our preference a managed

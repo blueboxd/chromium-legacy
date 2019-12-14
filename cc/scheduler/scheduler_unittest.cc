@@ -4257,6 +4257,9 @@ TEST_F(SchedulerTest, SendEarlyDidNotProduceFrameIfIdle) {
 
   client_->Reset();
   scheduler_->NotifyBeginMainFrameStarted(task_runner_->NowTicks());
+  // Request a new commit before finishing the current one to simulate behavior
+  // seen in certain OOPIF renderers.
+  scheduler_->SetNeedsBeginMainFrame();
   scheduler_->BeginMainFrameAborted(CommitEarlyOutReason::FINISHED_NO_UPDATES);
   EXPECT_EQ(client_->last_begin_frame_ack().sequence_number,
             begin_main_frame_args.sequence_number);

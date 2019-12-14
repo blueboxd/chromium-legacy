@@ -5880,6 +5880,47 @@ TEST_P(SplitViewOverviewSessionInClamshellTest,
   EXPECT_EQ(0.f, unsnappable_layer->opacity());
 }
 
+// Tests that dragging a window from overview creates a drop target on the same
+// display, even if the window bounds are mostly on another display.
+TEST_P(SplitViewOverviewSessionInClamshellTest,
+       DragFromOverviewWithBoundsMostlyOnAnotherDisplay) {
+  UpdateDisplay("600x600,600x600");
+  const aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
+  ASSERT_EQ(2u, root_windows.size());
+  const display::DisplayIdList display_ids =
+      display_manager()->GetCurrentDisplayIdList();
+  ASSERT_EQ(2u, display_ids.size());
+  ASSERT_EQ(root_windows[0], Shell::GetRootWindowForDisplayId(display_ids[0]));
+  ASSERT_EQ(root_windows[1], Shell::GetRootWindowForDisplayId(display_ids[1]));
+
+  display::Screen* screen = display::Screen::GetScreen();
+  const gfx::Rect creation_bounds(0, 0, 600, 600);
+  ASSERT_EQ(display_ids[0], screen->GetDisplayMatching(creation_bounds).id());
+  const gfx::Rect bounds(550, 0, 600, 600);
+  ASSERT_EQ(display_ids[1], screen->GetDisplayMatching(bounds).id());
+  std::unique_ptr<aura::Window> window = CreateTestWindow(creation_bounds);
+  window->SetBoundsInScreen(bounds,
+                            display_manager()->GetDisplayForId(display_ids[0]));
+
+  ToggleOverview();
+  OverviewItem* overview_item = GetOverviewItemForWindow(window.get());
+  EXPECT_FALSE(GetDropTarget(0));
+  EXPECT_FALSE(GetDropTarget(1));
+  gfx::PointF drag_point = overview_item->target_bounds().CenterPoint();
+  overview_session()->InitiateDrag(overview_item, drag_point,
+                                   /*is_touch_dragging=*/false);
+  EXPECT_FALSE(GetDropTarget(0));
+  EXPECT_FALSE(GetDropTarget(1));
+  drag_point.Offset(5.f, 0.f);
+  overview_session()->Drag(overview_item, drag_point);
+  EXPECT_FALSE(GetDropTarget(1));
+  ASSERT_TRUE(GetDropTarget(0));
+  EXPECT_EQ(root_windows[0], GetDropTarget(0)->root_window());
+  overview_session()->CompleteDrag(overview_item, drag_point);
+  EXPECT_FALSE(GetDropTarget(0));
+  EXPECT_FALSE(GetDropTarget(1));
+}
+
 using SplitViewOverviewSessionInClamshellTestMultiDisplayOnly =
     SplitViewOverviewSessionInClamshellTest;
 

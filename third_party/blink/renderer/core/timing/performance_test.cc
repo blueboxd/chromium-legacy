@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/core/timing/performance_long_task_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_observer.h"
+#include "third_party/blink/renderer/core/timing/performance_observer_init.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 
 namespace blink {
@@ -113,6 +114,35 @@ TEST_F(PerformanceTest, Activate) {
   base_->UnregisterPerformanceObserver(*observer_.Get());
   EXPECT_EQ(0, base_->NumObservers());
   EXPECT_EQ(1, base_->NumActiveObservers());
+}
+
+TEST_F(PerformanceTest, AddLongTaskTiming) {
+  V8TestingScope scope;
+  Initialize(scope.GetScriptState());
+
+  // Add a long task entry, but no observer registered.
+  base_->AddLongTaskTiming(
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(1234),
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(5678), "window",
+      "same-origin", "www.foo.com/bar", "", "");
+  EXPECT_FALSE(base_->HasPerformanceObserverFor(PerformanceEntry::kLongTask));
+  EXPECT_EQ(0, NumPerformanceEntriesInObserver());  // has no effect
+
+  // Make an observer for longtask
+  NonThrowableExceptionState exception_state;
+  PerformanceObserverInit* options = PerformanceObserverInit::Create();
+  Vector<String> entry_type_vec;
+  entry_type_vec.push_back("longtask");
+  options->setEntryTypes(entry_type_vec);
+  observer_->observe(options, exception_state);
+
+  EXPECT_TRUE(base_->HasPerformanceObserverFor(PerformanceEntry::kLongTask));
+  // Add a long task entry
+  base_->AddLongTaskTiming(
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(1234),
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(5678), "window",
+      "same-origin", "www.foo.com/bar", "", "");
+  EXPECT_EQ(1, NumPerformanceEntriesInObserver());  // added an entry
 }
 
 TEST_F(PerformanceTest, AllowsTimingRedirect) {

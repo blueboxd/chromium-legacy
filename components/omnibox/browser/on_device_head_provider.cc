@@ -87,9 +87,7 @@ OnDeviceHeadProvider::OnDeviceHeadProvider(
       worker_task_runner_(base::CreateSequencedTaskRunner(
           {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN, base::MayBlock()})),
-      model_(nullptr, base::OnTaskRunnerDeleter(worker_task_runner_)),
       on_device_search_request_id_(0) {
-  DETACH_FROM_SEQUENCE(worker_sequence_checker_);
 }
 
 OnDeviceHeadProvider::~OnDeviceHeadProvider() {}
@@ -162,52 +160,34 @@ void OnDeviceHeadProvider::Start(const AutocompleteInput& input,
     return;
 
   matches_.clear();
-  if (!input.text().empty()) {
-    // Note |on_device_search_request_id_| has already been changed in |Stop|
-    // so we don't need to change it again here to get a new id for this
-    // request.
-    std::unique_ptr<OnDeviceHeadProviderParams> params = base::WrapUnique(
-        new OnDeviceHeadProviderParams(on_device_search_request_id_, input));
-
-    base::PostTaskAndReplyWithResult(
-        worker_task_runner_.get(), FROM_HERE,
-        base::BindOnce(&OnDeviceHeadProvider::IsModelInstanceReady, this),
-        base::BindOnce(&OnDeviceHeadProvider::StartInternal,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(params)));
-  }
-}
-
-void OnDeviceHeadProvider::StartInternal(
-    std::unique_ptr<OnDeviceHeadProviderParams> params,
-    bool is_model_instance_ready) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
-
-  if (!is_model_instance_ready)
+  if (input.text().empty() || model_filename_.empty())
     return;
 
-  if (!params || params->request_id != on_device_search_request_id_)
-    return;
+  // Note |on_device_search_request_id_| has already been changed in |Stop| so
+  // we don't need to change it again here to get a new id for this request.
+  std::unique_ptr<OnDeviceHeadProviderParams> params = base::WrapUnique(
+      new OnDeviceHeadProviderParams(on_device_search_request_id_, input));
 
   done_ = false;
-
   // Since the On Device provider usually runs much faster than online
   // providers, it will be very likely users will see on device suggestions
   // first and then the Omnibox UI gets refreshed to show suggestions fetched
   // from server, if we issue both requests simultaneously.
-  // Therefore, we might want to delay the On Device suggest requests (and
-  // also apply a timeout to search default loader) to mitigate this issue.
-  // Note this delay is not needed for incognito where server suggestion is
-  // not served.
+  // Therefore, we might want to delay the On Device suggest requests (and also
+  // apply a timeout to search default loader) to mitigate this issue. Note this
+  // delay is not needed for incognito where server suggestion is not served.
   int delay = 0;
   if (!client()->IsOffTheRecord()) {
     delay = base::GetFieldTrialParamByFeatureAsInt(
-        omnibox::kOnDeviceHeadProvider, "DelayOnDeviceHeadSuggestRequestMs", 0);
+        omnibox::kOnDeviceHeadProvider, "DelayOnDeviceHeadSuggestRequestMs",
+        0);
   }
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&OnDeviceHeadProvider::DoSearch,
                      weak_ptr_factory_.GetWeakPtr(), std::move(params)),
-      delay > 0 ? base::TimeDelta::FromMilliseconds(delay) : base::TimeDelta());
+      delay > 0 ? base::TimeDelta::FromMilliseconds(delay)
+                : base::TimeDelta());
 }
 
 void OnDeviceHeadProvider::Stop(bool clear_cached_results,
@@ -227,37 +207,19 @@ void OnDeviceHeadProvider::Stop(bool clear_cached_results,
 void OnDeviceHeadProvider::OnModelUpdate(
     const std::string& new_model_filename) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
-  worker_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&OnDeviceHeadProvider::ResetModelInstanceFromNewModel,
-                     this, new_model_filename, provider_max_matches_));
+  if (!new_model_filename.empty())
+    model_filename_ = new_model_filename;
 }
 
-void OnDeviceHeadProvider::ResetModelInstanceFromNewModel(
-    const std::string& new_model_filename,
-    size_t provider_max_matches) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(worker_sequence_checker_);
-  if (new_model_filename.empty())
-    return;
-
-  auto new_model =
-      OnDeviceHeadModel::Create(new_model_filename, provider_max_matches);
-  if (new_model) {
-    model_ = std::unique_ptr<OnDeviceHeadModel, base::OnTaskRunnerDeleter>(
-        new_model.release(), base::OnTaskRunnerDeleter(worker_task_runner_));
-  }
-}
-
-bool OnDeviceHeadProvider::IsModelInstanceReady() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(worker_sequence_checker_);
-  return model_ != nullptr;
-}
-
+// TODO(crbug.com/925072): post OnDeviceHeadModel::GetSuggestionsForPrefix
+// directly and remove this function.
+// static
 std::unique_ptr<OnDeviceHeadProvider::OnDeviceHeadProviderParams>
 OnDeviceHeadProvider::GetSuggestionsFromModel(
+    const std::string& model_filename,
+    const size_t provider_max_matches,
     std::unique_ptr<OnDeviceHeadProviderParams> params) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(worker_sequence_checker_);
-  if (!IsModelInstanceReady() || !params) {
+  if (model_filename.empty() || !params) {
     if (params) {
       params->failed = true;
     }
@@ -267,7 +229,8 @@ OnDeviceHeadProvider::GetSuggestionsFromModel(
   params->creation_time = base::TimeTicks::Now();
   base::string16 trimmed_input;
   base::TrimWhitespace(params->input.text(), base::TRIM_ALL, &trimmed_input);
-  auto results = model_->GetSuggestionsForPrefix(
+  auto results = OnDeviceHeadModel::GetSuggestionsForPrefix(
+      model_filename, provider_max_matches,
       base::UTF16ToUTF8(base::i18n::ToLower(trimmed_input)));
   params->suggestions.clear();
   for (const auto& item : results) {
@@ -294,8 +257,8 @@ void OnDeviceHeadProvider::DoSearch(
 
   base::PostTaskAndReplyWithResult(
       worker_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&OnDeviceHeadProvider::GetSuggestionsFromModel, this,
-                     std::move(params)),
+      base::BindOnce(&OnDeviceHeadProvider::GetSuggestionsFromModel,
+                     model_filename_, provider_max_matches_, std::move(params)),
       base::BindOnce(&OnDeviceHeadProvider::SearchDone,
                      weak_ptr_factory_.GetWeakPtr()));
 }

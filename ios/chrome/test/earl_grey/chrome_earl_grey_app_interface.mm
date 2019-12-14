@@ -638,6 +638,14 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
       ->SetDefaultContentSetting(ContentSettingsType::POPUPS, value);
 }
 
+#pragma mark - Pref Utilities (EG2)
+
++ (void)setBoolValue:(BOOL)value forUserPref:(NSString*)prefName {
+  chrome_test_util::SetBooleanUserPref(
+      chrome_test_util::GetOriginalBrowserState(),
+      base::SysNSStringToUTF8(prefName).c_str(), value);
+}
+
 #pragma mark - Keyboard Command Utilities
 
 + (NSInteger)registeredKeyCommandCount {

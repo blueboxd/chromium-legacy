@@ -136,7 +136,8 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         testing.TestResult(
             'benchmark/story',
             output_artifacts={
-                'logs': testing.Artifact('/logs.txt', 'gs://logs.txt'),
+                'logs': testing.Artifact('/logs.txt',
+                                         fetch_url='gs://logs.txt'),
                 'screenshot': testing.Artifact(
                     os.path.join(self.output_dir, 'screenshot.png')),
             }
@@ -209,8 +210,9 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         ),
     )
 
-    with mock.patch('py_utils.cloud_storage.Insert') as cloud_patch:
-      cloud_patch.return_value = 'gs://trace.html'
+    with mock.patch('py_utils.cloud_storage.Upload') as cloud_patch:
+      cloud_patch.return_value = processor.cloud_storage.CloudFilepath(
+          bucket='bucket', remote_path='trace.html')
       processor.main([
           '--output-format', 'histograms',
           '--output-dir', self.output_dir,
@@ -240,7 +242,9 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     self.assertEqual(hist.diagnostics['benchmarkStart'],
                      date_range.DateRange(1234567890987))
     self.assertEqual(hist.diagnostics['traceUrls'],
-                     generic_set.GenericSet(['gs://trace.html']))
+                     generic_set.GenericSet([
+                         'https://console.developers.google.com'
+                         '/m/cloudstorage/b/bucket/o/trace.html']))
 
   def testHistogramsOutputResetResults(self):
     self.SerializeIntermediateResults(

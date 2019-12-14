@@ -38,6 +38,7 @@ namespace media {
 class AudioOutputRedirector;
 class InterleavedChannelMixer;
 class LoopbackHandler;
+enum class LoopbackInterruptReason;
 class MixerServiceReceiver;
 class MixerOutputStream;
 class PostProcessingPipelineFactory;
@@ -160,7 +161,7 @@ class StreamMixer {
                             int expected_input_channels);
   void FinalizeOnMixerThread();
   void Start();
-  void Stop();
+  void Stop(LoopbackInterruptReason reason);
   void CheckChangeOutputParams(int num_input_channels,
                                int input_samples_per_second);
   void SignalError(MixerInput::Source::MixerError error);

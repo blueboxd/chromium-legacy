@@ -32,7 +32,7 @@ class BookmarkPermanentNode;
 // managed_node() in the BookmarkModel follow the policy-defined bookmark tree.
 class ManagedBookmarksTracker {
  public:
-  typedef base::Callback<std::string()> GetManagementDomainCallback;
+  using GetManagementDomainCallback = base::RepeatingCallback<std::string()>;
 
   // Shared constants used in the policy configuration.
   static const char kName[];
@@ -42,7 +42,7 @@ class ManagedBookmarksTracker {
 
   ManagedBookmarksTracker(BookmarkModel* model,
                           PrefService* prefs,
-                          const GetManagementDomainCallback& callback);
+                          GetManagementDomainCallback callback);
   ~ManagedBookmarksTracker();
 
   // Returns the initial list of managed bookmarks, which can be passed to

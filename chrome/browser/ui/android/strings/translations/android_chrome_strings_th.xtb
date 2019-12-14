@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">ดาวน์โหลดไฟล์อีกครั้งไหม</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{ไฟล์เสียง # ไฟล์}other{ไฟล์เสียง # ไฟล์}}</translation>
 <translation id="2653659639078652383">ส่ง</translation>
-<translation id="2669093958999339774">บล็อกข้อความแจ้งเตือนไม่ให้รบกวนคุณ และใช้ข้อความแบบไม่ส่งเสียงแทน</translation>
 <translation id="2677748264148917807">ออก</translation>
 <translation id="2704606927547763573">คัดลอกแล้ว</translation>
 <translation id="2707726405694321444">รีเฟรชหน้า</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">บุ๊กมาร์กไว้ใน <ph name="PRODUCT_NAME" /> แล้ว</translation>
 <translation id="3744111561329211289">ซิงค์ในแบ็กกราวด์</translation>
 <translation id="3749259744154402564">ไม่รองรับ</translation>
-<translation id="3767376082821709728">เว็บไซต์ใหม่ที่คุณเข้าชมจะส่งการแจ้งเตือนให้คุณไม่ได้</translation>
 <translation id="3771001275138982843">ดาวน์โหลดอัปเดตไม่ได้</translation>
 <translation id="3771033907050503522">แท็บที่ไม่ระบุตัวตน</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />เปิดบลูทูธ<ph name="END_LINK" />เพื่อให้จับคู่ได้</translation>
@@ -957,7 +955,6 @@
 <translation id="8035133914807600019">โฟลเดอร์ใหม่…</translation>
 <translation id="8037750541064988519">เหลือ <ph name="DAYS" /> วัน</translation>
 <translation id="804335162455518893">ไม่พบการ์ด SD</translation>
-<translation id="8046278916126163020">เว็บไซต์ใหม่ที่คุณเข้าชมจะขอส่งการแจ้งเตือนให้คุณ</translation>
 <translation id="805047784848435650">อิงจากประวัติการท่องเว็บของคุณ</translation>
 <translation id="8051695050440594747">สามารถใช้งานได้ <ph name="MEGABYTES" /> MB</translation>
 <translation id="8058746566562539958">เปิดในแท็บใหม่ของ Chrome</translation>

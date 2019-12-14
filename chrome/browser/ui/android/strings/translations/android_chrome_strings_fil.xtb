@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">I-download ulit ang file?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# Audio file}one{# Audio file}other{# na Audio file}}</translation>
 <translation id="2653659639078652383">Isumite</translation>
-<translation id="2669093958999339774">I-block ang mga prompt ng notification na gumagambala sa iyo, at gumamit na lang ng mas tahimik na mensahe</translation>
 <translation id="2677748264148917807">Umalis</translation>
 <translation id="2704606927547763573">Kinopya</translation>
 <translation id="2707726405694321444">I-refresh ang page</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Naka-bookmark sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Pag-sync sa background</translation>
 <translation id="3749259744154402564">Hindi Sinusuportahan</translation>
-<translation id="3767376082821709728">Hindi makakapagpadala sa iyo ng mga notification ang mga bagong site</translation>
 <translation id="3771001275138982843">Hindi ma-download ang update</translation>
 <translation id="3771033907050503522">Mga Tab na Incognito</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />I-on ang Bluetooth<ph name="END_LINK" /> upang payagan ang pagpapares</translation>
@@ -957,7 +955,6 @@ HINDI magkakaroon ng access sa camera ang site. Ikaw lang ang makakakita ng mga 
 <translation id="8035133914807600019">Bagong folder…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> (na) araw na lang ang natitira</translation>
 <translation id="804335162455518893">Hindi nakita ang SD card</translation>
-<translation id="8046278916126163020">Puwedeng humiling ang mga bagong site na binibisita mo na magpadala sa iyo ng mga notification</translation>
 <translation id="805047784848435650">Batay sa iyong history ng pag-browse</translation>
 <translation id="8051695050440594747">Available ang <ph name="MEGABYTES" /> MB</translation>
 <translation id="8058746566562539958">Buksan sa bagong tab ng Chrome</translation>

@@ -16,6 +16,6 @@
 ] interface IdleDetector : EventTarget {
   readonly attribute IdleState state;
   attribute EventHandler onchange;
-  [CallWith=ScriptState, MeasureAs=IdleDetectionStart] Promise<void> start();
+  [CallWith=ScriptState, RaisesException, MeasureAs=IdleDetectionStart] Promise<void> start();
   void stop();
 };

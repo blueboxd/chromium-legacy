@@ -49,6 +49,9 @@
     // https://w3c.github.io/webappsec-feature-policy/#the-policy-object
     [RuntimeEnabled=FeaturePolicyJavaScriptInterface] readonly attribute FeaturePolicy featurePolicy;
 
+    // Document Policy
+    [RuntimeEnabled=DocumentPolicy, CEReactions, Reflect] attribute DOMString policy;
+
     [RuntimeEnabled=LazyFrameLoading, CEReactions, Reflect, ReflectOnly=("lazy", "eager", "auto"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString loading;
 
     // obsolete members

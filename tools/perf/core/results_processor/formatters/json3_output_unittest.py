@@ -179,15 +179,15 @@ class Json3OutputTest(unittest.TestCase):
         testing.TestResult('benchmark/story1', output_artifacts={
             'logs.txt': testing.Artifact(
                 'base/artifacts/logs1.txt',
-                'https://example.org/artifacts/logs1.txt')
+                fetch_url='gs://artifacts/logs1.txt')
         }),
         testing.TestResult('benchmark/story1', output_artifacts={
             'logs.txt': testing.Artifact(
                 'base/artifacts/logs2.txt',
-                'https://example.org/artifacts/logs2.txt'),
+                fetch_url='gs://artifacts/logs2.txt'),
             'trace.json': testing.Artifact(
                 'base/artifacts/trace2.json',
-                'https://example.org/artifacts/trace2.json')
+                fetch_url='gs://artifacts/trace2.json')
         }),
     ])
 
@@ -196,10 +196,10 @@ class Json3OutputTest(unittest.TestCase):
     self.assertEqual(test_result['expected'], 'PASS')
     self.assertEqual(test_result['artifacts'], {
         'logs.txt': [
-            'https://example.org/artifacts/logs1.txt',
-            'https://example.org/artifacts/logs2.txt'
+            'gs://artifacts/logs1.txt',
+            'gs://artifacts/logs2.txt'
         ],
         'trace.json': [
-            'https://example.org/artifacts/trace2.json'
+            'gs://artifacts/trace2.json'
         ]
     })

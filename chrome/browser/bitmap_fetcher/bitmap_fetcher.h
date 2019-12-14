@@ -37,15 +37,15 @@ class BitmapFetcher : public ImageDecoder::ImageRequest {
   // |credentials_mode| determines whether credentials such as cookies should be
   // sent.  Init may be called more than once in some cases.  If so, subsequent
   // starts will be ignored.
-  void Init(const std::string& referrer,
-            net::URLRequest::ReferrerPolicy referrer_policy,
-            network::mojom::CredentialsMode credentials_mode);
+  virtual void Init(const std::string& referrer,
+                    net::URLRequest::ReferrerPolicy referrer_policy,
+                    network::mojom::CredentialsMode credentials_mode);
 
   // Start fetching the URL with the fetcher. The delegate is notified
   // asynchronously when done.  Start may be called more than once in some
   // cases.  If so, subsequent starts will be ignored since the operation is
   // already in progress.
-  void Start(network::mojom::URLLoaderFactory* loader_factory);
+  virtual void Start(network::mojom::URLLoaderFactory* loader_factory);
 
   // Methods inherited from ImageDecoder::ImageRequest
 

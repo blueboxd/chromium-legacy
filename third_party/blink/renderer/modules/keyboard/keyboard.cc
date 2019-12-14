@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/keyboard/keyboard_layout.h"
 #include "third_party/blink/renderer/modules/keyboard/keyboard_lock.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
@@ -18,16 +19,18 @@ Keyboard::Keyboard(ExecutionContext* context)
 Keyboard::~Keyboard() = default;
 
 ScriptPromise Keyboard::lock(ScriptState* state,
-                             const Vector<String>& keycodes) {
-  return keyboard_lock_->lock(state, keycodes);
+                             const Vector<String>& keycodes,
+                             ExceptionState& exception_state) {
+  return keyboard_lock_->lock(state, keycodes, exception_state);
 }
 
 void Keyboard::unlock(ScriptState* state) {
   keyboard_lock_->unlock(state);
 }
 
-ScriptPromise Keyboard::getLayoutMap(ScriptState* state) {
-  return keyboard_layout_->GetKeyboardLayoutMap(state);
+ScriptPromise Keyboard::getLayoutMap(ScriptState* state,
+                                     ExceptionState& exception_state) {
+  return keyboard_layout_->GetKeyboardLayoutMap(state, exception_state);
 }
 
 void Keyboard::Trace(blink::Visitor* visitor) {

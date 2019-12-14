@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class ExecutionContext;
 class KeyboardLayout;
 class KeyboardLock;
@@ -24,10 +25,10 @@ class Keyboard final : public ScriptWrappable {
   ~Keyboard() override;
 
   // KeyboardLock API: https://w3c.github.io/keyboard-lock/
-  ScriptPromise lock(ScriptState*, const Vector<String>&);
+  ScriptPromise lock(ScriptState*, const Vector<String>&, ExceptionState&);
   void unlock(ScriptState*);
 
-  ScriptPromise getLayoutMap(ScriptState*);
+  ScriptPromise getLayoutMap(ScriptState*, ExceptionState&);
 
   // ScriptWrappable override.
   void Trace(blink::Visitor*) override;

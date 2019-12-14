@@ -120,7 +120,8 @@ void DatabaseImpl::CreateTransaction(
       transaction_id,
       std::set<int64_t>(object_store_ids.begin(), object_store_ids.end()), mode,
       new IndexedDBBackingStore::Transaction(
-          connection_->database()->backing_store()->AsWeakPtr(), durability));
+          connection_->database()->backing_store()->AsWeakPtr(), durability,
+          mode));
   connection_->database()->RegisterAndScheduleTransaction(transaction);
 
   dispatcher_host_->CreateAndBindTransactionImpl(

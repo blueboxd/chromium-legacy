@@ -39,7 +39,7 @@ class RootFrameSink : public base::RefCounted<RootFrameSink>,
   }
   void AddChildFrameSinkId(const viz::FrameSinkId& frame_sink_id);
   void RemoveChildFrameSinkId(const viz::FrameSinkId& frame_sink_id);
-  bool BeginFrame(const viz::BeginFrameArgs& args);
+  bool BeginFrame(const viz::BeginFrameArgs& args, bool had_input_event);
 
   // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(

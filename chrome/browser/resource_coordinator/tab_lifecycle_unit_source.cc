@@ -322,8 +322,6 @@ void TabLifecycleUnitSource::OnTabInserted(TabStripModel* tab_strip_model,
         performance_manager::PerformanceManager::GetPageNodeForWebContents(
             contents);
 
-    auto task_runner =
-        base::CreateSingleThreadTaskRunner({base::CurrentThread()});
     performance_manager::PerformanceManager::CallOnGraph(
         FROM_HERE,
         base::BindOnce(
@@ -341,7 +339,7 @@ void TabLifecycleUnitSource::OnTabInserted(TabStripModel* tab_strip_model,
                       page_node->IsHoldingWebLock(),
                       page_node->IsHoldingIndexedDBLock()));
             },
-            std::move(page_node), task_runner));
+            std::move(page_node), base::ThreadTaskRunnerHandle::Get()));
 
     NotifyLifecycleUnitCreated(lifecycle_unit);
   }

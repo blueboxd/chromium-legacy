@@ -53,11 +53,11 @@ const CGFloat kStrokeEndAtApogee = 1;
 
 @interface ToolbarToolsMenuButton ()<CAAnimationDelegate> {
   // Whether the reading list contains unseen items.
-  BOOL readingListContainsUnseenItems_;
+  BOOL _readingListContainsUnseenItems;
   // The CALayers containing the drawn dots.
-  NSMutableArray<CAShapeLayer*>* pathLayers_;
+  NSMutableArray<CAShapeLayer*>* _pathLayers;
   // Whether the CALayers are being animated.
-  BOOL animationOnGoing_;
+  BOOL _animationOnGoing;
 }
 
 // Tints of the button.
@@ -73,7 +73,7 @@ const CGFloat kStrokeEndAtApogee = 1;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   if (self = [super initWithFrame:frame]) {
-    pathLayers_ = [[NSMutableArray alloc] initWithCapacity:kNumberOfDots];
+    _pathLayers = [[NSMutableArray alloc] initWithCapacity:kNumberOfDots];
 
     [self configureSpotlightView];
   }
@@ -105,11 +105,11 @@ const CGFloat kStrokeEndAtApogee = 1;
 
 // Initializes the pathLayers.
 - (void)initializeShapeLayers {
-  for (NSUInteger i = 0; i < pathLayers_.count; i++) {
-    [pathLayers_[i] removeFromSuperlayer];
+  for (NSUInteger i = 0; i < _pathLayers.count; i++) {
+    [_pathLayers[i] removeFromSuperlayer];
   }
 
-  pathLayers_ = [[NSMutableArray alloc] initWithCapacity:kNumberOfDots];
+  _pathLayers = [[NSMutableArray alloc] initWithCapacity:kNumberOfDots];
   for (NSUInteger i = 0; i < kNumberOfDots; i++) {
     const CGFloat x = kDotOffsetXHorizontal + kHorizontalSpaceBetweenDots * i;
     const CGFloat y = kDotOffsetYHorizontal;
@@ -128,7 +128,7 @@ const CGFloat kStrokeEndAtApogee = 1;
     [pathLayer setStrokeStart:kStrokeStartAtRest];
     [pathLayer setStrokeEnd:kStrokeEndAtRest];
     [self.layer addSublayer:pathLayer];
-    [pathLayers_ addObject:pathLayer];
+    [_pathLayers addObject:pathLayer];
   }
 }
 
@@ -201,12 +201,12 @@ const CGFloat kStrokeEndAtApogee = 1;
 
 // Starts animating the button towards the color |targetColor|.
 - (void)animateToColor:(UIColor*)targetColor {
-  animationOnGoing_ = YES;
+  _animationOnGoing = YES;
 
-  DCHECK(pathLayers_.count == kNumberOfDots);
+  DCHECK(_pathLayers.count == kNumberOfDots);
   // Add four animations for each stroke.
   for (int i = 0; i < kNumberOfDots; i++) {
-    CAShapeLayer* pathLayer = pathLayers_[i];
+    CAShapeLayer* pathLayer = _pathLayers[i];
     int dotToAnimate = kNumberOfDots - i;
     if (UseRTLLayout()) {
       dotToAnimate = i;
@@ -275,7 +275,7 @@ const CGFloat kStrokeEndAtApogee = 1;
   // CAShapeLayer when an animation is on going.
   // To reflect any potential tint color change, the CAShapeLayer will be
   // recreated at the end of the animation.
-  if (!animationOnGoing_)
+  if (!_animationOnGoing)
     [self initializeShapeLayers];
 }
 
@@ -289,7 +289,7 @@ const CGFloat kStrokeEndAtApogee = 1;
 #pragma mark - CAAnimationDelegate
 
 - (void)animationDidStop:(CAAnimation*)animation finished:(BOOL)flag {
-  animationOnGoing_ = NO;
+  _animationOnGoing = NO;
   // Recreate the CAShapeLayers in case the tint code changed while the
   // animation was going on.
   [self initializeShapeLayers];

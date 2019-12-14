@@ -14,4 +14,15 @@ const base::FilePath GetHighlightedGamesPath(const base::FilePath& dir) {
   return dir.Append(kHighlightedGamesFileName);
 }
 
+base::Optional<Game> TryFindGameById(int id, const GamesCatalog& catalog) {
+  base::Optional<Game> optional_game;
+  for (const Game& game : catalog.games()) {
+    if (game.id() == id) {
+      optional_game = game;
+      break;
+    }
+  }
+  return optional_game;
+}
+
 }  // namespace games

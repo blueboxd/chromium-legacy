@@ -9,6 +9,7 @@
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "build/build_config.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 
 using base::FilePath;
@@ -19,7 +20,13 @@ namespace quic {
 std::vector<std::string> ReadFileContentsImpl(const std::string& dirname) {
   std::vector<std::string> files;
   FilePath directory(FilePath::FromUTF8Unsafe(dirname));
-  base::FileEnumerator file_list(directory, true, base::FileEnumerator::FILES);
+  int file_type = base::FileEnumerator::FILES;
+#if defined(OS_FUCHSIA)
+  // TODO(crbug.com): Fix FileEnumerator to correctly recurse into
+  // subdirectories contained in bundles.
+  file_type |= base::FileEnumerator::SHOW_SYM_LINKS;
+#endif
+  base::FileEnumerator file_list(directory, /*recurse=*/true, file_type);
   for (FilePath file_iter = file_list.Next(); !file_iter.empty();
        file_iter = file_list.Next()) {
     files.push_back(file_iter.AsUTF8Unsafe());

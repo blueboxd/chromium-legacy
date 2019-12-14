@@ -153,20 +153,20 @@ id<GREYMatcher> NavigationBarEditButton() {
 @end
 
 @implementation LanguageSettingsTestCase {
-  base::test::ScopedFeatureList featureList_;
+  base::test::ScopedFeatureList _featureList;
 
-  std::unique_ptr<translate::TranslatePrefs> translatePrefs_;
+  std::unique_ptr<translate::TranslatePrefs> _translatePrefs;
 }
 
 - (void)setUp {
   [super setUp];
 
   // Enable the Language Settings UI.
-  featureList_.InitAndEnableFeature(kLanguageSettings);
+  _featureList.InitAndEnableFeature(kLanguageSettings);
 
   // Create TranslatePrefs.
   ios::ChromeBrowserState* browserState = GetOriginalBrowserState();
-  translatePrefs_ =
+  _translatePrefs =
       ChromeIOSTranslateClient::CreateTranslatePrefs(browserState->GetPrefs());
 
   // Make sure Translate is enabled.
@@ -174,11 +174,11 @@ id<GREYMatcher> NavigationBarEditButton() {
 
   // Make sure "en" is the only accept language.
   std::vector<std::string> languages;
-  translatePrefs_->GetLanguageList(&languages);
+  _translatePrefs->GetLanguageList(&languages);
   for (const auto& language : languages) {
-    translatePrefs_->RemoveFromLanguageList(language);
+    _translatePrefs->RemoveFromLanguageList(language);
   }
-  translatePrefs_->AddToLanguageList("en", /*force_blocked=*/false);
+  _translatePrefs->AddToLanguageList("en", /*force_blocked=*/false);
 }
 
 - (void)tearDown {
@@ -254,7 +254,7 @@ id<GREYMatcher> NavigationBarEditButton() {
       performAction:TurnSettingsSwitchOn(NO)];
 
   // Verify the prefs are up-to-date.
-  GREYAssertFalse(translatePrefs_->IsOfferTranslateEnabled(),
+  GREYAssertFalse(_translatePrefs->IsOfferTranslateEnabled(),
                   @"Translate is expected to be disabled.");
 
   // Verify that "English (United States)" does not feature a label indicating
@@ -274,7 +274,7 @@ id<GREYMatcher> NavigationBarEditButton() {
       performAction:TurnSettingsSwitchOn(YES)];
 
   // Verify the prefs are up-to-date.
-  GREYAssertTrue(translatePrefs_->IsOfferTranslateEnabled(),
+  GREYAssertTrue(_translatePrefs->IsOfferTranslateEnabled(),
                  @"Translate is expected to be enabled.");
 
   // Verify that "English (United States)" features a label indicating it is
@@ -368,9 +368,9 @@ id<GREYMatcher> NavigationBarEditButton() {
   [ChromeEarlGreyUI openSettingsMenu];
 
   // Add "Turkish" to the list of accept languages.
-  translatePrefs_->AddToLanguageList("tr", /*force_blocked=*/false);
+  _translatePrefs->AddToLanguageList("tr", /*force_blocked=*/false);
   // Verify the prefs are up-to-date.
-  GREYAssertTrue(translatePrefs_->IsBlockedLanguage("tr"),
+  GREYAssertTrue(_translatePrefs->IsBlockedLanguage("tr"),
                  @"Turkish is expected to be Translate-blocked");
 
   // Go to the Language Settings page.
@@ -407,7 +407,7 @@ id<GREYMatcher> NavigationBarEditButton() {
       assertWithMatcher:grey_notNil()];
 
   // Verify the prefs are up-to-date.
-  GREYAssertFalse(translatePrefs_->IsBlockedLanguage("tr"),
+  GREYAssertFalse(_translatePrefs->IsBlockedLanguage("tr"),
                   @"Turkish should not be Translate-blocked");
 
   // Go to the "Turkish" Language Details page.
@@ -438,7 +438,7 @@ id<GREYMatcher> NavigationBarEditButton() {
       assertWithMatcher:grey_notNil()];
 
   // Verify the prefs are up-to-date.
-  GREYAssertTrue(translatePrefs_->IsBlockedLanguage("tr"),
+  GREYAssertTrue(_translatePrefs->IsBlockedLanguage("tr"),
                  @"Turkish is expected to be Translate-blocked");
 }
 
@@ -447,13 +447,13 @@ id<GREYMatcher> NavigationBarEditButton() {
   [ChromeEarlGreyUI openSettingsMenu];
 
   // Add "Turkish" to the list of accept languages.
-  translatePrefs_->AddToLanguageList("tr", /*force_blocked=*/false);
+  _translatePrefs->AddToLanguageList("tr", /*force_blocked=*/false);
   // Verify the prefs are up-to-date.
-  GREYAssertTrue(translatePrefs_->IsBlockedLanguage("tr"),
+  GREYAssertTrue(_translatePrefs->IsBlockedLanguage("tr"),
                  @"Turkish is expected to be Translate-blocked");
 
   // Make "Turkish" the target language.
-  translatePrefs_->SetRecentTargetLanguage("tr");
+  _translatePrefs->SetRecentTargetLanguage("tr");
 
   // Go to the Language Settings page.
   [ChromeEarlGreyUI tapSettingsMenuButton:LanguageSettingsButton()];
@@ -480,7 +480,7 @@ id<GREYMatcher> NavigationBarEditButton() {
   [ChromeEarlGreyUI openSettingsMenu];
 
   // Make sure "Turkish" is the target language and not "en".
-  translatePrefs_->SetRecentTargetLanguage("tr");
+  _translatePrefs->SetRecentTargetLanguage("tr");
 
   // Go to the Language Settings page.
   [ChromeEarlGreyUI tapSettingsMenuButton:LanguageSettingsButton()];
@@ -507,9 +507,9 @@ id<GREYMatcher> NavigationBarEditButton() {
   [ChromeEarlGreyUI openSettingsMenu];
 
   // Add "Aragonese" to the list of accept languages.
-  translatePrefs_->AddToLanguageList("an", /*force_blocked=*/false);
+  _translatePrefs->AddToLanguageList("an", /*force_blocked=*/false);
   // Verify the prefs are up-to-date.
-  GREYAssertTrue(translatePrefs_->IsBlockedLanguage("an"),
+  GREYAssertTrue(_translatePrefs->IsBlockedLanguage("an"),
                  @"Aragonese is expected to be Translate-blocked");
 
   // Go to the Language Settings page.
@@ -561,9 +561,9 @@ id<GREYMatcher> NavigationBarEditButton() {
   [ChromeEarlGreyUI openSettingsMenu];
 
   // Add "Turkish" to the list of accept languages.
-  translatePrefs_->AddToLanguageList("tr", /*force_blocked=*/false);
+  _translatePrefs->AddToLanguageList("tr", /*force_blocked=*/false);
   // Verify the prefs are up-to-date.
-  GREYAssertTrue(translatePrefs_->IsBlockedLanguage("tr"),
+  GREYAssertTrue(_translatePrefs->IsBlockedLanguage("tr"),
                  @"Turkish is expected to be Translate-blocked");
 
   // Go to the Language Settings page.

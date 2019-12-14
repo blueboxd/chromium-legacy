@@ -34,6 +34,10 @@ class EngineCleanupResultsProxy
   // arbitrary thread from the sandboxed engine.
   void CleanupDone(uint32_t result);
 
+ protected:
+  // Tests can subclass this create a proxy that's not bound to anything.
+  EngineCleanupResultsProxy();
+
  private:
   friend class base::RefCountedThreadSafe<EngineCleanupResultsProxy>;
   ~EngineCleanupResultsProxy();

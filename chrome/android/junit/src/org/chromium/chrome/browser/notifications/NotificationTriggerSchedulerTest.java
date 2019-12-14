@@ -65,8 +65,10 @@ public class NotificationTriggerSchedulerTest {
         return taskInfo.getExtras().getLong(key);
     }
 
-    private static long getScheduledDelay(TaskInfo taskInfo) {
-        return taskInfo.getOneOffInfo().getWindowEndTimeMs();
+    private static TaskInfo.ExactInfo getScheduledTimestamp(TaskInfo taskInfo) {
+        TaskInfo.TimingInfo timingInfo = taskInfo.getTimingInfo();
+        assertTrue(timingInfo instanceof TaskInfo.ExactInfo);
+        return (TaskInfo.ExactInfo) timingInfo;
     }
 
     @Test
@@ -77,8 +79,10 @@ public class NotificationTriggerSchedulerTest {
 
         List<TaskInfo> taskInfos = mTaskInfoCaptor.getAllValues();
         assertEquals(1, taskInfos.size());
-        assertEquals(timestamp, getTimestamp(taskInfos.get(0)));
-        assertEquals(1000, getScheduledDelay(taskInfos.get(0)));
+
+        TaskInfo taskInfo = taskInfos.get(0);
+        assertEquals(timestamp, getTimestamp(taskInfo));
+        assertEquals(timestamp, getScheduledTimestamp(taskInfo).getTriggerAtMs());
     }
 
     @Test
@@ -89,8 +93,10 @@ public class NotificationTriggerSchedulerTest {
 
         List<TaskInfo> taskInfos = mTaskInfoCaptor.getAllValues();
         assertEquals(1, taskInfos.size());
-        assertEquals(timestamp, getTimestamp(taskInfos.get(0)));
-        assertEquals(0, getScheduledDelay(taskInfos.get(0)));
+
+        TaskInfo taskInfo = taskInfos.get(0);
+        assertEquals(timestamp, getTimestamp(taskInfo));
+        assertEquals(timestamp, getScheduledTimestamp(taskInfo).getTriggerAtMs());
     }
 
     @Test

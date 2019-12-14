@@ -22,7 +22,7 @@ class ShellNativeAppWindowMac;
 @interface ShellNativeAppWindowController
     : NSWindowController<NSWindowDelegate> {
  @private
-  extensions::ShellNativeAppWindowMac* appWindow_;  // Owns us.
+  extensions::ShellNativeAppWindowMac* _appWindow;  // Owns us.
 }
 
 @property(assign, nonatomic) extensions::ShellNativeAppWindowMac* appWindow;

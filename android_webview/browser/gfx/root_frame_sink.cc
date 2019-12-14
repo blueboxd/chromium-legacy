@@ -87,7 +87,8 @@ void RootFrameSink::RemoveChildFrameSinkId(
                                                       frame_sink_id);
 }
 
-bool RootFrameSink::BeginFrame(const viz::BeginFrameArgs& args) {
+bool RootFrameSink::BeginFrame(const viz::BeginFrameArgs& args,
+                               bool had_input_event) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   begin_frame_source_->OnBeginFrame(args);
   // TODO(vasilyt): Implement new Android.View invalidation heuristics

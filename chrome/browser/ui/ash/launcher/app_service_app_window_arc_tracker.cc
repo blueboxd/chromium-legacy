@@ -120,6 +120,13 @@ void AppServiceAppWindowArcTracker::OnWindowVisibilityChanging(
       user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId());
 }
 
+void AppServiceAppWindowArcTracker::OnAppStatesChanged(
+    const std::string& app_id,
+    const ArcAppListPrefs::AppInfo& app_info) {
+  if (!app_info.ready)
+    OnAppRemoved(app_id);
+}
+
 void AppServiceAppWindowArcTracker::OnAppRemoved(const std::string& app_id) {
   const std::vector<int> task_ids_to_remove = GetTaskIdsForApp(app_id);
   for (const auto task_id : task_ids_to_remove)

@@ -654,5 +654,11 @@
               "fast/html",
               "fast/parser"],
     "args": ["--disable-blink-features=ShadowDOMV0,CustomElementsV0,HTMLImports"]
+  },
+  {
+    "prefix": "raw-clipboard",
+    "bases": ["clipboard/async-clipboard",
+              "external/wpt/clipboard-apis/clipboard-item.https.html"],
+    "args": ["--enable-features=RawClipboard"]
   }
 ]

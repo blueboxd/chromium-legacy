@@ -11,6 +11,8 @@ package org.chromium.base;
  * @param <T> Return type.
  */
 public interface Supplier<T> {
+    // TODO(crbug.com/1034012): Remove once min Android API level reaches 24.
+
     /**
      * Returns a value.
      */

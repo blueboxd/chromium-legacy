@@ -37,6 +37,9 @@ class EngineScanResultsProxy
   virtual void ScanDone(uint32_t result);
 
  protected:
+  // Tests can subclass this create a proxy that's not bound to anything.
+  EngineScanResultsProxy();
+
   virtual ~EngineScanResultsProxy();
 
  private:

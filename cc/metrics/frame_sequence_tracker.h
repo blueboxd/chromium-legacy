@@ -57,6 +57,12 @@ class CC_EXPORT FrameSequenceMetrics {
   FrameSequenceMetrics(const FrameSequenceMetrics&) = delete;
   FrameSequenceMetrics& operator=(const FrameSequenceMetrics&) = delete;
 
+  enum class ThreadType {
+    kMain,
+    kCompositor,
+    kSlower,
+  };
+
   struct ThroughputData {
     static std::unique_ptr<base::trace_event::TracedValue> ToTracedValue(
         const ThroughputData& impl,
@@ -66,7 +72,7 @@ class CC_EXPORT FrameSequenceMetrics {
     // indicates that no throughput metric is reported.
     static base::Optional<int> ReportHistogram(
         FrameSequenceTrackerType sequence_type,
-        const char* thread_name,
+        ThreadType thread_type,
         int metric_index,
         const ThroughputData& data);
 
@@ -208,12 +214,6 @@ class CC_EXPORT FrameSequenceTracker {
     kActive,
     kScheduledForTermination,
     kReadyForTermination,
-  };
-
-  enum class ThreadType {
-    kMain,
-    kCompositor,
-    kSlower,
   };
 
   static const char* GetFrameSequenceTrackerTypeName(int type_index);

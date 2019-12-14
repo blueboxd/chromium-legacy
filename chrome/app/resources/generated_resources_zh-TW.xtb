@@ -1189,7 +1189,6 @@
 <translation id="2665919335226618153">糟糕！格式化過程中發生錯誤。</translation>
 <translation id="2666990579225592931">開啟訪客視窗</translation>
 <translation id="2667463864537187133">管理拼字檢查</translation>
-<translation id="2669093958999339774">禁止網站顯示通知，以免干擾；改以低擾模式通知</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> 正在共用 Chrome 分頁。</translation>
 <translation id="2670429602441959756">這個網頁所含的功能目前與 VR 不相容。正在結束 VR 模式...</translation>
 <translation id="2671451824761031126">現在可以使用你的書籤和設定了</translation>
@@ -1963,7 +1962,6 @@
 <translation id="37613671848467444">在無痕式視窗中開啟(&amp;I)</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{與 1 個 USB 裝置通訊}other{與 # 個 USB 裝置通訊}}</translation>
 <translation id="3765246971671567135">無法讀取離線示範模式的政策。</translation>
-<translation id="3767376082821709728">不允許造訪的新網站傳送通知給你</translation>
 <translation id="3768037234834996183">正在處理您的偏好設定...</translation>
 <translation id="377050016711188788">冰淇淋</translation>
 <translation id="3771294271822695279">影片檔</translation>
@@ -3030,7 +3028,6 @@
 <translation id="5370819323174483825">重新載入(&amp;R)</translation>
 <translation id="5372529912055771682">這個版本的作業系統不支援提供註冊模式。請確認你使用的是最新版本，然後再試一次。</translation>
 <translation id="5372579129492968947">取消固定擴充功能</translation>
-<translation id="5374359983950678924">變更圖片</translation>
 <translation id="5376169624176189338">按一下回上一頁，按住可查看記錄</translation>
 <translation id="5376931455988532197">檔案過大</translation>
 <translation id="537813040452600081">你在這個視窗瀏覽的網頁不會顯示在瀏覽器記錄中，而且在你登出之後，電腦也不會留下 Cookie 等其他記錄。此外，系統不會保留你下載的檔案和建立的書籤。</translation>
@@ -4905,7 +4902,6 @@
 <translation id="8044899503464538266">慢</translation>
 <translation id="8045253504249021590">已透過 Google 資訊主頁停止同步功能。</translation>
 <translation id="8045923671629973368">輸入應用程式 ID 或線上應用程式商店網址</translation>
-<translation id="8046278916126163020">造訪的新網站可以要求傳送通知給你</translation>
 <translation id="804786196054284061">使用者授權協議</translation>
 <translation id="8049705080247101012">Google 已將「<ph name="EXTENSION_NAME" />」標示為惡意擴充功能並禁止安裝</translation>
 <translation id="8050038245906040378">Microsoft 商用程式碼簽署</translation>

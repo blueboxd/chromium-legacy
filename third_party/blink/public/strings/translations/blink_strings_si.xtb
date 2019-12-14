@@ -115,6 +115,7 @@
 <translation id="4812940957355064477">කරුණාකර නමක් අතුළු කරන්න.</translation>
 <translation id="4912536737030637138">ග්‍රන්ථ නාමාවලිය ඇතුළත් කිරීම</translation>
 <translation id="492244087561876220">අදහස් දක්වන්න</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> තේරිණි</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> තෝරා ගැනිණි</translation>
 <translation id="4992066212339426712">නිශ්ශබ්දතාවය ඉවත් කරන්න</translation>
 <translation id="49969490063480558">කරුණාකර '<ph name="ATSIGN" />' පසුව එන කොටසක් ඇතුළු කරන්න. '<ph name="INVALIDADDRESS" />' අසම්පූර්ණයි.</translation>
@@ -219,6 +220,7 @@
 <translation id="7888071071722539607">ඊමේල් ලිපිනයේ '<ph name="ATSIGN" />' ලකුණ ඇතුළත් කරන්න. '<ph name="INVALIDADDRESS" />' ලිපිනයේ '<ph name="ATSIGN" />' සලකුණ නොමැත.</translation>
 <translation id="7891486169920085145">බෙදුම</translation>
 <translation id="795667975304826397">කිසිදු ගොනුවක් තෝරා නැත</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> නොතේරිණි</translation>
 <translation id="8034303206267677282">ප්‍රබල</translation>
 <translation id="8053789581856978548">පෙළ ක්ෂේත්‍රය සොයන්න</translation>
 <translation id="8057695513531652401">නිවේදනය</translation>

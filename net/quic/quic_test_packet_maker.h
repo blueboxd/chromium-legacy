@@ -94,17 +94,21 @@ class QuicTestPacketMaker {
       quic::QuicRstStreamErrorCode error_code,
       bool include_stop_sending_if_v99);
 
-  std::unique_ptr<quic::QuicReceivedPacket> MakeRstAndRequestHeadersPacket(
+  std::unique_ptr<quic::QuicReceivedPacket> MakeRstAndDataPacket(
       uint64_t num,
       bool include_version,
       quic::QuicStreamId rst_stream_id,
       quic::QuicRstStreamErrorCode rst_error_code,
-      quic::QuicStreamId stream_id,
-      bool fin,
-      spdy::SpdyPriority priority,
-      spdy::SpdyHeaderBlock headers,
-      quic::QuicStreamId parent_stream_id,
-      size_t* spdy_headers_frame_length);
+      quic::QuicStreamId data_stream_id,
+      quic::QuicStringPiece data);
+
+  std::unique_ptr<quic::QuicReceivedPacket> MakeDataAndRstPacket(
+      uint64_t num,
+      bool include_version,
+      quic::QuicStreamId data_stream_id,
+      quic::QuicStringPiece data,
+      quic::QuicStreamId rst_stream_id,
+      quic::QuicRstStreamErrorCode rst_error_code);
 
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndRstPacket(
       uint64_t num,
@@ -141,6 +145,28 @@ class QuicTestPacketMaker {
       bool include_version,
       quic::QuicStreamId stream_id,
       quic::QuicRstStreamErrorCode error_code,
+      quic::QuicErrorCode quic_error,
+      const std::string& quic_error_details);
+  std::unique_ptr<quic::QuicReceivedPacket> MakeDataRstAndConnectionClosePacket(
+      uint64_t num,
+      bool include_version,
+      quic::QuicStreamId data_stream_id,
+      quic::QuicStringPiece data,
+      quic::QuicStreamId rst_stream_id,
+      quic::QuicRstStreamErrorCode error_code,
+      quic::QuicErrorCode quic_error,
+      const std::string& quic_error_details);
+  std::unique_ptr<quic::QuicReceivedPacket>
+  MakeDataRstAckAndConnectionClosePacket(
+      uint64_t num,
+      bool include_version,
+      quic::QuicStreamId data_stream_id,
+      quic::QuicStringPiece data,
+      quic::QuicStreamId rst_stream_id,
+      quic::QuicRstStreamErrorCode error_code,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      uint64_t least_unacked,
       quic::QuicErrorCode quic_error,
       const std::string& quic_error_details);
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndConnectionClosePacket(

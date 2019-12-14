@@ -47,9 +47,20 @@ class CONTENT_EXPORT AppCache
   using EntryMap = std::map<GURL, AppCacheEntry>;
   using AppCacheHosts = std::set<AppCacheHost*>;
 
+  // Given a manifest URL and a scope, tests that the scope isn't empty and
+  // that the result of resolving manifest URL to that scope matches our
+  // expectations for the manifest scope (doesn't have a ref, doesn't have a
+  // query, and ends in a forward-slash).
   static bool CheckValidManifestScope(const GURL& manifest_url,
                                       const std::string& manifest_scope);
 
+  // Takes a manifest URL and an optional scope.  Returns a string representing
+  // the manifest scope given those values.
+  //
+  // If |optional_scope| isn't empty, resolves |manifest_url| to a URL given
+  // |optional_scope|, and tests the resulting path component for whether it's a
+  // valid scope.  If so, that scope is returned.  Otherwise, returns the path
+  // from a valid |manifest_url|.
   static std::string GetManifestScope(const GURL& manifest_url,
                                       std::string optional_scope);
 

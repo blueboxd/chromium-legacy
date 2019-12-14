@@ -10,35 +10,11 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 
 #if defined(OS_ANDROID)
-#include "components/viz/service/display_embedder/overlay_candidate_validator_android.h"
 #include "components/viz/service/display_embedder/overlay_candidate_validator_surface_control.h"
 #include "gpu/config/gpu_feature_info.h"
 #endif
 
 namespace viz {
-
-namespace {
-#if defined(OS_ANDROID)
-std::unique_ptr<OverlayCandidateValidatorAndroid>
-CreateOverlayCandidateValidatorAndroid(
-    const OutputSurface::Capabilities& caps) {
-  // When SurfaceControl is enabled, any resource backed by an
-  // AHardwareBuffer can be marked as an overlay candidate but it requires
-  // that we use a SurfaceControl backed GLSurface. If we're creating a
-  // native window backed GLSurface, the overlay processing code will
-  // incorrectly assume these resources can be overlaid. So we disable all
-  // overlay processing for this OutputSurface.
-  const bool allow_overlays = !caps.android_surface_control_feature_enabled;
-
-  if (allow_overlays) {
-    return std::make_unique<OverlayCandidateValidatorAndroid>();
-  } else {
-    return nullptr;
-  }
-}
-#endif
-}  // namespace
-
 std::unique_ptr<OverlayCandidateValidatorStrategy>
 OverlayCandidateValidatorStrategy::Create(
     gpu::SurfaceHandle surface_handle,
@@ -50,9 +26,8 @@ OverlayCandidateValidatorStrategy::Create(
 #if defined(OS_ANDROID)
   if (capabilities.supports_surfaceless) {
     return std::make_unique<OverlayCandidateValidatorSurfaceControl>();
-  } else {
-    return CreateOverlayCandidateValidatorAndroid(capabilities);
   }
+  return nullptr;
 #else  // Default
   return nullptr;
 #endif

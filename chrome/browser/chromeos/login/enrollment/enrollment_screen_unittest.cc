@@ -312,56 +312,6 @@ TEST_P(AutomaticEnrollmentScreenUnitTest, Fallback) {
   TestFallback();
 }
 
-class MultiLicenseEnrollmentScreenUnitTest : public EnrollmentScreenUnitTest {
- public:
-  MultiLicenseEnrollmentScreenUnitTest() = default;
-
-  void SetUpEnrollmentScreen() override {
-    enrollment_config_.mode = policy::EnrollmentConfig::MODE_MANUAL;
-    enrollment_config_.auth_mechanism =
-        policy::EnrollmentConfig::AUTH_MECHANISM_INTERACTIVE;
-    EnrollmentScreenUnitTest::SetUpEnrollmentScreen();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MultiLicenseEnrollmentScreenUnitTest);
-};
-
-// Sign in and check that selected license type is propagated correctly.
-TEST_F(MultiLicenseEnrollmentScreenUnitTest, TestLicenseSelection) {
-  std::unique_ptr<EnterpriseEnrollmentHelperMock> mock =
-      std::make_unique<EnterpriseEnrollmentHelperMock>();
-  auto* mock_ref = mock.get();
-  EXPECT_CALL(*mock, EnrollUsingAuthCode(_))
-      .Times(AnyNumber())
-      .WillRepeatedly(Invoke([mock_ref](const std::string&) {
-        EnrollmentLicenseMap licenses;
-        static_cast<EnrollmentScreen*>(mock_ref->status_consumer())
-            ->OnMultipleLicensesAvailable(licenses);
-      }));
-  EXPECT_CALL(*mock, UseLicenseType(::policy::LicenseType::ANNUAL)).Times(1);
-
-  EnterpriseEnrollmentHelper::SetEnrollmentHelperMock(std::move(mock));
-
-  EXPECT_CALL(*GetMockScreenView(), SetEnrollmentConfig(_, _)).Times(1);
-
-  SetUpEnrollmentScreen();
-
-  EXPECT_CALL(*GetMockScreenView(), Show()).Times(1);
-  EXPECT_CALL(*GetMockScreenView(), ShowSigninScreen()).Times(1);
-
-  // Start enrollment.
-  enrollment_screen_->Show();
-
-  // Once at login, once after picking license type.
-
-  EXPECT_CALL(*GetMockScreenView(), ShowEnrollmentSpinnerScreen()).Times(2);
-  EXPECT_CALL(*GetMockScreenView(), ShowLicenseTypeSelectionScreen(_)).Times(1);
-
-  enrollment_screen_->OnLoginDone("user@domain.com", "oauth");
-  enrollment_screen_->OnLicenseTypeSelected("annual");
-}
-
 INSTANTIATE_TEST_SUITE_P(
     P,
     AutomaticEnrollmentScreenUnitTest,

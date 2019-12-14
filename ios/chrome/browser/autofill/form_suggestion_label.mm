@@ -63,8 +63,8 @@ UILabel* TextLabel(NSString* text, UIColor* textColor, BOOL bold) {
 
 @implementation FormSuggestionLabel {
   // Client of this view.
-  __weak id<FormSuggestionClient> client_;
-  FormSuggestion* suggestion_;
+  __weak id<FormSuggestionClient> _client;
+  FormSuggestion* _suggestion;
 }
 
 - (id)initWithSuggestion:(FormSuggestion*)suggestion
@@ -73,8 +73,8 @@ UILabel* TextLabel(NSString* text, UIColor* textColor, BOOL bold) {
                     client:(id<FormSuggestionClient>)client {
   self = [super initWithFrame:CGRectZero];
   if (self) {
-    suggestion_ = suggestion;
-    client_ = client;
+    _suggestion = suggestion;
+    _client = client;
 
     UIStackView* stackView = [[UIStackView alloc] initWithArrangedSubviews:@[]];
     stackView.axis = UILayoutConstraintAxisHorizontal;
@@ -144,7 +144,7 @@ UILabel* TextLabel(NSString* text, UIColor* textColor, BOOL bold) {
 
 - (void)touchesEnded:(NSSet*)touches withEvent:(UIEvent*)event {
   [self setBackgroundColor:[UIColor colorNamed:kGrey100Color]];
-  [client_ didSelectSuggestion:suggestion_];
+  [_client didSelectSuggestion:_suggestion];
 }
 
 @end

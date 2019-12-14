@@ -26,8 +26,6 @@ void ShowSSLInterstitial(
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-    const base::Callback<void(content::CertificateRequestResultType)>&
-        decision_callback,
     base::OnceCallback<
         void(std::unique_ptr<security_interstitials::SecurityInterstitialPage>)>
         blocking_page_ready_callback,
@@ -65,8 +63,6 @@ void HandleSSLError(
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-    const base::Callback<void(content::CertificateRequestResultType)>&
-        decision_callback,
     base::OnceCallback<
         void(std::unique_ptr<security_interstitials::SecurityInterstitialPage>)>
         blocking_page_ready_callback) {
@@ -85,7 +81,6 @@ void HandleSSLError(
   // SSLErrorHandler).
   ShowSSLInterstitial(web_contents, cert_error, ssl_info, request_url,
                       std::move(ssl_cert_reporter),
-                      std::move(decision_callback),
                       std::move(blocking_page_ready_callback), options_mask);
 }
 

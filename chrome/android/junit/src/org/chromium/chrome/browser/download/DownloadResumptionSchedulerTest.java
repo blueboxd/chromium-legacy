@@ -206,7 +206,6 @@ public class DownloadResumptionSchedulerTest {
 
         assertNotNull(task);
         assertEquals(TaskIds.DOWNLOAD_RESUMPTION_JOB_ID, task.getTaskId());
-        assertEquals(DownloadResumptionBackgroundTask.class, task.getBackgroundTaskClass());
         assertTrue(task.getExtras().isEmpty());
         assertEquals(expectedNetworkType, task.getRequiredNetworkType());
         assertFalse(task.requiresCharging());

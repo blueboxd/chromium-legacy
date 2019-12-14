@@ -60,8 +60,8 @@ extern const base::Feature kPaymentRequestSkipToGPay;
 // eligible credit card.
 extern const base::Feature kPaymentRequestSkipToGPayIfNoCard;
 
-// Controls whether the microtransaction features are enabled.
-extern const base::Feature kWebPaymentMicrotransaction;
+// Controls whether the minimal payment request ui features are enabled.
+extern const base::Feature kWebPaymentsMinimalUI;
 
 }  // namespace features
 }  // namespace payments

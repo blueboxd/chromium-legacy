@@ -841,6 +841,11 @@ void BrowserViewRenderer::Invalidate() {
   PostInvalidate(compositor_);
 }
 
+void BrowserViewRenderer::OnInputEvent() {
+  if (root_frame_sink_proxy_)
+    root_frame_sink_proxy_->OnInputEvent();
+}
+
 void BrowserViewRenderer::ProgressFling(base::TimeTicks frame_time) {
   if (!compositor_)
     return;

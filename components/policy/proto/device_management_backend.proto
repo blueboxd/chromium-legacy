@@ -11,7 +11,7 @@ package enterprise_management;
 // Everything below this comment will be synchronized between client and server
 // repos ( go/cros-proto-sync ).
 
-// This enum needs to be shared between DeviceRegisterRequest and
+// DEPRECATED: This enum needs to be shared between DeviceRegisterRequest and
 // LicenseAvailability protos. With java_api_version 1, this means that enum
 // needs to be wrapped into a message.
 message LicenseType {
@@ -27,7 +27,7 @@ message LicenseType {
     KIOSK = 3;
   }
 
-  optional LicenseTypeEnum license_type = 1;
+  optional LicenseTypeEnum license_type_deprecated = 1 [deprecated = true];
 }
 
 // Data along with a cryptographic signature verifying their authenticity.
@@ -2210,8 +2210,8 @@ message ActiveDirectoryPlayActivityRequest {
 // Response to the Play account activity request.
 message ActiveDirectoryPlayActivityResponse {}
 
-// Request to retrieve available device licenses. User auth token or auth
-// cookie must be provided with DeviceManagementRequest when
+// DEPRECATED: Request to retrieve available device licenses. User auth token
+// or auth cookie must be provided with DeviceManagementRequest when
 // CheckDeviceLicenseRequest is being sent.
 // See go/cdm-mixed-license-pool for more info
 message CheckDeviceLicenseRequest {}
@@ -2219,13 +2219,13 @@ message CheckDeviceLicenseRequest {}
 // Represents availability of a single license type.
 message LicenseAvailability {
   // License type.
-  optional LicenseType license_type = 1;
+  optional LicenseType license_type_deprecated = 1 [deprecated = true];
 
   // Remaining available licenses (can be 0).
-  optional int32 available_licenses = 2;
+  optional int32 available_licenses_deprecated = 2 [deprecated = true];
 }
 
-// Response to a check device license request.
+// DEPRECATED: Response to a check device license request.
 message CheckDeviceLicenseResponse {
   enum LicenseSelectionMode {
     // Should not happen, included for compatibility.
@@ -2237,7 +2237,8 @@ message CheckDeviceLicenseResponse {
   }
 
   // Policy setting value for license selection mode.
-  optional LicenseSelectionMode license_selection_mode = 1;
+  optional LicenseSelectionMode license_selection_mode_deprecated = 1
+      [deprecated = true];
 
   // Provides available license counts for each purchased license type.
   // This field would list each subscription for the domain even if all licenses
@@ -2247,7 +2248,8 @@ message CheckDeviceLicenseResponse {
   // contains more than one entry then device should display a screen asking
   // user to choose license type and send selected license type value in the
   // DeviceRegisterRequest.license_type field.
-  repeated LicenseAvailability license_availabilities = 2;
+  repeated LicenseAvailability license_availabilities_deprecated = 2
+      [deprecated = true];
 }
 
 // Sign in an Active Directory user using SAML SSO. The device management server
@@ -2517,7 +2519,6 @@ message ChildStatusReportResponse {
 //     * certificate_based_register
 //     * active_directory_enroll_play_user
 //     * active_directory_play_activity
-//     * check_device_license
 //     * active_directory_user_signin
 //     * register_browser
 //     * policy_validation_report
@@ -2529,8 +2530,8 @@ message ChildStatusReportResponse {
 //   * deviceid: MUST BE no more than 64-char in [\x21-\x7E].
 //   * agent: MUST BE no more than 64-char long.
 // * HTTP Authorization header MUST be in the following formats:
-//   * For register, ping, check_android_management and
-//     check_device_license requests with user authentication
+//   * For register, ping, check_android_management
+//     requests with user authentication
 //     Authorization: GoogleLogin auth=<auth cookie for Mobile Sync>
 //
 //   * For register for Chrome browsers
@@ -2573,7 +2574,6 @@ message ChildStatusReportResponse {
 //   active_directory_enroll_play_user:
 //       active_directory_enroll_play_user_request
 //   active_directory_play_activity: active_directory_play_activity_request
-//   check_device_license: check_device_license_request
 //   active_directory_user_signin: active_directory_user_signin_request
 //   register_browser: register_browser_request
 //   app_install_report: app_install_report_request
@@ -2648,7 +2648,8 @@ message DeviceManagementRequest {
       active_directory_play_activity_request = 20;
 
   // Request device license information.
-  optional CheckDeviceLicenseRequest check_device_license_request = 21;
+  optional CheckDeviceLicenseRequest check_device_license_request_deprecated =
+      21 [deprecated = true];
 
   // Initiate an Active Directory user signin.
   optional ActiveDirectoryUserSigninRequest
@@ -2775,7 +2776,8 @@ message DeviceManagementResponse {
       active_directory_play_activity_response = 20;
 
   // Response to a check device license request.
-  optional CheckDeviceLicenseResponse check_device_license_response = 21;
+  optional CheckDeviceLicenseResponse check_device_license_response_deprecated =
+      21 [deprecated = true];
 
   // Response to a request initiating an Active Directory user signin.
   optional ActiveDirectoryUserSigninResponse

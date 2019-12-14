@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">是否重新下载文件？</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# 个音频文件}other{# 个音频文件}}</translation>
 <translation id="2653659639078652383">提交</translation>
-<translation id="2669093958999339774">不直接弹出提示询问能否向您发送通知，改用更加静默的提示方式，以免造成打扰</translation>
 <translation id="2677748264148917807">离开</translation>
 <translation id="2704606927547763573">已复制</translation>
 <translation id="2707726405694321444">刷新网页</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">已在 <ph name="PRODUCT_NAME" /> 中添加书签</translation>
 <translation id="3744111561329211289">后台同步</translation>
 <translation id="3749259744154402564">不支持</translation>
-<translation id="3767376082821709728">您访问的新网站无法向您发送通知</translation>
 <translation id="3771001275138982843">无法下载此项更新</translation>
 <translation id="3771033907050503522">隐身标签页</translation>
 <translation id="3773755127849930740">请<ph name="BEGIN_LINK" />开启蓝牙<ph name="END_LINK" />以允许配对</translation>
@@ -957,7 +955,6 @@
 <translation id="8035133914807600019">新建文件夹…</translation>
 <translation id="8037750541064988519">还剩 <ph name="DAYS" /> 天</translation>
 <translation id="804335162455518893">找不到 SD 卡</translation>
-<translation id="8046278916126163020">您访问的新网站可询问能否向您发送通知</translation>
 <translation id="805047784848435650">根据您的浏览记录</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB 可用</translation>
 <translation id="8058746566562539958">在新的 Chrome 标签页中打开</translation>

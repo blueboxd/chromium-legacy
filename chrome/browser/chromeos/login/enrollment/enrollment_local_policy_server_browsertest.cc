@@ -248,48 +248,6 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
   EXPECT_TRUE(InstallAttributes::Get()->IsCloudManaged());
 }
 
-// Simple manual enrollment with only license type available.
-// Client should automatically select the only available license type,
-// so no license selection UI should be displayed.
-// TODO(https://crbug.com/1031275): Slow on MSAN and debug builds.
-#if defined(MEMORY_SANITIZER) || !defined(NDEBUG)
-#define MAYBE_ManualEnrollmentWithSingleLicense \
-  DISABLED_ManualEnrollmentWithSingleLicense
-#else
-#define MAYBE_ManualEnrollmentWithSingleLicense \
-  ManualEnrollmentWithSingleLicense
-#endif
-IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
-                       MAYBE_ManualEnrollmentWithSingleLicense) {
-  policy_server_.ExpectAvailableLicenseCount(5 /* perpetual */, 0 /* annual */,
-                                             0 /* kiosk */);
-
-  TriggerEnrollmentAndSignInSuccessfully();
-
-  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
-  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
-  EXPECT_TRUE(InstallAttributes::Get()->IsCloudManaged());
-}
-
-// Simple manual enrollment with license selection.
-// Enrollment selection UI should be displayed during enrollment.
-// Disable due to flaky crash/timeout on ChromeOS. https://crbug.com/1028650
-IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
-                       DISABLED_ManualEnrollmentWithMultipleLicenses) {
-  policy_server_.ExpectAvailableLicenseCount(5 /* perpetual */, 5 /* annual */,
-                                             5 /* kiosk */);
-
-  TriggerEnrollmentAndSignInSuccessfully();
-
-  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepLicenses);
-  enrollment_ui_.SelectEnrollmentLicense(test::values::kLicenseTypeAnnual);
-  enrollment_ui_.UseSelectedLicense();
-
-  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
-  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
-  EXPECT_TRUE(InstallAttributes::Get()->IsCloudManaged());
-}
-
 // Negative scenarios: see different HTTP error codes in
 // device_management_service.cc
 

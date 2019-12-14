@@ -78,17 +78,16 @@ bool IdleDetector::HasPendingActivity() const {
   return GetExecutionContext() && HasEventListeners();
 }
 
-ScriptPromise IdleDetector::start(ScriptState* script_state) {
+ScriptPromise IdleDetector::start(ScriptState* script_state,
+                                  ExceptionState& exception_state) {
   // Validate options.
   ExecutionContext* context = ExecutionContext::From(script_state);
   DCHECK(context->IsContextThread());
 
   if (!context->IsFeatureEnabled(mojom::FeaturePolicyFeature::kIdleDetection,
                                  ReportOptions::kReportOnFailure)) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
-                                           kFeaturePolicyBlocked));
+    exception_state.ThrowSecurityError(kFeaturePolicyBlocked);
+    return ScriptPromise();
   }
 
   StartMonitoring();

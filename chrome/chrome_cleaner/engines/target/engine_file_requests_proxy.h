@@ -48,6 +48,9 @@ class EngineFileRequestsProxy
   void UnbindRequestsRemote();
 
  protected:
+  // Tests can subclass this create a proxy that's not bound to anything.
+  EngineFileRequestsProxy();
+
   virtual ~EngineFileRequestsProxy();
 
  private:

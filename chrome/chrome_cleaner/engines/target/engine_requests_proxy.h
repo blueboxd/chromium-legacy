@@ -61,6 +61,9 @@ class EngineRequestsProxy
                                           HANDLE* registry_handle);
 
  protected:
+  // Tests can subclass this create a proxy that's not bound to anything.
+  EngineRequestsProxy();
+
   virtual ~EngineRequestsProxy();
 
  private:

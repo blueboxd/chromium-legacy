@@ -1190,7 +1190,6 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="2665919335226618153">Oi! Formatuojant įvyko klaida.</translation>
 <translation id="2666990579225592931">Atidaryti svečio langą</translation>
 <translation id="2667463864537187133">Rašybos tikrinimo tvarkymas</translation>
-<translation id="2669093958999339774">Blokuokite pranešimų įspėjimus, kad jūsų neblaškytų, ir naudokite tylesnius pranešimus</translation>
 <translation id="2670102641511624474">„<ph name="APP_NAME" />“ bendrina „Chrome“ skirtuką.</translation>
 <translation id="2670429602441959756">Šiame puslapyje yra funkcijų, kurios dar nepalaikomos VR. Išeinama...</translation>
 <translation id="2671451824761031126">Žymės ir nustatymai paruošti</translation>
@@ -1964,7 +1963,6 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="37613671848467444">Atidaryti inkognito lange</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Užmegzti ryšį su USB įrenginiu}one{Užmegzti ryšį su # USB įrenginiu}few{Užmegzti ryšį su # USB įrenginiais}many{Užmegzti ryšį su # USB įrenginio}other{Užmegzti ryšį su # USB įrenginių}}</translation>
 <translation id="3765246971671567135">Nepavyko nuskaityti neprisijungus pasiekiamos demonstracinio režimo politikos.</translation>
-<translation id="3767376082821709728">Naujos svetainės, kuriose lankotės, negali jums siųsti pranešimų</translation>
 <translation id="3768037234834996183">Sinchronizuojamos nuostatos...</translation>
 <translation id="377050016711188788">Ledai</translation>
 <translation id="3771294271822695279">Vaizdo įrašų failai</translation>
@@ -3032,7 +3030,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5370819323174483825">&amp;Įkelti iš naujo</translation>
 <translation id="5372529912055771682">Ši operacinė sistema nepalaiko teikiamo registracijos režimo. Įsitikinkite, kad naudojate naujausią versiją ir bandykite dar kartą.</translation>
 <translation id="5372579129492968947">Atsegti plėtinį</translation>
-<translation id="5374359983950678924">Keisti paveikslėlį</translation>
 <translation id="5376169624176189338">Spustelėkite, kad grįžtumėte, palaukite, kad pamatytumėte istoriją</translation>
 <translation id="5376931455988532197">Failas per didelis</translation>
 <translation id="537813040452600081">Puslapiai, kuriuos peržiūrite šiame lange, nerodomi naršyklės istorijoje. Kai atsijungsite, kompiuteryje neliks ir kitų jų pėdsakų, pvz., slapukų. Atsisiųsti failai ir sukurtos žymės nebus išsaugoti.</translation>
@@ -4908,7 +4905,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8044899503464538266">Lėtas</translation>
 <translation id="8045253504249021590">Sinchronizavimas sustabdytas naudojant „Google“ informacijos suvestinę.</translation>
 <translation id="8045923671629973368">Įveskite programos ID arba žiniatinklio parduotuvės URL</translation>
-<translation id="8046278916126163020">Naujos svetainės, kuriose apsilankote, gali prašyti leidimo siųsti pranešimus</translation>
 <translation id="804786196054284061">Galutinio naudotojo licencijos sutartis</translation>
 <translation id="8049705080247101012">„Google“ pažymėjo plėtinį „<ph name="EXTENSION_NAME" />“ kaip kenkėjišką ir neleido jo įdiegti</translation>
 <translation id="8050038245906040378">„Microsoft“ komercinio kodo pasirašymas</translation>

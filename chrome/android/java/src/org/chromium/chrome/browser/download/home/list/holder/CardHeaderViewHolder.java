@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.download.home.list.holder;
 
+import android.content.res.Resources;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,8 +48,11 @@ public class CardHeaderViewHolder extends ListItemViewHolder {
         if (faviconView != null) {
             properties.get(ListProperties.PROVIDER_FAVICON)
                     .getFavicon(headerListItem.faviconUrl, faviconSizePx, (bitmap) -> {
-                        faviconView.setImageDrawable(
-                                new BitmapDrawable(itemView.getResources(), bitmap));
+                        Resources resources = itemView.getContext().getResources();
+                        Drawable drawable = bitmap == null
+                                ? resources.getDrawable(R.drawable.ic_globe_24dp)
+                                : new BitmapDrawable(resources, bitmap);
+                        faviconView.setImageDrawable(drawable);
                     });
         }
     }

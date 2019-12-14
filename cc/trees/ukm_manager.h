@@ -41,7 +41,7 @@ class CC_EXPORT UkmManager {
   void AddCheckerboardedImages(int num_of_checkerboarded_images);
 
   void RecordThroughputUKM(FrameSequenceTrackerType tracker_type,
-                           FrameSequenceTracker::ThreadType thread_type,
+                           FrameSequenceMetrics::ThreadType thread_type,
                            int64_t throughput) const;
 
   ukm::UkmRecorder* recorder_for_testing() { return recorder_.get(); }

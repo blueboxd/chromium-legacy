@@ -212,6 +212,7 @@ target("mac_app_bundle", "remoting_native_messaging_host") {
     "VERSION_FULL=$remoting_version_full",
     "VERSION_SHORT=$remoting_version_short",
     "MACOSX_DEPLOYMENT_TARGET=10.7",
+    "HOST_NAME=$host_name",
   ]
 
   sources = [

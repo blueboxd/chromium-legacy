@@ -297,7 +297,8 @@ class IndexedDBConnectionCoordinator::OpenRequest
         std::set<int64_t>(object_store_ids.begin(), object_store_ids.end()),
         blink::mojom::IDBTransactionMode::VersionChange,
         db_->backing_store()
-            ->CreateTransaction(blink::mojom::IDBTransactionDurability::Strict)
+            ->CreateTransaction(blink::mojom::IDBTransactionDurability::Strict,
+                                blink::mojom::IDBTransactionMode::ReadWrite)
             .release());
 
     // Save a WeakPtr<IndexedDBTransaction> for the CreateAndBindTransaction

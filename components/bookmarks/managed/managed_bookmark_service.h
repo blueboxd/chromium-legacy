@@ -27,10 +27,10 @@ class ManagedBookmarksTracker;
 class ManagedBookmarkService : public KeyedService,
                                public BaseBookmarkModelObserver {
  public:
-  typedef base::Callback<std::string()> GetManagementDomainCallback;
+  using GetManagementDomainCallback = base::RepeatingCallback<std::string()>;
 
   ManagedBookmarkService(PrefService* prefs,
-                         const GetManagementDomainCallback& callback);
+                         GetManagementDomainCallback callback);
   ~ManagedBookmarkService() override;
 
   // Called upon creation of the BookmarkModel.

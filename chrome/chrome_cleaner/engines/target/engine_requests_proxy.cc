@@ -294,6 +294,8 @@ uint32_t EngineRequestsProxy::NtOpenReadOnlyRegistry(
   return return_code;
 }
 
+EngineRequestsProxy::EngineRequestsProxy() = default;
+
 EngineRequestsProxy::~EngineRequestsProxy() = default;
 
 MojoCallStatus EngineRequestsProxy::SandboxGetFileAttributes(

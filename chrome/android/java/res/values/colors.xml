@@ -6,12 +6,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Please see src/ui/android/java/res/values/colors.xml for the shared common colors. -->
 
-    <!-- Text colors -->
-    <color name="default_primary_color">#F2F2F2</color>
-    <color name="input_underline_error_color">#D32F2F</color>
-    <color name="explanation_text_color">#909090</color>
-    <color name="text_highlight_color">@color/highlight_color_on_dark_text</color>
-
     <!-- Other colors -->
     <color name="dark_action_bar_color">#263238</color>
     <color name="dark_status_bar_color">#161E21</color>

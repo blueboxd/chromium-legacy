@@ -66,15 +66,15 @@
 @end
 
 @implementation MockNotificationReceiver {
-  int notificationCount_;
+  int _notificationCount;
 }
 
 - (int)notificationCount {
-  return notificationCount_;
+  return _notificationCount;
 }
 
 - (void)receivedNotification {
-  notificationCount_++;
+  _notificationCount++;
 }
 
 @end

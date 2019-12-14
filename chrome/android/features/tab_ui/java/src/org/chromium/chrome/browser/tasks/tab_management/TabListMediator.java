@@ -264,7 +264,6 @@ class TabListMediator {
     private ComponentCallbacks mComponentCallbacks;
     private TabGridItemTouchHelperCallback mTabGridItemTouchHelperCallback;
     private int mNextTabId = Tab.INVALID_TAB_ID;
-    private boolean mTabRestoreCompleted;
     private @UiType int mUiType;
 
     private final TabActionListener mTabSelectedListener = new TabActionListener() {
@@ -500,7 +499,10 @@ class TabListMediator {
 
             @Override
             public void didAddTab(Tab tab, @TabLaunchType int type) {
-                if (!mTabRestoreCompleted) return;
+                boolean isTabModelRestoreCompleted = mTabModelSelector.getTabModelFilterProvider()
+                                                             .getCurrentTabModelFilter()
+                                                             .isTabModelRestored();
+                if (!isTabModelRestoreCompleted) return;
                 onTabAdded(tab, !mActionsOnAllRelatedTabs);
                 if (type == TabLaunchType.FROM_RESTORE && mActionsOnAllRelatedTabs) {
                     // When tab is restored after restoring stage (e.g. exiting multi-window mode),
@@ -538,11 +540,6 @@ class TabListMediator {
             public void tabRemoved(Tab tab) {
                 if (mModel.indexFromId(tab.getId()) == TabModel.INVALID_TAB_INDEX) return;
                 mModel.removeAt(mModel.indexFromId(tab.getId()));
-            }
-
-            @Override
-            public void restoreCompleted() {
-                mTabRestoreCompleted = true;
             }
         };
 
@@ -1272,11 +1269,6 @@ class TabListMediator {
         };
         mTabListFaviconProvider.getFaviconForUrlAsync(
                 tab.getUrl(), tab.isIncognito(), faviconCallback);
-    }
-
-    @VisibleForTesting
-    void setTabRestoreCompletedForTesting(boolean isRestored) {
-        mTabRestoreCompleted = isRestored;
     }
 
     /**

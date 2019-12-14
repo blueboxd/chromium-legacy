@@ -38,8 +38,11 @@ const base::Feature kCaptureSafetyNetId{"SafeBrowsingCaptureSafetyNetId",
 const base::Feature kCommittedSBInterstitials{
     "SafeBrowsingCommittedInterstitials", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kDeepScanningOfDownloads{
-    "SafeBrowsingDeepScanningOfDownloads", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kContentComplianceEnabled{
+    "ContentComplianceEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kMalwareScanEnabled{"MalwareScanEnabled",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPasswordProtectionForSavedPasswords{
     "SafeBrowsingPasswordProtectionForSavedPasswords",
@@ -114,6 +117,8 @@ constexpr struct {
     {&kCaptureInlineJavascriptForGoogleAds, true},
     {&kCaptureSafetyNetId, true},
     {&kCommittedSBInterstitials, true},
+    {&kContentComplianceEnabled, true},
+    {&kMalwareScanEnabled, true},
     {&kPasswordProtectionForSavedPasswords, true},
     {&kPasswordProtectionShowDomainsForSavedPasswords, true},
     {&kPasswordProtectionForSignedInUsers, true},

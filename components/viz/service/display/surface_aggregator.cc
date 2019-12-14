@@ -468,27 +468,31 @@ void SurfaceAggregator::EmitSurfaceContent(
   if (referenced_surfaces_.count(surface_id))
     return;
 
-  float layer_to_content_scale_x, layer_to_content_scale_y;
+  // If we are stretching content to fill the SurfaceDrawQuad, or if the device
+  // scale factor mismatches between content and SurfaceDrawQuad, we appply an
+  // additional scale.
+  float extra_content_scale_x, extra_content_scale_y;
   if (stretch_content_to_fill_bounds) {
     // Stretches the surface contents to exactly fill the layer bounds,
     // regardless of scale or aspect ratio differences.
-    layer_to_content_scale_x =
-        static_cast<float>(surface->GetActiveFrame().size_in_pixels().width()) /
-        source_rect.width();
-    layer_to_content_scale_y =
-        static_cast<float>(
-            surface->GetActiveFrame().size_in_pixels().height()) /
-        source_rect.height();
+    extra_content_scale_x =
+        source_rect.width() /
+        static_cast<float>(surface->GetActiveFrame().size_in_pixels().width());
+    extra_content_scale_y =
+        source_rect.height() /
+        static_cast<float>(surface->GetActiveFrame().size_in_pixels().height());
   } else {
-    layer_to_content_scale_x = layer_to_content_scale_y =
-        surface->GetActiveFrame().device_scale_factor() /
-        parent_device_scale_factor;
+    extra_content_scale_x = extra_content_scale_y =
+        parent_device_scale_factor /
+        surface->GetActiveFrame().device_scale_factor();
   }
+  float inverse_extra_content_scale_x = SK_MScalar1 / extra_content_scale_x;
+  float inverse_extra_content_scale_y = SK_MScalar1 / extra_content_scale_y;
 
   gfx::Transform scaled_quad_to_target_transform(
       source_sqs->quad_to_target_transform);
-  scaled_quad_to_target_transform.Scale(SK_MScalar1 / layer_to_content_scale_x,
-                                        SK_MScalar1 / layer_to_content_scale_y);
+  scaled_quad_to_target_transform.Scale(extra_content_scale_x,
+                                        extra_content_scale_y);
 
   const CompositorFrame& frame = surface->GetActiveFrame();
   TRACE_EVENT_WITH_FLOW2(
@@ -652,54 +656,51 @@ void SurfaceAggregator::EmitSurfaceContent(
     auto* shared_quad_state = CopyAndScaleSharedQuadState(
         source_sqs, scaled_quad_to_target_transform, target_transform,
         gfx::ScaleToEnclosingRect(source_sqs->quad_layer_rect,
-                                  layer_to_content_scale_x,
-                                  layer_to_content_scale_y),
+                                  inverse_extra_content_scale_x,
+                                  inverse_extra_content_scale_y),
         gfx::ScaleToEnclosingRect(source_sqs->visible_quad_layer_rect,
-                                  layer_to_content_scale_x,
-                                  layer_to_content_scale_y),
+                                  inverse_extra_content_scale_x,
+                                  inverse_extra_content_scale_y),
         clip_rect, dest_pass, rounded_corner_info, occluding_damage_rect,
         occluding_damage_rect_valid);
 
-    gfx::Rect scaled_rect(gfx::ScaleToEnclosingRect(
-        source_rect, layer_to_content_scale_x, layer_to_content_scale_y));
+    // At this point, we need to calculate three values in order to construct
+    // the RenderPassDrawQuad:
 
-    gfx::Rect scaled_visible_rect(
-        gfx::ScaleToEnclosingRect(source_visible_rect, layer_to_content_scale_x,
-                                  layer_to_content_scale_y));
+    // |quad_rect| - A rectangle representing the RenderPass's output area in
+    //   content space. This is equal to the root render pass (|last_pass|)
+    //   output rect.
+    gfx::Rect quad_rect = last_pass.output_rect;
 
-    // TODO(ericrk): Apply this path everywhere (not just de-jelly).
-    // crbug.com/1016677
-    if (de_jelly_enabled_) {
-      // Due to viewport clipping, |last_pass|'s |output_rect| may be smaller
-      // than |source_rect|'s projection into content space. We always use
-      // |output_rect| to avoid sampling outside of RenderPass output.
-      gfx::Rect quad_rect = last_pass.output_rect;
+    // |quad_visible_rect| - A rectangle representing the visible portion of
+    //   the RenderPass, in content space. As the SurfaceDrawQuad being
+    //   embedded may be clipped further than its root render pass, we use the
+    //   surface quad's value - |source_visible_rect|.
+    //
+    //   There may be an |extra_content_scale_x| applied when going from this
+    //   render pass's content space to the surface's content space, we remove
+    //   this so that |quad_visible_rect| is in the render pass's content
+    //   space.
+    gfx::Rect quad_visible_rect(gfx::ScaleToEnclosingRect(
+        source_visible_rect, inverse_extra_content_scale_x,
+        inverse_extra_content_scale_y));
 
-      // We can't produce content outside of |output_rect|, so clip the visible
-      // rect if necessary.
-      scaled_visible_rect.Intersect(quad_rect);
+    // |tex_coord_rect| - A rectangle representing the bounds of the texture
+    //   in the RenderPass's |quad_rect|. Not in content space, instead as an
+    //   offset within |quad_rect|.
+    gfx::RectF tex_coord_rect = gfx::RectF(gfx::SizeF(quad_rect.size()));
 
-      // |tex_coord_rect| indicates the area of the source texture to sample
-      // from. This is always the size of |quad_rect| which represents the full
-      // render pass |output_rect|.
-      gfx::RectF tex_coord_rect = gfx::RectF(gfx::SizeF(quad_rect.size()));
+    // We can't produce content outside of |quad_rect|, so clip the visible
+    // rect if necessary.
+    quad_visible_rect.Intersect(quad_rect);
 
-      auto* quad = dest_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-      RenderPassId remapped_pass_id = RemapPassId(last_pass.id, surface_id);
-      quad->SetNew(shared_quad_state, quad_rect, scaled_visible_rect,
-                   remapped_pass_id, 0, gfx::RectF(), gfx::Size(),
-                   gfx::Vector2dF(), gfx::PointF(), tex_coord_rect,
-                   /*force_anti_aliasing_off=*/false,
-                   /* backdrop_filter_quality*/ 1.0f);
-    } else {
-      auto* quad = dest_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-      RenderPassId remapped_pass_id = RemapPassId(last_pass.id, surface_id);
-      quad->SetNew(shared_quad_state, scaled_rect, scaled_visible_rect,
-                   remapped_pass_id, 0, gfx::RectF(), gfx::Size(),
-                   gfx::Vector2dF(), gfx::PointF(), gfx::RectF(scaled_rect),
-                   /*force_anti_aliasing_off=*/false,
-                   /* backdrop_filter_quality*/ 1.0f);
-    }
+    auto* quad = dest_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
+    RenderPassId remapped_pass_id = RemapPassId(last_pass.id, surface_id);
+    quad->SetNew(shared_quad_state, quad_rect, quad_visible_rect,
+                 remapped_pass_id, 0, gfx::RectF(), gfx::Size(),
+                 gfx::Vector2dF(), gfx::PointF(), tex_coord_rect,
+                 /*force_anti_aliasing_off=*/false,
+                 /* backdrop_filter_quality*/ 1.0f);
   }
 
   referenced_surfaces_.erase(surface_id);

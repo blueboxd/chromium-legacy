@@ -75,10 +75,10 @@ std::unique_ptr<BookmarkPermanentNode> LoadManagedNode(
 
 ManagedBookmarkService::ManagedBookmarkService(
     PrefService* prefs,
-    const GetManagementDomainCallback& callback)
+    GetManagementDomainCallback callback)
     : prefs_(prefs),
       bookmark_model_(nullptr),
-      managed_domain_callback_(callback),
+      managed_domain_callback_(std::move(callback)),
       managed_node_(nullptr) {}
 
 ManagedBookmarkService::~ManagedBookmarkService() {
@@ -92,8 +92,8 @@ void ManagedBookmarkService::BookmarkModelCreated(
   bookmark_model_ = bookmark_model;
   bookmark_model_->AddObserver(this);
 
-  managed_bookmarks_tracker_.reset(new ManagedBookmarksTracker(
-      bookmark_model_, prefs_, managed_domain_callback_));
+  managed_bookmarks_tracker_ = std::make_unique<ManagedBookmarksTracker>(
+      bookmark_model_, prefs_, managed_domain_callback_);
 }
 
 LoadManagedNodeCallback ManagedBookmarkService::GetLoadManagedNodeCallback() {

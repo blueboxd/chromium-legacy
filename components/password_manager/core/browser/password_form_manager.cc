@@ -595,8 +595,11 @@ bool PasswordFormManager::ProvisionallySave(
 
   // This function might be called multiple times. Consider as success if the
   // submitted form was successfully parsed on a previous call.
-  if (!parsed_submitted_form)
+  if (!parsed_submitted_form ||
+      !parsed_submitted_form->HasNonEmptyPasswordValue()) {
     return is_submitted_;
+  }
+
   parsed_submitted_form_ = std::move(parsed_submitted_form);
   submitted_form_ = submitted_form;
   is_submitted_ = true;

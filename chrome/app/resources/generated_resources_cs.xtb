@@ -1189,7 +1189,6 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2665919335226618153">To ne! Během formátování došlo k chybě.</translation>
 <translation id="2666990579225592931">Otevřít okno hosta</translation>
 <translation id="2667463864537187133">Správa kontroly pravopisu</translation>
-<translation id="2669093958999339774">Blokovat žádosti o zobrazování oznámení a používat místo nich méně rušivou zprávu</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> sdílí kartu Chrome.</translation>
 <translation id="2670429602441959756">Tato stránka obsahuje funkce, které ve virtuální realitě dosud nejsou podporovány. Režim virtuální reality se zavře...</translation>
 <translation id="2671451824761031126">Vaše záložky a nastavení jsou připravena</translation>
@@ -1963,7 +1962,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="37613671848467444">Otevřít v &amp;anonymním okně</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Komunikace se zařízením USB}few{Komunikace se # zařízeními USB}many{Komunikace s # zařízení USB}other{Komunikace s # zařízeními USB}}</translation>
 <translation id="3765246971671567135">Načtení zásady pro offline ukázkový režim se nezdařilo.</translation>
-<translation id="3767376082821709728">Nové weby, které navštívíte, vám nemohou zasílat oznámení</translation>
 <translation id="3768037234834996183">Synchronizace předvoleb…</translation>
 <translation id="377050016711188788">Zmrzlina</translation>
 <translation id="3771294271822695279">Soubory videa</translation>
@@ -3030,7 +3028,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5370819323174483825">Načíst &amp;znovu</translation>
 <translation id="5372529912055771682">Uvedený režim registrace není touto verzí operačního systému podporován. Zkontrolujte prosím, zda máte spuštěnou nejnovější verzi, a zkuste to znovu.</translation>
 <translation id="5372579129492968947">Odepnout rozšíření</translation>
-<translation id="5374359983950678924">Změnit obrázek</translation>
 <translation id="5376169624176189338">Kliknutím se vrátíte zpět, přidržením se zobrazí historie</translation>
 <translation id="5376931455988532197">Soubor je příliš velký</translation>
 <translation id="537813040452600081">Stránky, které otevřete v tomto okně, nebudou uvedeny v historii prohlížeče a po odhlášení v počítači nezanechají žádné stopy, např. soubory cookie. Zachovány nezůstanou ani stažené soubory či vytvořené záložky.</translation>
@@ -4905,7 +4902,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8044899503464538266">Pomalu</translation>
 <translation id="8045253504249021590">Synchronizace byla zastavena prostřednictvím Hlavního panelu Google.</translation>
 <translation id="8045923671629973368">Zadejte identifikátor aplikace nebo URL internetového obchodu</translation>
-<translation id="8046278916126163020">Nové weby, které navštívíte, vás mohou žádat o oprávnění zasílat vám oznámení</translation>
 <translation id="804786196054284061">Licenční smlouva s koncovým uživatelem</translation>
 <translation id="8049705080247101012">Rozšíření <ph name="EXTENSION_NAME" /> bylo společností Google označeno jako škodlivé a jeho instalace byla zablokována</translation>
 <translation id="8050038245906040378">Komerční podepisování kódu Microsoft</translation>

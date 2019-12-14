@@ -30,6 +30,7 @@
 #include "components/dom_distiller/core/url_utils.h"
 #include "components/dom_distiller/core/viewer.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -135,6 +136,13 @@ void DomDistillerViewerSource::RequestViewerHandle::DidFinishNavigation(
     }
     return;
   }
+
+  // At the moment we destroy the handle and won't be able
+  // to restore the document later, so we prevent the page
+  // from being stored in back-forward cache.
+  content::BackForwardCache::DisableForRenderFrameHost(
+      navigation_handle->GetPreviousRenderFrameHostId(),
+      "DomDistillerViewerSource");
 
   Cancel();
 }

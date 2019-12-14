@@ -1187,7 +1187,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2665919335226618153">Æsj! Det oppsto en feil under formateringen.</translation>
 <translation id="2666990579225592931">Åpne et gjestevindu</translation>
 <translation id="2667463864537187133">Administrer stavekontroll</translation>
-<translation id="2669093958999339774">Blokkér varselmeldinger fra å forstyrre deg, og bruk en stillere melding i stedet</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> deler en Chrome-fane.</translation>
 <translation id="2670429602441959756">Denne siden inneholder funksjoner som ikke støttes i VR ennå. Avslutter …</translation>
 <translation id="2671451824761031126">Bokmerkene og innstillingene dine er klare</translation>
@@ -1961,7 +1960,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="37613671848467444">Åpne i &amp;inkognitovindu</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{kommunisere med én USB-enhet}other{kommunisere med # USB-enheter}}</translation>
 <translation id="3765246971671567135">Kunne ikke lese regelen for demomodus uten nett.</translation>
-<translation id="3767376082821709728">Nye nettsteder du besøker, kan ikke sende deg varsler</translation>
 <translation id="3768037234834996183">Synkroniserer innstillingene dine ...</translation>
 <translation id="377050016711188788">Iskrem</translation>
 <translation id="3771294271822695279">Videofiler</translation>
@@ -3027,7 +3025,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5370819323174483825">&amp;Last inn på nytt</translation>
 <translation id="5372529912055771682">Denne versjonen av operativsystemet støtter ikke registreringsmodusen som ble angitt. Kontroller at du kjører den nyeste versjonen, og prøv på nytt.</translation>
 <translation id="5372579129492968947">Løsne utvidelsen</translation>
-<translation id="5374359983950678924">Endre bilde</translation>
 <translation id="5376169624176189338">Klikk for å gå tilbake – hold for å se logg</translation>
 <translation id="5376931455988532197">Filen er for stor</translation>
 <translation id="537813040452600081">Sider i dette vinduet vises ikke i nettleserloggen, og de legger ikke igjen andre spor (f.eks. informasjonskapsler) på datamaskinen etter at du har logget av. Filer du laster ned og bokmerker du oppretter, lagres ikke.</translation>
@@ -4902,7 +4899,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8044899503464538266">Lav</translation>
 <translation id="8045253504249021590">Synkronisering er stoppet via Google-oversikten.</translation>
 <translation id="8045923671629973368">Skriv inn app-ID-en eller nettadressen til nettbutikken</translation>
-<translation id="8046278916126163020">Nye nettsteder du besøker, kan be om å få sende deg varsler</translation>
 <translation id="804786196054284061">Brukerlisensavtale</translation>
 <translation id="8049705080247101012">Google har merket <ph name="EXTENSION_NAME" /> som skadelig, og installasjonen har blitt avbrutt</translation>
 <translation id="8050038245906040378">Microsoft-signering med kommersiell kode</translation>

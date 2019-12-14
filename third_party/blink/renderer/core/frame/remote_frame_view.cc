@@ -70,7 +70,8 @@ void RemoteFrameView::AttachToLayout() {
   UpdateRenderThrottlingStatus(
       IsHiddenForThrottling(),
       ParentFrameView()->CanThrottleRenderingForPropagation());
-  FrameRectsChanged(FrameRect());
+  needs_frame_rect_propagation_ = true;
+  ParentFrameView()->SetNeedsUpdateGeometries();
 }
 
 void RemoteFrameView::DetachFromLayout() {
@@ -176,10 +177,17 @@ void RemoteFrameView::InvalidateRect(const IntRect& rect) {
   object->InvalidatePaintRectangle(repaint_rect);
 }
 
+void RemoteFrameView::SetFrameRect(const IntRect& rect) {
+  EmbeddedContentView::SetFrameRect(rect);
+  if (needs_frame_rect_propagation_)
+    PropagateFrameRects();
+}
+
 void RemoteFrameView::PropagateFrameRects() {
   // Update the rect to reflect the position of the frame relative to the
   // containing local frame root. The position of the local root within
   // any remote frames, if any, is accounted for by the embedder.
+  needs_frame_rect_propagation_ = false;
   IntRect frame_rect(FrameRect());
   IntRect screen_space_rect = frame_rect;
 

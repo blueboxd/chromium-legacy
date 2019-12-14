@@ -8,6 +8,7 @@
 ] interface Keyboard {
     // Keyboard Lock specification: https://w3c.github.io/keyboard-lock/
     [CallWith=ScriptState,
+     RaisesException,
      MeasureAs=KeyboardApiLock
     ] Promise<void> lock(optional sequence<DOMString> keyCodes = []);
 
@@ -17,6 +18,7 @@
 
     // Keyboard Map specification: https://wicg.github.io/keyboard-map/
     [CallWith=ScriptState,
+     RaisesException,
      HighEntropy,
      MeasureAs=KeyboardApiGetLayoutMap
     ] Promise<KeyboardLayoutMap> getLayoutMap();

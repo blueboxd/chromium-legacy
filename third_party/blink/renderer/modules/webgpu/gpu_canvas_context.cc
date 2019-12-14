@@ -76,7 +76,7 @@ GPUSwapChain* GPUCanvasContext::configureSwapChain(
     // destroy all its resources (and produce errors when used).
     swapchain_->Neuter();
   }
-  swapchain_ = GPUSwapChain::Create(this, descriptor);
+  swapchain_ = MakeGarbageCollected<GPUSwapChain>(this, descriptor);
   return swapchain_;
 }
 

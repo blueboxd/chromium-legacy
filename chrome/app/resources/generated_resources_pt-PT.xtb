@@ -1189,7 +1189,6 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2665919335226618153">Ah, bolas! Ocorreu um erro durante a formatação.</translation>
 <translation id="2666990579225592931">Abrir janela de convidado</translation>
 <translation id="2667463864537187133">Gerir verificação ortográfica</translation>
-<translation id="2669093958999339774">Impedir que os pedidos de interrupções interrompam e, em alternativa, utilizar uma mensagem mais discreta</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> está a partilhar um separador do Chrome.</translation>
 <translation id="2670429602441959756">Esta página contém funcionalidades que ainda não são suportadas no modo de RV e será agora fechada.</translation>
 <translation id="2671451824761031126">Os seus marcadores e definições estão prontos</translation>
@@ -1964,7 +1963,6 @@ Pretende pará-lo?</translation>
 <translation id="37613671848467444">Abrir na Janela de &amp;Navegação Anónima</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Comunicar com um dispositivo USB}other{Comunicar com # dispositivos USB}}</translation>
 <translation id="3765246971671567135">Não foi possível ler a política do modo de demonstração offline.</translation>
-<translation id="3767376082821709728">Os novos sites que visitar não podem enviar-lhe notificações.</translation>
 <translation id="3768037234834996183">A sincronizar as preferências...</translation>
 <translation id="377050016711188788">Gelado</translation>
 <translation id="3771294271822695279">Ficheiros de vídeo</translation>
@@ -3032,7 +3030,6 @@ Pretende pará-lo?</translation>
 <translation id="5370819323174483825">&amp;Recarregar</translation>
 <translation id="5372529912055771682">O modo de inscrição fornecido não é suportado por esta versão do sistema operativo. Certifique-se de que está a executar a versão mais recente e tente novamente.</translation>
 <translation id="5372579129492968947">Soltar extensão</translation>
-<translation id="5374359983950678924">Alterar imagem</translation>
 <translation id="5376169624176189338">Clique para retroceder, mantenha premido para ver o histórico</translation>
 <translation id="5376931455988532197">Ficheiro demasiado grande</translation>
 <translation id="537813040452600081">As páginas visualizadas nesta janela não serão apresentadas no histórico do navegador nem no histórico de pesquisas e não deixarão outros vestígios, como cookies, no computador depois de terminar sessão. Os ficheiros transferidos e os marcadores criados não serão preservados.</translation>
@@ -4908,7 +4905,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8044899503464538266">Lento</translation>
 <translation id="8045253504249021590">A sincronização foi interrompida através do Painel de Controlo Google.</translation>
 <translation id="8045923671629973368">Introduza o ID da aplicação ou o URL da loja online.</translation>
-<translation id="8046278916126163020">Os novos sites que visita podem pedir para lhe enviar notificações.</translation>
 <translation id="804786196054284061">Contrato de Licença de Utilizador Final</translation>
 <translation id="8049705080247101012">A Google sinalizou a extensão "<ph name="EXTENSION_NAME" />" como sendo maliciosa e a instalação foi impedida.</translation>
 <translation id="8050038245906040378">Assinatura de código comercial Microsoft</translation>

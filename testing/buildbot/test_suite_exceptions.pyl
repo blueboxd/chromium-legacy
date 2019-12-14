@@ -342,13 +342,18 @@
     ],
     'modifications': {
       # chromium.android
-      'android-pie-arm64-rel': {
-        'experiment_percentage': 100, # https://crbug.com/1010211
+      'android-arm64-proguard-rel': {
+        'swarming': {
+          'shards': 25,
+        },
       },
       'android-marshmallow-arm64-rel': {
         'swarming': {
           'shards': 25,
         },
+      },
+      'android-pie-arm64-rel': {
+        'experiment_percentage': 100, # https://crbug.com/1010211
       },
       'KitKat Phone Tester (dbg)': {
         'swarming': {
@@ -467,6 +472,11 @@
       'Lollipop Phone Tester': {
         'swarming': {
           'shards': 13,
+        },
+      },
+      'android-arm64-proguard-rel': {
+        'swarming': {
+          'shards': 16,
         },
       },
       'android-kitkat-arm-rel': {
@@ -836,9 +846,6 @@
     'remove_from': [
       # chromium.clang
       'CrWinAsan(dll)', # https://crbug.com/935598
-      # chromium.fyi
-      # Not eough disk space in the VMs, crbug.com/913153
-      'chromeos-vm-code-coverage',
     ],
     'modifications': {
       # chromium.clang
@@ -1211,7 +1218,6 @@
       'android-asan',
       # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-rel',
-      'android-marshmallow-arm64-coverage-rel',
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
       # No capacity for tablet testers.
@@ -1228,7 +1234,6 @@
       'android-asan',
       # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-rel',
-      'android-marshmallow-arm64-coverage-rel',
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
       # No capacity for tablet testers.
@@ -1245,7 +1250,6 @@
       'android-asan',
       # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-rel',
-      'android-marshmallow-arm64-coverage-rel',
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
       # No capacity for tablet testers.
@@ -1269,7 +1273,6 @@
       'android-asan',
       # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-rel',
-      'android-marshmallow-arm64-coverage-rel',
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
       # No capacity for tablet testers.
@@ -1285,7 +1288,6 @@
     'remove_from': [
       # chromium.android
       'android-kitkat-arm-rel',
-      'android-marshmallow-arm64-coverage-rel',
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
       'KitKat Tablet Tester',
@@ -1416,11 +1418,11 @@
   },
   'perfetto_unittests': {
     'remove_from': [
+      'android-arm64-proguard-rel',
       'android-asan',
       'android-code-coverage',
       'android-code-coverage-native',
       'android-kitkat-arm-rel',
-      'android-marshmallow-arm64-coverage-rel',
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
       'Android CFI',
@@ -1628,20 +1630,6 @@
     'modifications': {
       # chromium.android
       'android-kitkat-arm-rel': {
-        'args': [
-          '--browser=android-chromium',
-          '--device=android',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'temp_band': '<30',
-            },
-          ],
-          'shards': 15,
-        },
-      },
-      'android-marshmallow-arm64-coverage-rel': {
         'args': [
           '--browser=android-chromium',
           '--device=android',

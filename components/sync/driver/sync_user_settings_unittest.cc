@@ -276,6 +276,48 @@ TEST_F(SyncUserSettingsTest, AlwaysPreferredTypes_ChromeOS) {
   EXPECT_TRUE(preferred_types.Has(DEVICE_INFO));
   EXPECT_TRUE(preferred_types.Has(USER_CONSENTS));
 }
+
+TEST_F(SyncUserSettingsTest, AppsAreHandledByOsSettings) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(chromeos::features::kSplitSettingsSync);
+
+  std::unique_ptr<SyncUserSettingsImpl> settings =
+      MakeSyncUserSettings(GetUserTypes());
+
+  ASSERT_TRUE(settings->IsSyncEverythingEnabled());
+  ASSERT_TRUE(settings->IsSyncAllOsTypesEnabled());
+
+  // App model types are enabled.
+  EXPECT_TRUE(settings->GetPreferredDataTypes().Has(APP_LIST));
+  EXPECT_TRUE(settings->GetPreferredDataTypes().Has(APP_SETTINGS));
+  EXPECT_TRUE(settings->GetPreferredDataTypes().Has(APPS));
+  EXPECT_TRUE(settings->GetPreferredDataTypes().Has(ARC_PACKAGE));
+  EXPECT_TRUE(settings->GetPreferredDataTypes().Has(WEB_APPS));
+
+  // Disable browser types.
+  settings->SetSelectedTypes(
+      /*keep_everything_synced=*/false,
+      /*selected_types=*/UserSelectableTypeSet());
+
+  // App model types are still enabled.
+  EXPECT_TRUE(settings->GetPreferredDataTypes().Has(APP_LIST));
+  EXPECT_TRUE(settings->GetPreferredDataTypes().Has(APP_SETTINGS));
+  EXPECT_TRUE(settings->GetPreferredDataTypes().Has(APPS));
+  EXPECT_TRUE(settings->GetPreferredDataTypes().Has(ARC_PACKAGE));
+  EXPECT_TRUE(settings->GetPreferredDataTypes().Has(WEB_APPS));
+
+  // Disable OS types.
+  settings->SetSelectedOsTypes(
+      /*sync_all_os_types=*/false,
+      /*selected_types=*/UserSelectableOsTypeSet());
+
+  // Apps are disabled.
+  EXPECT_FALSE(settings->GetPreferredDataTypes().Has(APP_LIST));
+  EXPECT_FALSE(settings->GetPreferredDataTypes().Has(APP_SETTINGS));
+  EXPECT_FALSE(settings->GetPreferredDataTypes().Has(APPS));
+  EXPECT_FALSE(settings->GetPreferredDataTypes().Has(ARC_PACKAGE));
+  EXPECT_FALSE(settings->GetPreferredDataTypes().Has(WEB_APPS));
+}
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace

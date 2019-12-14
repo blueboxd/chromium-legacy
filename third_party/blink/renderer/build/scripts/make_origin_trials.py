@@ -49,6 +49,10 @@ class OriginTrialsWriter(make_runtime_features.BaseRuntimeFeatureWriter):
         self._trial_to_features_map = self._make_trial_to_features_map()
         self._set_trial_types()
 
+    @property
+    def origin_trial_features(self):
+        return self._origin_trial_features
+
     def _make_implied_mappings(self):
         # Set up the implied_by relationships between trials.
         implied_mappings = dict()

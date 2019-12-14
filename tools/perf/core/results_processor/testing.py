@@ -53,19 +53,23 @@ def TestResult(test_path, status='PASS', expected=None,
   return test_result
 
 
-def Artifact(file_path, remote_url=None,
+def Artifact(file_path, view_url=None, fetch_url=None,
              content_type='application/octet-stream'):
   """Build an Artifact dict.
 
   Args:
     file_path: A string with the absolute path where the artifact is stored.
-    remote_url: An optional string with a URL where the artifact has been
-      uploaded to.
+    view_url: An optional string with a URL where the artifact has been
+      uploaded to as a human-viewable link.
+    fetch_url: An optional string with a URL where the artifact has been
+      uploaded to as a machine downloadable link.
     content_type: An optional string with the MIME type of the artifact.
   """
   artifact = {'filePath': file_path, 'contentType': content_type}
-  if remote_url is not None:
-    artifact['remoteUrl'] = remote_url
+  if view_url is not None:
+    artifact['viewUrl'] = view_url
+  if fetch_url is not None:
+    artifact['fetchUrl'] = fetch_url
   return artifact
 
 

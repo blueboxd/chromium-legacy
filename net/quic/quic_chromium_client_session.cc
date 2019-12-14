@@ -2281,7 +2281,7 @@ void QuicChromiumClientSession::OnWriteUnblocked() {
 }
 
 void QuicChromiumClientSession::OnPathDegrading() {
-  if (go_away_on_path_degrading_) {
+  if (go_away_on_path_degrading_ && IsCryptoHandshakeConfirmed()) {
     net_log_.AddEvent(
         NetLogEventType::QUIC_SESSION_CLIENT_GOAWAY_ON_PATH_DEGRADING);
     NotifyFactoryOfSessionGoingAway();

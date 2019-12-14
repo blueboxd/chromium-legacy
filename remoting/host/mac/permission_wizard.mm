@@ -160,6 +160,14 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
   NSButton* _nextButton;
   NSButton* _okButton;
 
+  // This class modifies the NSApplicationActivationPolicy in order to show a
+  // Dock icon when presenting the dialog window. This is needed because the
+  // native-messaging host sets LSUIElement=YES in its plist to hide the Dock
+  // icon. This field stores the previous setting so it can be restored when
+  // the window is closed (so this class will still do the right thing if it is
+  // instantiated from an app that normally shows a Dock icon).
+  NSApplicationActivationPolicy _originalActivationPolicy;
+
   // The page of the wizard being shown.
   WizardPage _page;
 
@@ -192,10 +200,12 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
     _page = WizardPage::ACCESSIBILITY;
     _autoAdvance = YES;
   }
+  _originalActivationPolicy = [NSApp activationPolicy];
   return self;
 }
 
 - (void)hide {
+  [NSApp setActivationPolicy:_originalActivationPolicy];
   [self close];
 }
 
@@ -517,6 +527,9 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
     // Update the whole UI, not just the "Next" button, in case a different page
     // was previously shown.
     [self updateUI];
+
+    // Bring the window to the front again, to prompt the user to hit Next.
+    [self presentWindow];
   } else {
     // Permission denied, so turn off auto-advance for this page, and present
     // the dialog to the user if needed. After the user grants this permission,
@@ -526,6 +539,10 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
     // shown when a permission-check fails.
     _autoAdvance = NO;
     if (![self window].visible) {
+      // Only present the window if it was previously hidden. This method will
+      // bring the window on top of other windows, which should not happen
+      // during regular polling for permission status, as the user is focused on
+      // the System Preferences applet.
       [self presentWindow];
     }
 
@@ -539,6 +556,9 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
   [self.window center];
   [self showWindow:nil];
   [NSApp activateIgnoringOtherApps:YES];
+
+  // Show the application icon in the dock.
+  [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 }
 
 @end

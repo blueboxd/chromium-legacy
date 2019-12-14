@@ -25,7 +25,7 @@ SkColor GetDefaultInactiveFrameColor() {
 
 }  // namespace
 
-ThemeServiceWin::ThemeServiceWin() {
+ThemeServiceWin::ThemeServiceWin(Profile* profile) : ThemeService(profile) {
   // This just checks for Windows 8+ instead of calling DwmColorsAllowed()
   // because we want to monitor the frame color even when a custom frame is in
   // use, so that it will be correct if at any time the user switches to the
@@ -40,8 +40,7 @@ ThemeServiceWin::ThemeServiceWin() {
   }
 }
 
-ThemeServiceWin::~ThemeServiceWin() {
-}
+ThemeServiceWin::~ThemeServiceWin() = default;
 
 bool ThemeServiceWin::ShouldUseNativeFrame() const {
   const bool use_native_frame_if_enabled =

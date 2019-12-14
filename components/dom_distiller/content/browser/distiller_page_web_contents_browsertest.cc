@@ -30,6 +30,7 @@
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/shell/browser/shell.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/dom_distiller_js/dom_distiller.pb.h"
@@ -135,10 +136,15 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
   void SetUpTestServer() {
     base::FilePath path;
     base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
+
     embedded_test_server()->ServeFilesFromDirectory(
         path.AppendASCII("components/test/data/dom_distiller"));
     embedded_test_server()->ServeFilesFromDirectory(
         path.AppendASCII("components/dom_distiller/core/javascript"));
+
+    response_ = std::make_unique<net::test_server::ControllableHttpResponse>(
+        embedded_test_server(), "/pinch_tester.html");
+
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
@@ -150,6 +156,8 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
   DistillerPageWebContents* distiller_page_;
   std::unique_ptr<proto::DomDistillerResult> distiller_result_;
   base::Value js_result_;
+
+  std::unique_ptr<net::test_server::ControllableHttpResponse> response_;
 };
 
 // Use this class to be able to leak the WebContents, which is needed for when
@@ -527,6 +535,19 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, MAYBE_TestPinch) {
   web_contents->GetController().LoadURL(
       embedded_test_server()->GetURL("/pinch_tester.html"), content::Referrer(),
       ui::PAGE_TRANSITION_TYPED, std::string());
+
+  const std::string html_template = viewer::GetArticleTemplateHtml(
+      DistilledPagePrefs::THEME_LIGHT,
+      DistilledPagePrefs::FONT_FAMILY_SANS_SERIF);
+
+  const std::string scripts = R"(
+    <script src='dom_distiller_viewer.js'></script>
+    <script src='pinch_tester.js'></script>
+  )";
+
+  response_->WaitForRequest();
+  response_->Send(net::HTTP_OK, "text/html", html_template + scripts);
+  response_->Done();
   url_loaded_runner.Run();
 
   // Execute the JS to run the tests, and wait until it has finished.

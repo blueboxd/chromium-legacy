@@ -12,7 +12,7 @@ package org.chromium.base;
  * @param <T> The type of the input to the operation.
  */
 public interface Consumer<T> {
-    // TODO(bttk@chromium.org): Remove once min Android API level reaches 24.
+    // TODO(crbug.com/1034012): Remove once min Android API level reaches 24.
 
     /**
      * Performs this operation on the given argument.

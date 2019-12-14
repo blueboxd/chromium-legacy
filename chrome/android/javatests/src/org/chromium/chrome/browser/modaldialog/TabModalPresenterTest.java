@@ -17,11 +17,11 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertTrue;
 
-import static org.chromium.chrome.browser.modaldialog.ModalDialogTestUtils.checkCurrentPresenter;
-import static org.chromium.chrome.browser.modaldialog.ModalDialogTestUtils.checkDialogDismissalCause;
-import static org.chromium.chrome.browser.modaldialog.ModalDialogTestUtils.checkPendingSize;
-import static org.chromium.chrome.browser.modaldialog.ModalDialogTestUtils.createDialog;
-import static org.chromium.chrome.browser.modaldialog.ModalDialogTestUtils.showDialog;
+import static org.chromium.components.browser_ui.modaldialog.ModalDialogTestUtils.checkCurrentPresenter;
+import static org.chromium.components.browser_ui.modaldialog.ModalDialogTestUtils.checkDialogDismissalCause;
+import static org.chromium.components.browser_ui.modaldialog.ModalDialogTestUtils.checkPendingSize;
+import static org.chromium.components.browser_ui.modaldialog.ModalDialogTestUtils.createDialog;
+import static org.chromium.components.browser_ui.modaldialog.ModalDialogTestUtils.showDialog;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.Espresso;
@@ -51,6 +51,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
+import org.chromium.components.browser_ui.modaldialog.ModalDialogTestUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -119,7 +120,8 @@ public class TabModalPresenterTest {
     @Feature({"ModalDialog"})
     public void testShow_UrlBarFocused() throws Exception {
         // Show a tab modal dialog. The dialog should be shown on top of the toolbar.
-        PropertyModel dialog1 = createDialog(mActivity, "1", null);
+        PropertyModel dialog1 =
+                createDialog(mActivity, mActivity.getModalDialogManager(), "1", null);
         showDialog(mManager, dialog1, ModalDialogType.TAB);
 
         TabModalPresenter presenter =
@@ -165,9 +167,12 @@ public class TabModalPresenterTest {
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testSuspend_ToggleOverview() throws Exception {
         mActivity.getActivityTab().addObserver(mTestObserver);
-        PropertyModel dialog1 = createDialog(mActivity, "1", null);
-        PropertyModel dialog2 = createDialog(mActivity, "2", null);
-        PropertyModel dialog3 = createDialog(mActivity, "3", null);
+        PropertyModel dialog1 =
+                createDialog(mActivity, mActivity.getModalDialogManager(), "1", null);
+        PropertyModel dialog2 =
+                createDialog(mActivity, mActivity.getModalDialogManager(), "2", null);
+        PropertyModel dialog3 =
+                createDialog(mActivity, mActivity.getModalDialogManager(), "3", null);
 
         // Initially there are no dialogs in the pending list. Browser controls are not restricted.
         checkPendingSize(mManager, ModalDialogType.TAB, 0);
@@ -236,7 +241,8 @@ public class TabModalPresenterTest {
     @Feature({"ModalDialog"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testSuspend_LastTabClosed() throws Exception {
-        PropertyModel dialog1 = createDialog(mActivity, "1", null);
+        PropertyModel dialog1 =
+                createDialog(mActivity, mActivity.getModalDialogManager(), "1", null);
 
         // Make sure there is only one opened tab.
         while (mActivity.getCurrentTabModel().getCount() > 1) {
@@ -276,9 +282,12 @@ public class TabModalPresenterTest {
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @DisabledTest(message = "Flaky. crbug.com/1030683")
     public void testSuspend_TabClosed() throws Exception {
-        PropertyModel dialog1 = createDialog(mActivity, "1", null);
-        PropertyModel dialog2 = createDialog(mActivity, "2", null);
-        PropertyModel dialog3 = createDialog(mActivity, "3", null);
+        PropertyModel dialog1 =
+                createDialog(mActivity, mActivity.getModalDialogManager(), "1", null);
+        PropertyModel dialog2 =
+                createDialog(mActivity, mActivity.getModalDialogManager(), "2", null);
+        PropertyModel dialog3 =
+                createDialog(mActivity, mActivity.getModalDialogManager(), "3", null);
         mActivityTestRule.loadUrlInNewTab("about:blank");
 
         // Initially there are no dialogs in the pending list. Browser controls are not restricted.
@@ -330,8 +339,10 @@ public class TabModalPresenterTest {
     @Feature({"ModalDialog"})
     @DisabledTest(message = "Flaky. crbug.com/1030903")
     public void testDismiss_SwitchTab() throws Exception {
-        PropertyModel dialog1 = createDialog(mActivity, "1", null);
-        PropertyModel dialog2 = createDialog(mActivity, "2", null);
+        PropertyModel dialog1 =
+                createDialog(mActivity, mActivity.getModalDialogManager(), "1", null);
+        PropertyModel dialog2 =
+                createDialog(mActivity, mActivity.getModalDialogManager(), "2", null);
 
         // Open a new tab and make sure that the current tab is at index 0.
         mActivityTestRule.loadUrlInNewTab("about:blank");
@@ -369,8 +380,10 @@ public class TabModalPresenterTest {
     @SmallTest
     @Feature({"ModalDialog"})
     public void testDismiss_BackPressed() throws Exception {
-        PropertyModel dialog1 = createDialog(mActivity, "1", null);
-        PropertyModel dialog2 = createDialog(mActivity, "2", null);
+        PropertyModel dialog1 =
+                createDialog(mActivity, mActivity.getModalDialogManager(), "1", null);
+        PropertyModel dialog2 =
+                createDialog(mActivity, mActivity.getModalDialogManager(), "2", null);
 
         // Initially there are no dialogs in the pending list. Browser controls are not restricted.
         checkPendingSize(mManager, ModalDialogType.TAB, 0);
@@ -409,7 +422,8 @@ public class TabModalPresenterTest {
     @SmallTest
     @Feature({"ModalDialog"})
     public void testDismiss_CancelOnTouchOutside() throws Exception {
-        PropertyModel dialog1 = createDialog(mActivity, "1", null);
+        PropertyModel dialog1 =
+                createDialog(mActivity, mActivity.getModalDialogManager(), "1", null);
 
         // Show a tab modal dialog and verify it shows.
         showDialog(mManager, dialog1, ModalDialogType.TAB);
@@ -439,7 +453,8 @@ public class TabModalPresenterTest {
     @SmallTest
     @Feature({"ModalDialog"})
     public void testDismiss_DismissalCause_BackPressed() throws Exception {
-        PropertyModel dialog1 = createDialog(mActivity, "1", mTestObserver);
+        PropertyModel dialog1 =
+                createDialog(mActivity, mActivity.getModalDialogManager(), "1", mTestObserver);
         mExpectedDismissalCause = DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE;
 
         showDialog(mManager, dialog1, ModalDialogType.TAB);
@@ -456,7 +471,8 @@ public class TabModalPresenterTest {
     @SmallTest
     @Feature({"ModalDialog"})
     public void testDismiss_DismissalCause_TabSwitched() throws Exception {
-        PropertyModel dialog1 = createDialog(mActivity, "1", mTestObserver);
+        PropertyModel dialog1 =
+                createDialog(mActivity, mActivity.getModalDialogManager(), "1", mTestObserver);
         mExpectedDismissalCause = DialogDismissalCause.TAB_SWITCHED;
         int callCount = mTestObserver.onDialogDismissedCallback.getCallCount();
 
@@ -476,7 +492,8 @@ public class TabModalPresenterTest {
     @SmallTest
     @Feature({"ModalDialog"})
     public void testDismiss_DismissalCause_TabDestroyed() throws Exception {
-        PropertyModel dialog1 = createDialog(mActivity, "1", mTestObserver);
+        PropertyModel dialog1 =
+                createDialog(mActivity, mActivity.getModalDialogManager(), "1", mTestObserver);
         mExpectedDismissalCause = DialogDismissalCause.TAB_DESTROYED;
         int callCount = mTestObserver.onDialogDismissedCallback.getCallCount();
 
@@ -492,7 +509,8 @@ public class TabModalPresenterTest {
     @SmallTest
     @Feature({"ModalDialog"})
     public void testBrowserControlContraints_ShowHide() {
-        PropertyModel dialog1 = createDialog(mActivity, "1", null);
+        PropertyModel dialog1 =
+                createDialog(mActivity, mActivity.getModalDialogManager(), "1", null);
         Assert.assertEquals(BrowserControlsState.BOTH, getBrowserControlsConstraints());
         showDialog(mManager, dialog1, ModalDialogType.TAB);
         Assert.assertEquals(BrowserControlsState.SHOWN, getBrowserControlsConstraints());

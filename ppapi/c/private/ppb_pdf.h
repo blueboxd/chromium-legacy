@@ -89,7 +89,7 @@ struct PP_PrivateAccessibilityTextStyleInfo {
   uint32_t font_name_length;
   int font_weight;
   PP_TextRenderingMode render_mode;
-  double font_size;
+  float font_size;
   // Colors are ARGB.
   uint32_t fill_color;
   uint32_t stroke_color;

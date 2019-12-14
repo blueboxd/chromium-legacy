@@ -25,6 +25,7 @@ cast_source_set("common") {
     "constants.h",
     "conversions.cc",
     "conversions.h",
+    "loopback_interrupt_reason.h",
     "mixer_socket.cc",
     "mixer_socket.h",
   ]
@@ -111,8 +112,11 @@ cast_source_set("loopback_connection") {
     "loopback_connection.h",
   ]
 
-  deps = [
+  public_deps = [
     ":common",
+  ]
+
+  deps = [
     ":connection",
     ":proto",
     "//base",

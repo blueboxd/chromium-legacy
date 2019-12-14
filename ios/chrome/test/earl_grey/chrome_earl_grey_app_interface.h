@@ -372,6 +372,11 @@
 // browser state.
 + (void)setPopupPrefValue:(ContentSetting)value;
 
+#pragma mark - Pref Utilities (EG2)
+
+// Sets the value of a boolean user pref in the original browser state.
++ (void)setBoolValue:(BOOL)value forUserPref:(NSString*)prefName;
+
 #pragma mark - Keyboard Command utilities
 
 // The count of key commands registered with the currently active BVC.

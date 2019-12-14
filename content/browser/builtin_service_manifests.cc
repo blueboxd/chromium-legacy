@@ -11,19 +11,12 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/service_names.mojom.h"
-#include "services/device/public/cpp/manifest.h"
-#include "services/service_manager/public/cpp/manifest_builder.h"
 
 namespace content {
 
 const std::vector<service_manager::Manifest>& GetBuiltinServiceManifests() {
   static base::NoDestructor<std::vector<service_manager::Manifest>> manifests{
-      std::vector<service_manager::Manifest>{
-          GetContentBrowserManifest(),
-
-          device::GetManifest(),
-      }};
+      std::vector<service_manager::Manifest>{GetContentBrowserManifest()}};
   return *manifests;
 }
 

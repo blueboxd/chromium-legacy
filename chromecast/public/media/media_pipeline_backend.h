@@ -223,6 +223,31 @@ class MediaPipelineBackend {
         FrameDisplayInfoDelegate* frame_display_info_delegate,
         VideoDecoder* video_decoder) __attribute__((weak));
 
+    // The optional APIs below are for low latency playback performance
+    // improvement and they are only available and sensible on very limited
+    // implementations. Only intended users should be concerned with them.
+
+    // Get number of frames available for display in last Vsync, in
+    // |num_of_frames_available_last_vsync|. It returns false if it fails.
+    CHROMECAST_EXPORT static bool GetNumberOfFramesAvailableLastVsync(
+        uint32_t* num_of_frames_available_last_vsync,
+        VideoDecoder* video_decoder) __attribute__((weak));
+    // Get number of frames pushed but not decoded yet, in
+    // |num_of_frames_enqueued_pre_decode|. It returns false if it fails.
+    CHROMECAST_EXPORT static bool GetNumberOfFramesEnqueuedPreDecode(
+        uint32_t* num_of_frames_enqueued_pre_decode,
+        VideoDecoder* video_decoder) __attribute__((weak));
+    // Change the max number of frames that output module would hold before it
+    // drops frame. It returns false if it fails.
+    CHROMECAST_EXPORT static bool SetFreeRunDropThreshold(
+        uint32_t free_run_drop_threshold,
+        VideoDecoder* video_decoder) __attribute__((weak));
+    // Set max output buffer count at post decoding stage. It returns false if
+    // it fails.
+    CHROMECAST_EXPORT static bool SetMaxOutputBufferCount(
+        uint32_t max_output_buffer_count,
+        VideoDecoder* video_decoder) __attribute__((weak));
+
    protected:
     ~VideoDecoder() override {}
   };

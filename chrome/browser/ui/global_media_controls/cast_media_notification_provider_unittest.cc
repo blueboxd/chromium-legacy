@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_provider.h"
 
 #include "chrome/browser/media/router/test/mock_media_router.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/media_message_center/media_notification_controller.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -38,7 +39,7 @@ class CastMediaNotificationProviderTest : public testing::Test {
  public:
   void SetUp() override {
     notification_provider_ = std::make_unique<CastMediaNotificationProvider>(
-        &router_, &notification_controller_,
+        &profile_, &router_, &notification_controller_,
         base::BindRepeating(&MockClosure::Run,
                             base::Unretained(&items_changed_callback_)));
   }
@@ -47,6 +48,7 @@ class CastMediaNotificationProviderTest : public testing::Test {
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
+  TestingProfile profile_;
   std::unique_ptr<CastMediaNotificationProvider> notification_provider_;
   MockMediaNotificationController notification_controller_;
   media_router::MockMediaRouter router_;

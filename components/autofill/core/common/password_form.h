@@ -330,6 +330,9 @@ struct PasswordForm {
   // whether |in_store == Store::kAccountStore|.
   bool IsUsingAccountStore() const;
 
+  // Returns true when |password_value| or |new_password_value| are non-empty.
+  bool HasNonEmptyPasswordValue() const;
+
   // Equality operators for testing.
   bool operator==(const PasswordForm& form) const;
   bool operator!=(const PasswordForm& form) const;

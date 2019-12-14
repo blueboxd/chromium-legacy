@@ -101,6 +101,8 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/feedback_private/feedback_private_delegate.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
@@ -296,6 +298,13 @@ SigninScreenHandler::~SigninScreenHandler() {
   network_state_informer_->RemoveObserver(this);
   proximity_auth::ScreenlockBridge::Get()->SetLockHandler(nullptr);
   proximity_auth::ScreenlockBridge::Get()->SetFocusedUser(EmptyAccountId());
+  // TODO(https://crbug.com/1033572) Quick fix to close feedback form when login
+  // was performed.
+  login_feedback_.reset();
+  extensions::FeedbackPrivateDelegate* feedback_private_delegate =
+      extensions::ExtensionsAPIClient::Get()->GetFeedbackPrivateDelegate();
+  feedback_private_delegate->UnloadFeedbackExtension(
+      Profile::FromWebUI(web_ui()));
 }
 
 void SigninScreenHandler::DeclareLocalizedValues(

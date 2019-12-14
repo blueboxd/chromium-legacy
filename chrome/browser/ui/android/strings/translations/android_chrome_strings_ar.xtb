@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">هل تريد تنزيل الملف مرة أخرى؟</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{ملف صوتي واحد (#)}zero{# ملف صوتي}two{ملفان صوتيان (#)}few{# ملفات صوتية}many{# ملفًا صوتيًا}other{# ملف صوتي}}</translation>
 <translation id="2653659639078652383">إرسال</translation>
-<translation id="2669093958999339774">منع رسائل الإشعارات من إزعاجك، وعرض رسائل أقل بروزًا بدلاً من ذلك</translation>
 <translation id="2677748264148917807">الخروج</translation>
 <translation id="2704606927547763573">تم النسخ</translation>
 <translation id="2707726405694321444">تحديث الصفحة</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">تمت إضافة إشارة مرجعية في <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">المزامنة في الخلفية</translation>
 <translation id="3749259744154402564">غير متوافق</translation>
-<translation id="3767376082821709728">يتعذّر على المواقع الإلكترونية الجديدة التي تزورها إرسال إشعارات إليك.</translation>
 <translation id="3771001275138982843">تعذُّر تنزيل التحديث</translation>
 <translation id="3771033907050503522">علامات تبويب التصفح المتخفي</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />تشغيل البلوتوث<ph name="END_LINK" /> للسماح بالإقران</translation>
@@ -957,7 +955,6 @@
 <translation id="8035133914807600019">مجلد جديد...</translation>
 <translation id="8037750541064988519">عدد الأيام المتبقية: <ph name="DAYS" /></translation>
 <translation id="804335162455518893">‏لم يتم العثور على بطاقة SD.</translation>
-<translation id="8046278916126163020">يمكن أن تطلب المواقع الإلكترونية الجديدة التي تزورها إرسال إشعارات إليك.</translation>
 <translation id="805047784848435650">استنادًا إلى سجلّ التصفُّح</translation>
 <translation id="8051695050440594747">هناك <ph name="MEGABYTES" /> ميغابايت متوفرة</translation>
 <translation id="8058746566562539958">‏فتح بعلامة تبويب Chrome جديدة</translation>

@@ -47,6 +47,7 @@
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
+#include "net/third_party/quiche/src/quic/test_tools/qpack/qpack_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -284,6 +285,13 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
         session_->CreateHandle(HostPortPair("mail.example.org", 80));
 
     session_->Initialize();
+
+    // Blackhole QPACK decoder stream instead of constructing mock writes.
+    if (VersionUsesHttp3(version_.transport_version)) {
+      session_->qpack_decoder()->set_qpack_stream_sender_delegate(
+          &noop_qpack_stream_sender_delegate_);
+    }
+
     TestCompletionCallback callback;
     EXPECT_THAT(session_->CryptoConnect(callback.callback()), IsOk());
     EXPECT_TRUE(session_->IsCryptoHandshakeConfirmed());
@@ -595,6 +603,8 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
   scoped_refptr<IOBuffer> read_buf_;
 
   TestCompletionCallback write_callback_;
+
+  quic::test::NoopQpackStreamSenderDelegate noop_qpack_stream_sender_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicProxyClientSocketTest);
 };

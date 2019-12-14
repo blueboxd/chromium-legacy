@@ -47,6 +47,9 @@ namespace gfx {
 
 namespace {
 
+// Replacement codepoint for elided text.
+constexpr base::char16 kEllipsisCodepoint = 0x2026;
+
 // Default color used for the text and cursor.
 const SkColor kDefaultColor = SK_ColorBLACK;
 
@@ -205,100 +208,9 @@ typename BreakList<T>::const_iterator IncrementBreakListIteratorToPosition(
   return iter;
 }
 
-// Returns the offset (codepoint rank) for the codepoint at text[index].
-size_t GetOffsetForTextIndex(const base::string16& text, size_t index) {
-  DCHECK_LT(index, text.length());
-  // Move index to the beginning of the surrogate pair, if needed.
-  U16_SET_CP_START(text.data(), 0, index);
-
-  // Iterates through codepoints until we reach |index| in |text|.
-  for (base::i18n::UTF16CharIterator text_iter(&text); !text_iter.end();
-       text_iter.Advance()) {
-    // Codepoint at |index| is found, returns the corresponding offset.
-    if (text_iter.array_pos() == static_cast<int32_t>(index))
-      return text_iter.char_offset();
-  }
-
-  NOTREACHED();
-  return text.length();
-}
-
-// Applies a conversion function on codepoints in |text|. The resulting text
-// size may differ but the amount of codepoints stay the same. The rewrite
-// function |func| receives the offset (e.g. rank) of the codepoint and the
-// codepoint.
-void RewriteCodepointsInPlace(
-    base::RepeatingCallback<UChar32(size_t, UChar32)> func,
-    base::string16* text) {
-  size_t index = 0;
-  size_t rank = 0;
-  while (index < text->length()) {
-    // Gets the range to be replaced.
-    UChar32 original_codepoint;
-    U16_GET(text->c_str(), 0, index, text->length(), original_codepoint);
-
-    // Find the codepoint replacement.
-    UChar32 new_codepoint = func.Run(rank, original_codepoint);
-
-    if (new_codepoint != original_codepoint) {
-      // Encode the codepoint in utf16 (e.g. base::char16).
-      base::char16 replace_chars[U16_MAX_LENGTH];
-      size_t replace_length = U16_LENGTH(new_codepoint);
-      if (replace_length == 1) {
-        replace_chars[0] = new_codepoint;
-      } else {
-        replace_chars[0] = U16_LEAD(new_codepoint);
-        replace_chars[1] = U16_TRAIL(new_codepoint);
-      }
-
-      // Replace the codepoint range by the new codepoint characters.
-      text->replace(index, U16_LENGTH(original_codepoint), replace_chars,
-                    replace_length);
-    }
-
-    // Move index of the next codepoint. This must be computed after any
-    // rewriting steps above since codepoint size may differ.
-    U16_NEXT(text->c_str(), index, text->length(), new_codepoint);
-    ++rank;
-  }
-}
-
-// Obscures characters for the given |text|. The obscured characters are
-// replaced by an bullet. In multiline, the newline character is not replaced.
-// If |reveal_index| is specified, the codepoint at |reveal_index| keeps its
-// original value.
-void ObscuredText(bool multiline, int reveal_index, base::string16* text) {
-  DCHECK_LE(-1, reveal_index);
-  // Convert reveal_index to a rank because indexes are invalidated since the
-  // text is replace in-place. Reveal index can be -1 to indicate that no
-  // character should be revealed. If |reveal_index| is out-of-bound, no
-  // character should be revealed.
-  size_t reveal_rank;
-  if (reveal_index != -1 &&
-      base::checked_cast<size_t>(reveal_index) < text->size()) {
-    // Move |reveal_index| to the beginning of the surrogate pair, if needed.
-    U16_SET_CP_START(text->data(), 0, reveal_index);
-    reveal_rank = GetOffsetForTextIndex(*text, reveal_index);
-  } else {
-    reveal_rank = text->length();
-  }
-
-  RewriteCodepointsInPlace(
-      base::BindRepeating(
-          [](bool multiline, size_t reveal_rank, size_t rank,
-             UChar32 codepoint) -> UChar32 {
-            if ((reveal_rank == rank) || (codepoint == '\n' && multiline))
-              return codepoint;
-            return RenderText::kPasswordReplacementChar;
-          },
-          multiline, reveal_rank),
-      text);
-}
-
 // Replaces the unicode control characters, control characters and PUA (Private
 // Use Areas) codepoints.
 UChar32 ReplaceControlCharacter(bool multiline,
-                                size_t index,
                                 UChar32 codepoint) {
   // 'REPLACEMENT CHARACTER' used to replace an unknown,
   // unrecognized or unrepresentable character.
@@ -337,16 +249,6 @@ UChar32 ReplaceControlCharacter(bool multiline,
   }
 
   return codepoint;
-}
-
-// Replace the codepoints not handled by RenderText by an other compatible
-// codepoint. Replace the unicode control characters ISO 6429 (block C0) by
-// their corresponding visual symbols. Control characters can't be displayed but
-// their visual symbols can. Replace PUA (Private Use Areas) codepoints with the
-// 'replacement character'.
-void ReplaceControlCharactersWithSymbols(bool multiline, base::string16* text) {
-  RewriteCodepointsInPlace(
-      base::BindRepeating(ReplaceControlCharacter, multiline), text);
 }
 
 }  // namespace
@@ -1078,14 +980,14 @@ const Rect& RenderText::GetUpdatedCursorBounds() {
 
 internal::GraphemeIterator RenderText::GetGraphemeIteratorAtTextIndex(
     size_t index) const {
-  EnsureLayoutTextAttributeUpdated();
+  EnsureLayoutTextUpdated();
   return GetGraphemeIteratorAtIndex(
       text_, &internal::TextToDisplayIndex::text_index, index);
 }
 
 internal::GraphemeIterator RenderText::GetGraphemeIteratorAtDisplayTextIndex(
     size_t index) const {
-  EnsureLayoutTextAttributeUpdated();
+  EnsureLayoutTextUpdated();
   return GetGraphemeIteratorAtIndex(
       layout_text_, &internal::TextToDisplayIndex::display_index, index);
 }
@@ -1116,7 +1018,7 @@ size_t RenderText::IndexOfAdjacentGrapheme(
   if (index > text_.length())
     return text_.length();
 
-  EnsureLayoutTextAttributeUpdated();
+  EnsureLayoutTextUpdated();
 
   internal::GraphemeIterator iter = index == text_.length()
                                         ? text_to_display_indices_.end()
@@ -1299,6 +1201,7 @@ RenderText::RenderText()
       font_size_overrides_(0),
       weights_(Font::Weight::NORMAL),
       styles_(TEXT_STYLE_COUNT),
+      layout_styles_(TEXT_STYLE_COUNT),
       obscured_(false),
       obscured_reveal_index_(-1),
       truncate_length_(0),
@@ -1320,7 +1223,7 @@ internal::StyleIterator RenderText::GetTextStyleIterator() const {
 }
 
 internal::StyleIterator RenderText::GetLayoutTextStyleIterator() const {
-  EnsureLayoutTextAttributeUpdated();
+  EnsureLayoutTextUpdated();
   return internal::StyleIterator(&layout_colors_, &layout_baselines_,
                                  &layout_font_size_overrides_, &layout_weights_,
                                  &layout_styles_);
@@ -1394,6 +1297,8 @@ void RenderText::SetSelectionModel(const SelectionModel& model) {
   selection_model_ = model;
   cached_bounds_and_offset_valid_ = false;
   has_directed_selection_ = kSelectionIsAlwaysDirected;
+
+  OnLayoutTextAttributeChanged(false);
 }
 
 size_t RenderText::TextIndexToDisplayIndex(size_t index) const {
@@ -1408,90 +1313,50 @@ void RenderText::OnTextColorChanged() {
 }
 
 void RenderText::OnLayoutTextAttributeChanged(bool text_changed) {
-  layout_text_attributes_up_to_date_ = false;
+  layout_text_up_to_date_ = false;
 }
 
 void RenderText::EnsureLayoutTextUpdated() const {
   if (layout_text_up_to_date_)
     return;
 
-  layout_text_ = text_;
-
-  // Obscure the layout text by replacing hidden characters by bullets.
-  if (obscured_)
-    ObscuredText(multiline_, obscured_reveal_index_, &layout_text_);
-
-  // Handle unicode control characters ISO 6429 (block C0). Range from 0 to 0x1F
-  // and 0x7F.
-  ReplaceControlCharactersWithSymbols(multiline_, &layout_text_);
-
-  const base::string16& text = layout_text_;
-  if (truncate_length_ > 0 && truncate_length_ < text.length()) {
-    // Truncate the text at a valid character break and append an ellipsis.
-    icu::StringCharacterIterator iter(text.c_str());
-    // Respect ELIDE_HEAD and ELIDE_MIDDLE preferences during truncation.
-    if (elide_behavior_ == ELIDE_HEAD) {
-      iter.setIndex32(
-          static_cast<int32_t>(text.length() - truncate_length_ + 1));
-      layout_text_.assign(kEllipsisUTF16 + text.substr(iter.getIndex()));
-    } else if (elide_behavior_ == ELIDE_MIDDLE) {
-      iter.setIndex32(static_cast<int32_t>(truncate_length_ / 2));
-      const size_t ellipsis_start = iter.getIndex();
-      iter.setIndex32(
-          static_cast<int32_t>(text.length() - (truncate_length_ / 2)));
-      const size_t ellipsis_end = iter.getIndex();
-      DCHECK_LE(ellipsis_start, ellipsis_end);
-      layout_text_.assign(text.substr(0, ellipsis_start) + kEllipsisUTF16 +
-                          text.substr(ellipsis_end));
-    } else {
-      iter.setIndex32(static_cast<int32_t>(truncate_length_ - 1));
-      layout_text_.assign(text.substr(0, iter.getIndex()) + kEllipsisUTF16);
-    }
-  }
-
-  // Wait to reset |layout_text_up_to_date_| until the end, to ensure this
-  // function's implementation doesn't indirectly rely on it being up to date
-  // anywhere.
-  layout_text_up_to_date_ = true;
-}
-
-void RenderText::EnsureLayoutTextAttributeUpdated() const {
-  if (layout_text_attributes_up_to_date_)
-    return;
-
-  EnsureLayoutTextUpdated();
-
-  // Reset the previous layout text attributes.
-  size_t max_length = layout_text_.length();
-  layout_colors_.SetMax(max_length);
-  layout_baselines_.SetMax(max_length);
-  layout_font_size_overrides_.SetMax(max_length);
-  layout_weights_.SetMax(max_length);
-  layout_styles_.resize(TEXT_STYLE_COUNT);
-  for (auto& layout_style : layout_styles_)
-    layout_style.SetMax(max_length);
+  layout_text_.clear();
   text_to_display_indices_.clear();
 
-  // Create an iterator to ensure layout BreakLists don't break graphemes.
+  // Reset the previous layout text attributes. Allocate enough space for
+  // layout text attributes (upper limit to 2x characters per codepoint). The
+  // actual size will be updated at the end of the function.
+  UpdateLayoutStyleLengths(2 * text_.length());
+
+  // Create an grapheme iterator to ensure layout BreakLists don't break
+  // graphemes.
   base::i18n::BreakIterator grapheme_iter(
       text_, base::i18n::BreakIterator::BREAK_CHARACTER);
   bool success = grapheme_iter.Init();
   DCHECK(success);
 
+  // Ensures the reveal index is at a codepoint boundary (e.g. not in a middle
+  // of a surrogate pairs).
+  size_t reveal_index = text_.size();
+  if (obscured_reveal_index_ != -1) {
+    reveal_index = base::checked_cast<size_t>(obscured_reveal_index_);
+    // Move |reveal_index| to the beginning of the surrogate pair, if needed.
+    if (reveal_index < text_.size())
+      U16_SET_CP_START(text_.data(), 0, reveal_index);
+  }
+
   // Iterates through codepoints in both strings. Both string have the same
   // amount of codepoints but some codepoints may differ (e.g. obscured or
   // replaced) and may differ in length (e.g. surrogate pair).
   base::i18n::UTF16CharIterator text_iter(&text_);
-  base::i18n::UTF16CharIterator layout_text_iter(&layout_text_);
   internal::StyleIterator styles = GetTextStyleIterator();
   size_t text_grapheme_start_position = 0;
   size_t layout_grapheme_start_position = 0;
-  while (!text_iter.end() && !layout_text_iter.end()) {
+  while (!text_iter.end()) {
     size_t current_text_position = text_iter.array_pos();
-    size_t current_layout_text_position = layout_text_iter.array_pos();
     if (grapheme_iter.IsGraphemeBoundary(current_text_position)) {
       text_grapheme_start_position = current_text_position;
-      layout_grapheme_start_position = current_layout_text_position;
+      layout_grapheme_start_position = layout_text_.size();
 
       // Keep track of the mapping between |text_| and |layout_text_| indices.
       internal::TextToDisplayIndex mapping = {text_grapheme_start_position,
@@ -1499,14 +1364,49 @@ void RenderText::EnsureLayoutTextAttributeUpdated() const {
       text_to_display_indices_.push_back(mapping);
     }
 
-    // Move text iterators to their next character.
+    int32_t codepoint = text_iter.get();
+    // Move text iterator to the next character.
     text_iter.Advance();
-    layout_text_iter.Advance();
+
+    // Obscure the layout text by replacing hidden characters by bullets.
+    if (obscured_ && reveal_index != current_text_position &&
+        (codepoint != '\n' || !multiline_)) {
+      codepoint = RenderText::kPasswordReplacementChar;
+    }
+
+    // Handle unicode control characters ISO 6429 (block C0). Range from 0 to
+    // 0x1F and 0x7F.
+    codepoint = ReplaceControlCharacter(multiline_, codepoint);
+
+    // Truncate the remaining codepoints if appending the codepoint to
+    // |layout_text_| is making the text larger than |truncate_length_|.
+    size_t codepoint_length = U16_LENGTH(codepoint);
+    const bool truncate_text =
+        (truncate_length_ != 0 &&
+         ((layout_text_.size() + codepoint_length > truncate_length_) ||
+          (!text_iter.end() &&
+           (layout_text_.size() + codepoint_length == truncate_length_))));
+
+    if (truncate_text) {
+      codepoint = kEllipsisCodepoint;
+      codepoint_length = U16_LENGTH(codepoint);
+      // On truncate, remove the whole current grapheme.
+      layout_text_.resize(layout_grapheme_start_position);
+    }
+
+    // Append the codepoint to the layout text.
+    const size_t current_layout_text_position = layout_text_.size();
+    if (codepoint_length == 1) {
+      layout_text_ += codepoint;
+    } else {
+      layout_text_ += U16_LEAD(codepoint);
+      layout_text_ += U16_TRAIL(codepoint);
+    }
 
     // Apply the style at current grapheme position to the layout text.
     styles.IncrementToPosition(text_grapheme_start_position);
 
-    Range range(current_layout_text_position, layout_text_iter.array_pos());
+    Range range(current_layout_text_position, layout_text_.size());
     layout_colors_.ApplyValue(styles.color(), range);
     layout_baselines_.ApplyValue(styles.baseline(), range);
     layout_font_size_overrides_.ApplyValue(styles.font_size_override(), range);
@@ -1516,22 +1416,34 @@ void RenderText::EnsureLayoutTextAttributeUpdated() const {
                                    range);
     }
 
+    const Range grapheme_start_range(gfx::Range(
+        text_grapheme_start_position, text_grapheme_start_position + 1));
+
     // Apply an underline to the composition range in |underlines|.
-    if (composition_range_.Contains(gfx::Range(text_grapheme_start_position))) {
+    if (composition_range_.Contains(grapheme_start_range)) {
       layout_styles_[TEXT_STYLE_HEAVY_UNDERLINE].ApplyValue(true, range);
     }
 
     // Apply the selected text color to the selection range.
-    if (!selection().is_empty() &&
-        selection().Contains(gfx::Range(text_grapheme_start_position))) {
+    if (!selection().is_empty() && selection().Contains(grapheme_start_range)) {
       layout_colors_.ApplyValue(selection_color_, range);
     }
+
+    // Stop appending characters if the text is truncated.
+    if (truncate_text)
+      break;
   }
 
-  // Wait to reset |layout_text_attributes_up_to_date_| until the end, to ensure
-  // this function's implementation doesn't indirectly rely on it being up to
-  // date anywhere.
-  layout_text_attributes_up_to_date_ = true;
+  // Resize the layout text attributes to the actual layout text length.
+  UpdateLayoutStyleLengths(layout_text_.length());
+
+  // Ensures that the text got truncated correctly, when needed.
+  DCHECK(truncate_length_ == 0 || layout_text_.size() <= truncate_length_);
+
+  // Wait to reset |layout_text_up_to_date_| until the end, to ensure this
+  // function's implementation doesn't indirectly rely on it being up to date
+  // anywhere.
+  layout_text_up_to_date_ = true;
 }
 
 const base::string16& RenderText::GetLayoutText() const {
@@ -1828,8 +1740,17 @@ void RenderText::UpdateStyleLengths() {
   baselines_.SetMax(text_length);
   font_size_overrides_.SetMax(text_length);
   weights_.SetMax(text_length);
-  for (size_t style = 0; style < TEXT_STYLE_COUNT; ++style)
-    styles_[style].SetMax(text_length);
+  for (auto& style : styles_)
+    style.SetMax(text_length);
+}
+
+void RenderText::UpdateLayoutStyleLengths(size_t max_length) const {
+  layout_colors_.SetMax(max_length);
+  layout_baselines_.SetMax(max_length);
+  layout_font_size_overrides_.SetMax(max_length);
+  layout_weights_.SetMax(max_length);
+  for (auto& layout_style : layout_styles_)
+    layout_style.SetMax(max_length);
 }
 
 int RenderText::GetLineContainingYCoord(float text_y) {

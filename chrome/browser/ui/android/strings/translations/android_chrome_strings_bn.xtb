@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">আবার ফাইল ডাউনলোড করবেন?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{#টি অডিও ফাইল}one{#টি অডিও ফাইল}other{#টি অডিও ফাইল}}</translation>
 <translation id="2653659639078652383">জমা দিন</translation>
-<translation id="2669093958999339774">আপনি যাতে বিরক্ত না হন তার জন্য বিজ্ঞপ্তি বিষয়ক প্রম্পট ব্লক করুন এবং তার জায়গায় নিঃশব্দে জানানোর মেসেজ ব্যবহার করুন</translation>
 <translation id="2677748264148917807">ছেড়ে চলে যান</translation>
 <translation id="2704606927547763573">প্রতিলিপি করা হয়েছে</translation>
 <translation id="2707726405694321444">পৃষ্ঠা রিফ্রেশ করুন</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> এ বুকমার্ক করা হয়েছে</translation>
 <translation id="3744111561329211289">পটভূমি সিঙ্ক</translation>
 <translation id="3749259744154402564">কাজ করে না</translation>
-<translation id="3767376082821709728">নতুন সাইট অ্যাক্সেস করলে সেটি আপনাকে বিজ্ঞপ্তি পাঠাতে পারবে না</translation>
 <translation id="3771001275138982843">আপডেট ডাউনলোড করা যায়নি</translation>
 <translation id="3771033907050503522">ছদ্মবেশী ট্যাবগুলি</translation>
 <translation id="3773755127849930740">যুক্ত করার মঞ্জুরি দিতে <ph name="BEGIN_LINK" />ব্লুটুথ চালু করুন<ph name="END_LINK" /></translation>
@@ -959,7 +957,6 @@
 <translation id="8035133914807600019">নতুন ফোল্ডার...</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> দিন বাকি আছে</translation>
 <translation id="804335162455518893">এসডি কার্ড পাওয়া যায়নি</translation>
-<translation id="8046278916126163020">নতুন সাইট সাইটে গেলে সেটি আপনার কাছে বিজ্ঞপ্তি পাঠানোর অনুমতি চাইবে</translation>
 <translation id="805047784848435650">আপনার ব্রাউজিং ইতিহাসের উপর ভিত্তি করে</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> এমবি উপলভ্য</translation>
 <translation id="8058746566562539958">নতুন Chrome ট্যাবে খুলুন</translation>

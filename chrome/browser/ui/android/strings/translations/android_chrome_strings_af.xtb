@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Laai lêer weer af?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# oudiolêer}other{# oudiolêers}}</translation>
 <translation id="2653659639078652383">Dien in</translation>
-<translation id="2669093958999339774">Keer dat kennisgewingporboodskappe jou onderbreek en gebruik eerder 'n stiller boodskap</translation>
 <translation id="2677748264148917807">Gaan uit</translation>
 <translation id="2704606927547763573">Gekopieer</translation>
 <translation id="2707726405694321444">Herlaai bladsy</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Geboekmerk in <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Agtergrondsinkronisering</translation>
 <translation id="3749259744154402564">Ongesteun</translation>
-<translation id="3767376082821709728">Nuwe werwe wat jy besoek, kan nie vir jou kennisgewings stuur nie</translation>
 <translation id="3771001275138982843">Kon nie die opdatering aflaai nie</translation>
 <translation id="3771033907050503522">Incognito-oortjies</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Skakel Bluetooth aan<ph name="END_LINK" /> om saambinding moontlik te maak</translation>
@@ -755,6 +753,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="6545017243486555795">Vee alle data uit</translation>
 <translation id="6545864417968258051">Bluetooth-opsporing</translation>
 <translation id="6560414384669816528">Soek met Sogou</translation>
+<translation id="656065428026159829">Sien meer</translation>
 <translation id="6566259936974865419">Chrome het vir jou <ph name="GIGABYTES" /> GB bespaar</translation>
 <translation id="6573096386450695060">Laat altyd toe</translation>
 <translation id="6573431926118603307">Oortjies wat jy op jou ander toestelle in Chrome oopgemaak het, sal hier verskyn.</translation>
@@ -851,6 +850,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="7293171162284876153">Skakel "Sinkroniseer jou Chrome-data" aan om met sinkronisering te begin.</translation>
 <translation id="729975465115245577">Jou toestel het nie 'n program om die wagwoordlêer te berg nie.</translation>
 <translation id="7302081693174882195">Besonderhede: Gerangskik volgens hoeveelheid data bespaar</translation>
+<translation id="7302486331832100261">Jy blokkeer gewoonlik kennisgewings. Tik op Besonderhede om toe te laat.</translation>
 <translation id="7328017930301109123">In Ligte modus laai Chrome bladsye vinniger en gebruik tot 60 persent minder data.</translation>
 <translation id="7333031090786104871">Voeg steeds vorige werf by</translation>
 <translation id="7352939065658542140">VIDEO</translation>
@@ -957,7 +957,6 @@ Die werf kry NIE toegang tot die kamera nie. Net jy kan die kameraprente sien.</
 <translation id="8035133914807600019">Nuwe vouer …</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dae oor</translation>
 <translation id="804335162455518893">Kon nie SD-kaart kry nie</translation>
-<translation id="8046278916126163020">Nuwe werwe wat jy besoek, kan vra of hulle vir jou kennisgewings mag stuur</translation>
 <translation id="805047784848435650">Gegrond op jou blaaigeskiedenis</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB beskikbaar</translation>
 <translation id="8058746566562539958">Open in nuwe Chrome-oortjie</translation>

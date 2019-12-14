@@ -13,7 +13,6 @@ js_type_check("closure_compile") {
     ":demo_preferences",
     ":demo_setup",
     ":encryption_migration",
-    ":enrollment_license_card",
     ":fingerprint_setup",
     ":gaia_buttons",
     ":gaia_card",
@@ -168,13 +167,6 @@ js_library("demo_setup") {
 }
 
 js_library("encryption_migration") {
-  deps = [
-    ":oobe_dialog_host_behavior",
-    "//ui/webui/resources/js:i18n_behavior",
-  ]
-}
-
-js_library("enrollment_license_card") {
   deps = [
     ":oobe_dialog_host_behavior",
     "//ui/webui/resources/js:i18n_behavior",

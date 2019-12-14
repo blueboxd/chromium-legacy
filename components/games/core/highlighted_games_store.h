@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
+#include "base/time/clock.h"
 #include "components/games/core/data_files_parser.h"
 #include "components/games/core/games_types.h"
 #include "components/games/core/proto/games_catalog.pb.h"
@@ -24,11 +25,12 @@ namespace games {
 // and then calculating and caching the currently highlighted game.
 class HighlightedGamesStore {
  public:
-  explicit HighlightedGamesStore();
+  explicit HighlightedGamesStore(base::Clock* clock);
 
   // For unit tests.
   explicit HighlightedGamesStore(
-      std::unique_ptr<DataFilesParser> data_files_parser);
+      std::unique_ptr<DataFilesParser> data_files_parser,
+      base::Clock* clock);
 
   virtual ~HighlightedGamesStore();
 
@@ -66,12 +68,16 @@ class HighlightedGamesStore {
 
   void Respond(ResponseCode code, const Game& game);
 
+  bool IsCurrent(const HighlightedGame& highlighted_game);
+
   std::unique_ptr<DataFilesParser> data_files_parser_;
 
   // Task runner delegating tasks to the ThreadPool.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  std::unique_ptr<const Game> cached_highlighted_game_;
+  base::Clock* clock_;
+  std::unique_ptr<HighlightedGame> cached_highlighted_game_;
+  std::unique_ptr<Game> cached_game_;
   base::Optional<HighlightedGameCallback> pending_callback_;
 
   base::WeakPtrFactory<HighlightedGamesStore> weak_ptr_factory_{this};

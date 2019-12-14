@@ -163,7 +163,7 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
 
   void RunValidationCallback(const std::string& remote_jid);
 
-  void StartHost(bool enable_dialogs = true);
+  void StartHost(bool enable_dialogs = true, bool enable_notifications = true);
   void ShutdownHost();
 
   static base::ListValue MakeList(
@@ -268,7 +268,7 @@ void It2MeHostTest::StartupHostStateHelper(const base::Closure& quit_closure) {
                                       base::Unretained(this), quit_closure);
 }
 
-void It2MeHostTest::StartHost(bool enable_dialogs) {
+void It2MeHostTest::StartHost(bool enable_dialogs, bool enable_notifications) {
   if (!policies_) {
     policies_ = PolicyWatcher::GetDefaultPolicies();
   }
@@ -291,6 +291,11 @@ void It2MeHostTest::StartHost(bool enable_dialogs) {
     // Only ChromeOS supports this method, so tests setting enable_dialogs to
     // false should only be run on ChromeOS.
     it2me_host_->set_enable_dialogs(enable_dialogs);
+  }
+  if (!enable_notifications) {
+    // Only ChromeOS supports this method, so tests setting enable_dialogs to
+    // false should only be run on ChromeOS.
+    it2me_host_->set_enable_notifications(enable_notifications);
   }
   auto register_host_request =
       std::make_unique<XmppRegisterSupportHostRequest>("fake_bot_jid");
@@ -625,11 +630,17 @@ TEST_F(It2MeHostTest, MultipleConnectionsTriggerDisconnect) {
 }
 
 #if defined(OS_CHROMEOS)
-TEST_F(It2MeHostTest, ConnectRespectsNoDialogsParameter) {
+TEST_F(It2MeHostTest, ConnectRespectsSuppressDialogsParameter) {
   StartHost(false);
   EXPECT_FALSE(dialog_factory_->dialog_created());
   EXPECT_FALSE(
       GetHost()->desktop_environment_options().enable_user_interface());
+}
+
+TEST_F(It2MeHostTest, ConnectRespectsSuppressNotificationsParameter) {
+  StartHost(true, false);
+  EXPECT_FALSE(dialog_factory_->dialog_created());
+  EXPECT_FALSE(GetHost()->desktop_environment_options().enable_notifications());
 }
 #endif
 

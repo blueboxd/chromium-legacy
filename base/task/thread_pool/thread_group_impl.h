@@ -130,7 +130,7 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   size_t NumberOfIdleWorkersForTesting() const;
 
  private:
-  class ScopedWorkersExecutor;
+  class ScopedCommandsExecutor;
   class WorkerThreadDelegateImpl;
 
   // Friend tests so that they can access |blocked_workers_poll_period| and
@@ -145,13 +145,13 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   void PushTaskSourceAndWakeUpWorkers(
       TransactionWithRegisteredTaskSource transaction_with_task_source)
       override;
-  void EnsureEnoughWorkersLockRequired(BaseScopedWorkersExecutor* executor)
+  void EnsureEnoughWorkersLockRequired(BaseScopedCommandsExecutor* executor)
       override EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Creates a worker and schedules its start, if needed, to maintain one idle
   // worker, |max_tasks_| permitting.
-  void MaintainAtLeastOneIdleWorkerLockRequired(ScopedWorkersExecutor* executor)
-      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  void MaintainAtLeastOneIdleWorkerLockRequired(
+      ScopedCommandsExecutor* executor) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Returns true if worker cleanup is permitted.
   bool CanWorkerCleanupForTestingLockRequired() EXCLUSIVE_LOCKS_REQUIRED(lock_);
@@ -159,7 +159,7 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   // Creates a worker, adds it to the thread group, schedules its start and
   // returns it. Cannot be called before Start().
   scoped_refptr<WorkerThread> CreateAndRegisterWorkerLockRequired(
-      ScopedWorkersExecutor* executor) EXCLUSIVE_LOCKS_REQUIRED(lock_);
+      ScopedCommandsExecutor* executor) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Returns the number of workers that are awake (i.e. not on the idle stack).
   size_t GetNumAwakeWorkersLockRequired() const EXCLUSIVE_LOCKS_REQUIRED(lock_);
@@ -192,7 +192,7 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   void ScheduleAdjustMaxTasks();
 
   // Schedules AdjustMaxTasks() through |executor| if required.
-  void MaybeScheduleAdjustMaxTasksLockRequired(ScopedWorkersExecutor* executor)
+  void MaybeScheduleAdjustMaxTasksLockRequired(ScopedCommandsExecutor* executor)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Returns true if AdjustMaxTasks() should periodically be called on
@@ -330,6 +330,12 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
 
   // Set at the start of JoinForTesting().
   bool join_for_testing_started_ GUARDED_BY(lock_) = false;
+
+  // Cached HistogramBase pointers, can be accessed without
+  // holding |lock_|. If |lock_| is held, add new samples using
+  // ThreadGroupImpl::ScopedCommandsExecutor (increase
+  // |scheduled_histogram_samples_| size as needed) to defer until after |lock_|
+  // release, due to metrics system callbacks which may schedule tasks.
 
   // ThreadPool.DetachDuration.[thread group name] histogram. Intentionally
   // leaked.

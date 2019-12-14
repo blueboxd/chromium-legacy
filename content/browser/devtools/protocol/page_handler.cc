@@ -212,8 +212,7 @@ PageHandler::PageHandler(EmulationHandler* emulation_handler,
   DCHECK(emulation_handler_);
 }
 
-PageHandler::~PageHandler() {
-}
+PageHandler::~PageHandler() = default;
 
 // static
 std::vector<PageHandler*> PageHandler::EnabledForWebContents(
@@ -1111,6 +1110,7 @@ void PageHandler::ScreenshotCaptured(
 
 void PageHandler::GotManifest(std::unique_ptr<GetAppManifestCallback> callback,
                               const GURL& manifest_url,
+                              const ::blink::Manifest& parsed_manifest,
                               blink::mojom::ManifestDebugInfoPtr debug_info) {
   auto errors = std::make_unique<protocol::Array<Page::AppManifestError>>();
   bool failed = true;
@@ -1127,9 +1127,18 @@ void PageHandler::GotManifest(std::unique_ptr<GetAppManifestCallback> callback,
         failed = true;
     }
   }
+
+  std::unique_ptr<Page::AppManifestParsedProperties> parsed;
+  if (!parsed_manifest.IsEmpty()) {
+    parsed = Page::AppManifestParsedProperties::Create()
+                 .SetScope(parsed_manifest.scope.possibly_invalid_spec())
+                 .Build();
+  }
+
   callback->sendSuccess(
       manifest_url.possibly_invalid_spec(), std::move(errors),
-      failed ? Maybe<std::string>() : debug_info->raw_manifest);
+      failed ? Maybe<std::string>() : debug_info->raw_manifest,
+      std::move(parsed));
 }
 
 Response PageHandler::StopLoading() {

@@ -13,9 +13,6 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
-#include "base/test/scoped_feature_list.h"
-#include "net/base/features.h"
-#include "net/base/network_isolation_key.h"
 #include "net/cert/cert_net_fetcher.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -34,7 +31,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-#include "url/origin.h"
 
 using net::test::IsOk;
 
@@ -253,10 +249,8 @@ class CertNetFetcherURLRequestTestWithHangingReadHandler
 // Helper to start an AIA fetch using default parameters.
 WARN_UNUSED_RESULT std::unique_ptr<CertNetFetcher::Request> StartRequest(
     CertNetFetcher* fetcher,
-    const GURL& url,
-    const NetworkIsolationKey& network_isolation_key = NetworkIsolationKey()) {
-  return fetcher->FetchCaIssuers(url, network_isolation_key,
-                                 CertNetFetcher::DEFAULT,
+    const GURL& url) {
+  return fetcher->FetchCaIssuers(url, CertNetFetcher::DEFAULT,
                                  CertNetFetcher::DEFAULT);
 }
 
@@ -377,8 +371,8 @@ TEST_F(CertNetFetcherURLRequestTest, TooLarge) {
   // This file has a response body 12 bytes long. So setting the maximum to 11
   // bytes will cause it to fail.
   GURL url(test_server_.GetURL("/certs.p7c"));
-  std::unique_ptr<CertNetFetcher::Request> request = fetcher()->FetchCaIssuers(
-      url, NetworkIsolationKey(), CertNetFetcher::DEFAULT, 11);
+  std::unique_ptr<CertNetFetcher::Request> request =
+      fetcher()->FetchCaIssuers(url, CertNetFetcher::DEFAULT, 11);
 
   VerifyFailure(ERR_FILE_TOO_BIG, request.get());
 }
@@ -391,8 +385,8 @@ TEST_F(CertNetFetcherURLRequestTest, Hang) {
   CreateFetcher();
 
   GURL url(test_server_.GetURL("/slow/certs.p7c?5"));
-  std::unique_ptr<CertNetFetcher::Request> request = fetcher()->FetchCaIssuers(
-      url, NetworkIsolationKey(), 10, CertNetFetcher::DEFAULT);
+  std::unique_ptr<CertNetFetcher::Request> request =
+      fetcher()->FetchCaIssuers(url, 10, CertNetFetcher::DEFAULT);
   VerifyFailure(ERR_TIMED_OUT, request.get());
 }
 
@@ -643,75 +637,6 @@ TEST_F(CertNetFetcherURLRequestTest,
   std::unique_ptr<CertNetFetcher::Request> request =
       StartRequest(fetcher(), url);
   VerifyFailure(ERR_ABORTED, request.get());
-}
-
-// Make sure that "duplicate" requests are only merged if their
-// NetworkIsolationKey matches.
-TEST_F(CertNetFetcherURLRequestTest,
-       MergeDuplicatesRespectsNetworkIsolationKey) {
-  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://a.test"));
-  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://b.test"));
-  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
-  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
-
-  ASSERT_TRUE(test_server_.Start());
-
-  CreateFetcher();
-
-  GURL url = test_server_.GetURL("/cert.crt");
-
-  std::unique_ptr<CertNetFetcher::Request> request1 =
-      StartRequest(fetcher(), url, kNetworkIsolationKey1);
-
-  std::unique_ptr<CertNetFetcher::Request> request2 =
-      StartRequest(fetcher(), url, kNetworkIsolationKey2);
-
-  std::unique_ptr<CertNetFetcher::Request> request3 =
-      StartRequest(fetcher(), url, kNetworkIsolationKey1);
-
-  VerifySuccess("-cert.crt-\n", request1.get());
-  VerifySuccess("-cert.crt-\n", request2.get());
-  VerifySuccess("-cert.crt-\n", request3.get());
-
-  // Verify that only 2 URLRequests were started even though 3 requests were
-  // issued.
-  EXPECT_EQ(2, NumCreatedRequests());
-}
-
-// Make sure the NetworkIsolationKey is respected.
-TEST_F(CertNetFetcherURLRequestTest, NetworkIsolationKeyPassedToURLLoader) {
-  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://a.test"));
-  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://b.test"));
-  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
-  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kSplitCacheByNetworkIsolationKey);
-
-  CreateFetcher();
-
-  // Start server, fetch a cacheable file using kNetworkIsolationKey1, and stop
-  // the server. The response should be stored in the cache using
-  // kNetworkIsolationKey1.
-  ASSERT_TRUE(test_server_.Start());
-  GURL url = test_server_.GetURL("/cacheable_1hr.crt");
-  std::unique_ptr<CertNetFetcher::Request> request1 =
-      StartRequest(fetcher(), url, kNetworkIsolationKey1);
-  VerifySuccess("-cacheable_1hr.crt-\n", request1.get());
-  ASSERT_TRUE(test_server_.ShutdownAndWaitUntilComplete());
-
-  // Try fetching the resources with kNetworkIsolationKey2. Since the server has
-  // been stopped and the resource is only cached with kNetworkIsolationKey1,
-  // the request should fail.
-  std::unique_ptr<CertNetFetcher::Request> request2 =
-      StartRequest(fetcher(), url, kNetworkIsolationKey2);
-  VerifyFailure(ERR_CONNECTION_REFUSED, request2.get());
-
-  // Fetching with kNetworkIsolationKey1 should return the cached resource.
-  std::unique_ptr<CertNetFetcher::Request> request3 =
-      StartRequest(fetcher(), url, kNetworkIsolationKey1);
-  VerifySuccess("-cacheable_1hr.crt-\n", request3.get());
 }
 
 // Tests that outstanding Requests are cancelled when Shutdown is called.

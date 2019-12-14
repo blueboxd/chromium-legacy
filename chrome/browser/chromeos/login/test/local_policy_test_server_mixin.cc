@@ -71,25 +71,6 @@ void LocalPolicyTestServerMixin::SetUpCommandLine(
                                   policy_test_server_->GetServiceURL().spec());
 }
 
-void LocalPolicyTestServerMixin::ExpectAvailableLicenseCount(int perpetual,
-                                                             int annual,
-                                                             int kiosk) {
-  base::Value licenses(base::Value::Type::DICTIONARY);
-  if (perpetual >= 0) {
-    licenses.SetKey("perpetual", base::Value(perpetual));
-  }
-  if (annual >= 0) {
-    licenses.SetKey("annual", base::Value(annual));
-  }
-  if (kiosk >= 0) {
-    licenses.SetKey("kiosk", base::Value(kiosk));
-  }
-  DCHECK(licenses.DictSize() > 0);
-
-  server_config_.SetKey("available_licenses", std::move(licenses));
-  policy_test_server_->SetConfig(server_config_);
-}
-
 void LocalPolicyTestServerMixin::ExpectTokenEnrollment(
     const std::string& enrollment_token,
     const std::string& token_creator) {

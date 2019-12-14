@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">¿Quieres descargar el archivo de nuevo?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# archivo de audio}other{# archivos de audio}}</translation>
 <translation id="2653659639078652383">Enviar</translation>
-<translation id="2669093958999339774">Bloquea las notificaciones emergentes para evitar interrupciones y utiliza un tipo de aviso más discreto</translation>
 <translation id="2677748264148917807">Salir</translation>
 <translation id="2704606927547763573">Copiado</translation>
 <translation id="2707726405694321444">Actualizar página</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Marcador añadido a <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Sincronización en segundo plano</translation>
 <translation id="3749259744154402564">No admitido</translation>
-<translation id="3767376082821709728">Los sitios web nuevos a los que accedas no podrán enviarte notificaciones</translation>
 <translation id="3771001275138982843">No se ha podido descargar la actualización</translation>
 <translation id="3771033907050503522">Pestañas incógnito</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Activa el Bluetooth<ph name="END_LINK" /> para permitir la vinculación</translation>
@@ -957,7 +955,6 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="8035133914807600019">Nueva carpeta…</translation>
 <translation id="8037750541064988519">Quedan <ph name="DAYS" /> días</translation>
 <translation id="804335162455518893">No se ha encontrado la tarjeta SD</translation>
-<translation id="8046278916126163020">Los sitios web nuevos a los que accedas pueden preguntarte si quieres que te envíen notificaciones</translation>
 <translation id="805047784848435650">Según tu historial de navegación</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB disponible(s)</translation>
 <translation id="8058746566562539958">Abrir en una pestaña nueva</translation>

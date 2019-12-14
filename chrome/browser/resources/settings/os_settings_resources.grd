@@ -12,6 +12,12 @@
   </outputs>
   <release seq="1">
     <structures>
+      <structure name="IDR_OS_SETTINGS_LOCALIZED_STRING_WITH_LINK_JS"
+                 file="chromeos/localized_string_with_link/localized_string_with_link.js"
+                 type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_LOCALIZED_STRING_WITH_LINK_HTML"
+                 file="chromeos/localized_string_with_link/localized_string_with_link.html"
+                 type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_A11Y_PAGE_JS"
                  file="chromeos/os_a11y_page/os_a11y_page.js"
                  type="chrome_html" />

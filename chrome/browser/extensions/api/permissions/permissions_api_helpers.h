@@ -42,9 +42,6 @@ struct UnpackPermissionSetResult {
 
   // API permissions that are in the extension's "optional" permission set.
   APIPermissionSet optional_apis;
-  // API permissions that are in the extension's "optional" permission set,
-  // but don't support the optional permissions API.
-  APIPermissionSet unsupported_optional_apis;
   // Explicit hosts that are in the extension's "optional" permission set.
   URLPatternSet optional_explicit_hosts;
 

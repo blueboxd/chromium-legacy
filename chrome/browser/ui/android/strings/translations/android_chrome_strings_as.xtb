@@ -231,7 +231,6 @@
 <translation id="2650751991977523696">ফাইল পুনৰ ডাইনল'ড কৰিবনে?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{#টা অডিঅ' ফাইল}one{#টা অডিঅ' ফাইল}other{#টা অডিঅ' ফাইল}}</translation>
 <translation id="2653659639078652383">দাখিল কৰক</translation>
-<translation id="2669093958999339774">আপোনাৰ বাবে ব্যাঘাত জন্মাব নোৱৰাকৈ জাননীৰ প্ৰম্প্‌টসমূহ অৱৰোধ কৰক আৰু তাৰ পৰিৱৰ্তে এটা নীৰৱ বাৰ্তা ব্যৱহাৰ কৰক</translation>
 <translation id="2677748264148917807">ত্যাগ কৰক</translation>
 <translation id="2704606927547763573">প্ৰতিলিপি কৰা হ'ল</translation>
 <translation id="2707726405694321444">পৃষ্ঠাটো ৰিফ্ৰেশ্ব কৰক</translation>
@@ -366,7 +365,6 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" />ত বুকমার্ক কৰা হৈছে</translation>
 <translation id="3744111561329211289">নেপথ্যত ছিংক কৰা</translation>
 <translation id="3749259744154402564">অসমৰ্থিত</translation>
-<translation id="3767376082821709728">আপুনি চোৱা নতুন ছাইটসমূহে আপোনালৈ জাননী পঠিয়াব নোৱাৰে</translation>
 <translation id="3771001275138982843">আপডে’টটো ডাউনল’ড কৰিব পৰা নগ’ল</translation>
 <translation id="3771033907050503522">ইনক’গনিট’ টেব</translation>
 <translation id="3773755127849930740">যোৰা লগোৱাৰ অনুমতি দিবলৈ <ph name="BEGIN_LINK" />ব্লুটুথ অন কৰক<ph name="END_LINK" /></translation>
@@ -954,7 +952,6 @@
 <translation id="8035133914807600019">নতুন ফ’ল্ডাৰ…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> দিন বাকী আছে</translation>
 <translation id="804335162455518893">SD কাৰ্ড বিচাৰি পোৱা নগ’ল</translation>
-<translation id="8046278916126163020">আপুনি চোৱা নতুন ছাইটসমূহে আপোনালৈ জাননী পঠিয়াবলৈ ক’ব পাৰে</translation>
 <translation id="805047784848435650">আপোনাৰ ব্ৰাউজিং ইতিহাসৰ ওপৰত ভিত্তি কৰি</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> এম.বি. উপলব্ধ</translation>
 <translation id="8058746566562539958">নতুন Chrome টেবত খোলক</translation>

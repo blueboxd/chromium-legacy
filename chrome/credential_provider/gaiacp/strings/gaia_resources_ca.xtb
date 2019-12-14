@@ -25,6 +25,7 @@
 <translation id="7209941495304122410">Introdueix la contrasenya de Windows</translation>
 <translation id="7357241217513796177">Assegura't que tinguis connexió a la xarxa i torna-ho a provar.</translation>
 <translation id="7536769223115622137">Afegeix el compte de la feina</translation>
+<translation id="7811865856574012727">L'administrador ha restringit l'inici de sessió del dispositiu en els dominis següents: <ph name="EMAIL_DOMAINS" />. Torna-ho a provar utilitzant un compte de la feina vàlid.</translation>
 <translation id="7856245195110636219">No es pot continuar sense introduir la contrasenya actual de Windows. Contacta amb un administrador del sistema.</translation>
 <translation id="8639729688781680518">He oblidat la contrasenya de Windows</translation>
 <translation id="866458870819756755">No s'ha pogut crear cap usuari.</translation>

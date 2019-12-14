@@ -34,7 +34,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
                                   InfobarModalPositioner> {
   // The AnimatedFullscreenDisable disables fullscreen by displaying the
   // Toolbar/s when an Infobar banner is presented.
-  std::unique_ptr<AnimatedScopedFullscreenDisabler> animatedFullscreenDisabler_;
+  std::unique_ptr<AnimatedScopedFullscreenDisabler> _animatedFullscreenDisabler;
 }
 
 // Delegate that holds the Infobar information and actions.
@@ -88,7 +88,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 #pragma mark - Public Methods.
 
 - (void)stop {
-  animatedFullscreenDisabler_ = nullptr;
+  _animatedFullscreenDisabler = nullptr;
   _infobarDelegate = nil;
 }
 
@@ -106,11 +106,11 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   }
 
   // Make sure to display the Toolbar/s before presenting the Banner.
-  animatedFullscreenDisabler_ =
+  _animatedFullscreenDisabler =
       std::make_unique<AnimatedScopedFullscreenDisabler>(
           FullscreenControllerFactory::GetInstance()->GetForBrowserState(
               self.browserState));
-  animatedFullscreenDisabler_->StartAnimation();
+  _animatedFullscreenDisabler->StartAnimation();
 
   [self.bannerViewController
       setModalPresentationStyle:UIModalPresentationCustom];
@@ -277,7 +277,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   [self.badgeDelegate infobarBannerWasDismissed:self.infobarType
                                     forWebState:self.webState];
   self.bannerTransitionDriver = nil;
-  animatedFullscreenDisabler_ = nullptr;
+  _animatedFullscreenDisabler = nullptr;
   [self infobarWasDismissed];
   if (!self.infobarActionInProgress) {
     // Only inform InfobarContainer that the Infobar banner presentation is

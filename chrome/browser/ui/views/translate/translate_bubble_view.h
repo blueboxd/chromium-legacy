@@ -26,6 +26,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -280,6 +281,14 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
       std::unique_ptr<views::Button> advance_done_button,
       std::unique_ptr<views::Checkbox> advanced_always_translate_checkbox);
 
+  // Creates a translate icon for when the bottom branding isn't showing. This
+  // should only be used on non-Chrome-branded builds.
+  std::unique_ptr<views::ImageView> CreateTranslateIcon();
+
+  // Creates a three dot options menu button.
+  std::unique_ptr<views::Button> CreateOptionsMenuButton();
+
+  // Creates a close button.
   std::unique_ptr<views::Button> CreateCloseButton();
 
   // Get the current always translate checkbox

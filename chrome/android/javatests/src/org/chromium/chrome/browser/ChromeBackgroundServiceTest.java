@@ -27,13 +27,12 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.browser.background_sync.BackgroundSyncBackgroundTask;
 import org.chromium.chrome.browser.background_sync.BackgroundSyncBackgroundTaskScheduler;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsLauncher;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.components.background_task_scheduler.BackgroundTask;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
+import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
@@ -94,14 +93,11 @@ public class ChromeBackgroundServiceTest {
             doReturn(true).when(mTaskScheduler).schedule(any(Context.class), any(TaskInfo.class));
         }
 
-        protected void checkBackgroundTaskSchedulerInvocation(
-                Class<? extends BackgroundTask> backgroundTaskClass) {
+        protected void checkBackgroundTaskSchedulerInvocation(int taskId) {
             PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
                 verify(mTaskScheduler)
                         .schedule(any(Context.class),
-                                argThat(taskInfo
-                                        -> taskInfo.getBackgroundTaskClass()
-                                                == backgroundTaskClass));
+                                argThat(taskInfo -> taskInfo.getTaskId() == taskId));
             });
         }
     }
@@ -135,7 +131,8 @@ public class ChromeBackgroundServiceTest {
     @Feature({"BackgroundSync"})
     public void testBackgroundSyncRescheduleWhenTaskRuns() {
         mTaskService.onRunTask(new TaskParams(BackgroundSyncBackgroundTaskScheduler.TASK_TAG));
-        mTaskService.checkBackgroundTaskSchedulerInvocation(BackgroundSyncBackgroundTask.class);
+        mTaskService.checkBackgroundTaskSchedulerInvocation(
+                TaskIds.BACKGROUND_SYNC_ONE_SHOT_JOB_ID);
     }
 
     @Test

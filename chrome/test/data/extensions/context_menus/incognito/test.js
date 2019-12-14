@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 var inIncognitoContext = chrome.extension.inIncognitoContext;
-var incognitoStr = inIncognitoContext ? "incognito" : "regular";
+var incognitoStr = inIncognitoContext ? 'incognito' : 'regular';
 
-function onclick(info) {
-  chrome.test.sendMessage("onclick fired " + incognitoStr);
-}
-
-chrome.contextMenus.create({title: "item " + incognitoStr,
-                            onclick: onclick}, function() {
-  if (!chrome.runtime.lastError) {
-    chrome.test.sendMessage("created item " + incognitoStr);
-  }
-});
+chrome.runtime.onInstalled.addListener(function(details) {
+  chrome.contextMenus.create(
+      {title: 'item ' + incognitoStr, id: 'id_' + incognitoStr},
+      function() {
+        chrome.test.assertNoLastError();
+        chrome.contextMenus.onClicked.addListener(function(info, tab) {
+          chrome.test.sendMessage('onclick fired ' + incognitoStr);
+        });
+        chrome.test.sendMessage('created item ' + incognitoStr);
+      })});

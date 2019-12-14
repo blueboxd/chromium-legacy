@@ -18,12 +18,14 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
@@ -36,7 +38,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/favicon/core/favicon_service.h"
@@ -497,6 +498,21 @@ void FindNodeInVerifier(BookmarkModel* foreign_model,
   *result = walker;
 }
 
+std::vector<const BookmarkNode*> GetAllBookmarkNodes(
+    const BookmarkModel* model) {
+  std::vector<const BookmarkNode*> all_nodes;
+
+  // Add root node separately as iterator does not include it.
+  all_nodes.push_back(model->root_node());
+
+  ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
+  while (iterator.has_next()) {
+    all_nodes.push_back(iterator.Next());
+  }
+
+  return all_nodes;
+}
+
 }  // namespace
 
 BookmarkModel* GetBookmarkModel(int index) {
@@ -937,18 +953,11 @@ size_t CountFoldersWithTitlesMatching(int profile, const std::string& title) {
 }
 
 bool ContainsBookmarkNodeWithGUID(int profile, const std::string& guid) {
-  BookmarkModel* model = GetBookmarkModel(profile);
-  // Check root node separately as iterator does not include it.
-  if (model->root_node()->guid() == guid) {
-    return true;
-  }
-  ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
-  // Walk through the model tree looking for a BookmarkNode whose GUID matches
-  // |guid|.
-  while (iterator.has_next()) {
-    const BookmarkNode* node = iterator.Next();
-    if (node->guid() == guid)
+  for (const BookmarkNode* node :
+       GetAllBookmarkNodes(GetBookmarkModel(profile))) {
+    if (node->guid() == guid) {
       return true;
+    }
   }
   return false;
 }
@@ -1017,6 +1026,126 @@ std::unique_ptr<syncer::LoopbackServerEntity> CreateBookmarkServerEntity(
   return bookmark_builder.BuildBookmark(url);
 }
 
+AnyBookmarkChangeObserver::AnyBookmarkChangeObserver(
+    const base::RepeatingClosure& cb)
+    : cb_(cb) {}
+
+AnyBookmarkChangeObserver::~AnyBookmarkChangeObserver() = default;
+
+void AnyBookmarkChangeObserver::BookmarkModelLoaded(BookmarkModel* model,
+                                                    bool ids_reassigned) {
+  cb_.Run();
+}
+
+void AnyBookmarkChangeObserver::BookmarkModelBeingDeleted(
+    BookmarkModel* model) {
+  cb_.Run();
+}
+
+void AnyBookmarkChangeObserver::BookmarkNodeMoved(
+    BookmarkModel* model,
+    const BookmarkNode* old_parent,
+    size_t old_index,
+    const BookmarkNode* new_parent,
+    size_t new_index) {
+  cb_.Run();
+}
+
+void AnyBookmarkChangeObserver::BookmarkNodeAdded(BookmarkModel* model,
+                                                  const BookmarkNode* parent,
+                                                  size_t index) {
+  cb_.Run();
+}
+
+void AnyBookmarkChangeObserver::OnWillRemoveBookmarks(
+    BookmarkModel* model,
+    const BookmarkNode* parent,
+    size_t old_index,
+    const BookmarkNode* node) {
+  cb_.Run();
+}
+
+void AnyBookmarkChangeObserver::BookmarkNodeRemoved(
+    BookmarkModel* model,
+    const BookmarkNode* parent,
+    size_t old_index,
+    const BookmarkNode* node,
+    const std::set<GURL>& no_longer_bookmarked) {
+  cb_.Run();
+}
+
+void AnyBookmarkChangeObserver::OnWillChangeBookmarkNode(
+    BookmarkModel* model,
+    const BookmarkNode* node) {
+  cb_.Run();
+}
+
+void AnyBookmarkChangeObserver::BookmarkNodeChanged(BookmarkModel* model,
+                                                    const BookmarkNode* node) {
+  cb_.Run();
+}
+
+void AnyBookmarkChangeObserver::OnWillChangeBookmarkMetaInfo(
+    BookmarkModel* model,
+    const BookmarkNode* node) {
+  cb_.Run();
+}
+
+void AnyBookmarkChangeObserver::BookmarkMetaInfoChanged(
+    BookmarkModel* model,
+    const BookmarkNode* node) {
+  cb_.Run();
+}
+
+void AnyBookmarkChangeObserver::BookmarkNodeFaviconChanged(
+    BookmarkModel* model,
+    const BookmarkNode* node) {
+  cb_.Run();
+}
+
+void AnyBookmarkChangeObserver::OnWillReorderBookmarkNode(
+    BookmarkModel* model,
+    const BookmarkNode* node) {
+  cb_.Run();
+}
+
+void AnyBookmarkChangeObserver::BookmarkNodeChildrenReordered(
+    BookmarkModel* model,
+    const BookmarkNode* node) {
+  cb_.Run();
+}
+
+void AnyBookmarkChangeObserver::ExtensiveBookmarkChangesBeginning(
+    BookmarkModel* model) {
+  cb_.Run();
+}
+
+void AnyBookmarkChangeObserver::ExtensiveBookmarkChangesEnded(
+    BookmarkModel* model) {
+  cb_.Run();
+}
+
+void AnyBookmarkChangeObserver::OnWillRemoveAllUserBookmarks(
+    BookmarkModel* model) {
+  cb_.Run();
+}
+
+void AnyBookmarkChangeObserver::BookmarkAllUserNodesRemoved(
+    BookmarkModel* model,
+    const std::set<GURL>& removed_urls) {
+  cb_.Run();
+}
+
+void AnyBookmarkChangeObserver::GroupedBookmarkChangesBeginning(
+    BookmarkModel* model) {
+  cb_.Run();
+}
+
+void AnyBookmarkChangeObserver::GroupedBookmarkChangesEnded(
+    BookmarkModel* model) {
+  cb_.Run();
+}
+
 BookmarksMatchChecker::BookmarksMatchChecker()
     : MultiClientStatusChangeChecker(
           sync_datatype_helper::test()->GetSyncServices()) {}
@@ -1035,11 +1164,84 @@ bool BookmarksMatchVerifierChecker::IsExitConditionSatisfied(std::ostream* os) {
   return AllModelsMatchVerifier();
 }
 
+SingleBookmarkModelStatusChangeChecker::SingleBookmarkModelStatusChangeChecker(
+    int profile_index)
+    : profile_index_(profile_index),
+      bookmark_model_(GetBookmarkModel(profile_index)) {
+  observer_ = std::make_unique<AnyBookmarkChangeObserver>(base::BindRepeating(
+      &SingleBookmarkModelStatusChangeChecker::PostCheckExitCondition,
+      weak_ptr_factory_.GetWeakPtr()));
+  bookmark_model_->AddObserver(observer_.get());
+}
+
+SingleBookmarkModelStatusChangeChecker::
+    ~SingleBookmarkModelStatusChangeChecker() {
+  bookmark_model_->RemoveObserver(observer_.get());
+}
+
+int SingleBookmarkModelStatusChangeChecker::profile_index() const {
+  return profile_index_;
+}
+
+BookmarkModel* SingleBookmarkModelStatusChangeChecker::bookmark_model() const {
+  return bookmark_model_;
+}
+
+void SingleBookmarkModelStatusChangeChecker::CheckExitCondition() {
+  pending_check_exit_condition_ = false;
+  StatusChangeChecker::CheckExitCondition();
+}
+
+void SingleBookmarkModelStatusChangeChecker::PostCheckExitCondition() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (pending_check_exit_condition_) {
+    // Already posted.
+    return;
+  }
+
+  pending_check_exit_condition_ = true;
+
+  // Use base::PostTask() instead of CheckExitCondition() directly to make sure
+  // that the checker doesn't immediately kick in while bookmarks are modified.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindRepeating(
+          &SingleBookmarkModelStatusChangeChecker::CheckExitCondition,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
+SingleBookmarksModelMatcherChecker::SingleBookmarksModelMatcherChecker(
+    int profile_index,
+    const Matcher& matcher)
+    : SingleBookmarkModelStatusChangeChecker(profile_index),
+      matcher_(matcher) {}
+
+SingleBookmarksModelMatcherChecker::~SingleBookmarksModelMatcherChecker() {}
+
+bool SingleBookmarksModelMatcherChecker::IsExitConditionSatisfied(
+    std::ostream* os) {
+  const std::vector<const BookmarkNode*> all_bookmark_nodes =
+      GetAllBookmarkNodes(bookmark_model());
+
+  testing::StringMatchResultListener result_listener;
+  const bool matches = testing::ExplainMatchResult(matcher_, all_bookmark_nodes,
+                                                   &result_listener);
+  if (TimedOut() && !matches && result_listener.str().empty()) {
+    // Some matchers don't provide details via ExplainMatchResult().
+    *os << "Expected: ";
+    matcher_.DescribeTo(os);
+    *os << "  Actual: " << testing::PrintToString(all_bookmark_nodes);
+  } else {
+    *os << result_listener.str();
+  }
+  return matches;
+}
+
 BookmarksTitleChecker::BookmarksTitleChecker(int profile_index,
                                              const std::string& title,
                                              int expected_count)
-    : SingleClientStatusChangeChecker(
-          sync_datatype_helper::test()->GetSyncService(profile_index)),
+    : SingleBookmarkModelStatusChangeChecker(profile_index),
       profile_index_(profile_index),
       title_(title),
       expected_count_(expected_count) {
@@ -1115,34 +1317,29 @@ bool ServerBookmarksEqualityChecker::IsExitConditionSatisfied(
 
 ServerBookmarksEqualityChecker::~ServerBookmarksEqualityChecker() {}
 
-namespace {
-
-bool BookmarkCountsByUrlMatch(int profile,
-                              const GURL& url,
-                              int expected_count) {
-  int actual_count = CountBookmarksWithUrlsMatching(profile, url);
-  if (expected_count != actual_count) {
-    DVLOG(1) << base::StringPrintf("Expected %d URL(s), but there were %d.",
-                                   expected_count, actual_count);
-    return false;
-  }
-  return true;
-}
-
-}  // namespace
-
 BookmarksUrlChecker::BookmarksUrlChecker(int profile,
                                          const GURL& url,
                                          int expected_count)
-    : AwaitMatchStatusChangeChecker(base::Bind(BookmarkCountsByUrlMatch,
-                                               profile,
-                                               std::cref(url),
-                                               expected_count),
-                                    "Bookmark URL counts match.") {}
+    : SingleBookmarkModelStatusChangeChecker(profile),
+      url_(url),
+      expected_count_(expected_count) {}
+
+bool BookmarksUrlChecker::IsExitConditionSatisfied(std::ostream* os) {
+  int actual_count = CountBookmarksWithUrlsMatching(profile_index(), url_);
+  *os << "Expected " << expected_count_ << " bookmarks with URL " << url_
+      << " but found " << actual_count;
+  if (TimedOut()) {
+    *os << " in "
+        << testing::PrintToString(
+               GetAllBookmarkNodes(GetBookmarkModel(profile_index())));
+  }
+  return expected_count_ == actual_count;
+}
 
 BookmarksGUIDChecker::BookmarksGUIDChecker(int profile, const std::string& guid)
-    : AwaitMatchStatusChangeChecker(
-          base::BindRepeating(ContainsBookmarkNodeWithGUID, profile, guid),
-          "Bookmark GUID exists.") {}
+    : SingleBookmarksModelMatcherChecker(profile,
+                                         testing::Contains(HasGuid(guid))) {}
+
+BookmarksGUIDChecker::~BookmarksGUIDChecker() {}
 
 }  // namespace bookmarks_helper

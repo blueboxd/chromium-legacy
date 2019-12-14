@@ -10,6 +10,7 @@
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="clear_browsing_data_browser_proxy.html">
 <link rel="import" href="history_deletion_dialog.html">
+<link rel="import" href="installed_app_checkbox.html">
 <link rel="import" href="../controls/settings_checkbox.html">
 <link rel="import" href="../controls/settings_dropdown_menu.html">
 <link rel="import" href="../icons.html">
@@ -78,7 +79,8 @@
         margin-top: auto;
       }
 
-      settings-checkbox {
+      settings-checkbox,
+      installed-app-checkbox {
         --settings-row-two-line-min-height: 48px;
       }
 
@@ -248,7 +250,7 @@
         <cr-button class="cancel-button" disabled="[[clearingInProgress_]]"
             on-click="onCancelTap_">$i18n{cancel}</cr-button>
         <cr-button id="clearBrowsingDataConfirm"
-            class="action-button" on-click="clearBrowsingData_"
+            class="action-button" on-click="onClearBrowsingDataClick_"
             disabled="[[isClearButtonDisabled_(clearingInProgress_,
                                                clearButtonDisabled_)]]">
             $i18n{clearData}
@@ -275,6 +277,37 @@
             $i18nRaw{clearBrowsingDataWithSyncError}
           </span>
         </div>
+      </div>
+    </cr-dialog>
+
+    <cr-dialog id="installedAppsDialog" close-text="$i18n{close}"
+               ignore-popstate show-scroll-borders
+               on-close="hideInstalledApps_">
+      <div slot="title">
+        $i18n{installedAppsTitle}
+      </div>
+      <div slot="body">
+        <template is="dom-repeat" items="[[installedApps_]]">
+          <div class="row">
+            <installed-app-checkbox
+              installed_app="[[item]]"
+              disabled="[[clearingInProgress_]]">
+            </installed-app-checkbox>
+          </div>
+        </template>
+      </div>
+      <div slot="button-container">
+        <paper-spinner-lite active="[[clearingInProgress_]]">
+        </paper-spinner-lite>
+        <cr-button class="cancel-button" disabled="[[clearingInProgress_]]"
+            on-click="hideInstalledApps_">
+          $i18n{cancel}
+        </cr-button>
+        <cr-button id="installedAppsConfirm" class="action-button"
+            disabled="[[clearingInProgress_]]"
+            on-click="onInstalledAppsConfirmClick_">
+          $i18n{installedAppsConfirm}
+        </cr-button>
       </div>
     </cr-dialog>
 

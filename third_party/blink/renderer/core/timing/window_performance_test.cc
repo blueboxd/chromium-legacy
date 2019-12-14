@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/string_or_double.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_performance_observer_callback.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
@@ -17,8 +16,6 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
-#include "third_party/blink/renderer/core/timing/performance_observer.h"
-#include "third_party/blink/renderer/core/timing/performance_observer_init.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
@@ -37,10 +34,6 @@ class WindowPerformanceTest : public testing::Test {
   void SetUp() override {
     test_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
     ResetPerformance();
-
-    // Create another dummy page holder and pretend this is the iframe.
-    another_page_holder_ = std::make_unique<DummyPageHolder>(IntSize(400, 300));
-    another_page_holder_->GetDocument().SetURL(KURL("https://iframed.com/bar"));
   }
 
   bool ObservingLongTasks() {
@@ -72,31 +65,9 @@ class WindowPerformanceTest : public testing::Test {
                                      timestamp);
   }
 
-  void AddLongTaskTiming(base::TimeTicks start_time,
-                         base::TimeTicks end_time,
-                         const AtomicString& name,
-                         const AtomicString& container_type,
-                         const String& container_src,
-                         const String& container_id,
-                         const String& container_name) {
-    performance_->AddLongTaskTiming(start_time, end_time, name, container_type,
-                                    container_src, container_id,
-                                    container_name);
-  }
-
-  size_t NumEntries(PerformanceObserver* observer) {
-    return observer->performance_entries_.size();
-  }
-
   LocalFrame* GetFrame() const { return &page_holder_->GetFrame(); }
 
   Document* GetDocument() const { return &page_holder_->GetDocument(); }
-
-  LocalFrame* AnotherFrame() const { return &another_page_holder_->GetFrame(); }
-
-  Document* AnotherDocument() const {
-    return &another_page_holder_->GetDocument();
-  }
 
   String SanitizedAttribution(ExecutionContext* context,
                               bool has_multiple_contexts,
@@ -120,16 +91,13 @@ class WindowPerformanceTest : public testing::Test {
 
   Persistent<WindowPerformance> performance_;
   std::unique_ptr<DummyPageHolder> page_holder_;
-  std::unique_ptr<DummyPageHolder> another_page_holder_;
   scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
   std::unique_ptr<Performance::UnifiedClock> unified_clock_;
 };
 
 TEST_F(WindowPerformanceTest, LongTaskObserverInstrumentation) {
-  // Longtasks are observed by default.
-  EXPECT_TRUE(ObservingLongTasks());
   performance_->UpdateLongTaskInstrumentation();
-  EXPECT_TRUE(ObservingLongTasks());
+  EXPECT_FALSE(ObservingLongTasks());
 
   // Adding LongTask observer (with filer option) enables instrumentation.
   AddLongTaskObserver();
@@ -139,7 +107,7 @@ TEST_F(WindowPerformanceTest, LongTaskObserverInstrumentation) {
   // Removing LongTask observer disables instrumentation.
   RemoveLongTaskObserver();
   performance_->UpdateLongTaskInstrumentation();
-  EXPECT_TRUE(ObservingLongTasks());
+  EXPECT_FALSE(ObservingLongTasks());
 }
 
 TEST_F(WindowPerformanceTest, SanitizedLongTaskName) {
@@ -155,12 +123,17 @@ TEST_F(WindowPerformanceTest, SanitizedLongTaskName) {
 }
 
 TEST_F(WindowPerformanceTest, SanitizedLongTaskName_CrossOrigin) {
+  // Create another dummy page holder and pretend it is an iframe.
+  DummyPageHolder another_page(IntSize(400, 300));
+  another_page.GetDocument().SetURL(KURL("https://iframed.com/bar"));
+
   // Unable to attribute, when no execution contents are available.
   EXPECT_EQ("unknown", SanitizedAttribution(nullptr, false, GetFrame()));
 
   // Attribute for same context (and same origin).
-  EXPECT_EQ("cross-origin-unreachable",
-            SanitizedAttribution(AnotherDocument(), false, GetFrame()));
+  EXPECT_EQ(
+      "cross-origin-unreachable",
+      SanitizedAttribution(&another_page.GetDocument(), false, GetFrame()));
 }
 
 // https://crbug.com/706798: Checks that after navigation that have replaced the
@@ -423,38 +396,6 @@ TEST_F(WindowPerformanceTest, FirstPointerUp) {
   // The name of the entry should be "pointerdown".
   EXPECT_EQ(
       1u, performance_->getEntriesByName("pointerdown", "first-input").size());
-}
-
-TEST_F(WindowPerformanceTest, AddLongTaskTiming) {
-  V8TestingScope scope;
-  v8::Local<v8::Function> callback =
-      v8::Function::New(scope.GetScriptState()->GetContext(), nullptr)
-          .ToLocalChecked();
-  Persistent<PerformanceObserver> observer =
-      MakeGarbageCollected<PerformanceObserver>(
-          ExecutionContext::From(scope.GetScriptState()), performance_,
-          V8PerformanceObserverCallback::Create(callback));
-  // Add a long task entry, but no observer registered.
-  AddLongTaskTiming(base::TimeTicks() + base::TimeDelta::FromSecondsD(1234),
-                    base::TimeTicks() + base::TimeDelta::FromSecondsD(5678),
-                    "window", "same-origin", "www.foo.com/bar", "", "");
-  EXPECT_FALSE(performance_->HasObserverFor(PerformanceEntry::kLongTask));
-  EXPECT_EQ(0u, NumEntries(observer));  // has no effect
-
-  // Make an observer for longtask
-  NonThrowableExceptionState exception_state;
-  PerformanceObserverInit* options = PerformanceObserverInit::Create();
-  Vector<String> entry_type_vec;
-  entry_type_vec.push_back("longtask");
-  options->setEntryTypes(entry_type_vec);
-  observer->observe(options, exception_state);
-
-  EXPECT_TRUE(performance_->HasObserverFor(PerformanceEntry::kLongTask));
-  // Add a long task entry
-  AddLongTaskTiming(base::TimeTicks() + base::TimeDelta::FromSecondsD(1234),
-                    base::TimeTicks() + base::TimeDelta::FromSecondsD(5678),
-                    "window", "same-origin", "www.foo.com/bar", "", "");
-  EXPECT_EQ(1u, NumEntries(observer));  // added an entry
 }
 
 }  // namespace blink

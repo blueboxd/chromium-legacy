@@ -75,9 +75,10 @@ class KnownInterceptionDisclosureInfobarTest : public InProcessBrowserTest {
     network::mojom::NetworkService* network_service =
         content::GetNetworkService();
     DCHECK(network_service);
+    base::RunLoop run_loop;
     network_service->UpdateCRLSet(
-        base::as_bytes(base::make_span(crl_set_bytes)));
-    content::FlushNetworkServiceInstanceForTesting();
+        base::as_bytes(base::make_span(crl_set_bytes)), run_loop.QuitClosure());
+    run_loop.Run();
   }
 
  protected:

@@ -384,7 +384,7 @@ static void printFrames(const blink::Frame* frame,
   printf("  document=%p\n", local_frame ? local_frame->GetDocument() : nullptr);
   printIndent(indent);
   printf("  uri=%s\n\n",
-         local_frame
+         local_frame && local_frame->GetDocument()
              ? local_frame->GetDocument()->Url().GetString().Utf8().c_str()
              : nullptr);
 

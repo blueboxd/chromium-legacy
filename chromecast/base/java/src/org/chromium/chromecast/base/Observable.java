@@ -4,6 +4,8 @@
 
 package org.chromium.chromecast.base;
 
+import org.chromium.base.Function;
+
 /**
  * Interface for Observable state.
  *

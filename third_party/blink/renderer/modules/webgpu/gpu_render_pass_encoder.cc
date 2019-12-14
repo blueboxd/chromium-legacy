@@ -15,14 +15,6 @@
 
 namespace blink {
 
-// static
-GPURenderPassEncoder* GPURenderPassEncoder::Create(
-    GPUDevice* device,
-    WGPURenderPassEncoder render_pass_encoder) {
-  return MakeGarbageCollected<GPURenderPassEncoder>(device,
-                                                    render_pass_encoder);
-}
-
 GPURenderPassEncoder::GPURenderPassEncoder(
     GPUDevice* device,
     WGPURenderPassEncoder render_pass_encoder)

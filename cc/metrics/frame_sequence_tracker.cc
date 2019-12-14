@@ -64,11 +64,11 @@ constexpr int kMinFramesForThroughputMetric = 100;
 constexpr int kBuiltinSequenceNum = FrameSequenceTrackerType::kMaxType + 1;
 constexpr int kMaximumHistogramIndex = 3 * kBuiltinSequenceNum;
 
-int GetIndexForMetric(FrameSequenceTracker::ThreadType thread_type,
+int GetIndexForMetric(FrameSequenceMetrics::ThreadType thread_type,
                       FrameSequenceTrackerType type) {
-  if (thread_type == FrameSequenceTracker::ThreadType::kMain)
+  if (thread_type == FrameSequenceMetrics::ThreadType::kMain)
     return static_cast<int>(type);
-  if (thread_type == FrameSequenceTracker::ThreadType::kCompositor)
+  if (thread_type == FrameSequenceMetrics::ThreadType::kCompositor)
     return static_cast<int>(type + kBuiltinSequenceNum);
   return static_cast<int>(type + 2 * kBuiltinSequenceNum);
 }
@@ -148,12 +148,12 @@ void FrameSequenceMetrics::ReportMetrics() {
 
   // Report the throughput metrics.
   base::Optional<int> impl_throughput_percent = ThroughputData::ReportHistogram(
-      type_, "CompositorThread",
-      GetIndexForMetric(FrameSequenceTracker::ThreadType::kCompositor, type_),
+      type_, ThreadType::kCompositor,
+      GetIndexForMetric(FrameSequenceMetrics::ThreadType::kCompositor, type_),
       impl_throughput_);
   base::Optional<int> main_throughput_percent = ThroughputData::ReportHistogram(
-      type_, "MainThread",
-      GetIndexForMetric(FrameSequenceTracker::ThreadType::kMain, type_),
+      type_, ThreadType::kMain,
+      GetIndexForMetric(FrameSequenceMetrics::ThreadType::kMain, type_),
       main_throughput_);
 
   base::Optional<ThroughputData> slower_throughput;
@@ -170,8 +170,8 @@ void FrameSequenceMetrics::ReportMetrics() {
   }
   if (slower_throughput.has_value()) {
     slower_throughput_percent = ThroughputData::ReportHistogram(
-        type_, "SlowerThread",
-        GetIndexForMetric(FrameSequenceTracker::ThreadType::kSlower, type_),
+        type_, ThreadType::kSlower,
+        GetIndexForMetric(FrameSequenceMetrics::ThreadType::kSlower, type_),
         slower_throughput.value());
     DCHECK(slower_throughput_percent.has_value());
   }
@@ -706,7 +706,7 @@ std::unique_ptr<FrameSequenceMetrics> FrameSequenceTracker::TakeMetrics() {
 
 base::Optional<int> FrameSequenceMetrics::ThroughputData::ReportHistogram(
     FrameSequenceTrackerType sequence_type,
-    const char* thread_name,
+    ThreadType thread_type,
     int metric_index,
     const ThroughputData& data) {
   DCHECK_LT(sequence_type, FrameSequenceTrackerType::kMaxType);
@@ -723,6 +723,10 @@ base::Optional<int> FrameSequenceMetrics::ThroughputData::ReportHistogram(
 
   const int percent =
       static_cast<int>(100 * data.frames_produced / data.frames_expected);
+  const char* thread_name =
+      thread_type == ThreadType::kCompositor
+          ? "CompositorThread"
+          : thread_type == ThreadType::kMain ? "MainThread" : "SlowerThread";
   STATIC_HISTOGRAM_POINTER_GROUP(
       GetThroughputHistogramName(sequence_type, thread_name), metric_index,
       kMaximumHistogramIndex, Add(percent),

@@ -27,16 +27,16 @@ void ThroughputUkmReporter::ReportThroughputUkm(
     samples_to_next_event_ = kNumberOfSamplesToReport;
     if (impl_throughput_percent) {
       ukm_manager->RecordThroughputUKM(
-          type, FrameSequenceTracker::ThreadType::kCompositor,
+          type, FrameSequenceMetrics::ThreadType::kCompositor,
           impl_throughput_percent.value());
     }
     if (main_throughput_percent) {
       ukm_manager->RecordThroughputUKM(type,
-                                       FrameSequenceTracker::ThreadType::kMain,
+                                       FrameSequenceMetrics::ThreadType::kMain,
                                        main_throughput_percent.value());
     }
     ukm_manager->RecordThroughputUKM(type,
-                                     FrameSequenceTracker::ThreadType::kSlower,
+                                     FrameSequenceMetrics::ThreadType::kSlower,
                                      slower_throughput_percent.value());
   }
   DCHECK_GT(samples_to_next_event_, 0u);

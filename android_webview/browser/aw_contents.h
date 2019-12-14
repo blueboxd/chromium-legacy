@@ -336,6 +336,8 @@ class AwContents : public FindHelper::Listener,
   void SetDipScale(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
                    jfloat dip_scale);
+  void OnInputEvent(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& obj);
   void SetSaveFormData(bool enabled);
 
   // Sets the java client

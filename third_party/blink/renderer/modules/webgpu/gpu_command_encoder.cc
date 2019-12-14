@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_texture.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_texture_copy_view.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_texture_view.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -249,7 +250,7 @@ GPURenderPassEncoder* GPUCommandEncoder::beginRenderPass(
     dawn_desc.depthStencilAttachment = nullptr;
   }
 
-  return GPURenderPassEncoder::Create(
+  return MakeGarbageCollected<GPURenderPassEncoder>(
       device_,
       GetProcs().commandEncoderBeginRenderPass(GetHandle(), &dawn_desc));
 }
@@ -261,7 +262,7 @@ GPUComputePassEncoder* GPUCommandEncoder::beginComputePass(
     dawn_desc.label = descriptor->label().Utf8().data();
   }
 
-  return GPUComputePassEncoder::Create(
+  return MakeGarbageCollected<GPUComputePassEncoder>(
       device_,
       GetProcs().commandEncoderBeginComputePass(GetHandle(), &dawn_desc));
 }
@@ -354,7 +355,7 @@ GPUCommandBuffer* GPUCommandEncoder::finish(
     dawn_desc.label = descriptor->label().Utf8().data();
   }
 
-  return GPUCommandBuffer::Create(
+  return MakeGarbageCollected<GPUCommandBuffer>(
       device_, GetProcs().commandEncoderFinish(GetHandle(), &dawn_desc));
 }
 

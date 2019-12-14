@@ -5,13 +5,53 @@
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_item.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/global_media_controls/cast_media_session_controller.h"
 #include "components/media_message_center/media_notification_controller.h"
 #include "components/media_message_center/media_notification_view.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "net/base/load_flags.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/media_session/public/cpp/util.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
 namespace {
+
+net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag() {
+  return net::DefineNetworkTrafficAnnotation(
+      "media_router_global_media_controls_image",
+      R"(
+  semantics {
+    sender: "Media Router"
+    description:
+      "Chrome allows users to control media playback on Chromecast-enabled "
+      "devices on the same local network. When a media app is running on a "
+      "device, it may provide Chrome with metadata including media artwork. "
+      "Chrome fetches the artwork so that it can be displayed in the media "
+      "controls UI."
+    trigger:
+      "This is triggered whenever a Cast app running on a device on the local "
+      "network sends out a metadata update with a new image URL, e.g. when "
+      "the app starts playing a new song or a video."
+    data:
+      "None, aside from the artwork image URLs specified by Cast apps."
+    destination: WEBSITE
+  }
+  policy {
+    cookies_allowed: NO
+    setting:
+      "The feature is enabled by default. There is no user setting to disable "
+      "the feature."
+    chrome_policy: {
+      EnableMediaRouter {
+        EnableMediaRouter: false
+      }
+    }
+  }
+)");
+}
 
 media_session::mojom::MediaSessionInfoPtr CreateSessionInfo() {
   auto session_info = media_session::mojom::MediaSessionInfo::New();
@@ -76,10 +116,15 @@ media_session::mojom::MediaSessionInfo::SessionState ToSessionState(
 CastMediaNotificationItem::CastMediaNotificationItem(
     const media_router::MediaRoute& route,
     media_message_center::MediaNotificationController* notification_controller,
-    std::unique_ptr<CastMediaSessionController> session_controller)
+    std::unique_ptr<CastMediaSessionController> session_controller,
+    Profile* profile)
     : notification_controller_(notification_controller),
       session_controller_(std::move(session_controller)),
       media_route_id_(route.media_route_id()),
+      image_downloader_(
+          profile,
+          base::BindRepeating(&CastMediaNotificationItem::ImageChanged,
+                              base::Unretained(this))),
       session_info_(CreateSessionInfo()) {
   metadata_.artist = base::UTF8ToUTF16(route.description());
   notification_controller_->ShowNotification(media_route_id_);
@@ -111,7 +156,12 @@ void CastMediaNotificationItem::OnMediaStatusUpdated(
   session_info_->state = ToSessionState(status->play_state);
   session_info_->playback_state = ToPlaybackState(status->play_state);
 
-  // TODO(crbug.com/987479): Fetch and set the background image.
+  if (status->images.empty()) {
+    image_downloader_.Reset();
+  } else {
+    // TODO(takumif): Consider choosing an image based on the resolution.
+    image_downloader_.Download(status->images.at(0)->url);
+  }
   UpdateView();
   session_controller_->OnMediaStatusUpdated(std::move(status));
 }
@@ -121,6 +171,46 @@ CastMediaNotificationItem::GetObserverPendingRemote() {
   return observer_receiver_.BindNewPipeAndPassRemote();
 }
 
+CastMediaNotificationItem::ImageDownloader::ImageDownloader(
+    Profile* profile,
+    base::RepeatingCallback<void(const SkBitmap&)> callback)
+    : url_loader_factory_(
+          content::BrowserContext::GetDefaultStoragePartition(profile)
+              ->GetURLLoaderFactoryForBrowserProcess()),
+      callback_(std::move(callback)) {}
+
+CastMediaNotificationItem::ImageDownloader::~ImageDownloader() = default;
+
+void CastMediaNotificationItem::ImageDownloader::OnFetchComplete(
+    const GURL& url,
+    const SkBitmap* bitmap) {
+  if (bitmap) {
+    bitmap_ = *bitmap;
+    callback_.Run(*bitmap);
+  }
+}
+
+void CastMediaNotificationItem::ImageDownloader::Download(const GURL& url) {
+  if (url == url_)
+    return;
+  url_ = url;
+  bitmap_fetcher_ = bitmap_fetcher_factory_for_testing_
+                        ? bitmap_fetcher_factory_for_testing_.Run(
+                              url_, this, GetTrafficAnnotationTag())
+                        : std::make_unique<BitmapFetcher>(
+                              url_, this, GetTrafficAnnotationTag());
+  bitmap_fetcher_->Init(
+      /* referrer */ "", net::URLRequest::NEVER_CLEAR_REFERRER,
+      network::mojom::CredentialsMode::kOmit);
+  bitmap_fetcher_->Start(url_loader_factory_.get());
+}
+
+void CastMediaNotificationItem::ImageDownloader::Reset() {
+  bitmap_fetcher_.reset();
+  url_ = GURL();
+  bitmap_ = SkBitmap();
+}
+
 void CastMediaNotificationItem::UpdateView() {
   if (!view_)
     return;
@@ -128,4 +218,11 @@ void CastMediaNotificationItem::UpdateView() {
   view_->UpdateWithMediaMetadata(metadata_);
   view_->UpdateWithMediaActions(actions_);
   view_->UpdateWithMediaSessionInfo(session_info_.Clone());
+  view_->UpdateWithMediaArtwork(
+      gfx::ImageSkia::CreateFrom1xBitmap(image_downloader_.bitmap()));
+}
+
+void CastMediaNotificationItem::ImageChanged(const SkBitmap& bitmap) {
+  if (view_)
+    view_->UpdateWithMediaArtwork(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
 }

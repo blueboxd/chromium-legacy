@@ -589,8 +589,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   virtual bool HasFallbackSurface() const;
 
-  // The model object. Members will become private when
-  // RenderWidgetHostViewGuest is removed.
+  // The model object. Access is protected to allow access to
+  // RenderWidgetHostViewChildFrame.
   RenderWidgetHostImpl* host_;
 
   // Is this a fullscreen view?

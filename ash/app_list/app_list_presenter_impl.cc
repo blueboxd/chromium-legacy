@@ -9,6 +9,7 @@
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/views/app_list_main_view.h"
+#include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
@@ -36,11 +37,11 @@
 namespace ash {
 namespace {
 
-constexpr std::array<int, 8> kIdsOfContainersThatWontHideAppList = {
+constexpr std::array<int, 7> kIdsOfContainersThatWontHideAppList = {
     kShellWindowId_AppListContainer,      kShellWindowId_HomeScreenContainer,
     kShellWindowId_MenuContainer,         kShellWindowId_SettingBubbleContainer,
     kShellWindowId_ShelfBubbleContainer,  kShellWindowId_ShelfContainer,
-    kShellWindowId_ShelfControlContainer, kShellWindowId_StatusContainer,
+    kShellWindowId_ShelfControlContainer,
 };
 
 inline ui::Layer* GetLayer(views::Widget* widget) {
@@ -64,6 +65,26 @@ void DidPresentCompositorFrame(base::TimeTicks event_time_stamp,
     UMA_HISTOGRAM_TIMES(kAppListHideInputLatencyHistogram, input_latency);
   }
 }
+
+// Implicit animation observer that runs a scoped closure runner, and deletes
+// itself when the observed implicit animations complete.
+class CallbackRunnerLayerAnimationObserver
+    : public ui::ImplicitAnimationObserver {
+ public:
+  explicit CallbackRunnerLayerAnimationObserver(
+      base::ScopedClosureRunner closure_runner)
+      : closure_runner_(std::move(closure_runner)) {}
+  ~CallbackRunnerLayerAnimationObserver() override = default;
+
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override {
+    closure_runner_.RunAndReset();
+    delete this;
+  }
+
+ private:
+  base::ScopedClosureRunner closure_runner_;
+};
 
 }  // namespace
 
@@ -266,6 +287,16 @@ void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
   if (!callback.is_null()) {
     settings.emplace(layer->GetAnimator());
     callback.Run(&settings.value());
+
+    // Disable suggestion chips blur during animations to improve performance.
+    base::ScopedClosureRunner blur_disabler =
+        view_->app_list_main_view()
+            ->contents_view()
+            ->GetAppsContainerView()
+            ->DisableSuggestionChipsBlur();
+    // The observer will delete itself when the animations are completed.
+    settings->AddObserver(
+        new CallbackRunnerLayerAnimationObserver(std::move(blur_disabler)));
   }
 
   // The animation metrics reporter will run for opacity and transform
@@ -313,6 +344,16 @@ void AppListPresenterImpl::UpdateScaleAndOpacityForHomeLauncher(
   if (!callback.is_null()) {
     settings.emplace(layer->GetAnimator());
     callback.Run(&settings.value());
+
+    // Disable suggestion chips blur during animations to improve performance.
+    base::ScopedClosureRunner blur_disabler =
+        view_->app_list_main_view()
+            ->contents_view()
+            ->GetAppsContainerView()
+            ->DisableSuggestionChipsBlur();
+    // The observer will delete itself when the animations are completed.
+    settings->AddObserver(
+        new CallbackRunnerLayerAnimationObserver(std::move(blur_disabler)));
   }
 
   // The animation metrics reporter will run for opacity and transform
@@ -454,14 +495,8 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
 
   if (delegate_->IsTabletMode()) {
     if (visible != delegate_->IsVisible()) {
-      if (app_list_gained_focus) {
+      if (app_list_gained_focus)
         view_->OnHomeLauncherGainingFocusWithoutAnimation();
-      } else {
-        // In tablet mode, when |AppList| lost focus after other new App window
-        // opened, we should perform "back" action on the active page, e.g.
-        // close the search box or the embedded Assistant UI if it's opened.
-        view_->Back();
-      }
 
       OnVisibilityChanged(visible, GetDisplayId());
     }

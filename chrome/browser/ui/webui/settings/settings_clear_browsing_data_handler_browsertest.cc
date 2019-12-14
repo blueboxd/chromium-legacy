@@ -18,7 +18,7 @@
 
 namespace {
 
-constexpr char kGetInstalledApps[] = "getImportantInstalledApps";
+constexpr char kGetInstalledApps[] = "getInstalledApps";
 constexpr char kWebUiFunctionName[] = "webUiCallbackName";
 
 }  // namespace

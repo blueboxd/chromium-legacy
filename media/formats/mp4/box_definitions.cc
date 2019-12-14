@@ -794,7 +794,8 @@ VideoSampleEntry::VideoSampleEntry()
       width(0),
       height(0),
       video_codec(kUnknownVideoCodec),
-      video_codec_profile(VIDEO_CODEC_PROFILE_UNKNOWN) {}
+      video_codec_profile(VIDEO_CODEC_PROFILE_UNKNOWN),
+      video_codec_level(kNoVideoCodecLevel) {}
 
 VideoSampleEntry::VideoSampleEntry(const VideoSampleEntry& other) = default;
 
@@ -851,6 +852,7 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
         DVLOG(2) << __func__ << " reading DolbyVisionConfiguration (dvcC/dvvC)";
         video_codec = kCodecDolbyVision;
         video_codec_profile = dv_config->codec_profile;
+        video_codec_level = dv_config->dv_level;
       }
 #endif  // BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
       break;
@@ -873,6 +875,7 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
         DVLOG(2) << __func__ << " reading DolbyVisionConfiguration (dvcC/dvvC)";
         video_codec = kCodecDolbyVision;
         video_codec_profile = dv_config->codec_profile;
+        video_codec_level = dv_config->dv_level;
       }
 #endif  // BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
       break;
@@ -893,6 +896,7 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
       RCHECK(dv_config.has_value());
       video_codec = kCodecDolbyVision;
       video_codec_profile = dv_config->codec_profile;
+      video_codec_level = dv_config->dv_level;
       break;
     }
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
@@ -909,6 +913,7 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
       RCHECK(dv_config.has_value());
       video_codec = kCodecDolbyVision;
       video_codec_profile = dv_config->codec_profile;
+      video_codec_level = dv_config->dv_level;
       break;
     }
 #endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)

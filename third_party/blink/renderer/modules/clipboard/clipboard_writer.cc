@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/clipboard/clipboard_writer.h"
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom-blink.h"
 #include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
@@ -95,6 +96,45 @@ class ClipboardTextWriter final : public ClipboardWriter {
   }
 };
 
+// Writes a blob with arbitrary, unsanitized content to the System Clipboard.
+class ClipboardRawDataWriter final : public ClipboardWriter {
+ public:
+  ClipboardRawDataWriter(ClipboardPromise* promise, String mime_type)
+      : ClipboardWriter(promise), mime_type_(mime_type) {}
+  ~ClipboardRawDataWriter() override = default;
+
+ private:
+  // Unfortunately, in order to use the same ClipboardWriter base,
+  // ClipboardRawDataWriter does need to have these extra 2 thread hops.
+  void DecodeOnBackgroundThread(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      DOMArrayBuffer* raw_data) override {
+    DCHECK(!IsMainThread());
+
+    PostCrossThreadTask(
+        *task_runner, FROM_HERE,
+        CrossThreadBindOnce(
+            &ClipboardRawDataWriter::Write,
+            /* This unretained is safe because the ClipboardRawDataWriter
+              must remain alive when returning to its main thread. */
+            CrossThreadUnretained(this), WrapCrossThreadPersistent(raw_data)));
+  }
+
+  void Write(DOMArrayBuffer* raw_data) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+    uint8_t* raw_data_pointer = static_cast<uint8_t*>(raw_data->Data());
+    mojo_base::BigBuffer buffer(std::vector<uint8_t>(
+        raw_data_pointer, raw_data_pointer + raw_data->ByteLengthAsSizeT()));
+
+    SystemClipboard::GetInstance().WriteRawData(mime_type_, std::move(buffer));
+
+    promise_->CompleteWriteRepresentation();
+  }
+
+  String mime_type_;
+};
+
 }  // anonymous namespace
 
 // ClipboardWriter functions.
@@ -102,7 +142,12 @@ class ClipboardTextWriter final : public ClipboardWriter {
 // static
 std::unique_ptr<ClipboardWriter> ClipboardWriter::Create(
     const String& mime_type,
+    bool is_raw,
     ClipboardPromise* promise) {
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kRawClipboard) ||
+         !is_raw);
+  if (is_raw)
+    return std::make_unique<ClipboardRawDataWriter>(promise, mime_type);
   if (mime_type == kMimeTypeImagePng)
     return std::make_unique<ClipboardImageWriter>(promise);
   if (mime_type == kMimeTypeTextPlain)

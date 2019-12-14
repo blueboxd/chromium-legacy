@@ -58,8 +58,8 @@ class PrefRegistrySyncable : public PrefRegistrySimple {
 #endif
   };
 
-  typedef base::Callback<void(const std::string& path, uint32_t flags)>
-      SyncableRegistrationCallback;
+  using SyncableRegistrationCallback =
+      base::RepeatingCallback<void(const std::string& path, uint32_t flags)>;
 
   PrefRegistrySyncable();
 
@@ -70,7 +70,7 @@ class PrefRegistrySyncable : public PrefRegistrySimple {
   // Calling this method after a callback has already been set will
   // make the object forget the previous callback and use the new one
   // instead.
-  void SetSyncableRegistrationCallback(const SyncableRegistrationCallback& cb);
+  void SetSyncableRegistrationCallback(SyncableRegistrationCallback cb);
 
   // Returns a new PrefRegistrySyncable that uses the same defaults
   // store.

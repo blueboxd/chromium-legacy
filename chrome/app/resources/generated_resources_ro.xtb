@@ -1190,7 +1190,6 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2665919335226618153">Of, nu mai merge! A apărut o eroare în timpul formatării.</translation>
 <translation id="2666990579225592931">Deschide o fereastră pentru invitați</translation>
 <translation id="2667463864537187133">Gestionează verificarea ortografiei</translation>
-<translation id="2669093958999339774">Blochează solicitările de notificări astfel încât să nu te întrerupă și alege un mesaj mai discret</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> trimite conținutul unei file Chrome.</translation>
 <translation id="2670429602441959756">Această pagină conține funcții care nu sunt încă acceptate în RV. Se iese...</translation>
 <translation id="2671451824761031126">Marcajele și setările sunt gata</translation>
@@ -1964,7 +1963,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="37613671848467444">Deschideți într-o &amp;fereastră incognito</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Comunică cu un dispozitiv USB}few{Comunică cu # dispozitive USB}other{Comunică cu # de dispozitive USB}}</translation>
 <translation id="3765246971671567135">Nu s-a putut citi politica offline privind modul demo.</translation>
-<translation id="3767376082821709728">Site-urile noi pe care le accesezi nu îți pot trimite notificări</translation>
 <translation id="3768037234834996183">Se sincronizează preferințele...</translation>
 <translation id="377050016711188788">Înghețată</translation>
 <translation id="3771294271822695279">Fișiere video</translation>
@@ -3032,7 +3030,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5370819323174483825">&amp;Reîncarcă</translation>
 <translation id="5372529912055771682">Modul de înscriere furnizat nu este acceptat de această versiune a sistemului de operare. Asigurați-vă că rulați cea mai recentă versiune și încercați din nou.</translation>
 <translation id="5372579129492968947">Anulează fixarea extensiei</translation>
-<translation id="5374359983950678924">Schimbă imaginea</translation>
 <translation id="5376169624176189338">Dă clic pentru a naviga înapoi, ține apăsat pentru a vedea istoricul</translation>
 <translation id="5376931455988532197">Fișierul este prea mare</translation>
 <translation id="537813040452600081">Paginile pe care le accesați în această fereastră nu vor apărea în istoricul browserului și nu vor lăsa alte urme pe computer (de ex., cookie-uri) după ce vă deconectați. Fișierele pe care le descărcați și marcajele pe care le creați nu se vor păstra.</translation>
@@ -4907,7 +4904,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8044899503464538266">Lent</translation>
 <translation id="8045253504249021590">Sincronizarea a fost oprită prin Tabloul de bord Google.</translation>
 <translation id="8045923671629973368">Introdu ID-ul aplicației sau adresa URL din magazinul web</translation>
-<translation id="8046278916126163020">Site-urile noi pe care le accesezi îți pot solicita să îți trimită notificări</translation>
 <translation id="804786196054284061">Acord de licență pentru utilizatorul final</translation>
 <translation id="8049705080247101012">Google a semnalat „<ph name="EXTENSION_NAME" />” ca extensie rău intenționată și instalarea nu a fost permisă</translation>
 <translation id="8050038245906040378">Semnare comercială a codului Microsoft</translation>

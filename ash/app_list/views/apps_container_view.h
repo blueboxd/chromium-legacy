@@ -11,7 +11,9 @@
 
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/views/horizontal_page.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 
 namespace ash {
 
@@ -137,6 +139,10 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   // Updates suggestion chips from app list model.
   void UpdateSuggestionChips();
 
+  // Temporarily disables blur on suggestion chips view background. The blur
+  // will remained disabled until the returned closure runner goes out of scope.
+  base::ScopedClosureRunner DisableSuggestionChipsBlur();
+
  private:
   enum ShowState {
     SHOW_NONE,  // initial state
@@ -171,6 +177,12 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   // depending on the current display work area size.
   GridLayout CalculateGridLayout() const;
 
+  // Callback returned by DisableBlur().
+  void OnSuggestionChipsBlurDisablerReleased();
+
+  // The number of active requests to disable blur.
+  size_t suggestion_chips_blur_disabler_count_ = 0;
+
   ContentsView* contents_view_;  // Not owned.
 
   // The views below are owned by views hierarchy.
@@ -197,6 +209,8 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   // |cached_container_margins_|, provided the method arguments match the cached
   // arguments (otherwise the margins will be recalculated).
   CachedContainerMargins cached_container_margins_;
+
+  base::WeakPtrFactory<AppsContainerView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppsContainerView);
 };

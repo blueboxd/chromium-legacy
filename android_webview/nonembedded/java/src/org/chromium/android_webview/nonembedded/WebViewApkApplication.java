@@ -55,12 +55,17 @@ public class WebViewApkApplication extends Application {
      * for those processes regardless of whether the WebView is standalone or Monochrome.
      */
     public static void maybeInitProcessGlobals() {
-        // Either "webview_service", or "webview_apk".
-        // "webview_service" is meant to be very light-weight and never load the native library.
-        if (ContextUtils.getProcessName().contains(":webview_")) {
+        if (isWebViewProcess()) {
             PathUtils.setPrivateDataDirectorySuffix("webview", "WebView");
             CommandLineUtil.initCommandLine();
         }
+    }
+
+    // Returns true if running in the "webview_apk" or "webview_service" process.
+    public static boolean isWebViewProcess() {
+        // Either "webview_service", or "webview_apk".
+        // "webview_service" is meant to be very light-weight and never load the native library.
+        return ContextUtils.getProcessName().contains(":webview_");
     }
 
     /**

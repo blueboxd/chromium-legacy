@@ -40,8 +40,6 @@ void HandleSSLError(
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-    const base::Callback<void(content::CertificateRequestResultType)>&
-        decision_callback,
     BlockingPageReadyCallback blocking_page_ready_callback);
 
 }  // namespace weblayer

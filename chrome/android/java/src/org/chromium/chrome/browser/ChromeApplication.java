@@ -81,9 +81,7 @@ public class ChromeApplication extends Application {
         if (isBrowserProcess) UmaUtils.recordMainEntryPointTime();
         super.attachBaseContext(context);
         ContextUtils.initApplicationContext(this);
-        LibraryLoader.getInstance().setLibraryProcessType(isBrowserProcess
-                        ? LibraryProcessType.PROCESS_BROWSER
-                        : LibraryProcessType.PROCESS_CHILD);
+        maybeInitProcessType(isBrowserProcess);
         if (isBrowserProcess) {
             if (BuildConfig.IS_MULTIDEX_ENABLED) {
                 ChromiumMultiDexInstaller.install(this);
@@ -152,6 +150,29 @@ public class ChromeApplication extends Application {
         if (isBrowserProcess) {
             TraceEvent.end("ChromeApplication.attachBaseContext");
         }
+    }
+
+    private void maybeInitProcessType(boolean isBrowserProcess) {
+        if (isBrowserProcess) {
+            LibraryLoader.getInstance().setLibraryProcessType(LibraryProcessType.PROCESS_BROWSER);
+            return;
+        }
+        // WebView initialization sets the correct process type.
+        if (isWebViewProcess()) return;
+
+        // Child processes set their own process type when bound.
+        String processName = ContextUtils.getProcessName();
+        if (processName.contains("privileged_process")
+                || processName.contains("sandboxed_process")) {
+            return;
+        }
+
+        // We must be in an isolated service process.
+        LibraryLoader.getInstance().setLibraryProcessType(LibraryProcessType.PROCESS_CHILD);
+    }
+
+    protected boolean isWebViewProcess() {
+        return false;
     }
 
     private static Boolean shouldUseDebugFlags() {

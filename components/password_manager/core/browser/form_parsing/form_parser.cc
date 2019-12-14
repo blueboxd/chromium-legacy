@@ -129,16 +129,37 @@ bool StringMatchesCVC(const base::string16& str) {
   return autofill::MatchesPattern(str, *kCardCvcReCached);
 }
 
+// Returns true if the |str| contains words related to SSN fields.
+bool StringMatchesSSN(const base::string16& str) {
+  static const base::NoDestructor<base::string16> kSSNReCached(
+      base::UTF8ToUTF16(autofill::kSocialSecurityRe));
+
+  return autofill::MatchesPattern(str, *kSSNReCached);
+}
+
+// Returns true if the |str| contains words related to one time password fields.
+bool StringMatchesOTP(const base::string16& str) {
+  static const base::NoDestructor<base::string16> kOTPReCached(
+      base::UTF8ToUTF16(autofill::kOneTimePwdRe));
+
+  return autofill::MatchesPattern(str, *kOTPReCached);
+}
+
 // TODO(crbug.com/860700): Remove name and attribute checking once server-side
 // provides hints for CVC.
 // Returns true if the |field| is suspected to be not the password field.
 // The suspicion is based on server-side provided hints and on checking the
-// field's id and name for hinting towards a CVC code.
+// field's id and name for hinting towards a CVC code, Social Security
+// Number or one-time password.
 bool IsNotPasswordField(const ProcessedField& field) {
   return field.server_hints_not_password ||
+         field.autocomplete_flag == AutocompleteFlag::kCreditCard ||
          StringMatchesCVC(field.field->name_attribute) ||
          StringMatchesCVC(field.field->id_attribute) ||
-         field.autocomplete_flag == AutocompleteFlag::kCreditCard;
+         StringMatchesSSN(field.field->name_attribute) ||
+         StringMatchesSSN(field.field->id_attribute) ||
+         StringMatchesOTP(field.field->name_attribute) ||
+         StringMatchesOTP(field.field->id_attribute);
 }
 
 // Returns true if the |field| is suspected to be not the username field.

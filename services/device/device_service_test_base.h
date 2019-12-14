@@ -11,7 +11,6 @@
 #include "services/device/public/mojom/device_service.mojom.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "services/network/test/test_url_loader_factory.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
@@ -32,7 +31,6 @@ class DeviceServiceTestBase : public testing::Test {
   void SetUp() override;
 
  protected:
-  service_manager::Connector* connector() { return connector_.get(); }
   mojom::DeviceService* device_service() { return service_remote_.get(); }
   DeviceService* device_service_impl() { return service_.get(); }
 
@@ -51,10 +49,8 @@ class DeviceServiceTestBase : public testing::Test {
   network::TestURLLoaderFactory test_url_loader_factory_;
 
  private:
-  service_manager::TestConnectorFactory test_connector_factory_;
   std::unique_ptr<network::TestNetworkConnectionTracker>
       network_connection_tracker_;
-  std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<DeviceService> service_;
   mojo::Remote<mojom::DeviceService> service_remote_;
 

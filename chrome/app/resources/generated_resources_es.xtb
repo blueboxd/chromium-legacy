@@ -1190,7 +1190,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2665919335226618153">¡Oh, no! Se ha producido un error dando formato.</translation>
 <translation id="2666990579225592931">Abrir ventana de invitado</translation>
 <translation id="2667463864537187133">Administrar la revisión ortográfica</translation>
-<translation id="2669093958999339774">Bloquea las notificaciones emergentes para evitar interrupciones y utiliza un tipo de aviso más discreto</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> está compartiendo una pestaña de Chrome.</translation>
 <translation id="2670429602441959756">Esta página contiene funciones que aún no se admiten en RV. Saliendo...</translation>
 <translation id="2671451824761031126">Tu configuración y tus marcadores están listos</translation>
@@ -1964,7 +1963,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="37613671848467444">Abrir en una ventana de &amp;incógnito</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Comunicarse con un dispositivo USB}other{Comunicarse con # dispositivos USB}}</translation>
 <translation id="3765246971671567135">No se ha podido leer la política del modo de demostración sin conexión.</translation>
-<translation id="3767376082821709728">Los sitios web nuevos a los que accedas no podrán enviarte notificaciones</translation>
 <translation id="3768037234834996183">Sincronizando tus preferencias...</translation>
 <translation id="377050016711188788">Helado</translation>
 <translation id="3771294271822695279">Archivos de vídeo</translation>
@@ -3031,7 +3029,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5370819323174483825">&amp;Volver a cargar</translation>
 <translation id="5372529912055771682">El modo de inscripción proporcionado no es compatible con esta versión del sistema operativo. Comprueba que estés utilizando la última versión y vuelve a intentarlo.</translation>
 <translation id="5372579129492968947">No fijar extensión</translation>
-<translation id="5374359983950678924">Cambiar imagen</translation>
 <translation id="5376169624176189338">Haz clic para retroceder una página o pulsa unos segundos para ver el historial</translation>
 <translation id="5376931455988532197">El archivo es demasiado grande.</translation>
 <translation id="537813040452600081">Las páginas que aparezcan en esta ventana no se mostrarán en el historial del navegador y no dejarán otros rastros, como cookies, en el ordenador después de cerrar sesión. No se conservarán los archivos que descargues ni los marcadores que crees.</translation>
@@ -4906,7 +4903,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8044899503464538266">Lenta</translation>
 <translation id="8045253504249021590">La sincronización se ha detenido mediante el Panel de Control de Google.</translation>
 <translation id="8045923671629973368">Introducir el ID de la aplicación o la URL de Chrome Web Store</translation>
-<translation id="8046278916126163020">Los sitios web nuevos a los que accedas pueden preguntarte si quieres que te envíen notificaciones</translation>
 <translation id="804786196054284061">Acuerdo de licencia de usuario final</translation>
 <translation id="8049705080247101012">Google ha marcado "<ph name="EXTENSION_NAME" />" como extensión maliciosa, por lo que ha evitado que se instale</translation>
 <translation id="8050038245906040378">Firma de código comercial de Microsoft</translation>

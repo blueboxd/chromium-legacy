@@ -69,6 +69,10 @@ struct StructTraits<media::mojom::VideoDecoderConfigDataView,
     return input.hdr_metadata();
   }
 
+  static uint32_t level(const media::VideoDecoderConfig& input) {
+    return input.level();
+  }
+
   static bool Read(media::mojom::VideoDecoderConfigDataView input,
                    media::VideoDecoderConfig* output);
 };

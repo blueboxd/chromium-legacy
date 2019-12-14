@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Želite znova prenesti datoteko?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# zvočna datoteka}one{# zvočna datoteka}two{# zvočni datoteki}few{# zvočne datoteke}other{# zvočnih datotek}}</translation>
 <translation id="2653659639078652383">Pošlji</translation>
-<translation id="2669093958999339774">Preprečevanje, da bi vas motili pozivi za pošiljanje obvestil, in uporaba manj vsiljivega sporočila</translation>
 <translation id="2677748264148917807">Zapusti</translation>
 <translation id="2704606927547763573">Kopirano</translation>
 <translation id="2707726405694321444">Osveži stran</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Dodano med zaznamke v izdelku <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Sinhroniziranje v ozadju</translation>
 <translation id="3749259744154402564">Ni podprto</translation>
-<translation id="3767376082821709728">Nova spletna mesta, ki jih obiščete, vam ne morejo pošiljati obvestil</translation>
 <translation id="3771001275138982843">Posodobitve ni bilo mogoče prenesti</translation>
 <translation id="3771033907050503522">Incognito Tabs</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Vklopite Bluetooth<ph name="END_LINK" />, če želite dovoliti seznanjanje</translation>
@@ -957,7 +955,6 @@ Spletno mesto NIMA dostopa do kamere. Posnetki kamere so vidni samo vam.</transl
 <translation id="8035133914807600019">Nova mapa …</translation>
 <translation id="8037750541064988519">Še <ph name="DAYS" /> dni</translation>
 <translation id="804335162455518893">Kartice SD ni bilo mogoče najti</translation>
-<translation id="8046278916126163020">Nova spletna mesta, ki jih obiščete, vas lahko vprašajo, ali želite, da vam pošiljajo obvestila</translation>
 <translation id="805047784848435650">Na podlagi zgodovine brskanja</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB na voljo</translation>
 <translation id="8058746566562539958">Odpiranje na novem zavihku v Chromu</translation>

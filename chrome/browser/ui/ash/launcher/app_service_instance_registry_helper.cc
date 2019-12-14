@@ -93,6 +93,21 @@ void AppServiceInstanceRegistryHelper::OnTabInserted(
 
   std::string app_id = GetAppId(contents);
   aura::Window* window = GetWindow(contents);
+
+  // When the user drags a tab to a new browser, or to an other browser, it
+  // could generate a temp instance for this window with the Chrome application
+  // app_id. For this case, this temp instance can be deleted, otherwise, DCHECK
+  // error for inconsistent app_id.
+  std::string old_app_id = app_id;
+  proxy_->InstanceRegistry().ForOneInstance(
+      window, [&old_app_id](const apps::InstanceUpdate& update) {
+        old_app_id = update.AppId();
+      });
+  if (app_id != old_app_id) {
+    OnInstances(old_app_id, window, std::string(),
+                apps::InstanceState::kDestroyed);
+  }
+
   AddTabWindow(app_id, window);
   apps::InstanceState state = static_cast<apps::InstanceState>(
       apps::InstanceState::kStarted | apps::InstanceState::kRunning);

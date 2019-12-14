@@ -9,24 +9,24 @@
 #endif
 
 @implementation AccessibilityLabelBuilder {
-  NSMutableArray* components_;
+  NSMutableArray* _components;
 }
 
 - (instancetype)init {
   self = [super init];
   if (self) {
-    components_ = [[NSMutableArray alloc] init];
+    _components = [[NSMutableArray alloc] init];
   }
   return self;
 }
 
 - (void)appendItem:(NSString*)item {
   if (item)
-    [components_ addObject:item];
+    [_components addObject:item];
 }
 
 - (NSString*)buildAccessibilityLabel {
-  return [components_ componentsJoinedByString:@", "];
+  return [_components componentsJoinedByString:@", "];
 }
 
 @end

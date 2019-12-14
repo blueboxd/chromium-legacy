@@ -876,6 +876,8 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source,
       {"historyDeletionDialogTitle",
        IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_TITLE},
       {"historyDeletionDialogOK", IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_OK},
+      {"installedAppsConfirm", IDS_SETTINGS_CLEAR_INSTALLED_APPS_DATA_CONFIRM},
+      {"installedAppsTitle", IDS_SETTINGS_CLEAR_INSTALLED_APPS_DATA_TITLE},
       {"notificationWarning", IDS_SETTINGS_NOTIFICATION_WARNING},
   };
 
@@ -921,7 +923,6 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"scrollLabel", IDS_SETTINGS_SCROLL_LABEL},
       {"traditionalScrollLabel", IDS_SETTINGS_TRADITIONAL_SCROLL_LABEL},
       {"naturalScrollLabel", IDS_SETTINGS_NATURAL_SCROLL_LABEL},
-      {"naturalScrollLearnMore", IDS_LEARN_MORE},
   };
   AddLocalizedStringsBulk(html_source, kDeviceStrings);
 
@@ -2581,6 +2582,9 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   html_source->AddString(
       "exceptionsLearnMoreURL",
       base::ASCIIToUTF16(chrome::kContentSettingsExceptionsLearnMoreURL));
+  html_source->AddBoolean(
+      "installedAppsInCbd",
+      base::FeatureList::IsEnabled(features::kStoragePressureUI));
 }
 
 void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {

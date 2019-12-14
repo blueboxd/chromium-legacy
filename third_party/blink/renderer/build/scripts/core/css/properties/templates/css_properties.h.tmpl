@@ -52,6 +52,9 @@ class {{class_name}} final : public {{property.superclass}} {
   {% if property.is_internal or property.runtime_flag %}
   CSSExposure Exposure() const override;
   {% endif %}
+  {% if property.in_origin_trial %}
+  CSSExposure Exposure(const ExecutionContext*) const override;
+  {% endif %}
   {% if not is_alias %}
   {% if not property.affected_by_all %}
   bool IsAffectedByAll() const override { return false; }

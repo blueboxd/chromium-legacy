@@ -46,6 +46,26 @@ const OSSettingsBrowserTest = class extends PolymerTest {
   }
 };
 
+// Tests for the localized-string-with-link element.
+// eslint-disable-next-line no-var
+var LocalizedStringWithLinkTest = class extends OSSettingsBrowserTest {
+  get browsePreload() {
+    return super.browsePreload +
+        'chromeos/localized_string_with_link/localized_string_with_link.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'localized_string_with_link_test.js',
+    ]);
+  }
+};
+
+TEST_F('LocalizedStringWithLinkTest', 'AllJsTests', () => {
+  mocha.run();
+});
+
 // Tests for the About section.
 // eslint-disable-next-line no-var
 var OSSettingsAboutPageTest = class extends OSSettingsBrowserTest {

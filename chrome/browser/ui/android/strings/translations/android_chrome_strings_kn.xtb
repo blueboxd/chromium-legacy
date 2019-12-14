@@ -233,7 +233,6 @@
 <translation id="2650751991977523696">ಫೈಲ್‌ ಮತ್ತೆ ಡೌನ್‌ಲೋಡ್‌ ಮಾಡುವುದೇ?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ಆಡಿಯೋ ಫೈಲ್}one{# ಆಡಿಯೋ ಫೈಲ್‌ಗಳು}other{# ಆಡಿಯೋ ಫೈಲ್‌ಗಳು}}</translation>
 <translation id="2653659639078652383">ಸಲ್ಲಿಸು</translation>
-<translation id="2669093958999339774">ನಿಮಗೆ ಅಡ್ಡಿಪಡಿಸುವ ಅಧಿಸೂಚನೆಯ ಪ್ರಾಂಪ್ಟ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ ಮತ್ತು ಬದಲಿಗೆ ನಿಶ್ಯಬ್ದ ಸಂದೇಶವನ್ನು ಬಳಸಿ</translation>
 <translation id="2677748264148917807">ತೊರೆಯಿರಿ</translation>
 <translation id="2704606927547763573">ನಕಲಿಸಲಾಗಿದೆ</translation>
 <translation id="2707726405694321444">ಪುಟವನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ</translation>
@@ -368,7 +367,6 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> ನಲ್ಲಿ ಬುಕ್‌ಮಾರ್ಕ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="3744111561329211289">ಹಿನ್ನೆಲೆ ಸಿಂಕ್</translation>
 <translation id="3749259744154402564">ಬೆಂಬಲಿತವಾಗಿಲ್ಲ</translation>
-<translation id="3767376082821709728">ನೀವು ಭೇಟಿ ನೀಡುವ ಹೊಸ ಸೈಟ್‌ಗಳು ನಿಮಗೆ ಅಧಿಸೂಚನೆಗಳನ್ನು ಕಳುಹಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="3771001275138982843">ಅಪ್‌ಡೇಟ್ ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
 <translation id="3771033907050503522">ಅದೃಶ್ಯ ಟ್ಯಾಬ್‌ಗಳು</translation>
 <translation id="3773755127849930740">ಜೋಡಿಸುವಿಕೆ ಅನುಮತಿಸಲು <ph name="BEGIN_LINK" />ಬ್ಲೂಟೂತ್ ಆನ್ ಮಾಡಿ<ph name="END_LINK" /></translation>
@@ -958,7 +956,6 @@
 <translation id="8035133914807600019">ಹೊಸ ಫೋಲ್ಡರ್‌…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> ದಿನಗಳು ಉಳಿದಿವೆ</translation>
 <translation id="804335162455518893">SD ಕಾರ್ಡ್ ಕಂಡುಬಂದಿಲ್ಲ</translation>
-<translation id="8046278916126163020">ನೀವು ಭೇಟಿ ನೀಡುವ ಹೊಸ ಸೈಟ್‌ಗಳು ನಿಮಗೆ ಅಧಿಸೂಚನೆಗಳನ್ನು ಕಳುಹಿಸಲು ಕೇಳಬಹುದು</translation>
 <translation id="805047784848435650">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸದ ಆಧಾರಿಸಿ</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB  ಲಭ್ಯವಿದೆ</translation>
 <translation id="8058746566562539958">ಹೊಸ Chrome ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>

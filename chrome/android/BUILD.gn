@@ -136,6 +136,7 @@ android_resources("chrome_app_java_resources") {
     "//chrome/browser/ui/android/widget:ui_widget_java_resources",
     "//chrome/browser/ui/messages/android:java_resources",
     "//components/autofill/android:autofill_java_resources",
+    "//components/browser_ui/modaldialog/android:java_resources",
     "//components/browser_ui/styles/android:java_resources",
     "//components/browser_ui/widget/android:java_resources",
     "//components/policy:app_restrictions_resources",
@@ -267,6 +268,7 @@ android_library("chrome_java") {
     "//components/background_task_scheduler:background_task_scheduler_java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
     "//components/bookmarks/common/android:bookmarks_java",
+    "//components/browser_ui/modaldialog/android:java",
     "//components/browser_ui/styles/android:java",
     "//components/browser_ui/widget/android:java",
     "//components/content_capture/android:java",
@@ -752,7 +754,7 @@ android_library("chrome_test_java") {
 
   deps = [
     ":browser_java_test_support",
-    ":chrome_public_test_apk_resources",
+    ":chrome_app_java_resources",
     ":chrome_test_util_java",
     ":partner_location_descriptor_proto_java",
     "$google_play_services_package:google_play_services_base_java",
@@ -792,6 +794,8 @@ android_library("chrome_test_java") {
     "//components/background_task_scheduler:background_task_scheduler_javatests",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
     "//components/bookmarks/common/android:bookmarks_java",
+    "//components/browser_ui/modaldialog/android:java",
+    "//components/browser_ui/modaldialog/android:javatests",
     "//components/browser_ui/styles/android:java",
     "//components/browser_ui/widget/android:java",
     "//components/browser_ui/widget/android:javatests",
@@ -1075,14 +1079,6 @@ if (enable_vr || enable_arcore) {
   }
 }
 
-android_resources("chrome_public_test_apk_resources") {
-  resource_dirs = [ "javatests/res" ]
-  deps = [
-    ":chrome_app_java_resources",
-  ]
-  custom_package = "org.chromium.chrome.test"
-}
-
 # Overrides icon / name defined in chrome_app_java_resources.
 android_resources("chrome_public_apk_resources") {
   resource_dirs = [ "java/res_chromium" ]
@@ -1214,7 +1210,7 @@ chrome_common_shared_library("libchromefortest") {
 # is generated from Java code so it just needs to be generated once.
 if (current_toolchain == default_toolchain) {
   generate_jni_registration("chrome_jni_registration") {
-    target = ":chrome_public_base_module_java"
+    targets = [ ":chrome_public_base_module_java" ]
     header_output = chrome_jni_registration_header
     sources_blacklist = chrome_jni_sources_blacklist
   }
@@ -1223,7 +1219,7 @@ if (current_toolchain == default_toolchain) {
   # helps ensure that the correct classes are marked with @MainDex.
   generate_jni_registration("chrome_jni_for_test_registration") {
     testonly = true
-    target = ":chrome_public_base_module_java_for_test"
+    targets = [ ":chrome_public_base_module_java_for_test" ]
     header_output = chrome_jni_for_test_registration_header
     sources_blacklist = chrome_jni_sources_blacklist
   }

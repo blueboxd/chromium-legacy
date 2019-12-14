@@ -14,6 +14,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
@@ -133,8 +134,6 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactoryInternal() {
     auto task_runner = base::CreateSequencedTaskRunner(
         {base::ThreadPool(), base::MayBlock(),
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-    auto current_task_runner =
-        base::CreateSequencedTaskRunner({base::CurrentThread()});
     task_runner->PostTask(
         FROM_HERE,
         base::BindOnce(
@@ -143,7 +142,7 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactoryInternal() {
             client_id_, fallback_loader_factory_->Clone(),
             controller_connector_.BindNewPipeAndPassReceiver(),
             subresource_loader_factory_.BindNewPipeAndPassReceiver(),
-            task_runner, std::move(current_task_runner),
+            task_runner, base::SequencedTaskRunnerHandle::Get(),
             base::BindRepeating(
                 &ServiceWorkerProviderContext::AddPendingWorkerTimingReceiver,
                 weak_factory_.GetWeakPtr())));

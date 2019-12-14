@@ -57,7 +57,7 @@
 @end
 
 @interface CRWTestJSInjectionReceiver () {
-  CRWTestWKWebViewEvaluator* evaluator_;
+  CRWTestWKWebViewEvaluator* _evaluator;
 }
 @end
 
@@ -67,7 +67,7 @@
   CRWTestWKWebViewEvaluator* evaluator =
       [[CRWTestWKWebViewEvaluator alloc] init];
   if (self = [super initWithEvaluator:evaluator])
-    evaluator_ = evaluator;
+    _evaluator = evaluator;
   return self;
 }
 

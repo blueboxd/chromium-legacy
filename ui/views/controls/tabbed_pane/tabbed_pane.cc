@@ -149,9 +149,13 @@ bool Tab::HandleAccessibleAction(const ui::AXActionData& action_data) {
 void Tab::OnFocus() {
   // Do not draw focus ring in kHighlight mode.
   if (tabbed_pane_->GetStyle() != TabbedPane::TabStripStyle::kHighlight) {
-    SetBorder(CreateSolidBorder(
-        GetInsets().top(), GetNativeTheme()->GetSystemColor(
-                               ui::NativeTheme::kColorId_FocusedBorderColor)));
+    // Maintain the current Insets with CreatePaddedBorder.
+    int border_size = 2;
+    SetBorder(CreatePaddedBorder(
+        CreateSolidBorder(border_size,
+                          GetNativeTheme()->GetSystemColor(
+                              ui::NativeTheme::kColorId_FocusedBorderColor)),
+        GetInsets() - gfx::Insets(border_size)));
   }
 
   // When the tab gains focus, send an accessibility event indicating that the
@@ -371,12 +375,18 @@ TabbedPane::TabStripStyle TabStrip::GetStyle() const {
 }
 
 gfx::Size TabStrip::CalculatePreferredSize() const {
-  // Tabstrips don't require any minimum space along their main axis, and can
-  // shrink all the way to zero size.  Only the cross axis thickness matters.
-  const gfx::Size size = GetLayoutManager()->GetPreferredSize(this);
-  return (GetOrientation() == TabbedPane::Orientation::kHorizontal)
-             ? gfx::Size(0, size.height())
-             : gfx::Size(size.width(), 0);
+  // In horizontal mode, use the preferred size as determined by the largest
+  // child or the minimum size necessary to display the tab titles, whichever is
+  // larger.
+  if (GetOrientation() == TabbedPane::Orientation::kHorizontal) {
+    return GetLayoutManager()->GetPreferredSize(this);
+  } else {
+    // In vertical mode, Tabstrips don't require any minimum space along their
+    // main axis, and can shrink all the way to zero size.  Only the cross axis
+    // thickness matters.
+    const gfx::Size size = GetLayoutManager()->GetPreferredSize(this);
+    return gfx::Size(size.width(), 0);
+  }
 }
 
 void TabStrip::OnPaintBorder(gfx::Canvas* canvas) {

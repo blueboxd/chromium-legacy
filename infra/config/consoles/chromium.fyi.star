@@ -23,11 +23,6 @@ luci.console_view(
             short_name = 'lnx',
         ),
         luci.console_view_entry(
-            builder = 'ci/chromeos-vm-code-coverage',
-            category = 'code_coverage',
-            short_name = 'vm',
-        ),
-        luci.console_view_entry(
             builder = 'ci/linux-chromeos-code-coverage',
             category = 'code_coverage',
             short_name = 'lcr',

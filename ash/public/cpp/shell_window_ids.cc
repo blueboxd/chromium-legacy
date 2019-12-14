@@ -42,7 +42,7 @@ constexpr std::array<int, 6> kPostDesksActivatableContainersIds = {
     kShellWindowId_ShelfContainer,
     kShellWindowId_ShelfControlContainer,
     kShellWindowId_ShelfBubbleContainer,
-    kShellWindowId_StatusContainer,
+    kShellWindowId_OverviewFocusContainer,
 };
 
 }  // namespace

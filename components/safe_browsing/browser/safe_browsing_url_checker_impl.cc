@@ -489,6 +489,9 @@ void SafeBrowsingUrlCheckerImpl::OnRTLookupResponse(
   }
 
   const GURL& url = urls_[next_index_].url;
+  // TODO(crbug.com/1033692): Only take the first threat info into account
+  // because threat infos are returned in decreasing order of severity. Consider
+  // extend it to support multiple threat types.
   if (response && (response->threat_info_size() > 0) &&
       (response->threat_info(0).verdict_type() ==
        RTLookupResponse::ThreatInfo::DANGEROUS)) {

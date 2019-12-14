@@ -25,6 +25,7 @@ class ListValue;
 }
 
 namespace content {
+class BrowsingDataFilterBuilder;
 class WebUI;
 }
 
@@ -55,6 +56,12 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
   void OnGotInstalledApps(
       const std::string& webui_callback_id,
       std::vector<ImportantSitesUtil::ImportantDomainInfo> installed_apps);
+
+  // Build a filter of sites to include and exclude from site data removal
+  // based on whether installed apps were marked for deletion by the checkbox on
+  // the installed apps warning dialog.
+  std::unique_ptr<content::BrowsingDataFilterBuilder> ProcessInstalledApps(
+      const base::ListValue* installed_apps);
 
   // Clears browsing data, called by Javascript.
   void HandleClearBrowsingData(const base::ListValue* value);

@@ -145,21 +145,6 @@ void DeviceCloudPolicyInitializer::StartEnrollment() {
   enrollment_handler_->StartEnrollment();
 }
 
-void DeviceCloudPolicyInitializer::CheckAvailableLicenses(
-    const AvailableLicensesCallback& callback) {
-  DCHECK(is_initialized_);
-  DCHECK(enrollment_handler_);
-  enrollment_handler_->CheckAvailableLicenses(callback);
-}
-
-void DeviceCloudPolicyInitializer::StartEnrollmentWithLicense(
-    policy::LicenseType license_type) {
-  DCHECK(is_initialized_);
-  DCHECK(enrollment_handler_);
-  DCHECK(license_type != policy::LicenseType::UNKNOWN);
-  enrollment_handler_->StartEnrollmentWithLicense(license_type);
-}
-
 EnrollmentConfig DeviceCloudPolicyInitializer::GetPrescribedEnrollmentConfig()
     const {
   EnrollmentConfig config;

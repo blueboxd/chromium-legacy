@@ -309,30 +309,6 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack_APISeparation) {
   EXPECT_TRUE(unpack_result->unlisted_apis.count(kUnlisted1));
 }
 
-// Tests that an error is thrown for permissions that cannot be optional, when
-// requested as an optional permission.
-TEST(ExtensionPermissionsAPIHelpers, Unpack_UnsupportedAPIPermission) {
-  APIPermissionSet optional_apis;
-  optional_apis.insert(APIPermission::kWallpaper);
-  EXPECT_FALSE((*optional_apis.begin())->info()->supports_optional());
-  PermissionSet optional_permissions(std::move(optional_apis),
-                                     ManifestPermissionSet(), URLPatternSet(),
-                                     URLPatternSet());
-
-  Permissions permissions_object;
-  permissions_object.permissions = std::make_unique<std::vector<std::string>>(
-      std::vector<std::string>({"wallpaper"}));
-
-  std::string error;
-  std::unique_ptr<UnpackPermissionSetResult> unpack_result =
-      UnpackPermissionSet(permissions_object, PermissionSet(),
-                          optional_permissions, true, &error);
-  ASSERT_TRUE(unpack_result) << error;
-  EXPECT_EQ(1u, unpack_result->unsupported_optional_apis.size());
-  EXPECT_TRUE(unpack_result->unsupported_optional_apis.count(
-      APIPermission::kWallpaper));
-}
-
 // Tests that unpacking works correctly with wildcard schemes (which are
 // interesting, because they only match http | https, and not all schemes).
 TEST(ExtensionPermissionsAPIHelpers, Unpack_WildcardSchemes) {

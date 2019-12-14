@@ -1727,6 +1727,11 @@ const char kQuietNotificationPromptsDescription[] =
     "When a site wishes to show notifications, the usual modal dialog is "
     "replaced with a quieter version.";
 
+const char kRawClipboardName[] = "Raw Clipboard";
+const char kRawClipboardDescription[] =
+    "Allows raw / unsanitized clipboard content to be read and written. "
+    "See https://github.com/WICG/raw-clipboard-access.";
+
 const char kReducedReferrerGranularityName[] =
     "Reduce default 'referer' header granularity.";
 const char kReducedReferrerGranularityDescription[] =
@@ -1934,6 +1939,11 @@ const char kShowAutofillTypePredictionsName[] = "Show Autofill predictions";
 const char kShowAutofillTypePredictionsDescription[] =
     "Annotates web forms with Autofill field type predictions as placeholder "
     "text.";
+
+const char kShowOverdrawFeedbackName[] = "Show overdraw feedback";
+const char kShowOverdrawFeedbackDescription[] =
+    "Visualize overdraw by color-coding elements based on if they have other "
+    "elements drawn underneath.";
 
 const char kSkiaRendererName[] = "Skia API for OOP-D compositing";
 const char kSkiaRendererDescription[] =
@@ -2217,6 +2227,12 @@ const char kUsernameFirstFlowDescription[] =
     "flows where a user has to type username first on one page and then "
     "password on another page";
 
+const char kUsePreferredIntervalForVideoName[] =
+    "Use preferred interval for video";
+const char kUsePreferredIntervalForVideoDescription[] =
+    "When enabled, the composition rate will be changed based on the videos' "
+    "actual fps.";
+
 const char kUseSearchClickForRightClickName[] =
     "Use Search+Click for right click";
 const char kUseSearchClickForRightClickDescription[] =
@@ -2251,6 +2267,11 @@ const char kWebPaymentsExperimentalFeaturesName[] =
     "Experimental Web Payments API features";
 const char kWebPaymentsExperimentalFeaturesDescription[] =
     "Enable experimental Web Payments API features";
+
+const char kWebPaymentsMinimalUIName[] = "Web Payments Minimal UI";
+const char kWebPaymentsMinimalUIDescription[] =
+    "Allow Payment Request API to open a minimal UI to replace the Payment "
+    "Request UI when appropriate.";
 
 const char kWebrtcCaptureMultiChannelApmName[] =
     "WebRTC multi-channel capture audio processing.";
@@ -2502,13 +2523,6 @@ const char kContextualSearchRankerQueryName[] =
     "Contextual Search Ranker prediction";
 const char kContextualSearchRankerQueryDescription[] =
     "Enables prediction of tap gestures using Assist-Ranker machine learning.";
-
-const char kContextualSearchSimplifiedServerName[] =
-    "Contextual Search simplified server logic";
-const char kContextualSearchSimplifiedServerDescription[] =
-    "Enables simpler server-side logic for determining what data to return and "
-    "show in the Contextual Search UI.  Option to allow all cards CoCa "
-    "returns.";
 
 const char kContextualSearchSecondTapName[] =
     "Contextual Search second tap triggering";
@@ -3098,6 +3112,11 @@ const char kUseWinrtMidiApiDescription[] =
 const char kUseXpsForPrintingName[] = "Use XPS for printing";
 const char kUseXpsForPrintingDescription[] =
     "When enabled, use XPS printing API instead of the GDI print API.";
+
+const char kUseXpsForPrintingFromPdfName[] = "Use XPS for printing from PDF";
+const char kUseXpsForPrintingFromPdfDescription[] =
+    "When enabled, use XPS printing API instead of the GDI print API when "
+    "printing PDF documents.";
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 const char kWinUseBrowserSpellCheckerName[] =

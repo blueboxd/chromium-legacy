@@ -36,8 +36,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }  // namespace.
 
 @interface DataplanUsageTableViewController () {
-  BooleanPrefMember basePreference_;
-  BooleanPrefMember wifiPreference_;
+  BooleanPrefMember _basePreference;
+  BooleanPrefMember _wifiPreference;
 }
 
 // Updates the checked state of the cells to match the preferences.
@@ -62,8 +62,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     self.title = title;
-    basePreference_.Init(basePreference, prefs);
-    wifiPreference_.Init(wifiPreference, prefs);
+    _basePreference.Init(basePreference, prefs);
+    _wifiPreference.Init(wifiPreference, prefs);
   }
   return self;
 }
@@ -104,8 +104,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)updateCheckedState {
-  BOOL basePrefOn = basePreference_.GetValue();
-  BOOL wifiPrefOn = wifiPreference_.GetValue();
+  BOOL basePrefOn = _basePreference.GetValue();
+  BOOL wifiPrefOn = _wifiPreference.GetValue();
   TableViewModel<TableViewItem*>* model = self.tableViewModel;
 
   std::unordered_map<NSInteger, bool> optionsMap = {
@@ -133,8 +133,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)updateBasePref:(BOOL)basePref wifiPref:(BOOL)wifiPref {
-  basePreference_.SetValue(basePref);
-  wifiPreference_.SetValue(wifiPref);
+  _basePreference.SetValue(basePref);
+  _wifiPreference.SetValue(wifiPref);
   [self updateCheckedState];
 }
 

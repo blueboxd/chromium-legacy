@@ -3,3 +3,7 @@ android.webkit.WebView focusable focused scrollable
 ++android.view.View role_description='comment section' name='comment section'
 ++android.view.View role_description='revision' name='revision'
 ++android.view.View role_description='suggestion' name='suggestion'
+++android.view.View
+++++android.view.View name='This is '
+++++android.view.View role_description='highlight' name='highlighted'
+++++android.view.View name='.'

@@ -185,11 +185,6 @@ luci.console_view(
             short_name = 'sim',
         ),
         luci.console_view_entry(
-            builder = 'ci/ios-slimnav',
-            category = 'chromium.mac|ios|misc',
-            short_name = 'slim',
-        ),
-        luci.console_view_entry(
             builder = 'ci/Linux Builder',
             category = 'chromium.linux|release',
             short_name = 'bld',

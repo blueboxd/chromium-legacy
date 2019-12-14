@@ -511,7 +511,7 @@
     },
     {
       name: "CSSRenderSubtree",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "CSSSnapSize",
@@ -1390,6 +1390,10 @@
     {
       name: "QuicTransport",
       status: "experimental",
+    },
+    {
+      // Enabled when blink::features::kRawClipboard is enabled.
+      name: "RawClipboard",
     },
     {
       name: "ReducedReferrerGranularity",

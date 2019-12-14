@@ -8,7 +8,6 @@
 <translation id="1032854598605920125">סובב בכיוון השעון</translation>
 <translation id="1036348656032585052">כבה</translation>
 <translation id="1038842779957582377">שם לא ידוע</translation>
-<translation id="1039626062703039346">‏בעזרת Chrome אפשר להגן על חשבון Google ולשנות את הסיסמה. הפעולה הזו תשלח אל Google דיווח לגבי האתר הזה.</translation>
 <translation id="1050038467049342496">סגירת יישומים אחרים</translation>
 <translation id="1055184225775184556">&amp;ביטול הוספה</translation>
 <translation id="1056898198331236512">אזהרה</translation>
@@ -299,7 +298,6 @@
 <translation id="2354001756790975382">סימניות אחרות</translation>
 <translation id="2354430244986887761">‏התכונה 'גלישה בטוחה' של Google <ph name="BEGIN_LINK" />מצאה לאחרונה יישומים מזיקים<ph name="END_LINK" /> באתר <ph name="SITE" />.</translation>
 <translation id="2355395290879513365">ייתכן שתוקפים יוכלו לראות את התמונות שבהן אתה צופה באתר זה, ולאחר מכן הם ינסו להונות אותך על ידי שינוי התמונות.</translation>
-<translation id="2355474962185559967">‏הזנת כרגע את הסיסמה שלך באתר מטעה. ההמלצה של Chromium היא לנווט אל <ph name="WEBSITE_1" /> ולשנות את הסיסמה שלך עכשיו.</translation>
 <translation id="2356070529366658676">שאל</translation>
 <translation id="2359629602545592467">מטבעות מרובים</translation>
 <translation id="2359808026110333948">המשך</translation>
@@ -332,7 +330,6 @@
 <translation id="2495083838625180221">‏מנתח JSON</translation>
 <translation id="2495093607237746763">‏אם האפשרות תסומן, Chromium ישמור עותק של הכרטיס במכשיר הזה כדי למלא טפסים במהירות רבה יותר.</translation>
 <translation id="2498091847651709837">סריקת כרטיס חדש</translation>
-<translation id="249825481377667906">‏בעזרת Chromium אפשר להגן על חשבון Google ולשנות את הסיסמה. הפעולה הזו תשלח אל Google דיווח לגבי האתר הזה.</translation>
 <translation id="2501278716633472235">חזרה</translation>
 <translation id="2503184589641749290">כרטיסי חיוב וכרטיסים משולמים מראש שהסוחר מקבל</translation>
 <translation id="2505268675989099013">הגנה על החשבון</translation>
@@ -483,7 +480,6 @@
 <translation id="3228969707346345236">התרגום נכשל כיוון שהדף כבר ב<ph name="LANGUAGE" />.</translation>
 <translation id="3229041911291329567">פרטי גרסה של המכשיר והדפדפן</translation>
 <translation id="323107829343500871">הזן את קוד האימות של הכרטיס <ph name="CREDIT_CARD" /></translation>
-<translation id="3234392465377209614">‏הזנת כרגע את הסיסמה שלך באתר מטעה. ההמלצה של Chromium היא לנווט אל <ph name="WEBSITE_1" />, אל <ph name="WEBSITE_2" /> ואל <ph name="WEBSITE_3" /> ולשנות את הסיסמה שלך עכשיו.</translation>
 <translation id="3234666976984236645">זהה תמיד תוכן חשוב באתר זה</translation>
 <translation id="3262069459091978471">‏<ph name="LOOKALIKE_DOMAIN" /> נראה דומה ל-<ph name="SUGGESTED_DOMAIN" />. תוקפים שמחקים אתרים לפעמים משתמשים בכתובת URL דומות.</translation>
 <translation id="3270847123878663523">&amp;ביטול של שינוי סדר</translation>
@@ -515,7 +511,6 @@
 <translation id="342781501876943858">‏אם הזנת את הסיסמה שלך באתרים אחרים, ההמלצה של Chromium היא לאפס אותה.</translation>
 <translation id="3428151540071562330">‏אחד או יותר ממזהי ה-URI של תבנית השרת DnsOverHttpsTemplates אינם חוקיים ולא ייעשה בהם שימוש.</translation>
 <translation id="3431636764301398940">שמור כרטיס זה במכשיר הנוכחי</translation>
-<translation id="3438790640050632698">‏הזנת כרגע את הסיסמה שלך באתר מטעה. ההמלצה של Chrome היא לנווט אל <ph name="WEBSITE_1" /> ואל <ph name="WEBSITE_2" /> ולשנות את הסיסמה שלך עכשיו.</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">הבעלים של המכשיר הזה כיבה את משחק הדינוזאורים.</translation>
 <translation id="3447884698081792621">הצגת אישור (נופק על-ידי <ph name="ISSUER" />)</translation>
@@ -530,7 +525,6 @@
 <translation id="3495081129428749620">חיפוש בדף
 <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">המערכת מתעלמת מהמדיניות הזו כי יש מדיניות אחרת מאותה קבוצה של הגדרות מדיניות שקיבלה עדיפות גבוהה יותר.</translation>
-<translation id="3525469219100414032">‏הזנת כרגע את הסיסמה שלך באתר מטעה. ההמלצה של Chrome היא לנווט אל <ph name="WEBSITE_1" /> ולשנות את הסיסמה שלך עכשיו.</translation>
 <translation id="3528171143076753409">אישור השרת אינו מהימן.</translation>
 <translation id="3528485271872257980">חום כהה</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{לפחות פריט אחד במכשירים מסונכרנים}=1{פריט אחד (ופריטים נוספים במכשירים מסונכרנים)}two{שני פריטים (ופריטים נוספים במכשירים מסונכרנים)}many{# פריטים (ופריטים נוספים במכשירים מסונכרנים)}other{# פריטים (ופריטים נוספים במכשירים מסונכרנים)}}</translation>
@@ -964,7 +958,6 @@ Del</translation>
 <translation id="5565735124758917034">פעיל</translation>
 <translation id="5570825185877910964">הגנה על החשבון</translation>
 <translation id="5571083550517324815">לא ניתן לבצע איסוף מהכתובת הזו. עליך לבחור כתובת אחרת.</translation>
-<translation id="5572009199897554128">‏הזנת כרגע את הסיסמה שלך באתר מטעה. ההמלצה של Chromium היא לנווט אל <ph name="WEBSITE_1" /> ואל <ph name="WEBSITE_2" /> ולשנות את הסיסמה שלך עכשיו.</translation>
 <translation id="5580958916614886209">בדוק את חודש התפוגה ונסה שוב</translation>
 <translation id="5586446728396275693">לא נשמרו כתובות</translation>
 <translation id="5595485650161345191">עריכת כתובת</translation>
@@ -1680,7 +1673,6 @@ Del</translation>
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">‏ייתכן שמישהו אחר ישלול את הגישה שלך לחשבון Google. לגלישה בטוחה ב-Chromium, מומלץ לשנות את הסיסמה עכשיו.</translation>
 <translation id="939736085109172342">תיקייה חדשה</translation>
-<translation id="940786960229275114">‏הזנת כרגע את הסיסמה שלך באתר מטעה. ההמלצה של Chrome היא לנווט אל <ph name="WEBSITE_1" />, אל <ph name="WEBSITE_2" /> ואל <ph name="WEBSITE_3" /> ולשנות את הסיסמה שלך עכשיו.</translation>
 <translation id="945855313015696284">יש לבדוק את המידע שבהמשך ולמחוק כרטיסים עם שגיאות</translation>
 <translation id="950736567201356821">3 ניקובים בחלק העליון</translation>
 <translation id="951104842009476243">כרטיסי חיוב וכרטיסים משולמים מראש שהסוחר מקבל</translation>

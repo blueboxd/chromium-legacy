@@ -43,6 +43,7 @@ class RemoteFrameView final : public GarbageCollected<RemoteFrameView>,
   }
 
   void Dispose() override;
+  void SetFrameRect(const IntRect&) override;
   void PropagateFrameRects() override;
   // Override to notify remote frame that its viewport size has changed.
   void InvalidateRect(const IntRect&);
@@ -100,6 +101,7 @@ class RemoteFrameView final : public GarbageCollected<RemoteFrameView>,
   IntrinsicSizingInfo intrinsic_sizing_info_;
   bool has_intrinsic_sizing_info_ = false;
   bool needs_occlusion_tracking_ = false;
+  bool needs_frame_rect_propagation_ = false;
 };
 
 template <>

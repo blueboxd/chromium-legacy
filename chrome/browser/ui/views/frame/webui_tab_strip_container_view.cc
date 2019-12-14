@@ -305,9 +305,10 @@ bool WebUITabStripContainerView::EventShouldPropagate(const ui::Event& event) {
     if (!view)
       continue;
 
-    const gfx::Rect bounds_in_window =
-        view->ConvertRectToWidget(view->GetLocalBounds());
-    if (bounds_in_window.Contains(located_event->root_location()))
+    const gfx::Rect bounds_in_screen = view->GetBoundsInScreen();
+    const gfx::Point event_location_in_screen =
+        located_event->target()->GetScreenLocation(*located_event);
+    if (bounds_in_screen.Contains(event_location_in_screen))
       return true;
   }
 

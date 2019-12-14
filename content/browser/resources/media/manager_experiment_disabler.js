@@ -39,7 +39,7 @@ var Manager = (function() {
     experimentsLink.createTextNode('Enable Flag Here');
 
     createChild(directions, 'li')
-        .createTextNode('In devtools (F11) press F1 (open settings).');
+        .createTextNode('In devtools (F12) press F1 (open settings).');
     createChild(directions, 'li')
         .createTextNode(
             'Select the "Experiments" tab on the side,' +

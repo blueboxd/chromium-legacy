@@ -102,15 +102,6 @@ bool OverlayProcessorOzone::NeedsSurfaceOccludingDamageRect() const {
 void OverlayProcessorOzone::CheckOverlaySupport(
     const OverlayProcessorInterface::OutputSurfaceOverlayPlane* primary_plane,
     OverlayCandidateList* surfaces) {
-  // SW mirroring copies out of the framebuffer, so we can't remove any
-  // quads for overlaying, otherwise the output is incorrect.
-  if (software_mirror_active_) {
-    for (size_t i = 0; i < surfaces->size(); i++) {
-      surfaces->at(i).overlay_handled = false;
-    }
-    return;
-  }
-
   // This number is depended on what type of strategies we have. Currently we
   // only overlay one video.
   DCHECK_EQ(1U, surfaces->size());
@@ -159,10 +150,6 @@ void OverlayProcessorOzone::CheckOverlaySupport(
       surface_iterator->display_rect = ozone_surface_iterator->display_rect;
     }
   }
-}
-
-void OverlayProcessorOzone::SetSoftwareMirrorMode(bool enabled) {
-  software_mirror_active_ = enabled;
 }
 
 gfx::Rect OverlayProcessorOzone::GetOverlayDamageRectForOutputSurface(

@@ -150,6 +150,10 @@ const base::Feature kImplicitRootScroller {
 const base::Feature kCSSOMViewScrollCoordinates{
     "CSSOMViewScrollCoordinates", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables Raw Clipboard. https://crbug.com/897289.
+const base::Feature kRawClipboard{"RawClipboard",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables usage of getDisplayMedia() that allows capture of web content, see
 // https://crbug.com/865060.
 const base::Feature kRTCGetDisplayMedia{"RTCGetDisplayMedia",

@@ -94,23 +94,23 @@ const char* const kGeolocationAuthorizationActionNewUser =
     CRWWebStateObserver,
     LocationManagerDelegate,
     OmniboxGeolocationAuthorizationAlertDelegate> {
-  OmniboxGeolocationLocalState* localState_;
-  LocationManager* locationManager_;
-  OmniboxGeolocationAuthorizationAlert* authorizationAlert_;
+  OmniboxGeolocationLocalState* _localState;
+  LocationManager* _locationManager;
+  OmniboxGeolocationAuthorizationAlert* _authorizationAlert;
 
   // Bridge to observe the web state from Objective-C.
-  std::unique_ptr<web::WebStateObserverBridge> webStateObserverBridge_;
+  std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
 
   // Records whether we have deliberately presented the system prompt, so that
   // we can record the user's action in
   // locationManagerDidChangeAuthorizationStatus:.
-  BOOL systemPrompt_;
+  BOOL _systemPrompt;
 
   // Records whether we are prompting for a new user, so that we can record the
   // user's action to the right histogram (either
   // kGeolocationAuthorizationActionExistingUser or
   // kGeolocationAuthorizationActionNewUser).
-  BOOL newUser_;
+  BOOL _newUser;
 }
 
 // Boolean value indicating whether geolocation is enabled for Omnibox queries.
@@ -187,14 +187,14 @@ const char* const kGeolocationAuthorizationActionNewUser =
     // TODO(crbug.com/661996): Remove the now useless
     // kAuthorizationStateNotDeterminedSystemPrompt from
     // omnibox_geolocation_local_state.h.
-    systemPrompt_ = YES;
+    _systemPrompt = YES;
     self.localState.authorizationState =
         geolocation::kAuthorizationStateNotDeterminedSystemPrompt;
 
     // Turn on location updates, so that iOS will prompt the user.
     [self startUpdatingLocation];
     self.webStateToReload = nullptr;
-    newUser_ = newUser;
+    _newUser = newUser;
   }
 }
 
@@ -331,7 +331,7 @@ const char* const kGeolocationAuthorizationActionNewUser =
       // Set |systemPrompt_|, so that
       // locationManagerDidChangeAuthorizationStatus: will know that any
       // CLAuthorizationStatus changes are coming from this specific prompt.
-      systemPrompt_ = YES;
+      _systemPrompt = YES;
       self.localState.authorizationState =
           geolocation::kAuthorizationStateNotDeterminedSystemPrompt;
       [self startUpdatingLocation];
@@ -379,33 +379,33 @@ const char* const kGeolocationAuthorizationActionNewUser =
 }
 
 - (OmniboxGeolocationLocalState*)localState {
-  if (!localState_) {
-    localState_ = [[OmniboxGeolocationLocalState alloc]
+  if (!_localState) {
+    _localState = [[OmniboxGeolocationLocalState alloc]
         initWithLocationManager:self.locationManager];
   }
-  return localState_;
+  return _localState;
 }
 
 - (LocationManager*)locationManager {
-  if (!locationManager_) {
-    locationManager_ = [[LocationManager alloc] init];
-    [locationManager_ setDelegate:self];
+  if (!_locationManager) {
+    _locationManager = [[LocationManager alloc] init];
+    [_locationManager setDelegate:self];
   }
-  return locationManager_;
+  return _locationManager;
 }
 
 - (void)setWebStateToReload:(web::WebState*)webState {
   if (webState == _webStateToReload)
     return;
 
-  if (!webStateObserverBridge_) {
-    webStateObserverBridge_ =
+  if (!_webStateObserverBridge) {
+    _webStateObserverBridge =
         std::make_unique<web::WebStateObserverBridge>(self);
   }
   if (_webStateToReload)
-    _webStateToReload->RemoveObserver(webStateObserverBridge_.get());
+    _webStateToReload->RemoveObserver(_webStateObserverBridge.get());
   if (webState)
-    webState->AddObserver(webStateObserverBridge_.get());
+    webState->AddObserver(_webStateObserverBridge.get());
   _webStateToReload = webState;
 }
 
@@ -448,7 +448,7 @@ const char* const kGeolocationAuthorizationActionNewUser =
 - (void)stopUpdatingLocation {
   // Note that we don't need to initialize |locationManager_| here. If it's
   // nil, then it's not running.
-  [locationManager_ stopUpdatingLocation];
+  [_locationManager stopUpdatingLocation];
 }
 
 - (void)addLocationAndReloadWebState:(web::WebState*)webState {
@@ -490,9 +490,9 @@ const char* const kGeolocationAuthorizationActionNewUser =
   // kAuthorizationStateAuthorized.
   self.webStateToReload = webState;
 
-  authorizationAlert_ =
+  _authorizationAlert =
       [[OmniboxGeolocationAuthorizationAlert alloc] initWithDelegate:self];
-  [authorizationAlert_ showAuthorizationAlert];
+  [_authorizationAlert showAuthorizationAlert];
 
   self.localState.lastAuthorizationAlertVersion =
       version_info::GetVersionNumber();
@@ -504,8 +504,8 @@ const char* const kGeolocationAuthorizationActionNewUser =
 }
 
 - (void)recordAuthorizationAction:(AuthorizationAction)authorizationAction {
-  if (newUser_) {
-    newUser_ = NO;
+  if (_newUser) {
+    _newUser = NO;
 
     UMA_HISTOGRAM_ENUMERATION(kGeolocationAuthorizationActionNewUser,
                               authorizationAction, kAuthorizationActionCount);
@@ -519,7 +519,7 @@ const char* const kGeolocationAuthorizationActionNewUser =
 
 - (void)locationManagerDidChangeAuthorizationStatus:
     (LocationManager*)locationManager {
-  if (systemPrompt_) {
+  if (_systemPrompt) {
     switch (self.locationManager.authorizationStatus) {
       case kCLAuthorizationStatusNotDetermined:
         // We may get a spurious notification about a transition to
@@ -532,7 +532,7 @@ const char* const kGeolocationAuthorizationActionNewUser =
       case kCLAuthorizationStatusDenied:
         self.localState.authorizationState =
             geolocation::kAuthorizationStateDenied;
-        systemPrompt_ = NO;
+        _systemPrompt = NO;
 
         [self recordAuthorizationAction:kAuthorizationActionPermanentlyDenied];
         break;
@@ -541,7 +541,7 @@ const char* const kGeolocationAuthorizationActionNewUser =
       case kCLAuthorizationStatusAuthorizedWhenInUse:
         self.localState.authorizationState =
             geolocation::kAuthorizationStateAuthorized;
-        systemPrompt_ = NO;
+        _systemPrompt = NO;
 
         [self addLocationAndReloadWebState:self.webStateToReload];
         self.webStateToReload = nullptr;
@@ -561,7 +561,7 @@ const char* const kGeolocationAuthorizationActionNewUser =
 
   [self addLocationAndReloadWebState:self.webStateToReload];
 
-  authorizationAlert_ = nil;
+  _authorizationAlert = nil;
   self.webStateToReload = nullptr;
 
   [self recordAuthorizationAction:kAuthorizationActionAuthorized];
@@ -573,7 +573,7 @@ const char* const kGeolocationAuthorizationActionNewUser =
   // We won't use location, but we'll still be able to prompt at the next
   // application update.
 
-  authorizationAlert_ = nil;
+  _authorizationAlert = nil;
   self.webStateToReload = nullptr;
 
   [self recordAuthorizationAction:kAuthorizationActionDenied];
@@ -582,11 +582,11 @@ const char* const kGeolocationAuthorizationActionNewUser =
 #pragma mark - OmniboxGeolocationController+Testing
 
 - (void)setLocalState:(OmniboxGeolocationLocalState*)localState {
-  localState_ = localState;
+  _localState = localState;
 }
 
 - (void)setLocationManager:(LocationManager*)locationManager {
-  locationManager_ = locationManager;
+  _locationManager = locationManager;
 }
 
 #pragma mark - CRWWebStateObserver Methods

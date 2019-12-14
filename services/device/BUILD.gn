@@ -338,7 +338,7 @@ source_set("test_support") {
     "//net",
     "//net:test_support",
     "//services/device/public/cpp/geolocation",
-    "//services/device/public/mojom:constants",
+    "//services/device/public/mojom:device_service",
     "//services/network:test_support",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",

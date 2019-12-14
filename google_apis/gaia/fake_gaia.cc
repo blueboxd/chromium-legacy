@@ -32,12 +32,13 @@
 #include "url/third_party/mozilla/url_parse.h"
 
 #define REGISTER_RESPONSE_HANDLER(url, method) \
-  request_handlers_.insert(std::make_pair( \
-        url.path(), base::Bind(&FakeGaia::method, base::Unretained(this))))
+  request_handlers_.insert(std::make_pair(     \
+      url.path(),                              \
+      base::BindRepeating(&FakeGaia::method, base::Unretained(this))))
 
 #define REGISTER_PATH_RESPONSE_HANDLER(path, method) \
-  request_handlers_.insert(std::make_pair( \
-        path, base::Bind(&FakeGaia::method, base::Unretained(this))))
+  request_handlers_.insert(std::make_pair(           \
+      path, base::BindRepeating(&FakeGaia::method, base::Unretained(this))))
 
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;

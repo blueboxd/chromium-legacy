@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Scaricare nuovamente il file?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# file audio}other{# file audio}}</translation>
 <translation id="2653659639078652383">Invia</translation>
-<translation id="2669093958999339774">Non farti interrompere da messaggi di notifica; usa invece un messaggio più discreto</translation>
 <translation id="2677748264148917807">Esci</translation>
 <translation id="2704606927547763573">Copiata</translation>
 <translation id="2707726405694321444">Aggiorna la pagina</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Aggiunto ai preferiti di <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Sincronizzazione in background</translation>
 <translation id="3749259744154402564">Azione non supportata</translation>
-<translation id="3767376082821709728">I nuovi siti visitati non possono inviarti notifiche</translation>
 <translation id="3771001275138982843">Impossibile scaricare l'aggiornamento</translation>
 <translation id="3771033907050503522">Schede di navigazione in incognito</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Attiva il Bluetooth<ph name="END_LINK" /> per consentire l'accoppiamento</translation>
@@ -755,6 +753,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6545017243486555795">Cancella tutti i dati</translation>
 <translation id="6545864417968258051">Scansione Bluetooth</translation>
 <translation id="6560414384669816528">Ricerche con Sogou</translation>
+<translation id="656065428026159829">Mostra altri</translation>
 <translation id="6566259936974865419">Chrome ti ha fatto risparmiare <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">Consenti sempre</translation>
 <translation id="6573431926118603307">Le schede aperte in Chrome sugli altri dispositivi verranno visualizzate qui.</translation>
@@ -851,6 +850,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7293171162284876153">Per iniziare la sincronizzazione, attiva "Sincronizza i tuoi dati di Chrome".</translation>
 <translation id="729975465115245577">Il tuo dispositivo non ha un'app per archiviare il file di password.</translation>
 <translation id="7302081693174882195">Dettagli: ordinati per quantità di dati risparmiati</translation>
+<translation id="7302486331832100261">Di solito blocchi le notifiche. Per consentirle, tocca Dettagli.</translation>
 <translation id="7328017930301109123">Nella modalità Lite, Chrome carica le pagine più rapidamente e utilizza fino al 60 percento di dati in meno.</translation>
 <translation id="7333031090786104871">Aggiunta del sito precedente ancora in corso</translation>
 <translation id="7352939065658542140">VIDEO</translation>
@@ -957,7 +957,6 @@ Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera so
 <translation id="8035133914807600019">Nuova cartella…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> giorni rimanenti</translation>
 <translation id="804335162455518893">Scheda SD non trovata</translation>
-<translation id="8046278916126163020">I nuovi siti visitati possono chiedere di inviarti notifiche</translation>
 <translation id="805047784848435650">In base alla tua cronologia di navigazione</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB disponibili</translation>
 <translation id="8058746566562539958">Apri in nuova scheda di Chrome</translation>

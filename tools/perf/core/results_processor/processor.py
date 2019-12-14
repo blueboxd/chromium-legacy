@@ -278,30 +278,31 @@ def RunIdentifier(results_label, test_suite_start):
 def UploadArtifacts(test_result, upload_bucket, run_identifier):
   """Upload all artifacts to cloud.
 
-  For a test run, uploads all its artifacts to cloud and sets remoteUrl
-  fields in intermediate_results.
+  For a test run, uploads all its artifacts to cloud and sets fetchUrl and
+  viewUrl fields in intermediate_results.
   """
   artifacts = test_result.get('outputArtifacts', {})
   for name, artifact in artifacts.iteritems():
-    if 'remoteUrl' in artifact:
-      continue
     # TODO(crbug.com/981349): Think of a more general way to
     # specify which artifacts deserve uploading.
     if name in [DIAGNOSTICS_NAME, MEASUREMENTS_NAME]:
       continue
     remote_name = '/'.join([run_identifier, test_result['testPath'], name])
     urlsafe_remote_name = re.sub(r'[^A-Za-z0-9/.-]+', '_', remote_name)
-    artifact['remoteUrl'] = cloud_storage.Insert(
+    cloud_filepath = cloud_storage.Upload(
         upload_bucket, urlsafe_remote_name, artifact['filePath'])
+    # Per crbug.com/1033755 some services require fetchUrl.
+    artifact['fetchUrl'] = cloud_filepath.fetch_url
+    artifact['viewUrl'] = cloud_filepath.view_url
     logging.info('%s: Uploaded %s to %s', test_result['testPath'], name,
-                 artifact['remoteUrl'])
+                 artifact['viewUrl'])
 
 
 def GetTraceUrl(test_result):
   artifacts = test_result.get('outputArtifacts', {})
   trace_artifact = artifacts.get(compute_metrics.HTML_TRACE_NAME, {})
-  if 'remoteUrl' in trace_artifact:
-    return trace_artifact['remoteUrl']
+  if 'viewUrl' in trace_artifact:
+    return trace_artifact['viewUrl']
   elif 'filePath' in trace_artifact:
     return 'file://' + trace_artifact['filePath']
   else:

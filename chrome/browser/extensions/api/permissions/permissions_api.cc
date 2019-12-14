@@ -35,8 +35,6 @@ const char kCantRemoveRequiredPermissionsError[] =
     "You cannot remove required permissions.";
 const char kNotInManifestPermissionsError[] =
     "Only permissions specified in the manifest may be requested.";
-const char kCannotBeOptionalError[] =
-    "The optional permissions API does not support '*'.";
 const char kUserGestureRequiredError[] =
     "This function must be called during a user gesture";
 
@@ -77,9 +75,6 @@ ExtensionFunction::ResponseAction PermissionsContainsFunction::Run() {
       // |unpack_result| if there are any unlisted.
       unpack_result->unlisted_apis.empty() &&
       unpack_result->unlisted_hosts.is_empty() &&
-      // Unsupported optional permissions can never be granted, so we know if
-      // there are any specified, the extension doesn't actively have them.
-      unpack_result->unsupported_optional_apis.empty() &&
       // Restricted file scheme patterns cannot be active on the extension,
       // since it doesn't have file access in that case.
       unpack_result->restricted_file_scheme_patterns.is_empty() &&
@@ -134,12 +129,6 @@ ExtensionFunction::ResponseAction PermissionsRemoveFunction::Run() {
   if (!unpack_result->unlisted_apis.empty() ||
       !unpack_result->unlisted_hosts.is_empty()) {
     return RespondNow(Error(kNotInManifestPermissionsError));
-  }
-
-  if (!unpack_result->unsupported_optional_apis.empty()) {
-    return RespondNow(
-        Error(kCannotBeOptionalError,
-              (*unpack_result->unsupported_optional_apis.begin())->name()));
   }
 
   // Make sure we only remove optional permissions, and not required
@@ -234,12 +223,6 @@ ExtensionFunction::ResponseAction PermissionsRequestFunction::Run() {
   if (!unpack_result->unlisted_apis.empty() ||
       !unpack_result->unlisted_hosts.is_empty()) {
     return RespondNow(Error(kNotInManifestPermissionsError));
-  }
-
-  if (!unpack_result->unsupported_optional_apis.empty()) {
-    return RespondNow(
-        Error(kCannotBeOptionalError,
-              (*unpack_result->unsupported_optional_apis.begin())->name()));
   }
 
   if (!unpack_result->restricted_file_scheme_patterns.is_empty()) {

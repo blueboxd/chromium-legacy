@@ -191,17 +191,15 @@ public class BackgroundTaskSchedulerPrefsTest {
     @Feature("BackgroundTaskScheduler")
     public void testMigrationToProto() {
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        String prefsEntry1 =
-                BackgroundTaskSchedulerPrefs.ScheduledTaskPreferenceEntry.createForTaskInfo(mTask1)
-                        .toString();
         Set<String> scheduledTasks = prefs.getStringSet(
                 BackgroundTaskSchedulerPrefs.KEY_SCHEDULED_TASKS, new HashSet<String>(1));
-        scheduledTasks.add(prefsEntry1);
 
-        String prefsEntry2 =
-                BackgroundTaskSchedulerPrefs.ScheduledTaskPreferenceEntry.createForTaskInfo(mTask2)
-                        .toString();
-        scheduledTasks.add(prefsEntry2);
+        // Create a valid BackgroundTaskSchedulerPrefs entry corresponding to TaskIds.TEST.
+        scheduledTasks.add("foo:33656");
+
+        // Create a valid BackgroundTaskSchedulerPrefs entry corresponding to
+        // TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID.
+        scheduledTasks.add("foo:77");
 
         SharedPreferences.Editor editor = prefs.edit();
         editor.putStringSet(BackgroundTaskSchedulerPrefs.KEY_SCHEDULED_TASKS, scheduledTasks);

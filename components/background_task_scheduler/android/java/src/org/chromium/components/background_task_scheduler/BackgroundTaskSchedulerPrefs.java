@@ -40,14 +40,7 @@ public class BackgroundTaskSchedulerPrefs {
     @VisibleForTesting
     static class ScheduledTaskPreferenceEntry {
         private static final String ENTRY_SEPARATOR = ":";
-        private String mBackgroundTaskClass;
         private int mTaskId;
-
-        /** Creates a scheduled task shared preference entry from task info. */
-        public static ScheduledTaskPreferenceEntry createForTaskInfo(TaskInfo taskInfo) {
-            return new ScheduledTaskPreferenceEntry(
-                    taskInfo.getBackgroundTaskClass().getName(), taskInfo.getTaskId());
-        }
 
         /**
          * Parses a preference entry from input string.
@@ -68,21 +61,11 @@ public class BackgroundTaskSchedulerPrefs {
             } catch (NumberFormatException e) {
                 return null;
             }
-            return new ScheduledTaskPreferenceEntry(entryParts[0], taskId);
+            return new ScheduledTaskPreferenceEntry(taskId);
         }
 
-        public ScheduledTaskPreferenceEntry(String className, int taskId) {
-            mBackgroundTaskClass = className;
+        public ScheduledTaskPreferenceEntry(int taskId) {
             mTaskId = taskId;
-        }
-
-        /**
-         * Converts a task info to a shared preference entry in the format:
-         * BACKGROUND_TASK_CLASS_NAME:TASK_ID.
-         */
-        @Override
-        public String toString() {
-            return mBackgroundTaskClass + ENTRY_SEPARATOR + mTaskId;
         }
 
         /** Gets the ID of the task in this entry. */

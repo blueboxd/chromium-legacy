@@ -9,6 +9,8 @@
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/multidevice/software_feature.h"
+#include "chromeos/services/device_sync/fake_cryptauth_feature_status_setter.h"
+#include "chromeos/services/device_sync/feature_status_change.h"
 #include "chromeos/services/device_sync/mock_cryptauth_client.h"
 #include "chromeos/services/device_sync/proto/enum_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -23,11 +25,18 @@ namespace device_sync {
 
 namespace {
 
-enum class Result { kSuccess, kErrorSettingFeature, kErrorFindingEligible };
+enum class Result {
+  kSuccess,
+  kErrorSettingSoftwareFeature,
+  kErrorSettingFeatureStatus,
+  kErrorFindingEligible
+};
 
 // Arbitrarily choose different error types which match to Result types.
-const NetworkRequestError kErrorSettingFeatureNetworkRequestError =
+const NetworkRequestError kErrorSettingSoftwareFeatureNetworkRequestError =
     NetworkRequestError::kOffline;
+const NetworkRequestError kErrorSettingFeatureStatusNetworkRequestError =
+    NetworkRequestError::kBadRequest;
 const NetworkRequestError kErrorFindingEligibleNetworkRequestError =
     NetworkRequestError::kEndpointNotFound;
 
@@ -35,6 +44,10 @@ const char kBetterTogetherHostCallbackBluetoothAddress[] =
     "BETTER_TOGETHER_HOST";
 const char kBetterTogetherClientCallbackBluetoothAddress[] =
     "BETTER_TOGETHER_CLIENT";
+
+const char kInstanceId0[] = "instanceId0";
+const char kInstanceId1[] = "instanceId1";
+const char kInstanceId2[] = "instanceId2";
 
 std::vector<cryptauth::ExternalDeviceInfo>
 CreateExternalDeviceInfosForRemoteDevices(
@@ -54,7 +67,8 @@ CreateExternalDeviceInfosForRemoteDevices(
 
 class DeviceSyncSoftwareFeatureManagerImplTest
     : public testing::Test,
-      public MockCryptAuthClientFactory::Observer {
+      public MockCryptAuthClientFactory::Observer,
+      public FakeCryptAuthFeatureStatusSetter::Delegate {
  public:
   DeviceSyncSoftwareFeatureManagerImplTest()
       : all_test_external_device_infos_(
@@ -73,13 +87,20 @@ class DeviceSyncSoftwareFeatureManagerImplTest
         std::make_unique<MockCryptAuthClientFactory>(
             MockCryptAuthClientFactory::MockType::MAKE_NICE_MOCKS);
     mock_cryptauth_client_factory_->AddObserver(this);
+
+    fake_cryptauth_feature_status_setter_ =
+        std::make_unique<FakeCryptAuthFeatureStatusSetter>();
+    fake_cryptauth_feature_status_setter_->set_delegate(this);
+
     software_feature_manager_ =
         SoftwareFeatureManagerImpl::Factory::NewInstance(
-            mock_cryptauth_client_factory_.get());
+            mock_cryptauth_client_factory_.get(),
+            fake_cryptauth_feature_status_setter_.get());
   }
 
   void TearDown() override {
     mock_cryptauth_client_factory_->RemoveObserver(this);
+    fake_cryptauth_feature_status_setter_->set_delegate(nullptr);
   }
 
   void OnCryptAuthClientCreated(MockCryptAuthClient* client) override {
@@ -100,7 +121,7 @@ class DeviceSyncSoftwareFeatureManagerImplTest
     last_toggle_request_ = request;
     toggle_easy_unlock_callback_ = callback;
     error_callback_ = error_callback;
-    error_code_ = kErrorSettingFeatureNetworkRequestError;
+    error_code_ = kErrorSettingSoftwareFeatureNetworkRequestError;
   }
 
   // Mock CryptAuthClient::FindEligibleUnlockDevices() implementation.
@@ -112,6 +133,11 @@ class DeviceSyncSoftwareFeatureManagerImplTest
     find_eligible_unlock_devices_callback_ = callback;
     error_callback_ = error_callback;
     error_code_ = kErrorFindingEligibleNetworkRequestError;
+  }
+
+  // FakeCryptAuthFeatureStatusSetter::Delegate:
+  void OnSetFeatureStatusCalled() override {
+    error_code_ = kErrorSettingFeatureStatusNetworkRequestError;
   }
 
   cryptauth::FindEligibleUnlockDevicesResponse
@@ -172,6 +198,18 @@ class DeviceSyncSoftwareFeatureManagerImplTest
         is_exclusive);
   }
 
+  void SetFeatureStatus(const std::string& device_id,
+                        multidevice::SoftwareFeature feature,
+                        FeatureStatusChange status_change) {
+    software_feature_manager_->SetFeatureStatus(
+        device_id, feature, status_change,
+        base::BindOnce(
+            &DeviceSyncSoftwareFeatureManagerImplTest::OnFeatureStatusSet,
+            base::Unretained(this)),
+        base::BindOnce(&DeviceSyncSoftwareFeatureManagerImplTest::OnError,
+                       base::Unretained(this)));
+  }
+
   void FindEligibleDevices(multidevice::SoftwareFeature feature) {
     software_feature_manager_->FindEligibleDevices(
         feature,
@@ -182,7 +220,24 @@ class DeviceSyncSoftwareFeatureManagerImplTest
                    base::Unretained(this)));
   }
 
+  void VerifyLastSetFeatureStatusRequest(
+      const std::string& expected_device_id,
+      multidevice::SoftwareFeature expected_feature,
+      FeatureStatusChange expected_status_change) {
+    ASSERT_EQ(1u, fake_cryptauth_feature_status_setter_->requests().size());
+    EXPECT_EQ(
+        expected_device_id,
+        fake_cryptauth_feature_status_setter_->requests().back().device_id);
+    EXPECT_EQ(expected_feature,
+              fake_cryptauth_feature_status_setter_->requests().back().feature);
+    EXPECT_EQ(
+        expected_status_change,
+        fake_cryptauth_feature_status_setter_->requests().back().status_change);
+  }
+
   void OnSoftwareFeatureStateSet() { result_ = Result::kSuccess; }
+
+  void OnFeatureStatusSet() { result_ = Result::kSuccess; }
 
   void OnEligibleDevicesFound(
       const std::vector<cryptauth::ExternalDeviceInfo>& eligible_devices,
@@ -193,8 +248,10 @@ class DeviceSyncSoftwareFeatureManagerImplTest
   }
 
   void OnError(NetworkRequestError error) {
-    if (error == kErrorSettingFeatureNetworkRequestError)
-      result_ = Result::kErrorSettingFeature;
+    if (error == kErrorSettingSoftwareFeatureNetworkRequestError)
+      result_ = Result::kErrorSettingSoftwareFeature;
+    else if (error == kErrorSettingFeatureStatusNetworkRequestError)
+      result_ = Result::kErrorSettingFeatureStatus;
     else if (error == kErrorFindingEligibleNetworkRequestError)
       result_ = Result::kErrorFindingEligible;
     else
@@ -207,6 +264,19 @@ class DeviceSyncSoftwareFeatureManagerImplTest
     ASSERT_TRUE(!success_callback.is_null());
     toggle_easy_unlock_callback_.Reset();
     success_callback.Run(cryptauth::ToggleEasyUnlockResponse());
+  }
+
+  void InvokeSetFeatureStatusCallback() {
+    ASSERT_EQ(1u, fake_cryptauth_feature_status_setter_->requests().size());
+
+    base::OnceClosure success_callback =
+        std::move(fake_cryptauth_feature_status_setter_->requests()
+                      .back()
+                      .success_callback);
+    ASSERT_FALSE(success_callback.is_null());
+    fake_cryptauth_feature_status_setter_->requests().pop_back();
+
+    std::move(success_callback).Run();
   }
 
   void InvokeFindEligibleDevicesCallback(
@@ -226,6 +296,19 @@ class DeviceSyncSoftwareFeatureManagerImplTest
     error_callback.Run(*error_code_);
   }
 
+  void InvokeSetFeatureStatusErrorCallback() {
+    ASSERT_EQ(1u, fake_cryptauth_feature_status_setter_->requests().size());
+
+    base::OnceCallback<void(NetworkRequestError)> error_callback =
+        std::move(fake_cryptauth_feature_status_setter_->requests()
+                      .back()
+                      .error_callback);
+    ASSERT_FALSE(error_callback.is_null());
+    fake_cryptauth_feature_status_setter_->requests().pop_back();
+
+    std::move(error_callback).Run(*error_code_);
+  }
+
   Result GetResultAndReset() {
     EXPECT_TRUE(result_);
     Result result = *result_;
@@ -240,6 +323,8 @@ class DeviceSyncSoftwareFeatureManagerImplTest
   const std::vector<cryptauth::ExternalDeviceInfo>
       test_ineligible_external_devices_infos_;
 
+  std::unique_ptr<FakeCryptAuthFeatureStatusSetter>
+      fake_cryptauth_feature_status_setter_;
   std::unique_ptr<MockCryptAuthClientFactory> mock_cryptauth_client_factory_;
   std::unique_ptr<SoftwareFeatureManager> software_feature_manager_;
 
@@ -273,10 +358,16 @@ TEST_F(DeviceSyncSoftwareFeatureManagerImplTest,
   SetSoftwareFeatureState(multidevice::SoftwareFeature::kBetterTogetherHost,
                           test_eligible_external_devices_infos_[0],
                           true /* enable */);
+  SetFeatureStatus(kInstanceId0,
+                   multidevice::SoftwareFeature::kBetterTogetherHost,
+                   FeatureStatusChange::kEnableExclusively);
   FindEligibleDevices(multidevice::SoftwareFeature::kBetterTogetherHost);
   SetSoftwareFeatureState(multidevice::SoftwareFeature::kBetterTogetherClient,
                           test_eligible_external_devices_infos_[1],
                           false /* enable */);
+  SetFeatureStatus(kInstanceId1,
+                   multidevice::SoftwareFeature::kBetterTogetherClient,
+                   FeatureStatusChange::kEnableNonExclusively);
   FindEligibleDevices(multidevice::SoftwareFeature::kBetterTogetherClient);
 
   EXPECT_EQ(SoftwareFeatureEnumToString(
@@ -285,6 +376,12 @@ TEST_F(DeviceSyncSoftwareFeatureManagerImplTest,
   EXPECT_EQ(true, last_toggle_request_.enable());
   EXPECT_EQ(false, last_toggle_request_.is_exclusive());
   InvokeSetSoftwareFeatureCallback();
+  EXPECT_EQ(Result::kSuccess, GetResultAndReset());
+
+  VerifyLastSetFeatureStatusRequest(
+      kInstanceId0, multidevice::SoftwareFeature::kBetterTogetherHost,
+      FeatureStatusChange::kEnableExclusively);
+  InvokeSetFeatureStatusCallback();
   EXPECT_EQ(Result::kSuccess, GetResultAndReset());
 
   EXPECT_EQ(SoftwareFeatureEnumToString(
@@ -302,6 +399,12 @@ TEST_F(DeviceSyncSoftwareFeatureManagerImplTest,
   EXPECT_EQ(false, last_toggle_request_.enable());
   EXPECT_EQ(false, last_toggle_request_.is_exclusive());
   InvokeSetSoftwareFeatureCallback();
+  EXPECT_EQ(Result::kSuccess, GetResultAndReset());
+
+  VerifyLastSetFeatureStatusRequest(
+      kInstanceId1, multidevice::SoftwareFeature::kBetterTogetherClient,
+      FeatureStatusChange::kEnableNonExclusively);
+  InvokeSetFeatureStatusCallback();
   EXPECT_EQ(Result::kSuccess, GetResultAndReset());
 
   EXPECT_EQ(SoftwareFeatureEnumToString(
@@ -332,7 +435,7 @@ TEST_F(DeviceSyncSoftwareFeatureManagerImplTest,
   EXPECT_EQ(true, last_toggle_request_.enable());
   EXPECT_EQ(false, last_toggle_request_.is_exclusive());
   InvokeErrorCallback();
-  EXPECT_EQ(Result::kErrorSettingFeature, GetResultAndReset());
+  EXPECT_EQ(Result::kErrorSettingSoftwareFeature, GetResultAndReset());
 
   EXPECT_EQ(SoftwareFeatureEnumToString(
                 cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT),
@@ -348,6 +451,37 @@ TEST_F(DeviceSyncSoftwareFeatureManagerImplTest,
   EXPECT_EQ(true, last_toggle_request_.enable());
   EXPECT_EQ(false, last_toggle_request_.is_exclusive());
   InvokeSetSoftwareFeatureCallback();
+  EXPECT_EQ(Result::kSuccess, GetResultAndReset());
+}
+
+TEST_F(DeviceSyncSoftwareFeatureManagerImplTest,
+       TestMultipleSetFeatureStatusRequests) {
+  SetFeatureStatus(kInstanceId0,
+                   multidevice::SoftwareFeature::kBetterTogetherHost,
+                   FeatureStatusChange::kEnableExclusively);
+  SetFeatureStatus(kInstanceId1,
+                   multidevice::SoftwareFeature::kBetterTogetherClient,
+                   FeatureStatusChange::kEnableNonExclusively);
+  SetFeatureStatus(kInstanceId2,
+                   multidevice::SoftwareFeature::kBetterTogetherHost,
+                   FeatureStatusChange::kEnableNonExclusively);
+
+  VerifyLastSetFeatureStatusRequest(
+      kInstanceId0, multidevice::SoftwareFeature::kBetterTogetherHost,
+      FeatureStatusChange::kEnableExclusively);
+  InvokeSetFeatureStatusErrorCallback();
+  EXPECT_EQ(Result::kErrorSettingFeatureStatus, GetResultAndReset());
+
+  VerifyLastSetFeatureStatusRequest(
+      kInstanceId1, multidevice::SoftwareFeature::kBetterTogetherClient,
+      FeatureStatusChange::kEnableNonExclusively);
+  InvokeSetFeatureStatusCallback();
+  EXPECT_EQ(Result::kSuccess, GetResultAndReset());
+
+  VerifyLastSetFeatureStatusRequest(
+      kInstanceId2, multidevice::SoftwareFeature::kBetterTogetherHost,
+      FeatureStatusChange::kEnableNonExclusively);
+  InvokeSetFeatureStatusCallback();
   EXPECT_EQ(Result::kSuccess, GetResultAndReset());
 }
 
@@ -388,13 +522,22 @@ TEST_F(DeviceSyncSoftwareFeatureManagerImplTest, TestOrderViaMultipleErrors) {
   SetSoftwareFeatureState(multidevice::SoftwareFeature::kBetterTogetherHost,
                           test_eligible_external_devices_infos_[0],
                           true /* enable */);
+  SetFeatureStatus(kInstanceId0,
+                   multidevice::SoftwareFeature::kBetterTogetherHost,
+                   FeatureStatusChange::kEnableExclusively);
   FindEligibleDevices(multidevice::SoftwareFeature::kBetterTogetherHost);
 
   EXPECT_EQ(SoftwareFeatureEnumToString(
                 cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST),
             last_toggle_request_.feature());
   InvokeErrorCallback();
-  EXPECT_EQ(Result::kErrorSettingFeature, GetResultAndReset());
+  EXPECT_EQ(Result::kErrorSettingSoftwareFeature, GetResultAndReset());
+
+  VerifyLastSetFeatureStatusRequest(
+      kInstanceId0, multidevice::SoftwareFeature::kBetterTogetherHost,
+      FeatureStatusChange::kEnableExclusively);
+  InvokeSetFeatureStatusErrorCallback();
+  EXPECT_EQ(Result::kErrorSettingFeatureStatus, GetResultAndReset());
 
   EXPECT_EQ(SoftwareFeatureEnumToString(
                 cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST),
@@ -416,7 +559,7 @@ TEST_F(DeviceSyncSoftwareFeatureManagerImplTest, TestIsExclusive) {
   EXPECT_EQ(true, last_toggle_request_.enable());
   EXPECT_EQ(true, last_toggle_request_.is_exclusive());
   InvokeErrorCallback();
-  EXPECT_EQ(Result::kErrorSettingFeature, GetResultAndReset());
+  EXPECT_EQ(Result::kErrorSettingSoftwareFeature, GetResultAndReset());
 }
 
 TEST_F(DeviceSyncSoftwareFeatureManagerImplTest, TestEasyUnlockSpecialCase) {
@@ -432,7 +575,7 @@ TEST_F(DeviceSyncSoftwareFeatureManagerImplTest, TestEasyUnlockSpecialCase) {
   EXPECT_EQ(true, last_toggle_request_.apply_to_all());
   EXPECT_FALSE(last_toggle_request_.has_public_key());
   InvokeErrorCallback();
-  EXPECT_EQ(Result::kErrorSettingFeature, GetResultAndReset());
+  EXPECT_EQ(Result::kErrorSettingSoftwareFeature, GetResultAndReset());
 }
 
 }  // namespace device_sync

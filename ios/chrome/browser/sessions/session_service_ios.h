@@ -11,8 +11,7 @@
 #include "base/sequenced_task_runner.h"
 
 @class SessionIOS;
-
-using SessionIOSFactory = SessionIOS* (^)();
+@class SessionIOSFactory;
 
 // A singleton service for saving the current session. Can either save on a
 // delay or immediately. Saving is always performed on a separate thread.
@@ -32,7 +31,7 @@ using SessionIOSFactory = SessionIOS* (^)();
 // is ignored. If YES, the save is done now, cancelling any pending calls.
 // Either way, the save is done on a separate thread to avoid blocking the UI
 // thread.
-- (void)saveSession:(SessionIOSFactory)factory
+- (void)saveSession:(__weak SessionIOSFactory*)factory
           directory:(NSString*)directory
         immediately:(BOOL)immediately;
 

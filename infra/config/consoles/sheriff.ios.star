@@ -36,11 +36,6 @@ luci.console_view(
             short_name = 'sim',
         ),
         luci.console_view_entry(
-            builder = 'ci/ios-slimnav',
-            category = 'chromium.mac',
-            short_name = 'slim',
-        ),
-        luci.console_view_entry(
             builder = 'ci/ios13-sdk-device',
             category = 'chromium.fyi|13',
             short_name = 'dev',

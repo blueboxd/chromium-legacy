@@ -2544,9 +2544,6 @@
   <message name="IDS_ENTERPRISE_ENROLLMENT_ERROR_ACTIVE_DIRECTORY_POLICY_FETCH" desc="Error message shown on the enrollment screen when the system failed to fetch device policy from the local server, e.g. Samba or Active Directory.">
     Oops!  The system failed to fetch policy for your device.
   </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_ERROR_LICENSE_REQUEST" desc="Error message shown on the enrollment screen when the system failed to retrieve available license types.">
-    Oops!  The system failed to load available licenses.
-  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_ERROR_SAVE_DEVICE_CONFIGURATION" desc="Error message shown on the enrollment screen when the system failed to save some part of the device configuration. E.g. token from the Device Management server.">
     Oops!  The system failed to save device configuration.
   </message>
@@ -2741,24 +2738,6 @@
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_EXPLAIN_ATTRIBUTE_LINK" desc="Text on the link to the device attribute update help article.">
     Learn more.
-  </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_LICENSE_SELECTION" desc="The subtitle on the license selection prompt screen.">
-    Choose license type
-  </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_LICENSE_SELECTION_EXPLANATION" desc="Multiple licenses message to be shown on license selection prompt screen.">
-    We have detected multiple license types for your domain. Please chose one to continue.
-  </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_PERPETUAL_LICENSE_TYPE" desc="Text on radio button to select Perpetual License during enrollment.">
-    Perpetual
-  </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_ANNUAL_LICENSE_TYPE" desc="Text on radio button to select Annual License during enrollment.">
-    Annual
-  </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_KIOSK_LICENSE_TYPE" desc="Text on radio button to select Single App Kiosk License during enrollment.">
-    Single App Kiosk
-  </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_LICENSES_REMAINING_TEMPLATE"  desc="Label indicating the number of remaining licenses for some license type.">
-    <ph name="LICENSE_TYPE">$1<ex>Perpetual</ex></ph> (<ph name="LICENSE_COUNT">$2<ex>10</ex></ph> rem.)
   </message>
 
   <!-- About network UI (chrome://network) display strings (for developer

@@ -80,30 +80,6 @@ void EnrollmentHelperMixin::ExpectSuccessfulOAuthEnrollment() {
           [this]() { mock_->status_consumer()->OnDeviceEnrolled(); }));
 }
 
-void EnrollmentHelperMixin::ExpectAvailableLicenseCount(int perpetual,
-                                                        int annual,
-                                                        int kiosk) {
-  std::map<policy::LicenseType, int> license_map;
-  if (perpetual >= 0)
-    license_map[policy::LicenseType::PERPETUAL] = perpetual;
-  if (annual >= 0)
-    license_map[policy::LicenseType::ANNUAL] = annual;
-  if (kiosk >= 0)
-    license_map[policy::LicenseType::KIOSK] = kiosk;
-  CHECK(license_map.size() > 1);
-  EXPECT_CALL(*mock_, EnrollUsingAuthCode(kTestAuthCode))
-      .WillOnce(InvokeWithoutArgs([this, license_map]() {
-        mock_->status_consumer()->OnMultipleLicensesAvailable(license_map);
-      }));
-}
-
-void EnrollmentHelperMixin::ExpectSuccessfulEnrollmentWithLicense(
-    policy::LicenseType license_type) {
-  EXPECT_CALL(*mock_, UseLicenseType(license_type))
-      .WillOnce(InvokeWithoutArgs(
-          [this]() { mock_->status_consumer()->OnDeviceEnrolled(); }));
-}
-
 void EnrollmentHelperMixin::ExpectAttestationEnrollmentSuccess() {
   EXPECT_CALL(*mock_, EnrollUsingAttestation())
       .WillOnce(InvokeWithoutArgs(

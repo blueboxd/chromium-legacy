@@ -25,7 +25,6 @@ luci.list_view(
         'try/ios-simulator-xcode-clang',
         'try/ios13-beta-simulator',
         'try/ios13-sdk-simulator',
-        'try/ios-slimnav',
         'try/mac-osxbeta-rel',
         'try/mac-rel',
         'try/mac_chromium_10.10',

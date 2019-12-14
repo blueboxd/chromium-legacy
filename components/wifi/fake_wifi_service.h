@@ -54,8 +54,8 @@ class FakeWiFiService : public WiFiService {
                         std::string* error) override;
   void SetEventObservers(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      const NetworkGuidListCallback& networks_changed_observer,
-      const NetworkGuidListCallback& network_list_changed_observer) override;
+      NetworkGuidListCallback networks_changed_observer,
+      NetworkGuidListCallback network_list_changed_observer) override;
   void RequestConnectedNetworkUpdate() override;
   void GetConnectedNetworkSSID(std::string* ssid,
                                std::string* error) override;

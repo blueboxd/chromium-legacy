@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "chromecast/media/audio/capture_service/message_parsing_util.h"
+#include "chromecast/media/audio/capture_service/message_parsing_utils.h"
 
 struct Environment {
   Environment() { logging::SetMinLogLevel(logging::LOG_FATAL); }
@@ -14,8 +14,8 @@ struct Environment {
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   static Environment env;
-  int64_t timestamp;
-  auto audio = chromecast::media::capture_service::ReadDataToAudioBus(
-      reinterpret_cast<const char*>(data), size, &timestamp);
+  PacketInfo info;
+  chromecast::media::capture_service::ReadHeader(
+      reinterpret_cast<const char*>(data), size, &info);
   return 0;
 }

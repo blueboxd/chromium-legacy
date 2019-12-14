@@ -98,7 +98,7 @@ class UI_BASE_EXPORT SelectionRequestor {
     base::TimeTicks timeout;
 
     // Called to terminate the nested run loop.
-    base::Closure quit_closure;
+    base::OnceClosure quit_closure;
 
     // True if the request is complete.
     bool completed;

@@ -8,7 +8,6 @@
 <translation id="1032854598605920125">گھڑی کی سمت میں گھمائیں</translation>
 <translation id="1036348656032585052">آف کریں</translation>
 <translation id="1038842779957582377">نامعلوم نام</translation>
-<translation id="1039626062703039346">‏Chrome آپ کو اپنا Google اکاؤنٹ محفوظ اور پاس ورڈ تبدیل کرنے میں مدد کر سکتا ہے۔ یہ Google کو اس سائٹ کے بارے میں مطلع کرے گا۔</translation>
 <translation id="1050038467049342496">دیگر ایپس بند کریں</translation>
 <translation id="1055184225775184556">شامل کریں کو &amp;کالعدم کریں</translation>
 <translation id="1056898198331236512">وارننگ</translation>
@@ -300,7 +299,6 @@
 <translation id="2354001756790975382">دیگر بُک مارکس</translation>
 <translation id="2354430244986887761">‏Google محفوظ براؤزنگ کو حال ہی میں <ph name="SITE" /> پر <ph name="BEGIN_LINK" />نقصاندہ ایپس ملی ہیں<ph name="END_LINK" />۔</translation>
 <translation id="2355395290879513365">حملہ آور ان تصاویر کو دیکھ سکتے ہیں جنہیں آپ اس سائٹ پر دیکھ رہے ہیں اور ان میں ترمیم کر کے آپ کو دھوکہ دے سکتے ہیں۔</translation>
-<translation id="2355474962185559967">‏آپ نے ابھی ایک پُرفریب سائٹ پر اپنا پاس ورڈ درج کیا ہے۔ Chromium آپ کو <ph name="WEBSITE_1" /> پر جا کر ابھی اپنا پاس ورڈ تبدیل کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="2356070529366658676">پوچھیں</translation>
 <translation id="2359629602545592467">متعدد</translation>
 <translation id="2359808026110333948">جاری رکھیں</translation>
@@ -333,7 +331,6 @@
 <translation id="2495083838625180221">‏JSON پارسر</translation>
 <translation id="2495093607237746763">‏نشان زد کیے جانے پر، زیادہ تیزی سے فارم بھرنے کیلئے Chromium آپ کے کارڈ کی ایک کاپی اس آلہ پر اسٹور کرے گا۔</translation>
 <translation id="2498091847651709837">نیا کارڈ اسکین کریں</translation>
-<translation id="249825481377667906">‏Chromium آپ کی اپنا Google اکاؤنٹ محفوظ اور پاس ورڈ تبدیل کرنے میں مدد کر سکتا ہے۔ یہ Google کو اس سائٹ کے بارے میں مطلع کرے گا۔</translation>
 <translation id="2501278716633472235">پیچھے جائیں</translation>
 <translation id="2503184589641749290">ڈیبٹ اور پیشگی ادائیگی والے کارڈز قبول کیے جاتے ہیں</translation>
 <translation id="2505268675989099013">اکاؤنٹ محفوظ کریں</translation>
@@ -482,7 +479,6 @@
 <translation id="3228969707346345236">ترجمہ ناکام ہو گیا کیونکہ صفحہ پہلے سے ہی <ph name="LANGUAGE" /> میں ہے۔</translation>
 <translation id="3229041911291329567">آپ کے آلے اور براؤزر کے بارے میں ورژن کی معلومات</translation>
 <translation id="323107829343500871">‏<ph name="CREDIT_CARD" /> کا CVC درج کریں</translation>
-<translation id="3234392465377209614">‏آپ نے ابھی ایک پُرفریب سائٹ پر اپنا پاس ورڈ درج کیا ہے۔ Chromium آپ کو <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" />، اور <ph name="WEBSITE_3" /> پر جا کر ابھی اپنا پاس ورڈ تبدیل کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="3234666976984236645">اس سائٹ پر اہم مواد کا ہمیشہ پتا لگائیں</translation>
 <translation id="3262069459091978471">‏<ph name="LOOKALIKE_DOMAIN" /> <ph name="SUGGESTED_DOMAIN" /> کے مماثل لگ رہا ہے۔ بعض اوقات حملہ آور مماثل URLs کا استعمال کر کے سائٹس کی نقل کرتے ہیں۔</translation>
 <translation id="3270847123878663523">دوبارہ ترتیب &amp;کالعدم کریں</translation>
@@ -514,7 +510,6 @@
 <translation id="342781501876943858">‏اگر آپ نے اپنا پاس ورڈ دیگر سائٹس پر دوبارہ استعمال کیا ہے تو Chromium آپ کو اپنا پاس ورڈ ری سیٹ کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="3428151540071562330">‏ایک یا ایک سے زیادہ DnsOverHttpsTemplates سرور تمثیل URIs غلط ہیں اور استعمال نہیں کیے جائیں گے۔</translation>
 <translation id="3431636764301398940">اس کارڈ کو اس آلہ میں محفوظ کریں</translation>
-<translation id="3438790640050632698">‏آپ نے ابھی ایک پُرفریب سائٹ پر اپنا پاس ورڈ درج کیا ہے۔ Chrome آپ کو <ph name="WEBSITE_1" /> اور <ph name="WEBSITE_2" /> پر جا کر ابھی اپنا پاس ورڈ تبدیل کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">اس آلہ کے مالک نے ڈائناسور گیم کو آف کر دیا ہے۔</translation>
 <translation id="3447884698081792621">سرٹیفیکیٹ دکھائیں (<ph name="ISSUER" /> کی جانب سے جاری کردہ)</translation>
@@ -529,7 +524,6 @@
 <translation id="3495081129428749620"><ph name="PAGE_TITLE" />
 صفحے میں تلاش کریں</translation>
 <translation id="3512163584740124171">اسی پالیسی گروپ کی طرف سے آنے والی دوسری پالیسی میں ایک اعلی ترجیح ہونے کی وجہ سے یہ پالیسی نظر انداز کی جاتی ہے۔</translation>
-<translation id="3525469219100414032">‏آپ نے ابھی ایک پُرفریب سائٹ پر اپنا پاس ورڈ درج کیا ہے۔ Chrome آپ کو <ph name="WEBSITE_1" /> پر جا کر ابھی اپنا پاس ورڈ تبدیل کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="3528171143076753409">سرور کا سرٹیفکیٹ بھروسہ مند نہیں ہے۔</translation>
 <translation id="3528485271872257980">گہرا بھورا</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{مطابقت پذیر آلات پر کم از کم 1 آئٹم}=1{1 آئٹم (اور مطابقت پذیر آلات پر مزید)}other{# آئٹمز (اور مطابقت پذیر آلات پر مزید)}}</translation>
@@ -952,7 +946,6 @@
 <translation id="5565735124758917034">فعال</translation>
 <translation id="5570825185877910964">اکاؤنٹ محفوظ کریں</translation>
 <translation id="5571083550517324815">اس پتے سے پِک اپ نہیں کر سکتے۔ کوئی مختلف پتہ منتخب کریں۔</translation>
-<translation id="5572009199897554128">‏آپ نے ابھی ایک پُرفریب سائٹ پر اپنا پاس ورڈ درج کیا ہے۔ Chromium آپ کو <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" /> پر جا کر ابھی اپنا پاس ورڈ تبدیل کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="5580958916614886209">اپنا اختتامی مہینہ چیک کریں اور دوبارہ کوشش کریں</translation>
 <translation id="5586446728396275693">کوئي پتہ محفوظ نہیں ہے</translation>
 <translation id="5595485650161345191">پتے میں ترمیم کریں</translation>
@@ -1669,7 +1662,6 @@
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">‏آپ اپنے Google اکاؤنٹ تک رسائی سے محروم ہو سکتے ہیں۔ Chromium تجویز کرتا ہے کہ آپ ابھی اپنا پاس ورڈ تبدیل کریں۔ آپ سے سائن ان کرنے کو کہا جائے گا۔</translation>
 <translation id="939736085109172342">نیا فولڈر</translation>
-<translation id="940786960229275114">‏آپ نے ابھی ایک پُرفریب سائٹ پر اپنا پاس ورڈ درج کیا ہے۔ Chrome آپ کو <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" />، اور <ph name="WEBSITE_3" /> پر جا کر ابھی اپنا پاس ورڈ تبدیل کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="945855313015696284">مندرجہ ذیل معلومات چیک کریں اور کسی بھی غلط کارڈ کو حذف کریں</translation>
 <translation id="950736567201356821">اوپر تین بار سوراخ</translation>
 <translation id="951104842009476243">قبول کردہ ڈیبٹ اور پیشگی ادائیگی والے کارڈز</translation>

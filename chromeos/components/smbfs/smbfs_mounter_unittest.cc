@@ -12,11 +12,11 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/task_environment.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "chromeos/components/mojo_bootstrap/pending_connection_manager.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
@@ -74,8 +74,8 @@ class SmbFsMounterTest : public testing::Test {
  public:
   void PostMountEvent(const std::string& source_path,
                       const std::string& mount_path) {
-    base::PostTask(
-        FROM_HERE, {base::CurrentThread()},
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
         base::BindOnce(&chromeos::disks::MockDiskMountManager::NotifyMountEvent,
                        base::Unretained(&mock_disk_mount_manager_),
                        chromeos::disks::DiskMountManager::MOUNTING,
@@ -163,8 +163,8 @@ class SmbFsMounterE2eTest : public testing::Test {
  public:
   void PostMountEvent(const std::string& source_path,
                       const std::string& mount_path) {
-    base::PostTask(
-        FROM_HERE, {base::CurrentThread()},
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
         base::BindOnce(&chromeos::disks::MockDiskMountManager::NotifyMountEvent,
                        base::Unretained(&mock_disk_mount_manager_),
                        chromeos::disks::DiskMountManager::MOUNTING,
@@ -272,9 +272,8 @@ TEST_F(SmbFsMounterE2eTest, MountSuccess) {
         // providing a Mojo connection endpoint.
         const std::string token =
             source_path.substr(sizeof(kMountUrlPrefix) - 1);
-        base::PostTask(
-            FROM_HERE, {base::CurrentThread()},
-            base::BindLambdaForTesting([token, &channel]() {
+        base::SequencedTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::BindLambdaForTesting([token, &channel]() {
               mojo_bootstrap::PendingConnectionManager::Get().OpenIpcChannel(
                   token,
                   channel.TakeLocalEndpoint().TakePlatformHandle().TakeFD());

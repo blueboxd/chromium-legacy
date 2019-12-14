@@ -36,10 +36,10 @@ class Location;
 CAPTURE_EXPORT
 @interface DeviceNameAndTransportType : NSObject {
  @private
-  base::scoped_nsobject<NSString> deviceName_;
+  base::scoped_nsobject<NSString> _deviceName;
   // The transport type of the device (USB, PCI, etc), values are defined in
   // <IOKit/audio/IOAudioTypes.h> as kIOAudioDeviceTransportType*.
-  int32_t transportType_;
+  int32_t _transportType;
 }
 
 - (id)initWithName:(NSString*)name transportType:(int32_t)transportType;

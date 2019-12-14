@@ -105,19 +105,27 @@ void RootFrameSinkProxy::RemoveChildFrameSinkIdOnViz(
   without_gpu_->RemoveChildFrameSinkId(frame_sink_id);
 }
 
+void RootFrameSinkProxy::OnInputEvent() {
+  DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
+  had_input_event_ = true;
+}
+
 bool RootFrameSinkProxy::BeginFrame(const viz::BeginFrameArgs& args) {
   DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
   bool invalidate = false;
   VizCompositorThreadRunnerWebView::GetInstance()->PostTaskAndBlock(
       FROM_HERE, base::BindOnce(&RootFrameSinkProxy::BeginFrameOnViz,
-                                base::Unretained(this), args, &invalidate));
+                                base::Unretained(this), args, had_input_event_,
+                                &invalidate));
+  had_input_event_ = false;
   return invalidate;
 }
 
 void RootFrameSinkProxy::BeginFrameOnViz(const viz::BeginFrameArgs& args,
+                                         bool had_input_event,
                                          bool* invalidate) {
   DCHECK_CALLED_ON_VALID_THREAD(viz_thread_checker_);
-  *invalidate = without_gpu_->BeginFrame(args);
+  *invalidate = without_gpu_->BeginFrame(args, had_input_event);
 }
 
 RootFrameSinkGetter RootFrameSinkProxy::GetRootFrameSinkCallback() {

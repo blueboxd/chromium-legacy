@@ -525,7 +525,6 @@ css_properties("make_core_generated_css_subclasses") {
       "../build/scripts/core/css/properties/make_css_property_subclasses.py"
   in_files = [ "css/properties/css_property_methods.json5" ]
   other_inputs = [
-    "css/css_properties.json5",
     "../build/scripts/core/css/properties/templates/css_properties.h.tmpl",
     "../build/scripts/core/css/properties/templates/css_properties.cc.tmpl",
   ]

@@ -1710,6 +1710,44 @@ TEST(FormParserTest, CVC) {
   });
 }
 
+// The parser should avoid identifying Social Security number and
+// one time password fields as passwords.
+TEST(FormParserTest, SSN_and_OTP) {
+  for (const char* field_name :
+       {"SocialSecurityNumber", "OneTimePassword", "SMS-token"}) {
+    CheckTestData({
+        {
+            .description_for_logging = "Field name matches the SSN/OTP pattern,"
+                                       "Ignore that one.",
+            .fields =
+                {
+                    {.role = ElementRole::USERNAME,
+                     .form_control_type = "text"},
+                    {.name = field_name, .form_control_type = "password"},
+                    {.role = ElementRole::CURRENT_PASSWORD,
+                     .form_control_type = "password"},
+                },
+            // The result should be trusted for more than just fallback, because
+            // there is an actual password field present.
+            .fallback_only = false,
+        },
+        {
+            .description_for_logging = "Create a fallback for the only password"
+                                       "field being an SSN/OTP field",
+            .fields =
+                {
+                    {.role = ElementRole::USERNAME,
+                     .form_control_type = "text"},
+                    {.role = ElementRole::CURRENT_PASSWORD,
+                     .name = field_name,
+                     .form_control_type = "password"},
+                },
+            .fallback_only = true,
+        },
+    });
+  }
+}
+
 // The parser should avoid identifying NOT_PASSWORD fields as passwords.
 TEST(FormParserTest, NotPasswordField) {
   CheckTestData({

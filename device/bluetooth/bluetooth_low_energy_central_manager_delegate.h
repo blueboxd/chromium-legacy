@@ -27,7 +27,7 @@ class BluetoothLowEnergyDiscoveryManagerMac;
 // This class will serve as the Objective-C delegate of CBCentralManager.
 @interface BluetoothLowEnergyCentralManagerDelegate
     : NSObject<CBCentralManagerDelegate> {
-  std::unique_ptr<device::BluetoothLowEnergyCentralManagerBridge> bridge_;
+  std::unique_ptr<device::BluetoothLowEnergyCentralManagerBridge> _bridge;
 }
 
 - (id)initWithDiscoveryManager:

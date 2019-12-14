@@ -6,6 +6,7 @@
 from blinkbuild.name_style_converter import NameStyleConverter
 from core.css.field_alias_expander import FieldAliasExpander
 import json5_generator
+from make_origin_trials import OriginTrialsWriter
 from name_utilities import enum_key_for_css_property, id_for_css_property
 from name_utilities import enum_key_for_css_property_alias, id_for_css_property_alias
 
@@ -57,9 +58,10 @@ def check_property_parameters(property_to_check):
 
 class CSSProperties(object):
     def __init__(self, file_paths):
-        assert len(file_paths) >= 2, \
-            "CSSProperties at least needs both css_properties.json5 and \
-            computed_style_field_aliases.json5 to function"
+        assert len(file_paths) >= 3, \
+            "CSSProperties at least needs both css_properties.json5, \
+            computed_style_field_aliases.json5 and \
+            runtime_enabled_features.json5 to function"
 
         # computed_style_field_aliases.json5. Used to expand out parameters used
         # in the various generators for ComputedStyle.
@@ -85,7 +87,14 @@ class CSSProperties(object):
         css_properties_file = json5_generator.Json5File.load_from_files(
             [file_paths[0]])
         self._default_parameters = css_properties_file.parameters
-        self.add_properties(css_properties_file.name_dictionaries)
+        # Map of feature name -> origin trial feature name
+        origin_trial_features = {}
+        # TODO(crbug/1031309): Refactor OriginTrialsWriter to reuse logic here.
+        origin_trials_writer = OriginTrialsWriter([file_paths[2]], "")
+        for feature in origin_trials_writer.origin_trial_features:
+            origin_trial_features[str(feature['name'])] = True
+
+        self.add_properties(css_properties_file.name_dictionaries, origin_trial_features)
 
         assert self._first_enum_value + len(self._properties_by_id) < \
             self._alias_offset, \
@@ -96,7 +105,7 @@ class CSSProperties(object):
 
         # Process extra files passed in.
         self._extra_fields = []
-        for i in range(2, len(file_paths)):
+        for i in range(3, len(file_paths)):
             fields = json5_generator.Json5File.load_from_files(
                 [file_paths[i]],
                 default_parameters=self._default_parameters)
@@ -104,12 +113,14 @@ class CSSProperties(object):
         for field in self._extra_fields:
             self.expand_parameters(field)
 
-    def add_properties(self, properties):
+    def add_properties(self, properties, origin_trial_features):
         for property_ in properties:
             self._properties_by_name[property_['name'].original] = property_
 
         for property_ in properties:
             self.expand_visited(property_)
+            property_['in_origin_trial'] = False
+            self.expand_origin_trials(property_, origin_trial_features)
 
         self._aliases = [
             property_ for property_ in properties if property_['alias_for']]
@@ -158,6 +169,12 @@ class CSSProperties(object):
         self.expand_aliases()
         self._properties_including_aliases = self._longhands + \
             self._shorthands + self._aliases
+
+    def expand_origin_trials(self, property_, origin_trial_features):
+        if not property_['runtime_flag']:
+            return
+        if property_['runtime_flag'] in origin_trial_features:
+            property_['in_origin_trial'] = True
 
     def expand_visited(self, property_):
         if not property_['visited_property_for']:

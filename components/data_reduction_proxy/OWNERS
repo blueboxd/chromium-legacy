@@ -1,6 +1,5 @@
 # Primary
 tbansal@chromium.org
-dougarnett@chromium.org
 mcrouse@chromium.org
 megjablon@chromium.org
 rajendrant@chromium.org
@@ -11,6 +10,7 @@ sophiechang@chromium.org
 
 # Secondary
 bengr@chromium.org
+dougarnett@chromium.org
 
 per-file *_messages.cc=set noparent
 per-file *_messages.cc=file://ipc/SECURITY_OWNERS

@@ -24,36 +24,36 @@ const int kMaximumBreakpadValueSize = 255;
 }
 
 @implementation CrashReportMultiParameter {
-  NSString* crashReportKey_;
-  std::unique_ptr<base::DictionaryValue> dictionary_;
+  NSString* _crashReportKey;
+  std::unique_ptr<base::DictionaryValue> _dictionary;
 }
 
 - (instancetype)initWithKey:(NSString*)key {
   if ((self = [super init])) {
     DCHECK([key length] && ([key length] <= kMaximumBreakpadValueSize));
-    dictionary_.reset(new base::DictionaryValue());
-    crashReportKey_ = [key copy];
+    _dictionary.reset(new base::DictionaryValue());
+    _crashReportKey = [key copy];
   }
   return self;
 }
 
 - (void)removeValue:(NSString*)key {
-  dictionary_->Remove(base::SysNSStringToUTF8(key).c_str(), nullptr);
+  _dictionary->Remove(base::SysNSStringToUTF8(key).c_str(), nullptr);
   [self updateCrashReport];
 }
 
 - (void)setValue:(NSString*)key withValue:(int)value {
-  dictionary_->SetInteger(base::SysNSStringToUTF8(key).c_str(), value);
+  _dictionary->SetInteger(base::SysNSStringToUTF8(key).c_str(), value);
   [self updateCrashReport];
 }
 
 - (void)incrementValue:(NSString*)key {
   int value;
   std::string utf8_string = base::SysNSStringToUTF8(key);
-  if (dictionary_->GetInteger(utf8_string.c_str(), &value)) {
-    dictionary_->SetInteger(utf8_string.c_str(), value + 1);
+  if (_dictionary->GetInteger(utf8_string.c_str(), &value)) {
+    _dictionary->SetInteger(utf8_string.c_str(), value + 1);
   } else {
-    dictionary_->SetInteger(utf8_string.c_str(), 1);
+    _dictionary->SetInteger(utf8_string.c_str(), 1);
   }
   [self updateCrashReport];
 }
@@ -61,11 +61,11 @@ const int kMaximumBreakpadValueSize = 255;
 - (void)decrementValue:(NSString*)key {
   int value;
   std::string utf8_string = base::SysNSStringToUTF8(key);
-  if (dictionary_->GetInteger(utf8_string.c_str(), &value)) {
+  if (_dictionary->GetInteger(utf8_string.c_str(), &value)) {
     if (value <= 1) {
-      dictionary_->Remove(utf8_string.c_str(), nullptr);
+      _dictionary->Remove(utf8_string.c_str(), nullptr);
     } else {
-      dictionary_->SetInteger(utf8_string.c_str(), value - 1);
+      _dictionary->SetInteger(utf8_string.c_str(), value - 1);
     }
     [self updateCrashReport];
   }
@@ -73,13 +73,13 @@ const int kMaximumBreakpadValueSize = 255;
 
 - (void)updateCrashReport {
   std::string stateAsJson;
-  base::JSONWriter::Write(*dictionary_.get(), &stateAsJson);
+  base::JSONWriter::Write(*_dictionary.get(), &stateAsJson);
   if (stateAsJson.length() > kMaximumBreakpadValueSize) {
     NOTREACHED();
     return;
   }
   breakpad_helper::AddReportParameter(
-      crashReportKey_,
+      _crashReportKey,
       [NSString stringWithCString:stateAsJson.c_str()
                          encoding:[NSString defaultCStringEncoding]],
       true);

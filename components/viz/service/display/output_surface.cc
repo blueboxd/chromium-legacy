@@ -82,9 +82,4 @@ void OutputSurface::SetGpuVSyncCallback(GpuVSyncCallback callback) {
 void OutputSurface::SetGpuVSyncEnabled(bool enabled) {
   NOTREACHED();
 }
-
-// Only needs implementation for BrowserCompositorOutputSurface.
-bool OutputSurface::IsSoftwareMirrorMode() const {
-  return false;
-}
 }  // namespace viz

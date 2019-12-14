@@ -43,6 +43,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -2233,8 +2234,8 @@ AutotestPrivateEnableAssistantAndWaitForReadyFunction::Run() {
   // Asynchronously subscribe to status changes to avoid a possible segmentation
   // fault caused by Respond() in the subscriber callback being called before
   // RespondLater() below.
-  PostTask(
-      FROM_HERE, {base::CurrentThread()},
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
       base::BindOnce(&AutotestPrivateEnableAssistantAndWaitForReadyFunction::
                          SubscribeToStatusChanges,
                      this));

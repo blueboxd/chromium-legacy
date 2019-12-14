@@ -229,17 +229,22 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
 
   struct Pass {
     Pass(const std::vector<Quad>& quads, int id, const gfx::Size& size)
-        : quads(quads), id(id), size(size), damage_rect(size) {}
+        : Pass(quads, id, gfx::Rect(size)) {}
+    Pass(const std::vector<Quad>& quads, int id, const gfx::Rect& output_rect)
+        : quads(quads),
+          id(id),
+          output_rect(output_rect),
+          damage_rect(output_rect) {}
     Pass(const std::vector<Quad>& quads, const gfx::Size& size)
-        : quads(quads), size(size), damage_rect(size) {}
+        : quads(quads), output_rect(size), damage_rect(size) {}
     Pass(const std::vector<Quad>& quads,
          const gfx::Size& size,
          const gfx::Rect& damage_rect)
-        : quads(quads), size(size), damage_rect(damage_rect) {}
+        : quads(quads), output_rect(size), damage_rect(damage_rect) {}
 
     const std::vector<Quad>& quads;
     int id = 1;
-    gfx::Size size;
+    gfx::Rect output_rect;
     gfx::Rect damage_rect;
   };
 
@@ -277,7 +282,7 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
     gfx::Transform root_transform;
     for (auto& pass : passes) {
       RenderPass* test_pass = AddRenderPassWithDamage(
-          pass_list, pass.id, gfx::Rect(pass.size), pass.damage_rect,
+          pass_list, pass.id, pass.output_rect, pass.damage_rect,
           root_transform, cc::FilterOperations());
       for (size_t j = 0; j < pass.quads.size(); ++j)
         AddQuadInPass(pass.quads[j], test_pass, referenced_surfaces);
@@ -5889,6 +5894,74 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AllowMerge) {
     CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
     // Merging not allowed, so 2 passes should be present.
     EXPECT_EQ(2u, aggregated_frame.render_pass_list.size());
+  }
+}
+
+// Verify that a SurfaceDrawQuad's root RenderPass has correct texture
+// parameters if being drawn via RPDQ.
+TEST_F(SurfaceAggregatorValidSurfaceTest, RenderPassDoesNotFillSurface) {
+  // Child surface.
+  gfx::Rect child_rect(5, 4, 5, 5);
+  ParentLocalSurfaceIdAllocator child_allocator;
+  child_allocator.GenerateId();
+
+  LocalSurfaceId child_local_surface_id =
+      child_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  SurfaceId child_surface_id(child_sink_->frame_sink_id(),
+                             child_local_surface_id);
+  {
+    std::vector<Quad> child_quads = {
+        Quad::SolidColorQuad(SK_ColorGREEN, child_rect)};
+    std::vector<Pass> child_passes = {Pass(child_quads, 1, child_rect)};
+
+    CompositorFrame child_frame = MakeEmptyCompositorFrame();
+    AddPasses(&child_frame.render_pass_list, child_passes,
+              &child_frame.metadata.referenced_surfaces);
+
+    child_sink_->SubmitCompositorFrame(child_local_surface_id,
+                                       std::move(child_frame));
+  }
+
+  gfx::Rect root_rect(SurfaceSize());
+  gfx::Rect surface_size(10, 10);
+
+  // Submit a SurfaceDrawQuad that does not allow merging.
+  {
+    auto pass = RenderPass::Create();
+    pass->SetNew(1, root_rect, root_rect, gfx::Transform());
+    auto* sqs = pass->CreateAndAppendSharedQuadState();
+    sqs->opacity = 1.f;
+
+    auto* surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+    surface_quad->SetAll(sqs, surface_size, surface_size,
+                         /*needs_blending=*/false,
+                         SurfaceRange(base::nullopt, child_surface_id),
+                         SK_ColorWHITE,
+                         /*stretch_content_to_fill_bounds=*/false,
+                         /*is_reflection=*/false,
+                         /*allow_merge=*/false);
+
+    CompositorFrame frame =
+        CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
+    root_sink_->SubmitCompositorFrame(root_local_surface_id_, std::move(frame));
+
+    SurfaceId root_surface_id(root_sink_->frame_sink_id(),
+                              root_local_surface_id_);
+
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
+
+    // Merging not allowed, so 2 passes should be present.
+    ASSERT_EQ(2u, aggregated_frame.render_pass_list.size());
+
+    // The base pass should contain a single RPDQ with a |rect| matching
+    // |child_rect|.
+    ASSERT_EQ(1u, aggregated_frame.render_pass_list[1]->quad_list.size());
+    const RenderPassDrawQuad* rpdq = RenderPassDrawQuad::MaterialCast(
+        aggregated_frame.render_pass_list[1]->quad_list.front());
+    EXPECT_EQ(child_rect, rpdq->rect);
+
+    // Additionally, the visible rect should have been clipped.
+    EXPECT_EQ(child_rect, rpdq->visible_rect);
   }
 }
 

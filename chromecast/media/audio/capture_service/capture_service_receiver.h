@@ -11,8 +11,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
+#include "chromecast/media/audio/capture_service/constants.h"
 #include "media/audio/audio_io.h"
-#include "media/base/audio_parameters.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -32,7 +32,10 @@ class CaptureServiceReceiver {
   static constexpr base::TimeDelta kConnectTimeout =
       base::TimeDelta::FromSeconds(1);
 
-  explicit CaptureServiceReceiver(const ::media::AudioParameters& audio_params);
+  CaptureServiceReceiver(capture_service::StreamType stream_type,
+                         int sample_rate,
+                         int channels,
+                         int frames_per_buffer);
   ~CaptureServiceReceiver();
 
   void Start(::media::AudioInputStream::AudioInputCallback* input_callback);
@@ -59,7 +62,10 @@ class CaptureServiceReceiver {
       ::media::AudioInputStream::AudioInputCallback* input_callback);
   void StopOnTaskRunner(base::WaitableEvent* finished);
 
-  const ::media::AudioParameters audio_params_;
+  const capture_service::StreamType stream_type_;
+  const int sample_rate_;
+  const int channels_;
+  const int frames_per_buffer_;
 
   // Socket requires IO thread, and low latency input stream requires high
   // thread priority. Therefore, a private thread instead of the IO thread from

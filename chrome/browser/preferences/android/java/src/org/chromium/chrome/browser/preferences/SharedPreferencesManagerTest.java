@@ -5,11 +5,11 @@
 package org.chromium.chrome.browser.preferences;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import android.content.SharedPreferences;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Before;
@@ -19,7 +19,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.InMemorySharedPreferences;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,8 +30,6 @@ import java.util.Set;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 public class SharedPreferencesManagerTest {
-    private SharedPreferences mPrefs = new InMemorySharedPreferences();
-
     @Mock
     private ChromePreferenceKeyChecker mChecker;
 
@@ -41,7 +38,7 @@ public class SharedPreferencesManagerTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mSubject = new SharedPreferencesManager(mPrefs, mChecker);
+        mSubject = new SharedPreferencesManager(mChecker);
     }
 
     @Test
@@ -274,5 +271,41 @@ public class SharedPreferencesManagerTest {
         mSubject.removeObserver(observer);
         mSubject.writeString("string_key", "bar");
         assertEquals(expectedEventCount, observer.mEventCount);
+    }
+
+    @Test
+    @SmallTest
+    public void testPrefsAreWipedBetweenTests_1() {
+        doTestPrefsAreWipedBetweenTests();
+    }
+
+    @Test
+    @SmallTest
+    public void testPrefsAreWipedBetweenTests_2() {
+        doTestPrefsAreWipedBetweenTests();
+    }
+
+    /**
+     * {@link #testPrefsAreWipedBetweenTests_1()} and {@link #testPrefsAreWipedBetweenTests_2()}
+     * each set the same preference and fail if it has been set previously. Whichever order these
+     * tests are run, either will fail if the prefs are not wiped between tests.
+     */
+    private void doTestPrefsAreWipedBetweenTests() {
+        // Disable key checking for this test because "dirty_pref" isn't registered in the "in use"
+        // list.
+        BaseChromePreferenceKeyChecker checkerHeld =
+                SharedPreferencesManager.getInstance().swapKeyCheckerForTesting(
+                        new BaseChromePreferenceKeyChecker());
+
+        try {
+            // If the other test has set this flag and it was not wiped out, fail.
+            assertFalse(SharedPreferencesManager.getInstance().readBoolean("dirty_pref", false));
+
+            // Set the flag so the other test ensures it was wiped out.
+            SharedPreferencesManager.getInstance().writeBoolean("dirty_pref", true);
+        } finally {
+            // Restore the key checker.
+            SharedPreferencesManager.getInstance().swapKeyCheckerForTesting(checkerHeld);
+        }
     }
 }

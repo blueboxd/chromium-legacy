@@ -1027,6 +1027,9 @@ extern const char kQuicDescription[];
 extern const char kQuietNotificationPromptsName[];
 extern const char kQuietNotificationPromptsDescription[];
 
+extern const char kRawClipboardName[];
+extern const char kRawClipboardDescription[];
+
 extern const char kReducedReferrerGranularityName[];
 extern const char kReducedReferrerGranularityDescription[];
 
@@ -1137,6 +1140,9 @@ extern const char kShowAutofillSignaturesDescription[];
 
 extern const char kShowAutofillTypePredictionsName[];
 extern const char kShowAutofillTypePredictionsDescription[];
+
+extern const char kShowOverdrawFeedbackName[];
+extern const char kShowOverdrawFeedbackDescription[];
 
 extern const char kSkiaRendererName[];
 extern const char kSkiaRendererDescription[];
@@ -1301,6 +1307,9 @@ extern const char kUnsafeWebGPUDescription[];
 extern const char kUiPartialSwapName[];
 extern const char kUiPartialSwapDescription[];
 
+extern const char kUsePreferredIntervalForVideoName[];
+extern const char kUsePreferredIntervalForVideoDescription[];
+
 extern const char kUseSearchClickForRightClickName[];
 extern const char kUseSearchClickForRightClickDescription[];
 
@@ -1321,6 +1330,9 @@ extern const char kWebMidiDescription[];
 
 extern const char kWebPaymentsExperimentalFeaturesName[];
 extern const char kWebPaymentsExperimentalFeaturesDescription[];
+
+extern const char kWebPaymentsMinimalUIName[];
+extern const char kWebPaymentsMinimalUIDescription[];
 
 extern const char kWebrtcCaptureMultiChannelApmName[];
 extern const char kWebrtcCaptureMultiChannelApmDescription[];
@@ -1483,9 +1495,6 @@ extern const char kContextualSearchRankerQueryDescription[];
 
 extern const char kContextualSearchSecondTapName[];
 extern const char kContextualSearchSecondTapDescription[];
-
-extern const char kContextualSearchSimplifiedServerName[];
-extern const char kContextualSearchSimplifiedServerDescription[];
 
 extern const char kDirectActionsName[];
 extern const char kDirectActionsDescription[];
@@ -1813,6 +1822,9 @@ extern const char kUseWinrtMidiApiDescription[];
 
 extern const char kUseXpsForPrintingName[];
 extern const char kUseXpsForPrintingDescription[];
+
+extern const char kUseXpsForPrintingFromPdfName[];
+extern const char kUseXpsForPrintingFromPdfDescription[];
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 extern const char kWinUseBrowserSpellCheckerName[];

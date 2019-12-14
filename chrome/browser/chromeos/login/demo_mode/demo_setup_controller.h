@@ -214,8 +214,6 @@ class DemoSetupController
   void OnOtherError(EnterpriseEnrollmentHelper::OtherError error) override;
   void OnDeviceAttributeUploadCompleted(bool success) override;
   void OnDeviceAttributeUpdatePermission(bool granted) override;
-  void OnMultipleLicensesAvailable(
-      const EnrollmentLicenseMap& licenses) override;
   void OnRestoreAfterRollbackCompleted() override;
 
   void SetCrOSComponentLoadErrorForTest(

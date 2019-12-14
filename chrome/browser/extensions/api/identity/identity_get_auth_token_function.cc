@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -25,6 +26,7 @@
 #include "chrome/common/extensions/api/identity.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -471,15 +473,29 @@ void IdentityGetAuthTokenFunction::StartMintToken(
         issue_advice_ = cache_entry.issue_advice();
         StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE);
         break;
+
+      case IdentityTokenCacheValue::CACHE_STATUS_REMOTE_CONSENT:
+        CompleteMintTokenFlow();
+        should_prompt_for_signin_ = false;
+        resolution_data_ = cache_entry.resolution_data();
+        StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE);
+        break;
     }
   } else {
     DCHECK(type == IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE);
 
-    if (cache_status == IdentityTokenCacheValue::CACHE_STATUS_TOKEN) {
-      CompleteMintTokenFlow();
-      CompleteFunctionWithResult(cache_entry.token());
-    } else {
-      ShowOAuthApprovalDialog(issue_advice_);
+    switch (cache_status) {
+      case IdentityTokenCacheValue::CACHE_STATUS_TOKEN:
+        CompleteMintTokenFlow();
+        CompleteFunctionWithResult(cache_entry.token());
+        break;
+      case IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND:
+      case IdentityTokenCacheValue::CACHE_STATUS_ADVICE:
+        ShowOAuthApprovalDialog(issue_advice_);
+        break;
+      case IdentityTokenCacheValue::CACHE_STATUS_REMOTE_CONSENT:
+        ShowRemoteConsentDialog(resolution_data_);
+        break;
     }
   }
 }
@@ -549,6 +565,28 @@ void IdentityGetAuthTokenFunction::OnIssueAdviceSuccess(
   // Existing grant was revoked and we used NO_FORCE, so we got info back
   // instead. Start a consent UI if we can.
   issue_advice_ = issue_advice;
+  StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE);
+}
+
+void IdentityGetAuthTokenFunction::OnRemoteConsentSuccess(
+    const RemoteConsentResolutionData& resolution_data) {
+  if (!base::FeatureList::IsEnabled(switches::kOAuthRemoteConsent)) {
+    // Fallback to the issue advice flow.
+    // TODO(https://crbug.com/1026237): Remove the fallback after making sure
+    // that the new flow works correctly.
+    OnIssueAdviceSuccess(IssueAdviceInfo());
+    return;
+  }
+
+  TRACE_EVENT_ASYNC_STEP_PAST0("identity", "IdentityGetAuthTokenFunction", this,
+                               "OnRemoteConsentSuccess");
+
+  IdentityAPI::GetFactoryInstance()
+      ->Get(GetProfile())
+      ->SetCachedToken(token_key_, IdentityTokenCacheValue(resolution_data));
+  should_prompt_for_signin_ = false;
+  resolution_data_ = resolution_data;
+  CompleteMintTokenFlow();
   StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE);
 }
 
@@ -821,6 +859,12 @@ void IdentityGetAuthTokenFunction::ShowOAuthApprovalDialog(
   gaia_web_auth_flow_.reset(new GaiaWebAuthFlow(this, GetProfile(), &token_key_,
                                                 oauth2_client_id_, locale));
   gaia_web_auth_flow_->Start();
+}
+
+void IdentityGetAuthTokenFunction::ShowRemoteConsentDialog(
+    const RemoteConsentResolutionData& resolution_data) {
+  // TODO(crbug.com/1026237): implement this.
+  NOTIMPLEMENTED();
 }
 
 std::unique_ptr<OAuth2MintTokenFlow>

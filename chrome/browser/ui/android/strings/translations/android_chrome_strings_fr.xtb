@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Télécharger de nouveau le fichier ?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# fichier audio}one{# fichier audio}other{# fichiers audio}}</translation>
 <translation id="2653659639078652383">Valider</translation>
-<translation id="2669093958999339774">Empêcher les invites liées aux notifications de vous interrompre, et les remplacer par un message plus discret</translation>
 <translation id="2677748264148917807">Quitter</translation>
 <translation id="2704606927547763573">Copié</translation>
 <translation id="2707726405694321444">Actualiser la page</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Favori ajouté dans <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Synchronisation en arrière-plan</translation>
 <translation id="3749259744154402564">Impossible d'effectuer cette action</translation>
-<translation id="3767376082821709728">Les sites que vous consultez pour la première fois ne sont pas autorisés à vous envoyer des notifications</translation>
 <translation id="3771001275138982843">Impossible de télécharger la mise à jour</translation>
 <translation id="3771033907050503522">Ongl. navig. priv.</translation>
 <translation id="3773755127849930740">Pour permettre l'association, <ph name="BEGIN_LINK" />activez le Bluetooth<ph name="END_LINK" /></translation>
@@ -957,7 +955,6 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="8035133914807600019">Nouveau dossier…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> jours restants</translation>
 <translation id="804335162455518893">Carte SD introuvable</translation>
-<translation id="8046278916126163020">Les sites que vous consultez pour la première fois peuvent demander l'autorisation de vous envoyer des notifications</translation>
 <translation id="805047784848435650">En fonction de votre historique de navigation</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> Mo disponibles</translation>
 <translation id="8058746566562539958">Ouvrir dans nouvel onglet Chrome</translation>

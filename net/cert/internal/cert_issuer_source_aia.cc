@@ -5,7 +5,6 @@
 #include "net/cert/internal/cert_issuer_source_aia.h"
 
 #include "base/strings/string_piece.h"
-#include "net/base/network_isolation_key.h"
 #include "net/cert/cert_net_fetcher.h"
 #include "net/cert/internal/cert_errors.h"
 #include "net/cert/pem.h"
@@ -173,9 +172,8 @@ void CertIssuerSourceAia::AsyncGetIssuersOf(const ParsedCertificate* cert,
     // TODO(mattm): add synchronous failure mode to FetchCaIssuers interface so
     // that this doesn't need to wait for async callback just to tell that an
     // URL has an unsupported scheme?
-    aia_request->AddCertFetcherRequest(
-        cert_fetcher_->FetchCaIssuers(url, NetworkIsolationKey::Todo(),
-                                      kTimeoutMilliseconds, kMaxResponseBytes));
+    aia_request->AddCertFetcherRequest(cert_fetcher_->FetchCaIssuers(
+        url, kTimeoutMilliseconds, kMaxResponseBytes));
   }
 
   *out_req = std::move(aia_request);

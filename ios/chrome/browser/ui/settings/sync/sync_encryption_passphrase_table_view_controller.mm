@@ -58,15 +58,15 @@ const CGFloat kSpinnerButtonPadding = 18;
 @interface SyncEncryptionPassphraseTableViewController () <
     IdentityManagerObserverBridgeDelegate,
     SettingsControllerProtocol> {
-  ios::ChromeBrowserState* browserState_;
+  ios::ChromeBrowserState* _browserState;
   // Whether the decryption progress is currently being shown.
-  BOOL isDecryptionProgressShown_;
-  NSString* savedTitle_;
-  UIBarButtonItem* savedLeftButton_;
-  std::unique_ptr<SyncObserverBridge> syncObserver_;
+  BOOL _isDecryptionProgressShown;
+  NSString* _savedTitle;
+  UIBarButtonItem* _savedLeftButton;
+  std::unique_ptr<SyncObserverBridge> _syncObserver;
   std::unique_ptr<signin::IdentityManagerObserverBridge>
-      identityManagerObserver_;
-  UITextField* passphrase_;
+      _identityManagerObserver;
+  UITextField* _passphrase;
 }
 
 @end
@@ -83,13 +83,13 @@ const CGFloat kSpinnerButtonPadding = 18;
   if (self) {
     self.title = l10n_util::GetNSString(IDS_IOS_SYNC_ENTER_PASSPHRASE_TITLE);
     self.shouldHideDoneButton = YES;
-    browserState_ = browserState;
+    _browserState = browserState;
     NSString* userEmail =
-        [AuthenticationServiceFactory::GetForBrowserState(browserState_)
+        [AuthenticationServiceFactory::GetForBrowserState(_browserState)
                 ->GetAuthenticatedIdentity() userEmail];
     DCHECK(userEmail);
     syncer::SyncService* service =
-        ProfileSyncServiceFactory::GetForBrowserState(browserState_);
+        ProfileSyncServiceFactory::GetForBrowserState(_browserState);
     if (service->IsEngineInitialized() &&
         service->GetUserSettings()->IsUsingSecondaryPassphrase()) {
       base::Time passphrase_time =
@@ -112,22 +112,22 @@ const CGFloat kSpinnerButtonPadding = 18;
     _processingMessage = l10n_util::GetNSString(IDS_SYNC_LOGIN_SETTING_UP);
     _footerMessage = l10n_util::GetNSString(IDS_IOS_SYNC_PASSPHRASE_RECOVER);
 
-    identityManagerObserver_ =
+    _identityManagerObserver =
         std::make_unique<signin::IdentityManagerObserverBridge>(
-            IdentityManagerFactory::GetForBrowserState(browserState_), self);
+            IdentityManagerFactory::GetForBrowserState(_browserState), self);
   }
   return self;
 }
 
 - (UITextField*)passphrase {
-  return passphrase_;
+  return _passphrase;
 }
 
 - (NSString*)syncErrorMessage {
   if (_syncErrorMessage)
     return _syncErrorMessage;
   SyncSetupService* service =
-      SyncSetupServiceFactory::GetForBrowserState(browserState_);
+      SyncSetupServiceFactory::GetForBrowserState(_browserState);
   DCHECK(service);
   SyncSetupService::SyncServiceState syncServiceState =
       service->GetSyncServiceState();
@@ -136,7 +136,7 @@ const CGFloat kSpinnerButtonPadding = 18;
   if (syncServiceState == SyncSetupService::kSyncServiceNeedsPassphrase)
     return nil;
 
-  return GetSyncErrorMessageForBrowserState(browserState_);
+  return GetSyncErrorMessageForBrowserState(_browserState);
 }
 
 #pragma mark - View lifecycle
@@ -150,7 +150,7 @@ const CGFloat kSpinnerButtonPadding = 18;
 - (void)didReceiveMemoryWarning {
   [super didReceiveMemoryWarning];
   if (![self isViewLoaded]) {
-    passphrase_ = nil;
+    _passphrase = nil;
   }
 }
 
@@ -193,7 +193,7 @@ const CGFloat kSpinnerButtonPadding = 18;
 
 - (BOOL)presentationControllerShouldDismiss:
     (UIPresentationController*)presentationController {
-  return ![passphrase_.text length];
+  return ![_passphrase.text length];
 }
 
 #pragma mark - Items
@@ -209,21 +209,21 @@ const CGFloat kSpinnerButtonPadding = 18;
 
 // Returns a passphrase item.
 - (TableViewItem*)passphraseItem {
-  if (passphrase_) {
-    [self unregisterTextField:passphrase_];
+  if (_passphrase) {
+    [self unregisterTextField:_passphrase];
   }
-  passphrase_ = [[UITextField alloc] init];
-  passphrase_.secureTextEntry = YES;
-  passphrase_.backgroundColor = UIColor.clearColor;
-  passphrase_.autocorrectionType = UITextAutocorrectionTypeNo;
-  passphrase_.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-  passphrase_.adjustsFontForContentSizeCategory = YES;
-  passphrase_.placeholder = l10n_util::GetNSString(IDS_SYNC_PASSPHRASE_LABEL);
-  [self registerTextField:passphrase_];
+  _passphrase = [[UITextField alloc] init];
+  _passphrase.secureTextEntry = YES;
+  _passphrase.backgroundColor = UIColor.clearColor;
+  _passphrase.autocorrectionType = UITextAutocorrectionTypeNo;
+  _passphrase.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  _passphrase.adjustsFontForContentSizeCategory = YES;
+  _passphrase.placeholder = l10n_util::GetNSString(IDS_SYNC_PASSPHRASE_LABEL);
+  [self registerTextField:_passphrase];
 
   BYOTextFieldItem* item =
       [[BYOTextFieldItem alloc] initWithType:ItemTypeEnterPassphrase];
-  item.textField = passphrase_;
+  item.textField = _passphrase;
   return item;
 }
 
@@ -253,7 +253,7 @@ const CGFloat kSpinnerButtonPadding = 18;
   [super tableView:tableView didSelectRowAtIndexPath:indexPath];
   NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
   if (itemType == ItemTypeEnterPassphrase) {
-    [passphrase_ becomeFirstResponder];
+    [_passphrase becomeFirstResponder];
   }
   [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
@@ -277,18 +277,18 @@ const CGFloat kSpinnerButtonPadding = 18;
 }
 
 - (void)signInPressed {
-  DCHECK([passphrase_ text].length);
+  DCHECK([_passphrase text].length);
 
-  if (!syncObserver_.get()) {
-    syncObserver_.reset(new SyncObserverBridge(
-        self, ProfileSyncServiceFactory::GetForBrowserState(browserState_)));
+  if (!_syncObserver.get()) {
+    _syncObserver.reset(new SyncObserverBridge(
+        self, ProfileSyncServiceFactory::GetForBrowserState(_browserState)));
   }
 
   // Clear out the error message.
   self.syncErrorMessage = nil;
 
   syncer::SyncService* service =
-      ProfileSyncServiceFactory::GetForBrowserState(browserState_);
+      ProfileSyncServiceFactory::GetForBrowserState(_browserState);
   DCHECK(service);
   // It is possible for a race condition to happen where a user is allowed
   // to call the backend with the passphrase before the backend is
@@ -300,10 +300,10 @@ const CGFloat kSpinnerButtonPadding = 18;
     return;
 
   [self showDecryptionProgress];
-  std::string passphrase = base::SysNSStringToUTF8([passphrase_ text]);
+  std::string passphrase = base::SysNSStringToUTF8([_passphrase text]);
   if ([self forDecryption]) {
     if (!service->GetUserSettings()->SetDecryptionPassphrase(passphrase)) {
-      syncObserver_.reset();
+      _syncObserver.reset();
       [self clearFieldsOnError:l10n_util::GetNSString(
                                    IDS_IOS_SYNC_INCORRECT_PASSPHRASE)];
       [self hideDecryptionProgress];
@@ -344,32 +344,32 @@ const CGFloat kSpinnerButtonPadding = 18;
 
 // Shows the UI to indicate the decryption is being attempted.
 - (void)showDecryptionProgress {
-  if (isDecryptionProgressShown_)
+  if (_isDecryptionProgressShown)
     return;
-  isDecryptionProgressShown_ = YES;
+  _isDecryptionProgressShown = YES;
 
   // Hide the button.
   self.navigationItem.rightBarButtonItem = nil;
 
   // Custom title view with spinner.
-  DCHECK(!savedTitle_);
-  DCHECK(!savedLeftButton_);
-  savedLeftButton_ = self.navigationItem.leftBarButtonItem;
+  DCHECK(!_savedTitle);
+  DCHECK(!_savedLeftButton);
+  _savedLeftButton = self.navigationItem.leftBarButtonItem;
   self.navigationItem.leftBarButtonItem = [self spinnerButton];
-  savedTitle_ = [self.title copy];
+  _savedTitle = [self.title copy];
   self.title = self.processingMessage;
 }
 
 // Hides the UI to indicate decryption is in process.
 - (void)hideDecryptionProgress {
-  if (!isDecryptionProgressShown_)
+  if (!_isDecryptionProgressShown)
     return;
-  isDecryptionProgressShown_ = NO;
+  _isDecryptionProgressShown = NO;
 
-  self.navigationItem.leftBarButtonItem = savedLeftButton_;
-  savedLeftButton_ = nil;
-  self.title = savedTitle_;
-  savedTitle_ = nil;
+  self.navigationItem.leftBarButtonItem = _savedLeftButton;
+  _savedLeftButton = nil;
+  self.title = _savedTitle;
+  _savedTitle = nil;
   [self setRightNavBarItem];
 }
 
@@ -425,8 +425,8 @@ const CGFloat kSpinnerButtonPadding = 18;
   // Stops observing the sync service. This is required during the shutdown
   // phase to avoid observing sync events for a browser state that is being
   // killed.
-  syncObserver_.reset();
-  identityManagerObserver_.reset();
+  _syncObserver.reset();
+  _identityManagerObserver.reset();
 }
 
 #pragma mark - UIControl events listener
@@ -468,7 +468,7 @@ const CGFloat kSpinnerButtonPadding = 18;
 
 - (void)onSyncStateChanged {
   syncer::SyncService* service =
-      ProfileSyncServiceFactory::GetForBrowserState(browserState_);
+      ProfileSyncServiceFactory::GetForBrowserState(_browserState);
 
   if (!service->IsEngineInitialized()) {
     return;
@@ -478,7 +478,7 @@ const CGFloat kSpinnerButtonPadding = 18;
   if (!service->GetUserSettings()->IsPassphraseRequired() &&
       (service->GetUserSettings()->IsUsingSecondaryPassphrase() ||
        [self forDecryption])) {
-    syncObserver_.reset();
+    _syncObserver.reset();
     [base::mac::ObjCCastStrict<SettingsNavigationController>(
         self.navigationController)
         popViewControllerOrCloseSettingsAnimated:YES];
@@ -497,7 +497,7 @@ const CGFloat kSpinnerButtonPadding = 18;
 #pragma mark - IdentityManagerObserverBridgeDelegate
 
 - (void)onEndBatchOfRefreshTokenStateChanges {
-  if (AuthenticationServiceFactory::GetForBrowserState(browserState_)
+  if (AuthenticationServiceFactory::GetForBrowserState(_browserState)
           ->IsAuthenticated()) {
     return;
   }

@@ -1190,7 +1190,6 @@ Varat pārvaldīt šī konta iestatījumus, savā ierīcē instalējot lietotni 
 <translation id="2665919335226618153">Diemžēl formatēšanas laikā radās kļūda.</translation>
 <translation id="2666990579225592931">Atvērt viesa režīma logu</translation>
 <translation id="2667463864537187133">Pareizrakstības pārbaudes pārvaldība</translation>
-<translation id="2669093958999339774">Bloķēt paziņojumu uzvednes, lai tās jūs netraucētu, un to vietā rādīt neuzkrītošākus ziņojumus</translation>
 <translation id="2670102641511624474">Lietotne <ph name="APP_NAME" /> koplieto Chrome cilni.</translation>
 <translation id="2670429602441959756">Šajā lapā ir funkcijas, kas vēl netiek atbalstītas virtuālajā realitātē. Notiek aizvēršana...</translation>
 <translation id="2671451824761031126">Jūsu grāmatzīmes un iestatījumi ir gatavi.</translation>
@@ -1964,7 +1963,6 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="37613671848467444">Atvērt &amp;inkognito režīma logā</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Saziņa ar USB ierīci}zero{Saziņa ar # USB ierīcēm}one{Saziņa ar # USB ierīci}other{Saziņa ar # USB ierīcēm}}</translation>
 <translation id="3765246971671567135">Neizdevās nolasīt bezsaistes demonstrācijas režīma politiku.</translation>
-<translation id="3767376082821709728">Kad pirmoreiz apmeklēsiet vietnes, no tām nevarēs jums sūtīt paziņojumus</translation>
 <translation id="3768037234834996183">Notiek jūsu preferenču sinhronizēšana...</translation>
 <translation id="377050016711188788">Saldējums</translation>
 <translation id="3771294271822695279">Video faili</translation>
@@ -3032,7 +3030,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5370819323174483825">&amp;Atkārtoti ielādēt</translation>
 <translation id="5372529912055771682">Nodrošinātais reģistrācijas režīms netiek atbalstīts šajā operētājsistēmas versijā. Noteikti lietojiet jaunāko versiju un mēģiniet vēlreiz.</translation>
 <translation id="5372579129492968947">Atspraust paplašinājumu</translation>
-<translation id="5374359983950678924">Mainīt attēlu</translation>
 <translation id="5376169624176189338">Nospiediet, lai dotos atpakaļ, paturiet, lai redzētu vēsturi</translation>
 <translation id="5376931455988532197">Fails ir pārāk liels.</translation>
 <translation id="537813040452600081">Lapas, ko skatāt šajā logā, nebūs redzamas pārlūka vēsturē, un, kad izrakstīsieties, datorā nepaliks nekādi vienumi, piemēram, sīkfaili. Tomēr visi lejupielādētie faili un izveidotās grāmatzīmes tiks saglabātas.</translation>
@@ -4906,7 +4903,6 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="8044899503464538266">Lēns</translation>
 <translation id="8045253504249021590">Sinhronizācija tika pārtraukta, izmantojot Google informācijas paneli.</translation>
 <translation id="8045923671629973368">Ievadiet lietojumprogrammas ID vai interneta veikala URL</translation>
-<translation id="8046278916126163020">Kad pirmoreiz apmeklējat vietnes, var tikt lūgta atļauja sūtīt jums paziņojumus</translation>
 <translation id="804786196054284061">Galalietotāja licences līgums</translation>
 <translation id="8049705080247101012">Google atzīmēja paplašinājumu <ph name="EXTENSION_NAME" /> kā ļaunprātīgu un nepieļāva instalēšanu.</translation>
 <translation id="8050038245906040378">Microsoft tirdzniecības koda parakstīšana</translation>

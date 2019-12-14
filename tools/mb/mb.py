@@ -13,6 +13,7 @@ from __future__ import print_function
 
 import argparse
 import ast
+import collections
 import errno
 import json
 import os
@@ -690,7 +691,7 @@ class MetaBuildWrapper(object):
       if 'chromium' in self.masters:
         for builder in self.masters['chromium']:
           config = self.masters['chromium'][builder]
-          def RecurseMixins(current_mixin):
+          def RecurseMixins(builder, current_mixin):
             if current_mixin == 'chrome_with_codecs':
               errs.append('Public artifact builder "%s" can not contain the '
                           '"chrome_with_codecs" mixin.' % builder)
@@ -698,15 +699,43 @@ class MetaBuildWrapper(object):
             if not 'mixins' in self.mixins[current_mixin]:
               return
             for mixin in self.mixins[current_mixin]['mixins']:
-              RecurseMixins(mixin)
+              RecurseMixins(builder, mixin)
 
           for mixin in self.configs[config]:
-            RecurseMixins(mixin)
+            RecurseMixins(builder, mixin)
       else:
         errs.append('Missing "chromium" master. Please update this '
                     'proprietary codecs check with the name of the master '
                     'responsible for public build artifacts.')
 
+    # Check for duplicate configs. Evaluate all configs, and see if, when
+    # evaluated, differently named configs are the same.
+    evaled_to_source = collections.defaultdict(set)
+    for master, builders in self.masters.items():
+      for builder in builders:
+        config = self.masters[master][builder]
+        if not config:
+          continue
+
+        if isinstance(config, dict):
+          # Ignore for now
+          continue
+        elif config.startswith('//'):
+          args = config
+        else:
+          args = self.FlattenConfig(config)['gn_args']
+          if 'error' in args:
+            continue
+
+        evaled_to_source[args].add(config)
+
+    for v in evaled_to_source.values():
+      if len(v) != 1:
+        errs.append('Duplicate configs detected. When evaluated fully, the '
+                    'following configs are all equivalent: %s. Please '
+                    'consolidate these configs into only one unique name per '
+                    'configuration value.' % (
+                      ', '.join(sorted('%r' % val for val in v))))
     if errs:
       raise MBErr(('mb config file %s has problems:' % self.args.config_file) +
                     '\n  ' + '\n  '.join(errs))
@@ -884,7 +913,7 @@ class MetaBuildWrapper(object):
       if 'args_file' in mixin_vals:
         if vals['args_file']:
           raise MBErr('args_file specified multiple times in mixins '
-                      'for %s on %s' % (self.args.builder, self.args.master))
+                      'for mixin %s' % m)
         vals['args_file'] = mixin_vals['args_file']
       if 'gn_args' in mixin_vals:
         if vals['gn_args']:

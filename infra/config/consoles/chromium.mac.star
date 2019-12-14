@@ -73,10 +73,5 @@ luci.console_view(
             category = 'ios|xcode',
             short_name = 'sim',
         ),
-        luci.console_view_entry(
-            builder = 'ci/ios-slimnav',
-            category = 'ios|misc',
-            short_name = 'slim',
-        ),
     ],
 )

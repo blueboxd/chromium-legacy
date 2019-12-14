@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Pretende transferir o ficheiro novamente?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ficheiro de áudio}other{# ficheiros de áudio}}</translation>
 <translation id="2653659639078652383">Submeter</translation>
-<translation id="2669093958999339774">Impedir que os pedidos de interrupções interrompam e, em alternativa, utilizar uma mensagem mais discreta</translation>
 <translation id="2677748264148917807">Sair</translation>
 <translation id="2704606927547763573">Copiado</translation>
 <translation id="2707726405694321444">Atualizar página</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Adicionado aos marcadores no <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Sincronização em segundo plano</translation>
 <translation id="3749259744154402564">Não suportado</translation>
-<translation id="3767376082821709728">Os novos sites que visitar não podem enviar-lhe notificações.</translation>
 <translation id="3771001275138982843">Não foi possível transferir a atualização.</translation>
 <translation id="3771033907050503522">Sep. nav. anónima</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Ative o Bluetooth<ph name="END_LINK" /> para permitir a sincronização</translation>
@@ -957,7 +955,6 @@ O site NÃO fica com acesso à câmara. As imagens da câmara estão visíveis a
 <translation id="8035133914807600019">Nova pasta…</translation>
 <translation id="8037750541064988519">Faltam <ph name="DAYS" /> dias</translation>
 <translation id="804335162455518893">Cartão SD não encontrado.</translation>
-<translation id="8046278916126163020">Os novos sites que visita podem pedir para lhe enviar notificações.</translation>
 <translation id="805047784848435650">Baseado no seu histórico de navegação</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB disponíveis</translation>
 <translation id="8058746566562539958">Abrir num novo sep. do Chrome</translation>

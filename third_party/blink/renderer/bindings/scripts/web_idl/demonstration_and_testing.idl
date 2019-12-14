@@ -12,7 +12,7 @@
   Exposed=Window
 ] interface TestInterfaceConstructor {
   constructor();
-  constructor(DOMString arg1);
+  [HTMLConstructor] constructor(DOMString arg1);
   [Custom] constructor(Node node);
   [RuntimeEnabled=TestFeature1] constructor(long num);
 };

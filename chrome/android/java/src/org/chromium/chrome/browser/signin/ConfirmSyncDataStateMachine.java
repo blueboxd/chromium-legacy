@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.signin;
 
 import android.content.Context;
 import android.os.Handler;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.text.TextUtils;
 
@@ -119,13 +118,6 @@ public class ConfirmSyncDataStateMachine
         if (isBeingDestroyed) return;
         mCallback.onCancel();
         mDelegate.dismissAllDialogs();
-        dismissDialog(ConfirmManagedSyncDataDialog.CONFIRM_IMPORT_SYNC_DATA_DIALOG_TAG);
-    }
-
-    private void dismissDialog(String tag) {
-        DialogFragment fragment = (DialogFragment) mFragmentManager.findFragmentByTag(tag);
-        if (fragment == null) return;
-        fragment.dismissAllowingStateLoss();
     }
 
     /**
@@ -187,15 +179,13 @@ public class ConfirmSyncDataStateMachine
         assert mNewAccountManaged != null;
         assert mState == State.AFTER_NEW_ACCOUNT_DIALOG;
 
-        mDelegate.dismissAllDialogs();
-
         if (mNewAccountManaged) {
             // Show 'logging into managed account' dialog
             // This will call back into onConfirm on success.
-            ConfirmManagedSyncDataDialog.showSignInToManagedAccountDialog(
-                    ConfirmSyncDataStateMachine.this, mFragmentManager, mContext.getResources(),
-                    SigninManager.extractDomainName(mNewAccountName));
+            mDelegate.showSignInToManagedAccountDialog(ConfirmSyncDataStateMachine.this,
+                    mContext.getResources(), SigninManager.extractDomainName(mNewAccountName));
         } else {
+            mDelegate.dismissAllDialogs();
             progress();
         }
     }

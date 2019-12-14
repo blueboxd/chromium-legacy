@@ -132,7 +132,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContextualSearchLongpressResolve,
     &kContextualSearchMlTapSuppression,
     &kContextualSearchSecondTap,
-    &kContextualSearchSimplifiedServer,
     &kContextualSearchTapDisableOverride,
     &kDirectActions,
     &kDownloadFileProvider,
@@ -202,9 +201,9 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &payments::features::kPaymentRequestSkipToGPayIfNoCard,
     &payments::features::kReturnGooglePayInBasicCard,
     &payments::features::kStrictHasEnrolledAutofillInstrument,
-    &payments::features::kWebPaymentMicrotransaction,
     &payments::features::kWebPaymentsExperimentalFeatures,
     &payments::features::kWebPaymentsMethodSectionOrderV2,
+    &payments::features::kWebPaymentsMinimalUI,
     &payments::features::kWebPaymentsModifiers,
     &payments::features::kWebPaymentsRedactShippingAddress,
     &payments::features::kWebPaymentsSingleAppUiSkip,
@@ -399,9 +398,6 @@ const base::Feature kContextualSearchMlTapSuppression{
 
 const base::Feature kContextualSearchSecondTap{
     "ContextualSearchSecondTap", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kContextualSearchSimplifiedServer{
-    "ContextualSearchSimplifiedServer", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContextualSearchTapDisableOverride{
     "ContextualSearchTapDisableOverride", base::FEATURE_DISABLED_BY_DEFAULT};

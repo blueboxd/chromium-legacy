@@ -11,31 +11,31 @@
 #endif
 
 @implementation BarButtonActivityIndicator {
-  UIActivityIndicatorView* activityIndicator_;
+  UIActivityIndicatorView* _activityIndicator;
 }
 
 - (id)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    activityIndicator_ = [[UIActivityIndicatorView alloc]
+    _activityIndicator = [[UIActivityIndicatorView alloc]
         initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-    [activityIndicator_ setBackgroundColor:[UIColor clearColor]];
-    [activityIndicator_ setHidesWhenStopped:YES];
-    [activityIndicator_ startAnimating];
-    [self addSubview:activityIndicator_];
+    [_activityIndicator setBackgroundColor:[UIColor clearColor]];
+    [_activityIndicator setHidesWhenStopped:YES];
+    [_activityIndicator startAnimating];
+    [self addSubview:_activityIndicator];
   }
   return self;
 }
 
 - (void)dealloc {
-  [activityIndicator_ stopAnimating];
+  [_activityIndicator stopAnimating];
 }
 
 - (void)layoutSubviews {
   [super layoutSubviews];
   CGSize boundsSize = self.bounds.size;
   CGPoint center = CGPointMake(boundsSize.width / 2, boundsSize.height / 2);
-  [activityIndicator_ setCenter:AlignPointToPixel(center)];
+  [_activityIndicator setCenter:AlignPointToPixel(center)];
 }
 
 @end

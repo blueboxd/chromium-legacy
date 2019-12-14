@@ -20,23 +20,16 @@ std::map<std::string, base::FilePath> GetV8SnapshotFilesToPreload() {
 #endif
 #elif defined(OS_ANDROID)
 #if defined(USE_V8_CONTEXT_SNAPSHOT)
-#if defined(ARCH_CPU_64_BITS)
   return {
       {kV8Snapshot64DataDescriptor,
-       base::FilePath(FILE_PATH_LITERAL("assets/v8_context_snapshot_64.bin"))}};
-#else
-  return {
+       base::FilePath(FILE_PATH_LITERAL("assets/v8_context_snapshot_64.bin"))},
       {kV8Snapshot32DataDescriptor,
        base::FilePath(FILE_PATH_LITERAL("assets/v8_context_snapshot_32.bin"))}};
-#endif
 #else
-#if defined(ARCH_CPU_64_BITS)
   return {{kV8Snapshot64DataDescriptor,
-           base::FilePath(FILE_PATH_LITERAL("assets/snapshot_blob_64.bin"))}};
-#else
-  return {{kV8Snapshot32DataDescriptor,
+           base::FilePath(FILE_PATH_LITERAL("assets/snapshot_blob_64.bin"))},
+          {kV8Snapshot32DataDescriptor,
            base::FilePath(FILE_PATH_LITERAL("assets/snapshot_blob_32.bin"))}};
-#endif
 #endif
 #else
   return {};

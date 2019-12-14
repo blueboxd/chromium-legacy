@@ -7,9 +7,11 @@
 #include "base/command_line.h"
 #include "base/optional.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -87,58 +89,58 @@ network::mojom::URLLoaderFactoryParamsPtr CreateParams(
 }  // namespace
 
 // static
-network::mojom::URLLoaderFactoryParamsPtr URLLoaderFactoryParamsHelper::Create(
-    RenderProcessHost* process,
-    const url::Origin& frame_origin,
-    const base::UnguessableToken& top_frame_token,
-    const net::NetworkIsolationKey& network_isolation_key,
-    network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
-    const WebPreferences& preferences) {
+network::mojom::URLLoaderFactoryParamsPtr
+URLLoaderFactoryParamsHelper::CreateForFrame(RenderFrameHostImpl* frame,
+                                             const url::Origin& frame_origin,
+                                             RenderProcessHost* process) {
   return CreateParams(process,
                       frame_origin,  // origin
                       frame_origin,  // request_initiator_site_lock
                       false,         // is_trusted
-                      top_frame_token, network_isolation_key,
-                      cross_origin_embedder_policy,
-                      preferences.allow_universal_access_from_file_urls,
+                      frame->GetTopFrameToken(),
+                      frame->GetNetworkIsolationKey(),
+                      frame->cross_origin_embedder_policy(),
+                      frame->GetRenderViewHost()
+                          ->GetWebkitPreferences()
+                          .allow_universal_access_from_file_urls,
                       false);  // is_for_isolated_world
 }
 
 // static
 network::mojom::URLLoaderFactoryParamsPtr
 URLLoaderFactoryParamsHelper::CreateForIsolatedWorld(
-    RenderProcessHost* process,
+    RenderFrameHostImpl* frame,
     const url::Origin& isolated_world_origin,
-    const url::Origin& main_world_origin,
-    const base::UnguessableToken& top_frame_token,
-    const net::NetworkIsolationKey& network_isolation_key,
-    network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
-    const WebPreferences& preferences) {
-  return CreateParams(process,
+    const url::Origin& main_world_origin) {
+  return CreateParams(frame->GetProcess(),
                       isolated_world_origin,  // origin
                       main_world_origin,      // request_initiator_site_lock
                       false,                  // is_trusted
-                      top_frame_token, network_isolation_key,
-                      cross_origin_embedder_policy,
-                      preferences.allow_universal_access_from_file_urls,
+                      frame->GetTopFrameToken(),
+                      frame->GetNetworkIsolationKey(),
+                      frame->cross_origin_embedder_policy(),
+                      frame->GetRenderViewHost()
+                          ->GetWebkitPreferences()
+                          .allow_universal_access_from_file_urls,
                       true);  // is_for_isolated_world
 }
 
 network::mojom::URLLoaderFactoryParamsPtr
-URLLoaderFactoryParamsHelper::CreateForPrefetch(
-    RenderProcessHost* process,
-    const url::Origin& frame_origin,
-    const base::UnguessableToken& top_frame_token,
-    network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
-    const WebPreferences& preferences) {
-  return CreateParams(process,
+URLLoaderFactoryParamsHelper::CreateForPrefetch(RenderFrameHostImpl* frame) {
+  // The factory client |is_trusted| to control the |network_isolation_key| in
+  // each separate request (rather than forcing the client to use the key
+  // specified in URLLoaderFactoryParams).
+  const url::Origin& frame_origin = frame->GetLastCommittedOrigin();
+  return CreateParams(frame->GetProcess(),
                       frame_origin,  // origin
                       frame_origin,  // request_initiator_site_lock
                       true,          // is_trusted
-                      top_frame_token,
+                      frame->GetTopFrameToken(),
                       base::nullopt,  // network_isolation_key
-                      cross_origin_embedder_policy,
-                      preferences.allow_universal_access_from_file_urls,
+                      frame->cross_origin_embedder_policy(),
+                      frame->GetRenderViewHost()
+                          ->GetWebkitPreferences()
+                          .allow_universal_access_from_file_urls,
                       false);  // is_for_isolated_world
 }
 

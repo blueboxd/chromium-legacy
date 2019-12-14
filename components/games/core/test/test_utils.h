@@ -20,14 +20,16 @@ GamesCatalog CreateGamesCatalog(std::vector<Game> games);
 
 GamesCatalog CreateGamesCatalogWithOneGame();
 
+GamesCatalog CreateCatalogWithTwoGames();
+
 Game CreateGame(int id = 1);
 
 Date CreateDate(int year, int month, int day);
 
 HighlightedGamesResponse CreateHighlightedGamesResponse();
 
-bool AreProtosEqual(const google::protobuf::MessageLite& lhs,
-                    const google::protobuf::MessageLite& rhs);
+void ExpectProtosEqual(const google::protobuf::MessageLite& expected,
+                       const google::protobuf::MessageLite& actual);
 
 }  // namespace test
 }  // namespace games

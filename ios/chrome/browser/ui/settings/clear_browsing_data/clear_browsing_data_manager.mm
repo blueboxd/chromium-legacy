@@ -109,10 +109,10 @@ static NSDictionary* _imageNamesByItemTypes = @{
   // Observer for browsing data removal events and associated ScopedObserver
   // used to track registration with BrowsingDataRemover. They both may be
   // null if the new Clear Browser Data UI is disabled.
-  std::unique_ptr<BrowsingDataRemoverObserver> observer_;
+  std::unique_ptr<BrowsingDataRemoverObserver> _observer;
   std::unique_ptr<
       ScopedObserver<BrowsingDataRemover, BrowsingDataRemoverObserver>>
-      scoped_observer_;
+      _scoped_observer;
 
   // Corresponds browsing data counters to their masks/flags. Items are inserted
   // as clear data items are constructed. Remains empty if the new Clear Browser
@@ -179,11 +179,11 @@ static NSDictionary* _imageNamesByItemTypes = @{
                         _browserState->GetPrefs());
 
     if (IsNewClearBrowsingDataUIEnabled()) {
-      observer_ = std::make_unique<BrowsingDataRemoverObserverBridge>(self);
-      scoped_observer_ = std::make_unique<
+      _observer = std::make_unique<BrowsingDataRemoverObserverBridge>(self);
+      _scoped_observer = std::make_unique<
           ScopedObserver<BrowsingDataRemover, BrowsingDataRemoverObserver>>(
-          observer_.get());
-      scoped_observer_->Add(remover);
+          _observer.get());
+      _scoped_observer->Add(remover);
 
       _prefChangeRegistrar.Init(_browserState->GetPrefs());
       _prefObserverBridge.reset(new PrefObserverBridge(self));

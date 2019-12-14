@@ -50,9 +50,9 @@ class InputMethodUtilTest : public testing::Test {
   InputMethodUtilTest()
       : util_(&delegate_, whitelist_.GetSupportedInputMethods()) {
     delegate_.set_get_localized_string_callback(
-        base::Bind(&l10n_util::GetStringUTF16));
+        base::BindRepeating(&l10n_util::GetStringUTF16));
     delegate_.set_get_display_language_name_callback(
-        base::Bind(&InputMethodUtilTest::GetDisplayLanguageName));
+        base::BindRepeating(&InputMethodUtilTest::GetDisplayLanguageName));
   }
 
   void SetUp() override {

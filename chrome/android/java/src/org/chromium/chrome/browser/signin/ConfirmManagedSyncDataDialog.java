@@ -9,11 +9,7 @@ import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
-
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.R;
 
@@ -39,10 +35,6 @@ public class ConfirmManagedSyncDataDialog extends DialogFragment
         void onCancel();
     }
 
-    @VisibleForTesting
-    public static final String CONFIRM_IMPORT_SYNC_DATA_DIALOG_TAG =
-            "sync_managed_data_tag";
-
     private static final String KEY_TITLE = "title";
     private static final String KEY_DESCRIPTION = "description";
     private static final String KEY_POSITIVE_BUTTON = "positiveButton";
@@ -52,47 +44,39 @@ public class ConfirmManagedSyncDataDialog extends DialogFragment
     private boolean mListenerCalled;
 
     /**
-     * Create the dialog to show when signing in to a managed account (either through sign in or
-     * when switching accounts).
-     * @param callback Callback for result.
-     * @param fragmentManager FragmentManaged to display the dialog.
+     * Creates {@link ConfirmManagedSyncDataDialog} when signing in to a managed account
+     * (either through sign in or when switching accounts).
+     * @param listener Callback for result.
      * @param resources Resources to load the strings.
      * @param domain The domain of the managed account.
+     * TODO(https://crbug.com/1033914): Cleanup the argument resources
      */
-    public static void showSignInToManagedAccountDialog(Listener callback,
-            FragmentManager fragmentManager, Resources resources, String domain) {
-        String title = resources.getString(R.string.sign_in_managed_account);
-        String positive = resources.getString(R.string.policy_dialog_proceed);
-        String negative = resources.getString(R.string.cancel);
-        String desc = resources.getString(R.string.sign_in_managed_account_description, domain);
-        showNewInstance(title, desc, positive, negative, fragmentManager, callback);
+    static ConfirmManagedSyncDataDialog create(
+            Listener listener, Resources resources, String domain) {
+        ConfirmManagedSyncDataDialog dialog = new ConfirmManagedSyncDataDialog();
+        dialog.setArguments(createArguments(resources, domain));
+        dialog.setListener(listener);
+        return dialog;
     }
 
-    private static void showNewInstance(String title, String description, String positiveButton,
-            String negativeButton, FragmentManager fragmentManager, Listener callback) {
-        ConfirmManagedSyncDataDialog confirmSync =
-                newInstance(title, description, positiveButton, negativeButton);
-
-        confirmSync.setListener(callback);
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.add(confirmSync, CONFIRM_IMPORT_SYNC_DATA_DIALOG_TAG);
-        transaction.commitAllowingStateLoss();
-    }
-
-    private static ConfirmManagedSyncDataDialog newInstance(String title, String description,
-            String positiveButton, String negativeButton) {
-        ConfirmManagedSyncDataDialog fragment = new ConfirmManagedSyncDataDialog();
+    private static Bundle createArguments(Resources resources, String domain) {
         Bundle args = new Bundle();
-        args.putString(KEY_TITLE, title);
-        args.putString(KEY_DESCRIPTION, description);
-        args.putString(KEY_POSITIVE_BUTTON, positiveButton);
-        args.putString(KEY_NEGATIVE_BUTTON, negativeButton);
-        fragment.setArguments(args);
-        return fragment;
+        args.putString(KEY_TITLE, resources.getString(R.string.sign_in_managed_account));
+        args.putString(KEY_DESCRIPTION,
+                resources.getString(R.string.sign_in_managed_account_description, domain));
+        args.putString(KEY_POSITIVE_BUTTON, resources.getString(R.string.policy_dialog_proceed));
+        args.putString(KEY_NEGATIVE_BUTTON, resources.getString(R.string.cancel));
+        return args;
+    }
+
+    private void setListener(Listener listener) {
+        assert mListener == null;
+        mListener = listener;
     }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        // TODO(https://crbug.com/1033911): when the dialog is recreated, a NPE can occur here.
         String title = getArguments().getString(KEY_TITLE);
         String description = getArguments().getString(KEY_DESCRIPTION);
         String positiveButton = getArguments().getString(KEY_POSITIVE_BUTTON);
@@ -104,11 +88,6 @@ public class ConfirmManagedSyncDataDialog extends DialogFragment
                 .setPositiveButton(positiveButton, this)
                 .setNegativeButton(negativeButton, this)
                 .create();
-    }
-
-    private void setListener(Listener listener) {
-        assert mListener == null;
-        mListener = listener;
     }
 
     @Override

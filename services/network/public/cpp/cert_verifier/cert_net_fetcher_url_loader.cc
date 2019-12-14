@@ -74,7 +74,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "net/base/load_flags.h"
-#include "net/base/network_isolation_key.h"
 #include "net/cert/cert_net_fetcher.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
@@ -287,7 +286,6 @@ struct CertNetFetcherURLLoader::RequestParams {
 
   GURL url;
   HttpMethod http_method;
-  net::NetworkIsolationKey network_isolation_key;
   size_t max_response_bytes;
 
   // If set to a value == 0 then means "no timeout".
@@ -304,10 +302,9 @@ CertNetFetcherURLLoader::RequestParams::RequestParams()
 
 bool CertNetFetcherURLLoader::RequestParams::operator<(
     const RequestParams& other) const {
-  return std::tie(url, http_method, network_isolation_key, max_response_bytes,
-                  timeout) < std::tie(other.url, other.http_method,
-                                      other.network_isolation_key,
-                                      other.max_response_bytes, other.timeout);
+  return std::tie(url, http_method, max_response_bytes, timeout) <
+         std::tie(other.url, other.http_method, other.max_response_bytes,
+                  other.timeout);
 }
 
 namespace {
@@ -489,9 +486,6 @@ void Job::StartURLLoader(network::mojom::URLLoaderFactory* factory) {
   request->url = request_params_->url;
   if (request_params_->http_method == HTTP_METHOD_POST)
     request->method = "POST";
-  request->trusted_params = network::ResourceRequest::TrustedParams();
-  request->trusted_params->network_isolation_key =
-      request_params_->network_isolation_key;
   request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   url_loader_ =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
@@ -708,17 +702,13 @@ void CertNetFetcherURLLoader::Shutdown() {
 }
 
 std::unique_ptr<net::CertNetFetcher::Request>
-CertNetFetcherURLLoader::FetchCaIssuers(
-    const GURL& url,
-    const net::NetworkIsolationKey& network_isolation_key,
-    int timeout_milliseconds,
-    int max_response_bytes) {
-  std::unique_ptr<RequestParams> request_params =
-      std::make_unique<RequestParams>();
+CertNetFetcherURLLoader::FetchCaIssuers(const GURL& url,
+                                        int timeout_milliseconds,
+                                        int max_response_bytes) {
+  std::unique_ptr<RequestParams> request_params(new RequestParams);
 
   request_params->url = url;
   request_params->http_method = HTTP_METHOD_GET;
-  request_params->network_isolation_key = network_isolation_key;
   request_params->timeout = GetTimeout(timeout_milliseconds);
   request_params->max_response_bytes =
       GetMaxResponseBytes(max_response_bytes, kMaxResponseSizeInBytesForAia);
@@ -728,15 +718,12 @@ CertNetFetcherURLLoader::FetchCaIssuers(
 
 std::unique_ptr<net::CertNetFetcher::Request> CertNetFetcherURLLoader::FetchCrl(
     const GURL& url,
-    const net::NetworkIsolationKey& network_isolation_key,
     int timeout_milliseconds,
     int max_response_bytes) {
-  std::unique_ptr<RequestParams> request_params =
-      std::make_unique<RequestParams>();
+  std::unique_ptr<RequestParams> request_params(new RequestParams);
 
   request_params->url = url;
   request_params->http_method = HTTP_METHOD_GET;
-  request_params->network_isolation_key = network_isolation_key;
   request_params->timeout = GetTimeout(timeout_milliseconds);
   request_params->max_response_bytes =
       GetMaxResponseBytes(max_response_bytes, kMaxResponseSizeInBytesForCrl);
@@ -745,17 +732,13 @@ std::unique_ptr<net::CertNetFetcher::Request> CertNetFetcherURLLoader::FetchCrl(
 }
 
 std::unique_ptr<net::CertNetFetcher::Request>
-CertNetFetcherURLLoader::FetchOcsp(
-    const GURL& url,
-    const net::NetworkIsolationKey& network_isolation_key,
-    int timeout_milliseconds,
-    int max_response_bytes) {
-  std::unique_ptr<RequestParams> request_params =
-      std::make_unique<RequestParams>();
+CertNetFetcherURLLoader::FetchOcsp(const GURL& url,
+                                   int timeout_milliseconds,
+                                   int max_response_bytes) {
+  std::unique_ptr<RequestParams> request_params(new RequestParams);
 
   request_params->url = url;
   request_params->http_method = HTTP_METHOD_GET;
-  request_params->network_isolation_key = network_isolation_key;
   request_params->timeout = GetTimeout(timeout_milliseconds);
   request_params->max_response_bytes =
       GetMaxResponseBytes(max_response_bytes, kMaxResponseSizeInBytesForAia);

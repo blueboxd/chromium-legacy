@@ -170,9 +170,14 @@ IndexedDBFakeBackingStore::OpenIndexCursor(
 
 IndexedDBFakeBackingStore::FakeTransaction::FakeTransaction(
     leveldb::Status result)
+    : FakeTransaction(result, blink::mojom::IDBTransactionMode::ReadWrite) {}
+IndexedDBFakeBackingStore::FakeTransaction::FakeTransaction(
+    leveldb::Status result,
+    blink::mojom::IDBTransactionMode mode)
     : IndexedDBBackingStore::Transaction(
           nullptr,
-          blink::mojom::IDBTransactionDurability::Relaxed),
+          blink::mojom::IDBTransactionDurability::Relaxed,
+          mode),
       result_(result) {}
 void IndexedDBFakeBackingStore::FakeTransaction::Begin(
     std::vector<ScopeLock> locks) {}
@@ -192,8 +197,9 @@ leveldb::Status IndexedDBFakeBackingStore::FakeTransaction::Rollback() {
 
 std::unique_ptr<IndexedDBBackingStore::Transaction>
 IndexedDBFakeBackingStore::CreateTransaction(
-    blink::mojom::IDBTransactionDurability durability) {
-  return std::make_unique<FakeTransaction>(leveldb::Status::OK());
+    blink::mojom::IDBTransactionDurability durability,
+    blink::mojom::IDBTransactionMode mode) {
+  return std::make_unique<FakeTransaction>(leveldb::Status::OK(), mode);
 }
 
 }  // namespace content

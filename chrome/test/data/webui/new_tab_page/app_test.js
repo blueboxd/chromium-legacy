@@ -9,7 +9,7 @@ import {TestProxy} from 'chrome://test/new_tab_page/test_support.js';
 import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageAppTest', () => {
-  /** @type {!NewTabPageAppElement} */
+  /** @type {!AppElement} */
   let app;
 
   /** @type {TestProxy} */

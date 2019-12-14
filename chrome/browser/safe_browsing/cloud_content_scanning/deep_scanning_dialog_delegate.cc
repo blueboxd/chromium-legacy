@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
@@ -27,6 +28,7 @@
 #include "components/policy/core/browser/url_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/proto/webprotect.pb.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/web_contents.h"
@@ -36,9 +38,6 @@
 #include "ui/base/ui_base_types.h"
 
 namespace safe_browsing {
-
-const base::Feature kDeepScanningOfUploads{"SafeBrowsingDeepScanningOfUploads",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // TODO(rogerta): keeping this disabled by default until UX is finalized.
 const base::Feature kDeepScanningOfUploadsUI{
@@ -306,9 +305,6 @@ bool DeepScanningDialogDelegate::FileTypeSupported(const bool for_malware_scan,
 bool DeepScanningDialogDelegate::IsEnabled(Profile* profile,
                                            GURL url,
                                            Data* data) {
-  if (!base::FeatureList::IsEnabled(kDeepScanningOfUploads))
-    return false;
-
   // If this is an incognitio profile, don't perform scans.
   if (profile->IsOffTheRecord())
     return false;
@@ -318,11 +314,11 @@ bool DeepScanningDialogDelegate::IsEnabled(Profile* profile,
     return false;
 
   // See if content compliance checks are needed.
-
   int state = g_browser_process->local_state()->GetInteger(
       prefs::kCheckContentCompliance);
   data->do_dlp_scan =
-      state == CHECK_UPLOADS || state == CHECK_UPLOADS_AND_DOWNLOADS;
+      base::FeatureList::IsEnabled(kContentComplianceEnabled) &&
+      (state == CHECK_UPLOADS || state == CHECK_UPLOADS_AND_DOWNLOADS);
 
   if (data->do_dlp_scan &&
       g_browser_process->local_state()->HasPrefPath(
@@ -339,7 +335,8 @@ bool DeepScanningDialogDelegate::IsEnabled(Profile* profile,
   state = profile->GetPrefs()->GetInteger(
       prefs::kSafeBrowsingSendFilesForMalwareCheck);
   data->do_malware_scan =
-      state == SEND_UPLOADS || state == SEND_UPLOADS_AND_DOWNLOADS;
+      base::FeatureList::IsEnabled(kMalwareScanEnabled) &&
+      (state == SEND_UPLOADS || state == SEND_UPLOADS_AND_DOWNLOADS);
 
   if (data->do_malware_scan) {
     if (g_browser_process->local_state()->HasPrefPath(

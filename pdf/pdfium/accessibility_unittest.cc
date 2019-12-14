@@ -89,7 +89,7 @@ TEST_F(AccessibilityTest, GetAccessibilityPage) {
   for (size_t i = 0; i < kExpectedTextRunCount; ++i) {
     const auto& expected = kExpectedTextRuns[i];
     EXPECT_EQ(expected.len, text_runs[i].len) << i;
-    EXPECT_DOUBLE_EQ(expected.font_size, text_runs[i].style.font_size) << i;
+    EXPECT_FLOAT_EQ(expected.font_size, text_runs[i].style.font_size) << i;
     EXPECT_FLOAT_EQ(expected.bounds_x, text_runs[i].bounds.point.x) << i;
     EXPECT_FLOAT_EQ(expected.bounds_y, text_runs[i].bounds.point.y) << i;
     float expected_bounds_w =

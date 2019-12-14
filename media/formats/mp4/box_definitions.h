@@ -278,6 +278,7 @@ struct MEDIA_EXPORT VideoSampleEntry : Box {
 
   VideoCodec video_codec;
   VideoCodecProfile video_codec_profile;
+  VideoCodecLevel video_codec_level;
 
   bool IsFormatValid() const;
 

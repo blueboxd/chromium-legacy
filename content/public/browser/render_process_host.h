@@ -553,6 +553,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // (without a need for separate calls to WarmupSpareRenderProcessHost).
   static void WarmupSpareRenderProcessHost(BrowserContext* browser_context);
 
+  // Return the spare RenderProcessHost, if it exists. There is at most one
+  // globally-used spare RenderProcessHost at any time.
+  static RenderProcessHost* GetSpareRenderProcessHostForTesting();
+
   // Flag to run the renderer in process.  This is primarily
   // for debugging purposes.  When running "in process", the
   // browser maintains a single RenderProcessHost which communicates

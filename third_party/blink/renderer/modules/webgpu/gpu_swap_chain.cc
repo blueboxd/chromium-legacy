@@ -9,14 +9,9 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_swap_chain_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_texture.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
-
-// static
-GPUSwapChain* GPUSwapChain::Create(GPUCanvasContext* context,
-                                   const GPUSwapChainDescriptor* descriptor) {
-  return MakeGarbageCollected<GPUSwapChain>(context, descriptor);
-}
 
 GPUSwapChain::GPUSwapChain(GPUCanvasContext* context,
                            const GPUSwapChainDescriptor* descriptor)

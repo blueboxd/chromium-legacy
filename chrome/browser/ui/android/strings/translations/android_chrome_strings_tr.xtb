@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Dosya tekrar indirilsin mi?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# Ses dosyası}other{# Ses dosyası}}</translation>
 <translation id="2653659639078652383">Gönder</translation>
-<translation id="2669093958999339774">Bildirim istemlerinin sizi rahatsız etmesini engelleyin ve bunun yerine bilgiyi daha az rahatsız edici bir şekilde alın.</translation>
 <translation id="2677748264148917807">Çık</translation>
 <translation id="2704606927547763573">Kopyalandı</translation>
 <translation id="2707726405694321444">Sayfayı yenile</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> üzerinde yer işareti koyuldu</translation>
 <translation id="3744111561329211289">Arka plan senkronizasyonu</translation>
 <translation id="3749259744154402564">Desteklenmiyor</translation>
-<translation id="3767376082821709728">Ziyaret ettiğiniz yeni siteler size bildirim gönderemez</translation>
 <translation id="3771001275138982843">Güncelleme indirilemedi</translation>
 <translation id="3771033907050503522">Gizli Sekmeler</translation>
 <translation id="3773755127849930740">Eşleşmeye izin vermek için <ph name="BEGIN_LINK" />Bluetooth'u açın<ph name="END_LINK" /></translation>
@@ -957,7 +955,6 @@ Site kameraya ERİŞMEZ. Kamera görüntülerini yalnızca siz görebilirsiniz.<
 <translation id="8035133914807600019">Yeni klasör…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> gün kaldı</translation>
 <translation id="804335162455518893">SD kart bulunamadı</translation>
-<translation id="8046278916126163020">Ziyaret ettiğiniz yeni siteler sizden bildirim göndermeye izin vermenizi isteyebilir</translation>
 <translation id="805047784848435650">Tarama geçmişinize dayalı</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB kullanılabilir</translation>
 <translation id="8058746566562539958">Yeni Chrome sekmesinde aç</translation>

@@ -335,11 +335,6 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   overlay_processor_->SetDisplayTransformHint(
       output_surface_->GetDisplayTransform());
 
-  // Only used for pre-OOP-D code path.
-  // TODO(weiliangc): Remove once reflector code is removed.
-  overlay_processor_->SetSoftwareMirrorMode(
-      output_surface_->IsSoftwareMirrorMode());
-
   // Before ProcessForOverlay calls into the hardware to ask about whether the
   // overlay setup can be handled, we need to set up the primary plane.
   OverlayProcessorInterface::OutputSurfaceOverlayPlane* primary_plane = nullptr;

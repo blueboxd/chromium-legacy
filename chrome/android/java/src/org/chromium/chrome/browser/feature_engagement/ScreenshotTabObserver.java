@@ -9,8 +9,10 @@ import androidx.annotation.Nullable;
 import org.chromium.base.UserData;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.metrics.UkmRecorder;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * A {@link TabObserver} that also handles screenshot related events.
@@ -65,17 +67,17 @@ public class ScreenshotTabObserver extends EmptyTabObserver implements UserData 
 
     @Override
     public void onClosingStateChanged(Tab tab, boolean closing) {
-        reportScreenshotUMA();
+        reportScreenshotUMA(tab);
     }
 
     @Override
     public void onDestroyed(Tab tab) {
-        reportScreenshotUMA();
+        reportScreenshotUMA(tab);
     }
 
     @Override
     public void onLoadStarted(Tab tab, boolean toDifferentDocument) {
-        reportScreenshotUMA();
+        reportScreenshotUMA(tab);
     }
 
     public void onActionPerformedAfterScreenshot(int action) {
@@ -88,12 +90,18 @@ public class ScreenshotTabObserver extends EmptyTabObserver implements UserData 
     }
 
     /** Before leaving a page, report screenshot related UMA and reset screenshot counter. */
-    private void reportScreenshotUMA() {
+    private void reportScreenshotUMA(Tab tab) {
         if (mScreenshotsTaken > 0) {
             RecordHistogram.recordCountHistogram(
                     "Tab.Screenshot.ScreenshotsPerPage", mScreenshotsTaken);
             RecordHistogram.recordEnumeratedHistogram(
                     "Tab.Screenshot.Action", mScreenshotAction, SCREENSHOT_ACTION_COUNT);
+            // For UKM, report a boolean metric as to whether a screenshot was
+            // taken.
+            WebContents webContents = tab.getWebContents();
+            if (webContents != null) {
+                new UkmRecorder.Bridge().recordEvent(webContents, "Tab.Screenshot");
+            }
         }
 
         mScreenshotsTaken = 0;

@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -20,6 +21,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -238,6 +240,42 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlobInternal(
            : 0);
   UMA_HISTOGRAM_COUNTS_1M("Storage.Blob.TotalUnsharedSize",
                           total_memory_needed / 1024);
+
+  std::vector<scoped_refptr<BlobDataItem>> items_needing_timestamp;
+  std::vector<base::FilePath> file_paths_needing_timestamp;
+  for (auto& item : entry->items_) {
+    if (item->item()->type() == BlobDataItem::Type::kFile &&
+        !item->item()->IsFutureFileItem() &&
+        item->item()->expected_modification_time().is_null()) {
+      items_needing_timestamp.push_back(item->item());
+      file_paths_needing_timestamp.push_back(item->item()->path());
+    }
+  }
+  if (!items_needing_timestamp.empty()) {
+    // Blob construction isn't blocked on getting these timestamps. The created
+    // blob will be fully functional whether or not timestamps are set. When
+    // the timestamp isn't set the blob just won't be able to detect the file
+    // on disk changing after the blob is created.
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+        base::BindOnce(
+            [](std::vector<base::FilePath> paths) {
+              std::vector<base::Time> result;
+              result.reserve(paths.size());
+              for (const auto& path : paths) {
+                base::File::Info info;
+                if (!base::GetFileInfo(path, &info)) {
+                  result.emplace_back();
+                  continue;
+                }
+                result.push_back(info.last_modified);
+              }
+              return result;
+            },
+            std::move(file_paths_needing_timestamp)),
+        base::BindOnce(&BlobDataItem::SetFileModificationTimes,
+                       std::move(items_needing_timestamp)));
+  }
 
   size_t num_building_dependent_blobs = 0;
   std::vector<std::unique_ptr<BlobDataHandle>> dependent_blobs;

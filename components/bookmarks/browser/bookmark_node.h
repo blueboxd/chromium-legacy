@@ -82,9 +82,9 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode>, public TitledUrlNode {
   const GURL& url() const { return url_; }
   void set_url(const GURL& url) { url_ = url; }
 
-  // Returns the favicon's URL. Returns an empty URL if there is no favicon
-  // associated with this bookmark.
-  const GURL* icon_url() const { return icon_url_ ? icon_url_.get() : nullptr; }
+  // Returns the favicon's URL. Return null if there is no favicon associated
+  // with this bookmark.
+  const GURL* icon_url() const { return icon_url_.get(); }
 
   Type type() const { return type_; }
 
@@ -245,6 +245,9 @@ class BookmarkPermanentNode : public BookmarkNode {
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkPermanentNode);
 };
+
+// If you are looking for gMock printing via PrintTo(), please check
+// bookmark_test_util.h.
 
 }  // namespace bookmarks
 

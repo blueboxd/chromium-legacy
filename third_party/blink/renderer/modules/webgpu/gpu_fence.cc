@@ -13,11 +13,6 @@
 
 namespace blink {
 
-// static
-GPUFence* GPUFence::Create(GPUDevice* device, WGPUFence fence) {
-  return MakeGarbageCollected<GPUFence>(device, fence);
-}
-
 GPUFence::GPUFence(GPUDevice* device, WGPUFence fence)
     : DawnObject<WGPUFence>(device, fence) {}
 

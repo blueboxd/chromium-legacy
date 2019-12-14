@@ -31,7 +31,6 @@ class EnterpriseEnrollmentHelperMock : public EnterpriseEnrollmentHelper {
   MOCK_METHOD0(EnrollUsingAttestation, void());
   MOCK_METHOD0(EnrollForOfflineDemo, void());
   MOCK_METHOD0(RestoreAfterRollback, void());
-  MOCK_METHOD1(UseLicenseType, void(policy::LicenseType type));
   MOCK_METHOD0(GetDeviceAttributeUpdatePermission, void());
   MOCK_METHOD2(UpdateDeviceAttributes,
                void(const std::string& asset_id, const std::string& location));

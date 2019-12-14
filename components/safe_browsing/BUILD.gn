@@ -160,6 +160,7 @@ if (!is_ios) {
 
     deps = [
       ":csd_proto",
+      ":realtimeapi_proto",
       "//base",
       "//components/content_settings/core/browser",
       "//components/history/core/browser",
@@ -178,6 +179,7 @@ if (!is_ios) {
 
     deps = [
       ":csd_proto",
+      ":realtimeapi_proto",
       ":verdict_cache_manager",
       "//base",
       "//components/content_settings/core/browser",

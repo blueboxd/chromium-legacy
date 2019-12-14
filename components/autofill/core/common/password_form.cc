@@ -151,6 +151,10 @@ bool PasswordForm::IsUsingAccountStore() const {
   return in_store == Store::kAccountStore;
 }
 
+bool PasswordForm::HasNonEmptyPasswordValue() const {
+  return !password_value.empty() || !new_password_value.empty();
+}
+
 bool PasswordForm::operator==(const PasswordForm& form) const {
   return scheme == form.scheme && signon_realm == form.signon_realm &&
          origin == form.origin && action == form.action &&

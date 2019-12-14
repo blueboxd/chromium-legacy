@@ -13,6 +13,7 @@
 #include "chrome/browser/sync/glue/extensions_activity_monitor.h"
 #include "components/browser_sync/browser_sync_client.h"
 #include "components/sync/model/model_type_store_service.h"
+#include "extensions/buildflags/buildflags.h"
 
 class Profile;
 
@@ -25,6 +26,7 @@ class PasswordStore;
 }
 
 namespace syncer {
+class ModelTypeController;
 class SyncService;
 }
 
@@ -65,6 +67,12 @@ class ChromeSyncClient : public browser_sync::BrowserSyncClient {
   syncer::SyncTypePreferenceProvider* GetPreferenceProvider() override;
 
  private:
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Creates the ModelTypeController for syncer::APPS.
+  std::unique_ptr<syncer::ModelTypeController> CreateAppsModelTypeController(
+      syncer::SyncService* sync_service);
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
   Profile* const profile_;
 
   // The sync api component factory in use by this client.

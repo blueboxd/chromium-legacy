@@ -71,6 +71,7 @@ android_library("java") {
     "//chrome/android:chrome_java",
     "//chrome/browser/preferences:java",
     "//chrome/browser/util:java",
+    "//components/browser_ui/modaldialog/android:java",
     "//components/policy/android:policy_java",
     "//content/public/android:content_java",
     "//device/vr:java",

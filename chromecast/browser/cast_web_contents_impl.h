@@ -44,6 +44,7 @@ class CastWebContentsImpl : public CastWebContents,
 
   content::WebContents* web_contents() const override;
   PageState page_state() const override;
+  base::Optional<pid_t> GetMainFrameRenderProcessPid() const override;
 
   QueryableDataHost* queryable_data_host() const override;
 

@@ -25,26 +25,34 @@ public interface PaymentAppFactoryParams {
     Map<String, PaymentMethodData> getMethodData();
 
     /** @return The PaymentRequest object identifier. */
-    String getId();
+    default String getId() {
+        return null;
+    }
 
     /**
      * @return The scheme, host, and port of the last committed URL of the top-level context as
      * formatted by UrlFormatter.formatUrlForSecurityDisplay().
      */
-    String getTopLevelOrigin();
+    default String getTopLevelOrigin() {
+        return null;
+    }
 
     /**
      * @return The scheme, host, and port of the last committed URL of the iframe that invoked the
      * PaymentRequest API as formatted by UrlFormatter.formatUrlForSecurityDisplay().
      */
-    String getPaymentRequestOrigin();
+    default String getPaymentRequestOrigin() {
+        return null;
+    }
 
     /**
      * @return The certificate chain of the top-level context as returned by
      * CertificateChainHelper.getCertificateChain(). Can be null.
      */
     @Nullable
-    byte[][] getCertificateChain();
+    default byte[][] getCertificateChain() {
+        return null;
+    }
 
     /**
      * @return The unmodifiable mapping of method names to modifiers, which include modified totals
@@ -52,15 +60,21 @@ public interface PaymentAppFactoryParams {
      * modified total in order summary, and additional line items in order summary. Should not be
      * null.
      */
-    Map<String, PaymentDetailsModifier> getModifiers();
+    default Map<String, PaymentDetailsModifier> getModifiers() {
+        return null;
+    }
 
     /**
      * @return Whether crawling the web for just-in-time installable payment handlers is enabled.
      */
-    boolean getMayCrawl();
+    default boolean getMayCrawl() {
+        return false;
+    }
 
     /**
      * @return The listener for payment method, shipping address, and shipping option change events.
      */
-    PaymentRequestUpdateEventCallback getPaymentRequestUpdateEventCallback();
+    default PaymentRequestUpdateEventCallback getPaymentRequestUpdateEventCallback() {
+        return null;
+    }
 }

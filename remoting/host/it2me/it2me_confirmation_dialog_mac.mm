@@ -26,9 +26,9 @@
 
 @interface It2MeConfirmationDialogMacController : NSObject {
  @private
-  base::scoped_nsobject<NSAlert> confirmation_alert_;
-  base::string16 username_;
-  remoting::It2MeConfirmationDialog::ResultCallback dialog_action_callback_;
+  base::scoped_nsobject<NSAlert> _confirmation_alert;
+  base::string16 _username;
+  remoting::It2MeConfirmationDialog::ResultCallback _dialog_action_callback;
 }
 
 - (id)initWithCallback:
@@ -128,29 +128,29 @@ It2MeConfirmationDialogFactory::Create() {
           (const remoting::It2MeConfirmationDialog::ResultCallback&)callback
               username:(const std::string&)username {
   if ((self = [super init])) {
-    username_ = base::UTF8ToUTF16(username);
-    dialog_action_callback_ = callback;
+    _username = base::UTF8ToUTF16(username);
+    _dialog_action_callback = callback;
   }
   return self;
 }
 
 - (void)show {
-  confirmation_alert_.reset([[NSAlert alloc] init]);
+  _confirmation_alert.reset([[NSAlert alloc] init]);
 
   base::string16 dialog_text =
       base::i18n::MessageFormatter::FormatWithNumberedArgs(
           l10n_util::GetStringUTF16(
               IDS_SHARE_CONFIRM_DIALOG_MESSAGE_WITH_USERNAME),
-          username_);
-  [confirmation_alert_ setMessageText:base::SysUTF16ToNSString(dialog_text)];
+          _username);
+  [_confirmation_alert setMessageText:base::SysUTF16ToNSString(dialog_text)];
 
-  NSButton* cancel_button = [confirmation_alert_
+  NSButton* cancel_button = [_confirmation_alert
       addButtonWithTitle:l10n_util::GetNSString(
                              IDS_SHARE_CONFIRM_DIALOG_DECLINE)];
   [cancel_button setAction:@selector(onCancel:)];
   [cancel_button setTarget:self];
 
-  NSButton* confirm_button = [confirmation_alert_
+  NSButton* confirm_button = [_confirmation_alert
       addButtonWithTitle:l10n_util::GetNSString(
                              IDS_SHARE_CONFIRM_DIALOG_CONFIRM)];
   [confirm_button setAction:@selector(onAccept:)];
@@ -160,11 +160,11 @@ It2MeConfirmationDialogFactory::Create() {
   NSString* imagePath = [bundle pathForResource:@"chromoting128" ofType:@"png"];
   base::scoped_nsobject<NSImage> image(
       [[NSImage alloc] initByReferencingFile:imagePath]);
-  [confirmation_alert_ setIcon:image];
-  [confirmation_alert_ layout];
+  [_confirmation_alert setIcon:image];
+  [_confirmation_alert layout];
 
   // Force alert to be at the proper level and location.
-  NSWindow* confirmation_window = [confirmation_alert_ window];
+  NSWindow* confirmation_window = [_confirmation_alert window];
   [confirmation_window center];
   [confirmation_window setTitle:l10n_util::GetNSString(IDS_PRODUCT_NAME)];
   [confirmation_window setLevel:NSNormalWindowLevel];
@@ -173,24 +173,24 @@ It2MeConfirmationDialogFactory::Create() {
 }
 
 - (void)hide {
-  if (confirmation_alert_) {
-    [[confirmation_alert_ window] close];
-    confirmation_alert_.reset();
+  if (_confirmation_alert) {
+    [[_confirmation_alert window] close];
+    _confirmation_alert.reset();
   }
 }
 
 - (void)onCancel:(id)sender {
   [self hide];
-  if (dialog_action_callback_) {
-    std::move(dialog_action_callback_)
+  if (_dialog_action_callback) {
+    std::move(_dialog_action_callback)
         .Run(remoting::It2MeConfirmationDialog::Result::CANCEL);
   }
 }
 
 - (void)onAccept:(id)sender {
   [self hide];
-  if (dialog_action_callback_) {
-    std::move(dialog_action_callback_)
+  if (_dialog_action_callback) {
+    std::move(_dialog_action_callback)
         .Run(remoting::It2MeConfirmationDialog::Result::OK);
   }
 }

@@ -97,6 +97,18 @@ static_library("browser") {
   }
 }
 
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "bookmark_test_util.cc",
+    "bookmark_test_util.h",
+  ]
+
+  deps = [
+    ":browser",
+  ]
+}
+
 bundle_data("unit_tests_bundle_data") {
   visibility = [ ":unit_tests" ]
   testonly = true

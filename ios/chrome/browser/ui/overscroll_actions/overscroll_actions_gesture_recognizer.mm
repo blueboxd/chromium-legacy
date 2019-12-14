@@ -13,8 +13,8 @@
 #endif
 
 @interface OverscrollActionsGestureRecognizer () {
-  __weak id target_;
-  SEL action_;
+  __weak id _target;
+  SEL _action;
 }
 @end
 
@@ -23,8 +23,8 @@
 - (instancetype)initWithTarget:(id)target action:(SEL)action {
   self = [super initWithTarget:target action:action];
   if (self) {
-    target_ = target;
-    action_ = action;
+    _target = target;
+    _action = action;
   }
   return self;
 }
@@ -33,12 +33,12 @@
   [super reset];
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-  [target_ performSelector:action_ withObject:self];
+  [_target performSelector:_action withObject:self];
 #pragma clang diagnostic pop
 }
 
 - (void)removeTarget:(id)target action:(SEL)action {
-  DCHECK(target != target_);
+  DCHECK(target != _target);
   [super removeTarget:target action:action];
 }
 

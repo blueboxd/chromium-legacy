@@ -256,9 +256,9 @@ public class CachedMetrics {
     public static class CustomCountHistogramSample extends CachedMetric {
         @GuardedBy("CachedMetric.sMetrics")
         private final List<Integer> mSamples = new ArrayList<Integer>();
-        private final int mMin;
-        private final int mMax;
-        private final int mNumBuckets;
+        protected final int mMin;
+        protected final int mMax;
+        protected final int mNumBuckets;
 
         public CustomCountHistogramSample(String histogramName, int min, int max, int numBuckets) {
             super(histogramName);
@@ -278,7 +278,7 @@ public class CachedMetrics {
             }
         }
 
-        private void recordWithNative(int sample) {
+        protected void recordWithNative(int sample) {
             RecordHistogram.recordCustomCountHistogram(mName, sample, mMin, mMax, mNumBuckets);
         }
 
@@ -319,6 +319,20 @@ public class CachedMetrics {
     public static class Count1MHistogramSample extends CustomCountHistogramSample {
         public Count1MHistogramSample(String histogramName) {
             super(histogramName, 1, 1000000, 50);
+        }
+    }
+
+    /**
+     * Caches a set of linear count histogram samples.
+     */
+    public static class LinearCountHistogramSample extends CustomCountHistogramSample {
+        public LinearCountHistogramSample(String histogramName, int min, int max, int numBuckets) {
+            super(histogramName, min, max, numBuckets);
+        }
+
+        @Override
+        protected void recordWithNative(int sample) {
+            RecordHistogram.recordLinearCountHistogram(mName, sample, mMin, mMax, mNumBuckets);
         }
     }
 

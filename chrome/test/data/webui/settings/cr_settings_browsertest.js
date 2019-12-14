@@ -972,6 +972,11 @@ TEST_F('CrSettingsPrivacyPageTest', 'UMALoggingTests', function() {
   mocha.run();
 });
 
+TEST_F('CrSettingsPrivacyPageTest', 'InstalledAppsTests', () => {
+  settings_privacy_page.registerInstalledAppsTests();
+  mocha.run();
+});
+
 GEN('#if defined(OS_MACOSX) || defined(OS_WIN)');
 TEST_F('CrSettingsPrivacyPageTest', 'CertificateManagerTests', function() {
   settings_privacy_page.registerNativeCertificateManagerTests();

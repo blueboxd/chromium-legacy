@@ -275,13 +275,13 @@ class DeviceSyncImpl : public DeviceSyncBase,
   // Only created and used if v2 DeviceSync is enabled; null otherwise.
   std::unique_ptr<CryptAuthDeviceRegistry> cryptauth_device_registry_;
   std::unique_ptr<CryptAuthV2DeviceManager> cryptauth_v2_device_manager_;
+  std::unique_ptr<CryptAuthDeviceNotifier> device_notifier_;
+  std::unique_ptr<CryptAuthFeatureStatusSetter> feature_status_setter_;
 
   std::unique_ptr<CryptAuthEnrollmentManager> cryptauth_enrollment_manager_;
   std::unique_ptr<CryptAuthDeviceManager> cryptauth_device_manager_;
   std::unique_ptr<RemoteDeviceProvider> remote_device_provider_;
   std::unique_ptr<SoftwareFeatureManager> software_feature_manager_;
-  std::unique_ptr<CryptAuthFeatureStatusSetter> feature_status_setter_;
-  std::unique_ptr<CryptAuthDeviceNotifier> device_notifier_;
   std::unique_ptr<CryptAuthDeviceActivityGetter>
       cryptauth_device_activity_getter_;
 

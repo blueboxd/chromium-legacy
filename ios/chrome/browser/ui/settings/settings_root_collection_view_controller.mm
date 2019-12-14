@@ -39,14 +39,14 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
 }  // namespace
 
 @implementation SettingsRootCollectionViewController {
-  SavedBarButtomItemPositionEnum savedBarButtonItemPosition_;
-  UIBarButtonItem* savedBarButtonItem_;
-  UIView* veil_;
+  SavedBarButtomItemPositionEnum _savedBarButtonItemPosition;
+  UIBarButtonItem* _savedBarButtonItem;
+  UIView* _veil;
 }
 
-@synthesize shouldHideDoneButton = shouldHideDoneButton_;
+@synthesize shouldHideDoneButton = _shouldHideDoneButton;
 @synthesize collectionViewAccessibilityIdentifier =
-    collectionViewAccessibilityIdentifier_;
+    _collectionViewAccessibilityIdentifier;
 @synthesize dispatcher = _dispatcher;
 
 - (void)viewDidLoad {
@@ -154,8 +154,8 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
 }
 
 - (void)preventUserInteraction {
-  DCHECK(!savedBarButtonItem_);
-  DCHECK_EQ(kUndefinedBarButtonItemPosition, savedBarButtonItemPosition_);
+  DCHECK(!_savedBarButtonItem);
+  DCHECK_EQ(kUndefinedBarButtonItemPosition, _savedBarButtonItemPosition);
 
   // Create |waitButton|.
   BOOL displayActivityIndicatorOnTheRight =
@@ -171,24 +171,24 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
 
   if (displayActivityIndicatorOnTheRight) {
     // If there is a right bar button item, then it is the "Done" button.
-    savedBarButtonItem_ = self.navigationItem.rightBarButtonItem;
-    savedBarButtonItemPosition_ = kRightBarButtonItemPosition;
+    _savedBarButtonItem = self.navigationItem.rightBarButtonItem;
+    _savedBarButtonItemPosition = kRightBarButtonItemPosition;
     self.navigationItem.rightBarButtonItem = waitButton;
     [self.navigationItem.leftBarButtonItem setEnabled:NO];
   } else {
-    savedBarButtonItem_ = self.navigationItem.leftBarButtonItem;
-    savedBarButtonItemPosition_ = kLeftBarButtonItemPosition;
+    _savedBarButtonItem = self.navigationItem.leftBarButtonItem;
+    _savedBarButtonItemPosition = kLeftBarButtonItemPosition;
     self.navigationItem.leftBarButtonItem = waitButton;
   }
 
   // Adds a veil that covers the collection view and prevents user interaction.
   DCHECK(self.view);
-  DCHECK(!veil_);
-  veil_ = [[UIView alloc] initWithFrame:self.view.bounds];
-  [veil_ setAutoresizingMask:(UIViewAutoresizingFlexibleWidth |
+  DCHECK(!_veil);
+  _veil = [[UIView alloc] initWithFrame:self.view.bounds];
+  [_veil setAutoresizingMask:(UIViewAutoresizingFlexibleWidth |
                               UIViewAutoresizingFlexibleHeight)];
-  [veil_ setBackgroundColor:[UIColor colorWithWhite:1.0 alpha:0.5]];
-  [self.view addSubview:veil_];
+  [_veil setBackgroundColor:[UIColor colorWithWhite:1.0 alpha:0.5]];
+  [self.view addSubview:_veil];
 
   // Disable user interaction for the navigation controller view to ensure
   // that the user cannot go back by swipping the navigation's top view
@@ -203,30 +203,30 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
   [self.navigationController.view setUserInteractionEnabled:YES];
 
   // Removes the veil that prevents user interaction.
-  DCHECK(veil_);
+  DCHECK(_veil);
   [UIView animateWithDuration:0.3
       animations:^{
-        [veil_ removeFromSuperview];
+        [_veil removeFromSuperview];
       }
       completion:^(BOOL finished) {
-        veil_ = nil;
+        _veil = nil;
       }];
 
-  DCHECK(savedBarButtonItem_);
-  switch (savedBarButtonItemPosition_) {
+  DCHECK(_savedBarButtonItem);
+  switch (_savedBarButtonItemPosition) {
     case kLeftBarButtonItemPosition:
-      self.navigationItem.leftBarButtonItem = savedBarButtonItem_;
+      self.navigationItem.leftBarButtonItem = _savedBarButtonItem;
       break;
     case kRightBarButtonItemPosition:
-      self.navigationItem.rightBarButtonItem = savedBarButtonItem_;
+      self.navigationItem.rightBarButtonItem = _savedBarButtonItem;
       [self.navigationItem.leftBarButtonItem setEnabled:YES];
       break;
     default:
       NOTREACHED();
       break;
   }
-  savedBarButtonItem_ = nil;
-  savedBarButtonItemPosition_ = kUndefinedBarButtonItemPosition;
+  _savedBarButtonItem = nil;
+  _savedBarButtonItemPosition = kUndefinedBarButtonItemPosition;
 }
 
 @end

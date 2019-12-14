@@ -31,6 +31,9 @@ extern const char kAccountConsistencyDice[];
 extern const base::Feature kAccountIdMigration;
 #endif
 
+// Enables the remote consent flow for chrome.identity extension API.
+extern const base::Feature kOAuthRemoteConsent;
+
 }  // namespace switches
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_BASE_SIGNIN_SWITCHES_H_

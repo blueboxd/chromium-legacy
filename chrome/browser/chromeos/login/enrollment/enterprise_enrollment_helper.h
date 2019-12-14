@@ -23,9 +23,6 @@ class EnrollmentStatus;
 
 namespace chromeos {
 
-// Maps a license type to number of available licenses.
-using EnrollmentLicenseMap = std::map<policy::LicenseType, int>;
-
 class ActiveDirectoryJoinDelegate;
 
 // This class is capable to enroll the device into enterprise domain, using
@@ -52,12 +49,6 @@ class EnterpriseEnrollmentHelper {
 
     // Called when an error happens on attempt to receive authentication tokens.
     virtual void OnAuthError(const GoogleServiceAuthError& error) = 0;
-
-    // Called when there are multiple license types available for enrollment,
-    // and admin allowed user to choose license type to assign.
-    // Enrollment is paused, and will resume once UseLicenseType() is called.
-    virtual void OnMultipleLicensesAvailable(
-        const EnrollmentLicenseMap& licenses) = 0;
 
     // Called when an error happens during enrollment.
     virtual void OnEnrollmentError(policy::EnrollmentStatus status) = 0;
@@ -130,9 +121,6 @@ class EnterpriseEnrollmentHelper {
   // should still be taken (e.g. create robot accounts on the device) as the
   // stateful partition is reset.
   virtual void RestoreAfterRollback() = 0;
-
-  // Continue enrollment using license |type|.
-  virtual void UseLicenseType(policy::LicenseType type) = 0;
 
   // Starts device attribute update process. First tries to get
   // permission to update device attributes for current user

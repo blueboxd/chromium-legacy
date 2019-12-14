@@ -103,6 +103,7 @@ import org.chromium.content_public.common.UseZoomForDSFPolicy;
 import org.chromium.device.gamepad.GamepadList;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.network.mojom.ReferrerPolicy;
+import org.chromium.ui.VSyncMonitor;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.PageTransition;
@@ -3265,7 +3266,7 @@ public class AwContents implements SmartClipProvider {
 
     @CalledByNative
     private void postInvalidateOnAnimation() {
-        if (!mWindowAndroid.getWindowAndroid().isInsideVSync()) {
+        if (!VSyncMonitor.isInsideVSync()) {
             mContainerView.postInvalidateOnAnimation();
         } else {
             mContainerView.invalidate();
@@ -3696,6 +3697,8 @@ public class AwContents implements SmartClipProvider {
                 mSettings.setSpatialNavigationEnabled(false);
             }
 
+            AwContentsJni.get().onInputEvent(mNativeAwContents, AwContents.this);
+
             mScrollOffsetManager.setProcessingTouchEvent(true);
             boolean rv = mWebContents.getEventForwarder().onTouchEvent(event);
             mScrollOffsetManager.setProcessingTouchEvent(false);
@@ -3986,6 +3989,7 @@ public class AwContents implements SmartClipProvider {
         void onDetachedFromWindow(long nativeAwContents, AwContents caller);
         boolean isVisible(long nativeAwContents, AwContents caller);
         void setDipScale(long nativeAwContents, AwContents caller, float dipScale);
+        void onInputEvent(long nativeAwContents, AwContents caller);
         // Returns null if save state fails.
         byte[] getOpaqueState(long nativeAwContents, AwContents caller);
 

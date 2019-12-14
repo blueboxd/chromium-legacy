@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Atsisiųsti failą dar kartą?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# garso įrašo failas}one{# garso įrašo failas}few{# garso įrašo failai}many{# garso įrašo failo}other{# garso įrašo failų}}</translation>
 <translation id="2653659639078652383">Pateikti</translation>
-<translation id="2669093958999339774">Blokuokite pranešimų įspėjimus, kad jūsų neblaškytų, ir naudokite tylesnius pranešimus</translation>
 <translation id="2677748264148917807">Išeiti</translation>
 <translation id="2704606927547763573">Nukopij.</translation>
 <translation id="2707726405694321444">Atnaujinti puslapį</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Pažymėta naršyklėje „<ph name="PRODUCT_NAME" />“</translation>
 <translation id="3744111561329211289">Fono sinchronizavimas</translation>
 <translation id="3749259744154402564">Nepalaikoma</translation>
-<translation id="3767376082821709728">Naujos svetainės, kuriose lankotės, negali jums siųsti pranešimų</translation>
 <translation id="3771001275138982843">Nepavyko atsisiųsti naujinio</translation>
 <translation id="3771033907050503522">Inkognito skirt.</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Įjunkite „Bluetooth“<ph name="END_LINK" />, kad būtų leidžiama susieti</translation>
@@ -957,7 +955,6 @@ Svetainė NETURI prieigos prie fotoaparato. Fotoaparato vaizdai matomi tik jums.
 <translation id="8035133914807600019">Naujas aplankas…</translation>
 <translation id="8037750541064988519">Liko <ph name="DAYS" /> d.</translation>
 <translation id="804335162455518893">SD kortelė nerasta</translation>
-<translation id="8046278916126163020">Naujos svetainės, kuriose apsilankote, gali prašyti leidimo siųsti pranešimus</translation>
 <translation id="805047784848435650">Pagal naršymo istoriją</translation>
 <translation id="8051695050440594747">Galima <ph name="MEGABYTES" /> MB</translation>
 <translation id="8058746566562539958">Atidaryti naujame „Chrome“ skirtuke</translation>

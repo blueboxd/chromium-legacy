@@ -63,6 +63,8 @@ extern const char kFlightRe[];
 extern const char kPriceRe[];
 extern const char kCreditCardCVCPattern[];
 extern const char kCreditCard4DigitExpYearPattern[];
+extern const char kSocialSecurityRe[];
+extern const char kOneTimePwdRe[];
 
 // Used to match field data that might be a UPI Virtual Payment Address.
 // See:

@@ -11,6 +11,12 @@ struct MostVisitedTile {
   url.mojom.Url url;
 };
 
+struct MostVisitedInfo {
+  bool custom_links_enabled;
+  bool visible;
+  array<MostVisitedTile> tiles;
+};
+
 // Used by the WebUI page to bootstrap bidirectional communication.
 interface PageHandlerFactory {
   // The WebUI page's |BrowserProxy| singleton calls this method when the page
@@ -38,6 +44,11 @@ interface PageHandler {
 
 // WebUI-side handler for requests from the browser.
 interface Page {
-  // Updates the page with tiles.
-  SetMostVisitedTiles(array<MostVisitedTile> tiles);
+  // Updates the page with most-visited info which includes whether the
+  // tiles should be shown, if links can be customized and the tiles.
+  SetMostVisitedInfo(MostVisitedInfo info);
+  // Set custom links enabled separate from |SetMostVisitedInfo|.
+  SetCustomLinksEnabled(bool enabled);
+  // Set whether most-visited section should be shown.
+  SetMostVisitedVisible(bool visible);
 };

@@ -28,9 +28,9 @@ namespace wifi {
 // accessible on UI thread.
 class WIFI_EXPORT WiFiService {
  public:
-  typedef std::vector<std::string> NetworkGuidList;
-  typedef base::Callback<
-      void(const NetworkGuidList& network_guid_list)> NetworkGuidListCallback;
+  using NetworkGuidList = std::vector<std::string>;
+  using NetworkGuidListCallback =
+      base::RepeatingCallback<void(const NetworkGuidList& network_guid_list)>;
 
   virtual ~WiFiService() {}
 
@@ -113,8 +113,8 @@ class WIFI_EXPORT WiFiService {
   // events needs to be sent. Notifications are posted on |task_runner|.
   virtual void SetEventObservers(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      const NetworkGuidListCallback& networks_changed_observer,
-      const NetworkGuidListCallback& network_list_changed_observer) = 0;
+      NetworkGuidListCallback networks_changed_observer,
+      NetworkGuidListCallback network_list_changed_observer) = 0;
 
   // Request update of Connected Network information. Send |NetworksChanged|
   // event on completion.

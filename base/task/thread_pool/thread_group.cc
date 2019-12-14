@@ -34,14 +34,14 @@ const ThreadGroup* GetCurrentThreadGroup() {
 
 }  // namespace
 
-void ThreadGroup::BaseScopedWorkersExecutor::ScheduleReleaseTaskSource(
+void ThreadGroup::BaseScopedCommandsExecutor::ScheduleReleaseTaskSource(
     RegisteredTaskSource task_source) {
   task_sources_to_release_.push_back(std::move(task_source));
 }
 
-ThreadGroup::BaseScopedWorkersExecutor::BaseScopedWorkersExecutor() = default;
+ThreadGroup::BaseScopedCommandsExecutor::BaseScopedCommandsExecutor() = default;
 
-ThreadGroup::BaseScopedWorkersExecutor::~BaseScopedWorkersExecutor() {
+ThreadGroup::BaseScopedCommandsExecutor::~BaseScopedCommandsExecutor() {
   CheckedLock::AssertNoLockHeldOnCurrentThread();
 }
 
@@ -145,7 +145,7 @@ RegisteredTaskSource ThreadGroup::RemoveTaskSource(
 }
 
 void ThreadGroup::ReEnqueueTaskSourceLockRequired(
-    BaseScopedWorkersExecutor* workers_executor,
+    BaseScopedCommandsExecutor* workers_executor,
     ScopedReenqueueExecutor* reenqueue_executor,
     TransactionWithRegisteredTaskSource transaction_with_task_source) {
   // Decide in which thread group the TaskSource should be reenqueued.
@@ -178,7 +178,7 @@ void ThreadGroup::ReEnqueueTaskSourceLockRequired(
 }
 
 RegisteredTaskSource ThreadGroup::TakeRegisteredTaskSource(
-    BaseScopedWorkersExecutor* executor) {
+    BaseScopedCommandsExecutor* executor) {
   DCHECK(!priority_queue_.IsEmpty());
 
   auto run_status = priority_queue_.PeekTaskSource().WillRunTask();
@@ -207,7 +207,7 @@ RegisteredTaskSource ThreadGroup::TakeRegisteredTaskSource(
                        std::move(task_source));
 }
 
-void ThreadGroup::UpdateSortKeyImpl(BaseScopedWorkersExecutor* executor,
+void ThreadGroup::UpdateSortKeyImpl(BaseScopedCommandsExecutor* executor,
                                     TaskSource::Transaction transaction) {
   CheckedAutoLock auto_lock(lock_);
   priority_queue_.UpdateSortKey(std::move(transaction));
@@ -215,7 +215,7 @@ void ThreadGroup::UpdateSortKeyImpl(BaseScopedWorkersExecutor* executor,
 }
 
 void ThreadGroup::PushTaskSourceAndWakeUpWorkersImpl(
-    BaseScopedWorkersExecutor* executor,
+    BaseScopedCommandsExecutor* executor,
     TransactionWithRegisteredTaskSource transaction_with_task_source) {
   CheckedAutoLock auto_lock(lock_);
   DCHECK(!replacement_thread_group_);

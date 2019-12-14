@@ -2060,6 +2060,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-web-payments-minimal-ui",
+    "owners": [ "rouslan", "web-payments-team@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enable-webassembly-baseline",
     "owners": [ "clemensb", "wasm-team@google.com" ],
     "expiry_milestone": 83
@@ -3104,6 +3109,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "raw-clipboard",
+    "owners": ["huangdarwin", "pwnall"],
+    "expiry_milestone": 84
+  },
+  {
     "name": "reader-mode-heuristics",
     "owners": [ "mdjones", "wychen" ],
     // This flag is a utility for testing Reader Mode heuristics or force
@@ -3279,6 +3289,11 @@
   {
     "name": "show-legacy-tls-warnings",
     "owners": [ "cthomp" ],
+    "expiry_milestone": 85
+  },
+  {
+    "name": "show-overdraw-feedback",
+    "owners": [ "andrescj", "chromeos-gfx@google.com" ],
     "expiry_milestone": 85
   },
   {
@@ -3613,6 +3628,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "use-preferred-interval-for-video",
+    "owners": [ "jiahe.zhang@intel.com", "khushalsagar" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "use-search-click-for-right-click",
     "owners": [ "khorimoto", "zentaro" ],
     "expiry_milestone": 85
@@ -3633,6 +3653,11 @@
     "name": "use-xps-for-printing",
     "owners": [ "awscreen", "thestig" ],
     "expiry_milestone": 83
+  },
+  {
+    "name": "use-xps-for-printing-from-pdf",
+    "owners": [ "awscreen", "thestig" ],
+    "expiry_milestone": 85
   },
   {
     "name": "username-first-flow",

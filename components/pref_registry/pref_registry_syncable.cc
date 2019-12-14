@@ -27,8 +27,8 @@ PrefRegistrySyncable::PrefRegistrySyncable() = default;
 PrefRegistrySyncable::~PrefRegistrySyncable() = default;
 
 void PrefRegistrySyncable::SetSyncableRegistrationCallback(
-    const SyncableRegistrationCallback& cb) {
-  callback_ = cb;
+    SyncableRegistrationCallback cb) {
+  callback_ = std::move(cb);
 }
 
 void PrefRegistrySyncable::OnPrefRegistered(const std::string& path,
@@ -44,7 +44,7 @@ void PrefRegistrySyncable::OnPrefRegistered(const std::string& path,
 #endif
 
   if (flags & kSyncablePrefFlags) {
-    if (!callback_.is_null())
+    if (callback_)
       callback_.Run(path, flags);
   }
 }

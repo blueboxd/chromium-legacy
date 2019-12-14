@@ -5,8 +5,11 @@
 #ifndef CHROMEOS_SERVICES_DEVICE_SYNC_SOFTWARE_FEATURE_MANAGER_H_
 #define CHROMEOS_SERVICES_DEVICE_SYNC_SOFTWARE_FEATURE_MANAGER_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "chromeos/components/multidevice/software_feature.h"
+#include "chromeos/services/device_sync/feature_status_change.h"
 #include "chromeos/services/device_sync/network_request_error.h"
 
 namespace chromeos {
@@ -34,6 +37,19 @@ class SoftwareFeatureManager {
       const base::Closure& success_callback,
       const base::Callback<void(NetworkRequestError)>& error_callback,
       bool is_exclusive = false) = 0;
+
+  // Enables or disables |feature| for the device with Instance ID |device_id|.
+  // This is the v2 DeviceSync analog of SetSoftwareFeatureState. This function
+  // should only be used when v1 and v2 DeviceSync are both active so that
+  // SetSoftwareFeatureState() and SetFeatureStatus() calls can be ordered.
+  // TODO(https://crbug.com/1019206): Remove when v1 DeviceSync is deprecated
+  // and CryptAuthFeatureStatusSetter is called directly.
+  virtual void SetFeatureStatus(
+      const std::string& device_id,
+      multidevice::SoftwareFeature feature,
+      FeatureStatusChange status_change,
+      base::OnceClosure success_callback,
+      base::OnceCallback<void(NetworkRequestError)> error_callback) = 0;
 
   // Finds eligible devices associated with the logged-in account which support
   // |software_feature|.

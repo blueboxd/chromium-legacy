@@ -426,6 +426,9 @@ struct FixupCase {
     {"host:𝟨", "host:%F0%9D%9F%A8"},  // non-ASCII digit (U+1D7E8)
     {"tel:12345678901", "tel:12345678901"},
     {"tel:123-456-78901", "tel:123-456-78901"},
+    // Double colon after host should not convert to an empty port.
+    {"foo.com::/server-redirect?http%3A%2F%2Fbar.com%2Ftitle2.html",
+     "http://foo.com/server-redirect?http%3A%2F%2Fbar.com%2Ftitle2.html"},
 };
 
 TEST(URLFixerTest, FixupURL) {

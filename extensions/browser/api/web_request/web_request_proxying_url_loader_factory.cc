@@ -1124,9 +1124,6 @@ void WebRequestProxyingURLLoaderFactory::OnTargetFactoryError() {
 
 void WebRequestProxyingURLLoaderFactory::OnProxyBindingError() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (proxy_receivers_.empty())
-    target_factory_.reset();
-
   MaybeRemoveProxy();
 }
 
@@ -1145,10 +1142,12 @@ void WebRequestProxyingURLLoaderFactory::RemoveRequest(
 }
 
 void WebRequestProxyingURLLoaderFactory::MaybeRemoveProxy() {
-  // Even if all URLLoaderFactory pipes connected to this object have been
-  // closed it has to stay alive until all active requests have completed.
-  if (target_factory_.is_bound() || !requests_.empty())
+  // We can delete this factory only when
+  //  - there are no existing requests, and
+  //  - it is impossible for a new request to arrive in the future.
+  if (!requests_.empty() || !proxy_receivers_.empty()) {
     return;
+  }
 
   // Deletes |this|.
   proxies_->RemoveProxy(this);

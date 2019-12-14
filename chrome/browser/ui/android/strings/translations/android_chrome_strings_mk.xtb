@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Дали да се преземе датотеката повторно?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аудиодатотека}one{# аудиодатотека}other{# аудиодатотеки}}</translation>
 <translation id="2653659639078652383">Поднеси</translation>
-<translation id="2669093958999339774">Блокирај ги потсетниците за известувања за да не ме прекинуваат и користи потивки пораки</translation>
 <translation id="2677748264148917807">Напушти</translation>
 <translation id="2704606927547763573">Копирано</translation>
 <translation id="2707726405694321444">Освежи ја страницата</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Обележано во <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Синхронизација во заднина</translation>
 <translation id="3749259744154402564">Неподдржано</translation>
-<translation id="3767376082821709728">Новите сајтови што ги посетувате не може да ви испраќаат известувања</translation>
 <translation id="3771001275138982843">Не можеше да се преземе ажурирањето</translation>
 <translation id="3771033907050503522">Инкогнито картички</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Вклучете Bluetooth<ph name="END_LINK" /> за да овозможите спарување</translation>
@@ -957,7 +955,6 @@
 <translation id="8035133914807600019">Нова папка…</translation>
 <translation id="8037750541064988519">Останаа <ph name="DAYS" /> дена</translation>
 <translation id="804335162455518893">SD-картичката не е најдена</translation>
-<translation id="8046278916126163020">Новите сајтови што ги посетувате може да побараат ваша дозвола за испраќање известувања</translation>
 <translation id="805047784848435650">Врз основа на вашата историја на прелистување</translation>
 <translation id="8051695050440594747">Достапни се <ph name="MEGABYTES" /> МБ</translation>
 <translation id="8058746566562539958">Отвори во нова Chrome картичка</translation>

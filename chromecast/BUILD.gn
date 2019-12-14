@@ -623,7 +623,7 @@ buildflag_header("chromecast_buildflags") {
 
 if (is_android) {
   generate_jni_registration("cast_shell_jni_registration") {
-    target = ":cast_shell_apk"
+    targets = [ ":cast_shell_apk" ]
     header_output = "$root_gen_dir/chromecast/android/${target_name}.h"
   }
 

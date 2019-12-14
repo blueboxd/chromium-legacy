@@ -1164,6 +1164,8 @@ Document::Document(const DocumentInit& initializer,
       document_timing_(*this),
       write_recursion_is_too_deep_(false),
       write_recursion_depth_(0),
+      scripted_animation_controller_(
+          MakeGarbageCollected<ScriptedAnimationController>(this)),
       current_frame_is_throttled_(false),
       registration_context_(initializer.RegistrationContext(this)),
       element_data_cache_clear_timer_(
@@ -3361,11 +3363,6 @@ void Document::Shutdown() {
   GetPage()->DocumentDetached(this);
 
   probe::DocumentDetached(this);
-
-  // FIXME: consider using ContextLifecycleStateObserver.
-  if (scripted_animation_controller_)
-    scripted_animation_controller_->ClearDocumentPointer();
-  scripted_animation_controller_.Clear();
 
   scripted_idle_task_controller_.Clear();
 
@@ -5688,19 +5685,19 @@ EventListener* Document::GetWindowAttributeEventListener(
 }
 
 void Document::EnqueueDisplayLockActivationTask(base::OnceClosure task) {
-  EnsureScriptedAnimationController().EnqueueTask(std::move(task));
+  scripted_animation_controller_->EnqueueTask(std::move(task));
 }
 
 void Document::EnqueueAnimationFrameTask(base::OnceClosure task) {
-  EnsureScriptedAnimationController().EnqueueTask(std::move(task));
+  scripted_animation_controller_->EnqueueTask(std::move(task));
 }
 
 void Document::EnqueueAnimationFrameEvent(Event* event) {
-  EnsureScriptedAnimationController().EnqueueEvent(event);
+  scripted_animation_controller_->EnqueueEvent(event);
 }
 
 void Document::EnqueueUniqueAnimationFrameEvent(Event* event) {
-  EnsureScriptedAnimationController().EnqueuePerFrameEvent(event);
+  scripted_animation_controller_->EnqueuePerFrameEvent(event);
 }
 
 void Document::EnqueueScrollEventForNode(Node* target) {
@@ -5710,7 +5707,7 @@ void Document::EnqueueScrollEventForNode(Node* target) {
                             ? Event::CreateBubble(event_type_names::kScroll)
                             : Event::Create(event_type_names::kScroll);
   scroll_event->SetTarget(target);
-  EnsureScriptedAnimationController().EnqueuePerFrameEvent(scroll_event);
+  scripted_animation_controller_->EnqueuePerFrameEvent(scroll_event);
 }
 
 void Document::EnqueueScrollEndEventForNode(Node* target) {
@@ -5720,7 +5717,7 @@ void Document::EnqueueScrollEndEventForNode(Node* target) {
           ? Event::CreateBubble(event_type_names::kScrollend)
           : Event::Create(event_type_names::kScrollend);
   scroll_end_event->SetTarget(target);
-  EnsureScriptedAnimationController().EnqueuePerFrameEvent(scroll_end_event);
+  scripted_animation_controller_->EnqueuePerFrameEvent(scroll_end_event);
 }
 
 void Document::EnqueueOverscrollEventForNode(Node* target,
@@ -5731,36 +5728,33 @@ void Document::EnqueueOverscrollEventForNode(Node* target,
   Event* overscroll_event = OverscrollEvent::Create(
       event_type_names::kOverscroll, bubbles, delta_x, delta_y);
   overscroll_event->SetTarget(target);
-  EnsureScriptedAnimationController().EnqueuePerFrameEvent(overscroll_event);
+  scripted_animation_controller_->EnqueuePerFrameEvent(overscroll_event);
 }
 
 void Document::EnqueueResizeEvent() {
   Event* event = Event::Create(event_type_names::kResize);
   event->SetTarget(domWindow());
-  EnsureScriptedAnimationController().EnqueuePerFrameEvent(event);
+  scripted_animation_controller_->EnqueuePerFrameEvent(event);
 }
 
 void Document::EnqueueMediaQueryChangeListeners(
     HeapVector<Member<MediaQueryListListener>>& listeners) {
-  EnsureScriptedAnimationController().EnqueueMediaQueryChangeListeners(
-      listeners);
+  scripted_animation_controller_->EnqueueMediaQueryChangeListeners(listeners);
 }
 
 void Document::EnqueueVisualViewportScrollEvent() {
   VisualViewportScrollEvent* event = VisualViewportScrollEvent::Create();
   event->SetTarget(domWindow()->visualViewport());
-  EnsureScriptedAnimationController().EnqueuePerFrameEvent(event);
+  scripted_animation_controller_->EnqueuePerFrameEvent(event);
 }
 
 void Document::EnqueueVisualViewportResizeEvent() {
   VisualViewportResizeEvent* event = VisualViewportResizeEvent::Create();
   event->SetTarget(domWindow()->visualViewport());
-  EnsureScriptedAnimationController().EnqueuePerFrameEvent(event);
+  scripted_animation_controller_->EnqueuePerFrameEvent(event);
 }
 
 void Document::DispatchEventsForPrinting() {
-  if (!scripted_animation_controller_)
-    return;
   scripted_animation_controller_->DispatchEventsAndCallbacksForPrinting();
 }
 
@@ -7298,15 +7292,9 @@ void Document::AddConsoleMessageImpl(ConsoleMessage* console_message,
   frame_->Console().AddMessage(console_message, discard_duplicates);
 }
 
-void Document::TasksWerePaused() {
-  if (scripted_animation_controller_)
-    scripted_animation_controller_->Pause();
-}
+void Document::TasksWerePaused() {}
 
-void Document::TasksWereUnpaused() {
-  if (scripted_animation_controller_)
-    scripted_animation_controller_->Unpause();
-}
+void Document::TasksWereUnpaused() {}
 
 bool Document::TasksNeedPause() {
   Page* page = GetPage();
@@ -7416,33 +7404,17 @@ void Document::PluginLoadingTimerFired(TimerBase*) {
   UpdateStyleAndLayout();
 }
 
-ScriptedAnimationController& Document::EnsureScriptedAnimationController() {
-  if (!scripted_animation_controller_) {
-    scripted_animation_controller_ =
-        MakeGarbageCollected<ScriptedAnimationController>(this);
-    // We need to make sure that we don't start up the animation controller on a
-    // background tab, for example.
-    if (!GetPage())
-      scripted_animation_controller_->Pause();
-  }
-  return *scripted_animation_controller_;
-}
-
 int Document::RequestAnimationFrame(
     FrameRequestCallbackCollection::FrameCallback* callback) {
-  return EnsureScriptedAnimationController().RegisterFrameCallback(callback);
+  return scripted_animation_controller_->RegisterFrameCallback(callback);
 }
 
 void Document::CancelAnimationFrame(int id) {
-  if (!scripted_animation_controller_)
-    return;
   scripted_animation_controller_->CancelFrameCallback(id);
 }
 
 void Document::ServiceScriptedAnimations(
     base::TimeTicks monotonic_animation_start_time) {
-  if (!scripted_animation_controller_)
-    return;
   auto start_time = base::TimeTicks::Now();
   scripted_animation_controller_->ServiceScriptedAnimations(
       monotonic_animation_start_time);
@@ -7454,18 +7426,17 @@ void Document::ServiceScriptedAnimations(
 
 int Document::RequestPostAnimationFrame(
     FrameRequestCallbackCollection::FrameCallback* cb) {
-  return EnsureScriptedAnimationController().RegisterPostFrameCallback(cb);
+  return scripted_animation_controller_->RegisterPostFrameCallback(cb);
 }
 
 void Document::CancelPostAnimationFrame(int id) {
-  if (scripted_animation_controller_)
-    scripted_animation_controller_->CancelPostFrameCallback(id);
+  scripted_animation_controller_->CancelPostFrameCallback(id);
 }
 
 void Document::RunPostAnimationFrameCallbacks() {
   bool was_throttled = current_frame_is_throttled_;
   current_frame_is_throttled_ = false;
-  if (was_throttled || !scripted_animation_controller_)
+  if (was_throttled)
     return;
   scripted_animation_controller_->RunPostFrameCallbacks();
 }
@@ -7809,8 +7780,6 @@ void Document::EnqueueAutofocusCandidate(Element& element) {
   if (index != WTF::kNotFound)
     autofocus_candidates_.EraseAt(index);
   autofocus_candidates_.push_back(element);
-  // ScriptedAnimationController invokes FlushAutofocusCandidates().
-  EnsureScriptedAnimationController();
 }
 
 bool Document::HasAutofocusCandidates() const {
@@ -8328,13 +8297,11 @@ void Document::RecordUkmOutliveTimeAfterShutdown(int outlive_time_count) {
 }
 
 bool Document::CurrentFrameHadRAF() const {
-  return scripted_animation_controller_ &&
-         scripted_animation_controller_->CurrentFrameHadRAF();
+  return scripted_animation_controller_->CurrentFrameHadRAF();
 }
 
 bool Document::NextFrameHasPendingRAF() const {
-  return scripted_animation_controller_ &&
-         scripted_animation_controller_->NextFrameHasPendingRAF();
+  return scripted_animation_controller_->NextFrameHasPendingRAF();
 }
 
 void Document::NavigateLocalAdsFrames() {

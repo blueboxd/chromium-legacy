@@ -234,8 +234,8 @@ void SelectionRequestor::CompleteRequest(size_t index, bool success) {
     ConvertSelectionForCurrentRequest();
   }
 
-  if (!request->quit_closure.is_null())
-    request->quit_closure.Run();
+  if (request->quit_closure)
+    std::move(request->quit_closure).Run();
 }
 
 void SelectionRequestor::ConvertSelectionForCurrentRequest() {

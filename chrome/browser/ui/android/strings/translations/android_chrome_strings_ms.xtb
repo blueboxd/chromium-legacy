@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Muat turun fail sekali lagi?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# Fail audio}other{# Fail audio}}</translation>
 <translation id="2653659639078652383">Serah</translation>
-<translation id="2669093958999339774">Sekat gesaan pemberitahuan daripada mengganggu anda, sebaliknya gunakan mesej yang lebih senyap</translation>
 <translation id="2677748264148917807">Tinggalkan</translation>
 <translation id="2704606927547763573">Disalin</translation>
 <translation id="2707726405694321444">Muat semula halaman</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Ditandai halaman dalam <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Penyegerakan latar belakang</translation>
 <translation id="3749259744154402564">Tidak disokong</translation>
-<translation id="3767376082821709728">Tapak baharu yang anda lawati tidak boleh menghantar pemberitahuan kepada anda</translation>
 <translation id="3771001275138982843">Tidak dapat memuat turun kemas kini</translation>
 <translation id="3771033907050503522">Tab Inkognito</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Hidupkan Bluetooth<ph name="END_LINK" /> untuk membenarkan penggandingan</translation>
@@ -957,7 +955,6 @@ Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera
 <translation id="8035133914807600019">Folder baharu...</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> hari lagi</translation>
 <translation id="804335162455518893">Kad SD tidak ditemui</translation>
-<translation id="8046278916126163020">Tapak baharu yang anda lawati boleh meminta untuk menghantar pemberitahuan kepada anda</translation>
 <translation id="805047784848435650">Berdasarkan sejarah penyemakan imbas anda</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB tersedia</translation>
 <translation id="8058746566562539958">Buka dalam tab Chrome baharu</translation>

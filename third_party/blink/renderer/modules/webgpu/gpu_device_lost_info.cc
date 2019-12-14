@@ -6,11 +6,6 @@
 
 namespace blink {
 
-// static
-GPUDeviceLostInfo* GPUDeviceLostInfo::Create(const String& message) {
-  return MakeGarbageCollected<GPUDeviceLostInfo>(message);
-}
-
 GPUDeviceLostInfo::GPUDeviceLostInfo(const String& message) {
   message_ = message;
 }

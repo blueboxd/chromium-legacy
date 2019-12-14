@@ -65,11 +65,6 @@ class LocalPolicyTestServerMixin : public InProcessBrowserTestMixin {
                         const base::Value& recommended_policy,
                         const std::string& policy_user);
 
-  // Configures and sets expectations for enrollment flow with license
-  // selection. Non-negative values indicate number of available licenses.
-  // There should be at least one license type.
-  void ExpectAvailableLicenseCount(int perpetual, int annual, int kiosk);
-
   void ExpectTokenEnrollment(const std::string& enrollment_token,
                              const std::string& token_creator);
 

@@ -397,3 +397,27 @@ TEST(AutocompleteMatchTest, DedupeDriveURLs) {
     CheckDuplicateCase(cases[i]);
   }
 }
+
+TEST(AutocompleteMatchTest, UpgradeMatchPropertiesWhileMergingDuplicates) {
+  AutocompleteMatch search_history_match(nullptr, 500, true,
+                                         AutocompleteMatchType::SEARCH_HISTORY);
+
+  // Entity match should get the increased score, but not change types.
+  AutocompleteMatch entity_match(nullptr, 400, false,
+                                 AutocompleteMatchType::SEARCH_SUGGEST_ENTITY);
+  entity_match.UpgradeMatchWithPropertiesFrom(search_history_match);
+  EXPECT_EQ(500, entity_match.relevance);
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_SUGGEST_ENTITY, entity_match.type);
+
+  // Suggest and search-what-typed matches should get the search history type.
+  AutocompleteMatch suggest_match(nullptr, 400, true,
+                                  AutocompleteMatchType::SEARCH_SUGGEST);
+  AutocompleteMatch search_what_you_typed(
+      nullptr, 400, true, AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED);
+  suggest_match.UpgradeMatchWithPropertiesFrom(search_history_match);
+  search_what_you_typed.UpgradeMatchWithPropertiesFrom(search_history_match);
+  EXPECT_EQ(500, suggest_match.relevance);
+  EXPECT_EQ(500, search_what_you_typed.relevance);
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_HISTORY, suggest_match.type);
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_HISTORY, search_what_you_typed.type);
+}

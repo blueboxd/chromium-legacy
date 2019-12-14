@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/css/resolver/font_builder.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/style_svg_resource.h"
 #include "third_party/blink/renderer/core/style/svg_computed_style.h"
@@ -46,6 +47,14 @@ CSSExposure {{class_name}}::Exposure() const {
     {% else %}
   return CSSExposure::kWeb;
     {% endif %}
+}
+  {% endif %}
+
+  {% if property.origin_trial %}
+CSSExposure {{class_name}}::Exposure(const ExecutionContext* execution_context) const {
+  if (!RuntimeEnabledFeatures::{{property.runtime_flag}}Enabled(execution_context))
+    return CSSExposure::kNone;
+  return CSSExposure::kWeb;
 }
   {% endif %}
 

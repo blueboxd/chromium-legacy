@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Tải tệp xuống lần nữa?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# tệp âm thanh}other{# tệp âm thanh}}</translation>
 <translation id="2653659639078652383">Gửi</translation>
-<translation id="2669093958999339774">Chặn thông báo bật lên làm phiền bạn và dùng cách thông báo nhẹ nhàng hơn</translation>
 <translation id="2677748264148917807">Rời khỏi</translation>
 <translation id="2704606927547763573">Đã sao chép</translation>
 <translation id="2707726405694321444">Làm mới trang</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Đã đánh dấu trang trong <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Đồng bộ hóa dưới nền</translation>
 <translation id="3749259744154402564">Chưa hỗ trợ</translation>
-<translation id="3767376082821709728">Các trang web mà bạn truy cập lần đầu không thể gửi thông báo cho bạn</translation>
 <translation id="3771001275138982843">Không thể tải bản cập nhật xuống</translation>
 <translation id="3771033907050503522">Tab ẩn danh</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Bật Bluetooth<ph name="END_LINK" /> để cho phép ghép nối</translation>
@@ -957,7 +955,6 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="8035133914807600019">Thư mục mới...</translation>
 <translation id="8037750541064988519">Còn <ph name="DAYS" /> ngày</translation>
 <translation id="804335162455518893">Không tìm thấy thẻ SD</translation>
-<translation id="8046278916126163020">Các trang web mà bạn truy cập lần đầu có thể yêu cầu bạn cho phép gửi thông báo</translation>
 <translation id="805047784848435650">Dựa trên lịch sử duyệt web của bạn</translation>
 <translation id="8051695050440594747">Còn <ph name="MEGABYTES" /> MB</translation>
 <translation id="8058746566562539958">Mở trong tab Chrome mới</translation>

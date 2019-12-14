@@ -1187,7 +1187,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2665919335226618153">Se produjo un error durante la aplicación de formato.</translation>
 <translation id="2666990579225592931">Abrir una ventana como invitado</translation>
 <translation id="2667463864537187133">Administrar el corrector ortográfico</translation>
-<translation id="2669093958999339774">Bloquear las notificaciones emergentes para evitar interrupciones y usar un tipo de aviso más discreto</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> comparte una pestaña de Chrome.</translation>
 <translation id="2670429602441959756">Esta página incluye funciones que aún no son compatibles con RV. Saliendo…</translation>
 <translation id="2671451824761031126">Tus marcadores y opciones de configuración están listos</translation>
@@ -1961,7 +1960,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="37613671848467444">Abrir en una ventana de &amp;incógnito</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Comunicarse con un dispositivo USB}other{Comunicarse con # dispositivos USB}}</translation>
 <translation id="3765246971671567135">No se pudo leer la política del modo de demostración sin conexión.</translation>
-<translation id="3767376082821709728">Los nuevos sitios que visites no podrán enviarte notificaciones</translation>
 <translation id="3768037234834996183">Sincronizando tus preferencias…</translation>
 <translation id="377050016711188788">Helado</translation>
 <translation id="3771294271822695279">Archivos de video</translation>
@@ -3029,7 +3027,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5370819323174483825">&amp;Volver a cargar</translation>
 <translation id="5372529912055771682">El modo de inscripción proporcionado no es compatible con esta versión del sistema operativo. Asegúrate de que estás ejecutando la versión más reciente y vuelve a intentarlo.</translation>
 <translation id="5372579129492968947">Deja de fijar extensión</translation>
-<translation id="5374359983950678924">Cambiar imagen</translation>
 <translation id="5376169624176189338">Haz clic para volver atrás o espera para ver el historial</translation>
 <translation id="5376931455988532197">Archivo demasiado grande</translation>
 <translation id="537813040452600081">Las páginas a las que accedas desde esta ventana no aparecerán en el historial del navegador ni dejarán rastros (por ejemplo, cookies) en la computadora una vez que salgas del navegador. Los archivos que descargues y los favoritos que crees no se guardarán.</translation>
@@ -4904,7 +4901,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8044899503464538266">Lento</translation>
 <translation id="8045253504249021590">La sincronización se detuvo mediante el Panel de control de Google.</translation>
 <translation id="8045923671629973368">Ingresa el ID de aplicación o la URL de la tienda web</translation>
-<translation id="8046278916126163020">Los nuevos sitios que visites pueden preguntarte si quieres recibir notificaciones</translation>
 <translation id="804786196054284061">Acuerdo de licencia de usuario final</translation>
 <translation id="8049705080247101012">Google marcó <ph name="EXTENSION_NAME" /> como extensión maliciosa y se canceló la instalación</translation>
 <translation id="8050038245906040378">Firma de código comercial de Microsoft</translation>

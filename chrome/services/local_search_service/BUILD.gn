@@ -17,6 +17,22 @@ source_set("local_search_service") {
   ]
 }
 
+source_set("test_utils") {
+  testonly = true
+
+  sources = [
+    "test_utils.cc",
+    "test_utils.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//chrome/services/local_search_service/public/mojom",
+    "//mojo/public/cpp/bindings",
+    "//testing/gtest",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
 
@@ -27,6 +43,7 @@ source_set("unit_tests") {
 
   deps = [
     ":local_search_service",
+    ":test_utils",
     "//testing/gtest",
   ]
 }

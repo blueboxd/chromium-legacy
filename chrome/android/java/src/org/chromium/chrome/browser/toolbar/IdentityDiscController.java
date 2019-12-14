@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.settings.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.chrome.browser.signin.SigninManager;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -36,8 +35,7 @@ import java.util.Collections;
  * (user sign-in state, whether NTP is shown)
  */
 class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Observer,
-                                        SigninManager.SignInStateObserver,
-                                        ProfileSyncService.SyncStateChangedListener {
+                                        SigninManager.SignInStateObserver {
     // Visual state of Identity Disc.
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({IdentityDiscState.NONE, IdentityDiscState.SMALL, IdentityDiscState.LARGE})
@@ -59,9 +57,8 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
     private final ToolbarManager mToolbarManager;
     private ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
 
-    // SigninManager and ProfileSyncService allow observing sign-in and sync state.
+    // We observe SigninManager to receive sign-in state change notifications.
     private SigninManager mSigninManager;
-    private ProfileSyncService mProfileSyncService;
 
     // ProfileDataCache facilitates retrieving profile picture. Separate objects are maintained
     // for different visual states to cache profile pictures of different size.
@@ -96,13 +93,6 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
         mActivityLifecycleDispatcher.unregister(this);
         mActivityLifecycleDispatcher = null;
 
-        mProfileSyncService = ProfileSyncService.get();
-        // ProfileSyncService being null means sync is disabled and won't be initialized. This means
-        // Identity Disc will never get shown so we don't need to register for other notifications.
-        if (mProfileSyncService == null) return;
-
-        mProfileSyncService.addSyncStateChangedListener(this);
-
         mSigninManager = IdentityServicesProvider.getSigninManager();
         mSigninManager.addSignInStateObserver(this);
     }
@@ -118,13 +108,9 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
      * Shows/hides Identity Disc depending on whether NTP is visible.
      */
     void updateButtonState(boolean isNTPVisible) {
-        // Sync is disabled. IdentityDisc will never be shown.
-        if (mProfileSyncService == null) return;
-
         mIsNTPVisible = isNTPVisible;
         String accountName = ChromeSigninController.get().getSignedInAccountName();
-        boolean shouldShowIdentityDisc = isNTPVisible && accountName != null
-                && ProfileSyncService.get().canSyncFeatureStart();
+        boolean shouldShowIdentityDisc = isNTPVisible && accountName != null;
         @IdentityDiscState
         int oldState = mState;
 
@@ -231,12 +217,6 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
         updateButtonState();
     }
 
-    // ProfileSyncService.SyncStateChangedListener implementation.
-    @Override
-    public void syncStateChanged() {
-        updateButtonState();
-    }
-
     /**
      * Call to tear down dependencies.
      */
@@ -255,10 +235,6 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
         if (mSigninManager != null) {
             mSigninManager.removeSignInStateObserver(this);
             mSigninManager = null;
-        }
-        if (mProfileSyncService != null) {
-            mProfileSyncService.removeSyncStateChangedListener(this);
-            mProfileSyncService = null;
         }
     }
 

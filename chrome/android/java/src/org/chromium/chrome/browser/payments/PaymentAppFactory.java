@@ -114,8 +114,6 @@ public class PaymentAppFactory implements PaymentAppFactoryInterface {
      */
     public void create(WebContents webContents, Map<String, PaymentMethodData> methodData,
             boolean mayCrawl, final PaymentAppCreatedCallback callback) {
-        callback.onPaymentAppCreated(new AutofillPaymentApp(webContents));
-
         if (mAdditionalFactories.isEmpty()) {
             callback.onAllPaymentAppsCreated();
             return;
@@ -167,9 +165,6 @@ public class PaymentAppFactory implements PaymentAppFactoryInterface {
         @Override
         public void onPaymentAppCreated(PaymentApp paymentApp) {
             mApps.add(paymentApp);
-            if (paymentApp instanceof AutofillPaymentApp) {
-                mDelegate.onAutofillPaymentAppFactoryCreated((AutofillPaymentApp) paymentApp);
-            }
         }
 
         // PaymentAppCreatedCallback implementation.
@@ -305,12 +300,6 @@ public class PaymentAppFactory implements PaymentAppFactoryInterface {
                         instrument.dismissInstrument();
                     }
                 }
-            }
-
-            int additionalTextResourceId = app.getAdditionalAppTextResourceId();
-            if (additionalTextResourceId != 0) {
-                assert app instanceof AutofillPaymentApp;
-                mDelegate.onAdditionalTextResourceId(additionalTextResourceId);
             }
 
             if (mPendingApps.isEmpty()) mDelegate.onDoneCreatingPaymentApps(PaymentAppFactory.this);

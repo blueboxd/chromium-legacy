@@ -160,44 +160,44 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     SuccessfulReauthTimeAccessor> {
   // The observable boolean that binds to the password manager setting state.
   // Saved passwords are only on if the password manager is enabled.
-  PrefBackedBoolean* passwordManagerEnabled_;
+  PrefBackedBoolean* _passwordManagerEnabled;
   // The header for save passwords switch section.
-  TableViewLinkHeaderFooterItem* manageAccountLinkItem_;
+  TableViewLinkHeaderFooterItem* _manageAccountLinkItem;
   // The item related to the switch for the password manager setting.
-  SettingsSwitchItem* savePasswordsItem_;
+  SettingsSwitchItem* _savePasswordsItem;
   // The item related to the button for exporting passwords.
-  TableViewTextItem* exportPasswordsItem_;
+  TableViewTextItem* _exportPasswordsItem;
   // The interface for getting and manipulating a user's saved passwords.
-  scoped_refptr<password_manager::PasswordStore> passwordStore_;
+  scoped_refptr<password_manager::PasswordStore> _passwordStore;
   // A helper object for passing data about saved passwords from a finished
   // password store request to the PasswordsTableViewController.
-  std::unique_ptr<ios::SavePasswordsConsumer> savedPasswordsConsumer_;
+  std::unique_ptr<ios::SavePasswordsConsumer> _savedPasswordsConsumer;
   // The list of the user's saved passwords.
-  std::vector<std::unique_ptr<autofill::PasswordForm>> savedForms_;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> _savedForms;
   // The list of the user's blocked sites.
-  std::vector<std::unique_ptr<autofill::PasswordForm>> blockedForms_;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> _blockedForms;
   // Map containing duplicates of saved passwords.
-  password_manager::DuplicatesMap savedPasswordDuplicates_;
+  password_manager::DuplicatesMap _savedPasswordDuplicates;
   // Map containing duplicates of blocked passwords.
-  password_manager::DuplicatesMap blockedPasswordDuplicates_;
+  password_manager::DuplicatesMap _blockedPasswordDuplicates;
   // The current Chrome browser state.
-  ios::ChromeBrowserState* browserState_;
+  ios::ChromeBrowserState* _browserState;
   // Authentication Service Observer.
-  std::unique_ptr<ChromeIdentityServiceObserverBridge> identityServiceObserver_;
+  std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
   // Object storing the time of the previous successful re-authentication.
   // This is meant to be used by the |ReauthenticationModule| for keeping
   // re-authentications valid for a certain time interval within the scope
   // of the Save Passwords Settings.
-  NSDate* successfulReauthTime_;
+  NSDate* _successfulReauthTime;
   // Module containing the reauthentication mechanism for viewing and copying
   // passwords.
-  ReauthenticationModule* reauthenticationModule_;
+  ReauthenticationModule* _reauthenticationModule;
   // Boolean containing whether the export operation is ready. This implies that
   // the exporter is idle and there is at least one saved passwords to export.
-  BOOL exportReady_;
+  BOOL _exportReady;
   // Alert informing the user that passwords are being prepared for
   // export.
-  UIAlertController* preparingPasswordsAlert_;
+  UIAlertController* _preparingPasswordsAlert;
 }
 
 // Kick off async request to get logins from password store.
@@ -228,23 +228,23 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   self = [super initWithTableViewStyle:style
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
-    browserState_ = browserState;
-    reauthenticationModule_ = [[ReauthenticationModule alloc]
+    _browserState = browserState;
+    _reauthenticationModule = [[ReauthenticationModule alloc]
         initWithSuccessfulReauthTimeAccessor:self];
     _passwordExporter = [[PasswordExporter alloc]
-        initWithReauthenticationModule:reauthenticationModule_
+        initWithReauthenticationModule:_reauthenticationModule
                               delegate:self];
     self.exampleHeaders = [[NSMutableDictionary alloc] init];
     self.title = l10n_util::GetNSString(IDS_IOS_PASSWORDS);
     self.shouldHideDoneButton = YES;
     self.searchTerm = @"";
-    passwordStore_ = IOSChromePasswordStoreFactory::GetForBrowserState(
-        browserState_, ServiceAccessType::EXPLICIT_ACCESS);
-    DCHECK(passwordStore_);
-    passwordManagerEnabled_ = [[PrefBackedBoolean alloc]
-        initWithPrefService:browserState_->GetPrefs()
+    _passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
+        _browserState, ServiceAccessType::EXPLICIT_ACCESS);
+    DCHECK(_passwordStore);
+    _passwordManagerEnabled = [[PrefBackedBoolean alloc]
+        initWithPrefService:_browserState->GetPrefs()
                    prefName:password_manager::prefs::kCredentialsEnableService];
-    [passwordManagerEnabled_ setObserver:self];
+    [_passwordManagerEnabled setObserver:self];
     [self getLoginsFromPasswordStore];
     [self updateUIForEditState];
     [self updateExportPasswordsButton];
@@ -328,7 +328,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     [self setSearchBarEnabled:NO];
   } else {
     [self setSavePasswordsSwitchItemEnabled:YES];
-    if (exportReady_) {
+    if (_exportReady) {
       [self setExportPasswordsButtonEnabled:YES];
     }
     [self setSearchBarEnabled:YES];
@@ -345,16 +345,16 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   // when the searchController is not active.
   if (!self.navigationItem.searchController.active) {
     [model addSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
-    savePasswordsItem_ = [self savePasswordsItem];
-    [model addItem:savePasswordsItem_
+    _savePasswordsItem = [self savePasswordsItem];
+    [model addItem:_savePasswordsItem
         toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
-    manageAccountLinkItem_ = [self manageAccountLinkItem];
-    [model setHeader:manageAccountLinkItem_
+    _manageAccountLinkItem = [self manageAccountLinkItem];
+    [model setHeader:_manageAccountLinkItem
         forSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
   }
 
   // Saved passwords.
-  if (!savedForms_.empty()) {
+  if (!_savedForms.empty()) {
     [model addSectionWithIdentifier:SectionIdentifierSavedPasswords];
     TableViewTextHeaderFooterItem* headerItem =
         [[TableViewTextHeaderFooterItem alloc] initWithType:ItemTypeHeader];
@@ -365,7 +365,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   }
 
   // Blacklisted passwords.
-  if (!blockedForms_.empty()) {
+  if (!_blockedForms.empty()) {
     [model addSectionWithIdentifier:SectionIdentifierBlocked];
     TableViewTextHeaderFooterItem* headerItem =
         [[TableViewTextHeaderFooterItem alloc] initWithType:ItemTypeHeader];
@@ -377,8 +377,8 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
   // Export passwords button.
   [model addSectionWithIdentifier:SectionIdentifierExportPasswordsButton];
-  exportPasswordsItem_ = [self exportPasswordsItem];
-  [model addItem:exportPasswordsItem_
+  _exportPasswordsItem = [self exportPasswordsItem];
+  [model addItem:_exportPasswordsItem
       toSectionWithIdentifier:SectionIdentifierExportPasswordsButton];
 
   [self filterItems:self.searchTerm];
@@ -400,7 +400,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
 - (BOOL)editButtonEnabled {
   DCHECK([self shouldShowEditButton]);
-  return !savedForms_.empty() || !blockedForms_.empty();
+  return !_savedForms.empty() || !_blockedForms.empty();
 }
 
 #pragma mark - SettingsControllerProtocol
@@ -431,7 +431,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   SettingsSwitchItem* savePasswordsItem =
       [[SettingsSwitchItem alloc] initWithType:ItemTypeSavePasswordsSwitch];
   savePasswordsItem.text = l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS);
-  savePasswordsItem.on = [passwordManagerEnabled_ value];
+  savePasswordsItem.on = [_passwordManagerEnabled value];
   savePasswordsItem.accessibilityIdentifier = @"savePasswordsItem_switch";
   return savePasswordsItem;
 }
@@ -474,15 +474,15 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 #pragma mark - BooleanObserver
 
 - (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
-  if (observableBoolean == passwordManagerEnabled_) {
+  if (observableBoolean == _passwordManagerEnabled) {
     // Update the item.
-    savePasswordsItem_.on = [passwordManagerEnabled_ value];
+    _savePasswordsItem.on = [_passwordManagerEnabled value];
 
     // Update the cell if it's not removed by presenting search controller.
     if ([self.tableViewModel
             hasItemForItemType:ItemTypeSavePasswordsSwitch
              sectionIdentifier:SectionIdentifierSavePasswordsSwitch]) {
-      [self reconfigureCellsForItems:@[ savePasswordsItem_ ]];
+      [self reconfigureCellsForItems:@[ _savePasswordsItem ]];
     }
   } else {
     NOTREACHED();
@@ -493,10 +493,10 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
 - (void)savePasswordsSwitchChanged:(UISwitch*)switchView {
   // Update the setting.
-  [passwordManagerEnabled_ setValue:switchView.on];
+  [_passwordManagerEnabled setValue:switchView.on];
 
   // Update the item.
-  savePasswordsItem_.on = [passwordManagerEnabled_ value];
+  _savePasswordsItem.on = [_passwordManagerEnabled value];
 }
 
 #pragma mark - SavePasswordsConsumerDelegate
@@ -508,15 +508,15 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   }
   for (auto& form : results) {
     if (form->blacklisted_by_user)
-      blockedForms_.push_back(std::move(form));
+      _blockedForms.push_back(std::move(form));
     else
-      savedForms_.push_back(std::move(form));
+      _savedForms.push_back(std::move(form));
   }
 
-  password_manager::SortEntriesAndHideDuplicates(&savedForms_,
-                                                 &savedPasswordDuplicates_);
-  password_manager::SortEntriesAndHideDuplicates(&blockedForms_,
-                                                 &blockedPasswordDuplicates_);
+  password_manager::SortEntriesAndHideDuplicates(&_savedForms,
+                                                 &_savedPasswordDuplicates);
+  password_manager::SortEntriesAndHideDuplicates(&_blockedForms,
+                                                 &_blockedPasswordDuplicates);
 
   [self updateUIForEditState];
   [self reloadData];
@@ -583,11 +583,11 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       performBatchUpdates:^{
         [model insertSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch
                                    atIndex:0];
-        [model setHeader:manageAccountLinkItem_
+        [model setHeader:_manageAccountLinkItem
             forSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
         [self.tableView insertSections:[NSIndexSet indexSetWithIndex:0]
                       withRowAnimation:UITableViewRowAnimationTop];
-        [model addItem:savePasswordsItem_
+        [model addItem:_savePasswordsItem
             toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
         [self.tableView
             insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0
@@ -682,10 +682,10 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 - (void)filterItems:(NSString*)searchTerm {
   TableViewModel* model = self.tableViewModel;
 
-  if (!savedForms_.empty()) {
+  if (!_savedForms.empty()) {
     [model deleteAllItemsFromSectionWithIdentifier:
                SectionIdentifierSavedPasswords];
-    for (const auto& form : savedForms_) {
+    for (const auto& form : _savedForms) {
       NSString* text = base::SysUTF8ToNSString(
           password_manager::GetShownOriginAndLinkUrl(*form).first);
       NSString* detailText = base::SysUTF16ToNSString(form->username_value);
@@ -702,9 +702,9 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     }
   }
 
-  if (!blockedForms_.empty()) {
+  if (!_blockedForms.empty()) {
     [model deleteAllItemsFromSectionWithIdentifier:SectionIdentifierBlocked];
-    for (const auto& form : blockedForms_) {
+    for (const auto& form : _blockedForms) {
       NSString* text = base::SysUTF8ToNSString(
           password_manager::GetShownOriginAndLinkUrl(*form).first);
       bool hidden = searchTerm.length > 0 &&
@@ -719,35 +719,35 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
 // Starts requests for saved and blocked passwords to the store.
 - (void)getLoginsFromPasswordStore {
-  savedPasswordsConsumer_.reset(new ios::SavePasswordsConsumer(self));
-  passwordStore_->GetAllLogins(savedPasswordsConsumer_.get());
+  _savedPasswordsConsumer.reset(new ios::SavePasswordsConsumer(self));
+  _passwordStore->GetAllLogins(_savedPasswordsConsumer.get());
 }
 
 - (void)updateExportPasswordsButton {
-  if (!exportPasswordsItem_)
+  if (!_exportPasswordsItem)
     return;
-  if (!savedForms_.empty() &&
+  if (!_savedForms.empty() &&
       self.passwordExporter.exportState == ExportState::IDLE) {
-    exportReady_ = YES;
+    _exportReady = YES;
     if (!self.editing) {
       [self setExportPasswordsButtonEnabled:YES];
     }
   } else {
-    exportReady_ = NO;
+    _exportReady = NO;
     [self setExportPasswordsButtonEnabled:NO];
   }
 }
 
 - (void)setExportPasswordsButtonEnabled:(BOOL)enabled {
   if (enabled) {
-    DCHECK(exportReady_ && !self.editing);
-    exportPasswordsItem_.textColor = [UIColor colorNamed:kBlueColor];
-    exportPasswordsItem_.accessibilityTraits &= ~UIAccessibilityTraitNotEnabled;
+    DCHECK(_exportReady && !self.editing);
+    _exportPasswordsItem.textColor = [UIColor colorNamed:kBlueColor];
+    _exportPasswordsItem.accessibilityTraits &= ~UIAccessibilityTraitNotEnabled;
   } else {
-    exportPasswordsItem_.textColor = UIColor.cr_labelColor;
-    exportPasswordsItem_.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
+    _exportPasswordsItem.textColor = UIColor.cr_labelColor;
+    _exportPasswordsItem.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
   }
-  [self reconfigureCellsForItems:@[ exportPasswordsItem_ ]];
+  [self reconfigureCellsForItems:@[ _exportPasswordsItem ]];
 }
 
 - (void)startPasswordsExportFlow {
@@ -777,7 +777,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
                   return;
                 }
                 [strongSelf.passwordExporter
-                    startExportFlow:CopyOf(strongSelf->savedForms_)];
+                    startExportFlow:CopyOf(strongSelf->_savedForms)];
               }];
 
   [exportConfirmation addAction:exportAction];
@@ -802,7 +802,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       [[PasswordDetailsTableViewController alloc]
             initWithPasswordForm:form
                         delegate:self
-          reauthenticationModule:reauthenticationModule_];
+          reauthenticationModule:_reauthenticationModule];
   controller.dispatcher = self.dispatcher;
   [self.navigationController pushViewController:controller animated:YES];
 }
@@ -813,19 +813,19 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   // forms vectors.
   NSArray* sortedIndexPaths =
       [indexPaths sortedArrayUsingSelector:@selector(compare:)];
-  auto passwordIterator = savedForms_.begin();
-  auto passwordEndIterator = savedForms_.end();
-  auto blockedIterator = blockedForms_.begin();
-  auto blockedEndIterator = blockedForms_.end();
+  auto passwordIterator = _savedForms.begin();
+  auto passwordEndIterator = _savedForms.end();
+  auto blockedIterator = _blockedForms.begin();
+  auto blockedEndIterator = _blockedForms.end();
   for (NSIndexPath* indexPath in sortedIndexPaths) {
     // Only form items are editable.
     PasswordFormContentItem* item =
         base::mac::ObjCCastStrict<PasswordFormContentItem>(
             [self.tableViewModel itemAtIndexPath:indexPath]);
     BOOL blocked = [item isKindOfClass:[BlockedFormContentItem class]];
-    auto& forms = blocked ? blockedForms_ : savedForms_;
+    auto& forms = blocked ? _blockedForms : _savedForms;
     auto& duplicates =
-        blocked ? blockedPasswordDuplicates_ : savedPasswordDuplicates_;
+        blocked ? _blockedPasswordDuplicates : _savedPasswordDuplicates;
 
     const autofill::PasswordForm& deletedForm = *item.form;
     auto begin = blocked ? blockedIterator : passwordIterator;
@@ -843,12 +843,12 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     auto duplicatesRange = duplicates.equal_range(key);
     for (auto iterator = duplicatesRange.first;
          iterator != duplicatesRange.second; ++iterator) {
-      passwordStore_->RemoveLogin(*(iterator->second));
+      _passwordStore->RemoveLogin(*(iterator->second));
     }
     duplicates.erase(key);
 
     formIterator = forms.erase(formIterator);
-    passwordStore_->RemoveLogin(*form);
+    _passwordStore->RemoveLogin(*form);
 
     // Keep track of where we are in the current list.
     if (blocked) {
@@ -874,11 +874,11 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
         // Delete in reverse order of section indexes (bottom up of section
         // displayed), so that indexes in model matches those in the view.  if
         // we don't we'll cause a crash.
-        if (strongSelf->blockedForms_.empty()) {
+        if (strongSelf->_blockedForms.empty()) {
           [self clearSectionWithIdentifier:SectionIdentifierBlocked
                           withRowAnimation:UITableViewRowAnimationAutomatic];
         }
-        if (strongSelf->savedForms_.empty()) {
+        if (strongSelf->_savedForms.empty()) {
           [strongSelf
               clearSectionWithIdentifier:SectionIdentifierSavedPasswords
                         withRowAnimation:UITableViewRowAnimationAutomatic];
@@ -889,8 +889,8 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
         if (!strongSelf)
           return;
         // If both lists are empty, exit editing mode.
-        if (strongSelf->savedForms_.empty() &&
-            strongSelf->blockedForms_.empty())
+        if (strongSelf->_savedForms.empty() &&
+            strongSelf->_blockedForms.empty())
           [strongSelf setEditing:NO animated:YES];
         [strongSelf updateUIForEditState];
         [strongSelf updateExportPasswordsButton];
@@ -936,7 +936,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     case ItemTypeExportPasswordsButton:
       DCHECK_EQ(SectionIdentifierExportPasswordsButton,
                 [model sectionIdentifierForSection:indexPath.section]);
-      if (exportReady_) {
+      if (_exportReady) {
         [self startPasswordsExportFlow];
       }
       break;
@@ -1002,10 +1002,10 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 - (void)passwordDetailsTableViewController:
             (PasswordDetailsTableViewController*)controller
                             deletePassword:(const autofill::PasswordForm&)form {
-  passwordStore_->RemoveLogin(form);
+  _passwordStore->RemoveLogin(form);
 
   std::vector<std::unique_ptr<autofill::PasswordForm>>& forms =
-      form.blacklisted_by_user ? blockedForms_ : savedForms_;
+      form.blacklisted_by_user ? _blockedForms : _savedForms;
   auto iterator = std::find_if(
       forms.begin(), forms.end(),
       [&form](const std::unique_ptr<autofill::PasswordForm>& value) {
@@ -1015,13 +1015,13 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   forms.erase(iterator);
 
   password_manager::DuplicatesMap& duplicates = form.blacklisted_by_user
-                                                    ? blockedPasswordDuplicates_
-                                                    : savedPasswordDuplicates_;
+                                                    ? _blockedPasswordDuplicates
+                                                    : _savedPasswordDuplicates;
   std::string key = password_manager::CreateSortKey(form);
   auto duplicatesRange = duplicates.equal_range(key);
   for (auto iterator = duplicatesRange.first;
        iterator != duplicatesRange.second; ++iterator) {
-    passwordStore_->RemoveLogin(*(iterator->second));
+    _passwordStore->RemoveLogin(*(iterator->second));
   }
   duplicates.erase(key);
 
@@ -1033,11 +1033,11 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 #pragma mark SuccessfulReauthTimeAccessor
 
 - (void)updateSuccessfulReauthTime {
-  successfulReauthTime_ = [[NSDate alloc] init];
+  _successfulReauthTime = [[NSDate alloc] init];
 }
 
 - (NSDate*)lastSuccessfulReauthTime {
-  return successfulReauthTime_;
+  return _successfulReauthTime;
 }
 
 #pragma mark PasswordExporterDelegate
@@ -1070,7 +1070,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 }
 
 - (void)showPreparingPasswordsAlert {
-  preparingPasswordsAlert_ = [UIAlertController
+  _preparingPasswordsAlert = [UIAlertController
       alertControllerWithTitle:
           l10n_util::GetNSString(IDS_IOS_EXPORT_PASSWORDS_PREPARING_ALERT_TITLE)
                        message:nil
@@ -1083,8 +1083,8 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
                              handler:^(UIAlertAction*) {
                                [weakSelf.passwordExporter cancelExport];
                              }];
-  [preparingPasswordsAlert_ addAction:cancelAction];
-  [self presentViewController:preparingPasswordsAlert_
+  [_preparingPasswordsAlert addAction:cancelAction];
+  [self presentViewController:_preparingPasswordsAlert
                      animated:YES
                    completion:nil];
 }
@@ -1153,8 +1153,8 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 #pragma mark Helper methods
 
 - (void)presentViewController:(UIViewController*)viewController {
-  if (self.presentedViewController == preparingPasswordsAlert_ &&
-      !preparingPasswordsAlert_.beingDismissed) {
+  if (self.presentedViewController == _preparingPasswordsAlert &&
+      !_preparingPasswordsAlert.beingDismissed) {
     __weak PasswordsTableViewController* weakSelf = self;
     [self dismissViewControllerAnimated:YES
                              completion:^{
@@ -1170,8 +1170,8 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 // Sets the save passwords switch item's enabled status to |enabled| and
 // reconfigures the corresponding cell.
 - (void)setSavePasswordsSwitchItemEnabled:(BOOL)enabled {
-  [savePasswordsItem_ setEnabled:enabled];
-  [self reconfigureCellsForItems:@[ savePasswordsItem_ ]];
+  [_savePasswordsItem setEnabled:enabled];
+  [self reconfigureCellsForItems:@[ _savePasswordsItem ]];
 }
 
 // Enables/disables search bar.
@@ -1206,7 +1206,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 }
 
 - (void)chromeIdentityServiceWillBeDestroyed {
-  identityServiceObserver_.reset();
+  _identityServiceObserver.reset();
 }
 
 @end

@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Të shkarkohet skedari sërish?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# skedar audio}other{# skedarë audio}}</translation>
 <translation id="2653659639078652383">Dërgoje</translation>
-<translation id="2669093958999339774">Blloko ndërprerjet e dritareve të njoftimeve dhe përdor një mesazh më të qetë në vend të saj</translation>
 <translation id="2677748264148917807">Largohu</translation>
 <translation id="2704606927547763573">Kopjuar</translation>
 <translation id="2707726405694321444">Rifresko faqen</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">U shtua si faqeshënues në <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Sinkronizimi në sfond</translation>
 <translation id="3749259744154402564">Nuk mbështetet</translation>
-<translation id="3767376082821709728">Sajtet e reja që viziton nuk mund të të dërgojnë njoftime</translation>
 <translation id="3771001275138982843">Përditësimi nuk mund të shkarkohej</translation>
 <translation id="3771033907050503522">Skedat "e fshehura"</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Aktivizo Bluetooth-in<ph name="END_LINK" /> për të lejuar çiftimin</translation>
@@ -957,7 +955,6 @@ Sajti NUK fiton qasje në kamerë. Imazhet e kamerës mund t'i shikosh vetëm ti
 <translation id="8035133914807600019">Dosje e re...</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> ditë të mbetura</translation>
 <translation id="804335162455518893">Karta SD nuk u gjet</translation>
-<translation id="8046278916126163020">Sajtet e reja që viziton mund të kërkojnë të të dërgojnë njoftime</translation>
 <translation id="805047784848435650">Bazuar në historikun tënd të shfletimit</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB në dispozicion</translation>
 <translation id="8058746566562539958">Hape në një skedë të re të Chrome</translation>

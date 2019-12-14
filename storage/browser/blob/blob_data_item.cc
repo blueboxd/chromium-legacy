@@ -227,6 +227,16 @@ void BlobDataItem::GrowFile(uint64_t new_length) {
   length_ = new_length;
 }
 
+// static
+void BlobDataItem::SetFileModificationTimes(
+    std::vector<scoped_refptr<BlobDataItem>> items,
+    std::vector<base::Time> times) {
+  DCHECK_EQ(items.size(), times.size());
+  for (size_t i = 0; i < items.size(); ++i) {
+    items[i]->expected_modification_time_ = times[i];
+  }
+}
+
 void PrintTo(const BlobDataItem& x, ::std::ostream* os) {
   const uint64_t kMaxDataPrintLength = 40;
   DCHECK(os);

@@ -44,18 +44,26 @@ base::string16 XrSessionRequestConsentDialogDelegate::GetDialogMessage() {
   }
 
   base::string16 dialog =
-      l10n_util::GetStringUTF16(IDS_XR_CONSENT_DIALOG_DESCRIPTION_DEFAULT);
+      l10n_util::GetStringUTF16(IDS_XR_CONSENT_DIALOG_DESCRIPTION_DEFAULT) +
+      L"\n";
 
   switch (consent_level_) {
     case XrConsentPromptLevel::kVRFeatures:
-      dialog += l10n_util::GetStringUTF16(
-          IDS_XR_CONSENT_DIALOG_DESCRIPTION_PHYSICAL_FEATURES);
+      dialog += l10n_util::GetStringFUTF16(
+          IDS_LIST_BULLET,
+          l10n_util::GetStringUTF16(
+              IDS_XR_CONSENT_DIALOG_DESCRIPTION_PHYSICAL_FEATURES));
       break;
     case XrConsentPromptLevel::kVRFloorPlan:
-      dialog += l10n_util::GetStringUTF16(
-                    IDS_XR_CONSENT_DIALOG_DESCRIPTION_PHYSICAL_FEATURES) +
-                l10n_util::GetStringUTF16(
-                    IDS_XR_CONSENT_DIALOG_DESCRIPTION_FLOOR_PLAN);
+      dialog += l10n_util::GetStringFUTF16(
+                    IDS_LIST_BULLET,
+                    l10n_util::GetStringUTF16(
+                        IDS_XR_CONSENT_DIALOG_DESCRIPTION_PHYSICAL_FEATURES)) +
+                L"\n" +
+                l10n_util::GetStringFUTF16(
+                    IDS_LIST_BULLET,
+                    l10n_util::GetStringUTF16(
+                        IDS_XR_CONSENT_DIALOG_DESCRIPTION_FLOOR_PLAN));
       break;
     // kDefault and kNone should both be handled by earlier checks, but the
     // compiler doesn't know that. These are listed here explicltly rather than

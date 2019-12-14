@@ -2318,8 +2318,6 @@ void NetworkContext::CreateUrlLoaderFactoryForNetworkService(
         url_loader_factory_pending_receiver) {
   auto url_loader_factory_params = mojom::URLLoaderFactoryParams::New();
   url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
-  // These need to be trusted so that consumers can set the NetworkIsolationKey.
-  url_loader_factory_params->is_trusted = true;
   CreateURLLoaderFactory(std::move(url_loader_factory_pending_receiver),
                          std::move(url_loader_factory_params));
 }

@@ -336,20 +336,18 @@ QuicTestPacketMaker::MakeMaxStreamsPacket(uint64_t num,
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
-QuicTestPacketMaker::MakeRstAndRequestHeadersPacket(
+QuicTestPacketMaker::MakeRstAndDataPacket(
     uint64_t num,
     bool include_version,
     quic::QuicStreamId rst_stream_id,
     quic::QuicRstStreamErrorCode rst_error_code,
-    quic::QuicStreamId stream_id,
-    bool fin,
-    spdy::SpdyPriority priority,
-    spdy::SpdyHeaderBlock headers,
-    quic::QuicStreamId parent_stream_id,
-    size_t* spdy_headers_frame_length) {
+    quic::QuicStreamId data_stream_id,
+    quic::QuicStringPiece data) {
   InitializeHeader(num, include_version);
-  quic::QuicRstStreamFrame rst_frame(1, rst_stream_id, rst_error_code, 0);
   quic::QuicFrames frames;
+
+  quic::QuicRstStreamFrame rst_frame(1, rst_stream_id, rst_error_code,
+                                     stream_offsets_[rst_stream_id]);
   frames.push_back(quic::QuicFrame(&rst_frame));
   DVLOG(1) << "Adding frame: " << frames.back();
 
@@ -361,36 +359,41 @@ QuicTestPacketMaker::MakeRstAndRequestHeadersPacket(
     DVLOG(1) << "Adding frame: " << frames.back();
   }
 
-  if (quic::VersionUsesHttp3(version_.transport_version)) {
-    // Send SETTINGS frame(s) if they have not already been sent.
-    MaybeAddHttp3SettingsFrames(&frames);
+  frames.push_back(
+      GenerateNextStreamFrame(data_stream_id, /* fin = */ false, data));
+  DVLOG(1) << "Adding frame: " << frames.back();
 
-    if (FLAGS_quic_allow_http3_priority) {
-      std::string priority_data =
-          GenerateHttp3PriorityData(priority, stream_id);
-      frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
-    }
+  return MakeMultipleFramesPacket(header_, frames, nullptr);
+}
 
-    // STREAM frames for HEADERS.
-    std::string data = QpackEncodeHeaders(stream_id, std::move(headers),
-                                          spdy_headers_frame_length);
-
-    frames.push_back(GenerateNextStreamFrame(stream_id, fin, data));
-
-    InitializeHeader(num, include_version);
-    return MakeMultipleFramesPacket(header_, frames, nullptr);
-  }
-
-  spdy::SpdySerializedFrame spdy_frame = MakeSpdyHeadersFrame(
-      stream_id, fin, priority, std::move(headers), parent_stream_id);
-  if (spdy_headers_frame_length) {
-    *spdy_headers_frame_length = spdy_frame.size();
-  }
-  frames.push_back(GenerateNextStreamFrame(
-      GetHeadersStreamId(), false,
-      quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size())));
-
+std::unique_ptr<quic::QuicReceivedPacket>
+QuicTestPacketMaker::MakeDataAndRstPacket(
+    uint64_t num,
+    bool include_version,
+    quic::QuicStreamId data_stream_id,
+    quic::QuicStringPiece data,
+    quic::QuicStreamId rst_stream_id,
+    quic::QuicRstStreamErrorCode rst_error_code) {
   InitializeHeader(num, include_version);
+  quic::QuicFrames frames;
+
+  frames.push_back(
+      GenerateNextStreamFrame(data_stream_id, /* fin = */ false, data));
+  DVLOG(1) << "Adding frame: " << frames.back();
+
+  quic::QuicRstStreamFrame rst_frame(1, rst_stream_id, rst_error_code,
+                                     stream_offsets_[rst_stream_id]);
+  frames.push_back(quic::QuicFrame(&rst_frame));
+  DVLOG(1) << "Adding frame: " << frames.back();
+
+  // The STOP_SENDING frame must be outside of the if (version==99) so that it
+  // stays in scope until the packet is built.
+  quic::QuicStopSendingFrame stop(1, rst_stream_id, rst_error_code);
+  if (version_.transport_version == quic::QUIC_VERSION_99) {
+    frames.push_back(quic::QuicFrame(&stop));
+    DVLOG(1) << "Adding frame: " << frames.back();
+  }
+
   return MakeMultipleFramesPacket(header_, frames, nullptr);
 }
 
@@ -531,6 +534,105 @@ QuicTestPacketMaker::MakeRstAndConnectionClosePacket(
     frames.push_back(quic::QuicFrame(&stop));
     DVLOG(1) << "Adding frame: " << frames.back();
   }
+
+  quic::QuicConnectionCloseFrame close(version_.transport_version, quic_error,
+                                       quic_error_details,
+                                       /*transport_close_frame_type=*/0);
+
+  frames.push_back(quic::QuicFrame(&close));
+  DVLOG(1) << "Adding frame: " << frames.back();
+
+  return MakeMultipleFramesPacket(header_, frames, nullptr);
+}
+
+std::unique_ptr<quic::QuicReceivedPacket>
+QuicTestPacketMaker::MakeDataRstAndConnectionClosePacket(
+    uint64_t num,
+    bool include_version,
+    quic::QuicStreamId data_stream_id,
+    quic::QuicStringPiece data,
+    quic::QuicStreamId rst_stream_id,
+    quic::QuicRstStreamErrorCode error_code,
+    quic::QuicErrorCode quic_error,
+    const std::string& quic_error_details) {
+  InitializeHeader(num, include_version);
+  quic::QuicFrames frames;
+
+  frames.push_back(
+      GenerateNextStreamFrame(data_stream_id, /* fin = */ false, data));
+  DVLOG(1) << "Adding frame: " << frames.back();
+
+  quic::QuicRstStreamFrame rst(1, rst_stream_id, error_code,
+                               stream_offsets_[rst_stream_id]);
+  frames.push_back(quic::QuicFrame(&rst));
+  DVLOG(1) << "Adding frame: " << frames.back();
+
+  // The STOP_SENDING frame must be outside of the if (version==99) so that it
+  // stays in scope until the packet is built.
+  quic::QuicStopSendingFrame stop(
+      1, rst_stream_id,
+      static_cast<quic::QuicApplicationErrorCode>(error_code));
+  if (version_.transport_version == quic::QUIC_VERSION_99) {
+    frames.push_back(quic::QuicFrame(&stop));
+    DVLOG(1) << "Adding frame: " << frames.back();
+  }
+
+  quic::QuicConnectionCloseFrame close(version_.transport_version, quic_error,
+                                       quic_error_details,
+                                       /*transport_close_frame_type=*/0);
+
+  frames.push_back(quic::QuicFrame(&close));
+  DVLOG(1) << "Adding frame: " << frames.back();
+
+  return MakeMultipleFramesPacket(header_, frames, nullptr);
+}
+
+std::unique_ptr<quic::QuicReceivedPacket>
+QuicTestPacketMaker::MakeDataRstAckAndConnectionClosePacket(
+    uint64_t num,
+    bool include_version,
+    quic::QuicStreamId data_stream_id,
+    quic::QuicStringPiece data,
+    quic::QuicStreamId rst_stream_id,
+    quic::QuicRstStreamErrorCode error_code,
+    uint64_t largest_received,
+    uint64_t smallest_received,
+    uint64_t least_unacked,
+    quic::QuicErrorCode quic_error,
+    const std::string& quic_error_details) {
+  InitializeHeader(num, include_version);
+  quic::QuicFrames frames;
+
+  frames.push_back(
+      GenerateNextStreamFrame(data_stream_id, /* fin = */ false, data));
+  DVLOG(1) << "Adding frame: " << frames.back();
+
+  quic::QuicRstStreamFrame rst(1, rst_stream_id, error_code, 0);
+  frames.push_back(quic::QuicFrame(&rst));
+  DVLOG(1) << "Adding frame: " << frames.back();
+
+  // The STOP_SENDING frame must be outside of the if (version==99) so that it
+  // stays in scope until the packet is built.
+  quic::QuicStopSendingFrame stop(
+      1, rst_stream_id,
+      static_cast<quic::QuicApplicationErrorCode>(error_code));
+  if (version_.transport_version == quic::QUIC_VERSION_99) {
+    frames.push_back(quic::QuicFrame(&stop));
+    DVLOG(1) << "Adding frame: " << frames.back();
+  }
+
+  quic::QuicAckFrame ack(MakeAckFrame(largest_received));
+  ack.ack_delay_time = quic::QuicTime::Delta::Zero();
+  for (uint64_t i = smallest_received; i <= largest_received; ++i) {
+    ack.received_packet_times.push_back(
+        std::make_pair(quic::QuicPacketNumber(i), clock_->Now()));
+  }
+  if (largest_received > 0) {
+    ack.packets.AddRange(quic::QuicPacketNumber(1),
+                         quic::QuicPacketNumber(largest_received + 1));
+  }
+  frames.push_back(quic::QuicFrame(&ack));
+  DVLOG(1) << "Adding frame: " << frames.back();
 
   quic::QuicConnectionCloseFrame close(version_.transport_version, quic_error,
                                        quic_error_details,
@@ -1444,8 +1546,7 @@ quic::QuicConnectionIdIncluded QuicTestPacketMaker::HasSourceConnectionId()
 }
 
 void QuicTestPacketMaker::Reset() {
-  for (const auto& kv : stream_offsets_)
-    stream_offsets_[kv.first] = 0;
+  stream_offsets_.clear();
 }
 
 quic::QuicStreamId QuicTestPacketMaker::GetFirstBidirectionalStreamId() const {

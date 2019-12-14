@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/content_constants_internal.h"
@@ -652,8 +653,6 @@ void WebWorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
   auto task_runner = base::CreateSequencedTaskRunner(
       {base::ThreadPool(), base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-  auto current_task_runner =
-      base::CreateSequencedTaskRunner({base::CurrentThread()});
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -661,7 +660,7 @@ void WebWorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
           std::move(service_worker_container_host), client_id_,
           fallback_factory_->Clone(),
           service_worker_url_loader_factory.InitWithNewPipeAndPassReceiver(),
-          task_runner, std::move(current_task_runner),
+          task_runner, base::SequencedTaskRunnerHandle::Get(),
           base::BindRepeating(
               &WebWorkerFetchContextImpl::AddPendingWorkerTimingReceiver,
               weak_factory_.GetWeakPtr())));

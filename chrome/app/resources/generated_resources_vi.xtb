@@ -1190,7 +1190,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2665919335226618153">Ôi, hỏng! Đã xảy ra lỗi trong khi định dạng.</translation>
 <translation id="2666990579225592931">Mở cửa sổ khách</translation>
 <translation id="2667463864537187133">Quản lý kiểm tra lỗi chính tả</translation>
-<translation id="2669093958999339774">Chặn thông báo bật lên làm phiền bạn và dùng cách thông báo nhẹ nhàng hơn</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> đang chia sẻ một tab trong Chrome.</translation>
 <translation id="2670429602441959756">Trang này có các tính năng chưa được hỗ trợ ở chế độ VR. Đang thoát...</translation>
 <translation id="2671451824761031126">Dấu trang và các cài đặt của bạn đã sẵn sàng</translation>
@@ -1964,7 +1963,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="37613671848467444">Mở trong &amp;Cửa sổ ẩn danh</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Kết nối với một thiết bị USB}other{Kết nối với # thiết bị USB}}</translation>
 <translation id="3765246971671567135">Không thể đọc chính sách về chế độ minh họa ngoại tuyến.</translation>
-<translation id="3767376082821709728">Các trang web mà bạn truy cập lần đầu không thể gửi thông báo cho bạn</translation>
 <translation id="3768037234834996183">Đang đồng bộ hóa tùy chọn của bạn...</translation>
 <translation id="377050016711188788">Kem</translation>
 <translation id="3771294271822695279">Tệp video</translation>
@@ -3032,7 +3030,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5370819323174483825">&amp;Tải lại</translation>
 <translation id="5372529912055771682">Chế độ đăng ký đã cung cấp không được phiên bản hệ điều hành này hỗ trợ. Hãy đảm bảo bạn đang chạy phiên bản mới nhất và thử lại.</translation>
 <translation id="5372579129492968947">Bỏ ghim tiện ích</translation>
-<translation id="5374359983950678924">Thay đổi hình ảnh</translation>
 <translation id="5376169624176189338">Nhấp vào để quay lại, giữ để xem lịch sử</translation>
 <translation id="5376931455988532197">Tệp quá lớn</translation>
 <translation id="537813040452600081">Các trang bạn xem trong cửa sổ này sẽ không xuất hiện trong lịch sử trình duyệt đồng thời sẽ không để lại dấu vết khác, như cookie, trên máy tính sau khi bạn đăng xuất. Các tệp bạn tải xuống và các dấu trang bạn tạo sẽ không được lưu giữ.</translation>
@@ -4907,7 +4904,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8044899503464538266">Chậm</translation>
 <translation id="8045253504249021590">Đã ngừng đồng bộ hóa qua Trang tổng quan của Google.</translation>
 <translation id="8045923671629973368">Hãy nhập ID ứng dụng hoặc URL cửa hàng trực tuyến</translation>
-<translation id="8046278916126163020">Các trang web mà bạn truy cập lần đầu có thể yêu cầu bạn cho phép gửi thông báo</translation>
 <translation id="804786196054284061">Thỏa thuận cấp phép người dùng cuối</translation>
 <translation id="8049705080247101012">Google đã gắn cờ "<ph name="EXTENSION_NAME" />" là độc hại và cài đặt đã bị chặn</translation>
 <translation id="8050038245906040378">Ký Mã Thương mại của Microsoft</translation>

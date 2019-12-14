@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_device_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_extensions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_request_adapter_options.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -25,16 +26,6 @@ WGPUDeviceProperties AsDawnType(const GPUDeviceDescriptor* descriptor) {
   return requested_device_properties;
 }
 }  // anonymous namespace
-
-// static
-GPUAdapter* GPUAdapter::Create(
-    const String& name,
-    uint32_t adapter_service_id,
-    const WGPUDeviceProperties& properties,
-    scoped_refptr<DawnControlClientHolder> dawn_control_client) {
-  return MakeGarbageCollected<GPUAdapter>(name, adapter_service_id, properties,
-                                          std::move(dawn_control_client));
-}
 
 GPUAdapter::GPUAdapter(
     const String& name,
@@ -62,7 +53,7 @@ void GPUAdapter::OnRequestDeviceCallback(ScriptPromiseResolver* resolver,
                                          bool is_request_device_success) {
   if (is_request_device_success) {
     ExecutionContext* execution_context = resolver->GetExecutionContext();
-    GPUDevice* device = GPUDevice::Create(
+    auto* device = MakeGarbageCollected<GPUDevice>(
         execution_context, GetDawnControlClient(), this, descriptor);
     resolver->Resolve(device);
   } else {

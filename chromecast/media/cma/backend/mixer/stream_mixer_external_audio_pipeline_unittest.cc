@@ -49,7 +49,7 @@ class MockLoopbackAudioObserver
                     int num_channels,
                     uint8_t* data,
                     int length));
-  MOCK_METHOD0(OnLoopbackInterrupted, void());
+  MOCK_METHOD1(OnLoopbackInterrupted, void(LoopbackInterruptReason));
 
   const std::vector<float>& data() const { return data_; }
 

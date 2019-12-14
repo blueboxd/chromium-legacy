@@ -637,10 +637,10 @@ TEST_F(It2MeNativeMessagingHostTest, ConnectMultiple) {
 }
 
 TEST_F(It2MeNativeMessagingHostTest,
-       ConnectRespectsNoDialogsParameterOnChromeOsOnly) {
+       ConnectRespectsSuppressUserDialogsParameterOnChromeOsOnly) {
   int next_id = 1;
   base::DictionaryValue connect_message = CreateConnectMessage(next_id);
-  connect_message.SetBoolean("noDialogs", true);
+  connect_message.SetBoolean("suppressUserDialogs", true);
   WriteMessageToInputPipe(connect_message);
   VerifyConnectResponses(next_id);
 #if defined(OS_CHROMEOS) || !defined(NDEBUG)
@@ -653,6 +653,22 @@ TEST_F(It2MeNativeMessagingHostTest,
   VerifyDisconnectResponses(next_id);
 }
 
+TEST_F(It2MeNativeMessagingHostTest,
+       ConnectRespectsSuppressNotificationsParameterOnChromeOsOnly) {
+  int next_id = 1;
+  base::DictionaryValue connect_message = CreateConnectMessage(next_id);
+  connect_message.SetBoolean("suppressNotifications", true);
+  WriteMessageToInputPipe(connect_message);
+  VerifyConnectResponses(next_id);
+#if defined(OS_CHROMEOS) || !defined(NDEBUG)
+  EXPECT_FALSE(factory_raw_ptr_->host->enable_notifications());
+#else
+  EXPECT_TRUE(factory_raw_ptr_->host->enable_notifications());
+#endif
+  ++next_id;
+  WriteMessageToInputPipe(CreateDisconnectMessage(next_id));
+  VerifyDisconnectResponses(next_id);
+}
 
 // Verify non-Dictionary requests are rejected.
 TEST_F(It2MeNativeMessagingHostTest, WrongFormat) {

@@ -21,6 +21,7 @@ namespace chromecast {
 class IOBufferPool;
 
 namespace media {
+enum class LoopbackInterruptReason;
 class MixerLoopbackConnection;
 
 // Handles loopback audio from the mixer or external audio pipeline.
@@ -47,7 +48,7 @@ class LoopbackHandler {
                 int frames);
 
   // Sends a 'loopback interrupted' signal to any connected observers.
-  void SendInterrupt();
+  void SendInterrupt(LoopbackInterruptReason reason);
 
  private:
   class ExternalLoopbackHandler;
@@ -63,7 +64,7 @@ class LoopbackHandler {
                         int num_channels,
                         void* data,
                         int data_size_bytes);
-  void SendInterruptInternal();
+  void SendInterruptInternal(LoopbackInterruptReason reason);
 
   scoped_refptr<IOBufferPool> buffer_pool_;
 

@@ -121,30 +121,38 @@ TEST_F(TabbedPaneTest, TabStripHighlightStyle) {
 }
 
 // Tests the preferred size and layout when tabs are aligned horizontally.
-// TabbedPane requests a size that fits its largest tab, and disregards the
-// width of horizontal tab strips for preferred size calculations. Tab titles
-// are elided to fit the actual width.
+// TabbedPane requests a size that fits the largest child or the minimum size
+// necessary to display the tab titles, whichever is larger.
 TEST_F(TabbedPaneTest, SizeAndLayout) {
   View* child1 = tabbed_pane_->AddTab(
-      ASCIIToUTF16("tab1 with very long text"),
+      ASCIIToUTF16("tab1"),
       std::make_unique<StaticSizedView>(gfx::Size(20, 10)));
-  View* child2 =
-      tabbed_pane_->AddTab(ASCIIToUTF16("tab2 with very long text"),
-                           std::make_unique<StaticSizedView>(gfx::Size(5, 5)));
+  View* child2 = tabbed_pane_->AddTab(
+      ASCIIToUTF16("tab2"), std::make_unique<StaticSizedView>(gfx::Size(5, 5)));
   tabbed_pane_->SelectTabAt(0);
 
-  // |tabbed_pane_| width should match the largest child in horizontal mode.
-  EXPECT_EQ(tabbed_pane_->GetPreferredSize().width(), 20);
+  // In horizontal mode, |tabbed_pane_| width should match the largest child or
+  // the minimum size necessary to display the tab titles, whichever is larger.
+  EXPECT_EQ(tabbed_pane_->GetPreferredSize().width(),
+            tabbed_pane_->GetTabAt(0)->GetPreferredSize().width() +
+                tabbed_pane_->GetTabAt(1)->GetPreferredSize().width());
   // |tabbed_pane_| reserves extra height for the tab strip in horizontal mode.
   EXPECT_GT(tabbed_pane_->GetPreferredSize().height(), 10);
 
+  // Test that the preferred size is now the size of the size of the largest
+  // child.
+  View* child3 = tabbed_pane_->AddTab(
+      ASCIIToUTF16("tab3"),
+      std::make_unique<StaticSizedView>(gfx::Size(150, 5)));
+  EXPECT_EQ(tabbed_pane_->GetPreferredSize().width(), 150);
+
   // The child views should resize to fit in larger tabbed panes.
-  widget_->SetBounds(gfx::Rect(0, 0, 100, 200));
-  tabbed_pane_->SetBounds(0, 0, 100, 200);
+  widget_->SetBounds(gfx::Rect(0, 0, 300, 200));
+  tabbed_pane_->SetBounds(0, 0, 300, 200);
   RunPendingMessages();
   // |tabbed_pane_| has no border. Therefore the children should be as wide as
   // the |tabbed_pane_|.
-  EXPECT_EQ(child1->bounds().width(), 100);
+  EXPECT_EQ(child1->bounds().width(), 300);
   EXPECT_GT(child1->bounds().height(), 0);
   // |tabbed_pane_| reserves extra height for the tab strip. Therefore the
   // children's height should be smaller than the |tabbed_pane_|'s height.
@@ -153,6 +161,7 @@ TEST_F(TabbedPaneTest, SizeAndLayout) {
   // If we switch to the other tab, it should get assigned the same bounds.
   tabbed_pane_->SelectTabAt(1);
   EXPECT_EQ(child1->bounds(), child2->bounds());
+  EXPECT_EQ(child2->bounds(), child3->bounds());
 }
 
 // Tests the preferred size and layout when tabs are aligned vertically..

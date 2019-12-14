@@ -76,8 +76,8 @@ class WiFiServiceMac : public WiFiService {
 
   void SetEventObservers(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      const NetworkGuidListCallback& networks_changed_observer,
-      const NetworkGuidListCallback& network_list_changed_observer) override;
+      NetworkGuidListCallback networks_changed_observer,
+      NetworkGuidListCallback network_list_changed_observer) override;
 
   void RequestConnectedNetworkUpdate() override;
 
@@ -382,11 +382,11 @@ void WiFiServiceMac::GetKeyFromSystem(const std::string& network_guid,
 
 void WiFiServiceMac::SetEventObservers(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const NetworkGuidListCallback& networks_changed_observer,
-    const NetworkGuidListCallback& network_list_changed_observer) {
+    NetworkGuidListCallback networks_changed_observer,
+    NetworkGuidListCallback network_list_changed_observer) {
   event_task_runner_.swap(task_runner);
-  networks_changed_observer_ = networks_changed_observer;
-  network_list_changed_observer_ = network_list_changed_observer;
+  networks_changed_observer_ = std::move(networks_changed_observer);
+  network_list_changed_observer_ = std::move(network_list_changed_observer);
 
   // Remove previous OS notifications observer.
   if (wlan_observer_) {
@@ -591,7 +591,7 @@ void WiFiServiceMac::OnWlanObserverNotification() {
 }
 
 void WiFiServiceMac::NotifyNetworkListChanged(const NetworkList& networks) {
-  if (network_list_changed_observer_.is_null())
+  if (!network_list_changed_observer_)
     return;
 
   NetworkGuidList current_networks;
@@ -607,7 +607,7 @@ void WiFiServiceMac::NotifyNetworkListChanged(const NetworkList& networks) {
 }
 
 void WiFiServiceMac::NotifyNetworkChanged(const std::string& network_guid) {
-  if (networks_changed_observer_.is_null())
+  if (!networks_changed_observer_)
     return;
 
   DVLOG(1) << "NotifyNetworkChanged: " << network_guid;

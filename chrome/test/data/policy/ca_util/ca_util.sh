@@ -98,6 +98,13 @@ root_cert() {
 # CA_ID=root_ca_cert CN="127.0.0.1" SAN="email:example@domain.com" \
 #  try issue_cert ok_cert_with_email_san leaf_cert_san as_pem
 
+# CA_ID=root_ca_cert CN="127.0.0.1" SAN="DNS:www.example.com,IP:192.168.7.1" \
+#  try issue_cert ok_cert_with_multiple_sans leaf_cert_san as_pem
+
+# CA_ID=root_ca_cert CN="127.0.0.1" \
+#  SAN="DNS:www.example.com,DNS:mail.example.com" \
+#  try issue_cert ok_cert_with_same_type_sans leaf_cert_san as_pem
+
 issue_cert() {
   cert_name="$1"
   cert_type="$2"

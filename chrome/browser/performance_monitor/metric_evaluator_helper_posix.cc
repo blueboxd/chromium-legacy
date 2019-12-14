@@ -16,15 +16,4 @@ base::Optional<int> MetricEvaluatorsHelperPosix::GetFreePhysicalMemoryMb() {
   return base::nullopt;
 }
 
-base::Optional<float> MetricEvaluatorsHelperPosix::GetDiskIdleTimePercent() {
-  NOTREACHED();
-  return base::nullopt;
-}
-
-base::Optional<int>
-MetricEvaluatorsHelperPosix::GetChromeTotalResidentSetEstimateMb() {
-  NOTREACHED();
-  return base::nullopt;
-}
-
 }  // namespace performance_monitor

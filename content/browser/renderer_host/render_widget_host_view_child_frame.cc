@@ -314,13 +314,6 @@ void RenderWidgetHostViewChildFrame::SetInsets(const gfx::Insets& insets) {
 }
 
 gfx::NativeView RenderWidgetHostViewChildFrame::GetNativeView() {
-  // TODO(ekaramad): To accomodate MimeHandlerViewGuest while embedded inside
-  // OOPIF-webview, we need to return the native view to be used by
-  // RenderWidgetHostViewGuest. Remove this once https://crbug.com/642826 is
-  // fixed.
-  if (!frame_connector_)
-    return nullptr;
-
   RenderWidgetHostView* parent_view =
       frame_connector_->GetParentRenderWidgetHostView();
   return parent_view ? parent_view->GetNativeView() : nullptr;

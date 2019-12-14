@@ -238,6 +238,11 @@ bool DetectDeferRedirectLoopsUsingCache();
 // overridden.
 bool OverrideShouldShowPreviewCheck();
 
+// Returns true if DeferAllScript should be applied even if the optimization
+// guide decision is unknown. This allows DeferAllScript to be applied if the
+// optimization guide does not yet know if it can be or not.
+bool ApplyDeferWhenOptimizationGuideDecisionUnknown();
+
 }  // namespace params
 
 }  // namespace previews

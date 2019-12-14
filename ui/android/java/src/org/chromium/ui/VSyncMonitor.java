@@ -18,7 +18,12 @@ public class VSyncMonitor {
     private static final long NANOSECONDS_PER_SECOND = 1000000000;
     private static final long NANOSECONDS_PER_MICROSECOND = 1000;
 
-    private boolean mInsideVSync;
+    private static final ThreadLocal<Boolean> sInsideVSync = new ThreadLocal<Boolean>() {
+        @Override
+        protected Boolean initialValue() {
+            return Boolean.FALSE;
+        }
+    };
 
     // Conservative guess about vsync's consecutivity.
     // If true, next tick is guaranteed to be consecutive.
@@ -107,14 +112,14 @@ public class VSyncMonitor {
     }
 
     /**
-     * @return true if onVSync handler is executing. If onVSync handler
-     * introduces invalidations, View#invalidate() should be called. If
-     * View#postInvalidateOnAnimation is called instead, the corresponding onDraw
-     * will be delayed by one frame. The embedder of VSyncMonitor should check
-     * this value if it wants to post an invalidation.
+     * @return true if any onVSync handler is executing on the current thread.
+     * If onVSync handler introduces invalidations, View#invalidate() should be
+     * called. If View#postInvalidateOnAnimation is called instead, the
+     * corresponding onDraw will be delayed by one frame. The embedder of
+     * VSyncMonitor should check this value if it wants to post an invalidation.
      */
-    public boolean isInsideVSync() {
-        return mInsideVSync;
+    public static boolean isInsideVSync() {
+        return VSyncMonitor.sInsideVSync.get();
     }
 
     private long getCurrentNanoTime() {
@@ -123,21 +128,21 @@ public class VSyncMonitor {
 
     private void onVSyncCallback(long frameTimeNanos, long currentTimeNanos) {
         assert mHaveRequestInFlight;
-        mInsideVSync = true;
+        VSyncMonitor.sInsideVSync.set(true);
         mHaveRequestInFlight = false;
         try {
             if (mListener != null) {
                 mListener.onVSync(this, frameTimeNanos / NANOSECONDS_PER_MICROSECOND);
             }
         } finally {
-            mInsideVSync = false;
+            VSyncMonitor.sInsideVSync.set(false);
         }
     }
 
     private void postCallback() {
         if (mHaveRequestInFlight) return;
         mHaveRequestInFlight = true;
-        mConsecutiveVSync = mInsideVSync;
+        mConsecutiveVSync = VSyncMonitor.sInsideVSync.get();
         mChoreographer.postFrameCallback(mVSyncFrameCallback);
     }
 }

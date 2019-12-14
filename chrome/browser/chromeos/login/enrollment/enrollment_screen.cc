@@ -50,39 +50,11 @@ const char* const kMetricEnrollmentTimeFailure =
 const char* const kMetricEnrollmentTimeSuccess =
     "Enterprise.EnrollmentTime.Success";
 
-const char* const kLicenseTypePerpetual = "perpetual";
-const char* const kLicenseTypeAnnual = "annual";
-const char* const kLicenseTypeKiosk = "kiosk";
-
 // Retry policy constants.
 constexpr int kInitialDelayMS = 4 * 1000;  // 4 seconds
 constexpr double kMultiplyFactor = 1.5;
 constexpr double kJitterFactor = 0.1;           // +/- 10% jitter
 constexpr int64_t kMaxDelayMS = 8 * 60 * 1000;  // 8 minutes
-
-::policy::LicenseType GetLicenseTypeById(const std::string& id) {
-  if (id == kLicenseTypePerpetual)
-    return ::policy::LicenseType::PERPETUAL;
-  if (id == kLicenseTypeAnnual)
-    return ::policy::LicenseType::ANNUAL;
-  if (id == kLicenseTypeKiosk)
-    return ::policy::LicenseType::KIOSK;
-  return ::policy::LicenseType::UNKNOWN;
-}
-
-std::string GetLicenseIdByType(::policy::LicenseType type) {
-  switch (type) {
-    case ::policy::LicenseType::PERPETUAL:
-      return kLicenseTypePerpetual;
-    case ::policy::LicenseType::ANNUAL:
-      return kLicenseTypeAnnual;
-    case ::policy::LicenseType::KIOSK:
-      return kLicenseTypeKiosk;
-    default:
-      NOTREACHED();
-      return std::string();
-  }
-}
 
 bool HasPublicUser() {
   // Some tests don't initialize the UserManager.
@@ -292,14 +264,6 @@ void EnrollmentScreen::OnLoginDone(const std::string& user,
   enrollment_helper_->EnrollUsingAuthCode(auth_code);
 }
 
-void EnrollmentScreen::OnLicenseTypeSelected(const std::string& license_type) {
-  view_->ShowEnrollmentSpinnerScreen();
-  const ::policy::LicenseType license = GetLicenseTypeById(license_type);
-  CHECK(license != ::policy::LicenseType::UNKNOWN)
-      << "license_type = " << license_type;
-  enrollment_helper_->UseLicenseType(license);
-}
-
 void EnrollmentScreen::OnRetry() {
   retry_task_.Cancel();
   ProcessRetry();
@@ -364,30 +328,6 @@ void EnrollmentScreen::OnConfirmationClosed() {
 void EnrollmentScreen::OnAuthError(const GoogleServiceAuthError& error) {
   RecordEnrollmentErrorMetrics();
   view_->ShowAuthError(error);
-}
-
-void EnrollmentScreen::OnMultipleLicensesAvailable(
-    const EnrollmentLicenseMap& licenses) {
-  if (GetConfiguration()) {
-    auto* license_type_value = GetConfiguration()->FindKeyOfType(
-        configuration::kEnrollmentLicenseType, base::Value::Type::STRING);
-    if (license_type_value) {
-      const std::string& license_type = license_type_value->GetString();
-      for (const auto& it : licenses) {
-        if (license_type == GetLicenseIdByType(it.first) && it.second > 0) {
-          VLOG(1) << "Using License type from configuration " << license_type;
-          OnLicenseTypeSelected(license_type);
-          return;
-        }
-      }
-      VLOG(1) << "No licenses for License type from configuration "
-              << license_type;
-    }
-  }
-  base::DictionaryValue license_dict;
-  for (const auto& it : licenses)
-    license_dict.SetInteger(GetLicenseIdByType(it.first), it.second);
-  view_->ShowLicenseTypeSelectionScreen(license_dict);
 }
 
 void EnrollmentScreen::OnEnrollmentError(policy::EnrollmentStatus status) {

@@ -161,6 +161,16 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   // changes.
   void UpdateContainerPolicy(Vector<String>* messages = nullptr);
 
+  // Return a document policy required policy for this frame, based on the
+  // frame attributes.
+  virtual DocumentPolicy::FeatureState ConstructRequiredPolicy() const {
+    return DocumentPolicy::FeatureState{};
+  }
+
+  // Update the required policy and notify the frame loader client of any
+  // changes.
+  void UpdateRequiredPolicy();
+
  private:
   // Intentionally private to prevent redundant checks when the type is
   // already HTMLFrameOwnerElement.

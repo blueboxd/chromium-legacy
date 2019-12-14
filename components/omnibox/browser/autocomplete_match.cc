@@ -1152,9 +1152,12 @@ void AutocompleteMatch::UpgradeMatchWithPropertiesFrom(
     }
   }
 
-  // For Search non-history matches, absorb any Search History type.
-  if (IsSearchType(type) && fill_into_edit == duplicate_match.fill_into_edit &&
-      !IsSearchHistoryType(type) && IsSearchHistoryType(duplicate_match.type)) {
+  // For Search Suggest and Search What-You-Typed matches, absorb any
+  // Search History type.
+  if ((type == AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED ||
+       type == AutocompleteMatchType::SEARCH_SUGGEST) &&
+      fill_into_edit == duplicate_match.fill_into_edit &&
+      IsSearchHistoryType(duplicate_match.type)) {
     type = duplicate_match.type;
   }
 

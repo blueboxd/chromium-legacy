@@ -163,11 +163,11 @@ void FakeWiFiService::GetKeyFromSystem(const std::string& network_guid,
 
 void FakeWiFiService::SetEventObservers(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const NetworkGuidListCallback& networks_changed_observer,
-    const NetworkGuidListCallback& network_list_changed_observer) {
+    NetworkGuidListCallback networks_changed_observer,
+    NetworkGuidListCallback network_list_changed_observer) {
   task_runner_.swap(task_runner);
-  networks_changed_observer_ = networks_changed_observer;
-  network_list_changed_observer_ = network_list_changed_observer;
+  networks_changed_observer_ = std::move(networks_changed_observer);
+  network_list_changed_observer_ = std::move(network_list_changed_observer);
 }
 
 void FakeWiFiService::RequestConnectedNetworkUpdate() {

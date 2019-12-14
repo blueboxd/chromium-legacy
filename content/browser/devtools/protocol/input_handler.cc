@@ -218,10 +218,13 @@ bool GenerateTouchPoints(
       return false;
     event->touches[event->touches_length] = it.second;
     event->touches[event->touches_length].state =
-        blink::WebTouchPoint::kStateStationary;
+        type == blink::WebInputEvent::kTouchCancel
+            ? blink::WebTouchPoint::kStateCancelled
+            : blink::WebTouchPoint::kStateStationary;
     event->touches_length++;
   }
-  if (type != blink::WebInputEvent::kUndefined) {
+  if (type == blink::WebInputEvent::kTouchCancel ||
+      type == blink::WebInputEvent::kTouchEnd) {
     event->touches[0].state = type == blink::WebInputEvent::kTouchCancel
                                   ? blink::WebTouchPoint::kStateCancelled
                                   : blink::WebTouchPoint::kStateReleased;
@@ -754,11 +757,9 @@ void InputHandler::DispatchWebTouchEvent(
         "TouchStart and TouchMove must have at least one touch point."));
     return;
   }
-  if ((type == blink::WebInputEvent::kTouchEnd ||
-       type == blink::WebInputEvent::kTouchCancel) &&
-      !touch_points->empty()) {
-    callback->sendFailure(Response::InvalidParams(
-        "TouchEnd and TouchCancel must not have any touch points."));
+  if (type == blink::WebInputEvent::kTouchCancel && !touch_points->empty()) {
+    callback->sendFailure(
+        Response::InvalidParams("TouchCancel must not have any touch points."));
     return;
   }
   if (type != blink::WebInputEvent::kTouchStart && touch_points_.empty()) {
@@ -795,27 +796,37 @@ void InputHandler::DispatchWebTouchEvent(
   bool ok = true;
   for (auto& id_point : points) {
     if (touch_points_.find(id_point.first) != touch_points_.end() &&
+        type == blink::WebInputEvent::kTouchMove &&
         touch_points_[id_point.first].PositionInWidget() ==
             id_point.second.PositionInWidget()) {
       continue;
     }
 
     events.emplace_back(type, modifiers, timestamp);
-    ok &= GenerateTouchPoints(&events.back(), blink::WebInputEvent::kUndefined,
-                              touch_points_, id_point.second);
-    touch_points_[id_point.first] = id_point.second;
+    ok &= GenerateTouchPoints(&events.back(), type, touch_points_,
+                              id_point.second);
+    if (type == blink::WebInputEvent::kTouchStart ||
+        type == blink::WebInputEvent::kTouchMove) {
+      touch_points_[id_point.first] = id_point.second;
+    } else if (type == blink::WebInputEvent::kTouchEnd) {
+      touch_points_.erase(id_point.first);
+    }
   }
 
-  if (type != blink::WebInputEvent::kTouchCancel)
-    type = blink::WebInputEvent::kTouchEnd;
-  for (auto it = touch_points_.begin(); it != touch_points_.end();) {
-    if (points.find(it->first) != points.end()) {
-      it++;
-      continue;
+  if (touch_points->size() == 0 && touch_points_.size() > 0) {
+    if (type == blink::WebInputEvent::kTouchCancel) {
+      events.emplace_back(type, modifiers, timestamp);
+      ok &= GenerateTouchPoints(&events.back(), type, touch_points_,
+                                touch_points_.begin()->second);
+      touch_points_.clear();
+    } else if (type == blink::WebInputEvent::kTouchEnd) {
+      for (auto it = touch_points_.begin(); it != touch_points_.end();) {
+        events.emplace_back(type, modifiers, timestamp);
+        ok &= GenerateTouchPoints(&events.back(), type, touch_points_,
+                                  it->second);
+        it = touch_points_.erase(it);
+      }
     }
-    events.emplace_back(type, modifiers, timestamp);
-    ok &= GenerateTouchPoints(&events.back(), type, touch_points_, it->second);
-    it = touch_points_.erase(it);
   }
   if (!ok) {
     callback->sendFailure(Response::Error(

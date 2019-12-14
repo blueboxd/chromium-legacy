@@ -258,10 +258,13 @@ class _InfoFileContext(object):
 
   def SubmitFiles(self, java_files):
     if self._pool is None:
-      self._pool = multiprocessing.Pool(processes=3)
+      # Restrict to just one process to not slow down compiling. Compiling
+      # is always slower.
+      self._pool = multiprocessing.Pool(1)
+    logging.info('Submitting %d files for info', len(java_files))
     self._results.append(
         self._pool.imap_unordered(
-            _ProcessJavaFileForInfo, java_files, chunksize=10))
+            _ProcessJavaFileForInfo, java_files, chunksize=1000))
 
   def _CheckPathMatchesClassName(self, java_file, package_name, class_name):
     parts = package_name.split('.') + [class_name + '.java']
@@ -299,7 +302,6 @@ class _InfoFileContext(object):
                                                       class_names, source):
           if self._ShouldIncludeInJarInfo(fully_qualified_name):
             ret[fully_qualified_name] = java_file
-    self._pool.join()
     return ret
 
   def Commit(self, output_path):
@@ -342,11 +344,11 @@ def _OnStaleMd5(options, javac_cmd, java_files, classpath):
   save_outputs = not options.enable_errorprone
 
   # Use jar_path's directory to ensure paths are relative (needed for goma).
-  with build_utils.TempDir(dir=os.path.dirname(options.jar_path)) as temp_dir:
-    srcjars = options.java_srcjars
-
+  temp_dir = options.jar_path + '.staging'
+  shutil.rmtree(temp_dir, True)
+  os.makedirs(temp_dir)
+  try:
     classes_dir = os.path.join(temp_dir, 'classes')
-    os.makedirs(classes_dir)
 
     if save_outputs:
       input_srcjars_dir = os.path.join(options.generated_dir, 'input_srcjars')
@@ -362,7 +364,7 @@ def _OnStaleMd5(options, javac_cmd, java_files, classpath):
       annotation_processor_outputs_dir = os.path.join(
           temp_dir, 'annotation_processor_outputs')
 
-    if srcjars:
+    if options.java_srcjars:
       logging.info('Extracting srcjars to %s', input_srcjars_dir)
       build_utils.MakeDirectory(input_srcjars_dir)
       for srcjar in options.java_srcjars:
@@ -380,7 +382,6 @@ def _OnStaleMd5(options, javac_cmd, java_files, classpath):
     if java_files:
       # Don't include the output directory in the initial set of args since it
       # being in a temp dir makes it unstable (breaks md5 stamping).
-      build_utils.MakeDirectory(annotation_processor_outputs_dir)
       cmd = list(javac_cmd)
       cmd += ['-d', classes_dir]
       cmd += ['-s', annotation_processor_outputs_dir]
@@ -396,6 +397,8 @@ def _OnStaleMd5(options, javac_cmd, java_files, classpath):
       cmd += ['@' + java_files_rsp_path]
 
       logging.debug('Build command %s', cmd)
+      os.makedirs(classes_dir)
+      os.makedirs(annotation_processor_outputs_dir)
       build_utils.CheckOutput(
           cmd,
           print_stdout=options.chromium_code,
@@ -416,6 +419,8 @@ def _OnStaleMd5(options, javac_cmd, java_files, classpath):
       build_utils.Touch(options.jar_path)
 
     logging.info('Completed all steps in _OnStaleMd5')
+  finally:
+    shutil.rmtree(temp_dir)
 
 
 def _ParseOptions(argv):

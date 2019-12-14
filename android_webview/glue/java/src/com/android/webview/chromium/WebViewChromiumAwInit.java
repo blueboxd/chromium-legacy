@@ -171,6 +171,8 @@ public class WebViewChromiumAwInit {
             // available when AwFeatureListCreator::SetUpFieldTrials() runs.
             finishVariationsInitLocked();
 
+            TraceEvent.setATraceEnabled(mFactory.getWebViewDelegate().isTraceTagEnabled());
+
             AwBrowserProcess.start();
             AwBrowserProcess.handleMinidumpsAndSetMetricsConsent(true /* updateMetricsConsent */);
 
@@ -179,7 +181,6 @@ public class WebViewChromiumAwInit {
                 mSharedStatics.setWebContentsDebuggingEnabledUnconditionally(true);
             }
 
-            TraceEvent.setATraceEnabled(mFactory.getWebViewDelegate().isTraceTagEnabled());
             mFactory.getWebViewDelegate().setOnTraceEnabledChangeListener(
                     new WebViewDelegate.OnTraceEnabledChangeListener() {
                         @Override

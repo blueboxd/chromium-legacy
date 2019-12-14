@@ -33,7 +33,7 @@ class PrefStore;
 // be called on the UI thread.
 class COMPONENTS_PREFS_EXPORT PrefValueStore {
  public:
-  using PrefChangedCallback = base::Callback<void(const std::string&)>;
+  using PrefChangedCallback = base::RepeatingCallback<void(const std::string&)>;
 
   // Delegate used to observe certain events in the |PrefValueStore|'s lifetime.
   class Delegate {
@@ -132,7 +132,9 @@ class COMPONENTS_PREFS_EXPORT PrefValueStore {
   // notified of preferences changing in the store. This does not
   // filter through the PrefNotifier mechanism, which may not forward
   // certain changes (e.g. unregistered prefs).
-  void set_callback(const PrefChangedCallback& callback);
+  void set_callback(PrefChangedCallback callback) {
+    pref_changed_callback_ = std::move(callback);
+  }
 
   // Gets the value for the given preference name that has the specified value
   // type. Values stored in a PrefStore that have the matching |name| but

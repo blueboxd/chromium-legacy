@@ -539,6 +539,7 @@ def main(argv):
   arg_parser.add_argument(
       '--sources-files',
       required=True,
+      action='append',
       help='A list of .sources files which contain Java '
       'file paths.')
   arg_parser.add_argument(
@@ -583,15 +584,14 @@ def main(argv):
         'Invalid arguments: --require_mocks without --enable_proxy_mocks. '
         'Cannot require mocks if they are not enabled.')
 
-  args.sources_files = build_utils.ParseGnList(args.sources_files)
-
+  sources_files = sorted(set(build_utils.ParseGnList(args.sources_files)))
   proxy_opts = ProxyOptions(
       use_hash=args.use_proxy_hash,
       require_mocks=args.require_mocks,
       enable_mocks=args.enable_proxy_mocks)
 
   java_file_paths = []
-  for f in args.sources_files:
+  for f in sources_files:
     # Skip generated files, since the GN targets do not declare any deps.
     java_file_paths.extend(
         p for p in build_utils.ReadSourcesList(f)
@@ -607,7 +607,7 @@ def main(argv):
     build_utils.WriteDepfile(
         args.depfile,
         args.srcjar_path,
-        args.sources_files + java_file_paths,
+        sources_files + java_file_paths,
         add_pydeps=False)
 
 

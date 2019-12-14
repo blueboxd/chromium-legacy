@@ -55,7 +55,8 @@ constexpr char kCRDConnectAuth[] = "authServiceWithToken";
 constexpr char kCRDConnectXMPPServer[] = "xmppServerAddress";
 constexpr char kCRDConnectXMPPTLS[] = "xmppServerUseTls";
 constexpr char kCRDConnectDirectoryBot[] = "directoryBotJid";
-constexpr char kCRDConnectNoDialogs[] = "noDialogs";
+constexpr char kCRDConnectSuppressUserDialogs[] = "suppressUserDialogs";
+constexpr char kCRDConnectSuppressNotifications[] = "suppressNotifications";
 constexpr char kCRDTerminateUponInput[] = "terminateUponInput";
 
 // Connect message parameter values:
@@ -209,7 +210,8 @@ void CRDHostDelegate::StartCRDHostAndGetCode(
   connect_params.SetKey(kCRDConnectXMPPTLS, base::Value(true));
   connect_params.SetKey(kCRDConnectDirectoryBot,
                         base::Value(kCRDConnectDirectoryBotValue));
-  connect_params.SetKey(kCRDConnectNoDialogs, base::Value(true));
+  connect_params.SetKey(kCRDConnectSuppressUserDialogs, base::Value(true));
+  connect_params.SetKey(kCRDConnectSuppressNotifications, base::Value(true));
   connect_params.SetKey(kCRDTerminateUponInput,
                         base::Value(terminate_upon_input));
   connect_params_ = std::move(connect_params);

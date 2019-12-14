@@ -1190,7 +1190,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2665919335226618153">Øv, surt! Der opstod en fejl under formateringen.</translation>
 <translation id="2666990579225592931">Åbn gæstevindue</translation>
 <translation id="2667463864537187133">Administrer stavekontrollen</translation>
-<translation id="2669093958999339774">Undgå forstyrrelser ved at blokere notifikationsprompts og i stedet vælge lydløse meddelelser</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> deler en Chrome-fane.</translation>
 <translation id="2670429602441959756">Denne side indeholder funktioner, der endnu ikke understøttes i VR. Afslutter...</translation>
 <translation id="2671451824761031126">Dine bogmærker og indstillinger er klar</translation>
@@ -1964,7 +1963,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="37613671848467444">Åbn i &amp;inkognitovindue</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Kommuniker med en USB-enhed}one{Kommuniker med # USB-enheder}other{Kommuniker med # USB-enheder}}</translation>
 <translation id="3765246971671567135">Politikken for offlinedemotilstand kunne ikke læses.</translation>
-<translation id="3767376082821709728">Eventuelle nye websites, du besøger, kan ikke sende dig notifikationer</translation>
 <translation id="3768037234834996183">Synkroniserer dine præferencer...</translation>
 <translation id="377050016711188788">Is</translation>
 <translation id="3771294271822695279">Videofiler</translation>
@@ -3032,7 +3030,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5370819323174483825">&amp;Opdater</translation>
 <translation id="5372529912055771682">Den medfølgende tilstand for tilmelding understøttes ikke af denne version af operativsystemet. Sørg for, at du kører den nyeste version, og prøv igen.</translation>
 <translation id="5372579129492968947">Frigør udvidelse</translation>
-<translation id="5374359983950678924">Skift billede</translation>
 <translation id="5376169624176189338">Klik for at gå tilbage. Hold knappen inde for at se historikken.</translation>
 <translation id="5376931455988532197">Filen er for stor</translation>
 <translation id="537813040452600081">De sider, du ser i dette vindue, vises ikke i browserhistorikken, og de efterlader ikke andre spor som f.eks. cookies på computeren, når du logger ud. De filer, du downloader, og bogmærker, du opretter, bliver ikke gemt.</translation>
@@ -4907,7 +4904,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8044899503464538266">Langsom</translation>
 <translation id="8045253504249021590">Synkronisering er blevet stoppet via Google Kontrolpanel.</translation>
 <translation id="8045923671629973368">Angiv et app-id eller webadressen til Chrome Webshop</translation>
-<translation id="8046278916126163020">Eventuelle nye websites, du besøger, kan spørge dig, om de må sende dig notifikationer</translation>
 <translation id="804786196054284061">Slutbrugerlicensaftale</translation>
 <translation id="8049705080247101012">Google har markeret "<ph name="EXTENSION_NAME" />" som skadelig, og installationen blev forhindret</translation>
 <translation id="8050038245906040378">Microsoft-signering af kommerciel kode</translation>

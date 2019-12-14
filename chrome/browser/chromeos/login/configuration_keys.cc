@@ -94,10 +94,6 @@ const char kRestoreAfterRollback[] = "enrollmentRestoreAfterRollback";
 // enrollment to identify organization device is enrolled into.
 const char kEnrollmentToken[] = "enrollmentToken";
 
-// String value indicating which license type should automatically be used if
-// license selection is done on a client side.
-const char kEnrollmentLicenseType[] = "enrollmentLicenseType";
-
 // String value indicating what value would be propagated to Asset ID field
 // on Device Attributes step.
 const char kEnrollmentAssetId[] = "enrollmentAssetId";
@@ -138,8 +134,6 @@ constexpr struct {
     {kDeviceRequisition, ValueType::STRING,
      ConfigurationHandlerSide::HANDLER_CPP},
     {kEnrollmentToken, ValueType::STRING,
-     ConfigurationHandlerSide::HANDLER_CPP},
-    {kEnrollmentLicenseType, ValueType::STRING,
      ConfigurationHandlerSide::HANDLER_CPP},
     {kEnrollmentLocation, ValueType::STRING,
      ConfigurationHandlerSide::HANDLER_CPP},

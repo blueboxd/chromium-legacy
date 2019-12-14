@@ -8110,6 +8110,18 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Tab.Screenshot">
+  <owner>sayman@chromium.org</owner>
+  <summary>
+    User took one or more screenshots of a page.
+  </summary>
+  <metric name="HasOccurred" enum="Boolean">
+    <summary>
+      A boolean signaling that the event has occurred; only records true values.
+    </summary>
+  </metric>
+</event>
+
 <event name="TabManager.Background.FirstAlertFired">
   <owner>chrisha@chromium.org</owner>
   <owner>lpy@chromium.org</owner>

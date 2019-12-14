@@ -8,7 +8,6 @@
 <translation id="1032854598605920125">時計回りに回転</translation>
 <translation id="1036348656032585052">オフにする</translation>
 <translation id="1038842779957582377">不明な名前</translation>
-<translation id="1039626062703039346">Chrome には Google アカウントの保護とパスワードの変更をサポートする機能があります。この機能を有効にすると、このサイトに関する情報が Google に送信されます。</translation>
 <translation id="1050038467049342496">他のアプリを終了する</translation>
 <translation id="1055184225775184556">追加の取り消し（&amp;U）</translation>
 <translation id="1056898198331236512">警告</translation>
@@ -299,7 +298,6 @@
 <translation id="2354001756790975382">その他のブックマーク</translation>
 <translation id="2354430244986887761"><ph name="SITE" /> では最近、Google セーフ ブラウジングにより<ph name="BEGIN_LINK" />有害なアプリが検出<ph name="END_LINK" />されました。</translation>
 <translation id="2355395290879513365">このサイトで目にする画像は、悪意のあるユーザーによって差し替えられたものである可能性があります。</translation>
-<translation id="2355474962185559967">偽のサイトでパスワードを入力しました。<ph name="WEBSITE_1" /> にアクセスして、パスワードを今すぐ変更することをおすすめします。</translation>
 <translation id="2356070529366658676">確認する</translation>
 <translation id="2359629602545592467">複数</translation>
 <translation id="2359808026110333948">続行</translation>
@@ -332,7 +330,6 @@
 <translation id="2495083838625180221">JSON パーサー</translation>
 <translation id="2495093607237746763">チェックボックスをオンにすると、Chromium がカード情報をこのデバイスに保存するためフォームにすばやく入力できるようになります。</translation>
 <translation id="2498091847651709837">新しいカードをスキャン</translation>
-<translation id="249825481377667906">Chromium には Google アカウントの保護とパスワードの変更をサポートする機能があります。この機能を有効にすると、このサイトに関する情報が Google に送信されます。</translation>
 <translation id="2501278716633472235">戻る</translation>
 <translation id="2503184589641749290">利用可能なデビットカードとプリペイド カード</translation>
 <translation id="2505268675989099013">アカウントを保護</translation>
@@ -475,7 +472,6 @@
 <translation id="3228969707346345236">このページは既に<ph name="LANGUAGE" />なので、翻訳できません。</translation>
 <translation id="3229041911291329567">デバイスとブラウザに関するバージョン情報</translation>
 <translation id="323107829343500871"><ph name="CREDIT_CARD" /> の CVC を入力</translation>
-<translation id="3234392465377209614">偽のサイトでパスワードを入力しました。<ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />、<ph name="WEBSITE_3" /> にアクセスして、パスワードを今すぐ変更することをおすすめします。</translation>
 <translation id="3234666976984236645">このサイトの重要なコンテンツを常に検出</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> は <ph name="SUGGESTED_DOMAIN" /> と似ているようです。不正なユーザーが、よく似た URL を使ってサイトを偽装している可能性があります。</translation>
 <translation id="3270847123878663523">順序変更の取り消し（&amp;U）</translation>
@@ -507,7 +503,6 @@
 <translation id="342781501876943858">パスワードを他のサイトで再使用した場合、Chromium ではパスワードの再設定を促すメッセージが表示されます。</translation>
 <translation id="3428151540071562330">DnsOverHttpsTemplates サーバー テンプレートの一部の URI が無効なため、使用されません。</translation>
 <translation id="3431636764301398940">このカード情報をこのデバイスに保存する</translation>
-<translation id="3438790640050632698">偽のサイトでパスワードを入力しました。<ph name="WEBSITE_1" /> と <ph name="WEBSITE_2" /> にアクセスして、パスワードを今すぐ変更することをおすすめします。</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">このデバイスの所有者が恐竜ゲームを無効にしています。</translation>
 <translation id="3447884698081792621">証明書（発行元: <ph name="ISSUER" />）を表示</translation>
@@ -522,7 +517,6 @@
 <translation id="3495081129428749620"><ph name="PAGE_TITLE" />
     ページ内を検索</translation>
 <translation id="3512163584740124171">より優先度の高いポリシーが同じポリシー グループにあるため、このポリシーは無視されます。</translation>
-<translation id="3525469219100414032">偽のサイトでパスワードを入力しました。<ph name="WEBSITE_1" /> にアクセスして、パスワードを今すぐ変更することをおすすめします。</translation>
 <translation id="3528171143076753409">サーバーの証明書を信頼できません。</translation>
 <translation id="3528485271872257980">暗い茶色</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{同期デバイスで 1 件以上のアイテム}=1{1 件のアイテム（同期デバイスではそれ以上のアイテム）}other{# 件のアイテム（同期デバイスではそれ以上のアイテム）}}</translation>
@@ -945,7 +939,6 @@
 <translation id="5565735124758917034">有効</translation>
 <translation id="5570825185877910964">アカウントを保護</translation>
 <translation id="5571083550517324815">この住所での受け取りはできません。別の住所を選択してください。</translation>
-<translation id="5572009199897554128">偽のサイトでパスワードを入力しました。<ph name="WEBSITE_1" /> と <ph name="WEBSITE_2" /> にアクセスして、パスワードを今すぐ変更することをおすすめします。</translation>
 <translation id="5580958916614886209">有効期限の「月」を確認してもう一度お試しください</translation>
 <translation id="5586446728396275693">保存されている住所がありません</translation>
 <translation id="5595485650161345191">住所の編集</translation>
@@ -1661,7 +1654,6 @@
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">Google アカウントにアクセスできなくなる可能性があります。Chromium で今すぐパスワードを変更することをおすすめします。変更の際には、ログインするよう求められます。</translation>
 <translation id="939736085109172342">新しいフォルダ</translation>
-<translation id="940786960229275114">偽のサイトでパスワードを入力しました。<ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />、<ph name="WEBSITE_3" /> にアクセスして、パスワードを今すぐ変更することをおすすめします。</translation>
 <translation id="945855313015696284">下記の情報を確認し、無効なカードがあれば削除してください</translation>
 <translation id="950736567201356821">3 穴パンチ（上）</translation>
 <translation id="951104842009476243">利用可能なデビットカードとプリペイド カード</translation>

@@ -2482,6 +2482,8 @@ bundle_data("test_support_bundle_data") {
   visibility = [ ":test_support" ]
   testonly = true
   sources = [
+    "data/quic_http_response_cache_data/test.example.com/index.html",
+    "data/quic_http_response_cache_data/test.example.com/map.html",
     "data/quic_http_response_cache_data_with_push/test.example.com/favicon.ico",
     "data/quic_http_response_cache_data_with_push/test.example.com/index.html",
     "data/quic_http_response_cache_data_with_push/test.example.com/index2.html",
@@ -5605,6 +5607,7 @@ test("net_unittests") {
     "third_party/quiche/src/quic/test_tools/simple_session_notifier_test.cc",
     "third_party/quiche/src/quic/test_tools/simulator/quic_endpoint_test.cc",
     "third_party/quiche/src/quic/test_tools/simulator/simulator_test.cc",
+    "third_party/quiche/src/quic/tools/quic_memory_cache_backend_test.cc",
     "third_party/quiche/src/spdy/core/array_output_buffer.cc",
     "third_party/quiche/src/spdy/core/array_output_buffer.h",
     "third_party/quiche/src/spdy/core/array_output_buffer_test.cc",
@@ -5883,7 +5886,6 @@ test("net_unittests") {
       "third_party/quiche/src/quic/core/quic_epoll_alarm_factory_test.cc",
       "third_party/quiche/src/quic/core/quic_epoll_connection_helper_test.cc",
       "third_party/quiche/src/quic/tools/quic_client_test.cc",
-      "third_party/quiche/src/quic/tools/quic_memory_cache_backend_test.cc",
       "third_party/quiche/src/quic/tools/quic_server_test.cc",
       "third_party/quiche/src/quic/tools/quic_simple_server_session_test.cc",
       "third_party/quiche/src/quic/tools/quic_simple_server_stream_test.cc",

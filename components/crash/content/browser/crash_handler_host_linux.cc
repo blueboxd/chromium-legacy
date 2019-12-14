@@ -106,7 +106,7 @@ void CrashDumpTask(CrashHandlerHostLinux* handler,
 
 // Since instances of CrashHandlerHostLinux are leaked, they are only destroyed
 // at the end of the processes lifetime, which is greater in span than the
-// lifetime of the IO message loop. Thus, all calls to base::Bind() use
+// lifetime of the IO message loop. Thus, all calls to base::BindOnce() use
 // non-refcounted pointers.
 
 CrashHandlerHostLinux::CrashHandlerHostLinux(const std::string& process_type,

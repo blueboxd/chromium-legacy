@@ -4,8 +4,6 @@
 
 #include "components/viz/service/display_embedder/gl_output_surface_android.h"
 
-#include "components/viz/service/display_embedder/overlay_candidate_validator_android.h"
-
 namespace viz {
 
 GLOutputSurfaceAndroid::GLOutputSurfaceAndroid(

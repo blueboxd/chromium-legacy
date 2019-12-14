@@ -513,4 +513,10 @@ const char kCreditCard4DigitExpYearPattern[] = "^[2][0][1-9][0-9]$";
 /////////////////////////////////////////////////////////////////////////////
 const char kUrlSearchActionRe[] = "/search(/|((\\w*\\.\\w+)?$))";
 
+/////////////////////////////////////////////////////////////////////////////
+// form_parser.cc
+/////////////////////////////////////////////////////////////////////////////
+const char kSocialSecurityRe[] = "ssn|social.?security.?(num(ber)?|#)*";
+const char kOneTimePwdRe[] = "one.?time|sms.?(code|token|password|pwd|pass)";
+
 }  // namespace autofill

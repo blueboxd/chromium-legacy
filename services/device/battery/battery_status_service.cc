@@ -27,39 +27,11 @@ BatteryStatusService::BatteryStatusService()
       &BatteryStatusService::ConsumersChanged, base::Unretained(this)));
 }
 
-BatteryStatusService::~BatteryStatusService() {
-  Shutdown();
-}
+BatteryStatusService::~BatteryStatusService() = default;
 
 BatteryStatusService* BatteryStatusService::GetInstance() {
-  // On embedder teardown, the BatteryStatusService object needs to shut down
-  // certain parts of its state to avoid DCHECKs going off on Windows (see.
-  // https://crbug.com/794105 for details). However, when used in the context of
-  // the browser the Device Service is not guaranteed to have its destructor
-  // run, as the sequence on which it runs is stopped before the task posted to
-  // run the Device Service destructor is run. Hence, stash the
-  // BatteryStatusService singleton in a SequenceLocalStorageSlot to ensure that
-  // its destructor (and consequently Shutdown() method) are run on embedder
-  // teardown. Unfortunately, this shutdown is currently not possible on
-  // ChromeOS: crbug.com/856771 presents a crash that performing this shutdown
-  // introduces on that platform, as it causes the BatteryStatusService instance
-  // to be shut down after the DBusThreadManager global instance, on which it
-  // implicitly depends.
-#if defined(OS_CHROMEOS)
   static base::NoDestructor<BatteryStatusService> service_wrapper;
   return service_wrapper.get();
-#else
-  static base::NoDestructor<
-      base::SequenceLocalStorageSlot<std::unique_ptr<BatteryStatusService>>>
-      service_local_storage_slot_wrapper;
-
-  auto& service_local_storage_slot = *service_local_storage_slot_wrapper;
-
-  if (!service_local_storage_slot)
-    service_local_storage_slot.emplace(new BatteryStatusService());
-
-  return service_local_storage_slot->get();
-#endif
 }
 
 std::unique_ptr<BatteryStatusService::BatteryUpdateSubscription>

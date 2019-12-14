@@ -345,7 +345,7 @@ void CheckClientDownloadRequest::NotifyRequestFinished(
 }
 
 bool CheckClientDownloadRequest::ShouldUploadForDlpScan() {
-  if (!base::FeatureList::IsEnabled(kDeepScanningOfDownloads))
+  if (!base::FeatureList::IsEnabled(kContentComplianceEnabled))
     return false;
 
   int check_content_compliance = g_browser_process->local_state()->GetInteger(
@@ -371,7 +371,7 @@ bool CheckClientDownloadRequest::ShouldUploadForDlpScan() {
 
 bool CheckClientDownloadRequest::ShouldUploadForMalwareScan(
     DownloadCheckResultReason reason) {
-  if (!base::FeatureList::IsEnabled(kDeepScanningOfDownloads))
+  if (!base::FeatureList::IsEnabled(kMalwareScanEnabled))
     return false;
 
   // If we know the file is malicious, we don't need to upload it.

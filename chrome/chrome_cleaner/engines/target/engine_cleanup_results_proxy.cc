@@ -28,6 +28,8 @@ void EngineCleanupResultsProxy::CleanupDone(uint32_t result) {
       base::BindOnce(&EngineCleanupResultsProxy::OnDone, this, result));
 }
 
+EngineCleanupResultsProxy::EngineCleanupResultsProxy() = default;
+
 EngineCleanupResultsProxy::~EngineCleanupResultsProxy() = default;
 
 void EngineCleanupResultsProxy::OnDone(uint32_t result) {

@@ -78,9 +78,10 @@ IN_PROC_BROWSER_TEST_F(CRLSetBrowserTest, TestCRLSetRevoked) {
         net::GetTestCertsDirectory().AppendASCII("crlset_by_leaf_spki.raw"),
         &crl_set_bytes);
   }
+  base::RunLoop run_loop;
   content::GetNetworkService()->UpdateCRLSet(
-      base::as_bytes(base::make_span(crl_set_bytes)));
-  content::FlushNetworkServiceInstanceForTesting();
+      base::as_bytes(base::make_span(crl_set_bytes)), run_loop.QuitClosure());
+  run_loop.Run();
 
   bool interstitial_expected =
       ssl_test_util::CertVerifierSupportsCRLSetBlocking();
@@ -122,9 +123,10 @@ IN_PROC_BROWSER_TEST_F(CRLSetBrowserTest, TestCRLSetBlockedInterception) {
                                "crlset_blocked_interception_by_root.raw"),
                            &crl_set_bytes);
   }
+  base::RunLoop run_loop;
   content::GetNetworkService()->UpdateCRLSet(
-      base::as_bytes(base::make_span(crl_set_bytes)));
-  content::FlushNetworkServiceInstanceForTesting();
+      base::as_bytes(base::make_span(crl_set_bytes)), run_loop.QuitClosure());
+  run_loop.Run();
 
   bool interstitial_expected =
       ssl_test_util::CertVerifierSupportsCRLSetBlocking();
@@ -168,9 +170,10 @@ IN_PROC_BROWSER_TEST_F(CRLSetBrowserTest, TestCRLSetKnownInterception) {
                                "crlset_known_interception_by_root.raw"),
                            &crl_set_bytes);
   }
+  base::RunLoop run_loop;
   content::GetNetworkService()->UpdateCRLSet(
-      base::as_bytes(base::make_span(crl_set_bytes)));
-  content::FlushNetworkServiceInstanceForTesting();
+      base::as_bytes(base::make_span(crl_set_bytes)), run_loop.QuitClosure());
+  run_loop.Run();
 
   // Navigate to the page. It should not cause an interstitial, but should
   // allow for the display of additional information that interception is

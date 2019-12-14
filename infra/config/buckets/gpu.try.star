@@ -50,6 +50,13 @@ def try_builder(
         location_regexp = tryjob.location_regexp,
         location_regexp_exclude = tryjob.location_regexp_exclude,
     )
+  else:
+    # Allow CQ to trigger this builder if user opts in via CQ-Include-Trybots.
+    luci.cq_tryjob_verifier(
+        builder = 'try/' + name,
+        cq_group = 'cq',
+        includable_only = True,
+    )
 
   return builder(
       name = name,

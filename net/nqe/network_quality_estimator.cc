@@ -1427,13 +1427,6 @@ void NetworkQualityEstimator::AddAndNotifyObserversOfRTT(
   UMA_HISTOGRAM_ENUMERATION("NQE.RTT.ObservationSource", observation.source(),
                             NETWORK_QUALITY_OBSERVATION_SOURCE_MAX);
 
-  base::HistogramBase* raw_observation_histogram = base::Histogram::FactoryGet(
-      std::string("NQE.RTT.RawObservation.") +
-          nqe::internal::GetNameForObservationSource(observation.source()),
-      1, 10 * 1000, 50, base::HistogramBase::kUmaTargetedHistogramFlag);
-  if (raw_observation_histogram)
-    raw_observation_histogram->Add(observation.value());
-
   // Maybe recompute the effective connection type since a new RTT observation
   // is available.
   if (observation.source() !=
@@ -1467,13 +1460,6 @@ void NetworkQualityEstimator::AddAndNotifyObserversOfThroughput(
 
   UMA_HISTOGRAM_ENUMERATION("NQE.Kbps.ObservationSource", observation.source(),
                             NETWORK_QUALITY_OBSERVATION_SOURCE_MAX);
-
-  base::HistogramBase* raw_observation_histogram = base::Histogram::FactoryGet(
-      std::string("NQE.Kbps.RawObservation.") +
-          nqe::internal::GetNameForObservationSource(observation.source()),
-      1, 10 * 1000, 50, base::HistogramBase::kUmaTargetedHistogramFlag);
-  if (raw_observation_histogram)
-    raw_observation_histogram->Add(observation.value());
 
   // Maybe recompute the effective connection type since a new throughput
   // observation is available.

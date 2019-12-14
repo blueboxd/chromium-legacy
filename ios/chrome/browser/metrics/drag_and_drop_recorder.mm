@@ -58,7 +58,7 @@ void RecordDragTypesForSession(id<UIDropSession> dropSession)
 
 @interface DragAndDropRecorder ()<UIDropInteractionDelegate> {
   // The currently active drop sessions.
-  NSHashTable* dropSessions_;
+  NSHashTable* _dropSessions;
 }
 @end
 
@@ -67,7 +67,7 @@ void RecordDragTypesForSession(id<UIDropSession> dropSession)
 - (instancetype)initWithView:(UIView*)view {
   self = [super init];
   if (self) {
-    dropSessions_ = [NSHashTable weakObjectsHashTable];
+    _dropSessions = [NSHashTable weakObjectsHashTable];
     UIDropInteraction* dropInteraction =
         [[UIDropInteraction alloc] initWithDelegate:self];
     [view addInteraction:dropInteraction];
@@ -81,8 +81,8 @@ void RecordDragTypesForSession(id<UIDropSession> dropSession)
   // same drop session.
   // Maintain a set of weak references to these sessions to make sure metrics
   // are recorded only once per drop session.
-  if (![dropSessions_ containsObject:session]) {
-    [dropSessions_ addObject:session];
+  if (![_dropSessions containsObject:session]) {
+    [_dropSessions addObject:session];
     RecordDragTypesForSession(session);
   }
   // Return "NO" as the goal of this UIDropInteractionDelegate is to report

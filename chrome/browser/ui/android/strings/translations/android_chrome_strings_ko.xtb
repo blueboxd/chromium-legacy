@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">파일을 다시 다운로드하시겠습니까?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{오디오 파일 #개}other{오디오 파일 #개}}</translation>
 <translation id="2653659639078652383">제출</translation>
-<translation id="2669093958999339774">방해가 되는 알림 허용 요청 팝업 대신 눈에 덜 띄는 메시지를 사용합니다.</translation>
 <translation id="2677748264148917807">나가기</translation>
 <translation id="2704606927547763573">복사됨</translation>
 <translation id="2707726405694321444">페이지 새로고침</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> 북마크에 추가됨</translation>
 <translation id="3744111561329211289">백그라운드 동기화</translation>
 <translation id="3749259744154402564">지원되지 않음</translation>
-<translation id="3767376082821709728">새로 방문하는 사이트에서 알림을 보낼 수 없습니다.</translation>
 <translation id="3771001275138982843">업데이트를 다운로드할 수 없음</translation>
 <translation id="3771033907050503522">시크릿 탭</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />블루투스를 사용 설정<ph name="END_LINK" />하여 페어링을 허용하세요.</translation>
@@ -957,7 +955,6 @@
 <translation id="8035133914807600019">새 폴더…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" />일 남음</translation>
 <translation id="804335162455518893">SD 카드가 없음</translation>
-<translation id="8046278916126163020">새로 방문하는 사이트에서 알림 표시 허용을 요청할 수 있습니다.</translation>
 <translation id="805047784848435650">인터넷 사용 기록에 기반해 추천됨</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" />MB 사용 가능</translation>
 <translation id="8058746566562539958">새 Chrome 탭에서 열기</translation>

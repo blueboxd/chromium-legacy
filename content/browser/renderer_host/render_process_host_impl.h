@@ -502,10 +502,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
       RenderProcessHost* render_process_host,
       const GURL& site_url);
 
-  // Return the spare RenderProcessHost, if it exists. There is at most one
-  // globally-used spare RenderProcessHost at any time.
-  static RenderProcessHost* GetSpareRenderProcessHostForTesting();
-
   // Discards the spare RenderProcessHost.  After this call,
   // GetSpareRenderProcessHostForTesting will return nullptr.
   static void DiscardSpareRenderProcessHostForTesting();
@@ -1047,7 +1043,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   base::TimeTicks keep_alive_start_time_;
 
   // Context shared for each mojom::PermissionService instance created for this
-  // RPH.
+  // RPH. This is destroyed early in ResetIPC() method.
   std::unique_ptr<PermissionServiceContext> permission_service_context_;
 
   // The memory allocator, if any, in which the renderer will write its metrics.

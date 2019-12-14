@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">ဖိုင်ကို ထပ်မံဒေါင်းလုဒ်လုပ်လိုပါသလား။</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{အသံဖိုင် # ဖိုင်}other{အသံဖိုင် # ဖိုင်}}</translation>
 <translation id="2653659639078652383">ပေးပို့ရန်</translation>
-<translation id="2669093958999339774">အနှောင့်အယှက်မဖြစ်စေရန် အကြောင်းကြားချက် ပေးပို့မှုများကို ပိတ်ထားပြီး ပိုမိုတိတ်ဆိတ်သည့် မက်ဆေ့ဂျ်ကို အသုံးပြုရန်</translation>
 <translation id="2677748264148917807">ထွက်ခွာရန်</translation>
 <translation id="2704606927547763573">ကူးယူပြီးပါပြီ</translation>
 <translation id="2707726405694321444">စာမျက်နှာကို ဆန်းသစ်ယူရန်</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> တွင် လိပ်စာအဖြစ် သိမ်းဆည်းပါ</translation>
 <translation id="3744111561329211289">နောက်ခံတွင် စင့်ခ်လုပ်ခြင်း</translation>
 <translation id="3749259744154402564">ပံ့ပိုးမထားပါ</translation>
-<translation id="3767376082821709728">သင်ဝင်ကြည့်သည့် ဝဘ်ဆိုက်အသစ်များသည် သင့်ထံ အကြောင်းကြားချက်များ ပို့၍မရပါ။</translation>
 <translation id="3771001275138982843">အပ်ဒိတ်ကို ဒေါင်းလုဒ်လုပ်ရ မရပါ</translation>
 <translation id="3771033907050503522">ကိုယ်ပျောက် တဲဘ်များ</translation>
 <translation id="3773755127849930740">ချိတ်တွဲခြင်းကို ခွင့်ပြုရန် <ph name="BEGIN_LINK" />ဘလူးတုသ်ကိုဖွင့်ပါ<ph name="END_LINK" /></translation>
@@ -956,7 +954,6 @@
 <translation id="8035133914807600019">ဖိုင်တွဲ အသစ်...</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> ရက် ကျန်သည်</translation>
 <translation id="804335162455518893">SD ကတ် မတွေ့ပါ</translation>
-<translation id="8046278916126163020">သင်ဝင်ကြည့်သည့် ဝဘ်ဆိုက်အသစ်များသည် သင့်ထံအကြောင်းကြားချက်များ ပေးပို့ရန် ‌တောင်းဆိုနိုင်သည်</translation>
 <translation id="805047784848435650">သင်၏ကြည့်ရှုမှုမှတ်တမ်းကို အခြေခံထားသည်</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> မီဂါဘိုက် (MB) သိမ်းနိုင်သည်</translation>
 <translation id="8058746566562539958">Chrome တဘ်အသစ်တွင် ဖွင့်ပါ</translation>

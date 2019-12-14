@@ -175,6 +175,11 @@ class PreviewsOptimizationGuideTest : public testing::Test {
              std::make_tuple(
                  optimization_guide::OptimizationGuideDecision::kUnknown,
                  default_metadata)},
+            {std::make_tuple(hint_not_loaded_url(),
+                             optimization_guide::proto::DEFER_ALL_SCRIPT),
+             std::make_tuple(
+                 optimization_guide::OptimizationGuideDecision::kUnknown,
+                 default_metadata)},
             {std::make_tuple(resource_loading_hints_url(),
                              optimization_guide::proto::RESOURCE_LOADING),
              std::make_tuple(
@@ -358,6 +363,30 @@ TEST_F(PreviewsOptimizationGuideTest,
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(hint_not_loaded_url());
 
+  EXPECT_FALSE(guide.CanApplyPreview(
+      /*previews_data=*/nullptr, &navigation_handle,
+      PreviewsType::DEFER_ALL_SCRIPT));
+  EXPECT_FALSE(guide.CanApplyPreview(
+      /*previews_data=*/nullptr, &navigation_handle, PreviewsType::NOSCRIPT));
+}
+
+TEST_F(PreviewsOptimizationGuideTest,
+       CanApplyDeferWithUnknownDecisionReturnsTrue) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeaturesAndParameters(
+      {{previews::features::kPreviews,
+        {{"apply_deferallscript_when_guide_decision_unknown", "true"}}}},
+      {});
+
+  PreviewsOptimizationGuide guide(optimization_guide_decider());
+  SeedOptimizationGuideDeciderWithDefaultResponses();
+
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(hint_not_loaded_url());
+
+  EXPECT_TRUE(guide.CanApplyPreview(
+      /*previews_data=*/nullptr, &navigation_handle,
+      PreviewsType::DEFER_ALL_SCRIPT));
   EXPECT_FALSE(guide.CanApplyPreview(
       /*previews_data=*/nullptr, &navigation_handle, PreviewsType::NOSCRIPT));
 }

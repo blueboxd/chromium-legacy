@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
@@ -51,8 +50,6 @@ TestingSpellCheckProvider::~TestingSpellCheckProvider() {
 void TestingSpellCheckProvider::RequestTextChecking(
     const base::string16& text,
     std::unique_ptr<blink::WebTextCheckingCompletion> completion) {
-  if (!loop_ && !base::MessageLoopCurrent::Get())
-    loop_ = std::make_unique<base::MessageLoop>();
   if (!receiver_.is_bound())
     SetSpellCheckHostForTesting(receiver_.BindNewPipeAndPassRemote());
   SpellCheckProvider::RequestTextChecking(text, std::move(completion));

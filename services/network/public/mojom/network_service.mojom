@@ -280,7 +280,7 @@ interface NetworkService {
   // CRLSets (where older is determined by the sequence number). All Network
   // Contexts created by the Network Service, including those created after
   // this call, will use the same CRLSet.
-  UpdateCRLSet(mojo_base.mojom.ReadOnlyBuffer crl_set);
+  UpdateCRLSet(mojo_base.mojom.ReadOnlyBuffer crl_set) => ();
 
   // Notification that the certificate database has been modified.
   OnCertDBChanged();

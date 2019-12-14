@@ -73,7 +73,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @end
 
 @implementation ContentSettingsTableViewController {
-  ios::ChromeBrowserState* browserState_;  // weak
+  ios::ChromeBrowserState* _browserState;  // weak
 }
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
@@ -84,7 +84,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self = [super initWithTableViewStyle:style
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
-    browserState_ = browserState;
+    _browserState = browserState;
     self.title = l10n_util::GetNSString(IDS_IOS_CONTENT_SETTINGS_TITLE);
 
     _prefChangeRegistrar.Init(browserState->GetPrefs());
@@ -156,7 +156,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   _translateDetailItem =
       [[TableViewDetailIconItem alloc] initWithType:ItemTypeSettingsTranslate];
   BOOL enabled =
-      browserState_->GetPrefs()->GetBoolean(prefs::kOfferTranslateEnabled);
+      _browserState->GetPrefs()->GetBoolean(prefs::kOfferTranslateEnabled);
   NSString* subtitle = enabled ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                                : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
   _translateDetailItem.text = l10n_util::GetNSString(IDS_IOS_TRANSLATE_SETTING);
@@ -185,7 +185,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (ContentSetting)getContentSetting:(ContentSettingsType)settingID {
-  return ios::HostContentSettingsMapFactory::GetForBrowserState(browserState_)
+  return ios::HostContentSettingsMapFactory::GetForBrowserState(_browserState)
       ->GetDefaultContentSetting(settingID, NULL);
 }
 
@@ -199,14 +199,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
   switch (itemType) {
     case ItemTypeSettingsBlockPopups: {
       UIViewController* controller = [[BlockPopupsTableViewController alloc]
-          initWithBrowserState:browserState_];
+          initWithBrowserState:_browserState];
       [self.navigationController pushViewController:controller animated:YES];
       break;
     }
     case ItemTypeSettingsTranslate: {
       TranslateTableViewController* controller =
           [[TranslateTableViewController alloc]
-              initWithPrefs:browserState_->GetPrefs()];
+              initWithPrefs:_browserState->GetPrefs()];
       controller.dispatcher = self.dispatcher;
       [self.navigationController pushViewController:controller animated:YES];
       break;
@@ -233,7 +233,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // This logic can be simplified when kLanguageSettings feature flag is
   // removed (when feature is fully enabled).
   if (_translateDetailItem && preferenceName == prefs::kOfferTranslateEnabled) {
-    BOOL enabled = browserState_->GetPrefs()->GetBoolean(preferenceName);
+    BOOL enabled = _browserState->GetPrefs()->GetBoolean(preferenceName);
     NSString* subtitle = enabled ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                                  : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
     _translateDetailItem.detailText = subtitle;

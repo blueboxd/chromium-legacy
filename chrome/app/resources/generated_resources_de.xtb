@@ -1186,7 +1186,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2665919335226618153">Oh nein! Beim Formatieren ist ein Fehler aufgetreten.</translation>
 <translation id="2666990579225592931">Gastfenster öffnen</translation>
 <translation id="2667463864537187133">Rechtschreibprüfung verwalten</translation>
-<translation id="2669093958999339774">Störende Aufforderungen zum Anzeigen von Benachrichtigungen blockieren und stattdessen ein Symbol in der Adressleiste einblenden</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> hat einen Chrome-Tab freigegeben.</translation>
 <translation id="2670429602441959756">Diese Seite enthält Funktionen, die noch nicht in VR unterstützt werden. Modus wird beendet…</translation>
 <translation id="2671451824761031126">Ihre Lesezeichen und Einstellungen stehen bereit</translation>
@@ -1960,7 +1959,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="37613671848467444">In &amp;Inkognito-Fenster öffnen</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Kommunikation mit einem USB-Gerät}other{Kommunikation mit # USB-Geräten}}</translation>
 <translation id="3765246971671567135">Richtlinie für den Offlinedemomodus konnte nicht verarbeitet werden.</translation>
-<translation id="3767376082821709728">Neue Websites, die Sie besuchen, können Ihnen keine Benachrichtigungen senden</translation>
 <translation id="3768037234834996183">Ihre Einstellungen werden synchronisiert...</translation>
 <translation id="377050016711188788">Eiscreme</translation>
 <translation id="3771294271822695279">Videodateien</translation>
@@ -3028,7 +3026,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5370819323174483825">&amp;Neu laden</translation>
 <translation id="5372529912055771682">Der bereitgestellte Anmeldemodus wird von dieser Betriebssystemversion nicht unterstützt. Führen Sie eine Aktualisierung auf die neueste Version aus und versuchen Sie es dann erneut.</translation>
 <translation id="5372579129492968947">Erweiterung loslösen</translation>
-<translation id="5374359983950678924">Bild ändern</translation>
 <translation id="5376169624176189338">Klicken, um zurückzugehen. Gedrückt halten, um den Verlauf aufzurufen</translation>
 <translation id="5376931455988532197">Datei zu groß</translation>
 <translation id="537813040452600081">In diesem Fenster aufgerufene Seiten erscheinen nicht im Browserverlauf und hinterlassen auch keine anderweitigen Spuren wie Cookies auf dem Computer, nachdem Sie sich abgemeldet haben. Ihre Lesezeichen und Ihre heruntergeladenen Dateien bleiben nicht erhalten.</translation>
@@ -4903,7 +4900,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8044899503464538266">Langsam</translation>
 <translation id="8045253504249021590">Die Synchronisierung wurde über das Google Dashboard gestoppt.</translation>
 <translation id="8045923671629973368">Anwendungs-ID oder Webstore-URL eingeben</translation>
-<translation id="8046278916126163020">Auf neuen Websites, die Sie besuchen, können Sie gefragt werden, ob Sie Benachrichtigungen erhalten möchten</translation>
 <translation id="804786196054284061">Endnutzer-Lizenzvereinbarung</translation>
 <translation id="8049705080247101012">"<ph name="EXTENSION_NAME" />" wurde von Google als schädlich eingestuft und die Installation wurde blockiert</translation>
 <translation id="8050038245906040378">Kommerzielle Microsoft-Codesignatur</translation>

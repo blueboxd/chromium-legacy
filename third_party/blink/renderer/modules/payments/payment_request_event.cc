@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_location.h"
 #include "third_party/blink/renderer/modules/payments/address_errors.h"
+#include "third_party/blink/renderer/modules/payments/payment_address_init_type_converter.h"
 #include "third_party/blink/renderer/modules/payments/payment_currency_amount.h"
 #include "third_party/blink/renderer/modules/payments/payment_details_modifier.h"
 #include "third_party/blink/renderer/modules/payments/payment_item.h"
@@ -246,18 +247,8 @@ ScriptPromise PaymentRequestEvent::changeShippingAddress(
                                            "Shipping address cannot be null"));
   }
 
-  auto shipping_address_ptr = payments::mojom::blink::PaymentAddress::New();
-  shipping_address_ptr->country = shipping_address->country();
-  shipping_address_ptr->address_line = shipping_address->addressLine();
-  shipping_address_ptr->region = shipping_address->region();
-  shipping_address_ptr->city = shipping_address->city();
-  shipping_address_ptr->dependent_locality =
-      shipping_address->dependentLocality();
-  shipping_address_ptr->postal_code = shipping_address->postalCode();
-  shipping_address_ptr->sorting_code = shipping_address->sortingCode();
-  shipping_address_ptr->organization = shipping_address->organization();
-  shipping_address_ptr->recipient = shipping_address->recipient();
-  shipping_address_ptr->phone = shipping_address->phone();
+  auto shipping_address_ptr =
+      payments::mojom::blink::PaymentAddress::From(shipping_address);
   String shipping_address_error;
   if (!PaymentsValidators::IsValidShippingAddress(shipping_address_ptr,
                                                   &shipping_address_error)) {

@@ -15,8 +15,6 @@ class GPURenderBundle : public DawnObject<WGPURenderBundle> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GPURenderBundle* Create(GPUDevice* device,
-                                 WGPURenderBundle render_bundle);
   explicit GPURenderBundle(GPUDevice* device, WGPURenderBundle render_bundle);
   ~GPURenderBundle() override;
 

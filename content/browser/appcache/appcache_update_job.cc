@@ -1473,15 +1473,17 @@ void AppCacheUpdateJob::OnResponseInfoLoaded(
   // Needed response info for a manifest fetch request.
   if (internal_state_ == FETCH_MANIFEST) {
     if (http_info) {
-      // Save a copy of the HttpResponseInfo in case we need it later.  We would
-      // use it if we attach conditional headers and the server replies with a
-      // 304.  In that case, we would use these same headers again to refetch
-      // the manifest.  In the case that the server replies with 200 OK, this
-      // manifest_response_info_ will be overwritten with that response's
-      // HttpResponseInfo and since it's a unique_ptr this HttpResponseInfo will
-      // be deleted.
-      manifest_response_info_ =
-          std::make_unique<net::HttpResponseInfo>(*http_info);
+      if (manifest_scope_checks_enabled_) {
+        // Save a copy of the HttpResponseInfo in case we need it later.  We
+        // would use it if we attach conditional headers and the server replies
+        // with a 304.  In that case, we would use these same headers again to
+        // refetch the manifest.  In the case that the server replies with 200
+        // OK, this manifest_response_info_ will be overwritten with that
+        // response's HttpResponseInfo and since it's a unique_ptr this
+        // HttpResponseInfo will be deleted.
+        manifest_response_info_ =
+            std::make_unique<net::HttpResponseInfo>(*http_info);
+      }
       if ((manifest_scope_checks_enabled_ &&
            cached_manifest_parser_version_ >= 1) ||
           (!manifest_scope_checks_enabled_ &&

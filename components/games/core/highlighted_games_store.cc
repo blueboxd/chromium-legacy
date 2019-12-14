@@ -8,19 +8,29 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
+#include "components/games/core/games_utils.h"
+#include "components/games/core/proto/date.pb.h"
 
 namespace games {
 
-HighlightedGamesStore::HighlightedGamesStore()
-    : HighlightedGamesStore(std::make_unique<DataFilesParser>()) {}
+namespace {
+bool TryConvertTime(const Date& date_proto, base::Time* out_time) {
+  return base::Time::FromUTCExploded(
+      {date_proto.year(), date_proto.month(), 0, date_proto.day()}, out_time);
+}
+}  // namespace
+
+HighlightedGamesStore::HighlightedGamesStore(base::Clock* clock)
+    : HighlightedGamesStore(std::make_unique<DataFilesParser>(), clock) {}
 
 HighlightedGamesStore::HighlightedGamesStore(
-    std::unique_ptr<DataFilesParser> data_files_parser)
+    std::unique_ptr<DataFilesParser> data_files_parser,
+    base::Clock* clock)
     : data_files_parser_(std::move(data_files_parser)),
       task_runner_(
           base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::USER_VISIBLE})) {
-}
+                                           base::TaskPriority::USER_VISIBLE})),
+      clock_(clock) {}
 
 HighlightedGamesStore::~HighlightedGamesStore() = default;
 
@@ -37,11 +47,21 @@ void HighlightedGamesStore::ProcessAsync(const base::FilePath& install_dir,
 }
 
 base::Optional<Game> HighlightedGamesStore::TryGetFromCache() {
-  base::Optional<Game> cached_game;
-  if (cached_highlighted_game_) {
-    cached_game = *cached_highlighted_game_;
+  base::Optional<Game> optional_game;
+
+  if (!cached_highlighted_game_ || !cached_game_) {
+    return optional_game;
   }
-  return cached_game;
+
+  if (IsCurrent(*cached_highlighted_game_)) {
+    optional_game = *cached_game_;
+  } else {
+    // Current game is outdated, clear cache.
+    cached_highlighted_game_.reset();
+    cached_game_.reset();
+  }
+
+  return optional_game;
 }
 
 void HighlightedGamesStore::SetPendingCallback(
@@ -60,8 +80,12 @@ HighlightedGamesStore::GetHighlightedGamesResponse(
   // Must run file IO on the thread pool.
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  // TODO(crbug.com/1018201): Add data file parsing logic.
-  return std::make_unique<HighlightedGamesResponse>();
+  base::Optional<HighlightedGamesResponse> response_proto =
+      data_files_parser_->TryParseHighlightedGames(install_dir);
+  if (!response_proto.has_value()) {
+    return nullptr;
+  }
+  return std::make_unique<HighlightedGamesResponse>(response_proto.value());
 }
 
 void HighlightedGamesStore::OnHighlightedGamesResponseParsed(
@@ -74,10 +98,33 @@ void HighlightedGamesStore::OnHighlightedGamesResponseParsed(
     return;
   }
 
-  // TODO(crbug.com/1018201): Add highlighted game parsing logic. For now, we'll
-  // just return the first game from the catalog.
-  cached_highlighted_game_ = std::make_unique<const Game>(catalog.games(0));
-  RespondAndInvoke(ResponseCode::kSuccess, *cached_highlighted_game_,
+  if (!response) {
+    RespondAndInvoke(ResponseCode::kFileNotFound, Game(),
+                     std::move(done_callback));
+    return;
+  }
+
+  // Try to find the game of the day for today.
+  for (const HighlightedGame& hg : response->games()) {
+    if (IsCurrent(hg)) {
+      // Try to update the cache with this game.
+      base::Optional<Game> game = TryFindGameById(hg.game_id(), catalog);
+      if (!game) {
+        RespondAndInvoke(ResponseCode::kInvalidData, Game(),
+                         std::move(done_callback));
+        return;
+      }
+
+      cached_game_ = std::make_unique<Game>(game.value());
+      cached_highlighted_game_ = std::make_unique<HighlightedGame>(hg);
+      RespondAndInvoke(ResponseCode::kSuccess, *cached_game_,
+                       std::move(done_callback));
+      return;
+    }
+  }
+
+  // Failed to find the game of the day.
+  RespondAndInvoke(ResponseCode::kInvalidData, Game(),
                    std::move(done_callback));
 }
 
@@ -93,6 +140,27 @@ void HighlightedGamesStore::RespondAndInvoke(ResponseCode code,
                                              base::OnceClosure done_callback) {
   Respond(code, game);
   std::move(done_callback).Run();
+}
+
+bool HighlightedGamesStore::IsCurrent(const HighlightedGame& highlighted_game) {
+  base::Time start_date;
+  if (!TryConvertTime(highlighted_game.start_date(), &start_date)) {
+    // TODO(crbug.com/1018201): Log bad data.
+    return false;
+  }
+
+  base::Time end_date;
+  if (!TryConvertTime(highlighted_game.end_date(), &end_date)) {
+    // TODO(crbug.com/1018201): Log bad data.
+    return false;
+  }
+
+  if (start_date > end_date) {
+    // TODO(crbug.com/1018201): Log bad data.
+    return false;
+  }
+
+  return clock_->Now() >= start_date && clock_->Now() < end_date;
 }
 
 }  // namespace games

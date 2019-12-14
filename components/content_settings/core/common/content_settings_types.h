@@ -185,6 +185,10 @@ enum class ContentSettingsType : int32_t {
   // ordered in the same order as listed in the enum.
   CLIPBOARD_SANITIZED_WRITE,
 
+  // This content setting type is for caching safe browsing real time url
+  // check's verdicts of each origin.
+  SAFE_BROWSING_URL_CHECK_DATA,
+
   NUM_TYPES,
 };
 

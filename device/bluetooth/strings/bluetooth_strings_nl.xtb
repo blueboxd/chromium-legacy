@@ -17,6 +17,7 @@
 <translation id="5271696982761495740">Tablet (<ph name="ADDRESS" />)</translation>
 <translation id="5376363957846771741">Onbekend of niet-ondersteund apparaat (<ph name="ADDRESS" />)</translation>
 <translation id="5716052956047449618"><ph name="DEVICE_NAME" />, modem</translation>
+<translation id="6459740836740815150"><ph name="DEVICE_NAME" />, audioapparaat in auto</translation>
 <translation id="6542922424766292144"><ph name="DEVICE_NAME" />, toetsenbord</translation>
 <translation id="654594702871184195">Audio (<ph name="ADDRESS" />)</translation>
 <translation id="6744468237221042970">Computer (<ph name="ADDRESS" />)</translation>
@@ -26,5 +27,6 @@
 <translation id="8866374292072238753">Video (<ph name="ADDRESS" />)</translation>
 <translation id="8952558712545617651">Muis (<ph name="ADDRESS" />)</translation>
 <translation id="8961448405689538648"><ph name="DEVICE_NAME" />, onbekend apparaattype</translation>
+<translation id="907431882454731668">Randapparaat (<ph name="ADDRESS" />)</translation>
 <translation id="978248992969828584">Telefoon (<ph name="ADDRESS" />)</translation>
 </translationbundle>

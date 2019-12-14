@@ -49,11 +49,6 @@
             </div>
           </oobe-dialog>
       </div>
-      <div id="step-license" hidden$="[[!eq_(currentStep_, 'license')]]">
-        <enrollment-license-card id="oauth-enroll-license-ui"
-                                 i18n-values="button-text:oauthEnrollNextBtn">
-        </enrollment-license-card>
-      </div>
       <div id="step-ad-join" hidden$="[[!eq_(currentStep_, 'ad-join')]]">
         <offline-ad-login id="oauth-enroll-ad-join-ui" is-domain-join
             class="fit" i18n-values=

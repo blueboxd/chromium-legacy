@@ -98,7 +98,6 @@ class CORE_EXPORT WindowPerformance final : public Performance,
   void Trace(blink::Visitor*) override;
 
  private:
-  friend class WindowPerformanceTest;
   PerformanceNavigationTiming* CreateNavigationTimingInstance() override;
 
   static std::pair<AtomicString, DOMWindow*> SanitizedAttribution(
@@ -120,14 +119,6 @@ class CORE_EXPORT WindowPerformance final : public Performance,
                           base::TimeTicks timestamp);
 
   void DispatchFirstInputTiming(PerformanceEventTiming* entry);
-
-  void AddLongTaskTiming(base::TimeTicks start_time,
-                         base::TimeTicks end_time,
-                         const AtomicString& name,
-                         const AtomicString& container_type,
-                         const String& container_src,
-                         const String& container_id,
-                         const String& container_name);
 
   // PerformanceEventTiming entries that have not been added yet: the event
   // dispatch has been completed but the swap promise used to determine

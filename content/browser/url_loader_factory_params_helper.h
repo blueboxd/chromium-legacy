@@ -11,8 +11,8 @@
 
 namespace content {
 
+class RenderFrameHostImpl;
 class RenderProcessHost;
-struct WebPreferences;
 
 // URLLoaderFactoryParamsHelper encapsulates details of how to create
 // network::mojom::URLLoaderFactoryParams (taking //content-focused parameters,
@@ -20,30 +20,39 @@ struct WebPreferences;
 // etc.)
 class URLLoaderFactoryParamsHelper {
  public:
-  static network::mojom::URLLoaderFactoryParamsPtr Create(
-      RenderProcessHost* process,
-      const url::Origin& frame_origin,
-      const base::UnguessableToken& top_frame_token,
-      const net::NetworkIsolationKey& network_isolation_key,
-      network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
-      const WebPreferences& preferences);
+  // Creates URLLoaderFactoryParams for a factory to be used from |process|,
+  // with parameters controlled by |frame| and |origin|.
+  //
+  // This overload is used to create a factory for:
+  // - fetching subresources from the |frame|
+  // - fetching subresources from a dedicated worker associated with the |frame|
+  // - fetching main worker script (when the worker is created by the |frame|)
+  //
+  // |origin| is exposed as a separate parameter, to accommodate calls during
+  // ready-to-commit time (when |frame|'s GetLastCommittedOrigin has not been
+  // updated yet).
+  //
+  // |process| is exposed as a separate parameter, to accommodate creating
+  // factories for dedicated workers (where the |process| hosting the worker
+  // might be different from the process hosting the |frame|).
+  static network::mojom::URLLoaderFactoryParamsPtr CreateForFrame(
+      RenderFrameHostImpl* frame,
+      const url::Origin& origin,
+      RenderProcessHost* process);
 
+  // Creates URLLoaderFactoryParams to be used by |isolated_world_origin| hosted
+  // within the |frame|.
   static network::mojom::URLLoaderFactoryParamsPtr CreateForIsolatedWorld(
-      RenderProcessHost* process,
+      RenderFrameHostImpl* frame,
       const url::Origin& isolated_world_origin,
-      const url::Origin& main_world_origin,
-      const base::UnguessableToken& top_frame_token,
-      const net::NetworkIsolationKey& network_isolation_key,
-      network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
-      const WebPreferences& preferences);
+      const url::Origin& main_world_origin);
 
   static network::mojom::URLLoaderFactoryParamsPtr CreateForPrefetch(
-      RenderProcessHost* process,
-      const url::Origin& frame_origin,
-      const base::UnguessableToken& top_frame_token,
-      network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
-      const WebPreferences& preferences);
+      RenderFrameHostImpl* frame);
 
+  // Creates URLLoaderFactoryParamsPtr for fetching subresources from a worker
+  // that is not associated with any particular frame (e.g. from a shared
+  // worker).
   static network::mojom::URLLoaderFactoryParamsPtr CreateForWorker(
       RenderProcessHost* process,
       const url::Origin& worker_origin);

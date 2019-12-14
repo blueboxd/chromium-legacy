@@ -3,7 +3,6 @@ luci.list_view(
     entries = [
         'try/android-cronet-arm-dbg',
         'try/android-kitkat-arm-rel',
-        'try/android-marshmallow-arm64-coverage-rel',
         'try/android-marshmallow-arm64-rel',
         'try/android-oreo-arm64-cts-networkservice-dbg',
         'try/android-pie-arm64-rel',

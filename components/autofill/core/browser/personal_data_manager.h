@@ -373,6 +373,18 @@ class PersonalDataManager : public KeyedService,
   // indicates if the card is saved to local storage.
   void OnCreditCardSaved(bool is_local_card);
 
+  // Returns true if either Profile or CreditCard Autofill is enabled.
+  virtual bool IsAutofillEnabled() const;
+
+  // Returns the value of the AutofillProfileEnabled pref.
+  virtual bool IsAutofillProfileEnabled() const;
+
+  // Returns the value of the AutofillCreditCardEnabled pref.
+  virtual bool IsAutofillCreditCardEnabled() const;
+
+  // Returns the value of the AutofillWalletImportEnabled pref.
+  virtual bool IsAutofillWalletImportEnabled() const;
+
   void set_client_profile_validator_for_test(
       AutofillProfileValidator* validator) {
     client_profile_validator_ = validator;
@@ -511,18 +523,6 @@ class PersonalDataManager : public KeyedService,
   // The first time this is called, logs an UMA metric about the user's autofill
   // credit cardss. On subsequent calls, does nothing.
   void LogStoredCreditCardMetrics() const;
-
-  // Returns true if either Profile or CreditCard Autofill is enabled.
-  virtual bool IsAutofillEnabled() const;
-
-  // Returns the value of the AutofillProfileEnabled pref.
-  virtual bool IsAutofillProfileEnabled() const;
-
-  // Returns the value of the AutofillCreditCardEnabled pref.
-  virtual bool IsAutofillCreditCardEnabled() const;
-
-  // Returns the value of the AutofillWalletImportEnabled pref.
-  virtual bool IsAutofillWalletImportEnabled() const;
 
   // Whether the server cards are enabled and should be suggested to the user.
   virtual bool ShouldSuggestServerCards() const;

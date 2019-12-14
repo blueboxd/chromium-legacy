@@ -286,7 +286,6 @@ TEST_F(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
       "NQE.RTT.ObservationSource", NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP, 1);
   histogram_tester.ExpectBucketCount(
       "NQE.Kbps.ObservationSource", NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP, 1);
-  histogram_tester.ExpectTotalCount("NQE.Kbps.RawObservation.Http", 1);
 
   std::unique_ptr<URLRequest> request2(
       context.CreateRequest(estimator.GetEchoURL(), DEFAULT_PRIORITY,
@@ -453,8 +452,6 @@ TEST_F(NetworkQualityEstimatorTest, Caching) {
     histogram_tester.ExpectBucketCount(
         "NQE.Kbps.ObservationSource",
         NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE, 1);
-    histogram_tester.ExpectTotalCount(
-        "NQE.Kbps.RawObservation.HttpCachedEstimate", 1);
 
     // Verify the contents of the net log.
     EXPECT_LE(
@@ -793,11 +790,7 @@ TEST_F(NetworkQualityEstimatorTest, DefaultObservations) {
   histogram_tester.ExpectBucketCount(
       "NQE.Kbps.ObservationSource",
       NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM, 1);
-  histogram_tester.ExpectTotalCount("NQE.Kbps.RawObservation.HttpPlatform", 1);
   histogram_tester.ExpectTotalCount("NQE.RTT.ObservationSource", 2);
-  histogram_tester.ExpectTotalCount("NQE.RTT.RawObservation.HttpPlatform", 1);
-  histogram_tester.ExpectTotalCount("NQE.RTT.RawObservation.TransportPlatform",
-                                    1);
   histogram_tester.ExpectTotalCount("NQE.Kbps.ObservationSource", 1);
 
   // Default observations should be added on connection change.
@@ -812,11 +805,7 @@ TEST_F(NetworkQualityEstimatorTest, DefaultObservations) {
   histogram_tester.ExpectBucketCount(
       "NQE.Kbps.ObservationSource",
       NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM, 2);
-  histogram_tester.ExpectTotalCount("NQE.Kbps.RawObservation.HttpPlatform", 2);
   histogram_tester.ExpectTotalCount("NQE.RTT.ObservationSource", 4);
-  histogram_tester.ExpectTotalCount("NQE.RTT.RawObservation.HttpPlatform", 2);
-  histogram_tester.ExpectTotalCount("NQE.RTT.RawObservation.TransportPlatform",
-                                    2);
   histogram_tester.ExpectTotalCount("NQE.Kbps.ObservationSource", 2);
 
   base::TimeDelta rtt;

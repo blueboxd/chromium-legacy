@@ -60,7 +60,6 @@ extern const base::Feature kContextualSearchDefinitions;
 extern const base::Feature kContextualSearchLongpressResolve;
 extern const base::Feature kContextualSearchMlTapSuppression;
 extern const base::Feature kContextualSearchSecondTap;
-extern const base::Feature kContextualSearchSimplifiedServer;
 extern const base::Feature kContextualSearchTapDisableOverride;
 extern const base::Feature kDarkenWebsitesCheckboxInThemesSetting;
 extern const base::Feature kDirectActions;

@@ -25,8 +25,6 @@ class GPUSwapChain : public ScriptWrappable,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GPUSwapChain* Create(GPUCanvasContext* context,
-                              const GPUSwapChainDescriptor* descriptor);
   explicit GPUSwapChain(GPUCanvasContext* context,
                         const GPUSwapChainDescriptor* descriptor);
   ~GPUSwapChain() override;

@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/xr/xr.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -57,7 +58,8 @@ XR* NavigatorXR::xr() {
   }
 
   if (!xr_) {
-    xr_ = XR::Create(*document->GetFrame(), document->UkmSourceID());
+    xr_ = MakeGarbageCollected<XR>(*document->GetFrame(),
+                                   document->UkmSourceID());
   }
 
   return xr_;

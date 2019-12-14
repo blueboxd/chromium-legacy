@@ -1557,26 +1557,6 @@ TEST_F(LayerTest, SetElementIdNotUsingLayerLists) {
   test_layer->SetLayerTreeHost(nullptr);
 }
 
-// Verifies that mirror count is pushed to the LayerImpl.
-TEST_F(LayerTest, MirrorCountIsPushed) {
-  scoped_refptr<Layer> test_layer = Layer::Create();
-  std::unique_ptr<LayerImpl> impl_layer =
-      LayerImpl::Create(host_impl_.active_tree(), 1);
-  test_layer->SetLayerTreeHost(layer_tree_host_.get());
-  EXPECT_EQ(0, test_layer->mirror_count());
-  EXPECT_EQ(0, impl_layer->mirror_count());
-
-  test_layer->IncrementMirrorCount();
-  EXPECT_EQ(1, test_layer->mirror_count());
-  EXPECT_EQ(0, impl_layer->mirror_count());
-
-  test_layer->PushPropertiesTo(impl_layer.get());
-  EXPECT_EQ(1, test_layer->mirror_count());
-  EXPECT_EQ(1, impl_layer->mirror_count());
-
-  test_layer->SetLayerTreeHost(nullptr);
-}
-
 // Verifies that when mirror count of the layer is incremented or decremented,
 // SetPropertyTreesNeedRebuild() and SetNeedsPushProperties() are called
 // appropriately.

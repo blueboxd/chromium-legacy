@@ -3477,6 +3477,19 @@
       "features": [
         "do_extra_flush_around_bindframebuffer"
       ]
+    },
+    {
+      "id": 326,
+      "description": "Migrating OpenGL contexts between low- and high-power GPUs is unreliable on Mac NVIDIA laptops",
+      "cr_bugs": [681341],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x10de",
+      "multi_gpu_category": "any",
+      "features": [
+        "force_low_power_gpu"
+      ]
     }
   ]
 }

@@ -72,13 +72,11 @@ TEST_F(MirrorLayerTest, PushProperties) {
       MirrorLayerImpl::Create(host_impl_.pending_tree(), mirror->id());
 
   // Verify that impl layers have default property values.
-  EXPECT_EQ(0, mirrored_impl->mirror_count());
   EXPECT_EQ(0, mirror_impl->mirrored_layer_id());
 
   SynchronizeTrees();
 
   // Verify that property values are pushed to impl layers.
-  EXPECT_EQ(1, mirrored_impl->mirror_count());
   EXPECT_EQ(mirrored_impl->id(), mirror_impl->mirrored_layer_id());
 }
 

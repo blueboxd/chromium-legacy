@@ -70,10 +70,21 @@ bool ModuleScriptFetcher::WasModuleLoadSuccessful(
     *module_type = ModuleScriptCreationParams::ModuleType::kJSONModule;
     return true;
   }
-  String required_response_type =
-      base::FeatureList::IsEnabled(blink::features::kJSONModules)
-          ? "JavaScript or JSON"
-          : "JavaScript";
+
+  if (RuntimeEnabledFeatures::CSSModulesEnabled() &&
+      MIMETypeRegistry::IsSupportedStyleSheetMIMEType(
+          response.HttpContentType())) {
+    *module_type = ModuleScriptCreationParams::ModuleType::kCSSModule;
+    return true;
+  }
+  String required_response_type = "JavaScript";
+  if (base::FeatureList::IsEnabled(blink::features::kJSONModules)) {
+    required_response_type = required_response_type + ", JSON";
+  }
+  if (RuntimeEnabledFeatures::CSSModulesEnabled()) {
+    required_response_type = required_response_type + ", CSS";
+  }
+
   String message =
       "Failed to load module script: The server responded with a non-" +
       required_response_type + " MIME type of \"" +

@@ -2024,6 +2024,10 @@ void PDFiumEngine::HandleAccessibilityAction(
       }
       break;
     }
+    case PP_PdfAccessibilityAction::PP_PDF_SCROLL_TO_GLOBAL_POINT: {
+      ScrollToGlobalPoint(action_data.target_rect, action_data.target_point);
+      break;
+    }
     default:
       NOTREACHED();
       break;
@@ -2195,6 +2199,12 @@ void PDFiumEngine::ScrollBasedOnScrollAlignment(
   }
 
   client_->ScrollBy(scroll_offset);
+}
+
+void PDFiumEngine::ScrollToGlobalPoint(const pp::Rect& target_rect,
+                                       const pp::Point& global_point) {
+  pp::Point scroll_offset = GetScreenRect(target_rect).point();
+  client_->ScrollBy(scroll_offset - global_point);
 }
 
 base::Optional<PDFEngine::NamedDestination> PDFiumEngine::GetNamedDestination(

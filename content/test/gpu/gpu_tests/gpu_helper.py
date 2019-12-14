@@ -48,9 +48,9 @@ def _GetANGLEGpuDeviceId(device_string):
     return None
 
 
-def GetGpuVendorString(gpu_info):
+def GetGpuVendorString(gpu_info, index):
   if gpu_info:
-    primary_gpu = gpu_info.devices[0]
+    primary_gpu = gpu_info.devices[index]
     if primary_gpu:
       vendor_string = primary_gpu.vendor_string
       angle_vendor_string = _ParseANGLEGpuVendorString(
@@ -69,9 +69,9 @@ def GetGpuVendorString(gpu_info):
   return 'unknown_gpu'
 
 
-def GetGpuDeviceId(gpu_info):
+def GetGpuDeviceId(gpu_info, index):
   if gpu_info:
-    primary_gpu = gpu_info.devices[0]
+    primary_gpu = gpu_info.devices[index]
     if primary_gpu:
       return (
           primary_gpu.device_id

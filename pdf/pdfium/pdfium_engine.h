@@ -536,6 +536,11 @@ class PDFiumEngine : public PDFEngine,
       const PP_PdfAccessibilityScrollAlignment& horizontal_scroll_alignment,
       const PP_PdfAccessibilityScrollAlignment& vertical_scroll_alignment);
 
+  // Scrolls top left of a rect in page |target_rect| to |global_point|.
+  // Global point is point relative to viewport in screen.
+  void ScrollToGlobalPoint(const pp::Rect& target_rect,
+                           const pp::Point& global_point);
+
   // Set if the document has any local edits.
   void SetEditMode(bool edit_mode);
 

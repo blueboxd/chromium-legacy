@@ -624,6 +624,17 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static void OverrideBatteryMonitorBinderForTesting(
       BatteryMonitorBinder binder);
 
+  // Allows overriding the URLLoaderFactory creation via CreateURLLoaderFactory.
+  // Passing a null callback will restore the default behavior.
+  // This method must be called either on the UI thread or before threads start.
+  // This |url_loader_factory_callback| is run on the UI thread.
+  using CreateNetworkFactoryCallback = base::RepeatingCallback<void(
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
+      int worker_process_id,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory)>;
+  static void SetNetworkFactoryForTesting(
+      const CreateNetworkFactoryCallback& url_loader_factory_callback);
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread.
   std::unique_ptr<IPC::ChannelProxy> channel_;

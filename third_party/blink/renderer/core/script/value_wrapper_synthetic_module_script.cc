@@ -6,14 +6,64 @@
 
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet_init.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_record_resolver.h"
+#include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 #include "v8/include/v8.h"
 
 namespace blink {
+
+// https://whatpr.org/html/4898/webappapis.html#creating-a-css-module-script
+ValueWrapperSyntheticModuleScript*
+ValueWrapperSyntheticModuleScript::CreateCSSWrapperSyntheticModuleScript(
+    const base::Optional<ModuleScriptCreationParams>& params,
+    Modulator* settings_object) {
+  DCHECK(settings_object->HasValidContext());
+  ScriptState* script_state = settings_object->GetScriptState();
+  ScriptState::Scope scope(script_state);
+  v8::Isolate* isolate = script_state->GetIsolate();
+  ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
+                                 "ModuleScriptLoader",
+                                 "CreateCSSWrapperSyntheticModuleScript");
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  Document* context_document = DynamicTo<Document>(execution_context);
+  if (!context_document) {
+    v8::Local<v8::Value> error = V8ThrowException::CreateTypeError(
+        isolate, "Cannot create CSS Module in non-document context");
+    return ValueWrapperSyntheticModuleScript::CreateWithError(
+        v8::Local<v8::Value>(), settings_object, params->GetResponseUrl(),
+        KURL(), ScriptFetchOptions(), error);
+  }
+  CSSStyleSheetInit* init = CSSStyleSheetInit::Create();
+  CSSStyleSheet* style_sheet =
+      CSSStyleSheet::Create(*context_document, init, exception_state);
+  if (exception_state.HadException()) {
+    v8::Local<v8::Value> error = exception_state.GetException();
+    exception_state.ClearException();
+    return ValueWrapperSyntheticModuleScript::CreateWithError(
+        v8::Local<v8::Value>(), settings_object, params->GetResponseUrl(),
+        KURL(), ScriptFetchOptions(), error);
+  }
+  style_sheet->replaceSync(params->GetSourceText().ToString(), exception_state);
+  if (exception_state.HadException()) {
+    v8::Local<v8::Value> error = exception_state.GetException();
+    exception_state.ClearException();
+    return ValueWrapperSyntheticModuleScript::CreateWithError(
+        v8::Local<v8::Value>(), settings_object, params->GetResponseUrl(),
+        KURL(), ScriptFetchOptions(), error);
+  }
+  v8::Local<v8::Value> v8_value_stylesheet = ToV8(style_sheet, script_state);
+  return ValueWrapperSyntheticModuleScript::CreateWithDefaultExport(
+      v8_value_stylesheet, settings_object, params->GetResponseUrl(), KURL(),
+      ScriptFetchOptions());
+}
 
 ValueWrapperSyntheticModuleScript*
 ValueWrapperSyntheticModuleScript::CreateJSONWrapperSyntheticModuleScript(

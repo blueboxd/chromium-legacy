@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download.home.list.holder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.chrome.browser.download.home.list.ListItem;
@@ -48,7 +49,7 @@ public class PrefetchGroupedItemViewHolder extends OfflineItemViewHolder {
         mTimestamp.setText(UiUtils.generatePrefetchTimestamp(listItem.date));
 
         OfflineItem offlineItem = ((ListItem.OfflineItemListItem) item).item;
-        View mediaButton = itemView.findViewById(R.id.media_button);
-        mediaButton.setVisibility(UiUtils.isMedia(offlineItem) ? View.VISIBLE : View.GONE);
+        ImageView mediaButton = itemView.findViewById(R.id.media_button);
+        mediaButton.setImageResource(UiUtils.getMediaPlayIconForPrefetchCards(offlineItem));
     }
 }

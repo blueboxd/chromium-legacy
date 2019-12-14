@@ -16,7 +16,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
 import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {Debouncer, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {Debouncer, html, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxy} from './browser_proxy.js';
 
@@ -29,6 +29,39 @@ const ScreenWidth = {
   MEDIUM: 1,
   WIDE: 2,
 };
+
+/**
+ * @param {!HTMLElement} tile
+ * @private
+ */
+function resetTilePosition(tile) {
+  tile.style.position = '';
+  tile.style.left = '';
+  tile.style.top = '';
+}
+
+/**
+ * @param {!HTMLElement} tile
+ * @param {!{x: number, y: number}} point
+ * @private
+ */
+function setTilePosition(tile, {x, y}) {
+  tile.style.position = 'absolute';
+  tile.style.left = `${x}px`;
+  tile.style.top = `${y}px`;
+}
+
+/**
+ * @param {!Array<!DOMRect>} rects
+ * @param {number} x
+ * @param {number} y
+ * @return {number}
+ * @private
+ */
+function getHitIndex(rects, x, y) {
+  return rects.findIndex(
+      r => x >= r.left && x <= r.right && y >= r.top && y <= r.bottom);
+}
 
 class MostVisitedElement extends PolymerElement {
   static get is() {
@@ -73,6 +106,17 @@ class MostVisitedElement extends PolymerElement {
         reflectToAttribute: true,
       },
 
+      /**
+       * Used to hide hover style and cr-icon-button of tiles while the tiles
+       * are being reordered.
+       * @private
+       */
+      reordering_: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+      },
+
       /** @private */
       maxTiles_: {
         type: Number,
@@ -102,6 +146,12 @@ class MostVisitedElement extends PolymerElement {
     };
   }
 
+  /** @private {!Array<!HTMLElement>} */
+  get tileElements_() {
+    return /** @type {!Array<!HTMLElement>} */ (
+        Array.from(this.shadowRoot.querySelectorAll('.tile:not([hidden])')));
+  }
+
   constructor() {
     super();
     /** @private {boolean} */
@@ -121,6 +171,15 @@ class MostVisitedElement extends PolymerElement {
     this.setMostVisitedVisibleListenerId_ = null;
     /** @private {number} */
     this.actionMenuTargetIndex_ = -1;
+
+    /**
+     * This is the position of the mouse with respect to the top-left corner
+     * of the tile being dragged.
+     * @private {(!{x: number, y: number}|null)}
+     */
+    this.dragOffset_ = null;
+    /** @private {!Array<!DOMRect>} */
+    this.tileRects_ = [];
   }
 
   /** @override */
@@ -182,6 +241,14 @@ class MostVisitedElement extends PolymerElement {
         'keydown', this.boundOnDocumentKeyDown_);
   }
 
+  /** @private */
+  clearForceHover_() {
+    const forceHover = this.shadowRoot.querySelector('.force-hover');
+    if (forceHover) {
+      forceHover.classList.remove('force-hover');
+    }
+  }
+
   /**
    * @return {number}
    * @private
@@ -223,6 +290,133 @@ class MostVisitedElement extends PolymerElement {
   computeShowAdd_() {
     return this.customLinksEnabled_ && this.tiles_ &&
         this.tiles_.length < this.maxTiles_;
+  }
+
+  /**
+   * If a pointer is over a tile rect that is different from the one being
+   * dragged, the dragging tile is moved to the new position. The reordering
+   * is done in the DOM and the by the |reorderMostVisitedTile()| call. This is
+   * done to prevent flicking between the time when the tiles are moved back to
+   * their original positions (by removing position absolute) and when the
+   * tiles are updated via a |setMostVisitedTiles()| call.
+   *
+   * |reordering_| is not set to false when the tiles are reordered. The callers
+   * will need to set it to false. This is necessary to handle a mouse drag
+   * issue.
+   * @param {number} x
+   * @param {number} y
+   * @private
+   */
+  dragEnd_(x, y) {
+    this.dragOffset_ = null;
+    const dragElement = this.shadowRoot.querySelector('.tile.dragging');
+    if (!dragElement) {
+      this.reordering_ = false;
+      return;
+    }
+    const dragIndex = this.$.tiles.modelForElement(dragElement).index;
+    dragElement.classList.remove('dragging');
+    this.tileElements_.forEach(resetTilePosition);
+    resetTilePosition(/** @type {!HTMLElement} */ (this.$.addShortcut));
+    const dropIndex = getHitIndex(this.tileRects_, x, y);
+    if (dragIndex !== dropIndex && dropIndex > -1) {
+      const [draggingTile] = this.tiles_.splice(dragIndex, 1);
+      this.tiles_.splice(dropIndex, 0, draggingTile);
+      this.notifySplices('tiles_', [
+        {
+          index: dragIndex,
+          removed: [draggingTile],
+          addedCount: 0,
+          object: this.tiles_,
+          type: 'splice',
+        },
+        {
+          index: dropIndex,
+          removed: [],
+          addedCount: 1,
+          object: this.tiles_,
+          type: 'splice',
+        },
+      ]);
+      this.pageHandler_.reorderMostVisitedTile(draggingTile.url, dropIndex);
+    }
+  }
+
+  /**
+   * The positions of the tiles are updated based on the location of the
+   * pointer.
+   * @param {number} x
+   * @param {number} y
+   * @private
+   */
+  dragOver_(x, y) {
+    const dragElement = this.shadowRoot.querySelector('.tile.dragging');
+    if (!dragElement) {
+      this.reordering_ = false;
+      return;
+    }
+    const dragIndex = this.$.tiles.modelForElement(dragElement).index;
+    setTilePosition(/** @type {!HTMLElement} */ (dragElement), {
+      x: x - this.dragOffset_.x,
+      y: y - this.dragOffset_.y,
+    });
+    const dropIndex = getHitIndex(this.tileRects_, x, y);
+    this.tileElements_.forEach((element, i) => {
+      let positionIndex;
+      if (i == dragIndex) {
+        return;
+      } else if (dropIndex == -1) {
+        positionIndex = i;
+      } else if (dragIndex < dropIndex && dragIndex <= i && i <= dropIndex) {
+        positionIndex = i - 1;
+      } else if (dragIndex > dropIndex && dragIndex >= i && i >= dropIndex) {
+        positionIndex = i + 1;
+      } else {
+        positionIndex = i;
+      }
+      setTilePosition(
+          /** @type {!HTMLElement} */ (element),
+          this.tileRects_[positionIndex]);
+    });
+  }
+
+  /**
+   * Sets up tile reordering for both drag and touch events. This method stores
+   * the following to be used in |dragOver_()| and |dragEnd_()|.
+   *   |dragOffset_|: This is the mouse/touch offset with respect to the
+   *       top/left corner of the tile being dragged. It is used to update the
+   *       dragging tile location during the drag.
+   *   |reordering_|: This is property/attribute used to hide the hover style
+   *       and cr-icon-button of the tiles while they are being reordered.
+   *   |tileRects_|: This is the rects of the tiles before the drag start. It is
+   *       to determine which tile the pointer is over while dragging.
+   * @param {!HTMLElement} dragElement
+   * @param {number} x
+   * @param {number} y
+   * @private
+   */
+  dragStart_(dragElement, x, y) {
+    // Need to clear the tile that has a forced hover style for when the drag
+    // started without moving the mouse after the last drag/drop.
+    this.clearForceHover_();
+
+    dragElement.classList.add('dragging');
+    const dragElementRect = dragElement.getBoundingClientRect();
+    this.dragOffset_ = {
+      x: x - dragElementRect.x,
+      y: y - dragElementRect.y,
+    };
+    const tileElements = this.tileElements_;
+    // Get all the rects first before setting the absolute positions.
+    this.tileRects_ = tileElements.map(t => t.getBoundingClientRect());
+    if (this.showAdd_) {
+      const element = /** @type {!HTMLElement} */ (this.$.addShortcut);
+      setTilePosition(element, element.getBoundingClientRect());
+    }
+    tileElements.forEach((tile, i) => {
+      setTilePosition(tile, this.tileRects_[i]);
+    });
+    this.reordering_ = true;
   }
 
   /**
@@ -327,6 +521,41 @@ class MostVisitedElement extends PolymerElement {
     }
   }
 
+  /**
+   * @param {!DragEvent} e
+   * @private
+   */
+  onDragStart_(e) {
+    // |dataTransfer| is null in tests.
+    if (e.dataTransfer) {
+      // Remove the ghost image that appears when dragging.
+      e.dataTransfer.setDragImage(new Image(), 0, 0);
+    }
+
+    this.dragStart_(/** @type {!HTMLElement} */ (e.target), e.x, e.y);
+    const dragOver = e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      this.dragOver_(e.x, e.y);
+    };
+    this.ownerDocument.addEventListener('dragover', dragOver);
+    this.ownerDocument.addEventListener('dragend', e => {
+      this.ownerDocument.removeEventListener('dragover', dragOver);
+      this.dragEnd_(e.x, e.y);
+      const dropIndex = getHitIndex(this.tileRects_, e.x, e.y);
+      if (dropIndex !== -1) {
+        this.tileElements_[dropIndex].classList.add('force-hover');
+      }
+      this.addEventListener('pointermove', () => {
+        this.clearForceHover_();
+        // When |reordering_| is true, the normal hover style is not shown.
+        // After a drop, the element that has hover is not correct. It will be
+        // after the mouse moves.
+        this.reordering_ = false;
+      }, {once: true});
+    }, {once: true});
+  }
+
   /** @private */
   onEdit_() {
     this.$.actionMenu.close();
@@ -426,7 +655,7 @@ class MostVisitedElement extends PolymerElement {
 
     const advanceKey = this.isRtl_ ? 'ArrowLeft' : 'ArrowRight';
     const delta = (e.key == advanceKey || e.key == 'ArrowDown') ? 1 : -1;
-    this.tileFocus_(index + delta);
+    this.tileFocus_(Math.max(0, index + delta));
   }
 
   /** @private */
@@ -436,17 +665,51 @@ class MostVisitedElement extends PolymerElement {
   }
 
   /**
+   * @param {!TouchEvent} e
+   * @private
+   */
+  onTouchStart_(e) {
+    if (this.reordering_) {
+      return;
+    }
+    const tileElement = /** @type {HTMLElement} */ (e.composedPath().find(
+        el => el.classList && el.classList.contains('tile')));
+    if (!tileElement) {
+      return;
+    }
+    const {pageX, pageY} = e.changedTouches[0];
+    this.dragStart_(tileElement, pageX, pageY);
+    const touchMove = e => {
+      const {pageX, pageY} = e.changedTouches[0];
+      this.dragOver_(pageX, pageY);
+    };
+    const touchEnd = e => {
+      this.ownerDocument.removeEventListener('touchmove', touchMove);
+      tileElement.removeEventListener('touchend', touchEnd);
+      tileElement.removeEventListener('touchcancel', touchEnd);
+      const {pageX, pageY} = e.changedTouches[0];
+      this.dragEnd_(pageX, pageY);
+      this.reordering_ = false;
+    };
+    this.ownerDocument.addEventListener('touchmove', touchMove);
+    tileElement.addEventListener('touchend', touchEnd, {once: true});
+    tileElement.addEventListener('touchcancel', touchEnd, {once: true});
+  }
+
+  /**
    * @param {number} index
    * @private
    */
   tileFocus_(index) {
-    const tileCount = Math.min(
-        this.columnCount_ * 2, this.tiles_.length + (this.showAdd_ ? 1 : 0));
-    if (tileCount === 0) {
+    if (index < 0) {
       return;
     }
-    const focusIndex = Math.min(Math.max(0, index), tileCount - 1);
-    this.shadowRoot.querySelectorAll('.tile, #addShortcut')[focusIndex].focus();
+    const tileElements = this.tileElements_;
+    if (index < tileElements.length) {
+      tileElements[index].focus();
+    } else if (this.showAdd_ && index === tileElements.length) {
+      this.$.addShortcut.focus();
+    }
   }
 
   /**

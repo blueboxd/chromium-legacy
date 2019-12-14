@@ -20,7 +20,7 @@ namespace blink {
 class ModuleScriptCreationParams {
   DISALLOW_NEW();
 
-  enum class ModuleType { kJavaScriptModule, kJSONModule };
+  enum class ModuleType { kJavaScriptModule, kJSONModule, kCSSModule };
 
  public:
   ModuleScriptCreationParams(

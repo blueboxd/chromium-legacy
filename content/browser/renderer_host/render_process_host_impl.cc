@@ -1212,6 +1212,13 @@ void BindBatteryMonitor(
     GetDeviceService().BindBatteryMonitor(std::move(receiver));
 }
 
+RenderProcessHostImpl::CreateNetworkFactoryCallback&
+GetCreateNetworkFactoryCallback() {
+  static base::NoDestructor<RenderProcessHostImpl::CreateNetworkFactoryCallback>
+      s_callback;
+  return *s_callback;
+}
+
 }  // namespace
 
 // A RenderProcessHostImpl's IO thread implementation of the
@@ -2559,6 +2566,18 @@ mojom::Renderer* RenderProcessHostImpl::GetRendererInterface() {
   return renderer_interface_.get();
 }
 
+// static
+void RenderProcessHostImpl::SetNetworkFactoryForTesting(
+    const CreateNetworkFactoryCallback& create_network_factory_callback) {
+  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(create_network_factory_callback.is_null() ||
+         GetCreateNetworkFactoryCallback().is_null())
+      << "It is not expected that this is called with non-null callback when "
+      << "another overriding callback is already set.";
+  GetCreateNetworkFactoryCallback() = create_network_factory_callback;
+}
+
 void RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -2574,8 +2593,16 @@ void RenderProcessHostImpl::CreateURLLoaderFactory(
   DCHECK(params);
   DCHECK_EQ(GetID(), static_cast<int>(params->process_id));
 
-  storage_partition_impl_->GetNetworkContext()->CreateURLLoaderFactory(
-      std::move(receiver), std::move(params));
+  if (GetCreateNetworkFactoryCallback().is_null()) {
+    storage_partition_impl_->GetNetworkContext()->CreateURLLoaderFactory(
+        std::move(receiver), std::move(params));
+  } else {
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory;
+    storage_partition_impl_->GetNetworkContext()->CreateURLLoaderFactory(
+        original_factory.InitWithNewPipeAndPassReceiver(), std::move(params));
+    GetCreateNetworkFactoryCallback().Run(std::move(receiver), GetID(),
+                                          std::move(original_factory));
+  }
 }
 
 bool RenderProcessHostImpl::MayReuseHost() {

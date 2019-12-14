@@ -202,16 +202,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   static std::string StatusToString(EmbeddedWorkerStatus status);
   static std::string StartingPhaseToString(StartingPhase phase);
 
-  using CreateNetworkFactoryCallback = base::RepeatingCallback<void(
-      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-      int process_id,
-      mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory)>;
-  // Allows overriding the URLLoaderFactory creation for loading subresources
-  // from service workers (i.e., fetch()) and for loading non-installed service
-  // worker scripts.
-  static void SetNetworkFactoryForTesting(
-      const CreateNetworkFactoryCallback& url_loader_factory_callback);
-
   // Forces this instance into STOPPED status and releases any state about the
   // running worker. Called when connection with the renderer died or the
   // renderer is unresponsive.  Essentially, it throws away any information

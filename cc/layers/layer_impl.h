@@ -170,9 +170,6 @@ class CC_EXPORT LayerImpl {
   // non-opaque color.  Tries to return background_color(), if possible.
   SkColor SafeOpaqueBackgroundColor() const;
 
-  void SetMasksToBounds(bool masks_to_bounds);
-  bool masks_to_bounds() const { return masks_to_bounds_; }
-
   void SetContentsOpaque(bool opaque);
   bool contents_opaque() const { return contents_opaque_; }
 
@@ -181,9 +178,6 @@ class CC_EXPORT LayerImpl {
   // Stable identifier for clients. See comment in cc/trees/element_id.h.
   void SetElementId(ElementId element_id);
   ElementId element_id() const { return element_id_; }
-
-  void SetMirrorCount(int mirror_count);
-  int mirror_count() const { return mirror_count_; }
 
   bool IsAffectedByPageScale() const;
 
@@ -489,9 +483,8 @@ class CC_EXPORT LayerImpl {
   // damage from animations. http://crbug.com/755828.
   bool layer_property_changed_not_from_property_trees_ : 1;
   bool layer_property_changed_from_property_trees_ : 1;
-  bool may_contain_video_ : 1;
 
-  bool masks_to_bounds_ : 1;
+  bool may_contain_video_ : 1;
   bool contents_opaque_ : 1;
   bool use_parent_backface_visibility_ : 1;
   bool should_check_backface_visibility_ : 1;
@@ -560,10 +553,6 @@ class CC_EXPORT LayerImpl {
   bool raster_even_if_not_drawn_ : 1;
 
   bool has_transform_node_ : 1;
-
-  // Number of layers mirroring this layer. If greater than zero, forces a
-  // render pass for the layer so it can be embedded by the mirroring layer.
-  int mirror_count_;
 };
 
 }  // namespace cc

@@ -175,7 +175,6 @@ class DrawPropertiesDrawRectsTest : public DrawPropertiesTest {
     LayerImpl* drawing_layer = AddLayer<LayerImpl>();
 
     target->SetDrawsContent(true);
-    target->SetMasksToBounds(true);
     drawing_layer->SetDrawsContent(true);
 
     target->SetBounds(target_rect.size());
@@ -903,7 +902,6 @@ TEST_F(DrawPropertiesTest, TransformAboveRootLayer) {
   root->SetBounds(gfx::Size(100, 100));
   child->SetDrawsContent(true);
   child->SetBounds(gfx::Size(100, 100));
-  child->SetMasksToBounds(true);
 
   CopyProperties(root, child);
   CreateClipNode(child);
@@ -1137,7 +1135,6 @@ TEST_F(DrawPropertiesTest, ClipRectCullsRenderSurfaces) {
 
   root->SetBounds(gfx::Size(500, 500));
   child->SetBounds(gfx::Size(20, 20));
-  child->SetMasksToBounds(true);
   grand_child->SetBounds(gfx::Size(10, 10));
   great_grand_child->SetBounds(gfx::Size(10, 10));
   leaf_node1->SetBounds(gfx::Size(500, 500));
@@ -1187,7 +1184,6 @@ TEST_F(DrawPropertiesTest, ClipRectCullsSurfaceWithoutVisibleContent) {
   LayerImpl* grand_child = AddLayer<LayerImpl>();
   LayerImpl* leaf_node = AddLayer<LayerImpl>();
 
-  root->SetMasksToBounds(true);
   root->SetBounds(gfx::Size(100, 100));
   child->SetBounds(gfx::Size(20, 20));
   grand_child->SetBounds(gfx::Size(10, 10));
@@ -1278,7 +1274,6 @@ TEST_F(DrawPropertiesTest, IsClippedIsSetCorrectlyLayerImpl) {
   // surface are clipped. But layers that contribute to child2's surface are
   // not clipped explicitly because child2's surface already accounts for
   // that clip.
-  parent->SetMasksToBounds(true);
   CreateClipNode(parent);
   child1->SetClipTreeIndex(parent->clip_tree_index());
   grand_child->SetClipTreeIndex(parent->clip_tree_index());
@@ -1303,7 +1298,6 @@ TEST_F(DrawPropertiesTest, IsClippedIsSetCorrectlyLayerImpl) {
   EXPECT_TRUE(leaf_node1->is_clipped());
   EXPECT_FALSE(leaf_node2->is_clipped());
 
-  parent->SetMasksToBounds(false);
   parent->SetClipTreeIndex(root->clip_tree_index());
   child1->SetClipTreeIndex(root->clip_tree_index());
   grand_child->SetClipTreeIndex(root->clip_tree_index());
@@ -1314,7 +1308,6 @@ TEST_F(DrawPropertiesTest, IsClippedIsSetCorrectlyLayerImpl) {
 
   // Case 3: child2 MasksToBounds. The layer and subtree are clipped, and
   // child2's render surface is not clipped.
-  child2->SetMasksToBounds(true);
   CreateClipNode(child2);
   leaf_node2->SetClipTreeIndex(child2->clip_tree_index());
 
@@ -1348,7 +1341,6 @@ TEST_F(DrawPropertiesTest, UpdateClipRectCorrectly) {
   parent->SetDrawsContent(true);
   child->SetBounds(gfx::Size(100, 100));
   child->SetDrawsContent(true);
-  child->SetMasksToBounds(true);
 
   CopyProperties(root, parent);
   CopyProperties(parent, child);
@@ -1361,7 +1353,6 @@ TEST_F(DrawPropertiesTest, UpdateClipRectCorrectly) {
   EXPECT_TRUE(child->is_clipped());
   EXPECT_EQ(gfx::Rect(100, 100), child->clip_rect());
 
-  parent->SetMasksToBounds(true);
   CreateClipNode(parent);
   GetClipNode(child)->parent_id = parent->clip_tree_index();
   child->SetOffsetToTransformParent(gfx::Vector2dF(100.f, 100.f));
@@ -1398,14 +1389,12 @@ TEST_F(DrawPropertiesTest, DrawableContentRectForLayers) {
   LayerImpl* grand_child4 = AddLayer<LayerImpl>();
 
   parent->SetBounds(gfx::Size(500, 500));
-  child->SetMasksToBounds(true);
   child->SetBounds(gfx::Size(20, 20));
   grand_child1->SetBounds(gfx::Size(10, 10));
   grand_child1->SetDrawsContent(true);
   grand_child2->SetBounds(gfx::Size(10, 10));
   grand_child2->SetDrawsContent(true);
   grand_child3->SetBounds(gfx::Size(10, 10));
-  grand_child3->SetMasksToBounds(true);
   grand_child3->SetDrawsContent(true);
   grand_child4->SetBounds(gfx::Size(10, 10));
   grand_child4->SetDrawsContent(true);
@@ -1455,13 +1444,10 @@ TEST_F(DrawPropertiesTest, ClipRectIsPropagatedCorrectlyToSurfaces) {
 
   parent->SetBounds(gfx::Size(500, 500));
   child->SetBounds(gfx::Size(20, 20));
-  child->SetMasksToBounds(true);
   grand_child1->SetBounds(gfx::Size(10, 10));
   grand_child2->SetBounds(gfx::Size(10, 10));
   grand_child3->SetBounds(gfx::Size(10, 10));
-  grand_child3->SetMasksToBounds(true);
   grand_child4->SetBounds(gfx::Size(10, 10));
-  grand_child4->SetMasksToBounds(true);
   leaf_node1->SetBounds(gfx::Size(10, 10));
   leaf_node1->SetDrawsContent(true);
   leaf_node2->SetBounds(gfx::Size(10, 10));
@@ -2136,7 +2122,6 @@ TEST_F(DrawPropertiesTest,
 
   root->SetBounds(gfx::Size(100, 100));
   child->SetBounds(gfx::Size(100, 100));
-  child->SetMasksToBounds(true);
   grand_child1->SetBounds(gfx::Size(50, 50));
   grand_child1->SetDrawsContent(true);
   grand_child2->SetBounds(gfx::Size(50, 50));
@@ -2185,7 +2170,6 @@ TEST_F(DrawPropertiesTest, VisibleContentRectWithClippingAndScaling) {
 
   root->SetBounds(gfx::Size(100, 100));
   child->SetBounds(gfx::Size(10, 10));
-  child->SetMasksToBounds(true);
   grand_child->SetBounds(gfx::Size(100, 100));
   grand_child->SetDrawsContent(true);
 
@@ -2239,7 +2223,6 @@ TEST_F(DrawPropertiesTest, ClipRectWithClippedDescendantOfFilter) {
 
   root->SetBounds(gfx::Size(100, 100));
   clip->SetBounds(gfx::Size(10, 10));
-  clip->SetMasksToBounds(true);
   filter_grand_child->SetBounds(gfx::Size(20, 20));
   filter_grand_child->SetDrawsContent(true);
 
@@ -2568,7 +2551,6 @@ TEST_F(DrawPropertiesTest,
   LayerImpl* child3 = AddLayer<LayerImpl>();
 
   root->SetBounds(gfx::Size(100, 100));
-  root->SetMasksToBounds(true);
   render_surface->SetBounds(gfx::Size(3, 4));
   child1->SetBounds(gfx::Size(50, 50));
   child1->SetDrawsContent(true);
@@ -2626,7 +2608,6 @@ TEST_F(DrawPropertiesTest, DrawableAndVisibleContentRectsForSurfaceHierarchy) {
   LayerImpl* child3 = AddLayer<LayerImpl>();
 
   root->SetBounds(gfx::Size(100, 100));
-  root->SetMasksToBounds(true);
   render_surface1->SetBounds(gfx::Size(3, 4));
   render_surface2->SetBounds(gfx::Size(7, 13));
   child1->SetBounds(gfx::Size(50, 50));
@@ -2702,9 +2683,6 @@ TEST_F(DrawPropertiesTest,
   child2->SetDrawsContent(true);
   render_surface2->SetBounds(gfx::Size(1000, 1000));
   render_surface2->SetDrawsContent(true);
-
-  child1->SetMasksToBounds(true);
-  child2->SetMasksToBounds(true);
 
   CopyProperties(root, render_surface1);
   CreateEffectNode(render_surface1).render_surface_reason =
@@ -2980,7 +2958,6 @@ TEST_F(DrawPropertiesTest,
   child_rotation.Rotate(45.0);
 
   root->SetBounds(gfx::Size(50, 50));
-  root->SetMasksToBounds(true);
   render_surface->SetBounds(gfx::Size(3, 4));
   child1->SetBounds(gfx::Size(50, 50));
   child1->SetDrawsContent(true);
@@ -3028,7 +3005,6 @@ TEST_F(DrawPropertiesTest, DrawableAndVisibleContentRectsInHighDPI) {
   FakePictureLayerImpl* child3 = AddLayer<FakePictureLayerImpl>();
 
   root->SetBounds(gfx::Size(100, 100));
-  root->SetMasksToBounds(true);
   render_surface1->SetBounds(gfx::Size(3, 4));
   render_surface1->SetDrawsContent(true);
   render_surface2->SetBounds(gfx::Size(7, 13));
@@ -6123,7 +6099,6 @@ TEST_F(DrawPropertiesTest, VisibleContentRectInChildRenderSurface) {
   root->SetBounds(gfx::Size(768 / 2, 3000));
   root->SetDrawsContent(true);
   clip->SetBounds(gfx::Size(768 / 2, 10000));
-  clip->SetMasksToBounds(true);
   content->SetBounds(gfx::Size(768 / 2, 10000));
   content->SetDrawsContent(true);
 
@@ -6224,7 +6199,6 @@ TEST_F(DrawPropertiesTest,
 
   root->SetBounds(gfx::Size(100, 100));
   clip->SetBounds(gfx::Size(10, 10));
-  clip->SetMasksToBounds(true);
   animated->SetBounds(gfx::Size(120, 120));
   surface->SetBounds(gfx::Size(100, 100));
   descendant_of_keyframe_model->SetBounds(gfx::Size(200, 200));
@@ -6797,9 +6771,7 @@ TEST_F(DrawPropertiesTest, TransformOfParentClipNodeAncestorOfTarget) {
 
   root->SetBounds(gfx::Size(30, 30));
   clip_layer->SetBounds(gfx::Size(30, 30));
-  clip_layer->SetMasksToBounds(true);
   target_layer->SetBounds(gfx::Size(30, 30));
-  target_layer->SetMasksToBounds(true);
   test_layer->SetBounds(gfx::Size(30, 30));
   test_layer->SetDrawsContent(true);
 
@@ -7095,7 +7067,6 @@ TEST_F(DrawPropertiesTest, LayerWithInputHandlerAndZeroOpacity) {
 
   root->SetBounds(gfx::Size(30, 30));
   render_surface->SetBounds(gfx::Size(30, 30));
-  render_surface->SetMasksToBounds(true);
   test_layer->SetBounds(gfx::Size(20, 20));
   test_layer->SetDrawsContent(true);
 
@@ -7356,7 +7327,6 @@ TEST_F(DrawPropertiesTest, SublayerScaleWithTransformNodeBetweenTwoTargets) {
 
   // We want layer between the two targets to create a clip node and effect
   // node but it shouldn't create a render surface.
-  between_targets->SetMasksToBounds(true);
   CopyProperties(root, render_surface1);
   CreateTransformNode(render_surface1).local = scale;
   CreateEffectNode(render_surface1).render_surface_reason =
@@ -7424,7 +7394,6 @@ TEST_F(DrawPropertiesTest, LargeTransformTest) {
   LayerImpl* child = AddLayer<LayerImpl>();
 
   child->SetDrawsContent(true);
-  child->SetMasksToBounds(true);
 
   gfx::Transform large_transform;
   large_transform.Scale(99999999999999999999.f, 99999999999999999999.f);

@@ -191,6 +191,21 @@ public final class UiUtils {
     }
 
     /**
+     * @return A drawable resource id representing the small media icon to be shown on prefetch
+     *         cards.
+     */
+    public static @DrawableRes int getMediaPlayIconForPrefetchCards(OfflineItem item) {
+        switch (item.filter) {
+            case OfflineItemFilter.VIDEO: // fallthrough
+            case OfflineItemFilter.AUDIO:
+                // TODO(shaktisahu): Provide vector icon for audio.
+                return R.drawable.ic_play_circle_filled_24dp;
+            default:
+                return 0;
+        }
+    }
+
+    /**
      * Generates a caption for downloads that are in-progress.
      * @param item       The {@link OfflineItem} to generate a caption for.
      * @param abbreviate Whether or not to abbreviate the caption for smaller UI surfaces.
@@ -357,12 +372,6 @@ public final class UiUtils {
                 assert false;
                 return "";
         }
-    }
-
-    /** @return Whether the given {@link OfflineItem} can be played as a media. */
-    public static boolean isMedia(OfflineItem offlineItem) {
-        return offlineItem.filter == OfflineItemFilter.AUDIO
-                || offlineItem.filter == OfflineItemFilter.VIDEO;
     }
 
     /** @return Whether the given {@link OfflineItem} can be shared. */

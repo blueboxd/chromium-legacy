@@ -133,7 +133,6 @@ TEST_F(LayerPerfTest, ImplPushPropertiesTo) {
     test_layer->SetSafeOpaqueBackgroundColor(background_color);
     test_layer->SetDrawsContent(draws_content);
     test_layer->SetContentsOpaque(contents_opaque);
-    test_layer->SetMasksToBounds(masks_to_bounds);
 
     test_layer->PushPropertiesTo(impl_layer.get());
 

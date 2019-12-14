@@ -38,11 +38,6 @@ class XR final : public EventTargetWithInlineData,
 
  public:
   // TODO(crbug.com/976796): Fix lint errors.
-  static XR* Create(LocalFrame& frame, int64_t source_id) {
-    return MakeGarbageCollected<XR>(frame, source_id);
-  }
-
-  // TODO(crbug.com/976796): Fix lint errors.
   XR(LocalFrame& frame, int64_t ukm_source_id);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(devicechange, kDevicechange)

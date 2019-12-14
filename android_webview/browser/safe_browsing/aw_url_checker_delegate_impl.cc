@@ -15,16 +15,20 @@
 #include "android_webview/browser/network_service/aw_web_resource_request.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
+#include "android_webview/browser_jni_headers/AwSafeBrowsingConfigHelper_jni.h"
+#include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/web_ui/constants.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "components/security_interstitials/core/urls.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 
 namespace android_webview {
 
@@ -83,8 +87,30 @@ bool AwUrlCheckerDelegateImpl::ShouldSkipRequestCheck(
         AwContentsIoThreadClient::FromID(render_process_id, render_frame_id);
   }
 
-  // Consider the request as whitelisted, if SafeBrowsing is not enabled.
-  return client && !client->GetSafeBrowsingEnabled();
+  // If Safe Browsing is disabled by the app, skip the check. Default to
+  // performing the check if we can't find the |client|, since the |client| may
+  // be null for some service worker requests (see https://crbug.com/979321).
+  bool safe_browsing_enabled = client ? client->GetSafeBrowsingEnabled() : true;
+  if (!safe_browsing_enabled)
+    return true;
+
+  // If this is a hardcoded WebUI URL we use for testing, do not skip the safe
+  // browsing check. We do not check user consent here because we do not ever
+  // send such URLs to GMS anyway. It's important to ignore user consent in this
+  // case because the GMS APIs we rely on to check user consent often get
+  // confused during CTS tests, reporting the user has not consented regardless
+  // of the on-device setting. See https://crbug.com/938538.
+  bool is_hardcoded_url =
+      original_url.SchemeIs(content::kChromeUIScheme) &&
+      original_url.host() == safe_browsing::kChromeUISafeBrowsingHost;
+  if (is_hardcoded_url)
+    return false;
+
+  // For other requests, follow user consent.
+  JNIEnv* env = base::android::AttachCurrentThread();
+  bool safe_browsing_user_consent =
+      Java_AwSafeBrowsingConfigHelper_getSafeBrowsingUserOptIn2(env);
+  return !safe_browsing_user_consent;
 }
 
 void AwUrlCheckerDelegateImpl::NotifySuspiciousSiteDetected(

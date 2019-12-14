@@ -512,4 +512,52 @@ suite('NewTabPageMostVisitedTest', () => {
     await wait;
     assertFalse(toast.open);
   });
+
+  test('drag first tile to second position', async () => {
+    await addTiles(2);
+    const [first, second] = queryTiles();
+    const firstRect = first.getBoundingClientRect();
+    const secondRect = second.getBoundingClientRect();
+    first.dispatchEvent(new DragEvent('dragstart', {
+      clientX: firstRect.x + firstRect.width / 2,
+      clientY: firstRect.y + firstRect.height / 2,
+    }));
+    await flushTasks();
+    const reorderCalled =
+        testProxy.handler.whenCalled('reorderMostVisitedTile');
+    document.dispatchEvent(new DragEvent('dragend', {
+      clientX: secondRect.x + 1,
+      clientY: secondRect.y + 1,
+    }));
+    const [url, newPos] = await reorderCalled;
+    assertEquals('https://a/', url.url);
+    assertEquals(1, newPos);
+    const [newFirst, newSecond] = queryTiles();
+    assertEquals('https://b/', newFirst.href);
+    assertEquals('https://a/', newSecond.href);
+  });
+
+  test('drag second tile to first position', async () => {
+    await addTiles(2);
+    const [first, second] = queryTiles();
+    const firstRect = first.getBoundingClientRect();
+    const secondRect = second.getBoundingClientRect();
+    second.dispatchEvent(new DragEvent('dragstart', {
+      clientX: secondRect.x + secondRect.width / 2,
+      clientY: secondRect.y + secondRect.height / 2,
+    }));
+    await flushTasks();
+    const reorderCalled =
+        testProxy.handler.whenCalled('reorderMostVisitedTile');
+    document.dispatchEvent(new DragEvent('dragend', {
+      clientX: firstRect.x + 1,
+      clientY: firstRect.y + 1,
+    }));
+    const [url, newPos] = await reorderCalled;
+    assertEquals('https://b/', url.url);
+    assertEquals(0, newPos);
+    const [newFirst, newSecond] = queryTiles();
+    assertEquals('https://b/', newFirst.href);
+    assertEquals('https://a/', newSecond.href);
+  });
 });

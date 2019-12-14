@@ -359,24 +359,31 @@ class GpuIntegrationTest(
     tags = super(GpuIntegrationTest, cls).GetPlatformTags(browser)
     system_info = browser.GetSystemInfo()
     if system_info:
+      gpu_tags = []
       gpu_info = system_info.gpu
-      gpu_vendor = gpu_helper.GetGpuVendorString(gpu_info)
-      gpu_device_id = gpu_helper.GetGpuDeviceId(gpu_info)
-      # The gpu device id tag will contain both the vendor and device id
-      # separated by a '-'.
-      try:
-        # If the device id is an integer then it will be added as
-        # a hexadecimal to the tag
-        gpu_device_tag = '%s-0x%x' % (gpu_vendor, gpu_device_id)
-      except TypeError:
-        # if the device id is not an integer it will be added as
-        # a string to the tag.
-        gpu_device_tag = '%s-%s' % (gpu_vendor, gpu_device_id)
-      angle_renderer = gpu_helper.GetANGLERenderer(gpu_info)
-      cmd_decoder = gpu_helper.GetCommandDecoder(gpu_info)
+      # On the dual-GPU MacBook Pros, surface the tags of the secondary GPU if
+      # it's the discrete GPU, so that test expectations can be written that
+      # target the discrete GPU.
+      gpu_tags.append(gpu_helper.GetANGLERenderer(gpu_info))
+      gpu_tags.append(gpu_helper.GetCommandDecoder(gpu_info))
+      if gpu_info and gpu_info.devices:
+        for ii in xrange(0, len(gpu_info.devices)):
+          gpu_vendor = gpu_helper.GetGpuVendorString(gpu_info, ii)
+          gpu_device_id = gpu_helper.GetGpuDeviceId(gpu_info, ii)
+          # The gpu device id tag will contain both the vendor and device id
+          # separated by a '-'.
+          try:
+            # If the device id is an integer then it will be added as
+            # a hexadecimal to the tag
+            gpu_device_tag = '%s-0x%x' % (gpu_vendor, gpu_device_id)
+          except TypeError:
+            # if the device id is not an integer it will be added as
+            # a string to the tag.
+            gpu_device_tag = '%s-%s' % (gpu_vendor, gpu_device_id)
+          if ii == 0 or gpu_vendor != 'intel':
+            gpu_tags.extend([gpu_vendor, gpu_device_tag])
       # all spaces and underscores in the tag will be replaced by dashes
-      tags.extend([re.sub('[ _]', '-', tag) for tag in [
-          gpu_vendor, gpu_device_tag, angle_renderer, cmd_decoder]])
+      tags.extend([re.sub('[ _]', '-', tag) for tag in gpu_tags])
     # If additional options have been set via '--extra-browser-args' check for
     # those which map to expectation tags. The '_browser_backend' attribute may
     # not exist in unit tests.

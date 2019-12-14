@@ -62,8 +62,8 @@ class URLLoaderInterceptor::IOState
       const URLLoaderCompletionStatusCallback& completion_status_callback,
       base::OnceClosure closure);
 
-  // Called when a SubresourceWrapper's binding has an error.
-  void SubresourceWrapperBindingError(SubresourceWrapper* wrapper);
+  // Called when a RenderProcessHostWrapper's binding has an error.
+  void RenderProcessHostWrapperBindingError(RenderProcessHostWrapper* wrapper);
 
   // Unsets the parent pointer. Prevents URLLoaderInterceptor::Intercept from
   // being called.
@@ -90,7 +90,7 @@ class URLLoaderInterceptor::IOState
   void GetNetworkFactoryCallback(
       scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter);
 
-  void CreateURLLoaderFactoryForSubresources(
+  void CreateURLLoaderFactoryForRenderProcessHost(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       int process_id,
       mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory);
@@ -165,13 +165,14 @@ class URLLoaderInterceptor::IOState
 
   URLLoaderCompletionStatusCallback completion_status_callback_;
 
-  // For intercepting frame requests with network service. There is one per
+  // For intercepting requests via network service. There is one per
   // StoragePartition. Only accessed on IO thread.
   std::set<std::unique_ptr<URLLoaderFactoryGetterWrapper>>
       url_loader_factory_getter_wrappers_;
-  // For intercepting subresources with network service. There is one per
-  // active render frame commit. Only accessed on IO thread.
-  std::set<std::unique_ptr<SubresourceWrapper>, base::UniquePtrComparator>
+  // For intercepting requests via network service. There is one per factory
+  // created via RenderProcessHost::CreateURLLoaderFactory. Only accessed on IO
+  // thread.
+  std::set<std::unique_ptr<RenderProcessHostWrapper>, base::UniquePtrComparator>
       subresource_wrappers_;
   std::set<std::unique_ptr<URLLoaderFactoryNavigationWrapper>>
       navigation_wrappers_;
@@ -401,11 +402,13 @@ class URLLoaderInterceptor::BrowserProcessWrapper {
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessWrapper);
 };
 
-// This class is sent along a RenderFrame commit message as a subresource
-// loader so that it can intercept subresource requests.
-class URLLoaderInterceptor::SubresourceWrapper {
+// This class is used (e.g. sent in a RenderFrame commit message, or used to
+// fetch a worker's main script) so it can intercept requests that normally
+// would be handled by the network service factory created via
+// RenderProcessHost::CreateURLLoaderFactory.
+class URLLoaderInterceptor::RenderProcessHostWrapper {
  public:
-  SubresourceWrapper(
+  RenderProcessHostWrapper(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver,
       int process_id,
       URLLoaderInterceptor::IOState* parent,
@@ -414,16 +417,16 @@ class URLLoaderInterceptor::SubresourceWrapper {
             parent,
             base::BindRepeating([](int process_id) { return process_id; },
                                 process_id),
-            base::BindRepeating(&SubresourceWrapper::GetOriginalFactory,
+            base::BindRepeating(&RenderProcessHostWrapper::GetOriginalFactory,
                                 base::Unretained(this))),
         original_factory_(std::move(original_factory)) {
     interceptor_.BindReceiver(std::move(factory_receiver));
     interceptor_.SetConnectionErrorHandler(base::BindOnce(
-        &URLLoaderInterceptor::IOState::SubresourceWrapperBindingError,
+        &URLLoaderInterceptor::IOState::RenderProcessHostWrapperBindingError,
         base::Unretained(parent), this));
   }
 
-  ~SubresourceWrapper() {}
+  ~RenderProcessHostWrapper() {}
 
  private:
   network::mojom::URLLoaderFactory* GetOriginalFactory() {
@@ -433,7 +436,7 @@ class URLLoaderInterceptor::SubresourceWrapper {
   Interceptor interceptor_;
   mojo::Remote<network::mojom::URLLoaderFactory> original_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(SubresourceWrapper);
+  DISALLOW_COPY_AND_ASSIGN(RenderProcessHostWrapper);
 };
 
 URLLoaderInterceptor::RequestParams::RequestParams() = default;
@@ -455,18 +458,11 @@ URLLoaderInterceptor::URLLoaderInterceptor(
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
   use_runloop_ = !ready_callback;
-  RenderFrameHostImpl::SetNetworkFactoryForTesting(base::BindRepeating(
-      &URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources,
+  RenderProcessHostImpl::SetNetworkFactoryForTesting(base::BindRepeating(
+      &URLLoaderInterceptor::CreateURLLoaderFactoryForRenderProcessHost,
       base::Unretained(this)));
-  SharedWorkerHost::SetNetworkFactoryForSubresourcesForTesting(
-      base::BindRepeating(
-          &URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources,
-          base::Unretained(this)));
-  // Note: This URLLoaderFactory creation callback will be used not only for
-  // subresource loading from service workers (i.e., fetch()), but also for
-  // loading non-installed service worker scripts.
-  EmbeddedWorkerInstance::SetNetworkFactoryForTesting(base::BindRepeating(
-      &URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources,
+  MockRenderProcessHost::SetNetworkFactory(base::BindRepeating(
+      &URLLoaderInterceptor::CreateURLLoaderFactoryForRenderProcessHost,
       base::Unretained(this)));
 
   StoragePartitionImpl::
@@ -479,10 +475,6 @@ URLLoaderInterceptor::URLLoaderInterceptor(
       base::BindRepeating(
           &URLLoaderInterceptor::InterceptNavigationRequestCallback,
           base::Unretained(this)));
-
-  MockRenderProcessHost::SetNetworkFactory(base::BindRepeating(
-      &URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources,
-      base::Unretained(this)));
 
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
     if (use_runloop_) {
@@ -516,12 +508,8 @@ URLLoaderInterceptor::~URLLoaderInterceptor() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   io_thread_->UnsetParent();
 
-  RenderFrameHostImpl::SetNetworkFactoryForTesting(
-      RenderFrameHostImpl::CreateNetworkFactoryCallback());
-  SharedWorkerHost::SetNetworkFactoryForSubresourcesForTesting(
-      RenderFrameHostImpl::CreateNetworkFactoryCallback());
-  EmbeddedWorkerInstance::SetNetworkFactoryForTesting(
-      RenderFrameHostImpl::CreateNetworkFactoryCallback());
+  RenderProcessHostImpl::SetNetworkFactoryForTesting(
+      RenderProcessHostImpl::CreateNetworkFactoryCallback());
 
   StoragePartitionImpl::
       SetGetURLLoaderFactoryForBrowserProcessCallbackForTesting(
@@ -612,7 +600,7 @@ void URLLoaderInterceptor::WriteResponse(
   WriteResponse(headers_str, ReadFile(file_path), client, std::move(ssl_info));
 }
 
-void URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources(
+void URLLoaderInterceptor::CreateURLLoaderFactoryForRenderProcessHost(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
     int process_id,
     mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory) {
@@ -620,12 +608,12 @@ void URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources(
     base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
-            &URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources,
+            &URLLoaderInterceptor::CreateURLLoaderFactoryForRenderProcessHost,
             base::Unretained(this), std::move(receiver), process_id,
             std::move(original_factory)));
     return;
   }
-  io_thread_->CreateURLLoaderFactoryForSubresources(
+  io_thread_->CreateURLLoaderFactoryForRenderProcessHost(
       std::move(receiver), process_id, std::move(original_factory));
 }
 
@@ -675,8 +663,8 @@ bool URLLoaderInterceptor::Intercept(RequestParams* params) {
   return false;
 }
 
-void URLLoaderInterceptor::IOState::SubresourceWrapperBindingError(
-    SubresourceWrapper* wrapper) {
+void URLLoaderInterceptor::IOState::RenderProcessHostWrapperBindingError(
+    RenderProcessHostWrapper* wrapper) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   auto it = subresource_wrappers_.find(wrapper);
   DCHECK(it != subresource_wrappers_.end());
@@ -704,12 +692,12 @@ void URLLoaderInterceptor::IOState::GetNetworkFactoryCallback(
                                                       this));
 }
 
-void URLLoaderInterceptor::IOState::CreateURLLoaderFactoryForSubresources(
+void URLLoaderInterceptor::IOState::CreateURLLoaderFactoryForRenderProcessHost(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
     int process_id,
     mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  subresource_wrappers_.emplace(std::make_unique<SubresourceWrapper>(
+  subresource_wrappers_.emplace(std::make_unique<RenderProcessHostWrapper>(
       std::move(receiver), process_id, this, std::move(original_factory)));
 }
 

@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'fc3b3ed16213f819c28ed77f782f725b9bf66e69',
+  'pdfium_revision': '068b907f128c014fac4bb2d459a5461b3fdeb20b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -1496,7 +1496,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'dd55f3ca8f2ea716ca917a4aaf36f0729fe902b1',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '41466b7bef5aa0927e3724f53c556bc4019f80d4',
+    Var('webrtc_git') + '/src.git' + '@' + '17ea068e8c72ec8ee31002eb6c23cf453c090d60',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1566,7 +1566,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2dc34316a80fe3f654aa2fc20f7f6677d05904b4',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@afa2ffc373e54b85bb196fc1174996a21a285e91',
     'condition': 'checkout_src_internal',
   },
 

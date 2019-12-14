@@ -54,7 +54,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       layer_property_changed_not_from_property_trees_(false),
       layer_property_changed_from_property_trees_(false),
       may_contain_video_(false),
-      masks_to_bounds_(false),
       contents_opaque_(false),
       use_parent_backface_visibility_(false),
       should_check_backface_visibility_(false),
@@ -75,8 +74,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       scrollbars_hidden_(false),
       needs_show_scrollbars_(false),
       raster_even_if_not_drawn_(false),
-      has_transform_node_(false),
-      mirror_count_(0) {
+      has_transform_node_(false) {
   DCHECK_GT(layer_id_, 0);
 
   DCHECK(layer_tree_impl_);
@@ -235,12 +233,6 @@ void LayerImpl::GetDebugBorderProperties(SkColor* color, float* width) const {
     return;
   }
 
-  if (masks_to_bounds_) {
-    *color = DebugColors::MaskingLayerBorderColor();
-    *width = DebugColors::MaskingLayerBorderWidth(device_scale_factor);
-    return;
-  }
-
   *color = DebugColors::ContainerLayerBorderColor();
   *width = DebugColors::ContainerLayerBorderWidth(device_scale_factor);
 }
@@ -365,7 +357,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
   layer->has_transform_node_ = has_transform_node_;
   layer->offset_to_transform_parent_ = offset_to_transform_parent_;
-  layer->masks_to_bounds_ = masks_to_bounds_;
   layer->contents_opaque_ = contents_opaque_;
   layer->may_contain_video_ = may_contain_video_;
   layer->use_parent_backface_visibility_ = use_parent_backface_visibility_;
@@ -386,7 +377,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->clip_tree_index_ = clip_tree_index_;
   layer->scroll_tree_index_ = scroll_tree_index_;
   layer->has_will_change_transform_hint_ = has_will_change_transform_hint_;
-  layer->mirror_count_ = mirror_count_;
   layer->scrollbars_hidden_ = scrollbars_hidden_;
   if (needs_show_scrollbars_)
     layer->needs_show_scrollbars_ = needs_show_scrollbars_;
@@ -616,10 +606,6 @@ SkColor LayerImpl::SafeOpaqueBackgroundColor() const {
   return color;
 }
 
-void LayerImpl::SetMasksToBounds(bool masks_to_bounds) {
-  masks_to_bounds_ = masks_to_bounds;
-}
-
 void LayerImpl::SetContentsOpaque(bool opaque) {
   contents_opaque_ = opaque;
 }
@@ -641,10 +627,6 @@ void LayerImpl::SetElementId(ElementId element_id) {
   layer_tree_impl_->RemoveFromElementLayerList(element_id_);
   element_id_ = element_id;
   layer_tree_impl_->AddToElementLayerList(element_id_, this);
-}
-
-void LayerImpl::SetMirrorCount(int mirror_count) {
-  mirror_count_ = mirror_count;
 }
 
 void LayerImpl::UnionUpdateRect(const gfx::Rect& update_rect) {

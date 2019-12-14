@@ -31,6 +31,8 @@ interface PageHandler {
   AddMostVisitedTile(url.mojom.Url url, string title) => (bool success);
   // Deletes tile by |url|.
   DeleteMostVisitedTile(url.mojom.Url url) => (bool success);
+  // Moves tile identified by url to a new position at index |new_pos|.
+  ReorderMostVisitedTile(url.mojom.Url url, uint8 new_pos);
   // Replaces the custom and most-visited tiles with the default tile set.
   RestoreMostVisitedDefaults();
   // Undoes the last action done to the tiles (add, delete, reorder, restore or

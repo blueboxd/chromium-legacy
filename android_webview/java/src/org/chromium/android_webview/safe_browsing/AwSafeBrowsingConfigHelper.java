@@ -16,6 +16,7 @@ import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
@@ -30,7 +31,7 @@ public class AwSafeBrowsingConfigHelper {
     private static final String OPT_IN_META_DATA_STR = "android.webkit.WebView.EnableSafeBrowsing";
     private static final boolean DEFAULT_USER_OPT_IN = false;
 
-    private static volatile Boolean sSafeBrowsingUserOptIn;
+    private static volatile boolean sSafeBrowsingUserOptIn;
     private static volatile boolean sEnabledByManifest;
 
     // Used to record the UMA histogram SafeBrowsing.WebView.AppOptIn. Since these values are
@@ -143,9 +144,18 @@ public class AwSafeBrowsingConfigHelper {
     }
 
     // Can be called from any thread. This returns true or false, depending on user opt-in
-    // preference. This returns null if we don't know yet what the user's preference is.
-    public static Boolean getSafeBrowsingUserOptIn() {
+    // preference. This returns false if we don't know yet what the user's preference is.
+    @CalledByNative
+    private static boolean getSafeBrowsingUserOptIn2() {
         return sSafeBrowsingUserOptIn;
+    }
+
+    // Can be called from any thread. This returns true or false, depending on user opt-in
+    // preference. This returns false if we don't know yet what the user's preference is.
+    // Deprecated: use getSafeBrowsingUserOptIn2() instead, this will be removed when downstream no
+    // longer depends on it.
+    public static Boolean getSafeBrowsingUserOptIn() {
+        return getSafeBrowsingUserOptIn2();
     }
 
     public static void setSafeBrowsingUserOptIn(boolean optin) {

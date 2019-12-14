@@ -237,9 +237,7 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
       return;
     }
 
-    if (DrawingRecorder::UseCachedDrawingIfPossible(
-            graphics_context, frame_overlay, DisplayItem::kFrameOverlay))
-      return;
+    frame_overlay.Invalidate();
     DrawingRecorder recorder(graphics_context, frame_overlay,
                              DisplayItem::kFrameOverlay);
     // The overlay frame is has a standalone paint property tree. Paint it in

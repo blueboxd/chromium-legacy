@@ -10,6 +10,5 @@
     android:layout_height="wrap_content"
     android:gravity="center"
     style="@style/ListPaginationHeaderText"
-    android:paddingBottom="16dp"
     android:text="@string/download_manager_ui_list_pagination">
 </TextView>

@@ -145,12 +145,12 @@ class URLLoaderInterceptor {
   class BrowserProcessWrapper;
   class Interceptor;
   class IOState;
-  class SubresourceWrapper;
+  class RenderProcessHostWrapper;
   class URLLoaderFactoryGetterWrapper;
   class URLLoaderFactoryNavigationWrapper;
 
-  // Used to create a factory for subresources in the network service case.
-  void CreateURLLoaderFactoryForSubresources(
+  // Used to create a factory associated with a specific RenderProcessHost.
+  void CreateURLLoaderFactoryForRenderProcessHost(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       int process_id,
       mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory);

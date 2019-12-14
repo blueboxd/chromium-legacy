@@ -55,14 +55,6 @@ namespace {
 // Used for tracing.
 constexpr char kEmbeddedWorkerInstanceScope[] = "EmbeddedWorkerInstance";
 
-EmbeddedWorkerInstance::CreateNetworkFactoryCallback&
-GetNetworkFactoryCallbackForTest() {
-  static base::NoDestructor<
-      EmbeddedWorkerInstance::CreateNetworkFactoryCallback>
-      callback;
-  return *callback;
-}
-
 // When a service worker version's failure count exceeds
 // |kMaxSameProcessFailureCount|, the embedded worker is forced to start in a
 // new process.
@@ -1073,18 +1065,9 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
       rph, routing_id, &default_factory_receiver);
 
   // TODO(yhirano): Support COEP.
-  if (GetNetworkFactoryCallbackForTest().is_null()) {
-    rph->CreateURLLoaderFactory(std::move(default_factory_receiver),
-                                std::move(factory_params));
-  } else {
-    mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory;
-    rph->CreateURLLoaderFactory(
-        original_factory.InitWithNewPipeAndPassReceiver(),
-        std::move(factory_params));
-    GetNetworkFactoryCallbackForTest().Run(std::move(default_factory_receiver),
-                                           rph->GetID(),
-                                           std::move(original_factory));
-  }
+
+  rph->CreateURLLoaderFactory(std::move(default_factory_receiver),
+                              std::move(factory_params));
 
   factory_bundle->set_bypass_redirect_checks(bypass_redirect_checks);
 
@@ -1247,12 +1230,6 @@ std::string EmbeddedWorkerInstance::StartingPhaseToString(StartingPhase phase) {
   }
   NOTREACHED() << phase;
   return std::string();
-}
-
-// static
-void EmbeddedWorkerInstance::SetNetworkFactoryForTesting(
-    const CreateNetworkFactoryCallback& create_network_factory_callback) {
-  GetNetworkFactoryCallbackForTest() = create_network_factory_callback;
 }
 
 void EmbeddedWorkerInstance::NotifyForegroundServiceWorkerAdded() {

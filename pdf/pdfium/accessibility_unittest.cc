@@ -337,6 +337,28 @@ TEST_F(AccessibilityTest, TestScrollToNearestEdge) {
   ComparePoint({-199, -199}, client.GetScrollRequestPoints());
 }
 
+TEST_F(AccessibilityTest, TestScrollToGlobalPoint) {
+  ScrollEnabledTestClient client;
+  std::unique_ptr<PDFiumEngine> engine = InitializeEngine(
+      &client, FILE_PATH_LITERAL("rectangles_multi_pages.pdf"));
+  ASSERT_TRUE(engine);
+  engine->PluginSizeUpdated({400, 400});
+  PP_PdfAccessibilityActionData action_data;
+  action_data.action = PP_PdfAccessibilityAction::PP_PDF_SCROLL_TO_GLOBAL_POINT;
+
+  // Scroll up if global point is below the target rect
+  action_data.target_rect = {{201, 201}, {10, 10}};
+  action_data.target_point = {230, 230};
+  engine->HandleAccessibilityAction(action_data);
+  ComparePoint({-29, -29}, client.GetScrollRequestPoints());
+
+  // Scroll down if global point is above the target rect
+  action_data.target_rect = {{230, 230}, {10, 10}};
+  action_data.target_point = {201, 201};
+  engine->HandleAccessibilityAction(action_data);
+  ComparePoint({29, 29}, client.GetScrollRequestPoints());
+}
+
 // This class is required to just override the NavigateTo
 // functionality for testing in a specific way. It will
 // keep the TestClient class clean for extension by others.

@@ -40,6 +40,7 @@ class NewTabPageHandler : public content::WebContentsObserver,
   void DeleteMostVisitedTile(const GURL& url,
                              DeleteMostVisitedTileCallback callback) override;
   void RestoreMostVisitedDefaults() override;
+  void ReorderMostVisitedTile(const GURL& url, uint8_t new_pos) override;
   void UpdateMostVisitedTile(const GURL& url,
                              const GURL& new_url,
                              const std::string& new_title,

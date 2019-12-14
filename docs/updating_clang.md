@@ -38,6 +38,10 @@ An archive of all packages built so far is at https://is.gd/chromeclang
             gs://chromium-browser-clang/Mac/lld-$rev.tgz
     ```
 
+    **Note** that writing to this bucket requires special permissions. File a
+    bug at g.co/bugatrooper if you don't have these already (e.g.,
+    https://crbug.com/1034081).
+
 1.  Run the goma package update script to push these packages to goma. If you do
     not have the necessary credentials to do the upload, ask clang@chromium.org
     to find someone who does

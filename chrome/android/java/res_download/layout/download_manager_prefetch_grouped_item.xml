@@ -26,14 +26,6 @@
         style="@style/AsyncImageView"
         tools:ignore="ContentDescription" />
 
-    <org.chromium.ui.widget.ChromeImageButton
-        android:id="@+id/media_button"
-        android:elevation="2dp"
-        android:clickable="false"
-        android:layout_marginTop="20dp"
-        android:layout_marginStart="20dp"
-        style="@style/SmallMediaPlayButton"/>
-
     <include layout="@layout/list_menu_button"
         android:layout_width="48dp"
         android:layout_height="48dp"
@@ -66,6 +58,13 @@
         android:ellipsize="end"
         android:textAppearance="@style/TextAppearance.BlackCaption"
         android:textAlignment="viewStart" />
+
+    <org.chromium.ui.widget.ChromeImageView
+        android:id="@+id/media_button"
+        style="@style/InlineOfflineIconStyle"
+        android:layout_alignBottom="@id/timestamp"
+        android:layout_toEndOf="@id/timestamp"
+        tools:ignore="ContentDescription" />
 
     <!-- Wrap this in a FrameLayout so that if the thumbnail is hidden this view
          does not negatively affect layout.  The FrameLayout spans the whole

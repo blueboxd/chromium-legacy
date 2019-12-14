@@ -188,11 +188,6 @@ class OcclusionTrackerTest : public testing::Test {
     return layer;
   }
 
-  void SetMasksToBounds(LayerImpl* layer) {
-    layer->SetMasksToBounds(true);
-    CreateClipNode(layer);
-  }
-
   void DestroyLayers() {
     auto* tree = host_->host_impl()->active_tree();
     tree->DetachLayers();
@@ -346,7 +341,7 @@ class OcclusionTrackerTestIdentityTransforms : public OcclusionTrackerTest {
     TestContentLayerImpl* root = this->CreateRoot(gfx::Size(200, 200));
     TestContentLayerImpl* parent = this->CreateDrawingLayer(
         root, this->identity_matrix, gfx::PointF(), gfx::Size(100, 100), true);
-    SetMasksToBounds(parent);
+    CreateClipNode(parent);
     TestContentLayerImpl* layer = this->CreateDrawingLayer(
         parent, this->identity_matrix, gfx::PointF(30.f, 30.f),
         gfx::Size(500, 500), true);
@@ -379,7 +374,7 @@ class OcclusionTrackerTestRotatedChild : public OcclusionTrackerTest {
     TestContentLayerImpl* root = this->CreateRoot(gfx::Size(200, 200));
     TestContentLayerImpl* parent = this->CreateDrawingLayer(
         root, this->identity_matrix, gfx::PointF(), gfx::Size(100, 100), true);
-    SetMasksToBounds(parent);
+    CreateClipNode(parent);
     TestContentLayerImpl* layer = this->CreateDrawingLayer(
         parent, layer_transform, gfx::PointF(30.f, 30.f), gfx::Size(500, 500),
         true);
@@ -410,7 +405,7 @@ class OcclusionTrackerTestTranslatedChild : public OcclusionTrackerTest {
     TestContentLayerImpl* root = this->CreateRoot(gfx::Size(200, 200));
     TestContentLayerImpl* parent = this->CreateDrawingLayer(
         root, this->identity_matrix, gfx::PointF(), gfx::Size(100, 100), true);
-    SetMasksToBounds(parent);
+    CreateClipNode(parent);
     TestContentLayerImpl* layer = this->CreateDrawingLayer(
         parent, layer_transform, gfx::PointF(30.f, 30.f), gfx::Size(500, 500),
         true);
@@ -441,10 +436,10 @@ class OcclusionTrackerTestChildInRotatedChild : public OcclusionTrackerTest {
     child_transform.Translate(-250.0, -250.0);
 
     TestContentLayerImpl* parent = this->CreateRoot(gfx::Size(100, 100));
-    SetMasksToBounds(parent);
+    CreateClipNode(parent);
     LayerImpl* child = this->CreateSurface(
         parent, child_transform, gfx::PointF(30.f, 30.f), gfx::Size(500, 500));
-    SetMasksToBounds(child);
+    CreateClipNode(child);
     TestContentLayerImpl* layer = this->CreateDrawingLayer(
         child, this->identity_matrix, gfx::PointF(10.f, 10.f),
         gfx::Size(500, 500), true);
@@ -675,11 +670,11 @@ class OcclusionTrackerTestSurfaceWithTwoOpaqueChildren
     TestContentLayerImpl* root = this->CreateRoot(gfx::Size(1000, 1000));
     TestContentLayerImpl* parent = this->CreateDrawingLayer(
         root, this->identity_matrix, gfx::PointF(), gfx::Size(100, 100), true);
-    SetMasksToBounds(parent);
+    CreateClipNode(parent);
     TestContentLayerImpl* child = this->CreateDrawingSurface(
         parent, child_transform, gfx::PointF(30.f, 30.f), gfx::Size(500, 500),
         false);
-    SetMasksToBounds(child);
+    CreateClipNode(child);
     TestContentLayerImpl* layer1 = this->CreateDrawingLayer(
         child, this->identity_matrix, gfx::PointF(10.f, 10.f),
         gfx::Size(500, 500), true);
@@ -744,7 +739,7 @@ class OcclusionTrackerTestOverlappingSurfaceSiblings
       : OcclusionTrackerTest(opaque_layers) {}
   void RunMyTest() override {
     TestContentLayerImpl* parent = this->CreateRoot(gfx::Size(100, 100));
-    SetMasksToBounds(parent);
+    CreateClipNode(parent);
     LayerImpl* child1 = this->CreateSurface(
         parent, this->identity_matrix, gfx::PointF(10.f, 0.f), gfx::Size());
     LayerImpl* child2 = this->CreateSurface(
@@ -808,7 +803,7 @@ class OcclusionTrackerTestOverlappingSurfaceSiblingsWithTwoTransforms
     child2_transform.Translate(-250.0, -250.0);
 
     TestContentLayerImpl* parent = this->CreateRoot(gfx::Size(100, 100));
-    SetMasksToBounds(parent);
+    CreateClipNode(parent);
     LayerImpl* child1 = this->CreateSurface(
         parent, child1_transform, gfx::PointF(30.f, 20.f), gfx::Size(10, 10));
     TestContentLayerImpl* layer1 = this->CreateDrawingLayer(
@@ -897,7 +892,7 @@ class OcclusionTrackerTestFilters : public OcclusionTrackerTest {
     layer_transform.Translate(-250.0, -250.0);
 
     TestContentLayerImpl* parent = this->CreateRoot(gfx::Size(100, 100));
-    SetMasksToBounds(parent);
+    CreateClipNode(parent);
     TestContentLayerImpl* blur_layer = this->CreateDrawingSurface(
         parent, layer_transform, gfx::PointF(30.f, 30.f), gfx::Size(500, 500),
         true);
@@ -1166,7 +1161,7 @@ class OcclusionTrackerTestSurfaceOcclusionTranslatesWithClipping
       : OcclusionTrackerTest(opaque_layers) {}
   void RunMyTest() override {
     TestContentLayerImpl* parent = this->CreateRoot(gfx::Size(300, 300));
-    SetMasksToBounds(parent);
+    CreateClipNode(parent);
     TestContentLayerImpl* surface =
         this->CreateDrawingSurface(parent, this->identity_matrix, gfx::PointF(),
                                    gfx::Size(500, 300), false);
@@ -1528,7 +1523,7 @@ class OcclusionTrackerTestTwoBackdropFiltersReduceOcclusionTwice
     TestContentLayerImpl* root = this->CreateRoot(gfx::Size(75, 75));
     LayerImpl* parent = this->CreateSurface(root, scale_by_half, gfx::PointF(),
                                             gfx::Size(150, 150));
-    SetMasksToBounds(parent);
+    CreateClipNode(parent);
     LayerImpl* filtered_surface1 = this->CreateDrawingSurface(
         parent, scale_by_half, gfx::PointF(), gfx::Size(300, 300), false);
     LayerImpl* filtered_surface2 = this->CreateDrawingSurface(
@@ -1876,7 +1871,7 @@ class OcclusionTrackerTestScaledLayerIsClipped : public OcclusionTrackerTest {
     LayerImpl* clip =
         this->CreateLayer(parent, this->identity_matrix,
                           gfx::PointF(10.f, 10.f), gfx::Size(50, 50));
-    SetMasksToBounds(clip);
+    CreateClipNode(clip);
     LayerImpl* scale = this->CreateLayer(clip, scale_transform, gfx::PointF(),
                                          gfx::Size(1, 1));
     LayerImpl* scaled = this->CreateDrawingLayer(
@@ -1909,7 +1904,7 @@ class OcclusionTrackerTestScaledLayerInSurfaceIsClipped
     LayerImpl* clip =
         this->CreateLayer(parent, this->identity_matrix,
                           gfx::PointF(10.f, 10.f), gfx::Size(50, 50));
-    SetMasksToBounds(clip);
+    CreateClipNode(clip);
     LayerImpl* surface = this->CreateDrawingSurface(
         clip, this->identity_matrix, gfx::PointF(), gfx::Size(400, 30), false);
     LayerImpl* scale = this->CreateLayer(surface, scale_transform,

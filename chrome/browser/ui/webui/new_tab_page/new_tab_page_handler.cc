@@ -82,6 +82,11 @@ void NewTabPageHandler::RestoreMostVisitedDefaults() {
   }
 }
 
+void NewTabPageHandler::ReorderMostVisitedTile(const GURL& url,
+                                               uint8_t new_pos) {
+  most_visited_sites_->ReorderCustomLink(url, new_pos);
+}
+
 void NewTabPageHandler::UpdateMostVisitedTile(
     const GURL& url,
     const GURL& new_url,

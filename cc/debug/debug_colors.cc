@@ -38,14 +38,6 @@ int DebugColors::ContentLayerBorderWidth(float device_scale_factor) {
   return Scale(2, device_scale_factor);
 }
 
-// Masking layers are pale blue and wide.
-SkColor DebugColors::MaskingLayerBorderColor() {
-  return SkColorSetARGB(48, 128, 255, 255);
-}
-int DebugColors::MaskingLayerBorderWidth(float device_scale_factor) {
-  return Scale(20, device_scale_factor);
-}
-
 // Other container layers are yellow.
 SkColor DebugColors::ContainerLayerBorderColor() {
   return SkColorSetARGB(192, 255, 255, 0);

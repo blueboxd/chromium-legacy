@@ -253,6 +253,11 @@ void ModuleScriptLoader::NotifyFetchFinished(
       module_script_ = ValueWrapperSyntheticModuleScript::
           CreateJSONWrapperSyntheticModuleScript(params, modulator_);
       break;
+    case ModuleScriptCreationParams::ModuleType::kCSSModule:
+      DCHECK(RuntimeEnabledFeatures::CSSModulesEnabled());
+      module_script_ = ValueWrapperSyntheticModuleScript::
+          CreateCSSWrapperSyntheticModuleScript(params, modulator_);
+      break;
     case ModuleScriptCreationParams::ModuleType::kJavaScriptModule:
       // Step 9. "Let source text be the result of UTF-8 decoding response's
       // body." [spec text]

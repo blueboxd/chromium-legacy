@@ -88,7 +88,6 @@ TEST_F(LayerImplTest, VerifyPendingLayerChangesAreTrackedProperly) {
   // Create a simple LayerImpl tree:
   host_impl()->CreatePendingTree();
   LayerImpl* root = EnsureRootLayerInPendingTree();
-  root->SetMasksToBounds(true);
   CreateClipNode(root);
   root->layer_tree_impl()->ResetAllChangeTracking();
 
@@ -148,7 +147,6 @@ TEST_F(LayerImplTest, VerifyPendingLayerChangesAreTrackedProperly) {
 
   // After setting all these properties already, setting to the exact same
   // values again should not cause any change.
-  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetMasksToBounds(true));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetContentsOpaque(true));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetDrawsContent(true));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetBounds(root->bounds()));
@@ -226,8 +224,6 @@ TEST_F(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   // Unrelated functions, always set to new values, always set needs update.
   host_impl()->active_tree()->set_needs_update_draw_properties();
   UpdateActiveTreeDrawProperties();
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetMasksToBounds(true);
-                                      layer->NoteLayerPropertyChanged());
   CreateClipNode(layer);
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetContentsOpaque(true);
                                       layer->NoteLayerPropertyChanged());
@@ -248,7 +244,6 @@ TEST_F(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
       host_impl()->active_tree()->SetFilterMutated(layer->element_id(),
                                                    arbitrary_filters));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetMasksToBounds(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetContentsOpaque(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetDrawsContent(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(

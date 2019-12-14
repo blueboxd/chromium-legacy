@@ -417,7 +417,6 @@ TEST_F(LayerTreeImplTest, HitTestingClipNodeDifferentTransformAndTargetIds) {
 
   LayerImpl* clip = AddLayer<LayerImpl>();
   clip->SetBounds(gfx::Size(25, 25));
-  clip->SetMasksToBounds(true);
   CopyProperties(scale, clip);
   CreateClipNode(clip);
 
@@ -449,7 +448,6 @@ TEST_F(LayerTreeImplTest, HitTestingSiblings) {
 
   LayerImpl* child1 = AddLayer<LayerImpl>();
   child1->SetBounds(gfx::Size(25, 25));
-  child1->SetMasksToBounds(true);
   child1->SetDrawsContent(true);
   child1->SetHitTestable(true);
   CopyProperties(root, child1);
@@ -457,7 +455,6 @@ TEST_F(LayerTreeImplTest, HitTestingSiblings) {
 
   LayerImpl* child2 = AddLayer<LayerImpl>();
   child2->SetBounds(gfx::Size(75, 75));
-  child2->SetMasksToBounds(true);
   child2->SetDrawsContent(true);
   child2->SetHitTestable(true);
   CopyProperties(root, child2);
@@ -538,7 +535,6 @@ TEST_F(LayerTreeImplTest, HitTestingForSimpleClippedLayer) {
   // this layer is positioned, and hit testing should correctly know where the
   // layer is located.
   clipping_layer->SetBounds(gfx::Size(50, 50));
-  clipping_layer->SetMasksToBounds(true);
   CopyProperties(root, clipping_layer);
   clipping_layer->SetOffsetToTransformParent(gfx::Vector2dF(25.f, 25.f));
   CreateClipNode(clipping_layer);
@@ -599,7 +595,6 @@ TEST_F(LayerTreeImplTest, HitTestingForMultiClippedRotatedLayer) {
   LayerImpl* root = root_layer();
 
   root->SetBounds(gfx::Size(100, 100));
-  root->SetMasksToBounds(true);
   CreateClipNode(root);
 
   // Visible rects computed by combinig clips in target space and root space
@@ -610,7 +605,6 @@ TEST_F(LayerTreeImplTest, HitTestingForMultiClippedRotatedLayer) {
   LayerImpl* rotated_leaf = AddLayer<LayerImpl>();
 
   child->SetBounds(gfx::Size(80, 80));
-  child->SetMasksToBounds(true);
   CopyProperties(root, child);
   child->SetOffsetToTransformParent(gfx::Vector2dF(10.f, 10.f));
   CreateClipNode(child);
@@ -622,7 +616,6 @@ TEST_F(LayerTreeImplTest, HitTestingForMultiClippedRotatedLayer) {
   // position (10, 10).
   // The size is to ensure it covers at least sqrt(2) * 100.
   grand_child->SetBounds(gfx::Size(200, 200));
-  grand_child->SetMasksToBounds(true);
   CopyProperties(child, grand_child);
   CreateTransformNode(grand_child).local = rotation45_degrees_about_corner;
   CreateClipNode(grand_child);
@@ -697,8 +690,6 @@ TEST_F(LayerTreeImplTest, HitTestingForNonClippingIntermediateLayer) {
 
   LayerImpl* intermediate_layer = AddLayer<LayerImpl>();
   intermediate_layer->SetBounds(gfx::Size(50, 50));
-  // Sanity check the intermediate layer should not clip.
-  ASSERT_FALSE(intermediate_layer->masks_to_bounds());
   CopyProperties(root, intermediate_layer);
   // this layer is positioned, and hit testing should correctly know where the
   // layer is located.
@@ -1476,7 +1467,6 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerRegionsForSimpleClippedLayer) {
   // this layer is positioned, and hit testing should correctly know where
   // the layer is located.
   clipping_layer->SetBounds(gfx::Size(50, 50));
-  clipping_layer->SetMasksToBounds(true);
   clipping_layer->SetOffsetToTransformParent(gfx::Vector2dF(25.f, 25.f));
   CopyProperties(root, clipping_layer);
   CreateClipNode(clipping_layer);
@@ -1559,7 +1549,6 @@ TEST_F(LayerTreeImplTest,
   // This layer is positioned, and hit testing should correctly know where
   // the layer is located.
   clipping_layer->SetBounds(gfx::Size(50, 50));
-  clipping_layer->SetMasksToBounds(true);
   CopyProperties(surface, clipping_layer);
   clipping_layer->SetOffsetToTransformParent(gfx::Vector2dF(25.f, 20.f));
   CreateClipNode(clipping_layer);
@@ -1856,7 +1845,6 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForPartialOccludedLayers) {
   LayerImpl* clipping_layer = AddLayer<LayerImpl>();
   // The clipping layer should occlude the right selection bound.
   clipping_layer->SetBounds(gfx::Size(50, 50));
-  clipping_layer->SetMasksToBounds(true);
   CopyProperties(root, clipping_layer);
   clipping_layer->SetOffsetToTransformParent(clipping_offset);
   CreateClipNode(clipping_layer);

@@ -155,6 +155,9 @@
     <!-- Explore Sites colors -->
     <color name="explore_sites_dense_tile_background_color">#00000000</color>
 
+    <!-- Prefetch article colors -->
+    <color name="prefetch_offline_icon_tint_color">@color/modern_grey_500</color>
+
     <!-- Other colors -->
     <color name="media_viewer_bg">#000000</color>
     <color name="image_viewer_bg">#0E0E0E</color>

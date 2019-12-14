@@ -336,7 +336,10 @@ TEST(RenderPassIOTest, RenderPassList) {
   base::FilePath test_data_dir;
   ASSERT_TRUE(base::PathService::Get(Paths::DIR_TEST_DATA, &test_data_dir));
   base::FilePath json_path =
-      test_data_dir.Append(FILE_PATH_LITERAL("render_pass_list_espn.json"));
+      test_data_dir.Append(FILE_PATH_LITERAL("render_pass_data"))
+          .Append(FILE_PATH_LITERAL("top_real_world_desktop"))
+          .Append(FILE_PATH_LITERAL("espn_2018"))
+          .Append(FILE_PATH_LITERAL("0463.json"));
   ASSERT_TRUE(base::PathExists(json_path));
   std::string json_text;
   ASSERT_TRUE(base::ReadFileToString(json_path, &json_text));

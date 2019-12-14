@@ -67,17 +67,6 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost {
     return RenderProcessHost::FromID(worker_process_id_);
   }
 
-  // Allows overriding the URLLoaderFactory creation for subresources.
-  // Passing a null callback will restore the default behavior.
-  // This method must be called either on the UI thread or before threads start.
-  // This callback is run on the UI thread.
-  using CreateNetworkFactoryCallback = base::RepeatingCallback<void(
-      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-      int worker_process_id,
-      mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory)>;
-  static void SetNetworkFactoryForSubresourcesForTesting(
-      const CreateNetworkFactoryCallback& url_loader_factory_callback);
-
   // Starts the SharedWorker in the renderer process.
   //
   // |main_script_load_params| is sent to the renderer process and to be used to

@@ -26,6 +26,11 @@ class CORE_EXPORT ValueWrapperSyntheticModuleScript final
     : public ModuleScript {
  public:
   static ValueWrapperSyntheticModuleScript*
+  CreateCSSWrapperSyntheticModuleScript(
+      const base::Optional<ModuleScriptCreationParams>& params,
+      Modulator* settings_object);
+
+  static ValueWrapperSyntheticModuleScript*
   CreateJSONWrapperSyntheticModuleScript(
       const base::Optional<ModuleScriptCreationParams>& params,
       Modulator* settings_object);

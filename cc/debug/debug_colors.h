@@ -24,9 +24,6 @@ class CC_DEBUG_EXPORT DebugColors {
   static SkColor ContentLayerBorderColor();
   static int ContentLayerBorderWidth(float device_scale_factor);
 
-  static SkColor MaskingLayerBorderColor();
-  static int MaskingLayerBorderWidth(float device_scale_factor);
-
   static SkColor ContainerLayerBorderColor();
   static int ContainerLayerBorderWidth(float device_scale_factor);
 

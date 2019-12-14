@@ -1,4 +1,5 @@
-# tags: [ linux win ]
+# tags: [ linux mac win ]
+# tags: [ nvidia ]
 # results: [ Failure RetryOnFailure Skip ]
 
 crbug.com/257109 [ linux ] GpuProcess_video [ Failure ]
@@ -7,3 +8,8 @@ crbug.com/257109 [ linux ] GpuProcess_video [ Failure ]
 crbug.com/700522 [ win ] GpuProcess_one_extra_workaround [ RetryOnFailure ]
 
 crbug.com/1028974 [ linux ] GpuProcess_feature_status_under_swiftshader [ RetryOnFailure ]
+
+# Dual-GPU NVIDIA MacBook Pros no longer activate the discrete GPU.
+crbug.com/681341 [ mac nvidia ] GpuProcess_mac_webgl_backgrounded_high_performance [ Skip ]
+crbug.com/681341 [ mac nvidia ] GpuProcess_mac_webgl_high_performance [ Skip ]
+crbug.com/681341 [ mac nvidia ] GpuProcess_mac_webgl_terminated_high_performance [ Skip ]

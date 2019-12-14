@@ -40,16 +40,6 @@
 #include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom.h"
 
 namespace content {
-namespace {
-
-SharedWorkerHost::CreateNetworkFactoryCallback&
-GetCreateNetworkFactoryCallbackForSharedWorker() {
-  static base::NoDestructor<SharedWorkerHost::CreateNetworkFactoryCallback>
-      s_callback;
-  return *s_callback;
-}
-
-}  // namespace
 
 // RAII helper class for talking to SharedWorkerDevToolsManager.
 class SharedWorkerHost::ScopedDevToolsHandle {
@@ -119,19 +109,6 @@ SharedWorkerHost::~SharedWorkerHost() {
   auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
   if (!IsShuttingDown(worker_process_host))
     worker_process_host->DecrementKeepAliveRefCount();
-}
-
-// static
-void SharedWorkerHost::SetNetworkFactoryForSubresourcesForTesting(
-    const CreateNetworkFactoryCallback& create_network_factory_callback) {
-  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(create_network_factory_callback.is_null() ||
-         GetCreateNetworkFactoryCallbackForSharedWorker().is_null())
-      << "It is not expected that this is called with non-null callback when "
-      << "another overriding callback is already set.";
-  GetCreateNetworkFactoryCallbackForSharedWorker() =
-      create_network_factory_callback;
 }
 
 void SharedWorkerHost::Start(
@@ -283,18 +260,9 @@ SharedWorkerHost::CreateNetworkFactoryForSubresources(
   // here.
 
   // TODO(yhirano): Support COEP.
-  if (GetCreateNetworkFactoryCallbackForSharedWorker().is_null()) {
-    worker_process_host->CreateURLLoaderFactory(
-        std::move(default_factory_receiver), std::move(factory_params));
-  } else {
-    mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory;
-    worker_process_host->CreateURLLoaderFactory(
-        original_factory.InitWithNewPipeAndPassReceiver(),
-        std::move(factory_params));
-    GetCreateNetworkFactoryCallbackForSharedWorker().Run(
-        std::move(default_factory_receiver), worker_process_id_,
-        std::move(original_factory));
-  }
+
+  worker_process_host->CreateURLLoaderFactory(
+      std::move(default_factory_receiver), std::move(factory_params));
 
   return pending_default_factory;
 }

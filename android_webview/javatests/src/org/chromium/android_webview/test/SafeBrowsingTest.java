@@ -353,6 +353,9 @@ public class SafeBrowsingTest {
                 () -> mWebContentsObserver =
                                    new TestAwWebContentsObserver(mContainerView.getWebContents(),
                                            mAwContents, mContentsClient) {});
+
+        // Need to configure user opt-in, otherwise WebView won't perform Safe Browsing checks.
+        AwSafeBrowsingConfigHelper.setSafeBrowsingUserOptIn(true);
     }
 
     @After
@@ -475,6 +478,23 @@ public class SafeBrowsingTest {
     private String colorToString(int color) {
         return "(" + Color.red(color) + "," + Color.green(color) + "," + Color.blue(color) + ","
                 + Color.alpha(color) + ")";
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testSafeBrowsingGetterAndSetter() throws Throwable {
+        Assert.assertTrue("Getter API should follow manifest tag by default",
+                mActivityTestRule.getAwSettingsOnUiThread(mAwContents).getSafeBrowsingEnabled());
+        mActivityTestRule.getAwSettingsOnUiThread(mAwContents).setSafeBrowsingEnabled(false);
+        Assert.assertFalse("setSafeBrowsingEnabled(false) should change the getter",
+                mActivityTestRule.getAwSettingsOnUiThread(mAwContents).getSafeBrowsingEnabled());
+        mActivityTestRule.getAwSettingsOnUiThread(mAwContents).setSafeBrowsingEnabled(true);
+        Assert.assertTrue("setSafeBrowsingEnabled(true) should change the getter",
+                mActivityTestRule.getAwSettingsOnUiThread(mAwContents).getSafeBrowsingEnabled());
+        AwSafeBrowsingConfigHelper.setSafeBrowsingUserOptIn(false);
+        Assert.assertTrue("Getter API should ignore user opt-out",
+                mActivityTestRule.getAwSettingsOnUiThread(mAwContents).getSafeBrowsingEnabled());
     }
 
     @Test
@@ -1064,6 +1084,29 @@ public class SafeBrowsingTest {
         mActivityTestRule.loadUrlAsync(mAwContents, WEB_UI_PHISHING_URL);
         mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(interstitialCount);
         waitForInterstitialDomToLoad();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testSafeBrowsingHardcodedUrlsIgnoreUserOptOut() throws Throwable {
+        AwSafeBrowsingConfigHelper.setSafeBrowsingUserOptIn(false);
+        loadGreenPage();
+        int interstitialCount =
+                mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
+        mActivityTestRule.loadUrlAsync(mAwContents, WEB_UI_MALWARE_URL);
+        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(interstitialCount);
+        waitForInterstitialDomToLoad();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testSafeBrowsingHardcodedUrlsRespectPerWebviewToggle() throws Throwable {
+        mActivityTestRule.getAwSettingsOnUiThread(mAwContents).setSafeBrowsingEnabled(false);
+        mActivityTestRule.loadUrlSync(
+                mAwContents, mContentsClient.getOnPageFinishedHelper(), WEB_UI_MALWARE_URL);
+        // If we get here, it means the navigation was not blocked by an interstitial.
     }
 
     @Test

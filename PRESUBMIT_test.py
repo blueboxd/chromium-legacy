@@ -2074,8 +2074,9 @@ class BannedTypeCheckTest(unittest.TestCase):
     self.assertTrue('content/renderer/ok/file3.cc' not in results[0].message)
 
   def testDeprecatedMojoTypes(self):
-    ok_paths = ['some/cpp']
-    warning_paths = ['third_party/blink']
+    ok_paths = ['components/arc']
+    warning_paths = ['some/cpp']
+    error_paths = ['third_party/blink']
     test_cases = [
       {
         'type': 'mojo::AssociatedBinding<>;',
@@ -2144,7 +2145,7 @@ class BannedTypeCheckTest(unittest.TestCase):
     ]
 
     # Build the list of MockFiles considering paths that should trigger warnings
-    # as well as paths that should not trigger anything.
+    # as well as paths that should trigger errors.
     input_api = MockInputApi()
     input_api.files = []
     for test_case in test_cases:
@@ -2154,20 +2155,30 @@ class BannedTypeCheckTest(unittest.TestCase):
       for path in warning_paths:
         input_api.files.append(MockFile(os.path.join(path, test_case['file']),
                                         [test_case['type']]))
+      for path in error_paths:
+        input_api.files.append(MockFile(os.path.join(path, test_case['file']),
+                                        [test_case['type']]))
 
     results = PRESUBMIT._CheckNoDeprecatedMojoTypes(input_api, MockOutputApi())
 
-    # Only warnings for now for all deprecated Mojo types.
-    self.assertEqual(1, len(results))
+    # warnings are results[0], errors are results[1]
+    self.assertEqual(2, len(results))
 
     for test_case in test_cases:
-      # Check that no warnings or errors have been triggered for these paths.
+      # Check that no warnings nor errors have been triggered for these paths.
       for path in ok_paths:
         self.assertFalse(path in results[0].message)
+        self.assertFalse(path in results[1].message)
 
       # Check warnings have been triggered for these paths.
       for path in warning_paths:
         self.assertTrue(path in results[0].message)
+        self.assertFalse(path in results[1].message)
+
+      # Check errors have been triggered for these paths.
+      for path in error_paths:
+        self.assertFalse(path in results[0].message)
+        self.assertTrue(path in results[1].message)
 
 
 class NoProductionCodeUsingTestOnlyFunctionsTest(unittest.TestCase):

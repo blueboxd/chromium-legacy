@@ -736,10 +736,8 @@ void ScrollableShelfView::Layout() {
   // Layout |shelf_container_view_|.
   shelf_container_view_->SetBoundsRect(shelf_container_bounds);
 
-  if (IsInTabletMode() && chromeos::switches::ShouldShowShelfHotseat()) {
-    shelf_container_view_->layer()->SetRoundedCornerRadius(
-        CalculateShelfContainerRoundedCorners());
-  }
+  shelf_container_view_->layer()->SetRoundedCornerRadius(
+      CalculateShelfContainerRoundedCorners());
 }
 
 void ScrollableShelfView::ChildPreferredSizeChanged(views::View* child) {
@@ -1755,6 +1753,9 @@ gfx::Insets ScrollableShelfView::CalculateRipplePaddingInsets() const {
 
 gfx::RoundedCornersF
 ScrollableShelfView::CalculateShelfContainerRoundedCorners() const {
+  if (!chromeos::switches::ShouldShowShelfHotseat() || !IsInTabletMode())
+    return gfx::RoundedCornersF();
+
   const bool is_horizontal_alignment = GetShelf()->IsHorizontalAlignment();
   const float radius = (is_horizontal_alignment ? height() : width()) / 2.f;
 

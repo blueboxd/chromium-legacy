@@ -1887,24 +1887,33 @@ def _CheckNoBannedFunctions(input_api, output_api):
 def _CheckNoDeprecatedMojoTypes(input_api, output_api):
   """Make sure that old Mojo types are not used."""
   warnings = []
+  errors = []
 
   file_filter = lambda f: f.LocalPath().endswith(('.cc', '.mm', '.h'))
   for f in input_api.AffectedFiles(file_filter=file_filter):
-    # Only need to check Blink for warnings for now.
-    if not f.LocalPath().startswith('third_party/blink'):
+    # Don't check //components/arc, not yet migrated (see crrev.com/c/1868870).
+    if f.LocalPath().startswith('components/arc'):
       continue
 
     for line_num, line in f.ChangedContents():
       for func_name, message in _DEPRECATED_MOJO_TYPES:
         problems = _GetMessageForMatchingType(input_api, f, line_num, line,
                                               func_name, message)
+
         if problems:
+          # Violations raise errors inside Blink and warnings everywhere else.
+          if f.LocalPath().startswith('third_party/blink'):
+            errors.extend(problems)
+          else:
             warnings.extend(problems)
 
   result = []
   if (warnings):
     result.append(output_api.PresubmitPromptWarning(
         'Banned Mojo types were used.\n' + '\n'.join(warnings)))
+  if (errors):
+    result.append(output_api.PresubmitError(
+        'Banned Mojo types were used.\n' + '\n'.join(errors)))
   return result
 
 

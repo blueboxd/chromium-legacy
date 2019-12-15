@@ -508,7 +508,11 @@ void GenericV4L2Device::CloseDevice() {
 bool GenericV4L2Device::PostSandboxInitialization() {
 #if BUILDFLAG(USE_LIBV4L2)
   static const base::FilePath::CharType kV4l2Lib[] =
+#if defined(ARCH_CPU_64_BITS)
+      FILE_PATH_LITERAL("/usr/lib64/libv4l2.so");
+#else
       FILE_PATH_LITERAL("/usr/lib/libv4l2.so");
+#endif  // defined(ARCH_CPU_64_BITS)
   StubPathMap paths;
   paths[kModuleV4l2].push_back(kV4l2Lib);
 

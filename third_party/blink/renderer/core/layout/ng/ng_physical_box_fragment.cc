@@ -190,7 +190,7 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren() const {
   DCHECK_EQ(layout_object->HasOverflowClip(), HasOverflowClip());
   if (HasOverflowClip()) {
     padding_strut = NGBoxStrut(LayoutUnit(), layout_object->PaddingEnd(),
-                               LayoutUnit(), layout_object->PaddingUnder())
+                               LayoutUnit(), layout_object->PaddingAfter())
                         .ConvertToPhysical(writing_mode, direction);
   }
 

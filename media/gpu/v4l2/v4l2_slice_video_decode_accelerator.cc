@@ -1287,7 +1287,6 @@ bool V4L2SliceVideoDecodeAccelerator::DestroyOutputBuffers() {
   // ReusePictureBuffer() pending on ChildThread already. It's ok to ignore
   // them, because we have already dismissed them (in DestroyOutputs()).
   surfaces_at_display_.clear();
-  DCHECK_EQ(output_queue_->FreeBuffersCount(), output_buffer_map_.size());
 
   output_buffer_map_.clear();
 

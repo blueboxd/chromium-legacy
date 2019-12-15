@@ -44,7 +44,7 @@ def main(argv):
         stats_path = args[0]
     else:
         host = Host()
-        stats_path = host.filesystem.join(host.port_factory.get().results_directory(), 'stats.json')
+        stats_path = host.filesystem.join(host.port_factory.get().artifacts_directory(), 'stats.json')
 
     with open(stats_path, 'r') as fp:
         stats_trie = json.load(fp)

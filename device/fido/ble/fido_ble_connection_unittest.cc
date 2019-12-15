@@ -389,6 +389,9 @@ class FidoBleConnectionTest : public ::testing::Test {
     }
   }
 
+ protected:
+  static BluetoothUUID uuid() { return BluetoothUUID(kFidoServiceUUID); }
+
  private:
   base::test::TaskEnvironment task_environment_;
 
@@ -410,14 +413,15 @@ class FidoBleConnectionTest : public ::testing::Test {
 
 TEST_F(FidoBleConnectionTest, Address) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
-  FidoBleConnection connection(adapter(), device_address, base::DoNothing());
+  FidoBleConnection connection(adapter(), device_address, uuid(),
+                               base::DoNothing());
   connection.Connect(base::DoNothing());
   EXPECT_EQ(device_address, connection.address());
 }
 
 TEST_F(FidoBleConnectionTest, DeviceNotPresent) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
-  FidoBleConnection connection(adapter(), device_address,
+  FidoBleConnection connection(adapter(), device_address, uuid(),
                                base::DoNothing());
 
   TestConnectionCallbackReceiver connection_callback_receiver;
@@ -430,7 +434,8 @@ TEST_F(FidoBleConnectionTest, PreConnected) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
   AddFidoDevice(device_address);
   SetupConnectingFidoDevice(device_address);
-  FidoBleConnection connection(adapter(), device_address, base::DoNothing());
+  FidoBleConnection connection(adapter(), device_address, uuid(),
+                               base::DoNothing());
 
   TestConnectionCallbackReceiver connection_callback_receiver;
   connection.Connect(connection_callback_receiver.callback());
@@ -442,7 +447,8 @@ TEST_F(FidoBleConnectionTest, NoConnectionWithoutCompletedGattDiscovery) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
   AddFidoDevice(device_address);
   SetupConnectingFidoDevice(device_address);
-  FidoBleConnection connection(adapter(), device_address, base::DoNothing());
+  FidoBleConnection connection(adapter(), device_address, uuid(),
+                               base::DoNothing());
 
   SimulateGattDiscoveryComplete(false);
   TestConnectionCallbackReceiver connection_callback_receiver;
@@ -459,7 +465,7 @@ TEST_F(FidoBleConnectionTest, GattServicesDiscoveredIgnoredBeforeConnection) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
   AddFidoDevice(device_address);
   SetupConnectingFidoDevice(device_address);
-  FidoBleConnection connection(adapter(), device_address,
+  FidoBleConnection connection(adapter(), device_address, uuid(),
                                base::DoNothing());
   NotifyGattServicesDiscovered();
 
@@ -478,7 +484,7 @@ TEST_F(FidoBleConnectionTest, GattServicesDiscoveredAgain) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
   AddFidoDevice(device_address);
   SetupConnectingFidoDevice(device_address);
-  FidoBleConnection connection(adapter(), device_address,
+  FidoBleConnection connection(adapter(), device_address, uuid(),
                                base::DoNothing());
 
   TestConnectionCallbackReceiver connection_callback_receiver;
@@ -498,7 +504,8 @@ TEST_F(FidoBleConnectionTest, SimulateGattConnectionError) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
   AddFidoDevice(device_address);
   SetupConnectingFidoDevice(device_address);
-  FidoBleConnection connection(adapter(), device_address, base::DoNothing());
+  FidoBleConnection connection(adapter(), device_address, uuid(),
+                               base::DoNothing());
 
   SimulateGattConnectionError();
   TestConnectionCallbackReceiver connection_callback_receiver;
@@ -511,7 +518,7 @@ TEST_F(FidoBleConnectionTest, SimulateGattNotifySessionStartError) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
   AddFidoDevice(device_address);
   SetupConnectingFidoDevice(device_address);
-  FidoBleConnection connection(adapter(), device_address,
+  FidoBleConnection connection(adapter(), device_address, uuid(),
                                base::DoNothing());
 
   SimulateGattNotifySessionStartError();
@@ -562,7 +569,7 @@ TEST_F(FidoBleConnectionTest, MultipleServiceRevisions) {
     SetNextWriteServiceRevisionResponse(
         {test_case.selected_revision.to_ulong()}, true);
 
-    FidoBleConnection connection(adapter(), device_address,
+    FidoBleConnection connection(adapter(), device_address, uuid(),
                                  base::DoNothing());
     TestConnectionCallbackReceiver connection_callback_receiver;
     connection.Connect(connection_callback_receiver.callback());
@@ -594,7 +601,7 @@ TEST_F(FidoBleConnectionTest, UnsupportedServiceRevisions) {
     SetNextReadServiceRevisionBitfieldResponse(
         true, {test_case.supported_revisions.to_ulong()});
 
-    FidoBleConnection connection(adapter(), device_address,
+    FidoBleConnection connection(adapter(), device_address, uuid(),
                                  base::DoNothing());
     TestConnectionCallbackReceiver connection_callback_receiver;
     connection.Connect(connection_callback_receiver.callback());
@@ -610,7 +617,7 @@ TEST_F(FidoBleConnectionTest, ReadServiceRevisionsFails) {
   SetupConnectingFidoDevice(device_address);
   SetNextReadServiceRevisionBitfieldResponse(false, {});
 
-  FidoBleConnection connection(adapter(), device_address,
+  FidoBleConnection connection(adapter(), device_address, uuid(),
                                base::DoNothing());
   TestConnectionCallbackReceiver connection_callback_receiver;
   connection.Connect(connection_callback_receiver.callback());
@@ -626,7 +633,7 @@ TEST_F(FidoBleConnectionTest, WriteServiceRevisionsFails) {
   SetNextReadServiceRevisionBitfieldResponse(true, {kDefaultServiceRevision});
   SetNextWriteServiceRevisionResponse({kDefaultServiceRevision}, false);
 
-  FidoBleConnection connection(adapter(), device_address,
+  FidoBleConnection connection(adapter(), device_address, uuid(),
                                base::DoNothing());
   TestConnectionCallbackReceiver connection_callback_receiver;
   connection.Connect(connection_callback_receiver.callback());
@@ -640,7 +647,7 @@ TEST_F(FidoBleConnectionTest, ReadStatusNotifications) {
 
   AddFidoDevice(device_address);
   SetupConnectingFidoDevice(device_address);
-  FidoBleConnection connection(adapter(), device_address,
+  FidoBleConnection connection(adapter(), device_address, uuid(),
                                read_callback.GetCallback());
 
   TestConnectionCallbackReceiver connection_callback_receiver;
@@ -661,7 +668,7 @@ TEST_F(FidoBleConnectionTest, ReadControlPointLength) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
   AddFidoDevice(device_address);
   SetupConnectingFidoDevice(device_address);
-  FidoBleConnection connection(adapter(), device_address,
+  FidoBleConnection connection(adapter(), device_address, uuid(),
                                base::DoNothing());
 
   TestConnectionCallbackReceiver connection_callback_receiver;
@@ -716,7 +723,7 @@ TEST_F(FidoBleConnectionTest, WriteControlPoint) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
   AddFidoDevice(device_address);
   SetupConnectingFidoDevice(device_address);
-  FidoBleConnection connection(adapter(), device_address,
+  FidoBleConnection connection(adapter(), device_address, uuid(),
                                base::DoNothing());
 
   TestConnectionCallbackReceiver connection_callback_receiver;
@@ -746,7 +753,7 @@ TEST_F(FidoBleConnectionTest, ReadsAndWriteFailWhenDisconnected) {
 
   AddFidoDevice(device_address);
   SetupConnectingFidoDevice(device_address);
-  FidoBleConnection connection(adapter(), device_address,
+  FidoBleConnection connection(adapter(), device_address, uuid(),
                                base::DoNothing());
 
   SimulateGattConnectionError();
@@ -774,7 +781,8 @@ TEST_F(FidoBleConnectionTest, ConnectionAddressChangeWhenDeviceAddressChanges) {
 
   AddFidoDevice(device_address);
   SetupConnectingFidoDevice(device_address);
-  FidoBleConnection connection(adapter(), device_address, base::DoNothing());
+  FidoBleConnection connection(adapter(), device_address, uuid(),
+                               base::DoNothing());
   ChangeDeviceAddressAndNotifyObservers(kTestDeviceAddress2);
   EXPECT_EQ(kTestDeviceAddress2, connection.address());
 }

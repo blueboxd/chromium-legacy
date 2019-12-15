@@ -327,9 +327,7 @@ target(link_target_type, "gles2_sources") {
   ]
 
   if (use_ozone) {
-    deps += [
-      "//ui/ozone",
-    ]
+    deps += [ "//ui/ozone" ]
   }
 
   if (enable_vulkan) {
@@ -411,6 +409,8 @@ target(link_target_type, "gles2_sources") {
       "ahardwarebuffer_utils.h",
       "image_reader_gl_owner.cc",
       "image_reader_gl_owner.h",
+      "shared_image_backing_egl_image.cc",
+      "shared_image_backing_egl_image.h",
       "shared_image_backing_factory_ahardwarebuffer.cc",
       "shared_image_backing_factory_ahardwarebuffer.h",
       "shared_image_video.cc",

@@ -672,9 +672,6 @@ def ensure_empty_dir(fs, directory, allow_existing, remove_existing):
     if not remove_existing:
         return
 
-    # The directory name 'layout-test-results' needs to be consistent with
-    # //build/scripts/slave/recipe_modules/chromium_tests/steps.py and
-    # //src/testing/buildbot/gn_isolate_map.pyl.
     layout_test_results = fs.join(directory, 'layout-test-results')
     merged_output_json = fs.join(directory, 'output.json')
     if fs.exists(layout_test_results) and not fs.remove_contents(layout_test_results):

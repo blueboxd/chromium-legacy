@@ -518,7 +518,7 @@ void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
   auto cable_device =
-      std::make_unique<FidoCableDevice>(adapter, device->GetAddress());
+      std::make_unique<FidoCableDevice>(adapter, device_address);
   StopAdvertisements(
       base::BindOnce(&FidoCableDiscovery::ConductEncryptionHandshake,
                      weak_factory_.GetWeakPtr(), std::move(cable_device),

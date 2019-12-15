@@ -108,6 +108,15 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
       uint32_t usage,
       const UnpackStateAttribs& attribs);
 
+  // This is meant to be used only on Android. Return nullptr for other
+  // platforms.
+  std::unique_ptr<SharedImageBacking> MakeEglImageBacking(
+      const Mailbox& mailbox,
+      viz::ResourceFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      uint32_t usage);
+
   struct FormatInfo {
     FormatInfo();
     ~FormatInfo();

@@ -4,8 +4,11 @@
 
 #include "gpu/command_buffer/service/shared_image_backing_factory_gl_texture.h"
 
+#include <thread>
+
 #include "base/bind_helpers.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
@@ -18,6 +21,7 @@
 #include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/command_buffer/service/shared_image_test_utils.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/tests/texture_image_factory.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
@@ -41,41 +45,66 @@
 namespace gpu {
 namespace {
 
+void CreateSharedContext(const GpuDriverBugWorkarounds& workarounds,
+                         scoped_refptr<gl::GLSurface>& surface,
+                         scoped_refptr<gl::GLContext>& context,
+                         scoped_refptr<SharedContextState>& context_state,
+                         scoped_refptr<gles2::FeatureInfo>& feature_info) {
+  surface = gl::init::CreateOffscreenGLSurface(gfx::Size());
+  ASSERT_TRUE(surface);
+  context =
+      gl::init::CreateGLContext(nullptr, surface.get(), gl::GLContextAttribs());
+  ASSERT_TRUE(context);
+  bool result = context->MakeCurrent(surface.get());
+  ASSERT_TRUE(result);
+
+  scoped_refptr<gl::GLShareGroup> share_group = new gl::GLShareGroup();
+  feature_info =
+      base::MakeRefCounted<gles2::FeatureInfo>(workarounds, GpuFeatureInfo());
+  context_state = base::MakeRefCounted<SharedContextState>(
+      std::move(share_group), surface, context,
+      false /* use_virtualized_gl_contexts */, base::DoNothing());
+  context_state->InitializeGrContext(workarounds, nullptr);
+  context_state->InitializeGL(GpuPreferences(), feature_info);
+}
+
+bool IsAndroid() {
+#if defined(OS_ANDROID)
+  return true;
+#else
+  return false;
+#endif
+}
+
 class SharedImageBackingFactoryGLTextureTestBase
     : public testing::TestWithParam<bool> {
  public:
+  SharedImageBackingFactoryGLTextureTestBase(bool is_thread_safe)
+      : shared_image_manager_(
+            std::make_unique<SharedImageManager>(is_thread_safe)) {}
+  ~SharedImageBackingFactoryGLTextureTestBase() {
+    // |context_state_| must be destroyed on its own context.
+    context_state_->MakeCurrent(surface_.get(), true /* needs_gl */);
+  }
+
   void SetUpBase(const GpuDriverBugWorkarounds& workarounds,
                  ImageFactory* factory) {
-    surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
-    ASSERT_TRUE(surface_);
-    context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
-                                         gl::GLContextAttribs());
-    ASSERT_TRUE(context_);
-    bool result = context_->MakeCurrent(surface_.get());
-    ASSERT_TRUE(result);
+    scoped_refptr<gles2::FeatureInfo> feature_info;
+    CreateSharedContext(workarounds, surface_, context_, context_state_,
+                        feature_info);
+    supports_etc1_ =
+        feature_info->validators()->compressed_texture_format.IsValid(
+            GL_ETC1_RGB8_OES);
 
     GpuPreferences preferences;
     preferences.use_passthrough_cmd_decoder = use_passthrough();
     backing_factory_ = std::make_unique<SharedImageBackingFactoryGLTexture>(
         preferences, workarounds, GpuFeatureInfo(), factory);
 
-    scoped_refptr<gl::GLShareGroup> share_group = new gl::GLShareGroup();
-    auto feature_info =
-        base::MakeRefCounted<gles2::FeatureInfo>(workarounds, GpuFeatureInfo());
-    context_state_ = base::MakeRefCounted<SharedContextState>(
-        std::move(share_group), surface_, context_,
-        false /* use_virtualized_gl_contexts */, base::DoNothing());
-    context_state_->InitializeGrContext(workarounds, nullptr);
-    context_state_->InitializeGL(GpuPreferences(), feature_info);
-
     memory_type_tracker_ = std::make_unique<MemoryTypeTracker>(nullptr);
     shared_image_representation_factory_ =
         std::make_unique<SharedImageRepresentationFactory>(
-            &shared_image_manager_, nullptr);
-
-    supports_etc1_ =
-        feature_info->validators()->compressed_texture_format.IsValid(
-            GL_ETC1_RGB8_OES);
+            shared_image_manager_.get(), nullptr);
   }
 
   bool use_passthrough() {
@@ -92,7 +121,7 @@ class SharedImageBackingFactoryGLTextureTestBase
   scoped_refptr<SharedContextState> context_state_;
   std::unique_ptr<SharedImageBackingFactoryGLTexture> backing_factory_;
   gles2::MailboxManagerImpl mailbox_manager_;
-  SharedImageManager shared_image_manager_;
+  std::unique_ptr<SharedImageManager> shared_image_manager_;
   std::unique_ptr<MemoryTypeTracker> memory_type_tracker_;
   std::unique_ptr<SharedImageRepresentationFactory>
       shared_image_representation_factory_;
@@ -102,6 +131,8 @@ class SharedImageBackingFactoryGLTextureTestBase
 class SharedImageBackingFactoryGLTextureTest
     : public SharedImageBackingFactoryGLTextureTestBase {
  public:
+  SharedImageBackingFactoryGLTextureTest()
+      : SharedImageBackingFactoryGLTextureTestBase(false) {}
   void SetUp() override {
     GpuDriverBugWorkarounds workarounds;
     workarounds.max_texture_size = INT_MAX - 1;
@@ -110,6 +141,57 @@ class SharedImageBackingFactoryGLTextureTest
 
  protected:
   TextureImageFactory image_factory_;
+};
+
+class SharedImageBackingFactoryGLTextureThreadSafeTest
+    : public SharedImageBackingFactoryGLTextureTestBase {
+ public:
+  SharedImageBackingFactoryGLTextureThreadSafeTest()
+      : SharedImageBackingFactoryGLTextureTestBase(true) {}
+  ~SharedImageBackingFactoryGLTextureThreadSafeTest() {
+    // |context_state2_| must be destroyed on its own context.
+    context_state2_->MakeCurrent(surface2_.get(), true /* needs_gl */);
+  }
+  void SetUp() override {
+    GpuDriverBugWorkarounds workarounds;
+    workarounds.max_texture_size = INT_MAX - 1;
+    SetUpBase(workarounds, &image_factory_);
+
+    // Create 2nd context/context_state which are not part of same shared group.
+    scoped_refptr<gles2::FeatureInfo> feature_info;
+    CreateSharedContext(workarounds, surface2_, context2_, context_state2_,
+                        feature_info);
+    feature_info.reset();
+  }
+
+ protected:
+  scoped_refptr<gl::GLSurface> surface2_;
+  scoped_refptr<gl::GLContext> context2_;
+  scoped_refptr<SharedContextState> context_state2_;
+  TextureImageFactory image_factory_;
+};
+
+class CreateAndValidateSharedImageRepresentations {
+ public:
+  CreateAndValidateSharedImageRepresentations(
+      SharedImageBackingFactoryGLTexture* backing_factory,
+      bool is_thread_safe,
+      gles2::MailboxManagerImpl* mailbox_manager,
+      SharedImageManager* shared_image_manager,
+      MemoryTypeTracker* memory_type_tracker,
+      SharedImageRepresentationFactory* shared_image_representation_factory,
+      SharedContextState* context_state);
+  ~CreateAndValidateSharedImageRepresentations();
+
+  gfx::Size size() { return size_; }
+  Mailbox mailbox() { return mailbox_; }
+
+ private:
+  gles2::MailboxManagerImpl* mailbox_manager_;
+  gfx::Size size_;
+  Mailbox mailbox_;
+  std::unique_ptr<SharedImageBacking> backing_;
+  std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image_;
 };
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
@@ -147,8 +229,8 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
 
   // Next, validate via a SharedImageRepresentationGLTexture.
   std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
-      shared_image_manager_.Register(std::move(backing),
-                                     memory_type_tracker_.get());
+      shared_image_manager_->Register(std::move(backing),
+                                      memory_type_tracker_.get());
   EXPECT_TRUE(shared_image);
   if (!use_passthrough()) {
     auto gl_representation =
@@ -250,8 +332,8 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
 
   // Next, validate via a SharedImageRepresentationGLTexture.
   std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
-      shared_image_manager_.Register(std::move(backing),
-                                     memory_type_tracker_.get());
+      shared_image_manager_->Register(std::move(backing),
+                                      memory_type_tracker_.get());
   EXPECT_TRUE(shared_image);
   if (!use_passthrough()) {
     auto gl_representation =
@@ -335,8 +417,8 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
     backing = backing_factory_->CreateSharedImage(
         mailbox, format, size, color_space, usage, false /* is_thread_safe */);
     EXPECT_TRUE(backing);
-    shared_image = shared_image_manager_.Register(std::move(backing),
-                                                  memory_type_tracker_.get());
+    shared_image = shared_image_manager_->Register(std::move(backing),
+                                                   memory_type_tracker_.get());
     auto gl_representation =
         shared_image_representation_factory_->ProduceGLTexture(mailbox);
     ASSERT_TRUE(gl_representation);
@@ -370,8 +452,8 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, InitialData) {
 
     // Validate via a SharedImageRepresentationGLTexture(Passthrough).
     std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
-        shared_image_manager_.Register(std::move(backing),
-                                       memory_type_tracker_.get());
+        shared_image_manager_->Register(std::move(backing),
+                                        memory_type_tracker_.get());
     EXPECT_TRUE(shared_image);
     GLenum expected_target = GL_TEXTURE_2D;
     if (!use_passthrough()) {
@@ -417,8 +499,8 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, InitialDataImage) {
 
   // Validate via a SharedImageRepresentationGLTexture(Passthrough).
   std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
-      shared_image_manager_.Register(std::move(backing),
-                                     memory_type_tracker_.get());
+      shared_image_manager_->Register(std::move(backing),
+                                      memory_type_tracker_.get());
   EXPECT_TRUE(shared_image);
   if (!use_passthrough()) {
     auto gl_representation =
@@ -501,8 +583,8 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, EstimatedSize) {
   EXPECT_GT(backing_estimated_size, 0u);
 
   std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
-      shared_image_manager_.Register(std::move(backing),
-                                     memory_type_tracker_.get());
+      shared_image_manager_->Register(std::move(backing),
+                                      memory_type_tracker_.get());
   EXPECT_EQ(backing_estimated_size, memory_type_tracker_->GetMemRepresented());
 
   shared_image.reset();
@@ -608,6 +690,8 @@ class SharedImageBackingFactoryGLTextureWithGMBTest
     : public SharedImageBackingFactoryGLTextureTestBase,
       public gpu::ImageFactory {
  public:
+  SharedImageBackingFactoryGLTextureWithGMBTest()
+      : SharedImageBackingFactoryGLTextureTestBase(false) {}
   void SetUp() override { SetUpBase(GpuDriverBugWorkarounds(), this); }
 
   scoped_refptr<gl::GLImage> GetImageFromMailbox(Mailbox mailbox) {
@@ -676,8 +760,8 @@ TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
   ASSERT_TRUE(backing);
 
   std::unique_ptr<SharedImageRepresentationFactoryRef> ref =
-      shared_image_manager_.Register(std::move(backing),
-                                     memory_type_tracker_.get());
+      shared_image_manager_->Register(std::move(backing),
+                                      memory_type_tracker_.get());
   scoped_refptr<gl::GLImage> image = GetImageFromMailbox(mailbox);
   ASSERT_EQ(image->GetType(), gl::GLImage::Type::NONE);
   auto* stub_image = static_cast<StubImage*>(image.get());
@@ -711,8 +795,8 @@ TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
       color_space, usage);
   ASSERT_TRUE(backing);
   std::unique_ptr<SharedImageRepresentationFactoryRef> ref =
-      shared_image_manager_.Register(std::move(backing),
-                                     memory_type_tracker_.get());
+      shared_image_manager_->Register(std::move(backing),
+                                      memory_type_tracker_.get());
   scoped_refptr<gl::GLImage> image = GetImageFromMailbox(mailbox);
   ASSERT_EQ(image->GetType(), gl::GLImage::Type::MEMORY);
   auto* shm_image = static_cast<gl::GLImageSharedMemory*>(image.get());
@@ -738,8 +822,8 @@ TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
   ASSERT_TRUE(backing);
 
   std::unique_ptr<SharedImageRepresentationFactoryRef> ref =
-      shared_image_manager_.Register(std::move(backing),
-                                     memory_type_tracker_.get());
+      shared_image_manager_->Register(std::move(backing),
+                                      memory_type_tracker_.get());
 
   auto representation =
       shared_image_representation_factory_->ProduceRGBEmulationGLTexture(
@@ -760,8 +844,189 @@ TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
   EXPECT_EQ(stub_image->update_counter(), 1);
 }
 
+// Intent of this test is to create at thread safe backing and test if all
+// representations are working.
+TEST_P(SharedImageBackingFactoryGLTextureThreadSafeTest, BasicThreadSafe) {
+  // SharedImageBackingFactoryGLTextureThreadSafeTest tests are only meant for
+  // android platform.
+  if (!IsAndroid())
+    return;
+
+  CreateAndValidateSharedImageRepresentations shared_image(
+      backing_factory_.get(), true /* is_thread_safe */, &mailbox_manager_,
+      shared_image_manager_.get(), memory_type_tracker_.get(),
+      shared_image_representation_factory_.get(), context_state_.get());
+}
+
+// Intent of this test is to use the shared image mailbox system by 2 different
+// threads each running their own GL context which are not part of same shared
+// group. One thread will be writing to the backing and other thread will be
+// reading from it.
+TEST_P(SharedImageBackingFactoryGLTextureThreadSafeTest, OneWriterOneReader) {
+  if (!IsAndroid())
+    return;
+
+  // Create it on 1st SharedContextState |context_state_|.
+  CreateAndValidateSharedImageRepresentations shared_image(
+      backing_factory_.get(), true /* is_thread_safe */, &mailbox_manager_,
+      shared_image_manager_.get(), memory_type_tracker_.get(),
+      shared_image_representation_factory_.get(), context_state_.get());
+
+  auto mailbox = shared_image.mailbox();
+  auto size = shared_image.size();
+
+  // Writer will write to the backing. We will create a GLTexture representation
+  // and write green color to it.
+  auto gl_representation =
+      shared_image_representation_factory_->ProduceGLTexture(mailbox);
+  EXPECT_TRUE(gl_representation);
+
+  // Begin writing to the underlying texture of the backing via ScopedAccess.
+  std::unique_ptr<SharedImageRepresentationGLTexture::ScopedAccess>
+      writer_scoped_access = gl_representation->BeginScopedAccess(
+          GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+
+  DCHECK(writer_scoped_access);
+
+  // Create an FBO.
+  GLuint fbo = 0;
+  gl::GLApi* api = gl::g_current_gl_context;
+  api->glGenFramebuffersEXTFn(1, &fbo);
+  api->glBindFramebufferEXTFn(GL_FRAMEBUFFER, fbo);
+
+  // Attach the texture to FBO.
+  api->glFramebufferTexture2DEXTFn(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+      gl_representation->GetTexture()->target(),
+      gl_representation->GetTexture()->service_id(), 0);
+
+  // Set the clear color to green.
+  api->glClearColorFn(0.0f, 1.0f, 0.0f, 1.0f);
+  api->glClearFn(GL_COLOR_BUFFER_BIT);
+
+  // End writing.
+  writer_scoped_access.reset();
+  gl_representation.reset();
+
+  // Read from the backing in a separate thread. Read is done via
+  // SkiaGLRepresentation. ReadPixels() creates/produces a SkiaGLRepresentation
+  // which in turn wraps a GLTextureRepresentation when for GL mode. Hence
+  // testing reading via SkiaGLRepresentation is equivalent to testing via
+  // GLTextureRepresentation.
+  std::vector<uint8_t> dst_pixels;
+
+  // Launch 2nd thread.
+  std::thread second_thread([&]() {
+    // Do ReadPixels() on 2nd SharedContextState |context_state2_|.
+    dst_pixels = ReadPixels(mailbox, size, context_state2_.get(),
+                            shared_image_representation_factory_.get());
+  });
+
+  // Wait for this thread to be done.
+  second_thread.join();
+
+  // Compare the pixel values.
+  EXPECT_EQ(dst_pixels[0], 0);
+  EXPECT_EQ(dst_pixels[1], 255);
+  EXPECT_EQ(dst_pixels[2], 0);
+  EXPECT_EQ(dst_pixels[3], 255);
+}
+
+CreateAndValidateSharedImageRepresentations::
+    CreateAndValidateSharedImageRepresentations(
+        SharedImageBackingFactoryGLTexture* backing_factory,
+        bool is_thread_safe,
+        gles2::MailboxManagerImpl* mailbox_manager,
+        SharedImageManager* shared_image_manager,
+        MemoryTypeTracker* memory_type_tracker,
+        SharedImageRepresentationFactory* shared_image_representation_factory,
+        SharedContextState* context_state)
+    : mailbox_manager_(mailbox_manager), size_(256, 256) {
+  // Make the context current.
+  DCHECK(context_state);
+  EXPECT_TRUE(
+      context_state->MakeCurrent(context_state->surface(), true /* needs_gl*/));
+  mailbox_ = Mailbox::GenerateForSharedImage();
+  auto format = viz::ResourceFormat::RGBA_8888;
+  auto color_space = gfx::ColorSpace::CreateSRGB();
+
+  // SHARED_IMAGE_USAGE_DISPLAY for skia read and SHARED_IMAGE_USAGE_RASTER for
+  // skia write.
+  uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_RASTER;
+  if (!is_thread_safe)
+    usage |= SHARED_IMAGE_USAGE_DISPLAY;
+  backing_ = backing_factory->CreateSharedImage(
+      mailbox_, format, size_, color_space, usage, is_thread_safe);
+  EXPECT_TRUE(backing_);
+
+  // Check clearing.
+  if (!backing_->IsCleared()) {
+    backing_->SetCleared();
+    EXPECT_TRUE(backing_->IsCleared());
+  }
+
+  GLenum expected_target = GL_TEXTURE_2D;
+  shared_image_ =
+      shared_image_manager->Register(std::move(backing_), memory_type_tracker);
+
+  // Create and validate GLTexture representation.
+  auto gl_representation =
+      shared_image_representation_factory->ProduceGLTexture(mailbox_);
+
+  EXPECT_TRUE(gl_representation);
+  EXPECT_TRUE(gl_representation->GetTexture()->service_id());
+  EXPECT_EQ(expected_target, gl_representation->GetTexture()->target());
+  EXPECT_EQ(size_, gl_representation->size());
+  EXPECT_EQ(format, gl_representation->format());
+  EXPECT_EQ(color_space, gl_representation->color_space());
+  EXPECT_EQ(usage, gl_representation->usage());
+  gl_representation.reset();
+
+  // Create and Validate Skia Representations.
+  auto skia_representation =
+      shared_image_representation_factory->ProduceSkia(mailbox_, context_state);
+  EXPECT_TRUE(skia_representation);
+  std::vector<GrBackendSemaphore> begin_semaphores;
+  std::vector<GrBackendSemaphore> end_semaphores;
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
+      scoped_write_access;
+  scoped_write_access = skia_representation->BeginScopedWriteAccess(
+      &begin_semaphores, &end_semaphores);
+  auto* surface = scoped_write_access->surface();
+  EXPECT_TRUE(surface);
+  EXPECT_EQ(size_.width(), surface->width());
+  EXPECT_EQ(size_.height(), surface->height());
+  EXPECT_TRUE(begin_semaphores.empty());
+  EXPECT_TRUE(end_semaphores.empty());
+  scoped_write_access.reset();
+
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>
+      scoped_read_access;
+  scoped_read_access = skia_representation->BeginScopedReadAccess(
+      &begin_semaphores, &end_semaphores);
+  auto* promise_texture = scoped_read_access->promise_image_texture();
+  EXPECT_TRUE(promise_texture);
+  EXPECT_TRUE(begin_semaphores.empty());
+  EXPECT_TRUE(end_semaphores.empty());
+  GrBackendTexture backend_texture = promise_texture->backendTexture();
+  EXPECT_TRUE(backend_texture.isValid());
+  EXPECT_EQ(size_.width(), backend_texture.width());
+  EXPECT_EQ(size_.height(), backend_texture.height());
+  scoped_read_access.reset();
+  skia_representation.reset();
+}
+
+CreateAndValidateSharedImageRepresentations::
+    ~CreateAndValidateSharedImageRepresentations() {
+  shared_image_.reset();
+  EXPECT_FALSE(mailbox_manager_->ConsumeTexture(mailbox_));
+}
+
 INSTANTIATE_TEST_SUITE_P(Service,
                          SharedImageBackingFactoryGLTextureTest,
+                         ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         SharedImageBackingFactoryGLTextureThreadSafeTest,
                          ::testing::Bool());
 INSTANTIATE_TEST_SUITE_P(Service,
                          SharedImageBackingFactoryGLTextureWithGMBTest,

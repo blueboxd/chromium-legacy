@@ -19,9 +19,14 @@
 
 namespace device {
 
-FidoBleDevice::FidoBleDevice(BluetoothAdapter* adapter, std::string address) {
+FidoBleDevice::FidoBleDevice(BluetoothAdapter* adapter,
+                             std::string address,
+                             Type type) {
+  const BluetoothUUID service_uuid(
+      type == Type::kCaBLE ? kCableAdvertisementUUID128 : kFidoServiceUUID);
+
   connection_ = std::make_unique<FidoBleConnection>(
-      adapter, std::move(address),
+      adapter, std::move(address), std::move(service_uuid),
       base::BindRepeating(&FidoBleDevice::OnStatusMessage,
                           weak_factory_.GetWeakPtr()));
 }

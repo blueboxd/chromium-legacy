@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/command_buffer/service/shared_image_test_utils.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_feature_info.h"
@@ -72,47 +73,6 @@ class SharedImageBackingFactoryAHBTest : public testing::Test {
   }
 
   GrContext* gr_context() { return context_state_->gr_context(); }
-
-  std::vector<uint8_t> ReadPixels(Mailbox mailbox, gfx::Size size) {
-    auto skia_representation =
-        shared_image_representation_factory_->ProduceSkia(mailbox,
-                                                          context_state_.get());
-    EXPECT_TRUE(skia_representation);
-    std::vector<GrBackendSemaphore> begin_semaphores;
-    std::vector<GrBackendSemaphore> end_semaphores;
-    std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>
-        scoped_read_access;
-    scoped_read_access = skia_representation->BeginScopedReadAccess(
-        &begin_semaphores, &end_semaphores);
-    auto* promise_texture = scoped_read_access->promise_image_texture();
-    EXPECT_EQ(0u, begin_semaphores.size());
-    EXPECT_EQ(0u, end_semaphores.size());
-    EXPECT_TRUE(promise_texture);
-    GrBackendTexture backend_texture = promise_texture->backendTexture();
-    EXPECT_TRUE(backend_texture.isValid());
-    EXPECT_EQ(size.width(), backend_texture.width());
-    EXPECT_EQ(size.height(), backend_texture.height());
-
-    // Create an Sk Image from GrBackendTexture.
-    auto sk_image = SkImage::MakeFromTexture(
-        gr_context(), promise_texture->backendTexture(),
-        kTopLeft_GrSurfaceOrigin, kRGBA_8888_SkColorType, kOpaque_SkAlphaType,
-        nullptr);
-
-    SkImageInfo dst_info =
-        SkImageInfo::Make(size.width(), size.height(), kRGBA_8888_SkColorType,
-                          kOpaque_SkAlphaType, nullptr);
-
-    const int num_pixels = size.width() * size.height();
-    std::vector<uint8_t> dst_pixels(num_pixels * 4);
-
-    // Read back pixels from Sk Image.
-    EXPECT_TRUE(sk_image->readPixels(dst_info, dst_pixels.data(),
-                                     dst_info.minRowBytes(), 0, 0));
-    scoped_read_access.reset();
-
-    return dst_pixels;
-  }
 
  protected:
   scoped_refptr<gl::GLSurface> surface_;
@@ -239,7 +199,8 @@ TEST_F(SharedImageBackingFactoryAHBTest, GLSkiaGL) {
   api->glClearFn(GL_COLOR_BUFFER_BIT);
   gl_representation.reset();
 
-  auto dst_pixels = ReadPixels(mailbox, size);
+  auto dst_pixels = ReadPixels(mailbox, size, context_state_.get(),
+                               shared_image_representation_factory_.get());
 
   // Compare the pixel values.
   EXPECT_EQ(dst_pixels[0], 0);
@@ -275,7 +236,8 @@ TEST_F(SharedImageBackingFactoryAHBTest, InitialData) {
       shared_image_manager_.Register(std::move(backing),
                                      memory_type_tracker_.get());
 
-  auto dst_pixels = ReadPixels(mailbox, size);
+  auto dst_pixels = ReadPixels(mailbox, size, context_state_.get(),
+                               shared_image_representation_factory_.get());
 
   // Compare the pixel values.
   DCHECK(dst_pixels.size() == initial_data.size());

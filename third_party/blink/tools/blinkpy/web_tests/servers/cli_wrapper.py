@@ -38,7 +38,7 @@ import optparse
 from blinkpy.common.host import Host
 from blinkpy.common.system.log_utils import configure_logging
 from blinkpy.web_tests.port.factory import configuration_options
-
+from blinkpy.web_tests.port.base import ARTIFACTS_SUB_DIR
 
 class RawTextHelpFormatter(optparse.IndentedHelpFormatter):
     def format_description(self, description):
@@ -63,7 +63,8 @@ def main(server_constructor, input_fn=None, argv=None, description=None, **kwarg
     host = Host()
     port_obj = host.port_factory.get(options=options)
     if not options.output_dir:
-        options.output_dir = port_obj.default_results_directory()
+        options.output_dir = port_obj.host.filesystem.join(
+            port_obj.default_results_directory(), ARTIFACTS_SUB_DIR)
 
     # Create the output directory if it doesn't already exist.
     port_obj.host.filesystem.maybe_make_directory(options.output_dir)

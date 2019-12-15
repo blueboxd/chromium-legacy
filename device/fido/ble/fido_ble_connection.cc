@@ -151,10 +151,12 @@ void OnReadServiceRevisionBitfieldError(
 
 FidoBleConnection::FidoBleConnection(BluetoothAdapter* adapter,
                                      std::string device_address,
+                                     BluetoothUUID service_uuid,
                                      ReadCallback read_callback)
     : adapter_(adapter),
       address_(std::move(device_address)),
-      read_callback_(std::move(read_callback)) {
+      read_callback_(std::move(read_callback)),
+      service_uuid_(service_uuid) {
   DCHECK(adapter_);
   adapter_->AddObserver(this);
   DCHECK(!address_.empty());
@@ -170,12 +172,6 @@ BluetoothDevice* FidoBleConnection::GetBleDevice() {
 
 const BluetoothDevice* FidoBleConnection::GetBleDevice() const {
   return adapter_->GetDevice(address());
-}
-
-FidoBleConnection::FidoBleConnection(BluetoothAdapter* adapter,
-                                     std::string device_address)
-    : adapter_(adapter), address_(std::move(device_address)) {
-  adapter_->AddObserver(this);
 }
 
 void FidoBleConnection::Connect(ConnectionCallback callback) {
@@ -507,10 +503,7 @@ const BluetoothRemoteGattService* FidoBleConnection::GetFidoService() {
   BluetoothDevice* device = GetBleDevice();
 
   for (const auto* service : device->GetGattServices()) {
-    // This assumes that no device is representing as both a FIDO BLE
-    // and a caBLE device.
-    if (service->GetUUID() == BluetoothUUID(kFidoServiceUUID) ||
-        service->GetUUID() == BluetoothUUID(kCableAdvertisementUUID128)) {
+    if (service->GetUUID() == service_uuid_) {
       return service;
     }
   }

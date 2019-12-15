@@ -2349,8 +2349,7 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                          "step", "GenerateCompositorFrame");
   base::TimeTicks frame_time = CurrentBeginFrameArgs().frame_time;
-  fps_counter_->SaveTimeStamp(frame_time,
-                              !layer_tree_frame_sink_->context_provider());
+  fps_counter_->SaveTimeStamp(frame_time);
   rendering_stats_instrumentation_->IncrementFrameCount(1);
 
   memory_history_->SaveEntry(tile_manager_.memory_stats_from_last_assign());

@@ -59,7 +59,7 @@ bool ConstructV2Nonce(base::span<uint8_t, 12> out_nonce, uint32_t counter) {
 FidoCableDevice::EncryptionData::EncryptionData() = default;
 
 FidoCableDevice::FidoCableDevice(BluetoothAdapter* adapter, std::string address)
-    : FidoBleDevice(adapter, std::move(address)) {}
+    : FidoBleDevice(adapter, std::move(address), FidoBleDevice::Type::kCaBLE) {}
 
 FidoCableDevice::FidoCableDevice(std::unique_ptr<FidoBleConnection> connection)
     : FidoBleDevice(std::move(connection)) {}

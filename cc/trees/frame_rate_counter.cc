@@ -47,7 +47,7 @@ base::TimeDelta FrameRateCounter::RecentFrameInterval(size_t n) const {
 FrameRateCounter::FrameRateCounter(bool has_impl_thread)
     : has_impl_thread_(has_impl_thread), dropped_frame_count_(0) {}
 
-void FrameRateCounter::SaveTimeStamp(base::TimeTicks timestamp, bool software) {
+void FrameRateCounter::SaveTimeStamp(base::TimeTicks timestamp) {
   ring_buffer_.SaveToBuffer(timestamp);
 
   // Check if frame interval can be computed.

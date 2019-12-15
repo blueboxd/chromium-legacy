@@ -260,6 +260,7 @@ if __name__ == '__main__':
   port = host.port_factory.get()
   if options.output_dir:
     port.set_option_default('results_directory', options.output_dir)
+    output_dir = options.output_dir
   else:
     output_dir = tempfile.mkdtemp('webdriver_tests')
     _log.info('Using a temporary output dir %s', output_dir)
@@ -267,7 +268,7 @@ if __name__ == '__main__':
   path_finder = PathFinder(host.filesystem)
 
   # Starts WPT Serve to serve the WPT WebDriver test content.
-  port.start_wptserve()
+  port.start_wptserve(output_dir=output_dir)
 
   # WebDriverExpectations stores skipped and failed WebDriver tests.
   expectations = parse_webdriver_expectations(host, port)

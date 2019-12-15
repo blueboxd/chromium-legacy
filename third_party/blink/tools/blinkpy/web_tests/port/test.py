@@ -518,7 +518,7 @@ class TestPort(Port):
         return self._operating_system
 
     def default_results_directory(self):
-        return '/tmp/layout-test-results'
+        return '/tmp'
 
     def setup_test_run(self):
         pass

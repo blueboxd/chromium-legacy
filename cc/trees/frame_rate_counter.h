@@ -27,7 +27,7 @@ class FrameRateCounter {
   int dropped_frame_count() const { return dropped_frame_count_; }
   size_t time_stamp_history_size() const { return ring_buffer_.BufferSize(); }
 
-  void SaveTimeStamp(base::TimeTicks timestamp, bool software);
+  void SaveTimeStamp(base::TimeTicks timestamp);
 
   // n = 0 returns the oldest frame interval retained in the history, while n =
   // time_stamp_history_size() - 1 returns the most recent frame interval.

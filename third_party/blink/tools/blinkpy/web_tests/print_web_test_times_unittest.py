@@ -37,11 +37,11 @@ class PrintWebTestTimesTest(unittest.TestCase):
     def check(self, args, expected_output, files=None):
         host = MockHost()
         fs = host.filesystem
-        results_directory = host.port_factory.get().results_directory()
+        artifacts_directory = host.port_factory.get().artifacts_directory()
         if files:
             fs.files = files
         else:
-            fs.write_text_file(fs.join(results_directory, 'times_ms.json'), """
+            fs.write_text_file(fs.join(artifacts_directory, 'times_ms.json'), """
                 {"foo": {"foo1": {"fast1.html": 10,
                                   "fast2.html": 10,
                                   "slow1.html": 80},

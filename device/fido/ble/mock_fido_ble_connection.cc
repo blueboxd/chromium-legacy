@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "device/fido/ble/mock_fido_ble_connection.h"
+#include "base/bind_helpers.h"
+#include "device/bluetooth/public/cpp/bluetooth_uuid.h"
+#include "device/fido/ble/fido_ble_uuids.h"
 
 #include <utility>
 
@@ -10,7 +13,10 @@ namespace device {
 
 MockFidoBleConnection::MockFidoBleConnection(BluetoothAdapter* adapter,
                                              std::string device_address)
-    : FidoBleConnection(adapter, std::move(device_address)) {}
+    : FidoBleConnection(adapter,
+                        std::move(device_address),
+                        BluetoothUUID(kFidoServiceUUID),
+                        base::DoNothing()) {}
 
 MockFidoBleConnection::~MockFidoBleConnection() = default;
 

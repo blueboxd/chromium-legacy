@@ -5,13 +5,16 @@
 #include "gpu/command_buffer/service/shared_image_backing_factory_gl_texture.h"
 
 #include <algorithm>
+#include <list>
 #include <string>
 #include <utility>
 
 #include "base/feature_list.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -36,6 +39,10 @@
 #include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/trace_util.h"
+
+#if defined(OS_ANDROID)
+#include "gpu/command_buffer/service/shared_image_backing_egl_image.h"
+#endif
 
 namespace gpu {
 
@@ -784,9 +791,12 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     const gfx::ColorSpace& color_space,
     uint32_t usage,
     bool is_thread_safe) {
-  DCHECK(!is_thread_safe);
-  return CreateSharedImage(mailbox, format, size, color_space, usage,
-                           base::span<const uint8_t>());
+  if (is_thread_safe) {
+    return MakeEglImageBacking(mailbox, format, size, color_space, usage);
+  } else {
+    return CreateSharedImage(mailbox, format, size, color_space, usage,
+                             base::span<const uint8_t>());
+  }
 }
 
 std::unique_ptr<SharedImageBacking>
@@ -1137,6 +1147,42 @@ SharedImageBackingFactoryGLTexture::MakeBacking(
     return std::make_unique<SharedImageBackingGLTexture>(
         mailbox, format, size, color_space, usage, texture, attribs);
   }
+}
+
+std::unique_ptr<SharedImageBacking>
+SharedImageBackingFactoryGLTexture::MakeEglImageBacking(
+    const Mailbox& mailbox,
+    viz::ResourceFormat format,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    uint32_t usage) {
+#if defined(OS_ANDROID)
+  const FormatInfo& format_info = format_info_[format];
+  if (!format_info.enabled) {
+    DLOG(ERROR) << "MakeEglImageBacking: invalid format";
+    return nullptr;
+  }
+
+  DCHECK(!(usage & SHARED_IMAGE_USAGE_SCANOUT));
+
+  if (size.width() < 1 || size.height() < 1 ||
+      size.width() > max_texture_size_ || size.height() > max_texture_size_) {
+    DLOG(ERROR) << "MakeEglImageBacking: Invalid size";
+    return nullptr;
+  }
+
+  // Calculate SharedImage size in bytes.
+  size_t estimated_size;
+  if (!viz::ResourceSizes::MaybeSizeInBytes(size, format, &estimated_size)) {
+    DLOG(ERROR) << "MakeEglImageBacking: Failed to calculate SharedImage size";
+    return nullptr;
+  }
+  return std::make_unique<SharedImageBackingEglImage>(
+      mailbox, format, size, color_space, usage, estimated_size,
+      format_info.gl_format, format_info.gl_type);
+#else
+  return nullptr;
+#endif
 }
 
 SharedImageBackingFactoryGLTexture::FormatInfo::FormatInfo() = default;

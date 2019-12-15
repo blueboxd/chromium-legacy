@@ -131,10 +131,14 @@ sk_sp<PaintFilter> FETurbulence::CreateImageFilter() {
   // a frequency, not a period.
   float base_frequency_x = base_frequency_x_ / GetFilter()->Scale();
   float base_frequency_y = base_frequency_y_ / GetFilter()->Scale();
+
+  // Cap the number of octaves to the maximum detectable when rendered with
+  // 8 bits per pixel, plus one for higher bit depth.
+  int capped_num_octaves = std::min(NumOctaves(), 9);
   return sk_make_sp<TurbulencePaintFilter>(
       type, SkFloatToScalar(base_frequency_x),
-      SkFloatToScalar(base_frequency_y), NumOctaves(), SkFloatToScalar(Seed()),
-      StitchTiles() ? &size : nullptr, &rect);
+      SkFloatToScalar(base_frequency_y), capped_num_octaves,
+      SkFloatToScalar(Seed()), StitchTiles() ? &size : nullptr, &rect);
 }
 
 static WTF::TextStream& operator<<(WTF::TextStream& ts,

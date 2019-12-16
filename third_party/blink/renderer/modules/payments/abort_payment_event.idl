@@ -6,8 +6,8 @@
 
 [
     RuntimeEnabled=PaymentApp,
-    Constructor(DOMString type, ExtendableEventInit eventInitDict),
     Exposed=ServiceWorker
 ] interface AbortPaymentEvent : ExtendableEvent {
+    constructor(DOMString type, ExtendableEventInit eventInitDict);
     [CallWith=ScriptState, RaisesException] void respondWith(Promise<boolean> paymentAbortedResponse);
 };

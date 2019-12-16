@@ -6,13 +6,11 @@
 // https://w3c.github.io/accelerometer/#accelerometer-interface
 
 [
-    Constructor(optional SpatialSensorOptions sensorOptions),
-    ConstructorCallWith=ExecutionContext,
     SecureContext,
-    RaisesException=Constructor,
     MeasureAs=AccelerometerConstructor,
     Exposed=Window
 ] interface Accelerometer : Sensor {
+    [CallWith=ExecutionContext, RaisesException] constructor(optional SpatialSensorOptions sensorOptions);
     readonly attribute unrestricted double? x;
     readonly attribute unrestricted double? y;
     readonly attribute unrestricted double? z;

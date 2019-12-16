@@ -127,7 +127,8 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
   uint32_t options = network::mojom::kURLLoadOptionNone;
   network::ResourceRequest resource_request;
   resource_request.url = script_url;
-  resource_request.site_for_cookies = main_script_url;
+  resource_request.site_for_cookies =
+      net::SiteForCookies::FromUrl(main_script_url);
   resource_request.do_not_prompt_for_login = true;
   resource_request.headers = default_headers;
   resource_request.referrer_policy = Referrer::ReferrerPolicyForUrlRequest(

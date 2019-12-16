@@ -19,6 +19,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/socket_permission_request.h"
@@ -405,10 +406,15 @@ int32_t PepperTCPSocketMessageFilter::OnMsgConnect(
   if (!network_context)
     return PP_ERROR_FAILED;
 
+  RenderFrameHost* render_frame_host =
+      RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+  if (!render_frame_host)
+    return PP_ERROR_FAILED;
+
   // TODO(mmenke): Pass in correct NetworkIsolationKey.
   network_context->ResolveHost(net::HostPortPair(host, port),
-                               net::NetworkIsolationKey::Todo(), nullptr,
-                               receiver_.BindNewPipeAndPassRemote());
+                               render_frame_host->GetNetworkIsolationKey(),
+                               nullptr, receiver_.BindNewPipeAndPassRemote());
   receiver_.set_disconnect_handler(
       base::BindOnce(&PepperTCPSocketMessageFilter::OnComplete,
                      base::Unretained(this), net::ERR_NAME_NOT_RESOLVED,

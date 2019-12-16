@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_VAAPI_VAAPI_VP9_ACCELERATOR_H_
-#define MEDIA_GPU_VAAPI_VAAPI_VP9_ACCELERATOR_H_
+#ifndef MEDIA_GPU_VAAPI_VP9_VAAPI_VIDEO_DECODER_DELEGATE_H_
+#define MEDIA_GPU_VAAPI_VP9_VAAPI_VIDEO_DECODER_DELEGATE_H_
 
+#include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "media/filters/vp9_parser.h"
+#include "media/gpu/vaapi/vaapi_video_decoder_delegate.h"
 #include "media/gpu/vp9_decoder.h"
 
 namespace media {
 
-template <class T> class DecodeSurfaceHandler;
-class VASurface;
 class VP9Picture;
-class VaapiWrapper;
 
-class VaapiVP9Accelerator : public VP9Decoder::VP9Accelerator {
+class VP9VaapiVideoDecoderDelegate : public VP9Decoder::VP9Accelerator,
+                                     public VaapiVideoDecoderDelegate {
  public:
-  VaapiVP9Accelerator(DecodeSurfaceHandler<VASurface>* vaapi_dec,
-                      scoped_refptr<VaapiWrapper> vaapi_wrapper);
-  ~VaapiVP9Accelerator() override;
+  VP9VaapiVideoDecoderDelegate(DecodeSurfaceHandler<VASurface>* const vaapi_dec,
+                               scoped_refptr<VaapiWrapper> vaapi_wrapper);
+  ~VP9VaapiVideoDecoderDelegate() override;
 
   // VP9Decoder::VP9Accelerator implementation.
   scoped_refptr<VP9Picture> CreateVP9Picture() override;
@@ -35,15 +35,9 @@ class VaapiVP9Accelerator : public VP9Decoder::VP9Accelerator {
   bool GetFrameContext(scoped_refptr<VP9Picture> pic,
                        Vp9FrameContext* frame_ctx) override;
 
- private:
-  const scoped_refptr<VaapiWrapper> vaapi_wrapper_;
-  DecodeSurfaceHandler<VASurface>* vaapi_dec_;
-
-  SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(VaapiVP9Accelerator);
+  DISALLOW_COPY_AND_ASSIGN(VP9VaapiVideoDecoderDelegate);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_VAAPI_VAAPI_VP9_ACCELERATOR_H_
+#endif  // MEDIA_GPU_VAAPI_VP9_VAAPI_VIDEO_DECODER_DELEGATE_H_

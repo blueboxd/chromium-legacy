@@ -7,11 +7,9 @@
 [
     RuntimeEnabled=WebNFC,
     SecureContext,
-    Constructor(NDEFRecordInit recordInit),
-    ConstructorCallWith=ExecutionContext,
-    RaisesException=Constructor,
     Exposed=Window
 ] interface NDEFRecord {
+    [CallWith=ExecutionContext, RaisesException] constructor(NDEFRecordInit recordInit);
     readonly attribute USVString recordType;
     readonly attribute USVString? mediaType;
     readonly attribute USVString? id;

@@ -547,6 +547,31 @@ void ParamTraits<net::LoadTimingInfo>::Log(const param_type& p,
   l->append(")");
 }
 
+void ParamTraits<net::SiteForCookies>::Write(base::Pickle* m,
+                                             const param_type& p) {
+  WriteParam(m, p.scheme());
+  WriteParam(m, p.registrable_domain());
+}
+
+bool ParamTraits<net::SiteForCookies>::Read(const base::Pickle* m,
+                                            base::PickleIterator* iter,
+                                            param_type* r) {
+  std::string scheme, registrable_domain;
+  if (!ReadParam(m, iter, &scheme) || !ReadParam(m, iter, &registrable_domain))
+    return false;
+
+  return net::SiteForCookies::FromWire(scheme, registrable_domain, r);
+}
+
+void ParamTraits<net::SiteForCookies>::Log(const param_type& p,
+                                           std::string* l) {
+  l->append("(");
+  LogParam(p.scheme(), l);
+  l->append(",");
+  LogParam(p.registrable_domain(), l);
+  l->append(")");
+}
+
 void ParamTraits<url::Origin>::Write(base::Pickle* m, const url::Origin& p) {
   WriteParam(m, p.GetTupleOrPrecursorTupleIfOpaque().scheme());
   WriteParam(m, p.GetTupleOrPrecursorTupleIfOpaque().host());

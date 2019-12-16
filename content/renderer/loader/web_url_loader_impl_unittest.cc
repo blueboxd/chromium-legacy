@@ -324,7 +324,8 @@ class WebURLLoaderImplTest : public testing::Test {
     redirect_info.status_code = 302;
     redirect_info.new_method = "GET";
     redirect_info.new_url = GURL(kTestURL);
-    redirect_info.new_site_for_cookies = GURL(kTestURL);
+    redirect_info.new_site_for_cookies =
+        net::SiteForCookies::FromUrl(GURL(kTestURL));
     peer()->OnReceivedRedirect(redirect_info,
                                network::mojom::URLResponseHead::New());
     EXPECT_TRUE(client()->did_receive_redirect());
@@ -336,7 +337,8 @@ class WebURLLoaderImplTest : public testing::Test {
     redirect_info.status_code = 302;
     redirect_info.new_method = "GET";
     redirect_info.new_url = GURL(kTestHTTPSURL);
-    redirect_info.new_site_for_cookies = GURL(kTestHTTPSURL);
+    redirect_info.new_site_for_cookies =
+        net::SiteForCookies::FromUrl(GURL(kTestHTTPSURL));
     peer()->OnReceivedRedirect(redirect_info,
                                network::mojom::URLResponseHead::New());
     EXPECT_TRUE(client()->did_receive_redirect());

@@ -511,7 +511,8 @@ TEST_F(AppCacheHostTest, SelectCacheAllowed) {
     AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
                       mojo::NullRemote(), &service_);
     host.set_frontend_for_testing(&mock_frontend_);
-    host.SetFirstPartyUrlForTesting(kDocAndOriginUrl);
+    host.SetSiteForCookiesForTesting(
+        net::SiteForCookies::FromUrl(kDocAndOriginUrl));
     host.SelectCache(kDocAndOriginUrl, blink::mojom::kAppCacheNoCacheId,
                      kManifestUrl);
     EXPECT_EQ(1, mock_quota_proxy->GetInUseCount(kOrigin));
@@ -560,7 +561,8 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
     AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
                       mojo::NullRemote(), &service_);
     host.set_frontend_for_testing(&mock_frontend_);
-    host.SetFirstPartyUrlForTesting(kDocAndOriginUrl);
+    host.SetSiteForCookiesForTesting(
+        net::SiteForCookies::FromUrl(kDocAndOriginUrl));
     host.SelectCache(kDocAndOriginUrl, blink::mojom::kAppCacheNoCacheId,
                      kManifestUrl);
     EXPECT_EQ(1, mock_quota_proxy->GetInUseCount(kOrigin));

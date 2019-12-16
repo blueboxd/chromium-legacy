@@ -40,7 +40,9 @@ class CONTENT_EXPORT AppCacheRequest {
   const std::string& GetMethod() const { return request_.method; }
 
   // Used for cookie policy.
-  const GURL& GetSiteForCookies() const { return request_.site_for_cookies; }
+  net::SiteForCookies GetSiteForCookies() const {
+    return request_.site_for_cookies;
+  }
 
   // The referrer for this request.
   const GURL GetReferrer() const { return request_.referrer; }

@@ -31,9 +31,9 @@
 // https://drafts.csswg.org/css-font-loading/#fontfacesetloadevent
 
 [
-  Constructor(DOMString type, optional FontFaceSetLoadEventInit eventInitDict),
   // TODO(loonybear): Exposed=(Window,Worker)
   Exposed=Window
 ] interface FontFaceSetLoadEvent : Event {
+    constructor(DOMString type, optional FontFaceSetLoadEventInit eventInitDict);
     [SameObject] readonly attribute FrozenArray<FontFace> fontfaces;
 };

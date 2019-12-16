@@ -27,6 +27,7 @@ typemaps = [
   "//services/network/public/cpp/p2p.typemap",
   "//services/network/public/cpp/proxy_config.typemap",
   "//services/network/public/cpp/proxy_config_with_annotation.typemap",
+  "//services/network/public/cpp/site_for_cookies.typemap",
   "//services/network/public/cpp/url_loader_completion_status.typemap",
   "//services/network/public/cpp/url_request.typemap",
   "//services/network/public/cpp/url_request_redirect_info.typemap",

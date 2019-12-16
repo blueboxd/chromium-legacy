@@ -15,10 +15,9 @@ typedef (DOMString or ArrayBuffer or ArrayBufferView or NDEFMessageInit)
 [
     RuntimeEnabled=WebNFC,
     SecureContext,
-    Constructor(),
-    ConstructorCallWith=ExecutionContext,
     Exposed=Window
 ] interface NDEFWriter {
+    [CallWith=ExecutionContext] constructor();
     [CallWith=ScriptState, RaisesException] Promise<void> push(
         NDEFMessageSource message,
         optional NDEFPushOptions options={});

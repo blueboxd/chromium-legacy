@@ -6,12 +6,10 @@
 // https://crbug.com/867904
 [
     RuntimeEnabled=PaymentRequestMerchantValidationEvent,
-    Constructor(DOMString type, optional MerchantValidationEventInit eventInitDict),
-    ConstructorCallWith=ScriptState,
-    RaisesException=Constructor,
     SecureContext,
     Exposed=Window
 ] interface MerchantValidationEvent : Event {
+  [CallWith=ScriptState, RaisesException] constructor(DOMString type, optional MerchantValidationEventInit eventInitDict);
   readonly attribute DOMString methodName;
   readonly attribute USVString validationURL;
   [CallWith=ScriptState,RaisesException] void complete(Promise<any> merchantSessionPromise);

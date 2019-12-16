@@ -26,8 +26,8 @@
 // https://w3c.github.io/mediacapture-main/#mediastreamtrackevent
 
 [
-    Exposed=Window,
-    Constructor(DOMString type, MediaStreamTrackEventInit eventInitDict)
+    Exposed=Window
 ] interface MediaStreamTrackEvent : Event {
+  constructor(DOMString type, MediaStreamTrackEventInit eventInitDict);
    [SameObject] readonly attribute MediaStreamTrack track;
 };

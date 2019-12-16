@@ -5,9 +5,8 @@
 // https://drafts.csswg.org/web-animations/#the-documenttimeline-interface
 
 [
-    Constructor(optional DocumentTimelineOptions options),
-    ConstructorCallWith=ExecutionContext,
     RuntimeEnabled=WebAnimationsAPI,
     Exposed=Window
 ] interface DocumentTimeline : AnimationTimeline {
+  [CallWith=ExecutionContext] constructor(optional DocumentTimelineOptions options);
 };

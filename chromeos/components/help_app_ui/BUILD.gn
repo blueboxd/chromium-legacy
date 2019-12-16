@@ -21,6 +21,7 @@ static_library("help_app_ui") {
     "//chromeos/resources:help_app_bundle_resources",
     "//chromeos/resources:help_app_resources",
     "//content/public/browser",
+    "//ui/resources:webui_resources_grd_grit",
     "//ui/webui",
   ]
 }

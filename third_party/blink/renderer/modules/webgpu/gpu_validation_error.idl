@@ -5,8 +5,8 @@
 // https://gpuweb.github.io/gpuweb/
 
 [
-    Constructor(DOMString message),
     Exposed(Window WebGPU, Worker WebGPU)
 ] interface GPUValidationError {
+    constructor(DOMString message);
     readonly attribute DOMString message;
 };

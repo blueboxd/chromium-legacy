@@ -37,10 +37,9 @@ enum EndOfStreamError {
 
 [
     ActiveScriptWrappable,
-    Constructor,
-    ConstructorCallWith=ExecutionContext,
     Exposed(Window MediaSourceStable, DedicatedWorker MediaSourceInWorkers, SharedWorker MediaSourceInWorkers)
 ] interface MediaSource : EventTarget {
+    [CallWith=ExecutionContext] constructor();
     // All the source buffers created by this object.
     readonly attribute SourceBufferList sourceBuffers;
 

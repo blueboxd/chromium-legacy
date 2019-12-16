@@ -5,11 +5,10 @@
 // Represents a CSS var() reference in a CSS value.
 // Spec: https://drafts.css-houdini.org/css-typed-om/#cssvariablereferencevalue
 [
-    Constructor(CSSOMString variable, optional CSSUnparsedValue? fallback = null),
     Exposed=(Window,LayoutWorklet,PaintWorklet),
-    RaisesException=Constructor,
     ImplementedAs=CSSStyleVariableReferenceValue
 ] interface CSSVariableReferenceValue {
+    [RaisesException] constructor(CSSOMString variable, optional CSSUnparsedValue? fallback = null);
     [RaisesException=Setter] attribute CSSOMString variable;
     readonly attribute CSSUnparsedValue? fallback;
 };

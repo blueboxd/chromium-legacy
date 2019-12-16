@@ -27,12 +27,10 @@
 // See https://webaudio.github.io/web-audio-api/#AudioBufferSourceNode
 [
     Exposed=Window,
-    Constructor(BaseAudioContext context, optional AudioBufferSourceOptions options),
-    RaisesException=Constructor,
     ActiveScriptWrappable,
     Measure
-]
-interface AudioBufferSourceNode : AudioScheduledSourceNode {
+] interface AudioBufferSourceNode : AudioScheduledSourceNode {
+    [RaisesException] constructor(BaseAudioContext context, optional AudioBufferSourceOptions options);
     [RaisesException=Setter] attribute AudioBuffer? buffer;
 
     readonly attribute AudioParam playbackRate;

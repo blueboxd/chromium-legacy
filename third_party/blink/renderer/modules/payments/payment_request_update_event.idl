@@ -6,9 +6,8 @@
 
 [
     RuntimeEnabled=PaymentRequest,
-    Constructor(DOMString type, optional PaymentRequestUpdateEventInit eventInitDict),
-    ConstructorCallWith=ExecutionContext,
     Exposed=Window
 ] interface PaymentRequestUpdateEvent : Event {
+    [CallWith=ExecutionContext] constructor(DOMString type, optional PaymentRequestUpdateEventInit eventInitDict);
     [CallWith=ScriptState,RaisesException] void updateWith(Promise<PaymentDetailsUpdate> detailsPromise);
 };

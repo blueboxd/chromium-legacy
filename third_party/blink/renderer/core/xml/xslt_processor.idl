@@ -31,11 +31,10 @@
 // https://hg.mozilla.org/mozilla-central/file/012853bd80b7/dom/webidl/XSLTProcessor.webidl
 
 [
-    Constructor,
-    ConstructorCallWith=Document,
     RuntimeEnabled=XSLT,
     MeasureAs=XSLTProcessor
 ] interface XSLTProcessor {
+    [CallWith=Document] constructor();
 
     void importStylesheet(Node style);
     // TODO(foolip): In Gecko, the transformTo*() methods throw an exception in

@@ -5,9 +5,9 @@
 // TODO(sahel): Add link to w3c. https://crbugs.com/907601
 
 [
-    Constructor(DOMString type, boolean bubbles, optional OverscrollEventInit eventInitDict),
     RuntimeEnabled=OverscrollCustomization
 ] interface OverscrollEvent : Event {
+    constructor(DOMString type, boolean bubbles, optional OverscrollEventInit eventInitDict);
     readonly attribute double deltaX;
     readonly attribute double deltaY;
 };

@@ -4,7 +4,6 @@
 
 #include "ui/base/ime/win/input_method_win_tsf.h"
 
-#include "ui/base/ime/input_method_keyboard_controller.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/win/tsf_bridge.h"
 #include "ui/base/ime/win/tsf_event_router.h"
@@ -199,12 +198,9 @@ void InputMethodWinTSF::ConfirmCompositionText(bool reset_engine,
 }
 
 void InputMethodWinTSF::ShowVirtualKeyboardIfEnabled() {
-  // TODO(crbug.com/1031786): Enable this once TSF input pane policy bug is
-  // fixed if (ui::TSFBridge::GetInstance())
-  //   ui::TSFBridge::GetInstance()->SetInputPanelPolicy(
-  //       /*inputPanelPolicyManual*/ false);
-  if (auto* controller = GetInputMethodKeyboardController())
-    controller->DisplayVirtualKeyboard();
+  if (ui::TSFBridge::GetInstance())
+    ui::TSFBridge::GetInstance()->SetInputPanelPolicy(
+        /*inputPanelPolicyManual*/ false);
 }
 
 }  // namespace ui

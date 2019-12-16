@@ -390,8 +390,7 @@ void URLRequestJob::NotifyHeadersComplete() {
     base::WeakPtr<URLRequestJob> weak_this(weak_factory_.GetWeakPtr());
 
     RedirectInfo redirect_info = RedirectInfo::ComputeRedirectInfo(
-        request_->method(), request_->url(),
-        request_->site_for_cookies().RepresentativeUrl(),
+        request_->method(), request_->url(), request_->site_for_cookies(),
         request_->first_party_url_policy(), request_->referrer_policy(),
         request_->referrer(), http_status_code, new_location,
         net::RedirectUtil::GetReferrerPolicyHeader(

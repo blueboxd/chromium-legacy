@@ -9,10 +9,9 @@ typedef (sequence<sequence<ByteString>> or record<ByteString, ByteString>) Heade
 // https://fetch.spec.whatwg.org/#headers-class
 
 [
-    Constructor(optional HeadersInit init),
-    Exposed=(Window,Worker),
-    RaisesException=Constructor
+    Exposed=(Window,Worker)
 ] interface Headers {
+    [RaisesException] constructor(optional HeadersInit init);
     [RaisesException] void append(ByteString name, ByteString value);
     [ImplementedAs=remove, RaisesException] void delete(ByteString key);
     [RaisesException] ByteString? get(ByteString key);

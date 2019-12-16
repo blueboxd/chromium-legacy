@@ -5,9 +5,9 @@
 // https://wicg.github.io/webusb/#events
 
 [
-    Constructor(DOMString type, USBConnectionEventInit eventInitDict),
     Exposed(DedicatedWorker WebUSBOnDedicatedWorkers, Window WebUSB),
     SecureContext
 ] interface USBConnectionEvent : Event {
+    constructor(DOMString type, USBConnectionEventInit eventInitDict);
     [SameObject] readonly attribute USBDevice device;
 };

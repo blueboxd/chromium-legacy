@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 [
-    Constructor(DOMString type, optional MojoInterfaceRequestEventInit eventInitDict),
     Exposed=(Window,Worker),
     RuntimeEnabled=MojoJSTest
 ] interface MojoInterfaceRequestEvent : Event {
+    constructor(DOMString type, optional MojoInterfaceRequestEventInit eventInitDict);
     readonly attribute MojoHandle handle;
 };

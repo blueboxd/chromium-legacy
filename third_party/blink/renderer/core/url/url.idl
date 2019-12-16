@@ -27,11 +27,10 @@
 // https://url.spec.whatwg.org/#url
 
 [
-    Constructor(USVString url, optional USVString base),
     Exposed=(Window,Worker),
-    ImplementedAs=DOMURL,
-    RaisesException=Constructor
+    ImplementedAs=DOMURL
 ] interface URL {
+    [RaisesException] constructor(USVString url, optional USVString base);
     stringifier attribute USVString href;
     readonly attribute USVString origin;
 

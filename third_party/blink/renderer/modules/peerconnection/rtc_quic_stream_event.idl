@@ -5,8 +5,8 @@
 // https://w3c.github.io/webrtc-quic/#rtcquicstreamevent
 [
    RuntimeEnabled=RTCQuicTransport,
-   Constructor(DOMString type, optional RTCQuicStreamEventInit eventInitDict),
    Exposed=Window
 ] interface RTCQuicStreamEvent : Event {
+    constructor(DOMString type, optional RTCQuicStreamEventInit eventInitDict);
     readonly attribute RTCQuicStream stream;
 };

@@ -32,10 +32,9 @@
 
 [
     Exposed=(DedicatedWorker,SharedWorker),
-    Constructor,
-    ConstructorCallWith=ExecutionContext,
     Measure
 ] interface FileReaderSync {
+    [CallWith=ExecutionContext] constructor();
     [RaisesException] ArrayBuffer readAsArrayBuffer(Blob blob);
     [RaisesException] DOMString readAsBinaryString(Blob blob);
     [RaisesException] DOMString readAsText(Blob blob, optional DOMString label);

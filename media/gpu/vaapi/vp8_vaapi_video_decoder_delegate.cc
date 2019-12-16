@@ -2,30 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/vaapi/vaapi_vp8_accelerator.h"
+#include "media/gpu/vaapi/vp8_vaapi_video_decoder_delegate.h"
 
 #include "media/gpu/decode_surface_handler.h"
+#include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_common.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 
 namespace media {
 
-VaapiVP8Accelerator::VaapiVP8Accelerator(
-    DecodeSurfaceHandler<VASurface>* vaapi_dec,
+VP8VaapiVideoDecoderDelegate::VP8VaapiVideoDecoderDelegate(
+    DecodeSurfaceHandler<VASurface>* const vaapi_dec,
     scoped_refptr<VaapiWrapper> vaapi_wrapper)
-    : vaapi_wrapper_(vaapi_wrapper), vaapi_dec_(vaapi_dec) {
-  DCHECK(vaapi_wrapper_);
-  DCHECK(vaapi_dec_);
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-}
+    : VaapiVideoDecoderDelegate(vaapi_dec, std::move(vaapi_wrapper)) {}
 
-VaapiVP8Accelerator::~VaapiVP8Accelerator() {
-  // TODO(mcasas): consider enabling the checker, https://crbug.com/789160
-  // DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
+VP8VaapiVideoDecoderDelegate::~VP8VaapiVideoDecoderDelegate() = default;
 
-scoped_refptr<VP8Picture> VaapiVP8Accelerator::CreateVP8Picture() {
+scoped_refptr<VP8Picture> VP8VaapiVideoDecoderDelegate::CreateVP8Picture() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const auto va_surface = vaapi_dec_->CreateSurface();
   if (!va_surface)
@@ -34,7 +28,7 @@ scoped_refptr<VP8Picture> VaapiVP8Accelerator::CreateVP8Picture() {
   return new VaapiVP8Picture(std::move(va_surface));
 }
 
-bool VaapiVP8Accelerator::SubmitDecode(
+bool VP8VaapiVideoDecoderDelegate::SubmitDecode(
     scoped_refptr<VP8Picture> pic,
     const Vp8ReferenceFrameVector& reference_frames) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -49,7 +43,8 @@ bool VaapiVP8Accelerator::SubmitDecode(
   return vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(va_surface_id);
 }
 
-bool VaapiVP8Accelerator::OutputPicture(const scoped_refptr<VP8Picture>& pic) {
+bool VP8VaapiVideoDecoderDelegate::OutputPicture(
+    const scoped_refptr<VP8Picture>& pic) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const VaapiVP8Picture* vaapi_pic = pic->AsVaapiVP8Picture();

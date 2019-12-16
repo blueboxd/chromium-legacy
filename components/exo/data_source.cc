@@ -302,4 +302,8 @@ void DataSource::OnTextRead(ReadTextDataCallback callback,
   std::move(callback).Run(mime_type, std::move(output));
 }
 
+bool DataSource::CanBeDataSourceForCopy(Surface *surface) const {
+  return delegate_->CanAcceptDataEventsForSurface(surface);
+}
+
 }  // namespace exo

@@ -26,10 +26,10 @@
 // https://w3c.github.io/speech-api/#speechgrammarlist
 
 [
-    Constructor,
     Measure,
     NoInterfaceObject
 ] interface SpeechGrammarList {
+    constructor();
     readonly attribute unsigned long length;
     [Measure] getter SpeechGrammar item(unsigned long index);
     [CallWith=ScriptState, Measure] void addFromUri(DOMString src, optional float weight);

@@ -268,7 +268,7 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
         params->network_isolation_key();
   }
   request->do_not_prompt_for_login = params->do_not_prompt_for_login();
-  request->site_for_cookies = params->url();
+  request->site_for_cookies = net::SiteForCookies::FromUrl(params->url());
   request->referrer = params->referrer();
   request->referrer_policy = params->referrer_policy();
   request->is_main_frame = true;

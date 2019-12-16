@@ -187,7 +187,8 @@ bool AppBrowserController::HasTitlebarToolbar() const {
   // Show titlebar toolbar for Terminal System App, but not other system apps.
   // TODO(crbug.com/846546): Generalise this as a SystemWebApp capability.
   if (IsForSystemWebApp()) {
-    return GetAppIdForSystemWebApp(browser()->profile(),
+    return !browser_->is_type_app_popup() &&
+           GetAppIdForSystemWebApp(browser()->profile(),
                                    SystemAppType::TERMINAL) == GetAppId();
   }
   // Show for all other apps.

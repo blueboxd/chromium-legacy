@@ -213,10 +213,13 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
            !pending_selected_manifest_url_.is_empty();
   }
 
-  const GURL& first_party_url() const { return first_party_url_; }
-  void SetFirstPartyUrlForTesting(const GURL& url) {
-    first_party_url_ = url;
-    first_party_url_initialized_ = true;
+  const net::SiteForCookies& site_for_cookies() const {
+    return site_for_cookies_;
+  }
+  void SetSiteForCookiesForTesting(
+      const net::SiteForCookies& site_for_cookies) {
+    site_for_cookies_ = site_for_cookies;
+    site_for_cookies_initialized_ = true;
   }
 
   // Returns a weak pointer reference to the host.
@@ -379,9 +382,9 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   // Used to inform the QuotaManager of what origins are currently in use.
   url::Origin origin_in_use_;
 
-  // First party url to be used in policy checks.
-  GURL first_party_url_;
-  bool first_party_url_initialized_ = false;
+  // To be used in policy checks.
+  net::SiteForCookies site_for_cookies_;
+  bool site_for_cookies_initialized_ = false;
 
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheGroupTest, CleanupUnusedGroup);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheGroupTest, QueueUpdate);

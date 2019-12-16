@@ -8,10 +8,10 @@
 // (e.g. backgroundColor, textDecoration, etc.).
 // Explainer: https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/master/EditContext/explainer.md
 [
-    Constructor(optional TextFormatUpdateEventInit options),
     Exposed=Window,
     RuntimeEnabled=EditContext
 ] interface TextFormatUpdateEvent : Event {
+    constructor(optional TextFormatUpdateEventInit options);
     readonly attribute unsigned long formatRangeStart;
     readonly attribute unsigned long formatRangeEnd;
     readonly attribute DOMString underlineColor;

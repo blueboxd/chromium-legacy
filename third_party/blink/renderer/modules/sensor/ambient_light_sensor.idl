@@ -7,12 +7,10 @@
 
 [
     RuntimeEnabled=SensorExtraClasses,
-    Constructor(optional SensorOptions sensorOptions),
-    ConstructorCallWith=ExecutionContext,
     SecureContext,
-    RaisesException=Constructor,
     MeasureAs=AmbientLightSensorConstructor,
     Exposed=Window
 ] interface AmbientLightSensor : Sensor {
+    [CallWith=ExecutionContext, RaisesException] constructor(optional SensorOptions sensorOptions);
     readonly attribute unrestricted double? illuminance;
 };

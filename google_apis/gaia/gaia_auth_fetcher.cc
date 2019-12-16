@@ -301,9 +301,10 @@ void GaiaAuthFetcher::CreateAndStartGaiaFetcher(
   if (credentials_mode != network::mojom::CredentialsMode::kOmit) {
     DCHECK_EQ(GaiaUrls::GetInstance()->gaia_url(), gaia_gurl.GetOrigin())
         << gaia_gurl;
-    resource_request->site_for_cookies = GaiaUrls::GetInstance()->gaia_url();
     url::Origin origin =
         url::Origin::Create(GaiaUrls::GetInstance()->gaia_url());
+    resource_request->site_for_cookies =
+        net::SiteForCookies::FromOrigin(origin);
     resource_request->trusted_params =
         network::ResourceRequest::TrustedParams();
     resource_request->trusted_params->network_isolation_key =

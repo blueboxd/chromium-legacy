@@ -5,9 +5,9 @@
 // https://w3c.github.io/push-api/#pushevent-interface
 
 [
-    Constructor(DOMString type, optional PushEventInit eventInitDict),
     Exposed=ServiceWorker,
     RuntimeEnabled=PushMessaging
 ] interface PushEvent : ExtendableEvent {
+    constructor(DOMString type, optional PushEventInit eventInitDict);
     readonly attribute PushMessageData? data;
 };

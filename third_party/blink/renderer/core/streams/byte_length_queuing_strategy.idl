@@ -6,10 +6,9 @@
 
 [
     Exposed=(Window,Worker,Worklet),
-    ConstructorCallWith=ScriptState,
-    Constructor([PermissiveDictionaryConversion] QueuingStrategyInit init),
     MeasureAs=ByteLengthQueuingStrategyConstructor
 ] interface ByteLengthQueuingStrategy {
+    [CallWith=ScriptState] constructor([PermissiveDictionaryConversion] QueuingStrategyInit init);
     [CallWith=ScriptState] readonly attribute any highWaterMark;
 
     // size is an accessor that returns a function.

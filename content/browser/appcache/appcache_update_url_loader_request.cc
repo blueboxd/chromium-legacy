@@ -90,7 +90,7 @@ std::string AppCacheUpdateJob::UpdateURLLoaderRequest::GetMimeType() const {
 
 void AppCacheUpdateJob::UpdateURLLoaderRequest::SetSiteForCookies(
     const GURL& site_for_cookies) {
-  request_.site_for_cookies = site_for_cookies;
+  request_.site_for_cookies = net::SiteForCookies::FromUrl(site_for_cookies);
 }
 
 void AppCacheUpdateJob::UpdateURLLoaderRequest::SetInitiator(

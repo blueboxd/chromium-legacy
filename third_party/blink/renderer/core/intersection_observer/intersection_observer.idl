@@ -9,11 +9,9 @@ callback IntersectionObserverCallback = void (sequence<IntersectionObserverEntry
 [
     Exposed=Window,
     ActiveScriptWrappable,
-    Constructor(IntersectionObserverCallback callback, optional IntersectionObserverInit options),
-    ConstructorCallWith=ScriptState,
-    MeasureAs=IntersectionObserver_Constructor,
-    RaisesException=Constructor
+    MeasureAs=IntersectionObserver_Constructor
 ] interface IntersectionObserver {
+    [CallWith=ScriptState, RaisesException] constructor(IntersectionObserverCallback callback, optional IntersectionObserverInit options);
     readonly attribute Element? root;
     readonly attribute DOMString rootMargin;
     // https://github.com/WICG/IntersectionObserver/issues/114

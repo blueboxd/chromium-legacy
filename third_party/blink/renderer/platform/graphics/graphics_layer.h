@@ -287,7 +287,7 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   // Helper functions used by settors to keep layer's the state consistent.
   void UpdateChildList();
   void UpdateLayerIsDrawable();
-  void UpdateContentsRect();
+  void UpdateContentsLayerBounds();
 
   void SetContentsTo(cc::Layer*, bool prevent_contents_opaque_changes);
   void SetupContentsLayer(cc::Layer*);

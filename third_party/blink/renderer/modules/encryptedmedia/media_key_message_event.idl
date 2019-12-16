@@ -34,9 +34,9 @@ enum MediaKeyMessageType {
 
 [
     Exposed=Window,
-    Constructor(DOMString type, MediaKeyMessageEventInit eventInitDict),
     SecureContext
 ] interface MediaKeyMessageEvent : Event {
+    constructor(DOMString type, MediaKeyMessageEventInit eventInitDict);
     readonly attribute MediaKeyMessageType messageType;
     readonly attribute ArrayBuffer message;
 };

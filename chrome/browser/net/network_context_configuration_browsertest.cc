@@ -547,12 +547,13 @@ class NetworkContextConfigurationBrowserTest
     if (cookie_type == CookieType::kThirdParty)
       cookie_line += ";SameSite=None;Secure";
     request->url = server->GetURL("/set-cookie?" + cookie_line);
+    url::Origin origin;
     if (cookie_type == CookieType::kThirdParty)
-      request->site_for_cookies = GURL("http://example.com");
+      origin = url::Origin::Create(GURL("http://example.com"));
     else
-      request->site_for_cookies = server->base_url();
+      origin = url::Origin::Create(server->base_url());
+    request->site_for_cookies = net::SiteForCookies::FromOrigin(origin);
 
-    url::Origin origin = url::Origin::Create(request->site_for_cookies);
     request->trusted_params = network::ResourceRequest::TrustedParams();
     request->trusted_params->network_isolation_key =
         net::NetworkIsolationKey(origin, origin);
@@ -786,8 +787,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   std::unique_ptr<network::ResourceRequest> request =
       std::make_unique<network::ResourceRequest>();
   request->url = https_server.GetURL("/echoheader?Cookie");
-  request->site_for_cookies = GURL(chrome::kChromeUIPrintURL);
-  url::Origin origin = url::Origin::Create(request->site_for_cookies);
+  url::Origin origin = url::Origin::Create(GURL(chrome::kChromeUIPrintURL));
+  request->site_for_cookies = net::SiteForCookies::FromOrigin(origin);
   request->trusted_params = network::ResourceRequest::TrustedParams();
   request->trusted_params->network_isolation_key =
       net::NetworkIsolationKey(origin, origin);

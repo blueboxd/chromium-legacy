@@ -3241,7 +3241,7 @@ int LoadBasicRequest(network::mojom::NetworkContext* network_context,
   request->render_frame_id = render_frame_id;
   request->load_flags = load_flags;
   // Allow access to SameSite cookies in tests.
-  request->site_for_cookies = url;
+  request->site_for_cookies = net::SiteForCookies::FromUrl(url);
 
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   std::unique_ptr<network::SimpleURLLoader> simple_loader =

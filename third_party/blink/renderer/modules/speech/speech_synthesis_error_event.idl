@@ -21,8 +21,8 @@ enum SpeechSynthesisErrorCode {
 // https://w3c.github.io/speech-api/#speechsynthesiserrorevent
 [
     Exposed=Window,
-    Constructor(DOMString type, SpeechSynthesisErrorEventInit eventInitDict),
     RuntimeEnabled=ScriptedSpeechSynthesis
 ] interface SpeechSynthesisErrorEvent : SpeechSynthesisEvent {
+    constructor(DOMString type, SpeechSynthesisErrorEventInit eventInitDict);
     readonly attribute SpeechSynthesisErrorCode error;
 };

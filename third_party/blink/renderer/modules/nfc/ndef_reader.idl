@@ -8,10 +8,9 @@
     RuntimeEnabled=WebNFC,
     ActiveScriptWrappable,
     SecureContext,
-    Constructor(),
-    ConstructorCallWith=ExecutionContext,
     Exposed=Window
 ] interface NDEFReader : EventTarget {
+    [CallWith=ExecutionContext] constructor();
     attribute EventHandler onreading;
     attribute EventHandler onerror;
 

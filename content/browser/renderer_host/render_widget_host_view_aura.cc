@@ -178,21 +178,11 @@ class WinScreenKeyboardObserver
 
   // InputMethodKeyboardControllerObserver overrides.
   void OnKeyboardVisible(const gfx::Rect& keyboard_rect) override {
-    // If the software input panel(SIP) is manually raised by the user, the flag
-    // should be set so we don't call TryShow API again.
-    host_view_->SetVirtualKeyboardRequested(true);
     host_view_->SetInsets(gfx::Insets(
         0, 0, keyboard_rect.IsEmpty() ? 0 : keyboard_rect.height(), 0));
   }
 
   void OnKeyboardHidden() override {
-    // If the software input panel(SIP) is manually closed by the user, the flag
-    // should be reset so we don't call TryHide API again. Also,
-    // next time user taps on an editable element after manually dismissing the
-    // keyboard, this flag is used to determine whether TryShow needs to be
-    // called or not. Calling TryShow/TryHide multiple times leads to SIP
-    // flickering.
-    host_view_->SetVirtualKeyboardRequested(false);
     // Restore the viewport.
     host_view_->SetInsets(gfx::Insets());
   }
@@ -369,7 +359,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
 #if defined(OS_WIN)
       legacy_render_widget_host_HWND_(nullptr),
       legacy_window_destroyed_(false),
-      virtual_keyboard_requested_(false),
 #endif
       device_scale_factor_(0.0f),
       event_handler_(new RenderWidgetHostViewEventHandler(host(), this, this)),
@@ -1775,10 +1764,7 @@ void RenderWidgetHostViewAura::FocusedNodeChanged(
     input_method->CancelComposition(this);
   has_composition_text_ = false;
 
-#if defined(OS_WIN)
-  if (!editable && virtual_keyboard_requested_ && window_)
-    virtual_keyboard_requested_ = false;
-#elif defined(OS_FUCHSIA)
+#if defined(OS_FUCHSIA)
   if (!editable && window_) {
     if (input_method) {
       input_method->GetInputMethodKeyboardController()
@@ -2324,7 +2310,6 @@ void RenderWidgetHostViewAura::DetachFromInputMethod() {
 
 #if defined(OS_WIN)
   // Reset the keyboard observer because it attaches to the input method.
-  virtual_keyboard_requested_ = false;
   keyboard_observer_.reset();
 #endif  // defined(OS_WIN)
 }
@@ -2412,44 +2397,31 @@ void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(
     show_virtual_keyboard =
         last_pointer_type_ == ui::EventPointerType::POINTER_TYPE_TOUCH;
 #endif
-
-#if !defined(OS_WIN)
     if (state->show_ime_if_needed &&
         GetInputMethod()->GetTextInputClient() == this &&
         show_virtual_keyboard) {
       GetInputMethod()->ShowVirtualKeyboardIfEnabled();
     }
-// TODO(crbug.com/1031786): Remove this once TSF fix for input pane policy
-// is serviced
-#elif defined(OS_WIN)
-    if (state->show_ime_if_needed && host()->GetView() &&
-        host()->delegate()) {
-      if (show_virtual_keyboard && !virtual_keyboard_requested_) {
-        keyboard_observer_.reset(new WinScreenKeyboardObserver(this));
-        GetInputMethod()->ShowVirtualKeyboardIfEnabled();
-        virtual_keyboard_requested_ = keyboard_observer_.get();
-      } else {
-        keyboard_observer_.reset(nullptr);
-      }
-    }
-#endif
     // Ensure that accessibility events are fired when the selection location
     // moves from UI back to content.
     text_input_manager->NotifySelectionBoundsChanged(updated_view);
-  }
-// TODO(crbug.com/1031786): Remove this once TSF fix for input pane policy
-// is serviced
+    // Register for input pane visibility change.
 #if defined(OS_WIN)
-  if (state &&
-      (state->type == ui::TEXT_INPUT_TYPE_NONE ||
-       state->mode == ui::TEXT_INPUT_MODE_NONE) &&
-      virtual_keyboard_requested_) {
-    virtual_keyboard_requested_ = false;
-    if (auto* controller = GetInputMethod()->GetInputMethodKeyboardController())
-      controller->DismissVirtualKeyboard();
-    keyboard_observer_.reset(nullptr);
-  }
+    auto* controller = GetInputMethod()->GetInputMethodKeyboardController();
+    if (controller && state->show_ime_if_needed && host()->GetView() &&
+        host()->delegate()) {
+      if (show_virtual_keyboard) {
+        keyboard_observer_.reset(new WinScreenKeyboardObserver(this));
+        if (!controller->DisplayVirtualKeyboard())
+          keyboard_observer_.reset(nullptr);
+      } else {
+        keyboard_observer_.reset(nullptr);
+      }
+    } else {
+      keyboard_observer_.reset(nullptr);
+    }
 #endif
+  }
 
   if (auto* render_widget_host = updated_view->host()) {
     // Monitor the composition information if there is a focused editable node.

@@ -5,9 +5,9 @@
 // https://wicg.github.io/background-fetch/#background-fetch-event
 
 [
-    Constructor(DOMString type, BackgroundFetchEventInit init),
     Exposed=ServiceWorker,
     RuntimeEnabled=BackgroundFetch
 ] interface BackgroundFetchEvent : ExtendableEvent {
+    constructor(DOMString type, BackgroundFetchEventInit init);
     readonly attribute BackgroundFetchRegistration registration;
 };

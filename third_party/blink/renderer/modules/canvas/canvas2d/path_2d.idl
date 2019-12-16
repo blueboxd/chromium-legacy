@@ -29,9 +29,9 @@
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#path2d
 
 [
-    Constructor(optional (Path2D or DOMString) path),
     Exposed=(PaintWorklet,Window,Worker)
 ] interface Path2D {
+    constructor(optional (Path2D or DOMString) path);
     [RaisesException] void addPath(Path2D path, optional DOMMatrix2DInit transform);
 };
 

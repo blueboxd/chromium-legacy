@@ -416,35 +416,18 @@ void GraphicsLayer::UpdateLayerIsDrawable() {
     CcLayer()->SetNeedsDisplay();
 }
 
-void GraphicsLayer::UpdateContentsRect() {
+void GraphicsLayer::UpdateContentsLayerBounds() {
   cc::Layer* contents_layer = ContentsLayerIfRegistered();
   if (!contents_layer)
     return;
 
-  contents_layer->SetPosition(
-      FloatPoint(contents_rect_.X(), contents_rect_.Y()));
-  if (!image_layer_) {
-    contents_layer->SetBounds(static_cast<gfx::Size>(contents_rect_.Size()));
-  } else {
-    DCHECK_EQ(image_layer_.get(), contents_layer_);
-    // The image_layer_ has fixed bounds, and we apply bounds changes via the
-    // transform instead. Since we never change the transform on the
-    // |image_layer_| otherwise, we can assume it is identity and just apply
-    // the bounds to it directly. Same thing for transform origin.
-    DCHECK(image_layer_->transform_origin() == gfx::Point3F());
-
-    if (contents_rect_.Size().IsEmpty() || image_size_.IsEmpty()) {
-      image_layer_->SetTransform(gfx::Transform());
-      contents_layer->SetBounds(static_cast<gfx::Size>(contents_rect_.Size()));
-    } else {
-      gfx::Transform image_transform;
-      image_transform.Scale(
-          static_cast<float>(contents_rect_.Width()) / image_size_.Width(),
-          static_cast<float>(contents_rect_.Height()) / image_size_.Height());
-      image_layer_->SetTransform(image_transform);
-      image_layer_->SetBounds(static_cast<gfx::Size>(image_size_));
-    }
+  IntSize contents_size = contents_rect_.Size();
+  if (image_layer_) {
+    DCHECK_EQ(image_layer_.get(), contents_layer);
+    if (!contents_size.IsEmpty() && !image_size_.IsEmpty())
+      contents_size = image_size_;
   }
+  contents_layer->SetBounds(gfx::Size(contents_size));
 }
 
 static HashSet<int>* g_registered_layer_set;
@@ -472,7 +455,7 @@ void GraphicsLayer::SetContentsTo(cc::Layer* layer,
       SetupContentsLayer(layer);
       children_changed = true;
     }
-    UpdateContentsRect();
+    UpdateContentsLayerBounds();
     prevent_contents_opaque_changes_ = prevent_contents_opaque_changes;
   } else {
     if (contents_layer_) {
@@ -697,7 +680,7 @@ void GraphicsLayer::SetContentsRect(const IntRect& rect) {
     return;
 
   contents_rect_ = rect;
-  UpdateContentsRect();
+  UpdateContentsLayerBounds();
   client_.GraphicsLayersDidChange();
 }
 
@@ -742,7 +725,6 @@ void GraphicsLayer::SetContentsToImage(
                            image_orientation.UsesWidthAsHeight());
     // Image layers can not be marked as opaque due to crbug.com/870857.
     image_layer_->SetContentsOpaque(false);
-    UpdateContentsRect();
   } else if (image_layer_) {
     UnregisterContentsLayer(image_layer_.get());
     image_layer_ = nullptr;

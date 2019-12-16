@@ -26,10 +26,8 @@
 // See https://webaudio.github.io/web-audio-api/#mediaelementaudiosourcenode
 [
     Exposed=Window,
-    Constructor(AudioContext context, MediaElementAudioSourceOptions options),
-    RaisesException=Constructor,
     Measure
-]
-interface MediaElementAudioSourceNode : AudioNode {
+] interface MediaElementAudioSourceNode : AudioNode {
+    [RaisesException] constructor(AudioContext context, MediaElementAudioSourceOptions options);
     [SameObject] readonly attribute HTMLMediaElement mediaElement;
 };

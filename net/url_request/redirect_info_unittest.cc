@@ -30,7 +30,8 @@ TEST(RedirectInfoTest, MethodForRedirect) {
   };
 
   const GURL kOriginalUrl = GURL("https://foo.test/original");
-  const GURL kOriginalSiteForCookies = GURL("https://foo.test/");
+  const SiteForCookies kOriginalSiteForCookies =
+      SiteForCookies::FromUrl(GURL("https://foo.test/"));
   const url::Origin kOriginalTopFrameOrigin = url::Origin::Create(kOriginalUrl);
   const URLRequest::FirstPartyURLPolicy kOriginalFirstPartyUrlPolicy =
       net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
@@ -82,7 +83,8 @@ TEST(RedirectInfoTest, CopyFragment) {
   };
 
   const std::string kOriginalMethod = "GET";
-  const GURL kOriginalSiteForCookies = GURL("https://foo.test/");
+  const SiteForCookies kOriginalSiteForCookies =
+      SiteForCookies::FromUrl(GURL("https://foo.test/"));
   const URLRequest::FirstPartyURLPolicy kOriginalFirstPartyUrlPolicy =
       net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
   const URLRequest::ReferrerPolicy kOriginalReferrerPolicy =
@@ -121,7 +123,8 @@ TEST(RedirectInfoTest, FirstPartyURLPolicy) {
 
   const std::string kOriginalMethod = "GET";
   const GURL kOriginalUrl = GURL("https://foo.test/");
-  const GURL kOriginalSiteForCookies = GURL("https://foo.test/");
+  const SiteForCookies kOriginalSiteForCookies =
+      SiteForCookies::FromUrl(GURL("https://foo.test/"));
   const URLRequest::ReferrerPolicy kOriginalReferrerPolicy =
       net::URLRequest::NEVER_CLEAR_REFERRER;
   const std::string kOriginalReferrer = "";
@@ -142,8 +145,8 @@ TEST(RedirectInfoTest, FirstPartyURLPolicy) {
         base::nullopt /* referrer_policy_header */, kInsecureSchemeWasUpgraded,
         kCopyFragment);
 
-    EXPECT_EQ(GURL(test.expected_new_site_for_cookies),
-              redirect_info.new_site_for_cookies);
+    EXPECT_TRUE(redirect_info.new_site_for_cookies.IsEquivalent(
+        SiteForCookies::FromUrl(GURL(test.expected_new_site_for_cookies))));
   }
 }
 
@@ -421,7 +424,8 @@ TEST(RedirectInfoTest, ReferrerPolicy) {
   };
 
   const std::string kOriginalMethod = "GET";
-  const GURL kOriginalSiteForCookies = GURL("https://foo.test/");
+  const SiteForCookies kOriginalSiteForCookies =
+      SiteForCookies::FromUrl(GURL("https://foo.test/"));
   const URLRequest::FirstPartyURLPolicy kOriginalFirstPartyUrlPolicy =
       net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
   const bool kInsecureSchemeWasUpgraded = false;

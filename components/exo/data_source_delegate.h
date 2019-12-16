@@ -39,6 +39,10 @@ class DataSourceDelegate {
   // Called when the compositor selects one drag and drop action.
   virtual void OnAction(DndAction dnd_action) = 0;
 
+  // This should return true if |surface| is the source of this data source.
+  // E.g. the surface is owned by the same client as the data source.
+  virtual bool CanAcceptDataEventsForSurface(Surface* surface) const = 0;
+
  protected:
   virtual ~DataSourceDelegate() {}
 };

@@ -7,13 +7,11 @@
 
 [
     RuntimeEnabled=PaymentRequest,
-    Constructor(sequence<PaymentMethodData> methodData, PaymentDetailsInit details, optional PaymentOptions options),
-    ConstructorCallWith=ExecutionContext,
-    RaisesException=Constructor,
     SecureContext,
     Exposed=Window,
     ActiveScriptWrappable
 ] interface PaymentRequest : EventTarget {
+    [CallWith=ExecutionContext, RaisesException] constructor(sequence<PaymentMethodData> methodData, PaymentDetailsInit details, optional PaymentOptions options);
     [CallWith=ScriptState, NewObject] Promise<PaymentResponse> show(optional Promise<PaymentDetailsUpdate> detailsPromise);
     [CallWith=ScriptState, NewObject] Promise<void> abort();
     [CallWith=ScriptState, HighEntropy, Measure, NewObject] Promise<boolean> canMakePayment();

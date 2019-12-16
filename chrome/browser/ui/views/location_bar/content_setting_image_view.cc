@@ -226,7 +226,7 @@ ContentSettingImageModel::ImageType ContentSettingImageView::GetTypeForTesting()
 
 void ContentSettingImageView::OnWidgetDestroying(views::Widget* widget) {
   if (indicator_promo_ && indicator_promo_->GetWidget() == widget) {
-    GetInkDrop()->SetFocused(false);
+    SetHighlighted(false);
     observer_.Remove(widget);
     indicator_promo_ = nullptr;
     // The highlighted icon needs to be recolored.
@@ -262,7 +262,7 @@ void ContentSettingImageView::AnimationEnded(const gfx::Animation* animation) {
         IDS_NOTIFICATIONS_QUIET_PERMISSION_NEW_REQUEST_PROMO, promo_width,
         base::nullopt, base::nullopt);
 
-    GetInkDrop()->SetFocused(true);
+    SetHighlighted(true);
     observer_.Add(indicator_promo_->GetWidget());
     SchedulePaint();
     content_setting_image_model_->SetPromoWasShown(web_contents);

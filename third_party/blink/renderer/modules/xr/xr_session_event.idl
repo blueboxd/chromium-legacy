@@ -6,8 +6,8 @@
 [
     SecureContext,
     Exposed=Window,
-    RuntimeEnabled=WebXR,
-    Constructor(DOMString type, XRSessionEventInit eventInitDict)
+    RuntimeEnabled=WebXR
 ] interface XRSessionEvent : Event {
+  constructor(DOMString type, XRSessionEventInit eventInitDict);
   [SameObject] readonly attribute XRSession session;
 };

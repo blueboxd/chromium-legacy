@@ -152,7 +152,8 @@ class ServiceWorkerProviderHostTest : public testing::Test {
   ServiceWorkerRemoteProviderEndpoint PrepareServiceWorkerProviderHost(
       const GURL& document_url) {
     ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-    GURL site_for_cookies = document_url;
+    net::SiteForCookies site_for_cookies =
+        net::SiteForCookies::FromUrl(document_url);
     url::Origin top_frame_origin = url::Origin::Create(document_url);
     CreateProviderHostInternal(document_url, site_for_cookies, top_frame_origin,
                                &remote_endpoint);
@@ -162,7 +163,7 @@ class ServiceWorkerProviderHostTest : public testing::Test {
   ServiceWorkerRemoteProviderEndpoint
   PrepareServiceWorkerProviderHostWithSiteForCookies(
       const GURL& document_url,
-      const GURL& site_for_cookies,
+      const net::SiteForCookies& site_for_cookies,
       const base::Optional<url::Origin>& top_frame_origin) {
     ServiceWorkerRemoteProviderEndpoint remote_endpoint;
     CreateProviderHostInternal(document_url, site_for_cookies, top_frame_origin,
@@ -172,7 +173,8 @@ class ServiceWorkerProviderHostTest : public testing::Test {
 
   base::WeakPtr<ServiceWorkerProviderHost> CreateProviderHost(
       const GURL& document_url) {
-    GURL site_for_cookies = document_url;
+    net::SiteForCookies site_for_cookies =
+        net::SiteForCookies::FromUrl(document_url);
     url::Origin top_frame_origin = url::Origin::Create(document_url);
     remote_endpoints_.emplace_back();
     return CreateProviderHostInternal(document_url, site_for_cookies,
@@ -186,15 +188,17 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
         helper_->mock_render_process_id(), false /* is_parent_frame_secure */,
         helper_->context()->AsWeakPtr(), &remote_endpoints_.back());
-    host->container_host()->UpdateUrls(document_url, document_url,
-                                       url::Origin::Create(document_url));
+    host->container_host()->UpdateUrls(
+        document_url, net::SiteForCookies::FromUrl(document_url),
+        url::Origin::Create(document_url));
     return host;
   }
 
   void FinishNavigation(ServiceWorkerContainerHost* container_host) {
     // In production code, the loader/request handler does this.
     const GURL url("https://www.example.com/page");
-    container_host->UpdateUrls(url, url, url::Origin::Create(url));
+    container_host->UpdateUrls(url, net::SiteForCookies::FromUrl(url),
+                               url::Origin::Create(url));
 
     // In production code this is called from NavigationRequest in the browser
     // process right before navigation commit.
@@ -322,7 +326,7 @@ class ServiceWorkerProviderHostTest : public testing::Test {
  private:
   base::WeakPtr<ServiceWorkerProviderHost> CreateProviderHostInternal(
       const GURL& document_url,
-      const GURL& site_for_cookies,
+      const net::SiteForCookies& site_for_cookies,
       const base::Optional<url::Origin>& top_frame_origin,
       ServiceWorkerRemoteProviderEndpoint* remote_endpoint) {
     base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
@@ -370,7 +374,7 @@ TEST_F(ServiceWorkerProviderHostTest, MatchRegistration) {
   // SetDocumentUrl sets all of matching registrations
   container_host->UpdateUrls(
       GURL("https://www.example.com/example1"),
-      GURL("https://www.example.com/example1"),
+      net::SiteForCookies::FromUrl(GURL("https://www.example.com/example1")),
       url::Origin::Create(GURL("https://www.example.com/example1")));
   ASSERT_EQ(registration2_, container_host->MatchRegistration());
   container_host->RemoveMatchingRegistration(registration2_.get());
@@ -379,7 +383,7 @@ TEST_F(ServiceWorkerProviderHostTest, MatchRegistration) {
   // SetDocumentUrl with another origin also updates matching registrations
   container_host->UpdateUrls(
       GURL("https://other.example.com/example"),
-      GURL("https://other.example.com/example"),
+      net::SiteForCookies::FromUrl(GURL("https://other.example.com/example")),
       url::Origin::Create(GURL("https://other.example.com/example")));
   ASSERT_EQ(registration3_, container_host->MatchRegistration());
   container_host->RemoveMatchingRegistration(registration3_.get());
@@ -395,21 +399,21 @@ TEST_F(ServiceWorkerProviderHostTest, ContextSecurity) {
 
   // Insecure document URL.
   provider_host_secure_parent->container_host()->UpdateUrls(
-      GURL("http://host"), GURL("http://host"),
+      GURL("http://host"), net::SiteForCookies::FromUrl(GURL("http://host")),
       url::Origin::Create(GURL("http://host")));
   EXPECT_FALSE(provider_host_secure_parent->container_host()
                    ->IsContextSecureForServiceWorker());
 
   // Insecure parent frame.
   provider_host_insecure_parent->container_host()->UpdateUrls(
-      GURL("https://host"), GURL("https://host"),
+      GURL("https://host"), net::SiteForCookies::FromUrl(GURL("https://host")),
       url::Origin::Create(GURL("https://host")));
   EXPECT_FALSE(provider_host_insecure_parent->container_host()
                    ->IsContextSecureForServiceWorker());
 
   // Secure URL and parent frame.
   provider_host_secure_parent->container_host()->UpdateUrls(
-      GURL("https://host"), GURL("https://host"),
+      GURL("https://host"), net::SiteForCookies::FromUrl(GURL("https://host")),
       url::Origin::Create(GURL("https://host")));
   EXPECT_TRUE(provider_host_secure_parent->container_host()
                   ->IsContextSecureForServiceWorker());
@@ -420,12 +424,14 @@ TEST_F(ServiceWorkerProviderHostTest, ContextSecurity) {
   EXPECT_TRUE(url.is_valid());
   EXPECT_FALSE(IsOriginSecure(url));
   EXPECT_TRUE(OriginCanAccessServiceWorkers(url));
-  provider_host_secure_parent->container_host()->UpdateUrls(url, url, origin);
+  provider_host_secure_parent->container_host()->UpdateUrls(
+      url, net::SiteForCookies::FromUrl(url), origin);
   EXPECT_TRUE(provider_host_secure_parent->container_host()
                   ->IsContextSecureForServiceWorker());
 
   // Exceptional service worker scheme with insecure parent frame.
-  provider_host_insecure_parent->container_host()->UpdateUrls(url, url, origin);
+  provider_host_insecure_parent->container_host()->UpdateUrls(
+      url, net::SiteForCookies::FromUrl(url), origin);
   EXPECT_FALSE(provider_host_insecure_parent->container_host()
                    ->IsContextSecureForServiceWorker());
 }
@@ -438,11 +444,14 @@ TEST_F(ServiceWorkerProviderHostTest, UpdateUrls_SameOriginRedirect) {
   ServiceWorkerContainerHost* container_host = host->container_host();
   const std::string uuid1 = container_host->client_uuid();
   EXPECT_EQ(url1, container_host->url());
-  EXPECT_EQ(url1, container_host->site_for_cookies());
+  EXPECT_TRUE(container_host->site_for_cookies().IsEquivalent(
+      net::SiteForCookies::FromUrl(url1)));
 
-  container_host->UpdateUrls(url2, url2, url::Origin::Create(url2));
+  container_host->UpdateUrls(url2, net::SiteForCookies::FromUrl(url2),
+                             url::Origin::Create(url2));
   EXPECT_EQ(url2, container_host->url());
-  EXPECT_EQ(url2, container_host->site_for_cookies());
+  EXPECT_TRUE(container_host->site_for_cookies().IsEquivalent(
+      net::SiteForCookies::FromUrl(url2)));
   EXPECT_EQ(uuid1, container_host->client_uuid());
 
   EXPECT_EQ(container_host, context_->GetContainerHostByClientID(
@@ -457,11 +466,14 @@ TEST_F(ServiceWorkerProviderHostTest, UpdateUrls_CrossOriginRedirect) {
   ServiceWorkerContainerHost* container_host = host->container_host();
   const std::string uuid1 = container_host->client_uuid();
   EXPECT_EQ(url1, container_host->url());
-  EXPECT_EQ(url1, container_host->site_for_cookies());
+  EXPECT_TRUE(container_host->site_for_cookies().IsEquivalent(
+      net::SiteForCookies::FromUrl(url1)));
 
-  container_host->UpdateUrls(url2, url2, url::Origin::Create(url2));
+  container_host->UpdateUrls(url2, net::SiteForCookies::FromUrl(url2),
+                             url::Origin::Create(url2));
   EXPECT_EQ(url2, container_host->url());
-  EXPECT_EQ(url2, container_host->site_for_cookies());
+  EXPECT_TRUE(container_host->site_for_cookies().IsEquivalent(
+      net::SiteForCookies::FromUrl(url2)));
   EXPECT_NE(uuid1, container_host->client_uuid());
 
   EXPECT_FALSE(context_->GetContainerHostByClientID(uuid1));
@@ -618,7 +630,7 @@ TEST_F(ServiceWorkerProviderHostTest,
   ServiceWorkerRemoteProviderEndpoint remote_endpoint =
       PrepareServiceWorkerProviderHostWithSiteForCookies(
           GURL("https://www.example.com/foo"),
-          GURL("https://www.example.com/top"),
+          net::SiteForCookies::FromUrl(GURL("https://www.example.com/top")),
           url::Origin::Create(GURL("https://www.example.com")));
 
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kDisabled,
@@ -628,8 +640,10 @@ TEST_F(ServiceWorkerProviderHostTest,
   ASSERT_EQ(1ul, test_browser_client.logs().size());
   EXPECT_EQ(GURL("https://www.example.com/scope"),
             test_browser_client.logs()[0].scope);
-  EXPECT_EQ(GURL("https://www.example.com/top"),
-            test_browser_client.logs()[0].site_for_cookies);
+  EXPECT_TRUE(net::SiteForCookies::FromUrl(
+                  test_browser_client.logs()[0].site_for_cookies)
+                  .IsEquivalent(net::SiteForCookies::FromUrl(
+                      GURL("https://www.example.com/top"))));
   EXPECT_EQ(url::Origin::Create(GURL("https://www.example.com")),
             test_browser_client.logs()[0].top_frame_origin);
   EXPECT_EQ(GURL("https://www.example.com/bar"),
@@ -641,8 +655,11 @@ TEST_F(ServiceWorkerProviderHostTest,
   ASSERT_EQ(2ul, test_browser_client.logs().size());
   EXPECT_EQ(GURL("https://www.example.com/foo"),
             test_browser_client.logs()[1].scope);
-  EXPECT_EQ(GURL("https://www.example.com/top"),
-            test_browser_client.logs()[1].site_for_cookies);
+  EXPECT_TRUE(net::SiteForCookies::FromUrl(
+                  test_browser_client.logs()[1].site_for_cookies)
+                  .IsEquivalent(net::SiteForCookies::FromUrl(
+                      GURL("https://www.example.com/top"))));
+
   EXPECT_EQ(url::Origin::Create(GURL("https://www.example.com")),
             test_browser_client.logs()[1].top_frame_origin);
   EXPECT_EQ(GURL(), test_browser_client.logs()[1].script_url);
@@ -652,8 +669,10 @@ TEST_F(ServiceWorkerProviderHostTest,
   ASSERT_EQ(3ul, test_browser_client.logs().size());
   EXPECT_EQ(GURL("https://www.example.com/foo"),
             test_browser_client.logs()[2].scope);
-  EXPECT_EQ(GURL("https://www.example.com/top"),
-            test_browser_client.logs()[2].site_for_cookies);
+  EXPECT_TRUE(net::SiteForCookies::FromUrl(
+                  test_browser_client.logs()[2].site_for_cookies)
+                  .IsEquivalent(net::SiteForCookies::FromUrl(
+                      GURL("https://www.example.com/top"))));
   EXPECT_EQ(url::Origin::Create(GURL("https://www.example.com")),
             *test_browser_client.logs()[2].top_frame_origin);
   EXPECT_EQ(GURL(), test_browser_client.logs()[2].script_url);
@@ -686,8 +705,10 @@ TEST_F(ServiceWorkerProviderHostTest, AllowsServiceWorker) {
   ASSERT_EQ(1ul, test_browser_client.logs().size());
   EXPECT_EQ(GURL("https://www.example.com/scope"),
             test_browser_client.logs()[0].scope);
-  EXPECT_EQ(GURL("https://www.example.com/sw.js"),
-            test_browser_client.logs()[0].site_for_cookies);
+  EXPECT_TRUE(net::SiteForCookies::FromUrl(
+                  test_browser_client.logs()[0].site_for_cookies)
+                  .IsEquivalent(net::SiteForCookies::FromUrl(
+                      GURL("https://www.example.com/sw.js"))));
   EXPECT_EQ(url::Origin::Create(GURL("https://www.example.com")),
             test_browser_client.logs()[0].top_frame_origin);
   SetBrowserClientForTesting(old_browser_client);
@@ -974,7 +995,8 @@ void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
         ServiceWorkerProviderHost::CreateForWebWorker(
             context_->AsWeakPtr(), helper_->mock_render_process_id(),
             provider_type, std::move(host_receiver), std::move(client_remote));
-    host->container_host()->UpdateUrls(url, url, url::Origin::Create(url));
+    host->container_host()->UpdateUrls(url, net::SiteForCookies::FromUrl(url),
+                                       url::Origin::Create(url));
     EXPECT_FALSE(CanFindClientContainerHost(host->container_host()));
     host->container_host()->CompleteWebWorkerPreparation(
         network::mojom::CrossOriginEmbedderPolicy::kNone);
@@ -1063,7 +1085,8 @@ void ServiceWorkerProviderHostTest::TestClientPhaseTransition(
   EXPECT_FALSE(container_host->is_response_committed());
   EXPECT_FALSE(container_host->is_execution_ready());
 
-  container_host->UpdateUrls(url, url, url::Origin::Create(url));
+  container_host->UpdateUrls(url, net::SiteForCookies::FromUrl(url),
+                             url::Origin::Create(url));
   container_host->CompleteWebWorkerPreparation(
       network::mojom::CrossOriginEmbedderPolicy::kNone);
 

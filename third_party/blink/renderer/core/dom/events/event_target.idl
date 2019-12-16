@@ -22,11 +22,10 @@
 
 [
     CheckSecurity=Receiver,
-    Constructor(),
-    ConstructorCallWith=ScriptState,
     Exposed=(Window,Worker,AudioWorklet),
     ImmutablePrototype
 ] interface EventTarget {
+    [CallWith=ScriptState] constructor();
     [Custom=CallPrologue] void addEventListener(DOMString type, EventListener? listener, optional (AddEventListenerOptions or boolean) options);
     [Custom=CallPrologue] void removeEventListener(DOMString type, EventListener? listener, optional (EventListenerOptions or boolean) options);
     [ImplementedAs=dispatchEventForBindings, RaisesException, RuntimeCallStatsCounter=EventTargetDispatchEvent] boolean dispatchEvent(Event event);

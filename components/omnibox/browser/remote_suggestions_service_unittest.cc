@@ -66,7 +66,8 @@ TEST_F(RemoteSuggestionsServiceTest, EnsureAttachCookies) {
   RunAndWait();
   EXPECT_TRUE(resource_request.attach_same_site_cookies);
   EXPECT_EQ(net::LOAD_DO_NOT_SAVE_COOKIES, resource_request.load_flags);
-  EXPECT_EQ(resource_request.url, resource_request.site_for_cookies);
+  EXPECT_TRUE(resource_request.site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromUrl(resource_request.url)));
   const std::string kServiceUri = "https://www.google.com/complete/search";
   EXPECT_EQ(kServiceUri,
             resource_request.url.spec().substr(0, kServiceUri.size()));

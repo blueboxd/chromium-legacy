@@ -6,9 +6,9 @@
 // They represent a list of string fragments and variable references.
 // Spec: https://drafts.css-houdini.org/css-typed-om/#unparsedvalue-objects
 [
-  Constructor(sequence<CSSUnparsedSegment> members),
   Exposed=(Window,LayoutWorklet,PaintWorklet)
 ] interface CSSUnparsedValue : CSSStyleValue {
+    constructor(sequence<CSSUnparsedSegment> members);
     iterable<CSSUnparsedSegment>;
     readonly attribute unsigned long length;
     [RaisesException] getter CSSUnparsedSegment (unsigned long index);

@@ -4,11 +4,9 @@
 
 // https://streams.spec.whatwg.org/#rs-class
 [
-    Exposed=(Window,Worker,Worklet),
-    Constructor(optional any underlyingSource, optional any strategy),
-    RaisesException=Constructor,
-    ConstructorCallWith=ScriptState
+    Exposed=(Window,Worker,Worklet)
 ] interface ReadableStream {
+    [CallWith=ScriptState, RaisesException] constructor(optional any underlyingSource, optional any strategy);
     // As long as we use V8Extras, anything can raise an exception.
     [RaisesException, CallWith=ScriptState, NotEnumerable] readonly attribute boolean locked;
 

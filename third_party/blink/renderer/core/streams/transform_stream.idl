@@ -4,13 +4,11 @@
 
 // https://streams.spec.whatwg.org/#ts-class
 [
-    Exposed=(Window,Worker,Worklet),
-    Constructor(optional any transformer,
-                optional any writableStrategy,
-                optional any readableStrategy),
-    RaisesException=Constructor,
-    ConstructorCallWith=ScriptState
+    Exposed=(Window,Worker,Worklet)
 ] interface TransformStream {
+    [CallWith=ScriptState, RaisesException] constructor(optional any transformer,
+                optional any writableStrategy,
+                optional any readableStrategy);
     [NotEnumerable] readonly attribute ReadableStream readable;
     [NotEnumerable] readonly attribute WritableStream writable;
 };

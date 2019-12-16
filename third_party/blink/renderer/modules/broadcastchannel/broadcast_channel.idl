@@ -5,13 +5,11 @@
 // https://html.spec.whatwg.org/C/#broadcastchannel
 
 [
-    Constructor(DOMString name),
-    ConstructorCallWith=ExecutionContext,
-    RaisesException=Constructor,
     Exposed=(Window,Worker),
     ActiveScriptWrappable,
     Measure
 ] interface BroadcastChannel : EventTarget {
+    [CallWith=ExecutionContext, RaisesException] constructor(DOMString name);
     readonly attribute DOMString name;
 
     [RaisesException, Measure] void postMessage(any message);

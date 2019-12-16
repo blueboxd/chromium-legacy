@@ -25,9 +25,9 @@
 
 // https://w3c.github.io/speech-api/#speechsynthesisevent
 [
-    RuntimeEnabled=ScriptedSpeechSynthesis,
-    Constructor(DOMString type, SpeechSynthesisEventInit eventInitDict)
+    RuntimeEnabled=ScriptedSpeechSynthesis
 ] interface SpeechSynthesisEvent : Event {
+    constructor(DOMString type, SpeechSynthesisEventInit eventInitDict);
     readonly attribute SpeechSynthesisUtterance utterance;
     readonly attribute unsigned long charIndex;
     readonly attribute unsigned long charLength;

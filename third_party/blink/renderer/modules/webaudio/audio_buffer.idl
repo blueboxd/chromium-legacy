@@ -29,10 +29,9 @@
 // See https://webaudio.github.io/web-audio-api/#AudioBuffer
 [
     Exposed=Window,
-    Constructor(AudioBufferOptions options),
-    RaisesException=Constructor,
     Measure
 ] interface AudioBuffer {
+    [RaisesException] constructor(AudioBufferOptions options);
     readonly attribute long length; // in sample-frames
     readonly attribute double duration; // in seconds
     readonly attribute float sampleRate; // in sample-frames per second

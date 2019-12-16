@@ -5,10 +5,10 @@
 // https://drafts.csswg.org/web-animations/#the-animationplaybackevent-interface
 
 [
-    Constructor(DOMString type, optional AnimationPlaybackEventInit eventInitDict),
     RuntimeEnabled=WebAnimationsAPI,
     Exposed=Window
 ] interface AnimationPlaybackEvent : Event {
+    constructor(DOMString type, optional AnimationPlaybackEventInit eventInitDict);
     readonly attribute double? currentTime;
     readonly attribute double? timelineTime;
 };

@@ -839,7 +839,7 @@ void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,
   resource_request.url = gurl;
   // TODO(caseq): this preserves behavior of URLFetcher-based implementation.
   // We really need to pass proper first party origin from the front-end.
-  resource_request.site_for_cookies = gurl;
+  resource_request.site_for_cookies = net::SiteForCookies::FromUrl(gurl);
   resource_request.headers.AddHeadersFromString(headers);
 
   NetworkResourceLoader::URLLoaderFactoryHolder url_loader_factory;

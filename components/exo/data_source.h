@@ -11,6 +11,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "components/exo/surface.h"
 
 namespace exo {
 
@@ -77,6 +78,8 @@ class DataSource {
 
   void ReadDataForTesting(const std::string& mime_type,
                           ReadDataCallback callback);
+
+  bool CanBeDataSourceForCopy(Surface *surface) const;
 
  private:
   // Reads data from the source. Then |callback| is invoked with read data. If

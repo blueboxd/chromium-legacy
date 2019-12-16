@@ -27,10 +27,9 @@
 // https://html.spec.whatwg.org/C/#the-popstateevent-interface
 
 [
-    Constructor(DOMString type, optional PopStateEventInit eventInitDict),
-    ConstructorCallWith=ScriptState,
     // TODO(foolip): Exposed=(Window,Worker)
     Exposed=Window
 ] interface PopStateEvent : Event {
+    [CallWith=ScriptState] constructor(DOMString type, optional PopStateEventInit eventInitDict);
     [Custom=Getter] readonly attribute any state;
 };

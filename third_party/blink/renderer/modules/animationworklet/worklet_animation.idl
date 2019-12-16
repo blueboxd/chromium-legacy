@@ -7,15 +7,13 @@
 // TODO(840383): Accodring to the specification |effects| is optional and
 // defaults to null. Match that here.
 [
-    Constructor(DOMString animatorName,
-                (AnimationEffect or sequence<AnimationEffect>) effects,
-                optional (DocumentTimeline or ScrollTimeline) timeline,
-                optional SerializedScriptValue options),
-    RaisesException=Constructor,
-    ConstructorCallWith=ScriptState,
     MeasureAs=WorkletAnimationConstructor,
     RuntimeEnabled=AnimationWorklet
 ] interface WorkletAnimation {
+  [CallWith=ScriptState, RaisesException] constructor(DOMString animatorName,
+                (AnimationEffect or sequence<AnimationEffect>) effects,
+                optional (DocumentTimeline or ScrollTimeline) timeline,
+                optional SerializedScriptValue options);
   readonly attribute DOMString animatorName;
   readonly attribute AnimationEffect? effect;
   readonly attribute AnimationTimeline? timeline;

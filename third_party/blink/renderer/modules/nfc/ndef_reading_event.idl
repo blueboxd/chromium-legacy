@@ -8,10 +8,9 @@
 [
     RuntimeEnabled=WebNFC,
     SecureContext,
-    Constructor(DOMString type, NDEFReadingEventInit eventInitDict),
-    RaisesException=Constructor,
     Exposed=Window
 ] interface NDEFReadingEvent : Event {
+    [RaisesException] constructor(DOMString type, NDEFReadingEventInit eventInitDict);
     readonly attribute DOMString serialNumber;
     [SameObject] readonly attribute NDEFMessage message;
 };

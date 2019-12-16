@@ -400,8 +400,7 @@ URLLoader::URLLoader(
   url_request_ = url_request_context_->CreateRequest(
       GURL(request.url), request.priority, this, traffic_annotation);
   url_request_->set_method(request.method);
-  url_request_->set_site_for_cookies(
-      net::SiteForCookies::FromUrl(request.site_for_cookies));
+  url_request_->set_site_for_cookies(request.site_for_cookies);
   url_request_->set_attach_same_site_cookies(request.attach_same_site_cookies);
   url_request_->SetReferrer(request.referrer.GetAsReferrer().spec());
   url_request_->set_referrer_policy(request.referrer_policy);

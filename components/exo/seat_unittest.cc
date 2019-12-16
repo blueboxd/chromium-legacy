@@ -66,6 +66,9 @@ class TestDataSourceDelegate : public DataSourceDelegate {
   void OnDndDropPerformed() override {}
   void OnDndFinished() override {}
   void OnAction(DndAction dnd_action) override {}
+  bool CanAcceptDataEventsForSurface(Surface* surface) const override {
+    return true;
+  }
 
   void SetData(std::vector<uint8_t> data) { data_ = std::move(data); }
 

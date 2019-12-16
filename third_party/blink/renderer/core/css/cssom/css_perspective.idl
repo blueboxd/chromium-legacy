@@ -6,9 +6,8 @@
 // like "transform".
 // Spec: https://drafts.css-houdini.org/css-typed-om/#cssperspective
 [
-    Constructor(CSSNumericValue length),
-    Exposed=(Window,LayoutWorklet,PaintWorklet),
-    RaisesException=Constructor
+    Exposed=(Window,LayoutWorklet,PaintWorklet)
 ] interface CSSPerspective : CSSTransformComponent {
+    [RaisesException] constructor(CSSNumericValue length);
     [RaisesException=Setter] attribute CSSNumericValue length;
 };

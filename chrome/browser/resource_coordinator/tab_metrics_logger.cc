@@ -240,6 +240,7 @@ tab_ranker::WindowFeatures TabMetricsLogger::CreateWindowFeatures(
       window_type = WindowMetricsEvent::TYPE_POPUP;
       break;
     case Browser::TYPE_APP:
+    case Browser::TYPE_APP_POPUP:
       window_type = WindowMetricsEvent::TYPE_APP;
       break;
     case Browser::TYPE_DEVTOOLS:

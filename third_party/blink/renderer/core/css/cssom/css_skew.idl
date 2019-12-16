@@ -6,10 +6,9 @@
 // "transform".
 // Spec: https://drafts.css-houdini.org/css-typed-om/#cssskew
 [
-    Constructor(CSSNumericValue ax, CSSNumericValue ay),
-    Exposed=(Window,LayoutWorklet,PaintWorklet),
-    RaisesException=Constructor
+    Exposed=(Window,LayoutWorklet,PaintWorklet)
 ] interface CSSSkew : CSSTransformComponent {
+    [RaisesException] constructor(CSSNumericValue ax, CSSNumericValue ay);
     [RaisesException=Setter] attribute CSSNumericValue ax;
     [RaisesException=Setter] attribute CSSNumericValue ay;
 };

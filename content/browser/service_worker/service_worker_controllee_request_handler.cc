@@ -281,13 +281,15 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     allow_service_worker =
         GetContentClient()->browser()->AllowServiceWorkerOnUI(
-            registration->scope(), container_host_->site_for_cookies(),
+            registration->scope(),
+            container_host_->site_for_cookies().RepresentativeUrl(),
             container_host_->top_frame_origin(), /*script_url=*/GURL(),
             browser_context_, container_host_->web_contents_getter());
   } else {
     allow_service_worker =
         GetContentClient()->browser()->AllowServiceWorkerOnIO(
-            registration->scope(), container_host_->site_for_cookies(),
+            registration->scope(),
+            container_host_->site_for_cookies().RepresentativeUrl(),
             container_host_->top_frame_origin(), /*script_url=*/GURL(),
             resource_context_, container_host_->web_contents_getter());
   }

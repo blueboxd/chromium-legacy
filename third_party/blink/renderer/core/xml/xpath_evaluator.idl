@@ -26,9 +26,9 @@
 // constructable XPathEvaluator interface.
 
 [
-    Constructor,
     Measure
 ] interface XPathEvaluator {
+    constructor();
     [Measure, RaisesException] XPathExpression createExpression(DOMString expression, optional XPathNSResolver? resolver = null);
 
     [Measure] XPathNSResolver createNSResolver(Node nodeResolver);

@@ -30,10 +30,9 @@
 
 [
     Exposed=(Window,Worker),
-    Constructor(optional DOMString label = "utf-8", optional TextDecoderOptions options),
-    RaisesException=Constructor,
     MeasureAs=TextDecoderConstructor
 ] interface TextDecoder {
+    [RaisesException] constructor(optional DOMString label = "utf-8", optional TextDecoderOptions options);
     readonly attribute DOMString encoding;
     readonly attribute boolean fatal;
     readonly attribute boolean ignoreBOM;

@@ -26,9 +26,9 @@
 // https://html.spec.whatwg.org/C/#the-pagetransitionevent-interface
 
 [
-    Constructor(DOMString type, optional PageTransitionEventInit eventInitDict),
     // TODO(foolip): Exposed=(Window,Worker)
     Exposed=Window
 ] interface PageTransitionEvent : Event {
+    constructor(DOMString type, optional PageTransitionEventInit eventInitDict);
     readonly attribute boolean persisted;
 };

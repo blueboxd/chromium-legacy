@@ -5,8 +5,8 @@
 // https://html.spec.whatwg.org/C/#dragevent
 
 [
-    Exposed=Window,
-    Constructor(DOMString type, optional DragEventInit eventInitDict)
+    Exposed=Window
 ] interface DragEvent : MouseEvent {
+    constructor(DOMString type, optional DragEventInit eventInitDict);
     [ImplementedAs=getDataTransfer] readonly attribute DataTransfer? dataTransfer;
 };

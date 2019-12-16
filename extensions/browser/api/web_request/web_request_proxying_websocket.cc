@@ -282,7 +282,7 @@ void WebRequestProxyingWebSocket::StartProxying(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   network::ResourceRequest request;
   request.url = url;
-  request.site_for_cookies = site_for_cookies;
+  request.site_for_cookies = net::SiteForCookies::FromUrl(site_for_cookies);
   if (user_agent) {
     request.headers.SetHeader(net::HttpRequestHeaders::kUserAgent, *user_agent);
   }

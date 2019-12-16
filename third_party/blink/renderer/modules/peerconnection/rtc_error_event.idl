@@ -4,8 +4,8 @@
 
 // https://w3c.github.io/webrtc-pc/#dom-rtcerrorevent
 [
-    Exposed=Window,
-    Constructor(DOMString type, RTCErrorEventInit eventInitDict)
+    Exposed=Window
 ] interface RTCErrorEvent : Event {
+    constructor(DOMString type, RTCErrorEventInit eventInitDict);
     readonly attribute RTCError error;
 };

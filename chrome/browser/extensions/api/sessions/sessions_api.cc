@@ -242,6 +242,11 @@ SessionsGetDevicesFunction::CreateWindowModel(
     const std::string& session_tag) {
   DCHECK(!window.tabs.empty());
 
+  // Ignore app popup window for now because we do not have a corresponding
+  // api::windows::WindowType value.
+  if (window.type == sessions::SessionWindow::TYPE_APP_POPUP)
+    return nullptr;
+
   // Prune tabs that are not syncable or are NewTabPage. Then, sort the tabs
   // from most recent to least recent.
   std::vector<const sessions::SessionTab*> tabs_in_window;
@@ -286,6 +291,8 @@ SessionsGetDevicesFunction::CreateWindowModel(
     case sessions::SessionWindow::TYPE_DEVTOOLS:
       type = api::windows::WINDOW_TYPE_DEVTOOLS;
       break;
+    case sessions::SessionWindow::TYPE_APP_POPUP:
+      NOTREACHED();
   }
 
   api::windows::WindowState state = api::windows::WINDOW_STATE_NONE;

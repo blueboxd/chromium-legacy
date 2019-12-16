@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_VAAPI_VAAPI_H264_ACCELERATOR_H_
-#define MEDIA_GPU_VAAPI_VAAPI_H264_ACCELERATOR_H_
+#ifndef MEDIA_GPU_VAAPI_H264_VAAPI_VIDEO_DECODER_DELEGATE_H_
+#define MEDIA_GPU_VAAPI_H264_VAAPI_VIDEO_DECODER_DELEGATE_H_
 
+#include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
-#include "media/filters/vp9_parser.h"
 #include "media/gpu/h264_decoder.h"
+#include "media/gpu/vaapi/vaapi_video_decoder_delegate.h"
+#include "media/video/h264_parser.h"
 
 // Verbatim from va/va.h, where typedef is used.
 typedef struct _VAPictureH264 VAPictureH264;
 
 namespace media {
 
-template <class T> class DecodeSurfaceHandler;
 class H264Picture;
-class VASurface;
-class VaapiWrapper;
 
-class VaapiH264Accelerator : public H264Decoder::H264Accelerator {
+class H264VaapiVideoDecoderDelegate : public H264Decoder::H264Accelerator,
+                                      public VaapiVideoDecoderDelegate {
  public:
-  VaapiH264Accelerator(DecodeSurfaceHandler<VASurface>* vaapi_dec,
-                       const scoped_refptr<VaapiWrapper> vaapi_wrapper);
-  ~VaapiH264Accelerator() override;
+  H264VaapiVideoDecoderDelegate(DecodeSurfaceHandler<VASurface>* vaapi_dec,
+                                scoped_refptr<VaapiWrapper> vaapi_wrapper);
+  ~H264VaapiVideoDecoderDelegate() override;
 
   // H264Decoder::H264Accelerator implementation.
   scoped_refptr<H264Picture> CreateH264Picture() override;
@@ -52,14 +52,9 @@ class VaapiH264Accelerator : public H264Decoder::H264Accelerator {
                              VAPictureH264* va_pics,
                              int num_pics);
 
-  const scoped_refptr<VaapiWrapper> vaapi_wrapper_;
-  DecodeSurfaceHandler<VASurface>* vaapi_dec_;
-
-  SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(VaapiH264Accelerator);
+  DISALLOW_COPY_AND_ASSIGN(H264VaapiVideoDecoderDelegate);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_VAAPI_VAAPI_H264_ACCELERATOR_H_
+#endif  // MEDIA_GPU_VAAPI_H264_VAAPI_VIDEO_DECODER_DELEGATE_H_

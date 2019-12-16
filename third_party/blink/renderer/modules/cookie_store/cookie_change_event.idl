@@ -11,9 +11,9 @@
 [
   Exposed=Window,
   RuntimeEnabled=CookieStore,
-  SecureContext,
-  Constructor(DOMString type, optional CookieChangeEventInit eventInitDict)
+  SecureContext
 ] interface CookieChangeEvent : Event {
+  constructor(DOMString type, optional CookieChangeEventInit eventInitDict);
   [MeasureAs=CookieStoreAPI] readonly attribute CookieList changed;
   [MeasureAs=CookieStoreAPI] readonly attribute CookieList deleted;
 };

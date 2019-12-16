@@ -5,9 +5,9 @@
 // https://w3c.github.io/mediacapture-record/#blob-event
 
 [
-    Exposed=Window,
-    Constructor(DOMString type, BlobEventInit eventInitDict)
-]  interface BlobEvent : Event {
+    Exposed=Window
+] interface BlobEvent : Event {
+    constructor(DOMString type, BlobEventInit eventInitDict);
     [SameObject] readonly attribute Blob data;
     readonly attribute DOMHighResTimeStamp timecode;
 };

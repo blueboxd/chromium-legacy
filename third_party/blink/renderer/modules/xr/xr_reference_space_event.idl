@@ -6,9 +6,9 @@
 [
     SecureContext,
     Exposed=Window,
-    RuntimeEnabled=WebXR,
-    Constructor(DOMString type, XRReferenceSpaceEventInit eventInitDict)
+    RuntimeEnabled=WebXR
 ] interface XRReferenceSpaceEvent : Event {
+  constructor(DOMString type, XRReferenceSpaceEventInit eventInitDict);
   [SameObject] readonly attribute XRReferenceSpace referenceSpace;
   [SameObject] readonly attribute XRRigidTransform transform;
 };

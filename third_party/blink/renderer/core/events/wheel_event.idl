@@ -22,9 +22,9 @@
 // https://w3c.github.io/uievents/#interface-WheelEvent
 
 [
-    Constructor(DOMString type, optional WheelEventInit eventInitDict),
     Exposed=Window
 ] interface WheelEvent : MouseEvent {
+    constructor(DOMString type, optional WheelEventInit eventInitDict);
     // DeltaModeCode
     const unsigned long DOM_DELTA_PIXEL = 0x00;
     const unsigned long DOM_DELTA_LINE = 0x01;

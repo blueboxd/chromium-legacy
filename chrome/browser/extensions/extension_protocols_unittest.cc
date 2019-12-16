@@ -126,7 +126,8 @@ network::ResourceRequest CreateResourceRequest(const std::string& method,
   network::ResourceRequest request;
   request.method = method;
   request.url = url;
-  request.site_for_cookies = url;  // bypass third-party cookie blocking.
+  request.site_for_cookies =
+      net::SiteForCookies::FromUrl(url);  // bypass third-party cookie blocking.
   request.request_initiator =
       url::Origin::Create(url);  // ensure initiator set.
   request.referrer_policy = content::Referrer::GetDefaultReferrerPolicy();

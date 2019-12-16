@@ -140,5 +140,33 @@ TEST(SiteForCookiesTest, Blob) {
       SiteForCookies::FromUrl(GURL("http://www.example.org:631"))));
 }
 
+TEST(SiteForCookiesTest, Wire) {
+  SiteForCookies out;
+
+  // Empty one.
+  EXPECT_TRUE(SiteForCookies::FromWire("", "", &out));
+  EXPECT_TRUE(out.IsNull());
+
+  // Not a valid scheme.
+  EXPECT_FALSE(SiteForCookies::FromWire("aH", "example.com", &out));
+  EXPECT_TRUE(out.IsNull());
+
+  // Not a eTLD + 1 (or something hosty).
+  EXPECT_FALSE(SiteForCookies::FromWire("http", "sub.example.com", &out));
+  EXPECT_TRUE(out.IsNull());
+
+  // This is fine, though.
+  EXPECT_TRUE(SiteForCookies::FromWire("https", "127.0.0.1", &out));
+  EXPECT_FALSE(out.IsNull());
+  EXPECT_EQ("SiteForCookies: {scheme=https; registrable_domain=127.0.0.1}",
+            out.ToDebugString());
+
+  // As is actual eTLD+1.
+  EXPECT_TRUE(SiteForCookies::FromWire("wss", "example.com", &out));
+  EXPECT_FALSE(out.IsNull());
+  EXPECT_EQ("SiteForCookies: {scheme=wss; registrable_domain=example.com}",
+            out.ToDebugString());
+}
+
 }  // namespace
 }  // namespace net

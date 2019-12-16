@@ -6,6 +6,6 @@ main frame - didFinishDocumentLoadForFrame
 main frame - didHandleOnloadEventsForFrame
 main frame - didFinishLoadForFrame
 This is a testharness.js-based test.
-FAIL Test that when deferred img is loaded, it uses the parse time base URL. assert_unreached: The image request should not load relative to the current (incorrect) base URL. Reached unreachable code
+FAIL Deferred images with loading='lazy' use the original base URL specified at the parse time assert_unreached: The image request should not load relative to the current (incorrect) base URL. Reached unreachable code
 Harness: the test ran to completion.
 

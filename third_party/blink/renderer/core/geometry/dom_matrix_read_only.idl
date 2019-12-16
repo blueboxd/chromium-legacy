@@ -5,12 +5,10 @@
 // https://drafts.fxtf.org/geometry/#DOMMatrix
 
 [
-    Constructor(optional (DOMString or sequence<unrestricted double>) init),
-    RaisesException=Constructor,
-    ConstructorCallWith=ExecutionContext,
     Exposed=(Window,Worker),
     Serializable
 ] interface DOMMatrixReadOnly {
+    [CallWith=ExecutionContext, RaisesException] constructor(optional (DOMString or sequence<unrestricted double>) init);
     [RaisesException, NewObject] static DOMMatrixReadOnly fromMatrix(optional DOMMatrixInit other);
     [RaisesException, NewObject] static DOMMatrixReadOnly fromFloat32Array(Float32Array array32);
     [RaisesException, NewObject] static DOMMatrixReadOnly fromFloat64Array(Float64Array array64);

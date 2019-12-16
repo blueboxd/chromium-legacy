@@ -34,11 +34,10 @@ callback MutationCallback = void (sequence<MutationRecord> mutations,
                                   MutationObserver observer);
 
 [
-    ConstructorCallWith=ScriptState,
-    Constructor(MutationCallback callback),
     ActiveScriptWrappable,
     Exposed=Window
 ] interface MutationObserver {
+    [CallWith=ScriptState] constructor(MutationCallback callback);
     [RaisesException] void observe(Node target, optional MutationObserverInit options);
     void disconnect();
     sequence<MutationRecord> takeRecords();

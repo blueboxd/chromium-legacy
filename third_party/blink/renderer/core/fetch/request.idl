@@ -31,11 +31,9 @@ enum ReferrerPolicy {
 
 [
     ActiveScriptWrappable,
-    Constructor(RequestInfo input, optional RequestInit requestInitDict),
-    ConstructorCallWith=ScriptState,
-    Exposed=(Window,Worker),
-    RaisesException=Constructor
+    Exposed=(Window,Worker)
 ] interface Request {
+    [CallWith=ScriptState, RaisesException] constructor(RequestInfo input, optional RequestInit requestInitDict);
     readonly attribute ByteString method;
     readonly attribute USVString url;
     [ImplementedAs=getHeaders, SameObject] readonly attribute Headers headers;

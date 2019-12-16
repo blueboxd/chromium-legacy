@@ -229,7 +229,7 @@ std::unique_ptr<network::SimpleURLLoader> NetworkFetch::MakeLoader() {
   if (host_overridden_) {
     resource_request->credentials_mode =
         network::mojom::CredentialsMode::kInclude;
-    resource_request->site_for_cookies = url;
+    resource_request->site_for_cookies = net::SiteForCookies::FromUrl(url);
   }
 
   SetRequestHeaders(resource_request.get());

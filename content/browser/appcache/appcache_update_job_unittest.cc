@@ -2426,7 +2426,8 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     MockFrontend* frontend = MakeMockFrontend();
     AppCacheHost* host = MakeHost(frontend);
-    host->SetFirstPartyUrlForTesting(kManifestUrl);
+    host->SetSiteForCookiesForTesting(
+        net::SiteForCookies::FromUrl(kManifestUrl));
     host->SelectCache(MockHttpServer::GetMockUrl("files/empty1"),
                       blink::mojom::kAppCacheNoCacheId, kManifestUrl);
 

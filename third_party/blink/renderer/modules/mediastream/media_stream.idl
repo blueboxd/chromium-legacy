@@ -27,12 +27,11 @@
 
 [
     Exposed=Window,
-    ActiveScriptWrappable,
-    Constructor,
-    Constructor(MediaStream stream),
-    Constructor(sequence<MediaStreamTrack> tracks),
-    ConstructorCallWith=ExecutionContext
+    ActiveScriptWrappable
 ] interface MediaStream : EventTarget {
+    [CallWith=ExecutionContext] constructor();
+    [CallWith=ExecutionContext] constructor(MediaStream stream);
+    [CallWith=ExecutionContext] constructor(sequence<MediaStreamTrack> tracks);
     readonly attribute DOMString id;
     sequence<MediaStreamTrack> getAudioTracks();
     sequence<MediaStreamTrack> getVideoTracks();

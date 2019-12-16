@@ -394,7 +394,8 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
                                       &provider_endpoints_)
               ->container_host()
               ->GetWeakPtr();
-      container_host_->UpdateUrls(request->url, request->url,
+      container_host_->UpdateUrls(request->url,
+                                  net::SiteForCookies::FromUrl(request->url),
                                   url::Origin::Create(request->url));
       container_host_->AddMatchingRegistration(registration_.get());
       container_host_->SetControllerRegistration(
@@ -523,7 +524,8 @@ TEST_F(ServiceWorkerNavigationLoaderTest, NoActiveWorker) {
           ->container_host()
           ->GetWeakPtr();
   container_host_->UpdateUrls(
-      GURL("https://example.com/"), GURL("https://example.com/"),
+      GURL("https://example.com/"),
+      net::SiteForCookies::FromUrl(GURL("https://example.com/")),
       url::Origin::Create(GURL("https://example.com/")));
 
   // Perform the request.

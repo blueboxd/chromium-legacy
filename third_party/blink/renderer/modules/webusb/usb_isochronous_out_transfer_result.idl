@@ -5,9 +5,9 @@
 // https://wicg.github.io/webusb/#usbisochronousouttransferresult
 
 [
-    Constructor(sequence<USBIsochronousOutTransferPacket> packets),
     Exposed(DedicatedWorker WebUSBOnDedicatedWorkers, Window WebUSB),
     SecureContext
 ] interface USBIsochronousOutTransferResult {
+    constructor(sequence<USBIsochronousOutTransferPacket> packets);
     readonly attribute FrozenArray<USBIsochronousOutTransferPacket> packets;
 };

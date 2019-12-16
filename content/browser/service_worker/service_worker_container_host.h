@@ -18,6 +18,7 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/cookies/site_for_cookies.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
@@ -229,7 +230,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // Sets |url_|, |site_for_cookies_| and |top_frame_origin_|. For service
   // worker clients, updates the client uuid if it's a cross-origin transition.
   void UpdateUrls(const GURL& url,
-                  const GURL& site_for_cookies,
+                  const net::SiteForCookies& site_for_cookies,
                   const base::Optional<url::Origin>& top_frame_origin);
 
   // For service worker clients. Makes this client be controlled by
@@ -296,11 +297,13 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // is_response_committed() is true, the URL should no longer change.
   const GURL& url() const { return url_; }
 
-  // The URL representing the site_for_cookies for this context. See
+  // Representing the first party for cookies, if any, for this context. See
   // |URLRequest::site_for_cookies()| for details.
   // For service worker execution contexts, site_for_cookies() always
-  // returns the service worker script URL.
-  const GURL& site_for_cookies() const { return site_for_cookies_; }
+  // corresponds to the service worker script URL.
+  const net::SiteForCookies& site_for_cookies() const {
+    return site_for_cookies_;
+  }
 
   // The URL representing the first-party site for this context.
   // For service worker execution contexts, top_frame_origin() always
@@ -502,7 +505,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
 
   // See comments for the getter functions.
   GURL url_;
-  GURL site_for_cookies_;
+  net::SiteForCookies site_for_cookies_;
   base::Optional<url::Origin> top_frame_origin_;
 
   // For window clients. A token used internally to identify this context in

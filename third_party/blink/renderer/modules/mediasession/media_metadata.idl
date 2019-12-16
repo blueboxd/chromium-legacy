@@ -6,11 +6,9 @@
 
 [
     Exposed=Window,
-    ConstructorCallWith=ScriptState,
-    Constructor(optional MediaMetadataInit metadata),
-    RaisesException=Constructor,
     RuntimeEnabled=MediaSession
 ] interface MediaMetadata {
+    [CallWith=ScriptState, RaisesException] constructor(optional MediaMetadataInit metadata);
     attribute DOMString title;
     attribute DOMString artist;
     attribute DOMString album;

@@ -5,8 +5,8 @@
 // https://gpuweb.github.io/gpuweb/
 
 [
-    Constructor(DOMString type, GPUUncapturedErrorEventInit gpuUncapturedErrorEventInitDict),
     Exposed(Window WebGPU, Worker WebGPU)
 ] interface GPUUncapturedErrorEvent : Event {
+    constructor(DOMString type, GPUUncapturedErrorEventInit gpuUncapturedErrorEventInitDict);
     [SameObject] readonly attribute GPUError error;
 };

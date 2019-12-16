@@ -41,13 +41,11 @@ enum NotificationPermission {
 
 [
     ActiveScriptWrappable,
-    ConstructorCallWith=ExecutionContext,
-    Constructor(DOMString title, optional NotificationOptions options),
     Exposed=(Window,Worker),
     MeasureAs=NotificationCreated,
-    RaisesException=Constructor,
     RuntimeEnabled=Notifications
 ] interface Notification : EventTarget {
+    [CallWith=ExecutionContext, RaisesException] constructor(DOMString title, optional NotificationOptions options);
     [CallWith=ExecutionContext, MeasureAs=NotificationPermission] static readonly attribute NotificationPermission permission;
 
     // TODO(crbug.com/841185): |deprecatedCallback| is not nullable in the spec.

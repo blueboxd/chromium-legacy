@@ -769,8 +769,10 @@ class MockNetworkContext : public network::TestNetworkContext {
  public:
   explicit MockNetworkContext(
       TCPFailureType tcp_failure_type,
+      Browser* browser,
       mojo::PendingReceiver<network::mojom::NetworkContext> receiver)
       : tcp_failure_type_(tcp_failure_type),
+        browser_(browser),
         receiver_(this, std::move(receiver)) {}
 
   ~MockNetworkContext() override {}
@@ -824,6 +826,11 @@ class MockNetworkContext : public network::TestNetworkContext {
                    network::mojom::ResolveHostParametersPtr optional_parameters,
                    mojo::PendingRemote<network::mojom::ResolveHostClient>
                        pending_response_client) override {
+    EXPECT_EQ(browser_->tab_strip_model()
+                  ->GetActiveWebContents()
+                  ->GetMainFrame()
+                  ->GetNetworkIsolationKey(),
+              network_isolation_key);
     mojo::Remote<network::mojom::ResolveHostClient> response_client(
         std::move(pending_response_client));
     response_client->OnComplete(net::OK, net::ResolveErrorInfo(net::OK),
@@ -832,6 +839,7 @@ class MockNetworkContext : public network::TestNetworkContext {
 
  private:
   TCPFailureType tcp_failure_type_;
+  Browser* const browser_;
 
   std::vector<std::unique_ptr<MockTCPServerSocket>> server_sockets_;
   std::vector<std::unique_ptr<MockTCPBoundSocket>> bound_sockets_;
@@ -848,7 +856,8 @@ class MockNetworkContext : public network::TestNetworkContext {
   do {                                                                        \
     mojo::Remote<network::mojom::NetworkContext> network_context_proxy;       \
     MockNetworkContext network_context(                                       \
-        failure_type, network_context_proxy.BindNewPipeAndPassReceiver());    \
+        failure_type, browser(),                                              \
+        network_context_proxy.BindNewPipeAndPassReceiver());                  \
     ppapi::SetPepperTCPNetworkContextForTesting(network_context_proxy.get()); \
     RunTestViaHTTP(LIST_TEST(test_name));                                     \
     ppapi::SetPepperTCPNetworkContextForTesting(nullptr);                     \

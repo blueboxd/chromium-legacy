@@ -118,7 +118,8 @@ class ResourceDispatcherTest : public testing::Test,
 
     request->method = "GET";
     request->url = GURL(kTestPageUrl);
-    request->site_for_cookies = GURL(kTestPageUrl);
+    request->site_for_cookies =
+        net::SiteForCookies::FromUrl(GURL(kTestPageUrl));
     request->referrer_policy = Referrer::GetDefaultReferrerPolicy();
     request->resource_type = static_cast<int>(ResourceType::kSubResource);
     request->priority = net::LOW;

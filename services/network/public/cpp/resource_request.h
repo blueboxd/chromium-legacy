@@ -14,6 +14,7 @@
 #include "base/unguessable_token.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/request_priority.h"
+#include "net/cookies/site_for_cookies.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
@@ -60,7 +61,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   // of each field.
   std::string method = "GET";
   GURL url;
-  GURL site_for_cookies;
+  net::SiteForCookies site_for_cookies;
   bool attach_same_site_cookies = false;
   bool update_first_party_url_on_redirect = false;
   base::Optional<url::Origin> request_initiator;

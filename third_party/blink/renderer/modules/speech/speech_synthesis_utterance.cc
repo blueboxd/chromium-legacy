@@ -33,6 +33,11 @@
 namespace blink {
 
 SpeechSynthesisUtterance* SpeechSynthesisUtterance::Create(
+    ExecutionContext* context) {
+  return MakeGarbageCollected<SpeechSynthesisUtterance>(context, String());
+}
+
+SpeechSynthesisUtterance* SpeechSynthesisUtterance::Create(
     ExecutionContext* context,
     const String& text) {
   return MakeGarbageCollected<SpeechSynthesisUtterance>(context, text);

@@ -282,7 +282,8 @@ std::unique_ptr<network::ResourceRequest> NetErrorHelper::CreatePostRequest(
       static_cast<int>(content::ResourceType::kSubResource);
 
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
-  resource_request->site_for_cookies = frame->GetDocument().SiteForCookies();
+  resource_request->site_for_cookies =
+      net::SiteForCookies::FromUrl(frame->GetDocument().SiteForCookies());
   // The security origin of the error page should exist and be opaque.
   DCHECK(!frame->GetDocument().GetSecurityOrigin().IsNull());
   DCHECK(frame->GetDocument().GetSecurityOrigin().IsOpaque());

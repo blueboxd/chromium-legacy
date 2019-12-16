@@ -64,12 +64,10 @@ enum RTCPeerConnectionState {
 //  * Dictionary -> specific dictionary types like RTCConfiguration
 [
     ActiveScriptWrappable,
-    // TODO(guidou): There should only be one constructor argument.
-    Constructor(optional RTCConfiguration configuration, optional Dictionary mediaConstraints),
-    ConstructorCallWith=ExecutionContext,
-    RaisesException=Constructor,
     Exposed=Window
 ] interface RTCPeerConnection : EventTarget {
+    // TODO(guidou): There should only be one constructor argument.
+    [CallWith=ExecutionContext, RaisesException] constructor(optional RTCConfiguration configuration, optional Dictionary mediaConstraints);
     [CallWith=ScriptState, RaisesException] Promise<RTCSessionDescription> createOffer(optional RTCOfferOptions options);
     [CallWith=ScriptState, RaisesException] Promise<RTCSessionDescription> createAnswer(optional RTCAnswerOptions options);
     [CallWith=ScriptState, RaisesException] Promise<void> setLocalDescription(optional RTCSessionDescriptionInit description = {});

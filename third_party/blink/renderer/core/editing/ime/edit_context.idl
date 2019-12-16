@@ -7,12 +7,11 @@
 // advanced editing scenarios. For more information please refer
 // https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/master/EditContext/explainer.md
 [
-    Constructor(optional EditContextInit options),
-    ConstructorCallWith=ScriptState,
     Exposed=Window,
     ActiveScriptWrappable,
     RuntimeEnabled=EditContext
 ] interface EditContext : EventTarget {
+    [CallWith=ScriptState] constructor(optional EditContextInit options);
     void focus();
     void blur();
     [RaisesException] void updateSelection(unsigned long start, unsigned long end);

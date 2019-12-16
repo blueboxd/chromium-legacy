@@ -686,18 +686,18 @@ namespace {
 
 struct RequestData {
   const GURL url;
-  const GURL first_party;
+  const net::SiteForCookies site_for_cookies;
   const base::Optional<url::Origin> initiator;
   const int load_flags;
   const std::string referrer;
 
   RequestData(const GURL& url,
-              const GURL& first_party,
+              const net::SiteForCookies& site_for_cookies,
               const base::Optional<url::Origin>& initiator,
               int load_flags,
               const std::string& referrer)
       : url(url),
-        first_party(first_party),
+        site_for_cookies(site_for_cookies),
         initiator(initiator),
         load_flags(load_flags),
         referrer(referrer) {}
@@ -777,11 +777,13 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, Basic) {
   // |first_party| and |initiator| that match the URL of the top-level document.
   // The top-level document itself doesn't have an |initiator|.
   const RequestData* first_request = &requests[0];
-  EXPECT_EQ(top_url, first_request->first_party);
+  EXPECT_TRUE(first_request->site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromUrl(top_url)));
   EXPECT_FALSE(first_request->initiator.has_value());
   for (size_t i = 1; i < requests.size(); i++) {
     const RequestData* request = &requests[i];
-    EXPECT_EQ(top_origin, url::Origin::Create(request->first_party));
+    EXPECT_TRUE(request->site_for_cookies.IsEquivalent(
+        net::SiteForCookies::FromOrigin(top_origin)));
     ASSERT_TRUE(request->initiator.has_value());
     EXPECT_EQ(top_origin, request->initiator);
   }
@@ -843,15 +845,17 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, BasicCrossSite) {
   EXPECT_EQ(9u, requests.size());
 
   // The first items loaded are the top-level and nested documents. These should
-  // both have a |first_party| that match the origin of the top-level document.
-  // The top-level document has no initiator and the nested frame is initiated
-  // by the top-level document.
+  // both have a |site_for_cookies| that matches the origin of the top-level
+  // document. The top-level document has no initiator and the nested frame is
+  // initiated by the top-level document.
   EXPECT_EQ(top_url, requests[0].url);
-  EXPECT_EQ(top_origin, url::Origin::Create(requests[0].first_party));
+  EXPECT_TRUE(requests[0].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromOrigin(top_origin)));
   EXPECT_FALSE(requests[0].initiator.has_value());
 
   EXPECT_EQ(nested_url, requests[1].url);
-  EXPECT_EQ(top_origin, url::Origin::Create(requests[1].first_party));
+  EXPECT_TRUE(requests[1].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromOrigin(top_origin)));
   EXPECT_EQ(top_origin, requests[1].initiator);
 
   // The remaining items are loaded as subresources in the nested document, and
@@ -859,7 +863,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, BasicCrossSite) {
   // document in which they're embedded.
   for (size_t i = 2; i < requests.size(); i++) {
     SCOPED_TRACE(requests[i].url);
-    EXPECT_EQ(GURL::EmptyGURL(), requests[i].first_party);
+    EXPECT_TRUE(requests[i].site_for_cookies.IsNull());
     EXPECT_EQ(nested_origin, requests[i].initiator);
   }
 }
@@ -879,19 +883,23 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, SameOriginNested) {
   // URL to which they navigate. The navigation was initiated outside of a
   // document, so there is no |initiator|.
   EXPECT_EQ(top_url, requests[0].url);
-  EXPECT_EQ(top_origin, url::Origin::Create(requests[0].first_party));
+  EXPECT_TRUE(requests[0].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromOrigin(top_origin)));
   EXPECT_FALSE(requests[0].initiator.has_value());
 
   // Subresource requests have a first-party and initiator that matches the
   // document in which they're embedded.
   EXPECT_EQ(image_url, requests[1].url);
-  EXPECT_EQ(top_origin, url::Origin::Create(requests[1].first_party));
+  EXPECT_TRUE(requests[1].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromOrigin(top_origin)));
   EXPECT_EQ(top_origin, requests[1].initiator);
 
   // Same-origin nested frames have a first-party and initiator that matches
-  // the document in which they're embedded.
+  // the document in which they're embedded (since the frame is same site with
+  // toplevel).
   EXPECT_EQ(nested_url, requests[2].url);
-  EXPECT_EQ(top_origin, url::Origin::Create(requests[2].first_party));
+  EXPECT_TRUE(requests[2].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromOrigin(top_origin)));
   EXPECT_EQ(top_origin, requests[2].initiator);
 }
 
@@ -919,14 +927,15 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, SameOriginAuxiliary) {
   // URL to which they navigate, even if they fail to load. The navigation was
   // initiated outside of a document, so there is no |initiator|.
   EXPECT_EQ(top_url, requests[0].url);
-  EXPECT_EQ(top_origin, url::Origin::Create(requests[0].first_party));
+  EXPECT_TRUE(requests[0].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromOrigin(top_origin)));
   EXPECT_FALSE(requests[0].initiator.has_value());
 
   // Auxiliary navigations have a first-party that matches the URL to which they
   // navigate, and an initiator that matches the document that triggered them.
   EXPECT_EQ(auxiliary_url, requests[1].url);
-  EXPECT_EQ(url::Origin::Create(auxiliary_url),
-            url::Origin::Create(requests[1].first_party));
+  EXPECT_TRUE(requests[1].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromUrl(auxiliary_url)));
   EXPECT_EQ(top_origin, requests[1].initiator);
 }
 
@@ -962,14 +971,15 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, CrossOriginAuxiliary) {
   // URL to which they navigate, even if they fail to load. The navigation was
   // initiated outside of a document, so there is no initiator.
   EXPECT_EQ(top_url, requests[0].url);
-  EXPECT_EQ(top_origin, url::Origin::Create(requests[0].first_party));
+  EXPECT_TRUE(requests[0].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromOrigin(top_origin)));
   EXPECT_FALSE(requests[0].initiator.has_value());
 
   // Auxiliary navigations have a first-party that matches the URL to which they
   // navigate, and an initiator that matches the document that triggered them.
   EXPECT_EQ(auxiliary_url, requests[1].url);
-  EXPECT_EQ(url::Origin::Create(auxiliary_url),
-            url::Origin::Create(requests[1].first_party));
+  EXPECT_TRUE(requests[1].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromUrl(auxiliary_url)));
   EXPECT_EQ(top_origin, requests[1].initiator);
 }
 
@@ -988,7 +998,8 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, FailedNavigation) {
   // URL to which they navigate, even if they fail to load. The navigation was
   // initiated outside of a document, so there is no initiator.
   EXPECT_EQ(top_url, requests[0].url);
-  EXPECT_EQ(top_origin, url::Origin::Create(requests[0].first_party));
+  EXPECT_TRUE(requests[0].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromOrigin(top_origin)));
   EXPECT_FALSE(requests[0].initiator.has_value());
 }
 
@@ -1012,23 +1023,26 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, CrossOriginNested) {
   // User-initiated top-level navigations have a |first-party|. The navigation
   // was initiated outside of a document, so there are no initiator.
   EXPECT_EQ(top_url, requests[0].url);
-  EXPECT_EQ(top_origin, url::Origin::Create(requests[0].first_party));
+  EXPECT_TRUE(requests[0].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromOrigin(top_origin)));
   EXPECT_FALSE(requests[0].initiator.has_value());
 
   EXPECT_EQ(top_js_url, requests[1].url);
-  EXPECT_EQ(top_origin, url::Origin::Create(requests[1].first_party));
+  EXPECT_TRUE(requests[1].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromOrigin(top_origin)));
   EXPECT_EQ(top_origin, requests[1].initiator);
 
   // Cross-origin frames have a first-party and initiator that matches the URL
-  // in which they're embedded.
+  // in which they're embedded (if they are the first cross-origin thing)
   EXPECT_EQ(nested_url, requests[2].url);
-  EXPECT_EQ(top_origin, url::Origin::Create(requests[2].first_party));
+  EXPECT_TRUE(requests[2].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromOrigin(top_origin)));
   EXPECT_EQ(top_origin, requests[2].initiator);
 
   // Cross-origin subresource requests have a unique first-party, and an
   // initiator that matches the document in which they're embedded.
   EXPECT_EQ(nested_js_url, requests[3].url);
-  EXPECT_EQ(GURL::EmptyGURL(), requests[3].first_party);
+  EXPECT_TRUE(requests[3].site_for_cookies.IsNull());
   EXPECT_EQ(nested_origin, requests[3].initiator);
 }
 

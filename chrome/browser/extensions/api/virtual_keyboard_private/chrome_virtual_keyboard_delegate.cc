@@ -407,6 +407,9 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
       "resizablefloatingkeyboard",
       base::FeatureList::IsEnabled(
           chromeos::features::kVirtualKeyboardFloatingResizable)));
+  features->AppendString(GenerateFeatureFlag(
+      "nativerulebased", base::FeatureList::IsEnabled(
+                             chromeos::features::kNativeRuleBasedTyping)));
 
   results->Set("features", std::move(features));
 

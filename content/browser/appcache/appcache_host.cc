@@ -204,7 +204,8 @@ void AppCacheHost::SelectCache(const GURL& document_url,
     // continue whether it was set or not.
 
     AppCachePolicy* policy = service()->appcache_policy();
-    if (policy && !policy->CanCreateAppCache(manifest_url, first_party_url_)) {
+    if (policy && !policy->CanCreateAppCache(
+                      manifest_url, site_for_cookies_.RepresentativeUrl())) {
       FinishCacheSelection(nullptr, nullptr, mojo::ReportBadMessageCallback());
       frontend()->EventRaised(
           blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
@@ -389,8 +390,8 @@ std::unique_ptr<AppCacheRequestHandler> AppCacheHost::CreateRequestHandler(
   if (AppCacheRequestHandler::IsMainResourceType(resource_type)) {
     // Store the first party origin so that it can be used later in SelectCache
     // for checking whether the creation of the appcache is allowed.
-    first_party_url_ = request->GetSiteForCookies();
-    first_party_url_initialized_ = true;
+    site_for_cookies_ = request->GetSiteForCookies();
+    site_for_cookies_initialized_ = true;
     return base::WrapUnique(new AppCacheRequestHandler(
         this, resource_type, should_reset_appcache, std::move(request)));
   }

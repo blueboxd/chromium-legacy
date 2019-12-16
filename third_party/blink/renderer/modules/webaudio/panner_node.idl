@@ -37,10 +37,9 @@ enum DistanceModelType {
 
 [
     Exposed=Window,
-    Constructor(BaseAudioContext context, optional PannerOptions options),
-    RaisesException=Constructor,
     Measure
 ] interface PannerNode : AudioNode {
+    [RaisesException] constructor(BaseAudioContext context, optional PannerOptions options);
     // Default model for stereo is equalpower.
     attribute PanningModelType panningModel;
 

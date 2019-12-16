@@ -2,34 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/vaapi/vaapi_vp9_accelerator.h"
+#include "media/gpu/vaapi/vp9_vaapi_video_decoder_delegate.h"
 
 #include <type_traits>
 
 #include "base/stl_util.h"
 #include "media/gpu/decode_surface_handler.h"
 #include "media/gpu/macros.h"
+#include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_common.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
-#include "media/gpu/vp9_picture.h"
 
 namespace media {
 
-VaapiVP9Accelerator::VaapiVP9Accelerator(
-    DecodeSurfaceHandler<VASurface>* vaapi_dec,
+VP9VaapiVideoDecoderDelegate::VP9VaapiVideoDecoderDelegate(
+    DecodeSurfaceHandler<VASurface>* const vaapi_dec,
     scoped_refptr<VaapiWrapper> vaapi_wrapper)
-    : vaapi_wrapper_(vaapi_wrapper), vaapi_dec_(vaapi_dec) {
-  DCHECK(vaapi_wrapper_);
-  DCHECK(vaapi_dec_);
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-}
+    : VaapiVideoDecoderDelegate(vaapi_dec, std::move(vaapi_wrapper)) {}
 
-VaapiVP9Accelerator::~VaapiVP9Accelerator() {
-  // TODO(mcasas): consider enabling the checker, https://crbug.com/789160
-  // CHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
+VP9VaapiVideoDecoderDelegate::~VP9VaapiVideoDecoderDelegate() = default;
 
-scoped_refptr<VP9Picture> VaapiVP9Accelerator::CreateVP9Picture() {
+scoped_refptr<VP9Picture> VP9VaapiVideoDecoderDelegate::CreateVP9Picture() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const auto va_surface = vaapi_dec_->CreateSurface();
   if (!va_surface)
@@ -38,7 +31,7 @@ scoped_refptr<VP9Picture> VaapiVP9Accelerator::CreateVP9Picture() {
   return new VaapiVP9Picture(std::move(va_surface));
 }
 
-bool VaapiVP9Accelerator::SubmitDecode(
+bool VP9VaapiVideoDecoderDelegate::SubmitDecode(
     scoped_refptr<VP9Picture> pic,
     const Vp9SegmentationParams& seg,
     const Vp9LoopFilterParams& lf,
@@ -157,7 +150,8 @@ bool VaapiVP9Accelerator::SubmitDecode(
       pic->AsVaapiVP9Picture()->va_surface()->id());
 }
 
-bool VaapiVP9Accelerator::OutputPicture(scoped_refptr<VP9Picture> pic) {
+bool VP9VaapiVideoDecoderDelegate::OutputPicture(
+    scoped_refptr<VP9Picture> pic) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const VaapiVP9Picture* vaapi_pic = pic->AsVaapiVP9Picture();
@@ -167,12 +161,13 @@ bool VaapiVP9Accelerator::OutputPicture(scoped_refptr<VP9Picture> pic) {
   return true;
 }
 
-bool VaapiVP9Accelerator::IsFrameContextRequired() const {
+bool VP9VaapiVideoDecoderDelegate::IsFrameContextRequired() const {
   return false;
 }
 
-bool VaapiVP9Accelerator::GetFrameContext(scoped_refptr<VP9Picture> pic,
-                                          Vp9FrameContext* frame_ctx) {
+bool VP9VaapiVideoDecoderDelegate::GetFrameContext(
+    scoped_refptr<VP9Picture> pic,
+    Vp9FrameContext* frame_ctx) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED() << "Frame context update not supported";
   return false;

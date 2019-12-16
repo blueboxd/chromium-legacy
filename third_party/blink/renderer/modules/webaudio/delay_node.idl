@@ -26,10 +26,8 @@
 // See https://webaudio.github.io/web-audio-api/#DelayNode
 [
     Exposed=Window,
-    Constructor(BaseAudioContext context, optional DelayOptions options),
-    RaisesException=Constructor,
     Measure
-]
-interface DelayNode : AudioNode {
+] interface DelayNode : AudioNode {
+    [RaisesException] constructor(BaseAudioContext context, optional DelayOptions options);
     readonly attribute AudioParam delayTime;
 };

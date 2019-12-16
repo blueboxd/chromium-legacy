@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 [
-    Constructor(sequence<CSSTransformComponent> transforms),
-    RaisesException=Constructor,
     Exposed=(Window,LayoutWorklet,PaintWorklet)
 ] interface CSSTransformValue : CSSStyleValue {
+    [RaisesException] constructor(sequence<CSSTransformComponent> transforms);
     iterable<CSSTransformComponent>;
     readonly attribute unsigned long length;
     getter CSSTransformComponent (unsigned long index);

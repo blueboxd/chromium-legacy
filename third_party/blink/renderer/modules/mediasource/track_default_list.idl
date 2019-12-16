@@ -6,10 +6,9 @@
 // https://w3c.github.io/media-source/#trackdefaultlist
 
 [
-    Constructor(optional sequence<TrackDefault> trackDefaults = []),
-    RaisesException=Constructor,
     RuntimeEnabled=MediaSourceExperimental
 ] interface TrackDefaultList {
+    [RaisesException] constructor(optional sequence<TrackDefault> trackDefaults = []);
     readonly attribute unsigned long length;
     [ImplementedAs=item] getter TrackDefault (unsigned long index);
 };

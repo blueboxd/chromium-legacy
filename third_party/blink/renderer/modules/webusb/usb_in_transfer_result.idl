@@ -6,9 +6,9 @@
 
 [
     Exposed(DedicatedWorker WebUSBOnDedicatedWorkers, Window WebUSB),
-    Constructor(USBTransferStatus status, optional DataView? data),
     SecureContext
 ] interface USBInTransferResult {
+    constructor(USBTransferStatus status, optional DataView? data);
     readonly attribute DataView? data;
     readonly attribute USBTransferStatus status;
 };

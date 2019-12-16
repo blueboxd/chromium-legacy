@@ -33,10 +33,9 @@
 
 [
     ActiveScriptWrappable,
-    Constructor,
-    ConstructorCallWith=ExecutionContext,
     Exposed=(Window,Worker)
 ] interface FileReader : EventTarget {
+    [CallWith=ExecutionContext] constructor();
     // async read methods
     [RaisesException] void readAsArrayBuffer(Blob blob);
     [RaisesException] void readAsBinaryString(Blob blob);

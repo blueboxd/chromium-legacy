@@ -33,10 +33,9 @@
 typedef (File or USVString) FormDataEntryValue;
 
 [
-    Constructor(optional HTMLFormElement form),
-    RaisesException=Constructor,
     Exposed=(Window,Worker)
 ] interface FormData {
+    [RaisesException] constructor(optional HTMLFormElement form);
     void append(USVString name, USVString value);
     [CallWith=ScriptState] void append(USVString name, Blob value, optional USVString filename);
     [ImplementedAs=deleteEntry] void delete(USVString name);

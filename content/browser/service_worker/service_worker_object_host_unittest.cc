@@ -221,8 +221,8 @@ TEST_F(ServiceWorkerObjectHostTest, OnVersionStateChanged) {
       CreateProviderHostForWindow(
           helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
           helper_->context()->AsWeakPtr(), &remote_endpoint);
-  provider_host->container_host()->UpdateUrls(scope, scope,
-                                              url::Origin::Create(scope));
+  provider_host->container_host()->UpdateUrls(
+      scope, net::SiteForCookies::FromUrl(scope), url::Origin::Create(scope));
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info =
       GetRegistrationFromRemote(remote_endpoint.host_remote()->get(), scope);
   // |version_| is the installing version of |registration_| now.
@@ -373,7 +373,8 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_FromClient) {
           helper_->context()->AsWeakPtr(), &remote_endpoint);
   SetProviderHostRenderFrameId(provider_host.get(), frame_host->GetRoutingID());
   ServiceWorkerContainerHost* container_host = provider_host->container_host();
-  container_host->UpdateUrls(scope, scope, url::Origin::Create(scope));
+  container_host->UpdateUrls(scope, net::SiteForCookies::FromUrl(scope),
+                             url::Origin::Create(scope));
 
   // Prepare a ServiceWorkerObjectHost for the worker.
   blink::mojom::ServiceWorkerObjectInfoPtr info =

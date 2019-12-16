@@ -5,6 +5,7 @@
 #include "net/cookies/site_for_cookies.h"
 
 #include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace net {
@@ -30,6 +31,24 @@ SiteForCookies& SiteForCookies::operator=(const SiteForCookies& other) =
     default;
 SiteForCookies& SiteForCookies::operator=(SiteForCookies&& site_for_cookies) =
     default;
+
+// static
+bool SiteForCookies::FromWire(const std::string& scheme,
+                              const std::string& registrable_domain,
+                              SiteForCookies* out) {
+  // Make sure scheme meets precondition of methods like
+  // GURL::SchemeIsCryptographic.
+  if (!base::IsStringASCII(scheme) || base::ToLowerASCII(scheme) != scheme)
+    return false;
+
+  // registrable_domain_ should also be canonicalized.
+  SiteForCookies candidate(scheme, registrable_domain);
+  if (registrable_domain != candidate.registrable_domain_)
+    return false;
+
+  *out = std::move(candidate);
+  return true;
+}
 
 // static
 SiteForCookies SiteForCookies::FromOrigin(const url::Origin& origin) {

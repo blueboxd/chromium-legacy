@@ -4,13 +4,11 @@
 
 [
     ActiveScriptWrappable,
-    Constructor(DOMString interfaceName, optional MojoScope scope = "context",
-                optional boolean useBrowserInterfaceBroker = false),
-    ConstructorCallWith=ExecutionContext,
     Exposed=(Window,Worker),
-    RaisesException=Constructor,
     RuntimeEnabled=MojoJSTest
 ] interface MojoInterfaceInterceptor : EventTarget {
+    [CallWith=ExecutionContext, RaisesException] constructor(DOMString interfaceName, optional MojoScope scope = "context",
+                optional boolean useBrowserInterfaceBroker = false);
     [RaisesException] void start();
     void stop();
 

@@ -5,11 +5,9 @@
 // https://encoding.spec.whatwg.org/#interface-textencoderstream
 [
     Exposed=(Window,Worker),
-    Constructor(),
-    ConstructorCallWith=ScriptState,
-    RaisesException=Constructor,
     MeasureAs=TextEncoderStreamConstructor
 ] interface TextEncoderStream {
+    [CallWith=ScriptState, RaisesException] constructor();
     readonly attribute DOMString encoding;
     readonly attribute ReadableStream readable;
     readonly attribute WritableStream writable;

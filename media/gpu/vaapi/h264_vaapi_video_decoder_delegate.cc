@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/vaapi/vaapi_h264_accelerator.h"
+#include "media/gpu/vaapi/h264_vaapi_video_decoder_delegate.h"
 
 #include <va/va.h>
 
@@ -35,21 +35,14 @@ static constexpr uint8_t kZigzagScan8x8[64] = {
 
 }  // namespace
 
-VaapiH264Accelerator::VaapiH264Accelerator(
-    DecodeSurfaceHandler<VASurface>* vaapi_dec,
+H264VaapiVideoDecoderDelegate::H264VaapiVideoDecoderDelegate(
+    DecodeSurfaceHandler<VASurface>* const vaapi_dec,
     scoped_refptr<VaapiWrapper> vaapi_wrapper)
-    : vaapi_wrapper_(vaapi_wrapper), vaapi_dec_(vaapi_dec) {
-  DCHECK(vaapi_wrapper_);
-  DCHECK(vaapi_dec_);
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-}
+    : VaapiVideoDecoderDelegate(vaapi_dec, std::move(vaapi_wrapper)) {}
 
-VaapiH264Accelerator::~VaapiH264Accelerator() {
-  // TODO(mcasas): consider enabling the checker, https://crbug.com/789160
-  // DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
+H264VaapiVideoDecoderDelegate::~H264VaapiVideoDecoderDelegate() = default;
 
-scoped_refptr<H264Picture> VaapiH264Accelerator::CreateH264Picture() {
+scoped_refptr<H264Picture> H264VaapiVideoDecoderDelegate::CreateH264Picture() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const auto va_surface = vaapi_dec_->CreateSurface();
   if (!va_surface)
@@ -65,7 +58,7 @@ static void InitVAPicture(VAPictureH264* va_pic) {
   va_pic->flags = VA_PICTURE_H264_INVALID;
 }
 
-Status VaapiH264Accelerator::SubmitFrameMetadata(
+Status H264VaapiVideoDecoderDelegate::SubmitFrameMetadata(
     const H264SPS* sps,
     const H264PPS* pps,
     const H264DPB& dpb,
@@ -180,7 +173,7 @@ Status VaapiH264Accelerator::SubmitFrameMetadata(
              : Status::kFail;
 }
 
-Status VaapiH264Accelerator::SubmitSlice(
+Status H264VaapiVideoDecoderDelegate::SubmitSlice(
     const H264PPS* pps,
     const H264SliceHeader* slice_hdr,
     const H264Picture::Vector& ref_pic_list0,
@@ -286,7 +279,8 @@ Status VaapiH264Accelerator::SubmitSlice(
              : Status::kFail;
 }
 
-Status VaapiH264Accelerator::SubmitDecode(scoped_refptr<H264Picture> pic) {
+Status H264VaapiVideoDecoderDelegate::SubmitDecode(
+    scoped_refptr<H264Picture> pic) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const bool success = vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(
@@ -294,7 +288,8 @@ Status VaapiH264Accelerator::SubmitDecode(scoped_refptr<H264Picture> pic) {
   return success ? Status::kOk : Status::kFail;
 }
 
-bool VaapiH264Accelerator::OutputPicture(scoped_refptr<H264Picture> pic) {
+bool H264VaapiVideoDecoderDelegate::OutputPicture(
+    scoped_refptr<H264Picture> pic) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const VaapiH264Picture* vaapi_pic = pic->AsVaapiH264Picture();
@@ -304,13 +299,14 @@ bool VaapiH264Accelerator::OutputPicture(scoped_refptr<H264Picture> pic) {
   return true;
 }
 
-void VaapiH264Accelerator::Reset() {
+void H264VaapiVideoDecoderDelegate::Reset() {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   vaapi_wrapper_->DestroyPendingBuffers();
 }
 
-void VaapiH264Accelerator::FillVAPicture(VAPictureH264* va_pic,
-                                         scoped_refptr<H264Picture> pic) {
+void H264VaapiVideoDecoderDelegate::FillVAPicture(
+    VAPictureH264* va_pic,
+    scoped_refptr<H264Picture> pic) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VASurfaceID va_surface_id = VA_INVALID_SURFACE;
 
@@ -341,9 +337,10 @@ void VaapiH264Accelerator::FillVAPicture(VAPictureH264* va_pic,
   va_pic->BottomFieldOrderCnt = pic->bottom_field_order_cnt;
 }
 
-int VaapiH264Accelerator::FillVARefFramesFromDPB(const H264DPB& dpb,
-                                                 VAPictureH264* va_pics,
-                                                 int num_pics) {
+int H264VaapiVideoDecoderDelegate::FillVARefFramesFromDPB(
+    const H264DPB& dpb,
+    VAPictureH264* va_pics,
+    int num_pics) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   H264Picture::Vector::const_reverse_iterator rit;
   int i;

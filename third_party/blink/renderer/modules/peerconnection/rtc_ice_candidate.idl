@@ -57,11 +57,9 @@ enum RTCIceTcpCandidateType {
 
 // https://w3c.github.io/webrtc-pc/#rtcicecandidate-interface
 [
-    Constructor(optional RTCIceCandidateInit candidateInitDict),
-    ConstructorCallWith=ExecutionContext,
-    RaisesException=Constructor,
     Exposed=Window
 ] interface RTCIceCandidate {
+    [CallWith=ExecutionContext, RaisesException] constructor(optional RTCIceCandidateInit candidateInitDict);
     readonly attribute DOMString candidate;
     readonly attribute DOMString? sdpMid;
     readonly attribute unsigned short? sdpMLineIndex;

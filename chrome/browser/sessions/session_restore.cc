@@ -642,10 +642,15 @@ class SessionRestoreImpl : public BrowserListObserver {
     params.initial_bounds = bounds;
 
 #if defined(OS_CHROMEOS)
+    // We only store trusted app windows, so we also create them as trusted.
     if (type == Browser::Type::TYPE_APP) {
-      const bool trusted_source = true;  // We only store trusted app windows.
-      params = Browser::CreateParams::CreateForApp(app_name, trusted_source,
-                                                   bounds, profile_, false);
+      params = Browser::CreateParams::CreateForApp(
+          app_name, /*trusted_source=*/true, bounds, profile_,
+          /*user_gesture=*/false);
+    } else if (type == Browser::Type::TYPE_APP_POPUP) {
+      params = Browser::CreateParams::CreateForAppPopup(
+          app_name, /*trusted_source=*/true, bounds, profile_,
+          /*user_gesture=*/false);
     }
 #endif
 

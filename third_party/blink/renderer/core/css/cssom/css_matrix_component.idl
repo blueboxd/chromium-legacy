@@ -6,9 +6,9 @@
 // "transform".
 // Spec: https://drafts.css-houdini.org/css-typed-om/#cssmatrixcomponent
 [
-    Constructor(DOMMatrixReadOnly matrix,
-        optional CSSMatrixComponentOptions options),
     Exposed=(Window,LayoutWorklet,PaintWorklet)
 ] interface CSSMatrixComponent : CSSTransformComponent {
+    constructor(DOMMatrixReadOnly matrix,
+        optional CSSMatrixComponentOptions options);
     attribute DOMMatrix matrix;
 };

@@ -26,7 +26,7 @@
 // https://w3c.github.io/speech-api/#speechsynthesisutterance
 
 [
-    Constructor(optional DOMString text = null),
+    Constructor(optional DOMString text),
     ConstructorCallWith=ExecutionContext,
     RuntimeEnabled=ScriptedSpeechSynthesis
 ] interface SpeechSynthesisUtterance : EventTarget {

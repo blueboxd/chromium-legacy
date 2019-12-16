@@ -44,7 +44,8 @@ void TestNavigationURLLoader::SimulateServerRedirect(const GURL& redirect_url) {
   redirect_info.status_code = 302;
   redirect_info.new_method = "GET";
   redirect_info.new_url = redirect_url;
-  redirect_info.new_site_for_cookies = redirect_url;
+  redirect_info.new_site_for_cookies =
+      net::SiteForCookies::FromUrl(redirect_url);
   auto response_head = network::mojom::URLResponseHead::New();
   CallOnRequestRedirected(redirect_info, std::move(response_head));
 }

@@ -5,9 +5,9 @@
 // Explainer: https://github.com/beverloo/notification-triggers
 
 [
-    Constructor(DOMTimeStamp timestamp),
     Exposed=(Window,Worker),
     RuntimeEnabled=NotificationTriggers
 ] interface TimestampTrigger {
+    constructor(DOMTimeStamp timestamp);
     readonly attribute DOMTimeStamp timestamp;
 };

@@ -873,7 +873,6 @@ test("content_browsertests") {
     "../browser/file_system/fileapi_browsertest.cc",
     "../browser/find_request_manager_browsertest.cc",
     "../browser/font_unique_name_lookup/font_unique_name_browsertest.cc",
-    "../browser/form_controls_browsertest.cc",
     "../browser/frame_host/ancestor_throttle_browsertest.cc",
     "../browser/frame_host/back_forward_cache_metrics_browsertest.cc",
     "../browser/frame_host/blocked_scheme_navigation_browsertest.cc",

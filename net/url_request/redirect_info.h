@@ -27,7 +27,7 @@ struct NET_EXPORT RedirectInfo {
       // request.
       const std::string& original_method,
       const GURL& original_url,
-      const GURL& original_site_for_cookies,
+      const SiteForCookies& original_site_for_cookies,
       URLRequest::FirstPartyURLPolicy original_first_party_url_policy,
       URLRequest::ReferrerPolicy original_referrer_policy,
       const std::string& original_referrer,
@@ -59,8 +59,8 @@ struct NET_EXPORT RedirectInfo {
   // The new request URL.
   GURL new_url;
 
-  // The new first-party URL for cookies.
-  GURL new_site_for_cookies;
+  // The new first-party for cookies.
+  SiteForCookies new_site_for_cookies;
 
   // The new HTTP referrer header.
   std::string new_referrer;

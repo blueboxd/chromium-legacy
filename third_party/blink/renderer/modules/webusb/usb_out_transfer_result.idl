@@ -6,9 +6,9 @@
 
 [
     Exposed(DedicatedWorker WebUSBOnDedicatedWorkers, Window WebUSB),
-    Constructor(USBTransferStatus status, optional unsigned long bytesWritten = 0),
     SecureContext
 ] interface USBOutTransferResult {
+    constructor(USBTransferStatus status, optional unsigned long bytesWritten = 0);
     readonly attribute unsigned long bytesWritten;
     readonly attribute USBTransferStatus status;
 };

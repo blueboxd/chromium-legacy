@@ -6,15 +6,13 @@
 
 [
     ActiveScriptWrappable,
-    ConstructorCallWith=ExecutionContext,
-    Constructor(USVString url),
-    Constructor(sequence<USVString> urls),
     MeasureAs=PresentationRequestConstructor,
-    RaisesException=Constructor,
     RuntimeEnabled=Presentation,
     SecureContext,
     Exposed=Window
 ] interface PresentationRequest : EventTarget {
+    [CallWith=ExecutionContext, RaisesException] constructor(USVString url);
+    [CallWith=ExecutionContext, RaisesException] constructor(sequence<USVString> urls);
     [CallWith=ScriptState, MeasureAs=PresentationRequestStart] Promise<PresentationConnection> start();
     [CallWith=ScriptState, MeasureAs=PresentationRequestReconnect] Promise<PresentationConnection> reconnect(DOMString id);
     [CallWith=ScriptState, MeasureAs=PresentationRequestGetAvailability] Promise<PresentationAvailability> getAvailability();

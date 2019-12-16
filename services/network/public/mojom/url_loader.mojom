@@ -16,6 +16,7 @@ import "services/network/public/mojom/fetch_api.mojom";
 import "services/network/public/mojom/http_request_headers.mojom";
 import "services/network/public/mojom/network_isolation_key.mojom";
 import "services/network/public/mojom/network_param.mojom";
+import "services/network/public/mojom/site_for_cookies.mojom";
 import "services/network/public/mojom/url_response_head.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
@@ -112,13 +113,13 @@ struct URLRequest {
   // The absolute requested URL encoded in ASCII per the rules of RFC-2396.
   url.mojom.Url url;
 
-  // URL representing the first-party origin for the request, which may be
-  // checked by the third-party cookie blocking policy. This is usually the URL
-  // of the document in the top-level window. Leaving it empty may lead to
-  // undesired cookie blocking. Third-party cookie blocking can be bypassed by
-  // setting site_for_cookies = url, but this should ideally only be
-  // done if there really is no way to determine the correct value.
-  url.mojom.Url site_for_cookies;
+  // Represents the first-party for the request, which may be checked by
+  // the third-party cookie blocking policy or by some cookies. Leaving it empty
+  // may lead to undesired cookie blocking. Third-party cookie blocking can be
+  // bypassed by setting site_for_cookies = SiteForCookies::FromUrl(url), but
+  // this should only be done if the fetch can be reasonably said to be done by
+  // the same principal as what |url| represents.
+  SiteForCookies site_for_cookies;
 
   // Boolean indicating whether SameSite cookies are allowed to be attached
   // to the request. It should be used as additional input to network side

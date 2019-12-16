@@ -26,9 +26,9 @@
 // https://w3c.github.io/deviceorientation/spec-source-orientation.html#deviceorientation
 
 [
-    Constructor(DOMString type, optional DeviceOrientationEventInit eventInitDict),
     Exposed=Window, SecureContext
 ] interface DeviceOrientationEvent : Event {
+    constructor(DOMString type, optional DeviceOrientationEventInit eventInitDict);
     readonly attribute double? alpha;
     readonly attribute double? beta;
     readonly attribute double? gamma;

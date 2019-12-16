@@ -6,11 +6,9 @@
 // https://w3c.github.io/accelerometer/#linearaccelerationsensor
 
 [
-    Constructor(optional SpatialSensorOptions sensorOptions),
-    ConstructorCallWith=ExecutionContext,
     SecureContext,
-    RaisesException=Constructor,
     MeasureAs=LinearAccelerationSensorConstructor,
     Exposed=Window
 ] interface LinearAccelerationSensor : Accelerometer {
+  [CallWith=ExecutionContext, RaisesException] constructor(optional SpatialSensorOptions sensorOptions);
 };

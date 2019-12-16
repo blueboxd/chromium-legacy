@@ -4,8 +4,10 @@
 
 // https://wicg.github.io/portals/#the-portalactivateevent-interface
 
-[Constructor(DOMString type, optional PortalActivateEventInit eventInitDict), Exposed=Window, RuntimeEnabled=Portals]
-interface PortalActivateEvent : Event {
+[
+ Exposed=Window, RuntimeEnabled=Portals
+] interface PortalActivateEvent : Event {
+  constructor(DOMString type, optional PortalActivateEventInit eventInitDict);
   [CallWith=ScriptState, Measure] readonly attribute any data;
   [RaisesException, Measure] HTMLPortalElement adoptPredecessor();
 };

@@ -27,8 +27,8 @@
 #include "ui/wm/core/wm_core_switches.h"
 
 namespace {
-const char* test_app_popup_name1 = "TestApp1";
-const char* test_app_popup_name2 = "TestApp2";
+const char* test_app_name1 = "TestApp1";
+const char* test_app_name2 = "TestApp2";
 }
 
 class SessionRestoreTestChromeOS : public InProcessBrowserTest {
@@ -67,10 +67,16 @@ class SessionRestoreTestChromeOS : public InProcessBrowserTest {
     return false;
   }
 
-  Browser::CreateParams CreateParamsForApp(const std::string name,
+  Browser::CreateParams CreateParamsForApp(const std::string& name,
                                            bool trusted) {
     return Browser::CreateParams::CreateForApp(name, trusted, gfx::Rect(),
                                                profile(), true);
+  }
+
+  Browser::CreateParams CreateParamsForAppPopup(const std::string& name,
+                                                bool trusted) {
+    return Browser::CreateParams::CreateForAppPopup(name, trusted, gfx::Rect(),
+                                                    profile(), true);
   }
 
   // Turn on session restore before we restart.
@@ -112,13 +118,13 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, RestoreBrowserWindows) {
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, PRE_RestoreAppsV1) {
-  // Create a trusted app popup.
-  CreateBrowserWithParams(CreateParamsForApp(test_app_popup_name1, true));
-  // Create a second trusted app with two popup windows.
-  CreateBrowserWithParams(CreateParamsForApp(test_app_popup_name2, true));
-  CreateBrowserWithParams(CreateParamsForApp(test_app_popup_name2, true));
-  // Create a third untrusted (child) app3 popup. This should not get restored.
-  CreateBrowserWithParams(CreateParamsForApp(test_app_popup_name2, false));
+  // Create a trusted app.
+  CreateBrowserWithParams(CreateParamsForApp(test_app_name1, true));
+  // Create a second trusted app with two windows.
+  CreateBrowserWithParams(CreateParamsForApp(test_app_name2, true));
+  CreateBrowserWithParams(CreateParamsForApp(test_app_name2, true));
+  // Create a third untrusted (child) app3. This should not get restored.
+  CreateBrowserWithParams(CreateParamsForApp(test_app_name2, false));
 
   TurnOnSessionRestore();
 }
@@ -129,9 +135,37 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, RestoreAppsV1) {
   size_t app2_count = 0;
   for (auto* browser : *BrowserList::GetInstance()) {
     ++total_count;
-    if (browser->app_name() == test_app_popup_name1)
+    if (browser->app_name() == test_app_name1)
       ++app1_count;
-    if (browser->app_name() == test_app_popup_name2)
+    if (browser->app_name() == test_app_name2)
+      ++app2_count;
+  }
+  EXPECT_EQ(1u, app1_count);
+  EXPECT_EQ(2u, app2_count);   // Only the trusted app windows are restored.
+  EXPECT_EQ(4u, total_count);  // Default browser() + 3 app windows
+}
+
+IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, PRE_RestoreAppsPopup) {
+  // Create a trusted app popup.
+  CreateBrowserWithParams(CreateParamsForAppPopup(test_app_name1, true));
+  // Create a second trusted app popup with two windows.
+  CreateBrowserWithParams(CreateParamsForAppPopup(test_app_name2, true));
+  CreateBrowserWithParams(CreateParamsForAppPopup(test_app_name2, true));
+  // Create a third untrusted (child) app popup. This should not get restored.
+  CreateBrowserWithParams(CreateParamsForAppPopup(test_app_name2, false));
+
+  TurnOnSessionRestore();
+}
+
+IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, RestoreAppsPopup) {
+  size_t total_count = 0;
+  size_t app1_count = 0;
+  size_t app2_count = 0;
+  for (auto* browser : *BrowserList::GetInstance()) {
+    ++total_count;
+    if (browser->app_name() == test_app_name1)
+      ++app1_count;
+    if (browser->app_name() == test_app_name2)
       ++app2_count;
   }
   EXPECT_EQ(1u, app1_count);
@@ -166,31 +200,49 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, PRE_RestoreMaximized) {
       CreateBrowserWithParams(Browser::CreateParams(profile(), true));
   browser2->window()->Maximize();
 
-  // Create two app popup windows and maximize the second one.
+  // Create two app windows and maximize the second one.
   Browser* app_browser1 =
-      CreateBrowserWithParams(CreateParamsForApp(test_app_popup_name1, true));
+      CreateBrowserWithParams(CreateParamsForApp(test_app_name1, true));
   Browser* app_browser2 =
-      CreateBrowserWithParams(CreateParamsForApp(test_app_popup_name1, true));
+      CreateBrowserWithParams(CreateParamsForApp(test_app_name2, true));
   app_browser2->window()->Maximize();
+
+  // Create two app popup windows and maximize the second one.
+  Browser* app_popup_browser1 =
+      CreateBrowserWithParams(CreateParamsForAppPopup(test_app_name1, true));
+  Browser* app_popup_browser2 =
+      CreateBrowserWithParams(CreateParamsForAppPopup(test_app_name2, true));
+  app_popup_browser2->window()->Maximize();
 
   EXPECT_FALSE(browser()->window()->IsMaximized());
   EXPECT_TRUE(browser2->window()->IsMaximized());
   EXPECT_FALSE(app_browser1->window()->IsMaximized());
   EXPECT_TRUE(app_browser2->window()->IsMaximized());
+  EXPECT_FALSE(app_popup_browser1->window()->IsMaximized());
+  EXPECT_TRUE(app_popup_browser2->window()->IsMaximized());
 
   TurnOnSessionRestore();
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, RestoreMaximized) {
   size_t total_count = 0;
-  size_t maximized_count = 0;
+  size_t app1_maximized_count = 0;
+  size_t app2_maximized_count = 0;
+  size_t total_maximized_count = 0;
   for (auto* browser : *BrowserList::GetInstance()) {
     ++total_count;
-    if (browser->window()->IsMaximized())
-      ++maximized_count;
+    if (browser->window()->IsMaximized()) {
+      ++total_maximized_count;
+      if (browser->app_name() == test_app_name1)
+        ++app1_maximized_count;
+      if (browser->app_name() == test_app_name2)
+        ++app2_maximized_count;
+    }
   }
-  EXPECT_EQ(4u, total_count);
-  EXPECT_EQ(2u, maximized_count);
+  EXPECT_EQ(6u, total_count);
+  EXPECT_EQ(0u, app1_maximized_count);
+  EXPECT_EQ(2u, app2_maximized_count);  // One TYPE_APP + One TYPE_APP_POPUP
+  EXPECT_EQ(3u, total_maximized_count);
 }
 
 // Test for crash when restoring minimized windows. http://crbug.com/679513.

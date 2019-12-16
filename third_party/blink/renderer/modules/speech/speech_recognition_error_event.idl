@@ -26,9 +26,9 @@
 // https://w3c.github.io/speech-api/#speechrecognitionerrorevent
 
 [
-    NoInterfaceObject,
-    Constructor(DOMString type, optional SpeechRecognitionErrorEventInit eventInitDict)
+    NoInterfaceObject
 ] interface SpeechRecognitionErrorEvent : Event {
+    constructor(DOMString type, optional SpeechRecognitionErrorEventInit eventInitDict);
     readonly attribute DOMString error;
     readonly attribute DOMString message;
 };

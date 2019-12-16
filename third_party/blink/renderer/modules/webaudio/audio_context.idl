@@ -34,11 +34,9 @@ enum AudioContextLatencyCategory {
 [
     Exposed=Window,
     ActiveScriptWrappable,
-    Constructor(optional AudioContextOptions contextOptions),
-    ConstructorCallWith=Document,
-    RaisesException=Constructor,
     Measure
 ] interface AudioContext : BaseAudioContext {
+    [CallWith=Document, RaisesException] constructor(optional AudioContextOptions contextOptions);
     [MeasureAs=AudioContextSuspend, CallWith=ScriptState, ImplementedAs=suspendContext] Promise<void> suspend();
     [MeasureAs=AudioContextClose, CallWith=ScriptState, ImplementedAs=closeContext] Promise<void> close();
     [MeasureAs=AudioContextResume, CallWith=ScriptState, ImplementedAs=resumeContext] Promise<void> resume();

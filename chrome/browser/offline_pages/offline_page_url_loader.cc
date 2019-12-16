@@ -42,7 +42,8 @@ net::RedirectInfo CreateRedirectInfo(const GURL& redirected_url,
   redirect_info.new_referrer_policy = net::URLRequest::NO_REFERRER;
   redirect_info.new_method = "GET";
   redirect_info.status_code = response_code;
-  redirect_info.new_site_for_cookies = redirect_info.new_url;
+  redirect_info.new_site_for_cookies =
+      net::SiteForCookies::FromUrl(redirect_info.new_url);
   return redirect_info;
 }
 

@@ -39,10 +39,9 @@ enum XMLHttpRequestResponseType {
 
 [
     ActiveScriptWrappable,
-    Constructor,
-    ConstructorCallWith=ScriptState,
     Exposed=(Window,DedicatedWorker,SharedWorker)
 ] interface XMLHttpRequest : XMLHttpRequestEventTarget {
+    [CallWith=ScriptState] constructor();
     // event handler
     attribute EventHandler onreadystatechange;
 

@@ -128,6 +128,10 @@ class Browser : public TabStripModelObserver,
     TYPE_APP,
     // Devtools browser.
     TYPE_DEVTOOLS,
+    // App popup browser. It behaves like an app browser (e.g. it should have an
+    // AppBrowserController) but looks like a popup (e.g. it never has a tab
+    // strip).
+    TYPE_APP_POPUP,
     // If you add a new type, consider updating the test
     // BrowserTest.StartMaximized.
   };
@@ -188,6 +192,12 @@ class Browser : public TabStripModelObserver,
                                      Profile* profile,
                                      bool user_gesture);
 
+    static CreateParams CreateForAppPopup(const std::string& app_name,
+                                          bool trusted_source,
+                                          const gfx::Rect& window_bounds,
+                                          Profile* profile,
+                                          bool user_gesture);
+
     static CreateParams CreateForDevTools(Profile* profile);
 
     // The browser type.
@@ -228,8 +238,15 @@ class Browser : public TabStripModelObserver,
     friend class Browser;
     friend class WindowSizerAshTest;
 
+    static CreateParams CreateForAppBase(bool is_popup,
+                                         const std::string& app_name,
+                                         bool trusted_source,
+                                         const gfx::Rect& window_bounds,
+                                         Profile* profile,
+                                         bool user_gesture);
+
     // The application name that is also the name of the window to the shell.
-    // Do not set this value directly, use CreateForApp.
+    // Do not set this value directly, use CreateForApp/CreateForAppPopup.
     // This name will be set for:
     // 1) v1 applications launched via an application shortcut or extension API.
     // 2) undocked devtool windows.
@@ -585,13 +602,16 @@ class Browser : public TabStripModelObserver,
   bool is_type_normal() const { return type_ == TYPE_NORMAL; }
   bool is_type_popup() const { return type_ == TYPE_POPUP; }
   bool is_type_app() const { return type_ == TYPE_APP; }
+  bool is_type_app_popup() const { return type_ == TYPE_APP_POPUP; }
   bool is_type_devtools() const { return type_ == TYPE_DEVTOOLS; }
   // TODO(crbug.com/990158): |deprecated_is_app()| is added for backwards
   // compatibility for previous callers to |is_app()| which returned true when
-  // |app_name_| is non-empty.  This includes TYPE_APP and TYPE_DEVTOOLS.
-  // Existing callers should change to use the appropriate is_type_* functions.
+  // |app_name_| is non-empty.  This includes TYPE_APP, TYPE_DEVTOOLS and
+  // TYPE_APP_POPUP. Existing callers should change to use the appropriate
+  // is_type_* functions.
   bool deprecated_is_app() const {
-    return type_ == TYPE_APP || type_ == TYPE_DEVTOOLS;
+    return type_ == TYPE_APP || type_ == TYPE_DEVTOOLS ||
+           type_ == TYPE_APP_POPUP;
   }
 
   // True when the mouse cursor is locked.

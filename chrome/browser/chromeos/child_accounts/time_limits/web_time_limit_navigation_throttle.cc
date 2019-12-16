@@ -132,8 +132,9 @@ ThrottleCheckResult WebTimeLimitNavigationThrottle::WillStartOrRedirectRequest(
   web_app::WebAppTabHelper* web_app_helper =
       web_app::WebAppTabHelper::FromWebContents(web_contents);
 
-  bool is_windowed =
-      (type == Browser::Type::TYPE_APP) || (type == Browser::Type::TYPE_POPUP);
+  bool is_windowed = (type == Browser::Type::TYPE_APP_POPUP) ||
+                     (type == Browser::Type::TYPE_APP) ||
+                     (type == Browser::Type::TYPE_POPUP);
   bool is_app = false;
   if (web_app_helper && !web_app_helper->app_id().empty())
     is_app = true;

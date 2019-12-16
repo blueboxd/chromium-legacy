@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 [
-    Constructor(),
     RuntimeEnabled=WebCodecs
 ] interface VideoDecoder {
+    constructor();
     [CallWith=ScriptState] Promise<void> Initialize(VideoDecoderInitParameters params);
     [CallWith=ScriptState] Promise<void> Flush();
     void Close();

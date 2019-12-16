@@ -22,6 +22,7 @@
 #include "services/network/public/cpp/network_isolation_key_mojom_traits.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "services/network/public/cpp/site_for_cookies_mojom_traits.h"
 #include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
@@ -81,7 +82,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static const GURL& url(const network::ResourceRequest& request) {
     return request.url;
   }
-  static const GURL& site_for_cookies(const network::ResourceRequest& request) {
+  static const net::SiteForCookies& site_for_cookies(
+      const network::ResourceRequest& request) {
     return request.site_for_cookies;
   }
   static bool attach_same_site_cookies(

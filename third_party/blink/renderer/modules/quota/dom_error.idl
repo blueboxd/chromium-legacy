@@ -30,7 +30,7 @@
 
 // FIXME: DOMError has been removed from the spec. crbug.com/460725
 [
-    Constructor(DOMString name, optional DOMString message = null),
+    Constructor(DOMString name, optional DOMString message),
     Measure
 ] interface DOMError {
     [Measure] readonly attribute DOMString name;

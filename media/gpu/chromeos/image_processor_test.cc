@@ -89,6 +89,7 @@ class ImageProcessorParamTest
         Fourcc::FromVideoPixelFormat(input_image.PixelFormat());
     Fourcc output_fourcc =
         Fourcc::FromVideoPixelFormat(output_image->PixelFormat());
+
     auto input_layout = test::CreateVideoFrameLayout(input_image.PixelFormat(),
                                                      input_image.Size());
     auto output_layout = test::CreateVideoFrameLayout(
@@ -144,7 +145,6 @@ class ImageProcessorParamTest
 
     auto ip_client = test::ImageProcessorClient::Create(
         input_config, output_config, kNumBuffers, std::move(frame_processors));
-    LOG_ASSERT(ip_client) << "Failed to create ImageProcessorClient";
     return ip_client;
   }
 };
@@ -167,6 +167,7 @@ TEST_P(ImageProcessorParamTest, ConvertOneTime_MemToMem) {
   auto ip_client = CreateImageProcessorClient(
       input_image, {VideoFrame::STORAGE_OWNED_MEMORY}, &output_image,
       {VideoFrame::STORAGE_OWNED_MEMORY});
+  ASSERT_TRUE(ip_client);
 
   ip_client->Process(input_image, output_image);
 
@@ -197,6 +198,7 @@ TEST_P(ImageProcessorParamTest, ConvertOneTime_DmabufToMem) {
   auto ip_client = CreateImageProcessorClient(
       input_image, {VideoFrame::STORAGE_DMABUFS}, &output_image,
       {VideoFrame::STORAGE_OWNED_MEMORY});
+  ASSERT_TRUE(ip_client);
 
   ip_client->Process(input_image, output_image);
 
@@ -217,7 +219,7 @@ TEST_P(ImageProcessorParamTest, ConvertOneTime_DmabufToDmabuf) {
   auto ip_client =
       CreateImageProcessorClient(input_image, {VideoFrame::STORAGE_DMABUFS},
                                  &output_image, {VideoFrame::STORAGE_DMABUFS});
-
+  ASSERT_TRUE(ip_client);
   ip_client->Process(input_image, output_image);
 
   EXPECT_TRUE(ip_client->WaitUntilNumImageProcessed(1u));
@@ -239,7 +241,7 @@ TEST_P(ImageProcessorParamTest, ConvertOneTime_GmbToGmb) {
   auto ip_client = CreateImageProcessorClient(
       input_image, {VideoFrame::STORAGE_GPU_MEMORY_BUFFER}, &output_image,
       {VideoFrame::STORAGE_GPU_MEMORY_BUFFER});
-
+  ASSERT_TRUE(ip_client);
   ip_client->Process(input_image, output_image);
 
   EXPECT_TRUE(ip_client->WaitUntilNumImageProcessed(1u));

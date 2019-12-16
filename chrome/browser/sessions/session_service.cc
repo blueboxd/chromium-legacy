@@ -585,8 +585,9 @@ void SessionService::Init() {
 bool SessionService::ShouldRestoreWindowOfType(
     sessions::SessionWindow::WindowType window_type) const {
 #if defined(OS_CHROMEOS)
-  // Restore app popups for ChromeOS alone.
-  if (window_type == sessions::SessionWindow::TYPE_APP)
+  // Restore apps and app popups for ChromeOS alone.
+  if (window_type == sessions::SessionWindow::TYPE_APP ||
+      window_type == sessions::SessionWindow::TYPE_APP_POPUP)
     return true;
 #endif
 

@@ -5,12 +5,10 @@
 // https://wicg.github.io/web-transport/#quic-transport
 [
     ActiveScriptWrappable,
-    Constructor(USVString url),
     Exposed=(Window,Worker),
-    RuntimeEnabled=QuicTransport,
-    ConstructorCallWith=ScriptState,
-    RaisesException=Constructor
+    RuntimeEnabled=QuicTransport
 ] interface QuicTransport {
+  [CallWith=ScriptState, RaisesException] constructor(USVString url);
   // QuicTransport is the first, and at this moment only, transport which is
   // implemented. In the (draft) spec there are many mix-in interfaces which
   // QuicTransport includes, but we define all their methods/attributes here

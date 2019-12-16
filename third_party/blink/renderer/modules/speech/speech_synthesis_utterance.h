@@ -45,6 +45,7 @@ class SpeechSynthesisUtterance final
   USING_GARBAGE_COLLECTED_MIXIN(SpeechSynthesisUtterance);
 
  public:
+  static SpeechSynthesisUtterance* Create(ExecutionContext*);
   static SpeechSynthesisUtterance* Create(ExecutionContext*, const String&);
 
   SpeechSynthesisUtterance(ExecutionContext*, const String&);

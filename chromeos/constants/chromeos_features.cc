@@ -191,6 +191,10 @@ const base::Feature kInstantTethering{"InstantTethering",
 // ChromeOS Media App. https://crbug.com/996088.
 const base::Feature kMediaApp{"MediaApp", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable or disable native typing for rule-based input methods.
+const base::Feature kNativeRuleBasedTyping{"NativeRuleBasedTyping",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to enable the Parental Controls section of settings.
 const base::Feature kParentalControlsSettings{
     "ChromeOSParentalControlsSettings", base::FEATURE_ENABLED_BY_DEFAULT};

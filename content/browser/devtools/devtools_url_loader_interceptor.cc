@@ -1084,13 +1084,12 @@ void InterceptionJob::ProcessSetCookies(const net::HttpResponseHeaders& headers,
       GetContentClient()
           ->browser()
           ->ShouldIgnoreSameSiteCookieRestrictionsWhenTopLevel(
-              create_loader_params_->request.site_for_cookies.scheme_piece(),
+              create_loader_params_->request.site_for_cookies.scheme(),
               create_loader_params_->request.url.SchemeIsCryptographic());
   options.set_same_site_cookie_context(
       net::cookie_util::ComputeSameSiteContextForResponse(
           create_loader_params_->request.url,
-          net::SiteForCookies::FromUrl(
-              create_loader_params_->request.site_for_cookies),
+          create_loader_params_->request.site_for_cookies,
           create_loader_params_->request.request_initiator,
           (create_loader_params_->request.attach_same_site_cookies ||
            should_treat_as_first_party)));
@@ -1233,12 +1232,11 @@ void InterceptionJob::FetchCookies(
       GetContentClient()
           ->browser()
           ->ShouldIgnoreSameSiteCookieRestrictionsWhenTopLevel(
-              request.site_for_cookies.scheme_piece(),
+              request.site_for_cookies.scheme(),
               request.url.SchemeIsCryptographic());
   options.set_same_site_cookie_context(
       net::cookie_util::ComputeSameSiteContextForRequest(
-          request.method, request.url,
-          net::SiteForCookies::FromUrl(request.site_for_cookies),
+          request.method, request.url, request.site_for_cookies,
           request.request_initiator,
           (request.attach_same_site_cookies || should_treat_as_first_party)));
 

@@ -1655,7 +1655,8 @@ class AppCacheStorageImplTest : public testing::Test {
                              kMockProcessId, GetBadMessageCallback());
       AppCacheHost* host1 = service_->GetHost(host1_id_);
       const GURL kEmptyPageUrl(GetMockUrl("empty.html"));
-      host1->SetFirstPartyUrlForTesting(kEmptyPageUrl);
+      host1->SetSiteForCookiesForTesting(
+          net::SiteForCookies::FromUrl(kEmptyPageUrl));
       host1->SelectCache(kEmptyPageUrl, blink::mojom::kAppCacheNoCacheId,
                          GetMockUrl("manifest"));
     } else {

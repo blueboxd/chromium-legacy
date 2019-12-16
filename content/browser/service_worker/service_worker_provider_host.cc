@@ -155,9 +155,10 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
   DCHECK_NE(blink::mojom::ServiceWorkerProviderType::kUnknown, type);
   if (type == blink::mojom::ServiceWorkerProviderType::kForServiceWorker) {
     DCHECK(running_hosted_version_);
-    container_host_->UpdateUrls(running_hosted_version_->script_url(),
-                                running_hosted_version_->script_url(),
-                                running_hosted_version_->script_origin());
+    container_host_->UpdateUrls(
+        running_hosted_version_->script_url(),
+        net::SiteForCookies::FromUrl(running_hosted_version_->script_url()),
+        running_hosted_version_->script_origin());
   }
 }
 

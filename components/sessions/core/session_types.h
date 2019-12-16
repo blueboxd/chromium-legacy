@@ -142,7 +142,8 @@ struct SESSIONS_EXPORT SessionWindow {
     TYPE_NORMAL = 0,
     TYPE_POPUP = 1,
     TYPE_APP = 2,
-    TYPE_DEVTOOLS = 3
+    TYPE_DEVTOOLS = 3,
+    TYPE_APP_POPUP = 4,
   };
 
   // Identifier of the window.

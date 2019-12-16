@@ -1581,7 +1581,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, StartMaximized) {
       Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(), true),
       Browser::CreateParams::CreateForApp("app_name", true, gfx::Rect(),
                                           browser()->profile(), true),
-      Browser::CreateParams::CreateForDevTools(browser()->profile())};
+      Browser::CreateParams::CreateForDevTools(browser()->profile()),
+      Browser::CreateParams::CreateForAppPopup("app_name", true, gfx::Rect(),
+                                               browser()->profile(), true)};
   for (size_t i = 0; i < base::size(params); ++i) {
     params[i].initial_show_state = ui::SHOW_STATE_MAXIMIZED;
     AddBlankTabAndShow(new Browser(params[i]));
@@ -1596,7 +1598,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, StartMinimized) {
       Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(), true),
       Browser::CreateParams::CreateForApp("app_name", true, gfx::Rect(),
                                           browser()->profile(), true),
-      Browser::CreateParams::CreateForDevTools(browser()->profile())};
+      Browser::CreateParams::CreateForDevTools(browser()->profile()),
+      Browser::CreateParams::CreateForAppPopup("app_name", true, gfx::Rect(),
+                                               browser()->profile(), true)};
   for (size_t i = 0; i < base::size(params); ++i) {
     params[i].initial_show_state = ui::SHOW_STATE_MINIMIZED;
     AddBlankTabAndShow(new Browser(params[i]));

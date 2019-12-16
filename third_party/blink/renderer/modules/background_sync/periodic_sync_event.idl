@@ -5,9 +5,9 @@
 // TODO(crbug.com/925297): Link to spec.
 
 [
-    Constructor(DOMString type, PeriodicSyncEventInit init),
     Exposed=ServiceWorker,
     RuntimeEnabled=PeriodicBackgroundSync
 ] interface PeriodicSyncEvent : ExtendableEvent {
+    constructor(DOMString type, PeriodicSyncEventInit init);
     readonly attribute DOMString tag;
 };

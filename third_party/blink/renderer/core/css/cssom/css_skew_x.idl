@@ -6,9 +6,8 @@
 // "transform".
 // Spec: https://drafts.css-houdini.org/css-typed-om/#cssskewx
 [
-    Constructor(CSSNumericValue ax),
-    Exposed=(Window, Worker, PaintWorklet, LayoutWorklet),
-    RaisesException=Constructor]
-interface CSSSkewX : CSSTransformComponent {
+    Exposed=(Window, Worker, PaintWorklet, LayoutWorklet)
+] interface CSSSkewX : CSSTransformComponent {
+    [RaisesException] constructor(CSSNumericValue ax);
     [RaisesException=Setter] attribute CSSNumericValue ax;
 };

@@ -40,11 +40,10 @@ enum FontFaceLoadStatus {
 [
     ActiveScriptWrappable,
     Exposed=(Window,Worker),
-    // FIXME: This should be (DOMString or BinaryData), where BinaryData is typedef of (ArrayBuffer or ArrayBufferView)
-    Constructor(DOMString family, (DOMString or ArrayBuffer or ArrayBufferView) source, optional FontFaceDescriptors descriptors),
-    ConstructorCallWith=ExecutionContext,
     MeasureAs=FontFaceConstructor
 ] interface FontFace {
+    // FIXME: This should be (DOMString or BinaryData), where BinaryData is typedef of (ArrayBuffer or ArrayBufferView)
+    [CallWith=ExecutionContext] constructor(DOMString family, (DOMString or ArrayBuffer or ArrayBufferView) source, optional FontFaceDescriptors descriptors);
     [RaisesException=Setter, SetterCallWith=ExecutionContext] attribute DOMString family;
     [RaisesException=Setter, SetterCallWith=ExecutionContext] attribute DOMString style;
     [RaisesException=Setter, SetterCallWith=ExecutionContext] attribute DOMString weight;

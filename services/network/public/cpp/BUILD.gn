@@ -143,6 +143,8 @@ jumbo_component("cpp_base") {
     "resource_request.h",
     "resource_request_body.cc",
     "resource_request_body.h",
+    "site_for_cookies_mojom_traits.cc",
+    "site_for_cookies_mojom_traits.h",
     "url_loader_completion_status.cc",
     "url_loader_completion_status.h",
     "url_request_mojom_traits.cc",
@@ -217,6 +219,7 @@ source_set("tests") {
     "network_quality_tracker_unittest.cc",
     "proxy_config_mojom_traits_unittest.cc",
     "simple_url_loader_unittest.cc",
+    "site_for_cookies_mojom_traits_unittest.cc",
     "source_stream_to_data_pipe_unittest.cc",
     "url_request_mojom_traits_unittest.cc",
   ]

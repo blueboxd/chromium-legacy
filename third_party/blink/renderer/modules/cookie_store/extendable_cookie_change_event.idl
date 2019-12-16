@@ -9,9 +9,9 @@
 
 [
   Exposed=ServiceWorker,
-  RuntimeEnabled=CookieStore,
-  Constructor(DOMString type, optional ExtendableCookieChangeEventInit eventInitDict)
+  RuntimeEnabled=CookieStore
 ] interface ExtendableCookieChangeEvent : ExtendableEvent {
+  constructor(DOMString type, optional ExtendableCookieChangeEventInit eventInitDict);
   [MeasureAs=CookieStoreAPI] readonly attribute CookieList changed;
   [MeasureAs=CookieStoreAPI] readonly attribute CookieList deleted;
 };

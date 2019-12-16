@@ -1061,7 +1061,8 @@ TEST_F(ServiceWorkerJobTest, AddRegistrationToMatchingProviderHosts) {
 
   // Make an in-scope client.
   ServiceWorkerContainerHost* client = CreateControllee();
-  client->UpdateUrls(in_scope, in_scope, url::Origin::Create(in_scope));
+  client->UpdateUrls(in_scope, net::SiteForCookies::FromUrl(in_scope),
+                     url::Origin::Create(in_scope));
 
   // Make an in-scope reserved client.
   std::unique_ptr<ServiceWorkerProviderHostAndInfo> host_and_info =
@@ -1069,12 +1070,13 @@ TEST_F(ServiceWorkerJobTest, AddRegistrationToMatchingProviderHosts) {
                                          /*are_ancestors_secure=*/true);
   ServiceWorkerContainerHost* reserved_client =
       host_and_info->host->container_host();
-  reserved_client->UpdateUrls(in_scope, in_scope,
+  reserved_client->UpdateUrls(in_scope, net::SiteForCookies::FromUrl(in_scope),
                               url::Origin::Create(in_scope));
 
   // Make an out-scope client.
   ServiceWorkerContainerHost* out_scope_client = CreateControllee();
-  out_scope_client->UpdateUrls(out_scope, out_scope,
+  out_scope_client->UpdateUrls(out_scope,
+                               net::SiteForCookies::FromUrl(out_scope),
                                url::Origin::Create(out_scope));
 
   // Make a new registration.

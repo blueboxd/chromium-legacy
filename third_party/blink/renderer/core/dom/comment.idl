@@ -20,8 +20,7 @@
 // https://dom.spec.whatwg.org/#interface-comment
 
 [
-    Constructor(optional DOMString data = ""),
-    ConstructorCallWith=Document,
     Exposed=Window
 ] interface Comment : CharacterData {
+  [CallWith=Document] constructor(optional DOMString data = "");
 };

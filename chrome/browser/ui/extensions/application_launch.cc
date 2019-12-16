@@ -391,8 +391,16 @@ Browser* CreateApplicationWindow(Profile* profile,
 
   // TODO(erg): AppLaunchParams should pass through the user_gesture from the
   // extension system here.
-  Browser::CreateParams browser_params(Browser::CreateParams::CreateForApp(
-      app_name, true /* trusted_source */, initial_bounds, profile, true));
+  Browser::CreateParams browser_params(
+      params.disposition == WindowOpenDisposition::NEW_POPUP
+          ? Browser::CreateParams::CreateForAppPopup(app_name,
+                                                     /*trusted_source=*/true,
+                                                     initial_bounds, profile,
+                                                     /*user_gesture=*/true)
+          : Browser::CreateParams::CreateForApp(app_name,
+                                                /*trusted_source=*/true,
+                                                initial_bounds, profile,
+                                                /*user_gesture=*/true));
 
   browser_params.initial_show_state =
       DetermineWindowShowState(profile, params.container, extension);

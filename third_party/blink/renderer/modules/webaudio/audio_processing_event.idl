@@ -25,10 +25,9 @@
 
 // See https://webaudio.github.io/web-audio-api/#audioprocessingevent
 [
-    Exposed=Window,
-    Constructor(DOMString type, AudioProcessingEventInit eventInitDict)
-]
-interface AudioProcessingEvent : Event {
+    Exposed=Window
+] interface AudioProcessingEvent : Event {
+    constructor(DOMString type, AudioProcessingEventInit eventInitDict);
     readonly attribute double playbackTime;
     readonly attribute AudioBuffer inputBuffer;
     readonly attribute AudioBuffer outputBuffer;

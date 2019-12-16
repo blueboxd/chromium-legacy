@@ -5873,7 +5873,8 @@ TEST_F(NetworkContextTest, AllowAllCookies) {
 
   ResourceRequest first_party_request;
   first_party_request.url = server_url;
-  first_party_request.site_for_cookies = first_party_url;
+  first_party_request.site_for_cookies =
+      net::SiteForCookies::FromUrl(first_party_url);
 
   std::unique_ptr<TestURLLoaderClient> client = FetchRequest(
       first_party_request, network_context.get(), url_loader_options);
@@ -5886,7 +5887,8 @@ TEST_F(NetworkContextTest, AllowAllCookies) {
 
   ResourceRequest third_party_request;
   third_party_request.url = server_url;
-  third_party_request.site_for_cookies = third_party_url;
+  third_party_request.site_for_cookies =
+      net::SiteForCookies::FromUrl(third_party_url);
 
   client = FetchRequest(third_party_request, network_context.get(),
                         url_loader_options);
@@ -5918,7 +5920,8 @@ TEST_F(NetworkContextTest, BlockThirdPartyCookies) {
 
   ResourceRequest first_party_request;
   first_party_request.url = server_url;
-  first_party_request.site_for_cookies = first_party_url;
+  first_party_request.site_for_cookies =
+      net::SiteForCookies::FromUrl(first_party_url);
 
   std::unique_ptr<TestURLLoaderClient> client = FetchRequest(
       first_party_request, network_context.get(), url_loader_options);
@@ -5931,7 +5934,8 @@ TEST_F(NetworkContextTest, BlockThirdPartyCookies) {
 
   ResourceRequest third_party_request;
   third_party_request.url = server_url;
-  third_party_request.site_for_cookies = third_party_url;
+  third_party_request.site_for_cookies =
+      net::SiteForCookies::FromUrl(third_party_url);
 
   client = FetchRequest(third_party_request, network_context.get(),
                         url_loader_options);
@@ -5963,7 +5967,8 @@ TEST_F(NetworkContextTest, BlockAllCookies) {
 
   ResourceRequest first_party_request;
   first_party_request.url = server_url;
-  first_party_request.site_for_cookies = first_party_url;
+  first_party_request.site_for_cookies =
+      net::SiteForCookies::FromUrl(first_party_url);
 
   std::unique_ptr<TestURLLoaderClient> client = FetchRequest(
       first_party_request, network_context.get(), url_loader_options);
@@ -5976,7 +5981,8 @@ TEST_F(NetworkContextTest, BlockAllCookies) {
 
   ResourceRequest third_party_request;
   third_party_request.url = server_url;
-  third_party_request.site_for_cookies = third_party_url;
+  third_party_request.site_for_cookies =
+      net::SiteForCookies::FromUrl(third_party_url);
 
   client = FetchRequest(third_party_request, network_context.get(),
                         url_loader_options);
@@ -6408,7 +6414,8 @@ static ResourceRequest CreateResourceRequest(const char* method,
   ResourceRequest request;
   request.method = std::string(method);
   request.url = url;
-  request.site_for_cookies = url;  // bypass third-party cookie blocking
+  request.site_for_cookies =
+      net::SiteForCookies::FromUrl(url);  // bypass third-party cookie blocking
   request.request_initiator =
       url::Origin::Create(url);  // ensure initiator is set
   return request;

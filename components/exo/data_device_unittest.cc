@@ -90,7 +90,7 @@ class TestDataDeviceDelegate : public DataDeviceDelegate {
   void OnSelection(const DataOffer& data_offer) override {
     events_.push_back(DataEvent::kSelection);
   }
-  bool CanAcceptDataEventsForSurface(Surface* surface) override {
+  bool CanAcceptDataEventsForSurface(Surface* surface) const override {
     return can_accept_data_events_for_surface_;
   }
 

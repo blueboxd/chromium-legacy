@@ -29,12 +29,10 @@
 
 [
     ActiveScriptWrappable,
-    Constructor(DOMString scriptURL, optional WorkerOptions options),
-    ConstructorCallWith=ExecutionContext,
     Exposed=(Window,DedicatedWorker),
-    RaisesException=Constructor,
     ImplementedAs=DedicatedWorker
 ] interface Worker : EventTarget {
+    [CallWith=ExecutionContext, RaisesException] constructor(DOMString scriptURL, optional WorkerOptions options);
     void terminate();
 
     [CallWith=ScriptState, RaisesException] void postMessage(any message, sequence<object> transfer);

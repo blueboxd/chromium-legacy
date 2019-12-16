@@ -32,10 +32,10 @@
 
 [
     Exposed=(Window,Worker),
-    Constructor(optional DOMString message = "", optional DOMString name = "Error"),
     Serializable,
     DoNotCheckConstants
 ] interface DOMException {
+    constructor(optional DOMString message = "", optional DOMString name = "Error");
 
     readonly attribute unsigned short   code;
     readonly attribute DOMString        name;

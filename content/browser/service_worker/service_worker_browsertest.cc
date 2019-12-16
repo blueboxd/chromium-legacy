@@ -719,7 +719,8 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
         33 /* dummy render process id */, true /* is_parent_frame_secure */,
         wrapper()->context()->AsWeakPtr(), &remote_endpoints_.back());
     const GURL url = embedded_test_server()->GetURL("/service_worker/host");
-    host->container_host()->UpdateUrls(url, url, url::Origin::Create(url));
+    host->container_host()->UpdateUrls(url, net::SiteForCookies::FromUrl(url),
+                                       url::Origin::Create(url));
     host->container_host()->SetControllerRegistration(
         registration_, false /* notify_controllerchange */);
   }

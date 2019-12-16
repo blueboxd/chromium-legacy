@@ -79,11 +79,17 @@ base::flat_set<DndAction> DataDeviceManagerDndActions(uint32_t value) {
 
 class WaylandDataSourceDelegate : public DataSourceDelegate {
  public:
-  explicit WaylandDataSourceDelegate(wl_resource* source)
-      : data_source_resource_(source) {}
+  explicit WaylandDataSourceDelegate(wl_client* client,
+                                     wl_resource* source)
+      : client_(client),
+        data_source_resource_(source) {}
 
   // Overridden from DataSourceDelegate:
   void OnDataSourceDestroying(DataSource* device) override { delete this; }
+  bool CanAcceptDataEventsForSurface(Surface* surface) const override {
+    return surface &&
+           wl_resource_get_client(GetSurfaceResource(surface)) == client_;
+  }
   void OnTarget(const base::Optional<std::string>& mime_type) override {
     wl_data_source_send_target(data_source_resource_,
                                mime_type ? mime_type->c_str() : nullptr);
@@ -122,6 +128,7 @@ class WaylandDataSourceDelegate : public DataSourceDelegate {
   }
 
  private:
+  wl_client* const client_;
   wl_resource* const data_source_resource_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandDataSourceDelegate);
@@ -240,7 +247,7 @@ class WaylandDataDeviceDelegate : public DataDeviceDelegate {
 
   // Overridden from DataDeviceDelegate:
   void OnDataDeviceDestroying(DataDevice* device) override { delete this; }
-  bool CanAcceptDataEventsForSurface(Surface* surface) override {
+  bool CanAcceptDataEventsForSurface(Surface* surface) const override {
     return surface &&
            wl_resource_get_client(GetSurfaceResource(surface)) == client_;
   }
@@ -362,8 +369,8 @@ void data_device_manager_create_data_source(wl_client* client,
   wl_resource* data_source_resource = wl_resource_create(
       client, &wl_data_source_interface, wl_resource_get_version(resource), id);
   SetImplementation(data_source_resource, &data_source_implementation,
-                    std::make_unique<DataSource>(
-                        new WaylandDataSourceDelegate(data_source_resource)));
+                    std::make_unique<DataSource>(new WaylandDataSourceDelegate(
+                        client, data_source_resource)));
 }
 
 void data_device_manager_get_data_device(wl_client* client,

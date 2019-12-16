@@ -42,6 +42,16 @@ class NET_EXPORT SiteForCookies {
   SiteForCookies& operator=(const SiteForCookies& other);
   SiteForCookies& operator=(SiteForCookies&& other);
 
+  // Tries to construct an instance from (potentially untrusted) values of
+  // scheme() and registrable_domain() that got received over an RPC.
+  //
+  // Returns whether successful or not. Doesn't touch |*out| if false is
+  // returned.  This returning |true| does not mean that whoever sent the values
+  // did not lie, merely that they are well-formed.
+  static bool FromWire(const std::string& scheme,
+                       const std::string& registrable_domain,
+                       SiteForCookies* out);
+
   // If the origin is opaque, returns SiteForCookies that matches nothing.
   //
   // If it's not, returns one that matches URLs which are considered to be
@@ -73,7 +83,12 @@ class NET_EXPORT SiteForCookies {
   GURL RepresentativeUrl() const;
 
   // Guaranteed to be lowercase.
-  base::StringPiece scheme() const { return scheme_; }
+  const std::string& scheme() const { return scheme_; }
+
+  const std::string& registrable_domain() const { return registrable_domain_; }
+
+  // Returns true if this SiteForCookies matches nothing.
+  bool IsNull() const { return scheme_.empty(); }
 
  private:
   SiteForCookies(const std::string& scheme, const std::string& host);

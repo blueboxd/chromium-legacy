@@ -5,8 +5,8 @@
 // Represents the inverse a CSSNumericValue.
 // https://drafts.css-houdini.org/css-typed-om/#cssmathinvert
 [
-  Constructor(CSSNumberish arg),
   Exposed=(Window,LayoutWorklet,PaintWorklet)
 ] interface CSSMathInvert : CSSMathValue {
+  constructor(CSSNumberish arg);
   readonly attribute CSSNumberish value;
 };

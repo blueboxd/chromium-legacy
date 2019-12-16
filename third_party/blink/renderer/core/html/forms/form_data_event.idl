@@ -5,9 +5,8 @@
 // https://html.spec.whatwg.org/C/#formdataevent
 
 [
-  Constructor(DOMString type, optional FormDataEventInit eventInitDict),
   Exposed=Window
-]
-interface FormDataEvent : Event {
+] interface FormDataEvent : Event {
+  constructor(DOMString type, optional FormDataEventInit eventInitDict);
   readonly attribute FormData formData;
 };

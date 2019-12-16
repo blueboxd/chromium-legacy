@@ -17,11 +17,11 @@
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/macros.h"
+#include "media/gpu/vaapi/h264_vaapi_video_decoder_delegate.h"
 #include "media/gpu/vaapi/va_surface.h"
-#include "media/gpu/vaapi/vaapi_h264_accelerator.h"
-#include "media/gpu/vaapi/vaapi_vp8_accelerator.h"
-#include "media/gpu/vaapi/vaapi_vp9_accelerator.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
+#include "media/gpu/vaapi/vp8_vaapi_video_decoder_delegate.h"
+#include "media/gpu/vaapi/vp9_vaapi_video_decoder_delegate.h"
 
 namespace media {
 
@@ -525,15 +525,15 @@ bool VaapiVideoDecoder::CreateAcceleratedVideoDecoder() {
 
   if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX) {
     decoder_.reset(new H264Decoder(
-        std::make_unique<VaapiH264Accelerator>(this, vaapi_wrapper_), profile_,
-        color_space_));
+        std::make_unique<H264VaapiVideoDecoderDelegate>(this, vaapi_wrapper_),
+        profile_, color_space_));
   } else if (profile_ >= VP8PROFILE_MIN && profile_ <= VP8PROFILE_MAX) {
     decoder_.reset(new VP8Decoder(
-        std::make_unique<VaapiVP8Accelerator>(this, vaapi_wrapper_)));
+        std::make_unique<VP8VaapiVideoDecoderDelegate>(this, vaapi_wrapper_)));
   } else if (profile_ >= VP9PROFILE_MIN && profile_ <= VP9PROFILE_MAX) {
     decoder_.reset(new VP9Decoder(
-        std::make_unique<VaapiVP9Accelerator>(this, vaapi_wrapper_), profile_,
-        color_space_));
+        std::make_unique<VP9VaapiVideoDecoderDelegate>(this, vaapi_wrapper_),
+        profile_, color_space_));
   } else {
     VLOGF(1) << "Unsupported profile " << GetProfileName(profile_);
     return false;

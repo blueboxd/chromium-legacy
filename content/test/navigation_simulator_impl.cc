@@ -472,7 +472,7 @@ void NavigationSimulatorImpl::Redirect(const GURL& new_url) {
   redirect_info.status_code = 302;
   redirect_info.new_method = "GET";
   redirect_info.new_url = new_url;
-  redirect_info.new_site_for_cookies = new_url;
+  redirect_info.new_site_for_cookies = net::SiteForCookies::FromUrl(new_url);
   redirect_info.new_referrer = referrer_->url.spec();
   redirect_info.new_referrer_policy =
       Referrer::ReferrerPolicyForUrlRequest(referrer_->policy);

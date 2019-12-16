@@ -386,9 +386,10 @@ std::string ExtensionTabUtil::GetBrowserWindowTypeText(const Browser& browser) {
   if (browser.is_type_devtools())
     return tabs_constants::kWindowTypeValueDevTools;
   // TODO(crbug.com/990158): We return 'popup' for both popup and app since
-  // chrome.tabs.create({type: 'popup'}) uses
+  // chrome.windows.create({type: 'popup'}) uses
   // Browser::CreateParams::CreateForApp.
-  if (browser.is_type_popup() || browser.is_type_app())
+  if (browser.is_type_popup() || browser.is_type_app() ||
+      browser.is_type_app_popup())
     return tabs_constants::kWindowTypeValuePopup;
   return tabs_constants::kWindowTypeValueNormal;
 }

@@ -6,9 +6,8 @@
 // example "initial".
 // https://drafts.css-houdini.org/css-typed-om/#keywordvalue-objects
 [
-    Constructor(CSSOMString keyword),
-    Exposed=(Window,LayoutWorklet,PaintWorklet),
-    RaisesException=Constructor
+    Exposed=(Window,LayoutWorklet,PaintWorklet)
 ] interface CSSKeywordValue : CSSStyleValue {
+    [RaisesException] constructor(CSSOMString keyword);
     [RaisesException=Setter] attribute CSSOMString value;
 };

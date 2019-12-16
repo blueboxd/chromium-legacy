@@ -36,10 +36,9 @@ enum DirectionSetting { "" /* horizontal */, "rl", "lr" };
 enum AlignSetting { "start", "center", "end", "left", "right" };
 
 [
-    Exposed=Window,
-    Constructor(double startTime, double endTime, DOMString text),
-    ConstructorCallWith=Document
+    Exposed=Window
 ] interface VTTCue : TextTrackCue {
+    [CallWith=Document] constructor(double startTime, double endTime, DOMString text);
     [RuntimeEnabled=WebVTTRegions] attribute VTTRegion? region;
     attribute DirectionSetting vertical;
     attribute boolean snapToLines;

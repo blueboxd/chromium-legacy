@@ -34,6 +34,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/template_expressions.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/display/types/display_constants.h"
 
 namespace web_app {
@@ -57,6 +58,7 @@ base::Optional<AppId> GetAppIdForSystemWebApp(Profile* profile,
 Browser* LaunchSystemWebApp(Profile* profile,
                             SystemAppType app_type,
                             const GURL& url,
+                            bool is_popup,
                             bool* did_create) {
   if (did_create)
     *did_create = false;
@@ -75,6 +77,8 @@ Browser* LaunchSystemWebApp(Profile* profile,
   apps::AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
       profile, extension, 0, extensions::AppLaunchSource::kSourceChromeInternal,
       display::kInvalidDisplayId);
+  if (is_popup)
+    params.disposition = WindowOpenDisposition::NEW_POPUP;
   params.override_url = url;
 
   return LaunchSystemWebApp(profile, app_type, url, params, did_create);

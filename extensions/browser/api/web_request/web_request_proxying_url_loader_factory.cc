@@ -460,7 +460,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
   redirect_info.status_code = kInternalRedirectStatusCode;
   redirect_info.new_method = request_.method;
   redirect_info.new_url = redirect_url_;
-  redirect_info.new_site_for_cookies = redirect_url_;
+  redirect_info.new_site_for_cookies =
+      net::SiteForCookies::FromUrl(redirect_url_);
 
   auto head = network::mojom::URLResponseHead::New();
   std::string headers = base::StringPrintf(
@@ -809,7 +810,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     redirect_info.status_code = override_headers_->response_code();
     redirect_info.new_method = request_.method;
     redirect_info.new_url = new_url;
-    redirect_info.new_site_for_cookies = new_url;
+    redirect_info.new_site_for_cookies = net::SiteForCookies::FromUrl(new_url);
 
     // These will get re-bound if a new request is initiated by
     // |FollowRedirect()|.

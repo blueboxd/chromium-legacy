@@ -516,8 +516,8 @@ TEST_F(GaiaAuthFetcherTest, ListAccounts) {
   ASSERT_EQ(received_requests_.size(), 1U);
   EXPECT_EQ(network::mojom::CredentialsMode::kInclude,
             received_requests_.at(0).credentials_mode);
-  EXPECT_EQ(GaiaUrls::GetInstance()->gaia_url(),
-            received_requests_.at(0).site_for_cookies);
+  EXPECT_TRUE(received_requests_.at(0).site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromUrl(GaiaUrls::GetInstance()->gaia_url())));
   auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, data);
 }
 

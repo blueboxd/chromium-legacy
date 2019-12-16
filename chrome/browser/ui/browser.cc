@@ -345,7 +345,8 @@ Browser::CreateParams::CreateParams(Type type,
 Browser::CreateParams::CreateParams(const CreateParams& other) = default;
 
 // static
-Browser::CreateParams Browser::CreateParams::CreateForApp(
+Browser::CreateParams Browser::CreateParams::CreateForAppBase(
+    bool is_popup,
     const std::string& app_name,
     bool trusted_source,
     const gfx::Rect& window_bounds,
@@ -353,12 +354,35 @@ Browser::CreateParams Browser::CreateParams::CreateForApp(
     bool user_gesture) {
   DCHECK(!app_name.empty());
 
-  CreateParams params(TYPE_APP, profile, user_gesture);
+  CreateParams params(is_popup ? Type::TYPE_APP_POPUP : Type::TYPE_APP, profile,
+                      user_gesture);
   params.app_name = app_name;
   params.trusted_source = trusted_source;
   params.initial_bounds = window_bounds;
 
   return params;
+}
+
+// static
+Browser::CreateParams Browser::CreateParams::CreateForApp(
+    const std::string& app_name,
+    bool trusted_source,
+    const gfx::Rect& window_bounds,
+    Profile* profile,
+    bool user_gesture) {
+  return CreateForAppBase(false, app_name, trusted_source, window_bounds,
+                          profile, user_gesture);
+}
+
+// static
+Browser::CreateParams Browser::CreateParams::CreateForAppPopup(
+    const std::string& app_name,
+    bool trusted_source,
+    const gfx::Rect& window_bounds,
+    Profile* profile,
+    bool user_gesture) {
+  return CreateForAppBase(true, app_name, trusted_source, window_bounds,
+                          profile, user_gesture);
 }
 
 // static
@@ -709,7 +733,8 @@ base::string16 Browser::GetWindowTitleFromWebContents(
   // If there is no title and this is an app, fall back on the app name. This
   // ensures that the native window gets a title which is important for a11y,
   // for example the window selector uses the Aura window title.
-  if (title.empty() && (is_type_app() || is_type_devtools()) &&
+  if (title.empty() &&
+      (is_type_app() || is_type_app_popup() || is_type_devtools()) &&
       include_app_name) {
     return base::UTF8ToUTF16(
         app_controller_ ? app_controller_->GetAppShortName() : app_name());
@@ -824,7 +849,7 @@ void Browser::OnWindowClosing() {
 
   bool notify_restore_service = is_type_normal() && tab_strip_model_->count();
 #if defined(USE_AURA) || defined(OS_MACOSX)
-  notify_restore_service |= is_type_app();
+  notify_restore_service |= is_type_app() || is_type_app_popup();
 #endif
 
   if (tab_restore_service && notify_restore_service)
@@ -1795,7 +1820,7 @@ blink::mojom::DisplayMode Browser::GetDisplayMode(
   if (window_->IsFullscreen())
     return blink::mojom::DisplayMode::kFullscreen;
 
-  if (is_type_app() || is_type_devtools())
+  if (is_type_app() || is_type_devtools() || is_type_app_popup())
     return blink::mojom::DisplayMode::kStandalone;
 
   return blink::mojom::DisplayMode::kBrowser;
@@ -2753,6 +2778,7 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
     case TYPE_NORMAL:
       return NormalBrowserSupportsWindowFeature(feature, check_can_support);
     case TYPE_POPUP:
+    case TYPE_APP_POPUP:
       return PopupBrowserSupportsWindowFeature(feature, check_can_support);
     case TYPE_APP:
       // TODO(crbug.com/992834): Change to TYPE_WEB_APP.

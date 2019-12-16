@@ -5,8 +5,8 @@
 // https://w3c.github.io/clipboard-apis/#clipboard-event-interfaces
 
 [
-    Constructor(DOMString type, optional ClipboardEventInit eventInitDict),
     Exposed=Window
 ] interface ClipboardEvent : Event {
+    constructor(DOMString type, optional ClipboardEventInit eventInitDict);
     readonly attribute DataTransfer? clipboardData;
 };

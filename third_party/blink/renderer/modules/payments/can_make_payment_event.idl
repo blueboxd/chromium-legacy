@@ -6,9 +6,9 @@
 
 [
     RuntimeEnabled=PaymentApp,
-    Constructor(DOMString type, CanMakePaymentEventInit eventInitDict),
     Exposed=ServiceWorker
 ] interface CanMakePaymentEvent : ExtendableEvent {
+    constructor(DOMString type, CanMakePaymentEventInit eventInitDict);
     readonly attribute USVString topOrigin;
     readonly attribute USVString paymentRequestOrigin;
     readonly attribute FrozenArray<PaymentMethodData> methodData;

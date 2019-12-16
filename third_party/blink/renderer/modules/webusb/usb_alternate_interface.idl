@@ -5,11 +5,10 @@
 // https://wicg.github.io/webusb/#interfaces
 
 [
-    Constructor(USBInterface deviceInterface, octet alternateSetting),
     Exposed(DedicatedWorker WebUSBOnDedicatedWorkers, Window WebUSB),
-    RaisesException=Constructor,
     SecureContext
 ] interface USBAlternateInterface {
+    [RaisesException] constructor(USBInterface deviceInterface, octet alternateSetting);
     readonly attribute octet alternateSetting;
     readonly attribute octet interfaceClass;
     readonly attribute octet interfaceSubclass;

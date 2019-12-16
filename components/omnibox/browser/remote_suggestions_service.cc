@@ -120,7 +120,7 @@ void RemoteSuggestionsService::CreateSuggestionsRequest(
   request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES;
   // Try to attach cookies for signed in user.
   request->attach_same_site_cookies = true;
-  request->site_for_cookies = suggest_url;
+  request->site_for_cookies = net::SiteForCookies::FromUrl(suggest_url);
   AddVariationHeaders(request.get());
   StartDownloadAndTransferLoader(std::move(request), std::string(),
                                  traffic_annotation, std::move(start_callback),

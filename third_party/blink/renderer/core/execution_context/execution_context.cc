@@ -98,18 +98,8 @@ ExecutionContext* ExecutionContext::ForRelevantRealm(
 }
 
 void ExecutionContext::SetLifecycleState(mojom::FrameLifecycleState state) {
-  bool was_paused = lifecycle_state_ != mojom::FrameLifecycleState::kRunning;
   lifecycle_state_ = state;
   NotifyContextLifecycleStateChanged(state);
-  bool paused = lifecycle_state_ != mojom::FrameLifecycleState::kRunning;
-
-  if (was_paused == paused)
-    return;
-
-  if (paused)
-    TasksWerePaused();
-  else
-    TasksWereUnpaused();
 }
 
 void ExecutionContext::NotifyContextDestroyed() {

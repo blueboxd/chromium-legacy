@@ -26,9 +26,9 @@
 // https://w3c.github.io/encrypted-media/#mediaencryptedevent
 
 [
-    Exposed=Window,
-    Constructor(DOMString type, optional MediaEncryptedEventInit eventInitDict)
+    Exposed=Window
 ] interface MediaEncryptedEvent : Event {
+    constructor(DOMString type, optional MediaEncryptedEventInit eventInitDict);
     readonly attribute DOMString initDataType;
     readonly attribute ArrayBuffer? initData;
 };

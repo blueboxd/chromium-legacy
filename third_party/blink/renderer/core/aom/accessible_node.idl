@@ -6,10 +6,9 @@
 // Explainer: https://github.com/WICG/aom/blob/master/explainer.md
 // Spec: https://wicg.github.io/aom/spec/
 [
-    Constructor,
-    ConstructorCallWith=Document,
     RuntimeEnabled=AccessibilityObjectModel
 ] interface AccessibleNode : EventTarget {
+    [CallWith=Document] constructor();
     attribute AccessibleNode? activeDescendant;
     attribute boolean? atomic;
     attribute DOMString? autocomplete;

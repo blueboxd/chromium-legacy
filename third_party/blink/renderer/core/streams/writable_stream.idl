@@ -5,11 +5,9 @@
 // https://streams.spec.whatwg.org/#ws-class
 [
     Exposed=(Window,Worker,Worklet),
-    Constructor(optional any underlyingSink, optional any strategy),
-    MeasureAs=WritableStreamConstructor,
-    RaisesException=Constructor,
-    ConstructorCallWith=ScriptState
+    MeasureAs=WritableStreamConstructor
 ] interface WritableStream {
+    [CallWith=ScriptState, RaisesException] constructor(optional any underlyingSink, optional any strategy);
     [NotEnumerable] readonly attribute boolean locked;
     [RaisesException, CallWith=ScriptState, NotEnumerable] Promise<void> abort(
         optional any reason);

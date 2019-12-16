@@ -731,7 +731,7 @@ void ServiceWorkerContainerHost::CompleteWebWorkerPreparation(
 
 void ServiceWorkerContainerHost::UpdateUrls(
     const GURL& url,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const base::Optional<url::Origin>& top_frame_origin) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   GURL previous_url = url_;
@@ -837,14 +837,14 @@ bool ServiceWorkerContainerHost::AllowServiceWorker(const GURL& scope,
   DCHECK(context_);
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     return GetContentClient()->browser()->AllowServiceWorkerOnUI(
-        scope, site_for_cookies(), top_frame_origin(), script_url,
-        context_->wrapper()->browser_context(),
+        scope, site_for_cookies().RepresentativeUrl(), top_frame_origin(),
+        script_url, context_->wrapper()->browser_context(),
         base::BindRepeating(&WebContentsImpl::FromRenderFrameHostID,
                             process_id_, frame_id_));
   } else {
     return GetContentClient()->browser()->AllowServiceWorkerOnIO(
-        scope, site_for_cookies(), top_frame_origin(), script_url,
-        context_->wrapper()->resource_context(),
+        scope, site_for_cookies().RepresentativeUrl(), top_frame_origin(),
+        script_url, context_->wrapper()->resource_context(),
         base::BindRepeating(&WebContentsImpl::FromRenderFrameHostID,
                             process_id_, frame_id_));
   }

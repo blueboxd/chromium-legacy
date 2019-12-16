@@ -120,7 +120,8 @@ static ResourceRequest CreateResourceRequest(const char* method,
   ResourceRequest request;
   request.method = std::string(method);
   request.url = url;
-  request.site_for_cookies = url;  // bypass third-party cookie blocking
+  request.site_for_cookies =
+      net::SiteForCookies::FromUrl(url);  // bypass third-party cookie blocking
   url::Origin origin = url::Origin::Create(url);
   request.request_initiator = origin;  // ensure initiator is set
   request.is_main_frame = true;
@@ -4338,7 +4339,8 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
     ResourceRequest request = CreateResourceRequest(
         "GET", https_server.GetURL("/set-cookie?a=b;Secure"));
     // Make this a third-party request.
-    request.site_for_cookies = GURL("http://www.example.com");
+    request.site_for_cookies =
+        net::SiteForCookies::FromUrl(GURL("http://www.example.com"));
 
     base::RunLoop delete_run_loop;
     mojo::PendingRemote<mojom::URLLoader> loader;
@@ -4392,7 +4394,8 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
     ResourceRequest request = CreateResourceRequest(
         "GET", https_server.GetURL("/set-cookie?a=b;Secure"));
     // Make this a third-party request.
-    request.site_for_cookies = GURL("http://www.example.com");
+    request.site_for_cookies =
+        net::SiteForCookies::FromUrl(GURL("http://www.example.com"));
 
     base::RunLoop delete_run_loop;
     mojo::PendingRemote<mojom::URLLoader> loader;

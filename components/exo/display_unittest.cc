@@ -216,7 +216,7 @@ class TestDataDeviceDelegate : public DataDeviceDelegate {
                 const gfx::PointF& location) override {}
   void OnDrop() override {}
   void OnSelection(const DataOffer& data_offer) override {}
-  bool CanAcceptDataEventsForSurface(Surface* surface) override {
+  bool CanAcceptDataEventsForSurface(Surface* surface) const override {
     return false;
   }
 };

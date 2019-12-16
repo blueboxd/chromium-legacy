@@ -178,7 +178,8 @@ class ServiceWorkerVersionTest : public testing::Test {
         controllee_process_id, true /* is_parent_frame_secure */,
         helper_->context()->AsWeakPtr(), &remote_endpoint);
     host->container_host()->UpdateUrls(
-        registration_->scope(), registration_->scope(),
+        registration_->scope(),
+        net::SiteForCookies::FromUrl(registration_->scope()),
         url::Origin::Create(registration_->scope()));
     host->container_host()->SetControllerRegistration(
         registration_, false /* notify_controllerchange */);
@@ -429,7 +430,8 @@ TEST_F(ServiceWorkerVersionTest, Doom) {
       33 /* dummy render process id */, true /* is_parent_frame_secure */,
       helper_->context()->AsWeakPtr(), &remote_endpoint);
   host->container_host()->UpdateUrls(
-      registration_->scope(), registration_->scope(),
+      registration_->scope(),
+      net::SiteForCookies::FromUrl(registration_->scope()),
       url::Origin::Create(registration_->scope()));
   host->container_host()->SetControllerRegistration(registration_, false);
   EXPECT_TRUE(version_->HasControllee());
@@ -1197,7 +1199,8 @@ TEST_F(ServiceWorkerVersionTest,
       std::move(host_and_info->host);
   remote_endpoint.BindForWindow(std::move(host_and_info->info));
   host->container_host()->UpdateUrls(
-      registration_->scope(), registration_->scope(),
+      registration_->scope(),
+      net::SiteForCookies::FromUrl(registration_->scope()),
       url::Origin::Create(registration_->scope()));
   host->container_host()->SetControllerRegistration(
       registration_, false /* notify_controllerchange */);

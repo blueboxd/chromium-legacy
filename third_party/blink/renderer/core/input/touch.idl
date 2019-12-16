@@ -26,10 +26,9 @@
 // https://w3c.github.io/touch-events/#touch-interface
 
 [
-    Constructor(TouchInit initDict),
-    ConstructorCallWith=Document,
     Exposed=Window
 ] interface Touch {
+    [CallWith=Document] constructor(TouchInit initDict);
     readonly attribute long identifier;
     readonly attribute EventTarget target;
     readonly attribute double screenX;

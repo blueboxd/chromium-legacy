@@ -25,7 +25,7 @@ ResourceRequest::~ResourceRequest() {}
 
 bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
   return method == request.method && url == request.url &&
-         site_for_cookies == request.site_for_cookies &&
+         site_for_cookies.IsEquivalent(request.site_for_cookies) &&
          attach_same_site_cookies == request.attach_same_site_cookies &&
          update_first_party_url_on_redirect ==
              request.update_first_party_url_on_redirect &&

@@ -221,7 +221,7 @@ void CastExtensionURLLoaderFactory::CreateLoaderAndStart(
 
   network::ResourceRequest new_request(request);
   new_request.url = GURL(cast_url);
-  new_request.site_for_cookies = new_request.url;
+  new_request.site_for_cookies = net::SiteForCookies::FromUrl(new_request.url);
 
   // Force a redirect to the new URL but without changing where the webpage
   // thinks it is.

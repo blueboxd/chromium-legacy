@@ -5,9 +5,8 @@
 // See https://webaudio.github.io/web-audio-api/#audioworkletprocessor
 
 [
-    Constructor,
-    ConstructorCallWith=ExecutionContext,
     Exposed=AudioWorklet
 ] interface AudioWorkletProcessor {
+  [CallWith=ExecutionContext] constructor();
   readonly attribute MessagePort port;
 };

@@ -9,10 +9,10 @@
 // fired).
 // Explainer: https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/master/EditContext/explainer.md
 [
-    Constructor(optional TextUpdateEventInit options),
     Exposed=Window,
     RuntimeEnabled=EditContext
 ] interface TextUpdateEvent : Event {
+    constructor(optional TextUpdateEventInit options);
     readonly attribute unsigned long updateRangeStart;
     readonly attribute unsigned long updateRangeEnd;
     readonly attribute DOMString updateText;

@@ -5,9 +5,9 @@
 //https://w3c.github.io/webrtc-pc/#rtcpeerconnectioniceerrorevent
 
 [
-    Constructor (DOMString type, RTCPeerConnectionIceErrorEventInit eventInitDict),
     Exposed=Window
 ] interface RTCPeerConnectionIceErrorEvent : Event {
+  constructor (DOMString type, RTCPeerConnectionIceErrorEventInit eventInitDict);
   readonly attribute DOMString hostCandidate;
   readonly attribute DOMString url;
   readonly attribute unsigned short errorCode;

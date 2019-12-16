@@ -6845,19 +6845,17 @@ void Document::ColorSchemeMetaChanged() {
   if (!RuntimeEnabledFeatures::MetaColorSchemeEnabled())
     return;
 
-  auto* root_element = documentElement();
-  if (!root_element)
-    return;
-
   const CSSValue* color_scheme = nullptr;
-  for (HTMLMetaElement& meta_element :
-       Traversal<HTMLMetaElement>::DescendantsOf(*root_element)) {
-    if (EqualIgnoringASCIICase(meta_element.GetName(), "color-scheme")) {
-      if ((color_scheme = CSSParser::ParseSingleValue(
-               CSSPropertyID::kColorScheme,
-               meta_element.Content().GetString().StripWhiteSpace(),
-               ElementSheet().Contents()->ParserContext()))) {
-        break;
+  if (auto* head_element = head()) {
+    for (HTMLMetaElement& meta_element :
+         Traversal<HTMLMetaElement>::DescendantsOf(*head_element)) {
+      if (EqualIgnoringASCIICase(meta_element.GetName(), "color-scheme")) {
+        if ((color_scheme = CSSParser::ParseSingleValue(
+                 CSSPropertyID::kColorScheme,
+                 meta_element.Content().GetString().StripWhiteSpace(),
+                 ElementSheet().Contents()->ParserContext()))) {
+          break;
+        }
       }
     }
   }

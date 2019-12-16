@@ -19,10 +19,10 @@
         app:srcCompat="@drawable/touch_to_fill_header_image" />
 
     <org.chromium.ui.widget.TextViewWithLeading
+        android:id="@+id/touch_to_fill_sheet_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:text="@string/touch_to_fill_sheet_title"
         android:textAppearance="@style/TextAppearance.BlackHeadline" />
 
     <org.chromium.ui.widget.TextViewWithLeading

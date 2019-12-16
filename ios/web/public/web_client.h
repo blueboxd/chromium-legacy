@@ -190,6 +190,10 @@ class WebClient {
   // desktop version. This method can be overriden to avoid having specific URL
   // being requested in desktop mode when the default mode is desktop.
   virtual bool ForceMobileVersionByDefault(const GURL& url);
+
+  // Returns the UserAgentType that should be used by default for the web
+  // content, based on the size class of |web_view|.
+  virtual UserAgentType GetDefaultUserAgent(UIView* web_view);
 };
 
 }  // namespace web

@@ -76,12 +76,16 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
   void ResetIncrementalStateIfNeeded(
       base::trace_event::TraceEvent* trace_event);
 
-  // Fills in all the fields in |track_event| that can be directly deduced from
-  // |trace_event|. Returns all the updates needed to be emitted into the
-  // |InternedData| field.
-  void PrepareTrackEvent(base::trace_event::TraceEvent* trace_event,
-                         base::trace_event::TraceEventHandle* handle,
-                         perfetto::protos::pbzero::TrackEvent* track_event);
+  // Fills in all the fields in |trace_packet| that can be directly deduced from
+  // |trace_event|. Also fills all updates needed to be emitted into the
+  // |InternedData| field into |pending_interning_updates_|. Returns a pointer
+  // to the prepared TrackEvent proto, on which the caller may set further
+  // fields.
+  perfetto::protos::pbzero::TrackEvent* PrepareTrackEvent(
+      base::trace_event::TraceEvent* trace_event,
+      base::trace_event::TraceEventHandle* handle,
+      protozero::MessageHandle<perfetto::protos::pbzero::TracePacket>*
+          trace_packet);
 
   // Given a list of updates to the indexes will fill in |interned_data| to
   // reflect them.
@@ -96,9 +100,10 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
     ResetIncrementalStateIfNeeded(trace_event);
 
     auto trace_packet = trace_writer_->NewTracePacket();
-    auto* track_event = trace_packet->set_track_event();
-    PrepareTrackEvent(trace_event, handle, track_event);
 
+    // Note: Since |track_event| is a protozero message under |trace_packet|, we
+    // can't modify |trace_packet| further until we're done with |track_event|.
+    auto* track_event = PrepareTrackEvent(trace_event, handle, &trace_packet);
     arg_func(perfetto::EventContext(track_event));
 
     if (!pending_interning_updates_.empty()) {

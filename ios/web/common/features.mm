@@ -41,8 +41,8 @@ const base::Feature kEnablePersistentDownloads{
 const base::Feature kUseJSForErrorPage{"UseJSForErrorPage",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kDefaultToDesktopOnIPad{"DefaultToDesktopOnIPad",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kUseDefaultUserAgentInWebClient{
+    "UseDefaultUserAgentInWebClient", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool UseWKWebViewLoading() {
   return base::FeatureList::IsEnabled(web::features::kUseWKWebViewLoading);

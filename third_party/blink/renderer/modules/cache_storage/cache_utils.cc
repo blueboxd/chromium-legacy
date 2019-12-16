@@ -24,7 +24,7 @@ Response* CreateEagerResponse(ScriptState* script_state,
                                                              *response);
 
   DataPipeBytesConsumer::CompletionNotifier* completion_notifier = nullptr;
-  fetch_data->ReplaceBodyStreamBuffer(MakeGarbageCollected<BodyStreamBuffer>(
+  fetch_data->ReplaceBodyStreamBuffer(BodyStreamBuffer::Create(
       script_state,
       MakeGarbageCollected<DataPipeBytesConsumer>(
           context->GetTaskRunner(TaskType::kNetworking),

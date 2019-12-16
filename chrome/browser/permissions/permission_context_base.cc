@@ -43,13 +43,6 @@
 #include "extensions/common/constants.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_data.h"
-#include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
-#include "components/user_manager/user.h"
-#include "components/user_manager/user_manager.h"
-#endif
-
 namespace {
 
 const char kPermissionBlockedKillSwitchMessage[] =
@@ -179,7 +172,6 @@ void PermissionContextBase::RequestPermission(
       case PermissionStatusSource::INSECURE_ORIGIN:
       case PermissionStatusSource::UNSPECIFIED:
       case PermissionStatusSource::VIRTUAL_URL_DIFFERENT_ORIGIN:
-      case PermissionStatusSource::WEB_KIOSK_APP_MODE:
         break;
     }
 
@@ -272,22 +264,7 @@ PermissionResult PermissionContextBase::GetPermissionStatus(
     return PermissionResult(content_setting,
                             PermissionStatusSource::UNSPECIFIED);
   }
-#if defined(OS_CHROMEOS)
-  if (user_manager::UserManager::IsInitialized() &&
-      user_manager::UserManager::Get()->IsLoggedInAsWebKioskApp()) {
-    const AccountId& account_id =
-        user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId();
-    DCHECK(chromeos::WebKioskAppManager::IsInitialized());
 
-    const chromeos::WebKioskAppData* app_data =
-        chromeos::WebKioskAppManager::Get()->GetAppByAccountId(account_id);
-    DCHECK(app_data);
-    if (url::Origin::Create(requesting_origin) ==
-        url::Origin::Create(app_data->install_url()))
-      return PermissionResult(CONTENT_SETTING_ALLOW,
-                              PermissionStatusSource::WEB_KIOSK_APP_MODE);
-  }
-#endif
   PermissionResult result =
       PermissionDecisionAutoBlocker::GetForProfile(profile_)->GetEmbargoResult(
           requesting_origin, content_settings_type_);

@@ -20,16 +20,10 @@ namespace cssvalue {
 
 class CORE_EXPORT CSSURIValue : public CSSValue {
  public:
-  static CSSURIValue* Create(const String& relative_url, const KURL& url) {
-    return MakeGarbageCollected<CSSURIValue>(AtomicString(relative_url), url);
-  }
-  static CSSURIValue* Create(const AtomicString& absolute_url) {
-    return MakeGarbageCollected<CSSURIValue>(absolute_url, absolute_url);
-  }
-
   CSSURIValue(const AtomicString&, const KURL&);
   CSSURIValue(const AtomicString& relative_url,
               const AtomicString& absolute_url);
+  CSSURIValue(const AtomicString& absolute_url);
   ~CSSURIValue();
 
   SVGResource* EnsureResourceReference() const;

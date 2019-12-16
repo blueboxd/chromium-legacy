@@ -410,8 +410,7 @@ void FetchManager::Loader::DidReceiveResponse(
 
   place_holder_body_ = MakeGarbageCollected<PlaceHolderBytesConsumer>();
   FetchResponseData* response_data = FetchResponseData::CreateWithBuffer(
-      MakeGarbageCollected<BodyStreamBuffer>(script_state, place_holder_body_,
-                                             signal_));
+      BodyStreamBuffer::Create(script_state, place_holder_body_, signal_));
   response_data->SetStatus(response.HttpStatusCode());
   if (response.CurrentRequestUrl().ProtocolIsAbout() ||
       response.CurrentRequestUrl().ProtocolIsData() ||

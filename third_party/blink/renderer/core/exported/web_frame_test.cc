@@ -1917,7 +1917,6 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentMode) {
             scroll_node->ContainerRect());
   EXPECT_EQ(IntSize(viewport_width, viewport_height),
             scroll_node->ContentsSize());
-  EXPECT_FALSE(scroll_container->CcLayer()->masks_to_bounds());
 }
 
 TEST_F(WebFrameTest, SetForceZeroLayoutHeight) {

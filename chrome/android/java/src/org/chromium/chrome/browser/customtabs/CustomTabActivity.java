@@ -394,13 +394,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
     }
 
     @Override
-    public void registerDirectActions() {
-        super.registerDirectActions();
-        mDirectActionInitializer.allowMenuActions(
-                this, getTabModelSelector(), R.id.bookmark_this_page_id, R.id.preferences_id);
-    }
-
-    @Override
     public void onUpdateStateChanged() {}
 
     @Override

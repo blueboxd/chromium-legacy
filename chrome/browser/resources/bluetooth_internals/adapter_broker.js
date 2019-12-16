@@ -166,7 +166,8 @@ cr.define('adapter_broker', function() {
 
     const bluetoothInternalsHandler = opt_bluetoothInternalsHandler ?
         opt_bluetoothInternalsHandler :
-        mojom.BluetoothInternalsHandler.getRemote();
+        mojom.BluetoothInternalsHandler.getRemote(
+            /*useBrowserInterfaceBroker=*/ true);
 
     // Get an Adapter service.
     return bluetoothInternalsHandler.getAdapter().then(function(response) {

@@ -138,7 +138,7 @@ void HTMLScriptElement::setInnerText(
     // On setting, the innerText [...] perform the regular steps, and then set
     // content object's [[ScriptText]] internal slot value [...].
     HTMLElement::setInnerText(value, exception_state);
-    script_text_internal_slot_ = value;
+    script_text_internal_slot_ = ParkableString(value.Impl());
   }
 }
 
@@ -152,7 +152,7 @@ void HTMLScriptElement::setTextContent(
     // On setting, [..] textContent [..] perform the regular steps, and then set
     // content object's [[ScriptText]] internal slot value [...].
     Node::setTextContent(value);
-    script_text_internal_slot_ = value;
+    script_text_internal_slot_ = ParkableString(value.Impl());
   }
 }
 
@@ -163,8 +163,8 @@ void HTMLScriptElement::setAsync(bool async) {
 
 void HTMLScriptElement::FinishParsingChildren() {
   Element::FinishParsingChildren();
-  DCHECK(script_text_internal_slot_.IsEmpty());
-  script_text_internal_slot_ = TextFromChildren();
+  DCHECK(!script_text_internal_slot_.length());
+  script_text_internal_slot_ = ParkableString(TextFromChildren().Impl());
 }
 
 bool HTMLScriptElement::async() const {
@@ -220,7 +220,7 @@ String HTMLScriptElement::ChildTextContent() {
 }
 
 String HTMLScriptElement::ScriptTextInternalSlot() const {
-  return script_text_internal_slot_;
+  return script_text_internal_slot_.ToString();
 }
 
 bool HTMLScriptElement::AsyncAttributeValue() const {

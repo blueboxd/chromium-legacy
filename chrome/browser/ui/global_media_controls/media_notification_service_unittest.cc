@@ -10,6 +10,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_provider.h"
@@ -602,7 +603,13 @@ TEST_F(MediaNotificationServiceTest, DismissesMediaSession) {
       1);
 }
 
-TEST_F(MediaNotificationServiceCastTest, CountCastSessionsAsActive) {
+// TODO(https://crbug.com/1034406) Flaky on Mac10.12
+#if defined(OS_MACOSX)
+#define MAYBE_CountCastSessionsAsActive DISABLED_CountCastSessionsAsActive
+#else
+#define MAYBE_CountCastSessionsAsActive CountCastSessionsAsActive
+#endif
+TEST_F(MediaNotificationServiceCastTest, MAYBE_CountCastSessionsAsActive) {
   media_router::MediaRoute media_route("id",
                                        media_router::MediaSource("source_id"),
                                        "sink_id", "description", true, true);

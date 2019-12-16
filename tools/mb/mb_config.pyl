@@ -554,7 +554,7 @@
     },
 
     'client.devtools-frontend.integration': {
-      'DevTools Linux': 'release_bot',
+      'DevTools Linux': 'release_trybot',
     },
 
     'client.openscreen.chromium': {
@@ -959,9 +959,9 @@
     },
 
     'tryserver.devtools-frontend': {
-      # Use pure release as CI doesn't have a debug builder.
-      'devtools_frontend_linux_blink_light_rel': 'release_bot',
-      'devtools_frontend_linux_blink_rel': 'release_bot',
+      # Align devtools blink builders with chromium linux-rel
+      'devtools_frontend_linux_blink_light_rel': 'release_trybot',
+      'devtools_frontend_linux_blink_rel': 'release_trybot',
     },
 
     'tryserver.v8': {

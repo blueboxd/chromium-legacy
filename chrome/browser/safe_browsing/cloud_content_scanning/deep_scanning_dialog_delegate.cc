@@ -21,6 +21,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_views.h"
 #include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request.h"
 #include "chrome/grit/generated_resources.h"
@@ -251,19 +252,7 @@ DeepScanningDialogDelegate::FileInfo::~FileInfo() = default;
 
 DeepScanningDialogDelegate::~DeepScanningDialogDelegate() = default;
 
-base::string16 DeepScanningDialogDelegate::GetTitle() {
-  return l10n_util::GetStringUTF16(IDS_DEEP_SCANNING_DIALOG_TITLE);
-}
-
-base::string16 DeepScanningDialogDelegate::GetDialogMessage() {
-  return l10n_util::GetStringUTF16(IDS_DEEP_SCANNING_DIALOG_MESSAGE);
-}
-
-int DeepScanningDialogDelegate::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_CANCEL;
-}
-
-void DeepScanningDialogDelegate::OnCanceled() {
+void DeepScanningDialogDelegate::Cancel() {
   if (callback_.is_null())
     return;
 
@@ -384,7 +373,7 @@ void DeepScanningDialogDelegate::ShowForWebContents(
   if (show_ui) {
     DeepScanningDialogDelegate* delegate_ptr = delegate.get();
     delegate_ptr->dialog_ =
-        TabModalConfirmDialog::Create(std::move(delegate), web_contents);
+        new DeepScanningDialogViews(std::move(delegate), web_contents);
     return;
   }
 
@@ -414,8 +403,7 @@ DeepScanningDialogDelegate::DeepScanningDialogDelegate(
     Data data,
     CompletionCallback callback,
     base::Optional<DeepScanAccessPoint> access_point)
-    : TabModalConfirmDialogDelegate(web_contents),
-      web_contents_(web_contents),
+    : web_contents_(web_contents),
       data_(std::move(data)),
       callback_(std::move(callback)),
       access_point_(access_point) {
@@ -609,7 +597,7 @@ bool DeepScanningDialogDelegate::CloseTabModalDialog() {
   if (!dialog_)
     return false;
 
-  dialog_->CancelTabModalDialog();
+  dialog_->CancelDialog();
   return true;
 }
 

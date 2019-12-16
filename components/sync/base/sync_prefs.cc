@@ -132,8 +132,6 @@ const char* GetPrefNameForOsType(UserSelectableOsType type) {
       return prefs::kSyncOsApps;
     case UserSelectableOsType::kOsPreferences:
       return prefs::kSyncOsPreferences;
-    case UserSelectableOsType::kPrinters:
-      return prefs::kSyncOsPrinters;
     case UserSelectableOsType::kWifiConfigurations:
       return prefs::kSyncWifiConfigurations;
   }

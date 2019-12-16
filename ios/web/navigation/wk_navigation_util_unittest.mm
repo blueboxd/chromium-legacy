@@ -82,6 +82,7 @@ TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrl) {
                           &restore_session_url, &first_index);
   ASSERT_EQ(0, first_index);
   ASSERT_TRUE(IsRestoreSessionUrl(restore_session_url));
+  ASSERT_TRUE(IsRestoreSessionUrl(net::NSURLWithGURL(restore_session_url)));
 
   std::string session_json =
       net::UnescapeBinaryURLComponent(restore_session_url.ref());
@@ -133,6 +134,7 @@ TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrlForLargeSession) {
       /*last_committed_item_index=*/0, items, &restore_session_url,
       &first_index);
   ASSERT_TRUE(IsRestoreSessionUrl(restore_session_url));
+  ASSERT_TRUE(IsRestoreSessionUrl(net::NSURLWithGURL(restore_session_url)));
 
   // Extract session JSON from restoration URL.
   base::JSONReader::ValueWithError value_with_error =
@@ -167,6 +169,7 @@ TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrlForExtraLargeForwardList) {
       &first_index);
   ASSERT_EQ(0, first_index);
   ASSERT_TRUE(IsRestoreSessionUrl(restore_session_url));
+  ASSERT_TRUE(IsRestoreSessionUrl(net::NSURLWithGURL(restore_session_url)));
 
   // Extract session JSON from restoration URL.
   base::JSONReader::ValueWithError value_with_error =
@@ -211,6 +214,7 @@ TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrlForExtraLargeBackList) {
       &first_index);
   ASSERT_EQ(150, first_index);
   ASSERT_TRUE(IsRestoreSessionUrl(restore_session_url));
+  ASSERT_TRUE(IsRestoreSessionUrl(net::NSURLWithGURL(restore_session_url)));
 
   // Extract session JSON from restoration URL.
   base::JSONReader::ValueWithError value_with_error =
@@ -256,6 +260,7 @@ TEST_F(WKNavigationUtilTest,
       &restore_session_url, &first_index);
   ASSERT_EQ(38, first_index);
   ASSERT_TRUE(IsRestoreSessionUrl(restore_session_url));
+  ASSERT_TRUE(IsRestoreSessionUrl(net::NSURLWithGURL(restore_session_url)));
 
   // Extract session JSON from restoration URL.
   base::JSONReader::ValueWithError value_with_error =
@@ -288,8 +293,11 @@ TEST_F(WKNavigationUtilTest,
 
 TEST_F(WKNavigationUtilTest, IsNotRestoreSessionUrl) {
   EXPECT_FALSE(IsRestoreSessionUrl(GURL()));
+  EXPECT_FALSE(IsRestoreSessionUrl([NSURL URLWithString:@""]));
   EXPECT_FALSE(IsRestoreSessionUrl(GURL("file://somefile")));
+  EXPECT_FALSE(IsRestoreSessionUrl([NSURL URLWithString:@"file://somefile"]));
   EXPECT_FALSE(IsRestoreSessionUrl(GURL("http://www.1.com")));
+  EXPECT_FALSE(IsRestoreSessionUrl([NSURL URLWithString:@"http://www.1.com"]));
 }
 
 // Tests that CreateRedirectUrl and ExtractTargetURL used back-to-back is an
@@ -308,12 +316,21 @@ TEST_F(WKNavigationUtilTest, IsPlaceholderUrl) {
   // Valid placeholder URLs.
   EXPECT_TRUE(IsPlaceholderUrl(GURL("about:blank?for=")));
   EXPECT_TRUE(IsPlaceholderUrl(GURL("about:blank?for=chrome%3A%2F%2Fnewtab")));
+  EXPECT_TRUE(IsPlaceholderUrl([NSURL URLWithString:@"about:blank?for="]));
+  EXPECT_TRUE(IsPlaceholderUrl(GURL("about:blank?for=chrome%3A%2F%2Fnewtab")));
+  EXPECT_TRUE(IsPlaceholderUrl(
+      [NSURL URLWithString:@"about:blank?for=chrome%3A%2F%2Fnewtab"]));
 
   // Not an about:blank URL.
   EXPECT_FALSE(IsPlaceholderUrl(GURL::EmptyGURL()));
+  EXPECT_FALSE(IsPlaceholderUrl([NSURL URLWithString:@""]));
+
   // Missing ?for= query parameter.
   EXPECT_FALSE(IsPlaceholderUrl(GURL("about:blank")));
+  EXPECT_FALSE(IsPlaceholderUrl([NSURL URLWithString:@"about:blank"]));
   EXPECT_FALSE(IsPlaceholderUrl(GURL("about:blank?chrome:%3A%2F%2Fnewtab")));
+  EXPECT_FALSE(IsPlaceholderUrl(
+      [NSURL URLWithString:@"about:blank?chrome:%3A%2F%2Fnewtab"]));
 }
 
 TEST_F(WKNavigationUtilTest, EncodReturnsEmptyOnInvalidUrls) {

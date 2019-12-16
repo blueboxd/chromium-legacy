@@ -5,8 +5,6 @@
 // Bug 776278: Constructors without overloads were wrongly requiring variadic
 // arguments to be present.
 
-[
-    Constructor(double... args)
-]
 interface TestVariadicConstructorArguments {
+    constructor(double... args);
 };

@@ -621,8 +621,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // TODO(crbug.com/738020): Investigate if this method is still needed and if
   // it can be implemented using NavigationManager API after removal of legacy
   // navigation stack.
-  GURL webViewURL = net::GURLWithNSURL(self.webView.URL);
-  if (self.webView && !IsWKInternalUrl(webViewURL)) {
+  if (self.webView && !IsWKInternalUrl(self.webView.URL)) {
     return [self webURLWithTrustLevel:trustLevel];
   }
   // Any non-web URL source is trusted.

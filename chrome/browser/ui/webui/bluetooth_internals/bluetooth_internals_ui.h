@@ -18,11 +18,15 @@ class BluetoothInternalsUI : public ui::MojoWebUIController {
   explicit BluetoothInternalsUI(content::WebUI* web_ui);
   ~BluetoothInternalsUI() override;
 
- private:
-  void BindBluetoothInternalsHandler(
+  // Instantiates the implementor of the mojom::BluetoothInternalsHandler mojo
+  // interface passing the pending receiver that will be internally bound.
+  void BindInterface(
       mojo::PendingReceiver<mojom::BluetoothInternalsHandler> receiver);
 
+ private:
   std::unique_ptr<BluetoothInternalsHandler> page_handler_;
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothInternalsUI);
 };

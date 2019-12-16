@@ -6490,6 +6490,7 @@ if (!is_android && !is_fuchsia) {
     testonly = true
     deps = [
       "//third_party/catapult:telemetry_chrome_test_support",
+      "//tools/metrics:metrics_python_tests",
     ]
     data = [
       # TODO(kbr): refactor the telemetry dependencies more cleanly.

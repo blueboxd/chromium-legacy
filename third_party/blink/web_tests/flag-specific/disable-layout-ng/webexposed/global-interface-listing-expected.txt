@@ -1188,6 +1188,12 @@ interface CookieStore : EventTarget
     method getAll
     method set
     setter onchange
+interface CookieStoreManager
+    attribute @@toStringTag
+    method constructor
+    method getSubscriptions
+    method subscribe
+    method unsubscribe
 interface CountQueuingStrategy
     attribute @@toStringTag
     getter highWaterMark
@@ -2362,6 +2368,13 @@ interface FaceDetector
     attribute @@toStringTag
     method constructor
     method detect
+interface FeaturePolicy
+    attribute @@toStringTag
+    method allowedFeatures
+    method allowsFeature
+    method constructor
+    method features
+    method getAllowlistForFeature
 interface FederatedCredential : Credential
     attribute @@toStringTag
     getter iconURL
@@ -7685,6 +7698,7 @@ interface ServiceWorkerRegistration : EventTarget
     attribute @@toStringTag
     getter active
     getter backgroundFetch
+    getter cookies
     getter index
     getter installing
     getter navigationPreload
@@ -10872,6 +10886,7 @@ interface XRFrame
     getter session
     method constructor
     method getHitTestResults
+    method getHitTestResultsForTransientInput
     method getPose
     method getViewerPose
 interface XRHitResult
@@ -10884,6 +10899,7 @@ interface XRHitTestResult
     method getPose
 interface XRHitTestSource
     attribute @@toStringTag
+    method cancel
     method constructor
 interface XRInputSource
     attribute @@toStringTag
@@ -10968,6 +10984,7 @@ interface XRSession : EventTarget
     method requestAnimationFrame
     method requestHitTest
     method requestHitTestSource
+    method requestHitTestSourceForTransientInput
     method requestReferenceSpace
     method updateRenderState
     setter onend
@@ -10982,6 +10999,15 @@ interface XRSessionEvent : Event
     method constructor
 interface XRSpace : EventTarget
     attribute @@toStringTag
+    method constructor
+interface XRTransientInputHitTestResult
+    attribute @@toStringTag
+    getter inputSource
+    getter results
+    method constructor
+interface XRTransientInputHitTestSource
+    attribute @@toStringTag
+    method cancel
     method constructor
 interface XRView
     attribute @@toStringTag

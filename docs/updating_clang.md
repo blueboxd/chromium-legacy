@@ -60,30 +60,6 @@ An archive of all packages built so far is at https://is.gd/chromeclang
       -b linux-chromeos-chrome
     ```
 
-1.  Optional: Start Pinpoint perf tryjobs. These are generally too noisy to
-    catch minor regressions pre-commit, but make sure there are no large
-    regressions.
-
-    a.  (Log in to store OAuth2 token in the depot_tools cache. Only needs to be
-        run once:)
-
-        $ PYTHONPATH=$(dirname $(which git-cl)) python -c"import auth;auth.OAUTH_CLIENT_ID='62121018386-h08uiaftreu4dr3c4alh3l7mogskvb7i.apps.googleusercontent.com';auth.OAUTH_CLIENT_SECRET='vc1fZfV1cZC6mgDSHV-KSPOz';print auth.get_authenticator_for_host('pinpoint',auth.make_auth_config()).login()"
-
-    b.  Generate a fresh Oauth2 token:
-
-        $ TOKEN=$(PYTHONPATH=$(dirname $(which git-cl)) python -c"import auth;print auth.get_authenticator_for_host('pinpoint',auth.make_auth_config()).get_access_token().token")
-
-    c.  Launch Pinpoint job:
-
-        $ curl -H"Authorization: Bearer $TOKEN" -F configuration=chromium-rel-win7-gpu-nvidia \
-            -F target=performance_test_suite -F benchmark=speedometer2 \
-            -F patch=https://chromium-review.googlesource.com/c/chromium/src/+/$(git cl issue | cut -d' ' -f3) \
-            -F start_git_hash=HEAD -F end_git_hash=HEAD https://pinpoint-dot-chromeperf.appspot.com/api/new
-
-    d.  Use the URL returned by the command above to see the progress and result
-        of the tryjob, checking that it doesn't regress significantly (> 10%).
-        Post the URL to the codereview.
-
 1.  Commit roll CL from the first step
 1.  The bots will now pull the prebuilt binary, and goma will have a matching
     binary, too.

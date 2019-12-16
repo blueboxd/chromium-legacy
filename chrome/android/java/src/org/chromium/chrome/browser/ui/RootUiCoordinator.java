@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.ui;
 
+import android.os.Bundle;
+import android.os.CancellationSignal;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -20,19 +22,23 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.MenuOrKeyboardActionController;
 import org.chromium.chrome.browser.TabThemeColorProvider;
+;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.directactions.DirectActionInitializer;
 import org.chromium.chrome.browser.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.findinpage.FindToolbarObserver;
+import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.metrics.UkmRecorder;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuBlocker;
@@ -45,6 +51,8 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogManagerObserver;
 import org.chromium.ui.modelutil.PropertyModel;
+
+import java.util.function.Consumer;
 
 /**
  * The root UI coordinator. This class will eventually be responsible for inflating and managing
@@ -87,6 +95,7 @@ public class RootUiCoordinator
     private SnackbarManager mBottomSheetSnackbarManager;
 
     private ScrimView mScrimView;
+    private DirectActionInitializer mDirectActionInitializer;
 
     /**
      * Create a new {@link RootUiCoordinator} for the given activity.
@@ -117,14 +126,6 @@ public class RootUiCoordinator
     // TODO(pnoland, crbug.com/865801): remove this in favor of wiring it directly.
     public ToolbarManager getToolbarManager() {
         return mToolbarManager;
-    }
-
-    /**
-     * @return The find toolbar manager or {@code null} if UI inflation is not yet complete.
-     */
-    @Nullable
-    public FindToolbarManager getFindToolbarManager() {
-        return mFindToolbarManager;
     }
 
     @Override
@@ -186,6 +187,7 @@ public class RootUiCoordinator
         initializeToolbar();
         initAppMenu();
         initFindToolbarManager();
+        initDirectActionInitializer();
         if (mAppMenuCoordinator != null) {
             mToolbarManager.onAppMenuInitialized(mAppMenuCoordinator);
             mModalDialogManagerObserver = new ModalDialogManagerObserver() {
@@ -279,6 +281,35 @@ public class RootUiCoordinator
         }
 
         return true;
+    }
+
+    /**
+     * Performs a direct action.
+     *
+     * @param actionId Name of the direct action to perform.
+     * @param arguments Arguments for this action.
+     * @param cancellationSignal Signal used to cancel a direct action from the caller.
+     * @param callback Callback to run when the action is done.
+     */
+    public void onPerformDirectAction(String actionId, Bundle arguments,
+            CancellationSignal cancellationSignal, Consumer<Bundle> callback) {
+        if (mDirectActionInitializer == null) return;
+        mDirectActionInitializer.onPerformDirectAction(
+                actionId, arguments, cancellationSignal, callback);
+    }
+
+    /**
+     * Lists direct actions supported.
+     *
+     * Returns a list of direct actions supported by the Activity associated with this
+     * RootUiCoordinator.
+     *
+     * @param cancellationSignal Signal used to cancel a direct action from the caller.
+     * @param callback Callback to run when the action is done.
+     */
+    public void onGetDirectActions(CancellationSignal cancellationSignal, Consumer callback) {
+        if (mDirectActionInitializer == null) return;
+        mDirectActionInitializer.onGetDirectActions(cancellationSignal, callback);
     }
 
     // Protected class methods
@@ -474,6 +505,16 @@ public class RootUiCoordinator
     /** @return The {@link SnackbarManager} for the {@link BottomSheetController}. */
     public SnackbarManager getBottomSheetSnackbarManager() {
         return mBottomSheetSnackbarManager;
+    }
+
+    private void initDirectActionInitializer() {
+        @ActivityType
+        int activityType = mActivity.getActivityType();
+        TabModelSelector tabModelSelector = mActivity.getTabModelSelector();
+        mDirectActionInitializer = new DirectActionInitializer(mActivity, activityType, mActivity,
+                mActivity::onBackPressed, tabModelSelector, mFindToolbarManager,
+                mActivity.getBottomSheetController(), mScrimView);
+        mActivity.getLifecycleDispatcher().register(mDirectActionInitializer);
     }
 
     // Testing methods

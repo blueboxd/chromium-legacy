@@ -46,7 +46,7 @@ std::string TestPersonalDataManager::SaveImportedCreditCard(
   return imported_credit_card.guid();
 }
 
-void TestPersonalDataManager::AddVPA(const std::string& profile) {
+void TestPersonalDataManager::AddUpiId(const std::string& profile) {
   num_times_save_upi_id_called_++;
 }
 

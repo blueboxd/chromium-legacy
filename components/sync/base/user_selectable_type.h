@@ -51,7 +51,6 @@ enum class UserSelectableOsType {
   kFirstType = kOsApps,
 
   kOsPreferences,
-  kPrinters,
   kWifiConfigurations,
   kLastType = kWifiConfigurations
 };

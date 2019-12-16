@@ -197,6 +197,22 @@ static void AdjustStyleForFirstLetter(ComputedStyle& style) {
   style.SetPosition(EPosition::kStatic);
 }
 
+static void AdjustStyleForMarker(ComputedStyle& style,
+                                 const ComputedStyle& parent_style) {
+  if (style.StyleType() != kPseudoIdMarker)
+    return;
+
+  // Style adjustments for markers with 'content: normal' are done in layout.
+  if (!style.GetContentData())
+    return;
+
+  // Outside list markers should generate a block container.
+  if (parent_style.ListStylePosition() == EListStylePosition::kOutside) {
+    DCHECK_EQ(style.Display(), EDisplay::kInline);
+    style.SetDisplay(EDisplay::kInlineBlock);
+  }
+}
+
 static void AdjustStyleForHTMLElement(ComputedStyle& style,
                                       HTMLElement& element) {
   // <div> and <span> are the most common elements on the web, we skip all the
@@ -608,6 +624,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     // We don't adjust the first letter style earlier because we may change the
     // display setting in adjustStyeForTagName() above.
     AdjustStyleForFirstLetter(style);
+    AdjustStyleForMarker(style, parent_style);
 
     AdjustStyleForDisplay(style, layout_parent_style,
                           element ? &element->GetDocument() : nullptr);

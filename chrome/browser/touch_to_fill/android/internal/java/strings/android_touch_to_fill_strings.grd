@@ -144,6 +144,9 @@
   <release allow_pseudo="false" seq="1">
     <messages fallback_to_english="true">
       <!-- Touch To Fill -->
+      <message name="IDS_TOUCH_TO_FILL_SHEET_TITLE_SINGLE" desc="Header for Touch To Fill sheet where users only have a single credential to fill into a form to.">
+        Continue with account
+      </message>
       <message name="IDS_TOUCH_TO_FILL_SHEET_TITLE" desc="Header for Touch To Fill sheet where users can pick a credential to fill into a form to.">
         Choose an account
       </message>
@@ -165,8 +168,8 @@
       <message name="IDS_MANAGE_PASSWORDS" desc="Title of the button at the end of a touch to fill sheet that will open the password preferences when tapped.">
         Manage passwords
       </message>
-      <message name="IDS_TOUCH_TO_FILL_CONFIRM" desc="Title of the button that confirms filling the only available set of credentials.">
-        Use password
+      <message name="IDS_TOUCH_TO_FILL_CONTINUE" desc="Title of the button that continues filling with the only available set of credentials.">
+        Continue
       </message>
     </messages>
   </release>

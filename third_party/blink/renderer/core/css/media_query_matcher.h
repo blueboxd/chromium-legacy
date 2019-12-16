@@ -42,8 +42,6 @@ class MediaQuerySet;
 class CORE_EXPORT MediaQueryMatcher final
     : public GarbageCollected<MediaQueryMatcher> {
  public:
-  static MediaQueryMatcher* Create(Document&);
-
   explicit MediaQueryMatcher(Document&);
   ~MediaQueryMatcher();
 

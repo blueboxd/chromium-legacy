@@ -188,7 +188,8 @@ function updateEngagementTable() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  detailsProvider = media.mojom.MediaEngagementScoreDetailsProvider.getRemote();
+  detailsProvider = media.mojom.MediaEngagementScoreDetailsProvider.getRemote(
+      /*useBrowserInterfaceBroker=*/ true);
   updateEngagementTable();
 
   engagementTableBody = $('engagement-table-body');

@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/power/smart_charging/user_charging_event.pb.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "services/viz/public/mojom/compositing/video_detector_observer.mojom.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 
@@ -29,13 +30,26 @@ class RecentEventsCounter;
 // user charging events. It is currently used to log data and will be
 // extended to do inference in the future.
 class SmartChargingManager : public ui::UserActivityObserver,
-                             public PowerManagerClient::Observer {
+                             public PowerManagerClient::Observer,
+                             public viz::mojom::VideoDetectorObserver {
  public:
-  SmartChargingManager(ui::UserActivityDetector* detector,
-                       std::unique_ptr<base::RepeatingTimer> periodic_timer);
+  SmartChargingManager(
+      ui::UserActivityDetector* detector,
+      mojo::PendingReceiver<viz::mojom::VideoDetectorObserver> receiver,
+      std::unique_ptr<base::RepeatingTimer> periodic_timer);
   ~SmartChargingManager() override;
   SmartChargingManager(const SmartChargingManager&) = delete;
   SmartChargingManager& operator=(const SmartChargingManager&) = delete;
+
+  // Stores start time and end time of events.
+  struct TimePeriod {
+    TimePeriod(base::TimeDelta start, base::TimeDelta end) {
+      start_time = start;
+      end_time = end;
+    }
+    base::TimeDelta start_time;
+    base::TimeDelta end_time;
+  };
 
   static std::unique_ptr<SmartChargingManager> CreateInstance();
 
@@ -49,6 +63,10 @@ class SmartChargingManager : public ui::UserActivityObserver,
   void PowerManagerBecameAvailable(bool available) override;
   void ShutdownRequested(power_manager::RequestShutdownReason reason) override;
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
+
+  // viz::mojom::VideoDetectorObserver overrides:
+  void OnVideoActivityStarted() override;
+  void OnVideoActivityEnded() override;
 
  private:
   friend class SmartChargingManagerTest;
@@ -66,6 +84,10 @@ class SmartChargingManager : public ui::UserActivityObserver,
   void OnReceiveScreenBrightnessPercent(
       base::Optional<double> screen_brightness_percent);
 
+  // Gets amount of time of video playing recently (e.g. in the last 30
+  // minutes).
+  base::TimeDelta DurationRecentVideoPlaying();
+
   ScopedObserver<ui::UserActivityDetector, ui::UserActivityObserver>
       user_activity_observer_{this};
 
@@ -80,11 +102,19 @@ class SmartChargingManager : public ui::UserActivityObserver,
   ml::BootClock boot_clock_;
   int event_id_ = -1;
 
+  const mojo::Receiver<viz::mojom::VideoDetectorObserver> receiver_;
+
   // Counters for user events.
   const std::unique_ptr<ml::RecentEventsCounter> mouse_counter_;
   const std::unique_ptr<ml::RecentEventsCounter> key_counter_;
   const std::unique_ptr<ml::RecentEventsCounter> stylus_counter_;
   const std::unique_ptr<ml::RecentEventsCounter> touch_counter_;
+
+  // A queue that stores recent video usage of the user.
+  base::circular_deque<TimePeriod> recent_video_usage_;
+  // Most recent time the user started playing video.
+  base::TimeDelta most_recent_video_start_time_;
+  bool is_video_playing_ = false;
 
   // TODO(crbug.com/1028853): This is for testing only. Need to remove when ukm
   // logger is available.

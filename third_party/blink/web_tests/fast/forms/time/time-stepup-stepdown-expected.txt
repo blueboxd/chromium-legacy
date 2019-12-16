@@ -37,8 +37,8 @@ PASS inputWithInitialValue.stepUp(); inputWithInitialValue.value is "12:34"
 
 
 Step-mismatched initial values
-PASS stepUp("20:13", "86400.000", null, 65536) is "00:00"
-PASS stepUp("20:13", "86400.001", null, 65536) is "00:00:00.000"
+PASS stepUp("20:13", "86400.000", null, 65536) is "20:13"
+PASS stepUp("20:13", "86400.001", null, 65536) is "20:13"
 PASS stepUp("20:13", "600", null, 1) is "20:20"
 PASS stepUp("20:13", "600", null, 2) is "20:30"
 PASS stepDown("20:13", "600", null, 1) is "20:10"

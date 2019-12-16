@@ -5,7 +5,6 @@
 #include "components/sync_bookmarks/bookmark_model_merger.h"
 
 #include <algorithm>
-#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -205,66 +204,44 @@ UpdatesPerParentId GroupValidUpdatesByParentId(
 
 }  // namespace
 
-class BookmarkModelMerger::RemoteTreeNode final {
- public:
-  // Constructs a tree given |update| as root and recursively all descendants by
-  // traversing |*updates_per_parent_id|. |update| and |updates_per_parent_id|
-  // must not be null. All updates |*updates_per_parent_id| must represent valid
-  // updates. Updates corresponding from descendant nodes are moved away from
-  // |*updates_per_parent_id|.
-  static RemoteTreeNode BuildTree(
-      std::unique_ptr<syncer::UpdateResponseData> update,
-      UpdatesPerParentId* updates_per_parent_id);
+BookmarkModelMerger::RemoteTreeNode::RemoteTreeNode() = default;
 
-  ~RemoteTreeNode() = default;
+BookmarkModelMerger::RemoteTreeNode::~RemoteTreeNode() = default;
 
-  // Allow moves, useful during construction.
-  RemoteTreeNode(RemoteTreeNode&&) = default;
-  RemoteTreeNode& operator=(RemoteTreeNode&&) = default;
+BookmarkModelMerger::RemoteTreeNode::RemoteTreeNode(
+    BookmarkModelMerger::RemoteTreeNode&&) = default;
+BookmarkModelMerger::RemoteTreeNode& BookmarkModelMerger::RemoteTreeNode::
+operator=(BookmarkModelMerger::RemoteTreeNode&&) = default;
 
-  const syncer::EntityData& entity() const { return *update_->entity; }
-  int64_t response_version() const { return update_->response_version; }
+void BookmarkModelMerger::RemoteTreeNode::EmplaceSelfAndDescendantsByGUID(
+    std::unordered_map<std::string, const RemoteTreeNode*>*
+        guid_to_remote_node_map) const {
+  DCHECK(guid_to_remote_node_map);
 
-  // Direct children nodes, sorted by ascending unique position. These are
-  // guaranteed to be valid updates (e.g. IsValidBookmarkSpecifics()).
-  const std::vector<RemoteTreeNode>& children() const { return children_; }
+  const std::string& guid = entity().specifics.bookmark().guid();
+  if (!guid.empty()) {
+    DCHECK(base::IsValidGUID(guid));
 
-  // Recursively emplaces all GUIDs (this node and descendants) into
-  // |*guid_to_remote_node_map|, which must not be null.
-  void EmplaceSelfAndDescendantsByGUID(
-      std::unordered_map<std::string, const RemoteTreeNode*>*
-          guid_to_remote_node_map) const {
-    DCHECK(guid_to_remote_node_map);
-
-    const std::string& guid = entity().specifics.bookmark().guid();
-    if (!guid.empty()) {
-      DCHECK(base::IsValidGUID(guid));
-
-      // Duplicate GUIDs have been sorted out before.
-      bool success = guid_to_remote_node_map->emplace(guid, this).second;
-      DCHECK(success);
-    }
-
-    for (const RemoteTreeNode& child : children_) {
-      child.EmplaceSelfAndDescendantsByGUID(guid_to_remote_node_map);
-    }
+    // Duplicate GUIDs have been sorted out before.
+    bool success = guid_to_remote_node_map->emplace(guid, this).second;
+    DCHECK(success);
   }
 
- private:
-  static bool UniquePositionLessThan(const RemoteTreeNode& lhs,
-                                     const RemoteTreeNode& rhs) {
-    const syncer::UniquePosition a_pos =
-        syncer::UniquePosition::FromProto(lhs.entity().unique_position);
-    const syncer::UniquePosition b_pos =
-        syncer::UniquePosition::FromProto(rhs.entity().unique_position);
-    return a_pos.LessThan(b_pos);
+  for (const RemoteTreeNode& child : children_) {
+    child.EmplaceSelfAndDescendantsByGUID(guid_to_remote_node_map);
   }
+}
 
-  RemoteTreeNode() = default;
-
-  std::unique_ptr<syncer::UpdateResponseData> update_;
-  std::vector<RemoteTreeNode> children_;
-};
+// static
+bool BookmarkModelMerger::RemoteTreeNode::UniquePositionLessThan(
+    const RemoteTreeNode& lhs,
+    const RemoteTreeNode& rhs) {
+  const syncer::UniquePosition a_pos =
+      syncer::UniquePosition::FromProto(lhs.entity().unique_position);
+  const syncer::UniquePosition b_pos =
+      syncer::UniquePosition::FromProto(rhs.entity().unique_position);
+  return a_pos.LessThan(b_pos);
+}
 
 // static
 BookmarkModelMerger::RemoteTreeNode

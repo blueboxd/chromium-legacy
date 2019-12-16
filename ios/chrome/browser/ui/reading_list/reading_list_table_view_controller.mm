@@ -139,6 +139,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   if (!editing) {
     self.editingWithToolbarButtons = NO;
     if (self.needsSectionCleanupAfterEditing) {
+      [self removeEmptySections];
       self.needsSectionCleanupAfterEditing = NO;
     }
   }
@@ -242,11 +243,11 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
      forRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(editingStyle, UITableViewCellEditingStyleDelete);
   base::RecordAction(base::UserMetricsAction("MobileReadingListDeleteEntry"));
-  // The UIKit animation for the swipe-to-delete gesture throws an exception if
-  // the section of the deleted item is removed before the animation is
-  // finished.  To prevent this from happening, record that cleanup is needed
-  // and remove the section when self.tableView.editing is reset to NO when the
-  // animation finishes.
+
+  // On IOS 12, the UIKit animation for the swipe-to-delete gesture throws an
+  // exception if the section of the deleted item is removed before the
+  // animation is finished. This is still needed on IOS 13 to prevent displaying
+  // Cancel and Mark all buttons, see crbug.com/1022763.
   self.needsSectionCleanupAfterEditing = YES;
   [self deleteItemsAtIndexPaths:@[ indexPath ]
                      endEditing:NO
@@ -779,9 +780,9 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
     [self.dataSource removeEntryFromItem:item];
   };
   [self updateItemsAtIndexPaths:indexPaths withItemUpdater:updater];
-  if (endEditing)
+  if (endEditing) {
     [self exitEditingModeAnimated:YES];
-
+  }
   // Update the model and table view for the deleted items.
   UITableView* tableView = self.tableView;
   NSArray* sortedIndexPaths =

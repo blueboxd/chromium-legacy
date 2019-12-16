@@ -101,6 +101,7 @@ group("telemetry_chrome_test_without_chrome") {
   ]
   data_deps = [
     "//third_party/catapult:telemetry_chrome_test_support",
+    "//tools/metrics:metrics_python_tests",
   ]
   if (is_chromeos) {
     data_deps += [

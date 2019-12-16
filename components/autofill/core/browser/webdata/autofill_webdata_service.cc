@@ -228,9 +228,9 @@ void AutofillWebDataService::MaskServerCreditCard(const std::string& id) {
            autofill_backend_, id));
 }
 
-void AutofillWebDataService::AddVPA(const std::string& vpa_id) {
-  wdbs_->ScheduleDBTask(FROM_HERE, Bind(&AutofillWebDataBackendImpl::AddVPA,
-                                        autofill_backend_, vpa_id));
+void AutofillWebDataService::AddUpiId(const std::string& upi_id) {
+  wdbs_->ScheduleDBTask(FROM_HERE, Bind(&AutofillWebDataBackendImpl::AddUpiId,
+                                        autofill_backend_, upi_id));
 }
 
 WebDataServiceBase::Handle AutofillWebDataService::GetPaymentsCustomerData(

@@ -64,6 +64,7 @@ if (!is_nacl && !is_ios) {
       "perfetto/task_runner.h",
       "perfetto/trace_event_data_source.cc",
       "perfetto/trace_event_data_source.h",
+      "perfetto/trace_time.h",
       "perfetto/traced_value_proto_writer.cc",
       "perfetto/traced_value_proto_writer.h",
       "perfetto/track_event_thread_local_event_sink.cc",

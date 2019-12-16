@@ -14,10 +14,6 @@ namespace blink {
 // the parser to pass to a stylesheet
 class StyleRuleNamespace final : public StyleRuleBase {
  public:
-  static StyleRuleNamespace* Create(AtomicString prefix, AtomicString uri) {
-    return MakeGarbageCollected<StyleRuleNamespace>(prefix, uri);
-  }
-
   StyleRuleNamespace(AtomicString prefix, AtomicString uri)
       : StyleRuleBase(kNamespace), prefix_(prefix), uri_(uri) {}
 

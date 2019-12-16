@@ -789,7 +789,7 @@ void InputType::ApplyStep(const Decimal& current,
   if (!DeprecatedEqualIgnoringCase(step_string, "any"))
     new_value = step_range.AlignValueForStep(current, new_value);
 
-  // 7. If the element has a minimum, and value is less than that minimum,
+  // 8. If the element has a minimum, and value is less than that minimum,
   // then set value to the smallest value that, when subtracted from the step
   // base, is an integral multiple of the allowed value step, and that is more
   // than or equal to minimum.
@@ -800,17 +800,23 @@ void InputType::ApplyStep(const Decimal& current,
     new_value = aligned_minimum;
   }
 
-  // 8. If the element has a maximum, and value is greater than that maximum,
+  // 9. If the element has a maximum, and value is greater than that maximum,
   // then set value to the largest value that, when subtracted from the step
   // base, is an integral multiple of the allowed value step, and that is less
   // than or equal to maximum.
   if (new_value > step_range.Maximum())
     new_value = aligned_maximum;
 
-  // 9. Let value as string be the result of running the algorithm to convert
+  // 10. If either the method invoked was the stepDown() method and value is
+  // greater than valueBeforeStepping, or the method invoked was the stepUp()
+  // method and value is less than valueBeforeStepping, then return.
+  if ((count < 0 && current < new_value) || (count > 0 && current > new_value))
+    return;
+
+  // 11. Let value as string be the result of running the algorithm to convert
   // a number to a string, as defined for the input element's type attribute's
   // current state, on value.
-  // 10. Set the value of the element to value as string.
+  // 12. Set the value of the element to value as string.
   SetValueAsDecimal(new_value, event_behavior, exception_state);
 
   if (AXObjectCache* cache = GetElement().GetDocument().ExistingAXObjectCache())
@@ -856,7 +862,7 @@ void InputType::StepUpFromLayoutObject(int n) {
   //   * If 0 is in-range, but not matched to step value
   //     - The value should be the larger matched value nearest to 0 if n > 0
   //       e.g. <input type=number min=-100 step=3> -> 2
-  //     - The value should be the smaler matched value nearest to 0 if n < 0
+  //     - The value should be the smaller matched value nearest to 0 if n < 0
   //       e.g. <input type=number min=-100 step=3> -> -1
   //   As for date/datetime-local/month/time/week types, the current value is
   //   assumed as "the current local date/time".

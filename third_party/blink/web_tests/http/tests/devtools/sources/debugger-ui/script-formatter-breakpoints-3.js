@@ -49,7 +49,7 @@
             .then(() => SourcesTestRunner.dumpBreakpointSidebarPane('while paused in raw'))
             .then(() => SourcesTestRunner.resumeExecution(next));
         // No need to remove breakpoint since formattedUISourceCode was removed.
-        Sources.sourceFormatter.discardFormattedUISourceCode(panel.visibleView.uiSourceCode());
+        Formatter.sourceFormatter.discardFormattedUISourceCode(panel.visibleView.uiSourceCode());
       }
     }
   ]);

@@ -29,11 +29,11 @@
 
 /* By default, we only display the MathML formulas without any formatting other than the one specified by the display attribute. */
 math {
-    display: inline;
+    display: inline-math;
 }
 
 math[display="block"] {
-    display: block;
+    display: math;
     text-align: center;
 }
 
@@ -46,13 +46,16 @@ math[display="block"] {
     outline: auto 1px -webkit-focus-ring-color;
 }
 
-/* We hide the PresentationExpression constructions that are children of a <semantics> element.
-   http://www.w3.org/TR/MathML/appendixa.html#parsing_PresentationExpression */
-semantics > mi, semantics > mn, semantics > mo, semantics > mtext, semantics > mspace, semantics > ms, semantics > maligngroup, semantics > malignmark, semantics > mrow, semantics > mfrac, semantics > msqrt, semantics > mroot, semantics > mstyle, semantics > merror, semantics > mpadded, semantics > mphantom, semantics > mfenced, semantics > menclose, semantics > msub, semantics > msup, semantics > msubsup, semantics > munder, semantics > mover, semantics > munderover, semantics > mmultiscripts, semantics > mtable, semantics > mstack, semantics > mlongdiv, semantics > maction {
-    display: none;
+maction, merror, mphantom, mrow, mstyle
+{
+    display: math;
 }
 
-/* However, we display all the annotations. */
-annotation, annotation-xml {
-    display: inline-block;
+mphantom {
+    visibility: hidden;
+}
+
+merror {
+    color: red;
+    background-color: lightYellow;
 }

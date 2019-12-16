@@ -53,7 +53,9 @@ class MODULES_EXPORT BackgroundFetchManager final
       const RequestOrUSVStringOrRequestOrUSVStringSequence& requests,
       const BackgroundFetchOptions* options,
       ExceptionState& exception_state);
-  ScriptPromise get(ScriptState* script_state, const String& id);
+  ScriptPromise get(ScriptState* script_state,
+                    const String& id,
+                    ExceptionState& exception_state);
   ScriptPromise getIds(ScriptState* script_state);
 
   void Trace(blink::Visitor* visitor) override;

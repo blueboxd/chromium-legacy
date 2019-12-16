@@ -27,10 +27,10 @@
 // https://html.spec.whatwg.org/C/#message-channels
 
 [
-    CustomConstructor,
     Exposed=(Window,Worker),
     Measure
 ] interface MessageChannel {
+    [Custom] constructor();
     readonly attribute MessagePort port1;
     readonly attribute MessagePort port2;
 };

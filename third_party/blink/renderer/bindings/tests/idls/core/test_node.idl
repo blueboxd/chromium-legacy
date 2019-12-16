@@ -18,9 +18,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-[
-    Constructor
-] interface TestNode : Node {
+interface TestNode : Node {
+    constructor();
     // These attributes are needed to test [PutForwards] in TestObject.idl.
     attribute DOMString href;
     [RaisesException=Setter] attribute DOMString hrefThrows;

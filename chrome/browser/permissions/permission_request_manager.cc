@@ -41,6 +41,13 @@
 #include "extensions/common/constants.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_data.h"
+#include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
+#include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
+#endif
+
 namespace {
 
 bool IsMessageTextEqual(PermissionRequest* a,
@@ -112,10 +119,30 @@ void PermissionRequestManager::AddRequest(PermissionRequest* request) {
   // any other renderer-side nav initiations?). Double-check this for
   // correct behavior on interstitials -- we probably want to basically queue
   // any request for which GetVisibleURL != GetLastCommittedURL.
-  const GURL& request_url_ = web_contents()->GetLastCommittedURL();
+  const GURL& main_frame_url_ = web_contents()->GetLastCommittedURL();
   bool is_main_frame =
-      url::Origin::Create(request_url_)
+      url::Origin::Create(main_frame_url_)
           .IsSameOriginWith(url::Origin::Create(request->GetOrigin()));
+
+#if defined(OS_CHROMEOS)
+  // In web kiosk mode, all permission requests are auto-approved for the origin
+  // of the main app.
+  if (user_manager::UserManager::IsInitialized() &&
+      user_manager::UserManager::Get()->IsLoggedInAsWebKioskApp()) {
+    const AccountId& account_id =
+        user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId();
+    DCHECK(chromeos::WebKioskAppManager::IsInitialized());
+    const chromeos::WebKioskAppData* app_data =
+        chromeos::WebKioskAppManager::Get()->GetAppByAccountId(account_id);
+    DCHECK(app_data);
+    if (url::Origin::Create(request->GetOrigin()) ==
+        url::Origin::Create(app_data->install_url())) {
+      request->PermissionGranted();
+      request->RequestFinished();
+      return;
+    }
+  }
+#endif
 
   // Don't re-add an existing request or one with a duplicate text request.
   PermissionRequest* existing_request = GetExistingRequest(request);

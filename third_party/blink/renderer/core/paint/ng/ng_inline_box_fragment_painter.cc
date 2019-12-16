@@ -334,7 +334,6 @@ void NGInlineBoxFragmentPainter::PaintAllFragments(
     return;
   }
 
-  DCHECK(layout_inline.ShouldCreateBoxFragment());
   NGInlineCursor cursor(*block_flow);
   cursor.MoveTo(layout_inline);
   for (; cursor; cursor.MoveToNextForSameLayoutObject()) {

@@ -82,6 +82,10 @@ bool IsWKInternalUrl(const GURL& url) {
   return IsPlaceholderUrl(url) || IsRestoreSessionUrl(url);
 }
 
+bool IsWKInternalUrl(NSURL* url) {
+  return IsPlaceholderUrl(url) || IsRestoreSessionUrl(url);
+}
+
 bool URLNeedsUserAgentType(const GURL& url) {
   if (web::GetWebClient()->IsAppSpecificURL(url))
     return false;
@@ -160,6 +164,13 @@ bool IsRestoreSessionUrl(const GURL& url) {
   return url.SchemeIsFile() && url.path() == GetRestoreSessionBaseUrl().path();
 }
 
+bool IsRestoreSessionUrl(NSURL* url) {
+  return
+      [url.scheme isEqual:@"file"] &&
+      [url.path
+          isEqual:base::SysUTF8ToNSString(GetRestoreSessionBaseUrl().path())];
+}
+
 GURL CreateRedirectUrl(const GURL& target_url) {
   GURL::Replacements replacements;
   std::string ref =
@@ -188,6 +199,14 @@ bool ExtractTargetURL(const GURL& restore_session_url, GURL* target_url) {
 bool IsPlaceholderUrl(const GURL& url) {
   return url.IsAboutBlank() && base::StartsWith(url.query(), kOriginalUrlKey,
                                                 base::CompareCase::SENSITIVE);
+}
+
+bool IsPlaceholderUrl(NSURL* url) {
+  // about:blank NSURLs don't have nil host and query, so use absolute string
+  // matching.
+  return [url.scheme isEqual:@"about"] &&
+         ([url.absoluteString hasPrefix:@"about:blank?for="] ||
+          [url.absoluteString hasPrefix:@"about://blank?for="]);
 }
 
 GURL CreatePlaceholderUrlForUrl(const GURL& original_url) {

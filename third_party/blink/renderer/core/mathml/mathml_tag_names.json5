@@ -8,9 +8,29 @@
   },
   data: [
     {
-      name: "math",
-      interfaceName: "MathMLElement",
+      name: "maction",
+      interfaceName: "MathMLRowElement",
     },
+    {
+      name: "math",
+      interfaceName: "MathMLRowElement",
+    },
+    {
+      name: "merror",
+      interfaceName: "MathMLRowElement",
+    },
+    {
+      name: "mphantom",
+      interfaceName: "MathMLRowElement",
+    },
+    {
+      name: "mrow",
+      interfaceName: "MathMLRowElement",
+    },
+    {
+      name: "mstyle",
+      interfaceName: "MathMLRowElement",
+     },
     {
       name: "mi",
       interfaceName: "MathMLElement",
@@ -49,7 +69,7 @@
     },
     {
       name: "semantics",
-      interfaceName: "MathMLElement",
+      interfaceName: "MathMLRowElement",
     },
   ]
 }

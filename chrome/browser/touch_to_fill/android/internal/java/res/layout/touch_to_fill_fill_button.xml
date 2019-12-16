@@ -12,7 +12,7 @@
     android:layout_marginBottom="16dp"
     android:minHeight="48dp"
     android:gravity="center"
-    android:text="@string/touch_to_fill_confirm"
+    android:text="@string/touch_to_fill_continue"
     android:background="@drawable/touch_to_fill_credential_background"
     android:ellipsize="end"
     android:singleLine="true"

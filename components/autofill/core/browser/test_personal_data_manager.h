@@ -34,7 +34,7 @@ class TestPersonalDataManager : public PersonalDataManager {
       const AutofillProfile& imported_profile) override;
   std::string SaveImportedCreditCard(
       const CreditCard& imported_credit_card) override;
-  void AddVPA(const std::string& vpa) override;
+  void AddUpiId(const std::string& upi_id) override;
   void AddProfile(const AutofillProfile& profile) override;
   void UpdateProfile(const AutofillProfile& profile) override;
   void RemoveByGUID(const std::string& guid) override;

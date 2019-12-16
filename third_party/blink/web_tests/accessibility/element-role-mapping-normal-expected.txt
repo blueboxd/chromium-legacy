@@ -9,7 +9,11 @@ Coffee
 - black hot drink
 Milk
 - white cold drink
-x + a / b
+x
++
+a
+/
+b
 Most important heading here
 Google Chrome
 
@@ -83,16 +87,23 @@ AXRole: AXWebArea
                 AXRole: AXStaticText "- white cold drink"
                     AXRole: AXInlineTextBox "- white cold drink"
         AXRole: AXMath
-            AXRole: AXStaticText "x "
-                AXRole: AXInlineTextBox "x "
-            AXRole: AXStaticText "+ "
-                AXRole: AXInlineTextBox "+ "
-            AXRole: AXStaticText "a "
-                AXRole: AXInlineTextBox "a "
-            AXRole: AXStaticText "/ "
-                AXRole: AXInlineTextBox "/ "
-            AXRole: AXStaticText "b"
-                AXRole: AXInlineTextBox "b"
+            AXRole: AXGenericContainer
+                AXRole: AXGenericContainer
+                    AXRole: AXStaticText "x"
+                        AXRole: AXInlineTextBox "x"
+                AXRole: AXGenericContainer
+                    AXRole: AXStaticText "+"
+                        AXRole: AXInlineTextBox "+"
+                AXRole: AXGenericContainer
+                    AXRole: AXGenericContainer
+                        AXRole: AXStaticText "a"
+                            AXRole: AXInlineTextBox "a"
+                    AXRole: AXGenericContainer
+                        AXRole: AXStaticText "/"
+                            AXRole: AXInlineTextBox "/"
+                    AXRole: AXGenericContainer
+                        AXRole: AXStaticText "b"
+                            AXRole: AXInlineTextBox "b"
         AXRole: AXMain
             AXRole: AXArticle
                 AXRole: AXHeaderAsNonLandmark

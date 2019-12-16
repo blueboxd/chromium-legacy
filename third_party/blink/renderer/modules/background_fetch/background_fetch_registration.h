@@ -20,6 +20,7 @@ namespace blink {
 
 class BackgroundFetchRecord;
 class CacheQueryOptions;
+class ExceptionState;
 class ScriptPromiseResolver;
 class ScriptState;
 class ServiceWorkerRegistration;

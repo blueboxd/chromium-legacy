@@ -3000,8 +3000,8 @@ TEST_F(AutofillTableTest, RemoveOrphanAutofillTableRows) {
   EXPECT_FALSE(s_autofill_profile_phones.Step());
 }
 
-TEST_F(AutofillTableTest, VPA) {
-  EXPECT_TRUE(table_->InsertVPA("name@indianbank"));
+TEST_F(AutofillTableTest, UpiId) {
+  EXPECT_TRUE(table_->InsertUpiId("name@indianbank"));
 
   sql::Statement s_inspect(db_->GetSQLConnection()->GetUniqueStatement(
       "SELECT vpa FROM payments_upi_vpa"));

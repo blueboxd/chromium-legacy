@@ -5114,6 +5114,7 @@ Unknown properties are collapsed to zero. -->
   <int value="0" label="WRLHH_LOGGING_STOPPED_BAD_STATE"/>
   <int value="1" label="PPH_EXTRA_PREVIEW_MESSAGE"/>
   <int value="2" label="PMF_INVALID_INITIATOR_ORIGIN"/>
+  <int value="3" label="RFH_INVALID_WEB_UI_CONTROLLER"/>
 </enum>
 
 <enum name="BadMessageReasonContent">

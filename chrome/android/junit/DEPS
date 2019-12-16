@@ -4,6 +4,7 @@ include_rules = [
   "+chrome/browser/image_fetcher",
   "+chrome/browser/preferences/android/java",
   "+chrome/browser/ui/android/widget",
+  "+chrome/browser/util",
   "+components/autofill/android/java/src/org/chromium/components/autofill",
   "+components/background_task_scheduler/android",
   "+components/bookmarks/common/android",

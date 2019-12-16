@@ -20,7 +20,7 @@ TEST(TextTrackListTest, InvalidateTrackIndexes) {
   const size_t kNumTextTracks = 4;
   TextTrack* text_tracks[kNumTextTracks];
   for (size_t i = 0; i < kNumTextTracks; ++i) {
-    text_tracks[i] = TextTrack::Create("subtitles", "", "");
+    text_tracks[i] = MakeGarbageCollected<TextTrack>("subtitles", "", "");
     list->Append(text_tracks[i]);
   }
 

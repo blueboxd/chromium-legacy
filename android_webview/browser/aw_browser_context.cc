@@ -77,35 +77,24 @@ bool IgnoreOriginSecurityCheck(const GURL& url) {
   return true;
 }
 
-void MigrateProfileData(base::FilePath cache_path,
-                        base::FilePath context_storage_path) {
-  FilePath old_cache_path;
-  base::PathService::Get(base::DIR_CACHE, &old_cache_path);
-  old_cache_path = old_cache_path.DirName().Append(
-      FILE_PATH_LITERAL("org.chromium.android_webview"));
+void MigrateBackContextStorageData(const base::FilePath& context_storage_path) {
+  // https://crbug.com/1033655: migrate back partially migrated data.
+  // This can cause delay in the start up path. Remove this after 2020 June.
+  base::FilePath original_path;
+  base::PathService::Get(base::DIR_ANDROID_APP_DATA, &original_path);
+  base::FilePath migrated_path(original_path.Append("Default"));
 
-  if (!base::PathExists(old_cache_path))
+  if (!base::PathExists(migrated_path))
     return;
 
-  bool success = base::CreateDirectory(cache_path);
-  if (success)
-    success &= base::Move(old_cache_path, cache_path);
-  DCHECK(success);
-
-  base::FilePath old_context_storage_path;
-  base::PathService::Get(base::DIR_ANDROID_APP_DATA, &old_context_storage_path);
-
-  if (!base::PathExists(context_storage_path)) {
-    base::CreateDirectory(context_storage_path);
-  }
-
-  auto migrate_context_storage_data = [&old_context_storage_path,
-                                       &context_storage_path](auto& suffix) {
-    if (base::PathExists(old_context_storage_path.Append(suffix))) {
-      bool success = base::Move(old_context_storage_path.Append(suffix),
-                                context_storage_path.Append(suffix));
-
+  auto migrate_context_storage_data = [&migrated_path,
+                                       &original_path](auto& suffix) {
+    if (base::PathExists(migrated_path.Append(suffix))) {
+      bool success = base::Move(migrated_path.Append(suffix),
+                                original_path.Append(suffix));
       DCHECK(success);
+      LOG(WARNING) << "'" << suffix << "' has been migrated back to "
+                   << original_path.value();
     }
   };
 
@@ -123,9 +112,8 @@ AwBrowserContext::AwBrowserContext()
       simple_factory_key_(GetPath(), IsOffTheRecord()) {
   DCHECK(!g_browser_context);
 
-  if (IsDefaultBrowserContext()) {
-    MigrateProfileData(GetCacheDir(), GetContextStoragePath());
-  }
+  if (IsDefaultBrowserContext())
+    MigrateBackContextStorageData(GetContextStoragePath());
 
   g_browser_context = this;
   SimpleKeyMap::GetInstance()->Associate(this, &simple_factory_key_);
@@ -176,18 +164,15 @@ base::FilePath AwBrowserContext::GetCacheDir() {
   if (!base::PathService::Get(base::DIR_CACHE, &cache_path)) {
     NOTREACHED() << "Failed to get app cache directory for Android WebView";
   }
-  cache_path = cache_path.Append(FILE_PATH_LITERAL("Default"))
-                   .Append(FILE_PATH_LITERAL("HTTP Cache"));
+  cache_path =
+      cache_path.Append(FILE_PATH_LITERAL("org.chromium.android_webview"));
   return cache_path;
 }
 
 base::FilePath AwBrowserContext::GetPrefStorePath() {
   FilePath pref_store_path;
   base::PathService::Get(base::DIR_ANDROID_APP_DATA, &pref_store_path);
-  // TODO(amalova): Assign a proper file path for non-default profiles
-  // when we support multiple profiles
-  pref_store_path =
-      pref_store_path.Append(FILE_PATH_LITERAL("Default/Preferences"));
+  pref_store_path = pref_store_path.Append(FILE_PATH_LITERAL("pref_store"));
 
   return pref_store_path;
 }
@@ -203,7 +188,6 @@ base::FilePath AwBrowserContext::GetContextStoragePath() {
     NOTREACHED() << "Failed to get app data directory for Android WebView";
   }
 
-  user_data_dir = user_data_dir.Append(FILE_PATH_LITERAL("Default"));
   return user_data_dir;
 }
 

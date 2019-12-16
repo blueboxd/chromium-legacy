@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_app_interface.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_constants.h"
 #import "ios/chrome/browser/ui/table_view/table_view_constants.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -29,12 +30,11 @@
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/navigation/reload_type.h"
+#include "net/base/network_change_notifier.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
-
-#include "net/base/network_change_notifier.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -240,9 +240,8 @@ void AddLotOfEntriesAndEnterEdit() {
   TapToolbarButtonWithID(kReadingListToolbarEditButtonID);
 }
 
-// Adds a read and an unread entry to the model, opens the reading list menu and
-// enter edit mode.
-void AddEntriesAndEnterEdit() {
+// Adds 2 read and 2 unread entries to the model, opens the reading list menu.
+void AddEntriesAndOpenReadingList() {
   GREYAssertNil(
       [ReadingListAppInterface addEntryWithURL:[NSURL URLWithString:kReadURL]
                                          title:kReadTitle
@@ -265,7 +264,10 @@ void AddEntriesAndEnterEdit() {
       @"Unable to add Reading List item");
 
   OpenReadingList();
+}
 
+void AddEntriesAndEnterEdit() {
+  AddEntriesAndOpenReadingList();
   TapToolbarButtonWithID(kReadingListToolbarEditButtonID);
 }
 
@@ -646,6 +648,39 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   AssertToolbarMarkButtonText(IDS_IOS_READING_LIST_MARK_UNREAD_BUTTON);
 }
 
+// Tests that the "Cancel", "Edit" and "Mark Unread" buttons are not visible
+// after delete (using swipe).
+- (void)testVisibleButtonsAfterSwipeDeletion {
+  // Reading list's view width is narrower on Ipad Air (iOS 12) than on other
+  // devices. The grey_swipeSlowInDirection action deletes the element instead
+  // of displaying the 'Delete' button.
+  if (@available(iOS 13, *)) {
+  } else {
+    if (IsIPadIdiom())
+      EARL_GREY_TEST_SKIPPED(@"Test skipped on Ipad Air 2, iOS12.");
+  }
+
+  AddEntriesAndOpenReadingList();
+
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(
+              chrome_test_util::StaticTextWithAccessibilityLabel(kReadTitle),
+              grey_ancestor(grey_kindOfClassName(@"TableViewURLCell")),
+              grey_sufficientlyVisible(), nil)]
+      performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
+
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_text(@"Delete"),
+                                          grey_ancestor(grey_kindOfClassName(
+                                              @"UISwipeActionPullView")),
+                                          nil)] performAction:grey_tap()];
+
+  AssertToolbarButtonNotVisibleWithID(kReadingListToolbarMarkButtonID);
+  AssertToolbarButtonNotVisibleWithID(kReadingListToolbarCancelButtonID);
+  AssertToolbarButtonVisibleWithID(kReadingListToolbarEditButtonID);
+}
+
 // Tests that only the "Cancel", "Delete" and "Mark Read" buttons are showing
 // when not editing.
 - (void)testVisibleButtonsOnlyUnreadEntrySelected {
@@ -675,10 +710,18 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // Tests the deletion of selected entries.
 - (void)testDeleteEntries {
   AddEntriesAndEnterEdit();
-
   TapEntry(kReadTitle2);
 
+  AssertToolbarButtonVisibleWithID(kReadingListToolbarDeleteButtonID);
+  AssertToolbarButtonVisibleWithID(kReadingListToolbarCancelButtonID);
+  AssertToolbarButtonNotVisibleWithID(kReadingListToolbarEditButtonID);
+
   TapToolbarButtonWithID(kReadingListToolbarDeleteButtonID);
+
+  AssertToolbarButtonNotVisibleWithID(kReadingListToolbarMarkButtonID);
+  AssertToolbarButtonNotVisibleWithID(kReadingListToolbarDeleteButtonID);
+  AssertToolbarButtonNotVisibleWithID(kReadingListToolbarCancelButtonID);
+  AssertToolbarButtonVisibleWithID(kReadingListToolbarEditButtonID);
 
   AssertEntryVisible(kReadTitle);
   AssertEntryNotVisible(kReadTitle2);
@@ -688,6 +731,27 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
                  static_cast<long>(kNumberReadEntries - 1));
   XCTAssertEqual([ReadingListAppInterface unreadEntriesCount],
                  kNumberUnreadEntries);
+
+  TapToolbarButtonWithID(kReadingListToolbarEditButtonID);
+  TapEntry(kReadTitle);
+  TapToolbarButtonWithID(kReadingListToolbarDeleteButtonID);
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_text(@"Read"),
+                                   grey_ancestor(grey_kindOfClassName(
+                                       @"_UITableViewHeaderFooterContentView")),
+                                   nil)] assertWithMatcher:grey_nil()];
+
+  TapToolbarButtonWithID(kReadingListToolbarEditButtonID);
+  TapEntry(kUnreadTitle);
+  TapEntry(kUnreadTitle2);
+  TapToolbarButtonWithID(kReadingListToolbarDeleteButtonID);
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_text(@"Unread"),
+                                   grey_ancestor(grey_kindOfClassName(
+                                       @"_UITableViewHeaderFooterContentView")),
+                                   nil)] assertWithMatcher:grey_nil()];
 }
 
 // Tests the deletion of all read entries.

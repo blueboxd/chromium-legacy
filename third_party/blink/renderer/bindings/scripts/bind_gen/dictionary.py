@@ -20,13 +20,18 @@ from .code_node_cxx import CxxFuncDeclNode
 from .code_node_cxx import CxxFuncDefNode
 from .code_node_cxx import CxxIfElseNode
 from .code_node_cxx import CxxLikelyIfNode
+from .codegen_accumulator import CodeGenAccumulator
 from .codegen_context import CodeGenContext
 from .codegen_expr import expr_from_exposure
 from .codegen_format import format_template as _format
+from .codegen_utils import collect_include_headers
 from .codegen_utils import enclose_with_namespace
 from .codegen_utils import make_copyright_header
+from .codegen_utils import make_forward_declarations
+from .codegen_utils import make_header_include_directives
 from .codegen_utils import write_code_node_to_file
 from .mako_renderer import MakoRenderer
+from .path_manager import PathManager
 
 
 _DICT_MEMBER_PRESENCE_PREDICATES = {
@@ -614,11 +619,7 @@ def generate_dictionary_cc_file(dictionary, output_dirs):
         class_name=class_name,
         base_class_name=base_class_name)
 
-    root_node = SymbolScopeNode(separator_last="\n")
-    root_node.set_renderer(MakoRenderer())
-
     code_node = ListNode()
-
     code_node.extend([
         TextNode("// static"),
         make_get_v8_dict_member_names_def(cg_context),
@@ -638,8 +639,27 @@ def generate_dictionary_cc_file(dictionary, output_dirs):
             make_dict_member_set_def(cg_context.make_copy(dict_member=member)),
         ])
 
+    root_node = SymbolScopeNode(separator_last="\n")
+    root_node.set_accumulator(CodeGenAccumulator())
+    root_node.set_renderer(MakoRenderer())
+
+    # TODO(crbug.com/1034398): Use api_path() or impl_path() once we migrate
+    # IDL compiler and move generated code of dictionaries.
+    h_file_path = PathManager(dictionary).blink_path(ext="h")
+
+    root_node.accumulator.add_include_headers([
+        "third_party/blink/renderer/platform/bindings/exception_messages.h",
+        "third_party/blink/renderer/platform/bindings/exception_state.h",
+        "third_party/blink/renderer/platform/heap/visitor.h",
+        "v8/include/v8.h",
+    ])
+
     root_node.extend([
         make_copyright_header(),
+        TextNode(""),
+        TextNode(_format("#include \"{}\"", h_file_path)),
+        TextNode(""),
+        make_header_include_directives(root_node.accumulator),
         TextNode(""),
         enclose_with_namespace(code_node, name_style.namespace("blink")),
     ])
@@ -659,18 +679,44 @@ def generate_dictionary_h_file(dictionary, output_dirs):
         class_name=class_name,
         base_class_name=base_class_name)
 
-    root_node = SymbolScopeNode(separator_last="\n")
-    root_node.set_renderer(MakoRenderer())
-
     code_node = ListNode()
     code_node.extend([
         make_dict_class_def(cg_context),
     ])
 
+    root_node = SymbolScopeNode(separator_last="\n")
+    root_node.set_accumulator(CodeGenAccumulator())
+    root_node.set_renderer(MakoRenderer())
+
+    root_node.accumulator.add_include_headers(
+        collect_include_headers(dictionary))
+    base_class_header = (
+        "third_party/blink/renderer/platform/bindings/dictionary_base.h")
+    if dictionary.inherited:
+        # TODO(crbug.com/1034398): Use api_path() or impl_path() once we
+        # migrate IDL compiler and move generated code of dictionaries.
+        base_class_header = PathManager(
+            dictionary.inherited).blink_path(ext="h")
+    root_node.accumulator.add_include_headers([
+        base_class_header,
+        "v8/include/v8.h",
+    ])
+    root_node.accumulator.add_class_decls([
+        "ExceptionState",
+        "Visitor",
+    ])
+
     root_node.extend([
         make_copyright_header(),
         TextNode(""),
-        enclose_with_namespace(code_node, name_style.namespace("blink")),
+        make_header_include_directives(root_node.accumulator),
+        TextNode(""),
+        enclose_with_namespace(
+            ListNode([
+                make_forward_declarations(root_node.accumulator),
+                TextNode(""),
+                code_node,
+            ]), name_style.namespace("blink")),
     ])
 
     write_code_node_to_file(root_node, filepath)

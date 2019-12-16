@@ -127,12 +127,7 @@ public class FeatureUtilities {
         cacheSwapPixelFormatToFixConvertFromTranslucentEnabled();
         cacheReachedCodeProfilerTrialGroup();
         cacheStartSurfaceEnabled();
-
-        if (isHighEndPhone()) {
-            cacheGridTabSwitcherEnabled();
-            cacheTabGroupsAndroidEnabled();
-            cacheDuetTabStripIntegrationAndroidEnabled();
-        }
+        cacheNativeTabSwitcherUiFlags();
 
         // Propagate REACHED_CODE_PROFILER feature value to LibraryLoader. This can't be done in
         // LibraryLoader itself because it lives in //base and can't depend on ChromeFeatureList.
@@ -411,7 +406,17 @@ public class FeatureUtilities {
         return isFlagEnabled(ChromePreferenceKeys.START_SURFACE_ENABLED_KEY, false);
     }
 
-    private static void cacheGridTabSwitcherEnabled() {
+    @VisibleForTesting
+    static void cacheNativeTabSwitcherUiFlags() {
+        if (isEligibleForTabUiExperiments()) {
+            cacheGridTabSwitcherEnabled();
+            cacheTabGroupsAndroidEnabled();
+            cacheDuetTabStripIntegrationAndroidEnabled();
+        }
+    }
+
+    @VisibleForTesting
+    static void cacheGridTabSwitcherEnabled() {
         SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
         String featureKey = ChromePreferenceKeys.GRID_TAB_SWITCHER_ENABLED_KEY;
         boolean shouldQueryFeatureFlag = !DeviceClassManager.enableAccessibilityLayout();
@@ -433,7 +438,8 @@ public class FeatureUtilities {
         // TODO(yusufo): AccessibilityLayout check should not be here and the flow should support
         // changing that setting while Chrome is alive.
         // Having Tab Groups or Start implies Grid Tab Switcher.
-        return isFlagEnabled(ChromePreferenceKeys.GRID_TAB_SWITCHER_ENABLED_KEY, false)
+        return !(isTabGroupsAndroidContinuationChromeFlagEnabled() && SysUtils.isLowEndDevice())
+                && isFlagEnabled(ChromePreferenceKeys.GRID_TAB_SWITCHER_ENABLED_KEY, false)
                 || isTabGroupsAndroidEnabled() || isStartSurfaceEnabled();
     }
 
@@ -446,7 +452,8 @@ public class FeatureUtilities {
         sFlags.put(ChromePreferenceKeys.GRID_TAB_SWITCHER_ENABLED_KEY, enabled);
     }
 
-    private static void cacheTabGroupsAndroidEnabled() {
+    @VisibleForTesting
+    static void cacheTabGroupsAndroidEnabled() {
         SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
         String featureKey = ChromePreferenceKeys.TAB_GROUPS_ANDROID_ENABLED_KEY;
         boolean shouldQueryFeatureFlag = !DeviceClassManager.enableAccessibilityLayout();
@@ -518,6 +525,12 @@ public class FeatureUtilities {
                         ContextUtils.getApplicationContext());
     }
 
+    private static boolean isEligibleForTabUiExperiments() {
+        return (isTabGroupsAndroidContinuationChromeFlagEnabled() || !SysUtils.isLowEndDevice())
+                && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
+                        ContextUtils.getApplicationContext());
+    }
+
     /**
      * @return Whether the tab group ui improvement feature is enabled and available for use.
      */
@@ -531,8 +544,14 @@ public class FeatureUtilities {
      * @return Whether the tab group continuation feature is enabled and available for use.
      */
     public static boolean isTabGroupsAndroidContinuationEnabled() {
-        return isTabGroupsAndroidEnabled()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID);
+        return isTabGroupsAndroidEnabled() && isTabGroupsAndroidContinuationChromeFlagEnabled();
+    }
+
+    /**
+     * @return Whether the tab group continuation Chrome flag is enabled.
+     */
+    public static boolean isTabGroupsAndroidContinuationChromeFlagEnabled() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID);
     }
 
     /**
@@ -652,6 +671,11 @@ public class FeatureUtilities {
             sFlags.put(preferenceName, flag);
         }
         return flag;
+    }
+
+    @VisibleForTesting
+    public static void resetFlagsForTesting() {
+        sFlags.clear();
     }
 
     @NativeMethods

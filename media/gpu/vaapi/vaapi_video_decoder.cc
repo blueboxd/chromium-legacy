@@ -405,8 +405,10 @@ void VaapiVideoDecoder::OnPipelineFlushed() {
   const base::Optional<VideoPixelFormat> format =
       GfxBufferFormatToVideoPixelFormat(GetBufferFormat());
   CHECK(format);
-  frame_pool_->RequestFrames(Fourcc::FromVideoPixelFormat(*format), pic_size_,
-                             visible_rect, natural_size,
+  auto format_fourcc = Fourcc::FromVideoPixelFormat(*format);
+  CHECK(format_fourcc);
+  frame_pool_->RequestFrames(*format_fourcc, pic_size_, visible_rect,
+                             natural_size,
                              decoder_->GetRequiredNumOfPictures());
 
   // All pending decode operations will be completed before triggering a

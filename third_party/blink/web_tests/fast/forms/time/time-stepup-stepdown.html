@@ -80,8 +80,8 @@ shouldBeEqualToString('inputWithInitialValue.stepUp(); inputWithInitialValue.val
 debug('');
 debug('Step-mismatched initial values');
 // There are no step-match values in 00:00 - 23:59:59.999 except 00:00.
-shouldBeEqualToString('stepUp("20:13", "86400.000", null, 65536)', '00:00');
-shouldBeEqualToString('stepUp("20:13", "86400.001", null, 65536)', '00:00:00.000');
+shouldBeEqualToString('stepUp("20:13", "86400.000", null, 65536)', '20:13');
+shouldBeEqualToString('stepUp("20:13", "86400.001", null, 65536)', '20:13');
 shouldBeEqualToString('stepUp("20:13", "600", null, 1)', '20:20');
 shouldBeEqualToString('stepUp("20:13", "600", null, 2)', '20:30');
 shouldBeEqualToString('stepDown("20:13", "600", null, 1)', '20:10');

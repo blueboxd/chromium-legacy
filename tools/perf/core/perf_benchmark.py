@@ -95,7 +95,8 @@ class PerfBenchmark(benchmark.Benchmark):
     # binary format that an older build does not expect.
     if (browser_options.browser_type != 'reference' and
         'no-field-trials' not in browser_options.compatibility_mode):
-      variations = self._GetVariationsBrowserArgs(finder_options)
+      variations = self._GetVariationsBrowserArgs(
+          finder_options, browser_options.extra_browser_args)
       browser_options.AppendExtraBrowserArgs(variations)
 
       browser_options.profile_files_to_copy.extend(
@@ -130,7 +131,7 @@ class PerfBenchmark(benchmark.Benchmark):
       return 'chromeos'
     return target_os
 
-  def _GetVariationsBrowserArgs(self, finder_options):
+  def _GetVariationsBrowserArgs(self, finder_options, current_args):
     chrome_root = finder_options.chrome_root
     if chrome_root is None:
       chrome_root = path_module.GetChromiumSrcDir()
@@ -142,7 +143,8 @@ class PerfBenchmark(benchmark.Benchmark):
 
     return fieldtrial_util.GenerateArgs(
         os.path.join(variations_dir, 'fieldtrial_testing_config.json'),
-        self.FixupTargetOS(possible_browser.target_os))
+        self.FixupTargetOS(possible_browser.target_os),
+        current_args)
 
   @staticmethod
   def _GetPossibleBuildDirectories(chrome_src_dir, browser_type):

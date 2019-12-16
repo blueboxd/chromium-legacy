@@ -11,6 +11,9 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.view.accessibility.AccessibilityManager;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
@@ -113,5 +116,15 @@ public class AccessibilityUtil {
                     && service.getResolveInfo().toString().contains("switchaccess");
         }
         return false;
+    }
+
+    /**
+     * Set whether the device has accessibility enabled. Should be reset back to null after the test
+     * has finished.
+     * @param isEnabled whether the device has accessibility enabled.
+     */
+    @VisibleForTesting
+    public static void setAccessibilityEnabledForTesting(@Nullable Boolean isEnabled) {
+        sIsAccessibilityEnabled = isEnabled;
     }
 }

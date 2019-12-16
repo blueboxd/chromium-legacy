@@ -81,8 +81,9 @@ ImageResourceContent* StyleFetchedImage::CachedImage() const {
 }
 
 CSSValue* StyleFetchedImage::CssValue() const {
-  return CSSImageValue::Create(
-      url_, origin_clean_ ? OriginClean::kTrue : OriginClean::kFalse,
+  return MakeGarbageCollected<CSSImageValue>(
+      AtomicString(url_.GetString()), url_, Referrer(),
+      origin_clean_ ? OriginClean::kTrue : OriginClean::kFalse,
       const_cast<StyleFetchedImage*>(this));
 }
 

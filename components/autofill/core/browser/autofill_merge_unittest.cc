@@ -276,15 +276,15 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
 
       // Import the profile.
       std::unique_ptr<CreditCard> imported_credit_card;
-      base::Optional<std::string> unused_imported_vpa;
+      base::Optional<std::string> unused_imported_upi_id;
       form_data_importer_->ImportFormData(form_structure,
                                           true,  // address autofill enabled,
                                           true,  // credit card autofill enabled
                                           false,  // should return local card
                                           &imported_credit_card,
-                                          &unused_imported_vpa);
+                                          &unused_imported_upi_id);
       EXPECT_FALSE(imported_credit_card);
-      EXPECT_FALSE(unused_imported_vpa.has_value());
+      EXPECT_FALSE(unused_imported_upi_id.has_value());
 
       // Clear the |form| to start a new profile.
       form.fields.clear();

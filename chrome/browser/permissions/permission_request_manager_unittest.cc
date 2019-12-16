@@ -31,7 +31,13 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#endif
 
 const double kTestEngagementScore = 29;
 
@@ -122,6 +128,34 @@ class PermissionRequestManagerTest : public ChromeRenderViewHostTestHarness {
       const content::LoadCommittedDetails& details) {
     manager_->NavigationEntryCommitted(details);
   }
+
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<MockPermissionRequest> MakeRequestInWebKioskMode(
+      const GURL& url,
+      const GURL& app_url) {
+    const AccountId account_id = AccountId::FromUserEmail("lala@example.com");
+
+    auto fake_user_manager =
+        std::make_unique<chromeos::FakeChromeUserManager>();
+    // Stealing the pointer from unique ptr before it goes to the scoped user
+    // manager.
+    chromeos::FakeChromeUserManager* user_manager = fake_user_manager.get();
+    auto scoped_user_manager =
+        std::make_unique<user_manager::ScopedUserManager>(
+            std::move(fake_user_manager));
+    user_manager->AddWebKioskAppUser(account_id);
+    user_manager->LoginUser(account_id);
+
+    auto kiosk_app_manager = std::make_unique<chromeos::WebKioskAppManager>();
+    kiosk_app_manager->AddAppForTesting(account_id, app_url);
+
+    NavigateAndCommit(url);
+    auto request = std::make_unique<MockPermissionRequest>(
+        /*text*/ "test", PermissionRequestType::PERMISSION_GEOLOCATION, url);
+    manager_->AddRequest(request.get());
+    return request;
+  }
+#endif
 
  protected:
   GURL url_;
@@ -891,3 +925,28 @@ TEST_F(PermissionRequestManagerTest,
   EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
   Accept();
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(PermissionRequestManagerTest, TestWebKioskModeSameOrigin) {
+  auto request =
+      MakeRequestInWebKioskMode(/*url*/ GURL("https://google.com/page"),
+                                /*app_url*/ GURL("https://google.com/launch"));
+
+  WaitForBubbleToBeShown();
+  // It should be granted by default.
+  EXPECT_TRUE(request->granted());
+}
+
+TEST_F(PermissionRequestManagerTest, TestWebKioskModeDifferentOrigin) {
+  auto request =
+      MakeRequestInWebKioskMode(/*url*/ GURL("https://example.com/page"),
+                                /*app_url*/ GURL("https://google.com/launch"));
+
+  WaitForBubbleToBeShown();
+  // It should not be granted by default.
+  EXPECT_FALSE(request->granted());
+  // But you should be able to accept it.
+  Accept();
+  EXPECT_TRUE(request->granted());
+}
+#endif  // defined(OS_CHROMEOS)

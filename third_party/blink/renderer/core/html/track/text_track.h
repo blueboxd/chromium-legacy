@@ -50,20 +50,13 @@ class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(TextTrack);
 
  public:
-  static TextTrack* Create(const AtomicString& kind,
-                           const AtomicString& label,
-                           const AtomicString& language) {
-    return MakeGarbageCollected<TextTrack>(kind, label, language, g_empty_atom,
-                                           kAddTrack);
-  }
-
   enum TextTrackType { kTrackElement, kAddTrack, kInBand };
 
   TextTrack(const AtomicString& kind,
             const AtomicString& label,
             const AtomicString& language,
-            const AtomicString& id,
-            TextTrackType);
+            const AtomicString& id = g_empty_atom,
+            TextTrackType = kAddTrack);
   ~TextTrack() override;
 
   virtual void SetTrackList(TextTrackList*);

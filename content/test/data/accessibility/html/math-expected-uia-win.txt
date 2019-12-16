@@ -3,8 +3,8 @@ document
 ++++group
 ++++++description Name='a'
 ++++++description Name='2'
-++++++description Name=' '
+++++group
 ++++++description Name='+'
-++++++description Name=' '
+++++group
 ++++++description Name='b'
 ++++++description Name='2'

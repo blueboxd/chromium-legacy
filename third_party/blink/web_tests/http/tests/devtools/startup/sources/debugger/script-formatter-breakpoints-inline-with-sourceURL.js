@@ -59,7 +59,7 @@
       function didShowFormattedScriptSource(frame) {
         formattedSourceFrame = frame;
         SourcesTestRunner.removeBreakpoint(formattedSourceFrame, 2);  // Lines here are zero based.
-        Sources.sourceFormatter.discardFormattedUISourceCode(formattedSourceFrame.uiSourceCode());
+        Formatter.sourceFormatter.discardFormattedUISourceCode(formattedSourceFrame.uiSourceCode());
         SourcesTestRunner.waitBreakpointSidebarPane().then(onBreakpointsUpdated);
       }
 

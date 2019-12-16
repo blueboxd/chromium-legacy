@@ -1753,7 +1753,6 @@ class LayerTreeHostTestAnimationOpacityMutatedUsingLayerLists
  protected:
   void BeginTest() override {
     Layer* root = layer_tree_host()->root_layer();
-    EXPECT_EQ(1.0f, root->opacity());
     EXPECT_EQ(1.0f, layer_tree_host()
                         ->property_trees()
                         ->effect_tree.FindNodeFromElementId(root->element_id())
@@ -1762,8 +1761,6 @@ class LayerTreeHostTestAnimationOpacityMutatedUsingLayerLists
     layer_tree_host()->SetElementOpacityMutated(root->element_id(),
                                                 ElementListType::ACTIVE, 0.3f);
 
-    // When using layer lists, we don't have to store the opacity on the layer.
-    EXPECT_EQ(1.0f, root->opacity());
     // The opacity should have been set directly on the effect node instead.
     EXPECT_EQ(0.3f, layer_tree_host()
                         ->property_trees()
@@ -1815,7 +1812,6 @@ class LayerTreeHostTestAnimationTransformMutatedUsingLayerLists
  protected:
   void BeginTest() override {
     Layer* root = layer_tree_host()->root_layer();
-    EXPECT_EQ(gfx::Transform(), root->transform());
     EXPECT_EQ(gfx::Transform(),
               layer_tree_host()
                   ->property_trees()
@@ -1827,9 +1823,6 @@ class LayerTreeHostTestAnimationTransformMutatedUsingLayerLists
     layer_tree_host()->SetElementTransformMutated(
         root->element_id(), ElementListType::ACTIVE, expected_transform);
 
-    // When using layer lists, we don't have to store the transform on the
-    // layer.
-    EXPECT_EQ(gfx::Transform(), root->transform());
     // The transform should have been set directly on the transform node
     // instead.
     EXPECT_EQ(expected_transform,
@@ -1872,7 +1865,6 @@ class LayerTreeHostTestAnimationFilterMutatedUsingLayerLists
  protected:
   void BeginTest() override {
     Layer* root = layer_tree_host()->root_layer();
-    EXPECT_EQ(FilterOperations(), root->filters());
     EXPECT_EQ(FilterOperations(),
               layer_tree_host()
                   ->property_trees()
@@ -1884,8 +1876,6 @@ class LayerTreeHostTestAnimationFilterMutatedUsingLayerLists
     layer_tree_host()->SetElementFilterMutated(
         root->element_id(), ElementListType::ACTIVE, filters);
 
-    // When using layer lists, we don't have to store the filters on the layer.
-    EXPECT_EQ(FilterOperations(), root->filters());
     // The filter should have been set directly on the effect node instead.
     EXPECT_EQ(filters,
               layer_tree_host()

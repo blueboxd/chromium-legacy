@@ -60,11 +60,11 @@ void HTMLTablePartElement::CollectStyleForPresentationAttribute(
       UseCounter::Count(
           GetDocument(),
           WebFeature::kHTMLTableElementPresentationAttributeBackground);
-      CSSImageValue* image_value =
-          CSSImageValue::Create(url, GetDocument().CompleteURL(url),
-                                Referrer(GetDocument().OutgoingReferrer(),
-                                         GetDocument().GetReferrerPolicy()),
-                                OriginClean::kTrue);
+      CSSImageValue* image_value = MakeGarbageCollected<CSSImageValue>(
+          AtomicString(url), GetDocument().CompleteURL(url),
+          Referrer(GetDocument().OutgoingReferrer(),
+                   GetDocument().GetReferrerPolicy()),
+          OriginClean::kTrue);
       style->SetProperty(
           CSSPropertyValue(GetCSSPropertyBackgroundImage(), *image_value));
     }

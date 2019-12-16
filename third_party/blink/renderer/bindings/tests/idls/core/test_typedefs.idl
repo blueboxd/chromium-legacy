@@ -50,9 +50,8 @@ typedef (sequence<sequence<ByteString>> or record<ByteString, ByteString>) Union
 typedef (Node or (sequence<long> or Event) or (XMLHttpRequest or DOMString)? or record<DOMString, (ByteString or NodeList)>) NestedUnionType;
 typedef (ULongLong or (BooleanType or TestCallbackInterfaceType)) UnionWithTypedef;
 
-[
-    Constructor(String stringArg)
-] interface TestTypedefs {
+interface TestTypedefs {
+    constructor(String stringArg);
     attribute ULongLong uLongLongAttribute;
     attribute LongWithClamp longWithClampAttribute;
     attribute T tAttribute;

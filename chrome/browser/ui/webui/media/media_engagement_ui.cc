@@ -151,14 +151,13 @@ MediaEngagementUI::MediaEngagementUI(content::WebUI* web_ui)
       IDR_MEDIA_ENGAGEMENT_SCORE_DETAILS_MOJOM_LITE_JS);
   source->SetDefaultResource(IDR_MEDIA_ENGAGEMENT_HTML);
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source.release());
-  AddHandlerToRegistry(base::BindRepeating(
-      &MediaEngagementUI::BindMediaEngagementScoreDetailsProvider,
-      base::Unretained(this)));
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(MediaEngagementUI)
 
 MediaEngagementUI::~MediaEngagementUI() = default;
 
-void MediaEngagementUI::BindMediaEngagementScoreDetailsProvider(
+void MediaEngagementUI::BindInterface(
     mojo::PendingReceiver<media::mojom::MediaEngagementScoreDetailsProvider>
         receiver) {
   ui_handler_ = std::make_unique<MediaEngagementScoreDetailsProviderImpl>(

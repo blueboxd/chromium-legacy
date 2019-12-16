@@ -29,7 +29,6 @@
  */
 
 // Test for length > 0, non-overloaded constructor.
-[
-    Constructor(DOMString stringArg)
-] interface TestInterfaceConstructor3 {
+interface TestInterfaceConstructor3 {
+    constructor(DOMString stringArg);
 };

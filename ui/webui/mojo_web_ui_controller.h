@@ -35,17 +35,24 @@ class MojoWebUIController : public content::WebUIController,
   ~MojoWebUIController() override;
 
   // content::WebContentsObserver implementation.
+  // TODO(crbug.com/936482) Remove once all subclasses of MojoWebUIController
+  // have been migrated to BrowserInterfaceBroker
   void OnInterfaceRequestFromFrame(
       content::RenderFrameHost* render_frame_host,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle* interface_pipe) override;
 
+  // TODO(crbug.com/936482) Remove once all subclasses of MojoWebUIController
+  // have been migrated to BrowserInterfaceBroker, and update the class-level
+  // comment instructing to call this method from subclasses' constructors.
   template <typename Binder>
   void AddHandlerToRegistry(Binder binder) {
     registry_.AddInterface(std::move(binder));
   }
 
  private:
+  // TODO(crbug.com/936482) Remove once all subclasses of MojoWebUIController
+  // have been migrated to BrowserInterfaceBroker
   service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoWebUIController);

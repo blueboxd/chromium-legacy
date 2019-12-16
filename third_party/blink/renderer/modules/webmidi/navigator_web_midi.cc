@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_access_initializer.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_options.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
@@ -75,20 +76,23 @@ NavigatorWebMIDI& NavigatorWebMIDI::From(Navigator& navigator) {
   return *supplement;
 }
 
-ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
-                                                  Navigator& navigator,
-                                                  const MIDIOptions* options) {
-  return NavigatorWebMIDI::From(navigator).requestMIDIAccess(script_state,
-                                                             options);
+ScriptPromise NavigatorWebMIDI::requestMIDIAccess(
+    ScriptState* script_state,
+    Navigator& navigator,
+    const MIDIOptions* options,
+    ExceptionState& exception_state) {
+  return NavigatorWebMIDI::From(navigator).requestMIDIAccess(
+      script_state, options, exception_state);
 }
 
-ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
-                                                  const MIDIOptions* options) {
+ScriptPromise NavigatorWebMIDI::requestMIDIAccess(
+    ScriptState* script_state,
+    const MIDIOptions* options,
+    ExceptionState& exception_state) {
   if (!script_state->ContextIsValid()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError,
-                                           "The frame is not working."));
+    exception_state.ThrowDOMException(DOMExceptionCode::kAbortError,
+                                      "The frame is not working.");
+    return ScriptPromise();
   }
 
   Document& document = *To<Document>(ExecutionContext::From(script_state));
@@ -116,10 +120,8 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
                                  ReportOptions::kReportOnFailure,
                                  kFeaturePolicyConsoleWarning)) {
     UseCounter::Count(document, WebFeature::kMidiDisabledByFeaturePolicy);
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
-                                           kFeaturePolicyErrorMessage));
+    exception_state.ThrowSecurityError(kFeaturePolicyErrorMessage);
+    return ScriptPromise();
   }
 
   return MIDIAccessInitializer::Start(script_state, options);

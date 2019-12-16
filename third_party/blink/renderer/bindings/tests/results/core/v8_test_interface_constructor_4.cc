@@ -146,7 +146,7 @@ CORE_EXPORT void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& 
     return;
   }
 
-  test_interface_constructor_4_v8_internal::Constructor(info);
+  V8TestInterfaceConstructor4::ConstructorCustom(info);
 }
 
 }  // namespace test_interface_constructor_4_v8_internal

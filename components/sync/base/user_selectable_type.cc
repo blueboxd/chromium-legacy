@@ -106,9 +106,7 @@ UserSelectableTypeInfo GetUserSelectableOsTypeInfo(UserSelectableOsType type) {
     case UserSelectableOsType::kOsPreferences:
       return {"osPreferences",
               OS_PREFERENCES,
-              {OS_PREFERENCES, OS_PRIORITY_PREFERENCES}};
-    case UserSelectableOsType::kPrinters:
-      return {"printers", PRINTERS, {PRINTERS}};
+              {OS_PREFERENCES, OS_PRIORITY_PREFERENCES, PRINTERS}};
     case UserSelectableOsType::kWifiConfigurations:
       return {"wifiConfigurations", WIFI_CONFIGURATIONS, {WIFI_CONFIGURATIONS}};
   }

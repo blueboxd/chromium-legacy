@@ -357,7 +357,7 @@ void NGBoxFragmentPainter::PaintObject(
 
   if (paint_phase == PaintPhase::kForeground &&
       paint_info.ShouldAddUrlMetadata()) {
-    NGFragmentPainter(box_fragment_, paint_fragment_)
+    NGFragmentPainter(box_fragment_, GetDisplayItemClient())
         .AddURLRectIfNeeded(paint_info, paint_offset);
   }
 
@@ -416,7 +416,7 @@ void NGBoxFragmentPainter::PaintObject(
   }
 
   if (ShouldPaintSelfOutline(paint_phase)) {
-    NGFragmentPainter(box_fragment_, paint_fragment_)
+    NGFragmentPainter(box_fragment_, GetDisplayItemClient())
         .PaintOutline(paint_info, paint_offset);
   }
 

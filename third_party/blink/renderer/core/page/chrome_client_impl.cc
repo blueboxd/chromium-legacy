@@ -635,7 +635,8 @@ DateTimeChooser* ChromeClientImpl::OpenDateTimeChooser(
       external_date_time_chooser_->IsShowingDateTimeChooserUI())
     return nullptr;
 
-  external_date_time_chooser_ = ExternalDateTimeChooser::Create(picker_client);
+  external_date_time_chooser_ =
+      MakeGarbageCollected<ExternalDateTimeChooser>(picker_client);
   external_date_time_chooser_->OpenDateTimeChooser(frame, parameters);
   return external_date_time_chooser_;
 }

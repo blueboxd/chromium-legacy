@@ -41,6 +41,7 @@ class V8TestInterfaceConstructor4 {
     return &v8_test_interface_constructor_4_wrapper_type_info;
   }
 
+  static void ConstructorCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions

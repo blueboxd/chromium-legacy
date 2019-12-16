@@ -266,9 +266,21 @@ std::string ChromeWebClient::GetProduct() const {
 }
 
 bool ChromeWebClient::ForceMobileVersionByDefault(const GURL& url) {
-  DCHECK(base::FeatureList::IsEnabled(web::features::kDefaultToDesktopOnIPad));
+  DCHECK(base::FeatureList::IsEnabled(
+      web::features::kUseDefaultUserAgentInWebClient));
   if (base::FeatureList::IsEnabled(web::kMobileGoogleSRP)) {
     return google_util::IsGoogleSearchUrl(url);
   }
   return false;
+}
+
+web::UserAgentType ChromeWebClient::GetDefaultUserAgent(UIView* web_view) {
+  DCHECK(base::FeatureList::IsEnabled(
+      web::features::kUseDefaultUserAgentInWebClient));
+  BOOL isRegularRegular = web_view.traitCollection.horizontalSizeClass ==
+                              UIUserInterfaceSizeClassRegular &&
+                          web_view.traitCollection.verticalSizeClass ==
+                              UIUserInterfaceSizeClassRegular;
+  return isRegularRegular ? web::UserAgentType::DESKTOP
+                          : web::UserAgentType::MOBILE;
 }

@@ -142,7 +142,8 @@ class DragToOverviewTest : public UIPerformanceTest {
   DISALLOW_COPY_AND_ASSIGN(DragToOverviewTest);
 };
 
-IN_PROC_BROWSER_TEST_F(DragToOverviewTest, DragWindow) {
+// TODO(https://crbug.com/1031526) flaky test
+IN_PROC_BROWSER_TEST_F(DragToOverviewTest, DISABLED_DragWindow) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();
   gfx::Rect browser_screen_bounds = browser_window->GetBoundsInScreen();

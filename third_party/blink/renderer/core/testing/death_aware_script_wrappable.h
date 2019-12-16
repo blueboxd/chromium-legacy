@@ -43,10 +43,6 @@ class DeathAwareScriptWrappable : public ScriptWrappable {
  public:
   typedef Member<DeathAwareScriptWrappable> Wrapper;
 
-  static DeathAwareScriptWrappable* Create() {
-    return MakeGarbageCollected<DeathAwareScriptWrappable>();
-  }
-
   static bool HasDied() { return has_died_; }
   static void ObserveDeathsOf(DeathAwareScriptWrappable* instance) {
     has_died_ = false;

@@ -30,11 +30,13 @@ class SmartChargingManagerTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
     PowerManagerClient::InitializeFake();
 
+    mojo::PendingRemote<viz::mojom::VideoDetectorObserver> observer;
     auto periodic_timer = std::make_unique<base::RepeatingTimer>();
     periodic_timer->SetTaskRunner(
         task_environment()->GetMainThreadTaskRunner());
     smart_charging_manager_ = std::make_unique<SmartChargingManager>(
-        &user_activity_detector_, std::move(periodic_timer));
+        &user_activity_detector_, observer.InitWithNewPipeAndPassReceiver(),
+        std::move(periodic_timer));
   }
 
   void TearDown() override {
@@ -82,6 +84,10 @@ class SmartChargingManagerTest : public ChromeRenderViewHostTestHarness {
         power_manager::SuspendImminent::LID_CLOSED);
   }
 
+  void ReportVideoStart() { smart_charging_manager_->OnVideoActivityStarted(); }
+
+  void ReportVideoEnd() { smart_charging_manager_->OnVideoActivityEnded(); }
+
   void FireTimer() { smart_charging_manager_->OnTimerFired(); }
 
   void InitializeBrightness(const double level) {
@@ -90,6 +96,10 @@ class SmartChargingManagerTest : public ChromeRenderViewHostTestHarness {
 
   void FastForwardTimeBySecs(const int seconds) {
     task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(seconds));
+  }
+
+  base::TimeDelta GetDurationRecentVideoPlaying() {
+    return smart_charging_manager_->DurationRecentVideoPlaying();
   }
 
   const gfx::Point kEventLocation = gfx::Point(90, 90);
@@ -220,6 +230,37 @@ TEST_F(SmartChargingManagerTest, ShutdownAndSuspend) {
   EXPECT_EQ(GetUserChargingEvent().event().event_id(), 1);
   EXPECT_EQ(GetUserChargingEvent().event().reason(),
             UserChargingEvent::Event::SHUTDOWN);
+}
+
+TEST_F(SmartChargingManagerTest, VideoDuration) {
+  // Video playing periods: [100, 200], [300, 500], [700, 800], [1500,2000].
+  FastForwardTimeBySecs(100);
+  ReportVideoStart();
+  FastForwardTimeBySecs(100);
+  ReportVideoEnd();
+  FastForwardTimeBySecs(100);
+  ReportVideoStart();
+  FastForwardTimeBySecs(200);
+  ReportVideoEnd();
+  FastForwardTimeBySecs(200);
+  ReportVideoStart();
+  FastForwardTimeBySecs(100);
+  ReportVideoEnd();
+  FastForwardTimeBySecs(700);
+  ReportVideoStart();
+  FastForwardTimeBySecs(300);
+
+  // At 1800s, total video playing time should be 700s.
+  EXPECT_EQ(GetDurationRecentVideoPlaying().InSeconds(), 700);
+
+  // At 2000s, total video playing time should be 800s.
+  FastForwardTimeBySecs(200);
+  ReportVideoEnd();
+  EXPECT_EQ(GetDurationRecentVideoPlaying().InSeconds(), 800);
+
+  // At 3600s, total video playing time should be 200s.
+  FastForwardTimeBySecs(1600);
+  EXPECT_EQ(GetDurationRecentVideoPlaying().InSeconds(), 200);
 }
 
 }  // namespace power

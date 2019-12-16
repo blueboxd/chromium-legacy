@@ -61,6 +61,9 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   // changes.
   void UpdateCollapseState();
 
+  // Updates this widget's bounds according to current conditions.
+  void UpdateLayout(bool animate);
+
   // Sets system tray visibility. Shows or hides widget if needed.
   void SetSystemTrayVisibility(bool visible);
 

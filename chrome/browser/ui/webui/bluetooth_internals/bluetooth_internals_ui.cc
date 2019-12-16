@@ -39,14 +39,13 @@ BluetoothInternalsUI::BluetoothInternalsUI(content::WebUI* web_ui)
 
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, html_source);
-  AddHandlerToRegistry(
-      base::BindRepeating(&BluetoothInternalsUI::BindBluetoothInternalsHandler,
-                          base::Unretained(this)));
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(BluetoothInternalsUI)
 
 BluetoothInternalsUI::~BluetoothInternalsUI() {}
 
-void BluetoothInternalsUI::BindBluetoothInternalsHandler(
+void BluetoothInternalsUI::BindInterface(
     mojo::PendingReceiver<mojom::BluetoothInternalsHandler> receiver) {
   page_handler_ =
       std::make_unique<BluetoothInternalsHandler>(std::move(receiver));

@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/modules/manifest/image_resource.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
@@ -54,12 +55,12 @@ const char kNullRequestErrorMessage[] = "Requests must not be null.";
 
 ScriptPromise RejectWithTypeError(ScriptState* script_state,
                                   const KURL& request_url,
-                                  const String& reason) {
-  return ScriptPromise::Reject(
-      script_state, V8ThrowException::CreateTypeError(
-                        script_state->GetIsolate(),
-                        "Refused to fetch '" + request_url.ElidedString() +
-                            "' because " + reason + "."));
+                                  const String& reason,
+                                  ExceptionState& exception_state) {
+  exception_state.ThrowTypeError("Refused to fetch '" +
+                                 request_url.ElidedString() + "' because " +
+                                 reason + ".");
+  return ScriptPromise();
 }
 
 // Returns whether the |request_url| should be blocked by the CSP. Must be
@@ -171,11 +172,9 @@ ScriptPromise BackgroundFetchManager::fetch(
     const BackgroundFetchOptions* options,
     ExceptionState& exception_state) {
   if (!registration_->active()) {
-    return ScriptPromise::Reject(
-        script_state,
-        V8ThrowException::CreateTypeError(script_state->GetIsolate(),
-                                          "No active registration available on "
-                                          "the ServiceWorkerRegistration."));
+    exception_state.ThrowTypeError(
+        "No active registration available on the ServiceWorkerRegistration.");
+    return ScriptPromise();
   }
 
   bool has_requests_with_body;
@@ -205,7 +204,7 @@ ScriptPromise BackgroundFetchManager::fetch(
 
     if (!request_url.IsValid()) {
       return RejectWithTypeError(script_state, request_url,
-                                 "that URL is invalid");
+                                 "that URL is invalid", exception_state);
     }
 
     // https://wicg.github.io/background-fetch/#dom-backgroundfetchmanager-fetch
@@ -213,41 +212,47 @@ ScriptPromise BackgroundFetchManager::fetch(
     //   rejected with a TypeError.""
     if (request->mode == network::mojom::RequestMode::kNoCors) {
       return RejectWithTypeError(script_state, request_url,
-                                 "the request mode must not be no-cors");
+                                 "the request mode must not be no-cors",
+                                 exception_state);
     }
 
     // Check this before mixed content, so that if mixed content is blocked by
     // CSP they get a CSP warning rather than a mixed content failure.
     if (ShouldBlockDueToCSP(execution_context, request_url)) {
       return RejectWithTypeError(script_state, request_url,
-                                 "it violates the Content Security Policy");
+                                 "it violates the Content Security Policy",
+                                 exception_state);
     }
 
     if (ShouldBlockPort(request_url)) {
       return RejectWithTypeError(script_state, request_url,
-                                 "that port is not allowed");
+                                 "that port is not allowed", exception_state);
     }
 
     if (ShouldBlockCredentials(execution_context, request_url)) {
       return RejectWithTypeError(script_state, request_url,
-                                 "that URL contains a username/password");
+                                 "that URL contains a username/password",
+                                 exception_state);
     }
 
     if (ShouldBlockScheme(request_url)) {
       return RejectWithTypeError(script_state, request_url,
                                  "only the https: scheme is allowed, or http: "
-                                 "for loopback IPs");
+                                 "for loopback IPs",
+                                 exception_state);
     }
 
     if (ShouldBlockDanglingMarkup(request_url)) {
       return RejectWithTypeError(script_state, request_url,
-                                 "it contains dangling markup");
+                                 "it contains dangling markup",
+                                 exception_state);
     }
 
     if (ShouldBlockGateWayAttacks(execution_context, request_url)) {
       return RejectWithTypeError(script_state, request_url,
                                  "Requestor IP address space doesn't match the "
-                                 "target address space.");
+                                 "target address space.",
+                                 exception_state);
     }
 
     kurls.insert(request_url);
@@ -358,7 +363,8 @@ void BackgroundFetchManager::DidFetch(
 }
 
 ScriptPromise BackgroundFetchManager::get(ScriptState* script_state,
-                                          const String& id) {
+                                          const String& id,
+                                          ExceptionState& exception_state) {
   // Creating a Background Fetch registration requires an activated worker, so
   // if |registration_| has not been activated we can skip the Mojo roundtrip.
   if (!registration_->active())
@@ -367,10 +373,8 @@ ScriptPromise BackgroundFetchManager::get(ScriptState* script_state,
   ScriptState::Scope scope(script_state);
 
   if (id.IsEmpty()) {
-    return ScriptPromise::Reject(
-        script_state,
-        V8ThrowException::CreateTypeError(script_state->GetIsolate(),
-                                          "The provided id is invalid."));
+    exception_state.ThrowTypeError("The provided id is invalid.");
+    return ScriptPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);

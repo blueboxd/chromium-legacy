@@ -124,6 +124,8 @@ class CORE_EXPORT NGLayoutInputNode {
     return IsBlock() && box_->IsRenderedLegend();
   }
 
+  bool IsMathRoot() const { return box_->IsMathMLRoot(); }
+
   bool IsAnonymousBlock() const { return box_->IsAnonymousBlock(); }
 
   // If the node is a quirky container for margin collapsing, see:

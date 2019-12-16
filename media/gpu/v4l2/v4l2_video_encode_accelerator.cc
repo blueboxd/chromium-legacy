@@ -21,6 +21,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
@@ -99,14 +100,20 @@ namespace media {
 
 namespace {
 // Convert VideoFrameLayout to ImageProcessor::PortConfig.
-ImageProcessor::PortConfig VideoFrameLayoutToPortConfig(
+base::Optional<ImageProcessor::PortConfig> VideoFrameLayoutToPortConfig(
     const VideoFrameLayout& layout,
     const gfx::Size& visible_size,
     const std::vector<VideoFrame::StorageType>& preferred_storage_types) {
-  return ImageProcessor::PortConfig(
-      Fourcc::FromVideoPixelFormat(layout.format(), !layout.is_multi_planar()),
-      layout.coded_size(), layout.planes(), visible_size,
-      preferred_storage_types);
+  auto fourcc =
+      Fourcc::FromVideoPixelFormat(layout.format(), !layout.is_multi_planar());
+  if (!fourcc) {
+    DVLOGF(1) << "Failed to create Fourcc from video pixel format "
+              << VideoPixelFormatToString(layout.format());
+    return base::nullopt;
+  }
+  return ImageProcessor::PortConfig(*fourcc, layout.coded_size(),
+                                    layout.planes(), visible_size,
+                                    preferred_storage_types);
 }
 }  // namespace
 
@@ -314,12 +321,18 @@ bool V4L2VideoEncodeAccelerator::CreateImageProcessor(
   // However, it doesn't matter VideoFrame::STORAGE_OWNED_MEMORY is specified
   // for |input_storage_type| here, as long as VideoFrame on Process()'s data
   // can be accessed by VideoFrame::data().
+  auto input_config = VideoFrameLayoutToPortConfig(
+      input_layout, visible_size, {VideoFrame::STORAGE_OWNED_MEMORY});
+  if (!input_config)
+    return false;
+  auto output_config = VideoFrameLayoutToPortConfig(
+      output_layout, visible_size,
+      {VideoFrame::STORAGE_DMABUFS, VideoFrame::STORAGE_OWNED_MEMORY});
+  if (!output_config)
+    return false;
+
   image_processor_ = ImageProcessorFactory::Create(
-      VideoFrameLayoutToPortConfig(input_layout, visible_size,
-                                   {VideoFrame::STORAGE_OWNED_MEMORY}),
-      VideoFrameLayoutToPortConfig(
-          output_layout, visible_size,
-          {VideoFrame::STORAGE_DMABUFS, VideoFrame::STORAGE_OWNED_MEMORY}),
+      *input_config, *output_config,
       // Try OutputMode::ALLOCATE first because we want v4l2IP chooses
       // ALLOCATE mode. For libyuvIP, it accepts only IMPORT.
       {ImageProcessor::OutputMode::ALLOCATE,
@@ -580,8 +593,11 @@ size_t V4L2VideoEncodeAccelerator::CopyIntoOutputBuffer(
       case H264NALU::kIDRSlice:
         // Only inject if we have both headers cached, and enough space for both
         // the headers and the NALU itself.
-        if (cached_sps_.empty() || cached_pps_.empty() ||
-            cached_h264_header_size_ + nalu.size + kH264StartCodeSize >
+        if (cached_sps_.empty() || cached_pps_.empty()) {
+          VLOGF(1) << "Cannot inject IDR slice without SPS and PPS";
+          break;
+        }
+        if (cached_h264_header_size_ + nalu.size + kH264StartCodeSize >
                 remaining_dst_size) {
           VLOGF(1) << "Not enough space to inject a stream header before IDR";
           break;
@@ -1079,7 +1095,7 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
   size_t num_planes = V4L2Device::GetNumPlanesOfV4L2PixFmt(
       Fourcc::FromVideoPixelFormat(device_input_layout_->format(),
                                    !device_input_layout_->is_multi_planar())
-          .ToV4L2PixFmt());
+          ->ToV4L2PixFmt());
 
   // Create GpuMemoryBufferHandle for native_input_mode.
   gfx::GpuMemoryBufferHandle gmb_handle;
@@ -1361,10 +1377,13 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
 
   // First see if the device can use the provided format directly.
   std::vector<uint32_t> pix_fmt_candidates;
-  uint32_t pix_fmt =
-      Fourcc::FromVideoPixelFormat(input_format, false).ToV4L2PixFmt();
-  if (pix_fmt)
-    pix_fmt_candidates.push_back(pix_fmt);
+  auto input_fourcc = Fourcc::FromVideoPixelFormat(input_format, false);
+  if (!input_fourcc) {
+    DVLOGF(2) << "Invalid input format "
+              << VideoPixelFormatToString(input_format);
+    return false;
+  }
+  pix_fmt_candidates.push_back(input_fourcc->ToV4L2PixFmt());
   // Second try preferred input formats for both single-planar and
   // multi-planar.
   for (auto preferred_format :

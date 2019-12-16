@@ -17,6 +17,7 @@
 #include "chrome/services/local_search_service/index_impl.h"
 #include "chrome/services/local_search_service/public/mojom/local_search_service.mojom-test-utils.h"
 #include "chrome/services/local_search_service/public/mojom/types.mojom.h"
+#include "chrome/services/local_search_service/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace local_search_service {
@@ -28,54 +29,6 @@ constexpr double kDefaultPartialMatchPenaltyRate = 0.9;
 constexpr bool kDefaultUsePrefixOnly = false;
 constexpr bool kDefaultUseWeightedRatio = true;
 constexpr bool kDefaultUseEditDistance = false;
-
-// TODO(1018613): another cl is moving these test functions to a util file.
-// Consolidate after the cl is landed.
-// The following helper functions call the async functions and check results.
-void GetSizeAndCheck(mojom::Index* index, uint64_t expected_num_items) {
-  DCHECK(index);
-  uint64_t num_items = 0;
-  mojom::IndexAsyncWaiter(index).GetSize(&num_items);
-  EXPECT_EQ(num_items, expected_num_items);
-}
-
-void AddOrUpdateAndCheck(mojom::Index* index,
-                         std::vector<mojom::DataPtr> data) {
-  DCHECK(index);
-  mojom::IndexAsyncWaiter(index).AddOrUpdate(std::move(data));
-}
-
-void FindAndCheck(mojom::Index* index,
-                  std::string query,
-                  int32_t max_latency_in_ms,
-                  int32_t max_results,
-                  mojom::ResponseStatus expected_status,
-                  const std::vector<std::string>& expected_result_ids) {
-  DCHECK(index);
-
-  mojom::IndexAsyncWaiter async_waiter(index);
-  mojom::ResponseStatus status = mojom::ResponseStatus::UNKNOWN_ERROR;
-  base::Optional<std::vector<::local_search_service::mojom::ResultPtr>> results;
-  async_waiter.Find(query, max_latency_in_ms, max_results, &status, &results);
-
-  EXPECT_EQ(status, expected_status);
-
-  if (results) {
-    // If results are returned, check size and values match the expected.
-    EXPECT_EQ(results->size(), expected_result_ids.size());
-    for (size_t i = 0; i < results->size(); ++i) {
-      EXPECT_EQ((*results)[i]->id, expected_result_ids[i]);
-      // Scores should be non-increasing.
-      if (i < results->size() - 1) {
-        EXPECT_GE((*results)[i]->score, (*results)[i + 1]->score);
-      }
-    }
-    return;
-  }
-
-  // If no results are returned, expected ids should be empty.
-  EXPECT_TRUE(expected_result_ids.empty());
-}
 
 void SetSearchParamsAndCheck(mojom::Index* index,
                              mojom::SearchParamsPtr search_params) {

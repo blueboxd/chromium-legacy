@@ -19,6 +19,9 @@ CSSURIValue::CSSURIValue(const AtomicString& relative_url,
       is_local_(relative_url.StartsWith('#')),
       absolute_url_(absolute_url) {}
 
+CSSURIValue::CSSURIValue(const AtomicString& absolute_url)
+    : CSSURIValue(absolute_url, absolute_url) {}
+
 CSSURIValue::CSSURIValue(const AtomicString& relative_url, const KURL& url)
     : CSSURIValue(relative_url, AtomicString(url.GetString())) {}
 
@@ -72,9 +75,11 @@ bool CSSURIValue::Equals(const CSSURIValue& other) const {
 CSSURIValue* CSSURIValue::ValueWithURLMadeAbsolute(
     const KURL& base_url,
     const WTF::TextEncoding& charset) const {
-  if (!charset.IsValid())
-    return Create(AtomicString(KURL(base_url, relative_url_).GetString()));
-  return Create(
+  if (!charset.IsValid()) {
+    return MakeGarbageCollected<CSSURIValue>(
+        AtomicString(KURL(base_url, relative_url_).GetString()));
+  }
+  return MakeGarbageCollected<CSSURIValue>(
       AtomicString(KURL(base_url, relative_url_, charset).GetString()));
 }
 

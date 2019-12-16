@@ -1641,15 +1641,15 @@ bool AutofillTable::GetPaymentsCustomerData(
   return s.Succeeded();
 }
 
-bool AutofillTable::InsertVPA(const std::string& vpa) {
+bool AutofillTable::InsertUpiId(const std::string& upi_id) {
   sql::Transaction transaction(db_);
   if (!transaction.Begin())
     return false;
 
-  sql::Statement insert_vpa_statement(
+  sql::Statement insert_upi_id_statement(
       db_->GetUniqueStatement("INSERT INTO payments_upi_vpa (vpa) VALUES (?)"));
-  insert_vpa_statement.BindString(0, vpa);
-  insert_vpa_statement.Run();
+  insert_upi_id_statement.BindString(0, upi_id);
+  insert_upi_id_statement.Run();
 
   transaction.Commit();
 

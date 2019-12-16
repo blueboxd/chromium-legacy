@@ -4,11 +4,13 @@
 
 #include "chrome/browser/chromeos/power/smart_charging/smart_charging_manager.h"
 
-#include <memory>
-
 #include "chrome/browser/chromeos/power/ml/recent_events_counter.h"
 #include "chromeos/constants/devicetype.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
+#include "components/viz/host/host_frame_sink_manager.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
+#include "ui/aura/env.h"
+#include "ui/compositor/compositor.h"
 
 namespace chromeos {
 namespace power {
@@ -17,30 +19,33 @@ namespace {
 // Interval at which data should be logged.
 constexpr base::TimeDelta kLoggingInterval = base::TimeDelta::FromMinutes(30);
 
-// Count number of key, mouse and touch events in the past 30 minutes.
-constexpr base::TimeDelta kUserInputEventsDuration =
+// Count number of key, mouse, touch events or duration of audio/video playing
+// in the past 30 minutes.
+constexpr base::TimeDelta kUserActivityDuration =
     base::TimeDelta::FromMinutes(30);
 
 // Granularity of input events is per minute.
 constexpr int kNumUserInputEventsBuckets =
-    kUserInputEventsDuration / base::TimeDelta::FromMinutes(1);
+    kUserActivityDuration / base::TimeDelta::FromMinutes(1);
 }  // namespace
 
 SmartChargingManager::SmartChargingManager(
     ui::UserActivityDetector* detector,
+    mojo::PendingReceiver<viz::mojom::VideoDetectorObserver> receiver,
     std::unique_ptr<base::RepeatingTimer> periodic_timer)
     : periodic_timer_(std::move(periodic_timer)),
+      receiver_(this, std::move(receiver)),
       mouse_counter_(std::make_unique<ml::RecentEventsCounter>(
-          kUserInputEventsDuration,
+          kUserActivityDuration,
           kNumUserInputEventsBuckets)),
       key_counter_(std::make_unique<ml::RecentEventsCounter>(
-          kUserInputEventsDuration,
+          kUserActivityDuration,
           kNumUserInputEventsBuckets)),
       stylus_counter_(std::make_unique<ml::RecentEventsCounter>(
-          kUserInputEventsDuration,
+          kUserActivityDuration,
           kNumUserInputEventsBuckets)),
       touch_counter_(std::make_unique<ml::RecentEventsCounter>(
-          kUserInputEventsDuration,
+          kUserActivityDuration,
           kNumUserInputEventsBuckets)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(detector);
@@ -60,9 +65,16 @@ std::unique_ptr<SmartChargingManager> SmartChargingManager::CreateInstance() {
   ui::UserActivityDetector* const detector = ui::UserActivityDetector::Get();
   DCHECK(detector);
 
+  mojo::PendingRemote<viz::mojom::VideoDetectorObserver> video_observer;
   std::unique_ptr<SmartChargingManager> screen_brightness_manager =
       std::make_unique<SmartChargingManager>(
-          detector, std::make_unique<base::RepeatingTimer>());
+          detector, video_observer.InitWithNewPipeAndPassReceiver(),
+          std::make_unique<base::RepeatingTimer>());
+
+  aura::Env::GetInstance()
+      ->context_factory_private()
+      ->GetHostFrameSinkManager()
+      ->AddVideoDetectorObserver(std::move(video_observer));
 
   return screen_brightness_manager;
 }
@@ -160,6 +172,19 @@ void SmartChargingManager::SuspendImminent(
   LogEvent(UserChargingEvent::Event::SUSPEND);
 }
 
+void SmartChargingManager::OnVideoActivityStarted() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  most_recent_video_start_time_ = boot_clock_.GetTimeSinceBoot();
+  is_video_playing_ = true;
+}
+
+void SmartChargingManager::OnVideoActivityEnded() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  recent_video_usage_.push_back(TimePeriod(most_recent_video_start_time_,
+                                           boot_clock_.GetTimeSinceBoot()));
+  is_video_playing_ = false;
+}
+
 void SmartChargingManager::PopulateUserChargingEventProto(
     UserChargingEvent* proto) {
   auto& features = *proto->mutable_features();
@@ -178,6 +203,10 @@ void SmartChargingManager::PopulateUserChargingEventProto(
   if (screen_brightness_percent_)
     features.set_screen_brightness_percent(
         static_cast<int>(screen_brightness_percent_.value()));
+
+  features.set_duration_recent_video_playing(
+      ukm::GetExponentialBucketMinForUserTiming(
+          DurationRecentVideoPlaying().InMinutes()));
 }
 
 void SmartChargingManager::LogEvent(
@@ -203,6 +232,29 @@ void SmartChargingManager::OnReceiveScreenBrightnessPercent(
   if (screen_brightness_percent.has_value()) {
     screen_brightness_percent_ = *screen_brightness_percent;
   }
+}
+
+base::TimeDelta SmartChargingManager::DurationRecentVideoPlaying() {
+  // Removes events that is out of |kUserActivityDuration|.
+  const base::TimeDelta start_of_duration =
+      boot_clock_.GetTimeSinceBoot() - kUserActivityDuration;
+  while (!recent_video_usage_.empty() &&
+         recent_video_usage_.front().end_time < start_of_duration) {
+    recent_video_usage_.pop_front();
+  }
+
+  // Calculates total time.
+  base::TimeDelta total_time = base::TimeDelta::FromSeconds(0);
+  for (const auto& event : recent_video_usage_) {
+    total_time += std::min(event.end_time - event.start_time,
+                           event.end_time - start_of_duration);
+  }
+  if (is_video_playing_) {
+    total_time +=
+        std::min(kUserActivityDuration, boot_clock_.GetTimeSinceBoot() -
+                                            most_recent_video_start_time_);
+  }
+  return total_time;
 }
 
 }  // namespace power

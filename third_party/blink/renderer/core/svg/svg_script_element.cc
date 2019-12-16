@@ -93,8 +93,8 @@ bool SVGScriptElement::IsURLAttribute(const Attribute& attribute) const {
 void SVGScriptElement::FinishParsingChildren() {
   SVGElement::FinishParsingChildren();
   have_fired_load_ = true;
-  DCHECK(script_text_internal_slot_.IsEmpty());
-  script_text_internal_slot_ = TextFromChildren();
+  DCHECK(!script_text_internal_slot_.length());
+  script_text_internal_slot_ = ParkableString(TextFromChildren().Impl());
 }
 
 bool SVGScriptElement::HaveLoadedRequiredResources() {
@@ -114,7 +114,7 @@ String SVGScriptElement::ChildTextContent() {
 }
 
 String SVGScriptElement::ScriptTextInternalSlot() const {
-  return script_text_internal_slot_;
+  return script_text_internal_slot_.ToString();
 }
 
 bool SVGScriptElement::HasSourceAttribute() const {

@@ -89,13 +89,13 @@ FetchRequestData* FetchRequestData::Create(
 
   if (fetch_api_request.blob) {
     DCHECK(!fetch_api_request.body);
-    request->SetBuffer(MakeGarbageCollected<BodyStreamBuffer>(
+    request->SetBuffer(BodyStreamBuffer::Create(
         script_state,
         MakeGarbageCollected<BlobBytesConsumer>(
             ExecutionContext::From(script_state), fetch_api_request.blob),
         nullptr /* AbortSignal */));
   } else if (fetch_api_request.body) {
-    request->SetBuffer(MakeGarbageCollected<BodyStreamBuffer>(
+    request->SetBuffer(BodyStreamBuffer::Create(
         script_state,
         MakeGarbageCollected<FormDataBytesConsumer>(
             ExecutionContext::From(script_state), fetch_api_request.body),
@@ -173,7 +173,7 @@ FetchRequestData* FetchRequestData::Pass(ScriptState* script_state,
   FetchRequestData* request = FetchRequestData::CloneExceptBody();
   if (buffer_) {
     request->buffer_ = buffer_;
-    buffer_ = MakeGarbageCollected<BodyStreamBuffer>(
+    buffer_ = BodyStreamBuffer::Create(
         script_state, BytesConsumer::CreateClosed(), nullptr /* AbortSignal */);
     buffer_->CloseAndLockAndDisturb(exception_state);
     if (exception_state.HadException())

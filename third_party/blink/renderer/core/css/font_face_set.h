@@ -131,11 +131,6 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
     USING_GARBAGE_COLLECTED_MIXIN(LoadFontPromiseResolver);
 
    public:
-    static LoadFontPromiseResolver* Create(FontFaceArray faces,
-                                           ScriptState* script_state) {
-      return MakeGarbageCollected<LoadFontPromiseResolver>(faces, script_state);
-    }
-
     LoadFontPromiseResolver(FontFaceArray faces, ScriptState* script_state)
         : num_loading_(faces.size()),
           error_occured_(false),

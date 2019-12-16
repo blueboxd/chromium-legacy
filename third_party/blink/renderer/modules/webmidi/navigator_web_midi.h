@@ -39,6 +39,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class Navigator;
 
 class NavigatorWebMIDI final : public GarbageCollected<NavigatorWebMIDI>,
@@ -51,8 +52,11 @@ class NavigatorWebMIDI final : public GarbageCollected<NavigatorWebMIDI>,
   static NavigatorWebMIDI& From(Navigator&);
   static ScriptPromise requestMIDIAccess(ScriptState*,
                                          Navigator&,
-                                         const MIDIOptions*);
-  ScriptPromise requestMIDIAccess(ScriptState*, const MIDIOptions*);
+                                         const MIDIOptions*,
+                                         ExceptionState& exception_state);
+  ScriptPromise requestMIDIAccess(ScriptState*,
+                                  const MIDIOptions*,
+                                  ExceptionState& exception_state);
 
   explicit NavigatorWebMIDI(Navigator&);
 

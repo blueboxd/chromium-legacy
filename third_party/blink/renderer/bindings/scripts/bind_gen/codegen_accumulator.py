@@ -14,6 +14,8 @@ class CodeGenAccumulator(object):
         self._include_headers = set()
         # Forward declarations of C++ class
         self._class_decls = set()
+        # Forward declarations of C++ struct
+        self._struct_decls = set()
 
     @property
     def include_headers(self):
@@ -42,3 +44,17 @@ class CodeGenAccumulator(object):
     @staticmethod
     def require_class_decls(class_names):
         return lambda accumulator: accumulator.add_class_decls(class_names)
+
+    @property
+    def struct_decls(self):
+        return self._struct_decls
+
+    def add_struct_decl(self, struct_name):
+        self._struct_decls.add(struct_name)
+
+    def add_struct_decls(self, struct_names):
+        self._struct_decls.update(struct_names)
+
+    @staticmethod
+    def require_struct_decls(struct_names):
+        return lambda accumulator: accumulator.add_struct_decls(struct_names)

@@ -100,7 +100,7 @@ BodyStreamBuffer* CreateHelloWorldBuffer(ScriptState* script_state) {
   src->Add(Command(Command::kData, "Hello, "));
   src->Add(Command(Command::kData, "world"));
   src->Add(Command(Command::kDone));
-  return MakeGarbageCollected<BodyStreamBuffer>(script_state, src, nullptr);
+  return BodyStreamBuffer::Create(script_state, src, nullptr);
 }
 
 TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneDefault) {
@@ -164,7 +164,7 @@ TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneOpaque) {
 
 TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneError) {
   V8TestingScope scope;
-  BodyStreamBuffer* buffer = MakeGarbageCollected<BodyStreamBuffer>(
+  BodyStreamBuffer* buffer = BodyStreamBuffer::Create(
       scope.GetScriptState(),
       BytesConsumer::CreateErrored(BytesConsumer::Error()), nullptr);
   FetchResponseData* fetch_response_data =

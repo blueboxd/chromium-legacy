@@ -185,7 +185,7 @@ class AutofillWebDataBackendImpl
   WebDatabase::State UpdateServerAddressMetadata(const AutofillProfile& profile,
                                                  WebDatabase* db);
 
-  WebDatabase::State AddVPA(const std::string& vpa_id, WebDatabase* db);
+  WebDatabase::State AddUpiId(const std::string& upi_id, WebDatabase* db);
 
   // Returns the PaymentsCustomerData from the database.
   std::unique_ptr<WDTypedResult> GetPaymentsCustomerData(WebDatabase* db);

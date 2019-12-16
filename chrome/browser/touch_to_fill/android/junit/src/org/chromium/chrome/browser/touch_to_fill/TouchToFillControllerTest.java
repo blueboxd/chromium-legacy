@@ -22,6 +22,7 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.Cr
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.DISMISS_HANDLER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.FORMATTED_URL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.ORIGIN_SECURE;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.SINGLE_CREDENTIAL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ON_CLICK_MANAGE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.SHEET_ITEMS;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
@@ -128,6 +129,17 @@ public class TouchToFillControllerTest {
         mMediator.showCredentials(TEST_URL, true, Arrays.asList(ANA, CARL, BOB));
         ListModel<MVCListAdapter.ListItem> itemList = mModel.get(SHEET_ITEMS);
         assertThat(itemList.get(0).type, is(ItemType.HEADER));
+        assertThat(itemList.get(0).model.get(SINGLE_CREDENTIAL), is(false));
+        assertThat(
+                itemList.get(0).model.get(FORMATTED_URL), is(formatForSecurityDisplay(TEST_URL)));
+        assertThat(itemList.get(0).model.get(ORIGIN_SECURE), is(true));
+    }
+    @Test
+    public void testShowCredentialWithSingleEntryCreatesHeader() {
+        mMediator.showCredentials(TEST_URL, true, Arrays.asList(ANA));
+        ListModel<MVCListAdapter.ListItem> itemList = mModel.get(SHEET_ITEMS);
+        assertThat(itemList.get(0).type, is(ItemType.HEADER));
+        assertThat(itemList.get(0).model.get(SINGLE_CREDENTIAL), is(true));
         assertThat(
                 itemList.get(0).model.get(FORMATTED_URL), is(formatForSecurityDisplay(TEST_URL)));
         assertThat(itemList.get(0).model.get(ORIGIN_SECURE), is(true));

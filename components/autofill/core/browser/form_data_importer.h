@@ -90,16 +90,16 @@ class FormDataImporter {
   // data. If the form contains credit card data already present in a local
   // credit card entry *and* |should_return_local_card| is true, the data is
   // stored into |imported_credit_card| so that we can prompt the user whether
-  // to upload it. If the form contains UPI/VPA data and
-  // |credit_card_autofill_enabled| is true, the VPA value will be stored into
-  // |imported_vpa|. Returns |true| if sufficient address or credit card data
+  // to upload it. If the form contains UPI data and
+  // |credit_card_autofill_enabled| is true, the UPI ID will be stored into
+  // |imported_upi_id|. Returns |true| if sufficient address or credit card data
   // was found. Exposed for testing.
   bool ImportFormData(const FormStructure& form,
                       bool profile_autofill_enabled,
                       bool credit_card_autofill_enabled,
                       bool should_return_local_card,
                       std::unique_ptr<CreditCard>* imported_credit_card,
-                      base::Optional<std::string>* imported_vpa);
+                      base::Optional<std::string>* imported_upi_id);
 
   // Go through the |form| fields and attempt to extract and import valid
   // address profiles. Returns true on extraction success of at least one
@@ -126,8 +126,8 @@ class FormDataImporter {
   CreditCard ExtractCreditCardFromForm(const FormStructure& form,
                                        bool* hasDuplicateFieldType);
 
-  // Go through the |form| fields and find a UPI/VPA value to import. The return
-  // value will be empty if no UPI ID was found.
+  // Go through the |form| fields and find a UPI ID to import. The return value
+  // will be empty if no UPI ID was found.
   base::Optional<std::string> ImportUpiId(const FormStructure& form);
 
   // Whether a dynamic change form is imported.

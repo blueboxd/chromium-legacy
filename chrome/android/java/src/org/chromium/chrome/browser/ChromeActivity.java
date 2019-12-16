@@ -57,7 +57,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler.IntentHandlerDelegate;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegateImpl;
-import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
@@ -78,7 +77,6 @@ import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsMod
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
 import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.directactions.DirectActionInitializer;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerUIUtils;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.download.DownloadManagerService;
@@ -287,9 +285,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             ManualFillingComponentFactory.createComponent();
 
     private AssistStatusHandler mAssistStatusHandler;
-
-    @Nullable
-    protected DirectActionInitializer mDirectActionInitializer;
 
     // A set of views obscuring all tabs. When this set is nonempty,
     // all tab content will be hidden from the accessibility tree.
@@ -1170,10 +1165,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @UsedByReflection("Called from Android Q")
     public void onPerformDirectAction(String actionId, Bundle arguments,
             CancellationSignal cancellationSignal, Consumer<Bundle> callback) {
-        if (mDirectActionInitializer == null) return;
-
-        mDirectActionInitializer.getCoordinator().onPerformDirectAction(
-                actionId, arguments, callback);
+        mRootUiCoordinator.onPerformDirectAction(actionId, arguments, cancellationSignal, callback);
     }
 
     // TODO(crbug.com/973781): Once Chromium is built against Android Q SDK:
@@ -1183,9 +1175,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @TargetApi(29)
     @UsedByReflection("Called from Android Q")
     public void onGetDirectActions(CancellationSignal cancellationSignal, Consumer callback) {
-        if (mDirectActionInitializer == null) return;
-
-        mDirectActionInitializer.getCoordinator().onGetDirectActions(callback);
+        mRootUiCoordinator.onGetDirectActions(cancellationSignal, callback);
     }
 
     @Override
@@ -1363,30 +1353,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mEphemeralTabCoordinator =
                     new EphemeralTabCoordinator(this, getBottomSheetController());
         }
-
-        // TODO(crbug.com/959841): Once crrev.com/c/1669360 is submitted, make the code below
-        // conditional on ChromeFeatureList.isEnabled(ChromeFeatureList.DIRECT_ACTIONS)
-        mDirectActionInitializer = DirectActionInitializer.create(mTabModelSelector);
-        if (mDirectActionInitializer != null) {
-            registerDirectActions();
-        }
-    }
-
-    /**
-     * Register direct actions to {@link #mDirectActionInitializer}, guaranteed to be non-null.
-     *
-     * <p>Subclasses should override this method and either extend the set of direct actions or
-     * suppress registration of default direct actions.
-     *
-     *  TODO(crrev.com/959841): Move the DirectActionInitializer in the UiRootCoordinator.
-     */
-    protected void registerDirectActions() {
-        mDirectActionInitializer.registerCommonChromeActions(this, getActivityType(), this,
-                this::onBackPressed, mTabModelSelector, mRootUiCoordinator.getFindToolbarManager(),
-                AutofillAssistantFacade.areDirectActionsAvailable(getActivityType())
-                        ? getBottomSheetController()
-                        : null,
-                getScrim());
     }
 
     /**

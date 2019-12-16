@@ -235,6 +235,15 @@ public abstract class CommandLine {
     }
 
     /**
+     * Set {@link CommandLine} for testing.
+     * @param commandLine The {@link CommandLine} to use.
+     */
+    @VisibleForTesting
+    public static void setInstanceForTesting(CommandLine commandLine) {
+        setInstance(commandLine);
+    }
+
+    /**
      * @param fileName the file to read in.
      * @return Array of chars read from the file, or null if the file cannot be read.
      */

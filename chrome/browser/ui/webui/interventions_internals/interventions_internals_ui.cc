@@ -57,14 +57,13 @@ InterventionsInternalsUI::InterventionsInternalsUI(content::WebUI* web_ui)
   }
   content::WebUIDataSource::Add(profile, GetSource());
   previews_ui_service_ = previews_service->previews_ui_service();
-  AddHandlerToRegistry(base::BindRepeating(
-      &InterventionsInternalsUI::BindInterventionsInternalsPageHandler,
-      base::Unretained(this)));
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(InterventionsInternalsUI)
 
 InterventionsInternalsUI::~InterventionsInternalsUI() {}
 
-void InterventionsInternalsUI::BindInterventionsInternalsPageHandler(
+void InterventionsInternalsUI::BindInterface(
     mojo::PendingReceiver<mojom::InterventionsInternalsPageHandler> receiver) {
   DCHECK(previews_ui_service_);
   page_handler_ = std::make_unique<InterventionsInternalsPageHandler>(

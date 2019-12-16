@@ -16,15 +16,19 @@
     1x and 2x icons:
       'icon1x' - a name of icon from material design set to show on button.
       'icon2x' - a name of icon from material design set to show on button.
+    1x and 2x sources:
+      'src1x' - A direct source to a file. For example, a SVG file.
+      'src2x' - A direct source to a file. For example, a SVG file.
+
 -->
 <dom-module id="hd-iron-icon">
   <template>
     <style include="iron-flex iron-flex-alignment iron-positioning"></style>
     <link rel="stylesheet" href="oobe_iron_flex_layout_fix.css">
     <link rel="stylesheet" href="hd-iron-icon.css">
-    <div class="flex layout vertical">
-      <iron-icon id="icon1x" icon="[[icon1x]]"></iron-icon>
-      <iron-icon id="icon2x" icon="[[icon2x]]"></iron-icon>
+    <div class="flex layout vertical" aria-hidden="true">
+      <iron-icon id="icon1x" icon="[[icon1x]]" src="[[src1x]]"></iron-icon>
+      <iron-icon id="icon2x" icon="[[icon2x]]" src="[[src2x]]"></iron-icon>
     </div>
   </template>
 </dom-module>

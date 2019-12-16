@@ -186,6 +186,12 @@ public interface TabSwitcher {
          *         tab switcher.
          */
         int getTabListTopOffset();
+
+        /**
+         * @return The mode of the list of Tabs.
+         */
+        @VisibleForTesting
+        int getListModeForTesting();
     }
 
     /**

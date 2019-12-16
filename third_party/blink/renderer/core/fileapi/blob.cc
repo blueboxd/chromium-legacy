@@ -216,7 +216,7 @@ Blob* Blob::slice(int64_t start,
 }
 
 ReadableStream* Blob::stream(ScriptState* script_state) const {
-  BodyStreamBuffer* body_buffer = MakeGarbageCollected<BodyStreamBuffer>(
+  BodyStreamBuffer* body_buffer = BodyStreamBuffer::Create(
       script_state,
       MakeGarbageCollected<BlobBytesConsumer>(
           ExecutionContext::From(script_state), blob_data_handle_),

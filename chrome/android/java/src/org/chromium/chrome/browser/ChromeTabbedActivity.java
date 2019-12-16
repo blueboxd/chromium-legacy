@@ -1771,13 +1771,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
         return true;
     }
 
-    @Override
-    protected void registerDirectActions() {
-        super.registerDirectActions();
-
-        mDirectActionInitializer.registerTabManipulationActions(this, getTabModelSelector());
-    }
-
     private void onOmniboxFocusChanged(boolean hasFocus) {
         mMainIntentMetrics.onOmniboxFocused();
         mTabModalHandler.onOmniboxFocusChanged(hasFocus);

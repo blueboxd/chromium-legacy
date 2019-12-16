@@ -28,7 +28,7 @@ void UpiVpaSaveManager::OnUserDecidedOnLocalSave(const std::string& upi_id,
                                                  bool accepted) {
   // TODO(crbug.com/986289) Add metrics.
   if (accepted)
-    personal_data_manager_->AddVPA(upi_id);
+    personal_data_manager_->AddUpiId(upi_id);
 }
 
 }  // namespace autofill

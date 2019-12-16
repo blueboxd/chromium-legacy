@@ -220,7 +220,7 @@ VideoEncodeAcceleratorTestEnvironment* g_env;
 // "--num_frames_to_encode". Ignored if 0.
 int g_num_frames_to_encode = 0;
 
-#ifdef ARCH_CPU_ARMEL
+#if defined(ARCH_CPU_ARM_FAMILY)
 // ARM performs CPU cache management with CPU cache line granularity. We thus
 // need to ensure our buffers are CPU cache line-aligned (64 byte-aligned).
 // Otherwise newer kernels will refuse to accept them, and on older kernels

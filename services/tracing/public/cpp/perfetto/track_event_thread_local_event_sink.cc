@@ -230,13 +230,21 @@ void TrackEventThreadLocalEventSink::ResetIncrementalStateIfNeeded(
   }
 }
 
-void TrackEventThreadLocalEventSink::PrepareTrackEvent(
+TrackEvent* TrackEventThreadLocalEventSink::PrepareTrackEvent(
     base::trace_event::TraceEvent* trace_event,
     base::trace_event::TraceEventHandle* handle,
-    TrackEvent* track_event) {
+    protozero::MessageHandle<perfetto::protos::pbzero::TracePacket>*
+        trace_packet) {
   // Each event's updates to InternedData are flushed at the end of
   // AddTraceEvent().
   DCHECK(pending_interning_updates_.empty());
+
+  // Delta encoded timestamps and interned data require incremental state.
+  (*trace_packet)
+      ->set_sequence_flags(
+          perfetto::protos::pbzero::TracePacket::SEQ_NEEDS_INCREMENTAL_STATE);
+
+  TrackEvent* track_event = (*trace_packet)->set_track_event();
 
   char phase = trace_event->phase();
 
@@ -567,6 +575,8 @@ void TrackEventThreadLocalEventSink::PrepareTrackEvent(
     interned_source_locations_.Clear();
     interned_log_message_bodies_.Clear();
   }
+
+  return track_event;
 }
 
 void TrackEventThreadLocalEventSink::EmitStoredInternedData(
@@ -718,7 +728,8 @@ void TrackEventThreadLocalEventSink::DoResetIncrementalState(
   // Emit a new thread descriptor in a separate packet, where we also set
   // the |incremental_state_cleared| flag.
   auto trace_packet = trace_writer_->NewTracePacket();
-  trace_packet->set_incremental_state_cleared(true);
+  trace_packet->set_sequence_flags(
+      perfetto::protos::pbzero::TracePacket::SEQ_INCREMENTAL_STATE_CLEARED);
   EmitThreadDescriptor(&trace_packet, trace_event, explicit_timestamp);
   reset_incremental_state_ = false;
 }

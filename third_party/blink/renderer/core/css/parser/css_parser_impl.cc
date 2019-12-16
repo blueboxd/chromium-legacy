@@ -836,7 +836,7 @@ StyleRuleProperty* CSSParserImpl::ConsumePropertyRule(
   }
 
   ConsumeDeclarationList(block, StyleRule::kProperty);
-  return StyleRuleProperty::Create(
+  return MakeGarbageCollected<StyleRuleProperty>(
       name, CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
 }
 

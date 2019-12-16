@@ -159,10 +159,6 @@ void OutputStreamConnection::OnConnected(std::unique_ptr<MixerSocket> socket) {
 
 void OutputStreamConnection::OnConnectionError() {
   socket_.reset();
-  if (sent_eos_) {
-    delegate_->OnEosPlayed();
-    return;
-  }
   MixerConnection::Connect();
 }
 
@@ -172,7 +168,7 @@ bool OutputStreamConnection::HandleMetadata(const Generic& message) {
     return true;
   }
 
-  if (message.has_push_result() && !sent_eos_) {
+  if (message.has_push_result()) {
     delegate_->FillNextBuffer(
         audio_buffer_->data() + MixerSocket::kAudioMessageHeaderSize,
         fill_size_frames_, message.push_result().next_playback_timestamp());

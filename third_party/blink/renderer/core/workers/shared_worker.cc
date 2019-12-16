@@ -67,6 +67,12 @@ SharedWorker::SharedWorker(ExecutionContext* context)
 
 SharedWorker* SharedWorker::Create(ExecutionContext* context,
                                    const String& url,
+                                   ExceptionState& exception_state) {
+  return SharedWorker::Create(context, url, /*name=*/String(), exception_state);
+}
+
+SharedWorker* SharedWorker::Create(ExecutionContext* context,
+                                   const String& url,
                                    const String& name,
                                    ExceptionState& exception_state) {
   DCHECK(IsMainThread());

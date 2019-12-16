@@ -37,3 +37,22 @@ class _TemplateFormatter(string.Formatter):
             return kwargs[key]
         else:
             return "{" + key + "}"
+
+
+class NonRenderable(object):
+    """
+    Represents a non-renderable object.
+
+    Unlike a template variable bound to None, which is a valid Python value,
+    this object raises an exception when rendered, just like an unbound template
+    variable.
+    """
+
+    def __init__(self, error_message="Undefined"):
+        self._error_message = error_message
+
+    def __bool__(self):
+        raise NameError(self._error_message)
+
+    def __str__(self):
+        raise NameError(self._error_message)

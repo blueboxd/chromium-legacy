@@ -12,7 +12,6 @@
 const SyncPrefsIndividualDataTypes = [
   'osAppsSynced',
   'osPreferencesSynced',
-  'printersSynced',
   'wifiConfigurationsSynced',
 ];
 

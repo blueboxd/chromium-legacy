@@ -67,13 +67,6 @@ ExternalDateTimeChooser::ExternalDateTimeChooser(DateTimeChooserClient* client)
   DCHECK(client);
 }
 
-ExternalDateTimeChooser* ExternalDateTimeChooser::Create(
-    DateTimeChooserClient* client) {
-  ExternalDateTimeChooser* chooser =
-      MakeGarbageCollected<ExternalDateTimeChooser>(client);
-  return chooser;
-}
-
 void ExternalDateTimeChooser::OpenDateTimeChooser(
     LocalFrame* frame,
     const DateTimeChooserParameters& parameters) {

@@ -2966,7 +2966,7 @@ TextTrack* HTMLMediaElement::addTextTrack(const AtomicString& kind,
   //    text track kind to kind, its text track label to label, its text
   //    track language to language, ..., and its text track list of cues to
   //    an empty list.
-  TextTrack* text_track = TextTrack::Create(kind, label, language);
+  auto* text_track = MakeGarbageCollected<TextTrack>(kind, label, language);
   //    ..., its text track readiness state to the text track loaded state, ...
   text_track->SetReadinessState(TextTrack::kLoaded);
 

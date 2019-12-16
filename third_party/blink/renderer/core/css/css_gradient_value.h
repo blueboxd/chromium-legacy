@@ -196,33 +196,6 @@ class CSSLinearGradientValue final : public CSSGradientValue {
 
 class CSSRadialGradientValue final : public CSSGradientValue {
  public:
-  static CSSGradientValue* Create(
-      const CSSValue* first_x,
-      const CSSValue* first_y,
-      const CSSPrimitiveValue* first_radius,
-      const CSSValue* second_x,
-      const CSSValue* second_y,
-      const CSSPrimitiveValue* second_radius,
-      CSSGradientRepeat repeat,
-      CSSGradientType gradient_type = kCSSRadialGradient) {
-    return MakeGarbageCollected<CSSRadialGradientValue>(
-        first_x, first_y, first_radius, second_x, second_y, second_radius,
-        nullptr, nullptr, nullptr, nullptr, repeat, gradient_type);
-  }
-
-  static CSSGradientValue* Create(const CSSValue* center_x,
-                                  const CSSValue* center_y,
-                                  const CSSIdentifierValue* shape,
-                                  const CSSIdentifierValue* sizing_behavior,
-                                  const CSSPrimitiveValue* horizontal_size,
-                                  const CSSPrimitiveValue* vertical_size,
-                                  CSSGradientRepeat repeat,
-                                  CSSGradientType gradient_type) {
-    return MakeGarbageCollected<CSSRadialGradientValue>(
-        center_x, center_y, nullptr, center_x, center_y, nullptr, shape,
-        sizing_behavior, horizontal_size, vertical_size, repeat, gradient_type);
-  }
-
   CSSRadialGradientValue(const CSSValue* first_x,
                          const CSSValue* first_y,
                          const CSSPrimitiveValue* first_radius,
@@ -242,6 +215,46 @@ class CSSRadialGradientValue final : public CSSGradientValue {
         second_y_(second_y),
         first_radius_(first_radius),
         second_radius_(second_radius),
+        shape_(shape),
+        sizing_behavior_(sizing_behavior),
+        end_horizontal_size_(horizontal_size),
+        end_vertical_size_(vertical_size) {}
+
+  CSSRadialGradientValue(const CSSValue* first_x,
+                         const CSSValue* first_y,
+                         const CSSPrimitiveValue* first_radius,
+                         const CSSValue* second_x,
+                         const CSSValue* second_y,
+                         const CSSPrimitiveValue* second_radius,
+                         CSSGradientRepeat repeat,
+                         CSSGradientType gradient_type = kCSSRadialGradient)
+      : CSSGradientValue(kRadialGradientClass, repeat, gradient_type),
+        first_x_(first_x),
+        first_y_(first_y),
+        second_x_(second_x),
+        second_y_(second_y),
+        first_radius_(first_radius),
+        second_radius_(second_radius),
+        shape_(nullptr),
+        sizing_behavior_(nullptr),
+        end_horizontal_size_(nullptr),
+        end_vertical_size_(nullptr) {}
+
+  CSSRadialGradientValue(const CSSValue* center_x,
+                         const CSSValue* center_y,
+                         const CSSIdentifierValue* shape,
+                         const CSSIdentifierValue* sizing_behavior,
+                         const CSSPrimitiveValue* horizontal_size,
+                         const CSSPrimitiveValue* vertical_size,
+                         CSSGradientRepeat repeat,
+                         CSSGradientType gradient_type)
+      : CSSGradientValue(kRadialGradientClass, repeat, gradient_type),
+        first_x_(center_x),
+        first_y_(center_y),
+        second_x_(center_x),
+        second_y_(center_y),
+        first_radius_(nullptr),
+        second_radius_(nullptr),
         shape_(shape),
         sizing_behavior_(sizing_behavior),
         end_horizontal_size_(horizontal_size),

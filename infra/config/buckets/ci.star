@@ -1163,7 +1163,7 @@ def fyi_coverage_builder(
     name,
     cores=32,
     execution_timeout=20 * time.hour,
-    goma_backend=None,
+    goma_backend=goma.backend.RBE_PROD,
     **kwargs):
   return fyi_builder(
       name = name,
@@ -1175,7 +1175,6 @@ def fyi_coverage_builder(
 
 fyi_coverage_builder(
     name = 'android-code-coverage',
-    goma_backend = goma.backend.RBE_PROD,
     use_java_coverage = True,
     ssd = True,
 )
@@ -1190,6 +1189,7 @@ fyi_coverage_builder(
     name = 'ios-simulator-code-coverage',
     caches = [XCODE_IOS_11_CACHE],
     cores = None,
+    goma_backend = None,  # TODO(crbug.com/950413): Use goma.backend.RBE_PROD
     os = os.MAC_ANY,
     use_clang_coverage = True,
     properties = {
@@ -1199,14 +1199,12 @@ fyi_coverage_builder(
 
 fyi_coverage_builder(
     name = 'linux-chromeos-code-coverage',
-    goma_backend = goma.backend.RBE_PROD,
     ssd = True,
     use_clang_coverage = True,
 )
 
 fyi_coverage_builder(
     name = 'linux-code-coverage',
-    goma_backend = goma.backend.RBE_PROD,
     os = None,
     use_clang_coverage = True,
 )
@@ -1215,7 +1213,6 @@ fyi_coverage_builder(
     name = 'mac-code-coverage',
     builderless = True,
     cores = 24,
-    goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_ANY,
     ssd = True,
     use_clang_coverage = True,
@@ -1224,7 +1221,6 @@ fyi_coverage_builder(
 fyi_coverage_builder(
     name = 'win10-code-coverage',
     builderless = True,
-    goma_backend = goma.backend.RBE_PROD,
     goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
     ssd = True,

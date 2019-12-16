@@ -14,7 +14,9 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_producer.h"
+#include "services/tracing/public/cpp/perfetto/trace_time.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
@@ -89,6 +91,9 @@ class COMPONENT_EXPORT(TRACING_CPP) SystemTraceWriter {
       {
         perfetto::TraceWriter::TracePacketHandle trace_packet_handle =
             trace_writer_->NewTracePacket();
+        trace_packet_handle->set_timestamp(
+            TRACE_TIME_TICKS_NOW().since_origin().InNanoseconds());
+        trace_packet_handle->set_timestamp_clock_id(kTraceClockId);
         ChromeEventBundleHandle event_bundle =
             ChromeEventBundleHandle(trace_packet_handle->set_chrome_events());
 

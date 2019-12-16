@@ -15,13 +15,6 @@ namespace cssvalue {
 
 class CSSPendingSubstitutionValue : public CSSValue {
  public:
-  static CSSPendingSubstitutionValue* Create(
-      CSSPropertyID shorthand_property_id,
-      CSSVariableReferenceValue* shorthand_value) {
-    return MakeGarbageCollected<CSSPendingSubstitutionValue>(
-        shorthand_property_id, shorthand_value);
-  }
-
   CSSPendingSubstitutionValue(CSSPropertyID shorthand_property_id,
                               CSSVariableReferenceValue* shorthand_value)
       : CSSValue(kPendingSubstitutionValueClass),

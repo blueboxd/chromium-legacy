@@ -15,11 +15,20 @@ class RenderFrameHost;
 namespace chrome {
 namespace internal {
 
+// The mechanism implemented by the PopulateChrome*FrameBinders() functions
+// below will replace interface registries and binders used for handling
+// InterfaceProvider's GetInterface() calls (see crbug.com/718652).
+
 // PopulateChromeFrameBinders() registers BrowserInterfaceBroker's
 // GetInterface() handler callbacks for chrome-specific document-scoped
-// interfaces. This mechanism will replace interface registries and binders used
-// for handling InterfaceProvider's GetInterface() calls (see crbug.com/718652).
+// interfaces.
 void PopulateChromeFrameBinders(
+    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map);
+
+// PopulateChromeWebUIFrameBinders() registers BrowserInterfaceBroker's
+// GetInterface() handler callbacks for chrome-specific document-scoped
+// interfaces used from WebUI pages (e.g. chrome://bluetooth-internals).
+void PopulateChromeWebUIFrameBinders(
     service_manager::BinderMapWithContext<content::RenderFrameHost*>* map);
 
 }  // namespace internal

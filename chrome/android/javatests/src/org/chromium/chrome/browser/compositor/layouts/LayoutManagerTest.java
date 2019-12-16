@@ -4,14 +4,15 @@
 
 package org.chromium.chrome.browser.compositor.layouts;
 
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_LOW_END_DEVICE;
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 
 import android.content.Context;
 import android.graphics.PointF;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.annotation.UiThreadTest;
+import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
-import android.support.test.rule.UiThreadTestRule;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.MotionEvent.PointerCoords;
@@ -22,12 +23,17 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.MathUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.accessibility_tab_switcher.OverviewListLayout;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
@@ -35,15 +41,22 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirectio
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.Stack;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.tasks.tab_management.TabListCoordinator;
+import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModel.MockTabModelDelegate;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -53,6 +66,12 @@ import org.chromium.ui.test.util.UiRestriction;
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class LayoutManagerTest implements MockTabModelDelegate {
     private static final String TAG = "LayoutManagerTest";
+
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
+    @Rule
+    public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     private long mLastDownTime;
 
@@ -84,9 +103,6 @@ public class LayoutManagerTest implements MockTabModelDelegate {
         mPointerCoords[1].pressure = 1;
         mPointerCoords[1].size = 1;
     }
-
-    @Rule
-    public UiThreadTestRule mRule = new UiThreadTestRule();
 
     /**
      * Simulates time so the animation updates.
@@ -503,11 +519,102 @@ public class LayoutManagerTest implements MockTabModelDelegate {
         runToolbarSideSwipeTestOnCurrentModel(ScrollDirection.RIGHT, 0);
     }
 
+    @Test
+    @MediumTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_LOW_END_DEVICE})
+    @Feature({"Android-TabSwitcher"})
+    // clang-format off
+    @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    public void testStartSurfaceLayoutDisabled() {
+        // clang-format on
+        FeatureUtilities.setGridTabSwitcherEnabledForTesting(false);
+        launchedChromeAndEnterTabSwitcher();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Layout activeLayout = getActiveLayout();
+            Assert.assertTrue(activeLayout instanceof OverviewListLayout);
+        });
+    }
+
+    @Test
+    @MediumTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Feature({"Android-TabSwitcher"})
+    // clang-format off
+    @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID})
+    public void testStartSurfaceLayoutEnabled_Grid() {
+        // clang-format on
+        FeatureUtilities.setGridTabSwitcherEnabledForTesting(true);
+        launchedChromeAndEnterTabSwitcher();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Layout activeLayout = getActiveLayout();
+            Assert.assertTrue(activeLayout instanceof StartSurfaceLayout);
+
+            StartSurfaceLayout startSurfaceLayout = (StartSurfaceLayout) activeLayout;
+
+            Assert.assertEquals(TabListCoordinator.TabListMode.GRID,
+                    startSurfaceLayout.getStartSurfaceForTesting()
+                            .getTabListDelegate()
+                            .getListModeForTesting());
+        });
+    }
+    @Test
+    @MediumTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_LOW_END_DEVICE})
+    @Feature({"Android-TabSwitcher"})
+    @CommandLineFlags
+            .Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+            @Features
+            .EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+                    ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+            @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+            public void
+            testStartSurfaceLayoutEnabled_List() {
+        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
+        launchedChromeAndEnterTabSwitcher();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Layout activeLayout = getActiveLayout();
+            Assert.assertTrue(activeLayout instanceof StartSurfaceLayout);
+
+            StartSurfaceLayout startSurfaceLayout = (StartSurfaceLayout) activeLayout;
+
+            Assert.assertEquals(TabListCoordinator.TabListMode.LIST,
+                    startSurfaceLayout.getStartSurfaceForTesting()
+                            .getTabListDelegate()
+                            .getListModeForTesting());
+        });
+    }
+
     @Before
     public void setUp() {
         // Load the browser process.
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { ChromeBrowserInitializer.getInstance().handleSynchronousStartup(); });
+    }
+
+    private void launchedChromeAndEnterTabSwitcher() {
+        mActivityTestRule.startMainActivityOnBlankPage();
+        CriteriaHelper.pollUiThread(Criteria.equals(true,
+                mActivityTestRule.getActivity()
+                        .getTabModelSelector()
+                        .getTabModelFilterProvider()
+                        .getCurrentTabModelFilter()::isTabModelRestored));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            LayoutManagerChrome layoutManager = mActivityTestRule.getActivity().getLayoutManager();
+            layoutManager.showOverview(false);
+
+            CriteriaHelper.pollUiThread(Criteria.equals(true, layoutManager::overviewVisible));
+        });
+    }
+
+    private Layout getActiveLayout() {
+        LayoutManagerChrome layoutManager = mActivityTestRule.getActivity().getLayoutManager();
+        return layoutManager.getActiveLayout();
     }
 
     private void runToolbarSideSwipeTestOnCurrentModel(

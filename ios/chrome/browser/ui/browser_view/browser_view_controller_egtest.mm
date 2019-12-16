@@ -7,10 +7,12 @@
 #include "base/feature_list.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ios/web/public/test/http_server/html_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -27,6 +29,55 @@
 @end
 
 @implementation BrowserViewControllerTestCase
+
+// Tests that the NTP is interactable even when multiple NTP are opened during
+// the animation of the first NTP opening. See crbug.com/1032544.
+- (void)testPageInteractable {
+  // Scope for the synchronization disabled.
+  {
+    ScopedSynchronizationDisabler syncDisabler;
+
+    [ChromeEarlGrey openNewTab];
+
+    // Wait for 0.05s before opening the new one.
+    GREYCondition* myCondition = [GREYCondition conditionWithName:@"Wait block"
+                                                            block:^BOOL {
+                                                              return NO;
+                                                            }];
+    BOOL success = [myCondition waitWithTimeout:0.05];
+    success = NO;
+
+    [ChromeEarlGrey openNewTab];
+  }  // End of the sync disabler scope.
+
+  [ChromeEarlGrey waitForMainTabCount:3];
+
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_SUGGESTIONS_BOOKMARKS)]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::HeaderWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_SUGGESTIONS_BOOKMARKS)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
+      performAction:grey_tap()];
+
+  [ChromeEarlGrey selectTabAtIndex:1];
+
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_SUGGESTIONS_BOOKMARKS)]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::HeaderWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_SUGGESTIONS_BOOKMARKS)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
+      performAction:grey_tap()];
+}
 
 // Tests that evaluating JavaScript in the omnibox (e.g, a bookmarklet) works.
 - (void)testJavaScriptInOmnibox {

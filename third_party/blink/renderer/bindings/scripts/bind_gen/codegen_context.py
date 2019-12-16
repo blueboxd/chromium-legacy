@@ -5,6 +5,7 @@
 import copy
 
 from . import name_style
+from .codegen_format import NonRenderable
 from .path_manager import PathManager
 
 
@@ -136,13 +137,15 @@ class CodeGenContext(object):
 
         for attr in self._context_attrs.iterkeys():
             value = getattr(self, attr)
-            if value is not None:
-                bindings[attr] = value
+            if value is None:
+                value = NonRenderable()
+            bindings[attr] = value
 
         for attr in self._computational_attrs:
             value = getattr(self, attr)
-            if value is not None:
-                bindings[attr.strip("_")] = value
+            if value is None:
+                value = NonRenderable()
+            bindings[attr.strip("_")] = value
 
         return bindings
 

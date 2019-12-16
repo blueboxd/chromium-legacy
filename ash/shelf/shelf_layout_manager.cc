@@ -1075,6 +1075,17 @@ gfx::Rect ShelfLayoutManager::GetNavigationBounds() const {
   return nav_bounds;
 }
 
+gfx::Rect ShelfLayoutManager::GetStatusAreaBounds() const {
+  gfx::Vector2d offset = target_bounds_.shelf_bounds.OffsetFromOrigin();
+  gfx::Rect status_bounds = target_bounds_.status_bounds_in_shelf;
+  status_bounds.Offset(offset);
+  return status_bounds;
+}
+
+float ShelfLayoutManager::GetOpacity() const {
+  return target_bounds_.opacity;
+}
+
 int ShelfLayoutManager::CalculateHotseatYInShelf(
     HotseatState hotseat_target_state) const {
   DCHECK(shelf_->IsHorizontalAlignment());
@@ -1459,8 +1470,6 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
         GetLayer(shelf_widget_)->GetAnimator());
     ui::ScopedLayerAnimationSettings hotseat_animation_setter(
         GetLayer(hotseat_widget)->GetAnimator());
-    ui::ScopedLayerAnimationSettings status_animation_setter(
-        GetLayer(status_widget)->GetAnimator());
 
     if (hide_animation_observer_)
       shelf_animation_setter.AddObserver(hide_animation_observer_.get());
@@ -1495,20 +1504,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
       status_widget->Hide();
     }
 
-    SetupAnimator(&status_animation_setter, animation_duration,
-                  gfx::Tween::EASE_OUT);
-    GetLayer(status_widget)->SetOpacity(target_bounds_.opacity);
-
-    if (observer)
-      status_animation_setter.AddObserver(observer);
-
-    // Setting visibility during an animation causes the visibility property to
-    // animate. Override the animation settings to immediately set the
-    // visibility property. Opacity will still animate.
-
-    gfx::Rect status_bounds = target_bounds_.status_bounds_in_shelf;
-    status_bounds.Offset(target_bounds_.shelf_bounds.OffsetFromOrigin());
-    status_widget->SetBounds(status_bounds);
+    status_widget->UpdateLayout(animate);
 
     // Nav widget handles its own bounds animations so we use AnimateOpacity to
     // create a separate ScopedLayerAnimationSettings for nav widget opacity.

@@ -86,9 +86,9 @@ class ImageProcessorParamTest
       test::Image* const output_image,
       const std::vector<VideoFrame::StorageType>& output_storage_types) {
     Fourcc input_fourcc =
-        Fourcc::FromVideoPixelFormat(input_image.PixelFormat());
+        *Fourcc::FromVideoPixelFormat(input_image.PixelFormat());
     Fourcc output_fourcc =
-        Fourcc::FromVideoPixelFormat(output_image->PixelFormat());
+        *Fourcc::FromVideoPixelFormat(output_image->PixelFormat());
 
     auto input_layout = test::CreateVideoFrameLayout(input_image.PixelFormat(),
                                                      input_image.Size());

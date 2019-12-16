@@ -116,4 +116,8 @@ bool WebClient::ForceMobileVersionByDefault(const GURL&) {
   return false;
 }
 
+UserAgentType WebClient::GetDefaultUserAgent(UIView* web_view) {
+  return UserAgentType::MOBILE;
+}
+
 }  // namespace web

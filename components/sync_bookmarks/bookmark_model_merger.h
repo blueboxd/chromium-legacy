@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_BOOKMARKS_BOOKMARK_MODEL_MERGER_H_
 #define COMPONENTS_SYNC_BOOKMARKS_BOOKMARK_MODEL_MERGER_H_
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -50,7 +51,52 @@ class BookmarkModelMerger {
 
  private:
   // Internal representation of a remote tree, composed of nodes.
-  class RemoteTreeNode;
+  class RemoteTreeNode final {
+   private:
+    using UpdatesPerParentId =
+        std::unordered_map<base::StringPiece,
+                           syncer::UpdateResponseDataList,
+                           base::StringPieceHash>;
+
+   public:
+    // Constructs a tree given |update| as root and recursively all descendants
+    // by traversing |*updates_per_parent_id|. |update| and
+    // |updates_per_parent_id| must not be null. All updates
+    // |*updates_per_parent_id| must represent valid updates. Updates
+    // corresponding from descendant nodes are moved away from
+    // |*updates_per_parent_id|.
+    static RemoteTreeNode BuildTree(
+        std::unique_ptr<syncer::UpdateResponseData> update,
+        UpdatesPerParentId* updates_per_parent_id);
+
+    ~RemoteTreeNode();
+
+    // Allow moves, useful during construction.
+    RemoteTreeNode(RemoteTreeNode&&);
+    RemoteTreeNode& operator=(RemoteTreeNode&&);
+
+    const syncer::EntityData& entity() const { return *update_->entity; }
+    int64_t response_version() const { return update_->response_version; }
+
+    // Direct children nodes, sorted by ascending unique position. These are
+    // guaranteed to be valid updates (e.g. IsValidBookmarkSpecifics()).
+    const std::vector<RemoteTreeNode>& children() const { return children_; }
+
+    // Recursively emplaces all GUIDs (this node and descendants) into
+    // |*guid_to_remote_node_map|, which must not be null.
+    void EmplaceSelfAndDescendantsByGUID(
+        std::unordered_map<std::string, const RemoteTreeNode*>*
+            guid_to_remote_node_map) const;
+
+   private:
+    static bool UniquePositionLessThan(const RemoteTreeNode& lhs,
+                                       const RemoteTreeNode& rhs);
+
+    RemoteTreeNode();
+
+    std::unique_ptr<syncer::UpdateResponseData> update_;
+    std::vector<RemoteTreeNode> children_;
+  };
 
   // A forest composed of multiple trees where the root of each tree represents
   // a permanent node, keyed by server-defined unique tag of the root.

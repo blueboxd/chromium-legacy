@@ -525,11 +525,12 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateServerAddressMetadata(
   return WebDatabase::COMMIT_NEEDED;
 }
 
-WebDatabase::State AutofillWebDataBackendImpl::AddVPA(const std::string& vpa_id,
-                                                      WebDatabase* db) {
+WebDatabase::State AutofillWebDataBackendImpl::AddUpiId(
+    const std::string& upi_id,
+    WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
 
-  if (!AutofillTable::FromWebDatabase(db)->InsertVPA(vpa_id))
+  if (!AutofillTable::FromWebDatabase(db)->InsertUpiId(upi_id))
     return WebDatabase::COMMIT_NOT_NEEDED;
   return WebDatabase::COMMIT_NEEDED;
 }

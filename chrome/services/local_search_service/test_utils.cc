@@ -63,6 +63,10 @@ void FindAndCheck(mojom::Index* index,
     EXPECT_EQ(results->size(), expected_result_ids.size());
     for (size_t i = 0; i < results->size(); ++i) {
       EXPECT_EQ((*results)[i]->id, expected_result_ids[i]);
+      // Scores should be non-increasing.
+      if (i < results->size() - 1) {
+        EXPECT_GE((*results)[i]->score, (*results)[i + 1]->score);
+      }
     }
     return;
   }

@@ -279,7 +279,7 @@ struct PaymentsCustomerData;
 // payments_upi_vpa     Contains saved UPI/VPA payment data.
 //                      https://en.wikipedia.org/wiki/Unified_Payments_Interface
 //
-//   vpa_id             A string representing the VPA value.
+//   vpa_id             A string representing the UPI ID (a.k.a. VPA) value.
 
 class AutofillTable : public WebDatabaseTable,
                       public syncer::SyncMetadataStore {
@@ -440,8 +440,8 @@ class AutofillTable : public WebDatabaseTable,
   bool GetPaymentsCustomerData(
       std::unique_ptr<PaymentsCustomerData>* customer_data) const;
 
-  // Adds |vpa| to the saved VPA ids.
-  bool InsertVPA(const std::string& vpa);
+  // Adds |upi_id| to the saved UPI IDs.
+  bool InsertUpiId(const std::string& upi_id);
 
   // Deletes all data from the server card and profile tables. Returns true if
   // any data was deleted, false if not (so false means "commit not needed"

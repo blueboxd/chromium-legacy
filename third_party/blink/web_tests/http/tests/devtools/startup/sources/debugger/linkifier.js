@@ -51,10 +51,10 @@
 
   async function uiSourceCodeScriptFormatted() {
     TestRunner.addResult('pretty printed location: ' + link.textContent);
-    var formattedContent = (await Sources.sourceFormatter._formattedSourceCodes.get(uiSourceCode).formatData.formattedSourceCode.requestContent()).content;
+    var formattedContent = (await Formatter.sourceFormatter._formattedSourceCodes.get(uiSourceCode).formatData.formattedSourceCode.requestContent()).content;
     TestRunner.addResult('pretty printed content:');
     TestRunner.addResult(formattedContent);
-    Sources.sourceFormatter.discardFormattedUISourceCode(UI.panels.sources.visibleView.uiSourceCode());
+    Formatter.sourceFormatter.discardFormattedUISourceCode(UI.panels.sources.visibleView.uiSourceCode());
     TestRunner.addResult('reverted location: ' + link.textContent);
 
     var count1 = liveLocationsCount();

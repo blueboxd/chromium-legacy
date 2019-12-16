@@ -34,5 +34,5 @@
   ImplementedAs=NavigatorWebMIDI,
   SecureContext
 ] partial interface Navigator {
-  [CallWith=ScriptState, MeasureAs=RequestMIDIAccess_ObscuredByFootprinting] Promise<MIDIAccess> requestMIDIAccess(optional MIDIOptions options);
+  [CallWith=ScriptState, RaisesException, MeasureAs=RequestMIDIAccess_ObscuredByFootprinting] Promise<MIDIAccess> requestMIDIAccess(optional MIDIOptions options);
 };

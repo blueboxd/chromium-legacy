@@ -36,6 +36,7 @@
 #include "services/tracing/public/cpp/perfetto/macros.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_producer.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
+#include "services/tracing/public/cpp/perfetto/trace_time.h"
 #include "services/tracing/public/cpp/perfetto/traced_value_proto_writer.h"
 #include "services/tracing/public/cpp/perfetto/track_event_thread_local_event_sink.h"
 #include "services/tracing/public/cpp/trace_event_args_whitelist.h"
@@ -47,7 +48,6 @@
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_metadata.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
-#include "third_party/perfetto/protos/perfetto/trace/clock_snapshot.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_histogram_sample.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/process_descriptor.pbzero.h"
@@ -102,19 +102,6 @@ void WriteMetadataProto(ChromeMetadataPacket* metadata_proto,
   }
 #endif  // defined(OS_ANDROID) && defined(OFFICIAL_BUILD)
 }
-
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
-// Linux, Android, and Fuchsia all use CLOCK_MONOTONIC. See crbug.com/166153
-// about efforts to unify base::TimeTicks across all platforms.
-constexpr perfetto::protos::pbzero::ClockSnapshot::Clock::BuiltinClocks
-    kTraceClockId = perfetto::protos::pbzero::ClockSnapshot::Clock::MONOTONIC;
-#else
-// Mac and Windows TimeTicks advance when sleeping, so are closest to BOOTTIME
-// in behavior.
-// TODO(eseckler): Support specifying Mac/Win platform clocks in BuiltinClocks.
-constexpr perfetto::protos::pbzero::ClockSnapshot::Clock::BuiltinClocks
-    kTraceClockId = perfetto::protos::pbzero::ClockSnapshot::Clock::BOOTTIME;
-#endif
 
 static_assert(
     sizeof(TraceEventDataSource::SessionFlags) <= sizeof(uint64_t),
@@ -1041,7 +1028,8 @@ void TraceEventDataSource::EmitProcessDescriptor() {
     }
     trace_packet = trace_writer_->NewTracePacket();
   }
-  trace_packet->set_incremental_state_cleared(true);
+  trace_packet->set_sequence_flags(
+      perfetto::protos::pbzero::TracePacket::SEQ_INCREMENTAL_STATE_CLEARED);
   trace_packet->set_timestamp(
       TRACE_TIME_TICKS_NOW().since_origin().InNanoseconds());
   trace_packet->set_timestamp_clock_id(kTraceClockId);

@@ -53,6 +53,9 @@ class CORE_EXPORT SharedWorker final
  public:
   static SharedWorker* Create(ExecutionContext*,
                               const String& url,
+                              ExceptionState&);
+  static SharedWorker* Create(ExecutionContext*,
+                              const String& url,
                               const String& name,
                               ExceptionState&);
 

@@ -8,5 +8,7 @@ Polymer({
   properties: {
     icon1x: String,
     icon2x: String,
+    src1x: String,
+    src2x: String,
   },
 });

@@ -45,8 +45,10 @@ extern const base::Feature kEnablePersistentDownloads;
 // Feature flag for the new error page workflow, using JavaScript.
 extern const base::Feature kUseJSForErrorPage;
 
-// Feature flag to request the desktop version of web pages on iPad.
-extern const base::Feature kDefaultToDesktopOnIPad;
+// When enabled, for each navigation, the default user agent is chosen by the
+// WebClient GetDefaultUserAgent() method. If it is disabled, the mobile version
+// is requested by default.
+extern const base::Feature kUseDefaultUserAgentInWebClient;
 
 // Use WKWebView.loading to update WebState::IsLoading.
 // TODO(crbug.com/1006012): Clean up this flag after experiment.

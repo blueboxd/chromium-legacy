@@ -38,8 +38,6 @@ class LocalFrame;
 
 class CORE_EXPORT ExternalDateTimeChooser final : public DateTimeChooser {
  public:
-  static ExternalDateTimeChooser* Create(DateTimeChooserClient*);
-
   explicit ExternalDateTimeChooser(DateTimeChooserClient*);
   ~ExternalDateTimeChooser() override;
   void Trace(Visitor*) override;

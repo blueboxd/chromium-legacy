@@ -62,13 +62,13 @@ void HTMLBodyElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == html_names::kBackgroundAttr) {
-    String url = StripLeadingAndTrailingHTMLSpaces(value);
+    AtomicString url(StripLeadingAndTrailingHTMLSpaces(value));
     if (!url.IsEmpty()) {
-      CSSImageValue* image_value =
-          CSSImageValue::Create(url, GetDocument().CompleteURL(url),
-                                Referrer(GetDocument().OutgoingReferrer(),
-                                         GetDocument().GetReferrerPolicy()),
-                                OriginClean::kTrue);
+      CSSImageValue* image_value = MakeGarbageCollected<CSSImageValue>(
+          url, GetDocument().CompleteURL(url),
+          Referrer(GetDocument().OutgoingReferrer(),
+                   GetDocument().GetReferrerPolicy()),
+          OriginClean::kTrue);
       image_value->SetInitiator(localName());
       style->SetProperty(
           CSSPropertyValue(GetCSSPropertyBackgroundImage(), *image_value));

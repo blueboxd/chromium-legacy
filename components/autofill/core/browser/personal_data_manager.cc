@@ -649,11 +649,11 @@ void PersonalDataManager::RecordUseOf(const AutofillDataModel& data_model) {
   }
 }
 
-void PersonalDataManager::AddVPA(const std::string& vpa_id) {
-  DCHECK(!vpa_id.empty());
+void PersonalDataManager::AddUpiId(const std::string& upi_id) {
+  DCHECK(!upi_id.empty());
   if (is_off_the_record_ || !database_helper_->GetLocalDatabase())
     return;
-  database_helper_->GetLocalDatabase()->AddVPA(vpa_id);
+  database_helper_->GetLocalDatabase()->AddUpiId(upi_id);
 }
 
 void PersonalDataManager::AddProfile(const AutofillProfile& profile) {

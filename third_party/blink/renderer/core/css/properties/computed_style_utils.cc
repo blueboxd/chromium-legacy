@@ -1658,7 +1658,8 @@ CSSValue* ComputedStyleUtils::CreateTimingFunctionValue(
 
       // Canonical form of step timing function is step(n, type) or step(n) even
       // if initially parsed as step-start or step-end.
-      return cssvalue::CSSStepsTimingFunctionValue::Create(steps, position);
+      return MakeGarbageCollected<cssvalue::CSSStepsTimingFunctionValue>(
+          steps, position);
     }
 
     default:
@@ -2041,7 +2042,8 @@ CSSValue* ComputedStyleUtils::AdjustSVGPaintForCurrentColor(
     const Color& current_color) {
   if (paint.type >= SVG_PAINTTYPE_URI_NONE) {
     CSSValueList* values = CSSValueList::CreateSpaceSeparated();
-    values->Append(*cssvalue::CSSURIValue::Create(paint.GetUrl()));
+    values->Append(
+        *MakeGarbageCollected<cssvalue::CSSURIValue>(paint.GetUrl()));
     if (paint.type == SVG_PAINTTYPE_URI_NONE)
       values->Append(*CSSIdentifierValue::Create(CSSValueID::kNone));
     else if (paint.type == SVG_PAINTTYPE_URI_CURRENTCOLOR)
@@ -2061,7 +2063,7 @@ CSSValue* ComputedStyleUtils::AdjustSVGPaintForCurrentColor(
 CSSValue* ComputedStyleUtils::ValueForSVGResource(
     const StyleSVGResource* resource) {
   if (resource)
-    return cssvalue::CSSURIValue::Create(resource->Url());
+    return MakeGarbageCollected<cssvalue::CSSURIValue>(resource->Url());
   return CSSIdentifierValue::Create(CSSValueID::kNone);
 }
 

@@ -25,18 +25,6 @@
 
 namespace blink {
 
-extern const WrapperTypeInfo v8_test_interface_constructor_constructor_wrapper_type_info;
-
-class V8TestInterfaceConstructorConstructor {
-  STATIC_ONLY(V8TestInterfaceConstructorConstructor);
- public:
-  static v8::Local<v8::FunctionTemplate> DomTemplate(v8::Isolate*, const DOMWrapperWorld&);
-  static void NamedConstructorAttributeGetter(v8::Local<v8::Name> property_name, const v8::PropertyCallbackInfo<v8::Value>& info);
-  static constexpr const WrapperTypeInfo* GetWrapperTypeInfo() {
-    return &v8_test_interface_constructor_constructor_wrapper_type_info;
-  }
-};
-
 CORE_EXPORT extern const WrapperTypeInfo v8_test_interface_constructor_wrapper_type_info;
 
 class V8TestInterfaceConstructor {

@@ -465,8 +465,15 @@ void VaapiMjpegDecodeAccelerator::DecodeImpl(
   // For DMA-buf backed |dst_frame|, we will import it as a VA surface and use
   // VPP to convert the decoded |surface| into it, if the formats and sizes are
   // supported.
-  const uint32_t video_frame_va_fourcc =
-      Fourcc::FromVideoPixelFormat(dst_frame->format()).ToVAFourCC();
+  const auto video_frame_fourcc =
+      Fourcc::FromVideoPixelFormat(dst_frame->format());
+  if (!video_frame_fourcc) {
+    VLOGF(1) << "Unsupported video frame format: " << dst_frame->format();
+    NotifyError(task_id, PLATFORM_FAILURE);
+    return;
+  }
+
+  const uint32_t video_frame_va_fourcc = video_frame_fourcc->ToVAFourCC();
   if (video_frame_va_fourcc == kInvalidVaFourcc) {
     VLOGF(1) << "Unsupported video frame format: " << dst_frame->format();
     NotifyError(task_id, PLATFORM_FAILURE);

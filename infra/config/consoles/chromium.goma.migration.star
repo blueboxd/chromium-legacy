@@ -827,6 +827,10 @@ luci.console_view(
             short_name = 'x86',
         ),
         luci.console_view_entry(
+            builder = 'ci/android-code-coverage-native',
+            category = 'misc|android',
+        ),
+        luci.console_view_entry(
             builder = 'ci/Win ASan Release',
             category = 'win|week1|asan',
         ),

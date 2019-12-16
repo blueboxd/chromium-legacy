@@ -102,24 +102,6 @@
         </cr-toggle>
       </div>
 
-      <div class="list-item" hidden="[[!osSyncPrefs.printersRegistered]]">
-        <div id="printersCheckboxLabel"
-            label-disabled$="[[isDataTypeToggleDisabled_(
-                osSyncFeatureEnabled,
-                osSyncPrefs.syncAllOsTypes,
-                osSyncPrefs.printersEnforced)]]">
-          $i18n{syncPrintersCheckboxLabel}
-        </div>
-        <cr-toggle checked="{{osSyncPrefs.printersSynced}}"
-            on-change="onSingleSyncDataTypeChanged_"
-            disabled="[[isDataTypeToggleDisabled_(
-                osSyncFeatureEnabled,
-                osSyncPrefs.syncAllOsTypes,
-                osSyncPrefs.printersEnforced)]]"
-            aria-labelledby="printersCheckboxLabel">
-        </cr-toggle>
-      </div>
-
       <div class="list-item"
            hidden="[[!osSyncPrefs.wifiConfigurationsRegistered]]">
         <div id="wifiConfigurationsCheckboxLabel"

@@ -21,14 +21,18 @@ class InterventionsInternalsUI : public ui::MojoWebUIController {
   explicit InterventionsInternalsUI(content::WebUI* web_ui);
   ~InterventionsInternalsUI() override;
 
- private:
-  void BindInterventionsInternalsPageHandler(
+  // Instantiates implementor of the mojom::InterventionsInternalsPageHandler
+  // mojo interface passing the pending receiver that will be internally bound.
+  void BindInterface(
       mojo::PendingReceiver<mojom::InterventionsInternalsPageHandler> receiver);
 
+ private:
   // The PreviewsUIService associated with this UI.
   previews::PreviewsUIService* previews_ui_service_;
 
   std::unique_ptr<InterventionsInternalsPageHandler> page_handler_;
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(InterventionsInternalsUI);
 };

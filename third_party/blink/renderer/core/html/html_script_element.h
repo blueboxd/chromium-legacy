@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/script/script_element_base.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
+#include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 
 namespace blink {
 
@@ -75,9 +76,6 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   bool HasLegalLinkAttribute(const QualifiedName&) const override;
   const QualifiedName& SubResourceAttributeName() const override;
 
-  void SetTrustedTextContent(const String&);
-  void SetTrustedInnerText(const String&, ExceptionState&);
-
   // ScriptElementBase overrides:
   String SourceAttributeValue() const override;
   String CharsetAttributeValue() const override;
@@ -112,7 +110,7 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   Element& CloneWithoutAttributesAndChildren(Document&) const override;
 
   // https://w3c.github.io/webappsec-trusted-types/dist/spec/#script-scripttext
-  String script_text_internal_slot_;
+  ParkableString script_text_internal_slot_;
 
   Member<ScriptLoader> loader_;
 };

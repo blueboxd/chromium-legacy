@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-[
-    Constructor(DOMString type, TestInterfaceEventInit testInterfaceEventInit)
-] interface TestInterfaceEventInitConstructor : Event {
+interface TestInterfaceEventInitConstructor : Event {
+    constructor(DOMString type, TestInterfaceEventInit testInterfaceEventInit);
     readonly attribute DOMString readonlyStringAttribute;
 };

@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.chromium.base.SysUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
@@ -62,9 +63,15 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
                 tabModelSelector, tabCreatorManager, resetHandler, animationSourceViewProvider,
                 controller, tabGroupTitleEditor, mComponentName);
 
-        mTabListCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
-                tabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false, null,
-                gridCardOnClickListenerProvider, mMediator.getTabGridDialogHandler(),
+        // TODO(crbug.com/1031349) : Remove the inline mode logic here, make the constructor to take
+        // in a mode parameter instead.
+        mTabListCoordinator = new TabListCoordinator(
+                FeatureUtilities.isTabGroupsAndroidContinuationEnabled()
+                                && SysUtils.isLowEndDevice()
+                        ? TabListCoordinator.TabListMode.LIST
+                        : TabListCoordinator.TabListMode.GRID,
+                context, tabModelSelector, tabContentManager::getTabThumbnailWithCallback, null,
+                false, null, gridCardOnClickListenerProvider, mMediator.getTabGridDialogHandler(),
                 TabProperties.UiType.CLOSABLE, null, containerView, null, false, mComponentName);
 
         TabListRecyclerView recyclerView = mTabListCoordinator.getContainerView();

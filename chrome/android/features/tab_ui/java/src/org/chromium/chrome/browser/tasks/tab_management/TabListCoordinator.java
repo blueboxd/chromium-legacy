@@ -54,7 +54,7 @@ public class TabListCoordinator implements Destroyable {
      * NOTE: CAROUSEL mode currently uses a fixed height and card width set in dimens.xml with names
      *  tab_carousel_height and tab_carousel_card_width.
      *
-     *  STRIP and GRID modes will have height equal to that of the container view.
+     *  STRIP, LIST, and GRID modes will have height equal to that of the container view.
      * */
     @IntDef({TabListMode.GRID, TabListMode.STRIP, TabListMode.CAROUSEL, TabListMode.LIST})
     @Retention(RetentionPolicy.SOURCE)

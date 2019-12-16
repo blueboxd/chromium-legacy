@@ -114,6 +114,8 @@ class TabSelectionEditorCoordinator {
         mParentView = parentView;
         mTabModelSelector = tabModelSelector;
 
+        // TODO(crbug.com/1007598): construct TabListCoordinator with List mode if it's a low end
+        // device, and TabGroupContinuation is turned on.
         mTabListCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 mTabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false,
                 null, null, null, TabProperties.UiType.SELECTABLE, this::getSelectionDelegate, null,

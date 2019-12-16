@@ -44,7 +44,7 @@ public class OnDiskFileTest {
                                                 .getTargetContext()
                                                 .getCacheDir()
                                                 .getPath(),
-                "WebView/Default/HTTP Cache");
+                "org.chromium.android_webview");
         FileUtils.recursivelyDeleteFile(webViewCacheDir);
 
         mActivityTestRule.startBrowserProcess();

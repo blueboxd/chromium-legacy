@@ -2,8 +2,24 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import contextlib
 import os
 import sys
+
+
+@contextlib.contextmanager
+def SysPath(path, position=None):
+  if position is None:
+    sys.path.append(path)
+  else:
+    sys.path.insert(position, path)
+  try:
+    yield
+  finally:
+    if sys.path[-1] == path:
+      sys.path.pop()
+    else:
+      sys.path.remove(path)
 
 
 def GetChromiumSrcDir():
@@ -44,6 +60,10 @@ def GetContribDir():
 
 def GetAndroidPylibDir():
   return os.path.join(GetChromiumSrcDir(), 'build', 'android')
+
+
+def GetVariationsDir():
+  return os.path.join(GetChromiumSrcDir(), 'tools', 'variations')
 
 
 def AddTelemetryToPath():

@@ -1197,7 +1197,8 @@ TEST_F('ChromeVoxEditingTest', 'TelTrimsWhitespace', function() {
       });
 });
 
-TEST_F('ChromeVoxEditingTest', 'BackwardWordDelete', function() {
+// TODO(https://crbug.com/1033983) flaky on linux-chromeos-rel/dbg.
+TEST_F('ChromeVoxEditingTest', 'DISABLED_BackwardWordDelete', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
       `

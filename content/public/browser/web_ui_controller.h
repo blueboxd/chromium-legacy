@@ -68,7 +68,7 @@ class CONTENT_EXPORT WebUIController {
 // Type for the subclass.
 #define WEB_UI_CONTROLLER_TYPE_DECL()            \
   static constexpr int kWebUIControllerType = 0; \
-  Type GetType() override final;                 \
+  Type GetType() final;                          \
   friend class content::WebUIController
 
 // This macro instantiates the static variable declared by the previous macro.

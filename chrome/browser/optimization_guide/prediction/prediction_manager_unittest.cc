@@ -13,6 +13,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
 #include "chrome/browser/optimization_guide/optimization_guide_util.h"
 #include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
@@ -557,8 +558,16 @@ TEST_F(PredictionManagerTest, OptimizationTargetNotRegisteredForNavigation) {
       0);
 }
 
+// TODO(https://crbug.com/1034433) Flaky on Mac10.12
+#if defined(OS_MACOSX)
+#define MAYBE_NoPredictionModelForRegisteredOptimizationTarget \
+  DISABLED_NoPredictionModelForRegisteredOptimizationTarget
+#else
+#define MAYBE_NoPredictionModelForRegisteredOptimizationTarget \
+  NoPredictionModelForRegisteredOptimizationTarget
+#endif
 TEST_F(PredictionManagerTest,
-       NoPredictionModelForRegisteredOptimizationTarget) {
+       MAYBE_NoPredictionModelForRegisteredOptimizationTarget) {
   base::HistogramTester histogram_tester;
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
@@ -1009,8 +1018,16 @@ TEST_F(PredictionManagerTest,
       PredictionManagerModelStatus::kStoreAvailableModelNotLoaded, 1);
 }
 
+// TODO(https://crbug.com/1034433) Flaky on Mac10.12
+#if defined(OS_MACOSX)
+#define MAYBE_ShouldTargetNavigationStoreUnavailableModelUnknown \
+  DISABLED_ShouldTargetNavigationStoreUnavailableModelUnknown
+#else
+#define MAYBE_ShouldTargetNavigationStoreUnavailableModelUnknown \
+  ShouldTargetNavigationStoreUnavailableModelUnknown
+#endif
 TEST_F(PredictionManagerTest,
-       ShouldTargetNavigationStoreUnavailableModelUnknown) {
+       MAYBE_ShouldTargetNavigationStoreUnavailableModelUnknown) {
   base::HistogramTester histogram_tester;
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
@@ -1070,7 +1087,16 @@ TEST_F(PredictionManagerTest, UpdateModelForUnregisteredTarget) {
       "OptimizationGuide.PredictionManager.HostModelFeaturesStored", 0);
 }
 
-TEST_F(PredictionManagerTest, UpdateModelWithUnsupportedOptimizationTarget) {
+// TODO(https://crbug.com/1034433) Flaky on Mac10.12
+#if defined(OS_MACOSX)
+#define MAYBE_UpdateModelWithUnsupportedOptimizationTarget \
+  DISABLED_UpdateModelWithUnsupportedOptimizationTarget
+#else
+#define MAYBE_UpdateModelWithUnsupportedOptimizationTarget \
+  UpdateModelWithUnsupportedOptimizationTarget
+#endif
+TEST_F(PredictionManagerTest,
+       MAYBE_UpdateModelWithUnsupportedOptimizationTarget) {
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           GURL("https://foo.com"));

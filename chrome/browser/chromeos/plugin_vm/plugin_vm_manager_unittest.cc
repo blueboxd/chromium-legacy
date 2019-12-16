@@ -70,6 +70,22 @@ class PluginVmManagerTest : public testing::Test {
     return chrome_launcher_controller_->GetShelfSpinnerController();
   }
 
+  void SetListVmsResponse(vm_tools::plugin_dispatcher::VmState state) {
+    vm_tools::plugin_dispatcher::ListVmResponse list_vms_response;
+    list_vms_response.add_vm_info()->set_state(state);
+    VmPluginDispatcherClient().set_list_vms_response(list_vms_response);
+  }
+
+  void NotifyVmStateChanged(vm_tools::plugin_dispatcher::VmState state) {
+    vm_tools::plugin_dispatcher::VmStateChangedSignal state_changed_signal;
+    state_changed_signal.set_owner_id(
+        chromeos::ProfileHelper::GetUserIdHashFromProfile(
+            testing_profile_.get()));
+    state_changed_signal.set_vm_name(kPluginVmName);
+    state_changed_signal.set_vm_state(state);
+    VmPluginDispatcherClient().NotifyVmStateChanged(state_changed_signal);
+  }
+
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> testing_profile_;
   std::unique_ptr<PluginVmTestHelper> test_helper_;
@@ -103,10 +119,7 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmStartAndShow) {
   EXPECT_TRUE(IsPluginVmAllowedForProfile(testing_profile_.get()));
 
   // The PluginVmManager calls StartVm when the VM is not yet running.
-  vm_tools::plugin_dispatcher::ListVmResponse list_vms_response;
-  list_vms_response.add_vm_info()->set_state(
-      vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED);
-  VmPluginDispatcherClient().set_list_vms_response(list_vms_response);
+  SetListVmsResponse(vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED);
 
   plugin_vm_manager_->LaunchPluginVm();
   task_environment_.RunUntilIdle();
@@ -126,10 +139,7 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmShowAndStop) {
   EXPECT_TRUE(IsPluginVmAllowedForProfile(testing_profile_.get()));
 
   // The PluginVmManager skips calling StartVm when the VM is already running.
-  vm_tools::plugin_dispatcher::ListVmResponse list_vms_response;
-  list_vms_response.add_vm_info()->set_state(
-      vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING);
-  VmPluginDispatcherClient().set_list_vms_response(list_vms_response);
+  SetListVmsResponse(vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING);
 
   plugin_vm_manager_->LaunchPluginVm();
   task_environment_.RunUntilIdle();
@@ -158,14 +168,7 @@ TEST_F(PluginVmManagerTest, OnStateChangedRunningStoppedSuspended) {
   EXPECT_TRUE(
       chrome_launcher_controller_->IsOpen(ash::ShelfID(kPluginVmAppId)));
 
-  vm_tools::plugin_dispatcher::VmStateChangedSignal state_changed_signal;
-  state_changed_signal.set_owner_id(
-      chromeos::ProfileHelper::GetUserIdHashFromProfile(
-          testing_profile_.get()));
-  state_changed_signal.set_vm_name(kPluginVmName);
-  state_changed_signal.set_vm_state(
-      vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING);
-  VmPluginDispatcherClient().NotifyVmStateChanged(state_changed_signal);
+  NotifyVmStateChanged(vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING);
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(ConciergeClient().get_vm_info_called());
   EXPECT_TRUE(base::DirectoryExists(
@@ -173,24 +176,19 @@ TEST_F(PluginVmManagerTest, OnStateChangedRunningStoppedSuspended) {
   EXPECT_TRUE(SeneschalClient().share_path_called());
   EXPECT_EQ(plugin_vm_manager_->seneschal_server_handle(), 1ul);
 
-  state_changed_signal.set_vm_state(
-      vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED);
-  VmPluginDispatcherClient().NotifyVmStateChanged(state_changed_signal);
+  NotifyVmStateChanged(vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(plugin_vm_manager_->seneschal_server_handle(), 0ul);
   EXPECT_FALSE(
       chrome_launcher_controller_->IsOpen(ash::ShelfID(kPluginVmAppId)));
 
   // Signals for RUNNING, then SUSPENDED.
-  state_changed_signal.set_vm_state(
-      vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING);
-  VmPluginDispatcherClient().NotifyVmStateChanged(state_changed_signal);
+  NotifyVmStateChanged(vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(plugin_vm_manager_->seneschal_server_handle(), 1ul);
 
-  state_changed_signal.set_vm_state(
+  NotifyVmStateChanged(
       vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDED);
-  VmPluginDispatcherClient().NotifyVmStateChanged(state_changed_signal);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(plugin_vm_manager_->seneschal_server_handle(), 0ul);
 }
@@ -202,10 +200,7 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmSpinner) {
   // No spinner before doing anything
   EXPECT_FALSE(SpinnerController()->HasApp(kPluginVmAppId));
 
-  vm_tools::plugin_dispatcher::ListVmResponse list_vms_response;
-  list_vms_response.add_vm_info()->set_state(
-      vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED);
-  VmPluginDispatcherClient().set_list_vms_response(list_vms_response);
+  SetListVmsResponse(vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED);
 
   plugin_vm_manager_->LaunchPluginVm();
   task_environment_.RunUntilIdle();
@@ -228,19 +223,10 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmFromSuspending) {
   // delayed until an appropriate state change signal is received.
   test_helper_->AllowPluginVm();
 
-  vm_tools::plugin_dispatcher::VmStateChangedSignal state_changed_signal;
-  state_changed_signal.set_owner_id(
-      chromeos::ProfileHelper::GetUserIdHashFromProfile(
-          testing_profile_.get()));
-  state_changed_signal.set_vm_name(kPluginVmName);
-  state_changed_signal.set_vm_state(
+  NotifyVmStateChanged(
       vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDING);
-  VmPluginDispatcherClient().NotifyVmStateChanged(state_changed_signal);
 
-  vm_tools::plugin_dispatcher::ListVmResponse list_vms_response;
-  list_vms_response.add_vm_info()->set_state(
-      vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDING);
-  VmPluginDispatcherClient().set_list_vms_response(list_vms_response);
+  SetListVmsResponse(vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDING);
   plugin_vm_manager_->LaunchPluginVm();
   task_environment_.RunUntilIdle();
 
@@ -250,9 +236,8 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmFromSuspending) {
   EXPECT_TRUE(SpinnerController()->HasApp(kPluginVmAppId));
 
   // The launch process continues once the operation completes.
-  state_changed_signal.set_vm_state(
+  NotifyVmStateChanged(
       vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDED);
-  VmPluginDispatcherClient().NotifyVmStateChanged(state_changed_signal);
   task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(VmPluginDispatcherClient().list_vms_called());
@@ -265,10 +250,7 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmInvalidLicense) {
   EXPECT_TRUE(IsPluginVmAllowedForProfile(testing_profile_.get()));
 
   // The PluginVmManager calls StartVm when the VM is not yet running.
-  vm_tools::plugin_dispatcher::ListVmResponse list_vms_response;
-  list_vms_response.add_vm_info()->set_state(
-      vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED);
-  VmPluginDispatcherClient().set_list_vms_response(list_vms_response);
+  SetListVmsResponse(vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED);
 
   vm_tools::plugin_dispatcher::StartVmResponse start_vm_response;
   start_vm_response.set_error(

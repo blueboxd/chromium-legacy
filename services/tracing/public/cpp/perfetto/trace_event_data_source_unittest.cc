@@ -301,7 +301,9 @@ class TraceEventDataSourceTest : public testing::Test {
 
     // ThreadDescriptor is only emitted when incremental state was reset, and
     // thus also always serves as indicator for the state reset to the consumer.
-    EXPECT_TRUE(packet->incremental_state_cleared());
+    EXPECT_EQ(packet->sequence_flags(),
+              static_cast<uint32_t>(perfetto::protos::pbzero::TracePacket::
+                                        SEQ_INCREMENTAL_STATE_CLEARED));
   }
 
   void ExpectProcessDescriptor(const perfetto::protos::TracePacket* packet) {
@@ -320,6 +322,11 @@ class TraceEventDataSourceTest : public testing::Test {
                         int64_t absolute_timestamp = 0,
                         int32_t tid_override = 0,
                         int32_t pid_override = 0) {
+    // All TrackEvents need incremental state for delta timestamps / interning.
+    EXPECT_EQ(packet->sequence_flags(),
+              static_cast<uint32_t>(perfetto::protos::pbzero::TracePacket::
+                                        SEQ_NEEDS_INCREMENTAL_STATE));
+
     EXPECT_TRUE(packet->has_track_event());
 
     if (absolute_timestamp > 0) {

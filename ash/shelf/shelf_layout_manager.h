@@ -245,7 +245,10 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // coordinates.
   int CalculateHotseatYInShelf(HotseatState hotseat_target_state) const;
 
+  // Getters for bounds and opacity of the various sub-components.
   gfx::Rect GetNavigationBounds() const;
+  gfx::Rect GetStatusAreaBounds() const;
+  float GetOpacity() const;
 
   bool updating_bounds() const { return updating_bounds_; }
   ShelfAutoHideState auto_hide_state() const { return state_.auto_hide_state; }

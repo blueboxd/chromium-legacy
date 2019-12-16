@@ -368,6 +368,11 @@ const String& NDEFRecord::lang() const {
 }
 
 DOMDataView* NDEFRecord::data() const {
+  // Step 4 in https://w3c.github.io/web-nfc/#dfn-parse-an-ndef-record
+  if (record_type_ == "empty") {
+    DCHECK(payload_data_.IsEmpty());
+    return nullptr;
+  }
   DOMArrayBuffer* dom_buffer =
       DOMArrayBuffer::Create(payload_data_.data(), payload_data_.size());
   return DOMDataView::Create(dom_buffer, 0, payload_data_.size());

@@ -41,7 +41,6 @@ const char kSyncAllOsTypes[] = "sync.all_os_types";
 // OS user selectable types.
 const char kSyncOsApps[] = "sync.os_apps";
 const char kSyncOsPreferences[] = "sync.os_preferences";
-const char kSyncOsPrinters[] = "sync.os_printers";
 #endif
 
 // Booleans specifying whether the user has selected to sync the following

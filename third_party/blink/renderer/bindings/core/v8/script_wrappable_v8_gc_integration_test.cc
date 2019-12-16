@@ -31,7 +31,7 @@ TEST_F(ScriptWrappableV8GCIntegrationTest, V8ReportsLiveObjectsDuringFullGc) {
   GCObjectLivenessObserver<DeathAwareScriptWrappable> observer;
   {
     v8::HandleScope handle_scope(GetIsolate());
-    DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::Create();
+    auto* object = MakeGarbageCollected<DeathAwareScriptWrappable>();
     observer.Observe(object);
 
     holder.Reset(GetIsolate(),
@@ -52,7 +52,7 @@ TEST_F(ScriptWrappableV8GCIntegrationTest,
   GCObjectLivenessObserver<DeathAwareScriptWrappable> observer;
   {
     v8::HandleScope handle_scope(GetIsolate());
-    DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::Create();
+    auto* object = MakeGarbageCollected<DeathAwareScriptWrappable>();
     observer.Observe(object);
 
     v8::Local<v8::Value> wrapper =
@@ -85,7 +85,7 @@ TEST_F(ScriptWrappableV8GCIntegrationTest,
   GCObjectLivenessObserver<DeathAwareScriptWrappable> observer;
   {
     v8::HandleScope handle_scope(GetIsolate());
-    DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::Create();
+    auto* object = MakeGarbageCollected<DeathAwareScriptWrappable>();
     observer.Observe(object);
 
     // Creates new V8 wrapper and associates it with global scope
@@ -109,7 +109,7 @@ TEST_F(ScriptWrappableV8GCIntegrationTest,
   GCObjectLivenessObserver<DeathAwareScriptWrappable> observer;
   {
     v8::HandleScope handle_scope(GetIsolate());
-    DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::Create();
+    auto* object = MakeGarbageCollected<DeathAwareScriptWrappable>();
     observer.Observe(object);
 
     // Creates new V8 wrapper and associates it with global scope

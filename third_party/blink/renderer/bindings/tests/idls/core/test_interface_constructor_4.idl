@@ -7,4 +7,5 @@
 interface TestInterfaceConstructor4 {
     [CallWith=ScriptState, RaisesException] constructor(TestInterfaceConstructor4 testInterface4Arg);
     [CallWith=ScriptState, RaisesException] constructor(USVString usvStringArg);
+    [Custom] constructor(double doubleArg);
 };

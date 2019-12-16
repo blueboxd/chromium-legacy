@@ -28,6 +28,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/os_crypt/os_crypt.h"
@@ -700,6 +701,7 @@ LoginDatabase::LoginDatabase(const base::FilePath& db_path,
 LoginDatabase::~LoginDatabase() = default;
 
 bool LoginDatabase::Init() {
+  TRACE_EVENT0("passwords", "LoginDatabase::Init");
   // Set pragmas for a small, private database (based on WebDatabase).
   db_.set_page_size(2048);
   db_.set_cache_size(32);
@@ -867,6 +869,7 @@ void LoginDatabase::InitPasswordRecoveryUtil(
 
 void LoginDatabase::ReportMetrics(const std::string& sync_username,
                                   bool custom_passphrase_sync_enabled) {
+  TRACE_EVENT0("passwords", "LoginDatabase::ReportMetrics");
   sql::Statement s(db_.GetCachedStatement(
       SQL_FROM_HERE,
       "SELECT signon_realm, password_type, blacklisted_by_user,"
@@ -1142,6 +1145,7 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username,
 
 PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form,
                                                 AddLoginError* error) {
+  TRACE_EVENT0("passwords", "LoginDatabase::AddLogin");
   if (error) {
     *error = AddLoginError::kNone;
   }
@@ -1221,6 +1225,7 @@ PasswordStoreChangeList LoginDatabase::AddBlacklistedLoginForTesting(
 
 PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form,
                                                    UpdateLoginError* error) {
+  TRACE_EVENT0("passwords", "LoginDatabase::UpdateLogin");
   if (error) {
     *error = UpdateLoginError::kNone;
   }
@@ -1306,6 +1311,7 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form,
 
 bool LoginDatabase::RemoveLogin(const PasswordForm& form,
                                 PasswordStoreChangeList* changes) {
+  TRACE_EVENT0("passwords", "LoginDatabase::RemoveLogin");
   if (changes) {
     changes->clear();
   }
@@ -1340,6 +1346,7 @@ bool LoginDatabase::RemoveLogin(const PasswordForm& form,
 
 bool LoginDatabase::RemoveLoginByPrimaryKey(int primary_key,
                                             PasswordStoreChangeList* changes) {
+  TRACE_EVENT0("passwords", "LoginDatabase::RemoveLoginByPrimaryKey");
   PasswordForm form;
   if (changes) {
     changes->clear();
@@ -1377,6 +1384,7 @@ bool LoginDatabase::RemoveLoginsCreatedBetween(
     base::Time delete_begin,
     base::Time delete_end,
     PasswordStoreChangeList* changes) {
+  TRACE_EVENT0("passwords", "LoginDatabase::RemoveLoginsCreatedBetween");
   if (changes) {
     changes->clear();
   }
@@ -1415,6 +1423,7 @@ bool LoginDatabase::RemoveLoginsCreatedBetween(
 }
 
 bool LoginDatabase::GetAutoSignInLogins(PrimaryKeyToFormMap* key_to_form_map) {
+  TRACE_EVENT0("passwords", "LoginDatabase::GetAutoSignInLogins");
   DCHECK(key_to_form_map);
   DCHECK(!autosignin_statement_.empty());
   key_to_form_map->clear();
@@ -1513,6 +1522,7 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
 bool LoginDatabase::GetLogins(
     const PasswordStore::FormDigest& form,
     std::vector<std::unique_ptr<PasswordForm>>* forms) {
+  TRACE_EVENT0("passwords", "LoginDatabase::GetLogins");
   DCHECK(forms);
   forms->clear();
 
@@ -1600,6 +1610,7 @@ bool LoginDatabase::GetLogins(
 bool LoginDatabase::GetLoginsByPassword(
     const base::string16& plain_text_password,
     std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) {
+  TRACE_EVENT0("passwords", "LoginDatabase::GetLoginsByPassword");
   DCHECK(forms);
   forms->clear();
 
@@ -1630,6 +1641,7 @@ bool LoginDatabase::GetLoginsCreatedBetween(
     const base::Time begin,
     const base::Time end,
     PrimaryKeyToFormMap* key_to_form_map) {
+  TRACE_EVENT0("passwords", "LoginDatabase::GetLoginsCreatedBetween");
   DCHECK(key_to_form_map);
   DCHECK(!created_statement_.empty());
   sql::Statement s(
@@ -1644,6 +1656,7 @@ bool LoginDatabase::GetLoginsCreatedBetween(
 
 FormRetrievalResult LoginDatabase::GetAllLogins(
     PrimaryKeyToFormMap* key_to_form_map) {
+  TRACE_EVENT0("passwords", "LoginDatabase::GetAllLogins");
   DCHECK(key_to_form_map);
   key_to_form_map->clear();
 
@@ -1655,11 +1668,13 @@ FormRetrievalResult LoginDatabase::GetAllLogins(
 
 bool LoginDatabase::GetAutofillableLogins(
     std::vector<std::unique_ptr<PasswordForm>>* forms) {
+  TRACE_EVENT0("passwords", "LoginDatabase::GetAutofillableLogins");
   return GetAllLoginsWithBlacklistSetting(false, forms);
 }
 
 bool LoginDatabase::GetBlacklistLogins(
     std::vector<std::unique_ptr<PasswordForm>>* forms) {
+  TRACE_EVENT0("passwords", "LoginDatabase::GetBlacklistLogins");
   return GetAllLoginsWithBlacklistSetting(true, forms);
 }
 
@@ -1694,6 +1709,7 @@ bool LoginDatabase::IsEmpty() {
 }
 
 bool LoginDatabase::DeleteAndRecreateDatabaseFile() {
+  TRACE_EVENT0("passwords", "LoginDatabase::DeleteAndRecreateDatabaseFile");
   DCHECK(db_.is_open());
   meta_table_.Reset();
   db_.Close();
@@ -1703,6 +1719,7 @@ bool LoginDatabase::DeleteAndRecreateDatabaseFile() {
 
 DatabaseCleanupResult LoginDatabase::DeleteUndecryptableLogins() {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
+  TRACE_EVENT0("passwords", "LoginDatabase::DeleteUndecryptableLogins");
   // If the Keychain is unavailable, don't delete any logins.
   if (!OSCrypt::IsEncryptionAvailable()) {
     metrics_util::LogDeleteUndecryptableLoginsReturnValue(
@@ -1758,6 +1775,7 @@ DatabaseCleanupResult LoginDatabase::DeleteUndecryptableLogins() {
 
 std::string LoginDatabase::GetEncryptedPassword(
     const PasswordForm& form) const {
+  TRACE_EVENT0("passwords", "LoginDatabase::GetEncryptedPassword");
   DCHECK(!encrypted_statement_.empty());
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE, encrypted_statement_.c_str()));
@@ -1776,6 +1794,7 @@ std::string LoginDatabase::GetEncryptedPassword(
 }
 
 std::unique_ptr<syncer::MetadataBatch> LoginDatabase::GetAllSyncMetadata() {
+  TRACE_EVENT0("passwords", "LoginDatabase::GetAllSyncMetadata");
   std::unique_ptr<syncer::MetadataBatch> metadata_batch =
       GetAllSyncEntityMetadata();
   if (metadata_batch == nullptr) {
@@ -1793,6 +1812,7 @@ std::unique_ptr<syncer::MetadataBatch> LoginDatabase::GetAllSyncMetadata() {
 }
 
 void LoginDatabase::DeleteAllSyncMetadata() {
+  TRACE_EVENT0("passwords", "LoginDatabase::DeleteAllSyncMetadata");
   ClearAllSyncMetadata(&db_);
 }
 
@@ -1800,6 +1820,7 @@ bool LoginDatabase::UpdateSyncMetadata(
     syncer::ModelType model_type,
     const std::string& storage_key,
     const sync_pb::EntityMetadata& metadata) {
+  TRACE_EVENT0("passwords", "LoginDatabase::UpdateSyncMetadata");
   DCHECK_EQ(model_type, syncer::PASSWORDS);
 
   int storage_key_int = 0;
@@ -1829,6 +1850,7 @@ bool LoginDatabase::UpdateSyncMetadata(
 
 bool LoginDatabase::ClearSyncMetadata(syncer::ModelType model_type,
                                       const std::string& storage_key) {
+  TRACE_EVENT0("passwords", "LoginDatabase::ClearSyncMetadata");
   DCHECK_EQ(model_type, syncer::PASSWORDS);
 
   int storage_key_int = 0;
@@ -1850,6 +1872,7 @@ bool LoginDatabase::ClearSyncMetadata(syncer::ModelType model_type,
 bool LoginDatabase::UpdateModelTypeState(
     syncer::ModelType model_type,
     const sync_pb::ModelTypeState& model_type_state) {
+  TRACE_EVENT0("passwords", "LoginDatabase::UpdateModelTypeState");
   DCHECK_EQ(model_type, syncer::PASSWORDS);
 
   // Make sure only one row is left by storing it in the entry with id=1
@@ -1864,6 +1887,7 @@ bool LoginDatabase::UpdateModelTypeState(
 }
 
 bool LoginDatabase::ClearModelTypeState(syncer::ModelType model_type) {
+  TRACE_EVENT0("passwords", "LoginDatabase::ClearModelTypeState");
   DCHECK_EQ(model_type, syncer::PASSWORDS);
 
   sql::Statement s(db_.GetCachedStatement(
@@ -1873,14 +1897,17 @@ bool LoginDatabase::ClearModelTypeState(syncer::ModelType model_type) {
 }
 
 bool LoginDatabase::BeginTransaction() {
+  TRACE_EVENT0("passwords", "LoginDatabase::BeginTransaction");
   return db_.BeginTransaction();
 }
 
 void LoginDatabase::RollbackTransaction() {
+  TRACE_EVENT0("passwords", "LoginDatabase::RollbackTransaction");
   db_.RollbackTransaction();
 }
 
 bool LoginDatabase::CommitTransaction() {
+  TRACE_EVENT0("passwords", "LoginDatabase::CommitTransaction");
   return db_.CommitTransaction();
 }
 

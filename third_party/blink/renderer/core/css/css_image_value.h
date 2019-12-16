@@ -39,42 +39,11 @@ class ComputedStyle;
 
 class CORE_EXPORT CSSImageValue : public CSSValue {
  public:
-  static CSSImageValue* Create(const KURL& url,
-                               OriginClean origin_clean,
-                               StyleImage* image = nullptr) {
-    return Create(url.GetString(), url, Referrer(), origin_clean, image);
-  }
-  static CSSImageValue* Create(const AtomicString& relative_url,
-                               const KURL& absolute_url,
-                               OriginClean origin_clean,
-                               StyleImage* image = nullptr) {
-    return Create(relative_url, absolute_url, Referrer(), origin_clean, image);
-  }
-  static CSSImageValue* Create(const String& raw_value,
-                               const KURL& url,
-                               const Referrer& referrer,
-                               OriginClean origin_clean,
-                               StyleImage* image = nullptr) {
-    return Create(AtomicString(raw_value), url, referrer, origin_clean, image);
-  }
-  static CSSImageValue* Create(const AtomicString& raw_value,
-                               const KURL& url,
-                               const Referrer& referrer,
-                               OriginClean origin_clean,
-                               StyleImage* image = nullptr) {
-    return MakeGarbageCollected<CSSImageValue>(raw_value, url, referrer, image,
-                                               origin_clean);
-  }
-  static CSSImageValue* Create(const AtomicString& absolute_url,
-                               OriginClean origin_clean) {
-    return MakeGarbageCollected<CSSImageValue>(absolute_url, origin_clean);
-  }
-
   CSSImageValue(const AtomicString& raw_value,
                 const KURL&,
                 const Referrer&,
-                StyleImage*,
-                OriginClean origin_clean);
+                OriginClean origin_clean,
+                StyleImage* image = nullptr);
   CSSImageValue(const AtomicString& absolute_url, OriginClean origin_clean);
   ~CSSImageValue();
 
@@ -104,12 +73,15 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
   bool KnownToBeOpaque(const Document&, const ComputedStyle&) const;
 
   CSSImageValue* ValueWithURLMadeAbsolute() const {
-    return Create(KURL(absolute_url_), origin_clean_, cached_image_.Get());
+    return MakeGarbageCollected<CSSImageValue>(
+        absolute_url_, KURL(absolute_url_), Referrer(), origin_clean_,
+        cached_image_.Get());
   }
 
   CSSImageValue* Clone() const {
-    return Create(relative_url_, KURL(absolute_url_), origin_clean_,
-                  cached_image_.Get());
+    return MakeGarbageCollected<CSSImageValue>(
+        relative_url_, KURL(absolute_url_), Referrer(), origin_clean_,
+        cached_image_.Get());
   }
 
   void SetInitiator(const AtomicString& name) { initiator_name_ = name; }

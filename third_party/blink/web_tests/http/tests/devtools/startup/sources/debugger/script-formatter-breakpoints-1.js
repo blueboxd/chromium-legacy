@@ -52,7 +52,7 @@
 
       function pausedInF1Again(callFrames) {
         SourcesTestRunner.dumpBreakpointSidebarPane('while paused in pretty printed');
-        Sources.sourceFormatter.discardFormattedUISourceCode(panel.visibleView.uiSourceCode());
+        Formatter.sourceFormatter.discardFormattedUISourceCode(panel.visibleView.uiSourceCode());
         SourcesTestRunner.waitBreakpointSidebarPane().then(onBreakpointsUpdated);
       }
 

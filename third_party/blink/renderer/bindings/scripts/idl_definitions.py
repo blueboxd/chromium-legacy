@@ -320,6 +320,7 @@ class IdlInterface(object):
         # for constructor code generation but we will use a new code generator
         # soon so this kind of workaround should be fine.
         constructor_operations = []
+        custom_constructor_operations = []
         constructor_operations_extended_attributes = {}
 
         def is_blacklisted_attribute_type(idl_type):
@@ -355,17 +356,19 @@ class IdlInterface(object):
                         self.has_named_property_getter = True
                 self.operations.append(op)
             elif child_class == 'Constructor':
-                constructor, extended_attributes = (
-                    constructor_operation_from_node(child))
-                # Check extended attributes consistency when we previously
-                # handle constructor operations.
-                if constructor_operations:
-                    check_constructor_operations_extended_attributes(
-                        constructor_operations_extended_attributes,
-                        extended_attributes)
-                constructor_operations.append(constructor)
-                constructor_operations_extended_attributes.update(
-                    extended_attributes)
+                operation = constructor_operation_from_node(child)
+                if operation.is_custom:
+                    custom_constructor_operations.append(operation.constructor)
+                else:
+                    # Check extended attributes consistency when we previously
+                    # handle constructor operations.
+                    if constructor_operations:
+                        check_constructor_operations_extended_attributes(
+                            constructor_operations_extended_attributes,
+                            operation.extended_attributes)
+                    constructor_operations.append(operation.constructor)
+                    constructor_operations_extended_attributes.update(
+                        operation.extended_attributes)
             elif child_class == 'Inherit':
                 self.parent = child.GetName()
             elif child_class == 'Stringifier':
@@ -402,8 +405,8 @@ class IdlInterface(object):
         if 'Unforgeable' in self.extended_attributes:
             raise ValueError('[Unforgeable] cannot appear on interfaces.')
 
-        if constructor_operations:
-            if self.constructors:
+        if constructor_operations or custom_constructor_operations:
+            if self.constructors or self.custom_constructors:
                 raise ValueError('Detected mixed [Constructor] and consructor '
                                  'operations. Do not use both in a single '
                                  'interface.')
@@ -417,6 +420,7 @@ class IdlInterface(object):
                                  'operations. Do not use both in a single '
                                  'interface')
             self.constructors = constructor_operations
+            self.custom_constructors = custom_constructor_operations
             self.extended_attributes.update(extended_attributes)
 
 
@@ -838,8 +842,7 @@ def ext_attributes_node_to_extended_attributes(node):
     # overloading, and thus are stored in temporary lists.
     # However, Named Constructors cannot be overloaded, and thus do not have
     # a list.
-    # FIXME: move Constructor logic into separate function, instead of modifying
-    #        extended attributes in-place.
+    # TODO(bashi): Remove |constructors| and |custom_constructors|.
     constructors = []
     custom_constructors = []
     extended_attributes = {}
@@ -858,9 +861,8 @@ def ext_attributes_node_to_extended_attributes(node):
         child = child_node(extended_attribute_node)
         child_class = child and child.GetClass()
         if name == 'Constructor':
-            if child_class and child_class != 'Arguments':
-                raise ValueError('Constructor only supports Arguments as child, but has child of class: %s' % child_class)
-            constructors.append(child)
+            raise ValueError('[Constructor] is deprecated. Use constructor '
+                             'operations')
         elif name == 'CustomConstructor':
             if child_class and child_class != 'Arguments':
                 raise ValueError('[CustomConstructor] only supports Arguments as child, but has child of class: %s' % child_class)
@@ -906,6 +908,8 @@ def extended_attributes_to_constructors(extended_attributes):
     Auxiliary function for IdlInterface.__init__.
     """
 
+    # TODO(bashi): Remove 'Constructors' and 'CustomConstructors'.
+
     constructor_list = extended_attributes.get('Constructors', [])
     constructors = [
         IdlOperation.constructor_from_arguments_node('Constructor', arguments_node)
@@ -932,10 +936,19 @@ def extended_attributes_to_constructors(extended_attributes):
     return constructors, custom_constructors
 
 
+class ConstructorOperation(object):
+    """Represents a constructor operation. This is a tentative object used to
+    create constructors in IdlInterface.
+    """
+
+    def __init__(self, constructor, extended_attributes, is_custom):
+        self.constructor = constructor
+        self.extended_attributes = extended_attributes
+        self.is_custom = is_custom
+
+
 def constructor_operation_from_node(node):
-    """Creates a constructor from the given |node|. Returns a tuple of
-    (constructor, extended_attributes) of which extended_attributes are
-    specified on |node|.
+    """Creates a ConstructorOperation from the given |node|.
     """
 
     arguments_node = None
@@ -953,9 +966,21 @@ def constructor_operation_from_node(node):
     if not arguments_node:
         raise ValueError('Expected Arguments node for constructor operation')
 
-    constructor = IdlOperation.constructor_from_arguments_node(
-        'Constructor', arguments_node)
-    return (constructor, extended_attributes)
+    if 'Custom' in extended_attributes:
+        if extended_attributes['Custom']:
+            raise ValueError('[Custom] should not have a value on constructor '
+                             'operations')
+        del extended_attributes['Custom']
+        constructor = IdlOperation.constructor_from_arguments_node(
+            'CustomConstructor', arguments_node)
+        return ConstructorOperation(
+            constructor, extended_attributes, is_custom=True)
+    else:
+        constructor = IdlOperation.constructor_from_arguments_node(
+            'Constructor', arguments_node)
+        return ConstructorOperation(
+            constructor, extended_attributes, is_custom=False)
+
 
 
 def check_constructor_operations_extended_attributes(current_attrs, new_attrs):
@@ -975,7 +1000,6 @@ def convert_constructor_operations_extended_attributes(extended_attributes):
     extended attributes for an interface definition (e.g. [ConstructorCallWith])
     """
 
-    # TODO(bashi): Convert [Custom] to [CustomConstructor].
     converted = {}
     for name, value in extended_attributes.items():
         if name == "CallWith":

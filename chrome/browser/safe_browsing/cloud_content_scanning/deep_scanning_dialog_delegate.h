@@ -29,6 +29,8 @@ class Profile;
 
 namespace safe_browsing {
 
+class DeepScanningDialogViews;
+
 extern const base::Feature kDeepScanningOfUploadsUI;
 
 // A tab modal dialog delegate that informs the user of a background deep
@@ -57,7 +59,7 @@ extern const base::Feature kDeepScanningOfUploadsUI;
 //     safe_browsing::DeepScanningDialogDelegate::ShowForWebContents(
 //         contents, std::move(data), base::BindOnce(...));
 //   }
-class DeepScanningDialogDelegate : public TabModalConfirmDialogDelegate {
+class DeepScanningDialogDelegate {
  public:
   // Used as an input to ShowForWebContents() to describe what data needs
   // deeper scanning.  Any members can be empty.
@@ -130,13 +132,11 @@ class DeepScanningDialogDelegate : public TabModalConfirmDialogDelegate {
   DeepScanningDialogDelegate(const DeepScanningDialogDelegate&) = delete;
   DeepScanningDialogDelegate& operator=(const DeepScanningDialogDelegate&) =
       delete;
-  ~DeepScanningDialogDelegate() override;
+  virtual ~DeepScanningDialogDelegate();
 
-  // TabModelConfirmDialogDelegate implementation.
-  base::string16 GetTitle() override;
-  base::string16 GetDialogMessage() override;
-  int GetDialogButtons() const override;
-  void OnCanceled() override;
+  // Called when the user decides to cancel the file upload. This will stop the
+  // upload to Chrome since the scan wasn't allowed to complete.
+  void Cancel();
 
   // Returns true if the deep scanning feature is enabled in the upload
   // direction via enterprise policies.  If the appropriate enterprise policies
@@ -262,7 +262,7 @@ class DeepScanningDialogDelegate : public TabModalConfirmDialogDelegate {
   CompletionCallback callback_;
 
   // Pointer to UI when enabled.
-  TabModalConfirmDialog* dialog_ = nullptr;
+  DeepScanningDialogViews* dialog_ = nullptr;
 
   // Access point to use to record UMA metrics. base::nullopt implies no metrics
   // are to be recorded.

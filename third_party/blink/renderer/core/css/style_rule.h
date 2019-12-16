@@ -189,11 +189,6 @@ class StyleRulePage : public StyleRuleBase {
 
 class StyleRuleProperty : public StyleRuleBase {
  public:
-  static StyleRuleProperty* Create(const String& name,
-                                   CSSPropertyValueSet* properties) {
-    return MakeGarbageCollected<StyleRuleProperty>(name, properties);
-  }
-
   StyleRuleProperty(const String& name, CSSPropertyValueSet*);
   StyleRuleProperty(const StyleRuleProperty&);
   ~StyleRuleProperty();

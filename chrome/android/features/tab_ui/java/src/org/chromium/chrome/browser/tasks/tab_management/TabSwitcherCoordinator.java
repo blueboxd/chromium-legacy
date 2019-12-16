@@ -61,6 +61,7 @@ public class TabSwitcherCoordinator
     private final TabSelectionEditorCoordinator mTabSelectionEditorCoordinator;
     private final UndoGroupSnackbarController mUndoGroupSnackbarController;
     private final TabModelSelector mTabModelSelector;
+    private final @TabListCoordinator.TabListMode int mMode;
 
     private final MenuOrKeyboardActionController
             .MenuOrKeyboardActionHandler mTabSwitcherMenuActionHandler =
@@ -87,6 +88,7 @@ public class TabSwitcherCoordinator
             MenuOrKeyboardActionController menuOrKeyboardActionController,
             SnackbarManager.SnackbarManageable snackbarManageable, ViewGroup container,
             @TabListCoordinator.TabListMode int mode) {
+        mMode = mode;
         mTabModelSelector = tabModelSelector;
 
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
@@ -201,6 +203,11 @@ public class TabSwitcherCoordinator
     @Override
     public int getTabListTopOffset() {
         return mTabListCoordinator.getTabListTopOffset();
+    }
+
+    @Override
+    public int getListModeForTesting() {
+        return mMode;
     }
 
     @Override

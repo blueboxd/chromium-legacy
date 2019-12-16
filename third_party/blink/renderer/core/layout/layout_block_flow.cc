@@ -4221,7 +4221,7 @@ bool LayoutBlockFlow::CreatesNewFormattingContext() const {
   if (IsInline() || IsFloatingOrOutOfFlowPositioned() || HasOverflowClip() ||
       IsFlexItemIncludingDeprecatedAndNG() || IsCustomItem() ||
       IsDocumentElement() || IsGridItem() || IsWritingModeRoot() ||
-      StyleRef().Display() == EDisplay::kFlowRoot ||
+      IsMathItem() || StyleRef().Display() == EDisplay::kFlowRoot ||
       ShouldApplyPaintContainment() || ShouldApplyLayoutContainment() ||
       StyleRef().SpecifiesColumns() ||
       StyleRef().GetColumnSpan() == EColumnSpan::kAll) {

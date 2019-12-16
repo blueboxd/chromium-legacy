@@ -79,7 +79,8 @@ class PlatformVideoFramePoolTest
     scoped_refptr<VideoFrame> frame = pool_->GetFrame();
     frame->set_timestamp(base::TimeDelta::FromMilliseconds(timestamp_ms));
 
-    EXPECT_EQ(layout_->fourcc(), Fourcc::FromVideoPixelFormat(frame->format()));
+    EXPECT_EQ(layout_->fourcc(),
+              *Fourcc::FromVideoPixelFormat(frame->format()));
     EXPECT_EQ(layout_->size(), frame->coded_size());
     EXPECT_EQ(visible_rect_, frame->visible_rect());
     EXPECT_EQ(natural_size_, frame->natural_size());

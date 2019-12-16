@@ -48,7 +48,7 @@
         }
       }
       #outer_circle_focus_outlines_scale_x {
-        animation: 1.001s forwards outer_circle_focus_outlines_scale_x_animation;
+        animation: .29s forwards outer_circle_focus_outlines_scale_x_animation;
       }
       @keyframes outer_circle_focus_outlines_scale_y_animation {
         0% {
@@ -64,7 +64,7 @@
         }
       }
       #outer_circle_focus_outlines_scale_y {
-        animation: 1.001s forwards outer_circle_focus_outlines_scale_y_animation;
+        animation: .29s forwards outer_circle_focus_outlines_scale_y_animation;
       }
       @keyframes outer_circle_focus_outlines_animation {
         0% {
@@ -80,7 +80,7 @@
         }
       }
       #outer_circle_focus_outlines {
-        animation: 3.67s forwards outer_circle_focus_outlines_animation;
+        animation: 1.09s forwards outer_circle_focus_outlines_animation;
       }
       @keyframes inner_circle_focus_outlines_scale_x_animation {
         0% {
@@ -92,7 +92,7 @@
         }
       }
       #inner_circle_focus_outlines_scale_x {
-        animation: 1.001s forwards inner_circle_focus_outlines_scale_x_animation;
+        animation: .29s forwards inner_circle_focus_outlines_scale_x_animation;
       }
       @keyframes inner_circle_focus_outlines_scale_y_animation {
         0% {
@@ -104,7 +104,7 @@
         }
       }
       #inner_circle_focus_outlines_scale_y {
-        animation: 1.001s forwards inner_circle_focus_outlines_scale_y_animation;
+        animation: .29s forwards inner_circle_focus_outlines_scale_y_animation;
       }
       @keyframes inner_circle_focus_outlines_animation {
         0% {
@@ -120,7 +120,7 @@
         }
       }
       #inner_circle_focus_outlines {
-        animation: 2.002s forwards inner_circle_focus_outlines_animation;
+        animation: .58s forwards inner_circle_focus_outlines_animation;
       }
     </style>
 </svg>

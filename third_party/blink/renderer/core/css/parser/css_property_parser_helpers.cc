@@ -705,9 +705,9 @@ cssvalue::CSSURIValue* ConsumeUrl(CSSParserTokenRange& range,
   StringView url = ConsumeUrlAsStringView(range, context);
   if (url.IsNull())
     return nullptr;
-  String url_string = url.ToString();
-  return cssvalue::CSSURIValue::Create(url_string,
-                                       context->CompleteURL(url_string));
+  AtomicString url_string(url.ToString());
+  return MakeGarbageCollected<cssvalue::CSSURIValue>(
+      url_string, context->CompleteURL(url_string));
 }
 
 static int ClampRGBComponent(const CSSPrimitiveValue& value) {
@@ -1313,16 +1313,16 @@ static CSSValue* ConsumeDeprecatedGradient(CSSParserTokenRange& args,
       return nullptr;
   }
 
-  cssvalue::CSSGradientValue* result =
-      (id == CSSValueID::kRadial)
-          ? cssvalue::CSSRadialGradientValue::Create(
-                first_x, first_y, first_radius, second_x, second_y,
-                second_radius, cssvalue::kNonRepeating,
-                cssvalue::kCSSDeprecatedRadialGradient)
-          : MakeGarbageCollected<cssvalue::CSSLinearGradientValue>(
-                first_x, first_y, second_x, second_y, nullptr,
-                cssvalue::kNonRepeating,
-                cssvalue::kCSSDeprecatedLinearGradient);
+  cssvalue::CSSGradientValue* result;
+  if (id == CSSValueID::kRadial) {
+    result = MakeGarbageCollected<cssvalue::CSSRadialGradientValue>(
+        first_x, first_y, first_radius, second_x, second_y, second_radius,
+        cssvalue::kNonRepeating, cssvalue::kCSSDeprecatedRadialGradient);
+  } else {
+    result = MakeGarbageCollected<cssvalue::CSSLinearGradientValue>(
+        first_x, first_y, second_x, second_y, nullptr, cssvalue::kNonRepeating,
+        cssvalue::kCSSDeprecatedLinearGradient);
+  }
   cssvalue::CSSGradientColorStop stop;
   while (ConsumeCommaIncludingWhitespace(args)) {
     if (!ConsumeDeprecatedGradientColorStop(args, stop, css_parser_mode))
@@ -1439,9 +1439,10 @@ static CSSValue* ConsumeDeprecatedRadialGradient(
     ConsumeCommaIncludingWhitespace(args);
   }
 
-  cssvalue::CSSGradientValue* result = cssvalue::CSSRadialGradientValue::Create(
-      center_x, center_y, shape, size_keyword, horizontal_size, vertical_size,
-      repeating, cssvalue::kCSSPrefixedRadialGradient);
+  cssvalue::CSSGradientValue* result =
+      MakeGarbageCollected<cssvalue::CSSRadialGradientValue>(
+          center_x, center_y, shape, size_keyword, horizontal_size,
+          vertical_size, repeating, cssvalue::kCSSPrefixedRadialGradient);
   return ConsumeGradientColorStops(args, context, result,
                                    ConsumeGradientLengthOrPercent)
              ? result
@@ -1530,9 +1531,10 @@ static CSSValue* ConsumeRadialGradient(CSSParserTokenRange& args,
     return nullptr;
   }
 
-  cssvalue::CSSGradientValue* result = cssvalue::CSSRadialGradientValue::Create(
-      center_x, center_y, shape, size_keyword, horizontal_size, vertical_size,
-      repeating, cssvalue::kCSSRadialGradient);
+  cssvalue::CSSGradientValue* result =
+      MakeGarbageCollected<cssvalue::CSSRadialGradientValue>(
+          center_x, center_y, shape, size_keyword, horizontal_size,
+          vertical_size, repeating, cssvalue::kCSSRadialGradient);
   return ConsumeGradientColorStops(args, context, result,
                                    ConsumeGradientLengthOrPercent)
              ? result
@@ -1770,7 +1772,7 @@ static CSSValue* ConsumeGeneratedImage(CSSParserTokenRange& range,
 static CSSValue* CreateCSSImageValueWithReferrer(
     const AtomicString& raw_value,
     const CSSParserContext* context) {
-  CSSValue* image_value = CSSImageValue::Create(
+  CSSValue* image_value = MakeGarbageCollected<CSSImageValue>(
       raw_value, context->CompleteURL(raw_value), context->GetReferrer(),
       context->IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse);
   return image_value;

@@ -12,7 +12,6 @@
 #include "ash/shell.h"
 #include "ash/utility/transformer_util.h"
 #include "base/command_line.h"
-#include "components/viz/common/features.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout_store.h"
@@ -244,13 +243,6 @@ class MirrorRootWindowTransformer : public RootWindowTransformer {
 
       transform_.Translate(margin, 0);
       transform_.Scale(inverted_scale, inverted_scale);
-    }
-
-    // Apply rotation only when reflector is used for mirroring (non viz display
-    // compositor).
-    if (!features::IsVizDisplayCompositorEnabled()) {
-      // Make sure the rotation transform is applied in the beginning.
-      transform_.PreconcatTransform(rotation_transform);
     }
   }
 

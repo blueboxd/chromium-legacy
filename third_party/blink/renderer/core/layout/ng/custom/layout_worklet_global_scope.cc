@@ -36,12 +36,12 @@ LayoutWorkletGlobalScope* LayoutWorkletGlobalScope::Create(
   auto* isolate = ToIsolate(frame);
   auto microtask_queue =
       v8::MicrotaskQueue::New(isolate, v8::MicrotasksPolicy::kScoped);
-  auto* agent = Agent::CreateForWorkerOrWorklet(
-      isolate,
-      creation_params->agent_cluster_id.is_empty()
-          ? base::UnguessableToken::Create()
-          : creation_params->agent_cluster_id,
-      std::move(microtask_queue));
+  auto* agent =
+      MakeGarbageCollected<Agent>(isolate,
+                                  creation_params->agent_cluster_id.is_empty()
+                                      ? base::UnguessableToken::Create()
+                                      : creation_params->agent_cluster_id,
+                                  std::move(microtask_queue));
   auto* global_scope = MakeGarbageCollected<LayoutWorkletGlobalScope>(
       frame, std::move(creation_params), reporting_proxy,
       pending_layout_registry, agent);

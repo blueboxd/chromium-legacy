@@ -696,7 +696,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.testPageHandler) {
       pageHandler = window.testPageHandler;
     } else {
-      pageHandler = mojom.InterventionsInternalsPageHandler.getRemote();
+      pageHandler = mojom.InterventionsInternalsPageHandler.getRemote(
+          /*useBrowserInterfaceBroker=*/ true);
 
       // Set up client side mojo interface.
       pageImpl = new InterventionsInternalPageImpl();

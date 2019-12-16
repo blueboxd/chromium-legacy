@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_uri_reference.h"
 #include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -106,7 +107,7 @@ class SVGScriptElement final : public SVGElement,
 
   bool have_fired_load_ = false;
 
-  String script_text_internal_slot_;
+  ParkableString script_text_internal_slot_;
 
   Member<ScriptLoader> loader_;
 };

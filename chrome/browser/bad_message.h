@@ -24,6 +24,7 @@ enum BadMessageReason {
   WRLHH_LOGGING_STOPPED_BAD_STATE = 0,
   PPH_EXTRA_PREVIEW_MESSAGE = 1,
   PMF_INVALID_INITIATOR_ORIGIN = 2,
+  RFH_INVALID_WEB_UI_CONTROLLER = 3,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

@@ -46,8 +46,6 @@ DictionaryValue CreateOsSyncPrefs(SyncAllConfig sync_all,
   result.SetBoolean("osAppsSynced", types.Has(UserSelectableOsType::kOsApps));
   result.SetBoolean("osPreferencesSynced",
                     types.Has(UserSelectableOsType::kOsPreferences));
-  result.SetBoolean("printersSynced",
-                    types.Has(UserSelectableOsType::kPrinters));
   result.SetBoolean("wifiConfigurationsSynced",
                     types.Has(UserSelectableOsType::kWifiConfigurations));
   return result;
@@ -74,8 +72,6 @@ void CheckConfigDataTypeArguments(const DictionaryValue* dictionary,
             types.Has(UserSelectableOsType::kOsApps));
   CheckBool(dictionary, "osPreferencesSynced",
             types.Has(UserSelectableOsType::kOsPreferences));
-  CheckBool(dictionary, "printersSynced",
-            types.Has(UserSelectableOsType::kPrinters));
   CheckBool(dictionary, "wifiConfigurationsSynced",
             types.Has(UserSelectableOsType::kWifiConfigurations));
 }
@@ -287,7 +283,6 @@ TEST_F(OsSyncHandlerTest, ShowSetupSyncEverything) {
   CheckBool(dictionary, "syncAllOsTypes", true);
   CheckBool(dictionary, "osAppsRegistered", true);
   CheckBool(dictionary, "osPreferencesRegistered", true);
-  CheckBool(dictionary, "printersRegistered", true);
   CheckBool(dictionary, "wifiConfigurationsRegistered", true);
   CheckConfigDataTypeArguments(dictionary, SYNC_ALL_OS_TYPES,
                                UserSelectableOsTypeSet::All());

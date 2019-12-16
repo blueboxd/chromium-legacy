@@ -20,6 +20,25 @@ def make_copyright_header():
 """)
 
 
+def make_forward_declarations(accumulator):
+    assert isinstance(accumulator, CodeGenAccumulator)
+
+    class ForwardDeclarations(object):
+        def __init__(self, accumulator):
+            self._accumulator = accumulator
+
+        def __str__(self):
+            return "\n".join([
+                "class {};".format(class_name)
+                for class_name in sorted(self._accumulator.class_decls)
+            ] + [
+                "struct {};".format(struct_name)
+                for struct_name in sorted(self._accumulator.struct_decls)
+            ])
+
+    return LiteralNode(ForwardDeclarations(accumulator))
+
+
 def make_header_include_directives(accumulator):
     assert isinstance(accumulator, CodeGenAccumulator)
 

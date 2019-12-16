@@ -5472,7 +5472,7 @@ TEST_F(AutofillManagerTest, DisambiguateUploadTypes) {
   }
 }
 
-// When a field contains fields with UPI/VPA values, a crowdsourcing vote should
+// When a field contains fields with UPI ID values, a crowdsourcing vote should
 // be uploaded.
 TEST_F(AutofillManagerTest, CrowdsourceUPIVPA) {
   std::vector<AutofillProfile> profiles;

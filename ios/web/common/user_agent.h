@@ -21,7 +21,9 @@ enum class UserAgentType : short {
   AUTOMATIC,
 
   // TODO(crbug.com/1025227): Update comments.
-  // The default user agent type if kDefaultToDesktopOnIPad isn't enabled.  Used
+  // The default user agent type if kUseDefaultUserAgentInWebClient isn't
+  // enabled.
+  // Used
   // to specify a mobile browser user agent.
   MOBILE,
 
@@ -35,10 +37,6 @@ std::string GetUserAgentTypeDescription(UserAgentType type);
 // Returns a UserAgentType with the given description.  If |description| doesn't
 // correspond with a UserAgentType, UserAgentType::NONE will be returned.
 UserAgentType GetUserAgentTypeWithDescription(const std::string& description);
-
-// Returns the UserAgentType that should be used by default for the web content,
-// based on the size class of |web_view|.
-UserAgentType GetDefaultUserAgent(UIView* web_view);
 
 // Returns the os cpu info portion for a user agent.
 std::string BuildOSCpuInfo(UserAgentType type);

@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/modules/event_interface_modules_names.h"
 #include "third_party/blink/renderer/modules/manifest/image_resource.h"
 #include "third_party/blink/renderer/modules/service_worker/wait_until_observer.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
@@ -45,20 +46,19 @@ void BackgroundFetchUpdateUIEvent::Trace(blink::Visitor* visitor) {
 
 ScriptPromise BackgroundFetchUpdateUIEvent::updateUI(
     ScriptState* script_state,
-    const BackgroundFetchUIOptions* ui_options) {
+    const BackgroundFetchUIOptions* ui_options,
+    ExceptionState& exception_state) {
   if (observer_ && !observer_->IsEventActive()) {
     // Return a rejected promise as the event is no longer active.
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "ExtendableEvent is no longer active."));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "ExtendableEvent is no longer active.");
+    return ScriptPromise();
   }
   if (update_ui_called_) {
     // Return a rejected promise as this method should only be called once.
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "updateUI may only be called once."));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "updateUI may only be called once.");
+    return ScriptPromise();
   }
 
   update_ui_called_ = true;

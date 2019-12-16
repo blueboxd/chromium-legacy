@@ -31,10 +31,6 @@ class Display;
 class ManagedDisplayInfo;
 }
 
-namespace ui {
-class Reflector;
-}
-
 namespace ash {
 class AshWindowTreeHost;
 class MirrorWindowTestApi;
@@ -103,12 +99,10 @@ class ASH_EXPORT MirrorWindowController
 
   display::DisplayManager::MultiDisplayMode multi_display_mode_;
 
-  // The id of the display being mirrored in the reflector.
+  // The id of the display being mirrored.
   int64_t reflecting_source_id_ = display::kInvalidDisplayId;
 
   std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
-
-  std::unique_ptr<ui::Reflector> reflector_;
 
   DISALLOW_COPY_AND_ASSIGN(MirrorWindowController);
 };

@@ -58,7 +58,8 @@ public class ApplicationStatusTest {
                 Robolectric.buildActivity(Activity.class).create().start().visible();
         TrackingShadowActivity shadow = (TrackingShadowActivity) Shadows.shadowOf(controller.get());
 
-        controller.get().getWindow().getCallback().onWindowFocusChanged(true);
+        controller.windowFocusChanged(true);
+
         // Assert that listeners were notified.
         verify(mock).onWindowFocusChanged(controller.get(), true);
         // Also ensure that the original activity is forwarded the notification.

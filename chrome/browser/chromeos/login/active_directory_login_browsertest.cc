@@ -101,7 +101,13 @@ class ActiveDirectoryLoginAutocompleteTest : public ActiveDirectoryLoginTest {
 }  // namespace
 
 // Test successful Active Directory login.
-IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, LoginSuccess) {
+// TODO(https://crbug.com/1034481) Flaky on MSAN bots.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_LoginSuccess DISABLED_LoginSuccess
+#else
+#define MAYBE_LoginSuccess LoginSuccess
+#endif
+IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, MAYBE_LoginSuccess) {
   OobeBaseTest::WaitForSigninScreen();
   ASSERT_TRUE(InstallAttributes::Get()->IsActiveDirectoryManaged());
   ad_login_.TestNoError();
@@ -112,7 +118,13 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, LoginSuccess) {
 
 // Tests that the Kerberos SSO environment variables are set correctly after
 // an Active Directory log in.
-IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, KerberosVarsCopied) {
+// TODO(https://crbug.com/1034481) Flaky on MSAN bots.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_KerberosVarsCopied DISABLED_KerberosVarsCopied
+#else
+#define MAYBE_KerberosVarsCopied KerberosVarsCopied
+#endif
+IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, MAYBE_KerberosVarsCopied) {
   OobeBaseTest::WaitForSigninScreen();
   ad_login_.TestNoError();
   ad_login_.TestDomainHidden();

@@ -589,7 +589,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(kDownloadInfobarMessagesUI)},
     {"desktop-version-default", flag_descriptions::kDefaultToDesktopOnIPadName,
      flag_descriptions::kDefaultToDesktopOnIPadDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(web::features::kDefaultToDesktopOnIPad)},
+     FEATURE_VALUE_TYPE(web::features::kUseDefaultUserAgentInWebClient)},
     {"mobile-google-srp", flag_descriptions::kMobileGoogleSRPName,
      flag_descriptions::kMobileGoogleSRPDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::kMobileGoogleSRP)},

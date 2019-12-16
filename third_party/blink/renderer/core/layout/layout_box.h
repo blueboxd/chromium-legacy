@@ -1315,6 +1315,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   bool IsGridItem() const { return Parent() && Parent()->IsLayoutGrid(); }
 
+  bool IsMathItem() const { return Parent() && Parent()->IsMathML(); }
+
   LayoutUnit LineHeight(
       bool first_line,
       LineDirectionMode,

@@ -229,6 +229,7 @@ copy("chrome_camera_app_sounds") {
 
 copy("chrome_camera_app_views") {
   sources = [
+    "src/views/background.html",
     "src/views/main.html",
   ]
 

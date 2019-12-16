@@ -18,17 +18,14 @@
 #include "ash/window_factory.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "ui/aura/client/capture_client.h"
-#include "ui/aura/env.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
-#include "ui/compositor/reflector.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/display_transform.h"
 #include "ui/display/manager/display_layout_store.h"
@@ -124,10 +121,6 @@ int64_t GetCurrentReflectingSourceId() {
   if (display_manager->IsInSoftwareMirrorMode())
     return display_manager->mirroring_source_id();
   return display::kInvalidDisplayId;
-}
-
-ui::ContextFactoryPrivate* GetContextFactoryPrivate() {
-  return aura::Env::GetInstance()->context_factory_private();
 }
 
 }  // namespace
@@ -228,19 +221,6 @@ void MirrorWindowController::UpdateWindow(
       host_info->ash_host->SetRootWindowTransformer(std::move(transformer));
       // The accelerated widget is created synchronously.
       DCHECK_NE(gfx::kNullAcceleratedWidget, host->GetAcceleratedWidget());
-      if (!features::IsVizDisplayCompositorEnabled()) {
-        mirror_window->SetBounds(host->window()->bounds());
-        mirror_window->Show();
-        if (reflector_) {
-          reflector_->AddMirroringLayer(mirror_window->layer());
-        } else if (GetContextFactoryPrivate()) {
-          reflector_ = GetContextFactoryPrivate()->CreateReflector(
-              Shell::GetRootWindowForDisplayId(reflecting_source_id_)
-                  ->GetHost()
-                  ->compositor(),
-              mirror_window->layer());
-        }
-      }
     } else {
       AshWindowTreeHost* ash_host =
           mirroring_host_info_map_[display_info.id()]->ash_host.get();
@@ -250,44 +230,41 @@ void MirrorWindowController::UpdateWindow(
       host->SetBoundsInPixels(display_info.bounds_in_native());
     }
 
-    if (features::IsVizDisplayCompositorEnabled()) {
-      // |mirror_size| is the size of the compositor of the mirror source in
-      // physical pixels. The RootWindowTransformer corrects the scale of the
-      // mirrored display and the location of input events.
-      ui::Compositor* source_compositor =
-          Shell::GetRootWindowForDisplayId(reflecting_source_id_)
-              ->GetHost()
-              ->compositor();
-      gfx::Size mirror_size = source_compositor->size();
+    // |mirror_size| is the size of the compositor of the mirror source in
+    // physical pixels. The RootWindowTransformer corrects the scale of the
+    // mirrored display and the location of input events.
+    ui::Compositor* source_compositor =
+        Shell::GetRootWindowForDisplayId(reflecting_source_id_)
+            ->GetHost()
+            ->compositor();
+    gfx::Size mirror_size = source_compositor->size();
 
-      auto* mirroring_host_info = mirroring_host_info_map_[display_info.id()];
+    auto* mirroring_host_info = mirroring_host_info_map_[display_info.id()];
 
-      // The rotation of the source display (internal display) should be undone
-      // in the destination display (external display) if mirror mode is enabled
-      // in tablet mode. This allows the destination display to show in an
-      // orientation independent of the source display.
-      // See https://crbug.com/824417
-      const bool should_undo_rotation = Shell::Get()
-                                            ->display_manager()
-                                            ->layout_store()
-                                            ->forced_mirror_mode_for_tablet();
-      if (!should_undo_rotation) {
-        // Use the rotation from source display without panel orientation
-        // applied instead of the display transform hint in |source_compositor|
-        // so that panel orientation is not applied to the mirror host.
-        mirroring_host_info->ash_host->AsWindowTreeHost()
-            ->SetDisplayTransformHint(
-                display::DisplayRotationToOverlayTransform(
-                    display_manager->GetDisplayInfo(reflecting_source_id_)
-                        .GetActiveRotation()));
-      }
-
-      aura::Window* mirror_window = mirroring_host_info->mirror_window;
-      mirror_window->SetBounds(gfx::Rect(mirror_size));
-      mirror_window->Show();
-      mirror_window->layer()->SetShowReflectedSurface(reflecting_surface_id,
-                                                      mirror_size);
+    // The rotation of the source display (internal display) should be undone in
+    // the destination display (external display) if mirror mode is enabled in
+    // tablet mode. This allows the destination display to show in an
+    // orientation independent of the source display.
+    // See https://crbug.com/824417
+    const bool should_undo_rotation = Shell::Get()
+                                          ->display_manager()
+                                          ->layout_store()
+                                          ->forced_mirror_mode_for_tablet();
+    if (!should_undo_rotation) {
+      // Use the rotation from source display without panel orientation
+      // applied instead of the display transform hint in |source_compositor|
+      // so that panel orientation is not applied to the mirror host.
+      mirroring_host_info->ash_host->AsWindowTreeHost()
+          ->SetDisplayTransformHint(display::DisplayRotationToOverlayTransform(
+              display_manager->GetDisplayInfo(reflecting_source_id_)
+                  .GetActiveRotation()));
     }
+
+    aura::Window* mirror_window = mirroring_host_info->mirror_window;
+    mirror_window->SetBounds(gfx::Rect(mirror_size));
+    mirror_window->Show();
+    mirror_window->layer()->SetShowReflectedSurface(reflecting_surface_id,
+                                                    mirror_size);
   }
 
   // Deleting WTHs for disconnected displays.
@@ -306,11 +283,6 @@ void MirrorWindowController::UpdateWindow(
     }
   }
 
-  if (mirroring_host_info_map_.empty() && reflector_) {
-    // Close the mirror window if all displays are disconnected.
-    GetContextFactoryPrivate()->RemoveReflector(reflector_.get());
-    reflector_.reset();
-  }
 }
 
 void MirrorWindowController::UpdateWindow() {
@@ -346,11 +318,6 @@ void MirrorWindowController::CloseIfNotNecessary() {
 }
 
 void MirrorWindowController::Close(bool delay_host_deletion) {
-  if (reflector_) {
-    GetContextFactoryPrivate()->RemoveReflector(reflector_.get());
-    reflector_.reset();
-  }
-
   for (auto& info : mirroring_host_info_map_)
     CloseAndDeleteHost(info.second, delay_host_deletion);
   mirroring_host_info_map_.clear();
@@ -363,8 +330,6 @@ void MirrorWindowController::OnHostResized(aura::WindowTreeHost* host) {
       if (info->mirror_window_host_size == host->GetBoundsInPixels().size())
         return;
       info->mirror_window_host_size = host->GetBoundsInPixels().size();
-      if (reflector_)
-        reflector_->OnMirroringCompositorResized();
       // No need to update the transformer as new transformer is already set
       // in UpdateWindow.
       Shell::Get()
@@ -436,9 +401,6 @@ void MirrorWindowController::CloseAndDeleteHost(MirroringHostInfo* host_info,
   host->RemoveObserver(Shell::Get()->window_tree_host_manager());
   host->RemoveObserver(this);
   host_info->ash_host->PrepareForShutdown();
-  // |reflector_| may be null during display disconnect or shutdown.
-  if (reflector_ && host_info->mirror_window->layer()->GetCompositor())
-    reflector_->RemoveMirroringLayer(host_info->mirror_window->layer());
 
   // EventProcessor may be accessed after this call if the mirroring window
   // was deleted as a result of input event (e.g. shortcut), so don't delete

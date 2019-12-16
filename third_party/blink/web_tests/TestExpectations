@@ -1380,6 +1380,9 @@ crbug.com/875235 virtual/layout_ng_fieldset/fast/forms/fieldset/legend-small-aft
 # ====== MathMLCore-only tests from here ======
 
 crbug.com/6606 external/wpt/mathml/presentation-markup/direction/direction-006.html [ Failure ]
+crbug.com/6606 external/wpt/mathml/presentation-markup/direction/direction-007.html [ Failure ]
+crbug.com/6606 external/wpt/mathml/presentation-markup/direction/direction-008.html [ Failure ]
+crbug.com/6606 external/wpt/mathml/presentation-markup/direction/direction-009.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/direction/direction-overall.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/direction/direction.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/fractions/frac-1.html [ Failure ]
@@ -1406,7 +1409,6 @@ crbug.com/6606 external/wpt/mathml/presentation-markup/fractions/frac-parameters
 crbug.com/6606 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-004.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-005.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-006.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/fractions/frac-rendering-from-in-flow.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/fractions/frac-visibility-001.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/menclose/legacy-menclose-radical-notation.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/mrow/inferred-mrow-baseline.html [ Failure ]
@@ -1415,8 +1417,6 @@ crbug.com/6606 external/wpt/mathml/presentation-markup/mrow/legacy-mfenced-eleme
 crbug.com/6606 external/wpt/mathml/presentation-markup/mrow/legacy-mrow-like-elements-001.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/mrow/legacy-mrow-like-elements-002.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/mrow/legacy-mstyle-attributes.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/operators/embellished-operator-001.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/operators/embellished-operator-002.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/mo-axis-height-1.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/mo-form-dynamic.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/mo-form-fallback.html [ Failure ]
@@ -1424,7 +1424,6 @@ crbug.com/6606 external/wpt/mathml/presentation-markup/operators/mo-form-minus-p
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/mo-form.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/mo-movablelimits-default.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/mo-movablelimits-dynamic.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/operators/mo-movablelimits-from-in-flow.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/mo-movablelimits.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/mo-paint-lspace-rspace.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/operator-dictionary-001.html [ Failure ]
@@ -1433,9 +1432,7 @@ crbug.com/6606 external/wpt/mathml/presentation-markup/operators/operator-dictio
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/operator-dictionary-004.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/operator-dictionary-005.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/operator-dictionary-006.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/radicals/radical-rendering-from-in-flow.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/radicals/root-parameters-1.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/scripts/cramped-001.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/scripts/empty-underover.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/scripts/subsup-1.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/scripts/subsup-2.html [ Failure ]
@@ -1457,7 +1454,6 @@ crbug.com/6606 external/wpt/mathml/presentation-markup/spaces/space-2.html [ Fai
 crbug.com/6606 external/wpt/mathml/presentation-markup/spaces/space-like-001.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/spaces/space-like-002.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/spaces/space-like-003.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/spaces/space-like-004.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/tables/table-001.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/tables/table-002.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/tables/table-axis-height.html [ Failure ]
@@ -1476,8 +1472,6 @@ crbug.com/6606 external/wpt/mathml/relations/css-styling/displaystyle-2.html [ F
 crbug.com/6606 external/wpt/mathml/relations/css-styling/ignored-properties-001.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/lengths-1.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/lengths-2.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/mathbackground-004.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/mathcolor-004.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-auto.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-bold-fraktur.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-bold-italic.html [ Failure ]
@@ -1497,7 +1491,6 @@ crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-sans-serif.
 crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-script.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-stretched.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-tailed.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/not-participating-to-parent-layout.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/padding-border-margin/border-001.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/padding-border-margin/border-002.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/padding-border-margin/margin-001.html [ Failure ]
@@ -1517,8 +1510,19 @@ crbug.com/6606 external/wpt/mathml/relations/html5-tree/href-click-1.html [ Fail
 crbug.com/6606 external/wpt/mathml/relations/html5-tree/href-click-2.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/html5-tree/integration-point-1.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/html5-tree/integration-point-2.html [ Failure ]
+crbug.com/6606 external/wpt/mathml/relations/html5-tree/integration-point-3.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/html5-tree/integration-point-4.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/html5-tree/required-extensions-2.html [ Failure ]
+
+# Need to handle OOF for these.
+crbug.com/6606 external/wpt/mathml/presentation-markup/fractions/frac-rendering-from-in-flow.html [ Skip ]
+crbug.com/6606 external/wpt/mathml/presentation-markup/operators/embellished-operator-001.html [ Skip ]
+crbug.com/6606 external/wpt/mathml/presentation-markup/operators/embellished-operator-002.html [ Skip ]
+crbug.com/6606 external/wpt/mathml/presentation-markup/operators/mo-movablelimits-from-in-flow.html [ Skip ]
+crbug.com/6606 external/wpt/mathml/presentation-markup/radicals/radical-rendering-from-in-flow.html [ Skip ]
+crbug.com/6606 external/wpt/mathml/presentation-markup/scripts/cramped-001.html [ Skip ]
+crbug.com/6606 external/wpt/mathml/presentation-markup/spaces/space-like-004.html [ Skip ]
+crbug.com/6606 external/wpt/mathml/relations/css-styling/not-participating-to-parent-layout.html [ Skip ]
 
 # These tests time out when MathML is not implemented.
 # See https://github.com/mathml-refresh/mathml/issues/167
@@ -3972,7 +3976,7 @@ crbug.com/865579 external/wpt/css/css-logical/animation-001.html [ Failure Pass 
 crbug.com/865579 external/wpt/css/css-logical/animation-002.html [ Failure Pass ]
 
 # [css-animations]
-crbug.com/993365 external/wpt/css/css-animations/Element-getAnimations.tentative.html [ Failure Pass ]
+crbug.com/993365 external/wpt/css/css-transitions/Element-getAnimations.tentative.html [ Failure Pass ]
 
 # [selectors-4]
 crbug.com/576815 external/wpt/css/selectors/selectors-dir-selector-ltr-001.html [ Failure ]
@@ -6091,6 +6095,7 @@ crbug.com/993790 virtual/document-policy/external/wpt/document-policy/required-p
 
 # Temporary suppression to allow devtools-frontend changes
 crbug.com/1029489 http/tests/devtools/elements/elements-linkify-attributes.js [ Pass Failure ]
+crbug.com/1029826 http/tests/devtools/copy-network-request.js [ Pass Failure ]
 crbug.com/1029521 virtual/threaded/external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Pass Failure Timeout ]
 crbug.com/1026879 http/tests/devtools/network/network-cookies-pane.js [ Pass Failure ]
 
@@ -6132,18 +6137,15 @@ crbug.com/963183 http/tests/devtools/unit/viewport-datagrid-items-expandable-att
 crbug.com/1033213 http/tests/devtools/security/interstitial-sidebar.js [ Pass Failure ]
 crbug.com/1033213 http/tests/devtools/security/mixed-content-sidebar.js [ Pass Failure ]
 
-# Temporarily disabled for landing changes to source formatter in DevTools
-crbug.com/1004203 http/tests/devtools/sources/debugger-ui/script-formatter-breakpoints-2.js [ Pass Failure ]
-crbug.com/1004203 http/tests/devtools/sources/debugger-ui/script-formatter-breakpoints-3.js [ Pass Failure ]
-crbug.com/1004203 http/tests/devtools/sources/formatter-css.js [ Pass Failure ]
-crbug.com/1004203 http/tests/devtools/sources/formatter-js.js [ Pass Failure ]
-crbug.com/1004203 http/tests/devtools/sources/inline-styles-scripts-locations.js [ Pass Failure ]
-crbug.com/1004203 http/tests/devtools/startup/sources/debugger/linkifier.js [ Pass Failure ]
-crbug.com/1004203 http/tests/devtools/startup/sources/debugger/script-formatter-breakpoints-1.js [ Pass Failure ]
-crbug.com/1004203 http/tests/devtools/startup/sources/debugger/script-formatter-breakpoints-4.js [ Pass Failure ]
-crbug.com/1004203 http/tests/devtools/startup/sources/debugger/script-formatter-breakpoints-inline-with-sourceURL.js [ Pass Failure ]
-
 # Sheriff 2019-12-13
 crbug.com/1032451 [ Win7 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/idlharness.https.window.html [ Failure ]
 crbug.com/1033852 [ Win7 ] virtual/omt-worker-fetch/external/wpt/fetch/api/idlharness.any.sharedworker.html [ Failure ]
 crbug.com/1033387 [ Mac ] http/tests/portals/crbug-1031677.html [ Pass Timeout ]
+
+# Sheriff 2019-12-16
+crbug.com/1034374 [ Linux Debug ] http/tests/devtools/tracing/timeline-worker-events.js [ Pass Failure ]
+crbug.com/1034374 [ Linux Debug ] virtual/threaded/http/tests/devtools/tracing/timeline-worker-events.js [ Pass Failure ]
+
+# The Wasm code cache requires disabling the baseline compiler, so only the
+# virtual test should be run.
+Bug(none) http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Skip ]

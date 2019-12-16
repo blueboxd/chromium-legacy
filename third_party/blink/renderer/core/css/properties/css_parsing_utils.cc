@@ -176,8 +176,8 @@ CSSValue* ConsumeSteps(CSSParserTokenRange& range) {
   }
 
   range = range_copy;
-  return cssvalue::CSSStepsTimingFunctionValue::Create(steps->GetIntValue(),
-                                                       position);
+  return MakeGarbageCollected<cssvalue::CSSStepsTimingFunctionValue>(
+      steps->GetIntValue(), position);
 }
 
 CSSValue* ConsumeCubicBezier(CSSParserTokenRange& range) {

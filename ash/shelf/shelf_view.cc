@@ -2250,8 +2250,7 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
   if (old_item.id == context_menu_id_ && shelf_menu_model_adapter_)
     shelf_menu_model_adapter_->Cancel();
 
-  // If std::move is not called on |view|, |view| will be deleted once out of
-  // scope.
+  // If not moved, |view| will be deleted once out of scope.
   std::unique_ptr<views::View> view(view_model_->view_at(model_index));
   view_model_->Remove(model_index);
 
@@ -2283,13 +2282,8 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
   } else {
     // If there is no fade out animation, notify the parent view of the
     // changed size before bounds animations start.
-    if (chromeos::switches::ShouldShowScrollableShelf()) {
-      // Ensures that the invisble view is removed before animating to ideal
-      // bounds.
-      view.reset();
-
+    if (chromeos::switches::ShouldShowScrollableShelf())
       PreferredSizeChanged();
-    }
 
     // We don't need to show a fade out animation for invisible |view|. When an
     // item is ripped out from the shelf, its |view| is already invisible.

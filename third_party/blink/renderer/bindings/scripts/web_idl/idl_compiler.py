@@ -164,8 +164,8 @@ class IdlCompiler(object):
             if not hasattr(ir, 'iter_all_members'):
                 return
             if (only_to_members_of_partial_or_mixin
-                    and ((hasattr(ir, 'is_partial') and ir.is_partial) or
-                         (hasattr(ir, 'is_mixin') and ir.is_mixin))):
+                    and not ((hasattr(ir, 'is_partial') and ir.is_partial) or
+                             (hasattr(ir, 'is_mixin') and ir.is_mixin))):
                 return
             for member in ir.iter_all_members():
                 apply_to(member)

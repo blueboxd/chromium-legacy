@@ -66,13 +66,6 @@ class CSSCubicBezierTimingFunctionValue : public CSSValue {
 
 class CSSStepsTimingFunctionValue : public CSSValue {
  public:
-  static CSSStepsTimingFunctionValue* Create(
-      int steps,
-      StepsTimingFunction::StepPosition step_position) {
-    return MakeGarbageCollected<CSSStepsTimingFunctionValue>(steps,
-                                                             step_position);
-  }
-
   CSSStepsTimingFunctionValue(int steps,
                               StepsTimingFunction::StepPosition step_position)
       : CSSValue(kStepsTimingFunctionClass),

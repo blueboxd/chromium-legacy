@@ -306,6 +306,7 @@ source_set("unit_tests_internal") {
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/web",
     "//ios/chrome/test/fakes",
+    "//ios/web/common:features",
     "//ios/web/common:web_view_creation_util",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",

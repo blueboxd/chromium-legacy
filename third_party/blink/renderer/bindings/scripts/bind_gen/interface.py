@@ -156,7 +156,8 @@ def bind_callback_local_vars(code_node, cg_context):
         # [ImplementedAs=LocalDOMWindow] instead of [ImplementedAs=DOMWindow],
         # and [CrossOrigin] properties should be implemented specifically with
         # DOMWindow class.  Then, we'll have less hacks.
-        if "CrossOrigin" in cg_context.member_like.extended_attributes:
+        if (not cg_context.member_like or
+                "CrossOrigin" in cg_context.member_like.extended_attributes):
             text = ("DOMWindow* ${blink_receiver} = "
                     "${class_name}::ToBlinkUnsafe(${v8_receiver});")
         else:
@@ -545,7 +546,7 @@ def make_check_security_of_return_value(cg_context):
     ])
     return SequenceNode([
         T("// [CheckSecurity=ReturnValue]"),
-        UnlikelyExitNode(cond=cond, body=body),
+        CxxUnlikelyIfNode(cond=cond, body=body),
     ])
 
 

@@ -115,8 +115,13 @@ Polymer({
   onShown_: function() {
     this.async(function() {
       this.$.networkSelectLogin.refresh();
-      this.$.networkSelectLogin.focus();
-    }.bind(this));
+      if (this.isConnected_)
+        this.$.nextButton.focus();
+      else
+        this.$.networkSelectLogin.focus();
+    }.bind(this), 300);
+    // Timeout is a workaround to correctly propagate focus to
+    // RendererFrameHostImpl see https://crbug.com/955129 for details.
   },
 
   /**

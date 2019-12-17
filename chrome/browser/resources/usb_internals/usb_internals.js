@@ -14,7 +14,8 @@ cr.define('usb_internals', function() {
       // actions after the page is loaded but before any script is run.
       await window.setupFn();
 
-      const pageHandler = mojom.UsbInternalsPageHandler.getRemote();
+      const pageHandler = mojom.UsbInternalsPageHandler.getRemote(
+          /*useBrowserInterfaceBroker=*/ true);
 
       // Connection to the UsbInternalsPageHandler instance running in the
       // browser process.

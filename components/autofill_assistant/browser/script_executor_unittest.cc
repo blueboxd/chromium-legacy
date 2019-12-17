@@ -828,6 +828,119 @@ TEST_F(ScriptExecutorTest, InterruptReturnsShutdown) {
               Contains(Pair("interrupt", SCRIPT_STATUS_SUCCESS)));
 }
 
+TEST_F(ScriptExecutorTest, RunInterruptDuringPrompt) {
+  SetupInterrupt("interrupt", "interrupt_trigger");
+
+  // Main script has a prompt with an "auto_select" element. This functions very
+  // much like a WaitForDom, except for the UI changes triggered by the switches
+  // between PROMPT and RUNNING states.
+  ActionsResponseProto interruptible;
+  auto* prompt_action = interruptible.add_actions()->mutable_prompt();
+  prompt_action->set_allow_interrupt(true);
+  prompt_action->add_choices()
+      ->mutable_auto_select_if_element_exists()
+      ->add_selectors("end_prompt");
+  interruptible.add_actions()->mutable_tell()->set_message("done");
+  EXPECT_CALL(mock_service_, OnGetActions(kScriptPath, _, _, _, _, _))
+      .WillRepeatedly(RunOnceCallback<5>(true, Serialize(interruptible)));
+
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"interrupt_trigger"})), _))
+      .WillOnce(RunOnceCallback<1>(OkClientStatus()))
+      .WillRepeatedly(
+          RunOnceCallback<1>(ClientStatus(ELEMENT_RESOLUTION_FAILED)));
+
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"end_prompt"})), _))
+      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
+
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillRepeatedly(RunOnceCallback<4>(true, ""));
+
+  EXPECT_CALL(executor_callback_,
+              Run(Field(&ScriptExecutor::Result::success, true)));
+  executor_->Run(executor_callback_.Get());
+
+  EXPECT_THAT(scripts_state_,
+              Contains(Pair(kScriptPath, SCRIPT_STATUS_SUCCESS)));
+  EXPECT_THAT(scripts_state_,
+              Contains(Pair("interrupt", SCRIPT_STATUS_SUCCESS)));
+
+  // Expected scenario:
+  // - show prompt (enter PROMPT state)
+  // - notice interrupt_trigger element
+  // - run interrupt (enter RUNNING state)
+  // - show prompt again (enter PROMPT state)
+  // - notice end_prompt element
+  // - end prompt, continue main script (enter RUNNING state)
+  // - run tell, which sets message to "done"
+  EXPECT_THAT(delegate_.GetStateHistory(),
+              ElementsAre(AutofillAssistantState::PROMPT,
+                          AutofillAssistantState::RUNNING,
+                          AutofillAssistantState::PROMPT,
+                          AutofillAssistantState::RUNNING));
+  EXPECT_EQ("done", delegate_.GetStatusMessage());
+}
+
+TEST_F(ScriptExecutorTest, RunInterruptMultipleTimesDuringPrompt) {
+  SetupInterrupt("interrupt", "interrupt_trigger");
+
+  // Main script has a prompt with an "auto_select" element. This functions very
+  // much like a WaitForDom, except for the UI changes triggered by the switches
+  // between PROMPT and RUNNING states.
+  ActionsResponseProto interruptible;
+  auto* prompt_action = interruptible.add_actions()->mutable_prompt();
+  prompt_action->set_allow_interrupt(true);
+  prompt_action->add_choices()
+      ->mutable_auto_select_if_element_exists()
+      ->add_selectors("end_prompt");
+  EXPECT_CALL(mock_service_, OnGetActions(kScriptPath, _, _, _, _, _))
+      .WillRepeatedly(RunOnceCallback<5>(true, Serialize(interruptible)));
+
+  // interrupt_trigger goes away and come back, which means that the interrupt
+  // will be run twice.
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"interrupt_trigger"})), _))
+      .WillOnce(RunOnceCallback<1>(OkClientStatus()))
+      .WillOnce(RunOnceCallback<1>(ClientStatus(ELEMENT_RESOLUTION_FAILED)))
+      .WillOnce(RunOnceCallback<1>(OkClientStatus()))
+      .WillRepeatedly(
+          RunOnceCallback<1>(ClientStatus(ELEMENT_RESOLUTION_FAILED)));
+
+  // It takes a several rounds for end_prompt to appear, which gives time for
+  // the interrupt to run.
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"end_prompt"})), _))
+      .WillOnce(RunOnceCallback<1>(ClientStatus(ELEMENT_RESOLUTION_FAILED)))
+      .WillOnce(RunOnceCallback<1>(ClientStatus(ELEMENT_RESOLUTION_FAILED)))
+      .WillOnce(RunOnceCallback<1>(ClientStatus(ELEMENT_RESOLUTION_FAILED)))
+      .WillOnce(RunOnceCallback<1>(ClientStatus(ELEMENT_RESOLUTION_FAILED)))
+      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
+
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillRepeatedly(RunOnceCallback<4>(true, ""));
+
+  EXPECT_CALL(executor_callback_,
+              Run(Field(&ScriptExecutor::Result::success, true)));
+  executor_->Run(executor_callback_.Get());
+  for (int try_count = 0;
+       try_count < 10 && scripts_state_[kScriptPath] == SCRIPT_STATUS_RUNNING;
+       try_count++) {
+    task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1000));
+  }
+  EXPECT_THAT(scripts_state_,
+              Contains(Pair(kScriptPath, SCRIPT_STATUS_SUCCESS)));
+  EXPECT_THAT(scripts_state_,
+              Contains(Pair("interrupt", SCRIPT_STATUS_SUCCESS)));
+
+  EXPECT_THAT(
+      delegate_.GetStateHistory(),
+      ElementsAre(
+          AutofillAssistantState::PROMPT, AutofillAssistantState::RUNNING,
+          AutofillAssistantState::PROMPT, AutofillAssistantState::RUNNING,
+          AutofillAssistantState::PROMPT, AutofillAssistantState::RUNNING));
+}
+
 TEST_F(ScriptExecutorTest, UpdateScriptListGetNext) {
   should_update_scripts_ = false;
   scripts_update_.clear();

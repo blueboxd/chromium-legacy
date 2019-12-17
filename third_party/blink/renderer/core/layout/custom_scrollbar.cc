@@ -36,14 +36,6 @@
 
 namespace blink {
 
-Scrollbar* CustomScrollbar::CreateCustomScrollbar(
-    ScrollableArea* scrollable_area,
-    ScrollbarOrientation orientation,
-    Element* style_source) {
-  return MakeGarbageCollected<CustomScrollbar>(scrollable_area, orientation,
-                                               style_source);
-}
-
 CustomScrollbar::CustomScrollbar(ScrollableArea* scrollable_area,
                                  ScrollbarOrientation orientation,
                                  Element* style_source)

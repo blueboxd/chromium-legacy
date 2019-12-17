@@ -51,6 +51,8 @@ source_set("common") {
     "gpu_buffer_layout.h",
     "image_processor.cc",
     "image_processor.h",
+    "image_processor_backend.cc",
+    "image_processor_backend.h",
     "image_processor_factory.h",
     "image_processor_with_pool.cc",
     "image_processor_with_pool.h",

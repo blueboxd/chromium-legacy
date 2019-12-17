@@ -33,8 +33,8 @@ struct ClientFilterableState;
 // Helper class to instantiate field trials from a variations seed.
 class VariationsSeedProcessor {
  public:
-  typedef base::Callback<void(uint32_t, const base::string16&)>
-      UIStringOverrideCallback;
+  using UIStringOverrideCallback =
+      base::RepeatingCallback<void(uint32_t, const base::string16&)>;
 
   VariationsSeedProcessor();
   virtual ~VariationsSeedProcessor();

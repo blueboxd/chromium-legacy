@@ -1559,6 +1559,12 @@ win_builder(
 )
 
 win_builder(
+    name = 'win10_chromium_x64_coverage_rel_ng',
+    os = os.WINDOWS_10,
+    use_clang_coverage = True
+)
+
+win_builder(
     name = 'win10_chromium_x64_rel_ng_exp',
     builderless = False,
     os = os.WINDOWS_ANY,

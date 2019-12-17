@@ -247,6 +247,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   // Getters for bounds and opacity of the various sub-components.
   gfx::Rect GetNavigationBounds() const;
+  gfx::Rect GetHotseatBounds() const;
   gfx::Rect GetStatusAreaBounds() const;
   float GetOpacity() const;
 

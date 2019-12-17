@@ -27,7 +27,7 @@ class TestSyncService : public SyncService {
   TestSyncService();
   ~TestSyncService() override;
 
-  void SetDisableReasons(int disable_reasons);
+  void SetDisableReasons(DisableReasonSet disable_reasons);
   void SetTransportState(TransportState transport_state);
   void SetLocalSyncEnabled(bool local_sync_enabled);
   void SetAuthenticatedAccountInfo(const CoreAccountInfo& account_info);
@@ -59,7 +59,7 @@ class TestSyncService : public SyncService {
   // SyncService implementation.
   syncer::SyncUserSettings* GetUserSettings() override;
   const syncer::SyncUserSettings* GetUserSettings() const override;
-  int GetDisableReasons() const override;
+  DisableReasonSet GetDisableReasons() const override;
   TransportState GetTransportState() const override;
   bool IsLocalSyncEnabled() const override;
   CoreAccountInfo GetAuthenticatedAccountInfo() const override;
@@ -115,7 +115,7 @@ class TestSyncService : public SyncService {
  private:
   TestSyncUserSettings user_settings_;
 
-  int disable_reasons_ = DISABLE_REASON_NONE;
+  DisableReasonSet disable_reasons_;
   TransportState transport_state_ = TransportState::ACTIVE;
   bool local_sync_enabled_ = false;
   CoreAccountInfo account_info_;

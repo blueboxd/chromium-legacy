@@ -408,7 +408,8 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
             final AnimationDrawable animationDrawable = new AnimationDrawable();
             for (int i = 0; i < thumbnails.size(); ++i) {
                 animationDrawable.addFrame(
-                        new BitmapDrawable(thumbnails.get(i)), IMAGE_FRAME_DISPLAY);
+                        new BitmapDrawable(mContext.getResources(), thumbnails.get(i)),
+                        IMAGE_FRAME_DISPLAY);
             }
             animationDrawable.setOneShot(false);
             mIconView.setImageDrawable(animationDrawable);

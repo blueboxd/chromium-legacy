@@ -79,8 +79,7 @@ class TestVisitedLinkDelegate : public VisitedLinkDelegate {
 void TestVisitedLinkDelegate::RebuildTable(
     const scoped_refptr<URLEnumerator>& enumerator) {
   for (URLs::const_iterator itr = rebuild_urls_.begin();
-       itr != rebuild_urls_.end();
-       ++itr)
+       itr != rebuild_urls_.end(); ++itr)
     enumerator->OnURL(*itr);
   enumerator->OnComplete(true);
 }
@@ -102,9 +101,7 @@ class TestURLIterator : public VisitedLinkWriter::URLIterator {
 };
 
 TestURLIterator::TestURLIterator(const URLs& urls)
-    : iterator_(urls.begin()),
-      end_(urls.end()) {
-}
+    : iterator_(urls.begin()), end_(urls.end()) {}
 
 const GURL& TestURLIterator::NextURL() {
   return *(iterator_++);
@@ -119,9 +116,7 @@ bool TestURLIterator::HasNextURL() const {
 class TrackingVisitedLinkEventListener : public VisitedLinkWriter::Listener {
  public:
   TrackingVisitedLinkEventListener()
-      : reset_count_(0),
-        completely_reset_count_(0),
-        add_count_(0) {}
+      : reset_count_(0), completely_reset_count_(0), add_count_(0) {}
 
   void NewTable(base::ReadOnlySharedMemoryRegion* table_region) override {
     if (table_region->IsValid()) {
@@ -617,7 +612,7 @@ class VisitCountingContext : public mojom::VisitedLinkNotificationSink {
   int completely_reset_event_count_;
   int new_table_count_;
 
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
   mojo::ReceiverSet<mojom::VisitedLinkNotificationSink> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(VisitCountingContext);
@@ -630,9 +625,9 @@ class VisitRelayingRenderProcessHost : public MockRenderProcessHost {
       content::BrowserContext* browser_context,
       VisitCountingContext* context)
       : MockRenderProcessHost(browser_context) {
-    OverrideBinderForTesting(
-        mojom::VisitedLinkNotificationSink::Name_,
-        base::Bind(&VisitCountingContext::Bind, base::Unretained(context)));
+    OverrideBinderForTesting(mojom::VisitedLinkNotificationSink::Name_,
+                             base::BindRepeating(&VisitCountingContext::Bind,
+                                                 base::Unretained(context)));
     content::NotificationService::current()->Notify(
         content::NOTIFICATION_RENDERER_PROCESS_CREATED,
         content::Source<RenderProcessHost>(this),

@@ -198,7 +198,6 @@ void FrameLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(progress_tracker_);
   visitor->Trace(document_loader_);
-  visitor->Trace(provisional_document_loader_);
   visitor->Trace(last_origin_document_csp_);
 }
 
@@ -211,14 +210,14 @@ void FrameLoader::Init() {
       frame_->Owner() ? base::make_optional(frame_->Owner()->GetFramePolicy())
                       : base::nullopt;
 
-  provisional_document_loader_ = Client()->CreateDocumentLoader(
+  DocumentLoader* new_document_loader = Client()->CreateDocumentLoader(
       frame_, kWebNavigationTypeOther,
       MakeGarbageCollected<ContentSecurityPolicy>(),
       std::move(navigation_params), nullptr /* extra_data */);
 
-  CommitDocumentLoader(provisional_document_loader_.Release(), base::nullopt,
-                       nullptr, true /* is_initialization */,
-                       base::DoNothing::Once(), false /* is_javascript_url */);
+  CommitDocumentLoader(new_document_loader, base::nullopt, nullptr,
+                       true /* is_initialization */, base::DoNothing::Once(),
+                       false /* is_javascript_url */);
 
   frame_->GetDocument()->CancelParsing();
 
@@ -243,8 +242,6 @@ void FrameLoader::SetDefersLoading(bool defers) {
     frame_->GetDocument()->Fetcher()->SetDefersLoading(defers);
   if (document_loader_)
     document_loader_->SetDefersLoading(defers);
-  if (provisional_document_loader_)
-    provisional_document_loader_->SetDefersLoading(defers);
 }
 
 void FrameLoader::SaveScrollAnchor() {
@@ -962,12 +959,11 @@ void FrameLoader::CommitNavigation(
 
   // TODO(dgozman): get rid of provisional document loader and most of the code
   // below. We should probably call DocumentLoader::CommitNavigation directly.
-  DocumentLoader* provisional_document_loader = Client()->CreateDocumentLoader(
+  DocumentLoader* new_document_loader = Client()->CreateDocumentLoader(
       frame_, navigation_type, content_security_policy,
       std::move(navigation_params), std::move(extra_data));
-  provisional_document_loader_ = provisional_document_loader;
 
-  CommitDocumentLoader(provisional_document_loader_.Release(), unload_timing,
+  CommitDocumentLoader(new_document_loader, unload_timing,
                        previous_history_item, false /* is_initialization */,
                        std::move(call_before_attaching_new_document),
                        is_javascript_url);
@@ -1012,7 +1008,6 @@ void FrameLoader::StopAllLoaders() {
   frame_->GetDocument()->CancelParsing();
   if (document_loader_)
     document_loader_->StopLoading();
-  DetachDocumentLoader(provisional_document_loader_);
   CancelClientNavigation();
   DidFinishNavigation(FrameLoader::NavigationFinishState::kSuccess);
 
@@ -1033,7 +1028,7 @@ bool FrameLoader::DetachDocument(
     SecurityOrigin* committing_origin,
     base::Optional<Document::UnloadEventTiming>* timing) {
   PluginScriptForbiddenScope forbid_plugin_destructor_scripting;
-  DocumentLoader* pdl = provisional_document_loader_;
+  ClientNavigationState* client_navigation = client_navigation_.get();
 
   // Don't allow this frame to navigate anymore. This line is needed for
   // navigation triggered from children's unload handlers. Blocking navigations
@@ -1059,7 +1054,7 @@ bool FrameLoader::DetachDocument(
   if (!frame_->Client())
     return false;
   // FrameNavigationDisabler should prevent another load from starting.
-  DCHECK_EQ(provisional_document_loader_, pdl);
+  DCHECK_EQ(client_navigation_.get(), client_navigation);
   // detachFromFrame() will abort XHRs that haven't completed, which can trigger
   // event listeners for 'abort'. These event listeners might call
   // window.stop(), which will in turn detach the provisional document loader.
@@ -1072,7 +1067,7 @@ bool FrameLoader::DetachDocument(
   if (!frame_->Client())
     return false;
   // FrameNavigationDisabler should prevent another load from starting.
-  DCHECK_EQ(provisional_document_loader_, pdl);
+  DCHECK_EQ(client_navigation_.get(), client_navigation);
 
   // No more events will be dispatched so detach the Document.
   // TODO(yoav): Should we also be nullifying domWindow's document (or
@@ -1278,13 +1273,6 @@ blink::UserAgentMetadata FrameLoader::UserAgentMetadata() const {
 void FrameLoader::Detach() {
   frame_->GetDocument()->CancelParsing();
   DetachDocumentLoader(document_loader_);
-  if (provisional_document_loader_) {
-    // Suppress client notification about failed provisional
-    // load - it does not bring any value when the frame is
-    // being detached anyway.
-    provisional_document_loader_->SetSentDidFinishLoad();
-    DetachDocumentLoader(provisional_document_loader_);
-  }
   ClearClientNavigation();
   committing_navigation_ = false;
   DidFinishNavigation(FrameLoader::NavigationFinishState::kSuccess);
@@ -1319,10 +1307,6 @@ bool FrameLoader::MaybeRenderFallbackContent() {
   ClearClientNavigation();
   DidFinishNavigation(FrameLoader::NavigationFinishState::kSuccess);
   return true;
-}
-
-void FrameLoader::DetachProvisionalDocumentLoader() {
-  DetachDocumentLoader(provisional_document_loader_);
 }
 
 bool FrameLoader::ShouldPerformFragmentNavigation(bool is_form_submission,
@@ -1459,7 +1443,7 @@ void FrameLoader::DidDropNavigation() {
 
 void FrameLoader::MarkAsLoading() {
   // This should only be called for initial history navigation in child frame.
-  DCHECK(!provisional_document_loader_ && !client_navigation_);
+  DCHECK(!client_navigation_);
   DCHECK(frame_->GetDocument()->IsLoadCompleted());
   DCHECK(frame_->GetDocument()->HasFinishedParsing());
   progress_tracker_->ProgressStarted();
@@ -1496,13 +1480,6 @@ bool FrameLoader::CancelProvisionalLoaderForNewNavigation() {
   // document.onreadystatechange can fire in Abort(), which can:
   // 1) Detach this frame.
   // 2) Stop the provisional DocumentLoader (i.e window.stop()).
-  if (!frame_->GetPage())
-    return false;
-
-  DetachDocumentLoader(provisional_document_loader_);
-  // Detaching the provisional DocumentLoader above may leave the frame without
-  // any loading DocumentLoader. It can causes the 'load' event to fire, which
-  // can be used to detach this frame.
   if (!frame_->GetPage())
     return false;
 
@@ -1707,10 +1684,6 @@ std::unique_ptr<TracedValue> FrameLoader::ToTracedValue() const {
   traced_value->EndDictionary();
   traced_value->SetBoolean("isLoadingMainFrame", frame_->IsMainFrame());
   traced_value->SetString("stateMachine", state_machine_.ToString());
-  traced_value->SetString("provisionalDocumentLoaderURL",
-                          provisional_document_loader_
-                              ? provisional_document_loader_->Url().GetString()
-                              : String());
   traced_value->SetString(
       "documentLoaderURL",
       document_loader_ ? document_loader_->Url().GetString() : String());

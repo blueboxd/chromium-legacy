@@ -225,12 +225,12 @@ blink::WebString MockRenderThread::GetUserAgent() {
   return blink::WebString();
 }
 
-bool MockRenderThread::IsUseZoomForDSF() {
-  return zoom_for_dsf_;
-}
-
 const blink::UserAgentMetadata& MockRenderThread::GetUserAgentMetadata() {
   return kUserAgentMetadata;
+}
+
+bool MockRenderThread::IsUseZoomForDSF() {
+  return zoom_for_dsf_;
 }
 
 #if defined(OS_WIN)

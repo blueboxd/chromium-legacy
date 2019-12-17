@@ -961,8 +961,11 @@ String CounterValueForElement(Element* element) {
   element->GetDocument().UpdateStyleAndLayout();
   WTF::TextStream stream;
   bool is_first_counter = true;
-  // The counter layoutObjects should be children of :before or :after
-  // pseudo-elements.
+  // The counter LayoutObjects should be children of ::marker, ::before or
+  // ::after pseudo-elements.
+  if (LayoutObject* marker =
+          element->PseudoElementLayoutObject(kPseudoIdMarker))
+    WriteCounterValuesFromChildren(stream, marker, is_first_counter);
   if (LayoutObject* before =
           element->PseudoElementLayoutObject(kPseudoIdBefore))
     WriteCounterValuesFromChildren(stream, before, is_first_counter);

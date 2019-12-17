@@ -76,20 +76,22 @@ enum SyncInitialState {
   SYNC_INITIAL_STATE_LIMIT
 };
 
-void RecordSyncInitialState(int disable_reasons, bool first_setup_complete) {
+void RecordSyncInitialState(SyncService::DisableReasonSet disable_reasons,
+                            bool first_setup_complete) {
   SyncInitialState sync_state = CAN_START;
-  if (disable_reasons & ProfileSyncService::DISABLE_REASON_NOT_SIGNED_IN) {
+  if (disable_reasons.Has(ProfileSyncService::DISABLE_REASON_NOT_SIGNED_IN)) {
     sync_state = NOT_SIGNED_IN;
-  } else if (disable_reasons &
-             ProfileSyncService::DISABLE_REASON_ENTERPRISE_POLICY) {
+  } else if (disable_reasons.Has(
+                 ProfileSyncService::DISABLE_REASON_ENTERPRISE_POLICY)) {
     sync_state = NOT_ALLOWED_BY_POLICY;
-  } else if (disable_reasons &
-             ProfileSyncService::DISABLE_REASON_PLATFORM_OVERRIDE) {
+  } else if (disable_reasons.Has(
+                 ProfileSyncService::DISABLE_REASON_PLATFORM_OVERRIDE)) {
     // This case means Android's "MasterSync" toggle. However, that is not
     // plumbed into ProfileSyncService until after this method, so we never get
     // here. See http://crbug.com/568771.
     sync_state = NOT_ALLOWED_BY_PLATFORM;
-  } else if (disable_reasons & ProfileSyncService::DISABLE_REASON_USER_CHOICE) {
+  } else if (disable_reasons.Has(
+                 ProfileSyncService::DISABLE_REASON_USER_CHOICE)) {
     if (first_setup_complete) {
       sync_state = NOT_REQUESTED;
     } else {
@@ -385,9 +387,10 @@ bool ProfileSyncService::IsEngineAllowedToStart() const {
   // USER_CHOICE (i.e. the Sync feature toggle) and PLATFORM_OVERRIDE (i.e.
   // Android's "MasterSync" toggle) do not prevent starting up the Sync
   // transport.
-  const int kDisableReasonMask =
-      ~(DISABLE_REASON_USER_CHOICE | DISABLE_REASON_PLATFORM_OVERRIDE);
-  return (GetDisableReasons() & kDisableReasonMask) == DISABLE_REASON_NONE;
+  auto disable_reasons = GetDisableReasons();
+  disable_reasons.RemoveAll(SyncService::DisableReasonSet(
+      DISABLE_REASON_USER_CHOICE, DISABLE_REASON_PLATFORM_OVERRIDE));
+  return disable_reasons.Empty();
 }
 
 void ProfileSyncService::OnProtocolEvent(const ProtocolEvent& event) {
@@ -682,35 +685,35 @@ const SyncUserSettings* ProfileSyncService::GetUserSettings() const {
   return user_settings_.get();
 }
 
-int ProfileSyncService::GetDisableReasons() const {
+SyncService::DisableReasonSet ProfileSyncService::GetDisableReasons() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // If Sync is disabled via command line flag, then ProfileSyncService
   // shouldn't even be instantiated.
   DCHECK(switches::IsSyncAllowedByFlag());
 
-  int result = DISABLE_REASON_NONE;
+  DisableReasonSet result;
   if (!user_settings_->IsSyncAllowedByPlatform()) {
-    result = result | DISABLE_REASON_PLATFORM_OVERRIDE;
+    result.Put(DISABLE_REASON_PLATFORM_OVERRIDE);
   }
   if (sync_prefs_.IsManaged() || sync_disabled_by_admin_) {
-    result = result | DISABLE_REASON_ENTERPRISE_POLICY;
+    result.Put(DISABLE_REASON_ENTERPRISE_POLICY);
   }
   // Local sync doesn't require sign-in.
   if (!IsSignedIn() && !IsLocalSyncEnabled()) {
-    result = result | DISABLE_REASON_NOT_SIGNED_IN;
+    result.Put(DISABLE_REASON_NOT_SIGNED_IN);
   }
   // When local sync is on sync should be considered requsted or otherwise it
   // will not resume after the policy or the flag has been removed.
   if (!user_settings_->IsSyncRequested() && !IsLocalSyncEnabled()) {
-    result = result | DISABLE_REASON_USER_CHOICE;
+    result.Put(DISABLE_REASON_USER_CHOICE);
   }
   if (unrecoverable_error_reason_ != ERROR_REASON_UNSET) {
-    result = result | DISABLE_REASON_UNRECOVERABLE_ERROR;
+    result.Put(DISABLE_REASON_UNRECOVERABLE_ERROR);
   }
   if (base::FeatureList::IsEnabled(switches::kStopSyncInPausedState)) {
     if (auth_manager_->IsSyncPaused()) {
-      result = result | DISABLE_REASON_PAUSED;
+      result.Put(DISABLE_REASON_PAUSED);
     }
   }
   return result;
@@ -1399,10 +1402,9 @@ ModelTypeSet ProfileSyncService::GetModelTypesForTransportOnlyMode() const {
 #if defined(OS_CHROMEOS)
   // Chrome OS system types are not tied to browser sync-the-feature.
   if (chromeos::features::IsSplitSettingsSyncEnabled()) {
-    // TODO(jamescook): WEB_APPS
     allowed_types.PutAll({APP_LIST, APP_SETTINGS, APPS, ARC_PACKAGE,
                           OS_PREFERENCES, OS_PRIORITY_PREFERENCES, PRINTERS,
-                          WIFI_CONFIGURATIONS});
+                          WEB_APPS, WIFI_CONFIGURATIONS});
   }
 #endif  // defined(OS_CHROMEOS)
 

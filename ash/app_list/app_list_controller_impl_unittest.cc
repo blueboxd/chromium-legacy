@@ -718,7 +718,7 @@ class AppListAnimationTest : public AshTestBase,
     shelf->SetAlignment(ShelfAlignment::kBottom);
 
     if (GetParam()) {
-      shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+      shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
     }
 
     // The shelf should be shown at this point despite auto hide behavior, given

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 10134 tests; 10122 PASS, 12 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 10144 tests; 10132 PASS, 12 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS a.title: 38 tests
 PASS a.lang: 38 tests
 PASS a.dir: 68 tests
@@ -18,27 +18,27 @@ PASS a.referrerPolicy: 30 tests
 FAIL a.referrerPolicy: setAttribute() to "same-origin" assert_equals: IDL get expected "same-origin" but got ""
 PASS a.referrerPolicy: 3 tests
 FAIL a.referrerPolicy: setAttribute() to "SAME-ORIGIN" assert_equals: IDL get expected "same-origin" but got ""
-PASS a.referrerPolicy: 5 tests
+PASS a.referrerPolicy: 6 tests
 FAIL a.referrerPolicy: setAttribute() to "strict-origin" assert_equals: IDL get expected "strict-origin" but got ""
 PASS a.referrerPolicy: 3 tests
 FAIL a.referrerPolicy: setAttribute() to "STRICT-ORIGIN" assert_equals: IDL get expected "strict-origin" but got ""
-PASS a.referrerPolicy: 5 tests
+PASS a.referrerPolicy: 7 tests
 FAIL a.referrerPolicy: setAttribute() to "strict-origin-when-cross-origin" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
 PASS a.referrerPolicy: 3 tests
 FAIL a.referrerPolicy: setAttribute() to "STRICT-ORIGIN-WHEN-CROSS-ORIGIN" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
-PASS a.referrerPolicy: 33 tests
+PASS a.referrerPolicy: 35 tests
 FAIL a.referrerPolicy: IDL set to "same-origin" assert_equals: IDL get expected "same-origin" but got ""
 PASS a.referrerPolicy: 3 tests
 FAIL a.referrerPolicy: IDL set to "SAME-ORIGIN" assert_equals: IDL get expected "same-origin" but got ""
-PASS a.referrerPolicy: 5 tests
+PASS a.referrerPolicy: 6 tests
 FAIL a.referrerPolicy: IDL set to "strict-origin" assert_equals: IDL get expected "strict-origin" but got ""
 PASS a.referrerPolicy: 3 tests
 FAIL a.referrerPolicy: IDL set to "STRICT-ORIGIN" assert_equals: IDL get expected "strict-origin" but got ""
-PASS a.referrerPolicy: 5 tests
+PASS a.referrerPolicy: 7 tests
 FAIL a.referrerPolicy: IDL set to "strict-origin-when-cross-origin" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
 PASS a.referrerPolicy: 3 tests
 FAIL a.referrerPolicy: IDL set to "STRICT-ORIGIN-WHEN-CROSS-ORIGIN" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
-PASS a.referrerPolicy: 5 tests
+PASS a.referrerPolicy: 7 tests
 PASS a.href: 44 tests
 PASS a.coords: 38 tests
 PASS a.charset: 38 tests

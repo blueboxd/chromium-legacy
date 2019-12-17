@@ -37,7 +37,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   content::WebContents* GetWebContents() override;
   std::string GetAccountEmailAddress() override;
   std::string GetLocale() override;
-  void EnterState(AutofillAssistantState state) override;
+  bool EnterState(AutofillAssistantState state) override;
   void SetTouchableElementArea(const ElementAreaProto& element) override;
   void SetStatusMessage(const std::string& message) override;
   std::string GetStatusMessage() const override;
@@ -83,7 +83,13 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
     trigger_context_ = std::move(trigger_context);
   }
 
-  AutofillAssistantState GetState() { return state_; }
+  std::vector<AutofillAssistantState> GetStateHistory() {
+    return state_history_;
+  }
+  AutofillAssistantState GetState() {
+    return state_history_.empty() ? AutofillAssistantState::INACTIVE
+                                  : state_history_.back();
+  }
 
   Details* GetDetails() { return details_.get(); }
 
@@ -113,7 +119,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   WebController* web_controller_ = nullptr;
   ClientMemory memory_;
   std::unique_ptr<TriggerContext> trigger_context_;
-  AutofillAssistantState state_ = AutofillAssistantState::INACTIVE;
+  std::vector<AutofillAssistantState> state_history_;
   std::string status_message_;
   std::unique_ptr<Details> details_;
   std::unique_ptr<InfoBox> info_box_;

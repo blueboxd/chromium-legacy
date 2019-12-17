@@ -79,7 +79,7 @@ public class IdentityManagerIntegrationTest {
 
             // Get a reference to the service.
             mIdentityMutator = IdentityServicesProvider.getSigninManager().getIdentityMutator();
-            mIdentityManager = IdentityServicesProvider.getIdentityManager();
+            mIdentityManager = IdentityServicesProvider.get().getIdentityManager();
         });
     }
 

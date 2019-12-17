@@ -42,19 +42,49 @@ void PromptAction::InternalProcessAction(ProcessActionCallback callback) {
   SetupPreconditions();
   UpdateUserActions();
 
-  if (HasNonemptyPreconditions() || HasAutoSelect()) {
-    RunPeriodicChecks();
-    timer_ = std::make_unique<base::RepeatingTimer>();
-    timer_->Start(FROM_HERE,
-                  delegate_->GetSettings().periodic_script_check_interval,
-                  base::BindRepeating(&PromptAction::RunPeriodicChecks,
-                                      weak_ptr_factory_.GetWeakPtr()));
+  if (HasNonemptyPreconditions() || HasAutoSelect() ||
+      proto_.prompt().allow_interrupt()) {
+    delegate_->WaitForDom(base::TimeDelta::Max(),
+                          proto_.prompt().allow_interrupt(),
+                          base::BindRepeating(&PromptAction::RegisterChecks,
+                                              weak_ptr_factory_.GetWeakPtr()),
+                          base::BindOnce(&PromptAction::OnDoneWaitForDom,
+                                         weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
-void PromptAction::RunPeriodicChecks() {
-  CheckPreconditions();
-  CheckAutoSelect();
+void PromptAction::RegisterChecks(
+    BatchElementChecker* checker,
+    base::OnceCallback<void(const ClientStatus&)> wait_for_dom_callback) {
+  if (!callback_) {
+    // Action is done; checks aren't necessary anymore.
+    std::move(wait_for_dom_callback).Run(OkClientStatus());
+    return;
+  }
+
+  UpdateUserActions();
+
+  for (size_t i = 0; i < preconditions_.size(); i++) {
+    preconditions_[i]->Check(checker,
+                             base::BindOnce(&PromptAction::OnPreconditionResult,
+                                            weak_ptr_factory_.GetWeakPtr(), i));
+  }
+
+  auto_select_choice_index_ = -1;
+  for (int i = 0; i < proto_.prompt().choices_size(); i++) {
+    Selector selector =
+        Selector(proto_.prompt().choices(i).auto_select_if_element_exists());
+    if (selector.empty())
+      continue;
+
+    checker->AddElementCheck(
+        selector, base::BindOnce(&PromptAction::OnAutoSelectElementExists,
+                                 weak_ptr_factory_.GetWeakPtr(), i));
+  }
+
+  checker->AddAllDoneCallback(base::BindOnce(&PromptAction::OnElementChecksDone,
+                                             weak_ptr_factory_.GetWeakPtr(),
+                                             std::move(wait_for_dom_callback)));
 }
 
 void PromptAction::SetupPreconditions() {
@@ -78,29 +108,12 @@ bool PromptAction::HasNonemptyPreconditions() {
   return false;
 }
 
-void PromptAction::CheckPreconditions() {
-  precondition_checker_ = std::make_unique<BatchElementChecker>();
-  for (size_t i = 0; i < preconditions_.size(); i++) {
-    preconditions_[i]->Check(precondition_checker_.get(),
-                             base::BindOnce(&PromptAction::OnPreconditionResult,
-                                            weak_ptr_factory_.GetWeakPtr(), i));
-  }
-  precondition_checker_->AddAllDoneCallback(base::BindOnce(
-      &PromptAction::OnPreconditionChecksDone, weak_ptr_factory_.GetWeakPtr()));
-  delegate_->RunElementChecks(precondition_checker_.get());
-}
-
 void PromptAction::OnPreconditionResult(size_t choice_index, bool result) {
   if (precondition_results_[choice_index] == result)
     return;
 
   precondition_results_[choice_index] = result;
   precondition_changed_ = true;
-}
-
-void PromptAction::OnPreconditionChecksDone() {
-  if (precondition_changed_)
-    UpdateUserActions();
 }
 
 void PromptAction::UpdateUserActions() {
@@ -136,26 +149,6 @@ bool PromptAction::HasAutoSelect() {
   return false;
 }
 
-void PromptAction::CheckAutoSelect() {
-  auto_select_checker_ = std::make_unique<BatchElementChecker>();
-
-  // Wait as long as necessary for one of the elements to show up. This is
-  // cancelled by CancelPrompt()
-  for (int i = 0; i < proto_.prompt().choices_size(); i++) {
-    Selector selector =
-        Selector(proto_.prompt().choices(i).auto_select_if_element_exists());
-    if (selector.empty())
-      continue;
-
-    auto_select_checker_->AddElementCheck(
-        selector, base::BindOnce(&PromptAction::OnAutoSelectElementExists,
-                                 weak_ptr_factory_.GetWeakPtr(), i));
-  }
-  auto_select_checker_->AddAllDoneCallback(base::BindOnce(
-      &PromptAction::OnAutoSelectDone, weak_ptr_factory_.GetWeakPtr()));
-  delegate_->RunElementChecks(auto_select_checker_.get());
-}
-
 void PromptAction::OnAutoSelectElementExists(
     int choice_index,
     const ClientStatus& element_status) {
@@ -167,7 +160,27 @@ void PromptAction::OnAutoSelectElementExists(
   // check callback.
 }
 
-void PromptAction::OnAutoSelectDone() {
+void PromptAction::OnElementChecksDone(
+    base::OnceCallback<void(const ClientStatus&)> wait_for_dom_callback) {
+  if (precondition_changed_)
+    UpdateUserActions();
+
+  // Calling wait_for_dom_callback with successful status is a way of asking the
+  // WaitForDom to end gracefully and call OnDoneWaitForDom with the status.
+  // Note that it is possible for WaitForDom to decide not to call
+  // OnDoneWaitForDom, if an interrupt triggers at the same time, so we cannot
+  // cancel the prompt and choose the suggestion just yet.
+  if (auto_select_choice_index_ >= 0) {
+    std::move(wait_for_dom_callback).Run(OkClientStatus());
+    return;
+  }
+
+  // Let WaitForDom know we're still waiting for an element.
+  std::move(wait_for_dom_callback).Run(ClientStatus(ELEMENT_RESOLUTION_FAILED));
+}
+
+void PromptAction::OnDoneWaitForDom(const ClientStatus& status) {
+  // Status doesn't matter; it's just forwarded from AutoSelectDone.
   if (auto_select_choice_index_ >= 0) {
     delegate_->CancelPrompt();
     OnSuggestionChosen(auto_select_choice_index_);
@@ -180,11 +193,6 @@ void PromptAction::OnSuggestionChosen(int choice_index) {
     return;
   }
   DCHECK(choice_index >= 0 && choice_index <= proto_.prompt().choices_size());
-
-  // Interrupt checks and timer.
-  timer_.reset();
-  precondition_checker_.reset();
-  auto_select_checker_.reset();
 
   PromptProto::Choice choice;
   UpdateProcessedAction(ACTION_APPLIED);

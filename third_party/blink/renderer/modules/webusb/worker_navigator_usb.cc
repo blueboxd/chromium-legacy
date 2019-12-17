@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/workers/worker_navigator.h"
 #include "third_party/blink/renderer/modules/webusb/usb.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -44,7 +45,7 @@ USB* WorkerNavigatorUSB::usb(ScriptState* script_state) {
         RuntimeEnabledFeatures::WebUSBOnDedicatedWorkersEnabled();
 
     if (isDedicatedWorkerAndEnabled) {
-      usb_ = USB::Create(*context);
+      usb_ = MakeGarbageCollected<USB>(*context);
     }
   }
   return usb_;

@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -45,6 +46,7 @@ public class DirectActionAvailabilityWebappTest {
     @Test
     @MediumTest
     @Feature({"DirectActions"})
+    @DisabledTest(message = "crbug.com/1033006")
     public void testCoreDirectActionInWebappActivity() throws Exception {
         mWebAppActivityTestRule.startWebappActivity();
 

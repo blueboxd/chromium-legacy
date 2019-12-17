@@ -221,7 +221,7 @@ TEST_F(ToastManagerImplTest, PositionWithAutoHiddenBottomShelf) {
 
   Shelf* shelf = GetPrimaryShelf();
   EXPECT_EQ(ShelfAlignment::kBottom, shelf->alignment());
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
   ShowToast("DUMMY", ToastData::kInfiniteDuration);
@@ -243,7 +243,7 @@ TEST_F(ToastManagerImplTest, PositionWithAutoHiddenBottomShelf) {
 TEST_F(ToastManagerImplTest, PositionWithHiddenBottomShelf) {
   Shelf* shelf = GetPrimaryShelf();
   EXPECT_EQ(ShelfAlignment::kBottom, shelf->alignment());
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlwaysHidden);
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 
   ShowToast("DUMMY", ToastData::kInfiniteDuration);

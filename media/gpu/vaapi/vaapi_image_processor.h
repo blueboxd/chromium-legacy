@@ -7,12 +7,9 @@
 
 #include <memory>
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
-#include "build/build_config.h"
-#include "media/gpu/chromeos/image_processor.h"
+#include "media/gpu/chromeos/image_processor_backend.h"
+#include "media/gpu/media_gpu_export.h"
 
 namespace media {
 
@@ -20,45 +17,36 @@ class VaapiWrapper;
 
 // ImageProcessor that is hardware accelerated with VA-API. This ImageProcessor
 // supports DmaBuf only for both input and output.
-class VaapiImageProcessor : public ImageProcessor {
+class VaapiImageProcessor : public ImageProcessorBackend {
  public:
   // Factory method to create VaapiImageProcessor for a buffer conversion
   // specified by |input_config| and |output_config|. Provided |error_cb| will
   // be posted to the same thread that executes Create(), if an error occurs
   // after initialization.
   // Returns nullptr if it fails to create VaapiImageProcessor.
-  static std::unique_ptr<VaapiImageProcessor> Create(
-      const ImageProcessor::PortConfig& input_config,
-      const ImageProcessor::PortConfig& output_config,
-      const std::vector<ImageProcessor::OutputMode>& preferred_output_modes,
-      scoped_refptr<base::SequencedTaskRunner> client_task_runner,
-      const base::RepeatingClosure& error_cb);
+  static std::unique_ptr<ImageProcessorBackend> Create(
+      const PortConfig& input_config,
+      const PortConfig& output_config,
+      const std::vector<OutputMode>& preferred_output_modes,
+      ErrorCB error_cb,
+      scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
 
   // ImageProcessor implementation.
-  ~VaapiImageProcessor() override;
-  bool Reset() override;
+  void Process(scoped_refptr<VideoFrame> input_frame,
+               scoped_refptr<VideoFrame> output_frame,
+               FrameReadyCB cb) override;
 
  private:
   VaapiImageProcessor(
-      const ImageProcessor::PortConfig& input_config,
-      const ImageProcessor::PortConfig& output_config,
       scoped_refptr<VaapiWrapper> vaapi_wrapper,
-      scoped_refptr<base::SequencedTaskRunner> client_task_runner);
-
-  // ImageProcessor implementation.
-  bool ProcessInternal(scoped_refptr<VideoFrame> input_frame,
-                       scoped_refptr<VideoFrame> output_frame,
-                       FrameReadyCB cb) override;
-
-  // Callback invoked on completion of VAAPI frame processing tasks.
-  void OnOutputFrameReady(FrameReadyCB cb, scoped_refptr<VideoFrame> frame);
-
-  // Sequence task runner in which the buffer conversion is performed.
-  const scoped_refptr<base::SequencedTaskRunner> processor_task_runner_;
+      const PortConfig& input_config,
+      const PortConfig& output_config,
+      OutputMode output_mode,
+      ErrorCB error_cb,
+      scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
+  ~VaapiImageProcessor() override;
 
   const scoped_refptr<VaapiWrapper> vaapi_wrapper_;
-
-  base::WeakPtrFactory<VaapiImageProcessor> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VaapiImageProcessor);
 };

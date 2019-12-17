@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -28,7 +29,8 @@ constexpr size_t kNumFramesForImageProcessor = limits::kMaxVideoFrames + 1;
 
 // Pick a compositor renderable format from |candidates|.
 // Return zero if not found.
-Fourcc PickRenderableFourcc(const std::vector<Fourcc>& candidates) {
+base::Optional<Fourcc> PickRenderableFourcc(
+    const std::vector<Fourcc>& candidates) {
   // Hardcode compositor renderable format now.
   // TODO: figure out a way to pick the best one dynamically.
   // Prefer YVU420 and NV12 because ArcGpuVideoDecodeAccelerator only supports
@@ -48,7 +50,7 @@ Fourcc PickRenderableFourcc(const std::vector<Fourcc>& candidates) {
       return Fourcc(value);
     }
   }
-  return Fourcc();
+  return base::nullopt;
 }
 
 }  //  namespace
@@ -500,7 +502,7 @@ base::Optional<Fourcc> VideoDecoderPipeline::PickDecoderOutputFormat(
   std::vector<Fourcc> fourccs;
   for (const auto& candidate : candidates)
     fourccs.push_back(candidate.first);
-  const Fourcc renderable_fourcc = PickRenderableFourcc(fourccs);
+  const auto renderable_fourcc = PickRenderableFourcc(fourccs);
   if (renderable_fourcc)
     return renderable_fourcc;
 

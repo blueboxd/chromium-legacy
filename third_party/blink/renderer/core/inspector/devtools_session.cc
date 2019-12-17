@@ -198,9 +198,11 @@ void DevToolsSession::DispatchProtocolCommand(
     int call_id,
     const String& method,
     blink::mojom::blink::DevToolsMessagePtr message_ptr) {
-  // TODO(petermarshall): Remove the distinction between DevToolsSession and
-  // IOSession as we always use IOSession now.
-  NOTREACHED();
+  TRACE_EVENT_WITH_FLOW1(
+      "devtools", "DevToolsSession::DispatchProtocolCommand", call_id,
+      TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_FLOW_IN, "call_id", call_id);
+  return DispatchProtocolCommandImpl(call_id, method,
+                                     UnwrapMessage(message_ptr));
 }
 
 void DevToolsSession::DispatchProtocolCommandImpl(int call_id,

@@ -155,9 +155,6 @@ void OSSyncHandler::PushSyncPrefs() {
     std::string type_name = syncer::GetUserSelectableOsTypeName(type);
     args.SetBoolean(type_name + "Registered", registered_types.Has(type));
     args.SetBoolean(type_name + "Synced", selected_types.Has(type));
-    // TODO(crbug.com/1020236): Add SyncUserSettings::GetForcedOsTypes() if we
-    // decide to support Apps sync for supervised users.
-    args.SetBoolean(type_name + "Enforced", false);
   }
   FireWebUIListener("os-sync-prefs-changed", base::Value(feature_enabled_),
                     args);

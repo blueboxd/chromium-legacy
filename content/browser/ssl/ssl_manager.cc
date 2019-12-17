@@ -141,21 +141,6 @@ void SSLManager::OnSSLCertificateError(
   manager->OnCertError(std::move(handler));
 }
 
-// static
-void SSLManager::OnSSLCertificateSubresourceError(
-    const base::WeakPtr<SSLErrorHandler::Delegate>& delegate,
-    const GURL& url,
-    int render_process_id,
-    int render_frame_id,
-    int net_error,
-    const net::SSLInfo& ssl_info,
-    bool fatal) {
-  OnSSLCertificateError(delegate, false, url,
-                        WebContentsImpl::FromRenderFrameHostID(
-                            render_process_id, render_frame_id),
-                        net_error, ssl_info, fatal);
-}
-
 SSLManager::SSLManager(NavigationControllerImpl* controller)
     : controller_(controller),
       ssl_host_state_delegate_(

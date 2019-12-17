@@ -941,6 +941,7 @@
       'gpu-fyi-try-win10-nvidia-skgl-64': 'gpu_fyi_tests_release_trybot',
       'win10_chromium_x64_dbg_ng': 'gpu_tests_debug_bot',
       'win10_chromium_x64_rel_ng': 'gpu_tests_release_trybot_resource_whitelisting',
+      'win10_chromium_x64_coverage_rel_ng': 'gpu_tests_release_trybot_resource_whitelisting_code_coverage',
       'win10_chromium_x64_rel_ng_exp': 'release_trybot',
       'win-annotator-rel': 'release_trybot',
       'win-asan': 'asan_clang_fuzzer_static_v8_heap_minimal_symbols_release',
@@ -1677,6 +1678,14 @@
 
     'gpu_tests_release_trybot_resource_whitelisting': [
       'gpu_tests', 'release_trybot', 'resource_whitelisting',
+    ],
+
+    # TODO(crbug.com/1004523) Delete this once coverage mode is enabled on the
+    # standard Windows trybot and the dedicated coverage trybot is no longer
+    # needed.
+    'gpu_tests_release_trybot_resource_whitelisting_code_coverage': [
+      'gpu_tests', 'release_trybot', 'resource_whitelisting',
+      'use_clang_coverage', 'partial_code_coverage_instrumentation',
     ],
 
     'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange': [

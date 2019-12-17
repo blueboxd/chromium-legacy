@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 3036 tests; 2950 PASS, 86 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 3060 tests; 2974 PASS, 86 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS head.title: 38 tests
 PASS head.lang: 38 tests
 PASS head.dir: 68 tests
@@ -35,7 +35,7 @@ PASS link.hidden: 39 tests
 PASS link.accessKey: 38 tests
 PASS link.tabIndex: 26 tests
 PASS link.href: 44 tests
-PASS link.crossOrigin: 58 tests
+PASS link.crossOrigin: 62 tests
 PASS link.rel: 38 tests
 PASS link.as: 25 tests
 FAIL link.as: setAttribute() to "audio" assert_equals: IDL get expected "audio" but got ""
@@ -51,17 +51,18 @@ PASS link.as: 10 tests
 FAIL link.as: setAttribute() to "manifest" assert_equals: IDL get expected "manifest" but got ""
 PASS link.as: 3 tests
 FAIL link.as: setAttribute() to "MANIFEST" assert_equals: IDL get expected "manifest" but got ""
+PASS link.as: setAttribute() to "manifeſt"
 FAIL link.as: setAttribute() to "object" assert_equals: IDL get expected "object" but got ""
 PASS link.as: 3 tests
 FAIL link.as: setAttribute() to "OBJECT" assert_equals: IDL get expected "object" but got ""
 FAIL link.as: setAttribute() to "report" assert_equals: IDL get expected "report" but got ""
 PASS link.as: 3 tests
 FAIL link.as: setAttribute() to "REPORT" assert_equals: IDL get expected "report" but got ""
-PASS link.as: 5 tests
+PASS link.as: 6 tests
 FAIL link.as: setAttribute() to "sharedworker" assert_equals: IDL get expected "sharedworker" but got ""
 PASS link.as: 3 tests
 FAIL link.as: setAttribute() to "SHAREDWORKER" assert_equals: IDL get expected "sharedworker" but got ""
-PASS link.as: 12 tests
+PASS link.as: 14 tests
 FAIL link.as: setAttribute() to "video" assert_equals: IDL get expected "video" but got ""
 PASS link.as: 3 tests
 FAIL link.as: setAttribute() to "VIDEO" assert_equals: IDL get expected "video" but got ""
@@ -72,7 +73,7 @@ PASS link.as: setAttribute() to "worKer"
 FAIL link.as: setAttribute() to "xslt" assert_equals: IDL get expected "xslt" but got ""
 PASS link.as: 3 tests
 FAIL link.as: setAttribute() to "XSLT" assert_equals: IDL get expected "xslt" but got ""
-PASS link.as: 23 tests
+PASS link.as: 24 tests
 FAIL link.as: IDL set to "audio" assert_equals: IDL get expected "audio" but got ""
 PASS link.as: 3 tests
 FAIL link.as: IDL set to "AUDIO" assert_equals: IDL get expected "audio" but got ""
@@ -86,17 +87,18 @@ PASS link.as: 10 tests
 FAIL link.as: IDL set to "manifest" assert_equals: IDL get expected "manifest" but got ""
 PASS link.as: 3 tests
 FAIL link.as: IDL set to "MANIFEST" assert_equals: IDL get expected "manifest" but got ""
+PASS link.as: IDL set to "manifeſt"
 FAIL link.as: IDL set to "object" assert_equals: IDL get expected "object" but got ""
 PASS link.as: 3 tests
 FAIL link.as: IDL set to "OBJECT" assert_equals: IDL get expected "object" but got ""
 FAIL link.as: IDL set to "report" assert_equals: IDL get expected "report" but got ""
 PASS link.as: 3 tests
 FAIL link.as: IDL set to "REPORT" assert_equals: IDL get expected "report" but got ""
-PASS link.as: 5 tests
+PASS link.as: 6 tests
 FAIL link.as: IDL set to "sharedworker" assert_equals: IDL get expected "sharedworker" but got ""
 PASS link.as: 3 tests
 FAIL link.as: IDL set to "SHAREDWORKER" assert_equals: IDL get expected "sharedworker" but got ""
-PASS link.as: 12 tests
+PASS link.as: 14 tests
 FAIL link.as: IDL set to "video" assert_equals: IDL get expected "video" but got ""
 PASS link.as: 3 tests
 FAIL link.as: IDL set to "VIDEO" assert_equals: IDL get expected "video" but got ""
@@ -107,6 +109,7 @@ PASS link.as: IDL set to "worKer"
 FAIL link.as: IDL set to "xslt" assert_equals: IDL get expected "xslt" but got ""
 PASS link.as: 3 tests
 FAIL link.as: IDL set to "XSLT" assert_equals: IDL get expected "xslt" but got ""
+PASS link.as: IDL set to "xſlt"
 PASS link.media: 38 tests
 PASS link.nonce: 20 tests
 FAIL link.nonce: IDL set to "" assert_equals: getAttribute() expected "" but got "test-valueOf"
@@ -134,27 +137,27 @@ PASS link.referrerPolicy: 30 tests
 FAIL link.referrerPolicy: setAttribute() to "same-origin" assert_equals: IDL get expected "same-origin" but got ""
 PASS link.referrerPolicy: 3 tests
 FAIL link.referrerPolicy: setAttribute() to "SAME-ORIGIN" assert_equals: IDL get expected "same-origin" but got ""
-PASS link.referrerPolicy: 5 tests
+PASS link.referrerPolicy: 6 tests
 FAIL link.referrerPolicy: setAttribute() to "strict-origin" assert_equals: IDL get expected "strict-origin" but got ""
 PASS link.referrerPolicy: 3 tests
 FAIL link.referrerPolicy: setAttribute() to "STRICT-ORIGIN" assert_equals: IDL get expected "strict-origin" but got ""
-PASS link.referrerPolicy: 5 tests
+PASS link.referrerPolicy: 7 tests
 FAIL link.referrerPolicy: setAttribute() to "strict-origin-when-cross-origin" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
 PASS link.referrerPolicy: 3 tests
 FAIL link.referrerPolicy: setAttribute() to "STRICT-ORIGIN-WHEN-CROSS-ORIGIN" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
-PASS link.referrerPolicy: 33 tests
+PASS link.referrerPolicy: 35 tests
 FAIL link.referrerPolicy: IDL set to "same-origin" assert_equals: IDL get expected "same-origin" but got ""
 PASS link.referrerPolicy: 3 tests
 FAIL link.referrerPolicy: IDL set to "SAME-ORIGIN" assert_equals: IDL get expected "same-origin" but got ""
-PASS link.referrerPolicy: 5 tests
+PASS link.referrerPolicy: 6 tests
 FAIL link.referrerPolicy: IDL set to "strict-origin" assert_equals: IDL get expected "strict-origin" but got ""
 PASS link.referrerPolicy: 3 tests
 FAIL link.referrerPolicy: IDL set to "STRICT-ORIGIN" assert_equals: IDL get expected "strict-origin" but got ""
-PASS link.referrerPolicy: 5 tests
+PASS link.referrerPolicy: 7 tests
 FAIL link.referrerPolicy: IDL set to "strict-origin-when-cross-origin" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
 PASS link.referrerPolicy: 3 tests
 FAIL link.referrerPolicy: IDL set to "STRICT-ORIGIN-WHEN-CROSS-ORIGIN" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
-PASS link.referrerPolicy: 5 tests
+PASS link.referrerPolicy: 7 tests
 PASS link.charset: 38 tests
 PASS link.rev: 38 tests
 PASS link.target: 38 tests

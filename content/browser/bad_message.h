@@ -246,6 +246,7 @@ enum BadMessageReason {
   MDDH_INVALID_STREAM_SELECTION_INFO = 218,
   REGISTER_PROTOCOL_HANDLER_INVALID_URL = 219,
   NC_SAME_DOCUMENT_POST_COMMIT_ERROR = 220,
+  RFH_INVALID_WEB_UI_CONTROLLER = 221,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

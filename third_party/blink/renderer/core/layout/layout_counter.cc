@@ -474,23 +474,21 @@ void LayoutCounter::WillBeDestroyed() {
 
 scoped_refptr<StringImpl> LayoutCounter::OriginalText() const {
   if (!counter_node_) {
-    LayoutObject* before_after_container = Parent();
+    LayoutObject* container = Parent();
     while (true) {
-      if (!before_after_container)
+      if (!container)
         return nullptr;
-      if (!before_after_container->IsAnonymous() &&
-          !before_after_container->IsPseudoElement())
-        return nullptr;  // LayoutCounters are restricted to before and after
-                         // pseudo elements
-      PseudoId container_style = before_after_container->StyleRef().StyleType();
+      if (!container->IsAnonymous() && !container->IsPseudoElement())
+        return nullptr;  // LayoutCounters are restricted to before, after and
+                         // marker pseudo elements
+      PseudoId container_style = container->StyleRef().StyleType();
       if ((container_style == kPseudoIdBefore) ||
           (container_style == kPseudoIdAfter) ||
           (container_style == kPseudoIdMarker))
         break;
-      before_after_container = before_after_container->Parent();
+      container = container->Parent();
     }
-    MakeCounterNodeIfNeeded(*before_after_container, counter_.Identifier(),
-                            true)
+    MakeCounterNodeIfNeeded(*container, counter_.Identifier(), true)
         ->AddLayoutObject(const_cast<LayoutCounter*>(this));
     DCHECK(counter_node_);
   }

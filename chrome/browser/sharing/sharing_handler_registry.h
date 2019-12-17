@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SHARING_SHARING_HANDLER_REGISTRY_H_
 #define CHROME_BROWSER_SHARING_SHARING_HANDLER_REGISTRY_H_
 
-#include "components/sync/protocol/sharing_message.pb.h"
+#include "chrome/browser/sharing/proto/sharing_message.pb.h"
 
 class SharingMessageHandler;
 

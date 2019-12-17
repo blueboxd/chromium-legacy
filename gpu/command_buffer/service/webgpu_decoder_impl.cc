@@ -14,6 +14,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/numerics/checked_math.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -61,7 +62,7 @@ class WireServerCommandSerializer : public dawn_wire::CommandSerializer {
 WireServerCommandSerializer::WireServerCommandSerializer(DecoderClient* client)
     : client_(client),
       buffer_(kMaxWireBufferSize),
-      put_offset_(sizeof(cmds::DawnReturnDataHeader)) {
+      put_offset_(offsetof(cmds::DawnReturnCommandsInfo, deserialized_buffer)) {
   cmds::DawnReturnDataHeader* return_data_header =
       reinterpret_cast<cmds::DawnReturnDataHeader*>(&buffer_[0]);
   return_data_header->return_data_type = DawnReturnDataType::kDawnCommands;
@@ -69,8 +70,14 @@ WireServerCommandSerializer::WireServerCommandSerializer(DecoderClient* client)
 
 void* WireServerCommandSerializer::GetCmdSpace(size_t size) {
   // TODO(enga): Handle chunking commands if size +
-  // sizeof(cmds::DawnReturnDataHeader)> kMaxWireBufferSize.
-  if (size + sizeof(cmds::DawnReturnDataHeader) > kMaxWireBufferSize) {
+  // offsetof(cmds::DawnReturnCommandsInfo, deserialized_buffer)>
+  // kMaxWireBufferSize.
+  size_t total_wire_buffer_size =
+      (base::CheckedNumeric<size_t>(size) +
+       base::CheckedNumeric<size_t>(
+           offsetof(cmds::DawnReturnCommandsInfo, deserialized_buffer)))
+          .ValueOrDie();
+  if (total_wire_buffer_size > kMaxWireBufferSize) {
     NOTREACHED();
     return nullptr;
   }
@@ -89,7 +96,8 @@ void* WireServerCommandSerializer::GetCmdSpace(size_t size) {
     // TODO(enga): Keep track of how much command space the application is using
     // and adjust the buffer size accordingly.
 
-    DCHECK_EQ(put_offset_, sizeof(cmds::DawnReturnDataHeader));
+    DCHECK_EQ(put_offset_,
+              offsetof(cmds::DawnReturnCommandsInfo, deserialized_buffer));
     next_offset = put_offset_ + size;
   }
 
@@ -99,7 +107,8 @@ void* WireServerCommandSerializer::GetCmdSpace(size_t size) {
 }
 
 bool WireServerCommandSerializer::Flush() {
-  if (put_offset_ > sizeof(cmds::DawnReturnDataHeader)) {
+  if (put_offset_ >
+      offsetof(cmds::DawnReturnCommandsInfo, deserialized_buffer)) {
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
                  "WireServerCommandSerializer::Flush", "bytes", put_offset_);
 
@@ -108,7 +117,7 @@ bool WireServerCommandSerializer::Flush() {
                             "DawnReturnCommands", return_trace_id++);
 
     client_->HandleReturnData(base::make_span(buffer_.data(), put_offset_));
-    put_offset_ = sizeof(cmds::DawnReturnDataHeader);
+    put_offset_ = offsetof(cmds::DawnReturnCommandsInfo, deserialized_buffer);
   }
   return true;
 }
@@ -121,21 +130,19 @@ void WireServerCommandSerializer::SendAdapterProperties(
 
   size_t serialized_adapter_properties_size =
       dawn_wire::SerializedWGPUDevicePropertiesSize(&adapter_properties);
-  std::vector<char> serialized_buffer(sizeof(cmds::DawnReturnDataHeader) +
-                                      sizeof(cmds::DawnReturnAdapterIDs) +
-                                      serialized_adapter_properties_size);
+  std::vector<char> serialized_buffer(
+      offsetof(cmds::DawnReturnAdapterInfo, deserialized_buffer) +
+      serialized_adapter_properties_size);
+
+  cmds::DawnReturnAdapterInfo* return_adapter_info =
+      reinterpret_cast<cmds::DawnReturnAdapterInfo*>(serialized_buffer.data());
 
   // Set Dawn return data header
-  reinterpret_cast<cmds::DawnReturnDataHeader*>(serialized_buffer.data())
-      ->return_data_type = DawnReturnDataType::kRequestedDawnAdapterProperties;
-
-  // Set adapter ids
-  cmds::DawnReturnAdapterInfo* return_adapter_info =
-      reinterpret_cast<cmds::DawnReturnAdapterInfo*>(
-          serialized_buffer.data() + sizeof(cmds::DawnReturnDataHeader));
-  return_adapter_info->adapter_ids.request_adapter_serial =
-      request_adapter_serial;
-  return_adapter_info->adapter_ids.adapter_service_id = adapter_service_id;
+  return_adapter_info->header = {};
+  DCHECK_EQ(DawnReturnDataType::kRequestedDawnAdapterProperties,
+            return_adapter_info->header.return_data_header.return_data_type);
+  return_adapter_info->header.request_adapter_serial = request_adapter_serial;
+  return_adapter_info->header.adapter_service_id = adapter_service_id;
 
   // Set serialized adapter properties
   dawn_wire::SerializeWGPUDeviceProperties(

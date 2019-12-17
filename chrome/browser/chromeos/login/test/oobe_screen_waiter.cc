@@ -42,7 +42,7 @@ void OobeScreenWaiter::Wait() {
   run_loop_->Run();
   run_loop_.reset();
 
-  DCHECK_EQ(State::DONE, state_);
+  ASSERT_EQ(State::DONE, state_);
 
   oobe_ui_observer_.RemoveAll();
   if (check_native_window_visible_)

@@ -69,6 +69,10 @@ namespace {
 // mojo::core::Core::CreateDataPipe
 constexpr size_t kBlockedBodyAllocationSize = 1;
 
+constexpr char kCrossOriginEmbedderPolicyHeader[] =
+    "Cross-Origin-Embedder-Policy";
+constexpr char kCrossOriginOpenerPolicyHeader[] = "Cross-Origin-Opener-Policy";
+
 // TODO: this duplicates some of PopulateResourceResponse in
 // content/browser/loader/resource_loader.cc
 void PopulateResourceResponse(net::URLRequest* request,
@@ -1006,13 +1010,26 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
       response_->content_security_policy = policy.TakeContentSecurityPolicy();
   }
 
-  // Parse the Cross-Origin-Opener-Policy header.
-  std::string raw_coop_string;
-  if (url_request_->response_headers() &&
-      url_request_->response_headers()->GetNormalizedHeader(
-          kCrossOriginOpenerPolicyHeader, &raw_coop_string)) {
-    response_->cross_origin_opener_policy =
-        ParseCrossOriginOpenerPolicyHeader(raw_coop_string);
+  if (base::FeatureList::IsEnabled(features::kCrossOriginIsolation)) {
+    // Parse the Cross-Origin-Embedder-Policy header.
+    std::string raw_coep_string;
+    if (url_request_->response_headers() &&
+        url_request_->response_headers()->GetNormalizedHeader(
+            kCrossOriginEmbedderPolicyHeader, &raw_coep_string)) {
+      if (raw_coep_string == "require-corp") {
+        response_->cross_origin_embedder_policy =
+            mojom::CrossOriginEmbedderPolicy::kRequireCorp;
+      }
+    }
+
+    // Parse the Cross-Origin-Opener-Policy header.
+    std::string raw_coop_string;
+    if (url_request_->response_headers() &&
+        url_request_->response_headers()->GetNormalizedHeader(
+            kCrossOriginOpenerPolicyHeader, &raw_coop_string)) {
+      response_->cross_origin_opener_policy =
+          ParseCrossOriginOpenerPolicyHeader(raw_coop_string);
+    }
   }
 
   // If necessary, retrieve the associated origin policy, before sending the

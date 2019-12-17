@@ -221,7 +221,8 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
 
   // These initial values hide the shelf until user preferences are available.
   ShelfAlignment alignment_ = ShelfAlignment::kBottomLocked;
-  ShelfAutoHideBehavior auto_hide_behavior_ = SHELF_AUTO_HIDE_ALWAYS_HIDDEN;
+  ShelfAutoHideBehavior auto_hide_behavior_ =
+      ShelfAutoHideBehavior::kAlwaysHidden;
 
   // Sets shelf alignment to bottom during login and screen lock.
   ShelfLockingManager shelf_locking_manager_;

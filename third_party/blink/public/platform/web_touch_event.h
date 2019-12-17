@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_TOUCH_EVENT_H_
 
 #include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/platform/web_touch_point.h"
 
 namespace blink {
 

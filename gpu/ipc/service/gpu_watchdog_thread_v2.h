@@ -36,7 +36,10 @@ enum class GpuWatchdogTimeoutEvent {
   // The GPU makes progress within 60 sec in OnWatchdogTimeout(). The GPU main
   // thread is not killed.
   kProgressAfterWait,
-  kMaxValue = kProgressAfterWait,
+  // Just continue if it's not on the TTY of our host X11 server.
+  kContinueOnNonHostServerTty,
+
+  kMaxValue = kContinueOnNonHostServerTty,
 };
 
 class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
@@ -127,6 +130,12 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   bool WithinOneMinFromPowerResumed();
   bool WithinOneMinFromForegrounded();
 
+#if defined(USE_X11)
+  int GetActiveTTY();
+#endif
+  // The watchdog continues when it's not on the TTY of our host X11 server.
+  bool ContinueOnNonHostX11ServerTty();
+
   // This counter is only written on the gpu thread, and read on both threads.
   base::subtle::Atomic32 arm_disarm_counter_ = 0;
   // The counter number read in the last OnWatchdogTimeout() on the watchdog
@@ -174,6 +183,11 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
 
   // The accumulated timeout time the GPU main thread was given.
   base::TimeDelta time_in_extra_timeouts_;
+#endif
+
+#if defined(USE_X11)
+  FILE* tty_file_ = nullptr;
+  int host_tty_ = -1;
 #endif
 
   // The system has entered the power suspension mode.

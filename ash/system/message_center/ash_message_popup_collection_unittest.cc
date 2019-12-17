@@ -146,7 +146,7 @@ TEST_F(AshMessagePopupCollectionTest, AutoHide) {
   std::unique_ptr<views::Widget> widget = CreateTestWidget(
       nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect(0, 0, 50, 50));
   Shelf* shelf = GetPrimaryShelf();
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
   EXPECT_EQ(origin_x, popup_collection()->GetToastOriginX(toast_size));
   EXPECT_LT(baseline, popup_collection()->GetBaseline());
 }

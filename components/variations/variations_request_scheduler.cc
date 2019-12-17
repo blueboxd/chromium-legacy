@@ -13,8 +13,8 @@
 namespace variations {
 
 VariationsRequestScheduler::VariationsRequestScheduler(
-    const base::Closure& task) : task_(task) {
-}
+    const base::RepeatingClosure& task)
+    : task_(task) {}
 
 VariationsRequestScheduler::~VariationsRequestScheduler() {
 }
@@ -56,14 +56,14 @@ base::TimeDelta VariationsRequestScheduler::GetFetchPeriod() const {
   return base::TimeDelta::FromMinutes(30);
 }
 
-base::Closure VariationsRequestScheduler::task() const {
+base::RepeatingClosure VariationsRequestScheduler::task() const {
   return task_;
 }
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 // static
 VariationsRequestScheduler* VariationsRequestScheduler::Create(
-    const base::Closure& task,
+    const base::RepeatingClosure& task,
     PrefService* local_state) {
   return new VariationsRequestScheduler(task);
 }

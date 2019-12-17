@@ -9,7 +9,7 @@
 Polymer({
   is: 'bluetooth-device-list-item',
 
-  behaviors: [I18nBehavior],
+  behaviors: [I18nBehavior, cr.ui.FocusRowBehavior],
 
   properties: {
     /**
@@ -27,7 +27,6 @@ Polymer({
     ariaLabel: {
       type: String,
       notify: true,
-      reflectToAttribute: true,
       computed: 'getAriaLabel_(device)',
     },
   },
@@ -41,6 +40,34 @@ Polymer({
   ignoreEnterKey_: function(event) {
     if (event.key == 'Enter') {
       event.stopPropagation();
+    }
+  },
+
+  /** @private */
+  tryConnect_: function() {
+    if (!this.isDisconnected_(this.device)) {
+      return;
+    }
+
+    this.fire('device-event', {
+      action: 'connect',
+      device: this.device,
+    });
+  },
+
+  /** @private */
+  onClick_: function() {
+    this.tryConnect_();
+  },
+
+  /**
+   * @param {!KeyboardEvent} e
+   * @private
+   */
+  onKeyDown_: function(e) {
+    if (e.key == 'Enter' || e.key == ' ') {
+      this.tryConnect_();
+      e.preventDefault();
     }
   },
 

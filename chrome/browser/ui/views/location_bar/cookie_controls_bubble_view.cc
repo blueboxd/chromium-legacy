@@ -9,6 +9,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
@@ -124,6 +125,7 @@ void CookieControlsBubbleView::UpdateUi() {
 
   GetBubbleFrameView()->UpdateWindowTitle();
   text_->SetVisible(false);
+  show_cookies_link_->SetVisible(false);
   header_view_->SetVisible(false);
 
   if (intermediate_step_ == IntermediateStep::kTurnOffButton) {
@@ -131,6 +133,7 @@ void CookieControlsBubbleView::UpdateUi() {
     text_->SetText(
         l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_NOT_WORKING_DESCRIPTION));
     extra_view_ = SetExtraView(CreateInfoIcon());
+    show_cookies_link_->SetVisible(true);
   } else if (status_ == CookieControlsController::Status::kEnabled) {
     header_view_->SetVisible(true);
     header_view_->SetImage(
@@ -185,16 +188,24 @@ base::string16 CookieControlsBubbleView::GetDialogButtonLabel(
 }
 
 void CookieControlsBubbleView::Init() {
-  // Use a BoxLayout because the view might be larger than |text_| and we want
-  // |text_| at the top.
+  const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical));
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+
   auto text = std::make_unique<views::Label>(base::string16(),
                                              views::style::CONTEXT_LABEL,
                                              views::style::STYLE_SECONDARY);
   text->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   text->SetMultiLine(true);
   text_ = AddChildView(std::move(text));
+
+  auto cookie_link = std::make_unique<views::Link>(
+      l10n_util::GetStringUTF16(IDS_BLOCKED_COOKIES_INFO));
+  cookie_link->SetMultiLine(true);
+  cookie_link->set_listener(this);
+  cookie_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  show_cookies_link_ = AddChildView(std::move(cookie_link));
 
   // TODO(crbug.com/1013092): The bubble should display a header view with full
   // width without having to tweak margins.
@@ -279,10 +290,16 @@ bool CookieControlsBubbleView::Close() {
 
 void CookieControlsBubbleView::LinkClicked(views::Link* source,
                                            int event_flags) {
-  DCHECK_EQ(status_, CookieControlsController::Status::kEnabled);
-  base::RecordAction(UserMetricsAction("CookieControls.Bubble.NotWorking"));
-  // Don't go through the controller as this is an intermediary state that
-  // is only relevant for the bubble UI.
-  intermediate_step_ = IntermediateStep::kTurnOffButton;
-  UpdateUi();
+  if (source == show_cookies_link_) {
+    base::RecordAction(UserMetricsAction("CookieControls.Bubble.CookiesInUse"));
+    TabDialogs::FromWebContents(web_contents())->ShowCollectedCookies();
+    GetWidget()->Close();
+  } else {
+    DCHECK_EQ(status_, CookieControlsController::Status::kEnabled);
+    base::RecordAction(UserMetricsAction("CookieControls.Bubble.NotWorking"));
+    // Don't go through the controller as this is an intermediary state that
+    // is only relevant for the bubble UI.
+    intermediate_step_ = IntermediateStep::kTurnOffButton;
+    UpdateUi();
+  }
 }

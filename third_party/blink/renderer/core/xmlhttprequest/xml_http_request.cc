@@ -818,7 +818,7 @@ void XMLHttpRequest::send(Document* document, ExceptionState& exception_state) {
   if (AreMethodAndURLValidForSend()) {
     if (document->IsHTMLDocument())
       UpdateContentTypeAndCharset("text/html;charset=UTF-8", "UTF-8");
-    else if (document->IsXMLDocument())
+    else if (IsA<XMLDocument>(document))
       UpdateContentTypeAndCharset("application/xml;charset=UTF-8", "UTF-8");
 
     String body = CreateMarkup(document);

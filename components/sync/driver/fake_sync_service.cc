@@ -28,7 +28,8 @@ const syncer::SyncUserSettings* FakeSyncService::GetUserSettings() const {
   return nullptr;
 }
 
-int FakeSyncService::GetDisableReasons() const {
+syncer::SyncService::DisableReasonSet FakeSyncService::GetDisableReasons()
+    const {
   return DISABLE_REASON_NOT_SIGNED_IN;
 }
 

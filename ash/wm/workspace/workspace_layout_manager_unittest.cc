@@ -1080,7 +1080,7 @@ TEST_F(WorkspaceLayoutManagerSoloTest, NotResizeWhenScreenIsLocked) {
   window->Show();
 
   Shelf* shelf = GetPrimaryShelf();
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
 
   window->SetBounds(
       screen_util::GetMaximizedWindowBoundsInParent(window.get()));
@@ -1279,17 +1279,17 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
 
   EXPECT_EQ(fullscreen_size,
             default_container()->children()[0]->bounds().size());
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlwaysHidden);
   shelf_layout_manager->UpdateVisibilityState();
 
   // When the shelf is re-shown WorkspaceLayoutManager shrinks all children but
   // the backdrop.
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kNever);
   shelf_layout_manager->UpdateVisibilityState();
   EXPECT_EQ(fullscreen_size,
             default_container()->children()[0]->bounds().size());
 
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlwaysHidden);
   shelf_layout_manager->UpdateVisibilityState();
   EXPECT_EQ(fullscreen_size,
             default_container()->children()[0]->bounds().size());

@@ -8,7 +8,9 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/login_constants.h"
 #include "ash/public/cpp/shutdown_controller.h"
+#include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/shutdown_reason.h"
@@ -16,7 +18,11 @@
 #include "ash/system/power/power_button_controller_test_api.h"
 #include "ash/system/power/power_button_test_base.h"
 #include "ash/touch/touch_devices_controller.h"
+#include "ash/wallpaper/wallpaper_view.h"
+#include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/lock_state_controller_test_api.h"
+#include "ash/wm/overview/overview_constants.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/session_state_animator.h"
 #include "ash/wm/test_session_state_animator.h"
 #include "base/bind.h"
@@ -694,6 +700,40 @@ TEST_F(LockStateControllerTest, ShutDownAfterShowPowerMenu) {
   // When the timeout fires, we should request a shutdown.
   lock_state_test_api_->trigger_real_shutdown_timeout();
   EXPECT_EQ(1, NumShutdownRequests());
+}
+
+TEST_F(LockStateControllerTest, CancelShouldResetWallpaperProperty) {
+  Initialize(ButtonType::NORMAL, LoginStatus::USER);
+
+  ExpectUnlockedState();
+
+  auto* wallpaper_view = Shell::Get()
+                             ->GetPrimaryRootWindowController()
+                             ->wallpaper_widget_controller()
+                             ->wallpaper_view();
+
+  auto* overview_controller = Shell::Get()->overview_controller();
+  // Enter Overview and verify wallpaper properties.
+  overview_controller->StartOverview();
+  EXPECT_EQ(overview_constants::kBlurSigma, wallpaper_view->blur_sigma());
+  EXPECT_EQ(overview_constants::kOpacity, wallpaper_view->opacity());
+
+  // Start lock animation and verify wallpaper properties.
+  PressLockButton();
+  ExpectPreLockAnimationStarted();
+  EXPECT_EQ(login_constants::kBlurSigma, wallpaper_view->blur_sigma());
+  EXPECT_EQ(1.f, wallpaper_view->opacity());
+
+  // Cancel lock animation.
+  AdvancePartially(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE, 0.5f);
+  ReleaseLockButton();
+  ExpectPreLockAnimationCancel();
+  Advance(SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
+  ExpectUnlockedState();
+
+  // Verify walpaper properties are restored to overview's.
+  EXPECT_EQ(overview_constants::kBlurSigma, wallpaper_view->blur_sigma());
+  EXPECT_EQ(overview_constants::kOpacity, wallpaper_view->opacity());
 }
 
 }  // namespace ash

@@ -8,8 +8,20 @@
   },
   data: [
     {
+      name: "annotation",
+      interfaceName: "MathMLElement",
+    },
+    {
+      name: "annotation-xml",
+      interfaceName: "MathMLElement",
+    },
+    {
       name: "maction",
       interfaceName: "MathMLRowElement",
+    },
+    {
+      name: "malignmark",
+      interfaceName: "MathMLElement",
     },
     {
       name: "math",
@@ -20,17 +32,9 @@
       interfaceName: "MathMLRowElement",
     },
     {
-      name: "mphantom",
-      interfaceName: "MathMLRowElement",
+      name: "mglyph",
+      interfaceName: "MathMLElement",
     },
-    {
-      name: "mrow",
-      interfaceName: "MathMLRowElement",
-    },
-    {
-      name: "mstyle",
-      interfaceName: "MathMLRowElement",
-     },
     {
       name: "mi",
       interfaceName: "MathMLElement",
@@ -44,27 +48,23 @@
       interfaceName: "MathMLElement",
     },
     {
-      name: "mtext",
-      interfaceName: "MathMLElement",
+      name: "mphantom",
+      interfaceName: "MathMLRowElement",
+    },
+    {
+      name: "mrow",
+      interfaceName: "MathMLRowElement",
     },
     {
       name: "ms",
       interfaceName: "MathMLElement",
     },
     {
-      name: "mglyph",
-      interfaceName: "MathMLElement",
+      name: "mstyle",
+      interfaceName: "MathMLRowElement",
     },
     {
-      name: "malignmark",
-      interfaceName: "MathMLElement",
-    },
-    {
-      name: "annotation",
-      interfaceName: "MathMLElement",
-    },
-    {
-      name: "annotation-xml",
+      name: "mtext",
       interfaceName: "MathMLElement",
     },
     {

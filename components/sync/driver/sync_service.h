@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sync/base/enum_set.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/user_demographics.h"
 #include "components/sync/driver/sync_service_observer.h"
@@ -121,32 +122,36 @@ class SyncService : public KeyedService {
  public:
   // The set of reasons due to which Sync-the-feature can be disabled. Note that
   // Sync-the-transport might still start up even in the presence of (some)
-  // disable reasons. Meant to be used as a bitmask.
+  // disable reasons. Meant to be used as a enum set.
   enum DisableReason {
-    DISABLE_REASON_NONE = 0,
     // Sync is disabled via platform-level override (e.g. Android's "MasterSync"
     // toggle).
-    DISABLE_REASON_PLATFORM_OVERRIDE = 1 << 0,
+    DISABLE_REASON_PLATFORM_OVERRIDE,
+    DISABLE_REASON_FIRST = DISABLE_REASON_PLATFORM_OVERRIDE,
     // Sync is disabled by enterprise policy, either browser policy (through
     // prefs) or account policy received from the Sync server.
-    DISABLE_REASON_ENTERPRISE_POLICY = 1 << 1,
+    DISABLE_REASON_ENTERPRISE_POLICY,
     // Sync can't start because there is no authenticated user.
-    DISABLE_REASON_NOT_SIGNED_IN = 1 << 2,
+    DISABLE_REASON_NOT_SIGNED_IN,
     // Sync is suppressed by user choice, either via the feature toggle in
     // Chrome settings (which exists on Android and iOS), a platform-level
     // toggle (e.g. Android's "ChromeSync" toggle), or a “Reset Sync” operation
     // from the dashboard. This is also set if there's simply no signed-in user
     // (in addition to DISABLE_REASON_NOT_SIGNED_IN).
-    DISABLE_REASON_USER_CHOICE = 1 << 3,
+    DISABLE_REASON_USER_CHOICE,
     // Sync has encountered an unrecoverable error. It won't attempt to start
     // again until either the browser is restarted, or the user fully signs out
     // and back in again.
-    DISABLE_REASON_UNRECOVERABLE_ERROR = 1 << 4,
+    DISABLE_REASON_UNRECOVERABLE_ERROR,
     // Sync is paused because the user signed out on the web. This is different
     // from NOT_SIGNED_IN: In this case, there *is* still a primary account, but
     // it doesn't have valid credentials.
-    DISABLE_REASON_PAUSED = 1 << 5,
+    DISABLE_REASON_PAUSED,
+    DISABLE_REASON_LAST = DISABLE_REASON_PAUSED,
   };
+
+  using DisableReasonSet =
+      EnumSet<DisableReason, DISABLE_REASON_FIRST, DISABLE_REASON_LAST>;
 
   // The overall state of Sync-the-transport, in ascending order of
   // "activeness". Note that this refers to the transport layer, which may be
@@ -196,11 +201,11 @@ class SyncService : public KeyedService {
   // DisableReason enum entries.
   // Note: This refers to Sync-the-feature. Sync-the-transport may be running
   // even in the presence of disable reasons.
-  virtual int GetDisableReasons() const = 0;
+  virtual DisableReasonSet GetDisableReasons() const = 0;
   // Helper that returns whether GetDisableReasons() contains the given |reason|
   // (possibly among others).
   bool HasDisableReason(DisableReason reason) const {
-    return GetDisableReasons() & reason;
+    return GetDisableReasons().Has(reason);
   }
 
   // Returns the overall state of the SyncService transport layer. See the enum

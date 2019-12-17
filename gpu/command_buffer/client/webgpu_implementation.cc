@@ -242,30 +242,42 @@ void WebGPUImplementation::OnGpuControlReturnData(
   if (data.size() <= sizeof(cmds::DawnReturnDataHeader)) {
     // TODO(jiawei.shao@intel.com): Lose the context.
     NOTREACHED();
+    return;
   }
   const cmds::DawnReturnDataHeader& dawnReturnDataHeader =
       *reinterpret_cast<const cmds::DawnReturnDataHeader*>(data.data());
 
-  const uint8_t* dawnReturnDataBody =
-      data.data() + sizeof(cmds::DawnReturnDataHeader);
-  size_t dawnReturnDataSize = data.size() - sizeof(cmds::DawnReturnDataHeader);
-
   switch (dawnReturnDataHeader.return_data_type) {
-    case DawnReturnDataType::kDawnCommands:
+    case DawnReturnDataType::kDawnCommands: {
+      if (data.size() < sizeof(cmds::DawnReturnCommandsInfo)) {
+        // TODO(jiawei.shao@intel.com): Lose the context.
+        NOTREACHED();
+        break;
+      }
+
+      const cmds::DawnReturnCommandsInfo* dawn_return_commands_info =
+          reinterpret_cast<const cmds::DawnReturnCommandsInfo*>(data.data());
       if (!wire_client_->HandleCommands(
-              reinterpret_cast<const char*>(dawnReturnDataBody),
-              dawnReturnDataSize)) {
+              reinterpret_cast<const char*>(
+                  dawn_return_commands_info->deserialized_buffer),
+              data.size() - offsetof(cmds::DawnReturnCommandsInfo,
+                                     deserialized_buffer))) {
         // TODO(enga): Lose the context.
         NOTREACHED();
       }
-      break;
+    } break;
     case DawnReturnDataType::kRequestedDawnAdapterProperties: {
+      if (data.size() < sizeof(cmds::DawnReturnAdapterInfo)) {
+        // TODO(jiawei.shao@intel.com): Lose the context.
+        NOTREACHED();
+        break;
+      }
+
       const cmds::DawnReturnAdapterInfo* returned_adapter_info =
-          reinterpret_cast<const cmds::DawnReturnAdapterInfo*>(
-              dawnReturnDataBody);
+          reinterpret_cast<const cmds::DawnReturnAdapterInfo*>(data.data());
 
       GLuint request_adapter_serial =
-          returned_adapter_info->adapter_ids.request_adapter_serial;
+          returned_adapter_info->header.request_adapter_serial;
       auto request_callback_iter =
           request_adapter_callback_map_.find(request_adapter_serial);
       if (request_callback_iter == request_adapter_callback_map_.end()) {
@@ -275,7 +287,7 @@ void WebGPUImplementation::OnGpuControlReturnData(
       }
       auto& request_callback = request_callback_iter->second;
       GLuint adapter_service_id =
-          returned_adapter_info->adapter_ids.adapter_service_id;
+          returned_adapter_info->header.adapter_service_id;
       WGPUDeviceProperties adapter_properties = {};
       const volatile char* deserialized_buffer =
           reinterpret_cast<const volatile char*>(
@@ -286,6 +298,12 @@ void WebGPUImplementation::OnGpuControlReturnData(
       request_adapter_callback_map_.erase(request_callback_iter);
     } break;
     case DawnReturnDataType::kRequestedDeviceReturnInfo: {
+      if (data.size() < sizeof(cmds::DawnReturnRequestDeviceInfo)) {
+        // TODO(jiawei.shao@intel.com): Lose the context.
+        NOTREACHED();
+        break;
+      }
+
       const cmds::DawnReturnRequestDeviceInfo* returned_request_device_info =
           reinterpret_cast<const cmds::DawnReturnRequestDeviceInfo*>(
               data.data());

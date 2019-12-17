@@ -98,6 +98,13 @@ class MessageValidator {
       : data_(array->Data()), length_(array->lengthAsSizeT()), offset_(0) {}
 
   bool Process(ExceptionState& exception_state, bool sysex_enabled) {
+    // data_ is put into a WTF::Vector eventually, which only has wtf_size_t
+    // space.
+    if (!base::CheckedNumeric<wtf_size_t>(length_).IsValid()) {
+      exception_state.ThrowRangeError(
+          "Data exceeds the maximum supported length");
+      return false;
+    }
     while (!IsEndOfData() && AcceptRealTimeMessages()) {
       if (!IsStatusByte()) {
         exception_state.ThrowTypeError("Running status is not allowed " +
@@ -307,9 +314,10 @@ void MIDIOutput::DidOpen(bool opened) {
 
   while (!pending_data_.empty()) {
     auto& front = pending_data_.front();
-    midiAccess()->SendMIDIData(port_index_, front.first->Data(),
-                               front.first->deprecatedLengthAsUnsigned(),
-                               front.second);
+    midiAccess()->SendMIDIData(
+        port_index_, front.first->Data(),
+        base::checked_cast<wtf_size_t>(front.first->lengthAsSizeT()),
+        front.second);
     pending_data_.TakeFirst();
   }
 }
@@ -338,8 +346,9 @@ void MIDIOutput::SendInternal(DOMUint8Array* array,
   if (IsOpening()) {
     pending_data_.emplace_back(array, timestamp);
   } else {
-    midiAccess()->SendMIDIData(port_index_, array->Data(),
-                               array->deprecatedLengthAsUnsigned(), timestamp);
+    midiAccess()->SendMIDIData(
+        port_index_, array->Data(),
+        base::checked_cast<wtf_size_t>(array->lengthAsSizeT()), timestamp);
   }
 }
 

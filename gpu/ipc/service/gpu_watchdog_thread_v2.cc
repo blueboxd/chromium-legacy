@@ -10,6 +10,7 @@
 #include "base/bit_cast.h"
 #include "base/debug/alias.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/persistent_histogram_allocator.h"
@@ -44,6 +45,12 @@ GpuWatchdogThreadImplV2::GpuWatchdogThreadImplV2(base::TimeDelta timeout,
   }
 #endif
 
+#if defined(USE_X11)
+  tty_file_ = base::OpenFile(
+      base::FilePath(FILE_PATH_LITERAL("/sys/class/tty/tty0/active")), "r");
+  host_tty_ = GetActiveTTY();
+#endif
+
   Arm();
 }
 
@@ -57,6 +64,11 @@ GpuWatchdogThreadImplV2::~GpuWatchdogThreadImplV2() {
 #if defined(OS_WIN)
   if (watched_thread_handle_)
     CloseHandle(watched_thread_handle_);
+#endif
+
+#if defined(USE_X11)
+  if (tty_file_)
+    fclose(tty_file_);
 #endif
 }
 
@@ -392,7 +404,8 @@ void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
       WatchedThreadNeedsMoreTime(disarmed || gpu_makes_progress);
 
   // No gpu hang is detected. Continue with another OnWatchdogTimeout task
-  if (disarmed || gpu_makes_progress || watched_thread_needs_more_time) {
+  if (disarmed || gpu_makes_progress || watched_thread_needs_more_time ||
+      ContinueOnNonHostX11ServerTty()) {
     last_on_watchdog_timeout_timeticks_ = base::TimeTicks::Now();
     last_arm_disarm_counter_ =
         base::subtle::NoBarrier_Load(&arm_disarm_counter_);
@@ -711,6 +724,34 @@ bool GpuWatchdogThreadImplV2::WithinOneMinFromForegrounded() {
   return foregrounded_event_ && num_of_timeout_after_foregrounded_ <= count;
 }
 
+#if defined(USE_X11)
+int GpuWatchdogThreadImplV2::GetActiveTTY() {
+  char tty_string[8] = {0};
+  if (tty_file_ && !fseek(tty_file_, 0, SEEK_SET) &&
+      fread(tty_string, 1, 7, tty_file_)) {
+    int tty_number;
+    if (sscanf(tty_string, "tty%d\n", &tty_number) == 1)
+      return tty_number;
+  }
+  return -1;
+}
+#endif
+
+bool GpuWatchdogThreadImplV2::ContinueOnNonHostX11ServerTty() {
+#if defined(USE_X11)
+  int active_tty = GetActiveTTY();
+  bool is_on_host_tty = host_tty_ == active_tty;
+
+  // Don't crash if we're not on the TTY of our host X11 server.
+  if (host_tty_ != -1 && active_tty != -1 && !is_on_host_tty) {
+    GpuWatchdogTimeoutHistogram(
+        GpuWatchdogTimeoutEvent::kContinueOnNonHostServerTty);
+    return true;
+  } else
+#endif
+    return false;
+}
+
 // For gpu testing only. Return whether a GPU hang was detected or not.
 bool GpuWatchdogThreadImplV2::IsGpuHangDetectedForTesting() {
   DCHECK(is_test_mode_);
@@ -733,5 +774,4 @@ void GpuWatchdogThreadImplV2::WaitForPowerObserverAddedForTesting() {
       base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&event)));
   event.Wait();
 }
-
 }  // namespace gpu

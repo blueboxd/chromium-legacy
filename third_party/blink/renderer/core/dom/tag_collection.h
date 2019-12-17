@@ -73,17 +73,19 @@ class TagCollectionNS : public HTMLCollection {
   AtomicString local_name_;
 };
 
-DEFINE_TYPE_CASTS(TagCollection,
-                  LiveNodeListBase,
-                  collection,
-                  collection->GetType() == kTagCollectionType,
-                  collection.GetType() == kTagCollectionType);
+template <>
+struct DowncastTraits<TagCollection> {
+  static bool AllowFrom(const LiveNodeListBase& collection) {
+    return collection.GetType() == kTagCollectionType;
+  }
+};
 
-DEFINE_TYPE_CASTS(TagCollectionNS,
-                  LiveNodeListBase,
-                  collection,
-                  collection->GetType() == kTagCollectionNSType,
-                  collection.GetType() == kTagCollectionNSType);
+template <>
+struct DowncastTraits<TagCollectionNS> {
+  static bool AllowFrom(const LiveNodeListBase& collection) {
+    return collection.GetType() == kTagCollectionNSType;
+  }
+};
 
 }  // namespace blink
 

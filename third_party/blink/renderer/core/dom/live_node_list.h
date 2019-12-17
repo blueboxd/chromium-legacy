@@ -79,11 +79,12 @@ class CORE_EXPORT LiveNodeList : public NodeList, public LiveNodeListBase {
   mutable CollectionItemsCache<LiveNodeList, Element> collection_items_cache_;
 };
 
-DEFINE_TYPE_CASTS(LiveNodeList,
-                  LiveNodeListBase,
-                  list,
-                  IsLiveNodeListType(list->GetType()),
-                  IsLiveNodeListType(list.GetType()));
+template <>
+struct DowncastTraits<LiveNodeList> {
+  static bool AllowFrom(const LiveNodeListBase& list) {
+    return IsLiveNodeListType(list.GetType());
+  }
+};
 
 inline void LiveNodeList::InvalidateCacheForAttribute(
     const QualifiedName* attr_name) const {

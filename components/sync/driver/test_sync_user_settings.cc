@@ -23,11 +23,11 @@ bool TestSyncUserSettings::IsSyncRequested() const {
 }
 
 void TestSyncUserSettings::SetSyncRequested(bool requested) {
-  int disable_reasons = service_->GetDisableReasons();
+  SyncService::DisableReasonSet disable_reasons = service_->GetDisableReasons();
   if (requested) {
-    disable_reasons &= ~SyncService::DISABLE_REASON_USER_CHOICE;
+    disable_reasons.Remove(SyncService::DISABLE_REASON_USER_CHOICE);
   } else {
-    disable_reasons |= SyncService::DISABLE_REASON_USER_CHOICE;
+    disable_reasons.Put(SyncService::DISABLE_REASON_USER_CHOICE);
   }
   service_->SetDisableReasons(disable_reasons);
 }
@@ -38,11 +38,11 @@ bool TestSyncUserSettings::IsSyncAllowedByPlatform() const {
 }
 
 void TestSyncUserSettings::SetSyncAllowedByPlatform(bool allowed) {
-  int disable_reasons = service_->GetDisableReasons();
+  SyncService::DisableReasonSet disable_reasons = service_->GetDisableReasons();
   if (allowed) {
-    disable_reasons &= ~SyncService::DISABLE_REASON_PLATFORM_OVERRIDE;
+    disable_reasons.Remove(SyncService::DISABLE_REASON_PLATFORM_OVERRIDE);
   } else {
-    disable_reasons |= SyncService::DISABLE_REASON_PLATFORM_OVERRIDE;
+    disable_reasons.Put(SyncService::DISABLE_REASON_PLATFORM_OVERRIDE);
   }
   service_->SetDisableReasons(disable_reasons);
 }

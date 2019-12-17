@@ -121,6 +121,10 @@ void StyleCascade::Apply() {
 void StyleCascade::Apply(Animator& animator) {
   Resolver resolver(animator, excluder_);
 
+  // The computed value of -webkit-appearance decides whether we need to
+  // apply -internal-ua properties or not.
+  ApplyAppearance(resolver);
+
   // Affects the computed value of 'color', hence needs to happen before
   // high-priority properties.
   Apply(GetCSSPropertyColorScheme(), resolver);
@@ -197,6 +201,12 @@ void StyleCascade::ApplyHighPriority(Resolver& resolver) {
   state_.SetConversionFontSizes(CSSToLengthConversionData::FontSizes(
       state_.Style(), state_.RootElementStyle()));
   state_.SetConversionZoom(state_.Style()->EffectiveZoom());
+}
+
+void StyleCascade::ApplyAppearance(Resolver& resolver) {
+  Apply(GetCSSPropertyWebkitAppearance(), resolver);
+  if (!state_.Style()->HasAppearance())
+    Exclude(CSSProperty::kUA, true);
 }
 
 void StyleCascade::Apply(const CSSPropertyName& name) {

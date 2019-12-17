@@ -76,8 +76,9 @@ void ShowContainerTerminal(Profile* profile,
                            const apps::AppLaunchParams& launch_params,
                            const GURL& vsh_in_crosh_url,
                            Browser* browser) {
-  ShowApplicationWindow(profile, launch_params, vsh_in_crosh_url, browser,
-                        WindowOpenDisposition::NEW_FOREGROUND_TAB);
+  NavigateApplicationWindow(browser, launch_params, vsh_in_crosh_url,
+                            WindowOpenDisposition::NEW_FOREGROUND_TAB);
+  browser->window()->Show();
   browser->window()->GetNativeWindow()->SetProperty(
       kOverrideWindowIconResourceIdKey, IDR_LOGO_CROSTINI_TERMINAL);
 }

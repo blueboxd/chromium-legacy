@@ -1994,11 +1994,6 @@ int QuicStreamFactory::CreateSession(
     *session = nullptr;
     return ERR_CONNECTION_CLOSED;
   }
-  if (connection->version().KnowsWhichDecrypterToUse()) {
-    connection->InstallDecrypter(
-        quic::ENCRYPTION_FORWARD_SECURE,
-        std::make_unique<quic::NullDecrypter>(quic::Perspective::IS_CLIENT));
-  }
   return OK;
 }
 

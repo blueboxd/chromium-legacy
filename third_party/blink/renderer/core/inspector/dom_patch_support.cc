@@ -68,7 +68,7 @@ void DOMPatchSupport::PatchDocument(const String& markup) {
     new_document = XMLDocument::CreateSVG(init);
   else if (GetDocument().IsXHTMLDocument())
     new_document = XMLDocument::CreateXHTML(init);
-  else if (GetDocument().IsXMLDocument())
+  else if (IsA<XMLDocument>(GetDocument()))
     new_document = MakeGarbageCollected<XMLDocument>(init);
 
   DCHECK(new_document);

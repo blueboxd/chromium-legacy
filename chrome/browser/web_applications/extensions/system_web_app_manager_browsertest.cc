@@ -239,6 +239,22 @@ content::WebContents* SystemWebAppManagerBrowserTest::LaunchApp(
       ->OpenApplication(params);
 }
 
+content::EvalJsResult EvalJs(content::WebContents* web_contents,
+                             const std::string& script) {
+  // Set world_id = 1 to bypass Content Security Policy restriction.
+  return content::EvalJs(web_contents, script,
+                         content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+                         1 /*world_id*/);
+}
+
+::testing::AssertionResult ExecJs(content::WebContents* web_contents,
+                                  const std::string& script) {
+  // Set world_id = 1 to bypass Content Security Policy restriction.
+  return content::ExecJs(web_contents, script,
+                         content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+                         1 /*world_id*/);
+}
+
 // Test that System Apps install correctly with a manifest.
 IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest, Install) {
   const extensions::Extension* app = GetExtensionForAppBrowser(
@@ -299,30 +315,57 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest,
   ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_directory.GetPath(),
                                              &temp_file_path));
 
-  params.launch_files = {temp_file_path};
-
   const GURL& launch_url = WebAppProvider::Get(browser()->profile())
                                ->registrar()
                                .GetAppLaunchURL(params.app_id);
+
+  // First launch.
+  params.launch_files = {temp_file_path};
   content::TestNavigationObserver navigation_observer(launch_url);
   navigation_observer.StartWatchingNewWebContents();
-
   content::WebContents* web_contents =
       OpenApplication(browser()->profile(), params);
-
   navigation_observer.Wait();
 
-  auto result =
-      content::EvalJs(web_contents,
-                      "new Promise(resolve => {"
-                      "  launchQueue.setConsumer(launchParams => {"
-                      "    resolve(launchParams.files.length);"
-                      "  });"
-                      "});",
-                      content::EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /*world_id*/);
+  // Set up a Promise that resolves to launchParams, when launchQueue's consumer
+  // callback is called.
+  EXPECT_TRUE(ExecJs(web_contents,
+                     "window.launchParamsPromise = new Promise(resolve => {"
+                     "  window.resolveLaunchParamsPromise = resolve;"
+                     "});"
+                     "launchQueue.setConsumer(launchParams => {"
+                     "  window.resolveLaunchParamsPromise(launchParams);"
+                     "});"));
 
-  // Files array should be populated with one file.
-  EXPECT_EQ(1, result.value.GetInt());
+  // Check launch files are correct.
+  EXPECT_EQ(temp_file_path.BaseName().AsUTF8Unsafe(),
+            EvalJs(web_contents,
+                   "window.launchParamsPromise.then("
+                   "  launchParams => launchParams.files[0].name);"));
+
+  // Reset the Promise to get second launchParams.
+  EXPECT_TRUE(ExecJs(web_contents,
+                     "window.launchParamsPromise = new Promise(resolve => {"
+                     "  window.resolveLaunchParamsPromise = resolve;"
+                     "});"));
+
+  // Second Launch.
+  base::FilePath temp_file_path2;
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_directory.GetPath(),
+                                             &temp_file_path2));
+  params.launch_files = {temp_file_path2};
+  content::WebContents* web_contents2 =
+      OpenApplication(browser()->profile(), params);
+
+  // WebContents* should be the same because we are passing launchParams to the
+  // opened application.
+  EXPECT_EQ(web_contents, web_contents2);
+
+  // Second launch_files are passed to the opened application.
+  EXPECT_EQ(temp_file_path2.BaseName().AsUTF8Unsafe(),
+            EvalJs(web_contents,
+                   "window.launchParamsPromise.then("
+                   "  launchParams => launchParams.files[0].name)"));
 }
 
 }  // namespace web_app

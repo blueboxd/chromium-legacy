@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/session/session_observer.h"
 #include "ash/shutdown_reason.h"
+#include "ash/wallpaper/wallpaper_property.h"
 #include "ash/wm/lock_state_observer.h"
 #include "ash/wm/session_state_animator.h"
 #include "base/macros.h"
@@ -206,6 +207,10 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   base::OnceClosure lock_screen_displayed_callback_;
 
   ScopedSessionObserver scoped_session_observer_;
+
+  // The wallpaper property before entring lock state. Used to restore the
+  // wallpaper blur and opacity after exiting lock state.
+  WallpaperProperty saved_property_;
 
   base::ObserverList<LockStateObserver>::Unchecked observers_;
 

@@ -50,7 +50,12 @@ class XMLDocument final : public Document {
               DocumentClassFlags document_classes = kXMLDocumentClass);
 };
 
-DEFINE_DOCUMENT_TYPE_CASTS(XMLDocument);
+template <>
+struct DowncastTraits<XMLDocument> {
+  static bool AllowFrom(const Document& document) {
+    return document.IsXMLDocument();
+  }
+};
 
 }  // namespace blink
 

@@ -35,7 +35,7 @@ base::Optional<GpuBufferLayout> GpuBufferLayout::Create(
     const std::vector<ColorPlaneLayout>& planes) {
   // TODO(akahuang): Check planes.size() is equal to the expected value
   // according to |fourcc|.
-  if (!fourcc || size.IsEmpty() || planes.size() == 0) {
+  if (size.IsEmpty() || planes.size() == 0) {
     VLOGF(1) << "Invalid parameters. fourcc: " << fourcc.ToString()
              << ", size: " << size.ToString()
              << ", planes: " << VectorToString(planes);

@@ -378,12 +378,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
       base::FeatureList::IsEnabled(features::kDesktopPWAsUSS) &&
       web_app::WebAppProvider::Get(profile_)) {
     if (!disabled_types.Has(syncer::WEB_APPS)) {
-      // TODO(https://crbug.com/1031549): Run in transport-mode on Chrome OS
-      // with SplitSettingsSync.
-      controllers.push_back(std::make_unique<syncer::ModelTypeController>(
-          syncer::WEB_APPS,
-          std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
-              GetControllerDelegateForModelType(syncer::WEB_APPS).get())));
+      controllers.push_back(CreateWebAppsModelTypeController(sync_service));
     }
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
@@ -729,6 +724,29 @@ ChromeSyncClient::CreateAppSettingsModelTypeController(
       extensions::settings_sync_util::GetSyncableServiceProvider(
           profile_, syncer::APP_SETTINGS),
       GetDumpStackClosure(), profile_);
+}
+
+std::unique_ptr<syncer::ModelTypeController>
+ChromeSyncClient::CreateWebAppsModelTypeController(
+    syncer::SyncService* sync_service) {
+  syncer::ModelTypeControllerDelegate* delegate =
+      GetControllerDelegateForModelType(syncer::WEB_APPS).get();
+#if defined(OS_CHROMEOS)
+  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+    // Use the same delegate in full-sync and transport-only modes.
+    return std::make_unique<OsSyncModelTypeController>(
+        syncer::WEB_APPS,
+        /*delegate_for_full_sync_mode=*/
+        std::make_unique<ForwardingModelTypeControllerDelegate>(delegate),
+        /*delegate_for_transport_mode=*/
+        std::make_unique<ForwardingModelTypeControllerDelegate>(delegate),
+        profile_->GetPrefs(), sync_service);
+  }
+  // Fall through.
+#endif
+  return std::make_unique<syncer::ModelTypeController>(
+      syncer::WEB_APPS,
+      std::make_unique<ForwardingModelTypeControllerDelegate>(delegate));
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 

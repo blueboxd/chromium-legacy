@@ -98,7 +98,9 @@ const char* const kModelIdsBlacklistedForMediaFoundation[] = {
     // HP HD Camera. See https://crbug.com/1011888.
     "04ca:7095",
     // RBG/IR camera for Windows Hello Face Auth. See https://crbug.com/984864.
-    "13d3:5257"};
+    "13d3:5257",
+    // Acer Aspire f5-573g. See https://crbug.com/1034644.
+    "0bda:57f2"};
 
 const std::pair<VideoCaptureApi, std::vector<std::pair<GUID, GUID>>>
     kMfAttributes[] = {{VideoCaptureApi::WIN_MEDIA_FOUNDATION,

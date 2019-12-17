@@ -62,8 +62,12 @@ std::string FakeScriptExecutorDelegate::GetLocale() {
   return "en-US";
 }
 
-void FakeScriptExecutorDelegate::EnterState(AutofillAssistantState state) {
-  state_ = state;
+bool FakeScriptExecutorDelegate::EnterState(AutofillAssistantState state) {
+  if (GetState() == state)
+    return false;
+
+  state_history_.emplace_back(state);
+  return true;
 }
 
 void FakeScriptExecutorDelegate::SetTouchableElementArea(

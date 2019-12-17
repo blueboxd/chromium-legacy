@@ -224,7 +224,6 @@ class CORE_EXPORT FrameLoader final {
   // Like ClearClientNavigation, but also notifies the client to actually cancel
   // the navigation.
   void CancelClientNavigation();
-  void DetachProvisionalDocumentLoader();
 
   void Trace(blink::Visitor*);
 
@@ -301,13 +300,8 @@ class CORE_EXPORT FrameLoader final {
 
   Member<ProgressTracker> progress_tracker_;
 
-  // Document loaders for the three phases of frame loading. Note that while a
-  // new request is being loaded, the old document loader may still be
-  // referenced. E.g. while a new request is in the "policy" state, the old
-  // document loader may be consulted in particular as it makes sense to imply
-  // certain settings on the new loader.
+  // Document loader for frame loading.
   Member<DocumentLoader> document_loader_;
-  Member<DocumentLoader> provisional_document_loader_;
 
   // This struct holds information about a navigation, which is being
   // initiated by the client through the browser process, until the navigation

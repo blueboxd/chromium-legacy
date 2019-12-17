@@ -22,26 +22,38 @@ class HotseatTransitionAnimator::TransitionAnimationMetricsReporter
  public:
   TransitionAnimationMetricsReporter() = default;
   ~TransitionAnimationMetricsReporter() override = default;
-  void set_animating_to_shown_hotseat(bool animating_to_shown_hotseat) {
-    animating_to_shown_hotseat_ = animating_to_shown_hotseat;
-  }
+
+  void set_new_state(HotseatState new_state) { new_state_ = new_state; }
+
   // ui::AnimationMetricsReporter:
   void Report(int value) override {
-    if (animating_to_shown_hotseat_) {
-      UMA_HISTOGRAM_PERCENTAGE(
-          "Ash.HotseatTransition.AnimationSmoothness.TransitionToShownHotseat",
-          value);
-    } else {
-      UMA_HISTOGRAM_PERCENTAGE(
-          "Ash.HotseatTransition.AnimationSmoothness."
-          "TransitionFromShownHotseat",
-          value);
+    switch (new_state_) {
+      case HotseatState::kShown:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Ash.HotseatTransition.AnimationSmoothness."
+            "TransitionToShownHotseat",
+            value);
+        break;
+      case HotseatState::kExtended:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Ash.HotseatTransition.AnimationSmoothness."
+            "TransitionToExtendedHotseat",
+            value);
+        break;
+      case HotseatState::kHidden:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Ash.HotseatTransition.AnimationSmoothness."
+            "TransitionToHiddenHotseat",
+            value);
+        break;
+      default:
+        NOTREACHED();
     }
   }
 
  private:
-  // Whether the animation reported is transitioning state into a shown hotseat.
-  bool animating_to_shown_hotseat_ = false;
+  // The state to which the animation is transitioning.
+  HotseatState new_state_;
 };
 
 HotseatTransitionAnimator::HotseatTransitionAnimator(ShelfWidget* shelf_widget)
@@ -123,8 +135,7 @@ void HotseatTransitionAnimator::DoAnimation(HotseatState old_state,
   const int y_offset = starting_y - target_bounds.y();
   transform.Translate(0, y_offset);
   shelf_widget_->GetAnimatingBackground()->SetTransform(transform);
-  animation_metrics_reporter_->set_animating_to_shown_hotseat(
-      animating_to_shown_hotseat);
+  animation_metrics_reporter_->set_new_state(new_state);
 
   {
     ui::ScopedLayerAnimationSettings shelf_bg_animation_setter(

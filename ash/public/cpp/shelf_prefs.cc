@@ -149,17 +149,17 @@ ShelfAutoHideBehavior AutoHideBehaviorFromPref(const std::string& value) {
   // "Default" as well as "Never" and "Always", "Default" should now
   // be treated as "Never" (http://crbug.com/146773).
   if (value == kShelfAutoHideBehaviorAlways)
-    return SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
-  return SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
+    return ShelfAutoHideBehavior::kAlways;
+  return ShelfAutoHideBehavior::kNever;
 }
 
 const char* AutoHideBehaviorToPref(ShelfAutoHideBehavior behavior) {
   switch (behavior) {
-    case SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
+    case ShelfAutoHideBehavior::kAlways:
       return kShelfAutoHideBehaviorAlways;
-    case SHELF_AUTO_HIDE_BEHAVIOR_NEVER:
+    case ShelfAutoHideBehavior::kNever:
       return kShelfAutoHideBehaviorNever;
-    case SHELF_AUTO_HIDE_ALWAYS_HIDDEN:
+    case ShelfAutoHideBehavior::kAlwaysHidden:
       // This should not be a valid preference option for now. We only want to
       // completely hide it when we run in app mode - or while we temporarily
       // hide the shelf (e.g. SessionAbortedDialog).

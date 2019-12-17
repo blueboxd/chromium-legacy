@@ -9,6 +9,7 @@
 #include "third_party/blink/public/platform/web_float_size.h"
 #include "third_party/blink/public/platform/web_gesture_device.h"
 #include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/platform/web_pointer_properties.h"
 #include "third_party/blink/public/platform/web_scroll_types.h"
 #include "ui/events/types/scroll_types.h"
 

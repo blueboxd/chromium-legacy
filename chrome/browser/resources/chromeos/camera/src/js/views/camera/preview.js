@@ -89,15 +89,6 @@ cca.views.camera.Preview = class {
      */
     this.resizeWindowTimeout_ = null;
 
-    /**
-     * Aspect ratio for the window.
-     * @type {number}
-     * @private
-     */
-    this.aspectRatio_ = 1;
-
-    var inner = chrome.app.window.current().innerBounds;
-    this.aspectRatio_ = inner.width / inner.height;
     window.addEventListener('resize', () => this.onWindowResize_());
 
     ['expert', 'show-metadata'].forEach((state) => {
@@ -400,32 +391,6 @@ cca.views.camera.Preview = class {
   }
 
   /**
-   * Sets CCA window inner bound to specified size.
-   * @param {number} width Width and min width of new window inner bound.
-   * @param {number} height Height and min height of new window inner bound.
-   * @return {!Promise} Promise which is resolved when size change actually
-   *     happen.
-   * @private
-   */
-  setWindowSize_(width, height) {
-    return new Promise((resolve) => {
-      const listener = () => {
-        chrome.app.window.current().onBoundsChanged.removeListener(listener);
-        resolve();
-      };
-      chrome.app.window.current().onBoundsChanged.addListener(listener);
-      const inner = chrome.app.window.current().innerBounds;
-      const prevW = inner.width;
-      const prevH = inner.height;
-      inner.minWidth = inner.width = width;
-      inner.minHeight = inner.height = height;
-      if (prevW === width && prevH === height) {
-        listener();
-      }
-    });
-  }
-
-  /**
    * Handles resizing the window for preview's aspect ratio changes.
    * @param {number=} aspectRatio Aspect ratio changed.
    * @return {!Promise}
@@ -442,7 +407,6 @@ cca.views.camera.Preview = class {
     // by the last known window's aspect ratio.
     return new Promise((resolve) => {
              if (aspectRatio) {
-               this.aspectRatio_ = aspectRatio;
                resolve();
              } else {
                this.resizeWindowTimeout_ = setTimeout(() => {
@@ -457,10 +421,7 @@ cca.views.camera.Preview = class {
           if (cca.util.isWindowFullSize()) {
             return;
           }
-          const width = chrome.app.window.current().innerBounds.minWidth;
-          assert(width !== undefined);
-          const height = Math.round(width * 9 / 16);
-          return this.setWindowSize_(width, height);
+          return cca.util.fitWindow();
         });
   }
 

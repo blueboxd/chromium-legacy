@@ -183,8 +183,10 @@ void ShowPWAInstallBubble(content::WebContents* web_contents,
   if (g_auto_accept_pwa_for_testing)
     g_bubble_->AcceptDialog();
 
-  icon->Update();
-  DCHECK(icon->GetVisible());
+  if (icon) {
+    icon->Update();
+    DCHECK(icon->GetVisible());
+  }
 }
 
 void SetAutoAcceptPWAInstallConfirmationForTesting(bool auto_accept) {

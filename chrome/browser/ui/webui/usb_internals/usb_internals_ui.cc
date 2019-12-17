@@ -39,13 +39,13 @@ UsbInternalsUI::UsbInternalsUI(content::WebUI* web_ui)
   source->SetDefaultResource(IDR_USB_INTERNALS_HTML);
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
-  AddHandlerToRegistry(base::BindRepeating(
-      &UsbInternalsUI::BindUsbInternalsPageHandler, base::Unretained(this)));
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(UsbInternalsUI)
 
 UsbInternalsUI::~UsbInternalsUI() {}
 
-void UsbInternalsUI::BindUsbInternalsPageHandler(
+void UsbInternalsUI::BindInterface(
     mojo::PendingReceiver<mojom::UsbInternalsPageHandler> receiver) {
   page_handler_ =
       std::make_unique<UsbInternalsPageHandler>(std::move(receiver));

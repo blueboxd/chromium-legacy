@@ -186,22 +186,23 @@ class SectionList {
   std::vector<std::unique_ptr<Section>> sections_;
 };
 
-std::string GetDisableReasonsString(int disable_reasons) {
-  if (disable_reasons == syncer::SyncService::DISABLE_REASON_NONE) {
+std::string GetDisableReasonsString(
+    SyncService::DisableReasonSet disable_reasons) {
+  if (disable_reasons.Empty()) {
     return "None";
   }
   std::vector<std::string> reason_strings;
-  if (disable_reasons & syncer::SyncService::DISABLE_REASON_PLATFORM_OVERRIDE)
+  if (disable_reasons.Has(SyncService::DISABLE_REASON_PLATFORM_OVERRIDE))
     reason_strings.push_back("Platform override");
-  if (disable_reasons & syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY)
+  if (disable_reasons.Has(SyncService::DISABLE_REASON_ENTERPRISE_POLICY))
     reason_strings.push_back("Enterprise policy");
-  if (disable_reasons & syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN)
+  if (disable_reasons.Has(SyncService::DISABLE_REASON_NOT_SIGNED_IN))
     reason_strings.push_back("Not signed in");
-  if (disable_reasons & syncer::SyncService::DISABLE_REASON_USER_CHOICE)
+  if (disable_reasons.Has(SyncService::DISABLE_REASON_USER_CHOICE))
     reason_strings.push_back("User choice");
-  if (disable_reasons & syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR)
+  if (disable_reasons.Has(SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR))
     reason_strings.push_back("Unrecoverable error");
-  if (disable_reasons & syncer::SyncService::DISABLE_REASON_PAUSED)
+  if (disable_reasons.Has(SyncService::DISABLE_REASON_PAUSED))
     reason_strings.push_back("Paused");
   return base::JoinString(reason_strings, ", ");
 }

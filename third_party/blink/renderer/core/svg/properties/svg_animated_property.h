@@ -101,7 +101,7 @@ class SVGAnimatedPropertyBase : public GarbageCollectedMixin {
  private:
   static_assert(kNumberOfAnimatedPropertyTypes <= (1u << 5),
                 "enough bits for AnimatedPropertyType (type_)");
-  static constexpr int kCssPropertyBits = 9;
+  static constexpr int kCssPropertyBits = 10;
   static_assert((1u << kCssPropertyBits) - 1 >= kIntLastCSSProperty,
                 "enough bits for CSS property ids");
 

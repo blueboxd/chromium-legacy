@@ -131,8 +131,7 @@ bool IsSameOriginClientContainerHost(
   // iteration, because (1) hosts in BackForwardCache should never be exposed to
   // web as clients and (2) hosts could be in an unknown state after eviction
   // and before deletion.
-  if (IsBackForwardCacheEnabled() &&
-      ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+  if (IsBackForwardCacheEnabled()) {
     if (container_host->IsInBackForwardCache())
       return false;
   }
@@ -149,8 +148,7 @@ bool IsSameOriginWindowClientContainerHost(
   // iteration, because (1) hosts in BackForwardCache should never be exposed to
   // web as clients and (2) hosts could be in an unknown state after eviction
   // and before deletion.
-  if (IsBackForwardCacheEnabled() &&
-      ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+  if (IsBackForwardCacheEnabled()) {
     if (container_host->IsInBackForwardCache())
       return false;
   }

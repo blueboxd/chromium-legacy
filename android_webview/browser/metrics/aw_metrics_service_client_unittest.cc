@@ -85,7 +85,7 @@ class TestClient : public AwMetricsServiceClient {
 
 std::unique_ptr<TestingPrefServiceSimple> CreateTestPrefs() {
   auto prefs = std::make_unique<TestingPrefServiceSimple>();
-  metrics::MetricsService::RegisterPrefs(prefs->registry());
+  AwMetricsServiceClient::RegisterPrefs(prefs->registry());
   return prefs;
 }
 

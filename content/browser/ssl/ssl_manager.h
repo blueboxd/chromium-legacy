@@ -56,18 +56,6 @@ class CONTENT_EXPORT SSLManager {
       const net::SSLInfo& ssl_info,
       bool fatal);
 
-  // Same as the above, and only works for subresources. Prefer using
-  // OnSSLCertificateError whenever possible (ie when you have access to the
-  // WebContents).
-  static void OnSSLCertificateSubresourceError(
-      const base::WeakPtr<SSLErrorHandler::Delegate>& delegate,
-      const GURL& url,
-      int render_process_id,
-      int render_frame_id,
-      int net_error,
-      const net::SSLInfo& ssl_info,
-      bool fatal);
-
   // Construct an SSLManager for the specified tab.
   explicit SSLManager(NavigationControllerImpl* controller);
   virtual ~SSLManager();

@@ -18,6 +18,7 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 #include "components/safe_browsing/buildflags.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -86,6 +87,14 @@ ContentPasswordManagerDriver::~ContentPasswordManagerDriver() = default;
 ContentPasswordManagerDriver*
 ContentPasswordManagerDriver::GetForRenderFrameHost(
     content::RenderFrameHost* render_frame_host) {
+  // With back-forward cache, the page stays alive and its mojo connections are
+  // not closed. The page would be frozen and would eventually stop doing work,
+  // but the messages can still arrive when the frame is not active. Given that
+  // autofill logic can show popups, it's problematic - prevent pages using
+  // autofill from entering back-forward cache for now to avoid it.
+  content::BackForwardCache::DisableForRenderFrameHost(
+      render_frame_host, "password_manager::ContentPasswordManagerDriver");
+
   ContentPasswordManagerDriverFactory* factory =
       ContentPasswordManagerDriverFactory::FromWebContents(
           content::WebContents::FromRenderFrameHost(render_frame_host));

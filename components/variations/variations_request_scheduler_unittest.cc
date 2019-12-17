@@ -14,7 +14,7 @@ namespace variations {
 TEST(VariationsRequestSchedulerTest, ScheduleFetchShortly) {
   base::test::SingleThreadTaskEnvironment task_environment;
 
-  const base::Closure task = base::DoNothing();
+  const base::RepeatingClosure task = base::DoNothing();
   VariationsRequestScheduler scheduler(task);
   EXPECT_FALSE(scheduler.one_shot_timer_.IsRunning());
 

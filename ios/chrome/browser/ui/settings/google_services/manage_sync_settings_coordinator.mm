@@ -161,8 +161,7 @@
 #pragma mark - SyncObserverModelBridge
 
 - (void)onSyncStateChanged {
-  if (self.syncService->GetDisableReasons() !=
-      syncer::SyncService::DISABLE_REASON_NONE) {
+  if (!self.syncService->GetDisableReasons().Empty()) {
     [self closeManageSyncSettings];
   }
 }

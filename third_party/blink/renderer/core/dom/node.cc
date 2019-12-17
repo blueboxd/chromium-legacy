@@ -375,36 +375,64 @@ NodeList* Node::childNodes() {
 }
 
 Node* Node::PseudoAwarePreviousSibling() const {
-  if (parentElement() && !previousSibling()) {
-    Element* parent = parentElement();
-    if (IsAfterPseudoElement() && parent->lastChild())
-      return parent->lastChild();
-    if (!IsBeforePseudoElement())
-      return parent->GetPseudoElement(kPseudoIdBefore);
+  Element* parent = parentElement();
+  if (!parent || previousSibling())
+    return previousSibling();
+  switch (GetPseudoId()) {
+    case kPseudoIdAfter:
+      if (Node* previous = parent->lastChild())
+        return previous;
+      FALLTHROUGH;
+    case kPseudoIdNone:
+      if (Node* previous = parent->GetPseudoElement(kPseudoIdBefore))
+        return previous;
+      FALLTHROUGH;
+    case kPseudoIdBefore:
+      if (Node* previous = parent->GetPseudoElement(kPseudoIdMarker))
+        return previous;
+      FALLTHROUGH;
+    case kPseudoIdMarker:
+      break;
+    default:
+      NOTREACHED();
   }
-  return previousSibling();
+  return nullptr;
 }
 
 Node* Node::PseudoAwareNextSibling() const {
-  if (parentElement() && !nextSibling()) {
-    Element* parent = parentElement();
-    if (IsBeforePseudoElement() && parent->HasChildren())
-      return parent->firstChild();
-    if (!IsAfterPseudoElement())
-      return parent->GetPseudoElement(kPseudoIdAfter);
+  Element* parent = parentElement();
+  if (!parent || nextSibling())
+    return nextSibling();
+  switch (GetPseudoId()) {
+    case kPseudoIdMarker:
+      if (Node* next = parent->GetPseudoElement(kPseudoIdBefore))
+        return next;
+      FALLTHROUGH;
+    case kPseudoIdBefore:
+      if (parent->HasChildren())
+        return parent->firstChild();
+      FALLTHROUGH;
+    case kPseudoIdNone:
+      if (Node* next = parent->GetPseudoElement(kPseudoIdAfter))
+        return next;
+      FALLTHROUGH;
+    case kPseudoIdAfter:
+      break;
+    default:
+      NOTREACHED();
   }
-  return nextSibling();
+  return nullptr;
 }
 
 Node* Node::PseudoAwareFirstChild() const {
   if (const auto* current_element = DynamicTo<Element>(this)) {
-    Node* first = current_element->GetPseudoElement(kPseudoIdBefore);
-    if (first)
+    if (Node* first = current_element->GetPseudoElement(kPseudoIdMarker))
       return first;
-    first = current_element->firstChild();
-    if (!first)
-      first = current_element->GetPseudoElement(kPseudoIdAfter);
-    return first;
+    if (Node* first = current_element->GetPseudoElement(kPseudoIdBefore))
+      return first;
+    if (Node* first = current_element->firstChild())
+      return first;
+    return current_element->GetPseudoElement(kPseudoIdAfter);
   }
 
   return firstChild();
@@ -412,13 +440,13 @@ Node* Node::PseudoAwareFirstChild() const {
 
 Node* Node::PseudoAwareLastChild() const {
   if (const auto* current_element = DynamicTo<Element>(this)) {
-    Node* last = current_element->GetPseudoElement(kPseudoIdAfter);
-    if (last)
+    if (Node* last = current_element->GetPseudoElement(kPseudoIdAfter))
       return last;
-    last = current_element->lastChild();
-    if (!last)
-      last = current_element->GetPseudoElement(kPseudoIdBefore);
-    return last;
+    if (Node* last = current_element->lastChild())
+      return last;
+    if (Node* last = current_element->GetPseudoElement(kPseudoIdBefore))
+      return last;
+    return current_element->GetPseudoElement(kPseudoIdMarker);
   }
 
   return lastChild();

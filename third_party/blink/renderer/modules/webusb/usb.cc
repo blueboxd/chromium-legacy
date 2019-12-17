@@ -197,8 +197,8 @@ USBDevice* USB::GetOrCreateDevice(UsbDeviceInfoPtr device_info) {
     String guid = device_info->guid;
     mojo::PendingRemote<UsbDevice> pipe;
     service_->GetDevice(guid, pipe.InitWithNewPipeAndPassReceiver());
-    device = USBDevice::Create(std::move(device_info), std::move(pipe),
-                               GetExecutionContext());
+    device = MakeGarbageCollected<USBDevice>(
+        std::move(device_info), std::move(pipe), GetExecutionContext());
     device_cache_.insert(guid, device);
   }
   return device;
@@ -242,8 +242,8 @@ void USB::OnDeviceRemoved(UsbDeviceInfoPtr device_info) {
   String guid = device_info->guid;
   USBDevice* device = device_cache_.at(guid);
   if (!device) {
-    device = USBDevice::Create(std::move(device_info), mojo::NullRemote(),
-                               GetExecutionContext());
+    device = MakeGarbageCollected<USBDevice>(
+        std::move(device_info), mojo::NullRemote(), GetExecutionContext());
   }
   DispatchEvent(
       *USBConnectionEvent::Create(event_type_names::kDisconnect, device));

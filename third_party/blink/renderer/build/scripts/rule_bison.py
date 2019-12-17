@@ -33,8 +33,8 @@
 # found in the LICENSE file.
 
 # usage: rule_bison.py INPUT_FILE OUTPUT_DIR BISON_EXE
-# INPUT_FILE is a path to either XPathGrammar.y.
-# OUTPUT_DIR is where the bison-generated .cpp and .h files should be placed.
+# INPUT_FILE is a path to either xpath_grammar.y.
+# OUTPUT_DIR is where the bison-generated .cc and .h files should be placed.
 
 import errno
 import os
@@ -44,79 +44,72 @@ import sys
 
 from blinkbuild.name_style_converter import NameStyleConverter
 
-assert len(sys.argv) == 4 or len(sys.argv) == 5
 
-inputFile = sys.argv[1]
-outputDir = sys.argv[2]
-bisonExe = sys.argv[3]
-
-pathToBison = os.path.split(bisonExe)[0]
-if pathToBison:
-    # Make sure this path is in the path so that it can find its auxiliary
-    # binaries (in particular, m4). To avoid other 'm4's being found, insert
-    # at head, rather than tail.
-    os.environ['PATH'] = pathToBison + os.pathsep + os.environ['PATH']
-
-inputName = os.path.basename(inputFile)
-assert inputName == 'xpath_grammar.y'
-prefix = {'xpath_grammar.y': 'xpathyy'}[inputName]
-
-(inputRoot, inputExt) = os.path.splitext(inputName)
-newInputRoot = inputRoot + '_generated'
-
-# The generated .h will be in a different location depending on the bison
-# version.
-outputHTries = [
-    os.path.join(outputDir, newInputRoot + '.cpp.h'),
-    os.path.join(outputDir, newInputRoot + '.hpp'),
-    os.path.join(outputDir, newInputRoot + '.hh'),
-]
-
-for outputHTry in outputHTries:
-    try:
-        os.unlink(outputHTry)
-    except OSError, e:
-        if e.errno != errno.ENOENT:
-            raise
-
-outputCpp = os.path.join(outputDir, newInputRoot + '.cc')
-
-returnCode = subprocess.call([bisonExe, '-d', '-p', prefix, inputFile, '-o', outputCpp])
-assert returnCode == 0
-
-# Find the name that bison used for the generated header file.
-outputHTmp = None
-for outputHTry in outputHTries:
-    try:
-        os.stat(outputHTry)
-        outputHTmp = outputHTry
-        break
-    except OSError, e:
-        if e.errno != errno.ENOENT:
-            raise
-
-assert outputHTmp != None
-
-
-def modifyFile(path, prefixLines, suffixLines):
-    prefixLines = map(lambda s: s + '\n', prefixLines)
-    suffixLines = map(lambda s: s + '\n', suffixLines)
+def modify_file(path, prefix_lines, suffix_lines, replace_list=[]):
+    prefix_lines = map(lambda s: s + '\n', prefix_lines)
+    suffix_lines = map(lambda s: s + '\n', suffix_lines)
     with open(path, 'r') as f:
-        oldLines = f.readlines()
-    newLines = prefixLines + oldLines + suffixLines
+        old_lines = f.readlines()
+    for i in range(len(old_lines)):
+        for src, dest in replace_list:
+            old_lines[i] = old_lines[i].replace(src, dest)
+    new_lines = prefix_lines + old_lines + suffix_lines
     with open(path, 'w') as f:
-        f.writelines(newLines)
+        f.writelines(new_lines)
 
-# Rewrite the generated header with #include guards.
-kClangFormatDisableLine = "// clang-format off"
-outputH = os.path.join(outputDir, newInputRoot + '.h')
-headerGuard = NameStyleConverter(outputH).to_header_guard()
-modifyFile(outputHTmp,
-           [kClangFormatDisableLine,
-            '#ifndef %s' % headerGuard,
-            '#define %s' % headerGuard,
-            ], ['#endif  // %s' % headerGuard]
-           )
-os.rename(outputHTmp, outputH)
 
-modifyFile(outputCpp, [kClangFormatDisableLine], [])
+def main():
+    assert len(sys.argv) == 4
+
+    input_file = sys.argv[1]
+    output_dir = sys.argv[2]
+    bison_exe = sys.argv[3]
+
+    path_to_bison = os.path.split(bison_exe)[0]
+    if path_to_bison:
+        # Make sure this path is in the path so that it can find its auxiliary
+        # binaries (in particular, m4). To avoid other 'm4's being found, insert
+        # at head, rather than tail.
+        os.environ['PATH'] = path_to_bison + os.pathsep + os.environ['PATH']
+
+    input_name = os.path.basename(input_file)
+    assert input_name == 'xpath_grammar.y'
+    prefix = {'xpath_grammar.y': 'xpathyy'}[input_name]
+
+    # Output name without directory and extension.
+    output_basename = os.path.splitext(input_name)[0] + '_generated'
+
+    output_cc = os.path.join(output_dir, output_basename + '.cc')
+    BISON_HEADER_EXT = '.hh'
+    original_output_h = os.path.join(output_dir,
+                                     output_basename + BISON_HEADER_EXT)
+
+    return_code = subprocess.call([bison_exe, '-d', '-p', prefix, input_file,
+                                   '-o', output_cc])
+    assert return_code == 0
+    # If the file doesn't exist, this raise an OSError.
+    os.stat(original_output_h)
+
+    # The generated files contain references to the original "foo.hh" for
+    # #include and #line. We replace them with "foo.h".
+    common_replace_list = [(output_basename + BISON_HEADER_EXT,
+                            output_basename + '.h')]
+
+    # Rewrite the generated header with #include guards.
+    CLANG_FORMAT_DISABLE_LINE = "// clang-format off"
+    output_h = os.path.join(output_dir, output_basename + '.h')
+    header_guard = NameStyleConverter(output_h).to_header_guard()
+    modify_file(original_output_h,
+                [CLANG_FORMAT_DISABLE_LINE,
+                 '#ifndef %s' % header_guard,
+                 '#define %s' % header_guard],
+                ['#endif  // %s' % header_guard],
+                replace_list=common_replace_list)
+    os.rename(original_output_h, output_h)
+
+    modify_file(output_cc, [CLANG_FORMAT_DISABLE_LINE], [],
+                replace_list=common_replace_list)
+
+
+if __name__ == '__main__':
+    main()

@@ -92,9 +92,9 @@ void ShelfContextMenuModel::ExecuteCommand(int command_id, int event_flags) {
       SetShelfAutoHideBehaviorPref(
           prefs, display_id_,
           GetShelfAutoHideBehaviorPref(prefs, display_id_) ==
-                  SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS
-              ? SHELF_AUTO_HIDE_BEHAVIOR_NEVER
-              : SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+                  ShelfAutoHideBehavior::kAlways
+              ? ShelfAutoHideBehavior::kNever
+              : ShelfAutoHideBehavior::kAlways);
       break;
     case MENU_ALIGNMENT_LEFT:
       DCHECK(!is_tablet_mode);
@@ -140,7 +140,7 @@ void ShelfContextMenuModel::AddShelfAndWallpaperItems() {
   if (CanUserModifyShelfAutoHide(prefs) && !IsFullScreenMode(display_id_)) {
     const bool is_autohide_set =
         GetShelfAutoHideBehaviorPref(prefs, display_id_) ==
-        SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+        ShelfAutoHideBehavior::kAlways;
     auto string_id = is_autohide_set
                          ? IDS_ASH_SHELF_CONTEXT_MENU_ALWAYS_SHOW_SHELF
                          : IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE;

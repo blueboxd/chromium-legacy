@@ -4,12 +4,14 @@
 
 module blink.mojom;
 
+// Values are persisted to disk.
+// Do not renumber or delete existing values, to avoid data loss.
 enum StorageType {
-  kTemporary,
-  kPersistent,
-  kSyncable,
-  kQuotaNotManaged,
-  kUnknown,
+  kTemporary = 0,
+  kPersistent = 1,
+  kSyncable = 2,
+  kQuotaNotManaged = 3,
+  kUnknown = 4,
 };
 
 // These values need to match core/dom/exception_code.h.

@@ -111,6 +111,10 @@ class CORE_EXPORT StyleCascade {
 
     Origin GetOrigin() const;
     bool HasOrigin() const { return GetOrigin() != Origin::kNone; }
+    bool HasUAOrigin() const {
+      return GetOrigin() == Origin::kUserAgent ||
+             GetOrigin() == Origin::kImportantUserAgent;
+    }
 
     // This function is used to determine if an incoming Value should win
     // over the Value which already exists in the cascade.
@@ -409,6 +413,10 @@ class CORE_EXPORT StyleCascade {
   // in practice, it is very inconvenient to detect these dependencies. Hence,
   // we apply font-affecting properties (among others) before all the others.
   void ApplyHighPriority(Resolver&);
+
+  // Applies -webkit-appearance, and excludes -internal-ua-* properties if
+  // we don't have an appearance.
+  void ApplyAppearance(Resolver&);
 
   // Apply a single property (including any dependencies).
   void Apply(const CSSPropertyName&);

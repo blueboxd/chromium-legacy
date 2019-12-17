@@ -7711,7 +7711,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Sign-in error
       </message>
       <message name="IDS_SYNC_ERROR_BUBBLE_VIEW_TITLE" desc="Title in the sync error bubble view/notification.">
-        Sync Error
+        Sync error
       </message>
       <message name="IDS_SYNC_ERROR_USER_MENU_TITLE" desc="Title of the sync/signin error header of desktop user menu.">
         Sync isn't working
@@ -8939,6 +8939,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </if>
 
       <!-- NFC permission -->
+      <message name="IDS_NFC_PERMISSION_FRAGMENT" desc="Permission request shown if the user is visiting a site that wants to use NFC. Follows a prompt: 'This site would like to:'">
+        Use NFC devices
+      </message>
       <if expr="is_android">
         <message name="IDS_NFC_INFOBAR_TEXT" desc="Text requesting permission for a site to use NFC">
           <ph name="URL">$1<ex>google.com</ex></ph> wants to send and receive info when you tap your phone on an NFC device

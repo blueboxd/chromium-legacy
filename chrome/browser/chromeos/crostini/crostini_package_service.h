@@ -49,9 +49,6 @@ class CrostiniPackageService : public KeyedService,
 
   void NotificationCompleted(CrostiniPackageNotification* notification);
 
-  // The package installer service caches the most recent retrieved package
-  // info, for use in a package install notification.
-  // TODO(timloh): Actually cache the values.
   void GetLinuxPackageInfo(
       const std::string& vm_name,
       const std::string& container_name,

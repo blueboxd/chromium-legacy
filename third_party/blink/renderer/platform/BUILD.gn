@@ -192,7 +192,7 @@ buildflag_header("bindings_buildflags") {
   header_dir = "third_party/blink/renderer/platform/bindings"
 
   flags = [
-    "RAW_HEAP_SNAPSHOTS=$v8_enable_raw_heap_snapshots",
+    "RAW_HEAP_SNAPSHOTS=$enable_additional_blink_object_names",
     "RCS_COUNT_EVERYTHING=$runtime_call_stats_count_everything",
   ]
 }
@@ -1503,6 +1503,7 @@ jumbo_component("platform") {
     "//gin",
     "//jingle:webrtc_glue",
     "//media",
+    "//media/capture:capture_switches",
     "//media/capture/mojom:video_capture",
     "//mojo/public/cpp/base",
     "//mojo/public/cpp/bindings",

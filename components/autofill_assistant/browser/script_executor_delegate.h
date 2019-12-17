@@ -59,7 +59,9 @@ class ScriptExecutorDelegate {
   virtual content::WebContents* GetWebContents() = 0;
   virtual std::string GetAccountEmailAddress() = 0;
   virtual std::string GetLocale() = 0;
-  virtual void EnterState(AutofillAssistantState state) = 0;
+
+  // Enters the given state. Returns true if the state was changed.
+  virtual bool EnterState(AutofillAssistantState state) = 0;
 
   // Make the area of the screen that correspond to the given elements
   // touchable.

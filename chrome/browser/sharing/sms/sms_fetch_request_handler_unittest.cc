@@ -6,8 +6,8 @@
 
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
-#include "components/sync/protocol/sharing_message.pb.h"
 #include "content/public/browser/sms_fetcher.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"

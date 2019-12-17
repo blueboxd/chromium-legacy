@@ -4932,6 +4932,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="CookieControls.Bubble.CookiesInUse">
+  <owner>dullweber@chromium.org</owner>
+  <owner>huanzhong@chromium.org</owner>
+  <description>
+    &quot;Cookies in use&quot; dialog was opened from the cookie controls UI.
+  </description>
+</action>
+
 <action name="CookieControls.Bubble.NotWorking">
   <owner>dullweber@chromium.org</owner>
   <owner>huanzhong@chromium.org</owner>

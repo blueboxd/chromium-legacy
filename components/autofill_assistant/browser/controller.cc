@@ -541,9 +541,9 @@ void Controller::EnterStoppedState() {
   EnterState(AutofillAssistantState::STOPPED);
 }
 
-void Controller::EnterState(AutofillAssistantState state) {
+bool Controller::EnterState(AutofillAssistantState state) {
   if (state_ == state)
-    return;
+    return false;
 
   DVLOG(2) << __func__ << ": " << state_ << " -> " << state;
 
@@ -569,6 +569,7 @@ void Controller::EnterState(AutofillAssistantState state) {
   } else {
     StopPeriodicScriptChecks();
   }
+  return true;
 }
 
 void Controller::SetWebControllerForTest(

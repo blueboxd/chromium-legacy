@@ -106,6 +106,11 @@ class ColumnRuleColor;
 class Fill;
 class Float;
 class FloodColor;
+class InternalUaBackgroundColor;
+class InternalUaBorderBottomColor;
+class InternalUaBorderLeftColor;
+class InternalUaBorderRightColor;
+class InternalUaBorderTopColor;
 class InternalVisitedBackgroundColor;
 class InternalVisitedBorderBottomColor;
 class InternalVisitedBorderLeftColor;
@@ -211,6 +216,11 @@ class ComputedStyle : public ComputedStyleBase,
   friend class css_longhand::Fill;
   friend class css_longhand::Float;
   friend class css_longhand::FloodColor;
+  friend class css_longhand::InternalUaBackgroundColor;
+  friend class css_longhand::InternalUaBorderBottomColor;
+  friend class css_longhand::InternalUaBorderLeftColor;
+  friend class css_longhand::InternalUaBorderRightColor;
+  friend class css_longhand::InternalUaBorderTopColor;
   friend class css_longhand::InternalVisitedBackgroundColor;
   friend class css_longhand::InternalVisitedBorderBottomColor;
   friend class css_longhand::InternalVisitedBorderLeftColor;
@@ -237,6 +247,7 @@ class ComputedStyle : public ComputedStyleBase,
   // Access to private Appearance() and HasAppearance().
   friend class LayoutTheme;
   friend class StyleAdjuster;
+  friend class StyleCascade;
   friend class css_longhand::WebkitAppearance;
   // Editing has to only reveal unvisited info.
   friend class ApplyStyleCommand;
@@ -248,6 +259,7 @@ class ComputedStyle : public ComputedStyleBase,
   friend class StyleBuilderFunctions;
   // Saves Border/Background information for later comparison.
   friend class CachedUAStyle;
+  friend class UAStyle;
   // Accesses visited and unvisited colors.
   friend class ColorPropertyFunctions;
   // Edits the background for media controls.

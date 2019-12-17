@@ -46,7 +46,7 @@ TestSyncService::TestSyncService()
 
 TestSyncService::~TestSyncService() = default;
 
-void TestSyncService::SetDisableReasons(int disable_reasons) {
+void TestSyncService::SetDisableReasons(DisableReasonSet disable_reasons) {
   disable_reasons_ = disable_reasons;
 }
 
@@ -154,7 +154,7 @@ const SyncUserSettings* TestSyncService::GetUserSettings() const {
   return &user_settings_;
 }
 
-int TestSyncService::GetDisableReasons() const {
+SyncService::DisableReasonSet TestSyncService::GetDisableReasons() const {
   return disable_reasons_;
 }
 

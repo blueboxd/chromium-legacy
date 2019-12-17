@@ -132,6 +132,7 @@ class PermissionManager : public KeyedService,
  private:
   friend class PermissionManagerTest;
   friend class GeolocationPermissionContextTests;
+  friend class NfcPermissionContextTests;
 
   class PendingRequest;
   using PendingRequestsMap = base::IDMap<std::unique_ptr<PendingRequest>>;

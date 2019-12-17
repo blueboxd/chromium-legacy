@@ -231,6 +231,7 @@ void ScriptExecutor::OnGetUserData(
     UserData* user_data,
     const UserModel* user_model) {
   delegate_->EnterState(AutofillAssistantState::RUNNING);
+  delegate_->SetUserActions(nullptr);
   std::move(callback).Run(user_data, user_model);
 }
 
@@ -272,21 +273,6 @@ void ScriptExecutor::OnGetFullCard(GetFullCardCallback callback,
 
 void ScriptExecutor::Prompt(
     std::unique_ptr<std::vector<UserAction>> user_actions) {
-  if (touchable_element_area_) {
-    // Prompt() reproduces the end-of-script appearance and behavior during
-    // script execution. This includes allowing access to touchable elements,
-    // set through a previous call to the focus action with touchable_elements
-    // set.
-    delegate_->SetTouchableElementArea(*touchable_element_area_);
-
-    // The touchable_elements_ currently set in the script is reset, so that it
-    // won't affect the real end of the script.
-    touchable_element_area_.reset();
-
-    // The touchable element and overlays are cleared again in
-    // ScriptExecutor::OnChosen or ScriptExecutor::ClearChips
-  }
-
   // We change the chips callback with a callback that cleans up the state
   // before calling the initial callback.
   for (auto& user_action : *user_actions) {
@@ -297,7 +283,17 @@ void ScriptExecutor::Prompt(
                                               weak_ptr_factory_.GetWeakPtr()));
   }
 
-  delegate_->EnterState(AutofillAssistantState::PROMPT);
+  if (delegate_->EnterState(AutofillAssistantState::PROMPT) &&
+      touchable_element_area_) {
+    // Prompt() reproduces the end-of-script appearance and behavior during
+    // script execution. This includes allowing access to touchable elements,
+    // set through a previous call to the focus action with touchable_elements
+    // set.
+    delegate_->SetTouchableElementArea(*touchable_element_area_);
+
+    // The touchable element and overlays are cleared in
+    // ScriptExecutor::CleanUpAfterPrompt
+  }
   delegate_->SetUserActions(std::move(user_actions));
 }
 
@@ -307,6 +303,10 @@ void ScriptExecutor::CancelPrompt() {
 }
 
 void ScriptExecutor::CleanUpAfterPrompt() {
+  // Mark touchable_elements_ as consumed, so that it won't affect the next
+  // prompt or the end of the script.
+  touchable_element_area_.reset();
+
   delegate_->ClearTouchableElementArea();
   delegate_->EnterState(AutofillAssistantState::RUNNING);
 }
@@ -845,7 +845,6 @@ void ScriptExecutor::WaitForDomOperation::RunChecks(
     for (const auto* interrupt : *main_script_->ordered_interrupts_) {
       if (ran_interrupts_.find(interrupt->handle.path) !=
           ran_interrupts_.end()) {
-        // Only run an interrupt once in a WaitForDomOperation, to avoid loops.
         continue;
       }
 
@@ -881,7 +880,15 @@ void ScriptExecutor::WaitForDomOperation::OnElementCheckDone(
 
 void ScriptExecutor::WaitForDomOperation::OnAllChecksDone(
     base::OnceCallback<void(const ClientStatus&)> report_attempt_result) {
-  if (!runnable_interrupts_.empty()) {
+  if (runnable_interrupts_.empty()) {
+    // Since no interrupts fired, allow previously-run interrupts to be run
+    // again in the next round. This is meant to give elements one round to
+    // disappear and avoid the simplest form of loops. A round with interrupts
+    // firing doesn't count as one round here, because an interrupt can run
+    // quickly and return immediately, without waiting for
+    // periodic_element_check_interval.
+    ran_interrupts_.clear();
+  } else {
     // We must go through runnable_interrupts_ to make sure priority order is
     // respected in case more than one interrupt is ready to run.
     for (const auto* interrupt : *main_script_->ordered_interrupts_) {
@@ -905,6 +912,8 @@ void ScriptExecutor::WaitForDomOperation::RunInterrupt(
       main_script_->last_global_payload_, main_script_->initial_script_payload_,
       /* listener= */ this, main_script_->scripts_state_, &no_interrupts_,
       delegate_);
+  delegate_->EnterState(AutofillAssistantState::RUNNING);
+  delegate_->SetUserActions(nullptr);
   interrupt_executor_->Run(
       base::BindOnce(&ScriptExecutor::WaitForDomOperation::OnInterruptDone,
                      base::Unretained(this)));
@@ -919,6 +928,7 @@ void ScriptExecutor::WaitForDomOperation::OnInterruptDone(
     return;
   }
   RestoreStatusMessage();
+  RestorePreInterruptScroll();
 
   // Restart. We use the original wait time since the interruption could have
   // triggered any kind of actions, including actions that wait on the user. We
@@ -940,7 +950,6 @@ void ScriptExecutor::WaitForDomOperation::RunCallbackWithResult(
   if (!callback_)
     return;
 
-  RestorePreInterruptScroll();
   std::move(callback_).Run(element_status, result);
 }
 

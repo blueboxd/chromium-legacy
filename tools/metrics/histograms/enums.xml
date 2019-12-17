@@ -4917,6 +4917,7 @@ Unknown properties are collapsed to zero. -->
   <int value="-1442160010" label="Serial"/>
   <int value="-1314032804" label="MediaSessionImpl::OnServiceCreated"/>
   <int value="-1303768664" label="PopupBlockerTabHelper"/>
+  <int value="-1192330754" label="autofill::ContentAutofillDriver"/>
   <int value="-866479064" label="content::protocol::SecurityHandler"/>
   <int value="-684843031" label="SafeBrowsingTriggeredPopupBlocker"/>
   <int value="-438850149" label="PermissionRequestManager"/>
@@ -4931,6 +4932,8 @@ Unknown properties are collapsed to zero. -->
   <int value="2013040510" label="RenderFrameDevToolsAgentHost"/>
   <int value="2024383223"
       label="ChromePasswordManagerClient::BindCredentialManager"/>
+  <int value="2129248270"
+      label="password_manager::ContentPasswordManagerDriver"/>
 </enum>
 
 <enum name="BackForwardCacheEvictedAfterDocumentRestoredReason">
@@ -5355,6 +5358,7 @@ Unknown properties are collapsed to zero. -->
   <int value="218" label="MDDH_INVALID_STREAM_SELECTION_INFO"/>
   <int value="219" label="REGISTER_PROTOCOL_HANDLER_INVALID_URL"/>
   <int value="220" label="NC_SAME_DOCUMENT_POST_COMMIT_ERROR"/>
+  <int value="221" label="RFH_INVALID_WEB_UI_CONTROLLER"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -30808,6 +30812,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="ProgressAfterMoreThreadTime"/>
   <int value="4" label="TimeoutWait"/>
   <int value="5" label="ProgressAfterWait"/>
+  <int value="6" label="ContinueOnNonHostServerTty"/>
 </enum>
 
 <enum name="GPUWebGraphicsContext3D_Init_CanLoseContext">

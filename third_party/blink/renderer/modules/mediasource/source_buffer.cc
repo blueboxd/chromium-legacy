@@ -362,24 +362,24 @@ void SourceBuffer::appendBuffer(DOMArrayBuffer* data,
                                 ExceptionState& exception_state) {
   double media_time = GetMediaTime();
   DVLOG(2) << __func__ << " this=" << this << " media_time=" << media_time
-           << " size=" << data->DeprecatedByteLengthAsUnsigned();
+           << " size=" << data->ByteLengthAsSizeT();
   // Section 3.2 appendBuffer()
   // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendBuffer-void-ArrayBufferView-data
   AppendBufferInternal(media_time,
                        static_cast<const unsigned char*>(data->Data()),
-                       data->DeprecatedByteLengthAsUnsigned(), exception_state);
+                       data->ByteLengthAsSizeT(), exception_state);
 }
 
 void SourceBuffer::appendBuffer(NotShared<DOMArrayBufferView> data,
                                 ExceptionState& exception_state) {
   double media_time = GetMediaTime();
   DVLOG(3) << __func__ << " this=" << this << " media_time=" << media_time
-           << " size=" << data.View()->deprecatedByteLengthAsUnsigned();
+           << " size=" << data.View()->byteLengthAsSizeT();
   // Section 3.2 appendBuffer()
   // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendBuffer-void-ArrayBufferView-data
   AppendBufferInternal(
       media_time, static_cast<const unsigned char*>(data.View()->BaseAddress()),
-      data.View()->deprecatedByteLengthAsUnsigned(), exception_state);
+      data.View()->byteLengthAsSizeT(), exception_state);
 }
 
 void SourceBuffer::abort(ExceptionState& exception_state) {
@@ -1224,9 +1224,12 @@ bool SourceBuffer::PrepareAppend(double media_time,
   source_->OpenIfInEndedState();
 
   // 5. Run the coded frame eviction algorithm.
-  if (!EvictCodedFrames(media_time, new_data_size)) {
+  if (!EvictCodedFrames(media_time, new_data_size) ||
+      !base::CheckedNumeric<wtf_size_t>(new_data_size).IsValid()) {
     // 6. If the buffer full flag equals true, then throw a QUOTA_EXCEEDED_ERR
     //    exception and abort these steps.
+    //    If the incoming data exceeds wtf_size_t::max, then our implementation
+    //    cannot deal with it, so we also throw a QuotaExceededError.
     DVLOG(3) << __func__ << " this=" << this << " -> throw QuotaExceededError";
     MediaSource::LogAndThrowDOMException(exception_state,
                                          DOMExceptionCode::kQuotaExceededError,
@@ -1263,7 +1266,7 @@ bool SourceBuffer::EvictCodedFrames(double media_time, size_t new_data_size) {
 
 void SourceBuffer::AppendBufferInternal(double media_time,
                                         const unsigned char* data,
-                                        unsigned size,
+                                        size_t size,
                                         ExceptionState& exception_state) {
   TRACE_EVENT_ASYNC_BEGIN1("media", "SourceBuffer::appendBuffer", this, "size",
                            size);
@@ -1281,7 +1284,7 @@ void SourceBuffer::AppendBufferInternal(double media_time,
   // 2. Add data to the end of the input buffer.
   DCHECK(data || size == 0);
   if (data)
-    pending_append_data_.Append(data, size);
+    pending_append_data_.Append(data, base::checked_cast<wtf_size_t>(size));
   pending_append_data_offset_ = 0;
 
   // 3. Set the updating attribute to true.

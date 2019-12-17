@@ -20,6 +20,7 @@ Polymer({
   behaviors: [
     I18nBehavior,
     CrScrollableBehavior,
+    ListPropertyUpdateBehavior,
     settings.RouteObserverBehavior,
   ],
 
@@ -70,16 +71,6 @@ Polymer({
     },
 
     /**
-     * Reflects the iron-list selecteditem property.
-     * @type {!chrome.bluetooth.Device}
-     * @private
-     */
-    selectedPairedItem_: {
-      type: Object,
-      observer: 'selectedPairedItemChanged_',
-    },
-
-    /**
      * The ordered list of unpaired bluetooth devices.
      * @type {!Array<!chrome.bluetooth.Device>}
      */
@@ -88,15 +79,6 @@ Polymer({
       value: /** @return {Array} */ function() {
         return [];
       },
-    },
-
-    /**
-     * Reflects the iron-list selecteditem property.
-     * @type {!chrome.bluetooth.Device}
-     */
-    selectedUnpairedItem_: {
-      type: Object,
-      observer: 'selectedUnpairedItemChanged_',
     },
 
     /**
@@ -155,6 +137,17 @@ Polymer({
       value: null,
     },
 
+    /**
+     * Used by FocusRowBehavior to track the last focused element on a row.
+     * @private
+     */
+    lastFocused_: Object,
+
+    /**
+     * Used by FocusRowBehavior to track if the list has been blurred.
+     * @private
+     */
+    listBlurred_: Boolean,
   },
 
   observers: [
@@ -202,21 +195,17 @@ Polymer({
 
   /** @private */
   deviceListChanged_: function() {
-    this.saveScroll(this.$.pairedDevices);
-    this.saveScroll(this.$.unpairedDevices);
-
-    this.pairedDeviceList_ = this.getUpdatedDeviceList_(
-        this.pairedDeviceList_,
-        this.deviceList_.filter(d => d.paired || d.connecting));
-    this.unpairedDeviceList_ = this.getUpdatedDeviceList_(
-        this.unpairedDeviceList_,
-        this.deviceList_.filter(d => !(d.paired || d.connecting)));
-
-    this.$.pairedDevices.fire('iron-resize');
-    this.$.unpairedDevices.fire('iron-resize');
+    this.updateList(
+        'pairedDeviceList_', item => item.address,
+        this.getUpdatedDeviceList_(
+            this.pairedDeviceList_,
+            this.deviceList_.filter(d => d.paired || d.connecting)));
+    this.updateList(
+        'unpairedDeviceList_', item => item.address,
+        this.getUpdatedDeviceList_(
+            this.unpairedDeviceList_,
+            this.deviceList_.filter(d => !(d.paired || d.connecting))));
     this.updateScrollableContents();
-    this.restoreScroll(this.$.unpairedDevices);
-    this.restoreScroll(this.$.pairedDevices);
   },
 
   /**
@@ -253,20 +242,6 @@ Polymer({
     }
 
     return updatedDeviceList;
-  },
-
-  /** @private */
-  selectedPairedItemChanged_: function() {
-    if (this.selectedPairedItem_) {
-      this.connectDevice_(this.selectedPairedItem_);
-    }
-  },
-
-  /** @private */
-  selectedUnpairedItemChanged_: function() {
-    if (this.selectedUnpairedItem_) {
-      this.connectDevice_(this.selectedUnpairedItem_);
-    }
   },
 
   /** @private */

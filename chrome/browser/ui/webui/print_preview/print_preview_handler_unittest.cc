@@ -314,12 +314,12 @@ class PrintPreviewHandlerTest : public testing::Test {
       // locale code sync up correctly.
       browser_process->SetApplicationLocale(locale);
       base::test::ScopedRestoreICUDefaultLocale scoped_locale(locale);
-      base::testing::ResetFormatters();
+      base::ResetFormattersForTesting();
       handler()->HandleGetInitialSettings(list_args.get());
     }
     // Reset again now that |scoped_locale| has been destroyed.
     browser_process->SetApplicationLocale(original_locale);
-    base::testing::ResetFormatters();
+    base::ResetFormattersForTesting();
 
     // In response to get initial settings, the initial settings are sent back.
     ASSERT_EQ(1u, web_ui()->call_data().size());

@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
+#include "third_party/blink/renderer/core/dom/xml_document.h"
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -899,7 +900,7 @@ Response InspectorDOMAgent::setOuterHTML(int node_id,
 
   Document* document =
       IsA<Document>(node) ? To<Document>(node) : node->ownerDocument();
-  if (!document || (!document->IsHTMLDocument() && !document->IsXMLDocument()))
+  if (!document || (!document->IsHTMLDocument() && !IsA<XMLDocument>(document)))
     return Response::Error("Not an HTML/XML document");
 
   Node* new_node = nullptr;

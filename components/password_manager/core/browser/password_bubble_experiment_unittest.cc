@@ -80,7 +80,7 @@ TEST_F(PasswordManagerPasswordBubbleExperimentTest,
         test_case.current_shown_count);
     sync_service()->SetDisableReasons(
         test_case.is_sync_allowed
-            ? syncer::SyncService::DISABLE_REASON_NONE
+            ? syncer::SyncService::DisableReasonSet()
             : syncer::SyncService::DISABLE_REASON_PLATFORM_OVERRIDE);
     sync_service()->SetFirstSetupComplete(test_case.is_first_setup_complete);
     sync_service()->SetTransportState(
@@ -100,7 +100,7 @@ TEST_F(PasswordManagerPasswordBubbleExperimentTest,
 
 #if !defined(OS_CHROMEOS)
 TEST_F(PasswordManagerPasswordBubbleExperimentTest, ReviveSignInPasswordPromo) {
-  sync_service()->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
+  sync_service()->SetDisableReasons(syncer::SyncService::DisableReasonSet());
   sync_service()->SetFirstSetupComplete(false);
   sync_service()->SetTransportState(
       syncer::SyncService::TransportState::PENDING_DESIRED_CONFIGURATION);

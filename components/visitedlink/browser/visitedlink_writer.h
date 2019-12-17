@@ -150,9 +150,9 @@ class VisitedLinkWriter : public VisitedLinkCommon {
   // Sets a task to execute when the next rebuild from history is complete.
   // This is used by unit tests to wait for the rebuild to complete before
   // they continue. The pointer will be owned by this object after the call.
-  void set_rebuild_complete_task(const base::Closure& task) {
+  void set_rebuild_complete_task(base::OnceClosure task) {
     DCHECK(rebuild_complete_task_.is_null());
-    rebuild_complete_task_ = task;
+    rebuild_complete_task_ = std::move(task);
   }
 
   // returns the number of items in the table for testing verification
@@ -163,9 +163,7 @@ class VisitedLinkWriter : public VisitedLinkCommon {
 
   // Call to cause the entire database file to be re-written from scratch
   // to disk. Used by the performance tester.
-  void RewriteFile() {
-    WriteFullTable();
-  }
+  void RewriteFile() { WriteFullTable(); }
 #endif
 
  private:
@@ -178,7 +176,7 @@ class VisitedLinkWriter : public VisitedLinkCommon {
   // thread.
   struct LoadFromFileResult;
 
-  using TableLoadCompleteCallback = base::Callback<void(
+  using TableLoadCompleteCallback = base::OnceCallback<void(
       bool success,
       scoped_refptr<LoadFromFileResult> load_from_file_result)>;
 
@@ -224,7 +222,7 @@ class VisitedLinkWriter : public VisitedLinkCommon {
   // These functions are only called if |persist_to_disk_| is true.
 
   // Posts the given task to the blocking worker pool with our options.
-  void PostIOTask(const base::Location& from_here, const base::Closure& task);
+  void PostIOTask(const base::Location& from_here, base::OnceClosure task);
 
   // Writes the entire table to disk. It will leave the table file open and
   // the handle to it will be stored in file_.
@@ -237,7 +235,7 @@ class VisitedLinkWriter : public VisitedLinkCommon {
   // is called from the background thread. It must be first in the sequence of
   // background operations with the database file.
   static void LoadFromFile(const base::FilePath& filename,
-                           const TableLoadCompleteCallback& callback);
+                           TableLoadCompleteCallback callback);
 
   // Load the table from the database file. Returns true on success.
   // Fills parameter |load_from_file_result| on success. It is called from
@@ -473,7 +471,7 @@ class VisitedLinkWriter : public VisitedLinkCommon {
 
   // When set, indicates the task that should be run after the next rebuild from
   // history is complete.
-  base::Closure rebuild_complete_task_;
+  base::OnceClosure rebuild_complete_task_;
 
   // Set to prevent us from attempting to rebuild the database from global
   // history if we have an error opening the file. This is used for testing,

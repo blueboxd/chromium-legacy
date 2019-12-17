@@ -19,6 +19,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class PrefRegistrySimple;
 class PrefService;
 
 namespace metrics {
@@ -102,6 +103,9 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
 
   AwMetricsServiceClient();
   ~AwMetricsServiceClient() override;
+
+  // Registers local state prefs used by this class.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   void Initialize(PrefService* pref_service);
   void SetHaveMetricsConsent(bool user_consent, bool app_consent);

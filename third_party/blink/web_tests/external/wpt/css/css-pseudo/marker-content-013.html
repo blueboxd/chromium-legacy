@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<html class="reftest-wait">
 <meta charset="utf-8">
 <title>CSS Test: ::marker pseudo elements styled with 'content' property</title>
 <link rel="author" title="Oriol Brufau" href="mailto:obrufau@igalia.com">
@@ -27,6 +28,7 @@
   <li class="string">item</li>
   <li class="content">item</li>
 </ol>
+<script src="/common/reftest-wait.js"></script>
 <script>
 "use strict";
 addEventListener("load", function() {
@@ -39,3 +41,4 @@ addEventListener("load", function() {
   });
 }, {once: true});
 </script>
+</html>

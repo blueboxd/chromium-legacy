@@ -643,8 +643,8 @@ void VariationsService::StartRepeatedVariationsSeedFetch() {
 
   DCHECK(!request_scheduler_);
   request_scheduler_.reset(VariationsRequestScheduler::Create(
-      base::Bind(&VariationsService::FetchVariationsSeed,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&VariationsService::FetchVariationsSeed,
+                          weak_ptr_factory_.GetWeakPtr()),
       local_state_));
   // Note that the act of starting the scheduler will start the fetch, if the
   // scheduler deems appropriate.

@@ -11,8 +11,6 @@
 
 namespace network {
 
-const char kCrossOriginOpenerPolicyHeader[] = "cross-origin-opener-policy";
-
 // Parsing is done following the COOP spec draft:
 // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
 // TODO(ahemery): add a fuzzer for the parser, see

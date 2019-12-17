@@ -69,9 +69,9 @@ void NGMathRowLayoutAlgorithm::LayoutRowItems(
 
     // TODO(rbuis): Operators can add lspace and rspace.
 
-    children->emplace_back(NGContainerFragmentBuilder::ChildWithOffset(
-        {inline_offset, margins.block_start - ascent},
-        std::move(&physical_fragment)));
+    children->emplace_back(
+        LogicalOffset{inline_offset, margins.block_start - ascent},
+        &physical_fragment);
 
     inline_offset += fragment.InlineSize() + margins.inline_end;
 

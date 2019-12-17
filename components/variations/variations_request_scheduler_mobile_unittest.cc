@@ -28,7 +28,8 @@ TEST(VariationsRequestSchedulerMobileTest, StartNoRun) {
   prefs.registry()->RegisterTimePref(prefs::kVariationsLastFetchTime,
                                      base::Time::Now());
   int executed = 0;
-  const base::Closure task = base::Bind(&Increment, &executed);
+  const base::RepeatingClosure task =
+      base::BindRepeating(&Increment, &executed);
   VariationsRequestSchedulerMobile scheduler(task, &prefs);
   scheduler.Start();
   // We expect it the task to not have triggered.
@@ -41,7 +42,8 @@ TEST(VariationsRequestSchedulerMobileTest, StartRun) {
   base::Time old = base::Time::Now() - base::TimeDelta::FromHours(24);
   prefs.registry()->RegisterTimePref(prefs::kVariationsLastFetchTime, old);
   int executed = 0;
-  const base::Closure task = base::Bind(&Increment, &executed);
+  const base::RepeatingClosure task =
+      base::BindRepeating(&Increment, &executed);
   VariationsRequestSchedulerMobile scheduler(task, &prefs);
   scheduler.Start();
   // We expect the task to have triggered.
@@ -57,7 +59,8 @@ TEST(VariationsRequestSchedulerMobileTest, OnAppEnterForegroundNoRun) {
   prefs.registry()->RegisterTimePref(prefs::kVariationsLastFetchTime,
                                      base::Time::Now());
   int executed = 0;
-  const base::Closure task = base::Bind(&Increment, &executed);
+  const base::RepeatingClosure task =
+      base::BindRepeating(&Increment, &executed);
   VariationsRequestSchedulerMobile scheduler(task, &prefs);
 
   // Verify timer not running.
@@ -83,7 +86,8 @@ TEST(VariationsRequestSchedulerMobileTest, OnAppEnterForegroundRun) {
   base::Time old = base::Time::Now() - base::TimeDelta::FromHours(24);
   prefs.registry()->RegisterTimePref(prefs::kVariationsLastFetchTime, old);
   int executed = 0;
-  const base::Closure task = base::Bind(&Increment, &executed);
+  const base::RepeatingClosure task =
+      base::BindRepeating(&Increment, &executed);
   VariationsRequestSchedulerMobile scheduler(task, &prefs);
 
   // Verify timer not running.
@@ -109,7 +113,8 @@ TEST(VariationsRequestSchedulerMobileTest, OnAppEnterForegroundOnStartup) {
   base::Time old = base::Time::Now() - base::TimeDelta::FromHours(24);
   prefs.registry()->RegisterTimePref(prefs::kVariationsLastFetchTime, old);
   int executed = 0;
-  const base::Closure task = base::Bind(&Increment, &executed);
+  const base::RepeatingClosure task =
+      base::BindRepeating(&Increment, &executed);
   VariationsRequestSchedulerMobile scheduler(task, &prefs);
 
   scheduler.Start();

@@ -44,7 +44,8 @@ void SessionAbortedDialog::Show(const std::string& user_email) {
   std::vector<RootWindowController*> controllers =
       Shell::GetAllRootWindowControllers();
   for (RootWindowController* controller : controllers) {
-    controller->shelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
+    controller->shelf()->SetAutoHideBehavior(
+        ShelfAutoHideBehavior::kAlwaysHidden);
   }
 }
 

@@ -1662,19 +1662,8 @@ void NavigationRequest::OnResponseStarted(
   }
 
   auto cross_origin_embedder_policy =
-      network::mojom::CrossOriginEmbedderPolicy::kNone;
+      response_head_->cross_origin_embedder_policy;
   if (base::FeatureList::IsEnabled(network::features::kCrossOriginIsolation)) {
-    // Parse the Cross-Origin-Opener-Policy header.
-    {
-      std::string header_value;
-      if (response_head_->headers &&
-          response_head_->headers->GetNormalizedHeader(
-              "cross-origin-embedder-policy", &header_value) &&
-          header_value == "require-corp") {
-        cross_origin_embedder_policy =
-            network::mojom::CrossOriginEmbedderPolicy::kRequireCorp;
-      }
-    }
     // https://mikewest.github.io/corpp/#process-navigation-response.
     if (GetParentFrame() &&
         GetParentFrame()->cross_origin_embedder_policy() ==

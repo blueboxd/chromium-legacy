@@ -28,14 +28,6 @@ class USBDevice : public ScriptWrappable, public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static USBDevice* Create(
-      device::mojom::blink::UsbDeviceInfoPtr device_info,
-      mojo::PendingRemote<device::mojom::blink::UsbDevice> device,
-      ExecutionContext* context) {
-    return MakeGarbageCollected<USBDevice>(std::move(device_info),
-                                           std::move(device), context);
-  }
-
   explicit USBDevice(device::mojom::blink::UsbDeviceInfoPtr,
                      mojo::PendingRemote<device::mojom::blink::UsbDevice>,
                      ExecutionContext*);

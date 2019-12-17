@@ -95,6 +95,9 @@ cca.views.camera.ReviewResult = class {
       return;
     }
     cca.state.set('playing-result-video', true);
+    if (document.activeElement === this.playResultVideoButton_) {
+      this.confirmResultButton_.focus();
+    }
     this.reviewVideoResult_.play();
   }
 
@@ -148,7 +151,7 @@ cca.views.camera.ReviewResult = class {
     this.reviewVideoResult_.src = fileEntry.toURL();
     cca.state.set('review-video-result', true);
     cca.state.set('review-result', true);
-    this.playResultVideoButton_.focus();
+    this.confirmResultButton_.focus();
 
     return new Promise((resolve) => {
       this.resolveOpen_ = resolve;

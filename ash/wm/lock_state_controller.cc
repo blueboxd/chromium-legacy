@@ -12,11 +12,13 @@
 #include "ash/cancel_mode.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/shutdown_controller.h"
+#include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shutdown_reason.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
+#include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/session_state_animator.h"
 #include "ash/wm/session_state_animator_impl.h"
 #include "base/bind.h"
@@ -144,7 +146,8 @@ bool LockStateController::ShutdownRequested() {
 void LockStateController::CancelLockAnimation() {
   VLOG(1) << "CancelLockAnimation";
   animating_lock_ = false;
-  Shell::Get()->wallpaper_controller()->UpdateWallpaperBlurForLockState(false);
+  Shell::Get()->wallpaper_controller()->RestoreWallpaperPropertyForLockState(
+      saved_property_);
   base::OnceClosure next_animation_starter =
       base::BindOnce(&LockStateController::LockAnimationCancelled,
                      weak_ptr_factory_.GetWeakPtr());
@@ -313,6 +316,9 @@ void LockStateController::OnRealPowerTimeout() {
 void LockStateController::PreLockAnimation(
     SessionStateAnimator::AnimationSpeed speed,
     bool request_lock_on_completion) {
+  saved_property_ = Shell::GetPrimaryRootWindowController()
+                        ->wallpaper_widget_controller()
+                        ->property();
   Shell::Get()->wallpaper_controller()->UpdateWallpaperBlurForLockState(true);
   base::OnceClosure next_animation_starter = base::BindOnce(
       &LockStateController::PreLockAnimationFinished,

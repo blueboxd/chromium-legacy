@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_SHARING_SHARING_METRICS_H_
 
 #include "base/time/time.h"
+#include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/shared_clipboard/remote_copy_handle_message_result.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
-#include "components/sync/protocol/sharing_message.pb.h"
 
 enum class SharingDeviceRegistrationResult;
 

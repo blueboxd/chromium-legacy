@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "media/base/video_types.h"
@@ -52,7 +53,7 @@ std::unique_ptr<ImageProcessor> CreateV4L2ImageProcessorWithInputCandidates(
     supported_fourccs.push_back(*fourcc);
   }
 
-  const Fourcc output_fourcc = out_format_picker.Run(supported_fourccs);
+  const auto output_fourcc = out_format_picker.Run(supported_fourccs);
   if (!output_fourcc)
     return nullptr;
 
@@ -72,14 +73,14 @@ std::unique_ptr<ImageProcessor> CreateV4L2ImageProcessorWithInputCandidates(
     gfx::Size output_size(visible_size.width(), visible_size.height());
     size_t num_planes = 0;
     if (!V4L2ImageProcessor::TryOutputFormat(
-            input_fourcc.ToV4L2PixFmt(), output_fourcc.ToV4L2PixFmt(),
+            input_fourcc.ToV4L2PixFmt(), output_fourcc->ToV4L2PixFmt(),
             input_size, &output_size, &num_planes)) {
       VLOGF(2) << "Failed to get output size and plane count of IP";
       continue;
     }
 
     return v4l2_vda_helpers::CreateImageProcessor(
-        input_fourcc, output_fourcc, input_size, output_size, visible_size,
+        input_fourcc, *output_fourcc, input_size, output_size, visible_size,
         num_buffers, V4L2Device::Create(), ImageProcessor::OutputMode::IMPORT,
         std::move(client_task_runner), std::move(error_cb));
   }
@@ -97,26 +98,21 @@ std::unique_ptr<ImageProcessor> ImageProcessorFactory::Create(
     size_t num_buffers,
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     ImageProcessor::ErrorCB error_cb) {
-  std::unique_ptr<ImageProcessor> image_processor;
+  std::vector<ImageProcessor::CreateBackendCB> create_funcs;
 #if BUILDFLAG(USE_VAAPI)
-  image_processor = VaapiImageProcessor::Create(input_config, output_config,
-                                                preferred_output_modes,
-                                                client_task_runner, error_cb);
-  if (image_processor)
-    return image_processor;
+  create_funcs.push_back(base::BindRepeating(&VaapiImageProcessor::Create));
 #endif  // BUILDFLAG(USE_VAAPI)
 #if BUILDFLAG(USE_V4L2_CODEC)
-  for (auto output_mode : preferred_output_modes) {
-    image_processor = V4L2ImageProcessor::Create(
-        client_task_runner, V4L2Device::Create(), input_config, output_config,
-        output_mode, num_buffers, error_cb);
-    if (image_processor)
-      return image_processor;
-  }
+  create_funcs.push_back(base::BindRepeating(
+      &V4L2ImageProcessor::Create, V4L2Device::Create(), num_buffers));
 #endif  // BUILDFLAG(USE_V4L2_CODEC)
-  for (auto output_mode : preferred_output_modes) {
-    image_processor = LibYUVImageProcessor::Create(
-        input_config, output_config, output_mode, client_task_runner, error_cb);
+  create_funcs.push_back(base::BindRepeating(&LibYUVImageProcessor::Create));
+
+  std::unique_ptr<ImageProcessor> image_processor;
+  for (auto& create_func : create_funcs) {
+    image_processor = ImageProcessor::Create(
+        std::move(create_func), input_config, output_config,
+        preferred_output_modes, error_cb, client_task_runner);
     if (image_processor)
       return image_processor;
   }

@@ -85,13 +85,9 @@ string16 FormatPercent(int number) {
       ASCIIToUTF16("{0,number,percent}"), static_cast<double>(number) / 100.0);
 }
 
-namespace testing {
-
-void ResetFormatters() {
+void ResetFormattersForTesting() {
   g_number_format_int.Get().Reset();
   g_number_format_float.Get().Reset();
 }
-
-}  // namespace testing
 
 }  // namespace base

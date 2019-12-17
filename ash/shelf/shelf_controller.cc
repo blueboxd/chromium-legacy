@@ -53,7 +53,7 @@ void SetShelfAutoHideFromPrefs() {
     auto value = GetShelfAutoHideBehaviorPref(prefs, display.id());
     // Don't show the shelf in app mode.
     if (session_controller->IsRunningInAppMode())
-      value = SHELF_AUTO_HIDE_ALWAYS_HIDDEN;
+      value = ShelfAutoHideBehavior::kAlwaysHidden;
     if (Shelf* shelf = GetShelfForDisplay(display.id()))
       shelf->SetAutoHideBehavior(value);
   }

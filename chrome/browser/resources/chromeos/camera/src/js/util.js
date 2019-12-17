@@ -15,6 +15,11 @@ var cca = cca || {};
 cca.util = cca.util || {};
 
 /**
+ * import {Resolution} from '../type.js';
+ */
+var Resolution = Resolution || {};
+
+/**
  * Gets the clockwise rotation and flip that can orient a photo to its upright
  * position.
  * @param {!Blob} blob JPEG blob that might contain EXIF orientation field.
@@ -394,4 +399,54 @@ cca.util.scalePicture = function(url, isVideo, width, height = undefined) {
 cca.util.toggleChecked = function(element, checked) {
   element.checked = checked;
   element.dispatchEvent(new Event('change'));
+};
+
+/**
+ * Sets CCA window inner bound to size which can fit in current screen.
+ * @return {!Promise} Promise which is resolved when size change actually
+ *     happen or is resolved immediately when there is no need to change.
+ */
+cca.util.fitWindow = function() {
+  const appWindow = chrome.app.window.current();
+
+  /**
+   * Get a preferred window size which can fit in current screen.
+   * @return {Resolution} Preferred window size.
+   */
+  const getPreferredWindowSize = () => {
+    const inner = appWindow.innerBounds;
+    const outer = appWindow.outerBounds;
+
+    const predefinedWidth = inner.minWidth;
+    const availableWidth = screen.availWidth;
+
+    const topBarHeight = outer.height - inner.height;
+    const fixedRatioMaxWidth =
+        Math.floor((screen.availHeight - topBarHeight) * 16 / 9);
+
+    let preferredWidth =
+        Math.min(predefinedWidth, availableWidth, fixedRatioMaxWidth);
+    preferredWidth -= preferredWidth % 16;
+    const preferredHeight = preferredWidth * 9 / 16;
+
+    return new Resolution(preferredWidth, preferredHeight);
+  };
+
+  const {width, height} = getPreferredWindowSize();
+
+  return new Promise((resolve) => {
+    const inner = appWindow.innerBounds;
+    if (inner.width === width && inner.height === height) {
+      resolve();
+      return;
+    }
+
+    const listener = () => {
+      appWindow.onBoundsChanged.removeListener(listener);
+      resolve();
+    };
+    appWindow.onBoundsChanged.addListener(listener);
+
+    Object.assign(inner, {width, height, minWidth: width, minHeight: height});
+  });
 };

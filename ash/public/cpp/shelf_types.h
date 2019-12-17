@@ -32,15 +32,10 @@ enum class HotseatState {
   kExtended,
 };
 
-enum ShelfAutoHideBehavior {
-  // Always auto-hide.
-  SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
-
-  // Never auto-hide.
-  SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
-
-  // Always hide.
-  SHELF_AUTO_HIDE_ALWAYS_HIDDEN,
+enum class ShelfAutoHideBehavior {
+  kAlways,        // Always auto-hide.
+  kNever,         // Never auto-hide.
+  kAlwaysHidden,  // Always hide.
 };
 
 enum ShelfAutoHideState {

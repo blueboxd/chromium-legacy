@@ -25,13 +25,9 @@ BASE_I18N_EXPORT string16 FormatDouble(double number, int fractional_digits);
 // Ex: FormatPercent(12) => "12%" in English, "12 %" in Romanian
 BASE_I18N_EXPORT string16 FormatPercent(int number);
 
-namespace testing {
-
 // Causes cached formatters to be discarded and recreated. Only useful for
 // testing.
-BASE_I18N_EXPORT void ResetFormatters();
-
-}  // namespace testing
+BASE_I18N_EXPORT void ResetFormattersForTesting();
 
 }  // namespace base
 

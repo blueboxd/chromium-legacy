@@ -460,4 +460,30 @@ TEST(StringViewTest, EqualIgnoringASCIICase) {
   EXPECT_TRUE(EqualIgnoringASCIICase(StringView(""), ""));
 }
 
+TEST(StringViewTest, DeprecatedEqualIgnoringCase) {
+  constexpr UChar kLongSAndKelvin[] = {0x017F, 0x212A, 0};
+  EXPECT_TRUE(DeprecatedEqualIgnoringCase("SK", kLongSAndKelvin));
+  EXPECT_TRUE(DeprecatedEqualIgnoringCase("sk", kLongSAndKelvin));
+
+  // Turkish-specific mappings are not applied.
+  constexpr UChar kSmallDotlessI[] = {0x0131, 0};
+  constexpr UChar kCapitalDotI[] = {0x0130, 0};
+  EXPECT_FALSE(DeprecatedEqualIgnoringCase("i", kSmallDotlessI));
+  EXPECT_FALSE(DeprecatedEqualIgnoringCase("i", kCapitalDotI));
+
+  // DeprecatedEqualIgnoringCase() has length-equality check.
+  constexpr UChar kSmallSharpS[] = {0x00DF, 0};
+  constexpr UChar kCapitalSharpS[] = {0x1E9E, 0};
+  EXPECT_FALSE(DeprecatedEqualIgnoringCase("ss", kSmallSharpS));
+  EXPECT_FALSE(DeprecatedEqualIgnoringCase("SS", kSmallSharpS));
+  EXPECT_FALSE(DeprecatedEqualIgnoringCase("ss", kCapitalSharpS));
+  EXPECT_FALSE(DeprecatedEqualIgnoringCase("SS", kCapitalSharpS));
+  constexpr UChar kLigatureFFI[] = {0xFB03, 0};
+  EXPECT_FALSE(DeprecatedEqualIgnoringCase("ffi", kLigatureFFI));
+
+  constexpr UChar kLigatureFFIAndSSSS[] = {0xFB03, 's', 's', 's', 's', 0};
+  constexpr UChar kFFIAndSharpSs[] = {'f', 'f', 'i', 0x00DF, 0x00DF, 0};
+  EXPECT_TRUE(DeprecatedEqualIgnoringCase(kLigatureFFIAndSSSS, kFFIAndSharpSs));
+}
+
 }  // namespace WTF

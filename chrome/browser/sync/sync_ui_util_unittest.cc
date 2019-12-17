@@ -116,7 +116,7 @@ StatusLabels SetUpDistinctCase(
       test_environment->UpdatePersistentErrorOfRefreshTokenForAccount(
           account_id,
           GoogleServiceAuthError(GoogleServiceAuthError::State::SERVICE_ERROR));
-      service->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
+      service->SetDisableReasons(syncer::SyncService::DisableReasonSet());
       return {SYNC_ERROR, IDS_SYNC_RELOGIN_ERROR, IDS_SYNC_RELOGIN_LINK_LABEL,
               REAUTHENTICATE};
     }
@@ -129,7 +129,7 @@ StatusLabels SetUpDistinctCase(
       syncer::SyncStatus status;
       status.sync_protocol_error = protocol_error;
       service->SetDetailedSyncStatus(false, status);
-      service->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
+      service->SetDisableReasons(syncer::SyncService::DisableReasonSet());
       return {SYNC_ERROR, IDS_SYNC_UPGRADE_CLIENT,
               IDS_SYNC_UPGRADE_CLIENT_LINK_LABEL, UPGRADE_CLIENT};
     }
@@ -145,7 +145,7 @@ StatusLabels SetUpDistinctCase(
       service->SetFirstSetupComplete(true);
       service->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
       service->SetDetailedSyncStatus(false, syncer::SyncStatus());
-      service->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
+      service->SetDisableReasons(syncer::SyncService::DisableReasonSet());
       service->SetPassphraseRequired(true);
       service->SetPassphraseRequiredForPreferredDataTypes(true);
       return {SYNC_ERROR, IDS_SYNC_STATUS_NEEDS_PASSWORD,
@@ -155,7 +155,7 @@ StatusLabels SetUpDistinctCase(
       service->SetFirstSetupComplete(true);
       service->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
       service->SetDetailedSyncStatus(false, syncer::SyncStatus());
-      service->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
+      service->SetDisableReasons(syncer::SyncService::DisableReasonSet());
       service->SetPassphraseRequired(false);
       service->SetTrustedVaultKeyRequiredForPreferredDataTypes(true);
       return {PASSWORDS_ONLY_SYNC_ERROR, IDS_SETTINGS_EMPTY_STRING,
@@ -165,7 +165,7 @@ StatusLabels SetUpDistinctCase(
       service->SetFirstSetupComplete(true);
       service->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
       service->SetDetailedSyncStatus(false, syncer::SyncStatus());
-      service->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
+      service->SetDisableReasons(syncer::SyncService::DisableReasonSet());
       service->SetPassphraseRequired(false);
       return {SYNCED, IDS_SYNC_ACCOUNT_SYNCING, IDS_SETTINGS_EMPTY_STRING,
               NO_ACTION};

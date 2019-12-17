@@ -43,6 +43,8 @@ ProcessInternalsUI::ProcessInternalsUI(WebUI* web_ui)
   WebUIDataSource::Add(web_contents()->GetBrowserContext(), source);
 }
 
+WEB_UI_CONTROLLER_TYPE_IMPL(ProcessInternalsUI)
+
 ProcessInternalsUI::~ProcessInternalsUI() = default;
 
 void ProcessInternalsUI::RenderFrameCreated(RenderFrameHost* rfh) {

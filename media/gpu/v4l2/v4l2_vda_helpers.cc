@@ -4,6 +4,7 @@
 
 #include "media/gpu/v4l2/v4l2_vda_helpers.h"
 
+#include "base/bind.h"
 #include "media/base/color_plane_layout.h"
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/macros.h"
@@ -74,13 +75,15 @@ std::unique_ptr<ImageProcessor> CreateImageProcessor(
     ImageProcessor::ErrorCB error_cb) {
   // TODO(crbug.com/917798): Use ImageProcessorFactory::Create() once we remove
   //     |image_processor_device_| from V4L2VideoDecodeAccelerator.
-  auto image_processor = V4L2ImageProcessor::Create(
-      std::move(client_task_runner), image_processor_device,
+  auto image_processor = ImageProcessor::Create(
+      base::BindRepeating(&V4L2ImageProcessor::Create, image_processor_device,
+                          nb_buffers),
       ImageProcessor::PortConfig(vda_output_format, vda_output_coded_size, {},
                                  visible_size, {VideoFrame::STORAGE_DMABUFS}),
       ImageProcessor::PortConfig(ip_output_format, ip_output_coded_size, {},
                                  visible_size, {VideoFrame::STORAGE_DMABUFS}),
-      image_processor_output_mode, nb_buffers, std::move(error_cb));
+      {image_processor_output_mode}, std::move(error_cb),
+      std::move(client_task_runner));
   if (!image_processor)
     return nullptr;
 

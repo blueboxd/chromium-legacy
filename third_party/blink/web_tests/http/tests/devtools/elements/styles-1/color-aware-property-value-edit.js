@@ -11,6 +11,8 @@
       <div id="inspected2" style="color: #ffffee">inspected2</div>
     `);
 
+  let treeElement;
+
   TestRunner.runTestSuite([
     function init(next) {
       ElementsTestRunner.selectNodeAndWaitForStyles('inspected1', next);
@@ -77,7 +79,7 @@
     setFormat(format, onFormatSet);
 
     function onFormatSet() {
-      var treeElement = ElementsTestRunner.getElementStylePropertyTreeItem(propertyName);
+      treeElement = ElementsTestRunner.getElementStylePropertyTreeItem(propertyName);
       treeElement.startEditing(treeElement.valueElement);
       TestRunner.addResult(treeElement.valueElement.textContent);
       treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent('Escape'));

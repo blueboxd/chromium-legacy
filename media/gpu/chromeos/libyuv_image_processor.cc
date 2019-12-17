@@ -4,8 +4,6 @@
 
 #include "media/gpu/chromeos/libyuv_image_processor.h"
 
-#include "base/bind.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/macros.h"
@@ -54,34 +52,14 @@ SupportResult IsFormatSupported(Fourcc input_fourcc, Fourcc output_fourcc) {
 
 }  // namespace
 
-LibYUVImageProcessor::LibYUVImageProcessor(
-    const ImageProcessor::PortConfig& input_config,
-    const ImageProcessor::PortConfig& output_config,
-    std::unique_ptr<VideoFrameMapper> video_frame_mapper,
-    scoped_refptr<base::SequencedTaskRunner> client_task_runner,
-    ErrorCB error_cb)
-    : ImageProcessor(input_config,
-                     output_config,
-                     OutputMode::IMPORT,
-                     std::move(client_task_runner)),
-      video_frame_mapper_(std::move(video_frame_mapper)),
-      error_cb_(error_cb),
-      process_thread_("LibYUVImageProcessorThread") {}
-
-LibYUVImageProcessor::~LibYUVImageProcessor() {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
-  Reset();
-
-  process_thread_.Stop();
-}
 
 // static
-std::unique_ptr<LibYUVImageProcessor> LibYUVImageProcessor::Create(
-    const ImageProcessor::PortConfig& input_config,
-    const ImageProcessor::PortConfig& output_config,
-    ImageProcessor::OutputMode output_mode,
-    scoped_refptr<base::SequencedTaskRunner> client_task_runner,
-    ErrorCB error_cb) {
+std::unique_ptr<ImageProcessorBackend> LibYUVImageProcessor::Create(
+    const PortConfig& input_config,
+    const PortConfig& output_config,
+    const std::vector<OutputMode>& preferred_output_modes,
+    ErrorCB error_cb,
+    scoped_refptr<base::SequencedTaskRunner> backend_task_runner) {
   VLOGF(2);
 
   std::unique_ptr<VideoFrameMapper> video_frame_mapper;
@@ -121,7 +99,7 @@ std::unique_ptr<LibYUVImageProcessor> LibYUVImageProcessor::Create(
     return nullptr;
   }
 
-  if (output_mode != OutputMode::IMPORT) {
+  if (!base::Contains(preferred_output_modes, OutputMode::IMPORT)) {
     VLOGF(2) << "Only support OutputMode::IMPORT";
     return nullptr;
   }
@@ -134,73 +112,66 @@ std::unique_ptr<LibYUVImageProcessor> LibYUVImageProcessor::Create(
     return nullptr;
   }
 
-  auto processor = base::WrapUnique(new LibYUVImageProcessor(
-      ImageProcessor::PortConfig(input_config.fourcc, input_config.size,
-                                 input_config.planes, input_config.visible_size,
-                                 {input_storage_type}),
-      ImageProcessor::PortConfig(
-          output_config.fourcc, output_config.size, output_config.planes,
-          output_config.visible_size, {output_storage_type}),
-      std::move(video_frame_mapper), std::move(client_task_runner),
-      std::move(error_cb)));
+  scoped_refptr<VideoFrame> intermediate_frame;
+
   if (res == SupportResult::SupportedWithPivot) {
-    processor->intermediate_frame_ =
+    intermediate_frame =
         VideoFrame::CreateFrame(PIXEL_FORMAT_I420, input_config.visible_size,
                                 gfx::Rect(input_config.visible_size),
                                 input_config.visible_size, base::TimeDelta());
-    if (!processor->intermediate_frame_) {
+    if (!intermediate_frame) {
       VLOGF(1) << "Failed to create intermediate frame";
       return nullptr;
     }
   }
 
-  if (!processor->process_thread_.Start()) {
-    VLOGF(1) << "Failed to start processing thread";
-    return nullptr;
-  }
-
+  auto processor =
+      base::WrapUnique<ImageProcessorBackend>(new LibYUVImageProcessor(
+          std::move(video_frame_mapper), std::move(intermediate_frame),
+          PortConfig(input_config.fourcc, input_config.size,
+                     input_config.planes, input_config.visible_size,
+                     {input_storage_type}),
+          PortConfig(output_config.fourcc, output_config.size,
+                     output_config.planes, output_config.visible_size,
+                     {output_storage_type}),
+          OutputMode::IMPORT, std::move(error_cb),
+          std::move(backend_task_runner)));
   VLOGF(2) << "LibYUVImageProcessor created for converting from "
            << input_config.ToString() << " to " << output_config.ToString();
   return processor;
 }
 
-bool LibYUVImageProcessor::ProcessInternal(
-    scoped_refptr<VideoFrame> input_frame,
-    scoped_refptr<VideoFrame> output_frame,
-    FrameReadyCB cb) {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
-  DVLOGF(4);
-  DCHECK_EQ(input_frame->layout().format(),
-            input_config_.fourcc.ToVideoPixelFormat());
-  DCHECK(input_frame->layout().coded_size() == input_config_.size);
-  DCHECK_EQ(output_frame->layout().format(),
-            output_config_.fourcc.ToVideoPixelFormat());
-  DCHECK(output_frame->layout().coded_size() == output_config_.size);
-  DCHECK(input_config_.storage_type() == input_frame->storage_type() ||
-         VideoFrame::IsStorageTypeMappable(input_frame->storage_type()));
-  DCHECK(VideoFrame::IsStorageTypeMappable(output_frame->storage_type()));
+LibYUVImageProcessor::LibYUVImageProcessor(
+    std::unique_ptr<VideoFrameMapper> video_frame_mapper,
+    scoped_refptr<VideoFrame> intermediate_frame,
+    const PortConfig& input_config,
+    const PortConfig& output_config,
+    OutputMode output_mode,
+    ErrorCB error_cb,
+    scoped_refptr<base::SequencedTaskRunner> backend_task_runner)
+    : ImageProcessorBackend(input_config,
+                            output_config,
+                            output_mode,
+                            std::move(error_cb),
+                            std::move(backend_task_runner)),
+      video_frame_mapper_(std::move(video_frame_mapper)),
+      intermediate_frame_(std::move(intermediate_frame)) {}
 
-  // Since process_thread_ is owned by this class. base::Unretained(this) and
-  // the raw pointer of that task runner are safe.
-  process_task_tracker_.PostTask(
-      process_thread_.task_runner().get(), FROM_HERE,
-      base::BindOnce(&LibYUVImageProcessor::ProcessTask, base::Unretained(this),
-                     std::move(input_frame), std::move(output_frame),
-                     std::move(cb)));
-  return true;
+LibYUVImageProcessor::~LibYUVImageProcessor() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
 }
 
-void LibYUVImageProcessor::ProcessTask(scoped_refptr<VideoFrame> input_frame,
-                                       scoped_refptr<VideoFrame> output_frame,
-                                       FrameReadyCB cb) {
-  DCHECK(process_thread_.task_runner()->BelongsToCurrentThread());
+void LibYUVImageProcessor::Process(scoped_refptr<VideoFrame> input_frame,
+                                   scoped_refptr<VideoFrame> output_frame,
+                                   FrameReadyCB cb) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
   DVLOGF(4);
   if (input_frame->storage_type() == VideoFrame::STORAGE_DMABUFS) {
     DCHECK_NE(video_frame_mapper_.get(), nullptr);
     input_frame = video_frame_mapper_->Map(std::move(input_frame));
     if (!input_frame) {
       VLOGF(1) << "Failed to map input VideoFrame";
-      NotifyError();
+      error_cb_.Run();
       return;
     }
   }
@@ -208,30 +179,17 @@ void LibYUVImageProcessor::ProcessTask(scoped_refptr<VideoFrame> input_frame,
   int res = DoConversion(input_frame.get(), output_frame.get());
   if (res != 0) {
     VLOGF(1) << "libyuv::I420ToNV12 returns non-zero code: " << res;
-    NotifyError();
+    error_cb_.Run();
     return;
   }
   output_frame->set_timestamp(input_frame->timestamp());
-  client_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(std::move(cb), std::move(output_frame)));
-}
 
-bool LibYUVImageProcessor::Reset() {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
-
-  process_task_tracker_.TryCancelAll();
-  return true;
-}
-
-void LibYUVImageProcessor::NotifyError() {
-  VLOGF(1);
-
-  client_task_runner_->PostTask(FROM_HERE, error_cb_);
+  std::move(cb).Run(std::move(output_frame));
 }
 
 int LibYUVImageProcessor::DoConversion(const VideoFrame* const input,
                                        VideoFrame* const output) {
-  DCHECK(process_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
 
 #define Y_U_V_DATA(fr)                                                \
   fr->data(VideoFrame::kYPlane), fr->stride(VideoFrame::kYPlane),     \

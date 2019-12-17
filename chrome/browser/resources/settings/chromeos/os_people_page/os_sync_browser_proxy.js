@@ -9,23 +9,19 @@
 cr.exportPath('settings');
 
 /**
- * User preferences for OS sync. 'Enforced' means the user cannot disable the
- * type. For example, a type might be forced on for supervised user accounts.
- * 'Registered' means the user has the option to select a type. For example, a
- * type might not be registered due to a feature flag being disabled.
+ * User preferences for OS sync. 'Registered' means the user has the option to
+ * select a type. For example, a type might not be registered due to a feature
+ * flag being disabled.
  * @see components/sync/driver/sync_service.h
  *
  * TODO(jamescook): Encryption options.
  *
  * @typedef {{
- *   osPreferencesEnforced: boolean,
+ *   osAppsRegistered: boolean,
+ *   osAppsSynced: boolean,
  *   osPreferencesRegistered: boolean,
  *   osPreferencesSynced: boolean,
- *   printersEnforced: boolean,
- *   printersRegistered: boolean,
- *   printersSynced: boolean,
  *   syncAllOsDataTypes: boolean,
- *   wifiConfigurationsEnforced: boolean,
  *   wifiConfigurationsRegistered: boolean,
  *   wifiConfigurationsSynced: boolean,
  * }}

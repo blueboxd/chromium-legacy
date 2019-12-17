@@ -50,11 +50,12 @@ class ClassCollection final : public HTMLCollection {
   SpaceSplitString class_names_;
 };
 
-DEFINE_TYPE_CASTS(ClassCollection,
-                  LiveNodeListBase,
-                  collection,
-                  collection->GetType() == kClassCollectionType,
-                  collection.GetType() == kClassCollectionType);
+template <>
+struct DowncastTraits<ClassCollection> {
+  static bool AllowFrom(const LiveNodeListBase& collection) {
+    return collection.GetType() == kClassCollectionType;
+  }
+};
 
 inline bool ClassCollection::ElementMatches(const Element& test_element) const {
   if (!test_element.HasClass())

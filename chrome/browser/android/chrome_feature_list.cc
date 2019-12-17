@@ -271,7 +271,7 @@ const base::Feature kAllowNewIncognitoTabIntents{
     "AllowNewIncognitoTabIntents", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kFocusOmniboxInIncognitoTabIntents{
-    "FocusOmniboxInIncognitoTabIntents", base::FEATURE_DISABLED_BY_DEFAULT};
+    "FocusOmniboxInIncognitoTabIntents", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAllowRemoteContextForNotifications{
     "AllowRemoteContextForNotifications", base::FEATURE_ENABLED_BY_DEFAULT};

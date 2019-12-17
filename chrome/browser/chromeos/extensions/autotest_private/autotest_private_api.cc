@@ -2713,13 +2713,13 @@ AutotestPrivateGetShelfAutoHideBehaviorFunction::Run() {
       ash::GetShelfAutoHideBehaviorPref(profile->GetPrefs(), display_id);
   std::string str_behavior;
   switch (behavior) {
-    case ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
+    case ash::ShelfAutoHideBehavior::kAlways:
       str_behavior = "always";
       break;
-    case ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_BEHAVIOR_NEVER:
+    case ash::ShelfAutoHideBehavior::kNever:
       str_behavior = "never";
       break;
-    case ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_ALWAYS_HIDDEN:
+    case ash::ShelfAutoHideBehavior::kAlwaysHidden:
       // SHELF_AUTO_HIDE_ALWAYS_HIDDEN not supported by shelf_prefs.cc
       return RespondNow(Error("SHELF_AUTO_HIDE_ALWAYS_HIDDEN not supported"));
   }
@@ -2748,9 +2748,9 @@ AutotestPrivateSetShelfAutoHideBehaviorFunction::Run() {
 
   ash::ShelfAutoHideBehavior behavior;
   if (params->behavior == "always") {
-    behavior = ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+    behavior = ash::ShelfAutoHideBehavior::kAlways;
   } else if (params->behavior == "never") {
-    behavior = ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
+    behavior = ash::ShelfAutoHideBehavior::kNever;
   } else {
     return RespondNow(Error(
         base::StrCat({"Invalid behavior; expected 'always', 'never', got ",

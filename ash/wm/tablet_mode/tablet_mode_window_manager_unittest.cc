@@ -960,7 +960,7 @@ TEST_P(TabletModeWindowManagerTest, KeepFullScreenModeOn) {
 
   // Allow the shelf to hide and set the pref.
   SetShelfAutoHideBehaviorPref(GetPrimaryDisplay().id(),
-                               SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+                               ShelfAutoHideBehavior::kAlways);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 
   WMEvent event(WM_EVENT_TOGGLE_FULLSCREEN);
@@ -1144,7 +1144,7 @@ TEST_P(TabletModeWindowManagerTest, MinimizePreservedAfterLeavingFullscreen) {
   Shelf* shelf = GetPrimaryShelf();
 
   // Allow the shelf to hide and enter full screen.
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
   WMEvent event(WM_EVENT_TOGGLE_FULLSCREEN);
   window_state->OnWMEvent(&event);
   ASSERT_FALSE(window_state->IsMinimized());
@@ -1165,12 +1165,12 @@ TEST_P(TabletModeWindowManagerTest, MinimizePreservedAfterLeavingFullscreen) {
 TEST_P(TabletModeWindowManagerTest, DoNotDisableAutoHideBehaviorOnTabletMode) {
   Shelf* shelf = GetPrimaryShelf();
   SetShelfAutoHideBehaviorPref(GetPrimaryDisplay().id(),
-                               SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+                               ShelfAutoHideBehavior::kAlways);
+  EXPECT_EQ(ShelfAutoHideBehavior::kAlways, shelf->auto_hide_behavior());
   CreateTabletModeWindowManager();
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+  EXPECT_EQ(ShelfAutoHideBehavior::kAlways, shelf->auto_hide_behavior());
   DestroyTabletModeWindowManager();
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+  EXPECT_EQ(ShelfAutoHideBehavior::kAlways, shelf->auto_hide_behavior());
 }
 
 // Check that full screen mode can be turned on in tablet mode and remains
@@ -1185,7 +1185,7 @@ TEST_P(TabletModeWindowManagerTest, AllowFullScreenMode) {
 
   // Allow the shelf to hide and set the pref.
   SetShelfAutoHideBehaviorPref(GetPrimaryDisplay().id(),
-                               SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+                               ShelfAutoHideBehavior::kAlways);
 
   EXPECT_FALSE(window_state->IsFullscreen());
   EXPECT_FALSE(window_state->IsMaximized());

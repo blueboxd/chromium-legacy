@@ -46,6 +46,7 @@ class FileList;
 class Font;
 class FontDescription;
 class HTMLInputElement;
+class IntRect;
 class LengthSize;
 class Locale;
 class LocalFrame;

@@ -19,17 +19,17 @@ MathMLElement::MathMLElement(const QualifiedName& tagName,
 MathMLElement::~MathMLElement() {}
 
 static inline bool IsValidDirAttribute(const AtomicString& value) {
-  return DeprecatedEqualIgnoringCase(value, "ltr") ||
-         DeprecatedEqualIgnoringCase(value, "rtl");
+  return EqualIgnoringASCIICase(value, "ltr") ||
+         EqualIgnoringASCIICase(value, "rtl");
 }
 
 // Keywords from MathML3 and CSS font-size are skipped.
 static inline bool IsDisallowedMathSizeAttribute(const AtomicString& value) {
-  return DeprecatedEqualIgnoringCase(value, "medium") ||
+  return EqualIgnoringASCIICase(value, "medium") ||
          value.EndsWith("large", kTextCaseASCIIInsensitive) ||
          value.EndsWith("small", kTextCaseASCIIInsensitive) ||
-         DeprecatedEqualIgnoringCase(value, "smaller") ||
-         DeprecatedEqualIgnoringCase(value, "larger");
+         EqualIgnoringASCIICase(value, "smaller") ||
+         EqualIgnoringASCIICase(value, "larger");
 }
 
 bool MathMLElement::IsPresentationAttribute(const QualifiedName& name) const {

@@ -13,7 +13,7 @@ namespace ash {
 void ForceHideShelvesForTest() {
   for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
     auto* shelf = root_window_controller->shelf();
-    shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
+    shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlwaysHidden);
   }
 }
 

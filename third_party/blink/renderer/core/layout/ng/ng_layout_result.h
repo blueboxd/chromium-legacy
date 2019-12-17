@@ -285,21 +285,24 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
                                     bool check_same_block_size = true) const;
 #endif
 
- private:
-  friend class NGBoxFragmentBuilder;
-  friend class NGLineBoxFragmentBuilder;
-  friend class MutableForOutOfFlow;
-
+  using NGBoxFragmentBuilderPassKey = util::PassKey<NGBoxFragmentBuilder>;
+  // This constructor is for a non-success status.
+  NGLayoutResult(NGBoxFragmentBuilderPassKey, EStatus, NGBoxFragmentBuilder*);
   // This constructor requires a non-null fragment and sets a success status.
   NGLayoutResult(
+      NGBoxFragmentBuilderPassKey,
       scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
       NGBoxFragmentBuilder*);
+  using NGLineBoxFragmentBuilderPassKey =
+      util::PassKey<NGLineBoxFragmentBuilder>;
   // This constructor requires a non-null fragment and sets a success status.
   NGLayoutResult(
+      NGLineBoxFragmentBuilderPassKey,
       scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
       NGLineBoxFragmentBuilder*);
-  // This constructor is for a non-success status.
-  NGLayoutResult(EStatus, NGBoxFragmentBuilder*);
+
+ private:
+  friend class MutableForOutOfFlow;
 
   // We don't need the copy constructor, move constructor, copy
   // assigmnment-operator, or move assignment-operator today.

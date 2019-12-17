@@ -7,6 +7,7 @@
 
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_menu_source_type.h"
+#include "third_party/blink/public/platform/web_pointer_properties.h"
 
 namespace blink {
 

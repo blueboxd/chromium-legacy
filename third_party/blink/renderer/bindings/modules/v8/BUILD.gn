@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//third_party/blink/renderer/bindings/bindings.gni")
 import("//third_party/blink/renderer/bindings/modules/v8/generated.gni")
 import("//third_party/blink/renderer/bindings/scripts/scripts.gni")
 import("//third_party/blink/renderer/modules/modules.gni")
@@ -22,13 +23,20 @@ group("bindings_modules_v8_generated") {
 
 idl_compiler("generate_bindings_modules_v8_interfaces") {
   sources = modules_definition_idl_files
+  if (use_v8_bind_gen_for_dictionary) {
+    sources -= modules_dictionary_idl_files
+  }
   output_dir = bindings_modules_v8_output_dir
   output_name_suffix = ""
   target_component = "modules"
 }
 
 idl_impl("bindings_modules_impl_generated") {
-  dict_idls = modules_dictionary_idl_files
+  if (use_v8_bind_gen_for_dictionary) {
+    dict_idls = []
+  } else {
+    dict_idls = modules_dictionary_idl_files
+  }
   non_dict_outputs = bindings_modules_generated_union_type_files +
                      generated_modules_callback_function_files
   non_dict_output_dir = bindings_modules_v8_output_dir

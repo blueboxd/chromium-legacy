@@ -116,7 +116,7 @@ class ProfileSyncService : public SyncService,
   // SyncService implementation
   SyncUserSettings* GetUserSettings() override;
   const SyncUserSettings* GetUserSettings() const override;
-  int GetDisableReasons() const override;
+  DisableReasonSet GetDisableReasons() const override;
   TransportState GetTransportState() const override;
   bool IsLocalSyncEnabled() const override;
   CoreAccountInfo GetAuthenticatedAccountInfo() const override;

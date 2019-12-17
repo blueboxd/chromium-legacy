@@ -41,6 +41,7 @@ struct ColorProfile;
 namespace ash {
 
 class WallpaperColorCalculator;
+struct WallpaperProperty;
 class WallpaperResizer;
 class WallpaperWindowStateManager;
 
@@ -159,6 +160,9 @@ class ASH_EXPORT WallpaperControllerImpl
   // blur if |blur| is true and blur is allowed by the controller, otherwise any
   // existing blur is removed.
   void UpdateWallpaperBlurForLockState(bool blur);
+
+  // Restores the wallpaper property from lock state.
+  void RestoreWallpaperPropertyForLockState(const WallpaperProperty& property);
 
   // Wallpaper should be dimmed for login, lock, OOBE and add user screens.
   bool ShouldApplyDimming() const;

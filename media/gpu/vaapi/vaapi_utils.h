@@ -29,8 +29,6 @@ class Vp8ReferenceFrameVector;
 struct VAContextAndScopedVASurfaceDeleter;
 struct Vp8FrameHeader;
 
-constexpr uint32_t kInvalidVaFourcc = 0u;
-
 // Class to map a given VABuffer, identified by |buffer_id|, for its lifetime.
 // This class must operate under |lock_| acquired.
 class ScopedVABufferMapping {

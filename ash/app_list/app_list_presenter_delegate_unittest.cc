@@ -1698,7 +1698,7 @@ TEST_F(AppListPresenterDelegateTest, ShowInInvalidDisplay) {
 // app list but keep shelf visible.
 TEST_F(AppListPresenterDelegateTest, TapAutoHideShelfWithAppListOpened) {
   Shelf* shelf = GetPrimaryShelf();
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
 
   // Create a normal unmaximized window; the shelf should be hidden.
   std::unique_ptr<views::Widget> window = CreateTestWidget();

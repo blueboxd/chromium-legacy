@@ -326,7 +326,7 @@ class FlexLine {
 //   https://drafts.csswg.org/css-flexbox/
 //
 // Expected usage is as follows:
-//     FlexLayoutAlgorithm algorithm(Style(), MainAxisLength(), flex_items);
+//     FlexLayoutAlgorithm algorithm(Style(), MainAxisLength());
 //     for (each child) {
 //       algorithm.emplace_back(...caller must compute these values...)
 //     }

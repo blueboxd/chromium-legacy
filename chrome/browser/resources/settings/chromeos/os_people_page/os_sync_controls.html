@@ -66,38 +66,26 @@
     <div class="list-frame" id="sync-data-types">
       <div class="list-item" hidden="[[!osSyncPrefs.osAppsRegistered]]">
         <div id="osAppsCheckboxLabel"
-            label-disabled$="[[isDataTypeToggleDisabled_(
-                osSyncFeatureEnabled,
-                osSyncPrefs.syncAllOsTypes,
-                osSyncPrefs.osAppsEnforced)]]">
+            label-disabled$="[[areDataTypeTogglesDisabled_]]">
           $i18n{syncOsAppsCheckboxLabel}
         </div>
         <cr-toggle id="osAppsControl"
             checked="{{osSyncPrefs.osAppsSynced}}"
             on-change="onSingleSyncDataTypeChanged_"
-            disabled="[[isDataTypeToggleDisabled_(
-                osSyncFeatureEnabled,
-                osSyncPrefs.syncAllOsTypes,
-                osSyncPrefs.osAppsEnforced)]]"
+            disabled="[[areDataTypeTogglesDisabled_]]"
             aria-labelledby="osAppsCheckboxLabel">
         </cr-toggle>
       </div>
 
       <div class="list-item" hidden="[[!osSyncPrefs.osPreferencesRegistered]]">
         <div id="osSettingsCheckboxLabel"
-            label-disabled$="[[isDataTypeToggleDisabled_(
-                osSyncFeatureEnabled,
-                osSyncPrefs.syncAllOsTypes,
-                osSyncPrefs.osPreferencesEnforced)]]">
+            label-disabled$="[[areDataTypeTogglesDisabled_]]">
           $i18n{syncOsSettingsCheckboxLabel}
         </div>
         <cr-toggle id="osPreferencesControl"
             checked="{{osSyncPrefs.osPreferencesSynced}}"
             on-change="onSingleSyncDataTypeChanged_"
-            disabled="[[isDataTypeToggleDisabled_(
-                osSyncFeatureEnabled,
-                osSyncPrefs.syncAllOsTypes,
-                osSyncPrefs.osPreferencesEnforced)]]"
+            disabled="[[areDataTypeTogglesDisabled_]]"
             aria-labelledby="osSettingsCheckboxLabel">
         </cr-toggle>
       </div>
@@ -105,18 +93,12 @@
       <div class="list-item"
            hidden="[[!osSyncPrefs.wifiConfigurationsRegistered]]">
         <div id="wifiConfigurationsCheckboxLabel"
-            label-disabled$="[[isDataTypeToggleDisabled_(
-                osSyncFeatureEnabled,
-                osSyncPrefs.syncAllOsTypes,
-                osSyncPrefs.wifiConfigurationsEnforced)]]">
+            label-disabled$="[[areDataTypeTogglesDisabled_]]">
           $i18n{wifiConfigurationsCheckboxLabel}
         </div>
         <cr-toggle checked="{{osSyncPrefs.wifiConfigurationsSynced}}"
             on-change="onSingleSyncDataTypeChanged_"
-            disabled="[[isDataTypeToggleDisabled_(
-                osSyncFeatureEnabled,
-                osSyncPrefs.syncAllOsTypes,
-                osSyncPrefs.wifiConfigurationsEnforced)]]"
+            disabled="[[areDataTypeTogglesDisabled_]]"
             aria-labelledby="wifiConfigurationsCheckboxLabel">
         </cr-toggle>
       </div>

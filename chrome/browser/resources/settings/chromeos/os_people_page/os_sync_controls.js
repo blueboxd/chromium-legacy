@@ -49,6 +49,14 @@ Polymer({
      * @type {settings.OsSyncPrefs|undefined}
      */
     osSyncPrefs: Object,
+
+    /** @private */
+    areDataTypeTogglesDisabled_: {
+      type: Boolean,
+      value: true,
+      computed: `computeDataTypeTogglesDisabled_(osSyncFeatureEnabled,
+          osSyncPrefs.syncAllOsTypes)`,
+    },
   },
 
   /** @private {?settings.OsSyncBrowserProxy} */
@@ -160,14 +168,12 @@ Polymer({
   },
 
   /**
-   * @param {boolean} syncFeatureEnabled
-   * @param {boolean} syncAllOsTypes
-   * @param {boolean} enforced
-   * @return {boolean} Whether a sync data type toggle should be disabled.
+   * @return {boolean} Whether the sync data type toggles should be disabled.
+   * @private
    */
-  isDataTypeToggleDisabled_: function(
-      syncFeatureEnabled, syncAllOsTypes, enforced) {
-    return !syncFeatureEnabled || syncAllOsTypes || !!enforced;
+  computeDataTypeTogglesDisabled_: function() {
+    return !this.osSyncFeatureEnabled ||
+        (this.osSyncPrefs !== undefined && this.osSyncPrefs.syncAllOsTypes);
   },
 
   /**

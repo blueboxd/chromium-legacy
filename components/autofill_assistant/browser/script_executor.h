@@ -308,7 +308,8 @@ class ScriptExecutor : public ActionDelegate,
     // The status message that was displayed when the interrupt started.
     std::string pre_interrupt_status_;
 
-    // Paths of the interrupts that were run during the current action.
+    // Paths of the interrupts that were just run. These interrupts are
+    // prevented from firing for one round.
     std::set<std::string> ran_interrupts_;
 
     RetryTimer retry_timer_;

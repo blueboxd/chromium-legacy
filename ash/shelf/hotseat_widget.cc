@@ -11,6 +11,7 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/shelf/scrollable_shelf_view.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
@@ -20,6 +21,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window_targeter.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -322,8 +324,29 @@ void HotseatWidget::OnTabletModeChanged() {
   delegate_view_->OnTabletModeChanged();
 }
 
+float HotseatWidget::CalculateOpacity() {
+  const float target_opacity =
+      GetShelfView()->shelf()->shelf_layout_manager()->GetOpacity();
+  return (state() == HotseatState::kExtended) ? 1.0f  // fully opaque
+                                              : target_opacity;
+}
+
 void HotseatWidget::UpdateOpaqueBackground() {
   delegate_view_->UpdateOpaqueBackground();
+}
+
+void HotseatWidget::UpdateLayout() {
+  ui::Layer* layer = GetNativeView()->layer();
+  ui::ScopedLayerAnimationSettings animation_setter(layer->GetAnimator());
+  animation_setter.SetTransitionDuration(
+      ShelfConfig::Get()->shelf_animation_duration());
+  animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
+  animation_setter.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+
+  layer->SetOpacity(CalculateOpacity());
+  SetBounds(
+      GetShelfView()->shelf()->shelf_layout_manager()->GetHotseatBounds());
 }
 
 gfx::Size HotseatWidget::GetOpaqueBackgroundSize() const {

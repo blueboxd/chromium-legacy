@@ -125,6 +125,7 @@ js_library("tooltip") {
 js_library("util") {
   deps = [
     ":tooltip",
+    ":type",
     "browser_proxy:browser_proxy",
     "mojo:chrome_helper",
   ]

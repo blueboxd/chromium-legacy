@@ -960,7 +960,7 @@ TEST_F(AutoclickTest, ShelfAutohidesWithAutoclickBubble) {
                        gfx::Rect(0, 0, 200, 200), true /* show */);
 
   // Turn on auto-hide for the shelf.
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
@@ -987,7 +987,7 @@ TEST_F(AutoclickTest, BubbleMovesWithShelfPositionChange) {
   Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
       AutoclickMenuPosition::kBottomRight);
   Shelf* shelf = GetPrimaryShelf();
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kNever);
   EXPECT_EQ(shelf->GetVisibilityState(), SHELF_VISIBLE);
   AutoclickMenuView* menu = GetAutoclickMenuView();
   ASSERT_TRUE(menu);

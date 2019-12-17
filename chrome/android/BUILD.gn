@@ -2842,6 +2842,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/send_tab_to_self/TargetDeviceInfo.java",
     "java/src/org/chromium/chrome/browser/sessions/SessionTabHelper.java",
     "java/src/org/chromium/chrome/browser/settings/LocationSettings.java",
+    "java/src/org/chromium/chrome/browser/settings/NfcSystemLevelSetting.java",
     "java/src/org/chromium/chrome/browser/settings/about/AboutSettingsBridge.java",
     "java/src/org/chromium/chrome/browser/settings/autofill/AutofillProfileBridge.java",
     "java/src/org/chromium/chrome/browser/settings/password/PasswordEditingBridge.java",

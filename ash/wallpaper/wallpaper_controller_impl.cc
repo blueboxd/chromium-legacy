@@ -695,23 +695,43 @@ bool WallpaperControllerImpl::IsPolicyControlled(
 }
 
 void WallpaperControllerImpl::UpdateWallpaperBlurForLockState(bool blur) {
-  bool needs_blur = blur && IsBlurAllowedForLockState();
-  bool changed = is_wallpaper_blurred_for_lock_state_ != needs_blur;
+  if (!IsBlurAllowedForLockState())
+    return;
+
+  bool changed = is_wallpaper_blurred_for_lock_state_ != blur;
   // is_wallpaper_blurrred_for_lock_state_ may already be updated in
   // InstallDesktopController. Always try to update, then invoke observer
   // if something changed.
   for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
-    changed |=
-        root_window_controller->wallpaper_widget_controller()
-            ->SetWallpaperProperty(needs_blur ? wallpaper_constants::kLockState
-                                              : wallpaper_constants::kClear);
+    changed |= root_window_controller->wallpaper_widget_controller()
+                   ->SetWallpaperProperty(blur ? wallpaper_constants::kLockState
+                                               : wallpaper_constants::kClear);
   }
 
-  is_wallpaper_blurred_for_lock_state_ = needs_blur;
+  is_wallpaper_blurred_for_lock_state_ = blur;
   if (changed) {
     for (auto& observer : observers_)
       observer.OnWallpaperBlurChanged();
   }
+}
+
+void WallpaperControllerImpl::RestoreWallpaperPropertyForLockState(
+    const WallpaperProperty& property) {
+  if (!IsBlurAllowedForLockState())
+    return;
+
+  // |is_wallpaper_blurrred_for_lock_state_| may already be updated in
+  // InstallDesktopController. Always try to update, then invoke observer
+  // if something changed.
+  for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
+    root_window_controller->wallpaper_widget_controller()->SetWallpaperProperty(
+        property);
+  }
+
+  DCHECK(is_wallpaper_blurred_for_lock_state_);
+  is_wallpaper_blurred_for_lock_state_ = false;
+  for (auto& observer : observers_)
+    observer.OnWallpaperBlurChanged();
 }
 
 bool WallpaperControllerImpl::ShouldApplyDimming() const {

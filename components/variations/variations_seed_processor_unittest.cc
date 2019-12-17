@@ -91,8 +91,8 @@ class TestOverrideStringCallback {
   typedef std::map<uint32_t, base::string16> OverrideMap;
 
   TestOverrideStringCallback()
-      : callback_(base::Bind(&TestOverrideStringCallback::Override,
-                             base::Unretained(this))) {}
+      : callback_(base::BindRepeating(&TestOverrideStringCallback::Override,
+                                      base::Unretained(this))) {}
 
   virtual ~TestOverrideStringCallback() {}
 

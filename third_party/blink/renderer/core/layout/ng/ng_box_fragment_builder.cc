@@ -240,12 +240,15 @@ scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
       NGPhysicalBoxFragment::Create(this, block_or_line_writing_mode);
   fragment->CheckType();
 
-  return base::AdoptRef(new NGLayoutResult(std::move(fragment), this));
+  return base::AdoptRef(
+      new NGLayoutResult(NGLayoutResult::NGBoxFragmentBuilderPassKey(),
+                         std::move(fragment), this));
 }
 
 scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::Abort(
     NGLayoutResult::EStatus status) {
-  return base::AdoptRef(new NGLayoutResult(status, this));
+  return base::AdoptRef(new NGLayoutResult(
+      NGLayoutResult::NGBoxFragmentBuilderPassKey(), status, this));
 }
 
 // Computes the geometry required for any inline containing blocks.

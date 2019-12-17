@@ -31,7 +31,7 @@ class SyncSessionDurationsMetricsRecorderTest : public testing::Test {
   void EnableSync() {
     identity_test_env_.MakePrimaryAccountAvailable("foo@gmail.com");
     sync_service_.SetIsAuthenticatedAccountPrimary(true);
-    sync_service_.SetDisableReasons(SyncService::DISABLE_REASON_NONE);
+    sync_service_.SetDisableReasons(SyncService::DisableReasonSet());
   }
 
   void SetInvalidCredentialsAuthError() {

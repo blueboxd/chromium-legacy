@@ -26,6 +26,8 @@
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals.mojom.h"
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals_ui.h"
 #include "chrome/browser/ui/webui/media/media_engagement_ui.h"
+#include "chrome/browser/ui/webui/usb_internals/usb_internals.mojom.h"
+#include "chrome/browser/ui/webui/usb_internals/usb_internals_ui.h"
 #include "chrome/common/prerender.mojom.h"
 #include "components/dom_distiller/content/browser/distillability_driver.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_service_impl.h"
@@ -387,6 +389,9 @@ void PopulateChromeWebUIFrameBinders(
 
   RegisterWebUIControllerInterfaceBinder<
       SiteEngagementUI, ::mojom::SiteEngagementDetailsProvider>(map);
+
+  RegisterWebUIControllerInterfaceBinder<UsbInternalsUI,
+                                         ::mojom::UsbInternalsPageHandler>(map);
 
 #if defined(OS_ANDROID)
   RegisterWebUIControllerInterfaceBinder<

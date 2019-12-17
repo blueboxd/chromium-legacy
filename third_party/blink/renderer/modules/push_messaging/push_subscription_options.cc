@@ -22,7 +22,7 @@ Vector<uint8_t> BufferSourceToVector(
     const ArrayBufferOrArrayBufferViewOrString& application_server_key,
     ExceptionState& exception_state) {
   char* input;
-  int length;
+  size_t length;
   Vector<char> decoded_application_server_key;
   Vector<uint8_t> result;
 
@@ -30,15 +30,14 @@ Vector<uint8_t> BufferSourceToVector(
   if (application_server_key.IsArrayBuffer()) {
     input =
         static_cast<char*>(application_server_key.GetAsArrayBuffer()->Data());
-    length = application_server_key.GetAsArrayBuffer()
-                 ->DeprecatedByteLengthAsUnsigned();
+    length = application_server_key.GetAsArrayBuffer()->ByteLengthAsSizeT();
   } else if (application_server_key.IsArrayBufferView()) {
     input = static_cast<char*>(
         application_server_key.GetAsArrayBufferView().View()->buffer()->Data());
     length = application_server_key.GetAsArrayBufferView()
                  .View()
                  ->buffer()
-                 ->DeprecatedByteLengthAsUnsigned();
+                 ->ByteLengthAsSizeT();
   } else if (application_server_key.IsString()) {
     if (!Base64UnpaddedURLDecode(application_server_key.GetAsString(),
                                  decoded_application_server_key)) {
@@ -65,7 +64,7 @@ Vector<uint8_t> BufferSourceToVector(
        input + length);
 
   if (is_vapid || is_sender_id) {
-    result.Append(input, length);
+    result.Append(input, static_cast<wtf_size_t>(length));
   } else {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,

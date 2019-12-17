@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/id_target_observer.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/xml_document.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_transformable_container.h"
 #include "third_party/blink/renderer/core/svg/svg_g_element.h"
 #include "third_party/blink/renderer/core/svg/svg_length_context.h"
@@ -107,7 +108,7 @@ void SVGUseElement::Trace(blink::Visitor* visitor) {
 
 #if DCHECK_IS_ON()
 static inline bool IsWellFormedDocument(const Document& document) {
-  if (document.IsXMLDocument())
+  if (IsA<XMLDocument>(document))
     return static_cast<XMLDocumentParser*>(document.Parser())->WellFormed();
   return true;
 }

@@ -137,7 +137,7 @@ class Controller : public ScriptExecutorDelegate,
   void AddListener(ScriptExecutorDelegate::Listener* listener) override;
   void RemoveListener(ScriptExecutorDelegate::Listener* listener) override;
 
-  void EnterState(AutofillAssistantState state) override;
+  bool EnterState(AutofillAssistantState state) override;
   void SetCollectUserDataOptions(CollectUserDataOptions* options) override;
   void WriteUserData(
       base::OnceCallback<void(UserData*, UserData::FieldChange*)>) override;

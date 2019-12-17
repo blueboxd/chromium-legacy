@@ -151,8 +151,9 @@ cca.App = class {
 
   /**
    * Starts the app by loading the model and opening the camera-view.
+   * @return {!Promise}
    */
-  start() {
+  async start() {
     var ackMigrate = false;
     cca.models.FileSystem
         .initialize(() => {
@@ -183,6 +184,7 @@ cca.App = class {
         .finally(() => {
           cca.metrics.log(cca.metrics.Type.LAUNCH, ackMigrate);
         });
+    await cca.util.fitWindow();
     chrome.app.window.current().show();
     this.backgroundOps_.notifyActivation();
   }
@@ -235,5 +237,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   assert(window['backgroundOps'] !== undefined);
   cca.App.instance_ = new cca.App(
       /** @type {!cca.bg.BackgroundOps} */ (window['backgroundOps']));
-  cca.App.instance_.start();
+  await cca.App.instance_.start();
 });

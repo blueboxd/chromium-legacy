@@ -84,7 +84,9 @@ public class SyncTest {
                 new Criteria("Timed out checking that hasPrimaryAccount() == true") {
                     @Override
                     public boolean isSatisfied() {
-                        return IdentityServicesProvider.getIdentityManager().hasPrimaryAccount();
+                        return IdentityServicesProvider.get()
+                                .getIdentityManager()
+                                .hasPrimaryAccount();
                     }
                 },
                 SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
@@ -98,7 +100,9 @@ public class SyncTest {
                 new Criteria("Timed out checking that hasPrimaryAccount() == false") {
                     @Override
                     public boolean isSatisfied() {
-                        return !IdentityServicesProvider.getIdentityManager().hasPrimaryAccount();
+                        return !IdentityServicesProvider.get()
+                                        .getIdentityManager()
+                                        .hasPrimaryAccount();
                     }
                 },
                 SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);

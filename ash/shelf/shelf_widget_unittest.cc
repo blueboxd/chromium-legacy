@@ -289,7 +289,7 @@ TEST_F(ShelfWidgetTest, ShelfEdgeOverlappingWindowHitTestMouse) {
 
   // Now restore shelf alignment (bottom) and auto-hide (hidden) the shelf.
   shelf->SetAlignment(ShelfAlignment::kBottom);
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
   shelf_layout_manager->LayoutShelf();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_layout_manager->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_layout_manager->auto_hide_state());
@@ -349,7 +349,7 @@ TEST_F(ShelfWidgetTest, HiddenShelfHitTestTouch) {
   }
 
   // Now auto-hide (hidden) the shelf.
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
   shelf_layout_manager->LayoutShelf();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_layout_manager->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_layout_manager->auto_hide_state());
@@ -411,7 +411,7 @@ TEST_F(ShelfWidgetAfterLoginTest, InitialValues) {
   // Ensure settings are correct before login.
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
   EXPECT_EQ(ShelfAlignment::kBottomLocked, shelf->alignment());
-  EXPECT_EQ(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, shelf->auto_hide_behavior());
+  EXPECT_EQ(ShelfAutoHideBehavior::kAlwaysHidden, shelf->auto_hide_behavior());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
   // Simulate login.
@@ -420,32 +420,32 @@ TEST_F(ShelfWidgetAfterLoginTest, InitialValues) {
   // Ensure settings are correct after login.
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
   EXPECT_EQ(ShelfAlignment::kBottom, shelf->alignment());
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+  EXPECT_EQ(ShelfAutoHideBehavior::kNever, shelf->auto_hide_behavior());
   // "Hidden" is the default state when auto-hide is turned off.
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 }
 
 TEST_F(ShelfWidgetAfterLoginTest, CreateAutoHideAlwaysShelf) {
   // The actual auto hide state is shown because there are no open windows.
-  TestShelf(ShelfAlignment::kBottom, SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
+  TestShelf(ShelfAlignment::kBottom, ShelfAutoHideBehavior::kAlways,
             SHELF_AUTO_HIDE, SHELF_AUTO_HIDE_SHOWN);
 }
 
 TEST_F(ShelfWidgetAfterLoginTest, CreateAutoHideNeverShelf) {
   // The auto hide state 'HIDDEN' is returned for any non-auto-hide behavior.
-  TestShelf(ShelfAlignment::kLeft, SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
-            SHELF_VISIBLE, SHELF_AUTO_HIDE_HIDDEN);
+  TestShelf(ShelfAlignment::kLeft, ShelfAutoHideBehavior::kNever, SHELF_VISIBLE,
+            SHELF_AUTO_HIDE_HIDDEN);
 }
 
 TEST_F(ShelfWidgetAfterLoginTest, CreateAutoHideAlwaysHideShelf) {
   // The auto hide state 'HIDDEN' is returned for any non-auto-hide behavior.
-  TestShelf(ShelfAlignment::kRight, SHELF_AUTO_HIDE_ALWAYS_HIDDEN, SHELF_HIDDEN,
-            SHELF_AUTO_HIDE_HIDDEN);
+  TestShelf(ShelfAlignment::kRight, ShelfAutoHideBehavior::kAlwaysHidden,
+            SHELF_HIDDEN, SHELF_AUTO_HIDE_HIDDEN);
 }
 
 TEST_F(ShelfWidgetAfterLoginTest, CreateLockedShelf) {
   // The auto hide state 'HIDDEN' is returned for any non-auto-hide behavior.
-  TestShelf(ShelfAlignment::kBottomLocked, SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
+  TestShelf(ShelfAlignment::kBottomLocked, ShelfAutoHideBehavior::kNever,
             SHELF_VISIBLE, SHELF_AUTO_HIDE_HIDDEN);
 }
 

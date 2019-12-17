@@ -228,6 +228,9 @@ base::string16 PermissionRequestImpl::GetMessageTextFragment() const {
     case ContentSettingsType::CLIPBOARD_READ_WRITE:
       message_id = IDS_CLIPBOARD_PERMISSION_FRAGMENT;
       break;
+    case ContentSettingsType::NFC:
+      message_id = IDS_NFC_PERMISSION_FRAGMENT;
+      break;
     default:
       NOTREACHED();
       return base::string16();

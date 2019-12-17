@@ -2,7 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="../chromeos/localized_string_with_link/localized_string_with_link.html">
+<link rel="import" href="../chromeos/localized_link/localized_link.html">
 <link rel="import" href="../controls/settings_radio_group.html">
 <link rel="import" href="../controls/settings_slider.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
@@ -101,10 +101,10 @@
               $i18n{traditionalScrollLabel}
             </cr-radio-button>
             <cr-radio-button name="true">
-              <localized-string-with-link
+              <settings-localized-link
                   localized-string="$i18n{naturalScrollLabel}"
                   link-url="$i18n{naturalScrollLearnMoreLink}">
-              </localized-string-with-link>
+              </settings-localized-link>
             </cr-radio-button>
           </settings-radio-group>
         </div>

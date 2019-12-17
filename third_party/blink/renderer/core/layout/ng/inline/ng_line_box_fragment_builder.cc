@@ -148,7 +148,9 @@ NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   scoped_refptr<const NGPhysicalLineBoxFragment> fragment =
       NGPhysicalLineBoxFragment::Create(this);
 
-  return base::AdoptRef(new NGLayoutResult(std::move(fragment), this));
+  return base::AdoptRef(
+      new NGLayoutResult(NGLayoutResult::NGLineBoxFragmentBuilderPassKey(),
+                         std::move(fragment), this));
 }
 
 }  // namespace blink

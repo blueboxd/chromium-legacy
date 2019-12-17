@@ -21,6 +21,19 @@
 namespace content {
 namespace {
 
+bool ShouldSendOnIO(const std::string& method) {
+  // Keep in sync with WebDevToolsAgent::ShouldInterruptForMethod.
+  // TODO(petermarshall): find a way to share this.
+  return method == "Debugger.pause" || method == "Debugger.setBreakpoint" ||
+         method == "Debugger.setBreakpointByUrl" ||
+         method == "Debugger.removeBreakpoint" ||
+         method == "Debugger.setBreakpointsActive" ||
+         method == "Debugger.getStackTrace" ||
+         method == "Performance.getMetrics" || method == "Page.crash" ||
+         method == "Runtime.terminateExecution" ||
+         method == "Emulation.setScriptExecutionDisabled";
+}
+
 // Async control commands (such as CSS.enable) are idempotant and can
 // be safely replayed in the new render frame host. We will always forward
 // them to the new renderer on cross process navigation. Main rationale for
@@ -278,13 +291,25 @@ void DevToolsSession::DispatchProtocolMessageToAgent(
   auto message_ptr = blink::mojom::DevToolsMessage::New();
   message_ptr->data =
       mojo_base::BigBuffer(base::make_span(message.data(), message.size()));
-  if (io_session_) {
-    TRACE_EVENT_WITH_FLOW2("devtools",
-                           "DevToolsSession::DispatchProtocolMessageToAgent",
-                           call_id, TRACE_EVENT_FLAG_FLOW_OUT, "method",
-                           method.c_str(), "call_id", call_id);
-    io_session_->DispatchProtocolCommand(call_id, method,
-                                         std::move(message_ptr));
+
+  if (ShouldSendOnIO(method)) {
+    if (io_session_) {
+      TRACE_EVENT_WITH_FLOW2(
+          "devtools", "DevToolsSession::DispatchProtocolMessageToAgent on IO",
+          call_id, TRACE_EVENT_FLAG_FLOW_OUT, "method", method.c_str(),
+          "call_id", call_id);
+      io_session_->DispatchProtocolCommand(call_id, method,
+                                           std::move(message_ptr));
+    }
+  } else {
+    if (session_) {
+      TRACE_EVENT_WITH_FLOW2("devtools",
+                             "DevToolsSession::DispatchProtocolMessageToAgent",
+                             call_id, TRACE_EVENT_FLAG_FLOW_OUT, "method",
+                             method.c_str(), "call_id", call_id);
+      session_->DispatchProtocolCommand(call_id, method,
+                                        std::move(message_ptr));
+    }
   }
 }
 

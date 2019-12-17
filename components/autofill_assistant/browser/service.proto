@@ -1208,6 +1208,10 @@ message PromptProto {
     reserved 13;
   }
   repeated Choice choices = 4;
+
+  // If true, run scripts flagged with 'interrupt=true' as soon as their
+  // preconditions match, then go back to the prompt.
+  optional bool allow_interrupt = 5;
 }
 
 message ContactDetailsProto {

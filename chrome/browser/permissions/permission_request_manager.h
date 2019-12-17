@@ -127,6 +127,7 @@ class PermissionRequestManager
   // lot of friends.
   friend class GeolocationBrowserTest;
   friend class GeolocationPermissionContextTests;
+  friend class NfcPermissionContextTests;
   friend class MockPermissionPromptFactory;
   friend class PermissionContextBaseTests;
   friend class PermissionRequestManagerTest;

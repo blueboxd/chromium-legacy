@@ -25,10 +25,15 @@ LookupSingleLeakData PrepareLookupSingleLeakData(const std::string& username,
   std::string canonicalized_username = CanonicalizeUsername(username);
   LookupSingleLeakData data;
   data.username_hash_prefix = BucketizeUsername(canonicalized_username);
+  std::string scrypt_hash =
+      ScryptHashUsernameAndPassword(canonicalized_username, password);
+  if (scrypt_hash.empty())
+    return LookupSingleLeakData();
   data.encrypted_payload = CipherEncrypt(
       ScryptHashUsernameAndPassword(canonicalized_username, password),
       &data.encryption_key);
-  return data;
+  return data.encrypted_payload.empty() ? LookupSingleLeakData()
+                                        : std::move(data);
 }
 
 // Searches |reencrypted_lookup_hash| in the |encrypted_leak_match_prefixes|

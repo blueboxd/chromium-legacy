@@ -31,7 +31,7 @@ namespace blink {
 void LiveNodeListBase::InvalidateCacheForAttribute(
     const QualifiedName* attr_name) const {
   if (IsLiveNodeListType(GetType()))
-    ToLiveNodeList(this)->InvalidateCacheForAttribute(attr_name);
+    To<LiveNodeList>(this)->InvalidateCacheForAttribute(attr_name);
   else
     ToHTMLCollection(this)->InvalidateCacheForAttribute(attr_name);
 }

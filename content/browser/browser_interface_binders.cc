@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/content_index/content_index_service_impl.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
@@ -173,19 +174,26 @@ void BindColorChooserFactoryForFrame(
 void BindProcessInternalsHandler(
     content::RenderFrameHost* host,
     mojo::PendingReceiver<::mojom::ProcessInternalsHandler> receiver) {
-  // This should not be requested by subframes, so terminate the renderer if
-  // it issues such a request.
-  if (host->GetParent()) {
-    host->GetProcess()->ShutdownForBadMessage(
-        content::RenderProcessHost::CrashReportMode::GENERATE_CRASH_DUMP);
-    return;
-  }
-
   auto* contents = WebContents::FromRenderFrameHost(host);
   DCHECK_EQ(contents->GetLastCommittedURL().host_piece(),
             kChromeUIProcessInternalsHost);
-  static_cast<ProcessInternalsUI*>(contents->GetWebUI()->GetController())
-      ->BindProcessInternalsHandler(std::move(receiver), host);
+
+  content::WebUI* web_ui = contents->GetWebUI();
+
+  // Performs a safe downcast to the concrete ProcessInternalsUI subclass.
+  ProcessInternalsUI* process_internals_ui =
+      web_ui ? web_ui->GetController()->GetAs<ProcessInternalsUI>() : nullptr;
+
+  // This is expected to be called only for main frames and for the right WebUI
+  // pages matching the same WebUI associated to the RenderFrameHost.
+  if (host->GetParent() || !process_internals_ui) {
+    ReceivedBadMessage(
+        host->GetProcess(),
+        bad_message::BadMessageReason::RFH_INVALID_WEB_UI_CONTROLLER);
+    return;
+  }
+
+  process_internals_ui->BindProcessInternalsHandler(std::move(receiver), host);
 }
 
 void BindQuotaDispatcherHost(

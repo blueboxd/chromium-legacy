@@ -320,7 +320,8 @@ class VariationsServiceTest : public ::testing::Test {
     if (!metrics_state_manager_) {
       metrics_state_manager_ = metrics::MetricsStateManager::Create(
           &prefs_, enabled_state_provider_.get(), base::string16(),
-          base::Bind(&StubStoreClientInfo), base::Bind(&StubLoadClientInfo));
+          base::BindRepeating(&StubStoreClientInfo),
+          base::BindRepeating(&StubLoadClientInfo));
     }
     return metrics_state_manager_.get();
   }

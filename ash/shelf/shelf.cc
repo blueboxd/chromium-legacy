@@ -75,7 +75,7 @@ class Shelf::AutoHideEventHandler : public ui::EventHandler {
         event, static_cast<aura::Window*>(event->target()));
   }
   void OnTouchEvent(ui::TouchEvent* event) override {
-    if (shelf_->auto_hide_behavior() != SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS)
+    if (shelf_->auto_hide_behavior() != ShelfAutoHideBehavior::kAlways)
       return;
 
     // The event target should be the shelf widget or the hotseat widget.

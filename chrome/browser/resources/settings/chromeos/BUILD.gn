@@ -76,7 +76,7 @@ group("closure_compile") {
     "crostini_page:closure_compile",
     "date_time_page:closure_compile",
     "internet_page:closure_compile",
-    "localized_string_with_link:closure_compile",
+    "localized_link:closure_compile",
     "os_a11y_page:closure_compile",
     "os_apps_page:closure_compile",
     "os_files_page:closure_compile",

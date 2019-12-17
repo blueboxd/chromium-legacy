@@ -5,8 +5,8 @@
 #include "chrome/browser/sharing/ack_message_handler.h"
 
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_message_sender.h"
-#include "components/sync/protocol/sharing_message.pb.h"
 
 AckMessageHandler::AckMessageHandler(
     SharingMessageSender* sharing_message_sender)

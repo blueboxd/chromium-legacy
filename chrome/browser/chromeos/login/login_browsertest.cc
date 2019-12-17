@@ -106,7 +106,8 @@ void TestSystemTrayIsVisible(bool otr) {
       shelf->GetStatusAreaWidget()->unified_system_tray();
   SCOPED_TRACE(testing::Message()
                << "ShelfVisibilityState=" << shelf->GetVisibilityState()
-               << " ShelfAutoHideBehavior=" << shelf->auto_hide_behavior());
+               << " ShelfAutoHideBehavior="
+               << static_cast<int>(shelf->auto_hide_behavior()));
   EXPECT_TRUE(tray->GetVisible());
 
   // This check flakes for LoginGuestTest: https://crbug.com/693106.

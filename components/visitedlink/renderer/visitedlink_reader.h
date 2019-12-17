@@ -25,7 +25,7 @@ class VisitedLinkReader : public VisitedLinkCommon,
   VisitedLinkReader();
   ~VisitedLinkReader() override;
 
-  base::Callback<
+  base::RepeatingCallback<
       void(mojo::PendingReceiver<mojom::VisitedLinkNotificationSink>)>
   GetBindCallback();
 

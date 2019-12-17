@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/timer/timer.h"
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/chip.h"
@@ -31,18 +30,19 @@ class PromptAction : public Action {
   // Overrides Action:
   void InternalProcessAction(ProcessActionCallback callback) override;
 
-  void RunPeriodicChecks();
+  void RegisterChecks(
+      BatchElementChecker* checker,
+      base::OnceCallback<void(const ClientStatus&)> wait_for_dom_callback);
   void SetupPreconditions();
   bool HasNonemptyPreconditions();
-  void CheckPreconditions();
   void OnPreconditionResult(size_t choice_index, bool result);
-  void OnPreconditionChecksDone();
   void UpdateUserActions();
   bool HasAutoSelect();
-  void CheckAutoSelect();
   void OnAutoSelectElementExists(int choice_index,
                                  const ClientStatus& element_status);
-  void OnAutoSelectDone();
+  void OnElementChecksDone(
+      base::OnceCallback<void(const ClientStatus&)> wait_for_dom_callback);
+  void OnDoneWaitForDom(const ClientStatus& status);
   void OnSuggestionChosen(int choice_index);
 
   ProcessActionCallback callback_;
@@ -59,16 +59,11 @@ class PromptAction : public Action {
   // the set of user actions must be updated.
   bool precondition_changed_ = false;
 
-  // Batch element checker for preconditions.
-  std::unique_ptr<BatchElementChecker> precondition_checker_;
+  // Batch element checker for preconditions and auto-selection.
+  std::unique_ptr<BatchElementChecker> element_checker_;
 
   // If >= 0, contains the index of the Choice to auto-select.
   int auto_select_choice_index_ = -1;
-
-  // Batch element checker for auto-selection, if any.
-  std::unique_ptr<BatchElementChecker> auto_select_checker_;
-
-  std::unique_ptr<base::RepeatingTimer> timer_;
 
   base::WeakPtrFactory<PromptAction> weak_ptr_factory_{this};
 

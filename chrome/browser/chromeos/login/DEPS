@@ -12,4 +12,7 @@ specific_include_rules = {
     "+ash/system/status_area_widget.h",
     "+ash/system/unified/unified_system_tray.h",
   ],
+  "chrome_restart_request\.cc": [
+    "+media/capture/capture_export.h",
+  ],
 }

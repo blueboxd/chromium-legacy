@@ -26,11 +26,13 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_launch/web_launch_files_helper.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/template_expressions.h"
@@ -95,34 +97,35 @@ Browser* LaunchSystemWebApp(Profile* profile,
 
   DCHECK_EQ(params.app_id, *GetAppIdForSystemWebApp(profile, app_type));
 
-  if (did_create)
-    *did_create = false;
-
-  // TODO(https://crbug.com/1027030): Better understand and improve SWA launch
-  // behavior. Early exit here skips logic in ShowApplicationWindow.
+  // Make sure we have a browser for app.
   Browser* browser = nullptr;
   if (provider->system_web_app_manager().IsSingleWindow(app_type)) {
     browser = FindSystemWebAppBrowser(profile, app_type);
   }
-
-  if (browser) {
-    content::WebContents* web_contents =
-        browser->tab_strip_model()->GetWebContentsAt(0);
-    if (web_contents && web_contents->GetURL() == url) {
-      browser->window()->Show();
-      return browser;
-    }
-  }
-
   if (!browser) {
+    browser = CreateApplicationWindow(profile, params, url);
     if (did_create)
       *did_create = true;
-    browser = CreateApplicationWindow(profile, params, url);
+  } else {
+    if (did_create)
+      *did_create = false;
   }
 
-  ShowApplicationWindow(profile, params, url, browser,
-                        WindowOpenDisposition::CURRENT_TAB);
+  // Navigate application window to application's |url| if necessary.
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetWebContentsAt(0);
+  if (!web_contents || web_contents->GetURL() != url) {
+    web_contents = NavigateApplicationWindow(
+        browser, params, url, WindowOpenDisposition::CURRENT_TAB);
+  }
 
+  // Send launch files.
+  if (base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI)) {
+    web_launch::WebLaunchFilesHelper::SetLaunchPaths(
+        web_contents, web_contents->GetURL(), params.launch_files);
+  }
+
+  browser->window()->Show();
   return browser;
 }
 

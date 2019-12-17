@@ -123,6 +123,7 @@ jumbo_source_set("browser") {
     "//media",
     "//media:media_buildflags",
     "//media/capture",
+    "//media/capture:capture_switches",
     "//media/learning/impl",
     "//media/midi",
     "//media/midi:mojo",

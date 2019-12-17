@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "android_webview/browser/metrics/aw_metrics_log_uploader.h"
+#include "android_webview/browser/metrics/aw_stability_metrics_provider.h"
 #include "android_webview/browser_jni_headers/AwMetricsServiceClient_jni.h"
 #include "android_webview/common/aw_features.h"
 #include "base/android/jni_android.h"
@@ -36,6 +37,7 @@
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/metrics/ui/screen_info_metrics_provider.h"
 #include "components/metrics/version_utils.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/android/channel_getter.h"
 #include "components/version_info/version_info.h"
@@ -123,6 +125,8 @@ std::unique_ptr<metrics::MetricsService> CreateMetricsService(
       std::make_unique<metrics::NetworkMetricsProvider>(
           content::CreateNetworkConnectionTrackerAsyncGetter()));
   service->RegisterMetricsProvider(
+      std::make_unique<android_webview::AwStabilityMetricsProvider>(prefs));
+  service->RegisterMetricsProvider(
       std::make_unique<metrics::AndroidMetricsProvider>());
   service->RegisterMetricsProvider(
       std::make_unique<metrics::CPUMetricsProvider>());
@@ -183,6 +187,12 @@ AwMetricsServiceClient* AwMetricsServiceClient::GetInstance() {
 
 AwMetricsServiceClient::AwMetricsServiceClient() = default;
 AwMetricsServiceClient::~AwMetricsServiceClient() = default;
+
+// static
+void AwMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
+  metrics::MetricsService::RegisterPrefs(registry);
+  metrics::StabilityMetricsHelper::RegisterPrefs(registry);
+}
 
 void AwMetricsServiceClient::Initialize(PrefService* pref_service) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -473,8 +473,8 @@ void VaapiMjpegDecodeAccelerator::DecodeImpl(
     return;
   }
 
-  const uint32_t video_frame_va_fourcc = video_frame_fourcc->ToVAFourCC();
-  if (video_frame_va_fourcc == kInvalidVaFourcc) {
+  const auto video_frame_va_fourcc = video_frame_fourcc->ToVAFourCC();
+  if (!video_frame_va_fourcc) {
     VLOGF(1) << "Unsupported video frame format: " << dst_frame->format();
     NotifyError(task_id, PLATFORM_FAILURE);
     return;
@@ -484,7 +484,7 @@ void VaapiMjpegDecodeAccelerator::DecodeImpl(
   if (dst_frame->HasDmaBufs() &&
       VaapiWrapper::IsVppResolutionAllowed(surface->size()) &&
       VaapiWrapper::IsVppSupportedForJpegDecodedSurfaceToFourCC(
-          surface->format(), video_frame_va_fourcc)) {
+          surface->format(), *video_frame_va_fourcc)) {
     if (!OutputPictureVppOnTaskRunner(surface, task_id, std::move(dst_frame))) {
       VLOGF(1) << "Output picture using VPP failed";
       NotifyError(task_id, PLATFORM_FAILURE);
@@ -497,7 +497,7 @@ void VaapiMjpegDecodeAccelerator::DecodeImpl(
   // 2. VPP doesn't support the format conversion. This is intended for AMD
   //    VAAPI driver whose VPP only supports converting decoded 4:2:0 JPEGs.
   std::unique_ptr<ScopedVAImage> image =
-      decoder_.GetImage(video_frame_va_fourcc, &status);
+      decoder_.GetImage(*video_frame_va_fourcc, &status);
   if (status != VaapiImageDecodeStatus::kSuccess) {
     NotifyError(task_id, VaapiJpegDecodeStatusToError(status));
     return;

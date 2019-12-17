@@ -49,47 +49,14 @@ Browser* CreateWebApplicationWindow(Profile* profile,
   return new Browser(browser_params);
 }
 
-void SetWebAppPrefsForWebContents(content::WebContents* web_contents) {
-  web_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
-  web_contents->SyncRendererPrefs();
-  web_contents->NotifyPreferencesChanged();
-}
-
-content::WebContents* ShowWebApplicationWindow(
-    const apps::AppLaunchParams& params,
-    const GURL& default_url,
+content::WebContents* NavigateWebApplicationWindow(
     Browser* browser,
+    const GURL& url,
     WindowOpenDisposition disposition) {
-  web_app::FileHandlerManager& file_handler_manager =
-      web_app::WebAppProviderBase::GetProviderBase(browser->profile())
-          ->file_handler_manager();
-  const GURL url =
-      file_handler_manager
-          .GetMatchingFileHandlerURL(params.app_id, params.launch_files)
-          .value_or(default_url);
-
   NavigateParams nav_params(browser, url, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
   nav_params.disposition = disposition;
   Navigate(&nav_params);
-
-  content::WebContents* web_contents =
-      nav_params.navigated_or_inserted_contents;
-
-  SetWebAppPrefsForWebContents(web_contents);
-
-  WebAppTabHelper* tab_helper = WebAppTabHelper::FromWebContents(web_contents);
-  DCHECK(tab_helper);
-  tab_helper->SetAppId(params.app_id);
-
-  browser->window()->Show();
-  web_contents->SetInitialFocus();
-
-  if (base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI)) {
-    web_launch::WebLaunchFilesHelper::SetLaunchPaths(web_contents, url,
-                                                     params.launch_files);
-  }
-
-  return web_contents;
+  return nav_params.navigated_or_inserted_contents;
 }
 
 }  // namespace
@@ -107,9 +74,15 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
   if (params.container == apps::mojom::LaunchContainer::kLaunchContainerWindow)
     RecordAppWindowLaunch(profile(), params.app_id);
 
-  const GURL url = params.override_url.is_empty()
-                       ? provider_->registrar().GetAppLaunchURL(params.app_id)
-                       : params.override_url;
+  web_app::FileHandlerManager& file_handler_manager =
+      provider_->file_handler_manager();
+
+  const GURL url =
+      params.override_url.is_empty()
+          ? file_handler_manager
+                .GetMatchingFileHandlerURL(params.app_id, params.launch_files)
+                .value_or(provider_->registrar().GetAppLaunchURL(params.app_id))
+          : params.override_url;
 
   // System Web Apps go through their own launch path.
   base::Optional<SystemAppType> system_app_type =
@@ -122,8 +95,21 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
 
   Browser* browser = CreateWebApplicationWindow(profile(), params.app_id);
 
-  content::WebContents* web_contents = ShowWebApplicationWindow(
-      params, url, browser, WindowOpenDisposition::NEW_FOREGROUND_TAB);
+  content::WebContents* web_contents = NavigateWebApplicationWindow(
+      browser, url, WindowOpenDisposition::NEW_FOREGROUND_TAB);
+
+  // TODO(https://crbug.com/1032443):
+  // Eventually move this to browser_navigator.cc: CreateTargetContents().
+  WebAppTabHelper* tab_helper = WebAppTabHelper::FromWebContents(web_contents);
+  DCHECK(tab_helper);
+  tab_helper->SetAppId(params.app_id);
+
+  if (base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI)) {
+    web_launch::WebLaunchFilesHelper::SetLaunchPaths(web_contents, url,
+                                                     params.launch_files);
+  }
+
+  browser->window()->Show();
 
   // TODO(crbug.com/1014328): Populate WebApp metrics instead of Extensions.
 

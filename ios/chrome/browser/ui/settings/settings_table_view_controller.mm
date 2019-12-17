@@ -999,8 +999,8 @@ NSString* kDevViewSourceKey = @"DevViewSource";
     googleServicesItem.detailText = nil;
     googleServicesItem.image =
         [UIImage imageNamed:kSyncAndGoogleServicesImageName];
-  } else if (syncService->GetDisableReasons() &
-             syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY) {
+  } else if (syncService->GetDisableReasons().Has(
+                 syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY)) {
     googleServicesItem.detailText = l10n_util::GetNSString(
         IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_DISABLBED_BY_ADMINISTRATOR_STATUS);
     googleServicesItem.image =

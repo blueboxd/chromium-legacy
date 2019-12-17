@@ -80,8 +80,11 @@ class ActionDelegate {
       base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
   // Wait for up to |max_wait_time| for element conditions to match on the page,
-  // then call |callback| with a successful status if at least an element
-  // matched, an error status otherwise.
+  // then call |callback| with the last status.
+  //
+  // |check_elements| should register the elements to check, process their state
+  // and reports its decision to the callback it's passed. WaitForDom retries as
+  // long as the decision is not OK, and max_wait_time is not reached.
   //
   // If |allow_interrupt| interrupts can run while waiting.
   virtual void WaitForDom(

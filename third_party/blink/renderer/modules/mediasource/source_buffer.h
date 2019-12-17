@@ -126,7 +126,7 @@ class SourceBuffer final : public EventTargetWithInlineData,
   bool EvictCodedFrames(double media_time, size_t new_data_size);
   void AppendBufferInternal(double media_time,
                             const unsigned char*,
-                            unsigned,
+                            size_t,
                             ExceptionState&);
   void AppendBufferAsyncPart();
   void AppendError();

@@ -85,6 +85,9 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
   }
   virtual const CSSProperty* GetVisitedProperty() const { return nullptr; }
   virtual const CSSProperty* GetUnvisitedProperty() const { return nullptr; }
+
+  virtual const CSSProperty* GetUAProperty() const { return nullptr; }
+
   static void FilterWebExposedCSSPropertiesIntoVector(
       const CSSPropertyID*,
       size_t length,
@@ -104,7 +107,12 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
     // seen by CSSOM, which is represented by the unvisited property).
     kVisited = 1 << 7,
     kInternal = 1 << 8,
-    kIsAffectedByForcedColors = 1 << 9
+    kIsAffectedByForcedColors = 1 << 9,
+    // A UA property represents a property as styled by the user-agent.
+    // For example, -internal-ua-background-color contains the value
+    // 'background-color' would have had without any user or author
+    // declarations.
+    kUA = 1 << 10,
   };
 
   constexpr CSSProperty(CSSPropertyID property_id,

@@ -34,10 +34,7 @@
 #include <string.h>
 
 #include "base/time/time.h"
-#include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_pointer_properties.h"
-#include "third_party/blink/public/platform/web_rect.h"
-#include "third_party/blink/public/platform/web_touch_point.h"
+#include "third_party/blink/public/platform/web_float_point.h"
 
 namespace blink {
 

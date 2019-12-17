@@ -2053,7 +2053,7 @@ TEST_F(DesksTest, AutohiddenShelfAnimatesAfterDeskSwitch) {
   ShelfWidget* shelf_widget = shelf->shelf_widget();
   const gfx::Rect shown_shelf_bounds = shelf_widget->GetWindowBoundsInScreen();
 
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
 
   // Enable animations so that we can make sure that they occur.
   ui::ScopedAnimationDurationScaleMode regular_animations(

@@ -8,6 +8,8 @@ source_set("metrics") {
     "aw_metrics_log_uploader.h",
     "aw_metrics_service_client.cc",
     "aw_metrics_service_client.h",
+    "aw_stability_metrics_provider.cc",
+    "aw_stability_metrics_provider.h",
     "memory_metrics_logger.cc",
     "memory_metrics_logger.h",
   ]

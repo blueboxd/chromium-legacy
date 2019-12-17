@@ -71,8 +71,14 @@ ScriptPromise InflateTransformer::Transform(
   DCHECK(buffer_source.IsArrayBuffer());
   const auto* array_buffer = buffer_source.GetAsArrayBuffer();
   const uint8_t* start = static_cast<const uint8_t*>(array_buffer->Data());
-  wtf_size_t length = array_buffer->DeprecatedByteLengthAsUnsigned();
-  Inflate(start, length, IsFinished(false), controller, exception_state);
+  size_t length = array_buffer->ByteLengthAsSizeT();
+  if (length > std::numeric_limits<wtf_size_t>::max()) {
+    exception_state.ThrowRangeError(
+        "Buffer size exceeds maximum heap object size.");
+    return ScriptPromise();
+  }
+  Inflate(start, static_cast<wtf_size_t>(length), IsFinished(false), controller,
+          exception_state);
 
   return ScriptPromise::CastUndefined(script_state_);
 }

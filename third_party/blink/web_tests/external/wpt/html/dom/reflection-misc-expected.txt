@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 4879 tests; 4862 PASS, 17 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 4891 tests; 4874 PASS, 17 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS html.title: 38 tests
 PASS html.lang: 38 tests
 PASS html.dir: 68 tests
@@ -22,7 +22,7 @@ PASS script.type: 38 tests
 PASS script.noModule: 39 tests
 PASS script.charset: 38 tests
 PASS script.defer: 39 tests
-PASS script.crossOrigin: 58 tests
+PASS script.crossOrigin: 62 tests
 PASS script.nonce: 20 tests
 FAIL script.nonce: IDL set to "" assert_equals: getAttribute() expected "" but got "test-valueOf"
 FAIL script.nonce: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: getAttribute() expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got "test-valueOf"
@@ -133,7 +133,7 @@ PASS undefinedelement.autofocus: 39 tests
 PASS undefinedelement.hidden: 39 tests
 PASS undefinedelement.accessKey: 38 tests
 PASS undefinedelement.tabIndex: 26 tests
-PASS undefinedelement.enterKeyHint: 108 tests
-PASS undefinedelement.inputMode: 118 tests
+PASS undefinedelement.enterKeyHint: 114 tests
+PASS undefinedelement.inputMode: 120 tests
 Harness: the test ran to completion.
 

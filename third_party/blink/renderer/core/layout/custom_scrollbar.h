@@ -45,10 +45,6 @@ class LayoutObject;
 // LayoutCustomScrollbarPart.
 class CustomScrollbar final : public Scrollbar {
  public:
-  static Scrollbar* CreateCustomScrollbar(ScrollableArea*,
-                                          ScrollbarOrientation,
-                                          Element*);
-
   CustomScrollbar(ScrollableArea*, ScrollbarOrientation, Element*);
   ~CustomScrollbar() override;
 

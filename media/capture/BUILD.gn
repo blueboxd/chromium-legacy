@@ -17,6 +17,15 @@ group("capture") {
   ]
 }
 
+component("capture_switches") {
+  defines = [ "CAPTURE_IMPLEMENTATION" ]
+  sources = [
+    "capture_export.h",
+    "capture_switches.cc",
+    "capture_switches.h",
+  ]
+}
+
 # Things needed by //media/capture/mojom/video_capture_types.mojom.
 jumbo_component("capture_base") {
   defines = [ "CAPTURE_IMPLEMENTATION" ]

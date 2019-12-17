@@ -39,6 +39,7 @@ static_assert(sizeof(NGLayoutResult) == sizeof(SameSizeAsNGLayoutResult),
 }  // namespace
 
 NGLayoutResult::NGLayoutResult(
+    NGBoxFragmentBuilderPassKey passkey,
     scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
     NGBoxFragmentBuilder* builder)
     : NGLayoutResult(std::move(physical_fragment),
@@ -81,12 +82,15 @@ NGLayoutResult::NGLayoutResult(
 }
 
 NGLayoutResult::NGLayoutResult(
+    NGLineBoxFragmentBuilderPassKey passkey,
     scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
     NGLineBoxFragmentBuilder* builder)
     : NGLayoutResult(std::move(physical_fragment),
                      static_cast<NGContainerFragmentBuilder*>(builder)) {}
 
-NGLayoutResult::NGLayoutResult(EStatus status, NGBoxFragmentBuilder* builder)
+NGLayoutResult::NGLayoutResult(NGBoxFragmentBuilderPassKey key,
+                               EStatus status,
+                               NGBoxFragmentBuilder* builder)
     : NGLayoutResult(/* physical_fragment */ nullptr,
                      static_cast<NGContainerFragmentBuilder*>(builder)) {
   bitfields_.status = status;

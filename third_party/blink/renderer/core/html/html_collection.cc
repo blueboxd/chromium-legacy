@@ -277,13 +277,13 @@ inline bool HTMLCollection::ElementMatches(const Element& element) const {
     case kNodeChildren:
       return true;
     case kClassCollectionType:
-      return ToClassCollection(*this).ElementMatches(element);
+      return To<ClassCollection>(*this).ElementMatches(element);
     case kTagCollectionType:
-      return ToTagCollection(*this).ElementMatches(element);
+      return To<TagCollection>(*this).ElementMatches(element);
     case kHTMLTagCollectionType:
       return ToHTMLTagCollection(*this).ElementMatches(element);
     case kTagCollectionNSType:
-      return ToTagCollectionNS(*this).ElementMatches(element);
+      return To<TagCollectionNS>(*this).ElementMatches(element);
     case kWindowNamedItems:
       return ToWindowNameCollection(*this).ElementMatches(element);
     case kDocumentAllNamedItems:
@@ -355,7 +355,7 @@ Element* HTMLCollection::TraverseToFirst() const {
           RootNode(), MakeIsMatch(ToHTMLTagCollection(*this)));
     case kClassCollectionType:
       return ElementTraversal::FirstWithin(
-          RootNode(), MakeIsMatch(ToClassCollection(*this)));
+          RootNode(), MakeIsMatch(To<ClassCollection>(*this)));
     default:
       if (OverridesItemAfter())
         return VirtualItemAfter(nullptr);
@@ -385,7 +385,7 @@ Element* HTMLCollection::TraverseForwardToOffset(
     case kClassCollectionType:
       return TraverseMatchingElementsForwardToOffset(
           current_element, &RootNode(), offset, current_offset,
-          MakeIsMatch(ToClassCollection(*this)));
+          MakeIsMatch(To<ClassCollection>(*this)));
     default:
       if (OverridesItemAfter()) {
         for (Element* next = VirtualItemAfter(&current_element); next;

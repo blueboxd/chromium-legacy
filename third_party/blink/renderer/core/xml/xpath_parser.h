@@ -84,9 +84,6 @@ class Parser {
   Member<Expression> top_expr_;
   bool got_namespace_error_;
 
-  void RegisterString(String*);
-  void DeleteString(String*);
-
  private:
   bool IsBinaryOperatorContext() const;
 
@@ -114,7 +111,6 @@ class Parser {
   int last_token_type_;
   Member<XPathNSResolver> resolver_;
 
-  HashSet<std::unique_ptr<String>> strings_;
   DISALLOW_COPY_AND_ASSIGN(Parser);
 };
 
@@ -122,5 +118,4 @@ class Parser {
 
 }  // namespace blink
 
-int xpathyyparse(blink::xpath::Parser*);
 #endif

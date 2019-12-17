@@ -34,10 +34,6 @@ class USB final : public EventTargetWithInlineData,
   USING_PRE_FINALIZER(USB, Dispose);
 
  public:
-  static USB* Create(ExecutionContext& context) {
-    return MakeGarbageCollected<USB>(context);
-  }
-
   explicit USB(ExecutionContext&);
   ~USB() override;
 

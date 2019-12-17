@@ -1004,12 +1004,15 @@ scoped_refptr<Gradient> CSSLinearGradientValue::CreateGradient(
 }
 
 bool CSSLinearGradientValue::Equals(const CSSLinearGradientValue& other) const {
-  if (gradient_type_ == kCSSDeprecatedLinearGradient)
-    return other.gradient_type_ == gradient_type_ &&
-           DataEquivalent(first_x_, other.first_x_) &&
+  if (gradient_type_ != other.gradient_type_)
+    return false;
+
+  if (gradient_type_ == kCSSDeprecatedLinearGradient) {
+    return DataEquivalent(first_x_, other.first_x_) &&
            DataEquivalent(first_y_, other.first_y_) &&
            DataEquivalent(second_x_, other.second_x_) &&
            DataEquivalent(second_y_, other.second_y_) && stops_ == other.stops_;
+  }
 
   if (repeating_ != other.repeating_)
     return false;

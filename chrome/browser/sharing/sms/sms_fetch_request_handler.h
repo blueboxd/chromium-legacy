@@ -9,8 +9,8 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
+#include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
-#include "components/sync/protocol/sharing_message.pb.h"
 #include "content/public/browser/sms_fetcher.h"
 #include "url/origin.h"
 

@@ -2038,7 +2038,7 @@ void Document::SetContent(const String& content) {
 }
 
 String Document::SuggestedMIMEType() const {
-  if (IsXMLDocument()) {
+  if (IsA<XMLDocument>(this)) {
     if (IsXHTMLDocument())
       return "application/xhtml+xml";
     if (IsSVGDocument())
@@ -5157,7 +5157,7 @@ Document* Document::CloneDocumentWithoutChildren() const {
                           .WithContextDocument(ContextDocument())
                           .WithOwnerDocument(const_cast<Document*>(this))
                           .WithURL(Url());
-  if (IsXMLDocument()) {
+  if (IsA<XMLDocument>(this)) {
     if (IsXHTMLDocument())
       return XMLDocument::CreateXHTML(
           init.WithRegistrationContext(RegistrationContext()));

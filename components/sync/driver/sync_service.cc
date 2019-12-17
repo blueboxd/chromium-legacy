@@ -35,8 +35,7 @@ bool SyncService::IsSyncFeatureEnabled() const {
 }
 
 bool SyncService::CanSyncFeatureStart() const {
-  return GetDisableReasons() == DISABLE_REASON_NONE &&
-         IsAuthenticatedAccountPrimary();
+  return GetDisableReasons().Empty() && IsAuthenticatedAccountPrimary();
 }
 
 bool SyncService::IsEngineInitialized() const {

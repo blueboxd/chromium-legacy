@@ -19,6 +19,7 @@
 #include "ui/gfx/range/range.h"
 
 namespace gfx {
+class Insets;
 class Point;
 class Rect;
 class Size;

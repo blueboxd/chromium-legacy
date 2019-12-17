@@ -11,6 +11,7 @@
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
+#include "base/timer/timer.h"
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
 #include "components/autofill_assistant/browser/web/mock_web_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -42,10 +43,8 @@ class PromptActionTest : public testing::Test {
     ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
         .WillByDefault(RunOnceCallback<1>(ClientStatus(), ""));
 
-    ON_CALL(mock_action_delegate_, RunElementChecks)
-        .WillByDefault(Invoke([this](BatchElementChecker* checker) {
-          checker->Run(&mock_web_controller_);
-        }));
+    EXPECT_CALL(mock_action_delegate_, OnWaitForDom(_, _, _, _))
+        .WillRepeatedly(Invoke(this, &PromptActionTest::FakeWaitForDom));
     ON_CALL(mock_action_delegate_, Prompt(_))
         .WillByDefault(Invoke(
             [this](std::unique_ptr<std::vector<UserAction>> user_actions) {
@@ -55,6 +54,65 @@ class PromptActionTest : public testing::Test {
   }
 
  protected:
+  // Fakes ActionDelegate::WaitForDom.
+  //
+  // This simulates a WaitForDom that calls |check_elements_| every seconds
+  // until it gets a successful callback, then calls done_waiting_callback.
+  void FakeWaitForDom(
+      base::TimeDelta max_wait_time,
+      bool allow_interrupt,
+      base::RepeatingCallback<
+          void(BatchElementChecker*,
+               base::OnceCallback<void(const ClientStatus&)>)>& check_elements,
+      base::OnceCallback<void(const ClientStatus&)>& done_waiting_callback) {
+    RunFakeWaitForDom(check_elements, std::move(done_waiting_callback));
+  }
+
+  void RunFakeWaitForDom(
+      base::RepeatingCallback<
+          void(BatchElementChecker*,
+               base::OnceCallback<void(const ClientStatus&)>)> check_elements,
+      base::OnceCallback<void(const ClientStatus&)> done_waiting_callback) {
+    checker_ = std::make_unique<BatchElementChecker>();
+    has_check_elements_result_ = false;
+    check_elements.Run(checker_.get(),
+                       base::BindOnce(&PromptActionTest::OnCheckElementsDone,
+                                      base::Unretained(this)));
+    checker_->AddAllDoneCallback(base::BindOnce(
+        &PromptActionTest::OnWaitForDomDone, base::Unretained(this),
+        check_elements, std::move(done_waiting_callback)));
+    checker_->Run(&mock_web_controller_);
+  }
+
+  // Called from the check_elements callback passed to FakeWaitForDom.
+  void OnCheckElementsDone(const ClientStatus& result) {
+    ASSERT_FALSE(has_check_elements_result_);  // Duplicate calls
+    has_check_elements_result_ = true;
+    check_elements_result_ = result;
+  }
+
+  // Called by |checker_| once it's done and either ends the WaitForDom or
+  // schedule another run.
+  void OnWaitForDomDone(
+      base::RepeatingCallback<
+          void(BatchElementChecker*,
+               base::OnceCallback<void(const ClientStatus&)>)> check_elements,
+      base::OnceCallback<void(const ClientStatus&)> done_waiting_callback) {
+    ASSERT_TRUE(
+        has_check_elements_result_);  // OnCheckElementsDone() not called
+
+    if (check_elements_result_.ok()) {
+      std::move(done_waiting_callback).Run(check_elements_result_);
+    } else {
+      wait_for_dom_timer_ = std::make_unique<base::OneShotTimer>();
+      wait_for_dom_timer_->Start(
+          FROM_HERE, base::TimeDelta::FromSeconds(1),
+          base::BindOnce(&PromptActionTest::RunFakeWaitForDom,
+                         base::Unretained(this), check_elements,
+                         std::move(done_waiting_callback)));
+    }
+  }
+
   // task_env_ must be first to guarantee other field
   // creation run in that environment.
   base::test::TaskEnvironment task_env_;
@@ -65,6 +123,10 @@ class PromptActionTest : public testing::Test {
   ActionProto proto_;
   PromptProto* prompt_proto_;
   std::unique_ptr<std::vector<UserAction>> user_actions_;
+  std::unique_ptr<BatchElementChecker> checker_;
+  bool has_check_elements_result_ = false;
+  ClientStatus check_elements_result_;
+  std::unique_ptr<base::OneShotTimer> wait_for_dom_timer_;
 };
 
 TEST_F(PromptActionTest, ChoicesMissing) {
@@ -185,7 +247,7 @@ TEST_F(PromptActionTest, DisabledUnlessElementExists) {
   EXPECT_TRUE((*user_actions_)[0].HasCallback());
 }
 
-TEST_F(PromptActionTest, AutoSelect) {
+TEST_F(PromptActionTest, AutoSelectWhenElementExists) {
   auto* choice_proto = prompt_proto_->add_choices();
   choice_proto->set_server_payload("auto-select");
   choice_proto->mutable_auto_select_if_element_exists()->add_selectors(

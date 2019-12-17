@@ -926,11 +926,10 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
       frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
   }
 
-  // If we have a provisional request for a different document, a fragment
+  // If we have a client navigation for a different document, a fragment
   // scroll should cancel it.
   // Note: see fragment-change-does-not-cancel-pending-navigation, where
   // this does not actually happen.
-  GetFrameLoader().DetachProvisionalDocumentLoader();
   GetFrameLoader().DidFinishNavigation(
       FrameLoader::NavigationFinishState::kSuccess);
 

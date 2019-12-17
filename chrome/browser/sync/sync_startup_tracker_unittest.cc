@@ -24,7 +24,7 @@ class SyncStartupTrackerTest : public testing::Test {
   SyncStartupTrackerTest() {}
 
   void SetupNonInitializedPSS() {
-    sync_service_.SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
+    sync_service_.SetDisableReasons(syncer::SyncService::DisableReasonSet());
     sync_service_.SetTransportState(
         syncer::SyncService::TransportState::INITIALIZING);
   }
@@ -34,7 +34,7 @@ class SyncStartupTrackerTest : public testing::Test {
 };
 
 TEST_F(SyncStartupTrackerTest, SyncAlreadyInitialized) {
-  sync_service_.SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
+  sync_service_.SetDisableReasons(syncer::SyncService::DisableReasonSet());
   sync_service_.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
   EXPECT_CALL(observer_, SyncStartupCompleted());
   SyncStartupTracker tracker(&sync_service_, &observer_);
@@ -54,7 +54,7 @@ TEST_F(SyncStartupTrackerTest, SyncNotSignedIn) {
 TEST_F(SyncStartupTrackerTest, SyncAuthError) {
   // Make sure that we get a SyncStartupFailed() callback if sync gets an auth
   // error.
-  sync_service_.SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
+  sync_service_.SetDisableReasons(syncer::SyncService::DisableReasonSet());
   sync_service_.SetTransportState(
       syncer::SyncService::TransportState::INITIALIZING);
   sync_service_.SetAuthError(
@@ -86,7 +86,7 @@ TEST_F(SyncStartupTrackerTest, SyncDelayedAuthError) {
   Mock::VerifyAndClearExpectations(&sync_service_);
 
   // Now, mark the PSS as having an auth error.
-  sync_service_.SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
+  sync_service_.SetDisableReasons(syncer::SyncService::DisableReasonSet());
   sync_service_.SetTransportState(
       syncer::SyncService::TransportState::INITIALIZING);
   sync_service_.SetAuthError(

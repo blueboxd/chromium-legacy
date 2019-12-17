@@ -18,11 +18,15 @@ class UsbInternalsUI : public ui::MojoWebUIController {
   explicit UsbInternalsUI(content::WebUI* web_ui);
   ~UsbInternalsUI() override;
 
- private:
-  void BindUsbInternalsPageHandler(
+  // Instantiates the implementor of the mojom::UsbInternalsPageHandler mojo
+  // interface passing the pending receiver that will be internally bound.
+  void BindInterface(
       mojo::PendingReceiver<mojom::UsbInternalsPageHandler> receiver);
 
+ private:
   std::unique_ptr<UsbInternalsPageHandler> page_handler_;
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(UsbInternalsUI);
 };

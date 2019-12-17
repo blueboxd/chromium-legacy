@@ -249,6 +249,7 @@ source_set("chromeos") {
     "//gpu/ipc/host",
     "//gpu/ipc/service",
     "//media",
+    "//media/capture:capture_switches",
     "//media/mojo/mojom",
     "//mojo/public/cpp/platform",
     "//mojo/public/cpp/system",

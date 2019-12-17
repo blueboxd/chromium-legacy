@@ -94,7 +94,7 @@ class CollisionDetectionUtilsDisplayTest
     scoped_root_.reset(new ScopedRootWindowForNewWindows(root_window_));
     for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
       auto* shelf = root_window_controller->shelf();
-      shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
+      shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlwaysHidden);
     }
   }
 
@@ -311,7 +311,7 @@ TEST_P(CollisionDetectionUtilsDisplayTest, GetRestingPositionAvoidsKeyboard) {
 
 TEST_P(CollisionDetectionUtilsDisplayTest, AutoHideShownShelfAffectsWindow) {
   auto* shelf = Shelf::ForWindow(root_window());
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 
   auto shelf_bounds = shelf->GetWindow()->GetBoundsInScreen();

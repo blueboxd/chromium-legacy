@@ -60,7 +60,9 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/test/fake_server/fake_server.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -216,6 +218,8 @@ class SaveCardBubbleViewsFullFormBrowserTest
         browser()->profile(), username, "password",
         ProfileSyncServiceHarness::SigninType::FAKE_SIGNIN);
 
+    content::BackForwardCacheDisabledTester back_forward_cache_disabled_tester;
+
     // Set up the URL loader factory for the payments client so we can intercept
     // those network requests too.
     test_shared_loader_factory_ =
@@ -227,6 +231,11 @@ class SaveCardBubbleViewsFullFormBrowserTest
         ->client()
         ->GetPaymentsClient()
         ->set_url_loader_factory_for_testing(test_shared_loader_factory_);
+
+    EXPECT_TRUE(back_forward_cache_disabled_tester.IsDisabledForFrameWithReason(
+        GetActiveWebContents()->GetMainFrame()->GetProcess()->GetID(),
+        GetActiveWebContents()->GetMainFrame()->GetRoutingID(),
+        "autofill::ContentAutofillDriver"));
 
     // Set up this class as the ObserverForTest implementation.
     credit_card_save_manager_ = ContentAutofillDriver::GetForRenderFrameHost(

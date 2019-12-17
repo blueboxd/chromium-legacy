@@ -54,8 +54,14 @@ class ASH_EXPORT HotseatWidget : public views::Widget,
   // Notifies children of tablet mode state changes.
   void OnTabletModeChanged();
 
+  // Returns the target opacity (between 0 and 1) given current conditions.
+  float CalculateOpacity();
+
   // Updates the opaque background which functions as the hotseat background.
   void UpdateOpaqueBackground();
+
+  // Updates this widget's layout according to current conditions.
+  void UpdateLayout();
 
   gfx::Size GetOpaqueBackgroundSize() const;
 

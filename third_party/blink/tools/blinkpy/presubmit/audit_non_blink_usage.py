@@ -597,6 +597,12 @@ _CONFIG = [
         ],
     },
     {
+        'paths': ['third_party/blink/renderer/core/xml'],
+        'allowed': [
+            'xpathyy::.+',
+        ],
+    },
+    {
         'paths': [
             'third_party/blink/renderer/modules/device_orientation/',
             'third_party/blink/renderer/modules/gamepad/',

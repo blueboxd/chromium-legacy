@@ -116,13 +116,6 @@ ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
 }
 
-float CalculateHotseatTargetOpacity(HotseatWidget* hotseat_widget,
-                                    float target_opacity) {
-  return (hotseat_widget->state() == HotseatState::kExtended)
-             ? kDefaultShelfOpacity
-             : target_opacity;
-}
-
 void SetupAnimator(ui::ScopedLayerAnimationSettings* animation_setter,
                    base::TimeDelta animation_duration,
                    gfx::Tween::Type type) {
@@ -532,7 +525,7 @@ void ShelfLayoutManager::UpdateVisibilityState() {
     SetState(SHELF_HIDDEN);
   } else {
     // TODO(zelidrag): Verify shelf drag animation still shows on the device
-    // when we are in SHELF_AUTO_HIDE_ALWAYS_HIDDEN.
+    // when we are in ShelfAutoHideBehavior::kAlwaysHidden.
     switch (window_state) {
       case WorkspaceWindowState::kFullscreen:
         if (IsShelfAutoHideForFullscreenMaximized()) {
@@ -1075,6 +1068,13 @@ gfx::Rect ShelfLayoutManager::GetNavigationBounds() const {
   return nav_bounds;
 }
 
+gfx::Rect ShelfLayoutManager::GetHotseatBounds() const {
+  gfx::Vector2d offset = target_bounds_.shelf_bounds.OffsetFromOrigin();
+  gfx::Rect hotseat_bounds = target_bounds_.hotseat_bounds_in_shelf;
+  hotseat_bounds.Offset(offset);
+  return hotseat_bounds;
+}
+
 gfx::Rect ShelfLayoutManager::GetStatusAreaBounds() const {
   gfx::Vector2d offset = target_bounds_.shelf_bounds.OffsetFromOrigin();
   gfx::Rect status_bounds = target_bounds_.status_bounds_in_shelf;
@@ -1398,11 +1398,11 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
 
 ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
   switch (shelf_->auto_hide_behavior()) {
-    case SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
+    case ShelfAutoHideBehavior::kAlways:
       return SHELF_AUTO_HIDE;
-    case SHELF_AUTO_HIDE_BEHAVIOR_NEVER:
+    case ShelfAutoHideBehavior::kNever:
       return SHELF_VISIBLE;
-    case SHELF_AUTO_HIDE_ALWAYS_HIDDEN:
+    case ShelfAutoHideBehavior::kAlwaysHidden:
       return SHELF_HIDDEN;
   }
   return SHELF_VISIBLE;
@@ -1437,8 +1437,7 @@ void ShelfLayoutManager::SetDimmed(bool dimmed) {
                  kDimAnimationDuration, gfx::Tween::LINEAR);
 
   AnimateOpacity(shelf_widget_->hotseat_widget(),
-                 CalculateHotseatTargetOpacity(shelf_widget_->hotseat_widget(),
-                                               target_bounds_.opacity),
+                 shelf_widget_->hotseat_widget()->CalculateOpacity(),
                  kDimAnimationDuration, gfx::Tween::LINEAR);
 
   AnimateOpacity(shelf_widget_->status_area_widget(), target_bounds_.opacity,
@@ -1468,8 +1467,6 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
   {
     ui::ScopedLayerAnimationSettings shelf_animation_setter(
         GetLayer(shelf_widget_)->GetAnimator());
-    ui::ScopedLayerAnimationSettings hotseat_animation_setter(
-        GetLayer(hotseat_widget)->GetAnimator());
 
     if (hide_animation_observer_)
       shelf_animation_setter.AddObserver(hide_animation_observer_.get());
@@ -1485,17 +1482,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     gfx::Rect shelf_bounds = target_bounds_.shelf_bounds;
     shelf_widget_->SetBounds(shelf_bounds);
 
-    SetupAnimator(&hotseat_animation_setter, animation_duration,
-                  gfx::Tween::EASE_OUT);
-    GetLayer(hotseat_widget)
-        ->SetOpacity(CalculateHotseatTargetOpacity(hotseat_widget,
-                                                   target_bounds_.opacity));
-
-    gfx::Vector2d hotseat_offset =
-        target_bounds_.shelf_bounds.OffsetFromOrigin();
-    gfx::Rect hotseat_bounds = target_bounds_.hotseat_bounds_in_shelf;
-    hotseat_bounds.Offset(hotseat_offset);
-    hotseat_widget->SetBounds(hotseat_bounds);
+    hotseat_widget->UpdateLayout();
 
     // Having a window which is visible but does not have an opacity is an
     // illegal state. We therefore hide the shelf here if required.

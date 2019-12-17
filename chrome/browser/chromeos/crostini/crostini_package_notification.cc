@@ -157,8 +157,6 @@ CrostiniPackageNotification::GetNotificationSettingsForTypeAndAppName(
   return result;
 }
 
-// TODO(timloh): This doesn't get called if the user shuts down Crostini, so
-// the notification will be stuck at whatever percentage it is at.
 void CrostiniPackageNotification::UpdateProgress(
     PackageOperationStatus status,
     int progress_percent,

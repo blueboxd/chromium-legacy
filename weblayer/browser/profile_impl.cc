@@ -21,14 +21,13 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
-#include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "weblayer/browser/download_manager_delegate_impl.h"
 #include "weblayer/browser/ssl_host_state_delegate_impl.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/common/weblayer_paths.h"
-#include "weblayer/public/download_delegate.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/callback_android.h"
@@ -57,37 +56,6 @@ class ResourceContextImpl : public content::ResourceContext {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ResourceContextImpl);
-};
-
-class DownloadManagerDelegateImpl : public content::DownloadManagerDelegate {
- public:
-  DownloadManagerDelegateImpl() = default;
-  ~DownloadManagerDelegateImpl() override = default;
-
-  bool InterceptDownloadIfApplicable(
-      const GURL& url,
-      const std::string& user_agent,
-      const std::string& content_disposition,
-      const std::string& mime_type,
-      const std::string& request_origin,
-      int64_t content_length,
-      bool is_transient,
-      content::WebContents* web_contents) override {
-    // If there's no DownloadDelegate, the download is simply dropped.
-    auto* tab = TabImpl::FromWebContents(web_contents);
-    if (!tab)
-      return true;
-
-    DownloadDelegate* delegate = tab->download_delegate();
-    if (!delegate)
-      return true;
-
-    return delegate->InterceptDownload(url, user_agent, content_disposition,
-                                       mime_type, content_length);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DownloadManagerDelegateImpl);
 };
 
 bool IsNameValid(const std::string& name) {

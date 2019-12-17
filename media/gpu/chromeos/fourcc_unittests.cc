@@ -118,7 +118,9 @@ TEST(FourccTest, VideoPixelFormatToV4L2PixFmt) {
 static void CheckFromVAFourCCAndBack(uint32_t va_fourcc) {
   base::Optional<Fourcc> fourcc = Fourcc::FromVAFourCC(va_fourcc);
   EXPECT_NE(fourcc, base::nullopt);
-  EXPECT_EQ(fourcc->ToVAFourCC(), va_fourcc);
+  base::Optional<uint32_t> to_va_fourcc = fourcc->ToVAFourCC();
+  EXPECT_NE(to_va_fourcc, base::nullopt);
+  EXPECT_EQ(*to_va_fourcc, va_fourcc);
 }
 
 TEST(FourccTest, FromVaFourCCAndBack) {
@@ -157,23 +159,23 @@ TEST(FourccTest, VAFourCCToVideoPixelFormat) {
 
 TEST(FourccTest, VideoPixelFormatToVAFourCC) {
   EXPECT_EQ(static_cast<uint32_t>(VA_FOURCC_I420),
-            Fourcc::FromVideoPixelFormat(PIXEL_FORMAT_I420)->ToVAFourCC());
+            *Fourcc::FromVideoPixelFormat(PIXEL_FORMAT_I420)->ToVAFourCC());
   EXPECT_EQ(static_cast<uint32_t>(VA_FOURCC_NV12),
-            Fourcc::FromVideoPixelFormat(PIXEL_FORMAT_NV12)->ToVAFourCC());
+            *Fourcc::FromVideoPixelFormat(PIXEL_FORMAT_NV12)->ToVAFourCC());
   EXPECT_EQ(static_cast<uint32_t>(VA_FOURCC_NV21),
-            Fourcc::FromVideoPixelFormat(PIXEL_FORMAT_NV21)->ToVAFourCC());
+            *Fourcc::FromVideoPixelFormat(PIXEL_FORMAT_NV21)->ToVAFourCC());
   EXPECT_EQ(static_cast<uint32_t>(VA_FOURCC_YV12),
-            Fourcc::FromVideoPixelFormat(PIXEL_FORMAT_YV12)->ToVAFourCC());
+            *Fourcc::FromVideoPixelFormat(PIXEL_FORMAT_YV12)->ToVAFourCC());
   EXPECT_EQ(static_cast<uint32_t>(VA_FOURCC_YUY2),
-            Fourcc::FromVideoPixelFormat(PIXEL_FORMAT_YUY2)->ToVAFourCC());
+            *Fourcc::FromVideoPixelFormat(PIXEL_FORMAT_YUY2)->ToVAFourCC());
   EXPECT_EQ(static_cast<uint32_t>(VA_FOURCC_RGBA),
-            Fourcc::FromVideoPixelFormat(PIXEL_FORMAT_ABGR)->ToVAFourCC());
+            *Fourcc::FromVideoPixelFormat(PIXEL_FORMAT_ABGR)->ToVAFourCC());
   EXPECT_EQ(static_cast<uint32_t>(VA_FOURCC_RGBX),
-            Fourcc::FromVideoPixelFormat(PIXEL_FORMAT_XBGR)->ToVAFourCC());
+            *Fourcc::FromVideoPixelFormat(PIXEL_FORMAT_XBGR)->ToVAFourCC());
   EXPECT_EQ(static_cast<uint32_t>(VA_FOURCC_BGRA),
-            Fourcc::FromVideoPixelFormat(PIXEL_FORMAT_ARGB)->ToVAFourCC());
+            *Fourcc::FromVideoPixelFormat(PIXEL_FORMAT_ARGB)->ToVAFourCC());
   EXPECT_EQ(static_cast<uint32_t>(VA_FOURCC_BGRX),
-            Fourcc::FromVideoPixelFormat(PIXEL_FORMAT_XRGB)->ToVAFourCC());
+            *Fourcc::FromVideoPixelFormat(PIXEL_FORMAT_XRGB)->ToVAFourCC());
 }
 #endif  // BUILDFLAG(USE_VAAPI)
 

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/gpu/v4l2/v4l2_image_processor.h"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
@@ -11,24 +13,19 @@
 #include <sys/mman.h>
 
 #include <limits>
-#include <tuple>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/sequenced_task_runner.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "media/base/color_plane_layout.h"
 #include "media/base/scopedfd_helper.h"
-#include "media/base/video_types.h"
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/macros.h"
-#include "media/gpu/v4l2/v4l2_image_processor.h"
 
 #define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value, type_str) \
   do {                                                          \
@@ -38,17 +35,8 @@
     }                                                           \
   } while (0)
 
-#define IOCTL_OR_ERROR_RETURN(type, arg) \
-  IOCTL_OR_ERROR_RETURN_VALUE(type, arg, ((void)0), #type)
-
 #define IOCTL_OR_ERROR_RETURN_FALSE(type, arg) \
   IOCTL_OR_ERROR_RETURN_VALUE(type, arg, false, #type)
-
-#define IOCTL_OR_LOG_ERROR(type, arg)           \
-  do {                                          \
-    if (device_->Ioctl(type, arg) != 0)         \
-      VPLOGF(1) << "ioctl() failed: " << #type; \
-  } while (0)
 
 namespace media {
 
@@ -58,74 +46,41 @@ V4L2ImageProcessor::JobRecord::JobRecord()
 V4L2ImageProcessor::JobRecord::~JobRecord() = default;
 
 V4L2ImageProcessor::V4L2ImageProcessor(
-    scoped_refptr<base::SequencedTaskRunner> client_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
     scoped_refptr<V4L2Device> device,
-    const ImageProcessor::PortConfig& input_config,
-    const ImageProcessor::PortConfig& output_config,
+    const PortConfig& input_config,
+    const PortConfig& output_config,
     v4l2_memory input_memory_type,
     v4l2_memory output_memory_type,
     OutputMode output_mode,
     size_t num_buffers,
     ErrorCB error_cb)
-    : ImageProcessor(input_config,
-                     output_config,
-                     output_mode,
-                     std::move(client_task_runner)),
+    : ImageProcessorBackend(input_config,
+                            output_config,
+                            output_mode,
+                            std::move(error_cb),
+                            std::move(backend_task_runner)),
       input_memory_type_(input_memory_type),
       output_memory_type_(output_memory_type),
       device_(device),
-      device_task_runner_(
-          base::CreateSingleThreadTaskRunner({base::ThreadPool()})),
+      num_buffers_(num_buffers),
       // We poll V4L2 device on this task runner, which blocks the task runner.
       // Therefore we use dedicated SingleThreadTaskRunner here.
       poll_task_runner_(base::CreateSingleThreadTaskRunner(
           {base::ThreadPool()},
-          base::SingleThreadTaskRunnerThreadMode::DEDICATED)),
-      num_buffers_(num_buffers),
-      error_cb_(error_cb) {
+          base::SingleThreadTaskRunnerThreadMode::DEDICATED)) {
   DVLOGF(2);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-  DETACH_FROM_SEQUENCE(device_sequence_checker_);
   DETACH_FROM_SEQUENCE(poll_sequence_checker_);
 
-  client_weak_this_ = client_weak_this_factory_.GetWeakPtr();
-  device_weak_this_ = device_weak_this_factory_.GetWeakPtr();
+  backend_weak_this_ = backend_weak_this_factory_.GetWeakPtr();
   poll_weak_this_ = poll_weak_this_factory_.GetWeakPtr();
 }
 
-V4L2ImageProcessor::~V4L2ImageProcessor() {
+void V4L2ImageProcessor::Destroy() {
   DVLOGF(3);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
 
-  // Don't post a client tasks any more because they are redundant.
-  client_weak_this_factory_.InvalidateWeakPtrs();
-
-  // Cancel all pending tasks and then clean up on |device_task_runner_|.
-  process_task_tracker_.TryCancelAll();
-
-  // TODO(akahuang): Change to async destructor to avoid base::WaitableEvent.
-  // Clean up |device_task_runner_|.
-  base::WaitableEvent device_done;
-  device_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&V4L2ImageProcessor::DestroyOnDeviceSequence,
-                     device_weak_this_, base::Unretained(&device_done)));
-  device_done.Wait();
-
-  // After |device_task_runner_| is finished cleaning up, we don't schedule new
-  // DevicePollTask() to |poll_task_runner_|. Now clean up |poll_task_runner_|.
-  base::WaitableEvent poll_done;
-  poll_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&V4L2ImageProcessor::DestroyOnPollSequence,
-                                poll_weak_this_, base::Unretained(&poll_done)));
-  poll_done.Wait();
-}
-
-void V4L2ImageProcessor::DestroyOnDeviceSequence(base::WaitableEvent* event) {
-  VLOGF(2);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
-
-  device_weak_this_factory_.InvalidateWeakPtrs();
+  backend_weak_this_factory_.InvalidateWeakPtrs();
 
   if (input_queue_) {
     input_queue_->Streamoff();
@@ -143,27 +98,34 @@ void V4L2ImageProcessor::DestroyOnDeviceSequence(base::WaitableEvent* event) {
   running_jobs_ = {};
 
   // Stop the running DevicePollTask() if it exists.
-  if (!device_->SetDevicePollInterrupt()) {
+  if (!device_->SetDevicePollInterrupt())
     NotifyError();
-    return;
-  }
 
-  event->Signal();
+  // After stopping queue, we don't schedule new DevicePollTask() to
+  // |poll_task_runner_|. Now clean up |poll_task_runner_|.
+  poll_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&V4L2ImageProcessor::DestroyOnPollSequence,
+                                poll_weak_this_));
 }
 
-void V4L2ImageProcessor::DestroyOnPollSequence(base::WaitableEvent* event) {
+void V4L2ImageProcessor::DestroyOnPollSequence() {
   VLOGF(2);
   DCHECK_CALLED_ON_VALID_SEQUENCE(poll_sequence_checker_);
 
   poll_weak_this_factory_.InvalidateWeakPtrs();
 
-  event->Signal();
+  delete this;
+}
+
+V4L2ImageProcessor::~V4L2ImageProcessor() {
+  VLOGF(3);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(poll_sequence_checker_);
 }
 
 void V4L2ImageProcessor::NotifyError() {
   VLOGF(1);
 
-  client_task_runner_->PostTask(FROM_HERE, error_cb_);
+  error_cb_.Run();
 }
 
 namespace {
@@ -185,16 +147,37 @@ v4l2_memory InputStorageTypeToV4L2Memory(VideoFrame::StorageType storage_type) {
 }  // namespace
 
 // static
-std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
-    scoped_refptr<base::SequencedTaskRunner> client_task_runner,
+std::unique_ptr<ImageProcessorBackend> V4L2ImageProcessor::Create(
     scoped_refptr<V4L2Device> device,
-    const ImageProcessor::PortConfig& input_config,
-    const ImageProcessor::PortConfig& output_config,
-    const ImageProcessor::OutputMode output_mode,
     size_t num_buffers,
-    ErrorCB error_cb) {
+    const PortConfig& input_config,
+    const PortConfig& output_config,
+    const std::vector<OutputMode>& preferred_output_modes,
+    ErrorCB error_cb,
+    scoped_refptr<base::SequencedTaskRunner> backend_task_runner) {
+  for (const auto& output_mode : preferred_output_modes) {
+    auto image_processor = V4L2ImageProcessor::CreateWithOutputMode(
+        device, num_buffers, input_config, output_config, output_mode, error_cb,
+        backend_task_runner);
+    if (image_processor)
+      return image_processor;
+  }
+
+  return nullptr;
+}
+
+// static
+std::unique_ptr<ImageProcessorBackend> V4L2ImageProcessor::CreateWithOutputMode(
+    scoped_refptr<V4L2Device> device,
+    size_t num_buffers,
+    const PortConfig& input_config,
+    const PortConfig& output_config,
+    const OutputMode& output_mode,
+    ErrorCB error_cb,
+    scoped_refptr<base::SequencedTaskRunner> backend_task_runner) {
   VLOGF(2);
   DCHECK_GT(num_buffers, 0u);
+
   if (!device) {
     VLOGF(2) << "Failed creating V4L2Device";
     return nullptr;
@@ -235,9 +218,9 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
     return nullptr;
   }
 
-  const v4l2_memory output_memory_type =
-      output_mode == ImageProcessor::OutputMode::ALLOCATE ? V4L2_MEMORY_MMAP
-                                                          : V4L2_MEMORY_DMABUF;
+  const v4l2_memory output_memory_type = output_mode == OutputMode::ALLOCATE
+                                             ? V4L2_MEMORY_MMAP
+                                             : V4L2_MEMORY_DMABUF;
 
   if (!device->IsImageProcessingSupported()) {
     VLOGF(1) << "V4L2ImageProcessor not supported in this platform";
@@ -318,48 +301,62 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
     output_planes[i].size = pix_mp.plane_fmt[i].sizeimage;
   }
 
-  auto processor = base::WrapUnique(new V4L2ImageProcessor(
-      std::move(client_task_runner), std::move(device),
-      ImageProcessor::PortConfig(input_config.fourcc, negotiated_input_size,
-                                 input_planes, input_config.visible_size,
-                                 {input_storage_type}),
-      ImageProcessor::PortConfig(output_config.fourcc, negotiated_output_size,
-                                 output_planes, output_config.visible_size,
-                                 {output_storage_type}),
-      input_memory_type, output_memory_type, output_mode, num_buffers,
-      std::move(error_cb)));
-  if (!processor->Initialize()) {
-    VLOGF(1) << "Failed to initialize V4L2ImageProcessor";
+  auto image_processor = std::unique_ptr<
+      V4L2ImageProcessor, std::default_delete<ImageProcessorBackend>>(
+      new V4L2ImageProcessor(
+          backend_task_runner, std::move(device),
+          PortConfig(input_config.fourcc, negotiated_input_size, input_planes,
+                     input_config.visible_size, {input_storage_type}),
+          PortConfig(output_config.fourcc, negotiated_output_size,
+                     output_planes, output_config.visible_size,
+                     {output_storage_type}),
+          input_memory_type, output_memory_type, output_mode, num_buffers,
+          std::move(error_cb)));
+
+  // Initialize at |backend_task_runner_|.
+  bool success = false;
+  base::WaitableEvent done;
+  auto init_cb = base::BindOnce(
+      [](base::WaitableEvent* done, bool* success, bool value) {
+        *success = value;
+        done->Signal();
+      },
+      base::Unretained(&done), base::Unretained(&success));
+  // Using base::Unretained() is safe because it is blocking call.
+  backend_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&V4L2ImageProcessor::Initialize,
+                                base::Unretained(image_processor.get()),
+                                std::move(init_cb)));
+  done.Wait();
+  if (!success)
     return nullptr;
-  }
-  return processor;
+
+  return image_processor;
 }
 
-bool V4L2ImageProcessor::Initialize() {
+void V4L2ImageProcessor::Initialize(InitCB init_cb) {
   DVLOGF(2);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
 
   // Capabilities check.
   struct v4l2_capability caps;
   memset(&caps, 0, sizeof(caps));
   const __u32 kCapsRequired = V4L2_CAP_VIDEO_M2M_MPLANE | V4L2_CAP_STREAMING;
-  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYCAP, &caps);
+  if (device_->Ioctl(VIDIOC_QUERYCAP, &caps) != 0) {
+    VPLOGF(1) << "ioctl() failed: VIDIOC_QUERYCAP";
+    std::move(init_cb).Run(false);
+    return;
+  }
   if ((caps.capabilities & kCapsRequired) != kCapsRequired) {
     VLOGF(1) << "Initialize(): ioctl() failed: VIDIOC_QUERYCAP: "
              << "caps check failed: 0x" << std::hex << caps.capabilities;
-    return false;
+    std::move(init_cb).Run(false);
+    return;
   }
 
-  // Call to AllocateBuffers must be asynchronous.
-  base::WaitableEvent done;
-  bool result;
-  device_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&V4L2ImageProcessor::AllocateBuffersTask,
-                     device_weak_this_, &result, base::Unretained(&done)));
-  done.Wait();
-  if (!result) {
-    return false;
+  if (!CreateInputBuffers() || !CreateOutputBuffers()) {
+    std::move(init_cb).Run(false);
+    return;
   }
 
   // Enqueue a poll task with no devices to poll on - will wait only for the
@@ -373,7 +370,7 @@ bool V4L2ImageProcessor::Initialize() {
            << "input: " << input_config_.ToString()
            << ", output: " << output_config_.ToString();
 
-  return true;
+  std::move(init_cb).Run(true);
 }
 
 // static
@@ -452,48 +449,34 @@ bool V4L2ImageProcessor::TryOutputFormat(uint32_t input_pixelformat,
   return true;
 }
 
-bool V4L2ImageProcessor::ProcessInternal(
-    scoped_refptr<VideoFrame> frame,
-    LegacyFrameReadyCB cb) {
+void V4L2ImageProcessor::ProcessLegacy(scoped_refptr<VideoFrame> frame,
+                                       LegacyFrameReadyCB cb) {
   DVLOGF(4) << "ts=" << frame->timestamp().InMilliseconds();
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
+
+  if (output_memory_type_ != V4L2_MEMORY_MMAP) {
+    NOTREACHED();
+    return;
+  }
 
   auto job_record = std::make_unique<JobRecord>();
   job_record->input_frame = frame;
   job_record->legacy_ready_cb = std::move(cb);
 
-  if (output_memory_type_ != V4L2_MEMORY_MMAP) {
-    NOTREACHED();
-  }
-
-  process_task_tracker_.PostTask(
-      device_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&V4L2ImageProcessor::ProcessTask, device_weak_this_,
-                     std::move(job_record)));
-  return true;
+  input_job_queue_.emplace(std::move(job_record));
+  ProcessJobsTask();
 }
 
-bool V4L2ImageProcessor::ProcessInternal(scoped_refptr<VideoFrame> input_frame,
-                                         scoped_refptr<VideoFrame> output_frame,
-                                         FrameReadyCB cb) {
+void V4L2ImageProcessor::Process(scoped_refptr<VideoFrame> input_frame,
+                                 scoped_refptr<VideoFrame> output_frame,
+                                 FrameReadyCB cb) {
   DVLOGF(4) << "ts=" << input_frame->timestamp().InMilliseconds();
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
 
   auto job_record = std::make_unique<JobRecord>();
   job_record->input_frame = std::move(input_frame);
   job_record->output_frame = std::move(output_frame);
   job_record->ready_cb = std::move(cb);
-
-  process_task_tracker_.PostTask(
-      device_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&V4L2ImageProcessor::ProcessTask, device_weak_this_,
-                     std::move(job_record)));
-  return true;
-}
-
-void V4L2ImageProcessor::ProcessTask(std::unique_ptr<JobRecord> job_record) {
-  DVLOGF(4) << "ts=" << job_record->input_frame->timestamp().InMilliseconds();
-  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
 
   input_job_queue_.emplace(std::move(job_record));
   ProcessJobsTask();
@@ -501,7 +484,7 @@ void V4L2ImageProcessor::ProcessTask(std::unique_ptr<JobRecord> job_record) {
 
 void V4L2ImageProcessor::ProcessJobsTask() {
   DVLOGF(4);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
 
   while (!input_job_queue_.empty()) {
     // We need one input and one output buffer to schedule the job
@@ -517,38 +500,17 @@ void V4L2ImageProcessor::ProcessJobsTask() {
   }
 }
 
-bool V4L2ImageProcessor::Reset() {
+void V4L2ImageProcessor::Reset() {
   DVLOGF(3);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-
-  process_task_tracker_.TryCancelAll();
-  base::WaitableEvent event;
-  device_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&V4L2ImageProcessor::ResetTask,
-                                device_weak_this_, base::Unretained(&event)));
-  event.Wait();
-
-  // Then cancel pending tasks on |client_task_runner_| to avoid returning
-  // frames after reset.
-  client_weak_this_factory_.InvalidateWeakPtrs();
-  client_weak_this_ = client_weak_this_factory_.GetWeakPtr();
-
-  return true;
-}
-
-void V4L2ImageProcessor::ResetTask(base::WaitableEvent* event) {
-  DVLOGF(3);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
 
   input_job_queue_ = {};
   running_jobs_ = {};
-
-  event->Signal();
 }
 
 bool V4L2ImageProcessor::CreateInputBuffers() {
   VLOGF(2);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
   DCHECK_EQ(input_queue_, nullptr);
 
   struct v4l2_control control;
@@ -614,7 +576,7 @@ bool V4L2ImageProcessor::CreateInputBuffers() {
 
 bool V4L2ImageProcessor::CreateOutputBuffers() {
   VLOGF(2);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
   DCHECK_EQ(output_queue_, nullptr);
 
   struct v4l2_rect visible_rect;
@@ -668,14 +630,14 @@ void V4L2ImageProcessor::DevicePollTask(bool poll_device) {
 
   // All processing should happen on ServiceDeviceTask(), since we shouldn't
   // touch processor state from this thread.
-  device_task_runner_->PostTask(
+  backend_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&V4L2ImageProcessor::ServiceDeviceTask,
-                                device_weak_this_));
+                                backend_weak_this_));
 }
 
 void V4L2ImageProcessor::ServiceDeviceTask() {
   DVLOGF(4);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
   DCHECK(input_queue_);
 
   Dequeue();
@@ -705,7 +667,7 @@ void V4L2ImageProcessor::ServiceDeviceTask() {
 
 void V4L2ImageProcessor::EnqueueInput(const JobRecord* job_record) {
   DVLOGF(4);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
   DCHECK(input_queue_);
 
   const size_t old_inputs_queued = input_queue_->QueuedBuffersCount();
@@ -727,7 +689,7 @@ void V4L2ImageProcessor::EnqueueInput(const JobRecord* job_record) {
 
 void V4L2ImageProcessor::EnqueueOutput(JobRecord* job_record) {
   DVLOGF(4);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
   DCHECK(output_queue_);
 
   const int old_outputs_queued = output_queue_->QueuedBuffersCount();
@@ -762,7 +724,7 @@ void V4L2ImageProcessor::V4L2VFRecycleThunk(
 
 void V4L2ImageProcessor::V4L2VFRecycleTask(V4L2ReadableBufferRef buf) {
   DVLOGF(4);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
 
   // Release the buffer reference so we can directly call ProcessJobsTask()
   // knowing that we have an extra output buffer.
@@ -781,7 +743,7 @@ void V4L2ImageProcessor::V4L2VFRecycleTask(V4L2ReadableBufferRef buf) {
 
 void V4L2ImageProcessor::Dequeue() {
   DVLOGF(4);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
   DCHECK(input_queue_);
   DCHECK(output_queue_);
   DCHECK(input_queue_->IsStreaming());
@@ -837,10 +799,11 @@ void V4L2ImageProcessor::Dequeue() {
               orig_frame, orig_frame->format(), orig_frame->visible_rect(),
               orig_frame->natural_size());
           // Because VideoFrame destruction callback might be executed on any
-          // sequence, we use a thunk to post the task to |device_task_runner_|.
+          // sequence, we use a thunk to post the task to
+          // |backend_task_runner_|.
           output_frame->AddDestructionObserver(
               base::BindOnce(&V4L2ImageProcessor::V4L2VFRecycleThunk,
-                             device_task_runner_, device_weak_this_, buffer));
+                             backend_task_runner_, backend_weak_this_, buffer));
         }
         break;
 
@@ -855,34 +818,18 @@ void V4L2ImageProcessor::Dequeue() {
 
     output_frame->set_timestamp(job_record->input_frame->timestamp());
 
-    base::OnceClosure output_cb;
     if (!job_record->legacy_ready_cb.is_null()) {
-      output_cb = base::BindOnce(std::move(job_record->legacy_ready_cb),
-                                 buffer->BufferId(), std::move(output_frame));
+      std::move(job_record->legacy_ready_cb)
+          .Run(buffer->BufferId(), std::move(output_frame));
     } else {
-      output_cb = base::BindOnce(std::move(job_record->ready_cb),
-                                 std::move(output_frame));
+      std::move(job_record->ready_cb).Run(std::move(output_frame));
     }
-    // The task might be cancelled when Reset() is called and then
-    // |client_weak_this_| becomes invalid.
-    client_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&V4L2ImageProcessor::OutputFrameOnClientSequence,
-                       client_weak_this_, std::move(output_cb)));
   }
-}
-
-void V4L2ImageProcessor::OutputFrameOnClientSequence(
-    base::OnceClosure output_cb) {
-  DVLOGF(4);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-
-  std::move(output_cb).Run();
 }
 
 bool V4L2ImageProcessor::EnqueueInputRecord(const JobRecord* job_record) {
   DVLOGF(4);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
   DCHECK(input_queue_);
   DCHECK_GT(input_queue_->FreeBuffersCount(), 0u);
 
@@ -921,7 +868,7 @@ bool V4L2ImageProcessor::EnqueueInputRecord(const JobRecord* job_record) {
 
 bool V4L2ImageProcessor::EnqueueOutputRecord(JobRecord* job_record) {
   DVLOGF(4);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
   DCHECK_GT(output_queue_->FreeBuffersCount(), 0u);
 
   V4L2WritableBufferRef buffer(output_queue_->GetFreeBuffer());
@@ -939,15 +886,6 @@ bool V4L2ImageProcessor::EnqueueOutputRecord(JobRecord* job_record) {
       NOTREACHED();
       return false;
   }
-}
-
-void V4L2ImageProcessor::AllocateBuffersTask(bool* result,
-                                             base::WaitableEvent* done) {
-  VLOGF(2);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
-
-  *result = CreateInputBuffers() && CreateOutputBuffers();
-  done->Signal();
 }
 
 }  // namespace media

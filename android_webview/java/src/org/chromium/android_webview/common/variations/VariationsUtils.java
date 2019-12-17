@@ -88,7 +88,7 @@ public class VariationsUtils {
     }
 
     // Silently returns null in case of a missing or truncated seed, which is expected in case
-    // of an incomplete downoad or copy. Other IO problems are actual errors, and are logged.
+    // of an incomplete download or copy. Other IO problems are actual errors, and are logged.
     @Nullable
     public static SeedInfo readSeedFile(File inFile) {
         if (!inFile.exists()) return null;
@@ -103,22 +103,24 @@ public class VariationsUtils {
                 return null;
             }
 
-            if (!proto.hasSignature() || !proto.hasCountry() || !proto.hasDate()
-                    || !proto.hasIsGzipCompressed() || !proto.hasSeedData()) {
+            if (!proto.hasSignature() || !proto.hasCountry()
+                    || (!proto.hasDate() && !proto.hasDateHeader()) || !proto.hasIsGzipCompressed()
+                    || !proto.hasSeedData()) {
                 return null;
             }
 
             SeedInfo info = new SeedInfo();
             info.signature = proto.getSignature();
             info.country = proto.getCountry();
-            info.date = proto.getDate();
             info.isGzipCompressed = proto.getIsGzipCompressed();
             info.seedData = proto.getSeedData().toByteArray();
 
-            // |dateHeader| is deprecated in favor of |date|, but parse |dateHeader| in case this
-            // seed predates the deprecation.
-            // TODO(crbug.com/1013390): Remove this fallback logic.
-            if (proto.hasDateHeader()) {
+            if (proto.hasDate()) {
+                info.date = proto.getDate();
+            } else {
+                // |dateHeader| is deprecated in favor of |date|, but parse |dateHeader| in case
+                // this seed predates the deprecation.
+                // TODO(crbug.com/1013390): Remove this fallback logic.
                 info.date = SeedInfo.parseDateHeader(proto.getDateHeader());
             }
 

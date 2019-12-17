@@ -87,6 +87,11 @@ void MockCryptoClientStream::OnHandshakeMessage(
 }
 
 bool MockCryptoClientStream::CryptoConnect() {
+  if (session()->connection()->version().KnowsWhichDecrypterToUse()) {
+    session()->connection()->InstallDecrypter(
+        ENCRYPTION_FORWARD_SECURE,
+        std::make_unique<NullDecrypter>(Perspective::IS_CLIENT));
+  }
   if (proof_verify_details_) {
     if (!proof_verify_details_->cert_verify_result.verified_cert
              ->VerifyNameMatch(server_id_.host())) {

@@ -1,79 +1,45 @@
 // clang-format off
-/* A Bison parser, made by GNU Bison 3.4.1.  */
+// A Bison parser, made by GNU Bison 3.4.2.
 
-/* Bison implementation for Yacc-like parsers in C
+// Skeleton implementation for Bison LALR(1) parsers in C++
 
-   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2019 Free Software Foundation,
-   Inc.
+// Copyright (C) 2002-2015, 2018-2019 Free Software Foundation, Inc.
 
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-/* As a special exception, you may create a larger work that contains
-   part or all of the Bison parser skeleton and distribute that work
-   under terms of your choice, so long as that work isn't itself a
-   parser generator using the skeleton or a modified version thereof
-   as a parser skeleton.  Alternatively, if you modify or redistribute
-   the parser skeleton itself, you may (at your option) remove this
-   special exception, which will cause the skeleton and the resulting
-   Bison output files to be licensed under the GNU General Public
-   License without this special exception.
+// As a special exception, you may create a larger work that contains
+// part or all of the Bison parser skeleton and distribute that work
+// under terms of your choice, so long as that work isn't itself a
+// parser generator using the skeleton or a modified version thereof
+// as a parser skeleton.  Alternatively, if you modify or redistribute
+// the parser skeleton itself, you may (at your option) remove this
+// special exception, which will cause the skeleton and the resulting
+// Bison output files to be licensed under the GNU General Public
+// License without this special exception.
 
-   This special exception was added by the Free Software Foundation in
-   version 2.2 of Bison.  */
+// This special exception was added by the Free Software Foundation in
+// version 2.2 of Bison.
 
-/* C LALR(1) parser skeleton written by Richard Stallman, by
-   simplifying the original so-called "semantic" parser.  */
-
-/* All symbols defined below should begin with yy or YY, to avoid
-   infringing on user name space.  This should be done even for local
-   variables, as they might otherwise be expanded by user macros.
-   There are some unavoidable exceptions within include files to
-   define necessary library symbols; they are noted "INFRINGES ON
-   USER NAME SPACE" below.  */
-
-/* Undocumented macros, especially those whose name start with YY_,
-   are private implementation details.  Do not rely on them.  */
-
-/* Identify Bison output.  */
-#define YYBISON 1
-
-/* Bison version.  */
-#define YYBISON_VERSION "3.4.1"
-
-/* Skeleton name.  */
-#define YYSKELETON_NAME "yacc.c"
-
-/* Pure parsers.  */
-#define YYPURE 2
-
-/* Push parsers.  */
-#define YYPUSH 0
-
-/* Pull parsers.  */
-#define YYPULL 1
+// Undocumented macros, especially those whose name start with YY_,
+// are private implementation details.  Do not rely on them.
 
 
-/* Substitute the variable and function names.  */
-#define yyparse         xpathyyparse
-#define yylex           xpathyylex
-#define yyerror         xpathyyerror
-#define yydebug         xpathyydebug
-#define yynerrs         xpathyynerrs
+// Take the name prefix into account.
+#define yylex   xpathyylex
 
-
-/* First part of user prologue.  */
-#line 43 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+// First part of user prologue.
+#line 52 "third_party/blink/renderer/core/xml/xpath_grammar.y"
 
 
 #include "third_party/blink/renderer/core/xml/xpath_functions.h"
@@ -84,379 +50,1896 @@
 #include "third_party/blink/renderer/core/xml/xpath_step.h"
 #include "third_party/blink/renderer/core/xml/xpath_variable_reference.h"
 
-// The union below must be located on the stack because it contains raw
-// pointers to Oilpan objects. crbug.com/961413
-#define YYSTACK_USE_ALLOCA 1
-// Bison's bug? YYSTACK_ALLOC is not defined if _MSC_VER.
-#if defined(_MSC_VER)
-#define YYSTACK_ALLOC _alloca
-#endif
-
 #define YYENABLE_NLS 0
-#define YYLTYPE_IS_TRIVIAL 1
+#define YY_EXCEPTIONS 0
 #define YYDEBUG 0
-#define YYMAXDEPTH 10000
 
 using blink::xpath::Step;
 
-#line 102 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-
-# ifndef YY_NULLPTR
-#  if defined __cplusplus
-#   if 201103L <= __cplusplus
-#    define YY_NULLPTR nullptr
-#   else
-#    define YY_NULLPTR 0
-#   endif
-#  else
-#   define YY_NULLPTR ((void*)0)
-#  endif
-# endif
-
-/* Enabling verbose error messages.  */
-#ifdef YYERROR_VERBOSE
-# undef YYERROR_VERBOSE
-# define YYERROR_VERBOSE 1
-#else
-# define YYERROR_VERBOSE 0
-#endif
-
-/* Use api.header.include to #include this header
-   instead of duplicating it here.  */
-#ifndef YY_XPATHYY_THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_GRAMMAR_GENERATED_HH_INCLUDED
-# define YY_XPATHYY_THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_GRAMMAR_GENERATED_HH_INCLUDED
-/* Debug traces.  */
-#ifndef YYDEBUG
-# define YYDEBUG 0
-#endif
-#if YYDEBUG
-extern int xpathyydebug;
-#endif
-
-/* Token type.  */
-#ifndef YYTOKENTYPE
-# define YYTOKENTYPE
-  enum yytokentype
-  {
-    MULOP = 258,
-    EQOP = 259,
-    RELOP = 260,
-    PLUS = 261,
-    MINUS = 262,
-    OR = 263,
-    AND = 264,
-    AXISNAME = 265,
-    NODETYPE = 266,
-    PI = 267,
-    FUNCTIONNAME = 268,
-    LITERAL = 269,
-    VARIABLEREFERENCE = 270,
-    NUMBER = 271,
-    DOTDOT = 272,
-    SLASHSLASH = 273,
-    NAMETEST = 274,
-    XPATH_ERROR = 275
-  };
-#endif
-
-/* Value type.  */
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-union YYSTYPE
-{
-#line 73 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-
-  blink::xpath::Step::Axis axis;
-  blink::xpath::Step::NodeTest* node_test;
-  blink::xpath::NumericOp::Opcode num_op;
-  blink::xpath::EqTestOp::Opcode eq_op;
-  String* str;
-  blink::xpath::Expression* expr;
-  blink::HeapVector<blink::Member<blink::xpath::Predicate>>* pred_list;
-  blink::HeapVector<blink::Member<blink::xpath::Expression>>* arg_list;
-  blink::xpath::Step* step;
-  blink::xpath::LocationPath* location_path;
-
-#line 179 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-
-};
-typedef union YYSTYPE YYSTYPE;
-# define YYSTYPE_IS_TRIVIAL 1
-# define YYSTYPE_IS_DECLARED 1
-#endif
+#line 59 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
 
 
-
-int xpathyyparse (blink::xpath::Parser* parser);
-
-#endif /* !YY_XPATHYY_THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_GRAMMAR_GENERATED_HH_INCLUDED  */
-
-/* Second part of user prologue.  */
-#line 86 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#include "xpath_grammar_generated.h"
 
 
-static int xpathyylex(YYSTYPE* yylval) { return blink::xpath::Parser::Current()->Lex(yylval); }
-static void xpathyyerror(void*, const char*) { }
+// Unqualified %code blocks.
+#line 112 "third_party/blink/renderer/core/xml/xpath_grammar.y"
 
 
-#line 201 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+static int xpathyylex(xpathyy::YyParser::semantic_type* yylval) {
+  return blink::xpath::Parser::Current()->Lex(yylval);
+}
+
+namespace xpathyy {
+void YyParser::error(const std::string&) { }
+}
 
 
-#ifdef short
-# undef short
-#endif
+#line 78 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
 
-#ifdef YYTYPE_UINT8
-typedef YYTYPE_UINT8 yytype_uint8;
-#else
-typedef unsigned char yytype_uint8;
-#endif
-
-#ifdef YYTYPE_INT8
-typedef YYTYPE_INT8 yytype_int8;
-#else
-typedef signed char yytype_int8;
-#endif
-
-#ifdef YYTYPE_UINT16
-typedef YYTYPE_UINT16 yytype_uint16;
-#else
-typedef unsigned short yytype_uint16;
-#endif
-
-#ifdef YYTYPE_INT16
-typedef YYTYPE_INT16 yytype_int16;
-#else
-typedef short yytype_int16;
-#endif
-
-#ifndef YYSIZE_T
-# ifdef __SIZE_TYPE__
-#  define YYSIZE_T __SIZE_TYPE__
-# elif defined size_t
-#  define YYSIZE_T size_t
-# elif ! defined YYSIZE_T
-#  include <stddef.h> /* INFRINGES ON USER NAME SPACE */
-#  define YYSIZE_T size_t
-# else
-#  define YYSIZE_T unsigned
-# endif
-#endif
-
-#define YYSIZE_MAXIMUM ((YYSIZE_T) -1)
 
 #ifndef YY_
 # if defined YYENABLE_NLS && YYENABLE_NLS
 #  if ENABLE_NLS
-#   include <libintl.h> /* INFRINGES ON USER NAME SPACE */
-#   define YY_(Msgid) dgettext ("bison-runtime", Msgid)
+#   include <libintl.h> // FIXME: INFRINGES ON USER NAME SPACE.
+#   define YY_(msgid) dgettext ("bison-runtime", msgid)
 #  endif
 # endif
 # ifndef YY_
-#  define YY_(Msgid) Msgid
+#  define YY_(msgid) msgid
 # endif
 #endif
 
-#ifndef YY_ATTRIBUTE
-# if (defined __GNUC__                                               \
-      && (2 < __GNUC__ || (__GNUC__ == 2 && 96 <= __GNUC_MINOR__)))  \
-     || defined __SUNPRO_C && 0x5110 <= __SUNPRO_C
-#  define YY_ATTRIBUTE(Spec) __attribute__(Spec)
+// Whether we are compiled with exception support.
+#ifndef YY_EXCEPTIONS
+# if defined __GNUC__ && !defined __EXCEPTIONS
+#  define YY_EXCEPTIONS 0
 # else
-#  define YY_ATTRIBUTE(Spec) /* empty */
+#  define YY_EXCEPTIONS 1
 # endif
 #endif
 
-#ifndef YY_ATTRIBUTE_PURE
-# define YY_ATTRIBUTE_PURE   YY_ATTRIBUTE ((__pure__))
+
+
+// Enable debugging if requested.
+#if YYDEBUG
+
+// A pseudo ostream that takes yydebug_ into account.
+# define YYCDEBUG if (yydebug_) (*yycdebug_)
+
+# define YY_SYMBOL_PRINT(Title, Symbol)         \
+  do {                                          \
+    if (yydebug_)                               \
+    {                                           \
+      *yycdebug_ << Title << ' ';               \
+      yy_print_ (*yycdebug_, Symbol);           \
+      *yycdebug_ << '\n';                       \
+    }                                           \
+  } while (false)
+
+# define YY_REDUCE_PRINT(Rule)          \
+  do {                                  \
+    if (yydebug_)                       \
+      yy_reduce_print_ (Rule);          \
+  } while (false)
+
+# define YY_STACK_PRINT()               \
+  do {                                  \
+    if (yydebug_)                       \
+      yystack_print_ ();                \
+  } while (false)
+
+#else // !YYDEBUG
+
+# define YYCDEBUG if (false) std::cerr
+# define YY_SYMBOL_PRINT(Title, Symbol)  YYUSE (Symbol)
+# define YY_REDUCE_PRINT(Rule)           static_cast<void> (0)
+# define YY_STACK_PRINT()                static_cast<void> (0)
+
+#endif // !YYDEBUG
+
+#define yyerrok         (yyerrstatus_ = 0)
+#define yyclearin       (yyla.clear ())
+
+#define YYACCEPT        goto yyacceptlab
+#define YYABORT         goto yyabortlab
+#define YYERROR         goto yyerrorlab
+#define YYRECOVERING()  (!!yyerrstatus_)
+
+namespace xpathyy {
+#line 150 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+
+
+  /// Build a parser object.
+   YyParser :: YyParser  (blink::xpath::Parser* parser__yyarg)
+    :
+#if YYDEBUG
+      yydebug_ (false),
+      yycdebug_ (&std::cerr),
+#endif
+      parser_ (parser__yyarg)
+  {}
+
+   YyParser ::~ YyParser  ()
+  {}
+
+   YyParser ::syntax_error::~syntax_error () YY_NOEXCEPT YY_NOTHROW
+  {}
+
+  /*---------------.
+  | Symbol types.  |
+  `---------------*/
+
+  // basic_symbol.
+#if 201103L <= YY_CPLUSPLUS
+  template <typename Base>
+   YyParser ::basic_symbol<Base>::basic_symbol (basic_symbol&& that)
+    : Base (std::move (that))
+    , value ()
+  {
+    switch (this->type_get ())
+    {
+      case 11: // kNodeType
+      case 12: // kPI
+      case 13: // kFunctionName
+      case 14: // kLiteral
+      case 15: // kVariableReference
+      case 16: // kNumber
+      case 19: // kNameTest
+        value.move< String > (std::move (that.value));
+        break;
+
+      case 45: // ArgumentList
+        value.move< blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Expression>>> > (std::move (that.value));
+        break;
+
+      case 38: // OptionalPredicateList
+      case 39: // PredicateList
+        value.move< blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > (std::move (that.value));
+        break;
+
+      case 31: // Expr
+      case 40: // Predicate
+      case 43: // PrimaryExpr
+      case 44: // FunctionCall
+      case 46: // Argument
+      case 47: // UnionExpr
+      case 48: // PathExpr
+      case 49: // FilterExpr
+      case 50: // OrExpr
+      case 51: // AndExpr
+      case 52: // EqualityExpr
+      case 53: // RelationalExpr
+      case 54: // AdditiveExpr
+      case 55: // MultiplicativeExpr
+      case 56: // UnaryExpr
+        value.move< blink::Persistent<blink::xpath::Expression> > (std::move (that.value));
+        break;
+
+      case 32: // LocationPath
+      case 33: // AbsoluteLocationPath
+      case 34: // RelativeLocationPath
+        value.move< blink::Persistent<blink::xpath::LocationPath> > (std::move (that.value));
+        break;
+
+      case 37: // NodeTest
+        value.move< blink::Persistent<blink::xpath::Step::NodeTest> > (std::move (that.value));
+        break;
+
+      case 35: // Step
+      case 41: // DescendantOrSelf
+      case 42: // AbbreviatedStep
+        value.move< blink::Persistent<blink::xpath::Step> > (std::move (that.value));
+        break;
+
+      case 4: // kEqOp
+      case 5: // kRelOp
+        value.move< blink::xpath::EqTestOp::Opcode > (std::move (that.value));
+        break;
+
+      case 3: // kMulOp
+        value.move< blink::xpath::NumericOp::Opcode > (std::move (that.value));
+        break;
+
+      case 10: // kAxisName
+      case 36: // AxisSpecifier
+        value.move< blink::xpath::Step::Axis > (std::move (that.value));
+        break;
+
+      default:
+        break;
+    }
+
+  }
 #endif
 
-#ifndef YY_ATTRIBUTE_UNUSED
-# define YY_ATTRIBUTE_UNUSED YY_ATTRIBUTE ((__unused__))
+  template <typename Base>
+   YyParser ::basic_symbol<Base>::basic_symbol (const basic_symbol& that)
+    : Base (that)
+    , value ()
+  {
+    switch (this->type_get ())
+    {
+      case 11: // kNodeType
+      case 12: // kPI
+      case 13: // kFunctionName
+      case 14: // kLiteral
+      case 15: // kVariableReference
+      case 16: // kNumber
+      case 19: // kNameTest
+        value.copy< String > (YY_MOVE (that.value));
+        break;
+
+      case 45: // ArgumentList
+        value.copy< blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Expression>>> > (YY_MOVE (that.value));
+        break;
+
+      case 38: // OptionalPredicateList
+      case 39: // PredicateList
+        value.copy< blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > (YY_MOVE (that.value));
+        break;
+
+      case 31: // Expr
+      case 40: // Predicate
+      case 43: // PrimaryExpr
+      case 44: // FunctionCall
+      case 46: // Argument
+      case 47: // UnionExpr
+      case 48: // PathExpr
+      case 49: // FilterExpr
+      case 50: // OrExpr
+      case 51: // AndExpr
+      case 52: // EqualityExpr
+      case 53: // RelationalExpr
+      case 54: // AdditiveExpr
+      case 55: // MultiplicativeExpr
+      case 56: // UnaryExpr
+        value.copy< blink::Persistent<blink::xpath::Expression> > (YY_MOVE (that.value));
+        break;
+
+      case 32: // LocationPath
+      case 33: // AbsoluteLocationPath
+      case 34: // RelativeLocationPath
+        value.copy< blink::Persistent<blink::xpath::LocationPath> > (YY_MOVE (that.value));
+        break;
+
+      case 37: // NodeTest
+        value.copy< blink::Persistent<blink::xpath::Step::NodeTest> > (YY_MOVE (that.value));
+        break;
+
+      case 35: // Step
+      case 41: // DescendantOrSelf
+      case 42: // AbbreviatedStep
+        value.copy< blink::Persistent<blink::xpath::Step> > (YY_MOVE (that.value));
+        break;
+
+      case 4: // kEqOp
+      case 5: // kRelOp
+        value.copy< blink::xpath::EqTestOp::Opcode > (YY_MOVE (that.value));
+        break;
+
+      case 3: // kMulOp
+        value.copy< blink::xpath::NumericOp::Opcode > (YY_MOVE (that.value));
+        break;
+
+      case 10: // kAxisName
+      case 36: // AxisSpecifier
+        value.copy< blink::xpath::Step::Axis > (YY_MOVE (that.value));
+        break;
+
+      default:
+        break;
+    }
+
+  }
+
+
+
+  template <typename Base>
+  bool
+   YyParser ::basic_symbol<Base>::empty () const YY_NOEXCEPT
+  {
+    return Base::type_get () == empty_symbol;
+  }
+
+  template <typename Base>
+  void
+   YyParser ::basic_symbol<Base>::move (basic_symbol& s)
+  {
+    super_type::move (s);
+    switch (this->type_get ())
+    {
+      case 11: // kNodeType
+      case 12: // kPI
+      case 13: // kFunctionName
+      case 14: // kLiteral
+      case 15: // kVariableReference
+      case 16: // kNumber
+      case 19: // kNameTest
+        value.move< String > (YY_MOVE (s.value));
+        break;
+
+      case 45: // ArgumentList
+        value.move< blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Expression>>> > (YY_MOVE (s.value));
+        break;
+
+      case 38: // OptionalPredicateList
+      case 39: // PredicateList
+        value.move< blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > (YY_MOVE (s.value));
+        break;
+
+      case 31: // Expr
+      case 40: // Predicate
+      case 43: // PrimaryExpr
+      case 44: // FunctionCall
+      case 46: // Argument
+      case 47: // UnionExpr
+      case 48: // PathExpr
+      case 49: // FilterExpr
+      case 50: // OrExpr
+      case 51: // AndExpr
+      case 52: // EqualityExpr
+      case 53: // RelationalExpr
+      case 54: // AdditiveExpr
+      case 55: // MultiplicativeExpr
+      case 56: // UnaryExpr
+        value.move< blink::Persistent<blink::xpath::Expression> > (YY_MOVE (s.value));
+        break;
+
+      case 32: // LocationPath
+      case 33: // AbsoluteLocationPath
+      case 34: // RelativeLocationPath
+        value.move< blink::Persistent<blink::xpath::LocationPath> > (YY_MOVE (s.value));
+        break;
+
+      case 37: // NodeTest
+        value.move< blink::Persistent<blink::xpath::Step::NodeTest> > (YY_MOVE (s.value));
+        break;
+
+      case 35: // Step
+      case 41: // DescendantOrSelf
+      case 42: // AbbreviatedStep
+        value.move< blink::Persistent<blink::xpath::Step> > (YY_MOVE (s.value));
+        break;
+
+      case 4: // kEqOp
+      case 5: // kRelOp
+        value.move< blink::xpath::EqTestOp::Opcode > (YY_MOVE (s.value));
+        break;
+
+      case 3: // kMulOp
+        value.move< blink::xpath::NumericOp::Opcode > (YY_MOVE (s.value));
+        break;
+
+      case 10: // kAxisName
+      case 36: // AxisSpecifier
+        value.move< blink::xpath::Step::Axis > (YY_MOVE (s.value));
+        break;
+
+      default:
+        break;
+    }
+
+  }
+
+  // by_type.
+   YyParser ::by_type::by_type ()
+    : type (empty_symbol)
+  {}
+
+#if 201103L <= YY_CPLUSPLUS
+   YyParser ::by_type::by_type (by_type&& that)
+    : type (that.type)
+  {
+    that.clear ();
+  }
 #endif
 
-/* Suppress unused-variable warnings by "using" E.  */
-#if ! defined lint || defined __GNUC__
-# define YYUSE(E) ((void) (E))
+   YyParser ::by_type::by_type (const by_type& that)
+    : type (that.type)
+  {}
+
+   YyParser ::by_type::by_type (token_type t)
+    : type (yytranslate_ (t))
+  {}
+
+  void
+   YyParser ::by_type::clear ()
+  {
+    type = empty_symbol;
+  }
+
+  void
+   YyParser ::by_type::move (by_type& that)
+  {
+    type = that.type;
+    that.clear ();
+  }
+
+  int
+   YyParser ::by_type::type_get () const YY_NOEXCEPT
+  {
+    return type;
+  }
+
+
+  // by_state.
+   YyParser ::by_state::by_state () YY_NOEXCEPT
+    : state (empty_state)
+  {}
+
+   YyParser ::by_state::by_state (const by_state& that) YY_NOEXCEPT
+    : state (that.state)
+  {}
+
+  void
+   YyParser ::by_state::clear () YY_NOEXCEPT
+  {
+    state = empty_state;
+  }
+
+  void
+   YyParser ::by_state::move (by_state& that)
+  {
+    state = that.state;
+    that.clear ();
+  }
+
+   YyParser ::by_state::by_state (state_type s) YY_NOEXCEPT
+    : state (s)
+  {}
+
+   YyParser ::symbol_number_type
+   YyParser ::by_state::type_get () const YY_NOEXCEPT
+  {
+    if (state == empty_state)
+      return empty_symbol;
+    else
+      return yystos_[state];
+  }
+
+   YyParser ::stack_symbol_type::stack_symbol_type ()
+  {}
+
+   YyParser ::stack_symbol_type::stack_symbol_type (YY_RVREF (stack_symbol_type) that)
+    : super_type (YY_MOVE (that.state))
+  {
+    switch (that.type_get ())
+    {
+      case 11: // kNodeType
+      case 12: // kPI
+      case 13: // kFunctionName
+      case 14: // kLiteral
+      case 15: // kVariableReference
+      case 16: // kNumber
+      case 19: // kNameTest
+        value.YY_MOVE_OR_COPY< String > (YY_MOVE (that.value));
+        break;
+
+      case 45: // ArgumentList
+        value.YY_MOVE_OR_COPY< blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Expression>>> > (YY_MOVE (that.value));
+        break;
+
+      case 38: // OptionalPredicateList
+      case 39: // PredicateList
+        value.YY_MOVE_OR_COPY< blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > (YY_MOVE (that.value));
+        break;
+
+      case 31: // Expr
+      case 40: // Predicate
+      case 43: // PrimaryExpr
+      case 44: // FunctionCall
+      case 46: // Argument
+      case 47: // UnionExpr
+      case 48: // PathExpr
+      case 49: // FilterExpr
+      case 50: // OrExpr
+      case 51: // AndExpr
+      case 52: // EqualityExpr
+      case 53: // RelationalExpr
+      case 54: // AdditiveExpr
+      case 55: // MultiplicativeExpr
+      case 56: // UnaryExpr
+        value.YY_MOVE_OR_COPY< blink::Persistent<blink::xpath::Expression> > (YY_MOVE (that.value));
+        break;
+
+      case 32: // LocationPath
+      case 33: // AbsoluteLocationPath
+      case 34: // RelativeLocationPath
+        value.YY_MOVE_OR_COPY< blink::Persistent<blink::xpath::LocationPath> > (YY_MOVE (that.value));
+        break;
+
+      case 37: // NodeTest
+        value.YY_MOVE_OR_COPY< blink::Persistent<blink::xpath::Step::NodeTest> > (YY_MOVE (that.value));
+        break;
+
+      case 35: // Step
+      case 41: // DescendantOrSelf
+      case 42: // AbbreviatedStep
+        value.YY_MOVE_OR_COPY< blink::Persistent<blink::xpath::Step> > (YY_MOVE (that.value));
+        break;
+
+      case 4: // kEqOp
+      case 5: // kRelOp
+        value.YY_MOVE_OR_COPY< blink::xpath::EqTestOp::Opcode > (YY_MOVE (that.value));
+        break;
+
+      case 3: // kMulOp
+        value.YY_MOVE_OR_COPY< blink::xpath::NumericOp::Opcode > (YY_MOVE (that.value));
+        break;
+
+      case 10: // kAxisName
+      case 36: // AxisSpecifier
+        value.YY_MOVE_OR_COPY< blink::xpath::Step::Axis > (YY_MOVE (that.value));
+        break;
+
+      default:
+        break;
+    }
+
+#if 201103L <= YY_CPLUSPLUS
+    // that is emptied.
+    that.state = empty_state;
+#endif
+  }
+
+   YyParser ::stack_symbol_type::stack_symbol_type (state_type s, YY_MOVE_REF (symbol_type) that)
+    : super_type (s)
+  {
+    switch (that.type_get ())
+    {
+      case 11: // kNodeType
+      case 12: // kPI
+      case 13: // kFunctionName
+      case 14: // kLiteral
+      case 15: // kVariableReference
+      case 16: // kNumber
+      case 19: // kNameTest
+        value.move< String > (YY_MOVE (that.value));
+        break;
+
+      case 45: // ArgumentList
+        value.move< blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Expression>>> > (YY_MOVE (that.value));
+        break;
+
+      case 38: // OptionalPredicateList
+      case 39: // PredicateList
+        value.move< blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > (YY_MOVE (that.value));
+        break;
+
+      case 31: // Expr
+      case 40: // Predicate
+      case 43: // PrimaryExpr
+      case 44: // FunctionCall
+      case 46: // Argument
+      case 47: // UnionExpr
+      case 48: // PathExpr
+      case 49: // FilterExpr
+      case 50: // OrExpr
+      case 51: // AndExpr
+      case 52: // EqualityExpr
+      case 53: // RelationalExpr
+      case 54: // AdditiveExpr
+      case 55: // MultiplicativeExpr
+      case 56: // UnaryExpr
+        value.move< blink::Persistent<blink::xpath::Expression> > (YY_MOVE (that.value));
+        break;
+
+      case 32: // LocationPath
+      case 33: // AbsoluteLocationPath
+      case 34: // RelativeLocationPath
+        value.move< blink::Persistent<blink::xpath::LocationPath> > (YY_MOVE (that.value));
+        break;
+
+      case 37: // NodeTest
+        value.move< blink::Persistent<blink::xpath::Step::NodeTest> > (YY_MOVE (that.value));
+        break;
+
+      case 35: // Step
+      case 41: // DescendantOrSelf
+      case 42: // AbbreviatedStep
+        value.move< blink::Persistent<blink::xpath::Step> > (YY_MOVE (that.value));
+        break;
+
+      case 4: // kEqOp
+      case 5: // kRelOp
+        value.move< blink::xpath::EqTestOp::Opcode > (YY_MOVE (that.value));
+        break;
+
+      case 3: // kMulOp
+        value.move< blink::xpath::NumericOp::Opcode > (YY_MOVE (that.value));
+        break;
+
+      case 10: // kAxisName
+      case 36: // AxisSpecifier
+        value.move< blink::xpath::Step::Axis > (YY_MOVE (that.value));
+        break;
+
+      default:
+        break;
+    }
+
+    // that is emptied.
+    that.type = empty_symbol;
+  }
+
+#if YY_CPLUSPLUS < 201103L
+   YyParser ::stack_symbol_type&
+   YyParser ::stack_symbol_type::operator= (stack_symbol_type& that)
+  {
+    state = that.state;
+    switch (that.type_get ())
+    {
+      case 11: // kNodeType
+      case 12: // kPI
+      case 13: // kFunctionName
+      case 14: // kLiteral
+      case 15: // kVariableReference
+      case 16: // kNumber
+      case 19: // kNameTest
+        value.move< String > (that.value);
+        break;
+
+      case 45: // ArgumentList
+        value.move< blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Expression>>> > (that.value);
+        break;
+
+      case 38: // OptionalPredicateList
+      case 39: // PredicateList
+        value.move< blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > (that.value);
+        break;
+
+      case 31: // Expr
+      case 40: // Predicate
+      case 43: // PrimaryExpr
+      case 44: // FunctionCall
+      case 46: // Argument
+      case 47: // UnionExpr
+      case 48: // PathExpr
+      case 49: // FilterExpr
+      case 50: // OrExpr
+      case 51: // AndExpr
+      case 52: // EqualityExpr
+      case 53: // RelationalExpr
+      case 54: // AdditiveExpr
+      case 55: // MultiplicativeExpr
+      case 56: // UnaryExpr
+        value.move< blink::Persistent<blink::xpath::Expression> > (that.value);
+        break;
+
+      case 32: // LocationPath
+      case 33: // AbsoluteLocationPath
+      case 34: // RelativeLocationPath
+        value.move< blink::Persistent<blink::xpath::LocationPath> > (that.value);
+        break;
+
+      case 37: // NodeTest
+        value.move< blink::Persistent<blink::xpath::Step::NodeTest> > (that.value);
+        break;
+
+      case 35: // Step
+      case 41: // DescendantOrSelf
+      case 42: // AbbreviatedStep
+        value.move< blink::Persistent<blink::xpath::Step> > (that.value);
+        break;
+
+      case 4: // kEqOp
+      case 5: // kRelOp
+        value.move< blink::xpath::EqTestOp::Opcode > (that.value);
+        break;
+
+      case 3: // kMulOp
+        value.move< blink::xpath::NumericOp::Opcode > (that.value);
+        break;
+
+      case 10: // kAxisName
+      case 36: // AxisSpecifier
+        value.move< blink::xpath::Step::Axis > (that.value);
+        break;
+
+      default:
+        break;
+    }
+
+    // that is emptied.
+    that.state = empty_state;
+    return *this;
+  }
+#endif
+
+  template <typename Base>
+  void
+   YyParser ::yy_destroy_ (const char* yymsg, basic_symbol<Base>& yysym) const
+  {
+    if (yymsg)
+      YY_SYMBOL_PRINT (yymsg, yysym);
+  }
+
+#if YYDEBUG
+  template <typename Base>
+  void
+   YyParser ::yy_print_ (std::ostream& yyo,
+                                     const basic_symbol<Base>& yysym) const
+  {
+    std::ostream& yyoutput = yyo;
+    YYUSE (yyoutput);
+    symbol_number_type yytype = yysym.type_get ();
+#if defined __GNUC__ && ! defined __clang__ && ! defined __ICC && __GNUC__ * 100 + __GNUC_MINOR__ <= 408
+    // Avoid a (spurious) G++ 4.8 warning about "array subscript is
+    // below array bounds".
+    if (yysym.empty ())
+      std::abort ();
+#endif
+    yyo << (yytype < yyntokens_ ? "token" : "nterm")
+        << ' ' << yytname_[yytype] << " (";
+    YYUSE (yytype);
+    yyo << ')';
+  }
+#endif
+
+  void
+   YyParser ::yypush_ (const char* m, YY_MOVE_REF (stack_symbol_type) sym)
+  {
+    if (m)
+      YY_SYMBOL_PRINT (m, sym);
+    yystack_.push (YY_MOVE (sym));
+  }
+
+  void
+   YyParser ::yypush_ (const char* m, state_type s, YY_MOVE_REF (symbol_type) sym)
+  {
+#if 201103L <= YY_CPLUSPLUS
+    yypush_ (m, stack_symbol_type (s, std::move (sym)));
 #else
-# define YYUSE(E) /* empty */
+    stack_symbol_type ss (s, sym);
+    yypush_ (m, ss);
 #endif
+  }
 
-#if defined __GNUC__ && ! defined __ICC && 407 <= __GNUC__ * 100 + __GNUC_MINOR__
-/* Suppress an incorrect diagnostic about yylval being uninitialized.  */
-# define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN \
-    _Pragma ("GCC diagnostic push") \
-    _Pragma ("GCC diagnostic ignored \"-Wuninitialized\"")\
-    _Pragma ("GCC diagnostic ignored \"-Wmaybe-uninitialized\"")
-# define YY_IGNORE_MAYBE_UNINITIALIZED_END \
-    _Pragma ("GCC diagnostic pop")
-#else
-# define YY_INITIAL_VALUE(Value) Value
-#endif
-#ifndef YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
-# define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
-# define YY_IGNORE_MAYBE_UNINITIALIZED_END
-#endif
-#ifndef YY_INITIAL_VALUE
-# define YY_INITIAL_VALUE(Value) /* Nothing. */
-#endif
+  void
+   YyParser ::yypop_ (int n)
+  {
+    yystack_.pop (n);
+  }
 
+#if YYDEBUG
+  std::ostream&
+   YyParser ::debug_stream () const
+  {
+    return *yycdebug_;
+  }
 
-#define YY_ASSERT(E) ((void) (0 && (E)))
-
-#if ! defined yyoverflow || YYERROR_VERBOSE
-
-/* The parser invokes alloca or malloc; define the necessary symbols.  */
-
-# ifdef YYSTACK_USE_ALLOCA
-#  if YYSTACK_USE_ALLOCA
-#   ifdef __GNUC__
-#    define YYSTACK_ALLOC __builtin_alloca
-#   elif defined __BUILTIN_VA_ARG_INCR
-#    include <alloca.h> /* INFRINGES ON USER NAME SPACE */
-#   elif defined _AIX
-#    define YYSTACK_ALLOC __alloca
-#   elif defined _MSC_VER
-#    include <malloc.h> /* INFRINGES ON USER NAME SPACE */
-#    define alloca _alloca
-#   else
-#    define YYSTACK_ALLOC alloca
-#    if ! defined _ALLOCA_H && ! defined EXIT_SUCCESS
-#     include <stdlib.h> /* INFRINGES ON USER NAME SPACE */
-      /* Use EXIT_SUCCESS as a witness for stdlib.h.  */
-#     ifndef EXIT_SUCCESS
-#      define EXIT_SUCCESS 0
-#     endif
-#    endif
-#   endif
-#  endif
-# endif
-
-# ifdef YYSTACK_ALLOC
-   /* Pacify GCC's 'empty if-body' warning.  */
-#  define YYSTACK_FREE(Ptr) do { /* empty */; } while (0)
-#  ifndef YYSTACK_ALLOC_MAXIMUM
-    /* The OS might guarantee only one guard page at the bottom of the stack,
-       and a page size can be as small as 4096 bytes.  So we cannot safely
-       invoke alloca (N) if N exceeds 4096.  Use a slightly smaller number
-       to allow for a few compiler-allocated temporary stack slots.  */
-#   define YYSTACK_ALLOC_MAXIMUM 4032 /* reasonable circa 2006 */
-#  endif
-# else
-#  define YYSTACK_ALLOC YYMALLOC
-#  define YYSTACK_FREE YYFREE
-#  ifndef YYSTACK_ALLOC_MAXIMUM
-#   define YYSTACK_ALLOC_MAXIMUM YYSIZE_MAXIMUM
-#  endif
-#  if (defined __cplusplus && ! defined EXIT_SUCCESS \
-       && ! ((defined YYMALLOC || defined malloc) \
-             && (defined YYFREE || defined free)))
-#   include <stdlib.h> /* INFRINGES ON USER NAME SPACE */
-#   ifndef EXIT_SUCCESS
-#    define EXIT_SUCCESS 0
-#   endif
-#  endif
-#  ifndef YYMALLOC
-#   define YYMALLOC malloc
-#   if ! defined malloc && ! defined EXIT_SUCCESS
-void *malloc (YYSIZE_T); /* INFRINGES ON USER NAME SPACE */
-#   endif
-#  endif
-#  ifndef YYFREE
-#   define YYFREE free
-#   if ! defined free && ! defined EXIT_SUCCESS
-void free (void *); /* INFRINGES ON USER NAME SPACE */
-#   endif
-#  endif
-# endif
-#endif /* ! defined yyoverflow || YYERROR_VERBOSE */
+  void
+   YyParser ::set_debug_stream (std::ostream& o)
+  {
+    yycdebug_ = &o;
+  }
 
 
-#if (! defined yyoverflow \
-     && (! defined __cplusplus \
-         || (defined YYSTYPE_IS_TRIVIAL && YYSTYPE_IS_TRIVIAL)))
+   YyParser ::debug_level_type
+   YyParser ::debug_level () const
+  {
+    return yydebug_;
+  }
 
-/* A type that is properly aligned for any stack member.  */
-union yyalloc
-{
-  yytype_int16 yyss_alloc;
-  YYSTYPE yyvs_alloc;
-};
+  void
+   YyParser ::set_debug_level (debug_level_type l)
+  {
+    yydebug_ = l;
+  }
+#endif // YYDEBUG
 
-/* The size of the maximum gap between one aligned stack and the next.  */
-# define YYSTACK_GAP_MAXIMUM (sizeof (union yyalloc) - 1)
+   YyParser ::state_type
+   YyParser ::yy_lr_goto_state_ (state_type yystate, int yysym)
+  {
+    int yyr = yypgoto_[yysym - yyntokens_] + yystate;
+    if (0 <= yyr && yyr <= yylast_ && yycheck_[yyr] == yystate)
+      return yytable_[yyr];
+    else
+      return yydefgoto_[yysym - yyntokens_];
+  }
 
-/* The size of an array large to enough to hold all stacks, each with
-   N elements.  */
-# define YYSTACK_BYTES(N) \
-     ((N) * (sizeof (yytype_int16) + sizeof (YYSTYPE)) \
-      + YYSTACK_GAP_MAXIMUM)
+  bool
+   YyParser ::yy_pact_value_is_default_ (int yyvalue)
+  {
+    return yyvalue == yypact_ninf_;
+  }
 
-# define YYCOPY_NEEDED 1
+  bool
+   YyParser ::yy_table_value_is_error_ (int yyvalue)
+  {
+    return yyvalue == yytable_ninf_;
+  }
 
-/* Relocate STACK from its old location to the new one.  The
-   local variables YYSIZE and YYSTACKSIZE give the old and new number of
-   elements in the stack, and YYPTR gives the new location of the
-   stack.  Advance YYPTR to a properly aligned location for the next
-   stack.  */
-# define YYSTACK_RELOCATE(Stack_alloc, Stack)                           \
-    do                                                                  \
-      {                                                                 \
-        YYSIZE_T yynewbytes;                                            \
-        YYCOPY (&yyptr->Stack_alloc, Stack, yysize);                    \
-        Stack = &yyptr->Stack_alloc;                                    \
-        yynewbytes = yystacksize * sizeof (*Stack) + YYSTACK_GAP_MAXIMUM; \
-        yyptr += yynewbytes / sizeof (*yyptr);                          \
-      }                                                                 \
-    while (0)
+  int
+   YyParser ::operator() ()
+  {
+    return parse ();
+  }
 
-#endif
+  int
+   YyParser ::parse ()
+  {
+    // State.
+    int yyn;
+    /// Length of the RHS of the rule being reduced.
+    int yylen = 0;
 
-#if defined YYCOPY_NEEDED && YYCOPY_NEEDED
-/* Copy COUNT objects from SRC to DST.  The source and destination do
-   not overlap.  */
-# ifndef YYCOPY
-#  if defined __GNUC__ && 1 < __GNUC__
-#   define YYCOPY(Dst, Src, Count) \
-      __builtin_memcpy (Dst, Src, (Count) * sizeof (*(Src)))
-#  else
-#   define YYCOPY(Dst, Src, Count)              \
-      do                                        \
-        {                                       \
-          YYSIZE_T yyi;                         \
-          for (yyi = 0; yyi < (Count); yyi++)   \
-            (Dst)[yyi] = (Src)[yyi];            \
-        }                                       \
-      while (0)
-#  endif
-# endif
-#endif /* !YYCOPY_NEEDED */
+    // Error handling.
+    int yynerrs_ = 0;
+    int yyerrstatus_ = 0;
 
-/* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  47
-/* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   122
+    /// The lookahead symbol.
+    symbol_type yyla;
 
-/* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  30
-/* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  27
-/* YYNRULES -- Number of rules.  */
-#define YYNRULES  61
-/* YYNSTATES -- Number of states.  */
-#define YYNSTATES  94
+    /// The return value of parse ().
+    int yyresult;
 
-#define YYUNDEFTOK  2
-#define YYMAXUTOK   275
+#if YY_EXCEPTIONS
+    try
+#endif // YY_EXCEPTIONS
+      {
+    YYCDEBUG << "Starting parse\n";
 
-/* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
-   as returned by yylex, with out-of-bounds checking.  */
-#define YYTRANSLATE(YYX)                                                \
-  ((unsigned) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
 
-/* YYTRANSLATE[TOKEN-NUM] -- Symbol number corresponding to TOKEN-NUM
-   as returned by yylex.  */
-static const yytype_uint8 yytranslate[] =
-{
+    /* Initialize the stack.  The initial state will be set in
+       yynewstate, since the latter expects the semantical and the
+       location values to have been already stored, initialize these
+       stacks with a primary value.  */
+    yystack_.clear ();
+    yypush_ (YY_NULLPTR, 0, YY_MOVE (yyla));
+
+  /*-----------------------------------------------.
+  | yynewstate -- push a new symbol on the stack.  |
+  `-----------------------------------------------*/
+  yynewstate:
+    YYCDEBUG << "Entering state " << yystack_[0].state << '\n';
+
+    // Accept?
+    if (yystack_[0].state == yyfinal_)
+      YYACCEPT;
+
+    goto yybackup;
+
+
+  /*-----------.
+  | yybackup.  |
+  `-----------*/
+  yybackup:
+    // Try to take a decision without lookahead.
+    yyn = yypact_[yystack_[0].state];
+    if (yy_pact_value_is_default_ (yyn))
+      goto yydefault;
+
+    // Read a lookahead token.
+    if (yyla.empty ())
+      {
+        YYCDEBUG << "Reading a token: ";
+#if YY_EXCEPTIONS
+        try
+#endif // YY_EXCEPTIONS
+          {
+            yyla.type = yytranslate_ (yylex (&yyla.value));
+          }
+#if YY_EXCEPTIONS
+        catch (const syntax_error& yyexc)
+          {
+            YYCDEBUG << "Caught exception: " << yyexc.what() << '\n';
+            error (yyexc);
+            goto yyerrlab1;
+          }
+#endif // YY_EXCEPTIONS
+      }
+    YY_SYMBOL_PRINT ("Next token is", yyla);
+
+    /* If the proper action on seeing token YYLA.TYPE is to reduce or
+       to detect an error, take that action.  */
+    yyn += yyla.type_get ();
+    if (yyn < 0 || yylast_ < yyn || yycheck_[yyn] != yyla.type_get ())
+      goto yydefault;
+
+    // Reduce or error.
+    yyn = yytable_[yyn];
+    if (yyn <= 0)
+      {
+        if (yy_table_value_is_error_ (yyn))
+          goto yyerrlab;
+        yyn = -yyn;
+        goto yyreduce;
+      }
+
+    // Count tokens shifted since error; after three, turn off error status.
+    if (yyerrstatus_)
+      --yyerrstatus_;
+
+    // Shift the lookahead token.
+    yypush_ ("Shifting", yyn, YY_MOVE (yyla));
+    goto yynewstate;
+
+
+  /*-----------------------------------------------------------.
+  | yydefault -- do the default action for the current state.  |
+  `-----------------------------------------------------------*/
+  yydefault:
+    yyn = yydefact_[yystack_[0].state];
+    if (yyn == 0)
+      goto yyerrlab;
+    goto yyreduce;
+
+
+  /*-----------------------------.
+  | yyreduce -- do a reduction.  |
+  `-----------------------------*/
+  yyreduce:
+    yylen = yyr2_[yyn];
+    {
+      stack_symbol_type yylhs;
+      yylhs.state = yy_lr_goto_state_ (yystack_[yylen].state, yyr1_[yyn]);
+      /* Variants are always initialized to an empty instance of the
+         correct type. The default '$$ = $1' action is NOT applied
+         when using variants.  */
+      switch (yyr1_[yyn])
+    {
+      case 11: // kNodeType
+      case 12: // kPI
+      case 13: // kFunctionName
+      case 14: // kLiteral
+      case 15: // kVariableReference
+      case 16: // kNumber
+      case 19: // kNameTest
+        yylhs.value.emplace< String > ();
+        break;
+
+      case 45: // ArgumentList
+        yylhs.value.emplace< blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Expression>>> > ();
+        break;
+
+      case 38: // OptionalPredicateList
+      case 39: // PredicateList
+        yylhs.value.emplace< blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > ();
+        break;
+
+      case 31: // Expr
+      case 40: // Predicate
+      case 43: // PrimaryExpr
+      case 44: // FunctionCall
+      case 46: // Argument
+      case 47: // UnionExpr
+      case 48: // PathExpr
+      case 49: // FilterExpr
+      case 50: // OrExpr
+      case 51: // AndExpr
+      case 52: // EqualityExpr
+      case 53: // RelationalExpr
+      case 54: // AdditiveExpr
+      case 55: // MultiplicativeExpr
+      case 56: // UnaryExpr
+        yylhs.value.emplace< blink::Persistent<blink::xpath::Expression> > ();
+        break;
+
+      case 32: // LocationPath
+      case 33: // AbsoluteLocationPath
+      case 34: // RelativeLocationPath
+        yylhs.value.emplace< blink::Persistent<blink::xpath::LocationPath> > ();
+        break;
+
+      case 37: // NodeTest
+        yylhs.value.emplace< blink::Persistent<blink::xpath::Step::NodeTest> > ();
+        break;
+
+      case 35: // Step
+      case 41: // DescendantOrSelf
+      case 42: // AbbreviatedStep
+        yylhs.value.emplace< blink::Persistent<blink::xpath::Step> > ();
+        break;
+
+      case 4: // kEqOp
+      case 5: // kRelOp
+        yylhs.value.emplace< blink::xpath::EqTestOp::Opcode > ();
+        break;
+
+      case 3: // kMulOp
+        yylhs.value.emplace< blink::xpath::NumericOp::Opcode > ();
+        break;
+
+      case 10: // kAxisName
+      case 36: // AxisSpecifier
+        yylhs.value.emplace< blink::xpath::Step::Axis > ();
+        break;
+
+      default:
+        break;
+    }
+
+
+
+      // Perform the reduction.
+      YY_REDUCE_PRINT (yyn);
+#if YY_EXCEPTIONS
+      try
+#endif // YY_EXCEPTIONS
+        {
+          switch (yyn)
+            {
+  case 2:
+#line 128 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      parser_->top_expr_ = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ();
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ();
+    }
+#line 1070 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 3:
+#line 136 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::LocationPath> > ();
+      yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > ()->SetAbsolute(false);
+    }
+#line 1079 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 4:
+#line 142 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::LocationPath> > ();
+      yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > ()->SetAbsolute(true);
+    }
+#line 1088 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 5:
+#line 150 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > () = blink::MakeGarbageCollected<blink::xpath::LocationPath>();
+    }
+#line 1096 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 6:
+#line 155 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::LocationPath> > ();
+    }
+#line 1104 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 7:
+#line 160 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::LocationPath> > ();
+      yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > ()->InsertFirstStep(yystack_[1].value.as < blink::Persistent<blink::xpath::Step> > ());
+    }
+#line 1113 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 8:
+#line 168 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > () = blink::MakeGarbageCollected<blink::xpath::LocationPath>();
+      yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > ()->AppendStep(yystack_[0].value.as < blink::Persistent<blink::xpath::Step> > ());
+    }
+#line 1122 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 9:
+#line 174 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > () = yystack_[2].value.as < blink::Persistent<blink::xpath::LocationPath> > ();
+      yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > ()->AppendStep(yystack_[0].value.as < blink::Persistent<blink::xpath::Step> > ());
+    }
+#line 1131 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 10:
+#line 180 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > () = yystack_[2].value.as < blink::Persistent<blink::xpath::LocationPath> > ();
+      yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > ()->AppendStep(yystack_[1].value.as < blink::Persistent<blink::xpath::Step> > ());
+      yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > ()->AppendStep(yystack_[0].value.as < blink::Persistent<blink::xpath::Step> > ());
+    }
+#line 1141 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 11:
+#line 189 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      if (yystack_[0].value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > ())
+        yylhs.value.as < blink::Persistent<blink::xpath::Step> > () = blink::MakeGarbageCollected<Step>(Step::kChildAxis, *yystack_[1].value.as < blink::Persistent<blink::xpath::Step::NodeTest> > (), *yystack_[0].value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > ());
+      else
+        yylhs.value.as < blink::Persistent<blink::xpath::Step> > () = blink::MakeGarbageCollected<Step>(Step::kChildAxis, *yystack_[1].value.as < blink::Persistent<blink::xpath::Step::NodeTest> > ());
+    }
+#line 1152 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 12:
+#line 197 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      AtomicString local_name;
+      AtomicString namespace_uri;
+      if (!parser_->ExpandQName(yystack_[1].value.as < String > (), local_name, namespace_uri)) {
+        parser_->got_namespace_error_ = true;
+        YYABORT;
+      }
+
+      if (yystack_[0].value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > ())
+        yylhs.value.as < blink::Persistent<blink::xpath::Step> > () = blink::MakeGarbageCollected<Step>(Step::kChildAxis, Step::NodeTest(Step::NodeTest::kNameTest, local_name, namespace_uri), *yystack_[0].value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > ());
+      else
+        yylhs.value.as < blink::Persistent<blink::xpath::Step> > () = blink::MakeGarbageCollected<Step>(Step::kChildAxis, Step::NodeTest(Step::NodeTest::kNameTest, local_name, namespace_uri));
+    }
+#line 1170 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 13:
+#line 212 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      if (yystack_[0].value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > ())
+        yylhs.value.as < blink::Persistent<blink::xpath::Step> > () = blink::MakeGarbageCollected<Step>(yystack_[2].value.as < blink::xpath::Step::Axis > (), *yystack_[1].value.as < blink::Persistent<blink::xpath::Step::NodeTest> > (), *yystack_[0].value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > ());
+      else
+        yylhs.value.as < blink::Persistent<blink::xpath::Step> > () = blink::MakeGarbageCollected<Step>(yystack_[2].value.as < blink::xpath::Step::Axis > (), *yystack_[1].value.as < blink::Persistent<blink::xpath::Step::NodeTest> > ());
+    }
+#line 1181 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 14:
+#line 220 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      AtomicString local_name;
+      AtomicString namespace_uri;
+      if (!parser_->ExpandQName(yystack_[1].value.as < String > (), local_name, namespace_uri)) {
+        parser_->got_namespace_error_ = true;
+        YYABORT;
+      }
+
+      if (yystack_[0].value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > ())
+        yylhs.value.as < blink::Persistent<blink::xpath::Step> > () = blink::MakeGarbageCollected<Step>(yystack_[2].value.as < blink::xpath::Step::Axis > (), Step::NodeTest(Step::NodeTest::kNameTest, local_name, namespace_uri), *yystack_[0].value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > ());
+      else
+        yylhs.value.as < blink::Persistent<blink::xpath::Step> > () = blink::MakeGarbageCollected<Step>(yystack_[2].value.as < blink::xpath::Step::Axis > (), Step::NodeTest(Step::NodeTest::kNameTest, local_name, namespace_uri));
+    }
+#line 1199 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 15:
+#line 234 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    { yylhs.value.as < blink::Persistent<blink::xpath::Step> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Step> > (); }
+#line 1205 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 16:
+#line 238 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    { yylhs.value.as < blink::xpath::Step::Axis > () = yystack_[0].value.as < blink::xpath::Step::Axis > (); }
+#line 1211 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 17:
+#line 241 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::xpath::Step::Axis > () = Step::kAttributeAxis;
+    }
+#line 1219 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 18:
+#line 248 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      if (yystack_[2].value.as < String > () == "node")
+        yylhs.value.as < blink::Persistent<blink::xpath::Step::NodeTest> > () = blink::MakeGarbageCollected<Step::NodeTest>(Step::NodeTest::kAnyNodeTest);
+      else if (yystack_[2].value.as < String > () == "text")
+        yylhs.value.as < blink::Persistent<blink::xpath::Step::NodeTest> > () = blink::MakeGarbageCollected<Step::NodeTest>(Step::NodeTest::kTextNodeTest);
+      else if (yystack_[2].value.as < String > () == "comment")
+        yylhs.value.as < blink::Persistent<blink::xpath::Step::NodeTest> > () = blink::MakeGarbageCollected<Step::NodeTest>(Step::NodeTest::kCommentNodeTest);
+    }
+#line 1232 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 19:
+#line 258 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::Step::NodeTest> > () = blink::MakeGarbageCollected<Step::NodeTest>(Step::NodeTest::kProcessingInstructionNodeTest);
+    }
+#line 1240 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 20:
+#line 263 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::Step::NodeTest> > () = blink::MakeGarbageCollected<Step::NodeTest>(Step::NodeTest::kProcessingInstructionNodeTest, yystack_[1].value.as < String > ().StripWhiteSpace());
+    }
+#line 1248 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 21:
+#line 270 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > () = 0;
+    }
+#line 1256 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 22:
+#line 275 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > () = yystack_[0].value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > ();
+    }
+#line 1264 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 23:
+#line 282 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > () = blink::MakeGarbageCollected<blink::HeapVector<blink::Member<blink::xpath::Predicate>>>();
+      yylhs.value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > ()->push_back(blink::MakeGarbageCollected<blink::xpath::Predicate>(yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ()));
+    }
+#line 1273 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 24:
+#line 288 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > () = yystack_[1].value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > ();
+      yylhs.value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > ()->push_back(blink::MakeGarbageCollected<blink::xpath::Predicate>(yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ()));
+    }
+#line 1282 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 25:
+#line 296 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[1].value.as < blink::Persistent<blink::xpath::Expression> > ();
+    }
+#line 1290 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 26:
+#line 303 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::Step> > () = blink::MakeGarbageCollected<Step>(Step::kDescendantOrSelfAxis, Step::NodeTest(Step::NodeTest::kAnyNodeTest));
+    }
+#line 1298 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 27:
+#line 310 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::Step> > () = blink::MakeGarbageCollected<Step>(Step::kSelfAxis, Step::NodeTest(Step::NodeTest::kAnyNodeTest));
+    }
+#line 1306 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 28:
+#line 315 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::Step> > () = blink::MakeGarbageCollected<Step>(Step::kParentAxis, Step::NodeTest(Step::NodeTest::kAnyNodeTest));
+    }
+#line 1314 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 29:
+#line 322 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::VariableReference>(yystack_[0].value.as < String > ());
+    }
+#line 1322 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 30:
+#line 327 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[1].value.as < blink::Persistent<blink::xpath::Expression> > ();
+    }
+#line 1330 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 31:
+#line 332 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::StringExpression>(yystack_[0].value.as < String > ());
+    }
+#line 1338 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 32:
+#line 337 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::Number>(yystack_[0].value.as < String > ().ToDouble());
+    }
+#line 1346 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 33:
+#line 341 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
+#line 1352 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 34:
+#line 346 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::xpath::CreateFunction(yystack_[2].value.as < String > ());
+      if (!yylhs.value.as < blink::Persistent<blink::xpath::Expression> > ())
+        YYABORT;
+    }
+#line 1362 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 35:
+#line 353 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::xpath::CreateFunction(yystack_[3].value.as < String > (), *yystack_[1].value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Expression>>> > ());
+      if (!yylhs.value.as < blink::Persistent<blink::xpath::Expression> > ())
+        YYABORT;
+    }
+#line 1372 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 36:
+#line 362 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Expression>>> > () = blink::MakeGarbageCollected<blink::HeapVector<blink::Member<blink::xpath::Expression>>>();
+      yylhs.value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Expression>>> > ()->push_back(yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ());
+    }
+#line 1381 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 37:
+#line 368 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Expression>>> > () = yystack_[2].value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Expression>>> > ();
+      yylhs.value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Expression>>> > ()->push_back(yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ());
+    }
+#line 1390 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 38:
+#line 375 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
+#line 1396 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 39:
+#line 379 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
+#line 1402 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 40:
+#line 382 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::Union>();
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > ()->AddSubExpression(yystack_[2].value.as < blink::Persistent<blink::xpath::Expression> > ());
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > ()->AddSubExpression(yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ());
+    }
+#line 1412 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 41:
+#line 391 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::LocationPath> > ();
+    }
+#line 1420 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 42:
+#line 395 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
+#line 1426 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 43:
+#line 398 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yystack_[0].value.as < blink::Persistent<blink::xpath::LocationPath> > ()->SetAbsolute(true);
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::Path>(yystack_[2].value.as < blink::Persistent<blink::xpath::Expression> > (), yystack_[0].value.as < blink::Persistent<blink::xpath::LocationPath> > ());
+    }
+#line 1435 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 44:
+#line 404 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yystack_[0].value.as < blink::Persistent<blink::xpath::LocationPath> > ()->InsertFirstStep(yystack_[1].value.as < blink::Persistent<blink::xpath::Step> > ());
+      yystack_[0].value.as < blink::Persistent<blink::xpath::LocationPath> > ()->SetAbsolute(true);
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::Path>(yystack_[2].value.as < blink::Persistent<blink::xpath::Expression> > (), yystack_[0].value.as < blink::Persistent<blink::xpath::LocationPath> > ());
+    }
+#line 1445 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 45:
+#line 412 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
+#line 1451 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 46:
+#line 415 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::Filter>(yystack_[1].value.as < blink::Persistent<blink::xpath::Expression> > (), *yystack_[0].value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > ());
+    }
+#line 1459 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 47:
+#line 421 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
+#line 1465 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 48:
+#line 424 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::LogicalOp>(blink::xpath::LogicalOp::kOP_Or, yystack_[2].value.as < blink::Persistent<blink::xpath::Expression> > (), yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ());
+    }
+#line 1473 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 49:
+#line 430 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
+#line 1479 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 50:
+#line 433 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::LogicalOp>(blink::xpath::LogicalOp::kOP_And, yystack_[2].value.as < blink::Persistent<blink::xpath::Expression> > (), yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ());
+    }
+#line 1487 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 51:
+#line 439 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
+#line 1493 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 52:
+#line 442 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::EqTestOp>(yystack_[1].value.as < blink::xpath::EqTestOp::Opcode > (), yystack_[2].value.as < blink::Persistent<blink::xpath::Expression> > (), yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ());
+    }
+#line 1501 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 53:
+#line 448 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
+#line 1507 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 54:
+#line 451 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::EqTestOp>(yystack_[1].value.as < blink::xpath::EqTestOp::Opcode > (), yystack_[2].value.as < blink::Persistent<blink::xpath::Expression> > (), yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ());
+    }
+#line 1515 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 55:
+#line 457 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
+#line 1521 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 56:
+#line 460 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::NumericOp>(blink::xpath::NumericOp::kOP_Add, yystack_[2].value.as < blink::Persistent<blink::xpath::Expression> > (), yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ());
+    }
+#line 1529 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 57:
+#line 465 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::NumericOp>(blink::xpath::NumericOp::kOP_Sub, yystack_[2].value.as < blink::Persistent<blink::xpath::Expression> > (), yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ());
+    }
+#line 1537 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 58:
+#line 471 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
+#line 1543 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 59:
+#line 474 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::NumericOp>(yystack_[1].value.as < blink::xpath::NumericOp::Opcode > (), yystack_[2].value.as < blink::Persistent<blink::xpath::Expression> > (), yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ());
+    }
+#line 1551 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 60:
+#line 480 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
+#line 1557 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+  case 61:
+#line 483 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+    {
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::Negative>();
+      yylhs.value.as < blink::Persistent<blink::xpath::Expression> > ()->AddSubExpression(yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ());
+    }
+#line 1566 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+    break;
+
+
+#line 1570 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+
+            default:
+              break;
+            }
+        }
+#if YY_EXCEPTIONS
+      catch (const syntax_error& yyexc)
+        {
+          YYCDEBUG << "Caught exception: " << yyexc.what() << '\n';
+          error (yyexc);
+          YYERROR;
+        }
+#endif // YY_EXCEPTIONS
+      YY_SYMBOL_PRINT ("-> $$ =", yylhs);
+      yypop_ (yylen);
+      yylen = 0;
+      YY_STACK_PRINT ();
+
+      // Shift the result of the reduction.
+      yypush_ (YY_NULLPTR, YY_MOVE (yylhs));
+    }
+    goto yynewstate;
+
+
+  /*--------------------------------------.
+  | yyerrlab -- here on detecting error.  |
+  `--------------------------------------*/
+  yyerrlab:
+    // If not already recovering from an error, report this error.
+    if (!yyerrstatus_)
+      {
+        ++yynerrs_;
+        error (yysyntax_error_ (yystack_[0].state, yyla));
+      }
+
+
+    if (yyerrstatus_ == 3)
+      {
+        /* If just tried and failed to reuse lookahead token after an
+           error, discard it.  */
+
+        // Return failure if at end of input.
+        if (yyla.type_get () == yyeof_)
+          YYABORT;
+        else if (!yyla.empty ())
+          {
+            yy_destroy_ ("Error: discarding", yyla);
+            yyla.clear ();
+          }
+      }
+
+    // Else will try to reuse lookahead token after shifting the error token.
+    goto yyerrlab1;
+
+
+  /*---------------------------------------------------.
+  | yyerrorlab -- error raised explicitly by YYERROR.  |
+  `---------------------------------------------------*/
+  yyerrorlab:
+    /* Pacify compilers when the user code never invokes YYERROR and
+       the label yyerrorlab therefore never appears in user code.  */
+    if (false)
+      YYERROR;
+
+    /* Do not reclaim the symbols of the rule whose action triggered
+       this YYERROR.  */
+    yypop_ (yylen);
+    yylen = 0;
+    goto yyerrlab1;
+
+
+  /*-------------------------------------------------------------.
+  | yyerrlab1 -- common code for both syntax error and YYERROR.  |
+  `-------------------------------------------------------------*/
+  yyerrlab1:
+    yyerrstatus_ = 3;   // Each real token shifted decrements this.
+    {
+      stack_symbol_type error_token;
+      for (;;)
+        {
+          yyn = yypact_[yystack_[0].state];
+          if (!yy_pact_value_is_default_ (yyn))
+            {
+              yyn += yyterror_;
+              if (0 <= yyn && yyn <= yylast_ && yycheck_[yyn] == yyterror_)
+                {
+                  yyn = yytable_[yyn];
+                  if (0 < yyn)
+                    break;
+                }
+            }
+
+          // Pop the current state because it cannot handle the error token.
+          if (yystack_.size () == 1)
+            YYABORT;
+
+          yy_destroy_ ("Error: popping", yystack_[0]);
+          yypop_ ();
+          YY_STACK_PRINT ();
+        }
+
+
+      // Shift the error token.
+      error_token.state = yyn;
+      yypush_ ("Shifting", YY_MOVE (error_token));
+    }
+    goto yynewstate;
+
+
+  /*-------------------------------------.
+  | yyacceptlab -- YYACCEPT comes here.  |
+  `-------------------------------------*/
+  yyacceptlab:
+    yyresult = 0;
+    goto yyreturn;
+
+
+  /*-----------------------------------.
+  | yyabortlab -- YYABORT comes here.  |
+  `-----------------------------------*/
+  yyabortlab:
+    yyresult = 1;
+    goto yyreturn;
+
+
+  /*-----------------------------------------------------.
+  | yyreturn -- parsing is finished, return the result.  |
+  `-----------------------------------------------------*/
+  yyreturn:
+    if (!yyla.empty ())
+      yy_destroy_ ("Cleanup: discarding lookahead", yyla);
+
+    /* Do not reclaim the symbols of the rule whose action triggered
+       this YYABORT or YYACCEPT.  */
+    yypop_ (yylen);
+    while (1 < yystack_.size ())
+      {
+        yy_destroy_ ("Cleanup: popping", yystack_[0]);
+        yypop_ ();
+      }
+
+    return yyresult;
+  }
+#if YY_EXCEPTIONS
+    catch (...)
+      {
+        YYCDEBUG << "Exception caught: cleaning lookahead and stack\n";
+        // Do not try to display the values of the reclaimed symbols,
+        // as their printers might throw an exception.
+        if (!yyla.empty ())
+          yy_destroy_ (YY_NULLPTR, yyla);
+
+        while (1 < yystack_.size ())
+          {
+            yy_destroy_ (YY_NULLPTR, yystack_[0]);
+            yypop_ ();
+          }
+        throw;
+      }
+#endif // YY_EXCEPTIONS
+  }
+
+  void
+   YyParser ::error (const syntax_error& yyexc)
+  {
+    error (yyexc.what ());
+  }
+
+  // Generate an error message.
+  std::string
+   YyParser ::yysyntax_error_ (state_type, const symbol_type&) const
+  {
+    return YY_("syntax error");
+  }
+
+
+  const signed char  YyParser ::yypact_ninf_ = -44;
+
+  const signed char  YyParser ::yytable_ninf_ = -1;
+
+  const signed char
+   YyParser ::yypact_[] =
+  {
+      77,    77,   -44,    -9,    -4,    18,   -44,   -44,   -44,   -44,
+     -44,    19,    -2,   -44,    77,   -44,    36,   -44,   -44,    13,
+     -44,    11,    19,    -2,   -44,    19,   -44,    21,   -44,    17,
+      34,    38,    44,    46,    20,    49,   -44,   -44,    25,    -3,
+      59,    77,   -44,    19,   -44,    13,    29,   -44,    -2,    -2,
+      19,    19,   -44,    13,    19,    95,    -2,    -2,    77,    77,
+      77,    77,    77,    77,    77,   -44,    30,   -44,   -44,   -44,
+       0,   -44,    31,   -44,   -44,   -44,   -44,   -44,   -44,   -44,
+      13,    13,    38,    44,    46,    20,    49,    49,   -44,   -44,
+     -44,    77,   -44,   -44
+  };
+
+  const unsigned char
+   YyParser ::yydefact_[] =
+  {
+       0,     0,    16,     0,     0,     0,    31,    29,    32,    28,
+      26,    21,     5,    17,     0,    27,     0,    41,     4,     3,
+       8,     0,    21,     0,    15,    45,    33,    60,    39,    42,
+       2,    47,    49,    51,    53,    55,    58,    61,     0,     0,
+       0,     0,    12,    22,    23,     6,     0,     1,     0,     0,
+      21,    21,    11,     7,    46,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,    18,     0,    19,    34,    38,
+       0,    36,     0,    24,    30,     9,    10,    14,    13,    40,
+      43,    44,    48,    50,    52,    54,    56,    57,    59,    20,
+      35,     0,    25,    37
+  };
+
+  const signed char
+   YyParser ::yypgoto_[] =
+  {
+     -44,     2,   -44,   -44,   -11,   -43,   -44,    35,   -18,    33,
+     -36,   -16,   -44,   -44,   -44,   -44,   -32,   -44,     5,   -44,
+     -44,     3,     8,    -5,     1,   -23,    -1
+  };
+
+  const signed char
+   YyParser ::yydefgoto_[] =
+  {
+      -1,    69,    17,    18,    19,    20,    21,    22,    42,    43,
+      44,    23,    24,    25,    26,    70,    71,    27,    28,    29,
+      30,    31,    32,    33,    34,    35,    36
+  };
+
+  const unsigned char
+   YyParser ::yytable_[] =
+  {
+      37,    45,    16,    49,    52,    75,    76,    73,     2,     3,
+       4,    66,    53,    57,    38,     9,    46,    11,    73,    39,
+      13,    67,     3,     4,    90,    15,    62,    63,    91,    49,
+      50,    10,    77,    78,    48,    10,    47,    49,    56,    86,
+      87,    40,    58,    72,    41,    80,    81,    59,    60,    65,
+      55,    61,    64,    74,    89,    84,    51,    92,    54,    93,
+      79,    82,    85,    88,    49,    49,     1,    83,     0,     2,
+       3,     4,     5,     6,     7,     8,     9,    10,    11,     0,
+      12,    13,    14,    68,     1,     0,    15,     2,     3,     4,
+       5,     6,     7,     8,     9,    10,    11,     0,    12,    13,
+      14,     0,     0,     0,    15,     2,     3,     4,     5,     6,
+       7,     8,     9,    10,    11,     0,    12,    13,    14,     0,
+       0,     0,    15
+  };
+
+  const signed char
+   YyParser ::yycheck_[] =
+  {
+       1,    12,     0,    19,    22,    48,    49,    43,    10,    11,
+      12,    14,    23,    29,    23,    17,    14,    19,    54,    23,
+      22,    24,    11,    12,    24,    27,     6,     7,    28,    45,
+      19,    18,    50,    51,    21,    18,     0,    53,    21,    62,
+      63,    23,     8,    41,    25,    56,    57,     9,     4,    24,
+      29,     5,     3,    24,    24,    60,    21,    26,    25,    91,
+      55,    58,    61,    64,    80,    81,     7,    59,    -1,    10,
+      11,    12,    13,    14,    15,    16,    17,    18,    19,    -1,
+      21,    22,    23,    24,     7,    -1,    27,    10,    11,    12,
+      13,    14,    15,    16,    17,    18,    19,    -1,    21,    22,
+      23,    -1,    -1,    -1,    27,    10,    11,    12,    13,    14,
+      15,    16,    17,    18,    19,    -1,    21,    22,    23,    -1,
+      -1,    -1,    27
+  };
+
+  const unsigned char
+   YyParser ::yystos_[] =
+  {
+       0,     7,    10,    11,    12,    13,    14,    15,    16,    17,
+      18,    19,    21,    22,    23,    27,    31,    32,    33,    34,
+      35,    36,    37,    41,    42,    43,    44,    47,    48,    49,
+      50,    51,    52,    53,    54,    55,    56,    56,    23,    23,
+      23,    25,    38,    39,    40,    34,    31,     0,    21,    41,
+      19,    37,    38,    34,    39,    29,    21,    41,     8,     9,
+       4,     5,     6,     7,     3,    24,    14,    24,    24,    31,
+      45,    46,    31,    40,    24,    35,    35,    38,    38,    48,
+      34,    34,    51,    52,    53,    54,    55,    55,    56,    24,
+      24,    28,    26,    46
+  };
+
+  const unsigned char
+   YyParser ::yyr1_[] =
+  {
+       0,    30,    31,    32,    32,    33,    33,    33,    34,    34,
+      34,    35,    35,    35,    35,    35,    36,    36,    37,    37,
+      37,    38,    38,    39,    39,    40,    41,    42,    42,    43,
+      43,    43,    43,    43,    44,    44,    45,    45,    46,    47,
+      47,    48,    48,    48,    48,    49,    49,    50,    50,    51,
+      51,    52,    52,    53,    53,    54,    54,    54,    55,    55,
+      56,    56
+  };
+
+  const unsigned char
+   YyParser ::yyr2_[] =
+  {
+       0,     2,     1,     1,     1,     1,     2,     2,     1,     3,
+       3,     2,     2,     3,     3,     1,     1,     1,     3,     3,
+       4,     0,     1,     1,     2,     3,     1,     1,     1,     1,
+       3,     1,     1,     1,     3,     4,     1,     3,     1,     1,
+       3,     1,     1,     3,     3,     1,     2,     1,     3,     1,
+       3,     1,     3,     1,     3,     1,     3,     3,     1,     3,
+       1,     2
+  };
+
+
+#if YYDEBUG
+  // YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
+  // First, the terminals, then, starting at \a yyntokens_, nonterminals.
+  const char*
+  const  YyParser ::yytname_[] =
+  {
+  "$end", "error", "$undefined", "kMulOp", "kEqOp", "kRelOp", "kPlus",
+  "kMinus", "kOr", "kAnd", "kAxisName", "kNodeType", "kPI",
+  "kFunctionName", "kLiteral", "kVariableReference", "kNumber", "kDotDot",
+  "kSlashSlash", "kNameTest", "kXPathError", "'/'", "'@'", "'('", "')'",
+  "'['", "']'", "'.'", "','", "'|'", "$accept", "Expr", "LocationPath",
+  "AbsoluteLocationPath", "RelativeLocationPath", "Step", "AxisSpecifier",
+  "NodeTest", "OptionalPredicateList", "PredicateList", "Predicate",
+  "DescendantOrSelf", "AbbreviatedStep", "PrimaryExpr", "FunctionCall",
+  "ArgumentList", "Argument", "UnionExpr", "PathExpr", "FilterExpr",
+  "OrExpr", "AndExpr", "EqualityExpr", "RelationalExpr", "AdditiveExpr",
+  "MultiplicativeExpr", "UnaryExpr", YY_NULLPTR
+  };
+
+
+  const unsigned short
+   YyParser ::yyrline_[] =
+  {
+       0,   127,   127,   135,   141,   149,   154,   159,   167,   173,
+     179,   188,   196,   211,   219,   234,   238,   240,   247,   257,
+     262,   270,   274,   281,   287,   295,   302,   309,   314,   321,
+     326,   331,   336,   341,   345,   352,   361,   367,   375,   379,
+     381,   390,   395,   397,   403,   412,   414,   421,   423,   430,
+     432,   439,   441,   448,   450,   457,   459,   464,   471,   473,
+     480,   482
+  };
+
+  // Print the state stack on the debug stream.
+  void
+   YyParser ::yystack_print_ ()
+  {
+    *yycdebug_ << "Stack now";
+    for (stack_type::const_iterator
+           i = yystack_.begin (),
+           i_end = yystack_.end ();
+         i != i_end; ++i)
+      *yycdebug_ << ' ' << i->state;
+    *yycdebug_ << '\n';
+  }
+
+  // Report on the debug stream that the rule \a yyrule is going to be reduced.
+  void
+   YyParser ::yy_reduce_print_ (int yyrule)
+  {
+    unsigned yylno = yyrline_[yyrule];
+    int yynrhs = yyr2_[yyrule];
+    // Print the symbols being reduced, and their result.
+    *yycdebug_ << "Reducing stack by rule " << yyrule - 1
+               << " (line " << yylno << "):\n";
+    // The symbols being reduced.
+    for (int yyi = 0; yyi < yynrhs; yyi++)
+      YY_SYMBOL_PRINT ("   $" << yyi + 1 << " =",
+                       yystack_[(yynrhs) - (yyi + 1)]);
+  }
+#endif // YYDEBUG
+
+   YyParser ::token_number_type
+   YyParser ::yytranslate_ (int t)
+  {
+    // YYTRANSLATE[TOKEN-NUM] -- Symbol number corresponding to
+    // TOKEN-NUM as returned by yylex.
+    static
+    const token_number_type
+    translate_table[] =
+    {
        0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -485,1525 +1968,20 @@ static const yytype_uint8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20
-};
-
-#if YYDEBUG
-  /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-static const yytype_uint16 yyrline[] =
-{
-       0,   134,   134,   141,   146,   153,   158,   163,   171,   177,
-     182,   190,   198,   214,   222,   238,   242,   244,   251,   263,
-     269,   279,   283,   287,   293,   300,   307,   314,   319,   326,
-     332,   337,   343,   349,   353,   361,   371,   377,   384,   388,
-     390,   399,   404,   406,   412,   421,   423,   430,   432,   439,
-     441,   448,   450,   457,   459,   466,   468,   473,   480,   482,
-     489,   491
-};
-#endif
-
-#if YYDEBUG || YYERROR_VERBOSE || 0
-/* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
-   First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
-static const char *const yytname[] =
-{
-  "$end", "error", "$undefined", "MULOP", "EQOP", "RELOP", "PLUS",
-  "MINUS", "OR", "AND", "AXISNAME", "NODETYPE", "PI", "FUNCTIONNAME",
-  "LITERAL", "VARIABLEREFERENCE", "NUMBER", "DOTDOT", "SLASHSLASH",
-  "NAMETEST", "XPATH_ERROR", "'/'", "'@'", "'('", "')'", "'['", "']'",
-  "'.'", "','", "'|'", "$accept", "Expr", "LocationPath",
-  "AbsoluteLocationPath", "RelativeLocationPath", "Step", "AxisSpecifier",
-  "NodeTest", "OptionalPredicateList", "PredicateList", "Predicate",
-  "DescendantOrSelf", "AbbreviatedStep", "PrimaryExpr", "FunctionCall",
-  "ArgumentList", "Argument", "UnionExpr", "PathExpr", "FilterExpr",
-  "OrExpr", "AndExpr", "EqualityExpr", "RelationalExpr", "AdditiveExpr",
-  "MultiplicativeExpr", "UnaryExpr", YY_NULLPTR
-};
-#endif
-
-# ifdef YYPRINT
-/* YYTOKNUM[NUM] -- (External) token number corresponding to the
-   (internal) symbol number NUM (which must be that of a token).  */
-static const yytype_uint16 yytoknum[] =
-{
-       0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
-     265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
-     275,    47,    64,    40,    41,    91,    93,    46,    44,   124
-};
-# endif
-
-#define YYPACT_NINF -44
-
-#define yypact_value_is_default(Yystate) \
-  (!!((Yystate) == (-44)))
-
-#define YYTABLE_NINF -1
-
-#define yytable_value_is_error(Yytable_value) \
-  0
-
-  /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
-     STATE-NUM.  */
-static const yytype_int8 yypact[] =
-{
-      77,    77,   -44,    -9,    -4,    18,   -44,   -44,   -44,   -44,
-     -44,    19,    -2,   -44,    77,   -44,    36,   -44,   -44,    13,
-     -44,    11,    19,    -2,   -44,    19,   -44,    21,   -44,    17,
-      34,    38,    44,    46,    20,    49,   -44,   -44,    25,    -3,
-      59,    77,   -44,    19,   -44,    13,    29,   -44,    -2,    -2,
-      19,    19,   -44,    13,    19,    95,    -2,    -2,    77,    77,
-      77,    77,    77,    77,    77,   -44,    30,   -44,   -44,   -44,
-       0,   -44,    31,   -44,   -44,   -44,   -44,   -44,   -44,   -44,
-      13,    13,    38,    44,    46,    20,    49,    49,   -44,   -44,
-     -44,    77,   -44,   -44
-};
-
-  /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
-     Performed when YYTABLE does not specify something else to do.  Zero
-     means the default is an error.  */
-static const yytype_uint8 yydefact[] =
-{
-       0,     0,    16,     0,     0,     0,    31,    29,    32,    28,
-      26,    21,     5,    17,     0,    27,     0,    41,     4,     3,
-       8,     0,    21,     0,    15,    45,    33,    60,    39,    42,
-       2,    47,    49,    51,    53,    55,    58,    61,     0,     0,
-       0,     0,    12,    22,    23,     6,     0,     1,     0,     0,
-      21,    21,    11,     7,    46,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,    18,     0,    19,    34,    38,
-       0,    36,     0,    24,    30,     9,    10,    14,    13,    40,
-      43,    44,    48,    50,    52,    54,    56,    57,    59,    20,
-      35,     0,    25,    37
-};
-
-  /* YYPGOTO[NTERM-NUM].  */
-static const yytype_int8 yypgoto[] =
-{
-     -44,     2,   -44,   -44,   -11,   -43,   -44,    35,   -18,    33,
-     -36,   -16,   -44,   -44,   -44,   -44,   -32,   -44,     5,   -44,
-     -44,     3,     8,    -5,     1,   -23,    -1
-};
-
-  /* YYDEFGOTO[NTERM-NUM].  */
-static const yytype_int8 yydefgoto[] =
-{
-      -1,    69,    17,    18,    19,    20,    21,    22,    42,    43,
-      44,    23,    24,    25,    26,    70,    71,    27,    28,    29,
-      30,    31,    32,    33,    34,    35,    36
-};
-
-  /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
-     positive, shift that token.  If negative, reduce the rule whose
-     number is the opposite.  If YYTABLE_NINF, syntax error.  */
-static const yytype_uint8 yytable[] =
-{
-      37,    45,    16,    49,    52,    75,    76,    73,     2,     3,
-       4,    66,    53,    57,    38,     9,    46,    11,    73,    39,
-      13,    67,     3,     4,    90,    15,    62,    63,    91,    49,
-      50,    10,    77,    78,    48,    10,    47,    49,    56,    86,
-      87,    40,    58,    72,    41,    80,    81,    59,    60,    65,
-      55,    61,    64,    74,    89,    84,    51,    92,    54,    93,
-      79,    82,    85,    88,    49,    49,     1,    83,     0,     2,
-       3,     4,     5,     6,     7,     8,     9,    10,    11,     0,
-      12,    13,    14,    68,     1,     0,    15,     2,     3,     4,
-       5,     6,     7,     8,     9,    10,    11,     0,    12,    13,
-      14,     0,     0,     0,    15,     2,     3,     4,     5,     6,
-       7,     8,     9,    10,    11,     0,    12,    13,    14,     0,
-       0,     0,    15
-};
-
-static const yytype_int8 yycheck[] =
-{
-       1,    12,     0,    19,    22,    48,    49,    43,    10,    11,
-      12,    14,    23,    29,    23,    17,    14,    19,    54,    23,
-      22,    24,    11,    12,    24,    27,     6,     7,    28,    45,
-      19,    18,    50,    51,    21,    18,     0,    53,    21,    62,
-      63,    23,     8,    41,    25,    56,    57,     9,     4,    24,
-      29,     5,     3,    24,    24,    60,    21,    26,    25,    91,
-      55,    58,    61,    64,    80,    81,     7,    59,    -1,    10,
-      11,    12,    13,    14,    15,    16,    17,    18,    19,    -1,
-      21,    22,    23,    24,     7,    -1,    27,    10,    11,    12,
-      13,    14,    15,    16,    17,    18,    19,    -1,    21,    22,
-      23,    -1,    -1,    -1,    27,    10,    11,    12,    13,    14,
-      15,    16,    17,    18,    19,    -1,    21,    22,    23,    -1,
-      -1,    -1,    27
-};
-
-  /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
-     symbol of state STATE-NUM.  */
-static const yytype_uint8 yystos[] =
-{
-       0,     7,    10,    11,    12,    13,    14,    15,    16,    17,
-      18,    19,    21,    22,    23,    27,    31,    32,    33,    34,
-      35,    36,    37,    41,    42,    43,    44,    47,    48,    49,
-      50,    51,    52,    53,    54,    55,    56,    56,    23,    23,
-      23,    25,    38,    39,    40,    34,    31,     0,    21,    41,
-      19,    37,    38,    34,    39,    29,    21,    41,     8,     9,
-       4,     5,     6,     7,     3,    24,    14,    24,    24,    31,
-      45,    46,    31,    40,    24,    35,    35,    38,    38,    48,
-      34,    34,    51,    52,    53,    54,    55,    55,    56,    24,
-      24,    28,    26,    46
-};
-
-  /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
-static const yytype_uint8 yyr1[] =
-{
-       0,    30,    31,    32,    32,    33,    33,    33,    34,    34,
-      34,    35,    35,    35,    35,    35,    36,    36,    37,    37,
-      37,    38,    38,    39,    39,    40,    41,    42,    42,    43,
-      43,    43,    43,    43,    44,    44,    45,    45,    46,    47,
-      47,    48,    48,    48,    48,    49,    49,    50,    50,    51,
-      51,    52,    52,    53,    53,    54,    54,    54,    55,    55,
-      56,    56
-};
-
-  /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
-static const yytype_uint8 yyr2[] =
-{
-       0,     2,     1,     1,     1,     1,     2,     2,     1,     3,
-       3,     2,     2,     3,     3,     1,     1,     1,     3,     3,
-       4,     0,     1,     1,     2,     3,     1,     1,     1,     1,
-       3,     1,     1,     1,     3,     4,     1,     3,     1,     1,
-       3,     1,     1,     3,     3,     1,     2,     1,     3,     1,
-       3,     1,     3,     1,     3,     1,     3,     3,     1,     3,
-       1,     2
-};
-
-
-#define yyerrok         (yyerrstatus = 0)
-#define yyclearin       (yychar = YYEMPTY)
-#define YYEMPTY         (-2)
-#define YYEOF           0
-
-#define YYACCEPT        goto yyacceptlab
-#define YYABORT         goto yyabortlab
-#define YYERROR         goto yyerrorlab
-
-
-#define YYRECOVERING()  (!!yyerrstatus)
-
-#define YYBACKUP(Token, Value)                                    \
-  do                                                              \
-    if (yychar == YYEMPTY)                                        \
-      {                                                           \
-        yychar = (Token);                                         \
-        yylval = (Value);                                         \
-        YYPOPSTACK (yylen);                                       \
-        yystate = *yyssp;                                         \
-        goto yybackup;                                            \
-      }                                                           \
-    else                                                          \
-      {                                                           \
-        yyerror (parser, YY_("syntax error: cannot back up")); \
-        YYERROR;                                                  \
-      }                                                           \
-  while (0)
-
-/* Error token number */
-#define YYTERROR        1
-#define YYERRCODE       256
-
-
-
-/* Enable debugging if requested.  */
-#if YYDEBUG
-
-# ifndef YYFPRINTF
-#  include <stdio.h> /* INFRINGES ON USER NAME SPACE */
-#  define YYFPRINTF fprintf
-# endif
-
-# define YYDPRINTF(Args)                        \
-do {                                            \
-  if (yydebug)                                  \
-    YYFPRINTF Args;                             \
-} while (0)
-
-/* This macro is provided for backward compatibility. */
-#ifndef YY_LOCATION_PRINT
-# define YY_LOCATION_PRINT(File, Loc) ((void) 0)
-#endif
-
-
-# define YY_SYMBOL_PRINT(Title, Type, Value, Location)                    \
-do {                                                                      \
-  if (yydebug)                                                            \
-    {                                                                     \
-      YYFPRINTF (stderr, "%s ", Title);                                   \
-      yy_symbol_print (stderr,                                            \
-                  Type, Value, parser); \
-      YYFPRINTF (stderr, "\n");                                           \
-    }                                                                     \
-} while (0)
-
-
-/*-----------------------------------.
-| Print this symbol's value on YYO.  |
-`-----------------------------------*/
-
-static void
-yy_symbol_value_print (FILE *yyo, int yytype, YYSTYPE const * const yyvaluep, blink::xpath::Parser* parser)
-{
-  FILE *yyoutput = yyo;
-  YYUSE (yyoutput);
-  YYUSE (parser);
-  if (!yyvaluep)
-    return;
-# ifdef YYPRINT
-  if (yytype < YYNTOKENS)
-    YYPRINT (yyo, yytoknum[yytype], *yyvaluep);
-# endif
-  YYUSE (yytype);
-}
-
-
-/*---------------------------.
-| Print this symbol on YYO.  |
-`---------------------------*/
-
-static void
-yy_symbol_print (FILE *yyo, int yytype, YYSTYPE const * const yyvaluep, blink::xpath::Parser* parser)
-{
-  YYFPRINTF (yyo, "%s %s (",
-             yytype < YYNTOKENS ? "token" : "nterm", yytname[yytype]);
-
-  yy_symbol_value_print (yyo, yytype, yyvaluep, parser);
-  YYFPRINTF (yyo, ")");
-}
-
-/*------------------------------------------------------------------.
-| yy_stack_print -- Print the state stack from its BOTTOM up to its |
-| TOP (included).                                                   |
-`------------------------------------------------------------------*/
-
-static void
-yy_stack_print (yytype_int16 *yybottom, yytype_int16 *yytop)
-{
-  YYFPRINTF (stderr, "Stack now");
-  for (; yybottom <= yytop; yybottom++)
-    {
-      int yybot = *yybottom;
-      YYFPRINTF (stderr, " %d", yybot);
-    }
-  YYFPRINTF (stderr, "\n");
-}
-
-# define YY_STACK_PRINT(Bottom, Top)                            \
-do {                                                            \
-  if (yydebug)                                                  \
-    yy_stack_print ((Bottom), (Top));                           \
-} while (0)
-
-
-/*------------------------------------------------.
-| Report that the YYRULE is going to be reduced.  |
-`------------------------------------------------*/
-
-static void
-yy_reduce_print (yytype_int16 *yyssp, YYSTYPE *yyvsp, int yyrule, blink::xpath::Parser* parser)
-{
-  unsigned long yylno = yyrline[yyrule];
-  int yynrhs = yyr2[yyrule];
-  int yyi;
-  YYFPRINTF (stderr, "Reducing stack by rule %d (line %lu):\n",
-             yyrule - 1, yylno);
-  /* The symbols being reduced.  */
-  for (yyi = 0; yyi < yynrhs; yyi++)
-    {
-      YYFPRINTF (stderr, "   $%d = ", yyi + 1);
-      yy_symbol_print (stderr,
-                       yystos[yyssp[yyi + 1 - yynrhs]],
-                       &yyvsp[(yyi + 1) - (yynrhs)]
-                                              , parser);
-      YYFPRINTF (stderr, "\n");
-    }
-}
-
-# define YY_REDUCE_PRINT(Rule)          \
-do {                                    \
-  if (yydebug)                          \
-    yy_reduce_print (yyssp, yyvsp, Rule, parser); \
-} while (0)
-
-/* Nonzero means print parse trace.  It is left uninitialized so that
-   multiple parsers can coexist.  */
-int yydebug;
-#else /* !YYDEBUG */
-# define YYDPRINTF(Args)
-# define YY_SYMBOL_PRINT(Title, Type, Value, Location)
-# define YY_STACK_PRINT(Bottom, Top)
-# define YY_REDUCE_PRINT(Rule)
-#endif /* !YYDEBUG */
-
-
-/* YYINITDEPTH -- initial size of the parser's stacks.  */
-#ifndef YYINITDEPTH
-# define YYINITDEPTH 200
-#endif
-
-/* YYMAXDEPTH -- maximum size the stacks can grow to (effective only
-   if the built-in stack extension method is used).
-
-   Do not make this value too large; the results are undefined if
-   YYSTACK_ALLOC_MAXIMUM < YYSTACK_BYTES (YYMAXDEPTH)
-   evaluated with infinite-precision integer arithmetic.  */
-
-#ifndef YYMAXDEPTH
-# define YYMAXDEPTH 10000
-#endif
-
-
-#if YYERROR_VERBOSE
-
-# ifndef yystrlen
-#  if defined __GLIBC__ && defined _STRING_H
-#   define yystrlen strlen
-#  else
-/* Return the length of YYSTR.  */
-static YYSIZE_T
-yystrlen (const char *yystr)
-{
-  YYSIZE_T yylen;
-  for (yylen = 0; yystr[yylen]; yylen++)
-    continue;
-  return yylen;
-}
-#  endif
-# endif
-
-# ifndef yystpcpy
-#  if defined __GLIBC__ && defined _STRING_H && defined _GNU_SOURCE
-#   define yystpcpy stpcpy
-#  else
-/* Copy YYSRC to YYDEST, returning the address of the terminating '\0' in
-   YYDEST.  */
-static char *
-yystpcpy (char *yydest, const char *yysrc)
-{
-  char *yyd = yydest;
-  const char *yys = yysrc;
-
-  while ((*yyd++ = *yys++) != '\0')
-    continue;
-
-  return yyd - 1;
-}
-#  endif
-# endif
-
-# ifndef yytnamerr
-/* Copy to YYRES the contents of YYSTR after stripping away unnecessary
-   quotes and backslashes, so that it's suitable for yyerror.  The
-   heuristic is that double-quoting is unnecessary unless the string
-   contains an apostrophe, a comma, or backslash (other than
-   backslash-backslash).  YYSTR is taken from yytname.  If YYRES is
-   null, do not copy; instead, return the length of what the result
-   would have been.  */
-static YYSIZE_T
-yytnamerr (char *yyres, const char *yystr)
-{
-  if (*yystr == '"')
-    {
-      YYSIZE_T yyn = 0;
-      char const *yyp = yystr;
-
-      for (;;)
-        switch (*++yyp)
-          {
-          case '\'':
-          case ',':
-            goto do_not_strip_quotes;
-
-          case '\\':
-            if (*++yyp != '\\')
-              goto do_not_strip_quotes;
-            else
-              goto append;
-
-          append:
-          default:
-            if (yyres)
-              yyres[yyn] = *yyp;
-            yyn++;
-            break;
-
-          case '"':
-            if (yyres)
-              yyres[yyn] = '\0';
-            return yyn;
-          }
-    do_not_strip_quotes: ;
-    }
-
-  if (! yyres)
-    return yystrlen (yystr);
-
-  return (YYSIZE_T) (yystpcpy (yyres, yystr) - yyres);
-}
-# endif
-
-/* Copy into *YYMSG, which is of size *YYMSG_ALLOC, an error message
-   about the unexpected token YYTOKEN for the state stack whose top is
-   YYSSP.
-
-   Return 0 if *YYMSG was successfully written.  Return 1 if *YYMSG is
-   not large enough to hold the message.  In that case, also set
-   *YYMSG_ALLOC to the required number of bytes.  Return 2 if the
-   required number of bytes is too large to store.  */
-static int
-yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
-                yytype_int16 *yyssp, int yytoken)
-{
-  YYSIZE_T yysize0 = yytnamerr (YY_NULLPTR, yytname[yytoken]);
-  YYSIZE_T yysize = yysize0;
-  enum { YYERROR_VERBOSE_ARGS_MAXIMUM = 5 };
-  /* Internationalized format string. */
-  const char *yyformat = YY_NULLPTR;
-  /* Arguments of yyformat. */
-  char const *yyarg[YYERROR_VERBOSE_ARGS_MAXIMUM];
-  /* Number of reported tokens (one for the "unexpected", one per
-     "expected"). */
-  int yycount = 0;
-
-  /* There are many possibilities here to consider:
-     - If this state is a consistent state with a default action, then
-       the only way this function was invoked is if the default action
-       is an error action.  In that case, don't check for expected
-       tokens because there are none.
-     - The only way there can be no lookahead present (in yychar) is if
-       this state is a consistent state with a default action.  Thus,
-       detecting the absence of a lookahead is sufficient to determine
-       that there is no unexpected or expected token to report.  In that
-       case, just report a simple "syntax error".
-     - Don't assume there isn't a lookahead just because this state is a
-       consistent state with a default action.  There might have been a
-       previous inconsistent state, consistent state with a non-default
-       action, or user semantic action that manipulated yychar.
-     - Of course, the expected token list depends on states to have
-       correct lookahead information, and it depends on the parser not
-       to perform extra reductions after fetching a lookahead from the
-       scanner and before detecting a syntax error.  Thus, state merging
-       (from LALR or IELR) and default reductions corrupt the expected
-       token list.  However, the list is correct for canonical LR with
-       one exception: it will still contain any token that will not be
-       accepted due to an error action in a later state.
-  */
-  if (yytoken != YYEMPTY)
-    {
-      int yyn = yypact[*yyssp];
-      yyarg[yycount++] = yytname[yytoken];
-      if (!yypact_value_is_default (yyn))
-        {
-          /* Start YYX at -YYN if negative to avoid negative indexes in
-             YYCHECK.  In other words, skip the first -YYN actions for
-             this state because they are default actions.  */
-          int yyxbegin = yyn < 0 ? -yyn : 0;
-          /* Stay within bounds of both yycheck and yytname.  */
-          int yychecklim = YYLAST - yyn + 1;
-          int yyxend = yychecklim < YYNTOKENS ? yychecklim : YYNTOKENS;
-          int yyx;
-
-          for (yyx = yyxbegin; yyx < yyxend; ++yyx)
-            if (yycheck[yyx + yyn] == yyx && yyx != YYTERROR
-                && !yytable_value_is_error (yytable[yyx + yyn]))
-              {
-                if (yycount == YYERROR_VERBOSE_ARGS_MAXIMUM)
-                  {
-                    yycount = 1;
-                    yysize = yysize0;
-                    break;
-                  }
-                yyarg[yycount++] = yytname[yyx];
-                {
-                  YYSIZE_T yysize1 = yysize + yytnamerr (YY_NULLPTR, yytname[yyx]);
-                  if (yysize <= yysize1 && yysize1 <= YYSTACK_ALLOC_MAXIMUM)
-                    yysize = yysize1;
-                  else
-                    return 2;
-                }
-              }
-        }
-    }
-
-  switch (yycount)
-    {
-# define YYCASE_(N, S)                      \
-      case N:                               \
-        yyformat = S;                       \
-      break
-    default: /* Avoid compiler warnings. */
-      YYCASE_(0, YY_("syntax error"));
-      YYCASE_(1, YY_("syntax error, unexpected %s"));
-      YYCASE_(2, YY_("syntax error, unexpected %s, expecting %s"));
-      YYCASE_(3, YY_("syntax error, unexpected %s, expecting %s or %s"));
-      YYCASE_(4, YY_("syntax error, unexpected %s, expecting %s or %s or %s"));
-      YYCASE_(5, YY_("syntax error, unexpected %s, expecting %s or %s or %s or %s"));
-# undef YYCASE_
-    }
-
-  {
-    YYSIZE_T yysize1 = yysize + yystrlen (yyformat);
-    if (yysize <= yysize1 && yysize1 <= YYSTACK_ALLOC_MAXIMUM)
-      yysize = yysize1;
+    };
+    const unsigned user_token_number_max_ = 275;
+    const token_number_type undef_token_ = 2;
+
+    if (static_cast<int> (t) <= yyeof_)
+      return yyeof_;
+    else if (static_cast<unsigned> (t) <= user_token_number_max_)
+      return translate_table[t];
     else
-      return 2;
+      return undef_token_;
   }
 
-  if (*yymsg_alloc < yysize)
-    {
-      *yymsg_alloc = 2 * yysize;
-      if (! (yysize <= *yymsg_alloc
-             && *yymsg_alloc <= YYSTACK_ALLOC_MAXIMUM))
-        *yymsg_alloc = YYSTACK_ALLOC_MAXIMUM;
-      return 1;
-    }
+} // xpathyy
+#line 1984 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
 
-  /* Avoid sprintf, as that infringes on the user's name space.
-     Don't have undefined behavior even if the translation
-     produced a string with the wrong number of "%s"s.  */
-  {
-    char *yyp = *yymsg;
-    int yyi = 0;
-    while ((*yyp = *yyformat) != '\0')
-      if (*yyp == '%' && yyformat[1] == 's' && yyi < yycount)
-        {
-          yyp += yytnamerr (yyp, yyarg[yyi++]);
-          yyformat += 2;
-        }
-      else
-        {
-          yyp++;
-          yyformat++;
-        }
-  }
-  return 0;
-}
-#endif /* YYERROR_VERBOSE */
-
-/*-----------------------------------------------.
-| Release the memory associated to this symbol.  |
-`-----------------------------------------------*/
-
-static void
-yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep, blink::xpath::Parser* parser)
-{
-  YYUSE (yyvaluep);
-  YYUSE (parser);
-  if (!yymsg)
-    yymsg = "Deleting";
-  YY_SYMBOL_PRINT (yymsg, yytype, yyvaluep, yylocationp);
-
-  YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
-  YYUSE (yytype);
-  YY_IGNORE_MAYBE_UNINITIALIZED_END
-}
-
-
-
-
-/*----------.
-| yyparse.  |
-`----------*/
-
-int
-yyparse (blink::xpath::Parser* parser)
-{
-/* The lookahead symbol.  */
-int yychar;
-
-
-/* The semantic value of the lookahead symbol.  */
-/* Default value used for initialization, for pacifying older GCCs
-   or non-GCC compilers.  */
-YY_INITIAL_VALUE (static YYSTYPE yyval_default;)
-YYSTYPE yylval YY_INITIAL_VALUE (= yyval_default);
-
-    /* Number of syntax errors so far.  */
-    int yynerrs;
-
-    int yystate;
-    /* Number of tokens to shift before error messages enabled.  */
-    int yyerrstatus;
-
-    /* The stacks and their tools:
-       'yyss': related to states.
-       'yyvs': related to semantic values.
-
-       Refer to the stacks through separate pointers, to allow yyoverflow
-       to reallocate them elsewhere.  */
-
-    /* The state stack.  */
-    yytype_int16 yyssa[YYINITDEPTH];
-    yytype_int16 *yyss;
-    yytype_int16 *yyssp;
-
-    /* The semantic value stack.  */
-    YYSTYPE yyvsa[YYINITDEPTH];
-    YYSTYPE *yyvs;
-    YYSTYPE *yyvsp;
-
-    YYSIZE_T yystacksize;
-
-  int yyn;
-  int yyresult;
-  /* Lookahead token as an internal (translated) token number.  */
-  int yytoken = 0;
-  /* The variables used to return semantic value and location from the
-     action routines.  */
-  YYSTYPE yyval;
-
-#if YYERROR_VERBOSE
-  /* Buffer for error messages, and its allocated size.  */
-  char yymsgbuf[128];
-  char *yymsg = yymsgbuf;
-  YYSIZE_T yymsg_alloc = sizeof yymsgbuf;
-#endif
-
-#define YYPOPSTACK(N)   (yyvsp -= (N), yyssp -= (N))
-
-  /* The number of symbols on the RHS of the reduced rule.
-     Keep to zero when no symbol should be popped.  */
-  int yylen = 0;
-
-  yyssp = yyss = yyssa;
-  yyvsp = yyvs = yyvsa;
-  yystacksize = YYINITDEPTH;
-
-  YYDPRINTF ((stderr, "Starting parse\n"));
-
-  yystate = 0;
-  yyerrstatus = 0;
-  yynerrs = 0;
-  yychar = YYEMPTY; /* Cause a token to be read.  */
-  goto yysetstate;
-
-
-/*------------------------------------------------------------.
-| yynewstate -- push a new state, which is found in yystate.  |
-`------------------------------------------------------------*/
-yynewstate:
-  /* In all cases, when you get here, the value and location stacks
-     have just been pushed.  So pushing a state here evens the stacks.  */
-  yyssp++;
-
-
-/*--------------------------------------------------------------------.
-| yynewstate -- set current state (the top of the stack) to yystate.  |
-`--------------------------------------------------------------------*/
-yysetstate:
-  YYDPRINTF ((stderr, "Entering state %d\n", yystate));
-  YY_ASSERT (0 <= yystate && yystate < YYNSTATES);
-  *yyssp = (yytype_int16) yystate;
-
-  if (yyss + yystacksize - 1 <= yyssp)
-#if !defined yyoverflow && !defined YYSTACK_RELOCATE
-    goto yyexhaustedlab;
-#else
-    {
-      /* Get the current used size of the three stacks, in elements.  */
-      YYSIZE_T yysize = (YYSIZE_T) (yyssp - yyss + 1);
-
-# if defined yyoverflow
-      {
-        /* Give user a chance to reallocate the stack.  Use copies of
-           these so that the &'s don't force the real ones into
-           memory.  */
-        YYSTYPE *yyvs1 = yyvs;
-        yytype_int16 *yyss1 = yyss;
-
-        /* Each stack pointer address is followed by the size of the
-           data in use in that stack, in bytes.  This used to be a
-           conditional around just the two extra args, but that might
-           be undefined if yyoverflow is a macro.  */
-        yyoverflow (YY_("memory exhausted"),
-                    &yyss1, yysize * sizeof (*yyssp),
-                    &yyvs1, yysize * sizeof (*yyvsp),
-                    &yystacksize);
-        yyss = yyss1;
-        yyvs = yyvs1;
-      }
-# else /* defined YYSTACK_RELOCATE */
-      /* Extend the stack our own way.  */
-      if (YYMAXDEPTH <= yystacksize)
-        goto yyexhaustedlab;
-      yystacksize *= 2;
-      if (YYMAXDEPTH < yystacksize)
-        yystacksize = YYMAXDEPTH;
-
-      {
-        yytype_int16 *yyss1 = yyss;
-        union yyalloc *yyptr =
-          (union yyalloc *) YYSTACK_ALLOC (YYSTACK_BYTES (yystacksize));
-        if (! yyptr)
-          goto yyexhaustedlab;
-        YYSTACK_RELOCATE (yyss_alloc, yyss);
-        YYSTACK_RELOCATE (yyvs_alloc, yyvs);
-# undef YYSTACK_RELOCATE
-        if (yyss1 != yyssa)
-          YYSTACK_FREE (yyss1);
-      }
-# endif
-
-      yyssp = yyss + yysize - 1;
-      yyvsp = yyvs + yysize - 1;
-
-      YYDPRINTF ((stderr, "Stack size increased to %lu\n",
-                  (unsigned long) yystacksize));
-
-      if (yyss + yystacksize - 1 <= yyssp)
-        YYABORT;
-    }
-#endif /* !defined yyoverflow && !defined YYSTACK_RELOCATE */
-
-  if (yystate == YYFINAL)
-    YYACCEPT;
-
-  goto yybackup;
-
-
-/*-----------.
-| yybackup.  |
-`-----------*/
-yybackup:
-  /* Do appropriate processing given the current state.  Read a
-     lookahead token if we need one and don't already have one.  */
-
-  /* First try to decide what to do without reference to lookahead token.  */
-  yyn = yypact[yystate];
-  if (yypact_value_is_default (yyn))
-    goto yydefault;
-
-  /* Not known => get a lookahead token if don't already have one.  */
-
-  /* YYCHAR is either YYEMPTY or YYEOF or a valid lookahead symbol.  */
-  if (yychar == YYEMPTY)
-    {
-      YYDPRINTF ((stderr, "Reading a token: "));
-      yychar = yylex (&yylval);
-    }
-
-  if (yychar <= YYEOF)
-    {
-      yychar = yytoken = YYEOF;
-      YYDPRINTF ((stderr, "Now at end of input.\n"));
-    }
-  else
-    {
-      yytoken = YYTRANSLATE (yychar);
-      YY_SYMBOL_PRINT ("Next token is", yytoken, &yylval, &yylloc);
-    }
-
-  /* If the proper action on seeing token YYTOKEN is to reduce or to
-     detect an error, take that action.  */
-  yyn += yytoken;
-  if (yyn < 0 || YYLAST < yyn || yycheck[yyn] != yytoken)
-    goto yydefault;
-  yyn = yytable[yyn];
-  if (yyn <= 0)
-    {
-      if (yytable_value_is_error (yyn))
-        goto yyerrlab;
-      yyn = -yyn;
-      goto yyreduce;
-    }
-
-  /* Count tokens shifted since error; after three, turn off error
-     status.  */
-  if (yyerrstatus)
-    yyerrstatus--;
-
-  /* Shift the lookahead token.  */
-  YY_SYMBOL_PRINT ("Shifting", yytoken, &yylval, &yylloc);
-
-  /* Discard the shifted token.  */
-  yychar = YYEMPTY;
-
-  yystate = yyn;
-  YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
-  *++yyvsp = yylval;
-  YY_IGNORE_MAYBE_UNINITIALIZED_END
-  goto yynewstate;
-
-
-/*-----------------------------------------------------------.
-| yydefault -- do the default action for the current state.  |
-`-----------------------------------------------------------*/
-yydefault:
-  yyn = yydefact[yystate];
-  if (yyn == 0)
-    goto yyerrlab;
-  goto yyreduce;
-
-
-/*-----------------------------.
-| yyreduce -- do a reduction.  |
-`-----------------------------*/
-yyreduce:
-  /* yyn is the number of a rule to reduce with.  */
-  yylen = yyr2[yyn];
-
-  /* If YYLEN is nonzero, implement the default value of the action:
-     '$$ = $1'.
-
-     Otherwise, the following line sets YYVAL to garbage.
-     This behavior is undocumented and Bison
-     users should not rely upon it.  Assigning to YYVAL
-     unconditionally makes the parser a bit smaller, and it avoids a
-     GCC warning that YYVAL may be used uninitialized.  */
-  yyval = yyvsp[1-yylen];
-
-
-  YY_REDUCE_PRINT (yyn);
-  switch (yyn)
-    {
-  case 2:
-#line 135 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      parser->top_expr_ = (yyvsp[0].expr);
-    }
-#line 1362 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 3:
-#line 142 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.location_path)->SetAbsolute(false);
-    }
-#line 1370 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 4:
-#line 147 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.location_path)->SetAbsolute(true);
-    }
-#line 1378 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 5:
-#line 154 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.location_path) = blink::MakeGarbageCollected<blink::xpath::LocationPath>();
-    }
-#line 1386 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 6:
-#line 159 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.location_path) = (yyvsp[0].location_path);
-    }
-#line 1394 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 7:
-#line 164 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.location_path) = (yyvsp[0].location_path);
-      (yyval.location_path)->InsertFirstStep((yyvsp[-1].step));
-    }
-#line 1403 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 8:
-#line 172 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.location_path) = blink::MakeGarbageCollected<blink::xpath::LocationPath>();
-      (yyval.location_path)->AppendStep((yyvsp[0].step));
-    }
-#line 1412 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 9:
-#line 178 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.location_path)->AppendStep((yyvsp[0].step));
-    }
-#line 1420 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 10:
-#line 183 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.location_path)->AppendStep((yyvsp[-1].step));
-      (yyval.location_path)->AppendStep((yyvsp[0].step));
-    }
-#line 1429 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 11:
-#line 191 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      if ((yyvsp[0].pred_list))
-        (yyval.step) = blink::MakeGarbageCollected<Step>(Step::kChildAxis, *(yyvsp[-1].node_test), *(yyvsp[0].pred_list));
-      else
-        (yyval.step) = blink::MakeGarbageCollected<Step>(Step::kChildAxis, *(yyvsp[-1].node_test));
-    }
-#line 1440 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 12:
-#line 199 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      AtomicString local_name;
-      AtomicString namespace_uri;
-      if (!parser->ExpandQName(*(yyvsp[-1].str), local_name, namespace_uri)) {
-        parser->got_namespace_error_ = true;
-        YYABORT;
-      }
-
-      if ((yyvsp[0].pred_list))
-        (yyval.step) = blink::MakeGarbageCollected<Step>(Step::kChildAxis, Step::NodeTest(Step::NodeTest::kNameTest, local_name, namespace_uri), *(yyvsp[0].pred_list));
-      else
-        (yyval.step) = blink::MakeGarbageCollected<Step>(Step::kChildAxis, Step::NodeTest(Step::NodeTest::kNameTest, local_name, namespace_uri));
-       parser->DeleteString((yyvsp[-1].str));
-    }
-#line 1459 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 13:
-#line 215 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      if ((yyvsp[0].pred_list))
-        (yyval.step) = blink::MakeGarbageCollected<Step>((yyvsp[-2].axis), *(yyvsp[-1].node_test), *(yyvsp[0].pred_list));
-      else
-        (yyval.step) = blink::MakeGarbageCollected<Step>((yyvsp[-2].axis), *(yyvsp[-1].node_test));
-    }
-#line 1470 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 14:
-#line 223 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      AtomicString local_name;
-      AtomicString namespace_uri;
-      if (!parser->ExpandQName(*(yyvsp[-1].str), local_name, namespace_uri)) {
-        parser->got_namespace_error_ = true;
-        YYABORT;
-      }
-
-      if ((yyvsp[0].pred_list))
-        (yyval.step) = blink::MakeGarbageCollected<Step>((yyvsp[-2].axis), Step::NodeTest(Step::NodeTest::kNameTest, local_name, namespace_uri), *(yyvsp[0].pred_list));
-      else
-        (yyval.step) = blink::MakeGarbageCollected<Step>((yyvsp[-2].axis), Step::NodeTest(Step::NodeTest::kNameTest, local_name, namespace_uri));
-      parser->DeleteString((yyvsp[-1].str));
-    }
-#line 1489 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 17:
-#line 245 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.axis) = Step::kAttributeAxis;
-    }
-#line 1497 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 18:
-#line 252 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      if (*(yyvsp[-2].str) == "node")
-        (yyval.node_test) = blink::MakeGarbageCollected<Step::NodeTest>(Step::NodeTest::kAnyNodeTest);
-      else if (*(yyvsp[-2].str) == "text")
-        (yyval.node_test) = blink::MakeGarbageCollected<Step::NodeTest>(Step::NodeTest::kTextNodeTest);
-      else if (*(yyvsp[-2].str) == "comment")
-        (yyval.node_test) = blink::MakeGarbageCollected<Step::NodeTest>(Step::NodeTest::kCommentNodeTest);
-
-      parser->DeleteString((yyvsp[-2].str));
-    }
-#line 1512 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 19:
-#line 264 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.node_test) = blink::MakeGarbageCollected<Step::NodeTest>(Step::NodeTest::kProcessingInstructionNodeTest);
-      parser->DeleteString((yyvsp[-2].str));
-    }
-#line 1521 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 20:
-#line 270 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.node_test) = blink::MakeGarbageCollected<Step::NodeTest>(Step::NodeTest::kProcessingInstructionNodeTest, (yyvsp[-1].str)->StripWhiteSpace());
-      parser->DeleteString((yyvsp[-3].str));
-      parser->DeleteString((yyvsp[-1].str));
-    }
-#line 1531 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 21:
-#line 279 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.pred_list) = 0;
-    }
-#line 1539 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 23:
-#line 288 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.pred_list) = blink::MakeGarbageCollected<blink::HeapVector<blink::Member<blink::xpath::Predicate>>>();
-      (yyval.pred_list)->push_back(blink::MakeGarbageCollected<blink::xpath::Predicate>((yyvsp[0].expr)));
-    }
-#line 1548 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 24:
-#line 294 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.pred_list)->push_back(blink::MakeGarbageCollected<blink::xpath::Predicate>((yyvsp[0].expr)));
-    }
-#line 1556 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 25:
-#line 301 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.expr) = (yyvsp[-1].expr);
-    }
-#line 1564 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 26:
-#line 308 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.step) = blink::MakeGarbageCollected<Step>(Step::kDescendantOrSelfAxis, Step::NodeTest(Step::NodeTest::kAnyNodeTest));
-    }
-#line 1572 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 27:
-#line 315 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.step) = blink::MakeGarbageCollected<Step>(Step::kSelfAxis, Step::NodeTest(Step::NodeTest::kAnyNodeTest));
-    }
-#line 1580 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 28:
-#line 320 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.step) = blink::MakeGarbageCollected<Step>(Step::kParentAxis, Step::NodeTest(Step::NodeTest::kAnyNodeTest));
-    }
-#line 1588 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 29:
-#line 327 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.expr) = blink::MakeGarbageCollected<blink::xpath::VariableReference>(*(yyvsp[0].str));
-      parser->DeleteString((yyvsp[0].str));
-    }
-#line 1597 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 30:
-#line 333 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.expr) = (yyvsp[-1].expr);
-    }
-#line 1605 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 31:
-#line 338 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.expr) = blink::MakeGarbageCollected<blink::xpath::StringExpression>(*(yyvsp[0].str));
-      parser->DeleteString((yyvsp[0].str));
-    }
-#line 1614 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 32:
-#line 344 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.expr) = blink::MakeGarbageCollected<blink::xpath::Number>((yyvsp[0].str)->ToDouble());
-      parser->DeleteString((yyvsp[0].str));
-    }
-#line 1623 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 34:
-#line 354 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.expr) = blink::xpath::CreateFunction(*(yyvsp[-2].str));
-      if (!(yyval.expr))
-        YYABORT;
-      parser->DeleteString((yyvsp[-2].str));
-    }
-#line 1634 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 35:
-#line 362 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.expr) = blink::xpath::CreateFunction(*(yyvsp[-3].str), *(yyvsp[-1].arg_list));
-      if (!(yyval.expr))
-        YYABORT;
-      parser->DeleteString((yyvsp[-3].str));
-    }
-#line 1645 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 36:
-#line 372 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.arg_list) = blink::MakeGarbageCollected<blink::HeapVector<blink::Member<blink::xpath::Expression>>>();
-      (yyval.arg_list)->push_back((yyvsp[0].expr));
-    }
-#line 1654 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 37:
-#line 378 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.arg_list)->push_back((yyvsp[0].expr));
-    }
-#line 1662 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 40:
-#line 391 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.expr) = blink::MakeGarbageCollected<blink::xpath::Union>();
-      (yyval.expr)->AddSubExpression((yyvsp[-2].expr));
-      (yyval.expr)->AddSubExpression((yyvsp[0].expr));
-    }
-#line 1672 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 41:
-#line 400 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.expr) = (yyvsp[0].location_path);
-    }
-#line 1680 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 43:
-#line 407 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyvsp[0].location_path)->SetAbsolute(true);
-      (yyval.expr) = blink::MakeGarbageCollected<blink::xpath::Path>((yyvsp[-2].expr), (yyvsp[0].location_path));
-    }
-#line 1689 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 44:
-#line 413 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyvsp[0].location_path)->InsertFirstStep((yyvsp[-1].step));
-      (yyvsp[0].location_path)->SetAbsolute(true);
-      (yyval.expr) = blink::MakeGarbageCollected<blink::xpath::Path>((yyvsp[-2].expr), (yyvsp[0].location_path));
-    }
-#line 1699 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 46:
-#line 424 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.expr) = blink::MakeGarbageCollected<blink::xpath::Filter>((yyvsp[-1].expr), *(yyvsp[0].pred_list));
-    }
-#line 1707 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 48:
-#line 433 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.expr) = blink::MakeGarbageCollected<blink::xpath::LogicalOp>(blink::xpath::LogicalOp::kOP_Or, (yyvsp[-2].expr), (yyvsp[0].expr));
-    }
-#line 1715 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 50:
-#line 442 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.expr) = blink::MakeGarbageCollected<blink::xpath::LogicalOp>(blink::xpath::LogicalOp::kOP_And, (yyvsp[-2].expr), (yyvsp[0].expr));
-    }
-#line 1723 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 52:
-#line 451 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.expr) = blink::MakeGarbageCollected<blink::xpath::EqTestOp>((yyvsp[-1].eq_op), (yyvsp[-2].expr), (yyvsp[0].expr));
-    }
-#line 1731 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 54:
-#line 460 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.expr) = blink::MakeGarbageCollected<blink::xpath::EqTestOp>((yyvsp[-1].eq_op), (yyvsp[-2].expr), (yyvsp[0].expr));
-    }
-#line 1739 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 56:
-#line 469 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.expr) = blink::MakeGarbageCollected<blink::xpath::NumericOp>(blink::xpath::NumericOp::kOP_Add, (yyvsp[-2].expr), (yyvsp[0].expr));
-    }
-#line 1747 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 57:
-#line 474 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.expr) = blink::MakeGarbageCollected<blink::xpath::NumericOp>(blink::xpath::NumericOp::kOP_Sub, (yyvsp[-2].expr), (yyvsp[0].expr));
-    }
-#line 1755 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 59:
-#line 483 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.expr) = blink::MakeGarbageCollected<blink::xpath::NumericOp>((yyvsp[-1].num_op), (yyvsp[-2].expr), (yyvsp[0].expr));
-    }
-#line 1763 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-  case 61:
-#line 492 "third_party/blink/renderer/core/xml/xpath_grammar.y"
-    {
-      (yyval.expr) = blink::MakeGarbageCollected<blink::xpath::Negative>();
-      (yyval.expr)->AddSubExpression((yyvsp[0].expr));
-    }
-#line 1772 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-    break;
-
-
-#line 1776 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
-
-      default: break;
-    }
-  /* User semantic actions sometimes alter yychar, and that requires
-     that yytoken be updated with the new translation.  We take the
-     approach of translating immediately before every use of yytoken.
-     One alternative is translating here after every semantic action,
-     but that translation would be missed if the semantic action invokes
-     YYABORT, YYACCEPT, or YYERROR immediately after altering yychar or
-     if it invokes YYBACKUP.  In the case of YYABORT or YYACCEPT, an
-     incorrect destructor might then be invoked immediately.  In the
-     case of YYERROR or YYBACKUP, subsequent parser actions might lead
-     to an incorrect destructor call or verbose syntax error message
-     before the lookahead is translated.  */
-  YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
-
-  YYPOPSTACK (yylen);
-  yylen = 0;
-  YY_STACK_PRINT (yyss, yyssp);
-
-  *++yyvsp = yyval;
-
-  /* Now 'shift' the result of the reduction.  Determine what state
-     that goes to, based on the state we popped back to and the rule
-     number reduced by.  */
-  {
-    const int yylhs = yyr1[yyn] - YYNTOKENS;
-    const int yyi = yypgoto[yylhs] + *yyssp;
-    yystate = (0 <= yyi && yyi <= YYLAST && yycheck[yyi] == *yyssp
-               ? yytable[yyi]
-               : yydefgoto[yylhs]);
-  }
-
-  goto yynewstate;
-
-
-/*--------------------------------------.
-| yyerrlab -- here on detecting error.  |
-`--------------------------------------*/
-yyerrlab:
-  /* Make sure we have latest lookahead translation.  See comments at
-     user semantic actions for why this is necessary.  */
-  yytoken = yychar == YYEMPTY ? YYEMPTY : YYTRANSLATE (yychar);
-
-  /* If not already recovering from an error, report this error.  */
-  if (!yyerrstatus)
-    {
-      ++yynerrs;
-#if ! YYERROR_VERBOSE
-      yyerror (parser, YY_("syntax error"));
-#else
-# define YYSYNTAX_ERROR yysyntax_error (&yymsg_alloc, &yymsg, \
-                                        yyssp, yytoken)
-      {
-        char const *yymsgp = YY_("syntax error");
-        int yysyntax_error_status;
-        yysyntax_error_status = YYSYNTAX_ERROR;
-        if (yysyntax_error_status == 0)
-          yymsgp = yymsg;
-        else if (yysyntax_error_status == 1)
-          {
-            if (yymsg != yymsgbuf)
-              YYSTACK_FREE (yymsg);
-            yymsg = (char *) YYSTACK_ALLOC (yymsg_alloc);
-            if (!yymsg)
-              {
-                yymsg = yymsgbuf;
-                yymsg_alloc = sizeof yymsgbuf;
-                yysyntax_error_status = 2;
-              }
-            else
-              {
-                yysyntax_error_status = YYSYNTAX_ERROR;
-                yymsgp = yymsg;
-              }
-          }
-        yyerror (parser, yymsgp);
-        if (yysyntax_error_status == 2)
-          goto yyexhaustedlab;
-      }
-# undef YYSYNTAX_ERROR
-#endif
-    }
-
-
-
-  if (yyerrstatus == 3)
-    {
-      /* If just tried and failed to reuse lookahead token after an
-         error, discard it.  */
-
-      if (yychar <= YYEOF)
-        {
-          /* Return failure if at end of input.  */
-          if (yychar == YYEOF)
-            YYABORT;
-        }
-      else
-        {
-          yydestruct ("Error: discarding",
-                      yytoken, &yylval, parser);
-          yychar = YYEMPTY;
-        }
-    }
-
-  /* Else will try to reuse lookahead token after shifting the error
-     token.  */
-  goto yyerrlab1;
-
-
-/*---------------------------------------------------.
-| yyerrorlab -- error raised explicitly by YYERROR.  |
-`---------------------------------------------------*/
-yyerrorlab:
-  /* Pacify compilers when the user code never invokes YYERROR and the
-     label yyerrorlab therefore never appears in user code.  */
-  if (0)
-    YYERROR;
-
-  /* Do not reclaim the symbols of the rule whose action triggered
-     this YYERROR.  */
-  YYPOPSTACK (yylen);
-  yylen = 0;
-  YY_STACK_PRINT (yyss, yyssp);
-  yystate = *yyssp;
-  goto yyerrlab1;
-
-
-/*-------------------------------------------------------------.
-| yyerrlab1 -- common code for both syntax error and YYERROR.  |
-`-------------------------------------------------------------*/
-yyerrlab1:
-  yyerrstatus = 3;      /* Each real token shifted decrements this.  */
-
-  for (;;)
-    {
-      yyn = yypact[yystate];
-      if (!yypact_value_is_default (yyn))
-        {
-          yyn += YYTERROR;
-          if (0 <= yyn && yyn <= YYLAST && yycheck[yyn] == YYTERROR)
-            {
-              yyn = yytable[yyn];
-              if (0 < yyn)
-                break;
-            }
-        }
-
-      /* Pop the current state because it cannot handle the error token.  */
-      if (yyssp == yyss)
-        YYABORT;
-
-
-      yydestruct ("Error: popping",
-                  yystos[yystate], yyvsp, parser);
-      YYPOPSTACK (1);
-      yystate = *yyssp;
-      YY_STACK_PRINT (yyss, yyssp);
-    }
-
-  YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
-  *++yyvsp = yylval;
-  YY_IGNORE_MAYBE_UNINITIALIZED_END
-
-
-  /* Shift the error token.  */
-  YY_SYMBOL_PRINT ("Shifting", yystos[yyn], yyvsp, yylsp);
-
-  yystate = yyn;
-  goto yynewstate;
-
-
-/*-------------------------------------.
-| yyacceptlab -- YYACCEPT comes here.  |
-`-------------------------------------*/
-yyacceptlab:
-  yyresult = 0;
-  goto yyreturn;
-
-
-/*-----------------------------------.
-| yyabortlab -- YYABORT comes here.  |
-`-----------------------------------*/
-yyabortlab:
-  yyresult = 1;
-  goto yyreturn;
-
-
-#if !defined yyoverflow || YYERROR_VERBOSE
-/*-------------------------------------------------.
-| yyexhaustedlab -- memory exhaustion comes here.  |
-`-------------------------------------------------*/
-yyexhaustedlab:
-  yyerror (parser, YY_("memory exhausted"));
-  yyresult = 2;
-  /* Fall through.  */
-#endif
-
-
-/*-----------------------------------------------------.
-| yyreturn -- parsing is finished, return the result.  |
-`-----------------------------------------------------*/
-yyreturn:
-  if (yychar != YYEMPTY)
-    {
-      /* Make sure we have latest lookahead translation.  See comments at
-         user semantic actions for why this is necessary.  */
-      yytoken = YYTRANSLATE (yychar);
-      yydestruct ("Cleanup: discarding lookahead",
-                  yytoken, &yylval, parser);
-    }
-  /* Do not reclaim the symbols of the rule whose action triggered
-     this YYABORT or YYACCEPT.  */
-  YYPOPSTACK (yylen);
-  YY_STACK_PRINT (yyss, yyssp);
-  while (yyssp != yyss)
-    {
-      yydestruct ("Cleanup: popping",
-                  yystos[*yyssp], yyvsp, parser);
-      YYPOPSTACK (1);
-    }
-#ifndef yyoverflow
-  if (yyss != yyssa)
-    YYSTACK_FREE (yyss);
-#endif
-#if YYERROR_VERBOSE
-  if (yymsg != yymsgbuf)
-    YYSTACK_FREE (yymsg);
-#endif
-  return yyresult;
-}
-#line 498 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 489 "third_party/blink/renderer/core/xml/xpath_grammar.y"
 

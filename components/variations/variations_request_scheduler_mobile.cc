@@ -17,10 +17,9 @@ const int kScheduleFetchDelaySeconds = 5;
 }  // namespace
 
 VariationsRequestSchedulerMobile::VariationsRequestSchedulerMobile(
-    const base::Closure& task,
-    PrefService* local_state) :
-  VariationsRequestScheduler(task), local_state_(local_state) {
-}
+    const base::RepeatingClosure& task,
+    PrefService* local_state)
+    : VariationsRequestScheduler(task), local_state_(local_state) {}
 
 VariationsRequestSchedulerMobile::~VariationsRequestSchedulerMobile() {
 }
@@ -60,7 +59,7 @@ void VariationsRequestSchedulerMobile::OnAppEnterForeground() {
 
 // static
 VariationsRequestScheduler* VariationsRequestScheduler::Create(
-    const base::Closure& task,
+    const base::RepeatingClosure& task,
     PrefService* local_state) {
   return new VariationsRequestSchedulerMobile(task, local_state);
 }

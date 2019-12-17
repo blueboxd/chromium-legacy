@@ -135,9 +135,9 @@ TEST_F(ShelfTooltipManagerTest, HideWhenShelfIsAutoHideHidden) {
   ShowTooltipForFirstAppIcon();
   ASSERT_TRUE(tooltip_manager_->IsVisible());
 
-  GetPrimaryShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  GetPrimaryShelf()->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
   GetPrimaryShelf()->UpdateAutoHideState();
-  ASSERT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
+  ASSERT_EQ(ShelfAutoHideBehavior::kAlways,
             GetPrimaryShelf()->auto_hide_behavior());
   ASSERT_EQ(SHELF_AUTO_HIDE_HIDDEN, GetPrimaryShelf()->GetAutoHideState());
   EXPECT_FALSE(tooltip_manager_->IsVisible());
@@ -154,7 +154,7 @@ TEST_F(ShelfTooltipManagerTest, HideWhenShelfIsAutoHideHidden) {
   // Close the window to show the auto-hide shelf; tooltips should now show.
   widget.reset();
   GetPrimaryShelf()->UpdateAutoHideState();
-  ASSERT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
+  ASSERT_EQ(ShelfAutoHideBehavior::kAlways,
             GetPrimaryShelf()->auto_hide_behavior());
   ASSERT_EQ(SHELF_AUTO_HIDE_SHOWN, GetPrimaryShelf()->GetAutoHideState());
 

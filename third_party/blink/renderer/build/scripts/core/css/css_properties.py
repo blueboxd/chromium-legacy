@@ -67,9 +67,7 @@ class CSSProperties(object):
         # in the various generators for ComputedStyle.
         self._field_alias_expander = FieldAliasExpander(file_paths[1])
 
-        # CSSPropertyValueMetadata assumes that there are at most 1024
-        # properties + aliases.
-        self._alias_offset = 512
+        self._alias_offset = 1024
         # 0: CSSPropertyID::kInvalid
         # 1: CSSPropertyID::kVariable
         self._first_enum_value = 2
@@ -121,6 +119,7 @@ class CSSProperties(object):
             self.expand_visited(property_)
             property_['in_origin_trial'] = False
             self.expand_origin_trials(property_, origin_trial_features)
+            self.expand_ua(property_)
 
         self._aliases = [
             property_ for property_ in properties if property_['alias_for']]
@@ -188,6 +187,17 @@ class CSSProperties(object):
         assert 'visited_property' not in unvisited_property, \
             'A property may not have multiple visited properties'
         unvisited_property['visited_property'] = property_
+
+    def expand_ua(self, ua_property_):
+        if not ua_property_['ua_property_for']:
+            return
+        ua_property_for = ua_property_['ua_property_for']
+        author_property = self._properties_by_name[ua_property_for]
+        ua_property_['ua'] = True
+        ua_property_['author_property'] = author_property
+        assert 'ua_property' not in author_property, \
+            'A property may not have multiple ua properties'
+        author_property['ua_property'] = ua_property_
 
     def expand_aliases(self):
         for i, alias in enumerate(self._aliases):

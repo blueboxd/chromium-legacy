@@ -40,7 +40,7 @@ js_library("device_page_browser_proxy") {
 js_library("pointers") {
   deps = [
     ":device_page_browser_proxy",
-    "../chromeos/localized_string_with_link:localized_string_with_link",
+    "../chromeos/localized_link:localized_link",
     "../controls:settings_toggle_button",
   ]
 }
@@ -143,7 +143,7 @@ js_library("storage") {
   deps = [
     "..:route",
     "..:route_origin_behavior",
-    "../chromeos/localized_string_with_link:localized_string_with_link",
+    "../chromeos/localized_link:localized_link",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:web_ui_listener_behavior",

@@ -36,6 +36,8 @@ class ProcessInternalsUI : public WebUIController, public WebContentsObserver {
  private:
   std::unique_ptr<::mojom::ProcessInternalsHandler> ui_handler_;
 
+  WEB_UI_CONTROLLER_TYPE_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(ProcessInternalsUI);
 };
 

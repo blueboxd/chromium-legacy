@@ -21,6 +21,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/sync/test/integration/os_sync_test.h"
+#include "chrome/common/chrome_features.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #endif
@@ -297,9 +298,11 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
 class SingleClientStandaloneTransportOsSyncTest : public OsSyncTest {
  public:
   SingleClientStandaloneTransportOsSyncTest() : OsSyncTest(SINGLE_CLIENT) {
-    // Enable the Wi-Fi type and don't auto-start browser sync.
+    // Don't auto-start browser sync. Enable in-development types.
     scoped_features_.InitWithFeatures(
-        {switches::kSyncWifiConfigurations, switches::kSyncManualStartChromeOS},
+        {switches::kSyncManualStartChromeOS,
+         features::kDesktopPWAsWithoutExtensions, features::kDesktopPWAsUSS,
+         switches::kSyncWifiConfigurations},
         {});
   }
   ~SingleClientStandaloneTransportOsSyncTest() override = default;
@@ -335,7 +338,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportOsSyncTest,
   EXPECT_TRUE(active_types.Has(syncer::OS_PREFERENCES));
   EXPECT_TRUE(active_types.Has(syncer::OS_PRIORITY_PREFERENCES));
   EXPECT_TRUE(active_types.Has(syncer::PRINTERS));
-  // TODO(jamescook): WEB_APPS
+  EXPECT_TRUE(active_types.Has(syncer::WEB_APPS));
   EXPECT_TRUE(active_types.Has(syncer::WIFI_CONFIGURATIONS));
 
   // Verify that a few browser non-transport-mode types are not active.
@@ -371,7 +374,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportOsSyncTest,
   EXPECT_FALSE(active_types.Has(syncer::OS_PREFERENCES));
   EXPECT_FALSE(active_types.Has(syncer::OS_PRIORITY_PREFERENCES));
   EXPECT_FALSE(active_types.Has(syncer::PRINTERS));
-  // TODO(jamescook): WEB_APPS
+  EXPECT_FALSE(active_types.Has(syncer::WEB_APPS));
   EXPECT_FALSE(active_types.Has(syncer::WIFI_CONFIGURATIONS));
 
   // Browser non-transport-mode types are active.

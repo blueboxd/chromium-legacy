@@ -4,6 +4,8 @@
         .reset { counter-reset: c; }
         .increment { counter-increment: c; }
         .increment2 { counter-increment: c 2; }
+        .show-marker { display: list-item; }
+        .show-marker::marker { content: counters(c, "."); }
         .show-before:before { content: counters(c, "."); }
         .show-after:after { content: counters(c, "."); }
         .show-twice:before { content: counters(c, ".") counters(c, "."); }
@@ -16,9 +18,13 @@
 <body>
     <div>This is the test for internals.counterValueForElementById</div>
 
+    <div class="reset"><span id="marker" class="show-marker"></span></div>
     <div class="reset"><span id="before" class="show-before"></span></div>
     <div class="reset"><span id="after" class="show-after"></span></div>
+    <div class="reset"><span id="marker_before" class="show-marker show-before"></span></div>
+    <div class="reset"><span id="marker_after" class="show-marker show-after"></span></div>
     <div class="reset"><span id="before_after" class="show-before show-after"></span></div>
+    <div class="reset"><span id="marker_before_after" class="show-marker show-before show-after"></span></div>
     <div class="reset"><span id="twice" class="show-twice"></span></div>
     <div class="reset">
         <span id="point" class="reset increment show-before">
@@ -35,9 +41,13 @@
         if (window.testRunner) {
             testRunner.dumpAsText();
 
+            shouldBe("internals.counterValue(document.getElementById('marker'))", "'0'");
             shouldBe("internals.counterValue(document.getElementById('before'))", "'0'");
             shouldBe("internals.counterValue(document.getElementById('after'))", "'0'");
+            shouldBe("internals.counterValue(document.getElementById('marker_before'))", "'0 0'");
+            shouldBe("internals.counterValue(document.getElementById('marker_after'))", "'0 0'");
             shouldBe("internals.counterValue(document.getElementById('before_after'))", "'0 0'");
+            shouldBe("internals.counterValue(document.getElementById('marker_before_after'))", "'0 0 0'");
             shouldBe("internals.counterValue(document.getElementById('twice'))", "'0 0'");
             shouldBe("internals.counterValue(document.getElementById('point'))", "'0.1'");
             shouldBe("internals.counterValue(document.getElementById('two-points'))", "'0.1.2'");

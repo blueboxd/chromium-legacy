@@ -113,6 +113,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/metrics/VariationsSessionTest.java",
   "junit/src/org/chromium/chrome/browser/native_page/NativePageFactoryTest.java",
   "junit/src/org/chromium/chrome/browser/net/nqe/NetworkQualityProviderTest.java",
+  "junit/src/org/chromium/chrome/browser/nfc/NfcSystemLevelPromptTest.java",
   "junit/src/org/chromium/chrome/browser/night_mode/GlobalNightModeStateControllerTest.java",
   "junit/src/org/chromium/chrome/browser/night_mode/GlobalNightModeStateProviderHolderTest.java",
   "junit/src/org/chromium/chrome/browser/notifications/NotificationPlatformBridgeUnitTest.java",

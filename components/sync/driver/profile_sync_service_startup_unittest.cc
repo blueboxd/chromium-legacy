@@ -164,9 +164,10 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   // Should not actually start, rather just clean things up and wait
   // to be enabled.
   sync_service()->Initialize();
-  EXPECT_EQ(SyncService::DISABLE_REASON_NOT_SIGNED_IN |
-                SyncService::DISABLE_REASON_USER_CHOICE,
-            sync_service()->GetDisableReasons());
+  EXPECT_EQ(
+      SyncService::DisableReasonSet(SyncService::DISABLE_REASON_NOT_SIGNED_IN,
+                                    SyncService::DISABLE_REASON_USER_CHOICE),
+      sync_service()->GetDisableReasons());
   EXPECT_EQ(SyncService::TransportState::DISABLED,
             sync_service()->GetTransportState());
 
@@ -180,8 +181,9 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   sync_service()->GetUserSettings()->SetSyncRequested(true);
   auto sync_blocker = sync_service()->GetSetupInProgressHandle();
   EXPECT_FALSE(sync_service()->IsEngineInitialized());
-  EXPECT_EQ(SyncService::DISABLE_REASON_NOT_SIGNED_IN,
-            sync_service()->GetDisableReasons());
+  EXPECT_EQ(
+      SyncService::DisableReasonSet(SyncService::DISABLE_REASON_NOT_SIGNED_IN),
+      sync_service()->GetDisableReasons());
   EXPECT_EQ(SyncService::TransportState::DISABLED,
             sync_service()->GetTransportState());
 
@@ -190,7 +192,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   // Now we're signed in, so the engine can start. Engine initialization is
   // immediate in this test, so we bypass the INITIALIZING state.
   EXPECT_TRUE(sync_service()->IsEngineInitialized());
-  EXPECT_EQ(SyncService::DISABLE_REASON_NONE,
+  EXPECT_EQ(SyncService::DisableReasonSet(),
             sync_service()->GetDisableReasons());
   EXPECT_EQ(SyncService::TransportState::PENDING_DESIRED_CONFIGURATION,
             sync_service()->GetTransportState());
@@ -274,7 +276,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartInvalidCredentials) {
   // state. It'll take either a browser restart or a full sign-out+sign-in to
   // get out of this.
   EXPECT_TRUE(sync_service()->HasUnrecoverableError());
-  EXPECT_EQ(SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR,
+  EXPECT_EQ(SyncService::DisableReasonSet(
+                SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR),
             sync_service()->GetDisableReasons());
   EXPECT_EQ(SyncService::TransportState::DISABLED,
             sync_service()->GetTransportState());
@@ -471,7 +474,8 @@ TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
   EXPECT_CALL(*component_factory(), CreateDataTypeManager(_, _, _, _, _, _))
       .Times(0);
   sync_service()->Initialize();
-  EXPECT_EQ(SyncService::DISABLE_REASON_ENTERPRISE_POLICY,
+  EXPECT_EQ(SyncService::DisableReasonSet(
+                SyncService::DISABLE_REASON_ENTERPRISE_POLICY),
             sync_service()->GetDisableReasons());
 }
 
@@ -492,7 +496,7 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   // this test).
   sync_service()->Initialize();
   EXPECT_TRUE(sync_service()->IsEngineInitialized());
-  EXPECT_EQ(SyncService::DISABLE_REASON_NONE,
+  EXPECT_EQ(SyncService::DisableReasonSet(),
             sync_service()->GetDisableReasons());
   EXPECT_EQ(SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
@@ -506,7 +510,8 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   EXPECT_CALL(*data_type_manager, Stop(DISABLE_SYNC));
 
   sync_prefs()->SetManagedForTest(true);
-  ASSERT_EQ(SyncService::DISABLE_REASON_ENTERPRISE_POLICY,
+  ASSERT_EQ(SyncService::DisableReasonSet(
+                SyncService::DISABLE_REASON_ENTERPRISE_POLICY),
             sync_service()->GetDisableReasons());
   EXPECT_FALSE(sync_service()->IsEngineInitialized());
   EXPECT_EQ(SyncService::TransportState::DISABLED,
@@ -527,7 +532,7 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
 
   sync_prefs()->SetManagedForTest(false);
 
-  ASSERT_EQ(SyncService::DISABLE_REASON_NONE,
+  ASSERT_EQ(SyncService::DisableReasonSet(),
             sync_service()->GetDisableReasons());
 
   EXPECT_TRUE(sync_service()->IsEngineInitialized());
@@ -559,7 +564,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
   ON_CALL(*data_type_manager, IsNigoriEnabled()).WillByDefault(Return(true));
   sync_service()->Initialize();
   EXPECT_TRUE(sync_service()->HasUnrecoverableError());
-  EXPECT_EQ(SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR,
+  EXPECT_EQ(SyncService::DisableReasonSet(
+                SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR),
             sync_service()->GetDisableReasons());
 }
 
@@ -576,7 +582,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartDownloadFailed) {
 
   auto sync_blocker = sync_service()->GetSetupInProgressHandle();
   sync_blocker.reset();
-  EXPECT_EQ(SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR,
+  EXPECT_EQ(SyncService::DisableReasonSet(
+                SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR),
             sync_service()->GetDisableReasons());
   EXPECT_EQ(SyncService::TransportState::DISABLED,
             sync_service()->GetTransportState());
@@ -605,17 +612,19 @@ TEST_F(ProfileSyncServiceStartupTest, FullStartupSequenceFirstTime) {
 
   // There is no signed-in user, so also nobody has decided that Sync should be
   // started.
-  EXPECT_EQ(SyncService::DISABLE_REASON_NOT_SIGNED_IN |
-                SyncService::DISABLE_REASON_USER_CHOICE,
-            sync_service()->GetDisableReasons());
+  EXPECT_EQ(
+      SyncService::DisableReasonSet(SyncService::DISABLE_REASON_NOT_SIGNED_IN,
+                                    SyncService::DISABLE_REASON_USER_CHOICE),
+      sync_service()->GetDisableReasons());
   EXPECT_EQ(SyncService::TransportState::DISABLED,
             sync_service()->GetTransportState());
 
   // Sign in. Now Sync-the-transport could start, but gets deferred by default.
   // Sync-the-feature still doesn't start until the user says they want it.
   SimulateTestUserSignin();
-  EXPECT_EQ(SyncService::DISABLE_REASON_USER_CHOICE,
-            sync_service()->GetDisableReasons());
+  EXPECT_EQ(
+      SyncService::DisableReasonSet(SyncService::DISABLE_REASON_USER_CHOICE),
+      sync_service()->GetDisableReasons());
   EXPECT_EQ(SyncService::TransportState::START_DEFERRED,
             sync_service()->GetTransportState());
   EXPECT_FALSE(sync_service()->IsSyncFeatureEnabled());

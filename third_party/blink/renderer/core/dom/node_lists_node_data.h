@@ -39,13 +39,13 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
  public:
   ChildNodeList* GetChildNodeList(ContainerNode& node) {
     DCHECK(!child_node_list_ || node == child_node_list_->VirtualOwnerNode());
-    return ToChildNodeList(child_node_list_);
+    return To<ChildNodeList>(child_node_list_.Get());
   }
 
   ChildNodeList* EnsureChildNodeList(ContainerNode& node) {
     DCHECK(ThreadState::Current()->IsGCForbidden());
     if (child_node_list_)
-      return ToChildNodeList(child_node_list_);
+      return To<ChildNodeList>(child_node_list_.Get());
     auto* list = MakeGarbageCollected<ChildNodeList>(node);
     child_node_list_ = list;
     return list;

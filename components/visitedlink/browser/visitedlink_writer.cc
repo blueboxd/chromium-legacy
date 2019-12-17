@@ -31,9 +31,9 @@
 #include "url/gurl.h"
 
 #if defined(OS_WIN)
-#include <windows.h>
 #include <io.h>
 #include <shlobj.h>
+#include <windows.h>
 #endif  // defined(OS_WIN)
 
 using content::BrowserThread;
@@ -257,8 +257,8 @@ VisitedLinkWriter::~VisitedLinkWriter() {
     // state. On the next start table will be rebuilt.
     base::FilePath filename;
     GetDatabaseFileName(&filename);
-    PostIOTask(FROM_HERE,
-               base::Bind(IgnoreResult(&base::DeleteFile), filename, false));
+    PostIOTask(FROM_HERE, base::BindOnce(IgnoreResult(&base::DeleteFile),
+                                         filename, false));
   }
 }
 
@@ -343,9 +343,9 @@ VisitedLinkWriter::Hash VisitedLinkWriter::TryToAddURL(const GURL& url) {
 }
 
 void VisitedLinkWriter::PostIOTask(const base::Location& from_here,
-                                   const base::Closure& task) {
+                                   base::OnceClosure task) {
   DCHECK(persist_to_disk_);
-  file_task_runner_->PostTask(from_here, task);
+  file_task_runner_->PostTask(from_here, std::move(task));
 }
 
 void VisitedLinkWriter::AddURL(const GURL& url) {
@@ -573,7 +573,7 @@ void VisitedLinkWriter::WriteFullTable() {
     file_ = static_cast<FILE**>(calloc(1, sizeof(*file_)));
     base::FilePath filename;
     GetDatabaseFileName(&filename);
-    PostIOTask(FROM_HERE, base::Bind(&AsyncOpen, file_, filename));
+    PostIOTask(FROM_HERE, base::BindOnce(&AsyncOpen, file_, filename));
   }
 
   // Write the new header.
@@ -590,7 +590,7 @@ void VisitedLinkWriter::WriteFullTable() {
               table_length_ * sizeof(Fingerprint));
 
   // The hash table may have shrunk, so make sure this is the end.
-  PostIOTask(FROM_HERE, base::Bind(&AsyncTruncate, file_));
+  PostIOTask(FROM_HERE, base::BindOnce(&AsyncTruncate, file_));
 }
 
 bool VisitedLinkWriter::InitFromFile() {
@@ -605,24 +605,24 @@ bool VisitedLinkWriter::InitFromFile() {
 
   table_is_loading_from_file_ = true;
 
-  TableLoadCompleteCallback callback = base::Bind(
+  TableLoadCompleteCallback callback = base::BindOnce(
       &VisitedLinkWriter::OnTableLoadComplete, weak_ptr_factory_.GetWeakPtr());
 
-  PostIOTask(FROM_HERE,
-             base::Bind(&VisitedLinkWriter::LoadFromFile, filename, callback));
+  PostIOTask(FROM_HERE, base::BindOnce(&VisitedLinkWriter::LoadFromFile,
+                                       filename, std::move(callback)));
 
   return true;
 }
 
 // static
-void VisitedLinkWriter::LoadFromFile(
-    const base::FilePath& filename,
-    const TableLoadCompleteCallback& callback) {
+void VisitedLinkWriter::LoadFromFile(const base::FilePath& filename,
+                                     TableLoadCompleteCallback callback) {
   scoped_refptr<LoadFromFileResult> load_from_file_result;
   bool success = LoadApartFromFile(filename, &load_from_file_result);
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(callback, success, load_from_file_result));
+  base::PostTask(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(std::move(callback), success, load_from_file_result));
 }
 
 // static
@@ -898,7 +898,7 @@ void VisitedLinkWriter::FreeURLTable() {
   mapped_table_memory_ = base::MappedReadOnlyRegion();
   if (!persist_to_disk_ || !file_)
     return;
-  PostIOTask(FROM_HERE, base::Bind(&AsyncClose, file_));
+  PostIOTask(FROM_HERE, base::BindOnce(&AsyncClose, file_));
   // AsyncClose() will close the file and free the memory pointed by |file_|.
   file_ = nullptr;
 }
@@ -979,18 +979,18 @@ uint32_t VisitedLinkWriter::NewTableSizeForCount(int32_t item_count) const {
   // These table sizes are selected to be the maximum prime number less than
   // a "convenient" multiple of 1K.
   static const int table_sizes[] = {
-      16381,    // 16K  = 16384   <- don't shrink below this table size
-                //                   (should be == default_table_size)
-      32767,    // 32K  = 32768
-      65521,    // 64K  = 65536
-      130051,   // 128K = 131072
-      262127,   // 256K = 262144
-      524269,   // 512K = 524288
-      1048549,  // 1M   = 1048576
-      2097143,  // 2M   = 2097152
-      4194301,  // 4M   = 4194304
-      8388571,  // 8M   = 8388608
-      16777199,  // 16M  = 16777216
+      16381,      // 16K  = 16384   <- don't shrink below this table size
+                  //                   (should be == default_table_size)
+      32767,      // 32K  = 32768
+      65521,      // 64K  = 65536
+      130051,     // 128K = 131072
+      262127,     // 256K = 262144
+      524269,     // 512K = 524288
+      1048549,    // 1M   = 1048576
+      2097143,    // 2M   = 2097152
+      4194301,    // 4M   = 4194304
+      8388571,    // 8M   = 8388608
+      16777199,   // 16M  = 16777216
       33554347};  // 32M  = 33554432
 
   // Try to leave the table 33% full.
@@ -1057,10 +1057,8 @@ void VisitedLinkWriter::OnTableRebuildComplete(
   table_builder_ = nullptr;  // Will release our reference to the builder.
 
   // Notify the unit test that the rebuild is complete (will be NULL in prod.)
-  if (!rebuild_complete_task_.is_null()) {
-    rebuild_complete_task_.Run();
-    rebuild_complete_task_.Reset();
-  }
+  if (!rebuild_complete_task_.is_null())
+    std::move(rebuild_complete_task_).Run();
 }
 
 void VisitedLinkWriter::WriteToFile(FILE** file,
@@ -1069,9 +1067,10 @@ void VisitedLinkWriter::WriteToFile(FILE** file,
                                     int32_t data_size) {
   DCHECK(persist_to_disk_);
   DCHECK(!table_is_loading_from_file_);
-  PostIOTask(FROM_HERE,
-      base::Bind(&AsyncWrite, file, offset,
-                 std::string(static_cast<const char*>(data), data_size)));
+  PostIOTask(
+      FROM_HERE,
+      base::BindOnce(&AsyncWrite, file, offset,
+                     std::string(static_cast<const char*>(data), data_size)));
 }
 
 void VisitedLinkWriter::WriteUsedItemCountToFile() {

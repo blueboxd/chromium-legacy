@@ -28,10 +28,18 @@ NGFlexLayoutAlgorithm::NGFlexLayoutAlgorithm(
       border_scrollbar_padding_(border_padding_ +
                                 params.fragment_geometry.scrollbar),
       is_column_(Style().ResolvedIsColumnFlexDirection()),
-      is_horizontal_flow_(FlexLayoutAlgorithm::IsHorizontalFlow(Style())) {
+      is_horizontal_flow_(FlexLayoutAlgorithm::IsHorizontalFlow(Style())),
+      is_cross_size_definite_(IsContainerCrossSizeDefinite()) {
   container_builder_.SetIsNewFormattingContext(
       params.space.IsNewFormattingContext());
   container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
+
+  border_box_size_ = container_builder_.InitialBorderBoxSize();
+  content_box_size_ =
+      ShrinkAvailableSize(border_box_size_, border_scrollbar_padding_);
+  child_percentage_size_ = CalculateChildPercentageSize(
+      ConstraintSpace(), Node(), content_box_size_);
+  algorithm_.emplace(&Style(), MainAxisContentExtent(LayoutUnit::Max()));
 }
 
 bool NGFlexLayoutAlgorithm::MainAxisIsInlineAxis(
@@ -272,7 +280,7 @@ bool NGFlexLayoutAlgorithm::ShouldItemShrinkToFit(
 
 bool NGFlexLayoutAlgorithm::WillChildCrossSizeBeContainerCrossSize(
     const NGBlockNode& child) const {
-  return !algorithm_->IsMultiline() && IsContainerCrossSizeDefinite() &&
+  return !algorithm_->IsMultiline() && is_cross_size_definite_ &&
          DoesItemStretch(child);
 }
 
@@ -575,15 +583,6 @@ NGFlexLayoutAlgorithm::AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
 }
 
 scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
-  border_box_size_ = container_builder_.InitialBorderBoxSize();
-  content_box_size_ =
-      ShrinkAvailableSize(border_box_size_, border_scrollbar_padding_);
-  child_percentage_size_ = CalculateChildPercentageSize(
-      ConstraintSpace(), Node(), content_box_size_);
-
-  const LayoutUnit line_break_length = MainAxisContentExtent(LayoutUnit::Max());
-  algorithm_.emplace(&Style(), line_break_length);
-
   ConstructAndAppendFlexItems();
 
   LayoutUnit main_axis_offset = border_scrollbar_padding_.inline_start;

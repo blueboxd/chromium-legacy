@@ -1161,7 +1161,7 @@ TEST_P(InputHandlerProxyTest, HitTestTouchEventNonNullTouchAction) {
                   testing::Property(&gfx::Point::x, testing::Eq(0)), _))
       .WillOnce(testing::Invoke([](const gfx::Point&,
                                    cc::TouchAction* touch_action) {
-        *touch_action = cc::kTouchActionMax;
+        *touch_action = cc::TouchAction::kMax;
         return cc::InputHandler::TouchStartOrMoveEventListenerType::NO_HANDLER;
       }));
 
@@ -1170,7 +1170,7 @@ TEST_P(InputHandlerProxyTest, HitTestTouchEventNonNullTouchAction) {
                   testing::Property(&gfx::Point::x, testing::Gt(0)), _))
       .WillOnce(
           testing::Invoke([](const gfx::Point&, cc::TouchAction* touch_action) {
-            *touch_action = cc::kTouchActionPanUp;
+            *touch_action = cc::TouchAction::kPanUp;
             return cc::InputHandler::TouchStartOrMoveEventListenerType::
                 HANDLER_ON_SCROLLING_LAYER;
           }));
@@ -1187,12 +1187,12 @@ TEST_P(InputHandlerProxyTest, HitTestTouchEventNonNullTouchAction) {
   touch.touches[2] = CreateWebTouchPoint(WebTouchPoint::kStatePressed, -10, 10);
 
   bool is_touching_scrolling_layer;
-  cc::TouchAction white_listed_touch_action = cc::kTouchActionAuto;
+  cc::TouchAction white_listed_touch_action = cc::TouchAction::kAuto;
   EXPECT_EQ(expected_disposition_, input_handler_->HitTestTouchEventForTest(
                                        touch, &is_touching_scrolling_layer,
                                        &white_listed_touch_action));
   EXPECT_TRUE(is_touching_scrolling_layer);
-  EXPECT_EQ(white_listed_touch_action, cc::kTouchActionPanUp);
+  EXPECT_EQ(white_listed_touch_action, cc::TouchAction::kPanUp);
   VERIFY_AND_RESET_MOCKS();
 }
 
@@ -1253,11 +1253,11 @@ TEST_P(InputHandlerProxyTest, MultiTouchPointHitTestNegative) {
       .Times(2)
       .WillRepeatedly(testing::Invoke([](const gfx::Point&,
                                          cc::TouchAction* touch_action) {
-        *touch_action = cc::kTouchActionPanUp;
+        *touch_action = cc::TouchAction::kPanUp;
         return cc::InputHandler::TouchStartOrMoveEventListenerType::NO_HANDLER;
       }));
   EXPECT_CALL(mock_client_,
-              SetWhiteListedTouchAction(cc::kTouchActionPanUp, 1,
+              SetWhiteListedTouchAction(cc::TouchAction::kPanUp, 1,
                                         InputHandlerProxy::DROP_EVENT))
       .WillOnce(testing::Return());
 
@@ -1289,7 +1289,7 @@ TEST_P(InputHandlerProxyTest, MultiTouchPointHitTestPositive) {
                   testing::Property(&gfx::Point::x, testing::Eq(0)), _))
       .WillOnce(testing::Invoke([](const gfx::Point&,
                                    cc::TouchAction* touch_action) {
-        *touch_action = cc::kTouchActionAuto;
+        *touch_action = cc::TouchAction::kAuto;
         return cc::InputHandler::TouchStartOrMoveEventListenerType::NO_HANDLER;
       }));
   EXPECT_CALL(mock_input_handler_,
@@ -1297,11 +1297,11 @@ TEST_P(InputHandlerProxyTest, MultiTouchPointHitTestPositive) {
                   testing::Property(&gfx::Point::x, testing::Gt(0)), _))
       .WillOnce(
           testing::Invoke([](const gfx::Point&, cc::TouchAction* touch_action) {
-            *touch_action = cc::kTouchActionPanY;
+            *touch_action = cc::TouchAction::kPanY;
             return cc::InputHandler::TouchStartOrMoveEventListenerType::
                 HANDLER_ON_SCROLLING_LAYER;
           }));
-  EXPECT_CALL(mock_client_, SetWhiteListedTouchAction(cc::kTouchActionPanY, 1,
+  EXPECT_CALL(mock_client_, SetWhiteListedTouchAction(cc::TouchAction::kPanY, 1,
                                                       expected_disposition_))
       .WillOnce(testing::Return());
   // Since the second touch point hits a touch-region, there should be no
@@ -1336,16 +1336,16 @@ TEST_P(InputHandlerProxyTest, MultiTouchPointHitTestPassivePositive) {
       .Times(3)
       .WillOnce(testing::Invoke([](const gfx::Point&,
                                    cc::TouchAction* touch_action) {
-        *touch_action = cc::kTouchActionPanRight;
+        *touch_action = cc::TouchAction::kPanRight;
         return cc::InputHandler::TouchStartOrMoveEventListenerType::NO_HANDLER;
       }))
       .WillRepeatedly(testing::Invoke([](const gfx::Point&,
                                          cc::TouchAction* touch_action) {
-        *touch_action = cc::kTouchActionPanX;
+        *touch_action = cc::TouchAction::kPanX;
         return cc::InputHandler::TouchStartOrMoveEventListenerType::NO_HANDLER;
       }));
   EXPECT_CALL(mock_client_, SetWhiteListedTouchAction(
-                                cc::kTouchActionPanRight, 1,
+                                cc::TouchAction::kPanRight, 1,
                                 InputHandlerProxy::DID_HANDLE_NON_BLOCKING))
       .WillOnce(testing::Return());
 
@@ -1382,11 +1382,11 @@ TEST_P(InputHandlerProxyTest, TouchStartPassiveAndTouchEndBlocking) {
   EXPECT_CALL(mock_input_handler_, EventListenerTypeForTouchStartOrMoveAt(_, _))
       .WillOnce(testing::Invoke([](const gfx::Point&,
                                    cc::TouchAction* touch_action) {
-        *touch_action = cc::kTouchActionNone;
+        *touch_action = cc::TouchAction::kNone;
         return cc::InputHandler::TouchStartOrMoveEventListenerType::NO_HANDLER;
       }));
   EXPECT_CALL(mock_client_, SetWhiteListedTouchAction(
-                                cc::kTouchActionNone, 1,
+                                cc::TouchAction::kNone, 1,
                                 InputHandlerProxy::DID_HANDLE_NON_BLOCKING))
       .WillOnce(testing::Return());
 

@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/graph/process_node_impl.h"
@@ -23,23 +24,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace performance_manager {
-
-// static
-PerformanceManagerTabHelper* PerformanceManagerTabHelper::first_ = nullptr;
-
-// static
-void PerformanceManagerTabHelper::DetachAndDestroyAll() {
-  while (first_) {
-    PerformanceManagerTabHelper* helper = first_;
-    // Tear it down and detach it from the WebContents, which will
-    // delete it.
-    content::WebContents* web_contents = helper->web_contents();
-    DCHECK(web_contents);
-    helper->TearDown();
-    DCHECK(!helper->web_contents());
-    web_contents->RemoveUserData(UserDataKey());
-  }
-}
 
 PerformanceManagerTabHelper::PerformanceManagerTabHelper(
     content::WebContents* web_contents)
@@ -60,29 +44,14 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
     if (frame->IsRenderFrameCreated())
       RenderFrameCreated(frame);
   }
-
-  // Push this instance to the list.
-  next_ = first_;
-  if (next_)
-    next_->prev_ = this;
-  prev_ = nullptr;
-  first_ = this;
 }
 
 PerformanceManagerTabHelper::~PerformanceManagerTabHelper() {
   DCHECK(!page_node_);
   DCHECK(frames_.empty());
-  DCHECK_NE(this, first_);
-  DCHECK(!prev_);
-  DCHECK(!next_);
 }
 
 void PerformanceManagerTabHelper::TearDown() {
-  // Validate that this instance is in list of tab helpers.
-  DCHECK(first_ == this || next_ || prev_);
-  DCHECK_NE(this, next_);
-  DCHECK_NE(this, prev_);
-
   // Ship our page and frame nodes to the PerformanceManagerImpl for
   // incineration.
   std::vector<std::unique_ptr<NodeBase>> nodes;
@@ -103,25 +72,19 @@ void PerformanceManagerTabHelper::TearDown() {
   // Delete the page and its entire frame tree from the graph.
   performance_manager_->BatchDeleteNodes(std::move(nodes));
 
-  if (first_ == this) {
-    DCHECK(!prev_);
-    first_ = next_;
+  if (destruction_observer_) {
+    destruction_observer_->OnPerformanceManagerTabHelperDestroying(
+        web_contents());
   }
-
-  if (prev_) {
-    DCHECK_EQ(prev_->next_, this);
-    prev_->next_ = next_;
-  }
-
-  if (next_) {
-    DCHECK_EQ(next_->prev_, this);
-    next_->prev_ = prev_;
-  }
-  prev_ = nullptr;
-  next_ = nullptr;
 
   // Unsubscribe from the associated WebContents.
   Observe(nullptr);
+}
+
+void PerformanceManagerTabHelper::SetDestructionObserver(
+    DestructionObserver* destruction_observer) {
+  DCHECK(!destruction_observer || !destruction_observer_);
+  destruction_observer_ = destruction_observer;
 }
 
 void PerformanceManagerTabHelper::RenderFrameCreated(
@@ -137,9 +100,12 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
     parent_frame_node = frames_[parent].get();
   }
 
-  // Ideally this would strictly be a "Get", but it is possible in tests for
-  // the the RenderProcessUserData to not have attached at this point.
-  auto* process_node = RenderProcessUserData::GetOrCreateForRenderProcessHost(
+  // Ideally, creation would not be required here, but it is possible in tests
+  // for the RenderProcessUserData to not have attached at this point.
+  PerformanceManagerRegistry::GetInstance()
+      ->CreateProcessNodeForRenderProcessHost(render_frame_host->GetProcess());
+
+  auto* process_node = RenderProcessUserData::GetForRenderProcessHost(
                            render_frame_host->GetProcess())
                            ->process_node();
 

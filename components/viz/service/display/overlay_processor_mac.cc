@@ -35,7 +35,9 @@ bool OverlayProcessorMac::IsOverlaySupported() const {
 }
 
 gfx::Rect OverlayProcessorMac::GetAndResetOverlayDamage() {
-  return gfx::Rect();
+  gfx::Rect result = ca_overlay_damage_rect_;
+  ca_overlay_damage_rect_ = gfx::Rect();
+  return result;
 }
 
 void OverlayProcessorMac::ProcessForOverlays(
@@ -73,6 +75,7 @@ void OverlayProcessorMac::ProcessForOverlays(
   // CALayer overlays are all-or-nothing. If all quads were replaced with
   // layers then mark the output surface as already handled.
   output_surface_already_handled_ = true;
+  ca_overlay_damage_rect_ = render_pass->output_rect;
   *damage_rect = gfx::Rect();
 }
 

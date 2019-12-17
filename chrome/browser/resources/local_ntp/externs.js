@@ -111,7 +111,8 @@ let og;
  *     ConvertPromoDataToDict()
  * @typedef {{promoHtml: (string|undefined),
  *            promoLogUrl: (string|undefined),
- *            promoId: (string|undefined)}}
+ *            promoId: (string|undefined),
+ *            canOpenExtensionsPage: boolean}}
  */
 let promo;
 
@@ -390,6 +391,15 @@ window.chrome.embeddedSearch.newTabPage.updateCustomLink;
 
 /** @param {string} promoId */
 window.chrome.embeddedSearch.newTabPage.blocklistPromo;
+
+/**
+ * @param {number} button
+ * @param {boolean} altKey
+ * @param {boolean} ctrlKey
+ * @param {boolean} metaKey
+ * @param {boolean} shiftKey
+ */
+window.chrome.embeddedSearch.newTabPage.openExtensionsPage;
 
 /**
  * Embedded Search API methods defined in

@@ -20,8 +20,11 @@
 #include "ppapi/shared_impl/ppapi_globals.h"
 
 namespace base {
+class SingleThreadTaskRunner;
+class TaskRunner;
 class Thread;
 }
+
 namespace IPC {
 class Sender;
 }
@@ -42,9 +45,11 @@ class UDPSocketFilter;
 
 class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
  public:
-  explicit PluginGlobals(const scoped_refptr<base::TaskRunner>& task_runner);
-  PluginGlobals(PpapiGlobals::PerThreadForTest,
-                const scoped_refptr<base::TaskRunner>& task_runner);
+  explicit PluginGlobals(
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
+  PluginGlobals(
+      PpapiGlobals::PerThreadForTest,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
   ~PluginGlobals() override;
 
   // Getter for the global singleton. Generally, you should use
@@ -81,7 +86,9 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   // Returns the channel for sending to the browser.
   IPC::Sender* GetBrowserSender();
 
-  base::TaskRunner* ipc_task_runner() { return ipc_task_runner_.get(); }
+  base::SingleThreadTaskRunner* ipc_task_runner() {
+    return ipc_task_runner_.get();
+  }
 
   // Returns the language code of the current UI language.
   std::string GetUILanguage();
@@ -176,7 +183,7 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
 
   std::unique_ptr<BrowserSender> browser_sender_;
 
-  scoped_refptr<base::TaskRunner> ipc_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
 
   // Thread for performing potentially blocking file operations. It's created
   // lazily, since it might not be needed.

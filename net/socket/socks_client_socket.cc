@@ -319,6 +319,7 @@ int SOCKSClientSocket::DoResolveHost() {
 }
 
 int SOCKSClientSocket::DoResolveHostComplete(int result) {
+  resolve_error_info_ = resolve_host_request_->GetResolveErrorInfo();
   if (result != OK) {
     // Resolving the hostname failed; fail the request rather than automatically
     // falling back to SOCKS4a (since it can be confusing to see invalid IP
@@ -472,6 +473,10 @@ int SOCKSClientSocket::GetPeerAddress(IPEndPoint* address) const {
 
 int SOCKSClientSocket::GetLocalAddress(IPEndPoint* address) const {
   return transport_socket_->GetLocalAddress(address);
+}
+
+ResolveErrorInfo SOCKSClientSocket::GetResolveErrorInfo() const {
+  return resolve_error_info_;
 }
 
 }  // namespace net

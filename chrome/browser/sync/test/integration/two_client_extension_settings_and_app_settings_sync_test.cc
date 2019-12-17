@@ -12,6 +12,11 @@
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/sync/test/integration/os_sync_test.h"
+#include "chromeos/constants/chromeos_features.h"
+#endif
+
 namespace {
 
 using apps_helper::InstallAppForAllProfiles;
@@ -209,5 +214,31 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionSettingsAndAppSettingsSyncTest,
   ASSERT_PRED3(StartWithDifferentSettingsTest, InstallAppForAllProfiles(0),
                InstallAppForAllProfiles(1), InstallAppForAllProfiles(2));
 }
+
+#if defined(OS_CHROMEOS)
+// Tests for SplitSettingsSync, which uses a different ModelTypeController for
+// syncer::APP_SETTINGS.
+class TwoClientAppSettingsOsSyncTest : public OsSyncTest {
+ public:
+  TwoClientAppSettingsOsSyncTest() : OsSyncTest(TWO_CLIENT) {}
+  ~TwoClientAppSettingsOsSyncTest() override = default;
+};
+
+IN_PROC_BROWSER_TEST_F(TwoClientAppSettingsOsSyncTest,
+                       AppsStartWithSameSettings) {
+  ASSERT_TRUE(chromeos::features::IsSplitSettingsSyncEnabled());
+  ASSERT_TRUE(SetupClients());
+  ASSERT_PRED3(StartWithSameSettingsTest, InstallAppForAllProfiles(0),
+               InstallAppForAllProfiles(1), InstallAppForAllProfiles(2));
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientAppSettingsOsSyncTest,
+                       AppsStartWithDifferentSettings) {
+  ASSERT_TRUE(chromeos::features::IsSplitSettingsSyncEnabled());
+  ASSERT_TRUE(SetupClients());
+  ASSERT_PRED3(StartWithDifferentSettingsTest, InstallAppForAllProfiles(0),
+               InstallAppForAllProfiles(1), InstallAppForAllProfiles(2));
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace

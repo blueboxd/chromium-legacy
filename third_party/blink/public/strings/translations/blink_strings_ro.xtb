@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">Mărește acest text la cel puțin <ph name="MIN_CHARACTERS" /> caractere (în prezent folosești <ph name="CURRENT_LENGTH" /> caractere).</translation>
 <translation id="383465348367842624">Valoarea urmată de semnul „<ph name="ATSIGN" />” nu trebuie să conțină simbolul „<ph name="INVALIDCHARACTER" />”.</translation>
 <translation id="3846214748874656680">Ieși din ecranul complet</translation>
-<translation id="3889183436948184105">versiune</translation>
 <translation id="3920932319529768807">concluzie</translation>
 <translation id="3924558731517983934">aplicație</translation>
 <translation id="3944740393230681990">prolog</translation>
@@ -115,6 +114,7 @@
 <translation id="4812940957355064477">Introduceți un număr.</translation>
 <translation id="4912536737030637138">intrare bibliografică</translation>
 <translation id="492244087561876220">comentariu</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> selectat</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> selectate</translation>
 <translation id="4992066212339426712">Activează sunetul</translation>
 <translation id="49969490063480558">Introduceți o valoare după semnul „<ph name="ATSIGN" />”. Adresa „<ph name="INVALIDADDRESS" />” nu este completă.</translation>
@@ -219,6 +219,7 @@
 <translation id="7888071071722539607">Includeți semnul „<ph name="ATSIGN" />” în adresa de e-mail. Din adresa „<ph name="INVALIDADDRESS" />” lipsește semnul „<ph name="ATSIGN" />”.</translation>
 <translation id="7891486169920085145">element de divizare</translation>
 <translation id="795667975304826397">Nu ai ales niciun fișier</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> nu este selectat</translation>
 <translation id="8034303206267677282">puternic</translation>
 <translation id="8053789581856978548">câmp pentru căutarea textului</translation>
 <translation id="8057695513531652401">anunț</translation>
@@ -257,7 +258,6 @@
 <translation id="8987927404178983737">Lună</translation>
 <translation id="901493112792887934">timp actual în secunde</translation>
 <translation id="901834265349196618">e-mail</translation>
-<translation id="9023835124071926463">secțiunea de comentarii</translation>
 <translation id="9048119486235211610">navigare</translation>
 <translation id="9062295712474918030">document</translation>
 <translation id="9093215626363556771">ieși din modul picture-in-picture</translation>

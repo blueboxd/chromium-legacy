@@ -25,8 +25,9 @@ namespace test {
 
 // A TestTaskFactory posts tasks to a TaskRunner and verifies that they run as
 // expected. Generates a test failure when:
-// - The RunsTasksInCurrentSequence() method of the TaskRunner returns false on
-//   a thread on which a Task is run.
+// - The RunsTasksInCurrentSequence() method of the SequencedTaskRunner
+//   (kSequenced or kSingleThread modes) returns false on a thread on which a
+//   Task is run.
 // - The TaskRunnerHandles set in the context of the task don't match what's
 //   expected for the tested TaskSourceExecutionMode.
 // - The TaskSourceExecutionMode of the TaskRunner is kSequenced or

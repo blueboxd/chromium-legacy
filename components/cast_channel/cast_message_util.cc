@@ -30,8 +30,9 @@ const EnumTable<CastMessageType> EnumTable<CastMessageType>::instance(
     {
         {CastMessageType::kPing, "PING"},
         {CastMessageType::kPong, "PONG"},
+        {CastMessageType::kRpc, "RPC"},
         {CastMessageType::kGetAppAvailability, "GET_APP_AVAILABILITY"},
-        {CastMessageType::kReceiverStatusRequest, "GET_STATUS"},
+        {CastMessageType::kGetStatus, "GET_STATUS"},
         {CastMessageType::kConnect, "CONNECT"},
         {CastMessageType::kCloseConnection, "CLOSE"},
         {CastMessageType::kBroadcast, "APPLICATION_BROADCAST"},
@@ -42,6 +43,15 @@ const EnumTable<CastMessageType> EnumTable<CastMessageType>::instance(
         {CastMessageType::kLaunchError, "LAUNCH_ERROR"},
         {CastMessageType::kOffer, "OFFER"},
         {CastMessageType::kAnswer, "ANSWER"},
+        {CastMessageType::kCapabilitiesResponse, "CAPABILITIES_RESPONSE"},
+        {CastMessageType::kStatusResponse, "STATUS_RESPONSE"},
+        {CastMessageType::kMultizoneStatus, "MULTIZONE_STATUS"},
+        {CastMessageType::kInvalidPlayerState, "INVALID_PLAYER_STATE"},
+        {CastMessageType::kLoadFailed, "LOAD_FAILED"},
+        {CastMessageType::kLoadCancelled, "LOAD_CANCELLED"},
+        {CastMessageType::kInvalidRequest, "INVALID_REQUEST"},
+        {CastMessageType::kPresentation, "PRESENTATION"},
+        {CastMessageType::kGetCapabilities, "GET_CAPABILITIES"},
         {CastMessageType::kOther},
     },
     CastMessageType::kMaxValue);
@@ -173,7 +183,7 @@ std::ostream& operator<<(std::ostream& lhs, const CastMessage& rhs) {
     lhs << "payload_utf8: " << rhs.payload_utf8();
   }
   if (rhs.has_payload_binary()) {
-    lhs << "payload_binary: ...";
+    lhs << "payload_binary: (" << rhs.payload_binary().size() << " bytes)";
   }
   lhs << "}";
   return lhs;
@@ -358,9 +368,9 @@ CastMessage CreateGetAppAvailabilityRequest(const std::string& source_id,
 CastMessage CreateReceiverStatusRequest(const std::string& source_id,
                                         int request_id) {
   Value dict(Value::Type::DICTIONARY);
-  dict.SetKey("type",
-              Value(EnumToString<CastMessageType,
-                                 CastMessageType::kReceiverStatusRequest>()));
+  dict.SetKey(
+      "type",
+      Value(EnumToString<CastMessageType, CastMessageType::kGetStatus>()));
   dict.SetKey("requestId", Value(request_id));
   return CreateCastMessage(kReceiverNamespace, dict, source_id,
                            kPlatformReceiverId);

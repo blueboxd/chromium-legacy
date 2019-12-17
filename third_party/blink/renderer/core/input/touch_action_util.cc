@@ -17,7 +17,7 @@ TouchAction ComputeEffectiveTouchAction(const Node& node) {
   if (node.GetComputedStyle())
     return node.GetComputedStyle()->GetEffectiveTouchAction();
 
-  return TouchAction::kTouchActionAuto;
+  return TouchAction::kAuto;
 }
 
 }  // namespace touch_action_util

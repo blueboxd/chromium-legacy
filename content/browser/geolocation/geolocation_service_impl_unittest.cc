@@ -14,7 +14,6 @@
 #include "content/public/test/mock_permission_manager.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "content/test/test_render_frame_host.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
@@ -77,7 +76,6 @@ class GeolocationServiceTest : public RenderViewHostImplTestHarness {
 
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
-    service_manager_context_ = std::make_unique<TestServiceManagerContext>();
     NavigateAndCommit(kMainUrl);
     browser_context_.reset(new content::TestBrowserContext());
     browser_context_->SetPermissionControllerDelegate(
@@ -93,7 +91,6 @@ class GeolocationServiceTest : public RenderViewHostImplTestHarness {
   void TearDown() override {
     context_.reset();
     geolocation_overrider_.reset();
-    service_manager_context_.reset();
     browser_context_.reset();
     RenderViewHostImplTestHarness::TearDown();
   }
@@ -130,7 +127,6 @@ class GeolocationServiceTest : public RenderViewHostImplTestHarness {
   }
 
  private:
-  std::unique_ptr<TestServiceManagerContext> service_manager_context_;
   std::unique_ptr<device::ScopedGeolocationOverrider> geolocation_overrider_;
 
   std::unique_ptr<TestBrowserContext> browser_context_;

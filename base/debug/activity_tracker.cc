@@ -1396,9 +1396,9 @@ void GlobalActivityTracker::ReleaseTrackerForCurrentThreadForTesting() {
 }
 
 void GlobalActivityTracker::SetBackgroundTaskRunner(
-    const scoped_refptr<TaskRunner>& runner) {
+    const scoped_refptr<SequencedTaskRunner>& runner) {
   AutoLock lock(global_tracker_lock_);
-  background_task_runner_ = runner;
+  background_task_runner_ = std::move(runner);
 }
 
 void GlobalActivityTracker::SetProcessExitCallback(
@@ -1450,7 +1450,7 @@ void GlobalActivityTracker::RecordProcessExit(ProcessId process_id,
   DCHECK_NE(GetProcessId(), pid);
   DCHECK_NE(0, pid);
 
-  scoped_refptr<TaskRunner> task_runner;
+  scoped_refptr<SequencedTaskRunner> task_runner;
   std::string command_line;
   {
     base::AutoLock lock(global_tracker_lock_);

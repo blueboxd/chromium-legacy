@@ -19,11 +19,12 @@ namespace device {
 
 BatteryStatusService::BatteryStatusService()
     : main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      update_callback_(base::Bind(&BatteryStatusService::NotifyConsumers,
-                                  base::Unretained(this))),
+      update_callback_(
+          base::BindRepeating(&BatteryStatusService::NotifyConsumers,
+                              base::Unretained(this))),
       status_updated_(false),
       is_shutdown_(false) {
-  callback_list_.set_removal_callback(base::Bind(
+  callback_list_.set_removal_callback(base::BindRepeating(
       &BatteryStatusService::ConsumersChanged, base::Unretained(this)));
 }
 

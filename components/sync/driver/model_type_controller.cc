@@ -43,24 +43,38 @@ SyncStopMetadataFate TakeStrictestMetadataFate(SyncStopMetadataFate fate1,
 
 }  // namespace
 
+ModelTypeController::ModelTypeController(ModelType type)
+    : DataTypeController(type) {}
+
 ModelTypeController::ModelTypeController(
     ModelType type,
     std::unique_ptr<ModelTypeControllerDelegate> delegate_for_full_sync_mode)
-    : DataTypeController(type) {
-  delegate_map_.emplace(SyncMode::kFull,
-                        std::move(delegate_for_full_sync_mode));
+    : ModelTypeController(type) {
+  InitModelTypeController(std::move(delegate_for_full_sync_mode), nullptr);
 }
 
 ModelTypeController::ModelTypeController(
     ModelType type,
     std::unique_ptr<ModelTypeControllerDelegate> delegate_for_full_sync_mode,
     std::unique_ptr<ModelTypeControllerDelegate> delegate_for_transport_mode)
-    : ModelTypeController(type, std::move(delegate_for_full_sync_mode)) {
-  delegate_map_.emplace(SyncMode::kTransportOnly,
-                        std::move(delegate_for_transport_mode));
+    : ModelTypeController(type) {
+  InitModelTypeController(std::move(delegate_for_full_sync_mode),
+                          std::move(delegate_for_transport_mode));
 }
 
 ModelTypeController::~ModelTypeController() {}
+
+void ModelTypeController::InitModelTypeController(
+    std::unique_ptr<ModelTypeControllerDelegate> delegate_for_full_sync_mode,
+    std::unique_ptr<ModelTypeControllerDelegate> delegate_for_transport_mode) {
+  DCHECK(delegate_map_.empty());
+  delegate_map_.emplace(SyncMode::kFull,
+                        std::move(delegate_for_full_sync_mode));
+  if (delegate_for_transport_mode) {
+    delegate_map_.emplace(SyncMode::kTransportOnly,
+                          std::move(delegate_for_transport_mode));
+  }
+}
 
 std::unique_ptr<DataTypeActivationResponse>
 ModelTypeController::ActivateManuallyForNigori() {

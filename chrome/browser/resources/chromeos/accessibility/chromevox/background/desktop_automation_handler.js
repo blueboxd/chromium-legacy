@@ -63,6 +63,12 @@ DesktopAutomationHandler = function(node) {
       EventType.DOCUMENT_SELECTION_CHANGED, this.onDocumentSelectionChanged);
   this.addListener_(EventType.FOCUS, this.onFocus);
   this.addListener_(EventType.HOVER, this.onHover);
+
+  // Note that live region changes from views are really announcement
+  // events. Their target nodes contain no live region semantics and have no
+  // relation to live regions which are supported in |LiveRegions|.
+  this.addListener_(EventType.LIVE_REGION_CHANGED, this.onEventFromViews);
+
   this.addListener_(EventType.LOAD_COMPLETE, this.onLoadComplete);
   this.addListener_(EventType.MENU_END, this.onMenuEnd);
   this.addListener_(EventType.MENU_LIST_ITEM_SELECTED, this.onEventIfSelected);
@@ -150,6 +156,15 @@ DesktopAutomationHandler.prototype = {
     output.withRichSpeechAndBraille(
         ChromeVoxState.instance.currentRange, prevRange, evt.type);
     output.go();
+  },
+
+  /**
+   * @param {!AutomationEvent} evt
+   */
+  onEventFromViews: function(evt) {
+    if (evt.target.root.role == RoleType.DESKTOP) {
+      this.onEventDefault(evt);
+    }
   },
 
   /**

@@ -24,7 +24,6 @@
 <translation id="1171770572613082465">Праглядайце папулярныя вэб-сайты, націснуўшы кнопку "Топ сайтаў"</translation>
 <translation id="1173894706177603556">Перайменаваць</translation>
 <translation id="1178581264944972037">Прыпыніць</translation>
-<translation id="118069123878619799">– вашы фізічныя характарыстыкі, такія як рост</translation>
 <translation id="1181037720776840403">Выдаліць</translation>
 <translation id="1188239144602654184">Пачаць сеанс AR</translation>
 <translation id="1197267115302279827">Перамясціць закладкі</translation>
@@ -62,7 +61,6 @@
 <translation id="1384959399684842514">Спампоўка прыпынена</translation>
 <translation id="1386674309198842382">Апошнія дзеянні: <ph name="LAST_UPDATED" /> сут таму</translation>
 <translation id="1397811292916898096">Шукаць з дапамогай <ph name="PRODUCT_NAME" /></translation>
-<translation id="1404122904123200417">Убудавана ў вэб-сайт <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"Не адсочваць"</translation>
 <translation id="1407135791313364759">Адкрыць усе</translation>
 <translation id="1409426117486808224">Спрошчаны выгляд адкрытых укладак</translation>
@@ -215,6 +213,7 @@
 <translation id="2534155362429831547">Выдалена элементаў: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="2536728043171574184">Вы праглядаеце пазасеткавую копію гэтай старонкі</translation>
 <translation id="2537178555904266562">Памылка пры сінхранізацыі пароляў</translation>
+<translation id="2537296579376733324">Усе файлы cookie, толькі на гэтым сайце</translation>
 <translation id="2546283357679194313">Файлы сookie і даныя сайтаў</translation>
 <translation id="2567385386134582609">ВІДАРЫС</translation>
 <translation id="257088987046510401">Тэмы</translation>
@@ -472,6 +471,7 @@
 <translation id="4565377596337484307">Схаваць пароль</translation>
 <translation id="4570913071927164677">Падрабязныя звесткі</translation>
 <translation id="4572422548854449519">Увайдзіце ва ўліковы запіс пад кіраваннем</translation>
+<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{1 хвіліну таму}one{# хвіліну таму}few{# хвіліны таму}many{# хвілін таму}other{# хвіліны таму}}</translation>
 <translation id="4587589328781138893">Сайты</translation>
 <translation id="4594952190837476234">Гэта пазасеткавая старонка створана <ph name="CREATION_TIME" /> і можа адрознівацца ад сваёй інтэрнэт-версіі.</translation>
@@ -652,7 +652,6 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{# гадзіну таму}one{# гадзіну таму}few{# гадзіны таму}many{# гадзін таму}other{# гадзіны таму}}</translation>
 <translation id="5810288467834065221">© <ph name="YEAR" /> Google LLC. Усе правы абароненыя.</translation>
 <translation id="5817918615728894473">Спалучыць</translation>
-<translation id="5819762621475381970">– планіроўку вашага пакоя</translation>
 <translation id="583281660410589416">Невядома</translation>
 <translation id="5833984609253377421">Абагуліць спасылку</translation>
 <translation id="5836192821815272682">Спампоўваецца абнаўленне Chrome…</translation>
@@ -753,6 +752,7 @@
 <translation id="6545017243486555795">Ачысціць усе даныя</translation>
 <translation id="6545864417968258051">Пошук прылад Bluetooth</translation>
 <translation id="6560414384669816528">Пошук праз Sogou</translation>
+<translation id="656065428026159829">Яшчэ</translation>
 <translation id="6566259936974865419">Chrome сэканоміў вам <ph name="GIGABYTES" /> ГБ</translation>
 <translation id="6573096386450695060">Заўсёды дазваляць</translation>
 <translation id="6573431926118603307">Тут з'явяцца ўкладкі, адкрытыя вамі ў браўзеры Chrome на іншых прыладах.</translation>
@@ -849,6 +849,7 @@
 <translation id="7293171162284876153">Каб пачаць сінхранізацыю, уключыце "Сінхранізацыю даных Chrome".</translation>
 <translation id="729975465115245577">На вашай прыладзе няма праграмы для захоўвання файла з паролямі.</translation>
 <translation id="7302081693174882195">Падрабязныя звесткі: Адсартавана па аб'ёме захаваных даных</translation>
+<translation id="7302486331832100261">Звычайна вы блакіруеце апавяшчэнні. Каб дазволіць іх, націсніце "Падрабязнасці".</translation>
 <translation id="7328017930301109123">У спрошчаным рэжыме Chrome загружае старонкі хутчэй і зніжае выкарыстанне трафіка максімум на 60 працэнтаў.</translation>
 <translation id="7333031090786104871">Ідзе дадаванне папярэдняга сайта</translation>
 <translation id="7352939065658542140">ВІДЭА</translation>

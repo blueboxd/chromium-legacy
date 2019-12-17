@@ -24,8 +24,9 @@ void BatteryMonitorImpl::Create(
 BatteryMonitorImpl::BatteryMonitorImpl() : status_to_report_(false) {
   // NOTE: DidChange may be called before AddCallback returns. This is done to
   // report current status.
-  subscription_ = BatteryStatusService::GetInstance()->AddCallback(
-      base::Bind(&BatteryMonitorImpl::DidChange, base::Unretained(this)));
+  subscription_ =
+      BatteryStatusService::GetInstance()->AddCallback(base::BindRepeating(
+          &BatteryMonitorImpl::DidChange, base::Unretained(this)));
 }
 
 BatteryMonitorImpl::~BatteryMonitorImpl() {}

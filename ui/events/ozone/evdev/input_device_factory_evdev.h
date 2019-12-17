@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
@@ -107,7 +107,7 @@ class COMPONENT_EXPORT(EVDEV) InputDeviceFactoryEvdev {
   void EnableDevices();
 
   // Task runner for our thread.
-  const scoped_refptr<base::TaskRunner> task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Cursor movement.
   CursorDelegateEvdev* const cursor_;

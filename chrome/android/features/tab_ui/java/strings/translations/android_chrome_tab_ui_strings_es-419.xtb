@@ -4,6 +4,8 @@
 <translation id="1075622780330595106">Últimamente no usaste <ph name="NUMBER_OF_TABS" /> de tus pestañas. ¿Quieres cerrarlas?</translation>
 <translation id="1181037720776840403">Quitar</translation>
 <translation id="125153950246128346">Presiona para ver otra pestaña</translation>
+<translation id="1657719826150349398">Mover la pestaña hacia abajo</translation>
+<translation id="1778290789805128794">Mover la pestaña hacia arriba</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> pestaña}other{<ph name="TABS_COUNT_MANY" /> pestañas}}</translation>
 <translation id="2569352796411618312">Sugerencia: Últimamente no usaste <ph name="NUMBER_OF_TABS" /> de tus pestañas. ¿Quieres cerrarlas?</translation>
 <translation id="257674075312929031">Grupo</translation>
@@ -20,11 +22,13 @@
 <translation id="58326064309361797">Arrastra las pestañas para agruparlas</translation>
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="6193448654517602979">Seleccionar pestañas</translation>
+<translation id="6562820390860419811">Mover la pestaña a la izquierda</translation>
 <translation id="6615455863669487791">Mostrarme</translation>
 <translation id="6840760312327750441">Para agrupar pestañas, mantén presionada una y arrástrala hasta otra.</translation>
 <translation id="7151209024774799310">Quitar pestañas del grupo</translation>
 <translation id="7559245342362162951">Muestra las pestañas del grupo en la cuadrícula de pantalla completa</translation>
 <translation id="7792771145871471484">Revisa las sugerencias.</translation>
+<translation id="7885132941432959125">Mover la pestaña a la derecha</translation>
 <translation id="7966321538264951561">Descarta las sugerencias.</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Cierra <ph name="TABS_COUNT_ONE" /> pestaña seleccionada}other{Cierra <ph name="TABS_COUNT_MANY" /> pestañas seleccionadas}}</translation>
 <translation id="9150694013019234766">Alterna entre las pestañas que aparecen en el grupo de pestañas cerca de la parte inferior de la pantalla</translation>

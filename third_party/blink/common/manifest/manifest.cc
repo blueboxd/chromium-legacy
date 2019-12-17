@@ -17,6 +17,10 @@ bool Manifest::ImageResource::operator==(
   return src == other.src && type == other.type && sizes == other.sizes;
 }
 
+Manifest::ShortcutItem::ShortcutItem() = default;
+
+Manifest::ShortcutItem::~ShortcutItem() = default;
+
 Manifest::ShareTargetParams::ShareTargetParams() = default;
 
 Manifest::ShareTargetParams::~ShareTargetParams() = default;
@@ -42,7 +46,7 @@ bool Manifest::IsEmpty() const {
   return name.is_null() && short_name.is_null() && start_url.is_empty() &&
          display == blink::mojom::DisplayMode::kUndefined &&
          orientation == blink::kWebScreenOrientationLockDefault &&
-         icons.empty() && !share_target.has_value() &&
+         icons.empty() && shortcuts.empty() && !share_target.has_value() &&
          related_applications.empty() && !prefer_related_applications &&
          !theme_color && !background_color && gcm_sender_id.is_null() &&
          scope.is_empty();

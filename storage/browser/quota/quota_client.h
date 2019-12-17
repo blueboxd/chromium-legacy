@@ -36,14 +36,13 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaClient
       base::OnceCallback<void(blink::mojom::QuotaStatusCode status)>;
 
   enum ID {
-    kUnknown = 1 << 0,
-    kFileSystem = 1 << 1,
-    kDatabase = 1 << 2,
-    kAppcache = 1 << 3,
-    kIndexedDatabase = 1 << 4,
-    kServiceWorkerCache = 1 << 5,
-    kServiceWorker = 1 << 6,
-    kBackgroundFetch = 1 << 7,
+    kFileSystem = 1 << 0,
+    kDatabase = 1 << 1,
+    kAppcache = 1 << 2,
+    kIndexedDatabase = 1 << 3,
+    kServiceWorkerCache = 1 << 4,
+    kServiceWorker = 1 << 5,
+    kBackgroundFetch = 1 << 6,
     kAllClientsMask = -1,
   };
 

@@ -48,6 +48,7 @@ bool TranslationResultParser::Parse(const Value* result,
     return false;
   }
 
+  quick_answer->result_type = ResultType::kTranslationResult;
   quick_answer->primary_answer = *translated_text;
   quick_answer->secondary_answer =
       base::StringPrintf(kSourceTextTemplate, source_text->c_str(),

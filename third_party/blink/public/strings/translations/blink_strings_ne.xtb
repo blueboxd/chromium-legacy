@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">कृपया यो पाठलाई <ph name="MIN_CHARACTERS" /> अक्षर वा थप (तपाईं हालमा प्रयोग गरिरहेको <ph name="CURRENT_LENGTH" /> अक्षर) सम्म लम्ब्याउनुहोस्।</translation>
 <translation id="383465348367842624">त्यसको पछाडि '<ph name="ATSIGN" />' आउने भागमा '<ph name="INVALIDCHARACTER" />' सङ्केत हुनुहुँदैन।</translation>
 <translation id="3846214748874656680">पूर्ण स्क्रिनबाट निस्कनुहोस्</translation>
-<translation id="3889183436948184105">पुनरावृत्ति</translation>
 <translation id="3920932319529768807">निष्कर्ष</translation>
 <translation id="3924558731517983934">अनुप्रयोग</translation>
 <translation id="3944740393230681990">प्रस्तावना</translation>
@@ -115,6 +114,7 @@
 <translation id="4812940957355064477">कृपया एक नम्बर प्रविष्टि गर्नुहोस्।</translation>
 <translation id="4912536737030637138">ग्रन्थसूचीको प्रविष्टि</translation>
 <translation id="492244087561876220">टिप्पणी</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> चयन गरियो</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> चयन गरिएको</translation>
 <translation id="4992066212339426712">आवाज खोल्नुहोस्</translation>
 <translation id="49969490063480558">कृपया '<ph name="ATSIGN" />' पछ्याउने एउटा भाग प्रविष्टि गर्नुहोस्। '<ph name="INVALIDADDRESS" />' अपूर्ण छ।</translation>
@@ -219,6 +219,7 @@
 <translation id="7888071071722539607">कृपया इमेल ठेगानामा एक '<ph name="ATSIGN" />' समावेश गर्नुहोस्। <ph name="INVALIDADDRESS" />' ले एक '<ph name="ATSIGN" />' हराइरहेको छ।</translation>
 <translation id="7891486169920085145">स्प्लिटर</translation>
 <translation id="795667975304826397">कुनैपनि फाइल छानिएको छैन</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> चयन गरिएन</translation>
 <translation id="8034303206267677282">बलियो</translation>
 <translation id="8053789581856978548">खोज पाठ क्षेत्र</translation>
 <translation id="8057695513531652401">सूचना</translation>
@@ -257,7 +258,6 @@
 <translation id="8987927404178983737">महिना</translation>
 <translation id="901493112792887934">सेकेन्डमा हालको समय</translation>
 <translation id="901834265349196618">इमेल</translation>
-<translation id="9023835124071926463">टिप्पणीको खण्ड</translation>
 <translation id="9048119486235211610">नेभिगेसन</translation>
 <translation id="9062295712474918030">कागजात</translation>
 <translation id="9093215626363556771">picture-in-picture बाट बाहिरिनुहोस्‌</translation>

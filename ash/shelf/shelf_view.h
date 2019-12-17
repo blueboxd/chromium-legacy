@@ -567,6 +567,10 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // Different from GetTitleForView, |view| here must be a child view.
   base::string16 GetTitleForChildView(const views::View* view) const;
 
+  // |view| is the unique pointer to the shelf icon to be removed.
+  void HandleInvisibleViewRemovedInScrollableShelf(
+      std::unique_ptr<views::View> view);
+
   // The model; owned by Launcher.
   ShelfModel* model_;
 

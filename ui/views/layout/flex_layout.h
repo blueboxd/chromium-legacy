@@ -86,6 +86,7 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   FlexLayout& SetIncludeHostInsetsInLayout(bool include_host_insets_in_layout);
   FlexLayout& SetIgnoreDefaultMainAxisMargins(
       bool ignore_default_main_axis_margins);
+  FlexLayout& SetFlexAllocationOrder(FlexAllocationOrder flex_allocation_order);
 
   LayoutOrientation orientation() const { return orientation_; }
   bool collapse_margins() const { return collapse_margins_; }
@@ -98,6 +99,9 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   }
   bool ignore_default_main_axis_margins() const {
     return ignore_default_main_axis_margins_;
+  }
+  FlexAllocationOrder flex_allocation_order() const {
+    return flex_allocation_order_;
   }
 
   // Moves and uses |value| as the default value for layout property |key|.
@@ -267,6 +271,12 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   // called, the default child margin of 10 would also apply on the leading and
   // trailing edge of the host view.
   bool ignore_default_main_axis_margins_ = false;
+
+  // Order in which the host's child views receive their flex allocation.
+  // Setting to reverse is useful when, for example, you want views to drop out
+  // left-to-right when there's insufficient space to display them all instead
+  // of right-to-left.
+  FlexAllocationOrder flex_allocation_order_ = FlexAllocationOrder::kNormal;
 
   // Default properties for any views that don't have them explicitly set for
   // this layout.

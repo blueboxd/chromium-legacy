@@ -385,7 +385,6 @@
 <translation id="3646890046000188562">{COUNT,plural, =1{кері құсбелгі}other{# кері құсбелгі}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{доллар}other{# доллар белгісі}}</translation>
-<translation id="3658742229777143148">Қарап шығу</translation>
 <translation id="3659787053479271466">alrt</translation>
 <translation id="3665563998540286755"><ph name="VALUE" />, тізім терезесі</translation>
 <translation id="3681531118904532409">Қауын түстес сары</translation>
@@ -1104,7 +1103,6 @@ Chrome браузерінің мәзірін ашу үшін Alt + F тірке�
 <translation id="812886159861361726"><ph name="FILE_NAME" /> файлын жүктеп алу тоқтатылды</translation>
 <translation id="8138880386467279117">Сенсорлық экранға арналған</translation>
 <translation id="8153880621934657047">Кестенің ішінде емес.</translation>
-<translation id="8161114871611868169">Пікір бөлімі</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{астыңғы сызық}other{# астыңғы сызық}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8184828902145951186">жол</translation>

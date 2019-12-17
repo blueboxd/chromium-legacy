@@ -1016,6 +1016,7 @@ void View::SetBackground(std::unique_ptr<Background> b) {
 }
 
 void View::SetBorder(std::unique_ptr<Border> b) {
+  const gfx::Rect old_contents_bounds = GetContentsBounds();
   border_ = std::move(b);
 
   // Conceptually, this should be PreferredSizeChanged(), but for some view
@@ -1025,7 +1026,8 @@ void View::SetBorder(std::unique_ptr<Border> b) {
   // InvalidateLayout() still triggers a re-layout of the view, which should
   // include re-querying its preferred size so in practice this is both safe and
   // has the intended effect.
-  InvalidateLayout();
+  if (old_contents_bounds != GetContentsBounds())
+    InvalidateLayout();
 
   SchedulePaint();
 }

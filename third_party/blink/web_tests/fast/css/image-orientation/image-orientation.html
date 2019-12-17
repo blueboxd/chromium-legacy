@@ -9,7 +9,7 @@ description('Apply image-orientation property and check computed style.');
 
 var expectations = {
     'from-image': ['from-image'],
-    '0deg': ['0deg'],
+    'none': ['none'],
     '': ['-360deg', '-315deg', '315deg', '360deg', '90deg', '-270deg', '-225deg', '45deg',
     '180deg', '-180deg', '-135deg', '135deg', '270deg', '-90deg', '-45deg', '225deg', '0']
 };
@@ -22,7 +22,7 @@ for (expected in expectations) {
         img.style.imageOrientation = test;
         if (expected == '') {
             shouldBe('img.style.cssText', '""');
-            shouldBe('getComputedStyle(img).imageOrientation', '"0deg"');
+            shouldBe('getComputedStyle(img).imageOrientation', '"from-image"');
         } else {
             shouldBe('img.style.cssText', '"image-orientation: ' + test + ';"');
             shouldBe('getComputedStyle(img).imageOrientation', '"' + expected + '"');

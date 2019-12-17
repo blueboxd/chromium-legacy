@@ -122,6 +122,7 @@
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
+#include "chrome/browser/chromeos/sync/app_settings_model_type_controller.h"
 #include "chrome/browser/chromeos/sync/apps_model_type_controller.h"
 #include "chrome/browser/chromeos/sync/os_sync_model_type_controller.h"
 #include "chrome/browser/chromeos/sync/os_syncable_service_model_type_controller.h"
@@ -369,13 +370,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   // App setting sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::APP_SETTINGS)) {
-    // TODO(https://crbug.com/1031549): Run in transport-mode on Chrome OS with
-    // SplitSettingsSync.
-    controllers.push_back(std::make_unique<ExtensionSettingModelTypeController>(
-        syncer::APP_SETTINGS, model_type_store_factory,
-        extensions::settings_sync_util::GetSyncableServiceProvider(
-            profile_, syncer::APP_SETTINGS),
-        dump_stack, profile_));
+    controllers.push_back(CreateAppSettingsModelTypeController(sync_service));
   }
 
   // Web Apps sync is disabled by default.
@@ -714,6 +709,26 @@ ChromeSyncClient::CreateAppsModelTypeController(
   return std::make_unique<ExtensionModelTypeController>(
       syncer::APPS, GetModelTypeStoreService()->GetStoreFactory(),
       GetSyncableServiceForType(syncer::APPS), GetDumpStackClosure(), profile_);
+}
+
+std::unique_ptr<syncer::ModelTypeController>
+ChromeSyncClient::CreateAppSettingsModelTypeController(
+    syncer::SyncService* sync_service) {
+#if defined(OS_CHROMEOS)
+  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+    return std::make_unique<AppSettingsModelTypeController>(
+        GetModelTypeStoreService()->GetStoreFactory(),
+        extensions::settings_sync_util::GetSyncableServiceProvider(
+            profile_, syncer::APP_SETTINGS),
+        GetDumpStackClosure(), profile_, sync_service);
+  }
+  // Fall through.
+#endif
+  return std::make_unique<ExtensionSettingModelTypeController>(
+      syncer::APP_SETTINGS, GetModelTypeStoreService()->GetStoreFactory(),
+      extensions::settings_sync_util::GetSyncableServiceProvider(
+          profile_, syncer::APP_SETTINGS),
+      GetDumpStackClosure(), profile_);
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 

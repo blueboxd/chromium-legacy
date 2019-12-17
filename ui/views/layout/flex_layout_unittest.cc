@@ -2506,6 +2506,56 @@ TEST_F(FlexLayoutTest, GetAvailableSize_Flex_DifferentWeights) {
             host_->GetAvailableSize(child4));
 }
 
+// Flex Allocation Order -------------------------------------------------------
+
+TEST_F(FlexLayoutTest, FlexAllocationOrderNormal) {
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetDefault(kFlexBehaviorKey, kDropOut.WithWeight(0));
+  layout_->SetFlexAllocationOrder(FlexAllocationOrder::kNormal);
+  View* const v1 = AddChild({10, 10});
+  View* const v2 = AddChild({10, 10});
+  View* const v3 = AddChild({10, 10});
+
+  host_->SetSize({35, 10});
+  EXPECT_TRUE(v1->GetVisible());
+  EXPECT_TRUE(v2->GetVisible());
+  EXPECT_TRUE(v3->GetVisible());
+
+  host_->SetSize({25, 10});
+  EXPECT_TRUE(v1->GetVisible());
+  EXPECT_TRUE(v2->GetVisible());
+  EXPECT_FALSE(v3->GetVisible());
+
+  host_->SetSize({15, 10});
+  EXPECT_TRUE(v1->GetVisible());
+  EXPECT_FALSE(v2->GetVisible());
+  EXPECT_FALSE(v3->GetVisible());
+}
+
+TEST_F(FlexLayoutTest, FlexAllocationOrderReverse) {
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetDefault(kFlexBehaviorKey, kDropOut.WithWeight(0));
+  layout_->SetFlexAllocationOrder(FlexAllocationOrder::kReverse);
+  View* const v1 = AddChild({10, 10});
+  View* const v2 = AddChild({10, 10});
+  View* const v3 = AddChild({10, 10});
+
+  host_->SetSize({35, 10});
+  EXPECT_TRUE(v1->GetVisible());
+  EXPECT_TRUE(v2->GetVisible());
+  EXPECT_TRUE(v3->GetVisible());
+
+  host_->SetSize({25, 10});
+  EXPECT_FALSE(v1->GetVisible());
+  EXPECT_TRUE(v2->GetVisible());
+  EXPECT_TRUE(v3->GetVisible());
+
+  host_->SetSize({15, 10});
+  EXPECT_FALSE(v1->GetVisible());
+  EXPECT_FALSE(v2->GetVisible());
+  EXPECT_TRUE(v3->GetVisible());
+}
+
 // Specific Regression Cases ---------------------------------------------------
 
 // Test case (and example code) for crbug.com/1012119:

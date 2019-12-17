@@ -38,6 +38,7 @@ Portal::Portal(RenderFrameHostImpl* owner_render_frame_host,
                std::unique_ptr<WebContents> existing_web_contents)
     : Portal(owner_render_frame_host) {
   SetPortalContents(std::move(existing_web_contents));
+  GetPortalContents()->NotifyInsidePortal(true);
 }
 
 Portal::~Portal() {
@@ -373,6 +374,7 @@ void Portal::Activate(blink::TransferableMessage data,
   portal_contents_impl_->GetMainFrame()->OnPortalActivated(
       std::move(predecessor_web_contents), std::move(data),
       std::move(callback));
+  portal_contents_impl_->NotifyInsidePortal(false);
 
   devtools_instrumentation::PortalActivated(outer_contents->GetMainFrame());
 }

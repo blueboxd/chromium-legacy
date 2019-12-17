@@ -205,6 +205,7 @@ void WebContentController::ProcessInputEvent(const webview::InputEvent& ev) {
                 &root_relative_event, contents->GetNativeView())) {
           return;
         }
+        evt.set_may_cause_scrolling(root_relative_event.may_cause_scrolling());
 
         handler->OnTouchEvent(&evt);
 

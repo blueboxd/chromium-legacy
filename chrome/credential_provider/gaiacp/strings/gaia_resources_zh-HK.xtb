@@ -25,6 +25,7 @@
 <translation id="7209941495304122410">輸入 Windows 密碼</translation>
 <translation id="7357241217513796177">請確定您已連接網絡，然後再試一次。</translation>
 <translation id="7536769223115622137">新增公司帳戶</translation>
+<translation id="7811865856574012727">你的系統管理員已限制裝置登入下列網域：<ph name="EMAIL_DOMAINS" />。請使用有效的公司帳戶再試一次。</translation>
 <translation id="7856245195110636219">必須輸入目前的 Windows 密碼才能繼續操作。請聯絡系統管理員。</translation>
 <translation id="8639729688781680518">忘記 Windows 密碼</translation>
 <translation id="866458870819756755">無法建立使用者。</translation>

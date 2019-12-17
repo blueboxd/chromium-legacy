@@ -120,6 +120,10 @@ void AppServiceAppWindowArcTracker::OnWindowVisibilityChanging(
       user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId());
 }
 
+void AppServiceAppWindowArcTracker::OnWindowDestroying(aura::Window* window) {
+  app_service_controller_->UnregisterWindow(window);
+}
+
 void AppServiceAppWindowArcTracker::OnAppStatesChanged(
     const std::string& app_id,
     const ArcAppListPrefs::AppInfo& app_info) {

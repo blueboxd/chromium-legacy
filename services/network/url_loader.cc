@@ -755,9 +755,7 @@ void URLLoader::PauseReadingBodyFromNet() {
   // avoids polluting the histogram data with data points from cached responses.
   should_pause_reading_body_ = true;
 
-  // If the data pipe has been set up and the request is in IO pending state,
-  // there is a pending read for the response body.
-  if (HasDataPipe() && url_request_->status().is_io_pending()) {
+  if (read_in_progress_) {
     update_body_read_before_paused_ = true;
   } else {
     body_read_before_paused_ = url_request_->GetRawBodyBytes();
@@ -780,7 +778,6 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
                                    const net::RedirectInfo& redirect_info,
                                    bool* defer_redirect) {
   DCHECK(url_request == url_request_.get());
-  DCHECK(url_request->status().is_success());
 
   DCHECK(!deferred_redirect_url_);
   deferred_redirect_url_ = std::make_unique<GURL>(redirect_info.new_url);
@@ -1045,6 +1042,7 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
 }
 
 void URLLoader::ReadMore() {
+  DCHECK(!read_in_progress_);
   // Once the MIME type is sniffed, all data is sent as soon as it is read from
   // the network.
   DCHECK(consumer_handle_.is_valid() || !pending_write_);
@@ -1080,6 +1078,7 @@ void URLLoader::ReadMore() {
 
   auto buf = base::MakeRefCounted<NetToMojoIOBuffer>(
       pending_write_.get(), pending_write_buffer_offset_);
+  read_in_progress_ = true;
   int bytes_read = url_request_->Read(
       buf.get(), static_cast<int>(pending_write_buffer_size_ -
                                   pending_write_buffer_offset_));
@@ -1090,6 +1089,9 @@ void URLLoader::ReadMore() {
 }
 
 void URLLoader::DidRead(int num_bytes, bool completed_synchronously) {
+  DCHECK(read_in_progress_);
+  read_in_progress_ = false;
+
   size_t new_data_offset = pending_write_buffer_offset_;
   if (num_bytes > 0) {
     pending_write_buffer_offset_ += num_bytes;
@@ -1166,7 +1168,7 @@ void URLLoader::DidRead(int num_bytes, bool completed_synchronously) {
     }
   }
 
-  if (!url_request_->status().is_success() || num_bytes == 0) {
+  if (num_bytes <= 0) {
     // There may be no |pending_write_| if a URLRequestJob cancelled itself in
     // URLRequestJob::OnSuspend() after receiving headers, while there was no
     // pending read.
@@ -1176,8 +1178,8 @@ void URLLoader::DidRead(int num_bytes, bool completed_synchronously) {
     // since the concern is the effect that entering suspend mode has on
     // sockets. See https://crbug.com/651120.
     if (pending_write_)
-      CompletePendingWrite(url_request_->status().is_success());
-    NotifyCompleted(url_request_->status().ToNetError());
+      CompletePendingWrite(num_bytes == 0);
+    NotifyCompleted(num_bytes);
     // |this| will have been deleted.
     return;
   }

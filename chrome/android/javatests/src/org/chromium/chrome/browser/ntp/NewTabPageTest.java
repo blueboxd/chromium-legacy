@@ -41,7 +41,6 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -330,10 +329,9 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
-    @DisableIf
-            .Build(sdk_is_greater_than = 22, message = "crbug.com/593007")
-            @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
-            public void testSearchFromFakebox(boolean interestFeedEnabled) {
+    @DisabledTest(message = "Test is flaky. crbug.com/593007, crbug.com/1033654")
+    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
+    public void testSearchFromFakebox(boolean interestFeedEnabled) {
         TouchCommon.singleClickView(mFakebox);
         waitForFakeboxFocusAnimationComplete(mNtp);
         final UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);

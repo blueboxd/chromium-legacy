@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">У тексті має бути на менше <ph name="MIN_CHARACTERS" /> символів (ви ввели <ph name="CURRENT_LENGTH" /> символів).</translation>
 <translation id="383465348367842624">Частина перед знаком "<ph name="ATSIGN" />" не може містити символ "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="3846214748874656680">Вийти з повноекранного режиму</translation>
-<translation id="3889183436948184105">редакція</translation>
 <translation id="3920932319529768807">висновок</translation>
 <translation id="3924558731517983934">додаток</translation>
 <translation id="3944740393230681990">пролог</translation>
@@ -115,6 +114,7 @@
 <translation id="4812940957355064477">Введіть число.</translation>
 <translation id="4912536737030637138">бібліографічний запис</translation>
 <translation id="492244087561876220">коментар</translation>
+<translation id="4971739861736909480">Вибрано <ph name="ACCNAME" /></translation>
 <translation id="4975562563186953947">Вибрано <ph name="SELECTED_COUNT" /></translation>
 <translation id="4992066212339426712">Увімкнути звук</translation>
 <translation id="49969490063480558">Введіть частину електронної адреси після знака "<ph name="ATSIGN" />". Електронна адреса "<ph name="INVALIDADDRESS" />" неповна.</translation>
@@ -219,6 +219,7 @@
 <translation id="7888071071722539607">Електронна адреса має містити знак "<ph name="ATSIGN" />". В електронній адресі "<ph name="INVALIDADDRESS" />" знака "<ph name="ATSIGN" />" немає.</translation>
 <translation id="7891486169920085145">розділювач</translation>
 <translation id="795667975304826397">Файл не вибрано</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" />: не вибрано</translation>
 <translation id="8034303206267677282">важливо</translation>
 <translation id="8053789581856978548">текстове поле пошуку</translation>
 <translation id="8057695513531652401">примітка</translation>
@@ -257,7 +258,6 @@
 <translation id="8987927404178983737">Місяць</translation>
 <translation id="901493112792887934">поточний час у секундах</translation>
 <translation id="901834265349196618">електронна адреса</translation>
-<translation id="9023835124071926463">розділ із коментарями</translation>
 <translation id="9048119486235211610">навігація</translation>
 <translation id="9062295712474918030">документ</translation>
 <translation id="9093215626363556771">вийти з режиму "Картинка в картинці"</translation>

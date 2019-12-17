@@ -21,6 +21,8 @@ import java.util.List;
  * Utility class that interacts with native to retrieve and set website settings.
  */
 public class WebsitePreferenceBridge {
+    public static final String SITE_WILDCARD = "*";
+
     /** The android permissions associated with requesting location. */
     private static final String[] LOCATION_PERMISSIONS = {
             android.Manifest.permission.ACCESS_FINE_LOCATION,
@@ -259,9 +261,10 @@ public class WebsitePreferenceBridge {
 
     @CalledByNative
     private static void addContentSettingExceptionToList(ArrayList<ContentSettingException> list,
-            int contentSettingsType, String pattern, int contentSetting, String source) {
-        ContentSettingException exception =
-                new ContentSettingException(contentSettingsType, pattern, contentSetting, source);
+            int contentSettingsType, String primaryPattern, String secondaryPattern,
+            int contentSetting, String source) {
+        ContentSettingException exception = new ContentSettingException(
+                contentSettingsType, primaryPattern, secondaryPattern, contentSetting, source);
         list.add(exception);
     }
 
@@ -513,9 +516,18 @@ public class WebsitePreferenceBridge {
     }
 
     public static void setContentSettingForPattern(
-            int contentSettingType, String pattern, int setting) {
+            int contentSettingType, String primaryPattern, String secondaryPattern, int setting) {
+        // Currently only Cookie Settings support a non-empty, non-wildcard secondaryPattern.
+        // In addition, if a Cookie Setting uses secondaryPattern, the primaryPattern must be
+        // the wildcard.
+        if (contentSettingType != ContentSettingsType.COOKIES) {
+            assert secondaryPattern.equals(SITE_WILDCARD) || secondaryPattern.isEmpty();
+        } else if (!secondaryPattern.equals(SITE_WILDCARD) && !secondaryPattern.isEmpty()) {
+            assert primaryPattern.equals(SITE_WILDCARD);
+        }
+
         WebsitePreferenceBridgeJni.get().setContentSettingForPattern(
-                contentSettingType, pattern, setting);
+                contentSettingType, primaryPattern, secondaryPattern, setting);
     }
 
     public static boolean isQuietNotificationsUiEnabled() {
@@ -589,7 +601,8 @@ public class WebsitePreferenceBridge {
         void setContentSettingEnabled(int contentSettingType, boolean allow);
         void getContentSettingsExceptions(
                 int contentSettingsType, List<ContentSettingException> list);
-        void setContentSettingForPattern(int contentSettingType, String pattern, int setting);
+        void setContentSettingForPattern(int contentSettingType, String primaryPattern,
+                String secondaryPattern, int setting);
         int getContentSetting(int contentSettingType);
         void setContentSetting(int contentSettingType, int setting);
         boolean getAcceptCookiesEnabled();

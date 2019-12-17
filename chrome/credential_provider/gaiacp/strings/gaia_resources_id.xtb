@@ -25,6 +25,7 @@
 <translation id="7209941495304122410">Masukkan Sandi Windows</translation>
 <translation id="7357241217513796177">Pastikan Anda memiliki sambungan jaringan, lalu coba lagi.</translation>
 <translation id="7536769223115622137">Tambahkan akun kerja</translation>
+<translation id="7811865856574012727">Administrator telah membatasi login perangkat untuk domain berikut: <ph name="EMAIL_DOMAINS" />. Coba lagi menggunakan akun kerja yang valid.</translation>
 <translation id="7856245195110636219">Tidak dapat melanjutkan tanpa memasukkan sandi Windows saat ini. Harap hubungi administrator sistem Anda.</translation>
 <translation id="8639729688781680518">Lupa Sandi Windows</translation>
 <translation id="866458870819756755">Tidak dapat membuat pengguna.</translation>

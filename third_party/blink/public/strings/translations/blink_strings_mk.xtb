@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">Продолжете го текстот на <ph name="MIN_CHARACTERS" /> знаци или повеќе (во моментов користите <ph name="CURRENT_LENGTH" /> знаци).</translation>
 <translation id="383465348367842624">Дел по кој следува „<ph name="ATSIGN" />“ не треба да го содржи симболот „<ph name="INVALIDCHARACTER" />“.</translation>
 <translation id="3846214748874656680">Излези од цел екран</translation>
-<translation id="3889183436948184105">ревизија</translation>
 <translation id="3920932319529768807">заклучок</translation>
 <translation id="3924558731517983934">апликација</translation>
 <translation id="3944740393230681990">пролог</translation>
@@ -115,6 +114,7 @@
 <translation id="4812940957355064477">Внесете број.</translation>
 <translation id="4912536737030637138">библиографски запис</translation>
 <translation id="492244087561876220">коментар</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" />, избрано</translation>
 <translation id="4975562563186953947">Избрани: <ph name="SELECTED_COUNT" /></translation>
 <translation id="4992066212339426712">Вклучи звук</translation>
 <translation id="49969490063480558">Внесете дел по „<ph name="ATSIGN" />“. Адресата „<ph name="INVALIDADDRESS" />“ е некомплетна.</translation>
@@ -219,6 +219,7 @@
 <translation id="7888071071722539607">Опфатете „<ph name="ATSIGN" />“ во адресата на е-пошта. Во „<ph name="INVALIDADDRESS" />“ недостига „<ph name="ATSIGN" />“.</translation>
 <translation id="7891486169920085145">разделница</translation>
 <translation id="795667975304826397">Нема избрана датотека</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" />, не е избрано</translation>
 <translation id="8034303206267677282">силно</translation>
 <translation id="8053789581856978548">пребарај текстуално поле</translation>
 <translation id="8057695513531652401">напомена</translation>
@@ -257,7 +258,6 @@
 <translation id="8987927404178983737">Месец</translation>
 <translation id="901493112792887934">тековно време во секунди</translation>
 <translation id="901834265349196618">е-пошта</translation>
-<translation id="9023835124071926463">дел со коментари</translation>
 <translation id="9048119486235211610">навигација</translation>
 <translation id="9062295712474918030">документ</translation>
 <translation id="9093215626363556771">излези од „слика во слика“</translation>

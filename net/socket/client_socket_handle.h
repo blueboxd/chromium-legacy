@@ -21,6 +21,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_pool.h"
@@ -172,6 +173,7 @@ class NET_EXPORT ClientSocketHandle {
   void set_connection_attempts(const ConnectionAttempts& attempts) {
     connection_attempts_ = attempts;
   }
+  ResolveErrorInfo resolve_error_info() const { return resolve_error_info_; }
 
   // Only valid if there is no |socket_|.
   bool is_ssl_error() const {
@@ -240,6 +242,7 @@ class NET_EXPORT ClientSocketHandle {
   base::TimeDelta idle_time_;
   // See ClientSocketPool::ReleaseSocket() for an explanation.
   int64_t group_generation_;
+  ResolveErrorInfo resolve_error_info_;
   bool is_ssl_error_;
   scoped_refptr<SSLCertRequestInfo> ssl_cert_request_info_;
   std::vector<ConnectionAttempt> connection_attempts_;

@@ -8094,7 +8094,7 @@ TEST_F(URLRequestTestHTTP, ThrottledPriority) {
   req->Start();
   d.RunUntilComplete();
 
-  EXPECT_TRUE(req->status().is_success());
+  EXPECT_EQ(OK, d.request_status());
 }
 
 TEST_F(URLRequestTestHTTP, RawBodyBytesNoContentEncoding) {

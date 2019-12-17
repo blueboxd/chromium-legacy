@@ -35,17 +35,13 @@ ExploreSitesInternalsUI::ExploreSitesInternalsUI(content::WebUI* web_ui)
   explore_sites_service_ =
       ExploreSitesServiceFactory::GetForBrowserContext(profile);
   content::WebUIDataSource::Add(profile, source);
-  // "BindExploreSitesInternalsPageHandler" will be invoked by
-  // explore_sites_internals.js, which is only possible while this object is
-  // alive, so this base::Unretained is safe.
-  AddHandlerToRegistry(base::BindRepeating(
-      &ExploreSitesInternalsUI::BindExploreSitesInternalsPageHandler,
-      base::Unretained(this)));
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(ExploreSitesInternalsUI)
 
 ExploreSitesInternalsUI::~ExploreSitesInternalsUI() {}
 
-void ExploreSitesInternalsUI::BindExploreSitesInternalsPageHandler(
+void ExploreSitesInternalsUI::BindInterface(
     mojo::PendingReceiver<explore_sites_internals::mojom::PageHandler>
         receiver) {
   page_handler_ = std::make_unique<ExploreSitesInternalsPageHandler>(

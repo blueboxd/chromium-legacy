@@ -40,6 +40,7 @@ TEST_F(UnitConversionResultParserTest, Success) {
   QuickAnswer quick_answer;
 
   EXPECT_TRUE(parser_->Parse(&result, &quick_answer));
+  EXPECT_EQ(ResultType::kUnitConversionResult, quick_answer.result_type);
   EXPECT_EQ("9.84252 inch", quick_answer.primary_answer);
   EXPECT_TRUE(quick_answer.secondary_answer.empty());
 }

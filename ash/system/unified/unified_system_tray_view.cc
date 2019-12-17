@@ -491,6 +491,7 @@ views::View* UnifiedSystemTrayView::GetLastFocusableChild() {
 void UnifiedSystemTrayView::FocusEntered(bool reverse) {
   views::View* focus_view =
       reverse ? GetLastFocusableChild() : GetFirstFocusableChild();
+  GetFocusManager()->ClearFocus();
   GetFocusManager()->SetFocusedView(focus_view);
 }
 

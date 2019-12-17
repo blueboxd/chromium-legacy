@@ -17,6 +17,7 @@
 <translation id="5271696982761495740">Táblagép (<ph name="ADDRESS" />)</translation>
 <translation id="5376363957846771741">Ismeretlen vagy nem támogatott eszköz (<ph name="ADDRESS" />)</translation>
 <translation id="5716052956047449618"><ph name="DEVICE_NAME" />, modem</translation>
+<translation id="6459740836740815150"><ph name="DEVICE_NAME" />, autós audioeszköz</translation>
 <translation id="6542922424766292144"><ph name="DEVICE_NAME" />, billentyűzet</translation>
 <translation id="654594702871184195">Hangeszköz (<ph name="ADDRESS" />)</translation>
 <translation id="6744468237221042970">Számítógép (<ph name="ADDRESS" />)</translation>
@@ -26,5 +27,6 @@
 <translation id="8866374292072238753">Videoeszköz (<ph name="ADDRESS" />)</translation>
 <translation id="8952558712545617651">Egér (<ph name="ADDRESS" />)</translation>
 <translation id="8961448405689538648"><ph name="DEVICE_NAME" />, ismeretlen eszköztípus</translation>
+<translation id="907431882454731668">Periféria (<ph name="ADDRESS" />)</translation>
 <translation id="978248992969828584">Telefonszám (<ph name="ADDRESS" />)</translation>
 </translationbundle>

@@ -862,16 +862,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "download-rename",
-    "owners": [ "hesen", "dtrainor" ],
-    "expiry_milestone": 79
-  },
-  {
-    "name": "download-resumption-without-strong-validators",
-    "owners": [ "qinmin", "dtrainor", "xingliu" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "draw-vertically-edge-to-edge",
     "owners": [ "chrome-android-app@chromium.org" ],
     "expiry_milestone": 88

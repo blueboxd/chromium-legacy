@@ -101,7 +101,6 @@ class MockDataSource final : public mojom::BundleDataSource {
 
  private:
   // Implements mojom::BundledDataSource.
-  void GetSize(GetSizeCallback callback) override {}
   void Read(uint64_t offset, uint64_t length, ReadCallback callback) override {}
 
   mojo::Receiver<mojom::BundleDataSource> receiver_;
@@ -140,7 +139,7 @@ TEST_F(SafeWebBundleParserTest, ParseGoldenFile) {
   {
     base::RunLoop run_loop;
     parser.ParseMetadata(base::BindOnce(
-        [](base::Closure quit_closure,
+        [](base::OnceClosure quit_closure,
            mojom::BundleMetadataPtr* metadata_result,
            mojom::BundleMetadataPtr metadata,
            mojom::BundleMetadataParseErrorPtr error) {
@@ -164,7 +163,7 @@ TEST_F(SafeWebBundleParserTest, ParseGoldenFile) {
         entry.second->response_locations[0]->offset,
         entry.second->response_locations[0]->length,
         base::BindOnce(
-            [](base::Closure quit_closure, const std::string url,
+            [](base::OnceClosure quit_closure, const std::string url,
                std::map<std::string, mojom::BundleResponsePtr>* responses,
                mojom::BundleResponsePtr response,
                mojom::BundleResponseParseErrorPtr error) {
@@ -260,7 +259,7 @@ TEST_F(SafeWebBundleParserTest, ConnectionError) {
   base::RunLoop run_loop;
   bool parsed = false;
   parser.ParseMetadata(base::BindOnce(
-      [](base::Closure quit_closure, bool* parsed,
+      [](base::OnceClosure quit_closure, bool* parsed,
          mojom::BundleMetadataPtr metadata,
          mojom::BundleMetadataParseErrorPtr error) {
         EXPECT_FALSE(metadata);

@@ -329,11 +329,13 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportOsSyncTest,
   // OS data types synced by the transport layer are active.
   syncer::ModelTypeSet active_types = service->GetActiveDataTypes();
   EXPECT_TRUE(active_types.Has(syncer::APP_LIST));
+  EXPECT_TRUE(active_types.Has(syncer::APP_SETTINGS));
   EXPECT_TRUE(active_types.Has(syncer::APPS));
   EXPECT_TRUE(active_types.Has(syncer::ARC_PACKAGE));
   EXPECT_TRUE(active_types.Has(syncer::OS_PREFERENCES));
   EXPECT_TRUE(active_types.Has(syncer::OS_PRIORITY_PREFERENCES));
   EXPECT_TRUE(active_types.Has(syncer::PRINTERS));
+  // TODO(jamescook): WEB_APPS
   EXPECT_TRUE(active_types.Has(syncer::WIFI_CONFIGURATIONS));
 
   // Verify that a few browser non-transport-mode types are not active.
@@ -363,11 +365,13 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportOsSyncTest,
   // OS data types synced by the transport layer are not active.
   syncer::ModelTypeSet active_types = service->GetActiveDataTypes();
   EXPECT_FALSE(active_types.Has(syncer::APP_LIST));
+  EXPECT_FALSE(active_types.Has(syncer::APP_SETTINGS));
   EXPECT_FALSE(active_types.Has(syncer::APPS));
   EXPECT_FALSE(active_types.Has(syncer::ARC_PACKAGE));
   EXPECT_FALSE(active_types.Has(syncer::OS_PREFERENCES));
   EXPECT_FALSE(active_types.Has(syncer::OS_PRIORITY_PREFERENCES));
   EXPECT_FALSE(active_types.Has(syncer::PRINTERS));
+  // TODO(jamescook): WEB_APPS
   EXPECT_FALSE(active_types.Has(syncer::WIFI_CONFIGURATIONS));
 
   // Browser non-transport-mode types are active.

@@ -92,10 +92,6 @@ UserSelectableTypeSet TestSyncUserSettings::GetRegisteredSelectableTypes()
   return UserSelectableTypeSet::All();
 }
 
-UserSelectableTypeSet TestSyncUserSettings::GetForcedTypes() const {
-  return {};
-}
-
 #if defined(OS_CHROMEOS)
 bool TestSyncUserSettings::IsSyncAllOsTypesEnabled() const {
   return sync_all_os_types_enabled_;

@@ -42,7 +42,7 @@ base::LazyInstance<ThreadLocalWorkerThreadData>::DestructorAtExit
     g_worker_data_tls = LAZY_INSTANCE_INITIALIZER;
 
 // A task-runner that refuses to run any tasks.
-class DoNothingTaskRunner : public base::TaskRunner {
+class DoNothingTaskRunner : public base::SequencedTaskRunner {
  public:
   DoNothingTaskRunner() {}
 
@@ -52,6 +52,12 @@ class DoNothingTaskRunner : public base::TaskRunner {
   bool PostDelayedTask(const base::Location& from_here,
                        base::OnceClosure task,
                        base::TimeDelta delay) override {
+    return false;
+  }
+
+  bool PostNonNestableDelayedTask(const base::Location& from_here,
+                                  base::OnceClosure task,
+                                  base::TimeDelta delay) override {
     return false;
   }
 
@@ -131,7 +137,8 @@ void WorkerThreadRegistry::WillStopCurrentWorkerThread() {
   g_worker_data_tls.Pointer()->Set(nullptr);
 }
 
-base::TaskRunner* WorkerThreadRegistry::GetTaskRunnerFor(int worker_id) {
+base::SequencedTaskRunner* WorkerThreadRegistry::GetTaskRunnerFor(
+    int worker_id) {
   base::AutoLock locker(task_runner_map_lock_);
   return base::Contains(task_runner_map_, worker_id)
              ? task_runner_map_[worker_id]

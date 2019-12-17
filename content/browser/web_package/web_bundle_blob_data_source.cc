@@ -294,20 +294,21 @@ WebBundleBlobDataSource::BlobDataSourceCore::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void WebBundleBlobDataSource::BlobDataSourceCore::GetSize(
-    GetSizeCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  std::move(callback).Run(content_length_);
-}
-
 void WebBundleBlobDataSource::BlobDataSourceCore::Read(uint64_t offset,
                                                        uint64_t length,
                                                        ReadCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!IsValidRange(offset, length, content_length_)) {
+  if (offset >= static_cast<uint64_t>(content_length_)) {
     std::move(callback).Run(base::nullopt);
     return;
   }
+  int64_t offset_plus_length;
+  if (!base::CheckAdd(offset, length).AssignIfValid(&offset_plus_length)) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+  if (offset_plus_length > content_length_)
+    length = content_length_ - offset;
   WaitForBlob(base::BindOnce(
       &WebBundleBlobDataSource::BlobDataSourceCore::OnBlobReadyForRead,
       base::Unretained(this), offset, length, std::move(callback)));

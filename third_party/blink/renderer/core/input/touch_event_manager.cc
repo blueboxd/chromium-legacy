@@ -156,7 +156,7 @@ void TouchEventManager::Clear() {
   touch_attribute_map_.clear();
   last_coalesced_touch_event_ = WebTouchEvent();
   suppressing_touchmoves_within_slop_ = false;
-  current_touch_action_ = TouchAction::kTouchActionAuto;
+  current_touch_action_ = TouchAction::kAuto;
 }
 
 void TouchEventManager::Trace(blink::Visitor* visitor) {
@@ -577,9 +577,9 @@ void TouchEventManager::UpdateTouchAttributeMapsForPointerDown(
   if (should_enforce_vertical_scroll_ &&
       HasEventHandlerInAncestorPath(
           touch_node, EventHandlerRegistry::kTouchStartOrMoveEventBlocking)) {
-    delayed_effective_touch_action_ = delayed_effective_touch_action_.value_or(
-                                          TouchAction::kTouchActionAuto) &
-                                      effective_touch_action;
+    delayed_effective_touch_action_ =
+        delayed_effective_touch_action_.value_or(TouchAction::kAuto) &
+        effective_touch_action;
   }
   if (!delayed_effective_touch_action_) {
     frame_->GetPage()->GetChromeClient().SetTouchAction(frame_,
@@ -680,7 +680,7 @@ WebInputEventResult TouchEventManager::FlushEvents() {
 
 void TouchEventManager::AllTouchesReleasedCleanup() {
   touch_sequence_document_.Clear();
-  current_touch_action_ = TouchAction::kTouchActionAuto;
+  current_touch_action_ = TouchAction::kAuto;
   last_coalesced_touch_event_ = WebTouchEvent();
   // Ideally, we should have DCHECK(!delayed_effective_touch_action_) but we do
   // we do actually get here from HandleTouchPoint(). Supposedly, if there has
@@ -702,7 +702,7 @@ WebInputEventResult TouchEventManager::EnsureVerticalScrollIsPossible(
       event_result == WebInputEventResult::kHandledApplication;
   if (prevent_defaulted && delayed_effective_touch_action_) {
     // Make sure that only vertical scrolling is permitted.
-    *delayed_effective_touch_action_ &= TouchAction::kTouchActionPanY;
+    *delayed_effective_touch_action_ &= TouchAction::kPanY;
   }
 
   if (delayed_effective_touch_action_) {

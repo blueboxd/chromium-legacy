@@ -71,4 +71,44 @@ TEST_F(ManifestTypeConvertersTest, BasicFileHandlerIsCorrectlyConverted) {
   EXPECT_TRUE(
       base::EqualsASCII(manifest.file_handlers[0].accept[mime][0], ".png"));
 }
+
+TEST_F(ManifestTypeConvertersTest, NoShortcutsDoesNotConvert) {
+  const String json = "{\"start_url\": \"/\"}";
+  const mojom::blink::ManifestPtr& mojo_manifest = Load(json);
+
+  auto manifest = mojo_manifest.To<blink::Manifest>();
+  EXPECT_TRUE(manifest.shortcuts.empty());
+}
+
+TEST_F(ManifestTypeConvertersTest, BasicShortcutIsCorrectlyConverted) {
+  const mojom::blink::ManifestPtr& mojo_manifest = Load(
+      "{"
+      "  \"shortcuts\": ["
+      "      {"
+      "        \"name\": \"name\", "
+      "        \"short_name\": \"short_name\","
+      "        \"url\": \"url\", "
+      "        \"icons\": ["
+      "            {"
+      "              \"src\": \"image.jpg\""
+      "            }"
+      "          ] "
+      "      }"
+      "    ] "
+      "}");
+
+  auto manifest = mojo_manifest.To<blink::Manifest>();
+  ASSERT_FALSE(manifest.shortcuts.empty());
+
+  ASSERT_EQ(manifest.shortcuts.size(), 1u);
+  EXPECT_TRUE(base::EqualsASCII(manifest.shortcuts[0].name, "name"));
+  EXPECT_TRUE(base::EqualsASCII(manifest.shortcuts[0].short_name.string(),
+                                "short_name"));
+  EXPECT_EQ(manifest.shortcuts[0].url.spec(), "http://example.com/url");
+
+  ASSERT_EQ(manifest.shortcuts[0].icons.size(), 1u);
+  ASSERT_EQ(manifest.shortcuts[0].icons[0].src.spec(),
+            "http://example.com/image.jpg");
+}
+
 }  // namespace blink

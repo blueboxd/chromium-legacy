@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "components/viz/service/display/dc_layer_overlay.h"
+#include "gpu/command_buffer/service/memory_tracking.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/presentation_feedback.h"
@@ -16,10 +17,13 @@ namespace viz {
 
 SkiaOutputDevice::SkiaOutputDevice(
     bool need_swap_semaphore,
+    gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
     : need_swap_semaphore_(need_swap_semaphore),
       did_swap_buffer_complete_callback_(
-          std::move(did_swap_buffer_complete_callback)) {}
+          std::move(did_swap_buffer_complete_callback)),
+      memory_type_tracker_(
+          std::make_unique<gpu::MemoryTypeTracker>(memory_tracker)) {}
 
 SkiaOutputDevice::~SkiaOutputDevice() = default;
 

@@ -19,6 +19,7 @@
 #include "chromecast/browser/cast_web_view_factory.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/gpu_utils.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -110,6 +111,10 @@ void CastWebService::ClearLocalStorage(base::OnceClosure callback) {
                 base::Time::Min(), base::Time::Max(), std::move(cb));
           },
           base::Passed(std::move(callback))));
+}
+
+void CastWebService::StopGpuProcess(base::OnceClosure callback) const {
+  content::StopGpuProcess(std::move(callback));
 }
 
 void CastWebService::OwnerDestroyed(CastWebView* web_view) {

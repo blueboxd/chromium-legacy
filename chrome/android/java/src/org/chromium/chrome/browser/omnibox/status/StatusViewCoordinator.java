@@ -45,13 +45,11 @@ public class StatusViewCoordinator implements View.OnClickListener, TextWatcher 
         mIsTablet = isTablet;
         mStatusView = statusView;
 
-        mModel = new PropertyModel.Builder(StatusProperties.ALL_KEYS)
-                         .with(StatusProperties.STATUS_ICON_TINT_RES, R.color.divider_bg_color)
-                         .build();
+        mModel = new PropertyModel(StatusProperties.ALL_KEYS);
 
         PropertyModelChangeProcessor.create(mModel, mStatusView, new StatusViewBinder());
-        mMediator = new StatusMediator(
-                mModel, mStatusView.getResources(), urlBarEditingTextStateProvider);
+        mMediator = new StatusMediator(mModel, mStatusView.getResources(), mStatusView.getContext(),
+                urlBarEditingTextStateProvider);
 
         Resources res = mStatusView.getResources();
         mMediator.setUrlMinWidth(res.getDimensionPixelSize(R.dimen.location_bar_min_url_width)
@@ -163,10 +161,11 @@ public class StatusViewCoordinator implements View.OnClickListener, TextWatcher 
     /**
      * @return The ID of the drawable currently shown in the security icon.
      */
-    @VisibleForTesting
     @DrawableRes
-    public int getSecurityIconResourceId() {
-        return mModel.get(StatusProperties.STATUS_ICON_RES);
+    public int getSecurityIconResourceIdForTesting() {
+        return mModel.get(StatusProperties.STATUS_ICON_RESOURCE) == null
+                ? 0
+                : mModel.get(StatusProperties.STATUS_ICON_RESOURCE).getIconResForTesting();
     }
 
     /**

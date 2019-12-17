@@ -26,12 +26,12 @@ class SandboxedDMGAnalyzer
     : public base::RefCountedThreadSafe<SandboxedDMGAnalyzer> {
  public:
   using ResultCallback =
-      base::Callback<void(const safe_browsing::ArchiveAnalyzerResults&)>;
+      base::OnceCallback<void(const safe_browsing::ArchiveAnalyzerResults&)>;
 
   SandboxedDMGAnalyzer(
       const base::FilePath& dmg_file,
       const uint64_t max_size,
-      const ResultCallback& callback,
+      ResultCallback callback,
       mojo::PendingRemote<chrome::mojom::FileUtilService> service);
 
   // Starts the analysis. Must be called on the UI thread.
@@ -61,7 +61,7 @@ class SandboxedDMGAnalyzer
   const uint64_t max_size_;
 
   // Callback invoked on the UI thread with the file analyze results.
-  const ResultCallback callback_;
+  ResultCallback callback_;
 
   // Remote interfaces to the file util service. Only used from the UI thread.
   mojo::Remote<chrome::mojom::FileUtilService> service_;

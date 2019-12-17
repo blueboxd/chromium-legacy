@@ -345,7 +345,7 @@ void InlineFlowBoxPainter::RecordHitTestData(const PaintInfo& paint_info,
     return;
 
   auto touch_action = layout_object->EffectiveAllowedTouchAction();
-  if (touch_action == TouchAction::kTouchActionAuto)
+  if (touch_action == TouchAction::kAuto)
     return;
 
   HitTestDisplayItem::Record(

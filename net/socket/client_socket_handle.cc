@@ -25,6 +25,7 @@ ClientSocketHandle::ClientSocketHandle()
       higher_pool_(nullptr),
       reuse_type_(ClientSocketHandle::UNUSED),
       group_generation_(-1),
+      resolve_error_info_(ResolveErrorInfo(OK)),
       is_ssl_error_(false) {}
 
 ClientSocketHandle::~ClientSocketHandle() {
@@ -163,6 +164,7 @@ void ClientSocketHandle::SetSocket(std::unique_ptr<StreamSocket> s) {
 void ClientSocketHandle::SetAdditionalErrorState(ConnectJob* connect_job) {
   connection_attempts_ = connect_job->GetConnectionAttempts();
 
+  resolve_error_info_ = connect_job->GetResolveErrorInfo();
   is_ssl_error_ = connect_job->IsSSLError();
   ssl_cert_request_info_ = connect_job->GetCertRequestInfo();
 }
@@ -241,6 +243,7 @@ void ClientSocketHandle::ResetInternal(bool cancel, bool cancel_connect_job) {
 }
 
 void ClientSocketHandle::ResetErrorState() {
+  resolve_error_info_ = ResolveErrorInfo(OK);
   is_ssl_error_ = false;
   ssl_cert_request_info_ = nullptr;
 }

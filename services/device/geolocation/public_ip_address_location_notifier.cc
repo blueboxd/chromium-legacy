@@ -78,8 +78,8 @@ void PublicIpAddressLocationNotifier::OnConnectionChanged(
   // delay, so that we only react once if multiple network changes occur in a
   // short span of time.
   react_to_network_change_closure_.Reset(
-      base::Bind(&PublicIpAddressLocationNotifier::ReactToNetworkChange,
-                 base::Unretained(this)));
+      base::BindOnce(&PublicIpAddressLocationNotifier::ReactToNetworkChange,
+                     base::Unretained(this)));
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, react_to_network_change_closure_.callback(),
       kNetworkChangeReactionDelay);

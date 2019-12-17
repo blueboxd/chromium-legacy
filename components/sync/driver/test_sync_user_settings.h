@@ -35,7 +35,6 @@ class TestSyncUserSettings : public SyncUserSettings {
   void SetSelectedTypes(bool sync_everything,
                         UserSelectableTypeSet types) override;
   UserSelectableTypeSet GetRegisteredSelectableTypes() const override;
-  UserSelectableTypeSet GetForcedTypes() const override;
 
 #if defined(OS_CHROMEOS)
   bool IsSyncAllOsTypesEnabled() const override;

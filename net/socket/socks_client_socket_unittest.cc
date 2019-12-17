@@ -349,7 +349,7 @@ TEST_F(SOCKSClientSocketTest, FailedSocketRead) {
 TEST_F(SOCKSClientSocketTest, FailedDNS) {
   const char hostname[] = "unresolved.ipv4.address";
 
-  host_resolver_->rules()->AddSimulatedFailure(hostname);
+  host_resolver_->rules()->AddSimulatedTimeoutFailure(hostname);
 
   RecordingTestNetLog log;
 
@@ -364,6 +364,8 @@ TEST_F(SOCKSClientSocketTest, FailedDNS) {
 
   rv = callback_.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_THAT(user_sock_->GetResolveErrorInfo().error,
+              IsError(ERR_DNS_TIMED_OUT));
   EXPECT_FALSE(user_sock_->IsConnected());
   entries = log.GetEntries();
   EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLogEventType::SOCKS_CONNECT));

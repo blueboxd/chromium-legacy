@@ -38,8 +38,8 @@ NetworkLocationProvider::NetworkLocationProvider(
     PositionCache* position_cache)
     : wifi_data_provider_manager_(nullptr),
       wifi_data_update_callback_(
-          base::Bind(&NetworkLocationProvider::OnWifiDataUpdate,
-                     base::Unretained(this))),
+          base::BindRepeating(&NetworkLocationProvider::OnWifiDataUpdate,
+                              base::Unretained(this))),
       is_wifi_data_complete_(false),
       position_cache_(position_cache),
       is_permission_granted_(false),
@@ -47,8 +47,8 @@ NetworkLocationProvider::NetworkLocationProvider(
       request_(new NetworkLocationRequest(
           std::move(url_loader_factory),
           api_key,
-          base::Bind(&NetworkLocationProvider::OnLocationResponse,
-                     base::Unretained(this)))) {
+          base::BindRepeating(&NetworkLocationProvider::OnLocationResponse,
+                              base::Unretained(this)))) {
   DCHECK(position_cache_);
 }
 

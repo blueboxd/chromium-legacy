@@ -385,7 +385,6 @@
 <translation id="3646890046000188562">{COUNT,plural, =1{பேக்டிக்}other{# பேக்டிக்குகள்}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{டாலர் குறி}other{# டாலர் குறிகள்}}</translation>
-<translation id="3658742229777143148">மீள்திருத்தங்கள்</translation>
 <translation id="3659787053479271466">alrt</translation>
 <translation id="3665563998540286755"><ph name="VALUE" />, பட்டியல் பெட்டி</translation>
 <translation id="3681531118904532409">பப்பாயா விப்</translation>
@@ -1104,7 +1103,6 @@ Chrome உலாவி மெனுவைத் திறக்க, Alt+F வி
 <translation id="812886159861361726"><ph name="FILE_NAME" /> கோப்பின் பதிவிறக்கம் நிறுத்தப்பட்டது</translation>
 <translation id="8138880386467279117">தொடுதல்</translation>
 <translation id="8153880621934657047">அட்டவணையின் உள்ளே கிடையாது.</translation>
-<translation id="8161114871611868169">கருத்துப் பிரிவு</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{அடிக்கோடு}other{# அடிக்கோடுகள்}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8184828902145951186">வரிசை</translation>

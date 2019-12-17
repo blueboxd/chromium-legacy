@@ -30,10 +30,12 @@ class DownloadsUI : public ui::MojoWebUIController,
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);
 
- private:
-  void BindPageHandlerFactory(
+  // Instantiates the implementor of the mojom::PageHandlerFactory mojo
+  // interface passing the pending receiver that will be internally bound.
+  void BindInterface(
       mojo::PendingReceiver<downloads::mojom::PageHandlerFactory> receiver);
 
+ private:
   // downloads::mojom::PageHandlerFactory:
   void CreatePageHandler(
       mojo::PendingRemote<downloads::mojom::Page> page,
@@ -43,6 +45,8 @@ class DownloadsUI : public ui::MojoWebUIController,
 
   mojo::Receiver<downloads::mojom::PageHandlerFactory> page_factory_receiver_{
       this};
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsUI);
 };

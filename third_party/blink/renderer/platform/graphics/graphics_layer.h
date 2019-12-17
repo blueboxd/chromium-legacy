@@ -174,7 +174,7 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   void SetContentsToImage(
       Image*,
       Image::ImageDecodingMode decode_mode,
-      RespectImageOrientationEnum = kDoNotRespectImageOrientation);
+      RespectImageOrientationEnum = kRespectImageOrientation);
   // If |prevent_contents_opaque_changes| is set to true, then calls to
   // SetContentsOpaque() will not be passed on to the |layer|. Use when
   // the client wants to have control of the opaqueness of the contents

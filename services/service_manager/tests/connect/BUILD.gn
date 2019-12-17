@@ -25,9 +25,9 @@ source_set("connect") {
   data_deps = [
     ":connect_test_app",
     ":connect_test_class_app",
-    ":connect_test_singleton_app",
     ":connect_test_exe",
     ":connect_test_package",
+    ":connect_test_singleton_app",
   ]
 }
 

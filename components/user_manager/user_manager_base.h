@@ -13,6 +13,7 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
@@ -27,7 +28,7 @@ class PrefRegistrySimple;
 
 namespace base {
 class ListValue;
-class TaskRunner;
+class SingleThreadTaskRunner;
 }
 
 namespace user_manager {
@@ -40,9 +41,9 @@ class RemoveUserDelegate;
 // Base implementation of the UserManager interface.
 class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
  public:
-  // Creates UserManagerBase with |task_runner| for UI thread and
-  // |blocking_task_runner| for SequencedWorkerPool.
-  explicit UserManagerBase(scoped_refptr<base::TaskRunner> task_runner);
+  // Creates UserManagerBase with |task_runner| for UI thread.
+  explicit UserManagerBase(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~UserManagerBase() override;
 
   // Registers UserManagerBase preferences.
@@ -391,7 +392,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   bool last_session_active_account_id_initialized_ = false;
 
   // TaskRunner for UI thread.
-  scoped_refptr<base::TaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   base::WeakPtrFactory<UserManagerBase> weak_factory_{this};
 

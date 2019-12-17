@@ -37,6 +37,7 @@ source_set("unit_tests") {
     "//media:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/libwebm",
   ]
 
   configs += [

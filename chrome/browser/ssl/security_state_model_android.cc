@@ -9,7 +9,6 @@
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/origin_util.h"
 #include "url/gurl.h"
 
 using base::android::ConvertJavaStringToUTF16;
@@ -30,21 +29,7 @@ jint JNI_SecurityStateModel_GetSecurityLevelForWebContents(
 }
 
 // static
-jboolean JNI_SecurityStateModel_IsSchemeCryptographic(
-    JNIEnv* env,
-    const JavaParamRef<jstring>& jurl) {
-  GURL url(ConvertJavaStringToUTF16(env, jurl));
-  return url.is_valid() && url.SchemeIsCryptographic();
-}
-
-// static
-jboolean JNI_SecurityStateModel_ShouldDowngradeNeutralStyling(
-    JNIEnv* env,
-    jint jsecurity_level,
-    const JavaParamRef<jstring>& jurl) {
-  GURL url(ConvertJavaStringToUTF16(env, jurl));
-  auto security_level =
-      static_cast<security_state::SecurityLevel>(jsecurity_level);
-  return security_state::ShouldDowngradeNeutralStyling(
-      security_level, url, base::BindRepeating(&content::IsOriginSecure));
+jboolean JNI_SecurityStateModel_ShouldShowDangerTriangleForWarningLevel(
+    JNIEnv* env) {
+  return security_state::ShouldShowDangerTriangleForWarningLevel();
 }

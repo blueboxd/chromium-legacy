@@ -66,7 +66,7 @@ class TouchActionTrackingWebWidgetClient
     : public frame_test_helpers::TestWebWidgetClient {
  public:
   TouchActionTrackingWebWidgetClient()
-      : action_set_count_(0), action_(TouchAction::kTouchActionAuto) {}
+      : action_set_count_(0), action_(TouchAction::kAuto) {}
 
   // WebWidgetClient methods
   void SetTouchAction(TouchAction touch_action) override {
@@ -77,7 +77,7 @@ class TouchActionTrackingWebWidgetClient
   // Local methods
   void Reset() {
     action_set_count_ = 0;
-    action_ = TouchAction::kTouchActionAuto;
+    action_ = TouchAction::kAuto;
   }
 
   int TouchActionSetCount() { return action_set_count_; }
@@ -342,23 +342,22 @@ void TouchActionTest::RunTestOnTree(
       EXPECT_EQ(1, client.TouchActionSetCount()) << failure_context_pos;
       if (client.TouchActionSetCount()) {
         if (expected_action == "auto") {
-          EXPECT_EQ(TouchAction::kTouchActionAuto, client.LastTouchAction())
+          EXPECT_EQ(TouchAction::kAuto, client.LastTouchAction())
               << failure_context_pos;
         } else if (expected_action == "none") {
-          EXPECT_EQ(TouchAction::kTouchActionNone, client.LastTouchAction())
+          EXPECT_EQ(TouchAction::kNone, client.LastTouchAction())
               << failure_context_pos;
         } else if (expected_action == "pan-x") {
-          EXPECT_EQ(TouchAction::kTouchActionPanX, client.LastTouchAction())
+          EXPECT_EQ(TouchAction::kPanX, client.LastTouchAction())
               << failure_context_pos;
         } else if (expected_action == "pan-y") {
-          EXPECT_EQ(TouchAction::kTouchActionPanY, client.LastTouchAction())
+          EXPECT_EQ(TouchAction::kPanY, client.LastTouchAction())
               << failure_context_pos;
         } else if (expected_action == "pan-x-y") {
-          EXPECT_EQ((TouchAction::kTouchActionPan), client.LastTouchAction())
+          EXPECT_EQ((TouchAction::kPan), client.LastTouchAction())
               << failure_context_pos;
         } else if (expected_action == "manipulation") {
-          EXPECT_EQ((TouchAction::kTouchActionManipulation),
-                    client.LastTouchAction())
+          EXPECT_EQ((TouchAction::kManipulation), client.LastTouchAction())
               << failure_context_pos;
         } else {
           FAIL() << "Unrecognized expected-action " << expected_action << " "

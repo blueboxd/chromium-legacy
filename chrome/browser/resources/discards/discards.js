@@ -11,7 +11,8 @@
    */
   export function getOrCreateDetailsProvider() {
     if (!discardsDetailsProvider) {
-      discardsDetailsProvider = discards.mojom.DetailsProvider.getRemote();
+      discardsDetailsProvider = discards.mojom.DetailsProvider.getRemote(
+          /*useBrowserInterfaceBroker=*/ true);
     }
     return discardsDetailsProvider;
   }

@@ -22,8 +22,10 @@ namespace viz {
 SkiaOutputDeviceVulkan::SkiaOutputDeviceVulkan(
     VulkanContextProvider* context_provider,
     gpu::SurfaceHandle surface_handle,
+    gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
     : SkiaOutputDevice(true /*need_swap_semaphore */,
+                       memory_tracker,
                        did_swap_buffer_complete_callback),
       context_provider_(context_provider),
       surface_handle_(surface_handle) {

@@ -124,7 +124,8 @@ function verify_prompt_reject(e, t) {
             );
             assert_equals(
                 error.message,
-                "The prompt() method must be called with a user gesture",
+                "Failed to execute 'prompt' on 'BeforeInstallPromptEvent': " +
+                    "The prompt() method must be called with a user gesture",
                 "Rejected promise does not provide expected message."
             );
         })

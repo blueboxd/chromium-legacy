@@ -7,14 +7,9 @@ package org.chromium.chrome.browser.omnibox.status;
 import static org.chromium.chrome.browser.toolbar.top.ToolbarPhone.URL_FOCUS_CHANGE_ANIMATION_DURATION_MS;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
-import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
-import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.TouchDelegate;
 import android.view.View;
@@ -24,7 +19,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.ColorRes;
-import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
@@ -33,7 +27,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.toolbar.ToolbarCommonPropertiesModel;
 import org.chromium.chrome.browser.ui.widget.CompositeTouchDelegate;
-import org.chromium.ui.UiUtils;
 import org.chromium.ui.widget.Toast;
 
 /**
@@ -68,12 +61,9 @@ public class StatusView extends LinearLayout {
     private boolean mAnimatingStatusIconShow;
     private boolean mAnimatingStatusIconHide;
 
-    private @DrawableRes int mIconRes;
-    private @ColorRes int mIconTintRes;
     private @StringRes int mAccessibilityToast;
 
-    private Bitmap mIconBitmap;
-    private Bitmap mCachedGoogleG;
+    private Drawable mStatusIconDrawable;
 
     private TouchDelegate mTouchDelegate;
     private CompositeTouchDelegate mCompositeTouchDelegate;
@@ -215,22 +205,8 @@ public class StatusView extends LinearLayout {
      * Start animating transition of status icon.
      */
     private void animateStatusIcon() {
-        Drawable targetIcon;
-        boolean wantIconHidden = false;
-
-        if (mIconRes != 0 && mIconTintRes != 0) {
-            targetIcon = UiUtils.getTintedDrawable(getContext(), mIconRes, mIconTintRes);
-        } else if (mIconRes != 0) {
-            targetIcon = AppCompatResources.getDrawable(getContext(), mIconRes);
-        } else if (mIconBitmap != null) {
-            targetIcon = new BitmapDrawable(getResources(), mIconBitmap);
-        } else {
-            // Do not specify any icon here and do not replace existing icon, either.
-            // TransitionDrawable uses different timing mechanism than Animations, and that may,
-            // depending on animation scale factor, produce a visible glitch.
-            targetIcon = null;
-            wantIconHidden = true;
-        }
+        Drawable targetIcon = mStatusIconDrawable;
+        boolean wantIconHidden = mStatusIconDrawable == null;
 
         // Ensure proper handling of animations.
         // Possible variants:
@@ -317,61 +293,8 @@ public class StatusView extends LinearLayout {
         mAnimationsEnabled = enabled;
     }
 
-    /**
-     * Specify navigation button image.
-     */
-    void setStatusIcon(@DrawableRes int imageRes) {
-        mIconRes = imageRes;
-        // mIconRes and mIconBitmap are mutually exclusive and therefore when one is set, the other
-        // should be unset.
-        mIconBitmap = null;
-
-        // Note: To workaround for TransitionDrawable resizing mismatching layers (see
-        // {@link StatusView#animateStatusIcon} when passed into LayerDrawable.LayerState), a 20dp
-        // google g is loaded and drawn on a R.dimen.location_bar_status_icon_width sized background
-        if (mDelegate != null && mToolbarCommonPropertiesModel != null
-                && mDelegate.shouldShowSearchEngineLogo(mToolbarCommonPropertiesModel.isIncognito())
-                && mIconRes == R.drawable.ic_logo_googleg_20dp) {
-            if (mCachedGoogleG == null) {
-                int outlineSize = getResources().getDimensionPixelSize(
-                        R.dimen.location_bar_status_icon_width);
-                Drawable googleGDrawable = AppCompatResources.getDrawable(
-                        getContext(), R.drawable.ic_logo_googleg_20dp);
-                mCachedGoogleG = Bitmap.createBitmap(outlineSize, outlineSize, Config.ARGB_8888);
-                Canvas canvas = new Canvas(mCachedGoogleG);
-                canvas.translate((outlineSize - googleGDrawable.getIntrinsicWidth()) / 2f,
-                        (outlineSize - googleGDrawable.getIntrinsicHeight()) / 2f);
-                googleGDrawable.setBounds(0, 0, googleGDrawable.getIntrinsicWidth(),
-                        googleGDrawable.getIntrinsicHeight());
-                googleGDrawable.draw(canvas);
-            }
-            mIconBitmap = mCachedGoogleG;
-            mIconRes = 0;
-        }
-        animateStatusIcon();
-    }
-
-    /**
-     * Specify navigation icon tint color.
-     */
-    void setStatusIconTint(@ColorRes int colorRes) {
-        // TODO(ender): combine icon and tint into a single class describing icon properties to
-        // avoid multi-step crossfade animation configuration.
-        // This is technically still invisible, since animations only begin after all operations in
-        // UI thread (including status icon configuration) are complete, but can be avoided
-        // entirely, making the code also more intuitive.
-        mIconTintRes = colorRes;
-        animateStatusIcon();
-    }
-
-    /**
-     * Specify the icon drawable.
-     */
-    void setStatusIcon(Bitmap icon) {
-        mIconBitmap = icon;
-        // mIconRes and mIconBitmap are mutually exclusive and therefore when one is set, the other
-        // should be unset.
-        mIconRes = 0;
+    void setStatusIconResources(Drawable statusIconDrawable) {
+        mStatusIconDrawable = statusIconDrawable;
         animateStatusIcon();
     }
 
@@ -490,8 +413,8 @@ public class StatusView extends LinearLayout {
         if (mDelegate.isSearchEngineLogoEnabled()) {
             endPadding = 0;
         } else {
-            endPadding = mIconRes != 0 ? mIncognitoBadgeEndPaddingWithIcon
-                                       : mIncognitoBadgeEndPaddingWithoutIcon;
+            endPadding = isIconVisible() ? mIncognitoBadgeEndPaddingWithIcon
+                                         : mIncognitoBadgeEndPaddingWithoutIcon;
         }
         mIncognitoBadge.setPaddingRelative(mIncognitoBadge.getPaddingStart(),
                 mIncognitoBadge.getPaddingTop(), endPadding, mIncognitoBadge.getPaddingBottom());
@@ -582,7 +505,7 @@ public class StatusView extends LinearLayout {
 
     /** @return True if the status icon is currently visible. */
     private boolean isIconVisible() {
-        return (mIconRes != 0 || mIconBitmap != null) && mIconView.getVisibility() != GONE
+        return mStatusIconDrawable != null && mIconView.getVisibility() != GONE
                 && mIconView.getAlpha() != 0;
     }
 

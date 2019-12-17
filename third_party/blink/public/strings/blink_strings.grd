@@ -296,9 +296,6 @@ below:
       <message name="IDS_AX_ROLE_COMMENT" desc="Accessibility role description for a single comment">
         comment
       </message>
-      <message name="IDS_AX_ROLE_COMMENT_SECTION" desc="Accessibility role description for a section of comments">
-        comment section
-      </message>
       <message name="IDS_AX_ROLE_COMPLEMENTARY" desc="Accessibility role description for complementary">
         complementary
       </message>
@@ -524,9 +521,6 @@ below:
       </message>
       <message name="IDS_AX_ROLE_REGION" desc="Accessibility role description for region">
         region
-      </message>
-      <message name="IDS_AX_ROLE_REVISION" desc="Accessibility role description for revision, meaining historical change info tied to this content">
-        revision
       </message>
       <!-- https://www.w3.org/TR/core-aam-1.1/#role-map-searchbox -->
       <if expr="is_win">

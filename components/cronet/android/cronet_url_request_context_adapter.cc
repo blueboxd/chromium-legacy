@@ -350,7 +350,7 @@ JNI_CronetUrlRequestContext_GetHistogramDeltas(JNIEnv* env) {
   std::vector<uint8_t> data;
   if (!HistogramManager::GetInstance()->GetDeltas(&data))
     return ScopedJavaLocalRef<jbyteArray>();
-  return base::android::ToJavaByteArray(env, &data[0], data.size());
+  return base::android::ToJavaByteArray(env, data.data(), data.size());
 }
 
 }  // namespace cronet

@@ -28,10 +28,8 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -45,18 +43,16 @@ class MediaQueryListListener;
 
 class CORE_EXPORT ScriptedAnimationController
     : public GarbageCollected<ScriptedAnimationController>,
-      public ContextLifecycleStateObserver,
       public NameClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ScriptedAnimationController);
-
  public:
   explicit ScriptedAnimationController(Document*);
-  ~ScriptedAnimationController() override = default;
+  virtual ~ScriptedAnimationController() = default;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*);
   const char* NameInHeapSnapshot() const override {
     return "ScriptedAnimationController";
   }
+  void ClearDocumentPointer() { document_ = nullptr; }
 
   // Animation frame callbacks are used for requestAnimationFrame().
   typedef int CallbackId;
@@ -86,7 +82,8 @@ class CORE_EXPORT ScriptedAnimationController
   void ServiceScriptedAnimations(base::TimeTicks monotonic_time_now);
   void RunPostFrameCallbacks();
 
-  void ContextLifecycleStateChanged(mojom::FrameLifecycleState) final;
+  void Pause();
+  void Unpause();
 
   void DispatchEventsAndCallbacksForPrinting();
 
@@ -104,9 +101,9 @@ class CORE_EXPORT ScriptedAnimationController
 
   bool HasScheduledFrameTasks() const;
 
-  Document* GetDocument() const { return To<Document>(GetExecutionContext()); }
-
+  Member<Document> document_;
   FrameRequestCallbackCollection callback_collection_;
+  int suspend_count_;
   Vector<base::OnceClosure> task_queue_;
   HeapVector<Member<Event>> event_queue_;
   HeapListHashSet<std::pair<Member<const EventTarget>, const StringImpl*>>

@@ -106,6 +106,7 @@ class LintTest(LoggingTestCase):
         self.assertEqual(res, [])
         self.assertEqual(host.ports_parsed, ['a', 'b', 'b-win'])
 
+    @unittest.skip('crbug.com/986447, re-enable after merging crrev.com/c/1918294')
     def test_lint_test_files(self):
         options = optparse.Values({'platform': 'test-mac-mac10.10'})
         host = MockHost()

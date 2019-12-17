@@ -19,7 +19,7 @@ class PlatformSensorFusion::Factory : public base::RefCounted<Factory> {
   static void CreateSensorFusion(
       SensorReadingSharedBuffer* reading_buffer,
       std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm,
-      const PlatformSensorProviderBase::CreateSensorCallback& callback,
+      PlatformSensorProviderBase::CreateSensorCallback callback,
       PlatformSensorProvider* provider) {
     scoped_refptr<Factory> factory(new Factory(reading_buffer,
                                                std::move(fusion_algorithm),
@@ -32,7 +32,7 @@ class PlatformSensorFusion::Factory : public base::RefCounted<Factory> {
 
   Factory(SensorReadingSharedBuffer* reading_buffer,
           std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm,
-          const PlatformSensorProviderBase::CreateSensorCallback& callback,
+          PlatformSensorProviderBase::CreateSensorCallback callback,
           PlatformSensorProvider* provider)
       : fusion_algorithm_(std::move(fusion_algorithm)),
         result_callback_(std::move(callback)),
@@ -56,7 +56,7 @@ class PlatformSensorFusion::Factory : public base::RefCounted<Factory> {
         SensorCreated(std::move(sensor));
       } else {
         provider_->CreateSensor(type,
-                                base::Bind(&Factory::SensorCreated, this));
+                                base::BindOnce(&Factory::SensorCreated, this));
       }
     }
   }
@@ -95,9 +95,9 @@ void PlatformSensorFusion::Create(
     SensorReadingSharedBuffer* reading_buffer,
     PlatformSensorProvider* provider,
     std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm,
-    const PlatformSensorProviderBase::CreateSensorCallback& callback) {
+    PlatformSensorProviderBase::CreateSensorCallback callback) {
   Factory::CreateSensorFusion(reading_buffer, std::move(fusion_algorithm),
-                              callback, provider);
+                              std::move(callback), provider);
 }
 
 PlatformSensorFusion::PlatformSensorFusion(

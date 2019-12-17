@@ -357,6 +357,7 @@ void SharedWorkerServiceImpl::StartWorker(
   // CreateWorker() and StartWorker() calls. Doing so avoids starting a shared
   // worker and immediately stopping it because its sole client is already being
   // torn down.
+  host->PruneNonExistentClients();
   if (!host->HasClients()) {
     DestroyHost(host.get());
     return;

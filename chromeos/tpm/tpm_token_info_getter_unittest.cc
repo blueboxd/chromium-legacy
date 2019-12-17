@@ -57,7 +57,6 @@ class FakeTaskRunner : public base::TaskRunner {
     base::ThreadTaskRunnerHandle::Get()->PostTask(from_here, std::move(task));
     return true;
   }
-  bool RunsTasksInCurrentSequence() const override { return true; }
 
  protected:
   ~FakeTaskRunner() override = default;

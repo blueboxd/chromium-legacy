@@ -12,8 +12,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "base/task_runner.h"
 #include "build/build_config.h"
 #include "mojo/core/dispatcher.h"
 #include "mojo/core/handle_signals_state.h"
@@ -45,7 +45,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
 
   // Called exactly once, shortly after construction, and before any other
   // methods are called on this object.
-  void SetIOTaskRunner(scoped_refptr<base::TaskRunner> io_task_runner);
+  void SetIOTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
   // Retrieves the NodeController for the current process.
   NodeController* GetNodeController();

@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task_runner.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/vpn_service_proxy.h"
@@ -41,7 +40,7 @@ class CONTENT_EXPORT PepperVpnProviderMessageFilter
                                  PP_Instance instance);
 
   // ppapi::host::ResourceMessageFilter overrides.
-  scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
+  scoped_refptr<base::SequencedTaskRunner> OverrideTaskRunnerForMessage(
       const IPC::Message& message) override;
   int32_t OnResourceMessageReceived(
       const IPC::Message& msg,

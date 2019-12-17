@@ -196,7 +196,7 @@ class ChannelTestShutdownAndWriteDelegate : public Channel::Delegate {
  public:
   ChannelTestShutdownAndWriteDelegate(
       PlatformChannelEndpoint endpoint,
-      scoped_refptr<base::TaskRunner> task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       scoped_refptr<Channel> client_channel,
       std::unique_ptr<base::Thread> client_thread,
       base::RepeatingClosure quit_closure)

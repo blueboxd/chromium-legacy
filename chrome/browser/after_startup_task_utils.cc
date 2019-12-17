@@ -15,9 +15,9 @@
 #include "base/process/process.h"
 #include "base/rand_util.h"
 #include "base/sequence_checker.h"
+#include "base/sequenced_task_runner.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/task/post_task.h"
-#include "base/task_runner.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -45,13 +45,13 @@ namespace {
 
 struct AfterStartupTask {
   AfterStartupTask(const base::Location& from_here,
-                   const scoped_refptr<base::TaskRunner>& task_runner,
+                   const scoped_refptr<base::SequencedTaskRunner>& task_runner,
                    base::OnceClosure task)
       : from_here(from_here), task_runner(task_runner), task(std::move(task)) {}
   ~AfterStartupTask() {}
 
   const base::Location from_here;
-  const scoped_refptr<base::TaskRunner> task_runner;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner;
   base::OnceClosure task;
 };
 
@@ -82,7 +82,8 @@ void ScheduleTask(std::unique_ptr<AfterStartupTask> queued_task) {
   // Spread their execution over a brief time.
   constexpr int kMinDelaySec = 0;
   constexpr int kMaxDelaySec = 10;
-  scoped_refptr<base::TaskRunner> target_runner = queued_task->task_runner;
+  scoped_refptr<base::SequencedTaskRunner> target_runner =
+      queued_task->task_runner;
   base::Location from_here = queued_task->from_here;
   int delay_in_seconds = g_schedule_tasks_with_delay
                              ? base::RandInt(kMinDelaySec, kMaxDelaySec)
@@ -235,28 +236,6 @@ void StartupObserver::Start() {
 
 }  // namespace
 
-AfterStartupTaskUtils::Runner::Runner(
-    scoped_refptr<base::TaskRunner> destination_runner)
-    : destination_runner_(std::move(destination_runner)) {
-  DCHECK(destination_runner_);
-}
-
-AfterStartupTaskUtils::Runner::~Runner() = default;
-
-bool AfterStartupTaskUtils::Runner::PostDelayedTask(
-    const base::Location& from_here,
-    base::OnceClosure task,
-    base::TimeDelta delay) {
-  DCHECK(delay.is_zero());
-  AfterStartupTaskUtils::PostTask(from_here, destination_runner_,
-                                  std::move(task));
-  return true;
-}
-
-bool AfterStartupTaskUtils::Runner::RunsTasksInCurrentSequence() const {
-  return destination_runner_->RunsTasksInCurrentSequence();
-}
-
 void AfterStartupTaskUtils::StartMonitoringStartup() {
   // The observer is self-deleting.
   (new StartupObserver)->Start();
@@ -264,7 +243,7 @@ void AfterStartupTaskUtils::StartMonitoringStartup() {
 
 void AfterStartupTaskUtils::PostTask(
     const base::Location& from_here,
-    const scoped_refptr<base::TaskRunner>& destination_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& destination_runner,
     base::OnceClosure task) {
   if (IsBrowserStartupComplete()) {
     destination_runner->PostTask(from_here, std::move(task));

@@ -201,7 +201,7 @@ void ExpectCTReporter::OnResponseStarted(net::URLRequest* request,
   PreflightInProgress* preflight = preflight_it->second.get();
 
   const int response_code =
-      request->status().is_success() ? request->GetResponseCode() : -1;
+      net_error == net::OK ? request->GetResponseCode() : -1;
 
   // Check that the preflight succeeded: it must have an HTTP OK status code,
   // with the following headers:
@@ -210,8 +210,7 @@ void ExpectCTReporter::OnResponseStarted(net::URLRequest* request,
   // - Access-Control-Allow-Headers: Content-Type
 
   if (response_code == -1 || response_code < 200 || response_code > 299) {
-    OnReportFailure(preflight->report_uri, request->status().error(),
-                    response_code);
+    OnReportFailure(preflight->report_uri, net_error, response_code);
     inflight_preflights_.erase(request);
     // Do not use |preflight| after this point, since it has been erased above.
     return;
@@ -221,8 +220,7 @@ void ExpectCTReporter::OnResponseStarted(net::URLRequest* request,
       !HasHeaderValues(request, "Access-Control-Allow-Methods", {"post"}) ||
       !HasHeaderValues(request, "Access-Control-Allow-Headers",
                        {"content-type"})) {
-    OnReportFailure(preflight->report_uri, request->status().error(),
-                    response_code);
+    OnReportFailure(preflight->report_uri, net_error, response_code);
     inflight_preflights_.erase(request);
     // Do not use |preflight| after this point, since it has been erased above.
     return;

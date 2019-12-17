@@ -753,6 +753,23 @@ void SearchTabHelper::BlocklistPromo(const std::string& promo_id) {
   promo_service->BlocklistPromo(promo_id);
 }
 
+void SearchTabHelper::OpenExtensionsPage(double button,
+                                         bool alt_key,
+                                         bool ctrl_key,
+                                         bool meta_key,
+                                         bool shift_key) {
+  if (!search::DefaultSearchProviderIsGoogle(profile()))
+    return;
+  bool middle_button = (button == 1.0);
+  WindowOpenDisposition disposition = ui::DispositionFromClick(
+      middle_button, alt_key, ctrl_key, meta_key, shift_key);
+  if (button > 1)
+    disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  web_contents_->OpenURL(content::OpenURLParams(
+      GURL(chrome::kChromeUIExtensionsURL), content::Referrer(), disposition,
+      ui::PAGE_TRANSITION_LINK, false));
+}
+
 void SearchTabHelper::OpenAutocompleteMatch(
     uint8_t line,
     const GURL& url,

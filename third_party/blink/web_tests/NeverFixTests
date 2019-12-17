@@ -1,3 +1,8 @@
+# tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.10 Mac10.11 Mac10.12 Retina
+#         Mac10.13 Win Win7 Win10 ]
+# tags: [ Release Debug ]
+# results: [ Timeout Crash Pass Failure Slow Skip ]
+
 # This file should only include tests that we never want to run.
 # There should only be the following categories of tests here:
 #   1. Tests of the test harness (run_web_tests.py) itself.
@@ -1991,20 +1996,20 @@ virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-s
 # Skip below.  Note that by default Site Isolation isolates *sites* rather
 # than *origin* and therefore avoids problems related to document.domain
 # compatibility.
-Bug(none) external/wpt/html/browsers/origin/relaxing-the-same-origin-restriction [ Skip ]
-Bug(none) external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ Skip ]
-Bug(none) external/wpt/dom/events/EventListener-incumbent-global-1.sub.html [ Skip ]
-Bug(none) external/wpt/dom/events/EventListener-incumbent-global-2.sub.html [ Skip ]
-Bug(none) http/tests/dom/EventListener-incumbent-global-1.html [ Skip ]
-Bug(none) http/tests/dom/EventListener-incumbent-global-2.html [ Skip ]
-Bug(none) external/wpt/html/browsers/history/the-location-interface/allow_prototype_cycle_through_location.sub.html [ Skip ]
-Bug(none) external/wpt/html/browsers/history/the-location-interface/location-prototype-setting-same-origin-domain.sub.html [ Skip ]
-Bug(none) external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-on-new-window.html [ Skip ]
-Bug(none) external/wpt/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin-domain.sub.html [ Skip ]
-Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.https.sub.html [ Skip ]
-Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.https.sub.html [ Skip ]
-Bug(none) external/wpt/wasm/serialization/module/window-domain-success.sub.html [ Skip ]
-Bug(none) external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html [ Skip ]
+external/wpt/html/browsers/origin/relaxing-the-same-origin-restriction [ Skip ]
+external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ Skip ]
+external/wpt/dom/events/EventListener-incumbent-global-1.sub.html [ Skip ]
+external/wpt/dom/events/EventListener-incumbent-global-2.sub.html [ Skip ]
+http/tests/dom/EventListener-incumbent-global-1.html [ Skip ]
+http/tests/dom/EventListener-incumbent-global-2.html [ Skip ]
+external/wpt/html/browsers/history/the-location-interface/allow_prototype_cycle_through_location.sub.html [ Skip ]
+external/wpt/html/browsers/history/the-location-interface/location-prototype-setting-same-origin-domain.sub.html [ Skip ]
+external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-on-new-window.html [ Skip ]
+external/wpt/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin-domain.sub.html [ Skip ]
+external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.https.sub.html [ Skip ]
+external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.https.sub.html [ Skip ]
+external/wpt/wasm/serialization/module/window-domain-success.sub.html [ Skip ]
+external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html [ Skip ]
 # -------------------- origin-vs-url in console messages -----------------
 # Process hosting https://foo.example.com should not get any data from
 # https://bar.other-site-example.com.  This includes things like cookies
@@ -2025,7 +2030,7 @@ crbug.com/669083 http/tests/security/frameNavigation/xss-DENIED-top-navigation-w
 # but don't make sense if
 # 3) site isolation is enabled without also enabling
 #    IsolatedCodeCache (tests disabled by the test expectation below).
-Bug(none) http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Skip ]
+http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Skip ]
 # ==== Tests incompatible with the default WPT Origin Isolation end here ==^^
 
 # Tests using testRunner.useUnfortunateSynchronousResizeMode occasionally fail on Win7,

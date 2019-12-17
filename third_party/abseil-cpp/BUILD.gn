@@ -12,9 +12,9 @@ group("default") {
   deps = [
     "absl/types:any",
     "absl/types:bad_any_cast",
-    "absl/types:span",
-    "absl/types:optional",
     "absl/types:bad_optional_access",
+    "absl/types:optional",
+    "absl/types:span",
   ]
 }
 

@@ -18,30 +18,30 @@ constexpr int kMilsPerInch = 1000;
 
 // Length of an inch in CSS's 1pt unit.
 // http://dev.w3.org/csswg/css3-values/#absolute-length-units-cm-mm.-in-pt-pc
-const int kPointsPerInch = 72;
+constexpr int kPointsPerInch = 72;
 
 // Length of an inch in CSS's 1px unit.
 // http://dev.w3.org/csswg/css3-values/#the-px-unit
-const int kPixelsPerInch = 96;
+constexpr int kPixelsPerInch = 96;
 
 // Dpi used to save to PDF or Cloud Print.
-const int kDefaultPdfDpi = 300;
+constexpr int kDefaultPdfDpi = 300;
 
 // LETTER: 8.5 x 11 inches
-const float kLetterWidthInch = 8.5f;
-const float kLetterHeightInch = 11.0f;
+constexpr float kLetterWidthInch = 8.5f;
+constexpr float kLetterHeightInch = 11.0f;
 
 // LEGAL: 8.5 x 14 inches
-const float kLegalWidthInch = 8.5f;
-const float kLegalHeightInch = 14.0f;
+constexpr float kLegalWidthInch = 8.5f;
+constexpr float kLegalHeightInch = 14.0f;
 
 // A4: 8.27 x 11.69 inches
-const float kA4WidthInch = 8.27f;
-const float kA4HeightInch = 11.69f;
+constexpr float kA4WidthInch = 8.27f;
+constexpr float kA4HeightInch = 11.69f;
 
 // A3: 11.69 x 16.54 inches
-const float kA3WidthInch = 11.69f;
-const float kA3HeightInch = 16.54f;
+constexpr float kA3WidthInch = 11.69f;
+constexpr float kA3HeightInch = 16.54f;
 
 // Converts from one unit system to another using integer arithmetics.
 PRINTING_EXPORT int ConvertUnit(double value, int old_unit, int new_unit);

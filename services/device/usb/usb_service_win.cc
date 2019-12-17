@@ -309,12 +309,12 @@ UsbServiceWin::~UsbServiceWin() {
   NotifyWillDestroyUsbService();
 }
 
-void UsbServiceWin::GetDevices(const GetDevicesCallback& callback) {
+void UsbServiceWin::GetDevices(GetDevicesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (enumeration_ready())
-    UsbService::GetDevices(callback);
+    UsbService::GetDevices(std::move(callback));
   else
-    enumeration_callbacks_.push_back(callback);
+    enumeration_callbacks_.push_back(std::move(callback));
 }
 
 void UsbServiceWin::OnDeviceAdded(const GUID& class_guid,
@@ -353,8 +353,8 @@ void UsbServiceWin::HelperStarted() {
     result.reserve(devices().size());
     for (const auto& map_entry : devices())
       result.push_back(map_entry.second);
-    for (const auto& callback : enumeration_callbacks_)
-      callback.Run(result);
+    for (auto& callback : enumeration_callbacks_)
+      std::move(callback).Run(result);
     enumeration_callbacks_.clear();
   }
 }
@@ -373,8 +373,8 @@ void UsbServiceWin::CreateDeviceObject(const std::string& device_path,
   scoped_refptr<UsbDeviceWin> device(new UsbDeviceWin(
       device_path, hub_path, bus_number, port_number, driver_name));
   devices_by_path_[device->device_path()] = device;
-  device->ReadDescriptors(base::Bind(&UsbServiceWin::DeviceReady,
-                                     weak_factory_.GetWeakPtr(), device));
+  device->ReadDescriptors(base::BindOnce(&UsbServiceWin::DeviceReady,
+                                         weak_factory_.GetWeakPtr(), device));
 }
 
 void UsbServiceWin::DeviceReady(scoped_refptr<UsbDeviceWin> device,
@@ -414,8 +414,8 @@ void UsbServiceWin::DeviceReady(scoped_refptr<UsbDeviceWin> device,
     result.reserve(devices().size());
     for (const auto& map_entry : devices())
       result.push_back(map_entry.second);
-    for (const auto& callback : enumeration_callbacks_)
-      callback.Run(result);
+    for (auto& callback : enumeration_callbacks_)
+      std::move(callback).Run(result);
     enumeration_callbacks_.clear();
   } else if (success && enumeration_ready()) {
     NotifyDeviceAdded(device);

@@ -436,7 +436,7 @@ class InstallAppController : public ui::ProgressWndEvents,
 
   // Provides an execution environment for the UI code. Typically, it runs
   // a single task which is the UI run loop.
-  scoped_refptr<base::TaskRunner> ui_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   // The run loop associated with the updater main thread.
   base::RunLoop runloop_;

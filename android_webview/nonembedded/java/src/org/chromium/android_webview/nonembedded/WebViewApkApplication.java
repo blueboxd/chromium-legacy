@@ -56,7 +56,7 @@ public class WebViewApkApplication extends Application {
      */
     public static void maybeInitProcessGlobals() {
         if (isWebViewProcess()) {
-            PathUtils.setPrivateDataDirectorySuffix("webview");
+            PathUtils.setPrivateDataDirectorySuffix("webview", "WebView");
             CommandLineUtil.initCommandLine();
         }
     }

@@ -27,7 +27,6 @@
 #include "content/public/browser/media_session_service.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/service_process_host.h"
-#include "content/public/common/content_switches.h"
 #include "services/identity/public/mojom/identity_service.mojom.h"
 
 namespace {
@@ -82,12 +81,10 @@ void AssistantClient::MaybeInit(Profile* profile) {
 
   initialized_ = true;
 
-  bool is_test = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kBrowserTest);
   auto* service =
       AssistantServiceConnection::GetForProfile(profile_)->service();
   service->Init(client_receiver_.BindNewPipeAndPassRemote(),
-                device_actions_.AddReceiver(), is_test);
+                device_actions_.AddReceiver());
   assistant_image_downloader_ = std::make_unique<AssistantImageDownloader>();
   assistant_setup_ = std::make_unique<AssistantSetup>(service);
 

@@ -204,8 +204,6 @@ class ThreadPostingTasks : public SimpleThread {
 
  private:
   void Run() override {
-    EXPECT_FALSE(factory_.task_runner()->RunsTasksInCurrentSequence());
-
     const size_t kNumTasksPerThread = 150;
     for (size_t i = 0; i < kNumTasksPerThread; ++i) {
       factory_.PostTask(test::TestTaskFactory::PostNestedTask::NO,
@@ -402,7 +400,6 @@ TEST_P(ThreadPoolImplTest_CoverAllSchedulingOptions, PostTasksViaTaskRunner) {
       CreateTaskRunnerAndExecutionMode(thread_pool_.get(), GetTraits(),
                                        GetExecutionMode()),
       GetExecutionMode());
-  EXPECT_FALSE(factory.task_runner()->RunsTasksInCurrentSequence());
 
   const size_t kNumTasksPerTest = 150;
   for (size_t i = 0; i < kNumTasksPerTest; ++i) {
@@ -826,7 +823,7 @@ TEST_P(ThreadPoolImplTest, SequencedRunsTasksInCurrentSequence) {
   single_thread_task_runner->PostTask(
       FROM_HERE,
       BindOnce(
-          [](scoped_refptr<TaskRunner> sequenced_task_runner,
+          [](scoped_refptr<SequencedTaskRunner> sequenced_task_runner,
              WaitableEvent* task_ran) {
             EXPECT_FALSE(sequenced_task_runner->RunsTasksInCurrentSequence());
             task_ran->Signal();
@@ -849,7 +846,7 @@ TEST_P(ThreadPoolImplTest, SingleThreadRunsTasksInCurrentSequence) {
   sequenced_task_runner->PostTask(
       FROM_HERE,
       BindOnce(
-          [](scoped_refptr<TaskRunner> single_thread_task_runner,
+          [](scoped_refptr<SingleThreadTaskRunner> single_thread_task_runner,
              WaitableEvent* task_ran) {
             EXPECT_FALSE(
                 single_thread_task_runner->RunsTasksInCurrentSequence());

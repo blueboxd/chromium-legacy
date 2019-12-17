@@ -7,7 +7,7 @@ extra_icu_module_desc = {
   android_manifest =
       "//chrome/android/modules/extra_icu/internal/java/AndroidManifest.xml"
   java_deps = [
-    "//third_party/icu:icu_extra_assets",
     "//chrome/android/modules/extra_icu/internal:java",
+    "//third_party/icu:icu_extra_assets",
   ]
 }

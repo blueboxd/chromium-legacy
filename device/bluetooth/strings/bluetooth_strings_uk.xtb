@@ -17,6 +17,7 @@
 <translation id="5271696982761495740">Планшетний ПК (<ph name="ADDRESS" />)</translation>
 <translation id="5376363957846771741">Невідомий чи непідтримуваний пристрій (<ph name="ADDRESS" />)</translation>
 <translation id="5716052956047449618"><ph name="DEVICE_NAME" />, модем</translation>
+<translation id="6459740836740815150"><ph name="DEVICE_NAME" />, аудіопристрій для автомобілів</translation>
 <translation id="6542922424766292144"><ph name="DEVICE_NAME" />, клавіатура</translation>
 <translation id="654594702871184195">Аудіо (<ph name="ADDRESS" />)</translation>
 <translation id="6744468237221042970">Комп’ютер (<ph name="ADDRESS" />)</translation>
@@ -26,5 +27,6 @@
 <translation id="8866374292072238753">Відео (<ph name="ADDRESS" />)</translation>
 <translation id="8952558712545617651">Миша (<ph name="ADDRESS" />)</translation>
 <translation id="8961448405689538648"><ph name="DEVICE_NAME" />, невідомий тип пристрою</translation>
+<translation id="907431882454731668">Периферійний пристрій (<ph name="ADDRESS" />)</translation>
 <translation id="978248992969828584">Телефон (<ph name="ADDRESS" />)</translation>
 </translationbundle>

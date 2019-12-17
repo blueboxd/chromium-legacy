@@ -153,8 +153,6 @@ Output.ROLE_INFO_ = {
   comboBoxMenuButton: {msgId: 'role_combobox', earconId: 'LISTBOX'},
   complementary: {msgId: 'role_complementary', inherits: 'abstractContainer'},
   comment: {msgId: 'role_comment', inherits: 'abstractContainer'},
-  commentSection:
-      {msgId: 'role_comment_section', inherits: 'abstractContainer'},
   contentDeletion:
       {msgId: 'role_content_deletion', inherits: 'abstractContainer'},
   contentInsertion:
@@ -272,7 +270,6 @@ Output.ROLE_INFO_ = {
   radioButton: {msgId: 'role_radio'},
   radioGroup: {msgId: 'role_radiogroup', inherits: 'abstractContainer'},
   region: {msgId: 'role_region', inherits: 'abstractContainer'},
-  revision: {msgId: 'role_revision', inherits: 'abstractContainer'},
   rootWebArea: {outputContextFirst: true},
   row: {msgId: 'role_row', inherits: 'abstractContainer'},
   rowHeader: {msgId: 'role_rowheader', inherits: 'cell'},

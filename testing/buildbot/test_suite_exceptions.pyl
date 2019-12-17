@@ -2024,6 +2024,11 @@
           'shards': 20,
         },
       },
+      'mac10.14-blink-rel-dummy': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
       'WebKit Linux composite_after_paint Dummy Builder': {
         'args': [
           '--additional-driver-flag=--enable-blink-features=CompositeAfterPaint',

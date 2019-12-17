@@ -169,7 +169,7 @@ TEST_F(MemoryDumpSchedulerTest, StopAndStartOnAnotherThread) {
   config.callback =
       BindRepeating(&CallbackWrapper::OnTick, Unretained(&on_tick_));
 
-  scoped_refptr<TaskRunner> expected_task_runner = bg_thread_.task_runner();
+  auto expected_task_runner = bg_thread_.task_runner();
   testing::InSequence sequence;
   EXPECT_CALL(on_tick_, OnTick(_)).Times(kTicks - 1);
   EXPECT_CALL(on_tick_, OnTick(_))

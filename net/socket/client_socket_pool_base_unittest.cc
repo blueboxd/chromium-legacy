@@ -34,6 +34,7 @@
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/log/net_log.h"
@@ -353,6 +354,10 @@ class TestConnectJob : public ConnectJob {
 
   bool HasEstablishedConnection() const override {
     return has_established_connection_;
+  }
+
+  ResolveErrorInfo GetResolveErrorInfo() const override {
+    return ResolveErrorInfo(OK);
   }
 
   bool IsSSLError() const override { return store_additional_error_state_; }

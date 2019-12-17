@@ -38,14 +38,12 @@ const char kInsecureInputEventsSecurityStateIssueId[] = "insecure-input-events";
 const char kCertMissingSubjectAltName[] = "cert-missing-subject-alt-name";
 
 std::string SecurityLevelToProtocolSecurityState(
-    security_state::SecurityLevel security_level,
-    GURL url) {
+    security_state::SecurityLevel security_level) {
   switch (security_level) {
     case security_state::NONE:
+      return protocol::Security::SecurityStateEnum::Neutral;
     case security_state::WARNING:
-      if (security_state::ShouldDowngradeNeutralStyling(
-              security_level, url,
-              base::BindRepeating(&content::IsOriginSecure)))
+      if (security_state::ShouldShowDangerTriangleForWarningLevel())
         return protocol::Security::SecurityStateEnum::Insecure;
       return protocol::Security::SecurityStateEnum::Neutral;
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
@@ -189,8 +187,8 @@ CreateVisibleSecurityState(content::WebContents* web_contents) {
       SecurityStateTabHelper::FromWebContents(web_contents);
   DCHECK(helper);
   auto state = helper->GetVisibleSecurityState();
-  std::string security_state = SecurityLevelToProtocolSecurityState(
-      helper->GetSecurityLevel(), state->url);
+  std::string security_state =
+      SecurityLevelToProtocolSecurityState(helper->GetSecurityLevel());
 
   bool scheme_is_cryptographic =
       security_state::IsSchemeCryptographic(state->url);

@@ -24,7 +24,6 @@
 <translation id="1171770572613082465">Սեղմեք «Կայքերի ընտրանի» կոճակը և դիտեք թոփ կայքերը</translation>
 <translation id="1173894706177603556">Վերանվանել</translation>
 <translation id="1178581264944972037">Դադար</translation>
-<translation id="118069123878619799">– ձեր ֆիզիկական բնութագրերը, օրինակ՝ հասակը,</translation>
 <translation id="1181037720776840403">Ջնջել</translation>
 <translation id="1188239144602654184">Սկսել AR աշխատաշրջանը</translation>
 <translation id="1197267115302279827">Տեղափոխել էջանիշները</translation>
@@ -62,7 +61,6 @@
 <translation id="1384959399684842514">Ներբեռնումը դադարեցվել է</translation>
 <translation id="1386674309198842382">Ակտիվ է եղել <ph name="LAST_UPDATED" /> օր առաջ</translation>
 <translation id="1397811292916898096">Որոնում <ph name="PRODUCT_NAME" />-ում</translation>
-<translation id="1404122904123200417">Ներկառուցված <ph name="WEBSITE_URL" /> կայքում</translation>
 <translation id="1406000523432664303">«Չհետևել»</translation>
 <translation id="1407135791313364759">Բացել բոլորը</translation>
 <translation id="1409426117486808224">Բաց ներդիրների պարզեցված դիտակերպ</translation>
@@ -215,6 +213,7 @@
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> տարր ջնջվեց</translation>
 <translation id="2536728043171574184">Դուք դիտում եք տվյալ էջի անցանց պատճենը</translation>
 <translation id="2537178555904266562">Չհաջողվեց համաժամացնել գաղտնաբառերը</translation>
+<translation id="2537296579376733324">Բոլոր քուքիները, միայն այս կայքում</translation>
 <translation id="2546283357679194313">Cookie ֆայլեր և կայքի տվյալներ</translation>
 <translation id="2567385386134582609">ՊԱՏԿԵՐ</translation>
 <translation id="257088987046510401">Թեմաներ</translation>
@@ -472,6 +471,7 @@
 <translation id="4565377596337484307">Թաքցնել գաղտնաբառը</translation>
 <translation id="4570913071927164677">Մանրամասներ</translation>
 <translation id="4572422548854449519">Մուտք գործեք կառավարվող հաշիվ</translation>
+<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# րոպե առաջ}one{# minutes ago}other{# րոպե առաջ}}</translation>
 <translation id="4587589328781138893">Կայքեր</translation>
 <translation id="4594952190837476234">Այս էջը պահվել է <ph name="CREATION_TIME" />-ին, և կարող է տարբերվել առցանց տարբերակից։</translation>
@@ -652,7 +652,6 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{# ժամ առաջ}one{# hours ago}other{# ժամ առաջ}}</translation>
 <translation id="5810288467834065221">© Google LLC <ph name="YEAR" />։ Բոլոր իրավունքները պահպանված են:</translation>
 <translation id="5817918615728894473">Զուգակցել</translation>
-<translation id="5819762621475381970">– ձեր սենյակի դասավորությունը:</translation>
 <translation id="583281660410589416">Անհայտ</translation>
 <translation id="5833984609253377421">Կիսվել հղումով</translation>
 <translation id="5836192821815272682">Ներբեռնվում է Chrome-ի նոր տարբերակը…</translation>
@@ -690,7 +689,7 @@
 <translation id="6111020039983847643">օգտագործվել է</translation>
 <translation id="6112702117600201073">Էջի թարմացում</translation>
 <translation id="6127379762771434464">Տարրը հեռացվեց</translation>
-<translation id="6140912465461743537">Երկիր/Տարածաշրջան</translation>
+<translation id="6140912465461743537">Երկիր/տարածաշրջան</translation>
 <translation id="614940544461990577">Փորձեք՝</translation>
 <translation id="6154478581116148741">Այս սարքից ձեր գաղտնաբառերն արտահանելու համար կարգավորումներում միացրեք էկրանի կողպումը։</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> տվյալների խնայում</translation>
@@ -753,6 +752,7 @@
 <translation id="6545017243486555795">Մաքրել բոլոր տվյալները</translation>
 <translation id="6545864417968258051">Bluetooth սարքերի որոնում</translation>
 <translation id="6560414384669816528">Որոնել Sogou որոնման համակարգով</translation>
+<translation id="656065428026159829">Տեսնել ավելին</translation>
 <translation id="6566259936974865419">Chrome-ը խնայել է <ph name="GIGABYTES" /> ԳԲ տարածք</translation>
 <translation id="6573096386450695060">Միշտ թույլատրել</translation>
 <translation id="6573431926118603307">Ձեր մյուս սարքերում Chrome-ով բացված ներդիրները կտեսնեք այստեղ:</translation>
@@ -849,6 +849,7 @@
 <translation id="7293171162284876153">Սկսելու համար միացրեք «Համաժամացնել Chrome-ի տվյալները» կարգավորումը:</translation>
 <translation id="729975465115245577">Ձեր սարքը գաղտնաբառերի ֆայլ պահելու հավելված չունի:</translation>
 <translation id="7302081693174882195">Տեղեկություններ․ տեսակավորված է ըստ պահված տվյալների ծավալի</translation>
+<translation id="7302486331832100261">Դուք սովորաբար արգելափակում եք ծանուցումները։ Թույլատրելու համար սեղմեք «Մանրամասներ»։</translation>
 <translation id="7328017930301109123">Lite ռեժիմում Chrome-ն ավելի արագ է բեռնում էջերը և օգտագործում է մինչև 60 տոկոս պակաս թրաֆիկ:</translation>
 <translation id="7333031090786104871">Դեռ նախորդ կայքն է ավելացվում</translation>
 <translation id="7352939065658542140">ՏԵՍԱՆՅՈՒԹ</translation>

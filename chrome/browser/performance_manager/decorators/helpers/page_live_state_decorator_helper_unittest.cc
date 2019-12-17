@@ -7,7 +7,7 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "components/performance_manager/performance_manager_tab_helper.h"
+#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/performance_manager/performance_manager_test_harness.h"
 #include "components/performance_manager/test_support/page_live_state_decorator.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,6 +29,7 @@ class PageLiveStateDecoratorHelperTest
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     perf_man_ = PerformanceManagerImpl::Create(base::DoNothing());
+    registry_ = PerformanceManagerRegistry::Create();
     indicator_ = MediaCaptureDevicesDispatcher::GetInstance()
                      ->GetMediaStreamCaptureIndicator();
     auto contents = CreateTestWebContents();
@@ -40,6 +41,8 @@ class PageLiveStateDecoratorHelperTest
     helper_.reset();
     indicator_.reset();
     DeleteContents();
+    registry_->TearDown();
+    registry_.reset();
     // Have the performance manager destroy itself.
     PerformanceManagerImpl::Destroy(std::move(perf_man_));
     task_environment()->RunUntilIdle();
@@ -50,7 +53,7 @@ class PageLiveStateDecoratorHelperTest
   std::unique_ptr<content::WebContents> CreateTestWebContents() {
     std::unique_ptr<content::WebContents> contents =
         ChromeRenderViewHostTestHarness::CreateTestWebContents();
-    PerformanceManagerTabHelper::CreateForWebContents(contents.get());
+    registry_->CreatePageNodeForWebContents(contents.get());
     return contents;
   }
 
@@ -63,6 +66,7 @@ class PageLiveStateDecoratorHelperTest
  private:
   scoped_refptr<MediaStreamCaptureIndicator> indicator_;
   std::unique_ptr<PerformanceManagerImpl> perf_man_;
+  std::unique_ptr<PerformanceManagerRegistry> registry_;
   std::unique_ptr<PageLiveStateDecoratorHelper> helper_;
 };
 

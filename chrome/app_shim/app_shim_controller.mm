@@ -469,8 +469,7 @@ void AppShimController::OpenFiles(const std::vector<base::FilePath>& files) {
   if (init_state_ == InitState::kWaitingForAppToFinishLaunch) {
     launch_files_ = files;
   } else {
-    // TODO(https://crbug.com/829689): Implement me!
-    NOTIMPLEMENTED();
+    host_->FilesOpened(files);
   }
 }
 

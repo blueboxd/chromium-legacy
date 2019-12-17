@@ -25,6 +25,7 @@
 <translation id="7209941495304122410">Unesite zaporku za Windows</translation>
 <translation id="7357241217513796177">Provjerite mrežnu vezu i pokušajte ponovo.</translation>
 <translation id="7536769223115622137">Dodaj radni račun</translation>
+<translation id="7811865856574012727">Vaš administrator ograničio je prijavu uređaja na sljedećim domenama: <ph name="EMAIL_DOMAINS" />. Pokušajte ponovo putem valjanog poslovnog računa.</translation>
 <translation id="7856245195110636219">Ne možete nastaviti bez unošenja trenutačne zaporke za Windows. Obratite se administratoru sustava.</translation>
 <translation id="8639729688781680518">Zaboravili ste zaporku za Windows</translation>
 <translation id="866458870819756755">Izrada korisnika nije uspjela</translation>

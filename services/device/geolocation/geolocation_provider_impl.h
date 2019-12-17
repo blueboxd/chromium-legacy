@@ -37,7 +37,7 @@ namespace device {
 // Callback that returns the embedder's custom location provider. This callback
 // is provided to the Device Service by its embedder.
 using CustomLocationProviderCallback =
-    base::Callback<std::unique_ptr<LocationProvider>()>;
+    base::RepeatingCallback<std::unique_ptr<LocationProvider>()>;
 
 class GeolocationProviderImpl : public GeolocationProvider,
                                 public mojom::GeolocationControl,

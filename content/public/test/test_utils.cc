@@ -39,7 +39,6 @@
 #include "content/public/common/process_type.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_launcher.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/fetch/fetch_api_request_headers_map.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
@@ -323,8 +322,7 @@ void WindowedNotificationObserver::Observe(int type,
   run_loop_.Quit();
 }
 
-InProcessUtilityThreadHelper::InProcessUtilityThreadHelper()
-    : shell_context_(new TestServiceManagerContext) {
+InProcessUtilityThreadHelper::InProcessUtilityThreadHelper() {
   RenderProcessHost::SetRunRendererInProcess(true);
 }
 

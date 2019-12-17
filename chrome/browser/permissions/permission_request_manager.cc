@@ -475,14 +475,18 @@ void PermissionRequestManager::FinalizeBubble(
 
   auto* adaptive_notification_permission_ui_enabler =
       AdaptiveQuietNotificationPermissionUiEnabler::GetForProfile(profile);
-  adaptive_notification_permission_ui_enabler->RecordPermissionPromptOutcome(
-      permission_action);
   for (PermissionRequest* request : requests_) {
     // TODO(timloh): We only support dismiss and ignore embargo for permissions
     // which use PermissionRequestImpl as the other subclasses don't support
     // GetContentSettingsType.
     if (request->GetContentSettingsType() == ContentSettingsType::DEFAULT)
       continue;
+
+    if (request->GetPermissionRequestType() ==
+        PermissionRequestType::PERMISSION_NOTIFICATIONS) {
+      adaptive_notification_permission_ui_enabler
+          ->RecordPermissionPromptOutcome(permission_action);
+    }
 
     PermissionEmbargoStatus embargo_status =
         PermissionEmbargoStatus::NOT_EMBARGOED;

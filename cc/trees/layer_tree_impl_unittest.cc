@@ -1115,7 +1115,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayerLists) {
 
 TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerRegionsForSingleLayer) {
   TouchActionRegion touch_action_region;
-  touch_action_region.Union(kTouchActionNone, gfx::Rect(10, 10, 50, 50));
+  touch_action_region.Union(TouchAction::kNone, gfx::Rect(10, 10, 50, 50));
 
   LayerImpl* root = root_layer();
   root->SetBounds(gfx::Size(100, 100));
@@ -1192,7 +1192,7 @@ TEST_F(LayerTreeImplTest,
   ASSERT_FALSE(uninvertible_transform.IsInvertible());
 
   TouchActionRegion touch_action_region;
-  touch_action_region.Union(kTouchActionNone, gfx::Rect(10, 10, 50, 50));
+  touch_action_region.Union(TouchAction::kNone, gfx::Rect(10, 10, 50, 50));
 
   LayerImpl* layer = AddLayer<LayerImpl>();
   layer->SetBounds(gfx::Size(100, 100));
@@ -1260,7 +1260,7 @@ TEST_F(LayerTreeImplTest,
 TEST_F(LayerTreeImplTest,
        HitCheckingTouchHandlerRegionsForSinglePositionedLayer) {
   TouchActionRegion touch_action_region;
-  touch_action_region.Union(kTouchActionNone, gfx::Rect(10, 10, 50, 50));
+  touch_action_region.Union(TouchAction::kNone, gfx::Rect(10, 10, 50, 50));
 
   // This layer is positioned, and hit testing should correctly know where the
   // layer is located.
@@ -1333,7 +1333,7 @@ TEST_F(LayerTreeImplTest,
   CreateTransformNode(page_scale_layer);
 
   TouchActionRegion touch_action_region;
-  touch_action_region.Union(kTouchActionNone, gfx::Rect(10, 10, 30, 30));
+  touch_action_region.Union(TouchAction::kNone, gfx::Rect(10, 10, 30, 30));
   LayerImpl* test_layer = AddLayer<LayerImpl>();
   test_layer->SetBounds(gfx::Size(50, 50));
   test_layer->SetDrawsContent(true);
@@ -1472,7 +1472,7 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerRegionsForSimpleClippedLayer) {
   CreateClipNode(clipping_layer);
 
   TouchActionRegion touch_action_region;
-  touch_action_region.Union(kTouchActionNone, gfx::Rect(10, 10, 50, 50));
+  touch_action_region.Union(TouchAction::kNone, gfx::Rect(10, 10, 50, 50));
 
   LayerImpl* child = AddLayer<LayerImpl>();
   child->SetBounds(gfx::Size(300, 300));
@@ -1554,7 +1554,7 @@ TEST_F(LayerTreeImplTest,
   CreateClipNode(clipping_layer);
 
   TouchActionRegion touch_action_region;
-  touch_action_region.Union(kTouchActionNone, gfx::Rect(0, 0, 300, 300));
+  touch_action_region.Union(TouchAction::kNone, gfx::Rect(0, 0, 300, 300));
 
   LayerImpl* child = AddLayer<LayerImpl>();
   child->SetBounds(gfx::Size(300, 300));
@@ -1616,7 +1616,7 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerOverlappingRegions) {
   touch_layer->SetDrawsContent(true);
   touch_layer->SetHitTestable(true);
   TouchActionRegion touch_action_region;
-  touch_action_region.Union(kTouchActionNone, gfx::Rect(0, 0, 50, 50));
+  touch_action_region.Union(TouchAction::kNone, gfx::Rect(0, 0, 50, 50));
   touch_layer->SetTouchActionRegion(touch_action_region);
   CopyProperties(root, touch_layer);
 
@@ -1678,7 +1678,7 @@ TEST_F(LayerTreeImplTest, HitTestingTouchHandlerRegionsForLayerThatIsNotDrawn) {
   root->SetHitTestable(true);
 
   TouchActionRegion touch_action_region;
-  touch_action_region.Union(kTouchActionNone, gfx::Rect(10, 10, 30, 30));
+  touch_action_region.Union(TouchAction::kNone, gfx::Rect(10, 10, 30, 30));
   LayerImpl* test_layer = AddLayer<LayerImpl>();
   test_layer->SetBounds(gfx::Size(50, 50));
   test_layer->SetDrawsContent(false);

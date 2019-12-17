@@ -24,7 +24,6 @@
 <translation id="1171770572613082465">Допрете го копчето „Популарни“ за да ги разгледате популарните веб-сајтови</translation>
 <translation id="1173894706177603556">Преименувај</translation>
 <translation id="1178581264944972037">Пауза</translation>
-<translation id="118069123878619799">- вашите физички карактеристики, како висината</translation>
 <translation id="1181037720776840403">Отстрани</translation>
 <translation id="1188239144602654184">Влези во AR</translation>
 <translation id="1197267115302279827">Премести обележувачи</translation>
@@ -62,7 +61,6 @@
 <translation id="1384959399684842514">Преземањето е паузирано</translation>
 <translation id="1386674309198842382">Активен пред <ph name="LAST_UPDATED" /> дена</translation>
 <translation id="1397811292916898096">Пребарувајте со <ph name="PRODUCT_NAME" /></translation>
-<translation id="1404122904123200417">Вградено во <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">„Не ме следи“</translation>
 <translation id="1407135791313364759">Отвори ги сите</translation>
 <translation id="1409426117486808224">Поедноставен приказ за отворени картички</translation>
@@ -215,6 +213,7 @@
 <translation id="2534155362429831547">Избришани се <ph name="NUMBER_OF_ITEMS" /> ставки</translation>
 <translation id="2536728043171574184">Се прикажува офлајн копија на страницата</translation>
 <translation id="2537178555904266562">Грешка при синхронизирање на лозинките</translation>
+<translation id="2537296579376733324">Сите колачиња, само на овој сајт</translation>
 <translation id="2546283357679194313">Колачиња и податоци од сајтот</translation>
 <translation id="2567385386134582609">СЛИКА</translation>
 <translation id="257088987046510401">Теми</translation>
@@ -472,6 +471,7 @@
 <translation id="4565377596337484307">Сокриј ја лозинката</translation>
 <translation id="4570913071927164677">Детали</translation>
 <translation id="4572422548854449519">Најавете се на управувана сметка</translation>
+<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Пред # минута}one{Пред # минута}other{Пред # минути}}</translation>
 <translation id="4587589328781138893">Сајтови</translation>
 <translation id="4594952190837476234">Офлајн страницава е од <ph name="CREATION_TIME" /> и може да се разликува од онлајн верзијата.</translation>
@@ -652,7 +652,6 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{Пред # час}one{Пред # час}other{Пред # часа}}</translation>
 <translation id="5810288467834065221">Авторски права <ph name="YEAR" /> Google LLC. Сите права се задржани.</translation>
 <translation id="5817918615728894473">Спари</translation>
-<translation id="5819762621475381970">- распоредот на вашата соба</translation>
 <translation id="583281660410589416">Непознат</translation>
 <translation id="5833984609253377421">Сподели го линкот</translation>
 <translation id="5836192821815272682">Се презема ажурирање на Chrome…</translation>
@@ -753,6 +752,7 @@
 <translation id="6545017243486555795">Избриши ги сите податоци</translation>
 <translation id="6545864417968258051">Скенирање за Bluetooth</translation>
 <translation id="6560414384669816528">Пребарување со Sogou</translation>
+<translation id="656065428026159829">Прикажи повеќе</translation>
 <translation id="6566259936974865419">Chrome ви заштеди <ph name="GIGABYTES" /> гб</translation>
 <translation id="6573096386450695060">Секогаш дозволувај</translation>
 <translation id="6573431926118603307">Картичките што сте ги отвориле во Chrome на другите уреди ќе се појават тука.</translation>
@@ -849,6 +849,7 @@
 <translation id="7293171162284876153">За да започне синхронизацијата, вклучете „Синхронизирајте ги податоците од Chrome“.</translation>
 <translation id="729975465115245577">Уредот нема апликација за складирање на датотеката со лозинки.</translation>
 <translation id="7302081693174882195">Детали: подредени по количината на зачувани податоци</translation>
+<translation id="7302486331832100261">Вообичаено ги блокирате известувањата. За да ги дозволите, допрете „Детали“.</translation>
 <translation id="7328017930301109123">Во Lite-режим, Chrome побрзо ги вчитува страниците и користи до 60 проценти помалку интернет.</translation>
 <translation id="7333031090786104871">Сè уште се додава претходниот сајт</translation>
 <translation id="7352939065658542140">ВИДЕО</translation>

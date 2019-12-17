@@ -32,7 +32,8 @@ namespace device {
 // one call to Start().
 class LocationApiAdapterAndroid {
  public:
-  using OnGeopositionCB = base::Callback<void(const mojom::Geoposition&)>;
+  using OnGeopositionCB =
+      base::RepeatingCallback<void(const mojom::Geoposition&)>;
 
   // Starts the underlying location provider.
   // Called on |task_runner_|.

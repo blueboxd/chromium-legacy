@@ -24,7 +24,6 @@
 <translation id="1171770572613082465">"शीर्ष साइटहरू" नामक बटनमा ट्याप गरी लोकप्रिय वेबसाइटहरू हेर्नुहोस्</translation>
 <translation id="1173894706177603556">पुन: नामाकरण गर्नुहोस्</translation>
 <translation id="1178581264944972037">पज गर्नुहोस्</translation>
-<translation id="118069123878619799">- उचाइ जस्ता तपाईंको शारीरिक विशेषता</translation>
 <translation id="1181037720776840403">हटाउनुहोस्</translation>
 <translation id="1188239144602654184">AR को सत्र सुरु गर्नुहोस्</translation>
 <translation id="1197267115302279827">बुकमार्कहरू सार्नुहोस्</translation>
@@ -62,7 +61,6 @@
 <translation id="1384959399684842514">डाउनलोड रोकिएको छ</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> दिनअघि सक्रिय</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> मार्फत खोज्नुहोस्</translation>
-<translation id="1404122904123200417"><ph name="WEBSITE_URL" /> मा एम्बेड भएको</translation>
 <translation id="1406000523432664303">“ट्रयाक नगर्नुहोस्”</translation>
 <translation id="1407135791313364759">सबै खोल्नुहोस्</translation>
 <translation id="1409426117486808224">खुला ट्याबहरूका लागि सरलीकृत दृश्य</translation>
@@ -215,6 +213,7 @@
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> वस्तुहरू मेटाइए</translation>
 <translation id="2536728043171574184">यो पृष्ठको एक अफलाइन प्रतिलिपि हेर्दै</translation>
 <translation id="2537178555904266562">पासवर्डहरू सिंक गर्ने क्रममा त्रुटि भयो</translation>
+<translation id="2537296579376733324">सबै कुकीहरू, यो साइटमा मात्र</translation>
 <translation id="2546283357679194313">कुकीहरू र साइट डाटा</translation>
 <translation id="2567385386134582609">छवि</translation>
 <translation id="257088987046510401">थिमहरू</translation>
@@ -471,6 +470,7 @@
 <translation id="4565377596337484307">पासवर्ड लुकाउनुहोस्</translation>
 <translation id="4570913071927164677">विवरणहरू</translation>
 <translation id="4572422548854449519">व्यवस्थापन गरिएको खातामा साइन इन गर्नुहोस्</translation>
+<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# मिनेटअघि}other{# मिनेटअघि}}</translation>
 <translation id="4587589328781138893">साइटहरू</translation>
 <translation id="4594952190837476234">यो पृष्ठ <ph name="CREATION_TIME" /> मा सिर्जना गरिएको हुँदा अनलाइन संस्करणभन्दा भिन्न हुन सक्छ।</translation>
@@ -651,7 +651,6 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{# घन्टा अघि}other{# घन्टा अघि}}</translation>
 <translation id="5810288467834065221">प्रतिलिपि अधिकार <ph name="YEAR" /> Google LLC। सर्वाधिकार सुरक्षित।</translation>
 <translation id="5817918615728894473">जोडा  बनाउनुहोस्</translation>
-<translation id="5819762621475381970">- तपाईंको कोठाको प्रारूप</translation>
 <translation id="583281660410589416">अज्ञात</translation>
 <translation id="5833984609253377421">लिंक आदान प्रदान गर्नुहोस्</translation>
 <translation id="5836192821815272682">Chrome को अद्यावधिक डाउनलोड गर्दै…</translation>
@@ -752,6 +751,7 @@
 <translation id="6545017243486555795">सबै डेटा खाली गर्नुहोस्</translation>
 <translation id="6545864417968258051">ब्लुटुथ स्क्यान गर्दै</translation>
 <translation id="6560414384669816528">Sogou मार्फत खोजी गर्नुहोस्</translation>
+<translation id="656065428026159829">थप हेर्नुहोस्</translation>
 <translation id="6566259936974865419">Chrome ले तपाईंको <ph name="GIGABYTES" /> जि.बि. बचाएको छ</translation>
 <translation id="6573096386450695060">सधैँ अनुमति दिनुहोस्</translation>
 <translation id="6573431926118603307">तपाईँले आफ्ना अन्य यन्त्रहरूमा Chrome मा खोल्नुभएका ट्याबहरू यहाँ देखिनेछन्।</translation>
@@ -848,6 +848,7 @@
 <translation id="7293171162284876153">सिंक गर्ने कार्य सुरु गर्न "Chrome को आफ्नो डेटा सिंक गर्नुहोस्"।</translation>
 <translation id="729975465115245577">तपाईंको यन्त्रमा पासवर्डहरूको फाइल भण्डारण गर्ने कुनै अनुप्रयोग छैन।</translation>
 <translation id="7302081693174882195">विवरणहरू: बचत गरिएको डेटाको मात्राअनुसार क्रमबद्ध गरिएको</translation>
+<translation id="7302486331832100261">तपाईं सामान्यतया सूचनाहरूमाथि रोक लगाउनुहुन्छ। अनुमति दिन विवरणहरूमा ट्याप गर्नुहोस्।</translation>
 <translation id="7328017930301109123">लाइट मोडमा हुँदा Chrome ले पृष्ठहरू अझ छिटो लोड गर्नुका साथै ६० प्रतिशतसम्म कम डेटा प्रयोग गर्छ।</translation>
 <translation id="7333031090786104871">अघिल्लो साइट अझै थपिँदै</translation>
 <translation id="7352939065658542140">भिडियो</translation>

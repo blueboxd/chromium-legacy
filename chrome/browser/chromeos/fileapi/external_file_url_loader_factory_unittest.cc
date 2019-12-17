@@ -20,7 +20,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
@@ -106,7 +105,6 @@ class ExternalFileURLLoaderFactoryTest : public testing::Test {
 
  private:
   content::BrowserTaskEnvironment task_environment_;
-  content::TestServiceManagerContext context_;
 
   std::unique_ptr<ExternalFileURLLoaderFactory> url_loader_factory_;
 

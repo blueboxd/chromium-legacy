@@ -37,7 +37,7 @@ std::string GetUnhashedClientTagFromAutofillWalletSpecifics(
     case sync_pb::AutofillWalletSpecifics::CUSTOMER_DATA:
       return specifics.customer_data().id();
     case sync_pb::AutofillWalletSpecifics::CREDIT_CARD_CLOUD_TOKEN_DATA:
-      return specifics.cloud_token_data().masked_card_id();
+      return specifics.cloud_token_data().instrument_token();
     case sync_pb::AutofillWalletSpecifics::UNKNOWN:
       NOTREACHED();
       return std::string();

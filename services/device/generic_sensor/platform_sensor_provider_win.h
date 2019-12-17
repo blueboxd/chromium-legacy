@@ -35,19 +35,19 @@ class PlatformSensorProviderWin final : public PlatformSensorProvider {
   // PlatformSensorProvider interface implementation.
   void CreateSensorInternal(mojom::SensorType type,
                             SensorReadingSharedBuffer* reading_buffer,
-                            const CreateSensorCallback& callback) override;
+                            CreateSensorCallback callback) override;
 
  private:
   void InitSensorManager();
   void OnInitSensorManager(mojom::SensorType type,
                            SensorReadingSharedBuffer* reading_buffer,
-                           const CreateSensorCallback& callback);
+                           CreateSensorCallback callback);
   std::unique_ptr<PlatformSensorReaderWinBase> CreateSensorReader(
       mojom::SensorType type);
   void SensorReaderCreated(
       mojom::SensorType type,
       SensorReadingSharedBuffer* reading_buffer,
-      const CreateSensorCallback& callback,
+      CreateSensorCallback callback,
       std::unique_ptr<PlatformSensorReaderWinBase> sensor_reader);
 
   scoped_refptr<base::SingleThreadTaskRunner> com_sta_task_runner_;

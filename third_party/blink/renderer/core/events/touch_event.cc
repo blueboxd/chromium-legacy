@@ -54,8 +54,7 @@ const WebTouchEvent* GetWebTouchEvent(const WebCoalescedInputEvent& event) {
 }
 }  // namespace
 
-TouchEvent::TouchEvent()
-    : current_touch_action_(TouchAction::kTouchActionAuto) {}
+TouchEvent::TouchEvent() : current_touch_action_(TouchAction::kAuto) {}
 
 TouchEvent::TouchEvent(const WebCoalescedInputEvent& event,
                        TouchList* touches,
@@ -92,7 +91,7 @@ TouchEvent::TouchEvent(const AtomicString& type,
       touches_(TouchList::Create(initializer->touches())),
       target_touches_(TouchList::Create(initializer->targetTouches())),
       changed_touches_(TouchList::Create(initializer->changedTouches())),
-      current_touch_action_(TouchAction::kTouchActionAuto) {}
+      current_touch_action_(TouchAction::kAuto) {}
 
 TouchEvent::~TouchEvent() = default;
 
@@ -127,7 +126,7 @@ void TouchEvent::preventDefault() {
       // Only enable the warning when the current touch action is auto because
       // an author may use touch action but call preventDefault for interop with
       // browsers that don't support touch-action.
-      if (current_touch_action_ == TouchAction::kTouchActionAuto) {
+      if (current_touch_action_ == TouchAction::kAuto) {
         id = "PreventDefaultPassive";
         message =
             "Unable to preventDefault inside passive event listener due to "
@@ -148,7 +147,7 @@ void TouchEvent::preventDefault() {
        type() == event_type_names::kTouchmove) &&
       local_dom_window) {
     auto* local_frame = DynamicTo<LocalFrame>(view()->GetFrame());
-    if (local_frame && current_touch_action_ == TouchAction::kTouchActionAuto) {
+    if (local_frame && current_touch_action_ == TouchAction::kAuto) {
       switch (HandlingPassive()) {
         case PassiveMode::kNotPassiveDefault:
           UseCounter::Count(local_dom_window->document(),

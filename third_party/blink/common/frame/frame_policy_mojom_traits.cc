@@ -12,7 +12,8 @@ bool StructTraits<blink::mojom::FramePolicyDataView, blink::FramePolicy>::Read(
   out->allowed_to_download = in.allowed_to_download();
 
   return in.ReadSandboxFlags(&out->sandbox_flags) &&
-         in.ReadContainerPolicy(&out->container_policy);
+         in.ReadContainerPolicy(&out->container_policy) &&
+         in.ReadRequiredDocumentPolicy(&out->required_document_policy);
 }
 
 }  // namespace mojo

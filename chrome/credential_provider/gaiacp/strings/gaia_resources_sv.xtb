@@ -25,6 +25,7 @@
 <translation id="7209941495304122410">Ange lösenord för Windows</translation>
 <translation id="7357241217513796177">Kontrollera nätverksanslutningen och försök igen.</translation>
 <translation id="7536769223115622137">Lägg till jobbkonto</translation>
+<translation id="7811865856574012727">Adminstratören har begränsat enhetsinloggning till följande domäner: <ph name="EMAIL_DOMAINS" />. Testa igen med ett giltigt jobbkonto.</translation>
 <translation id="7856245195110636219">Det går inte att fortsätta utan att ange det nuvarande lösenordet för Windows. Kontakta systemadministratören.</translation>
 <translation id="8639729688781680518">Jag har glömt lösenordet för Windows</translation>
 <translation id="866458870819756755">Det gick inte att skapa en användare.</translation>

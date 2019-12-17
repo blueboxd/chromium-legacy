@@ -582,6 +582,7 @@ void AudioDecoderForMixer::OnAudioReadyForPlayback(int64_t mixer_delay) {
 
 void AudioDecoderForMixer::OnEosPlayed() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  CheckBufferComplete();
   delegate_->OnEndOfStream();
 }
 

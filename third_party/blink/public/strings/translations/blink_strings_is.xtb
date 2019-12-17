@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">Lengdu þennan texta í <ph name="MIN_CHARACTERS" /> stafi eða meira (sem stendur notarðu <ph name="CURRENT_LENGTH" /> stafi).</translation>
 <translation id="383465348367842624">Hlutinn sem kemur á eftir „<ph name="ATSIGN" />“ á ekki að innihalda táknið „<ph name="INVALIDCHARACTER" />“.</translation>
 <translation id="3846214748874656680">Hætta að nota allan skjáinn</translation>
-<translation id="3889183436948184105">endurskoðun</translation>
 <translation id="3920932319529768807">samantekt</translation>
 <translation id="3924558731517983934">forrit</translation>
 <translation id="3944740393230681990">formáli</translation>
@@ -115,6 +114,7 @@
 <translation id="4812940957355064477">Sláðu inn tölu.</translation>
 <translation id="4912536737030637138">færsla í heimildaskrá</translation>
 <translation id="492244087561876220">athugasemd</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> valið</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> valin</translation>
 <translation id="4992066212339426712">Hætta að þagga</translation>
 <translation id="49969490063480558">Sláðu inn hluta á eftir „<ph name="ATSIGN" />“. „<ph name="INVALIDADDRESS" />“ er ólokið.</translation>
@@ -219,6 +219,7 @@
 <translation id="7888071071722539607">Hafðu „<ph name="ATSIGN" />“ með í netfanginu. „<ph name="ATSIGN" />“ vantar í „<ph name="INVALIDADDRESS" />“.</translation>
 <translation id="7891486169920085145">skiptir</translation>
 <translation id="795667975304826397">Engin skrá valin</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> ekki valið</translation>
 <translation id="8034303206267677282">mikill</translation>
 <translation id="8053789581856978548">textareitur fyrir leit</translation>
 <translation id="8057695513531652401">tilkynning</translation>
@@ -257,7 +258,6 @@
 <translation id="8987927404178983737">Mánuður</translation>
 <translation id="901493112792887934">núverandi tími í sekúndum</translation>
 <translation id="901834265349196618">tölvupóstur</translation>
-<translation id="9023835124071926463">athugasemdahluti</translation>
 <translation id="9048119486235211610">yfirlit</translation>
 <translation id="9062295712474918030">skjal</translation>
 <translation id="9093215626363556771">loka mynd í mynd</translation>

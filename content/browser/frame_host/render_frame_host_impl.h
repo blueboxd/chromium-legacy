@@ -1012,6 +1012,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
                               const url::Origin& source_origin,
                               const base::Optional<url::Origin>& target_origin);
 
+  // Returns true if the frame is embedded in a Portal.
+  bool InsidePortal();
+
   blink::mojom::FrameVisibility visibility() const { return visibility_; }
 
   // A CommitCallbackInterceptor is used to modify parameters for or cancel a
@@ -1296,7 +1299,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void SuddenTerminationDisablerChanged(
       bool present,
       blink::mojom::SuddenTerminationDisablerType disabler_type) override;
-  void ReceivedUserGestureBeforeNavigationChanged(bool value) override;
+  void HadStickyUserActivationBeforeNavigationChanged(bool value) override;
 
  protected:
   friend class RenderFrameHostFactory;

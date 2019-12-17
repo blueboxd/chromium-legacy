@@ -30,7 +30,8 @@ class AddSupervisionAPIServer extends PostMessageAPIServer {
     super(webviewElement, METHOD_LIST, targetURL, originURLPrefix);
 
     this.addSupervisionHandler_ =
-        addSupervision.mojom.AddSupervisionHandler.getRemote();
+        addSupervision.mojom.AddSupervisionHandler.getRemote(
+            /*useBrowserInterfaceBroker=*/ true);
 
     this.registerMethod('logOut', this.logOut.bind(this));
     this.registerMethod(

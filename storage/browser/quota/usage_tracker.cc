@@ -262,8 +262,6 @@ void UsageTracker::AccumulateClientHostUsage(base::OnceClosure callback,
     info->usage = 0;
 
   switch (client) {
-    case QuotaClient::kUnknown:
-      break;
     case QuotaClient::kFileSystem:
       info->usage_breakdown->fileSystem += usage;
       break;

@@ -5,6 +5,7 @@
 #include "weblayer/test/weblayer_browser_test.h"
 
 #include "base/files/file_path.h"
+#include "build/build_config.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "weblayer/public/navigation.h"
@@ -67,6 +68,8 @@ class OneShotNavigationObserver : public NavigationObserver {
 
 using NavigationBrowserTest = WebLayerBrowserTest;
 
+// Disabled on Windows, see crbug.com/1034764
+#if !defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, NoError) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
@@ -147,5 +150,6 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, HttpConnectivityError) {
   EXPECT_EQ(observer.load_error(), Navigation::kConnectivityError);
   EXPECT_EQ(observer.navigation_state(), NavigationState::kFailed);
 }
+#endif  // !defined(OS_WIN)
 
 }  // namespace weblayer

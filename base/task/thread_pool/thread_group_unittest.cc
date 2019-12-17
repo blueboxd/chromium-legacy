@@ -83,8 +83,6 @@ class ThreadPostingTasks : public SimpleThread {
 
  private:
   void Run() override {
-    EXPECT_FALSE(factory_.task_runner()->RunsTasksInCurrentSequence());
-
     for (size_t i = 0; i < kNumTasksPostedPerThread; ++i)
       EXPECT_TRUE(factory_.PostTask(post_nested_task_, OnceClosure()));
   }
@@ -328,7 +326,7 @@ TEST_P(ThreadGroupTestAllExecutionModes, SequencedRunsTasksInCurrentSequence) {
   task_runner->PostTask(
       FROM_HERE,
       BindOnce(
-          [](scoped_refptr<TaskRunner> sequenced_task_runner,
+          [](scoped_refptr<SequencedTaskRunner> sequenced_task_runner,
              WaitableEvent* task_ran) {
             EXPECT_FALSE(sequenced_task_runner->RunsTasksInCurrentSequence());
             task_ran->Signal();

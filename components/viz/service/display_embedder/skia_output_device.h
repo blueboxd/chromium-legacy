@@ -37,6 +37,11 @@ namespace gl {
 class GLImage;
 }
 
+namespace gpu {
+class MemoryTracker;
+class MemoryTypeTracker;
+}  // namespace gpu
+
 namespace viz {
 
 class SkiaOutputDevice {
@@ -71,6 +76,7 @@ class SkiaOutputDevice {
                                    const gfx::Size& pixel_size)>;
   SkiaOutputDevice(
       bool need_swap_semaphore,
+      gpu::MemoryTracker* memory_tracker,
       DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
   virtual ~SkiaOutputDevice();
 
@@ -159,6 +165,8 @@ class SkiaOutputDevice {
 
   // RGBX format is emulated with RGBA.
   bool is_emulated_rgbx_ = false;
+
+  std::unique_ptr<gpu::MemoryTypeTracker> memory_type_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputDevice);
 };

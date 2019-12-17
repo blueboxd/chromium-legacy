@@ -25,6 +25,7 @@
 <translation id="7209941495304122410">Wpisz hasło do Windows</translation>
 <translation id="7357241217513796177">Upewnij się, że masz połączenie sieciowe, i spróbuj ponownie.</translation>
 <translation id="7536769223115622137">Dodaj konto do pracy</translation>
+<translation id="7811865856574012727">Administrator ograniczył logowanie na urządzeniu do tych domen: <ph name="EMAIL_DOMAINS" />. Spróbuj ponownie, używając odpowiedniego konta do pracy.</translation>
 <translation id="7856245195110636219">Nie można przejść dalej bez wpisania obecnego hasła do Windows. Skontaktuj się z administratorem systemu.</translation>
 <translation id="8639729688781680518">Nie pamiętam hasła do Windows</translation>
 <translation id="866458870819756755">Nie udało się utworzyć użytkownika.</translation>

@@ -30,7 +30,6 @@ source_set("page_info") {
     "//ios/chrome/common",
     "//ios/chrome/common/colors",
     "//ios/web",
-    "//ios/web/common",
     "//ios/web/public/security",
     "//ui/base",
     "//ui/gfx",

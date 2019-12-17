@@ -51,30 +51,41 @@ def lint(host, options):
     # (the default Port for this host) and it would work the same.
 
     failures = []
-    for port_to_lint in ports_to_lint:
-        expectations_dict = port_to_lint.all_expectations_dict()
-
-        for path in port_to_lint.extra_expectations_files():
+    wpt_overrides_exps_path = host.filesystem.join(
+        ports_to_lint[0].web_tests_dir(), 'WPTOverrideExpectations')
+    web_gpu_exps_path = host.filesystem.join(
+        ports_to_lint[0].web_tests_dir(), 'WebGPUExpectations')
+    paths = [wpt_overrides_exps_path, web_gpu_exps_path]
+    expectations_dict = {}
+    for path in paths:
+        if host.filesystem.exists(path):
+            expectations_dict[path] = host.filesystem.read_text_file(path)
+    for port in ports_to_lint:
+        expectations_dict.update(port.all_expectations_dict())
+        for path in port.extra_expectations_files():
             if host.filesystem.exists(path):
                 expectations_dict[path] = host.filesystem.read_text_file(path)
-
-        for expectations_file in expectations_dict:
-
-            if expectations_file in files_linted:
-                continue
-
-            try:
-                test_expectations.TestExpectations(
-                    port_to_lint,
-                    expectations_dict={expectations_file: expectations_dict[expectations_file]},
-                    is_lint_mode=True)
-            except test_expectations.ParseError as error:
+    for path, content in expectations_dict.items():
+        try:
+            test_expectations.TestExpectations(
+                ports_to_lint[0],
+                expectations_dict={path: content},
+                is_lint_mode=True)
+        except test_expectations.ParseError as error:
+            _log.error('')
+            for warning in error.warnings:
+                _log.error(warning)
+                failures.append('%s: %s' % (path, warning))
                 _log.error('')
-                for warning in error.warnings:
-                    _log.error(warning)
-                    failures.append('%s: %s' % (expectations_file, warning))
+        for lineno, line in enumerate(content.split('\n'), 1):
+            if line.strip().startswith('Bug('):
+                error = (("%s:%d Expectation '%s' has the Bug(...) token, "
+                          "The token has been removed in the new expectations format") %
+                          (host.filesystem.basename(path), lineno, line))
+                _log.error(error)
+                failures.append(error)
                 _log.error('')
-            files_linted.add(expectations_file)
+
     return failures
 
 

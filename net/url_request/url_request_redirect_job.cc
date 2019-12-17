@@ -84,7 +84,6 @@ bool URLRequestRedirectJob::CopyFragmentOnRedirect(const GURL& location) const {
 
 void URLRequestRedirectJob::StartAsync() {
   DCHECK(request_);
-  DCHECK(request_->status().is_success());
 
   receive_headers_end_ = base::TimeTicks::Now();
   response_time_ = base::Time::Now();

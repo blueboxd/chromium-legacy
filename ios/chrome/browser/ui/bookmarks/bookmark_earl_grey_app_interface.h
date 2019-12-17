@@ -21,6 +21,21 @@
                                        thirdURL:(NSString*)thirdURL
                                       fourthURL:(NSString*)fourthURL;
 
+// Checks that the promo has already been seen or not.
++ (NSError*)verifyPromoAlreadySeen:(BOOL)seen;
+
+// Checks that the promo has already been seen or not.
++ (void)setPromoAlreadySeen:(BOOL)seen;
+
+// Sets that the promo has already been seen |times| number of times.
++ (void)setPromoAlreadySeenNumberOfTimes:(int)times;
+
+// Returns the number of times a Promo has been seen.
++ (int)numberOfTimesPromoAlreadySeen;
+
+// Sets up a FakeIdentity and returns the email of this Identity.
++ (NSString*)setupFakeIdentity;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_EARL_GREY_APP_INTERFACE_H_

@@ -39,6 +39,8 @@ class WebAppUninstallDialog {
       const AppId& app_id,
       OnWebAppUninstallDialogClosed closed_callback) = 0;
 
+  virtual void SetDialogShownCallbackForTesting(base::OnceClosure callback) = 0;
+
  protected:
   WebAppUninstallDialog() = default;
 };

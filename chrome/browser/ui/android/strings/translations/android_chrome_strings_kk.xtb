@@ -24,7 +24,6 @@
 <translation id="1171770572613082465">"Танымал сайт" түймесін түрту арқылы танымал веб-сайттарды көріңіз.</translation>
 <translation id="1173894706177603556">Атын өзгерту</translation>
 <translation id="1178581264944972037">Кідірту</translation>
-<translation id="118069123878619799">– бойыңыз сияқты физикалық сипаттар;</translation>
 <translation id="1181037720776840403">Өшіру</translation>
 <translation id="1188239144602654184">AR режиміне кіру</translation>
 <translation id="1197267115302279827">Бетбелгілерді жылжыту</translation>
@@ -62,7 +61,6 @@
 <translation id="1384959399684842514">Жүктеу кідіртілді</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> күн бұрын қосылған.</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> арқылы іздеу</translation>
-<translation id="1404122904123200417"><ph name="WEBSITE_URL" /> мекенжайына ендірілген</translation>
 <translation id="1406000523432664303">"Бақыламау"</translation>
 <translation id="1407135791313364759">Барлығын ашу</translation>
 <translation id="1409426117486808224">Ашық қойындылардың қарапайым көрінісі</translation>
@@ -215,6 +213,7 @@
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> элемент жойылды.</translation>
 <translation id="2536728043171574184">Бұл беттің желіден тыс күйдегі көшірмесі көрсетілуде</translation>
 <translation id="2537178555904266562">Құпия сөздерді синхрондау кезінде қате шықты</translation>
+<translation id="2537296579376733324">Барлық cookie файлдары осы сайтта ғана бар.</translation>
 <translation id="2546283357679194313">Cookie файлдары және торап деректері</translation>
 <translation id="2567385386134582609">КЕСКІН</translation>
 <translation id="257088987046510401">Тақырыптар</translation>
@@ -472,6 +471,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="4565377596337484307">Құпия сөзді жасыру</translation>
 <translation id="4570913071927164677">Мәліметтер</translation>
 <translation id="4572422548854449519">Басқарылатын есептік жазбаға кіру</translation>
+<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# минут бұрын}other{# минут бұрын}}</translation>
 <translation id="4587589328781138893">Сайттар</translation>
 <translation id="4594952190837476234">Бұл офлайн бет <ph name="CREATION_TIME" /> күні жасалған, сондықтан онлайн нұсқасынан өзгеше болуы мүмкін.</translation>
@@ -652,7 +652,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="5809361687334836369">{HOURS,plural, =1{# сағат бұрын}other{# сағат бұрын}}</translation>
 <translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. Барлық құқықтары қорғалған.</translation>
 <translation id="5817918615728894473">Жұптау</translation>
-<translation id="5819762621475381970">– бөлменің жобасы.</translation>
 <translation id="583281660410589416">Белгісіз</translation>
 <translation id="5833984609253377421">Сілтемені бөлісу</translation>
 <translation id="5836192821815272682">Chrome браузерінің жаңа нұсқасы жүктеп алынуда…</translation>
@@ -753,6 +752,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="6545017243486555795">Барлық деректерді өшіру</translation>
 <translation id="6545864417968258051">Bluetooth құрылғыларын іздеу</translation>
 <translation id="6560414384669816528">Sogou қызметімен іздеу</translation>
+<translation id="656065428026159829">Басқаларын көру</translation>
 <translation id="6566259936974865419">Chrome <ph name="GIGABYTES" /> ГБ деректі сақтады</translation>
 <translation id="6573096386450695060">Әрқашан рұқсат беру</translation>
 <translation id="6573431926118603307">Басқа құрылғыларда Chrome браузерінен ашылған қойындылар осы жерде шығады.</translation>
@@ -849,6 +849,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="7293171162284876153">Синхрондауды бастау үшін "Chrome деректерін синхрондау" параметрін қосыңыз.</translation>
 <translation id="729975465115245577">Құрылғыңызда құпия сөздер файлын сақтайтын қолданба орнатылмаған.</translation>
 <translation id="7302081693174882195">Мәліметтер: сақталған деректер көлемі бойынша сұрыпталды</translation>
+<translation id="7302486331832100261">Әдетте хабарландыруларға тыйым саласыз. Рұқсат беру үшін "Мәліметтер" түймесін түртіңіз.</translation>
 <translation id="7328017930301109123">Lite режимінде Chrome беттерді жылдамырақ жүктейді және трафикті 60 пайызға дейін аз жұмсайды.</translation>
 <translation id="7333031090786104871">Алдыңғы сайт әлі енгізілуде</translation>
 <translation id="7352939065658542140">БЕЙНЕ</translation>

@@ -44,6 +44,15 @@ enum SectionJudgement : int {
 // from SectionJudgement values.
 template <class Traits>
 int JudgeSection(size_t image_size, const typename Traits::Elf_Shdr* section) {
+  // BufferRegion uses |size_t| this can be 32-bit in some cases. For Elf64
+  // |sh_addr|, |sh_offset| and |sh_size| are 64-bit this can result in
+  // overflows in the subsequent validation steps.
+  if (!base::IsValueInRangeForNumericType<size_t>(section->sh_addr) ||
+      !base::IsValueInRangeForNumericType<size_t>(section->sh_offset) ||
+      !base::IsValueInRangeForNumericType<size_t>(section->sh_size)) {
+    return SECTION_IS_MALFORMED;
+  }
+
   // Examine RVA range: Reject if numerical overflow may happen.
   if (!BufferRegion{section->sh_addr, section->sh_size}.FitsIn(kSizeBound))
     return SECTION_IS_MALFORMED;
@@ -219,6 +228,9 @@ std::unique_ptr<ReferenceWriter> DisassemblerElf<Traits>::MakeWriteRelocs(
 template <class Traits>
 bool DisassemblerElf<Traits>::ParseHeader() {
   BufferSource source(image_);
+  // Ensure any offsets will fit within the |image_|'s bounds.
+  if (!base::IsValueInRangeForNumericType<offset_t>(image_.size()))
+    return false;
 
   // Ensures |header_| is valid later on.
   if (!QuickDetect(image_))

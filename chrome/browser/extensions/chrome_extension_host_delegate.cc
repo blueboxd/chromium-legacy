@@ -16,8 +16,7 @@
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "components/app_modal/javascript_dialog_manager.h"
-#include "components/performance_manager/performance_manager_tab_helper.h"
-#include "components/performance_manager/public/performance_manager.h"
+#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_system.h"
 
@@ -33,9 +32,9 @@ void ChromeExtensionHostDelegate::OnExtensionHostCreated(
   PrefsTabHelper::CreateForWebContents(web_contents);
   apps::AudioFocusWebContentsObserver::CreateForWebContents(web_contents);
 
-  if (performance_manager::PerformanceManager::IsAvailable()) {
-    performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
-        web_contents);
+  if (auto* performance_manager_registry =
+          performance_manager::PerformanceManagerRegistry::GetInstance()) {
+    performance_manager_registry->CreatePageNodeForWebContents(web_contents);
   }
 }
 

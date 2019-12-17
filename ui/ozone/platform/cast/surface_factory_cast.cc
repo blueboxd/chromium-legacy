@@ -114,7 +114,7 @@ GLOzone* SurfaceFactoryCast::GetGLOzone(gl::GLImplementation implementation) {
 
 std::unique_ptr<SurfaceOzoneCanvas> SurfaceFactoryCast::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget,
-    base::TaskRunner* task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   // Software canvas support only in headless mode
   if (egl_implementation_)
     return nullptr;

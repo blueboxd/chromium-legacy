@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">Allargueu aquest text fins a un mínim de <ph name="MIN_CHARACTERS" /> caràcters (ara n'utilitzeu <ph name="CURRENT_LENGTH" />).</translation>
 <translation id="383465348367842624">Un nom d'usuari seguit de "<ph name="ATSIGN" />" no pot contenir el símbol "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="3846214748874656680">Surt de la pantalla completa</translation>
-<translation id="3889183436948184105">revisió</translation>
 <translation id="3920932319529768807">conclusió</translation>
 <translation id="3924558731517983934">aplicació</translation>
 <translation id="3944740393230681990">pròleg</translation>
@@ -259,7 +258,6 @@
 <translation id="8987927404178983737">Mes</translation>
 <translation id="901493112792887934">temps actual en segons</translation>
 <translation id="901834265349196618">correu electrònic</translation>
-<translation id="9023835124071926463">secció de comentaris</translation>
 <translation id="9048119486235211610">navegació</translation>
 <translation id="9062295712474918030">document</translation>
 <translation id="9093215626363556771">surt del mode de pantalla en pantalla</translation>

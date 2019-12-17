@@ -313,8 +313,6 @@ const char* ToString(ax::mojom::Role role) {
       return "comboBoxMenuButton";
     case ax::mojom::Role::kComment:
       return "comment";
-    case ax::mojom::Role::kCommentSection:
-      return "commentSection";
     case ax::mojom::Role::kComplementary:
       return "complementary";
     case ax::mojom::Role::kContentDeletion:
@@ -553,8 +551,6 @@ const char* ToString(ax::mojom::Role role) {
       return "radioGroup";
     case ax::mojom::Role::kRegion:
       return "region";
-    case ax::mojom::Role::kRevision:
-      return "revision";
     case ax::mojom::Role::kRootWebArea:
       return "rootWebArea";
     case ax::mojom::Role::kRow:
@@ -695,8 +691,6 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kComboBoxMenuButton;
   if (0 == strcmp(role, "comment"))
     return ax::mojom::Role::kComment;
-  if (0 == strcmp(role, "commentSection"))
-    return ax::mojom::Role::kCommentSection;
   if (0 == strcmp(role, "complementary"))
     return ax::mojom::Role::kComplementary;
   if (0 == strcmp(role, "contentDeletion"))
@@ -935,8 +929,6 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kRadioGroup;
   if (0 == strcmp(role, "region"))
     return ax::mojom::Role::kRegion;
-  if (0 == strcmp(role, "revision"))
-    return ax::mojom::Role::kRevision;
   if (0 == strcmp(role, "rootWebArea"))
     return ax::mojom::Role::kRootWebArea;
   if (0 == strcmp(role, "row"))

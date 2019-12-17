@@ -409,7 +409,7 @@ void ThreadGroupImpl::Start(
     int max_tasks,
     int max_best_effort_tasks,
     TimeDelta suggested_reclaim_time,
-    scoped_refptr<TaskRunner> service_thread_task_runner,
+    scoped_refptr<SequencedTaskRunner> service_thread_task_runner,
     WorkerThreadObserver* worker_thread_observer,
     WorkerEnvironment worker_environment,
     Optional<TimeDelta> may_block_threshold) {

@@ -91,7 +91,7 @@
 <translation id="209965399369889474">Sem conexão com a rede</translation>
 <translation id="2126242104232412123">Nova área</translation>
 <translation id="2127372758936585790">Carregador de baixa potência</translation>
-<translation id="2135456203358955318">Lupa ancorada</translation>
+<translation id="2135456203358955318">Lupa em área fixa</translation>
 <translation id="2144487987174258011">Reinicie para atualizar o Adobe Flash Player</translation>
 <translation id="2148902151539191989">VOLTAR</translation>
 <translation id="2208323208084708176">Modo de área de trabalho unificada.</translation>
@@ -123,7 +123,7 @@
 <translation id="2517825809102302935">Desativar esta noite</translation>
 <translation id="2542089167727451762">Toque na imagem do seu perfil</translation>
 <translation id="255671100581129685">O Google Assistente não está disponível para uma sessão pública.</translation>
-<translation id="256712445991462162">a lupa ancorada</translation>
+<translation id="256712445991462162">a lupa em área fixa</translation>
 <translation id="2575685495496069081">A opção de login múltiplo foi desativada</translation>
 <translation id="2582112259361606227">Reiniciar para atualizar</translation>
 <translation id="2617342710774726426">O chip está bloqueado</translation>
@@ -131,6 +131,7 @@
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2658778018866295321">Clicar e arrastar</translation>
 <translation id="2700493154570097719">Configurar teclado</translation>
+<translation id="2704781753052663061">Conectar-se a outras redes Wi-Fi</translation>
 <translation id="2718395828230677721">Modo noturno</translation>
 <translation id="2727977024730340865">Conectado a um carregador de baixa potência. O carregamento da bateria pode não ser confiável.</translation>
 <translation id="2761704814324807722">Bandeja de status, tempo <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -143,7 +144,7 @@
 <translation id="2872961005593481000">Desligar</translation>
 <translation id="2878884018241093801">Nenhum item recente</translation>
 <translation id="2903844815300039659">Conectado a <ph name="NAME" />, <ph name="STRENGTH" /></translation>
-<translation id="2942350706960889382">Lupa ancorada</translation>
+<translation id="2942350706960889382">Lupa em área fixa</translation>
 <translation id="2942516765047364088">Posição da estante</translation>
 <translation id="2946119680249604491">Adicionar conexão</translation>
 <translation id="2961963223658824723">Algo deu errado. Tente novamente em alguns segundos.</translation>
@@ -151,7 +152,7 @@
 <translation id="2970920913501714344">instalar apps, extensões e temas;</translation>
 <translation id="2977598380246111477">Próximo número</translation>
 <translation id="2995447421581609334">Mostrar dispositivos de transmissão.</translation>
-<translation id="2996462380875591307">Lupa ancorada ativada. Pressione Ctrl+Pesquisa+D novamente para desativá-la.</translation>
+<translation id="2996462380875591307">Lupa em área fixa ativada. Pressione Ctrl+Pesquisa+D novamente para desativá-la.</translation>
 <translation id="3000461861112256445">Áudio mono</translation>
 <translation id="3009178788565917040">Saída</translation>
 <translation id="3051128274746680507">Seu perfil de usuário supervisionado será removido em breve. Faça login para saber mais.</translation>
@@ -253,7 +254,7 @@
 <translation id="4378551569595875038">Conectando...</translation>
 <translation id="4379531060876907730">Estas são suas ferramentas da stylus</translation>
 <translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
-<translation id="4389184120735010762">Você pressionou o atalho de teclado para a lupa ancorada. Gostaria de ativá-la?</translation>
+<translation id="4389184120735010762">Você pressionou o atalho de teclado para a lupa em área fixa. Gostaria de ativá-la?</translation>
 <translation id="4421231901400348175">Compartilhando o controle da sua tela com <ph name="HELPER_NAME" /> via Assistência remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Não mostrar novamente</translation>

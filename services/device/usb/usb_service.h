@@ -32,7 +32,7 @@ class UsbDevice;
 class UsbService {
  public:
   using GetDevicesCallback =
-      base::Callback<void(const std::vector<scoped_refptr<UsbDevice>>&)>;
+      base::OnceCallback<void(const std::vector<scoped_refptr<UsbDevice>>&)>;
 
   class Observer {
    public:
@@ -67,7 +67,7 @@ class UsbService {
   scoped_refptr<UsbDevice> GetDevice(const std::string& guid);
 
   // Enumerates available devices.
-  virtual void GetDevices(const GetDevicesCallback& callback);
+  virtual void GetDevices(GetDevicesCallback callback);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

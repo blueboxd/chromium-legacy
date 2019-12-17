@@ -25,6 +25,7 @@
 <translation id="7209941495304122410">Angiv adgangskoden til Windows</translation>
 <translation id="7357241217513796177">Sørg for, at du har forbindelse til et netværk, og prøv igen.</translation>
 <translation id="7536769223115622137">Tilføj arbejdskonto</translation>
+<translation id="7811865856574012727">Din administrator har begrænset login på enheder for følgende domæner: <ph name="EMAIL_DOMAINS" />. Prøv igen ved hjælp af en gyldig arbejdskonto.</translation>
 <translation id="7856245195110636219">Det er ikke muligt at fortsætte, før den aktuelle adgangskode til Windows angives. Kontakt en systemadministrator.</translation>
 <translation id="8639729688781680518">Glemt adgangskode til Windows</translation>
 <translation id="866458870819756755">En bruger kunne ikke oprettes.</translation>

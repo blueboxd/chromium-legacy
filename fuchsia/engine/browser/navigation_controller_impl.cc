@@ -237,8 +237,10 @@ void NavigationControllerImpl::DidFinishLoad(
 
 void NavigationControllerImpl::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsSameDocument())
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument()) {
     return;
+  }
 
   is_main_document_loaded_ = false;
   OnNavigationEntryChanged();

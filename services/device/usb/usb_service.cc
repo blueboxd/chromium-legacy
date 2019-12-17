@@ -81,13 +81,13 @@ scoped_refptr<UsbDevice> UsbService::GetDevice(const std::string& guid) {
   return it->second;
 }
 
-void UsbService::GetDevices(const GetDevicesCallback& callback) {
+void UsbService::GetDevices(GetDevicesCallback callback) {
   std::vector<scoped_refptr<UsbDevice>> devices;
   devices.reserve(devices_.size());
   for (const auto& map_entry : devices_)
     devices.push_back(map_entry.second);
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, devices));
+      FROM_HERE, base::BindOnce(std::move(callback), devices));
 }
 
 void UsbService::AddObserver(Observer* observer) {

@@ -848,6 +848,7 @@
         'ReportDeviceSessionStatus',
         'ReportDeviceOsUpdateStatus',
         'ReportDeviceBoardStatus',
+        'ReportDeviceCpuInfo',
         'ReportDevicePowerStatus',
         'ReportDeviceStorageStatus',
         'ReportUploadFrequency',
@@ -7737,6 +7738,28 @@
 
       If the policy is set to false or left unset, the statistics will not be reported.
       If set to true, statistics will be reported.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
+    },
+    {
+      'name': 'ReportDeviceCpuInfo',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:81-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': False,
+      'id': 656,
+      'caption': '''Report CPU info''',
+      'tags': ['admin-sharing'],
+      'desc': '''Report information for a device's CPU(s).
+
+      If the policy is set to false or left unset, the information will not be reported.
+      If set to true, the CPU model name, architecture, and maximum clock speed will be
+      reported for each CPU.''',
       'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
@@ -19663,6 +19686,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'SupervisedUsersEnabled': 'supervised_users_settings.supervised_users_enabled',
     'DeviceStartUpFlags': 'start_up_flags.flags',
     'ReportDeviceBoardStatus': 'device_reporting.report_board_status',
+    'ReportDeviceCpuInfo': 'device_reporting.report_cpu_info',
     'ReportDeviceStorageStatus': 'device_reporting.report_storage_status',
     'ReportDevicePowerStatus': 'device_reporting.report_power_status',
     'DeviceOpenNetworkConfiguration': 'open_network_configuration.open_network_configuration',
@@ -20056,6 +20080,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'ReportDeviceSessionStatus',
         'ReportDeviceOsUpdateStatus',
         'ReportDeviceBoardStatus',
+        'ReportDeviceCpuInfo',
         'ReportDevicePowerStatus',
         'ReportDeviceStorageStatus',
         'ReportUploadFrequency',
@@ -20129,6 +20154,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569, 578],
-  'highest_id_currently_used': 655,
+  'highest_id_currently_used': 656,
   'highest_atomic_group_id_currently_used': 38
 }

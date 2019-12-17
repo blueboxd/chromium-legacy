@@ -176,6 +176,7 @@ gridTemplateColumns
 gridTemplateRows
 height
 hyphens
+imageOrientation
 imageRendering
 inlineSize
 isolation

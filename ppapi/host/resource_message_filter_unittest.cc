@@ -114,7 +114,7 @@ class MyResourceFilter : public ResourceMessageFilter {
     return last_task_runner_;
   }
 
-  scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
+  scoped_refptr<base::SequencedTaskRunner> OverrideTaskRunnerForMessage(
       const IPC::Message& msg) override {
     if (msg.type() == msg_type_)
       return task_runner_;

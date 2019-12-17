@@ -67,6 +67,19 @@ class MODULES_EXPORT ManifestParser {
                                      const String& key,
                                      TrimType trim);
 
+  // Helper function to parse strings present in a member that itself is
+  // a dictionary like 'shortcut' as defined in:
+  // https://w3c.github.io/manifest/#shortcutitem-and-its-members Each strings
+  // will identifiable by its |key|. This helper includes the member_name in any
+  // ManifestError added while parsing. This helps disambiguate member property
+  // names from top level member names. Returns the parsed string if any, a null
+  // optional if the parsing failed.
+  base::Optional<String> ParseStringForMember(const JSONObject* object,
+                                              const String& member_name,
+                                              const String& key,
+                                              bool required,
+                                              TrimType trim);
+
   // Helper function to parse colors present on a given |dictionary| in a given
   // field identified by its |key|. Returns a null optional if the value is not
   // present or is not a valid color.
@@ -146,6 +159,33 @@ class MODULES_EXPORT ManifestParser {
   // Returns a vector of ManifestImageResourcePtr with the successfully parsed
   // icons, if any. An empty vector if the field was not present or empty.
   Vector<mojom::blink::ManifestImageResourcePtr> ParseIcons(
+      const JSONObject* object);
+
+  // Parses the 'name' field of a shortcut, as defined in:
+  // https://w3c.github.io/manifest/#shortcuts-member
+  // Returns the parsed string if any, a null string if the parsing failed.
+  String ParseShortcutName(const JSONObject* shortcut);
+
+  // Parses the 'short_name' field of a shortcut, as defined in:
+  // https://w3c.github.io/manifest/#shortcuts-member
+  // Returns the parsed string if any, a null string if the parsing failed.
+  String ParseShortcutShortName(const JSONObject* shortcut);
+
+  // Parses the 'description' field of a shortcut, as defined in:
+  // https://w3c.github.io/manifest/#shortcuts-member
+  // Returns the parsed string if any, a null string if the parsing failed.
+  String ParseShortcutDescription(const JSONObject* shortcut);
+
+  // Parses the 'url' field of an icon, as defined in:
+  // https://w3c.github.io/manifest/#shortcuts-member
+  // Returns the parsed KURL if any, an empty KURL if the parsing failed.
+  KURL ParseShortcutUrl(const JSONObject* shortcut);
+
+  // Parses the 'shortcuts' field of a Manifest, as defined in:
+  // https://w3c.github.io/manifest/#shortcuts-member
+  // Returns a vector of ManifestShortcutPtr with the successfully parsed
+  // shortcuts, if any. An empty vector if the field was not present or empty.
+  Vector<mojom::blink::ManifestShortcutItemPtr> ParseShortcuts(
       const JSONObject* object);
 
   // Parses the name field of a share target file, as defined in:

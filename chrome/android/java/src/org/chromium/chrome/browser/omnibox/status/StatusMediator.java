@@ -4,8 +4,13 @@
 
 package org.chromium.chrome.browser.omnibox.status;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
+import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.view.View;
 
@@ -20,6 +25,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
+import org.chromium.chrome.browser.omnibox.status.StatusProperties.StatusIconResource;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
@@ -89,11 +95,17 @@ class StatusMediator {
 
     private StatusMediatorDelegate mDelegate;
     private Resources mResources;
+    private Context mContext;
+
     private ToolbarCommonPropertiesModel mToolbarCommonPropertiesModel;
     private UrlBarEditingTextStateProvider mUrlBarEditingTextStateProvider;
+
     private String mUrlBarTextWithAutocomplete = "";
     private boolean mUrlBarTextIsValidUrl;
+
     private float mUrlFocusPercent;
+    private String mSearchEngineLogoUrl;
+
     // Factors used to offset the animation of the status icon's alpha adjustment. The full formula
     // used: alpha = (focusAnimationProgress - mTextOffsetThreshold) / (1 - mTextOffsetThreshold)
     // mTextOffsetThreshold will be the % space that the icon takes up during the focus animation.
@@ -102,13 +114,16 @@ class StatusMediator {
     // The denominator for the above formula, which will adjust the scale for the alpha.
     private final float mTextOffsetAdjustedScale;
 
-    StatusMediator(PropertyModel model, Resources resources,
+    private Bitmap mCachedSearchEngineLogoBitmap;
+
+    StatusMediator(PropertyModel model, Resources resources, Context context,
             UrlBarEditingTextStateProvider urlBarEditingTextStateProvider) {
         mModel = model;
         mDelegate = new StatusMediatorDelegate();
         updateColorTheme();
 
         mResources = resources;
+        mContext = context;
         mUrlBarEditingTextStateProvider = urlBarEditingTextStateProvider;
 
         int iconWidth = resources.getDimensionPixelSize(R.dimen.location_bar_status_icon_width);
@@ -290,9 +305,9 @@ class StatusMediator {
                 focusAnimationProgress = MathUtils.clamp(
                         (percent - mTextOffsetThreshold) / mTextOffsetAdjustedScale, 0f, 1f);
             }
-            mModel.set(StatusProperties.STATUS_ALPHA, focusAnimationProgress);
+            mModel.set(StatusProperties.STATUS_ICON_ALPHA, focusAnimationProgress);
         } else {
-            mModel.set(StatusProperties.STATUS_ALPHA, 1f);
+            mModel.set(StatusProperties.STATUS_ICON_ALPHA, 1f);
         }
 
         updateLocationBarIcon();
@@ -416,8 +431,12 @@ class StatusMediator {
      */
     public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
             boolean isSearchEngineGoogle, String searchEngineUrl) {
+        if (!TextUtils.equals(searchEngineUrl, mSearchEngineLogoUrl)) {
+            mCachedSearchEngineLogoBitmap = null;
+        }
         mIsSearchEngineStateSetup = true;
         mIsSearchEngineGoogle = isSearchEngineGoogle;
+        mSearchEngineLogoUrl = searchEngineUrl;
         updateLocationBarIcon();
     }
 
@@ -462,8 +481,8 @@ class StatusMediator {
                               : R.color.locationbar_status_preview_color_light;
         }
 
-        mModel.set(StatusProperties.STATUS_ICON_RES, icon);
-        mModel.set(StatusProperties.STATUS_ICON_TINT_RES, tint);
+        mModel.set(StatusProperties.STATUS_ICON_RESOURCE,
+                icon == 0 ? null : new StatusIconResource(icon, tint));
         mModel.set(StatusProperties.STATUS_ICON_ACCESSIBILITY_TOAST_RES, toast);
     }
 
@@ -489,9 +508,8 @@ class StatusMediator {
                 && mToolbarCommonPropertiesModel.isIncognito();
         if (mDelegate.shouldShowSearchEngineLogo(isIncognito) && mIsSearchEngineStateSetup
                 && (showFocused || showUnfocusedSearchResultsPage)) {
-            setSecurityIconResourceForSearchEngineIcon(isIncognito, (icon) -> {
-                mModel.set(StatusProperties.STATUS_ICON_TINT_RES,
-                        getSecurityIconTintForSearchEngineIcon(icon));
+            getStatusIconResourceForSearchEngineIcon(isIncognito, (statusIconRes) -> {
+                mModel.set(StatusProperties.STATUS_ICON_RESOURCE, statusIconRes);
             });
             return true;
         } else {
@@ -505,33 +523,77 @@ class StatusMediator {
      * the caller which resource has been set.
      *
      * @param isIncognito True if the user is incognito.
-     * @param callback Called when the final value is set for the security icon resource. Meant to
-     *                 give the caller a chance to set the tint for the given resource.
+     * @param resourceCallback Called when the final value is set for the security icon resource.
+     *                         Meant to give the caller a chance to set the tint for the given
+     *                         resource.
      */
-    private void setSecurityIconResourceForSearchEngineIcon(
-            boolean isIncognito, Callback<Integer> callback) {
+    private void getStatusIconResourceForSearchEngineIcon(
+            boolean isIncognito, Callback<StatusIconResource> resourceCallback) {
         mShouldCancelCustomFavicon = false;
         // If the current url text is a valid url, then swap the dse icon for a globe.
         if (mUrlBarTextIsValidUrl) {
-            mModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_globe_24dp);
-            callback.onResult(R.drawable.ic_globe_24dp);
+            resourceCallback.onResult(new StatusIconResource(R.drawable.ic_globe_24dp,
+                    getSecurityIconTintForSearchEngineIcon(R.drawable.ic_globe_24dp)));
         } else if (mIsSearchEngineGoogle) {
-            int icon = mDelegate.shouldShowSearchLoupeEverywhere(isIncognito)
-                    ? R.drawable.ic_search
-                    : R.drawable.ic_logo_googleg_20dp;
-            mModel.set(StatusProperties.STATUS_ICON_RES, icon);
-            callback.onResult(icon);
+            if (mDelegate.shouldShowSearchLoupeEverywhere(isIncognito)) {
+                resourceCallback.onResult(new StatusIconResource(R.drawable.ic_search,
+                        getSecurityIconTintForSearchEngineIcon(R.drawable.ic_search)));
+            } else {
+                resourceCallback.onResult(
+                        new StatusIconResource(mSearchEngineLogoUrl, getGoogleGBitmap(), 0));
+            }
         } else {
-            mModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_search);
-            callback.onResult(R.drawable.ic_search);
-            if (!mDelegate.shouldShowSearchLoupeEverywhere(isIncognito)) {
-                mDelegate.getSearchEngineLogoFavicon(mResources, (favicon) -> {
-                    if (favicon == null || mShouldCancelCustomFavicon) return;
-                    mModel.set(StatusProperties.STATUS_ICON, favicon);
-                    callback.onResult(0);
-                });
+            if (mDelegate.shouldShowSearchLoupeEverywhere(isIncognito)) {
+                resourceCallback.onResult(new StatusIconResource(R.drawable.ic_search,
+                        getSecurityIconTintForSearchEngineIcon(R.drawable.ic_search)));
+            } else {
+                getNonGoogleSearchEngineIconBitmap(
+                        statusIconResource -> { resourceCallback.onResult(statusIconResource); });
             }
         }
+    }
+
+    /** @return The Google G {@link Bitmap}. */
+    private Bitmap getGoogleGBitmap() {
+        if (mDelegate != null && mToolbarCommonPropertiesModel != null
+                && mDelegate.shouldShowSearchEngineLogo(
+                        mToolbarCommonPropertiesModel.isIncognito())) {
+            if (mCachedSearchEngineLogoBitmap == null) {
+                int outlineSize =
+                        mResources.getDimensionPixelSize(R.dimen.location_bar_status_icon_width);
+                Drawable googleGDrawable =
+                        AppCompatResources.getDrawable(mContext, R.drawable.ic_logo_googleg_20dp);
+                mCachedSearchEngineLogoBitmap =
+                        Bitmap.createBitmap(outlineSize, outlineSize, Config.ARGB_8888);
+                Canvas canvas = new Canvas(mCachedSearchEngineLogoBitmap);
+                canvas.translate((outlineSize - googleGDrawable.getIntrinsicWidth()) / 2f,
+                        (outlineSize - googleGDrawable.getIntrinsicHeight()) / 2f);
+                googleGDrawable.setBounds(0, 0, googleGDrawable.getIntrinsicWidth(),
+                        googleGDrawable.getIntrinsicHeight());
+                googleGDrawable.draw(canvas);
+            }
+        }
+
+        return mCachedSearchEngineLogoBitmap;
+    }
+
+    /** @return The non-Google search engine icon {@link Bitmap}. */
+    private void getNonGoogleSearchEngineIconBitmap(final Callback<StatusIconResource> callback) {
+        if (mCachedSearchEngineLogoBitmap != null) {
+            callback.onResult(
+                    new StatusIconResource(mSearchEngineLogoUrl, mCachedSearchEngineLogoBitmap, 0));
+        }
+
+        mDelegate.getSearchEngineLogoFavicon(mResources, (favicon) -> {
+            if (favicon == null || mShouldCancelCustomFavicon) {
+                callback.onResult(new StatusIconResource(R.drawable.ic_search, 0));
+                return;
+            }
+
+            mCachedSearchEngineLogoBitmap = favicon;
+            callback.onResult(
+                    new StatusIconResource(mSearchEngineLogoUrl, mCachedSearchEngineLogoBitmap, 0));
+        });
     }
 
     /**

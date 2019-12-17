@@ -102,7 +102,6 @@ const RoleEntry kRoles[] = {
     {"columnheader", ax::mojom::Role::kColumnHeader},
     {"combobox", ax::mojom::Role::kComboBoxGrouping},
     {"comment", ax::mojom::Role::kComment},
-    {"commentsection", ax::mojom::Role::kCommentSection},
     {"complementary", ax::mojom::Role::kComplementary},
     {"contentinfo", ax::mojom::Role::kContentInfo},
     {"definition", ax::mojom::Role::kDefinition},
@@ -200,7 +199,6 @@ const RoleEntry kRoles[] = {
     // TODO(accessibility) region should only be mapped
     // if name present. See http://crbug.com/840819.
     {"region", ax::mojom::Role::kRegion},
-    {"revision", ax::mojom::Role::kRevision},
     {"row", ax::mojom::Role::kRow},
     {"rowgroup", ax::mojom::Role::kRowGroup},
     {"rowheader", ax::mojom::Role::kRowHeader},
@@ -241,7 +239,6 @@ const InternalRoleEntry kInternalRoles[] = {
     {ax::mojom::Role::kAlert, "Alert"},
     {ax::mojom::Role::kAnchor, "Anchor"},
     {ax::mojom::Role::kComment, "Comment"},
-    {ax::mojom::Role::kComment, "CommentSection"},
     {ax::mojom::Role::kApplication, "Application"},
     {ax::mojom::Role::kArticle, "Article"},
     {ax::mojom::Role::kAudio, "Audio"},
@@ -389,7 +386,6 @@ const InternalRoleEntry kInternalRoles[] = {
     {ax::mojom::Role::kRadioButton, "RadioButton"},
     {ax::mojom::Role::kRadioGroup, "RadioGroup"},
     {ax::mojom::Role::kRegion, "Region"},
-    {ax::mojom::Role::kRevision, "Revision"},
     {ax::mojom::Role::kRootWebArea, "WebArea"},
     {ax::mojom::Role::kRow, "Row"},
     {ax::mojom::Role::kRowGroup, "RowGroup"},
@@ -1519,6 +1515,7 @@ bool AXObject::IsSubWidget() const {
 bool AXObject::SupportsARIASetSizeAndPosInSet() const {
   switch (RoleValue()) {
     case ax::mojom::Role::kArticle:
+    case ax::mojom::Role::kComment:
     case ax::mojom::Role::kListBoxOption:
     case ax::mojom::Role::kListItem:
     case ax::mojom::Role::kMenuItem:
@@ -2104,9 +2101,7 @@ ax::mojom::Role AXObject::DetermineAriaRoleAttribute() const {
 
   switch (role) {
     case ax::mojom::Role::kComment:
-    case ax::mojom::Role::kCommentSection:
     case ax::mojom::Role::kMark:
-    case ax::mojom::Role::kRevision:
     case ax::mojom::Role::kSuggestion:
       UseCounter::Count(GetDocument(), WebFeature::kARIAAnnotations);
       if (!RuntimeEnabledFeatures::AccessibilityExposeARIAAnnotationsEnabled(
@@ -3495,7 +3490,6 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kColumn:
     case ax::mojom::Role::kComboBoxGrouping:
     case ax::mojom::Role::kComment:
-    case ax::mojom::Role::kCommentSection:
     case ax::mojom::Role::kComplementary:
     case ax::mojom::Role::kContentInfo:
     case ax::mojom::Role::kDate:
@@ -3571,7 +3565,6 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kPane:
     case ax::mojom::Role::kProgressIndicator:
     case ax::mojom::Role::kRadioGroup:
-    case ax::mojom::Role::kRevision:
     case ax::mojom::Role::kRootWebArea:
     case ax::mojom::Role::kRowGroup:
     case ax::mojom::Role::kScrollBar:

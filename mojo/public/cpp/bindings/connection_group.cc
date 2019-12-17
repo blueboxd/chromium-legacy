@@ -66,13 +66,14 @@ ConnectionGroup::Ref::Ref(scoped_refptr<ConnectionGroup> group)
 // static
 ConnectionGroup::Ref ConnectionGroup::Create(
     base::RepeatingClosure callback,
-    scoped_refptr<base::TaskRunner> task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   return Ref(base::WrapRefCounted(
       new ConnectionGroup(std::move(callback), std::move(task_runner))));
 }
 
-ConnectionGroup::ConnectionGroup(base::RepeatingClosure callback,
-                                 scoped_refptr<base::TaskRunner> task_runner)
+ConnectionGroup::ConnectionGroup(
+    base::RepeatingClosure callback,
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
     : notification_callback_(std::move(callback)),
       notification_task_runner_(std::move(task_runner)) {}
 

@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "net/base/features.h"
 #include "net/base/load_timing_info.h"
@@ -319,7 +320,8 @@ TEST_P(URLRequestQuicTest, TestGetRequest) {
   request->Start();
   ASSERT_TRUE(request->is_pending());
   delegate.RunUntilComplete();
-  EXPECT_TRUE(request->status().is_success());
+
+  EXPECT_EQ(OK, delegate.request_status());
   EXPECT_EQ(kHelloBodyValue, delegate.data_received());
   EXPECT_TRUE(request->ssl_info().is_valid());
 }
@@ -363,10 +365,8 @@ TEST_P(URLRequestQuicTest, CancelPushIfCached_SomeCached) {
 
   // Spin the message loop until the client receives the response for the first
   // request.
-  do {
-    base::RunLoop().RunUntilIdle();
-  } while (request_0->status().is_io_pending());
-  EXPECT_TRUE(request_0->status().is_success());
+  delegate_0.RunUntilComplete();
+  EXPECT_EQ(OK, delegate_0.request_status());
 
   // Send a request to /index2.html which pushes /kitten-1.jpg and /favicon.ico.
   // Should cancel push for /kitten-1.jpg.
@@ -380,10 +380,11 @@ TEST_P(URLRequestQuicTest, CancelPushIfCached_SomeCached) {
 
   // Spin the message loop until the client receives the response for the second
   // request.
-  do {
-    base::RunLoop().RunUntilIdle();
-  } while (request->status().is_io_pending());
-  EXPECT_TRUE(request->status().is_success());
+  delegate.RunUntilComplete();
+  EXPECT_EQ(OK, delegate.request_status());
+  // Wait until all QUIC events are process, some of which happen
+  // asynchronously.
+  base::RunLoop().RunUntilIdle();
 
   // Extract net logs on client side to verify push lookup transactions.
   auto entries = net_log_.GetEntriesWithType(
@@ -460,10 +461,8 @@ TEST_P(URLRequestQuicTest, CancelPushIfCached_AllCached) {
 
   // Spin the message loop until the client receives the response for the first
   // request.
-  do {
-    base::RunLoop().RunUntilIdle();
-  } while (request_0->status().is_io_pending());
-  EXPECT_TRUE(request_0->status().is_success());
+  delegate_0.RunUntilComplete();
+  EXPECT_EQ(OK, delegate_0.request_status());
 
   // Send a request to the pushed url: /favicon.ico to pull the resource into
   // cache.
@@ -477,10 +476,8 @@ TEST_P(URLRequestQuicTest, CancelPushIfCached_AllCached) {
 
   // Spin the message loop until the client receives the response for the second
   // request.
-  do {
-    base::RunLoop().RunUntilIdle();
-  } while (request_1->status().is_io_pending());
-  EXPECT_TRUE(request_1->status().is_success());
+  delegate_1.RunUntilComplete();
+  EXPECT_EQ(OK, delegate_1.request_status());
 
   // Send a request to /index2.html which pushes /kitten-1.jpg and /favicon.ico.
   // Should cancel push for both pushed resources, since they're already cached.
@@ -494,16 +491,17 @@ TEST_P(URLRequestQuicTest, CancelPushIfCached_AllCached) {
 
   // Spin the message loop until the client receives the response for the third
   // request.
-  do {
-    base::RunLoop().RunUntilIdle();
-  } while (request->status().is_io_pending());
-  EXPECT_TRUE(request->status().is_success());
+  delegate.RunUntilComplete();
+  EXPECT_EQ(OK, delegate.request_status());
+  // Wait until all QUIC events are process, some of which happen
+  // asynchronously.
+  base::RunLoop().RunUntilIdle();
 
   // Extract net logs on client side to verify push lookup transactions.
   auto entries = net_log_.GetEntriesWithType(
       NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION);
 
-  EXPECT_EQ(4u, entries.size());
+  ASSERT_EQ(4u, entries.size());
 
   std::string value;
   std::string push_url_1 = UrlFromPath(kKittenPath);
@@ -559,10 +557,8 @@ TEST_P(URLRequestQuicTest, DoNotCancelPushIfNotFoundInCache) {
   ASSERT_TRUE(request->is_pending());
 
   // Spin the message loop until the client receives response.
-  do {
-    base::RunLoop().RunUntilIdle();
-  } while (request->status().is_io_pending());
-  EXPECT_TRUE(request->status().is_success());
+  delegate.RunUntilComplete();
+  EXPECT_EQ(OK, delegate.request_status());
 
   // Extract net logs on client side to verify push lookup transactions.
   auto entries = net_log_.GetEntriesWithType(
@@ -620,8 +616,8 @@ TEST_P(URLRequestQuicTest, TestTwoRequests) {
   ASSERT_TRUE(request2->is_pending());
   run_loop.Run();
 
-  EXPECT_TRUE(request->status().is_success());
-  EXPECT_TRUE(request2->status().is_success());
+  EXPECT_EQ(OK, delegate.request_status());
+  EXPECT_EQ(OK, delegate2.request_status());
   EXPECT_EQ(kHelloBodyValue, delegate.data_received());
   EXPECT_EQ(kHelloBodyValue, delegate2.data_received());
 }
@@ -644,24 +640,29 @@ TEST_P(URLRequestQuicTest, RequestHeadersCallback) {
       CreateRequest(GURL(UrlFromPath(kHelloPath)), DEFAULT_PRIORITY, &delegate);
 
   request->SetExtraRequestHeaders(extra_headers);
-  request->SetRequestHeadersCallback(base::Bind(
-      &HttpRawRequestHeaders::Assign, base::Unretained(&raw_headers)));
+  request->SetRequestHeadersCallback(
+      base::BindLambdaForTesting([&](HttpRawRequestHeaders raw_headers) {
+        // This should be invoked before the request is completed, or any bytes
+        // are read.
+        EXPECT_FALSE(delegate.response_completed());
+        EXPECT_FALSE(delegate.bytes_received());
+
+        EXPECT_FALSE(raw_headers.headers().empty());
+        std::string value;
+        EXPECT_TRUE(raw_headers.FindHeaderForTest("x-foo", &value));
+        EXPECT_EQ("bar", value);
+        EXPECT_TRUE(raw_headers.FindHeaderForTest("accept-encoding", &value));
+        EXPECT_EQ("gzip, deflate", value);
+        EXPECT_TRUE(raw_headers.FindHeaderForTest(":path", &value));
+        EXPECT_EQ("/hello.txt", value);
+        EXPECT_TRUE(raw_headers.FindHeaderForTest(":authority", &value));
+        EXPECT_EQ("test.example.com", value);
+        EXPECT_TRUE(raw_headers.request_line().empty());
+      }));
   request->Start();
   ASSERT_TRUE(request->is_pending());
-  do {
-    base::RunLoop().RunUntilIdle();
-  } while (!delegate.response_started_count());
-  EXPECT_FALSE(raw_headers.headers().empty());
-  std::string value;
-  EXPECT_TRUE(raw_headers.FindHeaderForTest("x-foo", &value));
-  EXPECT_EQ("bar", value);
-  EXPECT_TRUE(raw_headers.FindHeaderForTest("accept-encoding", &value));
-  EXPECT_EQ("gzip, deflate", value);
-  EXPECT_TRUE(raw_headers.FindHeaderForTest(":path", &value));
-  EXPECT_EQ("/hello.txt", value);
-  EXPECT_TRUE(raw_headers.FindHeaderForTest(":authority", &value));
-  EXPECT_EQ("test.example.com", value);
-  EXPECT_TRUE(raw_headers.request_line().empty());
+  delegate.RunUntilComplete();
+  EXPECT_EQ(OK, delegate.request_status());
 }
 
 }  // namespace net

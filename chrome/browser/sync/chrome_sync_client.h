@@ -71,6 +71,10 @@ class ChromeSyncClient : public browser_sync::BrowserSyncClient {
   // Creates the ModelTypeController for syncer::APPS.
   std::unique_ptr<syncer::ModelTypeController> CreateAppsModelTypeController(
       syncer::SyncService* sync_service);
+
+  // Creates the ModelTypeController for syncer::APP_SETTINGS.
+  std::unique_ptr<syncer::ModelTypeController>
+  CreateAppSettingsModelTypeController(syncer::SyncService* sync_service);
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   Profile* const profile_;

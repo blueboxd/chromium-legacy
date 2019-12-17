@@ -1541,6 +1541,16 @@ unsigned AXNodeObject::HierarchicalLevel() const {
     // When level count is 0 due to this list item not having an ancestor of
     // Role::kList, not nested in list groups, this list item has a level of 1.
     return level == 0 ? 1 : level;
+  } else if (RoleValue() == ax::mojom::Role::kComment) {
+    // Comment: level is based on counting comment ancestors until the root.
+    level = 1;
+    for (AXObject* parent = ParentObject(); parent;
+         parent = parent->ParentObject()) {
+      ax::mojom::Role parent_role = parent->RoleValue();
+      if (parent_role == ax::mojom::Role::kComment)
+        level++;
+    }
+    return level;
   }
 
   return 0;

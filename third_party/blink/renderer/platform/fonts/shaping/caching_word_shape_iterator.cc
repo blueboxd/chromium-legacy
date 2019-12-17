@@ -13,8 +13,8 @@ scoped_refptr<const ShapeResult>
 CachingWordShapeIterator::ShapeWordWithoutSpacing(const TextRun& word_run,
                                                   const Font* font) {
   ShapeCacheEntry* cache_entry = shape_cache_->Add(word_run, ShapeCacheEntry());
-  if (cache_entry && cache_entry->shape_result_)
-    return cache_entry->shape_result_;
+  if (cache_entry && *cache_entry)
+    return *cache_entry;
 
   const String word_text = word_run.NormalizedUTF16();
   HarfBuzzShaper shaper(word_text);
@@ -25,7 +25,7 @@ CachingWordShapeIterator::ShapeWordWithoutSpacing(const TextRun& word_run,
 
   shape_result->SetDeprecatedInkBounds(shape_result->ComputeInkBounds());
   if (cache_entry)
-    cache_entry->shape_result_ = shape_result;
+    *cache_entry = shape_result;
 
   return shape_result;
 }

@@ -22,7 +22,7 @@
 class AccountId;
 
 namespace base {
-class TaskRunner;
+class SequencedTaskRunner;
 }
 
 namespace network {
@@ -63,7 +63,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) LoginPerformer
     virtual void SetAuthFlowOffline(bool offline) = 0;
   };
 
-  LoginPerformer(scoped_refptr<base::TaskRunner> task_runner,
+  LoginPerformer(scoped_refptr<base::SequencedTaskRunner> task_runner,
                  Delegate* delegate);
   ~LoginPerformer() override;
 
@@ -209,7 +209,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) LoginPerformer
   void DoPerformLogin(const UserContext& user_context,
                       AuthorizationMode auth_mode);
 
-  scoped_refptr<base::TaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Used for logging in.
   scoped_refptr<Authenticator> authenticator_;

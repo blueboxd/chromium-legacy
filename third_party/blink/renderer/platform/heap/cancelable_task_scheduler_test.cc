@@ -25,8 +25,6 @@ class ParallelTaskRunner : public base::TaskRunner {
     return true;
   }
 
-  bool RunsTasksInCurrentSequence() const override { return false; }
-
   void RunUntilIdle() {}
 };
 

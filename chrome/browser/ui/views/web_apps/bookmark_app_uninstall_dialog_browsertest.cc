@@ -145,14 +145,14 @@ class BookmarkAppUninstallDialogViewInteractiveBrowserTest
 
     dialog_ = web_app::WebAppUninstallDialog::Create(
         browser()->profile(), browser()->window()->GetNativeWindow());
+
+    base::RunLoop run_loop;
+    dialog_->SetDialogShownCallbackForTesting(run_loop.QuitClosure());
+
     dialog_->ConfirmUninstall(extension_->id(), base::DoNothing());
 
-    // The dialog shows when an icon update happens, run all pending messages to
-    // make sure that the widget exists and is showing at the end of this call.
-    base::RunLoop().RunUntilIdle();
+    run_loop.Run();
   }
-
-  void RunTest() { ShowAndVerifyUi(); }
 
  private:
   void TearDownOnMainThread() override {
@@ -165,8 +165,7 @@ class BookmarkAppUninstallDialogViewInteractiveBrowserTest
   std::unique_ptr<web_app::WebAppUninstallDialog> dialog_;
 };
 
-// TODO(https://crbug.com/1033751): Flaking on all platforms.
 IN_PROC_BROWSER_TEST_F(BookmarkAppUninstallDialogViewInteractiveBrowserTest,
-                       DISABLED_InvokeUi_ManualUninstall) {
-  RunTest();
+                       InvokeUi_ManualUninstall) {
+  ShowAndVerifyUi();
 }

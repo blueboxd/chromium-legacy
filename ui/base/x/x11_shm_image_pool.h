@@ -18,8 +18,8 @@ class COMPONENT_EXPORT(UI_BASE_X) X11ShmImagePool
     : public XShmImagePoolBase,
       public PlatformEventDispatcher {
  public:
-  X11ShmImagePool(base::TaskRunner* host_task_runner,
-                  base::TaskRunner* event_task_runner,
+  X11ShmImagePool(scoped_refptr<base::SequencedTaskRunner> host_task_runner,
+                  scoped_refptr<base::SequencedTaskRunner> event_task_runner,
                   XDisplay* display,
                   XID drawable,
                   Visual* visual,

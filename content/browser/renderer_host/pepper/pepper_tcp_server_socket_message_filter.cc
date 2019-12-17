@@ -104,7 +104,7 @@ void PepperTCPServerSocketMessageFilter::OnFilterDestroyed() {
       base::BindOnce(&PepperTCPServerSocketMessageFilter::Close, this));
 }
 
-scoped_refptr<base::TaskRunner>
+scoped_refptr<base::SequencedTaskRunner>
 PepperTCPServerSocketMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
   switch (message.type()) {

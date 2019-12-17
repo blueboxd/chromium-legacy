@@ -172,11 +172,9 @@ class AppShimHostTest : public testing::Test,
     host_ = nullptr;
     ++close_count_;
   }
-  void OnShimFocus(AppShimHost* host,
-                   chrome::mojom::AppShimFocusType focus_type,
-                   const std::vector<base::FilePath>& file) override {
-    ++focus_count_;
-  }
+  void OnShimFocus(AppShimHost* host) override { ++focus_count_; }
+  void OnShimOpenedFiles(AppShimHost* host,
+                         const std::vector<base::FilePath>& files) override {}
   void OnShimSelectedProfile(AppShimHost* host,
                              const base::FilePath& profile_path) override {}
 
@@ -220,8 +218,7 @@ TEST_F(AppShimHostTest, TestOnShimConnectedWithHandler) {
   EXPECT_EQ(0, focus_count_);
   EXPECT_EQ(0, close_count_);
 
-  GetMojoHost()->FocusApp(chrome::mojom::AppShimFocusType::kNormal,
-                          std::vector<base::FilePath>());
+  GetMojoHost()->FocusApp();
   RunUntilIdle();
   EXPECT_EQ(1, focus_count_);
 

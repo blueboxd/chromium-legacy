@@ -31,13 +31,13 @@ TEST_F(StyleAdjusterTest, TouchActionPropagatedAcrossIframes) {
   UpdateAllLifecyclePhasesForTest();
 
   Element* target = ChildDocument().getElementById("target");
-  EXPECT_EQ(TouchAction::kTouchActionNone,
+  EXPECT_EQ(TouchAction::kNone,
             target->GetComputedStyle()->GetEffectiveTouchAction());
 
   Element* owner = GetDocument().getElementById("owner");
   owner->setAttribute(html_names::kStyleAttr, "touch-action: auto");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(TouchAction::kTouchActionPinchZoom,
+  EXPECT_EQ(TouchAction::kPinchZoom,
             target->GetComputedStyle()->GetEffectiveTouchAction());
 }
 
@@ -53,7 +53,7 @@ TEST_F(StyleAdjusterTest, TouchActionPanningReEnabledByScrollers) {
   UpdateAllLifecyclePhasesForTest();
 
   Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(TouchAction::kTouchActionManipulation,
+  EXPECT_EQ(TouchAction::kManipulation,
             target->GetComputedStyle()->GetEffectiveTouchAction());
 }
 
@@ -69,20 +69,20 @@ TEST_F(StyleAdjusterTest, TouchActionPropagatedWhenAncestorStyleChanges) {
   UpdateAllLifecyclePhasesForTest();
 
   Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(TouchAction::kTouchActionPanX,
+  EXPECT_EQ(TouchAction::kPanX,
             target->GetComputedStyle()->GetEffectiveTouchAction());
 
   Element* ancestor = GetDocument().getElementById("ancestor");
   ancestor->setAttribute(html_names::kStyleAttr, "touch-action: pan-y");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(TouchAction::kTouchActionPanY,
+  EXPECT_EQ(TouchAction::kPanY,
             target->GetComputedStyle()->GetEffectiveTouchAction());
 
   Element* potential_scroller =
       GetDocument().getElementById("potential-scroller");
   potential_scroller->setAttribute(html_names::kStyleAttr, "overflow: scroll");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(TouchAction::kTouchActionPan,
+  EXPECT_EQ(TouchAction::kPan,
             target->GetComputedStyle()->GetEffectiveTouchAction());
 }
 
@@ -97,13 +97,13 @@ TEST_F(StyleAdjusterTest, TouchActionRestrictedByLowerAncestor) {
   UpdateAllLifecyclePhasesForTest();
 
   Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(TouchAction::kTouchActionPanRight,
+  EXPECT_EQ(TouchAction::kPanRight,
             target->GetComputedStyle()->GetEffectiveTouchAction());
 
   Element* parent = GetDocument().getElementById("parent");
   parent->setAttribute(html_names::kStyleAttr, "touch-action: auto");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(TouchAction::kTouchActionPanX,
+  EXPECT_EQ(TouchAction::kPanX,
             target->GetComputedStyle()->GetEffectiveTouchAction());
 }
 }  // namespace blink

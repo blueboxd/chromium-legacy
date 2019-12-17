@@ -650,8 +650,8 @@ bool FrameTreeNode::UpdateUserActivationState(
   return update_result;
 }
 
-void FrameTreeNode::OnSetHasReceivedUserGestureBeforeNavigation(bool value) {
-  render_manager_.OnSetHasReceivedUserGestureBeforeNavigation(value);
+void FrameTreeNode::OnSetHadStickyUserActivationBeforeNavigation(bool value) {
+  render_manager_.OnSetHadStickyUserActivationBeforeNavigation(value);
   replication_state_.has_received_user_gesture_before_nav = value;
 }
 

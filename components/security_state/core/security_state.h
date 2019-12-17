@@ -272,13 +272,9 @@ std::string GetLegacyTLSHistogramName(
 
 bool IsSHA1InChain(const VisibleSecurityState& visible_security_state);
 
-// Returns whether the NONE or WARNING state should downgrade styling from
-// neutral to insecure as part of an experiment to mark non-secure
-// connections with a grey triangle icon (crbug.com/997972).
-bool ShouldDowngradeNeutralStyling(
-    security_state::SecurityLevel security_level,
-    GURL url,
-    IsOriginSecureCallback is_origin_secure_callback);
+// Returns whether the WARNING state should downgrade the security icon from
+// info to danger triangle as part of an experiment (crbug.com/997972).
+bool ShouldShowDangerTriangleForWarningLevel();
 
 }  // namespace security_state
 

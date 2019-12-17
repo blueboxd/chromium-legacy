@@ -43,8 +43,8 @@ MtpDeviceManager::~MtpDeviceManager() {
   if (bus_) {
     bus_->UnlistenForServiceOwnerChange(
         mtpd::kMtpdServiceName,
-        base::Bind(&MtpDeviceManager::FinishSetupOnOriginThread,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindRepeating(&MtpDeviceManager::FinishSetupOnOriginThread,
+                            weak_ptr_factory_.GetWeakPtr()));
   }
 
   VLOG(1) << "MtpDeviceManager Shutdown completed";
@@ -507,8 +507,8 @@ void MtpDeviceManager::FinishSetupOnOriginThread(
   mtp_client_ = MediaTransferProtocolDaemonClient::Create(bus_.get());
 
   // Set up signals and start initializing |storage_info_map_|.
-  mtp_client_->ListenForChanges(base::Bind(&MtpDeviceManager::OnStorageChanged,
-                                           weak_ptr_factory_.GetWeakPtr()));
+  mtp_client_->ListenForChanges(base::BindRepeating(
+      &MtpDeviceManager::OnStorageChanged, weak_ptr_factory_.GetWeakPtr()));
   mtp_client_->EnumerateStorages(
       base::BindOnce(&MtpDeviceManager::OnEnumerateStorages,
                      weak_ptr_factory_.GetWeakPtr()),

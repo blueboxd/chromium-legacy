@@ -23,6 +23,7 @@
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/socks_connect_job.h"
+#include "net/socket/transport_client_socket_pool_test_util.h"
 #include "net/socket/transport_connect_job.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_task_environment.h"
@@ -86,7 +87,7 @@ class SOCKSConnectJobTest : public testing::Test, public WithTaskEnvironment {
 };
 
 TEST_F(SOCKSConnectJobTest, HostResolutionFailure) {
-  host_resolver_.rules()->AddSimulatedFailure(kProxyHostName);
+  host_resolver_.rules()->AddSimulatedTimeoutFailure(kProxyHostName);
 
   for (bool failure_synchronous : {false, true}) {
     host_resolver_.set_synchronous_mode(failure_synchronous);
@@ -97,6 +98,39 @@ TEST_F(SOCKSConnectJobTest, HostResolutionFailure) {
                                       &test_delegate, nullptr /* net_log */);
     test_delegate.StartJobExpectingResult(
         &socks_connect_job, ERR_PROXY_CONNECTION_FAILED, failure_synchronous);
+    EXPECT_THAT(socks_connect_job.GetResolveErrorInfo().error,
+                test::IsError(ERR_DNS_TIMED_OUT));
+  }
+}
+
+TEST_F(SOCKSConnectJobTest, HostResolutionFailureSOCKS4Endpoint) {
+  const char hostname[] = "google.com";
+  host_resolver_.rules()->AddSimulatedTimeoutFailure(hostname);
+
+  for (bool failure_synchronous : {false, true}) {
+    host_resolver_.set_synchronous_mode(failure_synchronous);
+
+    SequencedSocketData sequenced_socket_data{base::span<MockRead>(),
+                                              base::span<MockWrite>()};
+    sequenced_socket_data.set_connect_data(MockConnect(SYNCHRONOUS, OK));
+    client_socket_factory_.AddSocketDataProvider(&sequenced_socket_data);
+
+    scoped_refptr<SOCKSSocketParams> socket_params =
+        base::MakeRefCounted<SOCKSSocketParams>(
+            base::MakeRefCounted<TransportSocketParams>(
+                HostPortPair(kProxyHostName, kProxyPort), NetworkIsolationKey(),
+                false /* disable_secure_dns */, OnHostResolutionCallback()),
+            false /* socks_v5 */, HostPortPair(hostname, kSOCKS4TestPort),
+            NetworkIsolationKey(), TRAFFIC_ANNOTATION_FOR_TESTS);
+
+    TestConnectJobDelegate test_delegate;
+    SOCKSConnectJob socks_connect_job(
+        DEFAULT_PRIORITY, SocketTag(), &common_connect_job_params_,
+        socket_params, &test_delegate, nullptr /* net_log */);
+    test_delegate.StartJobExpectingResult(
+        &socks_connect_job, ERR_NAME_NOT_RESOLVED, failure_synchronous);
+    EXPECT_THAT(socks_connect_job.GetResolveErrorInfo().error,
+                test::IsError(ERR_DNS_TIMED_OUT));
   }
 }
 

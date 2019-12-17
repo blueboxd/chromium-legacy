@@ -42,7 +42,6 @@
 #include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/test_background_page_first_load_observer.h"
-#include "net/url_request/test_url_request_interceptor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using content::BrowserThread;

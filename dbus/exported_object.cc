@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/sequenced_task_runner.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"

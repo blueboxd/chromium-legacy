@@ -60,6 +60,12 @@ class FCMInvalidationListener
   // called at any time.
   void UpdateInterestedTopics(const Topics& topics);
 
+  // Called when the InstanceID token is revoked (usually because the InstanceID
+  // itself was deleted). Note that while this class receives new tokens
+  // internally (via FCMSyncNetworkChannel), the deletion flow is triggered
+  // externally, so it needs to be explicitly notified of token revocations.
+  void ClearInstanceIDToken();
+
   // AckHandler implementation.
   void Acknowledge(const invalidation::ObjectId& id,
                    const syncer::AckHandle& handle) override;

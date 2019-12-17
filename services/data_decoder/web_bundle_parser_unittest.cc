@@ -43,16 +43,14 @@ class TestDataSource : public mojom::BundleDataSource {
   explicit TestDataSource(const std::vector<uint8_t>& data)
       : data_(reinterpret_cast<const char*>(data.data()), data.size()) {}
 
-  void GetSize(GetSizeCallback callback) override {
-    std::move(callback).Run(data_.size());
-  }
-
   void Read(uint64_t offset, uint64_t length, ReadCallback callback) override {
-    if (offset + length > data_.size())
+    if (offset >= data_.size())
       std::move(callback).Run(base::nullopt);
     const uint8_t* start =
         reinterpret_cast<const uint8_t*>(data_.data()) + offset;
-    std::move(callback).Run(std::vector<uint8_t>(start, start + length));
+    uint64_t available_length = std::min(length, data_.size() - offset);
+    std::move(callback).Run(
+        std::vector<uint8_t>(start, start + available_length));
   }
 
   base::StringPiece GetPayload(const mojom::BundleResponsePtr& response) {

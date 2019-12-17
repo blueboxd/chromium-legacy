@@ -47,7 +47,7 @@ class WifiDataProviderManager {
   // Resets the factory function to the default.
   static void ResetFactoryForTesting();
 
-  typedef base::Closure WifiDataUpdateCallback;
+  typedef base::RepeatingClosure WifiDataUpdateCallback;
 
   // Registers a callback, which will be run whenever new data is available.
   // Instantiates the singleton if necessary, and always returns it.

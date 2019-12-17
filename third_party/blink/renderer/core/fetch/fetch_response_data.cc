@@ -67,6 +67,15 @@ blink::ContentSecurityPolicyPtr ConvertToBlink(ContentSecurityPolicyPtr csp) {
                                            std::move(report_endpoints));
 }
 
+WTF::Vector<blink::ContentSecurityPolicyPtr> ConvertToBlink(
+    std::vector<ContentSecurityPolicyPtr> policies) {
+  WTF::Vector<blink::ContentSecurityPolicyPtr> blink_policies;
+  for (auto& policy : policies)
+    blink_policies.push_back(ConvertToBlink(std::move(policy)));
+
+  return blink_policies;
+}
+
 }  // namespace mojom
 }  // namespace network
 

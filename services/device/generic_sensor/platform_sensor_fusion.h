@@ -41,7 +41,7 @@ class PlatformSensorFusion : public PlatformSensor,
       SensorReadingSharedBuffer* reading_buffer,
       PlatformSensorProvider* provider,
       std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm,
-      const PlatformSensorProviderBase::CreateSensorCallback& callback);
+      PlatformSensorProviderBase::CreateSensorCallback callback);
 
   // PlatformSensor:
   mojom::ReportingMode GetReportingMode() override;

@@ -85,6 +85,14 @@ class WebmMuxerTest : public TestWithParam<TestParams> {
     return parameters;
   }
 
+  mkvmuxer::Colour* GetVideoTrackColor() const {
+    mkvmuxer::VideoTrack* const video_track =
+        reinterpret_cast<mkvmuxer::VideoTrack*>(
+            webm_muxer_.segment_.GetTrackByNumber(
+                webm_muxer_.video_track_index_));
+    return video_track->colour();
+  }
+
   WebmMuxer webm_muxer_;
 
   size_t last_encoded_length_;
@@ -255,6 +263,64 @@ TEST_P(WebmMuxerTest, OnEncodedAudioTwoFrames) {
   webm_muxer_.ForceOneLibWebmErrorForTesting();
   EXPECT_FALSE(webm_muxer_.OnEncodedAudio(audio_params, encoded_data,
                                           base::TimeTicks::Now()));
+}
+
+TEST_P(WebmMuxerTest, ColorSpaceREC709IsPropagatedToTrack) {
+  WebmMuxer::VideoParameters params(gfx::Size(1, 1), 0, media::kCodecVP9,
+                                    gfx::ColorSpace::CreateREC709());
+  webm_muxer_.OnEncodedVideo(params, "abab", {}, base::TimeTicks::Now(),
+                             true /* keyframe */);
+  mkvmuxer::Colour* colour = GetVideoTrackColor();
+  EXPECT_EQ(colour->primaries(), mkvmuxer::Colour::kIturBt709P);
+  EXPECT_EQ(colour->transfer_characteristics(), mkvmuxer::Colour::kIturBt709Tc);
+  EXPECT_EQ(colour->matrix_coefficients(), mkvmuxer::Colour::kBt709);
+  EXPECT_EQ(colour->range(), mkvmuxer::Colour::kBroadcastRange);
+}
+
+TEST_P(WebmMuxerTest, ColorSpaceExtendedSRGBIsPropagatedToTrack) {
+  WebmMuxer::VideoParameters params(
+      gfx::Size(1, 1), 0, media::kCodecVP9,
+      gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT709,
+                      gfx::ColorSpace::TransferID::IEC61966_2_1,
+                      gfx::ColorSpace::MatrixID::BT709,
+                      gfx::ColorSpace::RangeID::LIMITED));
+  webm_muxer_.OnEncodedVideo(params, "banana", {}, base::TimeTicks::Now(),
+                             true /* keyframe */);
+  mkvmuxer::Colour* colour = GetVideoTrackColor();
+  EXPECT_EQ(colour->primaries(), mkvmuxer::Colour::kIturBt709P);
+  EXPECT_EQ(colour->transfer_characteristics(), mkvmuxer::Colour::kIec6196621);
+  EXPECT_EQ(colour->matrix_coefficients(), mkvmuxer::Colour::kBt709);
+  EXPECT_EQ(colour->range(), mkvmuxer::Colour::kBroadcastRange);
+}
+
+TEST_P(WebmMuxerTest, ColorSpaceHDR10IsPropagatedToTrack) {
+  WebmMuxer::VideoParameters params(
+      gfx::Size(1, 1), 0, media::kCodecVP9,
+      gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
+                      gfx::ColorSpace::TransferID::SMPTEST2084,
+                      gfx::ColorSpace::MatrixID::BT2020_NCL,
+                      gfx::ColorSpace::RangeID::LIMITED));
+  webm_muxer_.OnEncodedVideo(params, "cafebabe", {}, base::TimeTicks::Now(),
+                             true /* keyframe */);
+  mkvmuxer::Colour* colour = GetVideoTrackColor();
+  EXPECT_EQ(colour->primaries(), mkvmuxer::Colour::kIturBt2020);
+  EXPECT_EQ(colour->transfer_characteristics(), mkvmuxer::Colour::kSmpteSt2084);
+  EXPECT_EQ(colour->matrix_coefficients(),
+            mkvmuxer::Colour::kBt2020NonConstantLuminance);
+  EXPECT_EQ(colour->range(), mkvmuxer::Colour::kBroadcastRange);
+}
+
+TEST_P(WebmMuxerTest, ColorSpaceFullRangeHDR10IsPropagatedToTrack) {
+  WebmMuxer::VideoParameters params(
+      gfx::Size(1, 1), 0, media::kCodecVP9,
+      gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
+                      gfx::ColorSpace::TransferID::SMPTEST2084,
+                      gfx::ColorSpace::MatrixID::BT2020_NCL,
+                      gfx::ColorSpace::RangeID::FULL));
+  webm_muxer_.OnEncodedVideo(params, "beatles", {}, base::TimeTicks::Now(),
+                             true /* keyframe */);
+  mkvmuxer::Colour* colour = GetVideoTrackColor();
+  EXPECT_EQ(colour->range(), mkvmuxer::Colour::kFullRange);
 }
 
 // This test verifies that when video data comes before audio data, we save the

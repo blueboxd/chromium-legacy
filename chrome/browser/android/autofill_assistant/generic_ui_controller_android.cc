@@ -175,8 +175,11 @@ base::android::ScopedJavaGlobalRef<jobject> CreateJavaView(
 
   if (proto.view_case() == ViewProto::kViewContainer) {
     for (const auto& child : proto.view_container().views()) {
-      Java_AssistantViewFactory_addViewToContainer(
-          env, jview, CreateJavaView(env, jcontext, jdelegate, child, views));
+      auto jchild = CreateJavaView(env, jcontext, jdelegate, child, views);
+      if (!jchild) {
+        return nullptr;
+      }
+      Java_AssistantViewFactory_addViewToContainer(env, jview, jchild);
     }
   }
 

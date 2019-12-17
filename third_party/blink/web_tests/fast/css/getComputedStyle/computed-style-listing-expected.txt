@@ -169,7 +169,7 @@ grid-template-columns: none
 grid-template-rows: none
 height: 0px
 hyphens: manual
-image-orientation: 0deg
+image-orientation: from-image
 image-rendering: auto
 isolation: auto
 justify-content: normal

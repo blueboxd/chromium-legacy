@@ -16,7 +16,9 @@
 #include "net/base/net_export.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/request_priority.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/socket/connect_job.h"
+#include "net/socket/socks_client_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
@@ -79,6 +81,7 @@ class NET_EXPORT_PRIVATE SOCKSConnectJob : public ConnectJob,
   // ConnectJob methods.
   LoadState GetLoadState() const override;
   bool HasEstablishedConnection() const override;
+  ResolveErrorInfo GetResolveErrorInfo() const override;
 
   // Returns the handshake timeout used by SOCKSConnectJobs.
   static base::TimeDelta HandshakeTimeoutForTesting();
@@ -121,6 +124,9 @@ class NET_EXPORT_PRIVATE SOCKSConnectJob : public ConnectJob,
   State next_state_;
   std::unique_ptr<ConnectJob> transport_connect_job_;
   std::unique_ptr<StreamSocket> socket_;
+  SOCKSClientSocket* socks_socket_ptr_;
+
+  ResolveErrorInfo resolve_error_info_;
 
   DISALLOW_COPY_AND_ASSIGN(SOCKSConnectJob);
 };

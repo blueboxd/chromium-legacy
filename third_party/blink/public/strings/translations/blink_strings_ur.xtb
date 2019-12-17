@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">براہ کرم اس متن کو <ph name="MIN_CHARACTERS" /> حروف یا زیادہ تک بڑھائیں (آپ فی الحال <ph name="CURRENT_LENGTH" /> حروف استعمال کر رہے ہیں)۔</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />' کے بعد ایک حصہ میں علامت '<ph name="INVALIDCHARACTER" />' شامل نہیں ہونی چاہیے۔</translation>
 <translation id="3846214748874656680">پوری اسکرین سے باہر نکلیں</translation>
-<translation id="3889183436948184105">نظرثانی</translation>
 <translation id="3920932319529768807">اختتامیہ</translation>
 <translation id="3924558731517983934">ایپلیکیشن</translation>
 <translation id="3944740393230681990">تمہید</translation>
@@ -115,6 +114,7 @@
 <translation id="4812940957355064477">براہ کرم ایک نمبر درج کریں۔</translation>
 <translation id="4912536737030637138">کتابیات کا اندراج</translation>
 <translation id="492244087561876220">تبصرہ</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> منتخب کیا گيا</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> منتخب کر لیا گیا</translation>
 <translation id="4992066212339426712">آواز چلائیں</translation>
 <translation id="49969490063480558">براہ کرم '<ph name="ATSIGN" />' کے بعد ایک حصہ درج کریں۔ '<ph name="INVALIDADDRESS" />' نامکمل ہے۔</translation>
@@ -219,6 +219,7 @@
 <translation id="7888071071722539607">براہ کرم ای میل پتہ میں ایک '<ph name="ATSIGN" />' شامل کریں۔ '<ph name="INVALIDADDRESS" />' میں '<ph name="ATSIGN" />' غائب ہے۔</translation>
 <translation id="7891486169920085145">تقسیم کنندہ</translation>
 <translation id="795667975304826397">کوئی فائل منتخب نہیں کی گئی</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> منتخب کردہ نہیں ہے</translation>
 <translation id="8034303206267677282">مضبوط</translation>
 <translation id="8053789581856978548">متن تلاش کرنے کی فیلڈ</translation>
 <translation id="8057695513531652401">نوٹس</translation>
@@ -257,7 +258,6 @@
 <translation id="8987927404178983737">ماہ</translation>
 <translation id="901493112792887934">موجودہ وقت سیکنڈ میں ہے</translation>
 <translation id="901834265349196618">ای میل</translation>
-<translation id="9023835124071926463">تبصرہ سیکشن</translation>
 <translation id="9048119486235211610">نیویگیشن</translation>
 <translation id="9062295712474918030">دستاویز</translation>
 <translation id="9093215626363556771">'تصویر میں تصویر' سے باہر نکلیں</translation>

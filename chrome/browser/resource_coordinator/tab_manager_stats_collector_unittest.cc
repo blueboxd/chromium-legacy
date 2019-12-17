@@ -26,7 +26,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/performance_manager/performance_manager_tab_helper.h"
+#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
@@ -109,8 +109,8 @@ class TabManagerStatsCollectorTest
 
   std::unique_ptr<WebContents> CreateWebContentsForUKM(ukm::SourceId id) {
     std::unique_ptr<WebContents> contents(CreateTestWebContents());
-    performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
-        contents.get());
+    performance_manager::PerformanceManagerRegistry::GetInstance()
+        ->CreatePageNodeForWebContents(contents.get());
     ResourceCoordinatorTabHelper::CreateForWebContents(contents.get());
     ResourceCoordinatorTabHelper::FromWebContents(contents.get())
         ->SetUkmSourceIdForTest(id);

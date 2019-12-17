@@ -564,6 +564,25 @@ CA_NAME="req_ca_dn" \
     -out ../certificates/may_2018.pem \
     -config ca.cnf
 
+# Issued after 1 July 2019 (The macOS 10.15+ date for additional
+# policies for locally-trusted certificates - see
+# https://support.apple.com/en-us/HT210176 ) and valid for >825
+# days, even accounting for rounding issues.
+openssl req \
+  -config ../scripts/ee.cnf \
+  -newkey rsa:2048 \
+  -text \
+  -out out/900_days_after_2019_07_01.req
+CA_NAME="req_ca_dn" \
+  openssl ca \
+    -batch \
+    -extensions user_cert \
+    -startdate 190701000000Z \
+    -enddate   211217000000Z \
+    -in out/900_days_after_2019_07_01.req \
+    -out ../certificates/900_days_after_2019_07_01.pem \
+    -config ca.cnf
+
 # Regenerate CRLSets
 ## Block a leaf cert directly by SPKI
 python crlsetutil.py -o ../certificates/crlset_by_leaf_spki.raw \

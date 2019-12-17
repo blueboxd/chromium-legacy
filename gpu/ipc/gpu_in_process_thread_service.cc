@@ -25,7 +25,7 @@ GpuInProcessThreadService::GpuInProcessThreadService(
     const GpuPreferences& gpu_preferences,
     SharedImageManager* shared_image_manager,
     gles2::ProgramCache* program_cache,
-    scoped_refptr<SharedContextState> shared_context_state)
+    SharedContextStateGetter shared_context_state_getter)
     : CommandBufferTaskExecutor(gpu_preferences,
                                 gpu_feature_info,
                                 sync_point_manager,
@@ -33,10 +33,10 @@ GpuInProcessThreadService::GpuInProcessThreadService(
                                 share_group,
                                 share_group_surface_format,
                                 shared_image_manager,
-                                program_cache,
-                                std::move(shared_context_state)),
+                                program_cache),
       task_runner_(task_runner),
-      scheduler_(scheduler) {}
+      scheduler_(scheduler),
+      shared_context_state_getter_(std::move(shared_context_state_getter)) {}
 
 GpuInProcessThreadService::~GpuInProcessThreadService() = default;
 
@@ -65,6 +65,11 @@ void GpuInProcessThreadService::ScheduleDelayedWork(base::OnceClosure task) {
 void GpuInProcessThreadService::PostNonNestableToClient(
     base::OnceClosure callback) {
   NOTREACHED();
+}
+
+scoped_refptr<SharedContextState>
+GpuInProcessThreadService::GetSharedContextState() {
+  return shared_context_state_getter_.Run();
 }
 
 }  // namespace gpu

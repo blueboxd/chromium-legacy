@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
@@ -203,7 +204,7 @@ TEST_F(PerUserTopicRegistrationManagerTest,
   EXPECT_TRUE(per_user_topic_registration_manager->GetSubscribedTopicsForTest()
                   .empty());
 
-  // Empty response body should result in no succesfull registrations.
+  // Empty response body should result in no successful registrations.
   std::string response_body;
 
   url_loader_factory()->AddResponse(
@@ -515,6 +516,96 @@ TEST_F(PerUserTopicRegistrationManagerTest,
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(observed_state(), SubscriptionChannelState::ENABLED);
+}
+
+TEST_F(PerUserTopicRegistrationManagerTest, ShouldRecordTokenStateHistogram) {
+  const char kTokenStateHistogram[] =
+      "FCMInvalidations.TokenStateOnRegistrationRequest2";
+  enum class TokenStateOnSubscriptionRequest {
+    kTokenWasEmpty = 0,
+    kTokenUnchanged = 1,
+    kTokenChanged = 2,
+    kTokenCleared = 3,
+  };
+
+  const Topics topics = GetSequenceOfTopics(kInvalidationObjectIdsCount);
+  auto per_user_topic_registration_manager = BuildRegistrationManager();
+
+  // Subscribe to some topics (and provide an InstanceID token).
+  {
+    base::HistogramTester histograms;
+
+    AddCorrectSubscriptionResponce(/*private_topic=*/"", "original_token");
+    per_user_topic_registration_manager->UpdateSubscribedTopics(
+        topics, "original_token");
+    base::RunLoop().RunUntilIdle();
+
+    histograms.ExpectUniqueSample(
+        kTokenStateHistogram, TokenStateOnSubscriptionRequest::kTokenWasEmpty,
+        1);
+  }
+
+  ASSERT_EQ(TopicSetFromTopics(topics),
+            per_user_topic_registration_manager->GetSubscribedTopicsForTest());
+  ASSERT_TRUE(
+      per_user_topic_registration_manager->HaveAllRequestsFinishedForTest());
+
+  // Call UpdateSubscribedTopics again with the same token.
+  {
+    base::HistogramTester histograms;
+
+    per_user_topic_registration_manager->UpdateSubscribedTopics(
+        topics, "original_token");
+    base::RunLoop().RunUntilIdle();
+
+    histograms.ExpectUniqueSample(
+        kTokenStateHistogram, TokenStateOnSubscriptionRequest::kTokenUnchanged,
+        1);
+  }
+
+  // Topic subscriptions are unchanged.
+  ASSERT_EQ(TopicSetFromTopics(topics),
+            per_user_topic_registration_manager->GetSubscribedTopicsForTest());
+  ASSERT_TRUE(
+      per_user_topic_registration_manager->HaveAllRequestsFinishedForTest());
+
+  // Call UpdateSubscribedTopics again, but now with a different token.
+  {
+    base::HistogramTester histograms;
+
+    AddCorrectSubscriptionResponce(/*private_topic=*/"", "different_token");
+    per_user_topic_registration_manager->UpdateSubscribedTopics(
+        topics, "different_token");
+    base::RunLoop().RunUntilIdle();
+
+    histograms.ExpectUniqueSample(
+        kTokenStateHistogram, TokenStateOnSubscriptionRequest::kTokenChanged,
+        1);
+  }
+
+  // Topic subscriptions are still the same (all topics were re-subscribed).
+  ASSERT_EQ(TopicSetFromTopics(topics),
+            per_user_topic_registration_manager->GetSubscribedTopicsForTest());
+  ASSERT_TRUE(
+      per_user_topic_registration_manager->HaveAllRequestsFinishedForTest());
+
+  // Call ClearInstanceIDToken.
+  {
+    base::HistogramTester histograms;
+
+    per_user_topic_registration_manager->ClearInstanceIDToken();
+    base::RunLoop().RunUntilIdle();
+
+    histograms.ExpectUniqueSample(
+        kTokenStateHistogram, TokenStateOnSubscriptionRequest::kTokenCleared,
+        1);
+  }
+
+  // Topic subscriptions are gone now.
+  ASSERT_TRUE(per_user_topic_registration_manager->GetSubscribedTopicsForTest()
+                  .empty());
+  ASSERT_TRUE(
+      per_user_topic_registration_manager->HaveAllRequestsFinishedForTest());
 }
 
 }  // namespace syncer

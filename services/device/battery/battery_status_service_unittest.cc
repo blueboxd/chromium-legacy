@@ -62,10 +62,10 @@ class BatteryStatusServiceTest : public testing::Test {
   typedef BatteryStatusService::BatteryUpdateSubscription BatterySubscription;
 
   void SetUp() override {
-    callback1_ = base::Bind(&BatteryStatusServiceTest::Callback1,
-                            base::Unretained(this));
-    callback2_ = base::Bind(&BatteryStatusServiceTest::Callback2,
-                            base::Unretained(this));
+    callback1_ = base::BindRepeating(&BatteryStatusServiceTest::Callback1,
+                                     base::Unretained(this));
+    callback2_ = base::BindRepeating(&BatteryStatusServiceTest::Callback2,
+                                     base::Unretained(this));
 
     // We keep a raw pointer to the FakeBatteryManager, which we expect to
     // remain valid for the lifetime of the BatteryStatusService.

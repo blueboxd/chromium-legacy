@@ -43,22 +43,27 @@ std::pair<EventTarget*, StringImpl*> EventTargetKey(const Event* event) {
 }
 
 ScriptedAnimationController::ScriptedAnimationController(Document* document)
-    : ContextLifecycleStateObserver(document), callback_collection_(document) {
-  UpdateStateIfNeeded();
-}
+    : document_(document), callback_collection_(document), suspend_count_(0) {}
 
 void ScriptedAnimationController::Trace(Visitor* visitor) {
-  ContextLifecycleStateObserver::Trace(visitor);
+  visitor->Trace(document_);
   visitor->Trace(callback_collection_);
   visitor->Trace(event_queue_);
   visitor->Trace(media_query_list_listeners_);
   visitor->Trace(per_frame_events_);
 }
 
-void ScriptedAnimationController::ContextLifecycleStateChanged(
-    mojom::FrameLifecycleState state) {
-  if (state == mojom::FrameLifecycleState::kRunning)
-    ScheduleAnimationIfNeeded();
+void ScriptedAnimationController::Pause() {
+  ++suspend_count_;
+}
+
+void ScriptedAnimationController::Unpause() {
+  // It would be nice to put an DCHECK_GT(suspend_count_, 0) here, but in WK1
+  // resume() can be called even when suspend hasn't (if a tab was created in
+  // the background).
+  if (suspend_count_ > 0)
+    --suspend_count_;
+  ScheduleAnimationIfNeeded();
 }
 
 void ScriptedAnimationController::DispatchEventsAndCallbacksForPrinting() {
@@ -137,7 +142,7 @@ void ScriptedAnimationController::DispatchEvents(
 
 void ScriptedAnimationController::ExecuteFrameCallbacks() {
   // dispatchEvents() runs script which can cause the document to be destroyed.
-  if (!GetDocument())
+  if (!document_)
     return;
 
   callback_collection_.ExecuteFrameCallbacks(current_frame_time_ms_,
@@ -154,30 +159,28 @@ void ScriptedAnimationController::CallMediaQueryListListeners() {
 }
 
 bool ScriptedAnimationController::HasScheduledFrameTasks() const {
+  if (suspend_count_)
+    return false;
+
   return callback_collection_.HasFrameCallback() || !task_queue_.IsEmpty() ||
          !event_queue_.IsEmpty() || !media_query_list_listeners_.IsEmpty() ||
-         GetDocument()->HasAutofocusCandidates();
+         (document_ && document_->HasAutofocusCandidates());
 }
 
 void ScriptedAnimationController::ServiceScriptedAnimations(
     base::TimeTicks monotonic_time_now) {
-  if (!GetDocument() || !GetDocument()->GetFrame() ||
-      GetDocument()->IsContextPaused()) {
-    return;
+  if (document_ && document_->Loader()) {
+    current_frame_time_ms_ =
+        document_->Loader()
+            ->GetTiming()
+            .MonotonicTimeToZeroBasedDocumentTime(monotonic_time_now)
+            .InMillisecondsF();
+    current_frame_legacy_time_ms_ =
+        document_->Loader()
+            ->GetTiming()
+            .MonotonicTimeToPseudoWallTime(monotonic_time_now)
+            .InMillisecondsF();
   }
-
-  current_frame_time_ms_ =
-      GetDocument()
-          ->Loader()
-          ->GetTiming()
-          .MonotonicTimeToZeroBasedDocumentTime(monotonic_time_now)
-          .InMillisecondsF();
-  current_frame_legacy_time_ms_ =
-      GetDocument()
-          ->Loader()
-          ->GetTiming()
-          .MonotonicTimeToPseudoWallTime(monotonic_time_now)
-          .InMillisecondsF();
   current_frame_had_raf_ = HasFrameCallback();
 
   if (!HasScheduledFrameTasks())
@@ -188,7 +191,8 @@ void ScriptedAnimationController::ServiceScriptedAnimations(
   // 10.5. For each fully active Document in docs, flush autofocus
   // candidates for that Document if its browsing context is a top-level
   // browsing context.
-  GetDocument()->FlushAutofocusCandidates();
+  if (document_)
+    document_->FlushAutofocusCandidates();
 
   // 10.8. For each fully active Document in docs, evaluate media
   // queries and report changes for that Document, passing in now as the
@@ -255,15 +259,16 @@ void ScriptedAnimationController::EnqueueMediaQueryChangeListeners(
 }
 
 void ScriptedAnimationController::ScheduleAnimationIfNeeded() {
-  if (!GetDocument() || !GetDocument()->GetFrame() ||
-      GetDocument()->IsContextPaused()) {
+  if (suspend_count_ || !document_)
     return;
-  }
+  LocalFrameView* frame_view = document_->View();
+  if (!frame_view)
+    return;
 
   // If there is any pre-frame work to do, schedule an animation
   // unconditionally.
   if (HasScheduledFrameTasks()) {
-    GetDocument()->View()->ScheduleAnimation();
+    frame_view->ScheduleAnimation();
     return;
   }
 
@@ -271,9 +276,11 @@ void ScriptedAnimationController::ScheduleAnimationIfNeeded() {
   // currently running one -- if we're currently running an animation, then any
   // scheduled post-frame tasks will get run at the end of the current frame, so
   // no need to schedule another one.
-  if (callback_collection_.HasPostFrameCallback() &&
-      !GetDocument()->GetPage()->Animator().IsServicingAnimations()) {
-    GetDocument()->View()->ScheduleAnimation();
+  if (!callback_collection_.HasPostFrameCallback())
+    return;
+  if (Page* page = document_->GetPage()) {
+    if (!page->Animator().IsServicingAnimations())
+      frame_view->ScheduleAnimation();
   }
 }
 

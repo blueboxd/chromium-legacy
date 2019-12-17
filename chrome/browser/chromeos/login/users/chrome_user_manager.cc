@@ -21,8 +21,8 @@
 namespace chromeos {
 
 ChromeUserManager::ChromeUserManager(
-    scoped_refptr<base::TaskRunner> task_runner)
-    : UserManagerBase(task_runner) {}
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : UserManagerBase(std::move(task_runner)) {}
 
 ChromeUserManager::~ChromeUserManager() {}
 

@@ -26,10 +26,10 @@ SkiaOutputDeviceOffscreen::SkiaOutputDeviceOffscreen(
     gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
     : SkiaOutputDevice(false /*need_swap_semaphore */,
+                       memory_tracker,
                        did_swap_buffer_complete_callback),
       context_state_(context_state),
-      has_alpha_(has_alpha),
-      memory_tracker_(memory_tracker) {
+      has_alpha_(has_alpha) {
   capabilities_.flipped_output_surface = flipped;
   capabilities_.supports_post_sub_buffer = true;
 }
@@ -101,7 +101,7 @@ void SkiaOutputDeviceOffscreen::EnsureBackbuffer() {
     size_t estimated_size = info.computeMinByteSize();
     backbuffer_estimated_size_ = estimated_size;
   }
-  memory_tracker_->TrackMemoryAllocatedChange(backbuffer_estimated_size_);
+  memory_type_tracker_->TrackMemAlloc(backbuffer_estimated_size_);
 }
 
 void SkiaOutputDeviceOffscreen::DiscardBackbuffer() {
@@ -109,7 +109,7 @@ void SkiaOutputDeviceOffscreen::DiscardBackbuffer() {
     sk_surface_.reset();
     DeleteGrBackendTexture(context_state_.get(), &backend_texture_);
     backend_texture_ = GrBackendTexture();
-    memory_tracker_->TrackMemoryAllocatedChange(-backbuffer_estimated_size_);
+    memory_type_tracker_->TrackMemFree(backbuffer_estimated_size_);
     backbuffer_estimated_size_ = 0u;
   }
 }

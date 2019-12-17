@@ -39,7 +39,6 @@ class Value;
 namespace content {
 
 class RenderFrameHost;
-class TestServiceManagerContext;
 
 // Create an blink::mojom::FetchAPIRequestPtr with given fields.
 blink::mojom::FetchAPIRequestPtr CreateFetchAPIRequest(
@@ -292,7 +291,6 @@ class InProcessUtilityThreadHelper : public BrowserChildProcessObserver {
       const ChildProcessData& data) override;
 
   base::OnceClosure quit_closure_;
-  std::unique_ptr<TestServiceManagerContext> shell_context_;
   base::WeakPtrFactory<InProcessUtilityThreadHelper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InProcessUtilityThreadHelper);

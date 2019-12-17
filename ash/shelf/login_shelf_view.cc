@@ -158,7 +158,6 @@ class LoginShelfButton : public views::LabelButton {
     focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
     SetFocusPainter(nullptr);
     SetInkDropMode(InkDropMode::ON);
-    set_has_ink_drop_action_on_click(true);
     set_ink_drop_base_color(ShelfConfig::Get()->shelf_ink_drop_base_color());
     set_ink_drop_visible_opacity(
         ShelfConfig::Get()->shelf_ink_drop_visible_opacity());
@@ -264,7 +263,6 @@ class KioskAppsButton : public views::MenuButton,
     focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
     SetFocusPainter(nullptr);
     SetInkDropMode(InkDropMode::ON);
-    set_has_ink_drop_action_on_click(true);
     set_ink_drop_base_color(ShelfConfig::Get()->shelf_ink_drop_base_color());
     set_ink_drop_visible_opacity(
         ShelfConfig::Get()->shelf_ink_drop_visible_opacity());

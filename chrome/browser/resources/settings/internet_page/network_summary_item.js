@@ -182,11 +182,11 @@ Polymer({
     if (this.deviceIsEnabled_(deviceState)) {
       return false;
     }
+    if (deviceState.simAbsent) {
+      return true;
+    }
     if (!deviceState.simLockStatus) {
       return false;
-    }
-    if (deviceState.simLockStatus.simAbsent) {
-      return true;
     }
     const simLockType = deviceState.simLockStatus.lockType;
     return simLockType == 'sim-pin' || simLockType == 'sim-puk';

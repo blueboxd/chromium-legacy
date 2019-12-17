@@ -28,7 +28,7 @@ class TrueTypeFontMessageFilter : public ppapi::host::ResourceMessageFilter {
   TrueTypeFontMessageFilter();
 
   // ppapi::host::ResourceMessageFilter implementation.
-  scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
+  scoped_refptr<base::SequencedTaskRunner> OverrideTaskRunnerForMessage(
       const IPC::Message& msg) override;
   int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
@@ -49,7 +49,7 @@ TrueTypeFontMessageFilter::TrueTypeFontMessageFilter() {}
 
 TrueTypeFontMessageFilter::~TrueTypeFontMessageFilter() {}
 
-scoped_refptr<base::TaskRunner>
+scoped_refptr<base::SequencedTaskRunner>
 TrueTypeFontMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& msg) {
   // Use the font list SequencedTaskRunner to get the font list (currently the

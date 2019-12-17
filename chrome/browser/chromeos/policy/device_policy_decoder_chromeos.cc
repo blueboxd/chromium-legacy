@@ -689,6 +689,12 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
                       std::move(value), nullptr);
       }
     }
+    if (container.has_report_cpu_info()) {
+      policies->Set(key::kReportDeviceCpuInfo, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                    std::make_unique<base::Value>(container.report_cpu_info()),
+                    nullptr);
+    }
   }
 
   if (policy.has_device_heartbeat_settings()) {

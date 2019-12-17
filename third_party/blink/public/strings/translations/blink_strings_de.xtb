@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">Verlängern Sie diesen Text auf mindestens <ph name="MIN_CHARACTERS" /> Zeichen. Derzeit verwenden Sie <ph name="CURRENT_LENGTH" /> Zeichen.</translation>
 <translation id="383465348367842624">Vor dem <ph name="ATSIGN" />-Zeichen darf das Zeichen "<ph name="INVALIDCHARACTER" />" nicht verwendet werden.</translation>
 <translation id="3846214748874656680">Vollbildmodus beenden</translation>
-<translation id="3889183436948184105">Überarbeitung</translation>
 <translation id="3920932319529768807">Fazit</translation>
 <translation id="3924558731517983934">Anwendung</translation>
 <translation id="3944740393230681990">Prolog</translation>
@@ -115,6 +114,7 @@
 <translation id="4812940957355064477">Geben Sie eine Nummer ein.</translation>
 <translation id="4912536737030637138">Bibliografieeintrag</translation>
 <translation id="492244087561876220">Kommentar</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> ausgewählt</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> ausgewählt</translation>
 <translation id="4992066212339426712">Stummschaltung aufheben</translation>
 <translation id="49969490063480558">Geben Sie etwas nach dem <ph name="ATSIGN" />-Zeichen ein. Die Angabe "<ph name="INVALIDADDRESS" />" ist unvollständig.</translation>
@@ -219,6 +219,7 @@
 <translation id="7888071071722539607">Die E-Mail-Adresse muss ein <ph name="ATSIGN" />-Zeichen enthalten. In der Angabe "<ph name="INVALIDADDRESS" />" fehlt ein <ph name="ATSIGN" />-Zeichen.</translation>
 <translation id="7891486169920085145">Teilungsfunktion</translation>
 <translation id="795667975304826397">Keine ausgewählt</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> nicht ausgewählt</translation>
 <translation id="8034303206267677282">Stark</translation>
 <translation id="8053789581856978548">Feld für den Suchtext</translation>
 <translation id="8057695513531652401">Bemerkung</translation>
@@ -257,7 +258,6 @@
 <translation id="8987927404178983737">Monat</translation>
 <translation id="901493112792887934">Aktuelle Dauer in Sekunden</translation>
 <translation id="901834265349196618">E-Mail</translation>
-<translation id="9023835124071926463">Abschnitt für Kommentare</translation>
 <translation id="9048119486235211610">Navigation</translation>
 <translation id="9062295712474918030">Dokument</translation>
 <translation id="9093215626363556771">Bild-im-Bild-Modus beenden</translation>

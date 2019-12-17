@@ -1495,6 +1495,48 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, RecreateView) {
   navigation_listener_.RunUntilUrlAndTitleEquals(page1_url, kPage1Title);
 }
 
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ChildFrameNavigationIgnored) {
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
+  GURL page_url(embedded_test_server()->GetURL("/creates_child_frame.html"));
+
+  // Navigate to a page and wait for the navigation to complete.
+  fuchsia::web::FramePtr frame = CreateFrame();
+  fuchsia::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      controller.get(), fuchsia::web::LoadUrlParams(), page_url.spec()));
+  fuchsia::web::NavigationState expected_state;
+  expected_state.set_url(page_url.spec());
+  expected_state.set_title("main frame");
+  expected_state.set_is_main_document_loaded(true);
+  navigation_listener_.RunUntilNavigationStateMatches(
+      std::move(expected_state));
+
+  // Notify the page so that it constructs a child iframe.
+  fuchsia::web::WebMessage message;
+  message.set_data(cr_fuchsia::MemBufferFromString("test", "test"));
+  cr_fuchsia::ResultReceiver<fuchsia::web::Frame_PostMessage_Result>
+      post_result;
+  frame->PostMessage(
+      page_url.GetOrigin().spec(), std::move(message),
+      cr_fuchsia::CallbackToFitFunction(post_result.GetReceiveCallback()));
+
+  navigation_listener_.SetBeforeAckHook(
+      base::BindRepeating([](const fuchsia::web::NavigationState& change,
+                             OnNavigationStateChangedCallback callback) {
+        // The child iframe's loading status should not affect the
+        // is_main_document_loaded() bit.
+        if (change.has_is_main_document_loaded())
+          ADD_FAILURE();
+
+        callback();
+      }));
+
+  navigation_listener_.RunUntilUrlAndTitleEquals(page_url, "iframe loaded");
+}
+
 // Tests SetNavigationEventListener() immediately returns a NavigationEvent,
 // even in the absence of a new navigation.
 IN_PROC_BROWSER_TEST_F(FrameImplTest, ImmediateNavigationEvent) {

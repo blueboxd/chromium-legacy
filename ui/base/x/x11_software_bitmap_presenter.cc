@@ -124,8 +124,8 @@ bool X11SoftwareBitmapPresenter::CompositeBitmap(XDisplay* display,
 
 X11SoftwareBitmapPresenter::X11SoftwareBitmapPresenter(
     gfx::AcceleratedWidget widget,
-    base::TaskRunner* host_task_runner,
-    base::TaskRunner* event_task_runner)
+    scoped_refptr<base::SequencedTaskRunner> host_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> event_task_runner)
     : widget_(widget),
       display_(gfx::GetXDisplay()),
       gc_(nullptr),

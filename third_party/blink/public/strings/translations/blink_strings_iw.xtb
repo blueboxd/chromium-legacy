@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">הארך טקסט זה ל-<ph name="MIN_CHARACTERS" /> תווים או יותר (אתה משתמש כרגע ב-<ph name="CURRENT_LENGTH" /> תווים).</translation>
 <translation id="383465348367842624">חלק ולאחריו '<ph name="ATSIGN" />' לא אמור לכלול את הסמל '<ph name="INVALIDCHARACTER" />'.</translation>
 <translation id="3846214748874656680">צא ממסך מלא</translation>
-<translation id="3889183436948184105">תיקון</translation>
 <translation id="3920932319529768807">סיכום</translation>
 <translation id="3924558731517983934">יישום</translation>
 <translation id="3944740393230681990">פרולוג</translation>
@@ -115,6 +114,7 @@
 <translation id="4812940957355064477">יש להזין מספר.</translation>
 <translation id="4912536737030637138">ערך ביבליוגרפי</translation>
 <translation id="492244087561876220">תגובה</translation>
+<translation id="4971739861736909480">הפריט <ph name="ACCNAME" /> נבחר</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> נבחרו</translation>
 <translation id="4992066212339426712">בטל השתקה</translation>
 <translation id="49969490063480558">הזן חלק ולאחריו '<ph name="ATSIGN" />'‏. השדה '<ph name="INVALIDADDRESS" />' אינו מלא.</translation>
@@ -219,6 +219,7 @@
 <translation id="7888071071722539607">כלול '<ph name="ATSIGN" />' בכתובת האימייל. ב-'<ph name="INVALIDADDRESS" />' חסר '<ph name="ATSIGN" />'.</translation>
 <translation id="7891486169920085145">מפצל</translation>
 <translation id="795667975304826397">לא נבחר קובץ</translation>
+<translation id="7962328325860248200">הפריט <ph name="ACCNAME" /> לא נבחר</translation>
 <translation id="8034303206267677282">חשוב</translation>
 <translation id="8053789581856978548">שדה טקסט לחיפוש</translation>
 <translation id="8057695513531652401">הודעה</translation>
@@ -257,7 +258,6 @@
 <translation id="8987927404178983737">חודש</translation>
 <translation id="901493112792887934">זמן נוכחי בשניות</translation>
 <translation id="901834265349196618">אימייל</translation>
-<translation id="9023835124071926463">קטע התגובות</translation>
 <translation id="9048119486235211610">ניווט</translation>
 <translation id="9062295712474918030">מסמך</translation>
 <translation id="9093215626363556771">יציאה ממצב 'תמונה בתוך תמונה'</translation>

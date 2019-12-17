@@ -8,6 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -25,7 +27,7 @@ namespace ui {
 class X11CanvasSurface : public SurfaceOzoneCanvas {
  public:
   X11CanvasSurface(gfx::AcceleratedWidget widget,
-                   base::TaskRunner* gpu_task_runner);
+                   scoped_refptr<base::SequencedTaskRunner> gpu_task_runner);
   ~X11CanvasSurface() override;
 
   // SurfaceOzoneCanvas overrides:

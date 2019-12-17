@@ -30,7 +30,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
@@ -42,9 +41,6 @@
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_util.h"
-#include "components/history/core/browser/history_db_task.h"
-#include "components/history/core/browser/history_service.h"
-#include "components/history/core/browser/history_types.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
 #include "content/public/test/test_utils.h"
@@ -99,23 +95,6 @@ void ApplyBookmarkFavicon(
                                 pixel_size);
 }
 
-// History task which signals an event.
-class SignalEventTask : public history::HistoryDBTask {
- public:
-  explicit SignalEventTask(base::WaitableEvent* done) : done_(done) {}
-
-  bool RunOnDBThread(history::HistoryBackend* backend,
-                     history::HistoryDatabase* db) override {
-    done_->Signal();
-    return true;
-  }
-
-  void DoneRunOnMainThread() override {}
-
- private:
-  base::WaitableEvent* done_;
-};
-
 // Helper class used to wait for changes to take effect on the favicon of a
 // particular bookmark node in a particular bookmark model.
 class FaviconChangeObserver : public bookmarks::BookmarkModelObserver {
@@ -169,12 +148,6 @@ class FaviconChangeObserver : public bookmarks::BookmarkModelObserver {
   base::RunLoop run_loop_;
   DISALLOW_COPY_AND_ASSIGN(FaviconChangeObserver);
 };
-
-// A collection of URLs for which we have added favicons. Since loading a
-// favicon is an asynchronous operation and doesn't necessarily invoke a
-// callback, this collection is used to determine if we must wait for a URL's
-// favicon to load or not.
-std::set<GURL>* urls_with_favicons_ = nullptr;
 
 // Returns the number of nodes of node type |node_type| in |model| whose
 // titles match the string |title|.
@@ -254,21 +227,16 @@ struct FaviconData {
 // nullopt if the favicon is still loading.
 base::Optional<FaviconData> GetFaviconData(BookmarkModel* model,
                                            const BookmarkNode* node) {
-  // If a favicon wasn't explicitly set for a particular URL, simply return its
-  // blank favicon.
-  if (!urls_with_favicons_ ||
-      urls_with_favicons_->find(node->url()) == urls_with_favicons_->end()) {
-    return FaviconData();
-  }
-  // If a favicon was explicitly set, we may need to wait for it to be loaded
-  // via BookmarkModel::GetFavicon(), which is an asynchronous operation.
+  // We may need to wait for the favicon to be loaded via
+  // BookmarkModel::GetFavicon(), which is an asynchronous operation.
   if (!node->is_favicon_loaded()) {
     model->GetFavicon(node);
     // Favicon still loading, no data available just yet.
     return base::nullopt;
   }
 
-  // Favicon loaded: return actual image.
+  // Favicon loaded: return actual image, if there is one (the no-favicon case
+  // is also considered loaded).
   return FaviconData(model->GetFavicon(node),
                      node->icon_url() ? *node->icon_url() : GURL());
 }
@@ -343,51 +311,21 @@ void DeleteFaviconMappingsImpl(Profile* profile,
   model->GetFavicon(node);
 }
 
-// Wait for all currently scheduled tasks on the history thread for all
-// profiles to complete and any notifications sent to the UI thread to have
-// finished processing.
-void WaitForHistoryToProcessPendingTasks() {
-  // Skip waiting for history to complete for tests without favicons.
-  if (!urls_with_favicons_)
-    return;
-
-  std::vector<Profile*> profiles_which_need_to_wait;
-  if (sync_datatype_helper::test()->use_verifier())
-    profiles_which_need_to_wait.push_back(
-        sync_datatype_helper::test()->verifier());
-  for (int i = 0; i < sync_datatype_helper::test()->num_clients(); ++i)
-    profiles_which_need_to_wait.push_back(
-        sync_datatype_helper::test()->GetProfile(i));
-
-  for (size_t i = 0; i < profiles_which_need_to_wait.size(); ++i) {
-    Profile* profile = profiles_which_need_to_wait[i];
-    history::HistoryService* history_service =
-        HistoryServiceFactory::GetForProfileWithoutCreating(profile);
-    base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                             base::WaitableEvent::InitialState::NOT_SIGNALED);
-    base::CancelableTaskTracker task_tracker;
-    // Post a task that signals |done|. Since tasks run in posting order, all
-    // previously posted tasks have run when |done| is signaled.
-    history_service->ScheduleDBTask(
-        FROM_HERE, std::make_unique<SignalEventTask>(&done), &task_tracker);
-    done.Wait();
-  }
-  // Wait such that any notifications broadcast from one of the history threads
-  // to the UI thread are processed.
-  content::RunAllPendingInMessageLoop();
-}
-
 // Checks if the favicon in |node_a| from |model_a| matches that of |node_b|
 // from |model_b|. Returns true if they match.
 bool FaviconsMatch(BookmarkModel* model_a,
                    BookmarkModel* model_b,
                    const BookmarkNode* node_a,
                    const BookmarkNode* node_b) {
+  DCHECK(!node_a->is_folder());
+  DCHECK(!node_b->is_folder());
+
   base::Optional<FaviconData> favicon_data_a = GetFaviconData(model_a, node_a);
   base::Optional<FaviconData> favicon_data_b = GetFaviconData(model_b, node_b);
 
   // If either of the two favicons is still loading, let's return false now
-  // because observers will get notified when the load completes.
+  // because observers will get notified when the load completes. Note that even
+  // the lack of favicon is considered a loaded favicon.
   if (!favicon_data_a.has_value() || !favicon_data_b.has_value())
     return false;
 
@@ -449,7 +387,6 @@ bool NodeCantBeSynced(bookmarks::BookmarkClient* client,
 // terms of the data model and favicon. Returns true if they both match.
 // Note: Some peripheral fields like creation times are allowed to mismatch.
 bool BookmarkModelsMatch(BookmarkModel* model_a, BookmarkModel* model_b) {
-  bool ret_val = true;
   ui::TreeNodeIterator<const BookmarkNode> iterator_a(
       model_a->root_node(), base::Bind(&NodeCantBeSynced, model_a->client()));
   ui::TreeNodeIterator<const BookmarkNode> iterator_b(
@@ -461,13 +398,19 @@ bool BookmarkModelsMatch(BookmarkModel* model_a, BookmarkModel* model_b) {
       return false;
     }
     const BookmarkNode* node_b = iterator_b.Next();
-    ret_val = ret_val && NodesMatch(node_a, node_b);
-    if (node_a->is_folder() || node_b->is_folder())
+    if (!NodesMatch(node_a, node_b)) {
+      LOG(ERROR) << "Nodes do not match";
+      return false;
+    }
+    if (node_a->is_folder() || node_b->is_folder()) {
       continue;
-    ret_val = ret_val && FaviconsMatch(model_a, model_b, node_a, node_b);
+    }
+    if (!FaviconsMatch(model_a, model_b, node_a, node_b)) {
+      LOG(ERROR) << "Favicons do not match";
+      return false;
+    }
   }
-  ret_val = ret_val && (!iterator_b.has_next());
-  return ret_val;
+  return !iterator_b.has_next();
 }
 
 // Finds the node in the verifier bookmark model that corresponds to
@@ -511,6 +454,15 @@ std::vector<const BookmarkNode*> GetAllBookmarkNodes(
   }
 
   return all_nodes;
+}
+
+void TriggerAllFaviconLoading(BookmarkModel* model) {
+  for (const BookmarkNode* node : GetAllBookmarkNodes(model)) {
+    if (!node->is_favicon_loaded()) {
+      // GetFavicon() kicks off the loading.
+      model->GetFavicon(node);
+    }
+  }
 }
 
 }  // namespace
@@ -657,9 +609,6 @@ void SetFavicon(int profile,
       << "Profile " << profile;
   ASSERT_EQ(BookmarkNode::URL, node->type()) << "Node " << node->GetTitle()
                                              << " must be a url.";
-  if (urls_with_favicons_ == nullptr)
-    urls_with_favicons_ = new std::set<GURL>();
-  urls_with_favicons_->insert(node->url());
   if (sync_datatype_helper::test()->use_verifier()) {
     const BookmarkNode* v_node = nullptr;
     FindNodeInVerifier(model, node, &v_node);
@@ -683,7 +632,6 @@ void ExpireFavicon(int profile, const BookmarkNode* node) {
       << "Profile " << profile;
   ASSERT_EQ(BookmarkNode::URL, node->type()) << "Node " << node->GetTitle()
                                              << " must be a url.";
-  ASSERT_EQ(1u, urls_with_favicons_->count(node->url()));
 
   if (sync_datatype_helper::test()->use_verifier()) {
     const BookmarkNode* v_node = nullptr;
@@ -691,8 +639,6 @@ void ExpireFavicon(int profile, const BookmarkNode* node) {
     ExpireFaviconImpl(sync_datatype_helper::test()->verifier(), node);
   }
   ExpireFaviconImpl(sync_datatype_helper::test()->GetProfile(profile), node);
-
-  WaitForHistoryToProcessPendingTasks();
 }
 
 void CheckFaviconExpired(int profile, const GURL& icon_url) {
@@ -751,8 +697,6 @@ void DeleteFaviconMappings(int profile,
   }
   DeleteFaviconMappingsImpl(sync_datatype_helper::test()->GetProfile(profile),
                             node, favicon_source);
-
-  WaitForHistoryToProcessPendingTasks();
 }
 
 const BookmarkNode* SetURL(int profile,
@@ -859,11 +803,6 @@ bool ModelMatchesVerifier(int profile) {
 }
 
 bool AllModelsMatchVerifier() {
-  // Ensure that all tasks have finished processing on the history thread
-  // and that any notifications the history thread may have sent have been
-  // processed before comparing models.
-  WaitForHistoryToProcessPendingTasks();
-
   for (int i = 0; i < sync_datatype_helper::test()->num_clients(); ++i) {
     if (!ModelMatchesVerifier(i)) {
       LOG(ERROR) << "Model " << i << " does not match the verifier.";
@@ -879,11 +818,6 @@ bool ModelsMatch(int profile_a, int profile_b) {
 }
 
 bool AllModelsMatch() {
-  // Ensure that all tasks have finished processing on the history thread
-  // and that any notifications the history thread may have sent have been
-  // processed before comparing models.
-  WaitForHistoryToProcessPendingTasks();
-
   for (int i = 1; i < sync_datatype_helper::test()->num_clients(); ++i) {
     if (!ModelsMatch(0, i)) {
       LOG(ERROR) << "Model " << i << " does not match Model 0.";
@@ -1146,53 +1080,30 @@ void AnyBookmarkChangeObserver::GroupedBookmarkChangesEnded(
   cb_.Run();
 }
 
-BookmarksMatchChecker::BookmarksMatchChecker()
-    : MultiClientStatusChangeChecker(
-          sync_datatype_helper::test()->GetSyncServices()) {}
+BookmarkModelStatusChangeChecker::BookmarkModelStatusChangeChecker() = default;
 
-bool BookmarksMatchChecker::IsExitConditionSatisfied(std::ostream* os) {
-  *os << "Waiting for matching models";
-  return AllModelsMatch();
+BookmarkModelStatusChangeChecker::~BookmarkModelStatusChangeChecker() {
+  for (const auto& model_and_observer : observers_) {
+    model_and_observer.first->RemoveObserver(model_and_observer.second.get());
+  }
 }
 
-BookmarksMatchVerifierChecker::BookmarksMatchVerifierChecker()
-    : MultiClientStatusChangeChecker(
-          sync_datatype_helper::test()->GetSyncServices()) {}
-
-bool BookmarksMatchVerifierChecker::IsExitConditionSatisfied(std::ostream* os) {
-  *os << "Waiting for model to match verifier";
-  return AllModelsMatchVerifier();
+void BookmarkModelStatusChangeChecker::Observe(
+    bookmarks::BookmarkModel* model) {
+  auto observer =
+      std::make_unique<AnyBookmarkChangeObserver>(base::BindRepeating(
+          &SingleBookmarkModelStatusChangeChecker::PostCheckExitCondition,
+          weak_ptr_factory_.GetWeakPtr()));
+  model->AddObserver(observer.get());
+  observers_.emplace_back(model, std::move(observer));
 }
 
-SingleBookmarkModelStatusChangeChecker::SingleBookmarkModelStatusChangeChecker(
-    int profile_index)
-    : profile_index_(profile_index),
-      bookmark_model_(GetBookmarkModel(profile_index)) {
-  observer_ = std::make_unique<AnyBookmarkChangeObserver>(base::BindRepeating(
-      &SingleBookmarkModelStatusChangeChecker::PostCheckExitCondition,
-      weak_ptr_factory_.GetWeakPtr()));
-  bookmark_model_->AddObserver(observer_.get());
-}
-
-SingleBookmarkModelStatusChangeChecker::
-    ~SingleBookmarkModelStatusChangeChecker() {
-  bookmark_model_->RemoveObserver(observer_.get());
-}
-
-int SingleBookmarkModelStatusChangeChecker::profile_index() const {
-  return profile_index_;
-}
-
-BookmarkModel* SingleBookmarkModelStatusChangeChecker::bookmark_model() const {
-  return bookmark_model_;
-}
-
-void SingleBookmarkModelStatusChangeChecker::CheckExitCondition() {
+void BookmarkModelStatusChangeChecker::CheckExitCondition() {
   pending_check_exit_condition_ = false;
   StatusChangeChecker::CheckExitCondition();
 }
 
-void SingleBookmarkModelStatusChangeChecker::PostCheckExitCondition() {
+void BookmarkModelStatusChangeChecker::PostCheckExitCondition() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (pending_check_exit_condition_) {
@@ -1206,9 +1117,64 @@ void SingleBookmarkModelStatusChangeChecker::PostCheckExitCondition() {
   // that the checker doesn't immediately kick in while bookmarks are modified.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindRepeating(
-          &SingleBookmarkModelStatusChangeChecker::CheckExitCondition,
-          weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&BookmarkModelStatusChangeChecker::CheckExitCondition,
+                          weak_ptr_factory_.GetWeakPtr()));
+}
+
+BookmarksMatchChecker::BookmarksMatchChecker() {
+  for (int i = 0; i < sync_datatype_helper::test()->num_clients(); ++i) {
+    Observe(GetBookmarkModel(i));
+  }
+}
+
+bool BookmarksMatchChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for matching models";
+  return AllModelsMatch();
+}
+
+bool BookmarksMatchChecker::Wait() {
+  for (int i = 0; i < sync_datatype_helper::test()->num_clients(); ++i) {
+    TriggerAllFaviconLoading(GetBookmarkModel(i));
+  }
+  return BookmarkModelStatusChangeChecker::Wait();
+}
+
+BookmarksMatchVerifierChecker::BookmarksMatchVerifierChecker() {
+  Observe(GetVerifierBookmarkModel());
+  for (int i = 0; i < sync_datatype_helper::test()->num_clients(); ++i) {
+    Observe(GetBookmarkModel(i));
+  }
+}
+
+bool BookmarksMatchVerifierChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for model to match verifier";
+  return AllModelsMatchVerifier();
+}
+
+bool BookmarksMatchVerifierChecker::Wait() {
+  TriggerAllFaviconLoading(GetVerifierBookmarkModel());
+  for (int i = 0; i < sync_datatype_helper::test()->num_clients(); ++i) {
+    TriggerAllFaviconLoading(GetBookmarkModel(i));
+  }
+  return BookmarkModelStatusChangeChecker::Wait();
+}
+
+SingleBookmarkModelStatusChangeChecker::SingleBookmarkModelStatusChangeChecker(
+    int profile_index)
+    : profile_index_(profile_index),
+      bookmark_model_(GetBookmarkModel(profile_index)) {
+  Observe(bookmark_model_);
+}
+
+SingleBookmarkModelStatusChangeChecker::
+    ~SingleBookmarkModelStatusChangeChecker() = default;
+
+int SingleBookmarkModelStatusChangeChecker::profile_index() const {
+  return profile_index_;
+}
+
+BookmarkModel* SingleBookmarkModelStatusChangeChecker::bookmark_model() const {
+  return bookmark_model_;
 }
 
 SingleBookmarksModelMatcherChecker::SingleBookmarksModelMatcherChecker(

@@ -6,9 +6,9 @@
 
 #include <utility>
 
+using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
-using ::testing::_;
 
 namespace device {
 
@@ -60,10 +60,10 @@ double FakePlatformSensor::GetMinimumSupportedFrequency() {
 
 FakePlatformSensorProvider::FakePlatformSensorProvider() {
   ON_CALL(*this, DoCreateSensorInternal(_, _, _))
-      .WillByDefault(Invoke(
-          [](mojom::SensorType, scoped_refptr<PlatformSensor> sensor,
-             const PlatformSensorProvider::CreateSensorCallback& callback) {
-            callback.Run(std::move(sensor));
+      .WillByDefault(
+          Invoke([](mojom::SensorType, scoped_refptr<PlatformSensor> sensor,
+                    PlatformSensorProvider::CreateSensorCallback callback) {
+            std::move(callback).Run(std::move(sensor));
           }));
 }
 
@@ -79,12 +79,12 @@ SensorReadingSharedBuffer* FakePlatformSensorProvider::GetSensorReadingBuffer(
 void FakePlatformSensorProvider::CreateSensorInternal(
     mojom::SensorType type,
     SensorReadingSharedBuffer* reading_buffer,
-    const CreateSensorCallback& callback) {
+    CreateSensorCallback callback) {
   DCHECK(type >= mojom::SensorType::kMinValue &&
          type <= mojom::SensorType::kMaxValue);
   auto sensor =
       base::MakeRefCounted<FakePlatformSensor>(type, reading_buffer, this);
-  DoCreateSensorInternal(type, std::move(sensor), callback);
+  DoCreateSensorInternal(type, std::move(sensor), std::move(callback));
 }
 
 MockPlatformSensorClient::MockPlatformSensorClient() {

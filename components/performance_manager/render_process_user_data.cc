@@ -26,44 +26,26 @@ const void* const kRenderProcessUserDataKey = &kRenderProcessUserDataKey;
 
 }  // namespace
 
-RenderProcessUserData* RenderProcessUserData::first_ = nullptr;
-
 RenderProcessUserData::RenderProcessUserData(
     content::RenderProcessHost* render_process_host)
     : host_(render_process_host) {
   host_->AddObserver(this);
   process_node_ = PerformanceManagerImpl::GetInstance()->CreateProcessNode(
       RenderProcessHostProxy(host_->GetID()));
-
-  // Push this instance to the list.
-  next_ = first_;
-  if (next_)
-    next_->prev_ = this;
-  prev_ = nullptr;
-  first_ = this;
 }
 
 RenderProcessUserData::~RenderProcessUserData() {
   PerformanceManagerImpl::GetInstance()->DeleteNode(std::move(process_node_));
   host_->RemoveObserver(this);
 
-  if (first_ == this)
-    first_ = next_;
-
-  if (prev_) {
-    DCHECK_EQ(prev_->next_, this);
-    prev_->next_ = next_;
-  }
-  if (next_) {
-    DCHECK_EQ(next_->prev_, this);
-    next_->prev_ = prev_;
+  if (destruction_observer_) {
+    destruction_observer_->OnRenderProcessUserDataDestroying(host_);
   }
 }
 
 // static
-void RenderProcessUserData::DetachAndDestroyAll() {
-  while (first_)
-    first_->host_->RemoveUserData(kRenderProcessUserDataKey);
+const void* RenderProcessUserData::UserDataKey() {
+  return kRenderProcessUserDataKey;
 }
 
 // static
@@ -73,15 +55,19 @@ RenderProcessUserData* RenderProcessUserData::GetForRenderProcessHost(
       host->GetUserData(kRenderProcessUserDataKey));
 }
 
+void RenderProcessUserData::SetDestructionObserver(
+    DestructionObserver* destruction_observer) {
+  DCHECK(!destruction_observer || !destruction_observer_);
+  destruction_observer_ = destruction_observer;
+}
+
 // static
-RenderProcessUserData* RenderProcessUserData::GetOrCreateForRenderProcessHost(
+RenderProcessUserData* RenderProcessUserData::CreateForRenderProcessHost(
     content::RenderProcessHost* host) {
-  auto* raw_user_data = GetForRenderProcessHost(host);
-  if (raw_user_data)
-    return raw_user_data;
+  DCHECK(!GetForRenderProcessHost(host));
   std::unique_ptr<RenderProcessUserData> user_data =
       base::WrapUnique(new RenderProcessUserData(host));
-  raw_user_data = user_data.get();
+  RenderProcessUserData* raw_user_data = user_data.get();
   host->SetUserData(kRenderProcessUserDataKey, std::move(user_data));
   return raw_user_data;
 }

@@ -15,9 +15,9 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/performance_manager/graph/process_node_impl.h"
 #include "components/performance_manager/performance_manager_impl.h"
-#include "components/performance_manager/performance_manager_tab_helper.h"
 #include "components/performance_manager/public/graph/process_node.h"
 #include "components/performance_manager/public/render_process_host_proxy.h"
 #include "components/performance_manager/render_process_user_data.h"
@@ -38,8 +38,11 @@ class RenderProcessHostProxyTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     perf_man_ = PerformanceManagerImpl::Create(base::DoNothing());
+    registry_ = PerformanceManagerRegistry::Create();
   }
   void TearDown() override {
+    registry_->TearDown();
+    registry_.reset();
     // Have the performance manager destroy itself.
     PerformanceManagerImpl::Destroy(std::move(perf_man_));
     task_environment()->RunUntilIdle();
@@ -50,9 +53,11 @@ class RenderProcessHostProxyTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<content::WebContents> CreateTestWebContents() {
     std::unique_ptr<content::WebContents> contents =
         ChromeRenderViewHostTestHarness::CreateTestWebContents();
-    PerformanceManagerTabHelper::CreateForWebContents(contents.get());
+    registry_->CreatePageNodeForWebContents(contents.get());
     return contents;
   }
+
+  std::unique_ptr<PerformanceManagerRegistry> registry_;
 
  private:
   std::unique_ptr<PerformanceManagerImpl> perf_man_;
@@ -81,8 +86,9 @@ TEST_F(RenderProcessHostProxyTest, RPHDeletionInvalidatesProxy) {
       rph_factory->CreateRenderProcessHost(profile, site_instance.get()));
 
   // Now create a RenderProcessUserData which creates a ProcessNode.
+  registry_->CreateProcessNodeForRenderProcessHost(host);
   auto* render_process_user_data =
-      RenderProcessUserData::GetOrCreateForRenderProcessHost(host);
+      RenderProcessUserData::GetForRenderProcessHost(host);
   ASSERT_NE(render_process_user_data, nullptr);
   ProcessNode* process_node = render_process_user_data->process_node();
   ASSERT_NE(process_node, nullptr);

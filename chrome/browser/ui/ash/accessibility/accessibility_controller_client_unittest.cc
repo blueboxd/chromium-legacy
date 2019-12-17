@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/ash/accessibility/fake_accessibility_controller.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 
@@ -75,7 +74,6 @@ class AccessibilityControllerClientTest : public testing::Test {
 
  private:
   content::BrowserTaskEnvironment task_environment_;
-  content::TestServiceManagerContext context_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityControllerClientTest);
 };

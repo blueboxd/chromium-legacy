@@ -109,6 +109,12 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
                     bool prevent_inline_autocomplete));
   MOCK_METHOD1(StopAutocomplete, void(bool clear_result));
   MOCK_METHOD1(BlocklistPromo, void(const std::string& promo_id));
+  MOCK_METHOD5(OpenExtensionsPage,
+               void(double button,
+                    bool alt_key,
+                    bool ctrl_key,
+                    bool meta_key,
+                    bool shift_key));
   MOCK_METHOD9(OpenAutocompleteMatch,
                void(uint8_t line,
                     const GURL& url,
@@ -157,6 +163,7 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD1(ShouldProcessQueryAutocomplete, bool(bool));
   MOCK_METHOD0(ShouldProcessStopAutocomplete, bool());
   MOCK_METHOD0(ShouldProcessBlocklistPromo, bool());
+  MOCK_METHOD0(ShouldProcessOpenExtensionsPage, bool());
   MOCK_METHOD1(ShouldProcessOpenAutocompleteMatch, bool(bool));
   MOCK_METHOD0(ShouldProcessDeleteAutocompleteMatch, bool());
 };

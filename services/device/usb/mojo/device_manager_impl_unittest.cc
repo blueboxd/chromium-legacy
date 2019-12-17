@@ -90,14 +90,14 @@ class MockDeviceManagerClient : public mojom::UsbDeviceManagerClient {
 };
 
 void ExpectDevicesAndThen(const std::set<std::string>& expected_guids,
-                          const base::Closure& continuation,
+                          base::OnceClosure continuation,
                           std::vector<UsbDeviceInfoPtr> results) {
   EXPECT_EQ(expected_guids.size(), results.size());
   std::set<std::string> actual_guids;
   for (size_t i = 0; i < results.size(); ++i)
     actual_guids.insert(results[i]->guid);
   EXPECT_EQ(expected_guids, actual_guids);
-  continuation.Run();
+  std::move(continuation).Run();
 }
 
 }  // namespace
@@ -214,7 +214,8 @@ TEST_F(USBDeviceManagerImplTest, Client) {
 
   {
     base::RunLoop loop;
-    base::Closure barrier = base::BarrierClosure(6, loop.QuitClosure());
+    base::RepeatingClosure barrier =
+        base::BarrierClosure(/*num_closures=*/6, loop.QuitClosure());
     testing::InSequence s;
     EXPECT_CALL(mock_client, DoOnDeviceAdded(_))
         .WillOnce(ExpectGuidAndThen(device1->guid(), barrier))

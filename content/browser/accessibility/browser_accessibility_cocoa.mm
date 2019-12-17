@@ -1958,9 +1958,6 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     case ax::mojom::Role::kComment:
       return base::SysUTF16ToNSString(
           content_client->GetLocalizedString(IDS_AX_ROLE_COMMENT));
-    case ax::mojom::Role::kCommentSection:
-      return base::SysUTF16ToNSString(
-          content_client->GetLocalizedString(IDS_AX_ROLE_COMMENT_SECTION));
     case ax::mojom::Role::kComplementary:
       return base::SysUTF16ToNSString(
           content_client->GetLocalizedString(IDS_AX_ROLE_COMPLEMENTARY));
@@ -2006,9 +2003,6 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     case ax::mojom::Role::kRegion:
       return base::SysUTF16ToNSString(
           content_client->GetLocalizedString(IDS_AX_ROLE_REGION));
-    case ax::mojom::Role::kRevision:
-      return base::SysUTF16ToNSString(
-          content_client->GetLocalizedString(IDS_AX_ROLE_REVISION));
     case ax::mojom::Role::kSection:
       // A <section> element uses the 'region' ARIA role mapping.
       return base::SysUTF16ToNSString(

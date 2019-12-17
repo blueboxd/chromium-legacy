@@ -38,11 +38,6 @@ class PerformanceManagerTabHelperTest : public PerformanceManagerTestHarness {
     // nodes involved.
     DeleteContents();
 
-    // The RenderProcessHosts seem to get leaked, or at least be still alive
-    // here, so explicitly detach from them in order to clean up the graph
-    // nodes.
-    RenderProcessUserData::DetachAndDestroyAll();
-
     PerformanceManagerTestHarness::TearDown();
   }
 

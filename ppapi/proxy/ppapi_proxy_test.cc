@@ -226,7 +226,7 @@ void PluginProxyTestHarness::TearDownHarness() {
 }
 
 void PluginProxyTestHarness::CreatePluginGlobals(
-    const scoped_refptr<base::TaskRunner>& ipc_task_runner) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner) {
   if (globals_config_ == PER_THREAD_GLOBALS) {
     plugin_globals_.reset(new PluginGlobals(PpapiGlobals::PerThreadForTest(),
                                             ipc_task_runner));

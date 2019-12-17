@@ -24,7 +24,6 @@
 <translation id="1171770572613082465">Mashhur saytlarni chiqarish uchun “Top saytlar” tugmasini bosing</translation>
 <translation id="1173894706177603556">Qayta nomlash</translation>
 <translation id="1178581264944972037">Pauza</translation>
-<translation id="118069123878619799">- boʻy kabi jismoniy xususiyatlaringiz</translation>
 <translation id="1181037720776840403">Olib tashlash</translation>
 <translation id="1188239144602654184">Virtual reallikka kirish</translation>
 <translation id="1197267115302279827">Xatcho‘plarni ko‘chirib o‘tkazish</translation>
@@ -62,7 +61,6 @@
 <translation id="1384959399684842514">Yuklab olish pauza qilindi.</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> kun oldin onlayn edi</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> orqali qidirish</translation>
-<translation id="1404122904123200417"><ph name="WEBSITE_URL" /> saytida o‘rnatilgan</translation>
 <translation id="1406000523432664303">“Kuzatilmasin”</translation>
 <translation id="1407135791313364759">Barchasini ochish</translation>
 <translation id="1409426117486808224">Ochiq varaqlarni ko‘rish uchun oddiy rejim</translation>
@@ -215,6 +213,7 @@
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> ta element oʻchirib tashlandi</translation>
 <translation id="2536728043171574184">Bu sahifaning oflayn nusxasi ko‘rilmoqda</translation>
 <translation id="2537178555904266562">Parollar sinxronlanmadi</translation>
+<translation id="2537296579376733324">Barcha cookie fayllar, faqat shu saytda</translation>
 <translation id="2546283357679194313">Cookie fayllari va sayt ma’lumotlari</translation>
 <translation id="2567385386134582609">TASVIR</translation>
 <translation id="257088987046510401">Mavzular</translation>
@@ -472,6 +471,7 @@ Google hisobingiz orqali amalga oshirgan qidiruvlaringiz, brauzer tarixi va bosh
 <translation id="4565377596337484307">Parolni berkitish</translation>
 <translation id="4570913071927164677">Tafsilotlar</translation>
 <translation id="4572422548854449519">Tobe hisobga kirish</translation>
+<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# daqiqa oldin}other{# daqiqa oldin}}</translation>
 <translation id="4587589328781138893">Sites</translation>
 <translation id="4594952190837476234">Bu sahifa saytning <ph name="CREATION_TIME" /> kunidagi nusxasi va onlayn versiyasidan farq qilishi mumkin.</translation>
@@ -652,7 +652,6 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="5809361687334836369">{HOURS,plural, =1{# soat oldin}other{# soat oldin}}</translation>
 <translation id="5810288467834065221">© Google LLC, <ph name="YEAR" /> Barcha huquqlar himoyalangan.</translation>
 <translation id="5817918615728894473">Ulanish</translation>
-<translation id="5819762621475381970">- xonangiz dizayni</translation>
 <translation id="583281660410589416">Noma’lum</translation>
 <translation id="5833984609253377421">Havolani ulashish</translation>
 <translation id="5836192821815272682">Chrome yangilanishi yuklab olinmoqda…</translation>
@@ -753,6 +752,7 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="6545017243486555795">Barcha ma’lumotlarni tozalash</translation>
 <translation id="6545864417968258051">Bluetooth qurilmalarni qidirish</translation>
 <translation id="6560414384669816528">Sogou orqali qidirib ko‘ring</translation>
+<translation id="656065428026159829">Yana</translation>
 <translation id="6566259936974865419">Chrome <ph name="GIGABYTES" /> GB tejab qoldi</translation>
 <translation id="6573096386450695060">Har doim ruxsat berilsin</translation>
 <translation id="6573431926118603307">Boshqa qurilmalaringizda ochilgan Chrome sahifalari shu yerda ko‘rsatiladi.</translation>
@@ -849,6 +849,7 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="7293171162284876153">Sinxronlashni boshlash uchun “Chrome axborotini sinxronlash” tugmasini bosing.</translation>
 <translation id="729975465115245577">Qurilmangizda parollarni saqlovchi ilova yo‘q.</translation>
 <translation id="7302081693174882195">Tafsilot: Tejalgan trafik asosida saralandi</translation>
+<translation id="7302486331832100261">Odatda bildirishnomalarni bloklaysiz. Ruxsat berish uchun Tafsilotlar ustiga bosing.</translation>
 <translation id="7328017930301109123">Lite rejimida Chrome sahifalarni tezroq yuklaydi va 60 foizgacha trafik tejaydi.</translation>
 <translation id="7333031090786104871">Avvalgi sayt qo‘shilmoqda</translation>
 <translation id="7352939065658542140">VIDEO</translation>

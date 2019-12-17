@@ -103,6 +103,9 @@ class TestCascade {
   void Apply(String name) { Apply(*CSSPropertyName::From(name)); }
   void Apply() { cascade_.Apply(); }
   void Apply(StyleCascade::Animator& animator) { cascade_.Apply(animator); }
+  void Exclude(CSSProperty::Flag flag, bool set) {
+    cascade_.Exclude(flag, set);
+  }
 
   HeapVector<CSSPropertyValue, 256> ParseValues(
       const CSSPropertyName& name,
@@ -240,7 +243,7 @@ class TestCascadeResolver {
 
  public:
   TestCascadeResolver(Document& document, StyleAnimator& animator)
-      : document_(&document), resolver_(animator) {}
+      : document_(&document), resolver_(animator, excluder_) {}
   bool InCycle() const { return resolver_.InCycle(); }
   bool DetectCycle(String name) {
     CSSPropertyRef ref(name, *document_);
@@ -254,6 +257,7 @@ class TestCascadeResolver {
   friend class TestCascadeAutoLock;
 
   Member<Document> document_;
+  StyleCascade::Excluder excluder_;
   StyleCascade::Resolver resolver_;
 };
 
@@ -1964,6 +1968,109 @@ TEST_F(StyleCascadeTest, VarInInternalVisitedShorthand) {
   Color green(0, 128, 0);
   const CSSProperty& outline_color = GetCSSPropertyOutlineColor();
   EXPECT_EQ(green, cascade.TakeStyle()->VisitedDependentColor(outline_color));
+}
+
+TEST_F(StyleCascadeTest, ExcludeNothing) {
+  StyleCascade::Excluder excluder;
+  EXPECT_FALSE(excluder.IsExcluded(GetCSSPropertyBackgroundColor()));
+  EXPECT_FALSE(excluder.IsExcluded(GetCSSPropertyColor()));
+  EXPECT_FALSE(excluder.IsExcluded(GetCSSPropertyDisplay()));
+  EXPECT_FALSE(excluder.IsExcluded(GetCSSPropertyFloat()));
+  EXPECT_FALSE(excluder.IsExcluded(GetCSSPropertyInternalVisitedColor()));
+}
+
+TEST_F(StyleCascadeTest, ExcludeInherited) {
+  StyleCascade::Excluder excluder;
+  excluder.Exclude(CSSProperty::kInherited, true);
+  EXPECT_FALSE(excluder.IsExcluded(GetCSSPropertyBackgroundColor()));
+  EXPECT_TRUE(excluder.IsExcluded(GetCSSPropertyColor()));
+  EXPECT_TRUE(excluder.IsExcluded(GetCSSPropertyFontSize()));
+  EXPECT_FALSE(excluder.IsExcluded(GetCSSPropertyDisplay()));
+  EXPECT_FALSE(excluder.IsExcluded(GetCSSPropertyFloat()));
+  EXPECT_TRUE(excluder.IsExcluded(GetCSSPropertyInternalVisitedColor()));
+}
+
+TEST_F(StyleCascadeTest, ExcludeNonInherited) {
+  StyleCascade::Excluder excluder;
+  excluder.Exclude(CSSProperty::kInherited, false);
+  EXPECT_TRUE(excluder.IsExcluded(GetCSSPropertyBackgroundColor()));
+  EXPECT_FALSE(excluder.IsExcluded(GetCSSPropertyColor()));
+  EXPECT_TRUE(excluder.IsExcluded(GetCSSPropertyDisplay()));
+  EXPECT_TRUE(excluder.IsExcluded(GetCSSPropertyFloat()));
+  EXPECT_FALSE(excluder.IsExcluded(GetCSSPropertyInternalVisitedColor()));
+}
+
+TEST_F(StyleCascadeTest, ExcludeVisitedAndInherited) {
+  StyleCascade::Excluder excluder;
+  excluder.Exclude(CSSProperty::kVisited, true);
+  excluder.Exclude(CSSProperty::kInherited, true);
+  EXPECT_FALSE(excluder.IsExcluded(GetCSSPropertyBackgroundColor()));
+  EXPECT_TRUE(excluder.IsExcluded(GetCSSPropertyColor()));
+  EXPECT_FALSE(excluder.IsExcluded(GetCSSPropertyDisplay()));
+  EXPECT_FALSE(excluder.IsExcluded(GetCSSPropertyFloat()));
+  EXPECT_TRUE(
+      excluder.IsExcluded(GetCSSPropertyInternalVisitedBackgroundColor()));
+}
+
+TEST_F(StyleCascadeTest, ExcludeVisitedAndNonInherited) {
+  StyleCascade::Excluder excluder;
+  excluder.Exclude(CSSProperty::kVisited, true);
+  excluder.Exclude(CSSProperty::kInherited, false);
+  EXPECT_TRUE(excluder.IsExcluded(GetCSSPropertyBackgroundColor()));
+  EXPECT_FALSE(excluder.IsExcluded(GetCSSPropertyColor()));
+  EXPECT_TRUE(excluder.IsExcluded(GetCSSPropertyDisplay()));
+  EXPECT_TRUE(excluder.IsExcluded(GetCSSPropertyFloat()));
+  EXPECT_TRUE(excluder.IsExcluded(GetCSSPropertyInternalVisitedColor()));
+}
+
+TEST_F(StyleCascadeTest, ClearExcludes) {
+  StyleCascade::Excluder excluder;
+  excluder.Exclude(CSSProperty::kVisited, true);
+  excluder.Exclude(CSSProperty::kInherited, false);
+  EXPECT_TRUE(excluder.IsExcluded(GetCSSPropertyBackgroundColor()));
+  EXPECT_FALSE(excluder.IsExcluded(GetCSSPropertyColor()));
+  EXPECT_TRUE(excluder.IsExcluded(GetCSSPropertyDisplay()));
+  EXPECT_TRUE(excluder.IsExcluded(GetCSSPropertyFloat()));
+  EXPECT_TRUE(excluder.IsExcluded(GetCSSPropertyInternalVisitedColor()));
+  excluder.Clear();
+  EXPECT_FALSE(excluder.IsExcluded(GetCSSPropertyBackgroundColor()));
+  EXPECT_FALSE(excluder.IsExcluded(GetCSSPropertyColor()));
+  EXPECT_FALSE(excluder.IsExcluded(GetCSSPropertyDisplay()));
+  EXPECT_FALSE(excluder.IsExcluded(GetCSSPropertyFloat()));
+  EXPECT_FALSE(excluder.IsExcluded(GetCSSPropertyInternalVisitedColor()));
+}
+
+TEST_F(StyleCascadeTest, ApplyWithExclude) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("color", "blue", Origin::kAuthor);
+  cascade.Add("background-color", "green", Origin::kAuthor);
+  cascade.Add("display", "inline", Origin::kAuthor);
+  cascade.Apply();
+  cascade.Add("color", "green", Origin::kAuthor);
+  cascade.Add("background-color", "red", Origin::kAuthor);
+  cascade.Add("display", "block", Origin::kAuthor);
+  cascade.Exclude(CSSProperty::kInherited, false);
+  cascade.Apply();
+  EXPECT_EQ("rgb(0, 128, 0)", cascade.ComputedValue("color"));
+  EXPECT_EQ("rgb(0, 128, 0)", cascade.ComputedValue("background-color"));
+  EXPECT_EQ("inline", cascade.ComputedValue("display"));
+}
+
+TEST_F(StyleCascadeTest, ApplyClearsExcludes) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("color", "red", Origin::kAuthor);
+  cascade.Add("background-color", "red", Origin::kAuthor);
+  cascade.Add("display", "inline", Origin::kAuthor);
+  cascade.Exclude(CSSProperty::kInherited, true);
+  cascade.Exclude(CSSProperty::kInherited, false);
+  cascade.Apply();
+  cascade.Add("color", "green", Origin::kAuthor);
+  cascade.Add("background-color", "green", Origin::kAuthor);
+  cascade.Add("display", "block", Origin::kAuthor);
+  cascade.Apply();
+  EXPECT_EQ("rgb(0, 128, 0)", cascade.ComputedValue("color"));
+  EXPECT_EQ("rgb(0, 128, 0)", cascade.ComputedValue("background-color"));
+  EXPECT_EQ("block", cascade.ComputedValue("display"));
 }
 
 }  // namespace blink

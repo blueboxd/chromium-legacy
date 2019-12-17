@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
-#include "base/task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/unguessable_token.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/resources/single_release_callback.h"
@@ -59,7 +59,8 @@ class VIZ_COMMON_EXPORT CopyOutputRequest {
   // Requests that the result callback be run as a task posted to the given
   // |task_runner|. If this is not set, the result callback could be run from
   // any context.
-  void set_result_task_runner(scoped_refptr<base::TaskRunner> task_runner) {
+  void set_result_task_runner(
+      scoped_refptr<base::SequencedTaskRunner> task_runner) {
     result_task_runner_ = std::move(task_runner);
   }
   bool has_result_task_runner() const { return !!result_task_runner_; }
@@ -127,7 +128,7 @@ class VIZ_COMMON_EXPORT CopyOutputRequest {
 
   const ResultFormat result_format_;
   CopyOutputRequestCallback result_callback_;
-  scoped_refptr<base::TaskRunner> result_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> result_task_runner_;
   gfx::Vector2d scale_from_;
   gfx::Vector2d scale_to_;
   base::Optional<base::UnguessableToken> source_;

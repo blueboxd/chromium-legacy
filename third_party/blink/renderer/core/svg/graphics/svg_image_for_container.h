@@ -70,6 +70,7 @@ class SVGImageForContainer final : public Image {
   }
 
   IntSize Size() const override;
+  FloatSize SizeAsFloat() const override;
 
   bool HasIntrinsicSize() const override { return image_->HasIntrinsicSize(); }
 
@@ -102,7 +103,8 @@ class SVGImageForContainer final : public Image {
                    const FloatPoint&,
                    SkBlendMode,
                    const FloatRect&,
-                   const FloatSize& repeat_spacing) override;
+                   const FloatSize& repeat_spacing,
+                   RespectImageOrientationEnum) override;
 
  private:
   SVGImageForContainer(SVGImage* image,

@@ -564,4 +564,33 @@ TEST_F(ScrollableShelfViewTest, FeedbackForAppPinning) {
             scrollable_shelf_view_->layout_strategy_for_test());
 }
 
+// Verifies that removing a shelf icon by mouse works as expected on scrollable
+// shelf (see https://crbug.com/1033967).
+TEST_F(ScrollableShelfViewTest, RipOffShelfItem) {
+  AddAppShortcutsUntilOverflow();
+  ASSERT_EQ(ScrollableShelfView::kShowRightArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  views::ViewModel* view_model = shelf_view_->view_model();
+  const gfx::Rect first_tappable_view_bounds =
+      view_model->view_at(scrollable_shelf_view_->first_tappable_app_index())
+          ->GetBoundsInScreen();
+
+  const gfx::Point drag_start_location =
+      first_tappable_view_bounds.CenterPoint();
+  const gfx::Point drag_end_location = gfx::Point(
+      drag_start_location.x(),
+      drag_start_location.y() - 3 * ShelfConfig::Get()->shelf_size());
+
+  // Drags an icon off the shelf to remove it.
+  GetEventGenerator()->MoveMouseTo(drag_start_location);
+  GetEventGenerator()->PressLeftButton();
+  GetEventGenerator()->MoveMouseTo(drag_end_location);
+  GetEventGenerator()->ReleaseLeftButton();
+
+  // Expects that the scrollable shelf has the correct layout strategy.
+  EXPECT_EQ(ScrollableShelfView::kNotShowArrowButtons,
+            scrollable_shelf_view_->layout_strategy_for_test());
+}
+
 }  // namespace ash

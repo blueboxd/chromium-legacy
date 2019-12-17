@@ -430,8 +430,6 @@ void URLRequestHttpJob::MaybeStartTransactionInternal(int result) {
 }
 
 void URLRequestHttpJob::StartTransactionInternal() {
-  // This should only be called while the request's status is IO_PENDING.
-  DCHECK_EQ(URLRequestStatus::IO_PENDING, request_->status().status());
   DCHECK(!override_response_headers_);
 
   // NOTE: This method assumes that request_info_ is already setup properly.
@@ -1464,8 +1462,7 @@ void URLRequestHttpJob::DoneWithRequest(CompletionCause reason) {
   NetworkQualityEstimator* network_quality_estimator =
       request()->context()->network_quality_estimator();
   if (network_quality_estimator) {
-    network_quality_estimator->NotifyRequestCompleted(
-        *request(), request_->status().error());
+    network_quality_estimator->NotifyRequestCompleted(*request());
   }
 
   RecordPerfHistograms(reason);

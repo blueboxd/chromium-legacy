@@ -74,7 +74,7 @@ TEST(PlatformSensorProviderTestWinrt, SensorCreationReturnCheck) {
   base::Optional<base::RunLoop> run_loop;
   bool expect_sensor_valid = false;
 
-  base::Callback<void(scoped_refptr<PlatformSensor> sensor)>
+  base::RepeatingCallback<void(scoped_refptr<PlatformSensor> sensor)>
       create_sensor_callback =
           base::BindLambdaForTesting([&](scoped_refptr<PlatformSensor> sensor) {
             if (expect_sensor_valid)
@@ -86,12 +86,13 @@ TEST(PlatformSensorProviderTestWinrt, SensorCreationReturnCheck) {
 
   run_loop.emplace();
   provider->CreateSensor(mojom::SensorType::AMBIENT_LIGHT,
-                         create_sensor_callback);
+                         base::BindOnce(create_sensor_callback));
   run_loop->Run();
 
   expect_sensor_valid = true;
   run_loop.emplace();
-  provider->CreateSensor(mojom::SensorType::GYROSCOPE, create_sensor_callback);
+  provider->CreateSensor(mojom::SensorType::GYROSCOPE,
+                         base::BindOnce(create_sensor_callback));
   run_loop->Run();
 
   // Linear acceleration is a fusion sensor built on top of accelerometer,
@@ -99,7 +100,7 @@ TEST(PlatformSensorProviderTestWinrt, SensorCreationReturnCheck) {
   expect_sensor_valid = true;
   run_loop.emplace();
   provider->CreateSensor(mojom::SensorType::LINEAR_ACCELERATION,
-                         create_sensor_callback);
+                         base::BindOnce(create_sensor_callback));
   run_loop->Run();
 }
 

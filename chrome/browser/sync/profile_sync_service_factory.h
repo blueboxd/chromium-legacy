@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_FACTORY_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -47,6 +48,10 @@ class ProfileSyncServiceFactory : public BrowserContextKeyedServiceFactory {
 
   // Overrides how the SyncClient is created for testing purposes.
   static void SetSyncClientFactoryForTest(SyncClientFactory* client_factory);
+
+  // Iterates over all profiles that have been loaded so far and extract their
+  // SyncService if present. Returned pointers are guaranteed to be not null.
+  static std::vector<const syncer::SyncService*> GetAllSyncServices();
 
  private:
   friend struct base::DefaultSingletonTraits<ProfileSyncServiceFactory>;

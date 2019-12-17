@@ -35,10 +35,7 @@
 }
 
 - (void)applicationWillBecomeActive:(NSNotification*)notification {
-  // TODO(https://crbug.com/829689): There should be no arguments to this mojo
-  // method.
-  return _appShimController->host()->FocusApp(
-      chrome::mojom::AppShimFocusType::kNormal, std::vector<base::FilePath>());
+  return _appShimController->host()->FocusApp();
 }
 
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {

@@ -30,7 +30,6 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.NotificationPermissionUpdater;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -53,8 +52,8 @@ public class ClientAppBroadcastReceiverTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        mReceiver = new ClientAppBroadcastReceiver(mMockStrategy, mDataRegister,
-                mock(ChromePreferenceManager.class), mPermissionUpdater);
+        mReceiver = new ClientAppBroadcastReceiver(
+                mMockStrategy, mDataRegister, mock(BrowserServicesStore.class), mPermissionUpdater);
         mContext = RuntimeEnvironment.application;
     }
 
@@ -112,9 +111,9 @@ public class ClientAppBroadcastReceiverTest {
     @Test
     @Feature("TrustedWebActivities")
     public void execute_ValidIntent() {
-        mReceiver = new ClientAppBroadcastReceiver(
-                new ClientAppBroadcastReceiver.ClearDataStrategy(), mDataRegister,
-                mock(ChromePreferenceManager.class), mPermissionUpdater);
+        mReceiver =
+                new ClientAppBroadcastReceiver(new ClientAppBroadcastReceiver.ClearDataStrategy(),
+                        mDataRegister, mock(BrowserServicesStore.class), mPermissionUpdater);
 
         int id = 67;
         String appName = "App Name 3";
@@ -140,9 +139,9 @@ public class ClientAppBroadcastReceiverTest {
     @Test
     @Feature("TrustedwebActivities")
     public void execute_UpdatePermissions() {
-        mReceiver = new ClientAppBroadcastReceiver(
-                new ClientAppBroadcastReceiver.ClearDataStrategy(), mDataRegister,
-                mock(ChromePreferenceManager.class), mPermissionUpdater);
+        mReceiver =
+                new ClientAppBroadcastReceiver(new ClientAppBroadcastReceiver.ClearDataStrategy(),
+                        mDataRegister, mock(BrowserServicesStore.class), mPermissionUpdater);
 
         int id = 67;
         String appName = "App Name 3";

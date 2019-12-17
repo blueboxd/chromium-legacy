@@ -3,200 +3,205 @@
 // found in the LICENSE file.
 
 #include "printing/backend/cups_helper.h"
+
 #include "printing/backend/print_backend.h"
+#include "printing/printing_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorDuplexShortEdge) {
-  const char kTestPpdData[] =
-      "*PPD-Adobe: \"4.3\"\n\n"
-      "*OpenGroup: General/General\n\n"
-      "*OpenUI *ColorModel/Color Model: PickOne\n"
-      "*DefaultColorModel: Gray\n"
-      "*ColorModel Gray/Grayscale: \""
-      "<</cupsColorSpace 0/cupsColorOrder 0>>"
-      "setpagedevice\"\n"
-      "*ColorModel Black/Inverted Grayscale: \""
-      "<</cupsColorSpace 3/cupsColorOrder 0>>"
-      "setpagedevice\"\n"
-      "*CloseUI: *ColorModel\n"
-      "*OpenUI *Duplex/2-Sided Printing: PickOne\n"
-      "*DefaultDuplex: DuplexTumble\n"
-      "*Duplex None/Off: \"<</Duplex false>>"
-      "setpagedevice\"\n"
-      "*Duplex DuplexNoTumble/LongEdge: \""
-      "<</Duplex true/Tumble false>>setpagedevice\"\n"
-      "*Duplex DuplexTumble/ShortEdge: \""
-      "<</Duplex true/Tumble true>>setpagedevice\"\n"
-      "*CloseUI: *Duplex\n\n"
-      "*CloseGroup: General\n";
+namespace printing {
 
-  printing::PrinterSemanticCapsAndDefaults caps;
-  EXPECT_TRUE(printing::ParsePpdCapabilities("test", kTestPpdData, &caps));
+namespace {
+
+// Returns true if the papers have the same name, vendor ID, and size.
+bool PapersEqual(const PrinterSemanticCapsAndDefaults::Paper& lhs,
+                 const PrinterSemanticCapsAndDefaults::Paper& rhs) {
+  return lhs.display_name == rhs.display_name &&
+         lhs.vendor_id == rhs.vendor_id && lhs.size_um == rhs.size_um;
+}
+
+}  // namespace
+
+TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorDuplexShortEdge) {
+  constexpr char kTestPpdData[] =
+      R"(*PPD-Adobe: "4.3"
+*OpenGroup: General/General
+*OpenUI *ColorModel/Color Model: PickOne
+*DefaultColorModel: Gray
+*ColorModel Gray/Grayscale: "
+  <</cupsColorSpace 0/cupsColorOrder 0>>setpagedevice"
+*ColorModel Black/Inverted Grayscale: "
+  <</cupsColorSpace 3/cupsColorOrder 0>>setpagedevice"
+*CloseUI: *ColorModel
+*OpenUI *Duplex/2-Sided Printing: PickOne
+*DefaultDuplex: DuplexTumble
+*Duplex None/Off: "
+  <</Duplex false>>setpagedevice"
+*Duplex DuplexNoTumble/LongEdge: "
+  </Duplex true/Tumble false>>setpagedevice"
+*Duplex DuplexTumble/ShortEdge: "
+  <</Duplex true/Tumble true>>setpagedevice"
+*CloseUI: *Duplex
+*CloseGroup: General)";
+
+  PrinterSemanticCapsAndDefaults caps;
+  EXPECT_TRUE(ParsePpdCapabilities("test", "", kTestPpdData, &caps));
   EXPECT_TRUE(caps.collate_capable);
   EXPECT_TRUE(caps.collate_default);
   EXPECT_TRUE(caps.copies_capable);
-  EXPECT_THAT(caps.duplex_modes, testing::UnorderedElementsAre(
-                                     printing::SIMPLEX, printing::LONG_EDGE,
-                                     printing::SHORT_EDGE));
-  EXPECT_EQ(printing::SHORT_EDGE, caps.duplex_default);
+  EXPECT_THAT(caps.duplex_modes,
+              testing::UnorderedElementsAre(SIMPLEX, LONG_EDGE, SHORT_EDGE));
+  EXPECT_EQ(SHORT_EDGE, caps.duplex_default);
   EXPECT_FALSE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
 }
 
 // Test duplex detection code, which regressed in http://crbug.com/103999.
 TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorDuplexSimples) {
-  const char kTestPpdData[] =
-      "*PPD-Adobe: \"4.3\"\n\n"
-      "*OpenGroup: General/General\n\n"
-      "*OpenUI *Duplex/Double-Sided Printing: PickOne\n"
-      "*DefaultDuplex: None\n"
-      "*Duplex None/Off: "
-      "\"<</Duplex false>>setpagedevice\"\n"
-      "*Duplex DuplexNoTumble/Long Edge (Standard): "
-      "\"<</Duplex true/Tumble false>>setpagedevice\"\n"
-      "*Duplex DuplexTumble/Short Edge (Flip): "
-      "\"<</Duplex true/Tumble true>>setpagedevice\"\n"
-      "*CloseUI: *Duplex\n\n"
-      "*CloseGroup: General\n";
+  constexpr char kTestPpdData[] =
+      R"(*PPD-Adobe: "4.3"
+*OpenGroup: General/General
+*OpenUI *Duplex/Double-Sided Printing: PickOne
+*DefaultDuplex: None
+*Duplex None/Off: "
+  <</Duplex false>>setpagedevice"
+*Duplex DuplexNoTumble/Long Edge (Standard): "
+  <</Duplex true/Tumble false>>setpagedevice"
+*Duplex DuplexTumble/Short Edge (Flip): "
+  <</Duplex true/Tumble true>>setpagedevice"
+*CloseUI: *Duplex
+*CloseGroup: General)";
 
-  printing::PrinterSemanticCapsAndDefaults caps;
-  EXPECT_TRUE(printing::ParsePpdCapabilities("test", kTestPpdData, &caps));
+  PrinterSemanticCapsAndDefaults caps;
+  EXPECT_TRUE(ParsePpdCapabilities("test", "", kTestPpdData, &caps));
   EXPECT_TRUE(caps.collate_capable);
   EXPECT_TRUE(caps.collate_default);
   EXPECT_TRUE(caps.copies_capable);
-  EXPECT_THAT(caps.duplex_modes, testing::UnorderedElementsAre(
-                                     printing::SIMPLEX, printing::LONG_EDGE,
-                                     printing::SHORT_EDGE));
-  EXPECT_EQ(printing::SIMPLEX, caps.duplex_default);
+  EXPECT_THAT(caps.duplex_modes,
+              testing::UnorderedElementsAre(SIMPLEX, LONG_EDGE, SHORT_EDGE));
+  EXPECT_EQ(SIMPLEX, caps.duplex_default);
   EXPECT_FALSE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
 }
 
 TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorNoDuplex) {
-  const char kTestPpdData[] =
-      "*PPD-Adobe: \"4.3\"\n\n"
-      "*OpenGroup: General/General\n\n"
-      "*OpenUI *ColorModel/Color Model: PickOne\n"
-      "*DefaultColorModel: Gray\n"
-      "*ColorModel Gray/Grayscale: \""
-      "<</cupsColorSpace 0/cupsColorOrder 0>>"
-      "setpagedevice\"\n"
-      "*ColorModel Black/Inverted Grayscale: \""
-      "<</cupsColorSpace 3/cupsColorOrder 0>>"
-      "setpagedevice\"\n"
-      "*CloseUI: *ColorModel\n"
-      "*CloseGroup: General\n";
+  constexpr char kTestPpdData[] =
+      R"(*PPD-Adobe: "4.3"
+*OpenGroup: General/General
+*OpenUI *ColorModel/Color Model: PickOne
+*DefaultColorModel: Gray
+*ColorModel Gray/Grayscale: "
+  <</cupsColorSpace 0/cupsColorOrder 0>>setpagedevice"
+*ColorModel Black/Inverted Grayscale: "
+  <</cupsColorSpace 3/cupsColorOrder 0>>setpagedevice"
+*CloseUI: *ColorModel
+*CloseGroup: General)";
 
-  printing::PrinterSemanticCapsAndDefaults caps;
-  EXPECT_TRUE(printing::ParsePpdCapabilities("test", kTestPpdData, &caps));
+  PrinterSemanticCapsAndDefaults caps;
+  EXPECT_TRUE(ParsePpdCapabilities("test", "", kTestPpdData, &caps));
   EXPECT_TRUE(caps.collate_capable);
   EXPECT_TRUE(caps.collate_default);
   EXPECT_TRUE(caps.copies_capable);
   EXPECT_THAT(caps.duplex_modes, testing::UnorderedElementsAre());
-  EXPECT_EQ(printing::UNKNOWN_DUPLEX_MODE, caps.duplex_default);
+  EXPECT_EQ(UNKNOWN_DUPLEX_MODE, caps.duplex_default);
   EXPECT_FALSE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
 }
 
 TEST(PrintBackendCupsHelperTest, TestPpdParsingColorTrueDuplexShortEdge) {
-  const char kTestPpdData[] =
-      "*PPD-Adobe: \"4.3\"\n\n"
-      "*ColorDevice: True\n"
-      "*DefaultColorSpace: CMYK\n\n"
-      "*OpenGroup: General/General\n\n"
-      "*OpenUI *ColorModel/Color Model: PickOne\n"
-      "*DefaultColorModel: CMYK\n"
-      "*ColorModel CMYK/Color: "
-      "\"(cmyk) RCsetdevicecolor\"\n"
-      "*ColorModel Gray/Black and White: "
-      "\"(gray) RCsetdevicecolor\"\n"
-      "*CloseUI: *ColorModel\n"
-      "*OpenUI *Duplex/2-Sided Printing: PickOne\n"
-      "*DefaultDuplex: DuplexTumble\n"
-      "*Duplex None/Off: \"<</Duplex false>>"
-      "setpagedevice\"\n"
-      "*Duplex DuplexNoTumble/LongEdge: \""
-      "<</Duplex true/Tumble false>>setpagedevice\"\n"
-      "*Duplex DuplexTumble/ShortEdge: \""
-      "<</Duplex true/Tumble true>>setpagedevice\"\n"
-      "*CloseUI: *Duplex\n\n"
-      "*CloseGroup: General\n";
+  constexpr char kTestPpdData[] =
+      R"(*PPD-Adobe: "4.3"
+*ColorDevice: True
+*DefaultColorSpace: CMYK
+*OpenGroup: General/General
+*OpenUI *ColorModel/Color Model: PickOne
+*DefaultColorModel: CMYK
+*ColorModel CMYK/Color: "(cmyk) RCsetdevicecolor"
+*ColorModel Gray/Black and White: "(gray) RCsetdevicecolor"
+*CloseUI: *ColorModel
+*OpenUI *Duplex/2-Sided Printing: PickOne
+*DefaultDuplex: DuplexTumble
+*Duplex None/Off: "
+  <</Duplex false>>setpagedevice"
+*Duplex DuplexNoTumble/LongEdge: "
+  <</Duplex true/Tumble false>>setpagedevice"
+*Duplex DuplexTumble/ShortEdge: "
+  <</Duplex true/Tumble true>>setpagedevice"
+*CloseUI: *Duplex
+*CloseGroup: General)";
 
-  printing::PrinterSemanticCapsAndDefaults caps;
-  EXPECT_TRUE(printing::ParsePpdCapabilities("test", kTestPpdData, &caps));
+  PrinterSemanticCapsAndDefaults caps;
+  EXPECT_TRUE(ParsePpdCapabilities("test", "", kTestPpdData, &caps));
   EXPECT_TRUE(caps.collate_capable);
   EXPECT_TRUE(caps.collate_default);
   EXPECT_TRUE(caps.copies_capable);
-  EXPECT_THAT(caps.duplex_modes, testing::UnorderedElementsAre(
-                                     printing::SIMPLEX, printing::LONG_EDGE,
-                                     printing::SHORT_EDGE));
-  EXPECT_EQ(printing::SHORT_EDGE, caps.duplex_default);
+  EXPECT_THAT(caps.duplex_modes,
+              testing::UnorderedElementsAre(SIMPLEX, LONG_EDGE, SHORT_EDGE));
+  EXPECT_EQ(SHORT_EDGE, caps.duplex_default);
   EXPECT_TRUE(caps.color_changeable);
   EXPECT_TRUE(caps.color_default);
 }
 
 TEST(PrintBackendCupsHelperTest, TestPpdParsingColorFalseDuplexLongEdge) {
-  const char kTestPpdData[] =
-      "*PPD-Adobe: \"4.3\"\n\n"
-      "*ColorDevice: True\n"
-      "*DefaultColorSpace: CMYK\n\n"
-      "*OpenGroup: General/General\n\n"
-      "*OpenUI *ColorModel/Color Model: PickOne\n"
-      "*DefaultColorModel: Grayscale\n"
-      "*ColorModel Color/Color: "
-      "\"%% FoomaticRIPOptionSetting: ColorModel=Color\"\n"
-      "*FoomaticRIPOptionSetting ColorModel=Color: "
-      "\"JCLDatamode=Color GSCmdLine=Color\"\n"
-      "*ColorModel Grayscale/Grayscale: "
-      "\"%% FoomaticRIPOptionSetting: ColorModel=Grayscale\"\n"
-      "*FoomaticRIPOptionSetting ColorModel=Grayscale: "
-      "\"JCLDatamode=Grayscale GSCmdLine=Grayscale\"\n"
-      "*CloseUI: *ColorModel\n"
-      "*OpenUI *Duplex/2-Sided Printing: PickOne\n"
-      "*DefaultDuplex: DuplexNoTumble\n"
-      "*Duplex None/Off: \"<</Duplex false>>"
-      "setpagedevice\"\n"
-      "*Duplex DuplexNoTumble/LongEdge: \""
-      "<</Duplex true/Tumble false>>setpagedevice\"\n"
-      "*Duplex DuplexTumble/ShortEdge: \""
-      "<</Duplex true/Tumble true>>setpagedevice\"\n"
-      "*CloseUI: *Duplex\n\n"
-      "*CloseGroup: General\n";
+  constexpr char kTestPpdData[] =
+      R"(*PPD-Adobe: "4.3"
+*ColorDevice: True
+*DefaultColorSpace: CMYK
+*OpenGroup: General/General
+*OpenUI *ColorModel/Color Model: PickOne
+*DefaultColorModel: Grayscale
+*ColorModel Color/Color: "
+  %% FoomaticRIPOptionSetting: ColorModel=Color"
+*FoomaticRIPOptionSetting ColorModel=Color: "
+  JCLDatamode=Color GSCmdLine=Color"
+*ColorModel Grayscale/Grayscale: "
+  %% FoomaticRIPOptionSetting: ColorModel=Grayscale"
+*FoomaticRIPOptionSetting ColorModel=Grayscale: "
+  JCLDatamode=Grayscale GSCmdLine=Grayscale"
+*CloseUI: *ColorModel
+*OpenUI *Duplex/2-Sided Printing: PickOne
+*DefaultDuplex: DuplexNoTumble
+*Duplex None/Off: "
+  <</Duplex false>>setpagedevice"
+*Duplex DuplexNoTumble/LongEdge: "
+  <</Duplex true/Tumble false>>setpagedevice"
+*Duplex DuplexTumble/ShortEdge: "
+  <</Duplex true/Tumble true>>setpagedevice"
+*CloseUI: *Duplex
+*CloseGroup: General)";
 
-  printing::PrinterSemanticCapsAndDefaults caps;
-  EXPECT_TRUE(printing::ParsePpdCapabilities("test", kTestPpdData, &caps));
+  PrinterSemanticCapsAndDefaults caps;
+  EXPECT_TRUE(ParsePpdCapabilities("test", "", kTestPpdData, &caps));
   EXPECT_TRUE(caps.collate_capable);
   EXPECT_TRUE(caps.collate_default);
   EXPECT_TRUE(caps.copies_capable);
-  EXPECT_THAT(caps.duplex_modes, testing::UnorderedElementsAre(
-                                     printing::SIMPLEX, printing::LONG_EDGE,
-                                     printing::SHORT_EDGE));
-  EXPECT_EQ(printing::LONG_EDGE, caps.duplex_default);
+  EXPECT_THAT(caps.duplex_modes,
+              testing::UnorderedElementsAre(SIMPLEX, LONG_EDGE, SHORT_EDGE));
+  EXPECT_EQ(LONG_EDGE, caps.duplex_default);
   EXPECT_TRUE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
 }
 
 TEST(PrintBackendCupsHelperTest, TestPpdParsingPageSize) {
-  const char kTestPpdData[] =
-      "*PPD-Adobe: \"4.3\"\n\n"
-      "*OpenUI *PageSize: PickOne\n"
-      "*DefaultPageSize: Letter\n"
-      "*PageSize Letter/US Letter: \""
-      "  <</DeferredMediaSelection true /PageSize [612 792] "
-      "  /ImagingBBox null /MediaClass null >> setpagedevice\"\n"
-      "*End\n"
-      "*PageSize Legal/US Legal: \""
-      "  <</DeferredMediaSelection true /PageSize [612 1008] "
-      "  /ImagingBBox null /MediaClass null >> setpagedevice\"\n"
-      "*End\n"
-      "*DefaultPaperDimension: Letter\n"
-      "*PaperDimension Letter/US Letter: \"612   792\"\n"
-      "*PaperDimension Legal/US Legal: \"612  1008\"\n\n"
-      "*CloseUI: *PageSize\n\n";
+  constexpr char kTestPpdData[] =
+      R"(*PPD-Adobe: "4.3"
+*OpenUI *PageSize: PickOne
+*DefaultPageSize: Legal
+*PageSize Letter/US Letter: "
+  <</DeferredMediaSelection true /PageSize [612 792]
+  /ImagingBBox null /MediaClass null >> setpagedevice"
+*End
+*PageSize Legal/US Legal: "
+  <</DeferredMediaSelection true /PageSize [612 1008]
+  /ImagingBBox null /MediaClass null >> setpagedevice"
+*End
+*DefaultPaperDimension: Legal
+*PaperDimension Letter/US Letter: "612   792"
+*PaperDimension Legal/US Legal: "612  1008"
+*CloseUI: *PageSize)";
 
-  printing::PrinterSemanticCapsAndDefaults caps;
-  EXPECT_TRUE(printing::ParsePpdCapabilities("test", kTestPpdData, &caps));
+  PrinterSemanticCapsAndDefaults caps;
+  EXPECT_TRUE(ParsePpdCapabilities("test", "", kTestPpdData, &caps));
   ASSERT_EQ(2UL, caps.papers.size());
   EXPECT_EQ("Letter", caps.papers[0].vendor_id);
   EXPECT_EQ("US Letter", caps.papers[0].display_name);
@@ -206,81 +211,131 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingPageSize) {
   EXPECT_EQ("US Legal", caps.papers[1].display_name);
   EXPECT_EQ(215900, caps.papers[1].size_um.width());
   EXPECT_EQ(355600, caps.papers[1].size_um.height());
+  EXPECT_TRUE(PapersEqual(caps.papers[1], caps.default_paper));
+}
+
+TEST(PrintBackendCupsHelperTest, TestPpdParsingPageSizeNoDefaultSpecified) {
+  constexpr char kTestPpdData[] =
+      R"(*PPD-Adobe: "4.3"
+*OpenUI *PageSize: PickOne
+*PageSize A3/ISO A3: "
+  << /DeferredMediaSelection true /PageSize [842 1191]
+  /ImagingBBox null >> setpagedevice"
+*End
+*PageSize A4/ISO A4: "
+  << /DeferredMediaSelection true /PageSize [595 842]
+  /ImagingBBox null >> setpagedevice"
+*End
+*PageSize Legal/US Legal: "
+  << /DeferredMediaSelection true /PageSize [612 1008]
+  /ImagingBBox null >> setpagedevice"
+*End
+*PageSize Letter/US Letter: "
+  << /DeferredMediaSelection true /PageSize [612 792]
+  /ImagingBBox null >> setpagedevice"
+*End
+*PaperDimension A3/ISO A3: "842 1191"
+*PaperDimension A4/ISO A4: "595 842"
+*PaperDimension Legal/US Legal: "612 1008"
+*PaperDimension Letter/US Letter: "612 792"
+*CloseUI: *PageSize)";
+
+  {
+    PrinterSemanticCapsAndDefaults caps;
+    EXPECT_TRUE(ParsePpdCapabilities("test", "en-US", kTestPpdData, &caps));
+    ASSERT_EQ(4UL, caps.papers.size());
+    EXPECT_EQ("Letter", caps.papers[3].vendor_id);
+    EXPECT_EQ("US Letter", caps.papers[3].display_name);
+    EXPECT_EQ(215900, caps.papers[3].size_um.width());
+    EXPECT_EQ(279400, caps.papers[3].size_um.height());
+    EXPECT_TRUE(PapersEqual(caps.papers[3], caps.default_paper));
+  }
+  {
+    PrinterSemanticCapsAndDefaults caps;
+    EXPECT_TRUE(ParsePpdCapabilities("test", "en-UK", kTestPpdData, &caps));
+    ASSERT_EQ(4UL, caps.papers.size());
+    EXPECT_EQ("A4", caps.papers[1].vendor_id);
+    EXPECT_EQ("ISO A4", caps.papers[1].display_name);
+    EXPECT_EQ(209903, caps.papers[1].size_um.width());
+    EXPECT_EQ(297039, caps.papers[1].size_um.height());
+    EXPECT_TRUE(PapersEqual(caps.papers[1], caps.default_paper));
+  }
 }
 
 TEST(PrintBackendCupsHelperTest, TestPpdParsingBrotherPrinters) {
   {
-    const char kTestPpdData[] =
-        "*PPD-Adobe: \"4.3\"\n\n"
-        "*ColorDevice: True\n"
-        "*OpenUI *BRPrintQuality/Color/Mono: PickOne\n"
-        "*DefaultBRPrintQuality: Auto\n"
-        "*BRPrintQuality Auto/Auto: \"\"\n"
-        "*BRPrintQuality Color/Color: \"\"\n"
-        "*BRPrintQuality Black/Mono: \"\"\n"
-        "*CloseUI: *BRPrintQuality\n\n";
+    constexpr char kTestPpdData[] =
+        R"(*PPD-Adobe: "4.3"
+*ColorDevice: True
+*OpenUI *BRPrintQuality/Color/Mono: PickOne
+*DefaultBRPrintQuality: Auto
+*BRPrintQuality Auto/Auto: ""
+*BRPrintQuality Color/Color: ""
+*BRPrintQuality Black/Mono: ""
+*CloseUI: *BRPrintQuality)";
 
-    printing::PrinterSemanticCapsAndDefaults caps;
-    EXPECT_TRUE(printing::ParsePpdCapabilities("test", kTestPpdData, &caps));
+    PrinterSemanticCapsAndDefaults caps;
+    EXPECT_TRUE(ParsePpdCapabilities("test", "", kTestPpdData, &caps));
     EXPECT_TRUE(caps.color_changeable);
     EXPECT_TRUE(caps.color_default);
-    EXPECT_EQ(printing::BROTHER_BRSCRIPT3_COLOR, caps.color_model);
-    EXPECT_EQ(printing::BROTHER_BRSCRIPT3_BLACK, caps.bw_model);
+    EXPECT_EQ(BROTHER_BRSCRIPT3_COLOR, caps.color_model);
+    EXPECT_EQ(BROTHER_BRSCRIPT3_BLACK, caps.bw_model);
   }
   {
-    const char kTestPpdData[] =
-        "*PPD-Adobe: \"4.3\"\n\n"
-        "*ColorDevice: True\n"
-        "*OpenUI *BRMonoColor/Color / Mono: PickOne\n"
-        "*DefaultBRMonoColor: Auto\n"
-        "*BRMonoColor Auto/Auto: \"\"\n"
-        "*BRMonoColor FullColor/Color: \"\"\n"
-        "*BRMonoColor Mono/Mono: \"\"\n"
-        "*CloseUI: *BRMonoColor\n\n";
+    constexpr char kTestPpdData[] =
+        R"(*PPD-Adobe: "4.3"
+*ColorDevice: True
+*OpenUI *BRMonoColor/Color / Mono: PickOne
+*DefaultBRMonoColor: Auto
+*BRMonoColor Auto/Auto: ""
+*BRMonoColor FullColor/Color: ""
+*BRMonoColor Mono/Mono: ""
+*CloseUI: *BRMonoColor)";
 
-    printing::PrinterSemanticCapsAndDefaults caps;
-    EXPECT_TRUE(printing::ParsePpdCapabilities("test", kTestPpdData, &caps));
+    PrinterSemanticCapsAndDefaults caps;
+    EXPECT_TRUE(ParsePpdCapabilities("test", "", kTestPpdData, &caps));
     EXPECT_TRUE(caps.color_changeable);
     EXPECT_TRUE(caps.color_default);
-    EXPECT_EQ(printing::BROTHER_CUPS_COLOR, caps.color_model);
-    EXPECT_EQ(printing::BROTHER_CUPS_MONO, caps.bw_model);
+    EXPECT_EQ(BROTHER_CUPS_COLOR, caps.color_model);
+    EXPECT_EQ(BROTHER_CUPS_MONO, caps.bw_model);
   }
   {
-    const char kTestPpdData[] =
-        "*PPD-Adobe: \"4.3\"\n\n"
-        "*ColorDevice: True\n"
-        "*OpenUI *BRDuplex/Two-Sided Printing: PickOne\n"
-        "*DefaultBRDuplex: DuplexTumble\n"
-        "*BRDuplex DuplexTumble/Short-Edge Binding: \"\"\n"
-        "*BRDuplex DuplexNoTumble/Long-Edge Binding: \"\"\n"
-        "*BRDuplex None/Off: \"\"\n"
-        "*CloseUI: *BRDuplex\n\n";
+    constexpr char kTestPpdData[] =
+        R"(*PPD-Adobe: "4.3"
+*ColorDevice: True
+*OpenUI *BRDuplex/Two-Sided Printing: PickOne
+*DefaultBRDuplex: DuplexTumble
+*BRDuplex DuplexTumble/Short-Edge Binding: ""
+*BRDuplex DuplexNoTumble/Long-Edge Binding: ""
+*BRDuplex None/Off: ""
+*CloseUI: *BRDuplex)";
 
-    printing::PrinterSemanticCapsAndDefaults caps;
-    EXPECT_TRUE(printing::ParsePpdCapabilities("test", kTestPpdData, &caps));
-    EXPECT_THAT(caps.duplex_modes, testing::UnorderedElementsAre(
-                                       printing::SIMPLEX, printing::LONG_EDGE,
-                                       printing::SHORT_EDGE));
-    EXPECT_EQ(printing::SHORT_EDGE, caps.duplex_default);
+    PrinterSemanticCapsAndDefaults caps;
+    EXPECT_TRUE(ParsePpdCapabilities("test", "", kTestPpdData, &caps));
+    EXPECT_THAT(caps.duplex_modes,
+                testing::UnorderedElementsAre(SIMPLEX, LONG_EDGE, SHORT_EDGE));
+    EXPECT_EQ(SHORT_EDGE, caps.duplex_default);
   }
 }
 
 TEST(PrintBackendCupsHelperTest, TestPpdParsingSamsungPrinters) {
   {
-    const char kTestPpdData[] =
-        "*PPD-Adobe: \"4.3\"\n\n"
-        "*ColorDevice: True\n"
-        "*OpenUI *ColorMode/Color Mode:  Boolean\n"
-        "*DefaultColorMode: True\n"
-        "*ColorMode False/Grayscale: \"\"\n"
-        "*ColorMode True/Color: \"\"\n"
-        "*CloseUI: *ColorMode\n\n";
+    constexpr char kTestPpdData[] =
+        R"(*PPD-Adobe: "4.3"
+*ColorDevice: True
+*OpenUI *ColorMode/Color Mode:  Boolean
+*DefaultColorMode: True
+*ColorMode False/Grayscale: ""
+*ColorMode True/Color: ""
+*CloseUI: *ColorMode)";
 
-    printing::PrinterSemanticCapsAndDefaults caps;
-    EXPECT_TRUE(printing::ParsePpdCapabilities("test", kTestPpdData, &caps));
+    PrinterSemanticCapsAndDefaults caps;
+    EXPECT_TRUE(ParsePpdCapabilities("test", "", kTestPpdData, &caps));
     EXPECT_TRUE(caps.color_changeable);
     EXPECT_TRUE(caps.color_default);
-    EXPECT_EQ(printing::COLORMODE_COLOR, caps.color_model);
-    EXPECT_EQ(printing::COLORMODE_MONOCHROME, caps.bw_model);
+    EXPECT_EQ(COLORMODE_COLOR, caps.color_model);
+    EXPECT_EQ(COLORMODE_MONOCHROME, caps.bw_model);
   }
 }
+
+}  // namespace printing

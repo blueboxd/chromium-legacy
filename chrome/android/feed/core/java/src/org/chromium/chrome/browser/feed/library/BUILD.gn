@@ -380,8 +380,6 @@ feed_conformance_test_lib_sources = [
   "testing/conformance/storage/ContentStorageDirectConformanceTest.java",
   "testing/conformance/storage/JournalStorageConformanceTest.java",
   "testing/conformance/storage/JournalStorageDirectConformanceTest.java",
-  "testing/requestmanager/FakeActionUploadRequestManager.java",
-  "testing/requestmanager/FakeFeedRequestManager.java",
   "testing/host/logging/FakeBasicLoggingApi.java",
   "testing/host/offlineindicator/FakeOfflineIndicatorApi.java",
   "testing/host/scheduler/FakeSchedulerApi.java",
@@ -396,6 +394,8 @@ feed_conformance_test_lib_sources = [
   "testing/modelprovider/FakeModelToken.java",
   "testing/modelprovider/FakeViewDepthProvider.java",
   "testing/modelprovider/FeatureChangeBuilder.java",
+  "testing/requestmanager/FakeActionUploadRequestManager.java",
+  "testing/requestmanager/FakeFeedRequestManager.java",
 ]
 
 android_resources("sharedstream_ui_resources") {

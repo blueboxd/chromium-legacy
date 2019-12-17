@@ -27,12 +27,32 @@ const GURL GetFrenchUrl();
 // cases will properly synchronize the UI for Earl Grey tests.
 @interface BookmarkEarlGreyImpl : BaseEGTestHelperImpl
 
+#pragma mark - Setup and Teardown
+
 // Clear Bookmarks top most row position cache.
 - (void)clearBookmarksPositionCache;
 
 // Loads a set of default bookmarks in the model for the tests to use.
 // GREYAssert is induced if test bookmarks can not be loaded.
 - (void)setupStandardBookmarks;
+
+#pragma mark - Promo
+
+// Checks that the promo has already been seen or not. GREYAssert is induced if
+// the opposite is true.
+- (void)verifyPromoAlreadySeen:(BOOL)seen;
+
+// Checks that the promo has already been seen or not.
+- (void)setPromoAlreadySeen:(BOOL)seen;
+
+// Sets that the promo has already been seen |times| number of times.
+- (void)setPromoAlreadySeenNumberOfTimes:(int)times;
+
+// Returns the number of times a Promo has been seen.
+- (int)numberOfTimesPromoAlreadySeen;
+
+// Sets up a FakeIdentity and returns the email of this Identity.
+- (NSString*)setupFakeIdentity;
 
 @end
 

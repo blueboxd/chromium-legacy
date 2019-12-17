@@ -359,6 +359,8 @@ void StreamFromResponseCallback(
       auto client = std::make_shared<WasmStreamingClient>(
           url, raw_resource->GetResponse().ResponseTime());
       streaming->SetClient(client);
+      const std::string& url_utf8 = url.Utf8();
+      streaming->SetUrl(url_utf8.c_str(), url_utf8.size());
       scoped_refptr<CachedMetadata> cached_module =
           cache_handler->GetCachedMetadata(kWasmModuleTag);
       if (cached_module) {

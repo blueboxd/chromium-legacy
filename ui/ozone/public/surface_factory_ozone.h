@@ -115,7 +115,7 @@ class COMPONENT_EXPORT(OZONE_BASE) SurfaceFactoryOzone {
   // Browser Process using only the handle contained in gfx::AcceleratedWidget.
   virtual std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget,
-      base::TaskRunner* task_runner);
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // Create a single native buffer to be used for overlay planes or zero copy
   // for |widget| representing a particular display controller or default

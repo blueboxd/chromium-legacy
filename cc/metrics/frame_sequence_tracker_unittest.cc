@@ -10,6 +10,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "cc/metrics/compositor_frame_reporting_controller.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/presentation_feedback.h"
 
@@ -115,7 +116,7 @@ class FrameSequenceTrackerTest : public testing::Test {
     EXPECT_TRUE(collection_.removal_trackers_.empty());
   }
 
-  void ReportMetrics() {
+  void ReportMetricsTest() {
     base::HistogramTester histogram_tester;
 
     // Test that there is no main thread frames expected.
@@ -168,6 +169,8 @@ class FrameSequenceTrackerTest : public testing::Test {
     histogram_tester.ExpectTotalCount(
         "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 3u);
   }
+
+  void ReportMetrics() { tracker_->ReportMetrics(); }
 
   base::TimeDelta TimeDeltaToReort() const {
     return tracker_->time_delta_to_report_;
@@ -362,7 +365,7 @@ TEST_F(FrameSequenceTrackerTest, MultipleCheckerboardingFrames) {
 }
 
 TEST_F(FrameSequenceTrackerTest, ReportMetrics) {
-  ReportMetrics();
+  ReportMetricsTest();
 }
 
 TEST_F(FrameSequenceTrackerTest, ReportMetricsAtFixedInterval) {
@@ -425,6 +428,87 @@ TEST_F(FrameSequenceTrackerTest, MainFrameTracking) {
   gfx::PresentationFeedback feedback;
   collection_.NotifyFramePresented(frame_1, feedback);
   collection_.NotifyFramePresented(frame_2, feedback);
+}
+
+TEST_F(FrameSequenceTrackerTest, MainFrameNoDamageTracking) {
+  const uint64_t source = 1;
+  uint64_t sequence = 0;
+
+  const auto first_args = CreateBeginFrameArgs(source, ++sequence);
+  DispatchCompleteFrame(first_args, kImplDamage | kMainDamage);
+
+  // Now, start the next frame, but for main, respond with the previous args.
+  const auto second_args = CreateBeginFrameArgs(source, ++sequence);
+  StartImplAndMainFrames(second_args);
+
+  uint32_t frame_token = NextFrameToken();
+  collection_.NotifySubmitFrame(frame_token, /*has_missing_content=*/false,
+                                viz::BeginFrameAck(second_args, true),
+                                first_args);
+  collection_.NotifyFrameEnd(second_args);
+
+  // Start and submit the next frame, with no damage from main.
+  auto args = CreateBeginFrameArgs(source, ++sequence);
+  StartImplAndMainFrames(args);
+  frame_token = NextFrameToken();
+  collection_.NotifyMainFrameCausedNoDamage(args);
+  collection_.NotifySubmitFrame(frame_token, /*has_missing_content=*/false,
+                                viz::BeginFrameAck(args, true), first_args);
+  collection_.NotifyFrameEnd(args);
+
+  // Now, submit a frame with damage from main from |second_args|.
+  args = CreateBeginFrameArgs(source, ++sequence);
+  StartImplAndMainFrames(args);
+  frame_token = NextFrameToken();
+  collection_.NotifySubmitFrame(frame_token, /*has_missing_content=*/false,
+                                viz::BeginFrameAck(args, true), second_args);
+  collection_.NotifyFrameEnd(args);
+}
+
+TEST_F(FrameSequenceTrackerTest, BeginMainFrameSubmit) {
+  const uint64_t source = 1;
+  uint64_t sequence = 0;
+
+  // Start with a bunch of frames so that the metric does get reported at the
+  // end of the test.
+  ImplThroughput().frames_expected = 98u;
+  ImplThroughput().frames_produced = 98u;
+  MainThroughput().frames_expected = 98u;
+  MainThroughput().frames_produced = 98u;
+
+  // Start a frame, send to main, but end the frame with no-damage before main
+  // responds.
+  auto first_args = CreateBeginFrameArgs(source, ++sequence);
+  collection_.NotifyBeginImplFrame(first_args);
+  collection_.NotifyBeginMainFrame(first_args);
+  collection_.NotifyImplFrameCausedNoDamage(
+      viz::BeginFrameAck(first_args, false));
+  collection_.NotifyFrameEnd(first_args);
+
+  // Start another frame, send to begin, but submit with main-update from the
+  // first frame (main thread has finally responded by this time to the first
+  // frame).
+  auto second_args = CreateBeginFrameArgs(source, ++sequence);
+  collection_.NotifyBeginImplFrame(second_args);
+  collection_.NotifyBeginMainFrame(second_args);
+  uint32_t frame_token = NextFrameToken();
+  collection_.NotifySubmitFrame(frame_token, /*has_missing_content=*/false,
+                                viz::BeginFrameAck(second_args, true),
+                                first_args);
+  collection_.NotifyFrameEnd(second_args);
+
+  // When the frame is presented, the main-frame should count towards its
+  // throughput.
+  base::HistogramTester histogram_tester;
+  const auto interval = viz::BeginFrameArgs::DefaultInterval();
+  gfx::PresentationFeedback feedback(base::TimeTicks::Now(), interval, 0);
+  collection_.NotifyFramePresented(frame_token, feedback);
+  ReportMetrics();
+
+  const char metric[] = "Graphics.Smoothness.Throughput.MainThread.TouchScroll";
+  histogram_tester.ExpectTotalCount(metric, 1u);
+  EXPECT_THAT(histogram_tester.GetAllSamples(metric),
+              testing::ElementsAre(base::Bucket(99, 1)));
 }
 
 }  // namespace cc

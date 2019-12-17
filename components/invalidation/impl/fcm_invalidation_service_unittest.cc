@@ -39,7 +39,6 @@
 using instance_id::InstanceID;
 using instance_id::InstanceIDDriver;
 using testing::_;
-using testing::StrictMock;
 
 namespace invalidation {
 
@@ -154,8 +153,9 @@ class FCMInvalidationServiceTestDelegate {
     identity_provider_ = std::make_unique<ProfileIdentityProvider>(
         identity_test_env_.identity_manager());
 
-    mock_instance_id_driver_ = std::make_unique<MockInstanceIDDriver>();
-    mock_instance_id_ = std::make_unique<MockInstanceID>();
+    mock_instance_id_driver_ =
+        std::make_unique<testing::NiceMock<MockInstanceIDDriver>>();
+    mock_instance_id_ = std::make_unique<testing::NiceMock<MockInstanceID>>();
     ON_CALL(*mock_instance_id_driver_, GetInstanceID(kApplicationName))
         .WillByDefault(testing::Return(mock_instance_id_.get()));
     ON_CALL(*mock_instance_id_, GetID(_))

@@ -488,12 +488,6 @@ const char kDisallowUnsafeHttpDownloadsNameDescription[] =
     "code), where the final download origin or any origin in the redirect "
     "chain is insecure.";
 
-const char kDownloadResumptionWithoutStrongValidatorsName[] =
-    "Allow download resumption without strong validators";
-const char kDownloadResumptionWithoutStrongValidatorsDescription[] =
-    "Allows download to resume instead of restarting from the begining if "
-    "strong validators are not present.";
-
 const char kEnableAccessibilityImageDescriptionsName[] =
     "Accessibility Image Descriptions";
 const char kEnableAccessibilityImageDescriptionsDescription[] =
@@ -1215,6 +1209,11 @@ const char kIgnoreLitePageRedirectHintsBlacklistName[] =
 const char kIgnoreLitePageRedirectHintsBlacklistDescription[] =
     "Ignore blacklist decisions made by Optimization Hints for Lite Page "
     "Redirect previews";
+
+const char kImprovedCookieControlsForThirdPartyCookieBlockingName[] =
+    "Enable improved UI for third-party cookie blocking";
+const char kImprovedCookieControlsForThirdPartyCookieBlockingDescription[] =
+    "Enables an improved UI for existing third-party cookie blocking users.";
 
 const char kImpulseScrollAnimationsName[] = "Impulse-style scroll animations";
 const char kImpulseScrollAnimationsDescription[] =
@@ -2539,9 +2538,6 @@ const char kDirectActionsName[] = "Direct actions";
 const char kDirectActionsDescription[] =
     "Enables direct actions (Android Q and more).";
 
-const char kDownloadRenameName[] = "Enable download rename";
-const char kDownloadRenameDescription[] = "Enables rename option for downloads";
-
 const char kDuetTabStripIntegrationAndroidName[] = "Duet-TabStrip Integration";
 const char kDuetTabStripIntegrationAndroidDescription[] =
     "Allows users to access integration of Duet and TabStrip.";
@@ -2933,11 +2929,6 @@ const char kImprovedCookieControlsName[] =
     "Enable improved cookie controls UI in incognito mode";
 const char kImprovedCookieControlsDescription[] =
     "Improved UI in Incognito mode for third-party cookie blocking.";
-
-const char kImprovedCookieControlsForThirdPartyCookieBlockingName[] =
-    "Enable improved UI for third-party cookie blocking";
-const char kImprovedCookieControlsForThirdPartyCookieBlockingDescription[] =
-    "Enables an improved UI for existing third-party cookie blocking users.";
 
 const char kEnableReaderModeName[] = "Enable Reader Mode";
 const char kEnableReaderModeDescription[] =

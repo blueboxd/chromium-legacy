@@ -60,10 +60,7 @@ void RegisterFileHandlersWithOsTask(
   base::string16 utf16_app_name = base::UTF8ToUTF16(app_name);
   base::FilePath icon_path =
       web_app::internals::GetIconFilePath(web_app_path, utf16_app_name);
-  // TODO(davidbienvenu): use kChromePwaLauncherExecutable once
-  // https://crrev.com/c/1815220 lands.
-  base::FilePath pwa_launcher_path =
-      GetChromeProxyPath().DirName().AppendASCII("chrome_pwa_launcher.exe");
+  base::FilePath pwa_launcher_path = GetChromePwaLauncherPath();
   base::FilePath sanitized_app_name = internals::GetSanitizedFileName(
       utf16_app_name + STRING16_LITERAL(".exe"));
   // TODO(jessemckenna): Do we need to do anything differently for Win7, e.g.,

@@ -1248,8 +1248,7 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
     DCHECK(inline_autocomplete_offset <= match.fill_into_edit.length());
     match.inline_autocompletion =
         match.fill_into_edit.substr(inline_autocomplete_offset);
-    match.allowed_to_be_default_match =
-        AutocompleteMatch::AllowedToBeDefault(params.input_before_fixup, match);
+    match.SetAllowedToBeDefault(params.input_before_fixup);
   }
 
   const auto format_types = AutocompleteMatch::GetFormatTypes(

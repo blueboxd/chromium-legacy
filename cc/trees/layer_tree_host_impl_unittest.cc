@@ -665,33 +665,33 @@ class LayerTreeHostImplTest : public testing::Test,
     CopyProperties(InnerViewportScrollLayer(), child);
 
     TouchActionRegion root_touch_action_region;
-    root_touch_action_region.Union(kTouchActionPanX, gfx::Rect(0, 0, 50, 50));
+    root_touch_action_region.Union(TouchAction::kPanX, gfx::Rect(0, 0, 50, 50));
     root_layer()->SetTouchActionRegion(root_touch_action_region);
     TouchActionRegion child_touch_action_region;
-    child_touch_action_region.Union(kTouchActionPanLeft,
+    child_touch_action_region.Union(TouchAction::kPanLeft,
                                     gfx::Rect(0, 0, 25, 25));
     child->SetTouchActionRegion(child_touch_action_region);
 
-    TouchAction touch_action = kTouchActionAuto;
+    TouchAction touch_action = TouchAction::kAuto;
     host_impl_->EventListenerTypeForTouchStartOrMoveAt(gfx::Point(10, 10),
                                                        &touch_action);
-    EXPECT_EQ(kTouchActionPanLeft, touch_action);
-    touch_action = kTouchActionAuto;
+    EXPECT_EQ(TouchAction::kPanLeft, touch_action);
+    touch_action = TouchAction::kAuto;
     host_impl_->EventListenerTypeForTouchStartOrMoveAt(gfx::Point(30, 30),
                                                        &touch_action);
-    EXPECT_EQ(kTouchActionPanX, touch_action);
+    EXPECT_EQ(TouchAction::kPanX, touch_action);
 
     TouchActionRegion new_child_region;
-    new_child_region.Union(kTouchActionPanY, gfx::Rect(0, 0, 25, 25));
+    new_child_region.Union(TouchAction::kPanY, gfx::Rect(0, 0, 25, 25));
     child->SetTouchActionRegion(new_child_region);
-    touch_action = kTouchActionAuto;
+    touch_action = TouchAction::kAuto;
     host_impl_->EventListenerTypeForTouchStartOrMoveAt(gfx::Point(10, 10),
                                                        &touch_action);
-    EXPECT_EQ(kTouchActionPanY, touch_action);
-    touch_action = kTouchActionAuto;
+    EXPECT_EQ(TouchAction::kPanY, touch_action);
+    touch_action = TouchAction::kAuto;
     host_impl_->EventListenerTypeForTouchStartOrMoveAt(gfx::Point(30, 30),
                                                        &touch_action);
-    EXPECT_EQ(kTouchActionPanX, touch_action);
+    EXPECT_EQ(TouchAction::kPanX, touch_action);
   }
 
   LayerImpl* CreateLayerForSnapping() {
@@ -1234,13 +1234,14 @@ TEST_F(LayerTreeHostImplTest, ScrollBlocksOnTouchEventHandlers) {
   // Touch handler regions determine whether touch events block scroll.
   TouchAction touch_action;
   TouchActionRegion touch_action_region;
-  touch_action_region.Union(kTouchActionPanLeft, gfx::Rect(0, 0, 100, 100));
-  touch_action_region.Union(kTouchActionPanRight, gfx::Rect(25, 25, 100, 100));
+  touch_action_region.Union(TouchAction::kPanLeft, gfx::Rect(0, 0, 100, 100));
+  touch_action_region.Union(TouchAction::kPanRight,
+                            gfx::Rect(25, 25, 100, 100));
   root->SetTouchActionRegion(std::move(touch_action_region));
   EXPECT_EQ(InputHandler::TouchStartOrMoveEventListenerType::HANDLER,
             host_impl_->EventListenerTypeForTouchStartOrMoveAt(
                 gfx::Point(10, 10), &touch_action));
-  EXPECT_EQ(kTouchActionPanLeft, touch_action);
+  EXPECT_EQ(TouchAction::kPanLeft, touch_action);
 
   // But they don't influence the actual handling of the scroll gestures.
   InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
@@ -1258,14 +1259,14 @@ TEST_F(LayerTreeHostImplTest, ScrollBlocksOnTouchEventHandlers) {
   EXPECT_EQ(InputHandler::TouchStartOrMoveEventListenerType::NO_HANDLER,
             host_impl_->EventListenerTypeForTouchStartOrMoveAt(
                 gfx::Point(10, 30), &touch_action));
-  EXPECT_EQ(kTouchActionAuto, touch_action);
+  EXPECT_EQ(TouchAction::kAuto, touch_action);
   touch_action_region = TouchActionRegion();
-  touch_action_region.Union(kTouchActionPanX, gfx::Rect(0, 0, 50, 50));
+  touch_action_region.Union(TouchAction::kPanX, gfx::Rect(0, 0, 50, 50));
   child->SetTouchActionRegion(std::move(touch_action_region));
   EXPECT_EQ(InputHandler::TouchStartOrMoveEventListenerType::HANDLER,
             host_impl_->EventListenerTypeForTouchStartOrMoveAt(
                 gfx::Point(10, 30), &touch_action));
-  EXPECT_EQ(kTouchActionPanX, touch_action);
+  EXPECT_EQ(TouchAction::kPanX, touch_action);
 }
 
 TEST_F(LayerTreeHostImplTest, ShouldScrollOnMainThread) {
@@ -3936,7 +3937,7 @@ class LayerTreeHostImplTestMultiScrollable : public LayerTreeHostImplTest {
     SetupScrollbarLayer(root_scroll, scrollbar_1_);
     scrollbar_1_->SetBounds(scrollbar_size_1);
     TouchActionRegion touch_action_region;
-    touch_action_region.Union(kTouchActionNone, gfx::Rect(scrollbar_size_1));
+    touch_action_region.Union(TouchAction::kNone, gfx::Rect(scrollbar_size_1));
     scrollbar_1_->SetTouchActionRegion(touch_action_region);
 
     // scrollbar_2 on child.
@@ -4058,7 +4059,7 @@ TEST_F(LayerTreeHostImplTest, ScrollHitTestOnScrollbar) {
   SetupScrollbarLayer(root_scroll, scrollbar_1);
   scrollbar_1->SetBounds(scrollbar_size_1);
   TouchActionRegion touch_action_region;
-  touch_action_region.Union(kTouchActionNone, gfx::Rect(scrollbar_size_1));
+  touch_action_region.Union(TouchAction::kNone, gfx::Rect(scrollbar_size_1));
   scrollbar_1->SetTouchActionRegion(touch_action_region);
 
   LayerImpl* child =
@@ -4379,7 +4380,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
   SetupScrollbarLayer(root_scroll, scrollbar);
   scrollbar->SetBounds(scrollbar_size);
   TouchActionRegion touch_action_region;
-  touch_action_region.Union(kTouchActionNone, gfx::Rect(scrollbar_size));
+  touch_action_region.Union(TouchAction::kNone, gfx::Rect(scrollbar_size));
   scrollbar->SetTouchActionRegion(touch_action_region);
   host_impl_->active_tree()->DidBecomeActive();
 
@@ -5332,7 +5333,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
   SetupScrollbarLayer(OuterViewportScrollLayer(), scrollbar_layer);
   scrollbar_layer->SetBounds(scrollbar_size);
   TouchActionRegion touch_action_region;
-  touch_action_region.Union(kTouchActionNone, gfx::Rect(scrollbar_size));
+  touch_action_region.Union(TouchAction::kNone, gfx::Rect(scrollbar_size));
   scrollbar_layer->SetTouchActionRegion(touch_action_region);
   scrollbar_layer->SetOffsetToTransformParent(gfx::Vector2dF(0, 35));
   UpdateDrawProperties(host_impl_->active_tree());
@@ -12316,7 +12317,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
   SetupScrollbarLayer(root_scroll, scrollbar_1);
   scrollbar_1->SetBounds(scrollbar_size_1);
   TouchActionRegion touch_action_region;
-  touch_action_region.Union(kTouchActionNone, gfx::Rect(scrollbar_size_1));
+  touch_action_region.Union(TouchAction::kNone, gfx::Rect(scrollbar_size_1));
   scrollbar_1->SetTouchActionRegion(touch_action_region);
 
   host_impl_->active_tree()->UpdateScrollbarGeometries();

@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "ui/gfx/animation/tween.h"
+#include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/layout/layout_manager_base.h"
 #include "ui/views/views_export.h"
 
@@ -125,21 +126,18 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
     DCHECK_EQ(0U, num_owned_layouts());
     T* const result = AddOwnedLayout(std::move(layout_manager));
     ResetLayout();
-    InvalidateHost(false);
     return result;
+  }
+  LayoutManagerBase* target_layout_manager() {
+    return num_owned_layouts() ? owned_layout(0) : nullptr;
+  }
+  const LayoutManagerBase* target_layout_manager() const {
+    return num_owned_layouts() ? owned_layout(0) : nullptr;
   }
 
   // Clears any previous layout, stops any animation, and re-loads the proposed
-  // layout from the embedded layout manager.
+  // layout from the embedded layout manager. Also invalidates the host view.
   void ResetLayout();
-
-  // Does the work of ResetLayout() or FreezeLayout(), with the resulting layout
-  // snapped to |target_size|.
-  void ResetLayoutToSize(const gfx::Size& target_size);
-
-  // Cleans up after an animation, runs delayed actions, and sends
-  // notifications.
-  void OnAnimationEnded();
 
   // Causes the specified child view to fade out and become hidden. Alternative
   // to directly hiding the view (which will have the same effect, but could
@@ -171,6 +169,10 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
   // animating the action is run immediately.
   void RunOrQueueAction(DelayedAction action);
 
+  // Returns a flex rule for the host view that will work in the vast majority
+  // of cases where the host view is embedded in a FlexLayout.
+  FlexRule GetDefaultFlexRule() const;
+
   // Returns the animation container being used by the layout manager, creating
   // one if one has not yet been created. Implicitly enables animation on this
   // layout, so you do not need to also call EnableAnimationForTesting().
@@ -194,12 +196,17 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
   class AnimationDelegate;
   friend class AnimationDelegate;
 
-  LayoutManagerBase* target_layout_manager() {
-    return num_owned_layouts() ? owned_layout(0) : nullptr;
-  }
-  const LayoutManagerBase* target_layout_manager() const {
-    return num_owned_layouts() ? owned_layout(0) : nullptr;
-  }
+  // Cleans up after an animation, runs delayed actions, and sends
+  // notifications.
+  void OnAnimationEnded();
+
+  // Equivalent to calling ResetLayoutToSize(GetAvailableTargetLayoutSize()).
+  // Convenience method.
+  void ResetLayoutToTargetSize();
+
+  // Does the work of ResetLayout(), with the resulting layout snapped to
+  // |target_size|.
+  void ResetLayoutToSize(const gfx::Size& target_size);
 
   // Calculates the new target layout and returns true if it has changed.
   bool RecalculateTarget();
@@ -237,6 +244,19 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
                                  double scale_percent,
                                  bool slide_from_leading) const;
 
+  // Returns the size available to the host view from its parent.
+  SizeBounds GetAvailableHostSize() const;
+
+  // Returns the space in which to calculate the target layout.
+  gfx::Size GetAvailableTargetLayoutSize();
+
+  // Implementation of the default flex rule for animating layout manager.
+  // See GetDefaultFlexRule() above.
+  static gfx::Size DefaultFlexRuleImpl(
+      const AnimatingLayoutManager* animating_layout,
+      const View* view,
+      const SizeBounds& size_bounds);
+
   // Whether or not to animate the bounds of the host view when the preferred
   // size of the layout changes. If false, the size will have to be set
   // explicitly by the host view's owner. Bounds animation is done by changing
@@ -264,6 +284,10 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
 
   // The current animation progress.
   double current_offset_ = 1.0;
+
+  // The restrictions on the layout's size the last time we recalculated our
+  // target layout.
+  SizeBounds last_available_host_size_;
 
   // The layout being animated away from.
   ProposedLayout starting_layout_;

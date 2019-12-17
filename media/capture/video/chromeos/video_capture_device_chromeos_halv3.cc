@@ -95,7 +95,7 @@ class VideoCaptureDeviceChromeOSHalv3::PowerManagerClientProxy
 
   base::WeakPtr<VideoCaptureDeviceChromeOSHalv3> device_;
   scoped_refptr<base::SingleThreadTaskRunner> device_task_runner_;
-  scoped_refptr<base::TaskRunner> dbus_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> dbus_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerManagerClientProxy);
 };

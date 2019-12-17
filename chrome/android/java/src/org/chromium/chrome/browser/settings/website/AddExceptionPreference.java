@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.settings.website;
 
+import static org.chromium.chrome.browser.settings.website.WebsitePreferenceBridge.SITE_WILDCARD;
+
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
@@ -19,11 +21,13 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
 /**
@@ -41,16 +45,26 @@ public class AddExceptionPreference
     // The custom message to show in the dialog.
     private String mDialogMessage;
 
+    // The Site Settings Category of the exception we are adding.
+    private final SiteSettingsCategory mCategory;
+
     // The colors for the site URL EditText
     private int mErrorColor;
     private int mDefaultColor;
 
     /**
-     * An interface to implement to get a callback when a site needs to be added.
-     * @param hostname The hostname to add.
+     * An interface to implement to get a callback when a site exception needs to be added.
      */
     public interface SiteAddedCallback {
-        public void onAddSite(String hostname);
+        /**
+         * The callback for the site exception that needs to be added.
+         * @param primaryPattern The primary pattern for the exception, usually the hostname to add,
+         * or the wildcard indicating all hosts
+         * @param secondaryPattern The secondary pattern for the exception, indicating on which
+         * sites the primary pattern is affected. Usually the wildcard or a specific host (for
+         * third-party cookies).
+         */
+        public void onAddSite(String primaryPattern, String secondaryPattern);
     }
 
     /**
@@ -60,10 +74,11 @@ public class AddExceptionPreference
      * @param message The custom message to show in the dialog.
      * @param callback A callback to receive notifications that an exception has been added.
      */
-    public AddExceptionPreference(
-            Context context, String key, String message, SiteAddedCallback callback) {
+    public AddExceptionPreference(Context context, String key, String message,
+            SiteSettingsCategory category, SiteAddedCallback callback) {
         super(context);
         mDialogMessage = message;
+        mCategory = category;
         mSiteAddedCallback = callback;
         setOnPreferenceClickListener(this);
 
@@ -103,12 +118,29 @@ public class AddExceptionPreference
                 Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.add_site_dialog, null);
         final EditText input = (EditText) view.findViewById(R.id.site);
+        final CheckBox thirdPartyExceptionsBox =
+                (CheckBox) view.findViewById(R.id.third_parties_exception_checkbox);
+
+        if (!mCategory.showSites(SiteSettingsCategory.Type.COOKIES)
+                || !ChromeFeatureList.isEnabled(
+                        ChromeFeatureList
+                                .IMPROVED_COOKIE_CONTROLS_FOR_THIRD_PARTY_COOKIE_BLOCKING)) {
+            thirdPartyExceptionsBox.setVisibility(View.GONE);
+            thirdPartyExceptionsBox.setChecked(false);
+        }
 
         DialogInterface.OnClickListener onClickListener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int button) {
                 if (button == AlertDialog.BUTTON_POSITIVE) {
-                    mSiteAddedCallback.onAddSite(input.getText().toString().trim());
+                    boolean isThirdPartyException = thirdPartyExceptionsBox.isChecked();
+                    String hostname = input.getText().toString().trim();
+
+                    // If a user chooses "all cookies, on this site only", set wildcard as primary
+                    String primary = isThirdPartyException ? SITE_WILDCARD : hostname;
+                    String secondary = !isThirdPartyException ? SITE_WILDCARD : hostname;
+
+                    mSiteAddedCallback.onAddSite(primary, secondary);
                 } else {
                     dialog.dismiss();
                 }

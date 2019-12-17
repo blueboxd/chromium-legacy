@@ -18,8 +18,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_split.h"
-#include "base/task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "net/base/cache_type.h"
@@ -28,11 +28,6 @@
 #include "net/disk_cache/simple/post_doom_waiter.h"
 #include "net/disk_cache/simple/simple_entry_impl.h"
 #include "net/disk_cache/simple/simple_index_delegate.h"
-
-namespace base {
-class SequencedTaskRunner;
-class TaskRunner;
-}  // namespace base
 
 namespace net {
 class PrioritizedTaskRunner;
@@ -79,7 +74,8 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
 
   SimpleIndex* index() { return index_.get(); }
 
-  void SetWorkerPoolForTesting(scoped_refptr<base::TaskRunner> task_runner);
+  void SetTaskRunnerForTesting(
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   net::Error Init(CompletionOnceCallback completion_callback);
 

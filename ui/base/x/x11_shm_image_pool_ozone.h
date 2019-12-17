@@ -18,13 +18,14 @@ class COMPONENT_EXPORT(UI_BASE_X) X11ShmImagePoolOzone
     : public XShmImagePoolBase,
       public XEventDispatcher {
  public:
-  X11ShmImagePoolOzone(base::TaskRunner* host_task_runner,
-                       base::TaskRunner* event_task_runner,
-                       XDisplay* display,
-                       XID drawable,
-                       Visual* visual,
-                       int depth,
-                       std::size_t max_frames_pending);
+  X11ShmImagePoolOzone(
+      scoped_refptr<base::SequencedTaskRunner> host_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> event_task_runner,
+      XDisplay* display,
+      XID drawable,
+      Visual* visual,
+      int depth,
+      std::size_t max_frames_pending);
 
  private:
   ~X11ShmImagePoolOzone() override;

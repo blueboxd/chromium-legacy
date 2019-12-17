@@ -5,6 +5,7 @@
 #include "gpu/ipc/in_process_gpu_thread_holder.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -73,7 +74,8 @@ void InProcessGpuThreadHolder::InitializeOnGpuThread(
   task_executor_ = std::make_unique<GpuInProcessThreadService>(
       task_runner(), scheduler_.get(), sync_point_manager_.get(),
       mailbox_manager_.get(), nullptr, gl::GLSurfaceFormat(), gpu_feature_info_,
-      gpu_preferences_, shared_image_manager_.get(), nullptr, nullptr);
+      gpu_preferences_, shared_image_manager_.get(), nullptr,
+      base::BindRepeating([] { return scoped_refptr<SharedContextState>(); }));
 
   completion->Signal();
 }

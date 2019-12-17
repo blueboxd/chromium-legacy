@@ -42,14 +42,15 @@ class PublicIpAddressGeolocatorTest : public testing::Test {
   void SetUp() override {
     // Intercept Mojo bad-message errors.
     mojo::core::SetDefaultProcessErrorCallback(
-        base::Bind(&PublicIpAddressGeolocatorTest::OnMojoBadMessage,
-                   base::Unretained(this)));
+        base::BindRepeating(&PublicIpAddressGeolocatorTest::OnMojoBadMessage,
+                            base::Unretained(this)));
 
     receiver_set_.Add(
         std::make_unique<PublicIpAddressGeolocator>(
             PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS, notifier_.get(),
-            base::Bind(&PublicIpAddressGeolocatorTest::OnGeolocatorBadMessage,
-                       base::Unretained(this))),
+            base::BindRepeating(
+                &PublicIpAddressGeolocatorTest::OnGeolocatorBadMessage,
+                base::Unretained(this))),
         public_ip_address_geolocator_.BindNewPipeAndPassReceiver());
   }
 
@@ -71,18 +72,18 @@ class PublicIpAddressGeolocatorTest : public testing::Test {
 
   // Invokes QueryNextPosition on |public_ip_address_geolocator_|, and runs
   // |done_closure| when the response comes back.
-  void QueryNextPosition(base::Closure done_closure) {
+  void QueryNextPosition(base::OnceClosure done_closure) {
     public_ip_address_geolocator_->QueryNextPosition(base::BindOnce(
         &PublicIpAddressGeolocatorTest::OnQueryNextPositionResponse,
-        base::Unretained(this), done_closure));
+        base::Unretained(this), std::move(done_closure)));
   }
 
   // Callback for QueryNextPosition() that records the result in |position_| and
   // then invokes |done_closure|.
-  void OnQueryNextPositionResponse(base::Closure done_closure,
+  void OnQueryNextPositionResponse(base::OnceClosure done_closure,
                                    mojom::GeopositionPtr position) {
     position_ = std::move(position);
-    done_closure.Run();
+    std::move(done_closure).Run();
   }
 
   // Result of the latest completed call to QueryNextPosition.
@@ -133,7 +134,8 @@ TEST_F(PublicIpAddressGeolocatorTest, BindAndQuery) {
           "lat": 10.0,
           "lng": 20.0
         }
-      })", net::HTTP_OK);
+      })",
+                                       net::HTTP_OK);
 
   // Wait for QueryNextPosition to return.
   loop.Run();
@@ -151,8 +153,8 @@ TEST_F(PublicIpAddressGeolocatorTest, ProhibitedOverlappingCalls) {
   public_ip_address_geolocator_.set_disconnect_handler(loop.QuitClosure());
 
   // Issue two overlapping calls to QueryNextPosition.
-  QueryNextPosition(base::Closure());
-  QueryNextPosition(base::Closure());
+  QueryNextPosition(base::NullCallback());
+  QueryNextPosition(base::NullCallback());
 
   // This terminates only in case of connection error, which we expect.
   loop.Run();

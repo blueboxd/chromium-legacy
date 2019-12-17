@@ -5,8 +5,8 @@
 import("//build/config/android/rules.gni")
 
 _jni_sources = [
-  "java/src/org/chromium/policy/PolicyConverter.java",
   "java/src/org/chromium/policy/CombinedPolicyProvider.java",
+  "java/src/org/chromium/policy/PolicyConverter.java",
 ]
 
 android_library("policy_java") {

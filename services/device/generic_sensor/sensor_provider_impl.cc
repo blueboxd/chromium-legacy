@@ -67,10 +67,10 @@ void SensorProviderImpl::GetSensor(mojom::SensorType type,
 
   scoped_refptr<PlatformSensor> sensor = provider_->GetSensor(type);
   if (!sensor) {
-    PlatformSensorProviderBase::CreateSensorCallback cb = base::Bind(
-        &SensorProviderImpl::SensorCreated, weak_ptr_factory_.GetWeakPtr(),
-        type, base::Passed(&cloned_handle), base::Passed(&callback));
-    provider_->CreateSensor(type, cb);
+    provider_->CreateSensor(
+        type, base::BindOnce(&SensorProviderImpl::SensorCreated,
+                             weak_ptr_factory_.GetWeakPtr(), type,
+                             std::move(cloned_handle), std::move(callback)));
     return;
   }
 

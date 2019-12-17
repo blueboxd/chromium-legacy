@@ -61,7 +61,8 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, ThemeColor) {
   }
 }
 
-IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, HasMinimalUiButtons) {
+// Flaky. http://crbug.com/1034029
+IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, DISABLED_HasMinimalUiButtons) {
   int index = 0;
   auto has_buttons = [this, &index](DisplayMode display_mode,
                                     bool open_as_window) -> bool {

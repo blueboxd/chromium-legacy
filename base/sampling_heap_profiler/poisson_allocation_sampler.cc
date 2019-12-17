@@ -362,9 +362,10 @@ bool PoissonAllocationSampler::InstallAllocatorHooks() {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
   allocator::InsertAllocatorDispatch(&g_allocator_dispatch);
 #else
+  // If the allocator shim isn't available, then we don't install any hooks.
+  // There's no point in printing an error message, since this can regularly
+  // happen for tests.
   ignore_result(g_allocator_dispatch);
-  DLOG(WARNING)
-      << "base::allocator shims are not available for memory sampling.";
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
 
 #if BUILDFLAG(USE_PARTITION_ALLOC) && !defined(OS_NACL)

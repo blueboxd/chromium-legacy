@@ -24,7 +24,7 @@
 
 namespace base {
 
-class TaskRunner;
+class SequencedTaskRunner;
 
 namespace internal {
 
@@ -45,7 +45,7 @@ class BASE_EXPORT DelayedTaskManager {
   // forwarded to their callbacks as they become ripe for execution.
   // |service_thread_task_runner| posts tasks to the ThreadPool service
   // thread.
-  void Start(scoped_refptr<TaskRunner> service_thread_task_runner);
+  void Start(scoped_refptr<SequencedTaskRunner> service_thread_task_runner);
 
   // Schedules a call to |post_task_now_callback| with |task| as argument when
   // |task| is ripe for execution. |task_runner| is passed to retain a
@@ -123,7 +123,7 @@ class BASE_EXPORT DelayedTaskManager {
   // that it is non-null.
   mutable CheckedLock queue_lock_;
 
-  scoped_refptr<TaskRunner> service_thread_task_runner_;
+  scoped_refptr<SequencedTaskRunner> service_thread_task_runner_;
 
   IntrusiveHeap<DelayedTask> delayed_task_queue_ GUARDED_BY(queue_lock_);
 

@@ -781,34 +781,6 @@ url_formatter::FormatUrlTypes AutocompleteMatch::GetFormatTypes(
 }
 
 // static
-bool AutocompleteMatch::AllowedToBeDefault(const AutocompleteInput& input,
-                                           AutocompleteMatch& match) {
-  if (match.inline_autocompletion.empty())
-    return true;
-  if (input.prevent_inline_autocomplete())
-    return false;
-  if (input.text().empty() || !base::IsUnicodeWhitespace(input.text().back()))
-    return true;
-
-  // If we've reached here, the input ends in trailing whitespace. If the
-  // trailing whitespace prefixes |match.inline_autocompletion|, then allow the
-  // match to be default and remove the whitespace from
-  // |match.inline_autocompletion|.
-  size_t last_non_whitespace_pos =
-      input.text().find_last_not_of(base::kWhitespaceUTF16);
-  DCHECK_NE(last_non_whitespace_pos, std::string::npos);
-  auto whitespace_suffix = input.text().substr(last_non_whitespace_pos + 1);
-  if (base::StartsWith(match.inline_autocompletion, whitespace_suffix,
-                       base::CompareCase::SENSITIVE)) {
-    match.inline_autocompletion =
-        match.inline_autocompletion.substr(whitespace_suffix.size());
-    return true;
-  }
-
-  return false;
-}
-
-// static
 void AutocompleteMatch::LogSearchEngineUsed(
     const AutocompleteMatch& match,
     TemplateURLService* template_url_service) {
@@ -1074,6 +1046,33 @@ AutocompleteMatch::GetMatchWithContentsAndDescriptionPossiblySwapped() const {
     copy.swap_contents_and_description = false;
   }
   return copy;
+}
+
+void AutocompleteMatch::SetAllowedToBeDefault(const AutocompleteInput& input) {
+  if (inline_autocompletion.empty())
+    allowed_to_be_default_match = true;
+  else if (input.prevent_inline_autocomplete())
+    allowed_to_be_default_match = false;
+  else if (input.text().empty() ||
+           !base::IsUnicodeWhitespace(input.text().back()))
+    allowed_to_be_default_match = true;
+  else {
+    // If we've reached here, the input ends in trailing whitespace. If the
+    // trailing whitespace prefixes |inline_autocompletion|, then allow the
+    // match to be default and remove the whitespace from
+    // |inline_autocompletion|.
+    size_t last_non_whitespace_pos =
+        input.text().find_last_not_of(base::kWhitespaceUTF16);
+    DCHECK_NE(last_non_whitespace_pos, std::string::npos);
+    auto whitespace_suffix = input.text().substr(last_non_whitespace_pos + 1);
+    if (base::StartsWith(inline_autocompletion, whitespace_suffix,
+                         base::CompareCase::SENSITIVE)) {
+      inline_autocompletion =
+          inline_autocompletion.substr(whitespace_suffix.size());
+      allowed_to_be_default_match = true;
+    } else
+      allowed_to_be_default_match = false;
+  }
 }
 
 void AutocompleteMatch::InlineTailPrefix(const base::string16& common_prefix) {

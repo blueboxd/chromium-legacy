@@ -13,6 +13,7 @@
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
 #include "net/socket/connect_job_test_util.h"
@@ -63,6 +64,9 @@ class TestConnectJob : public ConnectJob {
   // From ConnectJob:
   LoadState GetLoadState() const override { return LOAD_STATE_IDLE; }
   bool HasEstablishedConnection() const override { return false; }
+  ResolveErrorInfo GetResolveErrorInfo() const override {
+    return ResolveErrorInfo(net::OK);
+  }
   int ConnectInternal() override {
     SetSocket(std::unique_ptr<StreamSocket>(new MockTCPClientSocket(
         AddressList(), net_log().net_log(), &socket_data_provider_)));

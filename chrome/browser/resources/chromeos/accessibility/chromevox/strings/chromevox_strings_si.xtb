@@ -385,7 +385,6 @@
 <translation id="3646890046000188562">{COUNT,plural, =1{පසුටිකය}one{# පසුටික්}other{# පසුටික්}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{ඩොලරය}one{# ඩොලර ලකුණු}other{# ඩොලර ලකුණු}}</translation>
-<translation id="3658742229777143148">පුනරීක්ශණය</translation>
 <translation id="3659787053479271466">අවදි</translation>
 <translation id="3665563998540286755"><ph name="VALUE" />, ලැයිස්තු කොටුව</translation>
 <translation id="3681531118904532409">ගස් ලබු නැටි</translation>
@@ -1104,7 +1103,6 @@ Chrome බ්‍රවුසර මෙනුව විවෘත කිරීම�
 <translation id="812886159861361726"><ph name="FILE_NAME" /> බාගැනීම නැවැත්විය</translation>
 <translation id="8138880386467279117">ස්පර්ශය</translation>
 <translation id="8153880621934657047">වගුව තුළ නොවේ..</translation>
-<translation id="8161114871611868169">අදහස් කොටස</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{යටි ඉර}one{# යටි ඉරි}other{# යටි ඉරි}}</translation>
 <translation id="8179976553408161302">ඇතුළු කරන්න</translation>
 <translation id="8184828902145951186">පේළි</translation>

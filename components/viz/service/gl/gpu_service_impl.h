@@ -244,7 +244,9 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
     return gpu_channel_manager_->sync_point_manager();
   }
 
-  base::TaskRunner* main_runner() { return main_runner_.get(); }
+  scoped_refptr<base::SingleThreadTaskRunner>& main_runner() {
+    return main_runner_;
+  }
 
   gpu::GpuWatchdogThread* watchdog_thread() { return watchdog_thread_.get(); }
 

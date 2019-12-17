@@ -18,12 +18,12 @@
 
 SandboxedRarAnalyzer::SandboxedRarAnalyzer(
     const base::FilePath& rar_file_path,
-    const ResultCallback& callback,
+    ResultCallback callback,
     mojo::PendingRemote<chrome::mojom::FileUtilService> service)
     : file_path_(rar_file_path),
-      callback_(callback),
+      callback_(std::move(callback)),
       service_(std::move(service)) {
-  DCHECK(callback);
+  DCHECK(callback_);
   DCHECK(!file_path_.value().empty());
   service_->BindSafeArchiveAnalyzer(
       remote_analyzer_.BindNewPipeAndPassReceiver());
@@ -56,7 +56,7 @@ void SandboxedRarAnalyzer::AnalyzeFileDone(
     const safe_browsing::ArchiveAnalyzerResults& results) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   remote_analyzer_.reset();
-  callback_.Run(results);
+  std::move(callback_).Run(results);
 }
 
 void SandboxedRarAnalyzer::PrepareFileToAnalyze() {
@@ -96,9 +96,9 @@ void SandboxedRarAnalyzer::PrepareFileToAnalyze() {
 }
 
 void SandboxedRarAnalyzer::ReportFileFailure() {
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(callback_, safe_browsing::ArchiveAnalyzerResults()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(std::move(callback_),
+                                safe_browsing::ArchiveAnalyzerResults()));
 }
 
 std::string SandboxedRarAnalyzer::DebugString() const {

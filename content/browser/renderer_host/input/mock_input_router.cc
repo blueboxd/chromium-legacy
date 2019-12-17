@@ -38,11 +38,11 @@ bool MockInputRouter::HasPendingEvents() const {
 }
 
 base::Optional<cc::TouchAction> MockInputRouter::AllowedTouchAction() {
-  return cc::kTouchActionAuto;
+  return cc::TouchAction::kAuto;
 }
 
 base::Optional<cc::TouchAction> MockInputRouter::ActiveTouchAction() {
-  return cc::kTouchActionAuto;
+  return cc::TouchAction::kAuto;
 }
 
 mojo::PendingRemote<mojom::WidgetInputHandlerHost>

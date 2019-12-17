@@ -1,3 +1,8 @@
+# tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.10 Mac10.11 Mac10.12 Retina
+#         Mac10.13 Win Win7 Win10 ]
+# tags: [ Release Debug ]
+# results: [ Timeout Crash Pass Failure Slow Skip ]
+
 # This file lists test expectations for WPT tests running ONLY under the wptrunner code path in
 # Chromium. See go/wpt-in-chromium-ci for more info on the overall project.
 
@@ -454,7 +459,7 @@ crbug.com/lpz external/wpt/signed-exchange/sxg-variants-mismatch.tentative.html 
 crbug.com/lpz external/wpt/signed-exchange/sxg-version1b2.tentative.html [ Failure ]
 crbug.com/lpz external/wpt/sms/idlharness.https.any.html [ Failure ]
 crbug.com/lpz external/wpt/sms/idlharness.https.any.worker.html [ Failure ]
-crbug.com/lpz external/wpt/sms/interceptor.https.html [ Timeout ]
+crbug.com/lpz external/wpt/sms/interceptor.https.html [ Timeout Failure ]
 crbug.com/lpz external/wpt/sms/sms-top-level-frame-only.https.html [ Timeout ]
 crbug.com/lpz external/wpt/speech-api/historical.html [ Failure ]
 crbug.com/lpz external/wpt/streams/readable-byte-streams/construct-byob-request.any.html [ Failure ]
@@ -508,7 +513,7 @@ crbug.com/lpz external/wpt/web-animations/interfaces/KeyframeEffect/setKeyframes
 crbug.com/lpz external/wpt/web-animations/interfaces/KeyframeEffect/style-change-events.html [ Failure ]
 crbug.com/lpz external/wpt/web-locks/clientids.tentative.https.html [ Failure ]
 crbug.com/lpz external/wpt/web-locks/query-ordering.tentative.https.html [ Pass Failure ]
-crbug.com/lpz external/wpt/web-nfc/NDEFWriter_push.https.html [ Failure ]
+crbug.com/lpz external/wpt/web-nfc/NDEFWriter_push.https.html [ Failure Timeout ]
 crbug.com/lpz external/wpt/webaudio/the-audio-api/the-audioworklet-interface/audioworkletnode-output-channel-count.https.html [ Pass Failure ]
 crbug.com/lpz external/wpt/webauthn/createcredential-extensions.https.html [ Timeout ]
 crbug.com/lpz external/wpt/webauthn/createcredential-timeout.https.html [ Failure ]
@@ -896,7 +901,6 @@ crbug.com/lpz external/wpt/web-animations/timing-model/animations/reverse-runnin
 # Testharness test. Fail locally. Fail on wpt.fyi
 crbug.com/lpz external/wpt/mathml/relations/html5-tree/tabindex-002.html [ Failure ]
 crbug.com/lpz external/wpt/portals/portals-repeated-activate.html [ Failure ]
-crbug.com/lpz external/wpt/sms/interceptor.https.html [ Failure ]
 
 # WebXr tests fail because they need mojo stubs. crbug.com/1033611
 crbug.com/1033611 external/wpt/webxr/events_input_source_recreation.https.html [ Failure ]
@@ -988,7 +992,6 @@ crbug.com/lpz external/wpt/storage-access-api/requestStorageAccess.sub.window.ht
 crbug.com/lpz external/wpt/web-nfc/NDEFReader_scan_filter.https.html [ Timeout ]
 crbug.com/lpz external/wpt/web-nfc/NDEFReader_scan_iframe.https.html [ Timeout ]
 crbug.com/lpz external/wpt/web-nfc/NDEFReader_scan.https.html [ Timeout ]
-crbug.com/lpz external/wpt/web-nfc/NDEFWriter_push.https.html [ Timeout ]
 crbug.com/lpz external/wpt/websockets/stream-tentative/close.any.html [ Timeout ]
 crbug.com/lpz external/wpt/websockets/stream-tentative/close.any.serviceworker.html [ Timeout ]
 crbug.com/lpz external/wpt/websockets/stream-tentative/close.any.sharedworker.html [ Timeout ]

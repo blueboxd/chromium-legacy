@@ -63,7 +63,7 @@ void FakeLocalFrameHost::SuddenTerminationDisablerChanged(
     bool present,
     blink::mojom::SuddenTerminationDisablerType disabler_type) {}
 
-void FakeLocalFrameHost::ReceivedUserGestureBeforeNavigationChanged(
+void FakeLocalFrameHost::HadStickyUserActivationBeforeNavigationChanged(
     bool value) {}
 
 void FakeLocalFrameHost::BindFrameHostReceiver(

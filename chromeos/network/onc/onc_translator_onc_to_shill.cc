@@ -53,8 +53,10 @@ void SetClientCertProperties(client_cert::ConfigType config_type,
   std::string cert_type;
   onc_object->GetStringWithoutPathExpansion(::onc::client_cert::kClientCertType,
                                             &cert_type);
-  if (cert_type != ::onc::client_cert::kPKCS11Id)
+  if (cert_type != ::onc::client_cert::kPKCS11Id) {
+    client_cert::SetEmptyShillProperties(config_type, shill_dictionary);
     return;
+  }
 
   std::string pkcs11_id;
   onc_object->GetStringWithoutPathExpansion(

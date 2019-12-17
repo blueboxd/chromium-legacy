@@ -18,6 +18,8 @@
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "ui/aura/scoped_window_targeter.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -31,6 +33,53 @@ namespace {
 bool IsScrollableShelfEnabled() {
   return chromeos::switches::ShouldShowScrollableShelf();
 }
+
+// Custom window targeter for the hotseat. Used so the hotseat only processes
+// events that land on the visible portion of the hotseat, and only while the
+// hotseat is not animating.
+class HotseatWindowTargeter : public aura::WindowTargeter {
+ public:
+  explicit HotseatWindowTargeter(HotseatWidget* hotseat_widget)
+      : hotseat_widget_(hotseat_widget) {}
+  ~HotseatWindowTargeter() override = default;
+
+  HotseatWindowTargeter(const HotseatWindowTargeter& other) = delete;
+  HotseatWindowTargeter& operator=(const HotseatWindowTargeter& rhs) = delete;
+
+  // aura::WindowTargeter:
+  bool SubtreeShouldBeExploredForEvent(aura::Window* window,
+                                       const ui::LocatedEvent& event) override {
+    // Do not handle events if the hotseat window is animating as it may animate
+    // over other items which want to process events.
+    if (hotseat_widget_->GetLayer()->GetAnimator()->is_animating())
+      return false;
+    return aura::WindowTargeter::SubtreeShouldBeExploredForEvent(window, event);
+  }
+
+  bool GetHitTestRects(aura::Window* target,
+                       gfx::Rect* hit_test_rect_mouse,
+                       gfx::Rect* hit_test_rect_touch) const override {
+    // If the hotseat is not extended we can use the normal targeting as the
+    // hidden parts of the hotseat will not block non-shelf items from taking
+    // events.
+    if (target == hotseat_widget_->GetNativeWindow() &&
+        hotseat_widget_->state() == HotseatState::kExtended) {
+      // Shrink the hit bounds from the size of the window to the size of the
+      // hotseat opaque background.
+      gfx::Rect hit_bounds = target->bounds();
+      hit_bounds.ClampToCenteredSize(
+          hotseat_widget_->GetOpaqueBackgroundSize());
+      *hit_test_rect_mouse = *hit_test_rect_touch = hit_bounds;
+      return true;
+    }
+    return aura::WindowTargeter::GetHitTestRects(target, hit_test_rect_mouse,
+                                                 hit_test_rect_touch);
+  }
+
+ private:
+  // Unowned and guaranteed to be not null for the duration of |this|.
+  HotseatWidget* const hotseat_widget_;
+};
 
 }  // namespace
 
@@ -192,6 +241,9 @@ void HotseatWidget::Initialize(aura::Window* container, Shelf* shelf) {
     scrollable_shelf_view_ = GetContentsView()->AddChildView(
         std::make_unique<ScrollableShelfView>(ShelfModel::Get(), shelf));
     scrollable_shelf_view_->Init();
+
+    hotseat_window_targeter_ = std::make_unique<aura::ScopedWindowTargeter>(
+        GetNativeWindow(), std::make_unique<HotseatWindowTargeter>(this));
   } else {
     // The shelf view observes the shelf model and creates icons as items are
     // added to the model.
@@ -272,6 +324,11 @@ void HotseatWidget::OnTabletModeChanged() {
 
 void HotseatWidget::UpdateOpaqueBackground() {
   delegate_view_->UpdateOpaqueBackground();
+}
+
+gfx::Size HotseatWidget::GetOpaqueBackgroundSize() const {
+  DCHECK(scrollable_shelf_view_);
+  return scrollable_shelf_view_->GetHotseatBackgroundBounds().size();
 }
 
 void HotseatWidget::SetFocusCycler(FocusCycler* focus_cycler) {

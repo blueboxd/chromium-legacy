@@ -27,6 +27,7 @@
 #include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/security_events/security_event_recorder_factory.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
@@ -306,6 +307,20 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
 // static
 bool ProfileSyncServiceFactory::HasSyncService(Profile* profile) {
   return GetInstance()->GetServiceForBrowserContext(profile, false) != nullptr;
+}
+
+// static
+std::vector<const syncer::SyncService*>
+ProfileSyncServiceFactory::GetAllSyncServices() {
+  std::vector<Profile*> profiles =
+      g_browser_process->profile_manager()->GetLoadedProfiles();
+  std::vector<const syncer::SyncService*> sync_services;
+  for (Profile* profile : profiles) {
+    if (HasSyncService(profile)) {
+      sync_services.push_back(GetForProfile(profile));
+    }
+  }
+  return sync_services;
 }
 
 // static

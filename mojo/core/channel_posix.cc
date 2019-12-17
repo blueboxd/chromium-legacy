@@ -98,7 +98,7 @@ class ChannelPosix : public Channel,
   ChannelPosix(Delegate* delegate,
                ConnectionParams connection_params,
                HandlePolicy handle_policy,
-               scoped_refptr<base::TaskRunner> io_task_runner)
+               scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
       : Channel(delegate, handle_policy),
         self_(this),
         io_task_runner_(io_task_runner) {
@@ -552,7 +552,7 @@ class ChannelPosix : public Channel,
   // or accepted over |server_|.
   base::ScopedFD socket_;
 
-  scoped_refptr<base::TaskRunner> io_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // These watchers must only be accessed on the IO thread.
   std::unique_ptr<base::MessagePumpForIO::FdWatchController> read_watcher_;
@@ -583,7 +583,7 @@ scoped_refptr<Channel> Channel::Create(
     Delegate* delegate,
     ConnectionParams connection_params,
     HandlePolicy handle_policy,
-    scoped_refptr<base::TaskRunner> io_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   return new ChannelPosix(delegate, std::move(connection_params), handle_policy,
                           io_task_runner);
 }

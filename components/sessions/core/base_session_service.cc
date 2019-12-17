@@ -32,7 +32,7 @@ void RunIfNotCanceled(
 }
 
 void PostOrRunInternalGetCommandsCallback(
-    base::TaskRunner* task_runner,
+    base::SequencedTaskRunner* task_runner,
     const BaseSessionService::GetCommandsCallback& callback,
     std::vector<std::unique_ptr<SessionCommand>> commands) {
   if (task_runner->RunsTasksInCurrentSequence()) {

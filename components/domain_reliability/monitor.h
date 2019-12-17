@@ -30,7 +30,6 @@
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_response_info.h"
 #include "net/socket/connection_attempts.h"
-#include "net/url_request/url_request_status.h"
 
 namespace base {
 class Value;
@@ -91,9 +90,10 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
 
   // Should be called when |request| is complete. Will examine and possibly
   // log the (final) request. |started| should be true if the request was
-  // actually started before it was terminated. Must be called after
+  // actually started before it was terminated. |net_error| should be the
+  // final result of the network request. Must be called after
   // |SetDiscardUploads|.
-  void OnCompleted(net::URLRequest* request, bool started);
+  void OnCompleted(net::URLRequest* request, bool started, int net_error);
 
   // net::NetworkChangeNotifier::NetworkChangeObserver implementation:
   void OnNetworkChanged(
@@ -137,14 +137,14 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
 
   struct DOMAIN_RELIABILITY_EXPORT RequestInfo {
     RequestInfo();
-    explicit RequestInfo(const net::URLRequest& request);
+    RequestInfo(const net::URLRequest& request, int net_error);
     RequestInfo(const RequestInfo& other);
     ~RequestInfo();
 
     static bool ShouldReportRequest(const RequestInfo& request);
 
     GURL url;
-    net::URLRequestStatus status;
+    int net_error;
     net::HttpResponseInfo response_info;
     int load_flags;
     net::LoadTimingInfo load_timing_info;

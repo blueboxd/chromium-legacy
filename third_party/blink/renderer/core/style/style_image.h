@@ -25,6 +25,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_IMAGE_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -86,9 +87,13 @@ class CORE_EXPORT StyleImage : public GarbageCollected<StyleImage> {
   // not zoomed. Note that the |default_object_size| has already been snapped
   // to LayoutUnit resolution because it represents the target painted size of
   // a container.
+  //
+  // The size will respect the image orientation if requested and if the image
+  // supports it.
   virtual FloatSize ImageSize(const Document&,
                               float multiplier,
-                              const LayoutSize& default_object_size) const = 0;
+                              const LayoutSize& default_object_size,
+                              RespectImageOrientationEnum) const = 0;
 
   // The <image> has intrinsic dimensions.
   //

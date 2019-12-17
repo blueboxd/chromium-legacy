@@ -57,8 +57,8 @@ ios_eg2_test_app_host("ios_showcase_eg2tests") {
     "//ios/testing/earl_grey:eg_app_support+eg2",
   ]
   bundle_deps = [
-    "//ios/showcase/core/resources",
     "//ios/chrome/app/resources",
+    "//ios/showcase/core/resources",
     "//ios/third_party/earl_grey2:app_framework+bundle",
     "//ios/third_party/gtx:gtx+bundle",
   ]

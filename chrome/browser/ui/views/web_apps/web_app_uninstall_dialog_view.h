@@ -93,11 +93,10 @@ class WebAppUninstallDialogViews : public web_app::WebAppUninstallDialog,
       delete;
   ~WebAppUninstallDialogViews() override;
 
-  // Starts the process of showing a confirmation UI, which is split into two.
-  // 1) Set off a 'load icon' task.
-  // 2) Handle the load icon response and show the UI (OnAllIconsRead).
+  // web_app::WebAppUninstallDialog:
   void ConfirmUninstall(const web_app::AppId& app_id,
                         OnWebAppUninstallDialogClosed closed_callback) override;
+  void SetDialogShownCallbackForTesting(base::OnceClosure callback) override;
 
   void UninstallStarted();
   void CallCallback(bool uninstalled);
@@ -114,6 +113,8 @@ class WebAppUninstallDialogViews : public web_app::WebAppUninstallDialog,
 
   // The callback we will call Accepted/Canceled on after confirmation dialog.
   OnWebAppUninstallDialogClosed closed_callback_;
+
+  base::OnceClosure dialog_shown_callback_for_testing_;
 
   // Tracks whether |parent_| got destroyed.
   std::unique_ptr<NativeWindowTracker> parent_window_tracker_;

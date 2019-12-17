@@ -82,14 +82,14 @@ class WakeLockTest : public DeviceServiceTestBase {
         wake_lock_.BindNewPipeAndPassReceiver());
   }
 
-  void OnChangeType(base::Closure quit_closure, bool result) {
+  void OnChangeType(base::OnceClosure quit_closure, bool result) {
     result_ = result;
-    quit_closure.Run();
+    std::move(quit_closure).Run();
   }
 
-  void OnHasWakeLock(base::Closure quit_closure, bool has_wakelock) {
+  void OnHasWakeLock(base::OnceClosure quit_closure, bool has_wakelock) {
     has_wakelock_ = has_wakelock;
-    quit_closure.Run();
+    std::move(quit_closure).Run();
   }
 
   bool ChangeType(mojom::WakeLockType type) {
@@ -97,8 +97,8 @@ class WakeLockTest : public DeviceServiceTestBase {
 
     base::RunLoop run_loop;
     wake_lock_->ChangeType(
-        type, base::Bind(&WakeLockTest::OnChangeType, base::Unretained(this),
-                         run_loop.QuitClosure()));
+        type, base::BindOnce(&WakeLockTest::OnChangeType,
+                             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
 
     return result_;
@@ -108,9 +108,9 @@ class WakeLockTest : public DeviceServiceTestBase {
     has_wakelock_ = false;
 
     base::RunLoop run_loop;
-    wake_lock_->HasWakeLockForTests(base::Bind(&WakeLockTest::OnHasWakeLock,
-                                               base::Unretained(this),
-                                               run_loop.QuitClosure()));
+    wake_lock_->HasWakeLockForTests(base::BindOnce(&WakeLockTest::OnHasWakeLock,
+                                                   base::Unretained(this),
+                                                   run_loop.QuitClosure()));
     run_loop.Run();
 
     return has_wakelock_;

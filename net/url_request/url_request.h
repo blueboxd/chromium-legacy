@@ -683,10 +683,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // encryption, 0 for cached responses.
   int raw_header_size() const { return raw_header_size_; }
 
-  // Returns the error status of the request.
-  // Do not use! Going to be protected!
-  const URLRequestStatus& status() const { return status_; }
-
   const NetworkTrafficAnnotationTag& traffic_annotation() const {
     return traffic_annotation_;
   }
@@ -732,6 +728,9 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   // Allow the URLRequestJob class to set our status too.
   void set_status(URLRequestStatus status);
+
+  // Returns the error status of the request.
+  const URLRequestStatus& status() const { return status_; }
 
   // Allow the URLRequestJob to redirect this request. If non-null,
   // |removed_headers| and |modified_headers| are changes

@@ -72,7 +72,7 @@ void ProactiveSuggestionsRichView::AddedToWidget() {
   event_monitor_ = views::EventMonitor::CreateWindowMonitor(
       this, GetWidget()->GetNativeWindow(),
       {ui::ET_GESTURE_TAP, ui::ET_GESTURE_TAP_CANCEL, ui::ET_GESTURE_TAP_DOWN,
-       ui::ET_MOUSE_ENTERED, ui::ET_MOUSE_MOVED, ui::ET_MOUSE_EXITED});
+       ui::ET_MOUSE_ENTERED, ui::ET_MOUSE_EXITED});
 }
 
 void ProactiveSuggestionsRichView::OnMouseEntered(const ui::MouseEvent& event) {

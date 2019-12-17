@@ -79,6 +79,10 @@ bool SOCKSConnectJob::HasEstablishedConnection() const {
          next_state_ == STATE_SOCKS_CONNECT_COMPLETE;
 }
 
+ResolveErrorInfo SOCKSConnectJob::GetResolveErrorInfo() const {
+  return resolve_error_info_;
+}
+
 base::TimeDelta SOCKSConnectJob::HandshakeTimeoutForTesting() {
   return kSOCKSConnectJobTimeout;
 }
@@ -147,6 +151,7 @@ int SOCKSConnectJob::DoTransportConnect() {
 }
 
 int SOCKSConnectJob::DoTransportConnectComplete(int result) {
+  resolve_error_info_ = transport_connect_job_->GetResolveErrorInfo();
   if (result != OK)
     return ERR_PROXY_CONNECTION_FAILED;
 
@@ -165,11 +170,12 @@ int SOCKSConnectJob::DoSOCKSConnect() {
                                          socks_params_->destination(),
                                          socks_params_->traffic_annotation()));
   } else {
-    socket_.reset(new SOCKSClientSocket(
+    socks_socket_ptr_ = new SOCKSClientSocket(
         transport_connect_job_->PassSocket(), socks_params_->destination(),
         socks_params_->network_isolation_key(), priority(), host_resolver(),
         socks_params_->transport_params()->disable_secure_dns(),
-        socks_params_->traffic_annotation()));
+        socks_params_->traffic_annotation());
+    socket_.reset(socks_socket_ptr_);
   }
   transport_connect_job_.reset();
   return socket_->Connect(
@@ -177,6 +183,8 @@ int SOCKSConnectJob::DoSOCKSConnect() {
 }
 
 int SOCKSConnectJob::DoSOCKSConnectComplete(int result) {
+  if (!socks_params_->is_socks_v5())
+    resolve_error_info_ = socks_socket_ptr_->GetResolveErrorInfo();
   if (result != OK) {
     socket_->Disconnect();
     return result;

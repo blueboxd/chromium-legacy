@@ -308,9 +308,6 @@ extern const char kDisallowUnsafeHttpDownloadsNameDescription[];
 extern const char kDisplayList2dCanvasName[];
 extern const char kDisplayList2dCanvasDescription[];
 
-extern const char kDownloadResumptionWithoutStrongValidatorsName[];
-extern const char kDownloadResumptionWithoutStrongValidatorsDescription[];
-
 extern const char kEnableAccessibilityImageDescriptionsName[];
 extern const char kEnableAccessibilityImageDescriptionsDescription[];
 
@@ -731,6 +728,10 @@ extern const char kIgnorePreviewsBlacklistDescription[];
 
 extern const char kIgnoreLitePageRedirectHintsBlacklistName[];
 extern const char kIgnoreLitePageRedirectHintsBlacklistDescription[];
+
+extern const char kImprovedCookieControlsForThirdPartyCookieBlockingName[];
+extern const char
+    kImprovedCookieControlsForThirdPartyCookieBlockingDescription[];
 
 extern const char kCompositorThreadedScrollbarScrollingName[];
 extern const char kCompositorThreadedScrollbarScrollingDescription[];
@@ -1505,9 +1506,6 @@ extern const char kDirectActionsDescription[];
 extern const char kDontPrefetchLibrariesName[];
 extern const char kDontPrefetchLibrariesDescription[];
 
-extern const char kDownloadRenameName[];
-extern const char kDownloadRenameDescription[];
-
 extern const char kAutofillManualFallbackAndroidName[];
 extern const char kAutofillManualFallbackAndroidDescription[];
 
@@ -1721,10 +1719,6 @@ extern const char kNtpRealboxMatchOmniboxThemeDescription[];
 
 extern const char kImprovedCookieControlsName[];
 extern const char kImprovedCookieControlsDescription[];
-
-extern const char kImprovedCookieControlsForThirdPartyCookieBlockingName[];
-extern const char
-    kImprovedCookieControlsForThirdPartyCookieBlockingDescription[];
 
 extern const char kEnableReaderModeName[];
 extern const char kEnableReaderModeDescription[];

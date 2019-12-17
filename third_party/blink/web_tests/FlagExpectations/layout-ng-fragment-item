@@ -1,3 +1,8 @@
+# tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.10 Mac10.11 Mac10.12 Retina
+#         Mac10.13 Win Win7 Win10 ]
+# tags: [ Release Debug ]
+# results: [ Timeout Crash Pass Failure Slow Skip ]
+
 crbug.com/982194 accessibility/adjacent-continuations-cause-assertion-failure.html [ Failure ]
 crbug.com/982194 accessibility/aria-tables.html [ Failure ]
 crbug.com/982194 accessibility/first-letter-text-transform-causes-crash.html [ Failure ]
@@ -615,8 +620,8 @@ crbug.com/982194 virtual/audio-service/media/picture-in-picture/v2/request-pictu
 crbug.com/874695 virtual/audio-service/media/remoteplayback/prompt-twice-throws.html [ Pass ]
 crbug.com/982194 virtual/audio-service/media/stable/video-object-fit-stable.html [ Pass ]
 crbug.com/982194 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/udate-bytecheck.https.html [ Timeout ]
-Bug(none) virtual/composite-after-paint/compositing/geometry/outline-change.html [ Pass ]
-Bug(none) virtual/composite-after-paint/compositing/gestures/gesture-tapHighlight-img.html [ Pass ]
+virtual/composite-after-paint/compositing/geometry/outline-change.html [ Pass ]
+virtual/composite-after-paint/compositing/gestures/gesture-tapHighlight-img.html [ Pass ]
 
 crbug.com/982194 accessibility/selection-affinity.html [ Failure ]
 crbug.com/982194 compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]

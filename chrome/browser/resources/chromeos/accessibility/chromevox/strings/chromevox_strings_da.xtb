@@ -385,7 +385,6 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="3646890046000188562">{COUNT,plural, =1{accent grave}one{# accent graver}other{# accent graver}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{dollar}one{# dollartegn}other{# dollartegn}}</translation>
-<translation id="3658742229777143148">Revision</translation>
 <translation id="3659787053479271466">advar</translation>
 <translation id="3665563998540286755">Listefeltet <ph name="VALUE" /></translation>
 <translation id="3681531118904532409">Lys varm orange</translation>
@@ -1104,7 +1103,6 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="812886159861361726">Download af <ph name="FILE_NAME" /> er stoppet</translation>
 <translation id="8138880386467279117">Berøring</translation>
 <translation id="8153880621934657047">Ikke i tabel.</translation>
-<translation id="8161114871611868169">Kommentarsektion</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{understregning}one{# understregninger}other{# understregninger}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8184828902145951186">rk</translation>

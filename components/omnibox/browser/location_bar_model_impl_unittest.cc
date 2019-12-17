@@ -11,8 +11,16 @@
 #include "components/omnibox/browser/location_bar_model_delegate.h"
 #include "components/omnibox/browser/test_omnibox_client.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/security_state/core/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/favicon_size.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "url/gurl.h"
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "components/omnibox/browser/vector_icons.h"  // nogncheck
+#include "components/vector_icons/vector_icons.h"     // nogncheck
+#endif
 
 namespace {
 
@@ -221,5 +229,46 @@ TEST_F(LocationBarModelImplTest, QueryInOmniboxLookalikeURL) {
   EXPECT_FALSE(model()->GetDisplaySearchTerms(&result));
   EXPECT_EQ(base::string16(), result);
 }
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+// Tests GetVectorIcon returns the correct security indicator icon when the
+// danger-warning experiment is disabled.
+TEST_F(LocationBarModelImplTest, GetVectorIcon_DefaultWarning) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      security_state::features::kMarkHttpAsFeature);
+
+  delegate()->SetSecurityLevel(security_state::SecurityLevel::WARNING);
+
+  gfx::ImageSkia expected_icon = gfx::CreateVectorIcon(
+      omnibox::kHttpIcon, gfx::kFaviconSize, gfx::kPlaceholderColor);
+
+  gfx::ImageSkia icon = gfx::CreateVectorIcon(
+      model()->GetVectorIcon(), gfx::kFaviconSize, gfx::kPlaceholderColor);
+
+  EXPECT_EQ(icon.bitmap(), expected_icon.bitmap());
+}
+
+// Tests GetVectorIcon returns the correct security indicator icon when the
+// danger-warning experiment is enabled.
+TEST_F(LocationBarModelImplTest, GetVectorIcon_DangerWarning) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      security_state::features::kMarkHttpAsFeature,
+      {{security_state::features::kMarkHttpAsFeatureParameterName,
+        security_state::features::kMarkHttpAsParameterDangerWarning}});
+
+  delegate()->SetSecurityLevel(security_state::SecurityLevel::WARNING);
+
+  gfx::ImageSkia expected_icon =
+      gfx::CreateVectorIcon(omnibox::kNotSecureWarningIcon, gfx::kFaviconSize,
+                            gfx::kPlaceholderColor);
+
+  gfx::ImageSkia icon = gfx::CreateVectorIcon(
+      model()->GetVectorIcon(), gfx::kFaviconSize, gfx::kPlaceholderColor);
+
+  EXPECT_EQ(icon.bitmap(), expected_icon.bitmap());
+}
+#endif  // !defined(OS_IOS)
 
 }  // namespace

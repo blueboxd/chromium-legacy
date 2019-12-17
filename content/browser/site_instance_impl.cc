@@ -62,7 +62,8 @@ SiteInstanceImpl::SiteInstanceImpl(BrowsingInstance* browsing_instance)
       can_associate_with_spare_process_(true),
       has_site_(false),
       process_reuse_policy_(ProcessReusePolicy::DEFAULT),
-      is_for_service_worker_(false) {
+      is_for_service_worker_(false),
+      is_guest_(false) {
   DCHECK(browsing_instance);
 }
 
@@ -111,15 +112,22 @@ scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForURL(
 scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForServiceWorker(
     BrowserContext* browser_context,
     const GURL& url,
-    bool can_reuse_process) {
-  // This will create a new SiteInstance and BrowsingInstance.
-  scoped_refptr<BrowsingInstance> instance(
-      new BrowsingInstance(browser_context));
+    bool can_reuse_process,
+    bool is_guest) {
+  scoped_refptr<SiteInstanceImpl> site_instance;
 
-  // We do NOT want to allow the default site instance here because workers
-  // need to be kept separate from other sites.
-  scoped_refptr<SiteInstanceImpl> site_instance =
-      instance->GetSiteInstanceForURL(url, /* allow_default_instance */ false);
+  if (is_guest) {
+    site_instance = CreateForGuest(browser_context, url);
+  } else {
+    // This will create a new SiteInstance and BrowsingInstance.
+    scoped_refptr<BrowsingInstance> instance(
+        new BrowsingInstance(browser_context));
+
+    // We do NOT want to allow the default site instance here because workers
+    // need to be kept separate from other sites.
+    site_instance = instance->GetSiteInstanceForURL(
+        url, /* allow_default_instance */ false);
+  }
   site_instance->is_for_service_worker_ = true;
 
   // Attempt to reuse a renderer process if possible. Note that in the
@@ -133,6 +141,25 @@ scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForServiceWorker(
     site_instance->set_process_reuse_policy(
         SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
   }
+  return site_instance;
+}
+
+// static
+scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForGuest(
+    content::BrowserContext* browser_context,
+    const GURL& guest_site_url) {
+  DCHECK(browser_context);
+  DCHECK_NE(guest_site_url, GetDefaultSiteURL());
+  scoped_refptr<SiteInstanceImpl> site_instance = base::WrapRefCounted(
+      new SiteInstanceImpl(new BrowsingInstance(browser_context)));
+
+  site_instance->is_guest_ = true;
+
+  // Setting site and lock directly without the site URL conversions we
+  // do for user provided URLs. Callers expect GetSiteURL() to return the
+  // value they provide in |guest_site_url|.
+  site_instance->SetSiteAndLockInternal(guest_site_url, guest_site_url);
+
   return site_instance;
 }
 
@@ -315,13 +342,29 @@ void SiteInstanceImpl::SetSite(const GURL& url) {
   // SiteInstance more than once.
   DCHECK(!has_site_);
 
+  original_url_ = url;
+
+  // Convert |url| into appropriate site and lock URLs that can be passed to
+  // SetSiteAndLockInternal(). We must do this transformation for any arbitrary
+  // URL we get from a user, a navigation, or script.
+  GURL site_url;
+  GURL lock_url;
+  browsing_instance_->GetSiteAndLockForURL(
+      url, /* allow_default_instance */ false, &site_url, &lock_url);
+
+  SetSiteAndLockInternal(site_url, lock_url);
+}
+
+void SiteInstanceImpl::SetSiteAndLockInternal(const GURL& site_url,
+                                              const GURL& lock_url) {
+  // TODO(acolwell): Add logic to validate |site_url| and |lock_url| are valid.
+  DCHECK(!has_site_);
+
   // Remember that this SiteInstance has been used to load a URL, even if the
   // URL is invalid.
   has_site_ = true;
-  BrowserContext* browser_context = browsing_instance_->GetBrowserContext();
-  original_url_ = url;
-  browsing_instance_->GetSiteAndLockForURL(
-      url, /* allow_default_instance */ false, &site_, &lock_url_);
+  site_ = site_url;
+  lock_url_ = lock_url;
 
   // Now that we have a site, register it with the BrowsingInstance.  This
   // ensures that we won't create another SiteInstance for this site within
@@ -330,6 +373,7 @@ void SiteInstanceImpl::SetSite(const GURL& url) {
   browsing_instance_->RegisterSiteInstance(this);
 
   // Update the process reuse policy based on the site.
+  BrowserContext* browser_context = browsing_instance_->GetBrowserContext();
   bool should_use_process_per_site =
       RenderProcessHost::ShouldUseProcessPerSite(browser_context, site_);
   if (should_use_process_per_site) {
@@ -517,6 +561,14 @@ scoped_refptr<SiteInstance> SiteInstance::CreateForURL(
 }
 
 // static
+scoped_refptr<SiteInstance> SiteInstance::CreateForGuest(
+    content::BrowserContext* browser_context,
+    const GURL& guest_site_url) {
+  DCHECK(browser_context);
+  return SiteInstanceImpl::CreateForGuest(browser_context, guest_site_url);
+}
+
+// static
 bool SiteInstance::ShouldAssignSiteForURL(const GURL& url) {
   return SiteInstanceImpl::ShouldAssignSiteForURL(url);
 }
@@ -546,7 +598,7 @@ bool SiteInstanceImpl::IsSameSiteWithURL(const GURL& url) {
 }
 
 bool SiteInstanceImpl::IsGuest() {
-  return site_.SchemeIs(kGuestScheme);
+  return is_guest_;
 }
 
 bool SiteInstanceImpl::IsOriginalUrlSameSite(
@@ -696,10 +748,6 @@ GURL SiteInstanceImpl::GetSiteForURLInternal(
     const GURL& real_url,
     bool should_use_effective_urls,
     bool allow_default_site_url) {
-  // TODO(fsamuel, creis): For some reason appID is not recognized as a host.
-  if (real_url.SchemeIs(kGuestScheme))
-    return real_url;
-
   // Explicitly group chrome-error: URLs based on their host component.
   // These URLs are special because we want to group them like other URLs
   // with a host even though they are considered "no access" and
@@ -829,12 +877,6 @@ bool SiteInstanceImpl::CanBePlacedInDefaultSiteInstance(
           features::kProcessSharingWithDefaultSiteInstances)) {
     return false;
   }
-
-  // Exclude "chrome-guest:" URLs from the default SiteInstance to ensure that
-  // guest specific process selection, process swapping, and storage partition
-  // behavior is preserved.
-  if (url.SchemeIs(kGuestScheme))
-    return false;
 
   // Exclude "file://" URLs from the default SiteInstance to prevent the
   // default SiteInstance process from accumulating file access grants that

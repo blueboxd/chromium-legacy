@@ -25,4 +25,3 @@ android_aidl("cct_dynamic_module_aidl") {
     "src/src/java/org/chromium/chrome/browser/customtabs/dynamicmodule/IObjectWrapper.aidl",
   ]
 }
-

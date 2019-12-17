@@ -35,12 +35,27 @@ class PerformanceManagerTabHelper
       public content::WebContentsUserData<PerformanceManagerTabHelper>,
       public WebContentsProxyImpl {
  public:
-  // Detaches all instances from their WebContents and destroys them.
-  static void DetachAndDestroyAll();
+  // Observer interface to be notified when a PerformanceManagerTabHelper is
+  // being teared down.
+  class DestructionObserver {
+   public:
+    virtual ~DestructionObserver() = default;
+    virtual void OnPerformanceManagerTabHelperDestroying(
+        content::WebContents*) = 0;
+  };
 
   ~PerformanceManagerTabHelper() override;
 
   PageNodeImpl* page_node() { return page_node_.get(); }
+
+  // Registers an observer that is notified when the PerformanceManagerTabHelper
+  // is destroyed. Can only be set to non-nullptr if it was previously nullptr,
+  // and vice-versa.
+  void SetDestructionObserver(DestructionObserver* destruction_observer);
+
+  // Must be invoked prior to detaching a PerformanceManagerTabHelper from its
+  // WebContents.
+  void TearDown();
 
   // WebContentsObserver overrides.
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
@@ -85,10 +100,14 @@ class PerformanceManagerTabHelper
 
  private:
   friend class content::WebContentsUserData<PerformanceManagerTabHelper>;
+  friend class PerformanceManagerRegistryImpl;
   friend class WebContentsProxyImpl;
 
   explicit PerformanceManagerTabHelper(content::WebContents* web_contents);
-  void TearDown();
+
+  // Make CreateForWebContents private to restrict usage to
+  // PerformanceManagerRegistry.
+  using WebContentsUserData<PerformanceManagerTabHelper>::CreateForWebContents;
 
   // Post a task to run in the performance manager sequence. The |node| will be
   // passed as unretained, and the closure will be created with BindOnce.
@@ -119,14 +138,8 @@ class PerformanceManagerTabHelper
   // Maps from RenderFrameHost to the associated PM node.
   std::map<content::RenderFrameHost*, std::unique_ptr<FrameNodeImpl>> frames_;
 
+  DestructionObserver* destruction_observer_ = nullptr;
   base::ObserverList<Observer, true, false> observers_;
-
-  // All instances are linked together in a doubly linked list to allow orderly
-  // destruction at browser shutdown time.
-  static PerformanceManagerTabHelper* first_;
-
-  PerformanceManagerTabHelper* next_ = nullptr;
-  PerformanceManagerTabHelper* prev_ = nullptr;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

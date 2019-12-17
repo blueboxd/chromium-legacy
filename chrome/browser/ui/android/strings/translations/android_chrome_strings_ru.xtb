@@ -24,7 +24,6 @@
 <translation id="1171770572613082465">Чтобы перейти к списку популярных сайтов, нажмите кнопку "Топ сайтов"</translation>
 <translation id="1173894706177603556">Переименовать</translation>
 <translation id="1178581264944972037">Пауза</translation>
-<translation id="118069123878619799">– получить представление о параметрах вашего тела, например о росте;</translation>
 <translation id="1181037720776840403">Удалить</translation>
 <translation id="1188239144602654184">Начать</translation>
 <translation id="1197267115302279827">Переместить закладки</translation>
@@ -62,7 +61,6 @@
 <translation id="1384959399684842514">Скачивание приостановлено.</translation>
 <translation id="1386674309198842382">Последние действия: <ph name="LAST_UPDATED" /> дн. назад</translation>
 <translation id="1397811292916898096">Поиск в <ph name="PRODUCT_NAME" /></translation>
-<translation id="1404122904123200417">Встроено в <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Запрет отслеживания</translation>
 <translation id="1407135791313364759">Открыть все</translation>
 <translation id="1409426117486808224">Упрощенный просмотр открытых вкладок</translation>
@@ -215,6 +213,7 @@
 <translation id="2534155362429831547">Удалено записей: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="2536728043171574184">Офлайн-копия страницы</translation>
 <translation id="2537178555904266562">Не удалось синхронизировать пароли.</translation>
+<translation id="2537296579376733324">Все файлы cookie только на этом сайте</translation>
 <translation id="2546283357679194313">Файлы сookie и данные сайтов</translation>
 <translation id="2567385386134582609">ИЗОБРАЖЕНИЕ</translation>
 <translation id="257088987046510401">Темы</translation>
@@ -472,6 +471,7 @@
 <translation id="4565377596337484307">Скрыть пароль</translation>
 <translation id="4570913071927164677">Подробнее…</translation>
 <translation id="4572422548854449519">Войдите в управляемый аккаунт</translation>
+<translation id="4574741712540401491">• <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# минуту назад}one{# минуту назад}few{# минуты назад}many{# минут назад}other{# минуты назад}}</translation>
 <translation id="4587589328781138893">Сайты</translation>
 <translation id="4594952190837476234">Офлайн-версия страницы сохранена <ph name="CREATION_TIME" />. Она может отличаться от онлайн-версии.</translation>
@@ -652,7 +652,6 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{# час назад}one{# час назад}few{# часа назад}many{# часов назад}other{# часа назад}}</translation>
 <translation id="5810288467834065221">© Google LLC, <ph name="YEAR" />. Все права защищены.</translation>
 <translation id="5817918615728894473">Подключить</translation>
-<translation id="5819762621475381970">– узнать планировку комнаты, в которой вы находитесь.</translation>
 <translation id="583281660410589416">Неизвестно</translation>
 <translation id="5833984609253377421">Отправить ссылку</translation>
 <translation id="5836192821815272682">Скачивание обновлений для Chrome…</translation>
@@ -753,6 +752,7 @@
 <translation id="6545017243486555795">Удалить все данные</translation>
 <translation id="6545864417968258051">Поиск Bluetooth-устройств</translation>
 <translation id="6560414384669816528">Поиск в Sogou</translation>
+<translation id="656065428026159829">Ещё</translation>
 <translation id="6566259936974865419">Благодаря Chrome вы сэкономили <ph name="GIGABYTES" /> ГБ свободного места</translation>
 <translation id="6573096386450695060">Разрешать всегда</translation>
 <translation id="6573431926118603307">Здесь появятся вкладки, открытые в Chrome на других устройствах.</translation>
@@ -849,6 +849,7 @@
 <translation id="7293171162284876153">Чтобы начать ее, нажмите "Синхронизировать данные Chrome".</translation>
 <translation id="729975465115245577">На устройстве не установлено приложение для хранения файлов паролей.</translation>
 <translation id="7302081693174882195">Сортировка по объему сэкономленного трафика</translation>
+<translation id="7302486331832100261">Обычно вы блокируете уведомления. Чтобы разрешить их показ, нажмите "Подробнее".</translation>
 <translation id="7328017930301109123">В упрощенном режиме Chrome быстрее загружает страницы и экономит до 60 процентов трафика.</translation>
 <translation id="7333031090786104871">Предыдущий сайт ещё не добавлен</translation>
 <translation id="7352939065658542140">ВИДЕО</translation>

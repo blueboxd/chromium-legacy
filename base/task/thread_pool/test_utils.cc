@@ -36,8 +36,6 @@ class MockJobTaskRunner : public TaskRunner {
                        OnceClosure closure,
                        TimeDelta delay) override;
 
-  bool RunsTasksInCurrentSequence() const override;
-
  private:
   ~MockJobTaskRunner() override;
 
@@ -60,10 +58,6 @@ bool MockJobTaskRunner::PostDelayedTask(const Location& from_here,
       from_here, traits_, pooled_task_runner_delegate_);
   return pooled_task_runner_delegate_->EnqueueJobTaskSource(
       std::move(task_source));
-}
-
-bool MockJobTaskRunner::RunsTasksInCurrentSequence() const {
-  return pooled_task_runner_delegate_->IsRunningPoolWithTraits(traits_);
 }
 
 MockJobTaskRunner::~MockJobTaskRunner() = default;
@@ -242,15 +236,6 @@ bool MockPooledTaskRunnerDelegate::EnqueueJobTaskSource(
 void MockPooledTaskRunnerDelegate::RemoveJobTaskSource(
     scoped_refptr<JobTaskSource> task_source) {
   thread_group_->RemoveTaskSource(*task_source);
-}
-
-bool MockPooledTaskRunnerDelegate::IsRunningPoolWithTraits(
-    const TaskTraits& traits) const {
-  // |thread_group_| must be initialized with SetThreadGroup() before
-  // proceeding.
-  DCHECK(thread_group_);
-
-  return thread_group_->IsBoundToCurrentThread();
 }
 
 void MockPooledTaskRunnerDelegate::UpdatePriority(

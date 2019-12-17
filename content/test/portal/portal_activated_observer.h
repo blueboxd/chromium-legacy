@@ -44,6 +44,10 @@ class PortalActivatedObserver : public PortalInterceptorForTesting::Observer {
   // point.
   blink::mojom::PortalActivateResult WaitForActivateResult();
 
+  // Waits for the Activate method to be called by the predecessor renderer and
+  // for hit test data to be refreshed.
+  void WaitForActivateAndHitTestData();
+
  private:
   // PortalInterceptorForTesting::Observer:
   void OnPortalActivate() override;

@@ -236,7 +236,7 @@ void VideoDecodePerfHistory::SavePerfRecord(ukm::SourceId source_id,
   DVLOG(3)
       << __func__
       << base::StringPrintf(
-             " profile:%s size:%s fps:%d decoded:%d dropped:%d efficient:%d",
+             " profile:%s size:%s fps:%f decoded:%d dropped:%d efficient:%d",
              GetProfileName(features.profile).c_str(),
              features.video_size.ToString().c_str(), features.frames_per_sec,
              targets.frames_decoded, targets.frames_dropped,

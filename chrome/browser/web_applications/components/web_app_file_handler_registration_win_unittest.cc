@@ -78,9 +78,7 @@ class WebAppFileHandlerRegistrationWinTest : public testing::Test {
         registry_override_.OverrideRegistry(HKEY_CURRENT_USER));
     // Until the CL to create the shim app is submitted, create it by
     // hand. TODO(davidbienvenu): Remove this once cl/1815220 lands.
-    base::FilePath web_app_shim_path =
-        GetChromeProxyPath().DirName().AppendASCII("chrome_pwa_launcher.exe");
-    base::File app_shim(web_app_shim_path, base::File::FLAG_CREATE);
+    base::File app_shim(GetChromePwaLauncherPath(), base::File::FLAG_CREATE);
   }
 
   Profile* profile() { return &profile_; }

@@ -70,7 +70,7 @@ base::FilePath PepperFlashFileMessageFilter::GetDataDirName(
   return profile_path.Append(kPepperDataDirname);
 }
 
-scoped_refptr<base::TaskRunner>
+scoped_refptr<base::SequencedTaskRunner>
 PepperFlashFileMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& msg) {
   // The blocking pool provides a pool of threads to run file
@@ -81,9 +81,9 @@ PepperFlashFileMessageFilter::OverrideTaskRunnerForMessage(
   // the plugin has multiple threads, it cannot make assumptions about
   // ordering of IPC message sends, so it cannot make assumptions
   // about ordering of operations caused by those IPC messages.
-  return scoped_refptr<base::TaskRunner>(base::CreateSequencedTaskRunner(
+  return base::CreateSequencedTaskRunner(
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-       base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 }
 
 int32_t PepperFlashFileMessageFilter::OnResourceMessageReceived(

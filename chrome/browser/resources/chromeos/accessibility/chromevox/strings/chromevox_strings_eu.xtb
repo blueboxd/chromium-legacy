@@ -384,7 +384,6 @@ Tutoriala amaitzen duzunean, erabili ChromeVox Itxi botoira joateko, eta saka ez
 <translation id="3646890046000188562">{COUNT,plural, =1{azentu kamutsa}other{# azentu kamuts}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{dolar ikur}other{# dolar ikur}}</translation>
-<translation id="3658742229777143148">Zuzenketa</translation>
 <translation id="3659787053479271466">alerta</translation>
 <translation id="3665563998540286755"><ph name="VALUE" /> zerrenda-koadroa</translation>
 <translation id="3681531118904532409">Papaia-kolorekoa</translation>
@@ -1103,7 +1102,6 @@ Chrome arakatzaileko menua irekitzeko, sakatu Alt + F.</translation>
 <translation id="812886159861361726">Utzi zaio <ph name="FILE_NAME" /> deskargatzeari</translation>
 <translation id="8138880386467279117">Ukipena</translation>
 <translation id="8153880621934657047">Ez dago taula barruan.</translation>
-<translation id="8161114871611868169">Iruzkinen atala</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{azpimarra}other{# azpimarra}}</translation>
 <translation id="8179976553408161302">Sartu</translation>
 <translation id="8184828902145951186">err</translation>

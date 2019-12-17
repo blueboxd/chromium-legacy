@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/drive/drive_pref_names.h"
-#include "content/public/test/test_service_manager_context.h"
 #endif
 
 using safe_browsing::FileTypePolicies;
@@ -184,7 +183,6 @@ void ExpectValidDownloadDir(Profile* profile,
 
 TEST(DownloadPrefsTest, DownloadDirSanitization) {
   content::BrowserTaskEnvironment task_environment_;
-  content::TestServiceManagerContext service_manager_context;
   TestingProfile profile(base::FilePath("/home/chronos/u-0123456789abcdef"));
   DownloadPrefs prefs(&profile);
   const base::FilePath default_dir =

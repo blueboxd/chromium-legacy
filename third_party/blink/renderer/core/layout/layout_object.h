@@ -2191,11 +2191,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // (from style) and blocking touch event handlers.
   TouchAction EffectiveAllowedTouchAction() const {
     if (InsideBlockingTouchEventHandler())
-      return TouchAction::kTouchActionNone;
+      return TouchAction::kNone;
     return StyleRef().GetEffectiveTouchAction();
   }
   bool HasEffectiveAllowedTouchAction() const {
-    return EffectiveAllowedTouchAction() != TouchAction::kTouchActionAuto;
+    return EffectiveAllowedTouchAction() != TouchAction::kAuto;
   }
 
   // Whether this object's Node has a blocking touch event handler on itself

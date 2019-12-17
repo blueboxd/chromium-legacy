@@ -464,7 +464,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // RenderFrame, since that will be handled as part of postMessage.
   void TransferUserActivationFrom(RenderFrameHostImpl* source_rfh);
 
-  void OnSetHasReceivedUserGestureBeforeNavigation(bool value);
+  void OnSetHadStickyUserActivationBeforeNavigation(bool value);
 
   // Sets up the necessary state for a new RenderViewHost.  If |proxy| is not
   // null, it creates a RenderFrameProxy in the target renderer process which is

@@ -74,7 +74,7 @@ void AssistantAshTestBase::SetUp() {
   UpdateDisplay("1024x768");
 
   // Enable Assistant in settings.
-  test_api_->EnableAssistant();
+  test_api_->SetAssistantEnabled(true);
 
   // Cache controller.
   controller_ = Shell::Get()->assistant_controller();
@@ -82,7 +82,8 @@ void AssistantAshTestBase::SetUp() {
 
   // At this point our Assistant service is ready for use.
   // Indicate this by changing status from NOT_READY to READY.
-  AssistantState::Get()->NotifyStatusChanged(mojom::AssistantState::READY);
+  test_api_->GetAssistantState()->NotifyStatusChanged(
+      mojom::AssistantState::READY);
 
   test_api_->DisableAnimations();
 

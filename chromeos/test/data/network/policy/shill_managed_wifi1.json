@@ -1,6 +1,9 @@
 {
+  "EAP.CertID": "",
   "EAP.EAP": "TLS",
   "EAP.Identity": "${LOGIN_ID}@my.domain.com",
+  "EAP.KeyID": "",
+  "EAP.PIN": "",
   "EAP.UseSystemCAs": true,
   "GUID": "policy2_wifi1",
   "Mode": "managed",

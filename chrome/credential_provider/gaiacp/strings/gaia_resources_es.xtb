@@ -25,6 +25,7 @@
 <translation id="7209941495304122410">Introduce la contraseña de Windows</translation>
 <translation id="7357241217513796177">Comprueba que tengas una conexión de red y vuelve a intentarlo.</translation>
 <translation id="7536769223115622137">Añadir cuenta de trabajo</translation>
+<translation id="7811865856574012727">El administrador ha restringido el inicio de sesión con el dispositivo en los siguientes dominios: <ph name="EMAIL_DOMAINS" />. Inténtalo de nuevo usando una cuenta de trabajo válida.</translation>
 <translation id="7856245195110636219">No se puede continuar sin introducir la contraseña actual de Windows. Ponte en contacto con el administrador del sistema.</translation>
 <translation id="8639729688781680518">He olvidado la contraseña de Windows</translation>
 <translation id="866458870819756755">No se ha podido crear el usuario.</translation>

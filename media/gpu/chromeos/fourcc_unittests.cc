@@ -113,6 +113,27 @@ TEST(FourccTest, VideoPixelFormatToV4L2PixFmt) {
 #endif  // BUILDFLAG(USE_V4L2_CODEC)
 
 #if BUILDFLAG(USE_VAAPI)
+// Checks that converting a VaFourCC to Fourcc and back to VaFourCC
+// yields the same format as the original one.
+static void CheckFromVAFourCCAndBack(uint32_t va_fourcc) {
+  base::Optional<Fourcc> fourcc = Fourcc::FromVAFourCC(va_fourcc);
+  EXPECT_NE(fourcc, base::nullopt);
+  EXPECT_EQ(fourcc->ToVAFourCC(), va_fourcc);
+}
+
+TEST(FourccTest, FromVaFourCCAndBack) {
+  CheckFromVAFourCCAndBack(VA_FOURCC_I420);
+  CheckFromVAFourCCAndBack(VA_FOURCC_NV12);
+  CheckFromVAFourCCAndBack(VA_FOURCC_NV21);
+  CheckFromVAFourCCAndBack(VA_FOURCC_YV12);
+  CheckFromVAFourCCAndBack(VA_FOURCC_YUY2);
+  CheckFromVAFourCCAndBack(VA_FOURCC_RGBA);
+  CheckFromVAFourCCAndBack(VA_FOURCC_RGBX);
+  CheckFromVAFourCCAndBack(VA_FOURCC_BGRA);
+  CheckFromVAFourCCAndBack(VA_FOURCC_BGRX);
+  CheckFromVAFourCCAndBack(VA_FOURCC_ARGB);
+}
+
 TEST(FourccTest, VAFourCCToVideoPixelFormat) {
   EXPECT_EQ(PIXEL_FORMAT_I420,
             Fourcc::FromVAFourCC(VA_FOURCC_I420)->ToVideoPixelFormat());

@@ -146,21 +146,18 @@ void PerUserTopicRegistrationManager::RegisterProfilePrefs(
 // static
 void PerUserTopicRegistrationManager::RegisterPrefs(
     PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(kTypeSubscribedForInvalidationsDeprecated);
-  registry->RegisterStringPref(kActiveRegistrationTokenDeprecated,
-                               std::string());
-
-  registry->RegisterDictionaryPref(kTypeSubscribedForInvalidations);
-  registry->RegisterDictionaryPref(kActiveRegistrationTokens);
+  // Same as RegisterProfilePrefs; see comment in the header.
+  RegisterProfilePrefs(registry);
 }
 
 // State of the instance ID token when subscription is requested.
 // Used by UMA histogram, so entries shouldn't be reordered or removed.
 enum class PerUserTopicRegistrationManager::TokenStateOnSubscriptionRequest {
   kTokenWasEmpty = 0,
-  kUnchangedToken = 1,
+  kTokenUnchanged = 1,
   kTokenChanged = 2,
-  kMaxValue = kTokenChanged,
+  kTokenCleared = 3,
+  kMaxValue = kTokenCleared,
 };
 
 struct PerUserTopicRegistrationManager::SubscriptionEntry {
@@ -277,9 +274,7 @@ void PerUserTopicRegistrationManager::UpdateSubscribedTopics(
     const std::string& instance_id_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   instance_id_token_ = instance_id_token;
-  base::UmaHistogramEnumeration(
-      "FCMInvalidations.TokenStateOnRegistrationRequest",
-      DropAllSavedSubscriptionsOnTokenChange());
+  DropAllSavedSubscriptionsOnTokenChange();
 
   for (const auto& topic : topics) {
     // If the topic isn't subscribed yet, schedule the subscription.
@@ -326,9 +321,18 @@ void PerUserTopicRegistrationManager::UpdateSubscribedTopics(
     }
   }
 
-  // Kick off the process of actually processing the (un)subscription we just
+  // Kick off the process of actually processing the (un)subscriptions we just
   // scheduled.
+  // TODO(crbug.com/1020117): Only do this if we actually scheduled anything,
+  // i.e. |pending_subscriptions_| is not empty.
   RequestAccessToken();
+}
+
+void PerUserTopicRegistrationManager::ClearInstanceIDToken() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  instance_id_token_.clear();
+  DropAllSavedSubscriptionsOnTokenChange();
 }
 
 void PerUserTopicRegistrationManager::StartPendingSubscriptions() {
@@ -519,30 +523,48 @@ void PerUserTopicRegistrationManager::OnAccessTokenRequestFailed(
                           base::Unretained(this)));
 }
 
+void PerUserTopicRegistrationManager::DropAllSavedSubscriptionsOnTokenChange() {
+  TokenStateOnSubscriptionRequest outcome =
+      DropAllSavedSubscriptionsOnTokenChangeImpl();
+  base::UmaHistogramEnumeration(
+      "FCMInvalidations.TokenStateOnRegistrationRequest2", outcome);
+}
+
 PerUserTopicRegistrationManager::TokenStateOnSubscriptionRequest
-PerUserTopicRegistrationManager::DropAllSavedSubscriptionsOnTokenChange() {
+PerUserTopicRegistrationManager::DropAllSavedSubscriptionsOnTokenChangeImpl() {
   {
     DictionaryPrefUpdate token_update(pref_service_, kActiveRegistrationTokens);
-    std::string current_token;
-    token_update->GetString(project_id_, &current_token);
-    if (current_token.empty()) {
-      token_update->SetString(project_id_, instance_id_token_);
-      return TokenStateOnSubscriptionRequest::kTokenWasEmpty;
-    }
-    if (current_token == instance_id_token_) {
-      return TokenStateOnSubscriptionRequest::kUnchangedToken;
+    std::string previous_token;
+    token_update->GetString(project_id_, &previous_token);
+    if (previous_token == instance_id_token_) {
+      // Note: This includes the case where the token was and still is empty.
+      return TokenStateOnSubscriptionRequest::kTokenUnchanged;
     }
 
     token_update->SetString(project_id_, instance_id_token_);
+    if (previous_token.empty()) {
+      // If we didn't have a registration token before, we shouldn't have had
+      // any subscriptions either, so no need to drop them.
+      return TokenStateOnSubscriptionRequest::kTokenWasEmpty;
+    }
   }
 
+  // The token has been cleared or changed. In either case, clear all existing
+  // subscriptions since they won't be valid anymore. (No need to send
+  // unsubscribe requests - if the token was revoked, the server will drop the
+  // subscriptions anyway.)
   PerProjectDictionaryPrefUpdate update(pref_service_, project_id_);
   *update = base::Value(base::Value::Type::DICTIONARY);
   topic_to_private_topic_.clear();
   private_topic_to_topic_.clear();
-  return TokenStateOnSubscriptionRequest::kTokenChanged;
-  // TODO(crbug.com/1020117): Figure out if the unsubscribe request should be
-  // sent with the old token.
+  // Also cancel any pending subscription requests.
+  for (const auto& pending_subscription : pending_subscriptions_) {
+    pending_subscription.second->Cancel();
+  }
+  pending_subscriptions_.clear();
+  return instance_id_token_.empty()
+             ? TokenStateOnSubscriptionRequest::kTokenCleared
+             : TokenStateOnSubscriptionRequest::kTokenChanged;
 }
 
 void PerUserTopicRegistrationManager::NotifySubscriptionChannelStateChange(

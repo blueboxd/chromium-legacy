@@ -48,15 +48,13 @@ void PrioritizedTaskRunner::PostTaskAndReply(const base::Location& from_here,
 
   task_runner_->PostTaskAndReply(
       from_here,
-      base::BindOnce(&PrioritizedTaskRunner::RunPostTaskAndReply, this),
+      base::BindOnce(&PrioritizedTaskRunner::RunTaskAndPostReply, this),
       base::BindOnce(&PrioritizedTaskRunner::RunReply, this));
 }
 
 PrioritizedTaskRunner::~PrioritizedTaskRunner() = default;
 
-void PrioritizedTaskRunner::RunPostTaskAndReply() {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-
+void PrioritizedTaskRunner::RunTaskAndPostReply() {
   // Find the next job to run.
   Job job;
   {

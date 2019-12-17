@@ -61,7 +61,6 @@ ShelfControlButton::ShelfControlButton(
     Shelf* shelf,
     ShelfButtonDelegate* shelf_button_delegate)
     : ShelfButton(shelf, shelf_button_delegate) {
-  set_has_ink_drop_action_on_click(true);
   SetInstallFocusRingOnFocus(true);
   views::HighlightPathGenerator::Install(
       this, std::make_unique<ShelfControlButtonHighlightPathGenerator>());

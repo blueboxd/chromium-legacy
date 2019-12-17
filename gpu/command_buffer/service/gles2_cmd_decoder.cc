@@ -3180,6 +3180,8 @@ void BackTexture::Invalidate() {
     texture_ref_->ForceContextLost();
     texture_ref_ = nullptr;
   }
+  memory_tracker_.TrackMemFree(bytes_allocated_);
+  bytes_allocated_ = 0;
 }
 
 GLenum BackTexture::Target() {

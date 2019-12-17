@@ -315,6 +315,15 @@ FlexLayout& FlexLayout::SetMinimumCrossAxisSize(int size) {
   return *this;
 }
 
+FlexLayout& FlexLayout::SetFlexAllocationOrder(
+    FlexAllocationOrder flex_allocation_order) {
+  if (flex_allocation_order_ != flex_allocation_order) {
+    flex_allocation_order_ = flex_allocation_order;
+    InvalidateHost(true);
+  }
+  return *this;
+}
+
 ProposedLayout FlexLayout::CalculateProposedLayout(
     const SizeBounds& size_bounds) const {
   FlexLayoutData data;
@@ -735,7 +744,10 @@ void FlexLayout::AllocateFlexSpace(
     // We currently consider this user error; if the behavior is not
     // desired, prioritize the child views' flex.
     bool dirty = false;
-    for (int view_index : flex_elem.second) {
+    std::vector<size_t> view_indices(flex_elem.second);
+    if (flex_allocation_order() == FlexAllocationOrder::kReverse)
+      std::reverse(view_indices.begin(), view_indices.end());
+    for (int view_index : view_indices) {
       ChildLayout& child_layout = data->layout.child_layouts[view_index];
       FlexChildData& flex_child = data->child_data[view_index];
 

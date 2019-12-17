@@ -247,25 +247,32 @@ void SyncServiceCrypto::SetEncryptionPassphrase(const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This should only be called when the engine has been initialized.
   DCHECK(state_.engine);
-  DCHECK_NE(state_.required_user_action,
-            RequiredUserAction::kPassphraseRequiredForDecryption)
-      << "Can not set explicit passphrase when decryption is needed.";
-
-  DVLOG(1) << "Setting explicit passphrase for encryption.";
-  if (state_.required_user_action ==
-      RequiredUserAction::kPassphraseRequiredForEncryption) {
-    // |kPassphraseRequiredForEncryption| implies that the cryptographer does
-    // not have pending keys. Hence, as long as we're not trying to do an
-    // invalid passphrase change (e.g. explicit -> explicit or explicit ->
-    // implicit), we know this will succeed. If for some reason a new
-    // encryption key arrives via sync later, the SyncEncryptionHandler will
-    // trigger another OnPassphraseRequired().
-    state_.required_user_action = RequiredUserAction::kNone;
-    notify_observers_.Run();
-  }
-
   // We should never be called with an empty passphrase.
   DCHECK(!passphrase.empty());
+
+  switch (state_.required_user_action) {
+    case RequiredUserAction::kNone:
+      break;
+    case RequiredUserAction::kPassphraseRequiredForDecryption:
+    case RequiredUserAction::kFetchingTrustedVaultKeys:
+    case RequiredUserAction::kTrustedVaultKeyRequired:
+      // Cryptographer has pending keys.
+      NOTREACHED()
+          << "Can not set explicit passphrase when decryption is needed.";
+      return;
+    case RequiredUserAction::kPassphraseRequiredForEncryption:
+      // |kPassphraseRequiredForEncryption| implies that the cryptographer does
+      // not have pending keys. Hence, as long as we're not trying to do an
+      // invalid passphrase change (e.g. explicit -> explicit or explicit ->
+      // implicit), we know this will succeed. If for some reason a new
+      // encryption key arrives via sync later, the SyncEncryptionHandler will
+      // trigger another OnPassphraseRequired().
+      state_.required_user_action = RequiredUserAction::kNone;
+      notify_observers_.Run();
+      break;
+  }
+
+  DVLOG(1) << "Setting explicit passphrase for encryption.";
 
   // SetEncryptionPassphrase() should never be called if we are currently
   // encrypted with an explicit passphrase.

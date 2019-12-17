@@ -6,17 +6,25 @@
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_APP_SERVICE_APP_WINDOW_CROSTINI_TRACKER_H_
 
 #include "ash/public/cpp/shelf_types.h"
+#include "base/containers/flat_map.h"
 #include "chrome/browser/ui/ash/launcher/crostini_app_display.h"
+
+class AppServiceAppWindowLauncherController;
 
 namespace aura {
 class Window;
+}
+
+namespace exo {
+class Permission;
 }
 
 // AppServiceAppWindowCrostiniTracker is used to handle Crostini app window
 // special cases, e.g. CrostiniAppDisplay, Crostini shelf app id, etc.
 class AppServiceAppWindowCrostiniTracker {
  public:
-  AppServiceAppWindowCrostiniTracker();
+  explicit AppServiceAppWindowCrostiniTracker(
+      AppServiceAppWindowLauncherController* app_service_controller);
   ~AppServiceAppWindowCrostiniTracker();
 
   AppServiceAppWindowCrostiniTracker(
@@ -26,7 +34,7 @@ class AppServiceAppWindowCrostiniTracker {
 
   void OnWindowVisibilityChanging(aura::Window* window,
                                   const std::string& shelf_app_id);
-  void OnWindowDestroying(const std::string& app_id);
+  void OnWindowDestroying(const std::string& app_id, aura::Window* window);
 
   // A Crostini app with |app_id| is requested to launch on display with
   // |display_id|.
@@ -41,7 +49,14 @@ class AppServiceAppWindowCrostiniTracker {
   void RegisterCrostiniWindowForForceClose(aura::Window* window,
                                            const std::string& app_name);
 
+  AppServiceAppWindowLauncherController* const app_service_controller_;
+
   CrostiniAppDisplay crostini_app_display_;
+
+  // Permission objects that allow this controller to manage which application
+  // windows can activate themselves.
+  base::flat_map<aura::Window*, std::unique_ptr<exo::Permission>>
+      activation_permissions_;
 
   // These two member variables track an app restart request. When
   // app_id_to_restart_ is not empty the controller observes that app and

@@ -302,8 +302,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
 
   // This is static to ensure that we aren't trying to access the rest of the
   // accessibility tree during node initialization.
-  static ImplementedAtkInterfaces GetGTypeInterfaceMask(const AXNodeData& data,
-                                                        AtkRole atk_role);
+  static ImplementedAtkInterfaces GetGTypeInterfaceMask(const AXNodeData& data);
 
   GType GetAccessibilityGType();
   AtkObject* CreateAtkObject();

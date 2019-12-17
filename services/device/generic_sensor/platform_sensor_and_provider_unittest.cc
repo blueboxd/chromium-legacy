@@ -35,35 +35,34 @@ TEST_F(PlatformSensorProviderTest, ResourcesAreFreed) {
   EXPECT_CALL(*provider_, FreeResources()).Times(2);
   provider_->CreateSensor(
       mojom::SensorType::AMBIENT_LIGHT,
-      base::Bind([](scoped_refptr<PlatformSensor> s) { EXPECT_TRUE(s); }));
+      base::BindOnce([](scoped_refptr<PlatformSensor> s) { EXPECT_TRUE(s); }));
   // Failure.
   EXPECT_CALL(*provider_, DoCreateSensorInternal(_, _, _))
-      .WillOnce(Invoke(
-          [](mojom::SensorType, scoped_refptr<PlatformSensor>,
-             const PlatformSensorProvider::CreateSensorCallback& callback) {
-            callback.Run(nullptr);
+      .WillOnce(
+          Invoke([](mojom::SensorType, scoped_refptr<PlatformSensor>,
+                    PlatformSensorProvider::CreateSensorCallback callback) {
+            std::move(callback).Run(nullptr);
           }));
 
   provider_->CreateSensor(
       mojom::SensorType::AMBIENT_LIGHT,
-      base::Bind([](scoped_refptr<PlatformSensor> s) { EXPECT_FALSE(s); }));
+      base::BindOnce([](scoped_refptr<PlatformSensor> s) { EXPECT_FALSE(s); }));
 }
 
 TEST_F(PlatformSensorProviderTest, ResourcesAreNotFreedOnPendingRequest) {
   EXPECT_CALL(*provider_, FreeResources()).Times(0);
   // Suspend.
   EXPECT_CALL(*provider_, DoCreateSensorInternal(_, _, _))
-      .WillOnce(
-          Invoke([](mojom::SensorType, scoped_refptr<PlatformSensor>,
-                    const PlatformSensorProvider::CreateSensorCallback&) {}));
+      .WillOnce(Invoke([](mojom::SensorType, scoped_refptr<PlatformSensor>,
+                          PlatformSensorProvider::CreateSensorCallback) {}));
 
   provider_->CreateSensor(
       mojom::SensorType::AMBIENT_LIGHT,
-      base::Bind([](scoped_refptr<PlatformSensor> s) { NOTREACHED(); }));
+      base::BindOnce([](scoped_refptr<PlatformSensor> s) { NOTREACHED(); }));
 
   provider_->CreateSensor(
       mojom::SensorType::AMBIENT_LIGHT,
-      base::Bind([](scoped_refptr<PlatformSensor> s) { NOTREACHED(); }));
+      base::BindOnce([](scoped_refptr<PlatformSensor> s) { NOTREACHED(); }));
 }
 
 // This test verifies that the shared buffer's default values are 0.
@@ -83,7 +82,7 @@ TEST_F(PlatformSensorProviderTest, SharedBufferDefaultValue) {
 TEST_F(PlatformSensorProviderTest, SharedBufferCleared) {
   provider_->CreateSensor(
       mojom::SensorType::AMBIENT_LIGHT,
-      base::Bind([](scoped_refptr<PlatformSensor> sensor) {
+      base::BindOnce([](scoped_refptr<PlatformSensor> sensor) {
         auto client =
             std::make_unique<NiceMock<MockPlatformSensorClient>>(sensor);
         auto config = PlatformSensorConfiguration(10);

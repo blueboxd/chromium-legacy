@@ -8,6 +8,7 @@
 
 #include "base/json/json_writer.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
+#include "chromeos/components/quick_answers/utils/quick_answers_metrics.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -119,6 +120,7 @@ void SearchResultLoader::Fetch(const std::string& selected_text) {
   loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                              kNetworkTrafficAnnotationTag);
 
+  fetch_start_time_ = base::TimeTicks::Now();
   loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       network_loader_factory_,
       base::BindOnce(&SearchResultLoader::OnSimpleURLLoaderComplete,
@@ -127,15 +129,32 @@ void SearchResultLoader::Fetch(const std::string& selected_text) {
 
 void SearchResultLoader::OnSimpleURLLoaderComplete(
     std::unique_ptr<std::string> response_body) {
+  base::TimeDelta duration = base::TimeTicks::Now() - fetch_start_time_;
+
   if (!response_body || loader_->NetError() != net::OK ||
       !loader_->ResponseInfo() || !loader_->ResponseInfo()->headers) {
+    RecordLoadingStatus(LoadStatus::kNetworkError, duration);
     std::move(complete_callback_).Run(/*quick_answer=*/nullptr);
     return;
   }
 
   search_response_parser_ =
-      std::make_unique<SearchResponseParser>(std::move(complete_callback_));
+      std::make_unique<SearchResponseParser>(base::BindOnce(
+          &SearchResultLoader::OnResultParserComplete, base::Unretained(this)));
   search_response_parser_->ProcessResponse(std::move(response_body));
+}
+
+void SearchResultLoader::OnResultParserComplete(
+    std::unique_ptr<QuickAnswer> quick_answer) {
+  // Record quick answer result.
+  base::TimeDelta duration = base::TimeTicks::Now() - fetch_start_time_;
+  if (!quick_answer) {
+    RecordLoadingStatus(LoadStatus::kNoResult, duration);
+  } else {
+    RecordLoadingStatus(LoadStatus::kSuccess, duration);
+    RecordResult(quick_answer->result_type, duration);
+  }
+  std::move(complete_callback_).Run(std::move(quick_answer));
 }
 
 }  // namespace quick_answers

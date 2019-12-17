@@ -15,10 +15,6 @@ namespace gl {
 class GLSurface;
 }  // namespace gl
 
-namespace gpu {
-class MemoryTracker;
-}  // namespace gpu
-
 namespace viz {
 
 class SkiaOutputSurfaceDependency;
@@ -29,20 +25,20 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue final
   SkiaOutputDeviceBufferQueue(
       scoped_refptr<gl::GLSurface> gl_surface,
       SkiaOutputSurfaceDependency* deps,
-      const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
-      gpu::MemoryTracker* memory_tracker);
+      gpu::MemoryTracker* memory_tracker,
+      const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback);
   SkiaOutputDeviceBufferQueue(
       scoped_refptr<gl::GLSurface> gl_surface,
       SkiaOutputSurfaceDependency* deps,
-      const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
       gpu::MemoryTracker* memory_tracker,
+      const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
       uint32_t shared_image_usage);
   ~SkiaOutputDeviceBufferQueue() override;
 
   static std::unique_ptr<SkiaOutputDeviceBufferQueue> Create(
       SkiaOutputSurfaceDependency* deps,
-      const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
-      gpu::MemoryTracker* memory_tracker);
+      gpu::MemoryTracker* memory_tracker,
+      const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback);
 
   void SwapBuffers(BufferPresentedCallback feedback,
                    std::vector<ui::LatencyInfo> latency_info) override;

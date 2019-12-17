@@ -37,7 +37,7 @@ blink::mojom::FetchAPIResponsePtr BackgroundFetchSettledFetch::CloneResponse(
       response->cors_exposed_header_names,
       CloneSerializedBlob(response->side_data_blob),
       CloneSerializedBlob(response->side_data_blob_for_cache_put),
-      response->content_security_policy.Clone(),
+      mojo::Clone(response->content_security_policy),
       response->loaded_with_credentials);
 }
 

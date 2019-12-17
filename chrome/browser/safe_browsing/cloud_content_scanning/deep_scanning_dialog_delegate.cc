@@ -597,7 +597,7 @@ bool DeepScanningDialogDelegate::CloseTabModalDialog() {
   if (!dialog_)
     return false;
 
-  dialog_->CancelDialog();
+  dialog_->CancelDialogIfShowing();
   return true;
 }
 

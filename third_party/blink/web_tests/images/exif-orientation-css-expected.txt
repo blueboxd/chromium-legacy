@@ -1,4 +1,4 @@
-None of the images should be rotated. This test is only valid when run with testRunner (or with WebKitShouldRespectImageOrientation manually set to true).
+All of the images should be rotated and/or flipped according to their exif information.
 
 
 Normal 
@@ -22,10 +22,10 @@ img1 size = 100px by 50px
 img2 size = 100px by 50px
 img3 size = 100px by 50px
 img4 size = 100px by 50px
-img5 size = 100px by 50px
-img6 size = 100px by 50px
-img7 size = 100px by 50px
-img8 size = 100px by 50px
+img5 size = 50px by 100px
+img6 size = 50px by 100px
+img7 size = 50px by 100px
+img8 size = 50px by 100px
 img9 size = 100px by 100px
 img10 size = 100px by 100px
 img11 size = 100px by 100px

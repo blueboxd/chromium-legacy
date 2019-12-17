@@ -75,10 +75,13 @@ class AddSupervisionUI : public ui::MojoWebUIController,
 
   static void SetUpForTest(signin::IdentityManager* identity_manager);
 
- private:
-  void BindAddSupervisionHandler(
+  // Instantiates the implementor of the mojom::AddSupervisionHandler mojo
+  // interface passing the pending receiver that will be internally bound.
+  void BindInterface(
       mojo::PendingReceiver<add_supervision::mojom::AddSupervisionHandler>
           receiver);
+
+ private:
   void SetUpResources();
   GURL GetAddSupervisionURL();
 
@@ -89,6 +92,8 @@ class AddSupervisionUI : public ui::MojoWebUIController,
 
   static signin::IdentityManager* test_identity_manager_;
   bool allow_non_google_url_for_tests_ = false;
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(AddSupervisionUI);
 };

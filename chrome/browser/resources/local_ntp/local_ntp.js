@@ -392,6 +392,15 @@ function convertToRGBAColor(color) {
 }
 
 /**
+ * Converts an Array of color components into 8-digit Hex format "#RRGGBBAA".
+ * @param {Array<number>} color Array of rgba color components.
+ * @return {string} CSS color in 8-digit Hex format.
+ */
+function convertToHexColor(color) {
+  return '#' + assert(color).map(c => c.toString(16).padStart(2, '0')).join('');
+}
+
+/**
  * Returns a timeout that can be executed early. Calls back true if this was
  * an early execution, false otherwise.
  * @param {!Function} timeout The timeout function. Requires a boolean param.
@@ -661,6 +670,12 @@ function getIconUrl(url) {
   const iconUrl = new URL('chrome-search://ntpicon/');
   iconUrl.searchParams.set('show_fallback_monogram', 'false');
   iconUrl.searchParams.set('size', '24@' + window.devicePixelRatio + 'x');
+  // The fallback color must match that of .clock-icon and .search-icon
+  iconUrl.searchParams.set(
+      'color',
+      convertToHexColor(
+          configData.realboxMatchOmniboxTheme ? getNtpTheme().searchBox.icon :
+                                                [117, 117, 117, 255]));
   iconUrl.searchParams.set('url', url);
   return iconUrl.toString();
 }
@@ -1013,7 +1028,13 @@ function injectPromo(promo) {
 
   const link = promoContainer.querySelector('a');
   if (link) {
-    link.onclick = function() {
+    link.onclick = e => {
+      const url = new URL(link.href);
+      if (promo.canOpenExtensionsPage && url.origin == 'chrome://extensions') {
+        ntpApiHandle.openExtensionsPage(
+            e.button, e.altKey, e.ctrlKey, e.metaKey, e.shiftKey);
+        e.preventDefault();
+      }
       ntpApiHandle.logEvent(LOG_TYPE.NTP_MIDDLE_SLOT_PROMO_LINK_CLICKED);
     };
   }

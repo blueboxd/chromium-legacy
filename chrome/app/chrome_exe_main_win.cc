@@ -236,5 +236,12 @@ int main() {
   int rc = loader->Launch(instance, exe_entry_point_ticks);
   loader->RelaunchChromeBrowserWithNewCommandLineIfNeeded();
   delete loader;
+
+  // Process shutdown is hard and utility processes in particular have been
+  // crashing during shutdown. TerminateProcess is safer and faster. Other
+  // process types can be added as needed.
+  if (process_type == switches::kUtilityProcess) {
+    TerminateProcess(GetCurrentProcess(), rc);
+  }
   return rc;
 }

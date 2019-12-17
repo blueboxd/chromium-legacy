@@ -40,7 +40,7 @@ class TestMediaParserProvider : public MediaParserProvider {
 
   void OnConnectionError() override { std::move(quit_loop_).Run(); }
 
-  base::Closure quit_loop_;
+  base::OnceClosure quit_loop_;
 };
 
 }  // namespace
@@ -54,7 +54,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleryUtilBrowserTest, TestThirdPartyCpuInfo) {
 
   base::RunLoop run_loop;
   media_parser->GetCpuInfo(base::BindOnce(
-      [](base::Closure quit_closure, int64_t libyuv_cpu_flags,
+      [](base::OnceClosure quit_closure, int64_t libyuv_cpu_flags,
          int64_t ffmpeg_cpu_flags) {
         int64_t expected_ffmpeg_cpu_flags = 0;
 #if BUILDFLAG(ENABLE_FFMPEG)

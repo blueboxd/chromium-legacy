@@ -70,7 +70,6 @@ class CONTENT_EXPORT WebBundleBlobDataSource {
 
    private:
     // Implements data_decoder::mojom::BundleDataSource.
-    void GetSize(GetSizeCallback callback) override;
     void Read(uint64_t offset, uint64_t length, ReadCallback callback) override;
 
     void StreamingBlobDone(storage::BlobBuilderFromStream* builder,

@@ -5,6 +5,9 @@
 #include "chrome/browser/ui/ash/launcher/app_service_app_window_crostini_tracker.h"
 
 #include "ash/public/cpp/multi_user_window_manager.h"
+#include "ash/public/cpp/shelf_model.h"
+#include "base/containers/flat_tree.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/crostini/crostini_force_close_watcher.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
@@ -12,6 +15,8 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/launcher/app_service_app_window_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/app_service_app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
@@ -19,14 +24,21 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_features.h"
 #include "components/arc/arc_util.h"
+#include "components/exo/permission.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/aura/window.h"
+#include "ui/base/base_window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/wm/core/window_util.h"
 
 namespace {
+
+// Time allowed for apps to self-activate after launch, see
+// go/crostini-self-activate for details.
+constexpr base::TimeDelta kSelfActivationTimeout =
+    base::TimeDelta::FromSeconds(5);
 
 void MoveWindowFromOldDisplayToNewDisplay(aura::Window* window,
                                           display::Display& old_display,
@@ -52,8 +64,9 @@ void MoveWindowFromOldDisplayToNewDisplay(aura::Window* window,
 
 }  // namespace
 
-AppServiceAppWindowCrostiniTracker::AppServiceAppWindowCrostiniTracker() =
-    default;
+AppServiceAppWindowCrostiniTracker::AppServiceAppWindowCrostiniTracker(
+    AppServiceAppWindowLauncherController* app_service_controller)
+    : app_service_controller_(app_service_controller) {}
 
 AppServiceAppWindowCrostiniTracker::~AppServiceAppWindowCrostiniTracker() =
     default;
@@ -137,18 +150,44 @@ void AppServiceAppWindowCrostiniTracker::OnWindowVisibilityChanging(
 }
 
 void AppServiceAppWindowCrostiniTracker::OnWindowDestroying(
-    const std::string& app_id) {
+    const std::string& app_id,
+    aura::Window* window) {
   if (app_id != app_id_to_restart_)
     return;
   crostini::LaunchCrostiniApp(ChromeLauncherController::instance()->profile(),
                               app_id, display_id_to_restart_in_);
   app_id_to_restart_.clear();
+
+  base::EraseIf(activation_permissions_, [&window](const auto& element) {
+    return element.first == window;
+  });
 }
 
 void AppServiceAppWindowCrostiniTracker::OnAppLaunchRequested(
     const std::string& app_id,
     int64_t display_id) {
   crostini_app_display_.Register(app_id, display_id);
+  // Remove the old permissions and add a permission for every window the app
+  // currently has open.
+  activation_permissions_.clear();
+  ash::ShelfModel* model = app_service_controller_->owner()->shelf_model();
+  if (model->ItemIndexByAppID(app_id) >=
+      static_cast<int>(model->items().size()))
+    return;
+  AppWindowLauncherItemController* launcher_item_controller =
+      model->GetAppWindowLauncherItemController(
+          model->items()[model->ItemIndexByAppID(app_id)].id);
+  // Apps run for the first time won't have a launcher controller yet, return
+  // early because they won't have windows either so permissions aren't
+  // necessary.
+  if (!launcher_item_controller)
+    return;
+  for (ui::BaseWindow* app_window : launcher_item_controller->windows()) {
+    activation_permissions_.emplace(
+        app_window->GetNativeWindow(),
+        exo::GrantPermissionToActivate(app_window->GetNativeWindow(),
+                                       kSelfActivationTimeout));
+  }
 }
 
 void AppServiceAppWindowCrostiniTracker::Restart(const ash::ShelfID& shelf_id,

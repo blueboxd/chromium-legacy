@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">Αυξήστε την έκταση αυτού του κειμένου στους <ph name="MIN_CHARACTERS" /> χαρακτήρες ή περισσότερο (αυτήν τη στιγμή χρησιμοποιείτε <ph name="CURRENT_LENGTH" /> χαρακτήρες).</translation>
 <translation id="383465348367842624">Το τμήμα της διεύθυνσης πριν το σύμβολο "<ph name="ATSIGN" />" δεν πρέπει να περιέχει το σύμβολο "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="3846214748874656680">Έξοδος από πλήρη οθόνη</translation>
-<translation id="3889183436948184105">αναθεώρηση</translation>
 <translation id="3920932319529768807">συμπέρασμα</translation>
 <translation id="3924558731517983934">εφαρμογή</translation>
 <translation id="3944740393230681990">πρόλογος</translation>
@@ -259,7 +258,6 @@
 <translation id="8987927404178983737">Μήνας</translation>
 <translation id="901493112792887934">τρέχων χρόνος σε δευτερόλεπτα</translation>
 <translation id="901834265349196618">ηλεκτρονικό ταχυδρομείο</translation>
-<translation id="9023835124071926463">ενότητα σχολίων</translation>
 <translation id="9048119486235211610">πλοήγηση</translation>
 <translation id="9062295712474918030">έγγραφο</translation>
 <translation id="9093215626363556771">έξοδος από τη λειτουργία picture-in-picture</translation>

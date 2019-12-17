@@ -19,6 +19,9 @@ group("updater") {
       "//chrome/updater/mac",
     ]
   }
+  if (is_win || is_mac) {
+    deps += [ "//chrome/updater/tools:tools" ]
+  }
 }
 
 # Conditional build is needed, otherwise the analyze script on Linux
@@ -113,6 +116,10 @@ if (is_win || is_mac) {
         "//chrome/updater/mac:updater_bundle",
         "//chrome/updater/mac:updater_tests",
       ]
+    }
+
+    if (is_win || is_mac) {
+      deps += [ "//chrome/updater/tools:unittest" ]
     }
   }
 }

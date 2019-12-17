@@ -34,9 +34,11 @@ class FakeAssistantManagerServiceDelegate
       override;
   std::unique_ptr<assistant_client::AssistantManager> CreateAssistantManager(
       assistant_client::PlatformApi* platform_api,
-      const std::string& lib_assistant_config) override;
+      const std::string& libassistant_config) override;
   assistant_client::AssistantManagerInternal* UnwrapAssistantManagerInternal(
       assistant_client::AssistantManager* assistant_manager) override;
+
+  std::string libassistant_config() const { return libassistant_config_; }
 
  private:
   // Will be initialized in the constructor and moved out when
@@ -44,6 +46,9 @@ class FakeAssistantManagerServiceDelegate
   std::unique_ptr<FakeAssistantManager> assistant_manager_;
   std::unique_ptr<FakeAssistantManagerInternal> assistant_manager_internal_;
   FakeAssistantManager* assistant_manager_ptr_;
+
+  // Config passed to LibAssistant when it was started.
+  std::string libassistant_config_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAssistantManagerServiceDelegate);
 };

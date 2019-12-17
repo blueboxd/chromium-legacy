@@ -138,18 +138,19 @@ void AppShimHost::LaunchShim() {
 
   if (bootstrap_) {
     // If there is a connected app shim process, focus the app windows.
-    client_->OnShimFocus(this, chrome::mojom::AppShimFocusType::kNormal,
-                         std::vector<base::FilePath>());
+    client_->OnShimFocus(this);
   } else {
     // Otherwise, attempt to launch whatever app shims we find.
     LaunchShimInternal(false /* recreate_shims */);
   }
 }
 
-void AppShimHost::FocusApp(chrome::mojom::AppShimFocusType focus_type,
-                           const std::vector<base::FilePath>& files) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  client_->OnShimFocus(this, focus_type, files);
+void AppShimHost::FocusApp() {
+  client_->OnShimFocus(this);
+}
+
+void AppShimHost::FilesOpened(const std::vector<base::FilePath>& files) {
+  client_->OnShimOpenedFiles(this, files);
 }
 
 void AppShimHost::ProfileSelectedFromMenu(const base::FilePath& profile_path) {

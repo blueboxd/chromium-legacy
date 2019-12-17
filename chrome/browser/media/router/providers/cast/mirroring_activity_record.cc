@@ -25,6 +25,7 @@
 #include "chrome/common/media_router/route_request_result.h"
 #include "components/cast_channel/cast_message_util.h"
 #include "components/cast_channel/cast_socket.h"
+#include "components/cast_channel/enum_table.h"
 #include "components/mirroring/mojom/session_parameters.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -40,6 +41,23 @@ using mirroring::mojom::SessionParameters;
 using mirroring::mojom::SessionType;
 
 namespace media_router {
+
+namespace {
+
+const std::string GetMirroringNamespace(const base::Value& message) {
+  const base::Value* const type_value =
+      message.FindKeyOfType("type", base::Value::Type::STRING);
+
+  if (type_value &&
+      type_value->GetString() ==
+          cast_util::EnumToString<cast_channel::CastMessageType,
+                                  cast_channel::CastMessageType::kRpc>())
+    return mirroring::mojom::kWebRtcNamespace;
+  else
+    return mirroring::mojom::kRemotingNamespace;
+}
+
+}  // namespace
 
 MirroringActivityRecord::MirroringActivityRecord(
     const MediaRoute& route,
@@ -133,35 +151,9 @@ void MirroringActivityRecord::Send(mirroring::mojom::CastMessagePtr message) {
 
   GetDataDecoder().ParseJson(
       message->json_format_data,
-      base::BindRepeating(
-          [](const std::string& route_id,
-             base::WeakPtr<MirroringActivityRecord> self,
-             data_decoder::DataDecoder::ValueOrError result) {
-            if (!result.value) {
-              // TODO(crbug.com/905002): Record UMA metric for parse result.
-              DLOG(ERROR) << "Failed to parse Cast client message for "
-                          << route_id << ": " << *result.error;
-              return;
-            }
-
-            if (!self)
-              return;
-
-            CastSession* session = self->GetSession();
-            DCHECK(session);
-
-            // TODO(jrw): Can some of this logic be shared with
-            // CastActivityRecord::SendAppMessageToReceiver?
-            cast::channel::CastMessage cast_message =
-                cast_channel::CreateCastMessage(
-                    mirroring::mojom::kWebRtcNamespace,
-                    std::move(*result.value),
-                    self->message_handler_->sender_id(),
-                    session->transport_id());
-            self->message_handler_->SendCastMessage(self->channel_id_,
-                                                    cast_message);
-          },
-          route().media_route_id(), weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&MirroringActivityRecord::HandleParseJsonResult,
+                          weak_ptr_factory_.GetWeakPtr(),
+                          route().media_route_id()));
 }
 
 Result MirroringActivityRecord::SendAppMessageToReceiver(
@@ -242,8 +234,9 @@ void MirroringActivityRecord::TerminatePresentationConnections() {}
 void MirroringActivityRecord::OnAppMessage(
     const cast::channel::CastMessage& message) {
   if (message.namespace_() != mirroring::mojom::kWebRtcNamespace &&
-      message.namespace_() == mirroring::mojom::kRemotingNamespace) {
+      message.namespace_() != mirroring::mojom::kRemotingNamespace) {
     // Ignore message with wrong namespace.
+    DVLOG(2) << "Ignoring message with namespace " << message.namespace_();
     return;
   }
   DVLOG(2) << "Relaying app message from receiver: " << message.DebugString();
@@ -275,6 +268,29 @@ void MirroringActivityRecord::OnInternalMessage(
 void MirroringActivityRecord::CreateMediaController(
     mojo::PendingReceiver<mojom::MediaController> media_controller,
     mojo::PendingRemote<mojom::MediaStatusObserver> observer) {}
+
+void MirroringActivityRecord::HandleParseJsonResult(
+    const std::string& route_id,
+    data_decoder::DataDecoder::ValueOrError result) {
+  if (!result.value) {
+    // TODO(crbug.com/905002): Record UMA metric for parse result.
+    DLOG(ERROR) << "Failed to parse Cast client message for " << route_id
+                << ": " << *result.error;
+    return;
+  }
+
+  CastSession* session = GetSession();
+  DCHECK(session);
+
+  const std::string message_namespace = GetMirroringNamespace(*result.value);
+
+  // TODO(jrw): Can some of this logic be shared with
+  // CastActivityRecord::SendAppMessageToReceiver?
+  cast::channel::CastMessage cast_message = cast_channel::CreateCastMessage(
+      message_namespace, std::move(*result.value),
+      message_handler_->sender_id(), session->transport_id());
+  message_handler_->SendCastMessage(channel_id_, cast_message);
+}
 
 void MirroringActivityRecord::StopMirroring() {
   // Running the callback will cause this object to be deleted.

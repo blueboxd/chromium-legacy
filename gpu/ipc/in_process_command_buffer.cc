@@ -535,7 +535,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
   command_buffer_ = std::make_unique<CommandBufferService>(
       this, context_group_->memory_tracker());
 
-  context_state_ = task_executor_->shared_context_state();
+  context_state_ = task_executor_->GetSharedContextState();
 
   if (!surface_) {
     if (is_offscreen_) {

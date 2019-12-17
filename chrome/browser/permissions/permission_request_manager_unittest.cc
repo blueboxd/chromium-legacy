@@ -711,6 +711,22 @@ TEST_F(PermissionRequestManagerTest,
   EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
   Deny();
 
+  // Only denying the notification permission should count toward the threshold,
+  // other permissions should not.
+  GURL camera_url("http://www.camera.com/");
+  NavigateAndCommit(camera_url);
+  manager_->AddRequest(&request_camera_);
+  WaitForBubbleToBeShown();
+  EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
+  Deny();
+
+  GURL microphone_url("http://www.microphone.com/");
+  NavigateAndCommit(microphone_url);
+  manager_->AddRequest(&request_mic_);
+  WaitForBubbleToBeShown();
+  EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
+  Deny();
+
   GURL notification6("http://www.notification6.com/");
   NavigateAndCommit(notification6);
   MockPermissionRequest notification6_request(

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
@@ -106,7 +107,8 @@ TEST(CertVerifyProcMacTest, MacCRLIntermediate) {
   int flags = 0;
   CertVerifyResult verify_result;
 
-  scoped_refptr<CertVerifyProc> verify_proc = new CertVerifyProcMac;
+  scoped_refptr<CertVerifyProc> verify_proc =
+      base::MakeRefCounted<CertVerifyProcMac>();
   int error = verify_proc->Verify(
       cert.get(), "127.0.0.1", /*ocsp_response=*/std::string(),
       /*sct_list=*/std::string(), flags, crl_set.get(), CertificateList(),
@@ -165,7 +167,8 @@ TEST(CertVerifyProcMacTest, DISABLED_MacKeychainReordering) {
 
   int flags = 0;
   CertVerifyResult verify_result;
-  scoped_refptr<CertVerifyProc> verify_proc = new CertVerifyProcMac;
+  scoped_refptr<CertVerifyProc> verify_proc =
+      base::MakeRefCounted<CertVerifyProcMac>();
   int error = verify_proc->Verify(
       cert.get(), "gms.hongleong.com.my", /*ocsp_response=*/std::string(),
       /*sct_list=*/std::string(), flags, CRLSet::BuiltinCRLSet().get(),
@@ -213,13 +216,45 @@ TEST(CertVerifyProcMacTest, LargeKey) {
   // large_key.pem may need to be regenerated with a larger key.
   int flags = 0;
   CertVerifyResult verify_result;
-  scoped_refptr<CertVerifyProc> verify_proc = new CertVerifyProcMac;
+  scoped_refptr<CertVerifyProc> verify_proc =
+      base::MakeRefCounted<CertVerifyProcMac>();
   int error = verify_proc->Verify(
       cert.get(), "127.0.0.1", /*ocsp_response=*/std::string(),
       /*sct_list=*/std::string(), flags, CRLSet::BuiltinCRLSet().get(),
       CertificateList(), &verify_result);
   EXPECT_THAT(error, IsError(ERR_CERT_INVALID));
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_INVALID);
+}
+
+// Test that CertVerifierMac on 10.15+ appropriately flags certificates
+// that violate https://support.apple.com/en-us/HT210176 as having
+// too long validity, rather than being invalid certificates.
+TEST(CertVerifyProcMacTest, CertValidityTooLong) {
+  // Load root_ca_cert.pem into the test root store.
+  ScopedTestRoot test_root(
+      ImportCertFromFile(GetTestCertsDirectory(), "root_ca_cert.pem").get());
+
+  scoped_refptr<X509Certificate> cert(ImportCertFromFile(
+      GetTestCertsDirectory(), "900_days_after_2019_07_01.pem"));
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  scoped_refptr<CertVerifyProc> verify_proc =
+      base::MakeRefCounted<CertVerifyProcMac>();
+  int error = verify_proc->Verify(
+      cert.get(), "127.0.0.1", /*ocsp_response=*/std::string(),
+      /*sct_list=*/std::string(), flags, CRLSet::BuiltinCRLSet().get(),
+      CertificateList(), &verify_result);
+
+  if (base::mac::IsAtLeastOS10_15()) {
+    EXPECT_THAT(error, IsError(ERR_CERT_VALIDITY_TOO_LONG));
+    EXPECT_EQ((verify_result.cert_status & CERT_STATUS_ALL_ERRORS),
+              CERT_STATUS_VALIDITY_TOO_LONG);
+  } else {
+    EXPECT_THAT(error, IsOk());
+    EXPECT_FALSE(verify_result.cert_status & CERT_STATUS_VALIDITY_TOO_LONG);
+    EXPECT_FALSE(verify_result.cert_status & CERT_STATUS_INVALID);
+  }
 }
 
 }  // namespace

@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">Prodlužte prosím tento text na <ph name="MIN_CHARACTERS" /> či více znaků. (Aktuálně má <ph name="CURRENT_LENGTH" /> znaků.)</translation>
 <translation id="383465348367842624">Část před znakem <ph name="ATSIGN" /> nesmí obsahovat znak <ph name="INVALIDCHARACTER" />.</translation>
 <translation id="3846214748874656680">Ukončit režim na celou obrazovku</translation>
-<translation id="3889183436948184105">verze</translation>
 <translation id="3920932319529768807">závěr</translation>
 <translation id="3924558731517983934">aplikace</translation>
 <translation id="3944740393230681990">prolog</translation>
@@ -115,6 +114,7 @@
 <translation id="4812940957355064477">Zadejte prosím číslo.</translation>
 <translation id="4912536737030637138">bibliografická položka</translation>
 <translation id="492244087561876220">komentář</translation>
+<translation id="4971739861736909480">Vybráno: <ph name="ACCNAME" /></translation>
 <translation id="4975562563186953947">Vybráno: <ph name="SELECTED_COUNT" /></translation>
 <translation id="4992066212339426712">Zapnout zvuk</translation>
 <translation id="49969490063480558">Zadejte část za znakem <ph name="ATSIGN" />. Adresa <ph name="INVALIDADDRESS" /> není úplná.</translation>
@@ -219,6 +219,7 @@
 <translation id="7888071071722539607">Do e-mailové adresy zahrňte znak <ph name="ATSIGN" />. V adrese <ph name="INVALIDADDRESS" /> chybí znak <ph name="ATSIGN" />.</translation>
 <translation id="7891486169920085145">rozdělovač</translation>
 <translation id="795667975304826397">Soubor nevybrán</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> – nevybráno</translation>
 <translation id="8034303206267677282">silné</translation>
 <translation id="8053789581856978548">pole pro vyhledání textu</translation>
 <translation id="8057695513531652401">oznámení</translation>
@@ -257,7 +258,6 @@
 <translation id="8987927404178983737">Měsíc</translation>
 <translation id="901493112792887934">aktuální čas v sekundách</translation>
 <translation id="901834265349196618">e-mail</translation>
-<translation id="9023835124071926463">sekce komentářů</translation>
 <translation id="9048119486235211610">navigace</translation>
 <translation id="9062295712474918030">dokument</translation>
 <translation id="9093215626363556771">ukončit režim obrazu v obraze</translation>

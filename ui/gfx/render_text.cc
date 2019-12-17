@@ -1345,93 +1345,99 @@ void RenderText::EnsureLayoutTextUpdated() const {
       U16_SET_CP_START(text_.data(), 0, reveal_index);
   }
 
-  // Iterates through codepoints in both strings. Both string have the same
-  // amount of codepoints but some codepoints may differ (e.g. obscured or
-  // replaced) and may differ in length (e.g. surrogate pair).
+  // Iterates through graphemes from |text_| and rewrite its codepoints to
+  // |layout_text_|.
   base::i18n::UTF16CharIterator text_iter(&text_);
   internal::StyleIterator styles = GetTextStyleIterator();
-  size_t text_grapheme_start_position = 0;
-  size_t layout_grapheme_start_position = 0;
-  while (!text_iter.end()) {
-    size_t current_text_position = text_iter.array_pos();
-    if (grapheme_iter.IsGraphemeBoundary(current_text_position)) {
-      text_grapheme_start_position = current_text_position;
-      layout_grapheme_start_position = layout_text_.size();
+  bool text_truncated = false;
+  while (!text_iter.end() && !text_truncated) {
+    std::vector<uint32_t> grapheme_codepoints;
+    const size_t text_grapheme_start_position = text_iter.array_pos();
+    const size_t layout_grapheme_start_position = layout_text_.size();
 
-      // Keep track of the mapping between |text_| and |layout_text_| indices.
-      internal::TextToDisplayIndex mapping = {text_grapheme_start_position,
-                                              layout_grapheme_start_position};
-      text_to_display_indices_.push_back(mapping);
+    // Retrieve codepoints of the current grapheme.
+    do {
+      grapheme_codepoints.push_back(text_iter.get());
+      text_iter.Advance();
+    } while (!grapheme_iter.IsGraphemeBoundary(text_iter.array_pos()) &&
+             !text_iter.end());
+    const size_t text_grapheme_end_position = text_iter.array_pos();
+
+    // Keep track of the mapping between |text_| and |layout_text_| indices.
+    internal::TextToDisplayIndex mapping = {text_grapheme_start_position,
+                                            layout_grapheme_start_position};
+    text_to_display_indices_.push_back(mapping);
+
+    // Obscure the layout text by replacing the grapheme by a bullet.
+    if (obscured_ &&
+        (reveal_index < text_grapheme_start_position ||
+         reveal_index >= text_grapheme_end_position) &&
+        (grapheme_codepoints.size() != 1 || grapheme_codepoints[0] != '\n' ||
+         !multiline_)) {
+      grapheme_codepoints.clear();
+      grapheme_codepoints.push_back(RenderText::kPasswordReplacementChar);
     }
 
-    int32_t codepoint = text_iter.get();
-    // Move text iterator to the next character.
-    text_iter.Advance();
+    // Rewrite each codepoint of the grapheme.
+    for (uint32_t codepoint : grapheme_codepoints) {
+      // Handle unicode control characters ISO 6429 (block C0). Range from 0 to
+      // 0x1F and 0x7F.
+      codepoint = ReplaceControlCharacter(multiline_, codepoint);
 
-    // Obscure the layout text by replacing hidden characters by bullets.
-    if (obscured_ && reveal_index != current_text_position &&
-        (codepoint != '\n' || !multiline_)) {
-      codepoint = RenderText::kPasswordReplacementChar;
+      // Truncate the remaining codepoints if appending the codepoint to
+      // |layout_text_| is making the text larger than |truncate_length_|.
+      size_t codepoint_length = U16_LENGTH(codepoint);
+      text_truncated =
+          (truncate_length_ != 0 &&
+           ((layout_text_.size() + codepoint_length > truncate_length_) ||
+            (!text_iter.end() &&
+             (layout_text_.size() + codepoint_length == truncate_length_))));
+
+      if (text_truncated) {
+        codepoint = kEllipsisCodepoint;
+        codepoint_length = U16_LENGTH(codepoint);
+        // On truncate, remove the whole current grapheme.
+        layout_text_.resize(layout_grapheme_start_position);
+      }
+
+      // Append the codepoint to the layout text.
+      const size_t current_layout_text_position = layout_text_.size();
+      if (codepoint_length == 1) {
+        layout_text_ += codepoint;
+      } else {
+        layout_text_ += U16_LEAD(codepoint);
+        layout_text_ += U16_TRAIL(codepoint);
+      }
+
+      // Apply the style at current grapheme position to the layout text.
+      styles.IncrementToPosition(text_grapheme_start_position);
+
+      Range range(current_layout_text_position, layout_text_.size());
+      layout_colors_.ApplyValue(styles.color(), range);
+      layout_baselines_.ApplyValue(styles.baseline(), range);
+      layout_font_size_overrides_.ApplyValue(styles.font_size_override(),
+                                             range);
+      layout_weights_.ApplyValue(styles.weight(), range);
+      for (size_t i = 0; i < TEXT_STYLE_COUNT; ++i) {
+        layout_styles_[i].ApplyValue(styles.style(static_cast<TextStyle>(i)),
+                                     range);
+      }
+
+      const Range grapheme_start_range(gfx::Range(
+          text_grapheme_start_position, text_grapheme_start_position + 1));
+
+      // Apply an underline to the composition range in |underlines|.
+      if (composition_range_.Contains(grapheme_start_range))
+        layout_styles_[TEXT_STYLE_HEAVY_UNDERLINE].ApplyValue(true, range);
+
+      // Apply the selected text color to the selection range.
+      if (!selection().is_empty() && selection().Contains(grapheme_start_range))
+        layout_colors_.ApplyValue(selection_color_, range);
+
+      // Stop appending characters if the text is truncated.
+      if (text_truncated)
+        break;
     }
-
-    // Handle unicode control characters ISO 6429 (block C0). Range from 0 to
-    // 0x1F and 0x7F.
-    codepoint = ReplaceControlCharacter(multiline_, codepoint);
-
-    // Truncate the remaining codepoints if appending the codepoint to
-    // |layout_text_| is making the text larger than |truncate_length_|.
-    size_t codepoint_length = U16_LENGTH(codepoint);
-    const bool truncate_text =
-        (truncate_length_ != 0 &&
-         ((layout_text_.size() + codepoint_length > truncate_length_) ||
-          (!text_iter.end() &&
-           (layout_text_.size() + codepoint_length == truncate_length_))));
-
-    if (truncate_text) {
-      codepoint = kEllipsisCodepoint;
-      codepoint_length = U16_LENGTH(codepoint);
-      // On truncate, remove the whole current grapheme.
-      layout_text_.resize(layout_grapheme_start_position);
-    }
-
-    // Append the codepoint to the layout text.
-    const size_t current_layout_text_position = layout_text_.size();
-    if (codepoint_length == 1) {
-      layout_text_ += codepoint;
-    } else {
-      layout_text_ += U16_LEAD(codepoint);
-      layout_text_ += U16_TRAIL(codepoint);
-    }
-
-    // Apply the style at current grapheme position to the layout text.
-    styles.IncrementToPosition(text_grapheme_start_position);
-
-    Range range(current_layout_text_position, layout_text_.size());
-    layout_colors_.ApplyValue(styles.color(), range);
-    layout_baselines_.ApplyValue(styles.baseline(), range);
-    layout_font_size_overrides_.ApplyValue(styles.font_size_override(), range);
-    layout_weights_.ApplyValue(styles.weight(), range);
-    for (size_t i = 0; i < TEXT_STYLE_COUNT; ++i) {
-      layout_styles_[i].ApplyValue(styles.style(static_cast<TextStyle>(i)),
-                                   range);
-    }
-
-    const Range grapheme_start_range(gfx::Range(
-        text_grapheme_start_position, text_grapheme_start_position + 1));
-
-    // Apply an underline to the composition range in |underlines|.
-    if (composition_range_.Contains(grapheme_start_range)) {
-      layout_styles_[TEXT_STYLE_HEAVY_UNDERLINE].ApplyValue(true, range);
-    }
-
-    // Apply the selected text color to the selection range.
-    if (!selection().is_empty() && selection().Contains(grapheme_start_range)) {
-      layout_colors_.ApplyValue(selection_color_, range);
-    }
-
-    // Stop appending characters if the text is truncated.
-    if (truncate_text)
-      break;
   }
 
   // Resize the layout text attributes to the actual layout text length.

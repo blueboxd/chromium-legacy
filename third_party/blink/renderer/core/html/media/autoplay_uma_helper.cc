@@ -41,7 +41,7 @@ int64_t GetUserGestureStatusForUkmMetric(LocalFrame* frame) {
     result |= 0x01;
   if (frame->HasBeenActivated())
     result |= 0x02;
-  if (frame->HasReceivedUserGestureBeforeNavigation())
+  if (frame->HadStickyUserActivationBeforeNavigation())
     result |= 0x04;
 
   return result;

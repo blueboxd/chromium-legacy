@@ -3210,12 +3210,6 @@ const FeatureEntry kFeatureEntries[] = {
          download::features::kUseDownloadOfflineContentProvider)},
 
 #if defined(OS_ANDROID)
-    {"download-rename", flag_descriptions::kDownloadRenameName,
-     flag_descriptions::kDownloadRenameDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kDownloadRename)},
-#endif
-
-#if defined(OS_ANDROID)
     {"update-notification-scheduling-integration",
      flag_descriptions::kUpdateNotificationSchedulingIntegrationName,
      flag_descriptions::kUpdateNotificationSchedulingIntegrationDescription,
@@ -3223,13 +3217,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          chrome::android::kUpdateNotificationSchedulingIntegration)},
 #endif
-
-    {"download-resumption-without-strong-validators",
-     flag_descriptions::kDownloadResumptionWithoutStrongValidatorsName,
-     flag_descriptions::kDownloadResumptionWithoutStrongValidatorsDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         download::features::kAllowDownloadResumptionWithoutStrongValidators)},
 
     {"tab-hover-cards", flag_descriptions::kTabHoverCardsName,
      flag_descriptions::kTabHoverCardsDescription, kOsDesktop,
@@ -3338,8 +3325,8 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseXpsForPrintingFromPdfName,
      flag_descriptions::kUseXpsForPrintingFromPdfDescription, kOsWin,
      FEATURE_VALUE_TYPE(printing::features::kUseXpsForPrintingFromPdf)},
-#endif // defined(OS_WIN)
-#endif // BUILDFLAG(ENABLE_PRINTING)
+#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(ENABLE_PRINTING)
 
     {"autofill-profile-client-validation",
      flag_descriptions::kAutofillProfileClientValidationName,
@@ -4652,15 +4639,15 @@ const FeatureEntry kFeatureEntries[] = {
     {"improved-cookie-controls", flag_descriptions::kImprovedCookieControlsName,
      flag_descriptions::kImprovedCookieControlsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(content_settings::kImprovedCookieControls)},
+#endif  // !defined(OS_ANDROID)
 
     {"improved-cookie-controls-for-third-party-cookie-blocking",
      flag_descriptions::kImprovedCookieControlsForThirdPartyCookieBlockingName,
      flag_descriptions::
          kImprovedCookieControlsForThirdPartyCookieBlockingDescription,
-     kOsDesktop,
+     kOsAll,
      FEATURE_VALUE_TYPE(
          content_settings::kImprovedCookieControlsForThirdPartyCookieBlocking)},
-#endif  // !defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
     {"accessibility-internals-page-improvements",

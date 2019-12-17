@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
+#include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -195,6 +196,45 @@ class CORE_EXPORT StyleCascade {
   // dispatching any CSSPendingInterpolationValues to the given Animator.
   void Apply(Animator&);
 
+  // Excludes properties with a given flag set or unset.
+  //
+  // The exclusion takes effect during Apply, and has no effect for Add.
+  //
+  // Multiple calls to Exclude are combined, and a property is excluded from
+  // application if any of the conditions match.
+  //
+  // For example, the following applies only inherited properties that can't
+  // be interpolated:
+  //
+  //   StyleCascade cascade(state);
+  //   cascade.Add(name1, value1, Priority(Origin::kAuthor));
+  //   cascade.Add(name2, value2, Priority(Origin::kAuthor));
+  //   cascade.Add(name3, value3, Priority(Origin::kAuthor));
+  //   cascade.Exclude(CSSProperty::kInherited, false);
+  //   cascade.Exclude(CSSProperty::kInterpolable, true);
+  //   cascade.Apply();
+  //
+  // Note that calling Apply clears the excludes.
+  //
+  void Exclude(CSSProperty::Flag, bool set);
+
+  class CORE_EXPORT Excluder {
+    STACK_ALLOCATED();
+
+   public:
+    void Exclude(CSSProperty::Flag, bool set);
+    bool IsExcluded(const CSSProperty&) const;
+    void Clear();
+
+   private:
+    // Specifies which bits are significant in flags_. In other words, mask_
+    // contains a '1' at the corresponding position for each flag seen by
+    // Exclude().
+    CSSProperty::Flags mask_ = 0;
+    // Contains the flags to exclude. Only bits set in mask_ matter.
+    CSSProperty::Flags flags_ = 0;
+  };
+
   // Removes all kAnimationPropertyPriority properties from the cascade,
   // without applying the properties. This is used when pre-emptively copying
   // the cascade in case there are animations.
@@ -278,7 +318,8 @@ class CORE_EXPORT StyleCascade {
     friend class StyleCascade;
     friend class TestCascadeResolver;
 
-    Resolver(Animator& animator) : animator_(animator) {}
+    Resolver(Animator& animator, const Excluder& excluder)
+        : animator_(animator), excluder_(excluder) {}
     // If the given property is already being applied, returns true.
     // The return value is the same value you would get from InCycle(), and
     // is just returned for convenience.
@@ -298,6 +339,7 @@ class CORE_EXPORT StyleCascade {
     Animator& animator_;
     wtf_size_t cycle_depth_ = kNotFound;
     Filter filter_;
+    const Excluder& excluder_;
   };
 
   // Automatically locks and unlocks the given property. (See
@@ -501,6 +543,7 @@ class CORE_EXPORT StyleCascade {
   StyleResolverState& state_;
   HeapHashMap<CSSPropertyName, Value> cascade_;
   uint16_t order_ = 0;
+  Excluder excluder_;
 };
 
 }  // namespace blink

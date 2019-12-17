@@ -24,7 +24,6 @@
 <translation id="1171770572613082465">Bekijk populaire websites door op de knop Topsites te tikken</translation>
 <translation id="1173894706177603556">Naam wijzigen</translation>
 <translation id="1178581264944972037">Onderbreken</translation>
-<translation id="118069123878619799">- je fysieke kenmerken, zoals je lengte</translation>
 <translation id="1181037720776840403">Verwijderen</translation>
 <translation id="1188239144602654184">AR starten</translation>
 <translation id="1197267115302279827">Bladwijzers verplaatsen</translation>
@@ -62,7 +61,6 @@
 <translation id="1384959399684842514">Download onderbroken</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> dagen geleden actief</translation>
 <translation id="1397811292916898096">Zoeken met <ph name="PRODUCT_NAME" /></translation>
-<translation id="1404122904123200417">Ingesloten in <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Niet bijhouden</translation>
 <translation id="1407135791313364759">Alles openen</translation>
 <translation id="1409426117486808224">Vereenvoudigde weergave voor geopende tabbladen</translation>
@@ -215,6 +213,7 @@
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> items verwijderd</translation>
 <translation id="2536728043171574184">Een offline exemplaar van deze pagina bekijken</translation>
 <translation id="2537178555904266562">Fout bij synchroniseren van wachtwoorden</translation>
+<translation id="2537296579376733324">Alle cookies, alleen op deze site</translation>
 <translation id="2546283357679194313">Cookies en sitegegevens</translation>
 <translation id="2567385386134582609">AFBEELDING</translation>
 <translation id="257088987046510401">Thema's</translation>
@@ -472,6 +471,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4565377596337484307">Wachtwoord verbergen</translation>
 <translation id="4570913071927164677">Details</translation>
 <translation id="4572422548854449519">Inloggen bij een beheerd account</translation>
+<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minuut geleden}other{# minuten geleden}}</translation>
 <translation id="4587589328781138893">Sites</translation>
 <translation id="4594952190837476234">Deze offline pagina is van <ph name="CREATION_TIME" /> en kan afwijken van de online versie.</translation>
@@ -652,7 +652,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5809361687334836369">{HOURS,plural, =1{# uur geleden}other{# uur geleden}}</translation>
 <translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. Alle rechten voorbehouden.</translation>
 <translation id="5817918615728894473">Koppelen</translation>
-<translation id="5819762621475381970">- de indeling van je kamer</translation>
 <translation id="583281660410589416">Onbekend</translation>
 <translation id="5833984609253377421">Link delen</translation>
 <translation id="5836192821815272682">Chrome-update downloaden…</translation>

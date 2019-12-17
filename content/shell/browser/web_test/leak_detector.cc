@@ -30,9 +30,8 @@ const int kInitialNumberOfLiveResources = 0;
 const int kInitialNumberOfLiveFrames = 1;
 const int kInitialNumberOfWorkerGlobalScopes = 0;
 const int kInitialNumberOfLiveResourceFetchers = 1;
-// Each Document has a ScriptRunner and a ScriptedAnimationController,
-// which are ContextLifecycleStateObservers.
-const int kInitialNumberOfLiveContextLifecycleStateObservers = 2;
+// Each Document has a ScriptRunner, which is a ContextLifecycleStateObserver.
+const int kInitialNumberOfLiveContextLifecycleStateObservers = 1;
 
 // This includes not only about:blank's context but also ScriptRegexp (e.g.
 // created by isValidEmailAddress in EmailInputType.cpp). The leak detector

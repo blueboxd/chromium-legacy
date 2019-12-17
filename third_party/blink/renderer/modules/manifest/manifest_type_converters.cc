@@ -40,6 +40,9 @@ TypeConverter<blink::Manifest, blink::mojom::blink::ManifestPtr>::Convert(
   for (auto& icon : input->icons)
     output.icons.push_back(icon.To<blink::Manifest::ImageResource>());
 
+  for (auto& shortcut : input->shortcuts)
+    output.shortcuts.push_back(shortcut.To<blink::Manifest::ShortcutItem>());
+
   if (!input->share_target.is_null()) {
     output.share_target =
         input->share_target.To<blink::Manifest::ShareTarget>();
@@ -96,6 +99,34 @@ TypeConverter<blink::Manifest::ImageResource,
     }
     output.purpose.push_back(out_purpose);
   }
+
+  return output;
+}
+
+blink::Manifest::ShortcutItem
+TypeConverter<blink::Manifest::ShortcutItem,
+              blink::mojom::blink::ManifestShortcutItemPtr>::
+    Convert(const blink::mojom::blink::ManifestShortcutItemPtr& input) {
+  blink::Manifest::ShortcutItem output;
+  if (input.is_null())
+    return output;
+
+  output.name = blink::WebString(input->name).Utf16();
+
+  if (!input->short_name.IsEmpty()) {
+    output.short_name =
+        base::NullableString16(blink::WebString(input->short_name).Utf16());
+  }
+
+  if (!input->description.IsEmpty()) {
+    output.description =
+        base::NullableString16(blink::WebString(input->description).Utf16());
+  }
+
+  output.url = input->url;
+
+  for (auto& icon : input->icons)
+    output.icons.push_back(icon.To<::blink::Manifest::ImageResource>());
 
   return output;
 }

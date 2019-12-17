@@ -634,10 +634,10 @@ void LayoutTheme::AdjustSliderContainerStyle(ComputedStyle& style,
   if (e && (e->ShadowPseudoId() == "-webkit-media-slider-container" ||
             e->ShadowPseudoId() == "-webkit-slider-container")) {
     if (style.EffectiveAppearance() == kSliderVerticalPart) {
-      style.SetTouchAction(TouchAction::kTouchActionPanX);
+      style.SetTouchAction(TouchAction::kPanX);
       style.SetEffectiveAppearance(kNoControlPart);
     } else {
-      style.SetTouchAction(TouchAction::kTouchActionPanY);
+      style.SetTouchAction(TouchAction::kPanY);
       style.SetEffectiveAppearance(kNoControlPart);
     }
   }

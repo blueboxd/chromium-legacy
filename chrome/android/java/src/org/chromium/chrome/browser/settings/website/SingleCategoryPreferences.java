@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.settings.website;
 
 import static org.chromium.chrome.browser.settings.SearchUtils.handleSearchNavigation;
+import static org.chromium.chrome.browser.settings.website.WebsitePreferenceBridge.SITE_WILDCARD;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -502,7 +503,7 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
                 } else {
                     getPreferenceScreen().addPreference(
                             new AddExceptionPreference(getStyledContext(), ADD_EXCEPTION_KEY,
-                                    getAddExceptionDialogMessage(), this));
+                                    getAddExceptionDialogMessage(), mCategory, this));
                 }
             }
 
@@ -580,19 +581,22 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
 
     // AddExceptionPreference.SiteAddedCallback:
     @Override
-    public void onAddSite(String hostname) {
+    public void onAddSite(String primaryPattern, String secondaryPattern) {
         int setting =
                 (WebsitePreferenceBridge.isCategoryEnabled(mCategory.getContentSettingsType()))
                 ? ContentSettingValues.BLOCK
                 : ContentSettingValues.ALLOW;
 
         WebsitePreferenceBridge.setContentSettingForPattern(
-                mCategory.getContentSettingsType(), hostname, setting);
+                mCategory.getContentSettingsType(), primaryPattern, secondaryPattern, setting);
+
+        String hostname = primaryPattern.equals(SITE_WILDCARD) ? secondaryPattern : primaryPattern;
         Toast.makeText(getActivity(),
-                String.format(getActivity().getString(
-                        R.string.website_settings_add_site_toast),
-                        hostname),
-                Toast.LENGTH_SHORT).show();
+                     String.format(
+                             getActivity().getString(R.string.website_settings_add_site_toast),
+                             hostname),
+                     Toast.LENGTH_SHORT)
+                .show();
 
         getInfoForOrigins();
 
@@ -638,8 +642,8 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
             exception = true;
         }
         if (exception) {
-            getPreferenceScreen().addPreference(new AddExceptionPreference(
-                    getStyledContext(), ADD_EXCEPTION_KEY, getAddExceptionDialogMessage(), this));
+            getPreferenceScreen().addPreference(new AddExceptionPreference(getStyledContext(),
+                    ADD_EXCEPTION_KEY, getAddExceptionDialogMessage(), mCategory, this));
         }
     }
 

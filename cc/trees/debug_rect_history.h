@@ -54,21 +54,21 @@ enum DebugRectType {
 struct DebugRect {
   DebugRect(DebugRectType new_type,
             const gfx::Rect& new_rect,
-            TouchAction new_touch_action = kTouchActionNone,
+            TouchAction new_touch_action = TouchAction::kNone,
             uint32_t main_thread_scrolling_reasons = 0)
       : type(new_type),
         rect(new_rect),
         touch_action(new_touch_action),
         main_thread_scrolling_reasons(main_thread_scrolling_reasons) {
     if (type != TOUCH_EVENT_HANDLER_RECT_TYPE)
-      DCHECK_EQ(touch_action, kTouchActionNone);
+      DCHECK_EQ(touch_action, TouchAction::kNone);
     if (type != MAIN_THREAD_SCROLLING_REASON_RECT_TYPE)
       DCHECK(!main_thread_scrolling_reasons);
   }
   DebugRectType type;
   gfx::Rect rect;
   // Valid when |type| is |TOUCH_EVENT_HANDLER_RECT_TYPE|, otherwise default to
-  // |kTouchActionNone|.
+  // |TouchAction::kNone|.
   TouchAction touch_action;
   // Valid when |type| is |MAIN_THREAD_SCROLLING_REASON_RECT_TYPE|, otherwise 0.
   uint32_t main_thread_scrolling_reasons;

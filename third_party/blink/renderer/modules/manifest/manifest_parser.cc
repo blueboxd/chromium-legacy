@@ -99,6 +99,7 @@ void ManifestParser::Parse() {
     manifest_->background_color = *background_color;
 
   manifest_->gcm_sender_id = ParseGCMSenderID(root_object.get());
+  manifest_->shortcuts = ParseShortcuts(root_object.get());
 
   ManifestUmaUtil::ParseSucceeded(manifest_);
 }
@@ -148,6 +149,41 @@ base::Optional<String> ManifestParser::ParseString(const JSONObject* object,
 
   if (trim == Trim)
     value = value.StripWhiteSpace();
+  return value;
+}
+
+base::Optional<String> ManifestParser::ParseStringForMember(
+    const JSONObject* object,
+    const String& member_name,
+    const String& key,
+    bool required,
+    TrimType trim) {
+  JSONValue* json_value = object->Get(key);
+  if (!json_value) {
+    if (required) {
+      AddErrorInfo("property '" + key + "' of '" + member_name +
+                   "' not present.");
+    }
+
+    return base::nullopt;
+  }
+
+  String value;
+  if (!json_value->AsString(&value)) {
+    AddErrorInfo("property '" + key + "' of '" + member_name +
+                 "' ignored, type string expected.");
+    return base::nullopt;
+  }
+  if (trim == TrimType::Trim)
+    value = value.StripWhiteSpace();
+
+  if (value == "") {
+    AddErrorInfo("property '" + key + "' of '" + member_name +
+                 "' is an empty string.");
+    if (required)
+      return base::nullopt;
+  }
+
   return value;
 }
 
@@ -381,6 +417,81 @@ Vector<mojom::blink::ManifestImageResourcePtr> ManifestParser::ParseIcons(
   }
 
   return icons;
+}
+
+String ManifestParser::ParseShortcutName(const JSONObject* shortcut) {
+  base::Optional<String> name =
+      ParseStringForMember(shortcut, "shortcut", "name", true, Trim);
+  return name.has_value() ? *name : String();
+}
+
+String ManifestParser::ParseShortcutShortName(const JSONObject* shortcut) {
+  base::Optional<String> short_name =
+      ParseStringForMember(shortcut, "shortcut", "short_name", false, Trim);
+  return short_name.has_value() ? *short_name : String();
+}
+
+String ManifestParser::ParseShortcutDescription(const JSONObject* shortcut) {
+  base::Optional<String> description =
+      ParseStringForMember(shortcut, "shortcut", "description", false, Trim);
+  return description.has_value() ? *description : String();
+}
+
+KURL ManifestParser::ParseShortcutUrl(const JSONObject* shortcut) {
+  KURL shortcut_url = ParseURL(shortcut, "url", manifest_url_,
+                               ParseURLOriginRestrictions::kSameOriginOnly);
+  if (shortcut_url.IsNull()) {
+    AddErrorInfo("property 'url' of 'shortcut' not present.");
+  } else if (!shortcut_url.GetString().StartsWith(
+                 manifest_->scope.GetString())) {
+    AddErrorInfo(
+        "property 'url' of 'shortcut' ignored. url should be within scope of "
+        "the manifest.");
+    return KURL();
+  }
+
+  return shortcut_url;
+}
+
+Vector<mojom::blink::ManifestShortcutItemPtr> ManifestParser::ParseShortcuts(
+    const JSONObject* object) {
+  Vector<mojom::blink::ManifestShortcutItemPtr> shortcuts;
+  JSONValue* json_value = object->Get("shortcuts");
+  if (!json_value)
+    return shortcuts;
+
+  JSONArray* shortcuts_list = object->GetArray("shortcuts");
+  if (!shortcuts_list) {
+    AddErrorInfo("property 'shortcuts' ignored, type array expected.");
+    return shortcuts;
+  }
+
+  for (wtf_size_t i = 0; i < shortcuts_list->size(); ++i) {
+    JSONObject* shortcut_object = JSONObject::Cast(shortcuts_list->at(i));
+    if (!shortcut_object)
+      continue;
+
+    auto shortcut = mojom::blink::ManifestShortcutItem::New();
+    shortcut->url = ParseShortcutUrl(shortcut_object);
+    // A shortcut MUST have a valid url. If it does not, it MUST be ignored.
+    if (!shortcut->url.IsValid())
+      continue;
+
+    // A shortcut MUST have a valid name. If it does not, it MUST be ignored.
+    shortcut->name = ParseShortcutName(shortcut_object);
+    if (shortcut->name == String())
+      continue;
+
+    shortcut->short_name = ParseShortcutShortName(shortcut_object);
+    shortcut->description = ParseShortcutDescription(shortcut_object);
+    auto icons = ParseIcons(shortcut_object);
+    if (!icons.IsEmpty())
+      shortcut->icons = std::move(icons);
+
+    shortcuts.push_back(std::move(shortcut));
+  }
+
+  return shortcuts;
 }
 
 String ManifestParser::ParseFileFilterName(const JSONObject* file) {

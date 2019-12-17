@@ -97,8 +97,6 @@ const char kEntityTypesNotSpecified[] =
 
 const double kDegToRad = M_PI / 180.0;
 
-constexpr wtf_size_t kMinNumberOfBounds = 2;
-
 // Indices into the views array.
 const unsigned int kMonoOrStereoLeftView = 0;
 const unsigned int kStereoRightView = 1;
@@ -503,12 +501,7 @@ ScriptPromise XRSession::requestReferenceSpace(
           MakeGarbageCollected<XRReferenceSpace>(this, requested_type);
       break;
     case XRReferenceSpace::Type::kTypeBoundedFloor: {
-      bool supports_bounded =
-          immersive() && display_info_->stage_parameters &&
-          display_info_->stage_parameters->bounds &&
-          display_info_->stage_parameters->bounds->size() > kMinNumberOfBounds;
-
-      if (supports_bounded) {
+      if (immersive()) {
         reference_space = MakeGarbageCollected<XRBoundedReferenceSpace>(this);
       }
       break;

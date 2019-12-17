@@ -82,8 +82,8 @@ if (host_os == "win") {
 _blink_gen_dir = "$root_gen_dir/third_party/blink/renderer"
 
 make_core_generated_deps = [
-  "//third_party/blink/renderer/core:generated_testing_idls",
   "//third_party/blink/renderer/core:core_event_interfaces",
+  "//third_party/blink/renderer/core:generated_testing_idls",
 ]
 
 # A wrapper for python scripts. This adds the following paths to PYTHONPATH,

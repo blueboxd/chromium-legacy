@@ -1079,6 +1079,7 @@ gfx::ImageSkia DownloadItemView::GetWarningIcon() {
       return gfx::CreateVectorIcon(vector_icons::kErrorIcon, GetErrorIconSize(),
                                    gfx::kGoogleGrey600);
 
+    case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:

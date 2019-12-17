@@ -1424,7 +1424,7 @@ namespace {
 
 bool IsPinchCurrentlyAllowedInTarget(RenderWidgetHostViewBase* target) {
   base::Optional<cc::TouchAction> target_active_touch_action(
-      cc::kTouchActionNone);
+      cc::TouchAction::kNone);
   if (target) {
     target_active_touch_action =
         (static_cast<RenderWidgetHostImpl*>(target->GetRenderWidgetHost()))
@@ -1437,9 +1437,9 @@ bool IsPinchCurrentlyAllowedInTarget(RenderWidgetHostViewBase* target) {
   // TODO(wjmaclean): Find out why we can be in the middle of a gesture
   // sequence and not have a valid touch action assigned.
   if (!target_active_touch_action)
-    target_active_touch_action = cc::kTouchActionNone;
-  return (target_active_touch_action.value() &
-          cc::TouchAction::kTouchActionPinchZoom);
+    target_active_touch_action = cc::TouchAction::kNone;
+  return (target_active_touch_action.value() & cc::TouchAction::kPinchZoom) !=
+         cc::TouchAction::kNone;
 }
 
 }  // namespace

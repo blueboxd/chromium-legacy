@@ -15,7 +15,7 @@
 
 namespace {
 
-void OnParseXml(base::Closure quit_loop,
+void OnParseXml(base::OnceClosure quit_loop,
                 base::Optional<base::Value> value,
                 const base::Optional<std::string>& error) {
   std::move(quit_loop).Run();
@@ -38,7 +38,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::SingleThreadTaskExecutor main_thread_task_executor;
   base::RunLoop run_loop;
   xml_parser.Parse(std::string(data_ptr, size),
-                   base::Bind(&OnParseXml, run_loop.QuitClosure()));
+                   base::BindOnce(&OnParseXml, run_loop.QuitClosure()));
   run_loop.Run();
 
   return 0;

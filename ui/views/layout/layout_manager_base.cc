@@ -126,8 +126,17 @@ void LayoutManagerBase::ApplyLayout(const ProposedLayout& layout) {
     // If the child view is not visible and we haven't bothered to specify
     // bounds, don't bother setting them (which would cause another cascade of
     // events that wouldn't do anything useful).
-    if (child_layout.visible || !child_layout.bounds.IsEmpty())
-      child_view->SetBoundsRect(child_layout.bounds);
+    if (child_layout.visible || !child_layout.bounds.IsEmpty()) {
+      if (child_view->bounds() != child_layout.bounds)
+        child_view->SetBoundsRect(child_layout.bounds);
+      // Child layouts which are not invalid will not be laid out by the default
+      // View::Layout() implementation, but if there is an available size
+      // constraint it's important that the child view be laid out. So we'll do
+      // it here.
+      // TODO(dfried): figure out a better way to handle this.
+      else if (child_layout.available_size != SizeBounds())
+        child_view->Layout();
+    }
   }
 }
 

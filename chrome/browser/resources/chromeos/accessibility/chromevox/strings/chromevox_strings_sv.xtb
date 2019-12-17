@@ -385,7 +385,6 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="3646890046000188562">{COUNT,plural, =1{grav accent}other{# grav accent-tecken}}</translation>
 <translation id="3650317109285159359">menyalternativ med kryssruta</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{dollartecken}other{# dollartecken}}</translation>
-<translation id="3658742229777143148">Version</translation>
 <translation id="3659787053479271466">varning</translation>
 <translation id="3665563998540286755"><ph name="VALUE" />, listruta</translation>
 <translation id="3681531118904532409">Papayakrämorange</translation>
@@ -1104,7 +1103,6 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="812886159861361726">Nedladdningen stoppades <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">Trycka</translation>
 <translation id="8153880621934657047">Inte i tabellen.</translation>
-<translation id="8161114871611868169">Kommentarsfält</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{understreck}other{# understreck}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8184828902145951186">rad</translation>

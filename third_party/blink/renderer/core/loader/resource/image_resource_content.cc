@@ -517,7 +517,7 @@ bool ImageResourceContent::IsAcceptableCompressionRatio(
   if (!image_)
     return true;
 
-  uint64_t pixels = IntrinsicSize(kDoNotRespectImageOrientation).Area();
+  uint64_t pixels = IntrinsicSize(kRespectImageOrientation).Area();
   if (!pixels)
     return true;
 

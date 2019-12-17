@@ -886,7 +886,7 @@ LayerTreeHostImpl::EventListenerTypeForTouchStartOrMoveAt(
 
   if (layer_impl_with_touch_handler == nullptr) {
     if (out_touch_action)
-      *out_touch_action = kTouchActionAuto;
+      *out_touch_action = TouchAction::kAuto;
     return InputHandler::TouchStartOrMoveEventListenerType::NO_HANDLER;
   }
 

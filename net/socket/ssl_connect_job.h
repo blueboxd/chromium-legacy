@@ -16,6 +16,7 @@
 #include "net/base/net_export.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/privacy_mode.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/socket/connect_job.h"
 #include "net/socket/connection_attempts.h"
 #include "net/socket/ssl_client_socket.h"
@@ -106,6 +107,7 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
                         base::OnceClosure restart_with_auth_callback,
                         ConnectJob* job) override;
   ConnectionAttempts GetConnectionAttempts() const override;
+  ResolveErrorInfo GetResolveErrorInfo() const override;
   bool IsSSLError() const override;
   scoped_refptr<SSLCertRequestInfo> GetCertRequestInfo() override;
 
@@ -165,6 +167,7 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
   scoped_refptr<SSLCertRequestInfo> ssl_cert_request_info_;
 
   ConnectionAttempts connection_attempts_;
+  ResolveErrorInfo resolve_error_info_;
   // The address of the server the connect job is connected to. Populated if
   // and only if the connect job is connected *directly* to the server (not
   // through an HTTPS CONNECT request or a SOCKS proxy).

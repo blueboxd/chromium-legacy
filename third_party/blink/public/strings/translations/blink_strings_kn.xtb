@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">ಈ ಪಠ್ಯವನ್ನು <ph name="MIN_CHARACTERS" /> ಅಕ್ಷರಗಳಿಗೆ ಅಥವಾ ಅದಕ್ಕಿಂತಲೂ ಹೆಚ್ಚಿಗೆ ಸೀಮಿತಗೊಳಿಸಿ (ನೀವು ಪ್ರಸ್ತುತವಾಗಿ <ph name="CURRENT_LENGTH" /> ಅಕ್ಷರಗಳನ್ನು ಬಳಸುತ್ತಿರುವಿರಿ).</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />' ನಂತರದ ಭಾಗವು '<ph name="INVALIDCHARACTER" />' ಚಿಹ್ನೆಯನ್ನು ಒಳಗೊಂಡಿರಬಾರದು.</translation>
 <translation id="3846214748874656680">ಪೂರ್ಣಪರದೆಯಿಂದ ನಿರ್ಗಮಿಸಿ</translation>
-<translation id="3889183436948184105">ಪರಿಷ್ಕರಣೆ</translation>
 <translation id="3920932319529768807">ತೀರ್ಮಾನ</translation>
 <translation id="3924558731517983934">ಅಪ್ಲಿಕೇಶನ್</translation>
 <translation id="3944740393230681990">ಪೀಠಿಕೆ</translation>
@@ -115,6 +114,7 @@
 <translation id="4812940957355064477">ದಯವಿಟ್ಟು ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ.</translation>
 <translation id="4912536737030637138">ಗ್ರಂಥಸೂಚಿ ನಮೂದು</translation>
 <translation id="492244087561876220">ಕಾಮೆಂಟ್</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> ಅನ್ನು ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="4992066212339426712">ಅನ್‌ಮ್ಯೂಟ್</translation>
 <translation id="49969490063480558">'<ph name="ATSIGN" />' ನಂತರದ ಒಂದು ಭಾಗವನ್ನು ನಮೂದಿಸಿ. '<ph name="INVALIDADDRESS" />' ಅಪೂರ್ಣವಾಗಿದೆ.</translation>
@@ -219,6 +219,7 @@
 <translation id="7888071071722539607">ಇಮೇಲ್ ವಿಳಾಸದಲ್ಲಿ ಒಂದು '<ph name="ATSIGN" />' ಅನ್ನು ಸೇರಿಸಿ. '<ph name="ATSIGN" />' ನಲ್ಲಿ '<ph name="INVALIDADDRESS" />' ಕಾಣೆಯಾಗಿದೆ.</translation>
 <translation id="7891486169920085145">ಛೇದಕ</translation>
 <translation id="795667975304826397">ಯಾವುದೇ ಫೈಲ್ ಆಯ್ಕೆ ಮಾಡಿಲ್ಲ</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> ಅನ್ನು ಆಯ್ಕೆ ಮಾಡಲಾಗಿಲ್ಲ</translation>
 <translation id="8034303206267677282">ಪ್ರಬಲ</translation>
 <translation id="8053789581856978548">ಪಠ್ಯ ಹುಡುಕಾಟದ ಫೀಲ್ಡ್</translation>
 <translation id="8057695513531652401">ಸೂಚನೆ</translation>
@@ -257,7 +258,6 @@
 <translation id="8987927404178983737">ತಿಂಗಳು</translation>
 <translation id="901493112792887934">ಸೆಕೆಂಡ್‌ಗಳಲ್ಲಿ ಪ್ರಸ್ತುತ ಸಮಯ</translation>
 <translation id="901834265349196618">ಇಮೇಲ್</translation>
-<translation id="9023835124071926463">ಕಾಮೆಂಟ್ ವಿಭಾಗ</translation>
 <translation id="9048119486235211610">ನ್ಯಾವಿಗೇಷನ್</translation>
 <translation id="9062295712474918030">ಡಾಕ್ಯುಮೆಂಟ್</translation>
 <translation id="9093215626363556771">ಚಿತ್ರದಲ್ಲಿನ ಚಿತ್ರದಿಂದ ನಿರ್ಗಮಿಸಿ</translation>

@@ -38,6 +38,7 @@ class PRINTING_EXPORT HttpConnectionCUPS {
 // semantic options.
 PRINTING_EXPORT bool ParsePpdCapabilities(
     base::StringPiece printer_name,
+    base::StringPiece locale,
     base::StringPiece printer_capabilities,
     PrinterSemanticCapsAndDefaults* printer_info);
 

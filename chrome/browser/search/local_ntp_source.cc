@@ -402,7 +402,7 @@ scoped_refptr<base::RefCountedString> GetPromoString(
     dict.SetString("promoHtml", promo->promo_html);
     dict.SetString("promoLogUrl", promo->promo_log_url.spec());
     dict.SetString("promoId", promo->promo_id);
-    dict.SetBoolean("canOpenPrivilegedLinks", promo->can_open_privileged_links);
+    dict.SetBoolean("canOpenExtensionsPage", promo->can_open_extensions_page);
   }
 
   std::string js;

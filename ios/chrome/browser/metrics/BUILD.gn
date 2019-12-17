@@ -144,6 +144,7 @@ source_set("metrics_internal") {
   ]
   deps = [
     ":metrics",
+    ":tab_usage_recorder_metrics",
     "//base",
     "//components/google/core/common",
     "//ios/chrome/browser",
@@ -158,6 +159,17 @@ source_set("metrics_internal") {
     "//url",
   ]
   libs = [ "UIKit.framework" ]
+}
+
+source_set("tab_usage_recorder_metrics") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "tab_usage_recorder_metrics.h",
+    "tab_usage_recorder_metrics.mm",
+  ]
+  deps = [
+    "//base",
+  ]
 }
 
 source_set("unit_tests_internal") {
@@ -194,6 +206,7 @@ source_set("eg_tests") {
   ]
   deps = [
     ":metrics_internal",
+    ":tab_usage_recorder_metrics",
     ":test_support",
     "//base",
     "//base/test:test_support",
@@ -243,18 +256,23 @@ source_set("eg2_tests") {
   ]
   testonly = true
   sources = [
+    "tab_usage_recorder_egtest.mm",
     "ukm_egtest.mm",
   ]
   deps = [
     ":eg_test_support+eg2",
+    ":tab_usage_recorder_metrics",
     "//base/test:test_support",
     "//components/strings:components_strings_grit",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
+    "//ios/chrome/test:eg_test_support+eg2",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/public/provider/chrome/browser/signin:fake_chrome_identity",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
+    "//ios/web/public/test:element_selector",
+    "//ios/web/public/test/http_server",
     "//ui/base:base",
   ]
   libs = [ "UIKit.framework" ]
@@ -266,8 +284,6 @@ source_set("test_support") {
   sources = [
     "metrics_app_interface.h",
     "metrics_app_interface.mm",
-    "tab_usage_recorder_test_util.h",
-    "tab_usage_recorder_test_util.mm",
   ]
   deps = [
     ":metrics",
@@ -278,6 +294,7 @@ source_set("test_support") {
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/metrics:metrics_internal",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/main",
     "//ios/chrome/browser/ui/popup_menu:constants",
@@ -326,6 +343,7 @@ source_set("eg_app_support+eg2") {
     "//components/ukm",
     "//ios/chrome/browser",
     "//ios/chrome/browser/metrics",
+    "//ios/chrome/browser/metrics:metrics_internal",
     "//ios/chrome/test/app:test_support",
     "//ios/testing:nserror_support",
     "//services/metrics/public/cpp:metrics_cpp",
@@ -345,6 +363,9 @@ source_set("eg_test_support+eg2") {
   ]
   deps = [
     "//base",
+    "//base/test:test_support",
+    "//ios/chrome/test:eg_test_support+eg2",
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
   ]

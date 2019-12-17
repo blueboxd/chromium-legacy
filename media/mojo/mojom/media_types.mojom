@@ -325,7 +325,9 @@ struct PredictionFeatures {
     // but we can't do that with native enums.
     VideoCodecProfile profile;
     gfx.mojom.Size video_size;
-    int32 frames_per_sec = 0;
+    // Frames per second may ultimately be a bucketed as an integer, but we want
+    // to do that as late as possible. Using a double avoids early truncation.
+    double frames_per_sec = 0;
     // Name of the key system used for EME playbacks.
     string key_system;
     // Indicates when CDM will use HW secure decoding for EME playbacks.

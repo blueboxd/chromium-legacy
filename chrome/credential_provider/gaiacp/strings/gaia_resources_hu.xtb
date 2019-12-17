@@ -25,6 +25,7 @@
 <translation id="7209941495304122410">Adja meg Windows-jelszavát</translation>
 <translation id="7357241217513796177">Győződjön meg róla, hogy rendelkezik hálózati kapcsolattal, majd próbálja újra.</translation>
 <translation id="7536769223115622137">Munkahelyi fiók hozzáadása</translation>
+<translation id="7811865856574012727">Az adminisztrátor a következő domainekre korlátozta a bejelentkezést az eszközön: <ph name="EMAIL_DOMAINS" />. Próbálja újra érvényes munkahelyi fiókkal.</translation>
 <translation id="7856245195110636219">A jelenlegi Windows-jelszó megadása nélkül nem lehet továbblépni. Forduljon a rendszergazdához.</translation>
 <translation id="8639729688781680518">Elfelejtett Windows-jelszó</translation>
 <translation id="866458870819756755">Nem sikerült létrehozni a felhasználót.</translation>

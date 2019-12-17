@@ -17,6 +17,7 @@
 <translation id="5271696982761495740">Գրասալիկ (<ph name="ADDRESS" />)</translation>
 <translation id="5376363957846771741">Անհայտ կամ չաջակցվող սարք (<ph name="ADDRESS" />)</translation>
 <translation id="5716052956047449618"><ph name="DEVICE_NAME" />, մոդեմ</translation>
+<translation id="6459740836740815150"><ph name="DEVICE_NAME" />, ավտոմեքենայի աուդիո սարք</translation>
 <translation id="6542922424766292144"><ph name="DEVICE_NAME" />, ստեղնաշար</translation>
 <translation id="654594702871184195">Աուդիո սարք (<ph name="ADDRESS" />)</translation>
 <translation id="6744468237221042970">Համակարգիչ (<ph name="ADDRESS" />)</translation>
@@ -26,5 +27,6 @@
 <translation id="8866374292072238753">Վիդեո սարք (<ph name="ADDRESS" />)</translation>
 <translation id="8952558712545617651">Մկնիկ (<ph name="ADDRESS" />)</translation>
 <translation id="8961448405689538648"><ph name="DEVICE_NAME" />, անհայտ սարք</translation>
+<translation id="907431882454731668">Արտաքին սարք (<ph name="ADDRESS" />)</translation>
 <translation id="978248992969828584">Հեռախոս (<ph name="ADDRESS" />)</translation>
 </translationbundle>

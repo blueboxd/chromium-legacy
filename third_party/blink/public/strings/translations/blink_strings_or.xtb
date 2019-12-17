@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">ଦୟାକରି ଏହି ଟେକ୍ସଟ୍‍କୁ <ph name="MIN_CHARACTERS" />ଟି କିମ୍ବା ଅଧିକ ଅକ୍ଷର ପର୍ଯ୍ୟନ୍ତ ଲମ୍ବା କରନ୍ତୁ (ବର୍ତ୍ତମାନ ଆପଣ <ph name="CURRENT_LENGTH" />ଟି ଅକ୍ଷର ବ୍ୟବହାର କରୁଛନ୍ତି)।</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />' ପରେ ଆସୁଥିବା ଅଂଶରେ '<ph name="INVALIDCHARACTER" />' ଚିହ୍ନ ରହିବା ଉଚିତ ନୁହେଁ।</translation>
 <translation id="3846214748874656680">ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନ୍‌ରୁ ପ୍ରସ୍ଥାନ କରନ୍ତୁ</translation>
-<translation id="3889183436948184105">ପୁନରାବୃତ୍ତି</translation>
 <translation id="3920932319529768807">ସମାପ୍ତି</translation>
 <translation id="3924558731517983934">ଆପ୍ଲିକେସନ୍</translation>
 <translation id="3944740393230681990">ଭୂମିକା</translation>
@@ -115,6 +114,7 @@
 <translation id="4812940957355064477">ଦୟାକରି ଗୋଟିଏ ନମ୍ବର ଲେଖନ୍ତୁ।</translation>
 <translation id="4912536737030637138">ଗ୍ରନ୍ଥସୂଚୀ ଏଣ୍ଟ୍ରି</translation>
 <translation id="492244087561876220">ମନ୍ତବ୍ୟ</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> ଚୟନ କରାଯାଇଛି</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" />ଟି ଚୟନ କରାଯାଇଛି</translation>
 <translation id="4992066212339426712">ଅନମ୍ୟୁଟ୍ କରନ୍ତୁ</translation>
 <translation id="49969490063480558">ଦୟାକରି '<ph name="ATSIGN" />'କୁ ଅନୁସରଣ କରୁଥିବା ଏକ ଅଂଶ ଲେଖନ୍ତୁ। '<ph name="INVALIDADDRESS" />' ଅସମ୍ପୂର୍ଣ୍ଣ ଅଛି।</translation>
@@ -219,6 +219,7 @@
 <translation id="7888071071722539607">ଦୟାକରି ଇମେଲ୍ ଠିକଣାରେ ଏକ '<ph name="ATSIGN" />' ଅନ୍ତର୍ଭୁକ୍ତ କରନ୍ତୁ। '<ph name="INVALIDADDRESS" />' ରେ '<ph name="ATSIGN" />'ମିଳୁନାହିଁ।</translation>
 <translation id="7891486169920085145">ସ୍ପ୍ଲିଟର୍</translation>
 <translation id="795667975304826397">କୌଣସି ଫାଇଲ୍ ଚୟନ କରାଯାଇ ନାହିଁ</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> ଚୟନ କରାଯାଇନାହିଁ</translation>
 <translation id="8034303206267677282">ଦୃଢ଼</translation>
 <translation id="8053789581856978548">ଟେକ୍ସଟ୍‍ ଫିଲ୍ଡ ଖୋଜନ୍ତୁ</translation>
 <translation id="8057695513531652401">ବିଜ୍ଞପ୍ତି</translation>
@@ -257,7 +258,6 @@
 <translation id="8987927404178983737">ମାସ</translation>
 <translation id="901493112792887934">ସେକେଣ୍ଡରେ ବର୍ତ୍ତମାନର ସମୟ</translation>
 <translation id="901834265349196618">ଇମେଲ୍</translation>
-<translation id="9023835124071926463">ମନ୍ତବ୍ୟ ବିଭାଗ</translation>
 <translation id="9048119486235211610">ନାଭିଗେସନ୍</translation>
 <translation id="9062295712474918030">ଡକ୍ୟୁମେଣ୍ଟ</translation>
 <translation id="9093215626363556771">ଛବି-ଭିତରେ-ଛବିରୁ ବାହାରି ଯାଆନ୍ତୁ</translation>

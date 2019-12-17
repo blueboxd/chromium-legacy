@@ -29,10 +29,11 @@ using base::UserMetricsAction;
 
 namespace chromeos {
 
-LoginPerformer::LoginPerformer(scoped_refptr<base::TaskRunner> task_runner,
-                               Delegate* delegate)
+LoginPerformer::LoginPerformer(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    Delegate* delegate)
     : delegate_(delegate),
-      task_runner_(task_runner),
+      task_runner_(std::move(task_runner)),
       last_login_failure_(AuthFailure::AuthFailureNone()) {}
 
 LoginPerformer::~LoginPerformer() {

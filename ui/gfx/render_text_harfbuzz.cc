@@ -1506,10 +1506,6 @@ SelectionModel RenderTextHarfBuzz::FindCursorPosition(
   return LineSelectionModel(line_index, CURSOR_RIGHT);
 }
 
-bool RenderTextHarfBuzz::IsSelectionSupported() const {
-  return true;
-}
-
 std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {
   EnsureLayout();
   DCHECK(!update_display_run_list_);
@@ -1814,7 +1810,8 @@ void RenderTextHarfBuzz::DrawVisualText(internal::SkiaTextRenderer* renderer,
   BreakList<SkColor> colors = layout_colors();
   if (!selection.is_empty()) {
     colors.ApplyValue(selection_color(),
-                      Range(selection.GetMin(), selection.GetMax()));
+                      Range(TextIndexToDisplayIndex(selection.GetMin()),
+                            TextIndexToDisplayIndex(selection.GetMax())));
   }
 
   internal::TextRunList* run_list = GetRunList();

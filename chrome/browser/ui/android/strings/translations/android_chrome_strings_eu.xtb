@@ -24,7 +24,6 @@
 <translation id="1171770572613082465">Sakatu "Webgune nagusiak" botoia webgune ezagunak ikusteko</translation>
 <translation id="1173894706177603556">Aldatu izena</translation>
 <translation id="1178581264944972037">Pausatu</translation>
-<translation id="118069123878619799">- Zure ezaugarri fisikoak (esaterako, altuera).</translation>
 <translation id="1181037720776840403">Kendu</translation>
 <translation id="1188239144602654184">Sartu errealitate areagotuan</translation>
 <translation id="1197267115302279827">Mugitu laster-markak</translation>
@@ -62,7 +61,6 @@
 <translation id="1384959399684842514">Pausatu da deskarga</translation>
 <translation id="1386674309198842382">Aktibo duela <ph name="LAST_UPDATED" /> egun</translation>
 <translation id="1397811292916898096">Egin bilaketak <ph name="PRODUCT_NAME" /> zerbitzuarekin</translation>
-<translation id="1404122904123200417"><ph name="WEBSITE_URL" /> URLan kapsulatuta</translation>
 <translation id="1406000523432664303">"Ez jarraitu"</translation>
 <translation id="1407135791313364759">Ireki guztiak</translation>
 <translation id="1409426117486808224">Irekitako fitxen ikuspegi sinplifikatua</translation>
@@ -215,6 +213,7 @@
 <translation id="2534155362429831547">Ezabatu dira <ph name="NUMBER_OF_ITEMS" /> elementu</translation>
 <translation id="2536728043171574184">Orriaren konexiorik gabeko kopia ikusten ari zara</translation>
 <translation id="2537178555904266562">Errore bat gertatu da pasahitzak sinkronizatzean</translation>
+<translation id="2537296579376733324">Cookie guztiak, baina webgune honetan soilik</translation>
 <translation id="2546283357679194313">Cookieak eta webgune-datuak</translation>
 <translation id="2567385386134582609">IRUDIA</translation>
 <translation id="257088987046510401">Gaiak</translation>
@@ -472,6 +471,7 @@ Baliteke Google kontuak arakatze-historiako bestelako datu batzuk (adibidez, bil
 <translation id="4565377596337484307">Ezkutatu pasahitza</translation>
 <translation id="4570913071927164677">Xehetasunak</translation>
 <translation id="4572422548854449519">Hasi saioa kontu kudeatuan</translation>
+<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Duela # minutu}other{Duela # minutu}}</translation>
 <translation id="4587589328781138893">Webguneak</translation>
 <translation id="4594952190837476234">Konexiorik gabe erabiltzeko orri hau <ph name="CREATION_TIME" /> datan sortu zen. Ondorioz, baliteke sareko bertsioarekin bat ez etortzea.</translation>
@@ -652,7 +652,6 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="5809361687334836369">{HOURS,plural, =1{Duela # ordu}other{Duela # ordu}}</translation>
 <translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. Eskubide guztiak erreserbatuta.</translation>
 <translation id="5817918615728894473">Parekatu</translation>
-<translation id="5819762621475381970">- Gelaren diseinua.</translation>
 <translation id="583281660410589416">Ezezaguna</translation>
 <translation id="5833984609253377421">Partekatu esteka</translation>
 <translation id="5836192821815272682">Chrome-ren eguneratzea deskargatzen…</translation>

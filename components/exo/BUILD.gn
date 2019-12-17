@@ -304,9 +304,9 @@ test("exo_unittests") {
     ]
 
     data_deps += [
-      "//ash/strings:ash_test_strings",
       "//ash/resources:ash_test_resources_100_percent",
       "//ash/resources:ash_test_resources_200_percent",
+      "//ash/strings:ash_test_strings",
     ]
   }
 }

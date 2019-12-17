@@ -40,7 +40,8 @@
           rootElement,
           SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
       TestRunner.addResult('Set DOM breakpoint.');
-      pane._items.get(breakpoint).checkbox.click();
+      const breakpointElement = pane._list._itemToElement.get(breakpoint);
+      breakpointElement.firstElementChild.checkboxElement.click();
       TestRunner.addResult('Uncheck DOM breakpoint.');
       TestRunner
           .evaluateInPagePromise(
@@ -50,7 +51,8 @@
 
       function step2() {
         TestRunner.addResult('Check DOM breakpoint.');
-        pane._items.get(breakpoint).checkbox.click();
+        const breakpointElement = pane._list._itemToElement.get(breakpoint);
+        breakpointElement.firstElementChild.checkboxElement.click();
         TestRunner.evaluateInPageWithTimeout(
             'modifyAttribute(\'rootElement\', \'data-test-breakpoint-toggle\', \'bar\')');
         TestRunner.addResult(

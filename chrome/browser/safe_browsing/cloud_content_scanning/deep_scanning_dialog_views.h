@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -41,12 +42,23 @@ class DeepScanningDialogViews : public views::DialogDelegate {
   void DeleteDelegate() override;
   ui::ModalType GetModalType() const override;
 
+  // Cancels the dialog if it is showing, and simply delete it from memory if it
+  // is not. This method will always result in |this| being deleted.
+  void CancelDialogIfShowing();
+
  private:
   ~DeepScanningDialogViews() override;
+
+  // Show the dialog. Sets |shown_| to true.
+  void Show(content::WebContents* web_contents);
 
   std::unique_ptr<DeepScanningDialogDelegate> delegate_;
 
   views::MessageBoxView* message_box_view_;
+
+  bool shown_ = false;
+
+  base::WeakPtrFactory<DeepScanningDialogViews> weak_ptr_factory_{this};
 };
 
 }  // namespace safe_browsing

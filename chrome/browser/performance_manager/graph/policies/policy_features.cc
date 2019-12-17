@@ -80,5 +80,14 @@ extern const base::FeatureParam<int> kDynamicTuningScaleInvisibleTimeSec = {
 
 #endif  // defined(OS_LINUX)
 
+#if !defined(OS_ANDROID)
+const base::Feature kPageFreezingFromPerformanceManager{
+    "PageFreezingFromPerformanceManager", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kUrgentDiscardingFromPerformanceManager{
+    "UrgentDiscardingFromPerformanceManager",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 }  // namespace features
 }  // namespace performance_manager

@@ -620,8 +620,8 @@ public class OmniboxTest {
             boolean securityIcon = statusViewCoordinator.isSecurityButtonShown();
             if (mActivityTestRule.getActivity().isTablet()) {
                 Assert.assertTrue("Omnibox should have a Security icon", securityIcon);
-                Assert.assertEquals(
-                        R.drawable.omnibox_info, statusViewCoordinator.getSecurityIconResourceId());
+                Assert.assertEquals(R.drawable.omnibox_info,
+                        statusViewCoordinator.getSecurityIconResourceIdForTesting());
             } else {
                 Assert.assertFalse("Omnibox should not have a Security icon", securityIcon);
             }
@@ -670,7 +670,7 @@ public class OmniboxTest {
                     R.id.location_bar_status_icon, securityButton.getId());
             Assert.assertTrue(securityButton.isShown());
             Assert.assertEquals(R.drawable.omnibox_https_valid,
-                    statusViewCoordinator.getSecurityIconResourceId());
+                    statusViewCoordinator.getSecurityIconResourceIdForTesting());
         } finally {
             httpsTestServer.stopAndDestroyServer();
         }

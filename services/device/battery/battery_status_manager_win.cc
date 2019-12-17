@@ -130,9 +130,10 @@ class BatteryStatusObserver {
   bool CreateMessageWindow() {
     // TODO(timvolodine): consider reusing the message window of PowerMonitor.
     window_ = std::make_unique<base::win::MessageWindow>();
-    if (!window_->CreateNamed(base::Bind(&BatteryStatusObserver::HandleMessage,
-                                         base::Unretained(this)),
-                              base::string16(kWindowClassName))) {
+    if (!window_->CreateNamed(
+            base::BindRepeating(&BatteryStatusObserver::HandleMessage,
+                                base::Unretained(this)),
+            base::string16(kWindowClassName))) {
       LOG(ERROR) << "Failed to create message window: " << kWindowClassName;
       window_.reset();
       return false;

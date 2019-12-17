@@ -4,6 +4,8 @@
 <translation id="1075622780330595106"><ph name="NUMBER_OF_TABS" /> von Ihren Tabs wurden längere Zeit nicht verwendet. Möchten Sie sie schließen?</translation>
 <translation id="1181037720776840403">Entfernen</translation>
 <translation id="125153950246128346">Tippen, um einen anderen Tab zu sehen</translation>
+<translation id="1657719826150349398">Tab nach unten verschieben</translation>
+<translation id="1778290789805128794">Tab nach oben verschieben</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> Tab}other{<ph name="TABS_COUNT_MANY" /> Tabs}}</translation>
 <translation id="2569352796411618312">Vorschlag: <ph name="NUMBER_OF_TABS" /> von Ihren Tabs wurden längere Zeit nicht verwendet. Möchten Sie sie schließen?</translation>
 <translation id="257674075312929031">Gruppe</translation>
@@ -20,11 +22,13 @@
 <translation id="58326064309361797">Tabs zum Gruppieren ziehen</translation>
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="6193448654517602979">Tabs auswählen</translation>
+<translation id="6562820390860419811">Tab nach links bewegen</translation>
 <translation id="6615455863669487791">Zeigen</translation>
 <translation id="6840760312327750441">Wenn Sie Tabs gruppieren möchten, berühren und halten Sie einen Tab. Ziehen Sie ihn dann auf einen anderen Tab.</translation>
 <translation id="7151209024774799310">Tabs aus der Gruppe verschieben</translation>
 <translation id="7559245342362162951">Tabs der Gruppe in Vollbildraster anzeigen</translation>
 <translation id="7792771145871471484">Vorschläge ansehen.</translation>
+<translation id="7885132941432959125">Tab nach rechts verschieben</translation>
 <translation id="7966321538264951561">Vorschläge ablehnen.</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> ausgewählten Tab schließen}other{<ph name="TABS_COUNT_MANY" /> ausgewählte Tabs schließen}}</translation>
 <translation id="9150694013019234766">Am unteren Bildschirmrand können Sie zwischen den Tabs in Ihrer Tabgruppe wechseln</translation>

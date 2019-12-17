@@ -189,26 +189,6 @@ using chrome_test_util::SecondarySignInButton;
   GREYAssert(folderExists, assertMessage);
 }
 
-+ (void)verifyPromoAlreadySeen:(BOOL)seen {
-  ios::ChromeBrowserState* browserState =
-      chrome_test_util::GetOriginalBrowserState();
-  PrefService* prefs = browserState->GetPrefs();
-  if (prefs->GetBoolean(prefs::kIosBookmarkPromoAlreadySeen) == seen) {
-    return;
-  }
-  NSString* errorDesc = (seen)
-                            ? @"Expected promo already seen, but it wasn't."
-                            : @"Expected promo not already seen, but it was.";
-  GREYFail(errorDesc);
-}
-
-+ (void)setPromoAlreadySeen:(BOOL)seen {
-  ios::ChromeBrowserState* browserState =
-      chrome_test_util::GetOriginalBrowserState();
-  PrefService* prefs = browserState->GetPrefs();
-  prefs->SetBoolean(prefs::kIosBookmarkPromoAlreadySeen, seen);
-}
-
 + (void)assertExistenceOfBookmarkWithURL:(NSString*)URL name:(NSString*)name {
   bookmarks::BookmarkModel* bookmarkModel =
       ios::BookmarkModelFactory::GetForBrowserState(

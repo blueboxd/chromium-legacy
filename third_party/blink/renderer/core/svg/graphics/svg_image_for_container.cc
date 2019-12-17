@@ -28,9 +28,13 @@
 namespace blink {
 
 IntSize SVGImageForContainer::Size() const {
+  return RoundedIntSize(SizeAsFloat());
+}
+
+FloatSize SVGImageForContainer::SizeAsFloat() const {
   FloatSize scaled_container_size(container_size_);
   scaled_container_size.Scale(zoom_);
-  return RoundedIntSize(scaled_container_size);
+  return scaled_container_size;
 }
 
 void SVGImageForContainer::Draw(cc::PaintCanvas* canvas,
@@ -50,7 +54,8 @@ void SVGImageForContainer::DrawPattern(GraphicsContext& context,
                                        const FloatPoint& phase,
                                        SkBlendMode op,
                                        const FloatRect& dst_rect,
-                                       const FloatSize& repeat_spacing) {
+                                       const FloatSize& repeat_spacing,
+                                       RespectImageOrientationEnum) {
   image_->DrawPatternForContainer(context, container_size_, zoom_, src_rect,
                                   scale, phase, op, dst_rect, repeat_spacing,
                                   url_);

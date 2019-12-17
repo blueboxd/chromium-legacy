@@ -756,7 +756,8 @@ void BackgroundImageGeometry::CalculateFillTileSize(
                                          : unsnapped_positioning_area_size;
   LayoutSize image_intrinsic_size(image->ImageSize(
       positioning_box_.GetDocument(),
-      positioning_box_.StyleRef().EffectiveZoom(), positioning_area_size));
+      positioning_box_.StyleRef().EffectiveZoom(), positioning_area_size,
+      LayoutObject::ShouldRespectImageOrientation(&box_)));
   switch (type) {
     case EFillSizeType::kSizeLength: {
       tile_size_ = positioning_area_size;

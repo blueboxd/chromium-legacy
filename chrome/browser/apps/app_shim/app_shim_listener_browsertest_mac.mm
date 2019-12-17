@@ -136,8 +136,8 @@ class AppShimListenerBrowserTest : public InProcessBrowserTest,
 
  private:
   // chrome::mojom::AppShimHost.
-  void FocusApp(chrome::mojom::AppShimFocusType focus_type,
-                const std::vector<base::FilePath>& files) override {}
+  void FocusApp() override {}
+  void FilesOpened(const std::vector<base::FilePath>& files) override {}
   void ProfileSelectedFromMenu(const base::FilePath& profile_path) override {}
 
   std::unique_ptr<base::RunLoop> runner_;

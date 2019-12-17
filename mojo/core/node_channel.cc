@@ -169,7 +169,7 @@ scoped_refptr<NodeChannel> NodeChannel::Create(
     Delegate* delegate,
     ConnectionParams connection_params,
     Channel::HandlePolicy channel_handle_policy,
-    scoped_refptr<base::TaskRunner> io_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     const ProcessErrorCallback& process_error_callback) {
 #if defined(OS_NACL_SFI)
   LOG(FATAL) << "Multi-process not yet supported on NaCl-SFI";
@@ -462,11 +462,12 @@ void NodeChannel::EventMessageFromRelay(const ports::NodeName& source,
 }
 #endif  // defined(OS_WIN)
 
-NodeChannel::NodeChannel(Delegate* delegate,
-                         ConnectionParams connection_params,
-                         Channel::HandlePolicy channel_handle_policy,
-                         scoped_refptr<base::TaskRunner> io_task_runner,
-                         const ProcessErrorCallback& process_error_callback)
+NodeChannel::NodeChannel(
+    Delegate* delegate,
+    ConnectionParams connection_params,
+    Channel::HandlePolicy channel_handle_policy,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    const ProcessErrorCallback& process_error_callback)
     : delegate_(delegate),
       io_task_runner_(io_task_runner),
       process_error_callback_(process_error_callback)

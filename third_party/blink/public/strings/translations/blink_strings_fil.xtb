@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">Pakihabaan ang text na ito hanggang <ph name="MIN_CHARACTERS" /> (na) character o higit pa (kasalukuyan kang gumagamit ng <ph name="CURRENT_LENGTH" /> (na) character).</translation>
 <translation id="383465348367842624">Hindi dapat naglalaman ng simbolong '<ph name="INVALIDCHARACTER" />' ang bahagi bago ang '<ph name="ATSIGN" />.'</translation>
 <translation id="3846214748874656680">Lumabas sa fullscreen</translation>
-<translation id="3889183436948184105">rebisyon</translation>
 <translation id="3920932319529768807">konklusyon</translation>
 <translation id="3924558731517983934">application</translation>
 <translation id="3944740393230681990">prologue</translation>
@@ -115,6 +114,7 @@
 <translation id="4812940957355064477">Mangyaring maglagay ng numero.</translation>
 <translation id="4912536737030637138">entry sa bibliograpiya</translation>
 <translation id="492244087561876220">komento</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> ang napili</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> ang napili</translation>
 <translation id="4992066212339426712">I-unmute</translation>
 <translation id="49969490063480558">Mangyaring maglagay ng isang bahagi pagkatapos ng '<ph name="ATSIGN" />.' Hindi kumpleto ang '<ph name="INVALIDADDRESS" />.'</translation>
@@ -219,6 +219,7 @@
 <translation id="7888071071722539607">Mangyaring magsama ng '<ph name="ATSIGN" />' sa email address. Kulang ng '<ph name="ATSIGN" />' ang '<ph name="INVALIDADDRESS" />.'</translation>
 <translation id="7891486169920085145">splitter</translation>
 <translation id="795667975304826397">Walang napiling file</translation>
+<translation id="7962328325860248200">Hindi napili ang <ph name="ACCNAME" /></translation>
 <translation id="8034303206267677282">malakas</translation>
 <translation id="8053789581856978548">text field ng paghahanap</translation>
 <translation id="8057695513531652401">paunawa</translation>
@@ -257,7 +258,6 @@
 <translation id="8987927404178983737">Buwan</translation>
 <translation id="901493112792887934">kasalukuyang oras ayon sa segundo</translation>
 <translation id="901834265349196618">email</translation>
-<translation id="9023835124071926463">seksyon ng komento</translation>
 <translation id="9048119486235211610">navigation</translation>
 <translation id="9062295712474918030">dokumento</translation>
 <translation id="9093215626363556771">lumabas sa picture-in-picture</translation>

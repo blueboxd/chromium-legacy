@@ -4603,8 +4603,6 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_LINK;
 
     case ax::mojom::Role::kComment:
-    case ax::mojom::Role::kCommentSection:
-    case ax::mojom::Role::kRevision:
     case ax::mojom::Role::kSuggestion:
       return ROLE_SYSTEM_GROUPING;
 
@@ -5213,9 +5211,6 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
       return IA2_ROLE_COMMENT;
     case ax::mojom::Role::kSuggestion:
       return IA2_ROLE_SUGGESTION;
-    case ax::mojom::Role::kCommentSection:
-    case ax::mojom::Role::kRevision:
-      return IA2_ROLE_SECTION;
     case ax::mojom::Role::kBanner:
     case ax::mojom::Role::kHeader:
       // CORE-AAM recommends LANDMARK instead of HEADER.
@@ -5433,8 +5428,6 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
       return L"link";
 
     case ax::mojom::Role::kComment:
-    case ax::mojom::Role::kCommentSection:
-    case ax::mojom::Role::kRevision:
     case ax::mojom::Role::kSuggestion:
       return L"group";
 
@@ -6108,8 +6101,6 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
       return UIA_HyperlinkControlTypeId;
 
     case ax::mojom::Role::kComment:
-    case ax::mojom::Role::kCommentSection:
-    case ax::mojom::Role::kRevision:
     case ax::mojom::Role::kSuggestion:
       return ROLE_SYSTEM_GROUPING;
 

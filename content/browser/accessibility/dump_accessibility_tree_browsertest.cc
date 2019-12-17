@@ -516,6 +516,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunAriaTest(FILE_PATH_LITERAL("aria1.1-combobox.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaComment) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-comment.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityAriaComplementary) {
   RunAriaTest(FILE_PATH_LITERAL("aria-complementary.html"));

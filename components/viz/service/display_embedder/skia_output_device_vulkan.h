@@ -27,6 +27,7 @@ class SkiaOutputDeviceVulkan final : public SkiaOutputDevice {
   SkiaOutputDeviceVulkan(
       VulkanContextProvider* context_provider,
       gpu::SurfaceHandle surface_handle,
+      gpu::MemoryTracker* memory_tracker,
       DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
   ~SkiaOutputDeviceVulkan() override;
 

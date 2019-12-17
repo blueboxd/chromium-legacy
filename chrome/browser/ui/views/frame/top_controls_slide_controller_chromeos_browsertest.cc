@@ -290,13 +290,16 @@ class TopControlsSlideControllerTest : public InProcessBrowserTest {
 
   void OpenUrlAtIndex(const GURL& url, int index) {
     AddTabAtIndex(index, url, ui::PAGE_TRANSITION_TYPED);
-    TabNonEmptyPaintWaiter waiter(
-        browser()->tab_strip_model()->GetActiveWebContents());
+    auto* active_contents = browser_view()->GetActiveWebContents();
+    EXPECT_TRUE(content::WaitForLoadStop(active_contents));
+    TabNonEmptyPaintWaiter waiter(active_contents);
     waiter.Wait();
   }
 
   void ToggleTabletMode() {
+    TopControlsShownRatioWaiter waiter{test_controller_};
     ash::ShellTestApi().SetTabletModeEnabledForTest(!GetTabletModeEnabled());
+    waiter.WaitForRatio(1.f);
   }
 
   bool GetTabletModeEnabled() const {
@@ -477,9 +480,8 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, DisabledForHostedApps) {
       browser_view->GetActiveWebContents()));
 }
 
-// TODO(https://crbug.com/1033650) flaky on linux-chromeos-rel.
 IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
-                       DISABLED_EnabledOnlyForTabletNonImmersiveModes) {
+                       EnabledOnlyForTabletNonImmersiveModes) {
   EXPECT_FALSE(GetTabletModeEnabled());
   AddBlankTabAndShow(browser());
   // For a normal browser, the controller is created.
@@ -618,6 +620,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestClosingATab) {
   // Navigate to our test scrollable page.
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/top_controls_scroll.html"));
+  EXPECT_TRUE(content::WaitForLoadStop(browser_view()->GetActiveWebContents()));
   TabNonEmptyPaintWaiter paint_waiter(
       browser()->tab_strip_model()->GetActiveWebContents());
   paint_waiter.Wait();
@@ -1118,9 +1121,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
   }
 }
 
-// TODO(https://crbug.com/1033651) flaky on linux-chromeos-rel.
-IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
-                       DISABLED_TestPermissionBubble) {
+IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestPermissionBubble) {
   ToggleTabletMode();
   ASSERT_TRUE(GetTabletModeEnabled());
   EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());
@@ -1169,9 +1170,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
                                TopChromeShownState::kFullyHidden);
 }
 
-// TODO(https://crbug.com/1033648) flaky on linux-chromeos-rel.
-IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
-                       DISABLED_TestToggleChromeVox) {
+IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestToggleChromeVox) {
   ToggleTabletMode();
   ASSERT_TRUE(GetTabletModeEnabled());
   EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());
@@ -1205,7 +1204,6 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
       active_contents);
   chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(false);
   compositor_frame_waiter.WaitForAnyFrameSubmission();
-  content::WaitForResizeComplete(active_contents);
   EXPECT_FALSE(
       chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
   EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 1.f);

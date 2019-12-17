@@ -20,7 +20,7 @@ class BatteryStatusManager;
 
 class BatteryStatusService {
  public:
-  typedef base::Callback<void(const mojom::BatteryStatus&)>
+  typedef base::RepeatingCallback<void(const mojom::BatteryStatus&)>
       BatteryUpdateCallback;
   typedef base::CallbackList<void(const mojom::BatteryStatus&)>
       BatteryUpdateCallbackList;

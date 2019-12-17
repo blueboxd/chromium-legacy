@@ -3617,8 +3617,8 @@ TEST_P(HotseatShelfLayoutManagerTest, SwipeUpOnHotseatBackgroundDoesNothing) {
   // Swipe up on the Hotseat (parent of ShelfView) does nothing.
   gfx::Point start(GetPrimaryShelf()
                        ->shelf_widget()
-                       ->shelf_view_for_testing()
-                       ->GetBoundsInScreen()
+                       ->hotseat_widget()
+                       ->GetWindowBoundsInScreen()
                        .top_center());
   const gfx::Point end(start + gfx::Vector2d(0, -300));
   const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
@@ -4883,6 +4883,34 @@ TEST_F(HotseatShelfLayoutManagerTest, SwipeDownOnFocusedHotseat) {
   GetEventGenerator()->PressKey(ui::VKEY_TAB, 0);
   GetEventGenerator()->ReleaseKey(ui::VKEY_TAB, 0);
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+}
+
+// Tests that in overview, we can still exit by clicking on the hotseat if the
+// point is not on the visible area.
+TEST_F(HotseatShelfLayoutManagerTest, ExitOverviewWithClickOnHotseat) {
+  std::unique_ptr<aura::Window> window1 = AshTestBase::CreateTestWindow();
+  ShelfTestUtil::AddAppShortcut("app_id_1", TYPE_APP);
+
+  TabletModeControllerTestApi().EnterTabletMode();
+  ASSERT_TRUE(TabletModeControllerTestApi().IsTabletModeStarted());
+  ASSERT_FALSE(WindowState::Get(window1.get())->IsMinimized());
+
+  // Enter overview, hotseat is visible. Choose the point to the farthest left.
+  // This point will not be visible.
+  auto* overview_controller = Shell::Get()->overview_controller();
+  auto* hotseat_widget = GetShelfWidget()->hotseat_widget();
+  overview_controller->StartOverview();
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+  ASSERT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+  gfx::Point far_left_point =
+      hotseat_widget->GetWindowBoundsInScreen().left_center();
+
+  // Tests that on clicking, we exit overview and all windows are minimized.
+  GetEventGenerator()->set_current_screen_location(far_left_point);
+  GetEventGenerator()->ClickLeftButton();
+  EXPECT_EQ(HotseatState::kShown, GetShelfLayoutManager()->hotseat_state());
+  EXPECT_TRUE(WindowState::Get(window1.get())->IsMinimized());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
 }
 
 class ShelfLayoutManagerWindowDraggingTest : public ShelfLayoutManagerTestBase {

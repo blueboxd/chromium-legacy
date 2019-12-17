@@ -7,8 +7,8 @@ import("../../../tools/bindings/mojom.gni")
 group("test_data_deps") {
   testonly = true
   data_deps = [
-    ":test_interfaces_js_data_deps",
     ":test_associated_interfaces_js_data_deps",
+    ":test_interfaces_js_data_deps",
     ":validation_test_data",
     ":validation_test_data_list",
   ]

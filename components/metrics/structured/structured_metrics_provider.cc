@@ -8,19 +8,21 @@
 #include "base/values.h"
 #include "components/metrics/structured/event_base.h"
 #include "components/prefs/json_pref_store.h"
-#include "components/prefs/writeable_pref_store.h"
 
 namespace metrics {
 namespace structured {
 namespace {
 
 using ::metrics::ChromeUserMetricsExtension;
+using PrefReadError = ::PersistentPrefStore::PrefReadError;
 
 }  // namespace
 
 int StructuredMetricsProvider::kMaxEventsPerUpload = 100;
 
 char StructuredMetricsProvider::kStorageFileName[] = "structured_metrics.json";
+
+// TODO(crbug.com/1016655): Add error and usage UMA metrics.
 
 StructuredMetricsProvider::StructuredMetricsProvider() = default;
 
@@ -29,7 +31,16 @@ StructuredMetricsProvider::~StructuredMetricsProvider() {
     storage_->RemoveObserver(this);
 }
 
-// TODO(crbug.com/1016655): Add error and usage UMA metrics.
+StructuredMetricsProvider::PrefStoreErrorDelegate::PrefStoreErrorDelegate() =
+    default;
+
+StructuredMetricsProvider::PrefStoreErrorDelegate::~PrefStoreErrorDelegate() =
+    default;
+
+void StructuredMetricsProvider::PrefStoreErrorDelegate::OnError(
+    PrefReadError error) {
+  // TODO(crbug.com/1016655): Add error metrics.
+}
 
 void StructuredMetricsProvider::OnRecord(const EventBase& event) {
   // Records the information in |event|, to be logged to UMA on the next call to
@@ -50,13 +61,13 @@ void StructuredMetricsProvider::OnProfileAdded(
   storage_ = new JsonPrefStore(
       profile_path.Append(StructuredMetricsProvider::kStorageFileName));
   storage_->AddObserver(this);
-  // TODO(crbug.com/1016655): Remove nullptr and add an error delegate to report
-  // error metrics.
-  storage_->ReadPrefsAsync(nullptr);
+
+  // |storage_| takes ownership of the error delegate.
+  storage_->ReadPrefsAsync(new PrefStoreErrorDelegate());
 }
 
-void StructuredMetricsProvider::OnInitializationCompleted(bool succeeded) {
-  if (!succeeded)
+void StructuredMetricsProvider::OnInitializationCompleted(const bool success) {
+  if (!success)
     return;
   DCHECK(!storage_->ReadOnly());
   initialized_ = true;

@@ -47,26 +47,26 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
   // store a copy of an analyzer's results and then run a closure.
   class ResultsGetter {
    public:
-    ResultsGetter(const base::Closure& quit_closure,
+    ResultsGetter(base::OnceClosure quit_closure,
                   safe_browsing::ArchiveAnalyzerResults* results)
-        : quit_closure_(quit_closure), results_(results) {
+        : quit_closure_(std::move(quit_closure)), results_(results) {
       DCHECK(results);
       results->success = false;
     }
 
     SandboxedZipAnalyzer::ResultCallback GetCallback() {
-      return base::Bind(&ResultsGetter::OnZipAnalyzerResults,
-                        base::Unretained(this));
+      return base::BindOnce(&ResultsGetter::OnZipAnalyzerResults,
+                            base::Unretained(this));
     }
 
    private:
     void OnZipAnalyzerResults(
         const safe_browsing::ArchiveAnalyzerResults& results) {
       *results_ = results;
-      quit_closure_.Run();
+      std::move(quit_closure_).Run();
     }
 
-    base::Closure quit_closure_;
+    base::OnceClosure quit_closure_;
     safe_browsing::ArchiveAnalyzerResults* results_;
 
     DISALLOW_COPY_AND_ASSIGN(ResultsGetter);

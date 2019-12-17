@@ -168,8 +168,8 @@ aom_av1_decoder_sources = [
   "//third_party/libaom/source/libaom/av1/decoder/detokenize.c",
   "//third_party/libaom/source/libaom/av1/decoder/detokenize.h",
   "//third_party/libaom/source/libaom/av1/decoder/dthread.h",
-  "//third_party/libaom/source/libaom/av1/decoder/obu.h",
   "//third_party/libaom/source/libaom/av1/decoder/obu.c",
+  "//third_party/libaom/source/libaom/av1/decoder/obu.h",
 ]
 
 aom_av1_encoder_asm_sse2 = [
@@ -257,14 +257,16 @@ aom_av1_encoder_sources = [
   "//third_party/libaom/source/libaom/av1/encoder/corner_match.h",
   "//third_party/libaom/source/libaom/av1/encoder/cost.c",
   "//third_party/libaom/source/libaom/av1/encoder/cost.h",
+  "//third_party/libaom/source/libaom/av1/encoder/dwt.c",
+  "//third_party/libaom/source/libaom/av1/encoder/dwt.h",
+  "//third_party/libaom/source/libaom/av1/encoder/encode_strategy.c",
+  "//third_party/libaom/source/libaom/av1/encoder/encode_strategy.h",
   "//third_party/libaom/source/libaom/av1/encoder/encodeframe.c",
   "//third_party/libaom/source/libaom/av1/encoder/encodeframe.h",
   "//third_party/libaom/source/libaom/av1/encoder/encodemb.c",
   "//third_party/libaom/source/libaom/av1/encoder/encodemb.h",
   "//third_party/libaom/source/libaom/av1/encoder/encodemv.c",
   "//third_party/libaom/source/libaom/av1/encoder/encodemv.h",
-  "//third_party/libaom/source/libaom/av1/encoder/encode_strategy.c",
-  "//third_party/libaom/source/libaom/av1/encoder/encode_strategy.h",
   "//third_party/libaom/source/libaom/av1/encoder/encoder.c",
   "//third_party/libaom/source/libaom/av1/encoder/encoder.h",
   "//third_party/libaom/source/libaom/av1/encoder/encodetxb.c",
@@ -326,8 +328,6 @@ aom_av1_encoder_sources = [
   "//third_party/libaom/source/libaom/third_party/fastfeat/nonmax.c",
   "//third_party/libaom/source/libaom/third_party/vector/vector.c",
   "//third_party/libaom/source/libaom/third_party/vector/vector.h",
-  "//third_party/libaom/source/libaom/av1/encoder/dwt.c",
-  "//third_party/libaom/source/libaom/av1/encoder/dwt.h",
 ]
 
 aom_dsp_common_asm_sse2 = [
@@ -432,6 +432,7 @@ aom_dsp_common_sources = [
   "//third_party/libaom/source/libaom/aom_dsp/aom_filter.h",
   "//third_party/libaom/source/libaom/aom_dsp/aom_simd.h",
   "//third_party/libaom/source/libaom/aom_dsp/aom_simd_inline.h",
+  "//third_party/libaom/source/libaom/aom_dsp/avg.c",
   "//third_party/libaom/source/libaom/aom_dsp/bitreader_buffer.c",
   "//third_party/libaom/source/libaom/aom_dsp/bitreader_buffer.h",
   "//third_party/libaom/source/libaom/aom_dsp/bitwriter_buffer.c",
@@ -458,7 +459,6 @@ aom_dsp_common_sources = [
   "//third_party/libaom/source/libaom/aom_dsp/subtract.c",
   "//third_party/libaom/source/libaom/aom_dsp/txfm_common.h",
   "//third_party/libaom/source/libaom/aom_dsp/x86/convolve_common_intrin.h",
-  "//third_party/libaom/source/libaom/aom_dsp/avg.c",
 ]
 
 aom_dsp_decoder_sources = [
@@ -489,12 +489,12 @@ aom_mem_sources = [
 aom_ports_asm_x86 = [ "//third_party/libaom/source/libaom/aom_ports/emms.asm" ]
 
 aom_rtcd_sources = [
-  "//third_party/libaom/source/libaom/aom_dsp/aom_dsp_rtcd_defs.pl",
   "//third_party/libaom/source/libaom/aom_dsp/aom_dsp_rtcd.c",
-  "//third_party/libaom/source/libaom/aom_scale/aom_scale_rtcd.pl",
+  "//third_party/libaom/source/libaom/aom_dsp/aom_dsp_rtcd_defs.pl",
   "//third_party/libaom/source/libaom/aom_scale/aom_scale_rtcd.c",
-  "//third_party/libaom/source/libaom/av1/common/av1_rtcd_defs.pl",
+  "//third_party/libaom/source/libaom/aom_scale/aom_scale_rtcd.pl",
   "//third_party/libaom/source/libaom/av1/common/av1_rtcd.c",
+  "//third_party/libaom/source/libaom/av1/common/av1_rtcd_defs.pl",
   "//third_party/libaom/source/libaom/build/cmake/rtcd.pl",
 ]
 
@@ -532,9 +532,9 @@ aom_sources = [
 aom_util_sources = [
   "//third_party/libaom/source/libaom/aom_util/aom_thread.c",
   "//third_party/libaom/source/libaom/aom_util/aom_thread.h",
-  "//third_party/libaom/source/libaom/aom_util/endian_inl.h",
   "//third_party/libaom/source/libaom/aom_util/debug_util.c",
   "//third_party/libaom/source/libaom/aom_util/debug_util.h",
+  "//third_party/libaom/source/libaom/aom_util/endian_inl.h",
 ]
 
 aom_webm_decoder_sources = [

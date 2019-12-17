@@ -36,7 +36,6 @@
 #include "components/storage_monitor/storage_info.h"
 #include "components/user_manager/user.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "extensions/browser/extension_registry.h"
 #include "services/device/public/mojom/mtp_storage_info.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -267,7 +266,6 @@ class VolumeManagerTest : public testing::Test {
   }
 
   content::BrowserTaskEnvironment task_environment_;
-  content::TestServiceManagerContext context_;
   std::unique_ptr<FakeDiskMountManager> disk_mount_manager_;
   std::unique_ptr<ProfileEnvironment> main_profile_;
 };

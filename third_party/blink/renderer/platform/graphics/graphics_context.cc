@@ -1026,17 +1026,19 @@ SkFilterQuality GraphicsContext::ComputeFilterQuality(
       std::min(resampling, ImageInterpolationQuality()));
 }
 
-void GraphicsContext::DrawImageTiled(Image* image,
-                                     const FloatRect& dest_rect,
-                                     const FloatRect& src_rect,
-                                     const FloatSize& scale_src_to_dest,
-                                     const FloatPoint& phase,
-                                     const FloatSize& repeat_spacing,
-                                     SkBlendMode op) {
+void GraphicsContext::DrawImageTiled(
+    Image* image,
+    const FloatRect& dest_rect,
+    const FloatRect& src_rect,
+    const FloatSize& scale_src_to_dest,
+    const FloatPoint& phase,
+    const FloatSize& repeat_spacing,
+    SkBlendMode op,
+    RespectImageOrientationEnum respect_orientation) {
   if (ContextDisabled() || !image)
     return;
   image->DrawPattern(*this, src_rect, scale_src_to_dest, phase, op, dest_rect,
-                     repeat_spacing);
+                     repeat_spacing, respect_orientation);
   paint_controller_.SetImagePainted();
 }
 

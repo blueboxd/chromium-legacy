@@ -1,4 +1,4 @@
-The images should not rotate respecting their EXIF orientation since no image-orientation is specified.
+The images should rotate respecting their EXIF orientation since no image-orientation is specified.
 
 
 Normal 
@@ -17,8 +17,8 @@ img1 size = 100px by 50px
 img2 size = 100px by 50px
 img3 size = 100px by 50px
 img4 size = 100px by 50px
-img5 size = 100px by 50px
-img6 size = 100px by 50px
-img7 size = 100px by 50px
-img8 size = 100px by 50px
+img5 size = 50px by 100px
+img6 size = 50px by 100px
+img7 size = 50px by 100px
+img8 size = 50px by 100px
 img9 size = 100px by 50px

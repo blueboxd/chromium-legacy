@@ -697,12 +697,16 @@ void VideoTrackRecorderPassthrough::HandleEncodedVideoFrame(
   }
   state_ = KeyFrameState::kKeyFrameReceivedOK;
 
+  base::Optional<gfx::ColorSpace> color_space;
+  if (encoded_frame->ColorSpace())
+    color_space = encoded_frame->ColorSpace()->ToGfxColorSpace();
   auto span = encoded_frame->Data();
   const char* span_begin = reinterpret_cast<const char*>(span.data());
   std::string data(span_begin, span_begin + span.size());
   media::WebmMuxer::VideoParameters params(encoded_frame->Resolution(),
                                            /*framerate=*/0.0f,
-                                           /*codec=*/encoded_frame->Codec());
+                                           /*codec=*/encoded_frame->Codec(),
+                                           color_space);
   callback_.Run(params, std::move(data), {}, estimated_capture_time,
                 encoded_frame->IsKeyFrame());
 }

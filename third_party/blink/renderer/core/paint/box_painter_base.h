@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/style/style_image.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect_outsets.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 
@@ -112,6 +113,7 @@ class BoxPainterBase {
                   Color bg_color,
                   const FillLayer&,
                   BackgroundBleedAvoidance,
+                  RespectImageOrientationEnum,
                   bool include_left_edge,
                   bool include_right_edge,
                   bool is_inline);
@@ -122,6 +124,7 @@ class BoxPainterBase {
     Member<StyleImage> image;
     Color color;
 
+    RespectImageOrientationEnum respect_image_orientation;
     bool include_left_edge;
     bool include_right_edge;
     bool is_bottom_layer;

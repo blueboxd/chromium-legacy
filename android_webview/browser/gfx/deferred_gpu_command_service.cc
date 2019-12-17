@@ -34,7 +34,6 @@ DeferredGpuCommandService::DeferredGpuCommandService(
                                      nullptr,
                                      gl::GLSurfaceFormat(),
                                      gpu_service->shared_image_manager(),
-                                     nullptr,
                                      nullptr),
       task_queue_(task_queue),
       gpu_service_(gpu_service) {}
@@ -68,6 +67,11 @@ bool DeferredGpuCommandService::ForceVirtualizedGLContexts() const {
 
 bool DeferredGpuCommandService::ShouldCreateMemoryTracker() const {
   return false;
+}
+
+scoped_refptr<gpu::SharedContextState>
+DeferredGpuCommandService::GetSharedContextState() {
+  return nullptr;
 }
 
 }  // namespace android_webview

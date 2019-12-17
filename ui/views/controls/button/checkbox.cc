@@ -51,7 +51,6 @@ Checkbox::Checkbox(const base::string16& label, ButtonListener* listener)
 
   set_request_focus_on_press(false);
   SetInkDropMode(InkDropMode::ON);
-  set_has_ink_drop_action_on_click(true);
 
   // Limit the checkbox height to match the legacy appearance.
   const gfx::Size preferred_size(LabelButton::CalculatePreferredSize());

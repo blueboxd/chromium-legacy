@@ -259,14 +259,6 @@ def _ParseArgs(args):
   return options
 
 
-def _SortZip(original_path, sorted_path):
-  """Generate new zip archive by sorting all files in the original by name."""
-  with zipfile.ZipFile(sorted_path, 'w') as sorted_zip, \
-      zipfile.ZipFile(original_path, 'r') as original_zip:
-    for info in sorted(original_zip.infolist(), key=lambda i: i.filename):
-      sorted_zip.writestr(info, original_zip.read(info))
-
-
 def _IterFiles(root_dir):
   for root, _, files in os.walk(root_dir):
     for f in files:
@@ -587,14 +579,7 @@ def _CompileDeps(aapt2_path, dep_subdirs, temp_dir):
         stderr_filter=lambda output:
             build_utils.FilterLines(
                 output, r'ignoring configuration .* for (styleable|attribute)'))
-
-    # Sorting the files in the partial ensures deterministic output from the
-    # aapt2 link step which uses order of files in the partial.
-    sorted_partial_path = os.path.join(partials_dir,
-                                       unique_name + '.sorted.zip')
-    _SortZip(partial_path, sorted_partial_path)
-
-    return sorted_partial_path
+    return partial_path
 
   partials = pool.map(compile_partial, enumerate(dep_subdirs))
   pool.close()

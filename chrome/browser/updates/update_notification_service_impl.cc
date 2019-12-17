@@ -15,8 +15,19 @@
 #include "chrome/browser/notifications/scheduler/public/notification_schedule_service.h"
 #include "chrome/browser/notifications/scheduler/public/schedule_service_utils.h"
 #include "chrome/browser/updates/update_notification_config.h"
+#include "chrome/browser/updates/update_notification_info.h"
 
 namespace updates {
+namespace {
+
+void BuildNotificationData(const updates::UpdateNotificationInfo& data,
+                           notifications::NotificationData* out) {
+  DCHECK(out);
+  out->title = data.title;
+  out->message = data.message;
+}
+
+}  // namespace
 
 // Maximum number of update notification should be cached in scheduler.
 constexpr int kNumMaxNotificationsLimit = 1;
@@ -28,8 +39,7 @@ UpdateNotificationServiceImpl::UpdateNotificationServiceImpl(
 
 UpdateNotificationServiceImpl::~UpdateNotificationServiceImpl() = default;
 
-void UpdateNotificationServiceImpl::Schedule(
-    notifications::NotificationData data) {
+void UpdateNotificationServiceImpl::Schedule(UpdateNotificationInfo data) {
   schedule_service_->GetClientOverview(
       notifications::SchedulerClientType::kChromeUpdate,
       base::BindOnce(&UpdateNotificationServiceImpl::OnClientOverviewQueried,
@@ -37,7 +47,7 @@ void UpdateNotificationServiceImpl::Schedule(
 }
 
 void UpdateNotificationServiceImpl::OnClientOverviewQueried(
-    notifications::NotificationData data,
+    UpdateNotificationInfo data,
     notifications::ClientOverview overview) {
   int num_scheduled_notifs = overview.num_scheduled_notifications;
 
@@ -50,9 +60,11 @@ void UpdateNotificationServiceImpl::OnClientOverviewQueried(
         notifications::SchedulerClientType::kChromeUpdate);
   }
 
+  notifications::NotificationData notification_data;
+  BuildNotificationData(data, &notification_data);
   auto params = std::make_unique<notifications::NotificationParams>(
-      notifications::SchedulerClientType::kChromeUpdate, std::move(data),
-      BuildScheduleParams());
+      notifications::SchedulerClientType::kChromeUpdate,
+      std::move(notification_data), BuildScheduleParams());
   schedule_service_->Schedule(std::move(params));
 }
 

@@ -65,6 +65,10 @@ void ObservableWebView::ResourceLoadComplete(
     delegate_->OnMainFrameResourceLoadComplete(resource_load_info);
 }
 
+void ObservableWebView::ResetDelegate() {
+  delegate_ = nullptr;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WebDialogView, public:
 
@@ -293,6 +297,8 @@ void WebDialogView::OnDialogClosed(const std::string& json_retval) {
   if (delegate_) {
     delegate_->OnDialogClosed(json_retval);
     delegate_ = nullptr;  // We will not communicate further with the delegate.
+    // Clear the copy of the delegate in |web_view_| too.
+    web_view_->ResetDelegate();
   }
 }
 

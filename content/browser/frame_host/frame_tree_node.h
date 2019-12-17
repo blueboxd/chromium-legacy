@@ -330,7 +330,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // the comment on user_activation_state_ below.
   bool UpdateUserActivationState(blink::UserActivationUpdateType update_type);
 
-  void OnSetHasReceivedUserGestureBeforeNavigation(bool value);
+  void OnSetHadStickyUserActivationBeforeNavigation(bool value);
 
   // Returns the sandbox flags currently in effect for this frame. This includes
   // flags inherited from parent frames, the currently active flags from the

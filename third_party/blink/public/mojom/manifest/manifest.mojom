@@ -28,6 +28,8 @@ struct Manifest {
 
   array<ManifestImageResource> icons;
 
+  array<ManifestShortcutItem> shortcuts;
+
   ManifestShareTarget? share_target;
 
   // TODO(harrisjay): This field is non-standard and part of a Chrome
@@ -54,6 +56,24 @@ struct Manifest {
   mojo_base.mojom.String16? gcm_sender_id;
 
   url.mojom.Url scope;
+};
+
+// Structure representing a Shortcut Item per the Manifest specification, see:
+// https://w3c.github.io/manifest/#shortcutitem-and-its-members
+struct ManifestShortcutItem {
+  // name is required
+  mojo_base.mojom.String16 name;
+
+  mojo_base.mojom.String16? short_name;
+
+  mojo_base.mojom.String16? description;
+
+  // URL at which the shortcut can be found.
+  // MUST be a valid url. If a shortcut doesn't have a valid URL, it will not be
+  // successfully parsed, thus will not be represented in the Manifest.
+  url.mojom.Url url;
+
+  array<ManifestImageResource> icons;
 };
 
 // Structure representing an icon as per the Manifest specification, see:

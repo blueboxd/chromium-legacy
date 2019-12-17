@@ -105,6 +105,7 @@ TEST_F(ManifestParserTest, ValidNoContentParses) {
   ASSERT_FALSE(manifest->has_background_color);
   ASSERT_TRUE(manifest->gcm_sender_id.IsNull());
   ASSERT_EQ(DefaultDocumentUrl().BaseAsString(), manifest->scope.GetString());
+  ASSERT_TRUE(manifest->shortcuts.IsEmpty());
 }
 
 TEST_F(ManifestParserTest, MultipleErrorsReporting) {
@@ -112,10 +113,10 @@ TEST_F(ManifestParserTest, MultipleErrorsReporting) {
       "{ \"name\": 42, \"short_name\": 4,"
       "\"orientation\": {}, \"display\": \"foo\","
       "\"start_url\": null, \"icons\": {}, \"theme_color\": 42,"
-      "\"background_color\": 42 }");
+      "\"background_color\": 42, \"shortcuts\": {} }");
   ASSERT_FALSE(IsManifestEmpty(manifest));
 
-  EXPECT_EQ(8u, GetErrorCount());
+  EXPECT_EQ(9u, GetErrorCount());
 
   EXPECT_EQ("property 'name' ignored, type string expected.", errors()[0]);
   EXPECT_EQ("property 'short_name' ignored, type string expected.",
@@ -129,6 +130,7 @@ TEST_F(ManifestParserTest, MultipleErrorsReporting) {
             errors()[6]);
   EXPECT_EQ("property 'background_color' ignored, type string expected.",
             errors()[7]);
+  EXPECT_EQ("property 'shortcuts' ignored, type array expected.", errors()[8]);
 }
 
 TEST_F(ManifestParserTest, NameParseRules) {
@@ -1074,6 +1076,423 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
   }
 }
 
+TEST_F(ManifestParserTest, ShortcutsParseRules) {
+  // Smoke test: if no shortcut, no value.
+  {
+    auto& manifest = ParseManifest("{ \"shortcuts\": [] }");
+    EXPECT_TRUE(manifest->shortcuts.IsEmpty());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Smoke test: if empty shortcut, no value.
+  {
+    auto& manifest = ParseManifest("{ \"shortcuts\": [ {} ] }");
+    EXPECT_TRUE(manifest->icons.IsEmpty());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'url' of 'shortcut' not present.", errors()[0]);
+  }
+
+  // Smoke test: shortcut with invalid name and url, it will not be present in
+  // the list.
+  {
+    auto& manifest =
+        ParseManifest("{ \"shortcuts\": [ { \"shortcuts\": [] } ] }");
+    EXPECT_TRUE(manifest->icons.IsEmpty());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'url' of 'shortcut' not present.", errors()[0]);
+  }
+
+  // Smoke test: shortcut with no name, it will not be present in the list.
+  {
+    auto& manifest = ParseManifest("{ \"shortcuts\": [ { \"url\": \"\" } ] }");
+    EXPECT_TRUE(manifest->shortcuts.IsEmpty());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'name' of 'shortcut' not present.", errors()[0]);
+  }
+
+  // Smoke test: shortcut with no url, it will not be present in the list.
+  {
+    auto& manifest = ParseManifest("{ \"shortcuts\": [ { \"name\": \"\" } ] }");
+    EXPECT_TRUE(manifest->shortcuts.IsEmpty());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'url' of 'shortcut' not present.", errors()[0]);
+  }
+
+  // Smoke test: shortcut with empty name, and empty src, will not be present in
+  // the list.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ { \"name\": \"\", \"url\": \"\" } ] }");
+    EXPECT_TRUE(manifest->shortcuts.IsEmpty());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'name' of 'shortcut' is an empty string.", errors()[0]);
+  }
+
+  // Smoke test: shortcut with valid (non-empty) name and src, will be present
+  // in the list.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [{ \"name\": \"New Post\", \"url\": \"compose\" }] "
+        "}");
+    EXPECT_FALSE(manifest->shortcuts.IsEmpty());
+
+    auto& shortcuts = manifest->shortcuts;
+    EXPECT_EQ(shortcuts.size(), 1u);
+    EXPECT_EQ(shortcuts[0]->name, "New Post");
+    EXPECT_EQ(shortcuts[0]->url.GetString(), "http://foo.com/compose");
+    EXPECT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+}
+
+TEST_F(ManifestParserTest, ShortcutNameParseRules) {
+  // Smoke test.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": \"foo\", \"url\": \"NameParseTest\" } ] "
+        "}");
+    EXPECT_FALSE(manifest->shortcuts.IsEmpty());
+    EXPECT_EQ(manifest->shortcuts[0]->name, "foo");
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Trim whitespaces.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": \"  foo  \", \"url\": \"NameParseTest\" "
+        "} ] }");
+    ASSERT_EQ(manifest->shortcuts[0]->name, "foo");
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Don't parse if shortcut->name isn't present.
+  {
+    auto& manifest =
+        ParseManifest("{ \"shortcuts\": [ {\"url\": \"NameParseTest\" } ] }");
+    EXPECT_TRUE(manifest->shortcuts.IsEmpty());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'name' of 'shortcut' not present.", errors()[0]);
+  }
+
+  // Don't parse if shortcut->name isn't a string.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": {}, \"url\": \"NameParseTest\" } ] }");
+    EXPECT_TRUE(manifest->shortcuts.IsEmpty());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'name' of 'shortcut' ignored, type string expected.",
+              errors()[0]);
+  }
+
+  // Don't parse if shortcut->name isn't a string.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": 42, \"url\": \"NameParseTest\" } ] }");
+    EXPECT_TRUE(manifest->shortcuts.IsEmpty());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'name' of 'shortcut' ignored, type string expected.",
+              errors()[0]);
+  }
+
+  // Don't parse if shortcut->name is an empty string.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": \"\", \"url\": \"NameParseTest\" } ] }");
+    EXPECT_TRUE(manifest->shortcuts.IsEmpty());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'name' of 'shortcut' is an empty string.", errors()[0]);
+  }
+}
+
+TEST_F(ManifestParserTest, ShortcutShortNameParseRules) {
+  // Smoke test.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": \"ShortNameParseTest\", \"short_name\": "
+        "\"foo\", \"url\": \"ShortNameParseTest\" } ] }");
+    ASSERT_EQ(manifest->shortcuts[0]->short_name, "foo");
+    ASSERT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Shortcut member is parsed when no short_name is present
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": \"ShortNameParseTest\", \"url\": "
+        "\"ShortNameParseTest\" } ] }");
+    ASSERT_TRUE(manifest->shortcuts[0]->short_name.IsNull());
+    ASSERT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Trim whitespaces.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": \"ShortNameParseTest\", \"short_name\": "
+        "\"  foo  \", \"url\": \"ShortNameParseTest\" } ] }");
+    ASSERT_EQ(manifest->shortcuts[0]->short_name, "foo");
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Don't parse short_name if it isn't a string.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": \"ShortNameParseTest\", \"short_name\": "
+        "{}, \"url\": \"ShortNameParseTest\" } ] }");
+    ASSERT_TRUE(manifest->shortcuts[0]->short_name.IsNull());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(
+        "property 'short_name' of 'shortcut' ignored, type string expected.",
+        errors()[0]);
+  }
+
+  // Don't parse short_name if it isn't a string.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": \"ShortNameParseTest\", \"short_name\": "
+        "42, \"url\": \"ShortNameParseTest\" } ] }");
+    ASSERT_TRUE(manifest->shortcuts[0]->short_name.IsNull());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(
+        "property 'short_name' of 'shortcut' ignored, type string expected.",
+        errors()[0]);
+  }
+}
+
+TEST_F(ManifestParserTest, ShortcutDescriptionParseRules) {
+  // Smoke test.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": \"DescriptionParseTest\", "
+        "\"description\": "
+        "\"foo\", \"url\": \"DescriptionParseTest\" } ] }");
+    ASSERT_EQ(manifest->shortcuts[0]->description, "foo");
+    ASSERT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Shortcut member is parsed when no description is present
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": \"DescriptionParseTest\", \"url\": "
+        "\"DescriptionParseTest\" } ] }");
+    ASSERT_TRUE(manifest->shortcuts[0]->description.IsNull());
+    ASSERT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Trim whitespaces.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": \"DescriptionParseTest\", "
+        "\"description\": "
+        "\"  foo  \", \"url\": \"DescriptionParseTest\" } ] }");
+    ASSERT_EQ(manifest->shortcuts[0]->description, "foo");
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Don't parse description if it isn't a string.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": \"DescriptionParseTest\", "
+        "\"description\": "
+        "{}, \"url\": \"DescriptionParseTest\" } ] }");
+    ASSERT_TRUE(manifest->shortcuts[0]->description.IsNull());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(
+        "property 'description' of 'shortcut' ignored, type string expected.",
+        errors()[0]);
+  }
+
+  // Don't parse description if it isn't a string.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": \"DescriptionParseTest\", "
+        "\"description\": "
+        "42, \"url\": \"DescriptionParseTest\" } ] }");
+    ASSERT_TRUE(manifest->shortcuts[0]->description.IsNull());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(
+        "property 'description' of 'shortcut' ignored, type string expected.",
+        errors()[0]);
+  }
+}
+
+TEST_F(ManifestParserTest, ShortcutUrlParseRules) {
+  // Smoke test.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": \"UrlParseTest\", \"url\": \"foo\" } ] "
+        "}");
+    EXPECT_FALSE(manifest->shortcuts.IsEmpty());
+    EXPECT_EQ(manifest->shortcuts[0]->url, KURL(DefaultDocumentUrl(), "foo"));
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Smoke test. Don't parse (with an error) when url is not present.
+  {
+    auto& manifest = ParseManifest("{ \"shortcuts\": [ { \"name\": \"\" } ] }");
+    EXPECT_TRUE(manifest->shortcuts.IsEmpty());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'url' of 'shortcut' not present.", errors()[0]);
+  }
+
+  // Whitespaces.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": \"UrlParseTest\", \"url\": \"   foo   "
+        "\" } ] }");
+    EXPECT_FALSE(manifest->shortcuts.IsEmpty());
+    EXPECT_EQ(manifest->shortcuts[0]->url, KURL(DefaultDocumentUrl(), "foo"));
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Don't parse if url isn't a string.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": \"UrlParseTest\", \"url\": {} } ] }");
+    EXPECT_TRUE(manifest->shortcuts.IsEmpty());
+    EXPECT_EQ(2u, GetErrorCount());
+    EXPECT_EQ("property 'url' ignored, type string expected.", errors()[0]);
+    EXPECT_EQ("property 'url' of 'shortcut' not present.", errors()[1]);
+  }
+
+  // Don't parse if url isn't a string.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": \"UrlParseTest\", \"url\": 42 } ] }");
+    EXPECT_TRUE(manifest->shortcuts.IsEmpty());
+    EXPECT_EQ(2u, GetErrorCount());
+    EXPECT_EQ("property 'url' ignored, type string expected.", errors()[0]);
+    EXPECT_EQ("property 'url' of 'shortcut' not present.", errors()[1]);
+  }
+
+  // Resolving has to happen based on the manifest_url.
+  {
+    auto& manifest = ParseManifestWithURLs(
+        "{ \"shortcuts\": [ {\"name\": \"UrlParseTest\", \"url\": \"foo\" } ] "
+        "}",
+        KURL("http://foo.com/landing/manifest.json"), DefaultDocumentUrl());
+    EXPECT_FALSE(manifest->shortcuts.IsEmpty());
+    EXPECT_EQ(manifest->shortcuts[0]->url.GetString(),
+              "http://foo.com/landing/foo");
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Shortcut url should have same origin as the document url.
+  {
+    auto& manifest = ParseManifestWithURLs(
+        "{ \"shortcuts\": [ {\"name\": \"UrlParseTest\", \"url\": "
+        "\"http://bar.com/landing\" } ] "
+        "}",
+        KURL("http://foo.com/landing/manifest.json"), DefaultDocumentUrl());
+    EXPECT_TRUE(manifest->shortcuts.IsEmpty());
+    EXPECT_EQ(2u, GetErrorCount());
+    EXPECT_EQ("property 'url' ignored, should be same origin as document.",
+              errors()[0]);
+    EXPECT_EQ("property 'url' of 'shortcut' not present.", errors()[1]);
+  }
+
+  // Shortcut url should be within the manifest scope.
+  // The scope will be http://foo.com/landing.
+  // The shortcut_url will be http://foo.com/shortcut which is in not in scope.
+  {
+    auto& manifest = ParseManifestWithURLs(
+        "{ \"scope\": \"http://foo.com/landing\", \"shortcuts\": [ {\"name\": "
+        "\"UrlParseTest\", \"url\": \"shortcut\" } ] }",
+        KURL("http://foo.com/manifest.json"),
+        KURL("http://foo.com/landing/index.html"));
+    EXPECT_TRUE(manifest->shortcuts.IsEmpty());
+    ASSERT_EQ(manifest->scope.GetString(), "http://foo.com/landing");
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(
+        "property 'url' of 'shortcut' ignored. url should be within scope of "
+        "the manifest.",
+        errors()[0]);
+  }
+
+  // Shortcut url should be within the manifest scope.
+  // The scope will be http://foo.com/land.
+  // The shortcut_url will be http://foo.com/land/shortcut which is in scope.
+  {
+    auto& manifest = ParseManifestWithURLs(
+        "{ \"scope\": \"http://foo.com/land\", \"start_url\": "
+        "\"http://foo.com/land/landing.html\", \"shortcuts\": [ {\"name\": "
+        "\"UrlParseTest\", \"url\": \"shortcut\" } ] }",
+        KURL("http://foo.com/land/manifest.json"),
+        KURL("http://foo.com/index.html"));
+    EXPECT_FALSE(manifest->shortcuts.IsEmpty());
+    ASSERT_EQ(manifest->scope.GetString(), "http://foo.com/land");
+    EXPECT_EQ(manifest->shortcuts[0]->url.GetString(),
+              "http://foo.com/land/shortcut");
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+}
+
+TEST_F(ManifestParserTest, ShortcutIconsParseRules) {
+  // Smoke test: if no icons, shortcut->icons has no value.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": \"IconParseTest\", \"url\": \"foo\", "
+        "\"icons\": [] } ] }");
+    EXPECT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_FALSE(manifest->shortcuts.IsEmpty());
+    EXPECT_TRUE(manifest->shortcuts[0]->icons.IsEmpty());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Smoke test: if empty icon, shortcut->icons has no value.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": \"IconParseTest\", \"url\": \"foo\", "
+        "\"icons\": [{}] } ] }");
+    EXPECT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_FALSE(manifest->shortcuts.IsEmpty());
+    EXPECT_TRUE(manifest->shortcuts[0]->icons.IsEmpty());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Smoke test: icon with invalid src, shortcut->icons has no value.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": \"IconParseTest\", \"url\": \"foo\", "
+        "\"icons\": [{ \"icons\": [] }] } ] }");
+    EXPECT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_FALSE(manifest->shortcuts.IsEmpty());
+    EXPECT_TRUE(manifest->shortcuts[0]->icons.IsEmpty());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Smoke test: if icon with empty src, it will be present in shortcut->icons.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": \"IconParseTest\", \"url\": \"foo\", "
+        "\"icons\": [ { \"src\": \"\" } ] } ] }");
+    EXPECT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_FALSE(manifest->shortcuts.IsEmpty());
+    EXPECT_FALSE(manifest->shortcuts[0]->icons.IsEmpty());
+
+    auto& icons = manifest->shortcuts[0]->icons;
+    EXPECT_EQ(icons.size(), 1u);
+    EXPECT_EQ(icons[0]->src.GetString(), "http://foo.com/manifest.json");
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Smoke test: if one icon with valid src, it will be present in
+  // shortcut->icons.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": \"IconParseTest\", \"url\": \"foo\", "
+        "\"icons\": [ { \"src\": \"foo.jpg\" } ] } ] }");
+    EXPECT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_FALSE(manifest->shortcuts.IsEmpty());
+    EXPECT_FALSE(manifest->shortcuts[0]->icons.IsEmpty());
+    auto& icons = manifest->shortcuts[0]->icons;
+    EXPECT_EQ(icons.size(), 1u);
+    EXPECT_EQ(icons[0]->src.GetString(), "http://foo.com/foo.jpg");
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+}
 TEST_F(ManifestParserTest, FileHandlerParseRules) {
   // Does not contain file_handlers field.
   {

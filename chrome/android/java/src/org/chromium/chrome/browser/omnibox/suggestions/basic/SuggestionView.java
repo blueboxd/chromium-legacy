@@ -83,11 +83,12 @@ public class SuggestionView extends FrameLayout {
     @Override
     protected void onMeasure(int widthSpec, int heightSpec) {
         final int maxWidth = MeasureSpec.getSize(widthSpec);
+        final int minimumHeight = getMinimumHeight();
 
         mTextLine1.measure(MeasureSpec.makeMeasureSpec(maxWidth, MeasureSpec.AT_MOST),
-                MeasureSpec.makeMeasureSpec(getMinimumHeight(), MeasureSpec.AT_MOST));
+                MeasureSpec.makeMeasureSpec(minimumHeight, MeasureSpec.AT_MOST));
         mTextLine2.measure(MeasureSpec.makeMeasureSpec(maxWidth, MeasureSpec.AT_MOST),
-                MeasureSpec.makeMeasureSpec(getMinimumHeight(), MeasureSpec.AT_MOST));
+                MeasureSpec.makeMeasureSpec(minimumHeight, MeasureSpec.AT_MOST));
 
         if (MeasureSpec.getMode(heightSpec) == MeasureSpec.EXACTLY) {
             super.onMeasure(widthSpec, heightSpec);
@@ -96,7 +97,11 @@ public class SuggestionView extends FrameLayout {
             int additionalPadding = getResources().getDimensionPixelSize(
                     R.dimen.omnibox_suggestion_text_vertical_padding);
             desiredHeight += additionalPadding;
-            desiredHeight = Math.min(getMinimumHeight(), desiredHeight);
+            desiredHeight = Math.max(minimumHeight, desiredHeight);
+            if (MeasureSpec.getMode(heightSpec) == MeasureSpec.AT_MOST) {
+                desiredHeight = Math.min(desiredHeight, MeasureSpec.getSize(heightSpec));
+            }
+
             super.onMeasure(
                     widthSpec, MeasureSpec.makeMeasureSpec(desiredHeight, MeasureSpec.EXACTLY));
         }

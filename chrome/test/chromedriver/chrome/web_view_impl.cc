@@ -623,20 +623,10 @@ Status WebViewImpl::DispatchTouchEventWithMultiPoints(
     params.SetInteger("timestamp", current_time);
     std::string type = GetAsString(event.type);
     params.SetString("type", type);
-    if (type == "touchStart" || type == "touchMove") {
-      point_list->Append(GenerateTouchPoint(event));
-    } else {
-      if (touch_count < events.size() || touch_points_.size() > 1)
-        params.SetString("type", "touchMove");
-    }
+    if (type == "touchCancel")
+      continue;
 
-    for (auto point = touch_points_.begin(); point != touch_points_.end();
-         ++point) {
-      if (point->first != event.id) {
-        point_list->Append(GenerateTouchPoint(point->second));
-      }
-    }
-    touch_points_[event.id] = event;
+    point_list->Append(GenerateTouchPoint(event));
     params.Set("touchPoints", std::move(point_list));
 
     if (async_dispatch_events || touch_count < events.size()) {
@@ -648,9 +638,6 @@ Status WebViewImpl::DispatchTouchEventWithMultiPoints(
     if (status.IsError())
       return status;
 
-    if (type != "touchStart" && type != "touchMove") {
-      touch_points_.erase(event.id);
-    }
     touch_count++;
   }
   return Status(kOk);

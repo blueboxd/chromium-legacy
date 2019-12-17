@@ -510,7 +510,7 @@ class WebRtcVideoCaptureServiceBrowserTest : public ContentBrowserTest {
   }
 
   base::Thread virtual_device_thread_;
-  scoped_refptr<base::TaskRunner> main_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
 
  private:
   base::TimeDelta CalculateTimeSinceFirstInvocation() {

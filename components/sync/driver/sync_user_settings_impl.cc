@@ -94,7 +94,6 @@ bool SyncUserSettingsImpl::IsSyncEverythingEnabled() const {
 
 UserSelectableTypeSet SyncUserSettingsImpl::GetSelectedTypes() const {
   UserSelectableTypeSet types = prefs_->GetSelectedTypes();
-  types.PutAll(GetForcedTypes());
   types.RetainAll(GetRegisteredSelectableTypes());
   return types;
 }
@@ -164,13 +163,6 @@ void SyncUserSettingsImpl::SetOsSyncFeatureEnabled(bool enabled) {
   prefs_->SetOsSyncFeatureEnabled(enabled);
 }
 #endif  // defined(OS_CHROMEOS)
-
-UserSelectableTypeSet SyncUserSettingsImpl::GetForcedTypes() const {
-  if (preference_provider_) {
-    return preference_provider_->GetForcedTypes();
-  }
-  return UserSelectableTypeSet();
-}
 
 bool SyncUserSettingsImpl::IsEncryptEverythingAllowed() const {
   return !preference_provider_ ||

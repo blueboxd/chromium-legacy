@@ -115,6 +115,10 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost {
   void SetServiceWorkerHandle(
       std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle);
 
+  // Removes all clients whose RenderFrameHost has been destroyed before the
+  // shared worker was started.
+  void PruneNonExistentClients();
+
   // Returns true if this worker is connected to at least one client.
   bool HasClients() const;
 

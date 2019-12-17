@@ -8,6 +8,7 @@
 #include "base/containers/flat_set.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "base/strings/string_split.h"
 #include "net/base/load_flags.h"
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/loader_util.h"
@@ -76,6 +77,8 @@ void ReportCompletionStatusMetric(bool fetch_cors_flag,
   }
   UMA_HISTOGRAM_ENUMERATION("Net.Cors.CompletionStatus", metric);
 }
+
+constexpr const char kTimingAllowOrigin[] = "Timing-Allow-Origin";
 
 }  // namespace
 
@@ -269,7 +272,10 @@ void CorsURLLoader::OnReceiveResponse(mojom::URLResponseHeadPtr response_head) {
     }
   }
 
+  timing_allow_failed_flag_ = !PassesTimingAllowOriginCheck(*response_head);
+
   response_head->response_type = response_tainting_;
+  response_head->timing_allow_passed = !timing_allow_failed_flag_;
   forwarding_client_->OnReceiveResponse(std::move(response_head));
 }
 
@@ -302,6 +308,8 @@ void CorsURLLoader::OnReceiveRedirect(const net::RedirectInfo& redirect_info,
       return;
     }
   }
+
+  timing_allow_failed_flag_ = !PassesTimingAllowOriginCheck(*response_head);
 
   // Because we initiate a new request on redirect in some cases, we cannot
   // rely on the redirect logic in the network stack. Hence we need to
@@ -358,6 +366,7 @@ void CorsURLLoader::OnReceiveRedirect(const net::RedirectInfo& redirect_info,
   } else {
     response_head->response_type = response_tainting_;
   }
+  response_head->timing_allow_passed = !timing_allow_failed_flag_;
   forwarding_client_->OnReceiveRedirect(redirect_info,
                                         std::move(response_head));
 }
@@ -617,6 +626,38 @@ mojom::FetchResponseType CorsURLLoader::CalculateResponseTainting(
   return mojom::FetchResponseType::kBasic;
 }
 
+bool CorsURLLoader::PassesTimingAllowOriginCheck(
+    const mojom::URLResponseHead& response) const {
+  if (timing_allow_failed_flag_)
+    return false;
+
+  if (response_tainting_ == mojom::FetchResponseType::kBasic)
+    return true;
+
+  base::Optional<std::string> tao_header =
+      GetHeaderString(response, kTimingAllowOrigin);
+  if (!tao_header.has_value())
+    return false;
+
+  // Optimization for the common case when the header is a single '*'.
+  if (tao_header == "*")
+    return true;
+
+  url::Origin origin = tainted_ ? url::Origin() : *request_.request_initiator;
+  std::string serialized_origin = origin.Serialize();
+  std::vector<std::string> tao_headers = base::SplitString(
+      *tao_header, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  for (const std::string& header : tao_headers) {
+    if (header == "*")
+      return true;
+
+    if (header == serialized_origin)
+      return true;
+  }
+  return false;
+}
+
+// static
 base::Optional<std::string> CorsURLLoader::GetHeaderString(
     const mojom::URLResponseHead& response,
     const std::string& header_name) {

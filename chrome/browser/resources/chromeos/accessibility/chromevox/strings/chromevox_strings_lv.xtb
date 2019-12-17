@@ -385,7 +385,6 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="3646890046000188562">{COUNT,plural, =1{gravis}zero{# gravju}one{# gravis}other{# gravji}}</translation>
 <translation id="3650317109285159359">izvēlnes vienumu izvēles rūtiņa</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{dolāra zīme}zero{# dolāra zīmju}one{# dolāra zīme}other{# dolāra zīmes}}</translation>
-<translation id="3658742229777143148">Pārskatīšana</translation>
 <translation id="3659787053479271466">brīdinājums</translation>
 <translation id="3665563998540286755"><ph name="VALUE" />, sarakstlodziņš</translation>
 <translation id="3681531118904532409">Gaiša papaju</translation>
@@ -1104,7 +1103,6 @@ Lai atvērtu Chrome pārlūka izvēlni, vienlaikus nospiediet alternēšanas tau
 <translation id="812886159861361726">Faila “<ph name="FILE_NAME" />” lejupielāde apturēta</translation>
 <translation id="8138880386467279117">Pieskāriens</translation>
 <translation id="8153880621934657047">Nav tabulas iekšpusē.</translation>
-<translation id="8161114871611868169">Komentāru sadaļa</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{pasvītra}zero{# pasvītru}one{# pasvītra}other{# pasvītras}}</translation>
 <translation id="8179976553408161302">Ievadīt</translation>
 <translation id="8184828902145951186">rinda</translation>

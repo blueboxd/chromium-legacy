@@ -107,8 +107,8 @@ void FingerprintChromeOS::StartEnrollSession(const std::string& user_id,
     return;
 
   GetBiodClient()->EndAuthSession(
-      base::Bind(&FingerprintChromeOS::OnCloseAuthSessionForEnroll,
-                 weak_ptr_factory_.GetWeakPtr(), user_id, label));
+      base::BindOnce(&FingerprintChromeOS::OnCloseAuthSessionForEnroll,
+                     weak_ptr_factory_.GetWeakPtr(), user_id, label));
 }
 
 void FingerprintChromeOS::OnCloseAuthSessionForEnroll(
@@ -120,8 +120,8 @@ void FingerprintChromeOS::OnCloseAuthSessionForEnroll(
 
   GetBiodClient()->StartEnrollSession(
       user_id, label,
-      base::Bind(&FingerprintChromeOS::OnStartEnrollSession,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&FingerprintChromeOS::OnStartEnrollSession,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FingerprintChromeOS::CancelCurrentEnrollSession(
@@ -165,8 +165,8 @@ void FingerprintChromeOS::StartAuthSession() {
                             weak_ptr_factory_.GetWeakPtr()));
   } else {
     GetBiodClient()->StartAuthSession(
-        base::Bind(&FingerprintChromeOS::OnStartAuthSession,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&FingerprintChromeOS::OnStartAuthSession,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -175,8 +175,8 @@ void FingerprintChromeOS::OnCloseEnrollSessionForAuth(bool result) {
     return;
 
   GetBiodClient()->StartAuthSession(
-      base::Bind(&FingerprintChromeOS::OnStartAuthSession,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&FingerprintChromeOS::OnStartAuthSession,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FingerprintChromeOS::EndCurrentAuthSession(
@@ -207,8 +207,8 @@ void FingerprintChromeOS::AddFingerprintObserver(
   mojo::Remote<mojom::FingerprintObserver> observer(
       std::move(pending_observer));
   observer.set_disconnect_handler(
-      base::Bind(&FingerprintChromeOS::OnFingerprintObserverDisconnected,
-                 base::Unretained(this), observer.get()));
+      base::BindOnce(&FingerprintChromeOS::OnFingerprintObserverDisconnected,
+                     base::Unretained(this), observer.get()));
   observers_.push_back(std::move(observer));
 }
 

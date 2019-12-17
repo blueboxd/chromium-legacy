@@ -155,7 +155,6 @@ class SupervisedUserService : public KeyedService,
   void Shutdown() override;
 
   // SyncTypePreferenceProvider implementation:
-  syncer::UserSelectableTypeSet GetForcedTypes() const override;
   bool IsEncryptEverythingAllowed() const override;
 
 #if !defined(OS_ANDROID)

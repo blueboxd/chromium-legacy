@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">দয়া করে এই পাঠ্যকে ন্যূনতম <ph name="MIN_CHARACTERS" /> অক্ষরের বা তার বেশি (আপনি বর্তমানে <ph name="CURRENT_LENGTH" />টি অক্ষর ব্যবহার করেছেন) দৈর্ঘের করুন।</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />' অনুসরণ করে এমন একটি অংশে '<ph name="INVALIDCHARACTER" />' চিহ্ন থাকা উচিত নয়৷</translation>
 <translation id="3846214748874656680">পূর্ণস্ক্রীন থেকে প্রস্থান করুন</translation>
-<translation id="3889183436948184105">আবার দেখুন</translation>
 <translation id="3920932319529768807">সিদ্ধান্ত</translation>
 <translation id="3924558731517983934">অ্যাপ্লিকেশান</translation>
 <translation id="3944740393230681990">ভূমিকা</translation>
@@ -115,6 +114,7 @@
 <translation id="4812940957355064477">দয়া করে একটি সংখ্যা লিখুন৷</translation>
 <translation id="4912536737030637138">বিবলিওগ্রাফি এন্ট্রি</translation>
 <translation id="492244087561876220">মন্তব্য</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" />টি বেছে নেওয়া হয়েছে</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" />টি নির্বাচিত</translation>
 <translation id="4992066212339426712">সশব্দ করুন</translation>
 <translation id="49969490063480558">দয়া করে '<ph name="ATSIGN" />' অনুসরণ করে একটি অংশ লিখুন৷ '<ph name="INVALIDADDRESS" />' অসম্পূর্ণ৷</translation>
@@ -219,6 +219,7 @@
 <translation id="7888071071722539607">ইমেল আইডিতে অনুগ্রহ করে একটি '<ph name="ATSIGN" />' অন্তর্ভুক্ত করুন৷ '<ph name="INVALIDADDRESS" />'-তে একটি '<ph name="ATSIGN" />' অনুপস্থিত৷</translation>
 <translation id="7891486169920085145">স্প্লিটার</translation>
 <translation id="795667975304826397">কোনও ফাইল চয়ন করা হয় নি</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> বেছে নেওয়া হয়নি</translation>
 <translation id="8034303206267677282">প্রভাবশালী</translation>
 <translation id="8053789581856978548">সার্চ পাঠ্য ফিল্ড</translation>
 <translation id="8057695513531652401">বিজ্ঞপ্তি</translation>
@@ -257,7 +258,6 @@
 <translation id="8987927404178983737">মাস</translation>
 <translation id="901493112792887934">সেকেন্ডে বর্তমান সময়</translation>
 <translation id="901834265349196618">ইমেল আইডি</translation>
-<translation id="9023835124071926463">মন্তব্যের বিভাগ</translation>
 <translation id="9048119486235211610">নেভিগেশন</translation>
 <translation id="9062295712474918030">দস্তাবেজ</translation>
 <translation id="9093215626363556771">ছবির-মধ্যে-ছবি মোড থেকে বেরিয়ে আসুন</translation>

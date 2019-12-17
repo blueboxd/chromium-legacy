@@ -115,7 +115,13 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MANUAL_BrowserCrash) {
 }
 
 // Tests that browser tests print the callstack on asserts.
-IN_PROC_BROWSER_TEST_F(ContentBrowserTest, BrowserCrashCallStack) {
+// Disabled on Windows crbug.com/1034784
+#if defined(OS_WIN)
+#define MAYBE_BrowserCrashCallStack DISABLED_BrowserCrashCallStack
+#else
+#define MAYBE_BrowserCrashCallStack BrowserCrashCallStack
+#endif
+IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MAYBE_BrowserCrashCallStack) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());

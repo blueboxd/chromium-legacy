@@ -149,6 +149,7 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     std::unique_ptr<AssistantManagerServiceDelegate> delegate,
     std::unique_ptr<network::PendingSharedURLLoaderFactory>
         pending_url_loader_factory,
+    base::Optional<std::string> s3_server_uri_override,
     bool is_signed_out_mode)
     : client_(client),
       media_session_(std::make_unique<AssistantMediaSession>(client_, this)),
@@ -163,6 +164,7 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
       delegate_(std::move(delegate)),
       background_thread_("background thread"),
       is_signed_out_mode_(is_signed_out_mode),
+      libassistant_config_(CreateLibAssistantConfig(s3_server_uri_override)),
       weak_factory_(this) {
   background_thread_.Start();
 
@@ -1180,7 +1182,7 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
       assistant::features::IsMediaSessionIntegrationEnabled());
 
   new_assistant_manager_ = delegate_->CreateAssistantManager(
-      platform_api_.get(), CreateLibAssistantConfig());
+      platform_api_.get(), libassistant_config_);
   new_assistant_manager_internal_ =
       delegate_->UnwrapAssistantManagerInternal(new_assistant_manager_.get());
 
@@ -1382,7 +1384,6 @@ void AssistantManagerServiceImpl::MediaSessionMetadataChanged(
   media_metadata_ = std::move(metadata);
   UpdateMediaState();
 }
-
 
 void AssistantManagerServiceImpl::OnPlaybackStateChange(
     const MediaStatus& status) {

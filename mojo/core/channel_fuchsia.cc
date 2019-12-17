@@ -159,7 +159,7 @@ class ChannelFuchsia : public Channel,
   ChannelFuchsia(Delegate* delegate,
                  ConnectionParams connection_params,
                  HandlePolicy handle_policy,
-                 scoped_refptr<base::TaskRunner> io_task_runner)
+                 scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
       : Channel(delegate, handle_policy),
         self_(this),
         handle_(
@@ -397,7 +397,7 @@ class ChannelFuchsia : public Channel,
   scoped_refptr<Channel> self_;
 
   zx::channel handle_;
-  scoped_refptr<base::TaskRunner> io_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // These members are only used on the IO thread.
   std::unique_ptr<base::MessagePumpForIO::ZxHandleWatchController> read_watch_;
@@ -417,7 +417,7 @@ scoped_refptr<Channel> Channel::Create(
     Delegate* delegate,
     ConnectionParams connection_params,
     HandlePolicy handle_policy,
-    scoped_refptr<base::TaskRunner> io_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   return new ChannelFuchsia(delegate, std::move(connection_params),
                             handle_policy, std::move(io_task_runner));
 }

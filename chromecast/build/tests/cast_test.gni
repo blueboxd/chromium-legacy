@@ -504,8 +504,7 @@ template("cast_test_group_list") {
 #
 template("cast_test_deps_archive") {
   assert(defined(invoker.output), "$target_name needs 'output'")
-  assert(defined(invoker.deps_list_path),
-         "$target_name needs 'deps_list_path'")
+  assert(defined(invoker.deps_list_path), "$target_name needs 'deps_list_path'")
 
   deps = invoker.deps
 
@@ -514,7 +513,7 @@ template("cast_test_deps_archive") {
 
     script = "//chromecast/tools/build/package_test_deps.py"
     outputs = [
-      invoker.output
+      invoker.output,
     ]
 
     # Generate a comma separated list of filters.

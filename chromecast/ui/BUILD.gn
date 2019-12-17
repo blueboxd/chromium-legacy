@@ -2,24 +2,76 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
+
 import("//chromecast/chromecast.gni")
 import("//components/vector_icons/vector_icons.gni")
 
-cast_source_set("media_control_ui") {
+cast_source_set("public") {
   sources = [
-    "media_control_ui.cc",
-    "media_control_ui.h",
+    "media_overlay.h",
   ]
 
   deps = [
-    ":vector_icons",
     "//base",
-    "//chromecast/base",
-    "//chromecast/graphics",
-    "//chromecast/ui/mojom",
-    "//ui/aura:aura",
-    "//ui/views",
   ]
+}
+
+cast_source_set("aura_components") {
+  sources = [
+    "aura_components.h",
+  ]
+
+  deps = [
+    ":public",
+  ]
+
+  if (use_aura) {
+    sources += [ "aura_components.cc" ]
+
+    deps += [ ":media_overlay" ]
+  } else {
+    sources += [ "aura_components_dummy.cc" ]
+  }
+}
+
+if (use_aura) {
+  cast_source_set("media_control_ui") {
+    sources = [
+      "media_control_ui.cc",
+      "media_control_ui.h",
+    ]
+
+    deps = [
+      ":vector_icons",
+      "//base",
+      "//chromecast/base",
+      "//chromecast/graphics",
+      "//chromecast/ui/mojom",
+      "//ui/aura",
+      "//ui/views",
+    ]
+  }
+
+  cast_source_set("media_overlay") {
+    sources = [
+      "media_overlay_impl.cc",
+      "media_overlay_impl.h",
+    ]
+
+    deps = [
+      ":public",
+      "//base",
+      "//chromecast/app:resources",
+      "//chromecast/base",
+      "//chromecast/graphics",
+      "//chromecast/media/cma/pipeline",
+      "//chromecast/ui/mojom",
+      "//media",
+      "//ui/aura",
+      "//ui/views",
+    ]
+  }
 }
 
 # Rules for generating vector icon source files.

@@ -182,8 +182,8 @@ void NetworkServiceNetworkDelegate::OnCompleted(net::URLRequest* request,
   DCHECK_NE(net::ERR_IO_PENDING, net_error);
 
   if (network_context_->domain_reliability_monitor()) {
-    network_context_->domain_reliability_monitor()->OnCompleted(request,
-                                                                started);
+    network_context_->domain_reliability_monitor()->OnCompleted(
+        request, started, net_error);
   }
 
   ForwardProxyErrors(net_error);

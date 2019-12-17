@@ -42,7 +42,7 @@ std::unique_ptr<ResultParser> ResultParserFactory::Create(
       return std::make_unique<DefinitionResultParser>();
     case ResultType::kTranslationResult:
       return std::make_unique<TranslationResultParser>();
-    case ResultType::kUnitConvertionResult:
+    case ResultType::kUnitConversionResult:
       return std::make_unique<UnitConversionResultParser>();
       // TODO(llin): Add other result parsers.
   }

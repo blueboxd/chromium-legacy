@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/placeholder_image.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -107,7 +108,8 @@ bool StyleFetchedImage::ErrorOccurred() const {
 FloatSize StyleFetchedImage::ImageSize(
     const Document&,
     float multiplier,
-    const LayoutSize& default_object_size) const {
+    const LayoutSize& default_object_size,
+    RespectImageOrientationEnum respect_orientation) const {
   Image* image = image_->GetImage();
   if (image_->HasDevicePixelRatioHeaderValue()) {
     multiplier /= image_->DevicePixelRatioHeaderValue();
@@ -116,12 +118,10 @@ FloatSize StyleFetchedImage::ImageSize(
     return ImageSizeForSVGImage(ToSVGImage(image), multiplier,
                                 default_object_size);
   }
-  // Image orientation should only be respected for content images,
-  // not decorative images such as StyleImage (backgrounds,
-  // border-image, etc.)
-  //
-  // https://drafts.csswg.org/css-images-3/#the-image-orientation
-  FloatSize size(image->Size());
+
+  FloatSize size(respect_orientation && image->IsBitmapImage()
+                     ? ToBitmapImage(image)->SizeRespectingOrientation()
+                     : image->Size());
   return ApplyZoom(size, multiplier);
 }
 

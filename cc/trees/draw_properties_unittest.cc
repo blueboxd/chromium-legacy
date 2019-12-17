@@ -7071,7 +7071,7 @@ TEST_F(DrawPropertiesTest, LayerWithInputHandlerAndZeroOpacity) {
   test_layer->SetDrawsContent(true);
 
   TouchActionRegion touch_action_region;
-  touch_action_region.Union(kTouchActionNone, gfx::Rect(0, 0, 20, 20));
+  touch_action_region.Union(TouchAction::kNone, gfx::Rect(0, 0, 20, 20));
   test_layer->SetTouchActionRegion(std::move(touch_action_region));
 
   CopyProperties(root, render_surface);

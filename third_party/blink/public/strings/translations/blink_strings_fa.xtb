@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">لطفاً این نوشتار را به <ph name="MIN_CHARACTERS" /> نویسه یا بیشتر افزایش دهید (درحال حاضر از <ph name="CURRENT_LENGTH" /> نویسه استفاده می‌کنید).</translation>
 <translation id="383465348367842624">قسمت قبل از «<ph name="ATSIGN" />» نباید حاوی نماد «<ph name="INVALIDCHARACTER" />» باشد.</translation>
 <translation id="3846214748874656680">خروج از حالت تمام صفحه</translation>
-<translation id="3889183436948184105">بازبینی</translation>
 <translation id="3920932319529768807">نتیجه‌گیری</translation>
 <translation id="3924558731517983934">برنامه</translation>
 <translation id="3944740393230681990">گفتار آغازین</translation>
@@ -115,6 +114,7 @@
 <translation id="4812940957355064477">لطفاً شماره‌ای را وارد کنید.</translation>
 <translation id="4912536737030637138">ورودی فهرست منابع</translation>
 <translation id="492244087561876220">نظر</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> انتخاب شد</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> انتخاب شد</translation>
 <translation id="4992066212339426712">باصدا کردن</translation>
 <translation id="49969490063480558">لطفاً قسمت بعد از «<ph name="ATSIGN" />» را وارد کنید. «<ph name="INVALIDADDRESS" />» ناقص است.</translation>
@@ -219,6 +219,7 @@
 <translation id="7888071071722539607">لطفاً نماد «<ph name="ATSIGN" />» را به نشانی ایمیل اضافه کنید. «<ph name="INVALIDADDRESS" />» در «<ph name="ATSIGN" />» موجود نیست.</translation>
 <translation id="7891486169920085145">تقسیم‌کننده</translation>
 <translation id="795667975304826397">فایلی انتخاب نشده است</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> انتخاب نشده است</translation>
 <translation id="8034303206267677282">قوی</translation>
 <translation id="8053789581856978548">فیلد نوشتاری جستجو</translation>
 <translation id="8057695513531652401">اطلاعیه</translation>
@@ -257,7 +258,6 @@
 <translation id="8987927404178983737">ماه</translation>
 <translation id="901493112792887934">زمان کنونی به ثانیه</translation>
 <translation id="901834265349196618">ایمیل</translation>
-<translation id="9023835124071926463">بخش نظرات</translation>
 <translation id="9048119486235211610">پیمایش</translation>
 <translation id="9062295712474918030">سند</translation>
 <translation id="9093215626363556771">خروج از تصویر در تصویر</translation>

@@ -67,10 +67,6 @@ class SyncUserSettings {
   // UserSelectableType is registered iff main corresponding  ModelType is
   // registered.
   virtual UserSelectableTypeSet GetRegisteredSelectableTypes() const = 0;
-  // Returns the set of types which are enforced programmatically and can not
-  // be disabled by the user (e.g. enforced for supervised users). Types are
-  // not guaranteed to be registered.
-  virtual UserSelectableTypeSet GetForcedTypes() const = 0;
 
 #if defined(OS_CHROMEOS)
   // As above, but for Chrome OS-specific data types. These are controlled by

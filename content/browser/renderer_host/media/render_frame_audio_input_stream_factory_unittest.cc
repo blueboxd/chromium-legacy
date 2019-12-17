@@ -25,7 +25,6 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "content/public/test/test_utils.h"
 #include "media/audio/audio_system_impl.h"
 #include "media/audio/fake_audio_log_factory.h"
@@ -59,8 +58,6 @@ class MAYBE_RenderFrameAudioInputStreamFactoryTest
  public:
   MAYBE_RenderFrameAudioInputStreamFactoryTest()
       : RenderViewHostTestHarness(),
-        test_service_manager_context_(
-            std::make_unique<TestServiceManagerContext>()),
         audio_manager_(std::make_unique<media::TestAudioThread>(),
                        &log_factory_),
         audio_system_(media::AudioSystemImpl::CreateInstance()),
@@ -87,7 +84,6 @@ class MAYBE_RenderFrameAudioInputStreamFactoryTest
     ForwardingAudioStreamFactory::OverrideStreamFactoryBinderForTesting(
         base::NullCallback());
     audio_manager_.Shutdown();
-    test_service_manager_context_.reset();
     RenderViewHostTestHarness::TearDown();
   }
 
@@ -187,7 +183,6 @@ class MAYBE_RenderFrameAudioInputStreamFactoryTest
   const bool kAGC = false;
   const uint32_t kSharedMemoryCount = 123;
   MockStreamFactory audio_service_stream_factory_;
-  std::unique_ptr<TestServiceManagerContext> test_service_manager_context_;
   media::FakeAudioLogFactory log_factory_;
   media::FakeAudioManager audio_manager_;
   std::unique_ptr<media::AudioSystem> audio_system_;

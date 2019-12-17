@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/c/pp_errors.h"
@@ -57,7 +57,8 @@ void ResourceMessageFilter::OnFilterDestroyed() {
 
 bool ResourceMessageFilter::HandleMessage(const IPC::Message& msg,
                                           HostMessageContext* context) {
-  scoped_refptr<base::TaskRunner> runner = OverrideTaskRunnerForMessage(msg);
+  scoped_refptr<base::SequencedTaskRunner> runner =
+      OverrideTaskRunnerForMessage(msg);
   if (runner.get()) {
     if (runner->RunsTasksInCurrentSequence()) {
       DispatchMessage(msg, *context);
@@ -88,7 +89,7 @@ void ResourceMessageFilter::SendReply(const ReplyMessageContext& context,
     resource_host_->SendReply(context, msg);
 }
 
-scoped_refptr<base::TaskRunner>
+scoped_refptr<base::SequencedTaskRunner>
 ResourceMessageFilter::OverrideTaskRunnerForMessage(const IPC::Message& msg) {
   return nullptr;
 }

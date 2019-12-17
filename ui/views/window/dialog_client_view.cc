@@ -434,10 +434,12 @@ void DialogClientView::SetupViews() {
     UpdateDialogButton(&ok_button_, ui::DIALOG_BUTTON_OK);
   }
 
-  if (extra_view_)
+  auto disowned_extra_view = GetDialogDelegate()->DisownExtraView();
+  if (!disowned_extra_view)
     return;
 
-  extra_view_ = GetDialogDelegate()->DisownExtraView().release();
+  delete extra_view_;
+  extra_view_ = disowned_extra_view.release();
   if (extra_view_ && Button::AsButton(extra_view_))
     extra_view_->SetGroup(kButtonGroup);
 }

@@ -5,6 +5,7 @@
 <translation id="1010200102790553230">Ngarkoje faqen më vonë</translation>
 <translation id="1015730422737071372">Jep detaje të tjera</translation>
 <translation id="1021110881106174305">Kartat e pranuara</translation>
+<translation id="1021753677514347426">Ky problem ndodh për shkak të një certifikate që instalove ti ose dikush tjetër në pajisjen tënde. Certifikata njihet se është përdorur për të monitoruar dhe ndërhyrë në rrjete dhe nuk është e besuar nga Chromium. Megjithëse ekzistojnë disa raste legjitime për monitorimin, si p.sh. një rrjet shkolle ose kompanie, Chromium dëshiron të sigurohet që je në dijeni se kjo ndodh, edhe nëse nuk arrin ta ndalosh. Monitorimi mund të ndodhë në çdo shfletues ose aplikacion që ka qasje në ueb.</translation>
 <translation id="1032854598605920125">Rrotullo në drejtim të akrepave të orës</translation>
 <translation id="1036348656032585052">Çaktivizo</translation>
 <translation id="1038842779957582377">emër i panjohur</translation>
@@ -67,6 +68,7 @@
 <translation id="1264126396475825575">U regjistrua raport i ndërprerjes aksidentale në <ph name="CRASH_TIME" /> (nuk është ngarkuar apo shpërfillur ende)</translation>
 <translation id="1270502636509132238">Mënyra e marrjes</translation>
 <translation id="1285320974508926690">Asnjëherë mos e përkthe këtë sajt</translation>
+<translation id="1285400217480592994">Skano përmbajtjen e skedarëve që shkarkon ose ngarkon në Chrome.</translation>
 <translation id="1292701964462482250">"Një softuer në kompjuterin tënd po e ndalon Chrome që të lidhet në mënyrë të sigurt me uebin" (vetëm kompjuterët me Windows)</translation>
 <translation id="1294154142200295408">Variantet e rreshtit të komandës</translation>
 <translation id="129553762522093515">Të mbyllura së fundi</translation>
@@ -284,6 +286,7 @@
 <translation id="2270484714375784793">Numër telefoni</translation>
 <translation id="2277103315734023688">Kërko përpara</translation>
 <translation id="2283340219607151381">Ruaj dhe plotëso adresat</translation>
+<translation id="2288422996159078444">Çdo gjë që shkruan, çdo faqe që shikon ose çdo aktivitet tjetër në ueb po shikohet. Përmbajtjet në sajte mund të ndryshohen pa dijeninë tënde.</translation>
 <translation id="2289385804009217824">Prerje</translation>
 <translation id="2292556288342944218">Qasja jote në internet është bllokuar</translation>
 <translation id="2297722699537546652">B5 (Zarf)</translation>
@@ -426,6 +429,7 @@
 <translation id="2989742184762224133">Dy kapje me tel lart</translation>
 <translation id="2991174974383378012">Ndarja me sajtet e uebit</translation>
 <translation id="2991571918955627853">Nuk mund ta vizitosh <ph name="SITE" /> në këtë moment sepse sajti i uebit përdor HSTS. Gabimet dhe sulmet e rrjetit janë zakonisht të përkohshme, prandaj kjo faqe ndoshta do të funksionojë më vonë.</translation>
+<translation id="2996674880327704673">Sugjerime nga Google</translation>
 <translation id="3005723025932146533">Shfaq një kopje të ruajtur</translation>
 <translation id="3008447029300691911">Shkruaj kodin CVC për <ph name="CREDIT_CARD" />. Pasi të konfirmohet, të dhënat e kartës do të ndahen me këtë sajt.</translation>
 <translation id="3010559122411665027">Hyrja e listës "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -438,6 +442,7 @@
 <translation id="3060227939791841287">C9 (Zarf)</translation>
 <translation id="3061707000357573562">Shërbimi i korrigjimit</translation>
 <translation id="3064966200440839136">Po del nga modaliteti "i fshehur" për të paguar nëpërmjet një aplikacioni të jashtëm. Do të vazhdosh?</translation>
+<translation id="3086579638707268289">Aktiviteti yt në ueb po monitorohet</translation>
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Shto adresën e marrjes</translation>
 <translation id="3105172416063519923">ID-ja e elementit:</translation>
@@ -490,6 +495,7 @@
 <translation id="3369192424181595722">Gabim i orës</translation>
 <translation id="337363190475750230">Qasja u çaktivizua</translation>
 <translation id="3377188786107721145">Gabim i analizimit të politikës</translation>
+<translation id="3377736046129930310">Përdor kyçjen e ekranit për të konfirmuar kartat më shpejt</translation>
 <translation id="3380365263193509176">Gabim i panjohur</translation>
 <translation id="3380864720620200369">ID-ja e klientit:</translation>
 <translation id="3387261909427947069">Mënyrat e pagesës</translation>
@@ -650,6 +656,7 @@
 <translation id="4194250254487269611">Karta jote nuk mund të ruhet për momentin</translation>
 <translation id="4196861286325780578">&amp;Bëje përsëri zhvendosjen</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Të kontrollosh konfigurimet e murit mbrojtës dhe antivirusit<ph name="END_LINK" /></translation>
+<translation id="4214357935346142455">profili i ekranit të identifikimit</translation>
 <translation id="4215751373031079683">7x9 (Zarf)</translation>
 <translation id="4220128509585149162">Ndërprerjet aksidentale</translation>
 <translation id="422022731706691852">Sulmuesit në <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mund të përpiqen të të mashtrojnë të instalosh programe që dëmtojnë përvojën tënde të shfletimit (për shembull, duke ndryshuar faqen kryesore ose duke shfaqur reklama shtesë në faqen që viziton). <ph name="BEGIN_LEARN_MORE_LINK" />Mëso më shumë<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -732,6 +739,7 @@
 <translation id="4515275063822566619">Kartat dhe adresat janë nga Chrome dhe llogaria jote e Google (<ph name="ACCOUNT_EMAIL" />). Ato mund t'i menaxhosh te <ph name="BEGIN_LINK" />Cilësimet<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (Zarf)</translation>
 <translation id="4522570452068850558">Detajet</translation>
+<translation id="4524138615196389145">Konfirmo kartat e tua më shpejt duke përdorur WebAuthn nga tani e tutje</translation>
 <translation id="4524805452350978254">Menaxho kartat</translation>
 <translation id="455113658016510503">A9</translation>
 <translation id="4552089082226364758">Blici</translation>
@@ -842,6 +850,7 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-bit)</translation>
+<translation id="5121469660360593280">Ndaj me administratorin tënd të dhëna për ngjarjet e sigurisë që janë raportuar nga "Mbrojtja e përdoruesit" të Chrome Enterprise. Kjo mund të përfshijë URL-të e faqeve që viziton ti, emrat e skedarëve ose të dhënat meta dhe emrin e përdoruesit që përdor për t'u identifikuar në pajisjen tënde dhe në Chrome.</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Verifiko kartën tënde</translation>
 <translation id="5135404736266831032">Menaxho adresat...</translation>
@@ -853,6 +862,7 @@
 <translation id="5159010409087891077">Hape faqen në një dritare të re "të fshehtë" (⇧⌘N)</translation>
 <translation id="516920405563544094">Shkruaj kodin CVC për <ph name="CREDIT_CARD" />. Pasi t'i konfirmosh, detajet e kartës nga "Llogaria jote e Google" do të ndahen me këtë sajt.</translation>
 <translation id="5169827969064885044">Mund të humbasësh qasjen në llogarinë e organizatës ose mund të pësosh vjedhje të identitetit. Chrome rekomandon që ta ndryshosh fjalëkalimin tani.</translation>
+<translation id="5170017743895942767">"Mbrojtja e përdoruesit" e Chrome Enterprise</translation>
 <translation id="5171045022955879922">Kërko ose shkruaj URL-në</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Pajisja</translation>
@@ -973,6 +983,7 @@
 <translation id="5730040223043577876">Chrome rekomandon rivendosjen e fjalëkalimit tënd nëse e ke ripërdorur në sajte të tjera.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Ruaje kartën në "Llogarinë tënde të Google"}other{Ruaji kartat në "Llogarinë tënde të Google"}}</translation>
 <translation id="5763042198335101085">Fut një adresë të vlefshme email-i</translation>
+<translation id="5763703224595565476">Administratori yt ka aktivizuar "Mbrojtjen e përdoruesit" të Chrome Enterprise në shfletuesin tënd. "Mbrojtja e përdoruesit" të Chrome Enterprise ka qasje te disa nga të dhënat e tua.</translation>
 <translation id="5765072501007116331">Për të parë mënyrat dhe kërkesat e dorëzimit, zgjidh një adresë</translation>
 <translation id="5778550464785688721">Kontroll i plotë i pajisjeve MIDI</translation>
 <translation id="5781136890105823427">Eksperimenti u aktivizua</translation>
@@ -1052,6 +1063,7 @@
 <translation id="6094273045989040137">Shëno</translation>
 <translation id="6104072995492677441">JIS B6</translation>
 <translation id="610911394827799129">Llogaria jote e Google mund të ketë forma të tjera të historikut të shfletimit në <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
+<translation id="6120179357481664955">Të kujtohet ID-ja e UPI?</translation>
 <translation id="6132597952260690497">Informacion rreth shtesave dhe përbërësve shtesë të instaluar</translation>
 <translation id="6146055958333702838">Kontrollo kabllot dhe rindiz router-it, modemët ose pajisjet e tjera të rrjetit që mund të jesh duke përdorur.</translation>
 <translation id="614940544461990577">Provo:</translation>
@@ -1066,6 +1078,7 @@
 <translation id="6221345481584921695">Kohët e fundit "Shfletimi i sigurt" i Google <ph name="BEGIN_LINK" />zbuloi softuerin keqdashës<ph name="END_LINK" /> në <ph name="SITE" />. Sajtet e uebit që normalisht janë të sigurta, ndonjëherë infektohen me softuerë keqdashës. Përmbajtja keqdashëse vjen nga <ph name="SUBRESOURCE_HOST" />, një shpërndarës i njohur softuerësh keqdashës.</translation>
 <translation id="6234122620015464377">Prerje pas çdo dokumenti</translation>
 <translation id="6240447795304464094">Logo e Google Pay</translation>
+<translation id="6241121617266208201">Fshih sugjerimet</translation>
 <translation id="6251924700383757765">Politika e privatësisë</translation>
 <translation id="6254436959401408446">Nuk ka memorie të mjaftueshme për të hapur këtë faqe</translation>
 <translation id="625755898061068298">Ke zgjedhur që të çaktivizosh paralajmërimet e sigurisë për këtë sajt.</translation>
@@ -1112,6 +1125,7 @@
 <translation id="6409754798200046165">Sapo fute fjalëkalimin tënd në një sajt mashtrues. Chrome rekomandon që ta ndryshosh fjalëkalimin tani.</translation>
 <translation id="6410264514553301377">Fut datën e skadimit dhe kodin CVC për <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium mund të të ndihmojë ta mbrosh "Llogarinë tënde të Google" dhe të ndryshosh fjalëkalimin tënd.</translation>
+<translation id="6423385022588644828">Konfirmo kartat e tua më shpejt duke përdorur Touch ID nga tani e tutje</translation>
 <translation id="6427730057873428458">Palosje me dritare</translation>
 <translation id="6433490469411711332">Redakto informacionin e kontaktit</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> e refuzoi lidhjen.</translation>
@@ -1182,12 +1196,14 @@
 <translation id="6786747875388722282">Shtesat</translation>
 <translation id="6790428901817661496">Luaj</translation>
 <translation id="679355240208270552">U shpërfill sepse kërkimi i parazgjedhur nuk është aktivizuar nga politika.</translation>
+<translation id="6794951432696553238">Konfirmo kartat e tua më shpejt duke përdorur Windows Hello nga tani e tutje</translation>
 <translation id="681021252041861472">Fushë e detyrueshme</translation>
 <translation id="6810899417690483278">ID-ja e personalizimit</translation>
 <translation id="6825578344716086703">U përpoqe të gjeje <ph name="DOMAIN" />, por serveri paraqiti një certifikatë të nënshkruar duke përdorur një algoritëm të dobët nënshkrimi. Kjo do të thotë se kredencialet e sigurisë që paraqiti serveri mund të jenë të falsifikuara dhe serveri mund të mos jetë ai që prisje (mund të jesh duke komunikuar me një sulmues).</translation>
 <translation id="6826370046007623921">Parandalimi i humbjes së të dhënave</translation>
 <translation id="6831043979455480757">Përkthe</translation>
 <translation id="6839929833149231406">Zona</translation>
+<translation id="6846340164947227603">Përdor një numër karte virtuale...</translation>
 <translation id="6852204201400771460">Dëshiron ta ringarkosh aplikacionin?</translation>
 <translation id="6865412394715372076">Kjo kartë nuk mund të verifikohet për momentin</translation>
 <translation id="6868206169573555318">Hape përsëri për ta përditësuar</translation>
@@ -1216,6 +1232,7 @@
 <translation id="6989763994942163495">Trego cilësimet e përparuara...</translation>
 <translation id="6993898126790112050">6x9 (Zarf)</translation>
 <translation id="6996312675313362352">Përkthe gjithmonë nga <ph name="ORIGINAL_LANGUAGE" /></translation>
+<translation id="7004583254764674281">Përdor Windows Hello për t'i konfirmuar kartat më shpejt</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Këto tarifa mund të jenë vetëm për një rast ose dhe të përsëritura, gjë që mund të mos jetë menjëherë e qartë.</translation>
 <translation id="7029809446516969842">Fjalëkalimet</translation>
@@ -1226,6 +1243,7 @@
 <translation id="7064851114919012435">Informacionet e kontaktit</translation>
 <translation id="7075452647191940183">Kërkesa është tepër e madhe</translation>
 <translation id="7079718277001814089">Ky sajt përmban softuerë keqdashës</translation>
+<translation id="7081308185095828845">Kjo veçori nuk ofrohet në pajisjen tënde</translation>
 <translation id="7087282848513945231">Konteja</translation>
 <translation id="7090678807593890770">Kërko në Google për <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Fshih</translation>
@@ -1279,9 +1297,11 @@ Detaje shtesë:
 <translation id="733923710415886693">Certifikata e serverit nuk është zbuluar përmes "Transparencës së certifikatave".</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Është i lidhur:</translation>
+<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> ka aktivizuar "Mbrojtjen e përdoruesit" të Chrome Enterprise në shfletuesin tënd. "Mbrojtja e përdoruesit" të Chrome Enterprise ka qasje te disa nga të dhënat e tua.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Linja e komandave</translation>
 <translation id="7372973238305370288">rezultati i kërkimit</translation>
+<translation id="7374733840632556089">Ky problem ndodh për shkak të një certifikate që instalove ti ose dikush tjetër në pajisjen tënde. Certifikata njihet se është përdorur për të monitoruar dhe ndërhyrë në rrjete dhe nuk është e besuar nga Chrome. Megjithëse ekzistojnë disa raste legjitime për monitorimin, si p.sh. një rrjet shkolle ose kompanie, Chrome dëshiron të sigurohet që je në dijeni se kjo ndodh, edhe nëse nuk arrin ta ndalosh. Monitorimi mund të ndodhë në çdo shfletues ose aplikacion që ka qasje në ueb.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Kontrollet e klipeve media</translation>
 <translation id="7378627244592794276">Jo</translation>
@@ -1310,6 +1330,7 @@ Detaje shtesë:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /> rreth këtij problemi.</translation>
 <translation id="7455133967321480974">Përdor parazgjedhjen globale (blloko)</translation>
 <translation id="7460618730930299168">Shfaqja është ndryshe nga ajo që zgjodhe. Dëshiron të vazhdosh?</translation>
+<translation id="7464821087936825778">Po del nga modaliteti i kërkimit</translation>
 <translation id="7473891865547856676">Jo, faleminderit</translation>
 <translation id="7481312909269577407">Përpara</translation>
 <translation id="7485870689360869515">Nuk u gjetën të dhëna.</translation>
@@ -1531,6 +1552,7 @@ Detaje shtesë:
 <translation id="8559762987265718583">Nuk mund të vendoset një lidhje private me <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />sepse data dhe ora (<ph name="DATE_AND_TIME" />) e pajisjes tënde nuk janë të sakta.</translation>
 <translation id="8564985650692024650">Chromium rekomandon rivendosjen e fjalëkalimit tënd të <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> nëse e ke ripërdorur në sajte të tjera.</translation>
 <translation id="8571890674111243710">Po përkthen faqen në <ph name="LANGUAGE" />...</translation>
+<translation id="8574899947864779331">Përdor Touch ID për të konfirmuar kartat më shpejt</translation>
 <translation id="858637041960032120">Shto numrin e telefonit</translation>
 <translation id="860043288473659153">Emri i mbajtësit të kartës</translation>
 <translation id="8616822740383114808">Ky cilësim zbatohet nga "<ph name="ENFORCING_SETTING" />" në "<ph name="SETTINGS_PAGE" />"</translation>

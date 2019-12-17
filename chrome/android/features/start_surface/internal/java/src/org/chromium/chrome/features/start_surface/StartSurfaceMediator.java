@@ -175,13 +175,16 @@ class StartSurfaceMediator
                 mNormalTabModelObserver = new EmptyTabModelObserver() {
                     @Override
                     public void willCloseTab(Tab tab, boolean animate) {
-                        if (mNormalTabModel.getCount() <= 1) {
+                        if (mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE
+                                && mNormalTabModel.getCount() <= 1) {
                             setTabCarouselVisibility(false);
                         }
                     }
                     @Override
                     public void tabClosureUndone(Tab tab) {
-                        setTabCarouselVisibility(true);
+                        if (mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE) {
+                            setTabCarouselVisibility(true);
+                        }
                     }
                 };
             }
@@ -200,14 +203,13 @@ class StartSurfaceMediator
             mUrlFocusChangeListener = new UrlFocusChangeListener() {
                 @Override
                 public void onUrlFocusChange(boolean hasFocus) {
-                    // No fake search box on the explore pane in two panes mode.
-                    if (mSurfaceMode != SurfaceMode.TWO_PANES
-                            || !mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE)) {
-                        mPropertyModel.set(IS_FAKE_SEARCH_BOX_VISIBLE, !hasFocus);
-                    }
-                    if (mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE)) {
-                        mSecondaryTasksSurfacePropertyModel.set(
-                                IS_FAKE_SEARCH_BOX_VISIBLE, !hasFocus);
+                    if (hasFakeSearchBox()) {
+                        if (mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE)) {
+                            mSecondaryTasksSurfacePropertyModel.set(
+                                    IS_FAKE_SEARCH_BOX_VISIBLE, !hasFocus);
+                        } else {
+                            mPropertyModel.set(IS_FAKE_SEARCH_BOX_VISIBLE, !hasFocus);
+                        }
                     }
                     notifyStateChange();
                 }
@@ -242,12 +244,12 @@ class StartSurfaceMediator
         if (state == mOverviewModeState) return;
 
         mOverviewModeState = state;
-        setOverviewStateInternal(mOverviewModeState);
+        setOverviewStateInternal();
         notifyStateChange();
     }
 
-    private void setOverviewStateInternal(@OverviewModeState int newState) {
-        if (newState == OverviewModeState.SHOWN_HOMEPAGE) {
+    private void setOverviewStateInternal() {
+        if (mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE) {
             RecordUserAction.record("StartSurface.SinglePane");
             setExploreSurfaceVisibility(!mIsIncognito);
             setTabCarouselVisibility(
@@ -315,7 +317,6 @@ class StartSurfaceMediator
 
     @Override
     public void hideOverview(boolean animate) {
-        setOverviewState(OverviewModeState.NOT_SHOWN);
         mController.hideOverview(animate);
     }
 
@@ -473,7 +474,7 @@ class StartSurfaceMediator
         });
 
         mPropertyModel.set(IS_INCOGNITO, mIsIncognito);
-        setOverviewStateInternal(mOverviewModeState);
+        setOverviewStateInternal();
 
         // TODO(crbug.com/1021399): This looks not needed since there is no way to change incognito
         // mode when focusing on the omnibox and incognito mode change won't affect the visibility
@@ -505,6 +506,17 @@ class StartSurfaceMediator
         }
     }
 
+    private boolean hasFakeSearchBox() {
+        // No fake search box on the explore pane in two panes mode.
+        if (mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE
+                || mOverviewModeState == OverviewModeState.SHOWN_TASKS_ONLY
+                || (mOverviewModeState == OverviewModeState.SHOWN_TWO_PANES
+                        && !mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE))) {
+            return true;
+        }
+        return false;
+    }
+
     private boolean shouldShowTabSwitcherToolbar() {
         // Do not show Tab switcher toolbar on explore pane.
         if (mOverviewModeState == OverviewModeState.SHOWN_TWO_PANES
@@ -518,13 +530,6 @@ class StartSurfaceMediator
 
     private void setTabCarouselVisibility(boolean isVisible) {
         if (isVisible == mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE)) return;
-
-        // Hide the more Tabs view when the last Tab is closed.
-        if (!isVisible && mSecondaryTasksSurfaceController != null
-                && mSecondaryTasksSurfaceController.overviewVisible()) {
-            setSecondaryTasksSurfaceVisibility(false);
-            setExploreSurfaceVisibility(true);
-        }
 
         mPropertyModel.set(IS_TAB_CAROUSEL_VISIBLE, isVisible);
     }

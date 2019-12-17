@@ -250,8 +250,8 @@ class CC_EXPORT InputHandler {
   // scrolling layer.
   // |out_touch_action| is assigned the whitelisted touch action for the
   // |viewport_point|. In the case there are no touch handlers or touch action
-  // regions, |out_touch_action| is assigned kTouchActionAuto since the default
-  // touch action is auto.
+  // regions, |out_touch_action| is assigned TouchAction::kAuto since the
+  // default touch action is auto.
   virtual TouchStartOrMoveEventListenerType
   EventListenerTypeForTouchStartOrMoveAt(const gfx::Point& viewport_point,
                                          TouchAction* out_touch_action) = 0;

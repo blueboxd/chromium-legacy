@@ -79,7 +79,7 @@ class PublicIpAddressLocationNotifier
 
   // Cancelable closure to absorb overlapping delayed calls to
   // ReactToNetworkChange.
-  base::CancelableClosure react_to_network_change_closure_;
+  base::CancelableOnceClosure react_to_network_change_closure_;
 
   // Whether we have been notified of a network change since the last network
   // location request was sent.

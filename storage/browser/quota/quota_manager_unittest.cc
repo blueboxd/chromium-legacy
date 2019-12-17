@@ -1535,12 +1535,14 @@ TEST_F(QuotaManagerTest, EvictOriginData) {
   task_environment_.RunUntilIdle();
   int64_t predelete_host_pers = usage();
 
-  for (size_t i = 0; i < base::size(kData1); ++i)
+  for (size_t i = 0; i < base::size(kData1); ++i) {
     quota_manager()->NotifyStorageAccessed(
         url::Origin::Create(GURL(kData1[i].origin)), kData1[i].type);
-  for (size_t i = 0; i < base::size(kData2); ++i)
+  }
+  for (size_t i = 0; i < base::size(kData2); ++i) {
     quota_manager()->NotifyStorageAccessed(
-        url::Origin::Create(GURL(kData2[i].origin)), kData2[i].type);
+       url::Origin::Create(GURL(kData2[i].origin)), kData2[i].type);
+  }
   task_environment_.RunUntilIdle();
 
   EvictOriginData(ToOrigin("http://foo.com/"), kTemp);

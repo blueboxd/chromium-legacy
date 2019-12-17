@@ -215,7 +215,8 @@ void Image::DrawPattern(GraphicsContext& context,
                         const FloatPoint& phase,
                         SkBlendMode composite_op,
                         const FloatRect& dest_rect,
-                        const FloatSize& repeat_spacing) {
+                        const FloatSize& repeat_spacing,
+                        RespectImageOrientationEnum) {
   TRACE_EVENT0("skia", "Image::drawPattern");
 
   if (dest_rect.IsEmpty())

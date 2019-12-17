@@ -205,15 +205,6 @@ builder.
   Path regular expressions:
   * [`//chromecast/.+`](https://cs.chromium.org/chromium/src/chromecast/)
 
-* [gpu-fyi-try-android-p-pixel-2-skv-32](https://ci.chromium.org/p/chromium/builders/try/gpu-fyi-try-android-p-pixel-2-skv-32) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+gpu-fyi-try-android-p-pixel-2-skv-32)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+gpu-fyi-try-android-p-pixel-2-skv-32))
-
-  Path regular expressions:
-  * [`//components/viz/.+`](https://cs.chromium.org/chromium/src/components/viz/)
-  * [`//content/test/gpu/gpu_tests/.+py`](https://cs.chromium.org/search?q=package:%5Echromium$+file:content/test/gpu/gpu_tests/.+py)
-  * [`//content/test/gpu/gpu_tests/test_expectations/pixel_expectations.txt`](https://cs.chromium.org/search?q=package:%5Echromium$+file:content/test/gpu/gpu_tests/test_expectations/pixel_expectations.txt)
-  * [`//gpu/vulkan/.+`](https://cs.chromium.org/chromium/src/gpu/vulkan/)
-  * [`//services/viz/.+`](https://cs.chromium.org/chromium/src/services/viz/)
-
 * [ios-simulator-cronet](https://ci.chromium.org/p/chromium/builders/try/ios-simulator-cronet) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+ios-simulator-cronet)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+ios-simulator-cronet))
 
   Path regular expressions:

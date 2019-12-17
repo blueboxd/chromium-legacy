@@ -189,10 +189,11 @@ class SkiaOutputDeviceBufferQueue::OverlayData {
 SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
     scoped_refptr<gl::GLSurface> gl_surface,
     SkiaOutputSurfaceDependency* deps,
-    const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
     gpu::MemoryTracker* memory_tracker,
+    const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
     uint32_t shared_image_usage)
     : SkiaOutputDevice(false /*need_swap_semaphore */,
+                       memory_tracker,
                        did_swap_buffer_complete_callback),
       dependency_(deps),
       gl_surface_(gl_surface),
@@ -226,12 +227,12 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
 SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
     scoped_refptr<gl::GLSurface> gl_surface,
     SkiaOutputSurfaceDependency* deps,
-    const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
-    gpu::MemoryTracker* memory_tracker)
+    gpu::MemoryTracker* memory_tracker,
+    const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback)
     : SkiaOutputDeviceBufferQueue(gl_surface,
                                   deps,
-                                  did_swap_buffer_complete_callback,
                                   memory_tracker,
+                                  did_swap_buffer_complete_callback,
                                   kSharedImageUsage) {}
 
 SkiaOutputDeviceBufferQueue::~SkiaOutputDeviceBufferQueue() {
@@ -242,8 +243,8 @@ SkiaOutputDeviceBufferQueue::~SkiaOutputDeviceBufferQueue() {
 std::unique_ptr<SkiaOutputDeviceBufferQueue>
 SkiaOutputDeviceBufferQueue::Create(
     SkiaOutputSurfaceDependency* deps,
-    const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
-    gpu::MemoryTracker* memory_tracker) {
+    gpu::MemoryTracker* memory_tracker,
+    const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback) {
 #if defined(OS_ANDROID)
   if (!features::IsAndroidSurfaceControlEnabled())
     return nullptr;
@@ -268,8 +269,8 @@ SkiaOutputDeviceBufferQueue::Create(
   }
 
   return std::make_unique<SkiaOutputDeviceBufferQueue>(
-      std::move(gl_surface), deps, did_swap_buffer_complete_callback,
-      memory_tracker);
+      std::move(gl_surface), deps, memory_tracker,
+      did_swap_buffer_complete_callback);
 #else
   return nullptr;
 #endif

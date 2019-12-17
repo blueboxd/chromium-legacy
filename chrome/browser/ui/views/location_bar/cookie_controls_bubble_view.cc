@@ -19,6 +19,7 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/views/background.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/bubble/tooltip_icon.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/box_layout.h"
@@ -38,6 +39,17 @@ std::unique_ptr<views::Link> CreateNotWorkingLink(
       l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_NOT_WORKING_TITLE));
   link->set_listener(listener);
   return link;
+}
+
+std::unique_ptr<views::TooltipIcon> CreateInfoIcon() {
+  auto explanation_tooltip = std::make_unique<views::TooltipIcon>(
+      l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_HELP));
+  explanation_tooltip->set_bubble_width(
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          DISTANCE_BUBBLE_PREFERRED_WIDTH));
+  explanation_tooltip->set_anchor_point_arrow(
+      views::BubbleBorder::Arrow::TOP_RIGHT);
+  return explanation_tooltip;
 }
 
 }  // namespace
@@ -99,7 +111,6 @@ CookieControlsBubbleView::CookieControlsBubbleView(
     CookieControlsController* controller)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       controller_(controller) {
-  not_working_link_ = DialogDelegate::SetExtraView(CreateNotWorkingLink(this));
   observer_.Add(controller);
 }
 
@@ -111,11 +122,7 @@ void CookieControlsBubbleView::UpdateUi() {
     return;
   }
 
-  DialogModelChanged();
   GetBubbleFrameView()->UpdateWindowTitle();
-
-
-  not_working_link_->SetVisible(false);
   text_->SetVisible(false);
   header_view_->SetVisible(false);
 
@@ -123,6 +130,7 @@ void CookieControlsBubbleView::UpdateUi() {
     text_->SetVisible(true);
     text_->SetText(
         l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_NOT_WORKING_DESCRIPTION));
+    extra_view_ = SetExtraView(CreateInfoIcon());
   } else if (status_ == CookieControlsController::Status::kEnabled) {
     header_view_->SetVisible(true);
     header_view_->SetImage(
@@ -131,7 +139,7 @@ void CookieControlsBubbleView::UpdateUi() {
     text_->SetVisible(true);
     text_->SetText(
         l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_BLOCKED_MESSAGE));
-    not_working_link_->SetVisible(true);
+    extra_view_ = SetExtraView(CreateNotWorkingLink(this));
     blocked_cookies_.reset();
   } else {
     DCHECK_EQ(status_, CookieControlsController::Status::kDisabledForSite);
@@ -139,7 +147,10 @@ void CookieControlsBubbleView::UpdateUi() {
     header_view_->SetImage(
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_COOKIE_BLOCKING_OFF_HEADER));
+    if (extra_view_)
+      extra_view_->SetVisible(false);
   }
+  DialogModelChanged();
   Layout();
 
   // The show_disable_cookie_blocking_ui_ state has a different title
@@ -268,7 +279,6 @@ bool CookieControlsBubbleView::Close() {
 
 void CookieControlsBubbleView::LinkClicked(views::Link* source,
                                            int event_flags) {
-  DCHECK_EQ(source, not_working_link_);
   DCHECK_EQ(status_, CookieControlsController::Status::kEnabled);
   base::RecordAction(UserMetricsAction("CookieControls.Bubble.NotWorking"));
   // Don't go through the controller as this is an intermediary state that

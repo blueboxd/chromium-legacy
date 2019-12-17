@@ -442,6 +442,19 @@ TEST_F(SSLConnectJobTest, DisableSecureDns) {
   }
 }
 
+TEST_F(SSLConnectJobTest, DirectHostResolutionFailure) {
+  host_resolver_.rules()->AddSimulatedTimeoutFailure("host");
+
+  TestConnectJobDelegate test_delegate;
+  std::unique_ptr<ConnectJob> ssl_connect_job =
+      CreateConnectJob(&test_delegate, ProxyServer::SCHEME_DIRECT);
+  test_delegate.StartJobExpectingResult(ssl_connect_job.get(),
+                                        ERR_NAME_NOT_RESOLVED,
+                                        false /* expect_sync_result */);
+  EXPECT_THAT(ssl_connect_job->GetResolveErrorInfo().error,
+              test::IsError(ERR_DNS_TIMED_OUT));
+}
+
 TEST_F(SSLConnectJobTest, DirectCertError) {
   StaticSocketDataProvider data;
   socket_factory_.AddSocketDataProvider(&data);
@@ -540,6 +553,19 @@ TEST_F(SSLConnectJobTest, SOCKSFail) {
         ssl_connect_job->GetConnectionAttempts();
     EXPECT_EQ(0u, connection_attempts.size());
   }
+}
+
+TEST_F(SSLConnectJobTest, SOCKSHostResolutionFailure) {
+  host_resolver_.rules()->AddSimulatedTimeoutFailure("proxy");
+
+  TestConnectJobDelegate test_delegate;
+  std::unique_ptr<ConnectJob> ssl_connect_job =
+      CreateConnectJob(&test_delegate, ProxyServer::SCHEME_SOCKS5);
+  test_delegate.StartJobExpectingResult(ssl_connect_job.get(),
+                                        ERR_PROXY_CONNECTION_FAILED,
+                                        false /* expect_sync_result */);
+  EXPECT_THAT(ssl_connect_job->GetResolveErrorInfo().error,
+              test::IsError(ERR_DNS_TIMED_OUT));
 }
 
 TEST_F(SSLConnectJobTest, SOCKSBasic) {
@@ -683,6 +709,19 @@ TEST_F(SSLConnectJobTest, HttpProxyFail) {
         ssl_connect_job->GetConnectionAttempts();
     EXPECT_EQ(0u, connection_attempts.size());
   }
+}
+
+TEST_F(SSLConnectJobTest, HttpProxyHostResolutionFailure) {
+  host_resolver_.rules()->AddSimulatedTimeoutFailure("proxy");
+
+  TestConnectJobDelegate test_delegate;
+  std::unique_ptr<ConnectJob> ssl_connect_job =
+      CreateConnectJob(&test_delegate, ProxyServer::SCHEME_HTTP);
+  test_delegate.StartJobExpectingResult(ssl_connect_job.get(),
+                                        ERR_PROXY_CONNECTION_FAILED,
+                                        false /* expect_sync_result */);
+  EXPECT_THAT(ssl_connect_job->GetResolveErrorInfo().error,
+              test::IsError(ERR_DNS_TIMED_OUT));
 }
 
 TEST_F(SSLConnectJobTest, HttpProxyAuthChallenge) {

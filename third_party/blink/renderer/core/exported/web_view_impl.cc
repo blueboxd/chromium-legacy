@@ -2159,7 +2159,7 @@ bool WebViewImpl::ShouldZoomToLegibleScale(const Element& element) {
     // back out.
     TouchAction action =
         touch_action_util::ComputeEffectiveTouchAction(element);
-    if (!(action & TouchAction::kTouchActionPinchZoom))
+    if (!(static_cast<int>(action) & static_cast<int>(TouchAction::kPinchZoom)))
       zoom_into_legible_scale = false;
   }
 

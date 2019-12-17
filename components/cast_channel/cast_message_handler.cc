@@ -22,7 +22,7 @@ namespace {
 constexpr base::TimeDelta kLaunchMaxTimeout = base::TimeDelta::FromMinutes(2);
 
 void ReportParseError(const std::string& error) {
-  DVLOG(2) << "Error parsing JSON message: " << error;
+  DVLOG(1) << "Error parsing JSON message: " << error;
 }
 
 }  // namespace
@@ -361,12 +361,15 @@ void CastMessageHandler::HandleCastInternalMessage(
   if (request_id) {
     auto requests_it = pending_requests_.find(channel_id);
     if (requests_it != pending_requests_.end())
+      // You might think this method should return in this case, but there is at
+      // least one message type (RECEIVER_STATUS), that has a request ID but
+      // also needs to be handled by the registered observers.
       requests_it->second->HandlePendingRequest(*request_id, payload);
   }
 
   CastMessageType type = ParseMessageTypeFromPayload(payload);
   if (type == CastMessageType::kOther) {
-    DVLOG(2) << "Unknown message type: " << payload;
+    DVLOG(2) << "Unknown type in message: " << payload;
     return;
   }
 

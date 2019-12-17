@@ -36,15 +36,29 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
                                    const ChildProcessTerminationInfo& info) = 0;
   };
 
+  // Methods for creating new SiteInstances. The documentation for these methods
+  // are on the SiteInstance::Create* methods with the same name.
   static scoped_refptr<SiteInstanceImpl> Create(
       BrowserContext* browser_context);
   static scoped_refptr<SiteInstanceImpl> CreateForURL(
       BrowserContext* browser_context,
       const GURL& url);
+  static scoped_refptr<SiteInstanceImpl> CreateForGuest(
+      content::BrowserContext* browser_context,
+      const GURL& guest_site_url);
+
+  // Creates a SiteInstance that will be use for a service worker.
+  // |url| - The script URL for the service worker if |is_guest| is false.
+  //         The <webview> guest site URL if |is_guest| is true.
+  // |can_reuse_process| - Set to true if the new SiteInstance can use the
+  //                       same process as the renderer for |url|.
+  // |is_guest| - Set to true if the new SiteInstance is for a <webview>
+  // guest.
   static scoped_refptr<SiteInstanceImpl> CreateForServiceWorker(
       BrowserContext* browser_context,
       const GURL& url,
-      bool can_reuse_process = false);
+      bool can_reuse_process = false,
+      bool is_guest = false);
 
   // Creates a SiteInstance for |url| like CreateForURL() would except the
   // instance that is returned has its process_reuse_policy set to
@@ -356,6 +370,13 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // a dedicated process.
   void MaybeSetBrowsingInstanceDefaultProcess();
 
+  // Sets |site_| and |lock_| with |site_url| and |lock_url| respectively
+  // and registers this object with |browsing_instance_|. SetSite() calls
+  // this method to set the site and lock for a user provided URL. This
+  // method should only be called by code that need to set the site and
+  // lock directly without any "url to site URL" transformation.
+  void SetSiteAndLockInternal(const GURL& site_url, const GURL& lock_url);
+
   // Returns the site for the given URL, which includes only the scheme and
   // registered domain.  Returns an empty GURL if the URL has no host.
   // |should_use_effective_urls| specifies whether to resolve |url| to an
@@ -439,6 +460,10 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
 
   // Whether the SiteInstance was created for a service worker.
   bool is_for_service_worker_;
+
+  // Whether the SiteInstance was created for a <webview> guest.
+  // TODO(734722): Move this into the SecurityPrincipal once it is available.
+  bool is_guest_;
 
   base::ObserverList<Observer, true>::Unchecked observers_;
 

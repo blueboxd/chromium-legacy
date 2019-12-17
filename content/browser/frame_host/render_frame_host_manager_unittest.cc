@@ -1444,13 +1444,17 @@ TEST_F(RenderFrameHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
 
 // Test that we reuse the same guest SiteInstance if we navigate across sites.
 TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
-  GURL guest_url(std::string(kGuestScheme).append("://abc123"));
+  // Create a custom site URL for the SiteInstance. There is nothing special
+  // about this URL other than we expect the resulting SiteInstance to return
+  // this exact URL from its GetSiteURL() method.
+  const GURL kGuestSiteUrl("my-guest-scheme://someapp/somepath");
   scoped_refptr<SiteInstance> instance =
-      SiteInstance::CreateForURL(browser_context(), guest_url);
+      SiteInstance::CreateForGuest(browser_context(), kGuestSiteUrl);
   std::unique_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), instance));
 
   EXPECT_TRUE(instance->IsGuest());
+  EXPECT_EQ(kGuestSiteUrl, instance->GetSiteURL());
 
   RenderFrameHostManager* manager = web_contents->GetRenderManagerForTesting();
 

@@ -242,7 +242,9 @@ void VizMainImpl::CreateFrameSinkManagerInternal(
       gpu_service_->gpu_channel_manager()->gpu_preferences(),
       gpu_service_->shared_image_manager(),
       gpu_service_->gpu_channel_manager()->program_cache(),
-      gpu_service_->GetContextState());
+      // Unretained is safe since |gpu_service_| outlives |task_executor_|.
+      base::BindRepeating(&GpuServiceImpl::GetContextState,
+                          base::Unretained(gpu_service_.get())));
 
   viz_compositor_thread_runner_->CreateFrameSinkManager(
       std::move(params), task_executor_.get(), gpu_service_.get());

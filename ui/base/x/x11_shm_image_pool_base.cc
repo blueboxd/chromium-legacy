@@ -88,15 +88,16 @@ XShmImagePoolBase::SwapClosure::SwapClosure() = default;
 
 XShmImagePoolBase::SwapClosure::~SwapClosure() = default;
 
-XShmImagePoolBase::XShmImagePoolBase(base::TaskRunner* host_task_runner,
-                                     base::TaskRunner* event_task_runner,
-                                     XDisplay* display,
-                                     XID drawable,
-                                     Visual* visual,
-                                     int depth,
-                                     std::size_t frames_pending)
-    : host_task_runner_(host_task_runner),
-      event_task_runner_(event_task_runner),
+XShmImagePoolBase::XShmImagePoolBase(
+    scoped_refptr<base::SequencedTaskRunner> host_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> event_task_runner,
+    XDisplay* display,
+    XID drawable,
+    Visual* visual,
+    int depth,
+    std::size_t frames_pending)
+    : host_task_runner_(std::move(host_task_runner)),
+      event_task_runner_(std::move(event_task_runner)),
       display_(display),
       drawable_(drawable),
       visual_(visual),

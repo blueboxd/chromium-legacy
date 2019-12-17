@@ -122,7 +122,7 @@ public class WebShareTest {
     public void testWebShareNoUserGesture() throws Exception {
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_FILE));
         mActivityTestRule.runJavaScriptCodeInCurrentTab("initiate_share()");
-        Assert.assertEquals("Fail: NotAllowedError: "
+        Assert.assertEquals("Fail: NotAllowedError: Failed to execute 'share' on 'Navigator': "
                         + "Must be handling a user gesture to perform a share request.",
                 mUpdateWaiter.waitForUpdate());
     }
@@ -263,8 +263,9 @@ public class WebShareTest {
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_FILE_MANY));
         // Click (instead of directly calling the JavaScript function) to simulate a user gesture.
         TouchCommon.singleClickView(mTab.getView());
-        Assert.assertEquals(
-                "Fail: NotAllowedError: Permission denied", mUpdateWaiter.waitForUpdate());
+        Assert.assertEquals("Fail: NotAllowedError: "
+                        + "Failed to execute 'share' on 'Navigator': Permission denied",
+                mUpdateWaiter.waitForUpdate());
     }
 
     /**
@@ -278,8 +279,9 @@ public class WebShareTest {
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_FILE_LARGE));
         // Click (instead of directly calling the JavaScript function) to simulate a user gesture.
         TouchCommon.singleClickView(mTab.getView());
-        Assert.assertEquals(
-                "Fail: NotAllowedError: Permission denied", mUpdateWaiter.waitForUpdate());
+        Assert.assertEquals("Fail: NotAllowedError: "
+                        + "Failed to execute 'share' on 'Navigator': Permission denied",
+                mUpdateWaiter.waitForUpdate());
     }
 
     /**

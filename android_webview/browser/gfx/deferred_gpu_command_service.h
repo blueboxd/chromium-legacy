@@ -25,6 +25,7 @@ class DeferredGpuCommandService : public gpu::CommandBufferTaskExecutor {
   void ScheduleOutOfOrderTask(base::OnceClosure task) override;
   void ScheduleDelayedWork(base::OnceClosure task) override;
   void PostNonNestableToClient(base::OnceClosure callback) override;
+  scoped_refptr<gpu::SharedContextState> GetSharedContextState() override;
 
  protected:
   ~DeferredGpuCommandService() override;

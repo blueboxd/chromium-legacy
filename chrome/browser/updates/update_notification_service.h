@@ -10,18 +10,16 @@
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-namespace notifications {
-struct NotificationData;
-}  // namespace notifications
-
 namespace updates {
+
+struct UpdateNotificationInfo;
 
 // Service to schedule update notification via
 // notifications::NotificationScheduleService.
 class UpdateNotificationService : public KeyedService {
  public:
   // Try yo schedule an update notification.
-  virtual void Schedule(notifications::NotificationData data) = 0;
+  virtual void Schedule(UpdateNotificationInfo data) = 0;
 
   ~UpdateNotificationService() override = default;
 

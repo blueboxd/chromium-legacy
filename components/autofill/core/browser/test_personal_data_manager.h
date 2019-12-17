@@ -47,6 +47,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   void SetProfiles(std::vector<AutofillProfile>* profiles) override;
   void LoadProfiles() override;
   void LoadCreditCards() override;
+  void LoadCreditCardCloudTokenData() override;
   bool IsAutofillEnabled() const override;
   bool IsAutofillProfileEnabled() const override;
   bool IsAutofillCreditCardEnabled() const override;

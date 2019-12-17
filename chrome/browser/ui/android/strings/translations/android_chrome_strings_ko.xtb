@@ -24,7 +24,6 @@
 <translation id="1171770572613082465">'인기 사이트' 버튼을 탭하여 인기 웹사이트를 확인하세요.</translation>
 <translation id="1173894706177603556">이름 바꾸기</translation>
 <translation id="1178581264944972037">일시중지</translation>
-<translation id="118069123878619799">- 키와 같은 신체적 특징</translation>
 <translation id="1181037720776840403">삭제</translation>
 <translation id="1188239144602654184">AR 입력</translation>
 <translation id="1197267115302279827">북마크 이동</translation>
@@ -62,7 +61,6 @@
 <translation id="1384959399684842514">다운로드 일시중지됨</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" />일 전 동기화됨</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" />에서 검색</translation>
-<translation id="1404122904123200417"><ph name="WEBSITE_URL" />에 포함됨</translation>
 <translation id="1406000523432664303">'추적 안함'</translation>
 <translation id="1407135791313364759">모두 열기</translation>
 <translation id="1409426117486808224">열린 탭 간단히 보기</translation>
@@ -215,6 +213,7 @@
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" />개 항목 삭제함</translation>
 <translation id="2536728043171574184">이 페이지의 오프라인 사본 보는 중</translation>
 <translation id="2537178555904266562">비밀번호 동기화 중 오류</translation>
+<translation id="2537296579376733324">모든 쿠키, 이 사이트에서만</translation>
 <translation id="2546283357679194313">쿠키 및 사이트 데이터</translation>
 <translation id="2567385386134582609">이미지</translation>
 <translation id="257088987046510401">테마</translation>
@@ -472,6 +471,7 @@
 <translation id="4565377596337484307">비밀번호 감추기</translation>
 <translation id="4570913071927164677">세부정보</translation>
 <translation id="4572422548854449519">관리 계정에 로그인</translation>
+<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{#분 전}other{#분 전}}</translation>
 <translation id="4587589328781138893">사이트</translation>
 <translation id="4594952190837476234">이 오프라인 페이지는 <ph name="CREATION_TIME" />에 생성되었으며 온라인 버전과 다를 수 있습니다.</translation>
@@ -652,7 +652,6 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{#시간 전}other{#시간 전}}</translation>
 <translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. All rights reserved.</translation>
 <translation id="5817918615728894473">페어링</translation>
-<translation id="5819762621475381970">- 방 안의 구조</translation>
 <translation id="583281660410589416">알 수 없음</translation>
 <translation id="5833984609253377421">링크 공유</translation>
 <translation id="5836192821815272682">Chrome 업데이트 다운로드 중…</translation>
@@ -753,6 +752,7 @@
 <translation id="6545017243486555795">모든 데이터 삭제</translation>
 <translation id="6545864417968258051">블루투스 검색</translation>
 <translation id="6560414384669816528">Sogou로 검색</translation>
+<translation id="656065428026159829">더보기</translation>
 <translation id="6566259936974865419">Chrome을 통해 <ph name="GIGABYTES" />GB를 절약했습니다.</translation>
 <translation id="6573096386450695060">항상 허용</translation>
 <translation id="6573431926118603307">다른 기기의 Chrome에서 연 탭이 여기에 표시됩니다.</translation>
@@ -849,6 +849,7 @@
 <translation id="7293171162284876153">동기화를 시작하려면 'Chrome 데이터 동기화'를 사용 설정하세요.</translation>
 <translation id="729975465115245577">기기에 비밀번호 파일을 저장할 수 있는 앱이 없습니다.</translation>
 <translation id="7302081693174882195">세부정보: 저장된 데이터 양에 따라 정렬</translation>
+<translation id="7302486331832100261">기본적으로 알림을 차단하는 중입니다. 허용하려면 '세부정보'를 탭하세요.</translation>
 <translation id="7328017930301109123">Chrome의 라이트 모드를 사용하면 페이지가 더 빠르게 로드되고 데이터가 최대 60퍼센트 절약됩니다.</translation>
 <translation id="7333031090786104871">아직 이전 사이트 추가 중</translation>
 <translation id="7352939065658542140">동영상</translation>

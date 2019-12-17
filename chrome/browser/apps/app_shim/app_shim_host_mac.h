@@ -51,11 +51,13 @@ class AppShimHost : public chrome::mojom::AppShimHost {
     virtual void OnShimProcessDisconnected(AppShimHost* host) = 0;
 
     // Invoked by the shim host when the shim process receives a focus event.
-    // |files|, if non-empty, holds an array of files dragged onto the app
-    // bundle or dock icon.
-    virtual void OnShimFocus(AppShimHost* host,
-                             chrome::mojom::AppShimFocusType focus_type,
-                             const std::vector<base::FilePath>& files) = 0;
+    virtual void OnShimFocus(AppShimHost* host) = 0;
+
+    // Invoked by the shim host when the shim opens a file, e.g, by dragging
+    // a file onto the dock icon.
+    virtual void OnShimOpenedFiles(
+        AppShimHost* host,
+        const std::vector<base::FilePath>& files) = 0;
 
     // Invoked when a profile is selected from the menu bar.
     virtual void OnShimSelectedProfile(AppShimHost* host,
@@ -109,8 +111,8 @@ class AppShimHost : public chrome::mojom::AppShimHost {
   void OnShimProcessTerminated(bool recreate_shims_requested);
 
   // chrome::mojom::AppShimHost.
-  void FocusApp(chrome::mojom::AppShimFocusType focus_type,
-                const std::vector<base::FilePath>& files) override;
+  void FocusApp() override;
+  void FilesOpened(const std::vector<base::FilePath>& files) override;
   void ProfileSelectedFromMenu(const base::FilePath& profile_path) override;
 
   // Weak, owns |this|.

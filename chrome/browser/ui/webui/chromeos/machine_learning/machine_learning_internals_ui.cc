@@ -49,14 +49,13 @@ MachineLearningInternalsUI::MachineLearningInternalsUI(
   source->SetDefaultResource(IDR_MACHINE_LEARNING_INTERNALS_HTML);
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
-  AddHandlerToRegistry(base::BindRepeating(
-      &MachineLearningInternalsUI::BindMachineLearningInternalsPageHandler,
-      base::Unretained(this)));
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(MachineLearningInternalsUI)
 
 MachineLearningInternalsUI::~MachineLearningInternalsUI() = default;
 
-void MachineLearningInternalsUI::BindMachineLearningInternalsPageHandler(
+void MachineLearningInternalsUI::BindInterface(
     mojo::PendingReceiver<mojom::PageHandler> receiver) {
   page_handler_ = std::make_unique<MachineLearningInternalsPageHandler>(
       std::move(receiver));

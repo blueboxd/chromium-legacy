@@ -36,15 +36,6 @@ enum AppShimLaunchResult {
   kFailedValidation,
 };
 
-enum AppShimFocusType {
-  // Just focus the app.
-  kNormal,
-  // Focus the app or launch it if it has no windows open.
-  kReopen,
-  // Open the given file in the app.
-  kOpenFiles,
-};
-
 enum AppShimAttentionType {
   // Removes any active attention request.
   kCancel,
@@ -95,11 +86,12 @@ interface AppShim {
 // Interface through which the a process communicates to the browser process.
 interface AppShimHost {
   // Sent when the user has indicated a desire to focus the app, either by
-  // clicking on the app's icon in the dock or by selecting it with Cmd+Tab. In
-  // response, Chrome brings the app's windows to the foreground, or relaunches
-  // if the focus type indicates a reopen and there are no open windows.
-  FocusApp(AppShimFocusType focus_type,
-           array<mojo_base.mojom.FilePath> files);
+  // clicking on the app's icon in the dock or by selecting it with Cmd+Tab.
+  FocusApp();
+
+  // Sent when files are opened by the app (e.g, by opening in Finder, or by
+  // dragging on to the app in the dock).
+  FilesOpened(array<mojo_base.mojom.FilePath> files);
 
   // Called when a profile is selected from the profiles menu.
   ProfileSelectedFromMenu(mojo_base.mojom.FilePath profile_path);

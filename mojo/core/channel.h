@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
-#include "base/task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "mojo/core/connection_params.h"
 #include "mojo/core/platform_handle_in_transit.h"
@@ -273,7 +273,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
       Delegate* delegate,
       ConnectionParams connection_params,
       HandlePolicy handle_policy,
-      scoped_refptr<base::TaskRunner> io_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
   // Allows the caller to change the Channel's HandlePolicy after construction.
   void set_handle_policy(HandlePolicy policy) { handle_policy_ = policy; }

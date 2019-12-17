@@ -13,7 +13,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/x/x11_util.h"
@@ -29,8 +29,8 @@ namespace ui {
 class COMPONENT_EXPORT(UI_BASE_X) XShmImagePoolBase
     : public base::RefCountedThreadSafe<XShmImagePoolBase> {
  public:
-  XShmImagePoolBase(base::TaskRunner* host_task_runner,
-                    base::TaskRunner* event_task_runner,
+  XShmImagePoolBase(scoped_refptr<base::SequencedTaskRunner> host_task_runner,
+                    scoped_refptr<base::SequencedTaskRunner> event_task_runner,
                     XDisplay* display,
                     XID drawable,
                     Visual* visual,
@@ -66,8 +66,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePoolBase
 
   bool CanDispatchXEvent(XEvent* xev);
 
-  base::TaskRunner* const host_task_runner_;
-  base::TaskRunner* const event_task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> host_task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> event_task_runner_;
 
 #ifndef NDEBUG
   bool dispatcher_registered_ = false;

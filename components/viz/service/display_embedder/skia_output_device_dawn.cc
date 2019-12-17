@@ -32,8 +32,10 @@ constexpr dawn::TextureUsage kUsage =
 SkiaOutputDeviceDawn::SkiaOutputDeviceDawn(
     DawnContextProvider* context_provider,
     gfx::AcceleratedWidget widget,
+    gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
     : SkiaOutputDevice(/*need_swap_semaphore=*/false,
+                       memory_tracker,
                        did_swap_buffer_complete_callback),
       context_provider_(context_provider),
       widget_(widget) {

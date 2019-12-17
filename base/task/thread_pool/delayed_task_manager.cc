@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/task.h"
 #include "base/task_runner.h"
@@ -60,7 +61,7 @@ DelayedTaskManager::DelayedTaskManager(const TickClock* tick_clock)
 DelayedTaskManager::~DelayedTaskManager() = default;
 
 void DelayedTaskManager::Start(
-    scoped_refptr<TaskRunner> service_thread_task_runner) {
+    scoped_refptr<SequencedTaskRunner> service_thread_task_runner) {
   DCHECK(service_thread_task_runner);
 
   TimeTicks process_ripe_tasks_time;

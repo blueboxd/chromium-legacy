@@ -37,7 +37,6 @@
 #include "components/drive/drive_pref_names.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -116,8 +115,6 @@ TEST_F(FileManagerPathUtilTest, GetMyFilesFolderForProfile) {
 }
 
 TEST_F(FileManagerPathUtilTest, GetPathDisplayTextForSettings) {
-  content::TestServiceManagerContext service_manager_context;
-
   EXPECT_EQ("Downloads", GetPathDisplayTextForSettings(
                              profile_.get(), "/home/chronos/user/Downloads"));
   EXPECT_EQ("Downloads",
@@ -288,7 +285,6 @@ TEST_F(FileManagerPathUtilTest, MultiProfileDownloadsFolderMigration) {
 }
 
 TEST_F(FileManagerPathUtilTest, MigrateToDriveFs) {
-  content::TestServiceManagerContext service_manager_context;
   base::FilePath home("/home/chronos/u-0123456789abcdef");
   base::FilePath other("/some/other/path");
   base::FilePath old_drive("/special/drive-0123456789abcdef");

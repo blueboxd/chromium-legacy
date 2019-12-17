@@ -145,7 +145,6 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   // PooledTaskRunnerDelegate:
   bool PostTaskWithSequence(Task task,
                             scoped_refptr<Sequence> sequence) override;
-  bool IsRunningPoolWithTraits(const TaskTraits& traits) const override;
   bool ShouldYield(const TaskSource* task_source) const override;
 
   const std::unique_ptr<TaskTrackerImpl> task_tracker_;

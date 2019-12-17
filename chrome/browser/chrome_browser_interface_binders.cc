@@ -12,6 +12,7 @@
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
 #include "chrome/browser/bad_message.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
+#include "chrome/browser/engagement/site_engagement_details.mojom.h"
 #include "chrome/browser/language/translate_frame_binder.h"
 #include "chrome/browser/media/media_engagement_score_details.mojom.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/ssl/insecure_sensitive_input_driver_factory.h"
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals.mojom.h"
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals_ui.h"
+#include "chrome/browser/ui/webui/engagement/site_engagement_ui.h"
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals.mojom.h"
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals_ui.h"
 #include "chrome/browser/ui/webui/media/media_engagement_ui.h"
@@ -57,6 +59,8 @@
 #include "chrome/browser/android/contextualsearch/contextual_search_observer.h"
 #include "chrome/browser/android/dom_distiller/distiller_ui_handle_android.h"
 #include "chrome/browser/offline_pages/android/offline_page_auto_fetcher.h"
+#include "chrome/browser/ui/webui/explore_sites_internals/explore_sites_internals.mojom.h"
+#include "chrome/browser/ui/webui/explore_sites_internals/explore_sites_internals_ui.h"
 #include "chrome/common/offline_page_auto_fetcher.mojom.h"
 #include "components/contextual_search/content/browser/contextual_search_js_api_service_impl.h"
 #include "components/contextual_search/content/common/mojom/contextual_search_js_api_service.mojom.h"
@@ -70,6 +74,24 @@
 #else
 #include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/payments/payment_request_factory.h"
+#include "chrome/browser/ui/webui/downloads/downloads.mojom.h"
+#include "chrome/browser/ui/webui/downloads/downloads_ui.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision.mojom.h"
+#include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_ui.h"
+#endif
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/discards/discards.mojom.h"
+#include "chrome/browser/ui/webui/discards/discards_ui.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_page_handler.mojom.h"
+#include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_ui.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -317,6 +339,9 @@ void PopulateChromeFrameBinders(
   map->Add<blink::mojom::ShareService>(base::BindRepeating(
       &ForwardToJavaWebContents<blink::mojom::ShareService>));
 
+  map->Add<contextual_search::mojom::ContextualSearchJsApiService>(
+      base::BindRepeating(&BindContextualSearchObserver));
+
 #if BUILDFLAG(ENABLE_UNHANDLED_TAP)
   map->Add<blink::mojom::UnhandledTapNotifier>(
       base::BindRepeating(&BindUnhandledTapWebContentsObserver));
@@ -333,11 +358,6 @@ void PopulateChromeFrameBinders(
     map->Add<payments::mojom::PaymentRequest>(
         base::BindRepeating(&payments::CreatePaymentRequest));
   }
-#endif
-
-#if defined(OS_ANDROID)
-  map->Add<contextual_search::mojom::ContextualSearchJsApiService>(
-      base::BindRepeating(&BindContextualSearchObserver));
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -364,6 +384,38 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<
       MediaEngagementUI, media::mojom::MediaEngagementScoreDetailsProvider>(
       map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      SiteEngagementUI, ::mojom::SiteEngagementDetailsProvider>(map);
+
+#if defined(OS_ANDROID)
+  RegisterWebUIControllerInterfaceBinder<
+      explore_sites::ExploreSitesInternalsUI,
+      explore_sites_internals::mojom::PageHandler>(map);
+#else
+  RegisterWebUIControllerInterfaceBinder<DownloadsUI,
+                                         downloads::mojom::PageHandlerFactory>(
+      map);
+#endif
+
+#if defined(OS_CHROMEOS)
+  RegisterWebUIControllerInterfaceBinder<
+      chromeos::AddSupervisionUI,
+      add_supervision::mojom::AddSupervisionHandler>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      chromeos::machine_learning::MachineLearningInternalsUI,
+      chromeos::machine_learning::mojom::PageHandler>(map);
+#endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
+  RegisterWebUIControllerInterfaceBinder<DiscardsUI,
+                                         discards::mojom::DetailsProvider>(map);
+
+  RegisterWebUIControllerInterfaceBinder<DiscardsUI,
+                                         discards::mojom::GraphDump>(map);
+#endif
 }
 
 }  // namespace internal

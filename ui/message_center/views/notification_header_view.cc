@@ -304,6 +304,7 @@ void NotificationHeaderView::SetOverflowIndicator(int count) {
 void NotificationHeaderView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Button::GetAccessibleNodeData(node_data);
 
+  node_data->role = ax::mojom::Role::kGenericContainer;
   node_data->SetName(app_name_view_->GetText());
   node_data->SetDescription(summary_text_view_->GetText() +
                             base::ASCIIToUTF16(" ") +

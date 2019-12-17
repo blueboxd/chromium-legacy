@@ -73,10 +73,19 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  virtual void UpdateSubscribedTopics(const Topics& topics,
-                                      const std::string& token);
-
   virtual void Init();
+
+  // Triggers subscription and/or unsubscription requests so that the set of
+  // subscribed topics matches |topics|. If the |instance_id_token| has changed,
+  // triggers re-subscription for all topics.
+  virtual void UpdateSubscribedTopics(const Topics& topics,
+                                      const std::string& instance_id_token);
+
+  // Called when the InstanceID token (previously passed to
+  // UpdateSubscribedTopics()) is deleted or revoked. Clears the cached token
+  // and any subscribed topics, since the subscriptions will not be valid
+  // anymore.
+  void ClearInstanceIDToken();
 
   // Classes interested in subscription channel state changes should implement
   // PerUserTopicRegistrationManager::Observer and register here.
@@ -121,7 +130,9 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   void OnAccessTokenRequestSucceeded(const std::string& access_token);
   void OnAccessTokenRequestFailed(GoogleServiceAuthError error);
 
-  TokenStateOnSubscriptionRequest DropAllSavedSubscriptionsOnTokenChange();
+  void DropAllSavedSubscriptionsOnTokenChange();
+  TokenStateOnSubscriptionRequest DropAllSavedSubscriptionsOnTokenChangeImpl();
+
   void NotifySubscriptionChannelStateChange(
       SubscriptionChannelState invalidator_state);
 

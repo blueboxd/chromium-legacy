@@ -133,6 +133,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // GREYAssert is induced.
 - (void)waitForIncognitoTabCount:(NSUInteger)count;
 
+// Loads |URL| as if it was opened from an external application.
+- (void)openURLFromExternalApp:(const GURL&)URL;
+
 #pragma mark - Settings Utilities (EG2)
 
 // Sets value for content setting.
@@ -260,6 +263,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 // Returns the number of incognito tabs.
 - (NSUInteger)incognitoTabCount WARN_UNUSED_RESULT;
+
+// Returns the index of active tab in normal (non-incognito) mode.
+- (NSUInteger)indexOfActiveNormalTab;
 
 // Simulates a backgrounding and raises an EarlGrey exception if simulation not
 // succeeded.

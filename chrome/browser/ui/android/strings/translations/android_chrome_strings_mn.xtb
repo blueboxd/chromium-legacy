@@ -24,7 +24,6 @@
 <translation id="1171770572613082465">"Шилдэг сайтууд" товчлуурыг товшин, түгээмэл хэрэглэгддэг вэб сайтыг харна уу</translation>
 <translation id="1173894706177603556">Нэр солих</translation>
 <translation id="1178581264944972037">Түр зогсоох</translation>
-<translation id="118069123878619799">- таны биеийн онцлог, жишээлбэл, өндөр</translation>
 <translation id="1181037720776840403">Хасах</translation>
 <translation id="1188239144602654184">AR оруулна уу</translation>
 <translation id="1197267115302279827">Хавчуургыг шилжүүлэх</translation>
@@ -62,7 +61,6 @@
 <translation id="1384959399684842514">Таталтыг түр зогсоосон</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> өдрийн өмнөөс идэвхтэй</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" />-р хайх</translation>
-<translation id="1404122904123200417"><ph name="WEBSITE_URL" />-д оруулсан</translation>
 <translation id="1406000523432664303">“Бүү дага”</translation>
 <translation id="1407135791313364759">Бүгдийг нээ</translation>
 <translation id="1409426117486808224">Нээлттэй чихтэй хуудасны хялбаршуулсан харагдац</translation>
@@ -215,6 +213,7 @@
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> зүйлийг устгасан</translation>
 <translation id="2536728043171574184">Энэ хуудсын офлайн хуулбарыг харж байна</translation>
 <translation id="2537178555904266562">Нууц үгийг синк хийхэд алдаа гарлаа</translation>
+<translation id="2537296579376733324">Бүх күүки, зөвхөн энэ сайт дээр</translation>
 <translation id="2546283357679194313">Cookies болон сайтын дата</translation>
 <translation id="2567385386134582609">ЗУРАГ</translation>
 <translation id="257088987046510401">Themes</translation>
@@ -472,6 +471,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="4565377596337484307">Нууц үгийг нуух</translation>
 <translation id="4570913071927164677">Дэлгэрэнгүй</translation>
 <translation id="4572422548854449519">Удирдсан бүртгэл рүү нэвтэрнэ үү</translation>
+<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# минутын өмнө}other{# минутын өмнө}}</translation>
 <translation id="4587589328781138893">Сайт</translation>
 <translation id="4594952190837476234">Энэ офлайн хуудсыг <ph name="CREATION_TIME" />-с харуулж байгаа бөгөөд онлайн хувилбараас өөр байж болзошгүй.</translation>
@@ -651,7 +651,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="5809361687334836369">{HOURS,plural, =1{# цагийн өмнө}other{# цагийн өмнө}}</translation>
 <translation id="5810288467834065221">Зохиогчийн эрх <ph name="YEAR" /> Google ХХК. Бүх эрх хуулиар хамгаалагдсан.</translation>
 <translation id="5817918615728894473">Холбох</translation>
-<translation id="5819762621475381970">- таны өрөөний төлөвлөлт</translation>
 <translation id="583281660410589416">Үл мэдэгдэх</translation>
 <translation id="5833984609253377421">Холбоосыг хуваалцах</translation>
 <translation id="5836192821815272682">Chrome-н шинэчлэлтийг татаж байна…</translation>
@@ -752,6 +751,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="6545017243486555795">Бүх өгөгдлийг устгах</translation>
 <translation id="6545864417968258051">Bluetooth скан хийх</translation>
 <translation id="6560414384669816528">Sogou-р хайх</translation>
+<translation id="656065428026159829">Дэлгэрэнгүй үзэх</translation>
 <translation id="6566259936974865419">Chrome <ph name="GIGABYTES" /> гигабайтыг хэмнэсэн</translation>
 <translation id="6573096386450695060">Байнга зөвшөөрөх</translation>
 <translation id="6573431926118603307">Таны бусад төхөөрөмжөөрөө Chrome-д нээсэн чихтэй хуудас энд харагдах болно.</translation>
@@ -848,6 +848,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="7293171162284876153">Синк хийж эхлэхийн тулд "Chrome-н өгөгдлөө синк хийх" гэснийг асаана уу.</translation>
 <translation id="729975465115245577">Таны төхөөрөмжид нууц үгийн файлыг хадгалах апп байхгүй байна.</translation>
 <translation id="7302081693174882195">Дэлгэрэнгүй: Хэмнэсэн датаны хэмжээгээр нь эрэмбэлсэн</translation>
+<translation id="7302486331832100261">Та ихэвчлэн мэдэгдлийг хориглодог. Зөвшөөрөхийн тулд Дэлгэрэнгүй мэдээлэл дээр товшино уу.</translation>
 <translation id="7328017930301109123">Lite горимд байх үед Chrome хуудсыг илүү хурдан ачаалж, 60 хувь хүртэлх бага дата ашигладаг.</translation>
 <translation id="7333031090786104871">Өмнөх сайтыг нэмж байна</translation>
 <translation id="7352939065658542140">ВИДЕО</translation>

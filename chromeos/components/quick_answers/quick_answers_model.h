@@ -10,16 +10,31 @@
 namespace chromeos {
 namespace quick_answers {
 
+// The status of loading quick answers.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// Note: Enums labels are at |QuickAnswersLoadStatus|.
+enum class LoadStatus {
+  kSuccess = 0,
+  kNetworkError = 1,
+  kNoResult = 2,
+  kMaxValue = kNoResult,
+};
+
 // The type of the result. Valid values are map to the search result types.
 // Please see go/1ns-doc for more detail.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// Note: Enums labels are at |QuickAnswersResultType|.
 enum class ResultType {
   kDefinitionResult = 5493,
   kTranslationResult = 6613,
-  kUnitConvertionResult = 13668,
+  kUnitConversionResult = 13668,
 };
 
 // Structure to describe a quick answer.
 struct QuickAnswer {
+  ResultType result_type;
   std::string primary_answer;
   std::string secondary_answer;
 };

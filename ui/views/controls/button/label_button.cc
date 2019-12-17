@@ -383,6 +383,7 @@ ui::NativeTheme::State LabelButton::GetForegroundThemeState(
 
 void LabelButton::UpdateImage() {
   image_->SetImage(GetImage(GetVisualState()));
+  ResetCachedPreferredSize();
 }
 
 void LabelButton::UpdateThemedBorder() {

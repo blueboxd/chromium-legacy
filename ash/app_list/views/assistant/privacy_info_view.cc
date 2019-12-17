@@ -199,7 +199,6 @@ void PrivacyInfoView::InitCloseButton() {
   close_button_->set_ink_drop_visible_opacity(kInkDropVisibleOpacity);
   close_button_->set_ink_drop_highlight_opacity(kInkDropHighlightOpacity);
   close_button_->set_ink_drop_base_color(kInkDropBaseColor);
-  close_button_->set_has_ink_drop_action_on_click(true);
   views::InstallCircleHighlightPathGenerator(close_button_);
   row_container_->AddChildView(close_button_);
 }

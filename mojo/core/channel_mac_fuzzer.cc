@@ -26,7 +26,7 @@ class ChannelMacFuzzer {
     logging::SetMinLogLevel(logging::LOG_FATAL);
   }
 
-  scoped_refptr<base::TaskRunner> io_task_runner() {
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner() {
     return io_task_executor_.task_runner();
   }
 

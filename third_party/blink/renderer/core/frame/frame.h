@@ -67,9 +67,6 @@ class WindowAgentFactory;
 
 enum class FrameDetachType { kRemove, kSwap };
 
-// Status of user gesture.
-enum class UserGestureStatus { kActive, kNone };
-
 // Frame is the base class of LocalFrame and RemoteFrame and should only contain
 // functionality shared between both. In particular, any method related to
 // input, layout, or painting probably belongs on LocalFrame.
@@ -171,12 +168,12 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // Transfers user activation state from |other| frame into |this|.
   void TransferUserActivationFrom(Frame* other);
 
-  void SetDocumentHasReceivedUserGestureBeforeNavigation(bool value) {
-    has_received_user_gesture_before_nav_ = value;
+  void SetHadStickyUserActivationBeforeNavigation(bool value) {
+    had_sticky_user_activation_before_nav_ = value;
   }
 
-  bool HasReceivedUserGestureBeforeNavigation() const {
-    return has_received_user_gesture_before_nav_;
+  bool HadStickyUserActivationBeforeNavigation() const {
+    return had_sticky_user_activation_before_nav_;
   }
 
   bool IsAttached() const {
@@ -279,14 +276,14 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // for details on how this state is maintained.
   UserActivationState user_activation_state_;
 
-  bool has_received_user_gesture_before_nav_ = false;
+  bool had_sticky_user_activation_before_nav_ = false;
 
   // This is set to true if this is a subframe, and the frame element in the
   // parent frame's document becomes inert. This should always be false for
   // the main frame.
   bool is_inert_ = false;
 
-  TouchAction inherited_effective_touch_action_ = TouchAction::kTouchActionAuto;
+  TouchAction inherited_effective_touch_action_ = TouchAction::kAuto;
 
   bool visible_to_hit_testing_ = true;
 

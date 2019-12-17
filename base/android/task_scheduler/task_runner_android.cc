@@ -38,11 +38,13 @@ jlong JNI_TaskRunnerImpl_Init(
       task_runner = CreateSingleThreadTaskRunner(task_traits);
       break;
   }
-  return reinterpret_cast<intptr_t>(new TaskRunnerAndroid(task_runner));
+  return reinterpret_cast<intptr_t>(new TaskRunnerAndroid(
+      task_runner, static_cast<TaskRunnerType>(task_runner_type)));
 }
 
-TaskRunnerAndroid::TaskRunnerAndroid(scoped_refptr<TaskRunner> task_runner)
-    : task_runner_(std::move(task_runner)) {}
+TaskRunnerAndroid::TaskRunnerAndroid(scoped_refptr<TaskRunner> task_runner,
+                                     TaskRunnerType type)
+    : task_runner_(std::move(task_runner)), type_(type) {}
 
 TaskRunnerAndroid::~TaskRunnerAndroid() = default;
 
@@ -63,7 +65,12 @@ void TaskRunnerAndroid::PostDelayedTask(
 }
 
 bool TaskRunnerAndroid::BelongsToCurrentThread(JNIEnv* env) {
-  return task_runner_->RunsTasksInCurrentSequence();
+  // TODO(crbug.com/1026641): Move BelongsToCurrentThread from TaskRunnerImpl to
+  // SequencedTaskRunnerImpl on the Java side too.
+  if (type_ == TaskRunnerType::BASE)
+    return false;
+  return static_cast<SequencedTaskRunner*>(task_runner_.get())
+      ->RunsTasksInCurrentSequence();
 }
 
 }  // namespace base

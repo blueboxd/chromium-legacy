@@ -45,11 +45,15 @@ class SearchResultLoader {
 
  private:
   void OnSimpleURLLoaderComplete(std::unique_ptr<std::string> response_body);
+  void OnResultParserComplete(std::unique_ptr<QuickAnswer> quick_answer);
 
   std::unique_ptr<SearchResponseParser> search_response_parser_;
   network::mojom::URLLoaderFactory* network_loader_factory_;
   std::unique_ptr<network::SimpleURLLoader> loader_;
   CompleteCallback complete_callback_;
+
+  // Time when the query is issued.
+  base::TimeTicks fetch_start_time_;
 };
 
 }  // namespace quick_answers

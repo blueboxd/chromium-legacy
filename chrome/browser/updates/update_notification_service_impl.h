@@ -13,7 +13,6 @@
 
 namespace notifications {
 struct ClientOverview;
-struct NotificationData;
 class NotificationScheduleService;
 struct ScheduleParams;
 }  // namespace notifications
@@ -21,6 +20,7 @@ struct ScheduleParams;
 namespace updates {
 
 struct UpdateNotificationConfig;
+struct UpdateNotificationInfo;
 
 class UpdateNotificationServiceImpl : public UpdateNotificationService {
  public:
@@ -30,11 +30,11 @@ class UpdateNotificationServiceImpl : public UpdateNotificationService {
 
  private:
   // UpdateNotificationService implementation.
-  void Schedule(notifications::NotificationData data) override;
+  void Schedule(UpdateNotificationInfo data) override;
 
   // Called after querying the |ClientOverview| struct from scheduler system
   // completed.
-  void OnClientOverviewQueried(notifications::NotificationData data,
+  void OnClientOverviewQueried(UpdateNotificationInfo data,
                                notifications::ClientOverview overview);
 
   // Build notification ScheduleParams for update notification.

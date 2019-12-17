@@ -11,12 +11,13 @@
 
 namespace ui {
 
-X11CanvasSurface::X11CanvasSurface(gfx::AcceleratedWidget widget,
-                                   base::TaskRunner* gpu_task_runner)
+X11CanvasSurface::X11CanvasSurface(
+    gfx::AcceleratedWidget widget,
+    scoped_refptr<base::SequencedTaskRunner> gpu_task_runner)
     : task_runner_(base::SequencedTaskRunnerHandle::Get()),
       x11_software_bitmap_presenter_(widget,
                                      task_runner_.get(),
-                                     gpu_task_runner) {}
+                                     std::move(gpu_task_runner)) {}
 
 X11CanvasSurface::~X11CanvasSurface() = default;
 

@@ -135,8 +135,7 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderUnacceleratedOverlay) {
 
   auto provider = CanvasResourceProvider::Create(
       kSize,
-      CanvasResourceProvider::ResourceUsage::
-          kSoftwareCompositedDirect2DResourceUsage,
+      CanvasResourceProvider::ResourceUsage::kSoftwareCompositedResourceUsage,
       context_provider_wrapper_, 0 /* msaa_sample_count */,
       kLow_SkFilterQuality, kColorParams,
       CanvasResourceProvider::kAllowImageChromiumPresentationMode,

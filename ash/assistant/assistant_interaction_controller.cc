@@ -43,9 +43,9 @@ namespace ash {
 
 namespace {
 
-constexpr int kWarmerWelcomesMaxTimesTriggered = 3;
 constexpr char kAndroidIntentScheme[] = "intent://";
 constexpr char kAndroidIntentPrefix[] = "#Intent";
+using assistant::ui::kWarmerWelcomesMaxTimesTriggered;
 
 // Helpers ---------------------------------------------------------------------
 

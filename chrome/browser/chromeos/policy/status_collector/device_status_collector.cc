@@ -745,6 +745,17 @@ class DeviceStatusCollectorState : public StatusCollectorState {
         battery_info_out->set_manufacture_date(
             base::StringPrintf("%04d-%02d-%02d", year, month, day));
       }
+      const auto& cpu_info = probe_result->cpu_info;
+      if (cpu_info.has_value()) {
+        for (const auto& cpu : cpu_info.value()) {
+          em::CpuInfo* const cpu_info_out =
+              response_params_.device_status->add_cpu_info();
+          cpu_info_out->set_model_name(cpu->model_name);
+          cpu_info_out->set_architecture(
+              em::CpuInfo::Architecture(cpu->architecture));
+          cpu_info_out->set_max_clock_speed_khz(cpu->max_clock_speed_khz);
+        }
+      }
 
       for (const std::unique_ptr<SampledData>& sample_data : samples) {
         auto it = sample_data->battery_samples.find(battery_info->model_name);
@@ -897,6 +908,8 @@ DeviceStatusCollector::DeviceStatusCollector(
       chromeos::kReportDeviceStorageStatus, callback);
   board_status_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kReportDeviceBoardStatus, callback);
+  cpu_info_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceCpuInfo, callback);
 
   power_manager_->AddObserver(this);
 
@@ -997,6 +1010,10 @@ void DeviceStatusCollector::UpdateReportingSettings() {
   if (!cros_settings_->GetBoolean(chromeos::kReportDeviceBoardStatus,
                                   &report_board_status_)) {
     report_board_status_ = false;
+  }
+  if (!cros_settings_->GetBoolean(chromeos::kReportDeviceCpuInfo,
+                                  &report_cpu_info_)) {
+    report_cpu_info_ = false;
   }
 
   if (!report_hardware_status_) {
@@ -1270,6 +1287,8 @@ void DeviceStatusCollector::FetchCrosHealthdData(
     categories_to_probe.push_back(ProbeCategoryEnum::kNonRemovableBlockDevices);
   if (report_power_status_)
     categories_to_probe.push_back(ProbeCategoryEnum::kBattery);
+  if (report_cpu_info_)
+    categories_to_probe.push_back(ProbeCategoryEnum::kCpu);
 
   auto sample = std::make_unique<SampledData>();
   sample->timestamp = base::Time::Now();
@@ -1289,6 +1308,10 @@ void DeviceStatusCollector::OnProbeDataFetched(
     chromeos::cros_healthd::mojom::TelemetryInfoPtr reply) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::move(callback).Run(std::move(reply), sampled_data_);
+}
+
+bool DeviceStatusCollector::ShouldFetchCrosHealthData() const {
+  return report_power_status_ || report_storage_status_ || report_cpu_info_;
 }
 
 void DeviceStatusCollector::ReportingUsersChanged() {
@@ -1614,8 +1637,10 @@ bool DeviceStatusCollector::GetHardwareStatus(
   // clear
   status->clear_cpu_temp_infos();
 
-  if (report_power_status_ || report_storage_status_) {
+  if (report_storage_status_)
     state->FetchEMMCLifeTime(emmc_lifetime_fetcher_);
+
+  if (ShouldFetchCrosHealthData()) {
     state->FetchCrosHealthdData(cros_healthd_data_fetcher_);
   } else {
     // Sample CPU temperature in a background thread.

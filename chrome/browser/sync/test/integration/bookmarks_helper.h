@@ -310,27 +310,54 @@ class AnyBookmarkChangeObserver : public bookmarks::BookmarkModelObserver {
   const base::RepeatingClosure cb_;
 };
 
+// Base class used for checkers that verify the state of an arbitrary number
+// of BookmarkModel instances.
+class BookmarkModelStatusChangeChecker : public StatusChangeChecker {
+ public:
+  BookmarkModelStatusChangeChecker();
+  ~BookmarkModelStatusChangeChecker() override;
+
+  BookmarkModelStatusChangeChecker(const BookmarkModelStatusChangeChecker&) =
+      delete;
+  BookmarkModelStatusChangeChecker& operator=(
+      const BookmarkModelStatusChangeChecker&) = delete;
+
+ protected:
+  void Observe(bookmarks::BookmarkModel* model);
+
+  // StatusChangeChecker override.
+  void CheckExitCondition() override;
+
+ private:
+  // Equivalent of CheckExitCondition() that instead posts a task in the current
+  // task runner.
+  void PostCheckExitCondition();
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  std::vector<std::pair<bookmarks::BookmarkModel*,
+                        std::unique_ptr<AnyBookmarkChangeObserver>>>
+      observers_;
+
+  bool pending_check_exit_condition_ = false;
+  base::WeakPtrFactory<BookmarkModelStatusChangeChecker> weak_ptr_factory_{
+      this};
+};
+
 // Checker used to block until bookmarks match on all clients.
-class BookmarksMatchChecker : public MultiClientStatusChangeChecker {
+class BookmarksMatchChecker : public BookmarkModelStatusChangeChecker {
  public:
   BookmarksMatchChecker();
 
   // StatusChangeChecker implementation.
   bool IsExitConditionSatisfied(std::ostream* os) override;
-};
-
-// Checker used to block until bookmarks match the verifier bookmark model.
-class BookmarksMatchVerifierChecker : public MultiClientStatusChangeChecker {
- public:
-  BookmarksMatchVerifierChecker();
-
-  // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied(std::ostream* os) override;
+  bool Wait() override;
 };
 
 // Base class used for checkers that verify the state of a single BookmarkModel
 // instance.
-class SingleBookmarkModelStatusChangeChecker : public StatusChangeChecker {
+class SingleBookmarkModelStatusChangeChecker
+    : public BookmarkModelStatusChangeChecker {
  public:
   explicit SingleBookmarkModelStatusChangeChecker(int profile_index);
   ~SingleBookmarkModelStatusChangeChecker() override;
@@ -344,22 +371,19 @@ class SingleBookmarkModelStatusChangeChecker : public StatusChangeChecker {
   int profile_index() const;
   bookmarks::BookmarkModel* bookmark_model() const;
 
-  // StatusChangeChecker override.
-  void CheckExitCondition() override;
-
  private:
-  // Equivalent of CheckExitCondition() that instead posts a task in the current
-  // task runner.
-  void PostCheckExitCondition();
-
-  SEQUENCE_CHECKER(sequence_checker_);
-
   const int profile_index_;
   bookmarks::BookmarkModel* bookmark_model_;
-  std::unique_ptr<AnyBookmarkChangeObserver> observer_;
-  bool pending_check_exit_condition_ = false;
-  base::WeakPtrFactory<SingleBookmarkModelStatusChangeChecker>
-      weak_ptr_factory_{this};
+};
+
+// Checker used to block until bookmarks match the verifier bookmark model.
+class BookmarksMatchVerifierChecker : public BookmarkModelStatusChangeChecker {
+ public:
+  BookmarksMatchVerifierChecker();
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied(std::ostream* os) override;
+  bool Wait() override;
 };
 
 // Generic status change checker that waits until a predicate as defined by

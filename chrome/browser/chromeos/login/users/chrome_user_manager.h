@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "chrome/browser/chromeos/login/users/affiliation.h"
 #include "chrome/browser/chromeos/login/users/user_manager_interface.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
@@ -22,7 +22,8 @@ namespace chromeos {
 class ChromeUserManager : public user_manager::UserManagerBase,
                           public UserManagerInterface {
  public:
-  explicit ChromeUserManager(scoped_refptr<base::TaskRunner> task_runner);
+  explicit ChromeUserManager(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~ChromeUserManager() override;
 
   // user_manager::UserManagerBase:

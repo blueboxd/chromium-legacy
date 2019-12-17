@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 
 namespace base {
-class TaskRunner;
+class SingleThreadTaskRunner;
 }
 
 namespace mojo {
@@ -102,8 +102,9 @@ class COMPONENT_EXPORT(MOJO_CORE_EMBEDDER) ScopedIPCSupport {
     FAST,
   };
 
-  ScopedIPCSupport(scoped_refptr<base::TaskRunner> io_thread_task_runner,
-                   ShutdownPolicy shutdown_policy);
+  ScopedIPCSupport(
+      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
+      ShutdownPolicy shutdown_policy);
   ~ScopedIPCSupport();
 
  private:

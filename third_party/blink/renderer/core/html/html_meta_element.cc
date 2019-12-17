@@ -613,6 +613,6 @@ const AtomicString& HTMLMetaElement::HttpEquiv() const {
 }
 
 const AtomicString& HTMLMetaElement::GetName() const {
-  return GetNameAttribute();
+  return FastGetAttribute(html_names::kNameAttr);
 }
 }

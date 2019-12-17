@@ -27,7 +27,6 @@ PaddedButton::PaddedButton(views::ButtonListener* listener)
 
   SetInkDropMode(InkDropMode::ON);
   set_ink_drop_base_color(SkColorSetA(SK_ColorBLACK, 0.6 * 0xff));
-  set_has_ink_drop_action_on_click(true);
 }
 
 std::unique_ptr<views::InkDrop> PaddedButton::CreateInkDrop() {

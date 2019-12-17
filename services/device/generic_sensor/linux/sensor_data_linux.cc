@@ -31,7 +31,7 @@ void InitAmbientLightSensorData(SensorPathsLinux* data) {
   data->sensor_file_names.push_back(std::move(file_names));
   data->sensor_frequency_file_name = "in_intensity_sampling_frequency";
   data->sensor_scale_name = "in_intensity_scale";
-  data->apply_scaling_func = base::Bind(
+  data->apply_scaling_func = base::BindRepeating(
       [](double scaling_value, double offset, SensorReading& reading) {
         reading.als.value = scaling_value * (reading.als.value + offset);
       });
@@ -79,7 +79,7 @@ void InitAccelerometerSensorData(SensorPathsLinux* data) {
 #if defined(OS_CHROMEOS)
   data->sensor_scale_name = "in_accel_base_scale";
   data->sensor_frequency_file_name = "in_accel_base_sampling_frequency";
-  data->apply_scaling_func = base::Bind(
+  data->apply_scaling_func = base::BindRepeating(
       [](double scaling_value, double offset, SensorReading& reading) {
         double scaling = base::kMeanGravityDouble / scaling_value;
         reading.accel.x = scaling * (reading.accel.x + offset);
@@ -90,7 +90,7 @@ void InitAccelerometerSensorData(SensorPathsLinux* data) {
   data->sensor_scale_name = "in_accel_scale";
   data->sensor_offset_file_name = "in_accel_offset";
   data->sensor_frequency_file_name = "in_accel_sampling_frequency";
-  data->apply_scaling_func = base::Bind(
+  data->apply_scaling_func = base::BindRepeating(
       [](double scaling_value, double offset, SensorReading& reading) {
         // Adapt Linux reading values to generic sensor api specs.
         reading.accel.x = -scaling_value * (reading.accel.x + offset);
@@ -115,19 +115,20 @@ void InitGyroscopeSensorData(SensorPathsLinux* data) {
 #if defined(OS_CHROMEOS)
   data->sensor_scale_name = "in_anglvel_base_scale";
   data->sensor_frequency_file_name = "in_anglvel_base_frequency";
-  data->apply_scaling_func = base::Bind([](double scaling_value, double offset,
-                                           SensorReading& reading) {
-    double scaling = gfx::DegToRad(base::kMeanGravityDouble) / scaling_value;
-    // Adapt CrOS reading values to generic sensor api specs.
-    reading.gyro.x = -scaling * (reading.gyro.x + offset);
-    reading.gyro.y = -scaling * (reading.gyro.y + offset);
-    reading.gyro.z = -scaling * (reading.gyro.z + offset);
-  });
+  data->apply_scaling_func = base::BindRepeating(
+      [](double scaling_value, double offset, SensorReading& reading) {
+        double scaling =
+            gfx::DegToRad(base::kMeanGravityDouble) / scaling_value;
+        // Adapt CrOS reading values to generic sensor api specs.
+        reading.gyro.x = -scaling * (reading.gyro.x + offset);
+        reading.gyro.y = -scaling * (reading.gyro.y + offset);
+        reading.gyro.z = -scaling * (reading.gyro.z + offset);
+      });
 #else
   data->sensor_scale_name = "in_anglvel_scale";
   data->sensor_offset_file_name = "in_anglvel_offset";
   data->sensor_frequency_file_name = "in_anglvel_sampling_frequency";
-  data->apply_scaling_func = base::Bind(
+  data->apply_scaling_func = base::BindRepeating(
       [](double scaling_value, double offset, SensorReading& reading) {
         reading.gyro.x = scaling_value * (reading.gyro.x + offset);
         reading.gyro.y = scaling_value * (reading.gyro.y + offset);
@@ -151,7 +152,7 @@ void InitMagnetometerSensorData(SensorPathsLinux* data) {
   data->sensor_scale_name = "in_magn_scale";
   data->sensor_offset_file_name = "in_magn_offset";
   data->sensor_frequency_file_name = "in_magn_sampling_frequency";
-  data->apply_scaling_func = base::Bind(
+  data->apply_scaling_func = base::BindRepeating(
       [](double scaling_value, double offset, SensorReading& reading) {
         double scaling = scaling_value * kMicroteslaInGauss;
         reading.magn.x = scaling * (reading.magn.x + offset);

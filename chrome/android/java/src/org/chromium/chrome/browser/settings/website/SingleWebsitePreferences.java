@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.settings.website;
 
+import static org.chromium.chrome.browser.settings.website.WebsitePreferenceBridge.SITE_WILDCARD;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -256,7 +258,7 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
             for (ChosenObjectInfo objectInfo : other.getChosenObjectInfo()) {
                 if (origin.equals(objectInfo.getOrigin())
                         && (objectInfo.getEmbedder() == null
-                                   || objectInfo.getEmbedder().equals("*"))) {
+                                || objectInfo.getEmbedder().equals(SITE_WILDCARD))) {
                     merged.addChosenObjectInfo(objectInfo);
                 }
             }
@@ -285,7 +287,8 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
     private static boolean permissionInfoIsForTopLevelOrigin(PermissionInfo info, String origin) {
         // TODO(mvanouwerkerk): Find a more generic place for this method.
         return origin.equals(info.getOrigin())
-                && (origin.equals(info.getEmbedderSafe()) || "*".equals(info.getEmbedderSafe()));
+                && (origin.equals(info.getEmbedderSafe())
+                        || SITE_WILDCARD.equals(info.getEmbedderSafe()));
     }
 
     /**

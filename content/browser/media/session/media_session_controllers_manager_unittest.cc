@@ -8,7 +8,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/media/session/media_session_controller.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/media_content_type.h"
@@ -69,8 +68,6 @@ class MediaSessionControllersManagerTest
 
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
-    service_manager_context_ = std::make_unique<TestServiceManagerContext>();
-
     media_player_id_ = MediaPlayerId(contents()->GetMainFrame(), 1);
     mock_media_session_controller_ =
         std::make_unique<StrictMock<MockMediaSessionController>>(
@@ -109,7 +106,6 @@ class MediaSessionControllersManagerTest
     mock_media_session_controller_.reset();
     mock_media_session_controller_ptr_ = nullptr;
     manager_.reset();
-    service_manager_context_.reset();
     RenderViewHostImplTestHarness::TearDown();
   }
 
@@ -120,7 +116,6 @@ class MediaSessionControllersManagerTest
   StrictMock<MockMediaSessionController>* mock_media_session_controller_ptr_ =
       nullptr;
   std::unique_ptr<MediaSessionControllersManager> manager_;
-  std::unique_ptr<TestServiceManagerContext> service_manager_context_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;

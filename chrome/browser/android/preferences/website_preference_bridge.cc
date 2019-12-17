@@ -1002,13 +1002,20 @@ static void JNI_WebsitePreferenceBridge_SetContentSettingEnabled(
 static void JNI_WebsitePreferenceBridge_SetContentSettingForPattern(
     JNIEnv* env,
     int content_settings_type,
-    const JavaParamRef<jstring>& pattern,
+    const JavaParamRef<jstring>& primary_pattern,
+    const JavaParamRef<jstring>& secondary_pattern,
     int setting) {
+  std::string primary_pattern_string =
+      ConvertJavaStringToUTF8(env, primary_pattern);
+  std::string secondary_pattern_string =
+      ConvertJavaStringToUTF8(env, secondary_pattern);
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetContentSettingCustomScope(
-      ContentSettingsPattern::FromString(ConvertJavaStringToUTF8(env, pattern)),
-      ContentSettingsPattern::Wildcard(),
+      ContentSettingsPattern::FromString(primary_pattern_string),
+      secondary_pattern_string.empty()
+          ? ContentSettingsPattern::Wildcard()
+          : ContentSettingsPattern::FromString(secondary_pattern_string),
       static_cast<ContentSettingsType>(content_settings_type), std::string(),
       static_cast<ContentSetting>(setting));
 }
@@ -1026,6 +1033,7 @@ static void JNI_WebsitePreferenceBridge_GetContentSettingsExceptions(
     Java_WebsitePreferenceBridge_addContentSettingExceptionToList(
         env, list, content_settings_type,
         ConvertUTF8ToJavaString(env, entries[i].primary_pattern.ToString()),
+        ConvertUTF8ToJavaString(env, entries[i].secondary_pattern.ToString()),
         entries[i].GetContentSetting(),
         ConvertUTF8ToJavaString(env, entries[i].source));
   }

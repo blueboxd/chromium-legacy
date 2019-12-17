@@ -89,7 +89,7 @@ PepperVpnProviderMessageFilter::~PepperVpnProviderMessageFilter() {
   }
 }
 
-scoped_refptr<base::TaskRunner>
+scoped_refptr<base::SequencedTaskRunner>
 PepperVpnProviderMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
   switch (message.type()) {

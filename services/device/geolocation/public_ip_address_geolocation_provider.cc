@@ -40,7 +40,7 @@ void PublicIpAddressGeolocationProvider::CreateGeolocation(
       std::make_unique<PublicIpAddressGeolocator>(
           static_cast<net::PartialNetworkTrafficAnnotationTag>(tag),
           public_ip_address_location_notifier_.get(),
-          base::Bind(
+          base::BindRepeating(
               &mojo::UniqueReceiverSet<mojom::Geolocation>::ReportBadMessage,
               base::Unretained(&geolocation_receiver_set_))),
       std::move(receiver));

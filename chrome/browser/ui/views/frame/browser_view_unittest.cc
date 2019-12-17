@@ -23,7 +23,6 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/version_info/channel.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/scrollbar_size.h"
@@ -55,32 +54,7 @@ base::string16 SubBrowserName(const char* fmt) {
 
 }  // namespace
 
-class BrowserViewTest : public TestWithBrowserView {
- public:
-  BrowserViewTest() = default;
-  ~BrowserViewTest() override = default;
-
-  void SetUp() override {
-    TestWithBrowserView::SetUp();
-    test_service_manager_context_ =
-        std::make_unique<content::TestServiceManagerContext>();
-  }
-
-  void TearDown() override {
-    // Must be reset before browser thread teardown.
-    test_service_manager_context_.reset();
-    TestWithBrowserView::TearDown();
-  }
-
- private:
-  // WebContentsImpl accesses
-  // content::ServiceManagerConnection::GetForProcess(), so we must make sure it
-  // is instantiated.
-  std::unique_ptr<content::TestServiceManagerContext>
-      test_service_manager_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserViewTest);
-};
+using BrowserViewTest = TestWithBrowserView;
 
 // Test basic construction and initialization.
 TEST_F(BrowserViewTest, BrowserView) {

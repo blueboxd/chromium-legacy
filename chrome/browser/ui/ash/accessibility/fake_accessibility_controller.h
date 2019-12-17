@@ -9,12 +9,6 @@
 #include "base/macros.h"
 
 // Fake implementation of ash's mojo AccessibilityController interface.
-//
-// This fake registers itself to ServiceManager on construction and deregisters
-// on destruction.
-//
-// Note: A ServiceManagerConnection must be initialized before constructing this
-// object. Consider using content::TestServiceManagerContext on your tests.
 class FakeAccessibilityController : ash::AccessibilityController {
  public:
   FakeAccessibilityController();

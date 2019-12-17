@@ -384,7 +384,6 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="3646890046000188562">{COUNT,plural, =1{accent agut}other{# accents aguts}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{dòlar}other{# símbols de dòlar}}</translation>
-<translation id="3658742229777143148">Revisió</translation>
 <translation id="3659787053479271466">alerta</translation>
 <translation id="3665563998540286755"><ph name="VALUE" />, quadre de llista</translation>
 <translation id="3681531118904532409">Papaia clar</translation>
@@ -1103,7 +1102,6 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="812886159861361726">S'ha aturat la baixada del fitxer <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">Tàctil</translation>
 <translation id="8153880621934657047">No sou dins la taula.</translation>
-<translation id="8161114871611868169">Secció de comentaris</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{ratlla baixa}other{# ratlles baixes}}</translation>
 <translation id="8179976553408161302">Retorn</translation>
 <translation id="8184828902145951186">fila</translation>

@@ -1,3 +1,8 @@
+# tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.10 Mac10.11 Mac10.12 Retina
+#         Mac10.13 Win Win7 Win10 ]
+# tags: [ Release Debug ]
+# results: [ Timeout Crash Pass Failure Slow Skip ]
+
 # This is the main failure suppression file for WPT WebDriver Tests.
 # WPT WebDriver tests are a part of layout tests, but are run by a
 # separate runner, run_webdriver_tests.py. Thus this is a separate

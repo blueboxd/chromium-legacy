@@ -15,6 +15,7 @@
 #include "chrome/services/app_service/public/cpp/app_update.h"
 #include "chrome/services/app_service/public/cpp/instance_update.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "extensions/common/constants.h"
 
 namespace chromeos {
 namespace app_time {
@@ -23,9 +24,10 @@ namespace {
 
 // Return whether app with |app_id| should be included for per-app time
 // limits.
-// TODO(agawronska): Add support for PWA and Chrome.
 bool ShouldIncludeApp(const AppId& app_id) {
-  return app_id.app_type() == apps::mojom::AppType::kArc;
+  return app_id.app_type() == apps::mojom::AppType::kArc ||
+         app_id.app_type() == apps::mojom::AppType::kWeb ||
+         app_id.app_id() == extension_misc::kChromeAppId;
 }
 
 // Gets AppId from |update|.
@@ -82,10 +84,9 @@ std::string AppServiceWrapper::GetAppName(const AppId& app_id) const {
   DCHECK(!app_service_id.empty());
 
   std::string app_name;
-  GetAppCache().ForOneApp(app_service_id,
-                          [&app_name](const apps::AppUpdate& update) {
-                            app_name = update.ShortName();
-                          });
+  GetAppCache().ForOneApp(
+      app_service_id,
+      [&app_name](const apps::AppUpdate& update) { app_name = update.Name(); });
   return app_name;
 }
 

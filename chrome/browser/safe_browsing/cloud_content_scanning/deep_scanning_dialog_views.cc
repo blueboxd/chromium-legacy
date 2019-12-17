@@ -6,14 +6,23 @@
 
 #include <memory>
 
+#include "base/task/post_task.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/message_box_view.h"
 
 namespace safe_browsing {
+
+namespace {
+
+constexpr base::TimeDelta kInitialUIDelay =
+    base::TimeDelta::FromMilliseconds(200);
+
+}  // namespace
 
 DeepScanningDialogViews::DeepScanningDialogViews(
     std::unique_ptr<DeepScanningDialogDelegate> delegate,
@@ -30,7 +39,12 @@ DeepScanningDialogViews::DeepScanningDialogViews(
           views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
   message_box_view_ = new views::MessageBoxView(init_params);
 
-  constrained_window::ShowWebModalDialogViews(this, web_contents);
+  // Show the dialog after a delay in case the response is fast enough.
+  base::PostDelayedTask(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&DeepScanningDialogViews::Show,
+                     weak_ptr_factory_.GetWeakPtr(), web_contents),
+      kInitialUIDelay);
 }
 
 int DeepScanningDialogViews::GetDialogButtons() const {
@@ -68,6 +82,21 @@ void DeepScanningDialogViews::DeleteDelegate() {
 
 ui::ModalType DeepScanningDialogViews::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
+}
+
+void DeepScanningDialogViews::CancelDialogIfShowing() {
+  if (shown_) {
+    DialogDelegate::CancelDialog();
+  } else {
+    // The UI not being shown means |message_box_view_| has to be freed here.
+    delete message_box_view_;
+    delete this;
+  }
+}
+
+void DeepScanningDialogViews::Show(content::WebContents* web_contents) {
+  constrained_window::ShowWebModalDialogViews(this, web_contents);
+  shown_ = true;
 }
 
 DeepScanningDialogViews::~DeepScanningDialogViews() = default;

@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/app_banner/before_install_prompt_event_init.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
@@ -56,27 +57,30 @@ Vector<String> BeforeInstallPromptEvent::platforms() const {
   return platforms_;
 }
 
-ScriptPromise BeforeInstallPromptEvent::userChoice(ScriptState* script_state) {
+ScriptPromise BeforeInstallPromptEvent::userChoice(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   UseCounter::Count(ExecutionContext::From(script_state),
                     WebFeature::kBeforeInstallPromptEventUserChoice);
   // |m_binding| must be bound to allow the AppBannerService to resolve the
   // userChoice promise.
   if (user_choice_ && receiver_.is_bound())
     return user_choice_->Promise(script_state->World());
-  return ScriptPromise::RejectWithDOMException(
-      script_state, MakeGarbageCollected<DOMException>(
-                        DOMExceptionCode::kInvalidStateError,
-                        "userChoice cannot be accessed on this event."));
+  exception_state.ThrowDOMException(
+      DOMExceptionCode::kInvalidStateError,
+      "userChoice cannot be accessed on this event.");
+  return ScriptPromise();
 }
 
-ScriptPromise BeforeInstallPromptEvent::prompt(ScriptState* script_state) {
+ScriptPromise BeforeInstallPromptEvent::prompt(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   // |m_bannerService| must be bound to allow us to inform the AppBannerService
   // to display the banner now.
   if (!banner_service_remote_.is_bound()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "The prompt() method cannot be called."));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The prompt() method cannot be called.");
+    return ScriptPromise();
   }
 
   ExecutionContext* context = ExecutionContext::From(script_state);
@@ -84,11 +88,10 @@ ScriptPromise BeforeInstallPromptEvent::prompt(ScriptState* script_state) {
 
   if (!LocalFrame::ConsumeTransientUserActivation(doc ? doc->GetFrame()
                                                       : nullptr)) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kNotAllowedError,
-            "The prompt() method must be called with a user gesture"));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotAllowedError,
+        "The prompt() method must be called with a user gesture");
+    return ScriptPromise();
   }
 
   UseCounter::Count(context, WebFeature::kBeforeInstallPromptEventPrompt);

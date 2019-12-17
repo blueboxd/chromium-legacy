@@ -25,6 +25,7 @@
 <translation id="7209941495304122410">Windows-Passwort eingeben</translation>
 <translation id="7357241217513796177">Sorgen Sie dafür, dass Sie eine Netzwerkverbindung haben, und versuchen Sie es dann noch einmal.</translation>
 <translation id="7536769223115622137">Arbeitskonto hinzufügen</translation>
+<translation id="7811865856574012727">Ihr Administrator hat die Geräteanmeldung auf die folgenden Domains beschränkt: <ph name="EMAIL_DOMAINS" />. Versuchen Sie es noch einmal mit einem gültigen Arbeitskonto.</translation>
 <translation id="7856245195110636219">Fortfahren ohne Eingabe des aktuellen Windows-Passworts nicht möglich. Bitte setzen Sie sich mit einem Systemadministrator in Verbindung.</translation>
 <translation id="8639729688781680518">Windows-Passwort vergessen</translation>
 <translation id="866458870819756755">Ein Nutzer konnte nicht erstellt werden.</translation>

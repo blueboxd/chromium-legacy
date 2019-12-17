@@ -212,8 +212,16 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
     return nullptr;
   }
 
+  // Some vulkan implementations require dedicated memory for sharing memory
+  // object between vulkan instances.
+  VkMemoryDedicatedAllocateInfoKHR dedicated_memory_info = {
+      .sType = VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO_KHR,
+      .image = image,
+  };
+
   VkExportMemoryAllocateInfoKHR external_info = {
       .sType = VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO_KHR,
+      .pNext = &dedicated_memory_info,
       .handleTypes = context_state->vk_context_provider()
                          ->GetVulkanImplementation()
                          ->GetExternalImageHandleType(),

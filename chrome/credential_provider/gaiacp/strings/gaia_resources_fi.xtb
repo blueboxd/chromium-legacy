@@ -25,6 +25,7 @@
 <translation id="7209941495304122410">Lisää Windows-salasana</translation>
 <translation id="7357241217513796177">Varmista, että käytössäsi on verkkoyhteys, ja yritä uudelleen.</translation>
 <translation id="7536769223115622137">Lisää työtili</translation>
+<translation id="7811865856574012727">Järjestelmänvalvoja on rajoittanut laitteella kirjautumista näihin verkkotunnuksiin: <ph name="EMAIL_DOMAINS" />. Yritä uudelleen toimivalla työtilillä.</translation>
 <translation id="7856245195110636219">Jatkaminen ei onnistu lisäämättä nykyistä Windows-salasanaa. Ota yhteyttä järjestelmänvalvojaan.</translation>
 <translation id="8639729688781680518">Unohdin Windows-salasanan</translation>
 <translation id="866458870819756755">Käyttäjän luominen epäonnistui.</translation>

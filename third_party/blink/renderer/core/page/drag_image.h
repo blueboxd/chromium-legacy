@@ -52,7 +52,7 @@ class CORE_EXPORT DragImage {
  public:
   static std::unique_ptr<DragImage> Create(
       Image*,
-      RespectImageOrientationEnum = kDoNotRespectImageOrientation,
+      RespectImageOrientationEnum = kRespectImageOrientation,
       float device_scale_factor = 1,
       InterpolationQuality = kInterpolationDefault,
       float opacity = 1,

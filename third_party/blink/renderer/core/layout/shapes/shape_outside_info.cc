@@ -186,7 +186,8 @@ std::unique_ptr<Shape> ShapeOutsideInfo::CreateShapeForImage(
   DCHECK(!style_image->IsPendingImage());
   const LayoutSize& image_size = RoundedLayoutSize(style_image->ImageSize(
       layout_box_.GetDocument(), layout_box_.StyleRef().EffectiveZoom(),
-      reference_box_logical_size_));
+      reference_box_logical_size_,
+      LayoutObject::ShouldRespectImageOrientation(&layout_box_)));
 
   const LayoutRect& margin_rect =
       GetShapeImageMarginRect(layout_box_, reference_box_logical_size_);
@@ -199,9 +200,9 @@ std::unique_ptr<Shape> ShapeOutsideInfo::CreateShapeForImage(
       style_image->GetImage(layout_box_, layout_box_.GetDocument(),
                             layout_box_.StyleRef(), FloatSize(image_size));
 
-  return Shape::CreateRasterShape(image.get(), shape_image_threshold,
-                                  image_rect, margin_rect, writing_mode,
-                                  margin);
+  return Shape::CreateRasterShape(
+      image.get(), shape_image_threshold, image_rect, margin_rect, writing_mode,
+      margin, LayoutObject::ShouldRespectImageOrientation(&layout_box_));
 }
 
 const Shape& ShapeOutsideInfo::ComputedShape() const {

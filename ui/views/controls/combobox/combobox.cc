@@ -65,7 +65,6 @@ class TransparentButton : public Button {
         ButtonController::NotifyAction::kOnPress);
 
     SetInkDropMode(InkDropMode::ON);
-    set_has_ink_drop_action_on_click(true);
   }
   ~TransparentButton() override = default;
 

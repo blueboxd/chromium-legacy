@@ -2147,8 +2147,7 @@ void AXPlatformNodeAuraLinux::EnsureGTypeInit() {
 
 // static
 ImplementedAtkInterfaces AXPlatformNodeAuraLinux::GetGTypeInterfaceMask(
-    const AXNodeData& data,
-    AtkRole atk_role) {
+    const AXNodeData& data) {
   // The default implementation set includes the AtkComponent and AtkAction
   // interfaces, which are provided by all the AtkObjects that we produce.
   ImplementedAtkInterfaces interface_mask;
@@ -2159,32 +2158,31 @@ ImplementedAtkInterfaces AXPlatformNodeAuraLinux::GetGTypeInterfaceMask(
       interface_mask.Add(ImplementedAtkInterfaces::kHypertext);
   }
 
-  // Value Interface
   if (data.IsRangeValueSupported())
     interface_mask.Add(ImplementedAtkInterfaces::kValue);
 
-  // Document Interface
-  if (atk_role == ATK_ROLE_DOCUMENT_WEB)
+  if (ui::IsDocument(data.role))
     interface_mask.Add(ImplementedAtkInterfaces::kDocument);
 
-  // Image Interface
-  if (atk_role == ATK_ROLE_IMAGE || atk_role == ATK_ROLE_IMAGE_MAP)
+  if (IsImage(data.role))
     interface_mask.Add(ImplementedAtkInterfaces::kImage);
 
   // The AtkHyperlinkImpl interface allows getting a AtkHyperlink from an
   // AtkObject. It is indeed implemented by actual web hyperlinks, but also by
   // objects that will become embedded objects in ATK hypertext, so the name is
   // a bit of a misnomer from the ATK API.
-  if (atk_role == ATK_ROLE_LINK || !ui::IsText(data.role))
+  if (IsLink(data.role) || data.role == ax::mojom::Role::kAnchor ||
+      !ui::IsText(data.role)) {
     interface_mask.Add(ImplementedAtkInterfaces::kHyperlink);
+  }
 
-  if (atk_role == ATK_ROLE_FRAME)
+  if (data.role == ax::mojom::Role::kWindow)
     interface_mask.Add(ImplementedAtkInterfaces::kWindow);
 
   if (IsContainerWithSelectableChildren(data.role))
     interface_mask.Add(ImplementedAtkInterfaces::kSelection);
 
-  if (atk_role == ATK_ROLE_TABLE || atk_role == ATK_ROLE_TREE_TABLE)
+  if (IsTableLike(data.role))
     interface_mask.Add(ImplementedAtkInterfaces::kTable);
 
   // Because the TableCell Interface is only supported in ATK version 2.12 and
@@ -2192,10 +2190,8 @@ ImplementedAtkInterfaces AXPlatformNodeAuraLinux::GetGTypeInterfaceMask(
   // enough version. If we don't, GetAccessibilityGType will exclude
   // AtkTableCell from the supported interfaces and none of its methods or
   // properties will be exposed to assistive technologies.
-  if (atk_role == ATK_ROLE_TABLE_CELL || atk_role == ATK_ROLE_COLUMN_HEADER ||
-      atk_role == ATK_ROLE_ROW_HEADER) {
+  if (IsCellOrTableHeader(data.role))
     interface_mask.Add(ImplementedAtkInterfaces::kTableCell);
-  }
 
   return interface_mask;
 }
@@ -2302,7 +2298,7 @@ AtkObject* AXPlatformNodeAuraLinux::FindFirstWebContentDocument() {
 
 AtkObject* AXPlatformNodeAuraLinux::CreateAtkObject() {
   EnsureGTypeInit();
-  interface_mask_ = GetGTypeInterfaceMask(GetData(), GetAtkRole());
+  interface_mask_ = GetGTypeInterfaceMask(GetData());
   GType type = GetAccessibilityGType();
   AtkObject* atk_object = static_cast<AtkObject*>(g_object_new(type, nullptr));
 
@@ -2376,8 +2372,6 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
     case ax::mojom::Role::kAnchor:
       return ATK_ROLE_LINK;
     case ax::mojom::Role::kComment:
-    case ax::mojom::Role::kCommentSection:
-    case ax::mojom::Role::kRevision:
     case ax::mojom::Role::kSuggestion:
       return ATK_ROLE_SECTION;
     case ax::mojom::Role::kApplication:
@@ -3025,8 +3019,7 @@ void AXPlatformNodeAuraLinux::EnsureAtkObjectIsValid() {
     // If the object's role changes and that causes its
     // interface mask to change, we need to create a new
     // AtkObject for it.
-    ImplementedAtkInterfaces interface_mask =
-        GetGTypeInterfaceMask(GetData(), GetAtkRole());
+    ImplementedAtkInterfaces interface_mask = GetGTypeInterfaceMask(GetData());
     if (interface_mask != interface_mask_)
       DestroyAtkObjects();
   }

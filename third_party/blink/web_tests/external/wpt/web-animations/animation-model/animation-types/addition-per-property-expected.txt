@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 556 tests; 538 PASS, 18 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 556 tests; 539 PASS, 17 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testAddition function
 PASS align-content: "flex-end" onto "flex-start"
@@ -300,7 +300,7 @@ PASS hyphens: "none" onto "manual"
 PASS hyphens: "manual" onto "none"
 PASS image-orientation (type: discrete) has testAddition function
 PASS image-orientation: "from-image" onto "none"
-FAIL image-orientation: "none" onto "from-image" assert_equals: The value should be none at 0ms expected "none" but got "from-image"
+PASS image-orientation: "none" onto "from-image"
 PASS isolation (type: discrete) has testAddition function
 PASS isolation: "isolate" onto "auto"
 PASS isolation: "auto" onto "isolate"

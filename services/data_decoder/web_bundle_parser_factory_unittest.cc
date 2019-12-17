@@ -53,31 +53,7 @@ class WebBundleParserFactoryTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
 };
 
-TEST_F(WebBundleParserFactoryTest, GetSize) {
-  base::FilePath test_file = base::FilePath(FILE_PATH_LITERAL("hello.wbn"));
-
-  base::File file(GetTestFilePath(test_file),
-                  base::File::FLAG_OPEN | base::File::FLAG_READ);
-  ASSERT_TRUE(file.IsValid());
-  uint64_t file_size = file.GetLength();
-
-  mojo::PendingRemote<mojom::BundleDataSource> remote;
-  auto data_source = CreateFileDataSource(
-      remote.InitWithNewPipeAndPassReceiver(), std::move(file));
-
-  uint64_t result_size;
-  base::RunLoop run_loop;
-  data_source->GetSize(
-      base::BindLambdaForTesting([&result_size, &run_loop](uint64_t size) {
-        result_size = size;
-        run_loop.QuitClosure().Run();
-      }));
-  run_loop.Run();
-
-  EXPECT_EQ(file_size, result_size);
-}
-
-TEST_F(WebBundleParserFactoryTest, Read) {
+TEST_F(WebBundleParserFactoryTest, FileDataSource) {
   base::FilePath test_file =
       GetTestFilePath(base::FilePath(FILE_PATH_LITERAL("hello.wbn")));
 
@@ -133,6 +109,21 @@ TEST_F(WebBundleParserFactoryTest, Read) {
     base::RunLoop run_loop;
     data_source->Read(
         file_length - test_length, test_length + 1,
+        base::BindLambdaForTesting(
+            [&result_data,
+             &run_loop](const base::Optional<std::vector<uint8_t>>& data) {
+              result_data = data;
+              run_loop.QuitClosure().Run();
+            }));
+    run_loop.Run();
+  }
+  ASSERT_TRUE(result_data);
+  EXPECT_EQ(last16b, *result_data);
+
+  {
+    base::RunLoop run_loop;
+    data_source->Read(
+        file_length + 1, test_length,
         base::BindLambdaForTesting(
             [&result_data,
              &run_loop](const base::Optional<std::vector<uint8_t>>& data) {

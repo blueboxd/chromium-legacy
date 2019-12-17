@@ -49,7 +49,7 @@ template <wchar_t const* runtime_class_id,
 class PlatformSensorReaderWinrtBase : public PlatformSensorReaderWinBase {
  public:
   using GetSensorFactoryFunctor =
-      base::Callback<HRESULT(ISensorWinrtStatics**)>;
+      base::RepeatingCallback<HRESULT(ISensorWinrtStatics**)>;
 
   // Sets the client to notify changes about. The consumer should always
   // ensure the lifetime of the client surpasses the lifetime of this class.

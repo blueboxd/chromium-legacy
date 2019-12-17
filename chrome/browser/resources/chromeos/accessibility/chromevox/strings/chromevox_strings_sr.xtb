@@ -385,7 +385,6 @@
 <translation id="3646890046000188562">{COUNT,plural, =1{обрнути полунаводник}one{# обрнути полунаводник}few{# обрнута полунаводника}other{# обрнутих полунаводника}}</translation>
 <translation id="3650317109285159359">поље за потврду ставке менија</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{знак за долар}one{# знак за долар}few{# знака за долар}other{# знакова за долар}}</translation>
-<translation id="3658742229777143148">Ревизија</translation>
 <translation id="3659787053479271466">alrt</translation>
 <translation id="3665563998540286755"><ph name="VALUE" />, оквир листе</translation>
 <translation id="3681531118904532409">Бледа розенаранџаста</translation>
@@ -1104,7 +1103,6 @@
 <translation id="812886159861361726">Преузимање је заустављено <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">За додирни екран</translation>
 <translation id="8153880621934657047">Нисте унутар табеле.</translation>
-<translation id="8161114871611868169">Одељак са коментарима</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{доња црта}one{# доња црта}few{# доње црте}other{# доњих црта}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8184828902145951186">ред</translation>

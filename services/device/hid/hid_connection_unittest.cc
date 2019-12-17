@@ -93,8 +93,8 @@ class TestConnectCallback {
   }
 
   HidService::ConnectCallback GetCallback() {
-    return base::Bind(&TestConnectCallback::SetConnection,
-                      base::Unretained(this));
+    return base::BindRepeating(&TestConnectCallback::SetConnection,
+                               base::Unretained(this));
   }
 
  private:

@@ -315,16 +315,16 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
     base::WeakPtr<CanvasResourceProvider> provider,
     SkFilterQuality filter_quality,
     const CanvasColorParams& color_params,
-    bool is_overlay_candidate,
     bool is_origin_top_left,
-    bool allow_concurrent_read_write_access,
-    bool is_accelerated)
+    bool is_accelerated,
+    uint32_t shared_image_usage_flags)
     : CanvasResource(std::move(provider), filter_quality, color_params),
       context_provider_wrapper_(std::move(context_provider_wrapper)),
-      is_overlay_candidate_(is_overlay_candidate),
       size_(size),
       is_origin_top_left_(is_origin_top_left),
       is_accelerated_(is_accelerated),
+      is_overlay_candidate_(shared_image_usage_flags &
+                            gpu::SHARED_IMAGE_USAGE_SCANOUT),
       texture_target_(
           is_overlay_candidate_
               ? gpu::GetBufferTextureTarget(
@@ -341,6 +341,7 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
       Platform::Current()->GetGpuMemoryBufferManager();
   if (!is_accelerated_) {
     DCHECK(gpu_memory_buffer_manager);
+    DCHECK(shared_image_usage_flags & gpu::SHARED_IMAGE_USAGE_DISPLAY);
 
     gpu_memory_buffer_ = gpu_memory_buffer_manager->CreateGpuMemoryBuffer(
         gfx::Size(size), ColorParams().GetBufferFormat(),
@@ -355,23 +356,22 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
       context_provider_wrapper_->ContextProvider()->SharedImageInterface();
   DCHECK(shared_image_interface);
 
-  uint32_t flags = gpu::SHARED_IMAGE_USAGE_DISPLAY |
-                   gpu::SHARED_IMAGE_USAGE_GLES2 |
-                   gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
-  if (is_overlay_candidate_)
-    flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
-  if (allow_concurrent_read_write_access)
-    flags |= gpu::SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE;
+  // The GLES2 flag is needed for rendering via GL using a GrContext.
+  // TODO(jochin): Use SHARED_IMAGE_USAGE_RASTER instead when adding support for
+  // OOP raster. See crbug.com/1023277.
+  shared_image_usage_flags = shared_image_usage_flags |
+                             gpu::SHARED_IMAGE_USAGE_GLES2 |
+                             gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
 
   gpu::Mailbox shared_image_mailbox;
   if (gpu_memory_buffer_) {
     shared_image_mailbox = shared_image_interface->CreateSharedImage(
         gpu_memory_buffer_.get(), gpu_memory_buffer_manager,
-        ColorParams().GetStorageGfxColorSpace(), flags);
+        ColorParams().GetStorageGfxColorSpace(), shared_image_usage_flags);
   } else {
     shared_image_mailbox = shared_image_interface->CreateSharedImage(
         ColorParams().TransferableResourceFormat(), gfx::Size(size),
-        ColorParams().GetStorageGfxColorSpace(), flags);
+        ColorParams().GetStorageGfxColorSpace(), shared_image_usage_flags);
   }
 
   // Wait for the mailbox to be ready to be used.
@@ -387,7 +387,8 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
   // a texture for writes.
   if (!is_accelerated_)
     return;
-  if (allow_concurrent_read_write_access) {
+  if (shared_image_usage_flags &
+      gpu::SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE) {
     owning_thread_data().texture_id_for_write_access =
         raster_interface->CreateAndConsumeForGpuRaster(shared_image_mailbox);
   } else {
@@ -402,15 +403,14 @@ scoped_refptr<CanvasResourceSharedImage> CanvasResourceSharedImage::Create(
     base::WeakPtr<CanvasResourceProvider> provider,
     SkFilterQuality filter_quality,
     const CanvasColorParams& color_params,
-    bool is_overlay_candidate,
     bool is_origin_top_left,
-    bool allow_concurrent_read_write_access,
-    bool is_accelerated) {
+    bool is_accelerated,
+    uint32_t shared_image_usage_flags) {
   TRACE_EVENT0("blink", "CanvasResourceSharedImage::Create");
   auto resource = base::AdoptRef(new CanvasResourceSharedImage(
       size, std::move(context_provider_wrapper), std::move(provider),
-      filter_quality, color_params, is_overlay_candidate, is_origin_top_left,
-      allow_concurrent_read_write_access, is_accelerated));
+      filter_quality, color_params, is_origin_top_left, is_accelerated,
+      shared_image_usage_flags));
   return resource->IsValid() ? resource : nullptr;
 }
 

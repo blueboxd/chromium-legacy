@@ -37,7 +37,8 @@ void PaintWorkletDeferredImage::Draw(cc::PaintCanvas* canvas,
 }
 
 void PaintWorkletDeferredImage::DrawTile(GraphicsContext& context,
-                                         const FloatRect& src_rect) {
+                                         const FloatRect& src_rect,
+                                         RespectImageOrientationEnum) {
   DrawInternal(context.Canvas(), FloatRect(), src_rect, context.FillFlags(),
                kClampImageToSourceRect, image_);
 }
@@ -45,7 +46,8 @@ void PaintWorkletDeferredImage::DrawTile(GraphicsContext& context,
 sk_sp<PaintShader> PaintWorkletDeferredImage::CreateShader(
     const FloatRect& tile_rect,
     const SkMatrix* pattern_matrix,
-    const FloatRect& src_rect) {
+    const FloatRect& src_rect,
+    RespectImageOrientationEnum) {
   SkRect tile = SkRect::MakeXYWH(tile_rect.X(), tile_rect.Y(),
                                  tile_rect.Width(), tile_rect.Height());
   sk_sp<PaintShader> shader = PaintShader::MakeImage(

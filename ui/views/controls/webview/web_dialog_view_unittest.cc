@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/run_loop.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/browser_test_utils.h"
@@ -65,9 +66,11 @@ class WebDialogViewUnitTest : public views::test::WidgetTest {
     // dependencies from content.
     SetBrowserClientForTesting(&test_browser_client_);
 
+    web_dialog_delegate_ =
+        std::make_unique<TestWebDialogViewWebDialogDelegate>();
     web_contents_ = CreateWebContents();
     web_dialog_view_ = new WebDialogView(
-        web_contents_->GetBrowserContext(), &web_dialog_delegate_,
+        web_contents_->GetBrowserContext(), web_dialog_delegate_.get(),
         std::make_unique<ui::test::TestWebContentsHandler>());
 
     // This prevents the initialization of the dialog from navigating
@@ -94,9 +97,19 @@ class WebDialogViewUnitTest : public views::test::WidgetTest {
 
   WebDialogView* web_dialog_view() { return web_dialog_view_; }
 
-  TestWebDialogViewWebDialogDelegate* web_dialog_delegate() {
-    return &web_dialog_delegate_;
+  views::WebView* web_view() {
+    return web_dialog_view_ ? web_dialog_view_->web_view_ : nullptr;
   }
+
+  ui::WebDialogDelegate* web_view_delegate() {
+    return web_dialog_view_ ? web_dialog_view_->delegate_ : nullptr;
+  }
+
+  TestWebDialogViewWebDialogDelegate* web_dialog_delegate() {
+    return web_dialog_delegate_.get();
+  }
+
+  void ResetWebDialogDelegate() { web_dialog_delegate_.reset(); }
 
  protected:
   std::unique_ptr<content::TestWebContents> CreateWebContents() const {
@@ -125,7 +138,7 @@ class WebDialogViewUnitTest : public views::test::WidgetTest {
   WebDialogView* web_dialog_view_ = nullptr;
   base::RepeatingClosure quit_closure_;
 
-  TestWebDialogViewWebDialogDelegate web_dialog_delegate_;
+  std::unique_ptr<TestWebDialogViewWebDialogDelegate> web_dialog_delegate_;
   std::unique_ptr<content::TestWebContents> web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDialogViewUnitTest);
@@ -149,6 +162,27 @@ TEST_F(WebDialogViewUnitTest, WebDialogViewNotClosedOnEscape) {
 
   // The Dialog Widget should not be closed when escape is pressed.
   EXPECT_FALSE(widget_is_closed());
+}
+
+TEST_F(WebDialogViewUnitTest, ObservableWebViewOnWebDialogViewClosed) {
+  // Close the widget by pressing ESC key.
+  web_dialog_delegate()->set_close_on_escape(true);
+  const ui::KeyEvent escape_event(ui::ET_KEY_PRESSED, ui::VKEY_ESCAPE,
+                                  ui::EF_NONE);
+  SimulateKeyEvent(escape_event);
+
+  // The Dialog Widget should be closed .
+  ASSERT_TRUE(widget_is_closed());
+  // The delegate should be nullified so no further communication with it.
+  EXPECT_FALSE(web_view_delegate());
+
+  ResetWebDialogDelegate();
+  // Calling back to web view's ResourceLoadComplete() should not cause crash.
+  content::RenderFrameHost* rfh = web_view()->web_contents()->GetMainFrame();
+  ASSERT_TRUE(rfh);
+  content::GlobalRequestID request_id;
+  content::mojom::ResourceLoadInfo resource_load_info;
+  web_view()->ResourceLoadComplete(rfh, request_id, resource_load_info);
 }
 
 }  // namespace views

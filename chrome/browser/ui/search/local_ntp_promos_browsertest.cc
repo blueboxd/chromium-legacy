@@ -202,10 +202,10 @@ IN_PROC_BROWSER_TEST_F(LocalNTPPromoTest, BlockedPromoFetched) {
 // Tests are disabled until we implement a way to navigate to chrome scheme
 // links from the NTP.
 IN_PROC_BROWSER_TEST_F(LocalNTPPromoTest,
-                       DISABLED_PromoWithPriviligedLinkAndPermission) {
+                       PromoWithExtensionsLinkAndPermission) {
   PromoData promo;
   promo.promo_html = "<div><a href=\"chrome://extensions\">promo</a></div>";
-  promo.can_open_privileged_links = true;
+  promo.can_open_extensions_page = true;
   promo_service()->SetupWithPromo(promo);
 
   base::HistogramTester histograms;
@@ -243,8 +243,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPPromoTest,
   histograms.ExpectTotalCount("NewTabPage.Promos.ShownTime", 1);
 }
 
-IN_PROC_BROWSER_TEST_F(LocalNTPPromoTest,
-                       DISABLED_PromoWithPriviligedLinkNoPermission) {
+IN_PROC_BROWSER_TEST_F(LocalNTPPromoTest, PromoWithExtensionsLinkNoPermission) {
   PromoData promo;
   promo.promo_html = "<div><a href=\"chrome://extensions\">promo</a></div>";
   promo_service()->SetupWithPromo(promo);

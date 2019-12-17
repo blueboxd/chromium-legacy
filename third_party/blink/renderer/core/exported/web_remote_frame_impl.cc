@@ -441,8 +441,9 @@ void WebRemoteFrameImpl::IntrinsicSizingInfoChanged(
   owner->IntrinsicSizingInfoChanged();
 }
 
-void WebRemoteFrameImpl::SetHasReceivedUserGestureBeforeNavigation(bool value) {
-  GetFrame()->SetDocumentHasReceivedUserGestureBeforeNavigation(value);
+void WebRemoteFrameImpl::SetHadStickyUserActivationBeforeNavigation(
+    bool value) {
+  GetFrame()->SetHadStickyUserActivationBeforeNavigation(value);
 }
 
 v8::Local<v8::Object> WebRemoteFrameImpl::GlobalProxy() const {

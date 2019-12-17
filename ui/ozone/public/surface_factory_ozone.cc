@@ -67,7 +67,7 @@ std::unique_ptr<OverlaySurface> SurfaceFactoryOzone::CreateOverlaySurface(
 
 std::unique_ptr<SurfaceOzoneCanvas> SurfaceFactoryOzone::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget,
-    base::TaskRunner* task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   return nullptr;
 }
 

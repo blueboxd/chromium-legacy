@@ -78,6 +78,7 @@ TEST_F(DefinitionResultParserTest, Success) {
                             "incapable of being fully explored or understood.");
   QuickAnswer quick_answer;
   EXPECT_TRUE(parser_->Parse(&result, &quick_answer));
+  EXPECT_EQ(ResultType::kDefinitionResult, quick_answer.result_type);
   EXPECT_EQ("incapable of being fully explored or understood.",
             quick_answer.primary_answer);
   EXPECT_EQ("unfathomable · /ˌənˈfaT͟Həməb(ə)/", quick_answer.secondary_answer);

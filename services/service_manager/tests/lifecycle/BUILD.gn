@@ -23,8 +23,8 @@ source_set("lifecycle") {
 
   data_deps = [
     ":lifecycle_unittest_app",
-    ":lifecycle_unittest_parent",
     ":lifecycle_unittest_package",
+    ":lifecycle_unittest_parent",
   ]
 }
 

@@ -109,6 +109,10 @@ class VIZ_HOST_EXPORT HitTestQuery {
     return hit_test_data_;
   }
 
+  // Returns true if |id| is present in |hit_test_data|. If |id| is present
+  // |index| is set accordingly.
+  bool FindIndexOfFrameSink(const FrameSinkId& id, size_t* index) const;
+
  protected:
   // The FindTargetForLocation() functions call into this.
   // If |is_location_relative_to_parent| is true, |location| is relative to
@@ -147,10 +151,6 @@ class VIZ_HOST_EXPORT HitTestQuery {
                                        gfx::Transform* transform) const;
 
   void RecordSlowPathHitTestReasons(uint32_t) const;
-
-  // Returns true if |id| is present in |hit_test_data|. If |id| is present
-  // |index| is set accordingly.
-  bool FindIndexOfFrameSink(const FrameSinkId& id, size_t* index) const;
 
   std::vector<AggregatedHitTestRegion> hit_test_data_;
 

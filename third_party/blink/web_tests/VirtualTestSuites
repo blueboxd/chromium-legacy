@@ -535,7 +535,8 @@
               "external/wpt/css/css-scoping",
               "external/wpt/css/css-typed-om",
               "external/wpt/css/css-variables",
-              "fast/css/variables"],
+              "fast/css/variables",
+              "fast/forms/select/select-autofilled.html"],
     "args": ["--enable-blink-features=CSSCascade"]
   },
   {

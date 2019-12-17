@@ -106,8 +106,8 @@ X11SurfaceFactory::CreateVulkanImplementation(bool allow_protected_memory,
 
 std::unique_ptr<SurfaceOzoneCanvas> X11SurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget,
-    base::TaskRunner* task_runner) {
-  return std::make_unique<X11CanvasSurface>(widget, task_runner);
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  return std::make_unique<X11CanvasSurface>(widget, std::move(task_runner));
 }
 
 }  // namespace ui

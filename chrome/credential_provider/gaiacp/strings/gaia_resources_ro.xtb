@@ -25,6 +25,7 @@
 <translation id="7209941495304122410">Introdu parola pentru Windows</translation>
 <translation id="7357241217513796177">Asigură-te că ai o conexiune la rețea și încearcă din nou.</translation>
 <translation id="7536769223115622137">Adaugă contul de serviciu</translation>
+<translation id="7811865856574012727">Administratorul a restricționat conectarea dispozitivului la următoarele domenii: <ph name="EMAIL_DOMAINS" />. Încearcă din nou folosind un cont de serviciu valid.</translation>
 <translation id="7856245195110636219">Nu se mai poate continua fără introducerea parolei pentru Windows actuale. Contactează un administrator de sistem.</translation>
 <translation id="8639729688781680518">Am uitat parola pentru Windows</translation>
 <translation id="866458870819756755">Nu s-a putut crea un utilizator.</translation>

@@ -50,11 +50,6 @@ class BASE_EXPORT PooledTaskRunnerDelegate {
   virtual void RemoveJobTaskSource(
       scoped_refptr<JobTaskSource> task_source) = 0;
 
-  // Invoked when RunsTasksInCurrentSequence() is called on a
-  // PooledParallelTaskRunner. Returns true if the current thread is part of the
-  // ThreadGroup associated with |traits|.
-  virtual bool IsRunningPoolWithTraits(const TaskTraits& traits) const = 0;
-
   // Invoked when the priority of |sequence|'s TaskRunner is updated. The
   // implementation must update |sequence|'s priority to |priority|, then place
   // |sequence| in the correct priority-queue position within the appropriate

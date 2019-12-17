@@ -4,6 +4,7 @@
 
 package org.chromium.weblayer.test;
 
+import android.os.SystemClock;
 import android.support.test.filters.SmallTest;
 import android.support.v4.app.Fragment;
 import android.view.View;
@@ -87,6 +88,10 @@ public class TopControlsTest {
         // Get the size of the page.
         mInitialVisiblePageHeight = getVisiblePageHeight();
         Assert.assertTrue(mInitialVisiblePageHeight > 0);
+
+        // TODO(http://crbug.com/1034147): Remove this and find a way to pass command line arguments
+        // to the implementation.
+        SystemClock.sleep(3100);
 
         // Move by the size of the top-controls.
         EventUtils.simulateDragFromCenterOfView(

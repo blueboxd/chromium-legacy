@@ -212,8 +212,8 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
   scoped_refptr<PlatformSensor> CreateSensor(mojom::SensorType type) {
     run_loop_ = std::make_unique<base::RunLoop>();
     provider_->CreateSensor(
-        type, base::Bind(&PlatformSensorAndProviderTestWin::SensorCreated,
-                         base::Unretained(this)));
+        type, base::BindOnce(&PlatformSensorAndProviderTestWin::SensorCreated,
+                             base::Unretained(this)));
     run_loop_->Run();
     scoped_refptr<PlatformSensor> sensor;
     sensor.swap(platform_sensor_);

@@ -363,7 +363,8 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, TwoApps) {
   ExpectLaunchCounts(tester, /*windowLaunches=*/3, /*tabLaunches=*/0);
 }
 
-IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, ManyUserApps) {
+// Flaky. http://crbug.com/1034028
+IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, DISABLED_ManyUserApps) {
   base::HistogramTester tester;
 
   // More than 3 user-installed apps:

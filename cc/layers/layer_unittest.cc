@@ -939,7 +939,7 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
       gfx::Transform(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetDoubleSided(false));
   TouchActionRegion touch_action_region;
-  touch_action_region.Union(kTouchActionNone, gfx::Rect(10, 10));
+  touch_action_region.Union(TouchAction::kNone, gfx::Rect(10, 10));
   EXPECT_SET_NEEDS_COMMIT(
       1, test_layer->SetTouchActionRegion(std::move(touch_action_region)));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetForceRenderSurfaceForTesting(true));

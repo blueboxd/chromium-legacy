@@ -25,7 +25,7 @@ class FontMessageFilter : public ppapi::host::ResourceMessageFilter {
   FontMessageFilter();
 
   // ppapi::host::ResourceMessageFilter implementation.
-  scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
+  scoped_refptr<base::SequencedTaskRunner> OverrideTaskRunnerForMessage(
       const IPC::Message& msg) override;
   int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
@@ -44,8 +44,8 @@ FontMessageFilter::FontMessageFilter() {}
 
 FontMessageFilter::~FontMessageFilter() {}
 
-scoped_refptr<base::TaskRunner> FontMessageFilter::OverrideTaskRunnerForMessage(
-    const IPC::Message& msg) {
+scoped_refptr<base::SequencedTaskRunner>
+FontMessageFilter::OverrideTaskRunnerForMessage(const IPC::Message& msg) {
   // Use the font list SequencedTaskRunner to get the font list (currently the
   // only message) since getting the font list is non-threadsafe on Linux (for
   // versions of Pango predating 2013).

@@ -127,8 +127,6 @@ class WorkerPoolTaskRunner : public base::TaskRunner {
     worker_pool::PostTask(location, WTF::CrossThreadBindOnce(std::move(task)));
     return true;
   }
-
-  bool RunsTasksInCurrentSequence() const override { return false; }
 };
 
 }  // namespace

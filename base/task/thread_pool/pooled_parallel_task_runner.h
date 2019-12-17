@@ -34,8 +34,6 @@ class BASE_EXPORT PooledParallelTaskRunner : public TaskRunner {
                        OnceClosure closure,
                        TimeDelta delay) override;
 
-  bool RunsTasksInCurrentSequence() const override;
-
   // Removes |sequence| from |sequences_|.
   void UnregisterSequence(Sequence* sequence);
 

@@ -14,6 +14,7 @@
 #include "base/unguessable_token.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
@@ -440,6 +441,17 @@ void SharedWorkerHost::SetServiceWorkerHandle(
     std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   service_worker_handle_ = std::move(service_worker_handle);
+}
+
+void SharedWorkerHost::PruneNonExistentClients() {
+  DCHECK(!started_);
+
+  // It isn't necessary to send a notification to the removed clients since they
+  // are about to be destroyed anyway.
+  clients_.remove_if([](const ClientInfo& client_info) {
+    return !RenderFrameHostImpl::FromID(client_info.client_process_id,
+                                        client_info.frame_id);
+  });
 }
 
 bool SharedWorkerHost::HasClients() const {

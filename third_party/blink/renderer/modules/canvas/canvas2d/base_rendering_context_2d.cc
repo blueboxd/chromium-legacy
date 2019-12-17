@@ -1105,8 +1105,7 @@ void BaseRenderingContext2D::DrawImageInternal(cc::PaintCanvas* c,
 
   if (!image_source->IsVideoElement()) {
     image_flags.setAntiAlias(ShouldDrawImageAntialiased(dst_rect));
-    image->Draw(c, image_flags, dst_rect, src_rect,
-                kDoNotRespectImageOrientation,
+    image->Draw(c, image_flags, dst_rect, src_rect, kRespectImageOrientation,
                 Image::kDoNotClampImageToSourceRect, Image::kSyncDecode);
   } else {
     c->save();

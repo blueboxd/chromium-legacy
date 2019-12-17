@@ -2,16 +2,16 @@
 @MAC-ALLOW:AXRole*
 @MAC-ALLOW:AXSubrole*
 @WIN-ALLOW:xml-roles:*
+@WIN-DENY:level*
 @AURALINUX-ALLOW:xml-roles*
 @UIA-WIN-ALLOW:LocalizedControlType*
 @UIA-WIN-DENY:LocalizedControlType='text'
+@BLINK-DENY:hierarchicalLevel*
 -->
 <!DOCTYPE html>
 <html>
 <body>
   <div role="comment" aria-label="comment"></div>
-  <div role="commentsection" aria-label="comment section"></div>
-  <div role="revision" aria-label="revision"></div>
   <div role="suggestion" aria-label="suggestion"></div>
   <p>This is <span role="mark">highlighted</span>.</p>
 </body>

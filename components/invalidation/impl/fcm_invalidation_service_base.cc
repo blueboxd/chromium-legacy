@@ -226,9 +226,13 @@ void FCMInvalidationServiceBase::StopInvalidator() {
 }
 
 void FCMInvalidationServiceBase::StopInvalidatorPermanently() {
-  StopInvalidator();
+  // Reset the client ID (aka InstanceID) *before* stopping, so that
+  // FCMInvalidationListener gets notified about the cleared ID (the listener
+  // gets destroyed during StopInvalidator()).
   if (!client_id_.empty())
     ResetClientID();
+
+  StopInvalidator();
 }
 
 void FCMInvalidationServiceBase::PopulateClientID() {
@@ -265,6 +269,12 @@ void FCMInvalidationServiceBase::ResetClientID() {
   // Also let the registrar (and its observers) know that the instance ID is
   // gone.
   invalidator_registrar_.UpdateInvalidatorInstanceId(std::string());
+
+  // This will also delete all Instance ID *tokens*; we need to let the
+  // FCMInvalidationListener know.
+  if (invalidation_listener_) {
+    invalidation_listener_->ClearInstanceIDToken();
+  }
 }
 
 void FCMInvalidationServiceBase::OnInstanceIDReceived(
@@ -287,9 +297,6 @@ void FCMInvalidationServiceBase::OnDeleteInstanceIDCompleted(
   base::UmaHistogramEnumeration("FCMInvalidations.ResetClientIDStatus", result);
 
   diagnostic_info_.instance_id_cleared = base::Time::Now();
-
-  // TODO(crbug.com/1028761,crbug.com/1023813): This also deleted all Instance
-  // ID *tokens*; we need to let the FCMInvalidationListener know.
 }
 
 void FCMInvalidationServiceBase::DoUpdateSubscribedTopicsIfNeeded() {

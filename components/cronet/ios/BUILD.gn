@@ -49,8 +49,8 @@ _cronet_deps = [
   "//ios/net",
   "//ios/net:network_protocol",
   "//ios/web/common:user_agent",
-  "//ios/web/public/init:global_state",
   "//ios/web/init:global_state",
+  "//ios/web/public/init:global_state",
   "//net",
   "//url",
 ]

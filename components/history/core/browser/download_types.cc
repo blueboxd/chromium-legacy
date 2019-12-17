@@ -71,6 +71,7 @@ DownloadDangerType IntToDownloadDangerType(int danger_type) {
     case DownloadDangerType::SENSITIVE_CONTENT_BLOCK:
     case DownloadDangerType::DEEP_SCANNED_SAFE:
     case DownloadDangerType::DEEP_SCANNED_OPENED_DANGEROUS:
+    case DownloadDangerType::PROMPT_FOR_SCANNING:
       return static_cast<DownloadDangerType>(danger_type);
 
     case DownloadDangerType::INVALID:
@@ -126,6 +127,8 @@ std::ostream& operator<<(std::ostream& stream, DownloadDangerType danger_type) {
     case DownloadDangerType::DEEP_SCANNED_OPENED_DANGEROUS:
       return stream
              << "history::DownloadDangerType::DEEP_SCANNED_OPENED_DANGEROUS";
+    case DownloadDangerType::PROMPT_FOR_SCANNING:
+      return stream << "history::DownloadDangerType::PROMPT_FOR_SCANNING";
   }
   NOTREACHED();
   return stream;

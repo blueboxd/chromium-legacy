@@ -90,7 +90,7 @@ void FinishParseAudioVideoMetadata(
   DCHECK(metadata);
   DCHECK(attached_images);
 
-  callback.Run(std::move(metadata), *attached_images);
+  std::move(callback).Run(std::move(metadata), *attached_images);
 }
 
 bool IsSupportedMetadataMimetype(const std::string& mime_type) {
@@ -113,10 +113,10 @@ MediaMetadataParser::MediaMetadataParser(
 
 MediaMetadataParser::~MediaMetadataParser() = default;
 
-void MediaMetadataParser::Start(const MetadataCallback& callback) {
+void MediaMetadataParser::Start(MetadataCallback callback) {
   if (!IsSupportedMetadataMimetype(mime_type_)) {
-    callback.Run(chrome::mojom::MediaMetadata::New(),
-                 std::vector<metadata::AttachedImage>());
+    std::move(callback).Run(chrome::mojom::MediaMetadata::New(),
+                            std::vector<metadata::AttachedImage>());
     return;
   }
 
@@ -129,6 +129,6 @@ void MediaMetadataParser::Start(const MetadataCallback& callback) {
       media_thread_->task_runner().get(), FROM_HERE,
       base::BindOnce(&ParseAudioVideoMetadata, source_.get(),
                      get_attached_images_, mime_type_, images),
-      base::BindOnce(&FinishParseAudioVideoMetadata, callback,
+      base::BindOnce(&FinishParseAudioVideoMetadata, std::move(callback),
                      base::Owned(images)));
 }

@@ -48,18 +48,14 @@ public class Promise<T> {
      * @param <A> The type of the function input.
      * @param <R> The type of the function output.
      */
-    public interface Function<A, R> {
-        R apply(A argument);
-    }
+    public interface Function<A, R> extends org.chromium.base.Function<A, R> {}
 
     /**
      * A function class for use when chaining Promises with {@link Promise#then(AsyncFunction)}.
      * @param <A> The type of the function input.
      * @param <R> The type of the function output.
      */
-    public interface AsyncFunction<A, R> {
-        Promise<R> apply(A argument);
-    }
+    public interface AsyncFunction<A, R> extends Function<A, Promise<R>> {}
 
     /**
      * An exception class for when a rejected Promise is not handled and cannot pass the rejection
@@ -144,10 +140,10 @@ public class Promise<T> {
     }
 
     /**
-     * Queues a {@link Promise.Function} to be run when the Promise is fulfilled. When this Promise
-     * is fulfilled, the function will be run and its result will be place in the returned Promise.
+     * Queues a {@link Function} to be run when the Promise is fulfilled. When this Promise is
+     * fulfilled, the function will be run and its result will be place in the returned Promise.
      */
-    public <R> Promise<R> then(final Function<T, R> function) {
+    public <R> Promise<R> then(final org.chromium.base.Function<T, R> function) {
         checkThread();
 
         // Create a new Promise to store the result of the function.

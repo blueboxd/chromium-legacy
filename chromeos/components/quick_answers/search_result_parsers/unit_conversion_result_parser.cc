@@ -29,6 +29,7 @@ bool UnitConversionResultParser::Parse(const Value* result,
     return false;
   }
 
+  quick_answer->result_type = ResultType::kUnitConversionResult;
   quick_answer->primary_answer = *dest;
   return true;
 }

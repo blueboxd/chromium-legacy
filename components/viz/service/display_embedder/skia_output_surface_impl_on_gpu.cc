@@ -1439,8 +1439,8 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
       if (gl_surface_->IsSurfaceless()) {
         std::unique_ptr<SkiaOutputDeviceBufferQueue> onscreen_device =
             std::make_unique<SkiaOutputDeviceBufferQueue>(
-                gl_surface_, dependency_, did_swap_buffer_complete_callback_,
-                memory_tracker_.get());
+                gl_surface_, dependency_, memory_tracker_.get(),
+                did_swap_buffer_complete_callback_);
         supports_alpha_ = onscreen_device->supports_alpha();
         output_device_ = std::move(onscreen_device);
 
@@ -1448,7 +1448,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
         std::unique_ptr<SkiaOutputDeviceGL> onscreen_device =
             std::make_unique<SkiaOutputDeviceGL>(
                 dependency_->GetMailboxManager(), gl_surface_, feature_info_,
-                did_swap_buffer_complete_callback_);
+                memory_tracker_.get(), did_swap_buffer_complete_callback_);
 
         onscreen_device->Initialize(gr_context(), context);
         supports_alpha_ = onscreen_device->supports_alpha();
@@ -1485,11 +1485,11 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
     } else {
       output_device_ = std::make_unique<SkiaOutputDeviceVulkan>(
           vulkan_context_provider_, dependency_->GetSurfaceHandle(),
-          did_swap_buffer_complete_callback_);
+          memory_tracker_.get(), did_swap_buffer_complete_callback_);
     }
 #else
     auto output_device = SkiaOutputDeviceBufferQueue::Create(
-        dependency_, did_swap_buffer_complete_callback_, memory_tracker_.get());
+        dependency_, memory_tracker_.get(), did_swap_buffer_complete_callback_);
     if (output_device) {
       // TODO(https://crbug.com/1012401): don't depend on GL.
       gl_surface_ = output_device->gl_surface();
@@ -1497,7 +1497,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
     } else {
       output_device_ = std::make_unique<SkiaOutputDeviceVulkan>(
           vulkan_context_provider_, dependency_->GetSurfaceHandle(),
-          did_swap_buffer_complete_callback_);
+          memory_tracker_.get(), did_swap_buffer_complete_callback_);
     }
 #endif
   }
@@ -1525,7 +1525,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
 #else
     output_device_ = std::make_unique<SkiaOutputDeviceDawn>(
         dawn_context_provider_, dependency_->GetSurfaceHandle(),
-        did_swap_buffer_complete_callback_);
+        memory_tracker_.get(), did_swap_buffer_complete_callback_);
 #endif
   }
 #endif

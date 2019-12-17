@@ -385,7 +385,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="3646890046000188562">{COUNT,plural, =1{backtick}other{# backticks}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{dollar}other{# dollar signs}}</translation>
-<translation id="3658742229777143148">Revision</translation>
 <translation id="3659787053479271466">alrt</translation>
 <translation id="3665563998540286755"><ph name="VALUE" />, list box</translation>
 <translation id="3681531118904532409">Papaya Whip</translation>
@@ -1104,7 +1103,6 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="812886159861361726">Download stopped <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">Tap</translation>
 <translation id="8153880621934657047">Not inside table.</translation>
-<translation id="8161114871611868169">Comment section</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{underscore}other{# underscores}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8184828902145951186">row</translation>

@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
@@ -181,7 +180,7 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
 
  private:
   void CreatePluginGlobals(
-      const scoped_refptr<base::TaskRunner>& ipc_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
 
   GlobalsConfiguration globals_config_;
   std::unique_ptr<PluginGlobals> plugin_globals_;

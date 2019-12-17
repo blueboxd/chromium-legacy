@@ -111,7 +111,7 @@ class NET_EXPORT_PRIVATE PrioritizedTaskRunner
     }
   };
 
-  void RunPostTaskAndReply();
+  void RunTaskAndPostReply();
   void RunReply();
 
   ~PrioritizedTaskRunner();

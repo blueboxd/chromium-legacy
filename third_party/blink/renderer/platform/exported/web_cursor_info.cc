@@ -37,8 +37,7 @@ namespace blink {
 static SkBitmap GetCursorBitmap(const Cursor& cursor) {
   if (!cursor.GetImage())
     return {};
-  return cursor.GetImage()->AsSkBitmapForCurrentFrame(
-      kDoNotRespectImageOrientation);
+  return cursor.GetImage()->AsSkBitmapForCurrentFrame(kRespectImageOrientation);
 }
 
 WebCursorInfo::WebCursorInfo(const Cursor& cursor)

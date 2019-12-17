@@ -379,7 +379,6 @@ target(link_target_type, "renderer") {
     "//services/audio/public/mojom",
     "//services/device/public/cpp/generic_sensor",
     "//services/device/public/mojom",
-    "//services/device/public/mojom:constants",
     "//services/device/public/mojom:usb",
     "//services/image_annotation/public/cpp:cpp",
     "//services/image_annotation/public/mojom:mojom",

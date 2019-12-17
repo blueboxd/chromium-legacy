@@ -28,22 +28,6 @@ namespace domain_reliability {
 
 namespace {
 
-int URLRequestStatusToNetError(const net::URLRequestStatus& status) {
-  switch (status.status()) {
-    case net::URLRequestStatus::SUCCESS:
-      return net::OK;
-    case net::URLRequestStatus::IO_PENDING:
-      return net::ERR_IO_PENDING;
-    case net::URLRequestStatus::CANCELED:
-      return net::ERR_ABORTED;
-    case net::URLRequestStatus::FAILED:
-      return status.error();
-    default:
-      NOTREACHED();
-      return net::ERR_UNEXPECTED;
-  }
-}
-
 // Creates a new beacon based on |beacon_template| but fills in the status,
 // chrome_error, and server_ip fields based on the endpoint and result of
 // |attempt|.
@@ -159,17 +143,19 @@ void DomainReliabilityMonitor::SetDiscardUploads(bool discard_uploads) {
 void DomainReliabilityMonitor::OnBeforeRedirect(net::URLRequest* request) {
   DCHECK(discard_uploads_set_);
 
-  // Record the redirect itself in addition to the final request.
-  OnRequestLegComplete(RequestInfo(*request));
+  // Record the redirect itself in addition to the final request. The fact that
+  // a redirect is being followed indicates success.
+  OnRequestLegComplete(RequestInfo(*request, net::OK));
 }
 
 void DomainReliabilityMonitor::OnCompleted(net::URLRequest* request,
-                                           bool started) {
+                                           bool started,
+                                           int net_error) {
   DCHECK(discard_uploads_set_);
 
   if (!started)
     return;
-  RequestInfo request_info(*request);
+  RequestInfo request_info(*request, net_error);
   OnRequestLegComplete(request_info);
 
   if (request_info.response_info.network_accessed) {
@@ -230,9 +216,10 @@ DomainReliabilityMonitor::CreateContextForConfig(
 DomainReliabilityMonitor::RequestInfo::RequestInfo() {}
 
 DomainReliabilityMonitor::RequestInfo::RequestInfo(
-    const net::URLRequest& request)
+    const net::URLRequest& request,
+    int net_error)
     : url(request.url()),
-      status(request.status()),
+      net_error(net_error),
       response_info(request.response_info()),
       load_flags(request.load_flags()),
       upload_depth(
@@ -264,7 +251,7 @@ bool DomainReliabilityMonitor::RequestInfo::ShouldReportRequest(
   // that Domain Reliability is interested in.
   if (request.response_info.network_accessed)
     return true;
-  if (URLRequestStatusToNetError(request.status) != net::OK)
+  if (request.net_error != net::OK)
     return true;
   if (request.details.quic_port_migration_detected)
     return true;
@@ -288,8 +275,8 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
   else
     response_code = -1;
 
-  net::ConnectionAttempt url_request_attempt(
-      request.remote_endpoint, URLRequestStatusToNetError(request.status));
+  net::ConnectionAttempt url_request_attempt(request.remote_endpoint,
+                                             request.net_error);
 
   DomainReliabilityBeacon beacon_template;
   if (request.response_info.connection_info !=

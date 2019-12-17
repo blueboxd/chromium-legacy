@@ -32,12 +32,6 @@
 // Asserts that a folder called |title| exists.
 + (void)assertFolderExists:(NSString*)title;
 
-// Checks that the promo has already been seen or not.
-+ (void)verifyPromoAlreadySeen:(BOOL)seen;
-
-// Checks that the promo has already been seen or not.
-+ (void)setPromoAlreadySeen:(BOOL)seen;
-
 + (void)assertExistenceOfBookmarkWithURL:(NSString*)URL name:(NSString*)name;
 
 + (void)assertAbsenceOfBookmarkWithURL:(NSString*)URL;

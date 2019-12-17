@@ -55,10 +55,10 @@ CSSValue* StyleGeneratedImage::ComputedCSSValue(
   return image_generator_value_->ComputedCSSValue(style, allow_visited_style);
 }
 
-FloatSize StyleGeneratedImage::ImageSize(
-    const Document& document,
-    float multiplier,
-    const LayoutSize& default_object_size) const {
+FloatSize StyleGeneratedImage::ImageSize(const Document& document,
+                                         float multiplier,
+                                         const LayoutSize& default_object_size,
+                                         RespectImageOrientationEnum) const {
   if (fixed_size_) {
     FloatSize unzoomed_default_object_size(default_object_size);
     unzoomed_default_object_size.Scale(1 / multiplier);

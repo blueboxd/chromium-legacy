@@ -1785,6 +1785,8 @@ void WebContentsImpl::AttachInnerWebContents(
         inner_render_view_host);
   }
 
+  inner_web_contents_impl->RecursivelyUnregisterFrameSinkIds();
+
   // Create a link to our outer WebContents.
   node_.AttachInnerWebContents(std::move(inner_web_contents),
                                render_frame_host_impl);
@@ -1823,6 +1825,7 @@ void WebContentsImpl::AttachInnerWebContents(
 
 std::unique_ptr<WebContents> WebContentsImpl::DetachFromOuterWebContents() {
   DCHECK(node_.outer_web_contents());
+  RecursivelyUnregisterFrameSinkIds();
   if (RenderWidgetHostViewBase* view =
           static_cast<RenderWidgetHostViewBase*>(GetMainFrame()->GetView())) {
     view->Destroy();
@@ -1840,20 +1843,25 @@ std::unique_ptr<WebContents> WebContentsImpl::DetachFromOuterWebContents() {
   DCHECK_EQ(web_contents.get(), this);
   node_.SetFocusedWebContents(this);
   CreateRenderWidgetHostViewForRenderManager(GetRenderViewHost());
+  RecursivelyRegisterFrameSinkIds();
   return web_contents;
 }
 
 void WebContentsImpl::RecursivelyRegisterFrameSinkIds() {
-  auto* view = static_cast<RenderWidgetHostViewBase*>(
-      GetRenderManager()->GetRenderWidgetHostView());
-  DCHECK(view);
-  if (!view->IsRenderWidgetHostViewChildFrame())
-    return;
-  static_cast<RenderWidgetHostViewChildFrame*>(view)->RegisterFrameSinkId();
+  for (auto* view : GetRenderWidgetHostViewsInWebContentsTree()) {
+    auto* rwhvb = static_cast<RenderWidgetHostViewBase*>(view);
+    if (rwhvb->IsRenderWidgetHostViewChildFrame())
+      static_cast<RenderWidgetHostViewChildFrame*>(view)->RegisterFrameSinkId();
+  }
+}
 
-  for (auto* inner_web_contents : node_.GetInnerWebContents()) {
-    static_cast<WebContentsImpl*>(inner_web_contents)
-        ->RecursivelyRegisterFrameSinkIds();
+void WebContentsImpl::RecursivelyUnregisterFrameSinkIds() {
+  for (auto* view : GetRenderWidgetHostViewsInWebContentsTree()) {
+    auto* rwhvb = static_cast<RenderWidgetHostViewBase*>(view);
+    if (rwhvb->IsRenderWidgetHostViewChildFrame()) {
+      static_cast<RenderWidgetHostViewChildFrame*>(view)
+          ->UnregisterFrameSinkId();
+    }
   }
 }
 
@@ -1871,6 +1879,10 @@ void WebContentsImpl::ReattachToOuterWebContentsFrame() {
   GetMainFrame()->set_browser_plugin_embedder_ax_tree_id(
       parent_frame->GetAXTreeID());
   GetMainFrame()->UpdateAXTreeData();
+}
+
+void WebContentsImpl::NotifyInsidePortal(bool inside_portal) {
+  SendPageMessage(new PageMsg_SetInsidePortal(MSG_ROUTING_NONE, inside_portal));
 }
 
 void WebContentsImpl::DidChangeVisibleSecurityState() {
@@ -2160,6 +2172,23 @@ WebContentsImpl::GetRenderWidgetHostViewsInTree() {
     }
   }
   return set;
+}
+
+std::set<RenderWidgetHostView*>
+WebContentsImpl::GetRenderWidgetHostViewsInWebContentsTree() {
+  std::set<RenderWidgetHostView*> result;
+  GetRenderWidgetHostViewsInWebContentsTree(result);
+  return result;
+}
+
+void WebContentsImpl::GetRenderWidgetHostViewsInWebContentsTree(
+    std::set<RenderWidgetHostView*>& result) {
+  std::set<RenderWidgetHostView*> views = GetRenderWidgetHostViewsInTree();
+  result.insert(views.begin(), views.end());
+  for (auto* inner_web_contents : GetInnerWebContents()) {
+    static_cast<WebContentsImpl*>(inner_web_contents)
+        ->GetRenderWidgetHostViewsInWebContentsTree(result);
+  }
 }
 
 void WebContentsImpl::Activate() {
@@ -6178,6 +6207,7 @@ void WebContentsImpl::EnsureOpenerProxiesExist(RenderFrameHost* source_rfh) {
 }
 
 void WebContentsImpl::SetAsFocusedWebContentsIfNecessary() {
+  DCHECK(!portal());
   // Only change focus if we are not currently focused.
   WebContentsImpl* old_contents = GetFocusedWebContents();
   if (old_contents == this)
@@ -6206,6 +6236,7 @@ void WebContentsImpl::SetAsFocusedWebContentsIfNecessary() {
 
 void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
                                       SiteInstance* source) {
+  DCHECK(!portal());
   frame_tree_.SetFocusedFrame(node, source);
 
   if (auto* inner_contents = node_.GetInnerWebContentsInFrame(node)) {

@@ -78,23 +78,6 @@ class WebBundleBlobDataSourceTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebBundleBlobDataSourceTest);
 };
 
-TEST_F(WebBundleBlobDataSourceTest, GetSize) {
-  const std::string kData = "Test Data";
-  mojo::Remote<data_decoder::mojom::BundleDataSource> remote_source;
-  auto source = CreateTestDataSource(kData, &remote_source);
-
-  base::RunLoop run_loop;
-  uint64_t size_result = 0;
-  remote_source->GetSize(base::BindOnce(
-      [](base::OnceClosure closure, uint64_t* size_result, uint64_t size) {
-        *size_result = size;
-        std::move(closure).Run();
-      },
-      run_loop.QuitClosure(), &size_result));
-  run_loop.Run();
-  EXPECT_EQ(kData.size(), size_result);
-}
-
 TEST_F(WebBundleBlobDataSourceTest, Read) {
   const std::string kData = "Test Data";
   mojo::Remote<data_decoder::mojom::BundleDataSource> remote_source;
@@ -120,6 +103,30 @@ TEST_F(WebBundleBlobDataSourceTest, Read) {
   EXPECT_EQ('t', (*read_result)[2]);
 }
 
+TEST_F(WebBundleBlobDataSourceTest, Read_EndOfSourceReached) {
+  const std::string kData = "Test Data";
+  mojo::Remote<data_decoder::mojom::BundleDataSource> remote_source;
+  auto source = CreateTestDataSource(kData, &remote_source);
+
+  base::RunLoop run_loop;
+  base::Optional<std::vector<uint8_t>> read_result;
+  remote_source->Read(
+      6, 100,
+      base::BindOnce(
+          [](base::OnceClosure closure,
+             base::Optional<std::vector<uint8_t>>* read_result,
+             const base::Optional<std::vector<uint8_t>>& result) {
+            *read_result = result;
+            std::move(closure).Run();
+          },
+          run_loop.QuitClosure(), &read_result));
+  run_loop.Run();
+  ASSERT_EQ(3u, read_result->size());
+  EXPECT_EQ('a', (*read_result)[0]);
+  EXPECT_EQ('t', (*read_result)[1]);
+  EXPECT_EQ('a', (*read_result)[2]);
+}
+
 TEST_F(WebBundleBlobDataSourceTest, Read_OutOfRangeError) {
   const std::string kData = "Test Data";
   mojo::Remote<data_decoder::mojom::BundleDataSource> remote_source;
@@ -128,7 +135,7 @@ TEST_F(WebBundleBlobDataSourceTest, Read_OutOfRangeError) {
   base::RunLoop run_loop;
   base::Optional<std::vector<uint8_t>> read_result;
   remote_source->Read(
-      1, 100,
+      10, 100,
       base::BindOnce(
           [](base::OnceClosure closure,
              base::Optional<std::vector<uint8_t>>* read_result,

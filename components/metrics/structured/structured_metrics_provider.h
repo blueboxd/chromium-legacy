@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/structured/recorder.h"
+#include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_store.h"
 
 class JsonPrefStore;
@@ -75,6 +76,17 @@ class StructuredMetricsProvider : public metrics::MetricsProvider,
   friend class Recorder;
   friend class StructuredMetricsProviderTest;
 
+  // An error delegate called when |storage_| has finished reading prefs from
+  // disk.
+  class PrefStoreErrorDelegate : public PersistentPrefStore::ReadErrorDelegate {
+   public:
+    PrefStoreErrorDelegate();
+    ~PrefStoreErrorDelegate() override;
+
+    // PersistentPrefStore::ReadErrorDelegate:
+    void OnError(PersistentPrefStore::PrefReadError error) override;
+  };
+
   // metrics::MetricsProvider:
   void OnRecordingEnabled() override;
   void OnRecordingDisabled() override;
@@ -86,7 +98,7 @@ class StructuredMetricsProvider : public metrics::MetricsProvider,
   void OnProfileAdded(const base::FilePath& profile_path) override;
 
   // PrefStore::Observer:
-  void OnInitializationCompleted(bool succeeded) override;
+  void OnInitializationCompleted(bool success) override;
   void OnPrefValueChanged(const std::string& key) override {}
 
   // Beyond this number of logging events between successive calls to

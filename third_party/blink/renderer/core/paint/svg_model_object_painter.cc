@@ -39,7 +39,7 @@ void SVGModelObjectPainter::RecordHitTestData(
     return;
 
   auto touch_action = layout_svg_model_object.EffectiveAllowedTouchAction();
-  if (touch_action == TouchAction::kTouchActionAuto)
+  if (touch_action == TouchAction::kAuto)
     return;
 
   auto rect =

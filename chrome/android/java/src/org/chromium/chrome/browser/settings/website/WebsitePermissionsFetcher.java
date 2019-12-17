@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.settings.website;
 
+import static org.chromium.chrome.browser.settings.website.WebsitePreferenceBridge.SITE_WILDCARD;
+
 import android.util.Pair;
 
 import androidx.annotation.VisibleForTesting;
@@ -226,8 +228,11 @@ public class WebsitePermissionsFetcher {
     }
 
     private Website findOrCreateSite(String origin, String embedder) {
-        // Avoid showing multiple entries in "All sites" for the same origin.
-        if (embedder != null && (embedder.equals(origin) || "*".equals(embedder))) {
+        // This allows us to show multiple entries in "All sites" for the same origin, based on
+        // the (origin, embedder) combination. For example, "cnn.com", "cnn.com all cookies on this
+        // site only", and "cnn.com embedded on example.com" are all possible. In the future, this
+        // should be collapsed into "cnn.com" and you can see the different options after clicking.
+        if (embedder != null && (embedder.equals(origin) || embedder.equals(SITE_WILDCARD))) {
             embedder = null;
         }
 
@@ -261,13 +266,20 @@ public class WebsitePermissionsFetcher {
 
         for (ContentSettingException exception :
                 mWebsitePreferenceBridge.getContentSettingsExceptions(contentSettingsType)) {
-            // The pattern "*" represents the default setting, not a specific website.
-            if (exception.getPattern().equals("*")) continue;
-            String address = exception.getPattern();
-            if (address == null) continue;
-            Website site = findOrCreateSite(address, null);
+            String address = exception.getPrimaryPattern();
+            String embedder = exception.getSecondaryPattern();
+            // If both patterns are the wildcard, dont display this rule.
+            if (address == null || (address.equals(embedder) && address.equals(SITE_WILDCARD))) {
+                continue;
+            }
+            Website site = findOrCreateSite(address, embedder);
             site.setContentSettingException(exceptionType, exception);
         }
+    }
+
+    @VisibleForTesting
+    public void resetContentSettingExceptions() {
+        mSites.clear();
     }
 
     /**

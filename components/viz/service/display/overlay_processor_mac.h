@@ -64,9 +64,10 @@ class VIZ_SERVICE_EXPORT OverlayProcessorMac
  private:
   const bool could_overlay_;
   const bool enable_ca_overlay_;
+  gfx::Rect ca_overlay_damage_rect_;
 
  protected:
-  // Proteccted for testing.
+  // Protected for testing.
   // TODO(weiliangc): Eventually fold the CaLayerOverlayProcessor into this
   // class.
   std::unique_ptr<CALayerOverlayProcessor> ca_layer_overlay_processor_;

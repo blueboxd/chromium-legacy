@@ -9,7 +9,6 @@
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -117,9 +116,6 @@ class NTPJsonFetcherTest : public testing::Test {
 
   // This allows us to override the URL via finch params.
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  // This allows the NTPJsonFetcher to grab the JSON parsing service.
-  content::TestServiceManagerContext smc;
 };
 
 // TODO(https://crbug.com/854250): Fix the tests. They are disabled because

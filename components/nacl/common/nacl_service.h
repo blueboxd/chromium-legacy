@@ -6,7 +6,7 @@
 #define COMPONENTS_NACL_COMMON_NACL_SERVICE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
@@ -15,7 +15,7 @@
 class NaClService {
  public:
   explicit NaClService(
-      scoped_refptr<base::SequencedTaskRunner> ipc_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner);
   ~NaClService();
 
   // Returns a message pipe to use for the client endpoint of a legacy IPC

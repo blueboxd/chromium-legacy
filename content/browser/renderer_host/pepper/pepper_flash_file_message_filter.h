@@ -49,7 +49,7 @@ class PepperFlashFileMessageFilter : public ppapi::host::ResourceMessageFilter {
   ~PepperFlashFileMessageFilter() override;
 
   // ppapi::host::ResourceMessageFilter overrides.
-  scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
+  scoped_refptr<base::SequencedTaskRunner> OverrideTaskRunnerForMessage(
       const IPC::Message& msg) override;
   int32_t OnResourceMessageReceived(
       const IPC::Message& msg,

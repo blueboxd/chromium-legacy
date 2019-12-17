@@ -37,11 +37,6 @@ void TaskTracker::WaitForCompletedTasks(int count) {
     task_runs_cv_.Wait();
 }
 
-void ExpectRunsTasksInCurrentSequence(bool expected_value,
-                                      TaskRunner* task_runner) {
-  EXPECT_EQ(expected_value, task_runner->RunsTasksInCurrentSequence());
-}
-
 }  // namespace test
 
 }  // namespace base

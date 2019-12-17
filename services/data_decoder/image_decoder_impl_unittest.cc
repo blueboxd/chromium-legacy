@@ -62,7 +62,7 @@ class Request {
     decoder_->DecodeImage(
         image, mojom::ImageCodec::DEFAULT, shrink, kTestMaxImageSize,
         gfx::Size(),  // Take the smallest frame (there's only one frame).
-        base::Bind(&Request::OnRequestDone, base::Unretained(this)));
+        base::BindOnce(&Request::OnRequestDone, base::Unretained(this)));
   }
 
   const SkBitmap& bitmap() const { return bitmap_; }

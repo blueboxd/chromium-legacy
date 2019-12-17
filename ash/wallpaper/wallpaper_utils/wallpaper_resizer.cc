@@ -11,7 +11,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task_runner.h"
+#include "base/threading/thread_restrictions.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/image/image_skia_rep.h"
@@ -28,9 +28,8 @@ namespace {
 void Resize(const gfx::ImageSkia image,
             const gfx::Size& target_size,
             WallpaperLayout layout,
-            SkBitmap* resized_bitmap_out,
-            base::TaskRunner* task_runner) {
-  DCHECK(task_runner->RunsTasksInCurrentSequence());
+            SkBitmap* resized_bitmap_out) {
+  base::AssertLongCPUWorkAllowed();
 
   SkBitmap orig_bitmap = *image.bitmap();
   SkBitmap new_bitmap = orig_bitmap;
@@ -124,7 +123,7 @@ void WallpaperResizer::StartResize() {
   if (!task_runner_->PostTaskAndReply(
           FROM_HERE,
           base::BindOnce(&Resize, image_, target_size_, wallpaper_info_.layout,
-                         resized_bitmap, base::RetainedRef(task_runner_)),
+                         resized_bitmap),
           base::BindOnce(&WallpaperResizer::OnResizeFinished,
                          weak_ptr_factory_.GetWeakPtr(),
                          base::Owned(resized_bitmap)))) {

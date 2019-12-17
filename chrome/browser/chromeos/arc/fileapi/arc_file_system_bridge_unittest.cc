@@ -25,7 +25,6 @@
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_file_system_instance.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "content/public/test/test_utils.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -84,7 +83,6 @@ class ArcFileSystemBridgeTest : public testing::Test {
  protected:
   base::ScopedTempDir temp_dir_;
   content::BrowserTaskEnvironment task_environment_;
-  content::TestServiceManagerContext service_manager_context_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
 
   FakeFileSystemInstance fake_file_system_;

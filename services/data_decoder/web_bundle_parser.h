@@ -39,7 +39,6 @@ class WebBundleParser : public mojom::WebBundleParser {
     void RemoveObserver(Observer* observer);
 
     // Implements mojom::BundleDataSource.
-    void GetSize(GetSizeCallback callback) override;
     void Read(uint64_t offset, uint64_t length, ReadCallback callback) override;
 
    private:

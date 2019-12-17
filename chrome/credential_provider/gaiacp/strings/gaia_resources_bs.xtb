@@ -25,6 +25,7 @@
 <translation id="7209941495304122410">Unesite lozinku za Windows</translation>
 <translation id="7357241217513796177">Provjerite imate li mrežnu vezu i pokušajte ponovo.</translation>
 <translation id="7536769223115622137">Dodaj poslovni račun</translation>
+<translation id="7811865856574012727">Vaš administrator je ograničio prijavu uređaja na sljedeće domene: <ph name="EMAIL_DOMAINS" />. Pokušajte ponovo s važećim poslovnim računom.</translation>
 <translation id="7856245195110636219">Nije moguće nastaviti bez unošenja trenutne lozinke za Windows. Obratite se administratoru sistema.</translation>
 <translation id="8639729688781680518">Zaboravili ste lozinku za Windows</translation>
 <translation id="866458870819756755">Korisnik nije kreiran.</translation>

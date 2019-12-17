@@ -6,7 +6,9 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
+#include "components/version_info/version_info.h"
 
 namespace {
 const char* GetEnumStringValue(SharingFeatureName feature) {
@@ -56,6 +58,18 @@ const std::string& MessageTypeToMessageSuffix(
   }
   return chrome_browser_sharing::MessageType_Name(message_type);
 }
+
+// Major Chrome version comparison with the receiver device.
+// These values are logged to UMA. Entries should not be renumbered and numeric
+// values should never be reused. Please keep in sync with
+// "SharingMajorVersionComparison" in enums.xml.
+enum class SharingMajorVersionComparison {
+  kUnknown = 0,
+  kSenderIsLower = 1,
+  kSame = 2,
+  kSenderIsHigher = 3,
+  kMaxValue = kSenderIsHigher,
+};
 }  // namespace
 
 chrome_browser_sharing::MessageType SharingPayloadCaseToMessageType(
@@ -218,6 +232,36 @@ void LogSharingDeviceLastUpdatedAge(
   base::UmaHistogramCounts1000(
       base::StrCat({kBase, ".", MessageTypeToMessageSuffix(message_type)}),
       hours);
+}
+
+void LogSharingVersionComparison(
+    chrome_browser_sharing::MessageType message_type,
+    const std::string& receiver_version) {
+  int sender_major = 0;
+  base::StringToInt(version_info::GetMajorVersionNumber(), &sender_major);
+
+  // The |receiver_version| has optional modifiers e.g. "1.2.3.4 canary" so we
+  // do not parse it with base::Version.
+  int receiver_major = 0;
+  base::StringToInt(receiver_version, &receiver_major);
+
+  SharingMajorVersionComparison result;
+  if (sender_major == 0 || sender_major == INT_MIN || sender_major == INT_MAX ||
+      receiver_major == 0 || receiver_major == INT_MIN ||
+      receiver_major == INT_MAX) {
+    result = SharingMajorVersionComparison::kUnknown;
+  } else if (sender_major < receiver_major) {
+    result = SharingMajorVersionComparison::kSenderIsLower;
+  } else if (sender_major == receiver_major) {
+    result = SharingMajorVersionComparison::kSame;
+  } else {
+    result = SharingMajorVersionComparison::kSenderIsHigher;
+  }
+  constexpr char kBase[] = "Sharing.MajorVersionComparison";
+  base::UmaHistogramEnumeration(kBase, result);
+  base::UmaHistogramEnumeration(
+      base::StrCat({kBase, ".", MessageTypeToMessageSuffix(message_type)}),
+      result);
 }
 
 void LogSharingDialogShown(SharingFeatureName feature, SharingDialogType type) {

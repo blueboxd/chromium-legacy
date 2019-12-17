@@ -37,26 +37,60 @@ static constexpr char kPlatformReceiverId[] = "receiver-0";
 
 // Cast application protocol message types.
 enum class CastMessageType {
+  // Heartbeat messages.
   kPing,
   kPong,
+
+  // RPC control/status messages used by Media Remoting. These occur at high
+  // frequency, up to dozens per second at times, and should not be logged.
+  kRpc,
+
   kGetAppAvailability,
-  kReceiverStatusRequest,
-  kConnect,          // Virtual connection request
-  kCloseConnection,  // Close virtual connection
-  kBroadcast,        // Application broadcast / precache
-  kLaunch,           // Session launch request
-  kStop,             // Session stop request
+  kGetStatus,
+
+  // Virtual connection request
+  kConnect,
+
+  // Close virtual connection
+  kCloseConnection,
+
+  // Application broadcast / precache
+  kBroadcast,
+
+  // Session launch request
+  kLaunch,
+
+  // Session stop request
+  kStop,
+
   kReceiverStatus,
   kMediaStatus,
+
+  // error from receiver
   kLaunchError,
+
   kOffer,
   kAnswer,
+  kCapabilitiesResponse,
+  kStatusResponse,
+
+  // The following values are part of the protocol but are not currently used.
+  kMultizoneStatus,
+  kInvalidPlayerState,
+  kLoadFailed,
+  kLoadCancelled,
+  kInvalidRequest,
+  kPresentation,
+  kGetCapabilities,
+
   kOther,  // Add new types above |kOther|.
   kMaxValue = kOther,
 };
 
 enum class V2MessageType {
+  // Request to modify the text tracks style or change the tracks status.
   kEditTracksInfo,
+
   kGetStatus,
   kLoad,
   kMediaGetStatus,
@@ -64,17 +98,39 @@ enum class V2MessageType {
   kPause,
   kPlay,
   kPrecache,
+
+  // Inserts a list of new media items into the queue.
   kQueueInsert,
+
+  // Loads and optionally starts playback of a new queue of media items.
   kQueueLoad,
+
+  // Removes a list of items from the queue. If the remaining queue is empty,
+  // the media session will be terminated.
   kQueueRemove,
+
+  // Reorder a list of media items in the queue.
   kQueueReorder,
+
+  // Updates properties of the media queue, e.g. repeat mode, and properties of
+  // the existing items in the media queue.
   kQueueUpdate,
+
   kQueueNext,
   kQueuePrev,
   kSeek,
+
+  // Device set volume is also 'SET_VOLUME'. Thus, give this a different name.
+  // The message will be translate before being sent to the receiver.
   kSetVolume,
+
   kStop,
+
+  // Stop-media type is 'kStop', which collides with stop-session.
+  // Thus, give it a different name.  The message will be translate
+  // before being sent to the receiver.
   kStopMedia,
+
   kOther,  // Add new types above |kOther|.
   kMaxValue = kOther,
 };

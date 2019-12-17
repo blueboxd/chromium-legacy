@@ -20,4 +20,5 @@ type_mappings = [
   "blink.mojom.ManifestImageResource=::blink::Manifest::ImageResource",
   "blink.mojom.ManifestRelatedApplication=::blink::Manifest::RelatedApplication",
   "blink.mojom.ManifestShareTarget=::blink::Manifest::ShareTarget",
+  "blink.mojom.ManifestShortcutItem=::blink::Manifest::ShortcutItem",
 ]

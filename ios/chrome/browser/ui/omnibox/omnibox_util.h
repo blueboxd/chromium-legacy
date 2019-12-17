@@ -31,19 +31,14 @@ UIImage* GetOmniboxSuggestionIconForAutocompleteMatchType(
 // Returns the asset with "always template" rendering mode.
 UIImage* GetLocationBarSecurityIcon(LocationBarSecurityIconType icon);
 
-// Converts the |security_level| to an appropriate security icon type. If
-// |should_downgrade| is true, the info icon should be downgraded to a
-// grey triangle for non-secure connections.
+// Converts the |security_level| to an appropriate security icon type.
 LocationBarSecurityIconType GetLocationBarSecurityIconTypeForSecurityState(
-    security_state::SecurityLevel security_level,
-    bool should_downgrade);
+    security_state::SecurityLevel security_level);
 
 // Converts the |security_level| to an appropriate icon in "always template"
-// rendering mode. If |should_downgrade| is true, the info icon should be
-// downgraded to a grey triangle for non-secure connections.
+// rendering mode.
 UIImage* GetLocationBarSecurityIconForSecurityState(
-    security_state::SecurityLevel security_level,
-    bool should_downgrade);
+    security_state::SecurityLevel security_level);
 
 #pragma mark - Legacy utils.
 

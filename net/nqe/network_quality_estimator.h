@@ -190,7 +190,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
   // Notifies NetworkQualityEstimator that the response body of |request| has
   // been received.
-  void NotifyRequestCompleted(const URLRequest& request, int net_error);
+  void NotifyRequestCompleted(const URLRequest& request);
 
   // Notifies NetworkQualityEstimator that |request| will be destroyed.
   void NotifyURLRequestDestroyed(const URLRequest& request);

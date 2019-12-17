@@ -87,12 +87,12 @@ UIImage* GetLocationBarSecurityIcon(LocationBarSecurityIconType iconType) {
 
 // Converts the |security_level| to an appropriate security icon type.
 LocationBarSecurityIconType GetLocationBarSecurityIconTypeForSecurityState(
-    security_state::SecurityLevel security_level,
-    bool should_downgrade) {
+    security_state::SecurityLevel security_level) {
   switch (security_level) {
     case security_state::NONE:
+      return INFO;
     case security_state::WARNING:
-      if (should_downgrade)
+      if (security_state::ShouldShowDangerTriangleForWarningLevel())
         return NOT_SECURE_WARNING;
       return INFO;
     case security_state::EV_SECURE:
@@ -110,11 +110,9 @@ LocationBarSecurityIconType GetLocationBarSecurityIconTypeForSecurityState(
 // Converts the |security_level| to an appropriate icon in "always template"
 // rendering mode.
 UIImage* GetLocationBarSecurityIconForSecurityState(
-    security_state::SecurityLevel security_level,
-    bool should_downgrade) {
+    security_state::SecurityLevel security_level) {
   LocationBarSecurityIconType iconType =
-      GetLocationBarSecurityIconTypeForSecurityState(security_level,
-                                                     should_downgrade);
+      GetLocationBarSecurityIconTypeForSecurityState(security_level);
   return GetLocationBarSecurityIcon(iconType);
 }
 

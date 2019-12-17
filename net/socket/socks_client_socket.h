@@ -20,6 +20,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/dns/host_resolver.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/stream_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -79,6 +80,9 @@ class NET_EXPORT_PRIVATE SOCKSClientSocket : public StreamSocket {
 
   int GetPeerAddress(IPEndPoint* address) const override;
   int GetLocalAddress(IPEndPoint* address) const override;
+
+  // Returns error information about any host resolution attempt.
+  ResolveErrorInfo GetResolveErrorInfo() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SOCKSClientSocketTest, CompleteHandshake);
@@ -144,6 +148,7 @@ class NET_EXPORT_PRIVATE SOCKSClientSocket : public StreamSocket {
   const HostPortPair destination_;
   const NetworkIsolationKey network_isolation_key_;
   RequestPriority priority_;
+  ResolveErrorInfo resolve_error_info_;
 
   NetLogWithSource net_log_;
 

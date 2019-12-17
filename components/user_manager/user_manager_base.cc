@@ -18,10 +18,10 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_runner.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -107,8 +107,9 @@ void UserManagerBase::RegisterPrefs(PrefRegistrySimple* registry) {
   known_user::RegisterPrefs(registry);
 }
 
-UserManagerBase::UserManagerBase(scoped_refptr<base::TaskRunner> task_runner)
-    : task_runner_(task_runner) {}
+UserManagerBase::UserManagerBase(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : task_runner_(std::move(task_runner)) {}
 
 UserManagerBase::~UserManagerBase() {
   // Can't use STLDeleteElements because of the private destructor of User.

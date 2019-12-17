@@ -72,6 +72,10 @@ enum DownloadDangerType {
   // opened by the user.
   DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS = 16,
 
+  // The user is enrolled in the Advanced Protection Program, and the server has
+  // recommended this file be deep scanned.
+  DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING = 17,
+
   // Memory space for histograms is determined by the max.
   // ALWAYS ADD NEW VALUES BEFORE THIS ONE.
   DOWNLOAD_DANGER_TYPE_MAX

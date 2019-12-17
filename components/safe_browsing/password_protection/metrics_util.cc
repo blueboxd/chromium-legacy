@@ -114,15 +114,14 @@ void LogPasswordEntryRequestOutcome(
 
   bool is_gsuite_user =
       password_account_type.account_type() == ReusedPasswordAccountType::GSUITE;
+  bool is_gmail_user =
+      password_account_type.account_type() == ReusedPasswordAccountType::GMAIL;
   bool is_primary_account_password = password_account_type.is_account_syncing();
   if (is_primary_account_password) {
-    if (is_gsuite_user) {
-      UMA_HISTOGRAM_ENUMERATION(kGSuiteSyncPasswordEntryRequestOutcomeHistogram,
-                                outcome);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION(kGmailSyncPasswordEntryRequestOutcomeHistogram,
-                                outcome);
-    }
+    base::UmaHistogramEnumeration(
+        is_gsuite_user ? kGSuiteSyncPasswordEntryRequestOutcomeHistogram
+                       : kGmailSyncPasswordEntryRequestOutcomeHistogram,
+        outcome);
     UMA_HISTOGRAM_ENUMERATION(kSyncPasswordEntryRequestOutcomeHistogram,
                               outcome);
   } else if (password_account_type.account_type() ==
@@ -133,14 +132,11 @@ void LogPasswordEntryRequestOutcome(
              ReusedPasswordAccountType::SAVED_PASSWORD) {
     UMA_HISTOGRAM_ENUMERATION(kSavedPasswordEntryRequestOutcomeHistogram,
                               outcome);
-  } else {
-    if (is_gsuite_user) {
-      UMA_HISTOGRAM_ENUMERATION(
-          kGSuiteNonSyncPasswordEntryRequestOutcomeHistogram, outcome);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION(
-          kGmailNonSyncPasswordEntryRequestOutcomeHistogram, outcome);
-    }
+  } else if (is_gsuite_user || is_gmail_user) {
+    base::UmaHistogramEnumeration(
+        is_gsuite_user ? kGSuiteNonSyncPasswordEntryRequestOutcomeHistogram
+                       : kGmailNonSyncPasswordEntryRequestOutcomeHistogram,
+        outcome);
     UMA_HISTOGRAM_ENUMERATION(kNonSyncPasswordEntryRequestOutcomeHistogram,
                               outcome);
   }

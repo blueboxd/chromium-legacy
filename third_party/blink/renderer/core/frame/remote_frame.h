@@ -98,7 +98,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void DispatchLoadEventForFrameOwner() override;
   void Collapse(bool collapsed) final;
   void Focus() override;
-  void SetReceivedUserGestureBeforeNavigation(bool value) override;
+  void SetHadStickyUserActivationBeforeNavigation(bool value) override;
 
  private:
   // Frame protected overrides:

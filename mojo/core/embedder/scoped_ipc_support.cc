@@ -22,10 +22,10 @@ void ShutdownIPCSupport(base::OnceClosure callback) {
 }  // namespace
 
 ScopedIPCSupport::ScopedIPCSupport(
-    scoped_refptr<base::TaskRunner> io_thread_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
     ShutdownPolicy shutdown_policy)
     : shutdown_policy_(shutdown_policy) {
-  Core::Get()->SetIOTaskRunner(io_thread_task_runner);
+  Core::Get()->SetIOTaskRunner(std::move(io_thread_task_runner));
 }
 
 ScopedIPCSupport::~ScopedIPCSupport() {

@@ -24,7 +24,6 @@
 <translation id="1171770572613082465">Zobacz najpopularniejsze strony, klikając przycisk „Popularne”</translation>
 <translation id="1173894706177603556">Zmień nazwę</translation>
 <translation id="1178581264944972037">Wstrzymaj</translation>
-<translation id="118069123878619799">– Twoje cechy fizyczne, np wzrost;</translation>
 <translation id="1181037720776840403">Usuń</translation>
 <translation id="1188239144602654184">Włącz AR</translation>
 <translation id="1197267115302279827">Przenieś zakładki</translation>
@@ -62,7 +61,6 @@
 <translation id="1384959399684842514">Pobieranie wstrzymane</translation>
 <translation id="1386674309198842382">Aktywność <ph name="LAST_UPDATED" /> dni temu</translation>
 <translation id="1397811292916898096">Szukaj w <ph name="PRODUCT_NAME" /></translation>
-<translation id="1404122904123200417">Umieszczone na <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">„Bez śledzenia”</translation>
 <translation id="1407135791313364759">Otwórz wszystkie</translation>
 <translation id="1409426117486808224">Uproszczony widok otwartych kart</translation>
@@ -215,6 +213,7 @@
 <translation id="2534155362429831547">Usunięte elementy: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="2536728043171574184">Oglądasz kopię offline tej strony</translation>
 <translation id="2537178555904266562">Błąd podczas synchronizowania haseł</translation>
+<translation id="2537296579376733324">Wszystkie pliki cookie, tylko w tej witrynie</translation>
 <translation id="2546283357679194313">Pliki cookie i dane stron</translation>
 <translation id="2567385386134582609">OBRAZ</translation>
 <translation id="257088987046510401">Motywy</translation>
@@ -472,6 +471,7 @@ Na stronie <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> n
 <translation id="4565377596337484307">Ukryj hasło</translation>
 <translation id="4570913071927164677">Szczegóły</translation>
 <translation id="4572422548854449519">Zaloguj się na konto zarządzane</translation>
+<translation id="4574741712540401491">• <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minutę temu}few{# minuty temu}many{# minut temu}other{# minuty temu}}</translation>
 <translation id="4587589328781138893">Witryny</translation>
 <translation id="4594952190837476234">Ta strona offline jest z <ph name="CREATION_TIME" /> i może różnić się od wersji online.</translation>
@@ -652,7 +652,6 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5809361687334836369">{HOURS,plural, =1{# godzinę temu}few{# godziny temu}many{# godzin temu}other{# godziny temu}}</translation>
 <translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. Wszelkie prawa zastrzeżone.</translation>
 <translation id="5817918615728894473">Sparuj</translation>
-<translation id="5819762621475381970">– układ Twojego pokoju.</translation>
 <translation id="583281660410589416">Nieznany</translation>
 <translation id="5833984609253377421">Udostępnij link</translation>
 <translation id="5836192821815272682">Pobieram aktualizację Chrome…</translation>
@@ -753,6 +752,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6545017243486555795">Wyczyść wszystkie dane</translation>
 <translation id="6545864417968258051">Skanowanie Bluetooth</translation>
 <translation id="6560414384669816528">Szukaj w Sogou</translation>
+<translation id="656065428026159829">Pokaż więcej</translation>
 <translation id="6566259936974865419">Chrome pozwolił Ci zaoszczędzić <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">Zawsze zezwalaj</translation>
 <translation id="6573431926118603307">Tutaj wyświetlą się karty otwarte w Chrome na innych urządzeniach.</translation>
@@ -849,6 +849,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7293171162284876153">Aby rozpocząć synchronizację, włącz „Synchronizuj dane Chrome”.</translation>
 <translation id="729975465115245577">Na urządzeniu nie ma aplikacji umożliwiającej zapisanie pliku z hasłami.</translation>
 <translation id="7302081693174882195">Szczegóły: posortowane według zaoszczędzonych danych</translation>
+<translation id="7302486331832100261">Zazwyczaj blokujesz powiadomienia. Aby na nie zezwolić, kliknij Szczegóły.</translation>
 <translation id="7328017930301109123">Chrome szybciej ładuje strony w wersji uproszczonej, przesyłając nawet o 60 procent mniej danych.</translation>
 <translation id="7333031090786104871">Nadal dodaję poprzednią stronę</translation>
 <translation id="7352939065658542140">FILM</translation>

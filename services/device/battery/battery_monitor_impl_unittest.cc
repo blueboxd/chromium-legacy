@@ -28,7 +28,7 @@ namespace {
 
 void ExpectBatteryStatus(bool* out_called,
                          const mojom::BatteryStatus& expected,
-                         const base::Closure& quit_closure,
+                         base::OnceClosure quit_closure,
                          mojom::BatteryStatusPtr status) {
   if (out_called)
     *out_called = true;
@@ -36,7 +36,7 @@ void ExpectBatteryStatus(bool* out_called,
   EXPECT_EQ(expected.charging_time, status->charging_time);
   EXPECT_EQ(expected.discharging_time, status->discharging_time);
   EXPECT_EQ(expected.level, status->level);
-  quit_closure.Run();
+  std::move(quit_closure).Run();
 }
 
 class FakeBatteryStatusManager : public BatteryStatusManager {
@@ -130,7 +130,7 @@ TEST_F(BatteryMonitorImplTest, BatteryManagerDefaultValues) {
   default_status.discharging_time = std::numeric_limits<double>::infinity();
   default_status.level = 1.0;
   base::RunLoop run_loop;
-  battery_monitor_->QueryNextStatus(base::Bind(
+  battery_monitor_->QueryNextStatus(base::BindOnce(
       &ExpectBatteryStatus, nullptr, default_status, run_loop.QuitClosure()));
   run_loop.Run();
   EXPECT_TRUE(battery_manager()->started());
@@ -148,8 +148,8 @@ TEST_F(BatteryMonitorImplTest, BatteryManagerPredefinedValues) {
   battery_manager()->set_battery_status(status);
 
   base::RunLoop run_loop;
-  battery_monitor_->QueryNextStatus(base::Bind(&ExpectBatteryStatus, nullptr,
-                                               status, run_loop.QuitClosure()));
+  battery_monitor_->QueryNextStatus(base::BindOnce(
+      &ExpectBatteryStatus, nullptr, status, run_loop.QuitClosure()));
   run_loop.Run();
   EXPECT_TRUE(battery_manager()->started());
 }
@@ -168,7 +168,7 @@ TEST_F(BatteryMonitorImplTest, BatteryManagerInvokeUpdate) {
 
   // The first time query should succeed.
   base::RunLoop run_loop1;
-  battery_monitor_->QueryNextStatus(base::Bind(
+  battery_monitor_->QueryNextStatus(base::BindOnce(
       &ExpectBatteryStatus, nullptr, status, run_loop1.QuitClosure()));
   run_loop1.Run();
   EXPECT_TRUE(battery_manager()->started());
@@ -177,7 +177,7 @@ TEST_F(BatteryMonitorImplTest, BatteryManagerInvokeUpdate) {
   bool called = false;
   status.level = 0.6;
   base::RunLoop run_loop2;
-  battery_monitor_->QueryNextStatus(base::Bind(
+  battery_monitor_->QueryNextStatus(base::BindOnce(
       &ExpectBatteryStatus, &called, status, run_loop2.QuitClosure()));
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(called);

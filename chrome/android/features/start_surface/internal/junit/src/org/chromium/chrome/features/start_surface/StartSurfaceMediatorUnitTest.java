@@ -340,6 +340,7 @@ public class StartSurfaceMediatorUnitTest {
 
         doReturn(0).when(mNormalTabModel).getCount();
         mediator.showOverview(false);
+        mediator.setOverviewState(OverviewModeState.SHOWN_HOMEPAGE);
         verify(mNormalTabModel).addObserver(mTabModelObserverCaptor.capture());
         assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
         assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(false));
@@ -357,6 +358,7 @@ public class StartSurfaceMediatorUnitTest {
 
         doReturn(2).when(mNormalTabModel).getCount();
         mediator.showOverview(false);
+        mediator.setOverviewState(OverviewModeState.SHOWN_HOMEPAGE);
         verify(mNormalTabModel).addObserver(mTabModelObserverCaptor.capture());
         assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
         assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(true));
@@ -382,8 +384,11 @@ public class StartSurfaceMediatorUnitTest {
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
 
         doReturn(1).when(mNormalTabModel).getCount();
+        mediator.setSecondaryTasksSurfacePropertyModel(mSecondaryTasksSurfacePropertyModel);
         mediator.showOverview(false);
         verify(mNormalTabModel).addObserver(mTabModelObserverCaptor.capture());
+
+        mediator.setOverviewState(OverviewModeState.SHOWN_HOMEPAGE);
         mTabModelObserverCaptor.getValue().willCloseTab(mock(Tab.class), false);
         assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
         assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(false));
@@ -391,6 +396,15 @@ public class StartSurfaceMediatorUnitTest {
         mTabModelObserverCaptor.getValue().tabClosureUndone(mock(Tab.class));
         assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
         assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(true));
+
+        doReturn(2).when(mNormalTabModel).getCount();
+        mediator.setOverviewState(OverviewModeState.SHOWN_TABSWITCHER);
+        mTabModelObserverCaptor.getValue().willCloseTab(mock(Tab.class), false);
+        mTabModelObserverCaptor.getValue().tabClosureUndone(mock(Tab.class));
+        doReturn(0).when(mNormalTabModel).getCount();
+        mTabModelObserverCaptor.getValue().willCloseTab(mock(Tab.class), false);
+        assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(false));
+        assertThat(mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE), equalTo(true));
     }
 
     @Test

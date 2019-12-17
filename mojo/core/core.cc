@@ -59,7 +59,7 @@ const uint64_t kUnknownPipeIdForDebug = 0x7f7f7f7f7f7f7f7fUL;
 constexpr base::StringPiece kIsolatedInvitationPipeName = {"\0\0\0\0", 4};
 
 void InvokeProcessErrorCallbackOnTaskRunner(
-    scoped_refptr<base::TaskRunner> task_runner,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
     MojoProcessErrorHandler handler,
     uintptr_t context,
     const std::string& error,
@@ -93,7 +93,7 @@ void InvokeProcessErrorCallbackOnTaskRunner(
 // -- see Core::SendInvitation) will be destroyed.
 class ProcessDisconnectHandler {
  public:
-  ProcessDisconnectHandler(scoped_refptr<base::TaskRunner> task_runner,
+  ProcessDisconnectHandler(scoped_refptr<base::SequencedTaskRunner> task_runner,
                            MojoProcessErrorHandler handler,
                            uintptr_t context)
       : task_runner_(std::move(task_runner)),
@@ -107,18 +107,19 @@ class ProcessDisconnectHandler {
   }
 
  private:
-  const scoped_refptr<base::TaskRunner> task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   const MojoProcessErrorHandler handler_;
   const uintptr_t context_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessDisconnectHandler);
 };
 
-void RunMojoProcessErrorHandler(ProcessDisconnectHandler* disconnect_handler,
-                                scoped_refptr<base::TaskRunner> task_runner,
-                                MojoProcessErrorHandler handler,
-                                uintptr_t context,
-                                const std::string& error) {
+void RunMojoProcessErrorHandler(
+    ProcessDisconnectHandler* disconnect_handler,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    MojoProcessErrorHandler handler,
+    uintptr_t context,
+    const std::string& error) {
   InvokeProcessErrorCallbackOnTaskRunner(task_runner, handler, context, error,
                                          MOJO_PROCESS_ERROR_FLAG_NONE);
 }
@@ -136,8 +137,7 @@ Core::~Core() {
     // If this races with IO thread shutdown the callback will be dropped and
     // the NodeController will be shutdown on this thread anyway, which is also
     // just fine.
-    scoped_refptr<base::TaskRunner> io_task_runner =
-        node_controller_->io_task_runner();
+    auto io_task_runner = node_controller_->io_task_runner();
     io_task_runner->PostTask(FROM_HERE,
                              base::BindOnce(&Core::PassNodeControllerToIOThread,
                                             std::move(node_controller_)));
@@ -146,8 +146,9 @@ Core::~Core() {
       ->UnregisterAndDeleteDumpProviderSoon(std::move(handles_));
 }
 
-void Core::SetIOTaskRunner(scoped_refptr<base::TaskRunner> io_task_runner) {
-  GetNodeController()->SetIOTaskRunner(io_task_runner);
+void Core::SetIOTaskRunner(
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
+  GetNodeController()->SetIOTaskRunner(std::move(io_task_runner));
 }
 
 NodeController* Core::GetNodeController() {

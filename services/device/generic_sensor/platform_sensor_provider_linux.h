@@ -28,7 +28,7 @@ class PlatformSensorProviderLinux : public PlatformSensorProvider,
  protected:
   void CreateSensorInternal(mojom::SensorType type,
                             SensorReadingSharedBuffer* reading_buffer,
-                            const CreateSensorCallback& callback) override;
+                            CreateSensorCallback callback) override;
 
   void FreeResources() override;
 
@@ -45,7 +45,7 @@ class PlatformSensorProviderLinux : public PlatformSensorProvider,
   void SensorDeviceFound(
       mojom::SensorType type,
       SensorReadingSharedBuffer* reading_buffer,
-      const PlatformSensorProviderBase::CreateSensorCallback& callback,
+      PlatformSensorProviderBase::CreateSensorCallback callback,
       const SensorInfoLinux* sensor_device);
 
   // Returns SensorInfoLinux structure of a requested type.
@@ -73,7 +73,7 @@ class PlatformSensorProviderLinux : public PlatformSensorProvider,
 
   void CreateFusionSensor(mojom::SensorType type,
                           SensorReadingSharedBuffer* reading_buffer,
-                          const CreateSensorCallback& callback);
+                          CreateSensorCallback callback);
 
   // Set to true when enumeration is ready.
   bool sensor_nodes_enumerated_;

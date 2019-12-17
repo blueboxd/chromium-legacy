@@ -240,6 +240,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
     return display_item_client_;
   }
   const NGBorderEdges& BorderEdges() const;
+  PhysicalRect SelfInkOverflow() const;
 
   const NGPhysicalBoxFragment& box_fragment_;
   const DisplayItemClient& display_item_client_;

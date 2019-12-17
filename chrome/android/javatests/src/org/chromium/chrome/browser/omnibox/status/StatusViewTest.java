@@ -31,6 +31,7 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omnibox.status.StatusProperties.StatusIconResource;
 import org.chromium.chrome.browser.toolbar.LocationBarModel;
 import org.chromium.chrome.browser.ui.widget.CompositeTouchDelegate;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -113,7 +114,8 @@ public class StatusViewTest extends DummyUiActivityTestCase {
                 () -> { mStatusModel.set(StatusProperties.INCOGNITO_BADGE_VISIBLE, true); });
         onView(withId(R.id.location_bar_incognito_badge)).check(matches(isCompletelyDisplayed()));
 
-        runOnUiThreadBlocking(() -> { mStatusModel.set(StatusProperties.STATUS_ICON_RES, 0); });
+        runOnUiThreadBlocking(
+                () -> { mStatusModel.set(StatusProperties.STATUS_ICON_RESOURCE, null); });
         onView(withId(R.id.location_bar_status_icon))
                 .check((view, e) -> Assert.assertNull(mStatusView.getTouchDelegateForTesting()));
     }
@@ -132,7 +134,8 @@ public class StatusViewTest extends DummyUiActivityTestCase {
         onView(withId(R.id.location_bar_incognito_badge)).check(matches(isCompletelyDisplayed()));
 
         runOnUiThreadBlocking(() -> {
-            mStatusModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_logo_googleg_20dp);
+            mStatusModel.set(StatusProperties.STATUS_ICON_RESOURCE,
+                    new StatusIconResource(R.drawable.ic_search, 0));
         });
         onView(withId(R.id.location_bar_status_icon))
                 .check((view, e) -> assertNotNull(mStatusView.getTouchDelegateForTesting()));
@@ -150,7 +153,8 @@ public class StatusViewTest extends DummyUiActivityTestCase {
         onView(withId(R.id.location_bar_incognito_badge)).check(matches(isCompletelyDisplayed()));
 
         runOnUiThreadBlocking(() -> {
-            mStatusModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_logo_googleg_20dp);
+            mStatusModel.set(StatusProperties.STATUS_ICON_RESOURCE,
+                    new StatusIconResource(R.drawable.ic_logo_googleg_24dp, 0));
         });
         onView(withId(R.id.location_bar_incognito_badge)).check((view, e) -> {
             ViewGroup.MarginLayoutParams params =

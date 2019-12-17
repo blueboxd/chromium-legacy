@@ -271,10 +271,9 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
       base::WeakPtr<CanvasResourceProvider>,
       SkFilterQuality,
       const CanvasColorParams&,
-      bool is_overlay_candidate,
       bool is_origin_top_left,
-      bool allow_concurrent_read_write_access,
-      bool is_accelerated);
+      bool is_accelerated,
+      uint32_t shared_image_usage_flags);
   ~CanvasResourceSharedImage() override;
 
   bool IsRecycleable() const final { return true; }
@@ -356,10 +355,9 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
                             base::WeakPtr<CanvasResourceProvider>,
                             SkFilterQuality,
                             const CanvasColorParams&,
-                            bool is_overlay_candidate,
                             bool is_origin_top_left,
-                            bool allow_concurrent_read_write_access,
-                            bool is_accelerated);
+                            bool is_accelerated,
+                            uint32_t shared_image_usage_flags);
 
   OwningThreadData& owning_thread_data() {
     DCHECK_EQ(base::PlatformThread::CurrentId(), owning_thread_id_);
@@ -394,10 +392,10 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
 
   // Accessed on any thread.
-  const bool is_overlay_candidate_;
   const IntSize size_;
   const bool is_origin_top_left_;
   const bool is_accelerated_;
+  const bool is_overlay_candidate_;
   const GLenum texture_target_;
   const scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner_;
 

@@ -97,7 +97,7 @@ template("generated_json_strings") {
   }
 
   root_namespace = invoker.root_namespace
-  if (defined(invoker.root)) { 
+  if (defined(invoker.root)) {
     root_folder = invoker.root
   } else {
     root_folder = "//"
@@ -221,7 +221,7 @@ template("function_registration") {
   }
 
   # Child directory inside the generated file tree.
-  gen_child_dir = get_path_info(invoker.impl_dir+"/", "gen_dir")
+  gen_child_dir = get_path_info(invoker.impl_dir + "/", "gen_dir")
 
   bundle_generator_registration_name =
       target_name + "_bundle_generator_registration"

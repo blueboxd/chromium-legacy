@@ -19,6 +19,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/service_worker_task_queue_factory.h"
 #include "extensions/common/constants.h"
@@ -304,8 +305,7 @@ void ServiceWorkerTaskQueue::ActivateExtension(const Extension* extension) {
       BackgroundInfo::GetBackgroundServiceWorkerScript(extension));
   blink::mojom::ServiceWorkerRegistrationOptions option;
   option.scope = extension->url();
-  content::BrowserContext::GetStoragePartitionForSite(browser_context_,
-                                                      extension->url())
+  util::GetStoragePartitionForExtensionId(extension->id(), browser_context_)
       ->GetServiceWorkerContext()
       ->RegisterServiceWorker(
           script_url, option,
@@ -338,8 +338,7 @@ void ServiceWorkerTaskQueue::DeactivateExtension(const Extension* extension) {
       LazyContextId(browser_context_, extension_id, extension->url()),
       *sequence);
 
-  content::BrowserContext::GetStoragePartitionForSite(browser_context_,
-                                                      extension->url())
+  util::GetStoragePartitionForExtensionId(extension->id(), browser_context_)
       ->GetServiceWorkerContext()
       ->UnregisterServiceWorker(
           extension->url(),
@@ -356,9 +355,9 @@ void ServiceWorkerTaskQueue::RunTasksAfterStartWorker(
     return;
 
   content::StoragePartition* partition =
-      BrowserContext::GetStoragePartitionForSite(
-          lazy_context_id.browser_context(),
-          lazy_context_id.service_worker_scope());
+      util::GetStoragePartitionForExtensionId(
+          lazy_context_id.extension_id(), lazy_context_id.browser_context());
+
   content::ServiceWorkerContext* service_worker_context =
       partition->GetServiceWorkerContext();
 

@@ -24,12 +24,12 @@ class HidServiceTest : public ::testing::Test {
   std::unique_ptr<HidService> service_;
 };
 
-void OnGetDevices(const base::Closure& quit_closure,
+void OnGetDevices(base::OnceClosure quit_closure,
                   std::vector<mojom::HidDeviceInfoPtr> devices) {
   // Since there's no guarantee that any devices are connected at the moment
   // this test doesn't assume anything about the result but it at least verifies
   // that devices can be enumerated without the application crashing.
-  quit_closure.Run();
+  std::move(quit_closure).Run();
 }
 
 }  // namespace

@@ -504,8 +504,8 @@ void BatteryStatusManagerLinuxTest::UPowerSignalDeviceRemoved(
 
 void BatteryStatusManagerLinuxTest::StartBatteryStatusManagerLinux() {
   manager_ = BatteryStatusManagerLinux::CreateForTesting(
-      base::Bind(&BatteryStatusManagerLinuxTest::BatteryUpdateCallback,
-                 base::Unretained(this)),
+      base::BindRepeating(&BatteryStatusManagerLinuxTest::BatteryUpdateCallback,
+                          base::Unretained(this)),
       mock_bus_.get());
   manager_->StartListeningBatteryChange();
   SyncWithNotifierThread();

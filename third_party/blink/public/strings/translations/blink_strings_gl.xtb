@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">Amplía este texto a <ph name="MIN_CHARACTERS" /> caracteres ou máis. Actualmente estás utilizando <ph name="CURRENT_LENGTH" /> caracteres.</translation>
 <translation id="383465348367842624">O texto seguido do signo "<ph name="ATSIGN" />" non debe conter o símbolo "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="3846214748874656680">Saír da pantalla completa</translation>
-<translation id="3889183436948184105">revisión</translation>
 <translation id="3920932319529768807">conclusión</translation>
 <translation id="3924558731517983934">aplicación</translation>
 <translation id="3944740393230681990">prólogo</translation>
@@ -115,6 +114,7 @@
 <translation id="4812940957355064477">Introduce un número.</translation>
 <translation id="4912536737030637138">entrada bibliográfica</translation>
 <translation id="492244087561876220">comentario</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> (opción seleccionada)</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> seleccionados</translation>
 <translation id="4992066212339426712">Activar o son</translation>
 <translation id="49969490063480558">Introduce texto despois de "<ph name="ATSIGN" />". O enderezo electrónico "<ph name="INVALIDADDRESS" />" está incompleto.</translation>
@@ -219,6 +219,7 @@
 <translation id="7888071071722539607">Inclúe un valor "<ph name="ATSIGN" />" no enderezo de correo electrónico. A "<ph name="INVALIDADDRESS" />" fáltalle un "<ph name="ATSIGN" />".</translation>
 <translation id="7891486169920085145">divisor</translation>
 <translation id="795667975304826397">Non hai ningún ficheiro seleccionado</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> (opción non seleccionada)</translation>
 <translation id="8034303206267677282">importante</translation>
 <translation id="8053789581856978548">campo de texto de busca</translation>
 <translation id="8057695513531652401">aviso</translation>
@@ -257,7 +258,6 @@
 <translation id="8987927404178983737">Mes</translation>
 <translation id="901493112792887934">tempo actual en segundos</translation>
 <translation id="901834265349196618">correo electrónico</translation>
-<translation id="9023835124071926463">sección de comentarios</translation>
 <translation id="9048119486235211610">navegación</translation>
 <translation id="9062295712474918030">documento</translation>
 <translation id="9093215626363556771">sae do modo de pantalla superposta</translation>

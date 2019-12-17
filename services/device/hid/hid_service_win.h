@@ -10,10 +10,14 @@
 // Must be after windows.h.
 #include <hidclass.h>
 
+// NOTE: <hidsdi.h> must be included beore <hidpi.h>. clang-format will want to
+// reorder them.
+// clang-format off
 extern "C" {
 #include <hidsdi.h>
 #include <hidpi.h>
 }
+// clang-format on
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -34,8 +38,7 @@ class HidServiceWin : public HidService, public DeviceMonitorWin::Observer {
   HidServiceWin();
   ~HidServiceWin() override;
 
-  void Connect(const std::string& device_id,
-               const ConnectCallback& callback) override;
+  void Connect(const std::string& device_id, ConnectCallback callback) override;
   base::WeakPtr<HidService> GetWeakPtr() override;
 
  private:

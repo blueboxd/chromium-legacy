@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">Matndagi belgilar soni <ph name="MIN_CHARACTERS" /> tadan ko‘p bo‘lishi kerak (siz esa <ph name="CURRENT_LENGTH" /> ta belgidan foydalanyapsiz).</translation>
 <translation id="383465348367842624">Manzilning “<ph name="ATSIGN" />” qismida “<ph name="INVALIDCHARACTER" />” belgisi bo‘lmasligi kerak.</translation>
 <translation id="3846214748874656680">To‘liq ekran rejimidan chiqish</translation>
-<translation id="3889183436948184105">tahrir</translation>
 <translation id="3920932319529768807">xulosa</translation>
 <translation id="3924558731517983934">ilova</translation>
 <translation id="3944740393230681990">muqaddima</translation>
@@ -115,6 +114,7 @@
 <translation id="4812940957355064477">Raqam kiriting.</translation>
 <translation id="4912536737030637138">bibliografiya yozuvi</translation>
 <translation id="492244087561876220">fikr</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> tanlandi</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> ta element tanlandi</translation>
 <translation id="4992066212339426712">Ovozni yoqish</translation>
 <translation id="49969490063480558">Elektron manzilning qolgan qismini “<ph name="ATSIGN" />” belgisidan keyin kiriting. “<ph name="INVALIDADDRESS" />” manzili to‘liq emas.</translation>
@@ -219,6 +219,7 @@
 <translation id="7888071071722539607">Elektron pochta manzilida “<ph name="ATSIGN" />” belgisi bo‘lishi kerak. “<ph name="INVALIDADDRESS" />” manzilida “<ph name="ATSIGN" />” belgisi yo‘q.</translation>
 <translation id="7891486169920085145">ajratkich</translation>
 <translation id="795667975304826397">Hech qanday fayl tanlanmagan</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> tanlanmagan</translation>
 <translation id="8034303206267677282">kuchli</translation>
 <translation id="8053789581856978548">qidiruv maydoni</translation>
 <translation id="8057695513531652401">eslatma</translation>
@@ -257,7 +258,6 @@
 <translation id="8987927404178983737">Oy</translation>
 <translation id="901493112792887934">joriy vaqt soniyalarda</translation>
 <translation id="901834265349196618">e-pochta</translation>
-<translation id="9023835124071926463">fikrlar boʻlimi</translation>
 <translation id="9048119486235211610">navigatsiya</translation>
 <translation id="9062295712474918030">hujjat</translation>
 <translation id="9093215626363556771">tasvir ustida tasvir rejimidan chiqish</translation>

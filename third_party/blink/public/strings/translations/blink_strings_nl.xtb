@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">Breid deze tekst uit tot <ph name="MIN_CHARACTERS" /> tekens of meer (je gebruikt momenteel <ph name="CURRENT_LENGTH" /> tekens).</translation>
 <translation id="383465348367842624">Het naamgedeelte vóór '<ph name="ATSIGN" />' mag niet het teken '<ph name="INVALIDCHARACTER" />' bevatten.</translation>
 <translation id="3846214748874656680">Volledig scherm sluiten</translation>
-<translation id="3889183436948184105">revisie</translation>
 <translation id="3920932319529768807">conclusie</translation>
 <translation id="3924558731517983934">app</translation>
 <translation id="3944740393230681990">proloog</translation>
@@ -259,7 +258,6 @@
 <translation id="8987927404178983737">Maand</translation>
 <translation id="901493112792887934">huidige tijd in seconden</translation>
 <translation id="901834265349196618">e-mail</translation>
-<translation id="9023835124071926463">reactiegedeelte</translation>
 <translation id="9048119486235211610">navigatie</translation>
 <translation id="9062295712474918030">document</translation>
 <translation id="9093215626363556771">scherm-in-scherm afsluiten</translation>

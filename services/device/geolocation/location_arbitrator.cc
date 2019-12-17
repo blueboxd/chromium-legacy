@@ -91,8 +91,8 @@ void LocationArbitrator::RegisterProvider(
     std::unique_ptr<LocationProvider> provider) {
   if (!provider)
     return;
-  provider->SetUpdateCallback(base::Bind(&LocationArbitrator::OnLocationUpdate,
-                                         base::Unretained(this)));
+  provider->SetUpdateCallback(base::BindRepeating(
+      &LocationArbitrator::OnLocationUpdate, base::Unretained(this)));
   if (is_permission_granted_)
     provider->OnPermissionGranted();
   providers_.push_back(std::move(provider));

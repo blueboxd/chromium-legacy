@@ -28,7 +28,9 @@ class PLATFORM_EXPORT PaintGeneratedImage : public GeneratedImage {
             RespectImageOrientationEnum,
             ImageClampingMode,
             ImageDecodingMode) override;
-  void DrawTile(GraphicsContext&, const FloatRect&) final;
+  void DrawTile(GraphicsContext&,
+                const FloatRect&,
+                RespectImageOrientationEnum) final;
 
   PaintGeneratedImage(sk_sp<PaintRecord> record, const FloatSize& size)
       : GeneratedImage(size), record_(std::move(record)) {}

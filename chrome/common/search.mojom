@@ -184,6 +184,14 @@ interface EmbeddedSearch {
   // Called when a user dismisses a promo.
   BlocklistPromo(string promo_id);
 
+  // Handles navigation to chrome://extensions by calling the browser to
+  // complete the navigation for the extensions checkup middle slot promo.
+  OpenExtensionsPage(double button,
+                     bool alt_key,
+                     bool ctrl_key,
+                     bool meta_key,
+                     bool shift_key);
+
   // Handles navigation to an autocomplete match (i.e. an item in the realbox's
   // list of matches). Note: |url| is passed solely to verify that the browser
   // and renderer are in sync; don't trust this content or use it for anything

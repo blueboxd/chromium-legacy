@@ -4147,11 +4147,13 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ChromeColors_ColorApplied">
+  <obsolete>Deprecated as of 12/2019.</obsolete>
   <owner>gayane@chromium.org</owner>
   <description>Chrome Colors was applied from Colors menu.</description>
 </action>
 
 <action name="ChromeColors_DefaultApplied">
+  <obsolete>Deprecated as of 12/2019.</obsolete>
   <owner>gayane@chromium.org</owner>
   <description>Default theme was applied from Colors menu.</description>
 </action>
@@ -4175,6 +4177,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ChromeColors_ThemeUninstalled">
+  <obsolete>Deprecated as of 7/2019.</obsolete>
   <owner>gayane@chromium.org</owner>
   <description>Webstore theme uninstalled from Colors menu.</description>
 </action>

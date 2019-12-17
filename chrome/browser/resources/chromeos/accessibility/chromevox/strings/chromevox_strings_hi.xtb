@@ -385,7 +385,6 @@
 <translation id="3646890046000188562">{COUNT,plural, =1{बैकटिक}one{# बैकटिक}other{# बैकटिक}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{डॉलर}one{# डॉलर चिह्न}other{# डॉलर चिह्न}}</translation>
-<translation id="3658742229777143148">पुनरीक्षण</translation>
 <translation id="3659787053479271466">alrt</translation>
 <translation id="3665563998540286755"><ph name="VALUE" />, सूची बॉक्‍स</translation>
 <translation id="3681531118904532409">पपाया विप जैसा रंग</translation>
@@ -1104,7 +1103,6 @@
 <translation id="812886159861361726">डाउनलोड बंद हो गया <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">स्पर्श करें</translation>
 <translation id="8153880621934657047">टेबल में नहीं है.</translation>
-<translation id="8161114871611868169">टिप्पणियों वाला सेक्शन</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{अंडरस्कोर}one{# अंडरस्कोर}other{# अंडरस्कोर}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8184828902145951186">पंक्ति</translation>

@@ -30,7 +30,7 @@ void CallbackWithPassed(bool* called, std::unique_ptr<int>) {
   *called = true;
 }
 
-void VerifyCalledOnTaskRunner(base::TaskRunner* task_runner,
+void VerifyCalledOnTaskRunner(base::SingleThreadTaskRunner* task_runner,
                               bool* called) {
   ASSERT_TRUE(called);
   ASSERT_TRUE(task_runner);

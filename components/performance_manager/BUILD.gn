@@ -5,6 +5,7 @@
 static_library("performance_manager") {
   sources = [
     "decorators/page_live_state_decorator.cc",
+    "embedder/performance_manager_registry.h",
     "frame_priority/boosting_vote_aggregator.cc",
     "frame_priority/frame_priority.cc",
     "frame_priority/max_vote_aggregator.cc",
@@ -45,6 +46,7 @@ static_library("performance_manager") {
     "performance_manager_impl.h",
     "performance_manager_lock_observer.cc",
     "performance_manager_lock_observer.h",
+    "performance_manager_registry.cc",
     "performance_manager_tab_helper.cc",
     "performance_manager_tab_helper.h",
     "process_node_source.cc",

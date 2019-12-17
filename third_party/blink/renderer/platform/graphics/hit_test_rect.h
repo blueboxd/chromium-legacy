@@ -17,7 +17,7 @@ struct PLATFORM_EXPORT HitTestRect {
   TouchAction allowed_touch_action;
 
   HitTestRect(const LayoutRect& layout_rect)
-      : HitTestRect(layout_rect, TouchAction::kTouchActionNone) {}
+      : HitTestRect(layout_rect, TouchAction::kNone) {}
   HitTestRect(const LayoutRect& layout_rect, TouchAction action)
       : rect(layout_rect), allowed_touch_action(action) {}
 

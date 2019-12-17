@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/performance_manager/graph/process_node_impl.h"
 #include "components/performance_manager/performance_manager_impl.h"
 #include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
@@ -54,9 +55,9 @@ void ChromeContentBrowserClientPerformanceManagerPart::
       base::BindRepeating(&BindProcessNode, render_process_host->GetID()),
       base::SequencedTaskRunnerHandle::Get());
 
-  // Ideally this would strictly be a "CreateForRenderProcess", but when a
-  // RenderFrameHost is "resurrected" with a new process it will already have
-  // user data attached. This will happen on renderer crash.
-  performance_manager::RenderProcessUserData::GetOrCreateForRenderProcessHost(
-      render_process_host);
+  // Ideally this would strictly be a "Create", but when a RenderFrameHost is
+  // "resurrected" with a new process it will already have user data attached.
+  // This will happen on renderer crash.
+  performance_manager::PerformanceManagerRegistry::GetInstance()
+      ->CreateProcessNodeForRenderProcessHost(render_process_host);
 }

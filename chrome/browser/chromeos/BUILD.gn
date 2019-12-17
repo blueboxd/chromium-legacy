@@ -2174,6 +2174,8 @@ source_set("chromeos") {
     "smb_client/temp_file_manager.h",
     "startup_settings_cache.cc",
     "startup_settings_cache.h",
+    "sync/app_settings_model_type_controller.cc",
+    "sync/app_settings_model_type_controller.h",
     "sync/apps_model_type_controller.cc",
     "sync/apps_model_type_controller.h",
     "sync/os_sync_model_type_controller.cc",

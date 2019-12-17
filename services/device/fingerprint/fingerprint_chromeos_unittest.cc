@@ -149,14 +149,14 @@ TEST_F(FingerprintChromeOSTest, FingerprintObserverTest) {
   std::string label;
   chromeos::FakeBiodClient::Get()->StartEnrollSession(
       user_id, label,
-      base::Bind(&FingerprintChromeOSTest::onStartSession,
-                 base::Unretained(this)));
+      base::BindOnce(&FingerprintChromeOSTest::onStartSession,
+                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   GenerateEnrollScanDoneSignal();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(observer.enroll_scan_dones(), 1);
 
-  chromeos::FakeBiodClient::Get()->StartAuthSession(base::Bind(
+  chromeos::FakeBiodClient::Get()->StartAuthSession(base::BindOnce(
       &FingerprintChromeOSTest::onStartSession, base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   GenerateAuthScanDoneSignal();

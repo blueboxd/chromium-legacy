@@ -54,7 +54,7 @@ class CONTENT_EXPORT PepperHostResolverMessageFilter
   typedef std::vector<PP_NetAddress_Private> NetAddressList;
 
   // ppapi::host::ResourceMessageFilter overrides.
-  scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
+  scoped_refptr<base::SequencedTaskRunner> OverrideTaskRunnerForMessage(
       const IPC::Message& message) override;
   int32_t OnResourceMessageReceived(
       const IPC::Message& msg,

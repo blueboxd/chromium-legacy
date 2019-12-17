@@ -144,7 +144,7 @@ void SaveStringsAndRunContinuation(
     uint8_t manufacturer,
     uint8_t product,
     uint8_t serial_number,
-    const base::Closure& continuation,
+    base::OnceClosure continuation,
     std::unique_ptr<std::map<uint8_t, base::string16>> string_map) {
   if (manufacturer != 0)
     device->set_manufacturer_string((*string_map)[manufacturer]);
@@ -152,11 +152,11 @@ void SaveStringsAndRunContinuation(
     device->set_product_string((*string_map)[product]);
   if (serial_number != 0)
     device->set_serial_number((*string_map)[serial_number]);
-  continuation.Run();
+  std::move(continuation).Run();
 }
 
 void OnReadBosDescriptor(scoped_refptr<UsbDeviceHandle> device_handle,
-                         const base::Closure& barrier,
+                         base::OnceClosure barrier,
                          const GURL& landing_page) {
   scoped_refptr<UsbDeviceImpl> device =
       static_cast<UsbDeviceImpl*>(device_handle->GetDevice().get());
@@ -164,7 +164,7 @@ void OnReadBosDescriptor(scoped_refptr<UsbDeviceHandle> device_handle,
   if (landing_page.is_valid())
     device->set_webusb_landing_page(landing_page);
 
-  barrier.Run();
+  std::move(barrier).Run();
 }
 
 void OnDeviceOpenedReadDescriptors(
@@ -234,21 +234,21 @@ UsbServiceImpl::~UsbServiceImpl() {
     libusb_hotplug_deregister_callback(context_->context(), hotplug_handle_);
 }
 
-void UsbServiceImpl::GetDevices(const GetDevicesCallback& callback) {
+void UsbServiceImpl::GetDevices(GetDevicesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (usb_unavailable_) {
     task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(callback, std::vector<scoped_refptr<UsbDevice>>()));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  std::vector<scoped_refptr<UsbDevice>>()));
     return;
   }
 
   if (hotplug_enabled_ && !enumeration_in_progress_) {
     // The device list is updated live when hotplug events are supported.
-    UsbService::GetDevices(callback);
+    UsbService::GetDevices(std::move(callback));
   } else {
-    pending_enumeration_callbacks_.push_back(callback);
+    pending_enumeration_callbacks_.push_back(std::move(callback));
     RefreshDevices();
   }
 }
@@ -401,8 +401,8 @@ void UsbServiceImpl::RefreshDevicesComplete() {
 
     std::vector<GetDevicesCallback> callbacks;
     callbacks.swap(pending_enumeration_callbacks_);
-    for (const GetDevicesCallback& callback : callbacks)
-      callback.Run(result);
+    for (GetDevicesCallback& callback : callbacks)
+      std::move(callback).Run(result);
   }
 
   if (!pending_path_enumerations_.empty()) {
@@ -411,7 +411,7 @@ void UsbServiceImpl::RefreshDevicesComplete() {
 }
 
 void UsbServiceImpl::EnumerateDevice(ScopedLibusbDeviceRef platform_device,
-                                     const base::Closure& refresh_complete) {
+                                     base::OnceClosure refresh_complete) {
   DCHECK(context_);
 
   libusb_device_descriptor descriptor;
@@ -419,13 +419,13 @@ void UsbServiceImpl::EnumerateDevice(ScopedLibusbDeviceRef platform_device,
   if (rv != LIBUSB_SUCCESS) {
     USB_LOG(EVENT) << "Failed to get device descriptor: "
                    << ConvertPlatformUsbErrorToString(rv);
-    EnumerationFailed(std::move(platform_device), refresh_complete);
+    EnumerationFailed(std::move(platform_device), std::move(refresh_complete));
     return;
   }
 
   if (descriptor.bDeviceClass == LIBUSB_CLASS_HUB) {
     // Don't try to enumerate hubs. We never want to connect to a hub.
-    EnumerationFailed(std::move(platform_device), refresh_complete);
+    EnumerationFailed(std::move(platform_device), std::move(refresh_complete));
     return;
   }
 
@@ -435,7 +435,7 @@ void UsbServiceImpl::EnumerateDevice(ScopedLibusbDeviceRef platform_device,
                                                     descriptor);
   base::OnceClosure add_device =
       base::BindOnce(&UsbServiceImpl::AddDevice, weak_factory_.GetWeakPtr(),
-                     refresh_complete, device);
+                     std::move(refresh_complete), device);
 
   bool read_bos_descriptors = descriptor.bcdUSB >= kUsbVersion2_1;
   if (descriptor.iManufacturer == 0 && descriptor.iProduct == 0 &&
@@ -449,7 +449,7 @@ void UsbServiceImpl::EnumerateDevice(ScopedLibusbDeviceRef platform_device,
     base::OnceClosure enumeration_failed = base::BindOnce(
         &UsbServiceImpl::EnumerationFailed, weak_factory_.GetWeakPtr(),
         ScopedLibusbDeviceRef(device->platform_device(), context_),
-        refresh_complete);
+        std::move(refresh_complete));
 
     device->Open(base::BindOnce(
         &OnDeviceOpenedReadDescriptors, descriptor.iManufacturer,
@@ -458,11 +458,11 @@ void UsbServiceImpl::EnumerateDevice(ScopedLibusbDeviceRef platform_device,
   }
 }
 
-void UsbServiceImpl::AddDevice(const base::Closure& refresh_complete,
+void UsbServiceImpl::AddDevice(base::OnceClosure refresh_complete,
                                scoped_refptr<UsbDeviceImpl> device) {
   if (!base::Contains(devices_being_enumerated_, device->platform_device())) {
     // Device was removed while being enumerated.
-    refresh_complete.Run();
+    std::move(refresh_complete).Run();
     return;
   }
 
@@ -480,7 +480,7 @@ void UsbServiceImpl::AddDevice(const base::Closure& refresh_complete,
   if (enumeration_ready_)
     NotifyDeviceAdded(device);
 
-  refresh_complete.Run();
+  std::move(refresh_complete).Run();
 }
 
 void UsbServiceImpl::RemoveDevice(scoped_refptr<UsbDeviceImpl> device) {
@@ -545,9 +545,9 @@ void UsbServiceImpl::OnPlatformDeviceRemoved(
 }
 
 void UsbServiceImpl::EnumerationFailed(ScopedLibusbDeviceRef platform_device,
-                                       const base::Closure& refresh_complete) {
+                                       base::OnceClosure refresh_complete) {
   ignored_devices_.push_back(std::move(platform_device));
-  refresh_complete.Run();
+  std::move(refresh_complete).Run();
 }
 
 }  // namespace device

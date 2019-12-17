@@ -121,7 +121,7 @@ void OnSetRlzPingSent(int retry_count, bool success);
 // because DBus code is not thread safe.
 void SetRlzPingSent(int retry_count) {
   // GetSystemBus() could return null in tests.
-  base::TaskRunner* const origin_task_runner =
+  base::SequencedTaskRunner* const origin_task_runner =
       chromeos::DBusThreadManager::Get()->GetSystemBus()
           ? chromeos::DBusThreadManager::Get()
                 ->GetSystemBus()

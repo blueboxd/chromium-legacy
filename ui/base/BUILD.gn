@@ -1162,8 +1162,8 @@ test("ui_base_unittests") {
       "$root_out_dir/ui_test.pak",  # TODO(brettw): remove this line.
     ]
     data_deps += [
-      "//ui/resources:ui_test_pak",  # TODO(brettw): this does nothing.
       "//third_party/mesa_headers",
+      "//ui/resources:ui_test_pak",  # TODO(brettw): this does nothing.
     ]
   }
   if (is_linux || is_win || is_fuchsia) {

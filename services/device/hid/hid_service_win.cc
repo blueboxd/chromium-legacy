@@ -49,11 +49,12 @@ HidServiceWin::HidServiceWin()
 HidServiceWin::~HidServiceWin() {}
 
 void HidServiceWin::Connect(const std::string& device_guid,
-                            const ConnectCallback& callback) {
+                            ConnectCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const auto& map_entry = devices().find(device_guid);
   if (map_entry == devices().end()) {
-    task_runner_->PostTask(FROM_HERE, base::BindOnce(callback, nullptr));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(std::move(callback), nullptr));
     return;
   }
   scoped_refptr<HidDeviceInfo> device_info = map_entry->second;
@@ -61,13 +62,15 @@ void HidServiceWin::Connect(const std::string& device_guid,
   base::win::ScopedHandle file(OpenDevice(device_info->platform_device_id()));
   if (!file.IsValid()) {
     HID_PLOG(EVENT) << "Failed to open device";
-    task_runner_->PostTask(FROM_HERE, base::BindOnce(callback, nullptr));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(std::move(callback), nullptr));
     return;
   }
 
   task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(callback, HidConnectionWin::Create(
-                                              device_info, std::move(file))));
+      FROM_HERE,
+      base::BindOnce(std::move(callback),
+                     HidConnectionWin::Create(device_info, std::move(file))));
 }
 
 base::WeakPtr<HidService> HidServiceWin::GetWeakPtr() {

@@ -346,8 +346,8 @@ void RemoteFrame::Focus() {
   FocusImpl();
 }
 
-void RemoteFrame::SetReceivedUserGestureBeforeNavigation(bool value) {
-  SetDocumentHasReceivedUserGestureBeforeNavigation(value);
+void RemoteFrame::SetHadStickyUserActivationBeforeNavigation(bool value) {
+  Frame::SetHadStickyUserActivationBeforeNavigation(value);
 }
 
 bool RemoteFrame::IsIgnoredForHitTest() const {

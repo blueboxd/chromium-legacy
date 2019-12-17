@@ -31,7 +31,7 @@
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/performance_manager/performance_manager_tab_helper.h"
+#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "components/performance_manager/test_support/graph_impl.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -799,8 +799,8 @@ TEST_F(TabLifecycleUnitSourceTest, AsyncInitialization) {
   std::unique_ptr<content::WebContents> web_contents =
       CreateAndNavigateWebContents();
   content::WebContents* raw_web_contents = web_contents.get();
-  performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
-      raw_web_contents);
+  performance_manager::PerformanceManagerRegistry::GetInstance()
+      ->CreatePageNodeForWebContents(raw_web_contents);
 
   auto page_node =
       performance_manager::PerformanceManager::GetPageNodeForWebContents(

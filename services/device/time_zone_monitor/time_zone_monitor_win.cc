@@ -21,8 +21,8 @@ class TimeZoneMonitorWin : public TimeZoneMonitor {
   TimeZoneMonitorWin()
       : TimeZoneMonitor(),
         singleton_hwnd_observer_(new gfx::SingletonHwndObserver(
-            base::Bind(&TimeZoneMonitorWin::OnWndProc,
-                       base::Unretained(this)))) {}
+            base::BindRepeating(&TimeZoneMonitorWin::OnWndProc,
+                                base::Unretained(this)))) {}
 
   ~TimeZoneMonitorWin() override {}
 

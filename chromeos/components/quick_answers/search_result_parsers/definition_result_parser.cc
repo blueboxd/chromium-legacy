@@ -54,6 +54,7 @@ bool DefinitionResultParser::Parse(const Value* result,
     return false;
   }
 
+  quick_answer->result_type = ResultType::kDefinitionResult;
   quick_answer->primary_answer = *definition;
   quick_answer->secondary_answer = base::StringPrintf(
       kPhoneticsResultTemplate, query_term->c_str(), phonetics->c_str());

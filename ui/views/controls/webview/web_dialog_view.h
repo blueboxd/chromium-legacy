@@ -45,6 +45,10 @@ class ObservableWebView : public WebView {
       const content::GlobalRequestID& request_id,
       const content::mojom::ResourceLoadInfo& resource_load_info) override;
 
+  // Resets the delegate. The delegate will no longer receive calls after this
+  // point.
+  void ResetDelegate();
+
  private:
   ui::WebDialogDelegate* delegate_;
 

@@ -174,11 +174,8 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
     bool is_response_check) {
   NavigationRequest* request = NavigationRequest::From(navigation_handle());
 
-  bool is_portal = request->frame_tree_node()
-                       ->current_frame_host()
-                       ->GetRenderViewHost()
-                       ->GetDelegate()
-                       ->IsPortal();
+  bool is_portal =
+      request->frame_tree_node()->current_frame_host()->InsidePortal();
   if (request->IsInMainFrame() && !is_portal) {
     // Allow main frame navigations.
     return NavigationThrottle::PROCEED;
@@ -193,14 +190,14 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
   // existing content-security-policy on the response.
   if (is_response_check && base::FeatureList::IsEnabled(
                                network::features::kOutOfBlinkFrameAncestors)) {
-    if (auto& policy = request->response()->content_security_policy) {
+    if (!request->response()->content_security_policy.empty()) {
       // TODO(arthursonzogni): Remove content::ContentSecurityPolicy in favor of
       // network::mojom::ContentSecurityPolicy, this will avoid conversion
       // between type here.
-      // TODO(lfg): Pass every ContentSecurityPolicy here instead of one.
-      std::vector<ContentSecurityPolicy> policies = {
-          ContentSecurityPolicy(policy.Clone()),
-      };
+      std::vector<ContentSecurityPolicy> policies;
+      policies.reserve(request->response()->content_security_policy.size());
+      for (auto& policy : request->response()->content_security_policy)
+        policies.push_back(ContentSecurityPolicy(policy.Clone()));
       // TODO(lfg): If the initiating document is known and correspond to the
       // navigating frame's current document, consider using:
       // navigation_request().common_params().source_location here instead.
@@ -230,7 +227,7 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
                 navigation_handle()->IsFormSubmission())) {
           return NavigationThrottle::BLOCK_RESPONSE;
         }
-        if (parent->GetRenderViewHost()->GetDelegate()->IsPortal()) {
+        if (parent->InsidePortal()) {
           parent = parent->ParentOrOuterDelegateFrame();
         } else {
           parent = parent->GetParent();

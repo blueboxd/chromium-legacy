@@ -616,7 +616,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   ASSERT_TRUE(request->is_pending());
   delegate.RunUntilComplete();
 
-  EXPECT_EQ(net::OK, request->status().error());
+  EXPECT_EQ(OK, delegate.request_status());
   EXPECT_EQ(static_cast<int>(content_data.size()),
             request->received_response_content_length());
   EXPECT_EQ(static_cast<int>(response_header.size()),
@@ -650,7 +650,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   ASSERT_TRUE(request->is_pending());
   delegate.RunUntilComplete();
 
-  EXPECT_EQ(net::OK, request->status().error());
+  EXPECT_EQ(OK, delegate.request_status());
   EXPECT_EQ(static_cast<int>(content_data.size()),
             request->received_response_content_length());
   EXPECT_EQ(static_cast<int>(continue_header.size() + response_header.size()),
@@ -677,7 +677,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   request->Start();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(ERR_ABORTED, request->status().error());
+  EXPECT_EQ(ERR_ABORTED, delegate.request_status());
   EXPECT_EQ(0, request->received_response_content_length());
   EXPECT_EQ(28, request->raw_header_size());
   EXPECT_EQ(CountReadBytes(reads), request->GetTotalReceivedBytes());
@@ -705,7 +705,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   request->Start();
   delegate.RunUntilComplete();
 
-  EXPECT_EQ(net::OK, request->status().error());
+  EXPECT_EQ(OK, delegate.request_status());
   EXPECT_EQ(static_cast<int>(content_data.size()),
             request->received_response_content_length());
   EXPECT_EQ(static_cast<int>(header_data.size()), request->raw_header_size());

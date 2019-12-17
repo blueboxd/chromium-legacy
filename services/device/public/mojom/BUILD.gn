@@ -34,7 +34,6 @@ mojom("mojom") {
   ]
 
   public_deps = [
-    ":constants",
     "//mojo/public/mojom/base",
     "//services/network/public/mojom",
     "//services/network/public/mojom:mutable_network_traffic_annotation_interface",
@@ -97,10 +96,6 @@ mojom("generic_sensor") {
     "sensor_provider.mojom",
   ]
 
-  public_deps = [
-    ":constants",
-  ]
-
   export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
   export_header_blink = "third_party/blink/public/platform/web_common.h"
@@ -114,22 +109,6 @@ mojom("generic_sensor") {
   # use prepackaged redistributable JS bindings. It is therefore not desirable
   # to scramble these messages.
   scramble_message_ids = false
-}
-
-mojom("constants") {
-  generate_java = true
-  sources = [
-    "constants.mojom",
-  ]
-
-  export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
-  export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
-  export_header_blink = "third_party/blink/public/platform/web_common.h"
-
-  visibility_blink = [
-    "//third_party/blink/renderer/platform:blink_platform_public_deps",
-    ":*",
-  ]
 }
 
 mojom("usb") {

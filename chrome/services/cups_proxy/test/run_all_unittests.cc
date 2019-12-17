@@ -13,7 +13,8 @@
 int main(int argc, char** argv) {
   cups_proxy::LibCupsTestSuite test_suite(argc, argv);
   mojo::core::Init();
-  return base::LaunchUnitTests(argc, argv,
-                               base::Bind(&cups_proxy::LibCupsTestSuite::Run,
-                                          base::Unretained(&test_suite)));
+  return base::LaunchUnitTests(
+      argc, argv,
+      base::BindOnce(&cups_proxy::LibCupsTestSuite::Run,
+                     base::Unretained(&test_suite)));
 }

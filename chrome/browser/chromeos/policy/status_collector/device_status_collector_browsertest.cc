@@ -365,6 +365,7 @@ void GetFakeCrosHealthdData(
     const chromeos::cros_healthd::mojom::CachedVpdInfo& cached_vpd_info,
     const chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfo&
         storage_info,
+    const chromeos::cros_healthd::mojom::CpuInfo& cpu_info,
     const em::CPUTempInfo& cpu_sample,
     const em::BatterySample& battery_sample,
     policy::DeviceStatusCollector::CrosHealthdDataReceiver receiver) {
@@ -374,9 +375,11 @@ void GetFakeCrosHealthdData(
   base::Optional<std::vector<
       chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfoPtr>>
       block_device_info(std::move(storage_vector));
+  std::vector<chromeos::cros_healthd::mojom::CpuInfoPtr> cpu_vector;
+  cpu_vector.push_back(cpu_info.Clone());
   chromeos::cros_healthd::mojom::TelemetryInfo fake_info(
       battery_info.Clone(), std::move(block_device_info),
-      cached_vpd_info.Clone(), base::nullopt);
+      cached_vpd_info.Clone(), std::move(cpu_vector));
 
   auto sample = std::make_unique<policy::SampledData>();
   sample->cpu_samples[cpu_sample.cpu_label()] = cpu_sample;
@@ -2371,6 +2374,15 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   constexpr int kExpectedChargeNow = 5281;                        // (mAh)
   constexpr double kFakeChargeNow = kExpectedChargeNow / 1000.0;  // (Ah)
 
+  // CPU test values.
+  constexpr char kFakeModelName[] = "fake_cpu_model_name";
+  constexpr chromeos::cros_healthd::mojom::CpuArchitectureEnum
+      kFakeMojoArchitecture =
+          chromeos::cros_healthd::mojom::CpuArchitectureEnum::kX86_64;
+  constexpr em::CpuInfo::Architecture kFakeProtoArchitecture =
+      em::CpuInfo::X86_64;
+  constexpr uint32_t kFakeMaxClockSpeed = 3400000;
+
   // CPU Temperature test values.
   constexpr char kFakeCpuLabel[] = "fake_cpu_label";
   constexpr int kFakeCpuTemp = 91832;
@@ -2385,6 +2397,8 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfo storage_info(
       kFakeStoragePath, kFakeStorageSize, kFakeStorageType, kFakeStorageManfid,
       kFakeStorageName, kFakeStorageSerial);
+  chromeos::cros_healthd::mojom::CpuInfo cpu_info(
+      kFakeModelName, kFakeMojoArchitecture, kFakeMaxClockSpeed);
 
   // Create a fake sample to test with.
   em::CPUTempInfo fake_cpu_temp_sample;
@@ -2407,22 +2421,29 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
       base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
       base::BindRepeating(&GetEmptyStatefulPartitionInfo),
       base::BindRepeating(&GetFakeCrosHealthdData, battery_info,
-                          cached_vpd_info, storage_info, fake_cpu_temp_sample,
-                          fake_battery_sample));
+                          cached_vpd_info, storage_info, cpu_info,
+                          fake_cpu_temp_sample, fake_battery_sample));
 
-  // If neither kReportDevicePowerStatus nor kReportDeviceStorageStatus are set,
-  // expect that the data from cros_healthd isn't present in the protobuf.
+  // If kReportDeviceCpuInfo, kReportDevicePowerStatus, and
+  // kReportDeviceStorageStatus are false, expect that the data from
+  // cros_healthd isn't present in the protobuf.
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceCpuInfo, false);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDevicePowerStatus, false);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceStorageStatus, false);
   GetStatus();
+  ASSERT_EQ(device_status_.cpu_info_size(), 0);
   EXPECT_FALSE(device_status_.has_power_status());
   EXPECT_FALSE(device_status_.has_storage_status());
   EXPECT_FALSE(device_status_.has_system_status());
 
-  // When kReportDevicePowerStatus and kReportDeviceStorageStatus are set,
-  // expect the protobuf to have the data from cros_healthd.
+  // When kReportDeviceCpuInfo, kReportDevicePowerStatus, and
+  // kReportDeviceStorageStatus are set, expect the protobuf to have the data
+  // from cros_healthd.
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceCpuInfo, true);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDevicePowerStatus, true);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
@@ -2468,6 +2489,13 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   // Verify the Cached VPD.
   ASSERT_TRUE(device_status_.has_system_status());
   EXPECT_EQ(device_status_.system_status().vpd_sku_number(), kFakeSkuNumber);
+
+  // Verify the CPU data.
+  ASSERT_EQ(device_status_.cpu_info_size(), 1);
+  const auto& cpu = device_status_.cpu_info(0);
+  EXPECT_EQ(cpu.model_name(), kFakeModelName);
+  EXPECT_EQ(cpu.architecture(), kFakeProtoArchitecture);
+  EXPECT_EQ(cpu.max_clock_speed_khz(), kFakeMaxClockSpeed);
 }
 
 // Fake device state.

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.settings.website;
 
+import static org.chromium.chrome.browser.settings.website.WebsitePreferenceBridge.SITE_WILDCARD;
+
 import androidx.annotation.Nullable;
 
 import org.chromium.base.MathUtils;
@@ -60,13 +62,34 @@ public class Website implements Serializable {
         return mOrigin;
     }
 
-    public String getTitle() {
-        return mOrigin.getTitle();
+    public WebsiteAddress getEmbedder() {
+        return mEmbedder;
     }
 
-    public String getSummary() {
-        if (mEmbedder == null) return null;
-        return mEmbedder.getTitle();
+    public String getTitle() {
+        return getMainAddress().getTitle();
+    }
+
+    public boolean representsThirdPartiesOnSite() {
+        return mOrigin.getTitle().equals(SITE_WILDCARD) && mEmbedder != null
+                && !mEmbedder.getTitle().equals(SITE_WILDCARD);
+    }
+
+    private WebsiteAddress getMainAddress() {
+        if (representsThirdPartiesOnSite()) {
+            return mEmbedder;
+        }
+        return mOrigin;
+    }
+
+    /**
+     * Returns whichever WebsiteAddress is used to provide additional information. This will
+     * either return null (representing the wildcard) if it a 3P exception, or the mEmbedder
+     * (which may not be null, such as in the "a.com, b.com" origin combination).
+     */
+    private WebsiteAddress getAdditionalInformationAddress() {
+        if (representsThirdPartiesOnSite()) return null;
+        return mEmbedder;
     }
 
     /**
@@ -75,11 +98,19 @@ public class Website implements Serializable {
      */
     public int compareByAddressTo(Website to) {
         if (this == to) return 0;
-        int originComparison = mOrigin.compareTo(to.mOrigin);
+
+        // We want Website instances that represent third parties to be ordered beside other
+        // Website instances with the same "main site".
+        int originComparison = getMainAddress().compareTo(to.getMainAddress());
+
         if (originComparison == 0) {
-            if (mEmbedder == null) return to.mEmbedder == null ? 0 : -1;
-            if (to.mEmbedder == null) return 1;
-            return mEmbedder.compareTo(to.mEmbedder);
+            if (getAdditionalInformationAddress() == null) {
+                return to.getAdditionalInformationAddress() == null ? 0 : -1;
+            } else if (to.getAdditionalInformationAddress() == null) {
+                return 1;
+            }
+            return getAdditionalInformationAddress().compareTo(
+                    to.getAdditionalInformationAddress());
         }
         return originComparison;
     }

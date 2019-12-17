@@ -28,10 +28,9 @@ class DataSource;
 // so we sandbox potentially dangerous operations on user-provided data.
 class MediaMetadataParser {
  public:
-  typedef base::Callback<void(
+  using MetadataCallback = base::OnceCallback<void(
       chrome::mojom::MediaMetadataPtr metadata,
-      const std::vector<metadata::AttachedImage>& attached_images)>
-      MetadataCallback;
+      const std::vector<metadata::AttachedImage>& attached_images)>;
 
   MediaMetadataParser(std::unique_ptr<media::DataSource> source,
                       const std::string& mime_type,
@@ -40,7 +39,7 @@ class MediaMetadataParser {
   ~MediaMetadataParser();
 
   // |callback| is called on same message loop.
-  void Start(const MetadataCallback& callback);
+  void Start(MetadataCallback callback);
 
  private:
   // Only accessed on |media_thread_| from this class.

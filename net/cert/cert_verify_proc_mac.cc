@@ -81,7 +81,134 @@ int NetErrorFromOSStatus(OSStatus status) {
   }
 }
 
-CertStatus CertStatusFromOSStatus(OSStatus status) {
+// Beginning with macOS 10.13, certificate verification is dispatched
+// to trustd, which uses OSStatus internally to track errors, and
+// then maps the internal codes into CSSM codes for applications still
+// calling the deprecated (since 10.7) APIs.
+//
+// The mapping is maintained in SecPolicyChecks.list, to see the
+// checks applied to leaves/intermediates/roots/chains and what
+// failure of those checks will cause, both the OSStatus and the
+// mapped CSSM error code.
+//
+// Not all checks in the table are applicable; some only apply to
+// Apple-specific services (e.g. iTunes checking for an Apple
+// policy), so only those applicable to TLS are mapped here.
+//
+// The downside is that it does mean that as Apple introduces
+// additional checks (e.g. as done in 10.15), any failures of these
+// checks are initially mapped to ERR_CERT_INVALID for safety, even
+// if there may be a more applicable CertStatus code.
+CertStatus CertStatusFromOSStatusAtLeastOS10_13(OSStatus status) {
+  switch (status) {
+    case noErr:
+      return 0;
+
+    case CSSMERR_APPLETP_HOSTNAME_MISMATCH:
+      return CERT_STATUS_COMMON_NAME_INVALID;
+
+    case CSSMERR_TP_CERT_EXPIRED:
+    case CSSMERR_TP_CERT_NOT_VALID_YET:
+      return CERT_STATUS_DATE_INVALID;
+
+    case CSSMERR_APPLETP_TRUST_SETTING_DENY:
+    case CSSMERR_TP_NOT_TRUSTED:
+    // CSSMERR_TP_VERIFY_ACTION_FAILED is used when CT is required
+    // and not present. The OS rejected this chain, and so mapping
+    // to CERT_STATUS_CT_COMPLIANCE_FAILED (which is informational,
+    // as policy enforcement is not handled in the CertVerifier)
+    // would cause this error to be ignored and mapped to
+    // CERT_STATUS_INVALID. Rather than do that, mark it simply as
+    // "untrusted". The CT_COMPLIANCE_FAILED bit is not set, since
+    // it's not necessarily a compliance failure with the embedder's
+    // CT policy. It's a bit of a hack, but hopefully temporary.
+    // TP_NOT_TRUSTED is somewhat similar. It applies for
+    // situations where a root isn't trusted or an intermediate
+    // isn't trusted, when a key is restricted, or when the calling
+    // application requested CT enforcement (which CertVerifier
+    // should never being doing).
+    case CSSMERR_TP_VERIFY_ACTION_FAILED:
+      return CERT_STATUS_AUTHORITY_INVALID;
+
+    case CSSMERR_APPLETP_INVALID_AUTHORITY_ID:
+    case CSSMERR_APPLETP_INVALID_CA:
+    case CSSMERR_APPLETP_INVALID_EMPTY_SUBJECT:
+    case CSSMERR_APPLETP_INVALID_EXTENDED_KEY_USAGE:
+    case CSSMERR_APPLETP_INVALID_KEY_USAGE:
+    case CSSMERR_APPLETP_MISSING_REQUIRED_EXTENSION:
+    case CSSMERR_APPLETP_NO_BASIC_CONSTRAINTS:
+    case CSSMERR_APPLETP_PATH_LEN_CONSTRAINT:
+    case CSSMERR_APPLETP_UNKNOWN_CERT_EXTEN:
+    case CSSMERR_APPLETP_UNKNOWN_CRITICAL_EXTEN:
+    case CSSMERR_CSP_ALGID_MISMATCH:
+    // INVALID_POLICY_IDENTIFIERS and INVALID_NAME are used for
+    // certificates that violate the constraints imposed upon the
+    // issuer. Nominally this could be mapped to
+    // CERT_STATUS_AUTHORITY_INVALID, except the trustd behaviour
+    // is to treat this as a fatal (non-recoverable) error. That
+    // behavior is preserved here for consistency with Safari.
+    case CSSMERR_TP_INVALID_POLICY_IDENTIFIERS:
+    case CSSMERR_TP_INVALID_NAME:
+      return CERT_STATUS_INVALID;
+
+    // In trustd, an unsupported algorithm is CSP_ALGID_MISMATCH,
+    // which should cause a path building failure, while supported
+    // but weak algorithms use this code.
+    case CSSMERR_CSP_INVALID_DIGEST_ALGORITHM:
+      return CERT_STATUS_WEAK_SIGNATURE_ALGORITHM;
+
+    // In trustd, certificates that are too weak to process, period,
+    // are mapped to INVALID_CERTIFICATE. However, certificates which
+    // are too weak according to compliance policies (e.g. restrictions
+    // for publicly trusted certificates) are mapped to UNSUPPORTED_KEY_SIZE.
+    case CSSMERR_CSP_UNSUPPORTED_KEY_SIZE:
+      return CERT_STATUS_WEAK_KEY;
+
+    case CSSMERR_TP_CERT_REVOKED:
+      return CERT_STATUS_REVOKED;
+
+    case CSSMERR_APPLETP_INCOMPLETE_REVOCATION_CHECK:
+      return CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
+
+    // In the trustd world, if a CRL suspends a certificate,
+    // that's signaled by TP_CERT_REVOKED, with the revocation
+    // reason available in the error details dictionary. The
+    // SUSPENDED error is repurposed to indicate failure to
+    // comply with the macOS 10.15+ limits on certificate
+    // lifetimes - https://support.apple.com/en-us/HT210176
+    case CSSMERR_TP_CERT_SUSPENDED:
+      return CERT_STATUS_VALIDITY_TOO_LONG;
+
+    // CSSMERR_TP_INVALID_CERTIFICATE is unfortunate. It may be
+    // used to signal a weak key (CERT_STATUS_WEAK_KEY), which
+    // would be accompanied by a kSecTrustResultFatalTrustFailure, while
+    // the other situations (such as an invalid certificate, a
+    // name constraint violation, or a policy constraint violation)
+    // would be accompanied by a kSecTrustResultRecoverableTrustFailure.
+    // However, CertVerifier treats these as inverted: name constraint or
+    // policy violations are fatal (CERT_STATUS_INVALID), while WEAK_KEY
+    // may be recoverable.
+    // Further, because macOS attempts to gather all the errors, a different
+    // fatal error may have occurred elsewhere in the chain, so the overall
+    // result can't be used to distinguish individual certificate errors.
+    // For this complicated reason, the weak key case is mapped to
+    // CERT_STATUS_INVALID for safety, rather than mapping the policy
+    // violations as weak keys.
+    case CSSMERR_TP_INVALID_CERTIFICATE:
+      return CERT_STATUS_INVALID;
+
+    default: {
+      // Failure was due to something Chromium doesn't define a
+      // specific status for (such as basic constraints violation, or
+      // unknown critical extension)
+      OSSTATUS_LOG(WARNING, status)
+          << "Unknown error mapped to CERT_STATUS_INVALID";
+      return CERT_STATUS_INVALID;
+    }
+  }
+}
+
+CertStatus CertStatusFromOSStatusAtMostOS10_12(OSStatus status) {
   switch (status) {
     case noErr:
       return 0;
@@ -143,7 +270,6 @@ CertStatus CertStatusFromOSStatus(OSStatus status) {
       return CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
 
     case CSSMERR_APPLETP_SSL_BAD_EXT_KEY_USE:
-      // TODO(wtc): Should we add CERT_STATUS_WRONG_USAGE?
       return CERT_STATUS_INVALID;
 
     case errSecInternalError:
@@ -169,6 +295,13 @@ CertStatus CertStatusFromOSStatus(OSStatus status) {
       return CERT_STATUS_INVALID;
     }
   }
+}
+
+CertStatus CertStatusFromOSStatus(OSStatus status) {
+  if (base::mac::IsAtLeastOS10_13()) {
+    return CertStatusFromOSStatusAtLeastOS10_13(status);
+  }
+  return CertStatusFromOSStatusAtMostOS10_12(status);
 }
 
 // Creates a series of SecPolicyRefs to be added to a SecTrustRef used to
@@ -978,13 +1111,22 @@ int VerifyWithGivenFlags(X509Certificate* cert,
       verify_result->cert_status |= CERT_STATUS_AUTHORITY_INVALID;
       break;
 
+    case kSecTrustResultFatalTrustFailure:
+      // Certificate chain has a failure that cannot be overridden by the user.
     case kSecTrustResultRecoverableTrustFailure:
       // Certificate chain has a failure that can be overridden by the user.
-      if (cssm_result == CSSMERR_TP_VERIFY_ACTION_FAILED) {
+
+      // Prior to 10.13, a violation of key size restrictions would, at minimum,
+      // result in a TP_VERIFY_ACTION_FAILED error. In 10.13+, this error has
+      // different semantics, and weak keys can no longer be distinguished
+      // as such.
+      if (base::mac::IsAtMostOS10_12() &&
+          cssm_result == CSSMERR_TP_VERIFY_ACTION_FAILED) {
         policy_failed = true;
       } else {
         verify_result->cert_status |= CertStatusFromOSStatus(cssm_result);
       }
+
       // Walk the chain of error codes in the CSSM_TP_APPLE_EVIDENCE_INFO
       // structure which can catch multiple errors from each certificate.
       for (CFIndex index = 0, chain_count = CFArrayGetCount(completed_chain);
@@ -1017,11 +1159,10 @@ int VerifyWithGivenFlags(X509Certificate* cert,
             mapped_status = CERT_STATUS_WEAK_SIGNATURE_ALGORITHM;
             weak_key_or_signature_algorithm = true;
             policy_fail_already_mapped = true;
-          } else if (policy_failed &&
+          } else if (base::mac::IsOS10_12() && policy_failed &&
                      (flags & CertVerifyProc::VERIFY_REV_CHECKING_ENABLED) &&
                      chain_info[index].StatusCodes[status_code_index] ==
-                         CSSMERR_TP_VERIFY_ACTION_FAILED &&
-                     base::mac::IsOS10_12()) {
+                         CSSMERR_TP_VERIFY_ACTION_FAILED) {
             // On early versions of 10.12, using
             // kSecRevocationRequirePositiveResponse flag causes a
             // CSSMERR_TP_VERIFY_ACTION_FAILED status if revocation couldn't be

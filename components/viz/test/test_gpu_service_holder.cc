@@ -245,7 +245,9 @@ void TestGpuServiceHolder::InitializeOnGpuThread(
       gpu_service_->gpu_channel_manager()->gpu_preferences(),
       gpu_service_->shared_image_manager(),
       gpu_service_->gpu_channel_manager()->program_cache(),
-      gpu_service_->GetContextState());
+      // Unretained is safe since |gpu_service_| outlives |task_executor_|.
+      base::BindRepeating(&GpuServiceImpl::GetContextState,
+                          base::Unretained(gpu_service_.get())));
 
   // TODO(weiliangc): Since SkiaOutputSurface should not depend on command
   // buffer, the |gpu_task_sequence_| should be coming from

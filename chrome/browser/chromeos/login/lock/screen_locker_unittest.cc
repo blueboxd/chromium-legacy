@@ -40,7 +40,6 @@
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/audio_service.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "media/audio/test_audio_thread.h"
 #include "services/audio/public/cpp/sounds/audio_stream_handler.h"
@@ -113,9 +112,6 @@ class ScreenLockerUnitTest : public testing::Test {
  protected:
   // Needed for main loop and posting async tasks.
   content::BrowserTaskEnvironment task_environment_;
-
-  // Needed to set up Service Manager and create mojo fakes.
-  content::TestServiceManagerContext context_;
 
   // ViewsScreenLocker dependencies:
   lock_screen_apps::StateController state_controller_;

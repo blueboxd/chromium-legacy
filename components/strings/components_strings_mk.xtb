@@ -5,6 +5,7 @@
 <translation id="1010200102790553230">Вчитај ја страницата подоцна</translation>
 <translation id="1015730422737071372">Дајте дополнителни детали</translation>
 <translation id="1021110881106174305">Прифатени картички</translation>
+<translation id="1021753677514347426">Грешкава се случува поради сертификат што вие или некој друг сте го инсталирале на уредот. Сертификатов е познато дека се користи за надзор и пресретнување мрежи и Chromium нема доверба во него. Иако постојат и легитимни случаи за надзор, како на пр., во училишна или компаниска мрежа, Chromium сака да се увери дека знаете дека постои надзор, дури и ако не може да го сопрете. Надзорот може да се случи во кој било прелистувач или апликација што пристапува на интернет.</translation>
 <translation id="1032854598605920125">Ротирај надесно</translation>
 <translation id="1036348656032585052">Исклучи</translation>
 <translation id="1038842779957582377">непознато име</translation>
@@ -67,6 +68,7 @@
 <translation id="1264126396475825575">Извештајот за пад е снимен во <ph name="CRASH_TIME" /> (сѐ уште не е поставен или игнориран)</translation>
 <translation id="1270502636509132238">Начин на подигнување</translation>
 <translation id="1285320974508926690">Никогаш не преведувај ја оваа локација</translation>
+<translation id="1285400217480592994">Скенирање на содржините на датотеките што ги преземате и прикачувате во Chrome.</translation>
 <translation id="1292701964462482250">„Софтверот на вашиот компјутер го спречува Chrome безбедно да се поврзе на интернет“ (само за компјутери со Windows)</translation>
 <translation id="1294154142200295408">Варијации на линијата за наредби</translation>
 <translation id="129553762522093515">Неодамна затворено</translation>
@@ -284,6 +286,7 @@
 <translation id="2270484714375784793">Телефонски број</translation>
 <translation id="2277103315734023688">Премотај нанапред</translation>
 <translation id="2283340219607151381">Зачувувај и пополнувај адреси</translation>
+<translation id="2288422996159078444">Сѐ што ќе напишете, сите страници што ќе ги прегледате или секоја друга активност на интернет се надгледува, а содржините на сајтовите може да се променат без ваше знаење.</translation>
 <translation id="2289385804009217824">Кратење</translation>
 <translation id="2292556288342944218">Вашиот пристап на интернет е блокиран</translation>
 <translation id="2297722699537546652">B5 (плик)</translation>
@@ -436,6 +439,7 @@
 <translation id="2989742184762224133">Двојно спојување горе</translation>
 <translation id="2991174974383378012">Споделување со веб-сајтови</translation>
 <translation id="2991571918955627853">Не може да го посетите <ph name="SITE" /> во моментов затоа што веб-сајтот користи HSTS. Грешките на мрежата и нападите обично се привремени, така што страницава веројатно ќе работи подоцна.</translation>
+<translation id="2996674880327704673">Предлози од Google</translation>
 <translation id="3005723025932146533">Прикажи зачувана копија</translation>
 <translation id="3008447029300691911">Внесете го CVC за <ph name="CREDIT_CARD" />. Откако ќе потврдите, деталите за вашата картичка ќе се споделат со сајтот.</translation>
 <translation id="3010559122411665027">Запис во список „<ph name="ENTRY_INDEX" />“: <ph name="ERROR" /></translation>
@@ -448,6 +452,7 @@
 <translation id="3060227939791841287">C9 (плик)</translation>
 <translation id="3061707000357573562">Услуга за поправање грешки</translation>
 <translation id="3064966200440839136">Ќе го напуштите режимот „Инкогнито“ за да платите преку надворешна апликација. Ќе продолжите?</translation>
+<translation id="3086579638707268289">Вашата активност на интернет е под надзор</translation>
 <translation id="3095940652251934233">Изјава</translation>
 <translation id="3096100844101284527">Додајте адреса за подигнување</translation>
 <translation id="3105172416063519923">ИД на средство:</translation>
@@ -500,6 +505,7 @@
 <translation id="3369192424181595722">Грешка на часовникот</translation>
 <translation id="337363190475750230">Со оневозможен пристап</translation>
 <translation id="3377188786107721145">Грешка при анализа на правило</translation>
+<translation id="3377736046129930310">Користете заклучување екран за побрзо потврдување на картичките</translation>
 <translation id="3380365263193509176">Непозната грешка</translation>
 <translation id="3380864720620200369">ИД на клиент:</translation>
 <translation id="3387261909427947069">Начини на плаќање</translation>
@@ -665,6 +671,7 @@
 <translation id="4194250254487269611">Вашата картичка не може да се зачува во моментов</translation>
 <translation id="4196861286325780578">&amp;Повтори преместување</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Да ги проверите заштитниот ѕид и антивирусните конфигурации<ph name="END_LINK" /></translation>
+<translation id="4214357935346142455">профил на екранот за најавување</translation>
 <translation id="4215751373031079683">7x9 (плик)</translation>
 <translation id="4220128509585149162">Падови</translation>
 <translation id="422022731706691852">Напаѓачите на <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> може да се обидат да ве измамат да инсталирате програми што ќе му наштетат на вашето искуство со прелистувањето (на пример, со менување на вашата почетна страница или со прикажување дополнителни реклами на сајтовите што ги посетувате). <ph name="BEGIN_LEARN_MORE_LINK" />Дознајте повеќе<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -747,6 +754,7 @@
 <translation id="4515275063822566619">Картичките и адресите се од Chrome и од вашата сметка на Google (<ph name="ACCOUNT_EMAIL" />). Со нив може да управувате во <ph name="BEGIN_LINK" />Поставки<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (плик)</translation>
 <translation id="4522570452068850558">Детали</translation>
+<translation id="4524138615196389145">Отсега, потврдувајте ги картичките побрзо со WebAuthn</translation>
 <translation id="4524805452350978254">Управувајте со картичките</translation>
 <translation id="455113658016510503">A9</translation>
 <translation id="4552089082226364758">Flash</translation>
@@ -858,6 +866,7 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-бита)</translation>
+<translation id="5121469660360593280">Споделувајте податоци со администраторот за безбедносните настани што ги пријавила „Заштитата на компаниски корисник на Chrome“. Тука спаѓаат URL-адресите на страниците што ги посетувате, имињата или метаподатоците на датотеките и корисничкото име што го користите за најавување на вашиот уред и Chrome.</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Потврдете ја картичката</translation>
 <translation id="5135404736266831032">Управувајте со адресите…</translation>
@@ -869,6 +878,7 @@
 <translation id="5159010409087891077">Отворете ја страницата во нов инкогнито прозорец (⇧⌘N)</translation>
 <translation id="516920405563544094">Внесете го CVC за <ph name="CREDIT_CARD" />. Откако ќе потврдите, деталите за картичката од вашата сметка на Google ќе се споделат со сајтов.</translation>
 <translation id="5169827969064885044">Може да го изгубите пристапот до сметката на вашата организација или да ви го украдат идентитетот. Chrome препорачува да ја смените лозинката веднаш.</translation>
+<translation id="5170017743895942767">Заштита на компаниски корисник на Chrome</translation>
 <translation id="5171045022955879922">Барај или впиши URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Машина</translation>
@@ -989,6 +999,7 @@
 <translation id="5730040223043577876">Chrome препорачува ресетирање на лозинката ако повторно сте ја употребиле на други сајтови.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Зачувајте картичка во вашата сметка на Google}one{Зачувајте картички во вашата сметка на Google}other{Зачувајте картички во вашата сметка на Google}}</translation>
 <translation id="5763042198335101085">Внесете важечка адреса на е-пошта</translation>
+<translation id="5763703224595565476">Администраторот ја овозможи „Заштитата на компаниски корисник на Chrome“ во вашиот прелистувач. „Заштитата на компаниски корисник на Chrome“ има пристап до дел од вашите податоци.</translation>
 <translation id="5765072501007116331">За да ги видите методите и условите за доставување, изберете адреса</translation>
 <translation id="5778550464785688721">Целосна контрола на уредите MIDI</translation>
 <translation id="5781136890105823427">Експериментот е овозможен</translation>
@@ -1068,6 +1079,7 @@
 <translation id="6094273045989040137">Стави прибелешка</translation>
 <translation id="6104072995492677441">JIS B6</translation>
 <translation id="610911394827799129">Вашата сметка на Google можеби има други видови историја на прелистување на <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="6120179357481664955">Да се запомни ID за UPI?</translation>
 <translation id="6132597952260690497">Информации за инсталираните екстензии и приклучоци</translation>
 <translation id="6146055958333702838">Проверете ги каблите и рестартирајте ги рутерите, модемите или другите мрежни
         уреди што ги користите.</translation>
@@ -1083,6 +1095,7 @@
 <translation id="6221345481584921695">Google Safe Browsing неодамна <ph name="BEGIN_LINK" />откри злонамерен софтвер<ph name="END_LINK" /> на <ph name="SITE" />. Веб-локациите што обично се безбедни понекогаш се инфицираат со злонамерен софтвер. Злонамерната содржина доаѓа од <ph name="SUBRESOURCE_HOST" />, познат дистрибутер на злонамерен софтвер.</translation>
 <translation id="6234122620015464377">Кратење по секој документ</translation>
 <translation id="6240447795304464094">Лого на Google Pay</translation>
+<translation id="6241121617266208201">Сокриј ги предлозите</translation>
 <translation id="6251924700383757765">Политика за приватност</translation>
 <translation id="6254436959401408446">Нема доволно меморија за да се отвори страницава</translation>
 <translation id="625755898061068298">Одбравте да ги оневозможите безбедносните предупредувања за овој сајт.</translation>
@@ -1129,6 +1142,7 @@
 <translation id="6409754798200046165">Тукушто ја внесовте лозинката на сајт што може да ве измами. Chrome ви препорачува да ја промените лозинката веднаш.</translation>
 <translation id="6410264514553301377">Внесете ги датумот на истекување и CVC за <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium може да ви помогне да ја заштитите сметката на Google и да ја промените лозинката.</translation>
+<translation id="6423385022588644828">Отсега, потврдувајте ги картичките побрзо со Touch ID</translation>
 <translation id="6427730057873428458">Превиткување како брошура</translation>
 <translation id="6433490469411711332">Уредете ги информациите за контакт</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> одби да се поврзе.</translation>
@@ -1199,12 +1213,14 @@
 <translation id="6786747875388722282">Наставки</translation>
 <translation id="6790428901817661496">Репродуцирај</translation>
 <translation id="679355240208270552">Игнорирано бидејќи правилото не овозможува стандардно пребарување.</translation>
+<translation id="6794951432696553238">Отсега, потврдувајте ги картичките побрзо со Windows Hello</translation>
 <translation id="681021252041861472">Задолжително поле</translation>
 <translation id="6810899417690483278">Приспособен ID</translation>
 <translation id="6825578344716086703">Се обидовте да контактирате со <ph name="DOMAIN" />, но серверот прикажа сертификат потпишан со слаб алгоритам за потпис (како што е SHA-1). Тоа значи дека акредитивите за безбедност што ги прикажа серверот можеби се фалсификувани и дека можеби тоа не е серверот што го очекувавте (можеби комуницирате со напаѓач).</translation>
 <translation id="6826370046007623921">Заштита од загуба на податоци</translation>
 <translation id="6831043979455480757">Преведи</translation>
 <translation id="6839929833149231406">Област</translation>
+<translation id="6846340164947227603">Користете број на виртуелна картичка…</translation>
 <translation id="6852204201400771460">Дали да се вчита апликацијата повторно?</translation>
 <translation id="6865412394715372076">Картичкава не може да се потврди во моментов</translation>
 <translation id="6868206169573555318">Рестартирај за да се ажурира</translation>
@@ -1233,6 +1249,7 @@
 <translation id="6989763994942163495">Напредни поставки...</translation>
 <translation id="6993898126790112050">6x9 (плик)</translation>
 <translation id="6996312675313362352">Секогаш преведувај <ph name="ORIGINAL_LANGUAGE" /></translation>
+<translation id="7004583254764674281">Користете Windows Hello за побрзо потврдување на картичките</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Овие трошоци може да бидат еднократни или повторливи и може нема да бидат очигледни.</translation>
 <translation id="7029809446516969842">Лозинки</translation>
@@ -1243,6 +1260,7 @@
 <translation id="7064851114919012435">Информации за контакт</translation>
 <translation id="7075452647191940183">Барањето е предолго</translation>
 <translation id="7079718277001814089">Сајтов содржи злонамерен софтвер</translation>
+<translation id="7081308185095828845">Функцијава не е достапна на вашиот уред</translation>
 <translation id="7087282848513945231">Округ</translation>
 <translation id="7090678807593890770">Пребарајте на Google за <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Сокриј</translation>
@@ -1296,9 +1314,11 @@
 <translation id="733923710415886693">Сертификатот на серверот не е откриен преку Транспарентност на сертификати.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Е поврзан:</translation>
+<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> ја овозможи „Заштитата на компаниски корисник на Chrome“ во вашиот прелистувач. „Заштитата на компаниски корисник на Chrome“ има пристап до дел од вашите податоци.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Командна линија</translation>
 <translation id="7372973238305370288">резултат од пребарувањето</translation>
+<translation id="7374733840632556089">Грешкава се случува поради сертификат што вие или некој друг сте го инсталирале на уредот. Познато е дека сертификатов се користи за надзор и пресретнување мрежи и Chrome нема доверба во него. Иако постојат и легитимни случаи за надзор, како на пр., во училишна или компаниска мрежа, Chrome сака да се увери дека знаете дека постои надзор, дури и ако не може да го сопрете. Надзорот може да се случи во кој било прелистувач или апликација што пристапува на интернет.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Контроли за аудиовизуелни медиуми</translation>
 <translation id="7378627244592794276">Не</translation>
@@ -1327,6 +1347,7 @@
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />да дознаете повеќе<ph name="END_LINK" /> за овој проблем.</translation>
 <translation id="7455133967321480974">Користи глобален стандард (Блокирај)</translation>
 <translation id="7460618730930299168">Времето на прикажување е различно од она што го одбравте. Дали сакате да продолжите?</translation>
+<translation id="7464821087936825778">Се излегува од режимот на пребарување</translation>
 <translation id="7473891865547856676">Не, фала</translation>
 <translation id="7481312909269577407">Напред</translation>
 <translation id="7485870689360869515">Не се пронајдени податоци.</translation>
@@ -1548,6 +1569,7 @@
 <translation id="8559762987265718583">Не може да се воспостави приватна врска до <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> бидејќи датумот и времето на вашиот уред (<ph name="DATE_AND_TIME" />) се погрешни.</translation>
 <translation id="8564985650692024650">Chromium препорачува ресетирање на лозинката за <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> ако повторно сте ја употребиле на други сајтови.</translation>
 <translation id="8571890674111243710">Страницата се преведува на <ph name="LANGUAGE" />…</translation>
+<translation id="8574899947864779331">Користете Touch ID за побрзо потврдување на картичките</translation>
 <translation id="858637041960032120">Додај телефонски број</translation>
 <translation id="860043288473659153">Име на сопственикот на картичката</translation>
 <translation id="8616822740383114808">Поставкава е наметната од „<ph name="ENFORCING_SETTING" />“ во „<ph name="SETTINGS_PAGE" />“</translation>

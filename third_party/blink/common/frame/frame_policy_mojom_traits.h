@@ -29,6 +29,11 @@ class BLINK_COMMON_EXPORT
     return frame_policy.sandbox_flags;
   }
 
+  static const blink::DocumentPolicy::FeatureState& required_document_policy(
+      const blink::FramePolicy& frame_policy) {
+    return frame_policy.required_document_policy;
+  }
+
   static bool Read(blink::mojom::FramePolicyDataView in,
                    blink::FramePolicy* out);
 };

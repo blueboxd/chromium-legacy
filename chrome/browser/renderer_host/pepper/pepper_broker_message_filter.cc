@@ -34,7 +34,7 @@ PepperBrokerMessageFilter::PepperBrokerMessageFilter(PP_Instance instance,
 
 PepperBrokerMessageFilter::~PepperBrokerMessageFilter() {}
 
-scoped_refptr<base::TaskRunner>
+scoped_refptr<base::SequencedTaskRunner>
 PepperBrokerMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
   return base::CreateSingleThreadTaskRunner({BrowserThread::UI});

@@ -435,24 +435,21 @@ DiscardsUI::DiscardsUI(content::WebUI* web_ui)
       profile, std::make_unique<FaviconSource>(
                    profile, chrome::FaviconUrlFormat::kFavicon2));
 
-  AddHandlerToRegistry(base::BindRepeating(
-      &DiscardsUI::BindDiscardsDetailsProvider, base::Unretained(this)));
-  AddHandlerToRegistry(base::BindRepeating(
-      &DiscardsUI::BindDiscardsGraphDumpProvider, base::Unretained(this)));
-
   data_store_inspector_ = resource_coordinator::
       LocalSiteCharacteristicsDataStoreInspector::GetForProfile(profile);
 }
 
+WEB_UI_CONTROLLER_TYPE_IMPL(DiscardsUI)
+
 DiscardsUI::~DiscardsUI() {}
 
-void DiscardsUI::BindDiscardsDetailsProvider(
+void DiscardsUI::BindInterface(
     mojo::PendingReceiver<discards::mojom::DetailsProvider> receiver) {
   ui_handler_ = std::make_unique<DiscardsDetailsProviderImpl>(
       data_store_inspector_, std::move(receiver));
 }
 
-void DiscardsUI::BindDiscardsGraphDumpProvider(
+void DiscardsUI::BindInterface(
     mojo::PendingReceiver<discards::mojom::GraphDump> receiver) {
   if (performance_manager::PerformanceManager::IsAvailable()) {
     // Forward the interface receiver directly to the service.

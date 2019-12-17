@@ -504,6 +504,7 @@ void UnifiedMessageCenterView::FocusOut(bool reverse) {
 void UnifiedMessageCenterView::FocusEntered(bool reverse) {
   views::View* focus_view =
       reverse ? GetLastFocusableChild() : GetFirstFocusableChild();
+  GetFocusManager()->ClearFocus();
   GetFocusManager()->SetFocusedView(focus_view);
 }
 

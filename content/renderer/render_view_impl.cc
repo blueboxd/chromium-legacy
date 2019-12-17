@@ -1275,6 +1275,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PageMsg_UpdateTextAutosizerPageInfoForRemoteMainFrames,
                         OnTextAutosizerPageInfoChanged)
     IPC_MESSAGE_HANDLER(PageMsg_SetRendererPrefs, OnSetRendererPrefs)
+    IPC_MESSAGE_HANDLER(PageMsg_SetInsidePortal, OnSetInsidePortal)
 
     // Adding a new message? Add platform independent ones first, then put the
     // platform specific ones at the end.
@@ -2009,6 +2010,10 @@ void RenderViewImpl::OnTextAutosizerPageInfoChanged(
   // another renderer.
   if (!webview()->MainFrame()->IsWebLocalFrame())
     webview()->SetTextAutosizePageInfo(page_info);
+}
+
+void RenderViewImpl::OnSetInsidePortal(bool inside_portal) {
+  webview()->SetInsidePortal(inside_portal);
 }
 
 void RenderViewImpl::SetFocus(bool enable) {

@@ -201,8 +201,8 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
 
     std::unique_ptr<SkiaOutputDeviceBufferQueue> onscreen_device =
         std::make_unique<SkiaOutputDeviceBufferQueue>(
-            gl_surface_, dependency_.get(), present_callback,
-            memory_tracker_.get(), shared_image_usage);
+            gl_surface_, dependency_.get(), memory_tracker_.get(),
+            present_callback, shared_image_usage);
 
     output_device_ = std::move(onscreen_device);
   }

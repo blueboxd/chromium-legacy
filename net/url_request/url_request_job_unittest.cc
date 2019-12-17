@@ -575,7 +575,6 @@ TEST_F(URLRequestJobTest, InvalidContentGZipTransaction) {
   // so should be false.
   EXPECT_FALSE(d.request_failed());
   EXPECT_EQ(200, req->GetResponseCode());
-  EXPECT_FALSE(req->status().is_success());
   EXPECT_EQ(ERR_CONTENT_DECODING_FAILED, d.request_status());
   EXPECT_TRUE(d.data_received().empty());
   EXPECT_FALSE(network_layer.done_reading_called());

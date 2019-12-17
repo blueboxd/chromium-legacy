@@ -810,6 +810,22 @@ TEST_P(HttpProxyConnectJobTest, HaveAuth) {
   }
 }
 
+TEST_P(HttpProxyConnectJobTest, HostResolutionFailure) {
+  session_deps_.host_resolver->rules()->AddSimulatedTimeoutFailure(
+      kHttpProxyHost);
+  session_deps_.host_resolver->rules()->AddSimulatedTimeoutFailure(
+      kHttpsProxyHost);
+
+  TestConnectJobDelegate test_delegate;
+  std::unique_ptr<ConnectJob> connect_job =
+      CreateConnectJobForHttpRequest(&test_delegate, DEFAULT_PRIORITY);
+  test_delegate.StartJobExpectingResult(connect_job.get(),
+                                        ERR_PROXY_CONNECTION_FAILED,
+                                        false /* expect_sync_result */);
+  EXPECT_THAT(connect_job->GetResolveErrorInfo().error,
+              test::IsError(ERR_DNS_TIMED_OUT));
+}
+
 TEST_P(HttpProxyConnectJobTest, RequestPriority) {
   // Make request hang during host resolution, so can observe priority there.
   session_deps_.host_resolver->set_ondemand_mode(true);

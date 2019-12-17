@@ -32,7 +32,7 @@ int irt_ppapi_start(const struct PP_StartFunctions* funcs) {
 
   base::SingleThreadTaskExecutor executor;
   ppapi::proxy::PluginGlobals plugin_globals(
-      scoped_refptr<base::TaskRunner>(ppapi::GetIOThread()->task_runner()));
+      ppapi::GetIOThread()->task_runner());
 
   ppapi::PpapiDispatcher ppapi_dispatcher(
       ppapi::GetIOThread()->task_runner(), ppapi::GetShutdownEvent(),

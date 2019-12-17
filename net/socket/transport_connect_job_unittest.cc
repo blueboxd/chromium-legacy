@@ -137,7 +137,7 @@ TEST_F(TransportConnectJobTest, MakeAddrListStartWithIPv4) {
 }
 
 TEST_F(TransportConnectJobTest, HostResolutionFailure) {
-  host_resolver_.rules()->AddSimulatedFailure(kHostName);
+  host_resolver_.rules()->AddSimulatedTimeoutFailure(kHostName);
 
   //  Check sync and async failures.
   for (bool host_resolution_synchronous : {false, true}) {
@@ -149,6 +149,8 @@ TEST_F(TransportConnectJobTest, HostResolutionFailure) {
     test_delegate.StartJobExpectingResult(&transport_connect_job,
                                           ERR_NAME_NOT_RESOLVED,
                                           host_resolution_synchronous);
+    EXPECT_THAT(transport_connect_job.GetResolveErrorInfo().error,
+                test::IsError(ERR_DNS_TIMED_OUT));
   }
 }
 

@@ -99,7 +99,7 @@ PepperFlashClipboardMessageFilter::PepperFlashClipboardMessageFilter() {}
 
 PepperFlashClipboardMessageFilter::~PepperFlashClipboardMessageFilter() {}
 
-scoped_refptr<base::TaskRunner>
+scoped_refptr<base::SequencedTaskRunner>
 PepperFlashClipboardMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& msg) {
   // Clipboard writes should always occur on the UI thread due to the

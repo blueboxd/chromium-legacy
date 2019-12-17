@@ -15,7 +15,6 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/session_manager/session_manager_types.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/test_event_router_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -77,7 +76,6 @@ class SessionStateChangedEventDispatcherUnittest : public testing::Test {
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
-  content::TestServiceManagerContext service_manager_context_;
   TestingProfile* testing_profile_;
   std::unique_ptr<session_manager::SessionManager> session_manager_;
   std::unique_ptr<SessionStateChangedEventDispatcher> dispatcher_;

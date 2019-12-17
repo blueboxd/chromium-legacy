@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">Pailginkite šį tekstą iki <ph name="MIN_CHARACTERS" /> simb. ar daugiau (šiuo metu naudojate <ph name="CURRENT_LENGTH" /> simb.).</translation>
 <translation id="383465348367842624">Prieš „<ph name="ATSIGN" />“ esančioje dalyje neturėtų būti simbolio „<ph name="INVALIDCHARACTER" />“.</translation>
 <translation id="3846214748874656680">Išjungti viso ekrano režimą</translation>
-<translation id="3889183436948184105">taisymas</translation>
 <translation id="3920932319529768807">išvada</translation>
 <translation id="3924558731517983934">programa</translation>
 <translation id="3944740393230681990">prologas</translation>
@@ -115,6 +114,7 @@
 <translation id="4812940957355064477">Įveskite skaičių.</translation>
 <translation id="4912536737030637138">bibliografijos įrašas</translation>
 <translation id="492244087561876220">komentaras</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> pasirinkta</translation>
 <translation id="4975562563186953947">Pasirinkta: <ph name="SELECTED_COUNT" /></translation>
 <translation id="4992066212339426712">Įjungti garsą</translation>
 <translation id="49969490063480558">Įveskite dalį po „<ph name="ATSIGN" />“. „<ph name="INVALIDADDRESS" />“ nėra visas el. pašto adresas.</translation>
@@ -219,6 +219,7 @@
 <translation id="7888071071722539607">Į el. pašto adresą įtraukite „<ph name="ATSIGN" />“. „<ph name="INVALIDADDRESS" />“ trūksta „<ph name="ATSIGN" />“.</translation>
 <translation id="7891486169920085145">skaidiklis</translation>
 <translation id="795667975304826397">Nepasirinktas joks failas</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> nepasirinkta</translation>
 <translation id="8034303206267677282">svarbus</translation>
 <translation id="8053789581856978548">paieškos teksto laukas</translation>
 <translation id="8057695513531652401">pranešimas</translation>
@@ -257,7 +258,6 @@
 <translation id="8987927404178983737">Mėnuo</translation>
 <translation id="901493112792887934">dabartinis laikas sekundėmis</translation>
 <translation id="901834265349196618">El. paštas</translation>
-<translation id="9023835124071926463">komentarų skiltis</translation>
 <translation id="9048119486235211610">naršymas</translation>
 <translation id="9062295712474918030">dokumentas</translation>
 <translation id="9093215626363556771">išeiti iš vaizdo vaizde</translation>

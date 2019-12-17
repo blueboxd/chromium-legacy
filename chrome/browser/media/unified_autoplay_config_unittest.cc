@@ -14,7 +14,6 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/common/web_preferences.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "content/public/test/web_contents_tester.h"
 #include "media/base/media_switches.h"
 
@@ -31,16 +30,8 @@ class UnifiedAutoplaySoundSettingsTest
         {media::kAutoplayDisableSettings, media::kAutoplayWhitelistSettings},
         {});
     ChromeRenderViewHostTestHarness::SetUp();
-    test_service_manager_context_ =
-        std::make_unique<content::TestServiceManagerContext>();
 
     SoundContentSettingObserver::CreateForWebContents(web_contents());
-  }
-
-  void TearDown() override {
-    // Must be reset before browser thread teardown.
-    test_service_manager_context_.reset();
-    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   void SetSoundContentSettingDefault(ContentSetting value) {
@@ -75,11 +66,6 @@ class UnifiedAutoplaySoundSettingsTest
   PrefService* GetPrefs() { return profile()->GetPrefs(); }
 
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  // WebContentsImpl accesses the system Connector, so the Service Manager must
-  // be initialized.
-  std::unique_ptr<content::TestServiceManagerContext>
-      test_service_manager_context_;
 };
 
 TEST_F(UnifiedAutoplaySoundSettingsTest, ContentSetting_Allow) {

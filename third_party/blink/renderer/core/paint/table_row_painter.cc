@@ -80,7 +80,7 @@ void TableRowPainter::RecordHitTestData(const PaintInfo& paint_info,
     return;
 
   auto touch_action = layout_table_row_.EffectiveAllowedTouchAction();
-  if (touch_action == TouchAction::kTouchActionAuto)
+  if (touch_action == TouchAction::kAuto)
     return;
 
   auto rect = layout_table_row_.PhysicalBorderBoxRect();

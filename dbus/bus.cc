@@ -842,14 +842,14 @@ void Bus::ProcessAllIncomingDataIfAny() {
   }
 }
 
-base::TaskRunner* Bus::GetDBusTaskRunner() {
+base::SequencedTaskRunner* Bus::GetDBusTaskRunner() {
   if (dbus_task_runner_)
     return dbus_task_runner_.get();
   else
     return GetOriginTaskRunner();
 }
 
-base::TaskRunner* Bus::GetOriginTaskRunner() {
+base::SequencedTaskRunner* Bus::GetOriginTaskRunner() {
   DCHECK(origin_task_runner_);
   return origin_task_runner_.get();
 }

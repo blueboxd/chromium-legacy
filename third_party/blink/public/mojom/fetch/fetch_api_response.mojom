@@ -71,8 +71,7 @@ struct FetchAPIResponse {
 
   // In case this response had a Content-Security-Policy header, this is the
   // parsed CSP.
-  // TODO(lfg) Add support for multiple policies.
-  network.mojom.ContentSecurityPolicy? content_security_policy;
+  array<network.mojom.ContentSecurityPolicy> content_security_policy;
 
   // True if the response was loaded with a Request where the credentials mode
   // would potentially send cookies to the server:

@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "device/fido/hid/fido_hid_device.h"
-#include "services/device/public/mojom/constants.mojom.h"
 
 namespace device {
 

@@ -52,7 +52,6 @@ class SkiaOutputDeviceOffscreen : public SkiaOutputDevice {
   gfx::Size size_;
   uint64_t backbuffer_estimated_size_ = 0;
   sk_sp<SkColorSpace> sk_color_space_;
-  gpu::MemoryTracker* const memory_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputDeviceOffscreen);
 };

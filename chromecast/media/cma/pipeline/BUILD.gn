@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//chromecast/chromecast.gni")
 import("//build/buildflag_header.gni")
 import("//build/config/chromecast_build.gni")
+import("//chromecast/chromecast.gni")
 
 declare_args() {
   # Set true to use accurate but more expensive method for GetMediaTime().

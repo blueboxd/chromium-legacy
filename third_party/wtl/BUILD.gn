@@ -6,7 +6,7 @@ config("wtl_includes") {
   include_dirs = [ "include" ]
 
   if (is_clang) {
-    defines = [ "_WTL_NO_AUTOMATIC_NAMESPACE"]
+    defines = [ "_WTL_NO_AUTOMATIC_NAMESPACE" ]
   }
 }
 

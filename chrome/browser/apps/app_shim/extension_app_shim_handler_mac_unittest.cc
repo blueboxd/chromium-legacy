@@ -150,15 +150,10 @@ class TestingExtensionAppShimHandler : public ExtensionAppShimHandler {
   }
   virtual ~TestingExtensionAppShimHandler() {}
 
-  MOCK_METHOD3(OnShimFocus,
-               void(AppShimHost* host,
-                    chrome::mojom::AppShimFocusType,
-                    const std::vector<base::FilePath>& files));
+  MOCK_METHOD1(OnShimFocus, void(AppShimHost* host));
 
-  void RealOnShimFocus(AppShimHost* host,
-                       chrome::mojom::AppShimFocusType focus_type,
-                       const std::vector<base::FilePath>& files) {
-    ExtensionAppShimHandler::OnShimFocus(host, focus_type, files);
+  void RealOnShimFocus(AppShimHost* host) {
+    ExtensionAppShimHandler::OnShimFocus(host);
   }
 
   void SetProfileMenuItems(
@@ -290,6 +285,7 @@ class TestHost : public AppShimHost {
     return test_weak_factory_.GetWeakPtr();
   }
 
+  using AppShimHost::FilesOpened;
   using AppShimHost::ProfileSelectedFromMenu;
 
   std::unique_ptr<TestAppShim> test_app_shim_;
@@ -492,23 +488,17 @@ class ExtensionAppShimHandlerTestBase : public testing::Test {
     base::WeakPtr<TestHost> host = host_unique->GetWeakPtr();
     NormalLaunch(bootstrap, std::move(host_unique));
     EXPECT_EQ(host.get(), handler_->FindHost(profile, host->GetAppId()));
-    EXPECT_CALL(
-        *handler_,
-        OnShimFocus(host.get(), chrome::mojom::AppShimFocusType::kNormal, _));
+    EXPECT_CALL(*handler_, OnShimFocus(host.get()));
     handler_->OnAppActivated(profile, host->GetAppId());
     EXPECT_TRUE(host->did_connect_to_host());
   }
 
   // Simulates a focus request coming from a running app shim.
   void ShimNormalFocus(TestHost* host) {
-    EXPECT_CALL(*handler_,
-                OnShimFocus(host, chrome::mojom::AppShimFocusType::kNormal, _))
+    EXPECT_CALL(*handler_, OnShimFocus(host))
         .WillOnce(Invoke(handler_.get(),
                          &TestingExtensionAppShimHandler::RealOnShimFocus));
-
-    const std::vector<base::FilePath> no_files;
-    handler_->OnShimFocus(host, chrome::mojom::AppShimFocusType::kNormal,
-                          no_files);
+    handler_->OnShimFocus(host);
   }
 
   content::BrowserTaskEnvironment task_environment_;
@@ -661,18 +651,14 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchAndCloseShim) {
 
   // Activation when there is a registered shim finishes launch with success and
   // focuses the app.
-  EXPECT_CALL(
-      *handler_,
-      OnShimFocus(host_aa_.get(), chrome::mojom::AppShimFocusType::kNormal, _));
+  EXPECT_CALL(*handler_, OnShimFocus(host_aa_.get()));
   handler_->OnAppActivated(&profile_a_, kTestAppIdA);
   EXPECT_EQ(chrome::mojom::AppShimLaunchResult::kSuccess,
             *bootstrap_aa_result_);
 
   // Starting and closing a second host just focuses the original host of the
   // app.
-  EXPECT_CALL(*handler_,
-              OnShimFocus(host_aa_.get(),
-                          chrome::mojom::AppShimFocusType::kReopen, some_file));
+  EXPECT_CALL(*handler_, OnShimFocus(host_aa_.get()));
 
   DoShimLaunch(bootstrap_aa_duplicate_, std::move(host_aa_duplicate_unique_),
                chrome::mojom::AppShimLaunchType::kNormal, some_file);
@@ -704,28 +690,28 @@ TEST_F(ExtensionAppShimHandlerTest, AppLifetime) {
             *bootstrap_aa_result_);
   EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
 
-  // Return no app windows for OnShimFocus.
+  // Return no app windows for OnShimFocus. This will result in a launch call.
   AppWindowList app_window_list;
   EXPECT_CALL(*delegate_, GetWindows(&profile_a_, kTestAppIdA))
       .WillRepeatedly(Return(app_window_list));
+  EXPECT_CALL(*delegate_, LaunchApp(&profile_a_, extension_a_.get(), _))
+      .Times(1);
+  ShimNormalFocus(host_aa_.get());
 
-  // Non-reopen focus does nothing.
+  // Return one window. This should do nothing.
+  app_window_list.push_back(static_cast<extensions::AppWindow*>(nullptr));
+  EXPECT_CALL(*delegate_, GetWindows(&profile_a_, kTestAppIdA))
+      .WillRepeatedly(Return(app_window_list));
   EXPECT_CALL(*delegate_,
               LaunchApp(&profile_a_, extension_a_.get(), _))
       .Times(0);
   ShimNormalFocus(host_aa_.get());
 
-  // Reopen focus launches the app.
-  EXPECT_CALL(
-      *handler_,
-      OnShimFocus(host_aa_.get(), chrome::mojom::AppShimFocusType::kReopen, _))
-      .WillOnce(Invoke(handler_.get(),
-                       &TestingExtensionAppShimHandler::RealOnShimFocus));
+  // Open files should trigger a launch with those files.
   std::vector<base::FilePath> some_file(1, base::FilePath("some_file"));
   EXPECT_CALL(*delegate_,
               LaunchApp(&profile_a_, extension_a_.get(), some_file));
-  handler_->OnShimFocus(host_aa_.get(),
-                        chrome::mojom::AppShimFocusType::kReopen, some_file);
+  host_aa_->FilesOpened(some_file);
 
   // Process disconnect will cause the host to be deleted.
   handler_->OnShimProcessDisconnected(host_aa_.get());
@@ -933,10 +919,7 @@ TEST_F(ExtensionAppShimHandlerTest, PreExistingHost) {
 
   // Launch the app for this host. It should find the pre-existing host, and the
   // pre-existing host's launch result should be set.
-  EXPECT_CALL(
-      *handler_,
-      OnShimFocus(host_aa_.get(), chrome::mojom::AppShimFocusType::kNormal, _))
-      .Times(1);
+  EXPECT_CALL(*handler_, OnShimFocus(host_aa_.get())).Times(1);
   EXPECT_CALL(*delegate_, LaunchApp(&profile_a_, extension_a_.get(), _))
       .Times(0);
   EXPECT_FALSE(host_aa_->did_connect_to_host());

@@ -17,6 +17,7 @@
 <translation id="5271696982761495740">رایانهٔ لوحی (<ph name="ADDRESS" />)</translation>
 <translation id="5376363957846771741">دستگاه ناشناس یا پشتیبانی نشده (<ph name="ADDRESS" />)</translation>
 <translation id="5716052956047449618"><ph name="DEVICE_NAME" />، مودم</translation>
+<translation id="6459740836740815150"><ph name="DEVICE_NAME" />، دستگاه صوتی خودرو</translation>
 <translation id="6542922424766292144"><ph name="DEVICE_NAME" />، صفحه‌کلید</translation>
 <translation id="654594702871184195">صوتی (<ph name="ADDRESS" />)</translation>
 <translation id="6744468237221042970">رایانه (<ph name="ADDRESS" />)</translation>
@@ -26,5 +27,6 @@
 <translation id="8866374292072238753">ویدئو (<ph name="ADDRESS" />)</translation>
 <translation id="8952558712545617651">موشواره (<ph name="ADDRESS" />)</translation>
 <translation id="8961448405689538648"><ph name="DEVICE_NAME" />، نوع دستگاه ناشناس</translation>
+<translation id="907431882454731668">محیطی (<ph name="ADDRESS" />)</translation>
 <translation id="978248992969828584">تلفن (<ph name="ADDRESS" />)</translation>
 </translationbundle>

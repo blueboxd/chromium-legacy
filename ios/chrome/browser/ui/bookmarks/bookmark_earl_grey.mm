@@ -41,6 +41,8 @@ const GURL GetFrenchUrl() {
 
 @implementation BookmarkEarlGreyImpl
 
+#pragma mark - Setup and Teardown
+
 - (void)clearBookmarksPositionCache {
   [BookmarkEarlGreyAppInterface clearBookmarksPositionCache];
 }
@@ -58,6 +60,29 @@ const GURL GetFrenchUrl() {
                                 secondURL:spec2
                                  thirdURL:spec3
                                 fourthURL:spec4]);
+}
+
+#pragma mark - Promo
+
+- (void)verifyPromoAlreadySeen:(BOOL)seen {
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [BookmarkEarlGreyAppInterface verifyPromoAlreadySeen:seen]);
+}
+
+- (void)setPromoAlreadySeen:(BOOL)seen {
+  [BookmarkEarlGreyAppInterface setPromoAlreadySeen:seen];
+}
+
+- (void)setPromoAlreadySeenNumberOfTimes:(int)times {
+  [BookmarkEarlGreyAppInterface setPromoAlreadySeenNumberOfTimes:times];
+}
+
+- (int)numberOfTimesPromoAlreadySeen {
+  return [BookmarkEarlGreyAppInterface numberOfTimesPromoAlreadySeen];
+}
+
+- (NSString*)setupFakeIdentity {
+  return [BookmarkEarlGreyAppInterface setupFakeIdentity];
 }
 
 @end

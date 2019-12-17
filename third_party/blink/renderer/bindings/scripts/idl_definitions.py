@@ -864,9 +864,8 @@ def ext_attributes_node_to_extended_attributes(node):
             raise ValueError('[Constructor] is deprecated. Use constructor '
                              'operations')
         elif name == 'CustomConstructor':
-            if child_class and child_class != 'Arguments':
-                raise ValueError('[CustomConstructor] only supports Arguments as child, but has child of class: %s' % child_class)
-            custom_constructors.append(child)
+            raise ValueError('[CustomConstructor] is deprecated. Use '
+                             'constructor operations with [Custom]')
         elif name == 'NamedConstructor':
             if child_class and child_class != 'Call':
                 raise ValueError('[NamedConstructor] only supports Call as child, but has child of class: %s' % child_class)

@@ -24,12 +24,12 @@ struct ArchiveAnalyzerResults;
 class SandboxedRarAnalyzer
     : public base::RefCountedThreadSafe<SandboxedRarAnalyzer> {
  public:
-  using ResultCallback = base::RepeatingCallback<void(
-      const safe_browsing::ArchiveAnalyzerResults&)>;
+  using ResultCallback =
+      base::OnceCallback<void(const safe_browsing::ArchiveAnalyzerResults&)>;
 
   SandboxedRarAnalyzer(
       const base::FilePath& rar_file_path,
-      const ResultCallback& callback,
+      ResultCallback callback,
       mojo::PendingRemote<chrome::mojom::FileUtilService> service);
 
   // Starts the analysis. Must be called on the UI thread.
@@ -60,7 +60,7 @@ class SandboxedRarAnalyzer
   const base::FilePath file_path_;
 
   // Callback invoked on the UI thread with the file analyze results.
-  const ResultCallback callback_;
+  ResultCallback callback_;
 
   // Remote interfaces to the file util service. Only used from the UI thread.
   mojo::Remote<chrome::mojom::FileUtilService> service_;

@@ -103,7 +103,7 @@ class TwoClientBookmarksSyncTest : public FeatureToggler, public SyncTest {
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   GURL google_url("http://www.google.com");
   ASSERT_NE(nullptr, AddURL(0, "Google", google_url));
@@ -133,7 +133,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, Sanity) {
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SimultaneousURLChanges) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   GURL initial_url("http://www.google.com");
   GURL second_url("http://www.google.com/abc");
@@ -154,7 +154,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SimultaneousURLChanges) {
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_AddFirstFolder) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   ASSERT_NE(nullptr, AddFolder(0, kGenericFolderName));
   ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
@@ -163,7 +163,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_AddFirstFolder) {
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_Add3FoldersInShuffledOrder) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   ASSERT_NE(nullptr, AddFolder(0, 0, IndexedFolderName(0)));
   ASSERT_NE(nullptr, AddFolder(0, 1, IndexedFolderName(2)));
@@ -174,7 +174,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_AddFirstBMWithoutFavicon) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   ASSERT_NE(nullptr, AddURL(0, kGenericURLTitle, GURL(kGenericURL)));
   ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
@@ -182,7 +182,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_AddFirstBMWithFavicon) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
   const GURL page_url(kGenericURL);
   const GURL icon_url("http://www.google.com/favicon.ico");
 
@@ -213,7 +213,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_SetFaviconHiDPI) {
   const GURL icon_url2("http://www.google.com/favicon2.ico");
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   const BookmarkNode* bookmark0 = AddURL(0, kGenericURLTitle, page_url);
   ASSERT_NE(nullptr, bookmark0);
@@ -250,7 +250,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
   const GURL icon_url("http://www.google.com/favicon.ico");
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   const BookmarkNode* bookmark0 = AddURL(0, kGenericURLTitle, page_url);
   ASSERT_NE(bookmark0, nullptr);
@@ -291,7 +291,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
   const GURL icon_url("http://www.google.com/favicon.ico");
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   const BookmarkNode* bookmark01 = AddURL(0, kGenericURLTitle, page_url1);
   ASSERT_NE(nullptr, bookmark01);
@@ -322,7 +322,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_DeleteFavicon) {
   const GURL icon_url("http://www.google.com/favicon.ico");
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   const BookmarkNode* bookmark0 = AddURL(0, kGenericURLTitle, page_url);
   ASSERT_NE(nullptr, bookmark0);
@@ -348,7 +348,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_DeleteFavicon) {
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_AddNonHTTPBMs) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   ASSERT_NE(nullptr,
             AddURL(0, "FTP UR", GURL("ftp://user:password@host:1234/path")));
@@ -358,7 +358,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_AddNonHTTPBMs) {
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_AddFirstBMUnderFolder) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   const BookmarkNode* folder = AddFolder(0, kGenericFolderName);
   ASSERT_NE(nullptr, folder);
@@ -369,7 +369,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_AddFirstBMUnderFolder) {
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_AddSeveralBMsUnderBMBarAndOtherBM) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   for (size_t i = 0; i < 20; ++i) {
     std::string title = IndexedURLTitle(i);
@@ -382,7 +382,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_AddSeveralBMsAndFolders) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   for (size_t i = 0; i < 15; ++i) {
     if (base::RandDouble() > 0.6) {
@@ -413,7 +413,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_AddSeveralBMsAndFolders) {
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_DuplicateBMWithDifferentURLSameName) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   GURL url0 = GURL(IndexedURL(0));
   GURL url1 = GURL(IndexedURL(1));
@@ -426,7 +426,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_DuplicateBookmarksWithSameURL) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   std::string title0 = IndexedURLTitle(0);
   std::string title1 = IndexedURLTitle(1);
@@ -437,7 +437,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_RenameBMName) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   std::string title = IndexedURLTitle(1);
   const BookmarkNode* bookmark = AddURL(0, title, GURL(kGenericURL));
@@ -451,7 +451,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_RenameBMName) {
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_RenameBMURL) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   GURL url = GURL(IndexedURL(1));
   const BookmarkNode* bookmark = AddURL(0, kGenericURLTitle, url);
@@ -467,7 +467,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_RenameBMURL) {
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_TwiceRenamingBookmarkName) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   std::string title = IndexedURLTitle(1);
   const BookmarkNode* bookmark = AddURL(0, title, GURL(kGenericURL));
@@ -486,7 +486,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_TwiceRenamingBookmarkURL) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   GURL url = GURL(IndexedURL(1));
   const BookmarkNode* bookmark = AddURL(0, kGenericURLTitle, url);
@@ -503,7 +503,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_RenameBMFolder) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   std::string title = IndexedFolderName(1);
   const BookmarkNode* folder = AddFolder(0, title);
@@ -517,7 +517,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_RenameBMFolder) {
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_RenameEmptyBMFolder) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   std::string title = IndexedFolderName(1);
   const BookmarkNode* folder = AddFolder(0, title);
@@ -531,7 +531,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_RenameEmptyBMFolder) {
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_RenameBMFolderWithLongHierarchy) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   std::string title = IndexedFolderName(1);
   const BookmarkNode* folder = AddFolder(0, title);
@@ -556,7 +556,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_RenameBMFolderThatHasParentAndChildren) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   const BookmarkNode* folder = AddFolder(0, kGenericFolderName);
   ASSERT_NE(nullptr, folder);
@@ -586,7 +586,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_RenameBMNameAndURL) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   GURL url = GURL(IndexedURL(1));
   std::string title = IndexedURLTitle(1);
@@ -605,7 +605,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_RenameBMNameAndURL) {
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_DeleteBMEmptyAccountAfterwards) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   ASSERT_NE(nullptr, AddURL(0, kGenericURLTitle, GURL(kGenericURL)));
   ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
@@ -617,7 +617,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_DelBMNonEmptyAccountAfterwards) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   for (size_t i = 0; i < 20; ++i) {
     std::string title = IndexedURLTitle(i);
@@ -633,7 +633,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_DelFirstBMUnderBMFoldNonEmptyFoldAfterwards) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   const BookmarkNode* folder = AddFolder(0, kGenericFolderName);
   ASSERT_NE(nullptr, folder);
@@ -651,7 +651,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_DelLastBMUnderBMFoldNonEmptyFoldAfterwards) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   const BookmarkNode* folder = AddFolder(0, kGenericFolderName);
   ASSERT_NE(nullptr, folder);
@@ -669,7 +669,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_DelMiddleBMUnderBMFoldNonEmptyFoldAfterwards) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   const BookmarkNode* folder = AddFolder(0, kGenericFolderName);
   ASSERT_NE(nullptr, folder);
@@ -687,7 +687,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_DelBMsUnderBMFoldEmptyFolderAfterwards) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   const BookmarkNode* folder = AddFolder(0, kGenericFolderName);
   ASSERT_NE(nullptr, folder);
@@ -706,7 +706,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_DelEmptyBMFoldEmptyAccountAfterwards) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   ASSERT_NE(nullptr, AddFolder(0, kGenericFolderName));
   ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
@@ -718,7 +718,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_DelEmptyBMFoldNonEmptyAccountAfterwards) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   ASSERT_NE(nullptr, AddFolder(0, kGenericFolderName));
   for (size_t i = 1; i < 15; ++i) {
@@ -740,7 +740,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_DelBMFoldWithBMsNonEmptyAccountAfterwards) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   ASSERT_NE(nullptr, AddURL(0, kGenericURLTitle, GURL(kGenericURL)));
   const BookmarkNode* folder = AddFolder(0, 1, kGenericFolderName);
@@ -769,7 +769,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_DelBMFoldWithBMsAndBMFoldsNonEmptyACAfterwards) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   ASSERT_NE(nullptr, AddURL(0, kGenericURLTitle, GURL(kGenericURL)));
   const BookmarkNode* folder = AddFolder(0, 1, kGenericFolderName);
@@ -817,7 +817,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_DelBMFoldWithParentAndChildrenBMsAndBMFolds) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   const BookmarkNode* folder = AddFolder(0, kGenericFolderName);
   ASSERT_NE(nullptr, folder);
@@ -847,7 +847,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_ReverseTheOrderOfTwoBMs) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   GURL url0 = GURL(IndexedURL(0));
   GURL url1 = GURL(IndexedURL(1));
@@ -865,7 +865,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_ReverseTheOrderOfTwoBMs) {
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_ReverseTheOrderOf10BMs) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   for (size_t i = 0; i < 10; ++i) {
     std::string title = IndexedURLTitle(i);
@@ -881,7 +881,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_ReverseTheOrderOf10BMs) {
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_MovingBMsFromBMBarToBMFolder) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   ASSERT_NE(nullptr, AddURL(0, kGenericURLTitle, GURL(kGenericURL)));
   const BookmarkNode* folder = AddFolder(0, 1, kGenericFolderName);
@@ -897,14 +897,14 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
   for (size_t i = 0; i < num_bookmarks_to_move; ++i) {
     Move(0, GetBookmarkBarNode(0)->children()[2].get(), folder, i);
     ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-    ASSERT_TRUE(AllModelsMatchVerifier());
+    ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
   }
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_MovingBMsFromBMFoldToBMBar) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   ASSERT_NE(nullptr, AddURL(0, kGenericURLTitle, GURL(kGenericURL)));
   const BookmarkNode* folder = AddFolder(0, 1, kGenericFolderName);
@@ -920,14 +920,14 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
   for (size_t i = 0; i < num_bookmarks_to_move; ++i) {
     Move(0, folder->children().front().get(), GetBookmarkBarNode(0), i);
     ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-    ASSERT_TRUE(AllModelsMatchVerifier());
+    ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
   }
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_MovingBMsFromParentBMFoldToChildBMFold) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   const BookmarkNode* folder = AddFolder(0, kGenericFolderName);
   ASSERT_NE(nullptr, folder);
@@ -956,7 +956,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_MovingBMsFromChildBMFoldToParentBMFold) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   const BookmarkNode* folder = AddFolder(0, kGenericFolderName);
   ASSERT_NE(nullptr, folder);
@@ -984,7 +984,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_HoistBMs10LevelUp) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   const BookmarkNode* folder = GetBookmarkBarNode(0);
   const BookmarkNode* folder_L0 = nullptr;
@@ -1022,7 +1022,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_HoistBMs10LevelUp) {
 // Flaky. http://crbug.com/107744.
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_SinkBMs10LevelDown) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   const BookmarkNode* folder = GetBookmarkBarNode(0);
   const BookmarkNode* folder_L0 = nullptr;
@@ -1060,7 +1060,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_SinkBMs10LevelDown) {
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_SinkEmptyBMFold5LevelsDown) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   const BookmarkNode* folder = GetBookmarkBarNode(0);
   const BookmarkNode* folder_L5 = nullptr;
@@ -1088,7 +1088,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_SinkNonEmptyBMFold5LevelsDown) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   const BookmarkNode* folder = GetBookmarkBarNode(0);
   const BookmarkNode* folder_L5 = nullptr;
@@ -1120,7 +1120,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_HoistFolder5LevelsUp) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   const BookmarkNode* folder = GetBookmarkBarNode(0);
   const BookmarkNode* folder_L5 = nullptr;
@@ -1154,7 +1154,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_HoistFolder5LevelsUp) {
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_ReverseTheOrderOfTwoBMFolders) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   for (size_t i = 0; i < 2; ++i) {
     std::string title = IndexedFolderName(i);
@@ -1175,7 +1175,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        SC_ReverseTheOrderOfTenBMFolders) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   for (size_t i = 0; i < 10; ++i) {
     std::string title = IndexedFolderName(i);
@@ -1196,7 +1196,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        MC_BiDirectionalPushAddingBM) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   DisableVerifier();
   for (size_t i = 0; i < 2; ++i) {
@@ -1214,7 +1214,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        MC_BiDirectionalPush_AddingSameBMs) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   // Note: When a racy commit is done with identical bookmarks, it is possible
   // for duplicates to exist after sync completes. See http://crbug.com/19769.
@@ -1232,7 +1232,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        MC_BootStrapEmptyStateEverywhere) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
@@ -1566,7 +1566,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, DisableBookmarks) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   ASSERT_TRUE(
       GetClient(1)->DisableSyncForType(syncer::UserSelectableType::kBookmarks));
@@ -1581,7 +1581,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, DisableBookmarks) {
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, DisableSync) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   ASSERT_TRUE(GetClient(1)->DisableSyncForAllDatatypes());
   ASSERT_NE(nullptr, AddFolder(0, IndexedFolderName(0)));
@@ -1784,7 +1784,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        FirstClientEnablesEncryptionWithPassSecondChanges) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   // Add initial bookmarks.
   ASSERT_NE(nullptr, AddURL(0, 0, IndexedURLTitle(0), GURL(IndexedURL(0))));
@@ -1825,7 +1825,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
 // order is).
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, RacyPositionChanges) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   // Add initial bookmarks.
   size_t num_bookmarks = 5;
@@ -1835,7 +1835,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, RacyPositionChanges) {
 
   // Once we make diverging changes the verifer is helpless.
   ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
   DisableVerifier();
 
   // Make changes on client 0.
@@ -1884,7 +1884,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, RacyPositionChanges) {
 // and ensure both clients receive the bookmark.
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, CreateSyncedBookmarks) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   fake_server_->InjectEntity(syncer::PersistentPermanentEntity::CreateNew(
       syncer::BOOKMARKS, "synced_bookmarks", "Synced Bookmarks",
@@ -1908,7 +1908,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, CreateSyncedBookmarks) {
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
                        BookmarkAllNodesRemovedEvent) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   // Starting state:
   // other_node
@@ -1967,7 +1967,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, ManagedBookmarks) {
 
   // Set up sync.
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   // Verify that there are no managed bookmarks at startup in either profile.
   // The Managed Bookmarks folder should not be visible at this stage.

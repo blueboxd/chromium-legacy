@@ -341,7 +341,7 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
     web_frame_->UpdateUserActivationState(
         blink::UserActivationUpdateType::kNotifyActivation);
   }
-  web_frame_->SetHasReceivedUserGestureBeforeNavigation(
+  web_frame_->SetHadStickyUserActivationBeforeNavigation(
       state.has_received_user_gesture_before_nav);
 
   web_frame_->ResetReplicatedContentSecurityPolicy();

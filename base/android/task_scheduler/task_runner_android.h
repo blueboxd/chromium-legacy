@@ -17,7 +17,8 @@ enum class TaskRunnerType { BASE, SEQUENCED, SINGLE_THREAD };
 // a C++ TaskRunner.
 class TaskRunnerAndroid {
  public:
-  explicit TaskRunnerAndroid(scoped_refptr<TaskRunner> task_runner);
+  explicit TaskRunnerAndroid(scoped_refptr<TaskRunner> task_runner,
+                             TaskRunnerType type);
   ~TaskRunnerAndroid();
 
   void Destroy(JNIEnv* env);
@@ -30,6 +31,7 @@ class TaskRunnerAndroid {
 
  private:
   const scoped_refptr<TaskRunner> task_runner_;
+  const TaskRunnerType type_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskRunnerAndroid);
 };

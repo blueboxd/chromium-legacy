@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
-#include "chrome/browser/engagement/site_engagement_details.mojom.h"
+#include "chrome/browser/media/media_engagement_score_details.mojom.h"
 #include "chrome/browser/ui/webui/downloads/downloads.mojom.h"
 #include "chrome/browser/ui/webui/feed_internals/feed_internals.mojom.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
@@ -26,10 +26,8 @@
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader.mojom.h"
-#include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_page_handler.mojom.h"
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
@@ -41,15 +39,8 @@
 #include "chrome/common/conflicts/module_event_sink_win.mojom.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/ui/webui/explore_sites_internals/explore_sites_internals.mojom.h"
-#else
+#if !defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
-#endif
-
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
-#include "chrome/browser/ui/webui/discards/discards.mojom.h"
 #endif
 
 const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
@@ -107,7 +98,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 chromeos::cellular_setup::mojom::CellularSetup,
                 chromeos::crostini_installer::mojom::PageHandlerFactory,
                 chromeos::crostini_upgrader::mojom::PageHandlerFactory,
-                chromeos::machine_learning::mojom::PageHandler,
                 chromeos::multidevice_setup::mojom::MultiDeviceSetup,
                 chromeos::multidevice_setup::mojom::PrivilegedHostDeviceSetter,
                 chromeos::network_config::mojom::CrosNetworkConfig,
@@ -115,23 +105,12 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 // WebUI-only interfaces go below this line. These should be
                 // brokered through a dedicated interface, but they're here
                 // for for now.
-                downloads::mojom::PageHandlerFactory,
                 feed_internals::mojom::PageHandler,
                 new_tab_page::mojom::PageHandlerFactory,
-#if defined(OS_ANDROID)
-                explore_sites_internals::mojom::PageHandler,
-#else
+#if !defined(OS_ANDROID)
                 app_management::mojom::PageHandlerFactory,
 #endif
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
-                discards::mojom::DetailsProvider, discards::mojom::GraphDump,
-#endif
-#if defined(OS_CHROMEOS)
-                add_supervision::mojom::AddSupervisionHandler,
-#endif
                 mojom::OmniboxPageHandler, mojom::ResetPasswordHandler,
-                mojom::SiteEngagementDetailsProvider,
                 mojom::UsbInternalsPageHandler,
                 snippets_internals::mojom::PageHandlerFactory>())
         .Build()

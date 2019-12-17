@@ -144,10 +144,6 @@ class TaskRunnerWithCap : public base::TaskRunner {
     return true;
   }
 
-  bool RunsTasksInCurrentSequence() const override {
-    return task_runner_->RunsTasksInCurrentSequence();
-  }
-
  private:
   struct LocationAndTask {
     LocationAndTask() = default;

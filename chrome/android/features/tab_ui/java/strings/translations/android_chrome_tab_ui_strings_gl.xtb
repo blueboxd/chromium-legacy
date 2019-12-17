@@ -4,6 +4,8 @@
 <translation id="1075622780330595106">Ultimamente non se utilizaron <ph name="NUMBER_OF_TABS" /> das túas pestanas. Queres pechalas?</translation>
 <translation id="1181037720776840403">Eliminar</translation>
 <translation id="125153950246128346">Toca para ver outra pestana</translation>
+<translation id="1657719826150349398">Mover pestana cara abaixo</translation>
+<translation id="1778290789805128794">Mover pestana cara arriba</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> pestana}other{<ph name="TABS_COUNT_MANY" /> pestanas}}</translation>
 <translation id="2569352796411618312">Suxestión: <ph name="NUMBER_OF_TABS" /> das pestanas que tes abertas leva/n sen utilizarse un bo anaco. Queres pechala/s?</translation>
 <translation id="257674075312929031">Grupo</translation>
@@ -20,11 +22,13 @@
 <translation id="58326064309361797">Arrastra as pestanas para agrupalas</translation>
 <translation id="6040143037577758943">Pechar</translation>
 <translation id="6193448654517602979">Selecciona pestanas</translation>
+<translation id="6562820390860419811">Mover pestana cara á esquerda</translation>
 <translation id="6615455863669487791">Mostrar</translation>
 <translation id="6840760312327750441">Para agrupar varias pestanas, mantén premida unha delas e despois arrástraa ata outra.</translation>
 <translation id="7151209024774799310">Quitar pestanas do grupo</translation>
 <translation id="7559245342362162951">Mostrar as pestanas do grupo nunha grade en pantalla completa</translation>
 <translation id="7792771145871471484">Revisar as suxestións.</translation>
+<translation id="7885132941432959125">Mover pestana cara á dereita</translation>
 <translation id="7966321538264951561">Ignorar estas suxestións.</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Pechar <ph name="TABS_COUNT_ONE" /> pestana seleccionada}other{Pechar <ph name="TABS_COUNT_MANY" /> pestanas seleccionadas}}</translation>
 <translation id="9150694013019234766">Cambia dunha pestana a outra no grupo de pestanas da parte inferior da pantalla</translation>

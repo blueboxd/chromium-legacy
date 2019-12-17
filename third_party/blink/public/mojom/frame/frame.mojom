@@ -113,7 +113,7 @@ interface LocalFrameHost {
   // Notifies the browser that the associated frame received a user gesture on
   // a previous navigation on the same eTLD+1. This ensures the state is
   // propagated to any remote frames.
-  ReceivedUserGestureBeforeNavigationChanged(bool has_gesture);
+  HadStickyUserActivationBeforeNavigationChanged(bool has_gesture);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will
@@ -237,5 +237,5 @@ interface RemoteFrame {
 
   // Notifies this remote frame to mark that the previous document on that
   // frame had received a user gesture on the same eTLD+1.
-  SetReceivedUserGestureBeforeNavigation(bool has_gesture);
+  SetHadStickyUserActivationBeforeNavigation(bool has_gesture);
 };

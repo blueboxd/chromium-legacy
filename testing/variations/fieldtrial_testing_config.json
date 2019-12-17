@@ -1128,6 +1128,7 @@
             "platforms": [
                 "android",
                 "chromeos",
+                "ios",
                 "linux",
                 "mac",
                 "windows"
@@ -1147,6 +1148,7 @@
             "platforms": [
                 "android",
                 "chromeos",
+                "ios",
                 "linux",
                 "mac",
                 "windows"
@@ -3420,6 +3422,25 @@
             ]
         }
     ],
+    "LegacyTLSDeprecation": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "LegacyTLSWarnings"
+                    ]
+                }
+            ]
+        }
+    ],
     "LowPriorityIframes2": [
         {
             "platforms": [
@@ -5575,6 +5596,7 @@
     "SafeBrowsingRealTimeUrlLookupEnabled": [
         {
             "platforms": [
+                "android",
                 "chromeos",
                 "linux",
                 "mac",

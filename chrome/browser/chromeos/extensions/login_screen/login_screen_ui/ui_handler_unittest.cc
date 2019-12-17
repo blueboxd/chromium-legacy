@@ -18,7 +18,6 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/version_info/version_info.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -188,7 +187,6 @@ class LoginScreenExtensionUiHandlerUnittest : public testing::Test {
   }
 
   content::BrowserTaskEnvironment task_environment_;
-  content::TestServiceManagerContext context_;
   const extensions::ScopedCurrentChannel scoped_current_channel_;
 
   session_manager::SessionManager session_manager_;

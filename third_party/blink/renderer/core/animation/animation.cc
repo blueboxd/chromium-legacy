@@ -242,16 +242,8 @@ DocumentTimeline& Animation::TickingTimeline() {
 void Animation::setCurrentTime(double new_current_time,
                                bool is_null,
                                ExceptionState& exception_state) {
-  // TODO(crbug.com/916117): Implement setting current time for scroll-linked
-  // animations.
-  if (timeline_ && timeline_->IsScrollTimeline()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        "Scroll-linked WebAnimation currently does not support setting"
-        " current time.");
-    return;
-  }
-
+  // TODO(crbug.com/924159): Update this after we add support for inactive
+  // timelines and unresolved timeline.currentTime
   if (is_null) {
     // If the current time is resolved, then throw a TypeError.
     if (CurrentTimeInternal()) {
@@ -542,15 +534,7 @@ void Animation::CommitPendingPlay(double ready_time) {
   current_time_pending_ = false;
 
   // Update hold and start time.
-  if (timeline_ && timeline_->IsScrollTimeline()) {
-    // Special handling for scroll timelines.  The start time is always zero
-    // when the animation is playing. This forces the current time to match
-    // the timeline time. TODO(crbug.com/916117): Resolve in spec.
-    start_time_ = 0;
-    ApplyPendingPlaybackRate();
-    if (playback_rate_ != 0)
-      hold_time_ = base::nullopt;
-  } else if (hold_time_) {
+  if (hold_time_) {
     // A: If animation’s hold time is resolved,
     // A.1. Apply any pending playback rate on animation.
     // A.2. Let new start time be the result of evaluating:
@@ -1022,9 +1006,16 @@ void Animation::PlayInternal(AutoRewind auto_rewind,
   //    Set animation’s hold time to zero.
   double effective_playback_rate = EffectivePlaybackRate();
   base::Optional<double> current_time = CurrentTimeInternal();
+  // TODO(crbug.com/1012073): This should be able to be extracted into a
+  // function in AnimationTimeline that each child class can override for their
+  // own special behavior.
+  base::Optional<double> initial_hold_time =
+      (timeline_ && timeline_->IsScrollTimeline())
+          ? timeline_->CurrentTimeSeconds()
+          : 0;
   if (effective_playback_rate > 0 && auto_rewind == AutoRewind::kEnabled &&
       (!current_time || current_time < 0 || current_time >= EffectEnd())) {
-    hold_time_ = 0;
+    hold_time_ = initial_hold_time;
   } else if (effective_playback_rate < 0 &&
              auto_rewind == AutoRewind::kEnabled &&
              (!current_time || current_time <= 0 ||
@@ -1037,7 +1028,7 @@ void Animation::PlayInternal(AutoRewind auto_rewind,
     }
     hold_time_ = EffectEnd();
   } else if (effective_playback_rate == 0 && !current_time) {
-    hold_time_ = 0;
+    hold_time_ = initial_hold_time;
   }
 
   // 4. If animation has a pending play task or a pending pause task,
@@ -1053,7 +1044,15 @@ void Animation::PlayInternal(AutoRewind auto_rewind,
   //      aborted pause is false, and
   //      animation does not have a pending playback rate,
   //    abort this procedure.
-  if (!hold_time_ && !aborted_pause && !pending_playback_rate_)
+  //
+  // TODO(crbug.com/916117): Remove temporary extra condition for
+  // scroll timelines. This is needed because hold_time_ can be set using
+  // timeline.currentTime, which currently can return null. This check is to
+  // make sure we don't abort in this case.
+  if ((!hold_time_ &&
+       (timeline_ &&
+        !timeline_->IsScrollTimeline() /* Temporary extra condition */)) &&
+      !aborted_pause && !pending_playback_rate_)
     return;
 
   // 6. If animation’s hold time is resolved, let its start time be unresolved.

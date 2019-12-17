@@ -921,14 +921,6 @@ void SupervisedUserService::SetExtensionsActive() {
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-syncer::UserSelectableTypeSet SupervisedUserService::GetForcedTypes() const {
-  if (!ProfileIsSupervised())
-    return syncer::UserSelectableTypeSet();
-
-  return {syncer::UserSelectableType::kExtensions,
-          syncer::UserSelectableType::kApps};
-}
-
 bool SupervisedUserService::IsEncryptEverythingAllowed() const {
   return !active_;
 }

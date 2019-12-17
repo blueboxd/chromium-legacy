@@ -71,8 +71,6 @@ std::string RoleToString(ax::mojom::Role role) {
       return result.append("ComboBoxMenuButton");
     case ax::mojom::Role::kComment:
       return result.append("Comment");
-    case ax::mojom::Role::kCommentSection:
-      return result.append("CommentSection");
     case ax::mojom::Role::kComplementary:
       return result.append("Complementary");
     case ax::mojom::Role::kContentDeletion:
@@ -299,8 +297,6 @@ std::string RoleToString(ax::mojom::Role role) {
       return result.append("RadioGroup");
     case ax::mojom::Role::kRegion:
       return result.append("Region");
-    case ax::mojom::Role::kRevision:
-      return result.append("Revision");
     case ax::mojom::Role::kRow:
       return result.append("Row");
     case ax::mojom::Role::kRowGroup:

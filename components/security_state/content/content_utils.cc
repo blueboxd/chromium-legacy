@@ -39,14 +39,12 @@ namespace {
 // Note: This is a lossy operation. Not all of the policies that can be
 // expressed by a SecurityLevel can be expressed by a blink::SecurityStyle.
 blink::SecurityStyle SecurityLevelToSecurityStyle(
-    security_state::SecurityLevel security_level,
-    GURL url) {
+    security_state::SecurityLevel security_level) {
   switch (security_level) {
     case security_state::NONE:
+      return blink::SecurityStyle::kNeutral;
     case security_state::WARNING:
-      if (security_state::ShouldDowngradeNeutralStyling(
-              security_level, url,
-              base::BindRepeating(&content::IsOriginSecure)))
+      if (security_state::ShouldShowDangerTriangleForWarningLevel())
         return blink::SecurityStyle::kInsecure;
       return blink::SecurityStyle::kNeutral;
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
@@ -475,7 +473,7 @@ blink::SecurityStyle GetSecurityStyle(
     const security_state::VisibleSecurityState& visible_security_state,
     content::SecurityStyleExplanations* security_style_explanations) {
   const blink::SecurityStyle security_style =
-      SecurityLevelToSecurityStyle(security_level, visible_security_state.url);
+      SecurityLevelToSecurityStyle(security_level);
 
   // Safety tips come after SafeBrowsing but before HTTP warnings.
   // ExplainSafeBrowsingSecurity always inserts warnings to the front, so

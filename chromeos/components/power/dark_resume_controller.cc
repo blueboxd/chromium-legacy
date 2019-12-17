@@ -6,7 +6,6 @@
 #include <utility>
 
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 
 namespace chromeos {

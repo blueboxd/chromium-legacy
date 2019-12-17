@@ -36,6 +36,8 @@ void HeadsUpDisplayLayer::UpdateLocationAndSize(
                 device_viewport.height() / device_scale_factor);
 
   gfx::Size bounds;
+  gfx::Transform matrix;
+  matrix.MakeIdentity();
 
   if (layer_tree_host()->GetDebugState().ShowHudRects()) {
     bounds = device_viewport_in_layout_pixels;
@@ -44,9 +46,14 @@ void HeadsUpDisplayLayer::UpdateLocationAndSize(
     // FPS meter), use a fixed size.
     constexpr int kDefaultHUDSize = 256;
     bounds.SetSize(kDefaultHUDSize, kDefaultHUDSize);
+    // Put the HUD on the top-left side instead of the top-right side because
+    // the HUD sometimes can be drawn on out of the screen when it works on
+    // embedded devices.
+    matrix.Translate(0.0, 0.0);
   }
 
   SetBounds(bounds);
+  SetTransform(matrix);
 }
 
 bool HeadsUpDisplayLayer::HasDrawableContent() const {

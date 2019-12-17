@@ -26,21 +26,39 @@ class ProcessNodeImpl;
 class RenderProcessUserData : public base::SupportsUserData::Data,
                               public content::RenderProcessHostObserver {
  public:
+  // Observer interface to be notified when a RenderProcessUserData is
+  // destroyed.
+  class DestructionObserver {
+   public:
+    virtual ~DestructionObserver() = default;
+    virtual void OnRenderProcessUserDataDestroying(
+        content::RenderProcessHost*) = 0;
+  };
+
   ~RenderProcessUserData() override;
+
+  static const void* UserDataKey();
 
   static RenderProcessUserData* GetForRenderProcessHost(
       content::RenderProcessHost* host);
-  static RenderProcessUserData* GetOrCreateForRenderProcessHost(
-      content::RenderProcessHost* host);
 
-  // Detaches all instances from their RenderProcessHosts and destroys them.
-  static void DetachAndDestroyAll();
+  // Registers an observer that is notified when the RenderProcessUserData is
+  // destroyed. Can only be set to non-nullptr if it was previously nullptr, and
+  // vice-versa.
+  void SetDestructionObserver(DestructionObserver* destruction_observer);
 
   ProcessNodeImpl* process_node() { return process_node_.get(); }
 
  private:
+  friend class PerformanceManagerRegistryImpl;
+
   explicit RenderProcessUserData(
       content::RenderProcessHost* render_process_host);
+
+  // Only PerformanceManagerRegistry is allowed to create a
+  // RenderProcessUserData.
+  static RenderProcessUserData* CreateForRenderProcessHost(
+      content::RenderProcessHost* host);
 
   // RenderProcessHostObserver overrides
   void RenderProcessReady(content::RenderProcessHost* host) override;
@@ -49,16 +67,11 @@ class RenderProcessUserData : public base::SupportsUserData::Data,
       const content::ChildProcessTerminationInfo& info) override;
   void RenderProcessHostDestroyed(content::RenderProcessHost* host) override;
 
-  // All instances are linked together in a doubly linked list to allow orderly
-  // destruction at browser shutdown time.
-  static RenderProcessUserData* first_;
-
-  RenderProcessUserData* prev_ = nullptr;
-  RenderProcessUserData* next_ = nullptr;
-
   content::RenderProcessHost* const host_;
 
   std::unique_ptr<ProcessNodeImpl> process_node_;
+
+  DestructionObserver* destruction_observer_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessUserData);
 };

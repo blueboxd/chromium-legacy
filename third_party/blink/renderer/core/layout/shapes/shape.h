@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/style/basic_shapes.h"
 #include "third_party/blink/renderer/core/style/style_image.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 
@@ -84,7 +85,8 @@ class CORE_EXPORT Shape {
                                                   const LayoutRect& image_rect,
                                                   const LayoutRect& margin_rect,
                                                   WritingMode,
-                                                  float margin);
+                                                  float margin,
+                                                  RespectImageOrientationEnum);
   static std::unique_ptr<Shape> CreateLayoutBoxShape(const FloatRoundedRect&,
                                                      WritingMode,
                                                      float margin);

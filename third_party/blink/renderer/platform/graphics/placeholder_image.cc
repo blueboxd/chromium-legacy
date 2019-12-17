@@ -252,8 +252,8 @@ PaintImage PlaceholderImage::PaintImageForCurrentFrame() {
 
   PaintRecorder paint_recorder;
   Draw(paint_recorder.beginRecording(FloatRect(dest_rect)), PaintFlags(),
-       FloatRect(dest_rect), FloatRect(dest_rect),
-       kDoNotRespectImageOrientation, kClampImageToSourceRect, kSyncDecode);
+       FloatRect(dest_rect), FloatRect(dest_rect), kRespectImageOrientation,
+       kClampImageToSourceRect, kSyncDecode);
 
   paint_record_for_current_frame_ = paint_recorder.finishRecordingAsPicture();
   paint_record_content_id_ = PaintImage::GetNextContentId();
@@ -359,13 +359,15 @@ void PlaceholderImage::Draw(cc::PaintCanvas* canvas,
       Font::kUseFallbackIfFontNotReady, 1.0f, flags);
 }
 
-void PlaceholderImage::DrawPattern(GraphicsContext& context,
-                                   const FloatRect& src_rect,
-                                   const FloatSize& scale,
-                                   const FloatPoint& phase,
-                                   SkBlendMode mode,
-                                   const FloatRect& dest_rect,
-                                   const FloatSize& repeat_spacing) {
+void PlaceholderImage::DrawPattern(
+    GraphicsContext& context,
+    const FloatRect& src_rect,
+    const FloatSize& scale,
+    const FloatPoint& phase,
+    SkBlendMode mode,
+    const FloatRect& dest_rect,
+    const FloatSize& repeat_spacing,
+    RespectImageOrientationEnum respect_orientation) {
   DCHECK(context.Canvas());
 
   PaintFlags flags = context.FillFlags();
@@ -374,9 +376,8 @@ void PlaceholderImage::DrawPattern(GraphicsContext& context,
   // Ignore the pattern specifications and just draw a single placeholder image
   // over the whole |dest_rect|. This is done in order to prevent repeated icons
   // from cluttering tiled background images.
-  Draw(context.Canvas(), flags, dest_rect, src_rect,
-       kDoNotRespectImageOrientation, kClampImageToSourceRect,
-       kUnspecifiedDecode);
+  Draw(context.Canvas(), flags, dest_rect, src_rect, respect_orientation,
+       kClampImageToSourceRect, kUnspecifiedDecode);
 }
 
 void PlaceholderImage::DestroyDecodedData() {

@@ -4,6 +4,8 @@
 <translation id="1075622780330595106">Vairākas cilnes pēdējā laikā nav izmantotas (kopā <ph name="NUMBER_OF_TABS" />). Vai vēlaties tās aizvērt?</translation>
 <translation id="1181037720776840403">Noņemt</translation>
 <translation id="125153950246128346">Pieskarieties, lai skatītu citu cilni</translation>
+<translation id="1657719826150349398">Pārvietot cilni uz leju</translation>
+<translation id="1778290789805128794">Pārvietot cilni augšpusē</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> cilne}zero{<ph name="TABS_COUNT_MANY" /> cilnes}one{<ph name="TABS_COUNT_MANY" /> cilne}other{<ph name="TABS_COUNT_MANY" /> cilnes}}</translation>
 <translation id="2569352796411618312">Ieteikums: vairākas cilnes pēdējā laikā nav izmantotas (kopā <ph name="NUMBER_OF_TABS" />). Vai vēlaties tās aizvērt?</translation>
 <translation id="257674075312929031">Grupa</translation>
@@ -20,11 +22,13 @@
 <translation id="58326064309361797">Velciet cilnes, lai tās sagrupētu</translation>
 <translation id="6040143037577758943">Aizvērt</translation>
 <translation id="6193448654517602979">Atlasiet cilnes</translation>
+<translation id="6562820390860419811">Pārvietot cilni pa kreisi</translation>
 <translation id="6615455863669487791">Rādīt man</translation>
 <translation id="6840760312327750441">Lai sagrupētu cilnes, pieskarieties cilnei un turiet to. Pēc tam velciet to uz citas cilnes.</translation>
 <translation id="7151209024774799310">Noņemt cilnes no grupas</translation>
 <translation id="7559245342362162951">Rādīt grupas cilnes pilnekrāna režģī</translation>
 <translation id="7792771145871471484">Pārskatīt ieteikumus.</translation>
+<translation id="7885132941432959125">Pārvietot cilni pa labi</translation>
 <translation id="7966321538264951561">Nerādīt ieteikumus.</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Aizvērt atlasīto cilni (skaits: <ph name="TABS_COUNT_ONE" />)}zero{Aizvērt atlasītās cilnes (skaits: <ph name="TABS_COUNT_MANY" />)}one{Aizvērt atlasītās cilnes (skaits: <ph name="TABS_COUNT_MANY" />)}other{Aizvērt atlasītās cilnes (skaits: <ph name="TABS_COUNT_MANY" />)}}</translation>
 <translation id="9150694013019234766">Pārslēdziet cilnes savā ciļņu grupā ekrāna apakšdaļā.</translation>

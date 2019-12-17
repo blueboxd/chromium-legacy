@@ -116,13 +116,13 @@ class TestCompletionCallback {
 };
 
 void ExpectTimeoutAndClose(scoped_refptr<UsbDeviceHandle> handle,
-                           const base::Closure& quit_closure,
+                           base::OnceClosure quit_closure,
                            UsbTransferStatus status,
                            scoped_refptr<base::RefCountedBytes> buffer,
                            size_t transferred) {
   EXPECT_EQ(UsbTransferStatus::TIMEOUT, status);
   handle->Close();
-  quit_closure.Run();
+  std::move(quit_closure).Run();
 }
 
 TEST_F(UsbDeviceHandleTest, InterruptTransfer) {

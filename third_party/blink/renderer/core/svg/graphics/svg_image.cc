@@ -331,8 +331,8 @@ void SVGImage::DrawForContainer(cc::PaintCanvas* canvas,
     adjusted_src_size.Scale(residual_scale.Width(), residual_scale.Height());
     scaled_src.SetSize(adjusted_src_size);
 
-    DrawInternal(canvas, flags, dst_rect, scaled_src,
-                 kDoNotRespectImageOrientation, kClampImageToSourceRect, url);
+    DrawInternal(canvas, flags, dst_rect, scaled_src, kRespectImageOrientation,
+                 kClampImageToSourceRect, url);
   });
 }
 

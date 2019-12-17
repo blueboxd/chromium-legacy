@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">Ընդլայնեք այս տեքստը մինչև <ph name="MIN_CHARACTERS" /> կամ ավելի գրանշան (ներկայումս <ph name="CURRENT_LENGTH" /> գրանշան է):</translation>
 <translation id="383465348367842624">«<ph name="ATSIGN" />»-ին հետևող մասը չպետք է պարունակի «<ph name="INVALIDCHARACTER" />» նշանը:</translation>
 <translation id="3846214748874656680">Դուք գալ լիաէկրան ռեժիմից</translation>
-<translation id="3889183436948184105">տարբերակ</translation>
 <translation id="3920932319529768807">եզրակացություն</translation>
 <translation id="3924558731517983934">հավելված</translation>
 <translation id="3944740393230681990">նախաբան</translation>
@@ -115,6 +114,7 @@
 <translation id="4812940957355064477">Մուտքագրեք համար:</translation>
 <translation id="4912536737030637138">բիբլիոգրաֆիական գրառում</translation>
 <translation id="492244087561876220">մեկնաբանություն</translation>
+<translation id="4971739861736909480">«<ph name="ACCNAME" />» օբյեկտն ընտրված է</translation>
 <translation id="4975562563186953947">Ընտրված է՝ <ph name="SELECTED_COUNT" /></translation>
 <translation id="4992066212339426712">Միացնել ձայնը</translation>
 <translation id="49969490063480558">Մուտքագրեք «<ph name="ATSIGN" />» նշանին հաջորդող մասը: «<ph name="INVALIDADDRESS" />» հասցեն թերի է:</translation>
@@ -219,6 +219,7 @@
 <translation id="7888071071722539607">Էլ․ հասցեն պետք է պարունակի «<ph name="ATSIGN" />» նշանը: «<ph name="INVALIDADDRESS" />» հասցեում «<ph name="ATSIGN" />» նշանը չկա:</translation>
 <translation id="7891486169920085145">բաժանիչ</translation>
 <translation id="795667975304826397">Ընտրված ֆայլ չկա</translation>
+<translation id="7962328325860248200">«<ph name="ACCNAME" />» օբյեկտն ընտրված չէ</translation>
 <translation id="8034303206267677282">կարևոր</translation>
 <translation id="8053789581856978548">որոնման տեքստի վանդակ</translation>
 <translation id="8057695513531652401">ծանոթագրություն</translation>
@@ -257,7 +258,6 @@
 <translation id="8987927404178983737">Ամիս</translation>
 <translation id="901493112792887934">ընթացիկ ժամանակը վայրկյաններով</translation>
 <translation id="901834265349196618">էլփոստ</translation>
-<translation id="9023835124071926463">մեկնաբանությունների բաժին</translation>
 <translation id="9048119486235211610">նավարկում</translation>
 <translation id="9062295712474918030">փաստաթուղթ</translation>
 <translation id="9093215626363556771">դուրս գալ «նկար նկարի մեջ» ռեժիմից</translation>

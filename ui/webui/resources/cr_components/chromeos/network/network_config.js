@@ -323,8 +323,11 @@ Polymer({
     'updateEapCerts_(eapProperties_.*, serverCaCerts_, userCerts_)',
     'updateShowEap_(configProperties_.*, eapProperties_.*, securityType_)',
     'updateVpnType_(configProperties_, vpnType_)',
-    'updateVpnIPsecCerts_(vpnType_, configProperties_.typeConfig.vpn.ipSec.*)',
-    'updateOpenVPNCerts_(vpnType_, configProperties_.typeConfig.vpn.openVpn.*)',
+    'updateVpnIPsecCerts_(vpnType_,' +
+        'configProperties_.typeConfig.vpn.ipSec.*, serverCaCerts_, userCerts_)',
+    'updateOpenVPNCerts_(vpnType_,' +
+        'configProperties_.typeConfig.vpn.openVpn.*,' +
+        'serverCaCerts_, userCerts_)',
     // Multiple updateIsConfigured observers for different configurations.
     'updateIsConfigured_(configProperties_.*, securityType_)',
     'updateIsConfigured_(configProperties_, eapProperties_.*)',
@@ -391,7 +394,6 @@ Polymer({
     this.hiddenNetworkWarning_ = this.showHiddenNetworkWarning_();
 
     this.updateIsConfigured_();
-    this.onNetworkCertificatesChanged();
   },
 
   save: function() {
@@ -804,6 +806,8 @@ Polymer({
     if (autoConnect !== undefined) {
       configProperties.autoConnect = {value: autoConnect};
     }
+    // Request certificates the first time |configProperties_| is set.
+    const requestCertificates = this.configProperties_ == undefined;
     this.configProperties_ = configProperties;
     this.securityType_ = security;
     this.set('eapProperties_', this.getEap_(this.configProperties_));
@@ -812,6 +816,9 @@ Polymer({
     }
     if (managedProperties.type == mojom.NetworkType.kVPN) {
       this.vpnType_ = this.getVpnTypeFromProperties_(this.configProperties_);
+    }
+    if (requestCertificates) {
+      this.onNetworkCertificatesChanged();
     }
   },
 

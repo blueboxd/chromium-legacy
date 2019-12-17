@@ -234,6 +234,17 @@ const NGBorderEdges& NGBoxFragmentPainter::BorderEdges() const {
   return *border_edges_;
 }
 
+PhysicalRect NGBoxFragmentPainter::SelfInkOverflow() const {
+  if (paint_fragment_)
+    return paint_fragment_->SelfInkOverflow();
+  if (box_item_)
+    return box_item_->SelfInkOverflow();
+  const NGPhysicalFragment& fragment = PhysicalFragment();
+  DCHECK(fragment.IsBox() && !fragment.IsInlineBox());
+  return ToLayoutBox(fragment.GetLayoutObject())
+      ->PhysicalSelfVisualOverflowRect();
+}
+
 void NGBoxFragmentPainter::Paint(const PaintInfo& paint_info) {
   if (PhysicalFragment().IsAtomicInline() &&
       !box_fragment_.HasSelfPaintingLayer())
@@ -1427,6 +1438,7 @@ BoxPainterBase::FillLayerInfo NGBoxFragmentPainter::GetFillLayerInfo(
   return BoxPainterBase::FillLayerInfo(
       fragment.GetLayoutObject()->GetDocument(), fragment.Style(),
       fragment.HasOverflowClip(), color, bg_layer, bleed_avoidance,
+      LayoutObject::ShouldRespectImageOrientation(fragment.GetLayoutObject()),
       border_edges.line_left, border_edges.line_right,
       fragment.GetLayoutObject()->IsInline());
 }
@@ -1499,7 +1511,7 @@ bool NGBoxFragmentPainter::NodeAtPoint(const HitTestContext& hit_test,
     PhysicalRect bounds_rect(physical_offset, size);
     if (UNLIKELY(hit_test.result->GetHitTestRequest().GetType() &
                  HitTestRequest::kHitTestVisualOverflow)) {
-      bounds_rect = paint_fragment_->SelfInkOverflow();
+      bounds_rect = SelfInkOverflow();
       bounds_rect.Move(physical_offset);
     }
     // TODO(kojii): Don't have good explanation why only inline box needs to

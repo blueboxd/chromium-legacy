@@ -265,7 +265,7 @@ std::unique_ptr<DragImage> DragImage::Create(const KURL& url,
                           text_paint);
 
   scoped_refptr<StaticBitmapImage> image = resource_provider->Snapshot();
-  return DragImage::Create(image.get(), kDoNotRespectImageOrientation,
+  return DragImage::Create(image.get(), kRespectImageOrientation,
                            device_scale_factor);
 }
 

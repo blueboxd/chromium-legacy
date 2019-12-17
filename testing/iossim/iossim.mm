@@ -188,6 +188,16 @@ NSString* ResolvePath(NSString* path) {
   return [NSString stringWithCString:abs_path encoding:NSUTF8StringEncoding];
 }
 
+// Specific for XCode 10.1 and lower,
+// search |simctl_list| for a udid matching |sdk_version|.
+NSArray* GetDevicesBySDKForXcode10AndLower(NSDictionary* simctl_list,
+                                           NSString* sdk_version) {
+  // Pre-Xcode 10.2's simulator, xcrun simctl list -j returned "devices"
+  // that looked like "iOS 12.1".
+  NSString* sdk = [@"iOS " stringByAppendingString:sdk_version];
+  return [simctl_list[@"devices"] objectForKey:sdk];
+}
+
 // Search |simctl_list| for a udid matching |device_name| and |sdk_version|.
 NSString* GetDeviceBySDKAndName(NSDictionary* simctl_list,
                                 NSString* device_name,
@@ -213,6 +223,9 @@ NSString* GetDeviceBySDKAndName(NSDictionary* simctl_list,
     exit(kExitInvalidArguments);
   }
   NSArray* devices = [simctl_list[@"devices"] objectForKey:sdk];
+  if (devices == nil || [devices count] == 0) {
+    devices = GetDevicesBySDKForXcode10AndLower(simctl_list, sdk_version);
+  }
   for (NSDictionary* device in devices) {
     if ([device[@"name"] isEqualToString:device_name]) {
       return device[@"udid"];

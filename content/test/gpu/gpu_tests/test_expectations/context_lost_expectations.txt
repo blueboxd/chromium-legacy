@@ -1,6 +1,6 @@
 # tags: [ android linux lion mac mountainlion win win7 win8 win10]
 # tags: [ debug ]
-# tags: [ nvidia qualcomm-adreno-(tm)-418 qualcomm-adreno-(tm)-420 ]
+# tags: [ intel nvidia qualcomm-adreno-(tm)-418 qualcomm-adreno-(tm)-420 ]
 # tags: [ asan no-asan ]
 # results: [ Failure RetryOnFailure Skip ]
 
@@ -51,3 +51,6 @@ crbug.com/1031567 [ mac ] ContextLost_WebGLContextLostFromGPUProcessExit [ Retry
 # Mac NVIDIA only uses the low-power GPU.
 crbug.com/681341 [ mac nvidia ] ContextLost_MacWebGLMultisamplingHighPowerSwitchLosesContext [ Skip ]
 crbug.com/681341 [ mac nvidia ] ContextLost_MacWebGLPreserveDBHighPowerSwitchLosesContext [ Skip ]
+
+# Linux Intel Flake
+crbug.com/1034008 [ linux intel ] ContextLost_WebGLContextLostInHiddenTab [ RetryOnFailure ]

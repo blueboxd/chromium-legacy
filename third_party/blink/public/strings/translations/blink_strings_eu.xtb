@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">Luzatu testua <ph name="MIN_CHARACTERS" /> karaktere izan ditzan gutxienez (<ph name="CURRENT_LENGTH" /> karaktere erabiltzen ari zara).</translation>
 <translation id="383465348367842624">"<ph name="ATSIGN" />" ikurraren ondoren ezin da "<ph name="INVALIDCHARACTER" />" idatzi.</translation>
 <translation id="3846214748874656680">Irten pantaila osotik</translation>
-<translation id="3889183436948184105">zuzenketa</translation>
 <translation id="3920932319529768807">ondorioa</translation>
 <translation id="3924558731517983934">aplikazioa</translation>
 <translation id="3944740393230681990">hitzaurrea</translation>
@@ -257,7 +256,6 @@
 <translation id="8987927404178983737">Hilabetea</translation>
 <translation id="901493112792887934">uneko denbora segundotan</translation>
 <translation id="901834265349196618">helbide elektronikoa</translation>
-<translation id="9023835124071926463">iruzkinen atala</translation>
 <translation id="9048119486235211610">nabigazioa</translation>
 <translation id="9062295712474918030">dokumentua</translation>
 <translation id="9093215626363556771">irten pantaila txikiko modutik</translation>

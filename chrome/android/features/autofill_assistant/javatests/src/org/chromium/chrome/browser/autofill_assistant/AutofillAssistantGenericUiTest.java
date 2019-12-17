@@ -174,14 +174,14 @@ public class AutofillAssistantGenericUiTest {
                                         .setStrokeWidth(ClientDimensionProto.newBuilder().setDp(1)))
                         .build();
 
-        ViewProto locationImage = createTestImage("ic_place_googblue_36dp", "locationImage");
+        ViewProto locationImage = createTestImage("ic_add_outline_white_24dp", "locationImage");
         ViewProto locationTextView =
                 createTextView("345 Spear Street, San Francisco", "locationText");
         ViewProto locationChevron = createTestImage("ic_expand_more_black_24dp", "locationChevron");
         ViewProto locationSection = createSectionView(
                 Arrays.asList(locationImage, locationTextView, locationChevron), "locationSection");
 
-        ViewProto cardImage = createTestImage("ic_folder_blue_24dp", "cardImage");
+        ViewProto cardImage = createTestImage("ic_remove_outline_white_24dp", "cardImage");
         ViewProto cardTextView = createTextView("Visa •••• 1111", "cardText");
         ViewProto cardChevron = createTestImage("ic_expand_more_black_24dp", "cardChevron");
         ViewProto cardSection = createSectionView(

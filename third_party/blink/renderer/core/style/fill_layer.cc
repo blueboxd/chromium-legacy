@@ -395,8 +395,12 @@ bool FillLayer::ImageIsOpaque(const Document& document,
                               const ComputedStyle& style) const {
   // Returns whether we have an image that will cover the content below it when
   // composite_ == CompositeSourceOver && blend_mode_ == BlendMode::kNormal.
+  // Note that it doesn't matter what orientation we use because we are only
+  // checking for IsEmpty.
   return image_->KnownToBeOpaque(document, style) &&
-         !image_->ImageSize(document, style.EffectiveZoom(), LayoutSize())
+         !image_
+              ->ImageSize(document, style.EffectiveZoom(), LayoutSize(),
+                          kRespectImageOrientation)
               .IsEmpty();
 }
 

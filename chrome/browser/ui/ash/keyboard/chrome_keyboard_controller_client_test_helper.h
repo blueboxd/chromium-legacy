@@ -13,7 +13,6 @@
 class Profile;
 
 // Helper for tests depending on ChromeKeyboardControllerClient.
-// Tests must include a content::TestServiceManagerContext instance.
 class ChromeKeyboardControllerClientTestHelper {
  public:
   // Use this for tests using ChromeAshTestBase. TODO(stevenjb): Update tests to

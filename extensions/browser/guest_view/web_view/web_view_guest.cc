@@ -371,7 +371,7 @@ void WebViewGuest::CreateWebContents(const base::DictionaryValue& create_params,
     // Create the SiteInstance in a new BrowsingInstance, which will ensure
     // that webview tags are also not allowed to send messages across
     // different partitions.
-    guest_site_instance = content::SiteInstance::CreateForURL(
+    guest_site_instance = content::SiteInstance::CreateForGuest(
         owner_render_process_host->GetBrowserContext(), guest_site);
   }
   WebContents::CreateParams params(

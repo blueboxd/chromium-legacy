@@ -4,6 +4,8 @@
 <translation id="1075622780330595106">しばらく使用していないタブが <ph name="NUMBER_OF_TABS" /> 個あります。これらのタブを閉じますか？</translation>
 <translation id="1181037720776840403">削除</translation>
 <translation id="125153950246128346">タップすると他のタブが表示されます</translation>
+<translation id="1657719826150349398">タブを下に移動</translation>
+<translation id="1778290789805128794">タブを一番上に移動</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> 個のタブ}other{<ph name="TABS_COUNT_MANY" /> 個のタブ}}</translation>
 <translation id="2569352796411618312">提案: しばらく使用していないタブが <ph name="NUMBER_OF_TABS" /> 個あります。これらのタブを閉じますか？</translation>
 <translation id="257674075312929031">グループ</translation>
@@ -20,11 +22,13 @@
 <translation id="58326064309361797">タブをグループ化するにはドラッグします</translation>
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="6193448654517602979">タブを選択</translation>
+<translation id="6562820390860419811">タブを左に移動</translation>
 <translation id="6615455863669487791">表示</translation>
 <translation id="6840760312327750441">タブをグループ化するには、タブを押しながら別のタブにドラッグします。</translation>
 <translation id="7151209024774799310">グループからタブを削除</translation>
 <translation id="7559245342362162951">グループのタブを全画面グリッドで表示</translation>
 <translation id="7792771145871471484">提案を確認します。</translation>
+<translation id="7885132941432959125">タブを右に移動</translation>
 <translation id="7966321538264951561">提案を閉じます。</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{選択した <ph name="TABS_COUNT_ONE" /> 個のタブを閉じます}other{選択した <ph name="TABS_COUNT_MANY" /> 個のタブを閉じます}}</translation>
 <translation id="9150694013019234766">画面下部にあるタブグループのタブを切り替えます</translation>

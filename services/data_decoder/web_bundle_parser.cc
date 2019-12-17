@@ -311,30 +311,22 @@ class WebBundleParser::MetadataParser
   ~MetadataParser() override { data_source_->RemoveObserver(this); }
 
   void Start() {
-    data_source_->GetSize(base::BindOnce(&MetadataParser::DidGetSize,
-                                         weak_factory_.GetWeakPtr()));
+    // First, we will parse `magic`, `version`, and the CBOR header of
+    // `primary-url`.
+    // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#top-level
+    const uint64_t length = sizeof(kBundleMagicBytes) +
+                            sizeof(kVersionB1MagicBytes) +
+                            kMaxCBORItemHeaderSize;
+    data_source_->Read(0, length,
+                       base::BindOnce(&MetadataParser::ParseMagicBytes,
+                                      weak_factory_.GetWeakPtr()));
   }
 
  private:
-  void DidGetSize(uint64_t size) {
-    size_ = size;
-
-    // In the next step, we will parse `magic`, `version`, and the CBOR
-    // header of `primary-url`.
-    // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#top-level
-    const uint64_t length = std::min(size, sizeof(kBundleMagicBytes) +
-                                               sizeof(kVersionB1MagicBytes) +
-                                               kMaxCBORItemHeaderSize);
-    data_source_->Read(0, length,
-                       base::BindOnce(&MetadataParser::ParseMagicBytes,
-                                      weak_factory_.GetWeakPtr(), length));
-  }
-
   // Step 1-4 of
   // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#load-metadata
-  void ParseMagicBytes(uint64_t expected_data_length,
-                       const base::Optional<std::vector<uint8_t>>& data) {
-    if (!data || data->size() != expected_data_length) {
+  void ParseMagicBytes(const base::Optional<std::vector<uint8_t>>& data) {
+    if (!data) {
       RunErrorCallbackAndDestroy("Error reading bundle magic bytes.");
       return;
     }
@@ -381,22 +373,20 @@ class WebBundleParser::MetadataParser
 
     // In the next step, we will parse the content of `primary-url`,
     // `section-lengths`, and the CBOR header of `sections`.
-    const uint64_t length = std::min(
-        size_ - input.CurrentOffset(),
-        *url_length + kMaxSectionLengthsCBORSize + kMaxCBORItemHeaderSize * 2);
+    const uint64_t length =
+        *url_length + kMaxSectionLengthsCBORSize + kMaxCBORItemHeaderSize * 2;
     data_source_->Read(input.CurrentOffset(), length,
                        base::BindOnce(&MetadataParser::ParseBundleHeader,
-                                      weak_factory_.GetWeakPtr(), length,
-                                      *url_length, input.CurrentOffset()));
+                                      weak_factory_.GetWeakPtr(), *url_length,
+                                      input.CurrentOffset()));
   }
 
   // Step 5-21 of
   // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#load-metadata
-  void ParseBundleHeader(uint64_t expected_data_length,
-                         uint64_t url_length,
+  void ParseBundleHeader(uint64_t url_length,
                          uint64_t offset_in_stream,
                          const base::Optional<std::vector<uint8_t>>& data) {
-    if (!data || data->size() != expected_data_length) {
+    if (!data) {
       RunErrorCallbackAndDestroy("Error reading bundle header.");
       return;
     }
@@ -534,9 +524,9 @@ class WebBundleParser::MetadataParser
 
       // Step 19.4. "Set currentOffset to currentOffset + length."
       if (!base::CheckAdd(current_offset, length)
-               .AssignIfValid(&current_offset) ||
-          current_offset > size_) {
-        RunErrorCallbackAndDestroy("Section doesn't fit in the bundle.");
+               .AssignIfValid(&current_offset)) {
+        RunErrorCallbackAndDestroy(
+            "Integer overflow calculating section offsets.");
         return;
       }
     }
@@ -1098,7 +1088,6 @@ class WebBundleParser::MetadataParser
 
   scoped_refptr<SharedBundleDataSource> data_source_;
   ParseMetadataCallback callback_;
-  uint64_t size_;
   bool version_mismatch_ = false;
   GURL fallback_url_;
   SectionOffsets section_offsets_;
@@ -1323,11 +1312,6 @@ WebBundleParser::SharedBundleDataSource::~SharedBundleDataSource() = default;
 void WebBundleParser::SharedBundleDataSource::OnDisconnect() {
   for (auto* observer : observers_)
     observer->OnDisconnect();
-}
-
-void WebBundleParser::SharedBundleDataSource::GetSize(
-    GetSizeCallback callback) {
-  data_source_->GetSize(std::move(callback));
 }
 
 void WebBundleParser::SharedBundleDataSource::Read(uint64_t offset,

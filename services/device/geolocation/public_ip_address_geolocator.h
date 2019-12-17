@@ -23,7 +23,8 @@ class PublicIpAddressLocationNotifier;
 // geolocation.
 class PublicIpAddressGeolocator : public mojom::Geolocation {
  public:
-  using BadMessageCallback = base::Callback<void(const std::string& message)>;
+  using BadMessageCallback =
+      base::RepeatingCallback<void(const std::string& message)>;
 
   // Creates a PublicIpAddressGeolocatorsubscribed to the specified |notifier|.
   // This object will unbind and destroy itself if |notifier| is destroyed.

@@ -68,8 +68,10 @@ void AssistantWebViewDelegateImpl::UpdateBackButtonVisibility(
   caption_button_model->set_back_button_visibility(visibility);
 
   auto* non_client_view = widget->non_client_view();
+
   DCHECK_EQ(NonClientFrameViewAsh::kViewClassName,
-            non_client_view->GetClassName());
+            non_client_view->frame_view()->GetClassName());
+
   auto* frame_view_ash =
       static_cast<NonClientFrameViewAsh*>(non_client_view->frame_view());
   frame_view_ash->SetCaptionButtonModel(std::move(caption_button_model));

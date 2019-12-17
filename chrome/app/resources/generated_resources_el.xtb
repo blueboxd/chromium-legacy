@@ -133,7 +133,6 @@
 <translation id="1177863135347784049">Προσαρμοσμένη</translation>
 <translation id="1178581264944972037">Παύση</translation>
 <translation id="117916940443676133">Το κλειδί ασφαλείας σας δεν προστατεύεται από PIN. Για να διαχειριστείτε τα δεδομένα σύνδεσης, δημιουργήστε ένα PIN.</translation>
-<translation id="118069123878619799">- τα φυσικά χαρακτηριστικά σας, όπως το ύψος σας</translation>
 <translation id="1181037720776840403">Κατάργηση</translation>
 <translation id="1183237619868651138">Δεν είναι δυνατή η εγκατάσταση του <ph name="EXTERNAL_CRX_FILE" /> σε τοπική κρυφή μνήμη.</translation>
 <translation id="1185924365081634987">Μπορείτε επίσης να δοκιμάσετε να <ph name="GUEST_SIGNIN_LINK_START" />περιηγηθείτε ως επισκέπτης<ph name="GUEST_SIGNIN_LINK_END" /> για να διορθώσετε αυτό το σφάλμα δικτύου.</translation>
@@ -1908,7 +1907,6 @@
 <translation id="3678156199662914018">Επέκταση: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3681311097828166361">Σας ευχαριστούμε για τα σχόλιά σας. Βρίσκεστε εκτός σύνδεσης αυτήν τη στιγμή. Η αναφορά σας θα σταλεί αργότερα.</translation>
 <translation id="3682824389861648626">Ελάχιστο όριο κίνησης</translation>
-<translation id="3683023058278427253">Εντοπίσαμε πολλούς τύπους αδειών για τον τομέα σας. Επιλέξτε έναν, για να συνεχίσετε.</translation>
 <translation id="3683524264665795342">Αίτημα κοινής χρήσης οθόνης από την εφαρμογή <ph name="APP_NAME" /></translation>
 <translation id="368789413795732264">Παρουσιάστηκε σφάλμα κατά την απόπειρα εγγραφής στο αρχείο <ph name="ERROR_TEXT" />.</translation>
 <translation id="3688507211863392146">Εγγραφή σε αρχεία και φακέλους που ανοίγετε στην εφαρμογή</translation>
@@ -2173,7 +2171,6 @@
 <translation id="4013132157686828973">Το "<ph name="CLIENT_NAME" />" εντοπίζει τα σφάλματα σε αυτό το πρόγραμμα περιήγησης</translation>
 <translation id="4014432863917027322">Να γίνει επιδιόρθωση του "<ph name="EXTENSION_NAME" />";</translation>
 <translation id="4015163439792426608">Έχετε επεκτάσεις; <ph name="BEGIN_LINK" />Διαχειριστείτε τις επεκτάσεις σας<ph name="END_LINK" /> σε ένα βολικό μέρος.</translation>
-<translation id="4020106588733303597">Δυστυχώς, το σύστημα δεν κατάφερε να φορτώσει τις διαθέσιμες άδειες.</translation>
 <translation id="4020327272915390518">Μενού επιλογών</translation>
 <translation id="4021279097213088397">–</translation>
 <translation id="4022426551683927403">&amp;Προσθήκη στο λεξικό</translation>
@@ -2680,7 +2677,6 @@
 <translation id="4823484602432206655">Ανάγνωση και αλλαγή των ρυθμίσεων χρήστη και συσκευής</translation>
 <translation id="4824958205181053313">Ακύρωση συγχρονισμού;</translation>
 <translation id="4827675678516992122">Αδυναμία σύνδεσης</translation>
-<translation id="4828937774870308359">Αυστραλός</translation>
 <translation id="4829768588131278040">Ρύθμιση PIN</translation>
 <translation id="4830502475412647084">Εγκατάσταση ενημέρωσης λειτουργικού συστήματος</translation>
 <translation id="4830573902900904548">Η συσκευή σας <ph name="DEVICE_TYPE" /> δεν μπορεί να συνδεθεί στο διαδίκτυο χρησιμοποιώντας το δίκτυο <ph name="NETWORK_NAME" />. Επιλέξτε κάποιο άλλο δίκτυο. <ph name="LEARN_MORE_LINK_START" />Μάθετε περισσότερα<ph name="LEARN_MORE_LINK_END" /></translation>
@@ -2781,7 +2777,6 @@
 <translation id="4953689047182316270">Απάντηση σε συμβάντα προσβασιμότητας</translation>
 <translation id="4953808748584563296">Προεπιλεγμένο πορτοκαλί avatar</translation>
 <translation id="4955710816792587366">Επιλογή PIN</translation>
-<translation id="4955814292505481804">Ετήσια</translation>
 <translation id="4959262764292427323">Οι κωδικοί πρόσβασης αποθηκεύονται στον Λογαριασμό σας Google, ώστε να μπορείτε να τους χρησιμοποιήσετε σε οποιαδήποτε συσκευή</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
 <translation id="496185450405387901">Αυτή η εφαρμογή έχει εγκατασταθεί από τον διαχειριστή σας.</translation>
@@ -3264,7 +3259,6 @@
 <translation id="5659593005791499971">Διεύθυνση ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="5659833766619490117">Δεν ήταν δυνατή η μετάφραση αυτής της σελίδας</translation>
 <translation id="5660204307954428567">Σύζευξη με τη συσκευή <ph name="DEVICE_NAME" /></translation>
-<translation id="5662477687021125631">Οριστική</translation>
 <translation id="5667546120811588575">Ρύθμιση του Google Play…</translation>
 <translation id="5669267381087807207">Ενεργοποίηση</translation>
 <translation id="5669691691057771421">Εισαγωγή νέου κωδικού PIN</translation>
@@ -3367,7 +3361,6 @@
 <translation id="5815645614496570556">Διεύθυνση X.400</translation>
 <translation id="5816434091619127343">Οι ζητούμενες αλλαγές στον εκτυπωτή θα τον καθιστούσαν ακατάλληλο για χρήση.</translation>
 <translation id="5817918615728894473">Σύζευξη</translation>
-<translation id="5819762621475381970">- τη διάταξη του δωματίου σας</translation>
 <translation id="5821565227679781414">Δημιουργία συντόμευσης</translation>
 <translation id="5825412242012995131">Ενεργοποίηση (Συνιστάται)</translation>
 <translation id="5826395379250998812">Συνδέστε τη συσκευή <ph name="DEVICE_TYPE" /> με το τηλέφωνό σας. <ph name="LINK_BEGIN" />Μάθετε περισσότερα<ph name="LINK_END" /></translation>
@@ -4005,7 +3998,6 @@
 <translation id="674632704103926902">Ενεργοποίηση μεταφοράς με πάτημα</translation>
 <translation id="6748217015615267851">Λειτουργία απόδοσης: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Μπορείτε να συνεχίσετε, αλλά μόνο τα συγχρονισμένα δεδομένα και οι ρυθμίσεις σας θα αποκατασταθούν. Όλα τα τοπικά δεδομένα θα χαθούν.</translation>
-<translation id="6748775883310276718">Kiosk μεμονωμένης εφαρμογής</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Ανώνυμη περιήγηση)</translation>
 <translation id="6757101664402245801">Το URL αντιγράφηκε</translation>
 <translation id="6758056191028427665">Πείτε μας πώς τα πηγαίνουμε</translation>
@@ -4983,7 +4975,6 @@
 <translation id="8108526232944491552">{COUNT,plural, =0{Δεν υπάρχουν cookie τρίτου μέρους}=1{Αποκλείστηκε 1 cookie τρίτου μέρους}other{Αποκλείστηκαν # cookie τρίτου μέρους}}</translation>
 <translation id="810875025413331850">Δεν βρέθηκαν κοντινές συσκευές.</translation>
 <translation id="8111155949205007504">Κοινοποίηση αυτού του κωδικού πρόσβασης στο iPhone σας</translation>
-<translation id="8113043281354018522">Επιλογή τύπου άδειας</translation>
 <translation id="8114875720387900039">Οριζόντιος διαχωρισμός</translation>
 <translation id="8116972784401310538">&amp;Διαχείριση σελιδοδεικτών</translation>
 <translation id="8117620576188476503">Διαχειριστείτε συνδέσεις, ενημερώσεις και ρυθμίσεις από την περιοχή κατάστασης. Για να μεταβείτε εδώ από το πληκτρολόγιο, πατήστε Alt + Shift + S.</translation>
@@ -5700,7 +5691,6 @@
 <translation id="9121814364785106365">Άνοιγμα ως καρφιτσωμένης καρτέλας</translation>
 <translation id="9122176249172999202">Η εφαρμογή <ph name="IDS_SHORT_PRODUCT_NAME" /> τέθηκε σε παύση</translation>
 <translation id="9124003689441359348">Οι αποθηκευμένοι κωδικοί πρόσβασής σας θα εμφανίζονται εδώ</translation>
-<translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (απομένουν <ph name="LICENSE_COUNT" />)</translation>
 <translation id="9128317794749765148">Δεν ήταν δυνατή η ολοκλήρωση της ρύθμισης</translation>
 <translation id="9128870381267983090">Σύνδεση σε δίκτυο</translation>
 <translation id="9130015405878219958">Έγινε ενεργοποίηση μη έγκυρης λειτουργίας.</translation>

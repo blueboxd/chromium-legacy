@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 686 tests; 653 PASS, 33 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 686 tests; 656 PASS, 30 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testInterpolation function
 PASS align-content uses discrete animation when animating between "flex-start" and "flex-end" with linear easing
@@ -370,9 +370,9 @@ PASS hyphens uses discrete animation when animating between "manual" and "none" 
 PASS hyphens uses discrete animation when animating between "manual" and "none" with effect easing
 PASS hyphens uses discrete animation when animating between "manual" and "none" with keyframe easing
 PASS image-orientation (type: discrete) has testInterpolation function
-FAIL image-orientation uses discrete animation when animating between "none" and "from-image" with linear easing assert_equals: The value should be none at 0ms expected "none" but got "0deg"
-FAIL image-orientation uses discrete animation when animating between "none" and "from-image" with effect easing assert_equals: The value should be none at 0ms expected "none" but got "0deg"
-FAIL image-orientation uses discrete animation when animating between "none" and "from-image" with keyframe easing assert_equals: The value should be none at 0ms expected "none" but got "0deg"
+PASS image-orientation uses discrete animation when animating between "none" and "from-image" with linear easing
+PASS image-orientation uses discrete animation when animating between "none" and "from-image" with effect easing
+PASS image-orientation uses discrete animation when animating between "none" and "from-image" with keyframe easing
 PASS isolation (type: discrete) has testInterpolation function
 PASS isolation uses discrete animation when animating between "auto" and "isolate" with linear easing
 PASS isolation uses discrete animation when animating between "auto" and "isolate" with effect easing

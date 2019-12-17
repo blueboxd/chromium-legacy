@@ -24,7 +24,6 @@
 <translation id="1171770572613082465">Sien gewilde webwerwe deur op die "Topwerwe"-knoppie te tik</translation>
 <translation id="1173894706177603556">Hernoem</translation>
 <translation id="1178581264944972037">Laat wag</translation>
-<translation id="118069123878619799">- jou fisieke kenmerke, soos lengte</translation>
 <translation id="1181037720776840403">Verwyder</translation>
 <translation id="1188239144602654184">Gaan by AR in</translation>
 <translation id="1197267115302279827">Skuif boekmerke</translation>
@@ -62,7 +61,6 @@
 <translation id="1384959399684842514">Aflaai is onderbreek</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> dae gelede aktief</translation>
 <translation id="1397811292916898096">Soek met <ph name="PRODUCT_NAME" /></translation>
-<translation id="1404122904123200417">Ingebed in <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“Moenie naspoor nie”</translation>
 <translation id="1407135791313364759">Maak alles oop</translation>
 <translation id="1409426117486808224">Vereenvoudigde aansig vir oop oortjies</translation>
@@ -215,6 +213,7 @@
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> items is uitgevee</translation>
 <translation id="2536728043171574184">Bekyk tans 'n vanlyn kopie van hierdie bladsy</translation>
 <translation id="2537178555904266562">Kon nie wagwoorde sinkroniseer nie</translation>
+<translation id="2537296579376733324">Alle webkoekies, net op hierdie werf</translation>
 <translation id="2546283357679194313">Webkoekies en werfdata</translation>
 <translation id="2567385386134582609">PRENT</translation>
 <translation id="257088987046510401">Temas</translation>
@@ -472,6 +471,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="4565377596337484307">Versteek wagwoord</translation>
 <translation id="4570913071927164677">Besonderhede</translation>
 <translation id="4572422548854449519">Meld by 'n bestuurde rekening aan</translation>
+<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minuut gelede}other{# minute gelede}}</translation>
 <translation id="4587589328781138893">Werwe</translation>
 <translation id="4594952190837476234">Hierdie vanlyn bladsy is van <ph name="CREATION_TIME" /> af en kan van die aanlyn weergawe verskil.</translation>
@@ -652,7 +652,6 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="5809361687334836369">{HOURS,plural, =1{# uur gelede}other{# uur gelede}}</translation>
 <translation id="5810288467834065221">Kopiereg <ph name="YEAR" /> Google LLC. Alle regte voorbehou.</translation>
 <translation id="5817918615728894473">Bind saam</translation>
-<translation id="5819762621475381970">- die uitleg van jou vertrek</translation>
 <translation id="583281660410589416">Onbekend</translation>
 <translation id="5833984609253377421">Deel skakel</translation>
 <translation id="5836192821815272682">Laai tans Chrome-opdatering af …</translation>

@@ -110,7 +110,7 @@ ports::ScopedEvent DeserializeEventMessage(
 class ThreadDestructionObserver
     : public base::MessageLoopCurrent::DestructionObserver {
  public:
-  static void Create(scoped_refptr<base::TaskRunner> task_runner,
+  static void Create(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                      base::OnceClosure callback) {
     if (task_runner->RunsTasksInCurrentSequence()) {
       // Owns itself.
@@ -154,7 +154,7 @@ NodeController::NodeController(Core* core)
 }
 
 void NodeController::SetIOTaskRunner(
-    scoped_refptr<base::TaskRunner> task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   io_task_runner_ = task_runner;
   ThreadDestructionObserver::Create(
       io_task_runner_,

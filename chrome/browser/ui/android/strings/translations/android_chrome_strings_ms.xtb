@@ -24,7 +24,6 @@
 <translation id="1171770572613082465">Lihat tapak web popular dengan mengetik butang "Tapak popular"</translation>
 <translation id="1173894706177603556">Namakan semula</translation>
 <translation id="1178581264944972037">Jeda</translation>
-<translation id="118069123878619799">- ciri fizikal anda, seperti ketinggian</translation>
 <translation id="1181037720776840403">Alih keluar</translation>
 <translation id="1188239144602654184">Masuk ke AR</translation>
 <translation id="1197267115302279827">Alihkan penanda halaman</translation>
@@ -62,7 +61,6 @@
 <translation id="1384959399684842514">Muat turun dijeda</translation>
 <translation id="1386674309198842382">Aktif <ph name="LAST_UPDATED" /> hari lalu</translation>
 <translation id="1397811292916898096">Cari dengan <ph name="PRODUCT_NAME" /></translation>
-<translation id="1404122904123200417">Dibenamkan dalam <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“Jangan Kesan”</translation>
 <translation id="1407135791313364759">Buka semua</translation>
 <translation id="1409426117486808224">Paparan ringkas bagi tab terbuka</translation>
@@ -215,6 +213,7 @@
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> item dipadamkan</translation>
 <translation id="2536728043171574184">Melihat salinan luar talian halaman ini</translation>
 <translation id="2537178555904266562">Ralat semasa menyegerakkan kata laluan</translation>
+<translation id="2537296579376733324">Semua kuki, pada tapak ini sahaja</translation>
 <translation id="2546283357679194313">Kuki dan data tapak</translation>
 <translation id="2567385386134582609">IMEJ</translation>
 <translation id="257088987046510401">Tema</translation>
@@ -472,6 +471,7 @@ Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain s
 <translation id="4565377596337484307">Sembunyikan kata laluan</translation>
 <translation id="4570913071927164677">Butiran</translation>
 <translation id="4572422548854449519">Log masuk ke akaun terurus</translation>
+<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minit yang lalu}other{# minit yang lalu}}</translation>
 <translation id="4587589328781138893">Tapak</translation>
 <translation id="4594952190837476234">Halaman luar talian ini dari <ph name="CREATION_TIME" /> dan mungkin berbeza daripada versi dalam talian.</translation>
@@ -652,7 +652,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5809361687334836369">{HOURS,plural, =1{# jam yang lalu}other{# jam yang lalu}}</translation>
 <translation id="5810288467834065221">Hak Cipta <ph name="YEAR" /> Google LLC. Hak cipta terpelihara.</translation>
 <translation id="5817918615728894473">Gandingkan</translation>
-<translation id="5819762621475381970">- reka letak bilik anda</translation>
 <translation id="583281660410589416">Tidak diketahui</translation>
 <translation id="5833984609253377421">Kongsi pautan</translation>
 <translation id="5836192821815272682">Memuat Turun Kemas Kini Chrome…</translation>
@@ -753,6 +752,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6545017243486555795">Hapuskan Semua Data</translation>
 <translation id="6545864417968258051">Pengimbasan Bluetooth</translation>
 <translation id="6560414384669816528">Cari dengan Sogou</translation>
+<translation id="656065428026159829">Lihat lagi</translation>
 <translation id="6566259936974865419">Chrome telah menjimatkan data anda sebanyak <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">Sentiasa benarkan</translation>
 <translation id="6573431926118603307">Tab yang telah anda buka dalam Chrome pada peranti anda yang lain akan dipaparkan di sini.</translation>
@@ -849,6 +849,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7293171162284876153">Untuk memulakan penyegerakan, hidupkan "Segerakkan data Chrome anda".</translation>
 <translation id="729975465115245577">Peranti anda tiada apl untuk menyimpan fail kata laluan.</translation>
 <translation id="7302081693174882195">Butiran: Diisih mengikut jumlah penjimatan data</translation>
+<translation id="7302486331832100261">Anda biasanya menyekat pemberitahuan. Untuk membenarkan, ketik Butiran.</translation>
 <translation id="7328017930301109123">Dalam mod Ringkas, Chrome memuatkan halaman lebih pantas dan mengurangkan penggunaan data sehingga 60 peratus.</translation>
 <translation id="7333031090786104871">Masih menambahkan tapak yang terdahulu</translation>
 <translation id="7352939065658542140">VIDEO</translation>

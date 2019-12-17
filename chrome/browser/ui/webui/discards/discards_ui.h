@@ -23,15 +23,22 @@ class DiscardsUI : public ui::MojoWebUIController {
   explicit DiscardsUI(content::WebUI* web_ui);
   ~DiscardsUI() override;
 
- private:
-  void BindDiscardsDetailsProvider(
+  // Instantiates the implementor of the mojom::DetailsProvider mojo
+  // interface passing the pending receiver that will be internally bound.
+  void BindInterface(
       mojo::PendingReceiver<discards::mojom::DetailsProvider> receiver);
-  void BindDiscardsGraphDumpProvider(
+
+  // Instantiates the implementor of the mojom::GraphDump mojo
+  // interface passing the pending receiver that will be internally bound.
+  void BindInterface(
       mojo::PendingReceiver<discards::mojom::GraphDump> receiver);
 
+ private:
   std::unique_ptr<discards::mojom::DetailsProvider> ui_handler_;
   resource_coordinator::LocalSiteCharacteristicsDataStoreInspector*
       data_store_inspector_;
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(DiscardsUI);
 };

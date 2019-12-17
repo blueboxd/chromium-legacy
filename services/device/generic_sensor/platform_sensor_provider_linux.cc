@@ -58,7 +58,7 @@ PlatformSensorProviderLinux::~PlatformSensorProviderLinux() = default;
 void PlatformSensorProviderLinux::CreateSensorInternal(
     mojom::SensorType type,
     SensorReadingSharedBuffer* reading_buffer,
-    const CreateSensorCallback& callback) {
+    CreateSensorCallback callback) {
   if (!sensor_nodes_enumerated_) {
     if (!sensor_nodes_enumeration_started_) {
       // Unretained() is safe because the deletion of |sensor_device_manager_|
@@ -73,30 +73,30 @@ void PlatformSensorProviderLinux::CreateSensorInternal(
   }
 
   if (IsFusionSensorType(type)) {
-    CreateFusionSensor(type, reading_buffer, callback);
+    CreateFusionSensor(type, reading_buffer, std::move(callback));
     return;
   }
 
   SensorInfoLinux* sensor_device = GetSensorDevice(type);
   if (!sensor_device) {
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
 
-  SensorDeviceFound(type, reading_buffer, callback, sensor_device);
+  SensorDeviceFound(type, reading_buffer, std::move(callback), sensor_device);
 }
 
 void PlatformSensorProviderLinux::SensorDeviceFound(
     mojom::SensorType type,
     SensorReadingSharedBuffer* reading_buffer,
-    const PlatformSensorProviderBase::CreateSensorCallback& callback,
+    PlatformSensorProviderBase::CreateSensorCallback callback,
     const SensorInfoLinux* sensor_device) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(sensor_device);
 
   scoped_refptr<PlatformSensorLinux> sensor =
       new PlatformSensorLinux(type, reading_buffer, this, sensor_device);
-  callback.Run(sensor);
+  std::move(callback).Run(sensor);
 }
 
 void PlatformSensorProviderLinux::FreeResources() {
@@ -136,8 +136,8 @@ void PlatformSensorProviderLinux::ProcessStoredRequests() {
           GetSensorReadingSharedBufferForType(type);
       CreateFusionSensor(
           type, reading_buffer,
-          base::Bind(&PlatformSensorProviderLinux::NotifySensorCreated,
-                     base::Unretained(this), type));
+          base::BindOnce(&PlatformSensorProviderLinux::NotifySensorCreated,
+                         base::Unretained(this), type));
       continue;
     }
 
@@ -196,7 +196,7 @@ void PlatformSensorProviderLinux::OnDeviceRemoved(
 void PlatformSensorProviderLinux::CreateFusionSensor(
     mojom::SensorType type,
     SensorReadingSharedBuffer* reading_buffer,
-    const CreateSensorCallback& callback) {
+    CreateSensorCallback callback) {
   DCHECK(IsFusionSensorType(type));
   std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm;
   switch (type) {
@@ -232,8 +232,8 @@ void PlatformSensorProviderLinux::CreateFusionSensor(
   }
 
   DCHECK(fusion_algorithm);
-  PlatformSensorFusion::Create(reading_buffer, this,
-                               std::move(fusion_algorithm), callback);
+  PlatformSensorFusion::Create(
+      reading_buffer, this, std::move(fusion_algorithm), std::move(callback));
 }
 
 }  // namespace device

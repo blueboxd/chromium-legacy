@@ -24,7 +24,6 @@
 
 namespace base {
 class SequencedTaskRunner;
-class TaskRunner;
 }
 
 namespace dbus {
@@ -38,7 +37,7 @@ class ObjectProxy;
 //
 // For asynchronous operations such as an asynchronous method call, the
 // bus object will use a task runner to monitor the underlying file
-// descriptor used for D-Bus communication. By default, the bus will use
+// descriptor used for D-Bus communication. By default, the bus will usegi
 // the current thread's task runner. If |dbus_task_runner| option is
 // specified, the bus will use that task runner instead.
 //
@@ -547,10 +546,10 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   virtual void UnregisterObjectPath(const ObjectPath& object_path);
 
   // Returns the task runner of the D-Bus thread.
-  virtual base::TaskRunner* GetDBusTaskRunner();
+  virtual base::SequencedTaskRunner* GetDBusTaskRunner();
 
   // Returns the task runner of the thread that created the bus.
-  virtual base::TaskRunner* GetOriginTaskRunner();
+  virtual base::SequencedTaskRunner* GetOriginTaskRunner();
 
   // Returns true if the bus has the D-Bus thread.
   virtual bool HasDBusThread();

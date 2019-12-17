@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/args.gni")
 import("//build/config/linux/pkg_config.gni")
 
 declare_args() {
@@ -9,7 +10,7 @@ declare_args() {
   # library shipped with the system. In release builds of Chrome OS we
   # use the system version, but when building on dev workstations we
   # bundle it because Ubuntu doesn't ship a usable version.
-  use_system_libsync = false
+  use_system_libsync = is_chromeos_device
 }
 
 if (!use_system_libsync) {

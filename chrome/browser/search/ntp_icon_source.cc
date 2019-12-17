@@ -36,6 +36,7 @@
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_service.h"
 #include "content/public/browser/storage_partition.h"
+#include "extensions/common/image_util.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
 #include "skia/ext/image_operations.h"
@@ -63,6 +64,9 @@ const char kIconSourceUmaClientName[] = "NtpIconSource";
 
 const char kShowFallbackMonogramParam[] = "show_fallback_monogram";
 
+// The requested color of the icon in 8-digit Hex format (e.g., #757575FF).
+const char kColorParam[] = "color";
+
 // The requested size of the icon.
 const char kSizeParam[] = "size";
 
@@ -87,6 +91,9 @@ const char kServerFaviconURL[] =
 struct ParsedNtpIconPath {
   // The URL for which the icon is being requested.
   GURL url;
+
+  // The requested color of the icon in 8-digit Hex format (e.g., #757575FF).
+  std::string color_rgba = "";
 
   // The size of the requested icon in dip.
   int size_in_dip = 0;
@@ -125,6 +132,8 @@ const ParsedNtpIconPath ParseNtpIconPath(const std::string& path) {
     std::string key = it.GetKey();
     if (key == kShowFallbackMonogramParam) {
       parsed.show_fallback_monogram = it.GetUnescapedValue() != "false";
+    } else if (key == kColorParam) {
+      parsed.color_rgba = it.GetUnescapedValue();
     } else if (key == kSizeParam) {
       std::vector<std::string> pieces =
           base::SplitString(it.GetUnescapedValue(), "@", base::TRIM_WHITESPACE,
@@ -165,11 +174,13 @@ struct NtpIconSource::NtpIconRequest {
   NtpIconRequest(content::URLDataSource::GotDataCallback cb,
                  const GURL& path,
                  int icon_size_in_pixels,
+                 std::string color_rgba,
                  float scale,
                  bool show_fallback_monogram)
       : callback(std::move(cb)),
         path(path),
         icon_size_in_pixels(icon_size_in_pixels),
+        color_rgba(color_rgba),
         device_scale_factor(scale),
         show_fallback_monogram(show_fallback_monogram) {}
 
@@ -181,6 +192,7 @@ struct NtpIconSource::NtpIconRequest {
   content::URLDataSource::GotDataCallback callback;
   GURL path;
   int icon_size_in_pixels;
+  std::string color_rgba;
   float device_scale_factor;
   bool show_fallback_monogram;
 };
@@ -213,7 +225,7 @@ void NtpIconSource::StartDataRequest(
     int icon_size_in_pixels =
         std::ceil(parsed.size_in_dip * parsed.device_scale_factor);
     NtpIconRequest request(std::move(callback), parsed.url, icon_size_in_pixels,
-                           parsed.device_scale_factor,
+                           parsed.color_rgba, parsed.device_scale_factor,
                            parsed.show_fallback_monogram);
 
     // Check if the requested URL is part of the prepopulated pages (currently,
@@ -402,7 +414,14 @@ void NtpIconSource::ReturnRenderedIconForRequest(NtpIconRequest request,
       const auto resized = gfx::ImageSkiaOperations::CreateResizedImage(
           scaled_image, skia::ImageOperations::RESIZE_BEST,
           gfx::Size(fallback_size, fallback_size));
-      DrawFavicon(*resized.bitmap(), &canvas, icon_size);
+      auto bitmap = *resized.bitmap();
+
+      SkColor color = 0;
+      if (extensions::image_util::ParseHexColorString(request.color_rgba,
+                                                      &color)) {
+        bitmap = SkBitmapOperations::CreateColorMask(bitmap, color);
+      }
+      DrawFavicon(bitmap, &canvas, icon_size);
     } else {
       DrawFavicon(favicon, &canvas, icon_size);
     }

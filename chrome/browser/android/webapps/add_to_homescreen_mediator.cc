@@ -101,6 +101,11 @@ void AddToHomescreenMediator::AddToHomescreen(
 }
 
 void AddToHomescreenMediator::OnUiDismissed(JNIEnv* env) {
+  if (!params_) {
+    delete this;
+    return;
+  }
+
   event_callback_.Run(AddToHomescreenInstaller::Event::UI_DISMISSED, *params_);
   delete this;
 }

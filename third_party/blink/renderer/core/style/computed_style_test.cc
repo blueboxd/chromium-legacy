@@ -572,22 +572,41 @@ TEST(ComputedStyleTest, ApplyInternalLightDarkColor) {
   CSSValueList* light_value = CSSValueList::CreateSpaceSeparated();
   light_value->Append(*CSSIdentifierValue::Create(CSSValueID::kLight));
 
-  CSSPropertyRef scheme_property("color-scheme", state.GetDocument());
-  CSSPropertyRef color_property("color", state.GetDocument());
+  auto origin = StyleCascade::Origin::kUserAgent;
 
-  To<Longhand>(color_property.GetProperty())
-      .ApplyValue(state, *internal_light_dark);
-  To<Longhand>(scheme_property.GetProperty()).ApplyValue(state, *dark_value);
-  if (!RuntimeEnabledFeatures::CSSCascadeEnabled())
-    resolver.ApplyCascadedColorValue(state);
-  EXPECT_EQ(Color::kWhite, style->VisitedDependentColor(GetCSSPropertyColor()));
+  {
+    ScopedCSSCascadeForTest scoped_cascade_enabled(false);
 
-  To<Longhand>(color_property.GetProperty())
-      .ApplyValue(state, *internal_light_dark);
-  To<Longhand>(scheme_property.GetProperty()).ApplyValue(state, *light_value);
-  if (!RuntimeEnabledFeatures::CSSCascadeEnabled())
+    To<Longhand>(GetCSSPropertyColor()).ApplyValue(state, *internal_light_dark);
+    To<Longhand>(GetCSSPropertyColorScheme()).ApplyValue(state, *dark_value);
     resolver.ApplyCascadedColorValue(state);
-  EXPECT_EQ(Color::kBlack, style->VisitedDependentColor(GetCSSPropertyColor()));
+    EXPECT_EQ(Color::kWhite,
+              style->VisitedDependentColor(GetCSSPropertyColor()));
+
+    To<Longhand>(GetCSSPropertyColor()).ApplyValue(state, *internal_light_dark);
+    To<Longhand>(GetCSSPropertyColorScheme()).ApplyValue(state, *light_value);
+    resolver.ApplyCascadedColorValue(state);
+    EXPECT_EQ(Color::kBlack,
+              style->VisitedDependentColor(GetCSSPropertyColor()));
+  }
+
+  {
+    ScopedCSSCascadeForTest scoped_cascade_enabled(true);
+
+    StyleCascade cascade1(state);
+    cascade1.Add(*CSSPropertyName::From("color"), internal_light_dark, origin);
+    cascade1.Add(*CSSPropertyName::From("color-scheme"), dark_value, origin);
+    cascade1.Apply();
+    EXPECT_EQ(Color::kWhite,
+              style->VisitedDependentColor(GetCSSPropertyColor()));
+
+    StyleCascade cascade2(state);
+    cascade2.Add(*CSSPropertyName::From("color"), internal_light_dark, origin);
+    cascade2.Add(*CSSPropertyName::From("color-scheme"), light_value, origin);
+    cascade2.Apply();
+    EXPECT_EQ(Color::kBlack,
+              style->VisitedDependentColor(GetCSSPropertyColor()));
+  }
 }
 
 }  // namespace blink

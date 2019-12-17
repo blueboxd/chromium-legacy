@@ -24,17 +24,15 @@ class FileDataSource final : public mojom::BundleDataSource {
 
  private:
   // Implements mojom::BundleDataSource.
-  void GetSize(GetSizeCallback callback) override {
-    std::move(callback).Run(file_.GetLength());
-  }
   void Read(uint64_t offset, uint64_t length, ReadCallback callback) override {
     std::vector<uint8_t> buf(length);
-    uint64_t bytes =
-        file_.Read(offset, reinterpret_cast<char*>(buf.data()), length);
-    if (bytes != length)
-      std::move(callback).Run(base::nullopt);
-    else
+    int bytes = file_.Read(offset, reinterpret_cast<char*>(buf.data()), length);
+    if (bytes > 0) {
+      buf.resize(bytes);
       std::move(callback).Run(std::move(buf));
+    } else {
+      std::move(callback).Run(base::nullopt);
+    }
   }
 
   mojo::Receiver<mojom::BundleDataSource> receiver_;

@@ -37,7 +37,7 @@ namespace history {
 namespace {
 
 void RunOrPostGetMostVisitedURLsCallback(
-    base::TaskRunner* task_runner,
+    base::SequencedTaskRunner* task_runner,
     const TopSitesImpl::GetMostVisitedURLsCallback& callback,
     const MostVisitedURLList& urls) {
   if (task_runner->RunsTasksInCurrentSequence())

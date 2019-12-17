@@ -71,7 +71,7 @@ MessageDispatcher::~MessageDispatcher() {
 void MessageDispatcher::Send(mojom::CastMessagePtr message) {
   if (message->message_namespace != mojom::kWebRtcNamespace &&
       message->message_namespace != mojom::kRemotingNamespace) {
-    DVLOG(2) << "Ignore message with unknown namespace = "
+    DVLOG(2) << "Ignoring message with unknown namespace = "
              << message->message_namespace;
     return;  // Ignore message with wrong namespace.
   }

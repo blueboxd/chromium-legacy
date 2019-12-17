@@ -11,6 +11,8 @@
 
 namespace performance_manager {
 
+class PerformanceManagerRegistry;
+
 // A test harness that initializes PerformanceManagerImpl, plus the entire
 // RenderViewHost harness. Allows for creating full WebContents, and their
 // accompanying structures in the graph. The task environment is accessed
@@ -33,6 +35,7 @@ class PerformanceManagerTestHarness
 
  private:
   std::unique_ptr<PerformanceManagerImpl> perf_man_;
+  std::unique_ptr<PerformanceManagerRegistry> registry_;
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceManagerTestHarness);
 };

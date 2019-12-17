@@ -910,7 +910,7 @@ class RenderWidgetHostViewAuraOverscrollTest
   void PressAndSetTouchActionAuto() {
     PressTouchPoint(0, 1);
     SendTouchEvent();
-    widget_host_->input_router()->OnSetTouchAction(cc::kTouchActionAuto);
+    widget_host_->input_router()->OnSetTouchAction(cc::TouchAction::kAuto);
     MockWidgetInputHandler::MessageVector events =
         GetAndResetDispatchedMessages();
     EXPECT_EQ("TouchStart", GetMessageNames(events));
@@ -1465,7 +1465,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   EXPECT_TRUE(press.synchronous_handling_disabled());
   EXPECT_EQ(ui::MotionEvent::Action::DOWN, pointer_state().GetAction());
   EXPECT_EQ(1U, pointer_state().GetPointerCount());
-  widget_host_->input_router()->OnSetTouchAction(cc::kTouchActionAuto);
+  widget_host_->input_router()->OnSetTouchAction(cc::TouchAction::kAuto);
 
   view_->OnTouchEvent(&move);
   base::RunLoop().RunUntilIdle();
@@ -2400,7 +2400,7 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
 
   view_->OnTouchEvent(&press0);
   view_->GetFocusedWidget()->input_router()->OnSetTouchAction(
-      cc::kTouchActionAuto);
+      cc::TouchAction::kAuto);
   base::RunLoop().RunUntilIdle();
 
   MockWidgetInputHandler::MessageVector events =
@@ -4510,7 +4510,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollWithTouchEvents) {
   // The test sends an intermingled sequence of touch and gesture events.
   PressTouchPoint(0, 1);
   SendTouchEvent();
-  widget_host_->input_router()->OnSetTouchAction(cc::kTouchActionAuto);
+  widget_host_->input_router()->OnSetTouchAction(cc::TouchAction::kAuto);
   MockWidgetInputHandler::MessageVector events =
       GetAndResetDispatchedMessages();
   EXPECT_EQ("TouchStart", GetMessageNames(events));
@@ -5651,7 +5651,7 @@ TEST_F(RenderWidgetHostViewAuraTest, GestureTapFromStylusHasPointerType) {
   // Simulate touch press and release to generate a GestureTap.
   generator.EnterPenPointerMode();
   generator.PressTouch();
-  widget_host_->input_router()->OnSetTouchAction(cc::kTouchActionAuto);
+  widget_host_->input_router()->OnSetTouchAction(cc::TouchAction::kAuto);
   generator.ReleaseTouch();
   base::RunLoop().RunUntilIdle();
   MockWidgetInputHandler::MessageVector events =

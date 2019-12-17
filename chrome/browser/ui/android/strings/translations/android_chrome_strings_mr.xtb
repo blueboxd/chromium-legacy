@@ -24,7 +24,6 @@
 <translation id="1171770572613082465">"टॉप साइट" बटणावर टॅप करून लोकप्रिय वेबसाइट पाहा</translation>
 <translation id="1173894706177603556">नाव बदला</translation>
 <translation id="1178581264944972037">विराम द्या</translation>
-<translation id="118069123878619799">- तुमची शारीरिक वैशिष्‍ट्ये जसे की, उंची</translation>
 <translation id="1181037720776840403">काढून टाका</translation>
 <translation id="1188239144602654184">AR सुरू करा</translation>
 <translation id="1197267115302279827">बुकर्माक हलवा</translation>
@@ -62,7 +61,6 @@
 <translation id="1384959399684842514">डाउनलोडला विराम दिला</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> दिवसांपूर्वी ॲक्टिव्ह होते</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> सह शोधा</translation>
-<translation id="1404122904123200417"><ph name="WEBSITE_URL" /> मध्ये एम्बेड केले</translation>
 <translation id="1406000523432664303">“Do Not Track”</translation>
 <translation id="1407135791313364759">सर्व उघडा</translation>
 <translation id="1409426117486808224">उघड्या टॅबसाठी सोपा केलेला व्ह्यू</translation>
@@ -215,6 +213,7 @@
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> आयटम हटवले</translation>
 <translation id="2536728043171574184">या पेजची ऑफलाइन प्रत पाहत आहे</translation>
 <translation id="2537178555904266562">पासवर्ड सिंक करताना एरर</translation>
+<translation id="2537296579376733324">सर्व कुकी, फक्त या साइटवर</translation>
 <translation id="2546283357679194313">कुकीज आणि साइट डेटा</translation>
 <translation id="2567385386134582609">इमेज</translation>
 <translation id="257088987046510401">थीम</translation>
@@ -472,6 +471,7 @@
 <translation id="4565377596337484307">पासवर्ड लपवा</translation>
 <translation id="4570913071927164677">तपशील</translation>
 <translation id="4572422548854449519">व्यवस्थापित केलेल्या खात्यामध्ये साइन इन करा</translation>
+<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# मिनिटापूर्वी}other{# मिनिटांपूर्वी}}</translation>
 <translation id="4587589328781138893">साइट</translation>
 <translation id="4594952190837476234">हे <ph name="CREATION_TIME" /> पासूनचे ऑफलाइन पेज आहे आणि ऑनलाइन आवृत्तीपेक्षा वेगळे असू शकते.</translation>
@@ -652,7 +652,6 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{# तासापूर्वी}other{# तासांपूर्वी}}</translation>
 <translation id="5810288467834065221">कॉपीराइट <ph name="YEAR" /> Google LLC. सर्व हक्क राखीव.</translation>
 <translation id="5817918615728894473">जोडा</translation>
-<translation id="5819762621475381970">- तुमच्या रूमचा लेआउट</translation>
 <translation id="583281660410589416">अज्ञात</translation>
 <translation id="5833984609253377421">लिंक शेअर करा</translation>
 <translation id="5836192821815272682">Chrome अपडेट डाउनलोड करत आहे…</translation>

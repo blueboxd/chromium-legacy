@@ -664,7 +664,7 @@ class CacheStorageManagerTest : public testing::Test {
         std::vector<std::string>() /* cors_exposed_header_names */,
         nullptr /* side_data_blob */,
         nullptr /* side_data_blob_for_cache_put */,
-        nullptr /* content_security_policy */,
+        std::vector<network::mojom::ContentSecurityPolicyPtr>(),
         false /* loaded_with_credentials */);
 
     blink::mojom::BatchOperationPtr operation =

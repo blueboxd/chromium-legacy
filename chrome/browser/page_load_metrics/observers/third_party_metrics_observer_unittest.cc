@@ -534,6 +534,6 @@ TEST_P(ThirdPartyDomStorageAccessMetricsObserverTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     ThirdPartyDomStorageAccessMetricsObserverTest,
     ::testing::Values(false, true));

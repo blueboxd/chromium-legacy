@@ -293,7 +293,6 @@ class _InfoFileContext(object):
   def _Collect(self):
     if self._pool is None:
       return {}
-    self._pool.close()
     ret = {}
     for result in self._results:
       for java_file, package_name, class_names in result:
@@ -302,7 +301,17 @@ class _InfoFileContext(object):
                                                       class_names, source):
           if self._ShouldIncludeInJarInfo(fully_qualified_name):
             ret[fully_qualified_name] = java_file
+    self._pool.terminate()
     return ret
+
+  def __del__(self):
+    # Work around for Python 2.x bug with multiprocessing and daemon threads:
+    # https://bugs.python.org/issue4106
+    if self._pool is not None:
+      logging.info('Joining multiprocessing.Pool')
+      self._pool.terminate()
+      self._pool.join()
+      logging.info('Done.')
 
   def Commit(self, output_path):
     """Writes a .jar.info file.

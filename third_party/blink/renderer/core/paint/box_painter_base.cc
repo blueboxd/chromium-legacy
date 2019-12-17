@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/core/style/style_fetched_image.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/graphics/scoped_interpolation_quality.h"
@@ -274,11 +275,13 @@ BoxPainterBase::FillLayerInfo::FillLayerInfo(
     Color bg_color,
     const FillLayer& layer,
     BackgroundBleedAvoidance bleed_avoidance,
+    RespectImageOrientationEnum respect_image_orientation,
     bool include_left,
     bool include_right,
     bool is_inline)
     : image(layer.GetImage()),
       color(bg_color),
+      respect_image_orientation(respect_image_orientation),
       include_left_edge(include_left),
       include_right_edge(include_right),
       is_bottom_layer(!layer.Next()),
@@ -369,6 +372,18 @@ FloatRect ComputeSubsetForBackground(const FloatRect& phase_and_size,
                    subset.Height() / scale.Height());
 }
 
+FloatRect CorrectSrcRectForImageOrientation(BitmapImage* image,
+                                            FloatRect original_rect) {
+  ImageOrientation orientation = image->CurrentFrameOrientation();
+  if (orientation != kDefaultImageOrientation) {
+    AffineTransform forward_map =
+        orientation.TransformFromDefault(original_rect.Size());
+    AffineTransform inverse_map = forward_map.Inverse();
+    return inverse_map.MapRect(original_rect);
+  }
+  return original_rect;
+}
+
 // The unsnapped_subset_size should be the target painting area implied by the
 //   content, without any snapping applied. It is necessary to correctly
 //   compute the subset of the source image to paint into the destination.
@@ -385,7 +400,8 @@ void DrawTiledBackground(GraphicsContext& context,
                          const FloatSize& tile_size,
                          SkBlendMode op,
                          const FloatSize& repeat_spacing,
-                         bool has_filter_property) {
+                         bool has_filter_property,
+                         RespectImageOrientationEnum respect_orientation) {
   DCHECK(!tile_size.IsEmpty());
 
   // Use the intrinsic size of the image if it has one, otherwise force the
@@ -419,9 +435,19 @@ void DrawTiledBackground(GraphicsContext& context,
     // would either snap only if close to integral, or move snapping
     // calculations up the stack.
     visible_src_rect = FloatRect(RoundedIntRect(visible_src_rect));
+
+    // When respecting image orientation, the drawing code expects the source
+    // rect to be in the unrotated image space, but we have computed it here in
+    // the rotated space in order to position and size the background. Undo the
+    // src rect rotation if necessaary.
+    if (respect_orientation && image->IsBitmapImage()) {
+      visible_src_rect = CorrectSrcRectForImageOrientation(ToBitmapImage(image),
+                                                           visible_src_rect);
+    }
+
     context.DrawImage(image, Image::kSyncDecode, snapped_paint_rect,
                       &visible_src_rect, has_filter_property, op,
-                      kDoNotRespectImageOrientation);
+                      respect_orientation);
     return;
   }
 
@@ -431,7 +457,8 @@ void DrawTiledBackground(GraphicsContext& context,
   // it into the snapped_dest_rect using phase from one_tile_rect and the
   // given repeat spacing. Note the phase is already scaled.
   context.DrawImageTiled(image, snapped_paint_rect, tile_rect, scale,
-                         one_tile_rect.Location(), repeat_spacing, op);
+                         one_tile_rect.Location(), repeat_spacing, op,
+                         respect_orientation);
 }
 
 inline bool PaintFastBottomLayer(Node* node,
@@ -528,7 +555,11 @@ inline bool PaintFastBottomLayer(Node* node,
   // intrinsic size is the requested tile size.
   bool has_intrinsic_size = image->HasIntrinsicSize();
   const FloatSize intrinsic_tile_size =
-      !has_intrinsic_size ? image_tile.Size() : FloatSize(image->Size());
+      !has_intrinsic_size
+          ? image_tile.Size()
+          : FloatSize(info.respect_image_orientation && image->IsBitmapImage()
+                          ? ToBitmapImage(image)->SizeRespectingOrientation()
+                          : image->Size());
   // Subset computation needs the same location as was used with
   // ComputePhaseForBackground above, but needs the unsnapped destination
   // size to correctly calculate sprite subsets in the presence of zoom. But if
@@ -550,6 +581,15 @@ inline bool PaintFastBottomLayer(Node* node,
   if (src_rect.IsEmpty())
     src_rect = unrounded_subset;
 
+  // When respecting image orientation, the drawing code expects the source rect
+  // to be in the unrotated image space, but we have computed it here in the
+  // rotated space in order to position and size the background. Undo the src
+  // rect rotation if necessaary.
+  if (info.respect_image_orientation && image->IsBitmapImage()) {
+    src_rect =
+        CorrectSrcRectForImageOrientation(ToBitmapImage(image), src_rect);
+  }
+
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
                "data",
                inspector_paint_image_event::Data(
@@ -561,7 +601,7 @@ inline bool PaintFastBottomLayer(Node* node,
   context.DrawImageRRect(
       image, Image::kSyncDecode, image_border, src_rect,
       node && node->ComputedStyleRef().HasFilterInducingProperty(),
-      composite_op);
+      composite_op, info.respect_image_orientation);
 
   if (info.image && info.image->IsImageResource()) {
     PaintTimingDetector::NotifyBackgroundImagePaint(
@@ -691,7 +731,8 @@ void PaintFillLayerBackground(GraphicsContext& context,
         FloatRect(geometry.SnappedDestRect()), geometry.Phase(),
         FloatSize(geometry.TileSize()), composite_op,
         FloatSize(geometry.SpaceSize()),
-        node && node->ComputedStyleRef().HasFilterInducingProperty());
+        node && node->ComputedStyleRef().HasFilterInducingProperty(),
+        info.respect_image_orientation);
     if (info.image && info.image->IsImageResource()) {
       PaintTimingDetector::NotifyBackgroundImagePaint(
           node, image, To<StyleFetchedImage>(info.image.Get()),

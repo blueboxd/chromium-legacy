@@ -146,8 +146,9 @@ void DebugRectHistory::SaveTouchEventHandlerRects(LayerTreeImpl* tree_impl) {
 
 void DebugRectHistory::SaveTouchEventHandlerRectsCallback(LayerImpl* layer) {
   const TouchActionRegion& touch_action_region = layer->touch_action_region();
-  for (int touch_action_index = kTouchActionNone;
-       touch_action_index != kTouchActionMax; ++touch_action_index) {
+  for (int touch_action_index = static_cast<int>(TouchAction::kNone);
+       touch_action_index != static_cast<int>(TouchAction::kMax);
+       ++touch_action_index) {
     auto touch_action = static_cast<TouchAction>(touch_action_index);
     Region region = touch_action_region.GetRegionForTouchAction(touch_action);
     for (gfx::Rect rect : region) {
@@ -220,7 +221,7 @@ void DebugRectHistory::SaveMainThreadScrollingReasonRects(
               MAIN_THREAD_SCROLLING_REASON_RECT_TYPE,
               MathUtil::MapEnclosingClippedRect(layer->ScreenSpaceTransform(),
                                                 gfx::Rect(layer->bounds())),
-              kTouchActionNone, reasons));
+              TouchAction::kNone, reasons));
         }
       }
     }

@@ -29,6 +29,7 @@ class BrowserChildProcessWatcher;
 class GraphImpl;
 class PageLiveStateDecoratorHelper;
 class PerformanceManagerImpl;
+class PerformanceManagerRegistry;
 class SharedWorkerWatcher;
 }  // namespace performance_manager
 
@@ -68,6 +69,7 @@ class ChromeBrowserMainExtraPartsPerformanceManager
 
   std::unique_ptr<performance_manager::PerformanceManagerImpl>
       performance_manager_;
+  std::unique_ptr<performance_manager::PerformanceManagerRegistry> registry_;
 
   // This must be alive at least until the end of base::ThreadPool shutdown,
   // because it can be accessed by IndexedDB which runs on a base::ThreadPool

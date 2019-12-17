@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.settings.website;
 
+import static org.chromium.chrome.browser.settings.website.WebsitePreferenceBridge.SITE_WILDCARD;
+
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
@@ -39,27 +41,43 @@ public class ContentSettingException implements Serializable {
     }
 
     private final int mContentSettingType;
-    private final String mPattern;
+    private final String mPrimaryPattern;
+    private final String mSecondaryPattern;
     private final @ContentSettingValues @Nullable Integer mContentSetting;
     private final String mSource;
 
     /**
      * Construct a ContentSettingException.
      * @param type The content setting type this exception covers.
-     * @param pattern The host/domain pattern this exception covers.
+     * @param primaryPattern The primary host/domain pattern this exception covers.
+     * @param secondaryPattern The secondary host/domain pattern this exception covers.
      * @param setting The setting for this exception, e.g. ALLOW or BLOCK.
      * @param source The source for this exception, e.g. "policy".
      */
-    public ContentSettingException(int type, String pattern,
+    public ContentSettingException(int type, String primaryPattern, String secondaryPattern,
             @ContentSettingValues @Nullable Integer setting, String source) {
         mContentSettingType = type;
-        mPattern = pattern;
+        mPrimaryPattern = primaryPattern;
+        mSecondaryPattern = secondaryPattern;
         mContentSetting = setting;
         mSource = source;
     }
 
-    public String getPattern() {
-        return mPattern;
+    /**
+     * Construct a ContentSettingException.
+     * Same as above but defaults secondaryPattern to wildcard.
+     */
+    public ContentSettingException(int type, String primaryPattern,
+            @ContentSettingValues @Nullable Integer setting, String source) {
+        this(type, primaryPattern, SITE_WILDCARD, setting, source);
+    }
+
+    public String getPrimaryPattern() {
+        return mPrimaryPattern;
+    }
+
+    public String getSecondaryPattern() {
+        return mSecondaryPattern;
     }
 
     public String getSource() {
@@ -78,7 +96,8 @@ public class ContentSettingException implements Serializable {
      * Sets the content setting value for this exception.
      */
     public void setContentSetting(@ContentSettingValues @Nullable Integer value) {
-        WebsitePreferenceBridge.setContentSettingForPattern(mContentSettingType, mPattern, value);
+        WebsitePreferenceBridge.setContentSettingForPattern(
+                mContentSettingType, mPrimaryPattern, mSecondaryPattern, value);
     }
 
     public static @ContentSettingsType int getContentSettingsType(@Type int type) {

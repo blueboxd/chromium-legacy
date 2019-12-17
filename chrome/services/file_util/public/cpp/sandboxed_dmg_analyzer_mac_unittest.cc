@@ -59,22 +59,22 @@ class SandboxedDMGAnalyzerTest : public testing::Test {
   // store a copy of an analyzer's results and then run a closure.
   class ResultsGetter {
    public:
-    ResultsGetter(const base::Closure& next_closure,
+    ResultsGetter(base::OnceClosure next_closure,
                   safe_browsing::ArchiveAnalyzerResults* results)
-        : next_closure_(next_closure), results_(results) {}
+        : next_closure_(std::move(next_closure)), results_(results) {}
 
     SandboxedDMGAnalyzer::ResultCallback GetCallback() {
-      return base::Bind(&ResultsGetter::ResultsCallback,
-                        base::Unretained(this));
+      return base::BindOnce(&ResultsGetter::ResultsCallback,
+                            base::Unretained(this));
     }
 
    private:
     void ResultsCallback(const safe_browsing::ArchiveAnalyzerResults& results) {
       *results_ = results;
-      next_closure_.Run();
+      std::move(next_closure_).Run();
     }
 
-    base::Closure next_closure_;
+    base::OnceClosure next_closure_;
     safe_browsing::ArchiveAnalyzerResults* results_;
 
     DISALLOW_COPY_AND_ASSIGN(ResultsGetter);

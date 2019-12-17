@@ -20,6 +20,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest.h"
@@ -35,7 +36,7 @@ std::unique_ptr<TestingProfile> GetTestingProfile() {
   TestingProfile::Builder profile_builder;
   return profile_builder.Build();
 }
-}
+}  // namespace
 
 namespace extensions {
 
@@ -268,12 +269,8 @@ TEST_F(AppDataMigratorTest, DISABLED_FileSystemMigration) {
   content::RunAllTasksUntilIdle();
 
   registry_->AddEnabled(new_ext);
-  GURL extension_url =
-      extensions::Extension::GetBaseURLFromExtensionId(new_ext->id());
-
   content::StoragePartition* new_partition =
-      content::BrowserContext::GetStoragePartitionForSite(profile_.get(),
-                                                          extension_url);
+      util::GetStoragePartitionForExtensionId(new_ext->id(), profile_.get());
 
   ASSERT_NE(new_partition->GetPath(), default_partition_->GetPath());
 

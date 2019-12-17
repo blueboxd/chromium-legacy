@@ -25,6 +25,12 @@ class View;
 // Describes how elements should be aligned within a layout.
 enum class LayoutAlignment { kStart, kCenter, kEnd, kStretch };
 
+// Specifies whether flex space is allocated in the same order as the children
+// in the host view, or in reverse order. Reverse order is useful when you want
+// child views to drop out from left to right instead of right to left if there
+// isn't enough space to display them.
+enum class FlexAllocationOrder { kNormal, kReverse };
+
 // Callback used to specify the size of a child view based on its size bounds.
 // Create your own custom rules, or use the Minimum|MaximumFlexSizeRule
 // constants below for common behaviors.

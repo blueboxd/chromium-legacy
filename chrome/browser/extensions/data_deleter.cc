@@ -97,9 +97,8 @@ void DataDeleter::StartDeleting(Profile* profile, const Extension* extension) {
     GURL launch_web_url_origin(
         AppLaunchInfo::GetLaunchWebURL(extension).GetOrigin());
 
-    StoragePartition* partition = BrowserContext::GetStoragePartitionForSite(
-        profile,
-        Extension::GetBaseURLFromExtensionId(extension->id()));
+    StoragePartition* partition =
+        util::GetStoragePartitionForExtensionId(extension->id(), profile);
 
     ExtensionSpecialStoragePolicy* storage_policy =
         profile->GetExtensionSpecialStoragePolicy();

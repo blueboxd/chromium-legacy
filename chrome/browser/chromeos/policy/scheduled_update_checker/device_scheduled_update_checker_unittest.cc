@@ -37,7 +37,6 @@
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/policy/core/common/policy_service.h"
 #include "services/device/public/cpp/test/test_wake_lock_provider.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 

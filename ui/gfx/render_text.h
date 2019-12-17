@@ -478,9 +478,6 @@ class GFX_EXPORT RenderText {
   // amid multi-character graphemes are allowed here, unlike IsValidCursorIndex.
   bool IsValidLogicalIndex(size_t index) const;
 
-  // Returns true if this instance supports text selection.
-  virtual bool IsSelectionSupported() const = 0;
-
   // Get the visual bounds of a cursor at |caret|. These bounds typically
   // represent a vertical line if |insert_mode| is true. Pass false for
   // |insert_mode| to retrieve the bounds of the associated glyph. These bounds

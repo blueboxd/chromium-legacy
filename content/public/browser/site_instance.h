@@ -173,6 +173,13 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
       content::BrowserContext* browser_context,
       const GURL& url);
 
+  // Factory method to create a SiteInstance for a <webview> guest in a new
+  // BrowsingInstance.
+  // TODO(734722): Replace this method once SecurityPrincipal is available.
+  static scoped_refptr<SiteInstance> CreateForGuest(
+      content::BrowserContext* browser_context,
+      const GURL& guest_site_url);
+
   // Determine if a URL should "use up" a site.  URLs such as about:blank or
   // chrome-native:// leave the site unassigned.
   static bool ShouldAssignSiteForURL(const GURL& url);

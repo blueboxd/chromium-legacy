@@ -43,8 +43,8 @@ void MediaParser::ParseMediaMetadata(
       std::make_unique<IPCDataSource>(std::move(media_data_source), total_size);
   MediaMetadataParser* parser = new MediaMetadataParser(
       std::move(source), mime_type, get_attached_images);
-  parser->Start(base::Bind(&ParseMediaMetadataDone, base::Passed(&callback),
-                           base::Owned(parser)));
+  parser->Start(base::BindOnce(&ParseMediaMetadataDone, std::move(callback),
+                               base::Owned(parser)));
 }
 
 void MediaParser::CheckMediaFile(base::TimeDelta decode_time,

@@ -89,6 +89,7 @@ GURL IOSChromeSyncedTabDelegate::GetVirtualURLAtIndex(int i) const {
   DCHECK_GE(i, 0);
   if (GetSessionStorageIfNeeded()) {
     NSArray* item_storages = session_storage_.itemStorages;
+    DCHECK_LT(i, static_cast<int>(item_storages.count));
     CRWNavigationItemStorage* item = item_storages[i];
     return item.virtualURL;
   }
@@ -128,6 +129,8 @@ void IOSChromeSyncedTabDelegate::GetSerializedNavigationAtIndex(
     sessions::SerializedNavigationEntry* serialized_entry) const {
   if (GetSessionStorageIfNeeded()) {
     NSArray* item_storages = session_storage_.itemStorages;
+    DCHECK_GE(i, 0);
+    DCHECK_LT(i, static_cast<int>(item_storages.count));
     CRWNavigationItemStorage* item = item_storages[i];
     *serialized_entry =
         sessions::IOSSerializedNavigationBuilder::FromNavigationStorageItem(
@@ -220,10 +223,19 @@ bool IOSChromeSyncedTabDelegate::GetSessionStorageIfNeeded() const {
   // is displayed. Before restoration, the session storage must be used.
   bool should_use_storage =
       web_state_->GetNavigationManager()->IsRestoreSessionInProgress();
+  bool storage_has_tabs = false;
   if (should_use_storage && !session_storage_) {
     session_storage_ = web_state_->BuildSessionStorage();
+    storage_has_tabs = session_storage_.itemStorages.count;
+#if DCHECK_IS_ON()
+    if (storage_has_tabs) {
+      DCHECK_GE(session_storage_.lastCommittedItemIndex, 0);
+      DCHECK_LT(session_storage_.lastCommittedItemIndex,
+                static_cast<int>(session_storage_.itemStorages.count));
+    }
+#endif
   }
-  return should_use_storage;
+  return should_use_storage && storage_has_tabs;
 }
 
 WEB_STATE_USER_DATA_KEY_IMPL(IOSChromeSyncedTabDelegate)

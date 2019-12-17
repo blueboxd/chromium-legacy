@@ -1131,7 +1131,7 @@
       Pair
     </message>
     <message name="IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE_TITLE" desc="Title of the settings dialog for adding or pairing Bluetooth a device.">
-      Pair Bluetooth device
+      Connect to Bluetooth device
     </message>
     <message name="IDS_SETTINGS_BLUETOOTH_NO_DEVICES" desc="Message displayed when there are no paired Bluetooth devices scan.">
       No paired devices

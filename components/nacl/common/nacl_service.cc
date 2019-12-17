@@ -51,7 +51,7 @@ mojo::IncomingInvitation GetMojoInvitation() {
 }  // namespace
 
 NaClService::NaClService(
-    scoped_refptr<base::SequencedTaskRunner> ipc_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner)
     : ipc_support_(std::move(ipc_task_runner),
                    mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST) {}
 

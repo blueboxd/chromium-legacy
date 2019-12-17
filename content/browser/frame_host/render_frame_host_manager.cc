@@ -1070,11 +1070,11 @@ void RenderFrameHostManager::TransferUserActivationFrom(
   }
 }
 
-void RenderFrameHostManager::OnSetHasReceivedUserGestureBeforeNavigation(
+void RenderFrameHostManager::OnSetHadStickyUserActivationBeforeNavigation(
     bool value) {
   for (const auto& pair : proxy_hosts_) {
     pair.second->GetAssociatedRemoteFrame()
-        ->SetReceivedUserGestureBeforeNavigation(value);
+        ->SetHadStickyUserActivationBeforeNavigation(value);
   }
 }
 

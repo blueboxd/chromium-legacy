@@ -36,7 +36,7 @@ class ChannelWin : public Channel,
   ChannelWin(Delegate* delegate,
              ConnectionParams connection_params,
              HandlePolicy handle_policy,
-             scoped_refptr<base::TaskRunner> io_task_runner)
+             scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
       : Channel(delegate, handle_policy),
         self_(this),
         io_task_runner_(io_task_runner) {
@@ -357,7 +357,7 @@ class ChannelWin : public Channel,
   // Indicates whether |handle_| must wait for a connection.
   bool needs_connection_ = false;
 
-  const scoped_refptr<base::TaskRunner> io_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   base::MessagePumpForIO::IOContext connect_context_;
   base::MessagePumpForIO::IOContext read_context_;
@@ -384,7 +384,7 @@ scoped_refptr<Channel> Channel::Create(
     Delegate* delegate,
     ConnectionParams connection_params,
     HandlePolicy handle_policy,
-    scoped_refptr<base::TaskRunner> io_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   return new ChannelWin(delegate, std::move(connection_params), handle_policy,
                         io_task_runner);
 }

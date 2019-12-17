@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "autocomplete_match.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -420,4 +421,59 @@ TEST(AutocompleteMatchTest, UpgradeMatchPropertiesWhileMergingDuplicates) {
   EXPECT_EQ(500, search_what_you_typed.relevance);
   EXPECT_EQ(AutocompleteMatchType::SEARCH_HISTORY, suggest_match.type);
   EXPECT_EQ(AutocompleteMatchType::SEARCH_HISTORY, search_what_you_typed.type);
+}
+
+TEST(AutocompleteMatchTest, SetAllowedToBeDefault) {
+  auto test = [](int caseI, const std::string input_text,
+                 bool input_prevent_inline_autocomplete,
+                 const std::string match_inline_autocompletion,
+                 const std::string expected_inline_autocompletion,
+                 bool expected_allowed_to_be_default_match) {
+    AutocompleteInput input(base::UTF8ToUTF16(input_text),
+                            metrics::OmniboxEventProto::OTHER,
+                            TestSchemeClassifier());
+    input.set_prevent_inline_autocomplete(input_prevent_inline_autocomplete);
+
+    AutocompleteMatch match;
+    match.inline_autocompletion =
+        base::UTF8ToUTF16(match_inline_autocompletion);
+
+    match.SetAllowedToBeDefault(input);
+
+    EXPECT_EQ(base::UTF16ToUTF8(match.inline_autocompletion).c_str(),
+              expected_inline_autocompletion)
+        << "case " << caseI;
+    EXPECT_EQ(match.allowed_to_be_default_match,
+              expected_allowed_to_be_default_match)
+        << "case " << caseI;
+  };
+
+  // Test all combinations of:
+  // 1) input text in ["goo", "goo ", "goo  "]
+  // 2) input prevent_inline_autocomplete in [false, true]
+  // 3) match inline_autocopmletion in ["", "gle.com", " gle.com", "  gle.com"]
+  test(1, "goo", false, "", "", true);
+  test(2, "goo", false, "gle.com", "gle.com", true);
+  test(3, "goo", false, " gle.com", " gle.com", true);
+  test(4, "goo", false, "  gle.com", "  gle.com", true);
+  test(5, "goo ", false, "", "", true);
+  test(6, "goo ", false, "gle.com", "gle.com", false);
+  test(7, "goo ", false, " gle.com", "gle.com", true);
+  test(8, "goo ", false, "  gle.com", " gle.com", true);
+  test(9, "goo  ", false, "", "", true);
+  test(10, "goo  ", false, "gle.com", "gle.com", false);
+  test(11, "goo  ", false, " gle.com", " gle.com", false);
+  test(12, "goo  ", false, "  gle.com", "gle.com", true);
+  test(13, "goo", true, "", "", true);
+  test(14, "goo", true, "gle.com", "gle.com", false);
+  test(15, "goo", true, " gle.com", " gle.com", false);
+  test(16, "goo", true, "  gle.com", "  gle.com", false);
+  test(17, "goo ", true, "", "", true);
+  test(18, "goo ", true, "gle.com", "gle.com", false);
+  test(19, "goo ", true, " gle.com", " gle.com", false);
+  test(20, "goo ", true, "  gle.com", "  gle.com", false);
+  test(21, "goo  ", true, "", "", true);
+  test(22, "goo  ", true, "gle.com", "gle.com", false);
+  test(23, "goo  ", true, " gle.com", " gle.com", false);
+  test(24, "goo  ", true, "  gle.com", "  gle.com", false);
 }

@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">Pidennä tämä teksti yli <ph name="MIN_CHARACTERS" /> merkkiin (tällä hetkellä käytössä <ph name="CURRENT_LENGTH" /> merkkiä).</translation>
 <translation id="383465348367842624"><ph name="ATSIGN" />-osaa ennen tulevassa osassa ei pitäisi olla merkkiä <ph name="INVALIDCHARACTER" />.</translation>
 <translation id="3846214748874656680">Sulje koko näytön tila.</translation>
-<translation id="3889183436948184105">muutostiedot</translation>
 <translation id="3920932319529768807">johtopäätös</translation>
 <translation id="3924558731517983934">sovellus</translation>
 <translation id="3944740393230681990">prologi</translation>
@@ -115,6 +114,7 @@
 <translation id="4812940957355064477">Anna numero.</translation>
 <translation id="4912536737030637138">lähdeluettelomerkintä</translation>
 <translation id="492244087561876220">kommentti</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> valittu</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> valittu</translation>
 <translation id="4992066212339426712">Poista mykistys</translation>
 <translation id="49969490063480558">Kirjoita loppuun asti osoite, joka alkaa <ph name="ATSIGN" />. <ph name="INVALIDADDRESS" /> on vielä kesken.</translation>
@@ -219,6 +219,7 @@
 <translation id="7888071071722539607">Sähköpostiosoitteeseen kuuluu <ph name="ATSIGN" />-osa. Osoitteesta <ph name="INVALIDADDRESS" /> puuttuu <ph name="ATSIGN" />.</translation>
 <translation id="7891486169920085145">jakaja</translation>
 <translation id="795667975304826397">Ei valittua tiedostoa</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> ei valittu</translation>
 <translation id="8034303206267677282">vahva</translation>
 <translation id="8053789581856978548">hakutekstikenttä</translation>
 <translation id="8057695513531652401">ilmoitus</translation>
@@ -257,7 +258,6 @@
 <translation id="8987927404178983737">Kuukausi</translation>
 <translation id="901493112792887934">nykyinen toistoaika sekunteina</translation>
 <translation id="901834265349196618">sähköposti</translation>
-<translation id="9023835124071926463">kommenttiosio</translation>
 <translation id="9048119486235211610">navigointi</translation>
 <translation id="9062295712474918030">dokumentti</translation>
 <translation id="9093215626363556771">sulje kuva kuvassa ‑tila</translation>

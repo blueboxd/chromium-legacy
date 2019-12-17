@@ -4330,7 +4330,7 @@ TEST_F(DiskCacheBackendTest, DISABLED_SimpleCachePrioritizedEntryOrder) {
       static_cast<disk_cache::SimpleBackendImpl*>(cache_.get());
   auto task_runner = base::CreateSequencedTaskRunner(
       {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()});
-  simple_cache->SetWorkerPoolForTesting(task_runner);
+  simple_cache->SetTaskRunnerForTesting(task_runner);
 
   // Create three entries. Priority order is 3, 1, 2 because 3 has the highest
   // request priority and 1 is created before 2.
@@ -4422,7 +4422,7 @@ TEST_F(DiskCacheBackendTest, SimpleCacheFIFOEntryOrder) {
       static_cast<disk_cache::SimpleBackendImpl*>(cache_.get());
   auto task_runner = base::CreateSequencedTaskRunner(
       {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()});
-  simple_cache->SetWorkerPoolForTesting(task_runner);
+  simple_cache->SetTaskRunnerForTesting(task_runner);
 
   // Create three entries. If their priority was honored, they'd run in order
   // 3, 1, 2.

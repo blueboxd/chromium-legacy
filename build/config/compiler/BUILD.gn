@@ -1529,12 +1529,6 @@ config("default_warnings") {
           "-Wno-deprecated-copy",
         ]
 
-        if (is_fuchsia) {
-          cflags += [
-            # TODO(https://crbug.com/999871): Clean up, enable.
-            "-Wno-c99-designator",
-          ]
-        }
         if (is_win) {
           cflags += [
             # TODO(https://crbug.com/1002945): Clean up, enable.

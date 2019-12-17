@@ -1896,6 +1896,7 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
     // matches ordered set role.
     if ((node_is_radio_button &&
          child->data().role == ax::mojom::Role::kRadioButton) ||
+        child->data().role == ax::mojom::Role::kComment ||
         (!node_is_radio_button && child->SetRoleMatchesItemRole(ordered_set))) {
       int child_level =
           child->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);

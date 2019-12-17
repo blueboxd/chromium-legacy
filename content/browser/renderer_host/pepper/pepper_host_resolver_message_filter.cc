@@ -99,7 +99,7 @@ PepperHostResolverMessageFilter::PepperHostResolverMessageFilter(
 
 PepperHostResolverMessageFilter::~PepperHostResolverMessageFilter() {}
 
-scoped_refptr<base::TaskRunner>
+scoped_refptr<base::SequencedTaskRunner>
 PepperHostResolverMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
   if (message.type() == PpapiHostMsg_HostResolver_Resolve::ID)

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.settings.website;
 
+import static org.chromium.chrome.browser.settings.website.WebsitePreferenceBridge.SITE_WILDCARD;
+
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
@@ -24,6 +26,7 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
@@ -172,6 +175,34 @@ public class SiteSettingsPreferencesTest {
 
             private boolean doesAcceptCookies() {
                 return WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.COOKIES);
+            }
+        });
+    }
+
+    private void setBlockCookiesSiteException(final SettingsActivity settingsActivity,
+            final String hostname, final boolean thirdPartiesOnly) {
+        TestThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                final SingleCategoryPreferences websitePreferences =
+                        (SingleCategoryPreferences) settingsActivity.getMainFragment();
+
+                Assert.assertTrue(doesAcceptCookies());
+                if (thirdPartiesOnly) {
+                    Assert.assertTrue(improvedControlsEnabled());
+                    websitePreferences.onAddSite(SITE_WILDCARD, hostname);
+                } else {
+                    websitePreferences.onAddSite(hostname, SITE_WILDCARD);
+                }
+            }
+
+            private boolean doesAcceptCookies() {
+                return WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.COOKIES);
+            }
+
+            private boolean improvedControlsEnabled() {
+                return ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.IMPROVED_COOKIE_CONTROLS_FOR_THIRD_PARTY_COOKIE_BLOCKING);
             }
         });
     }
@@ -341,6 +372,43 @@ public class SiteSettingsPreferencesTest {
         // Load the page again and ensure the cookie remains unset.
         mActivityTestRule.loadUrl(url);
         Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+    }
+
+    /**
+     * Blocks specific sites from setting cookies and ensures that no cookies can be set.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    // Todo(eokoyomon) figure out how to set and test third party cookie setting in this test
+    // @EnableFeatures(ChromeFeatureList.IMPROVED_COOKIE_CONTROLS_FOR_THIRD_PARTY_COOKIE_BLOCKING)
+    public void testSiteExceptionCookiesBlocked() throws Exception {
+        SettingsActivity settingsActivity =
+                SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
+        setCookiesEnabled(settingsActivity, true);
+
+        final String url = mTestServer.getURL("/chrome/test/data/android/cookie.html");
+
+        // Load the page and clear any set cookies.
+        mActivityTestRule.loadUrl(url + "#clear");
+        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+
+        // Check cookies can be set for this website when there is no rule.
+        mActivityTestRule.runJavaScriptCodeInCurrentTab("setCookie()");
+        Assert.assertEquals(
+                "\"Foo=Bar\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+
+        // Set specific rule to block site and ensure it cannot set cookies.
+        mActivityTestRule.loadUrl(url + "#clear");
+        setBlockCookiesSiteException(settingsActivity, url, false);
+        mActivityTestRule.runJavaScriptCodeInCurrentTab("setCookie()");
+        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+
+        // Load the page again and ensure the cookie remains unset.
+        mActivityTestRule.loadUrl(url);
+        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+
+        settingsActivity.finish();
     }
 
     /**

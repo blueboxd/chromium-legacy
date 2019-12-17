@@ -80,7 +80,7 @@ class CONTENT_EXPORT PepperTCPServerSocketMessageFilter
 
   // ppapi::host::ResourceMessageFilter overrides.
   void OnFilterDestroyed() override;
-  scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
+  scoped_refptr<base::SequencedTaskRunner> OverrideTaskRunnerForMessage(
       const IPC::Message& message) override;
   int32_t OnResourceMessageReceived(
       const IPC::Message& msg,

@@ -20,6 +20,7 @@
 #include "media/base/audio_codecs.h"
 #include "media/base/media_export.h"
 #include "media/base/video_codecs.h"
+#include "media/base/video_color_space.h"
 #include "third_party/libwebm/source/mkvmuxer.hpp"
 #include "ui/gfx/geometry/size.h"
 
@@ -53,13 +54,16 @@ class MEDIA_EXPORT WebmMuxer : public mkvmuxer::IMkvWriter {
   // media::VideoFrame.
   struct MEDIA_EXPORT VideoParameters {
     VideoParameters(scoped_refptr<media::VideoFrame> frame);
-    VideoParameters(gfx::Size visible_rect_size_param,
-                    double frame_rate_param,
-                    VideoCodec codec);
+    VideoParameters(gfx::Size visible_rect_size,
+                    double frame_rate,
+                    VideoCodec codec,
+                    base::Optional<gfx::ColorSpace> color_space);
+    VideoParameters(const VideoParameters&);
     ~VideoParameters();
     gfx::Size visible_rect_size;
     double frame_rate;
     VideoCodec codec;
+    base::Optional<gfx::ColorSpace> color_space;
   };
 
   // |audio_codec| should coincide with whatever is sent in OnEncodedAudio(),
@@ -95,7 +99,9 @@ class MEDIA_EXPORT WebmMuxer : public mkvmuxer::IMkvWriter {
   // AddVideoTrack adds |frame_size| and |frame_rate| to the Segment
   // info, although individual frames passed to OnEncodedVideo() can have any
   // frame size.
-  void AddVideoTrack(const gfx::Size& frame_size, double frame_rate);
+  void AddVideoTrack(const gfx::Size& frame_size,
+                     double frame_rate,
+                     const base::Optional<gfx::ColorSpace>& color_space);
   void AddAudioTrack(const media::AudioParameters& params);
 
   // IMkvWriter interface.

@@ -30,9 +30,9 @@
 #include "base/memory/shared_memory_mapping.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/process/process_handle.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_local.h"
 
@@ -965,7 +965,8 @@ class BASE_EXPORT GlobalActivityTracker {
   void ReleaseTrackerForCurrentThreadForTesting();
 
   // Sets a task-runner that can be used for background work.
-  void SetBackgroundTaskRunner(const scoped_refptr<TaskRunner>& runner);
+  void SetBackgroundTaskRunner(
+      const scoped_refptr<SequencedTaskRunner>& runner);
 
   // Sets an optional callback to be called when a process exits.
   void SetProcessExitCallback(ProcessExitCallback callback);
@@ -1222,7 +1223,7 @@ class BASE_EXPORT GlobalActivityTracker {
   std::map<int64_t, std::string> known_processes_;
 
   // A task-runner that can be used for doing background processing.
-  scoped_refptr<TaskRunner> background_task_runner_;
+  scoped_refptr<SequencedTaskRunner> background_task_runner_;
 
   // A callback performed when a subprocess exits, including its exit-code
   // and the phase it was in when that occurred. This will be called via

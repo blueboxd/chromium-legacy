@@ -40,7 +40,9 @@ class GeneratedCodeCacheTest : public testing::Test {
 
   void TearDown() override {
     disk_cache::FlushCacheThreadForTesting();
+    generated_code_cache_.reset();
     task_environment_.RunUntilIdle();
+    EXPECT_TRUE(cache_dir_.Delete()) << cache_dir_.GetPath();
   }
 
   // This function initializes the cache and waits till the transaction is
@@ -115,9 +117,9 @@ class GeneratedCodeCacheTest : public testing::Test {
   }
 
  protected:
+  base::ScopedTempDir cache_dir_;
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<GeneratedCodeCache> generated_code_cache_;
-  base::ScopedTempDir cache_dir_;
   std::string received_data_;
   base::Time received_response_time_;
   bool received_;

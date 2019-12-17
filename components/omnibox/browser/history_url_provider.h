@@ -120,8 +120,8 @@ struct HistoryURLProviderParams {
   // live beyond the original query while it runs on the history thread.
   AutocompleteInput input;
   // |input_before_fixup| is needed for invoking
-  // |AutocompleteMatch::AllowedToBeDefault| which considers trailing input
-  // whitespaces which the fixed up |input| will have trimmed.
+  // |AutocompleteMatch::SetAllowedToBeDefault| which considers
+  // trailing input whitespaces which the fixed up |input| will have trimmed.
   AutocompleteInput input_before_fixup;
 
   // Set when "http://" should be trimmed from the beginning of the URLs.

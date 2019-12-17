@@ -149,13 +149,11 @@ signin::IdentityManager* AddSupervisionUI::test_identity_manager_ = nullptr;
 
 AddSupervisionUI::AddSupervisionUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui) {
-  // Register the Mojo API handler.
-  AddHandlerToRegistry(base::BindRepeating(
-      &AddSupervisionUI::BindAddSupervisionHandler, base::Unretained(this)));
-
   // Set up the basic page framework.
   SetUpResources();
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(AddSupervisionUI)
 
 AddSupervisionUI::~AddSupervisionUI() = default;
 
@@ -179,7 +177,7 @@ void AddSupervisionUI::SetUpForTest(signin::IdentityManager* identity_manager) {
   test_identity_manager_ = identity_manager;
 }
 
-void AddSupervisionUI::BindAddSupervisionHandler(
+void AddSupervisionUI::BindInterface(
     mojo::PendingReceiver<add_supervision::mojom::AddSupervisionHandler>
         receiver) {
   signin::IdentityManager* identity_manager =

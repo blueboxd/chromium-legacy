@@ -384,7 +384,6 @@
 <translation id="3646890046000188562">{COUNT,plural, =1{обратен апостроф}other{# обратни апострофа}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{знак за долар}other{# знака за долар}}</translation>
-<translation id="3658742229777143148">Ревизия</translation>
 <translation id="3659787053479271466">сигнал</translation>
 <translation id="3665563998540286755"><ph name="VALUE" />, списъчно поле</translation>
 <translation id="3681531118904532409">папая</translation>
@@ -1103,7 +1102,6 @@
 <translation id="812886159861361726">Изтеглянето на <ph name="FILE_NAME" /> спря</translation>
 <translation id="8138880386467279117">Докосване</translation>
 <translation id="8153880621934657047">Не сте в таблицата.</translation>
-<translation id="8161114871611868169">Секция за коментари</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{долна черта}other{# долни черти}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8184828902145951186">ред</translation>

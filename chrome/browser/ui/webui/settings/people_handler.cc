@@ -964,13 +964,10 @@ void PeopleHandler::PushSyncPrefs() {
       sync_user_settings->GetRegisteredSelectableTypes();
   const syncer::UserSelectableTypeSet selected_types =
       sync_user_settings->GetSelectedTypes();
-  const syncer::UserSelectableTypeSet enforced_types =
-      sync_user_settings->GetForcedTypes();
   for (syncer::UserSelectableType type : syncer::UserSelectableTypeSet::All()) {
     const std::string type_name = syncer::GetUserSelectableTypeName(type);
     args.SetBoolean(type_name + "Registered", registered_types.Has(type));
     args.SetBoolean(type_name + "Synced", selected_types.Has(type));
-    args.SetBoolean(type_name + "Enforced", enforced_types.Has(type));
   }
   args.SetBoolean("syncAllDataTypes",
                   sync_user_settings->IsSyncEverythingEnabled());

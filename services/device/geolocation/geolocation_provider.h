@@ -32,7 +32,7 @@ class GeolocationProvider {
  public:
   static GeolocationProvider* GetInstance();
 
-  typedef base::Callback<void(const mojom::Geoposition&)>
+  typedef base::RepeatingCallback<void(const mojom::Geoposition&)>
       LocationUpdateCallback;
   typedef base::CallbackList<void(const mojom::Geoposition&)>::Subscription
       Subscription;

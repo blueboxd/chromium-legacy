@@ -8,9 +8,9 @@ import("//testing/test.gni")
 group("forwarder2") {
   testonly = true
   data_deps = [
+    ":device_forwarder_prepare_dist($default_toolchain)",
     ":host_forwarder",
     ":host_forwarder_unittests",
-    ":device_forwarder_prepare_dist($default_toolchain)",
   ]
 }
 

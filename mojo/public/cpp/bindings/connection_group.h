@@ -11,7 +11,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/task_runner.h"
+#include "base/sequenced_task_runner.h"
 
 namespace mojo {
 
@@ -83,7 +83,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) ConnectionGroup
   // to zero, |callback| is invoked on |task_runner|. If |task_runner| is null
   // (useless except perhaps in tests), |callback| is ignored.
   static Ref Create(base::RepeatingClosure callback,
-                    scoped_refptr<base::TaskRunner> task_runner);
+                    scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   unsigned int GetNumRefsForTesting() const { return num_refs_; }
 
@@ -92,7 +92,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) ConnectionGroup
   friend class Ref;
 
   ConnectionGroup(base::RepeatingClosure callback,
-                  scoped_refptr<base::TaskRunner> task_runner);
+                  scoped_refptr<base::SequencedTaskRunner> task_runner);
   virtual ~ConnectionGroup();
 
   void AddGroupRef();
@@ -100,7 +100,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) ConnectionGroup
   void SetParentGroup(Ref parent_group);
 
   const base::RepeatingClosure notification_callback_;
-  const scoped_refptr<base::TaskRunner> notification_task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> notification_task_runner_;
 
   // A reference to this group's parent group, if any.
   Ref parent_group_;

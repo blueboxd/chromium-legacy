@@ -189,7 +189,7 @@ crbug.com/907544 [ vulkan win passthrough nvidia ] conformance/uniforms/uniform-
 
 # Win / NVIDIA Quadro P400 / D3D11 flaky failures
 crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/data/gles3/shaders/functions.html [ Failure ]
-crbug.com/921052 [ d3d11 win nvidia-0x1cb3 ] deqp/functional/gles3/framebufferblit/depth_stencil.html [ RetryOnFailure ]
+crbug.com/921052 [ d3d11 win nvidia-0x1cb3 ] deqp/functional/gles3/framebufferblit/depth_stencil.html [ Skip ]
 crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_lines.html [ Failure ]
 crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_triangles.html [ Failure ]
 crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/functional/gles3/transformfeedback/basic_types_separate_lines.html [ Failure ]

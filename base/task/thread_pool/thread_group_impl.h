@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/waitable_event.h"
@@ -28,7 +29,6 @@
 #include "base/task/thread_pool/tracked_ref.h"
 #include "base/task/thread_pool/worker_thread.h"
 #include "base/task/thread_pool/worker_thread_stack.h"
-#include "base/task_runner.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -77,7 +77,7 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   void Start(int max_tasks,
              int max_best_effort_tasks,
              TimeDelta suggested_reclaim_time,
-             scoped_refptr<TaskRunner> service_thread_task_runner,
+             scoped_refptr<SequencedTaskRunner> service_thread_task_runner,
              WorkerThreadObserver* worker_thread_observer,
              WorkerEnvironment worker_environment,
              Optional<TimeDelta> may_block_threshold = Optional<TimeDelta>());
@@ -239,7 +239,7 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
     // Environment to be initialized per worker.
     WorkerEnvironment worker_environment = WorkerEnvironment::NONE;
 
-    scoped_refptr<TaskRunner> service_thread_task_runner;
+    scoped_refptr<SequencedTaskRunner> service_thread_task_runner;
 
     // Optional observer notified when a worker enters and exits its main.
     WorkerThreadObserver* worker_thread_observer = nullptr;

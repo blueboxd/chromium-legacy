@@ -13,6 +13,7 @@
 #include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/sandbox_file_system_backend_delegate.h"
@@ -156,16 +157,15 @@ void AppDataMigrator::DoMigrationAndReply(const Extension* old,
 
   // This should retrieve the general storage partition.
   content::StoragePartition* old_partition =
-      BrowserContext::GetStoragePartitionForSite(
-          profile_, Extension::GetBaseURLFromExtensionId(extension->id()));
+      util::GetStoragePartitionForExtensionId(extension->id(), profile_);
 
   // Enable the new extension so we can access its storage partition.
   bool old_was_disabled = registry_->AddEnabled(extension);
 
   // This should create a new isolated partition for the new version of the
   // extension.
-  StoragePartition* new_partition = BrowserContext::GetStoragePartitionForSite(
-      profile_, Extension::GetBaseURLFromExtensionId(extension->id()));
+  StoragePartition* new_partition =
+      util::GetStoragePartitionForExtensionId(extension->id(), profile_);
 
   // Now, restore the enabled/disabled state of the new and old extensions.
   if (old_was_disabled)

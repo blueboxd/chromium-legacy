@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/autofill/core/browser/data_model/data_model_utils.h"
+
 #include "base/i18n/string_search.h"
 #include "base/i18n/unicodestring.h"
 #include "base/macros.h"

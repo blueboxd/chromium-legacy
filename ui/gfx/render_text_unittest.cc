@@ -2244,6 +2244,24 @@ TEST_F(RenderTextTest, TruncatedObscuredText) {
             render_text->GetDisplayText());
 }
 
+TEST_F(RenderTextTest, TruncatedObscuredTextWithGraphemes) {
+  RenderText* render_text = GetRenderText();
+  render_text->set_truncate_length(3);
+  render_text->SetText(
+      WideToUTF16(L"e\u0301\U0001F468\u200D\u2708\uFE0F\U0001D11E"));
+  render_text->SetObscured(true);
+  EXPECT_EQ(GetObscuredString(3), render_text->GetDisplayText());
+
+  render_text->SetObscuredRevealIndex(0);
+  EXPECT_EQ(UTF8ToUTF16("e\u0301\u2026"), render_text->GetDisplayText());
+
+  render_text->SetObscuredRevealIndex(2);
+  EXPECT_EQ(UTF8ToUTF16("\u2022\u2026"), render_text->GetDisplayText());
+
+  render_text->SetObscuredRevealIndex(7);
+  EXPECT_EQ(UTF8ToUTF16("\u2022\u2022\u2026"), render_text->GetDisplayText());
+}
+
 TEST_F(RenderTextTest, TruncatedCursorMovementLTR) {
   RenderText* render_text = GetRenderText();
   render_text->set_truncate_length(2);
@@ -3065,15 +3083,50 @@ TEST_F(RenderTextTest, GraphemeIterator) {
   iterator = render_text->GetGraphemeIteratorAtDisplayTextIndex(3);
   EXPECT_EQ(3U, render_text->GetDisplayTextIndex(iterator));
 
+  render_text->SetText(UTF8ToUTF16("e\u0301b"));
+  render_text->SetObscured(true);
+  iterator = render_text->GetGraphemeIteratorAtDisplayTextIndex(0);
+  EXPECT_EQ(0U, render_text->GetTextIndex(iterator));
+  iterator = render_text->GetGraphemeIteratorAtDisplayTextIndex(1);
+  EXPECT_EQ(2U, render_text->GetTextIndex(iterator));
+  render_text->SetObscured(false);
+  iterator = render_text->GetGraphemeIteratorAtDisplayTextIndex(0);
+  EXPECT_EQ(0U, render_text->GetTextIndex(iterator));
+  iterator = render_text->GetGraphemeIteratorAtDisplayTextIndex(1);
+  EXPECT_EQ(0U, render_text->GetTextIndex(iterator));
+  iterator = render_text->GetGraphemeIteratorAtDisplayTextIndex(2);
+  EXPECT_EQ(2U, render_text->GetTextIndex(iterator));
+
   render_text->SetText(WideToUTF16(L"a\U0001F601b"));
   render_text->SetObscured(true);
-
   iterator = render_text->GetGraphemeIteratorAtDisplayTextIndex(0);
+  EXPECT_EQ(0U, render_text->GetTextIndex(iterator));
   EXPECT_EQ(0U, render_text->GetDisplayTextIndex(iterator));
   iterator = render_text->GetGraphemeIteratorAtDisplayTextIndex(1);
+  EXPECT_EQ(1U, render_text->GetTextIndex(iterator));
   EXPECT_EQ(1U, render_text->GetDisplayTextIndex(iterator));
   iterator = render_text->GetGraphemeIteratorAtDisplayTextIndex(2);
+  EXPECT_EQ(3U, render_text->GetTextIndex(iterator));
   EXPECT_EQ(2U, render_text->GetDisplayTextIndex(iterator));
+
+  render_text->SetText(UTF8ToUTF16("\U0001F468\u200D\u2708\uFE0Fx"));
+  render_text->SetObscured(true);
+  iterator = render_text->GetGraphemeIteratorAtDisplayTextIndex(0);
+  EXPECT_EQ(0U, render_text->GetTextIndex(iterator));
+  EXPECT_EQ(0U, render_text->GetDisplayTextIndex(iterator));
+  iterator = render_text->GetGraphemeIteratorAtDisplayTextIndex(1);
+  EXPECT_EQ(5U, render_text->GetTextIndex(iterator));
+  EXPECT_EQ(1U, render_text->GetDisplayTextIndex(iterator));
+  render_text->SetObscured(false);
+  iterator = render_text->GetGraphemeIteratorAtDisplayTextIndex(0);
+  EXPECT_EQ(0U, render_text->GetTextIndex(iterator));
+  EXPECT_EQ(0U, render_text->GetDisplayTextIndex(iterator));
+  iterator = render_text->GetGraphemeIteratorAtDisplayTextIndex(1);
+  EXPECT_EQ(0U, render_text->GetTextIndex(iterator));
+  EXPECT_EQ(0U, render_text->GetDisplayTextIndex(iterator));
+  iterator = render_text->GetGraphemeIteratorAtDisplayTextIndex(5);
+  EXPECT_EQ(5U, render_text->GetTextIndex(iterator));
+  EXPECT_EQ(5U, render_text->GetDisplayTextIndex(iterator));
 }
 
 TEST_F(RenderTextTest, GraphemeBoundaries) {
@@ -7301,6 +7354,23 @@ TEST_F(RenderTextTest, DrawVisualText_WithSelection) {
   EXPECT_EQ(text_log[1].color, SK_ColorRED);
   EXPECT_EQ(text_log[2].glyph_count, 17u);
   EXPECT_EQ(text_log[2].color, SK_ColorBLACK);
+}
+
+TEST_F(RenderTextTest, DrawVisualText_WithSelectionOnObcuredEmoji) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(WideToUTF16(L"\U0001F628\U0001F628\U0001F628"));
+  render_text->SetObscured(true);
+  render_text->set_selection_color(SK_ColorRED);
+  DrawVisualText({4, 6});
+
+  std::vector<TestSkiaTextRenderer::TextLog> text_log;
+  renderer()->GetTextLogAndReset(&text_log);
+
+  ASSERT_EQ(text_log.size(), 2u);
+  EXPECT_EQ(text_log[0].glyph_count, 2u);
+  EXPECT_EQ(text_log[0].color, SK_ColorBLACK);
+  EXPECT_EQ(text_log[1].glyph_count, 1u);
+  EXPECT_EQ(text_log[1].color, SK_ColorRED);
 }
 
 }  // namespace gfx

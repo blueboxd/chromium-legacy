@@ -2718,7 +2718,7 @@ class ServiceWorkerWebRequestApiTest : public testing::WithParamInterface<bool>,
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(/* No prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          ServiceWorkerWebRequestApiTest,
                          ::testing::Bool());
 

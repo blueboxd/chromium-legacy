@@ -57,6 +57,7 @@ class CastWebService {
   // |callback| is called when data deletion is done or at least the deletion
   // is scheduled.
   void ClearLocalStorage(base::OnceClosure callback);
+  void StopGpuProcess(base::OnceClosure callback) const;
 
  private:
   void OwnerDestroyed(CastWebView* web_view);

@@ -186,8 +186,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   RenderFrameProxyHost* frame_proxy_in_parent_renderer_;
 
   bool is_inert_ = false;
-  cc::TouchAction inherited_effective_touch_action_ =
-      cc::TouchAction::kTouchActionAuto;
+  cc::TouchAction inherited_effective_touch_action_ = cc::TouchAction::kAuto;
 
   bool is_throttled_ = false;
   bool subtree_throttled_ = false;

@@ -65,6 +65,10 @@ bool WebSocketTransportConnectJob::HasEstablishedConnection() const {
   return false;
 }
 
+ResolveErrorInfo WebSocketTransportConnectJob::GetResolveErrorInfo() const {
+  return resolve_error_info_;
+}
+
 void WebSocketTransportConnectJob::OnIOComplete(int result) {
   result = DoLoop(result);
   if (result != ERR_IO_PENDING)
@@ -125,6 +129,7 @@ int WebSocketTransportConnectJob::DoResolveHostComplete(int result) {
   // Overwrite connection start time, since for connections that do not go
   // through proxies, |connect_start| should not include dns lookup time.
   connect_timing_.connect_start = connect_timing_.dns_end;
+  resolve_error_info_ = request_->GetResolveErrorInfo();
 
   if (result != OK)
     return result;

@@ -94,38 +94,4 @@ public class ChromePreferenceManager {
     public void clearNewTabPageSigninPromoSuppressionPeriodStart() {
         mManager.removeKey(ChromePreferenceKeys.NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START);
     }
-
-    /** Do not modify the set returned by this method. */
-    private Set<String> getTrustedWebActivityDisclosureAcceptedPackages() {
-        return mManager.readStringSet(
-                ChromePreferenceKeys.TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES);
-    }
-
-    /**
-     * Sets that the user has accepted the Trusted Web Activity "Running in Chrome" disclosure for
-     * TWAs launched by the given package.
-     */
-    public void setUserAcceptedTwaDisclosureForPackage(String packageName) {
-        mManager.addToStringSet(
-                ChromePreferenceKeys.TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES,
-                packageName);
-    }
-
-    /**
-     * Removes the record of accepting the Trusted Web Activity "Running in Chrome" disclosure for
-     * TWAs launched by the given package.
-     */
-    public void removeTwaDisclosureAcceptanceForPackage(String packageName) {
-        mManager.removeFromStringSet(
-                ChromePreferenceKeys.TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES,
-                packageName);
-    }
-
-    /**
-     * Checks whether the given package was previously passed to
-     * {@link #setUserAcceptedTwaDisclosureForPackage(String)}.
-     */
-    public boolean hasUserAcceptedTwaDisclosureForPackage(String packageName) {
-        return getTrustedWebActivityDisclosureAcceptedPackages().contains(packageName);
-    }
 }

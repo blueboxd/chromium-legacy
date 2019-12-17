@@ -260,7 +260,6 @@ void TrayPopupUtils::ConfigureTrayPopupButton(views::Button* button) {
   button->SetInstallFocusRingOnFocus(true);
   button->SetFocusForPlatform();
   button->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
-  button->set_has_ink_drop_action_on_click(true);
 }
 
 void TrayPopupUtils::ConfigureAsStickyHeader(views::View* view) {

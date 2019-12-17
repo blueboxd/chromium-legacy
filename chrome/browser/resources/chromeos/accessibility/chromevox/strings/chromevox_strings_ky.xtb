@@ -385,7 +385,6 @@
 <translation id="3646890046000188562">{COUNT,plural, =1{гравис}other{# гравис}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{доллар}other{# доллар белгиси}}</translation>
-<translation id="3658742229777143148">Карап чыгуу</translation>
 <translation id="3659787053479271466">alrt</translation>
 <translation id="3665563998540286755"><ph name="VALUE" />, тизме кутусу</translation>
 <translation id="3681531118904532409">Папайя түсүндөй саргыч ыраң</translation>
@@ -1104,7 +1103,6 @@ Chrome серепчисинин менюсун ачуу үчүн Alt+F баск�
 <translation id="812886159861361726"><ph name="FILE_NAME" /> файлын жүктөп алуу токтотулду</translation>
 <translation id="8138880386467279117">Тийип коюу</translation>
 <translation id="8153880621934657047">Жадыбалдын ичинде эмес.</translation>
-<translation id="8161114871611868169">Пикир бөлүмү</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{төмөнкү сызык}other{# төмөнкү сызык}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8184828902145951186">сап</translation>

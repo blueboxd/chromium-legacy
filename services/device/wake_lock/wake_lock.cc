@@ -32,8 +32,8 @@ WakeLock::WakeLock(mojo::PendingReceiver<mojom::WakeLock> receiver,
       observer_(observer) {
   DCHECK(observer_);
   AddClient(std::move(receiver));
-  receiver_set_.set_disconnect_handler(
-      base::Bind(&WakeLock::OnConnectionError, base::Unretained(this)));
+  receiver_set_.set_disconnect_handler(base::BindRepeating(
+      &WakeLock::OnConnectionError, base::Unretained(this)));
 }
 
 WakeLock::~WakeLock() {}

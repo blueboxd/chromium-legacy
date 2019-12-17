@@ -151,6 +151,10 @@ ConnectionAttempts TransportConnectJob::GetConnectionAttempts() const {
   return attempts;
 }
 
+ResolveErrorInfo TransportConnectJob::GetResolveErrorInfo() const {
+  return resolve_error_info_;
+}
+
 // static
 void TransportConnectJob::MakeAddressListStartWithIPv4(AddressList* list) {
   for (auto i = list->begin(); i != list->end(); ++i) {
@@ -281,6 +285,7 @@ int TransportConnectJob::DoResolveHostComplete(int result) {
   // through proxies, |connect_start| should not include dns lookup time.
   connect_timing_.connect_start = connect_timing_.dns_end;
   resolve_result_ = result;
+  resolve_error_info_ = request_->GetResolveErrorInfo();
 
   if (result != OK)
     return result;

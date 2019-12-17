@@ -385,7 +385,6 @@ Ako ste pregledali tutorijal, pomoću ChromeVoxa idite do dugmeta Zatvori i klik
 <translation id="3646890046000188562">{COUNT,plural, =1{kratkouzlazni akcenat}one{# kratkouzlazni akcenat}few{# kratkouzlazna akcenta}other{# kratkouzlaznih akcenata}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{dolar}one{# znak za dolar}few{# znaka za dolar}other{# znakova za dolar}}</translation>
-<translation id="3658742229777143148">Revizija</translation>
 <translation id="3659787053479271466">upoz</translation>
 <translation id="3665563998540286755"><ph name="VALUE" />, okvir s listom</translation>
 <translation id="3681531118904532409">Papaja</translation>
@@ -1104,7 +1103,6 @@ Da otvorite meni preglednika Chrome, pritisnite Alt+F.</translation>
 <translation id="812886159861361726">Preuzimanje je zaustavljeno – <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">Dodirnuti</translation>
 <translation id="8153880621934657047">Niste unutar tabele.</translation>
-<translation id="8161114871611868169">Odjeljak za komentare</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{donja crta}one{# donja crta}few{# donje crte}other{# donjih crti}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8184828902145951186">red</translation>

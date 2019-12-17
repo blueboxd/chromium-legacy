@@ -983,6 +983,22 @@ message SystemStatus {
   optional string vpd_sku_number = 1;
 }
 
+// Status of a single physical CPU.
+message CpuInfo {
+  // The CPU model name.
+  optional string model_name = 1;
+
+  // The CPU architecture.
+  enum Architecture {
+    ARCHITECTURE_UNSPECIFIED = 0;
+    X86_64 = 1;
+  }
+  optional Architecture architecture = 2;
+
+  // The max CPU clock speed in kHz.
+  optional uint32 max_clock_speed_khz = 3;
+}
+
 // Report device level status.
 message DeviceStatusReportRequest {
   reserved 4, 7, 13, 20;
@@ -1074,6 +1090,9 @@ message DeviceStatusReportRequest {
 
   // Samples of free RAM [in bytes] (unreliable due to GC).
   repeated SystemFreeRamInfo system_ram_free_infos = 31;
+
+  // Information about a devices physical CPU(s).
+  repeated CpuInfo cpu_info = 32;
 }
 
 message OsUpdateStatus {

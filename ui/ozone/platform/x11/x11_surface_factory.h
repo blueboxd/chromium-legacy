@@ -32,7 +32,7 @@ class X11SurfaceFactory : public SurfaceFactoryOzone {
 #endif
   std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget,
-      base::TaskRunner* task_runner) override;
+      scoped_refptr<base::SequencedTaskRunner> task_runner) override;
 
  private:
   std::unique_ptr<GLOzone> glx_implementation_;

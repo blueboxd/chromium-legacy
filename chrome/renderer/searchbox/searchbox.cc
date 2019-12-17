@@ -455,6 +455,15 @@ void SearchBox::BlocklistPromo(const std::string& promo_id) {
   embedded_search_service_->BlocklistPromo(promo_id);
 }
 
+void SearchBox::OpenExtensionsPage(double button,
+                                   bool alt_key,
+                                   bool ctrl_key,
+                                   bool meta_key,
+                                   bool shift_key) {
+  embedded_search_service_->OpenExtensionsPage(button, alt_key, ctrl_key,
+                                               meta_key, shift_key);
+}
+
 void SearchBox::OpenAutocompleteMatch(uint8_t line,
                                       const GURL& url,
                                       bool are_matches_showing,

@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">请将该文本增加为 <ph name="MIN_CHARACTERS" /> 个字符或更多（您当前使用的是 <ph name="CURRENT_LENGTH" /> 个字符）。</translation>
 <translation id="383465348367842624">“<ph name="ATSIGN" />”前面的内容不应包含符号“<ph name="INVALIDCHARACTER" />”。</translation>
 <translation id="3846214748874656680">退出全屏模式</translation>
-<translation id="3889183436948184105">修订历史</translation>
 <translation id="3920932319529768807">总结</translation>
 <translation id="3924558731517983934">应用</translation>
 <translation id="3944740393230681990">序言</translation>
@@ -115,6 +114,7 @@
 <translation id="4812940957355064477">请输入一个数字。</translation>
 <translation id="4912536737030637138">参考书目</translation>
 <translation id="492244087561876220">评论</translation>
+<translation id="4971739861736909480">已选择“<ph name="ACCNAME" />”</translation>
 <translation id="4975562563186953947">选择了<ph name="SELECTED_COUNT" />项</translation>
 <translation id="4992066212339426712">取消静音</translation>
 <translation id="49969490063480558">请在“<ph name="ATSIGN" />”后面输入内容。“<ph name="INVALIDADDRESS" />”不完整。</translation>
@@ -219,6 +219,7 @@
 <translation id="7888071071722539607">请在电子邮件地址中包括“<ph name="ATSIGN" />”。“<ph name="INVALIDADDRESS" />”中缺少“<ph name="ATSIGN" />”。</translation>
 <translation id="7891486169920085145">分离器</translation>
 <translation id="795667975304826397">未选择任何文件</translation>
+<translation id="7962328325860248200">未选择“<ph name="ACCNAME" />”</translation>
 <translation id="8034303206267677282">紧急</translation>
 <translation id="8053789581856978548">搜索文本字段</translation>
 <translation id="8057695513531652401">通知</translation>
@@ -257,7 +258,6 @@
 <translation id="8987927404178983737">月</translation>
 <translation id="901493112792887934">目前时间（以秒为单位）</translation>
 <translation id="901834265349196618">电子邮件</translation>
-<translation id="9023835124071926463">“评论”部分</translation>
 <translation id="9048119486235211610">导航</translation>
 <translation id="9062295712474918030">文档</translation>
 <translation id="9093215626363556771">退出“画中画”模式</translation>

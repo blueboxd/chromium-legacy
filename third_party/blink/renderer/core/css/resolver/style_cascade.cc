@@ -119,7 +119,11 @@ void StyleCascade::Apply() {
 }
 
 void StyleCascade::Apply(Animator& animator) {
-  Resolver resolver(animator);
+  Resolver resolver(animator, excluder_);
+
+  // Affects the computed value of 'color', hence needs to happen before
+  // high-priority properties.
+  Apply(GetCSSPropertyColorScheme(), resolver);
 
   // TODO(crbug.com/985031): Set bits ::Add-time to know if we need to do this.
   ApplyHighPriority(resolver);
@@ -130,6 +134,29 @@ void StyleCascade::Apply(Animator& animator) {
     const CSSPropertyName& name = iter->key;
     Apply(name, resolver);
   }
+
+  excluder_.Clear();
+}
+
+void StyleCascade::Exclude(CSSProperty::Flag flag, bool set) {
+  excluder_.Exclude(flag, set);
+}
+
+void StyleCascade::Excluder::Exclude(CSSProperty::Flag flag, bool set) {
+  if (set)
+    flags_ |= flag;
+  else
+    flags_ &= ~flag;
+  mask_ |= flag;
+}
+
+bool StyleCascade::Excluder::IsExcluded(const CSSProperty& property) const {
+  return ~(property.GetFlags() ^ flags_) & mask_;
+}
+
+void StyleCascade::Excluder::Clear() {
+  flags_ = 0;
+  mask_ = 0;
 }
 
 void StyleCascade::RemoveAnimationPriority() {
@@ -174,7 +201,7 @@ void StyleCascade::ApplyHighPriority(Resolver& resolver) {
 
 void StyleCascade::Apply(const CSSPropertyName& name) {
   NullAnimator animator;
-  Resolver resolver(animator);
+  Resolver resolver(animator, excluder_);
   Apply(name, resolver);
 }
 
@@ -191,6 +218,8 @@ void StyleCascade::Apply(const CSSProperty& property, Resolver& resolver) {
 
   Value cascaded = cascade_.Take(property.GetCSSPropertyName());
   if (cascaded.IsEmpty())
+    return;
+  if (resolver.excluder_.IsExcluded(property))
     return;
 
   const CSSValue* value = cascaded.GetValue();

@@ -112,6 +112,7 @@ const char* const kKnownSettings[] = {
     kReportDeviceActivityTimes,
     kReportDeviceBoardStatus,
     kReportDeviceBootMode,
+    kReportDeviceCpuInfo,
     kReportDeviceHardwareStatus,
     kReportDeviceLocation,
     kReportDevicePowerStatus,
@@ -549,6 +550,10 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
     if (reporting_policy.has_device_status_frequency()) {
       new_values_cache->SetInteger(kReportUploadFrequency,
                                    reporting_policy.device_status_frequency());
+    }
+    if (reporting_policy.has_report_cpu_info()) {
+      new_values_cache->SetBoolean(kReportDeviceCpuInfo,
+                                   reporting_policy.report_cpu_info());
     }
   }
 }

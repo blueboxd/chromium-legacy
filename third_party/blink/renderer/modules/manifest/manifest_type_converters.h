@@ -32,6 +32,13 @@ struct TypeConverter<blink::Manifest::ImageResource,
 };
 
 template <>
+struct TypeConverter<blink::Manifest::ShortcutItem,
+                     blink::mojom::blink::ManifestShortcutItemPtr> {
+  static blink::Manifest::ShortcutItem Convert(
+      const blink::mojom::blink::ManifestShortcutItemPtr& input);
+};
+
+template <>
 struct TypeConverter<blink::Manifest::ShareTarget,
                      blink::mojom::blink::ManifestShareTargetPtr> {
   static blink::Manifest::ShareTarget Convert(

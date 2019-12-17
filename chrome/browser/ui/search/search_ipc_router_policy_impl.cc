@@ -150,6 +150,10 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessBlocklistPromo() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
+bool SearchIPCRouterPolicyImpl::ShouldProcessOpenExtensionsPage() {
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
+}
+
 bool SearchIPCRouterPolicyImpl::ShouldProcessOpenAutocompleteMatch(
     bool is_active_tab) {
   return is_active_tab && !is_incognito_ && search::IsInstantNTP(web_contents_);

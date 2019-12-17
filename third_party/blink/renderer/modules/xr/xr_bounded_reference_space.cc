@@ -15,6 +15,10 @@
 
 namespace blink {
 namespace {
+
+// Bounds must be a valid polygon (at least 3 vertices).
+constexpr wtf_size_t kMinimumNumberOfBoundVertices = 3;
+
 float RoundCm(float val) {
   // Float round will only round to the nearest whole number. In order to get
   // two decimal points of precision, we need to move the decimal out then
@@ -65,7 +69,9 @@ void XRBoundedReferenceSpace::EnsureUpdated() {
     // We may not have bounds if we've lost tracking after being created.
     // Whether we have them or not, we need to clear the existing bounds.
     offset_bounds_geometry_.clear();
-    if (display_info->stage_parameters->bounds) {
+    if (display_info->stage_parameters->bounds &&
+        display_info->stage_parameters->bounds->size() >=
+            kMinimumNumberOfBoundVertices) {
       for (const auto& bound : *(display_info->stage_parameters->bounds)) {
         FloatPoint3D p = offset_from_native.MapPoint(
             FloatPoint3D(bound.X(), 0.0, bound.Z()));

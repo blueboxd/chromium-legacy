@@ -431,7 +431,7 @@ Cada item da lista da política é uma string que contém um código de extensã
 
           Se esta política for definida como "Tela cheia", a lupa estará sempre ativa no modo tela cheia na tela de login.
 
-          Se esta política for definida como "Dispositivo na base", a lupa estará sempre ativada no modo lupa ancorada na tela de login.
+          Se esta política for definida como "Dispositivo na base", a lupa estará sempre ativada no modo lupa em área fixa na tela de login.
 
           Se esta política for definida como "Nenhum", a lupa estará sempre desativada na tela de login.
 
@@ -1139,7 +1139,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="267596348720209223">Especifica a codificação de caracteres suportados pelo mecanismo de pesquisa. Codificações são nomes de código da página como UTF-8, GB2312 e ISO-8859-1. Eles são testados na ordem fornecida. Esta política é opcional. Se não for definida, será utilizado o padrão, UTF-8. Esta política só é respeitada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="268577405881275241">Ativar o recurso de proxy de compactação de dados</translation>
 <translation id="2693108589792503178">Configure o URL de alteração de senha.</translation>
-<translation id="2694143893026486692">Lupa ancorada ativada</translation>
+<translation id="2694143893026486692">Lupa em área fixa ativada</translation>
 <translation id="2694188263972877487">Configurar o tipo de download que o <ph name="PRODUCT_NAME" /> bloqueará totalmente sem permitir que os usuários substituam a decisão de segurança.
 
       Se você definir esta política, o <ph name="PRODUCT_NAME" /> impedirá certos tipos de downloads e não permitirá que o usuário ignore os avisos de segurança.

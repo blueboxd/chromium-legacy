@@ -90,34 +90,62 @@ class IDNSpoofChecker {
   static void RestoreTrieParamsForTesting();
 
  private:
+  // Store information about various language scripts whose letters can be used
+  // to make whole-script-confusable spoofs (e.g. ѕсоре[.]com where all letters
+  // in ѕсоре are Cyrillic).
+  struct WholeScriptConfusable {
+    WholeScriptConfusable(
+        std::unique_ptr<icu::UnicodeSet> arg_all_letters,
+        std::unique_ptr<icu::UnicodeSet> arg_latin_lookalike_letters,
+        const std::vector<std::string>& allowed_tlds);
+    ~WholeScriptConfusable();
+
+    // Captures all letters belonging to this script.
+    std::unique_ptr<icu::UnicodeSet> all_letters;
+    // The subset of all_letters that look like Latin ASCII letters. A domain
+    // label entirely made of them is blocked as a simplified
+    // whole-script-spoofable, unless the TLD of the domain is explicitly
+    // allowed by |allowed_tlds|.
+    std::unique_ptr<icu::UnicodeSet> latin_lookalike_letters;
+    // List of top level domains where whole-script-confusable domains are
+    // allowed for this script.
+    const std::vector<std::string> allowed_tlds;
+  };
+
+  // Returns true if all the letters belonging to |script| in |label| also
+  // belong to a set of Latin lookalike letters for that script.
+  static bool IsLabelWholeScriptConfusableForScript(
+      const WholeScriptConfusable& script,
+      const icu::UnicodeString& label);
+  // Returns true if |tld| is a top level domain most likely to contain a large
+  // number of domains in |script| (as in, written script). |tld_unicode| can be
+  // empty if |tld| is not well formed punycode.
+  static bool IsWholeScriptConfusableAllowedForTLD(
+      const WholeScriptConfusable& wsc,
+      base::StringPiece tld,
+      base::StringPiece16 tld_unicode);
+
   // Sets allowed characters in IDN labels and turns on USPOOF_CHAR_LIMIT.
   void SetAllowedUnicodeSet(UErrorCode* status);
 
-  // Returns true if all the Cyrillic letters in |label| belong to a set of
-  // Cyrillic letters that look like ASCII Latin letters.
-  bool IsMadeOfLatinAlikeCyrillic(const icu::UnicodeString& label);
   // Returns true if the string is entirely made up of either digits or
   // characters that look like digits (but not exclusively actual digits).
   bool IsDigitLookalike(const icu::UnicodeString& label);
-  // Returns true if |tld| is a top level domain most likely to contain a large
-  // number of Cyrillic domains. |tld_unicode| can be empty if |tld| is not well
-  // formed punycode.
-  bool IsCyrillicTopLevelDomain(base::StringPiece tld,
-                                base::StringPiece16 tld_unicode) const;
 
   USpoofChecker* checker_;
   icu::UnicodeSet deviation_characters_;
   icu::UnicodeSet non_ascii_latin_letters_;
   icu::UnicodeSet kana_letters_exceptions_;
   icu::UnicodeSet combining_diacritics_exceptions_;
-  icu::UnicodeSet cyrillic_letters_;
-  icu::UnicodeSet cyrillic_letters_latin_alike_;
   icu::UnicodeSet digits_;
   icu::UnicodeSet digit_lookalikes_;
   icu::UnicodeSet lgc_letters_n_ascii_;
   icu::UnicodeSet icelandic_characters_;
   std::unique_ptr<icu::Transliterator> diacritic_remover_;
   std::unique_ptr<icu::Transliterator> extra_confusable_mapper_;
+
+  // List of scripts containing whole-script-confusable information.
+  std::vector<std::unique_ptr<WholeScriptConfusable>> wholescriptconfusables_;
 
   IDNSpoofChecker(const IDNSpoofChecker&) = delete;
   void operator=(const IDNSpoofChecker&) = delete;

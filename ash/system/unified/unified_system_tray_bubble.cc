@@ -303,17 +303,13 @@ void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
     return;
   }
 
-  // Don't close the bubble if the message center is gaining or losing
-  // activation.
+  // Don't close the bubble if the message center is gaining activation.
   if (features::IsUnifiedMessageCenterRefactorEnabled() &&
       tray_->IsMessageCenterBubbleShown()) {
     views::Widget* message_center_widget =
         tray_->message_center_bubble()->GetBubbleWidget();
     if (message_center_widget ==
-            views::Widget::GetWidgetForNativeView(gained_active) ||
-        (lost_active &&
-         message_center_widget ==
-             views::Widget::GetWidgetForNativeView(lost_active))) {
+        views::Widget::GetWidgetForNativeView(gained_active)) {
       return;
     }
   }
@@ -372,16 +368,16 @@ gfx::Insets UnifiedSystemTrayBubble::GetInsets() {
       kUnifiedMenuPadding, kUnifiedMenuPadding, kUnifiedMenuPadding - 1,
       kUnifiedMenuPadding - (base::i18n::IsRTL() ? 0 : 1));
 
-  // A special case exists on the homescreen in tablet mode in which the padding
-  // is already applied in the status area. We should not set the padding again
-  // for the bubble. See crbug.com/1011924.
+  // The work area in tablet mode always uses the in-app shelf height, which is
+  // shorter than the standard shelf height. In this state, we need to add back
+  // the difference to compensate (see crbug.com/1033302).
   bool in_tablet_mode = Shell::Get()->tablet_mode_controller() &&
                         Shell::Get()->tablet_mode_controller()->InTabletMode();
   bool is_bottom_alignment =
       tray_->shelf()->alignment() == ShelfAlignment::kBottom;
   if (chromeos::switches::ShouldShowShelfHotseat() && in_tablet_mode &&
       !ShelfConfig::Get()->is_in_app() && is_bottom_alignment) {
-    insets.set_bottom(0);
+    insets.set_bottom(insets.bottom() + kUnifiedNonInAppBubblePadding);
   }
 
   return insets;

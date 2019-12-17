@@ -1008,7 +1008,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HitTestTouchEvent(
       continue;
     }
 
-    cc::TouchAction touch_action = cc::kTouchActionAuto;
+    cc::TouchAction touch_action = cc::TouchAction::kAuto;
     cc::InputHandler::TouchStartOrMoveEventListenerType event_listener_type =
         input_handler_->EventListenerTypeForTouchStartOrMoveAt(
             gfx::Point(touch_event.touches[i].PositionInWidget().x,
@@ -1024,10 +1024,10 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HitTestTouchEvent(
           cc::InputHandler::TouchStartOrMoveEventListenerType::
               HANDLER_ON_SCROLLING_LAYER;
       // A non-passive touch start / move will always set the whitelisted touch
-      // action to kTouchActionNone, and in that case we do not ack the event
+      // action to TouchAction::kNone, and in that case we do not ack the event
       // from the compositor.
       if (compositor_touch_action_enabled_ && white_listed_touch_action &&
-          *white_listed_touch_action != cc::kTouchActionNone)
+          *white_listed_touch_action != cc::TouchAction::kNone)
         result = DID_HANDLE_NON_BLOCKING;
       else
         result = DID_NOT_HANDLE;
@@ -1082,7 +1082,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HitTestTouchEvent(
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
     const blink::WebTouchEvent& touch_event) {
   bool is_touching_scrolling_layer;
-  cc::TouchAction white_listed_touch_action = cc::kTouchActionAuto;
+  cc::TouchAction white_listed_touch_action = cc::TouchAction::kAuto;
   EventDisposition result = HitTestTouchEvent(
       touch_event, &is_touching_scrolling_layer, &white_listed_touch_action);
 
@@ -1115,7 +1115,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchMove(
   if (touch_result_ == kEventDispositionUndefined ||
       touch_event.touch_start_or_first_touch_move) {
     bool is_touching_scrolling_layer;
-    cc::TouchAction white_listed_touch_action = cc::kTouchActionAuto;
+    cc::TouchAction white_listed_touch_action = cc::TouchAction::kAuto;
     EventDisposition result = HitTestTouchEvent(
         touch_event, &is_touching_scrolling_layer, &white_listed_touch_action);
     client_->SetWhiteListedTouchAction(

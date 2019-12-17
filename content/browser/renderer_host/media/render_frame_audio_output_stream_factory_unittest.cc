@@ -23,7 +23,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_renderer_host.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "media/audio/audio_system_impl.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/fake_audio_manager.h"
@@ -51,9 +50,7 @@ class RenderFrameAudioOutputStreamFactoryTest
     : public RenderViewHostTestHarness {
  public:
   RenderFrameAudioOutputStreamFactoryTest()
-      : test_service_manager_context_(
-            std::make_unique<TestServiceManagerContext>()),
-        audio_manager_(std::make_unique<media::TestAudioThread>(),
+      : audio_manager_(std::make_unique<media::TestAudioThread>(),
                        &log_factory_),
         audio_system_(media::AudioSystemImpl::CreateInstance()),
         media_stream_manager_(std::make_unique<MediaStreamManager>(
@@ -79,7 +76,6 @@ class RenderFrameAudioOutputStreamFactoryTest
     ForwardingAudioStreamFactory::OverrideStreamFactoryBinderForTesting(
         base::NullCallback());
     audio_manager_.Shutdown();
-    test_service_manager_context_.reset();
     RenderViewHostTestHarness::TearDown();
   }
 
@@ -120,7 +116,6 @@ class RenderFrameAudioOutputStreamFactoryTest
   const media::AudioParameters kParams =
       media::AudioParameters::UnavailableDeviceParams();
   MockStreamFactory audio_service_stream_factory_;
-  std::unique_ptr<TestServiceManagerContext> test_service_manager_context_;
   media::FakeAudioLogFactory log_factory_;
   media::FakeAudioManager audio_manager_;
   std::unique_ptr<media::AudioSystem> audio_system_;

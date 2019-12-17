@@ -4683,10 +4683,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   // There's no intrinsic reason the following values can't be equal, but they
   // aren't at present, and if they become the same this test will need to be
   // updated to accommodate.
-  EXPECT_NE(cc::kTouchActionAuto, cc::kTouchActionNone);
+  EXPECT_NE(cc::TouchAction::kAuto, cc::TouchAction::kNone);
 
   // Verify the child's input router is initially not set. The TouchStart event
-  // will trigger kTouchActionNone being sent back to the browser.
+  // will trigger TouchAction::kNone being sent back to the browser.
   RenderWidgetHostImpl* child_render_widget_host =
       root->child_at(0)->current_frame_host()->GetRenderWidgetHost();
   EXPECT_FALSE(child_render_widget_host->input_router()
@@ -4731,7 +4731,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 
   // Verify the presence of the touch handler in the child frame correctly
   // propagates touch-action:none information back to the child's input router.
-  EXPECT_EQ(cc::kTouchActionNone,
+  EXPECT_EQ(cc::TouchAction::kNone,
             child_render_widget_host->input_router()->AllowedTouchAction());
 }
 
@@ -4758,10 +4758,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   // There's no intrinsic reason the following values can't be equal, but they
   // aren't at present, and if they become the same this test will need to be
   // updated to accommodate.
-  EXPECT_NE(cc::kTouchActionAuto, cc::kTouchActionNone);
+  EXPECT_NE(cc::TouchAction::kAuto, cc::TouchAction::kNone);
 
   // Verify the main frame's input router is initially not set. The
-  // TouchStart event will trigger kTouchActionNone being sent back to the
+  // TouchStart event will trigger TouchAction::kNone being sent back to the
   // browser.
   RenderWidgetHostImpl* render_widget_host =
       root->current_frame_host()->GetRenderWidgetHost();
@@ -4802,7 +4802,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 
   // Verify the presence of the touch handler in the child frame correctly
   // propagates touch-action:none information back to the child's input router.
-  EXPECT_EQ(cc::kTouchActionNone,
+  EXPECT_EQ(cc::TouchAction::kNone,
             render_widget_host->input_router()->AllowedTouchAction());
 }
 
@@ -5334,8 +5334,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 // Test that performing a touchpad pinch over an OOPIF offers the synthetic
 // wheel events to the child and causes the page scale factor to change for
 // the main frame (given that the child did not consume the wheel).
+#if defined(OS_LINUX)
+#define MAYBE_TouchpadPinchOverOOPIF DISABLED_TouchpadPinchOverOOPIF
+#else
+#define MAYBE_TouchpadPinchOverOOPIF TouchpadPinchOverOOPIF
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
-                       TouchpadPinchOverOOPIF) {
+                       MAYBE_TouchpadPinchOverOOPIF) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

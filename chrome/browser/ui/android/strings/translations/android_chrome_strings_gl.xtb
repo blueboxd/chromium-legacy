@@ -24,7 +24,6 @@
 <translation id="1171770572613082465">Para descubrir sitios web populares, toca o botón Populares</translation>
 <translation id="1173894706177603556">Cambiar o nome</translation>
 <translation id="1178581264944972037">Pausar</translation>
-<translation id="118069123878619799">- as túas características físicas, como a altura</translation>
 <translation id="1181037720776840403">Eliminar</translation>
 <translation id="1188239144602654184">Iniciar realidade aumentada</translation>
 <translation id="1197267115302279827">Mover marcadores</translation>
@@ -62,7 +61,6 @@
 <translation id="1384959399684842514">Pausouse a descarga</translation>
 <translation id="1386674309198842382">Dispositivo activo hai <ph name="LAST_UPDATED" />días</translation>
 <translation id="1397811292916898096">Buscar con <ph name="PRODUCT_NAME" /></translation>
-<translation id="1404122904123200417">Inserido en <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Non facer seguimento</translation>
 <translation id="1407135791313364759">Abrir todo</translation>
 <translation id="1409426117486808224">Vista simplificada de pestanas abertas</translation>
@@ -215,6 +213,7 @@
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> elementos eliminados</translation>
 <translation id="2536728043171574184">Visualización dunha copia sen conexión desta páxina</translation>
 <translation id="2537178555904266562">Produciuse un erro ao sincronizar os contrasinais</translation>
+<translation id="2537296579376733324">Todas as cookies, só neste sitio</translation>
 <translation id="2546283357679194313">Cookies e datos dos sitios</translation>
 <translation id="2567385386134582609">IMAXE</translation>
 <translation id="257088987046510401">Temas</translation>
@@ -472,6 +471,7 @@ Se queres axustar o termo de busca, manteno premido para seleccionalo. Se queres
 <translation id="4565377596337484307">Ocultar contrasinal</translation>
 <translation id="4570913071927164677">Detalles</translation>
 <translation id="4572422548854449519">Inicia sesión nunha conta xestionada</translation>
+<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Hai # minuto}other{Hai # minutos}}</translation>
 <translation id="4587589328781138893">Sitios</translation>
 <translation id="4594952190837476234">Esta páxina sen conexión creouse o <ph name="CREATION_TIME" /> e pode ser diferente da versión en liña.</translation>
@@ -652,7 +652,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5809361687334836369">{HOURS,plural, =1{Hai # hora}other{Hai # horas}}</translation>
 <translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. Todos os dereitos reservados.</translation>
 <translation id="5817918615728894473">Sincronizar</translation>
-<translation id="5819762621475381970">- a distribución do teu cuarto</translation>
 <translation id="583281660410589416">Descoñecido</translation>
 <translation id="5833984609253377421">Compartir ligazón</translation>
 <translation id="5836192821815272682">Descargando actualización de Chrome…</translation>
@@ -753,6 +752,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="6545017243486555795">Borrar todos os datos</translation>
 <translation id="6545864417968258051">Busca de dispositivos Bluetooth</translation>
 <translation id="6560414384669816528">Buscar con Sogou</translation>
+<translation id="656065428026159829">Ver máis</translation>
 <translation id="6566259936974865419">Chrome permitiuche aforrar <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">Permitir sempre</translation>
 <translation id="6573431926118603307">Aquí aparecerán as pestanas que abrises en Chrome noutros dispositivos.</translation>
@@ -849,6 +849,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="7293171162284876153">Para iniciar a sincronización, activa a opción Sincronizar os teus datos de Chrome.</translation>
 <translation id="729975465115245577">O dispositivo non ten unha aplicación para almacenar o ficheiro de contrasinais.</translation>
 <translation id="7302081693174882195">Detalles: filas ordenadas por cantidade de datos aforrados</translation>
+<translation id="7302486331832100261">Adoitas bloquear as notificacións. Para permitilas, toca Detalles.</translation>
 <translation id="7328017930301109123">No modo básico, Chrome carga as páxinas máis rápido e usa un 60 por cento menos de datos.</translation>
 <translation id="7333031090786104871">Aínda se está engadindo o sitio anterior</translation>
 <translation id="7352939065658542140">VÍDEO</translation>

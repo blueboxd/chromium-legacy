@@ -48,7 +48,7 @@ void SVGTextPainter::RecordHitTestData(const PaintInfo& paint_info) {
     return;
 
   auto touch_action = layout_svg_text_.EffectiveAllowedTouchAction();
-  if (touch_action == TouchAction::kTouchActionAuto)
+  if (touch_action == TouchAction::kAuto)
     return;
 
   auto rect = LayoutRect(layout_svg_text_.VisualRectInLocalSVGCoordinates());

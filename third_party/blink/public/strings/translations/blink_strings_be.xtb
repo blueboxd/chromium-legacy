@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">Павялічце колькасць сімвалаў у гэтым тэксце як мінімум да <ph name="MIN_CHARACTERS" /> (зараз у вас – <ph name="CURRENT_LENGTH" />).</translation>
 <translation id="383465348367842624">У частцы перад "<ph name="ATSIGN" />" не павінна быць сімвала "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="3846214748874656680">Выключыць поўнаэкранны рэжым</translation>
-<translation id="3889183436948184105">рэдакцыя</translation>
 <translation id="3920932319529768807">заключэнне</translation>
 <translation id="3924558731517983934">праграма</translation>
 <translation id="3944740393230681990">пралог</translation>
@@ -115,6 +114,7 @@
 <translation id="4812940957355064477">Увядзіце лік.</translation>
 <translation id="4912536737030637138">бібліяграфічны запіс</translation>
 <translation id="492244087561876220">каментарый</translation>
+<translation id="4971739861736909480">Выбрана: <ph name="ACCNAME" /></translation>
 <translation id="4975562563186953947">Выбрана: <ph name="SELECTED_COUNT" /></translation>
 <translation id="4992066212339426712">Уключыць гук</translation>
 <translation id="49969490063480558">Увядзіце частку пасля сімвала "<ph name="ATSIGN" />". Адрас "<ph name="INVALIDADDRESS" />" – няпоўны.</translation>
@@ -219,6 +219,7 @@
 <translation id="7888071071722539607">У адрасе электроннай пошты павінен быць сімвал "<ph name="ATSIGN" />". У "<ph name="INVALIDADDRESS" />" няма "<ph name="ATSIGN" />".</translation>
 <translation id="7891486169920085145">раздзяляльнік</translation>
 <translation id="795667975304826397">Файл не выбраны</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" />, не выбрана</translation>
 <translation id="8034303206267677282">важна</translation>
 <translation id="8053789581856978548">поле крытэрыю пошуку</translation>
 <translation id="8057695513531652401">паведамленне</translation>
@@ -257,7 +258,6 @@
 <translation id="8987927404178983737">Месяц</translation>
 <translation id="901493112792887934">колькі секунд прайшло</translation>
 <translation id="901834265349196618">электронная пошта</translation>
-<translation id="9023835124071926463">раздзел каментарыяў</translation>
 <translation id="9048119486235211610">навігацыя</translation>
 <translation id="9062295712474918030">дакумент</translation>
 <translation id="9093215626363556771">выйсці з рэжыму "відарыс у відарысе"</translation>

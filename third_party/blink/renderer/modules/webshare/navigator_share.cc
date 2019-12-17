@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/webshare/share_data.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -170,31 +171,31 @@ bool NavigatorShare::canShare(ScriptState* script_state,
 }
 
 ScriptPromise NavigatorShare::share(ScriptState* script_state,
-                                    const ShareData* share_data) {
+                                    const ShareData* share_data,
+                                    ExceptionState& exception_state) {
   Document* doc = To<Document>(ExecutionContext::From(script_state));
   KURL full_url;
   String error_message = CheckForTypeError(*doc, *share_data, &full_url);
   if (!error_message.IsEmpty()) {
-    v8::Local<v8::Value> error = V8ThrowException::CreateTypeError(
-        script_state->GetIsolate(), error_message);
-    return ScriptPromise::Reject(script_state, error);
+    exception_state.ThrowTypeError(error_message);
+    return ScriptPromise();
   }
 
   if (!LocalFrame::HasTransientUserActivation(doc->GetFrame())) {
-    auto* error = MakeGarbageCollected<DOMException>(
+    exception_state.ThrowDOMException(
         DOMExceptionCode::kNotAllowedError,
         "Must be handling a user gesture to perform a share request.");
-    return ScriptPromise::RejectWithDOMException(script_state, error);
+    return ScriptPromise();
   }
 
   if (!service_remote_) {
     LocalFrame* frame = doc->GetFrame();
     if (!frame) {
-      auto* error = MakeGarbageCollected<DOMException>(
+      exception_state.ThrowDOMException(
           DOMExceptionCode::kAbortError,
-          "Internal error: document frame is missing (the "
-          "navigator may be detached).");
-      return ScriptPromise::RejectWithDOMException(script_state, error);
+          "Internal error: document frame is missing (the navigator may be "
+          "detached).");
+      return ScriptPromise();
     }
 
     // See https://bit.ly/2S0zRAS for task types.
@@ -225,9 +226,9 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
 
     if (files.size() > kMaxSharedFileCount ||
         total_bytes > kMaxSharedFileBytes) {
-      auto* error = MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotAllowedError, "Permission denied");
-      return ScriptPromise::RejectWithDOMException(script_state, error);
+      exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                        "Permission denied");
+      return ScriptPromise();
     }
   }
 
@@ -242,8 +243,9 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
 
 ScriptPromise NavigatorShare::share(ScriptState* script_state,
                                     Navigator& navigator,
-                                    const ShareData* share_data) {
-  return From(navigator).share(script_state, share_data);
+                                    const ShareData* share_data,
+                                    ExceptionState& exception_state) {
+  return From(navigator).share(script_state, share_data, exception_state);
 }
 
 void NavigatorShare::OnConnectionError() {

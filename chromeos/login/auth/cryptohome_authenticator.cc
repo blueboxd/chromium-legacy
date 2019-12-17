@@ -579,10 +579,10 @@ void CheckKey(const base::WeakPtr<AuthAttemptState>& attempt,
 }  // namespace
 
 CryptohomeAuthenticator::CryptohomeAuthenticator(
-    scoped_refptr<base::TaskRunner> task_runner,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
     AuthStatusConsumer* consumer)
     : Authenticator(consumer),
-      task_runner_(task_runner),
+      task_runner_(std::move(task_runner)),
       migrate_attempted_(false),
       remove_attempted_(false),
       resync_attempted_(false),

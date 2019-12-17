@@ -186,24 +186,14 @@ const gfx::VectorIcon& LocationBarModelImpl::GetVectorIcon() const {
   if (IsOfflinePage())
     return omnibox::kOfflinePinIcon;
 
-  GURL url = GetURL();
   security_state::SecurityLevel security_level = GetSecurityLevel();
   switch (security_level) {
     case security_state::NONE:
-      // Show a danger triangle icon on HTTPS pages with passive mixed content
-      // when kMarkHttpAsParameterDangerWarning is enabled.
-      if (security_state::ShouldDowngradeNeutralStyling(
-              security_level, url,
-              base::BindRepeating(&content::IsOriginSecure))) {
-        return omnibox::kNotSecureWarningIcon;
-      }
       return omnibox::kHttpIcon;
     case security_state::WARNING:
       // When kMarkHttpAsParameterDangerWarning is enabled, show a danger
-      // triangle icon unless the page has a non-HTTPS secure origin.
-      if (security_state::ShouldDowngradeNeutralStyling(
-              security_level, url,
-              base::BindRepeating(&content::IsOriginSecure))) {
+      // triangle icon.
+      if (security_state::ShouldShowDangerTriangleForWarningLevel()) {
         return omnibox::kNotSecureWarningIcon;
       }
       return omnibox::kHttpIcon;

@@ -12,6 +12,7 @@
 #include "chrome/browser/notifications/scheduler/public/notification_params.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/updates/update_notification_info.h"
 #include "chrome/browser/updates/update_notification_service.h"
 #include "chrome/browser/updates/update_notification_service_factory.h"
 
@@ -31,7 +32,7 @@ void JNI_UpdateNotificationServiceBridge_Schedule(
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   auto* update_notification_service =
       UpdateNotificationServiceFactory::GetForBrowserContext(profile);
-  notifications::NotificationData data;
+  UpdateNotificationInfo data;
   data.title = ConvertJavaStringToUTF16(env, j_title);
   data.message = ConvertJavaStringToUTF16(env, j_message);
   update_notification_service->Schedule(std::move(data));

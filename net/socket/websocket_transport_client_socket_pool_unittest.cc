@@ -186,7 +186,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, SetResolvePriorityOnInit) {
 
 TEST_F(WebSocketTransportClientSocketPoolTest, InitHostResolutionFailure) {
   HostPortPair host_port_pair("unresolvable.host.name", 80);
-  host_resolver_->rules()->AddSimulatedFailure(host_port_pair.host());
+  host_resolver_->rules()->AddSimulatedTimeoutFailure(host_port_pair.host());
   TestCompletionCallback callback;
   ClientSocketHandle handle;
   EXPECT_EQ(
@@ -201,6 +201,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, InitHostResolutionFailure) {
                   callback.callback(), ClientSocketPool::ProxyAuthCallback(),
                   &pool_, NetLogWithSource()));
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_THAT(handle.resolve_error_info().error, IsError(ERR_DNS_TIMED_OUT));
 }
 
 TEST_F(WebSocketTransportClientSocketPoolTest, InitConnectionFailure) {

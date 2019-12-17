@@ -80,6 +80,7 @@ void SharingMessageSender::SendMessageToDevice(
 
   LogSharingDeviceLastUpdatedAge(
       message_type, base::Time::Now() - device.last_updated_timestamp());
+  LogSharingVersionComparison(message_type, device.chrome_version());
 
   message.set_sender_guid(local_device_info->guid());
   message.set_sender_device_name(

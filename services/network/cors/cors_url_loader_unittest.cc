@@ -2068,6 +2068,174 @@ TEST_F(CorsURLLoaderTest, RestrictedPrefetchFailsWithoutNIK) {
                              "LOAD_RESTRICTED_PREFETCH flag is not trusted"));
 }
 
+// Test that Timing-Allow-Origin check passes when a same-origin redirect
+// occurs. The redirect is as follows: [Origin] A -> A -> A.
+TEST_F(CorsURLLoaderTest, TAOCheckPassOnSameOriginRedirect) {
+  const GURL origin("https://example.com");
+  const GURL url("https://example.com/foo.png");
+  const GURL new_url("https://example.com/bar.png");
+
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kNoCors);
+  RunUntilCreateLoaderAndStartCalled();
+  NotifyLoaderClientOnReceiveRedirect(CreateRedirectInfo(301, "GET", new_url));
+  RunUntilRedirectReceived();
+
+  EXPECT_TRUE(client().response_head()->timing_allow_passed);
+
+  ClearHasReceivedRedirect();
+  FollowRedirect();
+
+  NotifyLoaderClientOnReceiveResponse();
+  NotifyLoaderClientOnComplete(net::OK);
+  RunUntilComplete();
+
+  EXPECT_TRUE(client().response_head()->timing_allow_passed);
+}
+
+TEST_F(CorsURLLoaderTest, TAOCheckFailOnCrossOriginResource1) {
+  const GURL origin("https://example.com");
+  const GURL url("https://other.example.com/foo.png");
+
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kCors);
+  RunUntilCreateLoaderAndStartCalled();
+  NotifyLoaderClientOnReceiveResponse(
+      {"Access-Control-Allow-Origin: https://example.com"});
+  NotifyLoaderClientOnComplete(net::OK);
+  RunUntilComplete();
+
+  // Note: this testcase will change when we change to the model in which TAO
+  // passes whenever CORS is used.
+  EXPECT_FALSE(client().response_head()->timing_allow_passed);
+}
+
+TEST_F(CorsURLLoaderTest, TAOCheckFailOnCrossOriginResource2) {
+  const GURL origin("https://example.com");
+  const GURL url("https://other.example.com/foo.png");
+
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kNoCors);
+  RunUntilCreateLoaderAndStartCalled();
+  // null does not work in this case since the tainted origin flag won't be set.
+  NotifyLoaderClientOnReceiveResponse({"Access-Control-Allow-Origin: null"});
+  NotifyLoaderClientOnComplete(net::OK);
+  RunUntilComplete();
+
+  EXPECT_FALSE(client().response_head()->timing_allow_passed);
+}
+
+TEST_F(CorsURLLoaderTest, TAOCheckPassOnCrossOriginResource) {
+  const GURL origin("https://example.com");
+  const GURL url("https://other.example.com/foo.png");
+
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kNoCors);
+  RunUntilCreateLoaderAndStartCalled();
+  NotifyLoaderClientOnReceiveResponse(
+      {"Timing-Allow-Origin: https://example.com"});
+  NotifyLoaderClientOnComplete(net::OK);
+  RunUntilComplete();
+
+  EXPECT_TRUE(client().response_head()->timing_allow_passed);
+}
+
+// [Origin] A -> B -> A where final redirect does not pass the check.
+TEST_F(CorsURLLoaderTest, TAOCheckFailRedirect1) {
+  const GURL origin("https://example.com");
+  const GURL url("https://other.example.com/foo.png");
+  const GURL new_url("https://example.com/bar.png");
+
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kNoCors);
+  RunUntilCreateLoaderAndStartCalled();
+  NotifyLoaderClientOnReceiveRedirect(
+      CreateRedirectInfo(301, "GET", new_url),
+      {"Timing-Allow-Origin: https://example.com"});
+  RunUntilRedirectReceived();
+
+  EXPECT_TRUE(client().response_head()->timing_allow_passed);
+
+  ClearHasReceivedRedirect();
+  FollowRedirect();
+
+  // This is insufficient: tainted origin flag will be set.
+  NotifyLoaderClientOnReceiveResponse(
+      {"Timing-Allow-Origin: https://example.com, https://other.example.com"});
+  NotifyLoaderClientOnComplete(net::OK);
+  RunUntilComplete();
+
+  EXPECT_FALSE(client().response_head()->timing_allow_passed);
+}
+
+// [Origin] A -> B -> A where B does not pass the check.
+TEST_F(CorsURLLoaderTest, TAOCheckFailRedirect2) {
+  const GURL origin("https://example.com");
+  const GURL url("https://other.example.com/foo.png");
+  const GURL new_url("https://example.com/bar.png");
+
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kNoCors);
+  RunUntilCreateLoaderAndStartCalled();
+  NotifyLoaderClientOnReceiveRedirect(CreateRedirectInfo(301, "GET", new_url));
+  RunUntilRedirectReceived();
+
+  EXPECT_FALSE(client().response_head()->timing_allow_passed);
+
+  ClearHasReceivedRedirect();
+  FollowRedirect();
+
+  NotifyLoaderClientOnReceiveResponse({"Timing-Allow-Origin: *"});
+  NotifyLoaderClientOnComplete(net::OK);
+  RunUntilComplete();
+
+  EXPECT_FALSE(client().response_head()->timing_allow_passed);
+}
+
+// [Origin] A -> B -> A
+TEST_F(CorsURLLoaderTest, TAOCheckPassRedirect1) {
+  const GURL origin("https://example.com");
+  const GURL url("https://other.example.com/foo.png");
+  const GURL new_url("https://example.com/bar.png");
+
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kNoCors);
+  RunUntilCreateLoaderAndStartCalled();
+  NotifyLoaderClientOnReceiveRedirect(
+      CreateRedirectInfo(301, "GET", new_url),
+      {"Timing-Allow-Origin: https://example.com"});
+  RunUntilRedirectReceived();
+
+  EXPECT_TRUE(client().response_head()->timing_allow_passed);
+
+  ClearHasReceivedRedirect();
+  FollowRedirect();
+
+  NotifyLoaderClientOnReceiveResponse({"Timing-Allow-Origin: null"});
+  NotifyLoaderClientOnComplete(net::OK);
+  RunUntilComplete();
+
+  EXPECT_TRUE(client().response_head()->timing_allow_passed);
+}
+
+// [Origin] A -> B -> C
+TEST_F(CorsURLLoaderTest, TAOCheckPassRedirect2) {
+  const GURL origin("https://example.com");
+  const GURL url("https://other1.com/foo.png");
+  const GURL new_url("https://other2.com/bar.png");
+
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kNoCors);
+  RunUntilCreateLoaderAndStartCalled();
+  NotifyLoaderClientOnReceiveRedirect(
+      CreateRedirectInfo(301, "GET", new_url),
+      {"Timing-Allow-Origin: https://example.com"});
+  RunUntilRedirectReceived();
+
+  EXPECT_TRUE(client().response_head()->timing_allow_passed);
+
+  ClearHasReceivedRedirect();
+  FollowRedirect();
+
+  NotifyLoaderClientOnReceiveResponse({"Timing-Allow-Origin: null"});
+  NotifyLoaderClientOnComplete(net::OK);
+  RunUntilComplete();
+
+  EXPECT_TRUE(client().response_head()->timing_allow_passed);
+}
+
 class CorsURLLoaderExtraSafelistedHeadersTest : public CorsURLLoaderTest {
  public:
   void SetUp() override {

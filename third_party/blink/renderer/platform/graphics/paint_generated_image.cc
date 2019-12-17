@@ -31,7 +31,8 @@ void PaintGeneratedImage::Draw(cc::PaintCanvas* canvas,
 }
 
 void PaintGeneratedImage::DrawTile(GraphicsContext& context,
-                                   const FloatRect& src_rect) {
+                                   const FloatRect& src_rect,
+                                   RespectImageOrientationEnum) {
   context.DrawRecord(record_);
 }
 

@@ -84,7 +84,7 @@ class CookieControlsBubbleView : public LocationBarBubbleDelegateView,
 
   views::ImageView* header_view_ = nullptr;
   views::Label* text_ = nullptr;
-  views::Link* not_working_link_ = nullptr;
+  views::View* extra_view_ = nullptr;
 
   ScopedObserver<CookieControlsController, CookieControlsView> observer_{this};
 

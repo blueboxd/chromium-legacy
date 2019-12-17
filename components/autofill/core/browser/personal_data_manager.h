@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/autofill_profile_validator.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
 #include "components/autofill/core/browser/data_model/test_data_creator.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/payments/account_info_getter.h"
@@ -250,6 +251,10 @@ class PersonalDataManager : public KeyedService,
 
   // Returns the Payments customer data. Returns nullptr if no data is present.
   virtual PaymentsCustomerData* GetPaymentsCustomerData() const;
+
+  // Returns the credit card cloud token data.
+  virtual std::vector<CreditCardCloudTokenData*> GetCreditCardCloudTokenData()
+      const;
 
   // Updates the validity states of |profiles| according to server validity map.
   void UpdateProfilesServerValidityMapsIfNeeded(
@@ -505,6 +510,9 @@ class PersonalDataManager : public KeyedService,
   // Loads the saved credit cards from the web database.
   virtual void LoadCreditCards();
 
+  // Loads the saved credit card cloud token data from the web database.
+  virtual void LoadCreditCardCloudTokenData();
+
   // Loads the payments customer data from the web database.
   virtual void LoadPaymentsCustomerData();
 
@@ -566,6 +574,10 @@ class PersonalDataManager : public KeyedService,
   std::vector<std::unique_ptr<CreditCard>> local_credit_cards_;
   std::vector<std::unique_ptr<CreditCard>> server_credit_cards_;
 
+  // Cached version of the CreditCardCloudTokenData obtained from the database.
+  std::vector<std::unique_ptr<CreditCardCloudTokenData>>
+      server_credit_card_cloud_token_data_;
+
   // When the manager makes a request from WebDataServiceBase, the database
   // is queried on another sequence, we record the query handle until we
   // get called back.  We store handles for both profile and credit card queries
@@ -574,6 +586,8 @@ class PersonalDataManager : public KeyedService,
   WebDataServiceBase::Handle pending_server_profiles_query_ = 0;
   WebDataServiceBase::Handle pending_creditcards_query_ = 0;
   WebDataServiceBase::Handle pending_server_creditcards_query_ = 0;
+  WebDataServiceBase::Handle pending_server_creditcard_cloud_token_data_query_ =
+      0;
   WebDataServiceBase::Handle pending_customer_data_query_ = 0;
 
   // The observers.

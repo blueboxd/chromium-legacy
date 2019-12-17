@@ -360,10 +360,11 @@ void ExtensionAppShimHandler::Delegate::LaunchApp(
   extensions::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_CMD_LINE_APP, extension->GetType());
   if (extension->is_hosted_app()) {
-    apps::LaunchService::Get(profile)->OpenApplication(
-        CreateAppLaunchParamsUserContainer(
-            profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-            apps::mojom::AppLaunchSource::kSourceCommandLine));
+    auto params = CreateAppLaunchParamsUserContainer(
+        profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        apps::mojom::AppLaunchSource::kSourceCommandLine);
+    params.launch_files = files;
+    apps::LaunchService::Get(profile)->OpenApplication(params);
     return;
   }
   if (files.empty()) {
@@ -762,13 +763,7 @@ void ExtensionAppShimHandler::OnShimProcessConnectedAndAllLaunchesDone(
     // If another app shim process has already connected to this (profile,
     // app_id) pair, then focus the windows for the existing process. Note
     // that this only does anything for non-RemoveCocoa apps.
-    OnShimFocus(
-        profile_state->GetHost(),
-        bootstrap->GetLaunchType() == chrome::mojom::AppShimLaunchType::kNormal
-            ? chrome::mojom::AppShimFocusType::kReopen
-            : chrome::mojom::AppShimFocusType::kNormal,
-        bootstrap->GetLaunchFiles());
-
+    OnShimFocus(profile_state->GetHost());
     bootstrap->OnFailedToConnectToHost(
         chrome::mojom::AppShimLaunchResult::kDuplicateHost);
     return;
@@ -934,10 +929,7 @@ void ExtensionAppShimHandler::OnShimProcessDisconnected(AppShimHost* host) {
   }
 }
 
-void ExtensionAppShimHandler::OnShimFocus(
-    AppShimHost* host,
-    chrome::mojom::AppShimFocusType focus_type,
-    const std::vector<base::FilePath>& files) {
+void ExtensionAppShimHandler::OnShimFocus(AppShimHost* host) {
   // This path is only for legacy apps (which are perforce single-profile).
   if (host->UsesRemoteViews())
     return;
@@ -951,16 +943,35 @@ void ExtensionAppShimHandler::OnShimFocus(
   }
 
   AppWindowList windows = delegate_->GetWindows(profile, host->GetAppId());
-  for (auto it = windows.rbegin(); it != windows.rend(); ++it) {
-    if (*it)
-      (*it)->GetBaseWindow()->Show();
-  }
-
-  if (focus_type == chrome::mojom::AppShimFocusType::kNormal ||
-      (focus_type == chrome::mojom::AppShimFocusType::kReopen &&
-       !windows.empty())) {
+  if (!windows.empty()) {
+    for (auto it = windows.rbegin(); it != windows.rend(); ++it) {
+      if (*it)
+        (*it)->GetBaseWindow()->Show();
+    }
     return;
   }
+
+  delegate_->LaunchApp(profile, extension, std::vector<base::FilePath>());
+}
+
+void ExtensionAppShimHandler::OnShimOpenedFiles(
+    AppShimHost* host,
+    const std::vector<base::FilePath>& files) {
+  auto found_app = apps_.find(host->GetAppId());
+  DCHECK(found_app != apps_.end());
+  AppState* app_state = found_app->second.get();
+  Profile* profile = nullptr;
+  if (app_state->IsMultiProfile()) {
+    // TODO(https://crbug.com/829689): Open files using the most-recently-used
+    // profile. This just grabs one at random.
+    profile = app_state->profiles.begin()->first;
+  } else {
+    profile = delegate_->ProfileForPath(host->GetProfilePath());
+  }
+  DCHECK(profile);
+  const Extension* extension =
+      delegate_->MaybeGetAppExtension(profile, host->GetAppId());
+  DCHECK(extension);
   delegate_->LaunchApp(profile, extension, files);
 }
 

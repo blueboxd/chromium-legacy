@@ -20,6 +20,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame.mojom-test-utils.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -379,22 +380,25 @@ IN_PROC_BROWSER_TEST_F(PortalHitTestBrowserTest, NoInputToOOPIFInPortal) {
   // Create portal and wait for navigation.
   // In the case of crbug.com/1002228 , this does not appear to reproduce if the
   // portal element is too small, so we give it an explicit size.
-  PortalCreatedObserver portal_created_observer(main_frame);
-  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  TestNavigationObserver navigation_observer(a_url);
-  navigation_observer.StartWatchingNewWebContents();
-  EXPECT_TRUE(ExecJs(main_frame,
-                     JsReplace("var portal = document.createElement('portal');"
-                               "portal.src = $1;"
-                               "portal.style.width = '500px';"
-                               "portal.style.height = '500px';"
-                               "portal.style.border = 'solid';"
-                               "document.body.appendChild(portal);",
-                               a_url)));
-  Portal* portal = portal_created_observer.WaitUntilPortalCreated();
+  Portal* portal = nullptr;
+  {
+    PortalCreatedObserver portal_created_observer(main_frame);
+    GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+    TestNavigationObserver navigation_observer(a_url);
+    navigation_observer.StartWatchingNewWebContents();
+    EXPECT_TRUE(ExecJs(
+        main_frame, JsReplace("var portal = document.createElement('portal');"
+                              "portal.src = $1;"
+                              "portal.style.width = '500px';"
+                              "portal.style.height = '500px';"
+                              "portal.style.border = 'solid';"
+                              "document.body.appendChild(portal);",
+                              a_url)));
+    portal = portal_created_observer.WaitUntilPortalCreated();
+    navigation_observer.Wait();
+  }
   WebContentsImpl* portal_contents = portal->GetPortalContents();
   RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
-  navigation_observer.Wait();
   WaitForHitTestData(portal_frame);
 
   // Add an out-of-process iframe to the portal.
@@ -443,6 +447,86 @@ IN_PROC_BROWSER_TEST_F(PortalHitTestBrowserTest, NoInputToOOPIFInPortal) {
   EXPECT_EQ(true, EvalJs(main_frame, "clicked"));
   EXPECT_EQ(false, EvalJs(portal_frame, "clicked"));
   EXPECT_EQ(false, EvalJs(portal_iframe, "clicked"));
+}
+
+// Tests that an OOPIF inside a portal receives input events after the portal is
+// activated.
+IN_PROC_BROWSER_TEST_F(PortalHitTestBrowserTest, InputToOOPIFAfterActivation) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  // Create portal.
+  // TODO(crbug.com/1029330): We currently need to give portal a large enough
+  // size to prevent overlap with iframe as this results in the test becoming
+  // flaky.
+  Portal* portal = nullptr;
+  {
+    PortalCreatedObserver portal_created_observer(main_frame);
+    GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+    TestNavigationObserver navigation_observer(a_url);
+    navigation_observer.StartWatchingNewWebContents();
+    EXPECT_TRUE(ExecJs(
+        main_frame, JsReplace("var portal = document.createElement('portal');"
+                              "portal.src = $1;"
+                              "portal.style.width = '500px';"
+                              "portal.style.height = '500px';"
+                              "document.body.appendChild(portal);",
+                              a_url)));
+    portal = portal_created_observer.WaitUntilPortalCreated();
+    navigation_observer.Wait();
+  }
+  WebContentsImpl* portal_contents = portal->GetPortalContents();
+  RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
+  WaitForHitTestData(portal_frame);
+
+  // Add an out-of-process iframe to the portal.
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  TestNavigationObserver iframe_navigation_observer(portal_contents);
+  EXPECT_TRUE(ExecJs(portal_frame,
+                     JsReplace("var iframe = document.createElement('iframe');"
+                               "iframe.src = $1;"
+                               "document.body.appendChild(iframe);",
+                               b_url)));
+  iframe_navigation_observer.Wait();
+  EXPECT_EQ(b_url, iframe_navigation_observer.last_navigation_url());
+
+  RenderFrameHostImpl* oopif = portal_frame->child_at(0)->current_frame_host();
+  RenderWidgetHostViewBase* oopif_view =
+      static_cast<RenderWidgetHostViewBase*>(oopif->GetView());
+  EXPECT_TRUE(oopif_view->IsRenderWidgetHostViewChildFrame());
+  EXPECT_NE(portal_frame->GetSiteInstance(), oopif->GetSiteInstance());
+  WaitForHitTestData(oopif);
+  EXPECT_TRUE(ExecJs(oopif,
+                     "var clicked = false;"
+                     "document.body.onmousedown = _ => clicked = true;"));
+
+  // Activate the portal.
+  {
+    PortalActivatedObserver activated_observer(portal);
+    EXPECT_TRUE(ExecJs(main_frame,
+                       "let portal = document.querySelector('portal');"
+                       "portal.activate().then(() => { "
+                       "  document.body.removeChild(portal); "
+                       "});"));
+    activated_observer.WaitForActivateAndHitTestData();
+  }
+  EXPECT_EQ(shell()->web_contents(), portal_contents);
+
+  // Send a mouse event to the OOPIF.
+  gfx::Point root_location =
+      oopif_view->TransformPointToRootCoordSpace(gfx::Point(10, 10));
+  InputEventAckWaiter waiter(oopif->GetRenderWidgetHost(),
+                             blink::WebInputEvent::kMouseDown);
+  SimulateRoutedMouseEvent(
+      shell()->web_contents(), blink::WebInputEvent::kMouseDown,
+      blink::WebPointerProperties::Button::kLeft, root_location);
+  waiter.Wait();
+
+  // Check that the click event was received by the iframe.
+  EXPECT_EQ(true, EvalJs(oopif, "clicked"));
 }
 
 // Tests that async hit testing does not target portals.
@@ -1377,6 +1461,55 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
   ASSERT_EQ(1, activated_controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(main_url, activated_controller.GetEntryAtIndex(0)->GetURL());
   EXPECT_EQ(pending_url, activated_controller.GetEntryAtIndex(1)->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, DidFocusIPCFromFrameInsidePortal) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  GURL url = embedded_test_server()->GetURL("a.com", "/title1.html");
+  Portal* portal = CreatePortalToUrl(web_contents_impl, url);
+  WebContentsImpl* portal_contents = portal->GetPortalContents();
+  RenderFrameHostImpl* portal_main_frame = portal_contents->GetMainFrame();
+
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  TestNavigationObserver iframe_navigation_observer(portal_contents);
+  EXPECT_TRUE(ExecJs(portal_main_frame,
+                     JsReplace("var iframe = document.createElement('iframe');"
+                               "iframe.src = $1;"
+                               "document.body.appendChild(iframe);",
+                               b_url)));
+  iframe_navigation_observer.Wait();
+  EXPECT_EQ(b_url, iframe_navigation_observer.last_navigation_url());
+
+  web_contents_impl->SetAsFocusedWebContentsIfNecessary();
+  EXPECT_EQ(web_contents_impl->GetFocusedWebContents(), web_contents_impl);
+  EXPECT_EQ(web_contents_impl->GetFocusedFrame(), main_frame);
+
+  // Simulate renderer sending LocalFrameHost::DidFocusFrame IPC.
+  RenderFrameHostImpl* iframe_rfhi =
+      portal_main_frame->child_at(0)->current_frame_host();
+  iframe_rfhi->DidFocusFrame();
+
+  // Focus should not have changed.
+  EXPECT_EQ(web_contents_impl->GetFocusedWebContents(), web_contents_impl);
+  EXPECT_EQ(web_contents_impl->GetFocusedFrame(), main_frame);
+
+  if (!SiteIsolationPolicy::UseDedicatedProcessesForAllSites())
+    return;
+
+  // Simulate renderer sending RemoteFrameHost::DidFocusFrame IPC.
+  RenderFrameProxyHost* iframe_rfph =
+      portal_main_frame->child_at(0)->render_manager()->GetRenderFrameProxyHost(
+          portal_main_frame->GetSiteInstance());
+  iframe_rfph->DidFocusFrame();
+
+  // Focus should not have changed.
+  EXPECT_EQ(web_contents_impl->GetFocusedWebContents(), web_contents_impl);
+  EXPECT_EQ(web_contents_impl->GetFocusedFrame(), main_frame);
 }
 
 class PortalOOPIFBrowserTest : public PortalBrowserTest {

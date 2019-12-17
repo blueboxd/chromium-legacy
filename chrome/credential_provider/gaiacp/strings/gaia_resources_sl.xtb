@@ -25,6 +25,7 @@
 <translation id="7209941495304122410">Vnesite geslo za Windows</translation>
 <translation id="7357241217513796177">Prepričajte se, da imate omrežno povezavo, in poskusite znova.</translation>
 <translation id="7536769223115622137">Dodajanje službenega računa</translation>
+<translation id="7811865856574012727">Skrbnik je omejil prijavo naprave na te domene: <ph name="EMAIL_DOMAINS" />. Poskusite znova z veljavnim službenim računom.</translation>
 <translation id="7856245195110636219">Če ne vnesete gesla za Windows, ne morete nadaljevati. Obrnite se na skrbnika sistema.</translation>
 <translation id="8639729688781680518">Pozabljeno geslo za Windows</translation>
 <translation id="866458870819756755">Uporabnika ni bilo mogoče ustvariti.</translation>

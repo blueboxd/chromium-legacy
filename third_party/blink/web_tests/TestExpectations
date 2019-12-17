@@ -1,15 +1,20 @@
+# tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.10 Mac10.11 Mac10.12 Retina
+#         Mac10.13 Win Win7 Win10 ]
+# tags: [ Release Debug ]
+# results: [ Timeout Crash Pass Failure Slow Skip ]
+
 # This is the main failure suppression file for Blink LayoutTests.
 # Further documentation:
 # https://chromium.googlesource.com/chromium/src/+/master/docs/testing/web_test_expectations.md
 
 # Intentional failures to test the layout test system.
-Bug(intentional) harness-tests/crash.html [ Crash ]
-Bug(intentional) harness-tests/timeout.html [ Timeout ]
-Bug(intentional) external/wpt/infrastructure/reftest/reftest_match_fail.html [ Failure ]
-Bug(intentional) external/wpt/infrastructure/reftest/reftest_mismatch_fail.html [ Failure ]
-Bug(intentional) external/wpt/infrastructure/reftest/reftest_ref_timeout.html [ Timeout ]
-Bug(intentional) external/wpt/infrastructure/reftest/reftest_timeout.html [ Timeout ]
-Bug(intentional) external/wpt/infrastructure/expected-fail/timeout.html [ Timeout ]
+harness-tests/crash.html [ Crash ]
+harness-tests/timeout.html [ Timeout ]
+external/wpt/infrastructure/reftest/reftest_match_fail.html [ Failure ]
+external/wpt/infrastructure/reftest/reftest_mismatch_fail.html [ Failure ]
+external/wpt/infrastructure/reftest/reftest_ref_timeout.html [ Timeout ]
+external/wpt/infrastructure/reftest/reftest_timeout.html [ Timeout ]
+external/wpt/infrastructure/expected-fail/timeout.html [ Timeout ]
 
 crbug.com/997202 external/wpt/infrastructure/reftest/reftest_fuzzy_1.html [ Failure ]
 crbug.com/997202 external/wpt/infrastructure/reftest/reftest_fuzzy_chain_ini.html [ Failure ]
@@ -111,30 +116,30 @@ crbug.com/759632 http/tests/devtools/network/network-datasaver-warning.js [ Fail
 # --- Begin CompositeAfterPaint Tests --
 # Only whitelisted tests run under the virtual suite.
 # More tests run with CompositeAfterPaint on the flag-specific try bot.
-Bug(none) virtual/composite-after-paint/ [ Skip ]
-Bug(none) virtual/composite-after-paint/compositing/backface-visibility/ [ Pass ]
-Bug(none) virtual/composite-after-paint/compositing/backgrounds/ [ Pass ]
-Bug(none) virtual/composite-after-paint/compositing/geometry/abs-position-inside-opacity.html [ Pass ]
-Bug(none) virtual/composite-after-paint/compositing/geometry/composited-html-size.html [ Pass ]
-Bug(none) virtual/composite-after-paint/compositing/geometry/outline-change.html [ Pass ]
-Bug(none) virtual/composite-after-paint/compositing/geometry/tall-page-composited.html [ Pass ]
-Bug(none) virtual/composite-after-paint/compositing/gestures/gesture-tapHighlight-img.html [ Pass ]
-Bug(none) virtual/composite-after-paint/compositing/gestures/gesture-tapHighlight-simple-scaledY.html [ Pass ]
-Bug(none) virtual/composite-after-paint/compositing/iframes/iframe-in-composited-layer.html [ Pass ]
-Bug(none) virtual/composite-after-paint/compositing/masks/mask-of-clipped-layer.html [ Pass ]
-Bug(none) virtual/composite-after-paint/compositing/overflow/clip-rotate-opacity-fixed.html [ Pass ]
-Bug(none) virtual/composite-after-paint/compositing/overlap-blending/children-opacity-huge.html [ Pass ]
-Bug(none) virtual/composite-after-paint/compositing/plugins/ [ Pass ]
-Bug(none) virtual/composite-after-paint/compositing/reflections/reflection-ordering.html [ Pass ]
-Bug(none) virtual/composite-after-paint/compositing/rtl/rtl-overflow-scrolling.html [ Pass ]
-Bug(none) virtual/composite-after-paint/compositing/squashing/squash-composited-input.html [ Pass ]
-Bug(none) virtual/composite-after-paint/compositing/transitions/opacity-on-inline.html [ Pass ]
-Bug(none) virtual/composite-after-paint/compositing/will-change/stacking-context-creation.html [ Pass ]
-Bug(none) virtual/composite-after-paint/compositing/z-order/ [ Pass ]
-Bug(none) virtual/composite-after-paint/paint/background/ [ Pass ]
-Bug(none) virtual/composite-after-paint/paint/filters/ [ Pass ]
-Bug(none) virtual/composite-after-paint/paint/frames [ Pass ]
-Bug(none) virtual/composite-after-paint/scrollingcoordinator [ Pass ]
+virtual/composite-after-paint/ [ Skip ]
+virtual/composite-after-paint/compositing/backface-visibility/ [ Pass ]
+virtual/composite-after-paint/compositing/backgrounds/ [ Pass ]
+virtual/composite-after-paint/compositing/geometry/abs-position-inside-opacity.html [ Pass ]
+virtual/composite-after-paint/compositing/geometry/composited-html-size.html [ Pass ]
+virtual/composite-after-paint/compositing/geometry/outline-change.html [ Pass ]
+virtual/composite-after-paint/compositing/geometry/tall-page-composited.html [ Pass ]
+virtual/composite-after-paint/compositing/gestures/gesture-tapHighlight-img.html [ Pass ]
+virtual/composite-after-paint/compositing/gestures/gesture-tapHighlight-simple-scaledY.html [ Pass ]
+virtual/composite-after-paint/compositing/iframes/iframe-in-composited-layer.html [ Pass ]
+virtual/composite-after-paint/compositing/masks/mask-of-clipped-layer.html [ Pass ]
+virtual/composite-after-paint/compositing/overflow/clip-rotate-opacity-fixed.html [ Pass ]
+virtual/composite-after-paint/compositing/overlap-blending/children-opacity-huge.html [ Pass ]
+virtual/composite-after-paint/compositing/plugins/ [ Pass ]
+virtual/composite-after-paint/compositing/reflections/reflection-ordering.html [ Pass ]
+virtual/composite-after-paint/compositing/rtl/rtl-overflow-scrolling.html [ Pass ]
+virtual/composite-after-paint/compositing/squashing/squash-composited-input.html [ Pass ]
+virtual/composite-after-paint/compositing/transitions/opacity-on-inline.html [ Pass ]
+virtual/composite-after-paint/compositing/will-change/stacking-context-creation.html [ Pass ]
+virtual/composite-after-paint/compositing/z-order/ [ Pass ]
+virtual/composite-after-paint/paint/background/ [ Pass ]
+virtual/composite-after-paint/paint/filters/ [ Pass ]
+virtual/composite-after-paint/paint/frames [ Pass ]
+virtual/composite-after-paint/scrollingcoordinator [ Pass ]
 # --- End CompositeAfterPaint Tests --
 
 # Subpixel differences
@@ -317,8 +322,8 @@ crbug.com/981719 [ Win ] external/wpt/css/css-ui/webkit-appearance-textfield-001
 
 # WebGPU tests are only run on GPU bots, so they are skipped by default and run
 # separately from other Web Tests.
-Bug(intentional) external/wpt/webgpu/ [ Skip ]
-Bug(intentional) wpt_internal/webgpu/ [ Skip ]
+external/wpt/webgpu/ [ Skip ]
+wpt_internal/webgpu/ [ Skip ]
 
 crbug.com/1018273 [ Mac ] compositing/gestures/gesture-tapHighlight-1-iframe-scrolled.html [ Failure ]
 crbug.com/1018273 [ Mac ] compositing/gestures/gesture-tapHighlight-1-iframe.html [ Failure ]
@@ -733,6 +738,7 @@ crbug.com/591099 paint/invalidation/scroll/fixed-under-composited-fixed-scrolled
 crbug.com/591099 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects-continuation.html [ Failure ]
 crbug.com/591099 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects-list-translate.html [ Failure ]
 crbug.com/591099 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
+crbug.com/591099 external/wpt/paint-timing/sibling-painting-first-image.html [ Failure ]
 crbug.com/591099 virtual/paint-timing/external/wpt/paint-timing/sibling-painting-first-image.html [ Failure ]
 crbug.com/591099 virtual/scalefactor200/css3/filters/composited-layer-child-bounds-after-composited-to-sw-shadow-change.html [ Failure ]
 
@@ -1290,7 +1296,7 @@ crbug.com/591099 virtual/layout_ng_block_frag/printing/fixed-positioned-child-sh
 crbug.com/829028 virtual/layout_ng_block_frag/printing/frameset.html [ Failure ]
 crbug.com/824918 virtual/layout_ng_block_frag/printing/setPrinting.html [ Failure ]
 crbug.com/829804 virtual/layout_ng_block_frag/printing/webgl-oversized-printing.html [ Skip ]
-Bug(none) virtual/layout_ng_block_frag/fragmentation/scrolling-contents-scroll.html [ Crash Failure ]
+virtual/layout_ng_block_frag/fragmentation/scrolling-contents-scroll.html [ Crash Failure ]
 
 # Flexbox in NG
 #
@@ -1751,9 +1757,6 @@ crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoo
 crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow-desktop.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Skip ]
 
-crbug.com/522648 fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
-crbug.com/522648 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
-crbug.com/522648 virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Skip ]
 crbug.com/652536 fast/events/mouse-cursor-change-after-image-load.html [ Failure Pass Crash ]
 crbug.com/652536 virtual/mouseevent_fractional/fast/events/mouse-cursor-change-after-image-load.html [ Failure Pass Crash ]
 crbug.com/520188 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass ]
@@ -2547,6 +2550,8 @@ crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/
 
 # 1px scroll offset difference for compositor threaded scrollbar scrolling on Linux.
 crbug.com/1009892 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling_hidpi/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
+# FAIL Test mouse drags on non-custom composited div scrollbar thumb. assert_equals: Vertical thumb drag downwards did not scroll as expected. expected 46 but got 0
+crbug.com/1009892 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure ]
 
 # Some control characters still not visible
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-001.html [ Failure ]
@@ -4715,9 +4720,6 @@ crbug.com/769347 [ Mac ] fast/dom/inert/inert-node-is-uneditable.html [ Failure 
 
 crbug.com/769056 virtual/text-antialias/emoji-web-font.html [ Failure ]
 
-# Paint-timing tests timeout without threaded-compositing, so skip them.
-crbug.com/720047 external/wpt/paint-timing [ Skip ]
-
 ### See crbug.com/891427 comment near the top of this file:
 ###crbug.com/849979 media/video-layer-crash.html [ Pass Timeout ]
 
@@ -6111,9 +6113,6 @@ crbug.com/878878 virtual/threaded/fast/scroll-snap/snap-scrolls-visual-viewport.
 # Sheriff 2019-12-10
 crbug.com/1032451 virtual/threaded-no-composited-antialiasing/animations/stability/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
 
-# Temporarily disabled to land DOM breakpoint changes in DevTools
-crbug.com/963183 http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints.js [ Pass Failure ]
-crbug.com/963183 http/tests/devtools/a11y-axe-core/sources/dom-breakpoints-pane-a11y-test.js [ Pass Failure ]
 
 # Temporarily disabled for landing changes to front_end/common in DevTools
 crbug.com/1006759 inspector-protocol/heap-profiler/heap-samples-in-snapshot.js [ Pass Failure ]
@@ -6145,7 +6144,20 @@ crbug.com/1033387 [ Mac ] http/tests/portals/crbug-1031677.html [ Pass Timeout ]
 # Sheriff 2019-12-16
 crbug.com/1034374 [ Linux Debug ] http/tests/devtools/tracing/timeline-worker-events.js [ Pass Failure ]
 crbug.com/1034374 [ Linux Debug ] virtual/threaded/http/tests/devtools/tracing/timeline-worker-events.js [ Pass Failure ]
+crbug.com/1034513 [ Win7 ] virtual/stable/fast/dom/Window/window-resize-contents.html [ Pass Failure ]
+crbug.com/1026712 [ Mac ] fast/forms/time-multiple-fields/time-multiple-fields-stepup-stepdown-from-renderer-hour.html [ Pass Timeout ]
+crbug.com/1026712 [ Mac ] virtual/web-components-v0-disabled/fast/forms/time-multiple-fields/time-multiple-fields-stepup-stepdown-from-renderer-hour.html [ Pass Timeout ]
 
 # The Wasm code cache requires disabling the baseline compiler, so only the
 # virtual test should be run.
-Bug(none) http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Skip ]
+http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Skip ]
+
+# Assertion errors need to be fixed
+crbug.com/1034492 http/tests/devtools/unit/filtered-item-selection-dialog-filtering.js [ Pass Failure ]
+crbug.com/1034492 http/tests/devtools/unit/filtered-list-widget-providers.js [ Pass Failure ]
+
+# Sheriff 2019-12-17
+crbug.com/1034789 [ Mac10.13 ] virtual/web-components-v0-disabled/fast/events/no-fake-mousemove.html [ Pass Timeout ]
+crbug.com/1034789 [ Mac10.13 ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change-async.html [ Pass Timeout ]
+crbug.com/1034789 [ Mac10.13 ] virtual/threaded/fast/scroll-snap/snap-to-target-on-layout-change.html [ Pass Timeout ]
+crbug.com/1034789 [ Mac10.13 ] external/wpt/pointerevents/pointerevent_coalesced_events_attributes.html [ Pass Failure ]

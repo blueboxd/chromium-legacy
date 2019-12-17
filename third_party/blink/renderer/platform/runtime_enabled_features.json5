@@ -836,7 +836,7 @@
     },
     {
       name: "ImageOrientation",
-      status: "test",
+      status: "stable",
     },
     {
       name: "ImplicitRootScroller",

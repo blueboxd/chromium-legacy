@@ -41,8 +41,7 @@
         </div>
         <cr-toggle checked="{{syncPrefs.appsSynced}}"
             on-change="onSingleSyncDataTypeChanged_"
-            disabled="[[shouldSyncCheckboxBeDisabled_(
-                syncPrefs.syncAllDataTypes, syncPrefs.appsEnforced)]]"
+            disabled="[[syncPrefs.syncAllDataTypes]]"
             aria-labelledby="appCheckboxLabel">
         </cr-toggle>
       </div>
@@ -53,8 +52,7 @@
         </div>
         <cr-toggle checked="{{syncPrefs.bookmarksSynced}}"
             on-change="onSingleSyncDataTypeChanged_"
-            disabled="[[shouldSyncCheckboxBeDisabled_(
-                syncPrefs.syncAllDataTypes, syncPrefs.bookmarksEnforced)]]"
+            disabled="[[syncPrefs.syncAllDataTypes]]"
             aria-labelledby="bookmarksCheckboxLabel">
         </cr-toggle>
       </div>
@@ -65,8 +63,7 @@
         </div>
         <cr-toggle checked="{{syncPrefs.extensionsSynced}}"
             on-change="onSingleSyncDataTypeChanged_"
-            disabled="[[shouldSyncCheckboxBeDisabled_(
-                syncPrefs.syncAllDataTypes, syncPrefs.extensionsEnforced)]]"
+            disabled="[[syncPrefs.syncAllDataTypes]]"
             aria-labelledby="extensionsCheckboxLabel">
         </cr-toggle>
       </div>
@@ -80,8 +77,7 @@
         <cr-toggle id="historyToggle"
             checked="{{syncPrefs.typedUrlsSynced}}"
             on-change="onTypedUrlsDataTypeChanged_"
-            disabled="[[shouldSyncCheckboxBeDisabled_(
-                syncPrefs.syncAllDataTypes, syncPrefs.typedUrlsEnforced)]]"
+            disabled="[[syncPrefs.syncAllDataTypes]]"
             aria-labelledby="historyCheckboxLabel">
         </cr-toggle>
       </div>
@@ -92,9 +88,7 @@
         </div>
         <cr-toggle checked="{{syncPrefs.preferencesSynced}}"
             on-change="onSingleSyncDataTypeChanged_"
-            disabled="[[shouldSyncCheckboxBeDisabled_(
-                syncPrefs.syncAllDataTypes,
-                syncPrefs.preferencesEnforced)]]"
+            disabled="[[syncPrefs.syncAllDataTypes]]"
             aria-labelledby="settingsCheckboxLabel">
         </cr-toggle>
       </div>
@@ -105,8 +99,7 @@
         </div>
         <cr-toggle checked="{{syncPrefs.themesSynced}}"
             on-change="onSingleSyncDataTypeChanged_"
-            disabled="[[shouldSyncCheckboxBeDisabled_(
-                syncPrefs.syncAllDataTypes, syncPrefs.themesEnforced)]]"
+            disabled="[[syncPrefs.syncAllDataTypes]]"
             aria-labelledby="themesAndWallpapersCheckboxLabel">
         </cr-toggle>
       </div>
@@ -117,8 +110,7 @@
         </div>
         <cr-toggle checked="{{syncPrefs.tabsSynced}}"
             on-change="onSingleSyncDataTypeChanged_"
-            disabled="[[shouldSyncCheckboxBeDisabled_(
-                syncPrefs.syncAllDataTypes, syncPrefs.tabsEnforced)]]"
+            disabled="[[syncPrefs.syncAllDataTypes]]"
             aria-labelledby="openTabsCheckboxLabel">
         </cr-toggle>
       </div>
@@ -129,8 +121,7 @@
         </div>
         <cr-toggle checked="{{syncPrefs.passwordsSynced}}"
             on-change="onSingleSyncDataTypeChanged_"
-            disabled="[[shouldSyncCheckboxBeDisabled_(
-                syncPrefs.syncAllDataTypes, syncPrefs.passwordsEnforced)]]"
+            disabled="[[syncPrefs.syncAllDataTypes]]"
             aria-labelledby="passwordsCheckboxLabel">
         </cr-toggle>
       </div>
@@ -143,8 +134,7 @@
              Payments integration. -->
         <cr-toggle checked="{{syncPrefs.autofillSynced}}"
             on-change="onAutofillDataTypeChanged_"
-            disabled="[[shouldSyncCheckboxBeDisabled_(
-                syncPrefs.syncAllDataTypes, syncPrefs.autofillEnforced)]]"
+            disabled="[[syncPrefs.syncAllDataTypes]]"
             aria-labelledby="autofillCheckboxLabel">
         </cr-toggle>
       </div>

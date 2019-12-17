@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/modules/webshare/share_data.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
@@ -90,8 +91,9 @@ class NavigatorShareTest : public testing::Test {
   void Share(const ShareData& share_data) {
     LocalFrame::NotifyUserActivation(&GetFrame());
     Navigator* navigator = GetFrame().DomWindow()->navigator();
-    ScriptPromise promise =
-        NavigatorShare::share(GetScriptState(), *navigator, &share_data);
+    NonThrowableExceptionState exception_state;
+    ScriptPromise promise = NavigatorShare::share(GetScriptState(), *navigator,
+                                                  &share_data, exception_state);
     test::RunPendingTasks();
     EXPECT_EQ(mock_share_service_.error() == mojom::ShareError::OK
                   ? v8::Promise::kFulfilled

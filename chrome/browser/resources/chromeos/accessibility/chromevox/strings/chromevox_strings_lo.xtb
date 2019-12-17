@@ -385,7 +385,6 @@
 <translation id="3646890046000188562">{COUNT,plural, =1{ເຄື່ອງໝາຍ (`)}other{# ເຄື່ອງໝາຍ (`)}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{​ໂດ​ລາ}other{# ສັນຍາລັກໂດລາ}}</translation>
-<translation id="3658742229777143148">ການ​ດັດ​ແກ້</translation>
 <translation id="3659787053479271466">ການເຕືອນ</translation>
 <translation id="3665563998540286755"><ph name="VALUE" />, ກ່ອງລາຍການ</translation>
 <translation id="3681531118904532409">ສີຊົມພູປາປາຢາວິບ</translation>
@@ -1104,7 +1103,6 @@
 <translation id="812886159861361726">ຢຸດການດາວໂຫຼດໄວ້ແລ້ວ <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">ແຕະ</translation>
 <translation id="8153880621934657047">ບໍ່​ຢູ່ພາຍໃນຕາ​ຕະ​ລາງ​ພາຍ​ໃນ​.</translation>
-<translation id="8161114871611868169">ພາກສ່ວນຄຳເຫັນ</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{ ເສັ້ນຂີດຢູ່ກ້ອງ}other{ # ເສັ້ນຂີດຢູ່ກ້ອງ}}</translation>
 <translation id="8179976553408161302">ປ້ອນເຂົ້າ</translation>
 <translation id="8184828902145951186">ແຖວ</translation>

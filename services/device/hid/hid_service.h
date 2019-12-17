@@ -45,7 +45,7 @@ class HidService {
   using GetDevicesCallback =
       base::OnceCallback<void(std::vector<mojom::HidDeviceInfoPtr>)>;
   using ConnectCallback =
-      base::Callback<void(scoped_refptr<HidConnection> connection)>;
+      base::OnceCallback<void(scoped_refptr<HidConnection> connection)>;
 
   static constexpr base::TaskTraits kBlockingTaskTraits = {
       base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
@@ -66,7 +66,7 @@ class HidService {
   // Opens a connection to a device. The callback will be run with null on
   // failure.
   virtual void Connect(const std::string& device_guid,
-                       const ConnectCallback& callback) = 0;
+                       ConnectCallback callback) = 0;
 
  protected:
   friend class HidConnectionTest;

@@ -113,11 +113,12 @@ TEST_F(PrioritizedTaskRunnerTest, PostTaskAndReplyThreadCheck) {
 
   base::RunLoop run_loop;
 
-  auto thread_check = [](scoped_refptr<base::TaskRunner> expected_task_runner,
-                         base::OnceClosure callback) {
-    EXPECT_TRUE(expected_task_runner->RunsTasksInCurrentSequence());
-    std::move(callback).Run();
-  };
+  auto thread_check =
+      [](scoped_refptr<base::SequencedTaskRunner> expected_task_runner,
+         base::OnceClosure callback) {
+        EXPECT_TRUE(expected_task_runner->RunsTasksInCurrentSequence());
+        std::move(callback).Run();
+      };
 
   prioritized_task_runner->PostTaskAndReply(
       FROM_HERE,

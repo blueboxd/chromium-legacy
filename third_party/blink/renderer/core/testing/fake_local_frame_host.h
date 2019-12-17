@@ -46,7 +46,7 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void SuddenTerminationDisablerChanged(
       bool present,
       blink::mojom::SuddenTerminationDisablerType disabler_type) override;
-  void ReceivedUserGestureBeforeNavigationChanged(bool value) override;
+  void HadStickyUserActivationBeforeNavigationChanged(bool value) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

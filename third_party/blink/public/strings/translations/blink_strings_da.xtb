@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">Forlæng denne tekst til <ph name="MIN_CHARACTERS" /> eller flere tegn (du bruger i øjeblikket <ph name="CURRENT_LENGTH" /> tegn).</translation>
 <translation id="383465348367842624">Den del, der kommer før "<ph name="ATSIGN" />", må ikke indeholde "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="3846214748874656680">Afslut fuld skærm</translation>
-<translation id="3889183436948184105">revision</translation>
 <translation id="3920932319529768807">konklusion</translation>
 <translation id="3924558731517983934">applikation</translation>
 <translation id="3944740393230681990">prolog</translation>
@@ -115,6 +114,7 @@
 <translation id="4812940957355064477">Angiv et nummer.</translation>
 <translation id="4912536737030637138">bibliografipost</translation>
 <translation id="492244087561876220">kommentar</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> er valgt</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> er valgt</translation>
 <translation id="4992066212339426712">Slå lyden til</translation>
 <translation id="49969490063480558">Angiv den del, der kommer efter "<ph name="ATSIGN" />". "<ph name="INVALIDADDRESS" />" er ufuldstændig.</translation>
@@ -219,6 +219,7 @@
 <translation id="7888071071722539607">Mailadressen skal indeholde et "<ph name="ATSIGN" />". "<ph name="INVALIDADDRESS" />" mangler et "<ph name="ATSIGN" />".</translation>
 <translation id="7891486169920085145">splitter</translation>
 <translation id="795667975304826397">Der er ikke valgt nogen fil</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> er ikke valgt</translation>
 <translation id="8034303206267677282">stærk</translation>
 <translation id="8053789581856978548">tekstfelt til søgning</translation>
 <translation id="8057695513531652401">meddelelse</translation>
@@ -257,7 +258,6 @@
 <translation id="8987927404178983737">Måned</translation>
 <translation id="901493112792887934">aktuel tid i sekunder</translation>
 <translation id="901834265349196618">mail</translation>
-<translation id="9023835124071926463">kommentarsektion</translation>
 <translation id="9048119486235211610">navigation</translation>
 <translation id="9062295712474918030">dokument</translation>
 <translation id="9093215626363556771">afslut integreret billede</translation>

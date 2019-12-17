@@ -77,7 +77,8 @@ LayoutSize LayoutListMarker::ImageBulletSize() const {
       font_data->GetFontMetrics().Ascent() / LayoutUnit(2);
   return RoundedLayoutSize(
       image_->ImageSize(GetDocument(), StyleRef().EffectiveZoom(),
-                        LayoutSize(bullet_width, bullet_width)));
+                        LayoutSize(bullet_width, bullet_width),
+                        LayoutObject::ShouldRespectImageOrientation(this)));
 }
 
 void LayoutListMarker::StyleWillChange(StyleDifference diff,
@@ -311,6 +312,8 @@ void LayoutListMarker::UpdateMargins() {
 std::pair<LayoutUnit, LayoutUnit> LayoutListMarker::InlineMarginsForInside(
     const ComputedStyle& style,
     bool is_image) {
+  if (style.GetContentData())
+    return {};
   if (is_image)
     return {LayoutUnit(), LayoutUnit(kCMarkerPaddingPx)};
   switch (GetListStyleCategory(style.ListStyleType())) {
@@ -329,51 +332,31 @@ std::pair<LayoutUnit, LayoutUnit> LayoutListMarker::InlineMarginsForOutside(
     LayoutUnit marker_inline_size) {
   LayoutUnit margin_start;
   LayoutUnit margin_end;
-  if (style.IsLeftToRightDirection()) {
-    if (is_image) {
-      margin_start = -marker_inline_size - kCMarkerPaddingPx;
-    } else {
-      switch (GetListStyleCategory(style.ListStyleType())) {
-        case ListStyleCategory::kNone:
-          break;
-        case ListStyleCategory::kSymbol: {
-          const SimpleFontData* font_data = style.GetFont().PrimaryFont();
-          DCHECK(font_data);
-          if (!font_data)
-            return {};
-          const FontMetrics& font_metrics = font_data->GetFontMetrics();
-          int offset = font_metrics.Ascent() * 2 / 3;
-          margin_start = LayoutUnit(-offset - kCMarkerPaddingPx - 1);
-          break;
-        }
-        default:
-          margin_start = -marker_inline_size;
-      }
-    }
-    margin_end = -margin_start - marker_inline_size;
+  if (style.GetContentData()) {
+    margin_start = -marker_inline_size;
+  } else if (is_image) {
+    margin_start = -marker_inline_size - kCMarkerPaddingPx;
+    margin_end = LayoutUnit(kCMarkerPaddingPx);
   } else {
-    if (is_image) {
-      margin_end = LayoutUnit(kCMarkerPaddingPx);
-    } else {
-      switch (GetListStyleCategory(style.ListStyleType())) {
-        case ListStyleCategory::kNone:
-          break;
-        case ListStyleCategory::kSymbol: {
-          const SimpleFontData* font_data = style.GetFont().PrimaryFont();
-          DCHECK(font_data);
-          if (!font_data)
-            return {};
-          const FontMetrics& font_metrics = font_data->GetFontMetrics();
-          int offset = font_metrics.Ascent() * 2 / 3;
-          margin_end = offset + kCMarkerPaddingPx + 1 - marker_inline_size;
-          break;
-        }
-        default:
-          margin_end = LayoutUnit();
+    switch (GetListStyleCategory(style.ListStyleType())) {
+      case ListStyleCategory::kNone:
+        break;
+      case ListStyleCategory::kSymbol: {
+        const SimpleFontData* font_data = style.GetFont().PrimaryFont();
+        DCHECK(font_data);
+        if (!font_data)
+          return {};
+        const FontMetrics& font_metrics = font_data->GetFontMetrics();
+        int offset = font_metrics.Ascent() * 2 / 3;
+        margin_start = LayoutUnit(-offset - kCMarkerPaddingPx - 1);
+        margin_end = offset + kCMarkerPaddingPx + 1 - marker_inline_size;
+        break;
       }
+      default:
+        margin_start = -marker_inline_size;
     }
-    margin_start = -margin_end - marker_inline_size;
   }
+  DCHECK_EQ(margin_start + margin_end, -marker_inline_size);
   return {margin_start, margin_end};
 }
 

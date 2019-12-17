@@ -637,8 +637,7 @@ TEST_P(AudioContextAutoplayTest,
 // document received a user gesture before navigation.
 TEST_P(AudioContextAutoplayTest,
        AutoplayMetrics_DocumentReceivedGesture_BeforeNavigation) {
-  GetDocument().GetFrame()->SetDocumentHasReceivedUserGestureBeforeNavigation(
-      true);
+  GetDocument().GetFrame()->SetHadStickyUserActivationBeforeNavigation(true);
 
   AudioContext* audio_context = AudioContext::Create(
       GetDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);

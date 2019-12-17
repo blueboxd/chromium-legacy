@@ -21,6 +21,7 @@ namespace blink {
 
 class BeforeInstallPromptEvent;
 class BeforeInstallPromptEventInit;
+class ExceptionState;
 
 using UserChoiceProperty =
     ScriptPromiseProperty<Member<BeforeInstallPromptEvent>,
@@ -69,8 +70,8 @@ class BeforeInstallPromptEvent final
   void Dispose();
 
   Vector<String> platforms() const;
-  ScriptPromise userChoice(ScriptState*);
-  ScriptPromise prompt(ScriptState*);
+  ScriptPromise userChoice(ScriptState*, ExceptionState&);
+  ScriptPromise prompt(ScriptState*, ExceptionState&);
 
   const AtomicString& InterfaceName() const override;
   void preventDefault() override;

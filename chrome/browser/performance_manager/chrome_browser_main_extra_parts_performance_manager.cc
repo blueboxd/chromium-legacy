@@ -21,11 +21,10 @@
 #include "chrome/browser/performance_manager/observers/isolation_context_metrics.h"
 #include "chrome/browser/performance_manager/observers/metrics_collector.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/performance_manager/graph/graph_impl.h"
 #include "components/performance_manager/performance_manager_impl.h"
 #include "components/performance_manager/performance_manager_lock_observer.h"
-#include "components/performance_manager/performance_manager_tab_helper.h"
-#include "components/performance_manager/render_process_user_data.h"
 #include "components/performance_manager/shared_worker_watcher.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
@@ -102,6 +101,7 @@ void ChromeBrowserMainExtraPartsPerformanceManager::PostCreateThreads() {
   performance_manager_ = performance_manager::PerformanceManagerImpl::Create(
       base::BindOnce(&ChromeBrowserMainExtraPartsPerformanceManager::
                          CreateDefaultPoliciesAndDecorators));
+  registry_ = performance_manager::PerformanceManagerRegistry::Create();
   browser_child_process_watcher_ =
       std::make_unique<performance_manager::BrowserChildProcessWatcher>();
   browser_child_process_watcher_->Initialize();
@@ -131,15 +131,13 @@ void ChromeBrowserMainExtraPartsPerformanceManager::PostMainMessageLoopRun() {
 
   page_live_state_data_helper_.reset();
 
-  // There may still be WebContents with attached tab helpers at this point in
-  // time, and there's no convenient later call-out to destroy the performance
-  // manager. To release the page and frame nodes, detach the tab helpers
-  // from any existing WebContents.
-  performance_manager::PerformanceManagerTabHelper::DetachAndDestroyAll();
-
-  // Then the render process nodes. These have to be destroyed after the
-  // frame nodes.
-  performance_manager::RenderProcessUserData::DetachAndDestroyAll();
+  // There may still be WebContents and RenderProcessHosts with attached user
+  // data, retaining PageNodes, FrameNodes and ProcessNodes. Tear down the
+  // registry to release these nodes. There is no convenient later call-out to
+  // destroy the performance manager after all WebContents and
+  // RenderProcessHosts have been destroyed.
+  registry_->TearDown();
+  registry_.reset();
 
   performance_manager::PerformanceManagerImpl::Destroy(
       std::move(performance_manager_));

@@ -38,7 +38,7 @@ const Region& TouchActionRegion::GetRegionForTouchAction(
 
 TouchAction TouchActionRegion::GetAllowedTouchAction(
     const gfx::Point& point) const {
-  TouchAction allowed_touch_action = kTouchActionAuto;
+  TouchAction allowed_touch_action = TouchAction::kAuto;
   for (const auto& pair : map_) {
     if (!pair.second.Contains(point))
       continue;

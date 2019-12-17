@@ -70,23 +70,91 @@ static const char* MkvCodeIcForMediaVideoCodecId(VideoCodec video_codec) {
   }
 }
 
+base::Optional<mkvmuxer::Colour> ColorFromColorSpace(
+    const gfx::ColorSpace& color) {
+  using mkvmuxer::Colour;
+  using MatrixID = gfx::ColorSpace::MatrixID;
+  using RangeID = gfx::ColorSpace::RangeID;
+  using TransferID = gfx::ColorSpace::TransferID;
+  using PrimaryID = gfx::ColorSpace::PrimaryID;
+  Colour colour;
+  int matrix_coefficients;
+  switch (color.GetMatrixID()) {
+    case MatrixID::BT709:
+      matrix_coefficients = Colour::kBt709;
+      break;
+    case MatrixID::BT2020_NCL:
+      matrix_coefficients = Colour::kBt2020NonConstantLuminance;
+      break;
+    default:
+      return base::nullopt;
+  }
+  colour.set_matrix_coefficients(matrix_coefficients);
+  int range;
+  switch (color.GetRangeID()) {
+    case RangeID::LIMITED:
+      range = Colour::kBroadcastRange;
+      break;
+    case RangeID::FULL:
+      range = Colour::kFullRange;
+      break;
+    default:
+      return base::nullopt;
+  }
+  colour.set_range(range);
+  int transfer_characteristics;
+  switch (color.GetTransferID()) {
+    case TransferID::BT709:
+      transfer_characteristics = Colour::kIturBt709Tc;
+      break;
+    case TransferID::IEC61966_2_1:
+      transfer_characteristics = Colour::kIec6196621;
+      break;
+    case TransferID::SMPTEST2084:
+      transfer_characteristics = Colour::kSmpteSt2084;
+      break;
+    default:
+      return base::nullopt;
+  }
+  colour.set_transfer_characteristics(transfer_characteristics);
+  int primaries;
+  switch (color.GetPrimaryID()) {
+    case PrimaryID::BT709:
+      primaries = Colour::kIturBt709P;
+      break;
+    case PrimaryID::BT2020:
+      primaries = Colour::kIturBt2020;
+      break;
+    default:
+      return base::nullopt;
+  }
+  colour.set_primaries(primaries);
+  return colour;
+}
+
 }  // anonymous namespace
 
 WebmMuxer::VideoParameters::VideoParameters(
-    scoped_refptr<media::VideoFrame> frame) {
-  visible_rect_size = frame->visible_rect().size();
-  frame_rate = 0.0;
+    scoped_refptr<media::VideoFrame> frame)
+    : visible_rect_size(frame->visible_rect().size()),
+      frame_rate(0.0),
+      codec(kUnknownVideoCodec),
+      color_space(frame->ColorSpace()) {
   ignore_result(frame->metadata()->GetDouble(VideoFrameMetadata::FRAME_RATE,
                                              &frame_rate));
-  codec = kUnknownVideoCodec;
 }
 
-WebmMuxer::VideoParameters::VideoParameters(gfx::Size visible_rect_size_param,
-                                            double frame_rate_param,
-                                            VideoCodec codec)
-    : visible_rect_size(visible_rect_size_param),
-      frame_rate(frame_rate_param),
-      codec(codec) {}
+WebmMuxer::VideoParameters::VideoParameters(
+    gfx::Size visible_rect_size,
+    double frame_rate,
+    VideoCodec codec,
+    base::Optional<gfx::ColorSpace> color_space)
+    : visible_rect_size(visible_rect_size),
+      frame_rate(frame_rate),
+      codec(codec),
+      color_space(color_space) {}
+
+WebmMuxer::VideoParameters::VideoParameters(const VideoParameters&) = default;
 
 WebmMuxer::VideoParameters::~VideoParameters() = default;
 
@@ -150,7 +218,8 @@ bool WebmMuxer::OnEncodedVideo(const VideoParameters& params,
     // |track_index_|, cannot be zero (!), initialize WebmMuxer in that case.
     // http://www.matroska.org/technical/specs/index.html#Tracks
     video_codec_ = params.codec;
-    AddVideoTrack(params.visible_rect_size, GetFrameRate(params));
+    AddVideoTrack(params.visible_rect_size, GetFrameRate(params),
+                  params.color_space);
     if (first_frame_timestamp_video_.is_null())
       first_frame_timestamp_video_ = timestamp;
   }
@@ -225,7 +294,10 @@ void WebmMuxer::Resume() {
   }
 }
 
-void WebmMuxer::AddVideoTrack(const gfx::Size& frame_size, double frame_rate) {
+void WebmMuxer::AddVideoTrack(
+    const gfx::Size& frame_size,
+    double frame_rate,
+    const base::Optional<gfx::ColorSpace>& color_space) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(0u, video_track_index_)
       << "WebmMuxer can only be initialized once.";
@@ -240,6 +312,11 @@ void WebmMuxer::AddVideoTrack(const gfx::Size& frame_size, double frame_rate) {
   mkvmuxer::VideoTrack* const video_track =
       reinterpret_cast<mkvmuxer::VideoTrack*>(
           segment_.GetTrackByNumber(video_track_index_));
+  if (color_space) {
+    auto colour = ColorFromColorSpace(*color_space);
+    if (colour)
+      video_track->SetColour(*colour);
+  }
   DCHECK(video_track);
   video_track->set_codec_id(MkvCodeIcForMediaVideoCodecId(video_codec_));
   DCHECK_EQ(0ull, video_track->crop_right());

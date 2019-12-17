@@ -69,6 +69,7 @@ using LoginAuthRequiredCallback =
 namespace base {
 class CommandLine;
 class FilePath;
+class SequencedTaskRunner;
 }  // namespace base
 
 namespace blink {
@@ -231,7 +232,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Note: see related BrowserThread::PostAfterStartupTask.
   virtual void PostAfterStartupTask(
       const base::Location& from_here,
-      const scoped_refptr<base::TaskRunner>& task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       base::OnceClosure task);
 
   // Allows the embedder to indicate whether it considers startup to be

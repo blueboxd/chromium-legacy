@@ -303,21 +303,6 @@ struct AutocompleteMatch {
   // components are important (part of the match), and should not be trimmed.
   static url_formatter::FormatUrlTypes GetFormatTypes(bool preserve_scheme,
                                                       bool preserve_subdomain);
-
-  // Determines whether a particular match is allowed to be the default match
-  // by comparing |input.text| and |match.inline_autocompletion|. Therefore,
-  // |match.inline_autocompletion| should be set prior to invoking this method.
-  // Also considers trailing whitespace in the input, so the input should not be
-  // fixed up.
-  //
-  // Input "x" will allow default matches "x", "xy", and "x y".
-  // Input "x " will allow default matches "x" and "x y".
-  // Input "x  " will allow default match "x".
-  // Input "x y" will allow default match "x y".
-  // Input "x" with prevent_inline_autocomplete will allow default match "x".
-  static bool AllowedToBeDefault(const AutocompleteInput& input,
-                                 AutocompleteMatch& match);
-
   // Logs the search engine used to navigate to a search page or auto complete
   // suggestion. For direct URL navigations, nothing is logged.
   static void LogSearchEngineUsed(const AutocompleteMatch& match,
@@ -434,6 +419,19 @@ struct AutocompleteMatch {
   // get confused about which is which.  See the code that sets
   // |swap_contents_and_description| for conditions they are swapped.
   AutocompleteMatch GetMatchWithContentsAndDescriptionPossiblySwapped() const;
+
+  // Determines whether this match is allowed to be the default match by
+  // comparing |input.text| and |inline_autocompletion|. Therefore,
+  // |inline_autocompletion| should be set prior to invoking this method. Also
+  // Also considers trailing whitespace in the input, so the input should not be
+  // fixed up. May trim trailing whitespaces from |inline_autocompletion|.
+  //
+  // Input "x" will allow default matches "x", "xy", and "x y".
+  // Input "x " will allow default matches "x" and "x y".
+  // Input "x  " will allow default match "x".
+  // Input "x y" will allow default match "x y".
+  // Input "x" with prevent_inline_autocomplete will allow default match "x".
+  void SetAllowedToBeDefault(const AutocompleteInput& input);
 
   // If this match is a tail suggestion, prepends the passed |common_prefix|.
   // If not, but the prefix matches the beginning of the suggestion, dims that

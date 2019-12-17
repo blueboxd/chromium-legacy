@@ -131,7 +131,7 @@ void PepperUDPSocketMessageFilter::OnFilterDestroyed() {
                  base::BindOnce(&PepperUDPSocketMessageFilter::Close, this));
 }
 
-scoped_refptr<base::TaskRunner>
+scoped_refptr<base::SequencedTaskRunner>
 PepperUDPSocketMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
   switch (message.type()) {

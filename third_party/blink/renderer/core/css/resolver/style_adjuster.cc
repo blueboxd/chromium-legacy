@@ -74,7 +74,7 @@ TouchAction AdjustTouchActionForElement(TouchAction touch_action,
       element && element == element->GetDocument().documentElement() &&
       element->GetDocument().LocalOwner();
   if (style.ScrollsOverflow() || is_child_document)
-    return touch_action | TouchAction::kTouchActionPan;
+    return touch_action | TouchAction::kPan;
   return touch_action;
 }
 
@@ -483,7 +483,7 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
   bool is_layout_object_needed =
       element && element->LayoutObjectIsNeeded(style);
 
-  TouchAction element_touch_action = TouchAction::kTouchActionAuto;
+  TouchAction element_touch_action = TouchAction::kAuto;
   // Touch actions are only supported by elements that support both the CSS
   // width and height properties.
   // See https://www.w3.org/TR/pointerevents/#the-touch-action-css-property.
@@ -502,7 +502,7 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
   // Apply touch action inherited from parent frame.
   if (is_child_document && element->GetDocument().GetFrame()) {
     inherited_action &=
-        TouchAction::kTouchActionPan |
+        TouchAction::kPan |
         element->GetDocument().GetFrame()->InheritedEffectiveTouchAction();
   }
 
@@ -516,9 +516,9 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
   inherited_action =
       AdjustTouchActionForElement(inherited_action, style, element);
 
-  TouchAction enforced_by_policy = TouchAction::kTouchActionNone;
+  TouchAction enforced_by_policy = TouchAction::kNone;
   if (element->GetDocument().IsVerticalScrollEnforced())
-    enforced_by_policy = TouchAction::kTouchActionPanY;
+    enforced_by_policy = TouchAction::kPanY;
 
   // Apply the adjusted parent effective touch actions.
   style.SetEffectiveTouchAction((element_touch_action & inherited_action) |

@@ -16,7 +16,7 @@
 #include "net/base/net_export.h"
 
 namespace base {
-class TaskRunner;
+class SequencedTaskRunner;
 }
 
 namespace net {
@@ -111,7 +111,7 @@ class NET_EXPORT DirectoryLister  {
 
     const base::FilePath dir_;
     const ListingType type_;
-    const scoped_refptr<base::TaskRunner> origin_task_runner_;
+    const scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
 
     // Only used on the origin thread.
     DirectoryLister* lister_;

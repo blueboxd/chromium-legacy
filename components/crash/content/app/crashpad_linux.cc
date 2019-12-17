@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/posix/global_descriptors.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "build/branding_buildflags.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "components/crash/content/app/crash_switches.h"
@@ -158,6 +159,11 @@ base::FilePath PlatformCrashpadInitialization(
 
 #if defined(OS_CHROMEOS)
     arguments.push_back("--use-cros-crash-reporter");
+
+    if (crash_reporter_client->IsRunningUnattended()) {
+      arguments.push_back(base::StringPrintf("--minidump-dir-for-tests=%s",
+                                             database_path.value().c_str()));
+    }
 #endif
 
     bool result =

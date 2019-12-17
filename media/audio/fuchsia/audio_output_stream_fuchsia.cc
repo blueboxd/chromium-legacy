@@ -258,8 +258,8 @@ void AudioOutputStreamFuchsia::SchedulePumpSamples(base::TimeTicks now) {
                                    min_lead_time_.value() -
                                    parameters_.GetBufferDuration() / 2;
   timer_.Start(FROM_HERE, next_pump_time - now,
-               base::Bind(&AudioOutputStreamFuchsia::PumpSamples,
-                          base::Unretained(this)));
+               base::BindOnce(&AudioOutputStreamFuchsia::PumpSamples,
+                              base::Unretained(this)));
 }
 
 }  // namespace media

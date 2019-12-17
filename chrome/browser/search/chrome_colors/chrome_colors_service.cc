@@ -10,15 +10,6 @@
 #include "chrome/common/search/generated_colors_info.h"
 #include "chrome/common/search/selected_colors_info.h"
 
-namespace {
-
-// Records whether current theme changes are confirmed or reverted.
-void RecordChangesConfirmedHistogram(bool confirmed) {
-  UMA_HISTOGRAM_BOOLEAN("ChromeColors.ChangesConfirmed", confirmed);
-}
-
-}  // namespace
-
 namespace chrome_colors {
 
 ChromeColorsService::ChromeColorsService(Profile* profile)
@@ -88,7 +79,6 @@ void ChromeColorsService::ConfirmThemeChanges() {
     return;
   prev_theme_reinstaller_ = nullptr;
   dialog_tab_ = nullptr;
-  RecordChangesConfirmedHistogram(true);
 }
 
 void ChromeColorsService::RevertThemeChangesWithReason(RevertReason reason) {
@@ -96,8 +86,6 @@ void ChromeColorsService::RevertThemeChangesWithReason(RevertReason reason) {
     prev_theme_reinstaller_->Reinstall();
     prev_theme_reinstaller_ = nullptr;
     dialog_tab_ = nullptr;
-    UMA_HISTOGRAM_ENUMERATION("ChromeColors.RevertReason", reason);
-    RecordChangesConfirmedHistogram(false);
   }
 }
 

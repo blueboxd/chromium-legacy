@@ -16,6 +16,7 @@ namespace autofill {
 class AutofillProfile;
 class AutofillTable;
 class CreditCard;
+struct CreditCardCloudTokenData;
 struct PaymentsCustomerData;
 
 // Returns the specified |id| encoded in / decoded from base 64.
@@ -48,6 +49,13 @@ void SetAutofillWalletSpecificsFromPaymentsCustomerData(
     const PaymentsCustomerData& customer_data,
     sync_pb::AutofillWalletSpecifics* wallet_specifics);
 
+// Sets the field of the |wallet_specifics| based on the specified
+// |cloud_token_data|. If |enforce_utf8|, ids are encoded into UTF-8.
+void SetAutofillWalletSpecificsFromCreditCardCloudTokenData(
+    const CreditCardCloudTokenData& cloud_token_data,
+    sync_pb::AutofillWalletSpecifics* wallet_specifics,
+    bool enforce_utf8 = false);
+
 // Creates an AutofillProfile from the specified |address| specifics.
 AutofillProfile ProfileFromSpecifics(
     const sync_pb::WalletPostalAddress& address);
@@ -69,7 +77,8 @@ void PopulateWalletTypesFromSyncData(
     const ::syncer::EntityChangeList& entity_data,
     std::vector<CreditCard>* wallet_cards,
     std::vector<AutofillProfile>* wallet_addresses,
-    std::vector<PaymentsCustomerData>* customer_data);
+    std::vector<PaymentsCustomerData>* customer_data,
+    std::vector<CreditCardCloudTokenData>* cloud_token_data);
 
 }  // namespace autofill
 

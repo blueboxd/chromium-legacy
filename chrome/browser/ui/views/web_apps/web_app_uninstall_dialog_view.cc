@@ -227,6 +227,11 @@ void WebAppUninstallDialogViews::ConfirmUninstall(
                              weak_ptr_factory_.GetWeakPtr()));
 }
 
+void WebAppUninstallDialogViews::SetDialogShownCallbackForTesting(
+    base::OnceClosure callback) {
+  dialog_shown_callback_for_testing_ = std::move(callback);
+}
+
 void WebAppUninstallDialogViews::OnAllIconsRead(
     std::map<SquareSizePx, SkBitmap> icon_bitmaps) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -240,6 +245,9 @@ void WebAppUninstallDialogViews::OnAllIconsRead(
                                                 std::move(icon_bitmaps));
 
   constrained_window::CreateBrowserModalDialogViews(view_, parent_)->Show();
+
+  if (dialog_shown_callback_for_testing_)
+    std::move(dialog_shown_callback_for_testing_).Run();
 }
 
 void WebAppUninstallDialogViews::OnWebAppUninstalled(

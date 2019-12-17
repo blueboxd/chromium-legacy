@@ -25,7 +25,8 @@ whenPageIsPopulatedForTest = function() {
 };
 
 function initialize() {
-  engagementDetailsProvider = mojom.SiteEngagementDetailsProvider.getRemote();
+  engagementDetailsProvider = mojom.SiteEngagementDetailsProvider.getRemote(
+      /*useBrowserInterfaceBroker=*/ true);
 
   /** @type {?HTMLElement} */
   const engagementTableBody = $('engagement-table-body');

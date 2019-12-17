@@ -349,7 +349,7 @@ class VIEWS_EXPORT Button : public InkDropHostView,
 
   // True when a button click should trigger an animation action on
   // ink_drop_delegate().
-  bool has_ink_drop_action_on_click_ = false;
+  bool has_ink_drop_action_on_click_ = true;
 
   // When true, the ink drop ripple and hover will be hidden prior to showing
   // the context menu.

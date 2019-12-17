@@ -101,6 +101,7 @@ void ChromeTestHarnessWithLocalDB::SetUp() {
   // initialized.
   performance_manager_ =
       performance_manager::PerformanceManagerImpl::Create(base::DoNothing());
+  registry_ = performance_manager::PerformanceManagerRegistry::Create();
 
   LocalSiteCharacteristicsDataStoreFactory::EnableForTesting();
 
@@ -112,6 +113,8 @@ void ChromeTestHarnessWithLocalDB::SetUp() {
 }
 
 void ChromeTestHarnessWithLocalDB::TearDown() {
+  registry_->TearDown();
+  registry_.reset();
   performance_manager::PerformanceManagerImpl::Destroy(
       std::move(performance_manager_));
   content::SetSystemConnectorForTesting(nullptr);

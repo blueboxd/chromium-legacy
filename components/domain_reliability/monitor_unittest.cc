@@ -21,10 +21,10 @@
 #include "components/domain_reliability/google_configs.h"
 #include "components/domain_reliability/test_util.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -70,7 +70,7 @@ class DomainReliabilityMonitorTest : public testing::Test {
 
   static RequestInfo MakeRequestInfo() {
     RequestInfo request;
-    request.status = net::URLRequestStatus();
+    request.net_error = net::OK;
     request.response_info.remote_endpoint =
         net::IPEndPoint(net::IPAddress(12, 34, 56, 78), 80);
     request.response_info.headers = MakeHttpResponseHeaders(
@@ -126,7 +126,7 @@ TEST_F(DomainReliabilityMonitorTest, NetworkFailure) {
 
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/");
-  request.status = net::URLRequestStatus::FromError(net::ERR_CONNECTION_RESET);
+  request.net_error = net::ERR_CONNECTION_RESET;
   request.response_info.headers = nullptr;
   OnRequestLegComplete(request);
 
@@ -187,8 +187,7 @@ TEST_F(DomainReliabilityMonitorTest, LocalError) {
 
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/");
-  request.status =
-      net::URLRequestStatus::FromError(net::ERR_PROXY_CONNECTION_FAILED);
+  request.net_error = net::ERR_PROXY_CONNECTION_FAILED;
   OnRequestLegComplete(request);
 
   EXPECT_EQ(0u, CountQueuedBeacons(context));
@@ -200,7 +199,7 @@ TEST_F(DomainReliabilityMonitorTest, WasFetchedViaProxy) {
 
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/");
-  request.status = net::URLRequestStatus::FromError(net::ERR_CONNECTION_RESET);
+  request.net_error = net::ERR_CONNECTION_RESET;
   request.response_info.remote_endpoint =
       net::IPEndPoint(net::IPAddress(127, 0, 0, 1), 3128);
   request.response_info.was_fetched_via_proxy = true;
@@ -240,8 +239,7 @@ TEST_F(DomainReliabilityMonitorTest, NoCachedIPFromFailedRevalidationRequest) {
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/");
   request.response_info.was_cached = true;
-  request.status =
-      net::URLRequestStatus::FromError(net::ERR_NAME_RESOLUTION_FAILED);
+  request.net_error = net::ERR_NAME_RESOLUTION_FAILED;
   OnRequestLegComplete(request);
 
   BeaconVector beacons;
@@ -263,7 +261,7 @@ TEST_F(DomainReliabilityMonitorTest, Upload) {
   request.url = GURL("http://example/");
   request.load_flags =
       net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
-  request.status = net::URLRequestStatus::FromError(net::ERR_CONNECTION_RESET);
+  request.net_error = net::ERR_CONNECTION_RESET;
   request.upload_depth = 1;
   OnRequestLegComplete(request);
 
@@ -303,7 +301,7 @@ TEST_F(DomainReliabilityMonitorTest, ClearBeacons) {
   // Add a beacon.
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/");
-  request.status = net::URLRequestStatus::FromError(net::ERR_CONNECTION_RESET);
+  request.net_error = net::ERR_CONNECTION_RESET;
   OnRequestLegComplete(request);
 
   // Make sure it was added.
@@ -326,16 +324,14 @@ TEST_F(DomainReliabilityMonitorTest, ClearBeaconsWithFilter) {
       CreateAndAddContextForOrigin(origin1, false);
   RequestInfo request = MakeRequestInfo();
   request.url = origin1;
-  request.status =
-      net::URLRequestStatus::FromError(net::ERR_CONNECTION_RESET);
+  request.net_error = net::ERR_CONNECTION_RESET;
   OnRequestLegComplete(request);
 
   DomainReliabilityContext* context2 =
       CreateAndAddContextForOrigin(origin2, false);
   request = MakeRequestInfo();
   request.url = origin2;
-  request.status =
-      net::URLRequestStatus::FromError(net::ERR_CONNECTION_RESET);
+  request.net_error = net::ERR_CONNECTION_RESET;
   OnRequestLegComplete(request);
 
   // Delete the beacons for |origin1|.
@@ -389,7 +385,7 @@ TEST_F(DomainReliabilityMonitorTest, WildcardMatchesSelf) {
 
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://wildcard/");
-  request.status = net::URLRequestStatus::FromError(net::ERR_CONNECTION_RESET);
+  request.net_error = net::ERR_CONNECTION_RESET;
   OnRequestLegComplete(request);
 
   EXPECT_EQ(1u, CountQueuedBeacons(context));
@@ -401,7 +397,7 @@ TEST_F(DomainReliabilityMonitorTest, WildcardMatchesSubdomain) {
 
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://test.wildcard/");
-  request.status = net::URLRequestStatus::FromError(net::ERR_CONNECTION_RESET);
+  request.net_error = net::ERR_CONNECTION_RESET;
   OnRequestLegComplete(request);
 
   EXPECT_EQ(1u, CountQueuedBeacons(context));
@@ -413,7 +409,7 @@ TEST_F(DomainReliabilityMonitorTest, WildcardDoesntMatchSubsubdomain) {
 
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://test.test.wildcard/");
-  request.status = net::URLRequestStatus::FromError(net::ERR_CONNECTION_RESET);
+  request.net_error = net::ERR_CONNECTION_RESET;
   OnRequestLegComplete(request);
 
   EXPECT_EQ(0u, CountQueuedBeacons(context));
@@ -427,7 +423,7 @@ TEST_F(DomainReliabilityMonitorTest, WildcardPrefersSelfToParentWildcard) {
 
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://test.wildcard/");
-  request.status = net::URLRequestStatus::FromError(net::ERR_CONNECTION_RESET);
+  request.net_error = net::ERR_CONNECTION_RESET;
   OnRequestLegComplete(request);
 
   EXPECT_EQ(1u, CountQueuedBeacons(context1));
@@ -443,7 +439,7 @@ TEST_F(DomainReliabilityMonitorTest,
 
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://test.wildcard/");
-  request.status = net::URLRequestStatus::FromError(net::ERR_CONNECTION_RESET);
+  request.net_error = net::ERR_CONNECTION_RESET;
   OnRequestLegComplete(request);
 
   EXPECT_EQ(1u, CountQueuedBeacons(context1));

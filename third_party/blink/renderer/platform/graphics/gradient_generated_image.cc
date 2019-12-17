@@ -54,7 +54,8 @@ void GradientGeneratedImage::Draw(cc::PaintCanvas* canvas,
 }
 
 void GradientGeneratedImage::DrawTile(GraphicsContext& context,
-                                      const FloatRect& src_rect) {
+                                      const FloatRect& src_rect,
+                                      RespectImageOrientationEnum) {
   // TODO(ccameron): This function should not ignore |context|'s color behavior.
   // https://crbug.com/672306
   PaintFlags gradient_flags(context.FillFlags());

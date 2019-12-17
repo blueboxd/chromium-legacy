@@ -627,9 +627,6 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ax::mojom::Role::kComment:
       message_id = IDS_AX_ROLE_COMMENT;
       break;
-    case ax::mojom::Role::kCommentSection:
-      message_id = IDS_AX_ROLE_COMMENT_SECTION;
-      break;
     case ax::mojom::Role::kComplementary:
       message_id = IDS_AX_ROLE_COMPLEMENTARY;
       break;
@@ -982,9 +979,6 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
       break;
     case ax::mojom::Role::kRegion:
       message_id = IDS_AX_ROLE_REGION;
-      break;
-    case ax::mojom::Role::kRevision:
-      message_id = IDS_AX_ROLE_REVISION;
       break;
     case ax::mojom::Role::kRootWebArea:
       // No role description.

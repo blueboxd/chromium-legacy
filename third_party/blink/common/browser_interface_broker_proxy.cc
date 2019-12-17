@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "base/no_destructor.h"
+#include "base/threading/sequence_local_storage_slot.h"
 
 namespace blink {
 
@@ -50,16 +52,17 @@ bool BrowserInterfaceBrokerProxy::SetBinderForTesting(
 }
 
 BrowserInterfaceBrokerProxy& GetEmptyBrowserInterfaceBroker() {
-  static BrowserInterfaceBrokerProxy* broker_proxy = []() {
-    BrowserInterfaceBrokerProxy* broker_proxy =
-        new BrowserInterfaceBrokerProxy();
+  static base::NoDestructor<
+      base::SequenceLocalStorageSlot<BrowserInterfaceBrokerProxy>>
+      proxy_slot;
+  if (!proxy_slot->GetValuePointer()) {
+    auto& proxy = proxy_slot->GetOrCreateValue();
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker> remote;
     ignore_result(remote.InitWithNewPipeAndPassReceiver());
-    broker_proxy->Bind(std::move(remote));
-    return broker_proxy;
-  }();
+    proxy.Bind(std::move(remote));
+  }
 
-  return *broker_proxy;
+  return proxy_slot->GetOrCreateValue();
 }
 
 }  // namespace blink

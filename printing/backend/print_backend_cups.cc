@@ -158,7 +158,7 @@ bool PrintBackendCUPS::GetPrinterSemanticCapsAndDefaults(
   if (!GetPrinterCapsAndDefaults(printer_name, &info))
     return false;
 
-  return ParsePpdCapabilities(printer_name, info.printer_capabilities,
+  return ParsePpdCapabilities(printer_name, locale(), info.printer_capabilities,
                               printer_info);
 }
 

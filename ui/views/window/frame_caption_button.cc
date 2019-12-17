@@ -53,7 +53,6 @@ FrameCaptionButton::FrameCaptionButton(views::ButtonListener* listener,
   set_animate_on_state_change(true);
   swap_images_animation_->Reset(1);
 
-  set_has_ink_drop_action_on_click(true);
   SetInkDropMode(InkDropMode::ON);
   set_ink_drop_visible_opacity(kInkDropVisibleOpacity);
   UpdateInkDropBaseColor();

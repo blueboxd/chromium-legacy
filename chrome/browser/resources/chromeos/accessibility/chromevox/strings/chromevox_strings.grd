@@ -1123,9 +1123,6 @@
       <message desc="Accessibility role description for a single comment" name="IDS_CHROMEVOX_ROLE_COMMENT">
         Comment
       </message>
-      <message desc="Accessibility role description for a comment section" name="IDS_CHROMEVOX_ROLE_COMMENT_SECTION">
-        Comment section
-      </message>
       <message desc="Accessibility role description for content deletion, meaning content that is has been or is suggested to be removed from a document, such as in a revision review" name="IDS_CHROMEVOX_ROLE_CONTENT_DELETION">
         Deletion
       </message>
@@ -1365,9 +1362,6 @@
       </message>
       <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'radio button group' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_RADIOGROUP_BRL">
         rdgrp
-      </message>
-      <message desc="Accessibility role description for revision, meaning historical change info tied to this content" name="IDS_CHROMEVOX_ROLE_REVISION">
-        Revision
       </message>
       <message desc="Describes an element with the ARIA role scrollbar." name="IDS_CHROMEVOX_ROLE_SCROLLBAR">
         Scroll bar

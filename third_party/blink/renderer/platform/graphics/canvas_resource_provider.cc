@@ -14,6 +14,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -133,9 +134,8 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
           context_provider_wrapper,
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
       bool is_origin_top_left,
-      bool is_overlay_candidate,
-      bool maybe_single_buffered,
-      bool is_accelerated)
+      bool is_accelerated,
+      uint32_t shared_image_usage_flags)
       : CanvasResourceProvider(
             kSharedImage,
             size,
@@ -151,9 +151,8 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
             is_origin_top_left,
             std::move(context_provider_wrapper),
             std::move(resource_dispatcher)),
-        is_overlay_candidate_(is_overlay_candidate),
-        maybe_single_buffered_(maybe_single_buffered),
-        is_accelerated_(is_accelerated) {
+        is_accelerated_(is_accelerated),
+        shared_image_usage_flags_(shared_image_usage_flags) {
     resource_ = NewOrRecycledResource();
     if (resource_)
       EnsureWriteAccess();
@@ -165,7 +164,8 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
   bool IsAccelerated() const final { return is_accelerated_; }
   bool SupportsDirectCompositing() const override { return true; }
   bool SupportsSingleBuffering() const override {
-    return maybe_single_buffered_;
+    return shared_image_usage_flags_ &
+           gpu::SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE;
   }
   GLuint GetBackingTextureHandleForOverwrite() override {
     DCHECK(is_accelerated_);
@@ -186,11 +186,10 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     if (IsGpuContextLost())
       return nullptr;
 
-    bool allow_concurrent_read_write_access = maybe_single_buffered_;
     return CanvasResourceSharedImage::Create(
         Size(), ContextProviderWrapper(), CreateWeakPtr(), FilterQuality(),
-        ColorParams(), is_overlay_candidate_, IsOriginTopLeft(),
-        allow_concurrent_read_write_access, is_accelerated_);
+        ColorParams(), IsOriginTopLeft(), is_accelerated_,
+        shared_image_usage_flags_);
   }
 
   void NotifyTexParamsModified(const CanvasResource* resource) override {
@@ -431,9 +430,8 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     return static_cast<const CanvasResourceSharedImage*>(resource_.get());
   }
 
-  const bool is_overlay_candidate_;
-  const bool maybe_single_buffered_;
   const bool is_accelerated_;
+  const uint32_t shared_image_usage_flags_;
   bool current_resource_has_write_access_ = false;
   scoped_refptr<CanvasResource> resource_;
   scoped_refptr<StaticBitmapImage> cached_snapshot_;
@@ -662,7 +660,9 @@ const Vector<CanvasResourceType>& GetResourceTypeFallbackList(
       return kAcceleratedDirect3DFallbackList;
     case CanvasResourceProvider::ResourceUsage::
         kSoftwareCompositedDirect2DResourceUsage:
-      return kCompositedFallbackList;
+      NOTREACHED();
+      static const Vector<CanvasResourceType> kEmptyList;
+      return kEmptyList;
   }
   NOTREACHED();
 }
@@ -767,50 +767,54 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
             resource_dispatcher);
         break;
       case CanvasResourceType::kSharedImage: {
-        DCHECK_NE(usage, ResourceUsage::kSoftwareResourceUsage);
-
         if (!context_provider_wrapper)
           continue;
 
-        const bool is_accelerated =
-            usage == ResourceUsage::kAcceleratedResourceUsage ||
-            usage == ResourceUsage::kAcceleratedCompositedResourceUsage ||
-            usage == ResourceUsage::kAcceleratedDirect2DResourceUsage ||
-            usage == ResourceUsage::kAcceleratedDirect3DResourceUsage;
-
-        // If the rendering will be in software and we don't have GMB support,
-        // fallback to bitmap provider type.
-        if (!is_accelerated && !is_gpu_memory_buffer_image_allowed)
-          continue;
-
-        // texture_storage_image is required to create shared images supporting
-        // scanout usage.
         const bool can_use_overlays =
             is_gpu_memory_buffer_image_allowed &&
             context_provider_wrapper->ContextProvider()
                 ->GetCapabilities()
                 .texture_storage_image;
 
-        const bool is_overlay_candidate =
-            (usage == ResourceUsage::kAcceleratedDirect2DResourceUsage ||
-             usage == ResourceUsage::kAcceleratedDirect3DResourceUsage ||
-             usage == ResourceUsage::kAcceleratedCompositedResourceUsage ||
-             usage == ResourceUsage::kSoftwareCompositedResourceUsage) &&
-            can_use_overlays;
-
-        // Single buffering requires concurrent read/write access to the
-        // resource which is sub-optimal for software raster since that would
-        // require concurrent access to the resource on the CPU and GPU, so
-        // enable it for accelerated low latency canvas only.
-        const bool maybe_single_buffered =
-            (usage == ResourceUsage::kAcceleratedDirect2DResourceUsage ||
-             usage == ResourceUsage::kAcceleratedDirect3DResourceUsage) &&
-            is_gpu_memory_buffer_image_allowed;
+        bool is_accelerated = false;
+        uint32_t shared_image_usage_flags = 0u;
+        switch (usage) {
+          case ResourceUsage::kSoftwareResourceUsage:
+            NOTREACHED();
+            continue;
+          case ResourceUsage::kSoftwareCompositedResourceUsage:
+            // Rendering in software with accelerated compositing.
+            if (!is_gpu_memory_buffer_image_allowed)
+              continue;
+            shared_image_usage_flags |= gpu::SHARED_IMAGE_USAGE_DISPLAY;
+            if (can_use_overlays)
+              shared_image_usage_flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
+            is_accelerated = false;
+            break;
+          case ResourceUsage::kAcceleratedDirect2DResourceUsage:
+          case ResourceUsage::kAcceleratedDirect3DResourceUsage:
+            if (can_use_overlays) {
+              shared_image_usage_flags |=
+                  gpu::SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE;
+            }
+            FALLTHROUGH;
+          case ResourceUsage::kAcceleratedCompositedResourceUsage:
+            shared_image_usage_flags |= gpu::SHARED_IMAGE_USAGE_DISPLAY;
+            if (can_use_overlays)
+              shared_image_usage_flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
+            FALLTHROUGH;
+          case ResourceUsage::kAcceleratedResourceUsage:
+            is_accelerated = true;
+            break;
+          case ResourceUsage::kSoftwareCompositedDirect2DResourceUsage:
+            NOTREACHED();
+            continue;
+        }
 
         provider = std::make_unique<CanvasResourceProviderSharedImage>(
             size, msaa_sample_count, filter_quality, color_params,
             context_provider_wrapper, resource_dispatcher, is_origin_top_left,
-            is_overlay_candidate, maybe_single_buffered, is_accelerated);
+            is_accelerated, shared_image_usage_flags);
       } break;
     }
     if (!provider->IsValid())

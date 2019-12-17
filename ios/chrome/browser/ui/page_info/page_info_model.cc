@@ -27,7 +27,6 @@
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
-#import "ios/web/common/origin_util.h"
 #include "ios/web/public/security/ssl_status.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
@@ -75,9 +74,7 @@ PageInfoModel::PageInfoModel(ios::ChromeBrowserState* browser_state,
     // Not HTTPS. This maps to the WARNING security level. Show the grey
     // triangle icon in page info based on the same logic used to determine
     // the iconography in the omnibox.
-    if (security_state::ShouldDowngradeNeutralStyling(
-            security_state::SecurityLevel::WARNING, url,
-            base::BindRepeating(&web::IsOriginSecure))) {
+    if (security_state::ShouldShowDangerTriangleForWarningLevel()) {
       icon_id = ICON_STATE_ERROR;
     } else {
       icon_id = ICON_STATE_INFO;
@@ -121,12 +118,12 @@ PageInfoModel::PageInfoModel(ios::ChromeBrowserState* browser_state,
             IDS_IOS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY, issuer_name));
       }
       if (ssl.content_status == web::SSLStatus::DISPLAYED_INSECURE_CONTENT) {
-        // HTTPS with mixed content. This maps to the NONE security level. Show
-        // the grey triangle icon in page info based on the same logic used to
-        // determine the iconography in the omnibox.
-        if (security_state::ShouldDowngradeNeutralStyling(
-                security_state::SecurityLevel::NONE, url,
-                base::BindRepeating(&web::IsOriginSecure))) {
+        // HTTPS with mixed content. This maps to the WARNING security level
+        // in M80, so assume the WARNING state when determining whether to
+        // swap the icon for a grey triangle. This will result in an
+        // inconsistency between the omnibox and page info if the mixed
+        // content WARNING feature is disabled.
+        if (security_state::ShouldShowDangerTriangleForWarningLevel()) {
           icon_id = ICON_STATE_ERROR;
         } else {
           icon_id = ICON_STATE_INFO;

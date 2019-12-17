@@ -12,6 +12,6 @@
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT COMPONENT_EXPORT(CC_IPC)
 
-IPC_ENUM_TRAITS_MAX_VALUE(cc::TouchAction, cc::TouchAction::kTouchActionMax)
+IPC_ENUM_TRAITS_MAX_VALUE(cc::TouchAction, cc::TouchAction::kMax)
 
 #endif  // CC_IPC_CC_PARAM_TRAITS_MACROS_H_

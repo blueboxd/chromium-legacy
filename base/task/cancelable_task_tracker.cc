@@ -14,6 +14,7 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 
@@ -21,7 +22,7 @@ namespace base {
 
 namespace {
 
-void RunOrPostToTaskRunner(scoped_refptr<TaskRunner> task_runner,
+void RunOrPostToTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner,
                            OnceClosure closure) {
   if (task_runner->RunsTasksInCurrentSequence())
     std::move(closure).Run();
@@ -163,13 +164,14 @@ bool CancelableTaskTracker::HasTrackedTasks() const {
 
 // static
 void CancelableTaskTracker::RunIfNotCanceled(
-    const scoped_refptr<TaskRunner>& task_runner,
+    const scoped_refptr<SequencedTaskRunner>& origin_task_runner,
     const scoped_refptr<TaskCancellationFlag>& flag,
     OnceClosure task) {
   // TODO(https://crbug.com/1009795): Ignore off-sequence cancellation, to
   // evaluate whether it is a worthwhile optimization.
-  if (flag->data.IsSet() && (AllowOffSequenceTaskCancelation() ||
-                             task_runner->RunsTasksInCurrentSequence())) {
+  if (flag->data.IsSet() &&
+      (AllowOffSequenceTaskCancelation() ||
+       origin_task_runner->RunsTasksInCurrentSequence())) {
     return;
   }
   std::move(task).Run();
@@ -177,21 +179,22 @@ void CancelableTaskTracker::RunIfNotCanceled(
 
 // static
 void CancelableTaskTracker::RunThenUntrackIfNotCanceled(
-    const scoped_refptr<TaskRunner>& task_runner,
+    const scoped_refptr<SequencedTaskRunner>& origin_task_runner,
     const scoped_refptr<TaskCancellationFlag>& flag,
     OnceClosure task,
     OnceClosure untrack) {
-  RunIfNotCanceled(task_runner, flag, std::move(task));
-  RunIfNotCanceled(task_runner, flag, std::move(untrack));
+  RunIfNotCanceled(origin_task_runner, flag, std::move(task));
+  RunIfNotCanceled(origin_task_runner, flag, std::move(untrack));
 }
 
 // static
 bool CancelableTaskTracker::IsCanceled(
-    const scoped_refptr<TaskRunner>& task_runner,
+    const scoped_refptr<SequencedTaskRunner>& origin_task_runner,
     const scoped_refptr<TaskCancellationFlag>& flag,
     const ScopedClosureRunner& cleanup_runner) {
-  return flag->data.IsSet() && (AllowOffSequenceTaskCancelation() ||
-                                task_runner->RunsTasksInCurrentSequence());
+  return flag->data.IsSet() &&
+         (AllowOffSequenceTaskCancelation() ||
+          origin_task_runner->RunsTasksInCurrentSequence());
 }
 
 void CancelableTaskTracker::Track(TaskId id,

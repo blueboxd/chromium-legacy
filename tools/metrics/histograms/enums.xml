@@ -16110,6 +16110,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="14" label="SENSITIVE_CONTENT_BLOCK"/>
   <int value="15" label="DEEP_SCANNED_SAFE"/>
   <int value="16" label="DEEP_SCANNED_OPENED_DANGEROUS"/>
+  <int value="17" label="PROMPT_FOR_SCANNING"/>
 </enum>
 
 <enum name="DownloadLocationDialogResult">
@@ -16727,6 +16728,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="24" label="P-384"/>
   <int value="25" label="P-521"/>
   <int value="29" label="X25519"/>
+  <int value="16696" label="CECPQ2"/>
 </enum>
 
 <enum name="EdidColorSpaceChecksOutcome">
@@ -18929,6 +18931,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="653" label="NTPCustomBackgroundEnabled"/>
   <int value="654" label="DNSInterceptionChecksEnabled"/>
   <int value="655" label="PrimaryMouseButtonSwitch"/>
+  <int value="656" label="ReportDeviceCpuInfo"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -45133,6 +45136,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="PSB 10MHz-wide"/>
   <int value="6" label="PSB 5MHz-wide"/>
   <int value="7" label="802.11ac"/>
+  <int value="8" label="802.11ax"/>
 </enum>
 
 <enum name="NetworkPortalResult">
@@ -52931,6 +52935,18 @@ Called by update_net_trust_anchors.py.-->
   <int value="21" label="QUIC_CHROMIUM_CLIENT_SESSION_CLOSE_SESSION_ON_ERROR"/>
 </enum>
 
+<enum name="QuickAnswersLoadStatus">
+  <int value="0" label="kNetworkError"/>
+  <int value="1" label="kNoResult"/>
+  <int value="2" label="kSuccess"/>
+</enum>
+
+<enum name="QuickAnswersResultType">
+  <int value="5493" label="kDefinitionResult"/>
+  <int value="6613" label="kTranslationResult"/>
+  <int value="13668" label="kUnitConversionResult"/>
+</enum>
+
 <enum name="QuickofficeErrorTypes">
   <int value="0" label="doc uncaught js exception"/>
   <int value="1" label="docx uncaught js exception"/>
@@ -55672,7 +55688,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="31" label="SENSITIVE_CONTENT_WARNING"/>
   <int value="32" label="SENSITIVE_CONTENT_BLOCK"/>
   <int value="33" label="DEEP_SCANNED_SAFE"/>
-  <int value="34" label="DEEP_SCANNED_OPENED_DANGEROUS"/>
 </enum>
 
 <enum name="SBClientDownloadCheckResult">
@@ -57455,6 +57470,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Dialog without devices but with an app"/>
   <int value="2" label="Educational dialog without devices or apps"/>
   <int value="3" label="Error dialog"/>
+</enum>
+
+<enum name="SharingMajorVersionComparison">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Sender version is lower"/>
+  <int value="2" label="Sender and receiver versions are same"/>
+  <int value="3" label="Sender version is higher"/>
 </enum>
 
 <enum name="SharingMessageType">
@@ -61500,6 +61522,16 @@ would be helpful to identify which type is being sent.
   <int value="4" label="TRUSTED_VAULT_PASSPHRASE"/>
 </enum>
 
+<enum name="SyncPassphraseType2">
+  <int value="0" label="No active syncing profiles"/>
+  <int value="1" label="Inconsistent state across profiles"/>
+  <int value="2" label="Implicit passphrase"/>
+  <int value="3" label="Keystore passphrase"/>
+  <int value="4" label="Frozen implicit passphrase"/>
+  <int value="5" label="Custom passphrase"/>
+  <int value="6" label="Trusted vault passphrase"/>
+</enum>
+
 <enum name="SyncPositioningScheme">
   <int value="0" label="UNIQUE_POSITION"/>
   <int value="1" label="POSITION_IN_PARENT"/>
@@ -62134,6 +62166,7 @@ would be helpful to identify which type is being sent.
   <int value="0" label="Token was empty"/>
   <int value="1" label="Token stayed unchanged"/>
   <int value="2" label="Token has changed"/>
+  <int value="3" label="Token was cleared"/>
 </enum>
 
 <enum name="TouchActions">

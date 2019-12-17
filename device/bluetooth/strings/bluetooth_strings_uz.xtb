@@ -17,6 +17,7 @@
 <translation id="5271696982761495740">Planshet (<ph name="ADDRESS" />)</translation>
 <translation id="5376363957846771741">Noma’lum yoki qo‘llab-quvvatlanmaydigan qurilma (<ph name="ADDRESS" />)</translation>
 <translation id="5716052956047449618"><ph name="DEVICE_NAME" />, Modem</translation>
+<translation id="6459740836740815150"><ph name="DEVICE_NAME" />, avtomobil audio qurilmasi</translation>
 <translation id="6542922424766292144"><ph name="DEVICE_NAME" />, Klaviatura</translation>
 <translation id="654594702871184195">Audio qurilma (<ph name="ADDRESS" />)</translation>
 <translation id="6744468237221042970">Kompyuter (<ph name="ADDRESS" />)</translation>
@@ -26,5 +27,6 @@
 <translation id="8866374292072238753">Video qurilma (<ph name="ADDRESS" />)</translation>
 <translation id="8952558712545617651">Sichqoncha (<ph name="ADDRESS" />)</translation>
 <translation id="8961448405689538648"><ph name="DEVICE_NAME" />, Notanish turdagi qurilma</translation>
+<translation id="907431882454731668">Tashqi qurilma (<ph name="ADDRESS" />)</translation>
 <translation id="978248992969828584">Telefon (<ph name="ADDRESS" />)</translation>
 </translationbundle>

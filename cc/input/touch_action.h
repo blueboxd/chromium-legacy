@@ -18,28 +18,27 @@ namespace cc {
 // This is intended to be the single canonical definition of the enum, it's used
 // elsewhere in both Blink and content since touch action logic spans those
 // subsystems.
-// TODO(crbug.com/720553): rework this enum to enum class.
 const size_t kTouchActionBits = 6;
 
-enum TouchAction {
+enum class TouchAction {
   // No scrolling or zooming allowed.
-  kTouchActionNone = 0x0,
-  kTouchActionPanLeft = 0x1,
-  kTouchActionPanRight = 0x2,
-  kTouchActionPanX = kTouchActionPanLeft | kTouchActionPanRight,
-  kTouchActionPanUp = 0x4,
-  kTouchActionPanDown = 0x8,
-  kTouchActionPanY = kTouchActionPanUp | kTouchActionPanDown,
-  kTouchActionPan = kTouchActionPanX | kTouchActionPanY,
-  kTouchActionPinchZoom = 0x10,
-  kTouchActionManipulation = kTouchActionPan | kTouchActionPinchZoom,
-  kTouchActionDoubleTapZoom = 0x20,
-  kTouchActionAuto = kTouchActionManipulation | kTouchActionDoubleTapZoom,
-  kTouchActionMax = (1 << 6) - 1
+  kNone = 0x0,
+  kPanLeft = 0x1,
+  kPanRight = 0x2,
+  kPanX = kPanLeft | kPanRight,
+  kPanUp = 0x4,
+  kPanDown = 0x8,
+  kPanY = kPanUp | kPanDown,
+  kPan = kPanX | kPanY,
+  kPinchZoom = 0x10,
+  kManipulation = kPan | kPinchZoom,
+  kDoubleTapZoom = 0x20,
+  kAuto = kManipulation | kDoubleTapZoom,
+  kMax = (1 << 6) - 1
 };
 
 inline TouchAction operator|(TouchAction a, TouchAction b) {
-  return static_cast<TouchAction>(int(a) | int(b));
+  return static_cast<TouchAction>(static_cast<int>(a) | static_cast<int>(b));
 }
 
 inline TouchAction& operator|=(TouchAction& a, TouchAction b) {
@@ -47,11 +46,15 @@ inline TouchAction& operator|=(TouchAction& a, TouchAction b) {
 }
 
 inline TouchAction operator&(TouchAction a, TouchAction b) {
-  return static_cast<TouchAction>(int(a) & int(b));
+  return static_cast<TouchAction>(static_cast<int>(a) & static_cast<int>(b));
 }
 
 inline TouchAction& operator&=(TouchAction& a, TouchAction b) {
   return a = a & b;
+}
+
+inline TouchAction operator~(TouchAction touch_action) {
+  return static_cast<TouchAction>(~static_cast<int>(touch_action));
 }
 
 inline const char* TouchActionToString(TouchAction touch_action) {

@@ -37,10 +37,6 @@ bool PooledParallelTaskRunner::PostDelayedTask(const Location& from_here,
       Task(from_here, std::move(closure), delay), std::move(sequence));
 }
 
-bool PooledParallelTaskRunner::RunsTasksInCurrentSequence() const {
-  return pooled_task_runner_delegate_->IsRunningPoolWithTraits(traits_);
-}
-
 void PooledParallelTaskRunner::UnregisterSequence(Sequence* sequence) {
   DCHECK(sequence);
 

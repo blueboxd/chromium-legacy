@@ -91,15 +91,13 @@ SiteEngagementUI::SiteEngagementUI(content::WebUI* web_ui)
       IDR_SITE_ENGAGEMENT_DETAILS_MOJOM_LITE_JS);
   source->SetDefaultResource(IDR_SITE_ENGAGEMENT_HTML);
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source.release());
-
-  AddHandlerToRegistry(
-      base::BindRepeating(&SiteEngagementUI::BindSiteEngagementDetailsProvider,
-                          base::Unretained(this)));
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(SiteEngagementUI)
 
 SiteEngagementUI::~SiteEngagementUI() {}
 
-void SiteEngagementUI::BindSiteEngagementDetailsProvider(
+void SiteEngagementUI::BindInterface(
     mojo::PendingReceiver<mojom::SiteEngagementDetailsProvider> receiver) {
   ui_handler_ = std::make_unique<SiteEngagementDetailsProviderImpl>(
       Profile::FromWebUI(web_ui()), std::move(receiver));

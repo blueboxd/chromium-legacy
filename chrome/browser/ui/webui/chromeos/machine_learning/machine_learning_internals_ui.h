@@ -23,11 +23,14 @@ class MachineLearningInternalsUI : public ui::MojoWebUIController {
   explicit MachineLearningInternalsUI(content::WebUI* web_ui);
   ~MachineLearningInternalsUI() override;
 
- private:
-  void BindMachineLearningInternalsPageHandler(
-      mojo::PendingReceiver<mojom::PageHandler> receiver);
+  // Instantiates the implementor of the mojom::PageHandler mojo interface
+  // passing the pending receiver that will be internally bound.
+  void BindInterface(mojo::PendingReceiver<mojom::PageHandler> receiver);
 
+ private:
   std::unique_ptr<MachineLearningInternalsPageHandler> page_handler_;
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(MachineLearningInternalsUI);
 };

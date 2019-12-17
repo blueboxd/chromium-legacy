@@ -375,7 +375,7 @@ base::i18n::TextDirection Label::GetTextDirectionForTesting() {
 }
 
 bool Label::IsSelectionSupported() const {
-  return !GetObscured() && full_text_->IsSelectionSupported();
+  return !GetObscured();
 }
 
 bool Label::GetSelectable() const {

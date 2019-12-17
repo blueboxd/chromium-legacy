@@ -42,7 +42,8 @@ AppServiceAppWindowLauncherController::AppServiceAppWindowLauncherController(
     arc_tracker_ = std::make_unique<AppServiceAppWindowArcTracker>(this);
 
   if (crostini::CrostiniFeatures::Get()->IsUIAllowed(owner->profile()))
-    crostini_tracker_ = std::make_unique<AppServiceAppWindowCrostiniTracker>();
+    crostini_tracker_ =
+        std::make_unique<AppServiceAppWindowCrostiniTracker>(this);
 }
 
 AppServiceAppWindowLauncherController::
@@ -199,10 +200,19 @@ void AppServiceAppWindowLauncherController::OnWindowDestroying(
   if (app_window_it == aura_window_to_app_window_.end())
     return;
 
+  // Note, for ARC apps, window may be recreated in some cases, so do not close
+  // controller on window destroying. Controller will be closed onTaskDestroyed
+  // event which is generated when actual task is destroyed.
+  if (arc_tracker_ && arc::GetWindowTaskId(window) != arc::kNoTaskId) {
+    arc_tracker_->OnWindowDestroying(window);
+    aura_window_to_app_window_.erase(app_window_it);
+    return;
+  }
+
   RemoveAppWindowFromShelf(app_window_it->second.get());
 
   if (!shelf_id.IsNull() && crostini_tracker_)
-    crostini_tracker_->OnWindowDestroying(shelf_id.app_id);
+    crostini_tracker_->OnWindowDestroying(shelf_id.app_id, window);
 
   aura_window_to_app_window_.erase(app_window_it);
 }

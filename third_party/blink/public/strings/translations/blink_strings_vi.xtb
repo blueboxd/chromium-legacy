@@ -82,7 +82,6 @@
 <translation id="3822383571486410024">Hãy kéo dài văn bản này thành <ph name="MIN_CHARACTERS" /> ký tự trở lên (bạn hiện đang sử dụng <ph name="CURRENT_LENGTH" /> ký tự).</translation>
 <translation id="383465348367842624">Phần đứng trước '<ph name="ATSIGN" />' không được chứa biểu tượng '<ph name="INVALIDCHARACTER" />'.</translation>
 <translation id="3846214748874656680">Thoát chế độ toàn màn hình</translation>
-<translation id="3889183436948184105">bản sửa đổi</translation>
 <translation id="3920932319529768807">kết luận</translation>
 <translation id="3924558731517983934">ứng dụng</translation>
 <translation id="3944740393230681990">phần mở đầu</translation>
@@ -257,7 +256,6 @@
 <translation id="8987927404178983737">Tháng</translation>
 <translation id="901493112792887934">thời gian hiện tại bằng giây</translation>
 <translation id="901834265349196618">email</translation>
-<translation id="9023835124071926463">phần nhận xét</translation>
 <translation id="9048119486235211610">điều hướng</translation>
 <translation id="9062295712474918030">tài liệu</translation>
 <translation id="9093215626363556771">thoát chế độ hình trong hình</translation>

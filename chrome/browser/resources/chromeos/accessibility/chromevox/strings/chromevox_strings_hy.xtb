@@ -384,7 +384,6 @@
 <translation id="3646890046000188562">{COUNT,plural, =1{հակադարձ ապաթարց}one{# հակադարձ ապաթարց}other{# հակադարձ ապաթարց}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{դոլար}one{# դոլարի նշան}other{# դոլարի նշան}}</translation>
-<translation id="3658742229777143148">Տարբերակ</translation>
 <translation id="3659787053479271466">alrt</translation>
 <translation id="3665563998540286755"><ph name="VALUE" />, ցուցակ</translation>
 <translation id="3681531118904532409">Խամրած ծիրանագույն</translation>
@@ -1103,7 +1102,6 @@ Chrome դիտարկիչի ընտրացանկը բացելու համար սեղ�
 <translation id="812886159861361726">«<ph name="FILE_NAME" />» ֆայլի ներբեռնումը դադարեցվեց</translation>
 <translation id="8138880386467279117">Հպէկրան</translation>
 <translation id="8153880621934657047">Աղյուսակի ներսում չեք:</translation>
-<translation id="8161114871611868169">Մեկնաբանությունների բաժին</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{ընդգծում}one{# ընդգծում}other{# ընդգծում}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8184828902145951186">տող</translation>

@@ -19,8 +19,9 @@ namespace viz {
 
 class VIZ_SERVICE_EXPORT SoftwareOutputDeviceX11 : public SoftwareOutputDevice {
  public:
-  SoftwareOutputDeviceX11(gfx::AcceleratedWidget widget,
-                          base::TaskRunner* gpu_task_runner);
+  SoftwareOutputDeviceX11(
+      gfx::AcceleratedWidget widget,
+      scoped_refptr<base::SequencedTaskRunner> gpu_task_runner);
 
   ~SoftwareOutputDeviceX11() override;
 

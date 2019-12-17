@@ -6,12 +6,16 @@ package org.chromium.chrome.browser.omnibox.status;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -22,6 +26,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
@@ -45,31 +50,37 @@ public final class StatusMediatorUnitTest {
     @Mock
     NewTabPage mNewTabPage;
     @Mock
-    Resources mResources;
-    @Mock
     ToolbarCommonPropertiesModel mToolbarCommonPropertiesModel;
     @Mock
     UrlBarEditingTextStateProvider mUrlBarEditingTextStateProvider;
     @Mock
     StatusMediator.StatusMediatorDelegate mDelegate;
-    @Mock
-    Bitmap mBitmap;
     @Captor
     ArgumentCaptor<Callback<Bitmap>> mCallbackCaptor;
     @Captor
     ArgumentCaptor<String> mUrlCaptor;
 
+    Activity mActivity;
+    Context mContext;
+    Resources mResources;
+
     PropertyModel mModel;
     StatusMediator mMediator;
+    Bitmap mBitmap;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        mActivity = Robolectric.buildActivity(Activity.class).setup().get();
+        mContext = mActivity.getApplicationContext();
+        mResources = mActivity.getResources();
 
         mModel = new PropertyModel(StatusProperties.ALL_KEYS);
-        mMediator = new StatusMediator(mModel, mResources, mUrlBarEditingTextStateProvider);
+        mMediator =
+                new StatusMediator(mModel, mResources, mActivity, mUrlBarEditingTextStateProvider);
         mMediator.setToolbarCommonPropertiesModel(mToolbarCommonPropertiesModel);
         mMediator.setDelegateForTesting(mDelegate);
+        mBitmap = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
 
         when(mDelegate.isUrlValid(mUrlCaptor.capture()))
                 .thenAnswer(invocation -> mUrlCaptor.getValue().equals(TEST_SEARCH_URL));
@@ -83,8 +94,8 @@ public final class StatusMediatorUnitTest {
         mMediator.setUrlHasFocus(true);
         mMediator.setShowIconsWhenUrlFocused(true);
         mMediator.updateSearchEngineStatusIcon(true, true, TEST_SEARCH_URL);
-        Assert.assertEquals(
-                R.drawable.ic_logo_googleg_20dp, mModel.get(StatusProperties.STATUS_ICON_RES));
+        Assert.assertEquals(TEST_SEARCH_URL,
+                mModel.get(StatusProperties.STATUS_ICON_RESOURCE).getIconIdentifierForTesting());
     }
 
     @Test
@@ -135,9 +146,8 @@ public final class StatusMediatorUnitTest {
         mMediator.setShowIconsWhenUrlFocused(true);
         mMediator.setUrlFocusChangePercent(1f);
         mMediator.updateSearchEngineStatusIcon(true, true, TEST_SEARCH_URL);
-        Assert.assertEquals(
-                R.drawable.ic_logo_googleg_20dp, mModel.get(StatusProperties.STATUS_ICON_RES));
-        Assert.assertTrue(mModel.get(StatusProperties.SHOW_STATUS_ICON));
+        Assert.assertEquals(TEST_SEARCH_URL,
+                mModel.get(StatusProperties.STATUS_ICON_RESOURCE).getIconIdentifierForTesting());
     }
 
     @Test
@@ -148,24 +158,56 @@ public final class StatusMediatorUnitTest {
         mMediator.setUrlHasFocus(true);
         mMediator.setShowIconsWhenUrlFocused(true);
         mMediator.updateSearchEngineStatusIcon(true, true, TEST_SEARCH_URL);
-        Assert.assertEquals(R.drawable.ic_search, mModel.get(StatusProperties.STATUS_ICON_RES));
+        Assert.assertEquals(R.drawable.ic_search,
+                mModel.get(StatusProperties.STATUS_ICON_RESOURCE).getIconResForTesting());
     }
 
     @Test
     @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
     public void searchEngineLogo_showNonGoogleLogo() {
         setupSearchEngineLogoForTesting(true, false, false);
+        doAnswer(invocation -> {
+            mCallbackCaptor.getValue().onResult(mBitmap);
+            return null;
+        })
+                .when(mDelegate)
+                .getSearchEngineLogoFavicon(any(), mCallbackCaptor.capture());
 
         mMediator.setUrlHasFocus(true);
         mMediator.setShowIconsWhenUrlFocused(true);
 
         // Clear invocations since the setup methods call updateLocationBarIcon.
         Mockito.clearInvocations(mDelegate);
+
         mMediator.updateSearchEngineStatusIcon(true, false, TEST_SEARCH_URL);
-        Assert.assertEquals(R.drawable.ic_search, mModel.get(StatusProperties.STATUS_ICON_RES));
+        BitmapDrawable bitmapDrawable =
+                (BitmapDrawable) mModel.get(StatusProperties.STATUS_ICON_RESOURCE)
+                        .getDrawable(mContext, mResources);
+        Assert.assertEquals("", mBitmap, bitmapDrawable.getBitmap());
         Mockito.verify(mDelegate, Mockito.times(1)).getSearchEngineLogoFavicon(any(), any());
-        mCallbackCaptor.getValue().onResult(mBitmap);
-        Assert.assertEquals(mBitmap, mModel.get(StatusProperties.STATUS_ICON));
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void searchEngineLogo_showNonGoogleLogo_defaultsToLoupeWhenFaviconIsNull() {
+        setupSearchEngineLogoForTesting(true, false, false);
+        doAnswer(invocation -> {
+            mCallbackCaptor.getValue().onResult(null);
+            return null;
+        })
+                .when(mDelegate)
+                .getSearchEngineLogoFavicon(any(), mCallbackCaptor.capture());
+
+        mMediator.setUrlHasFocus(true);
+        mMediator.setShowIconsWhenUrlFocused(true);
+
+        // Clear invocations since the setup methods call updateLocationBarIcon.
+        Mockito.clearInvocations(mDelegate);
+
+        mMediator.updateSearchEngineStatusIcon(true, false, TEST_SEARCH_URL);
+        Assert.assertEquals(R.drawable.ic_search,
+                mModel.get(StatusProperties.STATUS_ICON_RESOURCE).getIconResForTesting());
+        Mockito.verify(mDelegate, Mockito.times(1)).getSearchEngineLogoFavicon(any(), any());
     }
 
     @Test
@@ -179,7 +221,8 @@ public final class StatusMediatorUnitTest {
         // Clear invocations since the setup methods call updateLocationBarIcon.
         Mockito.clearInvocations(mDelegate);
         mMediator.updateSearchEngineStatusIcon(true, false, TEST_SEARCH_URL);
-        Assert.assertEquals(R.drawable.ic_search, mModel.get(StatusProperties.STATUS_ICON_RES));
+        Assert.assertEquals(R.drawable.ic_search,
+                mModel.get(StatusProperties.STATUS_ICON_RESOURCE).getIconResForTesting());
         Mockito.verify(mDelegate, Mockito.times(0)).getSearchEngineLogoFavicon(any(), any());
     }
 
@@ -193,7 +236,8 @@ public final class StatusMediatorUnitTest {
         doReturn(TEST_SEARCH_URL).when(mUrlBarEditingTextStateProvider).getTextWithAutocomplete();
 
         mMediator.onTextChanged(TEST_SEARCH_URL);
-        Assert.assertEquals(R.drawable.ic_globe_24dp, mModel.get(StatusProperties.STATUS_ICON_RES));
+        Assert.assertEquals(R.drawable.ic_globe_24dp,
+                mModel.get(StatusProperties.STATUS_ICON_RESOURCE).getIconResForTesting());
     }
 
     @Test
@@ -206,7 +250,8 @@ public final class StatusMediatorUnitTest {
         doReturn(TEST_SEARCH_URL).when(mUrlBarEditingTextStateProvider).getTextWithAutocomplete();
 
         mMediator.onTextChanged(TEST_SEARCH_URL.substring(0, TEST_SEARCH_URL.length() - 1));
-        Assert.assertEquals(R.drawable.ic_globe_24dp, mModel.get(StatusProperties.STATUS_ICON_RES));
+        Assert.assertEquals(R.drawable.ic_globe_24dp,
+                mModel.get(StatusProperties.STATUS_ICON_RESOURCE).getIconResForTesting());
     }
 
     @Test
@@ -220,8 +265,8 @@ public final class StatusMediatorUnitTest {
 
         mMediator.onTextChanged("food near me");
         verify(mDelegate).isUrlValid("food near me");
-        Assert.assertNotEquals(
-                R.drawable.ic_globe_24dp, mModel.get(StatusProperties.STATUS_ICON_RES));
+        Assert.assertNotEquals(R.drawable.ic_globe_24dp,
+                mModel.get(StatusProperties.STATUS_ICON_RESOURCE).getIconResForTesting());
     }
 
     @Test
@@ -237,8 +282,8 @@ public final class StatusMediatorUnitTest {
 
         mMediator.onTextChanged("");
         verify(mDelegate).isUrlValid("");
-        Assert.assertNotEquals(
-                R.drawable.ic_globe_24dp, mModel.get(StatusProperties.STATUS_ICON_RES));
+        Assert.assertNotEquals(R.drawable.ic_globe_24dp,
+                mModel.get(StatusProperties.STATUS_ICON_RESOURCE).getIconResForTesting());
     }
 
     @Test
@@ -252,7 +297,7 @@ public final class StatusMediatorUnitTest {
         mMediator.setSecurityIconResource(0);
         mMediator.updateSearchEngineStatusIcon(true, false, TEST_SEARCH_URL);
 
-        Assert.assertEquals(0, mModel.get(StatusProperties.STATUS_ICON_RES));
+        Assert.assertEquals(null, mModel.get(StatusProperties.STATUS_ICON_RESOURCE));
     }
 
     @Test
@@ -266,8 +311,8 @@ public final class StatusMediatorUnitTest {
         mMediator.updateSearchEngineStatusIcon(true, true, TEST_SEARCH_URL);
 
         Assert.assertTrue(mMediator.maybeUpdateStatusIconForSearchEngineIcon());
-        Assert.assertEquals(
-                R.drawable.ic_logo_googleg_20dp, mModel.get(StatusProperties.STATUS_ICON_RES));
+        Assert.assertEquals(TEST_SEARCH_URL,
+                mModel.get(StatusProperties.STATUS_ICON_RESOURCE).getIconIdentifierForTesting());
     }
 
     @Test

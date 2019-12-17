@@ -95,6 +95,9 @@ class MirroringActivityRecord : public ActivityRecord,
     kMaxValue = kOffscreenTab,
   };
 
+  void HandleParseJsonResult(const std::string& route_id,
+                             data_decoder::DataDecoder::ValueOrError result);
+
   void StopMirroring();
 
   mojo::Remote<mirroring::mojom::MirroringServiceHost> host_;

@@ -185,10 +185,9 @@ DownloadsUI::DownloadsUI(content::WebUI* web_ui)
   ManagedUIHandler::Initialize(web_ui, source);
   content::WebUIDataSource::Add(profile, source);
   content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
-
-  AddHandlerToRegistry(base::BindRepeating(&DownloadsUI::BindPageHandlerFactory,
-                                           base::Unretained(this)));
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(DownloadsUI)
 
 DownloadsUI::~DownloadsUI() = default;
 
@@ -199,7 +198,7 @@ base::RefCountedMemory* DownloadsUI::GetFaviconResourceBytes(
       IDR_DOWNLOADS_FAVICON, scale_factor);
 }
 
-void DownloadsUI::BindPageHandlerFactory(
+void DownloadsUI::BindInterface(
     mojo::PendingReceiver<downloads::mojom::PageHandlerFactory> receiver) {
   page_factory_receiver_.reset();
 

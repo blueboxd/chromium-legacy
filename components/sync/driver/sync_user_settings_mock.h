@@ -31,7 +31,6 @@ class SyncUserSettingsMock : public SyncUserSettings {
   MOCK_CONST_METHOD0(GetSelectedTypes, UserSelectableTypeSet());
   MOCK_METHOD2(SetSelectedTypes, void(bool, UserSelectableTypeSet));
   MOCK_CONST_METHOD0(GetRegisteredSelectableTypes, UserSelectableTypeSet());
-  MOCK_CONST_METHOD0(GetForcedTypes, UserSelectableTypeSet());
 
 #if defined(OS_CHROMEOS)
   MOCK_CONST_METHOD0(IsSyncAllOsTypesEnabled, bool());

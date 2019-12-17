@@ -1001,6 +1001,9 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_DESCRIPTION_COOKIES_BLOCK" desc="The description for the block Cookies for website dialog.">
        Block cookies for a specific site.
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_EXCEPTION_LABEL" desc="The label for site exceptions that affect third party cookies.">
+       All cookies, on this site only
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_DESCRIPTION_SOUND_ALLOW" desc="The description for the allow sound for website dialog.">
         Allow sound for a specific site.
       </message>
@@ -1193,8 +1196,8 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_WEBSITE_NOTIFICATION_SETTINGS" desc="Accessibility string for the notification settings">
         Open notification settings
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_EMBEDDED_IN" desc="String used to indicate the embedder origin of a site">
-        Embedded in <ph name="WEBSITE_URL">%1$s<ex>google.com</ex></ph>
+      <message name="IDS_WEBSITE_SETTINGS_EMBEDDED_ON" desc="String used to indicate the embedder origin of a site">
+        Embedded on <ph name="WEBSITE_URL">%1$s<ex>google.com</ex></ph>
       </message>
 
       <!-- Single site settings -->

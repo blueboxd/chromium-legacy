@@ -16,6 +16,7 @@
 #include "net/base/net_export.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/request_priority.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/http/http_auth.h"
 #include "net/quic/quic_chromium_client_session.h"
 #include "net/socket/connect_job.h"
@@ -109,6 +110,7 @@ class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob,
   // ConnectJob methods.
   LoadState GetLoadState() const override;
   bool HasEstablishedConnection() const override;
+  ResolveErrorInfo GetResolveErrorInfo() const override;
   bool IsSSLError() const override;
   scoped_refptr<SSLCertRequestInfo> GetCertRequestInfo() override;
 
@@ -223,6 +225,8 @@ class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob,
   // Set to true once a connection has been successfully established. Remains
   // true even if a new socket is being connected to retry with auth.
   bool has_established_connection_;
+
+  ResolveErrorInfo resolve_error_info_;
 
   std::unique_ptr<ConnectJob> nested_connect_job_;
   std::unique_ptr<ProxyClientSocket> transport_socket_;

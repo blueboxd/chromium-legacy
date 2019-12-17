@@ -25,6 +25,7 @@
 <translation id="7209941495304122410">Insira a senha do Windows</translation>
 <translation id="7357241217513796177">Verifique se você tem uma conexão de rede e tente novamente.</translation>
 <translation id="7536769223115622137">Adicionar conta de trabalho</translation>
+<translation id="7811865856574012727">O administrador restringiu o login no dispositivo para os seguintes domínios: <ph name="EMAIL_DOMAINS" />. Tente novamente usando uma conta de trabalho válida.</translation>
 <translation id="7856245195110636219">Não é possível continuar sem inserir a senha atual do Windows. Entre em contato com um administrador do sistema.</translation>
 <translation id="8639729688781680518">Esqueci minha senha do Windows</translation>
 <translation id="866458870819756755">Não foi possível criar um usuário.</translation>

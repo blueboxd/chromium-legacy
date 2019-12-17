@@ -453,7 +453,7 @@ TEST_F(LayerImplScrollTest, TouchActionRegionCacheInvalidation) {
       LayerImpl::Create(host_impl()->pending_tree(), 2);
 
   TouchActionRegion region;
-  region.Union(kTouchActionNone, gfx::Rect(0, 0, 50, 50));
+  region.Union(TouchAction::kNone, gfx::Rect(0, 0, 50, 50));
   pending_layer->SetTouchActionRegion(region);
 
   // The values for GetAllTouchActionRegions should be correct on both layers.

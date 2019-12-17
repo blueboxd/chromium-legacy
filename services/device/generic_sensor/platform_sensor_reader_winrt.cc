@@ -105,7 +105,7 @@ PlatformSensorReaderWinrtBase<
     ISensorReadingChangedHandler,
     ISensorReadingChangedEventArgs>::PlatformSensorReaderWinrtBase() {
   get_sensor_factory_callback_ =
-      base::Bind([](ISensorWinrtStatics** sensor_factory) -> HRESULT {
+      base::BindRepeating([](ISensorWinrtStatics** sensor_factory) -> HRESULT {
         return base::win::GetActivationFactory<ISensorWinrtStatics,
                                                runtime_class_id>(
             sensor_factory);

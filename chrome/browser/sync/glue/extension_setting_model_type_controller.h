@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_EXTENSION_SETTING_MODEL_TYPE_CONTROLLER_H_
 #define CHROME_BROWSER_SYNC_GLUE_EXTENSION_SETTING_MODEL_TYPE_CONTROLLER_H_
 
-#include <string>
-
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "components/sync/driver/non_ui_syncable_service_based_model_type_controller.h"
@@ -15,6 +13,9 @@ class Profile;
 
 namespace browser_sync {
 
+// A ModelTypeController that processes extension data on the extensions
+// background thread.
+// NOTE: Chrome OS uses a fork of this class for APP_SETTINGS.
 class ExtensionSettingModelTypeController
     : public syncer::NonUiSyncableServiceBasedModelTypeController {
  public:

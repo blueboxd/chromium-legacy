@@ -58,7 +58,7 @@ class MemoryTypeTracker {
   explicit MemoryTypeTracker(MemoryTracker* memory_tracker)
       : memory_tracker_(memory_tracker) {}
 
-  ~MemoryTypeTracker() = default;
+  ~MemoryTypeTracker() { DCHECK(!mem_represented_); }
 
   void TrackMemAlloc(size_t bytes) {
     DCHECK(bytes >= 0);

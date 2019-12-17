@@ -640,6 +640,8 @@ void CanonicalCookie::IsSetPermittedInContext(
          (effective_same_site == CookieEffectiveSameSite::STRICT_MODE) ||
          (effective_same_site ==
           CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE))) {
+      // TODO(crbug.com/1034014): Change enum to one with less confusing
+      // phrasing.
       UMA_HISTOGRAM_ENUMERATION("Cookie.SameSiteDifferentSchemeResponse",
                                 options.same_site_cookie_context_full(),
                                 CookieOptions::SameSiteCookieContext::COUNT);

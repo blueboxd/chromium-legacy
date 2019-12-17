@@ -38,7 +38,6 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/extension_test_message_listener.h"
-#include "net/url_request/test_url_request_interceptor.h"
 
 using content::BrowserThread;
 using extensions::Extension;

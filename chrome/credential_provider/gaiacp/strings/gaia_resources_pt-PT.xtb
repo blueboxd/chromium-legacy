@@ -25,6 +25,7 @@
 <translation id="7209941495304122410">Introduzir palavra-passe do Windows</translation>
 <translation id="7357241217513796177">Certifique-se de que tem uma ligação de rede e tente novamente.</translation>
 <translation id="7536769223115622137">Adicionar conta profissional</translation>
+<translation id="7811865856574012727">O seu administrador restringiu o início de sessão do dispositivo aos seguintes domínios: <ph name="EMAIL_DOMAINS" />. Tente novamente através de uma conta profissional válida.</translation>
 <translation id="7856245195110636219">Não é possível continuar sem introduzir a palavra-passe atual do Windows. Contacte um administrador do sistema.</translation>
 <translation id="8639729688781680518">Esqueci-me da palavra-passe do Windows</translation>
 <translation id="866458870819756755">Não foi possível criar um utilizador.</translation>

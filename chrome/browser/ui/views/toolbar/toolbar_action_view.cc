@@ -59,7 +59,6 @@ ToolbarActionView::ToolbarActionView(
       view_controller_(view_controller),
       delegate_(delegate) {
   SetInkDropMode(InkDropMode::ON);
-  set_has_ink_drop_action_on_click(true);
   set_hide_ink_drop_when_showing_context_menu(false);
   set_show_ink_drop_when_hot_tracked(true);
   SetID(VIEW_ID_BROWSER_ACTION);

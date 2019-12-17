@@ -236,6 +236,10 @@ bool HttpProxyConnectJob::HasEstablishedConnection() const {
   return false;
 }
 
+ResolveErrorInfo HttpProxyConnectJob::GetResolveErrorInfo() const {
+  return resolve_error_info_;
+}
+
 bool HttpProxyConnectJob::IsSSLError() const {
   return ssl_cert_request_info_ != nullptr;
 }
@@ -447,6 +451,7 @@ int HttpProxyConnectJob::DoTransportConnect() {
 }
 
 int HttpProxyConnectJob::DoTransportConnectComplete(int result) {
+  resolve_error_info_ = nested_connect_job_->GetResolveErrorInfo();
   if (result != OK) {
     UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpProxy.ConnectLatency.Insecure.Error",
                                base::TimeTicks::Now() - connect_start_time_);
@@ -478,6 +483,7 @@ int HttpProxyConnectJob::DoSSLConnect() {
 }
 
 int HttpProxyConnectJob::DoSSLConnectComplete(int result) {
+  resolve_error_info_ = nested_connect_job_->GetResolveErrorInfo();
   if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
     UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpProxy.ConnectLatency.Secure.Error",
                                base::TimeTicks::Now() - connect_start_time_);

@@ -176,7 +176,6 @@ class BookmarkButtonBase : public views::LabelButton {
         DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
     views::InstallPillHighlightPathGenerator(this);
     SetInkDropMode(InkDropMode::ON);
-    set_has_ink_drop_action_on_click(true);
     set_ink_drop_visible_opacity(kToolbarInkDropVisibleOpacity);
     show_animation_ = std::make_unique<gfx::SlideAnimation>(this);
     if (!animations_enabled) {

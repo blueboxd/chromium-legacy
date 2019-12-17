@@ -47,7 +47,7 @@ class UsbServiceImpl final :
 
  private:
   // device::UsbService implementation
-  void GetDevices(const GetDevicesCallback& callback) override;
+  void GetDevices(GetDevicesCallback callback) override;
 
 #if defined(OS_WIN)
   // device::DeviceMonitorWin::Observer implementation
@@ -67,9 +67,9 @@ class UsbServiceImpl final :
 
   // Creates a new UsbDevice based on the given libusb device.
   void EnumerateDevice(ScopedLibusbDeviceRef platform_device,
-                       const base::Closure& refresh_complete);
+                       base::OnceClosure refresh_complete);
 
-  void AddDevice(const base::Closure& refresh_complete,
+  void AddDevice(base::OnceClosure refresh_complete,
                  scoped_refptr<UsbDeviceImpl> device);
   void RemoveDevice(scoped_refptr<UsbDeviceImpl> device);
 
@@ -85,7 +85,7 @@ class UsbServiceImpl final :
   // Add |platform_device| to the |ignored_devices_| and
   // run |refresh_complete|.
   void EnumerationFailed(ScopedLibusbDeviceRef platform_device,
-                         const base::Closure& refresh_complete);
+                         base::OnceClosure refresh_complete);
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

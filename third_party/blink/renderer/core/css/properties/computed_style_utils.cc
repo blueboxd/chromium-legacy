@@ -1485,30 +1485,27 @@ CSSValue* ComputedStyleUtils::ValueForTextDecorationSkipInk(
 CSSValue* ComputedStyleUtils::TouchActionFlagsToCSSValue(
     TouchAction touch_action) {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (touch_action == TouchAction::kTouchActionAuto) {
+  if (touch_action == TouchAction::kAuto) {
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kAuto));
-  } else if (touch_action == TouchAction::kTouchActionNone) {
+  } else if (touch_action == TouchAction::kNone) {
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kNone));
-  } else if (touch_action == TouchAction::kTouchActionManipulation) {
+  } else if (touch_action == TouchAction::kManipulation) {
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kManipulation));
   } else {
-    if ((touch_action & TouchAction::kTouchActionPanX) ==
-        TouchAction::kTouchActionPanX)
+    if ((touch_action & TouchAction::kPanX) == TouchAction::kPanX)
       list->Append(*CSSIdentifierValue::Create(CSSValueID::kPanX));
-    else if (touch_action & TouchAction::kTouchActionPanLeft)
+    else if ((touch_action & TouchAction::kPanLeft) != TouchAction::kNone)
       list->Append(*CSSIdentifierValue::Create(CSSValueID::kPanLeft));
-    else if (touch_action & TouchAction::kTouchActionPanRight)
+    else if ((touch_action & TouchAction::kPanRight) != TouchAction::kNone)
       list->Append(*CSSIdentifierValue::Create(CSSValueID::kPanRight));
-    if ((touch_action & TouchAction::kTouchActionPanY) ==
-        TouchAction::kTouchActionPanY)
+    if ((touch_action & TouchAction::kPanY) == TouchAction::kPanY)
       list->Append(*CSSIdentifierValue::Create(CSSValueID::kPanY));
-    else if (touch_action & TouchAction::kTouchActionPanUp)
+    else if ((touch_action & TouchAction::kPanUp) != TouchAction::kNone)
       list->Append(*CSSIdentifierValue::Create(CSSValueID::kPanUp));
-    else if (touch_action & TouchAction::kTouchActionPanDown)
+    else if ((touch_action & TouchAction::kPanDown) != TouchAction::kNone)
       list->Append(*CSSIdentifierValue::Create(CSSValueID::kPanDown));
 
-    if ((touch_action & TouchAction::kTouchActionPinchZoom) ==
-        TouchAction::kTouchActionPinchZoom)
+    if ((touch_action & TouchAction::kPinchZoom) == TouchAction::kPinchZoom)
       list->Append(*CSSIdentifierValue::Create(CSSValueID::kPinchZoom));
   }
 

@@ -23,16 +23,13 @@ class DataSource : public data_decoder::mojom::BundleDataSource {
  public:
   DataSource(const uint8_t* data, size_t size) : data_(data), size_(size) {}
 
-  void GetSize(GetSizeCallback callback) override {
-    std::move(callback).Run(size_);
-  }
-
   void Read(uint64_t offset, uint64_t length, ReadCallback callback) override {
-    if (offset + length > size_) {
+    if (offset >= size_) {
       std::move(callback).Run(base::nullopt);
       return;
     }
     const uint8_t* start = data_ + offset;
+    length = std::min(length, size_ - offset);
     std::move(callback).Run(std::vector<uint8_t>(start, start + length));
   }
 
@@ -64,8 +61,8 @@ class WebBundleParserFuzzer {
                                    std::move(data_source_remote));
 
     quit_loop_ = run_loop->QuitClosure();
-    parser_->ParseMetadata(base::Bind(&WebBundleParserFuzzer::OnParseMetadata,
-                                      base::Unretained(this)));
+    parser_->ParseMetadata(base::BindOnce(
+        &WebBundleParserFuzzer::OnParseMetadata, base::Unretained(this)));
   }
 
   void OnParseMetadata(data_decoder::mojom::BundleMetadataPtr metadata,
@@ -87,9 +84,10 @@ class WebBundleParserFuzzer {
       return;
     }
 
-    parser_->ParseResponse(locations_[index]->offset, locations_[index]->length,
-                           base::Bind(&WebBundleParserFuzzer::OnParseResponse,
-                                      base::Unretained(this), index));
+    parser_->ParseResponse(
+        locations_[index]->offset, locations_[index]->length,
+        base::BindOnce(&WebBundleParserFuzzer::OnParseResponse,
+                       base::Unretained(this), index));
   }
 
   void OnParseResponse(size_t index,
@@ -101,7 +99,7 @@ class WebBundleParserFuzzer {
  private:
   mojo::Remote<data_decoder::mojom::WebBundleParser> parser_;
   DataSource data_source_;
-  base::Closure quit_loop_;
+  base::OnceClosure quit_loop_;
   std::vector<data_decoder::mojom::BundleResponseLocationPtr> locations_;
 };
 

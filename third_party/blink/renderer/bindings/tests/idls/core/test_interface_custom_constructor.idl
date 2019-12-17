@@ -28,9 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    CustomConstructor,
-    CustomConstructor(TestInterfaceEmpty testInterfaceEmptyArg),
-    CustomConstructor(double doubleArg, optional double optionalDoubleArg)
-] interface TestInterfaceCustomConstructor {
+interface TestInterfaceCustomConstructor {
+    [Custom] constructor();
+    [Custom] constructor(TestInterfaceEmpty testInterfaceEmptyArg);
+    [Custom] constructor(double doubleArg, optional double optionalDoubleArg);
 };

@@ -171,8 +171,7 @@ void ThreadPoolImpl::Start(const ThreadPoolInstance::InitParams& init_params,
   UpdateCanRunPolicy();
 
   // Needs to happen after starting the service thread to get its task_runner().
-  scoped_refptr<TaskRunner> service_thread_task_runner =
-      service_thread_->task_runner();
+  auto service_thread_task_runner = service_thread_->task_runner();
   delayed_task_manager_.Start(service_thread_task_runner);
 
   single_thread_task_runner_manager_.Start(worker_thread_observer);
@@ -465,10 +464,6 @@ void ThreadPoolImpl::RemoveJobTaskSource(
   ThreadGroup* const current_thread_group =
       GetThreadGroupForTraits(transaction.traits());
   current_thread_group->RemoveTaskSource(*task_source);
-}
-
-bool ThreadPoolImpl::IsRunningPoolWithTraits(const TaskTraits& traits) const {
-  return GetThreadGroupForTraits(traits)->IsBoundToCurrentThread();
 }
 
 void ThreadPoolImpl::UpdatePriority(scoped_refptr<TaskSource> task_source,

@@ -274,10 +274,6 @@ class ResourceScheduler::ScheduledResourceRequestImpl
   void Start(StartMode start_mode) {
     DCHECK(!ready_);
 
-    // If the request was cancelled, do nothing.
-    if (!request_->status().is_success())
-      return;
-
     // If the request was deferred, need to start it.  Otherwise, will just not
     // defer starting it in the first place, and the value of |start_mode|
     // makes no difference.

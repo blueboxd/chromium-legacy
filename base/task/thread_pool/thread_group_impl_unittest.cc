@@ -186,8 +186,6 @@ class ThreadPostingTasksWaitIdle : public SimpleThread {
 
  private:
   void Run() override {
-    EXPECT_FALSE(factory_.task_runner()->RunsTasksInCurrentSequence());
-
     for (size_t i = 0; i < kNumTasksPostedPerThread; ++i) {
       thread_group_->WaitForAllWorkersIdleForTesting();
       EXPECT_TRUE(factory_.PostTask(PostNestedTask::NO, OnceClosure()));

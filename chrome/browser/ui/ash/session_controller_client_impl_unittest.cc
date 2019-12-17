@@ -36,7 +36,6 @@
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
@@ -191,7 +190,6 @@ class SessionControllerClientImplTest : public testing::Test {
   }
 
   content::BrowserTaskEnvironment task_environment_;
-  content::TestServiceManagerContext context_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<AssistantClient> assistant_client_;
   session_manager::SessionManager session_manager_;

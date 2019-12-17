@@ -345,6 +345,11 @@ class CC_EXPORT FrameSequenceTracker {
   // corresponding frame-token is removed from this collection.
   base::circular_deque<uint32_t> main_frames_;
 
+  // Keeps track of the sequence-number of the first received begin-main-frame.
+  // This is used to ignore submitted frames that include updates from earlier
+  // begin-main-frames.
+  uint64_t first_received_main_sequence_ = 0;
+
   // Keeps track of the first submitted compositor-frame. This is used to ignore
   // reports from frames that were submitted before this tracker had been
   // created.
@@ -358,6 +363,10 @@ class CC_EXPORT FrameSequenceTracker {
   // Keeps track of the last sequence-number that produced a frame from the
   // main-thread.
   uint64_t last_submitted_main_sequence_ = 0;
+
+  // Keeps track of the last sequence-number that produced a frame that did not
+  // have any damage from the main-thread.
+  uint64_t last_no_main_damage_sequence_ = 0;
 
   // The time when this tracker is created, or the time when it was previously
   // scheduled to report histogram.

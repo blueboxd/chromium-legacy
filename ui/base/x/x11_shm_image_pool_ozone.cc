@@ -10,15 +10,16 @@
 
 namespace ui {
 
-X11ShmImagePoolOzone::X11ShmImagePoolOzone(base::TaskRunner* host_task_runner,
-                                           base::TaskRunner* event_task_runner,
-                                           XDisplay* display,
-                                           XID drawable,
-                                           Visual* visual,
-                                           int depth,
-                                           std::size_t frames_pending)
-    : XShmImagePoolBase(host_task_runner,
-                        event_task_runner,
+X11ShmImagePoolOzone::X11ShmImagePoolOzone(
+    scoped_refptr<base::SequencedTaskRunner> host_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> event_task_runner,
+    XDisplay* display,
+    XID drawable,
+    Visual* visual,
+    int depth,
+    std::size_t frames_pending)
+    : XShmImagePoolBase(std::move(host_task_runner),
+                        std::move(event_task_runner),
                         display,
                         drawable,
                         visual,

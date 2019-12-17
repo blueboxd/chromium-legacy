@@ -25,6 +25,7 @@
 <translation id="7209941495304122410">Windows 비밀번호 입력</translation>
 <translation id="7357241217513796177">네트워크 연결을 확인한 후 다시 시도해 주세요.</translation>
 <translation id="7536769223115622137">직장 계정 추가</translation>
+<translation id="7811865856574012727">관리자가 기기에서 다음 도메인에 로그인하지 못하도록 제한했습니다. <ph name="EMAIL_DOMAINS" /> 올바른 직장 계정을 사용하여 다시 시도해 보세요.</translation>
 <translation id="7856245195110636219">계속하려면 현재 Windows 비밀번호를 입력해야 합니다. 시스템 관리자에게 문의해 보세요.</translation>
 <translation id="8639729688781680518">Windows 비밀번호를 잊어버림</translation>
 <translation id="866458870819756755">사용자를 만들 수 없습니다.</translation>

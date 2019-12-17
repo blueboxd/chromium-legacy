@@ -18,12 +18,6 @@ class ScopedGuestButtonBlocker;
 }
 
 // Test implementation of ash's mojo LoginScreen interface.
-//
-// Registers itself to ServiceManager on construction and deregisters
-// on destruction.
-//
-// Note: A ServiceManagerConnection must be initialized before constructing this
-// object. Consider using content::TestServiceManagerContext on your tests.
 class TestLoginScreen : public ash::LoginScreen {
  public:
   TestLoginScreen();

@@ -20,7 +20,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/optional.h"
-#include "base/task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "mojo/core/atomic_flag.h"
 #include "mojo/core/node_channel.h"
@@ -58,13 +58,14 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
   const ports::NodeName& name() const { return name_; }
   Core* core() const { return core_; }
   ports::Node* node() const { return node_.get(); }
-  scoped_refptr<base::TaskRunner> io_task_runner() const {
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner() const {
     return io_task_runner_;
   }
 
   // Called exactly once, shortly after construction, and before any other
   // methods are called on this object.
-  void SetIOTaskRunner(scoped_refptr<base::TaskRunner> io_task_runner);
+  void SetIOTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
   // Sends an invitation to a remote process (via |connection_params|) to join
   // this process's graph of connected processes as a broker client.
@@ -252,7 +253,7 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
   Core* const core_;
   const ports::NodeName name_;
   const std::unique_ptr<ports::Node> node_;
-  scoped_refptr<base::TaskRunner> io_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // Guards |peers_| and |pending_peer_messages_|.
   base::Lock peers_lock_;

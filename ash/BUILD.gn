@@ -1510,11 +1510,11 @@ component("ash") {
     # Ash should not depend upon cryptohome_client or components that depend
     # on it. TODO(stevenjb): Assert on //chromeos/dbus/cryptohome_client once it
     # is extracted from //chromeos/dbus. https://crbug.com/647367.
-    "//components/arc",
     "//chromeos/attestation",
     "//chromeos/cryptohome",
     "//chromeos/login/auth",
     "//chromeos/tpm",
+    "//components/arc",
 
     # Ash should not depend upon content at all.
     "//content/public/browser",
@@ -1643,9 +1643,9 @@ static_library("ash_shell_lib_with_content") {
     ":ash_shell_lib",
   ]
   data_deps = [
-    "//ash/strings:ash_test_strings",
-    "//ash/resources:ash_test_resources_with_content_100_percent",
     "//ash/resources:ash_test_resources_200_percent",
+    "//ash/resources:ash_test_resources_with_content_100_percent",
+    "//ash/strings:ash_test_strings",
   ]
 }
 
@@ -2426,8 +2426,8 @@ static_library("test_support") {
   ]
 
   data_deps = [
-    "//ash/strings:ash_test_strings",
     "//ash/resources:ash_test_resources_100_percent",
     "//ash/resources:ash_test_resources_200_percent",
+    "//ash/strings:ash_test_strings",
   ]
 }

@@ -43,6 +43,7 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
       gpu::MailboxManager* mailbox_manager,
       scoped_refptr<gl::GLSurface> gl_surface,
       scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
+      gpu::MemoryTracker* memory_tracker,
       DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
   ~SkiaOutputDeviceGL() override;
 

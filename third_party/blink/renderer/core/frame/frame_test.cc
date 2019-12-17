@@ -22,7 +22,7 @@ class FrameTest : public PageTestBase {
 
     ASSERT_FALSE(GetDocument().GetFrame()->HasBeenActivated());
     ASSERT_FALSE(
-        GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
+        GetDocument().GetFrame()->HadStickyUserActivationBeforeNavigation());
   }
 
   void Navigate(const String& destinationUrl, bool user_activated) {
@@ -67,81 +67,81 @@ TEST_F(FrameTest, NavigateDifferentDomain) {
   LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
   EXPECT_TRUE(GetDocument().GetFrame()->HasBeenActivated());
   EXPECT_FALSE(
-      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
+      GetDocument().GetFrame()->HadStickyUserActivationBeforeNavigation());
 
   // Navigate to a different Document. In the main frame, user gesture state
   // will get reset. State will not persist since the domain has changed.
   NavigateDifferentDomain();
   EXPECT_FALSE(GetDocument().GetFrame()->HasBeenActivated());
   EXPECT_FALSE(
-      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
+      GetDocument().GetFrame()->HadStickyUserActivationBeforeNavigation());
 }
 
 TEST_F(FrameTest, NavigateSameDomainMultipleTimes) {
   LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
   EXPECT_TRUE(GetDocument().GetFrame()->HasBeenActivated());
   EXPECT_FALSE(
-      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
+      GetDocument().GetFrame()->HadStickyUserActivationBeforeNavigation());
 
   // Navigate to a different Document in the same domain.  In the main frame,
   // user gesture state will get reset, but persisted state will be true.
   NavigateSameDomain("page1");
   EXPECT_FALSE(GetDocument().GetFrame()->HasBeenActivated());
   EXPECT_TRUE(
-      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
+      GetDocument().GetFrame()->HadStickyUserActivationBeforeNavigation());
 
   // Navigate to a different Document in the same domain, the persisted
   // state will be true.
   NavigateSameDomain("page2");
   EXPECT_FALSE(GetDocument().GetFrame()->HasBeenActivated());
   EXPECT_TRUE(
-      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
+      GetDocument().GetFrame()->HadStickyUserActivationBeforeNavigation());
 
   // Navigate to the same URL in the same domain, the persisted state
   // will be true, but the user gesture state will be reset.
   NavigateSameDomain("page2");
   EXPECT_FALSE(GetDocument().GetFrame()->HasBeenActivated());
   EXPECT_TRUE(
-      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
+      GetDocument().GetFrame()->HadStickyUserActivationBeforeNavigation());
 
   // Navigate to a different Document in the same domain, the persisted
   // state will be true.
   NavigateSameDomain("page3");
   EXPECT_FALSE(GetDocument().GetFrame()->HasBeenActivated());
   EXPECT_TRUE(
-      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
+      GetDocument().GetFrame()->HadStickyUserActivationBeforeNavigation());
 }
 
 TEST_F(FrameTest, NavigateSameDomainDifferentDomain) {
   LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
   EXPECT_TRUE(GetDocument().GetFrame()->HasBeenActivated());
   EXPECT_FALSE(
-      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
+      GetDocument().GetFrame()->HadStickyUserActivationBeforeNavigation());
 
   // Navigate to a different Document in the same domain.  In the main frame,
   // user gesture state will get reset, but persisted state will be true.
   NavigateSameDomain("page1");
   EXPECT_FALSE(GetDocument().GetFrame()->HasBeenActivated());
   EXPECT_TRUE(
-      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
+      GetDocument().GetFrame()->HadStickyUserActivationBeforeNavigation());
 
   // Navigate to a different Document in a different domain, the persisted
   // state will be reset.
   NavigateDifferentDomain();
   EXPECT_FALSE(GetDocument().GetFrame()->HasBeenActivated());
   EXPECT_FALSE(
-      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
+      GetDocument().GetFrame()->HadStickyUserActivationBeforeNavigation());
 }
 
 TEST_F(FrameTest, NavigateSameDomainNoGesture) {
   EXPECT_FALSE(GetDocument().GetFrame()->HasBeenActivated());
   EXPECT_FALSE(
-      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
+      GetDocument().GetFrame()->HadStickyUserActivationBeforeNavigation());
 
   NavigateSameDomain("page1", false);
   EXPECT_FALSE(GetDocument().GetFrame()->HasBeenActivated());
   EXPECT_FALSE(
-      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
+      GetDocument().GetFrame()->HadStickyUserActivationBeforeNavigation());
 }
 
 TEST_F(FrameTest, UserActivationInterfaceTest) {

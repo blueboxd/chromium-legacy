@@ -231,7 +231,7 @@ class UsbGadgetFactory : public UsbService::Observer,
  private:
   void EnumerateDevices() {
     if (!device_) {
-      usb_service_->GetDevices(base::Bind(
+      usb_service_->GetDevices(base::BindOnce(
           &UsbGadgetFactory::OnDevicesEnumerated, weak_factory_.GetWeakPtr()));
     }
   }
@@ -420,8 +420,8 @@ class DeviceAddListener : public UsbService::Observer {
   ~DeviceAddListener() override = default;
 
   scoped_refptr<UsbDevice> WaitForAdd() {
-    usb_service_->GetDevices(base::Bind(&DeviceAddListener::OnDevicesEnumerated,
-                                        weak_factory_.GetWeakPtr()));
+    usb_service_->GetDevices(base::BindOnce(
+        &DeviceAddListener::OnDevicesEnumerated, weak_factory_.GetWeakPtr()));
     run_loop_.Run();
     return device_;
   }
@@ -484,8 +484,8 @@ class DeviceRemoveListener : public UsbService::Observer {
 
   void WaitForRemove() {
     usb_service_->GetDevices(
-        base::Bind(&DeviceRemoveListener::OnDevicesEnumerated,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&DeviceRemoveListener::OnDevicesEnumerated,
+                       weak_factory_.GetWeakPtr()));
     run_loop_.Run();
   }
 

@@ -404,18 +404,8 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
             return R.drawable.ic_offline_pin_24dp;
         }
 
-        String url = getCurrentUrl();
-
         switch (securityLevel) {
             case ConnectionSecurityLevel.NONE:
-                // For HTTPS sites with passive mixed content, ConnectionSecurityLevel
-                // is NONE, but the security indicator should be shown on all devices.
-                if (mNativeLocationBarModelAndroid != 0
-                        && SecurityStateModel.isSchemeCryptographic(url)) {
-                    return SecurityStateModel.shouldDowngradeNeutralStyling(securityLevel, url)
-                            ? R.drawable.omnibox_not_secure_warning
-                            : R.drawable.omnibox_info;
-                }
                 return isSmallDevice
                                 && (!SearchEngineLogoUtils.shouldShowSearchEngineLogo(isIncognito())
                                         || getNewTabPageForCurrentTab() != null)
@@ -425,7 +415,7 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
                 if (mNativeLocationBarModelAndroid == 0) {
                     return R.drawable.omnibox_info;
                 }
-                if (SecurityStateModel.shouldDowngradeNeutralStyling(securityLevel, url)) {
+                if (SecurityStateModel.shouldShowDangerTriangleForWarningLevel()) {
                     return R.drawable.omnibox_not_secure_warning;
                 }
                 return R.drawable.omnibox_info;

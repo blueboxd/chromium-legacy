@@ -242,22 +242,22 @@ class PLATFORM_EXPORT GraphicsContext {
                  const FloatRect* src_rect = nullptr,
                  bool has_filter_property = false,
                  SkBlendMode = SkBlendMode::kSrcOver,
-                 RespectImageOrientationEnum = kDoNotRespectImageOrientation);
-  void DrawImageRRect(
-      Image*,
-      Image::ImageDecodingMode,
-      const FloatRoundedRect& dest,
-      const FloatRect& src_rect,
-      bool has_filter_property = false,
-      SkBlendMode = SkBlendMode::kSrcOver,
-      RespectImageOrientationEnum = kDoNotRespectImageOrientation);
+                 RespectImageOrientationEnum = kRespectImageOrientation);
+  void DrawImageRRect(Image*,
+                      Image::ImageDecodingMode,
+                      const FloatRoundedRect& dest,
+                      const FloatRect& src_rect,
+                      bool has_filter_property = false,
+                      SkBlendMode = SkBlendMode::kSrcOver,
+                      RespectImageOrientationEnum = kRespectImageOrientation);
   void DrawImageTiled(Image* image,
                       const FloatRect& dest_rect,
                       const FloatRect& src_rect,
                       const FloatSize& scale_src_to_dest,
                       const FloatPoint& phase,
                       const FloatSize& repeat_spacing,
-                      SkBlendMode = SkBlendMode::kSrcOver);
+                      SkBlendMode = SkBlendMode::kSrcOver,
+                      RespectImageOrientationEnum = kRespectImageOrientation);
 
   // These methods write to the canvas.
   // Also drawLine(const IntPoint& point1, const IntPoint& point2) and

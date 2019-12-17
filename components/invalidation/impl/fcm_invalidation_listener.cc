@@ -59,6 +59,10 @@ void FCMInvalidationListener::UpdateInterestedTopics(const Topics& topics) {
   DoSubscriptionUpdate();
 }
 
+void FCMInvalidationListener::ClearInstanceIDToken() {
+  TokenReceived(std::string());
+}
+
 void FCMInvalidationListener::InvalidationReceived(
     const std::string& payload,
     const std::string& private_topic,
@@ -120,7 +124,13 @@ void FCMInvalidationListener::EmitSavedInvalidations(
 void FCMInvalidationListener::TokenReceived(
     const std::string& instance_id_token) {
   instance_id_token_ = instance_id_token;
-  DoSubscriptionUpdate();
+  if (instance_id_token_.empty()) {
+    if (per_user_topic_registration_manager_) {
+      per_user_topic_registration_manager_->ClearInstanceIDToken();
+    }
+  } else {
+    DoSubscriptionUpdate();
+  }
 }
 
 void FCMInvalidationListener::Acknowledge(const invalidation::ObjectId& id,

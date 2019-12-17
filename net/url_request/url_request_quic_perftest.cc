@@ -218,7 +218,7 @@ TEST_F(URLRequestQuicPerfTest, TestGetRequest) {
     EXPECT_TRUE(request->is_pending());
     base::RunLoop().Run();
 
-    EXPECT_TRUE(request->status().is_success());
+    EXPECT_EQ(OK, delegate.request_status());
     if (delegate.data_received() == kHelloAltSvcResponse) {
       quic_succeeded = true;
     } else {

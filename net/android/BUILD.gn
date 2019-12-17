@@ -37,8 +37,8 @@ android_library("net_java") {
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   srcjar_deps = [
-    ":net_errors_java",
     ":net_android_java_enums_srcjar",
+    ":net_errors_java",
   ]
 }
 

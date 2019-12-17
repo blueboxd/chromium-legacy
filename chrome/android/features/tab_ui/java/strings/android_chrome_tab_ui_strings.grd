@@ -263,7 +263,7 @@
           Move tab right
       </message>
        <message name="IDS_ACCESSIBILITY_TAB_MOVEMENT_UP" desc="This text button shows in the accessibility mode action menu. When user selects a tab, triggers action menu and clicks on this button, the current tab will switch position with the tab above it in the grid to achieve reordering.">
-          Move tab top
+          Move tab up
       </message>
        <message name="IDS_ACCESSIBILITY_TAB_MOVEMENT_DOWN" desc="This text button shows in the accessibility mode action menu. When user selects a tab, triggers action menu and clicks on this button, the current tab will switch position with the tab below it in the grid to achieve reordering.">
           Move tab down

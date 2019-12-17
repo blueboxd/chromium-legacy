@@ -47,7 +47,7 @@ class ChannelMac : public Channel,
   ChannelMac(Delegate* delegate,
              ConnectionParams connection_params,
              HandlePolicy handle_policy,
-             scoped_refptr<base::TaskRunner> io_task_runner)
+             scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
       : Channel(delegate, handle_policy, DispatchBufferPolicy::kUnmanaged),
         self_(this),
         io_task_runner_(io_task_runner),
@@ -654,7 +654,7 @@ class ChannelMac : public Channel,
   // Keeps the Channel alive at least until explicit shutdown on the IO thread.
   scoped_refptr<ChannelMac> self_;
 
-  scoped_refptr<base::TaskRunner> io_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   base::mac::ScopedMachReceiveRight receive_port_;
   base::mac::ScopedMachSendRight send_port_;
@@ -709,7 +709,7 @@ scoped_refptr<Channel> Channel::Create(
     Channel::Delegate* delegate,
     ConnectionParams connection_params,
     Channel::HandlePolicy handle_policy,
-    scoped_refptr<base::TaskRunner> io_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   return new ChannelMac(delegate, std::move(connection_params), handle_policy,
                         io_task_runner);
 }

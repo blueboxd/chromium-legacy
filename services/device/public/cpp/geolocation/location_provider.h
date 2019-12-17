@@ -16,8 +16,8 @@ class LocationProvider {
  public:
   virtual ~LocationProvider() {}
 
-  typedef base::Callback<void(const LocationProvider*,
-                              const mojom::Geoposition&)>
+  typedef base::RepeatingCallback<void(const LocationProvider*,
+                                       const mojom::Geoposition&)>
       LocationProviderUpdateCallback;
 
   // This callback will be used to notify when a new Geoposition becomes

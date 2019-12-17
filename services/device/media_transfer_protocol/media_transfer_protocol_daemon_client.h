@@ -88,7 +88,8 @@ class MediaTransferProtocolDaemonClient {
   // The first argument is true for attach, false for detach.
   // The second argument is the storage name.
   using MTPStorageEventHandler =
-      base::Callback<void(bool is_attach, const std::string& storage_name)>;
+      base::RepeatingCallback<void(bool is_attach,
+                                   const std::string& storage_name)>;
 
   virtual ~MediaTransferProtocolDaemonClient();
 

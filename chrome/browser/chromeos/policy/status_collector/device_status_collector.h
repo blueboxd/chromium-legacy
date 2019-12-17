@@ -306,6 +306,10 @@ class DeviceStatusCollector : public StatusCollector,
       CrosHealthdDataReceiver callback,
       chromeos::cros_healthd::mojom::TelemetryInfoPtr reply);
 
+  // Returns true if data (e.g. CPU info, power status, etc.) should be fetched
+  // from cros_healthd.
+  bool ShouldFetchCrosHealthData() const;
+
   // Callback invoked when reporting users pref is changed.
   void ReportingUsersChanged();
 
@@ -398,6 +402,7 @@ class DeviceStatusCollector : public StatusCollector,
   bool report_power_status_ = false;
   bool report_storage_status_ = false;
   bool report_board_status_ = false;
+  bool report_cpu_info_ = false;
 
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       activity_times_subscription_;
@@ -419,6 +424,8 @@ class DeviceStatusCollector : public StatusCollector,
       storage_status_subscription_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       board_status_subscription_;
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+      cpu_info_subscription_;
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 

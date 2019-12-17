@@ -179,7 +179,6 @@ MdTextButton::MdTextButton(ButtonListener* listener, int button_context)
     : LabelButton(listener, base::string16(), button_context),
       is_prominent_(false) {
   SetInkDropMode(InkDropMode::ON);
-  set_has_ink_drop_action_on_click(true);
   SetCornerRadius(LayoutProvider::Get()->GetCornerRadiusMetric(EMPHASIS_LOW));
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetFocusForPlatform();

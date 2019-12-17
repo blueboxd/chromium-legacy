@@ -4798,6 +4798,8 @@
 
   "ReportDeviceBoardStatus": {},
 
+  "ReportDeviceCpuInfo": {},
+
   "ReportUploadFrequency": {},
 
   "DeviceAllowNewUsers": {},

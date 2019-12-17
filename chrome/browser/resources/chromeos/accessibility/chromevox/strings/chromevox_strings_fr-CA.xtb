@@ -385,7 +385,6 @@ Si vous avez terminé le didacticiel, utilisez ChromeVox pour accéder au bouton
 <translation id="3646890046000188562">{COUNT,plural, =1{apostrophe inversée}one{# apostrophe inversée}other{# apostrophes inversées}}</translation>
 <translation id="3650317109285159359">case à cocher d'élément de menu</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{symbole de dollar}one{# symbole de dollar}other{# symboles de dollar}}</translation>
-<translation id="3658742229777143148">Révision</translation>
 <translation id="3659787053479271466">alerte</translation>
 <translation id="3665563998540286755"><ph name="VALUE" />, zone de liste</translation>
 <translation id="3681531118904532409">Chair clair</translation>
@@ -1104,7 +1103,6 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt + F.</translation>
 <translation id="812886159861361726">Le téléchargement du fichier <ph name="FILE_NAME" /> a été arrêté</translation>
 <translation id="8138880386467279117">Tactile</translation>
 <translation id="8153880621934657047">Vous n'êtes pas dans un tableau.</translation>
-<translation id="8161114871611868169">Section des commentaires</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{trait de soulignement}one{# trait de soulignement}other{# traits de soulignement}}</translation>
 <translation id="8179976553408161302">Entrée</translation>
 <translation id="8184828902145951186">ligne</translation>

@@ -1,7 +1,5 @@
 config("private_join_and_compute_config") {
-  include_dirs = [
-    "//third_party/boringssl/src/include",
-  ]
+  include_dirs = [ "//third_party/boringssl/src/include" ]
 }
 
 source_set("ec_commutative_cipher") {

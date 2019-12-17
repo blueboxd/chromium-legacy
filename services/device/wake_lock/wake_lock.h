@@ -24,7 +24,7 @@ namespace device {
 // Callback that maps a context ID to the NativeView associated with
 // that context. This callback is provided to the Device Service by its
 // embedder.
-using WakeLockContextCallback = base::Callback<gfx::NativeView(int)>;
+using WakeLockContextCallback = base::RepeatingCallback<gfx::NativeView(int)>;
 
 class WakeLock : public mojom::WakeLock {
  public:

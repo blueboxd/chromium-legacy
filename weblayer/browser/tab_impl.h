@@ -10,9 +10,11 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/browser_controls_state.h"
 #include "weblayer/browser/i18n_util.h"
 #include "weblayer/public/tab.h"
 
@@ -136,6 +138,12 @@ class TabImpl : public Tab,
 
   void UpdateRendererPrefs(bool should_sync_prefs);
 
+#if defined(OS_ANDROID)
+  void UpdateBrowserControlsState(content::BrowserControlsState constraints,
+                                  content::BrowserControlsState current,
+                                  bool animate);
+#endif
+
   DownloadDelegate* download_delegate_ = nullptr;
   ErrorPageDelegate* error_page_delegate_ = nullptr;
   FullscreenDelegate* fullscreen_delegate_ = nullptr;
@@ -148,6 +156,7 @@ class TabImpl : public Tab,
 #if defined(OS_ANDROID)
   TopControlsContainerView* top_controls_container_view_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> java_impl_;
+  base::OneShotTimer update_browser_controls_state_timer_;
 #endif
 
   bool is_fullscreen_ = false;

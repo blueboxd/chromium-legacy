@@ -1480,12 +1480,11 @@ void DocumentLoader::InstallNewDocument(
   // The DocumentLoader was flagged as activated if it needs to notify the frame
   // that it was activated before navigation. Update the frame state based on
   // the new value.
-  if (frame_->HasReceivedUserGestureBeforeNavigation() !=
+  if (frame_->HadStickyUserActivationBeforeNavigation() !=
       had_sticky_activation_) {
-    frame_->SetDocumentHasReceivedUserGestureBeforeNavigation(
-        had_sticky_activation_);
+    frame_->SetHadStickyUserActivationBeforeNavigation(had_sticky_activation_);
     frame_->GetLocalFrameHostRemote()
-        .ReceivedUserGestureBeforeNavigationChanged(had_sticky_activation_);
+        .HadStickyUserActivationBeforeNavigationChanged(had_sticky_activation_);
   }
 
   bool should_clear_window_name =

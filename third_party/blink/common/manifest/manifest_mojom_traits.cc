@@ -66,6 +66,9 @@ bool StructTraits<blink::mojom::ManifestDataView, ::blink::Manifest>::Read(
   if (!data.ReadIcons(&out->icons))
     return false;
 
+  if (!data.ReadShortcuts(&out->shortcuts))
+    return false;
+
   if (!data.ReadShareTarget(&out->share_target))
     return false;
 
@@ -115,6 +118,31 @@ bool StructTraits<blink::mojom::ManifestImageResourceDataView,
     return false;
 
   if (!data.ReadPurpose(&out->purpose))
+    return false;
+
+  return true;
+}
+
+bool StructTraits<blink::mojom::ManifestShortcutItemDataView,
+                  ::blink::Manifest::ShortcutItem>::
+    Read(blink::mojom::ManifestShortcutItemDataView data,
+         ::blink::Manifest::ShortcutItem* out) {
+  if (!data.ReadName(&out->name))
+    return false;
+
+  TruncatedString16 string;
+  if (!data.ReadShortName(&string))
+    return false;
+  out->short_name = base::NullableString16(std::move(string.string));
+
+  if (!data.ReadDescription(&string))
+    return false;
+  out->description = base::NullableString16(std::move(string.string));
+
+  if (!data.ReadUrl(&out->url))
+    return false;
+
+  if (!data.ReadIcons(&out->icons))
     return false;
 
   return true;

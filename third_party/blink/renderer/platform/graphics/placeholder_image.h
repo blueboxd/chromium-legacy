@@ -83,7 +83,8 @@ class PLATFORM_EXPORT PlaceholderImage final : public Image {
                    const FloatPoint& phase,
                    SkBlendMode,
                    const FloatRect& dest_rect,
-                   const FloatSize& repeat_spacing) override;
+                   const FloatSize& repeat_spacing,
+                   RespectImageOrientationEnum) override;
 
   // SetData does nothing, and the passed in buffer is ignored.
   SizeAvailability SetData(scoped_refptr<SharedBuffer>, bool) override;

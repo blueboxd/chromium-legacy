@@ -96,7 +96,7 @@ bool NGFragmentPainter::ShouldRecordHitTestData(
     return false;
 
   auto touch_action = fragment.EffectiveAllowedTouchAction();
-  if (touch_action == TouchAction::kTouchActionAuto)
+  if (touch_action == TouchAction::kAuto)
     return false;
 
   return true;

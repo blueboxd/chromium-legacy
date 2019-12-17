@@ -13,7 +13,6 @@
 #include "ash/public/cpp/ambient/ambient_mode_state.h"
 #include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "chromeos/assistant/internal/action/cros_action_module.h"
@@ -106,7 +105,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
       std::unique_ptr<AssistantManagerServiceDelegate> delegate,
       std::unique_ptr<network::PendingSharedURLLoaderFactory>
           pending_url_loader_factory,
-      base::Optional<std::string> s3_server_uri_override,
       bool is_signed_out_mode);
 
   ~AssistantManagerServiceImpl() override;
@@ -380,9 +378,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
 
   base::UnguessableToken media_session_audio_focus_id_ =
       base::UnguessableToken::Null();
-
-  // Configuration passed to libassistant.
-  std::string libassistant_config_;
 
   mojo::Receiver<mojom::AppListEventSubscriber> app_list_subscriber_receiver_{
       this};

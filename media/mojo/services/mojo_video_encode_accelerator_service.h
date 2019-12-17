@@ -53,7 +53,6 @@ class MEDIA_MOJO_EXPORT MojoVideoEncodeAcceleratorService
   ~MojoVideoEncodeAcceleratorService() override;
 
   // mojom::VideoEncodeAccelerator impl.
-  void GetEncoderInfo(GetEncoderInfoCallback callback) override;
   void Initialize(
       const media::VideoEncodeAccelerator::Config& config,
       mojo::PendingRemote<mojom::VideoEncodeAcceleratorClient> client,

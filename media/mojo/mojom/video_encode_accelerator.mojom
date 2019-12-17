@@ -7,7 +7,6 @@ module media.mojom;
 import "media/mojo/mojom/media_types.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "media/mojo/mojom/video_encoder_info.mojom";
 
 // This file is the Mojo version of the media::VideoEncodeAccelerator interface
 // and describes the communication between a Client and a remote "service"
@@ -83,14 +82,8 @@ interface VideoEncodeAccelerator {
     PLATFORM_FAILURE
   };
 
-  // Return a VideoEncoderInfo of an underlying VideoEncodeAccelerator.
-  // This needs to be called AFTER initialization is successfully done,
-  // otherwise the returned VideoEncoderInfo doesn't tell the true info of
-  // the encoder.
-  [Sync]
-  GetEncoderInfo() => (VideoEncoderInfo result);
-
   // Responded by VideoEncodeAcceleratorClient.RequireBitstreamBuffers().
+  // TODO(mcasas): Update to asynchronous, https://crbug.com/744210.
   [Sync]
   Initialize(VideoEncodeAcceleratorConfig config,
              pending_remote<VideoEncodeAcceleratorClient> client)

@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
-#include "media/mojo/mojom/video_encoder_info.mojom.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
@@ -42,16 +41,6 @@ MojoVideoEncodeAcceleratorService::MojoVideoEncodeAcceleratorService(
 MojoVideoEncodeAcceleratorService::~MojoVideoEncodeAcceleratorService() {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
-void MojoVideoEncodeAcceleratorService::GetEncoderInfo(
-    GetEncoderInfoCallback callback) {
-  if (!encoder_) {
-    std::move(callback).Run(VideoEncoderInfo());
-    return;
-  }
-
-  std::move(callback).Run(encoder_->GetEncoderInfo());
 }
 
 void MojoVideoEncodeAcceleratorService::Initialize(

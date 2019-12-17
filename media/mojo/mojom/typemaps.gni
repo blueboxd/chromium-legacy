@@ -20,7 +20,6 @@ typemaps = [
   "//media/mojo/mojom/video_decoder.typemap",
   "//media/mojo/mojom/video_decoder_config.typemap",
   "//media/mojo/mojom/video_encode_accelerator.typemap",
-  "//media/mojo/mojom/video_encoder_info.typemap",
   "//media/mojo/mojom/video_frame.typemap",
 ]
 

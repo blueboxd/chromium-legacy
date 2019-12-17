@@ -6,11 +6,9 @@
 
 #include <utility>
 
-#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
-#include "base/values.h"
 #include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/assistant/internal/test_support/fake_assistant_manager.h"
 #include "chromeos/assistant/internal/test_support/fake_assistant_manager_internal.h"
@@ -40,7 +38,6 @@ using testing::StrictMock;
 using CommunicationErrorType = AssistantManagerService::CommunicationErrorType;
 
 namespace {
-
 // Return the list of all libassistant error codes that are considered to be
 // authentication errors. This list is created on demand as there is no clear
 // enum that defines these, and we don't want to hard code this list in the
@@ -187,17 +184,12 @@ class AssistantManagerServiceImplTest : public testing::Test {
         task_environment.GetMainThreadTaskRunner(), &assistant_state_,
         PowerManagerClient::Get());
 
-    CreateAssistantManagerServiceImpl(/*libassistant_config=*/{});
-  }
-
-  void CreateAssistantManagerServiceImpl(
-      base::Optional<std::string> s3_server_uri_override = base::nullopt) {
     auto delegate = std::make_unique<FakeAssistantManagerServiceDelegate>();
     delegate_ = delegate.get();
 
     assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
         &assistant_client_, service_context_.get(), std::move(delegate),
-        shared_url_loader_factory_->Clone(), s3_server_uri_override,
+        shared_url_loader_factory_->Clone(),
         /*is_signed_out_mode=*/false);
   }
 
@@ -211,8 +203,6 @@ class AssistantManagerServiceImplTest : public testing::Test {
   }
 
   ash::AssistantState* assistant_state() { return &assistant_state_; }
-
-  FakeAssistantManagerServiceDelegate* delegate() { return delegate_; }
 
   FakeAssistantManager* fake_assistant_manager() {
     return delegate_->assistant_manager();
@@ -285,20 +275,6 @@ class AssistantManagerServiceImplTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(AssistantManagerServiceImplTest);
 };
-
-// Tests if the JSON string contains the given path with the given value
-#define EXPECT_HAS_PATH_WITH_VALUE(config_string, path, expected_value)    \
-  ({                                                                       \
-    base::Optional<base::Value> config =                                   \
-        base::JSONReader::Read(config_string);                             \
-    ASSERT_TRUE(config.has_value());                                       \
-    const base::Value* actual = config->FindPath(path);                    \
-    base::Value expected = base::Value(expected_value);                    \
-    ASSERT_NE(actual, nullptr)                                             \
-        << "Path '" << path << "' not found in config: " << config_string; \
-    EXPECT_EQ(*actual, expected);                                          \
-  })
-
 }  // namespace
 
 TEST_F(AssistantManagerServiceImplTest, StateShouldStartAsStopped) {
@@ -397,17 +373,6 @@ TEST_F(AssistantManagerServiceImplTest,
   assistant_manager_service()->SetAccessToken("<the-access-token>");
 
   EXPECT_EQ(kUserID, fake_assistant_manager()->user_id());
-}
-
-TEST_F(AssistantManagerServiceImplTest,
-       ShouldPassS3ServerUriOverrideToAssistantManager) {
-  CreateAssistantManagerServiceImpl("the-uri-override");
-
-  Start();
-  WaitUntilStartIsFinished();
-
-  EXPECT_HAS_PATH_WITH_VALUE(delegate()->libassistant_config(),
-                             "testing.s3_grpc_server_uri", "the-uri-override");
 }
 
 TEST_F(AssistantManagerServiceImplTest, ShouldPauseMediaManagerOnPause) {

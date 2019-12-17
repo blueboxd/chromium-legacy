@@ -28,7 +28,8 @@ interface AssistantService {
   // Initiates assistant and provides interfaces for assistant to call into the
   // browser.
   Init(pending_remote<Client> assistant_client_interface,
-       pending_remote<DeviceActions> device_actions_interface);
+       pending_remote<DeviceActions> device_actions_interface,
+       bool is_test);
 
   // Binds the main assistant backend interface.
   BindAssistant(pending_receiver<Assistant> receiver);

@@ -409,7 +409,7 @@ class LazyLoadPrerenderBrowserTest : public LazyLoadBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(LazyLoadPrerenderBrowserTest, ImagesIgnored) {
+IN_PROC_BROWSER_TEST_F(LazyLoadPrerenderBrowserTest, DISABLED_ImagesIgnored) {
   EnableDataSaver(true);
   SetUpURLMonitor();
   ASSERT_TRUE(embedded_test_server()->Start());

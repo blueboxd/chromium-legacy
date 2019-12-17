@@ -46,8 +46,6 @@ extern const aura::WindowProperty<bool>* const kOnlyAllowMouseClickEvents;
 COMPONENT_EXPORT(ASSISTANT_UI_CONSTANTS)
 const gfx::FontList& GetDefaultFontList();
 
-constexpr int kWarmerWelcomesMaxTimesTriggered = 3;
-
 }  // namespace ui
 }  // namespace assistant
 

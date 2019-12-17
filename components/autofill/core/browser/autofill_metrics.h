@@ -989,10 +989,6 @@ class AutofillMetrics {
   static void LogSubmittedServerCardExpirationStatusMetric(
       SubmittedServerCardExpirationStatusMetric metric);
 
-  // When a masked card is compared with another card, logs whether the cards'
-  // networks match.
-  static void LogMaskedCardComparisonNetworksMatch(bool matches);
-
   // When credit card save is not offered (either at all on mobile or by simply
   // not showing the bubble on desktop), logs the occurrence.
   static void LogCreditCardSaveNotOfferedDueToMaxStrikesMetric(

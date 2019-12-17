@@ -30,9 +30,8 @@ FakeAssistantManagerServiceDelegate::CreatePlatformApi(
 std::unique_ptr<assistant_client::AssistantManager>
 FakeAssistantManagerServiceDelegate::CreateAssistantManager(
     assistant_client::PlatformApi* platform_api,
-    const std::string& libassistant_config) {
+    const std::string& lib_assistant_config) {
   DCHECK(assistant_manager_);
-  libassistant_config_ = libassistant_config;
   return std::move(assistant_manager_);
 }
 

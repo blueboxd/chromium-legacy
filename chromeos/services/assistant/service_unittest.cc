@@ -184,8 +184,7 @@ class AssistantServiceTest : public testing::Test {
     service_ = std::make_unique<Service>(
         remote_service_.BindNewPipeAndPassReceiver(),
         shared_url_loader_factory_->Clone(), &pref_service_);
-    service_->SetAssistantManagerServiceForTesting(
-        std::make_unique<FakeAssistantManagerServiceImpl>());
+    service_->is_test_ = true;
 
     mock_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
         base::Time::Now(), base::TimeTicks::Now());
@@ -198,7 +197,8 @@ class AssistantServiceTest : public testing::Test {
         fake_identity_accessor_.CreatePendingRemoteAndBind());
 
     remote_service_->Init(fake_assistant_client_.MakeRemote(),
-                          fake_device_actions_.CreatePendingRemoteAndBind());
+                          fake_device_actions_.CreatePendingRemoteAndBind(),
+                          /*is_test=*/true);
     base::RunLoop().RunUntilIdle();
   }
 

@@ -35,9 +35,6 @@ class MockMojoVideoEncodeAccelerator : public mojom::VideoEncodeAccelerator {
   MockMojoVideoEncodeAccelerator() = default;
 
   // mojom::VideoEncodeAccelerator impl.
-  void GetEncoderInfo(GetEncoderInfoCallback callback) override {
-    return std::move(callback).Run(media::VideoEncoderInfo());
-  }
   void Initialize(
       const media::VideoEncodeAccelerator::Config& config,
       mojo::PendingRemote<mojom::VideoEncodeAcceleratorClient> client,

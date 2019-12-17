@@ -314,7 +314,7 @@ TEST_F('OSSettingsAppManagementReducersTest', 'AllJsTests', () => {
 var OSSettingsBluetoothPageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'bluetooth_page/bluetooth_page.html';
+    return super.browsePreload + 'chromeos/bluetooth_page/bluetooth_page.html';
   }
 
   /** @override */
@@ -339,7 +339,7 @@ TEST_F('OSSettingsBluetoothPageTest', 'AllJsTests', () => {
 var OSSettingsCrostiniPageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'crostini_page/crostini_page.html';
+    return super.browsePreload + 'chromeos/crostini_page/crostini_page.html';
   }
 
   /** @override */
@@ -366,7 +366,7 @@ TEST_F('OSSettingsCrostiniPageTest', 'All', () => {
 var OSSettingsDateTimePageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'date_time_page/date_time_page.html';
+    return super.browsePreload + 'chromeos/date_time_page/date_time_page.html';
   }
 
   /** @override */
@@ -487,7 +487,8 @@ TEST_F('OSSettingsGoogleAssistantPageTest', 'AllJsTests', () => {
 var OSSettingsInternetDetailPageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'internet_page/internet_detail_page.html';
+    return super.browsePreload +
+        'chromeos/internet_page/internet_detail_page.html';
   }
 
   /** @override */
@@ -512,7 +513,7 @@ TEST_F('OSSettingsInternetDetailPageTest', 'InternetDetailPage', () => {
 var OSSettingsInternetPageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'internet_page/internet_page.html';
+    return super.browsePreload + 'chromeos/internet_page/internet_page.html';
   }
 
   /** @override */
@@ -537,7 +538,7 @@ TEST_F('OSSettingsInternetPageTest', 'InternetPage', () => {
 var OSSettingsInternetSubpageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'internet_page/internet_subpage.html';
+    return super.browsePreload + 'chromeos/internet_page/internet_subpage.html';
   }
 
   /** @override */
@@ -907,7 +908,7 @@ TEST_F('OSSettingsPersonalizationPageTest', 'AllJsTests', () => {
 var OSSettingsPluginVmPageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'plugin_vm_page/plugin_vm_page.html';
+    return super.browsePreload + 'chromeos/plugin_vm_page/plugin_vm_page.html';
   }
 
   /** @override */

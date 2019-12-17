@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/optional.h"
 
 namespace base {
 class FilePath;
@@ -19,9 +18,7 @@ namespace assistant {
 
 base::FilePath GetRootPath();
 
-// Creates the configuration for libassistant.
-std::string CreateLibAssistantConfig(
-    base::Optional<std::string> s3_server_uri_override = base::nullopt);
+std::string CreateLibAssistantConfig();
 
 }  // namespace assistant
 }  // namespace chromeos

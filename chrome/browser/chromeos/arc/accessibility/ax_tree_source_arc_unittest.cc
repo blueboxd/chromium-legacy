@@ -931,7 +931,6 @@ TEST_F(AXTreeSourceArcTest, OnFocusEvent) {
   event->node_data.emplace_back(AXNodeInfoData::New());
   AXNodeInfoData* root = event->node_data.back().get();
   root->id = 10;
-
   SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
               std::vector<int>({1, 2}));
   SetProperty(root, AXBooleanProperty::IMPORTANCE, true);
@@ -970,6 +969,76 @@ TEST_F(AXTreeSourceArcTest, OnFocusEvent) {
   EXPECT_EQ(node1->id, data.focus_id);
 
   EXPECT_EQ(2, GetDispatchedEventCount(ax::mojom::Event::kFocus));
+}
+
+TEST_F(AXTreeSourceArcTest, OnDrawerOpened) {
+  auto event = AXEventData::New();
+  event->source_id = 10;  // root
+  event->task_id = 1;
+  event->event_type = AXEventType::WINDOW_STATE_CHANGED;
+  event->eventText = std::vector<std::string>({"Navigation"});
+
+  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
+  event->window_data->emplace_back(AXWindowInfoData::New());
+  AXWindowInfoData* root_window = event->window_data->back().get();
+  root_window->window_id = 100;
+  root_window->root_node_id = 10;
+
+  /* AXTree of this test:
+    [10] root (DrawerLayout)
+    --[1] node1 (not-importantForAccessibility) hidden node
+    --[2] node2 visible node
+    ----[3] node3 node with text
+  */
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* root = event->node_data.back().get();
+  root->id = 10;
+  SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
+              std::vector<int>({1, 2}));
+  SetProperty(root, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(root, AXStringProperty::CLASS_NAME,
+              "androidx.drawerlayout.widget.DrawerLayout");
+
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* node1 = event->node_data.back().get();
+  node1->id = 1;
+  SetProperty(node1, AXBooleanProperty::VISIBLE_TO_USER, true);
+
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* node2 = event->node_data.back().get();
+  node2->id = 2;
+  SetProperty(node2, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({3}));
+  SetProperty(node2, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(node2, AXBooleanProperty::VISIBLE_TO_USER, true);
+
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* node3 = event->node_data.back().get();
+  node3->id = 3;
+  SetProperty(node3, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(node3, AXBooleanProperty::VISIBLE_TO_USER, true);
+  SetProperty(node3, AXStringProperty::TEXT, "sample string.");
+
+  CallNotifyAccessibilityEvent(event.get());
+
+  std::unique_ptr<ui::AXNodeData> data;
+  std::string name;
+  CallSerializeNode(node2, &data);
+  ASSERT_EQ(ax::mojom::Role::kMenu, data->role);
+  ASSERT_TRUE(
+      data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
+  EXPECT_EQ("Navigation", name);
+
+  // Validate that the drawer title is cached.
+  event->eventText.reset();
+  event->event_type = AXEventType::WINDOW_CONTENT_CHANGED;
+  CallNotifyAccessibilityEvent(event.get());
+
+  data->RemoveStringAttribute(ax::mojom::StringAttribute::kName);
+  CallSerializeNode(node2, &data);
+  ASSERT_EQ(ax::mojom::Role::kMenu, data->role);
+  ASSERT_TRUE(
+      data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
+  EXPECT_EQ("Navigation", name);
 }
 
 TEST_F(AXTreeSourceArcTest, SerializeAndUnserialize) {

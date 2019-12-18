@@ -14,8 +14,6 @@ namespace blink {
 SVGTreeScopeResources::SVGTreeScopeResources(TreeScope* tree_scope)
     : tree_scope_(tree_scope) {}
 
-SVGTreeScopeResources::~SVGTreeScopeResources() = default;
-
 LocalSVGResource* SVGTreeScopeResources::ResourceForId(const AtomicString& id) {
   if (id.IsEmpty())
     return nullptr;

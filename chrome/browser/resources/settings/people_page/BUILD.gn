@@ -49,6 +49,7 @@ js_type_check("closure_compile") {
 js_library("account_manager") {
   deps = [
     ":account_manager_browser_proxy",
+    "../chromeos/localized_link:localized_link",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:icon",

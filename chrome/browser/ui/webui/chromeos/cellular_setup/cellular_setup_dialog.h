@@ -40,9 +40,12 @@ class CellularSetupDialogUI : public ui::MojoWebDialogUI {
   explicit CellularSetupDialogUI(content::WebUI* web_ui);
   ~CellularSetupDialogUI() override;
 
- private:
-  void BindCellularSetup(mojo::PendingReceiver<mojom::CellularSetup> receiver);
+  // Instantiates implementor of the mojom::CellularSetup mojo interface
+  // passing the pending receiver that will be internally bound.
+  void BindInterface(mojo::PendingReceiver<mojom::CellularSetup> receiver);
 
+ private:
+  WEB_UI_CONTROLLER_TYPE_DECL();
   DISALLOW_COPY_AND_ASSIGN(CellularSetupDialogUI);
 };
 

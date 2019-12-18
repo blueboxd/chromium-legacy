@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/signin_promo.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -32,8 +33,9 @@ const int kSigninErrorDialogHeight = 164;
 int GetSyncConfirmationDialogPreferredHeight(Profile* profile) {
   // If sync is disabled, then the sync confirmation dialog looks like an error
   // dialog and thus it has the same preferred size.
-  return profile->IsSyncAllowed() ? kSyncConfirmationDialogHeight
-                                  : kSigninErrorDialogHeight;
+  return ProfileSyncServiceFactory::IsSyncAllowed(profile)
+             ? kSyncConfirmationDialogHeight
+             : kSigninErrorDialogHeight;
 }
 
 }  // namespace

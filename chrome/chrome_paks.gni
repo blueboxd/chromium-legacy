@@ -177,6 +177,13 @@ template("chrome_extra_paks") {
         "//third_party/ink:ink_resources",
         "//ui/file_manager:resources",
       ]
+
+      if (!is_official_build) {
+        sources += [
+          "$root_gen_dir/chromeos/chromeos_sample_system_web_app_resources.pak",
+        ]
+        deps += [ "//chromeos/resources:sample_system_web_app_resources" ]
+      }
     }
     if (!is_android && !is_chromeos) {
       sources += [ "$root_gen_dir/chrome/welcome_resources.pak" ]

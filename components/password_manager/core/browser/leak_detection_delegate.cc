@@ -127,6 +127,7 @@ void LeakDetectionDelegate::OnShowLeakDetectionNotification(
 void LeakDetectionDelegate::OnError(LeakDetectionError error) {
   leak_check_.reset();
 
+  base::UmaHistogramEnumeration("PasswordManager.LeakDetection.Error", error);
   if (password_manager_util::IsLoggingActive(client_)) {
     BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
     switch (error) {

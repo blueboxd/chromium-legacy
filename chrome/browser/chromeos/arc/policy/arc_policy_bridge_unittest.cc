@@ -632,10 +632,11 @@ TEST_F(ArcPolicyBridgeRequiredKeyPairTest, RequiredKeyPairsBasicTest) {
   // One certificate is required to be installed.
   smart_card_manager()->set_required_cert_names_for_testing(
       std::vector<std::string>({kFakeCertName}));
-  GetPoliciesAndVerifyResult(
-      "{\"guid\":\"" + instance_guid() + "\"," +
-      base::StringPrintf(kRequiredKeyPairFormat, "\"", kFakeCertName, "\"") +
-      "}");
+  GetPoliciesAndVerifyResult("{\"guid\":\"" + instance_guid() + "\"," +
+                             base::StringPrintf(kRequiredKeyPairFormat,
+                                                "{\"alias\":\"", kFakeCertName,
+                                                "\"}") +
+                             "}");
 
   // An empty list is required to be installed.
   smart_card_manager()->set_required_cert_names_for_testing(

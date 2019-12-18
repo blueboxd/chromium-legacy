@@ -377,6 +377,8 @@ class VIEWS_EXPORT Textfield : public View,
 #endif
 
 #if defined(OS_WIN)
+  bool GetEditContextLayoutBounds(gfx::Rect* control_bounds,
+                                  gfx::Rect* selection_bounds) override;
   void SetActiveCompositionForAccessibility(
       const gfx::Range& range,
       const base::string16& active_composition_text,

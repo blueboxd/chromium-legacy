@@ -7258,6 +7258,10 @@ the Bookmarks menu.">
         desc="Used to indicate that the speech recognition service is waiting for user permission to use the microphone.">
         Waiting...
       </message>
+      <message name="IDS_NEW_TAB_VOICE_SEARCH_CLOSED"
+        desc="Message announced to screen reader users that the voice search overlay is closed.">
+        Voice search closed
+      </message>
 
       <if expr="not use_titlecase">
         <message name="IDS_NEW_TAB_APP_OPTIONS"

@@ -33,7 +33,7 @@
 # found in the LICENSE file.
 
 # usage: rule_bison.py INPUT_FILE OUTPUT_DIR BISON_EXE
-# INPUT_FILE is a path to either xpath_grammar.y.
+# INPUT_FILE is a path to *.y such as xpath_grammar.y.
 # OUTPUT_DIR is where the bison-generated .cc and .h files should be placed.
 
 import errno
@@ -73,8 +73,6 @@ def main():
         os.environ['PATH'] = path_to_bison + os.pathsep + os.environ['PATH']
 
     input_name = os.path.basename(input_file)
-    assert input_name == 'xpath_grammar.y'
-    prefix = {'xpath_grammar.y': 'xpathyy'}[input_name]
 
     # Output name without directory and extension.
     output_basename = os.path.splitext(input_name)[0] + '_generated'
@@ -84,7 +82,7 @@ def main():
     original_output_h = os.path.join(output_dir,
                                      output_basename + BISON_HEADER_EXT)
 
-    return_code = subprocess.call([bison_exe, '-d', '-p', prefix, input_file,
+    return_code = subprocess.call([bison_exe, '-d', input_file,
                                    '-o', output_cc])
     assert return_code == 0
     # If the file doesn't exist, this raise an OSError.

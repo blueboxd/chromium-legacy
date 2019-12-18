@@ -882,6 +882,15 @@ class FileManager extends cr.EventTarget {
     this.providersModel_ = new ProvidersModel(this.volumeManager_);
     this.fileFilter_ = new FileFilter(this.metadataModel_);
 
+    // Set the files-ng class for dialog header styling.
+    const dialogHeader = queryRequiredElement('.dialog-header');
+    if (util.isFilesNg()) {
+      dialogHeader.classList.add('files-ng');
+      // Move the dialog header to the side of the splitter above the list view.
+      const dialogMain = queryRequiredElement('.dialog-main');
+      dialogMain.insertBefore(dialogHeader, dialogMain.firstChild);
+    }
+
     // Create the root view of FileManager.
     assert(this.dialogDom_);
     assert(this.launchParams_);

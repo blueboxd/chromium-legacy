@@ -186,10 +186,11 @@ class MockInputHandler : public cc::InputHandler {
   }
   void set_is_scrolling_root(bool is) { is_scrolling_root_ = is; }
 
-  MOCK_METHOD3(GetSnapFlingInfoAndSetSnapTarget,
+  MOCK_METHOD3(GetSnapFlingInfoAndSetAnimatingSnapTarget,
                bool(const gfx::Vector2dF& natural_displacement,
                     gfx::Vector2dF* initial_offset,
                     gfx::Vector2dF* target_offset));
+  MOCK_METHOD1(ScrollEndForSnapFling, void(bool));
 
  private:
   bool is_scrolling_root_ = true;
@@ -887,7 +888,8 @@ void InputHandlerProxyTest::FlingAndSnap() {
       -40;  // -Y means scroll down - i.e. in the +Y direction.
   gesture_.data.scroll_update.inertial_phase =
       blink::WebGestureEvent::InertialPhaseState::kMomentum;
-  EXPECT_CALL(mock_input_handler_, GetSnapFlingInfoAndSetSnapTarget(_, _, _))
+  EXPECT_CALL(mock_input_handler_,
+              GetSnapFlingInfoAndSetAnimatingSnapTarget(_, _, _))
       .WillOnce(DoAll(testing::SetArgPointee<1>(gfx::Vector2dF(0, 0)),
                       testing::SetArgPointee<2>(gfx::Vector2dF(0, 100)),
                       testing::Return(true)));
@@ -904,7 +906,8 @@ TEST_P(InputHandlerProxyTest, SnapFlingIgnoresFollowingGSUAndGSE) {
   // snap position.
   expected_disposition_ = InputHandlerProxy::DROP_EVENT;
 
-  EXPECT_CALL(mock_input_handler_, GetSnapFlingInfoAndSetSnapTarget(_, _, _))
+  EXPECT_CALL(mock_input_handler_,
+              GetSnapFlingInfoAndSetAnimatingSnapTarget(_, _, _))
       .Times(0);
   EXPECT_CALL(mock_input_handler_, ScrollBy(_)).Times(0);
   EXPECT_EQ(expected_disposition_,

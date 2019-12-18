@@ -31,13 +31,13 @@ class CORE_EXPORT NGInlineBreakToken final : public NGBreakToken {
       unsigned item_index,
       unsigned text_offset,
       unsigned flags /* NGInlineBreakTokenFlags */) {
-    return base::AdoptRef(
-        new NGInlineBreakToken(node, style, item_index, text_offset, flags));
+    return base::AdoptRef(new NGInlineBreakToken(
+        PassKey(), node, style, item_index, text_offset, flags));
   }
 
   // Creates a break token for a node which cannot produce any more fragments.
   static scoped_refptr<NGInlineBreakToken> Create(NGLayoutInputNode node) {
-    return base::AdoptRef(new NGInlineBreakToken(node));
+    return base::AdoptRef(new NGInlineBreakToken(PassKey(), node));
   }
 
   ~NGInlineBreakToken() override;
@@ -69,19 +69,21 @@ class CORE_EXPORT NGInlineBreakToken final : public NGBreakToken {
     return flags_ & kIsForcedBreak;
   }
 
-#if DCHECK_IS_ON()
-  String ToString() const override;
-#endif
-
- private:
-  NGInlineBreakToken(NGInlineNode node,
+  using PassKey = util::PassKey<NGInlineBreakToken>;
+  NGInlineBreakToken(PassKey,
+                     NGInlineNode node,
                      const ComputedStyle*,
                      unsigned item_index,
                      unsigned text_offset,
                      unsigned flags /* NGInlineBreakTokenFlags */);
 
-  explicit NGInlineBreakToken(NGLayoutInputNode node);
+  explicit NGInlineBreakToken(PassKey, NGLayoutInputNode node);
 
+#if DCHECK_IS_ON()
+  String ToString() const override;
+#endif
+
+ private:
   scoped_refptr<const ComputedStyle> style_;
   unsigned item_index_;
   unsigned text_offset_;

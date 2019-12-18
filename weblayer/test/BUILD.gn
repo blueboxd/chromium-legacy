@@ -110,6 +110,7 @@ test("weblayer_browsertests") {
 
   if (is_android) {
     sources += [
+      "../browser/safe_browsing/safe_browsing_browsertest.cc",
       "../shell/android/browsertests_apk/weblayer_browser_tests_jni_onload.cc",
     ]
     deps += [
@@ -118,6 +119,8 @@ test("weblayer_browsertests") {
       "//android_webview:generate_aw_strings_grit",
       "//android_webview:locale_pak_assets",
       "//android_webview:pak_file_assets",
+      "//components/safe_browsing",
+      "//components/safe_browsing/android:safe_browsing_api_handler",
       "//components/viz/service:service_java",
       "//content/public/test/android:android_test_message_pump_support_java",
       "//content/test:android_test_message_pump_support",

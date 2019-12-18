@@ -22,7 +22,6 @@ class SVGTreeScopeResources final
     : public GarbageCollected<SVGTreeScopeResources> {
  public:
   explicit SVGTreeScopeResources(TreeScope*);
-  ~SVGTreeScopeResources();
 
   LocalSVGResource* ResourceForId(const AtomicString& id);
   LocalSVGResource* ExistingResourceForId(const AtomicString& id) const;

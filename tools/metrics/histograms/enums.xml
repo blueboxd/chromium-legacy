@@ -18978,6 +18978,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="654" label="DNSInterceptionChecksEnabled"/>
   <int value="655" label="PrimaryMouseButtonSwitch"/>
   <int value="656" label="ReportDeviceCpuInfo"/>
+  <int value="657" label="DeviceLoginScreenPrimaryMouseButtonSwitch"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -25666,7 +25667,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3028" label="CreateObjectBlob"/>
   <int value="3029" label="QuotaRead"/>
   <int value="3030" label="DelegateFocus"/>
-  <int value="3031" label="DelegateFocusNotFirstInFlatTree"/>
+  <int value="3031" label="OBSOLETE_DelegateFocusNotFirstInFlatTree"/>
   <int value="3032" label="ThirdPartySharedWorker"/>
   <int value="3033" label="ThirdPartyBroadcastChannel"/>
   <int value="3034"
@@ -25762,6 +25763,9 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3120" label="HTMLLinkElementMonetization"/>
   <int value="3121" label="InputTypeCheckboxRenderedNonSquare"/>
   <int value="3122" label="InputTypeRadioRenderedNonSquare"/>
+  <int value="3123" label="WebkitBoxPackJustifyDoesSomething"/>
+  <int value="3124" label="WebkitBoxPackCenterDoesSomething"/>
+  <int value="3125" label="WebkitBoxPackEndDoesSomething"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -48292,6 +48296,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Clicked Close"/>
   <int value="2" label="Clicked Check passwords"/>
   <int value="3" label="Clicked Ok"/>
+</enum>
+
+<enum name="PasswordLeakDetectionError">
+  <int value="0" label="Not signed in"/>
+  <int value="1" label="Token request error"/>
+  <int value="2" label="Hashing/encryption error"/>
+  <int value="3" label="Invalid server response"/>
 </enum>
 
 <enum name="PasswordLeakLookupResponseResult">

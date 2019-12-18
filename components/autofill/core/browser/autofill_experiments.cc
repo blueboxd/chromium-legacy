@@ -262,13 +262,4 @@ bool OfferStoreUnmaskedCards(bool is_off_the_record) {
 #endif
 }
 
-bool ShouldUseActiveSignedInAccount() {
-  // If butter is enabled or the feature to get the Payment Identity from Sync
-  // is enabled, the account of the active signed-in user should be used.
-  return base::FeatureList::IsEnabled(
-             features::kAutofillEnableAccountWalletStorage) ||
-         base::FeatureList::IsEnabled(
-             features::kAutofillGetPaymentsIdentityFromSync);
-}
-
 }  // namespace autofill

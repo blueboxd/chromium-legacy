@@ -250,7 +250,8 @@ void ServiceWorkerGlobalScope::FetchAndRunClassicScript(
   // "classic: Fetch a classic worker script given job's serialized script url,
   // job's client, "serviceworker", and the to-be-created environment settings
   // object for this service worker."
-  auto destination = mojom::RequestContextType::SERVICE_WORKER;
+  auto context_type = mojom::RequestContextType::SERVICE_WORKER;
+  auto destination = network::mojom::RequestDestination::kServiceWorker;
 
   // "To perform the fetch given request, run the following steps:"
   // Step 9.1. "Append `Service-Worker`/`script` to request's header list."
@@ -275,7 +276,8 @@ void ServiceWorkerGlobalScope::FetchAndRunClassicScript(
       *this,
       CreateOutsideSettingsFetcher(outside_settings_object,
                                    outside_resource_timing_notifier),
-      script_url, destination, network::mojom::RequestMode::kSameOrigin,
+      script_url, context_type, destination,
+      network::mojom::RequestMode::kSameOrigin,
       network::mojom::CredentialsMode::kSameOrigin,
       WTF::Bind(&ServiceWorkerGlobalScope::DidReceiveResponseForClassicScript,
                 WrapWeakPersistent(this),
@@ -298,8 +300,9 @@ void ServiceWorkerGlobalScope::FetchAndRunModuleScript(
           : ModuleScriptCustomFetchType::kWorkerConstructor;
   FetchModuleScript(module_url_record, outside_settings_object,
                     outside_resource_timing_notifier,
-                    mojom::RequestContextType::SERVICE_WORKER, credentials_mode,
-                    fetch_type,
+                    mojom::RequestContextType::SERVICE_WORKER,
+                    network::mojom::RequestDestination::kServiceWorker,
+                    credentials_mode, fetch_type,
                     MakeGarbageCollected<ServiceWorkerModuleTreeClient>(
                         ScriptController()->GetScriptState()));
 }
@@ -1827,6 +1830,7 @@ void ServiceWorkerGlobalScope::DispatchFetchEventForMainResource(
         response_callback,
     DispatchFetchEventForMainResourceCallback callback) {
   DCHECK(IsContextThread());
+
   // We can use kNone as a |requestor_coep| for the main resource because it
   // must be the same origin.
   event_queue_->EnqueueNormal(

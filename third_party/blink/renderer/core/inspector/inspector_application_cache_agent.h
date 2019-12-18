@@ -40,12 +40,6 @@ class InspectedFrames;
 class CORE_EXPORT InspectorApplicationCacheAgent final
     : public InspectorBaseAgent<protocol::ApplicationCache::Metainfo> {
  public:
-  static InspectorApplicationCacheAgent* Create(
-      InspectedFrames* inspected_frames) {
-    return MakeGarbageCollected<InspectorApplicationCacheAgent>(
-        inspected_frames);
-  }
-
   explicit InspectorApplicationCacheAgent(InspectedFrames*);
   ~InspectorApplicationCacheAgent() override = default;
   void Trace(blink::Visitor*) override;

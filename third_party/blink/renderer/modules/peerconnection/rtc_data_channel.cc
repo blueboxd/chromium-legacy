@@ -412,7 +412,7 @@ void RTCDataChannel::send(NotShared<DOMArrayBufferView> data,
   }
   buffered_amount_ += data.View()->byteLengthAsSizeT();
   if (!SendRawData(static_cast<const char*>(data.View()->BaseAddress()),
-                   data.View()->deprecatedByteLengthAsUnsigned())) {
+                   data.View()->byteLengthAsSizeT())) {
     // TODO(https://crbug.com/937848): Don't throw an exception if data is
     // queued.
     ThrowCouldNotSendDataException(&exception_state);

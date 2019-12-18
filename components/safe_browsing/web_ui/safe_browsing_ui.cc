@@ -231,6 +231,20 @@ void WebUIInfoSingleton::ClearLogMessages() {
     webui_listener->NotifyLogMessageJsListener(timestamp, message);
 }
 
+void WebUIInfoSingleton::AddToReportingEvents(const base::Value& event) {
+  if (!HasListener())
+    return;
+
+  for (auto* webui_listener : webui_instances_)
+    webui_listener->NotifyReportingEventJsListener(event);
+
+  reporting_events_.push_back(event.Clone());
+}
+
+void WebUIInfoSingleton::ClearReportingEvents() {
+  std::vector<base::Value>().swap(reporting_events_);
+}
+
 void WebUIInfoSingleton::RegisterWebUIInstance(SafeBrowsingUIHandler* webui) {
   webui_instances_.push_back(webui);
 }
@@ -1185,6 +1199,19 @@ base::Value SerializeLogMessage(const base::Time& timestamp,
   return std::move(result);
 }
 
+base::Value SerializeReportingEvent(const base::Value& event) {
+  base::DictionaryValue result;
+
+  std::string event_serialized;
+  JSONStringValueSerializer serializer(&event_serialized);
+  serializer.set_pretty_print(true);
+  serializer.Serialize(event);
+
+  result.SetString("message", event_serialized);
+
+  return std::move(result);
+}
+
 }  // namespace
 
 SafeBrowsingUI::SafeBrowsingUI(content::WebUI* web_ui)
@@ -1522,6 +1549,19 @@ void SafeBrowsingUIHandler::GetReferrerChain(const base::ListValue* args) {
                             base::Value(referrer_chain_serialized));
 }
 
+void SafeBrowsingUIHandler::GetReportingEvents(const base::ListValue* args) {
+  base::ListValue reporting_events;
+  for (const auto& reporting_event :
+       WebUIInfoSingleton::GetInstance()->reporting_events()) {
+    reporting_events.Append(reporting_event.Clone());
+  }
+
+  AllowJavascript();
+  std::string callback_id;
+  args->GetString(0, &callback_id);
+  ResolveJavascriptCallback(base::Value(callback_id), reporting_events);
+}
+
 void SafeBrowsingUIHandler::GetLogMessages(const base::ListValue* args) {
   const std::vector<std::pair<base::Time, std::string>>& log_messages =
       WebUIInfoSingleton::GetInstance()->log_messages();
@@ -1624,6 +1664,12 @@ void SafeBrowsingUIHandler::NotifyLogMessageJsListener(
                     base::Value(SerializeLogMessage(timestamp, message)));
 }
 
+void SafeBrowsingUIHandler::NotifyReportingEventJsListener(
+    const base::Value& event) {
+  AllowJavascript();
+  FireWebUIListener("reporting-events-update", SerializeReportingEvent(event));
+}
+
 void SafeBrowsingUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getExperiments",
@@ -1685,6 +1731,10 @@ void SafeBrowsingUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getReferrerChain",
       base::BindRepeating(&SafeBrowsingUIHandler::GetReferrerChain,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getReportingEvents",
+      base::BindRepeating(&SafeBrowsingUIHandler::GetReportingEvents,
                           base::Unretained(this)));
 }
 

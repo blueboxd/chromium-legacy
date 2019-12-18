@@ -297,7 +297,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       image_animation_controller_(GetTaskRunner(),
                                   this,
                                   settings_.enable_image_animation_resync),
-      is_animating_for_snap_(false),
       paint_image_generator_client_id_(PaintImage::GetNextGeneratorClientId()),
       scrollbar_controller_(std::make_unique<ScrollbarController>(this)),
       frame_trackers_(settings.single_thread_proxy_scheduler,
@@ -3844,7 +3843,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   }
   scroll_status.thread = SCROLL_ON_IMPL_THREAD;
   mutator_host_->ScrollAnimationAbort();
-  is_animating_for_snap_ = false;
+  scroll_animating_snap_target_ids_ = TargetSnapAreaElementIds();
 
   browser_controls_offset_manager_->ScrollBegin();
 
@@ -4884,6 +4883,7 @@ bool LayerTreeHostImpl::SnapAtScrollEnd() {
   if (!scroll_node || !scroll_node->snap_container_data.has_value())
     return false;
 
+  SnapContainerData& data = scroll_node->snap_container_data.value();
   gfx::ScrollOffset current_position = GetVisualScrollOffset(*scroll_node);
 
   std::unique_ptr<SnapSelectionStrategy> strategy =
@@ -4891,7 +4891,8 @@ bool LayerTreeHostImpl::SnapAtScrollEnd() {
           current_position, did_scroll_x_for_scroll_gesture_,
           did_scroll_y_for_scroll_gesture_);
   gfx::ScrollOffset snap_position;
-  if (!FindSnapPositionAndSetTarget(scroll_node, *strategy, &snap_position))
+  TargetSnapAreaElementIds snap_target_ids;
+  if (!data.FindSnapPosition(*strategy, &snap_position, &snap_target_ids))
     return false;
 
   if (viewport().ShouldScroll(*scroll_node)) {
@@ -4918,29 +4919,19 @@ bool LayerTreeHostImpl::SnapAtScrollEnd() {
   } else {
     did_animate = ScrollAnimationCreate(scroll_node, delta, base::TimeDelta());
   }
-  DCHECK(!is_animating_for_snap_);
-  is_animating_for_snap_ = did_animate;
+  DCHECK(!IsAnimatingForSnap());
+  if (did_animate) {
+    // The snap target will be set when the animation is completed.
+    scroll_animating_snap_target_ids_ = snap_target_ids;
+  } else if (data.SetTargetSnapAreaElementIds(snap_target_ids)) {
+    updated_snapped_elements_.insert(scroll_node->element_id);
+    client_->SetNeedsCommitOnImplThread();
+  }
   return did_animate;
 }
 
-bool LayerTreeHostImpl::FindSnapPositionAndSetTarget(
-    ScrollNode* scroll_node,
-    const SnapSelectionStrategy& strategy,
-    gfx::ScrollOffset* snap_position) const {
-  SnapContainerData& data = scroll_node->snap_container_data.value();
-
-  TargetSnapAreaElementIds snap_targets;
-  bool did_find_target =
-      data.FindSnapPosition(strategy, snap_position, &snap_targets);
-
-  // Even if a target was not found we still need to invalidate the target snap
-  // area element ids.
-  if (data.SetTargetSnapAreaElementIds(
-          did_find_target ? snap_targets : TargetSnapAreaElementIds())) {
-    client_->SetNeedsCommitOnImplThread();
-  }
-
-  return did_find_target;
+bool LayerTreeHostImpl::IsAnimatingForSnap() const {
+  return scroll_animating_snap_target_ids_ != TargetSnapAreaElementIds();
 }
 
 gfx::ScrollOffset LayerTreeHostImpl::GetVisualScrollOffset(
@@ -4951,13 +4942,14 @@ gfx::ScrollOffset LayerTreeHostImpl::GetVisualScrollOffset(
       scroll_node.element_id);
 }
 
-bool LayerTreeHostImpl::GetSnapFlingInfoAndSetSnapTarget(
+bool LayerTreeHostImpl::GetSnapFlingInfoAndSetAnimatingSnapTarget(
     const gfx::Vector2dF& natural_displacement_in_viewport,
     gfx::Vector2dF* out_initial_position,
     gfx::Vector2dF* out_target_position) {
   ScrollNode* scroll_node = CurrentlyScrollingNode();
   if (!scroll_node || !scroll_node->snap_container_data.has_value())
     return false;
+  const SnapContainerData& data = scroll_node->snap_container_data.value();
 
   float scale_factor = active_tree()->page_scale_factor_for_scroll();
   gfx::Vector2dF natural_displacement_in_content =
@@ -4967,16 +4959,35 @@ bool LayerTreeHostImpl::GetSnapFlingInfoAndSetSnapTarget(
   *out_initial_position = ScrollOffsetToVector2dF(current_offset);
 
   gfx::ScrollOffset snap_offset;
+  TargetSnapAreaElementIds snap_target_ids;
   std::unique_ptr<SnapSelectionStrategy> strategy =
       SnapSelectionStrategy::CreateForEndAndDirection(
           current_offset, gfx::ScrollOffset(natural_displacement_in_content));
-  if (!FindSnapPositionAndSetTarget(scroll_node, *strategy, &snap_offset))
+
+  if (!data.FindSnapPosition(*strategy, &snap_offset, &snap_target_ids))
     return false;
+  scroll_animating_snap_target_ids_ = snap_target_ids;
 
   *out_target_position = ScrollOffsetToVector2dF(snap_offset);
   out_target_position->Scale(scale_factor);
   out_initial_position->Scale(scale_factor);
   return true;
+}
+
+void LayerTreeHostImpl::ScrollEndForSnapFling(bool did_finish) {
+  ScrollNode* scroll_node = CurrentlyScrollingNode();
+  // When a snap fling animation reaches its intended target then we update the
+  // scrolled node's snap targets. This also ensures blink learns about the new
+  // snap targets for this scrolling element.
+  if (did_finish && scroll_node &&
+      scroll_node->snap_container_data.has_value()) {
+    scroll_node->snap_container_data.value().SetTargetSnapAreaElementIds(
+        scroll_animating_snap_target_ids_);
+    updated_snapped_elements_.insert(scroll_node->element_id);
+    client_->SetNeedsCommitOnImplThread();
+  }
+  scroll_animating_snap_target_ids_ = TargetSnapAreaElementIds();
+  ScrollEnd(false /* should_snap */);
 }
 
 void LayerTreeHostImpl::ClearCurrentlyScrollingNode() {
@@ -4986,7 +4997,7 @@ void LayerTreeHostImpl::ClearCurrentlyScrollingNode() {
   accumulated_root_overscroll_ = gfx::Vector2dF();
   did_scroll_x_for_scroll_gesture_ = false;
   did_scroll_y_for_scroll_gesture_ = false;
-  is_animating_for_snap_ = false;
+  scroll_animating_snap_target_ids_ = TargetSnapAreaElementIds();
 }
 
 void LayerTreeHostImpl::ScrollEndImpl() {
@@ -5178,8 +5189,7 @@ void LayerTreeHostImpl::PinchGestureEnd(const gfx::Point& anchor,
   frame_trackers_.StopSequence(FrameSequenceTrackerType::kPinchZoom);
 }
 
-void LayerTreeHostImpl::CollectScrollDeltas(
-    ScrollAndScaleSet* scroll_info) const {
+void LayerTreeHostImpl::CollectScrollDeltas(ScrollAndScaleSet* scroll_info) {
   if (active_tree_->LayerListIsEmpty())
     return;
 
@@ -5189,7 +5199,9 @@ void LayerTreeHostImpl::CollectScrollDeltas(
 
   active_tree_->property_trees()->scroll_tree.CollectScrollDeltas(
       scroll_info, inner_viewport_scroll_element_id,
-      active_tree_->settings().commit_fractional_scroll_deltas);
+      active_tree_->settings().commit_fractional_scroll_deltas,
+      updated_snapped_elements_);
+  updated_snapped_elements_.clear();
 }
 
 void LayerTreeHostImpl::CollectScrollbarUpdates(
@@ -6107,11 +6119,22 @@ void LayerTreeHostImpl::AnimationScalesChanged(ElementId element_id,
 void LayerTreeHostImpl::ScrollOffsetAnimationFinished() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollOffsetAnimationFinished");
   // ScrollOffsetAnimationFinished is called in two cases: 1- smooth scrolling
-  // animation is over (is_animating_for_snap_ == false). 2- snap scroll
-  // animation is over (is_animating_for_snap_ == true).  When smooth scroll
+  // animation is over (IsAnimatingForSnap == false). 2- snap scroll
+  // animation is over (IsAnimatingForSnap == true).  When smooth scroll
   // animation is over we should check and run snap scroll animation if needed.
-  if (!is_animating_for_snap_ && SnapAtScrollEnd())
+  if (!IsAnimatingForSnap() && SnapAtScrollEnd())
     return;
+
+  // The end of a scroll offset animation means that the scrolling node is at
+  // the target offset.
+  ScrollNode* scroll_node = CurrentlyScrollingNode();
+  if (scroll_node && scroll_node->snap_container_data.has_value()) {
+    scroll_node->snap_container_data.value().SetTargetSnapAreaElementIds(
+        scroll_animating_snap_target_ids_);
+    updated_snapped_elements_.insert(scroll_node->element_id);
+    client_->SetNeedsCommitOnImplThread();
+  }
+  scroll_animating_snap_target_ids_ = TargetSnapAreaElementIds();
 
   // Call scrollEnd with the deferred scroll end state when the scroll animation
   // completes after GSE arrival.

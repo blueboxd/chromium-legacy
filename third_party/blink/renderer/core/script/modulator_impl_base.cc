@@ -136,23 +136,26 @@ void ModulatorImplBase::BuiltInModuleUseCount(
 void ModulatorImplBase::FetchTree(
     const KURL& url,
     ResourceFetcher* fetch_client_settings_object_fetcher,
-    mojom::RequestContextType destination,
+    mojom::RequestContextType context_type,
+    network::mojom::RequestDestination destination,
     const ScriptFetchOptions& options,
     ModuleScriptCustomFetchType custom_fetch_type,
     ModuleTreeClient* client) {
   ModuleTreeLinker::Fetch(url, fetch_client_settings_object_fetcher,
-                          destination, options, this, custom_fetch_type,
-                          tree_linker_registry_, client);
+                          context_type, destination, options, this,
+                          custom_fetch_type, tree_linker_registry_, client);
 }
 
 void ModulatorImplBase::FetchDescendantsForInlineScript(
     ModuleScript* module_script,
     ResourceFetcher* fetch_client_settings_object_fetcher,
-    mojom::RequestContextType destination,
+    mojom::RequestContextType context_type,
+    network::mojom::RequestDestination destination,
     ModuleTreeClient* client) {
   ModuleTreeLinker::FetchDescendantsForInlineScript(
-      module_script, fetch_client_settings_object_fetcher, destination, this,
-      ModuleScriptCustomFetchType::kNone, tree_linker_registry_, client);
+      module_script, fetch_client_settings_object_fetcher, context_type,
+      destination, this, ModuleScriptCustomFetchType::kNone,
+      tree_linker_registry_, client);
 }
 
 void ModulatorImplBase::FetchSingle(

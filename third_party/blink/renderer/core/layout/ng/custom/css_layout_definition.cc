@@ -13,6 +13,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_fragment_result_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_intrinsic_sizes_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_intrinsic_sizes_result_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_layout_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_no_argument_constructor.h"
 #include "third_party/blink/renderer/core/css/cssom/prepopulated_computed_style_property_map.h"
@@ -24,6 +26,7 @@
 #include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_scope.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/fragment_result_options.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/intrinsic_sizes_result_options.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
@@ -33,10 +36,31 @@
 
 namespace blink {
 
+namespace {
+
+void GatherChildren(const NGBlockNode& node,
+                    CustomLayoutScope* custom_layout_scope,
+                    HeapVector<Member<CustomLayoutChild>>* children) {
+  // TODO(ikilpatrick): Determine if knowing the size of the array ahead of
+  // time improves performance in any noticeable way.
+  for (NGLayoutInputNode child = node.FirstChild(); child;
+       child = child.NextSibling()) {
+    if (child.IsOutOfFlowPositioned())
+      continue;
+
+    CustomLayoutChild* layout_child = child.GetCustomLayoutChild();
+    layout_child->SetCustomLayoutToken(custom_layout_scope->Token());
+    DCHECK(layout_child);
+    children->push_back(layout_child);
+  }
+}
+
+}  // anonymous namespace
+
 CSSLayoutDefinition::CSSLayoutDefinition(
     ScriptState* script_state,
     V8NoArgumentConstructor* constructor,
-    V8Function* intrinsic_sizes,
+    V8IntrinsicSizesCallback* intrinsic_sizes,
     V8LayoutCallback* layout,
     const Vector<CSSPropertyID>& native_invalidation_properties,
     const Vector<AtomicString>& custom_invalidation_properties,
@@ -44,7 +68,7 @@ CSSLayoutDefinition::CSSLayoutDefinition(
     const Vector<AtomicString>& child_custom_invalidation_properties)
     : script_state_(script_state),
       constructor_(constructor),
-      unused_intrinsic_sizes_(intrinsic_sizes),
+      intrinsic_sizes_(intrinsic_sizes),
       layout_(layout),
       native_invalidation_properties_(native_invalidation_properties),
       custom_invalidation_properties_(custom_invalidation_properties),
@@ -77,19 +101,8 @@ bool CSSLayoutDefinition::Instance::Layout(
 
   ScriptState::Scope scope(script_state);
 
-  // TODO(ikilpatrick): Determine if knowing the size of the array ahead of
-  // time improves performance in any noticeable way.
   HeapVector<Member<CustomLayoutChild>> children;
-  for (NGLayoutInputNode child = node.FirstChild(); child;
-       child = child.NextSibling()) {
-    if (child.IsOutOfFlowPositioned())
-      continue;
-
-    CustomLayoutChild* layout_child = child.GetCustomLayoutChild();
-    layout_child->SetCustomLayoutToken(custom_layout_scope->Token());
-    DCHECK(layout_child);
-    children.push_back(layout_child);
-  }
+  GatherChildren(node, custom_layout_scope, &children);
 
   CustomLayoutEdges* edges =
       MakeGarbageCollected<CustomLayoutEdges>(border_scrollbar_padding);
@@ -132,7 +145,7 @@ bool CSSLayoutDefinition::Instance::Layout(
   // Run the work queue until exhaustion.
   while (!custom_layout_scope->Queue()->IsEmpty()) {
     for (auto& task : *custom_layout_scope->Queue())
-      task.Run(space, node.Style());
+      task.Run(node, space, node.Style(), border_scrollbar_padding);
     custom_layout_scope->Queue()->clear();
     {
       v8::MicrotasksScope microtasks_scope(isolate, microtask_queue,
@@ -199,6 +212,105 @@ bool CSSLayoutDefinition::Instance::Layout(
   return true;
 }
 
+bool CSSLayoutDefinition::Instance::IntrinsicSizes(
+    const NGConstraintSpace& space,
+    const Document& document,
+    const NGBlockNode& node,
+    const LogicalSize& border_box_size,
+    const NGBoxStrut& border_scrollbar_padding,
+    CustomLayoutScope* custom_layout_scope,
+    IntrinsicSizesResultOptions* intrinsic_sizes_result_options) {
+  ScriptState* script_state = definition_->GetScriptState();
+  v8::Isolate* isolate = script_state->GetIsolate();
+
+  if (!script_state->ContextIsValid())
+    return false;
+
+  ScriptState::Scope scope(script_state);
+
+  HeapVector<Member<CustomLayoutChild>> children;
+  GatherChildren(node, custom_layout_scope, &children);
+
+  CustomLayoutEdges* edges =
+      MakeGarbageCollected<CustomLayoutEdges>(border_scrollbar_padding);
+
+  // TODO(ikilpatrick): Instead of creating a new style_map each time here,
+  // store on LayoutCustom, and update when the style changes.
+  StylePropertyMapReadOnly* style_map =
+      MakeGarbageCollected<PrepopulatedComputedStylePropertyMap>(
+          document, node.Style(), definition_->native_invalidation_properties_,
+          definition_->custom_invalidation_properties_);
+
+  ScriptValue return_value;
+  if (!definition_->intrinsic_sizes_
+           ->Invoke(instance_.NewLocal(isolate), children, edges, style_map)
+           .To(&return_value))
+    return false;
+
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  v8::MicrotaskQueue* microtask_queue = ToMicrotaskQueue(execution_context);
+  DCHECK(microtask_queue);
+
+  ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
+                                 "CSSLayoutAPI", "IntrinsicSizes");
+
+  v8::Local<v8::Value> v8_return_value = return_value.V8Value();
+  if (v8_return_value.IsEmpty() || !v8_return_value->IsPromise()) {
+    execution_context->AddConsoleMessage(ConsoleMessage::Create(
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kInfo,
+        "The intrinsicSizes function must be async or return a "
+        "promise, falling back to block layout."));
+    return false;
+  }
+
+  // Run the work queue until exhaustion.
+  while (!custom_layout_scope->Queue()->IsEmpty()) {
+    for (auto& task : *custom_layout_scope->Queue())
+      task.Run(node, space, node.Style(), border_scrollbar_padding);
+    custom_layout_scope->Queue()->clear();
+    {
+      v8::MicrotasksScope microtasks_scope(isolate, microtask_queue,
+                                           v8::MicrotasksScope::kRunMicrotasks);
+    }
+  }
+
+  if (exception_state.HadException()) {
+    ReportException(&exception_state);
+    return false;
+  }
+
+  v8::Local<v8::Promise> v8_result_promise =
+      v8::Local<v8::Promise>::Cast(v8_return_value);
+
+  if (v8_result_promise->State() != v8::Promise::kFulfilled) {
+    execution_context->AddConsoleMessage(ConsoleMessage::Create(
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kInfo,
+        "The intrinsicSizes function promise must resolve, "
+        "falling back to block layout."));
+    return false;
+  }
+  v8::Local<v8::Value> inner_value = v8_result_promise->Result();
+
+  // Attempt to convert the result.
+  V8IntrinsicSizesResultOptions::ToImpl(
+      isolate, inner_value, intrinsic_sizes_result_options, exception_state);
+
+  if (exception_state.HadException()) {
+    V8ScriptRunner::ReportException(isolate, exception_state.GetException());
+    exception_state.ClearException();
+    execution_context->AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kInfo,
+                               "Unable to parse the intrinsicSizes function "
+                               "result, falling back to block layout."));
+    return false;
+  }
+
+  return true;
+}
+
 void CSSLayoutDefinition::Instance::ReportException(
     ExceptionState* exception_state) {
   ScriptState* script_state = definition_->GetScriptState();
@@ -241,7 +353,7 @@ void CSSLayoutDefinition::Instance::Trace(blink::Visitor* visitor) {
 
 void CSSLayoutDefinition::Trace(Visitor* visitor) {
   visitor->Trace(constructor_);
-  visitor->Trace(unused_intrinsic_sizes_);
+  visitor->Trace(intrinsic_sizes_);
   visitor->Trace(layout_);
   visitor->Trace(script_state_);
 }

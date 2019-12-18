@@ -21,6 +21,12 @@ class Widget;
 // Crostini, and interal apps.
 class AppWindowBase : public ui::BaseWindow {
  public:
+  enum class FullScreenMode {
+    kNotDefined,  // Fullscreen mode was not defined.
+    kActive,      // Fullscreen is activated for an app.
+    kNonActive,   // Fullscreen was not activated for an app.
+  };
+
   AppWindowBase(const ash::ShelfID& shelf_id, views::Widget* widget);
 
   virtual ~AppWindowBase() {}
@@ -40,6 +46,8 @@ class AppWindowBase : public ui::BaseWindow {
   virtual void SetDescription(
       const std::string& title,
       const std::vector<uint8_t>& unsafe_icon_data_png) {}
+
+  virtual void SetFullscreenMode(FullScreenMode mode) {}
 
   // ui::BaseWindow:
   bool IsActive() const override;

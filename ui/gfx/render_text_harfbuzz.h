@@ -39,10 +39,6 @@ struct GFX_EXPORT TextRunHarfBuzz {
   explicit TextRunHarfBuzz(const Font& template_font);
   ~TextRunHarfBuzz();
 
-  // Returns the index of the first glyph that corresponds to the character at
-  // |pos|.
-  size_t CharToGlyph(size_t pos) const;
-
   // Returns the corresponding glyph range of the given character range.
   // |range| is in text-space (0 corresponds to |GetDisplayText()[0]|). Returned
   // value is in run-space (0 corresponds to the first glyph in the run).
@@ -131,7 +127,6 @@ struct GFX_EXPORT TextRunHarfBuzz {
     ShapeOutput& operator=(ShapeOutput&& other);
 
     float width = 0.0;
-    float preceding_run_widths = 0.0;
     std::vector<uint16_t> glyphs;
     std::vector<SkPoint> positions;
     // Note that in the context of TextRunHarfBuzz, |glyph_to_char| is indexed

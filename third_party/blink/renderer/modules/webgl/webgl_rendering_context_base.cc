@@ -1994,7 +1994,7 @@ void WebGLRenderingContextBase::bufferData(GLenum target,
   if (isContextLost())
     return;
   DCHECK(data);
-  BufferDataImpl(target, data.View()->deprecatedByteLengthAsUnsigned(),
+  BufferDataImpl(target, data.View()->byteLengthAsSizeT(),
                  data.View()->BaseAddressMaybeShared(), usage);
 }
 
@@ -2033,7 +2033,7 @@ void WebGLRenderingContextBase::bufferSubData(
   if (isContextLost())
     return;
   DCHECK(data);
-  BufferSubDataImpl(target, offset, data.DeprecatedByteLengthAsUnsigned(),
+  BufferSubDataImpl(target, offset, data.ByteLengthAsSizeT(),
                     data.BaseAddressMaybeOnStack());
 }
 
@@ -2185,10 +2185,16 @@ void WebGLRenderingContextBase::compressedTexImage2D(
     return;
   if (!ValidateCompressedTexFormat("compressedTexImage2D", internalformat))
     return;
-  ContextGL()->CompressedTexImage2D(
-      target, level, internalformat, width, height, border,
-      data.View()->deprecatedByteLengthAsUnsigned(),
-      data.View()->BaseAddressMaybeShared());
+  GLsizei data_length;
+  if (!base::CheckedNumeric<GLsizei>(data.View()->byteLengthAsSizeT())
+           .AssignIfValid(&data_length)) {
+    SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D",
+                      "src_length exceeds the maximum supported length");
+    return;
+  }
+  ContextGL()->CompressedTexImage2D(target, level, internalformat, width,
+                                    height, border, data_length,
+                                    data.View()->BaseAddressMaybeShared());
 }
 
 void WebGLRenderingContextBase::compressedTexSubImage2D(
@@ -2206,10 +2212,16 @@ void WebGLRenderingContextBase::compressedTexSubImage2D(
     return;
   if (!ValidateCompressedTexFormat("compressedTexSubImage2D", format))
     return;
-  ContextGL()->CompressedTexSubImage2D(
-      target, level, xoffset, yoffset, width, height, format,
-      data.View()->deprecatedByteLengthAsUnsigned(),
-      data.View()->BaseAddressMaybeShared());
+  GLsizei data_length;
+  if (!base::CheckedNumeric<GLsizei>(data.View()->byteLengthAsSizeT())
+           .AssignIfValid(&data_length)) {
+    SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D",
+                      "src_length exceeds the maximum supported length");
+    return;
+  }
+  ContextGL()->CompressedTexSubImage2D(target, level, xoffset, yoffset, width,
+                                       height, format, data_length,
+                                       data.View()->BaseAddressMaybeShared());
 }
 
 bool WebGLRenderingContextBase::ValidateSettableTexFormat(
@@ -4422,7 +4434,8 @@ void WebGLRenderingContextBase::ReadPixelsHelper(GLint x,
   base::CheckedNumeric<GLuint> offset_in_bytes = offset;
   offset_in_bytes *= pixels->TypeSize();
   if (!offset_in_bytes.IsValid() ||
-      offset_in_bytes.ValueOrDie() > pixels->deprecatedByteLengthAsUnsigned()) {
+      static_cast<size_t>(offset_in_bytes.ValueOrDie()) >
+          pixels->byteLengthAsSizeT()) {
     SynthesizeGLError(GL_INVALID_VALUE, "readPixels",
                       "destination offset out of range");
     return;
@@ -4435,7 +4448,7 @@ void WebGLRenderingContextBase::ReadPixelsHelper(GLint x,
     return;
   }
   base::CheckedNumeric<GLuint> buffer_size =
-      pixels->deprecatedByteLengthAsUnsigned() - offset_in_bytes;
+      pixels->byteLengthAsSizeT() - offset_in_bytes;
   if (!buffer_size.IsValid()) {
     SynthesizeGLError(GL_INVALID_VALUE, "readPixels",
                       "destination offset out of range");
@@ -5588,10 +5601,18 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
       source_image_rect == SentinelEmptyRect() ||
       source_image_rect ==
           IntRect(0, 0, video->videoWidth(), video->videoHeight());
-  const bool use_copyTextureCHROMIUM = function_id == kTexImage2D &&
-                                       source_image_rect_is_default &&
-                                       depth == 1 && GL_TEXTURE_2D == target &&
-                                       CanUseTexImageViaGPU(format, type);
+
+  const auto& caps = GetDrawingBuffer()->ContextProvider()->GetCapabilities();
+  const bool may_need_image_external_essl3 =
+      caps.egl_image_external &&
+      Extensions3DUtil::CopyTextureCHROMIUMNeedsESSL3(internalformat);
+  const bool have_image_external_essl3 = caps.egl_image_external_essl3;
+  const bool use_copyTextureCHROMIUM =
+      function_id == kTexImage2D && source_image_rect_is_default &&
+      depth == 1 && GL_TEXTURE_2D == target &&
+      (have_image_external_essl3 || !may_need_image_external_essl3) &&
+      CanUseTexImageViaGPU(format, type);
+
   // Format of source video may be 16-bit format, e.g. Y16 format.
   // glCopyTextureCHROMIUM requires the source texture to be in 8-bit format.
   // Converting 16-bits formated source texture to 8-bits formated texture will
@@ -6304,11 +6325,12 @@ void WebGLRenderingContextBase::uniformMatrix2fv(
     MaybeShared<DOMFloat32Array> v) {
   if (isContextLost() || !ValidateUniformMatrixParameters(
                              "uniformMatrix2fv", location, transpose, v.View(),
-                             4, 0, v.View()->deprecatedLengthAsUnsigned()))
+                             4, 0, v.View()->lengthAsSizeT()))
     return;
-  ContextGL()->UniformMatrix2fv(location->Location(),
-                                v.View()->deprecatedLengthAsUnsigned() >> 2,
-                                transpose, v.View()->DataMaybeShared());
+  ContextGL()->UniformMatrix2fv(
+      location->Location(),
+      base::checked_cast<GLuint>(v.View()->lengthAsSizeT()) >> 2, transpose,
+      v.View()->DataMaybeShared());
 }
 
 void WebGLRenderingContextBase::uniformMatrix2fv(
@@ -6329,11 +6351,12 @@ void WebGLRenderingContextBase::uniformMatrix3fv(
     MaybeShared<DOMFloat32Array> v) {
   if (isContextLost() || !ValidateUniformMatrixParameters(
                              "uniformMatrix3fv", location, transpose, v.View(),
-                             9, 0, v.View()->deprecatedLengthAsUnsigned()))
+                             9, 0, v.View()->lengthAsSizeT()))
     return;
-  ContextGL()->UniformMatrix3fv(location->Location(),
-                                v.View()->deprecatedLengthAsUnsigned() / 9,
-                                transpose, v.View()->DataMaybeShared());
+  ContextGL()->UniformMatrix3fv(
+      location->Location(),
+      base::checked_cast<GLuint>(v.View()->lengthAsSizeT()) / 9, transpose,
+      v.View()->DataMaybeShared());
 }
 
 void WebGLRenderingContextBase::uniformMatrix3fv(
@@ -6354,11 +6377,12 @@ void WebGLRenderingContextBase::uniformMatrix4fv(
     MaybeShared<DOMFloat32Array> v) {
   if (isContextLost() || !ValidateUniformMatrixParameters(
                              "uniformMatrix4fv", location, transpose, v.View(),
-                             16, 0, v.View()->deprecatedLengthAsUnsigned()))
+                             16, 0, v.View()->lengthAsSizeT()))
     return;
-  ContextGL()->UniformMatrix4fv(location->Location(),
-                                v.View()->deprecatedLengthAsUnsigned() >> 4,
-                                transpose, v.View()->DataMaybeShared());
+  ContextGL()->UniformMatrix4fv(
+      location->Location(),
+      base::checked_cast<GLuint>(v.View()->lengthAsSizeT()) >> 4, transpose,
+      v.View()->DataMaybeShared());
 }
 
 void WebGLRenderingContextBase::uniformMatrix4fv(
@@ -7500,7 +7524,7 @@ bool WebGLRenderingContextBase::ValidateTexFuncData(
   total += total_bytes_required;
   total += skip_bytes;
   if (!total.IsValid() ||
-      pixels->deprecatedByteLengthAsUnsigned() < total.ValueOrDie()) {
+      pixels->byteLengthAsSizeT() < static_cast<size_t>(total.ValueOrDie())) {
     SynthesizeGLError(GL_INVALID_OPERATION, function_name,
                       "ArrayBufferView not big enough for request");
     return false;
@@ -7660,15 +7684,20 @@ bool WebGLRenderingContextBase::ValidateUniformMatrixParameters(
     DOMFloat32Array* v,
     GLsizei required_min_size,
     GLuint src_offset,
-    GLuint src_length) {
+    size_t src_length) {
   if (!v) {
     SynthesizeGLError(GL_INVALID_VALUE, function_name, "no array");
     return false;
   }
+  if (!base::CheckedNumeric<GLuint>(src_length).IsValid()) {
+    SynthesizeGLError(GL_INVALID_VALUE, function_name,
+                      "src_length exceeds the maximum supported length");
+    return false;
+  }
   return ValidateUniformMatrixParameters(
       function_name, location, transpose, v->DataMaybeShared(),
-      v->deprecatedLengthAsUnsigned(), required_min_size, src_offset,
-      src_length);
+      v->lengthAsSizeT(), required_min_size, src_offset,
+      static_cast<GLuint>(src_length));
 }
 
 bool WebGLRenderingContextBase::ValidateUniformMatrixParameters(
@@ -7676,7 +7705,7 @@ bool WebGLRenderingContextBase::ValidateUniformMatrixParameters(
     const WebGLUniformLocation* location,
     GLboolean transpose,
     void* v,
-    GLsizei size,
+    size_t size,
     GLsizei required_min_size,
     GLuint src_offset,
     GLuint src_length) {
@@ -7692,6 +7721,11 @@ bool WebGLRenderingContextBase::ValidateUniformMatrixParameters(
     SynthesizeGLError(GL_INVALID_VALUE, function_name, "no array");
     return false;
   }
+  if (!base::CheckedNumeric<GLsizei>(size).IsValid()) {
+    SynthesizeGLError(GL_INVALID_VALUE, function_name,
+                      "array exceeds the maximum supported size");
+    return false;
+  }
   if (transpose && !IsWebGL2OrHigher()) {
     SynthesizeGLError(GL_INVALID_VALUE, function_name, "transpose not FALSE");
     return false;
@@ -7700,7 +7734,7 @@ bool WebGLRenderingContextBase::ValidateUniformMatrixParameters(
     SynthesizeGLError(GL_INVALID_VALUE, function_name, "invalid srcOffset");
     return false;
   }
-  GLsizei actual_size = size - src_offset;
+  GLsizei actual_size = static_cast<GLsizei>(size) - src_offset;
   if (src_length > 0) {
     if (src_length > static_cast<GLuint>(actual_size)) {
       SynthesizeGLError(GL_INVALID_VALUE, function_name,

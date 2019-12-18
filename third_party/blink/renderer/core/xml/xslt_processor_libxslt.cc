@@ -274,14 +274,14 @@ static xsltStylesheetPtr XsltStylesheetPointer(
   if (!cached_stylesheet && stylesheet_root_node) {
     // When using importStylesheet, we will use the given document as the
     // imported stylesheet's owner.
-    cached_stylesheet = XSLStyleSheet::CreateForXSLTProcessor(
+    cached_stylesheet = MakeGarbageCollected<XSLStyleSheet>(
         stylesheet_root_node->parentNode()
             ? &stylesheet_root_node->parentNode()->GetDocument()
             : document,
         stylesheet_root_node,
         stylesheet_root_node->GetDocument().Url().GetString(),
-        stylesheet_root_node->GetDocument()
-            .Url());  // FIXME: Should we use baseURL here?
+        stylesheet_root_node->GetDocument().Url(),
+        false);  // FIXME: Should we use baseURL here?
 
     // According to Mozilla documentation, the node must be a Document node,
     // an xsl:stylesheet or xsl:transform element. But we just use text

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_dialog.h"
 
+#include "base/bind_helpers.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_ui.h"
@@ -23,7 +25,8 @@ GURL GetUrl() {
 
 namespace chromeos {
 
-void CrostiniInstallerDialog::Show(Profile* profile) {
+void CrostiniInstallerDialog::Show(Profile* profile,
+                                   OnLoadedCallback on_loaded_callback) {
   DCHECK(crostini::CrostiniFeatures::Get()->IsUIAllowed(profile));
   auto* instance = SystemWebDialogDelegate::FindInstance(GetUrl().spec());
   if (instance) {
@@ -37,12 +40,17 @@ void CrostiniInstallerDialog::Show(Profile* profile) {
   crostini::CrostiniManager::GetForProfile(profile)->SetInstallerViewStatus(
       true);
 
-  instance = new CrostiniInstallerDialog(profile);
+  instance =
+      new CrostiniInstallerDialog(profile, std::move(on_loaded_callback));
   instance->ShowSystemDialog();
 }
 
-CrostiniInstallerDialog::CrostiniInstallerDialog(Profile* profile)
-    : SystemWebDialogDelegate{GetUrl(), /*title=*/{}}, profile_{profile} {}
+CrostiniInstallerDialog::CrostiniInstallerDialog(
+    Profile* profile,
+    OnLoadedCallback on_loaded_callback)
+    : SystemWebDialogDelegate(GetUrl(), /*title=*/base::string16()),
+      profile_(profile),
+      on_loaded_callback_(std::move(on_loaded_callback)) {}
 
 CrostiniInstallerDialog::~CrostiniInstallerDialog() {
   crostini::CrostiniManager::GetForProfile(profile_)->SetInstallerViewStatus(
@@ -79,6 +87,13 @@ void CrostiniInstallerDialog::OnCloseContents(content::WebContents* source,
                                               bool* out_close_dialog) {
   installer_ui_ = nullptr;
   return SystemWebDialogDelegate::OnCloseContents(source, out_close_dialog);
+}
+
+void CrostiniInstallerDialog::OnWebContentsFinishedLoad() {
+  if (!on_loaded_callback_.is_null()) {
+    DCHECK(installer_ui_);
+    std::move(on_loaded_callback_).Run(installer_ui_);
+  }
 }
 
 }  // namespace chromeos

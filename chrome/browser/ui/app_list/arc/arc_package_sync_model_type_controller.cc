@@ -24,55 +24,41 @@ using syncer::ModelTypeController;
 using syncer::ModelTypeControllerDelegate;
 using syncer::SyncableServiceBasedBridge;
 
-// static
-std::unique_ptr<ArcPackageSyncModelTypeController>
-ArcPackageSyncModelTypeController::Create(
+ArcPackageSyncModelTypeController::ArcPackageSyncModelTypeController(
     syncer::OnceModelTypeStoreFactory store_factory,
     base::WeakPtr<syncer::SyncableService> syncable_service,
     const base::RepeatingClosure& dump_stack,
     syncer::SyncService* sync_service,
-    Profile* profile) {
-  auto bridge = std::make_unique<SyncableServiceBasedBridge>(
-      syncer::ARC_PACKAGE, std::move(store_factory),
-      std::make_unique<ClientTagBasedModelTypeProcessor>(syncer::ARC_PACKAGE,
-                                                         dump_stack),
-      syncable_service.get());
-  ModelTypeControllerDelegate* delegate =
-      bridge->change_processor()->GetControllerDelegate().get();
-  auto delegate_for_full_sync_mode =
-      std::make_unique<ForwardingModelTypeControllerDelegate>(delegate);
-
-  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
-    // Runs in transport-mode and full-sync mode, sharing the bridge's delegate.
-    return base::WrapUnique(new ArcPackageSyncModelTypeController(
-        std::move(bridge), std::move(delegate_for_full_sync_mode),
-        /*delegate_for_transport_mode=*/
-        std::make_unique<ForwardingModelTypeControllerDelegate>(delegate),
-        sync_service, profile));
-  } else {
-    // Only runs in full-sync mode.
-    return base::WrapUnique(new ArcPackageSyncModelTypeController(
-        std::move(bridge), std::move(delegate_for_full_sync_mode),
-        /*delegate_for_transport_mode=*/
-        nullptr, sync_service, profile));
-  }
-}
-
-ArcPackageSyncModelTypeController::ArcPackageSyncModelTypeController(
-    std::unique_ptr<syncer::ModelTypeSyncBridge> bridge,
-    std::unique_ptr<ModelTypeControllerDelegate> delegate_for_full_sync_mode,
-    std::unique_ptr<ModelTypeControllerDelegate> delegate_for_transport_mode,
-    syncer::SyncService* sync_service,
     Profile* profile)
-    : ModelTypeController(syncer::ARC_PACKAGE,
-                          std::move(delegate_for_full_sync_mode),
-                          std::move(delegate_for_transport_mode)),
-      bridge_(std::move(bridge)),
+    : ModelTypeController(syncer::ARC_PACKAGE),
+      bridge_(std::make_unique<SyncableServiceBasedBridge>(
+          syncer::ARC_PACKAGE,
+          std::move(store_factory),
+          std::make_unique<ClientTagBasedModelTypeProcessor>(
+              syncer::ARC_PACKAGE,
+              dump_stack),
+          syncable_service.get())),
       sync_service_(sync_service),
       profile_(profile),
       arc_prefs_(ArcAppListPrefs::Get(profile)) {
   DCHECK(arc_prefs_);
   DCHECK(profile_);
+  ModelTypeControllerDelegate* delegate =
+      bridge_->change_processor()->GetControllerDelegate().get();
+  auto delegate_for_full_sync_mode =
+      std::make_unique<ForwardingModelTypeControllerDelegate>(delegate);
+
+  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+    // Runs in transport-mode and full-sync mode, sharing the bridge's delegate.
+    InitModelTypeController(
+        std::move(delegate_for_full_sync_mode),
+        /*delegate_for_transport_mode=*/
+        std::make_unique<ForwardingModelTypeControllerDelegate>(delegate));
+  } else {
+    // Only runs in full-sync mode.
+    InitModelTypeController(std::move(delegate_for_full_sync_mode),
+                            /*delegate_for_transport_mode=*/nullptr);
+  }
 
   arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
   if (arc_session_manager) {

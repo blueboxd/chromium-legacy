@@ -175,7 +175,9 @@ void DedicatedWorkerGlobalScope::FetchAndRunClassicScript(
 
   // Step 12. "Fetch a classic worker script given url, outside settings,
   // destination, and inside settings."
-  auto destination = mojom::RequestContextType::WORKER;
+  mojom::RequestContextType context_type = mojom::RequestContextType::WORKER;
+  network::mojom::RequestDestination destination =
+      network::mojom::RequestDestination::kWorker;
 
   // Step 12.1. "Set request's reserved client to inside settings."
   // The browesr process takes care of this.
@@ -188,7 +190,8 @@ void DedicatedWorkerGlobalScope::FetchAndRunClassicScript(
       *this,
       CreateOutsideSettingsFetcher(outside_settings_object,
                                    outside_resource_timing_notifier),
-      script_url, destination, network::mojom::RequestMode::kSameOrigin,
+      script_url, context_type, destination,
+      network::mojom::RequestMode::kSameOrigin,
       network::mojom::CredentialsMode::kSameOrigin,
       WTF::Bind(&DedicatedWorkerGlobalScope::DidReceiveResponseForClassicScript,
                 WrapWeakPersistent(this),
@@ -206,13 +209,15 @@ void DedicatedWorkerGlobalScope::FetchAndRunModuleScript(
     network::mojom::CredentialsMode credentials_mode) {
   // Step 12: "Let destination be "sharedworker" if is shared is true, and
   // "worker" otherwise."
-  mojom::RequestContextType destination = mojom::RequestContextType::WORKER;
+  mojom::RequestContextType context_type = mojom::RequestContextType::WORKER;
+  network::mojom::RequestDestination destination =
+      network::mojom::RequestDestination::kWorker;
 
   // Step 13: "... Fetch a module worker script graph given url, outside
   // settings, destination, the value of the credentials member of options, and
   // inside settings."
   FetchModuleScript(module_url_record, outside_settings_object,
-                    outside_resource_timing_notifier, destination,
+                    outside_resource_timing_notifier, context_type, destination,
                     credentials_mode,
                     ModuleScriptCustomFetchType::kWorkerConstructor,
                     MakeGarbageCollected<WorkerModuleTreeClient>(

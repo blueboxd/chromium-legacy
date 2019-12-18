@@ -47,7 +47,6 @@ class CORE_EXPORT StreamPromiseResolver final
 
   // Creates an initialised promise.
   explicit StreamPromiseResolver(ScriptState*);
-  ~StreamPromiseResolver();
 
   // Resolves the promise with |value|. Does nothing if the promise is already
   // settled.

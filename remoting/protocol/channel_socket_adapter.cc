@@ -125,7 +125,7 @@ void TransportChannelSocketAdapter::Close(int error_code) {
 }
 
 void TransportChannelSocketAdapter::OnNewPacket(
-    rtc::PacketTransportInterface* transport,
+    rtc::PacketTransportInternal* transport,
     const char* data,
     size_t data_size,
     const int64_t& packet_time,
@@ -155,7 +155,7 @@ void TransportChannelSocketAdapter::OnNewPacket(
 }
 
 void TransportChannelSocketAdapter::OnWritableState(
-    rtc::PacketTransportInterface* transport) {
+    rtc::PacketTransportInternal* transport) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Try to send the packet if there is a pending write.
   if (!write_callback_.is_null()) {

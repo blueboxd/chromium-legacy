@@ -213,6 +213,11 @@ mojom::RequestContextType WebURLRequest::GetRequestContext() const {
   return resource_request_->GetRequestContext();
 }
 
+network::mojom::RequestDestination WebURLRequest::GetRequestDestination()
+    const {
+  return resource_request_->GetRequestDestination();
+}
+
 void WebURLRequest::SetReferrerString(const WebString& referrer) {
   resource_request_->SetReferrerString(referrer);
 }
@@ -245,6 +250,11 @@ void WebURLRequest::SetHasUserGesture(bool has_user_gesture) {
 void WebURLRequest::SetRequestContext(
     mojom::RequestContextType request_context) {
   resource_request_->SetRequestContext(request_context);
+}
+
+void WebURLRequest::SetRequestDestination(
+    network::mojom::RequestDestination destination) {
+  resource_request_->SetRequestDestination(destination);
 }
 
 int WebURLRequest::RequestorID() const {

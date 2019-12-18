@@ -9,8 +9,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/media_engagement_score_details.mojom.h"
 #include "chrome/browser/ui/webui/downloads/downloads.mojom.h"
-#include "chrome/browser/ui/webui/omnibox/omnibox.mojom.h"
-#include "chrome/browser/ui/webui/reset_password/reset_password.mojom.h"
 #include "chrome/common/available_offline_content.mojom.h"
 #include "chrome/common/cache_stats_recorder.mojom.h"
 #include "chrome/common/net_benchmarking.mojom.h"
@@ -24,7 +22,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader.mojom.h"
-#include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "chromeos/services/network_config/public/mojom/constants.mojom.h"  // nogncheck
@@ -87,11 +84,11 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .RequireCapability("util_win", "util_win")
         .RequireCapability("xr_device_service", "xr_device_provider")
         .RequireCapability("xr_device_service", "xr_device_test_hook")
+#if defined(OS_CHROMEOS) || !defined(OS_ANDROID)
         .ExposeInterfaceFilterCapability_Deprecated(
             "navigation:frame", "renderer",
             service_manager::Manifest::InterfaceList<
 #if defined(OS_CHROMEOS)
-                chromeos::cellular_setup::mojom::CellularSetup,
                 chromeos::crostini_installer::mojom::PageHandlerFactory,
                 chromeos::crostini_upgrader::mojom::PageHandlerFactory,
                 chromeos::multidevice_setup::mojom::MultiDeviceSetup,
@@ -102,9 +99,10 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 // brokered through a dedicated interface, but they're here
                 // for for now.
 #if !defined(OS_ANDROID)
-                app_management::mojom::PageHandlerFactory,
+                app_management::mojom::PageHandlerFactory
 #endif
-                mojom::OmniboxPageHandler, mojom::ResetPasswordHandler>())
+                >())
+#endif  // defined(OS_CHROMEOS) || !defined(OS_ANDROID)
         .Build()
   };
   return *manifest;

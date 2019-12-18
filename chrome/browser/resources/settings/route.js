@@ -352,14 +352,12 @@ cr.define('settings', function() {
       r.ADDRESSES = r.AUTOFILL.createChild('/addresses');
     }
 
-    if (loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
-      r.CLEAR_BROWSER_DATA = r.BASIC.createChild('/clearBrowserData');
-      r.CLEAR_BROWSER_DATA.isNavigableDialog = true;
+    r.CLEAR_BROWSER_DATA = r.BASIC.createChild('/clearBrowserData');
+    r.CLEAR_BROWSER_DATA.isNavigableDialog = true;
 
-      if (pageVisibility.privacy !== false) {
-        r.PRIVACY = r.BASIC.createSection('/privacy', 'privacy');
-        addPrivacyChildRoutes(r);
-      }
+    if (pageVisibility.privacy !== false) {
+      r.PRIVACY = r.BASIC.createSection('/privacy', 'privacy');
+      addPrivacyChildRoutes(r);
     }
 
     if (pageVisibility.defaultBrowser !== false) {
@@ -377,16 +375,6 @@ cr.define('settings', function() {
     // Advanced Routes
     if (pageVisibility.advancedSettings !== false) {
       r.ADVANCED = new Route('/advanced');
-
-      if (!loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
-        r.CLEAR_BROWSER_DATA = r.ADVANCED.createChild('/clearBrowserData');
-        r.CLEAR_BROWSER_DATA.isNavigableDialog = true;
-
-        if (pageVisibility.privacy !== false) {
-          r.PRIVACY = r.ADVANCED.createSection('/privacy', 'privacy');
-          addPrivacyChildRoutes(r);
-        }
-      }
 
       r.LANGUAGES = r.ADVANCED.createSection('/languages', 'languages');
       // <if expr="not is_macosx">

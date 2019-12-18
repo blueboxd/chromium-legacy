@@ -43,10 +43,6 @@ class InspectedFrames;
 class CORE_EXPORT InspectorMemoryAgent final
     : public InspectorBaseAgent<protocol::Memory::Metainfo> {
  public:
-  static InspectorMemoryAgent* Create(InspectedFrames* frames) {
-    return MakeGarbageCollected<InspectorMemoryAgent>(frames);
-  }
-
   explicit InspectorMemoryAgent(InspectedFrames*);
   ~InspectorMemoryAgent() override;
   void Trace(blink::Visitor*) override;

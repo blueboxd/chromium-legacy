@@ -284,6 +284,8 @@ Resource* PreloadHelper::PreloadIfNeeded(
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(ResourceFetcher::DetermineRequestContext(
       resource_type.value(), ResourceFetcher::kImageNotImageSet));
+  resource_request.SetRequestDestination(
+      ResourceFetcher::DetermineRequestDestination(resource_type.value()));
 
   resource_request.SetReferrerPolicy(params.referrer_policy);
 
@@ -393,7 +395,9 @@ void PreloadHelper::ModulePreloadIfNeeded(
     }
     return;
   }
-  mojom::RequestContextType destination = mojom::RequestContextType::SCRIPT;
+  mojom::RequestContextType context_type = mojom::RequestContextType::SCRIPT;
+  network::mojom::RequestDestination destination =
+      network::mojom::RequestDestination::kScript;
 
   // Step 4. "Parse the URL given by the href attribute, relative to the
   // element's node document. If that fails, then return. Otherwise, let url be
@@ -447,7 +451,7 @@ void PreloadHelper::ModulePreloadIfNeeded(
   // metadata is "not-parser-inserted", credentials mode is credentials mode,
   // and referrer policy is referrer policy." [spec text]
   ModuleScriptFetchRequest request(
-      params.href, destination,
+      params.href, context_type, destination,
       ScriptFetchOptions(params.nonce, integrity_metadata, params.integrity,
                          kNotParserInserted, credentials_mode,
                          params.referrer_policy,
@@ -633,6 +637,7 @@ Resource* PreloadHelper::StartPreload(ResourceType type,
       break;
     case ResourceType::kScript:
       params.SetRequestContext(mojom::RequestContextType::SCRIPT);
+      params.SetRequestDestination(network::mojom::RequestDestination::kScript);
       resource = ScriptResource::Fetch(params, resource_fetcher, nullptr,
                                        ScriptResource::kAllowStreaming);
       break;

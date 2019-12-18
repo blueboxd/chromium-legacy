@@ -172,40 +172,22 @@ TEST_P(HomeButtonTest, ButtonPositionInTabletMode) {
   // When hotseat is enabled, home button position changes between in-app shelf
   // and home shelf, so test in-app when hotseat is enabled.
   if (GetParam()) {
-    // Wait for the navigation widget's animation.
-    test_api.RunMessageLoopUntilAnimationsDone(
-        GetPrimaryShelf()
-            ->shelf_widget()
-            ->navigation_widget()
-            ->get_bounds_animator_for_testing());
-
     EXPECT_EQ(home_button()->bounds().x(), 0);
 
     // Switch to in-app shelf.
     std::unique_ptr<views::Widget> widget = CreateTestWidget();
   }
 
-  // Wait for the navigation widget's animation.
-  test_api.RunMessageLoopUntilAnimationsDone(
-      GetPrimaryShelf()
-          ->shelf_widget()
-          ->navigation_widget()
-          ->get_bounds_animator_for_testing());
   EXPECT_GT(home_button()->bounds().x(), 0);
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
-  test_api.RunMessageLoopUntilAnimationsDone(
-      GetPrimaryShelf()
-          ->shelf_widget()
-          ->navigation_widget()
-          ->get_bounds_animator_for_testing());
 
   // Visual space around the home button is set at the widget level.
   EXPECT_EQ(0, home_button()->bounds().x());
 }
 
 TEST_P(HomeButtonTest, LongPressGesture) {
-  // Simulate two user with primary user as active.
+  // Simulate two users with primary user as active.
   CreateUserSessions(2);
 
   // Enable the Assistant in system settings.

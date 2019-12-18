@@ -66,8 +66,6 @@ class TestSharedImageBackingPassthrough
     return false;
   }
 
-  void Destroy() override { texture_passthrough_.reset(); }
-
   void OnMemoryDump(const std::string& dump_name,
                     base::trace_event::MemoryAllocatorDump* dump,
                     base::trace_event::ProcessMemoryDump* pmd,

@@ -38,6 +38,7 @@ class PLATFORM_EXPORT Extensions3DUtil final {
   bool EnsureExtensionEnabled(const String& name);
   bool IsExtensionEnabled(const String& name);
 
+  static bool CopyTextureCHROMIUMNeedsESSL3(GLenum dest_format);
   static bool CanUseCopyTextureCHROMIUM(GLenum dest_target);
 
  private:

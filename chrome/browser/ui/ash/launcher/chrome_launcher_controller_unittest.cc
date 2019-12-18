@@ -40,6 +40,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
@@ -1210,15 +1212,6 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
         ash::MultiUserWindowManagerImpl::ANIMATION_SPEED_DISABLED);
     ash::MultiUserWindowManagerImpl::Get()->OnActiveUserSessionChanged(
         account_id);
-    // TODO(crbug.com/956841) This should be redundant with the FlushBindings
-    // call, but removing it breaks some tests.
-    launcher_controller_->browser_status_monitor_for_test()->ActiveUserChanged(
-        account_id.GetUserEmail());
-
-    for (const auto& controller :
-         launcher_controller_->app_window_controllers_for_test()) {
-      controller->ActiveUserChanged(account_id.GetUserEmail());
-    }
   }
 
   // Creates a browser with a |profile| and load a tab with a |title| and |url|.
@@ -3375,6 +3368,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   EXPECT_EQ(1, model_->item_count());
 
   // Add a v2 app.
+  AddExtension(extension1_.get());
   V2App v2_app(profile(), extension1_.get());
   EXPECT_EQ(2, model_->item_count());
 
@@ -3409,6 +3403,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   // Add the v2 app to the inactive user and check that no item was added to
   // the launcher.
   {
+    AddExtension(extension1_.get());
     V2App v2_app(profile(), extension1_.get());
     EXPECT_EQ(1, model_->item_count());
 
@@ -3422,6 +3417,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
     EXPECT_EQ(1, model_->item_count());
   }
 
+  app_service_test().WaitForAppService();
   // After the application was killed there should still be 1 item.
   EXPECT_EQ(1, model_->item_count());
 
@@ -3503,13 +3499,27 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
       multi_user_util::GetAccountIdFromProfile(profile2));
   const AccountId account_id3(
       multi_user_util::GetAccountIdFromProfile(profile3));
+
+  extensions::TestExtensionSystem* extension_system1(
+      static_cast<extensions::TestExtensionSystem*>(
+          extensions::ExtensionSystem::Get(profile1)));
+  extensions::ExtensionService* extension_service1 =
+      extension_system1->CreateExtensionService(
+          base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
+  extension_service1->Init();
+  apps::AppServiceProxy* proxy1 =
+      apps::AppServiceProxyFactory::GetForProfile(profile1);
+
   SwitchActiveUser(account_id1);
 
-  // A v2 app for user #1 should be shown first and get hidden when switching to
-  // desktop #2.
+  // A v2 app for user #1 should be shown first and get hidden when switching
+  // to desktop #2.
+  extension_service1->AddExtension(extension1_.get());
+  proxy1->FlushMojoCallsForTesting();
   V2App v2_app_1(profile1, extension1_.get());
   EXPECT_TRUE(v2_app_1.window()->GetNativeWindow()->IsVisible());
   SwitchActiveUser(account_id2);
+  app_service_test().FlushMojoCalls();
   EXPECT_FALSE(v2_app_1.window()->GetNativeWindow()->IsVisible());
 
   // Add a v2 app for user #1 while on desktop #2 should not be shown.
@@ -3533,15 +3543,17 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   // Switching back to desktop#1 and creating an app for user #1 should move
   // the app on desktop #1.
   SwitchActiveUser(account_id1);
+  app_service_test().FlushMojoCalls();
   V2App v2_app_4(profile1, extension1_.get());
   EXPECT_FALSE(v2_app_1.window()->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(v2_app_2.window()->GetNativeWindow()->IsVisible());
   EXPECT_FALSE(v2_app_3.window()->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(v2_app_4.window()->GetNativeWindow()->IsVisible());
 
-  // Switching to desktop #3 and creating an app for user #1 should place it on
-  // that user's desktop (#1).
+  // Switching to desktop #3 and creating an app for user #1 should place it
+  // on that user's desktop (#1).
   SwitchActiveUser(account_id3);
+  app_service_test().FlushMojoCalls();
   V2App v2_app_5(profile1, extension1_.get());
   EXPECT_FALSE(v2_app_5.window()->GetNativeWindow()->IsVisible());
   SwitchActiveUser(account_id1);
@@ -3550,6 +3562,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   // Switching to desktop #2, hiding the app window and creating an app should
   // teleport there automatically.
   SwitchActiveUser(account_id2);
+  app_service_test().FlushMojoCalls();
   v2_app_1.window()->Hide();
   V2App v2_app_6(profile1, extension1_.get());
   EXPECT_FALSE(v2_app_1.window()->GetNativeWindow()->IsVisible());
@@ -3571,6 +3584,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   SwitchActiveUser(account_id);
   EXPECT_EQ(1, model_->item_count());
 
+  AddExtension(extension1_.get());
   V2App v2_app_1(profile(), extension1_.get());
   EXPECT_EQ(2, model_->item_count());
   {

@@ -361,10 +361,7 @@ Polymer({
       return;
     }
 
-    settings.CupsPrintersBrowserProxyImpl.getInstance()
-        .getEulaUrl(
-            this.pendingPrinter_.ppdManufacturer, this.pendingPrinter_.ppdModel)
-        .then(this.onGetEulaUrlCompleted_.bind(this));
+    this.attemptPpdEulaFetch_();
   },
 
   /**
@@ -407,6 +404,10 @@ Polymer({
       this.modelList = modelsInfo.models;
       // ModelListChanged_ is the final step of initializing pendingPrinter.
       this.arePrinterFieldsInitialized_ = true;
+
+      // Fetch the EULA URL once we have PpdReferences from fetching the
+      // |modelList|.
+      this.attemptPpdEulaFetch_();
     }
   },
 
@@ -480,6 +481,23 @@ Polymer({
    */
   protocolSelectEnabled: function() {
     return this.isOnline_ && this.networkProtocolActive_;
+  },
+
+  /**
+   * Attempts fetching for the EULA Url based off of the current printer's
+   * |ppdManufacturer| and |ppdModel|.
+   * @private
+   */
+  attemptPpdEulaFetch_: function() {
+    if (!this.pendingPrinter_.ppdManufacturer ||
+        !this.pendingPrinter_.ppdModel) {
+      return;
+    }
+
+    settings.CupsPrintersBrowserProxyImpl.getInstance()
+        .getEulaUrl(
+            this.pendingPrinter_.ppdManufacturer, this.pendingPrinter_.ppdModel)
+        .then(this.onGetEulaUrlCompleted_.bind(this));
   },
 
 });

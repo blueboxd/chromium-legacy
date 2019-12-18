@@ -99,6 +99,10 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
   // currently open chrome://safe-browsing tab was opened.
   void GetLogMessages(const base::ListValue* args);
 
+  // Get the reporting events that have been collected since the oldest
+  // currently open chrome://safe-browsing tab was opened.
+  void GetReportingEvents(const base::ListValue* args);
+
   // Register callbacks for WebUI messages.
   void RegisterMessages() override;
 
@@ -154,6 +158,10 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
   // are open.
   void NotifyLogMessageJsListener(const base::Time& timestamp,
                                   const std::string& message);
+
+  // Called when any new reporting events are sent while one or more WebUI tabs
+  // are open.
+  void NotifyReportingEventJsListener(const base::Value& event);
 
   // Callback when the CookieManager has returned the cookie.
   void OnGetCookie(const std::string& callback_id,
@@ -258,6 +266,13 @@ class WebUIInfoSingleton {
   static void NotifyLogMessageListeners(const base::Time& timestamp,
                                         const std::string& message);
 
+  // Add the reporting event to |reporting_events_| and send it to all the open
+  // chrome://safe-browsing tabs.
+  void AddToReportingEvents(const base::Value& event);
+
+  // Clear |reporting_events_|.
+  void ClearReportingEvents();
+
   // Register the new WebUI listener object.
   void RegisterWebUIInstance(SafeBrowsingUIHandler* webui);
 
@@ -339,6 +354,10 @@ class WebUIInfoSingleton {
     return log_messages_;
   }
 
+  const std::vector<base::Value>& reporting_events() {
+    return reporting_events_;
+  }
+
   network::mojom::CookieManager* GetCookieManager();
 
   void set_network_context(SafeBrowsingNetworkContext* network_context) {
@@ -407,6 +426,10 @@ class WebUIInfoSingleton {
   // List of messages logged since the oldest currently open
   // chrome://safe-browsing tab was opened.
   std::vector<std::pair<base::Time, std::string>> log_messages_;
+
+  // List of reporting events logged since the oldest currently open
+  // chrome://safe-browsing tab was opened.
+  std::vector<base::Value> reporting_events_;
 
   // The current referrer chain provider, if any. Can be nullptr.
   ReferrerChainProvider* referrer_chain_provider_ = nullptr;

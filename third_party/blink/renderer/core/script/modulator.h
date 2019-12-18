@@ -132,7 +132,8 @@ class CORE_EXPORT Modulator : public GarbageCollected<Modulator>,
   // used in the "fetch a module worker script graph" algorithm.
   virtual void FetchTree(const KURL&,
                          ResourceFetcher* fetch_client_settings_object_fetcher,
-                         mojom::RequestContextType destination,
+                         mojom::RequestContextType context_type,
+                         network::mojom::RequestDestination destination,
                          const ScriptFetchOptions&,
                          ModuleScriptCustomFetchType,
                          ModuleTreeClient*) = 0;
@@ -154,7 +155,8 @@ class CORE_EXPORT Modulator : public GarbageCollected<Modulator>,
   virtual void FetchDescendantsForInlineScript(
       ModuleScript*,
       ResourceFetcher* fetch_client_settings_object_fetcher,
-      mojom::RequestContextType destination,
+      mojom::RequestContextType context_type,
+      network::mojom::RequestDestination destination,
       ModuleTreeClient*) = 0;
 
   // Synchronously retrieves a single module script from existing module map

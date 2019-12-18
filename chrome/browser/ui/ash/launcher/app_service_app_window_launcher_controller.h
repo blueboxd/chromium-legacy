@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
@@ -28,6 +29,7 @@ class AppServiceAppWindowCrostiniTracker;
 class AppServiceAppWindowArcTracker;
 class AppWindowBase;
 class ChromeLauncherController;
+class Profile;
 
 // AppServiceAppWindowLauncherController observes the AppService
 // InstanceRegistry and the aura window manager. It manages app shelf items,
@@ -48,6 +50,7 @@ class AppServiceAppWindowLauncherController
   AppWindowLauncherItemController* ControllerForWindow(
       aura::Window* window) override;
   void ActiveUserChanged(const std::string& user_email) override;
+  void AdditionalUserAddedToSession(Profile* profile) override;
 
   // aura::EnvObserver:
   void OnWindowInitialized(aura::Window* window) override;
@@ -56,7 +59,7 @@ class AppServiceAppWindowLauncherController
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
                                intptr_t old) override;
-  void OnWindowVisibilityChanging(aura::Window* window, bool visible) override;
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
   void OnWindowDestroying(aura::Window* window) override;
 
   // wm::ActivationChangeObserver:
@@ -97,6 +100,8 @@ class AppServiceAppWindowLauncherController
  private:
   using AuraWindowToAppWindow =
       std::map<aura::Window*, std::unique_ptr<AppWindowBase>>;
+  using ProfileList = std::vector<Profile*>;
+  using WindowList = std::vector<aura::Window*>;
 
   void SetWindowActivated(aura::Window* window, bool active);
 
@@ -115,6 +120,12 @@ class AppServiceAppWindowLauncherController
 
   ash::ShelfID GetShelfId(aura::Window* window) const;
 
+  // Register |window| if the owner of the given |window| has a window
+  // teleported of the |window|'s application type to the current desktop.
+  void UserHasAppOnActiveDesktop(aura::Window* window,
+                                 const ash::ShelfID& shelf_id,
+                                 content::BrowserContext* browser_context);
+
   AuraWindowToAppWindow aura_window_to_app_window_;
   ScopedObserver<aura::Window, aura::WindowObserver> observed_windows_{this};
 
@@ -123,6 +134,12 @@ class AppServiceAppWindowLauncherController
       app_service_instance_helper_;
   std::unique_ptr<AppServiceAppWindowArcTracker> arc_tracker_;
   std::unique_ptr<AppServiceAppWindowCrostiniTracker> crostini_tracker_;
+
+  // A list of profiles which we additionally observe.
+  ProfileList profile_list_;
+
+  // A list of windows added for users.
+  WindowList window_list_;
 
   DISALLOW_COPY_AND_ASSIGN(AppServiceAppWindowLauncherController);
 };

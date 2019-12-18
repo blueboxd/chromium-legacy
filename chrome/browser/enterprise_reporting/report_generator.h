@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/enterprise_reporting/browser_report_generator.h"
 #include "chrome/browser/enterprise_reporting/report_request_definition.h"
 #include "chrome/browser/enterprise_reporting/report_request_queue_generator.h"
@@ -50,6 +51,12 @@ class ReportGenerator {
   // Returns the Serial number of the device. It's Windows only field and empty
   // on other platforms.
   virtual std::string GetSerialNumber();
+
+#if defined(OS_CHROMEOS)
+  // Collect the Android application information installed on primary profile,
+  // and append it to |basic_request_|.
+  virtual void AppendAndroidAppInfos();
+#endif
 
  private:
   void OnBrowserReportReady(std::unique_ptr<em::BrowserReport> browser_report);

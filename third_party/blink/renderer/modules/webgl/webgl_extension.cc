@@ -31,8 +31,6 @@ WebGLExtensionScopedContext::WebGLExtensionScopedContext(
     WebGLExtension* extension)
     : context_(extension->context_) {}
 
-WebGLExtensionScopedContext::~WebGLExtensionScopedContext() = default;
-
 WebGLExtension::WebGLExtension(WebGLRenderingContextBase* context)
     : context_(context) {}
 

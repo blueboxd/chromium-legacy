@@ -967,6 +967,19 @@ TEST(ShellUtilTest, BuildAppModelIdManySmall) {
             ShellUtil::BuildAppModelId(components));
 }
 
+TEST(ShellUtilTest, BuildAppModelIdNullTerminatorInTheMiddle) {
+  std::vector<base::string16> components;
+  base::string16 appname_with_nullTerminator(
+      L"I_have_null_terminator_in_middle");
+  appname_with_nullTerminator[5] = '\0';
+  components.push_back(appname_with_nullTerminator);
+  components.push_back(L"Default");
+  components.push_back(L"Test");
+  base::string16 expected_string(L"I_have_nul_in_middle.Default.Test");
+  expected_string[5] = '\0';
+  ASSERT_EQ(expected_string, ShellUtil::BuildAppModelId(components));
+}
+
 TEST(ShellUtilTest, BuildAppModelIdLongUsernameNormalProfile) {
   std::vector<base::string16> components;
   const base::string16 long_appname(

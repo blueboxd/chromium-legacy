@@ -405,8 +405,7 @@ void InputHandlerProxy::InjectScrollbarGestureScroll(
   std::unique_ptr<WebGestureEvent> synthetic_gesture_event =
       GenerateInjectedScrollGesture(
           type, original_timestamp, blink::WebGestureDevice::kScrollbar,
-          position_in_widget, scroll_delta,
-          pointer_result.scroll_units);
+          position_in_widget, scroll_delta, pointer_result.scroll_units);
 
   // This will avoid hit testing and directly scroll the scroller with the
   // provided element_id.
@@ -968,7 +967,7 @@ InputHandlerProxy::HandleGestureScrollUpdate(
 }
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollEnd(
-  const WebGestureEvent& gesture_event) {
+    const WebGestureEvent& gesture_event) {
   TRACE_EVENT0("input", "InputHandlerProxy::HandleGestureScrollEnd");
 #if DCHECK_IS_ON()
   DCHECK(expect_scroll_update_end_);
@@ -1090,10 +1089,9 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
   // we may not want to discard the entire touch sequence. Note this
   // code is explicitly after the assignment of the |touch_result_|
   // so the touch moves are not sent to the main thread un-necessarily.
-  if (result == DROP_EVENT &&
-      input_handler_->GetEventListenerProperties(
-          cc::EventListenerClass::kTouchEndOrCancel) !=
-          cc::EventListenerProperties::kNone) {
+  if (result == DROP_EVENT && input_handler_->GetEventListenerProperties(
+                                  cc::EventListenerClass::kTouchEndOrCancel) !=
+                                  cc::EventListenerProperties::kNone) {
     result = DID_HANDLE_NON_BLOCKING;
   }
 
@@ -1200,11 +1198,11 @@ void InputHandlerProxy::SynchronouslyZoomBy(float magnify_delta,
   input_handler_->PinchGestureEnd(anchor, false);
 }
 
-bool InputHandlerProxy::GetSnapFlingInfoAndSetSnapTarget(
+bool InputHandlerProxy::GetSnapFlingInfoAndSetAnimatingSnapTarget(
     const gfx::Vector2dF& natural_displacement,
     gfx::Vector2dF* initial_offset,
     gfx::Vector2dF* target_offset) const {
-  return input_handler_->GetSnapFlingInfoAndSetSnapTarget(
+  return input_handler_->GetSnapFlingInfoAndSetAnimatingSnapTarget(
       natural_displacement, initial_offset, target_offset);
 }
 
@@ -1216,8 +1214,8 @@ gfx::Vector2dF InputHandlerProxy::ScrollByForSnapFling(
   return scroll_result.current_visual_offset;
 }
 
-void InputHandlerProxy::ScrollEndForSnapFling() {
-  input_handler_->ScrollEnd(/*should_snap=*/false);
+void InputHandlerProxy::ScrollEndForSnapFling(bool did_finish) {
+  input_handler_->ScrollEndForSnapFling(did_finish);
 }
 
 void InputHandlerProxy::RequestAnimationForSnapFling() {
@@ -1231,11 +1229,8 @@ void InputHandlerProxy::HandleOverscroll(
   if (!scroll_result.did_overscroll_root)
     return;
 
-  TRACE_EVENT2("input",
-               "InputHandlerProxy::DidOverscroll",
-               "dx",
-               scroll_result.unused_scroll_delta.x(),
-               "dy",
+  TRACE_EVENT2("input", "InputHandlerProxy::DidOverscroll", "dx",
+               scroll_result.unused_scroll_delta.x(), "dy",
                scroll_result.unused_scroll_delta.y());
 
   // Bundle overscroll message with triggering event response, saving an IPC.

@@ -54,7 +54,7 @@ ArcAppWindow::~ArcAppWindow() {
 }
 
 void ArcAppWindow::SetFullscreenMode(FullScreenMode mode) {
-  DCHECK(mode != FullScreenMode::NOT_DEFINED);
+  DCHECK(mode != FullScreenMode::kNotDefined);
   fullscreen_mode_ = mode;
 }
 

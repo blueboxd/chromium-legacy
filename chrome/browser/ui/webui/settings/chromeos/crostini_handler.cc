@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/crostini/crostini_installer.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
@@ -137,8 +138,8 @@ void CrostiniHandler::OnJavascriptDisallowed() {
 void CrostiniHandler::HandleRequestCrostiniInstallerView(
     const base::ListValue* args) {
   AllowJavascript();
-  ShowCrostiniInstallerView(Profile::FromWebUI(web_ui()),
-                            crostini::CrostiniUISurface::kSettings);
+  crostini::CrostiniInstaller::GetForProfile(Profile::FromWebUI(web_ui()))
+      ->ShowDialog(crostini::CrostiniUISurface::kSettings);
 }
 
 void CrostiniHandler::HandleRequestRemoveCrostini(const base::ListValue* args) {

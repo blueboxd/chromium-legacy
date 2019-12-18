@@ -165,6 +165,21 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
     }
   }
 
+  if (policy.has_login_screen_primary_mouse_button_switch()) {
+    const em::BooleanPolicyProto& container(
+        policy.login_screen_primary_mouse_button_switch());
+    if (container.has_value()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(container.has_policy_options(),
+                         container.policy_options(), &level)) {
+        policies->Set(key::kDeviceLoginScreenPrimaryMouseButtonSwitch, level,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::make_unique<base::Value>(container.value()),
+                      nullptr);
+      }
+    }
+  }
+
   if (policy.has_reboot_on_shutdown()) {
     const em::RebootOnShutdownProto& container(policy.reboot_on_shutdown());
     if (container.has_reboot_on_shutdown()) {

@@ -265,7 +265,8 @@ void DynamicModuleResolver::ResolveDynamically(
   if (auto* scope = DynamicTo<WorkerGlobalScope>(*execution_context))
     scope->EnsureFetcher();
   modulator_->FetchTree(url, execution_context->Fetcher(),
-                        mojom::RequestContextType::SCRIPT, options,
+                        mojom::RequestContextType::SCRIPT,
+                        network::mojom::RequestDestination::kScript, options,
                         ModuleScriptCustomFetchType::kNone, tree_client);
 
   // Steps 6-9 are implemented at

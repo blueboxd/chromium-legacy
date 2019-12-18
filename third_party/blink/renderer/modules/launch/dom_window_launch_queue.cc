@@ -17,7 +17,6 @@ const char DOMWindowLaunchQueue::kSupplementName[] = "DOMWindowLaunchQueue";
 
 DOMWindowLaunchQueue::DOMWindowLaunchQueue()
     : launch_queue_(MakeGarbageCollected<LaunchQueue>()) {}
-DOMWindowLaunchQueue::~DOMWindowLaunchQueue() = default;
 
 Member<LaunchQueue> DOMWindowLaunchQueue::launchQueue(LocalDOMWindow& window) {
   return FromState(&window)->launch_queue_;

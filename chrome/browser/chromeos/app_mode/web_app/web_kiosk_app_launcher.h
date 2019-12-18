@@ -36,6 +36,7 @@ class WebKioskAppLauncher {
     virtual void InitializeNetwork() = 0;
     virtual void OnAppStartedInstalling() = 0;
     virtual void OnAppPrepared() = 0;
+    virtual void OnAppInstallFailed() = 0;
     virtual void OnAppLaunched() = 0;
     virtual void OnAppLaunchFailed() = 0;
 

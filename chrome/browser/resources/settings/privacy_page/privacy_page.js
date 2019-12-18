@@ -131,9 +131,7 @@ Polymer({
      */
     moreOpened_: {
       type: Boolean,
-      value: function() {
-        return !loadTimeData.getBoolean('privacySettingsRedesignEnabled');
-      },
+      value: false,
     },
 
     /** @private */
@@ -231,14 +229,6 @@ Polymer({
         return map;
       },
     },
-
-    // <if expr="not chromeos">
-    /** @private */
-    showRestart_: Boolean,
-    // </if>
-
-    /** @private */
-    showSignoutDialog_: Boolean,
 
     /** @private */
     searchFilter_: String,
@@ -441,15 +431,6 @@ Polymer({
         settings.SettingsPageInteractions.PRIVACY_NETWORK_PREDICTION);
   },
 
-  /** @private */
-  onSyncAndGoogleServicesClick_: function() {
-    // Navigate to sync page, and remove (privacy related) search text to
-    // avoid the sync page from being hidden.
-    settings.navigateTo(settings.routes.SYNC, null, true);
-    this.browserProxy_.recordSettingsPageHistogram(
-        settings.SettingsPageInteractions.PRIVACY_SYNC_AND_GOOGLE_SERVICES);
-  },
-
   /**
    * This is a workaround to connect the remove all button to the subpage.
    * @private
@@ -504,59 +485,6 @@ Polymer({
   getProtectedContentIdentifiersLabel_: function(value) {
     return value ? this.i18n('siteSettingsProtectedContentEnableIdentifiers') :
                    this.i18n('siteSettingsBlocked');
-  },
-
-  /** @private */
-  onSigninAllowedChange_: function() {
-    const toggle = this.$$('#signinAllowedToggle');
-    if (this.syncStatus.signedIn && !toggle.checked) {
-      // Switch the toggle back on and show the signout dialog.
-      toggle.checked = true;
-      this.showSignoutDialog_ = true;
-    } else {
-      toggle.sendPrefChange();
-      this.showRestart_ = true;
-    }
-    this.browserProxy_.recordSettingsPageHistogram(
-        settings.SettingsPageInteractions.PRIVACY_CHROME_SIGN_IN);
-  },
-
-  /** @private */
-  onSignoutDialogClosed_: function() {
-    if (/** @type {!SettingsSignoutDialogElement} */ (
-            this.$$('settings-signout-dialog'))
-            .wasConfirmed()) {
-      const toggle = this.$$('#signinAllowedToggle');
-      toggle.checked = false;
-      toggle.sendPrefChange();
-      this.showRestart_ = true;
-    }
-    this.showSignoutDialog_ = false;
-  },
-
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  onRestartTap_: function(e) {
-    e.stopPropagation();
-    settings.LifetimeBrowserProxyImpl.getInstance().restart();
-  },
-
-  /**
-   * @return {string}
-   * @private
-   */
-  getIronCollapseCssClass_: function() {
-    return this.privacySettingsRedesignEnabled_ ? 'iron-collapse-indented' : '';
-  },
-
-  /**
-   * @return {string}
-   * @private
-   */
-  getTopBarCssClass_: function() {
-    return this.privacySettingsRedesignEnabled_ ? 'settings-box first' : '';
   },
 });
 })();

@@ -87,7 +87,7 @@ BadgedProfilePhoto::BadgeType GetProfileBadgeType(Profile* profile) {
   // |Profile::IsSyncAllowed| is needed to check whether sync is allowed by GPO
   // policy.
   if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile) &&
-      profile->IsSyncAllowed() &&
+      ProfileSyncServiceFactory::IsSyncAllowed(profile) &&
       IdentityManagerFactory::GetForProfile(profile)->HasPrimaryAccount()) {
     return BadgedProfilePhoto::BADGE_TYPE_SYNC_COMPLETE;
   }
@@ -549,7 +549,7 @@ void ProfileMenuView::BuildSyncInfo() {
   Profile* profile = browser()->profile();
   // Only show the sync info if signin and sync are allowed.
   if (!profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed) ||
-      !profile->IsSyncAllowed()) {
+      !ProfileSyncServiceFactory::IsSyncAllowed(profile)) {
     return;
   }
 
@@ -816,7 +816,8 @@ void ProfileMenuView::AddDiceSyncErrorView(
   // profile (only selectable when sync is paused or disabled) and when sync is
   // not disabled there is a blue button to resolve the error.
   const bool show_sync_paused_ui = error == sync_ui_util::AUTH_ERROR;
-  const bool sync_disabled = !browser()->profile()->IsSyncAllowed();
+  const bool sync_disabled =
+      !ProfileSyncServiceFactory::IsSyncAllowed(browser()->profile());
   const bool passwords_only_error =
       error == sync_ui_util::TRUSTED_VAULT_KEY_MISSING_FOR_PASSWORDS_ERROR;
 
@@ -883,7 +884,7 @@ void ProfileMenuView::AddCurrentProfileView(
     const AvatarMenu::Item& avatar_item,
     bool is_guest) {
   Profile* profile = browser()->profile();
-  const bool sync_disabled = !profile->IsSyncAllowed();
+  const bool sync_disabled = !ProfileSyncServiceFactory::IsSyncAllowed(profile);
   if (!is_guest && sync_disabled) {
     AddDiceSyncErrorView(avatar_item, sync_ui_util::NO_SYNC_ERROR, 0);
     return;
@@ -906,7 +907,8 @@ void ProfileMenuView::AddCurrentProfileView(
   // disabled. Otherwise, show the email attached to the profile.
   bool show_email = !is_guest && avatar_item.signed_in;
   const base::string16 hover_button_title =
-      dice_enabled_ && profile->IsSyncAllowed() && show_email
+      dice_enabled_ && ProfileSyncServiceFactory::IsSyncAllowed(profile) &&
+              show_email
           ? l10n_util::GetStringUTF16(IDS_PROFILES_SYNC_COMPLETE_TITLE)
           : profile_name;
 

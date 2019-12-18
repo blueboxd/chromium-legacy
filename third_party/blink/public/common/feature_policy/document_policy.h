@@ -68,8 +68,6 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
  public:
   using FeatureState = std::map<mojom::FeaturePolicyFeature, PolicyValue>;
 
-  ~DocumentPolicy();
-
   static std::unique_ptr<DocumentPolicy> CreateWithRequiredPolicy(
       const FeatureState& required_policy);
 

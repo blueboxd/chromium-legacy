@@ -52,8 +52,6 @@
 
 namespace blink {
 
-LocalFileSystem::~LocalFileSystem() = default;
-
 void LocalFileSystem::ResolveURL(ExecutionContext* context,
                                  const KURL& file_system_url,
                                  std::unique_ptr<ResolveURICallbacks> callbacks,

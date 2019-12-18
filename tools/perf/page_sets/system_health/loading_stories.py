@@ -54,6 +54,13 @@ class LoadAmazonDesktopStory2018(_LoadingStory):
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
+class LoadAmazonMobileStory2019(_LoadingStory):
+  NAME = 'load:search:amazon:2019'
+  URL = 'https://www.amazon.com/s/?field-keywords=pixel'
+  TAGS = [story_tags.YEAR_2019]
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+
+
 class LoadTaobaoDesktopStory2018(_LoadingStory):
   NAME = 'load:search:taobao:2018'
   URL = 'https://world.taobao.com/'
@@ -75,6 +82,14 @@ class LoadTaobaoMobileStory(_LoadingStory):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.INTERNATIONAL, story_tags.HEALTH_CHECK,
           story_tags.YEAR_2016]
+
+
+class LoadTaobaoMobileStory2019(_LoadingStory):
+  NAME = 'load:search:taobao:2019'
+  URL = 'http://m.intl.taobao.com/'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.INTERNATIONAL, story_tags.HEALTH_CHECK,
+          story_tags.YEAR_2019]
 
 
 class LoadYandexStory2018(_LoadingStory):

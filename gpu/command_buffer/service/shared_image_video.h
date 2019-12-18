@@ -46,7 +46,6 @@ class GPU_GLES2_EXPORT SharedImageVideo
   void SetClearedRect(const gfx::Rect& cleared_rect) override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
-  void Destroy() override;
   size_t EstimatedSizeForMemTracking() const override;
 
   // SharedContextState::ContextLostObserver implementation.

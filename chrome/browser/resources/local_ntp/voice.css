@@ -588,3 +588,9 @@ html[dir=rtl] .overlay .voice-text {
     border-color: rgb(var(--GG200-rgb));
   }
 }
+
+#screen-reader-announcer {
+  clip: rect(0, 0, 0, 0);
+  display: inline-block;
+  position: fixed;
+}

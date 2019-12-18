@@ -19,8 +19,6 @@
 namespace content {
 namespace {
 
-bool g_registered_url_schemes = false;
-
 const char* const kDefaultSavableSchemes[] = {
   url::kHttpScheme,
   url::kHttpsScheme,
@@ -49,11 +47,7 @@ std::vector<std::string>& GetMutableServiceWorkerSchemes() {
 
 }  // namespace
 
-void RegisterContentSchemes() {
-  // On Android, schemes may have been registered already.
-  if (g_registered_url_schemes)
-    return;
-  g_registered_url_schemes = true;
+void RegisterContentSchemes(bool lock_schemes) {
   ContentClient::Schemes schemes;
   GetContentClient()->AddAdditionalSchemes(&schemes);
 
@@ -97,6 +91,14 @@ void RegisterContentSchemes() {
     url::EnableNonStandardSchemesForAndroidWebView();
 #endif
 
+  // Prevent future modification of the scheme lists. This is to prevent
+  // accidental creation of data races in the program. Add*Scheme aren't
+  // threadsafe so must be called when GURL isn't used on any other thread. This
+  // is really easy to mess up, so we say that all calls to Add*Scheme in Chrome
+  // must be inside this function.
+  if (lock_schemes)
+    url::LockSchemeRegistries();
+
   // Combine the default savable schemes with the additional ones given.
   GetMutableSavableSchemes().assign(std::begin(kDefaultSavableSchemes),
                                     std::end(kDefaultSavableSchemes));
@@ -105,11 +107,6 @@ void RegisterContentSchemes() {
                                     schemes.savable_schemes.end());
 
   GetMutableServiceWorkerSchemes() = std::move(schemes.service_worker_schemes);
-}
-
-void ReRegisterContentSchemesForTests() {
-  g_registered_url_schemes = false;
-  RegisterContentSchemes();
 }
 
 const std::vector<std::string>& GetSavableSchemes() {

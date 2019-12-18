@@ -11,7 +11,6 @@
 <link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
-<link rel="import" href="passwords_leak_detection_toggle.html">
 <link rel="import" href="privacy_page_browser_proxy.html">
 
 <if expr="not chromeos">
@@ -38,16 +37,14 @@
       }
     </style>
 <if expr="not chromeos">
-    <template is="dom-if" if="[[privacySettingsRedesignEnabled_]]">
-      <settings-toggle-button id="signinAllowedToggle"
-          disabled="[[syncFirstSetupInProgress_]]"
-          pref="{{prefs.signin.allowed_on_next_startup}}"
-          label="$i18n{signinAllowedTitle}"
-          sub-label="$i18n{signinAllowedDescription}"
-          on-settings-boolean-control-change="onSigninAllowedChange_"
-          no-set-pref>
-      </settings-toggle-button>
-    </template>
+    <settings-toggle-button id="signinAllowedToggle"
+        disabled="[[syncFirstSetupInProgress_]]"
+        pref="{{prefs.signin.allowed_on_next_startup}}"
+        label="$i18n{signinAllowedTitle}"
+        sub-label="$i18n{signinAllowedDescription}"
+        on-settings-boolean-control-change="onSigninAllowedChange_"
+        no-set-pref>
+    </settings-toggle-button>
 </if><!-- not chromeos -->
     <settings-toggle-button hidden="[[!pageVisibility.searchPrediction]]"
         pref="{{prefs.search.suggest_enabled}}"
@@ -58,28 +55,6 @@
         label="$i18n{linkDoctorPref}"
         sub-label="$i18n{linkDoctorPrefDesc}">
     </settings-toggle-button>
-    <template is="dom-if" if="[[!privacySettingsRedesignEnabled_]]">
-      <settings-toggle-button id="safeBrowsingToggle"
-          pref="{{prefs.safebrowsing.enabled}}"
-          label="$i18n{safeBrowsingEnableProtection}"
-          sub-label="$i18n{safeBrowsingEnableProtectionDesc}">
-      </settings-toggle-button>
-      <template is="dom-if" if="[[passwordsLeakDetectionEnabled_]]">
-        <settings-passwords-leak-detection-toggle
-            id="passwordsLeakDetectionToggle"
-            prefs="{{prefs}}"
-            sync-status="[[syncStatus]]">
-        </settings-passwords-leak-detection-toggle>
-      </template>
-      <settings-toggle-button id="safeBrowsingReportingToggle"
-          pref="[[safeBrowsingReportingPref_]]" no-set-pref
-          label="$i18n{safeBrowsingEnableExtendedReporting}"
-          sub-label="$i18n{safeBrowsingEnableExtendedReportingDesc}"
-          disabled="[[getDisabledExtendedSafeBrowsing_(prefs.*)]]"
-          on-settings-boolean-control-change=
-              "onSafeBrowsingReportingToggleChange_">
-      </settings-toggle-button>
-    </template>
 <if expr="_google_chrome">
 <if expr="chromeos">
     <settings-toggle-button pref="{{prefs.cros.metrics.reportingEnabled}}"
@@ -124,12 +99,10 @@
       </settings-toggle-button>
     </template>
 
-    <template is="dom-if" if="[[privacySettingsRedesignEnabled_]]">
-      <template is="dom-if" if="[[showSignoutDialog_]]" restamp>
-        <settings-signout-dialog sync-status="[[syncStatus]]"
-            on-close="onSignoutDialogClosed_">
-        </settings-signout-dialog>
-      </template>
+    <template is="dom-if" if="[[showSignoutDialog_]]" restamp>
+      <settings-signout-dialog sync-status="[[syncStatus]]"
+          on-close="onSignoutDialogClosed_">
+      </settings-signout-dialog>
     </template>
 
 <if expr="not chromeos">

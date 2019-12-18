@@ -23,7 +23,7 @@ class TickClock;
 namespace blink {
 class WebMouseWheelEvent;
 class WebTouchEvent;
-}
+}  // namespace blink
 
 namespace ui {
 
@@ -32,7 +32,7 @@ class InputHandlerProxyTest;
 class InputHandlerProxyEventQueueTest;
 class InputHandlerProxyMomentumScrollJankTest;
 class TestInputHandlerProxy;
-}
+}  // namespace test
 
 class CompositorThreadEventQueue;
 class EventWithCallback;
@@ -116,12 +116,12 @@ class InputHandlerProxy : public cc::InputHandlerClient,
                            const gfx::Point& anchor) override;
 
   // SnapFlingClient implementation.
-  bool GetSnapFlingInfoAndSetSnapTarget(
+  bool GetSnapFlingInfoAndSetAnimatingSnapTarget(
       const gfx::Vector2dF& natural_displacement,
       gfx::Vector2dF* initial_offset,
       gfx::Vector2dF* target_offset) const override;
   gfx::Vector2dF ScrollByForSnapFling(const gfx::Vector2dF& delta) override;
-  void ScrollEndForSnapFling() override;
+  void ScrollEndForSnapFling(bool did_finish) override;
   void RequestAnimationForSnapFling() override;
 
   bool gesture_scroll_on_impl_thread_for_testing() const {
@@ -145,14 +145,12 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   void DispatchQueuedInputEvents();
 
   // Helper functions for handling more complicated input events.
-  EventDisposition HandleMouseWheel(
-      const blink::WebMouseWheelEvent& event);
+  EventDisposition HandleMouseWheel(const blink::WebMouseWheelEvent& event);
   EventDisposition HandleGestureScrollBegin(
       const blink::WebGestureEvent& event);
   EventDisposition HandleGestureScrollUpdate(
       const blink::WebGestureEvent& event);
-  EventDisposition HandleGestureScrollEnd(
-      const blink::WebGestureEvent& event);
+  EventDisposition HandleGestureScrollEnd(const blink::WebGestureEvent& event);
   EventDisposition HandleTouchStart(const blink::WebTouchEvent& event);
   EventDisposition HandleTouchMove(const blink::WebTouchEvent& event);
   EventDisposition HandleTouchEnd(const blink::WebTouchEvent& event);

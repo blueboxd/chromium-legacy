@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/ash/launcher/app_service_app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/app_window_base.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_window.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "ui/aura/client/aura_constants.h"
@@ -108,7 +109,31 @@ AppServiceAppWindowArcTracker::~AppServiceAppWindowArcTracker() {
   prefs->RemoveObserver(this);
 }
 
-void AppServiceAppWindowArcTracker::OnWindowVisibilityChanging(
+void AppServiceAppWindowArcTracker::ActiveUserChanged(
+    const std::string& user_email) {
+  const std::string& primary_user_email = user_manager::UserManager::Get()
+                                              ->GetPrimaryUser()
+                                              ->GetAccountId()
+                                              .GetUserEmail();
+  if (user_email == primary_user_email) {
+    // Make sure that we created items for all apps, not only which have a
+    // window.
+    for (const auto& info : task_id_to_arc_app_window_info_)
+      AttachControllerToTask(info.first);
+
+    // Update active status.
+    OnTaskSetActive(active_task_id_);
+  } else {
+    // Some controllers might have no windows attached, for example background
+    // task when foreground tasks is in full screen.
+    for (const auto& it : app_shelf_group_to_controller_map_)
+      app_service_controller_->owner()->CloseLauncherItem(
+          it.second->shelf_id());
+    app_shelf_group_to_controller_map_.clear();
+  }
+}
+
+void AppServiceAppWindowArcTracker::OnWindowVisibilityChanged(
     aura::Window* window) {
   const int task_id = arc::GetWindowTaskId(window);
   if (task_id == arc::kNoTaskId || task_id == arc::kSystemWindowTaskId)
@@ -248,7 +273,15 @@ void AppServiceAppWindowArcTracker::OnTaskSetActive(int32_t task_id) {
     DCHECK(previous_arc_app_window_info);
     app_service_controller_->owner()->SetItemStatus(
         previous_arc_app_window_info->shelf_id(), ash::STATUS_RUNNING);
-    // TODO(crbug.com/1011235): Set previous window full screen mode.
+    AppWindowBase* previous_app_window = app_service_controller_->GetAppWindow(
+        previous_arc_app_window_info->window());
+    if (previous_app_window) {
+      previous_app_window->SetFullscreenMode(
+          previous_app_window->widget() &&
+                  previous_app_window->widget()->IsFullscreen()
+              ? ArcAppWindow::FullScreenMode::kActive
+              : ArcAppWindow::FullScreenMode::kNonActive);
+    }
   }
 
   active_task_id_ = task_id;
@@ -292,8 +325,8 @@ void AppServiceAppWindowArcTracker::AttachControllerToWindow(
   ArcAppWindowInfo* const info = it->second.get();
   DCHECK(info);
 
-  // Check if we have set the window for this task.
-  if (info->window())
+  // Check if we have set the AppWindowBase for this task.
+  if (app_service_controller_->GetAppWindow(window))
     return;
 
   views::Widget* const widget = views::Widget::GetWidgetForNativeWindow(window);

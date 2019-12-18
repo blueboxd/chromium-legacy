@@ -35,6 +35,8 @@ AccessibilityNodeInfoDataWrapper::AccessibilityNodeInfoDataWrapper(
       node_ptr_(node),
       is_clickable_leaf_(is_clickable_leaf) {}
 
+AccessibilityNodeInfoDataWrapper::~AccessibilityNodeInfoDataWrapper() = default;
+
 bool AccessibilityNodeInfoDataWrapper::IsNode() const {
   return true;
 }
@@ -89,6 +91,11 @@ void AccessibilityNodeInfoDataWrapper::PopulateAXRole(
   if (GetProperty(AXStringProperty::CLASS_NAME, &class_name)) {
     out_data->AddStringAttribute(ax::mojom::StringAttribute::kClassName,
                                  class_name);
+  }
+
+  if (role_) {
+    out_data->role = *role_;
+    return;
   }
 
   if (GetProperty(AXBooleanProperty::EDITABLE)) {
@@ -282,7 +289,8 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
   int labelled_by = -1;
 
   // Accessible name computation is a concatenated string comprising of:
-  // content description, text, labelled by text, and pane title.
+  // content description, text, labelled by text, pane title, and cached name
+  // from previous events.
   std::string text;
   std::string content_description;
   std::string label;
@@ -309,7 +317,7 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
   GetProperty(AXStringProperty::HINT_TEXT, &hint_text);
 
   if (!text.empty() || !content_description.empty() || !label.empty() ||
-      !pane_title.empty() || !hint_text.empty()) {
+      !pane_title.empty() || !hint_text.empty() || cached_name_) {
     // Append non empty properties to name attribute.
     std::vector<std::string> names;
     if (!content_description.empty())
@@ -332,6 +340,9 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
     // Append hint text as part of name attribute.
     if (!hint_text.empty())
       names.push_back(hint_text);
+
+    if (cached_name_ && !(*cached_name_).empty())
+      names.push_back(*cached_name_);
 
     // TODO (sarakato): Exposing all possible labels for a node, may result in
     // too much being spoken. For ARC ++, this may result in divergent behaviour

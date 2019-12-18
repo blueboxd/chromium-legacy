@@ -7,6 +7,7 @@
 #include <stack>
 #include <string>
 
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_node_info_data_wrapper.h"
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_window_info_data_wrapper.h"
@@ -29,8 +30,23 @@ using AXEventType = mojom::AccessibilityEventType;
 using AXIntListProperty = mojom::AccessibilityIntListProperty;
 using AXNodeInfoData = mojom::AccessibilityNodeInfoData;
 using AXNodeInfoDataPtr = mojom::AccessibilityNodeInfoDataPtr;
+using AXStringProperty = mojom::AccessibilityStringProperty;
 using AXWindowInfoData = mojom::AccessibilityWindowInfoData;
 using AXWindowIntListProperty = mojom::AccessibilityWindowIntListProperty;
+
+namespace {
+bool IsDrawerLayout(AXNodeInfoData* node) {
+  if (!node || !node->string_properties)
+    return false;
+
+  auto it = node->string_properties->find(AXStringProperty::CLASS_NAME);
+  if (it == node->string_properties->end())
+    return false;
+
+  return it->second == "androidx.drawerlayout.widget.DrawerLayout" ||
+         it->second == "android.support.v4.widget.DrawerLayout";
+}
+}  // namespace
 
 AXTreeSourceArc::AXTreeSourceArc(Delegate* delegate)
     : current_tree_serializer_(new AXTreeArcSerializer(this)),
@@ -129,10 +145,15 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     // is fired from Android multiple times.
     // The event of WINDOW_STATE_CHANGED is fired only once for each window
     // change and use it as a trigger to move the a11y focus to the first node.
+    AccessibilityInfoDataWrapper* focused_node =
+        GetFromId(event_data->source_id);
     AccessibilityInfoDataWrapper* new_focus =
-        FindFirstFocusableNode(GetFromId(event_data->source_id));
+        FindFirstFocusableNode(focused_node);
     if (IsValid(new_focus))
       focused_id_ = new_focus->GetId();
+
+    if (event_data->eventText)
+      UpdateAXNameCache(focused_node, *event_data->eventText);
   }
   if (!focused_id_.has_value()) {
     AccessibilityInfoDataWrapper* root = GetRoot();
@@ -154,6 +175,8 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
       }
     }
   }
+
+  ApplyCachedProperties();
 
   ExtensionMsg_AccessibilityEventBundleParams event_bundle;
   event_bundle.tree_id = ax_tree_id();
@@ -384,6 +407,53 @@ AccessibilityInfoDataWrapper* AXTreeSourceArc::FindFirstFocusableNode(
   }
 
   return nullptr;
+}
+
+void AXTreeSourceArc::UpdateAXNameCache(
+    AccessibilityInfoDataWrapper* focused_node,
+    const std::vector<std::string>& event_text) {
+  if (IsDrawerLayout(focused_node->GetNode())) {
+    // When drawer menu opened, make the menu title announced.
+    // When focus is changed, ChromeVox computes the diff in ancestry between
+    // the previously focused and new focused node.
+    // As the DrawerLayout is LCA of them, set the new title to be the first
+    // visible child node (which is usually drawer menu).
+    std::vector<AccessibilityInfoDataWrapper*> children;
+    focused_node->GetChildren(&children);
+    for (auto* child : children) {
+      if (child->IsNode() && child->IsVisibleToUser() &&
+          GetBooleanProperty(child->GetNode(), AXBooleanProperty::IMPORTANCE)) {
+        cached_roles_[child->GetId()] = ax::mojom::Role::kMenu;
+        if (!event_text.empty())
+          cached_names_[child->GetId()] = base::JoinString(event_text, " ");
+        return;
+      }
+    }
+  }
+}
+
+void AXTreeSourceArc::ApplyCachedProperties() {
+  for (auto it = cached_names_.begin(); it != cached_names_.end();) {
+    AccessibilityInfoDataWrapper* node = GetFromId(it->first);
+    if (node) {
+      static_cast<AccessibilityNodeInfoDataWrapper*>(node)->set_cached_name(
+          it->second);
+      it++;
+    } else {
+      it = cached_names_.erase(it);
+    }
+  }
+
+  for (auto it = cached_roles_.begin(); it != cached_roles_.end();) {
+    AccessibilityInfoDataWrapper* node = GetFromId(it->first);
+    if (node) {
+      static_cast<AccessibilityNodeInfoDataWrapper*>(node)->set_role(
+          it->second);
+      it++;
+    } else {
+      it = cached_roles_.erase(it);
+    }
+  }
 }
 
 void AXTreeSourceArc::Reset() {

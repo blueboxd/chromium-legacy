@@ -110,9 +110,6 @@ void SharedImageBacking::ReleaseRef(SharedImageRepresentation* representation) {
     refs_[0]->tracker()->TrackMemAlloc(estimated_size_);
     return;
   }
-
-  // Last ref deleted, clean up.
-  Destroy();
 }
 
 bool SharedImageBacking::HasAnyRefs() const {

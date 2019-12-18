@@ -455,7 +455,35 @@ ExternalVkImageBacking::ExternalVkImageBacking(
       memory_type_index_(memory_type_index) {}
 
 ExternalVkImageBacking::~ExternalVkImageBacking() {
-  DCHECK(!backend_texture_.isValid());
+  GrVkImageInfo image_info;
+  bool result = backend_texture_.getVkImageInfo(&image_info);
+  DCHECK(result);
+
+  auto* fence_helper = context_state()
+                           ->vk_context_provider()
+                           ->GetDeviceQueue()
+                           ->GetFenceHelper();
+  fence_helper->EnqueueImageCleanupForSubmittedWork(image_info.fImage,
+                                                    image_info.fAlloc.fMemory);
+  backend_texture_ = GrBackendTexture();
+
+  if (texture_) {
+    // Ensure that a context is current before removing the ref and calling
+    // glDeleteTextures.
+    if (!gl::GLContext::GetCurrent())
+      context_state()->MakeCurrent(nullptr, true /* need_gl */);
+    texture_->RemoveLightweightRef(have_context());
+  }
+
+  if (texture_passthrough_) {
+    // Ensure that a context is current before releasing |texture_passthrough_|,
+    // it calls glDeleteTextures.
+    if (!gl::GLContext::GetCurrent())
+      context_state()->MakeCurrent(nullptr, true /* need_gl */);
+    if (!have_context())
+      texture_passthrough_->MarkContextLost();
+    texture_passthrough_ = nullptr;
+  }
 }
 
 bool ExternalVkImageBacking::BeginAccess(
@@ -585,38 +613,6 @@ void ExternalVkImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
   DCHECK(!in_fence);
   latest_content_ = kInSharedMemory;
   SetCleared();
-}
-
-void ExternalVkImageBacking::Destroy() {
-  GrVkImageInfo image_info;
-  bool result = backend_texture_.getVkImageInfo(&image_info);
-  DCHECK(result);
-
-  auto* fence_helper = context_state()
-                           ->vk_context_provider()
-                           ->GetDeviceQueue()
-                           ->GetFenceHelper();
-  fence_helper->EnqueueImageCleanupForSubmittedWork(image_info.fImage,
-                                                    image_info.fAlloc.fMemory);
-  backend_texture_ = GrBackendTexture();
-
-  if (texture_) {
-    // Ensure that a context is current before removing the ref and calling
-    // glDeleteTextures.
-    if (!gl::GLContext::GetCurrent())
-      context_state()->MakeCurrent(nullptr, true /* need_gl */);
-    texture_->RemoveLightweightRef(have_context());
-  }
-
-  if (texture_passthrough_) {
-    // Ensure that a context is current before releasing |texture_passthrough_|,
-    // it calls glDeleteTextures.
-    if (!gl::GLContext::GetCurrent())
-      context_state()->MakeCurrent(nullptr, true /* need_gl */);
-    if (!have_context())
-      texture_passthrough_->MarkContextLost();
-    texture_passthrough_ = nullptr;
-  }
 }
 
 bool ExternalVkImageBacking::ProduceLegacyMailbox(

@@ -119,6 +119,7 @@ class ExtensionApps : public apps::mojom::Publisher,
   void OnAppWindowShown(extensions::AppWindow* app_window,
                         bool was_hidden) override;
   void OnAppWindowHidden(extensions::AppWindow* app_window) override;
+  void OnAppWindowRemoved(extensions::AppWindow* app_window) override;
 
   // extensions::ExtensionPrefsObserver overrides.
   void OnExtensionLastLaunchTimeChanged(
@@ -222,6 +223,8 @@ class ExtensionApps : public apps::mojom::Publisher,
   std::map<std::string, EnableFlowPtr> enable_flow_map_;
 
   std::set<std::string> paused_apps_;
+
+  std::map<extensions::AppWindow*, aura::Window*> app_window_to_aura_window_;
 
   ArcAppListPrefs* arc_prefs_ = nullptr;
 

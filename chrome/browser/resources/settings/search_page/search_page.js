@@ -9,8 +9,6 @@
 Polymer({
   is: 'settings-search-page',
 
-  behaviors: [I18nBehavior],
-
   properties: {
     prefs: Object,
 

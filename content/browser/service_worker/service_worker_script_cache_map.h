@@ -16,7 +16,7 @@
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/common/content_export.h"
 #include "net/base/completion_once_callback.h"
-#include "net/url_request/url_request_status.h"
+#include "net/base/net_errors.h"
 
 class GURL;
 
@@ -57,9 +57,8 @@ class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
 
   size_t size() const { return resource_map_.size(); }
 
-  const net::URLRequestStatus& main_script_status() const {
-    return main_script_status_;
-  }
+  // net::Error code from trying to load the main script resource.
+  int main_script_net_error() const { return main_script_net_error_; }
 
   const std::string& main_script_status_message() const {
     return main_script_status_message_;
@@ -86,7 +85,7 @@ class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
   ServiceWorkerVersion* owner_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ResourceMap resource_map_;
-  net::URLRequestStatus main_script_status_;
+  int main_script_net_error_ = net::OK;
   std::string main_script_status_message_;
 
   base::WeakPtrFactory<ServiceWorkerScriptCacheMap> weak_factory_{this};

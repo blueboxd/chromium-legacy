@@ -9,85 +9,74 @@ console-dir-es6.js:20 Object
     __proto__: Object
 console-dir-es6.js:23 Symbol()
 console-dir-es6.js:27 Map(1)
+    [[Entries]]
+        0: {Object => Object}
     size: (...)
     __proto__: Map
-    [[Entries]]: Array(1)
-        0: {Object => Object}
-        length: 1
 console-dir-es6.js:27 WeakMap
-    __proto__: WeakMap
-    [[Entries]]: Array(1)
+    [[Entries]]
         0: {Object => Object}
-        length: 1
-console-dir-es6.js:31 Set(1)
-    size: (...)
-    __proto__: Set
-    [[Entries]]: Array(1)
-        0: Object
-        length: 1
-console-dir-es6.js:31 WeakSet
-    __proto__: WeakSet
-    [[Entries]]: Array(1)
-        0: Object
-        length: 1
-console-dir-es6.js:39 Set(1)
-    size: (...)
-    __proto__: Set
-    [[Entries]]: Array(1)
-        0: Set(1)
-        length: 1
-console-dir-es6.js:42 WeakMap
     __proto__: WeakMap
-    [[Entries]]: Array(0)
-        length: 0
+console-dir-es6.js:31 Set(1)
+    [[Entries]]
+        0: Object
+    size: (...)
+    __proto__: Set
+console-dir-es6.js:31 WeakSet
+    [[Entries]]
+        0: Object
+    __proto__: WeakSet
+console-dir-es6.js:39 Set(1)
+    [[Entries]]
+        0: Set(1)
+    size: (...)
+    __proto__: Set
+console-dir-es6.js:42 WeakMap
+    [[Entries]]
+        No properties
+    __proto__: WeakMap
 console-dir-es6.js:50 MapIterator
+    [[Entries]]
+        0: Object
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "keys"
-    [[Entries]]: Array(1)
-        0: Object
-        length: 1
 console-dir-es6.js:51 MapIterator
+    [[Entries]]
+        0: Object
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    [[Entries]]: Array(1)
-        0: Object
-        length: 1
 console-dir-es6.js:52 MapIterator
+    [[Entries]]
+        0: {Object => Object}
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"
-    [[Entries]]: Array(1)
-        0: {Object => Object}
-        length: 1
 console-dir-es6.js:50 SetIterator
+    [[Entries]]
+        0: Object
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    [[Entries]]: Array(1)
-        0: Object
-        length: 1
 console-dir-es6.js:51 SetIterator
+    [[Entries]]
+        0: Object
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    [[Entries]]: Array(1)
-        0: Object
-        length: 1
 console-dir-es6.js:52 SetIterator
+    [[Entries]]
+        0: {Object => Object}
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"
-    [[Entries]]: Array(1)
-        0: Object
-        length: 1
 console-dir-es6.js:90 Array(27)
     0: class 
     1: class classWithWhitespace

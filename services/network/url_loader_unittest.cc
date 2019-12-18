@@ -2325,6 +2325,7 @@ TEST_F(URLLoaderTest, RedirectDirectlyModifiedSecHeadersUser) {
   // Try to modify `Sec-Fetch-User` directly.
   ResourceRequest request = CreateResourceRequest("GET", url);
   request.headers.SetHeader("Sec-Fetch-User", "?1");
+  request.headers.SetHeader("Sec-Fetch-Dest", "embed");
 
   base::RunLoop delete_run_loop;
   mojo::PendingRemote<mojom::URLLoader> loader;
@@ -2346,6 +2347,7 @@ TEST_F(URLLoaderTest, RedirectDirectlyModifiedSecHeadersUser) {
 
   const auto& request_headers = sent_request().headers;
   EXPECT_EQ(request_headers.end(), request_headers.find("Sec-Fetch-User"));
+  EXPECT_EQ("empty", request_headers.find("Sec-Fetch-Dest")->second);
 }
 
 // A mock URLRequestJob which simulates an HTTPS request with a certificate

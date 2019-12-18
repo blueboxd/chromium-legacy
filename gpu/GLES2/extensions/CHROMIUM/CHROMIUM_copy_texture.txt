@@ -136,6 +136,11 @@ Additions to the OpenGL ES 2.0 Specification
     INVALID_VALUE is generated if <sourceLevel> of the source texture is not
     defined.
 
+    INVALID_OPERATION is generated on ES 3.0 if <sourceId> refers to an
+    external texture (OES_EGL_image_external), <destId> refers to a texture
+    with an integer-type internal format, and the underlying context does not
+    support OES_EGL_image_external_essl3.
+
     The command
 
         CopySubTextureCHROMIUM
@@ -174,6 +179,11 @@ Additions to the OpenGL ES 2.0 Specification
 
     INVALID_VALUE is generated if (<xoffset> + <width>) > destWidth,
     or (<yoffset> + <height>) > destHeight.
+
+    INVALID_OPERATION is generated on ES 2.0 if <sourceId> refers to an
+    external texture (OES_EGL_image_external), <destId> refers to a texture
+    with an integer-type internal format, and the underlying context does not
+    support OES_EGL_image_external_essl3.
 
     Table 1.0 Valid internal formats for CopyTextureCHROMIUM:
 

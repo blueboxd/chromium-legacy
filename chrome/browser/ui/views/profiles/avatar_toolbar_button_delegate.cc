@@ -14,6 +14,7 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -176,7 +177,8 @@ AvatarToolbarButton::State AvatarToolbarButtonDelegate::GetState() const {
   }
 
 #if !defined(OS_CHROMEOS)
-  if (identity_manager->HasPrimaryAccount() && profile_->IsSyncAllowed() &&
+  if (identity_manager->HasPrimaryAccount() &&
+      ProfileSyncServiceFactory::IsSyncAllowed(profile_) &&
       error_controller_->HasAvatarError()) {
     // When DICE is enabled and the error is an auth error, the sync-paused
     // icon is shown.

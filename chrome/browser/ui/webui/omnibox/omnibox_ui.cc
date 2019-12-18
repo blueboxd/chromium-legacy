@@ -43,14 +43,14 @@ OmniboxUI::OmniboxUI(content::WebUI* web_ui)
   source->SetDefaultResource(IDR_OMNIBOX_HTML);
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
-  AddHandlerToRegistry(base::BindRepeating(&OmniboxUI::BindOmniboxPageHandler,
-                                           base::Unretained(this)));
   web_ui->AddMessageHandler(std::make_unique<VersionHandler>());
 }
 
+WEB_UI_CONTROLLER_TYPE_IMPL(OmniboxUI)
+
 OmniboxUI::~OmniboxUI() {}
 
-void OmniboxUI::BindOmniboxPageHandler(
+void OmniboxUI::BindInterface(
     mojo::PendingReceiver<mojom::OmniboxPageHandler> receiver) {
   omnibox_handler_ = std::make_unique<OmniboxPageHandler>(
       Profile::FromWebUI(web_ui()), std::move(receiver));

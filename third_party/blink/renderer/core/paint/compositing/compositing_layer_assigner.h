@@ -43,7 +43,6 @@ class CompositingLayerAssigner {
 
  public:
   explicit CompositingLayerAssigner(PaintLayerCompositor*);
-  ~CompositingLayerAssigner();
 
   void Assign(PaintLayer* update_root,
               Vector<PaintLayer*>& layers_needing_paint_invalidation);

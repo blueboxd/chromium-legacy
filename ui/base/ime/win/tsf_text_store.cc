@@ -25,6 +25,25 @@ namespace {
 // We support only one view.
 const TsViewCookie kViewCookie = 1;
 
+// Fetches the client rectangle, top left and bottom right points using the
+// window handle in screen coordinates.
+bool GetWindowClientRect(HWND window_handle,
+                         POINT* left_top,
+                         POINT* right_bottom) {
+  RECT client_rect = {};
+  if (!IsWindow(window_handle))
+    return false;
+  if (!GetClientRect(window_handle, &client_rect))
+    return false;
+  *left_top = {client_rect.left, client_rect.top};
+  *right_bottom = {client_rect.right, client_rect.bottom};
+  if (!ClientToScreen(window_handle, left_top))
+    return false;
+  if (!ClientToScreen(window_handle, right_bottom))
+    return false;
+  return true;
+}
+
 }  // namespace
 
 TSFTextStore::TSFTextStore() {
@@ -167,27 +186,32 @@ STDMETHODIMP TSFTextStore::GetScreenExt(TsViewCookie view_cookie, RECT* rect) {
   // {0, 0, 0, 0} means that the document rect is not currently displayed.
   SetRect(rect, 0, 0, 0, 0);
 
-  if (!IsWindow(window_handle_))
-    return E_FAIL;
-
   // Currently ui::TextInputClient does not expose the document rect. So use
   // the Win32 client rectangle instead.
   // TODO(yukawa): Upgrade TextInputClient so that the client can retrieve the
   // document rectangle.
-  RECT client_rect = {};
-  if (!GetClientRect(window_handle_, &client_rect))
-    return E_FAIL;
-  POINT left_top = {client_rect.left, client_rect.top};
-  POINT right_bottom = {client_rect.right, client_rect.bottom};
-  if (!ClientToScreen(window_handle_, &left_top))
-    return E_FAIL;
-  if (!ClientToScreen(window_handle_, &right_bottom))
+  POINT left_top;
+  POINT right_bottom;
+  if (!GetWindowClientRect(window_handle_, &left_top, &right_bottom))
     return E_FAIL;
 
   rect->left = left_top.x;
   rect->top = left_top.y;
   rect->right = right_bottom.x;
   rect->bottom = right_bottom.y;
+  // If the EditContext is active, then fetch the layout bounds from
+  // the active EditContext.
+  gfx::Rect result_rect;
+  gfx::Rect tmp_rect;
+  // TODO(snianu): Use this route to fetch the focused content editable
+  // element's layout bounds instead of reporting the client rectangle.
+  if (text_input_client_->GetEditContextLayoutBounds(&result_rect, &tmp_rect)) {
+    *rect =
+        display::win::ScreenWin::DIPToScreenRect(window_handle_, result_rect)
+            .ToRECT();
+    rect->left += left_top.x;
+    rect->top += left_top.y;
+  }
   return S_OK;
 }
 
@@ -305,6 +329,21 @@ STDMETHODIMP TSFTextStore::GetTextExt(TsViewCookie view_cookie,
   gfx::Rect tmp_rect;
   const uint32_t start_pos = acp_start - composition_start_;
   const uint32_t end_pos = acp_end - composition_start_;
+
+  // If there is an active EditContext, then fetch the layout bounds from it.
+  if (text_input_client_->GetEditContextLayoutBounds(&tmp_rect, &result_rect)) {
+    POINT left_top;
+    POINT right_bottom;
+    if (!GetWindowClientRect(window_handle_, &left_top, &right_bottom))
+      return E_FAIL;
+    *rect =
+        display::win::ScreenWin::DIPToScreenRect(window_handle_, result_rect)
+            .ToRECT();
+    rect->left += left_top.x;
+    rect->top += left_top.y;
+    *clipped = FALSE;
+    return S_OK;
+  }
 
   if (start_pos == end_pos) {
     if (text_input_client_->HasCompositionText()) {

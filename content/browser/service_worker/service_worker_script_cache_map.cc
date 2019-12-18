@@ -76,7 +76,7 @@ void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
     context_->storage()->DoomUncommittedResource(LookupResourceId(url));
     resource_map_.erase(url);
     if (owner_->script_url() == url) {
-      main_script_status_ = net::URLRequestStatus::FromError(net_error);
+      main_script_net_error_ = net_error;
       main_script_status_message_ = status_message;
     }
   } else if (size_bytes >= 0) {

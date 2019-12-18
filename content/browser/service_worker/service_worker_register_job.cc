@@ -569,10 +569,10 @@ void ServiceWorkerRegisterJob::OnStartWorkerFinished(
     return;
   }
 
-  const net::URLRequestStatus& main_script_status =
-      new_version()->script_cache_map()->main_script_status();
+  int main_script_net_error =
+      new_version()->script_cache_map()->main_script_net_error();
   std::string message;
-  if (main_script_status.status() != net::URLRequestStatus::SUCCESS) {
+  if (main_script_net_error != net::OK) {
     message = new_version()->script_cache_map()->main_script_status_message();
     if (message.empty())
       message = ServiceWorkerConsts::kServiceWorkerFetchScriptError;
@@ -817,13 +817,13 @@ void ServiceWorkerRegisterJob::AddRegistrationToMatchingProviderHosts(
 void ServiceWorkerRegisterJob::OnPausedAfterDownload() {
   DCHECK_EQ(GetUpdateCheckType(),
             UpdateCheckType::kMainScriptDuringStartWorker);
-  net::URLRequestStatus status =
-      new_version()->script_cache_map()->main_script_status();
-  if (!status.is_success()) {
+  int main_script_net_error =
+      new_version()->script_cache_map()->main_script_net_error();
+  if (main_script_net_error != net::OK) {
     // OnPausedAfterDownload() signifies a successful network load, which
     // translates into a script cache error only in the byte-for-byte identical
     // case.
-    DCHECK_EQ(status.error(), net::ERR_FILE_EXISTS);
+    DCHECK_EQ(main_script_net_error, net::ERR_FILE_EXISTS);
 
     BumpLastUpdateCheckTimeIfNeeded();
     ResolvePromise(blink::ServiceWorkerStatusCode::kOk, std::string(),

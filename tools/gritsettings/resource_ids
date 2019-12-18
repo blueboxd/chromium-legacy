@@ -294,6 +294,9 @@
   "chromeos/components/media_app_ui/resources/mock/media_app_bundle_mock_resources.grd": {
     "includes": [12590],
   },
+  "chromeos/components/sample_system_web_app_ui/resources/sample_system_web_app_resources.grd": {
+    "includes": [12700],
+  },
   "chromeos/resources/chromeos_resources.grd": {
     "META": {"join": 2},
     "includes": [12710],

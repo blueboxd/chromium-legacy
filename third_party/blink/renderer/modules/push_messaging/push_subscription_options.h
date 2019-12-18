@@ -26,13 +26,6 @@ class PushSubscriptionOptions final : public ScriptWrappable {
       const PushSubscriptionOptionsInit* options_init,
       ExceptionState& exception_state);
 
-  static PushSubscriptionOptions* Create(
-      bool user_visible_only,
-      const WTF::Vector<uint8_t>& application_server_key) {
-    return MakeGarbageCollected<PushSubscriptionOptions>(
-        user_visible_only, application_server_key);
-  }
-
   explicit PushSubscriptionOptions(
       bool user_visible_only,
       const WTF::Vector<uint8_t>& application_server_key);

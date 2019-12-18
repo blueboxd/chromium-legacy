@@ -260,13 +260,10 @@ class GetUnmaskDetailsRequest : public PaymentsRequest {
                    base::Value(kUnmaskCardBillableServiceNumber));
     request_dict.SetKey("context", std::move(context));
 
-    if (ShouldUseActiveSignedInAccount()) {
-      base::Value chrome_user_context(base::Value::Type::DICTIONARY);
-      chrome_user_context.SetKey("full_sync_enabled",
-                                 base::Value(full_sync_enabled_));
-      request_dict.SetKey("chrome_user_context",
-                          std::move(chrome_user_context));
-    }
+    base::Value chrome_user_context(base::Value::Type::DICTIONARY);
+    chrome_user_context.SetKey("full_sync_enabled",
+                               base::Value(full_sync_enabled_));
+    request_dict.SetKey("chrome_user_context", std::move(chrome_user_context));
 
     std::string request_content;
     base::JSONWriter::Write(request_dict, &request_content);
@@ -369,13 +366,10 @@ class UnmaskCardRequest : public PaymentsRequest {
     }
     request_dict.SetKey("context", std::move(context));
 
-    if (ShouldUseActiveSignedInAccount()) {
-      base::Value chrome_user_context(base::Value::Type::DICTIONARY);
-      chrome_user_context.SetKey("full_sync_enabled",
-                                 base::Value(full_sync_enabled_));
-      request_dict.SetKey("chrome_user_context",
-                          std::move(chrome_user_context));
-    }
+    base::Value chrome_user_context(base::Value::Type::DICTIONARY);
+    chrome_user_context.SetKey("full_sync_enabled",
+                               base::Value(full_sync_enabled_));
+    request_dict.SetKey("chrome_user_context", std::move(chrome_user_context));
 
     int value = 0;
     if (base::StringToInt(request_details_.user_response.exp_month, &value))
@@ -496,13 +490,10 @@ class OptChangeRequest : public PaymentsRequest {
                    base::Value(kUnmaskCardBillableServiceNumber));
     request_dict.SetKey("context", std::move(context));
 
-    if (ShouldUseActiveSignedInAccount()) {
-      base::Value chrome_user_context(base::Value::Type::DICTIONARY);
-      chrome_user_context.SetKey("full_sync_enabled",
-                                 base::Value(full_sync_enabled_));
-      request_dict.SetKey("chrome_user_context",
-                          std::move(chrome_user_context));
-    }
+    base::Value chrome_user_context(base::Value::Type::DICTIONARY);
+    chrome_user_context.SetKey("full_sync_enabled",
+                               base::Value(full_sync_enabled_));
+    request_dict.SetKey("chrome_user_context", std::move(chrome_user_context));
 
     std::string reason;
     switch (request_details_.reason) {
@@ -623,13 +614,10 @@ class GetUploadDetailsRequest : public PaymentsRequest {
     context.SetKey("billable_service", base::Value(billable_service_number_));
     request_dict.SetKey("context", std::move(context));
 
-    if (ShouldUseActiveSignedInAccount()) {
-      base::Value chrome_user_context(base::Value::Type::DICTIONARY);
-      chrome_user_context.SetKey("full_sync_enabled",
-                                 base::Value(full_sync_enabled_));
-      request_dict.SetKey("chrome_user_context",
-                          std::move(chrome_user_context));
-    }
+    base::Value chrome_user_context(base::Value::Type::DICTIONARY);
+    chrome_user_context.SetKey("full_sync_enabled",
+                               base::Value(full_sync_enabled_));
+    request_dict.SetKey("chrome_user_context", std::move(chrome_user_context));
 
     base::Value addresses(base::Value::Type::LIST);
     for (const AutofillProfile& profile : addresses_) {
@@ -798,13 +786,10 @@ class UploadCardRequest : public PaymentsRequest {
     }
     request_dict.SetKey("context", std::move(context));
 
-    if (ShouldUseActiveSignedInAccount()) {
-      base::Value chrome_user_context(base::Value::Type::DICTIONARY);
-      chrome_user_context.SetKey("full_sync_enabled",
-                                 base::Value(full_sync_enabled_));
-      request_dict.SetKey("chrome_user_context",
-                          std::move(chrome_user_context));
-    }
+    base::Value chrome_user_context(base::Value::Type::DICTIONARY);
+    chrome_user_context.SetKey("full_sync_enabled",
+                               base::Value(full_sync_enabled_));
+    request_dict.SetKey("chrome_user_context", std::move(chrome_user_context));
 
     SetStringIfNotEmpty(request_details_.card, CREDIT_CARD_NAME_FULL,
                         app_locale, "cardholder_name", request_dict);
@@ -913,13 +898,10 @@ class MigrateCardsRequest : public PaymentsRequest {
     }
     request_dict.SetKey("context", std::move(context));
 
-    if (ShouldUseActiveSignedInAccount()) {
-      base::Value chrome_user_context(base::Value::Type::DICTIONARY);
-      chrome_user_context.SetKey("full_sync_enabled",
-                                 base::Value(full_sync_enabled_));
-      request_dict.SetKey("chrome_user_context",
-                          std::move(chrome_user_context));
-    }
+    base::Value chrome_user_context(base::Value::Type::DICTIONARY);
+    chrome_user_context.SetKey("full_sync_enabled",
+                               base::Value(full_sync_enabled_));
+    request_dict.SetKey("chrome_user_context", std::move(chrome_user_context));
 
     request_dict.SetKey("context_token",
                         base::Value(request_details_.context_token));

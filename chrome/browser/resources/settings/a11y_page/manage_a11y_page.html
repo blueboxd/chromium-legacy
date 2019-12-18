@@ -12,6 +12,7 @@
 <link rel="import" href="../route.html">
 <link rel="import" href="../route_origin_behavior.html">
 <link rel="import" href="../settings_shared_css.html">
+<link rel="import" href="../chromeos/localized_link/localized_link.html">
 
 <dom-module id="settings-manage-a11y-page">
   <template>
@@ -37,14 +38,11 @@
       }
     </style>
     <div class="settings-box row first">
-      <span>
-        $i18n{a11yExplanation}
-        <a href="$i18nRaw{a11yLearnMoreUrl}" target="_blank">
-          $i18n{learnMore}
-        </a>
-      </span>
+      <settings-localized-link
+          localized-string="$i18n{a11yExplanation}"
+          link-url="$i18nRaw{a11yLearnMoreUrl}">
+      </settings-localized-link>
     </div>
-
     <h2>$i18n{textToSpeechHeading}</h2>
     <settings-toggle-button class="first"
         pref="{{prefs.settings.accessibility}}"

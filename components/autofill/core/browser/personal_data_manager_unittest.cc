@@ -7461,37 +7461,16 @@ TEST_F(PersonalDataManagerTest, GetAccountInfoForPaymentsServer) {
   active_info.email = kSyncTransportAccountEmail;
   sync_service_.SetAuthenticatedAccountInfo(active_info);
 
-  // The IdentityManager's AccountInfo should be returned by default.
+  // The Active Sync AccountInfo should be returned.
+  EXPECT_EQ(kSyncTransportAccountEmail,
+            personal_data_->GetAccountInfoForPaymentsServer().email);
+
+  // The Active Sync AccountInfo should still be returned even if
+  // kAutofillEnableAccountWalletStorage is disabled.
   {
     base::test::ScopedFeatureList scoped_features;
-    scoped_features.InitWithFeatures(
-        /*enabled_features=*/{},
-        /*disabled_features=*/{features::kAutofillEnableAccountWalletStorage,
-                               features::kAutofillGetPaymentsIdentityFromSync});
-
-    EXPECT_EQ(kPrimaryAccountEmail,
-              personal_data_->GetAccountInfoForPaymentsServer().email);
-  }
-
-  // The Active Sync AccountInfo should be returned if
-  // kAutofillEnableAccountWalletStorage is enabled.
-  {
-    base::test::ScopedFeatureList scoped_features;
-    scoped_features.InitWithFeatures(
-        /*enabled_features=*/{features::kAutofillEnableAccountWalletStorage},
-        /*disabled_features=*/{features::kAutofillGetPaymentsIdentityFromSync});
-
-    EXPECT_EQ(kSyncTransportAccountEmail,
-              personal_data_->GetAccountInfoForPaymentsServer().email);
-  }
-
-  // The Active Sync AccountInfo should be returned if
-  // kAutofillGetPaymentsIdentityFromSync is enabled.
-  {
-    base::test::ScopedFeatureList scoped_features;
-    scoped_features.InitWithFeatures(
-        /*enabled_features=*/{features::kAutofillGetPaymentsIdentityFromSync},
-        /*disabled_features=*/{features::kAutofillEnableAccountWalletStorage});
+    scoped_features.InitAndDisableFeature(
+        features::kAutofillEnableAccountWalletStorage);
 
     EXPECT_EQ(kSyncTransportAccountEmail,
               personal_data_->GetAccountInfoForPaymentsServer().email);
@@ -7793,14 +7772,12 @@ TEST_F(PersonalDataManagerTest, GetSyncSigninState) {
             personal_data_->GetSyncSigninState());
 
   // Check that the sync state is |SignedInAndSyncFeature| if the the sync
-  // feature is enabled even if the kAutofillEnableAccountWalletStorage and
-  // kAutofillGetPaymentsIdentityFromSync features are enabled.
+  // feature is enabled even if the kAutofillEnableAccountWalletStorage feature
+  // is enabled.
   {
     base::test::ScopedFeatureList scoped_features;
-    scoped_features.InitWithFeatures(
-        /*enabled_features=*/{features::kAutofillEnableAccountWalletStorage,
-                              features::kAutofillGetPaymentsIdentityFromSync},
-        /*disabled_features=*/{});
+    scoped_features.InitAndEnableFeature(
+        features::kAutofillEnableAccountWalletStorage);
     EXPECT_EQ(AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled,
               personal_data_->GetSyncSigninState());
   }

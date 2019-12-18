@@ -72,9 +72,10 @@ class ResultsProcessorUnitTests(unittest.TestCase):
           'bucket', 'path')
       processor.UploadArtifacts(test_result, 'bucket', 'run1')
       cloud_patch.assert_has_calls([
-          mock.call('bucket', 'run1/benchmark/story/logs', '/log.log'),
-          mock.call('bucket', 'run1/benchmark/story/trace.html', '/trace.html'),
-          mock.call('bucket', 'run1/benchmark/story/screenshot',
+          mock.call('bucket', 'run1/benchmark/story/retry_0/logs', '/log.log'),
+          mock.call('bucket', 'run1/benchmark/story/retry_0/trace.html',
+                    '/trace.html'),
+          mock.call('bucket', 'run1/benchmark/story/retry_0/screenshot',
                     '/screenshot.png'),
         ],
         any_order=True,

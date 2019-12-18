@@ -68,6 +68,8 @@ class CrostiniInstaller : public KeyedService,
   ~CrostiniInstaller() override;
   void Shutdown() override;
 
+  void ShowDialog(CrostiniUISurface ui_surface);
+
   // CrostiniInstallerUIDelegate:
   void Install(CrostiniManager::RestartOptions options,
                ProgressCallback progress_callback,

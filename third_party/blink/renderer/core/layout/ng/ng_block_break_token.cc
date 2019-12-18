@@ -21,6 +21,7 @@ static_assert(sizeof(NGBlockBreakToken) == sizeof(SameSizeAsNGBlockBreakToken),
 }  // namespace
 
 NGBlockBreakToken::NGBlockBreakToken(
+    PassKey key,
     NGLayoutInputNode node,
     LayoutUnit consumed_block_size,
     const NGBreakTokenVector& child_break_tokens,
@@ -37,7 +38,7 @@ NGBlockBreakToken::NGBlockBreakToken(
   }
 }
 
-NGBlockBreakToken::NGBlockBreakToken(NGLayoutInputNode node)
+NGBlockBreakToken::NGBlockBreakToken(PassKey key, NGLayoutInputNode node)
     : NGBreakToken(kBlockBreakToken, kUnfinished, node), num_children_(0) {}
 
 const NGInlineBreakToken* NGBlockBreakToken::InlineBreakTokenFor(

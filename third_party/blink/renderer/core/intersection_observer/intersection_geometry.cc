@@ -244,8 +244,6 @@ IntersectionGeometry::IntersectionGeometry(const RootGeometry& root_geometry,
   ComputeGeometry(root_geometry, root, target, thresholds);
 }
 
-IntersectionGeometry::~IntersectionGeometry() = default;
-
 void IntersectionGeometry::ComputeGeometry(const RootGeometry& root_geometry,
                                            const LayoutObject* root,
                                            const LayoutObject* target,

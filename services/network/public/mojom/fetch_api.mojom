@@ -24,6 +24,32 @@ enum RequestMode {
   // Add a new type here, then update enums.xml.
 };
 
+// Corresponds to Fetch request's "destination":
+// https://fetch.spec.whatwg.org/#concept-request-destination
+enum RequestDestination {
+  kEmpty,
+  kAudio,
+  kAudioWorklet,
+  kDocument,
+  kEmbed,
+  kFont,
+  kFrame,
+  kIframe,
+  kImage,
+  kManifest,
+  kObject,
+  kPaintWorklet,
+  kReport,
+  kScript,
+  kServiceWorker,
+  kSharedWorker,
+  kStyle,
+  kTrack,
+  kVideo,
+  kWorker,
+  kXslt,
+};
+
 // Corresponds to Fetch request's "redirect mode":
 // https://fetch.spec.whatwg.org/#concept-request-redirect-mode
 enum RedirectMode {

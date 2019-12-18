@@ -17,6 +17,7 @@ js_library("os_apps_page") {
     "../../android_apps_page:android_apps_subpage",
     "../../prefs:prefs_behavior",
     "../../settings_page:settings_animated_pages",
+    "../localized_link:localized_link",
     "app_management_page",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",

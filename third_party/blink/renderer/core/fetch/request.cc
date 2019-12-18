@@ -5,9 +5,9 @@
 #include "third_party/blink/renderer/core/fetch/request.h"
 
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/network/public/cpp/request_destination.h"
 #include "services/network/public/cpp/request_mode.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
-#include "third_party/blink/public/common/loader/request_destination.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
@@ -685,7 +685,7 @@ const KURL& Request::url() const {
 
 String Request::destination() const {
   // "The destination attribute’s getter must return request’s destination."
-  return GetRequestDestinationFromContext(request_->Context());
+  return network::RequestDestinationToString(request_->Destination());
 }
 
 String Request::referrer() const {
@@ -857,6 +857,7 @@ mojom::blink::FetchAPIRequestPtr Request::CreateFetchAPIRequest() const {
   fetch_api_request->integrity = request_->Integrity();
   fetch_api_request->is_history_navigation = request_->IsHistoryNavigation();
   fetch_api_request->request_context_type = request_->Context();
+  fetch_api_request->destination = request_->Destination();
 
   // Strip off the fragment part of URL. So far, all callers expect the fragment
   // to be excluded.
@@ -907,6 +908,13 @@ mojom::RequestContextType Request::GetRequestContextType() const {
     return mojom::RequestContextType::UNSPECIFIED;
   }
   return request_->Context();
+}
+
+network::mojom::RequestDestination Request::GetRequestDestination() const {
+  if (!request_) {
+    return network::mojom::RequestDestination::kEmpty;
+  }
+  return request_->Destination();
 }
 
 void Request::Trace(blink::Visitor* visitor) {

@@ -201,8 +201,6 @@ ThrottlingURLLoader::PriorityInfo::PriorityInfo(
     int32_t in_intra_priority_value)
     : priority(in_priority), intra_priority_value(in_intra_priority_value) {}
 
-ThrottlingURLLoader::PriorityInfo::~PriorityInfo() = default;
-
 // static
 std::unique_ptr<ThrottlingURLLoader> ThrottlingURLLoader::CreateLoaderAndStart(
     scoped_refptr<network::SharedURLLoaderFactory> factory,

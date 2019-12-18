@@ -57,7 +57,6 @@ class InspectorStyle final : public GarbageCollected<InspectorStyle> {
   InspectorStyle(CSSStyleDeclaration*,
                  CSSRuleSourceData*,
                  InspectorStyleSheetBase* parent_style_sheet);
-  ~InspectorStyle();
 
   CSSStyleDeclaration* CssStyle() { return style_.Get(); }
   std::unique_ptr<protocol::CSS::CSSStyle> BuildObjectForStyle();
@@ -122,13 +121,6 @@ class InspectorStyleSheetBase
 
 class InspectorStyleSheet : public InspectorStyleSheetBase {
  public:
-  static InspectorStyleSheet* Create(InspectorNetworkAgent*,
-                                     CSSStyleSheet* page_style_sheet,
-                                     const String& origin,
-                                     const String& document_url,
-                                     InspectorStyleSheetBase::Listener*,
-                                     InspectorResourceContainer*);
-
   InspectorStyleSheet(InspectorNetworkAgent*,
                       CSSStyleSheet* page_style_sheet,
                       const String& origin,

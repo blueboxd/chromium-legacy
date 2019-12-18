@@ -121,14 +121,13 @@ ResetPasswordUI::ResetPasswordUI(content::WebUI* web_ui)
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 html_source.release());
-
-  AddHandlerToRegistry(base::BindRepeating(
-      &ResetPasswordUI::BindResetPasswordHandler, base::Unretained(this)));
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(ResetPasswordUI)
 
 ResetPasswordUI::~ResetPasswordUI() {}
 
-void ResetPasswordUI::BindResetPasswordHandler(
+void ResetPasswordUI::BindInterface(
     mojo::PendingReceiver<mojom::ResetPasswordHandler> receiver) {
   ui_handler_ = std::make_unique<ResetPasswordHandlerImpl>(
       web_ui()->GetWebContents(), std::move(receiver));

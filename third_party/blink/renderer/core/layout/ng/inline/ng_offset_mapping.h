@@ -47,7 +47,6 @@ class CORE_EXPORT NGOffsetMappingUnit {
                       unsigned dom_end,
                       unsigned text_content_start,
                       unsigned text_content_end);
-  ~NGOffsetMappingUnit();
 
   // Returns associated node for this unit or null if this unit is associated
   // to generated content.

@@ -31,7 +31,7 @@ bool SnapFlingController::FilterEventForSnap(
 
 void SnapFlingController::ClearSnapFling() {
   if (state_ == State::kActive)
-    client_->ScrollEndForSnapFling();
+    client_->ScrollEndForSnapFling(false /* did_finish */);
 
   curve_.reset();
   state_ = State::kIdle;
@@ -50,7 +50,7 @@ bool SnapFlingController::HandleGestureScrollUpdate(
       SnapFlingCurve::EstimateDisplacement(info.delta);
 
   gfx::Vector2dF target_offset, start_offset;
-  if (!client_->GetSnapFlingInfoAndSetSnapTarget(
+  if (!client_->GetSnapFlingInfoAndSetAnimatingSnapTarget(
           ending_displacement, &start_offset, &target_offset)) {
     state_ = State::kIgnored;
     return false;
@@ -73,7 +73,7 @@ void SnapFlingController::Animate(base::TimeTicks time) {
     return;
 
   if (curve_->IsFinished()) {
-    client_->ScrollEndForSnapFling();
+    client_->ScrollEndForSnapFling(true /* did_finish */);
     state_ = State::kFinished;
     return;
   }

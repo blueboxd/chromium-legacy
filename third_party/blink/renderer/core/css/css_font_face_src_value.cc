@@ -137,7 +137,9 @@ void CSSFontFaceSrcValue::RestoreCachedResourceIfNeeded(
             fetched_->GetResource()->Options().content_security_policy_option);
   context->Fetcher()->EmulateLoadStartedForInspector(
       fetched_->GetResource(), KURL(resource_url),
-      mojom::RequestContextType::FONT, fetch_initiator_type_names::kCSS);
+      mojom::RequestContextType::FONT,
+      network::mojom::RequestDestination::kFont,
+      fetch_initiator_type_names::kCSS);
 }
 
 bool CSSFontFaceSrcValue::Equals(const CSSFontFaceSrcValue& other) const {

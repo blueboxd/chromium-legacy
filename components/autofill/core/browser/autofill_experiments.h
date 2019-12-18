@@ -53,9 +53,6 @@ bool IsAutofillNoLocalSaveOnUploadSuccessExperimentEnabled();
 // response of the option.
 bool OfferStoreUnmaskedCards(bool is_off_the_record);
 
-// Returns whether the account of the active signed-in user should be used.
-bool ShouldUseActiveSignedInAccount();
-
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_EXPERIMENTS_H_

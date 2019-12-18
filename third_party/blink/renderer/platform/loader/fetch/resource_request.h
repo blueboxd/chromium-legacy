@@ -270,6 +270,13 @@ class PLATFORM_EXPORT ResourceRequest final {
     request_context_ = context;
   }
 
+  network::mojom::RequestDestination GetRequestDestination() const {
+    return destination_;
+  }
+  void SetRequestDestination(network::mojom::RequestDestination destination) {
+    destination_ = destination;
+  }
+
   network::mojom::RequestMode GetMode() const { return mode_; }
   void SetMode(network::mojom::RequestMode mode) { mode_ = mode; }
 
@@ -483,6 +490,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   WebURLRequest::PreviewsState previews_state_;
   scoped_refptr<SharableExtraData> sharable_extra_data_;
   mojom::RequestContextType request_context_;
+  network::mojom::RequestDestination destination_;
   network::mojom::RequestMode mode_;
   mojom::FetchImportanceMode fetch_importance_mode_;
   network::mojom::CredentialsMode credentials_mode_;

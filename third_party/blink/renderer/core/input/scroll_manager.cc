@@ -778,7 +778,7 @@ bool ScrollManager::SnapAtGestureScrollEnd(
       std::move(on_finish));
 }
 
-bool ScrollManager::GetSnapFlingInfoAndSetSnapTarget(
+bool ScrollManager::GetSnapFlingInfoAndSetAnimatingSnapTarget(
     const gfx::Vector2dF& natural_displacement,
     gfx::Vector2dF* out_initial_position,
     gfx::Vector2dF* out_target_position) const {
@@ -829,7 +829,7 @@ gfx::Vector2dF ScrollManager::ScrollByForSnapFling(
   return gfx::Vector2dF(end_position.X(), end_position.Y());
 }
 
-void ScrollManager::ScrollEndForSnapFling() {
+void ScrollManager::ScrollEndForSnapFling(bool did_finish) {
   if (RuntimeEnabledFeatures::OverscrollCustomizationEnabled()) {
     if (Node* scroll_end_target = GetScrollEventTarget()) {
       scroll_end_target->GetDocument().EnqueueScrollEndEventForNode(

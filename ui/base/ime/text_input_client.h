@@ -217,6 +217,10 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
 #endif
 
 #if defined(OS_WIN)
+  // Returns false if the EditContext bounds are not available, else it returns
+  // true with the control and selection bounds for the active EditContext.
+  virtual bool GetEditContextLayoutBounds(gfx::Rect* control_bounds,
+                                          gfx::Rect* selection_bounds) = 0;
   // Notifies accessibility about active composition. This API is currently
   // only defined for TSF which is available only on Windows
   // https://docs.microsoft.com/en-us/windows/desktop/api/UIAutomationCore/

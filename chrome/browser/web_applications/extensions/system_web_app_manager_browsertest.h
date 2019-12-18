@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/web_applications/test/test_system_web_app_installation.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
@@ -29,8 +30,6 @@ class Extension;
 
 namespace web_app {
 
-class TestSystemWebAppManager;
-class TestWebUIControllerFactory;
 enum class SystemAppType;
 
 class SystemWebAppManagerBrowserTest : public InProcessBrowserTest {
@@ -52,6 +51,9 @@ class SystemWebAppManagerBrowserTest : public InProcessBrowserTest {
   // TestSystemWebAppManager if initialized with |install_mock| true.
   SystemWebAppManager& GetManager();
 
+  // Return SystemAppType of mocked app, only valid if |install_mock| is true.
+  SystemAppType GetMockAppType();
+
   void WaitForTestSystemAppInstall();
 
   // Wait for system apps to install, then launch one. Returns the browser that
@@ -69,9 +71,7 @@ class SystemWebAppManagerBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<KeyedService> CreateWebAppProvider(Profile* profile);
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::unique_ptr<TestWebUIControllerFactory> factory_;
-  std::unique_ptr<TestWebAppProviderCreator> test_web_app_provider_creator_;
-  TestSystemWebAppManager* test_system_web_app_manager_ = nullptr;
+  std::unique_ptr<TestSystemWebAppInstallation> maybe_installation_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemWebAppManagerBrowserTest);
 };

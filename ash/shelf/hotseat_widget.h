@@ -61,7 +61,7 @@ class ASH_EXPORT HotseatWidget : public views::Widget,
   void UpdateOpaqueBackground();
 
   // Updates this widget's layout according to current conditions.
-  void UpdateLayout();
+  void UpdateLayout(bool animate);
 
   gfx::Size GetOpaqueBackgroundSize() const;
 

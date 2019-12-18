@@ -21,10 +21,6 @@ class MODULES_EXPORT PushManager final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PushManager* Create(ServiceWorkerRegistration* registration) {
-    return MakeGarbageCollected<PushManager>(registration);
-  }
-
   explicit PushManager(ServiceWorkerRegistration* registration);
 
   // Web-exposed property:

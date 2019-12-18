@@ -4,6 +4,8 @@
 
 #include "chrome/services/app_service/public/cpp/instance_update.h"
 #include "chrome/services/app_service/public/cpp/instance.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -98,6 +100,9 @@ class InstanceUpdateTest : public testing::Test {
   bool expect_state_changed_;
   base::Time expect_last_updated_time_;
   bool expect_last_updated_time_changed_;
+
+  content::BrowserTaskEnvironment task_environment_;
+  TestingProfile profile_;
 };
 
 TEST_F(InstanceUpdateTest, StateIsNonNull) {
@@ -185,4 +190,26 @@ TEST_F(InstanceUpdateTest, BothLaunchAndStateIsUpdated) {
   delta->SetLaunchId("bbb");
   delta->UpdateState(apps::InstanceState::kRunning, base::Time::Now());
   EXPECT_FALSE(apps::InstanceUpdate::Equals(state.get(), delta.get()));
+}
+
+TEST_F(InstanceUpdateTest, BrowserContextIsUpdated) {
+  aura::Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  std::unique_ptr<apps::Instance> state =
+      std::make_unique<apps::Instance>(app_id, &window);
+  std::unique_ptr<apps::Instance> delta =
+      std::make_unique<apps::Instance>(app_id, &window);
+  delta->SetBrowserContext(&profile_);
+  EXPECT_FALSE(apps::InstanceUpdate::Equals(state.get(), delta.get()));
+}
+
+TEST_F(InstanceUpdateTest, BrowserContextIsNotUpdated) {
+  aura::Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  std::unique_ptr<apps::Instance> state =
+      std::make_unique<apps::Instance>(app_id, &window);
+  state->SetBrowserContext(&profile_);
+  std::unique_ptr<apps::Instance> delta =
+      std::make_unique<apps::Instance>(app_id, &window);
+  EXPECT_TRUE(apps::InstanceUpdate::Equals(state.get(), delta.get()));
 }

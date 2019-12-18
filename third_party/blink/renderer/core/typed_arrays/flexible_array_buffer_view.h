@@ -46,11 +46,6 @@ class CORE_EXPORT FlexibleArrayBufferView {
     return IsFull() ? full_->BaseAddressMaybeShared() : small_data_;
   }
 
-  unsigned ByteOffset() const {
-    DCHECK(!IsEmpty());
-    return IsFull() ? full_->deprecatedByteOffsetAsUnsigned() : 0;
-  }
-
   size_t ByteLengthAsSizeT() const {
     DCHECK(!IsEmpty());
     return IsFull() ? full_->byteLengthAsSizeT() : small_length_;

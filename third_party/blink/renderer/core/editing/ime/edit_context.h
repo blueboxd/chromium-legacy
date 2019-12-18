@@ -29,7 +29,7 @@ class InputMethodController;
 // The goal of the EditContext is to expose the lower-level APIs provided by
 // modern operating systems to facilitate various input modalities to unlock
 // advanced editing scenarios. For more information please refer
-// https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/master/EditContext/explainer.md
+// https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/master/EditContext/explainer.md.
 
 class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
                                       public ActiveScriptWrappable<EditContext>,
@@ -44,13 +44,13 @@ class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
                              const EditContextInit* dict);
   ~EditContext() override;
 
-  // Event listeners for an EditContext
+  // Event listeners for an EditContext.
   DEFINE_ATTRIBUTE_EVENT_LISTENER(textupdate, kTextupdate)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(textformatupdate, kTextformatupdate)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(compositionstart, kCompositionstart)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(compositionend, kCompositionend)
 
-  // Public APIs for an EditContext (called from JS)
+  // Public APIs for an EditContext (called from JS).
 
   // When focus is called on an EditContext, it sets the active EditContext in
   // the document so it can use the text input state to send info about the
@@ -87,51 +87,51 @@ class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
   // updated. However, in general this should be avoided during the firing of
   // textupdate as it will result in a canceled composition.
   // Also, after calling this API, update the selection by calling
-  // updateSelection
+  // updateSelection.
   void updateText(uint32_t start,
                   uint32_t end,
                   const String& new_text,
                   ExceptionState& exception_state);
 
-  // Returns the text of the EditContext
+  // Returns the text of the EditContext.
   String text() const;
 
-  // Returns the current selectionStart of the EditContext
+  // Returns the current selectionStart of the EditContext.
   uint32_t selectionStart() const;
 
-  // Returns the current selectionEnd of the EditContext
+  // Returns the current selectionEnd of the EditContext.
   uint32_t selectionEnd() const;
 
-  // Returns the InputMode of the EditContext
+  // Returns the InputMode of the EditContext.
   String inputMode() const;
 
-  // Returns the EnterKeyHint of the EditContext
+  // Returns the EnterKeyHint of the EditContext.
   String enterKeyHint() const;
 
-  // Returns the InputPanelPolicy of the EditContext
+  // Returns the InputPanelPolicy of the EditContext.
   String inputPanelPolicy() const;
 
-  // Sets the text of the EditContext which is used to display suggestions
+  // Sets the text of the EditContext which is used to display suggestions.
   void setText(const String& text);
 
-  // Sets the selectionStart of the EditContext
+  // Sets the selectionStart of the EditContext.
   void setSelectionStart(uint32_t selection_start,
                          ExceptionState& exception_state);
 
-  // Sets the selectionEnd of the EditContext
+  // Sets the selectionEnd of the EditContext.
   void setSelectionEnd(uint32_t selection_end, ExceptionState& exception_state);
 
   // Sets an input mode defined in EditContextInputMode.
-  // This relates to the inputMode attribute defined for input element
-  // https://html.spec.whatwg.org/multipage/interaction.html#input-modalities:-the-inputmode-attribute
+  // This relates to the inputMode attribute defined for input element:
+  // https://html.spec.whatwg.org/multipage/interaction.html#input-modalities:-the-inputmode-attribute.
   void setInputMode(const String& input_mode);
 
   // Sets a specific action related to Enter key defined in
-  // https://html.spec.whatwg.org/multipage/interaction.html#input-modalities:-the-enterkeyhint-attribute
+  // https://html.spec.whatwg.org/multipage/interaction.html#input-modalities:-the-enterkeyhint-attribute.
   void setEnterKeyHint(const String& enter_key_hint);
 
-  // Sets a policy that determines whether the VK should be raised or dismissed
-  // Auto raises the VK automatically, Manual suppresses it
+  // Sets a policy that determines whether the VK should be raised or dismissed.
+  // Auto raises the VK automatically, Manual suppresses it.
   void setInputPanelPolicy(const String& input_policy);
 
   // EventTarget overrides
@@ -163,9 +163,10 @@ class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
   bool GetCompositionCharacterBounds(WebVector<WebRect>& bounds) override;
   WebRange GetSelectionOffsets() const override;
 
-  // Returns the control and selection bounds for an EditContext
-  void GetLayoutBounds(WebRect& web_control_bounds,
-                       WebRect& web_selection_bounds) override;
+  // Populate |control_bounds| and |selection_bounds| with the bounds fetched
+  // from the active EditContext.
+  void GetLayoutBounds(WebRect* web_control_bounds,
+                       WebRect* web_selection_bounds) override;
 
   // Sets the composition range from the already existing text
   // This is used for reconversion scenarios in JPN IME.
@@ -174,28 +175,29 @@ class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
       int composition_end,
       const WebVector<WebImeTextSpan>& ime_text_spans);
 
-  bool IsEditContextActive() const override { return true; }
+  bool IsInputPanelPolicyManual() const override;
+  bool IsEditContextActive() const override;
   // Called from WebLocalFrame for English compositions
   // such as shape-writing, handwriting panels etc.
   // Extends the current selection range and removes the
-  // characters from the buffer
+  // characters from the buffer.
   void ExtendSelectionAndDelete(int before, int after);
 
  private:
-  // Returns the enter key action attribute set in the EditContext
+  // Returns the enter key action attribute set in the EditContext.
   ui::TextInputAction GetEditContextEnterKeyHint() const;
 
-  // Returns the inputMode of the EditContext from enterKeyHint property
+  // Returns the inputMode of the EditContext from enterKeyHint property.
   WebTextInputMode GetInputModeOfEditContext() const;
 
   InputMethodController& GetInputMethodController() const;
 
-  // Events fired to JS
-  // Fires compositionstart event to JS whenever user starts a composition
+  // Events fired to JS.
+  // Fires compositionstart event to JS whenever user starts a composition.
   bool DispatchCompositionStartEvent(const String& text);
 
   // Fires compositionend event to JS whenever composition is terminated by the
-  // user
+  // user.
   void DispatchCompositionEndEvent(const String& text);
 
   // The textformatupdate event is fired when the input method desires a
@@ -203,7 +205,7 @@ class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
   // properties that correspond with the properties that are exposed on
   // TextFormatUpdateEvent (e.g. backgroundColor, textDecoration, etc.). The
   // consumer of the EditContext should update their view accordingly to provide
-  // the user with visual feedback as prescribed by the software keyboard
+  // the user with visual feedback as prescribed by the software keyboard.
   void DispatchTextFormatEvent(const WebVector<WebImeTextSpan>& ime_text_spans);
 
   // The textupdate event will be fired on the EditContext when user input has
@@ -227,7 +229,7 @@ class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
                                uint32_t new_selection_start,
                                uint32_t new_selection_end);
 
-  // EditContext member variables
+  // EditContext member variables.
   String text_;
   uint32_t selection_start_ = 0;
   uint32_t selection_end_ = 0;

@@ -362,6 +362,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   bool has_user_activation_;
 
+  mojom::RequestDestination request_destination_ =
+      mojom::RequestDestination::kEmpty;
+
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client_;
 
   base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder_;

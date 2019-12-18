@@ -62,7 +62,6 @@ class CORE_EXPORT HitTestLocation {
 
   HitTestLocation(const HitTestLocation&, const PhysicalOffset& offset);
   HitTestLocation(const HitTestLocation&);
-  ~HitTestLocation();
   HitTestLocation& operator=(const HitTestLocation&);
 
   const PhysicalOffset& Point() const { return point_; }

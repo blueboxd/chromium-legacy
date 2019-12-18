@@ -146,6 +146,7 @@ class InstanceRecursiveObserver : public apps::InstanceRegistry::Observer {
     EXPECT_EQ(outer.LaunchId(), inner.LaunchId());
     EXPECT_EQ(outer.State(), inner.State());
     EXPECT_EQ(outer.LastUpdatedTime(), inner.LastUpdatedTime());
+    EXPECT_EQ(outer.BrowserContext(), inner.BrowserContext());
   }
 
   apps::InstanceRegistry* instance_registry_;

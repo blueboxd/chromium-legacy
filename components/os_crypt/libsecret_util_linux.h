@@ -18,6 +18,10 @@ class LibsecretLoader {
  public:
   static COMPONENT_EXPORT(OS_CRYPT) decltype(&::secret_item_get_attributes)
       secret_item_get_attributes;
+  static COMPONENT_EXPORT(OS_CRYPT) decltype(&::secret_item_get_created)
+      secret_item_get_created;
+  static COMPONENT_EXPORT(OS_CRYPT) decltype(&::secret_item_get_modified)
+      secret_item_get_modified;
   static COMPONENT_EXPORT(OS_CRYPT) decltype(&::secret_item_get_secret)
       secret_item_get_secret;
   static COMPONENT_EXPORT(OS_CRYPT) decltype(&::secret_item_load_secret_sync)

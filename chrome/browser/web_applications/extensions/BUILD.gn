@@ -92,7 +92,6 @@ source_set("browser_tests") {
   deps = [
     ":extensions",
     "//base/test:test_support",
-    "//chrome/app/theme:chrome_unscaled_resources_grit",
     "//chrome/browser",
     "//chrome/browser/ui",
     "//chrome/browser/web_applications",

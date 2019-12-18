@@ -132,6 +132,7 @@ struct GPU_EXPORT Capabilities {
   bool swap_buffers_with_bounds = false;
   bool commit_overlay_planes = false;
   bool egl_image_external = false;
+  bool egl_image_external_essl3 = false;
   bool texture_format_astc = false;
   bool texture_format_atc = false;
   bool texture_format_bgra8888 = false;

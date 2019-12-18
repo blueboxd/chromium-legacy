@@ -115,8 +115,7 @@
         <iron-icon icon="settings:assignment"></iron-icon>
         $i18n{autofillPageTitle}
       </a>
-      <a href="/privacy" hidden="[[shouldHidePrivacy_(
-          privacySettingsRedesignEnabled_, pageVisibility.privacy)]]">
+      <a href="/privacy" hidden="[[!pageVisibility.privacy]]">
         <iron-icon icon="cr:security"></iron-icon>
         $i18n{privacyPageTitle}
       </a>
@@ -152,10 +151,6 @@
           hidden="[[!pageVisibility.advancedSettings]]">
         <iron-selector id="subMenu" selectable="a" attr-for-selected="href"
             role="navigation" on-click="onLinkClick_">
-          <a href="/privacy" hidden="[[privacySettingsRedesignEnabled_]]">
-            <iron-icon icon="cr:security"></iron-icon>
-            $i18n{privacyPageTitle}
-          </a>
           <a href="/languages">
             <iron-icon icon="settings:language"></iron-icon>
             $i18n{languagesPageTitle}

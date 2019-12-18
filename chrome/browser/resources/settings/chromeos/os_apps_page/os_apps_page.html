@@ -14,6 +14,7 @@
 <link rel="import" href="../../settings_page/settings_subpage.html">
 <link rel="import" href="../../settings_shared_css.html">
 <link rel="import" href="../../settings_shared_css.html">
+<link rel="import" href="../localized_link/localized_link.html">
 <link rel="import" href="app_management_page/app_management_page.html">
 <link rel="import" href="app_management_page/app_detail_view.html">
 <link rel="import" href="app_management_page/uninstall_button.html">
@@ -46,8 +47,10 @@
               on-click="onAndroidAppsSubpageTap_">
             <div class="start settings-box-text">
               $i18n{androidAppsPageLabel}
-              <div class="secondary" id="secondaryText"
-                  inner-h-t-m-l="[[i18nAdvanced('androidAppsSubtext')]]">
+              <div class="secondary" id="secondaryText">
+                <settings-localized-link
+                    localized-string="[[i18nAdvanced('androidAppsSubtext')]]">
+                </settings-localized-link>
               </div>
             </div>
             <cr-policy-pref-indicator pref="[[prefs.arc.enabled]]"

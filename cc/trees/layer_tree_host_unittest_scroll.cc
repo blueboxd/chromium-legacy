@@ -1198,6 +1198,26 @@ class LayerTreeHostScrollTestImplOnlyScrollSnap
     PostSetNeedsCommitToMainThread();
   }
 
+  // The animations states are updated before this call.
+  void WillSendBeginMainFrameOnThread(LayerTreeHostImpl* host_impl) override {
+    if (host_impl->active_tree()->source_frame_number() < 0)
+      return;
+
+    // Perform a scroll such that a snap target is found. This will get pushed
+    // to the main thread on the next BeginMainFrame.
+    if (host_impl->active_tree()->source_frame_number() == 0) {
+      LayerImpl* scroller_impl =
+          host_impl->active_tree()->LayerById(scroller_->id());
+
+      DoGestureScroll(host_impl, scroller_, impl_thread_scroll_);
+
+      EXPECT_TRUE(host_impl->IsAnimatingForSnap());
+      EXPECT_VECTOR_EQ(impl_thread_scroll_, ScrollDelta(scroller_impl));
+    } else {
+      snap_animation_finished_ = !host_impl->IsAnimatingForSnap();
+    }
+  }
+
   void UpdateLayerTreeHost() override {
     ScrollNode* scroller_node =
         layer_tree_host()->property_trees()->scroll_tree.Node(
@@ -1208,37 +1228,20 @@ class LayerTreeHostScrollTestImplOnlyScrollSnap
       // On the first BeginMainFrame scrolling has not happened yet.
       // Check that the scroll offset and scroll snap targets are at the initial
       // values on the main thread.
-      EXPECT_EQ(snap_target_ids, TargetSnapAreaElementIds());
       EXPECT_VECTOR_EQ(initial_scroll_, scroller_->CurrentScrollOffset());
-    } else {
+    }
+    if (snap_animation_finished_) {
       // After a snap target is set on the impl thread, the snap targets should
       // be pushed to the main thread.
       EXPECT_EQ(snap_target_ids,
                 TargetSnapAreaElementIds(snap_area_id_, snap_area_id_));
       EndTest();
+    } else {
+      EXPECT_EQ(snap_target_ids, TargetSnapAreaElementIds());
     }
   }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
-    // Perform a scroll such that a snap target is found. This will get pushed
-    // to the main thread on the next BeginMainFrame.
-    if (host_impl->active_tree()->source_frame_number() == 0) {
-      LayerImpl* scroller_impl =
-          host_impl->active_tree()->LayerById(scroller_->id());
-
-      DoGestureScroll(host_impl, scroller_, impl_thread_scroll_);
-
-      EXPECT_TRUE(host_impl->is_animating_for_snap_for_testing());
-      EXPECT_VECTOR_EQ(impl_thread_scroll_, ScrollDelta(scroller_impl));
-
-      ScrollNode* scroller_node =
-          host_impl->active_tree()->property_trees()->scroll_tree.Node(
-              scroller_->scroll_tree_index());
-      auto snap_target_ids = scroller_node->snap_container_data.value()
-                                 .GetTargetSnapAreaElementIds();
-      EXPECT_EQ(snap_target_ids,
-                TargetSnapAreaElementIds(snap_area_id_, snap_area_id_));
-    }
     PostSetNeedsCommitToMainThread();
   }
 
@@ -1251,6 +1254,8 @@ class LayerTreeHostScrollTestImplOnlyScrollSnap
   gfx::Vector2dF impl_thread_scroll_;
 
   ElementId snap_area_id_;
+
+  bool snap_animation_finished_ = false;
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostScrollTestImplOnlyScrollSnap);

@@ -729,8 +729,6 @@ InspectorStyle::InspectorStyle(CSSStyleDeclaration* style,
   DCHECK(style_);
 }
 
-InspectorStyle::~InspectorStyle() = default;
-
 std::unique_ptr<protocol::CSS::CSSStyle> InspectorStyle::BuildObjectForStyle() {
   std::unique_ptr<protocol::CSS::CSSStyle> result = StyleWithProperties();
   if (source_data_) {
@@ -945,18 +943,6 @@ bool InspectorStyleSheetBase::LineNumberAndColumnToOffset(
                         OrdinalNumber::FromZeroBasedInt(column_number));
   *offset = position.ToOffset(*endings).ZeroBasedInt();
   return true;
-}
-
-InspectorStyleSheet* InspectorStyleSheet::Create(
-    InspectorNetworkAgent* network_agent,
-    CSSStyleSheet* page_style_sheet,
-    const String& origin,
-    const String& document_url,
-    InspectorStyleSheetBase::Listener* listener,
-    InspectorResourceContainer* resource_container) {
-  return MakeGarbageCollected<InspectorStyleSheet>(
-      network_agent, page_style_sheet, origin, document_url, listener,
-      resource_container);
 }
 
 InspectorStyleSheet::InspectorStyleSheet(

@@ -40,7 +40,6 @@ class WebGLExtensionScopedContext final {
 
  public:
   explicit WebGLExtensionScopedContext(WebGLExtension*);
-  ~WebGLExtensionScopedContext();
 
   bool IsLost() const { return !context_; }
   WebGLRenderingContextBase* Context() const { return context_.Get(); }

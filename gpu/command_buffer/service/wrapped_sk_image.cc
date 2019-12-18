@@ -41,6 +41,9 @@ namespace {
 class WrappedSkImage : public ClearTrackingSharedImageBacking {
  public:
   ~WrappedSkImage() override {
+    promise_texture_.reset();
+    gpu::DeleteSkImage(context_state_, std::move(image_));
+
     DCHECK(context_state_->context_lost() ||
            context_state_->IsCurrent(nullptr));
     if (!context_state_->context_lost())
@@ -50,11 +53,6 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
   // SharedImageBacking implementation.
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override {
     return false;
-  }
-
-  void Destroy() override {
-    promise_texture_.reset();
-    gpu::DeleteSkImage(context_state_, std::move(image_));
   }
 
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override {}

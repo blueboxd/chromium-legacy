@@ -19,7 +19,6 @@ class CORE_EXPORT TextIteratorBehavior final {
 
   TextIteratorBehavior(const TextIteratorBehavior& other);
   TextIteratorBehavior();
-  ~TextIteratorBehavior();
 
   bool operator==(const TextIteratorBehavior& other) const;
   bool operator!=(const TextIteratorBehavior& other) const;

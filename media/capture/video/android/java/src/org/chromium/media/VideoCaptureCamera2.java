@@ -1381,10 +1381,11 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
         boolean isInfrared = false;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            final int infoColor = cameraCharacteristics.get(
+            final Integer infoColor = cameraCharacteristics.get(
                     CameraCharacteristics.SENSOR_INFO_COLOR_FILTER_ARRANGEMENT);
-            isInfrared =
-                    (infoColor == CameraCharacteristics.SENSOR_INFO_COLOR_FILTER_ARRANGEMENT_NIR);
+            isInfrared = infoColor != null
+                    && infoColor.equals(
+                            CameraCharacteristics.SENSOR_INFO_COLOR_FILTER_ARRANGEMENT_NIR);
         }
         return "camera2 " + id + ", facing "
                 + ((facing == CameraCharacteristics.LENS_FACING_FRONT) ? "front" : "back")

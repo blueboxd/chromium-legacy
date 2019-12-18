@@ -57,14 +57,16 @@ class ModulatorImplBase : public Modulator {
 
   void FetchTree(const KURL&,
                  ResourceFetcher* fetch_client_settings_object_fetcher,
-                 mojom::RequestContextType destination,
+                 mojom::RequestContextType context_type,
+                 network::mojom::RequestDestination destination,
                  const ScriptFetchOptions&,
                  ModuleScriptCustomFetchType,
                  ModuleTreeClient*) override;
   void FetchDescendantsForInlineScript(
       ModuleScript*,
       ResourceFetcher* fetch_client_settings_object_fetcher,
-      mojom::RequestContextType destination,
+      mojom::RequestContextType context_type,
+      network::mojom::RequestDestination destination,
       ModuleTreeClient*) override;
   void FetchSingle(const ModuleScriptFetchRequest&,
                    ResourceFetcher* fetch_client_settings_object_fetcher,

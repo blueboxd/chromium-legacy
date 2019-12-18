@@ -69,6 +69,10 @@ source_set("web_applications") {
       "//components/arc:arc_base",
       "//components/arc/mojom",
     ]
+
+    if (!is_official_build) {
+      deps += [ "//chromeos/components/sample_system_web_app_ui" ]
+    }
   }
 
   public_deps = [
@@ -99,6 +103,8 @@ source_set("web_applications_test_support") {
     "test/test_pending_app_manager.h",
     "test/test_system_web_app_manager.cc",
     "test/test_system_web_app_manager.h",
+    "test/test_system_web_app_web_ui_controller_factory.cc",
+    "test/test_system_web_app_web_ui_controller_factory.h",
     "test/test_web_app_database_factory.cc",
     "test/test_web_app_database_factory.h",
     "test/test_web_app_registry_controller.cc",
@@ -120,6 +126,7 @@ source_set("web_applications_test_support") {
     ":web_app_test_group",
     ":web_applications",
     "//base/test:test_support",
+    "//chrome/app/theme:chrome_unscaled_resources_grit",
     "//chrome/browser",
     "//chrome/browser/web_applications/components",
     "//components/crx_file:crx_file",
@@ -217,6 +224,8 @@ source_set("web_applications_on_extensions_test_support") {
   testonly = true
 
   sources = [
+    "test/test_system_web_app_installation.cc",
+    "test/test_system_web_app_installation.h",
     "test/test_web_app_provider.cc",
     "test/test_web_app_provider.h",
   ]

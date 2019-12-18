@@ -275,6 +275,8 @@ blink_core_sources("layout") {
     "ng/custom/css_layout_definition.h",
     "ng/custom/css_layout_worklet.cc",
     "ng/custom/css_layout_worklet.h",
+    "ng/custom/custom_intrinsic_sizes.cc",
+    "ng/custom/custom_intrinsic_sizes.h",
     "ng/custom/custom_layout_child.cc",
     "ng/custom/custom_layout_child.h",
     "ng/custom/custom_layout_constraints.cc",

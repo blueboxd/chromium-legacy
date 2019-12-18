@@ -36,6 +36,7 @@ js_library("os_people_page") {
     "../../:page_visibility",
     "../../:route",
     "../../settings_page:settings_animated_pages",
+    "../localized_link:localized_link",
     "//chrome/browser/resources/settings/people_page:lock_screen",
     "//chrome/browser/resources/settings/people_page:lock_state_behavior",
     "//chrome/browser/resources/settings/people_page:profile_info_browser_proxy",

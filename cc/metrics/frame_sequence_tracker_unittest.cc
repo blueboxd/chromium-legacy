@@ -122,7 +122,7 @@ class FrameSequenceTrackerTest : public testing::Test {
     // Test that there is no main thread frames expected.
     tracker_->impl_throughput().frames_expected = 100u;
     tracker_->impl_throughput().frames_produced = 85u;
-    tracker_->ReportMetrics();
+    tracker_->ReportMetricsForTesting();
     histogram_tester.ExpectTotalCount(
         "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 1u);
     histogram_tester.ExpectTotalCount(
@@ -135,7 +135,7 @@ class FrameSequenceTrackerTest : public testing::Test {
     tracker_->impl_throughput().frames_produced = 85u;
     tracker_->main_throughput().frames_expected = 150u;
     tracker_->main_throughput().frames_produced = 25u;
-    tracker_->ReportMetrics();
+    tracker_->ReportMetricsForTesting();
     histogram_tester.ExpectTotalCount(
         "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 2u);
     histogram_tester.ExpectTotalCount(
@@ -148,7 +148,7 @@ class FrameSequenceTrackerTest : public testing::Test {
     tracker_->main_throughput().frames_produced = 1u;
     tracker_->impl_throughput().frames_expected = 2u;
     tracker_->impl_throughput().frames_produced = 1u;
-    tracker_->ReportMetrics();
+    tracker_->ReportMetricsForTesting();
     histogram_tester.ExpectTotalCount(
         "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 2u);
     histogram_tester.ExpectTotalCount(
@@ -161,7 +161,7 @@ class FrameSequenceTrackerTest : public testing::Test {
     tracker_->impl_throughput().frames_produced = 118u;
     tracker_->main_throughput().frames_expected = 120u;
     tracker_->main_throughput().frames_produced = 118u;
-    tracker_->ReportMetrics();
+    tracker_->ReportMetricsForTesting();
     histogram_tester.ExpectTotalCount(
         "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 3u);
     histogram_tester.ExpectTotalCount(
@@ -170,7 +170,7 @@ class FrameSequenceTrackerTest : public testing::Test {
         "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 3u);
   }
 
-  void ReportMetrics() { tracker_->ReportMetrics(); }
+  void ReportMetrics() { tracker_->ReportMetricsForTesting(); }
 
   base::TimeDelta TimeDeltaToReort() const {
     return tracker_->time_delta_to_report_;

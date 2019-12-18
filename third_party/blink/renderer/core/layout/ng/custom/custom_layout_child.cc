@@ -23,6 +23,25 @@ CustomLayoutChild::CustomLayoutChild(const CSSLayoutDefinition& definition,
           definition.ChildNativeInvalidationProperties(),
           definition.ChildCustomInvalidationProperties())) {}
 
+ScriptPromise CustomLayoutChild::intrinsicSizes(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
+  // A layout child may be invalid if it has been removed from the tree (it is
+  // possible for a web developer to hold onto a LayoutChild object after its
+  // underlying LayoutObject has been destroyed).
+  if (!node_ || !token_->IsValid()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
+                                           "The LayoutChild is not valid."));
+  }
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  CustomLayoutScope::Current()->Queue()->emplace_back(
+      this, token_, resolver, CustomLayoutWorkTask::TaskType::kIntrinsicSizes);
+  return resolver->Promise();
+}
+
 ScriptPromise CustomLayoutChild::layoutNextFragment(
     ScriptState* script_state,
     const CustomLayoutConstraintsOptions* options,
@@ -54,7 +73,8 @@ ScriptPromise CustomLayoutChild::layoutNextFragment(
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   CustomLayoutScope::Current()->Queue()->emplace_back(
-      this, token_, resolver, options, std::move(constraint_data));
+      this, token_, resolver, options, std::move(constraint_data),
+      CustomLayoutWorkTask::TaskType::kLayoutFragment);
   return resolver->Promise();
 }
 

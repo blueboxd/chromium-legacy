@@ -134,8 +134,6 @@ TEST_P(SharedImageBackingFactoryD3DTestSwapChain, InvalidFormat) {
         color_space, usage);
     EXPECT_TRUE(backings.front_buffer);
     EXPECT_TRUE(backings.back_buffer);
-    backings.front_buffer->Destroy();
-    backings.back_buffer->Destroy();
   }
   {
     auto valid_format = viz::BGRA_8888;
@@ -144,8 +142,6 @@ TEST_P(SharedImageBackingFactoryD3DTestSwapChain, InvalidFormat) {
         color_space, usage);
     EXPECT_TRUE(backings.front_buffer);
     EXPECT_TRUE(backings.back_buffer);
-    backings.front_buffer->Destroy();
-    backings.back_buffer->Destroy();
   }
   {
     auto valid_format = viz::RGBA_F16;
@@ -154,8 +150,6 @@ TEST_P(SharedImageBackingFactoryD3DTestSwapChain, InvalidFormat) {
         color_space, usage);
     EXPECT_TRUE(backings.front_buffer);
     EXPECT_TRUE(backings.back_buffer);
-    backings.front_buffer->Destroy();
-    backings.back_buffer->Destroy();
   }
   {
     auto invalid_format = viz::RGBA_4444;

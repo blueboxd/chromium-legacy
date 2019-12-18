@@ -201,8 +201,6 @@ void RadioButtonGroup::Trace(Visitor* visitor) {
 // RadioButtonGroup in the header.
 RadioButtonGroupScope::RadioButtonGroupScope() = default;
 
-RadioButtonGroupScope::~RadioButtonGroupScope() = default;
-
 void RadioButtonGroupScope::AddButton(HTMLInputElement* element) {
   DCHECK_EQ(element->type(), input_type_names::kRadio);
   if (element->GetName().IsEmpty())

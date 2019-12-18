@@ -50,7 +50,6 @@ class DocumentStyleSheetCollector {
   DocumentStyleSheetCollector(StyleSheetCollection*,
                               HeapVector<Member<StyleSheet>>*,
                               HeapHashSet<Member<Document>>*);
-  ~DocumentStyleSheetCollector();
 
   void AppendActiveStyleSheet(const ActiveStyleSheet&);
   void AppendSheetForList(StyleSheet*);

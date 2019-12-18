@@ -8,6 +8,7 @@
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../chromeos/localized_link/localized_link.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="cups_add_printer_dialog_elements.html">
 <link rel="import" href="cups_printer_dialog_util.html">
@@ -165,11 +166,11 @@
       </div>
       <div slot="dialog-body">
         <div class="subtext" id="makeModelTextInfo">
-          <span>[[getManufacturerAndModelSubtext_(activePrinter.*)]]
-          </span>
-          <a href="$i18n{printingCUPSPrintLearnMoreUrl}" target="_blank">
-            $i18n{learnMore}
-          </a>
+          <settings-localized-link
+              localized-string=
+                  "[[getManufacturerAndModelSubtext_(activePrinter.*)]]"
+              link-url="$i18n{printingCUPSPrintLearnMoreUrl}">
+          </settings-localized-link>
         </div>
         <div class="settings-box two-line">
           <cr-searchable-drop-down id="manufacturerDropdown"
@@ -188,10 +189,9 @@
           </cr-searchable-drop-down>
         </div>
         <div id="ppdLabel" class="cr-form-field-label">
-          <span>$i18n{selectDriver}</span>
-          <a href="$i18n{printingCUPSPrintPpdLearnMoreUrl}" target="_blank">
-              $i18n{learnMore}
-          </a>
+          <settings-localized-link localized-string="$i18n{selectDriver}"
+              link-url="$i18n{printingCUPSPrintPpdLearnMoreUrl}">
+          </settings-localized-link>
         </div>
         <div class="settings-box two-line">
           <cr-input class="browse-file-input" readonly value="[[newUserPPD_]]"

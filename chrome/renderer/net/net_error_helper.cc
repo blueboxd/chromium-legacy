@@ -278,6 +278,7 @@ std::unique_ptr<network::ResourceRequest> NetErrorHelper::CreatePostRequest(
   resource_request->method = "POST";
   resource_request->fetch_request_context_type =
       static_cast<int>(blink::mojom::RequestContextType::INTERNAL);
+  resource_request->destination = network::mojom::RequestDestination::kEmpty;
   resource_request->resource_type =
       static_cast<int>(content::ResourceType::kSubResource);
 

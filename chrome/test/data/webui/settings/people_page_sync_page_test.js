@@ -20,6 +20,10 @@ cr.define('settings_people_page_sync_page', function() {
       // We don't perform tests on them.
       syncPage.prefs = {
         profile: {password_manager_leak_detection: {value: true}},
+        signin: {
+          allowed_on_next_startup:
+              {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true}
+        },
         safebrowsing:
             {enabled: {value: true}, scout_reporting_enabled: {value: true}},
       };

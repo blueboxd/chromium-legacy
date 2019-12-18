@@ -39,7 +39,6 @@ class GraphicsLayerTreeBuilder {
 
  public:
   GraphicsLayerTreeBuilder();
-  ~GraphicsLayerTreeBuilder();
 
   void Rebuild(PaintLayer&, GraphicsLayerVector&);
 

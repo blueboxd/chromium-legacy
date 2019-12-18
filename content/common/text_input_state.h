@@ -5,11 +5,13 @@
 #ifndef CONTENT_COMMON_TEXT_INPUT_STATE_H_
 #define CONTENT_COMMON_TEXT_INPUT_STATE_H_
 
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "ui/base/ime/text_input_action.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace content {
 
@@ -19,6 +21,7 @@ namespace content {
 struct CONTENT_EXPORT TextInputState {
   TextInputState();
   TextInputState(const TextInputState& other);
+  ~TextInputState();
 
   // Type of the input field.
   ui::TextInputType type = ui::TEXT_INPUT_TYPE_NONE;
@@ -62,6 +65,13 @@ struct CONTENT_EXPORT TextInputState {
 
   // Whether or not this is a reply to a request from IME.
   bool reply_to_request = false;
+
+  // Store control and selection bounds of EditContext.
+  // These optionals will be nullopts if there isn't any active EditContext.
+  // For non EditContext scenarios, the bounds are returned via
+  // |GetCompositionCharacterBounds|
+  base::Optional<gfx::Rect> edit_context_control_bounds;
+  base::Optional<gfx::Rect> edit_context_selection_bounds;
 };
 
 }  // namespace content

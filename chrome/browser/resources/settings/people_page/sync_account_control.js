@@ -316,9 +316,7 @@ Polymer({
    * @private
    */
   shouldDisableSyncButton_: function() {
-    if (this.hideButtons ||
-        !loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
-      // Maintain existing behaviour if hidden or flag disabled
+    if (this.hideButtons || this.prefs === undefined) {
       return this.computeShowSetupButtons_();
     }
     return !!this.syncStatus.firstSetupInProgress ||

@@ -88,6 +88,10 @@ class PLATFORM_EXPORT FetchParameters {
     resource_request_.SetRequestContext(context);
   }
 
+  void SetRequestDestination(network::mojom::RequestDestination destination) {
+    resource_request_.SetRequestDestination(destination);
+  }
+
   void SetFetchImportanceMode(mojom::FetchImportanceMode importance_mode) {
     resource_request_.SetFetchImportanceMode(importance_mode);
   }

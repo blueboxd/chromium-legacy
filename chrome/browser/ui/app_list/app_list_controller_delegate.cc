@@ -96,6 +96,7 @@ void AppListControllerDelegate::DoShowAppInfoFlow(
     const std::string& extension_id) {
   DCHECK(CanDoShowAppInfoFlow());
 
+  // TODO(crbug.com/1029221): Make DoShowAppInfoFlow extensions-agnostic.
   const extensions::Extension* extension = GetExtension(profile, extension_id);
   DCHECK(extension);
 

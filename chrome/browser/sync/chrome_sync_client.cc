@@ -409,10 +409,11 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
       !chromeos::switches::IsTabletFormFactor()) {
     if (chromeos::features::IsSplitSettingsSyncEnabled()) {
       // Runs in sync transport-mode and full-sync mode.
-      controllers.push_back(OsSyncableServiceModelTypeController::Create(
-          syncer::APP_LIST, model_type_store_factory,
-          GetSyncableServiceForType(syncer::APP_LIST), dump_stack,
-          profile_->GetPrefs(), sync_service));
+      controllers.push_back(
+          std::make_unique<OsSyncableServiceModelTypeController>(
+              syncer::APP_LIST, model_type_store_factory,
+              GetSyncableServiceForType(syncer::APP_LIST), dump_stack,
+              profile_->GetPrefs(), sync_service));
     } else {
       // Only runs in full-sync mode.
       controllers.push_back(
@@ -436,23 +437,25 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
 #if defined(OS_CHROMEOS)
   if (arc::IsArcAllowedForProfile(profile_) &&
       !arc::IsArcAppSyncFlowDisabled()) {
-    controllers.push_back(ArcPackageSyncModelTypeController::Create(
+    controllers.push_back(std::make_unique<ArcPackageSyncModelTypeController>(
         model_type_store_factory,
         GetSyncableServiceForType(syncer::ARC_PACKAGE), dump_stack,
         sync_service, profile_));
   }
   if (chromeos::features::IsSplitSettingsSyncEnabled()) {
     if (!disabled_types.Has(syncer::OS_PREFERENCES)) {
-      controllers.push_back(OsSyncableServiceModelTypeController::Create(
-          syncer::OS_PREFERENCES, model_type_store_factory,
-          GetSyncableServiceForType(syncer::OS_PREFERENCES), dump_stack,
-          profile_->GetPrefs(), sync_service));
+      controllers.push_back(
+          std::make_unique<OsSyncableServiceModelTypeController>(
+              syncer::OS_PREFERENCES, model_type_store_factory,
+              GetSyncableServiceForType(syncer::OS_PREFERENCES), dump_stack,
+              profile_->GetPrefs(), sync_service));
     }
     if (!disabled_types.Has(syncer::OS_PRIORITY_PREFERENCES)) {
-      controllers.push_back(OsSyncableServiceModelTypeController::Create(
-          syncer::OS_PRIORITY_PREFERENCES, model_type_store_factory,
-          GetSyncableServiceForType(syncer::OS_PRIORITY_PREFERENCES),
-          dump_stack, profile_->GetPrefs(), sync_service));
+      controllers.push_back(
+          std::make_unique<OsSyncableServiceModelTypeController>(
+              syncer::OS_PRIORITY_PREFERENCES, model_type_store_factory,
+              GetSyncableServiceForType(syncer::OS_PRIORITY_PREFERENCES),
+              dump_stack, profile_->GetPrefs(), sync_service));
     }
     if (!disabled_types.Has(syncer::PRINTERS)) {
       // Use the same delegate in full-sync and transport-only modes.

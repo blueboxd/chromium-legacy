@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -758,6 +759,10 @@ void SafeBrowsingPrivateEventRouter::ReportRealtimeEventCallback(
   base::Value wrapper(base::Value::Type::DICTIONARY);
   wrapper.SetStringKey("time", now_str);
   wrapper.SetKey(name, std::move(event_builder).Run());
+
+  // Show the report on chrome://safe-browsing, if appropriate.
+  safe_browsing::WebUIInfoSingleton::GetInstance()->AddToReportingEvents(
+      wrapper);
 
   base::Value event_list(base::Value::Type::LIST);
   event_list.Append(std::move(wrapper));

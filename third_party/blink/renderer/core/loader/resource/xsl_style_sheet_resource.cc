@@ -36,6 +36,7 @@ namespace blink {
 
 static void ApplyXSLRequestProperties(FetchParameters& params) {
   params.SetRequestContext(mojom::RequestContextType::XSLT);
+  params.SetRequestDestination(network::mojom::RequestDestination::kXslt);
   // TODO(japhet): Accept: headers can be set manually on XHRs from script, in
   // the browser process, and... here. The browser process can't tell the
   // difference between an XSL stylesheet and a CSS stylesheet, so it assumes

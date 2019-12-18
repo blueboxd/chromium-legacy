@@ -40,7 +40,6 @@ struct CORE_EXPORT MatchedProperties {
 
  public:
   MatchedProperties();
-  ~MatchedProperties();
 
   void Trace(blink::Visitor*);
 

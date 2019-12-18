@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_factory_impl.h"
 
-#include "components/infobars/core/infobar.h"
 #import "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/save_password_infobar_banner_overlay.h"
 #import "ios/chrome/browser/ui/infobars/infobar_ui_delegate.h"

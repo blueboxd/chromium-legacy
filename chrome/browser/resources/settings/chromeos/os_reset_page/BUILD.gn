@@ -16,6 +16,7 @@ js_library("os_powerwash_dialog") {
   deps = [
     ":os_reset_browser_proxy",
     "../..:lifetime_browser_proxy",
+    "../localized_link:localized_link",
   ]
 }
 

@@ -840,6 +840,7 @@ jumbo_static_library("extensions") {
     "//components/safe_browsing:features",
     "//components/safe_browsing/common:safe_browsing_prefs",
     "//components/safe_browsing/db:database_manager",
+    "//components/safe_browsing/web_ui:web_ui",
     "//components/search_engines",
     "//components/services/patch/content",
     "//components/services/unzip/content",

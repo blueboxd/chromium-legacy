@@ -45,7 +45,6 @@ class HTMLElementStack {
 
  public:
   HTMLElementStack();
-  ~HTMLElementStack();
 
   class ElementRecord final : public GarbageCollected<ElementRecord> {
    public:

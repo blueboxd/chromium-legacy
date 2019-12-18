@@ -136,7 +136,6 @@ class SharedImageBackingAHB : public ClearTrackingSharedImageBacking {
 
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
-  void Destroy() override;
   gfx::Rect ClearedRect() const override;
   void SetClearedRect(const gfx::Rect& cleared_rect) override;
   base::android::ScopedHardwareBufferHandle GetAhbHandle() const;
@@ -456,9 +455,12 @@ SharedImageBackingAHB::SharedImageBackingAHB(
 }
 
 SharedImageBackingAHB::~SharedImageBackingAHB() {
-  // Check to make sure buffer is explicitly destroyed using Destroy() api
-  // before this destructor is called.
-  DCHECK(!hardware_buffer_handle_.is_valid());
+  DCHECK(hardware_buffer_handle_.is_valid());
+  if (legacy_texture_) {
+    legacy_texture_->RemoveLightweightRef(have_context());
+    legacy_texture_ = nullptr;
+  }
+  hardware_buffer_handle_.reset();
 }
 
 gfx::Rect SharedImageBackingAHB::ClearedRect() const {
@@ -505,15 +507,6 @@ bool SharedImageBackingAHB::ProduceLegacyMailbox(
                                        ClearedRectInternal());
   mailbox_manager->ProduceTexture(mailbox(), legacy_texture_);
   return true;
-}
-
-void SharedImageBackingAHB::Destroy() {
-  DCHECK(hardware_buffer_handle_.is_valid());
-  if (legacy_texture_) {
-    legacy_texture_->RemoveLightweightRef(have_context());
-    legacy_texture_ = nullptr;
-  }
-  hardware_buffer_handle_.reset();
 }
 
 base::android::ScopedHardwareBufferHandle SharedImageBackingAHB::GetAhbHandle()

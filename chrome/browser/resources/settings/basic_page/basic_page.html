@@ -144,8 +144,8 @@
             </settings-autofill-page>
           </settings-section>
         </template>
-        <template is="dom-if" if="[[showPrivacyPageAndRedesign_(
-            pageVisibility.privacy, 'BASIC')]]" restamp>
+        <template is="dom-if" if="[[showPage_(pageVisibility.privacy)]]"
+            restamp>
           <settings-section page-title="$i18n{privacyPageTitle}"
               section="privacy">
             <settings-privacy-page prefs="{{prefs}}"
@@ -204,15 +204,6 @@
           <div id="advancedPage" hidden$="[[!showAdvancedPage_(
               currentRoute_, inSearchMode, hasExpandedSection_,
               advancedToggleExpanded)]]">
-            <template is="dom-if" if="[[showPrivacyPageAndRedesign_(
-                pageVisibility.privacy, 'ADVANCED')]]" restamp>
-              <settings-section page-title="$i18n{privacyPageTitle}"
-                  section="privacy">
-                <settings-privacy-page prefs="{{prefs}}"
-                    page-visibility="[[pageVisibility.privacy]]">
-                </settings-privacy-page>
-              </settings-section>
-            </template>
             <template is="dom-if" if="[[showPage_(pageVisibility.languages)]]"
                 restamp>
               <settings-section page-title="$i18n{languagesPageTitle}"

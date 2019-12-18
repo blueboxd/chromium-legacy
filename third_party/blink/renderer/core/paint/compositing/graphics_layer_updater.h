@@ -39,7 +39,6 @@ class GraphicsLayerUpdater {
 
  public:
   GraphicsLayerUpdater();
-  ~GraphicsLayerUpdater();
 
   enum UpdateType {
     kDoNotForceUpdate,

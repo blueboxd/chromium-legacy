@@ -24,14 +24,18 @@ class ResetPasswordUI : public ui::MojoWebUIController {
   explicit ResetPasswordUI(content::WebUI* web_ui);
   ~ResetPasswordUI() override;
 
- private:
-  void BindResetPasswordHandler(
+  // Instantiates the implementor of the mojom::ResetPasswordHandler mojo
+  // interface passing the pending receiver that will be internally bound.
+  void BindInterface(
       mojo::PendingReceiver<mojom::ResetPasswordHandler> receiver);
 
+ private:
   base::DictionaryValue PopulateStrings() const;
 
   std::unique_ptr<mojom::ResetPasswordHandler> ui_handler_;
   const PasswordType password_type_;
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(ResetPasswordUI);
 };

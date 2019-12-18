@@ -182,8 +182,8 @@ public class ConfirmSyncDataStateMachine
         if (mNewAccountManaged) {
             // Show 'logging into managed account' dialog
             // This will call back into onConfirm on success.
-            mDelegate.showSignInToManagedAccountDialog(ConfirmSyncDataStateMachine.this,
-                    mContext.getResources(), SigninManager.extractDomainName(mNewAccountName));
+            mDelegate.showSignInToManagedAccountDialog(
+                    this, SigninManager.extractDomainName(mNewAccountName));
         } else {
             mDelegate.dismissAllDialogs();
             progress();

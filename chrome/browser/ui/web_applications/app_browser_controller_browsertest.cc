@@ -12,82 +12,33 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
-#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/test/test_system_web_app_installation.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 
 namespace web_app {
 
-class AppBrowserControllerBrowserTest
-    : public extensions::ExtensionBrowserTest {
+class AppBrowserControllerBrowserTest : public InProcessBrowserTest {
  public:
-  AppBrowserControllerBrowserTest() {
-#if defined(OS_CHROMEOS)
-    scoped_feature_list_.InitWithFeatures({}, {features::kTerminalSystemApp});
-#endif
-  }
-
-  ~AppBrowserControllerBrowserTest() override {}
-
-  void SetUp() override { extensions::ExtensionBrowserTest::SetUp(); }
+  AppBrowserControllerBrowserTest()
+      : test_system_web_app_installation_(
+            TestSystemWebAppInstallation::SetUpTabbedMultiWindowApp()) {}
 
  protected:
-  void InstallAndLaunchTerminalApp() {
-    GURL app_url = GetAppURL();
-    auto web_app_info = std::make_unique<WebApplicationInfo>();
-    web_app_info->app_url = app_url;
-    web_app_info->scope = app_url.GetWithoutFilename();
-    web_app_info->open_as_window = true;
-    AppId app_id = InstallWebApp(std::move(web_app_info));
-
-    auto* provider = WebAppProvider::Get(profile());
-    provider->system_web_app_manager().SetSystemAppsForTesting(
-        {{SystemAppType::TERMINAL, SystemAppInfo("Terminal", app_url)}});
-    ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
-        .Insert(app_url, app_id, ExternalInstallSource::kInternalDefault);
-    ASSERT_EQ(
-        GetAppIdForSystemWebApp(browser()->profile(), SystemAppType::TERMINAL),
-        app_id);
-
-    const extensions::Extension* extension =
-        extensions::ExtensionRegistry::Get(profile())->GetInstalledExtension(
-            app_id);
-    ASSERT_TRUE(extension);
-
-    app_browser_ = LaunchAppBrowser(extension);
-
-    ASSERT_TRUE(app_browser_);
-    ASSERT_NE(app_browser_, browser());
-  }
-
-  std::string InstallWebApp(
-      std::unique_ptr<WebApplicationInfo>&& web_app_info) {
-    std::string app_id;
-    base::RunLoop run_loop;
-    auto* provider = WebAppProvider::Get(profile());
-    DCHECK(provider);
-    provider->install_manager().InstallWebAppFromInfo(
-        std::move(web_app_info), ForInstallableSite::kYes,
-        WebappInstallSource::OMNIBOX_INSTALL_ICON,
-        base::BindLambdaForTesting(
-            [&](const std::string& installed_app_id, InstallResultCode code) {
-              EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
-              app_id = installed_app_id;
-              run_loop.Quit();
-            }));
-
-    run_loop.Run();
-    return app_id;
-  }
-
-  GURL GetAppURL() {
-    return embedded_test_server()->GetURL("app.com", "/simple.html");
+  void InstallAndLaunchMockApp() {
+    test_system_web_app_installation_->WaitForAppInstall();
+    app_browser_ = web_app::LaunchWebAppBrowser(
+        browser()->profile(), test_system_web_app_installation_->GetAppId());
+    tabbed_app_url_ = test_system_web_app_installation_->GetAppUrl();
   }
 
   GURL GetActiveTabURL() {
@@ -97,21 +48,22 @@ class AppBrowserControllerBrowserTest
   }
 
   Browser* app_browser_ = nullptr;
+  GURL tabbed_app_url_;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<TestSystemWebAppInstallation>
+      test_system_web_app_installation_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBrowserControllerBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest, TabsTest) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  InstallAndLaunchTerminalApp();
+  InstallAndLaunchMockApp();
 
   EXPECT_TRUE(app_browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP));
 
   // Check URL of tab1.
-  EXPECT_EQ(GetActiveTabURL(), GetAppURL());
+  EXPECT_EQ(GetActiveTabURL(), tabbed_app_url_);
   // Create tab2 with specific URL, check URL, number of tabs.
   chrome::AddTabAt(app_browser_, GURL(chrome::kChromeUINewTabURL), -1, true);
   EXPECT_EQ(app_browser_->tab_strip_model()->count(), 2);
@@ -119,11 +71,11 @@ IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest, TabsTest) {
   // Create tab3 with default URL, check URL, number of tabs.
   chrome::NewTab(app_browser_);
   EXPECT_EQ(app_browser_->tab_strip_model()->count(), 3);
-  EXPECT_EQ(GetActiveTabURL(), GetAppURL());
+  EXPECT_EQ(GetActiveTabURL(), tabbed_app_url_);
   // Switch to tab1, check URL.
   chrome::SelectNextTab(app_browser_);
   EXPECT_EQ(app_browser_->tab_strip_model()->count(), 3);
-  EXPECT_EQ(GetActiveTabURL(), GetAppURL());
+  EXPECT_EQ(GetActiveTabURL(), tabbed_app_url_);
   // Switch to tab2, check URL.
   chrome::SelectNextTab(app_browser_);
   EXPECT_EQ(app_browser_->tab_strip_model()->count(), 3);
@@ -131,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest, TabsTest) {
   // Switch to tab3, check URL.
   chrome::SelectNextTab(app_browser_);
   EXPECT_EQ(app_browser_->tab_strip_model()->count(), 3);
-  EXPECT_EQ(GetActiveTabURL(), GetAppURL());
+  EXPECT_EQ(GetActiveTabURL(), tabbed_app_url_);
   // Close tab3, check number of tabs.
   chrome::CloseTab(app_browser_);
   EXPECT_EQ(app_browser_->tab_strip_model()->count(), 2);
@@ -139,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest, TabsTest) {
   // Close tab2, check number of tabs.
   chrome::CloseTab(app_browser_);
   EXPECT_EQ(app_browser_->tab_strip_model()->count(), 1);
-  EXPECT_EQ(GetActiveTabURL(), GetAppURL());
+  EXPECT_EQ(GetActiveTabURL(), tabbed_app_url_);
 }
 
 }  // namespace web_app

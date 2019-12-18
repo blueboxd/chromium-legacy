@@ -39,8 +39,6 @@ static const size_t kNoahsArkCapacity = 3;
 
 HTMLFormattingElementList::HTMLFormattingElementList() = default;
 
-HTMLFormattingElementList::~HTMLFormattingElementList() = default;
-
 Element* HTMLFormattingElementList::ClosestElementInScopeWithName(
     const AtomicString& target_name) {
   for (wtf_size_t i = 1; i <= entries_.size(); ++i) {

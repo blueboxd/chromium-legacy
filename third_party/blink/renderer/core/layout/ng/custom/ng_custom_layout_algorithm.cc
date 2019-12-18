@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_scope.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/fragment_result_options.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/intrinsic_sizes_result_options.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/layout_worklet.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/layout_worklet_global_scope_proxy.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
@@ -34,9 +35,49 @@ NGCustomLayoutAlgorithm::NGCustomLayoutAlgorithm(
 
 base::Optional<MinMaxSize> NGCustomLayoutAlgorithm::ComputeMinMaxSize(
     const MinMaxSizeInput& input) const {
-  // TODO(ikilpatrick): Invoke the web-developer defined "intrinsicSizes"
-  // method.
-  return FallbackMinMaxSize(input);
+  if (!Node().IsCustomLayoutLoaded())
+    return FallbackMinMaxSize(input);
+
+  ScriptForbiddenScope::AllowUserAgentScript allow_script;
+  CustomLayoutScope scope;
+
+  const AtomicString& name = Style().DisplayLayoutCustomName();
+  const Document& document = Node().GetDocument();
+  LayoutWorklet* worklet = LayoutWorklet::From(*document.domWindow());
+  CSSLayoutDefinition* definition = worklet->Proxy()->FindDefinition(name);
+
+  // TODO(ikilpatrick): Cache the instance of the layout class.
+  CSSLayoutDefinition::Instance* instance = definition->CreateInstance();
+
+  if (!instance) {
+    // TODO(ikilpatrick): Report this error to the developer.
+    return FallbackMinMaxSize(input);
+  }
+
+  IntrinsicSizesResultOptions* intrinsic_sizes_result_options =
+      IntrinsicSizesResultOptions::Create();
+  if (!instance->IntrinsicSizes(ConstraintSpace(), document, Node(),
+                                container_builder_.InitialBorderBoxSize(),
+                                border_scrollbar_padding_, &scope,
+                                intrinsic_sizes_result_options)) {
+    // TODO(ikilpatrick): Report this error to the developer.
+    return FallbackMinMaxSize(input);
+  }
+
+  MinMaxSize sizes;
+  sizes.max_size = LayoutUnit::FromDoubleRound(
+      intrinsic_sizes_result_options->maxContentSize());
+  sizes.min_size = std::min(
+      sizes.max_size, LayoutUnit::FromDoubleRound(
+                          intrinsic_sizes_result_options->minContentSize()));
+
+  if (input.size_type == NGMinMaxSizeType::kContentBoxSize)
+    sizes -= border_padding_.InlineSum();
+
+  sizes.min_size.ClampNegativeToZero();
+  sizes.max_size.ClampNegativeToZero();
+
+  return sizes;
 }
 
 scoped_refptr<const NGLayoutResult> NGCustomLayoutAlgorithm::Layout() {

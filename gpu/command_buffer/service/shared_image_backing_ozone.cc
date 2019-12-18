@@ -109,8 +109,6 @@ void SharedImageBackingOzone::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
   return;
 }
 
-void SharedImageBackingOzone::Destroy() {}
-
 bool SharedImageBackingOzone::ProduceLegacyMailbox(
     MailboxManager* mailbox_manager) {
   NOTREACHED();

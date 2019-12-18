@@ -1656,4 +1656,5 @@ message ChromeDeviceSettingsProto {
   optional BooleanPolicyProto device_login_screen_system_info_enforced = 93;
   optional StringListPolicyProto device_web_based_attestation_allowed_urls = 94;
   optional BooleanPolicyProto device_show_numeric_keyboard_for_password = 95;
+  optional BooleanPolicyProto login_screen_primary_mouse_button_switch = 96;
 }

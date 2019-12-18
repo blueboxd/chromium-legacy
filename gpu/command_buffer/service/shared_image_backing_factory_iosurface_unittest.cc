@@ -311,8 +311,6 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, LegacyClearing) {
   texture->SetLevelCleared(target, 0, true);
   EXPECT_TRUE(texture->IsLevelCleared(target, 0));
   EXPECT_TRUE(backing->IsCleared());
-
-  backing->Destroy();
 }
 
 #if BUILDFLAG(USE_DAWN)

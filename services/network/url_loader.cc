@@ -365,6 +365,7 @@ URLLoader::URLLoader(
       report_raw_headers_(false),
       devtools_request_id_(request.devtools_request_id),
       has_user_activation_(false),
+      request_destination_(request.destination),
       resource_scheduler_client_(std::move(resource_scheduler_client)),
       keepalive_statistics_recorder_(std::move(keepalive_statistics_recorder)),
       network_usage_accumulator_(std::move(network_usage_accumulator)),
@@ -458,7 +459,8 @@ URLLoader::URLLoader(
   url_request_->set_initiator(request.request_initiator);
 
   SetFetchMetadataHeaders(url_request_.get(), request_mode_,
-                          has_user_activation_, nullptr, *factory_params_);
+                          has_user_activation_, request_destination_, nullptr,
+                          *factory_params_);
 
   if (request.update_first_party_url_on_redirect) {
     url_request_->set_first_party_url_policy(
@@ -818,8 +820,8 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
   // to do this before we re-add any.
   MaybeRemoveSecHeaders(url_request_.get(), redirect_info.new_url);
   SetFetchMetadataHeaders(url_request_.get(), request_mode_,
-                          has_user_activation_, &redirect_info.new_url,
-                          *factory_params_);
+                          has_user_activation_, request_destination_,
+                          &redirect_info.new_url, *factory_params_);
 
   url_loader_client_->OnReceiveRedirect(redirect_info, std::move(response));
 }

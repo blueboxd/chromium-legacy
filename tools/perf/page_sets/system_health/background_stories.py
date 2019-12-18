@@ -45,6 +45,11 @@ class BackgroundFacebookMobileStory(_BackgroundStory):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.YEAR_2016]
 
+class BackgroundFacebookMobileStory2019(_BackgroundStory):
+  NAME = 'background:social:facebook:2019'
+  URL = 'https://www.facebook.com/rihanna'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.YEAR_2019]
 
 class BackgroundNytimesMobileStory(_BackgroundStory):
   NAME = 'background:news:nytimes'
@@ -82,6 +87,13 @@ class BackgroundImgurMobileStory(_BackgroundStory):
   URL = 'http://imgur.com/gallery/hUita'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
+
+
+class BackgroundImgurMobileStory2019(_BackgroundStory):
+  NAME = 'background:media:imgur:2019'
+  URL = 'http://imgur.com/gallery/hUita'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
 
 
 class BackgroundGmailMobileStory(LoadGmailMobileStory):

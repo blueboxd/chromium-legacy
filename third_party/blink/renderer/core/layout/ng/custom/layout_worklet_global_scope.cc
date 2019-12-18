@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/custom/layout_worklet_global_scope.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_intrinsic_sizes_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_layout_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_no_argument_constructor.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_parser.h"
@@ -126,7 +127,8 @@ void LayoutWorkletGlobalScope::registerLayout(
       retriever.GetMethodOrThrow("intrinsicSizes", exception_state);
   if (exception_state.HadException())
     return;
-  V8Function* intrinsic_sizes = V8Function::Create(v8_intrinsic_sizes);
+  V8IntrinsicSizesCallback* intrinsic_sizes =
+      V8IntrinsicSizesCallback::Create(v8_intrinsic_sizes);
 
   v8::Local<v8::Function> v8_layout =
       retriever.GetMethodOrThrow("layout", exception_state);

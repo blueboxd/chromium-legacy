@@ -16,7 +16,8 @@ import {$} from 'chrome://resources/js/util.m.js';
 let pageHandler;
 
 document.addEventListener('DOMContentLoaded', function() {
-  pageHandler = mojom.ResetPasswordHandler.getRemote();
+  pageHandler =
+      mojom.ResetPasswordHandler.getRemote(/*useBrowserInterfaceBroker=*/ true);
 
   /** @type {?HTMLElement} */
   const resetPasswordButton = $('reset-password-button');

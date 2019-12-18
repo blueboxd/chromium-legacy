@@ -119,7 +119,6 @@ class CORE_EXPORT TextFinder final : public GarbageCollected<TextFinder> {
                      bool finished_whole_request);
 
   explicit TextFinder(WebLocalFrameImpl& owner_frame);
-  ~TextFinder();
 
   class FindMatch {
     DISALLOW_NEW();

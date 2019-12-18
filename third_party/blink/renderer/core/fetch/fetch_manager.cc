@@ -714,6 +714,7 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
   request.SetRequestorOrigin(fetch_request_data_->Origin());
   request.SetIsolatedWorldOrigin(fetch_request_data_->IsolatedWorldOrigin());
   request.SetRequestContext(fetch_request_data_->Context());
+  request.SetRequestDestination(fetch_request_data_->Destination());
   request.SetHttpMethod(fetch_request_data_->Method());
   request.SetFetchWindowId(fetch_request_data_->WindowId());
 
@@ -823,6 +824,7 @@ void FetchManager::Loader::PerformDataFetch() {
   ResourceRequest request(fetch_request_data_->Url());
   request.SetRequestorOrigin(fetch_request_data_->Origin());
   request.SetRequestContext(fetch_request_data_->Context());
+  request.SetRequestDestination(fetch_request_data_->Destination());
   request.SetUseStreamOnResponse(true);
   request.SetHttpMethod(fetch_request_data_->Method());
   request.SetCredentialsMode(network::mojom::CredentialsMode::kOmit);
@@ -883,6 +885,7 @@ ScriptPromise FetchManager::Fetch(ScriptState* script_state,
   }
 
   request->SetContext(mojom::RequestContextType::FETCH);
+  request->SetDestination(network::mojom::RequestDestination::kEmpty);
 
   auto* loader = MakeGarbageCollected<Loader>(
       GetExecutionContext(), this, resolver, request,

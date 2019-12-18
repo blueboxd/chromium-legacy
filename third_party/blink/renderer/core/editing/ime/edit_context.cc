@@ -69,6 +69,16 @@ InputMethodController& EditContext::GetInputMethodController() const {
   return ContextLifecycleObserver::GetFrame()->GetInputMethodController();
 }
 
+bool EditContext::IsEditContextActive() const {
+  return true;
+}
+
+bool EditContext::IsInputPanelPolicyManual() const {
+  return GetInputMethodController()
+             .GetActiveEditContext()
+             ->inputPanelPolicy() == "manual";
+}
+
 void EditContext::DispatchCompositionEndEvent(const String& text) {
   auto* event = MakeGarbageCollected<CompositionEvent>(
       event_type_names::kCompositionend,
@@ -153,7 +163,7 @@ void EditContext::focus() {
 void EditContext::blur() {
   if (GetInputMethodController().GetActiveEditContext() != this)
     return;
-  // Clean up the state of the |this| EditContext
+  // Clean up the state of the |this| EditContext.
   FinishComposingText(ConfirmCompositionBehavior::kKeepSelection);
   GetInputMethodController().SetActiveEditContext(this);
 }
@@ -179,7 +189,7 @@ void EditContext::updateSelection(uint32_t start,
     return;
 
   // There is an active composition so need to set the range of the
-  // composition too so that we can commit the string properly
+  // composition too so that we can commit the string properly.
   if (composition_range_start_ == 0 && composition_range_end_ == 0) {
     composition_range_start_ = selection_start_;
     composition_range_end_ = selection_end_;
@@ -261,7 +271,7 @@ void EditContext::setInputPanelPolicy(const String& input_policy) {
 }
 
 void EditContext::setInputMode(const String& input_mode) {
-  // inputMode password is not supported by browsers yet
+  // inputMode password is not supported by browsers yet:
   // https://github.com/whatwg/html/issues/4875
 
   if (input_mode == "text")
@@ -299,7 +309,7 @@ String EditContext::inputMode() const {
     case WebTextInputMode::kWebTextInputModeUrl:
       return "url";
     default:
-      return "none";  // defaulting to none
+      return "none";  // Defaulting to none.
   }
 }
 
@@ -339,15 +349,15 @@ String EditContext::enterKeyHint() const {
     case ui::TextInputAction::kSend:
       return "send";
     default:
-      // defaulting to enter
+      // Defaulting to enter.
       return "enter";
   }
 }
 
-void EditContext::GetLayoutBounds(WebRect& web_control_bounds,
-                                  WebRect& web_selection_bounds) {
-  web_control_bounds = control_bounds_;
-  web_selection_bounds = selection_bounds_;
+void EditContext::GetLayoutBounds(WebRect* web_control_bounds,
+                                  WebRect* web_selection_bounds) {
+  *web_control_bounds = control_bounds_;
+  *web_selection_bounds = selection_bounds_;
 }
 
 bool EditContext::SetComposition(
@@ -368,7 +378,7 @@ bool EditContext::SetComposition(
     composition_range_start_ = selection_start_;
     composition_range_end_ = selection_end_;
   }
-  // Update the selection and buffer if the composition range has changed
+  // Update the selection and buffer if the composition range has changed.
   String update_text(text);
   if (composition_range_start_ != selection_start_ &&
       composition_range_end_ != selection_end_) {
@@ -378,11 +388,11 @@ bool EditContext::SetComposition(
   text_ = text_.Substring(0, selection_start_) + update_text +
           text_.Substring(selection_end_);
 
-  // Fire textupdate and textformatupdate events to JS
+  // Fire textupdate and textformatupdate events to JS.
   const uint32_t update_range_start = composition_range_start_;
   const uint32_t update_range_end = composition_range_end_;
   if (has_composition_) {
-    // Replace the existing composition with empty string
+    // Replace the existing composition with empty string.
     composition_range_start_ = selection_start_;
     composition_range_end_ = selection_end_;
   }
@@ -422,7 +432,7 @@ bool EditContext::SetCompositionFromExistingText(
                           composition_range_end_, composition_start,
                           composition_start);
   DispatchTextFormatEvent(ime_text_spans);
-  // Update the selection range
+  // Update the selection range.
   selection_start_ = composition_start;
   selection_end_ = composition_start;
   return true;
@@ -432,10 +442,10 @@ bool EditContext::CommitText(const WebString& text,
                              const WebVector<WebImeTextSpan>& ime_text_spans,
                              const WebRange& replacement_range,
                              int relative_caret_position) {
-  // Fire textupdate and textformatupdate events to JS
+  // Fire textupdate and textformatupdate events to JS.
   // ime_text_spans can have multiple format updates so loop through and fire
-  // events accordingly
-  // Update the cached selection too
+  // events accordingly.
+  // Update the cached selection too.
   String update_text(text);
   uint32_t update_range_start;
   uint32_t update_range_end;
@@ -462,7 +472,7 @@ bool EditContext::CommitText(const WebString& text,
   composition_range_end_ = 0;
   DispatchTextUpdateEvent(update_text, update_range_start, update_range_end,
                           new_selection_start, new_selection_end);
-  // Fire composition end event
+  // Fire composition end event.
   if (!text.IsEmpty() && has_composition_)
     DispatchCompositionEndEvent(text);
 
@@ -475,7 +485,7 @@ bool EditContext::FinishComposingText(
   WebString text;
   if (has_composition_) {
     text = text_.Substring(composition_range_start_, composition_range_end_);
-    // Fire composition end event
+    // Fire composition end event.
     DispatchCompositionEndEvent(text);
   } else {
     text = text_.Substring(selection_start_, selection_end_);
@@ -536,7 +546,7 @@ WebTextInputMode EditContext::GetInputModeOfEditContext() const {
 
 WebTextInputInfo EditContext::TextInputInfo() {
   WebTextInputInfo info;
-  // Fetch all the text input info from edit context
+  // Fetch all the text input info from edit context.
   info.action = GetEditContextEnterKeyHint();
   info.input_mode = GetInputModeOfEditContext();
   info.type = TextInputType();
@@ -551,12 +561,12 @@ WebTextInputInfo EditContext::TextInputInfo() {
 
 int EditContext::TextInputFlags() const {
   int flags = 0;
-  // Disable spellcheck & autocorrect for EditContext
+  // Disable spellcheck & autocorrect for EditContext.
   flags |= kWebTextInputFlagAutocorrectOff;
   flags |= kWebTextInputFlagSpellcheckOff;
 
   // TODO:(snianu) Enable this once the password type
-  // is supported by inputMode attribute
+  // is supported by inputMode attribute.
   // if (input_mode_ == WebTextInputMode::kPassword)
   //   flags |= kWebTextInputFlagHasBeenPasswordField;
 

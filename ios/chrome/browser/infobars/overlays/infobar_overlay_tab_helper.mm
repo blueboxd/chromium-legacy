@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
-#import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_cancel_handler.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_factory.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
@@ -37,7 +36,8 @@ void InfobarOverlayTabHelper::CreateForWebState(
 InfobarOverlayTabHelper::InfobarOverlayTabHelper(
     web::WebState* web_state,
     std::unique_ptr<InfobarOverlayRequestFactory> request_factory)
-    : overlay_request_scheduler_(web_state, std::move(request_factory)) {}
+    : request_inserter_(web_state, std::move(request_factory)),
+      request_scheduler_(web_state, this) {}
 
 InfobarOverlayTabHelper::~InfobarOverlayTabHelper() = default;
 
@@ -45,14 +45,9 @@ InfobarOverlayTabHelper::~InfobarOverlayTabHelper() = default;
 
 InfobarOverlayTabHelper::OverlayRequestScheduler::OverlayRequestScheduler(
     web::WebState* web_state,
-    std::unique_ptr<InfobarOverlayRequestFactory> request_factory)
-    : queue_(
-          OverlayRequestQueue::FromWebState(web_state,
-                                            OverlayModality::kInfobarBanner)),
-      request_factory_(std::move(request_factory)),
-      scoped_observer_(this) {
-  DCHECK(queue_);
-  DCHECK(request_factory_);
+    InfobarOverlayTabHelper* tab_helper)
+    : tab_helper_(tab_helper), scoped_observer_(this) {
+  DCHECK(tab_helper_);
   InfoBarManager* manager = InfoBarManagerImpl::FromWebState(web_state);
   DCHECK(manager);
   scoped_observer_.Add(manager);
@@ -63,14 +58,8 @@ InfobarOverlayTabHelper::OverlayRequestScheduler::~OverlayRequestScheduler() =
 
 void InfobarOverlayTabHelper::OverlayRequestScheduler::OnInfoBarAdded(
     InfoBar* infobar) {
-  std::unique_ptr<OverlayRequest> request =
-      request_factory_->CreateInfobarRequest(infobar,
-                                             InfobarOverlayType::kBanner);
-  DCHECK(request);
-  std::unique_ptr<OverlayRequestCancelHandler> cancel_handler =
-      std::make_unique<InfobarOverlayRequestCancelHandler>(request.get(),
-                                                           queue_, infobar);
-  queue_->AddRequest(std::move(request), std::move(cancel_handler));
+  tab_helper_->request_inserter()->AddOverlayRequest(
+      infobar, InfobarOverlayType::kBanner);
 }
 
 void InfobarOverlayTabHelper::OverlayRequestScheduler::OnManagerShuttingDown(

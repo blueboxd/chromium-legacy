@@ -399,15 +399,6 @@ void PreSandboxInit() {
 
 }  // namespace
 
-class ContentClientCreator {
- public:
-  static void Create(ContentMainDelegate* delegate) {
-    ContentClient* client = delegate->CreateContentClient();
-    DCHECK(client);
-    SetContentClient(client);
-  }
-};
-
 class ContentClientInitializer {
  public:
   static void Set(const std::string& process_type,
@@ -652,8 +643,6 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
 #endif  // !OS_ANDROID
 
   int exit_code = 0;
-  if (!GetContentClient())
-    ContentClientCreator::Create(delegate_);
   if (delegate_->BasicStartupComplete(&exit_code))
     return exit_code;
   completed_basic_startup_ = true;
@@ -673,7 +662,8 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
   }
 #endif
 
-  RegisterContentSchemes();
+  if (!GetContentClient())
+    SetContentClient(&empty_content_client_);
   ContentClientInitializer::Set(process_type, delegate_);
 
 #if !defined(OS_ANDROID)
@@ -734,6 +724,7 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
 #endif
 
     RegisterPathProvider();
+    RegisterContentSchemes(delegate_->ShouldLockSchemeRegistry());
 
 #if defined(OS_ANDROID) && (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
     // On Android, we have two ICU data files. A main one with most languages

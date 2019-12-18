@@ -632,7 +632,8 @@ void FrameSerializer::RetrieveResourcesForCSSValue(const CSSValue& css_value,
       return;
 
     if (base::FeatureList::IsEnabled(
-            features::kHtmlImportsRequestInitiatorLock)) {
+            features::kHtmlImportsRequestInitiatorLock) &&
+        document.ImportsController()) {
       if (Document* context_document = document.ContextDocument()) {
         // For @imports from HTML imported Documents, we use the
         // context document for getting origin and ResourceFetcher to use the

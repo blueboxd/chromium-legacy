@@ -42,7 +42,6 @@ class CompositingRequirementsUpdater {
 
  public:
   CompositingRequirementsUpdater(LayoutView&);
-  ~CompositingRequirementsUpdater();
 
   //  Recurse through the layers in z-index and overflow order (which is
   //  equivalent to painting order)

@@ -118,13 +118,6 @@ TEST_P(BackButtonTest, BackKeySequenceGenerated) {
   if (GetParam())
     std::unique_ptr<views::Widget> widget = CreateTestWidget();
 
-  // Wait for the navigation widget's animation.
-  test_api()->RunMessageLoopUntilAnimationsDone(
-      GetPrimaryShelf()
-          ->shelf_widget()
-          ->navigation_widget()
-          ->get_bounds_animator_for_testing());
-
   AcceleratorControllerImpl* controller =
       Shell::Get()->accelerator_controller();
 
@@ -173,13 +166,6 @@ TEST_P(BackButtonTest, NoContextMenuOnBackButton) {
   // When hotseat is enabled, the back button is only usable in in-app shelf.
   if (GetParam())
     std::unique_ptr<views::Widget> widget = CreateTestWidget();
-
-  // We need to wait for the navigation widget's animation to be done.
-  test_api_->RunMessageLoopUntilAnimationsDone(
-      GetPrimaryShelf()
-          ->shelf_widget()
-          ->navigation_widget()
-          ->get_bounds_animator_for_testing());
 
   generator->MoveMouseTo(back_button()->GetBoundsInScreen().CenterPoint());
   generator->PressRightButton();

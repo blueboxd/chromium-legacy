@@ -52,7 +52,9 @@ XSLStyleSheet::XSLStyleSheet(XSLStyleSheet* parent_style_sheet,
       stylesheet_doc_taken_(false),
       compilation_failed_(false),
       parent_style_sheet_(parent_style_sheet),
-      owner_document_(nullptr) {}
+      owner_document_(nullptr) {
+  DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
+}
 
 XSLStyleSheet::XSLStyleSheet(Node* parent_node,
                              const String& original_url,
@@ -68,7 +70,9 @@ XSLStyleSheet::XSLStyleSheet(Node* parent_node,
       stylesheet_doc_taken_(false),
       compilation_failed_(false),
       parent_style_sheet_(nullptr),
-      owner_document_(nullptr) {}
+      owner_document_(nullptr) {
+  DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
+}
 
 XSLStyleSheet::XSLStyleSheet(Document* owner_document,
                              Node* style_sheet_root_node,
@@ -85,7 +89,9 @@ XSLStyleSheet::XSLStyleSheet(Document* owner_document,
       stylesheet_doc_taken_(false),
       compilation_failed_(false),
       parent_style_sheet_(nullptr),
-      owner_document_(owner_document) {}
+      owner_document_(owner_document) {
+  DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
+}
 
 XSLStyleSheet::~XSLStyleSheet() {
   if (!stylesheet_doc_taken_)

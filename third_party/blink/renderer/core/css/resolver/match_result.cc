@@ -43,8 +43,6 @@ MatchedProperties::MatchedProperties() {
   memset(&types_, 0, sizeof(types_));
 }
 
-MatchedProperties::~MatchedProperties() = default;
-
 void MatchedProperties::Trace(blink::Visitor* visitor) {
   visitor->Trace(properties);
 }

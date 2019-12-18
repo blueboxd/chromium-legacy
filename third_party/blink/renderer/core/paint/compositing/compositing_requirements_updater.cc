@@ -210,8 +210,6 @@ CompositingRequirementsUpdater::CompositingRequirementsUpdater(
     LayoutView& layout_view)
     : layout_view_(layout_view) {}
 
-CompositingRequirementsUpdater::~CompositingRequirementsUpdater() = default;
-
 void CompositingRequirementsUpdater::Update(
     PaintLayer* root,
     CompositingReasonsStats& compositing_reasons_stats) {

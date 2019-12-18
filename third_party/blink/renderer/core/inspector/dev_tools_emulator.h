@@ -25,7 +25,6 @@ class CORE_EXPORT DevToolsEmulator final
     : public GarbageCollected<DevToolsEmulator> {
  public:
   explicit DevToolsEmulator(WebViewImpl*);
-  ~DevToolsEmulator();
   void Trace(blink::Visitor*);
 
   // Settings overrides.

@@ -311,11 +311,9 @@ bool BaseArena::LazySweepWithDeadline(base::TimeTicks deadline) {
   DCHECK(ScriptForbiddenScope::IsScriptForbidden());
 
   size_t page_count = 1;
-  // TODO(bikineev): We should probably process pages in the reverse order. This
-  // will leave more work for concurrent sweeper and reduce memory footprint
-  // faster.
-  while (BasePage* page = unswept_pages_.PopLocked()) {
-    SweepUnsweptPage(page);
+  // First, process empty pages to faster reduce memory footprint.
+  while (BasePage* page = swept_unfinalized_empty_pages_.PopLocked()) {
+    page->FinalizeSweep(SweepResult::kPageEmpty);
     if (page_count % kDeadlineCheckInterval == 0) {
       if (deadline <= base::TimeTicks::Now()) {
         // Deadline has come.
@@ -324,6 +322,7 @@ bool BaseArena::LazySweepWithDeadline(base::TimeTicks deadline) {
     }
     page_count++;
   }
+  // Second, execute finalizers to leave more work for concurrent sweeper.
   while (BasePage* page = swept_unfinalized_pages_.PopLocked()) {
     swept_pages_.PushLocked(page);
     page->FinalizeSweep(SweepResult::kPageNotEmpty);
@@ -335,8 +334,9 @@ bool BaseArena::LazySweepWithDeadline(base::TimeTicks deadline) {
     }
     page_count++;
   }
-  while (BasePage* page = swept_unfinalized_empty_pages_.PopLocked()) {
-    page->FinalizeSweep(SweepResult::kPageEmpty);
+  // Help concurrent sweeper.
+  while (BasePage* page = unswept_pages_.PopLocked()) {
+    SweepUnsweptPage(page);
     if (page_count % kDeadlineCheckInterval == 0) {
       if (deadline <= base::TimeTicks::Now()) {
         // Deadline has come.
@@ -384,13 +384,13 @@ void BaseArena::CompleteSweep() {
   // Some phases, e.g. verification, require iterability of a page.
   MakeIterable();
 
-  // First, sweep and finalize pages.
+  // First, finalize pages that have been processed by concurrent sweepers.
+  InvokeFinalizersOnSweptPages();
+
+  // Then, sweep and finalize pages.
   while (BasePage* page = unswept_pages_.PopLocked()) {
     SweepUnsweptPage(page);
   }
-
-  // Then, finalize pages that have been processed by concurrent sweepers.
-  InvokeFinalizersOnSweptPages();
 
   // Verify object start bitmap after all freelists have been merged.
   VerifyObjectStartBitmap();

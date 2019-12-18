@@ -50,13 +50,6 @@ class TextResourceDecoder;
 
 class XHRReplayData final : public GarbageCollected<XHRReplayData> {
  public:
-  static XHRReplayData* Create(ExecutionContext*,
-                               const AtomicString& method,
-                               const KURL&,
-                               bool async,
-                               scoped_refptr<EncodedFormData>,
-                               bool include_credentials);
-
   XHRReplayData(ExecutionContext*,
                 const AtomicString& method,
                 const KURL&,

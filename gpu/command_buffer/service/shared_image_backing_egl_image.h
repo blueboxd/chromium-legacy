@@ -45,7 +45,6 @@ class SharedImageBackingEglImage : public ClearTrackingSharedImageBacking {
 
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
-  void Destroy() override;
 
   bool BeginWrite();
   void EndWrite(std::unique_ptr<gl::GLFenceEGL> end_write_fence);

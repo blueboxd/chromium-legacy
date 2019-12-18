@@ -14,8 +14,6 @@ CSSLayoutFunctionValue::CSSLayoutFunctionValue(CSSCustomIdentValue* name,
                                                bool is_inline)
     : CSSValue(kLayoutFunctionClass), name_(name), is_inline_(is_inline) {}
 
-CSSLayoutFunctionValue::~CSSLayoutFunctionValue() = default;
-
 String CSSLayoutFunctionValue::CustomCSSText() const {
   StringBuilder result;
   if (is_inline_)

@@ -1389,6 +1389,36 @@ TEST_F(RenderViewImplTest, ShouldSuppressKeyboardIsPropagated) {
   GetMainFrame()->SetAutofillClient(nullptr);
 }
 
+TEST_F(RenderViewImplTest, EditContextGetLayoutBoundsAndInputPanelPolicy) {
+  // Load an HTML page consisting of one input fields.
+  LoadHTML(
+      "<html>"
+      "<head>"
+      "</head>"
+      "<body>"
+      "</body>"
+      "</html>");
+  render_thread_->sink().ClearMessages();
+  // Create an EditContext with control and selection bounds and set input
+  // panel policy to auto.
+  ExecuteJavaScriptForTests(
+      "const editContext = new EditContext(); "
+      "editContext.focus();editContext.inputPanelPolicy=\"auto\";editContext."
+      "updateLayout(new DOMRect(10, 20, 30, 40), new DOMRect(10,20, 1, 5));");
+  base::RunLoop().RunUntilIdle();
+  // Update the IME status and verify if our IME backend sends an IPC message
+  // to notify layout bounds of the EditContext.
+  view()->GetWidget()->UpdateTextInputState();
+  auto params = ProcessAndReadIPC<WidgetHostMsg_TextInputStateChanged>();
+  EXPECT_EQ(true, std::get<0>(params).show_ime_if_needed);
+  gfx::Rect edit_context_control_bounds_expected(10, 20, 30, 40);
+  gfx::Rect edit_context_selection_bounds_expected(10, 20, 1, 5);
+  EXPECT_EQ(edit_context_control_bounds_expected,
+            std::get<0>(params).edit_context_control_bounds.value());
+  EXPECT_EQ(edit_context_selection_bounds_expected,
+            std::get<0>(params).edit_context_selection_bounds.value());
+}
+
 // Test that our IME backend can compose CJK words.
 // Our IME front-end sends many platform-independent messages to the IME backend
 // while it composes CJK words. This test sends the minimal messages captured

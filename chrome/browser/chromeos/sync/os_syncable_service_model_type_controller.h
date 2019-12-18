@@ -29,7 +29,7 @@ class SyncService;
 class OsSyncableServiceModelTypeController
     : public syncer::ModelTypeController {
  public:
-  static std::unique_ptr<OsSyncableServiceModelTypeController> Create(
+  OsSyncableServiceModelTypeController(
       syncer::ModelType type,
       syncer::OnceModelTypeStoreFactory store_factory,
       base::WeakPtr<syncer::SyncableService> syncable_service,
@@ -48,13 +48,6 @@ class OsSyncableServiceModelTypeController
   PreconditionState GetPreconditionState() const override;
 
  private:
-  // See implementation comment in Create().
-  OsSyncableServiceModelTypeController(
-      syncer::ModelType type,
-      std::unique_ptr<syncer::ModelTypeSyncBridge> bridge,
-      PrefService* pref_service,
-      syncer::SyncService* sync_service);
-
   // Callback for changes to the OS sync feature enabled pref.
   void OnUserPrefChanged();
 

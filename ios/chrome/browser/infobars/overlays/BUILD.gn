@@ -10,6 +10,8 @@ source_set("overlays") {
     "infobar_overlay_request_factory.h",
     "infobar_overlay_request_factory_impl.h",
     "infobar_overlay_request_factory_impl.mm",
+    "infobar_overlay_request_inserter.h",
+    "infobar_overlay_request_inserter.mm",
     "infobar_overlay_tab_helper.h",
     "infobar_overlay_tab_helper.mm",
     "infobar_overlay_type.h",
@@ -49,6 +51,7 @@ source_set("unit_tests") {
   sources = [
     "infobar_overlay_request_cancel_handler_unittest.mm",
     "infobar_overlay_request_factory_impl_unittest.mm",
+    "infobar_overlay_request_inserter_unittest.mm",
     "infobar_overlay_tab_helper_unittest.mm",
   ]
   deps = [

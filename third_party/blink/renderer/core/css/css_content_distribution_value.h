@@ -19,7 +19,6 @@ class CSSContentDistributionValue : public CSSValue {
   CSSContentDistributionValue(CSSValueID distribution,
                               CSSValueID position,
                               CSSValueID overflow);
-  ~CSSContentDistributionValue();
 
   CSSValueID Distribution() const { return distribution_; }
 

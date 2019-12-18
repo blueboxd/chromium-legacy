@@ -18,7 +18,7 @@ namespace {
 // Helpers ---------------------------------------------------------------------
 
 syncer::SyncService* GetSyncService(Profile* profile) {
-  return profile->IsSyncAllowed()
+  return ProfileSyncServiceFactory::IsSyncAllowed(profile)
              ? ProfileSyncServiceFactory::GetForProfile(profile)
              : nullptr;
 }

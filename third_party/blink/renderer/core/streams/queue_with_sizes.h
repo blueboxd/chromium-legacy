@@ -25,7 +25,6 @@ class CORE_EXPORT QueueWithSizes final
     : public GarbageCollected<QueueWithSizes> {
  public:
   QueueWithSizes();
-  ~QueueWithSizes();
 
   // https://streams.spec.whatwg.org/#dequeue-value
   v8::Local<v8::Value> DequeueValue(v8::Isolate*);

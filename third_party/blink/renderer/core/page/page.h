@@ -103,7 +103,6 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
 
    public:
     PageClients();
-    ~PageClients();
 
     Member<ChromeClient> chrome_client;
     DISALLOW_COPY_AND_ASSIGN(PageClients);

@@ -221,6 +221,10 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
   };
 
   CacheSuccess ApplyMatchedCache(StyleResolverState&, const MatchResult&);
+  void MaybeAddToMatchedPropertiesCache(StyleResolverState&,
+                                        const CacheSuccess&,
+                                        const MatchResult&);
+
   void ApplyCustomProperties(StyleResolverState&,
                              const MatchResult&,
                              const CacheSuccess&,

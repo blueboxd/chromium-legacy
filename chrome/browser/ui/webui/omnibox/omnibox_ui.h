@@ -18,11 +18,14 @@ class OmniboxUI : public ui::MojoWebUIController {
   explicit OmniboxUI(content::WebUI* contents);
   ~OmniboxUI() override;
 
- private:
-  void BindOmniboxPageHandler(
-      mojo::PendingReceiver<mojom::OmniboxPageHandler> receiver);
+  // Instantiates the implementor of the mojom::OmniboxPageHandler mojo
+  // interface passing the pending receiver that will be internally bound.
+  void BindInterface(mojo::PendingReceiver<mojom::OmniboxPageHandler> receiver);
 
+ private:
   std::unique_ptr<OmniboxPageHandler> omnibox_handler_;
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxUI);
 };

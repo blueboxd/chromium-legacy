@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.toolbar.bottom;
 
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
@@ -13,6 +14,7 @@ import androidx.annotation.StringRes;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
@@ -26,14 +28,14 @@ import org.chromium.components.feature_engagement.Tracker;
  * toolbar, and updating the model accordingly.
  */
 class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
-    /** The amount of time to show the Duet help bubble for. */
-    private static final int DUET_IPH_BUBBLE_SHOW_DURATION_MS = 10000;
-
     /** The transparency fraction of the IPH bubble. */
     private static final float DUET_IPH_BUBBLE_ALPHA_FRACTION = 0.9f;
 
     /** The transparency fraction of the IPH background. */
     private static final float DUET_IPH_BACKGROUND_ALPHA_FRACTION = 0.3f;
+
+    /** The dismissable parameter name of the IPH. */
+    static final String DUET_IPH_TAP_TO_DISMISS_PARAM_NAME = "duet_iph_tap_to_dismiss_enabled";
 
     /** The model for the browsing mode bottom toolbar that holds all of its state. */
     private final BrowsingModeBottomToolbarModel mModel;
@@ -68,7 +70,9 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
      */
     void showIPH(@FeatureConstants String feature, ChromeActivity activity, View anchor,
             Tracker tracker, Runnable completeRunnable) {
-        if (!tracker.shouldTriggerHelpUI(feature) || !anchor.isEnabled()) return;
+        if (!tracker.shouldTriggerHelpUI(feature) || !anchor.isShown() || !anchor.isEnabled()) {
+            return;
+        }
         int innerBackgroundColor =
                 ApiCompatibilityUtils.getColor(anchor.getResources(), R.color.modern_primary_color);
         int baseBubbleColor =
@@ -100,13 +104,25 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
             default:
                 assert false : "Unsupported FeatureConstants: " + feature;
         }
+
+        // Default value for whether to able to dismiss the IPH for duet is true.
+        boolean tapToDismiss = true;
+        if (ChromeFeatureList.isInitialized()) {
+            tapToDismiss = ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                    feature, DUET_IPH_TAP_TO_DISMISS_PARAM_NAME, true);
+        }
+
+        if (tapToDismiss) {
+            // When users can dismiss the IPH, the outer background should be total transparent.
+            finalScrimColor = Color.TRANSPARENT;
+        }
+
         FeatureHighlightProvider.getInstance().buildForView(activity, anchor, titleId,
                 FeatureHighlightProvider.TextAlignment.CENTER, R.style.TextAppearance_WhiteTitle1,
                 descId, FeatureHighlightProvider.TextAlignment.CENTER,
                 R.style.TextAppearance_WhiteBody, innerBackgroundColor, finalOuterColor,
-                finalScrimColor, DUET_IPH_BUBBLE_SHOW_DURATION_MS, completeRunnable);
-
-        anchor.postDelayed(() -> tracker.dismissed(feature), DUET_IPH_BUBBLE_SHOW_DURATION_MS);
+                finalScrimColor, FeatureHighlightProvider.NO_TIMEOUT, tapToDismiss,
+                completeRunnable);
     }
 
     /**

@@ -417,7 +417,7 @@ FrameSequenceTracker::FrameSequenceTracker(
 FrameSequenceTracker::~FrameSequenceTracker() {
 }
 
-void FrameSequenceTracker::ReportMetrics() {
+void FrameSequenceTracker::ReportMetricsForTesting() {
   metrics_->ReportMetrics();
 }
 

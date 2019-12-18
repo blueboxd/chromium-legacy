@@ -32,14 +32,6 @@ namespace blink {
 // Collection that limits to a particular tag.
 class TagCollection : public HTMLCollection {
  public:
-  static TagCollection* Create(ContainerNode& root_node,
-                               CollectionType type,
-                               const AtomicString& qualified_name) {
-    DCHECK_EQ(type, kTagCollectionType);
-    return MakeGarbageCollected<TagCollection>(root_node, kTagCollectionType,
-                                               qualified_name);
-  }
-
   TagCollection(ContainerNode& root_node,
                 CollectionType,
                 const AtomicString& qualified_name);
@@ -53,13 +45,6 @@ class TagCollection : public HTMLCollection {
 
 class TagCollectionNS : public HTMLCollection {
  public:
-  static TagCollectionNS* Create(ContainerNode& root_node,
-                                 const AtomicString& namespace_uri,
-                                 const AtomicString& local_name) {
-    return MakeGarbageCollected<TagCollectionNS>(
-        root_node, kTagCollectionNSType, namespace_uri, local_name);
-  }
-
   TagCollectionNS(ContainerNode& root_node,
                   CollectionType,
                   const AtomicString& namespace_uri,

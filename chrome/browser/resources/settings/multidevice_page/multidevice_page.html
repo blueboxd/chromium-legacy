@@ -42,7 +42,8 @@
             </template>
             <div class$=
                 "[[getMultiDeviceItemLabelBlockCssClass_(pageContentData)]]
-                    settings-box-text">
+                    settings-box-text"
+                aria-hidden$="[[getTextAriaHidden_(pageContentData)]]">
               <div id="multidevice-label">
                 [[getLabelText_(pageContentData)]]
               </div>

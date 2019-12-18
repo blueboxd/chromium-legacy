@@ -27,7 +27,6 @@ class CORE_EXPORT Deprecation final {
 
  public:
   Deprecation();
-  ~Deprecation();
 
   static void WarnOnDeprecatedProperties(const LocalFrame*,
                                          CSSPropertyID unresolved_property);

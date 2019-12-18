@@ -168,8 +168,6 @@ bool SharedImageVideo::ProduceLegacyMailbox(MailboxManager* mailbox_manager) {
   return true;
 }
 
-void SharedImageVideo::Destroy() {}
-
 size_t SharedImageVideo::EstimatedSizeForMemTracking() const {
   // This backing contributes to gpu memory only if its bound to the texture and
   // not when the backing is created.

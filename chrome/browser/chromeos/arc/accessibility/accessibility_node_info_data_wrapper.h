@@ -20,6 +20,8 @@ class AccessibilityNodeInfoDataWrapper : public AccessibilityInfoDataWrapper {
                                    mojom::AccessibilityNodeInfoData* node,
                                    bool is_clickable_leaf);
 
+  ~AccessibilityNodeInfoDataWrapper() override;
+
   // AccessibilityInfoDataWrapper overrides.
   bool IsNode() const override;
   mojom::AccessibilityNodeInfoData* GetNode() const override;
@@ -35,6 +37,9 @@ class AccessibilityNodeInfoDataWrapper : public AccessibilityInfoDataWrapper {
       std::vector<AccessibilityInfoDataWrapper*>* children) const override;
 
   mojom::AccessibilityNodeInfoData* node() { return node_ptr_; }
+
+  void set_role(ax::mojom::Role role) { role_ = role; }
+  void set_cached_name(const std::string& name) { cached_name_ = name; }
 
  private:
   bool GetProperty(mojom::AccessibilityBooleanProperty prop) const;
@@ -61,6 +66,9 @@ class AccessibilityNodeInfoDataWrapper : public AccessibilityInfoDataWrapper {
   mojom::AccessibilityNodeInfoData* node_ptr_ = nullptr;
 
   bool is_clickable_leaf_;
+
+  base::Optional<ax::mojom::Role> role_;
+  base::Optional<std::string> cached_name_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityNodeInfoDataWrapper);
 };

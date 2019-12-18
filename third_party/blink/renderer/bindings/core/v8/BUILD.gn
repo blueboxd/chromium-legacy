@@ -162,6 +162,8 @@ generated_core_callback_function_files = [
   "$bindings_core_v8_output_dir/v8_idle_request_callback.h",
   "$bindings_core_v8_output_dir/v8_intersection_observer_callback.cc",
   "$bindings_core_v8_output_dir/v8_intersection_observer_callback.h",
+  "$bindings_core_v8_output_dir/v8_intrinsic_sizes_callback.cc",
+  "$bindings_core_v8_output_dir/v8_intrinsic_sizes_callback.h",
   "$bindings_core_v8_output_dir/v8_layout_callback.cc",
   "$bindings_core_v8_output_dir/v8_layout_callback.h",
   "$bindings_core_v8_output_dir/v8_mojo_watch_callback.cc",

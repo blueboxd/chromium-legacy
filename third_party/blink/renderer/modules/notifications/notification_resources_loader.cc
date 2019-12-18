@@ -118,6 +118,8 @@ void NotificationResourcesLoader::LoadIcon(
 
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
+  resource_request.SetRequestDestination(
+      network::mojom::RequestDestination::kImage);
   resource_request.SetPriority(ResourceLoadPriority::kMedium);
   resource_request.SetTimeoutInterval(kImageFetchTimeout);
 

@@ -4714,6 +4714,18 @@
       }
     },
 
+    'rendering_desktop_representative_perf_tests_isolated_scripts_experimental': {
+      'rendering_representative_perf_tests': {
+        'isolate_name': 'rendering_representative_perf_tests',
+        'args': [
+          "../../tools/perf/run_benchmark",
+          "--benchmarks=rendering.desktop",
+        ],
+        'swarming': {},
+        'experiment_percentage': 25,
+      }
+    },
+
     'rendering_mobile_representative_perf_tests_isolated_scripts': {
       'rendering_representative_perf_tests': {
         'isolate_name': 'rendering_representative_perf_tests',
@@ -4723,6 +4735,19 @@
           "--browser=android-chromium"
         ],
         'swarming': {},
+      }
+    },
+
+    'rendering_mobile_representative_perf_tests_isolated_scripts_experimental': {
+      'rendering_representative_perf_tests': {
+        'isolate_name': 'rendering_representative_perf_tests',
+        'args': [
+          "../../tools/perf/run_benchmark",
+          "--benchmarks=rendering.mobile",
+          "--browser=android-chromium"
+        ],
+        'swarming': {},
+        'experiment_percentage': 25,
       }
     },
 

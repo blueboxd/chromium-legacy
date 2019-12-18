@@ -15,7 +15,6 @@ import org.chromium.components.signin.identitymanager.IdentityManager;
 /**
  * Provides access to sign-in related services that are profile-keyed on the native side. Java
  * equivalent of AccountTrackerServiceFactory and similar classes.
- * TODO(https://crbug.com/1032542): Inline the static methods of this class
  */
 public class IdentityServicesProvider {
     private static IdentityServicesProvider sIdentityServicesProvider;

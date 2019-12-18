@@ -33,7 +33,8 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   // https://html.spec.whatwg.org/C/#fetch-an-import()-module-script-graph
   static void Fetch(const KURL&,
                     ResourceFetcher* fetch_client_settings_object_fetcher,
-                    mojom::RequestContextType destination,
+                    mojom::RequestContextType context_type,
+                    network::mojom::RequestDestination destination,
                     const ScriptFetchOptions&,
                     Modulator*,
                     ModuleScriptCustomFetchType,
@@ -44,14 +45,16 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   static void FetchDescendantsForInlineScript(
       ModuleScript*,
       ResourceFetcher* fetch_client_settings_object_fetcher,
-      mojom::RequestContextType destination,
+      mojom::RequestContextType context_type,
+      network::mojom::RequestDestination destination,
       Modulator*,
       ModuleScriptCustomFetchType,
       ModuleTreeLinkerRegistry*,
       ModuleTreeClient*);
 
   ModuleTreeLinker(ResourceFetcher* fetch_client_settings_object_fetcher,
-                   mojom::RequestContextType destination,
+                   mojom::RequestContextType context_type,
+                   network::mojom::RequestDestination destination,
                    Modulator*,
                    ModuleScriptCustomFetchType,
                    ModuleTreeLinkerRegistry*,
@@ -99,7 +102,8 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
 
   const Member<ResourceFetcher> fetch_client_settings_object_fetcher_;
 
-  const mojom::RequestContextType destination_;
+  const mojom::RequestContextType context_type_;
+  const network::mojom::RequestDestination destination_;
   const Member<Modulator> modulator_;
   const ModuleScriptCustomFetchType custom_fetch_type_;
   HashSet<KURL> visited_set_;

@@ -83,7 +83,7 @@ class CORE_EXPORT FocusController final
       RemoteFrame* from,
       LocalFrame* to,
       InputDeviceCapabilities* source_capabilities = nullptr);
-  Element* FindFocusableElementInShadowHost(const Element& shadow_host);
+  static Element* FindFocusableElementInShadowHost(const Element& shadow_host);
   Element* NextFocusableElementInForm(Element*, WebFocusType);
   Element* FindFocusableElementAfter(Element& element, WebFocusType);
 

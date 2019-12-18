@@ -411,10 +411,6 @@ class Profile : public content::BrowserContext {
   // This method is virtual in order to be overridden for tests.
   virtual bool IsNewProfile();
 
-  // Checks whether sync is configurable by the user. Returns false if sync is
-  // disallowed by the command line or controlled by configuration management.
-  bool IsSyncAllowed();
-
   // Send NOTIFICATION_PROFILE_DESTROYED for this Profile, if it has not
   // already been sent. It is necessary because most Profiles are destroyed by
   // ProfileDestroyer, but in tests, some are not.

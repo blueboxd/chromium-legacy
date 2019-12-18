@@ -35,8 +35,6 @@
 // are private implementation details.  Do not rely on them.
 
 
-// Take the name prefix into account.
-#define yylex   xpathyylex
 
 // First part of user prologue.
 #line 52 "third_party/blink/renderer/core/xml/xpath_grammar.y"
@@ -56,17 +54,17 @@
 
 using blink::xpath::Step;
 
-#line 59 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 57 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
 
 
 #include "xpath_grammar_generated.h"
 
 
 // Unqualified %code blocks.
-#line 112 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 113 "third_party/blink/renderer/core/xml/xpath_grammar.y"
 
 
-static int xpathyylex(xpathyy::YyParser::semantic_type* yylval) {
+static int yylex(xpathyy::YyParser::semantic_type* yylval) {
   return blink::xpath::Parser::Current()->Lex(yylval);
 }
 
@@ -75,7 +73,7 @@ void YyParser::error(const std::string&) { }
 }
 
 
-#line 78 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 76 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
 
 
 #ifndef YY_
@@ -146,8 +144,9 @@ void YyParser::error(const std::string&) { }
 #define YYERROR         goto yyerrorlab
 #define YYRECOVERING()  (!!yyerrstatus_)
 
+#line 69 "third_party/blink/renderer/core/xml/xpath_grammar.y"
 namespace xpathyy {
-#line 150 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 149 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
 
 
   /// Build a parser object.
@@ -1062,98 +1061,98 @@ namespace xpathyy {
           switch (yyn)
             {
   case 2:
-#line 128 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 129 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       parser_->top_expr_ = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ();
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ();
     }
-#line 1070 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1069 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 3:
-#line 136 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 137 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::LocationPath> > ();
       yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > ()->SetAbsolute(false);
     }
-#line 1079 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1078 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 4:
-#line 142 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 143 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::LocationPath> > ();
       yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > ()->SetAbsolute(true);
     }
-#line 1088 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1087 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 5:
-#line 150 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 151 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > () = blink::MakeGarbageCollected<blink::xpath::LocationPath>();
     }
-#line 1096 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1095 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 6:
-#line 155 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 156 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::LocationPath> > ();
     }
-#line 1104 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1103 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 7:
-#line 160 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 161 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::LocationPath> > ();
       yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > ()->InsertFirstStep(yystack_[1].value.as < blink::Persistent<blink::xpath::Step> > ());
     }
-#line 1113 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1112 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 8:
-#line 168 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 169 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > () = blink::MakeGarbageCollected<blink::xpath::LocationPath>();
       yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > ()->AppendStep(yystack_[0].value.as < blink::Persistent<blink::xpath::Step> > ());
     }
-#line 1122 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1121 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 9:
-#line 174 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 175 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > () = yystack_[2].value.as < blink::Persistent<blink::xpath::LocationPath> > ();
       yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > ()->AppendStep(yystack_[0].value.as < blink::Persistent<blink::xpath::Step> > ());
     }
-#line 1131 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1130 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 10:
-#line 180 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 181 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > () = yystack_[2].value.as < blink::Persistent<blink::xpath::LocationPath> > ();
       yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > ()->AppendStep(yystack_[1].value.as < blink::Persistent<blink::xpath::Step> > ());
       yylhs.value.as < blink::Persistent<blink::xpath::LocationPath> > ()->AppendStep(yystack_[0].value.as < blink::Persistent<blink::xpath::Step> > ());
     }
-#line 1141 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1140 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 11:
-#line 189 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 190 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       if (yystack_[0].value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > ())
         yylhs.value.as < blink::Persistent<blink::xpath::Step> > () = blink::MakeGarbageCollected<Step>(Step::kChildAxis, *yystack_[1].value.as < blink::Persistent<blink::xpath::Step::NodeTest> > (), *yystack_[0].value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > ());
       else
         yylhs.value.as < blink::Persistent<blink::xpath::Step> > () = blink::MakeGarbageCollected<Step>(Step::kChildAxis, *yystack_[1].value.as < blink::Persistent<blink::xpath::Step::NodeTest> > ());
     }
-#line 1152 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1151 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 12:
-#line 197 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 198 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       AtomicString local_name;
       AtomicString namespace_uri;
@@ -1167,22 +1166,22 @@ namespace xpathyy {
       else
         yylhs.value.as < blink::Persistent<blink::xpath::Step> > () = blink::MakeGarbageCollected<Step>(Step::kChildAxis, Step::NodeTest(Step::NodeTest::kNameTest, local_name, namespace_uri));
     }
-#line 1170 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1169 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 13:
-#line 212 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 213 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       if (yystack_[0].value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > ())
         yylhs.value.as < blink::Persistent<blink::xpath::Step> > () = blink::MakeGarbageCollected<Step>(yystack_[2].value.as < blink::xpath::Step::Axis > (), *yystack_[1].value.as < blink::Persistent<blink::xpath::Step::NodeTest> > (), *yystack_[0].value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > ());
       else
         yylhs.value.as < blink::Persistent<blink::xpath::Step> > () = blink::MakeGarbageCollected<Step>(yystack_[2].value.as < blink::xpath::Step::Axis > (), *yystack_[1].value.as < blink::Persistent<blink::xpath::Step::NodeTest> > ());
     }
-#line 1181 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1180 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 14:
-#line 220 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 221 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       AtomicString local_name;
       AtomicString namespace_uri;
@@ -1196,31 +1195,31 @@ namespace xpathyy {
       else
         yylhs.value.as < blink::Persistent<blink::xpath::Step> > () = blink::MakeGarbageCollected<Step>(yystack_[2].value.as < blink::xpath::Step::Axis > (), Step::NodeTest(Step::NodeTest::kNameTest, local_name, namespace_uri));
     }
-#line 1199 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1198 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 15:
-#line 234 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 235 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     { yylhs.value.as < blink::Persistent<blink::xpath::Step> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Step> > (); }
-#line 1205 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1204 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 16:
-#line 238 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 239 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     { yylhs.value.as < blink::xpath::Step::Axis > () = yystack_[0].value.as < blink::xpath::Step::Axis > (); }
-#line 1211 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1210 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 17:
-#line 241 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 242 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::xpath::Step::Axis > () = Step::kAttributeAxis;
     }
-#line 1219 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1218 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 18:
-#line 248 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 249 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       if (yystack_[2].value.as < String > () == "node")
         yylhs.value.as < blink::Persistent<blink::xpath::Step::NodeTest> > () = blink::MakeGarbageCollected<Step::NodeTest>(Step::NodeTest::kAnyNodeTest);
@@ -1229,345 +1228,345 @@ namespace xpathyy {
       else if (yystack_[2].value.as < String > () == "comment")
         yylhs.value.as < blink::Persistent<blink::xpath::Step::NodeTest> > () = blink::MakeGarbageCollected<Step::NodeTest>(Step::NodeTest::kCommentNodeTest);
     }
-#line 1232 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1231 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 19:
-#line 258 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 259 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::Step::NodeTest> > () = blink::MakeGarbageCollected<Step::NodeTest>(Step::NodeTest::kProcessingInstructionNodeTest);
     }
-#line 1240 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1239 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 20:
-#line 263 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 264 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::Step::NodeTest> > () = blink::MakeGarbageCollected<Step::NodeTest>(Step::NodeTest::kProcessingInstructionNodeTest, yystack_[1].value.as < String > ().StripWhiteSpace());
     }
-#line 1248 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1247 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 21:
-#line 270 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 271 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > () = 0;
     }
-#line 1256 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1255 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 22:
-#line 275 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 276 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > () = yystack_[0].value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > ();
     }
-#line 1264 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1263 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 23:
-#line 282 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 283 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > () = blink::MakeGarbageCollected<blink::HeapVector<blink::Member<blink::xpath::Predicate>>>();
       yylhs.value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > ()->push_back(blink::MakeGarbageCollected<blink::xpath::Predicate>(yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ()));
     }
-#line 1273 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1272 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 24:
-#line 288 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 289 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > () = yystack_[1].value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > ();
       yylhs.value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > ()->push_back(blink::MakeGarbageCollected<blink::xpath::Predicate>(yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ()));
     }
-#line 1282 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1281 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 25:
-#line 296 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 297 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[1].value.as < blink::Persistent<blink::xpath::Expression> > ();
     }
-#line 1290 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1289 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 26:
-#line 303 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 304 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::Step> > () = blink::MakeGarbageCollected<Step>(Step::kDescendantOrSelfAxis, Step::NodeTest(Step::NodeTest::kAnyNodeTest));
     }
-#line 1298 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1297 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 27:
-#line 310 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 311 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::Step> > () = blink::MakeGarbageCollected<Step>(Step::kSelfAxis, Step::NodeTest(Step::NodeTest::kAnyNodeTest));
     }
-#line 1306 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1305 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 28:
-#line 315 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 316 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::Step> > () = blink::MakeGarbageCollected<Step>(Step::kParentAxis, Step::NodeTest(Step::NodeTest::kAnyNodeTest));
     }
-#line 1314 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1313 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 29:
-#line 322 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 323 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::VariableReference>(yystack_[0].value.as < String > ());
     }
-#line 1322 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1321 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 30:
-#line 327 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 328 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[1].value.as < blink::Persistent<blink::xpath::Expression> > ();
     }
-#line 1330 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1329 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 31:
-#line 332 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 333 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::StringExpression>(yystack_[0].value.as < String > ());
     }
-#line 1338 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1337 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 32:
-#line 337 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 338 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::Number>(yystack_[0].value.as < String > ().ToDouble());
     }
-#line 1346 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1345 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 33:
-#line 341 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 342 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
-#line 1352 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1351 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 34:
-#line 346 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 347 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::xpath::CreateFunction(yystack_[2].value.as < String > ());
       if (!yylhs.value.as < blink::Persistent<blink::xpath::Expression> > ())
         YYABORT;
     }
-#line 1362 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1361 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 35:
-#line 353 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 354 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::xpath::CreateFunction(yystack_[3].value.as < String > (), *yystack_[1].value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Expression>>> > ());
       if (!yylhs.value.as < blink::Persistent<blink::xpath::Expression> > ())
         YYABORT;
     }
-#line 1372 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1371 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 36:
-#line 362 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 363 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Expression>>> > () = blink::MakeGarbageCollected<blink::HeapVector<blink::Member<blink::xpath::Expression>>>();
       yylhs.value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Expression>>> > ()->push_back(yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ());
     }
-#line 1381 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1380 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 37:
-#line 368 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 369 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Expression>>> > () = yystack_[2].value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Expression>>> > ();
       yylhs.value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Expression>>> > ()->push_back(yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ());
     }
-#line 1390 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1389 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 38:
-#line 375 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 376 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
-#line 1396 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1395 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 39:
-#line 379 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 380 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
-#line 1402 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1401 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 40:
-#line 382 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 383 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::Union>();
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > ()->AddSubExpression(yystack_[2].value.as < blink::Persistent<blink::xpath::Expression> > ());
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > ()->AddSubExpression(yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ());
     }
-#line 1412 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1411 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 41:
-#line 391 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 392 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::LocationPath> > ();
     }
-#line 1420 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1419 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 42:
-#line 395 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 396 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
-#line 1426 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1425 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 43:
-#line 398 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 399 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yystack_[0].value.as < blink::Persistent<blink::xpath::LocationPath> > ()->SetAbsolute(true);
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::Path>(yystack_[2].value.as < blink::Persistent<blink::xpath::Expression> > (), yystack_[0].value.as < blink::Persistent<blink::xpath::LocationPath> > ());
     }
-#line 1435 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1434 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 44:
-#line 404 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 405 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yystack_[0].value.as < blink::Persistent<blink::xpath::LocationPath> > ()->InsertFirstStep(yystack_[1].value.as < blink::Persistent<blink::xpath::Step> > ());
       yystack_[0].value.as < blink::Persistent<blink::xpath::LocationPath> > ()->SetAbsolute(true);
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::Path>(yystack_[2].value.as < blink::Persistent<blink::xpath::Expression> > (), yystack_[0].value.as < blink::Persistent<blink::xpath::LocationPath> > ());
     }
-#line 1445 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1444 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 45:
-#line 412 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 413 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
-#line 1451 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1450 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 46:
-#line 415 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 416 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::Filter>(yystack_[1].value.as < blink::Persistent<blink::xpath::Expression> > (), *yystack_[0].value.as < blink::Persistent<blink::HeapVector<blink::Member<blink::xpath::Predicate>>> > ());
     }
-#line 1459 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1458 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 47:
-#line 421 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 422 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
-#line 1465 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1464 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 48:
-#line 424 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 425 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::LogicalOp>(blink::xpath::LogicalOp::kOP_Or, yystack_[2].value.as < blink::Persistent<blink::xpath::Expression> > (), yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ());
     }
-#line 1473 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1472 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 49:
-#line 430 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 431 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
-#line 1479 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1478 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 50:
-#line 433 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 434 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::LogicalOp>(blink::xpath::LogicalOp::kOP_And, yystack_[2].value.as < blink::Persistent<blink::xpath::Expression> > (), yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ());
     }
-#line 1487 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1486 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 51:
-#line 439 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 440 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
-#line 1493 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1492 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 52:
-#line 442 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 443 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::EqTestOp>(yystack_[1].value.as < blink::xpath::EqTestOp::Opcode > (), yystack_[2].value.as < blink::Persistent<blink::xpath::Expression> > (), yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ());
     }
-#line 1501 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1500 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 53:
-#line 448 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 449 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
-#line 1507 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1506 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 54:
-#line 451 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 452 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::EqTestOp>(yystack_[1].value.as < blink::xpath::EqTestOp::Opcode > (), yystack_[2].value.as < blink::Persistent<blink::xpath::Expression> > (), yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ());
     }
-#line 1515 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1514 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 55:
-#line 457 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 458 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
-#line 1521 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1520 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 56:
-#line 460 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 461 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::NumericOp>(blink::xpath::NumericOp::kOP_Add, yystack_[2].value.as < blink::Persistent<blink::xpath::Expression> > (), yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ());
     }
-#line 1529 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1528 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 57:
-#line 465 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 466 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::NumericOp>(blink::xpath::NumericOp::kOP_Sub, yystack_[2].value.as < blink::Persistent<blink::xpath::Expression> > (), yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ());
     }
-#line 1537 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1536 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 58:
-#line 471 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 472 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
-#line 1543 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1542 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 59:
-#line 474 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 475 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::NumericOp>(yystack_[1].value.as < blink::xpath::NumericOp::Opcode > (), yystack_[2].value.as < blink::Persistent<blink::xpath::Expression> > (), yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ());
     }
-#line 1551 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1550 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 60:
-#line 480 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 481 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     { yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > (); }
-#line 1557 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1556 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
   case 61:
-#line 483 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 484 "third_party/blink/renderer/core/xml/xpath_grammar.y"
     {
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > () = blink::MakeGarbageCollected<blink::xpath::Negative>();
       yylhs.value.as < blink::Persistent<blink::xpath::Expression> > ()->AddSubExpression(yystack_[0].value.as < blink::Persistent<blink::xpath::Expression> > ());
     }
-#line 1566 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1565 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
     break;
 
 
-#line 1570 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
+#line 1569 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
 
             default:
               break;
@@ -1893,13 +1892,13 @@ namespace xpathyy {
   const unsigned short
   YyParser::yyrline_[] =
   {
-       0,   127,   127,   135,   141,   149,   154,   159,   167,   173,
-     179,   188,   196,   211,   219,   234,   238,   240,   247,   257,
-     262,   270,   274,   281,   287,   295,   302,   309,   314,   321,
-     326,   331,   336,   341,   345,   352,   361,   367,   375,   379,
-     381,   390,   395,   397,   403,   412,   414,   421,   423,   430,
-     432,   439,   441,   448,   450,   457,   459,   464,   471,   473,
-     480,   482
+       0,   128,   128,   136,   142,   150,   155,   160,   168,   174,
+     180,   189,   197,   212,   220,   235,   239,   241,   248,   258,
+     263,   271,   275,   282,   288,   296,   303,   310,   315,   322,
+     327,   332,   337,   342,   346,   353,   362,   368,   376,   380,
+     382,   391,   396,   398,   404,   413,   415,   422,   424,   431,
+     433,   440,   442,   449,   451,   458,   460,   465,   472,   474,
+     481,   483
   };
 
   // Print the state stack on the debug stream.
@@ -1980,8 +1979,9 @@ namespace xpathyy {
       return undef_token_;
   }
 
+#line 69 "third_party/blink/renderer/core/xml/xpath_grammar.y"
 } // xpathyy
 #line 1984 "third_party/blink/renderer/core/xml/xpath_grammar_generated.cc"
 
-#line 489 "third_party/blink/renderer/core/xml/xpath_grammar.y"
+#line 490 "third_party/blink/renderer/core/xml/xpath_grammar.y"
 

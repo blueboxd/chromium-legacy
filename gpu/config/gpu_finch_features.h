@@ -33,10 +33,9 @@ GPU_EXPORT extern const base::Feature kGpuProcessHighPriorityWin;
 
 GPU_EXPORT extern const base::Feature kGpuUseDisplayThreadPriority;
 
-GPU_EXPORT extern const base::Feature
-    kGpuWatchdogNoTerminationAwaitingAcknowledge;
-
 GPU_EXPORT extern const base::Feature kGpuWatchdogV2;
+
+GPU_EXPORT extern const base::Feature kGpuWatchdogV1NewTimeout;
 
 #if defined(OS_MACOSX)
 GPU_EXPORT extern const base::Feature kMetal;

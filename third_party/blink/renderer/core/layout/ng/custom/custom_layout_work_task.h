@@ -14,24 +14,42 @@ namespace blink {
 class ComputedStyle;
 class CustomLayoutChild;
 class CustomLayoutToken;
+class NGBlockNode;
 class NGConstraintSpace;
+class NGLayoutInputNode;
 class SerializedScriptValue;
 class ScriptPromiseResolver;
+struct NGBoxStrut;
 
 // Contains all the information needed to resolve a promise with a fragment or
 // intrinsic-sizes.
 class CustomLayoutWorkTask {
  public:
+  enum TaskType {
+    kLayoutFragment,
+    kIntrinsicSizes,
+  };
+
+  // Used when resolving a promise with intrinsic-sizes.
+  CustomLayoutWorkTask(CustomLayoutChild*,
+                       CustomLayoutToken*,
+                       ScriptPromiseResolver*,
+                       const TaskType type);
+
+  // Used when resolving a promise with a fragment.
   CustomLayoutWorkTask(CustomLayoutChild*,
                        CustomLayoutToken*,
                        ScriptPromiseResolver*,
                        const CustomLayoutConstraintsOptions*,
-                       scoped_refptr<SerializedScriptValue> constraint_data);
+                       scoped_refptr<SerializedScriptValue> constraint_data,
+                       const TaskType type);
   ~CustomLayoutWorkTask();
 
   // Runs this work task.
-  void Run(const NGConstraintSpace& parent_space,
-           const ComputedStyle& parent_style);
+  void Run(const NGBlockNode& parent,
+           const NGConstraintSpace& parent_space,
+           const ComputedStyle& parent_style,
+           const NGBoxStrut& border_scrollbar_padding);
 
  private:
   Persistent<CustomLayoutChild> child_;
@@ -39,6 +57,16 @@ class CustomLayoutWorkTask {
   Persistent<ScriptPromiseResolver> resolver_;
   Persistent<const CustomLayoutConstraintsOptions> options_;
   scoped_refptr<SerializedScriptValue> constraint_data_;
+  TaskType type_;
+
+  void RunLayoutFragmentTask(const NGConstraintSpace& parent_space,
+                             const ComputedStyle& parent_style,
+                             NGLayoutInputNode child);
+  void RunIntrinsicSizesTask(const NGBlockNode& parent,
+                             const NGConstraintSpace& parent_space,
+                             const ComputedStyle& parent_style,
+                             const NGBoxStrut& border_scrollbar_padding,
+                             NGLayoutInputNode child);
 };
 
 }  // namespace blink

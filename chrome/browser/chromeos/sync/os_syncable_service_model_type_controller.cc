@@ -15,6 +15,7 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/model/model_type_controller_delegate.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
 #include "components/sync/model_impl/syncable_service_based_bridge.h"
@@ -23,40 +24,19 @@ using syncer::ClientTagBasedModelTypeProcessor;
 using syncer::ForwardingModelTypeControllerDelegate;
 using syncer::SyncableServiceBasedBridge;
 
-// static
-std::unique_ptr<OsSyncableServiceModelTypeController>
-OsSyncableServiceModelTypeController::Create(
+OsSyncableServiceModelTypeController::OsSyncableServiceModelTypeController(
     syncer::ModelType type,
     syncer::OnceModelTypeStoreFactory store_factory,
     base::WeakPtr<syncer::SyncableService> syncable_service,
     const base::RepeatingClosure& dump_stack,
     PrefService* pref_service,
-    syncer::SyncService* sync_service) {
-  // The bridge must be created first so that it can be used to construct the
-  // delegates passed to the superclass constructor.
-  auto bridge = std::make_unique<SyncableServiceBasedBridge>(
-      type, std::move(store_factory),
-      std::make_unique<ClientTagBasedModelTypeProcessor>(type, dump_stack),
-      syncable_service.get());
-  // Calls new because the constructor is private.
-  return base::WrapUnique(new OsSyncableServiceModelTypeController(
-      type, std::move(bridge), pref_service, sync_service));
-}
-
-OsSyncableServiceModelTypeController::OsSyncableServiceModelTypeController(
-    syncer::ModelType type,
-    std::unique_ptr<syncer::ModelTypeSyncBridge> bridge,
-    PrefService* pref_service,
     syncer::SyncService* sync_service)
-    : ModelTypeController(
+    : ModelTypeController(type),
+      bridge_(std::make_unique<SyncableServiceBasedBridge>(
           type,
-          /*delegate_for_full_sync_mode=*/
-          std::make_unique<ForwardingModelTypeControllerDelegate>(
-              bridge->change_processor()->GetControllerDelegate().get()),
-          /*delegate_for_transport_mode=*/
-          std::make_unique<ForwardingModelTypeControllerDelegate>(
-              bridge->change_processor()->GetControllerDelegate().get())),
-      bridge_(std::move(bridge)),
+          std::move(store_factory),
+          std::make_unique<ClientTagBasedModelTypeProcessor>(type, dump_stack),
+          syncable_service.get())),
       pref_service_(pref_service),
       sync_service_(sync_service) {
   DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
@@ -64,6 +44,14 @@ OsSyncableServiceModelTypeController::OsSyncableServiceModelTypeController(
          type == syncer::OS_PRIORITY_PREFERENCES);
   DCHECK(pref_service_);
   DCHECK(sync_service_);
+  syncer::ModelTypeControllerDelegate* delegate =
+      bridge_->change_processor()->GetControllerDelegate().get();
+  // Runs in transport-mode and full-sync mode, sharing the bridge's delegate.
+  InitModelTypeController(
+      /*delegate_for_full_sync_mode=*/
+      std::make_unique<ForwardingModelTypeControllerDelegate>(delegate),
+      /*delegate_for_transport_mode=*/
+      std::make_unique<ForwardingModelTypeControllerDelegate>(delegate));
 
   pref_registrar_.Init(pref_service_);
   pref_registrar_.Add(

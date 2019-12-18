@@ -131,8 +131,8 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
     if (!result.is_new_entry)
       return result.stored_value->value;
 
-    TagCollectionNS* list =
-        TagCollectionNS::Create(node, namespace_uri, local_name);
+    auto* list = MakeGarbageCollected<TagCollectionNS>(
+        node, kTagCollectionNSType, namespace_uri, local_name);
     result.stored_value->value = list;
     return list;
   }

@@ -117,7 +117,8 @@ void ModuleScriptLoader::FetchInternal(
 #endif
 
   // <spec step="5">... destination is destination, ...</spec>
-  resource_request.SetRequestContext(module_request.Destination());
+  resource_request.SetRequestContext(module_request.ContextType());
+  resource_request.SetRequestDestination(module_request.Destination());
 
   ResourceLoaderOptions options;
 

@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/containers/circular_deque.h"
+#include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -41,6 +42,8 @@ class AppCacheUpdateJobTest;
 }
 
 class HostNotifier;
+
+CONTENT_EXPORT extern const base::Feature kAppCacheManifestScopeChecksFeature;
 
 // Application cache Update algorithm and state.
 class CONTENT_EXPORT AppCacheUpdateJob

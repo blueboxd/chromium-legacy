@@ -3161,6 +3161,11 @@ class TestSharedImageBacking : public SharedImageBacking {
     texture_->SetImmutable(true, true);
   }
 
+  ~TestSharedImageBacking() override {
+    texture_->RemoveLightweightRef(have_context());
+    texture_ = nullptr;
+  }
+
   gfx::Rect ClearedRect() const override {
     return texture_->GetLevelClearedRect(texture_->target(), 0);
   }
@@ -3175,11 +3180,6 @@ class TestSharedImageBacking : public SharedImageBacking {
 
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override {
     return false;
-  }
-
-  void Destroy() override {
-    texture_->RemoveLightweightRef(have_context());
-    texture_ = nullptr;
   }
 
   void OnMemoryDump(const std::string& dump_name,

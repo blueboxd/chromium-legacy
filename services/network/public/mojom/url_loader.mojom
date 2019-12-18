@@ -276,6 +276,9 @@ struct URLRequest {
   // about this.
   int32 fetch_request_context_type;
 
+  // https://fetch.spec.whatwg.org/#concept-request-destiantion
+  RequestDestination destination;
+
   // Optional resource request body.
   URLRequestBody? request_body;
 

@@ -703,8 +703,16 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest,
   NavigateAndCheckForToolbar(app_browser_, app_url, true);
 }
 
+// Flaky, mostly on Windows: http://crbug.com/1032319
+#if defined(OS_WIN)
+#define MAYBE_ShouldShowCustomTabBarForHTTPAppHTTPSUrl \
+  DISABLED_ShouldShowCustomTabBarForHTTPAppHTTPSUrl
+#else
+#define MAYBE_ShouldShowCustomTabBarForHTTPAppHTTPSUrl \
+  ShouldShowCustomTabBarForHTTPAppHTTPSUrl
+#endif
 IN_PROC_BROWSER_TEST_P(HostedAppTest,
-                       ShouldShowCustomTabBarForHTTPAppHTTPSUrl) {
+                       MAYBE_ShouldShowCustomTabBarForHTTPAppHTTPSUrl) {
   ASSERT_TRUE(https_server()->Start());
 
   const GURL app_url = https_server()->GetURL("app.com", "/simple.html");

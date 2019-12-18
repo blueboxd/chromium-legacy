@@ -49,7 +49,6 @@ jumbo_source_set("common") {
     "indexeddb/indexeddb_metadata.cc",
     "loader/mime_sniffing_throttle.cc",
     "loader/mime_sniffing_url_loader.cc",
-    "loader/request_destination.cc",
     "loader/throttling_url_loader.cc",
     "loader/throttling_url_loader.h",
     "loader/url_loader_factory_bundle.cc",

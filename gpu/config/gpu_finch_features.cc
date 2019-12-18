@@ -66,15 +66,13 @@ const base::Feature kGpuUseDisplayThreadPriority{
     "GpuUseDisplayThreadPriority", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// Allow GPU watchdog to keep waiting for ackowledgement if one is already
-// issued from the monitored thread.
-const base::Feature kGpuWatchdogNoTerminationAwaitingAcknowledge{
-    "GpuWatchdogNoTerminationAwaitingAcknowledge",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Gpu watchdog V2 to simplify the logic and reduce GPU hangs
 const base::Feature kGpuWatchdogV2{"GpuWatchdogV2",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Use a different set of watchdog timeouts on V1
+const base::Feature kGpuWatchdogV1NewTimeout{"GpuWatchdogV1NewTimeout",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_MACOSX)
 // Enable use of Metal for OOP rasterization.

@@ -217,8 +217,20 @@ class SharedImageBackingD3D : public SharedImageBacking {
   }
 
   ~SharedImageBackingD3D() override {
-    // Destroy() is safe to call even if it's already been called.
-    Destroy();
+    if (texture_) {
+      texture_->RemoveLightweightRef(have_context());
+      texture_ = nullptr;
+    } else if (texture_passthrough_) {
+      if (!have_context())
+        texture_passthrough_->MarkContextLost();
+      texture_passthrough_ = nullptr;
+    }
+    swap_chain_ = nullptr;
+    d3d11_texture_.Reset();
+    dxgi_keyed_mutex_.Reset();
+    keyed_mutex_acquire_key_ = 0;
+    keyed_mutex_acquired_ = false;
+    shared_handle_.Close();
   }
 
   // Texture is cleared on initialization.
@@ -250,23 +262,6 @@ class SharedImageBackingD3D : public SharedImageBacking {
 #else
     return nullptr;
 #endif  // BUILDFLAG(USE_DAWN)
-  }
-
-  void Destroy() override {
-    if (texture_) {
-      texture_->RemoveLightweightRef(have_context());
-      texture_ = nullptr;
-    } else if (texture_passthrough_) {
-      if (!have_context())
-        texture_passthrough_->MarkContextLost();
-      texture_passthrough_ = nullptr;
-    }
-    swap_chain_ = nullptr;
-    d3d11_texture_.Reset();
-    dxgi_keyed_mutex_.Reset();
-    keyed_mutex_acquire_key_ = 0;
-    keyed_mutex_acquired_ = false;
-    shared_handle_.Close();
   }
 
   void OnMemoryDump(const std::string& dump_name,

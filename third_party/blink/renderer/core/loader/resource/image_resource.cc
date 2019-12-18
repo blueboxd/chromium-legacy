@@ -133,7 +133,8 @@ class ImageResource::ImageResourceInfoImpl final
       const KURL& url,
       const AtomicString& initiator_name) override {
     fetcher->EmulateLoadStartedForInspector(
-        resource_.Get(), url, mojom::RequestContextType::IMAGE, initiator_name);
+        resource_.Get(), url, mojom::RequestContextType::IMAGE,
+        network::mojom::RequestDestination::kImage, initiator_name);
   }
 
   void LoadDeferredImage(ResourceFetcher* fetcher) override {
@@ -173,6 +174,7 @@ ImageResource* ImageResource::Fetch(FetchParameters& params,
   if (params.GetResourceRequest().GetRequestContext() ==
       mojom::RequestContextType::UNSPECIFIED) {
     params.SetRequestContext(mojom::RequestContextType::IMAGE);
+    params.SetRequestDestination(network::mojom::RequestDestination::kImage);
   }
 
   ImageResource* resource = ToImageResource(

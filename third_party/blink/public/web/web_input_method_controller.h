@@ -82,10 +82,15 @@ class WebInputMethodController {
   }
 
   // Populate |control_bounds| and |selection_bounds| with the bounds fetched
-  // from the active EditContext
-  virtual void GetLayoutBounds(WebRect& control_bounds,
-                               WebRect& selection_bounds) = 0;
-  // Returns true if there is an active EditContext
+  // from the active EditContext. If there isn't any active |EditContext|, then
+  // these bounds are empty.
+  virtual void GetLayoutBounds(WebRect* control_bounds,
+                               WebRect* selection_bounds) = 0;
+  // Returns true if the inputPanelPolicy flag is set as manual in
+  // |EditContext|, which indicates that the software input panel(Virtual
+  // Keyboard) shouldn't come up on focus of the EditControl.
+  virtual bool IsInputPanelPolicyManual() const = 0;
+  // Returns true if there is an active |EditContext|.
   virtual bool IsEditContextActive() const = 0;
 };
 

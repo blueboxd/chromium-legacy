@@ -677,8 +677,6 @@ namespace blink {
 Deprecation::Deprecation() : mute_count_(0) {
 }
 
-Deprecation::~Deprecation() = default;
-
 void Deprecation::ClearSuppression() {
   css_property_deprecation_bits_.reset();
   features_deprecation_bits_.reset();

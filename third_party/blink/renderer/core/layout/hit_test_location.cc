@@ -88,8 +88,6 @@ HitTestLocation::HitTestLocation(const HitTestLocation& other,
 
 HitTestLocation::HitTestLocation(const HitTestLocation& other) = default;
 
-HitTestLocation::~HitTestLocation() = default;
-
 HitTestLocation& HitTestLocation::operator=(const HitTestLocation& other) =
     default;
 

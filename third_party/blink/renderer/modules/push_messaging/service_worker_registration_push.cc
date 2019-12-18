@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/modules/push_messaging/push_manager.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -38,7 +39,7 @@ PushManager* ServiceWorkerRegistrationPush::pushManager(
 
 PushManager* ServiceWorkerRegistrationPush::pushManager() {
   if (!push_manager_)
-    push_manager_ = PushManager::Create(registration_);
+    push_manager_ = MakeGarbageCollected<PushManager>(registration_);
   return push_manager_.Get();
 }
 

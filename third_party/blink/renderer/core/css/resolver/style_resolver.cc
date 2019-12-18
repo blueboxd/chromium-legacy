@@ -981,9 +981,18 @@ bool StyleResolver::PseudoStyleForElementInternal(
     // but that would use a slow universal element selector. So instead we apply
     // the styles here as an optimization.
     if (pseudo_style_request.pseudo_id == kPseudoIdMarker) {
+      // Set 'unicode-bidi: isolate'
       state.Style()->SetUnicodeBidi(UnicodeBidi::kIsolate);
-      state.Style()->SetFontVariantNumericSpacing(
-          FontVariantNumeric::kTabularNums);
+
+      // Set 'font-variant-numeric: tabular-nums'
+      FontVariantNumeric variant_numeric;
+      variant_numeric.SetNumericSpacing(FontVariantNumeric::kTabularNums);
+      state.GetFontBuilder().SetVariantNumeric(variant_numeric);
+      UpdateFont(state);
+
+      // Don't bother matching rules if there is no style for ::marker
+      if (!state.ParentStyle()->HasPseudoElementStyle(kPseudoIdMarker))
+        return true;
     }
 
     MatchUARules(collector);
@@ -1902,6 +1911,21 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
                       cache_hash, cached_matched_properties);
 }
 
+void StyleResolver::MaybeAddToMatchedPropertiesCache(
+    StyleResolverState& state,
+    const CacheSuccess& cache_success,
+    const MatchResult& match_result) {
+  if (!state.IsAnimatingCustomProperties() &&
+      !cache_success.cached_matched_properties && cache_success.cache_hash &&
+      MatchedPropertiesCache::IsCacheable(state)) {
+    INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
+                                  matched_property_cache_added, 1);
+    matched_properties_cache_.Add(*state.Style(), *state.ParentStyle(),
+                                  cache_success.cache_hash,
+                                  match_result.GetMatchedProperties());
+  }
+}
+
 void StyleResolver::ApplyCustomProperties(StyleResolverState& state,
                                           const MatchResult& match_result,
                                           const CacheSuccess& cache_success,
@@ -2074,16 +2098,7 @@ void StyleResolver::ApplyMatchedLowPriorityProperties(
   }
 
   LoadPendingResources(state);
-
-  if (!state.IsAnimatingCustomProperties() &&
-      !cache_success.cached_matched_properties && cache_success.cache_hash &&
-      MatchedPropertiesCache::IsCacheable(state)) {
-    INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
-                                  matched_property_cache_added, 1);
-    matched_properties_cache_.Add(*state.Style(), *state.ParentStyle(),
-                                  cache_success.cache_hash,
-                                  match_result.GetMatchedProperties());
-  }
+  MaybeAddToMatchedPropertiesCache(state, cache_success, match_result);
 
   DCHECK(!state.GetFontBuilder().FontDirty());
 }
@@ -2176,25 +2191,27 @@ void StyleResolver::CascadeAndApplyMatchedProperties(
     }
   }
 
+  // TODO(crbug.com/985025): We only support full cache hits for now.
+  //
+  // The matched properties cache supports partial hits (see
+  // CacheSuccess::ShouldApplyInheritedOnly), but the StyleCascade path does
+  // not support this yet.
   if (cache_success.IsFullCacheHit())
     return;
 
-  // TODO(crbug.com/985025): We only support full cache hits for now.
-  bool apply_inherited_only = false;
-
-  // TODO(crbug.com/985027): Cascade kLowPropertyPriority.
-
   CascadeAndApplyForcedColors(state, match_result);
 
-  // Ultimately NeedsApplyPass will be removed, so we don't bother fixing
-  // that for this codepath. For now, just always go through the low-priority
-  // properties.
-  const bool important = true;
-  NeedsApplyPass needs_apply_pass;
-  needs_apply_pass.Set(kLowPropertyPriority, important);
-  needs_apply_pass.Set(kLowPropertyPriority, !important);
-  ApplyMatchedLowPriorityProperties(state, match_result, cache_success,
-                                    apply_inherited_only, needs_apply_pass);
+  if (const UAStyle* ua_style = state.GetUAStyle()) {
+    state.Style()->SetHasAuthorBackground(
+        ua_style->HasDifferentBackground(state.StyleRef()));
+    state.Style()->SetHasAuthorBorder(
+        ua_style->HasDifferentBorder(state.StyleRef()));
+  }
+
+  LoadPendingResources(state);
+  MaybeAddToMatchedPropertiesCache(state, cache_success, match_result);
+
+  DCHECK(!state.GetFontBuilder().FontDirty());
 }
 
 static void CascadeDeclaration(StyleCascade& cascade,
@@ -2210,6 +2227,10 @@ static void CascadeDeclaration(StyleCascade& cascade,
     if (visited)
       cascade.Add(visited->GetCSSPropertyName(), &value, priority);
   }
+  if (priority.HasUAOrigin()) {
+    if (const CSSProperty* ua = CSSProperty::Get(name.Id()).GetUAProperty())
+      cascade.Add(ua->GetCSSPropertyName(), &value, priority);
+  }
 }
 
 // https://drafts.csswg.org/css-cascade/#all-shorthand
@@ -2220,10 +2241,6 @@ static void CascadeAll(StyleResolverState& state,
                        ValidPropertyFilter filter,
                        const CSSValue& value) {
   for (CSSPropertyID property_id : CSSPropertyIDList()) {
-    using LowPrioData = CSSPropertyPriorityData<kLowPropertyPriority>;
-    if (LowPrioData::PropertyHasPriority(property_id))
-      continue;
-
     const CSSProperty& property = CSSProperty::Get(property_id);
 
     if (property.IsShorthand())
@@ -2281,10 +2298,6 @@ void StyleResolver::CascadeRange(StyleResolverState& state,
                    current.Value());
         continue;
       }
-
-      using LowPrioData = CSSPropertyPriorityData<kLowPropertyPriority>;
-      if (LowPrioData::PropertyHasPriority(property_id))
-        continue;
 
       if (!PassesPropertyFilter(filter, property_id, state.GetDocument()))
         continue;

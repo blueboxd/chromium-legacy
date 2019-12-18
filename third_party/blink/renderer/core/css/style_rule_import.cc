@@ -110,7 +110,8 @@ void StyleRuleImport::RequestStyleSheet() {
 
   Document* document_for_origin = document;
   if (base::FeatureList::IsEnabled(
-          features::kHtmlImportsRequestInitiatorLock)) {
+          features::kHtmlImportsRequestInitiatorLock) &&
+      document->ImportsController()) {
     // For @imports from HTML imported Documents, we use the
     // context document for getting origin and ResourceFetcher to use the main
     // Document's origin, while using the element document for CompleteURL() to

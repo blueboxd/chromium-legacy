@@ -2046,6 +2046,7 @@ jumbo_static_library("ui") {
         "webui/chromeos/emulator/device_emulator_ui.cc",
         "webui/chromeos/emulator/device_emulator_ui.h",
       ]
+      deps += [ "//chromeos/components/sample_system_web_app_ui" ]
     }
 
     if (use_cras) {
@@ -3740,6 +3741,8 @@ jumbo_static_library("ui") {
       "app_list/search/zero_state_file_provider.h",
       "app_list/search/zero_state_file_result.cc",
       "app_list/search/zero_state_file_result.h",
+      "app_list/web_app_context_menu.cc",
+      "app_list/web_app_context_menu.h",
       "ash/assistant/assistant_client.cc",
       "ash/assistant/assistant_client.h",
       "ash/assistant/assistant_context_util.cc",
@@ -3813,8 +3816,6 @@ jumbo_static_library("ui") {
       "views/crostini/crostini_app_uninstaller_view.h",
       "views/crostini/crostini_force_close_view.cc",
       "views/crostini/crostini_force_close_view.h",
-      "views/crostini/crostini_installer_view.cc",
-      "views/crostini/crostini_installer_view.h",
       "views/crostini/crostini_package_install_failure_view.cc",
       "views/crostini/crostini_package_install_failure_view.h",
       "views/crostini/crostini_uninstaller_view.cc",

@@ -116,6 +116,11 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
   AccessibilityInfoDataWrapper* FindFirstFocusableNode(
       AccessibilityInfoDataWrapper* info_data) const;
 
+  void UpdateAXNameCache(AccessibilityInfoDataWrapper* focused_node,
+                         const std::vector<std::string>& event_text);
+
+  void ApplyCachedProperties();
+
   // Resets tree state.
   void Reset();
 
@@ -144,6 +149,9 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
   base::Optional<int32_t> focused_id_;
   bool is_notification_;
   bool is_input_method_window_;
+
+  std::map<int32_t, std::string> cached_names_;
+  std::map<int32_t, ax::mojom::Role> cached_roles_;
 
   // A delegate that handles accessibility actions on behalf of this tree. The
   // delegate is valid during the lifetime of this tree.

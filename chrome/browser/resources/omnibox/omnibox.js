@@ -77,7 +77,8 @@ class BrowserProxy {
         omniboxOutput.updateAnswerImage.bind(omniboxOutput));
 
     /** @private {!mojom.OmniboxPageHandlerRemote} */
-    this.handler_ = mojom.OmniboxPageHandler.getRemote();
+    this.handler_ =
+        mojom.OmniboxPageHandler.getRemote(/*useBrowserInterfaceBroker=*/ true);
     this.handler_.setClientPage(
         this.callbackRouter_.$.bindNewPipeAndPassRemote());
 

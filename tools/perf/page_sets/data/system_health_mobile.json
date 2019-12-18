@@ -3,6 +3,9 @@
         "background:media:imgur": {
             "DEFAULT": "system_health_mobile_047.wprgo"
         },
+        "background:media:imgur:2019": {
+            "DEFAULT": "system_health_mobile_1e1539cbc7.wprgo"
+        },
         "background:news:nytimes": {
             "DEFAULT": "system_health_mobile_052.wprgo"
         },
@@ -12,6 +15,9 @@
         "background:social:facebook": {
             "DEFAULT": "system_health_mobile_045.wprgo"
         },
+        "background:social:facebook:2019": {
+            "DEFAULT": "system_health_mobile_6a3429e9e4.wprgo"
+        },
         "background:tools:gmail": {
             "DEFAULT": "system_health_mobile_043.wprgo"
         },
@@ -20,6 +26,9 @@
         },
         "browse:chrome:omnibox": {
             "DEFAULT": "system_health_mobile_056.wprgo"
+        },
+        "browse:chrome:omnibox:2019": {
+            "DEFAULT": "system_health_mobile_8de13d6bda.wprgo"
         },
         "browse:media:facebook_photos": {
             "DEFAULT": "system_health_mobile_040.wprgo"
@@ -37,7 +46,7 @@
             "DEFAULT": "system_health_mobile_037.wprgo"
         },
         "browse:media:youtube:2019": {
-            "DEFAULT": "system_health_mobile_d70a6c0a79.wprgo"
+            "DEFAULT": "system_health_mobile_e3bcdb3230.wprgo"
         },
         "browse:news:cnn": {
             "DEFAULT": "system_health_mobile_014.wprgo"
@@ -261,6 +270,9 @@
         "load:search:amazon": {
             "DEFAULT": "system_health_mobile_000.wprgo"
         },
+        "load:search:amazon:2019": {
+            "DEFAULT": "system_health_mobile_c1802fd8f4.wprgo"
+        },
         "load:search:baidu": {
             "DEFAULT": "system_health_mobile_000.wprgo"
         },
@@ -281,6 +293,9 @@
         },
         "load:search:taobao": {
             "DEFAULT": "system_health_mobile_000.wprgo"
+        },
+        "load:search:taobao:2019": {
+            "DEFAULT": "system_health_mobile_193439b464.wprgo"
         },
         "load:search:yahoo": {
             "DEFAULT": "system_health_mobile_000.wprgo"

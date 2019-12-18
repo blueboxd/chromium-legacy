@@ -122,8 +122,6 @@ enum class CrostiniUISurface { kSettings = 0, kAppList = 1, kCount };
 // See chrome/browser/ui/views/crostini for implementation of the ShowXXX
 // functions below.
 
-// Shows the Crostini Installer dialog.
-void ShowCrostiniInstallerView(Profile* profile, CrostiniUISurface ui_surface);
 // Shows the Crostini Uninstaller dialog.
 void ShowCrostiniUninstallerView(Profile* profile,
                                  CrostiniUISurface ui_surface);

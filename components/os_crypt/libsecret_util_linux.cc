@@ -35,6 +35,11 @@ decltype(
     nullptr;
 decltype(&::secret_item_get_secret) LibsecretLoader::secret_item_get_secret =
     nullptr;
+decltype(&::secret_item_get_created) LibsecretLoader::secret_item_get_created =
+    nullptr;
+decltype(
+    &::secret_item_get_modified) LibsecretLoader::secret_item_get_modified =
+    nullptr;
 decltype(&::secret_value_get_text) LibsecretLoader::secret_value_get_text =
     nullptr;
 decltype(
@@ -51,6 +56,10 @@ const LibsecretLoader::FunctionInfo LibsecretLoader::kFunctions[] = {
      reinterpret_cast<void**>(&secret_item_get_secret)},
     {"secret_item_get_attributes",
      reinterpret_cast<void**>(&secret_item_get_attributes)},
+    {"secret_item_get_created",
+     reinterpret_cast<void**>(&secret_item_get_created)},
+    {"secret_item_get_modified",
+     reinterpret_cast<void**>(&secret_item_get_modified)},
     {"secret_item_load_secret_sync",
      reinterpret_cast<void**>(&secret_item_load_secret_sync)},
     {"secret_password_clear_sync",

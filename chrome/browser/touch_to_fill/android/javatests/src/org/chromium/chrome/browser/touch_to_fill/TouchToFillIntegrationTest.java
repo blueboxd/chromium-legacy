@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.browser.touch_to_fill;
 
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
@@ -12,9 +16,14 @@ import static org.mockito.Mockito.verify;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.pollUiThread;
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 
+import android.annotation.SuppressLint;
 import android.support.test.espresso.Espresso;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
+import android.widget.TextView;
+
+import androidx.annotation.Nullable;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,6 +38,7 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -103,6 +113,85 @@ public class TouchToFillIntegrationTest {
 
         waitForEvent(mMockBridge).onDismissed();
         verify(mMockBridge, never()).onCredentialSelected(any());
+    }
+
+    @Test
+    @MediumTest
+    @SuppressLint("SetTextI18n")
+    public void testDismissedIfUnableToShow() throws Exception {
+        BottomSheetController bottomSheetController =
+                mActivityTestRule.getActivity().getBottomSheetController();
+        BottomSheetContent otherBottomSheetContent = runOnUiThreadBlocking(() -> {
+            TextView highPriorityBottomSheetContentView =
+                    new TextView(mActivityTestRule.getActivity());
+            highPriorityBottomSheetContentView.setText("Another bottom sheet content");
+            BottomSheetContent content = new BottomSheetContent() {
+                @Override
+                public View getContentView() {
+                    return highPriorityBottomSheetContentView;
+                }
+
+                @Nullable
+                @Override
+                public View getToolbarView() {
+                    return null;
+                }
+
+                @Override
+                public int getVerticalScrollOffset() {
+                    return 0;
+                }
+
+                @Override
+                public void destroy() {}
+
+                @Override
+                public int getPriority() {
+                    return ContentPriority.HIGH;
+                }
+
+                @Override
+                public boolean swipeToDismissEnabled() {
+                    return false;
+                }
+
+                @Override
+                public int getSheetContentDescriptionStringId() {
+                    return 0;
+                }
+
+                @Override
+                public int getSheetHalfHeightAccessibilityStringId() {
+                    return 0;
+                }
+
+                @Override
+                public int getSheetFullHeightAccessibilityStringId() {
+                    return 0;
+                }
+
+                @Override
+                public int getSheetClosedAccessibilityStringId() {
+                    return 0;
+                }
+            };
+            bottomSheetController.requestShowContent(content, /* animate = */ false);
+            return content;
+        });
+        pollUiThread(() -> getBottomSheetState() == SheetState.PEEK);
+        Espresso.onView(withText("Another bottom sheet content")).check(matches(isDisplayed()));
+
+        runOnUiThreadBlocking(() -> {
+            mTouchToFill.showCredentials(EXAMPLE_URL, true, Arrays.asList(ANA, BOB));
+        });
+        waitForEvent(mMockBridge).onDismissed();
+        verify(mMockBridge, never()).onCredentialSelected(any());
+        Espresso.onView(withText("Another bottom sheet content")).check(matches(isDisplayed()));
+
+        runOnUiThreadBlocking(() -> {
+            bottomSheetController.hideContent(otherBottomSheetContent, /* animate = */ false);
+        });
+        pollUiThread(() -> getBottomSheetState() == BottomSheetController.SheetState.HIDDEN);
     }
 
     private RecyclerView getCredentials() {

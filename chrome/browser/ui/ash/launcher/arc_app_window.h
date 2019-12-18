@@ -33,14 +33,6 @@ class ArcAppWindow : public AppWindowBase,
                      public ImageDecoder::ImageRequest,
                      public AppIconLoaderDelegate {
  public:
-  // TODO(khmel): use a bool set to false by default, or use an existing enum,
-  // like ash::WindowStateType.
-  enum class FullScreenMode {
-    NOT_DEFINED,  // Fullscreen mode was not defined.
-    ACTIVE,       // Fullscreen is activated for an app.
-    NON_ACTIVE,   // Fullscreen was not activated for an app.
-  };
-
   ArcAppWindow(int task_id,
                const arc::ArcAppShelfId& app_shelf_id,
                views::Widget* widget,
@@ -49,7 +41,7 @@ class ArcAppWindow : public AppWindowBase,
 
   ~ArcAppWindow() override;
 
-  void SetFullscreenMode(FullScreenMode mode);
+  void SetFullscreenMode(FullScreenMode mode) override;
 
   // Sets optional window title and icon. Note that |unsafe_icon_data_png| has
   // to be decoded in separate process for security reason.
@@ -86,7 +78,7 @@ class ArcAppWindow : public AppWindowBase,
   // Keeps ARC shelf grouping id.
   const arc::ArcAppShelfId app_shelf_id_;
   // Keeps current full-screen mode.
-  FullScreenMode fullscreen_mode_ = FullScreenMode::NOT_DEFINED;
+  FullScreenMode fullscreen_mode_ = FullScreenMode::kNotDefined;
   ArcAppWindowDelegate* const owner_;
 
   // Set to true in case image fetch is requested. This indicates that default

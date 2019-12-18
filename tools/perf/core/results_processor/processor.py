@@ -287,7 +287,9 @@ def UploadArtifacts(test_result, upload_bucket, run_identifier):
     # specify which artifacts deserve uploading.
     if name in [DIAGNOSTICS_NAME, MEASUREMENTS_NAME]:
       continue
-    remote_name = '/'.join([run_identifier, test_result['testPath'], name])
+    retry_identifier = 'retry_%s' % test_result.get('resultId', '0')
+    remote_name = '/'.join(
+        [run_identifier, test_result['testPath'], retry_identifier, name])
     urlsafe_remote_name = re.sub(r'[^A-Za-z0-9/.-]+', '_', remote_name)
     cloud_filepath = cloud_storage.Upload(
         upload_bucket, urlsafe_remote_name, artifact['filePath'])

@@ -256,7 +256,6 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
   struct PriorityInfo {
     PriorityInfo(net::RequestPriority in_priority,
                  int32_t in_intra_priority_value);
-    ~PriorityInfo();
 
     net::RequestPriority priority;
     int32_t intra_priority_value;

@@ -28,7 +28,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/static_http_user_agent_settings.h"
-#include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "third_party/zlib/google/compression_utils.h"
 
@@ -383,12 +382,10 @@ void HttpBridge::OnURLLoadCompleteInternal(
 
   if (fetch_state_.request_succeeded)
     LogTimeout(false);
-  base::UmaHistogramSparse(
-      "Sync.URLFetchResponse",
-      fetch_state_.request_succeeded
-          ? fetch_state_.http_status_code
-          : net::URLRequestStatus::FromError(fetch_state_.net_error_code)
-                .ToNetError());
+  base::UmaHistogramSparse("Sync.URLFetchResponse",
+                           fetch_state_.request_succeeded
+                               ? fetch_state_.http_status_code
+                               : fetch_state_.net_error_code);
   UMA_HISTOGRAM_LONG_TIMES("Sync.URLFetchTime",
                            fetch_state_.end_time - fetch_state_.start_time);
 

@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.favicon.FaviconUtils;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ItemType;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -51,7 +52,11 @@ class TouchToFillViewBinder {
         if (propertyKey == DISMISS_HANDLER) {
             view.setDismissHandler(model.get(DISMISS_HANDLER));
         } else if (propertyKey == VISIBLE) {
-            view.setVisible(model.get(VISIBLE));
+            boolean visibilityChangeSuccessful = view.setVisible(model.get(VISIBLE));
+            if (!visibilityChangeSuccessful && model.get(VISIBLE)) {
+                assert (model.get(DISMISS_HANDLER) != null);
+                model.get(DISMISS_HANDLER).onResult(BottomSheetController.StateChangeReason.NONE);
+            }
         } else if (propertyKey == ON_CLICK_MANAGE) {
             view.setOnManagePasswordClick(model.get(ON_CLICK_MANAGE));
         } else if (propertyKey == SHEET_ITEMS) {

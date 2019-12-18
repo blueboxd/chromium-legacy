@@ -22,8 +22,6 @@ class TestSystemWebAppManager : public SystemWebAppManager {
   explicit TestSystemWebAppManager(Profile* profile);
   ~TestSystemWebAppManager() override;
 
-  void SetSystemApps(base::flat_map<SystemAppType, SystemAppInfo> system_apps);
-
   void SetUpdatePolicy(SystemWebAppManager::UpdatePolicy policy);
 
   void set_current_version(const base::Version& version) {

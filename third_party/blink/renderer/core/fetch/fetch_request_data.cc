@@ -103,6 +103,7 @@ FetchRequestData* FetchRequestData::Create(
   }
 
   request->SetContext(fetch_api_request.request_context_type);
+  request->SetDestination(fetch_api_request.destination);
   request->SetReferrerString(AtomicString(Referrer::NoReferrer()));
   if (fetch_api_request.referrer) {
     if (!fetch_api_request.referrer->url.IsEmpty())
@@ -132,6 +133,7 @@ FetchRequestData* FetchRequestData::CloneExceptBody() {
   request->origin_ = origin_;
   request->isolated_world_origin_ = isolated_world_origin_;
   request->context_ = context_;
+  request->destination_ = destination_;
   request->referrer_string_ = referrer_string_;
   request->referrer_policy_ = referrer_policy_;
   request->mode_ = mode_;
@@ -189,6 +191,7 @@ FetchRequestData::FetchRequestData()
     : method_(http_names::kGET),
       header_list_(MakeGarbageCollected<FetchHeaderList>()),
       context_(mojom::RequestContextType::UNSPECIFIED),
+      destination_(network::mojom::RequestDestination::kEmpty),
       referrer_string_(Referrer::ClientReferrerString()),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
       mode_(network::mojom::RequestMode::kNoCors),

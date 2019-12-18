@@ -6576,10 +6576,20 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="ThirdPartyCookieBlockingEnabledForSite">
+    <owner>dullweber@chromium.org</owner>
+    <owner>huanzhong@chromium.org</owner>
     <summary>
       Records whether third party cookie blocking was enabled for a site. Only
       recorded for users who enabled the cookie controls ui.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="WasCached">
     <summary>

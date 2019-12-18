@@ -78,7 +78,7 @@ class ASH_EXPORT ShelfNavigationWidget : public views::Widget,
 
   // Updates this widget's layout according to current constraints: tablet
   // mode and shelf orientation.
-  void UpdateLayout();
+  void UpdateLayout(bool animate);
 
   views::BoundsAnimator* get_bounds_animator_for_testing() {
     return bounds_animator_.get();

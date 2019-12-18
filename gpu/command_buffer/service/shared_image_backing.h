@@ -85,9 +85,6 @@ class GPU_GLES2_EXPORT SharedImageBacking {
 
   virtual void Update(std::unique_ptr<gfx::GpuFence> in_fence) = 0;
 
-  // Destroys the underlying backing. Must be called before destruction.
-  virtual void Destroy() = 0;
-
   virtual bool PresentSwapChain();
 
   // Allows the backing to attach additional data to the dump or dump

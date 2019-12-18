@@ -223,6 +223,9 @@ class PLATFORM_EXPORT ResourceFetcher
       ResourceType,
       IsImageSet);
 
+  static network::mojom::RequestDestination DetermineRequestDestination(
+      ResourceType);
+
   void UpdateAllImageResourcePriorities();
 
   // Returns whether the given resource is contained as a preloaded resource.
@@ -237,6 +240,7 @@ class PLATFORM_EXPORT ResourceFetcher
   void EmulateLoadStartedForInspector(Resource*,
                                       const KURL&,
                                       mojom::RequestContextType,
+                                      network::mojom::RequestDestination,
                                       const AtomicString& initiator_name);
 
   // This is called from leak detectors (Real-world leak detector & web test

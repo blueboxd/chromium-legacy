@@ -664,7 +664,8 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
   // Pull ScrollOffset delta for main thread, and change offset on main thread
   std::unique_ptr<ScrollAndScaleSet> scroll_info(new ScrollAndScaleSet());
   scroll_tree.CollectScrollDeltas(scroll_info.get(), ElementId(),
-                                  settings.commit_fractional_scroll_deltas);
+                                  settings.commit_fractional_scroll_deltas,
+                                  base::flat_set<ElementId>());
   host_->proxy()->SetNeedsCommit();
   host_->ApplyScrollAndScale(scroll_info.get());
   EXPECT_EQ(gfx::ScrollOffset(20, 30), scroll_layer->CurrentScrollOffset());

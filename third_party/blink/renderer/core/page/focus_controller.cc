@@ -1191,35 +1191,27 @@ Element* FocusController::NextFocusableElementInForm(Element* element,
   return nullptr;
 }
 
+// This is an implementation of step 2 of the "shadow host" branch of
+// https://html.spec.whatwg.org/C/#get-the-focusable-area
 Element* FocusController::FindFocusableElementInShadowHost(
     const Element& shadow_host) {
   DCHECK(shadow_host.AuthorShadowRoot());
-  OwnerMap owner_map;
-  ScopedFocusNavigation scope =
-      ScopedFocusNavigation::OwnedByShadowHost(shadow_host, owner_map);
-  Element* result = FindFocusableElementAcrossFocusScopes(kWebFocusTypeForward,
-                                                          scope, owner_map);
-  if (!result)
-    return nullptr;
-  // Check if |found| is the first focusable element under |element|, and count
-  // if it's not.
-  const Node* current = &shadow_host;
-  while ((current = FlatTreeTraversal::Next(*current))) {
-    if (!current->IsElementNode())
-      continue;
-    if (current == result) {
-      // We've reached |found|, which means |found| is the first focusable
-      // element so we don't count this.
-      break;
-    }
-    if (To<Element>(current)->IsFocusable()) {
-      UseCounter::Count(shadow_host.GetDocument(),
-                        WebFeature::kDelegateFocusNotFirstInFlatTree);
-      break;
+  // We have no behavior difference by focus trigger. Skip step 2.1.
+
+  // 2.2. Otherwise, let possible focus delegates be the list of all
+  //   focusable areas whose DOM anchor is a descendant of focus target
+  //   in the flat tree.
+  // 2.3. Return the first focusable area in tree order of their DOM
+  //   anchors in possible focus delegates, or null if possible focus
+  //   delegates is empty.
+  Node* current = const_cast<Element*>(&shadow_host);
+  while ((current = FlatTreeTraversal::Next(*current, &shadow_host))) {
+    if (auto* current_element = DynamicTo<Element>(current)) {
+      if (current_element->IsFocusable())
+        return current_element;
     }
   }
-
-  return result;
+  return nullptr;
 }
 
 Element* FocusController::FindFocusableElementAfter(Element& element,

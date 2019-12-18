@@ -97,7 +97,6 @@ SharedImageManager::Register(std::unique_ptr<SharedImageBacking> backing,
       (*lower_bound)->mailbox() == backing->mailbox()) {
     LOG(ERROR) << "SharedImageManager::Register: Trying to register an "
                   "already registered mailbox.";
-    backing->Destroy();
     return nullptr;
   }
 

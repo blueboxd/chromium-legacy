@@ -10,8 +10,6 @@ namespace blink {
 
 PolicyValue::PolicyValue() : type_(mojom::PolicyValueType::kNull) {}
 
-PolicyValue::~PolicyValue() = default;
-
 PolicyValue::PolicyValue(mojom::PolicyValueType type) : type_(type) {
   DCHECK_EQ(type, mojom::PolicyValueType::kNull);
 }

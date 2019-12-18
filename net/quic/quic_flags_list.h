@@ -408,3 +408,9 @@ QUIC_FLAG(
 // If true, QuicSentPacketManager will cap ack_delay to
 // peer_advertized_ack_delay before using it.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_sanitize_ack_delay, false)
+
+// If true, allow connection IDs of length [21,255] in version
+// negotiation packets.
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_allow_very_long_connection_ids,
+          false)

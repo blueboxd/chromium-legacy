@@ -44,14 +44,6 @@
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/window_finder.h"
-#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
-#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_install_utils.h"
-#include "chrome/browser/web_applications/system_web_app_manager.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -94,6 +86,8 @@
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
+#include "chrome/browser/web_applications/test/test_system_web_app_installation.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -629,51 +623,6 @@ class DetachToBrowserTabDragControllerTest
     observer.Wait();
   }
 
-  web_app::AppId InstallWebApp(
-      std::unique_ptr<WebApplicationInfo>&& web_app_info) {
-    web_app::AppId app_id;
-    base::RunLoop run_loop;
-    auto* provider = web_app::WebAppProvider::Get(browser()->profile());
-    DCHECK(provider);
-    provider->install_manager().InstallWebAppFromInfo(
-        std::move(web_app_info), web_app::ForInstallableSite::kYes,
-        WebappInstallSource::OMNIBOX_INSTALL_ICON,
-        base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
-                                       web_app::InstallResultCode code) {
-          EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
-          app_id = installed_app_id;
-          run_loop.Quit();
-        }));
-
-    run_loop.Run();
-    return app_id;
-  }
-
-  Browser* GetTerminalAppBrowser() {
-    // Install the app (but only once per session).
-    if (!terminal_app_id_) {
-      GURL app_url = embedded_test_server()->GetURL("app.com", "/simple.html");
-      auto web_app_info = std::make_unique<WebApplicationInfo>();
-      web_app_info->app_url = app_url;
-      web_app_info->scope = app_url.GetWithoutFilename();
-      web_app_info->display_mode = blink::mojom::DisplayMode::kStandalone;
-      web_app_info->open_as_window = true;
-      terminal_app_id_ = InstallWebApp(std::move(web_app_info));
-
-      auto* provider = web_app::WebAppProvider::Get(browser()->profile());
-      provider->system_web_app_manager().SetSystemAppsForTesting(
-          {{web_app::SystemAppType::TERMINAL,
-            // "Terminal" can be any string.
-            web_app::SystemAppInfo("Terminal", app_url)}});
-      web_app::ExternallyInstalledWebAppPrefs(browser()->profile()->GetPrefs())
-          .Insert(app_url, *terminal_app_id_,
-                  web_app::ExternalInstallSource::kInternalDefault);
-    }
-
-    return web_app::LaunchWebAppBrowser(browser()->profile(),
-                                        *terminal_app_id_);
-  }
-
   Browser* browser() const { return InProcessBrowserTest::browser(); }
 
  private:
@@ -682,7 +631,7 @@ class DetachToBrowserTabDragControllerTest
   aura::Window* root_ = nullptr;
 #endif
   base::test::ScopedFeatureList scoped_feature_list_;
-  base::Optional<web_app::AppId> terminal_app_id_;
+  base::Optional<web_app::AppId> tabbed_app_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DetachToBrowserTabDragControllerTest);
 };
@@ -3038,12 +2987,34 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                                              this, tab_strip));
 }
 
+class DetachToBrowserTabDragControllerTestWithTabbedSystemApp
+    : public DetachToBrowserTabDragControllerTest {
+ public:
+  DetachToBrowserTabDragControllerTestWithTabbedSystemApp()
+      : test_system_web_app_installation_(
+            web_app::TestSystemWebAppInstallation::
+                SetUpTabbedMultiWindowApp()) {}
+
+  web_app::AppId InstallMockApp() {
+    test_system_web_app_installation_->WaitForAppInstall();
+    return test_system_web_app_installation_->GetAppId();
+  }
+
+  Browser* LaunchWebAppBrowser(web_app::AppId app_id) {
+    return web_app::LaunchWebAppBrowser(browser()->profile(), app_id);
+  }
+
+ private:
+  std::unique_ptr<web_app::TestSystemWebAppInstallation>
+      test_system_web_app_installation_;
+};
+
 // Move tab from TYPE_APP Browser to create new TYPE_APP Browser.
-IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabbedSystemApp,
                        DragAppToOwnWindow) {
-  // Start the embedded server, and get Terminal System App.
-  ASSERT_TRUE(embedded_test_server()->Start());
-  Browser* app_browser = GetTerminalAppBrowser();
+  // Install and get a tabbed system app.
+  web_app::AppId tabbed_app_id = InstallMockApp();
+  Browser* app_browser = LaunchWebAppBrowser(tabbed_app_id);
   ASSERT_EQ(2u, browser_list->size());
 
   // Close normal browser since other code expects only 1 browser to start.
@@ -3067,12 +3038,12 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 }
 
 // Move tab from TYPE_APP Browser to another TYPE_APP Browser.
-IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabbedSystemApp,
                        DragAppToAppWindow) {
-  // Start the embedded server, and get 2 browsers with Terminal System App.
-  ASSERT_TRUE(embedded_test_server()->Start());
-  Browser* app_browser1 = GetTerminalAppBrowser();
-  Browser* app_browser2 = GetTerminalAppBrowser();
+  // Install and get 2 browsers with tabbed system app.
+  web_app::AppId tabbed_app_id = InstallMockApp();
+  Browser* app_browser1 = LaunchWebAppBrowser(tabbed_app_id);
+  Browser* app_browser2 = LaunchWebAppBrowser(tabbed_app_id);
   ASSERT_EQ(3u, browser_list->size());
   ResetIDs(app_browser2->tab_strip_model(), 100);
   Resize(app_browser1, app_browser2);
@@ -3101,11 +3072,11 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
 // Move tab from TYPE_APP Browser to TYPE_NORMAL Browser.
 // Only allowed with feature MixBrowserTypeTabs.
-IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabbedSystemApp,
                        DragAppToNormalWindow) {
-  // Start the embedded server, and get a browser with Terminal System App.
-  ASSERT_TRUE(embedded_test_server()->Start());
-  Browser* app_browser = GetTerminalAppBrowser();
+  // Install and get a tabbed system app.
+  web_app::AppId tabbed_app_id = InstallMockApp();
+  Browser* app_browser = LaunchWebAppBrowser(tabbed_app_id);
   ASSERT_EQ(2u, browser_list->size());
   // Close normal browser since other code expects only 1 browser to start.
   CloseBrowserSynchronously(browser());
@@ -4039,6 +4010,10 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(TabDragging,
                          DetachToBrowserTabDragControllerTestTouch,
                          ::testing::Values("touch"));
+INSTANTIATE_TEST_SUITE_P(
+    TabDragging,
+    DetachToBrowserTabDragControllerTestWithTabbedSystemApp,
+    ::testing::Values("mouse", "touch"));
 #else
 INSTANTIATE_TEST_SUITE_P(TabDragging,
                          DetachToBrowserTabDragControllerTest,

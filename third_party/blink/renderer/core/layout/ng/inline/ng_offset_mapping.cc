@@ -123,8 +123,6 @@ void NGOffsetMappingUnit::AssertValid() const {
 #endif
 }
 
-NGOffsetMappingUnit::~NGOffsetMappingUnit() = default;
-
 const Node* NGOffsetMappingUnit::AssociatedNode() const {
   if (const auto* text_fragment = ToLayoutTextFragmentOrNull(layout_object_))
     return text_fragment->AssociatedTextNode();

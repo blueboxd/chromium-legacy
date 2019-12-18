@@ -47,6 +47,8 @@ Resource* PreloadRequest::Start(Document* document) {
 
   resource_request.SetRequestContext(
       ResourceFetcher::DetermineRequestContext(resource_type_, is_image_set_));
+  resource_request.SetRequestDestination(
+      ResourceFetcher::DetermineRequestDestination(resource_type_));
 
   resource_request.SetFetchImportanceMode(importance_);
 

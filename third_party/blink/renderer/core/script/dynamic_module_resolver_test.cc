@@ -74,6 +74,7 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
   void FetchTree(const KURL& url,
                  ResourceFetcher*,
                  mojom::RequestContextType,
+                 network::mojom::RequestDestination,
                  const ScriptFetchOptions&,
                  ModuleScriptCustomFetchType custom_fetch_type,
                  ModuleTreeClient* client) final {

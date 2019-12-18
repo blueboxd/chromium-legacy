@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/gpu_gles2_export.h"
 

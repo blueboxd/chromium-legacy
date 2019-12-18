@@ -1525,6 +1525,11 @@
           '--browser=release_x64',
         ],
       },
+      'Win10 x64 Release (NVIDIA)': {
+        'args': [
+          '--browser=release_x64',
+        ],
+      },
     },
   },
   'sandbox_linux_unittests': {

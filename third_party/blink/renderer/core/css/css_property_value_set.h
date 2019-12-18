@@ -182,7 +182,6 @@ class CORE_EXPORT ALIGNAS(alignof(Member<const CSSValue>))
   ImmutableCSSPropertyValueSet(const CSSPropertyValue*,
                                unsigned count,
                                CSSParserMode);
-  ~ImmutableCSSPropertyValueSet();
 
   static ImmutableCSSPropertyValueSet*
   Create(const CSSPropertyValue* properties, unsigned count, CSSParserMode);

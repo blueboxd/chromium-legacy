@@ -150,10 +150,14 @@ void WorkerScriptFetchInitiator::Start(
     case ResourceType::kWorker:
       resource_request->fetch_request_context_type =
           static_cast<int>(blink::mojom::RequestContextType::WORKER);
+      resource_request->destination =
+          network::mojom::RequestDestination::kWorker;
       break;
     case ResourceType::kSharedWorker:
       resource_request->fetch_request_context_type =
           static_cast<int>(blink::mojom::RequestContextType::SHARED_WORKER);
+      resource_request->destination =
+          network::mojom::RequestDestination::kSharedWorker;
       break;
     default:
       NOTREACHED() << static_cast<int>(resource_type);
@@ -268,8 +272,6 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
   UpdateAdditionalHeadersForBrowserInitiatedRequest(
       &resource_request->headers, browser_context,
       /*should_update_existing_headers=*/false, renderer_preferences);
-
-  SetFetchMetadataHeadersForBrowserInitiatedRequest(resource_request);
 }
 
 void WorkerScriptFetchInitiator::CreateScriptLoader(

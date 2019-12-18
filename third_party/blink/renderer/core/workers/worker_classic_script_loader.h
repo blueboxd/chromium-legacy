@@ -64,7 +64,8 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   void LoadSynchronously(ExecutionContext&,
                          ResourceFetcher* fetch_client_settings_object_fetcher,
                          const KURL&,
-                         mojom::RequestContextType);
+                         mojom::RequestContextType,
+                         network::mojom::RequestDestination);
 
   // Note that callbacks could be invoked before
   // LoadTopLevelScriptAsynchronously() returns.
@@ -76,6 +77,7 @@ class CORE_EXPORT WorkerClassicScriptLoader final
       ResourceFetcher* fetch_client_settings_object_fetcher,
       const KURL&,
       mojom::RequestContextType,
+      network::mojom::RequestDestination,
       network::mojom::RequestMode,
       network::mojom::CredentialsMode,
       base::OnceClosure response_callback,

@@ -95,7 +95,6 @@ class MarkupFormatter final {
   static void AppendXMLDeclaration(StringBuilder&, const Document&);
 
   MarkupFormatter(AbsoluteURLs, SerializationType);
-  ~MarkupFormatter();
 
   void AppendStartMarkup(StringBuilder&, const Node&);
   void AppendEndMarkup(StringBuilder&, const Element&);

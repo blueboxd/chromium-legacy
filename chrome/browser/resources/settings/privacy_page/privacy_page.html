@@ -13,9 +13,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="../clear_browsing_data_dialog/clear_browsing_data_dialog.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
-<link rel="import" href="../lifetime_browser_proxy.html">
 <link rel="import" href="../people_page/sync_browser_proxy.html">
-<link rel="import" href="../people_page/signout_dialog.html">
 <link rel="import" href="../prefs/prefs.html">
 <link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../route.html">
@@ -25,9 +23,6 @@
 <link rel="import" href="../site_settings/all_sites.html">
 <link rel="import" href="../site_settings/constants.html">
 
-<if expr="not chromeos">
-<link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
-</if>
 <link rel="import" href="privacy_page_browser_proxy.html">
 
 <dom-module id="settings-privacy-page">
@@ -36,18 +31,6 @@
       .iron-collapse-indented {
         margin-inline-start: var(--cr-section-indent-width);
       }
-
-<if expr="not chromeos">
-      #toast {
-        left: 0;
-        z-index: 1;
-      }
-
-      :host-context([dir='rtl']) #toast {
-        left: auto;
-        right: 0;
-      }
-</if>
     </style>
     <template is="dom-if" if="[[showClearBrowsingDataDialog_]]" restamp>
       <settings-clear-browsing-data-dialog prefs="{{prefs}}"
@@ -76,13 +59,6 @@
     <settings-animated-pages id="pages" section="privacy"
         focus-config="[[focusConfig_]]">
       <div route-path="default">
-        <template is="dom-if" if="[[!privacySettingsRedesignEnabled_]]">
-          <cr-link-row id="syncLinkRow"
-              label="$i18n{syncAndNonPersonalizedServices}"
-              sub-label="$i18n{syncAndGoogleServicesPrivacyDescription}"
-              on-click="onSyncAndGoogleServicesClick_">
-          </cr-link-row>
-        </template>
         <cr-link-row id="clearBrowsingData"
             class="hr"
             label="$i18n{clearBrowsingData}"
@@ -96,47 +72,32 @@
         <cr-expand-button id="moreExpansion"
             alt="$i18n{privacyPageMore}"
             class="settings-box"
-            expanded="{{moreOpened_}}"
-            hidden="[[!privacySettingsRedesignEnabled_]]">
+            expanded="{{moreOpened_}}">
             <div>$i18n{privacyPageMore}</div>
         </cr-expand-button>
         <iron-collapse id="moreCollapse" opened="[[moreOpened_]]"
-            class$="[[getIronCollapseCssClass_(
-              privacySettingsRedesignEnabled_)]]">
-          <template is="dom-if" if="[[privacySettingsRedesignEnabled_]]">
-            <settings-toggle-button id="safeBrowsingToggle"
-                class$="[[getTopBarCssClass_(privacySettingsRedesignEnabled_)]]"
-                pref="{{prefs.safebrowsing.enabled}}"
-                label="$i18n{safeBrowsingEnableProtection}"
-                sub-label="$i18n{safeBrowsingEnableProtectionDesc}">
-            </settings-toggle-button>
-            <template is="dom-if" if="[[passwordsLeakDetectionEnabled_]]">
-              <settings-passwords-leak-detection-toggle
-                  id="passwordsLeakDetectionToggle"
-                  prefs="{{prefs}}"
-                  sync-status="[[syncStatus]]">
-              </settings-passwords-leak-detection-toggle>
-            </template>
-            <settings-toggle-button id="safeBrowsingReportingToggle"
-                pref="[[safeBrowsingReportingPref_]]" no-set-pref
-                label="$i18n{safeBrowsingEnableExtendedReporting}"
-                sub-label="$i18n{safeBrowsingEnableExtendedReportingDesc}"
-                disabled="[[getDisabledExtendedSafeBrowsing_(prefs.*)]]"
-                on-settings-boolean-control-change=
-                    "onSafeBrowsingReportingToggleChange_">
-            </settings-toggle-button>
-          </template>
-<if expr="not chromeos">
-        <template is="dom-if" if="[[!privacySettingsRedesignEnabled_]]">
-          <settings-toggle-button id="signinAllowedToggle"
-              pref="{{prefs.signin.allowed_on_next_startup}}"
-              label="$i18n{signinAllowedTitle}"
-              sub-label="$i18n{signinAllowedDescription}"
-              on-settings-boolean-control-change="onSigninAllowedChange_"
-              no-set-pref>
+            class="iron-collapse-indented">
+          <settings-toggle-button id="safeBrowsingToggle"
+              class="settings-box first"
+              pref="{{prefs.safebrowsing.enabled}}"
+              label="$i18n{safeBrowsingEnableProtection}"
+              sub-label="$i18n{safeBrowsingEnableProtectionDesc}">
           </settings-toggle-button>
-        </template>
-</if><!-- not chromeos -->
+          <template is="dom-if" if="[[passwordsLeakDetectionEnabled_]]">
+            <settings-passwords-leak-detection-toggle
+                id="passwordsLeakDetectionToggle"
+                prefs="{{prefs}}"
+                sync-status="[[syncStatus]]">
+            </settings-passwords-leak-detection-toggle>
+          </template>
+          <settings-toggle-button id="safeBrowsingReportingToggle"
+              pref="[[safeBrowsingReportingPref_]]" no-set-pref
+              label="$i18n{safeBrowsingEnableExtendedReporting}"
+              sub-label="$i18n{safeBrowsingEnableExtendedReportingDesc}"
+              disabled="[[getDisabledExtendedSafeBrowsing_(prefs.*)]]"
+              on-settings-boolean-control-change=
+                  "onSafeBrowsingReportingToggleChange_">
+          </settings-toggle-button>
           <settings-toggle-button id="doNotTrack"
               pref="{{prefs.enable_do_not_track}}" label="$i18n{doNotTrack}"
               on-settings-boolean-control-change="onDoNotTrackChange_"
@@ -739,23 +700,6 @@
         </template>
       </template>
     </settings-animated-pages>
-
-    <template is="dom-if" if="[[!privacySettingsRedesignEnabled_]]">
-      <template is="dom-if" if="[[showSignoutDialog_]]" restamp>
-        <settings-signout-dialog sync-status="[[syncStatus]]"
-            on-close="onSignoutDialogClosed_">
-        </settings-signout-dialog>
-      </template>
-    </template>
-
-<if expr="not chromeos">
-    <cr-toast id="toast" open="[[showRestart_]]">
-      <div>$i18n{restartToApplyChanges}</div>
-      <cr-button on-click="onRestartTap_">
-        $i18n{restart}
-      </cr-button>
-    </cr-toast>
-</if>
   </template>
   <script src="privacy_page.js"></script>
 </dom-module>

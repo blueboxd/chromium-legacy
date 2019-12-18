@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
@@ -89,7 +90,7 @@ void SyncConfirmationHandler::HandleConfirm(const base::ListValue* args) {
 }
 
 void SyncConfirmationHandler::HandleGoToSettings(const base::ListValue* args) {
-  DCHECK(profile_->IsSyncAllowed());
+  DCHECK(ProfileSyncServiceFactory::IsSyncAllowed(profile_));
   did_user_explicitly_interact_ = true;
   RecordConsent(args);
   CloseModalSigninWindow(LoginUIService::CONFIGURE_SYNC_FIRST);
@@ -102,7 +103,7 @@ void SyncConfirmationHandler::HandleUndo(const base::ListValue* args) {
 
 void SyncConfirmationHandler::HandleAccountImageRequest(
     const base::ListValue* args) {
-  DCHECK(profile_->IsSyncAllowed());
+  DCHECK(ProfileSyncServiceFactory::IsSyncAllowed(profile_));
   base::Optional<AccountInfo> primary_account_info =
       identity_manager_->FindExtendedAccountInfoForAccountWithRefreshToken(
           identity_manager_->GetPrimaryAccountInfo());
@@ -152,7 +153,7 @@ void SyncConfirmationHandler::RecordConsent(const base::ListValue* args) {
 }
 
 void SyncConfirmationHandler::SetUserImageURL(const std::string& picture_url) {
-  if (!profile_->IsSyncAllowed()) {
+  if (!ProfileSyncServiceFactory::IsSyncAllowed(profile_)) {
     // The sync disabled confirmation handler does not present the user image.
     // Avoid updating the image URL in this case.
     return;

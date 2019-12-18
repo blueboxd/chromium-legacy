@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
+#include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/stl_util.h"
@@ -23,8 +24,11 @@
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/services/app_service/public/cpp/instance.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/account_id/account_id.h"
 #include "components/arc/arc_util.h"
 #include "extensions/common/constants.h"
 #include "ui/aura/env.h"
@@ -48,11 +52,21 @@ AppServiceAppWindowLauncherController::AppServiceAppWindowLauncherController(
   if (crostini::CrostiniFeatures::Get()->IsUIAllowed(owner->profile()))
     crostini_tracker_ =
         std::make_unique<AppServiceAppWindowCrostiniTracker>(this);
+
+  profile_list_.push_back(owner->profile());
 }
 
 AppServiceAppWindowLauncherController::
     ~AppServiceAppWindowLauncherController() {
   aura::Env::GetInstance()->RemoveObserver(this);
+
+  // We need to remove all Registry observers for added users.
+  for (auto* profile : profile_list_) {
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(profile);
+    DCHECK(proxy);
+    proxy->InstanceRegistry().RemoveObserver(this);
+  }
 }
 
 AppWindowLauncherItemController*
@@ -72,35 +86,38 @@ AppServiceAppWindowLauncherController::ControllerForWindow(
 
 void AppServiceAppWindowLauncherController::ActiveUserChanged(
     const std::string& user_email) {
-  if (proxy_)
-    Observe(nullptr);
-
-  auto* new_proxy =
-      apps::AppServiceProxyFactory::GetForProfile(owner()->profile());
-  DCHECK(new_proxy);
-
+  proxy_ = apps::AppServiceProxyFactory::GetForProfile(owner()->profile());
+  DCHECK(proxy_);
   // Deactivates the running app windows in InstanceRegistry for the inactive
   // user, and activates the app windows for the active user.
-  for (const auto& window_item : aura_window_to_app_window_) {
-    AppWindowBase* app_window = window_item.second.get();
-    const std::string app_id = app_window->shelf_id().app_id;
-    // Skips ARC apps, because task id is used for ARC apps.
-    if (app_id == ash::kInternalAppIdKeyboardShortcutViewer)
-      continue;
-
-    if (!new_proxy->InstanceRegistry()
-             .GetWindows(app_window->shelf_id().app_id)
-             .empty()) {
-      AddAppWindowToShelf(app_window);
+  for (auto* window : window_list_) {
+    ash::ShelfID shelf_id;
+    if (proxy_->InstanceRegistry().ForOneInstance(
+            window, [&shelf_id](const apps::InstanceUpdate& update) {
+              shelf_id = ash::ShelfID(update.AppId(), update.LaunchId());
+            })) {
+      RegisterWindow(window, shelf_id);
     } else {
-      RemoveAppWindowFromShelf(app_window);
+      auto app_window_it = aura_window_to_app_window_.find(window);
+      if (app_window_it != aura_window_to_app_window_.end()) {
+        RemoveAppWindowFromShelf(app_window_it->second.get());
+        aura_window_to_app_window_.erase(app_window_it);
+      }
     }
   }
-
-  proxy_ = new_proxy;
-  Observe(&proxy_->InstanceRegistry());
-
   app_service_instance_helper_->ActiveUserChanged();
+  if (arc_tracker_)
+    arc_tracker_->ActiveUserChanged(user_email);
+}
+
+void AppServiceAppWindowLauncherController::AdditionalUserAddedToSession(
+    Profile* profile) {
+  // Each users InstanceRegister needs to be observed.
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+  DCHECK(proxy);
+  proxy->InstanceRegistry().AddObserver(this);
+  profile_list_.push_back(profile);
 }
 
 void AppServiceAppWindowLauncherController::OnWindowInitialized(
@@ -143,7 +160,7 @@ void AppServiceAppWindowLauncherController::OnWindowPropertyChanged(
   RegisterWindow(window, shelf_id);
 }
 
-void AppServiceAppWindowLauncherController::OnWindowVisibilityChanging(
+void AppServiceAppWindowLauncherController::OnWindowVisibilityChanged(
     aura::Window* window,
     bool visible) {
   // Skip OnWindowVisibilityChanged for ancestors/descendants.
@@ -151,7 +168,7 @@ void AppServiceAppWindowLauncherController::OnWindowVisibilityChanging(
     return;
 
   if (arc_tracker_)
-    arc_tracker_->OnWindowVisibilityChanging(window);
+    arc_tracker_->OnWindowVisibilityChanged(window);
 
   ash::ShelfID shelf_id = GetShelfId(window);
   if (shelf_id.IsNull())
@@ -241,21 +258,38 @@ void AppServiceAppWindowLauncherController::OnInstanceUpdate(
   if (!observed_windows_.IsObserving(window))
     return;
 
+  ash::ShelfID shelf_id(update.AppId(), update.LaunchId());
+
   // This is the first update for the given window.
   if (update.StateIsNull() &&
       (update.State() & apps::InstanceState::kDestroyed) ==
           apps::InstanceState::kUnknown) {
     std::string app_id = update.AppId();
     window->SetProperty(ash::kAppIDKey, update.AppId());
-    ash::ShelfID shelf_id(update.AppId(), update.LaunchId());
     window->SetProperty(ash::kShelfIDKey, shelf_id.Serialize());
     window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP);
+
+    // Web apps and Chrome are managed by browser, so skip them.
+    if (app_service_instance_helper_->IsWebApp(shelf_id.app_id) ||
+        shelf_id.app_id == extension_misc::kChromeAppId) {
+      return;
+    }
+    window_list_.push_back(window);
     return;
+  }
+
+  // For Chrome apps, when it is shown, call UserHasAppOnActiveDesktop to handle
+  // teleport function.
+  if (update.BrowserContext() &&
+      (update.State() & apps::InstanceState::kStarted) !=
+          apps::InstanceState::kUnknown &&
+      (update.State() & apps::InstanceState::kRunning) !=
+          apps::InstanceState::kUnknown) {
+    UserHasAppOnActiveDesktop(window, shelf_id, update.BrowserContext());
   }
 
   // Launch id is updated, so constructs a new shelf id.
   if (update.LaunchIdChanged()) {
-    ash::ShelfID shelf_id(update.AppId(), update.LaunchId());
     window->SetProperty(ash::kShelfIDKey, shelf_id.Serialize());
     window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP);
   }
@@ -269,11 +303,30 @@ void AppServiceAppWindowLauncherController::OnInstanceUpdate(
     // window is just added or hidden, and we don't need to add the app window
     // to Shelf. When the app window is visible or activeted, it can be added to
     // Shelf.
+    //
+    // The the window is teleported to the current user could be hidden as
+    // well. But we only remove the window added for the active user, and skip
+    // the window teleported to the current user, because
+    // MultiUserWindowManagerHelper manages those windows.
     auto app_window_it = aura_window_to_app_window_.find(window);
-    if (app_window_it != aura_window_to_app_window_.end()) {
+    if (app_window_it != aura_window_to_app_window_.end() &&
+        proxy_->InstanceRegistry().ForOneInstance(
+            window, [](const apps::InstanceUpdate& update) {})) {
       RemoveAppWindowFromShelf(app_window_it->second.get());
       aura_window_to_app_window_.erase(app_window_it);
     }
+  }
+
+  if (update.StateChanged() &&
+      update.State() == apps::InstanceState::kDestroyed) {
+    // For Chrome apps edge case, it could be added for the inactive users, and
+    // then removed. Since it is not registered we don't need to do anything
+    // anyways. As such, all which is left to do here is to get rid of our own
+    // reference.
+    WindowList::iterator it =
+        std::find(window_list_.begin(), window_list_.end(), update.Window());
+    if (it != window_list_.end())
+      window_list_.erase(it);
   }
 }
 
@@ -482,4 +535,48 @@ ash::ShelfID AppServiceAppWindowLauncherController::GetShelfId(
     return arc_tracker_->GetShelfId(arc::GetWindowTaskId(window));
 
   return shelf_id;
+}
+
+void AppServiceAppWindowLauncherController::UserHasAppOnActiveDesktop(
+    aura::Window* window,
+    const ash::ShelfID& shelf_id,
+    content::BrowserContext* browser_context) {
+  // If the window was created for the active user, register it to show an item
+  // on the shelf.
+  if (proxy_->InstanceRegistry().ForOneInstance(
+          window, [](const apps::InstanceUpdate& update) {})) {
+    RegisterWindow(window, shelf_id);
+    return;
+  }
+
+  // If the window was created for the inactive user and it has been teleported
+  // to the current user's desktop, register it to show an item on the shelf.
+  const AccountId current_account_id = multi_user_util::GetCurrentAccountId();
+  MultiUserWindowManagerHelper* helper =
+      MultiUserWindowManagerHelper::GetInstance();
+  aura::Window* other_window = nullptr;
+  for (auto* it : profile_list_) {
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(it);
+    if (proxy == proxy_)
+      continue;
+    proxy->InstanceRegistry().ForEachInstance(
+        [&other_window, &window, &shelf_id, &browser_context, &helper,
+         &current_account_id](const apps::InstanceUpdate& update) {
+          if (helper->IsWindowOnDesktopOfUser(update.Window(),
+                                              current_account_id) &&
+              (update.AppId() == shelf_id.app_id) &&
+              (update.BrowserContext() == browser_context) &&
+              update.Window() != window) {
+            other_window = update.Window();
+          }
+        });
+    if (other_window)
+      break;
+  }
+  if (other_window) {
+    MultiUserWindowManagerHelper::GetWindowManager()->ShowWindowForUser(
+        window, multi_user_util::GetCurrentAccountId());
+    RegisterWindow(window, shelf_id);
+  }
 }

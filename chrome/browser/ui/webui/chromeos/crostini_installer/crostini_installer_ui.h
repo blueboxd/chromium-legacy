@@ -27,6 +27,7 @@ class CrostiniInstallerUI
   ~CrostiniInstallerUI() override;
 
   bool can_close();
+  void ClickInstallForTesting();
 
  private:
   void BindPageHandlerFactory(

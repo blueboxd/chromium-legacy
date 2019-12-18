@@ -7,6 +7,7 @@
 #include "components/infobars/core/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/infobars/test/fake_infobar_delegate.h"
+#import "ios/chrome/browser/infobars/test/fake_infobar_ios.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #include "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #include "ios/chrome/browser/overlays/test/fake_overlay_user_data.h"
@@ -31,8 +32,7 @@ class InfobarOverlayRequestCancelHandlerTest : public PlatformTest {
         std::make_unique<web::TestNavigationManager>());
     InfoBarManagerImpl::CreateForWebState(&web_state_);
     // Create a test InfoBar and add it to the manager.
-    std::unique_ptr<InfoBar> infobar =
-        std::make_unique<InfoBar>(std::make_unique<FakeInfobarDelegate>());
+    std::unique_ptr<InfoBar> infobar = std::make_unique<FakeInfobarIOS>();
     infobar_ = infobar.get();
     manager()->AddInfoBar(std::move(infobar));
     // Create a fake OverlayRequest and add it to the infobar banner queue using

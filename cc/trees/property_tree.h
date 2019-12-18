@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/base/synced_property.h"
 #include "cc/cc_export.h"
@@ -431,7 +432,8 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   // called on the impl thread side PropertyTrees.
   void CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
                            ElementId inner_viewport_scroll_element_id,
-                           bool use_fractional_deltas);
+                           bool use_fractional_deltas,
+                           const base::flat_set<ElementId>& snapped_elements);
 
   // Applies deltas sent in the previous main frame onto the impl thread state.
   // Should only be called on the impl thread side PropertyTrees.

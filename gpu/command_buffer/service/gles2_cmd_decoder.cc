@@ -39,6 +39,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/debug_marker_manager.h"
+#include "gpu/command_buffer/common/gles2_cmd_copy_texture_chromium_utils.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
@@ -3362,6 +3363,8 @@ void BackRenderbuffer::Destroy() {
 
 void BackRenderbuffer::Invalidate() {
   id_ = 0;
+  memory_tracker_.TrackMemFree(bytes_allocated_);
+  bytes_allocated_ = 0;
 }
 
 BackFramebuffer::BackFramebuffer(GLES2DecoderImpl* decoder)
@@ -4232,6 +4235,8 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
 
   caps.egl_image_external =
       feature_info_->feature_flags().oes_egl_image_external;
+  caps.egl_image_external_essl3 =
+      feature_info_->feature_flags().oes_egl_image_external_essl3;
   caps.texture_format_astc =
       feature_info_->feature_flags().ext_texture_format_astc;
   caps.texture_format_atc =
@@ -18087,6 +18092,15 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     return;
   }
 
+  if (source_target == GL_TEXTURE_EXTERNAL_OES &&
+      CopyTextureCHROMIUMNeedsESSL3(internal_format) &&
+      !feature_info_->feature_flags().oes_egl_image_external_essl3) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+                       "Copy*TextureCHROMIUM from EXTERNAL_OES to integer "
+                       "format requires OES_EGL_image_external_essl3");
+    return;
+  }
+
   if (feature_info_->feature_flags().desktop_srgb_support) {
     bool enable_framebuffer_srgb =
         GLES2Util::GetColorEncodingFromInternalFormat(source_internal_format) ==
@@ -18347,6 +18361,15 @@ void GLES2DecoderImpl::CopySubTextureHelper(const char* function_name,
           &output_error_msg)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
                        output_error_msg.c_str());
+    return;
+  }
+
+  if (source_target == GL_TEXTURE_EXTERNAL_OES &&
+      CopyTextureCHROMIUMNeedsESSL3(dest_internal_format) &&
+      !feature_info_->feature_flags().oes_egl_image_external_essl3) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                       "Copy*TextureCHROMIUM from EXTERNAL_OES to integer "
+                       "format requires OES_EGL_image_external_essl3");
     return;
   }
 

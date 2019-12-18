@@ -103,7 +103,8 @@ void WorkerClassicScriptLoader::LoadSynchronously(
     ExecutionContext& execution_context,
     ResourceFetcher* fetch_client_settings_object_fetcher,
     const KURL& url,
-    mojom::RequestContextType request_context) {
+    mojom::RequestContextType request_context,
+    network::mojom::RequestDestination destination) {
   DCHECK(fetch_client_settings_object_fetcher);
   url_ = url;
   fetch_client_settings_object_fetcher_ = fetch_client_settings_object_fetcher;
@@ -115,6 +116,7 @@ void WorkerClassicScriptLoader::LoadSynchronously(
           .GetFetchClientSettingsObject()
           .GetAddressSpace());
   request.SetRequestContext(request_context);
+  request.SetRequestDestination(destination);
 
   SECURITY_DCHECK(execution_context.IsWorkerGlobalScope());
 
@@ -134,6 +136,7 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
     ResourceFetcher* fetch_client_settings_object_fetcher,
     const KURL& url,
     mojom::RequestContextType request_context,
+    network::mojom::RequestDestination destination,
     network::mojom::RequestMode request_mode,
     network::mojom::CredentialsMode credentials_mode,
     base::OnceClosure response_callback,
@@ -153,6 +156,7 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
           .GetFetchClientSettingsObject()
           .GetAddressSpace());
   request.SetRequestContext(request_context);
+  request.SetRequestDestination(destination);
   request.SetMode(request_mode);
   request.SetCredentialsMode(credentials_mode);
 

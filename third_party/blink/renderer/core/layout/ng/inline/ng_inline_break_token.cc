@@ -22,6 +22,7 @@ static_assert(sizeof(NGInlineBreakToken) ==
 }  // namespace
 
 NGInlineBreakToken::NGInlineBreakToken(
+    PassKey key,
     NGInlineNode node,
     const ComputedStyle* style,
     unsigned item_index,
@@ -34,7 +35,7 @@ NGInlineBreakToken::NGInlineBreakToken(
   flags_ = flags;
 }
 
-NGInlineBreakToken::NGInlineBreakToken(NGLayoutInputNode node)
+NGInlineBreakToken::NGInlineBreakToken(PassKey key, NGLayoutInputNode node)
     : NGBreakToken(kInlineBreakToken, kFinished, node),
       item_index_(0),
       text_offset_(0) {}

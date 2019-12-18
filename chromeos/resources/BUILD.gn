@@ -79,6 +79,21 @@ grit("help_app_bundle_resources") {
   output_dir = "$root_gen_dir/chromeos"
 }
 
+# Resources used by chrome://sample-system-web-app
+grit("sample_system_web_app_resources") {
+  source = "../components/sample_system_web_app_ui/resources/sample_system_web_app_resources.grd"
+
+  source_is_generated = true
+
+  outputs = [
+    "grit/chromeos_sample_system_web_app_resources.h",
+    "grit/chromeos_sample_system_web_app_resources_map.cc",
+    "grit/chromeos_sample_system_web_app_resources_map.h",
+    "chromeos_sample_system_web_app_resources.pak",
+  ]
+  output_dir = "$root_gen_dir/chromeos"
+}
+
 # Resources used by chrome://media-app, and parts of the sandboxed app it hosts
 # that do not come from the app bundle (below).
 grit("media_app_resources") {

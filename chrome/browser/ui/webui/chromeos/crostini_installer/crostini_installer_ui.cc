@@ -141,6 +141,13 @@ bool CrostiniInstallerUI::can_close() {
   return can_close_;
 }
 
+void CrostiniInstallerUI::ClickInstallForTesting() {
+  web_ui()->GetWebContents()->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::ASCIIToUTF16("document.querySelector('crostini-installer-app')"
+                         ".$$('.action-button').click()"),
+      base::NullCallback());
+}
+
 void CrostiniInstallerUI::BindPageHandlerFactory(
     mojo::PendingReceiver<
         chromeos::crostini_installer::mojom::PageHandlerFactory>

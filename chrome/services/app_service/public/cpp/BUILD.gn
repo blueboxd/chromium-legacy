@@ -26,6 +26,7 @@ if (is_chromeos) {
       "instance_update.h",
     ]
     deps = [
+      "//content/public/browser",
       "//skia",
       "//ui/aura",
       "//ui/compositor",
@@ -106,6 +107,7 @@ source_set("unit_tests") {
   deps = [
     ":app_update",
     ":icon_loader",
+    "//content/test:test_support",
     "//testing/gtest",
   ]
 

@@ -19,6 +19,7 @@
 #include "ios/web/common/user_agent.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "ui/base/layout.h"
+#include "url/url_util.h"
 
 namespace base {
 class RefCountedMemory;

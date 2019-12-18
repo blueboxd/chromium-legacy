@@ -66,6 +66,9 @@ class InstanceUpdate {
   base::Time LastUpdatedTime() const;
   bool LastUpdatedTimeChanged() const;
 
+  content::BrowserContext* BrowserContext() const;
+  bool BrowserContextChanged() const;
+
  private:
   Instance* state_;
   Instance* delta_;

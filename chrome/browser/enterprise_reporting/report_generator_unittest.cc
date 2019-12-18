@@ -25,6 +25,13 @@
 #include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_test.h"
+#include "components/arc/arc_prefs.h"
+#include "components/arc/test/fake_app_instance.h"
+#endif
+
 namespace em = enterprise_management;
 
 namespace enterprise_reporting {
@@ -36,6 +43,15 @@ const char kPluginName[] = "plugin";
 const char kPluginVersion[] = "1.0";
 const char kPluginDescription[] = "This is a plugin.";
 const char kPluginFileName[] = "file_name";
+
+#if defined(OS_CHROMEOS)
+const char kArcAppName1[] = "app_name1";
+const char kArcPackageName1[] = "package_name1";
+const char kArcActivityName1[] = "activity_name1";
+const char kArcAppName2[] = "app_name2";
+const char kArcPackageName2[] = "package_name2";
+const char kArcActivityName2[] = "activity_name2";
+#endif
 
 #if !defined(OS_CHROMEOS)
 // We only upload serial number on Windows.
@@ -77,6 +93,41 @@ void AddExtensionToProfile(TestingProfile* profile) {
                                      .SetID("abcdefghijklmnoabcdefghijklmnoab")
                                      .Build());
 }
+
+#if defined(OS_CHROMEOS)
+
+arc::mojom::AppInfo CreateArcApp(const std::string& app_name,
+                                 const std::string& package_name,
+                                 const std::string& activity_name) {
+  arc::mojom::AppInfo app;
+  app.name = app_name;
+  app.package_name = package_name;
+  app.activity = activity_name;
+  app.suspended = false;
+  app.sticky = true;
+  app.notifications_enabled = true;
+  return app;
+}
+
+arc::mojom::ArcPackageInfoPtr CreateArcPackage(
+    const std::string& package_name) {
+  return arc::mojom::ArcPackageInfo::New(
+      package_name, 0 /* package_version */, 0 /* last_backup_android_id */,
+      0 /* last_backup_time */, false /* sync */);
+}
+
+void AddArcPackageAndApp(ArcAppTest* arc_app_test,
+                         const std::string& app_name,
+                         const std::string& package_name,
+                         const std::string& activity_name) {
+  arc::mojom::ArcPackageInfoPtr package = CreateArcPackage(package_name);
+  arc_app_test->app_instance()->SendPackageAdded(std::move(package));
+
+  arc::mojom::AppInfo app = CreateArcApp(app_name, package_name, activity_name);
+  arc_app_test->app_instance()->SendAppAdded(app);
+}
+
+#endif
 
 }  // namespace
 
@@ -255,5 +306,62 @@ TEST_F(ReportGeneratorTest, GenerateBasicReport) {
   VerifyProfileReport(/*active_profile_names*/ std::set<std::string>(),
                       profile_names, browser_report);
 }
+
+#if defined(OS_CHROMEOS)
+
+TEST_F(ReportGeneratorTest, ReportArcAppInChromeOS) {
+  ArcAppTest arc_app_test;
+  TestingProfile primary_profile;
+  arc_app_test.SetUp(&primary_profile);
+
+  // Create two Arc applications in primary profile.
+  AddArcPackageAndApp(&arc_app_test, kArcAppName1, kArcPackageName1,
+                      kArcActivityName1);
+  AddArcPackageAndApp(&arc_app_test, kArcAppName2, kArcPackageName2,
+                      kArcActivityName2);
+
+  EXPECT_EQ(2u, arc_app_test.arc_app_list_prefs()->GetAppIds().size());
+
+  // Verify the Arc application information in the report is same as the test
+  // data.
+  auto requests = GenerateRequests();
+  EXPECT_EQ(1u, requests.size());
+
+  ReportRequest* request = requests.front().get();
+  EXPECT_EQ(2, request->android_app_infos_size());
+  em::AndroidAppInfo app_info1 = request->android_app_infos(1);
+  EXPECT_EQ(kArcAppName1, app_info1.app_name());
+  em::AndroidAppInfo app_info2 = request->android_app_infos(0);
+  EXPECT_EQ(kArcAppName2, app_info2.app_name());
+
+  arc_app_test.TearDown();
+}
+
+TEST_F(ReportGeneratorTest, ArcPlayStoreDisabled) {
+  ArcAppTest arc_app_test;
+  TestingProfile primary_profile;
+  arc_app_test.SetUp(&primary_profile);
+
+  // Create two Arc applications in primary profile.
+  AddArcPackageAndApp(&arc_app_test, kArcAppName1, kArcPackageName1,
+                      kArcActivityName1);
+  AddArcPackageAndApp(&arc_app_test, kArcAppName2, kArcPackageName2,
+                      kArcActivityName2);
+
+  EXPECT_EQ(2u, arc_app_test.arc_app_list_prefs()->GetAppIds().size());
+
+  // No Arc application information is reported after the Arc Play Store
+  // support for given profile is disabled.
+  primary_profile.GetPrefs()->SetBoolean(arc::prefs::kArcEnabled, false);
+  auto requests = GenerateRequests();
+  EXPECT_EQ(1u, requests.size());
+
+  ReportRequest* request = requests.front().get();
+  EXPECT_EQ(0, request->android_app_infos_size());
+
+  arc_app_test.TearDown();
+}
+
+#endif
 
 }  // namespace enterprise_reporting

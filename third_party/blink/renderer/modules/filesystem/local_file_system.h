@@ -64,7 +64,6 @@ class LocalFileSystem final : public GarbageCollected<LocalFileSystem>,
 
   explicit LocalFileSystem(LocalFrame&);
   explicit LocalFileSystem(WorkerGlobalScope&);
-  ~LocalFileSystem();
 
   void ResolveURL(ExecutionContext*,
                   const KURL&,

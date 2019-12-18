@@ -96,6 +96,8 @@ const RecognitionError = {
  */
 const speech = {};
 
+speech.SCREEN_READER_ANNOUNCER_ = 'screen-reader-announcer';
+
 /**
  * Localized translations for messages used in the Speech UI.
  * @type {{
@@ -321,6 +323,13 @@ speech.init = function(
     throw new Error('OnFocusChange handler already set on searchbox.');
   }
   searchboxApiHandle.onfocuschange = speech.onOmniboxFocused;
+  const dialog = $(view.DIALOG_ID_);
+  if (dialog) {
+    dialog.addEventListener('close', () => {
+      speech.screenReaderAnnounce_(translatedStrings.voiceSearchClosed);
+      fakeboxMicrophoneElem.focus();
+    });
+  }
 
   // Initialize speech internal state.
   speech.googleBaseUrl_ = googleBaseUrl;
@@ -917,6 +926,18 @@ speech.onClick_ = function(shouldSubmit, shouldRetry, navigatingAway) {
     speech.logEvent(LOG_TYPE.ACTION_CLOSE_OVERLAY);
     speech.stop();
   }
+};
+
+/**
+ * @param {string} message
+ * @private
+ */
+speech.screenReaderAnnounce_ = function(message) {
+  const annoucer = $(speech.SCREEN_READER_ANNOUNCER_);
+  annoucer.innerText = '';
+  setTimeout(() => {
+    annoucer.innerText = message;
+  }, 100);
 };
 
 /* TEXT VIEW */

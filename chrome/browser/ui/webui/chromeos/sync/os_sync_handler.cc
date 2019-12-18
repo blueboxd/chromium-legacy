@@ -161,9 +161,10 @@ void OSSyncHandler::PushSyncPrefs() {
 }
 
 syncer::SyncService* OSSyncHandler::GetSyncService() const {
-  return profile_->IsSyncAllowed()
-             ? ProfileSyncServiceFactory::GetForProfile(profile_)
-             : nullptr;
+  const bool is_sync_allowed =
+      ProfileSyncServiceFactory::IsSyncAllowed(profile_);
+  return is_sync_allowed ? ProfileSyncServiceFactory::GetForProfile(profile_)
+                         : nullptr;
 }
 
 void OSSyncHandler::AddSyncServiceObserver() {

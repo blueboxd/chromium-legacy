@@ -18,7 +18,7 @@ enum class LeakDetectionError {
   kHashingFailure = 2,
   // Error obtaining a valid server response.
   kInvalidServerResponse = 3,
-  // TODO(crbug.com/986298): add more errors.
+  kMaxValue = kInvalidServerResponse,
 };
 
 // Interface with callbacks for LeakDetectionCheck. Used to get the result of

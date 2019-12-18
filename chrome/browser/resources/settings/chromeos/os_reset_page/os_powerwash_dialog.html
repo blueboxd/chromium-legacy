@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="os_reset_browser_proxy.html">
+<link rel="import" href="../localized_link/localized_link.html">
 <link rel="import" href="../../lifetime_browser_proxy.html">
 <link rel="import" href="../../settings_shared_css.html">
 
@@ -13,12 +14,10 @@
         ignore-enter-key>
       <div slot="title">$i18n{powerwashDialogTitle}</div>
       <div slot="body">
-        <span>
-          $i18n{powerwashDialogExplanation}
-          <a href="$i18nRaw{powerwashLearnMoreUrl}" target="_blank">
-            $i18n{learnMore}
-          </a>
-        </span>
+        <settings-localized-link
+            localized-string="$i18n{powerwashDialogExplanation}"
+            link-url="$i18nRaw{powerwashLearnMoreUrl}">
+        </settings-localized-link>
       </div>
       <div slot="button-container">
         <cr-button class="cancel-button" on-click="onCancelTap_"

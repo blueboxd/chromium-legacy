@@ -674,8 +674,6 @@ TextFinder::TextFinder(WebLocalFrameImpl& owner_frame)
       scoping_in_progress_(false),
       find_match_rects_are_valid_(false) {}
 
-TextFinder::~TextFinder() = default;
-
 bool TextFinder::SetMarkerActive(Range* range, bool active) {
   if (!range || range->collapsed())
     return false;

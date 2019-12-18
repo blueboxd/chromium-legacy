@@ -6,6 +6,7 @@
 #define HEADLESS_LIB_HEADLESS_CONTENT_CLIENT_H_
 
 #include "content/public/common/content_client.h"
+#include "headless/public/headless_browser.h"
 
 namespace headless {
 

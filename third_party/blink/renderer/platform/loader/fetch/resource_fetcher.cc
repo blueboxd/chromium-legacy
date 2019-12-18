@@ -37,7 +37,6 @@
 #include "base/time/time.h"
 #include "services/network/public/cpp/request_mode.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/common/loader/request_destination.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
@@ -323,38 +322,6 @@ void SetReferrer(
   request.SetReferrerPolicy(generated_referrer.referrer_policy);
 }
 
-void SetSecFetchHeaders(
-    ResourceRequest& request,
-    const FetchClientSettingsObject& fetch_client_settings_object) {
-  scoped_refptr<SecurityOrigin> url_origin =
-      SecurityOrigin::Create(request.Url());
-  if (blink::RuntimeEnabledFeatures::FetchMetadataEnabled() &&
-      url_origin->IsPotentiallyTrustworthy()) {
-    const char* destination_value =
-        GetRequestDestinationFromContext(request.GetRequestContext());
-
-    // If the request's destination is the empty string (e.g. `fetch()`), then
-    // we'll use the identifier "empty" instead.
-    if (strlen(destination_value) == 0)
-      destination_value = "empty";
-
-    // We'll handle adding these headers to navigations outside of Blink.
-    if ((strncmp(destination_value, "document", 8) != 0 ||
-         strncmp(destination_value, "iframe", 6) != 0 ||
-         strncmp(destination_value, "frame", 5) != 0) &&
-        request.GetRequestContext() != mojom::RequestContextType::INTERNAL) {
-      if (blink::RuntimeEnabledFeatures::FetchMetadataDestinationEnabled()) {
-        request.SetHttpHeaderField("Sec-Fetch-Dest", destination_value);
-      }
-
-      // Note that the `Sec-Fetch-User` header is always false (and therefore
-      // omitted) for subresource requests. Likewise, note that we rely on
-      // Blink's embedder to set `Sec-Fetch-Site`, as we don't want to trust the
-      // renderer to assert its own origin. Ditto for `Sec-Fetch-Mode`.
-    }
-  }
-}
-
 }  // namespace
 
 ResourceFetcherInit::ResourceFetcherInit(
@@ -411,6 +378,40 @@ mojom::RequestContextType ResourceFetcher::DetermineRequestContext(
   }
   NOTREACHED();
   return mojom::RequestContextType::SUBRESOURCE;
+}
+
+network::mojom::RequestDestination ResourceFetcher::DetermineRequestDestination(
+    ResourceType type) {
+  switch (type) {
+    case ResourceType::kXSLStyleSheet:
+      DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
+      FALLTHROUGH;
+    case ResourceType::kCSSStyleSheet:
+      return network::mojom::RequestDestination::kStyle;
+    case ResourceType::kScript:
+      return network::mojom::RequestDestination::kScript;
+    case ResourceType::kFont:
+      return network::mojom::RequestDestination::kFont;
+    case ResourceType::kImage:
+      return network::mojom::RequestDestination::kImage;
+    case ResourceType::kTextTrack:
+      return network::mojom::RequestDestination::kTrack;
+    case ResourceType::kSVGDocument:
+      return network::mojom::RequestDestination::kImage;
+    case ResourceType::kAudio:
+      return network::mojom::RequestDestination::kAudio;
+    case ResourceType::kVideo:
+      return network::mojom::RequestDestination::kVideo;
+    case ResourceType::kManifest:
+      return network::mojom::RequestDestination::kManifest;
+    case ResourceType::kRaw:
+    case ResourceType::kImportResource:
+    case ResourceType::kLinkPrefetch:
+    case ResourceType::kMock:
+      return network::mojom::RequestDestination::kEmpty;
+  }
+  NOTREACHED();
+  return network::mojom::RequestDestination::kEmpty;
 }
 
 // static
@@ -855,6 +856,8 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
       mojom::RequestContextType::UNSPECIFIED) {
     resource_request.SetRequestContext(
         DetermineRequestContext(resource_type, kImageNotImageSet));
+    resource_request.SetRequestDestination(
+        DetermineRequestDestination(resource_type));
   }
   if (resource_type == ResourceType::kLinkPrefetch)
     resource_request.SetPurposeHeader("prefetch");
@@ -871,9 +874,6 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
 
   resource_request.SetExternalRequestStateFromRequestorAddressSpace(
       properties_->GetFetchClientSettingsObject().GetAddressSpace());
-
-  SetSecFetchHeaders(resource_request,
-                     properties_->GetFetchClientSettingsObject());
 
   Context().AddAdditionalRequestHeaders(resource_request);
 
@@ -2024,12 +2024,14 @@ void ResourceFetcher::EmulateLoadStartedForInspector(
     Resource* resource,
     const KURL& url,
     mojom::RequestContextType request_context,
+    network::mojom::RequestDestination request_destination,
     const AtomicString& initiator_name) {
   base::AutoReset<bool> r(&is_in_request_resource_, true);
   if (CachedResource(url))
     return;
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(request_context);
+  resource_request.SetRequestDestination(request_destination);
   if (!resource_request.PriorityHasBeenSet()) {
     resource_request.SetPriority(ComputeLoadPriority(
         resource->GetType(), resource_request, ResourcePriority::kNotVisible,

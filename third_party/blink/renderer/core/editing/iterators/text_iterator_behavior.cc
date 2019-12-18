@@ -138,8 +138,6 @@ TextIteratorBehavior::TextIteratorBehavior() {
   values_.all = 0;
 }
 
-TextIteratorBehavior::~TextIteratorBehavior() = default;
-
 bool TextIteratorBehavior::operator==(const TextIteratorBehavior& other) const {
   return values_.all == other.values_.all;
 }

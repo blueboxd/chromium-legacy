@@ -368,8 +368,7 @@ class UpdateWprTest(unittest.TestCase):
         self.wpr_updater.StartPinpointJobs(),
         (['<url>', '<url>', '<url>'], []))
     new_job.assert_called_with(
-        start_git_hash='HEAD',
-        end_git_hash='HEAD',
+        base_git_hash='HEAD',
         target='performance_test_suite',
         patch='<issue-url>',
         bug_id='',
@@ -390,8 +389,7 @@ class UpdateWprTest(unittest.TestCase):
     self.assertEqual(
         self.wpr_updater.StartPinpointJobs(['<config>']), ([], ['<config>']))
     new_job.assert_called_once_with(
-        start_git_hash='HEAD',
-        end_git_hash='HEAD',
+        base_git_hash='HEAD',
         target='performance_test_suite',
         patch='<issue-url>',
         bug_id='',

@@ -101,11 +101,7 @@ SharedImageBackingEglImage::SharedImageBackingEglImage(
       gl_format_(gl_format),
       gl_type_(gl_type) {}
 
-SharedImageBackingEglImage::~SharedImageBackingEglImage() {
-  // Check to make sure the resource was explicitly destroyed using Destroy()
-  // api before this destructor is called.
-  DCHECK(!egl_image_buffer_);
-}
+SharedImageBackingEglImage::~SharedImageBackingEglImage() {}
 
 void SharedImageBackingEglImage::Update(
     std::unique_ptr<gfx::GpuFence> in_fence) {
@@ -116,15 +112,6 @@ bool SharedImageBackingEglImage::ProduceLegacyMailbox(
     MailboxManager* mailbox_manager) {
   // This backing doe not support legacy mailbox system.
   return false;
-}
-
-void SharedImageBackingEglImage::Destroy() {
-  // TODO(vikassoni): Move this code to its destructor and remove this method.
-  // Do this for all the SharedImageBackings since this method is no longer
-  // required.
-  DCHECK(egl_image_buffer_);
-
-  egl_image_buffer_.reset();
 }
 
 std::unique_ptr<SharedImageRepresentationGLTexture>

@@ -119,7 +119,6 @@ Point::Point(double height, double width) : height_(height), width_(width) {
 }
 Point::Point(const Point& other) = default;
 Point& Point::operator=(const Point& other) = default;
-Point::~Point() = default;
 
 bool Point::operator==(const Point& other) const {
   return height_ == other.height_ && width_ == other.width_;
@@ -216,7 +215,7 @@ ResolutionSet::ResolutionSet()
     : ResolutionSet(0, kMaxDimension, 0, kMaxDimension, 0.0, HUGE_VAL) {}
 
 ResolutionSet::ResolutionSet(const ResolutionSet& other) = default;
-ResolutionSet::~ResolutionSet() = default;
+
 ResolutionSet& ResolutionSet::operator=(const ResolutionSet& other) = default;
 
 bool ResolutionSet::IsHeightEmpty() const {

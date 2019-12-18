@@ -213,7 +213,6 @@ class CORE_EXPORT DocumentLifecycle {
   };
 
   DocumentLifecycle();
-  ~DocumentLifecycle();
 
   bool IsActive() const { return state_ > kInactive && state_ < kStopping; }
   LifecycleState GetState() const { return state_; }

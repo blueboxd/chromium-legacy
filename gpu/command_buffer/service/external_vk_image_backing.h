@@ -92,7 +92,6 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
 
   // SharedImageBacking implementation.
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
-  void Destroy() override;
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
 
  protected:

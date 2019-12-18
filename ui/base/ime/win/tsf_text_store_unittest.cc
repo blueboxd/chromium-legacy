@@ -70,6 +70,8 @@ class MockTextInputClient : public TextInputClient {
                bool(const gfx::Range&, const std::vector<ui::ImeTextSpan>&));
   MOCK_METHOD3(SetActiveCompositionForAccessibility,
                void(const gfx::Range&, const base::string16&, bool));
+  MOCK_METHOD2(GetEditContextLayoutBounds,
+               bool(gfx::Rect* control_bounds, gfx::Rect* selection_bounds));
 };
 
 class MockInputMethodDelegate : public internal::InputMethodDelegate {

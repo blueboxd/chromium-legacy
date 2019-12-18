@@ -120,6 +120,15 @@ cr.define('safe_browsing', function() {
       addLogMessage(message);
     });
 
+    cr.sendWithPromise('getReportingEvents', []).then((reportingEvents) => {
+      reportingEvents.forEach(function(reportingEvent) {
+        addReportingEvent(reportingEvent);
+      });
+    });
+    cr.addWebUIListener('reporting-events-update', function(reportingEvent) {
+      addReportingEvent(reportingEvent);
+    });
+
     $('get-referrer-chain-form').addEventListener('submit', addReferrerChain);
 
     // Allow tabs to be navigated to by fragment. The fragment with be of the
@@ -267,6 +276,12 @@ cr.define('safe_browsing', function() {
     const logDiv = $('log-messages');
     const eventFormatted = "[" + (new Date(result["time"])).toLocaleString() +
         "] " + result['message'];
+    appendChildWithInnerText(logDiv, eventFormatted);
+  }
+
+  function addReportingEvent(result) {
+    const logDiv = $('reporting-events');
+    const eventFormatted = result['message'];
     appendChildWithInnerText(logDiv, eventFormatted);
   }
 

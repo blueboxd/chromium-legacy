@@ -32,14 +32,6 @@ Polymer({
     /** @type {settings.SyncStatus} */
     syncStatus: Object,
 
-    /** @private */
-    passwordsLeakDetectionEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('passwordsLeakDetectionEnabled');
-      },
-    },
-
     // <if expr="_google_chrome and not chromeos">
     // TODO(dbeam): make a virtual.* pref namespace and set/get this normally
     // (but handled differently in C++).
@@ -49,14 +41,6 @@ Polymer({
       value: function() {
         // TODO(dbeam): this is basically only to appease PrefControlBehavior.
         // Maybe add a no-validate attribute instead? This makes little sense.
-        return /** @type {chrome.settingsPrivate.PrefObject} */ ({});
-      },
-    },
-
-    /** @private {chrome.settingsPrivate.PrefObject} */
-    safeBrowsingReportingPref_: {
-      type: Object,
-      value: function() {
         return /** @type {chrome.settingsPrivate.PrefObject} */ ({});
       },
     },
@@ -72,24 +56,12 @@ Polymer({
     showSignoutDialog_: Boolean,
 
     /** @private */
-    privacySettingsRedesignEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('privacySettingsRedesignEnabled');
-      },
-    },
-
-    /** @private */
     syncFirstSetupInProgress_: {
       type: Boolean,
       value: false,
       computed: 'computeSyncFirstSetupInProgress_(syncStatus)',
     },
   },
-
-  observers: [
-    'onSafeBrowsingReportingPrefChange_(prefs.safebrowsing.*)',
-  ],
 
   /**
    * @return {boolean}
@@ -108,39 +80,6 @@ Polymer({
     this.addWebUIListener('metrics-reporting-change', setMetricsReportingPref);
     this.browserProxy_.getMetricsReporting().then(setMetricsReportingPref);
     // </if>
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  getDisabledExtendedSafeBrowsing_: function() {
-    return !this.getPref('safebrowsing.enabled').value;
-  },
-
-  /** @private */
-  onSafeBrowsingReportingToggleChange_: function() {
-    this.setPrefValue(
-        'safebrowsing.scout_reporting_enabled',
-        this.$$('#safeBrowsingReportingToggle').checked);
-  },
-
-  /** @private */
-  onSafeBrowsingReportingPrefChange_: function() {
-    if (this.prefs == undefined) {
-      return;
-    }
-    const safeBrowsingScoutPref =
-        this.getPref('safebrowsing.scout_reporting_enabled');
-    const prefValue = !!this.getPref('safebrowsing.enabled').value &&
-        !!safeBrowsingScoutPref.value;
-    this.safeBrowsingReportingPref_ = {
-      key: '',
-      type: chrome.settingsPrivate.PrefType.BOOLEAN,
-      value: prefValue,
-      enforcement: safeBrowsingScoutPref.enforcement,
-      controlledBy: safeBrowsingScoutPref.controlledBy,
-    };
   },
 
   // <if expr="_google_chrome and not chromeos">
@@ -177,7 +116,6 @@ Polymer({
       this.showRestart_ = true;
     }
   },
-
   // </if>
 
   // <if expr="_google_chrome">

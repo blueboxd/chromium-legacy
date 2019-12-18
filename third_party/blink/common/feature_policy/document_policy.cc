@@ -300,8 +300,6 @@ DocumentPolicy::DocumentPolicy(const FeatureState& defaults) {
   UpdateFeatureState(defaults);
 }
 
-DocumentPolicy::~DocumentPolicy() = default;
-
 // static
 std::unique_ptr<DocumentPolicy> DocumentPolicy::CreateWithRequiredPolicy(
     const FeatureState& required_policy,

@@ -44,8 +44,8 @@
 // Undocumented macros, especially those whose name start with YY_,
 // are private implementation details.  Do not rely on them.
 
-#ifndef YY_XPATHYY_THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_GRAMMAR_GENERATED_HH_INCLUDED
-# define YY_XPATHYY_THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_GRAMMAR_GENERATED_HH_INCLUDED
+#ifndef YY_YY_THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_GRAMMAR_GENERATED_HH_INCLUDED
+# define YY_YY_THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_GRAMMAR_GENERATED_HH_INCLUDED
 // //                    "%code requires" blocks.
 #line 46 "third_party/blink/renderer/core/xml/xpath_grammar.y"
 
@@ -167,8 +167,9 @@
 # define YYDEBUG 0
 #endif
 
+#line 69 "third_party/blink/renderer/core/xml/xpath_grammar.y"
 namespace xpathyy {
-#line 169 "third_party/blink/renderer/core/xml/xpath_grammar_generated.h"
+#line 170 "third_party/blink/renderer/core/xml/xpath_grammar_generated.h"
 
 
 
@@ -1472,12 +1473,13 @@ switch (yytype)
   };
 
 
+#line 69 "third_party/blink/renderer/core/xml/xpath_grammar.y"
 } // xpathyy
-#line 1474 "third_party/blink/renderer/core/xml/xpath_grammar_generated.h"
+#line 1476 "third_party/blink/renderer/core/xml/xpath_grammar_generated.h"
 
 
 
 
 
-#endif // !YY_XPATHYY_THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_GRAMMAR_GENERATED_HH_INCLUDED
+#endif // !YY_YY_THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_GRAMMAR_GENERATED_HH_INCLUDED
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_GRAMMAR_GENERATED_H_

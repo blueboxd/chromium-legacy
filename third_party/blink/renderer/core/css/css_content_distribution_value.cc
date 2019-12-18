@@ -19,8 +19,6 @@ CSSContentDistributionValue::CSSContentDistributionValue(
       position_(position),
       overflow_(overflow) {}
 
-CSSContentDistributionValue::~CSSContentDistributionValue() = default;
-
 String CSSContentDistributionValue::CustomCSSText() const {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
 

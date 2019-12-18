@@ -21,7 +21,6 @@ class PollableThreadSafeFlag {
 
  public:
   explicit PollableThreadSafeFlag(base::Lock* write_lock);
-  ~PollableThreadSafeFlag();
 
   // Set the flag. May only be called if |write_lock| is held.
   void SetWhileLocked(bool value);

@@ -37,6 +37,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
+#include "services/network/public/cpp/request_destination.h"
 #include "services/network/public/cpp/request_mode.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -425,6 +426,8 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
       // (P2PPortAllocatorSession::AllocateLegacyRelaySession, for example).
       // Remove this once those places are patched up.
       new_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
+      new_request.SetRequestDestination(
+          network::mojom::RequestDestination::kEmpty);
     } else if (context == mojom::RequestContextType::VIDEO) {
       resource_loader_options.initiator_info.name =
           fetch_initiator_type_names::kVideo;

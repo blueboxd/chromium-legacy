@@ -143,6 +143,10 @@ class MockLibsecretLoader : public LibsecretLoader {
                                                   ...);
 
   static SecretValue* mock_secret_item_get_secret(SecretItem* item);
+
+  static guint64 mock_secret_item_get_created(SecretItem* item);
+
+  static guint64 mock_secret_item_get_modified(SecretItem* item);
 };
 
 const gchar* MockLibsecretLoader::mock_secret_value_get_text(
@@ -231,6 +235,16 @@ SecretValue* MockLibsecretLoader::mock_secret_item_get_secret(
 }
 
 // static
+guint64 MockLibsecretLoader::mock_secret_item_get_created(SecretItem* item) {
+  return 0;
+}
+
+// static
+guint64 MockLibsecretLoader::mock_secret_item_get_modified(SecretItem* item) {
+  return 0;
+}
+
+// static
 bool MockLibsecretLoader::ResetForOSCrypt() {
   // Methods used by KeyStorageLibsecret
   secret_password_store_sync =
@@ -243,6 +257,9 @@ bool MockLibsecretLoader::ResetForOSCrypt() {
   // Used by Migrate()
   secret_password_clear_sync =
       &MockLibsecretLoader::mock_secret_password_clear_sync;
+  secret_item_get_created = &MockLibsecretLoader::mock_secret_item_get_created;
+  secret_item_get_modified =
+      &MockLibsecretLoader::mock_secret_item_get_modified;
 
   g_password_store.Pointer()->Reset();
   libsecret_loaded_ = true;

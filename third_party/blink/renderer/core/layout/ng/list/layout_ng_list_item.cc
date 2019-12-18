@@ -147,12 +147,9 @@ void LayoutNGListItem::UpdateMarker() {
   }
 
   // Create a marker box if it does not exist yet.
-  Node* list_item = GetNode();
+  Element* list_item = To<Element>(GetNode());
   const ComputedStyle* cached_marker_style =
-      list_item->IsPseudoElement()
-          ? nullptr
-          : To<Element>(list_item)->CachedStyleForPseudoElement(
-                kPseudoIdMarker);
+      list_item->CachedStyleForPseudoElement(kPseudoIdMarker);
   if (cached_marker_style && cached_marker_style->GetContentData()) {
     // Don't create an anonymous layout for the marker, it will be generated
     // by the ::marker pseudo-element.
@@ -161,17 +158,10 @@ void LayoutNGListItem::UpdateMarker() {
     is_marker_text_updated_ = true;
     return;
   }
-  scoped_refptr<ComputedStyle> marker_style;
-  if (cached_marker_style) {
-    marker_style = ComputedStyle::Clone(*cached_marker_style);
-  } else {
-    marker_style = ComputedStyle::Create();
-    marker_style->InheritFrom(style);
-    marker_style->SetStyleType(kPseudoIdMarker);
-    marker_style->SetUnicodeBidi(UnicodeBidi::kIsolate);
-    marker_style->SetFontVariantNumericSpacing(
-        FontVariantNumeric::kTabularNums);
-  }
+  scoped_refptr<ComputedStyle> marker_style =
+      cached_marker_style ? ComputedStyle::Clone(*cached_marker_style)
+                          : list_item->StyleForPseudoElement(kPseudoIdMarker);
+  DCHECK(marker_style);
   if (IsInside()) {
     if (marker_ && !marker_->IsLayoutInline())
       DestroyMarker();

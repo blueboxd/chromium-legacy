@@ -42,7 +42,6 @@ class QueueWithSizes::ValueSizePair final
 };
 
 QueueWithSizes::QueueWithSizes() = default;
-QueueWithSizes::~QueueWithSizes() = default;
 
 v8::Local<v8::Value> QueueWithSizes::DequeueValue(v8::Isolate* isolate) {
   DCHECK(!queue_.empty());

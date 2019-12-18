@@ -122,7 +122,8 @@ HTMLImportChild* HTMLImportsController::Load(const Document& parent_document,
   ResourceFetcher* fetcher = parent->GetDocument()->Fetcher();
 
   if (base::FeatureList::IsEnabled(
-          features::kHtmlImportsRequestInitiatorLock)) {
+          features::kHtmlImportsRequestInitiatorLock) &&
+      parent->GetDocument()->ImportsController()) {
     Document* context_document = parent->GetDocument()->ContextDocument();
     if (!context_document)
       return nullptr;

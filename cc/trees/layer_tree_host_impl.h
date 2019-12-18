@@ -15,6 +15,7 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/sequenced_task_runner.h"
@@ -592,9 +593,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   virtual void SetVisible(bool visible);
   bool visible() const { return visible_; }
 
-  bool is_animating_for_snap_for_testing() const {
-    return is_animating_for_snap_;
-  }
+  bool IsAnimatingForSnap() const;
 
   void SetNeedsOneBeginImplFrame();
   void SetNeedsRedraw();
@@ -680,10 +679,12 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // visual and layout offsets of the viewport.
   gfx::ScrollOffset GetVisualScrollOffset(const ScrollNode& scroll_node) const;
 
-  bool GetSnapFlingInfoAndSetSnapTarget(
+  bool GetSnapFlingInfoAndSetAnimatingSnapTarget(
       const gfx::Vector2dF& natural_displacement_in_viewport,
       gfx::Vector2dF* out_initial_position,
       gfx::Vector2dF* out_target_position) override;
+
+  void ScrollEndForSnapFling(bool did_finish) override;
 
   // Returns the amount of delta that can be applied to scroll_node, taking
   // page scale into account.
@@ -837,7 +838,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
  private:
   const gfx::ColorSpace& GetRasterColorSpaceAndId(int* id) const;
 
-  void CollectScrollDeltas(ScrollAndScaleSet* scroll_info) const;
+  void CollectScrollDeltas(ScrollAndScaleSet* scroll_info);
   void CollectScrollbarUpdates(ScrollAndScaleSet* scroll_info) const;
 
   // Returns the ScrollNode we should use to scroll, accounting for viewport
@@ -964,13 +965,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // Creates an animation curve and returns true if we need to update the
   // scroll position to a snap point. Otherwise returns false.
   bool SnapAtScrollEnd();
-
-  // Returns true if a target snap position was found.
-  // Updates the scrolling node's snap container data's target snap points
-  // accordingly to the found target.
-  bool FindSnapPositionAndSetTarget(ScrollNode* scroll_node,
-                                    const SnapSelectionStrategy& strategy,
-                                    gfx::ScrollOffset* snap_position) const;
 
   void SetContextVisibility(bool is_visible);
   void ImageDecodeFinished(int request_id, bool decode_succeeded);
@@ -1211,6 +1205,17 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // scroll_animating_overscroll_target_element_id_. https://crbug.com/940508
   ElementId scroll_animating_overscroll_target_element_id_;
 
+  // If a scroll snap is being animated, then the value of this will be the
+  // element id(s) of the target(s). Otherwise, the ids will be invalid.
+  // At the end of a scroll animation, the target should be set as the scroll
+  // node's snap target.
+  TargetSnapAreaElementIds scroll_animating_snap_target_ids_;
+
+  // A set of elements that scroll-snapped to a new target since the last
+  // begin main frame. The snap target ids of these elements will be sent to
+  // the main thread in the next begin main frame.
+  base::flat_set<ElementId> updated_snapped_elements_;
+
   // These completion states to be transfered to the main thread when we
   // begin main frame. The pair represents a request id and the completion (ie
   // success) state.
@@ -1255,7 +1260,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   PresentationTimeCallbackBuffer presentation_time_callbacks_;
-  bool is_animating_for_snap_;
 
   const PaintImage::GeneratorClientId paint_image_generator_client_id_;
 

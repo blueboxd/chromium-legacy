@@ -26,13 +26,6 @@ class PaintLayer;
 class CORE_EXPORT InspectorDOMSnapshotAgent final
     : public InspectorBaseAgent<protocol::DOMSnapshot::Metainfo> {
  public:
-  static InspectorDOMSnapshotAgent* Create(
-      InspectedFrames* inspected_frames,
-      InspectorDOMDebuggerAgent* dom_debugger_agent) {
-    return MakeGarbageCollected<InspectorDOMSnapshotAgent>(inspected_frames,
-                                                           dom_debugger_agent);
-  }
-
   InspectorDOMSnapshotAgent(InspectedFrames*, InspectorDOMDebuggerAgent*);
   ~InspectorDOMSnapshotAgent() override;
   void Trace(blink::Visitor*) override;

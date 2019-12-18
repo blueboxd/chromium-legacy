@@ -30,7 +30,6 @@ class PLATFORM_EXPORT WebMemoryAllocatorDump final {
  public:
   explicit WebMemoryAllocatorDump(
       base::trace_event::MemoryAllocatorDump* memory_allocator_dump);
-  ~WebMemoryAllocatorDump();
 
   // Adds a scalar attribute to the dump.
   // Arguments:

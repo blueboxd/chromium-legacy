@@ -98,18 +98,10 @@ void OnTaskComplete(FileTaskFinishedCallback done,
 
 }  // namespace
 
-void FindCrostiniTasks(Profile* profile,
-                       const std::vector<extensions::EntryInfo>& entries,
-                       std::vector<FullTaskDescriptor>* result_list,
-                       base::OnceClosure completion_closure) {
-  if (!crostini::CrostiniFeatures::Get()->IsUIAllowed(profile)) {
-    std::move(completion_closure).Run();
-    return;
-  }
-
-  std::vector<std::string> result_app_ids;
-  std::vector<std::string> result_app_names;
-
+void FindCrostiniApps(Profile* profile,
+                      const std::vector<extensions::EntryInfo>& entries,
+                      std::vector<std::string>* app_ids,
+                      std::vector<std::string>* app_names) {
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
   crostini::CrostiniMimeTypesService* mime_types_service =
@@ -122,8 +114,20 @@ void FindCrostiniTasks(Profile* profile,
     bool had_unsupported_mime_type = false;
     for (const extensions::EntryInfo& entry : entries) {
       if (supported_mime_types.find(entry.mime_type) !=
-          supported_mime_types.end())
+          supported_mime_types.end()) {
         continue;
+      }
+
+      // Allow files with type text/* to be opened with a text/plain application
+      // as per xdg spec.
+      // https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html.
+      // TODO(crbug.com/1032910): Add xdg mime support for aliases, subclasses.
+      if (base::StartsWith(entry.mime_type, "text/",
+                           base::CompareCase::SENSITIVE) &&
+          supported_mime_types.find(kUnknownTextMimeType) !=
+              supported_mime_types.end()) {
+        continue;
+      }
       // If we see either of these then we use the Linux container MIME type
       // mappings as alternates for finding an appropriate app since these are
       // the defaults when Chrome can't figure out the exact MIME type (but they
@@ -133,17 +137,32 @@ void FindCrostiniTasks(Profile* profile,
         std::string alternate_mime_type = mime_types_service->GetMimeType(
             entry.path, registration.VmName(), registration.ContainerName());
         if (supported_mime_types.find(alternate_mime_type) !=
-            supported_mime_types.end())
+            supported_mime_types.end()) {
           continue;
+        }
       }
       had_unsupported_mime_type = true;
       break;
     }
     if (had_unsupported_mime_type)
       continue;
-    result_app_ids.push_back(app_id);
-    result_app_names.push_back(registration.Name());
+    app_ids->push_back(app_id);
+    app_names->push_back(registration.Name());
   }
+}
+
+void FindCrostiniTasks(Profile* profile,
+                       const std::vector<extensions::EntryInfo>& entries,
+                       std::vector<FullTaskDescriptor>* result_list,
+                       base::OnceClosure completion_closure) {
+  if (!crostini::CrostiniFeatures::Get()->IsUIAllowed(profile)) {
+    std::move(completion_closure).Run();
+    return;
+  }
+
+  std::vector<std::string> result_app_ids;
+  std::vector<std::string> result_app_names;
+  FindCrostiniApps(profile, entries, &result_app_ids, &result_app_names);
 
   if (result_app_ids.empty()) {
     std::move(completion_closure).Run();

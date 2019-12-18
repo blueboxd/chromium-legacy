@@ -564,7 +564,8 @@ suite('CupsAddPrinterDialogTests', function() {
     addDialog.$$('.action-button').click();
     Polymer.dom.flush();
 
-    const eulaLink = 'google.com';
+    const eulaLink = 'google';
+    const expectedEulaLink = 'chrome://os-settings/' + eulaLink;
     const expectedManufacturer = 'Google';
     const expectedModel = 'printer';
     const expectedModel2 = 'newPrinter';
@@ -595,6 +596,7 @@ suite('CupsAddPrinterDialogTests', function() {
         .then(function(args) {
           // Check that the EULA text is shown.
           assertFalse(urlElement.hidden);
+          assertEquals(expectedEulaLink, urlElement.querySelector('a').href);
 
           resetGetEulaUrl(cupsPrintersBrowserProxy, '' /* eulaUrl */);
 
@@ -616,6 +618,7 @@ suite('CupsAddPrinterDialogTests', function() {
         })
         .then(function(args) {
           assertFalse(urlElement.hidden);
+          assertEquals(expectedEulaLink, urlElement.querySelector('a').href);
         });
   });
 

@@ -36,8 +36,6 @@ cr.define('settings_sync_account_control', function() {
     });
 
     setup(function() {
-      assertFalse(loadTimeData.getBoolean('privacySettingsRedesignEnabled'));
-
       browserProxy = new TestSyncBrowserProxy();
       settings.SyncBrowserProxyImpl.instance_ = browserProxy;
 
@@ -498,51 +496,6 @@ cr.define('settings_sync_account_control', function() {
       };
       assertVisible(testElement.$$('#turn-off'), false);
       assertVisible(testElement.$$('#sync-error-button'), false);
-    });
-
-    test('PrivacySettingsRedesignEnabled_False', function() {
-      // Ensure that the sync button is enabled regardless of signin pref.
-      assertTrue(testElement.getPref('signin.allowed_on_next_startup').value);
-      assertFalse(testElement.$$('#sign-in').disabled);
-      testElement.setPrefValue('signin.allowed_on_next_startup', false);
-      Polymer.dom.flush();
-      assertFalse(testElement.$$('#sign-in').disabled);
-    });
-  });
-
-  suite('PrivacySettingsRedesignTests', function() {
-    const peoplePage = null;
-    let browserProxy = null;
-    let testElement = null;
-
-    suiteSetup(function() {
-      loadTimeData.overrideValues({
-        privacySettingsRedesignEnabled: true,
-      });
-    });
-
-    setup(function() {
-      browserProxy = new TestSyncBrowserProxy();
-      settings.SyncBrowserProxyImpl.instance_ = browserProxy;
-
-      PolymerTest.clearBody();
-      testElement = document.createElement('settings-sync-account-control');
-      testElement.syncStatus = {
-        signedIn: true,
-        signedInUsername: 'foo@foo.com'
-      };
-      testElement.prefs = {
-        signin: {
-          allowed_on_next_startup:
-              {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true},
-        },
-      };
-      document.body.appendChild(testElement);
-      Polymer.dom.flush();
-    });
-
-    teardown(function() {
-      testElement.remove();
     });
 
     test('signinButtonDisabled', function() {

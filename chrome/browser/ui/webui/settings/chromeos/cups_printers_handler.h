@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "chromeos/printing/ppd_provider.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "printing/printer_query_result_chromeos.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -34,7 +35,6 @@ class Profile;
 
 namespace chromeos {
 
-class PpdProvider;
 class ServerPrintersFetcher;
 
 namespace settings {
@@ -187,6 +187,11 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
 
   // Handles getting the EULA URL if available.
   void HandleGetEulaUrl(const base::ListValue* args);
+
+  // Post EULA URL callback.
+  void OnGetEulaUrl(const std::string& callback_id,
+                    PpdProvider::CallbackResultCode result,
+                    const std::string& eula_url);
 
   // ui::SelectFileDialog::Listener override:
   void FileSelected(const base::FilePath& path,

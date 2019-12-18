@@ -25,6 +25,7 @@ constexpr char kKnownSecChHeader[] = "Sec-CH-UA";
 constexpr char kKnownSecFetchSiteHeader[] = "Sec-Fetch-Site";
 constexpr char kKnownSecFetchModeHeader[] = "Sec-Fetch-Mode";
 constexpr char kKnownSecFetchUserHeader[] = "Sec-Fetch-User";
+constexpr char kKnownSecFetchDestHeader[] = "Sec-Fetch-Dest";
 constexpr char kOtherSecHeader[] = "sec-other-info-header";
 constexpr char kOtherHeader[] = "Other-Header";
 
@@ -168,10 +169,10 @@ TEST_F(SecHeaderHelpersTest, UnprivilegedRequestOnExtension) {
   params.factory_bound_access_patterns->source_origin =
       url::Origin::Create(url);
 
-  SetFetchMetadataHeaders(current_url_request,
-                          network::mojom::RequestMode::kCors, false, &url,
-                          params);
-  ASSERT_EQ(2, static_cast<int>(current_url_request->extra_request_headers()
+  SetFetchMetadataHeaders(
+      current_url_request, network::mojom::RequestMode::kCors, false,
+      network::mojom::RequestDestination::kIframe, &url, params);
+  ASSERT_EQ(3, static_cast<int>(current_url_request->extra_request_headers()
                                     .GetHeaderVector()
                                     .size()));
 
@@ -183,6 +184,10 @@ TEST_F(SecHeaderHelpersTest, UnprivilegedRequestOnExtension) {
   ASSERT_TRUE(current_url_request->extra_request_headers().GetHeader(
       kKnownSecFetchModeHeader, &header_value));
   ASSERT_EQ(header_value, "cors");
+
+  ASSERT_TRUE(current_url_request->extra_request_headers().GetHeader(
+      kKnownSecFetchDestHeader, &header_value));
+  ASSERT_EQ(header_value, "iframe");
 }
 
 // Validate Sec-Fetch-Site and Sec-Fetch-Mode are set correctly with privileged
@@ -203,11 +208,11 @@ TEST_F(SecHeaderHelpersTest, PrivilegedRequestOnExtension) {
           mojom::CorsDomainMatchMode::kDisallowSubdomains,
           mojom::CorsPortMatchMode::kAllowAnyPort,
           mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
+  SetFetchMetadataHeaders(
+      current_url_request, network::mojom::RequestMode::kCors, true,
+      network::mojom::RequestDestination::kEmbed, &url, params);
 
-  SetFetchMetadataHeaders(current_url_request,
-                          network::mojom::RequestMode::kCors, true, &url,
-                          params);
-  ASSERT_EQ(3, static_cast<int>(current_url_request->extra_request_headers()
+  ASSERT_EQ(4, static_cast<int>(current_url_request->extra_request_headers()
                                     .GetHeaderVector()
                                     .size()));
 
@@ -223,6 +228,10 @@ TEST_F(SecHeaderHelpersTest, PrivilegedRequestOnExtension) {
   ASSERT_TRUE(current_url_request->extra_request_headers().GetHeader(
       kKnownSecFetchUserHeader, &header_value));
   ASSERT_EQ(header_value, "?1");
+
+  ASSERT_TRUE(current_url_request->extra_request_headers().GetHeader(
+      kKnownSecFetchDestHeader, &header_value));
+  ASSERT_EQ(header_value, "embed");
 }
 
 }  // namespace network

@@ -276,14 +276,19 @@ class CC_EXPORT InputHandler {
   virtual bool ScrollingShouldSwitchtoMainThread() = 0;
 
   // Sets the initial and target offset for scroll snapping for the currently
-  // scrolling node and the given natural displacement.
+  // scrolling node and the given natural displacement. Also sets the target
+  // element of the snap's scrolling animation.
   // |natural_displacement_in_viewport| is the estimated total scrolling for
   // the active scroll sequence.
   // Returns false if their is no position to snap to.
-  virtual bool GetSnapFlingInfoAndSetSnapTarget(
+  virtual bool GetSnapFlingInfoAndSetAnimatingSnapTarget(
       const gfx::Vector2dF& natural_displacement_in_viewport,
       gfx::Vector2dF* initial_offset,
       gfx::Vector2dF* target_offset) = 0;
+
+  // |did_finish| is true if the animation reached its target position (i.e.
+  // it wasn't aborted).
+  virtual void ScrollEndForSnapFling(bool did_finish) = 0;
 
  protected:
   InputHandler() = default;

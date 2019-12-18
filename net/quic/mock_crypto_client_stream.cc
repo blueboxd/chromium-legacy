@@ -76,6 +76,8 @@ MockCryptoClientStream::MockCryptoClientStream(
       proof_verify_details_(proof_verify_details),
       config_(config) {
   crypto_framer_.set_visitor(this);
+  // Simulate a negotiated cipher_suite with a fake value.
+  crypto_negotiated_params_->cipher_suite = 1;
 }
 
 MockCryptoClientStream::~MockCryptoClientStream() {}

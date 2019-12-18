@@ -160,7 +160,7 @@ Browser* FindSystemWebAppBrowser(Profile* profile, SystemAppType app_type) {
 bool IsSystemWebApp(Browser* browser) {
   DCHECK(browser);
   return browser->app_controller() &&
-         browser->app_controller()->IsForSystemWebApp();
+         browser->app_controller()->is_for_system_web_app();
 }
 
 gfx::Size GetSystemWebAppMinimumWindowSize(Browser* browser) {

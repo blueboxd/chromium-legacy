@@ -3725,6 +3725,8 @@ jumbo_static_library("browser") {
       "download/notification/download_item_notification.h",
       "download/notification/download_notification_manager.cc",
       "download/notification/download_notification_manager.h",
+      "enterprise_reporting/android_app_info_generator.cc",
+      "enterprise_reporting/android_app_info_generator.h",
       "feedback/feedback_util_chromeos.cc",
       "feedback/feedback_util_chromeos.h",
       "google/google_brand_chromeos.cc",

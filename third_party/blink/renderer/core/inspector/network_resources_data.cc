@@ -41,18 +41,6 @@ static bool IsHTTPErrorStatusCode(int status_code) {
   return status_code >= 400;
 }
 
-// static
-XHRReplayData* XHRReplayData::Create(ExecutionContext* execution_context,
-                                     const AtomicString& method,
-                                     const KURL& url,
-                                     bool async,
-                                     scoped_refptr<EncodedFormData> form_data,
-                                     bool include_credentials) {
-  return MakeGarbageCollected<XHRReplayData>(execution_context, method, url,
-                                             async, std::move(form_data),
-                                             include_credentials);
-}
-
 void XHRReplayData::AddHeader(const AtomicString& key,
                               const AtomicString& value) {
   headers_.Set(key, value);

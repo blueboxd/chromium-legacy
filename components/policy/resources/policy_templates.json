@@ -10827,6 +10827,31 @@
           If this policy is left unset, the left button of the mouse will be the primary key initially, but can be switched by the user anytime.'''
     },
     {
+      'name': 'DeviceLoginScreenPrimaryMouseButtonSwitch',
+      'owners': ['amraboelkher@chromium.org', 'emaxx@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:81-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 657,
+      'caption': '''Switch the primary mouse button to the right button on the login screen''',
+      'tags': [],
+      'desc': '''Switch the primary mouse button to the right button on the login screen.
+
+          If this policy is set to enabled, the right button of the mouse will always be the primary key on the login screen.
+
+          If this policy is set to disabled, the left button of the mouse will always be the primary key on the login screen.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the left button of the mouse will be the primary key on the login screen initially, but can be switched by the user anytime.'''
+    },
+    {
       'name': 'SharedClipboardEnabled',
       'owners': ['mvanouwerkerk@chromium.org', 'yasmo@chromium.org'],
       'type': 'main',
@@ -19633,6 +19658,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceLoginScreenDefaultScreenMagnifierType': 'accessibility_settings.login_screen_default_screen_magnifier_type',
     'DeviceLoginScreenScreenMagnifierType': 'accessibility_settings.login_screen_screen_magnifier_type',
     'DeviceLoginScreenDefaultVirtualKeyboardEnabled': 'accessibility_settings.login_screen_default_virtual_keyboard_enabled',
+    'DeviceLoginScreenPrimaryMouseButtonSwitch': 'login_screen_primary_mouse_button_switch.value',
     'DeviceLoginScreenVirtualKeyboardEnabled': 'accessibility_settings.login_screen_virtual_keyboard_enabled',
     'DeviceLoginScreenDictationEnabled': 'accessibility_settings.login_screen_dictation_enabled',
     'DeviceLoginScreenSelectToSpeakEnabled': 'accessibility_settings.login_screen_select_to_speak_enabled',
@@ -20154,6 +20180,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569, 578],
-  'highest_id_currently_used': 656,
+  'highest_id_currently_used': 657,
   'highest_atomic_group_id_currently_used': 38
 }

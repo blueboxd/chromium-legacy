@@ -15,6 +15,7 @@ import java.lang.annotation.RetentionPolicy;
  */
 @StringDef({FeatureConstants.DOWNLOAD_PAGE_FEATURE,
         FeatureConstants.DOWNLOAD_PAGE_SCREENSHOT_FEATURE, FeatureConstants.DOWNLOAD_HOME_FEATURE,
+        FeatureConstants.CHROME_DUET_HOME_BUTTON_FEATURE,
         FeatureConstants.CHROME_DUET_SEARCH_FEATURE,
         FeatureConstants.CHROME_DUET_TAB_SWITCHER_FEATURE,
         FeatureConstants.CHROME_HOME_EXPAND_FEATURE,

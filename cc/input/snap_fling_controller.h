@@ -23,12 +23,12 @@ class SnapFlingCurve;
 // are in the same coordinate space.
 class SnapFlingClient {
  public:
-  virtual bool GetSnapFlingInfoAndSetSnapTarget(
+  virtual bool GetSnapFlingInfoAndSetAnimatingSnapTarget(
       const gfx::Vector2dF& natural_displacement,
       gfx::Vector2dF* out_initial_position,
       gfx::Vector2dF* out_target_position) const = 0;
   virtual gfx::Vector2dF ScrollByForSnapFling(const gfx::Vector2dF& delta) = 0;
-  virtual void ScrollEndForSnapFling() = 0;
+  virtual void ScrollEndForSnapFling(bool did_finish) = 0;
   virtual void RequestAnimationForSnapFling() = 0;
 };
 

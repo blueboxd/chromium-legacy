@@ -310,6 +310,23 @@ bool ProfileSyncServiceFactory::HasSyncService(Profile* profile) {
 }
 
 // static
+bool ProfileSyncServiceFactory::IsSyncAllowed(Profile* profile) {
+  DCHECK(profile);
+  if (HasSyncService(profile)) {
+    syncer::SyncService* sync_service = GetForProfile(profile);
+    return !sync_service->HasDisableReason(
+               syncer::SyncService::DISABLE_REASON_PLATFORM_OVERRIDE) &&
+           !sync_service->HasDisableReason(
+               syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
+  }
+
+  // No ProfileSyncService created yet - we don't want to create one, so just
+  // infer the accessible state by looking at prefs/command line flags.
+  syncer::SyncPrefs prefs(profile->GetPrefs());
+  return switches::IsSyncAllowedByFlag() && !prefs.IsManaged();
+}
+
+// static
 std::vector<const syncer::SyncService*>
 ProfileSyncServiceFactory::GetAllSyncServices() {
   std::vector<Profile*> profiles =

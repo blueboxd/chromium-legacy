@@ -105,8 +105,6 @@ ImmutableCSSPropertyValueSet::ImmutableCSSPropertyValueSet(
   }
 }
 
-ImmutableCSSPropertyValueSet::~ImmutableCSSPropertyValueSet() = default;
-
 // Convert property into an uint16_t for comparison with metadata's property id
 // to avoid the compiler converting it to an int multiple times in a loop.
 static uint16_t GetConvertedCSSPropertyID(CSSPropertyID property_id) {

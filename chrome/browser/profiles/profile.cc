@@ -317,22 +317,6 @@ bool Profile::IsNewProfile() {
          PrefService::INITIALIZATION_STATUS_CREATED_NEW_PREF_STORE;
 }
 
-bool Profile::IsSyncAllowed() {
-  if (ProfileSyncServiceFactory::HasSyncService(this)) {
-    syncer::SyncService* sync_service =
-        ProfileSyncServiceFactory::GetForProfile(this);
-    return !sync_service->HasDisableReason(
-               syncer::SyncService::DISABLE_REASON_PLATFORM_OVERRIDE) &&
-           !sync_service->HasDisableReason(
-               syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
-  }
-
-  // No ProfileSyncService created yet - we don't want to create one, so just
-  // infer the accessible state by looking at prefs/command line flags.
-  syncer::SyncPrefs prefs(GetPrefs());
-  return switches::IsSyncAllowedByFlag() && !prefs.IsManaged();
-}
-
 void Profile::MaybeSendDestroyedNotification() {
   if (!sent_destroyed_notification_) {
     sent_destroyed_notification_ = true;

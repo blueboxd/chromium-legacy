@@ -1550,7 +1550,10 @@ TEST_F(LayerTreeHostImplTest, ScrollSnapOnX) {
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
   host_impl_->ScrollEnd(true);
-  EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId()),
+
+  // Snap target should not be set until the end of the animation.
+  EXPECT_TRUE(host_impl_->IsAnimatingForSnap());
+  EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
   base::TimeTicks start_time =
@@ -1561,6 +1564,7 @@ TEST_F(LayerTreeHostImplTest, ScrollSnapOnX) {
   BeginImplFrameAndAnimate(
       begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1000));
 
+  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 0), overflow->CurrentScrollOffset());
   EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId()),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
@@ -1587,8 +1591,12 @@ TEST_F(LayerTreeHostImplTest, ScrollSnapOnY) {
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
   host_impl_->ScrollEnd(true);
-  EXPECT_EQ(TargetSnapAreaElementIds(ElementId(), ElementId(10)),
+
+  // Snap target should not be set until the end of the animation.
+  EXPECT_TRUE(host_impl_->IsAnimatingForSnap());
+  EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
+
   base::TimeTicks start_time =
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
   BeginImplFrameAndAnimate(begin_frame_args, start_time);
@@ -1597,6 +1605,7 @@ TEST_F(LayerTreeHostImplTest, ScrollSnapOnY) {
   BeginImplFrameAndAnimate(
       begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1000));
 
+  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 50), overflow->CurrentScrollOffset());
   EXPECT_EQ(TargetSnapAreaElementIds(ElementId(), ElementId(10)),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
@@ -1623,8 +1632,12 @@ TEST_F(LayerTreeHostImplTest, ScrollSnapOnBoth) {
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
   host_impl_->ScrollEnd(true);
-  EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId(10)),
+
+  // Snap target should not be set until the end of the animation.
+  EXPECT_TRUE(host_impl_->IsAnimatingForSnap());
+  EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
+
   base::TimeTicks start_time =
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
   BeginImplFrameAndAnimate(begin_frame_args, start_time);
@@ -1633,6 +1646,7 @@ TEST_F(LayerTreeHostImplTest, ScrollSnapOnBoth) {
   BeginImplFrameAndAnimate(
       begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1000));
 
+  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 50), overflow->CurrentScrollOffset());
   EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId(10)),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
@@ -1662,7 +1676,7 @@ TEST_F(LayerTreeHostImplTest, ScrollSnapAfterAnimatedScroll) {
   // Animating for the wheel scroll.
   BeginImplFrameAndAnimate(begin_frame_args,
                            start_time + base::TimeDelta::FromMilliseconds(50));
-  EXPECT_FALSE(host_impl_->is_animating_for_snap_for_testing());
+  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
   gfx::ScrollOffset current_offset = overflow->CurrentScrollOffset();
   EXPECT_LT(0, current_offset.x());
   EXPECT_GT(20, current_offset.x());
@@ -1671,19 +1685,20 @@ TEST_F(LayerTreeHostImplTest, ScrollSnapAfterAnimatedScroll) {
   EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
-  // The scroll animation is finished, so the snap target should be set now and
-  // the snap animation should begin.
+  // The scroll animation is finished, so the snap animation should begin.
   BeginImplFrameAndAnimate(
       begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1000));
-  EXPECT_TRUE(host_impl_->is_animating_for_snap_for_testing());
-  EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId(10)),
+
+  // The snap target should not be set until the end of the animation.
+  EXPECT_TRUE(host_impl_->IsAnimatingForSnap());
+  EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
   // Finish the animation.
   BeginImplFrameAndAnimate(
       begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1500));
   EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 50), overflow->CurrentScrollOffset());
-  EXPECT_FALSE(host_impl_->is_animating_for_snap_for_testing());
+  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
   EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId(10)),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 }
@@ -1701,7 +1716,7 @@ TEST_F(LayerTreeHostImplTest, SnapAnimationCancelledByScroll) {
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
 
   host_impl_->ScrollBy(UpdateState(pointer_position, x_delta).get());
-  EXPECT_FALSE(host_impl_->is_animating_for_snap_for_testing());
+  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
 
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
@@ -1713,7 +1728,10 @@ TEST_F(LayerTreeHostImplTest, SnapAnimationCancelledByScroll) {
   // Animating for the snap.
   BeginImplFrameAndAnimate(begin_frame_args,
                            start_time + base::TimeDelta::FromMilliseconds(100));
-  EXPECT_TRUE(host_impl_->is_animating_for_snap_for_testing());
+  EXPECT_TRUE(host_impl_->IsAnimatingForSnap());
+  EXPECT_EQ(TargetSnapAreaElementIds(),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
+
   gfx::ScrollOffset current_offset = overflow->CurrentScrollOffset();
   EXPECT_GT(50, current_offset.x());
   EXPECT_LT(20, current_offset.x());
@@ -1725,11 +1743,20 @@ TEST_F(LayerTreeHostImplTest, SnapAnimationCancelledByScroll) {
                 ->ScrollBegin(BeginState(pointer_position, x_delta).get(),
                               InputHandler::WHEEL)
                 .thread);
-  EXPECT_FALSE(host_impl_->is_animating_for_snap_for_testing());
+  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
+  EXPECT_EQ(TargetSnapAreaElementIds(),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
+
   BeginImplFrameAndAnimate(begin_frame_args,
                            start_time + base::TimeDelta::FromMilliseconds(150));
   EXPECT_VECTOR_EQ(gfx::ScrollOffsetToVector2dF(current_offset),
                    overflow->CurrentScrollOffset());
+  BeginImplFrameAndAnimate(
+      begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1000));
+  // Ensure that the snap target was not updated at the end of the scroll
+  // animation.
+  EXPECT_EQ(TargetSnapAreaElementIds(),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 }
 
 TEST_F(LayerTreeHostImplTest,
@@ -1747,29 +1774,36 @@ TEST_F(LayerTreeHostImplTest,
 
   // There is a snap target at 50, scroll to it directly.
   host_impl_->ScrollBy(UpdateState(pointer_position, x_delta).get());
-  EXPECT_FALSE(host_impl_->is_animating_for_snap_for_testing());
+  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
 
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
   host_impl_->ScrollEnd(true);
+
+  // No animation is created, but the snap target should be updated.
+  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
+  EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId()),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
+
   base::TimeTicks start_time =
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
   BeginImplFrameAndAnimate(begin_frame_args, start_time);
 
   // We are already at a snap target so we should not animate for snap.
-  EXPECT_FALSE(host_impl_->is_animating_for_snap_for_testing());
+  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
 
   // Verify that we are not actually animating by running one frame and ensuring
   // scroll offset has not changed.
   BeginImplFrameAndAnimate(begin_frame_args,
                            start_time + base::TimeDelta::FromMilliseconds(100));
-  EXPECT_FALSE(host_impl_->is_animating_for_snap_for_testing());
+  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 0), overflow->CurrentScrollOffset());
   EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId()),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 }
 
-TEST_F(LayerTreeHostImplTest, GetSnapFlingInfoAndSetSnapTargetWhenZoomed) {
+TEST_F(LayerTreeHostImplTest,
+       GetSnapFlingInfoAndSetAnimatingSnapTargetWhenZoomed) {
   LayerImpl* overflow = CreateLayerForSnapping();
   // Scales the page to its 1/5.
   host_impl_->active_tree()->PushPageScaleFromMainThread(0.2f, 0.1f, 5);
@@ -1791,11 +1825,56 @@ TEST_F(LayerTreeHostImplTest, GetSnapFlingInfoAndSetSnapTargetWhenZoomed) {
   EXPECT_VECTOR_EQ(gfx::Vector2dF(4, 4), result.current_visual_offset);
 
   gfx::Vector2dF initial_offset, target_offset;
-  EXPECT_TRUE(host_impl_->GetSnapFlingInfoAndSetSnapTarget(
+  EXPECT_TRUE(host_impl_->GetSnapFlingInfoAndSetAnimatingSnapTarget(
       gfx::Vector2dF(10, 10), &initial_offset, &target_offset));
+  EXPECT_TRUE(host_impl_->IsAnimatingForSnap());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(4, 4), initial_offset);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 10), target_offset);
+  // Snap targets shouldn't be set until the fling animation is complete.
+  EXPECT_EQ(TargetSnapAreaElementIds(),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
+
+  host_impl_->ScrollEndForSnapFling(true /* did_finish */);
+  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
   EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId(10)),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
+}
+
+TEST_F(LayerTreeHostImplTest, SnapFlingAnimationEndWithoutFinishing) {
+  LayerImpl* overflow = CreateLayerForSnapping();
+  // Scales the page to its 1/5.
+  host_impl_->active_tree()->PushPageScaleFromMainThread(0.2f, 0.1f, 5.f);
+
+  // Should be (10, 10) in the scroller's coordinate.
+  gfx::Point pointer_position(2, 2);
+  gfx::Vector2dF delta(4, 4);
+  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
+            host_impl_
+                ->ScrollBegin(BeginState(pointer_position, delta).get(),
+                              InputHandler::WHEEL)
+                .thread);
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
+
+  // Should be (20, 20) in the scroller's coordinate.
+  InputHandlerScrollResult result =
+      host_impl_->ScrollBy(UpdateState(pointer_position, delta).get());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(20, 20), overflow->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(4, 4), result.current_visual_offset);
+
+  gfx::Vector2dF initial_offset, target_offset;
+  EXPECT_TRUE(host_impl_->GetSnapFlingInfoAndSetAnimatingSnapTarget(
+      gfx::Vector2dF(10, 10), &initial_offset, &target_offset));
+  EXPECT_TRUE(host_impl_->IsAnimatingForSnap());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(4, 4), initial_offset);
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 10), target_offset);
+  // Snap targets shouldn't be set until the fling animation is complete.
+  EXPECT_EQ(TargetSnapAreaElementIds(),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
+
+  // The snap targets should not be set if the snap fling did not finish.
+  host_impl_->ScrollEndForSnapFling(false /* did_finish */);
+  EXPECT_FALSE(host_impl_->IsAnimatingForSnap());
+  EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 }
 

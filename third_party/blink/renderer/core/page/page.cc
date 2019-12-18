@@ -1036,8 +1036,6 @@ void Page::ClearMediaFeatureOverrides() {
 
 Page::PageClients::PageClients() : chrome_client(nullptr) {}
 
-Page::PageClients::~PageClients() = default;
-
 template class CORE_TEMPLATE_EXPORT Supplement<Page>;
 
 const char InternalSettingsPageSupplementBase::kSupplementName[] =

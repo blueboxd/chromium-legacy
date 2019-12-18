@@ -138,7 +138,8 @@ void ProcessingInstruction::Process(const String& href, const String& charset) {
     // can hang off some parent sheet.
     if (is_xsl_ && RuntimeEnabledFeatures::XSLTEnabled()) {
       KURL final_url(local_href_);
-      sheet_ = XSLStyleSheet::CreateEmbedded(this, final_url);
+      sheet_ = MakeGarbageCollected<XSLStyleSheet>(this, final_url.GetString(),
+                                                   final_url, true);
       loading_ = false;
     }
     return;
@@ -195,8 +196,8 @@ void ProcessingInstruction::NotifyFinished(Resource* resource) {
       is_xsl_ ? std::make_unique<IncrementLoadEventDelayCount>(GetDocument())
               : nullptr;
   if (is_xsl_) {
-    sheet_ = XSLStyleSheet::Create(this, resource->Url(),
-                                   resource->GetResponse().ResponseUrl());
+    sheet_ = MakeGarbageCollected<XSLStyleSheet>(
+        this, resource->Url(), resource->GetResponse().ResponseUrl(), false);
     ToXSLStyleSheet(sheet_.Get())
         ->ParseString(ToXSLStyleSheetResource(resource)->Sheet());
   } else {

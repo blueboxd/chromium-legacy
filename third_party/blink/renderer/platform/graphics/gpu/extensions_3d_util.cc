@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/gles2_cmd_copy_texture_chromium_utils.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
@@ -75,6 +76,12 @@ bool Extensions3DUtil::IsExtensionEnabled(const String& name) {
   return enabled_extensions_.Contains(name);
 }
 
+// static
+bool Extensions3DUtil::CopyTextureCHROMIUMNeedsESSL3(GLenum dest_format) {
+  return gpu::gles2::CopyTextureCHROMIUMNeedsESSL3(dest_format);
+}
+
+// static
 bool Extensions3DUtil::CanUseCopyTextureCHROMIUM(GLenum dest_target) {
   switch (dest_target) {
     case GL_TEXTURE_2D:

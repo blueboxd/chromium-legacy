@@ -287,6 +287,23 @@ void WebKioskController::OnAppPrepared() {
     LaunchApp();
 }
 
+void WebKioskController::OnAppInstallFailed() {
+  // When app installation, still try running the app(there can network/app
+  // restrictions that block app launch until we handle them).
+  // For example, chat.google.com on the first launch opens accounts.google.com
+  // to get the gaia id.
+  app_state_ = AppState::INSTALLED;
+
+  if (!web_kiosk_splash_screen_view_)
+    return;
+  web_kiosk_splash_screen_view_->UpdateAppLaunchState(
+      AppLaunchSplashScreenView::AppLaunchState::
+          APP_LAUNCH_STATE_WAITING_APP_WINDOW_INSTALL_FAILED);
+  web_kiosk_splash_screen_view_->Show();
+  if (launch_on_install_)
+    LaunchApp();
+}
+
 void WebKioskController::LaunchApp() {
   DCHECK(app_state_ == AppState::INSTALLED);
   // We need to change the session state so we are able to create browser

@@ -997,7 +997,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
 
   bool ValidateClearBuffer(const char* function_name,
                            GLenum buffer,
-                           GLsizei length,
+                           size_t length,
                            GLuint src_offset);
 
   enum TexStorageType {

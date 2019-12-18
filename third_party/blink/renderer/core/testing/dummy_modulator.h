@@ -42,7 +42,8 @@ class DummyModulator : public Modulator {
 
   void FetchTree(const KURL&,
                  ResourceFetcher*,
-                 mojom::RequestContextType destination,
+                 mojom::RequestContextType context_type,
+                 network::mojom::RequestDestination destination,
                  const ScriptFetchOptions&,
                  ModuleScriptCustomFetchType,
                  ModuleTreeClient*) override;
@@ -51,10 +52,12 @@ class DummyModulator : public Modulator {
                    ModuleGraphLevel,
                    ModuleScriptCustomFetchType,
                    SingleModuleClient*) override;
-  void FetchDescendantsForInlineScript(ModuleScript*,
-                                       ResourceFetcher*,
-                                       mojom::RequestContextType destination,
-                                       ModuleTreeClient*) override;
+  void FetchDescendantsForInlineScript(
+      ModuleScript*,
+      ResourceFetcher*,
+      mojom::RequestContextType context_type,
+      network::mojom::RequestDestination destination,
+      ModuleTreeClient*) override;
   ModuleScript* GetFetchedModuleScript(const KURL&) override;
   KURL ResolveModuleSpecifier(const String&, const KURL&, String*) override;
   bool HasValidContext() override;

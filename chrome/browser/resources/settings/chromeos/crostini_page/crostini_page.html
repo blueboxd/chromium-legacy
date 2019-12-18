@@ -9,6 +9,7 @@
 <link rel="import" href="../../settings_page/settings_animated_pages.html">
 <link rel="import" href="../../settings_page/settings_subpage.html">
 <link rel="import" href="../../settings_shared_css.html">
+<link rel="import" href="../localized_link/localized_link.html">
 <link rel="import" href="crostini_arc_adb.html">
 <link rel="import" href="crostini_browser_proxy.html">
 <link rel="import" href="crostini_export_import.html">
@@ -28,8 +29,10 @@
             on-click="onSubpageTap_">
           <div class="start">
             $i18n{crostiniPageLabel}
-            <div class="secondary" id="secondaryText"
-                inner-h-t-m-l="[[i18nAdvanced('crostiniSubtext')]]">
+            <div class="secondary" id="secondaryText">
+              <settings-localized-link
+                  localized-string="[[i18nAdvanced('crostiniSubtext')]]">
+              </settings-localized-link>
             </div>
           </div>
           <template is="dom-if" if="[[!allowCrostini]]" restamp>

@@ -37,8 +37,9 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
         sizeof(NGBlockBreakToken) +
             child_break_tokens.size() * sizeof(NGBreakToken*),
         ::WTF::GetStringWithTypeName<NGBlockBreakToken>());
-    new (data) NGBlockBreakToken(node, consumed_block_size, child_break_tokens,
-                                 break_appeal, has_seen_all_children);
+    new (data) NGBlockBreakToken(PassKey(), node, consumed_block_size,
+                                 child_break_tokens, break_appeal,
+                                 has_seen_all_children);
     return base::AdoptRef(static_cast<NGBlockBreakToken*>(data));
   }
 
@@ -48,7 +49,7 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
   static scoped_refptr<NGBlockBreakToken> CreateBreakBefore(
       NGLayoutInputNode node,
       bool is_forced_break) {
-    auto* token = new NGBlockBreakToken(node);
+    auto* token = new NGBlockBreakToken(PassKey(), node);
     token->is_break_before_ = true;
     token->is_forced_break_ = is_forced_break;
     return base::AdoptRef(token);
@@ -102,17 +103,20 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
   String ToString() const override;
 #endif
 
- private:
+  using PassKey = util::PassKey<NGBlockBreakToken>;
+
   // Must only be called from Create(), because it assumes that enough space
   // has been allocated in the flexible array to store the children.
-  NGBlockBreakToken(NGLayoutInputNode node,
+  NGBlockBreakToken(PassKey,
+                    NGLayoutInputNode node,
                     LayoutUnit consumed_block_size,
                     const NGBreakTokenVector& child_break_tokens,
                     NGBreakAppeal break_appeal,
                     bool has_seen_all_children);
 
-  explicit NGBlockBreakToken(NGLayoutInputNode node);
+  explicit NGBlockBreakToken(PassKey, NGLayoutInputNode node);
 
+ private:
   LayoutUnit consumed_block_size_;
 
   wtf_size_t num_children_;

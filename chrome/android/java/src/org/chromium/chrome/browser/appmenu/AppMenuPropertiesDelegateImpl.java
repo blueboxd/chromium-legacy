@@ -289,43 +289,42 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                             ChromeSwitches.ENABLE_VR_SHELL_DEV));
         }
 
-        if (menuGroup == MenuGroup.OVERVIEW_MODE_MENU) {
-            if (isIncognito) {
-                // Hide normal close all tabs item.
-                menu.findItem(R.id.close_all_tabs_menu_id).setVisible(false);
-                // Enable close incognito tabs only if there are incognito tabs.
-                menu.findItem(R.id.close_all_incognito_tabs_menu_id).setEnabled(true);
-            } else {
-                // Hide close incognito tabs item.
-                menu.findItem(R.id.close_all_incognito_tabs_menu_id).setVisible(false);
-                // Enable close all tabs if there are normal tabs or incognito tabs.
-                menu.findItem(R.id.close_all_tabs_menu_id)
-                        .setEnabled(mTabModelSelector.getTotalTabCount() > 0);
-            }
-            if (!FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
-                    || DeviceClassManager.enableAccessibilityLayout()) {
-                menu.findItem(R.id.menu_group_tabs).setVisible(false);
-            } else {
-                boolean shouldEnabled = mTabModelSelector.getTabModelFilterProvider()
-                                                .getCurrentTabModelFilter()
-                                                .getTabsWithNoOtherRelatedTabs()
-                                                .size()
-                        > 1;
-                menu.findItem(R.id.menu_group_tabs).setEnabled(shouldEnabled);
-            }
-        }
-
         // We have to iterate all menu items since same menu item ID may be associated with more
         // than one menu items.
+        boolean isMenuGroupTabsVisible = FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
+                && !DeviceClassManager.enableAccessibilityLayout();
+        boolean isMenuGroupTabsEnabled = mTabModelSelector.getTabModelFilterProvider()
+                                                 .getCurrentTabModelFilter()
+                                                 .getTabsWithNoOtherRelatedTabs()
+                                                 .size()
+                > 1;
+        boolean hasTabs = mTabModelSelector.getTotalTabCount() > 0;
+        boolean hasIncognitoTabs = mTabModelSelector.getModel(true).getCount() > 0;
         for (int i = 0; i < menu.size(); ++i) {
             MenuItem item = menu.getItem(i);
+            int itemGroupId = item.getGroupId();
+            if (!(menuGroup == MenuGroup.START_SURFACE_MODE_MENU
+                                && itemGroupId == R.id.START_SURFACE_MODE_MENU
+                        || menuGroup == MenuGroup.OVERVIEW_MODE_MENU
+                                && itemGroupId == R.id.OVERVIEW_MODE_MENU
+                        || menuGroup == MenuGroup.PAGE_MENU && itemGroupId == R.id.PAGE_MENU)) {
+                continue;
+            }
+
             if (item.getItemId() == R.id.recent_tabs_menu_id) {
-                if ((menuGroup == MenuGroup.START_SURFACE_MODE_MENU
-                            && item.getGroupId() == R.id.START_SURFACE_MODE_MENU)
-                        || (menuGroup == MenuGroup.PAGE_MENU
-                                && item.getGroupId() == R.id.PAGE_MENU)) {
-                    item.setVisible(!isIncognito);
-                }
+                item.setVisible(!isIncognito);
+            }
+            if (item.getItemId() == R.id.menu_group_tabs) {
+                item.setVisible(isMenuGroupTabsVisible);
+                item.setEnabled(isMenuGroupTabsEnabled);
+            }
+            if (item.getItemId() == R.id.close_all_tabs_menu_id) {
+                item.setVisible(!isIncognito);
+                item.setEnabled(hasTabs);
+            }
+            if (item.getItemId() == R.id.close_all_incognito_tabs_menu_id) {
+                item.setVisible(isIncognito);
+                item.setEnabled(hasIncognitoTabs);
             }
         }
 

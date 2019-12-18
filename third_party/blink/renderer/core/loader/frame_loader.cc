@@ -593,6 +593,23 @@ static mojom::RequestContextType DetermineRequestContextFromNavigationType(
   return mojom::RequestContextType::HYPERLINK;
 }
 
+static network::mojom::RequestDestination
+DetermineRequestDestinationFromNavigationType(
+    const WebNavigationType navigation_type) {
+  switch (navigation_type) {
+    case kWebNavigationTypeLinkClicked:
+    case kWebNavigationTypeOther:
+    case kWebNavigationTypeFormResubmitted:
+    case kWebNavigationTypeFormSubmitted:
+      return network::mojom::RequestDestination::kDocument;
+    case kWebNavigationTypeBackForward:
+    case kWebNavigationTypeReload:
+      return network::mojom::RequestDestination::kEmpty;
+  }
+  NOTREACHED();
+  return network::mojom::RequestDestination::kDocument;
+}
+
 void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
                                   WebFrameLoadType frame_load_type) {
   CHECK(!IsBackForwardLoadType(frame_load_type));
@@ -673,6 +690,8 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
     request_context_type = mojom::RequestContextType::IFRAME;
   }
   resource_request.SetRequestContext(request_context_type);
+  resource_request.SetRequestDestination(
+      DetermineRequestDestinationFromNavigationType(navigation_type));
   request.SetFrameType(frame_->IsMainFrame()
                            ? network::mojom::RequestContextFrameType::kTopLevel
                            : network::mojom::RequestContextFrameType::kNested);

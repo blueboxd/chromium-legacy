@@ -15,3 +15,7 @@
 // Blink-specific type for layout function
 // https://drafts.css-houdini.org/css-layout-api/#layout-definition-layout-function
 callback LayoutCallback = any (sequence<LayoutChild> children, LayoutEdges edges, LayoutConstraints constraints, StylePropertyMapReadOnly styleMap);
+
+// Blink-specific type for intrinsicSizes function
+// https://drafts.css-houdini.org/css-layout-api/#layout-definition-intrinsic-sizes-function
+callback IntrinsicSizesCallback = any (sequence<LayoutChild> children, LayoutEdges edges, StylePropertyMapReadOnly styleMap);

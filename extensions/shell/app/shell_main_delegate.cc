@@ -134,6 +134,8 @@ ShellMainDelegate::~ShellMainDelegate() {
 
 bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   InitLogging();
+  content_client_.reset(new ShellContentClient);
+  SetContentClient(content_client_.get());
 
 #if defined(OS_CHROMEOS)
   chromeos::RegisterPathProvider();
@@ -159,11 +161,6 @@ void ShellMainDelegate::PreSandboxStartup() {
   if (ProcessNeedsResourceBundle(process_type))
     ui::ResourceBundle::InitSharedInstanceWithPakPath(
         GetResourcesPakFilePath());
-}
-
-content::ContentClient* ShellMainDelegate::CreateContentClient() {
-  content_client_ = std::make_unique<ShellContentClient>();
-  return content_client_.get();
 }
 
 content::ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {

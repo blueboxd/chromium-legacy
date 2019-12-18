@@ -335,11 +335,12 @@ void HotseatWidget::UpdateOpaqueBackground() {
   delegate_view_->UpdateOpaqueBackground();
 }
 
-void HotseatWidget::UpdateLayout() {
+void HotseatWidget::UpdateLayout(bool animate) {
   ui::Layer* layer = GetNativeView()->layer();
   ui::ScopedLayerAnimationSettings animation_setter(layer->GetAnimator());
   animation_setter.SetTransitionDuration(
-      ShelfConfig::Get()->shelf_animation_duration());
+      animate ? ShelfConfig::Get()->shelf_animation_duration()
+              : base::TimeDelta::FromMilliseconds(0));
   animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
   animation_setter.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);

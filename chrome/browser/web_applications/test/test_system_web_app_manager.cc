@@ -11,15 +11,10 @@ namespace web_app {
 
 TestSystemWebAppManager::TestSystemWebAppManager(Profile* profile)
     : SystemWebAppManager(profile) {
-  SetSystemApps(base::flat_map<SystemAppType, SystemAppInfo>());
+  SetSystemAppsForTesting(base::flat_map<SystemAppType, SystemAppInfo>());
 }
 
 TestSystemWebAppManager::~TestSystemWebAppManager() = default;
-
-void TestSystemWebAppManager::SetSystemApps(
-    base::flat_map<SystemAppType, SystemAppInfo> system_apps) {
-  SetSystemAppsForTesting(std::move(system_apps));
-}
 
 void TestSystemWebAppManager::SetUpdatePolicy(
     SystemWebAppManager::UpdatePolicy policy) {

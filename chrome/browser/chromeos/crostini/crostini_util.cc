@@ -16,6 +16,7 @@
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
+#include "chrome/browser/chromeos/crostini/crostini_installer.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service_factory.h"
@@ -401,7 +402,8 @@ void LaunchCrostiniApp(Profile* profile,
     // At this point, we know that Crostini UI is allowed.
     if (!crostini_manager->IsCrosTerminaInstalled() ||
         !CrostiniFeatures::Get()->IsEnabled(profile)) {
-      ShowCrostiniInstallerView(profile, CrostiniUISurface::kAppList);
+      crostini::CrostiniInstaller::GetForProfile(profile)->ShowDialog(
+          CrostiniUISurface::kAppList);
       return std::move(callback).Run(false, "Crostini not installed");
     }
 

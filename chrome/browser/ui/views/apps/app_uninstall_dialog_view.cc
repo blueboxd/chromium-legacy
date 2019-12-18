@@ -287,6 +287,7 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
       break;
     case apps::mojom::AppType::kExtension:
     case apps::mojom::AppType::kWeb:
+      // TODO(crbug.com/1029221): Implement uninstallation for web apps.
       InitializeViewForExtension(profile, app_id);
       break;
   }

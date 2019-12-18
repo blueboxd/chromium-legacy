@@ -375,7 +375,17 @@ class SharedImageBackingIOSurface : public ClearTrackingSharedImageBacking {
         dawn_format_(dawn_format) {
     DCHECK(io_surface_);
   }
-  ~SharedImageBackingIOSurface() final { DCHECK(!io_surface_); }
+  ~SharedImageBackingIOSurface() final {
+    TRACE_EVENT0("gpu", "SharedImageBackingFactoryIOSurface::Destroy");
+    DCHECK(io_surface_);
+
+    if (legacy_texture_) {
+      legacy_texture_->RemoveLightweightRef(have_context());
+      legacy_texture_ = nullptr;
+    }
+    mtl_texture_.reset();
+    io_surface_.reset();
+  }
 
   gfx::Rect ClearedRect() const final {
     // If a |legacy_texture_| exists, defer to that. Once created,
@@ -416,17 +426,6 @@ class SharedImageBackingIOSurface : public ClearTrackingSharedImageBacking {
 
     mailbox_manager->ProduceTexture(mailbox(), legacy_texture_);
     return true;
-  }
-  void Destroy() final {
-    TRACE_EVENT0("gpu", "SharedImageBackingFactoryIOSurface::Destroy");
-    DCHECK(io_surface_);
-
-    if (legacy_texture_) {
-      legacy_texture_->RemoveLightweightRef(have_context());
-      legacy_texture_ = nullptr;
-    }
-    mtl_texture_.reset();
-    io_surface_.reset();
   }
 
  protected:

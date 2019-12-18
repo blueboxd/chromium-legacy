@@ -71,6 +71,8 @@ void BackgroundFetchIconLoader::DidGetIconDisplaySizeIfSoLoadIcon(
 
   ResourceRequest resource_request(best_icon_url);
   resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
+  resource_request.SetRequestDestination(
+      network::mojom::RequestDestination::kImage);
   resource_request.SetPriority(ResourceLoadPriority::kMedium);
   resource_request.SetKeepalive(true);
   resource_request.SetMode(network::mojom::RequestMode::kNoCors);

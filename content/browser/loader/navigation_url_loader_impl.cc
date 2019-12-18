@@ -84,6 +84,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/request_destination.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -274,6 +275,36 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
                                 blink::FrameOwnerElementType::kEmbed)) {
       new_request->mode = network::mojom::RequestMode::kNavigateNestedObject;
     }
+  }
+
+  if (frame_tree_node) {
+    switch (frame_tree_node->frame_owner_element_type()) {
+      case blink::FrameOwnerElementType::kNone:
+        new_request->destination =
+            network::mojom::RequestDestination::kDocument;
+        break;
+      case blink::FrameOwnerElementType::kObject:
+        new_request->destination = network::mojom::RequestDestination::kObject;
+        break;
+      case blink::FrameOwnerElementType::kEmbed:
+        new_request->destination = network::mojom::RequestDestination::kEmbed;
+        break;
+      case blink::FrameOwnerElementType::kIframe:
+        new_request->destination = network::mojom::RequestDestination::kIframe;
+        break;
+      case blink::FrameOwnerElementType::kFrame:
+        new_request->destination = network::mojom::RequestDestination::kFrame;
+        break;
+      case blink::FrameOwnerElementType::kPortal:
+        // TODO(mkwst): "Portal"'s destination isn't actually defined at the
+        // moment. Let's assume it'll be similar to a frame until we decide
+        // otherwise.
+        // https://github.com/w3c/webappsec-fetch-metadata/issues/46
+        new_request->destination = network::mojom::RequestDestination::kIframe;
+        break;
+    }
+  } else {
+    new_request->destination = network::mojom::RequestDestination::kDocument;
   }
 
   if (ui::PageTransitionIsWebTriggerable(

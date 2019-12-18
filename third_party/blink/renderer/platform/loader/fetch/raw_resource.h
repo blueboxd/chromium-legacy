@@ -207,7 +207,6 @@ class PLATFORM_EXPORT RawResourceClientStateChecker final {
 
  public:
   RawResourceClientStateChecker();
-  ~RawResourceClientStateChecker();
 
   // Call before addClient()/removeClient() is called.
   void WillAddClient();

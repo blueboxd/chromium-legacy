@@ -58,6 +58,7 @@ if (is_chromeos) {
   js_library("cups_add_printer_dialog") {
     deps = [
       ":cups_printers_browser_proxy",
+      "../chromeos/localized_link:localized_link",
       "//ui/webui/resources/js:load_time_data",
       "//ui/webui/resources/js:web_ui_listener_behavior",
     ]
@@ -71,6 +72,7 @@ if (is_chromeos) {
 
   js_library("cups_edit_printer_dialog") {
     deps = [
+      "../chromeos/localized_link:localized_link",
       "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
       "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
       "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
@@ -109,6 +111,7 @@ if (is_chromeos) {
       ":cups_printers_entry_manager",
       ":cups_saved_printers",
       "..:route",
+      "../chromeos/localized_link:localized_link",
       "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
       "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
       "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",

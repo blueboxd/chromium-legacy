@@ -80,14 +80,19 @@ class TouchToFillView implements BottomSheetContent {
     /**
      * If set to true, requests to show the bottom sheet. Otherwise, requests to hide the sheet.
      * @param isVisible A boolean describing whether to show or hide the sheet.
+     * @return True if the request was successful, false otherwise.
      */
-    void setVisible(boolean isVisible) {
+    boolean setVisible(boolean isVisible) {
         if (isVisible) {
             mBottomSheetController.addObserver(mBottomSheetObserver);
-            mBottomSheetController.requestShowContent(this, true);
+            if (!mBottomSheetController.requestShowContent(this, true)) {
+                mBottomSheetController.removeObserver(mBottomSheetObserver);
+                return false;
+            }
         } else {
             mBottomSheetController.hideContent(this, true);
         }
+        return true;
     }
 
     void setSheetItemListAdapter(RecyclerView.Adapter adapter) {

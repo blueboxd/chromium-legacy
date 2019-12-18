@@ -8,8 +8,6 @@ namespace blink {
 
 EditingState::EditingState() = default;
 
-EditingState::~EditingState() = default;
-
 void EditingState::Abort() {
   DCHECK(!is_aborted_);
   is_aborted_ = true;

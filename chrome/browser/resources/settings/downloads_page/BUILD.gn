@@ -25,6 +25,7 @@ if (is_chromeos) {
   js_library("smb_shares_page") {
     deps = [
       "..:route",
+      "../chromeos/localized_link:localized_link",
       "//ui/webui/resources/cr_components/chromeos/smb_shares:smb_browser_proxy",
       "//ui/webui/resources/js:web_ui_listener_behavior",
     ]

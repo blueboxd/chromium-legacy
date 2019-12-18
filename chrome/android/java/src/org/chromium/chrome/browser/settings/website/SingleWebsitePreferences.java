@@ -656,6 +656,8 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
             return SiteSettingsCategory.createFromType(SiteSettingsCategory.Type.MICROPHONE);
         } else if (showWarningFor(SiteSettingsCategory.Type.NOTIFICATIONS)) {
             return SiteSettingsCategory.createFromType(SiteSettingsCategory.Type.NOTIFICATIONS);
+        } else if (showWarningFor(SiteSettingsCategory.Type.NFC)) {
+            return SiteSettingsCategory.createFromType(SiteSettingsCategory.Type.NFC);
         }
         return null;
     }

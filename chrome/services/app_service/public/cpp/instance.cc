@@ -19,6 +19,7 @@ std::unique_ptr<Instance> Instance::Clone() {
   auto instance = std::make_unique<Instance>(this->AppId(), this->Window());
   instance->SetLaunchId(this->LaunchId());
   instance->UpdateState(this->State(), this->LastUpdatedTime());
+  instance->SetBrowserContext(this->BrowserContext());
   return instance;
 }
 
@@ -26,6 +27,10 @@ void Instance::UpdateState(InstanceState state,
                            const base::Time& last_updated_time) {
   state_ = state;
   last_updated_time_ = last_updated_time;
+}
+
+void Instance::SetBrowserContext(content::BrowserContext* browser_context) {
+  browser_context_ = browser_context;
 }
 
 }  // namespace apps

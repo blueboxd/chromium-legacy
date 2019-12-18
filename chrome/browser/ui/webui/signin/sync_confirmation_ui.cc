@@ -28,7 +28,8 @@
 SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
     : SigninWebDialogUI(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  bool is_sync_allowed = profile->IsSyncAllowed();
+  const bool is_sync_allowed =
+      ProfileSyncServiceFactory::IsSyncAllowed(profile);
 
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISyncConfirmationHost);

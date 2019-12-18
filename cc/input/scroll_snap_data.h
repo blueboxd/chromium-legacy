@@ -171,6 +171,10 @@ struct TargetSnapAreaElementIds {
     return (other.x == x) && (other.y == y);
   }
 
+  bool operator!=(const TargetSnapAreaElementIds& other) const {
+    return !(*this == other);
+  }
+
   // Note that the same element can be snapped to on both the x and y axes.
   ElementId x;
   ElementId y;

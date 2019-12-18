@@ -134,6 +134,8 @@ class SystemWebAppManager {
     return *on_apps_synchronized_;
   }
 
+  // This call will override default System Apps configuration. You should call
+  // Start() after this call to install |system_apps|.
   void SetSystemAppsForTesting(
       base::flat_map<SystemAppType, SystemAppInfo> system_apps);
 

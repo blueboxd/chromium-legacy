@@ -47,6 +47,7 @@ enum class RedirectMode : int32_t;
 enum class ReferrerPolicy : int32_t;
 enum class RequestMode : int32_t;
 enum class RequestContextFrameType : int32_t;
+enum class RequestDestination : int32_t;
 }  // namespace mojom
 }  // namespace network
 
@@ -235,6 +236,11 @@ class WebURLRequest {
 
   BLINK_PLATFORM_EXPORT mojom::RequestContextType GetRequestContext() const;
   BLINK_PLATFORM_EXPORT void SetRequestContext(mojom::RequestContextType);
+
+  BLINK_PLATFORM_EXPORT network::mojom::RequestDestination
+  GetRequestDestination() const;
+  BLINK_PLATFORM_EXPORT void SetRequestDestination(
+      network::mojom::RequestDestination);
 
   BLINK_PLATFORM_EXPORT void SetReferrerString(const WebString& referrer);
   BLINK_PLATFORM_EXPORT void SetReferrerPolicy(

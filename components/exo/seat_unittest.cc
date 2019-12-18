@@ -424,7 +424,12 @@ TEST_F(SeatTest, SetSelection_NullSource) {
 
   RunReadingTask();
 
-  // Should clear the clipboard.
+  {
+    ui::ScopedClipboardWriter writer(ui::ClipboardBuffer::kCopyPaste);
+    writer.WriteText(base::UTF8ToUTF16("Golden data"));
+  }
+
+  // Should not affect the current state of the clipboard.
   seat.SetSelection(nullptr);
 
   ASSERT_TRUE(delegate.cancelled());
@@ -432,7 +437,7 @@ TEST_F(SeatTest, SetSelection_NullSource) {
   std::string clipboard;
   ui::Clipboard::GetForCurrentThread()->ReadAsciiText(
       ui::ClipboardBuffer::kCopyPaste, &clipboard);
-  EXPECT_EQ(clipboard, "");
+  EXPECT_EQ(clipboard, "Golden data");
 }
 
 TEST_F(SeatTest, PressedKeys) {

@@ -4127,14 +4127,7 @@ Element* Element::GetFocusableArea() const {
     return focused_element;
 
   // Slide the focus to its inner node.
-  // TODO(crbug.com/1014094): We should pick the first focusable element in
-  // the flat tree.
-  Element* found =
-      doc.GetPage()->GetFocusController().FindFocusableElementInShadowHost(
-          *this);
-  if (found && IsShadowIncludingInclusiveAncestorOf(*found))
-    return found;
-  return nullptr;
+  return FocusController::FindFocusableElementInShadowHost(*this);
 }
 
 void Element::focus(const FocusOptions* options) {

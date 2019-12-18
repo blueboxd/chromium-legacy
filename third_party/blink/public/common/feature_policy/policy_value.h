@@ -20,7 +20,6 @@ namespace blink {
 class BLINK_COMMON_EXPORT PolicyValue {
  public:
   PolicyValue();
-  ~PolicyValue();
 
   explicit PolicyValue(mojom::PolicyValueType);
 

@@ -26,6 +26,8 @@
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals.mojom.h"
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals_ui.h"
 #include "chrome/browser/ui/webui/media/media_engagement_ui.h"
+#include "chrome/browser/ui/webui/omnibox/omnibox.mojom.h"
+#include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
 #include "chrome/browser/ui/webui/usb_internals/usb_internals.mojom.h"
 #include "chrome/browser/ui/webui/usb_internals/usb_internals_ui.h"
 #include "chrome/common/prerender.mojom.h"
@@ -37,6 +39,7 @@
 #include "components/feed/buildflags.h"
 #include "components/performance_manager/performance_manager_tab_helper.h"
 #include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/translate/content/common/translate.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
@@ -62,6 +65,11 @@
 #include "chrome/browser/android/contextualsearch/unhandled_tap_web_contents_observer.h"
 #include "third_party/blink/public/mojom/unhandled_tap_notifier/unhandled_tap_notifier.mojom.h"
 #endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+#include "chrome/browser/ui/webui/reset_password/reset_password.mojom.h"
+#include "chrome/browser/ui/webui/reset_password/reset_password_ui.h"
+#endif  // BUILDFLAG(FULL_SAFE_BROWSING)
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/contextualsearch/contextual_search_observer.h"
@@ -104,6 +112,11 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_page_handler.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_ui.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_dialog.h"
+#include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -397,6 +410,9 @@ void PopulateChromeWebUIFrameBinders(
       MediaEngagementUI, media::mojom::MediaEngagementScoreDetailsProvider>(
       map);
 
+  RegisterWebUIControllerInterfaceBinder<OmniboxUI,
+                                         ::mojom::OmniboxPageHandler>(map);
+
   RegisterWebUIControllerInterfaceBinder<
       SiteEngagementUI, ::mojom::SiteEngagementDetailsProvider>(map);
 
@@ -425,6 +441,10 @@ void PopulateChromeWebUIFrameBinders(
       add_supervision::mojom::AddSupervisionHandler>(map);
 
   RegisterWebUIControllerInterfaceBinder<
+      chromeos::cellular_setup::CellularSetupDialogUI,
+      chromeos::cellular_setup::mojom::CellularSetup>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
       chromeos::machine_learning::MachineLearningInternalsUI,
       chromeos::machine_learning::mojom::PageHandler>(map);
 #endif  // defined(OS_CHROMEOS)
@@ -442,6 +462,11 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<FeedInternalsUI,
                                          feed_internals::mojom::PageHandler>(
       map);
+#endif
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+  RegisterWebUIControllerInterfaceBinder<ResetPasswordUI,
+                                         ::mojom::ResetPasswordHandler>(map);
 #endif
 }
 

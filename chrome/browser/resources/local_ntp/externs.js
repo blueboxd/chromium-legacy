@@ -537,4 +537,5 @@ configData.translatedStrings.undoThumbnailRemove;
 configData.translatedStrings.uploadImage;
 configData.translatedStrings.urlField;
 configData.translatedStrings.voiceCloseTooltip;
+configData.translatedStrings.voiceSearchClosed;
 configData.translatedStrings.waiting;

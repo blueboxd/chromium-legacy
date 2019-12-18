@@ -45,8 +45,6 @@ CompositingLayerAssigner::CompositingLayerAssigner(
     PaintLayerCompositor* compositor)
     : compositor_(compositor), layers_changed_(false) {}
 
-CompositingLayerAssigner::~CompositingLayerAssigner() = default;
-
 void CompositingLayerAssigner::Assign(
     PaintLayer* update_root,
     Vector<PaintLayer*>& layers_needing_paint_invalidation) {

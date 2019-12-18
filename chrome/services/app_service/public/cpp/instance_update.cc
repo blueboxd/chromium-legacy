@@ -29,6 +29,9 @@ void InstanceUpdate::Merge(Instance* state, const Instance* delta) {
   if (delta->State() != InstanceState::kUnknown) {
     state->UpdateState(delta->State(), delta->LastUpdatedTime());
   }
+  if (delta->BrowserContext()) {
+    state->SetBrowserContext(delta->BrowserContext());
+  }
   // When adding new fields to the Instance class, this function should also be
   // updated.
 }
@@ -61,6 +64,10 @@ bool InstanceUpdate::Equals(const Instance* state, const Instance* delta) {
   if (delta->State() != InstanceState::kUnknown &&
       (delta->State() != state->State() ||
        delta->LastUpdatedTime() != state->LastUpdatedTime())) {
+    return false;
+  }
+  if (delta->BrowserContext() &&
+      delta->BrowserContext() != state->BrowserContext()) {
     return false;
   }
   return true;
@@ -133,6 +140,21 @@ base::Time InstanceUpdate::LastUpdatedTime() const {
 bool InstanceUpdate::LastUpdatedTimeChanged() const {
   return delta_ && !delta_->LastUpdatedTime().is_null() &&
          (!state_ || (delta_->LastUpdatedTime() != state_->LastUpdatedTime()));
+}
+
+content::BrowserContext* InstanceUpdate::BrowserContext() const {
+  if (delta_ && delta_->BrowserContext()) {
+    return delta_->BrowserContext();
+  }
+  if (state_ && state_->BrowserContext()) {
+    return state_->BrowserContext();
+  }
+  return nullptr;
+}
+
+bool InstanceUpdate::BrowserContextChanged() const {
+  return delta_ && delta_->BrowserContext() &&
+         (!state_ || (delta_->BrowserContext() != state_->BrowserContext()));
 }
 
 }  // namespace apps

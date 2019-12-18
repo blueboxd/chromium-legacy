@@ -381,8 +381,14 @@ class SharedImageBackingGLTexture : public SharedImageBackingWithReadAccess {
   }
 
   ~SharedImageBackingGLTexture() override {
-    DCHECK(!texture_);
-    DCHECK(!rgb_emulation_texture_);
+    DCHECK(texture_);
+    texture_->RemoveLightweightRef(have_context());
+    texture_ = nullptr;
+
+    if (rgb_emulation_texture_) {
+      rgb_emulation_texture_->RemoveLightweightRef(have_context());
+      rgb_emulation_texture_ = nullptr;
+    }
   }
 
   gfx::Rect ClearedRect() const override {
@@ -428,17 +434,6 @@ class SharedImageBackingGLTexture : public SharedImageBackingWithReadAccess {
     DCHECK(texture_);
     mailbox_manager->ProduceTexture(mailbox(), texture_);
     return true;
-  }
-
-  void Destroy() override {
-    DCHECK(texture_);
-    texture_->RemoveLightweightRef(have_context());
-    texture_ = nullptr;
-
-    if (rgb_emulation_texture_) {
-      rgb_emulation_texture_->RemoveLightweightRef(have_context());
-      rgb_emulation_texture_ = nullptr;
-    }
   }
 
   void OnMemoryDump(const std::string& dump_name,
@@ -589,7 +584,10 @@ class SharedImageBackingPassthroughGLTexture
   }
 
   ~SharedImageBackingPassthroughGLTexture() override {
-    DCHECK(!texture_passthrough_);
+    DCHECK(texture_passthrough_);
+    if (!have_context())
+      texture_passthrough_->MarkContextLost();
+    texture_passthrough_.reset();
   }
 
   gfx::Rect ClearedRect() const override {
@@ -620,13 +618,6 @@ class SharedImageBackingPassthroughGLTexture
     DCHECK(texture_passthrough_);
     mailbox_manager->ProduceTexture(mailbox(), texture_passthrough_.get());
     return true;
-  }
-
-  void Destroy() override {
-    DCHECK(texture_passthrough_);
-    if (!have_context())
-      texture_passthrough_->MarkContextLost();
-    texture_passthrough_.reset();
   }
 
   void OnMemoryDump(const std::string& dump_name,

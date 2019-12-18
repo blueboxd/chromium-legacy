@@ -40,6 +40,7 @@ DocumentResource* DocumentResource::FetchSVGDocument(FetchParameters& params,
   DCHECK_EQ(params.GetResourceRequest().GetMode(),
             network::mojom::RequestMode::kSameOrigin);
   params.SetRequestContext(mojom::RequestContextType::IMAGE);
+  params.SetRequestDestination(network::mojom::RequestDestination::kImage);
   return ToDocumentResource(
       fetcher->RequestResource(params, SVGDocumentResourceFactory(), client));
 }

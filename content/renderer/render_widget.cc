@@ -1598,8 +1598,14 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     return;  // Not considered as a text input field in WebKit/Chromium.
 
   blink::WebTextInputInfo new_info;
-  if (auto* controller = GetInputMethodController())
+  if (auto* controller = GetInputMethodController()) {
     new_info = controller->TextInputInfo();
+    // Check if the input panel policy in |EditContext| is set to manual or not.
+    // This will be used to decide whether or not to show VK when |EditContext|
+    // is set focus.
+    if (controller->IsEditContextActive())
+      show_virtual_keyboard = !controller->IsInputPanelPolicyManual();
+  }
   const ui::TextInputMode new_mode =
       ConvertWebTextInputMode(new_info.input_mode);
 
@@ -1623,6 +1629,15 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     params.mode = new_mode;
     params.action = new_info.action;
     params.flags = new_info.flags;
+    if (auto* controller = GetInputMethodController()) {
+      if (controller->IsEditContextActive()) {
+        WebRect control_bounds;
+        WebRect selection_bounds;
+        controller->GetLayoutBounds(&control_bounds, &selection_bounds);
+        params.edit_context_control_bounds = control_bounds;
+        params.edit_context_selection_bounds = selection_bounds;
+      }
+    }
 #if defined(OS_ANDROID)
     if (next_previous_flags_ == kInvalidNextPreviousFlagsValue) {
       // Due to a focus change, values will be reset by the frame.

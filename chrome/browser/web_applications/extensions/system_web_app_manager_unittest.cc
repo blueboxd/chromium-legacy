@@ -135,7 +135,7 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
       SystemAppType::SETTINGS,
       SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
 
-  system_web_app_manager()->SetSystemApps(std::move(system_apps));
+  system_web_app_manager()->SetSystemAppsForTesting(std::move(system_apps));
   system_web_app_manager()->Start();
 
   base::RunLoop().RunUntilIdle();
@@ -158,7 +158,7 @@ TEST_F(SystemWebAppManagerTest, Enabled) {
       SystemAppType::DISCOVER,
       SystemAppInfo(kDiscoverAppNameForLogging, GURL(kAppUrl2)));
 
-  system_web_app_manager()->SetSystemApps(std::move(system_apps));
+  system_web_app_manager()->SetSystemAppsForTesting(std::move(system_apps));
   system_web_app_manager()->Start();
   base::RunLoop().RunUntilIdle();
 
@@ -181,7 +181,7 @@ TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
       SystemAppType::SETTINGS,
       SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
 
-  system_web_app_manager()->SetSystemApps(std::move(system_apps));
+  system_web_app_manager()->SetSystemAppsForTesting(std::move(system_apps));
   system_web_app_manager()->Start();
 
   base::RunLoop().RunUntilIdle();
@@ -206,7 +206,7 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
   system_apps.emplace(
       SystemAppType::SETTINGS,
       SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
-  system_web_app_manager()->SetSystemApps(system_apps);
+  system_web_app_manager()->SetSystemAppsForTesting(system_apps);
 
   system_web_app_manager()->set_current_version(base::Version("1.0.0.0"));
   system_web_app_manager()->Start();
@@ -219,7 +219,7 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
   system_apps.emplace(
       SystemAppType::DISCOVER,
       SystemAppInfo(kDiscoverAppNameForLogging, GURL(kAppUrl2)));
-  system_web_app_manager()->SetSystemApps(system_apps);
+  system_web_app_manager()->SetSystemAppsForTesting(system_apps);
   system_web_app_manager()->Start();
 
   base::RunLoop().RunUntilIdle();
@@ -254,7 +254,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   system_apps.emplace(
       SystemAppType::SETTINGS,
       SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
-  system_web_app_manager()->SetSystemApps(system_apps);
+  system_web_app_manager()->SetSystemAppsForTesting(system_apps);
 
   system_web_app_manager()->set_current_version(base::Version("1.0.0.0"));
   system_web_app_manager()->Start();
@@ -270,7 +270,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   system_apps.emplace(
       SystemAppType::DISCOVER,
       SystemAppInfo(kDiscoverAppNameForLogging, GURL(kAppUrl2)));
-  system_web_app_manager()->SetSystemApps(system_apps);
+  system_web_app_manager()->SetSystemAppsForTesting(system_apps);
   system_web_app_manager()->Start();
   base::RunLoop().RunUntilIdle();
 
@@ -318,7 +318,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   // Changing the install URL of a system app propagates even without a version
   // change.
   system_apps.find(SystemAppType::SETTINGS)->second.install_url = kAppUrl3;
-  system_web_app_manager()->SetSystemApps(system_apps);
+  system_web_app_manager()->SetSystemAppsForTesting(system_apps);
   system_web_app_manager()->Start();
   base::RunLoop().RunUntilIdle();
 
@@ -341,7 +341,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnLocaleChange) {
   system_apps.emplace(
       SystemAppType::SETTINGS,
       SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
-  system_web_app_manager()->SetSystemApps(system_apps);
+  system_web_app_manager()->SetSystemAppsForTesting(system_apps);
 
   // Simulate first execution.
   pending_app_manager()->SetInstallResultCode(
@@ -389,7 +389,7 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
     system_apps.emplace(
         SystemAppType::SETTINGS,
         SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
-    system_web_app_manager()->SetSystemApps(system_apps);
+    system_web_app_manager()->SetSystemAppsForTesting(system_apps);
 
     histograms.ExpectTotalCount(
         SystemWebAppManager::kInstallResultHistogramName, 0);
@@ -424,7 +424,7 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
         SystemAppType::DISCOVER,
         SystemAppInfo(kDiscoverAppNameForLogging, GURL(kAppUrl2)));
 
-    system_web_app_manager()->SetSystemApps(system_apps);
+    system_web_app_manager()->SetSystemAppsForTesting(system_apps);
     pending_app_manager()->SetInstallResultCode(
         InstallResultCode::kProfileDestroyed);
 
@@ -447,7 +447,7 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
     system_apps.emplace(
         SystemAppType::SETTINGS,
         SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
-    system_web_app_manager()->SetSystemApps(system_apps);
+    system_web_app_manager()->SetSystemAppsForTesting(system_apps);
     pending_app_manager()->SetInstallResultCode(
         InstallResultCode::kProfileDestroyed);
 

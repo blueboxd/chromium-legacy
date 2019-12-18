@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache_group.h"
@@ -1057,6 +1058,8 @@ class AppCacheUpdateJobTest : public testing::Test,
   }
 
   void UpgradeManifestDataChangedScopeUnchangedTest() {
+    base::test::ScopedFeatureList f;
+    f.InitAndEnableFeature(kAppCacheManifestScopeChecksFeature);
     MakeService();
     // URL path /files/manifest2-with-root-override has a cached scope of "/".
     // The path has a scope override of "/", so the fetched scope will be "/"
@@ -1142,6 +1145,8 @@ class AppCacheUpdateJobTest : public testing::Test,
   }
 
   void UpgradeManifestDataChangedScopeChangedTest() {
+    base::test::ScopedFeatureList f;
+    f.InitAndEnableFeature(kAppCacheManifestScopeChecksFeature);
     MakeService();
     // URL path /files/manifest2 has a cached scope of "/".  The path has no
     // scope override, so the fetched scope will be "/files/" and a scope change
@@ -1218,6 +1223,8 @@ class AppCacheUpdateJobTest : public testing::Test,
   }
 
   void UpgradeManifestDataUnchangedScopeUnchangedTest() {
+    base::test::ScopedFeatureList f;
+    f.InitAndEnableFeature(kAppCacheManifestScopeChecksFeature);
     MakeService();
     // URL path /files/manifest2-with-root-override has a cached scope of "/".
     // The path has a scope override of "/", so the fetched scope will be "/"
@@ -1271,6 +1278,8 @@ class AppCacheUpdateJobTest : public testing::Test,
   }
 
   void UpgradeManifestDataUnchangedScopeChangedTest() {
+    base::test::ScopedFeatureList f;
+    f.InitAndEnableFeature(kAppCacheManifestScopeChecksFeature);
     MakeService();
     // URL path /files/manifest2 has a cached scope of "/".  The path has no
     // scope override, so the fetched scope will be "/files/" and a scope change
@@ -3349,6 +3358,8 @@ class AppCacheUpdateJobTest : public testing::Test,
   // has a response info with cached Last-Modified headers, the request does not
   // include an If-Modified-Since conditioanl header.
   void IfModifiedSinceUpgradeParserVersion0Test() {
+    base::test::ScopedFeatureList f;
+    f.InitAndEnableFeature(kAppCacheManifestScopeChecksFeature);
     HttpHeadersRequestTestJob::Initialize(std::string(), std::string(),
                                           /*headers_allowed=*/false);
 
@@ -3415,6 +3426,8 @@ class AppCacheUpdateJobTest : public testing::Test,
   }
 
   void IfModifiedSinceUpgradeParserVersion1Test() {
+    base::test::ScopedFeatureList f;
+    f.InitAndEnableFeature(kAppCacheManifestScopeChecksFeature);
     HttpHeadersRequestTestJob::Initialize("Sat, 29 Oct 1994 19:43:31 GMT",
                                           std::string());
 
@@ -3485,6 +3498,8 @@ class AppCacheUpdateJobTest : public testing::Test,
   // has a response info with cached ETag headers, the request does not include
   // an If-None-Match conditioanl header.
   void IfNoneMatchUpgradeParserVersion0Test() {
+    base::test::ScopedFeatureList f;
+    f.InitAndEnableFeature(kAppCacheManifestScopeChecksFeature);
     HttpHeadersRequestTestJob::Initialize(std::string(), std::string(),
                                           /*headers_allowed=*/false);
 
@@ -3551,6 +3566,8 @@ class AppCacheUpdateJobTest : public testing::Test,
   }
 
   void IfNoneMatchUpgradeParserVersion1Test() {
+    base::test::ScopedFeatureList f;
+    f.InitAndEnableFeature(kAppCacheManifestScopeChecksFeature);
     HttpHeadersRequestTestJob::Initialize(std::string(), "\"LadeDade\"");
 
     MakeService();
@@ -4391,6 +4408,8 @@ class AppCacheUpdateJobTest : public testing::Test,
 
   void ScopeTest(const char* tested_manifest_path,
                  const TestedManifest& tested_manifest) {
+    base::test::ScopedFeatureList f;
+    f.InitAndEnableFeature(kAppCacheManifestScopeChecksFeature);
     GURL manifest_url = MockHttpServer::GetMockUrl(tested_manifest_path);
 
     MakeService();
@@ -4431,6 +4450,8 @@ class AppCacheUpdateJobTest : public testing::Test,
   void Scope304Test(const char* tested_manifest_path,
                     const std::string& previous_scope,
                     const TestedManifest& tested_manifest) {
+    base::test::ScopedFeatureList f;
+    f.InitAndEnableFeature(kAppCacheManifestScopeChecksFeature);
     GURL manifest_url = MockHttpServer::GetMockUrl(tested_manifest_path);
 
     MakeService();

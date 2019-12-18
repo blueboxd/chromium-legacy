@@ -20,8 +20,8 @@ namespace web_app {
 // Exclusively used from the UI thread.
 class AppIconManager {
  public:
-  AppIconManager();
-  virtual ~AppIconManager();
+  AppIconManager() = default;
+  virtual ~AppIconManager() = default;
 
   // Returns false if no downloaded icon with precise |icon_size_in_px|.
   virtual bool HasIcon(const AppId& app_id, int icon_size_in_px) const = 0;

@@ -27,7 +27,6 @@ class CORE_EXPORT EditingState final {
 
  public:
   EditingState();
-  ~EditingState();
 
   void Abort();
   bool IsAborted() const { return is_aborted_; }

@@ -288,9 +288,10 @@ bool WorkerGlobalScope::FetchClassicImportedScript(
   WorkerClassicScriptLoader* classic_script_loader =
       MakeGarbageCollected<WorkerClassicScriptLoader>();
   EnsureFetcher();
-  classic_script_loader->LoadSynchronously(*execution_context, Fetcher(),
-                                           script_url,
-                                           mojom::RequestContextType::SCRIPT);
+  classic_script_loader->LoadSynchronously(
+      *execution_context, Fetcher(), script_url,
+      mojom::RequestContextType::SCRIPT,
+      network::mojom::RequestDestination::kScript);
   if (classic_script_loader->Failed())
     return false;
   *out_response_url = classic_script_loader->ResponseURL();

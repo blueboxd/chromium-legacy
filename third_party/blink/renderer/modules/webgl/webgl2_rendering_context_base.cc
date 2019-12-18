@@ -2179,16 +2179,21 @@ void WebGL2RenderingContextBase::compressedTexImage2D(
     return;
   if (!ValidateCompressedTexFormat("compressedTexImage2D", internalformat))
     return;
-  if (src_offset > data.View()->deprecatedByteLengthAsUnsigned()) {
+  GLuint data_length;
+  if (!base::CheckedNumeric<GLuint>(data.View()->byteLengthAsSizeT())
+           .AssignIfValid(&data_length)) {
+    SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D",
+                      "provided data exceeds the maximum supported length");
+    return;
+  }
+  if (src_offset > data_length) {
     SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D",
                       "srcOffset is out of range");
     return;
   }
   if (src_length_override == 0) {
-    src_length_override =
-        data.View()->deprecatedByteLengthAsUnsigned() - src_offset;
-  } else if (src_length_override >
-             data.View()->deprecatedByteLengthAsUnsigned() - src_offset) {
+    src_length_override = data_length - src_offset;
+  } else if (src_length_override > data_length - src_offset) {
     SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D",
                       "srcLengthOverride is out of range");
     return;
@@ -2261,16 +2266,21 @@ void WebGL2RenderingContextBase::compressedTexSubImage2D(
     return;
   if (!ValidateCompressedTexFormat("compressedTexSubImage2D", format))
     return;
-  if (src_offset > data.View()->deprecatedByteLengthAsUnsigned()) {
+  GLuint data_length;
+  if (!base::CheckedNumeric<GLuint>(data.View()->byteLengthAsSizeT())
+           .AssignIfValid(&data_length)) {
+    SynthesizeGLError(GL_INVALID_VALUE, "compressedTexSubImage2D",
+                      "provided data exceeds the maximum supported length");
+    return;
+  }
+  if (src_offset > data_length) {
     SynthesizeGLError(GL_INVALID_VALUE, "compressedTexSubImage2D",
                       "srcOffset is out of range");
     return;
   }
   if (src_length_override == 0) {
-    src_length_override =
-        data.View()->deprecatedByteLengthAsUnsigned() - src_offset;
-  } else if (src_length_override >
-             data.View()->deprecatedByteLengthAsUnsigned() - src_offset) {
+    src_length_override = data_length - src_offset;
+  } else if (src_length_override > data_length - src_offset) {
     SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D",
                       "srcLengthOverride is out of range");
     return;
@@ -2325,16 +2335,21 @@ void WebGL2RenderingContextBase::compressedTexImage3D(
     return;
   if (!ValidateCompressedTexFormat("compressedTexImage3D", internalformat))
     return;
-  if (src_offset > data.View()->deprecatedByteLengthAsUnsigned()) {
+  GLuint data_length;
+  if (!base::CheckedNumeric<GLuint>(data.View()->byteLengthAsSizeT())
+           .AssignIfValid(&data_length)) {
+    SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage3D",
+                      "provided data exceeds the maximum supported length");
+    return;
+  }
+  if (src_offset > data_length) {
     SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage3D",
                       "srcOffset is out of range");
     return;
   }
   if (src_length_override == 0) {
-    src_length_override =
-        data.View()->deprecatedByteLengthAsUnsigned() - src_offset;
-  } else if (src_length_override >
-             data.View()->deprecatedByteLengthAsUnsigned() - src_offset) {
+    src_length_override = data_length - src_offset;
+  } else if (src_length_override > data_length - src_offset) {
     SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage3D",
                       "srcLengthOverride is out of range");
     return;
@@ -2391,16 +2406,21 @@ void WebGL2RenderingContextBase::compressedTexSubImage3D(
     return;
   if (!ValidateCompressedTexFormat("compressedTexSubImage3D", format))
     return;
-  if (src_offset > data.View()->deprecatedByteLengthAsUnsigned()) {
+  GLuint data_length;
+  if (!base::CheckedNumeric<GLuint>(data.View()->byteLengthAsSizeT())
+           .AssignIfValid(&data_length)) {
+    SynthesizeGLError(GL_INVALID_VALUE, "compressedTexSubImage3D",
+                      "provided data exceeds the maximum supported length");
+    return;
+  }
+  if (src_offset > data_length) {
     SynthesizeGLError(GL_INVALID_VALUE, "compressedTexSubImage3D",
                       "srcOffset is out of range");
     return;
   }
   if (src_length_override == 0) {
-    src_length_override =
-        data.View()->deprecatedByteLengthAsUnsigned() - src_offset;
-  } else if (src_length_override >
-             data.View()->deprecatedByteLengthAsUnsigned() - src_offset) {
+    src_length_override = data_length - src_offset;
+  } else if (src_length_override > data_length - src_offset) {
     SynthesizeGLError(GL_INVALID_VALUE, "compressedTexSubImage3D",
                       "srcLengthOverride is out of range");
     return;
@@ -2923,7 +2943,8 @@ void WebGL2RenderingContextBase::uniformMatrix2fv(
   ContextGL()->UniformMatrix2fv(
       location->Location(),
       (src_length ? src_length
-                  : (v.View()->deprecatedLengthAsUnsigned() - src_offset)) >>
+                  : (base::checked_cast<GLuint>(v.View()->lengthAsSizeT()) -
+                     src_offset)) >>
           2,
       transpose, v.View()->DataMaybeShared() + src_offset);
 }
@@ -2957,7 +2978,8 @@ void WebGL2RenderingContextBase::uniformMatrix3fv(
   ContextGL()->UniformMatrix3fv(
       location->Location(),
       (src_length ? src_length
-                  : (v.View()->deprecatedLengthAsUnsigned() - src_offset)) /
+                  : (base::checked_cast<GLuint>(v.View()->lengthAsSizeT()) -
+                     src_offset)) /
           9,
       transpose, v.View()->DataMaybeShared() + src_offset);
 }
@@ -2991,7 +3013,8 @@ void WebGL2RenderingContextBase::uniformMatrix4fv(
   ContextGL()->UniformMatrix4fv(
       location->Location(),
       (src_length ? src_length
-                  : (v.View()->deprecatedLengthAsUnsigned() - src_offset)) >>
+                  : (base::checked_cast<GLuint>(v.View()->lengthAsSizeT()) -
+                     src_offset)) >>
           4,
       transpose, v.View()->DataMaybeShared() + src_offset);
 }
@@ -3025,7 +3048,8 @@ void WebGL2RenderingContextBase::uniformMatrix2x3fv(
   ContextGL()->UniformMatrix2x3fv(
       location->Location(),
       (src_length ? src_length
-                  : (value.View()->deprecatedLengthAsUnsigned() - src_offset)) /
+                  : (base::checked_cast<GLuint>(value.View()->lengthAsSizeT()) -
+                     src_offset)) /
           6,
       transpose, value.View()->DataMaybeShared() + src_offset);
 }
@@ -3060,7 +3084,8 @@ void WebGL2RenderingContextBase::uniformMatrix3x2fv(
   ContextGL()->UniformMatrix3x2fv(
       location->Location(),
       (src_length ? src_length
-                  : (value.View()->deprecatedLengthAsUnsigned() - src_offset)) /
+                  : (base::checked_cast<GLuint>(value.View()->lengthAsSizeT()) -
+                     src_offset)) /
           6,
       transpose, value.View()->DataMaybeShared() + src_offset);
 }
@@ -3094,9 +3119,9 @@ void WebGL2RenderingContextBase::uniformMatrix2x4fv(
     return;
   ContextGL()->UniformMatrix2x4fv(
       location->Location(),
-      (src_length
-           ? src_length
-           : (value.View()->deprecatedLengthAsUnsigned() - src_offset)) >>
+      (src_length ? src_length
+                  : (base::checked_cast<GLuint>(value.View()->lengthAsSizeT()) -
+                     src_offset)) >>
           3,
       transpose, value.View()->DataMaybeShared() + src_offset);
 }
@@ -3130,9 +3155,9 @@ void WebGL2RenderingContextBase::uniformMatrix4x2fv(
     return;
   ContextGL()->UniformMatrix4x2fv(
       location->Location(),
-      (src_length
-           ? src_length
-           : (value.View()->deprecatedLengthAsUnsigned() - src_offset)) >>
+      (src_length ? src_length
+                  : (base::checked_cast<GLuint>(value.View()->lengthAsSizeT()) -
+                     src_offset)) >>
           3,
       transpose, value.View()->DataMaybeShared() + src_offset);
 }
@@ -3167,7 +3192,8 @@ void WebGL2RenderingContextBase::uniformMatrix3x4fv(
   ContextGL()->UniformMatrix3x4fv(
       location->Location(),
       (src_length ? src_length
-                  : (value.View()->deprecatedLengthAsUnsigned() - src_offset)) /
+                  : (base::checked_cast<GLuint>(value.View()->lengthAsSizeT()) -
+                     src_offset)) /
           12,
       transpose, value.View()->DataMaybeShared() + src_offset);
 }
@@ -3202,7 +3228,8 @@ void WebGL2RenderingContextBase::uniformMatrix4x3fv(
   ContextGL()->UniformMatrix4x3fv(
       location->Location(),
       (src_length ? src_length
-                  : (value.View()->deprecatedLengthAsUnsigned() - src_offset)) /
+                  : (base::checked_cast<GLuint>(value.View()->lengthAsSizeT()) -
+                     src_offset)) /
           12,
       transpose, value.View()->DataMaybeShared() + src_offset);
 }
@@ -3598,7 +3625,7 @@ void WebGL2RenderingContextBase::drawBuffers(const Vector<GLenum>& buffers) {
 
 bool WebGL2RenderingContextBase::ValidateClearBuffer(const char* function_name,
                                                      GLenum buffer,
-                                                     GLsizei size,
+                                                     size_t size,
                                                      GLuint src_offset) {
   base::CheckedNumeric<GLsizei> checked_size(size);
   checked_size -= src_offset;
@@ -3645,8 +3672,7 @@ void WebGL2RenderingContextBase::clearBufferiv(GLenum buffer,
                                                GLuint src_offset) {
   if (isContextLost() ||
       !ValidateClearBuffer("clearBufferiv", buffer,
-                           value.View()->deprecatedLengthAsUnsigned(),
-                           src_offset))
+                           value.View()->lengthAsSizeT(), src_offset))
     return;
 
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
@@ -3679,8 +3705,7 @@ void WebGL2RenderingContextBase::clearBufferuiv(
     GLuint src_offset) {
   if (isContextLost() ||
       !ValidateClearBuffer("clearBufferuiv", buffer,
-                           value.View()->deprecatedLengthAsUnsigned(),
-                           src_offset))
+                           value.View()->lengthAsSizeT(), src_offset))
     return;
 
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
@@ -3713,8 +3738,7 @@ void WebGL2RenderingContextBase::clearBufferfv(
     GLuint src_offset) {
   if (isContextLost() ||
       !ValidateClearBuffer("clearBufferfv", buffer,
-                           value.View()->deprecatedLengthAsUnsigned(),
-                           src_offset))
+                           value.View()->lengthAsSizeT(), src_offset))
     return;
 
   // As of this writing the default back buffer will always have an

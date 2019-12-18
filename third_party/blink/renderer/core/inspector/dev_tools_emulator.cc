@@ -106,8 +106,6 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* web_view)
           web_view->GetPage()->GetSettings().GetCookieEnabled()),
       document_cookie_disabled_(false) {}
 
-DevToolsEmulator::~DevToolsEmulator() = default;
-
 void DevToolsEmulator::Trace(blink::Visitor* visitor) {}
 
 void DevToolsEmulator::SetTextAutosizingEnabled(bool enabled) {

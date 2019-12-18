@@ -93,6 +93,7 @@ class CC_EXPORT FrameSequenceMetrics {
   void Merge(std::unique_ptr<FrameSequenceMetrics> metrics);
   bool HasEnoughDataForReporting() const;
   bool HasDataLeftForReporting() const;
+  // Report related metrics: throughput, checkboarding...
   void ReportMetrics();
 
   ThroughputData& impl_throughput() { return impl_throughput_; }
@@ -325,8 +326,7 @@ class CC_EXPORT FrameSequenceTracker {
 
   bool ShouldIgnoreSequence(uint64_t sequence_number) const;
 
-  // Report related metrics: throughput, checkboarding...
-  void ReportMetrics();
+  void ReportMetricsForTesting();
 
   const FrameSequenceTrackerType type_;
 

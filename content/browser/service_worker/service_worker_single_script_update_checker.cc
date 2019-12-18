@@ -174,6 +174,8 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
     // https://w3c.github.io/ServiceWorker/#update-algorithm
     resource_request.fetch_request_context_type =
         static_cast<int>(blink::mojom::RequestContextType::SERVICE_WORKER);
+    resource_request.destination =
+        network::mojom::RequestDestination::kServiceWorker;
     resource_request.resource_type =
         static_cast<int>(ResourceType::kServiceWorker);
 
@@ -204,6 +206,7 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
     // https://w3c.github.io/ServiceWorker/#update-algorithm
     resource_request.fetch_request_context_type =
         static_cast<int>(blink::mojom::RequestContextType::SCRIPT);
+    resource_request.destination = network::mojom::RequestDestination::kScript;
     resource_request.resource_type = static_cast<int>(ResourceType::kScript);
   }
 
@@ -215,8 +218,6 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
   // TODO(https://crbug.com/824647): Support ES modules. Use "cors" as a mode
   // for service worker served as modules, and "omit" as a credentials mode:
   // https://html.spec.whatwg.org/C/#fetch-a-single-module-script
-
-  SetFetchMetadataHeadersForBrowserInitiatedRequest(&resource_request);
 
   if (service_worker_loader_helpers::ShouldValidateBrowserCacheForScript(
           is_main_script_, force_bypass_cache_, update_via_cache_,

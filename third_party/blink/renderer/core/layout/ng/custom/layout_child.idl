@@ -12,7 +12,7 @@
 interface LayoutChild {
   readonly attribute StylePropertyMapReadOnly styleMap;
 
-  // IntrinsicSizesRequest intrinsicSizes();
+  [CallWith=ScriptState, RaisesException] Promise<IntrinsicSizes> intrinsicSizes();
   [CallWith=ScriptState, RaisesException] Promise<LayoutFragment> layoutNextFragment(optional CustomLayoutConstraintsOptions options);
 };
 

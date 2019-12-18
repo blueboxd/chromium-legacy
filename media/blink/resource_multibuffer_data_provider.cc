@@ -85,6 +85,9 @@ void ResourceMultiBufferDataProvider::Start() {
   request.SetRequestContext(is_client_audio_element_
                                 ? blink::mojom::RequestContextType::AUDIO
                                 : blink::mojom::RequestContextType::VIDEO);
+  request.SetRequestDestination(
+      is_client_audio_element_ ? network::mojom::RequestDestination::kAudio
+                               : network::mojom::RequestDestination::kVideo);
   request.SetHttpHeaderField(
       WebString::FromUTF8(net::HttpRequestHeaders::kRange),
       WebString::FromUTF8(

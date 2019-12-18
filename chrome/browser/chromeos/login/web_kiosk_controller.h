@@ -102,6 +102,7 @@ class WebKioskController : public LoginPerformer::Delegate,
   void InitializeNetwork() override;
   void OnAppStartedInstalling() override;
   void OnAppPrepared() override;
+  void OnAppInstallFailed() override;
   void OnAppLaunched() override;
   void OnAppLaunchFailed() override;
 

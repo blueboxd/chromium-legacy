@@ -42,7 +42,6 @@ class HTMLFormattingElementList {
 
  public:
   HTMLFormattingElementList();
-  ~HTMLFormattingElementList();
 
   // Ideally Entry would be private, but HTMLTreeBuilder has to coordinate
   // between the HTMLFormattingElementList and HTMLElementStack and needs access

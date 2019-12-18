@@ -18,6 +18,7 @@
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="os_add_languages_dialog.html">
+<link rel="import" href="../localized_link/localized_link.html">
 <link rel="import" href="../../controls/controlled_radio_button.html">
 <link rel="import" href="../../controls/settings_radio_group.html">
 <link rel="import" href="../../controls/settings_toggle_button.html">
@@ -146,10 +147,10 @@
 
       <span class="settings-box first"
           hidden="[[isHelpTextHidden_(languages.enabled.*)]]">
-        <span>$i18n{orderLanguagesInstructions}</span>
-        <a href="$i18n{languagesLearnMoreURL}" target="_blank">
-          $i18n{learnMore}
-        </a>
+        <settings-localized-link
+            localized-string="$i18n{orderLanguagesInstructions}"
+            link-url="$i18n{languagesLearnMoreURL}">
+        </settings-localized-link>
       </span>
       <div class="list-frame vertical-list" id="languagesList">
         <template is="dom-repeat" items="[[languages.enabled]]">

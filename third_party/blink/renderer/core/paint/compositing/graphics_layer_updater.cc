@@ -104,8 +104,6 @@ GraphicsLayerUpdater::UpdateContext::CompositingStackingContext() const {
 
 GraphicsLayerUpdater::GraphicsLayerUpdater() : needs_rebuild_tree_(false) {}
 
-GraphicsLayerUpdater::~GraphicsLayerUpdater() = default;
-
 void GraphicsLayerUpdater::Update(
     PaintLayer& layer,
     Vector<PaintLayer*>& layers_needing_paint_invalidation) {

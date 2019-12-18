@@ -233,7 +233,7 @@ void ShelfNavigationWidget::Initialize(aura::Window* container) {
   SetContentsView(delegate_);
   GetBackButton()->SetBoundsRect(GetFirstButtonBounds());
   SetSize(GetIdealSize());
-  UpdateLayout();
+  UpdateLayout(/*animate=*/false);
 }
 
 gfx::Size ShelfNavigationWidget::GetIdealSize() const {
@@ -294,15 +294,15 @@ void ShelfNavigationWidget::SetDefaultLastFocusableChild(
 }
 
 void ShelfNavigationWidget::OnTabletModeStarted() {
-  UpdateLayout();
+  UpdateLayout(/*animate=*/true);
 }
 
 void ShelfNavigationWidget::OnTabletModeEnded() {
-  UpdateLayout();
+  UpdateLayout(/*animate=*/true);
 }
 
 void ShelfNavigationWidget::OnShelfAlignmentChanged(aura::Window* root_window) {
-  UpdateLayout();
+  UpdateLayout(/*animate=*/false);
 }
 
 void ShelfNavigationWidget::OnImplicitAnimationsCompleted() {
@@ -312,14 +312,15 @@ void ShelfNavigationWidget::OnImplicitAnimationsCompleted() {
 }
 
 void ShelfNavigationWidget::OnShelfConfigUpdated() {
-  UpdateLayout();
+  UpdateLayout(/*animate=*/true);
 }
 
-void ShelfNavigationWidget::UpdateLayout() {
+void ShelfNavigationWidget::UpdateLayout(bool animate) {
   bool is_back_button_shown = IsBackButtonShown();
   // Use the same duration for all parts of the upcoming animation.
   const auto animation_duration =
-      ShelfConfig::Get()->shelf_animation_duration();
+      animate ? ShelfConfig::Get()->shelf_animation_duration()
+              : base::TimeDelta::FromMilliseconds(0);
   bounds_animator_->SetAnimationDuration(animation_duration);
 
   ui::ScopedLayerAnimationSettings nav_animation_setter(

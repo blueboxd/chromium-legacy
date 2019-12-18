@@ -8,12 +8,21 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
 
 #if defined(OS_WIN)
 #include "base/win/wmi.h"
+#endif
+
+#if defined(CHROMEOS)
+#include "chrome/browser/enterprise_reporting/android_app_info_generator.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #endif
 
 namespace em = enterprise_management;
@@ -35,7 +44,9 @@ void ReportGenerator::SetMaximumReportSizeForTesting(size_t size) {
 }
 
 void ReportGenerator::CreateBasicRequest() {
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+  AppendAndroidAppInfos();
+#else
   basic_request_.set_computer_name(this->GetMachineName());
   basic_request_.set_os_user_name(GetOSUserName());
   basic_request_.set_serial_number(GetSerialNumber());
@@ -70,6 +81,35 @@ std::string ReportGenerator::GetSerialNumber() {
   return std::string();
 #endif
 }
+
+#if defined(OS_CHROMEOS)
+
+void ReportGenerator::AppendAndroidAppInfos() {
+  // Android application is only supported for primary profile.
+  Profile* primary_profile =
+      g_browser_process->profile_manager()->GetPrimaryUserProfile();
+
+  if (!arc::IsArcPlayStoreEnabledForProfile(primary_profile))
+    return;
+
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(primary_profile);
+
+  if (!prefs) {
+    LOG(ERROR) << base::StringPrintf(
+        "Failed to generate ArcAppListPrefs instance for primary user profile "
+        "(debug name: %s).",
+        primary_profile->GetDebugName().c_str());
+    return;
+  }
+
+  AndroidAppInfoGenerator generator;
+  for (std::string app_id : prefs->GetAppIds()) {
+    em::AndroidAppInfo* app_info = basic_request_.add_android_app_infos();
+    generator.Generate(prefs, app_id)->Swap(app_info);
+  }
+}
+
+#endif
 
 void ReportGenerator::OnBrowserReportReady(
     std::unique_ptr<em::BrowserReport> browser_report) {

@@ -42,6 +42,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/result_codes.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "third_party/blink/public/common/features.h"
@@ -895,8 +896,8 @@ void ServiceWorkerVersion::OnMainScriptLoaded() {
   // If the script load was successful, unpause the worker by calling
   // InitializeGlobalScope(). Otherwise, keep it paused and the original
   // caller of StartWorker() is expected to terminate the worker.
-  net::URLRequestStatus status = script_cache_map()->main_script_status();
-  if (status.is_success())
+  int net_error = script_cache_map()->main_script_net_error();
+  if (net_error == net::OK)
     InitializeGlobalScope();
   // The callback can destroy |this|, so protect it first.
   auto protect = base::WrapRefCounted(this);
@@ -1971,12 +1972,11 @@ ServiceWorkerVersion::DeduceStartWorkerFailureReason(
   if (start_worker_status_ != blink::ServiceWorkerStatusCode::kOk)
     return start_worker_status_;
 
-  const net::URLRequestStatus& main_script_status =
-      script_cache_map()->main_script_status();
-  if (main_script_status.status() != net::URLRequestStatus::SUCCESS) {
-    if (net::IsCertificateError(main_script_status.error()))
+  int main_script_net_error = script_cache_map()->main_script_net_error();
+  if (main_script_net_error != net::OK) {
+    if (net::IsCertificateError(main_script_net_error))
       return blink::ServiceWorkerStatusCode::kErrorSecurity;
-    switch (main_script_status.error()) {
+    switch (main_script_net_error) {
       case net::ERR_INSECURE_RESPONSE:
       case net::ERR_UNSAFE_REDIRECT:
         return blink::ServiceWorkerStatusCode::kErrorSecurity;

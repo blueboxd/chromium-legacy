@@ -1482,7 +1482,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     gfx::Rect shelf_bounds = target_bounds_.shelf_bounds;
     shelf_widget_->SetBounds(shelf_bounds);
 
-    hotseat_widget->UpdateLayout();
+    hotseat_widget->UpdateLayout(animate);
 
     // Having a window which is visible but does not have an opacity is an
     // illegal state. We therefore hide the shelf here if required.
@@ -1499,7 +1499,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
                    gfx::Tween::EASE_OUT);
 
     // Let the navigation widget handle its own layout changes.
-    nav_widget->UpdateLayout();
+    nav_widget->UpdateLayout(animate);
 
     // Do not update the work area during overview animation.
     if (!suspend_work_area_update_) {

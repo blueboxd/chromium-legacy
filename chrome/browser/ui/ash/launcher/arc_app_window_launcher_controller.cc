@@ -359,8 +359,8 @@ void ArcAppWindowLauncherController::OnTaskSetActive(int32_t task_id) {
     previous_app_window->SetFullscreenMode(
         previous_app_window->widget() &&
                 previous_app_window->widget()->IsFullscreen()
-            ? ArcAppWindow::FullScreenMode::ACTIVE
-            : ArcAppWindow::FullScreenMode::NON_ACTIVE);
+            ? ArcAppWindow::FullScreenMode::kActive
+            : ArcAppWindow::FullScreenMode::kNonActive);
   }
 
   active_task_id_ = task_id;
@@ -377,7 +377,7 @@ void ArcAppWindowLauncherController::OnTaskSetActive(int32_t task_id) {
     // if (new_active_app_it->second->widget()) {
     //   new_active_app_it->second->widget()->SetFullscreen(
     //       new_active_app_it->second->fullscreen_mode() ==
-    //       ArcAppWindow::FullScreenMode::ACTIVE);
+    //       ArcAppWindow::FullScreenMode::kActive);
     // }
   }
 }

@@ -85,6 +85,7 @@ base::SingleThreadTaskRunner* DummyModulator::TaskRunner() {
 void DummyModulator::FetchTree(const KURL&,
                                ResourceFetcher*,
                                mojom::RequestContextType,
+                               network::mojom::RequestDestination,
                                const ScriptFetchOptions&,
                                ModuleScriptCustomFetchType,
                                ModuleTreeClient*) {
@@ -99,10 +100,12 @@ void DummyModulator::FetchSingle(const ModuleScriptFetchRequest&,
   NOTREACHED();
 }
 
-void DummyModulator::FetchDescendantsForInlineScript(ModuleScript*,
-                                                     ResourceFetcher*,
-                                                     mojom::RequestContextType,
-                                                     ModuleTreeClient*) {
+void DummyModulator::FetchDescendantsForInlineScript(
+    ModuleScript*,
+    ResourceFetcher*,
+    mojom::RequestContextType,
+    network::mojom::RequestDestination,
+    ModuleTreeClient*) {
   NOTREACHED();
 }
 

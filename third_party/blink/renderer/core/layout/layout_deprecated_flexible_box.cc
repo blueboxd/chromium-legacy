@@ -1021,6 +1021,8 @@ void LayoutDeprecatedFlexibleBox::LayoutVerticalBox(bool relayout_children) {
     // Children must be repositioned.
     LayoutUnit offset;
     if (StyleRef().BoxPack() == EBoxPack::kJustify) {
+      UseCounter::Count(GetDocument(),
+                        WebFeature::kWebkitBoxPackJustifyDoesSomething);
       // Determine the total number of children.
       int total_children = 0;
       for (LayoutBox* child = iterator.First(); child;
@@ -1054,10 +1056,15 @@ void LayoutDeprecatedFlexibleBox::LayoutVerticalBox(bool relayout_children) {
         }
       }
     } else {
-      if (StyleRef().BoxPack() == EBoxPack::kCenter)
+      if (StyleRef().BoxPack() == EBoxPack::kCenter) {
+        UseCounter::Count(GetDocument(),
+                          WebFeature::kWebkitBoxPackCenterDoesSomething);
         offset += remaining_space / 2;
-      else  // END
+      } else {  // END
+        UseCounter::Count(GetDocument(),
+                          WebFeature::kWebkitBoxPackEndDoesSomething);
         offset += remaining_space;
+      }
       for (LayoutBox* child = iterator.First(); child;
            child = iterator.Next()) {
         if (child->IsOutOfFlowPositioned())

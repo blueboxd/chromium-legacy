@@ -48,6 +48,7 @@
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/services/app_service/public/cpp/instance.h"
 #include "chrome/services/app_service/public/cpp/intent_filter_util.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/arc/arc_service_manager.h"
@@ -716,7 +717,7 @@ void ExtensionApps::OnAppWindowAdded(extensions::AppWindow* app_window) {
   DCHECK(!instance_registry_->ForOneInstance(
       app_window->GetNativeWindow(),
       [](const apps::InstanceUpdate& update) {}));
-
+  app_window_to_aura_window_[app_window] = app_window->GetNativeWindow();
   RegisterInstance(app_window, InstanceState::kStarted);
 }
 
@@ -743,6 +744,15 @@ void ExtensionApps::OnAppWindowHidden(extensions::AppWindow* app_window) {
   // For hidden |app_window|, the other state bit, running, active, and visible
   // should be cleared, and the state is set back to the started state.
   RegisterInstance(app_window, InstanceState::kStarted);
+}
+
+void ExtensionApps::OnAppWindowRemoved(extensions::AppWindow* app_window) {
+  if (!ShouldRecordAppWindowActivity(app_window)) {
+    return;
+  }
+
+  RegisterInstance(app_window, InstanceState::kDestroyed);
+  app_window_to_aura_window_.erase(app_window);
 }
 
 void ExtensionApps::OnExtensionLastLaunchTimeChanged(
@@ -1244,11 +1254,17 @@ void ExtensionApps::RegisterInstance(extensions::AppWindow* app_window,
     return;
   }
 
+  aura::Window* window = app_window->GetNativeWindow();
+  if (new_state == InstanceState::kDestroyed) {
+    DCHECK(base::Contains(app_window_to_aura_window_, app_window));
+    window = app_window_to_aura_window_[app_window];
+  }
   std::vector<std::unique_ptr<apps::Instance>> deltas;
-  auto instance = std::make_unique<apps::Instance>(
-      app_window->extension_id(), app_window->GetNativeWindow());
+  auto instance =
+      std::make_unique<apps::Instance>(app_window->extension_id(), window);
   instance->SetLaunchId(GetLaunchId(app_window));
   instance->UpdateState(new_state, base::Time::Now());
+  instance->SetBrowserContext(app_window->browser_context());
   deltas.push_back(std::move(instance));
   instance_registry_->OnInstances(deltas);
 }

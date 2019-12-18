@@ -1145,6 +1145,55 @@ message AppStatus {
   optional string required_platform_version = 5;
 }
 
+// Provides Android application permission.
+message AndroidAppPermission {
+  // Name of application permission.
+  optional string name = 1;
+
+  // Identify whether the application permission is granted.
+  optional bool granted = 2;
+
+  // Identify whether the application permission is managed.
+  optional bool managed = 3;
+}
+
+// Provides Android application information.
+message AndroidAppInfo {
+  enum AndroidAppStatus {
+    STATUS_ENABLED = 0;
+    STATUS_SUSPENDED = 1;
+    STATUS_DISABLED = 2;
+  }
+
+  enum InstalledSource {
+    SOURCE_BY_ADMIN = 0;
+    SOURCE_BY_USER = 1;
+    SOURCE_NOT_INSTALLED = 2;
+  }
+
+  // ID of the Android application.
+  optional string app_id = 1;
+
+  // Name of the Android application.
+  optional string app_name = 2;
+
+  // Name of the Android application package.
+  optional string package_name = 3;
+
+  // Status of the Android application. It is set as STATUS_SUSPENDED if the
+  // application is suspended by specific policies.
+  optional AndroidAppStatus status = 4;
+
+  // Identify how the Android application is installed.
+  optional InstalledSource installed_source = 5;
+
+  // Package version of the Android application.
+  optional int32 version = 6;
+
+  // Permissions of the Android application.
+  repeated AndroidAppPermission permissions = 7;
+}
+
 // Chrome user profile level status.
 // Deprecated : Use ChromeUserProfileInfo instead.
 message ChromeUserProfileReport {
@@ -1476,6 +1525,8 @@ message ChromeDesktopReportRequest {
 message ChromeOsUserReportRequest {
   // Browser related info.
   optional BrowserReport browser_report = 1;
+  // Android applications installed in primary profile.
+  repeated AndroidAppInfo android_app_infos = 2;
 }
 
 // A validation issue from validating a policy value that was contained in

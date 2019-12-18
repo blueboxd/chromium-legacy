@@ -87,13 +87,14 @@ AppBrowserController::AppBrowserController(
     : content::WebContentsObserver(nullptr),
       app_id_(std::move(app_id)),
       browser_(browser),
-      // Show tabs for Terminals only
+      system_app_type_(HasAppId() ? WebAppProvider::Get(browser->profile())
+                                        ->system_web_app_manager()
+                                        .GetSystemAppTypeForAppId(GetAppId())
+                                  : base::nullopt),
+      // Show tabs for Terminals only.
       // TODO(crbug.com/846546): Generalise has_tab_strip_ as a SystemWebApp
       // capability.
-      has_tab_strip_(HasAppId() ? GetAppIdForSystemWebApp(
-                                      browser->profile(),
-                                      SystemAppType::TERMINAL) == GetAppId()
-                                : false) {
+      has_tab_strip_(system_app_type_ == SystemAppType::TERMINAL) {
   browser->tab_strip_model()->AddObserver(this);
 }
 
@@ -150,7 +151,7 @@ bool AppBrowserController::ShouldShowCustomTabBar() const {
       return out_of_scope || !InstallableManager::IsOriginConsideredSecure(url);
     }
 
-    if (IsForSystemWebApp()) {
+    if (is_for_system_web_app()) {
       DCHECK_EQ(url.scheme_piece(), content::kChromeUIScheme);
       return false;
     }
@@ -186,33 +187,30 @@ bool AppBrowserController::has_tab_strip() const {
 bool AppBrowserController::HasTitlebarToolbar() const {
   // Show titlebar toolbar for Terminal System App, but not other system apps.
   // TODO(crbug.com/846546): Generalise this as a SystemWebApp capability.
-  if (IsForSystemWebApp()) {
-    return !browser_->is_type_app_popup() &&
-           GetAppIdForSystemWebApp(browser()->profile(),
-                                   SystemAppType::TERMINAL) == GetAppId();
-  }
+  if (is_for_system_web_app())
+    return system_app_type_ == web_app::SystemAppType::TERMINAL;
+
   // Show for all other apps.
   return true;
 }
 
 bool AppBrowserController::HasTitlebarAppOriginText() const {
   // Do not show origin text for System Apps.
-  return !IsForSystemWebApp();
+  return !is_for_system_web_app();
 }
 
 bool AppBrowserController::HasTitlebarContentSettings() const {
   // Do not show content settings for System Apps.
-  return !IsForSystemWebApp();
+  return !is_for_system_web_app();
 }
 
 #if defined(OS_CHROMEOS)
 bool AppBrowserController::UseTitlebarTerminalSystemAppMenu() const {
   // Use the Terminal System App Menu for Terminal System App only.
   // TODO(crbug.com/846546): Generalise this as a SystemWebApp capability.
-  if (IsForSystemWebApp()) {
-    return GetAppIdForSystemWebApp(browser()->profile(),
-                                   SystemAppType::TERMINAL) == GetAppId();
-  }
+  if (is_for_system_web_app())
+    return system_app_type_ == web_app::SystemAppType::TERMINAL;
+
   return false;
 }
 #endif
@@ -241,15 +239,6 @@ void AppBrowserController::Uninstall() {
 void AppBrowserController::UpdateCustomTabBarVisibility(bool animate) const {
   browser()->window()->UpdateCustomTabBarVisibility(ShouldShowCustomTabBar(),
                                                     animate);
-}
-
-bool AppBrowserController::IsForSystemWebApp() const {
-  if (!HasAppId())
-    return false;
-
-  return WebAppProvider::Get(browser()->profile())
-      ->system_web_app_manager()
-      .IsSystemWebApp(GetAppId());
 }
 
 void AppBrowserController::DidStartNavigation(

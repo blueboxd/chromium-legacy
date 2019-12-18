@@ -76,6 +76,9 @@ Polymer({
    * @private
    */
   computePasswordsLeakDetectionAvailable_: function() {
+    if (this.prefs === undefined) {
+      return false;
+    }
     return !!this.getPref('profile.password_manager_leak_detection').value &&
         !!this.getPref('safebrowsing.enabled').value;
   },
@@ -96,6 +99,9 @@ Polymer({
    * @private
    */
   getDisabledLeakDetection_: function() {
+    if (this.prefs === undefined) {
+      return false;
+    }
     return !this.userSignedIn_ || !this.getPref('safebrowsing.enabled').value;
   },
 
@@ -108,7 +114,7 @@ Polymer({
 
   /** @private */
   setPasswordsLeakDetectionPref_: function() {
-    if (this.prefs == undefined) {
+    if (this.prefs === undefined) {
       return;
     }
     const passwordManagerLeakDetectionPref =

@@ -57,6 +57,8 @@ const DevicePolicyToUserPolicyMapEntry kDevicePoliciesWithPolicyOptionsMap[] = {
     {key::kDeviceLoginScreenScreenMagnifierType, key::kScreenMagnifierType},
     {key::kDeviceLoginScreenShowOptionsInSystemTrayMenu,
      key::kShowAccessibilityOptionsInSystemTrayMenu},
+    {key::kDeviceLoginScreenPrimaryMouseButtonSwitch,
+     key::kPrimaryMouseButtonSwitch},
 };
 
 const DevicePolicyToUserPolicyMapEntry kRecommendedDevicePoliciesMap[] = {

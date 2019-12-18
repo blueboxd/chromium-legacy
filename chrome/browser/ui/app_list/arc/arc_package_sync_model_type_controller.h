@@ -33,7 +33,7 @@ class ArcPackageSyncModelTypeController
       public arc::ArcSessionManager::Observer {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
-  static std::unique_ptr<ArcPackageSyncModelTypeController> Create(
+  ArcPackageSyncModelTypeController(
       syncer::OnceModelTypeStoreFactory store_factory,
       base::WeakPtr<syncer::SyncableService> syncable_service,
       const base::RepeatingClosure& dump_stack,
@@ -53,15 +53,6 @@ class ArcPackageSyncModelTypeController
   void OnArcInitialStart() override;
 
  private:
-  ArcPackageSyncModelTypeController(
-      std::unique_ptr<syncer::ModelTypeSyncBridge> bridge,
-      std::unique_ptr<syncer::ModelTypeControllerDelegate>
-          delegate_for_full_sync_mode,
-      std::unique_ptr<syncer::ModelTypeControllerDelegate>
-          delegate_for_transport_mode,
-      syncer::SyncService* sync_service,
-      Profile* profile);
-
   void OnOsSyncFeaturePrefChanged();
 
   std::unique_ptr<syncer::ModelTypeSyncBridge> bridge_;

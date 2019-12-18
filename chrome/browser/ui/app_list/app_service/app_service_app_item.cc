@@ -6,6 +6,8 @@
 
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/bind.h"
+#include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -14,7 +16,9 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_context_menu.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_context_menu.h"
 #include "chrome/browser/ui/app_list/extension_app_context_menu.h"
+#include "chrome/browser/ui/app_list/web_app_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/common/chrome_features.h"
 
 // static
 const char AppServiceAppItem::kItemType[] = "AppServiceAppItem";
@@ -47,8 +51,16 @@ std::unique_ptr<app_list::AppContextMenu> AppServiceAppItem::MakeAppContextMenu(
       return std::make_unique<CrostiniAppContextMenu>(profile, app_id,
                                                       controller);
 
-    case apps::mojom::AppType::kExtension:
     case apps::mojom::AppType::kWeb:
+      if (base::FeatureList::IsEnabled(
+              features::kDesktopPWAsWithoutExtensions)) {
+        return std::make_unique<app_list::WebAppContextMenu>(
+            delegate, profile, app_id, controller);
+      }
+      // Otherwise deliberately fall through to fallback on Bookmark Apps.
+      FALLTHROUGH;
+
+    case apps::mojom::AppType::kExtension:
       return std::make_unique<app_list::ExtensionAppContextMenu>(
           delegate, profile, app_id, controller, is_platform_app);
 

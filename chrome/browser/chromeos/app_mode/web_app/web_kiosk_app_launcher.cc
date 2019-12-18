@@ -62,12 +62,14 @@ void WebKioskAppLauncher::ContinueWithNetworkReady() {
 
 void WebKioskAppLauncher::OnAppDataObtained(
     std::unique_ptr<WebApplicationInfo> app_info) {
-  if (app_info) {
-    WebKioskAppManager::Get()->UpdateAppByAccountId(account_id_,
-                                                    std::move(app_info));
+  if (!app_info) {
+    // Notify about failed installation, let the controller decide what to do.
+    delegate_->OnAppInstallFailed();
+    return;
   }
-  // If we could not update the app data, we should still launch the app(we may
-  // be under captive portal, there can be redirect, etc).
+
+  WebKioskAppManager::Get()->UpdateAppByAccountId(account_id_,
+                                                  std::move(app_info));
   delegate_->OnAppPrepared();
 }
 

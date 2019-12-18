@@ -34,9 +34,6 @@ class Profile;
 
 // AppServiceAppWindowArcTracker observes the ArcAppListPrefs to handle ARC app
 // window special cases, e.g. task id, closing ARC app windows, etc.
-//
-// TODO(crbug.com/1011235):
-// 1. Add ActiveUserChanged to handle the user switch case.
 class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
                                       public arc::ArcSessionManager::Observer {
  public:
@@ -48,8 +45,10 @@ class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
   AppServiceAppWindowArcTracker& operator=(
       const AppServiceAppWindowArcTracker&) = delete;
 
-  // Invoked by controller to notify |window| visibility is changing.
-  void OnWindowVisibilityChanging(aura::Window* window);
+  void ActiveUserChanged(const std::string& user_email);
+
+  // Invoked by controller to notify |window| visibility is changed.
+  void OnWindowVisibilityChanged(aura::Window* window);
 
   // Invoked by controller to notify |window| is destroying.
   void OnWindowDestroying(aura::Window* window);

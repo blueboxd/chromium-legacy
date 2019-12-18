@@ -23,6 +23,7 @@
 #include "components/content_settings/core/common/features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/download/public/common/download_features.h"
+#include "components/feature_engagement/public/feature_list.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/language/core/common/language_experiments.h"
@@ -85,6 +86,9 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kWebAuth,
     &features::kWebNfc,
     &features::kWebPayments,
+    &feature_engagement::kIPHChromeDuetHomeButtonFeature,
+    &feature_engagement::kIPHChromeDuetSearchFeature,
+    &feature_engagement::kIPHChromeDuetTabSwitcherFeature,
     &feed::kInterestFeedContentSuggestions,
     &kAdjustWebApkInstallationSpace,
     &kAllowNewIncognitoTabIntents,

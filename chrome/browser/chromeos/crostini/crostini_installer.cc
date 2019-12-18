@@ -15,12 +15,14 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/crostini/ansible/ansible_management_service_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_dialog.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -37,6 +39,7 @@ namespace crostini {
 
 namespace {
 using SetupResult = CrostiniInstaller::SetupResult;
+constexpr char kCrostiniSetupSourceHistogram[] = "Crostini.SetupSource";
 
 class CrostiniInstallerFactory : public BrowserContextKeyedServiceFactory {
  public:
@@ -180,6 +183,20 @@ void CrostiniInstaller::Shutdown() {
         restart_id_, base::DoNothing());
     restart_id_ = CrostiniManager::kUninitializedRestartId;
   }
+}
+
+void CrostiniInstaller::ShowDialog(CrostiniUISurface ui_surface) {
+  // Defensive check to prevent showing the installer when crostini is not
+  // allowed.
+  if (!CrostiniFeatures::Get()->IsUIAllowed(profile_)) {
+    return;
+  }
+  base::UmaHistogramEnumeration(kCrostiniSetupSourceHistogram, ui_surface,
+                                crostini::CrostiniUISurface::kCount);
+
+  // TODO(lxj): We should pass the dialog |this| here instead of letting the
+  // webui to call |GetForProfile()| later.
+  chromeos::CrostiniInstallerDialog::Show(profile_);
 }
 
 void CrostiniInstaller::Install(CrostiniManager::RestartOptions options,

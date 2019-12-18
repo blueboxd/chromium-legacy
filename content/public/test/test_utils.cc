@@ -200,7 +200,7 @@ void IsolateAllSitesForTesting(base::CommandLine* command_line) {
 
 void ResetSchemesAndOriginsWhitelist() {
   url::ResetForTests();
-  ReRegisterContentSchemesForTests();
+  RegisterContentSchemes(false);
 }
 
 GURL GetWebUIURL(const std::string& host) {

@@ -19,7 +19,6 @@ namespace cssvalue {
 class CSSLayoutFunctionValue : public CSSValue {
  public:
   CSSLayoutFunctionValue(CSSCustomIdentValue* name, bool is_inline);
-  ~CSSLayoutFunctionValue();
 
   String CustomCSSText() const;
   AtomicString GetName() const;

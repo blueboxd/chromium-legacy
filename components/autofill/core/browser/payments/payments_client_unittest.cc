@@ -113,11 +113,6 @@ class PaymentsClientTest : public testing::Test {
 
   void TearDown() override { client_.reset(); }
 
-  void EnableAutofillGetPaymentsIdentityFromSync() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kAutofillGetPaymentsIdentityFromSync);
-  }
-
   // Registers a field trial with the specified name and group and an associated
   // google web property variation id.
   void CreateFieldTrialWithId(const std::string& trial_name,
@@ -379,9 +374,8 @@ TEST_F(PaymentsClientTest, GetUnmaskDetailsSuccess) {
 }
 
 TEST_F(PaymentsClientTest, GetUnmaskDetailsIncludesChromeUserContext) {
-  scoped_feature_list_.InitWithFeatures(
-      {features::kAutofillGetPaymentsIdentityFromSync},  // Enabled
-      {features::kAutofillEnableAccountWalletStorage});  // Disabled
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillEnableAccountWalletStorage);
 
   StartGettingUnmaskDetails();
   IssueOAuthToken();
@@ -443,7 +437,6 @@ TEST_F(PaymentsClientTest, UnmaskSuccessViaCVCWithCreationOptions) {
 }
 
 TEST_F(PaymentsClientTest, UnmaskSuccessAccountFromSyncTest) {
-  EnableAutofillGetPaymentsIdentityFromSync();
   StartUnmasking(CardUnmaskOptions());
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{ \"pan\": \"1234\" }");
@@ -452,9 +445,8 @@ TEST_F(PaymentsClientTest, UnmaskSuccessAccountFromSyncTest) {
 }
 
 TEST_F(PaymentsClientTest, UnmaskIncludesChromeUserContext) {
-  scoped_feature_list_.InitWithFeatures(
-      {features::kAutofillGetPaymentsIdentityFromSync},  // Enabled
-      {features::kAutofillEnableAccountWalletStorage});  // Disabled
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillEnableAccountWalletStorage);
 
   StartUnmasking(CardUnmaskOptions());
   IssueOAuthToken();
@@ -467,9 +459,8 @@ TEST_F(PaymentsClientTest, UnmaskIncludesChromeUserContext) {
 
 TEST_F(PaymentsClientTest,
        UnmaskIncludesChromeUserContextIfWalletStorageFlagEnabled) {
-  scoped_feature_list_.InitWithFeatures(
-      {features::kAutofillEnableAccountWalletStorage},    // Enabled
-      {features::kAutofillGetPaymentsIdentityFromSync});  // Disabled
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillEnableAccountWalletStorage);
 
   StartUnmasking(CardUnmaskOptions());
   IssueOAuthToken();
@@ -478,22 +469,6 @@ TEST_F(PaymentsClientTest,
   // ChromeUserContext was set.
   EXPECT_TRUE(GetUploadData().find("chrome_user_context") != std::string::npos);
   EXPECT_TRUE(GetUploadData().find("full_sync_enabled") != std::string::npos);
-}
-
-TEST_F(PaymentsClientTest, UnmaskExcludesChromeUserContextIfExperimentsOff) {
-  scoped_feature_list_.InitWithFeatures(
-      {},  // Enabled
-      {features::kAutofillEnableAccountWalletStorage,
-       features::kAutofillGetPaymentsIdentityFromSync});  // Disabled
-
-  StartUnmasking(CardUnmaskOptions());
-  IssueOAuthToken();
-  ReturnResponse(net::HTTP_OK, "{}");
-
-  // ChromeUserContext was not set.
-  EXPECT_TRUE(!GetUploadData().empty());
-  EXPECT_TRUE(GetUploadData().find("chrome_user_context") == std::string::npos);
-  EXPECT_TRUE(GetUploadData().find("full_sync_enabled") == std::string::npos);
 }
 
 TEST_F(PaymentsClientTest, UnmaskLogsCvcLengthForAutofill) {
@@ -608,9 +583,8 @@ TEST_F(PaymentsClientTest, GetDetailsIncludesDetectedValuesInRequest) {
 }
 
 TEST_F(PaymentsClientTest, GetDetailsIncludesChromeUserContext) {
-  scoped_feature_list_.InitWithFeatures(
-      {features::kAutofillGetPaymentsIdentityFromSync},  // Enabled
-      {features::kAutofillEnableAccountWalletStorage});  // Disabled
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillEnableAccountWalletStorage);
 
   StartGettingUploadDetails();
 
@@ -621,30 +595,14 @@ TEST_F(PaymentsClientTest, GetDetailsIncludesChromeUserContext) {
 
 TEST_F(PaymentsClientTest,
        GetDetailsIncludesChromeUserContextIfWalletStorageFlagEnabled) {
-  scoped_feature_list_.InitWithFeatures(
-      {features::kAutofillEnableAccountWalletStorage},    // Enabled
-      {features::kAutofillGetPaymentsIdentityFromSync});  // Disabled
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillEnableAccountWalletStorage);
 
   StartGettingUploadDetails();
 
   // ChromeUserContext was set.
   EXPECT_TRUE(GetUploadData().find("chrome_user_context") != std::string::npos);
   EXPECT_TRUE(GetUploadData().find("full_sync_enabled") != std::string::npos);
-}
-
-TEST_F(PaymentsClientTest,
-       GetDetailsExcludesChromeUserContextIfExperimentsOff) {
-  scoped_feature_list_.InitWithFeatures(
-      {},  // Enabled
-      {features::kAutofillEnableAccountWalletStorage,
-       features::kAutofillGetPaymentsIdentityFromSync});  // Disabled
-
-  StartGettingUploadDetails();
-
-  // ChromeUserContext was not set.
-  EXPECT_TRUE(!GetUploadData().empty());
-  EXPECT_TRUE(GetUploadData().find("chrome_user_context") == std::string::npos);
-  EXPECT_TRUE(GetUploadData().find("full_sync_enabled") == std::string::npos);
 }
 
 TEST_F(PaymentsClientTest,
@@ -795,7 +753,6 @@ TEST_F(PaymentsClientTest, SupportedCardBinRangesParsesCorrectly) {
 }
 
 TEST_F(PaymentsClientTest, GetUploadAccountFromSyncTest) {
-  EnableAutofillGetPaymentsIdentityFromSync();
   // Set up a different account.
   const AccountInfo& secondary_account_info =
       identity_test_env_.MakeAccountAvailable("secondary@gmail.com");
@@ -925,9 +882,8 @@ TEST_F(PaymentsClientTest, UploadIncludesCvcInRequestIfProvided) {
 }
 
 TEST_F(PaymentsClientTest, UploadIncludesChromeUserContext) {
-  scoped_feature_list_.InitWithFeatures(
-      {features::kAutofillGetPaymentsIdentityFromSync},  // Enabled
-      {features::kAutofillEnableAccountWalletStorage});  // Disabled
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillEnableAccountWalletStorage);
 
   StartUploading(/*include_cvc=*/true);
   IssueOAuthToken();
@@ -939,9 +895,8 @@ TEST_F(PaymentsClientTest, UploadIncludesChromeUserContext) {
 
 TEST_F(PaymentsClientTest,
        UploadIncludesChromeUserContextIfWalletStorageFlagEnabled) {
-  scoped_feature_list_.InitWithFeatures(
-      {features::kAutofillEnableAccountWalletStorage},    // Enabled
-      {features::kAutofillGetPaymentsIdentityFromSync});  // Disabled
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillEnableAccountWalletStorage);
 
   StartUploading(/*include_cvc=*/true);
   IssueOAuthToken();
@@ -949,21 +904,6 @@ TEST_F(PaymentsClientTest,
   // ChromeUserContext was set.
   EXPECT_TRUE(GetUploadData().find("chrome_user_context") != std::string::npos);
   EXPECT_TRUE(GetUploadData().find("full_sync_enabled") != std::string::npos);
-}
-
-TEST_F(PaymentsClientTest, UploadExcludesChromeUserContextIfExperimentsOff) {
-  scoped_feature_list_.InitWithFeatures(
-      {},  // Enabled
-      {features::kAutofillEnableAccountWalletStorage,
-       features::kAutofillGetPaymentsIdentityFromSync});  // Disabled
-
-  StartUploading(/*include_cvc=*/true);
-  IssueOAuthToken();
-
-  // ChromeUserContext was not set.
-  EXPECT_TRUE(!GetUploadData().empty());
-  EXPECT_TRUE(GetUploadData().find("chrome_user_context") == std::string::npos);
-  EXPECT_TRUE(GetUploadData().find("full_sync_enabled") == std::string::npos);
 }
 
 TEST_F(PaymentsClientTest, UploadDoesNotIncludeCvcInRequestIfNotProvided) {
@@ -1027,9 +967,8 @@ TEST_F(PaymentsClientTest,
 }
 
 TEST_F(PaymentsClientTest, MigrationRequestIncludesChromeUserContext) {
-  scoped_feature_list_.InitWithFeatures(
-      {features::kAutofillGetPaymentsIdentityFromSync},  // Enabled
-      {features::kAutofillEnableAccountWalletStorage});  // Disabled
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillEnableAccountWalletStorage);
 
   StartMigrating(/*has_cardholder_name=*/true);
   IssueOAuthToken();
@@ -1041,9 +980,8 @@ TEST_F(PaymentsClientTest, MigrationRequestIncludesChromeUserContext) {
 
 TEST_F(PaymentsClientTest,
        MigrationRequestIncludesChromeUserContextIfWalletStorageFlagEnabled) {
-  scoped_feature_list_.InitWithFeatures(
-      {features::kAutofillEnableAccountWalletStorage},    // Enabled
-      {features::kAutofillGetPaymentsIdentityFromSync});  // Disabled
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillEnableAccountWalletStorage);
 
   StartMigrating(/*has_cardholder_name=*/true);
   IssueOAuthToken();
@@ -1051,22 +989,6 @@ TEST_F(PaymentsClientTest,
   // ChromeUserContext was set.
   EXPECT_TRUE(GetUploadData().find("chrome_user_context") != std::string::npos);
   EXPECT_TRUE(GetUploadData().find("full_sync_enabled") != std::string::npos);
-}
-
-TEST_F(PaymentsClientTest,
-       MigrationRequestExcludesChromeUserContextIfExperimentsOff) {
-  scoped_feature_list_.InitWithFeatures(
-      {},  // Enabled
-      {features::kAutofillEnableAccountWalletStorage,
-       features::kAutofillGetPaymentsIdentityFromSync});  // Disabled
-
-  StartMigrating(/*has_cardholder_name=*/true);
-  IssueOAuthToken();
-
-  // ChromeUserContext was not set.
-  EXPECT_TRUE(!GetUploadData().empty());
-  EXPECT_TRUE(GetUploadData().find("chrome_user_context") == std::string::npos);
-  EXPECT_TRUE(GetUploadData().find("full_sync_enabled") == std::string::npos);
 }
 
 TEST_F(PaymentsClientTest, MigrationSuccessWithSaveResult) {

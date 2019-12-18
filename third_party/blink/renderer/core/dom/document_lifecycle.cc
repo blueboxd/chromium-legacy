@@ -91,8 +91,6 @@ DocumentLifecycle::DocumentLifecycle()
       disallow_transition_count_(0),
       check_no_transition_(false) {}
 
-DocumentLifecycle::~DocumentLifecycle() = default;
-
 #if DCHECK_IS_ON()
 
 bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {

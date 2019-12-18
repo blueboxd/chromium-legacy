@@ -150,6 +150,7 @@ group("blink_platform_public_deps") {
     "//gpu/command_buffer/client:client",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common:common",
+    "//gpu/command_buffer/common:gles2_utils",
     "//net",
     "//services/device/public/mojom:generic_sensor_blink",
     "//services/device/public/mojom:mojom_blink",

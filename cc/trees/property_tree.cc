@@ -1417,9 +1417,11 @@ gfx::ScrollOffset ScrollTree::PullDeltaForMainThread(
   return delta;
 }
 
-void ScrollTree::CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
-                                     ElementId inner_viewport_scroll_element_id,
-                                     bool use_fractional_deltas) {
+void ScrollTree::CollectScrollDeltas(
+    ScrollAndScaleSet* scroll_info,
+    ElementId inner_viewport_scroll_element_id,
+    bool use_fractional_deltas,
+    const base::flat_set<ElementId>& snapped_elements) {
   DCHECK(!property_trees()->is_main_thread);
   TRACE_EVENT0("cc", "ScrollTree::CollectScrollDeltas");
   for (auto map_entry : synced_scroll_offset_map_) {
@@ -1428,19 +1430,24 @@ void ScrollTree::CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
 
     ElementId id = map_entry.first;
 
-    if (!scroll_delta.IsZero()) {
-      TRACE_EVENT_INSTANT2("cc", "CollectScrollDeltas",
-                           TRACE_EVENT_SCOPE_THREAD, "x", scroll_delta.x(), "y",
-                           scroll_delta.y());
-      // The snap targets will change on cc only if the node was scrolled, so it
-      // is safe to update the snap targets only when the scroll delta is not
-      // zero.
+    base::Optional<TargetSnapAreaElementIds> snap_target_ids;
+    if (snapped_elements.find(id) != snapped_elements.end()) {
       ScrollNode* scroll_node = FindNodeFromElementId(id);
-      base::Optional<TargetSnapAreaElementIds> snap_target_ids;
       if (scroll_node && scroll_node->snap_container_data) {
         snap_target_ids = scroll_node->snap_container_data.value()
                               .GetTargetSnapAreaElementIds();
       }
+    }
+
+    // Snap targets are set at the end of scroll offset animations (i.e when the
+    // animation state is updated to FINISHED). The state can be updated after
+    // the compositor's draw stage, which means the next attempt to push the
+    // snap targets is during the next frame. This makes it possible for the
+    // scroll delta to be zero.
+    if (!scroll_delta.IsZero() || snap_target_ids) {
+      TRACE_EVENT_INSTANT2("cc", "CollectScrollDeltas",
+                           TRACE_EVENT_SCOPE_THREAD, "x", scroll_delta.x(), "y",
+                           scroll_delta.y());
       ScrollAndScaleSet::ScrollUpdateInfo update(id, scroll_delta,
                                                  snap_target_ids);
       if (id == inner_viewport_scroll_element_id) {

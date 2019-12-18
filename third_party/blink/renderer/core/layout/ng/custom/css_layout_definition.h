@@ -17,13 +17,14 @@ namespace blink {
 
 class CustomLayoutScope;
 class FragmentResultOptions;
+class IntrinsicSizesResultOptions;
 struct LogicalSize;
 class NGBlockNode;
 struct NGBoxStrut;
 class NGConstraintSpace;
 class ScriptState;
 class SerializedScriptValue;
-class V8Function;
+class V8IntrinsicSizesCallback;
 class V8LayoutCallback;
 class V8NoArgumentConstructor;
 
@@ -36,7 +37,7 @@ class CSSLayoutDefinition final : public GarbageCollected<CSSLayoutDefinition>,
   CSSLayoutDefinition(
       ScriptState*,
       V8NoArgumentConstructor* constructor,
-      V8Function* intrinsic_sizes,
+      V8IntrinsicSizesCallback* intrinsic_sizes,
       V8LayoutCallback* layout,
       const Vector<CSSPropertyID>& native_invalidation_properties,
       const Vector<AtomicString>& custom_invalidation_properties,
@@ -61,6 +62,16 @@ class CSSLayoutDefinition final : public GarbageCollected<CSSLayoutDefinition>,
                 CustomLayoutScope*,
                 FragmentResultOptions*,
                 scoped_refptr<SerializedScriptValue>* fragment_result_data);
+
+    // Runs the web developer defined intrinsicSizes, returns true if everything
+    // succeeded. It populates the IntrinsicSizesResultOptions dictionary.
+    bool IntrinsicSizes(const NGConstraintSpace&,
+                        const Document&,
+                        const NGBlockNode&,
+                        const LogicalSize& border_box_size,
+                        const NGBoxStrut& border_scrollbar_padding,
+                        CustomLayoutScope*,
+                        IntrinsicSizesResultOptions*);
 
     void Trace(blink::Visitor*);
 
@@ -103,7 +114,7 @@ class CSSLayoutDefinition final : public GarbageCollected<CSSLayoutDefinition>,
   // sizes function, and layout function alive. It participates in wrapper
   // tracing as it holds onto V8 wrappers.
   Member<V8NoArgumentConstructor> constructor_;
-  Member<V8Function> unused_intrinsic_sizes_;
+  Member<V8IntrinsicSizesCallback> intrinsic_sizes_;
   Member<V8LayoutCallback> layout_;
 
   // If a constructor call ever fails, we'll refuse to create any more

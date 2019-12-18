@@ -81,8 +81,7 @@ public class ConfirmManagedSyncDataDialogTest {
     }
 
     private AlertDialog getSignInToManagedAccountDialog() {
-        mStateMachineDelegate.showSignInToManagedAccountDialog(
-                mMockListener, mActivity.getResources(), TEST_DOMAIN);
+        mStateMachineDelegate.showSignInToManagedAccountDialog(mMockListener, TEST_DOMAIN);
         return (AlertDialog) ShadowAlertDialog.getLatestDialog();
     }
 }

@@ -66,6 +66,7 @@
 using blink::xpath::Step;
 %}
 
+%define api.namespace {xpathyy}
 %define api.parser.class {YyParser}
 %parse-param { blink::xpath::Parser* parser_ }
 
@@ -111,7 +112,7 @@ using blink::xpath::Step;
 
 %code {
 
-static int xpathyylex(xpathyy::YyParser::semantic_type* yylval) {
+static int yylex(xpathyy::YyParser::semantic_type* yylval) {
   return blink::xpath::Parser::Current()->Lex(yylval);
 }
 

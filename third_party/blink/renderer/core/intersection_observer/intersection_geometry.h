@@ -69,7 +69,6 @@ class CORE_EXPORT IntersectionGeometry {
                        unsigned flags);
 
   IntersectionGeometry(const IntersectionGeometry&) = default;
-  ~IntersectionGeometry();
 
   bool ShouldReportRootBounds() const {
     return flags_ & kShouldReportRootBounds;

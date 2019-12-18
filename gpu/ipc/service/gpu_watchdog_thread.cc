@@ -19,6 +19,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_crash_keys.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "ui/gl/shader_tracking.h"
 
 #if defined(OS_WIN)
@@ -41,6 +42,18 @@ const int kGpuTimeout = 15000;
 const int kGpuTimeout = 10000;
 #endif
 
+// The same set of timeouts from Watchdog V2 so we can compare the results
+// between V1 and V2.
+#if defined(CYGPROFILE_INSTRUMENTATION)
+const int kNewGpuTimeout = 30000;
+#elif defined(OS_WIN) || defined(OS_ANDROID)
+const int kNewGpuTimeout = 15000;
+#elif defined(OS_MACOSX)
+const int kNewGpuTimeout = 17000;
+#else
+const int kNewGpuTimeout = 10000;
+#endif
+
 #if defined(USE_X11)
 const base::FilePath::CharType kTtyFilePath[] =
     FILE_PATH_LITERAL("/sys/class/tty/tty0/active");
@@ -50,7 +63,6 @@ const base::FilePath::CharType kTtyFilePath[] =
 
 GpuWatchdogThreadImplV1::GpuWatchdogThreadImplV1()
     : watched_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      timeout_(base::TimeDelta::FromMilliseconds(kGpuTimeout)),
       armed_(false),
       task_observer_(this),
       use_thread_cpu_time_(true),
@@ -65,6 +77,11 @@ GpuWatchdogThreadImplV1::GpuWatchdogThreadImplV1()
       host_tty_(-1)
 #endif
 {
+  if (base::FeatureList::IsEnabled(features::kGpuWatchdogV1NewTimeout))
+    timeout_ = base::TimeDelta::FromMilliseconds(kNewGpuTimeout);
+  else
+    timeout_ = base::TimeDelta::FromMilliseconds(kGpuTimeout);
+
   base::subtle::NoBarrier_Store(&awaiting_acknowledge_, false);
 
 #if defined(OS_WIN)

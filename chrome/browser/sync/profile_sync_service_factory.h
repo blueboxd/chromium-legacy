@@ -44,6 +44,11 @@ class ProfileSyncServiceFactory : public BrowserContextKeyedServiceFactory {
   // Note that GetForProfile will create the service if it doesn't exist yet.
   static bool HasSyncService(Profile* profile);
 
+  // Checks whether sync is configurable by the user. Returns false if sync is
+  // disallowed by the command line or controlled by configuration management.
+  // |profile| must not be nullptr.
+  static bool IsSyncAllowed(Profile* profile);
+
   static ProfileSyncServiceFactory* GetInstance();
 
   // Overrides how the SyncClient is created for testing purposes.

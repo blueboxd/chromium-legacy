@@ -621,6 +621,7 @@ class YouTubeMobileStory2019(_MediaBrowsingStory):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   IS_SINGLE_PAGE_APP = True
   ITEM_SELECTOR_INDEX = 3
+  ITEMS_TO_VISIT = 8
   TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.EMERGING_MARKET,
           story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
 

@@ -284,43 +284,6 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
           ? GetContentClient()->browser()->GetUserAgent()
           : user_agent_override);
 
-  // TODO(mkwst): Extract this logic out somewhere that can be shared between
-  // Blink and //content.
-  if (IsFetchMetadataEnabled() && IsOriginSecure(url)) {
-    std::string destination;
-    switch (frame_tree_node->frame_owner_element_type()) {
-      case blink::FrameOwnerElementType::kNone:
-        destination = "document";
-        break;
-      case blink::FrameOwnerElementType::kObject:
-        destination = "object";
-        break;
-      case blink::FrameOwnerElementType::kEmbed:
-        destination = "embed";
-        break;
-      case blink::FrameOwnerElementType::kIframe:
-        destination = "iframe";
-        break;
-      case blink::FrameOwnerElementType::kFrame:
-        destination = "frame";
-        break;
-      case blink::FrameOwnerElementType::kPortal:
-        // TODO(mkwst): "Portal"'s destination isn't actually defined at the
-        // moment. Let's assume it'll be similar to a frame until we decide
-        // otherwise.
-        // https://github.com/w3c/webappsec-fetch-metadata/issues/46
-        destination = "document";
-        break;
-    }
-
-    if (IsFetchMetadataDestinationEnabled()) {
-      headers->SetHeaderIfMissing("Sec-Fetch-Dest", destination.c_str());
-    }
-
-    // `Sec-Fetch-User`, `Sec-Fetch-Site` and `Sec-Fetch-Mode` are covered by
-    // the `network::SetFetchMetadataHeaders` function.
-  }
-
   if (!render_prefs.enable_referrers) {
     *referrer =
         blink::mojom::Referrer(GURL(), network::mojom::ReferrerPolicy::kNever);

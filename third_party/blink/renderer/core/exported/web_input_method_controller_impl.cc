@@ -174,12 +174,21 @@ WebTextInputType WebInputMethodControllerImpl::TextInputType() {
   return GetFrame()->GetInputMethodController().TextInputType();
 }
 
-void WebInputMethodControllerImpl::GetLayoutBounds(WebRect& control_bounds,
-                                                   WebRect& selection_bounds) {
+void WebInputMethodControllerImpl::GetLayoutBounds(WebRect* control_bounds,
+                                                   WebRect* selection_bounds) {
   if (IsEditContextActive()) {
     return GetInputMethodController().GetActiveEditContext()->GetLayoutBounds(
         control_bounds, selection_bounds);
   }
+}
+
+bool WebInputMethodControllerImpl::IsInputPanelPolicyManual() const {
+  if (IsEditContextActive()) {
+    return GetInputMethodController()
+        .GetActiveEditContext()
+        ->IsInputPanelPolicyManual();
+  }
+  return false;  // Default should always be automatic.
 }
 
 WebRange WebInputMethodControllerImpl::CompositionRange() {

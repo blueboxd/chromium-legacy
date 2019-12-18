@@ -69,7 +69,6 @@ class UserActionElementSet final {
   }
 
   UserActionElementSet();
-  ~UserActionElementSet();
 
   void DidDetach(Element&);
 

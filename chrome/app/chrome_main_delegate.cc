@@ -810,6 +810,8 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   }
 #endif
 
+  content::SetContentClient(&chrome_content_client_);
+
   // The TLS slot used by the memlog allocator shim needs to be initialized
   // early to ensure that it gets assigned a low slot number. If it gets
   // initialized too late, the glibc TLS system will require a malloc call in
@@ -1189,10 +1191,6 @@ void ChromeMainDelegate::ZygoteForked() {
 }
 
 #endif  // defined(OS_LINUX)
-
-content::ContentClient* ChromeMainDelegate::CreateContentClient() {
-  return &chrome_content_client_;
-}
 
 content::ContentBrowserClient*
 ChromeMainDelegate::CreateContentBrowserClient() {

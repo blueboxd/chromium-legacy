@@ -196,12 +196,6 @@ class ConfigParserTest : public testing::Test {
   }
 
  private:
-  std::unique_ptr<network::SimpleURLLoader> CreateFakeURLLoader(
-      const GURL& url,
-      const std::string& response_data,
-      net::HttpStatusCode response_code,
-      net::URLRequestStatus::Status status);
-
   MOCK_METHOD0(Callback, void(void));
 
   content::BrowserTaskEnvironment task_environment_;

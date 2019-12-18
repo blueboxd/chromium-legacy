@@ -10,4 +10,6 @@ TextInputState::TextInputState() = default;
 
 TextInputState::TextInputState(const TextInputState& other) = default;
 
+TextInputState::~TextInputState() = default;
+
 }  //  namespace content

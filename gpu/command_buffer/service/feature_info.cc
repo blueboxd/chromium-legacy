@@ -1032,6 +1032,15 @@ void FeatureInfo::InitializeFeatures() {
   if (gfx::HasExtension(extensions, "GL_OES_EGL_image_external")) {
     AddExtensionString("GL_OES_EGL_image_external");
     feature_flags_.oes_egl_image_external = true;
+
+    // In many places we check oes_egl_image_external to know whether
+    // TEXTURE_EXTERNAL_OES is valid. Drivers with the _essl3 version *should*
+    // have both. But to be safe, only enable the _essl3 version if the
+    // non-_essl3 version is available.
+    if (gfx::HasExtension(extensions, "GL_OES_EGL_image_external_essl3")) {
+      AddExtensionString("GL_OES_EGL_image_external_essl3");
+      feature_flags_.oes_egl_image_external_essl3 = true;
+    }
   }
   if (gfx::HasExtension(extensions, "GL_NV_EGL_stream_consumer_external")) {
     AddExtensionString("GL_NV_EGL_stream_consumer_external");

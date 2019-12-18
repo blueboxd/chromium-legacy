@@ -18,11 +18,6 @@ class NavigationPreloadManager final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static NavigationPreloadManager* Create(
-      ServiceWorkerRegistration* registration) {
-    return MakeGarbageCollected<NavigationPreloadManager>(registration);
-  }
-
   explicit NavigationPreloadManager(ServiceWorkerRegistration*);
 
   ScriptPromise enable(ScriptState*);

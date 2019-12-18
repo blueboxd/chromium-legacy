@@ -21,7 +21,6 @@ class PLATFORM_EXPORT UserModel {
 
  public:
   UserModel();
-  ~UserModel();
 
   // Tells us that the system started processing an input event. Must be paired
   // with a call to DidFinishProcessingInputEvent.

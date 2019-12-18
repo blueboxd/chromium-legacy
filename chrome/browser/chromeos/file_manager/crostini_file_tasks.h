@@ -28,6 +28,13 @@ namespace file_tasks {
 constexpr char kCrostiniAppActionID[] = "open-with";
 
 // Finds the Crostini tasks that can handle |entries|, appends them to
+// Finds the Crostini |app_ids| and |app_names| that can handle |entries|.
+// VisibleForTesting.  Called by |FindCrostiniTasks|.
+void FindCrostiniApps(Profile* profile,
+                      const std::vector<extensions::EntryInfo>& entries,
+                      std::vector<std::string>* app_ids,
+                      std::vector<std::string>* app_names);
+
 // |result_list|, and calls back to |callback| once finished.
 void FindCrostiniTasks(Profile* profile,
                        const std::vector<extensions::EntryInfo>& entries,

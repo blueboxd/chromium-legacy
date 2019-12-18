@@ -1869,7 +1869,7 @@ InspectorStyleSheet* InspectorCSSAgent::BindStyleSheet(
       css_style_sheet_to_inspector_style_sheet_.at(style_sheet);
   if (!inspector_style_sheet) {
     Document* document = style_sheet->OwnerDocument();
-    inspector_style_sheet = InspectorStyleSheet::Create(
+    inspector_style_sheet = MakeGarbageCollected<InspectorStyleSheet>(
         network_agent_, style_sheet, DetectOrigin(style_sheet, document),
         InspectorDOMAgent::DocumentURLString(document), this,
         resource_container_);

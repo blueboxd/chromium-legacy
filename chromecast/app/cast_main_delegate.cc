@@ -131,6 +131,8 @@ bool CastMainDelegate::BasicStartupComplete(int* exit_code) {
     }
   }
 #endif  // defined(OS_ANDROID)
+
+  content::SetContentClient(&content_client_);
   return false;
 }
 
@@ -278,10 +280,6 @@ void CastMainDelegate::InitializeResourceBundle() {
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       pak_file, ui::SCALE_FACTOR_NONE);
 #endif  // defined(OS_ANDROID)
-}
-
-content::ContentClient* CastMainDelegate::CreateContentClient() {
-  return &content_client_;
 }
 
 content::ContentBrowserClient* CastMainDelegate::CreateContentBrowserClient() {

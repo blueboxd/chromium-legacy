@@ -8,6 +8,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_scrollable_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="../chromeos/localized_link/localized_link.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="cups_add_printer_dialog_elements.html">
 <link rel="import" href="cups_printer_dialog_util.html">
@@ -121,10 +122,9 @@
             </cr-searchable-drop-down>
           </div>
           <div id="ppdLabel" class="cr-form-field-label">
-            <span>$i18n{selectDriver}</span>
-            <a href="$i18n{printingCUPSPrintPpdLearnMoreUrl}" target="_blank">
-                $i18n{learnMore}
-            </a>
+            <settings-localized-link localized-string="$i18n{selectDriver}"
+                link-url="$i18n{printingCUPSPrintPpdLearnMoreUrl}">
+            </settings-localized-link>
           </div>
           <div class="settings-box two-line">
             <cr-input class="browse-file-input" readonly tabindex="-1"

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.signin;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
@@ -188,13 +187,12 @@ public class ConfirmSyncDataStateMachineDelegate {
      * Shows {@link ConfirmManagedSyncDataDialog} when signing in to a managed account
      * (either through sign in or when switching accounts).
      * @param listener Callback for result.
-     * @param resources Resources to load the strings.
      * @param domain The domain of the managed account.
      */
     void showSignInToManagedAccountDialog(
-            ConfirmManagedSyncDataDialog.Listener listener, Resources resources, String domain) {
+            ConfirmManagedSyncDataDialog.Listener listener, String domain) {
         dismissAllDialogs();
-        showAllowingStateLoss(ConfirmManagedSyncDataDialog.create(listener, resources, domain),
+        showAllowingStateLoss(ConfirmManagedSyncDataDialog.create(listener, domain),
                 CONFIRM_MANAGED_SYNC_DATA_DIALOG_TAG);
     }
 

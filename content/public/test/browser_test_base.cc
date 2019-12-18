@@ -408,7 +408,7 @@ void BrowserTestBase::SetUp() {
       SetRendererClientForTesting(delegate->CreateContentRendererClient());
 
     content::RegisterPathProvider();
-    content::RegisterContentSchemes();
+    content::RegisterContentSchemes(false);
     ui::RegisterPathProvider();
 
     delegate->PreSandboxStartup();

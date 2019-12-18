@@ -153,6 +153,12 @@ bool DummyTextInputClient::SetCompositionFromExistingText(
 #endif
 
 #if defined(OS_WIN)
+bool DummyTextInputClient::GetEditContextLayoutBounds(
+    gfx::Rect* control_bounds,
+    gfx::Rect* selection_bounds) {
+  return false;
+}
+
 void DummyTextInputClient::SetActiveCompositionForAccessibility(
     const gfx::Range& range,
     const base::string16& active_composition_text,

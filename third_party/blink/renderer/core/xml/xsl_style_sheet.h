@@ -34,36 +34,13 @@ namespace blink {
 
 class XSLStyleSheet final : public StyleSheet {
  public:
-  static XSLStyleSheet* Create(ProcessingInstruction* parent_node,
-                               const String& original_url,
-                               const KURL& final_url) {
-    DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
-    return MakeGarbageCollected<XSLStyleSheet>(parent_node, original_url,
-                                               final_url, false);
-  }
-  static XSLStyleSheet* CreateEmbedded(ProcessingInstruction* parent_node,
-                                       const KURL& final_url) {
-    DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
-    return MakeGarbageCollected<XSLStyleSheet>(
-        parent_node, final_url.GetString(), final_url, true);
-  }
-
-  // Taking an arbitrary node is unsafe, because owner node pointer can become
-  // stale. XSLTProcessor ensures that the stylesheet doesn't outlive its
-  // parent, in part by not exposing it to JavaScript.
-  static XSLStyleSheet* CreateForXSLTProcessor(Document* document,
-                                               Node* stylesheet_root_node,
-                                               const String& original_url,
-                                               const KURL& final_url) {
-    DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
-    return MakeGarbageCollected<XSLStyleSheet>(document, stylesheet_root_node,
-                                               original_url, final_url, false);
-  }
-
   XSLStyleSheet(Node* parent_node,
                 const String& original_url,
                 const KURL& final_url,
                 bool embedded);
+  // Taking an arbitrary node is unsafe, because owner node pointer can become
+  // stale. XSLTProcessor ensures that the stylesheet doesn't outlive its
+  // parent, in part by not exposing it to JavaScript.
   XSLStyleSheet(Document* owner_document,
                 Node* style_sheet_root_node,
                 const String& original_url,

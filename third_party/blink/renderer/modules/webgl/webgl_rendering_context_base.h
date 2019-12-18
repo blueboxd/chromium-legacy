@@ -1418,12 +1418,12 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                        DOMFloat32Array*,
                                        GLsizei mod,
                                        GLuint src_offset,
-                                       GLuint src_length);
+                                       size_t src_length);
   bool ValidateUniformMatrixParameters(const char* function_name,
                                        const WebGLUniformLocation*,
                                        GLboolean transpose,
                                        void*,
-                                       GLsizei,
+                                       size_t size,
                                        GLsizei mod,
                                        GLuint src_offset,
                                        GLuint src_length);

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.signin;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
@@ -35,10 +34,7 @@ public class ConfirmManagedSyncDataDialog extends DialogFragment
         void onCancel();
     }
 
-    private static final String KEY_TITLE = "title";
-    private static final String KEY_DESCRIPTION = "description";
-    private static final String KEY_POSITIVE_BUTTON = "positiveButton";
-    private static final String KEY_NEGATIVE_BUTTON = "negativeButton";
+    private static final String KEY_DOMAIN = "domain";
 
     private Listener mListener;
     private boolean mListenerCalled;
@@ -47,26 +43,15 @@ public class ConfirmManagedSyncDataDialog extends DialogFragment
      * Creates {@link ConfirmManagedSyncDataDialog} when signing in to a managed account
      * (either through sign in or when switching accounts).
      * @param listener Callback for result.
-     * @param resources Resources to load the strings.
      * @param domain The domain of the managed account.
-     * TODO(https://crbug.com/1033914): Cleanup the argument resources
      */
-    static ConfirmManagedSyncDataDialog create(
-            Listener listener, Resources resources, String domain) {
+    static ConfirmManagedSyncDataDialog create(Listener listener, String domain) {
         ConfirmManagedSyncDataDialog dialog = new ConfirmManagedSyncDataDialog();
-        dialog.setArguments(createArguments(resources, domain));
+        Bundle args = new Bundle();
+        args.putString(KEY_DOMAIN, domain);
+        dialog.setArguments(args);
         dialog.setListener(listener);
         return dialog;
-    }
-
-    private static Bundle createArguments(Resources resources, String domain) {
-        Bundle args = new Bundle();
-        args.putString(KEY_TITLE, resources.getString(R.string.sign_in_managed_account));
-        args.putString(KEY_DESCRIPTION,
-                resources.getString(R.string.sign_in_managed_account_description, domain));
-        args.putString(KEY_POSITIVE_BUTTON, resources.getString(R.string.policy_dialog_proceed));
-        args.putString(KEY_NEGATIVE_BUTTON, resources.getString(R.string.cancel));
-        return args;
     }
 
     private void setListener(Listener listener) {
@@ -77,10 +62,11 @@ public class ConfirmManagedSyncDataDialog extends DialogFragment
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         // TODO(https://crbug.com/1033911): when the dialog is recreated, a NPE can occur here.
-        String title = getArguments().getString(KEY_TITLE);
-        String description = getArguments().getString(KEY_DESCRIPTION);
-        String positiveButton = getArguments().getString(KEY_POSITIVE_BUTTON);
-        String negativeButton = getArguments().getString(KEY_NEGATIVE_BUTTON);
+        String title = getString(R.string.sign_in_managed_account);
+        String description = getString(
+                R.string.sign_in_managed_account_description, getArguments().getString(KEY_DOMAIN));
+        String positiveButton = getString(R.string.policy_dialog_proceed);
+        String negativeButton = getString(R.string.cancel);
 
         return new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
                 .setTitle(title)

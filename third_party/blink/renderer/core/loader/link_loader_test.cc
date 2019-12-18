@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
@@ -113,7 +114,8 @@ class LinkLoaderPreloadTestBase : public testing::Test {
     Persistent<MockLinkLoaderClient> loader_client =
         MakeGarbageCollected<MockLinkLoaderClient>(
             expected.link_loader_should_load_value);
-    LinkLoader* loader = LinkLoader::Create(loader_client.Get());
+    auto* loader = MakeGarbageCollected<LinkLoader>(
+        loader_client.Get(), loader_client.Get()->GetLoadingTaskRunner());
     // TODO(crbug.com/751425): We should use the mock functionality
     // via |dummy_page_holder_|.
     url_test_helpers::RegisterMockedErrorURLLoad(params.href);
@@ -511,7 +513,8 @@ TEST_P(LinkLoaderModulePreloadTest, ModulePreload) {
       modulator);
   Persistent<MockLinkLoaderClient> loader_client =
       MakeGarbageCollected<MockLinkLoaderClient>(true);
-  LinkLoader* loader = LinkLoader::Create(loader_client.Get());
+  auto* loader = MakeGarbageCollected<LinkLoader>(
+      loader_client.Get(), loader_client.Get()->GetLoadingTaskRunner());
   KURL href_url = KURL(NullURL(), test_case.href);
   LinkLoadParameters params(
       LinkRelAttribute("modulepreload"), test_case.cross_origin,
@@ -560,7 +563,8 @@ TEST_P(LinkLoaderTestPrefetchPrivacyChanges, PrefetchPrivacyChanges) {
   dummy_page_holder->GetFrame().GetSettings()->SetScriptEnabled(true);
   Persistent<MockLinkLoaderClient> loader_client =
       MakeGarbageCollected<MockLinkLoaderClient>(true);
-  LinkLoader* loader = LinkLoader::Create(loader_client.Get());
+  auto* loader = MakeGarbageCollected<LinkLoader>(
+      loader_client.Get(), loader_client.Get()->GetLoadingTaskRunner());
   KURL href_url = KURL(NullURL(), "http://example.test/cat.jpg");
   // TODO(crbug.com/751425): We should use the mock functionality
   // via |dummy_page_holder|.
@@ -625,7 +629,8 @@ TEST_F(LinkLoaderTest, Prefetch) {
     Persistent<MockLinkLoaderClient> loader_client =
         MakeGarbageCollected<MockLinkLoaderClient>(
             test_case.link_loader_should_load_value);
-    LinkLoader* loader = LinkLoader::Create(loader_client.Get());
+    auto* loader = MakeGarbageCollected<LinkLoader>(
+        loader_client.Get(), loader_client.Get()->GetLoadingTaskRunner());
     KURL href_url = KURL(NullURL(), test_case.href);
     // TODO(crbug.com/751425): We should use the mock functionality
     // via |dummy_page_holder|.
@@ -678,7 +683,8 @@ TEST_F(LinkLoaderTest, DNSPrefetch) {
         dummy_page_holder->GetFrame().PrescientNetworking());
     Persistent<MockLinkLoaderClient> loader_client =
         MakeGarbageCollected<MockLinkLoaderClient>(test_case.should_load);
-    LinkLoader* loader = LinkLoader::Create(loader_client.Get());
+    auto* loader = MakeGarbageCollected<LinkLoader>(
+        loader_client.Get(), loader_client.Get()->GetLoadingTaskRunner());
     KURL href_url = KURL(KURL(String("http://example.com")), test_case.href);
     LinkLoadParameters params(
         LinkRelAttribute("dns-prefetch"), kCrossOriginAttributeNotSet, String(),
@@ -717,7 +723,8 @@ TEST_F(LinkLoaderTest, Preconnect) {
         dummy_page_holder->GetFrame().PrescientNetworking());
     Persistent<MockLinkLoaderClient> loader_client =
         MakeGarbageCollected<MockLinkLoaderClient>(test_case.should_load);
-    LinkLoader* loader = LinkLoader::Create(loader_client.Get());
+    auto* loader = MakeGarbageCollected<LinkLoader>(
+        loader_client.Get(), loader_client.Get()->GetLoadingTaskRunner());
     KURL href_url = KURL(KURL(String("http://example.com")), test_case.href);
     LinkLoadParameters params(
         LinkRelAttribute("preconnect"), test_case.cross_origin, String(),
@@ -744,7 +751,8 @@ TEST_F(LinkLoaderTest, PreloadAndPrefetch) {
   dummy_page_holder->GetFrame().GetSettings()->SetScriptEnabled(true);
   Persistent<MockLinkLoaderClient> loader_client =
       MakeGarbageCollected<MockLinkLoaderClient>(true);
-  LinkLoader* loader = LinkLoader::Create(loader_client.Get());
+  auto* loader = MakeGarbageCollected<LinkLoader>(
+      loader_client.Get(), loader_client.Get()->GetLoadingTaskRunner());
   KURL href_url = KURL(KURL(), "https://www.example.com/");
   // TODO(crbug.com/751425): We should use the mock functionality
   // via |dummy_page_holder|.

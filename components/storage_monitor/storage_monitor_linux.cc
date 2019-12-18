@@ -295,11 +295,11 @@ void StorageMonitorLinux::SetGetDeviceInfoCallbackForTest(
 
 void StorageMonitorLinux::EjectDevice(
     const std::string& device_id,
-    base::Callback<void(EjectStatus)> callback) {
+    base::OnceCallback<void(EjectStatus)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   StorageInfo::Type type;
   if (!StorageInfo::CrackDeviceId(device_id, &type, nullptr)) {
-    callback.Run(EJECT_FAILURE);
+    std::move(callback).Run(EJECT_FAILURE);
     return;
   }
 
@@ -319,7 +319,7 @@ void StorageMonitorLinux::EjectDevice(
   }
 
   if (path.empty()) {
-    callback.Run(EJECT_NO_SUCH_DEVICE);
+    std::move(callback).Run(EJECT_NO_SUCH_DEVICE);
     return;
   }
 
@@ -328,7 +328,8 @@ void StorageMonitorLinux::EjectDevice(
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&EjectPathOnBlockingTaskRunner, path, device), callback);
+      base::BindOnce(&EjectPathOnBlockingTaskRunner, path, device),
+      std::move(callback));
 }
 
 void StorageMonitorLinux::OnMtabWatcherCreated(

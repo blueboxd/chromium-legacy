@@ -53,7 +53,7 @@ class LogManager {
   // called every time the activity status of logging changes.
   static std::unique_ptr<LogManager> Create(
       LogRouter* log_router,
-      base::Closure notification_callback);
+      base::RepeatingClosure notification_callback);
 
   // This is the preferred way to submitting log entries.
   virtual LogBufferSubmitter Log() = 0;

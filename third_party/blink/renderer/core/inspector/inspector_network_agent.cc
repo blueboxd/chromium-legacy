@@ -495,11 +495,20 @@ BuildObjectForResourceRequest(const ResourceRequest& request,
   bool hasPostData =
       FormDataToString(request.HttpBody(), max_body_size, &postData);
   KURL url = request.Url();
+  // protocol::Network::Request doesn't have a separate referrer string member
+  // like blink::ResourceRequest, so here we add ResourceRequest's referrer
+  // string to the protocol request's headers manually.
+  auto headers = request.HttpHeaderFields();
+
+  // The request's referrer must be generated at this point.
+  DCHECK_NE(request.ReferrerString(), Referrer::ClientReferrerString());
+  headers.Set(http_names::kReferer, AtomicString(request.ReferrerString()));
+
   std::unique_ptr<protocol::Network::Request> result =
       protocol::Network::Request::create()
           .setUrl(UrlWithoutFragment(url).GetString())
           .setMethod(request.HttpMethod())
-          .setHeaders(BuildObjectForHeaders(request.HttpHeaderFields()))
+          .setHeaders(BuildObjectForHeaders(headers))
           .setInitialPriority(ResourcePriorityJSON(request.Priority()))
           .setReferrerPolicy(GetReferrerPolicy(request.GetReferrerPolicy()))
           .build();
@@ -859,13 +868,11 @@ void InspectorNetworkAgent::PrepareRequest(
       AtomicString header_name = AtomicString(key);
       // When overriding referer, also override referrer policy
       // for this request to assure the request will be allowed.
-      // TODO(domfarolino): Stop setting the HTTPReferrer header, and instead
-      // use ResourceRequest::referrer_. See https://crbug.com/850813. This
-      // seems to require storing the referrer info that is currently stored
-      // inside state_'s kExtraRequestHeaders, somewhere else.
+      // TODO: Should we store the referrer header somewhere other than
+      // |extra_request_headers_|?
       if (header_name.LowerASCII() == http_names::kReferer.LowerASCII()) {
-        request.SetHttpReferrer(
-            Referrer(value, network::mojom::ReferrerPolicy::kAlways));
+        request.SetReferrerString(value);
+        request.SetReferrerPolicy(network::mojom::ReferrerPolicy::kAlways);
       } else {
         request.SetHttpHeaderField(header_name, AtomicString(value));
       }

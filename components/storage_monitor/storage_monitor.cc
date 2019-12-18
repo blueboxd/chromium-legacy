@@ -83,16 +83,16 @@ std::vector<StorageInfo> StorageMonitor::GetAllAvailableStorages() const {
   return results;
 }
 
-void StorageMonitor::EnsureInitialized(base::Closure callback) {
+void StorageMonitor::EnsureInitialized(base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (initialized_) {
     if (!callback.is_null())
-      callback.Run();
+      std::move(callback).Run();
     return;
   }
 
   if (!callback.is_null()) {
-    on_initialize_callbacks_.push_back(callback);
+    on_initialize_callbacks_.push_back(std::move(callback));
   }
 
   if (initializing_)
@@ -127,10 +127,10 @@ std::string StorageMonitor::GetDeviceIdForTransientId(
 
 void StorageMonitor::EjectDevice(
     const std::string& device_id,
-    base::Callback<void(EjectStatus)> callback) {
+    base::OnceCallback<void(EjectStatus)> callback) {
   // Platform-specific implementations will override this method to
   // perform actual device ejection.
-  callback.Run(EJECT_FAILURE);
+  std::move(callback).Run(EJECT_FAILURE);
 }
 
 StorageMonitor::StorageMonitor()
@@ -151,10 +151,8 @@ StorageMonitor::Receiver* StorageMonitor::receiver() const {
 
 void StorageMonitor::MarkInitialized() {
   initialized_ = true;
-  for (auto iter = on_initialize_callbacks_.begin();
-       iter != on_initialize_callbacks_.end(); ++iter) {
-    iter->Run();
-  }
+  for (auto& callback : on_initialize_callbacks_)
+    std::move(callback).Run();
   on_initialize_callbacks_.clear();
 }
 

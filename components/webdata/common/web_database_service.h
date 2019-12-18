@@ -45,8 +45,9 @@ class WebDataServiceConsumer;
 class WEBDATA_EXPORT WebDatabaseService
     : public base::RefCountedDeleteOnSequence<WebDatabaseService> {
  public:
-  using ReadTask = base::Callback<std::unique_ptr<WDTypedResult>(WebDatabase*)>;
-  using WriteTask = base::Callback<WebDatabase::State(WebDatabase*)>;
+  using ReadTask =
+      base::OnceCallback<std::unique_ptr<WDTypedResult>(WebDatabase*)>;
+  using WriteTask = base::OnceCallback<WebDatabase::State(WebDatabase*)>;
 
   // Types for managing DB loading callbacks.
   using DBLoadedCallback = base::OnceClosure;
@@ -79,13 +80,12 @@ class WEBDATA_EXPORT WebDatabaseService
   scoped_refptr<WebDatabaseBackend> GetBackend() const;
 
   // Schedule an update/write task on the DB sequence.
-  virtual void ScheduleDBTask(const base::Location& from_here,
-                              const WriteTask& task);
+  virtual void ScheduleDBTask(const base::Location& from_here, WriteTask task);
 
   // Schedule a read task on the DB sequence.
   virtual WebDataServiceBase::Handle ScheduleDBTaskWithResult(
       const base::Location& from_here,
-      const ReadTask& task,
+      ReadTask task,
       WebDataServiceConsumer* consumer);
 
   // Cancel an existing request for a task on the DB sequence.

@@ -57,15 +57,16 @@ class VolumeMountWatcherWin {
   // removable volumes are found.
   void SetNotifications(StorageMonitor::Receiver* notifications);
 
-  void EjectDevice(const std::string& device_id,
-                   base::Callback<void(StorageMonitor::EjectStatus)> callback);
+  void EjectDevice(
+      const std::string& device_id,
+      base::OnceCallback<void(StorageMonitor::EjectStatus)> callback);
 
  protected:
-  typedef base::Callback<bool(const base::FilePath&,
-                              StorageInfo*)> GetDeviceDetailsCallbackType;
+  using GetDeviceDetailsCallbackType =
+      base::OnceCallback<bool(const base::FilePath&, StorageInfo*)>;
 
-  typedef base::Callback<std::vector<base::FilePath>(void)>
-      GetAttachedDevicesCallbackType;
+  using GetAttachedDevicesCallbackType =
+      base::OnceCallback<std::vector<base::FilePath>()>;
 
   // Handles mass storage device attach event on UI thread.
   void HandleDeviceAttachEventOnUIThread(
@@ -82,7 +83,7 @@ class VolumeMountWatcherWin {
   // |volume_watcher| points back to the VolumeMountWatcherWin that called it.
   static void RetrieveInfoForDeviceAndAdd(
       const base::FilePath& device_path,
-      const GetDeviceDetailsCallbackType& get_device_details_callback,
+      GetDeviceDetailsCallbackType get_device_details_callback,
       base::WeakPtr<VolumeMountWatcherWin> volume_watcher);
 
   // Mark that a device we started a metadata check for has completed.

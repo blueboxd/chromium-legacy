@@ -56,7 +56,8 @@ namespace blink {
 HTMLLinkElement::HTMLLinkElement(Document& document,
                                  const CreateElementFlags flags)
     : HTMLElement(html_names::kLinkTag, document),
-      link_loader_(LinkLoader::Create(this)),
+      link_loader_(
+          MakeGarbageCollected<LinkLoader>(this, GetLoadingTaskRunner())),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
       sizes_(MakeGarbageCollected<DOMTokenList>(*this, html_names::kSizesAttr)),
       rel_list_(MakeGarbageCollected<RelList>(this)),

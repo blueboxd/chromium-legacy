@@ -465,8 +465,8 @@ void WebWorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
     request.SetUrl(g_rewrite_url(request.Url().GetString().Utf8(), false));
 
   if (!renderer_preferences_.enable_referrers) {
-    request.SetHttpReferrer(blink::WebString(),
-                            network::mojom::ReferrerPolicy::kNever);
+    request.SetReferrerString(blink::WebString());
+    request.SetReferrerPolicy(network::mojom::ReferrerPolicy::kNever);
   }
 }
 

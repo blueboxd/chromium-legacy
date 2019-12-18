@@ -202,7 +202,7 @@ class AutofillClient : public RiskDataLoader {
       const UserProvidedCardDetails& user_provided_card_details)>
       UploadSaveCardPromptCallback;
 
-  typedef base::Callback<void(const CreditCard&)> CreditCardScanCallback;
+  typedef base::OnceCallback<void(const CreditCard&)> CreditCardScanCallback;
 
   // Callback to run if user presses the Save button in the migration dialog.
   // Will pass a vector of GUIDs of cards that the user selected to upload to
@@ -415,7 +415,7 @@ class AutofillClient : public RiskDataLoader {
   // Shows the user interface for scanning a credit card. Invokes the |callback|
   // when a credit card is scanned successfully. Should be called only if
   // HasCreditCardScanFeature() returns true.
-  virtual void ScanCreditCard(const CreditCardScanCallback& callback) = 0;
+  virtual void ScanCreditCard(CreditCardScanCallback callback) = 0;
 
   // Shows an Autofill popup with the given |values|, |labels|, |icons|, and
   // |identifiers| for the element at |element_bounds|. |delegate| will be

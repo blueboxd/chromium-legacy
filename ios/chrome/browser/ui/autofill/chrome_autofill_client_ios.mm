@@ -330,8 +330,7 @@ bool ChromeAutofillClientIOS::HasCreditCardScanFeature() {
   return false;
 }
 
-void ChromeAutofillClientIOS::ScanCreditCard(
-    const CreditCardScanCallback& callback) {
+void ChromeAutofillClientIOS::ScanCreditCard(CreditCardScanCallback callback) {
   NOTREACHED();
 }
 

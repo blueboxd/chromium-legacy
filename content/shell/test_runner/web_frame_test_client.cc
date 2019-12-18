@@ -411,8 +411,15 @@ void WebFrameTestClient::WillSendRequest(blink::WebURLRequest& request) {
   GURL main_document_url = request.SiteForCookies();
 
   if (test_runner()->HttpHeadersToClear()) {
-    for (const std::string& header : *test_runner()->HttpHeadersToClear())
+    for (const std::string& header : *test_runner()->HttpHeadersToClear()) {
+      DCHECK(!base::EqualsCaseInsensitiveASCII(header, "referer"));
       request.ClearHttpHeaderField(blink::WebString::FromUTF8(header));
+    }
+  }
+
+  if (test_runner()->ClearReferrer()) {
+    request.SetReferrerString(blink::WebString());
+    request.SetReferrerPolicy(network::mojom::ReferrerPolicy::kDefault);
   }
 
   std::string host = url.host();
@@ -528,10 +535,18 @@ bool WebFrameTestClient::ShouldContinueNavigation(
 
   if (test_runner()->HttpHeadersToClear()) {
     for (const std::string& header : *test_runner()->HttpHeadersToClear()) {
+      DCHECK(!base::EqualsCaseInsensitiveASCII(header, "referer"));
       info->url_request.ClearHttpHeaderField(
           blink::WebString::FromUTF8(header));
     }
   }
+
+  if (test_runner()->ClearReferrer()) {
+    info->url_request.SetReferrerString(blink::WebString());
+    info->url_request.SetReferrerPolicy(
+        network::mojom::ReferrerPolicy::kDefault);
+  }
+
   info->url_request.SetUrl(delegate_->RewriteWebTestsURL(
       info->url_request.Url().GetString().Utf8(),
       test_runner()->is_web_platform_tests_mode()));

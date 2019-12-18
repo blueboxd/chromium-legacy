@@ -39,16 +39,6 @@ class CORE_EXPORT DOMRectList final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMRectList* Create() { return MakeGarbageCollected<DOMRectList>(); }
-  static DOMRectList* Create(const Vector<FloatQuad>& quads) {
-    return MakeGarbageCollected<DOMRectList>(quads);
-  }
-
-  template <typename Rects>
-  static DOMRectList* Create(const Rects& rects) {
-    return MakeGarbageCollected<DOMRectList>(rects);
-  }
-
   DOMRectList();
 
   template <typename Rects>

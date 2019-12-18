@@ -30,7 +30,7 @@ TEST(StorageMonitorTest, TestInitialize) {
   EXPECT_FALSE(monitor.init_called());
 
   bool initialized = false;
-  monitor.EnsureInitialized(base::Bind(&SetLatch, &initialized));
+  monitor.EnsureInitialized(base::BindOnce(&SetLatch, &initialized));
   EXPECT_TRUE(monitor.init_called());
   EXPECT_FALSE(initialized);
   monitor.MarkInitialized();

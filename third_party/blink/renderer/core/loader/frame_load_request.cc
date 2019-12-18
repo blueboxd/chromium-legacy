@@ -36,9 +36,8 @@ static void SetReferrerForRequest(Document* origin_document,
   Referrer referrer = SecurityPolicy::GenerateReferrer(
       referrer_policy_to_use, request.Url(), referrer_to_use);
 
-  // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
-  // header and instead use a separate member. See https://crbug.com/850813.
-  request.SetHttpReferrer(referrer);
+  request.SetReferrerString(referrer.referrer);
+  request.SetReferrerPolicy(referrer.referrer_policy);
   request.SetHTTPOriginToMatchReferrerIfNeeded();
 }
 

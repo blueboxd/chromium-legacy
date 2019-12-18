@@ -40,9 +40,9 @@ namespace chromeos {
 
 namespace {
 
-const char kErrorNotActive[] = "IME is not active";
-const char kErrorWrongContext[] = "Context is not active";
-const char kCandidateNotFound[] = "Candidate not found";
+const char kErrorNotActive[] = "IME is not active.";
+const char kErrorWrongContext[] = "Context is not active.";
+const char kCandidateNotFound[] = "Candidate not found.";
 
 // The default entry number of a page in CandidateWindowProperty.
 const int kDefaultPageSize = 9;
@@ -208,7 +208,8 @@ bool InputMethodEngine::SetCursorPosition(int context_id,
   std::map<int, int>::const_iterator position =
       candidate_indexes_.find(candidate_id);
   if (position == candidate_indexes_.end()) {
-    *error = kCandidateNotFound;
+    *error = base::StringPrintf("%s candidate id = %d", kCandidateNotFound,
+                                candidate_id);
     return false;
   }
 
@@ -221,14 +222,18 @@ bool InputMethodEngine::SetCursorPosition(int context_id,
 }
 
 bool InputMethodEngine::SetMenuItems(
-    const std::vector<input_method::InputMethodManager::MenuItem>& items) {
-  return UpdateMenuItems(items);
+    const std::vector<input_method::InputMethodManager::MenuItem>& items,
+    std::string* error) {
+  return UpdateMenuItems(items, error);
 }
 
 bool InputMethodEngine::UpdateMenuItems(
-    const std::vector<input_method::InputMethodManager::MenuItem>& items) {
-  if (!IsActive())
+    const std::vector<input_method::InputMethodManager::MenuItem>& items,
+    std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
     return false;
+  }
 
   ui::ime::InputMethodMenuItemList menu_item_list;
   for (const auto& item : items) {
@@ -300,7 +305,8 @@ void InputMethodEngine::CommitTextToInputContext(int context_id,
 }
 
 bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
-                                     const std::string& code) {
+                                     const std::string& code,
+                                     std::string* error) {
   DCHECK(event);
   if (event->key_code() == ui::VKEY_UNKNOWN)
     event->set_key_code(ui::DomKeycodeToKeyboardCode(code));
@@ -319,6 +325,8 @@ bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
     input_context->SendKeyEvent(event);
     return true;
   }
+
+  *error = kErrorWrongContext;
   return false;
 }
 

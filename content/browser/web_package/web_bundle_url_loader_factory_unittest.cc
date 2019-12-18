@@ -66,13 +66,6 @@ class WebBundleURLLoaderFactoryTest : public testing::Test {
     resource_request_.method = net::HttpRequestHeaders::kGetMethod;
   }
 
-  void TearDown() override {
-    // Shut down the loader factory and allow its cleanup tasks in the
-    // ThreadPool to run so that temp dirs can be deleted.
-    loader_factory_.reset();
-    task_environment_.RunUntilIdle();
-  }
-
   // This function creates a URLLoader with |resource_request_|, and simulates
   // a response for WebBundleReader::ReadResponse with |response| if it
   // is given. |response| can contain nullptr to simulate the case ReadResponse

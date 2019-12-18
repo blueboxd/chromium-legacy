@@ -170,20 +170,6 @@ void WebURLRequest::SetHttpHeaderField(const WebString& name,
   resource_request_->SetHttpHeaderField(name, value);
 }
 
-void WebURLRequest::SetHttpReferrer(
-    const WebString& web_referrer,
-    network::mojom::ReferrerPolicy referrer_policy) {
-  // WebString doesn't have the distinction between empty and null. We use
-  // the null WTFString for referrer.
-  DCHECK_EQ(Referrer::NoReferrer(), String());
-  String referrer =
-      web_referrer.IsEmpty() ? Referrer::NoReferrer() : String(web_referrer);
-  // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
-  // header and instead use a separate member. See https://crbug.com/850813.
-  resource_request_->SetHttpReferrer(Referrer(referrer, referrer_policy));
-  resource_request_->SetReferrerString(referrer);
-}
-
 void WebURLRequest::AddHttpHeaderField(const WebString& name,
                                        const WebString& value) {
   resource_request_->AddHttpHeaderField(name, value);
@@ -225,6 +211,19 @@ bool WebURLRequest::ReportRawHeaders() const {
 
 mojom::RequestContextType WebURLRequest::GetRequestContext() const {
   return resource_request_->GetRequestContext();
+}
+
+void WebURLRequest::SetReferrerString(const WebString& referrer) {
+  resource_request_->SetReferrerString(referrer);
+}
+
+void WebURLRequest::SetReferrerPolicy(
+    network::mojom::ReferrerPolicy referrer_policy) {
+  resource_request_->SetReferrerPolicy(referrer_policy);
+}
+
+WebString WebURLRequest::ReferrerString() const {
+  return resource_request_->ReferrerString();
 }
 
 network::mojom::ReferrerPolicy WebURLRequest::GetReferrerPolicy() const {

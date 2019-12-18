@@ -119,11 +119,13 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
   // Set the list of items that appears in the language menu when this IME is
   // active.
   bool SetMenuItems(
-      const std::vector<input_method::InputMethodManager::MenuItem>& items);
+      const std::vector<input_method::InputMethodManager::MenuItem>& items,
+      std::string* error);
 
   // Update the state of the menu items.
   bool UpdateMenuItems(
-      const std::vector<input_method::InputMethodManager::MenuItem>& items);
+      const std::vector<input_method::InputMethodManager::MenuItem>& items,
+      std::string* error);
 
   // Hides the input view window (from API call).
   void HideInputView();
@@ -142,7 +144,10 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
 
   void CommitTextToInputContext(int context_id,
                                 const std::string& text) override;
-  bool SendKeyEvent(ui::KeyEvent* event, const std::string& code) override;
+
+  bool SendKeyEvent(ui::KeyEvent* event,
+                    const std::string& code,
+                    std::string* error) override;
 
   // Enables overriding input view page to Virtual Keyboard window.
   void EnableInputView();

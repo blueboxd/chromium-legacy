@@ -190,7 +190,7 @@ bool AwAutofillClient::HasCreditCardScanFeature() {
   return false;
 }
 
-void AwAutofillClient::ScanCreditCard(const CreditCardScanCallback& callback) {
+void AwAutofillClient::ScanCreditCard(CreditCardScanCallback callback) {
   NOTIMPLEMENTED();
 }
 

@@ -97,8 +97,9 @@ class PortableDeviceWatcherWin {
   // devices are found.
   void SetNotifications(StorageMonitor::Receiver* notifications);
 
-  void EjectDevice(const std::string& device_id,
-                   base::Callback<void(StorageMonitor::EjectStatus)> callback);
+  void EjectDevice(
+      const std::string& device_id,
+      base::OnceCallback<void(StorageMonitor::EjectStatus)> callback);
 
  private:
   friend class TestPortableDeviceWatcherWin;

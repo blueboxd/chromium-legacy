@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/autofill_experiments.h"
 
+#include "base/bind_helpers.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
@@ -27,7 +28,7 @@ class AutofillExperimentsTest : public testing::Test {
   void SetUp() override {
     pref_service_.registry()->RegisterBooleanPref(
         prefs::kAutofillWalletImportEnabled, true);
-    log_manager_ = LogManager::Create(nullptr, base::Closure());
+    log_manager_ = LogManager::Create(nullptr, base::NullCallback());
   }
 
   bool IsCreditCardUploadEnabled(const AutofillSyncSigninState sync_state) {

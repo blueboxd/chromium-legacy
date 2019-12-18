@@ -103,19 +103,19 @@ bool StorageMonitorWin::GetStorageInfoForPath(const base::FilePath& path,
 
 void StorageMonitorWin::EjectDevice(
     const std::string& device_id,
-    base::Callback<void(EjectStatus)> callback) {
+    base::OnceCallback<void(EjectStatus)> callback) {
   StorageInfo::Type type;
   if (!StorageInfo::CrackDeviceId(device_id, &type, nullptr)) {
-    callback.Run(EJECT_FAILURE);
+    std::move(callback).Run(EJECT_FAILURE);
     return;
   }
 
   if (type == StorageInfo::MTP_OR_PTP)
-    portable_device_watcher_->EjectDevice(device_id, callback);
+    portable_device_watcher_->EjectDevice(device_id, std::move(callback));
   else if (StorageInfo::IsRemovableDevice(device_id))
-    volume_mount_watcher_->EjectDevice(device_id, callback);
+    volume_mount_watcher_->EjectDevice(device_id, std::move(callback));
   else
-    callback.Run(EJECT_FAILURE);
+    std::move(callback).Run(EJECT_FAILURE);
 }
 
 bool StorageMonitorWin::GetMTPStorageInfoFromDeviceId(

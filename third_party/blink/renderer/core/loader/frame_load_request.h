@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOAD_REQUEST_H_
 
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
@@ -37,6 +38,7 @@
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer.h"
 
 namespace blink {
 
@@ -136,7 +138,8 @@ struct CORE_EXPORT FrameLoadRequest {
   void SetNoOpener() { window_features_.noopener = true; }
   void SetNoReferrer() {
     should_send_referrer_ = kNeverSendReferrer;
-    resource_request_.ClearHTTPReferrer();
+    resource_request_.SetReferrerString(Referrer::NoReferrer());
+    resource_request_.SetReferrerPolicy(network::mojom::ReferrerPolicy::kNever);
     resource_request_.ClearHTTPOrigin();
   }
 

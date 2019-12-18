@@ -149,8 +149,8 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
   render_frame->GetWebFrame()->SetAutofillClient(this);
   password_autofill_agent->SetAutofillAgent(this);
   AddFormObserver(this);
-  registry->AddInterface(
-      base::Bind(&AutofillAgent::BindPendingReceiver, base::Unretained(this)));
+  registry->AddInterface(base::BindRepeating(
+      &AutofillAgent::BindPendingReceiver, base::Unretained(this)));
 }
 
 AutofillAgent::~AutofillAgent() {

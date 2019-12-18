@@ -30,7 +30,8 @@ void AutofillDriverFactory::TabHidden() {
 
 void AutofillDriverFactory::AddForKey(
     void* key,
-    base::Callback<std::unique_ptr<AutofillDriver>()> factory_method) {
+    const base::RepeatingCallback<std::unique_ptr<AutofillDriver>()>&
+        factory_method) {
   auto insertion_result = driver_map_.insert(std::make_pair(key, nullptr));
   // This can be called twice for the key representing the main frame.
   if (insertion_result.second) {

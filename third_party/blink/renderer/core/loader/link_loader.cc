@@ -76,11 +76,6 @@ unsigned PrerenderRelTypesFromRelAttribute(
 
 }  // namespace
 
-LinkLoader* LinkLoader::Create(LinkLoaderClient* client) {
-  return MakeGarbageCollected<LinkLoader>(client,
-                                          client->GetLoadingTaskRunner());
-}
-
 class LinkLoader::FinishObserver final
     : public GarbageCollected<LinkLoader::FinishObserver>,
       public ResourceFinishObserver {

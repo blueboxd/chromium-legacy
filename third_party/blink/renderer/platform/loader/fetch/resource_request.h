@@ -52,7 +52,6 @@
 namespace blink {
 
 class EncodedFormData;
-struct Referrer;
 
 // A ResourceRequest is a "request" object for ResourceLoader. Conceptually
 // it is https://fetch.spec.whatwg.org/#concept-request, but it contains
@@ -150,16 +149,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   void SetHTTPContentType(const AtomicString& http_content_type) {
     SetHttpHeaderField(http_names::kContentType, http_content_type);
   }
-
-  // TODO(domfarolino): Remove this once we stop storing the generated referrer
-  // as a header, and instead use a separate member. See
-  // https://crbug.com/850813.
-  const AtomicString& HttpReferrer() const {
-    return HttpHeaderField(http_names::kReferer);
-  }
-  void SetHttpReferrer(const Referrer&);
-  bool DidSetHttpReferrer() const { return did_set_http_referrer_; }
-  void ClearHTTPReferrer();
 
   void SetReferrerPolicy(network::mojom::ReferrerPolicy referrer_policy) {
     referrer_policy_ = referrer_policy;
@@ -501,7 +490,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   String fetch_integrity_;
   String referrer_string_;
   network::mojom::ReferrerPolicy referrer_policy_;
-  bool did_set_http_referrer_;
   bool is_external_request_;
   network::mojom::CorsPreflightPolicy cors_preflight_policy_;
   RedirectStatus redirect_status_;

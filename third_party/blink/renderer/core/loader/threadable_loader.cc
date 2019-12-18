@@ -230,7 +230,8 @@ ThreadableLoader::ThreadableLoader(
 void ThreadableLoader::Start(const ResourceRequest& request) {
   original_security_origin_ = security_origin_ = request.RequestorOrigin();
   // Setting an outgoing referer is only supported in the async code path.
-  DCHECK(async_ || request.HttpReferrer().IsEmpty());
+  DCHECK(async_ ||
+         request.ReferrerString() == Referrer::ClientReferrerString());
 
   bool cors_enabled = cors::IsCorsEnabledRequestMode(request.GetMode());
 
@@ -672,10 +673,8 @@ bool ThreadableLoader::RedirectReceived(
 
     // Save the referrer to use when following the redirect.
     override_referrer_ = true;
-    // TODO(domfarolino): Use ReferrerString() once https://crbug.com/850813 is
-    // closed and we stop storing the referrer string as a `Referer` header.
     referrer_after_redirect_ =
-        Referrer(new_request.HttpReferrer(), new_request.GetReferrerPolicy());
+        Referrer(new_request.ReferrerString(), new_request.GetReferrerPolicy());
   }
   // We're initiating a new request (for redirect), so update
   // |last_request_url_| by destroying |assign_on_scope_exit|.
@@ -685,7 +684,9 @@ bool ThreadableLoader::RedirectReceived(
 
   // Remove any headers that may have been added by the network layer that cause
   // access control to fail.
-  cross_origin_request.ClearHTTPReferrer();
+  cross_origin_request.SetReferrerString(Referrer::NoReferrer());
+  cross_origin_request.SetReferrerPolicy(
+      network::mojom::ReferrerPolicy::kDefault);
   cross_origin_request.ClearHTTPOrigin();
   cross_origin_request.ClearHTTPUserAgent();
   // Add any request headers which we previously saved from the

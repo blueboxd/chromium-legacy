@@ -112,9 +112,10 @@ ContentAutofillDriver* ContentAutofillDriverFactory::DriverForFrame(
 
   // ContentAutofillDriver are created on demand here.
   if (!driver) {
-    AddForKey(render_frame_host,
-              base::Bind(CreateDriver, render_frame_host, client(), app_locale_,
-                         enable_download_manager_, provider_));
+    AddForKey(
+        render_frame_host,
+        base::BindRepeating(CreateDriver, render_frame_host, client(),
+                            app_locale_, enable_download_manager_, provider_));
     driver = DriverForKey(render_frame_host);
   }
 

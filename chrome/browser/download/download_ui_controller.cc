@@ -20,6 +20,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/download/android/download_controller.h"
 #include "chrome/browser/download/android/download_controller_base.h"
 #else
 #include "chrome/browser/profiles/profile.h"
@@ -182,10 +183,12 @@ void DownloadUIController::OnDownloadUpdated(content::DownloadManager* manager,
       item->GetState() != download::DownloadItem::CANCELLED)
     return;
 
-#if !defined(OS_ANDROID)
   content::WebContents* web_contents =
       content::DownloadItemUtils::GetWebContents(item);
   if (web_contents) {
+#if defined(OS_ANDROID)
+    DownloadController::CloseTabIfEmpty(web_contents);
+#else
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
     // If the download occurs in a new tab, and it's not a save page
     // download (started before initial navigation completed) close it.
@@ -199,8 +202,8 @@ void DownloadUIController::OnDownloadUpdated(content::DownloadManager* manager,
         !item->IsSavePackageDownload()) {
       web_contents->Close();
     }
+#endif  // defined(OS_ANDROID)
   }
-#endif
 
   if (item->GetState() == download::DownloadItem::CANCELLED)
     return;

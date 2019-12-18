@@ -96,7 +96,7 @@ class CardUnmaskPromptControllerImplGenericTest {
 
   void ShowPrompt() {
     controller_->ShowPrompt(
-        base::Bind(
+        base::BindOnce(
             &CardUnmaskPromptControllerImplGenericTest::GetCardUnmaskPromptView,
             base::Unretained(this)),
         test::GetMaskedServerCard(), AutofillClient::UNMASK_FOR_AUTOFILL,
@@ -105,7 +105,7 @@ class CardUnmaskPromptControllerImplGenericTest {
 
   void ShowPromptAmex() {
     controller_->ShowPrompt(
-        base::Bind(
+        base::BindOnce(
             &CardUnmaskPromptControllerImplGenericTest::GetCardUnmaskPromptView,
             base::Unretained(this)),
         test::GetMaskedServerCardAmex(), AutofillClient::UNMASK_FOR_AUTOFILL,

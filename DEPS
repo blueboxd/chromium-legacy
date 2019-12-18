@@ -306,7 +306,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '1bbbe8f52da580bd245af733e068eaabacf72731',
+  'dawn_revision': '3d2d62813fc57ffc56cc4ee342e2e210b26664a8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -889,7 +889,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '5e2debe5c94a11fb4939cf9ec3e07fd6fde0f761',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '6037820448a9dbe4f53902edf438a9ad5a6cac5d',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1566,7 +1566,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f86d8653f0ea0a001f07fdd5481cd2ee84271503',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e72c2a5c2f58ef0c1f48665e92929292c1f2b5b5',
     'condition': 'checkout_src_internal',
   },
 

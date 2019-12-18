@@ -159,13 +159,13 @@ ResourceRequest FrameLoader::ResourceRequestForReload(
   // document. If this reload is a client redirect (e.g., location.reload()), it
   // was initiated by something in the current document and should therefore
   // show the current document's url as the referrer.
-  // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
-  // header and instead use a separate member. See https://crbug.com/850813.
   if (client_redirect_policy == ClientRedirectPolicy::kClientRedirect) {
-    request.SetHttpReferrer(SecurityPolicy::GenerateReferrer(
+    Referrer referrer = SecurityPolicy::GenerateReferrer(
         frame_->GetDocument()->GetReferrerPolicy(),
         frame_->GetDocument()->Url(),
-        frame_->GetDocument()->OutgoingReferrer()));
+        frame_->GetDocument()->OutgoingReferrer());
+    request.SetReferrerString(referrer.referrer);
+    request.SetReferrerPolicy(referrer.referrer_policy);
   }
 
   request.SetSkipServiceWorker(frame_load_type ==

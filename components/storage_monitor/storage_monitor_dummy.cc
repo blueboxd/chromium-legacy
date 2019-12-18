@@ -26,7 +26,7 @@ class StorageMonitorDummy : public StorageMonitor {
   }
 
   void EjectDevice(const std::string& device_id,
-                   base::Callback<void(EjectStatus)> callback) override {}
+                   base::OnceCallback<void(EjectStatus)> callback) override {}
 
   DISALLOW_COPY_AND_ASSIGN(StorageMonitorDummy);
 };

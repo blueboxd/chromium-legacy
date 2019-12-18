@@ -162,10 +162,7 @@ class MockParserFactory final
 class MockWebBundleReaderFactoryImpl final : public MockWebBundleReaderFactory {
  public:
   MockWebBundleReaderFactoryImpl() : MockWebBundleReaderFactory() {}
-  ~MockWebBundleReaderFactoryImpl() override {
-    EXPECT_TRUE(!temp_dir_.IsValid() || temp_dir_.Delete())
-        << temp_dir_.GetPath();
-  }
+  ~MockWebBundleReaderFactoryImpl() override = default;
 
   scoped_refptr<WebBundleReader> CreateReader(
       const std::string& test_file_data) override {

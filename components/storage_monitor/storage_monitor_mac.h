@@ -45,7 +45,7 @@ class StorageMonitorMac : public StorageMonitor,
                              StorageInfo* device_info) const override;
 
   void EjectDevice(const std::string& device_id,
-                   base::Callback<void(EjectStatus)> callback) override;
+                   base::OnceCallback<void(EjectStatus)> callback) override;
 
  private:
   static void DiskAppearedCallback(DADiskRef disk, void* context);

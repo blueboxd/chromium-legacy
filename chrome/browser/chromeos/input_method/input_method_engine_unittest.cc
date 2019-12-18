@@ -42,8 +42,8 @@ namespace {
 const char kTestExtensionId[] = "mppnpdlheglhdfmldimlhpnegondlapf";
 const char kTestExtensionId2[] = "dmpipdbjkoajgdeppkffbjhngfckdloi";
 const char kTestImeComponentId[] = "test_engine_id";
-const char kErrorNotActive[] = "IME is not active";
-const char kErrorInvalidValue[] = "Argument '%s' with value '%d' is not valid";
+const char kErrorNotActive[] = "IME is not active.";
+const char kErrorInvalidValue[] = "Argument '%s' with value '%d' is not valid.";
 
 enum CallsBitmap {
   NONE = 0U,

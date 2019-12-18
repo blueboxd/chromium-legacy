@@ -69,7 +69,7 @@ class MockAutofillClient : public TestAutofillClient {
  public:
   MockAutofillClient() {}
 
-  MOCK_METHOD1(ScanCreditCard, void(const CreditCardScanCallback& callbacK));
+  MOCK_METHOD1(ScanCreditCard, void(CreditCardScanCallback callbacK));
 
   MOCK_METHOD6(ShowAutofillPopup,
                void(const gfx::RectF& element_bounds,

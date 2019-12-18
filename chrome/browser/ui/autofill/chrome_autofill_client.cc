@@ -462,9 +462,9 @@ bool ChromeAutofillClient::HasCreditCardScanFeature() {
   return CreditCardScannerController::HasCreditCardScanFeature();
 }
 
-void ChromeAutofillClient::ScanCreditCard(
-    const CreditCardScanCallback& callback) {
-  CreditCardScannerController::ScanCreditCard(web_contents(), callback);
+void ChromeAutofillClient::ScanCreditCard(CreditCardScanCallback callback) {
+  CreditCardScannerController::ScanCreditCard(web_contents(),
+                                              std::move(callback));
 }
 
 void ChromeAutofillClient::ShowAutofillPopup(

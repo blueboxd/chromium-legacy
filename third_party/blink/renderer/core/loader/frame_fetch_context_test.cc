@@ -181,10 +181,11 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
 
   void SetFilterPolicy(WebDocumentSubresourceFilter::LoadPolicy policy,
                        bool is_associated_with_ad_subframe = false) {
-    document->Loader()->SetSubresourceFilter(SubresourceFilter::Create(
-        *document, std::make_unique<FixedPolicySubresourceFilter>(
-                       policy, &filtered_load_callback_counter_,
-                       is_associated_with_ad_subframe)));
+    document->Loader()->SetSubresourceFilter(
+        MakeGarbageCollected<SubresourceFilter>(
+            document, std::make_unique<FixedPolicySubresourceFilter>(
+                          policy, &filtered_load_callback_counter_,
+                          is_associated_with_ad_subframe)));
   }
 
   base::Optional<ResourceRequestBlockedReason> CanRequest() {

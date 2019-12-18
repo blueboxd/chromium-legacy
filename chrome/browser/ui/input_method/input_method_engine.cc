@@ -23,12 +23,17 @@
 
 namespace {
 
+const char kErrorWrongContext[] = "Context is not active.";
 const char kErrorFollowCursorWindowExists[] =
     "A follow cursor IME window exists.";
 const char kErrorNoInputFocus[] =
     "The follow cursor IME window cannot be created without an input focus.";
 const char kErrorReachMaxWindowCount[] =
     "Cannot create more than 5 normal IME windows.";
+const char kErrorSentKeyEventsNotAllowed[] =
+    "input.ime.sendKeyEvents API is not allowed on non-text fields.";
+const char kErrorSpecialKeysNotAllowed[] =
+    "ENTER et al. keys are allowed only on http:, https: etc.";
 
 const int kMaxNormalWindowCount = 5;
 
@@ -120,25 +125,34 @@ void InputMethodEngine::CommitTextToInputContext(int context_id,
 }
 
 bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
-                                     const std::string& code) {
+                                     const std::string& code,
+                                     std::string* error) {
   DCHECK(event);
 
   // input.ime.sendKeyEvents API is only allowed to work on text fields.
-  if (current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
+  if (current_input_type_ == ui::TEXT_INPUT_TYPE_NONE) {
+    *error =
+        base::StringPrintf("%s current input type = %d",
+                           kErrorSentKeyEventsNotAllowed, current_input_type_);
     return false;
+  }
 
   if (event->key_code() == ui::VKEY_UNKNOWN)
     event->set_key_code(ui::DomCodeToUsLayoutKeyboardCode(event->code()));
 
   ui::IMEInputContextHandlerInterface* input_context =
       ui::IMEBridge::Get()->GetInputContextHandler();
-  if (!input_context)
+  if (!input_context) {
+    *error = kErrorWrongContext;
     return false;
+  }
 
   // ENTER et al. keys are allowed to work only on http:, https: etc.
   if (!IsValidKeyForAllPages(event)) {
-    if (IsSpecialPage(input_context->GetInputMethod()))
+    if (IsSpecialPage(input_context->GetInputMethod())) {
+      *error = kErrorSpecialKeysNotAllowed;
       return false;
+    }
   }
 
   input_context->SendKeyEvent(event);

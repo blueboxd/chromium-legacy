@@ -33,8 +33,9 @@ class MtpManagerClientChromeOS : public device::mojom::MtpManagerClient {
   bool GetStorageInfoForPath(const base::FilePath& path,
                              StorageInfo* storage_info) const;
 
-  void EjectDevice(const std::string& device_id,
-                   base::Callback<void(StorageMonitor::EjectStatus)> callback);
+  void EjectDevice(
+      const std::string& device_id,
+      base::OnceCallback<void(StorageMonitor::EjectStatus)> callback);
 
  protected:
   // device::mojom::MtpManagerClient implementation.

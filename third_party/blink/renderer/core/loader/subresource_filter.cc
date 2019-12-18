@@ -34,14 +34,6 @@ String GetErrorStringForDisallowedLoad(const KURL& url) {
 
 }  // namespace
 
-// static
-SubresourceFilter* SubresourceFilter::Create(
-    ExecutionContext& execution_context,
-    std::unique_ptr<WebDocumentSubresourceFilter> filter) {
-  return MakeGarbageCollected<SubresourceFilter>(&execution_context,
-                                                 std::move(filter));
-}
-
 SubresourceFilter::SubresourceFilter(
     ExecutionContext* execution_context,
     std::unique_ptr<WebDocumentSubresourceFilter> subresource_filter)

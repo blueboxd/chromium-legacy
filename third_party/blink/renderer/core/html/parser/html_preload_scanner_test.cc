@@ -146,7 +146,8 @@ class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
     PreloadRequestVerification(type, url, base_url, width, referrer_policy);
     Resource* resource = preload_request_->Start(document);
     ASSERT_TRUE(resource);
-    EXPECT_EQ(expected_referrer, resource->GetResourceRequest().HttpReferrer());
+    EXPECT_EQ(expected_referrer,
+              resource->GetResourceRequest().ReferrerString());
   }
 
   void PreconnectRequestVerification(const String& host,

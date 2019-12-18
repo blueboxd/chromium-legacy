@@ -85,7 +85,7 @@ class StorageMonitorLinux : public StorageMonitor {
   bool GetStorageInfoForPath(const base::FilePath& path,
                              StorageInfo* device_info) const override;
   void EjectDevice(const std::string& device_id,
-                   base::Callback<void(EjectStatus)> callback) override;
+                   base::OnceCallback<void(EjectStatus)> callback) override;
 
   // Called when the MtabWatcher has been created.
   void OnMtabWatcherCreated(std::unique_ptr<MtabWatcherLinux> watcher);

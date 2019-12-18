@@ -107,8 +107,8 @@ void FullCardRequest::GetFullCard(const CreditCard& card,
 
   if (should_unmask_card_) {
     risk_data_loader_->LoadRiskData(
-        base::Bind(&FullCardRequest::OnDidGetUnmaskRiskData,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&FullCardRequest::OnDidGetUnmaskRiskData,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

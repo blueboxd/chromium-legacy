@@ -53,8 +53,6 @@ class CORE_EXPORT LinkLoader final : public SingleModuleClient,
   USING_GARBAGE_COLLECTED_MIXIN(LinkLoader);
 
  public:
-  static LinkLoader* Create(LinkLoaderClient*);
-
   LinkLoader(LinkLoaderClient*, scoped_refptr<base::SingleThreadTaskRunner>);
   ~LinkLoader() override;
 

@@ -13,7 +13,8 @@ namespace {
 
 class LogManagerImpl : public LogManager {
  public:
-  LogManagerImpl(LogRouter* log_router, base::Closure notification_callback);
+  LogManagerImpl(LogRouter* log_router,
+                 base::RepeatingClosure notification_callback);
 
   ~LogManagerImpl() override;
 
@@ -35,16 +36,16 @@ class LogManagerImpl : public LogManager {
   bool is_suspended_ = false;
 
   // Called every time the logging activity status changes.
-  base::Closure notification_callback_;
+  base::RepeatingClosure notification_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(LogManagerImpl);
 };
 
 LogManagerImpl::LogManagerImpl(LogRouter* log_router,
-                               base::Closure notification_callback)
+                               base::RepeatingClosure notification_callback)
     : log_router_(log_router),
       can_use_log_router_(log_router_ && log_router_->RegisterManager(this)),
-      notification_callback_(notification_callback) {}
+      notification_callback_(std::move(notification_callback)) {}
 
 LogManagerImpl::~LogManagerImpl() {
   if (log_router_)
@@ -100,8 +101,9 @@ LogBufferSubmitter LogManagerImpl::Log() {
 // static
 std::unique_ptr<LogManager> LogManager::Create(
     LogRouter* log_router,
-    base::Closure notification_callback) {
-  return std::make_unique<LogManagerImpl>(log_router, notification_callback);
+    base::RepeatingClosure notification_callback) {
+  return std::make_unique<LogManagerImpl>(log_router,
+                                          std::move(notification_callback));
 }
 
 }  // namespace autofill

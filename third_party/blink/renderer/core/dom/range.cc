@@ -1631,7 +1631,7 @@ DOMRectList* Range::getClientRects() const {
   Vector<FloatQuad> quads;
   GetBorderAndTextQuads(quads);
 
-  return DOMRectList::Create(quads);
+  return MakeGarbageCollected<DOMRectList>(quads);
 }
 
 DOMRect* Range::getBoundingClientRect() const {

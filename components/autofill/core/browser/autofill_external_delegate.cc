@@ -239,7 +239,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
     AutofillMetrics::LogAutocompleteSuggestionAcceptedIndex(position);
     manager_->OnAutocompleteEntrySelected(value);
   } else if (identifier == POPUP_ITEM_ID_SCAN_CREDIT_CARD) {
-    manager_->client()->ScanCreditCard(base::Bind(
+    manager_->client()->ScanCreditCard(base::BindOnce(
         &AutofillExternalDelegate::OnCreditCardScanned, GetWeakPtr()));
   } else if (identifier == POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO) {
     manager_->client()->ExecuteCommand(identifier);

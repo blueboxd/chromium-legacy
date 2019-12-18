@@ -57,7 +57,7 @@ class KeyPressHandlerManagerTest : public testing::Test {
  protected:
   content::RenderWidgetHost::KeyPressEventCallback CallbackForName(
       const char* name) {
-    return base::Bind(DummyHandler, name, &callback_trace_);
+    return base::BindRepeating(DummyHandler, name, &callback_trace_);
   }
 
   // String encoding the events related to adding and removing callbacks. For

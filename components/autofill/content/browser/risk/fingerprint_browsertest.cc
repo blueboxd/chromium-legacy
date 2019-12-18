@@ -211,8 +211,8 @@ IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, GetFingerprint) {
       "25.0.0.123", kCharset, kAcceptLanguages, AutofillClock::Now(), kLocale,
       kUserAgent,
       base::TimeDelta::FromDays(1),  // Ought to be longer than any test run.
-      base::Bind(&AutofillRiskFingerprintTest::GetFingerprintTestCallback,
-                 base::Unretained(this), run_loop.QuitWhenIdleClosure()));
+      base::BindOnce(&AutofillRiskFingerprintTest::GetFingerprintTestCallback,
+                     base::Unretained(this), run_loop.QuitWhenIdleClosure()));
 
   // Wait for the callback to be called.
   run_loop.Run();

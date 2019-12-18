@@ -44,8 +44,9 @@ class LogManagerTest : public testing::Test {
  protected:
   void SetUp() override {
     manager_ = LogManager::Create(
-        &router_, base::Bind(&MockNotifiedObject::NotifyAboutLoggingActivity,
-                             base::Unretained(&notified_object_)));
+        &router_,
+        base::BindRepeating(&MockNotifiedObject::NotifyAboutLoggingActivity,
+                            base::Unretained(&notified_object_)));
   }
 
   void TearDown() override {
@@ -95,7 +96,7 @@ TEST_F(LogManagerTest, LogTextMessageDetachReceiver) {
 }
 
 TEST_F(LogManagerTest, NullCallbackWillNotCrash) {
-  manager_ = LogManager::Create(&router_, base::Closure());
+  manager_ = LogManager::Create(&router_, base::NullCallback());
   EXPECT_EQ(std::vector<base::Value>(), router_.RegisterReceiver(&receiver_));
   router_.UnregisterReceiver(&receiver_);
 }

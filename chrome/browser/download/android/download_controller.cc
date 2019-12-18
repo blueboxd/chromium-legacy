@@ -230,6 +230,18 @@ void DownloadController::RecordStoragePermission(StoragePermissionType type) {
 }
 
 // static
+void DownloadController::CloseTabIfEmpty(content::WebContents* web_contents) {
+  if (!web_contents)
+    return;
+
+  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+  if (tab && !tab->GetJavaObject().is_null()) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_DownloadController_closeTabIfBlank(env, tab->GetJavaObject());
+  }
+}
+
+// static
 DownloadController* DownloadController::GetInstance() {
   return base::Singleton<DownloadController>::get();
 }
@@ -341,11 +353,7 @@ void DownloadController::StartAndroidDownloadInternal(
       env, jurl, juser_agent, jfile_name, jmime_type, jcookie, jreferer);
 
   WebContents* web_contents = wc_getter.Run();
-  if (web_contents) {
-    TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
-    if (tab && !tab->GetJavaObject().is_null())
-      Java_DownloadController_closeTabIfBlank(env, tab->GetJavaObject());
-  }
+  CloseTabIfEmpty(web_contents);
 }
 
 bool DownloadController::HasFileAccessPermission() {
@@ -361,15 +369,6 @@ void DownloadController::OnDownloadStarted(DownloadItem* download_item) {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!download_item->IsDangerous())
     Java_DownloadController_onDownloadStarted(env);
-
-  WebContents* web_contents =
-      content::DownloadItemUtils::GetWebContents(download_item);
-  if (web_contents) {
-    TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
-    if (tab && !tab->GetJavaObject().is_null()) {
-      Java_DownloadController_closeTabIfBlank(env, tab->GetJavaObject());
-    }
-  }
 
   // Register for updates to the DownloadItem.
   download_item->RemoveObserver(this);

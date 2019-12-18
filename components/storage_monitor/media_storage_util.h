@@ -37,7 +37,7 @@ class MediaStorageUtil {
 
   // Removes disconnected devices from |devices| and then calls |done|.
   static void FilterAttachedDevices(DeviceIdSet* devices,
-                                    const base::Closure& done);
+                                    base::OnceClosure done);
 
   // Given |path|, fill in |device_info|, and |relative_path|
   // (from the root of the device).

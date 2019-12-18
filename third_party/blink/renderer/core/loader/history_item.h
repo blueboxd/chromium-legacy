@@ -50,8 +50,6 @@ enum class FetchCacheMode : int32_t;
 
 class CORE_EXPORT HistoryItem final : public GarbageCollected<HistoryItem> {
  public:
-  static HistoryItem* Create() { return MakeGarbageCollected<HistoryItem>(); }
-
   HistoryItem();
   ~HistoryItem();
 

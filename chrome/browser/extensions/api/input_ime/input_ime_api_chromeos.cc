@@ -12,6 +12,7 @@
 #include "ash/public/cpp/keyboard/keyboard_config.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/input_method/native_input_method_engine.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
@@ -699,9 +700,11 @@ ExtensionFunction::ResponseAction InputImeSetMenuItemsFunction::Run() {
     SetMenuItemToMenu(item_in, &items_out.back());
   }
 
-  if (!engine->SetMenuItems(items_out))
-    return RespondNow(
-        Error(InformativeError(kErrorSetMenuItemsFail, function_name())));
+  if (!engine->SetMenuItems(items_out, &error)) {
+    return RespondNow(Error(InformativeError(
+        base::StringPrintf("%s %s", kErrorSetMenuItemsFail, error.c_str()),
+        function_name())));
+  }
   return RespondNow(NoArguments());
 }
 
@@ -724,9 +727,11 @@ ExtensionFunction::ResponseAction InputImeUpdateMenuItemsFunction::Run() {
     SetMenuItemToMenu(item_in, &items_out.back());
   }
 
-  if (!engine->UpdateMenuItems(items_out))
-    return RespondNow(
-        Error(InformativeError(kErrorUpdateMenuItemsFail, function_name())));
+  if (!engine->UpdateMenuItems(items_out, &error)) {
+    return RespondNow(Error(InformativeError(
+        base::StringPrintf("%s %s", kErrorUpdateMenuItemsFail, error.c_str()),
+        function_name())));
+  }
   return RespondNow(NoArguments());
 }
 

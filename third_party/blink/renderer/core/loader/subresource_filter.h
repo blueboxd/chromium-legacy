@@ -26,10 +26,6 @@ class KURL;
 class CORE_EXPORT SubresourceFilter final
     : public GarbageCollected<SubresourceFilter> {
  public:
-  static SubresourceFilter* Create(
-      ExecutionContext&,
-      std::unique_ptr<WebDocumentSubresourceFilter>);
-
   SubresourceFilter(ExecutionContext*,
                     std::unique_ptr<WebDocumentSubresourceFilter>);
   ~SubresourceFilter();

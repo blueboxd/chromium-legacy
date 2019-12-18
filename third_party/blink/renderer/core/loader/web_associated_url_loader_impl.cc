@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -368,7 +369,18 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
       new_request.SetHttpMethod(FetchUtils::NormalizeMethod(method));
       HTTPRequestHeaderValidator validator;
       new_request.VisitHttpHeaderFields(&validator);
-      allow_load = validator.IsSafe();
+
+      // The request's referrer string is not stored as a header, so we must
+      // consult it separately, if set.
+      if (request.ReferrerString() !=
+          blink::WebString(Referrer::ClientReferrerString())) {
+        DCHECK(cors::IsForbiddenHeaderName("Referer"));
+        // `Referer` is a forbidden header name, so we must disallow this to
+        // load.
+        allow_load = false;
+      }
+
+      allow_load = allow_load && validator.IsSafe();
     }
   }
   new_request.ToMutableResourceRequest().SetCorsPreflightPolicy(

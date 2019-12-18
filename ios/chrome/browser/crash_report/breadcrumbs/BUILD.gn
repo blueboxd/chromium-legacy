@@ -30,6 +30,8 @@ source_set("breadcrumbs") {
     "breadcrumb_manager_keyed_service_factory.cc",
     "breadcrumb_manager_keyed_service_factory.h",
     "breadcrumb_manager_observer.h",
+    "breadcrumb_manager_tab_helper.h",
+    "breadcrumb_manager_tab_helper.mm",
     "breadcrumb_persistent_storage_keyed_service.cc",
     "breadcrumb_persistent_storage_keyed_service.h",
     "breadcrumb_persistent_storage_keyed_service_factory.cc",
@@ -57,6 +59,7 @@ source_set("unit_tests") {
   sources = [
     "breadcrumb_manager_keyed_service_unittest.mm",
     "breadcrumb_manager_observer_unittest.mm",
+    "breadcrumb_manager_tab_helper_unittest.mm",
     "breadcrumb_persistent_storage_keyed_service_unittest.mm",
     "breadcrumb_persistent_storage_util_unittest.mm",
   ]

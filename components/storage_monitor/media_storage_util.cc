@@ -99,14 +99,14 @@ bool MediaStorageUtil::CanCreateFileSystem(const std::string& device_id,
 
 // static
 void MediaStorageUtil::FilterAttachedDevices(DeviceIdSet* devices,
-                                             const base::Closure& done) {
+                                             base::OnceClosure done) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::PostTaskAndReply(
       FROM_HERE,
       {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&FilterAttachedDevicesOnBackgroundSequence, devices),
-      done);
+      std::move(done));
 }
 
 // TODO(kmadhusu) Write unit tests for GetDeviceInfoFromPath().

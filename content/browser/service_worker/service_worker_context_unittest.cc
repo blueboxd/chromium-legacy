@@ -168,7 +168,14 @@ class ServiceWorkerContextTest : public ServiceWorkerContextCoreObserver,
     helper_->context_wrapper()->AddObserver(this);
   }
 
-  void TearDown() override { helper_.reset(); }
+  void TearDown() override {
+    helper_.reset();
+    // The helper may post tasks to release resources in |temp_dir_|. Allow
+    // them to run now so that the directory may be deleted.
+    task_environment_.RunUntilIdle();
+    EXPECT_TRUE(!temp_dir_.IsValid() || temp_dir_.Delete())
+        << temp_dir_.GetPath();
+  }
 
   // ServiceWorkerContextCoreObserver overrides.
   void OnRegistrationCompleted(int64_t registration_id,
@@ -205,8 +212,14 @@ class ServiceWorkerContextTest : public ServiceWorkerContextCoreObserver,
   ServiceWorkerContextWrapper* context_wrapper() {
     return helper_->context_wrapper();
   }
+  void GetTemporaryDirectory(base::FilePath* temp_dir) {
+    ASSERT_FALSE(temp_dir_.IsValid());
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    *temp_dir = temp_dir_.GetPath();
+  }
 
  protected:
+  base::ScopedTempDir temp_dir_;
   BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   std::vector<NotificationLog> notifications_;
@@ -1062,9 +1075,9 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
 
   if (is_storage_on_disk()) {
     // Reinitialize the helper to test on-disk storage.
-    base::ScopedTempDir user_data_directory;
-    ASSERT_TRUE(user_data_directory.CreateUniqueTempDir());
-    helper_.reset(new EmbeddedWorkerTestHelper(user_data_directory.GetPath()));
+    base::FilePath user_data_directory;
+    ASSERT_NO_FATAL_FAILURE(GetTemporaryDirectory(&user_data_directory));
+    helper_.reset(new EmbeddedWorkerTestHelper(user_data_directory));
     helper_->context_wrapper()->AddObserver(this);
   }
 

@@ -59,7 +59,7 @@ class StorageMonitorCros : public StorageMonitor,
   bool GetStorageInfoForPath(const base::FilePath& path,
                              StorageInfo* device_info) const override;
   void EjectDevice(const std::string& device_id,
-                   base::Callback<void(EjectStatus)> callback) override;
+                   base::OnceCallback<void(EjectStatus)> callback) override;
   device::mojom::MtpManager* media_transfer_protocol_manager() override;
 
  private:

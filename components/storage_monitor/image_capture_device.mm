@@ -224,9 +224,9 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::Bind(&storage_monitor::RenameFile, savedPath, saveAsPath),
-      base::Bind(&storage_monitor::ReturnRenameResultToListener, _listener,
-                 name));
+      base::BindOnce(&storage_monitor::RenameFile, savedPath, saveAsPath),
+      base::BindOnce(&storage_monitor::ReturnRenameResultToListener, _listener,
+                     name));
 }
 
 // MacOS 10.14 SDK methods, not yet implemented (https://crbug.com/849689)

@@ -90,18 +90,19 @@ scoped_refptr<WebDatabaseBackend> WebDatabaseService::GetBackend() const {
 }
 
 void WebDatabaseService::ScheduleDBTask(const base::Location& from_here,
-                                        const WriteTask& task) {
+                                        WriteTask task) {
   DCHECK(web_db_backend_);
   std::unique_ptr<WebDataRequest> request =
       web_db_backend_->request_manager()->NewRequest(nullptr);
   db_task_runner_->PostTask(
-      from_here, BindOnce(&WebDatabaseBackend::DBWriteTaskWrapper,
-                          web_db_backend_, task, std::move(request)));
+      from_here,
+      BindOnce(&WebDatabaseBackend::DBWriteTaskWrapper, web_db_backend_,
+               std::move(task), std::move(request)));
 }
 
 WebDataServiceBase::Handle WebDatabaseService::ScheduleDBTaskWithResult(
     const base::Location& from_here,
-    const ReadTask& task,
+    ReadTask task,
     WebDataServiceConsumer* consumer) {
   DCHECK(consumer);
   DCHECK(web_db_backend_);
@@ -109,8 +110,9 @@ WebDataServiceBase::Handle WebDatabaseService::ScheduleDBTaskWithResult(
       web_db_backend_->request_manager()->NewRequest(consumer);
   WebDataServiceBase::Handle handle = request->GetHandle();
   db_task_runner_->PostTask(
-      from_here, BindOnce(&WebDatabaseBackend::DBReadTaskWrapper,
-                          web_db_backend_, task, std::move(request)));
+      from_here,
+      BindOnce(&WebDatabaseBackend::DBReadTaskWrapper, web_db_backend_,
+               std::move(task), std::move(request)));
   return handle;
 }
 

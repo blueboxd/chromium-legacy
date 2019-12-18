@@ -64,8 +64,8 @@ void TestStorageMonitor::SyncInitialize() {
 
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
-  monitor->EnsureInitialized(base::Bind(&base::WaitableEvent::Signal,
-                             base::Unretained(&event)));
+  monitor->EnsureInitialized(
+      base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&event)));
   while (!event.IsSignaled()) {
     base::RunLoop().RunUntilIdle();
   }
@@ -128,9 +128,9 @@ StorageMonitor::Receiver* TestStorageMonitor::receiver() const {
 
 void TestStorageMonitor::EjectDevice(
     const std::string& device_id,
-    base::Callback<void(EjectStatus)> callback) {
+    base::OnceCallback<void(EjectStatus)> callback) {
   ejected_device_ = device_id;
-  callback.Run(EJECT_OK);
+  std::move(callback).Run(EJECT_OK);
 }
 
 void TestStorageMonitor::AddRemovablePath(const base::FilePath& path) {

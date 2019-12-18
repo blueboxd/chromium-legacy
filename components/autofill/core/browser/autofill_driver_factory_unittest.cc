@@ -93,9 +93,10 @@ class AutofillDriverFactoryTest : public testing::Test {
     return std::make_unique<CountingAutofillDriver>(instance_counter_.val());
   }
 
-  base::Callback<std::unique_ptr<AutofillDriver>()> CreateDriverCallback() {
-    return base::Bind(&AutofillDriverFactoryTest::CreateDriver,
-                      base::Unretained(this));
+  base::RepeatingCallback<std::unique_ptr<AutofillDriver>()>
+  CreateDriverCallback() {
+    return base::BindRepeating(&AutofillDriverFactoryTest::CreateDriver,
+                               base::Unretained(this));
   }
 
  protected:

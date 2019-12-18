@@ -25,9 +25,8 @@ class CreditCardScannerController {
   // |web_contents|. Notifies the |delegate| when scanning completes
   // successfully. Destroys itself when the UI is dismissed. Should be called
   // only if HasCreditCardScanScanFeature() returns true.
-  static void ScanCreditCard(
-      content::WebContents* web_contents,
-      const AutofillClient::CreditCardScanCallback& callback);
+  static void ScanCreditCard(content::WebContents* web_contents,
+                             AutofillClient::CreditCardScanCallback callback);
 };
 
 }  // namespace autofill

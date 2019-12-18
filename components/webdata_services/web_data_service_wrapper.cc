@@ -120,11 +120,11 @@ WebDataServiceWrapper::WebDataServiceWrapper(
 #endif
 
   profile_autofill_web_data_->GetAutofillBackend(
-      base::Bind(&InitAutofillSyncBridgesOnDBSequence, db_task_runner,
-                 profile_autofill_web_data_, application_locale));
-  profile_autofill_web_data_->GetAutofillBackend(
-      base::Bind(&InitWalletSyncBridgesOnDBSequence, db_task_runner,
-                 profile_autofill_web_data_, context_path, application_locale));
+      base::BindOnce(&InitAutofillSyncBridgesOnDBSequence, db_task_runner,
+                     profile_autofill_web_data_, application_locale));
+  profile_autofill_web_data_->GetAutofillBackend(base::BindOnce(
+      &InitWalletSyncBridgesOnDBSequence, db_task_runner,
+      profile_autofill_web_data_, context_path, application_locale));
 
   if (base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableAccountWalletStorage)) {
@@ -139,7 +139,7 @@ WebDataServiceWrapper::WebDataServiceWrapper(
             account_database_, ui_task_runner, db_task_runner);
     account_autofill_web_data_->Init(
         base::BindOnce(show_error_callback, ERROR_LOADING_ACCOUNT_AUTOFILL));
-    account_autofill_web_data_->GetAutofillBackend(base::Bind(
+    account_autofill_web_data_->GetAutofillBackend(base::BindOnce(
         &InitWalletSyncBridgesOnDBSequence, db_task_runner,
         account_autofill_web_data_, context_path, application_locale));
   }

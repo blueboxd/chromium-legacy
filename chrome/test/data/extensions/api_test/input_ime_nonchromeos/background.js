@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var failToSendKeyEvents = `Could not send key events.
+var failToSendKeyEvents = `Could not send key events. ENTER et al. keys are allowed only on http:, https: etc.
 Thrown by input.ime.sendKeyEvents`;
 
 chrome.test.runTests([

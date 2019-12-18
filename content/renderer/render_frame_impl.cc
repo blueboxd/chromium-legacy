@@ -529,8 +529,7 @@ mojom::CommonNavigationParamsPtr MakeCommonNavigationParams(
   DCHECK(!info->url_request.RequestorOrigin().IsNull());
 
   blink::mojom::ReferrerPtr referrer = blink::mojom::Referrer::New(
-      GURL(info->url_request.HttpHeaderField(WebString::FromUTF8("Referer"))
-               .Latin1()),
+      blink::WebStringToGURL(info->url_request.ReferrerString()),
       info->url_request.GetReferrerPolicy());
 
   // No history-navigation is expected to happen.
@@ -4352,7 +4351,9 @@ void RenderFrameImpl::DownloadURL(
   } else {
     params.url = url;
   }
-  params.referrer = RenderViewImpl::GetReferrerFromRequest(frame_, request);
+
+  params.referrer.url = blink::WebStringToGURL(request.ReferrerString());
+  params.referrer.policy = request.GetReferrerPolicy();
   params.initiator_origin = request.RequestorOrigin();
   if (request.GetSuggestedFilename().has_value())
     params.suggested_name = request.GetSuggestedFilename()->Utf16();
@@ -4978,9 +4979,10 @@ void RenderFrameImpl::WillSendRequestInternal(
     blink::WebURLRequest& request,
     ResourceType resource_type,
     ui::PageTransition transition_type) {
-  if (render_view_->renderer_preferences_.enable_do_not_track)
+  if (render_view_->renderer_preferences_.enable_do_not_track) {
     request.SetHttpHeaderField(blink::WebString::FromUTF8(kDoNotTrackHeader),
                                "1");
+  }
 
   ApplyFilePathAlias(&request);
   GURL new_url;
@@ -5053,9 +5055,10 @@ void RenderFrameImpl::WillSendRequestInternal(
   request.SetHasUserGesture(
       WebUserGestureIndicator::IsProcessingUserGesture(frame_));
 
-  if (!render_view_->renderer_preferences_.enable_referrers)
-    request.SetHttpReferrer(WebString(),
-                            network::mojom::ReferrerPolicy::kNever);
+  if (!render_view_->renderer_preferences_.enable_referrers) {
+    request.SetReferrerString(WebString());
+    request.SetReferrerPolicy(network::mojom::ReferrerPolicy::kNever);
+  }
 }
 
 void RenderFrameImpl::DidLoadResourceFromMemoryCache(
@@ -6309,8 +6312,9 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {
   params.post_body = GetRequestBodyForWebURLRequest(info->url_request);
   DCHECK_EQ(!!params.post_body, IsHttpPost(info->url_request));
   params.extra_headers = GetWebURLRequestHeadersAsString(info->url_request);
-  params.referrer =
-      RenderViewImpl::GetReferrerFromRequest(frame_, info->url_request);
+  params.referrer.url =
+      blink::WebStringToGURL(info->url_request.ReferrerString());
+  params.referrer.policy = info->url_request.GetReferrerPolicy();
   params.disposition = RenderViewImpl::NavigationPolicyToDisposition(policy);
   params.triggering_event_info = info->triggering_event_info;
   params.blob_url_token =

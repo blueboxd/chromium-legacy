@@ -20,6 +20,11 @@ namespace content {
 
 void GpuChildThread::BindServiceInterface(
     mojo::GenericPendingReceiver receiver) {
+  if (!service_factory_) {
+    pending_service_receivers_.push_back(std::move(receiver));
+    return;
+  }
+
   if (auto shape_detection_receiver =
           receiver.As<shape_detection::mojom::ShapeDetectionService>()) {
     static base::NoDestructor<shape_detection::ShapeDetectionService> service{

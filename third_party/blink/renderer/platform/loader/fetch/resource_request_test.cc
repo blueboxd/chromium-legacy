@@ -33,7 +33,7 @@ TEST(ResourceRequestTest, SetIsAdResource) {
   std::unique_ptr<ResourceRequest> redirect_request =
       original.CreateRedirectRequest(
           KURL("https://example.test/redirect"), original.HttpMethod(),
-          original.SiteForCookies(), original.HttpReferrer(),
+          original.SiteForCookies(), original.ReferrerString(),
           original.GetReferrerPolicy(), original.GetSkipServiceWorker());
   EXPECT_TRUE(redirect_request->IsAdResource());
 }
@@ -48,7 +48,7 @@ TEST(ResourceRequestTest, UpgradeIfInsecureAcrossRedirects) {
   std::unique_ptr<ResourceRequest> redirect_request =
       original.CreateRedirectRequest(
           KURL("https://example.test/redirect"), original.HttpMethod(),
-          original.SiteForCookies(), original.HttpReferrer(),
+          original.SiteForCookies(), original.ReferrerString(),
           original.GetReferrerPolicy(), original.GetSkipServiceWorker());
   EXPECT_TRUE(redirect_request->UpgradeIfInsecure());
 }

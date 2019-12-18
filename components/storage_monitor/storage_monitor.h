@@ -94,7 +94,7 @@ class StorageMonitor {
   // |GetStorageInfoForPath| may not return the correct results. In addition,
   // registered observers will not be notified on device attachment/detachment.
   // Callbacks will run on the same sequence as the rest of the class.
-  void EnsureInitialized(base::Closure callback);
+  void EnsureInitialized(base::OnceClosure callback);
 
   // Return true if the storage monitor has already been initialized.
   bool IsInitialized() const;
@@ -134,9 +134,8 @@ class StorageMonitor {
   std::string GetTransientIdForDeviceId(const std::string& device_id);
   std::string GetDeviceIdForTransientId(const std::string& transient_id) const;
 
-  virtual void EjectDevice(
-      const std::string& device_id,
-      base::Callback<void(EjectStatus)> callback);
+  virtual void EjectDevice(const std::string& device_id,
+                           base::OnceCallback<void(EjectStatus)> callback);
 
  protected:
   friend class ::MediaFileSystemRegistryTest;
@@ -177,7 +176,7 @@ class StorageMonitor {
 
   bool initializing_;
   bool initialized_;
-  std::vector<base::Closure> on_initialize_callbacks_;
+  std::vector<base::OnceClosure> on_initialize_callbacks_;
 
   // For manipulating storage_map_ structure.
   mutable base::Lock storage_lock_;

@@ -307,33 +307,20 @@ std::unique_ptr<TracedValue> ResourcePrioritySetData(
 void SetReferrer(
     ResourceRequest& request,
     const FetchClientSettingsObject& fetch_client_settings_object) {
-  if (!request.DidSetHttpReferrer()) {
-    String referrer_to_use = request.ReferrerString();
-    network::mojom::ReferrerPolicy referrer_policy_to_use =
-        request.GetReferrerPolicy();
+  String referrer_to_use = request.ReferrerString();
+  network::mojom::ReferrerPolicy referrer_policy_to_use =
+      request.GetReferrerPolicy();
 
-    if (referrer_to_use == Referrer::ClientReferrerString())
-      referrer_to_use = fetch_client_settings_object.GetOutgoingReferrer();
+  if (referrer_to_use == Referrer::ClientReferrerString())
+    referrer_to_use = fetch_client_settings_object.GetOutgoingReferrer();
 
-    if (referrer_policy_to_use == network::mojom::ReferrerPolicy::kDefault)
-      referrer_policy_to_use = fetch_client_settings_object.GetReferrerPolicy();
+  if (referrer_policy_to_use == network::mojom::ReferrerPolicy::kDefault)
+    referrer_policy_to_use = fetch_client_settings_object.GetReferrerPolicy();
 
-    request.SetReferrerString(referrer_to_use);
-    request.SetReferrerPolicy(referrer_policy_to_use);
-    // TODO(domfarolino): Stop storing ResourceRequest's referrer as a header
-    // and store it elsewhere. See https://crbug.com/850813.
-    request.SetHttpReferrer(SecurityPolicy::GenerateReferrer(
-        referrer_policy_to_use, request.Url(), referrer_to_use));
-  } else {
-    // In the case of stale requests that are being revalidated, these requests
-    // will already have their HttpReferrer set, and we will end up here. We
-    // won't regenerate the referrer, but instead check that it's still correct.
-    CHECK_EQ(SecurityPolicy::GenerateReferrer(request.GetReferrerPolicy(),
-                                              request.Url(),
-                                              request.ReferrerString())
-                 .referrer,
-             request.HttpReferrer());
-  }
+  Referrer generated_referrer = SecurityPolicy::GenerateReferrer(
+      referrer_policy_to_use, request.Url(), referrer_to_use);
+  request.SetReferrerString(generated_referrer.referrer);
+  request.SetReferrerPolicy(generated_referrer.referrer_policy);
 }
 
 void SetSecFetchHeaders(

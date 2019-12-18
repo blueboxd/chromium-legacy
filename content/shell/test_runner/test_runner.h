@@ -131,6 +131,7 @@ class TestRunner : public WebTestRunner {
   bool ShouldDumpSpellCheckCallbacks() const;
   bool ShouldWaitUntilExternalURLLoad() const;
   const std::set<std::string>* HttpHeadersToClear() const;
+  bool ClearReferrer() const;
   bool is_web_platform_tests_mode() const {
     return is_web_platform_tests_mode_;
   }
@@ -407,7 +408,14 @@ class TestRunner : public WebTestRunner {
   void SetShouldStayOnPageAfterHandlingBeforeUnload(bool value);
 
   // Causes WillSendRequest to clear certain headers.
+  // Note: This cannot be used to clear the request's `Referer` header, as this
+  // header is computed later given its referrer string member. To clear it, use
+  // SetWillSendRequestClearReferrer() below.
   void SetWillSendRequestClearHeader(const std::string& header);
+
+  // Causes WillSendRequest to clear the request's referrer string and set its
+  // referrer policy to the default.
+  void SetWillSendRequestClearReferrer();
 
   // Sets a flag that causes the test to be marked as completed when the
   // WebLocalFrameClient receives a LoadURLExternally() call.
@@ -542,6 +550,7 @@ class TestRunner : public WebTestRunner {
   bool sweep_horizontally_;
 
   std::set<std::string> http_headers_to_clear_;
+  bool clear_referrer_ = false;
 
   // WAV audio data is stored here.
   std::vector<unsigned char> audio_data_;

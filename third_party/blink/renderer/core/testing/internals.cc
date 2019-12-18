@@ -2225,7 +2225,7 @@ DOMRectList* Internals::nonFastScrollableRects(
     }
   }
 
-  return DOMRectList::Create(layer_non_fast_scrollable_rects);
+  return MakeGarbageCollected<DOMRectList>(layer_non_fast_scrollable_rects);
 }
 
 void Internals::evictAllResources() const {
@@ -2583,7 +2583,7 @@ DOMRectList* Internals::AnnotatedRegions(Document* document,
   if (!document->View()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
                                       "The document provided is invalid.");
-    return DOMRectList::Create();
+    return MakeGarbageCollected<DOMRectList>();
   }
 
   document->UpdateStyleAndLayout();
@@ -2595,7 +2595,7 @@ DOMRectList* Internals::AnnotatedRegions(Document* document,
     if (region.draggable == draggable)
       quads.push_back(FloatQuad(FloatRect(region.bounds)));
   }
-  return DOMRectList::Create(quads);
+  return MakeGarbageCollected<DOMRectList>(quads);
 }
 
 static const char* CursorTypeToString(ui::CursorType cursor_type) {

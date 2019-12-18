@@ -29,7 +29,7 @@ std::unique_ptr<WebNavigationParams> WebNavigationParams::CreateFromInfo(
   auto result = std::make_unique<WebNavigationParams>();
   result->url = info.url_request.Url();
   result->http_method = info.url_request.HttpMethod();
-  result->referrer = info.url_request.HttpHeaderField(http_names::kReferer);
+  result->referrer = info.url_request.ReferrerString();
   result->referrer_policy = info.url_request.GetReferrerPolicy();
   result->http_body = info.url_request.HttpBody();
   result->http_content_type =

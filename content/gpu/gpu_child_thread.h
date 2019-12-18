@@ -102,8 +102,12 @@ class GpuChildThread : public ChildThreadImpl,
 
   viz::VizMainImpl viz_main_;
 
-  // ServiceFactory for service_manager::Service hosting.
+  // ServiceFactory for Mojo service hosting.
   std::unique_ptr<GpuServiceFactory> service_factory_;
+
+  // A queue of incoming service interface requests received prior to
+  // |service_factory_| initialization.
+  std::vector<mojo::GenericPendingReceiver> pending_service_receivers_;
 
   blink::AssociatedInterfaceRegistry associated_interfaces_;
 

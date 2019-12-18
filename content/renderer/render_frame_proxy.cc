@@ -744,11 +744,8 @@ void RenderFrameProxy::Navigate(const blink::WebURLRequest& request,
   params.post_body = GetRequestBodyForWebURLRequest(request);
   DCHECK_EQ(!!params.post_body, request.HttpMethod().Utf8() == "POST");
   params.extra_headers = GetWebURLRequestHeadersAsString(request);
-  // TODO(domfarolino): Retrieve the referrer in the form of a referrer member
-  // instead of the header field. See https://crbug.com/850813.
-  params.referrer = Referrer(blink::WebStringToGURL(request.HttpHeaderField(
-                                 blink::WebString::FromUTF8("Referer"))),
-                             request.GetReferrerPolicy());
+  params.referrer.url = blink::WebStringToGURL(request.ReferrerString());
+  params.referrer.policy = request.GetReferrerPolicy();
   params.disposition = WindowOpenDisposition::CURRENT_TAB;
   params.should_replace_current_entry = should_replace_current_entry;
   params.user_gesture = request.HasUserGesture();

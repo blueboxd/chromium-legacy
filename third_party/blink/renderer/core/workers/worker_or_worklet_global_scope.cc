@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/detachable_use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/null_resource_fetcher_properties.h"
@@ -272,7 +273,7 @@ void WorkerOrWorkletGlobalScope::InitializeWebFetchContextIfNeeded() {
       web_worker_fetch_context_->TakeSubresourceFilter();
   if (web_filter) {
     subresource_filter_ =
-        SubresourceFilter::Create(*this, std::move(web_filter));
+        MakeGarbageCollected<SubresourceFilter>(this, std::move(web_filter));
   }
 }
 

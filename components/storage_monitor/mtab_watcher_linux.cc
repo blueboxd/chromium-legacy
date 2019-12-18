@@ -41,8 +41,8 @@ MtabWatcherLinux::MtabWatcherLinux(const base::FilePath& mtab_path,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool ret = file_watcher_.Watch(
       mtab_path_, false,
-      base::Bind(&MtabWatcherLinux::OnFilePathChanged,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&MtabWatcherLinux::OnFilePathChanged,
+                          weak_ptr_factory_.GetWeakPtr()));
   if (!ret) {
     LOG(ERROR) << "Adding watch for " << mtab_path_.value() << " failed";
     return;

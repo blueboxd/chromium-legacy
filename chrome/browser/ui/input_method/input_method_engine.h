@@ -40,7 +40,11 @@ class InputMethodEngine : public InputMethodEngineBase,
 
   void CommitTextToInputContext(int context_id,
                                 const std::string& text) override;
-  bool SendKeyEvent(ui::KeyEvent* ui_event, const std::string& code) override;
+
+  bool SendKeyEvent(ui::KeyEvent* ui_event,
+                    const std::string& code,
+                    std::string* error) override;
+
   bool IsActive() const override;
 
   std::string GetExtensionId() const;

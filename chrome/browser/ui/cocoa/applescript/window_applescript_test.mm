@@ -174,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(WindowAppleScriptTest, ActiveTab) {
 }
 
 // Order of windows.
-IN_PROC_BROWSER_TEST_F(WindowAppleScriptTest, WindowOrder) {
+IN_PROC_BROWSER_TEST_F(WindowAppleScriptTest, DISABLED_WindowOrder) {
   base::scoped_nsobject<WindowAppleScript> window2(
       [[WindowAppleScript alloc] initWithBrowser:browser()]);
   base::scoped_nsobject<WindowAppleScript> window1(

@@ -419,9 +419,11 @@ ExtensionFunction::ResponseAction InputImeSendKeyEventsFunction::Run() {
     event.shift_key = key_event.shift_key ? *(key_event.shift_key) : false;
     event.caps_lock = key_event.caps_lock ? *(key_event.caps_lock) : false;
   }
-  if (!engine->SendKeyEvents(params.context_id, key_data_out))
-    return RespondNow(
-        Error(InformativeError(kErrorSetKeyEventsFail, function_name())));
+
+  if (!engine->SendKeyEvents(params.context_id, key_data_out, &error))
+    return RespondNow(Error(InformativeError(
+        base::StringPrintf("%s %s", kErrorSetKeyEventsFail, error.c_str()),
+        function_name())));
   return RespondNow(NoArguments());
 }
 

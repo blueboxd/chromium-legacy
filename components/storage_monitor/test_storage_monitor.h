@@ -60,7 +60,7 @@ class TestStorageMonitor : public StorageMonitor {
 
   void EjectDevice(
       const std::string& device_id,
-      base::Callback<void(StorageMonitor::EjectStatus)> callback) override;
+      base::OnceCallback<void(StorageMonitor::EjectStatus)> callback) override;
 
   const std::string& ejected_device() const { return ejected_device_; }
 

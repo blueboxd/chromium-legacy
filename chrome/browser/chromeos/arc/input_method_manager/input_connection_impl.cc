@@ -271,7 +271,10 @@ void InputConnectionImpl::SendKeyEvent(mojom::KeyEventDataPtr data_ptr) {
   event.shift_key = data_ptr->is_shift_down;
   event.caps_lock = data_ptr->is_capslock_on;
 
-  ime_engine_->SendKeyEvents(input_context_id_, {event});
+  std::string error;
+  if (!ime_engine_->SendKeyEvents(input_context_id_, {event}, &error)) {
+    LOG(ERROR) << error;
+  }
 }
 
 void InputConnectionImpl::SetCompositionRange(
@@ -330,7 +333,11 @@ void InputConnectionImpl::SendControlKeyEvent(const base::string16& text) {
       press.key = press.code = std::get<2>(t);
       chromeos::InputMethodEngine::KeyboardEvent release(press);
       release.type = "keyup";
-      ime_engine_->SendKeyEvents(input_context_id_, {press, release});
+      std::string error;
+      if (!ime_engine_->SendKeyEvents(input_context_id_, {press, release},
+                                      &error)) {
+        LOG(ERROR) << error;
+      }
       break;
     }
   }

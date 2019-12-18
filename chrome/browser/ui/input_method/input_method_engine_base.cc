@@ -39,9 +39,9 @@ namespace input_method {
 
 namespace {
 
-const char kErrorNotActive[] = "IME is not active";
-const char kErrorWrongContext[] = "Context is not active";
-const char kErrorInvalidValue[] = "Argument '%s' with value '%d' is not valid";
+const char kErrorNotActive[] = "IME is not active.";
+const char kErrorWrongContext[] = "Context is not active.";
+const char kErrorInvalidValue[] = "Argument '%s' with value '%d' is not valid.";
 
 #if defined(OS_CHROMEOS)
 std::string GetKeyFromEvent(const ui::KeyEvent& event) {
@@ -284,7 +284,9 @@ bool InputMethodEngineBase::ClearComposition(int context_id,
     return false;
   }
   if (context_id != context_id_ || context_id_ == -1) {
-    *error = kErrorWrongContext;
+    *error = base::StringPrintf(
+        "%s request context id = %d, current context id = %d",
+        kErrorWrongContext, context_id, context_id_);
     return false;
   }
 
@@ -301,7 +303,9 @@ bool InputMethodEngineBase::CommitText(int context_id,
     return false;
   }
   if (context_id != context_id_ || context_id_ == -1) {
-    *error = kErrorWrongContext;
+    *error = base::StringPrintf(
+        "%s request context id = %d, current context id = %d",
+        kErrorWrongContext, context_id, context_id_);
     return false;
   }
 
@@ -312,7 +316,9 @@ bool InputMethodEngineBase::CommitText(int context_id,
 bool InputMethodEngineBase::FinishComposingText(int context_id,
                                                 std::string* error) {
   if (context_id != context_id_ || context_id_ == -1) {
-    *error = kErrorWrongContext;
+    *error = base::StringPrintf(
+        "%s request context id = %d, current context id = %d",
+        kErrorWrongContext, context_id, context_id_);
     return false;
   }
   ConfirmCompositionText(/* reset_engine */ false, /* keep_selection */ true);
@@ -328,7 +334,9 @@ bool InputMethodEngineBase::DeleteSurroundingText(int context_id,
     return false;
   }
   if (context_id != context_id_ || context_id_ == -1) {
-    *error = kErrorWrongContext;
+    *error = base::StringPrintf(
+        "%s request context id = %d, current context id = %d",
+        kErrorWrongContext, context_id, context_id_);
     return false;
   }
 
@@ -341,12 +349,20 @@ bool InputMethodEngineBase::DeleteSurroundingText(int context_id,
 
 bool InputMethodEngineBase::SendKeyEvents(
     int context_id,
-    const std::vector<KeyboardEvent>& events) {
+    const std::vector<KeyboardEvent>& events,
+    std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
+    return false;
+  }
   // context_id  ==  0, means sending key events to non-input field.
   // context_id_ == -1, means the focus is not in an input field.
-  if (!IsActive() ||
-      (context_id != 0 && (context_id != context_id_ || context_id_ == -1)))
+  if ((context_id != 0 && (context_id != context_id_ || context_id_ == -1))) {
+    *error = base::StringPrintf(
+        "%s request context id = %d, current context id = %d",
+        kErrorWrongContext, context_id, context_id_);
     return false;
+  }
 
   for (size_t i = 0; i < events.size(); ++i) {
     const KeyboardEvent& event = events[i];
@@ -365,7 +381,7 @@ bool InputMethodEngineBase::SendKeyEvents(
         type, key_code, ui::KeycodeConverter::CodeStringToDomCode(event.code),
         flags, ui::KeycodeConverter::KeyStringToDomKey(event.key),
         ui::EventTimeForNow());
-    if (!SendKeyEvent(&ui_event, event.code))
+    if (!SendKeyEvent(&ui_event, event.code, error))
       return false;
   }
   return true;
@@ -384,7 +400,9 @@ bool InputMethodEngineBase::SetComposition(
     return false;
   }
   if (context_id != context_id_ || context_id_ == -1) {
-    *error = kErrorWrongContext;
+    *error = base::StringPrintf(
+        "%s request context id = %d, current context id = %d",
+        kErrorWrongContext, context_id, context_id_);
     return false;
   }
 
@@ -433,7 +451,9 @@ bool InputMethodEngineBase::SetCompositionRange(
     return false;
   }
   if (context_id != context_id_ || context_id_ == -1) {
-    *error = kErrorWrongContext;
+    *error = base::StringPrintf(
+        "%s request context id = %d, current context id = %d",
+        kErrorWrongContext, context_id, context_id_);
     return false;
   }
 
@@ -486,7 +506,9 @@ bool InputMethodEngineBase::SetSelectionRange(int context_id,
     return false;
   }
   if (context_id != context_id_ || context_id_ == -1) {
-    *error = kErrorWrongContext;
+    *error = base::StringPrintf(
+        "%s request context id = %d, current context id = %d",
+        kErrorWrongContext, context_id, context_id_);
     return false;
   }
   if (!IsUint32Value(start)) {

@@ -51,9 +51,10 @@ class AutofillWebDataBackendImpl
       scoped_refptr<WebDatabaseBackend> web_database_backend,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> db_task_runner,
-      const base::Closure& on_changed_callback,
-      const base::Closure& on_address_conversion_completed_callback,
-      const base::Callback<void(syncer::ModelType)>& on_sync_started_callback);
+      const base::RepeatingClosure& on_changed_callback,
+      const base::RepeatingClosure& on_address_conversion_completed_callback,
+      const base::RepeatingCallback<void(syncer::ModelType)>&
+          on_sync_started_callback);
 
   void SetAutofillProfileChangedCallback(
       base::RepeatingCallback<void(const AutofillProfileDeepChange&)>
@@ -249,9 +250,9 @@ class AutofillWebDataBackendImpl
   // TODO(caitkp): Make it so nobody but us needs direct DB access anymore.
   scoped_refptr<WebDatabaseBackend> web_database_backend_;
 
-  base::Closure on_changed_callback_;
-  base::Closure on_address_conversion_completed_callback_;
-  base::Callback<void(syncer::ModelType)> on_sync_started_callback_;
+  base::RepeatingClosure on_changed_callback_;
+  base::RepeatingClosure on_address_conversion_completed_callback_;
+  base::RepeatingCallback<void(syncer::ModelType)> on_sync_started_callback_;
 
   base::RepeatingCallback<void(const AutofillProfileDeepChange&)>
       on_autofill_profile_changed_cb_;

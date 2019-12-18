@@ -57,7 +57,9 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
                              std::move(handle)));
   }
 
-  void SetQuitLoopClosure(base::Closure closure) { quit_closure_ = closure; }
+  void SetQuitLoopClosure(base::OnceClosure closure) {
+    quit_closure_ = std::move(closure);
+  }
 
   // Returns the id and formdata received via
   // mojo interface method mojom::AutofillAgent::FillForm().
@@ -143,10 +145,8 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
 
  private:
   void CallDone() {
-    if (!quit_closure_.is_null()) {
-      quit_closure_.Run();
-      quit_closure_.Reset();
-    }
+    if (!quit_closure_.is_null())
+      std::move(quit_closure_).Run();
   }
 
   // mojom::AutofillAgent:
@@ -221,7 +221,7 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
 
   mojo::AssociatedReceiverSet<mojom::AutofillAgent> receivers_;
 
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
   // Records data received from FillForm() call.
   int32_t fill_form_id_;

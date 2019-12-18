@@ -67,6 +67,7 @@
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_http_load_info.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -613,10 +614,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     response_override = extra_data->TakeNavigationResponseOverrideOwnership();
   }
 
-  // TODO(domfarolino): Retrieve the referrer in the form of a referrer member
-  // instead of the header field. See https://crbug.com/850813.
-  GURL referrer_url(
-      request.HttpHeaderField(WebString::FromASCII("Referer")).Latin1());
+  GURL referrer_url = blink::WebStringToGURL(request.ReferrerString());
   const std::string& method = request.HttpMethod().Latin1();
 
   // TODO(brettw) this should take parameter encoding into account when

@@ -185,8 +185,8 @@ class WebAssociatedURLLoaderTest : public testing::Test,
     request.SetMode(network::mojom::RequestMode::kSameOrigin);
     request.SetCredentialsMode(network::mojom::CredentialsMode::kOmit);
     if (EqualIgnoringASCIICase(WebString::FromUTF8(header_field), "referer")) {
-      request.SetHttpReferrer(WebString::FromUTF8(header_value),
-                              network::mojom::ReferrerPolicy::kDefault);
+      request.SetReferrerString(WebString::FromUTF8(header_value));
+      request.SetReferrerPolicy(network::mojom::ReferrerPolicy::kDefault);
     } else {
       request.SetHttpHeaderField(WebString::FromUTF8(header_field),
                                  WebString::FromUTF8(header_value));
@@ -617,6 +617,7 @@ TEST_F(WebAssociatedURLLoaderTest, MAYBE_UntrustedCheckHeaders) {
   CheckHeaderFails("keep-alive");
   CheckHeaderFails("origin");
   CheckHeaderFails("referer", "http://example.com/");
+  CheckHeaderFails("referer", "");  // no-referrer.
   CheckHeaderFails("te");
   CheckHeaderFails("trailer");
   CheckHeaderFails("transfer-encoding");

@@ -215,8 +215,7 @@ bool WebViewAutofillClientIOS::HasCreditCardScanFeature() {
   return false;
 }
 
-void WebViewAutofillClientIOS::ScanCreditCard(
-    const CreditCardScanCallback& callback) {
+void WebViewAutofillClientIOS::ScanCreditCard(CreditCardScanCallback callback) {
   NOTREACHED();
 }
 

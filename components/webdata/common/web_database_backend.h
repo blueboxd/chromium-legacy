@@ -61,15 +61,15 @@ class WEBDATA_EXPORT WebDatabaseBackend
   // are used in cases where the request is being made from the UI thread and an
   // asyncronous callback is required to notify the client of |request|'s
   // completion.
-  void DBWriteTaskWrapper(const WebDatabaseService::WriteTask& task,
+  void DBWriteTaskWrapper(WebDatabaseService::WriteTask task,
                           std::unique_ptr<WebDataRequest> request);
-  void DBReadTaskWrapper(const WebDatabaseService::ReadTask& task,
+  void DBReadTaskWrapper(WebDatabaseService::ReadTask task,
                          std::unique_ptr<WebDataRequest> request);
 
   // Task runners to run database tasks.
-  void ExecuteWriteTask(const WebDatabaseService::WriteTask& task);
+  void ExecuteWriteTask(WebDatabaseService::WriteTask task);
   std::unique_ptr<WDTypedResult> ExecuteReadTask(
-      const WebDatabaseService::ReadTask& task);
+      WebDatabaseService::ReadTask task);
 
   const scoped_refptr<WebDataRequestManager>& request_manager() {
     return request_manager_;

@@ -251,15 +251,6 @@ static RenderViewImpl* (*g_create_render_view_impl)(
     const mojom::CreateViewParams&) = nullptr;
 
 // static
-Referrer RenderViewImpl::GetReferrerFromRequest(
-    WebFrame* frame,
-    const WebURLRequest& request) {
-  return Referrer(blink::WebStringToGURL(
-                      request.HttpHeaderField(WebString::FromUTF8("Referer"))),
-                  request.GetReferrerPolicy());
-}
-
-// static
 WindowOpenDisposition RenderViewImpl::NavigationPolicyToDisposition(
     WebNavigationPolicy policy) {
   switch (policy) {
@@ -1329,8 +1320,9 @@ WebView* RenderViewImpl::CreateView(
   params->disposition = NavigationPolicyToDisposition(policy);
   if (!request.IsNull()) {
     params->target_url = request.Url();
-    params->referrer =
-        blink::mojom::Referrer::From(GetReferrerFromRequest(creator, request));
+    params->referrer = blink::mojom::Referrer::New(
+        blink::WebStringToGURL(request.ReferrerString()),
+        request.GetReferrerPolicy());
   }
   params->features = ConvertWebWindowFeaturesToMojoWindowFeatures(features);
 

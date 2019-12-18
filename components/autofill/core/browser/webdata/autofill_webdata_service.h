@@ -193,7 +193,7 @@ class AutofillWebDataService : public WebDataServiceBase {
   // an AutofillWebdataBackend. This backend can be used to access or update the
   // WebDatabase directly on the DB sequence.
   void GetAutofillBackend(
-      const base::Callback<void(AutofillWebDataBackend*)>& callback);
+      base::OnceCallback<void(AutofillWebDataBackend*)> callback);
 
   // Returns a task runner that can be used to schedule tasks on the DB
   // sequence.

@@ -264,6 +264,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetTextSubpixelPositioning(bool value);
   void SetViewSourceForFrame(const std::string& name, bool enabled);
   void SetWillSendRequestClearHeader(const std::string& header);
+  void SetWillSendRequestClearReferrer();
   void SetWindowIsKey(bool value);
   void NavigateSecondaryWindow(const std::string& url);
   void InspectSecondaryWindow();
@@ -587,6 +588,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetViewSourceForFrame)
       .SetMethod("setWillSendRequestClearHeader",
                  &TestRunnerBindings::SetWillSendRequestClearHeader)
+      .SetMethod("setWillSendRequestClearReferrer",
+                 &TestRunnerBindings::SetWillSendRequestClearReferrer)
       .SetMethod("setWindowIsKey", &TestRunnerBindings::SetWindowIsKey)
       .SetMethod("navigateSecondaryWindow",
                  &TestRunnerBindings::NavigateSecondaryWindow)
@@ -1109,6 +1112,11 @@ void TestRunnerBindings::SetWillSendRequestClearHeader(
     runner_->SetWillSendRequestClearHeader(header);
 }
 
+void TestRunnerBindings::SetWillSendRequestClearReferrer() {
+  if (runner_)
+    runner_->SetWillSendRequestClearReferrer();
+}
+
 void TestRunnerBindings::WaitUntilExternalURLLoad() {
   if (runner_)
     runner_->WaitUntilExternalURLLoad();
@@ -1536,6 +1544,7 @@ void TestRunner::Reset() {
   did_notify_done_ = false;
 
   http_headers_to_clear_.clear();
+  clear_referrer_ = false;
 
   platform_name_ = "chromium";
   tooltip_text_ = std::string();
@@ -1756,6 +1765,10 @@ bool TestRunner::ShouldWaitUntilExternalURLLoad() const {
 
 const std::set<std::string>* TestRunner::HttpHeadersToClear() const {
   return &http_headers_to_clear_;
+}
+
+bool TestRunner::ClearReferrer() const {
+  return clear_referrer_;
 }
 
 bool TestRunner::IsFramePartOfMainTestWindow(blink::WebFrame* frame) const {
@@ -2397,6 +2410,10 @@ void TestRunner::SetShouldStayOnPageAfterHandlingBeforeUnload(bool value) {
 void TestRunner::SetWillSendRequestClearHeader(const std::string& header) {
   if (!header.empty())
     http_headers_to_clear_.insert(header);
+}
+
+void TestRunner::SetWillSendRequestClearReferrer() {
+  clear_referrer_ = true;
 }
 
 void TestRunner::WaitUntilExternalURLLoad() {

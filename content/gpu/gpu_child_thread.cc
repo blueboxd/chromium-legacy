@@ -195,6 +195,9 @@ void GpuChildThread::OnGpuServiceConnection(viz::GpuServiceImpl* gpu_service) {
       gpu_service->gpu_feature_info(),
       gpu_service->media_gpu_channel_manager()->AsWeakPtr(),
       gpu_service->gpu_memory_buffer_factory(), std::move(overlay_factory_cb)));
+  for (auto& receiver : pending_service_receivers_)
+    BindServiceInterface(std::move(receiver));
+  pending_service_receivers_.clear();
 
   if (GetContentClient()->gpu())  // Null in tests.
     GetContentClient()->gpu()->GpuServiceInitialized();

@@ -1925,13 +1925,13 @@ DOMRectList* Element::getClientRects() {
   Vector<FloatQuad> quads;
   ClientQuads(quads);
   if (quads.IsEmpty())
-    return DOMRectList::Create();
+    return MakeGarbageCollected<DOMRectList>();
 
   LayoutObject* element_layout_object = GetLayoutObject();
   DCHECK(element_layout_object);
   GetDocument().AdjustFloatQuadsForScrollAndAbsoluteZoom(
       quads, *element_layout_object);
-  return DOMRectList::Create(quads);
+  return MakeGarbageCollected<DOMRectList>(quads);
 }
 
 DOMRect* Element::getBoundingClientRect() {

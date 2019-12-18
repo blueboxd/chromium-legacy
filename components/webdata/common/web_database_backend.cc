@@ -50,40 +50,39 @@ void WebDatabaseBackend::ShutdownDatabase() {
 }
 
 void WebDatabaseBackend::DBWriteTaskWrapper(
-    const WebDatabaseService::WriteTask& task,
+    WebDatabaseService::WriteTask task,
     std::unique_ptr<WebDataRequest> request) {
   if (!request->IsActive())
     return;
 
-  ExecuteWriteTask(task);
+  ExecuteWriteTask(std::move(task));
   request_manager_->RequestCompleted(std::move(request), nullptr);
 }
 
-void WebDatabaseBackend::ExecuteWriteTask(
-    const WebDatabaseService::WriteTask& task) {
+void WebDatabaseBackend::ExecuteWriteTask(WebDatabaseService::WriteTask task) {
   LoadDatabaseIfNecessary();
   if (db_ && init_status_ == sql::INIT_OK) {
-    WebDatabase::State state = task.Run(db_.get());
+    WebDatabase::State state = std::move(task).Run(db_.get());
     if (state == WebDatabase::COMMIT_NEEDED)
       Commit();
   }
 }
 
 void WebDatabaseBackend::DBReadTaskWrapper(
-    const WebDatabaseService::ReadTask& task,
+    WebDatabaseService::ReadTask task,
     std::unique_ptr<WebDataRequest> request) {
   if (!request->IsActive())
     return;
 
-  std::unique_ptr<WDTypedResult> result = ExecuteReadTask(task);
+  std::unique_ptr<WDTypedResult> result = ExecuteReadTask(std::move(task));
   request_manager_->RequestCompleted(std::move(request), std::move(result));
 }
 
 std::unique_ptr<WDTypedResult> WebDatabaseBackend::ExecuteReadTask(
-    const WebDatabaseService::ReadTask& task) {
+    WebDatabaseService::ReadTask task) {
   LoadDatabaseIfNecessary();
   if (db_ && init_status_ == sql::INIT_OK) {
-    return task.Run(db_.get());
+    return std::move(task).Run(db_.get());
   }
   return nullptr;
 }
@@ -103,8 +102,8 @@ void WebDatabaseBackend::LoadDatabaseIfNecessary() {
     db_->AddTable(table.get());
 
   // Unretained to avoid a ref loop since we own |db_|.
-  db_->set_error_callback(base::Bind(&WebDatabaseBackend::DatabaseErrorCallback,
-                                     base::Unretained(this)));
+  db_->set_error_callback(base::BindRepeating(
+      &WebDatabaseBackend::DatabaseErrorCallback, base::Unretained(this)));
   diagnostics_.clear();
   catastrophic_error_occurred_ = false;
   init_status_ = db_->Init(db_path_);

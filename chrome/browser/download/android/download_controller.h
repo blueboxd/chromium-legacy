@@ -52,6 +52,8 @@ class DownloadController : public DownloadControllerBase {
   };
   static void RecordStoragePermission(StoragePermissionType type);
 
+  static void CloseTabIfEmpty(content::WebContents* web_contents);
+
   // Callback when user permission prompt finishes. Args: whether file access
   // permission is acquired, which permission to update.
   using AcquirePermissionCallback =

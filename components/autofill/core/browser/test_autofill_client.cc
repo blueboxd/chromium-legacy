@@ -197,8 +197,7 @@ bool TestAutofillClient::HasCreditCardScanFeature() {
   return false;
 }
 
-void TestAutofillClient::ScanCreditCard(
-    const CreditCardScanCallback& callback) {}
+void TestAutofillClient::ScanCreditCard(CreditCardScanCallback callback) {}
 
 void TestAutofillClient::ShowAutofillPopup(
     const gfx::RectF& element_bounds,

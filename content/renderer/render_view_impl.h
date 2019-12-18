@@ -419,10 +419,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // RenderFrameImpl. These implementations are to be moved to RenderFrameImpl
   // <http://crbug.com/361761>.
 
-  static Referrer GetReferrerFromRequest(
-      blink::WebFrame* frame,
-      const blink::WebURLRequest& request);
-
   static WindowOpenDisposition NavigationPolicyToDisposition(
       blink::WebNavigationPolicy policy);
 

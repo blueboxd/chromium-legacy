@@ -37,9 +37,10 @@ AutofillWebDataBackendImpl::AutofillWebDataBackendImpl(
     scoped_refptr<WebDatabaseBackend> web_database_backend,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_task_runner,
-    const base::Closure& on_changed_callback,
-    const base::Closure& on_address_conversion_completed_callback,
-    const base::Callback<void(syncer::ModelType)>& on_sync_started_callback)
+    const base::RepeatingClosure& on_changed_callback,
+    const base::RepeatingClosure& on_address_conversion_completed_callback,
+    const base::RepeatingCallback<void(syncer::ModelType)>&
+        on_sync_started_callback)
     : base::RefCountedDeleteOnSequence<AutofillWebDataBackendImpl>(
           std::move(db_task_runner)),
       ui_task_runner_(ui_task_runner),

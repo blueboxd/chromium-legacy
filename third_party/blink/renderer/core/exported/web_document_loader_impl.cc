@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
@@ -141,8 +142,8 @@ void WebDocumentLoaderImpl::DetachFromFrame(bool flush_microtask_queue) {
 
 void WebDocumentLoaderImpl::SetSubresourceFilter(
     WebDocumentSubresourceFilter* subresource_filter) {
-  DocumentLoader::SetSubresourceFilter(SubresourceFilter::Create(
-      *GetFrame()->GetDocument(), base::WrapUnique(subresource_filter)));
+  DocumentLoader::SetSubresourceFilter(MakeGarbageCollected<SubresourceFilter>(
+      GetFrame()->GetDocument(), base::WrapUnique(subresource_filter)));
 }
 
 void WebDocumentLoaderImpl::SetLoadingHintsProvider(

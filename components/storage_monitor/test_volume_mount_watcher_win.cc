@@ -139,14 +139,14 @@ bool TestVolumeMountWatcherWin::GetDeviceRemovable(
 
 VolumeMountWatcherWin::GetDeviceDetailsCallbackType
 TestVolumeMountWatcherWin::GetDeviceDetailsCallback() const {
-  return base::Bind(&GetMassStorageDeviceDetails);
+  return base::BindOnce(&GetMassStorageDeviceDetails);
 }
 
 VolumeMountWatcherWin::GetAttachedDevicesCallbackType
   TestVolumeMountWatcherWin::GetAttachedDevicesCallback() const {
   if (attached_devices_fake_)
-    return base::Bind(&FakeGetAttachedDevices);
-  return base::Bind(&FakeGetSingleAttachedDevice);
+    return base::BindOnce(&FakeGetAttachedDevices);
+  return base::BindOnce(&FakeGetSingleAttachedDevice);
 }
 
 }  // namespace storage_monitor

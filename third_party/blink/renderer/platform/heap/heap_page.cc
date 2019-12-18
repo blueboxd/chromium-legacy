@@ -1125,7 +1125,9 @@ void FreeList::Add(Address address, size_t size) {
 }
 
 void FreeList::MoveFrom(FreeList* other) {
+#if DCHECK_IS_ON()
   const size_t expected_size = FreeListSize() + other->FreeListSize();
+#endif
 
   // Newly created entries get added to the head.
   for (size_t index = 0; index < kBlinkPageSizeLog2; ++index) {
@@ -1146,7 +1148,9 @@ void FreeList::MoveFrom(FreeList* other) {
       std::max(biggest_free_list_index_, other->biggest_free_list_index_);
   other->biggest_free_list_index_ = 0;
 
+#if DCHECK_IS_ON()
   DCHECK_EQ(expected_size, FreeListSize());
+#endif
   DCHECK(other->IsEmpty());
 }
 

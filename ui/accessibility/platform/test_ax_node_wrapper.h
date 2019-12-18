@@ -44,6 +44,9 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   // Set a global scale factor for testing.
   static std::unique_ptr<base::AutoReset<float>> SetScaleFactor(float value);
 
+  // Set a global indicating that AXPlatformNodeDelegates are for web content.
+  static void SetGlobalIsWebContent(bool is_web_content);
+
   ~TestAXNodeWrapper() override;
 
   AXPlatformNode* ax_platform_node() const { return platform_node_; }
@@ -81,6 +84,7 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   gfx::NativeViewAccessible HitTestSync(int x, int y) override;
   gfx::NativeViewAccessible GetFocus() override;
   bool IsMinimized() const override;
+  bool IsWebContent() const override;
   AXPlatformNode* GetFromNodeID(int32_t id) override;
   AXPlatformNode* GetFromTreeIDAndNodeID(const ui::AXTreeID& ax_tree_id,
                                          int32_t id) override;

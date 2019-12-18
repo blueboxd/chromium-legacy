@@ -128,17 +128,14 @@ cast_test_group("cast_tests") {
   }
   filters += [ cast_media_unittests_filter ]
 
-  if (!is_android) {
+  if (!is_android && !is_fuchsia) {
     tests += [
       ":cast_shell_browsertests",
       ":cast_shell_unittests",
       "//ipc:ipc_tests",
+      "//jingle:jingle_unittests",
       "//url:url_unittests",
     ]
-
-    if (!is_fuchsia) {
-      tests += [ "//jingle:jingle_unittests" ]
-    }
 
     cast_shell_browsertests_filter = {
       test_name = "cast_shell_browsertests"
@@ -482,25 +479,6 @@ cast_executable("cast_shell") {
     "//chromecast/app",
     "//content/public/app:both",
   ]
-}
-
-if (is_fuchsia) {
-  fuchsia_package("cast_shell_pkg") {
-    binary = ":cast_shell"
-    package_name_override = "cast_shell"
-    manifest = "//chromecast/cast_shell.cmx"
-
-    if (chromecast_branding != "public") {
-      deps = [
-        "//chromecast/internal:fuchsia_internal_data_deps",
-      ]
-    }
-  }
-
-  fuchsia_package_runner("cast_shell_fuchsia") {
-    package = ":cast_shell_pkg"
-    package_name_override = "cast_shell"
-  }
 }
 
 repack("cast_shell_pak") {

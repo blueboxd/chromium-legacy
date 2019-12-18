@@ -18,6 +18,7 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/url_constants.h"
@@ -26,6 +27,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/account_id/account_id.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -35,6 +37,11 @@
 namespace {
 
 const char kProfileSyncNotificationId[] = "chrome://settings/sync/";
+
+struct BubbleViewParameters {
+  int message_id;
+  base::RepeatingClosure click_action;
+};
 
 void ShowSyncSetup(Profile* profile) {
   LoginUIService* login_ui = LoginUIServiceFactory::GetForProfile(profile);
@@ -46,6 +53,38 @@ void ShowSyncSetup(Profile* profile) {
   }
 
   chrome::ShowSettingsSubPageForProfile(profile, chrome::kSyncSetupSubPage);
+}
+
+void TriggerSyncKeyRetrieval(Profile* profile) {
+  chrome::ScopedTabbedBrowserDisplayer displayer(profile);
+  sync_ui_util::OpenTabForSyncKeyRetrieval(displayer.browser());
+}
+
+BubbleViewParameters GetBubbleViewParameters(
+    Profile* profile,
+    syncer::SyncService* sync_service) {
+  if (sync_ui_util::ShouldShowPassphraseError(sync_service)) {
+    BubbleViewParameters params;
+    params.message_id = IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE;
+    // |profile| is guaranteed to outlive the callback because the ownership of
+    // the notification gets transferred to NotificationDisplayService, which is
+    // a keyed service that cannot outlive the profile.
+    params.click_action =
+        base::BindRepeating(&ShowSyncSetup, base::Unretained(profile));
+    return params;
+  }
+
+  DCHECK(sync_ui_util::ShouldShowSyncKeysMissingError(sync_service));
+
+  BubbleViewParameters params;
+  params.message_id =
+      sync_service->GetUserSettings()->IsEncryptEverythingEnabled()
+          ? IDS_SYNC_NEEDS_KEYS_FOR_EVERYTHING_ERROR_BUBBLE_VIEW_MESSAGE
+          : IDS_SYNC_NEEDS_KEYS_FOR_PASSWORDS_ERROR_BUBBLE_VIEW_MESSAGE;
+
+  params.click_action =
+      base::BindRepeating(&TriggerSyncKeyRetrieval, base::Unretained(profile));
+  return params;
 }
 
 }  // namespace
@@ -77,14 +116,16 @@ void SyncErrorNotifier::OnStateChanged(syncer::SyncService* service) {
 
   // TODO(crbug.com/1019687): A sync error should also be prompted for
   // sync_ui_util::ShouldShowSyncKeysMissingError().
+  const bool should_display_notification =
+      sync_ui_util::ShouldShowPassphraseError(sync_service_) ||
+      sync_ui_util::ShouldShowSyncKeysMissingError(sync_service_);
 
-  if (sync_ui_util::ShouldShowPassphraseError(sync_service_) ==
-      notification_displayed_) {
+  if (should_display_notification == notification_displayed_) {
     return;
   }
 
   auto* display_service = NotificationDisplayService::GetForProfile(profile_);
-  if (!sync_ui_util::ShouldShowPassphraseError(sync_service_)) {
+  if (!should_display_notification) {
     notification_displayed_ = false;
     display_service->Close(NotificationHandler::Type::TRANSIENT,
                            notification_id_);
@@ -104,8 +145,7 @@ void SyncErrorNotifier::OnStateChanged(syncer::SyncService* service) {
 
   // Error state just got triggered. There shouldn't be previous notification.
   // Let's display one.
-  DCHECK(!notification_displayed_ &&
-         sync_ui_util::ShouldShowPassphraseError(sync_service_));
+  DCHECK(!notification_displayed_ && should_display_notification);
 
   message_center::NotifierId notifier_id(
       message_center::NotifierType::SYSTEM_COMPONENT,
@@ -115,18 +155,20 @@ void SyncErrorNotifier::OnStateChanged(syncer::SyncService* service) {
   notifier_id.profile_id =
       multi_user_util::GetAccountIdFromProfile(profile_).GetUserEmail();
 
+  BubbleViewParameters parameters =
+      GetBubbleViewParameters(profile_, sync_service_);
+
   // Add a new notification.
   std::unique_ptr<message_center::Notification> notification =
       ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, notification_id_,
           l10n_util::GetStringUTF16(IDS_SYNC_ERROR_BUBBLE_VIEW_TITLE),
-          l10n_util::GetStringUTF16(
-              IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE),
+          l10n_util::GetStringUTF16(parameters.message_id),
           l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DISPLAY_SOURCE),
           GURL(notification_id_), notifier_id,
           message_center::RichNotificationData(),
           base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
-              base::BindRepeating(&ShowSyncSetup, profile_)),
+              parameters.click_action),
           ash::kNotificationWarningIcon,
           message_center::SystemNotificationWarningLevel::WARNING);
 

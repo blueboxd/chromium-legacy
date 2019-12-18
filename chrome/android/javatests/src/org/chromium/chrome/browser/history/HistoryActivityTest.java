@@ -557,9 +557,9 @@ public class HistoryActivityTest {
         // user setting will be reset.
         final Account account = SigninTestUtil.addTestAccount();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            IdentityServicesProvider.getSigninManager().onFirstRunCheckDone();
-            IdentityServicesProvider.getSigninManager().addSignInStateObserver(mTestObserver);
-            IdentityServicesProvider.getSigninManager().signIn(
+            IdentityServicesProvider.get().getSigninManager().onFirstRunCheckDone();
+            IdentityServicesProvider.get().getSigninManager().addSignInStateObserver(mTestObserver);
+            IdentityServicesProvider.get().getSigninManager().signIn(
                     SigninAccessPoint.UNKNOWN, account, null);
         });
 
@@ -615,7 +615,7 @@ public class HistoryActivityTest {
         int currentCallCount = mTestObserver.onSigninStateChangedCallback.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> IdentityServicesProvider.getSigninManager().signOut(
+                        -> IdentityServicesProvider.get().getSigninManager().signOut(
                                 SignoutReason.SIGNOUT_TEST));
         mTestObserver.onSigninStateChangedCallback.waitForCallback(currentCallCount, 1);
         Assert.assertNull(SigninTestUtil.getCurrentAccount());
@@ -623,7 +623,8 @@ public class HistoryActivityTest {
         // Remove observer
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> IdentityServicesProvider.getSigninManager().removeSignInStateObserver(
-                                mTestObserver));
+                        -> IdentityServicesProvider.get()
+                                   .getSigninManager()
+                                   .removeSignInStateObserver(mTestObserver));
     }
 }

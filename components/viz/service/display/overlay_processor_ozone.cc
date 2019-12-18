@@ -4,7 +4,6 @@
 
 #include "components/viz/service/display/overlay_processor_ozone.h"
 
-#include "components/viz/service/display/overlay_candidate_list.h"
 #include "components/viz/service/display/overlay_strategy_fullscreen.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
@@ -55,41 +54,37 @@ OverlayProcessorOzone::OverlayProcessorOzone(
     bool overlay_enabled,
     std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates,
     std::vector<OverlayStrategy> available_strategies)
-    : OverlayProcessorUsingStrategy(
-          nullptr,
-          std::unique_ptr<OverlayCandidateValidatorStrategy>()),
+    : OverlayProcessorUsingStrategy(),
       overlay_enabled_(overlay_enabled),
       overlay_candidates_(std::move(overlay_candidates)),
       available_strategies_(std::move(available_strategies)) {
-  if (overlay_enabled_)
-    InitializeStrategies();
-}
-
-OverlayProcessorOzone::~OverlayProcessorOzone() = default;
-
-void OverlayProcessorOzone::InitializeStrategies() {
-  for (OverlayStrategy strategy : available_strategies_) {
-    switch (strategy) {
-      case OverlayStrategy::kFullscreen:
-        strategies_.push_back(
-            std::make_unique<OverlayStrategyFullscreen>(this));
-        break;
-      case OverlayStrategy::kSingleOnTop:
-        strategies_.push_back(
-            std::make_unique<OverlayStrategySingleOnTop>(this));
-        break;
-      case OverlayStrategy::kUnderlay:
-        strategies_.push_back(std::make_unique<OverlayStrategyUnderlay>(this));
-        break;
-      case OverlayStrategy::kUnderlayCast:
-        strategies_.push_back(
-            std::make_unique<OverlayStrategyUnderlayCast>(this));
-        break;
-      default:
-        NOTREACHED();
+  if (overlay_enabled_) {
+    for (OverlayStrategy strategy : available_strategies_) {
+      switch (strategy) {
+        case OverlayStrategy::kFullscreen:
+          strategies_.push_back(
+              std::make_unique<OverlayStrategyFullscreen>(this));
+          break;
+        case OverlayStrategy::kSingleOnTop:
+          strategies_.push_back(
+              std::make_unique<OverlayStrategySingleOnTop>(this));
+          break;
+        case OverlayStrategy::kUnderlay:
+          strategies_.push_back(
+              std::make_unique<OverlayStrategyUnderlay>(this));
+          break;
+        case OverlayStrategy::kUnderlayCast:
+          strategies_.push_back(
+              std::make_unique<OverlayStrategyUnderlayCast>(this));
+          break;
+        default:
+          NOTREACHED();
+      }
     }
   }
 }
+
+OverlayProcessorOzone::~OverlayProcessorOzone() = default;
 
 bool OverlayProcessorOzone::IsOverlaySupported() const {
   return overlay_enabled_;

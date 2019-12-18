@@ -25,9 +25,9 @@ class TypedFlexibleArrayBufferView final : public FlexibleArrayBufferView {
     return static_cast<ValueType*>(BaseAddressMaybeOnStack());
   }
 
-  unsigned length() const {
-    DCHECK_EQ(DeprecatedByteLengthAsUnsigned() % sizeof(ValueType), 0u);
-    return DeprecatedByteLengthAsUnsigned() / sizeof(ValueType);
+  size_t lengthAsSizeT() const {
+    DCHECK_EQ(ByteLengthAsSizeT() % sizeof(ValueType), 0u);
+    return ByteLengthAsSizeT() / sizeof(ValueType);
   }
 
  private:

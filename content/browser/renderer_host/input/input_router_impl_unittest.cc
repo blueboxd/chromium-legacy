@@ -1798,10 +1798,10 @@ TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {
   ASSERT_EQ(WebInputEvent::kMouseWheel, input_event->GetType());
   const WebMouseWheelEvent* synthetic_wheel =
       static_cast<const WebMouseWheelEvent*>(input_event);
-  EXPECT_EQ(20, synthetic_wheel->PositionInWidget().x);
-  EXPECT_EQ(25, synthetic_wheel->PositionInWidget().y);
-  EXPECT_EQ(20, synthetic_wheel->PositionInScreen().x);
-  EXPECT_EQ(25, synthetic_wheel->PositionInScreen().y);
+  EXPECT_EQ(20, synthetic_wheel->PositionInWidget().x());
+  EXPECT_EQ(25, synthetic_wheel->PositionInWidget().y());
+  EXPECT_EQ(20, synthetic_wheel->PositionInScreen().x());
+  EXPECT_EQ(25, synthetic_wheel->PositionInScreen().y());
   EXPECT_TRUE(synthetic_wheel->GetModifiers() &
               blink::WebInputEvent::kControlKey);
   EXPECT_EQ(blink::WebMouseWheelEvent::kPhaseBegan, synthetic_wheel->phase);
@@ -2194,12 +2194,12 @@ class InputRouterImplScaleMouseEventTest
     SimulateMouseEvent(type, 10, 10);
     UpdateDispatchedMessages();
     const WebMouseEvent* sent_event = GetSentWebInputEvent<WebMouseEvent>();
-    EXPECT_EQ(20, sent_event->PositionInWidget().x);
-    EXPECT_EQ(20, sent_event->PositionInWidget().y);
+    EXPECT_EQ(20, sent_event->PositionInWidget().x());
+    EXPECT_EQ(20, sent_event->PositionInWidget().y());
 
     const WebMouseEvent* filter_event = GetFilterWebInputEvent<WebMouseEvent>();
-    EXPECT_EQ(10, filter_event->PositionInWidget().x);
-    EXPECT_EQ(10, filter_event->PositionInWidget().y);
+    EXPECT_EQ(10, filter_event->PositionInWidget().x());
+    EXPECT_EQ(10, filter_event->PositionInWidget().y());
   }
 
  private:
@@ -2221,8 +2221,8 @@ TEST_F(InputRouterImplScaleEventTest, ScaleMouseWheelEventTest) {
 
   const WebMouseWheelEvent* sent_event =
       GetSentWebInputEvent<WebMouseWheelEvent>();
-  EXPECT_EQ(10, sent_event->PositionInWidget().x);
-  EXPECT_EQ(10, sent_event->PositionInWidget().y);
+  EXPECT_EQ(10, sent_event->PositionInWidget().x());
+  EXPECT_EQ(10, sent_event->PositionInWidget().y());
   EXPECT_EQ(20, sent_event->delta_x);
   EXPECT_EQ(20, sent_event->delta_y);
   EXPECT_EQ(2, sent_event->wheel_ticks_x);
@@ -2230,8 +2230,8 @@ TEST_F(InputRouterImplScaleEventTest, ScaleMouseWheelEventTest) {
 
   const WebMouseWheelEvent* filter_event =
       GetFilterWebInputEvent<WebMouseWheelEvent>();
-  EXPECT_EQ(5, filter_event->PositionInWidget().x);
-  EXPECT_EQ(5, filter_event->PositionInWidget().y);
+  EXPECT_EQ(5, filter_event->PositionInWidget().x());
+  EXPECT_EQ(5, filter_event->PositionInWidget().y());
   EXPECT_EQ(10, filter_event->delta_x);
   EXPECT_EQ(10, filter_event->delta_y);
   EXPECT_EQ(1, filter_event->wheel_ticks_x);
@@ -2258,33 +2258,33 @@ class InputRouterImplScaleTouchEventTest
     const WebTouchEvent* sent_event = GetSentWebInputEvent<WebTouchEvent>();
     ASSERT_EQ(2u, sent_event->touches_length);
     EXPECT_EQ(state, sent_event->touches[0].state);
-    EXPECT_EQ(20, sent_event->touches[0].PositionInWidget().x);
-    EXPECT_EQ(40, sent_event->touches[0].PositionInWidget().y);
-    EXPECT_EQ(10, sent_event->touches[0].PositionInScreen().x);
-    EXPECT_EQ(20, sent_event->touches[0].PositionInScreen().y);
+    EXPECT_EQ(20, sent_event->touches[0].PositionInWidget().x());
+    EXPECT_EQ(40, sent_event->touches[0].PositionInWidget().y());
+    EXPECT_EQ(10, sent_event->touches[0].PositionInScreen().x());
+    EXPECT_EQ(20, sent_event->touches[0].PositionInScreen().y());
     EXPECT_EQ(2 * radius_x_, sent_event->touches[0].radius_x);
     EXPECT_EQ(2 * radius_x_, sent_event->touches[0].radius_y);
 
-    EXPECT_EQ(200, sent_event->touches[1].PositionInWidget().x);
-    EXPECT_EQ(400, sent_event->touches[1].PositionInWidget().y);
-    EXPECT_EQ(100, sent_event->touches[1].PositionInScreen().x);
-    EXPECT_EQ(200, sent_event->touches[1].PositionInScreen().y);
+    EXPECT_EQ(200, sent_event->touches[1].PositionInWidget().x());
+    EXPECT_EQ(400, sent_event->touches[1].PositionInWidget().y());
+    EXPECT_EQ(100, sent_event->touches[1].PositionInScreen().x());
+    EXPECT_EQ(200, sent_event->touches[1].PositionInScreen().y());
     EXPECT_EQ(2 * radius_x_, sent_event->touches[1].radius_x);
     EXPECT_EQ(2 * radius_x_, sent_event->touches[1].radius_y);
 
     const WebTouchEvent* filter_event = GetFilterWebInputEvent<WebTouchEvent>();
     ASSERT_EQ(2u, filter_event->touches_length);
-    EXPECT_EQ(10, filter_event->touches[0].PositionInWidget().x);
-    EXPECT_EQ(20, filter_event->touches[0].PositionInWidget().y);
-    EXPECT_EQ(10, filter_event->touches[0].PositionInScreen().x);
-    EXPECT_EQ(20, filter_event->touches[0].PositionInScreen().y);
+    EXPECT_EQ(10, filter_event->touches[0].PositionInWidget().x());
+    EXPECT_EQ(20, filter_event->touches[0].PositionInWidget().y());
+    EXPECT_EQ(10, filter_event->touches[0].PositionInScreen().x());
+    EXPECT_EQ(20, filter_event->touches[0].PositionInScreen().y());
     EXPECT_EQ(radius_x_, filter_event->touches[0].radius_x);
     EXPECT_EQ(radius_x_, filter_event->touches[0].radius_y);
 
-    EXPECT_EQ(100, filter_event->touches[1].PositionInWidget().x);
-    EXPECT_EQ(200, filter_event->touches[1].PositionInWidget().y);
-    EXPECT_EQ(100, filter_event->touches[1].PositionInScreen().x);
-    EXPECT_EQ(200, filter_event->touches[1].PositionInScreen().y);
+    EXPECT_EQ(100, filter_event->touches[1].PositionInWidget().x());
+    EXPECT_EQ(200, filter_event->touches[1].PositionInWidget().y());
+    EXPECT_EQ(100, filter_event->touches[1].PositionInScreen().x());
+    EXPECT_EQ(200, filter_event->touches[1].PositionInScreen().y());
     EXPECT_EQ(radius_x_, filter_event->touches[1].radius_x);
     EXPECT_EQ(radius_x_, filter_event->touches[1].radius_y);
   }
@@ -2472,10 +2472,10 @@ class InputRouterImplScaleGestureEventTest
       const gfx::PointF& orig,
       const gfx::PointF& scaled,
       const base::Optional<gfx::SizeF>& contact_size_scaled) {
-    EXPECT_FLOAT_EQ(scaled.x(), sent_event->PositionInWidget().x);
-    EXPECT_FLOAT_EQ(scaled.y(), sent_event->PositionInWidget().y);
-    EXPECT_FLOAT_EQ(orig.x(), sent_event->PositionInScreen().x);
-    EXPECT_FLOAT_EQ(orig.y(), sent_event->PositionInScreen().y);
+    EXPECT_FLOAT_EQ(scaled.x(), sent_event->PositionInWidget().x());
+    EXPECT_FLOAT_EQ(scaled.y(), sent_event->PositionInWidget().y());
+    EXPECT_FLOAT_EQ(orig.x(), sent_event->PositionInScreen().x());
+    EXPECT_FLOAT_EQ(orig.y(), sent_event->PositionInScreen().y());
 
     base::Optional<gfx::SizeF> event_contact_size = GetContactSize(*sent_event);
     if (event_contact_size && contact_size_scaled) {
@@ -2490,10 +2490,10 @@ class InputRouterImplScaleGestureEventTest
       const WebGestureEvent* filter_event,
       const gfx::PointF& orig,
       const base::Optional<gfx::SizeF>& contact_size) {
-    EXPECT_FLOAT_EQ(orig.x(), filter_event->PositionInWidget().x);
-    EXPECT_FLOAT_EQ(orig.y(), filter_event->PositionInWidget().y);
-    EXPECT_FLOAT_EQ(orig.x(), filter_event->PositionInScreen().x);
-    EXPECT_FLOAT_EQ(orig.y(), filter_event->PositionInScreen().y);
+    EXPECT_FLOAT_EQ(orig.x(), filter_event->PositionInWidget().x());
+    EXPECT_FLOAT_EQ(orig.y(), filter_event->PositionInWidget().y());
+    EXPECT_FLOAT_EQ(orig.x(), filter_event->PositionInScreen().x());
+    EXPECT_FLOAT_EQ(orig.y(), filter_event->PositionInScreen().y());
 
     base::Optional<gfx::SizeF> event_contact_size =
         GetContactSize(*filter_event);

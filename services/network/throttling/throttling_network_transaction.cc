@@ -63,7 +63,7 @@ int ThrottlingNetworkTransaction::Throttle(
   if (result > 0)
     throttled_byte_count_ += result;
 
-  throttle_callback_ = base::Bind(
+  throttle_callback_ = base::BindRepeating(
       &ThrottlingNetworkTransaction::ThrottleCallback, base::Unretained(this));
   int rv = interceptor_->StartThrottle(result, throttled_byte_count_, send_end,
                                        start, false, throttle_callback_);

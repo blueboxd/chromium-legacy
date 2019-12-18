@@ -9,7 +9,9 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "url/gurl.h"
@@ -25,12 +27,24 @@ namespace chromeos {
 
 class SystemWebDialogDelegate : public ui::WebDialogDelegate {
  public:
+  // Default margin (in pixels) used when sizing a dialog to an internal screen;
+  // see ComputeDialogSizeForInternalScreen().
+  static const size_t kDialogMarginForInternalScreenPx;
+
   // Returns the instance whose Id() matches |id|. If more than one instance
   // matches, the first matching instance created is returned.
   static SystemWebDialogDelegate* FindInstance(const std::string& id);
 
   // Returns true if there is a system dialog with |url| loaded.
   static bool HasInstance(const GURL& url);
+
+  // Generates a dialog size which fits within the device's internal screen. If
+  // possible, this function simply returns |preferred_size|, but if that size
+  // does not fit within the screen's bounds with a margin of
+  // |kDialogMarginForInternalScreenPx| pixels on all sides, a smaller size is
+  // returned.
+  static gfx::Size ComputeDialogSizeForInternalScreen(
+      const gfx::Size& preferred_size);
 
   // |gurl| is the HTML file path for the dialog content and must be set.
   // |title| may be empty in which case ShouldShowDialogTitle() returns false.

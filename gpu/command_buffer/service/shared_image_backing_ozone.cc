@@ -95,12 +95,12 @@ std::unique_ptr<SharedImageBackingOzone> SharedImageBackingOzone::Create(
 
 SharedImageBackingOzone::~SharedImageBackingOzone() = default;
 
-bool SharedImageBackingOzone::IsCleared() const {
+gfx::Rect SharedImageBackingOzone::ClearedRect() const {
   NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  return gfx::Rect();
 }
 
-void SharedImageBackingOzone::SetCleared() {
+void SharedImageBackingOzone::SetClearedRect(const gfx::Rect& cleared_rect) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 

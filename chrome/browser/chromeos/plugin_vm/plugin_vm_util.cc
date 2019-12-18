@@ -182,9 +182,9 @@ void RemoveDriveDownloadDirectoryIfExists() {
 
 // TODO(muhamedp): Update if a different url format is ultimately chosen.
 bool IsDriveUrl(const GURL& url) {
-  const std::string url_base = "https://drive.google.com/open?id=";
-  return url.spec().find(url_base) == 0 &&
-         url.spec().length() > url_base.length();
+  const std::string url_base = "https://drive.google.com/open";
+  const std::string& spec = url.spec();
+  return spec.find(url_base) == 0 && spec.find("id=") < (spec.length() - 3);
 }
 
 // TODO(muhamedp): Update if a different url format is ultimately chosen.

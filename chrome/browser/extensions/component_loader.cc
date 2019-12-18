@@ -387,9 +387,8 @@ void ComponentLoader::AddKeyboardApp() {
 void ComponentLoader::AddChromeCameraApp() {
   base::FilePath resources_path;
   if (base::PathService::Get(chrome::DIR_RESOURCES, &resources_path)) {
-    AddComponentFromDir(
-        resources_path.Append(extension_misc::kChromeCameraAppPath),
-        extension_misc::kChromeCameraAppId, base::RepeatingClosure());
+    AddComponentFromDir(resources_path.Append(extension_misc::kCameraAppPath),
+                        extension_misc::kCameraAppId, base::RepeatingClosure());
   }
 }
 

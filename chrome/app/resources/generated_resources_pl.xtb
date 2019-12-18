@@ -2529,7 +2529,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4572779512957829735">Wpisz PIN klucza bezpieczeństwa</translation>
 <translation id="457386861538956877">Więcej</translation>
 <translation id="4574741712540401491">• <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Sparuj urządzenie Bluetooth</translation>
 <translation id="4579581181964204535">Nie udało się przesłać <ph name="HOST_NAME" />.</translation>
 <translation id="4581774856936278355">Błąd podczas przywracania Linuksa</translation>
 <translation id="4582563038311694664">Zresetuj wszystkie ustawienia</translation>
@@ -4869,7 +4868,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="7974936243149753750">Nadmiarowość obrazu</translation>
 <translation id="7978412674231730200">Klucz prywatny</translation>
 <translation id="7978450511781612192">Spowoduje to wylogowanie Cię z Twoich kont Google. Twoje zakładki, historia, hasła i inne dane przestaną być synchronizowane.</translation>
-<translation id="7979036127916589816">Błąd synchronizacji</translation>
 <translation id="7980084013673500153">Identyfikator zasobu: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Ładuj wstępnie strony, by przyspieszyć przeglądanie i wyszukiwanie</translation>
 <translation id="798145602633458219">Dodaj sugestię <ph name="SUGGESTION_NAME" /> do pola wyszukiwania</translation>
@@ -5318,6 +5316,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="862542460444371744">&amp;Rozszerzenia</translation>
 <translation id="862727964348362408">Zawieszona</translation>
 <translation id="862750493060684461">Pamięć podręczna CSS</translation>
+<translation id="8627706565932943526">Błąd synchronizacji</translation>
 <translation id="8627795981664801467">Tylko bezpieczne połączenia</translation>
 <translation id="8630903300770275248">Zaimportuj użytkownika nadzorowanego</translation>
 <translation id="8631032106121706562">Płatki</translation>

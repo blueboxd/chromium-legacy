@@ -34,24 +34,10 @@
 #include <string.h>
 
 #include "base/time/time.h"
-#include "third_party/blink/public/platform/web_float_point.h"
+#include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace blink {
-
-// The classes defined in this file are intended to be used with
-// WebWidget's HandleInputEvent method.  These event types are cross-
-// platform and correspond closely to WebCore's Platform*Event classes.
-//
-// WARNING! These classes must remain PODs (plain old data).  They are
-// intended to be "serializable" by copying their raw bytes, so they must
-// not contain any non-bit-copyable member variables!
-//
-// Furthermore, the class members need to be packed so they are aligned
-// properly and don't have paddings/gaps, otherwise memory check tools
-// like Valgrind will complain about uninitialized memory usage when
-// transferring these classes over the wire.
-
-#pragma pack(push, 4)
 
 // WebInputEvent --------------------------------------------------------------
 
@@ -425,8 +411,8 @@ class WebInputEvent {
   float FrameScale() const { return frame_scale_; }
   void SetFrameScale(float scale) { frame_scale_ = scale; }
 
-  WebFloatPoint FrameTranslate() const { return frame_translate_; }
-  void SetFrameTranslate(WebFloatPoint translate) {
+  gfx::Vector2dF FrameTranslate() const { return frame_translate_; }
+  void SetFrameTranslate(gfx::Vector2dF translate) {
     frame_translate_ = translate;
   }
 
@@ -450,7 +436,7 @@ class WebInputEvent {
   float frame_scale_;
 
   // The root frame translation (applied post scale).
-  WebFloatPoint frame_translate_;
+  gfx::Vector2dF frame_translate_;
 
   WebInputEvent(unsigned size,
                 Type type,
@@ -495,8 +481,6 @@ class WebInputEvent {
   Type type_;
   int modifiers_;
 };
-
-#pragma pack(pop)
 
 }  // namespace blink
 

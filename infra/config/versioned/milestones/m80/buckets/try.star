@@ -201,6 +201,8 @@ def mac_builder(
       goma_backend = goma_backend,
       mastername = 'tryserver.chromium.mac',
       os = os,
+      builderless = True,
+      ssd = True,
       **kwargs
   )
 

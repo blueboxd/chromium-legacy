@@ -116,9 +116,9 @@ BuildObjectForAnimationEffect(KeyframeEffect* effect) {
           .setFill(computed_timing->fill())
           .setEasing(easing)
           .build();
-  if (effect->target()) {
+  if (effect->EffectTarget()) {
     animation_object->setBackendNodeId(
-        IdentifiersFactory::IntIdForNode(effect->target()));
+        IdentifiersFactory::IntIdForNode(effect->EffectTarget()));
   }
   return animation_object;
 }
@@ -301,7 +301,7 @@ blink::Animation* InspectorAnimationAgent::AnimationClone(
     }
 
     auto* new_effect = MakeGarbageCollected<KeyframeEffect>(
-        old_effect->target(), new_model, old_effect->SpecifiedTiming());
+        old_effect->EffectTarget(), new_model, old_effect->SpecifiedTiming());
     is_cloning_ = true;
     blink::Animation* clone =
         blink::Animation::Create(new_effect, animation->timeline());
@@ -380,7 +380,8 @@ Response InspectorAnimationAgent::resolveAnimation(
     return response;
   if (id_to_animation_clone_.at(animation_id))
     animation = id_to_animation_clone_.at(animation_id);
-  const Element* element = To<KeyframeEffect>(animation->effect())->target();
+  const Element* element =
+      To<KeyframeEffect>(animation->effect())->EffectTarget();
   Document* document = element->ownerDocument();
   LocalFrame* frame = document ? document->GetFrame() : nullptr;
   ScriptState* script_state =
@@ -432,7 +433,7 @@ String InspectorAnimationAgent::CreateCSSId(blink::Animation& animation) {
     NOTREACHED();
   }
 
-  Element* element = effect->target();
+  Element* element = effect->EffectTarget();
   HeapVector<Member<CSSStyleDeclaration>> styles =
       css_agent_->MatchingStyles(element);
   Digestor digestor(kHashAlgorithmSha1);

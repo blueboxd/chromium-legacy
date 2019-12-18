@@ -126,7 +126,7 @@ public class SigninPromoUtil {
      */
     public static boolean startSigninActivityIfAllowed(
             Context context, @SigninAccessPoint int accessPoint) {
-        SigninManager signinManager = IdentityServicesProvider.getSigninManager();
+        SigninManager signinManager = IdentityServicesProvider.get().getSigninManager();
         if (signinManager.isSignInAllowed()) {
             SigninActivityLauncher.get().launchActivity(context, accessPoint);
             return true;

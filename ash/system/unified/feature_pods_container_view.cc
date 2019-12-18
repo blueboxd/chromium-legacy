@@ -79,7 +79,8 @@ int FeaturePodsContainerView::GetExpandedHeight() const {
 
   return kUnifiedFeaturePodBottomPadding +
          (kUnifiedFeaturePodVerticalPadding + kUnifiedFeaturePodSize.height()) *
-             number_of_lines;
+             std::max(0, number_of_lines - 1) +
+         kUnifiedFeaturePodSize.height() + kUnifiedFeaturePodTopPadding;
 }
 
 int FeaturePodsContainerView::GetCollapsedHeight() const {

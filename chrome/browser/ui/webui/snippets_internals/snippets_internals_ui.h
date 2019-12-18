@@ -29,17 +29,21 @@ class SnippetsInternalsUI
       mojo::PendingRemote<snippets_internals::mojom::Page> page,
       CreatePageHandlerCallback callback) override;
 
- private:
-  void BindSnippetsInternalsPageHandlerFactory(
+  // Instantiates the implementor of the mojom::PageHandlerFactory mojo
+  // interface passing the pending receiver that will be internally bound.
+  void BindInterface(
       mojo::PendingReceiver<snippets_internals::mojom::PageHandlerFactory>
           receiver);
 
+ private:
   std::unique_ptr<SnippetsInternalsPageHandler> page_handler_;
   ntp_snippets::ContentSuggestionsService* content_suggestions_service_;
   PrefService* pref_service_;
 
   // Receiver from the mojo interface to concrete impl.
   mojo::Receiver<snippets_internals::mojom::PageHandlerFactory> receiver_{this};
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(SnippetsInternalsUI);
 };

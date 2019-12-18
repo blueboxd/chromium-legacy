@@ -11,8 +11,7 @@ WebTouchEvent WebTouchEvent::FlattenTransform() const {
   for (unsigned i = 0; i < touches_length; ++i) {
     transformed_event.touches[i] = TouchPointInRootFrame(i);
   }
-  transformed_event.frame_translate_.x = 0;
-  transformed_event.frame_translate_.y = 0;
+  transformed_event.frame_translate_ = gfx::Vector2dF();
   transformed_event.frame_scale_ = 1;
 
   return transformed_event;
@@ -27,10 +26,8 @@ WebTouchPoint WebTouchEvent::TouchPointInRootFrame(unsigned point) const {
   transformed_point.radius_x /= frame_scale_;
   transformed_point.radius_y /= frame_scale_;
   transformed_point.SetPositionInWidget(
-      (transformed_point.PositionInWidget().x / frame_scale_) +
-          frame_translate_.x,
-      (transformed_point.PositionInWidget().y / frame_scale_) +
-          frame_translate_.y);
+      gfx::ScalePoint(transformed_point.PositionInWidget(), 1 / frame_scale_) +
+      frame_translate_);
   return transformed_point;
 }
 

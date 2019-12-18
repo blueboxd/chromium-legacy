@@ -24,6 +24,12 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobImpl
       std::unique_ptr<BlobDataHandle> handle,
       mojo::PendingReceiver<blink::mojom::Blob> receiver);
 
+  // Can be used to update the BlobDataHandle this BlobImpl refers to, for
+  // example to update it from one that doesn't have a valid size (when the
+  // BlobImpl was created) to one that has a valid size (after construction of
+  // the blob has completed). Both handles have to refer to the same blob.
+  void UpdateHandle(std::unique_ptr<BlobDataHandle> new_handle);
+
   // blink::mojom::Blob:
   void Clone(mojo::PendingReceiver<blink::mojom::Blob> receiver) override;
   void AsDataPipeGetter(

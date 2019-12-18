@@ -13,7 +13,8 @@ namespace gles2 {
 namespace {
 static const uint32_t kNewServiceId = 431;
 
-class TestSharedImageBackingPassthrough : public SharedImageBacking {
+class TestSharedImageBackingPassthrough
+    : public ClearTrackingSharedImageBacking {
  public:
   class TestSharedImageRepresentationPassthrough
       : public SharedImageRepresentationGLTexturePassthrough {
@@ -46,20 +47,16 @@ class TestSharedImageBackingPassthrough : public SharedImageBacking {
                                     const gfx::ColorSpace& color_space,
                                     uint32_t usage,
                                     GLuint texture_id)
-      : SharedImageBacking(mailbox,
-                           format,
-                           size,
-                           color_space,
-                           usage,
-                           0 /* estimated_size */,
-                           false /* is_thread_safe */) {
+      : ClearTrackingSharedImageBacking(mailbox,
+                                        format,
+                                        size,
+                                        color_space,
+                                        usage,
+                                        0 /* estimated_size */,
+                                        false /* is_thread_safe */) {
     texture_passthrough_ =
         base::MakeRefCounted<TexturePassthrough>(texture_id, GL_TEXTURE_2D);
   }
-
-  bool IsCleared() const override { return false; }
-
-  void SetCleared() override {}
 
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override {
     DCHECK(!in_fence);

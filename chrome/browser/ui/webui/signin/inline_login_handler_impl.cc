@@ -597,8 +597,7 @@ void InlineLoginHandlerImpl::CompleteLogin(const std::string& email,
   DCHECK(!auth_code.empty());
 
   content::StoragePartition* partition =
-      content::BrowserContext::GetStoragePartitionForSite(
-          contents->GetBrowserContext(), signin::GetSigninPartitionURL());
+      signin::GetSigninPartition(contents->GetBrowserContext());
 
   // If this was called from the user manager to reauthenticate the profile,
   // the current profile is the system profile.  In this case, use the email to

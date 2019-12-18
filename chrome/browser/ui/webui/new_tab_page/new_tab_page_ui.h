@@ -27,11 +27,13 @@ class NewTabPageUI : public ui::MojoWebUIController,
 
   static bool IsNewTabPageOrigin(const GURL& url);
 
- private:
-  void BindPageHandlerFactory(
+  // Instantiates the implementor of the mojom::PageHandlerFactory mojo
+  // interface passing the pending receiver that will be internally bound.
+  void BindInterface(
       mojo::PendingReceiver<new_tab_page::mojom::PageHandlerFactory>
           pending_receiver);
 
+ private:
   // new_tab_page::mojom::PageHandlerFactory:
   void CreatePageHandler(
       mojo::PendingRemote<new_tab_page::mojom::Page> pending_page,
@@ -44,6 +46,8 @@ class NewTabPageUI : public ui::MojoWebUIController,
       page_factory_receiver_;
 
   Profile* profile_;
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(NewTabPageUI);
 };

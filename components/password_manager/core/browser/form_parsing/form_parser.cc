@@ -42,6 +42,7 @@ constexpr char kAutocompleteUsername[] = "username";
 constexpr char kAutocompleteCurrentPassword[] = "current-password";
 constexpr char kAutocompleteNewPassword[] = "new-password";
 constexpr char kAutocompleteCreditCardPrefix[] = "cc-";
+constexpr char kAutocompleteOneTimePassword[] = "one-time-code";
 
 // The susbset of autocomplete flags related to passwords.
 enum class AutocompleteFlag {
@@ -49,8 +50,8 @@ enum class AutocompleteFlag {
   kUsername,
   kCurrentPassword,
   kNewPassword,
-  // Represents the whole family of cc-* flags.
-  kCreditCard
+  // Represents the whole family of cc-* flags + OTP flag.
+  kNonPassword
 };
 
 // The autocomplete attribute has one of the following structures:
@@ -61,7 +62,8 @@ enum class AutocompleteFlag {
 // For password forms, only the field_type is relevant. So parsing the attribute
 // amounts to just taking the last token.  If that token is one of "username",
 // "current-password" or "new-password", this returns an appropriate enum value.
-// If the token starts with a "cc-" prefix, this returns kCreditCard.
+// If the token starts with a "cc-" prefix or is "one-time-code" token, this
+// returns kNonPassword.
 // Otherwise, returns kNone.
 AutocompleteFlag ExtractAutocompleteFlag(const std::string& attribute) {
   std::vector<base::StringPiece> tokens =
@@ -78,10 +80,11 @@ AutocompleteFlag ExtractAutocompleteFlag(const std::string& attribute) {
   if (base::LowerCaseEqualsASCII(field_type, kAutocompleteNewPassword))
     return AutocompleteFlag::kNewPassword;
 
-  if (base::StartsWith(field_type, kAutocompleteCreditCardPrefix,
-                       base::CompareCase::SENSITIVE))
-    return AutocompleteFlag::kCreditCard;
-
+  if (base::LowerCaseEqualsASCII(field_type, kAutocompleteOneTimePassword) ||
+      base::StartsWith(field_type, kAutocompleteCreditCardPrefix,
+                       base::CompareCase::SENSITIVE)) {
+    return AutocompleteFlag::kNonPassword;
+  }
   return AutocompleteFlag::kNone;
 }
 
@@ -153,7 +156,7 @@ bool StringMatchesOTP(const base::string16& str) {
 // Number or one-time password.
 bool IsNotPasswordField(const ProcessedField& field) {
   return field.server_hints_not_password ||
-         field.autocomplete_flag == AutocompleteFlag::kCreditCard ||
+         field.autocomplete_flag == AutocompleteFlag::kNonPassword ||
          StringMatchesCVC(field.field->name_attribute) ||
          StringMatchesCVC(field.field->id_attribute) ||
          StringMatchesSSN(field.field->name_attribute) ||
@@ -477,7 +480,7 @@ void ParseUsingAutocomplete(const std::vector<ProcessedField>& processed_fields,
         else if (!result->confirmation_password)
           result->confirmation_password = processed_field.field;
         break;
-      case AutocompleteFlag::kCreditCard:
+      case AutocompleteFlag::kNonPassword:
       case AutocompleteFlag::kNone:
         break;
     }

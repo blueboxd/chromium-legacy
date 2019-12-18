@@ -120,6 +120,7 @@ class CSSProperties(object):
             property_['in_origin_trial'] = False
             self.expand_origin_trials(property_, origin_trial_features)
             self.expand_ua(property_)
+            self.expand_slots(property_)
 
         self._aliases = [
             property_ for property_ in properties if property_['alias_for']]
@@ -187,6 +188,20 @@ class CSSProperties(object):
         assert 'visited_property' not in unvisited_property, \
             'A property may not have multiple visited properties'
         unvisited_property['visited_property'] = property_
+
+    def expand_slots(self, property_):
+        if not property_['slots']:
+            return
+        assert not property_['is_slot'], \
+            'A slot (is_slot:true) may not reference slots'
+        # Verify that referenced slots have is_slot==True.
+        for slot in property_['slots']:
+            assert slot in self._properties_by_name, \
+                'Slots must name a property'
+            assert self._properties_by_name[slot]['is_slot'], \
+                'Referenced slot is not marked as a slot'
+        # Upgrade 'slots' to property references.
+        property_['slots'] = [self._properties_by_name[s] for s in property_['slots']]
 
     def expand_ua(self, ua_property_):
         if not ua_property_['ua_property_for']:

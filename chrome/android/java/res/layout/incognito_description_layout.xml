@@ -20,7 +20,7 @@
         android:layout_height="wrap_content"
         tools:ignore="ContentDescription"
         android:src="@drawable/incognito_splash"
-        app:tint="@color/default_icon_color_white" />
+        app:tint="@color/ntp_incognito_icon_color" />
 
     <TextView
         android:id="@+id/new_tab_incognito_title"

@@ -176,6 +176,18 @@
       ToolbarExpandedHeight(self.traitCollection.preferredContentSizeCategory));
 }
 
+- (void)willMoveToWindow:(UIWindow*)newWindow {
+  [super willMoveToWindow:newWindow];
+  [NamedGuide guideWithName:kPrimaryToolbarGuide view:self].constrainedView =
+      nil;
+}
+
+- (void)didMoveToWindow {
+  [super didMoveToWindow];
+  [NamedGuide guideWithName:kPrimaryToolbarGuide view:self].constrainedView =
+      self;
+}
+
 #pragma mark - Setup
 
 // Sets up the toolbar background.

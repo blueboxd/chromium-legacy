@@ -15,6 +15,10 @@ typedef NSString GuideName;
 
 // A guide that is constrained to match the frame of the tab's content area.
 extern GuideName* const kContentAreaGuide;
+// A guide that is constrained to match the frame of the primary toolbar. This
+// follows the frame of the primary toolbar even when that frame shrinks due to
+// fullscreen. It does not include the tab strip on iPad.
+extern GuideName* const kPrimaryToolbarGuide;
 // A guide that is constrained to match the frame of the secondary toolbar.
 extern GuideName* const kSecondaryToolbarGuide;
 // A guide that is constrained to match the frame the secondary toolbar would

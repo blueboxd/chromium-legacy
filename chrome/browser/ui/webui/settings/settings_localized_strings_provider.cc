@@ -60,6 +60,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/driver/sync_user_settings.h"
+#include "components/zoom/page_zoom_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
@@ -772,6 +773,9 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
 #endif
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+
+  html_source->AddString("presetZoomFactors",
+                         zoom::GetPresetZoomFactorsAsJSON());
 }
 
 #if defined(OS_CHROMEOS)

@@ -98,6 +98,8 @@ constexpr char kScreenContextQuery[] = "screen context";
 
 constexpr float kDefaultSliderStep = 0.1f;
 
+constexpr char kAndroidSettingsAppPackage[] = "com.android.settings";
+
 bool IsScreenContextAllowed(ash::AssistantStateBase* assistant_state) {
   return assistant_state->allowed_state() ==
              ash::mojom::AssistantAllowedState::ALLOWED &&
@@ -1330,6 +1332,10 @@ void AssistantManagerServiceImpl::OnAndroidAppListRefreshed(
     std::vector<mojom::AndroidAppInfoPtr> apps_info) {
   std::vector<action::AndroidAppInfo> android_apps_info;
   for (const auto& app_info : apps_info) {
+    // TODO(b/146355799): Remove the special handling for Android settings app.
+    if (app_info->package_name == kAndroidSettingsAppPackage)
+      continue;
+
     android_apps_info.push_back({app_info->package_name, app_info->version,
                                  app_info->localized_app_name,
                                  app_info->intent});

@@ -143,6 +143,9 @@ ul {
 }
 
 /** Tree nodes */
+[role="treeitem"] {
+  position: relative;
+}
 .node {
   display: flex;
   padding-right: 8px;
@@ -151,7 +154,6 @@ ul {
   text-decoration: none;
   color: inherit;
   border-radius: 4px;
-  position: relative;
 }
 .node:hover {
   background: #f1f3f4;

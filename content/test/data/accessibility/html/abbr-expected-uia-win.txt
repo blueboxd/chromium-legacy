@@ -1,5 +1,5 @@
 document
-++group
+++group IsControlElement=false
 ++++description Name='The '
 ++++description Name='World Health Organization'
 ++++++description Name='WHO'

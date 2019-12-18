@@ -907,8 +907,6 @@ class CORE_EXPORT NGConstraintSpace final {
              is_orthogonal_writing_mode_root ==
                  other.is_orthogonal_writing_mode_root &&
              is_intermediate_layout == other.is_intermediate_layout &&
-             is_fixed_block_size_indefinite ==
-                 other.is_fixed_block_size_indefinite &&
              is_restricted_block_size_table_cell ==
                  other.is_restricted_block_size_table_cell &&
              use_first_line_style == other.use_first_line_style &&

@@ -557,8 +557,7 @@ bool IsSigninFrameClientCertUserSelectionEnabled() {
 }
 
 bool ShouldShowShelfHotseat() {
-  return base::FeatureList::IsEnabled(features::kShelfHotseat) ||
-         base::CommandLine::ForCurrentProcess()->HasSwitch(kShelfHotseat);
+  return base::FeatureList::IsEnabled(features::kShelfHotseat);
 }
 
 bool ShouldShowShelfHoverPreviews() {

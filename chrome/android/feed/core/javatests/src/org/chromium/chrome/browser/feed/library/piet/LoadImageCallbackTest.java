@@ -26,7 +26,6 @@ import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -42,7 +41,8 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 @org.robolectric.annotation.Config(sdk = 27, manifest = org.robolectric.annotation.Config.NONE)
 public class LoadImageCallbackTest {
     private static final long FADE_IMAGE_THRESHOLD_MS = 682L;
-    private static final Integer NO_OVERLAY_COLOR = 0;
+    // null is a special value indicating no overlay.
+    private static final Integer NO_OVERLAY_COLOR = null;
     private static final boolean FADE_IMAGE = true;
     private static final boolean NO_FADE_IMAGE = false;
 
@@ -74,7 +74,6 @@ public class LoadImageCallbackTest {
     }
 
     @Test
-    @Ignore("crbug.com/1024945 Test fails, needs debugging")
     public void testInitialDrawable_fromImageView() {
         ImageView imageView = new ImageView(mContext);
         imageView.setImageDrawable(mInitialDrawable);
@@ -112,7 +111,6 @@ public class LoadImageCallbackTest {
     }
 
     @Test
-    @Ignore("crbug.com/1024945 Test fails, needs debugging")
     public void testQuickLoad_doesntFade_fadingDisabled() {
         ImageView imageView = new ImageView(mContext);
 
@@ -126,7 +124,6 @@ public class LoadImageCallbackTest {
     }
 
     @Test
-    @Ignore("crbug.com/1024945 Test fails, needs debugging")
     public void testQuickLoad_doesntFade_loadsBeforeTimeout() {
         ImageView imageView = new ImageView(mContext);
 
@@ -140,7 +137,6 @@ public class LoadImageCallbackTest {
     }
 
     @Test
-    @Ignore("crbug.com/1024945 Test fails, needs debugging")
     public void testDelayedTask() {
         ImageView imageView = new ImageView(mContext);
         LoadImageCallback callback = new LoadImageCallback(imageView, ScaleType.CENTER,
@@ -182,7 +178,6 @@ public class LoadImageCallbackTest {
     }
 
     @Test
-    @Ignore("crbug.com/1024945 Test fails, needs debugging")
     public void testSetsOverlayColor_null() {
         ImageView imageView = new ImageView(mContext);
         LoadImageCallback callback = new LoadImageCallback(imageView, ScaleType.CENTER,

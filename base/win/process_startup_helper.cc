@@ -18,8 +18,10 @@ namespace {
 // call stacks from /OPT:ICF function folding. Printing a unique message or
 // returning a unique value will do this. Note that for best results they need
 // to be unique from *all* functions in Chrome.
-void InvalidParameter(const wchar_t* expression, const wchar_t* function,
-                      const wchar_t* file, unsigned int line,
+void InvalidParameter(const wchar_t* expression,
+                      const wchar_t* function,
+                      const wchar_t* file,
+                      unsigned int line,
                       uintptr_t reserved) {
   __debugbreak();
   // Use a different exit code from PureCall to avoid COMDAT folding.

@@ -16,20 +16,20 @@ document
 ++description Name=' '
 ++link Name='Paragraph with content'
 ++++description Name='Paragraph with content' IsControlElement=false
-++group
+++group IsControlElement=false
 ++++link
 ++++description Name='After empty anchor'
-++group
+++group IsControlElement=false
 ++++link Name='Anchor with content'
 ++++++description Name='Anchor with content'
-++group
+++group IsControlElement=false
 ++++link Name='Anchor with ID'
 ++++++description Name='Anchor with ID'
-++group
-++++group
+++group IsControlElement=false
+++++group IsControlElement=false
 ++++description Name='After empty span'
-++group
-++++group
+++group IsControlElement=false
+++++group IsControlElement=false
 ++++++description Name='Span with content'
-++group
+++group IsControlElement=false
 ++++description Name='Paragraph with content'

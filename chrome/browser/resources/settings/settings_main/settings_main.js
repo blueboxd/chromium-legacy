@@ -78,12 +78,6 @@ Polymer({
      * @type {!PageVisibility}
      */
     pageVisibility: Object,
-
-    showAndroidApps: Boolean,
-
-    showParentalControls: Boolean,
-
-    havePlayStoreApp: Boolean,
   },
 
   /** @private */

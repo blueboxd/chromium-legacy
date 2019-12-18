@@ -6,10 +6,18 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator_delegate.h"
+#import "ios/chrome/browser/ui/overlays/overlay_request_mediator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+@interface OverlayRequestCoordinator () <OverlayRequestMediatorDelegate> {
+  // Subclassing properties.
+  BOOL _started;
+  OverlayRequestMediator* _mediator;
+}
+@end
 
 @implementation OverlayRequestCoordinator
 
@@ -63,6 +71,34 @@
 
 - (void)stop {
   [self stopAnimated:YES];
+}
+
+#pragma mark - OverlayRequestMediatorDelegate
+
+- (void)stopOverlayForMediator:(OverlayRequestMediator*)mediator {
+  [self stopAnimated:YES];
+}
+
+@end
+
+@implementation OverlayRequestCoordinator (Subclassing)
+
+- (void)setStarted:(BOOL)started {
+  _started = started;
+}
+
+- (BOOL)isStarted {
+  return _started;
+}
+
+- (void)setMediator:(OverlayRequestMediator*)mediator {
+  _mediator.delegate = nil;
+  _mediator = mediator;
+  _mediator.delegate = self;
+}
+
+- (OverlayRequestMediator*)mediator {
+  return _mediator;
 }
 
 @end

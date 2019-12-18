@@ -366,8 +366,8 @@ void PointerEventManager::AdjustTouchPointerEvent(
       HitTestRequest::kRetargetForInert;
   LocalFrame& root_frame = frame_->LocalFrameRoot();
   // TODO(szager): Shouldn't this be PositionInScreen() ?
-  PhysicalOffset hit_test_point =
-      PhysicalOffset::FromFloatPointRound(pointer_event.PositionInWidget());
+  PhysicalOffset hit_test_point = PhysicalOffset::FromFloatPointRound(
+      FloatPoint(pointer_event.PositionInWidget()));
   hit_test_point -= PhysicalOffset(hit_rect_size * 0.5f);
   HitTestLocation location(PhysicalRect(hit_test_point, hit_rect_size));
   HitTestResult hit_test_result =
@@ -381,7 +381,8 @@ void PointerEventManager::AdjustTouchPointerEvent(
     pointer_event.SetPositionInWidget(adjusted_point.X(), adjusted_point.Y());
 
   frame_->GetEventHandler().CacheTouchAdjustmentResult(
-      pointer_event.unique_touch_event_id, pointer_event.PositionInWidget());
+      pointer_event.unique_touch_event_id,
+      FloatPoint(pointer_event.PositionInWidget()));
 }
 
 bool PointerEventManager::ShouldFilterEvent(PointerEvent* pointer_event) {
@@ -424,7 +425,7 @@ PointerEventManager::ComputePointerEventTarget(
         HitTestRequest::kActive | HitTestRequest::kRetargetForInert;
     HitTestLocation location(frame_->View()->ConvertFromRootFrame(
         PhysicalOffset::FromFloatPointRound(
-            web_pointer_event.PositionInWidget())));
+            FloatPoint(web_pointer_event.PositionInWidget()))));
     HitTestResult hit_test_tesult =
         frame_->GetEventHandler().HitTestResultAtLocation(location, hit_type);
     Element* target = hit_test_tesult.InnerElement();
@@ -706,8 +707,8 @@ WebInputEventResult PointerEventManager::DirectDispatchMousePointerEvent(
     return result;
   }
   pointer_event_factory_.SetLastPosition(
-      pointer_event_factory_.GetPointerEventId(event), event.PositionInScreen(),
-      event.GetType());
+      pointer_event_factory_.GetPointerEventId(event),
+      FloatPoint(event.PositionInScreen()), event.GetType());
 
   return WebInputEventResult::kHandledSuppressed;
 }
@@ -1084,9 +1085,9 @@ void PointerEventManager::SetLastPointerPositionForFrameBoundary(
     pointer_event_factory_.RemoveLastPosition(pointer_id);
   } else if (!last_target || new_target->GetDocument().GetFrame() !=
                                  last_target->GetDocument().GetFrame()) {
-    pointer_event_factory_.SetLastPosition(pointer_id,
-                                           web_pointer_event.PositionInScreen(),
-                                           web_pointer_event.GetType());
+    pointer_event_factory_.SetLastPosition(
+        pointer_id, FloatPoint(web_pointer_event.PositionInScreen()),
+        web_pointer_event.GetType());
   }
 }
 

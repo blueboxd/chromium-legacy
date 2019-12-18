@@ -2568,14 +2568,6 @@ const char kEnableRevampedContextMenuDescription[] =
     "Enables a revamped context menu when a link, image, or video is long "
     "pressed within Chrome.";
 
-const char kEnableNtpRemoteSuggestionsName[] =
-    "Show server-side suggestions on the New Tab page";
-const char kEnableNtpRemoteSuggestionsDescription[] =
-    "If enabled, the list of content suggestions on the New Tab page will "
-    "contain server-side suggestions (e.g., Articles for you). Furthermore, it "
-    "allows to override the source used to retrieve these server-side "
-    "suggestions.";
-
 const char kEnableOfflinePreviewsName[] = "Offline Page Previews";
 const char kEnableOfflinePreviewsDescription[] =
     "Enable showing offline page previews on slow networks.";

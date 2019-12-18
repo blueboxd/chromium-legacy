@@ -427,7 +427,7 @@ class URLLoaderTest : public testing::Test {
         base::FilePath(FILE_PATH_LITERAL("services/test/data")));
     // This Unretained is safe because test_server_ is owned by |this|.
     test_server_.RegisterRequestMonitor(
-        base::Bind(&URLLoaderTest::Monitor, base::Unretained(this)));
+        base::BindRepeating(&URLLoaderTest::Monitor, base::Unretained(this)));
     ASSERT_TRUE(test_server_.Start());
 
     // Set up a scoped host resolver so that |kInsecureHost| will resolve to
@@ -690,7 +690,7 @@ class URLLoaderTest : public testing::Test {
             MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
             MOJO_WATCH_CONDITION_SATISFIED,
             base::BindRepeating(
-                [](base::Closure quit, MojoResult result,
+                [](base::RepeatingClosure quit, MojoResult result,
                    const mojo::HandleSignalsState& state) { quit.Run(); },
                 run_loop.QuitClosure()));
         run_loop.Run();
@@ -1585,7 +1585,7 @@ class CallbackSavingNetworkContextClient : public TestNetworkContextClient {
                              OnFileUploadRequestedCallback callback) override {
     file_upload_requested_callback_ = std::move(callback);
     if (quit_closure_for_on_file_upload_requested_)
-      quit_closure_for_on_file_upload_requested_.Run();
+      std::move(quit_closure_for_on_file_upload_requested_).Run();
   }
 
   void RunUntilUploadRequested(OnFileUploadRequestedCallback* callback) {
@@ -1593,13 +1593,12 @@ class CallbackSavingNetworkContextClient : public TestNetworkContextClient {
       base::RunLoop run_loop;
       quit_closure_for_on_file_upload_requested_ = run_loop.QuitClosure();
       run_loop.Run();
-      quit_closure_for_on_file_upload_requested_.Reset();
     }
     *callback = std::move(file_upload_requested_callback_);
   }
 
  private:
-  base::Closure quit_closure_for_on_file_upload_requested_;
+  base::OnceClosure quit_closure_for_on_file_upload_requested_;
   OnFileUploadRequestedCallback file_upload_requested_callback_;
 };
 

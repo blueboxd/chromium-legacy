@@ -1511,8 +1511,17 @@ TEST_F(OptimizationGuideHintsManagerTest,
   EXPECT_FALSE(navigation_data->has_page_hint_value());
 }
 
-TEST_F(OptimizationGuideHintsManagerTest,
-       CanApplyOptimizationAndPopulatesMetadataWithFirstOptThatMatchesWithExp) {
+#if defined(THREAD_SANITIZER)
+// Data race which TSan detects: https://crbug.com/1035004
+#define MAYBE_CanApplyOptimizationAndPopulatesMetadataWithFirstOptThatMatchesWithExp \
+  DISABLED_CanApplyOptimizationAndPopulatesMetadataWithFirstOptThatMatchesWithExp
+#else
+#define MAYBE_CanApplyOptimizationAndPopulatesMetadataWithFirstOptThatMatchesWithExp \
+  CanApplyOptimizationAndPopulatesMetadataWithFirstOptThatMatchesWithExp
+#endif
+TEST_F(
+    OptimizationGuideHintsManagerTest,
+    MAYBE_CanApplyOptimizationAndPopulatesMetadataWithFirstOptThatMatchesWithExp) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeatureWithParameters(
       optimization_guide::features::kOptimizationHintsExperiments,

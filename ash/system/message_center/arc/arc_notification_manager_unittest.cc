@@ -16,8 +16,8 @@
 #include "components/arc/session/connection_holder.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_notifications_instance.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/fake_message_center.h"
 #include "ui/message_center/message_center_observer.h"
@@ -134,14 +134,14 @@ class ArcNotificationManagerTest : public testing::Test {
     return key;
   }
 
-  void FlushInstanceCall() { binding_->FlushForTesting(); }
+  void FlushInstanceCall() { receiver_->FlushForTesting(); }
 
   void ConnectMojoChannel() {
-    binding_ =
-        std::make_unique<mojo::Binding<arc::mojom::NotificationsInstance>>(
+    receiver_ =
+        std::make_unique<mojo::Receiver<arc::mojom::NotificationsInstance>>(
             arc_notifications_instance_.get());
     arc::mojom::NotificationsInstancePtr instance_ptr;
-    binding_->Bind(mojo::MakeRequest(&instance_ptr));
+    receiver_->Bind(mojo::MakeRequest(&instance_ptr));
 
     arc_notification_manager_->SetInstance(std::move(instance_ptr));
     WaitForInstanceReady(
@@ -162,7 +162,7 @@ class ArcNotificationManagerTest : public testing::Test {
   void TearDown() override {
     arc_notification_manager_.reset();
     message_center_.reset();
-    binding_.reset();
+    receiver_.reset();
     arc_notifications_instance_.reset();
     base::RunLoop().RunUntilIdle();
   }
@@ -170,7 +170,7 @@ class ArcNotificationManagerTest : public testing::Test {
   base::test::SingleThreadTaskEnvironment task_environment_;
   TestArcAppIdProvider app_id_provider_;
   std::unique_ptr<arc::FakeNotificationsInstance> arc_notifications_instance_;
-  std::unique_ptr<mojo::Binding<arc::mojom::NotificationsInstance>> binding_;
+  std::unique_ptr<mojo::Receiver<arc::mojom::NotificationsInstance>> receiver_;
   std::unique_ptr<ArcNotificationManager> arc_notification_manager_;
   std::unique_ptr<MockMessageCenter> message_center_;
 

@@ -75,8 +75,8 @@ void PrintTouchList(WebTestDelegate* delegate,
                     int length) {
   for (int i = 0; i < length; ++i) {
     delegate->PrintMessage(base::StringPrintf(
-        "* %.2f, %.2f: %s\n", points[i].PositionInWidget().x,
-        points[i].PositionInWidget().y, PointState(points[i].state)));
+        "* %.2f, %.2f: %s\n", points[i].PositionInWidget().x(),
+        points[i].PositionInWidget().y(), PointState(points[i].state)));
   }
 }
 
@@ -91,14 +91,14 @@ void PrintEventDetails(WebTestDelegate* delegate,
     const blink::WebMouseEvent& mouse =
         static_cast<const blink::WebMouseEvent&>(event);
     delegate->PrintMessage(base::StringPrintf("* %.2f, %.2f\n",
-                                              mouse.PositionInWidget().x,
-                                              mouse.PositionInWidget().y));
+                                              mouse.PositionInWidget().x(),
+                                              mouse.PositionInWidget().y()));
   } else if (blink::WebInputEvent::IsGestureEventType(event.GetType())) {
     const blink::WebGestureEvent& gesture =
         static_cast<const blink::WebGestureEvent&>(event);
     delegate->PrintMessage(base::StringPrintf("* %.2f, %.2f\n",
-                                              gesture.PositionInWidget().x,
-                                              gesture.PositionInWidget().y));
+                                              gesture.PositionInWidget().x(),
+                                              gesture.PositionInWidget().y()));
   }
 }
 

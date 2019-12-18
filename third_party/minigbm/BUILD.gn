@@ -7,11 +7,10 @@ import("//build/config/linux/pkg_config.gni")
 assert(is_linux)
 
 declare_args() {
-  # Controls whether the build should use the version of minigbm library
-  # shipped with the system. In release builds of Chrome OS we use the
-  # system version, but when building on dev workstations or the Chrome
-  # waterfall we bundle it because Ubuntu doesn't ship a usable version.
-  use_system_minigbm = false
+  # Controls whether the build should use the version of minigbm library shipped
+  # with the system. In release builds of desktop Linux and Chrome OS we use the
+  # system version.
+  use_system_minigbm = is_desktop_linux
 
   use_amdgpu_minigbm = false
   use_exynos_minigbm = false

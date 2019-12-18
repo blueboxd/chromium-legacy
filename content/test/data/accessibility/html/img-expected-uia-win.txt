@@ -1,5 +1,5 @@
 document
-++group
+++group IsControlElement=false
 ++++img Name='pipe'
 ++++description Name=' '
 ++++description Name=' '

@@ -15,7 +15,6 @@ js_library("basic_page") {
     "..:page_visibility",
     "..:route",
     "..:search_settings",
-    "../android_apps_page:android_apps_browser_proxy",
     "../change_password_page:change_password_browser_proxy",
     "../chrome_cleanup_page:chrome_cleanup_proxy",
     "../prefs:prefs_behavior",

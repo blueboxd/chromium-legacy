@@ -23,6 +23,7 @@ source_set("drm") {
 source_set("gbm") {
   sources = [
     "gbm_buffer.h",
+    "gbm_defines.h",
     "gbm_device.h",
     "gbm_wrapper.cc",
     "gbm_wrapper.h",

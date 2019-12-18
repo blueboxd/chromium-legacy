@@ -2527,7 +2527,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4572779512957829735">Zadejte PIN bezpečnostního klíče</translation>
 <translation id="457386861538956877">Další...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Párování zařízení Bluetooth</translation>
 <translation id="4579581181964204535"><ph name="HOST_NAME" /> nelze odeslat.</translation>
 <translation id="4581774856936278355">Při obnovování systému Linux došlo k chybě</translation>
 <translation id="4582563038311694664">Resetovat všechna nastavení</translation>
@@ -4867,7 +4866,6 @@ V zařízení se systémem Chrome OS můžete aktivovat funkce ladění, abyste
 <translation id="7974936243149753750">Přesah obrazu</translation>
 <translation id="7978412674231730200">Soukromý klíč</translation>
 <translation id="7978450511781612192">Tímto se odhlásíte ze svých účtů Google. Vaše záložky, historie, hesla a další údaje již nebudou synchronizovány.</translation>
-<translation id="7979036127916589816">Chyba synchronizace</translation>
 <translation id="7980084013673500153">ID díla: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Předběžně načítat stránky pro rychlejší procházení a vyhledávání</translation>
 <translation id="798145602633458219">Přidat návrh <ph name="SUGGESTION_NAME" /> do vyhledávacího pole</translation>
@@ -5315,6 +5313,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="862542460444371744">Rozšíř&amp;ení</translation>
 <translation id="862727964348362408">Pozastaveno</translation>
 <translation id="862750493060684461">Mezipaměť CSS</translation>
+<translation id="8627706565932943526">Chyba synchronizace</translation>
 <translation id="8627795981664801467">Pouze zabezpečená spojení</translation>
 <translation id="8630903300770275248">Importovat dozorovaného uživatele</translation>
 <translation id="8631032106121706562">Kopretina</translation>

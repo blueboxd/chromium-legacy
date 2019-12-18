@@ -1589,7 +1589,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       정책을 설정하는 경우 'tls1', 'tls1.1', 'tls1.2' 중 하나로 설정할 수 있으며, 버전을 설정하면 <ph name="PRODUCT_NAME" />에서 지정된 버전보다 낮은 SSL/TLS 버전은 사용되지 않습니다. 인식할 수 없는 값은 무시됩니다.</translation>
 <translation id="34160070798637152">기기 전체 네트워크 구성을 제어합니다.</translation>
-<translation id="3417130629744653218">웹사이트가 사용 가능한 결제 수단을 쿼리하도록 허용합니다.</translation>
+<translation id="3417130629744653218">웹사이트가 사용 가능한 결제 수단을 쿼리하도록 허용</translation>
 <translation id="3417418267404583991">이 정책을 true로 설정하거나 구성하지 않으면 <ph name="PRODUCT_OS_NAME" />은(는) 게스트 로그인을 사용합니다. 게스트 로그인은 익명 사용자 세션이며 비밀번호가 필요없습니다.
 
       이 정책을 false로 설정하면, <ph name="PRODUCT_OS_NAME" />은(는) 게스트 세션을 시작하지 않습니다.</translation>
@@ -1945,13 +1945,13 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           정책이 설정되면 사용자가 변경하거나 재정의할 수 없습니다.
 
           설정되지 않으면 처음에는 로그인 화면에서 가상 키보드가 사용되지 않지만 사용자가 언제든지 사용 설정할 수 있습니다.</translation>
-<translation id="3913530489429898348"><ph name="PRODUCT_NAME" />에서 인쇄를 위해 <ph name="CLOUD_PRINT_NAME" />에 문서를 제출하도록 허용합니다.  참고: 이렇게 하면 <ph name="PRODUCT_NAME" />의 <ph name="CLOUD_PRINT_NAME" /> 지원 기능만 영향을 받으며  사용자는 웹사이트에서 인쇄 작업을 계속해서 제출할 수 있습니다.
+<translation id="3913530489429898348"><ph name="PRODUCT_NAME" />에서 인쇄를 위해 <ph name="CLOUD_PRINT_NAME" />에 문서를 보낼 수 있도록 허용합니다.  참고: 이렇게 하면 <ph name="PRODUCT_NAME" />의 <ph name="CLOUD_PRINT_NAME" /> 지원 기능만 영향을 받으며  사용자는 웹사이트에서 인쇄 작업을 계속해서 보낼 수 있습니다.
 
       이 설정을 사용하거나 설정이 구성되어 있지 않으면 사용자는 <ph name="PRODUCT_NAME" /> 인쇄 대화상자에서 <ph name="CLOUD_PRINT_NAME" />(으)로 인쇄할 수 있습니다.
 
       설정을 사용 중지하면 사용자는 <ph name="PRODUCT_NAME" /> 인쇄 대화상자에서 <ph name="CLOUD_PRINT_NAME" />(으)로 인쇄할 수 없습니다.
 
-      <ph name="CLOUD_PRINT_NAME" /> 목적지를 검색 가능한 상태로 유지하려면 정책이 true로 설정되고 <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" />이(가) <ph name="POLICY_PRINTERTYPEDENYLIST" /> 정책에 포함되지 않아야 합니다.</translation>
+      <ph name="CLOUD_PRINT_NAME" /> 대상을 검색 가능한 상태로 유지하려면 정책이 true로 설정되고 <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" />이(가) <ph name="POLICY_PRINTERTYPEDENYLIST" /> 정책에 포함되지 않아야 합니다.</translation>
 <translation id="391531815696899618">True로 설정하면 <ph name="PRODUCT_OS_NAME" /> 파일 앱에서 Google 드라이브 동기화를 사용 중지합니다. 이런 경우 Google 드라이브에 데이터가 업로드되지 않습니다.
 
           설정하지 않거나 False로 설정하면 파일을 Google 드라이브에 전송할 수 있습니다.</translation>
@@ -2563,7 +2563,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="4978405676361550165">‘OffHours’ 정책이 설정된 경우, 정의된 기간 동안 지정된 기기 정책이 무시됩니다(이러한 정책의 기본 설정이 사용됨). 기기 정책은 Chrome에 의해 ‘OffHours’ 기간이 시작 또는 종료되는 모든 이벤트가 발생할 때마다 다시 적용됩니다. ‘OffHours’ 시간이 종료되고 기기 정책 설정이 변경되면(예: 사용자가 허용되지 않는 계정으로 로그인한 경우) 사용자는 알림을 수신하고 강제로 로그아웃됩니다.</translation>
 <translation id="4980635395568992380">데이터 유형:</translation>
 <translation id="4980794848194997251">이 정책은 브라우저에서 혼합 콘텐츠(HTTPS 사이트의 HTTP 콘텐츠)가 처리되는 방식을 관리합니다.
-       정책이 true로 설정되거나 설정되지 않으면 오디오 및 동영상이 혼합된 콘텐츠는 HTTPS로 자동 업그레이드되며(즉, 리소스를 HTTPS로 사용할 수 없는 경우 대체 요소 없이 URL이 HTTPS로 변환됨), 이미지 혼합 콘텐츠의 경우 URL 입력란에 '안전하지 않음' 경고가 표시됩니다.
+       정책이 true로 설정되거나 설정되지 않으면 오디오 및 동영상이 혼합된 콘텐츠는 HTTPS로 자동 업그레이드되며(즉, 리소스를 HTTPS로 사용할 수 없는 경우 대체 방법을 시도하지 않고 URL이 HTTPS로 변환됨), 이미지 혼합 콘텐츠의 경우 URL 입력란에 '안전하지 않음' 경고가 표시됩니다.
        정책이 false로 설정되면 오디오 및 동영상의 자동 업그레이드가 사용 중지되며 이미지에도 경고가 표시되지 않습니다.
        이 정책은 오디오, 동영상, 이미지 외 유형의 혼합 콘텐츠에 영향을 주지 않습니다.</translation>
 <translation id="4983201894483989687">오래된 플러그인 실행 허용</translation>
@@ -4164,8 +4164,8 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="7583419926951418342">이 정책은 Google 관리 콘솔에 브라우저 작동 정보를 업로드하는 <ph name="PRODUCT_NAME" /> 클라우드 보고 기능을 관리합니다.
 
       정책이 설정되지 않거나 false로 설정되면 데이터가 수집되거나 업로드되지 않습니다.
-      true로 설정되면 데이터가 수집되며 Google 관리 콘솔에 업로드됩니다.
-      업로드되는 데이터를 관리하려면 그룹 Chrome 보고 확장 프로그램의 정책을 사용하세요.
+      true로 설정되면 데이터가 수집되어 Google 관리 콘솔에 업로드됩니다.
+      업로드되는 데이터를 관리하려면 Chrome Reporting Extension 그룹의 정책을 사용하세요.
 
       <ph name="PRODUCT_NAME" />의 경우 이 정책은 기기가 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />에 등록되어 있는 경우에만 적용됩니다.
       <ph name="PRODUCT_OS_NAME" />의 경우 정책이 항상 적용됩니다.</translation>
@@ -4860,13 +4860,13 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 
       모든 프린터 유형을 거부 목록에 포함하면 인쇄가 사실상 사용 중지됩니다. 문서를 인쇄하기 위해 보낼 프린터가 없어지기 때문입니다.
 
-      거부 목록에 <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" />을(를) 포함하면 <ph name="POLICY_CLOUDPRINTSUBMITENABLED" /> 정책을 false로 설정하는 것과 동일한 효과가 나타납니다. <ph name="CLOUD_PRINT_NAME" /> 목적지를 검색 가능한 상태로 유지하려면 <ph name="POLICY_CLOUDPRINTSUBMITENABLED" /> 정책이 true로 설정되고 거부 목록에 <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" />이(가) 포함되지 않아야 합니다.
+      거부 목록에 <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" />을(를) 포함하면 <ph name="POLICY_CLOUDPRINTSUBMITENABLED" /> 정책을 false로 설정하는 것과 동일한 효과가 나타납니다. <ph name="CLOUD_PRINT_NAME" /> 대상을 검색 가능한 상태로 유지하려면 <ph name="POLICY_CLOUDPRINTSUBMITENABLED" /> 정책이 true로 설정되고 거부 목록에 <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" />이(가) 포함되지 않아야 합니다.
 
       정책이 설정되지 않거나 빈 목록으로 설정되어 있는 경우 모든 프린터 유형을 검색할 수 있습니다.
 
-      확장 프로그램 프린터는 인쇄 제공업체 목적지라고도 하며, <ph name="PRODUCT_NAME" /> 확장 프로그램에 속한 모든 목적지를 포함합니다.
+      확장 프로그램 프린터는 인쇄 제공업체 대상이라고도 하며, <ph name="PRODUCT_NAME" /> 확장 프로그램에 속한 모든 대상을 포함합니다.
 
-      로컬 프린터는 기본 인쇄 목적지라고도 하며, 로컬 컴퓨터에서 사용 가능한 인쇄 목적지와 공유 네트워크 프린터를 포함합니다.</translation>
+      로컬 프린터는 기본 인쇄 대상이라고도 하며, 로컬 컴퓨터에서 사용 가능한 인쇄 대상과 공유 네트워크 프린터를 포함합니다.</translation>
 <translation id="8752541111574086388">이 정책은 지원이 중단되었으며 <ph name="PRODUCT_OS_NAME" /> 버전 82에서 삭제될 예정입니다. 대신 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> 정책을 사용하세요.
 
           배터리 전원을 사용할 때 사용자의 입력 없이 어느 정도의 시간이 지나면 경고 대화상자가 표시될지 지정합니다.

@@ -476,9 +476,7 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindMouseEventTarget(
     // https://crbug.com/934434.
     if (event.GetType() == blink::WebInputEvent::kMouseUp &&
         target == last_mouse_down_target_ &&
-        mouse_down_pre_transformed_coordinate_ ==
-            gfx::PointF(event.PositionInWidget().x,
-                        event.PositionInWidget().y)) {
+        mouse_down_pre_transformed_coordinate_ == event.PositionInWidget()) {
       transformed_point = mouse_down_post_transformed_coordinate_;
       needs_transform_point = false;
     }
@@ -490,8 +488,7 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindMouseEventTarget(
         FindViewAtLocation(root_view, event.PositionInWidget(),
                            viz::EventSource::MOUSE, &transformed_point);
     if (event.GetType() == blink::WebInputEvent::kMouseDown) {
-      mouse_down_pre_transformed_coordinate_.SetPoint(
-          event.PositionInWidget().x, event.PositionInWidget().y);
+      mouse_down_pre_transformed_coordinate_ = event.PositionInWidget();
     }
     if (result.should_query_view)
       return {result.view, true, transformed_point, latched_target};
@@ -1903,9 +1900,8 @@ void RenderWidgetHostInputEventRouter::ForwardEmulatedTouchEvent(
 
   if (event.GetType() == blink::WebInputEvent::kTouchStart)
     active_touches_ += CountChangedTouchPoints(event);
-  blink::WebFloatPoint position_in_widget = event.touches[0].PositionInWidget();
   gfx::PointF transformed_point = target->TransformRootPointToViewCoordSpace(
-      gfx::PointF(position_in_widget.x, position_in_widget.y));
+      event.touches[0].PositionInWidget());
   DispatchTouchEvent(last_emulated_event_root_view_, target, event,
                      ui::LatencyInfo(), transformed_point, true /* emulated */);
 }

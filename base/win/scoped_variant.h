@@ -6,6 +6,7 @@
 #define BASE_WIN_SCOPED_VARIANT_H_
 
 #include <windows.h>
+
 #include <oleauto.h>
 #include <stdint.h>
 
@@ -66,9 +67,7 @@ class BASE_EXPORT ScopedVariant {
 
   ~ScopedVariant();
 
-  inline VARTYPE type() const {
-    return var_.vt;
-  }
+  inline VARTYPE type() const { return var_.vt; }
 
   // Give ScopedVariant ownership over an already allocated VARIANT.
   void Reset(const VARIANT& var = kEmptyVariant);
@@ -149,9 +148,7 @@ class BASE_EXPORT ScopedVariant {
 
   // Allows the ScopedVariant instance to be passed to functions either by value
   // or by const reference.
-  operator const VARIANT&() const {
-    return var_;
-  }
+  operator const VARIANT&() const { return var_; }
 
   // Used as a debug check to see if we're leaking anything.
   static bool IsLeakableVarType(VARTYPE vt);

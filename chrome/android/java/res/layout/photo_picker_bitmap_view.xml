@@ -34,27 +34,32 @@
             tools:ignore="ContentDescription"
             android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/video_duration"
+        <LinearLayout
+            android:id="@+id/video_controls_small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="3dp"
-            android:layout_marginEnd="6dp"
+            android:gravity="center_vertical"
             android:layout_gravity="end"
-            style="@style/TextAppearance.WhiteBody"/>
-    </FrameLayout>
+            android:visibility="gone">
 
-    <ImageView
-        android:id="@+id/play_video"
-        android:layout_width="26dp"
-        android:layout_height="26dp"
-        android:layout_marginStart="2dp"
-        android:layout_marginBottom="2dp"
-        android:layout_marginEnd="2dp"
-        android:contentDescription="@string/accessibility_play_video"
-        android:layout_gravity="bottom|end"
-        android:visibility="gone"
-        app:srcCompat="@drawable/ic_play_circle_filled_blue" />
+            <TextView
+                android:id="@+id/video_duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:layout_marginEnd="3dp"
+                style="@style/TextAppearance.WhiteBody"/>
+
+            <ImageView
+                android:id="@+id/small_play_button"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginTop="3dp"
+                android:layout_marginEnd="6dp"
+                android:contentDescription="@string/accessibility_play_video"
+                app:srcCompat="@drawable/ic_play_circle_24dp_white" />
+        </LinearLayout>
+    </FrameLayout>
 
     <ImageView
         android:id="@+id/selected"

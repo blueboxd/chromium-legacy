@@ -129,7 +129,7 @@ bool ClientNativePixmapDmaBuf::IsConfigurationSupported(
           format == gfx::BufferFormat::R_8 ||
           format == gfx::BufferFormat::RG_88 ||
           format == gfx::BufferFormat::YUV_420_BIPLANAR ||
-          format == gfx::BufferFormat::RGBX_1010102 ||
+          format == gfx::BufferFormat::RGBA_1010102 ||
           format == gfx::BufferFormat::BGRX_1010102 ||
 #endif
 

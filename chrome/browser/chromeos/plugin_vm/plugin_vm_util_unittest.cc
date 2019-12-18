@@ -98,6 +98,7 @@ TEST_F(PluginVmUtilTest, DriveLinkDetection) {
   EXPECT_FALSE(IsDriveUrl(GURL("https://othersite.com?id=" + file_id)));
   EXPECT_FALSE(
       IsDriveUrl(GURL("https://drive.google.com.othersite.com?id=" + file_id)));
+  EXPECT_FALSE(IsDriveUrl(GURL(base_url)));
 }
 
 TEST_F(PluginVmUtilTest, DriveLinkIdExtraction) {

@@ -82,6 +82,7 @@
 #else  // !OS_ANDROID
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/save_upi_bubble_controller_impl.h"
+#include "chrome/browser/ui/autofill/payments/virtual_card_selection_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_state.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_view.h"
@@ -327,6 +328,15 @@ void ChromeAutofillClient::ConfirmSaveUpiIdLocally(
   autofill::SaveUPIBubbleControllerImpl* controller =
       autofill::SaveUPIBubbleControllerImpl::FromWebContents(web_contents());
   controller->OfferUpiIdLocalSave(upi_id, std::move(callback));
+}
+
+void ChromeAutofillClient::OfferVirtualCardOptions(
+    const std::vector<CreditCard*>& candidates,
+    base::OnceCallback<void(const std::string&)> callback) {
+  VirtualCardSelectionDialogControllerImpl::CreateForWebContents(
+      web_contents());
+  VirtualCardSelectionDialogControllerImpl::FromWebContents(web_contents())
+      ->ShowDialog(candidates, std::move(callback));
 }
 #endif
 

@@ -95,7 +95,7 @@ public class FeedAppLifecycle
         }
 
         ApplicationStatus.registerStateListenerForAllActivities(this);
-        IdentityServicesProvider.getSigninManager().addSignInStateObserver(this);
+        IdentityServicesProvider.get().getSigninManager().addSignInStateObserver(this);
     }
 
     /**
@@ -127,7 +127,7 @@ public class FeedAppLifecycle
      * Unregisters listeners and cleans up any native resources held by FeedAppLifecycle.
      */
     public void destroy() {
-        IdentityServicesProvider.getSigninManager().removeSignInStateObserver(this);
+        IdentityServicesProvider.get().getSigninManager().removeSignInStateObserver(this);
         ApplicationStatus.unregisterActivityStateListener(this);
         mLifecycleBridge.destroy();
         mLifecycleBridge = null;

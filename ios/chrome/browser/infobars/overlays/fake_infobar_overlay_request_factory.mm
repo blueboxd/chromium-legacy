@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/infobars/overlays/fake_infobar_overlay_request_factory.h"
 
-#import "ios/chrome/browser/overlays/public/common/infobars/infobar_overlay.h"
+#import "ios/chrome/browser/overlays/public/common/infobars/infobar_overlay_request_config.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -19,5 +19,5 @@ std::unique_ptr<OverlayRequest>
 FakeInfobarOverlayRequestFactory::CreateInfobarRequest(
     infobars::InfoBar* infobar,
     InfobarOverlayType type) {
-  return OverlayRequest::CreateWithConfig<InfobarOverlayData>(infobar);
+  return OverlayRequest::CreateWithConfig<InfobarOverlayRequestConfig>(infobar);
 }

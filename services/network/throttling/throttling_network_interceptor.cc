@@ -217,8 +217,8 @@ void ThrottlingNetworkInterceptor::ArmTimer(base::TimeTicks now) {
   }
 
   timer_.Start(FROM_HERE, desired_time - now,
-               base::Bind(&ThrottlingNetworkInterceptor::OnTimer,
-                          base::Unretained(this)));
+               base::BindOnce(&ThrottlingNetworkInterceptor::OnTimer,
+                              base::Unretained(this)));
 }
 
 int ThrottlingNetworkInterceptor::StartThrottle(

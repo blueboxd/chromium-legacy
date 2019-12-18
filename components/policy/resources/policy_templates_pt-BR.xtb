@@ -2493,8 +2493,8 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 <translation id="4978405676361550165">Se a política "OffHours" for definida, as políticas do dispositivo especificadas serão ignoradas (use as configurações padrão dessas políticas) durante os intervalos de tempo definidos. As políticas do dispositivo são reaplicadas pelo Chrome em todos os eventos quando o período "OffHours" começa ou termina. O usuário será notificado e forçado a se desconectar quando o período "OffHours" terminar e as configurações de política do dispositivo forem alteradas (por exemplo, quando o usuário estiver conectado com uma conta que não seja permitida).</translation>
 <translation id="4980635395568992380">Tipo do dado:</translation>
 <translation id="4980794848194997251">Esta política controla o tratamento para conteúdo misto (conteúdo HTTP em sites HTTPS) no navegador.
-       Se a política for definida como verdadeira ou não for definida, os conteúdos mistos de áudio e vídeo serão automaticamente atualizados para HTTPS (por exemplo, o URL será reescrito como HTTPS, sem o substituto se a fonte não estiver disponível em HTTPS), e um aviso de "Não seguro" será exibido na barra de URL para conteúdo misto de imagem.
-       Se a política for definida como falsa, as atualizações automáticas serão desativadas para áudio e vídeo, e nenhum aviso será exibido para imagens.
+       Se a política for definida como "verdadeira" ou não for definida, os conteúdos mistos de áudio e vídeo serão automaticamente atualizados para HTTPS (por exemplo, o URL será reescrito como HTTPS, sem o substituto se a fonte não estiver disponível em HTTPS), e um aviso de "Não seguro" será exibido na barra de URL para conteúdo misto de imagem.
+       Se a política for definida como "falsa", as atualizações automáticas serão desativadas para áudio e vídeo, e nenhum aviso será exibido para imagens.
        Esta política só afeta tipos de conteúdo misto de áudio, vídeo e imagens.</translation>
 <translation id="4983201894483989687">Permitir a execução de plug-ins que estão desatualizados</translation>
 <translation id="4986560318567565414">Caminho para mudar do navegador alternativo para o Chrome.</translation>
@@ -2534,7 +2534,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="5067143124345820993">Lista de permissões de login de usuário</translation>
 <translation id="5073609397321802133">Se a política for definida como falsa, a página "Nova guia" não permitirá que os usuários personalizem o plano de fundo. Qualquer plano de fundo personalizado já existente será removido permanentemente, mesmo que a política seja definida como verdadeira mais tarde.
 
-      Se a política for definida como verdadeira ou não for definida, os usuários poderão personalizar o plano de fundo da página "Nova guia".</translation>
+      Se a política for definida como "verdadeira" ou não for definida, os usuários poderão personalizar o plano de fundo da página "Nova guia".</translation>
 <translation id="5075834892754086022">Se a política estiver definida, o tamanho máximo configurado para o PIN será imposto. O tamanho mínimo absoluto do PIN é 1. Valores menores que esse serão tratados como 1.
 
           Se a política não for definida, um tamanho mínimo de PIN de seis dígitos será imposto. Esse é o mínimo recomendado.</translation>
@@ -4028,10 +4028,10 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
       Quando a política não é definida ou é definida como 0, a navegação para um URL designado o abre imediatamente em um navegador alternativo.
 
       Quando a política é definida com um número diferente de 0, o Chrome exibe uma mensagem por vários milésimos de segundo e, em seguida, abre o navegador alternativo.</translation>
-<translation id="7583419926951418342">Esta política controla relatórios de nuvem de <ph name="PRODUCT_NAME" /> que faz upload de informação sobre a operação do navegador para o Google Admin Console.
+<translation id="7583419926951418342">Esta política controla relatórios de nuvem do <ph name="PRODUCT_NAME" />, que faz upload de informação sobre a operação do navegador para o Google Admin Console.
 
-      Quando esta política não é definida ou é definida como falsa, os dados não são coletados nem enviados por upload.
-      Quando esta política é definida como verdadeira, os dados são coletados e enviados por upload para o Google Admin Console.
+      Quando esta política não é definida ou é definida como "falsa", os dados não são coletados nem enviados por upload.
+      Quando esta política é definida como "verdadeira", os dados são coletados e enviados por upload para o Google Admin Console.
       Para controlar quais dados são enviados, use as políticas do grupo Chrome Reporting Extension.
 
       Para o <ph name="PRODUCT_NAME" />, esta política só é eficaz quando a máquina está inscrita no <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />.
@@ -4344,9 +4344,9 @@ Esses favoritos são colocados em uma pasta que não pode ser modificada pelo us
 <translation id="8114382167597081590">Não aplicar o Modo restrito no YouTube</translation>
 <translation id="8117921351531866504">Permite que você defina se os sites têm permissão de verificar se os usuários salvaram formas de pagamento.
 
-      Se esta política é definida como desativada, sites que usam a API PaymentRequest.canMakePayment ou PaymentRequest.hasEnrolledInstrument serão informados de que não há formas de pagamento disponíveis.
+      Se esta política for definida como "desativada", sites que usam a API PaymentRequest.canMakePayment ou PaymentRequest.hasEnrolledInstrument serão informados de que não há formas de pagamento disponíveis.
 
-      Se a configuração está ativada ou não está definida, os sites têm permissão de verificar se o usuário salvou formas de pagamento.</translation>
+      Se a configuração estiver ativada ou não estiver definida, os sites terão permissão para verificar se o usuário salvou formas de pagamento.</translation>
 <translation id="8118665053362250806">Definir tamanho do cache de disco da mídia</translation>
 <translation id="8124468781472887384">Política de acesso à configuração de impressoras do dispositivo.</translation>
 <translation id="8138009212169037227">Esta política controla a permissão de fornecimento dos dados da política e do horário de busca dela.
@@ -4707,7 +4707,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
       Se esta configuração estiver desativada, não será possível excluir o histórico de navegação e de download.</translation>
 <translation id="8749803771700374502">Se o tipo da impressora estiver na lista de proibições, não será possível descobrir esse equipamento ou buscar suas funcionalidades.
 
-      Colocar todos os tipos de impressora na lista de proibições desativa a impressão de modo eficaz, uma vez que não haveria destinos disponíveis para enviar um documento para impressão.
+      Colocar todos os tipos de impressora na lista de proibições desativa a impressão de modo eficaz porque não há destinos disponíveis para enviar um documento para impressão.
 
       Incluir <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" /> na lista de proibições tem o mesmo efeito que definir a política <ph name="POLICY_CLOUDPRINTSUBMITENABLED" /> como falsa. Para que os destinos da <ph name="CLOUD_PRINT_NAME" /> continuem disponíveis, é necessário que a política <ph name="POLICY_CLOUDPRINTSUBMITENABLED" /> seja definida como verdadeira e que <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" /> não esteja na lista de proibições.
 

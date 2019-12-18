@@ -5,6 +5,7 @@ luci.list_view(
         'try/android-kitkat-arm-rel',
         'try/android-marshmallow-arm64-rel',
         'try/android-oreo-arm64-cts-networkservice-dbg',
+        'try/android-pie-arm64-coverage-rel',
         'try/android-pie-arm64-rel',
         'try/android-webview-pie-arm64-fyi-rel',
         'try/android_archive_rel_ng',

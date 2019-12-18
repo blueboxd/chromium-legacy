@@ -6,17 +6,14 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_GESTURE_EVENT_H_
 
 #include "cc/paint/element_id.h"
-#include "third_party/blink/public/platform/web_float_size.h"
 #include "third_party/blink/public/platform/web_gesture_device.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_pointer_properties.h"
 #include "third_party/blink/public/platform/web_scroll_types.h"
 #include "ui/events/types/scroll_types.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace blink {
-
-// See web_input_event.h for details why this pack is here.
-#pragma pack(push, 4)
 
 // WebGestureEvent ---------------------------------------------------------
 
@@ -178,10 +175,10 @@ class WebGestureEvent : public WebInputEvent {
   // Widget coordinate, which is relative to the bound of current RenderWidget
   // (e.g. a plugin or OOPIF inside a RenderView). Similar to viewport
   // coordinates but without DevTools emulation transform or overscroll applied.
-  WebFloatPoint position_in_widget_;
+  gfx::PointF position_in_widget_;
 
   // Screen coordinate
-  WebFloatPoint position_in_screen_;
+  gfx::PointF position_in_screen_;
 
   WebGestureDevice source_device_;
 
@@ -197,14 +194,14 @@ class WebGestureEvent : public WebInputEvent {
       : WebInputEvent(sizeof(WebGestureEvent)),
         source_device_(WebGestureDevice::kUninitialized) {}
 
-  const WebFloatPoint& PositionInWidget() const { return position_in_widget_; }
-  const WebFloatPoint& PositionInScreen() const { return position_in_screen_; }
+  const gfx::PointF& PositionInWidget() const { return position_in_widget_; }
+  const gfx::PointF& PositionInScreen() const { return position_in_screen_; }
 
-  void SetPositionInWidget(const WebFloatPoint& point) {
+  void SetPositionInWidget(const gfx::PointF& point) {
     position_in_widget_ = point;
   }
 
-  void SetPositionInScreen(const WebFloatPoint& point) {
+  void SetPositionInScreen(const gfx::PointF& point) {
     position_in_screen_ = point;
   }
 
@@ -215,18 +212,18 @@ class WebGestureEvent : public WebInputEvent {
   BLINK_PLATFORM_EXPORT float DeltaXInRootFrame() const;
   BLINK_PLATFORM_EXPORT float DeltaYInRootFrame() const;
   BLINK_PLATFORM_EXPORT ui::input_types::ScrollGranularity DeltaUnits() const;
-  BLINK_PLATFORM_EXPORT WebFloatPoint PositionInRootFrame() const;
+  BLINK_PLATFORM_EXPORT gfx::PointF PositionInRootFrame() const;
   BLINK_PLATFORM_EXPORT InertialPhaseState InertialPhase() const;
   BLINK_PLATFORM_EXPORT bool Synthetic() const;
 
   BLINK_PLATFORM_EXPORT float VelocityX() const;
   BLINK_PLATFORM_EXPORT float VelocityY() const;
 
-  BLINK_PLATFORM_EXPORT WebFloatSize TapAreaInRootFrame() const;
+  BLINK_PLATFORM_EXPORT gfx::SizeF TapAreaInRootFrame() const;
   BLINK_PLATFORM_EXPORT int TapCount() const;
 
   BLINK_PLATFORM_EXPORT void ApplyTouchAdjustment(
-      WebFloatPoint root_frame_coords);
+      const gfx::PointF& root_frame_coords);
 
   // Sets any scaled values to be their computed values and sets |frame_scale_|
   // back to 1 and |frame_translate_| X and Y coordinates back to 0.
@@ -317,8 +314,6 @@ class WebGestureEvent : public WebInputEvent {
     }
   }
 };
-
-#pragma pack(pop)
 
 }  // namespace blink
 

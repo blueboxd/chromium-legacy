@@ -130,9 +130,3 @@ AppListControllerDelegate::Pinnable GetPinnableForAppID(
 
   return AppListControllerDelegate::PIN_EDITABLE;
 }
-
-bool IsCameraApp(const std::string& app_id) {
-  return app_id == arc::kCameraAppId || app_id == arc::kLegacyCameraAppId ||
-         app_id == arc::kCameraMigrationAppId ||
-         app_id == extension_misc::kChromeCameraAppId;
-}

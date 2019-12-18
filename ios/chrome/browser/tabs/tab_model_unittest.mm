@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/main/browser_web_state_list_delegate.h"
+#import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
@@ -21,6 +22,7 @@
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/web/chrome_web_client.h"
+#import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
@@ -68,6 +70,8 @@ class TabModelTest : public PlatformTest {
     TestChromeBrowserState::Builder test_cbs_builder;
     chrome_browser_state_ = test_cbs_builder.Build();
 
+    browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get(),
+                                             web_state_list_.get());
     // Web usage is disabled during these tests.
     web_usage_enabler_ =
         WebStateListWebUsageEnablerFactory::GetInstance()->GetForBrowserState(
@@ -75,6 +79,9 @@ class TabModelTest : public PlatformTest {
     web_usage_enabler_->SetWebUsageEnabled(false);
 
     session_window_ = [[SessionWindowIOS alloc] init];
+
+    TabInsertionBrowserAgent::CreateForBrowser(browser_.get());
+    agent_ = TabInsertionBrowserAgent::FromBrowser(browser_.get());
 
     // Create tab model with just a dummy session service so the async state
     // saving doesn't trigger unless actually wanted.
@@ -98,7 +105,7 @@ class TabModelTest : public PlatformTest {
     }
 
     tab_model_ = tab_model;
-    web_usage_enabler_->SetWebStateList(tab_model_.webStateList);
+    web_usage_enabler_->SetWebStateList(web_state_list_.get());
   }
 
   TabModel* CreateTabModel(SessionServiceIOS* session_service,
@@ -110,6 +117,19 @@ class TabModelTest : public PlatformTest {
     [tab_model restoreSessionWindow:session_window forInitialRestore:YES];
     [tab_model setPrimary:YES];
     return tab_model;
+  }
+
+  const web::NavigationManager::WebLoadParams Params(GURL url) {
+    return Params(url, ui::PAGE_TRANSITION_TYPED);
+  }
+
+  const web::NavigationManager::WebLoadParams Params(
+      GURL url,
+      ui::PageTransition transition) {
+    web::NavigationManager::WebLoadParams loadParams(url);
+    loadParams.referrer = web::Referrer();
+    loadParams.transition_type = transition;
+    return loadParams;
   }
 
  protected:
@@ -130,250 +150,124 @@ class TabModelTest : public PlatformTest {
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   web::ScopedTestingWebClient web_client_;
   std::unique_ptr<WebStateListDelegate> web_state_list_delegate_;
+
   std::unique_ptr<WebStateList> web_state_list_;
+  std::unique_ptr<Browser> browser_;
   SessionWindowIOS* session_window_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  TabInsertionBrowserAgent* agent_;
   WebStateListWebUsageEnabler* web_usage_enabler_;
   TabModel* tab_model_;
 };
 
 TEST_F(TabModelTest, IsEmpty) {
-  EXPECT_EQ([tab_model_ count], 0U);
+  EXPECT_EQ(web_state_list_->count(), 0);
   EXPECT_TRUE([tab_model_ isEmpty]);
-  [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                           referrer:web::Referrer()
-                         transition:ui::PAGE_TRANSITION_TYPED
-                             opener:nil
-                        openedByDOM:NO
-                            atIndex:0
-                       inBackground:NO];
-  ASSERT_EQ(1U, [tab_model_ count]);
+  agent_->InsertWebState(Params(GURL(kURL1)),
+                         /*parent=*/nil,
+                         /*opened_by_dom=*/false,
+                         /*index=*/0,
+                         /*in_background=*/false);
+  ASSERT_EQ(1, web_state_list_->count());
   EXPECT_FALSE([tab_model_ isEmpty]);
 }
 
-TEST_F(TabModelTest, InsertUrlSingle) {
-  web::WebState* web_state =
-      [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:0
-                           inBackground:NO];
-  ASSERT_EQ(1U, [tab_model_ count]);
-  EXPECT_EQ(web_state, tab_model_.webStateList->GetWebStateAt(0));
-}
-
-TEST_F(TabModelTest, BrowserStateDestroyedMultiple) {
-  [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                           referrer:web::Referrer()
-                         transition:ui::PAGE_TRANSITION_TYPED
-                             opener:nil
-                        openedByDOM:NO
-                            atIndex:0
-                       inBackground:NO];
-  [tab_model_ disconnect];
-  [tab_model_ disconnect];
-}
-
-TEST_F(TabModelTest, InsertUrlMultiple) {
-  web::WebState* web_state0 =
-      [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:0
-                           inBackground:NO];
-  web::WebState* web_state1 =
-      [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:0
-                           inBackground:NO];
-  web::WebState* web_state2 =
-      [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:1
-                           inBackground:NO];
-
-  ASSERT_EQ(3U, [tab_model_ count]);
-  EXPECT_EQ(web_state1, tab_model_.webStateList->GetWebStateAt(0));
-  EXPECT_EQ(web_state2, tab_model_.webStateList->GetWebStateAt(1));
-  EXPECT_EQ(web_state0, tab_model_.webStateList->GetWebStateAt(2));
-}
-
-TEST_F(TabModelTest, AppendUrlSingle) {
-  web::WebState* web_state =
-      [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:[tab_model_ count]
-                           inBackground:NO];
-  ASSERT_EQ(1U, [tab_model_ count]);
-  EXPECT_EQ(web_state, tab_model_.webStateList->GetWebStateAt(0));
-}
-
-TEST_F(TabModelTest, AppendUrlMultiple) {
-  web::WebState* web_state0 =
-      [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:[tab_model_ count]
-                           inBackground:NO];
-  web::WebState* web_state1 =
-      [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:[tab_model_ count]
-                           inBackground:NO];
-  web::WebState* web_state2 =
-      [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:[tab_model_ count]
-                           inBackground:NO];
-
-  ASSERT_EQ(3U, [tab_model_ count]);
-  EXPECT_EQ(web_state0, tab_model_.webStateList->GetWebStateAt(0));
-  EXPECT_EQ(web_state1, tab_model_.webStateList->GetWebStateAt(1));
-  EXPECT_EQ(web_state2, tab_model_.webStateList->GetWebStateAt(2));
-}
-
 TEST_F(TabModelTest, CloseTabAtIndexBeginning) {
-  [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                           referrer:web::Referrer()
-                         transition:ui::PAGE_TRANSITION_TYPED
-                             opener:nil
-                        openedByDOM:NO
-                            atIndex:[tab_model_ count]
-                       inBackground:NO];
+  agent_->InsertWebState(Params(GURL(kURL1)),
+                         /*parent=*/nil,
+                         /*opened_by_dom=*/false,
+                         /*index=*/web_state_list_->count(),
+                         /*in_background=*/false);
   web::WebState* web_state1 =
-      [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:[tab_model_ count]
-                           inBackground:NO];
+      agent_->InsertWebState(Params(GURL(kURL1)),
+                             /*parent=*/nil,
+                             /*opened_by_dom=*/false,
+                             /*index=*/web_state_list_->count(),
+                             /*in_background=*/false);
   web::WebState* web_state2 =
-      [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:[tab_model_ count]
-                           inBackground:NO];
-
+      agent_->InsertWebState(Params(GURL(kURL1)),
+                             /*parent=*/nil,
+                             /*opened_by_dom=*/false,
+                             /*index=*/web_state_list_->count(),
+                             /*in_background=*/false);
   [tab_model_ closeTabAtIndex:0];
 
-  ASSERT_EQ(2U, [tab_model_ count]);
-  EXPECT_EQ(web_state1, tab_model_.webStateList->GetWebStateAt(0));
-  EXPECT_EQ(web_state2, tab_model_.webStateList->GetWebStateAt(1));
+  ASSERT_EQ(2, web_state_list_->count());
+  EXPECT_EQ(web_state1, web_state_list_->GetWebStateAt(0));
+  EXPECT_EQ(web_state2, web_state_list_->GetWebStateAt(1));
 }
 
 TEST_F(TabModelTest, CloseTabAtIndexMiddle) {
   web::WebState* web_state0 =
-      [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:[tab_model_ count]
-                           inBackground:NO];
-  [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                           referrer:web::Referrer()
-                         transition:ui::PAGE_TRANSITION_TYPED
-                             opener:nil
-                        openedByDOM:NO
-                            atIndex:[tab_model_ count]
-                       inBackground:NO];
+      agent_->InsertWebState(Params(GURL(kURL1)),
+                             /*parent=*/nil,
+                             /*opened_by_dom=*/false,
+                             /*index=*/web_state_list_->count(),
+                             /*in_background=*/false);
+  agent_->InsertWebState(Params(GURL(kURL1)),
+                         /*parent=*/nil,
+                         /*opened_by_dom=*/false,
+                         /*index=*/web_state_list_->count(),
+                         /*in_background=*/false);
   web::WebState* web_state2 =
-      [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:[tab_model_ count]
-                           inBackground:NO];
+      agent_->InsertWebState(Params(GURL(kURL1)),
+                             /*parent=*/nil,
+                             /*opened_by_dom=*/false,
+                             /*index=*/web_state_list_->count(),
+                             /*in_background=*/false);
 
   [tab_model_ closeTabAtIndex:1];
 
-  ASSERT_EQ(2U, [tab_model_ count]);
-  EXPECT_EQ(web_state0, tab_model_.webStateList->GetWebStateAt(0));
-  EXPECT_EQ(web_state2, tab_model_.webStateList->GetWebStateAt(1));
+  ASSERT_EQ(2, web_state_list_->count());
+  EXPECT_EQ(web_state0, web_state_list_->GetWebStateAt(0));
+  EXPECT_EQ(web_state2, web_state_list_->GetWebStateAt(1));
 }
 
 TEST_F(TabModelTest, CloseTabAtIndexLast) {
   web::WebState* web_state0 =
-      [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:[tab_model_ count]
-                           inBackground:NO];
+      agent_->InsertWebState(Params(GURL(kURL1)),
+                             /*parent=*/nil,
+                             /*opened_by_dom=*/false,
+                             /*index=*/web_state_list_->count(),
+                             /*in_background=*/false);
   web::WebState* web_state1 =
-      [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:[tab_model_ count]
-                           inBackground:NO];
-  [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                           referrer:web::Referrer()
-                         transition:ui::PAGE_TRANSITION_TYPED
-                             opener:nil
-                        openedByDOM:NO
-                            atIndex:[tab_model_ count]
-                       inBackground:NO];
+      agent_->InsertWebState(Params(GURL(kURL1)),
+                             /*parent=*/nil,
+                             /*opened_by_dom=*/false,
+                             /*index=*/web_state_list_->count(),
+                             /*in_background=*/false);
+  agent_->InsertWebState(Params(GURL(kURL1)),
+                         /*parent=*/nil,
+                         /*opened_by_dom=*/false,
+                         /*index=*/web_state_list_->count(),
+                         /*in_background=*/false);
 
   [tab_model_ closeTabAtIndex:2];
 
-  ASSERT_EQ(2U, [tab_model_ count]);
-  EXPECT_EQ(web_state0, tab_model_.webStateList->GetWebStateAt(0));
-  EXPECT_EQ(web_state1, tab_model_.webStateList->GetWebStateAt(1));
+  ASSERT_EQ(2, web_state_list_->count());
+  EXPECT_EQ(web_state0, web_state_list_->GetWebStateAt(0));
+  EXPECT_EQ(web_state1, web_state_list_->GetWebStateAt(1));
 }
 
 TEST_F(TabModelTest, CloseTabAtIndexOnlyOne) {
-  [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                           referrer:web::Referrer()
-                         transition:ui::PAGE_TRANSITION_TYPED
-                             opener:nil
-                        openedByDOM:NO
-                            atIndex:[tab_model_ count]
-                       inBackground:NO];
+  agent_->InsertWebState(Params(GURL(kURL1)),
+                         /*parent=*/nil,
+                         /*opened_by_dom=*/false,
+                         /*index=*/web_state_list_->count(),
+                         /*in_background=*/false);
 
   [tab_model_ closeTabAtIndex:0];
-
-  EXPECT_EQ(0U, [tab_model_ count]);
+  EXPECT_EQ(0, web_state_list_->count());
 }
 
 // TODO(crbug.com/888674): migrate this to EG test so it can be tested with
 // WKBasedNavigationManager.
 TEST_F(TabModelTest, DISABLED_RestoreSessionOnNTPTest) {
-  web::WebState* web_state =
-      [tab_model_ insertWebStateWithURL:GURL(kChromeUINewTabURL)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:0
-                           inBackground:NO];
+  web::WebState* web_state = agent_->InsertWebState(Params(GURL(kURL1)),
+                                                    /*parent=*/nil,
+                                                    /*opened_by_dom=*/false,
+                                                    /*index=*/0,
+                                                    /*in_background=*/false);
   web::WebStateImpl* web_state_impl =
       static_cast<web::WebStateImpl*>(web_state);
 
@@ -385,66 +279,57 @@ TEST_F(TabModelTest, DISABLED_RestoreSessionOnNTPTest) {
   SessionWindowIOS* window(CreateSessionWindow());
   [tab_model_ restoreSessionWindow:window forInitialRestore:NO];
 
-  ASSERT_EQ(3U, [tab_model_ count]);
-  EXPECT_EQ(tab_model_.webStateList->GetWebStateAt(1),
-            tab_model_.webStateList->GetActiveWebState());
-  EXPECT_NE(web_state, tab_model_.webStateList->GetWebStateAt(0));
-  EXPECT_NE(web_state, tab_model_.webStateList->GetWebStateAt(1));
-  EXPECT_NE(web_state, tab_model_.webStateList->GetWebStateAt(2));
+  ASSERT_EQ(3, web_state_list_->count());
+  EXPECT_EQ(web_state_list_->GetWebStateAt(1),
+            web_state_list_->GetActiveWebState());
+  EXPECT_NE(web_state, web_state_list_->GetWebStateAt(0));
+  EXPECT_NE(web_state, web_state_list_->GetWebStateAt(1));
+  EXPECT_NE(web_state, web_state_list_->GetWebStateAt(2));
 }
 
 // TODO(crbug.com/888674): migrate this to EG test so it can be tested with
 // WKBasedNavigationManager.
 TEST_F(TabModelTest, DISABLED_RestoreSessionOn2NtpTest) {
-  web::WebState* web_state0 =
-      [tab_model_ insertWebStateWithURL:GURL(kChromeUINewTabURL)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:0
-                           inBackground:NO];
+  web::WebState* web_state0 = agent_->InsertWebState(Params(GURL(kURL1)),
+                                                     /*parent=*/nil,
+                                                     /*opened_by_dom=*/false,
+                                                     /*index=*/0,
+                                                     /*in_background=*/false);
   web::WebStateImpl* web_state_impl =
       static_cast<web::WebStateImpl*>(web_state0);
   web_state_impl->GetNavigationManagerImpl().CommitPendingItem();
-  web::WebState* web_state1 =
-      [tab_model_ insertWebStateWithURL:GURL(kChromeUINewTabURL)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:1
-                           inBackground:NO];
+  web::WebState* web_state1 = agent_->InsertWebState(Params(GURL(kURL1)),
+                                                     /*parent=*/nil,
+                                                     /*opened_by_dom=*/false,
+                                                     /*index=*/0,
+                                                     /*in_background=*/false);
   web_state_impl = static_cast<web::WebStateImpl*>(web_state1);
   web_state_impl->GetNavigationManagerImpl().CommitPendingItem();
 
   SessionWindowIOS* window(CreateSessionWindow());
   [tab_model_ restoreSessionWindow:window forInitialRestore:NO];
 
-  ASSERT_EQ(5U, [tab_model_ count]);
-  EXPECT_EQ(tab_model_.webStateList->GetWebStateAt(3),
-            tab_model_.webStateList->GetActiveWebState());
-  EXPECT_EQ(web_state0, tab_model_.webStateList->GetWebStateAt(0));
-  EXPECT_EQ(web_state1, tab_model_.webStateList->GetWebStateAt(1));
-  EXPECT_NE(web_state0, tab_model_.webStateList->GetWebStateAt(2));
-  EXPECT_NE(web_state0, tab_model_.webStateList->GetWebStateAt(3));
-  EXPECT_NE(web_state0, tab_model_.webStateList->GetWebStateAt(4));
-  EXPECT_NE(web_state1, tab_model_.webStateList->GetWebStateAt(2));
-  EXPECT_NE(web_state1, tab_model_.webStateList->GetWebStateAt(3));
-  EXPECT_NE(web_state1, tab_model_.webStateList->GetWebStateAt(4));
+  ASSERT_EQ(5, web_state_list_->count());
+  EXPECT_EQ(web_state_list_->GetWebStateAt(3),
+            web_state_list_->GetActiveWebState());
+  EXPECT_EQ(web_state0, web_state_list_->GetWebStateAt(0));
+  EXPECT_EQ(web_state1, web_state_list_->GetWebStateAt(1));
+  EXPECT_NE(web_state0, web_state_list_->GetWebStateAt(2));
+  EXPECT_NE(web_state0, web_state_list_->GetWebStateAt(3));
+  EXPECT_NE(web_state0, web_state_list_->GetWebStateAt(4));
+  EXPECT_NE(web_state1, web_state_list_->GetWebStateAt(2));
+  EXPECT_NE(web_state1, web_state_list_->GetWebStateAt(3));
+  EXPECT_NE(web_state1, web_state_list_->GetWebStateAt(4));
 }
 
 // TODO(crbug.com/888674): migrate this to EG test so it can be tested with
 // WKBasedNavigationManager.
 TEST_F(TabModelTest, DISABLED_RestoreSessionOnAnyTest) {
-  web::WebState* web_state =
-      [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:0
-                           inBackground:NO];
+  web::WebState* web_state = agent_->InsertWebState(Params(GURL(kURL1)),
+                                                    /*parent=*/nil,
+                                                    /*opened_by_dom=*/false,
+                                                    /*index=*/0,
+                                                    /*in_background=*/false);
   web::WebStateImpl* web_state_impl =
       static_cast<web::WebStateImpl*>(web_state);
   web_state_impl->GetNavigationManagerImpl().CommitPendingItem();
@@ -452,154 +337,58 @@ TEST_F(TabModelTest, DISABLED_RestoreSessionOnAnyTest) {
   SessionWindowIOS* window(CreateSessionWindow());
   [tab_model_ restoreSessionWindow:window forInitialRestore:NO];
 
-  ASSERT_EQ(4U, [tab_model_ count]);
-  EXPECT_EQ(tab_model_.webStateList->GetWebStateAt(2),
-            tab_model_.webStateList->GetActiveWebState());
-  EXPECT_EQ(web_state, tab_model_.webStateList->GetWebStateAt(0));
-  EXPECT_NE(web_state, tab_model_.webStateList->GetWebStateAt(1));
-  EXPECT_NE(web_state, tab_model_.webStateList->GetWebStateAt(2));
-  EXPECT_NE(web_state, tab_model_.webStateList->GetWebStateAt(3));
+  ASSERT_EQ(4, web_state_list_->count());
+  EXPECT_EQ(web_state_list_->GetWebStateAt(2),
+            web_state_list_->GetActiveWebState());
+  EXPECT_EQ(web_state, web_state_list_->GetWebStateAt(0));
+  EXPECT_NE(web_state, web_state_list_->GetWebStateAt(1));
+  EXPECT_NE(web_state, web_state_list_->GetWebStateAt(2));
+  EXPECT_NE(web_state, web_state_list_->GetWebStateAt(3));
 }
 
 TEST_F(TabModelTest, CloseAllTabs) {
-  [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                           referrer:web::Referrer()
-                         transition:ui::PAGE_TRANSITION_TYPED
-                             opener:nil
-                        openedByDOM:NO
-                            atIndex:[tab_model_ count]
-                       inBackground:NO];
-  [tab_model_ insertWebStateWithURL:GURL(kURL2)
-                           referrer:web::Referrer()
-                         transition:ui::PAGE_TRANSITION_TYPED
-                             opener:nil
-                        openedByDOM:NO
-                            atIndex:[tab_model_ count]
-                       inBackground:NO];
-  [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                           referrer:web::Referrer()
-                         transition:ui::PAGE_TRANSITION_TYPED
-                             opener:nil
-                        openedByDOM:NO
-                            atIndex:[tab_model_ count]
-                       inBackground:NO];
-
+  agent_->InsertWebState(Params(GURL(kURL1)),
+                         /*parent=*/nil,
+                         /*opened_by_dom=*/false,
+                         /*index=*/web_state_list_->count(),
+                         /*in_background=*/false);
+  agent_->InsertWebState(Params(GURL(kURL2)),
+                         /*parent=*/nil,
+                         /*opened_by_dom=*/false,
+                         /*index=*/web_state_list_->count(),
+                         /*in_background=*/false);
+  agent_->InsertWebState(Params(GURL(kURL1)),
+                         /*parent=*/nil,
+                         /*opened_by_dom=*/false,
+                         /*index=*/web_state_list_->count(),
+                         /*in_background=*/false);
   [tab_model_ closeAllTabs];
 
-  EXPECT_EQ(0U, [tab_model_ count]);
+  EXPECT_EQ(0, web_state_list_->count());
 }
 
 TEST_F(TabModelTest, CloseAllTabsWithNoTabs) {
   [tab_model_ closeAllTabs];
 
-  EXPECT_EQ(0U, [tab_model_ count]);
+  EXPECT_EQ(0, web_state_list_->count());
 }
 
 TEST_F(TabModelTest, InsertWithSessionController) {
-  EXPECT_EQ([tab_model_ count], 0U);
+  EXPECT_EQ(web_state_list_->count(), 0);
   EXPECT_TRUE([tab_model_ isEmpty]);
 
   web::WebState* new_web_state =
-      [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:[tab_model_ count]
-                           inBackground:NO];
+      agent_->InsertWebState(Params(GURL(kURL1)),
+                             /*parent=*/nil,
+                             /*opened_by_dom=*/false,
+                             /*index=*/web_state_list_->count(),
+                             /*in_background=*/false);
 
-  EXPECT_EQ([tab_model_ count], 1U);
-  EXPECT_EQ(new_web_state, tab_model_.webStateList->GetWebStateAt(0));
-  tab_model_.webStateList->ActivateWebStateAt(0);
-  web::WebState* current_web_state =
-      tab_model_.webStateList->GetActiveWebState();
+  EXPECT_EQ(web_state_list_->count(), 1);
+  EXPECT_EQ(new_web_state, web_state_list_->GetWebStateAt(0));
+  web_state_list_->ActivateWebStateAt(0);
+  web::WebState* current_web_state = web_state_list_->GetActiveWebState();
   EXPECT_TRUE(current_web_state);
-}
-
-TEST_F(TabModelTest, AddWithOrderController) {
-  // Create a few tabs with the controller at the front.
-  web::WebState* parent =
-      [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:[tab_model_ count]
-                           inBackground:NO];
-  [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                           referrer:web::Referrer()
-                         transition:ui::PAGE_TRANSITION_TYPED
-                             opener:nil
-                        openedByDOM:NO
-                            atIndex:[tab_model_ count]
-                       inBackground:NO];
-  [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                           referrer:web::Referrer()
-                         transition:ui::PAGE_TRANSITION_TYPED
-                             opener:nil
-                        openedByDOM:NO
-                            atIndex:[tab_model_ count]
-                       inBackground:NO];
-
-  // Add a new tab, it should be added behind the parent.
-  web::WebState* child = [tab_model_
-      insertWebStateWithURL:GURL(kURL1)
-                   referrer:web::Referrer()
-                 transition:ui::PAGE_TRANSITION_LINK
-                     opener:parent
-                openedByDOM:NO
-                    atIndex:TabModelConstants::kTabPositionAutomatically
-               inBackground:NO];
-  EXPECT_EQ(tab_model_.webStateList->GetIndexOfWebState(parent), 0);
-  EXPECT_EQ(tab_model_.webStateList->GetIndexOfWebState(child), 1);
-
-  // Add another new tab without a parent, should go at the end.
-  web::WebState* web_state = [tab_model_
-      insertWebStateWithURL:GURL(kURL1)
-                   referrer:web::Referrer()
-                 transition:ui::PAGE_TRANSITION_LINK
-                     opener:nil
-                openedByDOM:NO
-                    atIndex:TabModelConstants::kTabPositionAutomatically
-               inBackground:NO];
-  EXPECT_EQ(tab_model_.webStateList->GetIndexOfWebState(web_state),
-            static_cast<int>([tab_model_ count]) - 1);
-
-  // Same for a tab that's not opened via a LINK transition.
-  web::WebState* web_state2 =
-      [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:[tab_model_ count]
-                           inBackground:NO];
-  EXPECT_EQ(tab_model_.webStateList->GetIndexOfWebState(web_state2),
-            static_cast<int>([tab_model_ count]) - 1);
-
-  // Add a tab in the background. It should appear behind the opening tab.
-  web::WebState* web_state3 = [tab_model_
-      insertWebStateWithURL:GURL(kURL1)
-                   referrer:web::Referrer()
-                 transition:ui::PAGE_TRANSITION_LINK
-                     opener:web_state
-                openedByDOM:NO
-                    atIndex:TabModelConstants::kTabPositionAutomatically
-               inBackground:NO];
-  EXPECT_EQ(tab_model_.webStateList->GetIndexOfWebState(web_state3),
-            tab_model_.webStateList->GetIndexOfWebState(web_state) + 1);
-
-  // Add another background tab behind the one we just opened.
-  web::WebState* web_state4 = [tab_model_
-      insertWebStateWithURL:GURL(kURL1)
-                   referrer:web::Referrer()
-                 transition:ui::PAGE_TRANSITION_LINK
-                     opener:web_state3
-                openedByDOM:NO
-                    atIndex:TabModelConstants::kTabPositionAutomatically
-               inBackground:NO];
-  EXPECT_EQ(tab_model_.webStateList->GetIndexOfWebState(web_state4),
-            tab_model_.webStateList->GetIndexOfWebState(web_state3) + 1);
 }
 
 // Test that saving a non-empty session, then saving an empty session, then
@@ -610,13 +399,11 @@ TEST_F(TabModelTest, RestorePersistedSessionAfterEmpty) {
   TestSessionService* test_session_service = [[TestSessionService alloc] init];
   SetTabModel(CreateTabModel(test_session_service, nil));
 
-  [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                           referrer:web::Referrer()
-                         transition:ui::PAGE_TRANSITION_TYPED
-                             opener:nil
-                        openedByDOM:NO
-                            atIndex:0
-                       inBackground:NO];
+  agent_->InsertWebState(Params(GURL(kURL1)),
+                         /*parent=*/nil,
+                         /*opened_by_dom=*/false,
+                         /*index=*/0,
+                         /*in_background=*/false);
   [test_session_service setPerformIO:YES];
   [tab_model_ saveSessionImmediately:YES];
   [test_session_service setPerformIO:NO];
@@ -636,7 +423,7 @@ TEST_F(TabModelTest, RestorePersistedSessionAfterEmpty) {
   SessionWindowIOS* session_window = session.sessionWindows[0];
   [tab_model_ restoreSessionWindow:session_window forInitialRestore:NO];
 
-  EXPECT_EQ(0U, [tab_model_ count]);
+  EXPECT_EQ(0, web_state_list_->count());
 }
 
 TEST_F(TabModelTest, DISABLED_PersistSelectionChange) {
@@ -645,30 +432,25 @@ TEST_F(TabModelTest, DISABLED_PersistSelectionChange) {
   TestSessionService* test_session_service = [[TestSessionService alloc] init];
   SetTabModel(CreateTabModel(test_session_service, nil));
 
-  [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                           referrer:web::Referrer()
-                         transition:ui::PAGE_TRANSITION_TYPED
-                             opener:nil
-                        openedByDOM:NO
-                            atIndex:tab_model_.webStateList->count()
-                       inBackground:NO];
-  [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                           referrer:web::Referrer()
-                         transition:ui::PAGE_TRANSITION_TYPED
-                             opener:tab_model_.webStateList->GetWebStateAt(0)
-                        openedByDOM:NO
-                            atIndex:[tab_model_ count]
-                       inBackground:NO];
-  [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                           referrer:web::Referrer()
-                         transition:ui::PAGE_TRANSITION_TYPED
-                             opener:tab_model_.webStateList->GetWebStateAt(0)
-                        openedByDOM:NO
-                            atIndex:0
-                       inBackground:NO];
+  agent_->InsertWebState(Params(GURL(kURL1)),
+                         /*parent=*/nil,
+                         /*opened_by_dom=*/false,
+                         /*index=*/web_state_list_->count(),
+                         /*in_background=*/false);
 
-  ASSERT_EQ(3U, [tab_model_ count]);
-  tab_model_.webStateList->ActivateWebStateAt(1);
+  agent_->InsertWebState(Params(GURL(kURL1)),
+                         /*parent=*/web_state_list_->GetWebStateAt(0),
+                         /*opened_by_dom=*/false,
+                         /*index=*/web_state_list_->count(),
+                         /*in_background=*/false);
+  agent_->InsertWebState(Params(GURL(kURL1)),
+                         /*parent=*/web_state_list_->GetWebStateAt(0),
+                         /*opened_by_dom=*/false,
+                         /*index=*/0,
+                         /*in_background=*/false);
+
+  ASSERT_EQ(3, web_state_list_->count());
+  web_state_list_->ActivateWebStateAt(1);
   // Force state to flush to disk on the main thread so it can be immediately
   // tested below.
   [test_session_service setPerformIO:YES];
@@ -685,10 +467,10 @@ TEST_F(TabModelTest, DISABLED_PersistSelectionChange) {
   // Create tab model from saved session.
   SetTabModel(CreateTabModel(test_session_service, session_window));
 
-  ASSERT_EQ(3u, [tab_model_ count]);
+  ASSERT_EQ(3, web_state_list_->count());
 
-  EXPECT_EQ(tab_model_.webStateList->GetWebStateAt(1),
-            tab_model_.webStateList->GetActiveWebState());
+  EXPECT_EQ(web_state_list_->GetWebStateAt(1),
+            web_state_list_->GetActiveWebState());
 }
 
 }  // anonymous namespace

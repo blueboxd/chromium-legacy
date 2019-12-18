@@ -626,8 +626,7 @@ public class FeedRequestManagerImplTest {
     public void testHandleResponse() throws Exception {
         mRequestManager.triggerRefresh(RequestReason.HOST_REQUESTED, mConsumer);
 
-        // TODO(crbug.com/1024945): Find alternative to LiteProtoTruth.
-        // assertThat(fakeProtocolAdapter.getLastResponse()).isEqualToDefaultInstance();
+        assertThat(mFakeProtocolAdapter.getLastResponse()).isEqualTo(Response.getDefaultInstance());
         assertThat(mConsumer.isCalled()).isTrue();
         assertThat(mConsumedResult.isSuccessful()).isTrue();
     }

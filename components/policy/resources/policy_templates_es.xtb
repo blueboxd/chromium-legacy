@@ -4484,7 +4484,7 @@ Si no se establece la política, el dispositivo tendrá un formato de reloj de 2
 <translation id="8114382167597081590">No aplicar el modo restringido en YouTube</translation>
 <translation id="8117921351531866504">Permite establecer si los sitios web pueden comprobar si el usuario tiene algún método de pago guardado.
 
-      Si se inhabilita esta política, se informa a los sitios web que usen la API PaymentRequest.canMakePayment o PaymentRequest.hasEnrolledInstrument que no hay ningún método de pago disponible.
+      Si se inhabilita esta política, se informa a los sitios web que usen la API PaymentRequest.canMakePayment o PaymentRequest.hasEnrolledInstrument de que no hay ningún método de pago disponible.
 
       Si se habilita este ajuste o no se configura, los sitios web pueden comprobar si el usuario tiene algún método de pago guardado.</translation>
 <translation id="8118665053362250806">Establecer tamaño de caché de disco de medios</translation>

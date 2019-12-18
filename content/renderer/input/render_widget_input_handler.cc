@@ -363,8 +363,8 @@ void RenderWidgetInputHandler::HandleInputEvent(
     const WebMouseEvent& mouse_event =
         static_cast<const WebMouseEvent&>(input_event);
     TRACE_EVENT2("renderer", "HandleMouseMove", "x",
-                 mouse_event.PositionInWidget().x, "y",
-                 mouse_event.PositionInWidget().y);
+                 mouse_event.PositionInWidget().x(), "y",
+                 mouse_event.PositionInWidget().y());
 
     prevent_default = delegate_->WillHandleMouseEvent(mouse_event);
 

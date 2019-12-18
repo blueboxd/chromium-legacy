@@ -230,6 +230,14 @@ NSData* WeakMD5FromPasteboardData(NSString* string,
 
 - (NSURL*)URLFromPasteboard {
   NSURL* url = [UIPasteboard generalPasteboard].URL;
+  // Usually, even if the user copies plaintext, if it looks like a URL, the URL
+  // property is filled. Sometimes, this doesn't happen, for instance when the
+  // pasteboard is sync'd from a Mac to the iOS simulator. In this case,
+  // fallback and manually check whether the pasteboard contains a url-like
+  // string.
+  if (!url) {
+    url = [NSURL URLWithString:UIPasteboard.generalPasteboard.string];
+  }
   if (![self.authorizedSchemes containsObject:url.scheme]) {
     return nil;
   }

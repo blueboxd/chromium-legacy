@@ -193,9 +193,8 @@ TEST(RegistryHashStoreContentsWinScopedTest, TestScopedDirsClearedMultiThread) {
   std::unique_ptr<RegistryHashStoreContentsWin> contents =
       std::make_unique<RegistryHashStoreContentsWin>(
           registry_path, kStoreKey, std::move(temp_scoped_dir_cleaner));
-  base::OnceClosure other_thread_closure =
-      base::BindOnce(&OffThreadTempScopedDirDestructor, registry_path,
-                     base::Passed(contents->MakeCopy()));
+  base::OnceClosure other_thread_closure = base::BindOnce(
+      &OffThreadTempScopedDirDestructor, registry_path, contents->MakeCopy());
 
   contents->SetMac(kAtomicPrefPath, kTestStringA);
   contents.reset();

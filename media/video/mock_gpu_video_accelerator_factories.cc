@@ -29,7 +29,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
            gfx::BufferFormat::RG_88 == format_ ||
            gfx::BufferFormat::YUV_420_BIPLANAR == format_ ||
            gfx::BufferFormat::BGRX_1010102 == format_ ||
-           gfx::BufferFormat::RGBX_1010102 == format_ ||
+           gfx::BufferFormat::RGBA_1010102 == format_ ||
            gfx::BufferFormat::RGBA_8888 == format_ ||
            gfx::BufferFormat::BGRA_8888 == format_);
     DCHECK(num_planes_ <= kMaxPlanes);

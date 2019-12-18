@@ -54,6 +54,7 @@
 #include "chrome/test/chromedriver/log_replay/replay_http_client.h"
 #include "chrome/test/chromedriver/net/net_util.h"
 #include "components/crx_file/crx_verifier.h"
+#include "components/embedder_support/switches.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/sha2.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -71,7 +72,7 @@
 namespace {
 
 const char* const kCommonSwitches[] = {
-    "disable-popup-blocking",
+    embedder_support::kDisablePopupBlocking,
     "enable-automation",
 };
 

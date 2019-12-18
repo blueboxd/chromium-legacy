@@ -35,10 +35,20 @@ using AshColorMode = AshColorProvider::AshColorMode;
 
 namespace {
 
-void ConfigureFeaturePodLabel(views::Label* label) {
+void ConfigureFeaturePodLabel(views::Label* label,
+                              int line_height,
+                              int font_size) {
   label->SetAutoColorReadabilityEnabled(false);
   label->SetSubpixelRenderingEnabled(false);
   label->set_can_process_events_within_subtree(false);
+  label->SetLineHeight(line_height);
+
+  gfx::Font default_font;
+  gfx::Font label_font =
+      default_font.Derive(font_size - default_font.GetFontSize(),
+                          gfx::Font::NORMAL, gfx::Font::Weight::NORMAL);
+  gfx::FontList font_list(label_font);
+  label->SetFontList(font_list);
 }
 
 }  // namespace
@@ -58,7 +68,7 @@ FeaturePodIconButton::FeaturePodIconButton(views::ButtonListener* listener,
 FeaturePodIconButton::~FeaturePodIconButton() = default;
 
 void FeaturePodIconButton::SetToggled(bool toggled) {
-  if (!is_togglable_)
+  if (!is_togglable_ || toggled_ == toggled)
     return;
 
   toggled_ = toggled;
@@ -141,8 +151,11 @@ FeaturePodLabelButton::FeaturePodLabelButton(views::ButtonListener* listener)
   SetBorder(views::CreateEmptyBorder(kUnifiedFeaturePodHoverPadding));
   GetViewAccessibility().OverrideIsLeaf(true);
 
-  ConfigureFeaturePodLabel(label_);
-  ConfigureFeaturePodLabel(sub_label_);
+  label_->SetLineHeight(kUnifiedFeaturePodLabelLineHeight);
+  ConfigureFeaturePodLabel(label_, kUnifiedFeaturePodLabelLineHeight,
+                           kUnifiedFeaturePodLabelFontSize);
+  ConfigureFeaturePodLabel(sub_label_, kUnifiedFeaturePodSubLabelLineHeight,
+                           kUnifiedFeaturePodSubLabelFontSize);
   sub_label_->SetVisible(false);
 
   detailed_view_arrow_->set_can_process_events_within_subtree(false);
@@ -166,7 +179,8 @@ void FeaturePodLabelButton::Layout() {
   DCHECK(focus_ring());
   focus_ring()->Layout();
   LayoutInCenter(label_, GetContentsBounds().y());
-  LayoutInCenter(sub_label_, GetContentsBounds().CenterPoint().y());
+  LayoutInCenter(sub_label_, GetContentsBounds().CenterPoint().y() +
+                                 kUnifiedFeaturePodInterLabelPadding);
 
   if (!detailed_view_arrow_->GetVisible())
     return;
@@ -196,8 +210,10 @@ gfx::Size FeaturePodLabelButton::CalculatePreferredSize() const {
   }
 
   int height = label_->GetPreferredSize().height() + GetInsets().height();
-  if (sub_label_->GetVisible())
-    height += sub_label_->GetPreferredSize().height();
+  if (sub_label_->GetVisible()) {
+    height += kUnifiedFeaturePodInterLabelPadding +
+              sub_label_->GetPreferredSize().height();
+  }
 
   return gfx::Size(width, height);
 }
@@ -309,11 +325,13 @@ double FeaturePodButton::GetOpacityForExpandedAmount(double expanded_amount) {
 void FeaturePodButton::SetVectorIcon(const gfx::VectorIcon& icon) {
   const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
       ContentLayerType::kIconPrimary, AshColorMode::kDark);
-  icon_button_->SetImage(views::Button::STATE_NORMAL,
-                         gfx::CreateVectorIcon(icon, icon_color));
+  icon_button_->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(icon, kUnifiedFeaturePodVectorIconSize,
+                            icon_color));
   icon_button_->SetImage(
       views::Button::STATE_DISABLED,
-      gfx::CreateVectorIcon(icon,
+      gfx::CreateVectorIcon(icon, kUnifiedFeaturePodVectorIconSize,
                             AshColorProvider::GetDisabledColor(icon_color)));
 }
 

@@ -124,11 +124,13 @@ class COMPONENT_EXPORT(CHROMEOS_DISKS) DiskMountManager {
     // Called on format process events.
     virtual void OnFormatEvent(FormatEvent event,
                                FormatError error_code,
-                               const std::string& device_path) {}
+                               const std::string& device_path,
+                               const std::string& device_label) {}
     // Called on rename process events.
     virtual void OnRenameEvent(RenameEvent event,
                                RenameError error_code,
-                               const std::string& device_path) {}
+                               const std::string& device_path,
+                               const std::string& device_label) {}
 
    protected:
     ~Observer() override;

@@ -58,7 +58,7 @@ class TextRendererTest : public testing::Test {
         task_environment_.GetMainThreadTaskRunner(),
         base::Bind(&TextRendererTest::OnAddTextTrack, base::Unretained(this))));
     text_renderer_->Initialize(
-        base::Bind(&TextRendererTest::OnEnd, base::Unretained(this)));
+        base::BindRepeating(&TextRendererTest::OnEnd, base::Unretained(this)));
   }
 
   void Destroy() {
@@ -87,7 +87,7 @@ class TextRendererTest : public testing::Test {
   }
 
   void OnAddTextTrack(const TextTrackConfig& config,
-                      const AddTextTrackDoneCB& done_cb) {
+                      AddTextTrackDoneCB done_cb) {
     base::Closure destroy_cb =
         base::Bind(&TextRendererTest::OnDestroyTextTrack,
                    base::Unretained(this), text_tracks_.size());
@@ -96,7 +96,7 @@ class TextRendererTest : public testing::Test {
     // text renderer deallocates them.
     text_tracks_.push_back(new FakeTextTrack(destroy_cb, config));
     std::unique_ptr<TextTrack> text_track(text_tracks_.back());
-    done_cb.Run(std::move(text_track));
+    std::move(done_cb).Run(std::move(text_track));
   }
 
   void RemoveTextTrack(unsigned idx) {

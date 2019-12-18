@@ -2525,7 +2525,6 @@
 <translation id="4572779512957829735">तपाईंको सुरक्षा साँचो प्रयोग गर्नका लागि उक्त PIN प्रविष्टि गर्नुहोस्</translation>
 <translation id="457386861538956877">थप...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">ब्लुटुथ यन्त्रको जोडा बनाउनुहोस्</translation>
 <translation id="4579581181964204535"><ph name="HOST_NAME" /> लाई cast गर्न असमर्थ।</translation>
 <translation id="4581774856936278355">Linux पुनर्स्थापना गर्ने क्रममा त्रुटि भयो</translation>
 <translation id="4582563038311694664">सबै सेटिङहरू रिसेट गर्नुहोस्</translation>
@@ -4864,7 +4863,6 @@
 <translation id="7974936243149753750">ओभरस्क्यान</translation>
 <translation id="7978412674231730200">निजी कुञ्जी</translation>
 <translation id="7978450511781612192">यस कार्यले तपाईंलाई आफ्ना Google खाताहरूबाट साइन आउट गराउने छ। तपाईंका पुस्तक चिन्ह, इतिहास, पासवर्ड र अन्य सेटिङहरू अब उप्रान्त सिंक‍ हुने छैनन्।</translation>
-<translation id="7979036127916589816">समक्रमण त्रुटि</translation>
 <translation id="7980084013673500153">सम्पत्ति ID: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">ब्राउजिङ र खोजी कार्यलाई अझ छिटो बनाउन पृष्ठहरू पूर्वलोड गर्नुहोस्</translation>
 <translation id="798145602633458219">सुझाव <ph name="SUGGESTION_NAME" /> लाई खोज बाकसमा जोड्नुहोस्</translation>
@@ -5312,6 +5310,7 @@
 <translation id="862542460444371744">&amp;विस्तारहरू</translation>
 <translation id="862727964348362408">निलम्बित</translation>
 <translation id="862750493060684461">CSS क्यास</translation>
+<translation id="8627706565932943526">समक्रमण त्रुटि</translation>
 <translation id="8627795981664801467">सुरक्षित जडानहरू मात्र</translation>
 <translation id="8630903300770275248">निरीक्षण गरिएको प्रयोगकर्ता आयात गर्नुहोस्</translation>
 <translation id="8631032106121706562">पेटल</translation>

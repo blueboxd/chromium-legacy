@@ -16,13 +16,55 @@
 #include "ui/gfx/linux/gbm_device.h"
 
 #if !defined(MINIGBM)
+#include <dlfcn.h>
 #include <fcntl.h>
 #include <xf86drm.h>
+
+#include "base/strings/stringize_macros.h"
 #endif
 
 namespace gbm_wrapper {
 
 namespace {
+
+#if defined(MINIGBM)
+// Minigbm has all needed functions, so dynamic loading is not necessary.
+#define WRAP_GBM_FN(x) \
+  ALLOW_UNUSED_TYPE decltype(x)* get_##x() { return x; }
+#else
+#define WRAP_GBM_FN(x)                                                        \
+  decltype(auto) get_##x() {                                                  \
+    static auto* x##_ =                                                       \
+        reinterpret_cast<decltype(::x)*>(dlsym(RTLD_DEFAULT, STRINGIZE(x)));  \
+    return x##_;                                                              \
+  }                                                                           \
+  /* Functions that call dlsym-loaded functions must not be instrumented with \
+   * CFI_ICALL. */                                                            \
+  template <typename... Args>                                                 \
+  NO_SANITIZE("cfi-icall")                                                    \
+  decltype(auto) x(Args&&... args) {                                          \
+    if (!get_##x()) {                                                         \
+      LOG(FATAL) << STRINGIZE(x) << "() is not available on this platform. "  \
+                 << STRINGIZE(get_##x)                                        \
+                 << "() should be used to determine availability.";           \
+    }                                                                         \
+    return get_##x()(std::forward<Args>(args)...);                            \
+  }
+#endif
+
+// TODO(https://crbug.com/784010): Remove these once support for Ubuntu Trusty
+// is dropped.
+WRAP_GBM_FN(gbm_bo_map)
+WRAP_GBM_FN(gbm_bo_unmap)
+
+// TODO(https://crbug.com/784010): Remove these once support for Ubuntu Trusty
+// and Debian Stretch are dropped.
+WRAP_GBM_FN(gbm_bo_create_with_modifiers)
+WRAP_GBM_FN(gbm_bo_get_handle_for_plane)
+WRAP_GBM_FN(gbm_bo_get_modifier)
+WRAP_GBM_FN(gbm_bo_get_offset)
+WRAP_GBM_FN(gbm_bo_get_plane_count)
+WRAP_GBM_FN(gbm_bo_get_stride_for_plane)
 
 int GetPlaneFdForBo(gbm_bo* bo, size_t plane) {
 #if defined(MINIGBM)

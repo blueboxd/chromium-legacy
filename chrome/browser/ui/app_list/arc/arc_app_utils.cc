@@ -96,7 +96,6 @@ constexpr char kAndroidContactsAppId[] = "kipfkokfekalckplgaikemhghlbkgpfl";
 
 constexpr char const* kAppIdsHiddenInLauncher[] = {
     kAndroidClockAppId,   kSettingsAppId,     kAndroidFilesAppId,
-    kCameraAppId,         kLegacyCameraAppId, kCameraMigrationAppId,
     kAndroidContactsAppId};
 
 // Returns true if |event_flags| came from a mouse or touch event.
@@ -220,15 +219,12 @@ const char kSettingsAppDomainUrlActivity[] =
 constexpr char kSettingsAppPackage[] = "com.android.settings";
 
 // App IDs, kept in sorted order.
-const char kCameraAppId[] = "goamfaniemdfcajgcmmflhchgkmbngka";
-const char kCameraMigrationAppId[] = "ngmkobaiicipbagcngcmilfkhejlnfci";
 const char kGmailAppId[] = "hhkfkjpmacfncmbapfohfocpjpdnobjg";
 const char kGoogleCalendarAppId[] = "decaoeahkmjpajbmlbpogjjkjbjokeed";
 const char kGoogleDuoAppId[] = "djkcbcmkefiiphjkonbeknmcgiheajce";
 const char kGoogleMapsAppId[] = "gmhipfhgnoelkiiofcnimehjnpaejiel";
 const char kGooglePhotosAppId[] = "fdbkkojdbojonckghlanfaopfakedeca";
 const char kInfinitePainterAppId[] = "afihfgfghkmdmggakhkgnfhlikhdpima";
-const char kLegacyCameraAppId[] = "obfofkigjfamlldmipdegnjlcpincibc";
 const char kLightRoomAppId[] = "fpegfnbgomakooccabncdaelhfppceni";
 const char kPlayBooksAppId[] = "cafegjnmmjpfibnlddppihpnkbkgicbg";
 const char kPlayGamesAppId[] = "nplnnjkbeijcggmpdcecpabgbjgeiedc";

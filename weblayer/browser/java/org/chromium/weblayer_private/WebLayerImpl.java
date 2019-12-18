@@ -56,7 +56,10 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     // TODO: should there be one tag for all this code?
     private static final String TAG = "WebLayer";
     private static final String PRIVATE_DIRECTORY_SUFFIX = "weblayer";
-    // TODO: Configure this from the client.
+    // Command line flags are only read in debug builds.
+    // WARNING: this file is written to by testing code in chrome (see
+    // "//chrome/test/chromedriver/chrome/device_manager.cc"). If you change this variable, update
+    // "device_manager.cc" too.
     private static final String COMMAND_LINE_FILE = "/data/local/tmp/weblayer-command-line";
 
     private final ProfileManager mProfileManager = new ProfileManager();
@@ -158,11 +161,13 @@ public final class WebLayerImpl extends IWebLayer.Stub {
                 "org.chromium.weblayer.ChildProcessService$Sandboxed");
 
         if (!CommandLine.isInitialized()) {
-            // This disk read in the critical path is for development purposes only.
-            // TODO: Move it to debug-only (similar to WebView), or allow clients to configure the
-            // command line.
-            try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-                CommandLine.initFromFile(COMMAND_LINE_FILE);
+            if (BuildInfo.isDebugAndroid()) {
+                // This disk read in the critical path is for development purposes only.
+                try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+                    CommandLine.initFromFile(COMMAND_LINE_FILE);
+                }
+            } else {
+                CommandLine.init(null);
             }
         }
 

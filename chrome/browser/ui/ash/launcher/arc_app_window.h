@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/ash/launcher/app_window_base.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 
-class ArcAppWindowLauncherController;
+class ArcAppWindowDelegate;
 
 namespace gfx {
 class ImageSkia;
@@ -44,7 +44,7 @@ class ArcAppWindow : public AppWindowBase,
   ArcAppWindow(int task_id,
                const arc::ArcAppShelfId& app_shelf_id,
                views::Widget* widget,
-               ArcAppWindowLauncherController* owner,
+               ArcAppWindowDelegate* owner,
                Profile* profile);
 
   ~ArcAppWindow() override;
@@ -53,8 +53,9 @@ class ArcAppWindow : public AppWindowBase,
 
   // Sets optional window title and icon. Note that |unsafe_icon_data_png| has
   // to be decoded in separate process for security reason.
-  void SetDescription(const std::string& title,
-                      const std::vector<uint8_t>& unsafe_icon_data_png);
+  void SetDescription(
+      const std::string& title,
+      const std::vector<uint8_t>& unsafe_icon_data_png) override;
 
   FullScreenMode fullscreen_mode() const { return fullscreen_mode_; }
 
@@ -86,7 +87,7 @@ class ArcAppWindow : public AppWindowBase,
   const arc::ArcAppShelfId app_shelf_id_;
   // Keeps current full-screen mode.
   FullScreenMode fullscreen_mode_ = FullScreenMode::NOT_DEFINED;
-  ArcAppWindowLauncherController* const owner_;
+  ArcAppWindowDelegate* const owner_;
 
   // Set to true in case image fetch is requested. This indicates that default
   // app icon is returned in |OnAppImageUpdated|.

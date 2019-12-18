@@ -1811,6 +1811,21 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALGLPassthrough(
     return;
   }
 
+  gfx::Rect new_cleared_rect;
+  gfx::Rect old_cleared_rect = dest_shared_image->ClearedRect();
+  gfx::Rect dest_rect(xoffset, yoffset, width, height);
+  if (gles2::TextureManager::CombineAdjacentRects(old_cleared_rect, dest_rect,
+                                                  &new_cleared_rect)) {
+    DCHECK(old_cleared_rect.IsEmpty() ||
+           new_cleared_rect.Contains(old_cleared_rect));
+  } else {
+    // No users of RasterDecoder leverage this functionality. Clearing uncleared
+    // regions could be added here if needed.
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                       "Cannot clear non-combineable rects.");
+    return;
+  }
+
   gles2::TexturePassthrough* source_texture =
       source_shared_image->GetTexturePassthrough().get();
   gles2::TexturePassthrough* dest_texture =
@@ -1825,6 +1840,10 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALGLPassthrough(
       /*unpack_flip_y=*/false, /*unpack_premultiply_alpha=*/false,
       /*unpack_unmultiply_alpha=*/false);
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glCopySubTexture");
+
+  if (!dest_shared_image->IsCleared()) {
+    dest_shared_image->SetClearedRect(new_cleared_rect);
+  }
 }
 
 void RasterDecoderImpl::DoCopySubTextureINTERNALGL(
@@ -1931,14 +1950,11 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALGL(
     DCHECK(old_cleared_rect.IsEmpty() ||
            new_cleared_rect.Contains(old_cleared_rect));
   } else {
-    // Otherwise clear part of texture level that is not already cleared.
-    if (!gles2::TextureManager::ClearTextureLevel(this, dest_texture,
-                                                  dest_target, dest_level)) {
-      LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glCopySubTexture",
-                         "destination texture dimensions too big");
-      return;
-    }
-    new_cleared_rect = gfx::Rect(dest_size);
+    // No users of RasterDecoder leverage this functionality. Clearing uncleared
+    // regions could be added here if needed.
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                       "Cannot clear non-combineable rects.");
+    return;
   }
 
   ScopedTextureBinder binder(state(), dest_target, dest_texture->service_id(),
@@ -2105,6 +2121,20 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALSkia(
     return;
   }
 
+  gfx::Rect new_cleared_rect;
+  gfx::Rect old_cleared_rect = dest_shared_image->ClearedRect();
+  if (gles2::TextureManager::CombineAdjacentRects(old_cleared_rect, dest_rect,
+                                                  &new_cleared_rect)) {
+    DCHECK(old_cleared_rect.IsEmpty() ||
+           new_cleared_rect.Contains(old_cleared_rect));
+  } else {
+    // No users of RasterDecoder leverage this functionality. Clearing uncleared
+    // regions could be added here if needed.
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                       "Cannot clear non-combineable rects.");
+    return;
+  }
+
   // With OneCopyRasterBufferProvider, source_shared_image->BeginReadAccess()
   // will copy pixels from SHM GMB to the texture in |source_shared_image|,
   // and then use drawImageRect() to draw that texure to the target
@@ -2152,6 +2182,10 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALSkia(
       shared_context_state_->vk_context_provider(), &flush_info);
   dest_scoped_access->surface()->flush(
       SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
+
+  if (!dest_shared_image->IsCleared()) {
+    dest_shared_image->SetClearedRect(new_cleared_rect);
+  }
 }
 
 namespace {

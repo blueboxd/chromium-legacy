@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/alert_view/alert_consumer.h"
-#import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_mediator+subclassing.h"
+#import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_mediator+alert_consumer_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -34,7 +34,7 @@
 
 @end
 
-@implementation AlertOverlayMediator (Subclassing)
+@implementation AlertOverlayMediator (AlertConsumerSupport)
 
 - (NSString*)alertTitle {
   // Subclasses implement.

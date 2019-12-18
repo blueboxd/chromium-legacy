@@ -793,27 +793,27 @@ class BBJSONGenerator(object):
         raise BBGenErr('%s names may not duplicate basic test suite names '
                        '(error found while processsing %s)'
                        % (test_type, suite))
-      seen_tests = {}
+      seen_tests = {}  # Maps a test to a test definition.
       for sub_suite in suite_def:
         if sub_suite in other_test_suites or sub_suite in target_test_suites:
           raise BBGenErr('%s may not refer to other composition type test '
                          'suites (error found while processing %s)'
                          % (test_type, suite))
-        elif sub_suite not in basic_suites:
+        if sub_suite not in basic_suites:
           raise BBGenErr('Unable to find reference to %s while processing %s'
                          % (sub_suite, suite))
-        else:
-          # test name -> basic_suite that it came from
-          basic_tests = {k: sub_suite for k in basic_suites[sub_suite]}
-          for test_name, test_suite in basic_tests.iteritems():
-            if (test_name in seen_tests and
-                basic_suites[test_suite][test_name] !=
-                basic_suites[seen_tests[test_name]][test_name]):
-              raise BBGenErr('Conflicting test definitions for %s from %s '
-                             'and %s in %s (error found while processing %s)'
-                             % (test_name, seen_tests[test_name], test_suite,
-                             test_type, suite))
-          seen_tests.update(basic_tests)
+
+        # Ensure that if a test is reachable via multiple basic suites,
+        # all of them have an identical definition of the test.
+        for test_name in basic_suites[sub_suite]:
+          if (test_name in seen_tests and
+              basic_suites[sub_suite][test_name] !=
+              basic_suites[seen_tests[test_name]][test_name]):
+            raise BBGenErr('Conflicting test definitions for %s from %s '
+                           'and %s in %s (error found while processing %s)'
+                           % (test_name, seen_tests[test_name], sub_suite,
+                           test_type, suite))
+          seen_tests[test_name] = sub_suite
 
   def flatten_test_suites(self):
     new_test_suites = {}

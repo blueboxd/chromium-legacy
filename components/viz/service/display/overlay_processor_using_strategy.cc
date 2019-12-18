@@ -13,59 +13,12 @@
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/output_surface.h"
-#include "components/viz/service/display/overlay_candidate_list.h"
-#include "components/viz/service/display/overlay_candidate_validator_strategy.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
-#include "components/viz/service/display/skia_output_surface.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
 
 namespace viz {
-
-namespace {
-
-#if defined(OS_ANDROID)
-// Utility class to make sure that we notify resource that they're promotable
-// before returning from ProcessForOverlays.
-class SendPromotionHintsBeforeReturning {
- public:
-  SendPromotionHintsBeforeReturning(DisplayResourceProvider* resource_provider,
-                                    OverlayCandidateList* candidates,
-                                    SkiaOutputSurface* skia_output_surface)
-      : resource_provider_(resource_provider),
-        candidates_(candidates),
-        skia_output_surface_(skia_output_surface) {}
-  ~SendPromotionHintsBeforeReturning() {
-    if (skia_output_surface_) {
-      base::flat_set<gpu::Mailbox> promotion_denied;
-      base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions;
-      auto locks = candidates_->ConvertLocalPromotionToMailboxKeyed(
-          resource_provider_, &promotion_denied, &possible_promotions);
-
-      std::vector<gpu::SyncToken> locks_sync_tokens;
-      for (auto& read_lock : locks)
-        locks_sync_tokens.push_back(read_lock->sync_token());
-
-      skia_output_surface_->SendOverlayPromotionNotification(
-          std::move(locks_sync_tokens), std::move(promotion_denied),
-          std::move(possible_promotions));
-    } else {
-      resource_provider_->SendPromotionHints(
-          candidates_->promotion_hint_info_map_,
-          candidates_->promotion_hint_requestor_set_);
-    }
-  }
-
- private:
-  DisplayResourceProvider* resource_provider_;
-  OverlayCandidateList* candidates_;
-  SkiaOutputSurface* skia_output_surface_;
-
-  DISALLOW_COPY_AND_ASSIGN(SendPromotionHintsBeforeReturning);
-};
-#endif
-}  // namespace
 
 // Default implementation of whether a strategy would remove the output surface
 // as overlay plane.
@@ -77,42 +30,21 @@ OverlayStrategy OverlayProcessorUsingStrategy::Strategy::GetUMAEnum() const {
   return OverlayStrategy::kUnknown;
 }
 
-#if defined(OS_ANDROID)
-OverlayProcessorUsingStrategy::OverlayProcessorUsingStrategy(
-    SkiaOutputSurface* skia_output_surface,
-    std::unique_ptr<OverlayCandidateValidatorStrategy> overlay_validator)
-    : OverlayProcessorInterface(),
-      overlay_validator_(std::move(overlay_validator)),
-      skia_output_surface_(skia_output_surface) {
-  InitializeStrategies();
-}
-#else  // defined(USE_OZONE)
-OverlayProcessorUsingStrategy::OverlayProcessorUsingStrategy(
-    SkiaOutputSurface* skia_output_surface,
-    std::unique_ptr<OverlayCandidateValidatorStrategy> overlay_validator)
-    : OverlayProcessorInterface(),
-      overlay_validator_(std::move(overlay_validator)) {
-  InitializeStrategies();
-}
-#endif
-
-void OverlayProcessorUsingStrategy::InitializeStrategies() {
-  DCHECK(strategies_.empty());
-  if (overlay_validator_)
-    strategies_ = overlay_validator_->InitializeStrategies(this);
-}
+OverlayProcessorUsingStrategy::OverlayProcessorUsingStrategy()
+    : OverlayProcessorInterface() {}
 
 OverlayProcessorUsingStrategy::~OverlayProcessorUsingStrategy() = default;
-
-bool OverlayProcessorUsingStrategy::IsOverlaySupported() const {
-  return !!overlay_validator_;
-}
 
 gfx::Rect OverlayProcessorUsingStrategy::GetAndResetOverlayDamage() {
   gfx::Rect result = overlay_damage_rect_;
   overlay_damage_rect_ = gfx::Rect();
   return result;
 }
+
+void OverlayProcessorUsingStrategy::NotifyOverlayPromotion(
+    DisplayResourceProvider* resource_provider,
+    const CandidateList& candidates,
+    const QuadList& quad_list) {}
 
 void OverlayProcessorUsingStrategy::ProcessForOverlays(
     DisplayResourceProvider* resource_provider,
@@ -126,14 +58,6 @@ void OverlayProcessorUsingStrategy::ProcessForOverlays(
     gfx::Rect* damage_rect,
     std::vector<gfx::Rect>* content_bounds) {
   TRACE_EVENT0("viz", "OverlayProcessorUsingStrategy::ProcessForOverlays");
-#if defined(OS_ANDROID)
-  // Be sure to send out notifications, regardless of whether we get to
-  // processing for overlays or not.  If we don't, then we should notify that
-  // they are not promotable.
-  SendPromotionHintsBeforeReturning notifier(resource_provider, candidates,
-                                             skia_output_surface_);
-#endif
-
   DCHECK(candidates->empty());
 
   RenderPass* render_pass = render_passes->back().get();
@@ -146,6 +70,8 @@ void OverlayProcessorUsingStrategy::ProcessForOverlays(
     // being invoked.  Also reset |previous_frame_underlay_was_unoccluded_|.
     previous_frame_underlay_rect_ = gfx::Rect();
     previous_frame_underlay_was_unoccluded_ = false;
+    NotifyOverlayPromotion(resource_provider, *candidates,
+                           render_pass->quad_list);
     return;
   }
 
@@ -168,6 +94,8 @@ void OverlayProcessorUsingStrategy::ProcessForOverlays(
     previous_frame_underlay_was_unoccluded_ = false;
   }
 
+  NotifyOverlayPromotion(resource_provider, *candidates,
+                         render_pass->quad_list);
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("viz.debug.overlay_planes"),
                  "Scheduled overlay planes", candidates->size());
 }
@@ -248,34 +176,11 @@ void OverlayProcessorUsingStrategy::AdjustOutputSurfaceOverlay(
   if (!output_surface_plane || !output_surface_plane->has_value())
     return;
 
-  // This is used by the surface control implementation to adjust the display
-  // transform and the display rect.
-  if (overlay_validator_)
-    overlay_validator_->AdjustOutputSurfaceOverlay(
-        &(output_surface_plane->value()));
-
   // If the overlay candidates cover the entire screen, the
   // |output_surface_plane| could be removed.
   if (last_successful_strategy_ &&
       last_successful_strategy_->RemoveOutputSurfaceAsOverlay())
     output_surface_plane->reset();
-}
-
-bool OverlayProcessorUsingStrategy::NeedsSurfaceOccludingDamageRect() const {
-  return overlay_validator_ &&
-         overlay_validator_->NeedsSurfaceOccludingDamageRect();
-}
-
-void OverlayProcessorUsingStrategy::SetDisplayTransformHint(
-    gfx::OverlayTransform transform) {
-  if (overlay_validator_)
-    overlay_validator_->SetDisplayTransform(transform);
-}
-
-void OverlayProcessorUsingStrategy::SetValidatorViewportSize(
-    const gfx::Size& size) {
-  if (overlay_validator_)
-    overlay_validator_->SetViewportSize(size);
 }
 
 bool OverlayProcessorUsingStrategy::AttemptWithStrategies(
@@ -306,18 +211,8 @@ bool OverlayProcessorUsingStrategy::AttemptWithStrategies(
   return false;
 }
 
-void OverlayProcessorUsingStrategy::CheckOverlaySupport(
-    const OverlayProcessorInterface::OutputSurfaceOverlayPlane* primary_plane,
-    OverlayCandidateList* candidate_list) {
-  if (overlay_validator_)
-    overlay_validator_->CheckOverlaySupport(primary_plane, candidate_list);
-}
-
 gfx::Rect OverlayProcessorUsingStrategy::GetOverlayDamageRectForOutputSurface(
     const OverlayCandidate& overlay) const {
-  if (overlay_validator_)
-    return overlay_validator_->GetOverlayDamageRectForOutputSurface(overlay);
-
   return ToEnclosedRect(overlay.display_rect);
 }
 }  // namespace viz

@@ -269,7 +269,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Setup backend mojo.
   const pageHandlerFactory =
-      snippetsInternals.mojom.PageHandlerFactory.getRemote();
+      snippetsInternals.mojom.PageHandlerFactory.getRemote(
+          /*useBrowserInterfaceBroker=*/ true);
 
   // Give backend mojo a reference to frontend mojo.
   pageHandlerFactory.createPageHandler(page.bindNewPipeAndPassRemote())

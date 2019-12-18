@@ -1,10 +1,10 @@
 group
 ++document Name='PDF document containing 1 page'
 ++++region Name='Page 1'
-++++++group
+++++++group IsControlElement=false
 ++++++++link Name='start first link start second link end second link end first link<newline>'
 ++++++++++description Name='start first link start second link end second link end first link<newline>' IsControlElement=false
-++++++group
+++++++group IsControlElement=false
 ++++++++link Name=' start second link end second link'
 ++++++++++description Name=' start second link end second link' IsControlElement=false
 ++++++++link Name='START FIRST LINK START SECOND LINK END FIRST LINK'

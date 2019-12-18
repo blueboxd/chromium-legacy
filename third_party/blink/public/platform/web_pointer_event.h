@@ -12,9 +12,6 @@
 
 namespace blink {
 
-// See web_input_event.h for details why this pack is here.
-#pragma pack(push, 4)
-
 // WebPointerEvent
 // This is a WIP and currently used only in Blink and only for touch.
 // TODO(nzolghadr): We should unify the fields in this class into
@@ -88,8 +85,6 @@ class WebPointerEvent : public WebInputEvent, public WebPointerProperties {
 
 #endif
 };
-
-#pragma pack(pop)
 
 }  // namespace blink
 

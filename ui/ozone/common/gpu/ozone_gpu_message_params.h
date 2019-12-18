@@ -16,12 +16,8 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/overlay_transform.h"
-#include "ui/ozone/public/overlay_candidates_ozone.h"
-#include "ui/ozone/public/overlay_surface_candidate.h"
 
 namespace ui {
-class OverlaySurfaceCandidate;
 
 struct DisplayMode_Params {
   DisplayMode_Params();
@@ -60,31 +56,6 @@ struct DisplaySnapshot_Params {
   int64_t product_code = 0;
   int32_t year_of_manufacture = display::kInvalidYearOfManufacture;
   gfx::Size maximum_cursor_size;
-};
-
-struct OverlayCheck_Params {
-  OverlayCheck_Params();
-  OverlayCheck_Params(const OverlaySurfaceCandidate& candidate);
-  OverlayCheck_Params(const OverlayCheck_Params& other);
-  ~OverlayCheck_Params();
-
-  gfx::Size buffer_size;
-  gfx::OverlayTransform transform = gfx::OVERLAY_TRANSFORM_NONE;
-  gfx::BufferFormat format = gfx::BufferFormat::BGRA_8888;
-  gfx::Rect display_rect;
-  gfx::RectF crop_rect;
-  bool is_opaque = false;
-  int plane_z_order = 0;
-  // By default we mark this configuration valid for promoting it to an overlay.
-  bool is_overlay_candidate = true;
-};
-
-struct OverlayCheckReturn_Params {
-  OverlayCheckReturn_Params() = default;
-  OverlayCheckReturn_Params(const OverlayCheckReturn_Params& other) = default;
-  ~OverlayCheckReturn_Params() = default;
-
-  OverlayStatus status = OVERLAY_STATUS_PENDING;
 };
 
 }  // namespace ui

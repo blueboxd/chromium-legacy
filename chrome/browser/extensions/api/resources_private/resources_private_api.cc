@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/api/resources_private.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/zoom/page_zoom_constants.h"
 #include "pdf/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -114,6 +115,8 @@ void AddStringsForPdf(base::DictionaryValue* dict) {
   };
   for (const auto& resource : kPdfResources)
     dict->SetString(resource.name, l10n_util::GetStringUTF16(resource.id));
+
+  dict->SetString("presetZoomFactors", zoom::GetPresetZoomFactorsAsJSON());
 }
 
 void AddAdditionalDataForPdf(base::DictionaryValue* dict) {

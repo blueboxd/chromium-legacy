@@ -569,10 +569,10 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
         if (mCurrentSyncError == SyncError.OTHER_ERRORS) {
             final Account account = ChromeSigninController.get().getSignedInUser();
             // TODO(https://crbug.com/873116): Pass the correct reason for the signout.
-            IdentityServicesProvider.getSigninManager().signOut(
+            IdentityServicesProvider.get().getSigninManager().signOut(
                     SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS,
                     ()
-                            -> IdentityServicesProvider.getSigninManager().signIn(
+                            -> IdentityServicesProvider.get().getSigninManager().signIn(
                                     SigninAccessPoint.SYNC_ERROR_CARD, account, null),
                     false);
             return;
@@ -746,7 +746,7 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
 
     private void cancelSync() {
         RecordUserAction.record("Signin_Signin_CancelAdvancedSyncSettings");
-        IdentityServicesProvider.getSigninManager().signOut(
+        IdentityServicesProvider.get().getSigninManager().signOut(
                 SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS);
         getActivity().finish();
     }

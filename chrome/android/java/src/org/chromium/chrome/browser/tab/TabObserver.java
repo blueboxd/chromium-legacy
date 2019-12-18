@@ -299,9 +299,10 @@ public interface TabObserver {
 
     /**
      * A notification when tab changes whether or not it is interactable and is accepting input.
+     * @param tab The notifying {@link Tab}.
      * @param isInteractable Whether or not the tab is interactable.
      */
-    void onInteractabilityChanged(boolean isInteractable);
+    void onInteractabilityChanged(Tab tab, boolean isInteractable);
 
     /**
      * Called when renderer changes its state about being responsive to requests.

@@ -56,6 +56,10 @@ class GPU_GLES2_EXPORT SharedImageRepresentation {
   MemoryTypeTracker* tracker() { return tracker_; }
   bool IsCleared() const { return backing_->IsCleared(); }
   void SetCleared() { backing_->SetCleared(); }
+  gfx::Rect ClearedRect() const { return backing_->ClearedRect(); }
+  void SetClearedRect(const gfx::Rect& cleared_rect) {
+    backing_->SetClearedRect(cleared_rect);
+  }
 
   // Indicates that the underlying graphics context has been lost, and the
   // backing should be treated as destroyed.

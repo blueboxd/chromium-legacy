@@ -244,14 +244,9 @@ void BluezDBusManager::InitializeClients() {
 }
 
 std::string BluezDBusManager::GetBluetoothServiceName() {
-  bool use_newblue = false;
-#if defined(OS_CHROMEOS)
-  use_newblue = base::FeatureList::IsEnabled(device::kNewblueDaemon);
-#endif  // defined(OS_CHROMEOS)
-
-  return use_newblue
-             ? bluetooth_object_manager::kBluetoothObjectManagerServiceName
-             : bluez_object_manager::kBluezObjectManagerServiceName;
+  // TODO(b/145163508): Remove the NewBlue feature flag as Bluetooth service is
+  // now always BlueZ.
+  return bluez_object_manager::kBluezObjectManagerServiceName;
 }
 
 // static

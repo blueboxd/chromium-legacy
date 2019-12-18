@@ -30,6 +30,9 @@
 // Sets that the promo has already been seen |times| number of times.
 + (void)setPromoAlreadySeenNumberOfTimes:(int)times;
 
+// Verifies that there is |count| children on the bookmark folder with |name|.
++ (NSError*)verifyChildCount:(size_t)count inFolderWithName:(NSString*)name;
+
 // Returns the number of times a Promo has been seen.
 + (int)numberOfTimesPromoAlreadySeen;
 

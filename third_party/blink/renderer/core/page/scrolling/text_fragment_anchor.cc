@@ -33,7 +33,10 @@ bool ParseTextDirective(const String& fragment,
   size_t end_pos = 0;
   while (end_pos != kNotFound) {
     if (fragment.Find(kTextFragmentIdentifierPrefix, start_pos) != start_pos) {
-      return false;
+      // If this is not a text directive, continue to the next directive
+      end_pos = fragment.find('&', start_pos + 1);
+      start_pos = end_pos + 1;
+      continue;
     }
 
     start_pos += kTextFragmentIdentifierPrefixStringLength;
@@ -46,10 +49,13 @@ bool ParseTextDirective(const String& fragment,
       target_text = fragment.Substring(start_pos, end_pos - start_pos);
       start_pos = end_pos + 1;
     }
-    out_selectors->push_back(TextFragmentSelector::Create(target_text));
+
+    TextFragmentSelector selector = TextFragmentSelector::Create(target_text);
+    if (selector.Type() != TextFragmentSelector::kInvalid)
+      out_selectors->push_back(selector);
   }
 
-  return true;
+  return out_selectors->size() > 0;
 }
 
 bool CheckSecurityRestrictions(LocalFrame& frame,

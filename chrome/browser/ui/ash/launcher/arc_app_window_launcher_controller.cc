@@ -35,13 +35,6 @@ namespace {
 
 constexpr size_t kMaxIconPngSize = 64 * 1024;  // 64 kb
 
-// Map any ARC Camera app to internal Camera app.
-ash::ShelfID MaybeMapShelfId(const arc::ArcAppShelfId& arc_app_shelf_id) {
-  if (IsCameraApp(arc_app_shelf_id.app_id()))
-    return ash::ShelfID(ash::kInternalAppIdCamera);
-  return ash::ShelfID(arc_app_shelf_id.ToString());
-}
-
 }  // namespace
 
 // The information about the arc application window which has to be kept
@@ -389,6 +382,10 @@ void ArcAppWindowLauncherController::OnTaskSetActive(int32_t task_id) {
   }
 }
 
+int ArcAppWindowLauncherController::GetActiveTaskId() const {
+  return active_task_id_;
+}
+
 AppWindowLauncherItemController*
 ArcAppWindowLauncherController::ControllerForWindow(aura::Window* window) {
   if (!window)
@@ -471,13 +468,12 @@ ArcAppWindowLauncherController::AttachControllerToTask(
   const arc::ArcAppShelfId& app_shelf_id = app_window_info.app_shelf_id();
   const auto it = app_shelf_group_to_controller_map_.find(app_shelf_id);
   if (it != app_shelf_group_to_controller_map_.end()) {
-    DCHECK(IsCameraApp(app_shelf_id.ToString()) ||
-           it->second->app_id() == app_shelf_id.ToString());
+    DCHECK(it->second->app_id() == app_shelf_id.ToString());
     it->second->AddTaskId(task_id);
     return it->second;
   }
 
-  const ash::ShelfID shelf_id = MaybeMapShelfId(app_shelf_id);
+  const ash::ShelfID shelf_id = ash::ShelfID(app_shelf_id.ToString());
   std::unique_ptr<ArcAppWindowLauncherItemController> controller =
       std::make_unique<ArcAppWindowLauncherItemController>(shelf_id);
   ArcAppWindowLauncherItemController* item_controller = controller.get();

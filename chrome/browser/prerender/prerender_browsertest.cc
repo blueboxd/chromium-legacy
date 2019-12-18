@@ -1567,13 +1567,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorTopLevel) {
   PrerenderTestURL(https_url, FINAL_STATUS_SSL_ERROR, 0);
 }
 
-// Checks that we cancel correctly when window.print() is called.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPrint) {
-  DisableLoadEventCheck();
-  PrerenderTestURL("/prerender/prerender_print.html", FINAL_STATUS_WINDOW_PRINT,
-                   0);
-}
-
 class TestClientCertStore : public net::ClientCertStore {
  public:
   explicit TestClientCertStore(const net::CertificateList& certs)

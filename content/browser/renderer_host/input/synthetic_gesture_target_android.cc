@@ -99,8 +99,8 @@ void SyntheticGestureTargetAndroid::DispatchWebTouchEventToPlatform(
   const unsigned num_touches = web_touch.touches_length;
   for (unsigned i = 0; i < num_touches; ++i) {
     const blink::WebTouchPoint* point = &web_touch.touches[i];
-    TouchSetPointer(i, point->PositionInWidget().x, point->PositionInWidget().y,
-                    point->id);
+    TouchSetPointer(i, point->PositionInWidget().x(),
+                    point->PositionInWidget().y(), point->id);
   }
 
   TouchInject(action, num_touches, web_touch.TimeStamp());
@@ -109,8 +109,8 @@ void SyntheticGestureTargetAndroid::DispatchWebTouchEventToPlatform(
 void SyntheticGestureTargetAndroid::DispatchWebMouseWheelEventToPlatform(
     const WebMouseWheelEvent& web_wheel,
     const ui::LatencyInfo&) {
-  TouchSetScrollDeltas(web_wheel.PositionInWidget().x,
-                       web_wheel.PositionInWidget().y, web_wheel.delta_x,
+  TouchSetScrollDeltas(web_wheel.PositionInWidget().x(),
+                       web_wheel.PositionInWidget().y(), web_wheel.delta_x,
                        web_wheel.delta_y);
   TouchInject(MOTION_EVENT_ACTION_SCROLL, 1, web_wheel.TimeStamp());
 }

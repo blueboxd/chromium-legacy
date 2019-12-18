@@ -6,6 +6,7 @@
 #define ASH_HOME_SCREEN_HOME_SCREEN_DELEGATE_H_
 
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/optional.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 
@@ -96,6 +97,10 @@ class HomeScreenDelegate {
 
   // True if home screen is visible.
   virtual bool IsHomeScreenVisible() = 0;
+
+  // Disables background blur in home screen UI while the returned
+  // ScopedClosureRunner is in scope.
+  virtual base::ScopedClosureRunner DisableHomeScreenBackgroundBlur() = 0;
 
   // Returns bounds rect in screen coordinates for the app list item associated
   // with the provided window in the apps grid shown in the home screen,

@@ -1485,8 +1485,8 @@ void NetworkContext::CreateP2PSocketManager(
       std::make_unique<P2PSocketManager>(
           std::move(client), std::move(trusted_socket_manager),
           std::move(socket_manager_receiver),
-          base::Bind(&NetworkContext::DestroySocketManager,
-                     base::Unretained(this)),
+          base::BindRepeating(&NetworkContext::DestroySocketManager,
+                              base::Unretained(this)),
           url_request_context_);
   socket_managers_[socket_manager.get()] = std::move(socket_manager);
 }
@@ -1670,8 +1670,9 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
       verify_proc = CreateCertVerifyProcForUser(cert_net_fetcher_,
                                                 std::move(public_slot));
     }
-    cert_verifier_with_trust_anchors_ = new CertVerifierWithTrustAnchors(
-        base::Bind(&NetworkContext::TrustAnchorUsed, base::Unretained(this)));
+    cert_verifier_with_trust_anchors_ =
+        new CertVerifierWithTrustAnchors(base::BindRepeating(
+            &NetworkContext::TrustAnchorUsed, base::Unretained(this)));
     UpdateAdditionalCertificates(
         std::move(params_->initial_additional_certificates));
     cert_verifier_with_trust_anchors_->InitializeOnIOThread(verify_proc);

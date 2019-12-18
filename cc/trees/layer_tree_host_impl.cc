@@ -376,9 +376,11 @@ void LayerTreeHostImpl::WillSendBeginMainFrame() {
 }
 
 void LayerTreeHostImpl::DidSendBeginMainFrame(const viz::BeginFrameArgs& args) {
-  if (impl_thread_phase_ == ImplThreadPhase::INSIDE_IMPL_FRAME)
+  if (impl_thread_phase_ == ImplThreadPhase::INSIDE_IMPL_FRAME &&
+      !begin_main_frame_sent_during_impl_) {
     begin_main_frame_sent_during_impl_ = true;
-  frame_trackers_.NotifyBeginMainFrame(args);
+    frame_trackers_.NotifyBeginMainFrame(args);
+  }
 }
 
 void LayerTreeHostImpl::BeginMainFrameAborted(
@@ -2307,6 +2309,14 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   // outside of begin-impl frame pipeline. Avoid notifying the trackers in such
   // cases.
   if (impl_thread_phase_ == ImplThreadPhase::INSIDE_IMPL_FRAME) {
+    if (!begin_main_frame_sent_during_impl_) {
+      frame_trackers_.NotifyBeginMainFrame(
+          current_begin_frame_tracker_.Current());
+      if (!begin_main_frame_expected_during_impl_) {
+        frame_trackers_.NotifyMainFrameCausedNoDamage(
+            current_begin_frame_tracker_.Current());
+      }
+    }
     frame_trackers_.NotifySubmitFrame(
         compositor_frame.metadata.frame_token, frame->has_missing_content,
         frame->begin_frame_ack, frame->origin_begin_main_frame_args);
@@ -2664,7 +2674,12 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   frame_trackers_.NotifyBeginImplFrame(args);
 
   begin_main_frame_expected_during_impl_ = client_->IsBeginMainFrameExpected();
-  begin_main_frame_sent_during_impl_ = false;
+  if (begin_main_frame_expected_during_impl_) {
+    begin_main_frame_sent_during_impl_ = true;
+    frame_trackers_.NotifyBeginMainFrame(args);
+  } else {
+    begin_main_frame_sent_during_impl_ = false;
+  }
 
   if (is_likely_to_require_a_draw_) {
     // Optimistically schedule a draw. This will let us expect the tile manager
@@ -2707,18 +2722,6 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
 }
 
 void LayerTreeHostImpl::DidFinishImplFrame() {
-  if (!begin_main_frame_sent_during_impl_ &&
-      !begin_main_frame_expected_during_impl_) {
-    // A begin-main-frame was never dispatched for this BeginFrameArgs, and one
-    // was not expected to be dispatched either. So notify the trackers of the
-    // begin-main-frame, and not to expect any updates from it. This is
-    // necessary to make sure the trackers can correctly know which frames were
-    // not expected to produce any updates.
-    frame_trackers_.NotifyBeginMainFrame(
-        current_begin_frame_tracker_.Current());
-    frame_trackers_.NotifyMainFrameCausedNoDamage(
-        current_begin_frame_tracker_.Current());
-  }
   frame_trackers_.NotifyFrameEnd(current_begin_frame_tracker_.Current());
   impl_thread_phase_ = ImplThreadPhase::IDLE;
   current_begin_frame_tracker_.Finish();
@@ -2728,7 +2731,26 @@ void LayerTreeHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack,
                                            FrameSkippedReason reason) {
   if (layer_tree_frame_sink_)
     layer_tree_frame_sink_->DidNotProduceFrame(ack);
-  // TODO(sad): Notify |frame_trackers_| if |reason| is no-damage.
+
+  // If a frame was not submitted because there was no damage, then notify the
+  // trackers.
+  if (reason == FrameSkippedReason::kNoDamage &&
+      impl_thread_phase_ == ImplThreadPhase::INSIDE_IMPL_FRAME) {
+    // It is possible that |ack| is for a 'future frame', i.e. for the next
+    // frame from the one currently being handled by the compositor (represented
+    // by the BeginFrameArgs instance in |current_begin_frame_tracker_|). This
+    // can happen, for example, when a frame is skipped early for
+    // latency-recovery, while the previous frame is still being processed.
+    // Notify the trackers only when this is *not* the case (since the trackers
+    // are not notified about the start of the future frame either).
+    const auto& args = current_begin_frame_tracker_.Current();
+    if (args.source_id == ack.source_id &&
+        args.sequence_number == ack.sequence_number) {
+      frame_trackers_.NotifyImplFrameCausedNoDamage(ack);
+      if (begin_main_frame_sent_during_impl_)
+        frame_trackers_.NotifyMainFrameCausedNoDamage(args);
+    }
+  }
 }
 
 void LayerTreeHostImpl::SynchronouslyInitializeAllTiles() {
@@ -3905,12 +3927,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
 
   ScrollNode* scrolling_node = nullptr;
   bool scroll_on_main_thread = false;
-
-  // TODO(bokan): This appears Mac-specific - from
-  // https://codereview.chromium.org/2486673008 Suspect it is unnecessary - a
-  // fling should just produce GSUs without an intermediate GSB and GSE.
-  if (scroll_state->is_in_inertial_phase())
-    scrolling_node = CurrentlyScrollingNode();
 
   if (!scrolling_node) {
     ClearCurrentlyScrollingNode();

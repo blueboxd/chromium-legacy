@@ -7,6 +7,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     style="@style/BottomToolbarButtonWrapper"
+    android:id="@+id/ss_home_tab"
     android:background="@null"
     android:contentDescription="@string/accessibility_start_surface_bottom_home_button" >
     <org.chromium.ui.widget.ChromeImageView

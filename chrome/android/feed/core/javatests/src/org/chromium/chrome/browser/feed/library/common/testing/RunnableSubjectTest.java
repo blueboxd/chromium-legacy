@@ -18,7 +18,6 @@ import com.google.common.truth.ExpectFailure;
 import com.google.common.truth.Truth;
 
 import org.junit.ComparisonFailure;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -97,7 +96,6 @@ public class RunnableSubjectTest {
     }
 
     @Test
-    @Ignore("crbug.com/1024945 java.lang.NoClassDefFoundError: difflib/DiffUtils")
     public void wrongMessage() {
         expectFailure.whenTesting()
                 .about(runnables())

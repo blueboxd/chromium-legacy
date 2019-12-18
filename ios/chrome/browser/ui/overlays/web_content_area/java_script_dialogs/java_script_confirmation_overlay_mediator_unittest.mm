@@ -7,6 +7,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
+#include "ios/chrome/browser/overlays/public/overlay_callback_manager.h"
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_response.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_confirmation_overlay.h"
@@ -45,7 +46,7 @@ class JavaScriptConfirmationOverlayMediatorTest
   }
   const GURL& url() const { return url_; }
   const std::string& message() const { return message_; }
-  const OverlayRequest* request() const { return request_.get(); }
+  OverlayRequest* request() const { return request_.get(); }
 
  private:
   web::TestWebState web_state_;
@@ -109,12 +110,13 @@ TEST_F(JavaScriptConfirmationOverlayMediatorTest,
 TEST_F(JavaScriptConfirmationOverlayMediatorTest, ConfirmResponse) {
   CreateMediator();
   ASSERT_EQ(2U, consumer().actions.count);
-  ASSERT_FALSE(!!request()->response());
+  ASSERT_FALSE(!!request()->GetCallbackManager()->GetCompletionResponse());
 
   // Execute the confirm action and verify the response.
   AlertAction* confirm_action = consumer().actions[0];
   confirm_action.handler(confirm_action);
-  OverlayResponse* confirm_response = request()->response();
+  OverlayResponse* confirm_response =
+      request()->GetCallbackManager()->GetCompletionResponse();
   ASSERT_TRUE(!!confirm_response);
   JavaScriptConfirmationOverlayResponseInfo* confirm_response_info =
       confirm_response->GetInfo<JavaScriptConfirmationOverlayResponseInfo>();
@@ -126,12 +128,13 @@ TEST_F(JavaScriptConfirmationOverlayMediatorTest, ConfirmResponse) {
 TEST_F(JavaScriptConfirmationOverlayMediatorTest, CancelResponse) {
   CreateMediator();
   ASSERT_EQ(2U, consumer().actions.count);
-  ASSERT_FALSE(!!request()->response());
+  ASSERT_FALSE(!!request()->GetCallbackManager()->GetCompletionResponse());
 
   // Execute the cancel action and verify the response.
   AlertAction* cancel_action = consumer().actions[1];
   cancel_action.handler(cancel_action);
-  OverlayResponse* cancel_response = request()->response();
+  OverlayResponse* cancel_response =
+      request()->GetCallbackManager()->GetCompletionResponse();
   ASSERT_TRUE(!!cancel_response);
   JavaScriptConfirmationOverlayResponseInfo* cancel_response_info =
       cancel_response->GetInfo<JavaScriptConfirmationOverlayResponseInfo>();

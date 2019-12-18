@@ -284,7 +284,7 @@ public class ChromeTabUtils {
         }
 
         @Override
-        public void onInteractabilityChanged(boolean interactable) {
+        public void onInteractabilityChanged(Tab tab, boolean interactable) {
             if (interactable) {
                 mCallback.notifyCalled();
                 mTab.removeObserver(this);

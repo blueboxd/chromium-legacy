@@ -6,20 +6,25 @@
 #include "base/win/event_trace_provider.h"
 #include <new>
 #include "testing/gtest/include/gtest/gtest.h"
+
 #include <initguid.h>  // NOLINT - has to be last
 
 namespace {
 
-using base::win::EtwTraceProvider;
 using base::win::EtwMofEvent;
+using base::win::EtwTraceProvider;
 
+// clang-format off
 // {7F0FD37F-FA3C-4cd6-9242-DF60967A2CB2}
 DEFINE_GUID(kTestProvider,
   0x7f0fd37f, 0xfa3c, 0x4cd6, 0x92, 0x42, 0xdf, 0x60, 0x96, 0x7a, 0x2c, 0xb2);
+// clang-format on
 
+// clang-format off
 // {7F0FD37F-FA3C-4cd6-9242-DF60967A2CB2}
 DEFINE_GUID(kTestEventClass,
   0x7f0fd37f, 0xfa3c, 0x4cd6, 0x92, 0x42, 0xdf, 0x60, 0x96, 0x7a, 0x2c, 0xb2);
+// clang-format on
 
 }  // namespace
 

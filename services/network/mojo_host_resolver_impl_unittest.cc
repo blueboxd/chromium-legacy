@@ -39,7 +39,7 @@ class TestRequestClient
       mojo::PendingReceiver<proxy_resolver::mojom::HostResolverRequestClient>
           receiver)
       : done_(false), receiver_(this, std::move(receiver)) {
-    receiver_.set_disconnect_handler(base::Bind(
+    receiver_.set_disconnect_handler(base::BindOnce(
         &TestRequestClient::OnMojoDisconnect, base::Unretained(this)));
   }
 
@@ -58,8 +58,8 @@ class TestRequestClient
   void OnMojoDisconnect();
 
   bool done_;
-  base::Closure run_loop_quit_closure_;
-  base::Closure connection_error_quit_closure_;
+  base::OnceClosure run_loop_quit_closure_;
+  base::OnceClosure connection_error_quit_closure_;
 
   mojo::Receiver<proxy_resolver::mojom::HostResolverRequestClient> receiver_;
 };
@@ -84,7 +84,7 @@ void TestRequestClient::ReportResult(
     int32_t error,
     const std::vector<net::IPAddress>& results) {
   if (!run_loop_quit_closure_.is_null()) {
-    run_loop_quit_closure_.Run();
+    std::move(run_loop_quit_closure_).Run();
   }
   ASSERT_FALSE(done_);
   error_ = error;
@@ -94,7 +94,7 @@ void TestRequestClient::ReportResult(
 
 void TestRequestClient::OnMojoDisconnect() {
   if (!connection_error_quit_closure_.is_null())
-    connection_error_quit_closure_.Run();
+    std::move(connection_error_quit_closure_).Run();
 }
 
 }  // namespace

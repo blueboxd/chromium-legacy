@@ -35,12 +35,12 @@ TEST(WebInputEventBuilderTest, TestMouseEventScale) {
   // The WebMouseEvent.position field should be in pixels on return and hence
   // should be the same value as the x and y coordinates passed in to the
   // WebMouseEventBuilder::Build function.
-  EXPECT_EQ(300, mouse_move.PositionInWidget().x);
-  EXPECT_EQ(200, mouse_move.PositionInWidget().y);
+  EXPECT_EQ(300, mouse_move.PositionInWidget().x());
+  EXPECT_EQ(200, mouse_move.PositionInWidget().y());
 
   // WebMouseEvent.positionInScreen is calculated in DIPs.
-  EXPECT_EQ(150, mouse_move.PositionInScreen().x);
-  EXPECT_EQ(100, mouse_move.PositionInScreen().y);
+  EXPECT_EQ(150, mouse_move.PositionInScreen().x());
+  EXPECT_EQ(100, mouse_move.PositionInScreen().y());
 
   EXPECT_EQ(blink::WebPointerProperties::PointerType::kMouse,
             mouse_move.pointer_type);

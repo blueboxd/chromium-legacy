@@ -30,7 +30,7 @@ class Texture;
 // this backing uses EGL Image siblings. This backing is thread safe across
 // different threads running different GL contexts not part of same shared
 // group. This is achieved by using locks and fences for proper synchronization.
-class SharedImageBackingEglImage : public SharedImageBacking {
+class SharedImageBackingEglImage : public ClearTrackingSharedImageBacking {
  public:
   SharedImageBackingEglImage(const Mailbox& mailbox,
                              viz::ResourceFormat format,
@@ -43,8 +43,6 @@ class SharedImageBackingEglImage : public SharedImageBacking {
 
   ~SharedImageBackingEglImage() override;
 
-  bool IsCleared() const override;
-  void SetCleared() override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
   void Destroy() override;

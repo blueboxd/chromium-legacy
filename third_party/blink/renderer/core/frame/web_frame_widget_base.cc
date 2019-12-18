@@ -214,13 +214,14 @@ void WebFrameWidgetBase::DragSourceEndedAt(
     CancelDrag();
     return;
   }
-  WebFloatPoint point_in_root_frame(
+  gfx::PointF point_in_root_frame(
       GetPage()->GetVisualViewport().ViewportToRootFrame(point_in_viewport));
 
-  WebMouseEvent fake_mouse_move(
-      WebInputEvent::kMouseMove, point_in_root_frame, screen_point,
-      WebPointerProperties::Button::kLeft, 0, WebInputEvent::kNoModifiers,
-      base::TimeTicks::Now());
+  WebMouseEvent fake_mouse_move(WebInputEvent::kMouseMove, point_in_root_frame,
+                                gfx::PointF(screen_point.x, screen_point.y),
+                                WebPointerProperties::Button::kLeft, 0,
+                                WebInputEvent::kNoModifiers,
+                                base::TimeTicks::Now());
   fake_mouse_move.SetFrameScale(1);
   local_root_->GetFrame()->GetEventHandler().DragSourceEndedAt(
       fake_mouse_move, static_cast<DragOperation>(operation));
@@ -264,7 +265,7 @@ WebDragOperation WebFrameWidgetBase::DragTargetDragEnterOrOver(
     return kWebDragOperationNone;
   }
 
-  WebFloatPoint point_in_root_frame(ViewportToRootFrame(point_in_viewport));
+  FloatPoint point_in_root_frame(ViewportToRootFrame(point_in_viewport));
 
   current_drag_data_->SetModifiers(modifiers);
   DragData drag_data(current_drag_data_.Get(), point_in_root_frame,

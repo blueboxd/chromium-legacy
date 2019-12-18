@@ -35,17 +35,6 @@ let Size;
 let ViewportRect;
 
 /**
- * Clamps the zoom factor (or page scale factor) to be within the limits.
- * @param {number} factor The zoom/scale factor.
- * @return {number} The factor clamped within the limits.
- */
-function clampZoom(factor) {
-  return Math.max(
-      Viewport.ZOOM_FACTOR_RANGE.min,
-      Math.min(factor, Viewport.ZOOM_FACTOR_RANGE.max));
-}
-
-/**
  * @param {!ViewportRect} rect1
  * @param {!ViewportRect} rect2
  * @return {number} The area of the intersection of the rects
@@ -127,6 +116,13 @@ export class Viewport {
 
     /** @private {number} */
     this.internalZoom_ = 1;
+
+    /**
+     * Predefined zoom factors to be used when zooming in/out. These are in
+     * ascending order.
+     * @private {!Array<number>}
+     */
+    this.presetZoomFactors_ = [];
 
     /** @private {?ZoomManager} */
     this.zoomManager_ = null;
@@ -227,6 +223,28 @@ export class Viewport {
   /** @param {boolean} twoUpView The new two up view state to set. */
   setTwoUpView(twoUpView) {
     this.twoUpView_ = twoUpView;
+  }
+
+  /**
+   * Clamps the zoom factor (or page scale factor) to be within the limits.
+   * @param {number} factor The zoom/scale factor.
+   * @return {number} The factor clamped within the limits.
+   * @private
+   */
+  clampZoom_(factor) {
+    return Math.max(
+        this.presetZoomFactors_[0],
+        Math.min(
+            factor,
+            this.presetZoomFactors_[this.presetZoomFactors_.length - 1]));
+  }
+
+  /**
+   * @param {!Array<number>} factors Array containing zoom/scale factors.
+   */
+  setZoomFactorRange(factors) {
+    assert(factors.length !== 0);
+    this.presetZoomFactors_ = factors;
   }
 
   /**
@@ -532,7 +550,7 @@ export class Viewport {
         this.allowedToChangeZoom_,
         'Called Viewport.setPinchZoomInternal_ without calling ' +
             'Viewport.mightZoom_.');
-    this.internalZoom_ = clampZoom(this.internalZoom_ * scaleDelta);
+    this.internalZoom_ = this.clampZoom_(this.internalZoom_ * scaleDelta);
 
     const newCenterInContent = this.frameToContent_(center);
     const delta = {
@@ -574,7 +592,7 @@ export class Viewport {
   setZoom(newZoom) {
     this.fittingType_ = FittingType.NONE;
     this.mightZoom_(() => {
-      this.setZoomInternal_(clampZoom(newZoom));
+      this.setZoomInternal_(this.clampZoom_(newZoom));
       this.updateViewport_();
     });
   }
@@ -943,10 +961,10 @@ export class Viewport {
   zoomOut() {
     this.mightZoom_(() => {
       this.fittingType_ = FittingType.NONE;
-      let nextZoom = Viewport.ZOOM_FACTORS[0];
-      for (let i = 0; i < Viewport.ZOOM_FACTORS.length; i++) {
-        if (Viewport.ZOOM_FACTORS[i] < this.internalZoom_) {
-          nextZoom = Viewport.ZOOM_FACTORS[i];
+      let nextZoom = this.presetZoomFactors_[0];
+      for (let i = 0; i < this.presetZoomFactors_.length; i++) {
+        if (this.presetZoomFactors_[i] < this.internalZoom_) {
+          nextZoom = this.presetZoomFactors_[i];
         }
       }
       this.setZoomInternal_(nextZoom);
@@ -958,10 +976,11 @@ export class Viewport {
   zoomIn() {
     this.mightZoom_(() => {
       this.fittingType_ = FittingType.NONE;
-      let nextZoom = Viewport.ZOOM_FACTORS[Viewport.ZOOM_FACTORS.length - 1];
-      for (let i = Viewport.ZOOM_FACTORS.length - 1; i >= 0; i--) {
-        if (Viewport.ZOOM_FACTORS[i] > this.internalZoom_) {
-          nextZoom = Viewport.ZOOM_FACTORS[i];
+      const maxZoomIndex = this.presetZoomFactors_.length - 1;
+      let nextZoom = this.presetZoomFactors_[maxZoomIndex];
+      for (let i = maxZoomIndex; i >= 0; i--) {
+        if (this.presetZoomFactors_[i] > this.internalZoom_) {
+          nextZoom = this.presetZoomFactors_[i];
         }
       }
       this.setZoomInternal_(nextZoom);
@@ -987,7 +1006,7 @@ export class Viewport {
 
       const needsScrollbars =
           this.documentNeedsScrollbars_(this.zoomManager_.applyBrowserZoom(
-              clampZoom(this.internalZoom_ * scaleDelta)));
+              this.clampZoom_(this.internalZoom_ * scaleDelta)));
 
       this.pinchCenter_ = e.center;
 
@@ -1253,23 +1272,6 @@ Viewport.PinchPhase = {
  * these events.
  */
 Viewport.SCROLL_INCREMENT = 40;
-
-/**
- * Predefined zoom factors to be used when zooming in/out. These are in
- * ascending order. This should match the lists in
- * components/zoom/page_zoom_constants.h and
- * chrome/browser/resources/settings/appearance_page/appearance_page.js
- */
-Viewport.ZOOM_FACTORS = [
-  0.25, 1 / 3, 0.5, 2 / 3, 0.75, 0.8, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3,
-  4, 5
-];
-
-/** The minimum and maximum range to be used to clip zoom factor. */
-Viewport.ZOOM_FACTOR_RANGE = {
-  min: Viewport.ZOOM_FACTORS[0],
-  max: Viewport.ZOOM_FACTORS[Viewport.ZOOM_FACTORS.length - 1]
-};
 
 /** The width of the page shadow around pages in pixels. */
 Viewport.PAGE_SHADOW = {

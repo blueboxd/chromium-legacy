@@ -13,9 +13,6 @@ namespace blink {
 
 class WebGestureEvent;
 
-// See web_input_event.h for details why this pack is here.
-#pragma pack(push, 4)
-
 // WebMouseEvent --------------------------------------------------------------
 
 class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
@@ -28,8 +25,8 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
   WebMenuSourceType menu_source_type;
 
   WebMouseEvent(Type type_param,
-                WebFloatPoint position,
-                WebFloatPoint global_position,
+                gfx::PointF position,
+                gfx::PointF global_position,
                 Button button_param,
                 int click_count_param,
                 int modifiers_param,
@@ -76,7 +73,7 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
                                       base::TimeTicks time_stamp_param,
                                       PointerId id_param = kMousePointerId);
 
-  BLINK_PLATFORM_EXPORT WebFloatPoint PositionInRootFrame() const;
+  BLINK_PLATFORM_EXPORT gfx::PointF PositionInRootFrame() const;
 
   // Sets any scaled values to be their computed values and sets |frame_scale_|
   // back to 1 and |frame_translate_| X and Y coordinates back to 0.
@@ -100,8 +97,6 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
  private:
   void SetMenuSourceType(WebInputEvent::Type);
 };
-
-#pragma pack(pop)
 
 }  // namespace blink
 

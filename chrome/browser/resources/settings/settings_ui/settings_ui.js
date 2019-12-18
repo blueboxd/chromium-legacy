@@ -66,21 +66,6 @@ Polymer({
     pageVisibility_: {type: Object, value: settings.pageVisibility},
 
     /** @private */
-    showAndroidApps_: Boolean,
-
-    /** @private */
-    showCrostini_: Boolean,
-
-    /** @private */
-    showParentalControls_: Boolean,
-
-    /** @private */
-    showPluginVm_: Boolean,
-
-    /** @private */
-    havePlayStoreApp_: Boolean,
-
-    /** @private */
     lastSearchQuery_: {
       type: String,
       value: '',
@@ -135,25 +120,6 @@ Polymer({
           loadTimeData.getString('controlledSettingChildRestriction'),
       // </if>
     };
-
-    // The SplitSettings feature hides OS settings in the browser settings page.
-    // https://crbug.com/950007
-    const showOSSettings = loadTimeData.getBoolean('showOSSettings');
-    this.showAndroidApps_ = showOSSettings &&
-        loadTimeData.valueExists('androidAppsVisible') &&
-        loadTimeData.getBoolean('androidAppsVisible');
-    this.showCrostini_ = showOSSettings &&
-        loadTimeData.valueExists('showCrostini') &&
-        loadTimeData.getBoolean('showCrostini');
-    this.showParentalControls_ = showOSSettings &&
-        loadTimeData.valueExists('showParentalControls') &&
-        loadTimeData.getBoolean('showParentalControls');
-    this.showPluginVm_ = showOSSettings &&
-        loadTimeData.valueExists('showPluginVm') &&
-        loadTimeData.getBoolean('showPluginVm');
-    this.havePlayStoreApp_ = showOSSettings &&
-        loadTimeData.valueExists('havePlayStoreApp') &&
-        loadTimeData.getBoolean('havePlayStoreApp');
 
     this.addEventListener('show-container', () => {
       this.$.container.style.visibility = 'visible';

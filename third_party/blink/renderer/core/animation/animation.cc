@@ -627,7 +627,7 @@ bool Animation::Affects(const Element& element,
   if (!effect)
     return false;
 
-  return (effect->target() == &element) &&
+  return (effect->EffectTarget() == &element) &&
          effect->Affects(PropertyHandle(property));
 }
 
@@ -2051,7 +2051,7 @@ void Animation::InvalidateKeyframeEffect(const TreeScope& tree_scope) {
   if (!keyframe_effect)
     return;
 
-  Element* target = keyframe_effect->target();
+  Element* target = keyframe_effect->EffectTarget();
 
   // TODO(alancutter): Remove dependency of this function on CSSAnimations.
   // This function makes the incorrect assumption that the animation uses

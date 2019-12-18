@@ -79,7 +79,7 @@ static const viz::ResourceFormat valid_viz_resource_format_table[] = {
     viz::ResourceFormat::RG_88,        viz::ResourceFormat::LUMINANCE_F16,
     viz::ResourceFormat::RGBA_F16,     viz::ResourceFormat::R16_EXT,
     viz::ResourceFormat::RGBX_8888,    viz::ResourceFormat::BGRX_8888,
-    viz::ResourceFormat::RGBX_1010102, viz::ResourceFormat::BGRX_1010102,
+    viz::ResourceFormat::RGBA_1010102, viz::ResourceFormat::BGRX_1010102,
     viz::ResourceFormat::YVU_420,      viz::ResourceFormat::YUV_420_BIPLANAR,
 };
 

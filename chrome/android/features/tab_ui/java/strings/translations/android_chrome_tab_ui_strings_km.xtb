@@ -4,6 +4,7 @@
 <translation id="1075622780330595106">ផ្ទាំង <ph name="NUMBER_OF_TABS" /> របស់អ្នក​មិនត្រូវបាន​ប្រើទេ​នាពេល​ថ្មីៗនេះ។ បិទផ្ទាំង​ទាំងនោះឬ?</translation>
 <translation id="1181037720776840403">ដកចេញ</translation>
 <translation id="125153950246128346">ចុចដើម្បីមើល​ផ្ទាំងផ្សេងទៀត</translation>
+<translation id="1657719826150349398">ផ្លាស់ទី​ផ្ទាំង​ចុះក្រោម</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{ផ្ទាំង <ph name="TABS_COUNT_ONE" />}other{ផ្ទាំង <ph name="TABS_COUNT_MANY" />}}</translation>
 <translation id="2569352796411618312">ការណែនាំ៖ ផ្ទាំង <ph name="NUMBER_OF_TABS" /> របស់អ្នក​មិនត្រូវបាន​ប្រើទេ​នាពេល​ថ្មីៗនេះ។ បិទផ្ទាំង​ទាំងនោះឬ?</translation>
 <translation id="257674075312929031">ក្រុម</translation>
@@ -20,11 +21,13 @@
 <translation id="58326064309361797">អូសផ្ទាំង​នានា ដើម្បី​ដាក់ផ្ទាំង​ទាំងនោះ​ជាក្រុម</translation>
 <translation id="6040143037577758943">បិទ</translation>
 <translation id="6193448654517602979">ជ្រើសរើសផ្ទាំង</translation>
+<translation id="6562820390860419811">ផ្លាស់ទី​ផ្ទាំង​ទៅ​ខាងឆ្វេង</translation>
 <translation id="6615455863669487791">បង្ហាញខ្ញុំ</translation>
 <translation id="6840760312327750441">ដើម្បីដាក់​ផ្ទាំង​ជាក្រុម សូម​ចុចផ្ទាំង​ឱ្យជាប់។ រួចអូស​ផ្ទាំងនោះ​ដាក់លើ​ផ្ទាំង​ផ្សេងទៀត។</translation>
 <translation id="7151209024774799310">លុបផ្ទាំង​ចេញពីក្រុម</translation>
 <translation id="7559245342362162951">បង្ហាញផ្ទាំង​របស់ក្រុមនៅក្នុងក្រឡា​ពេញ​អេក្រង់</translation>
 <translation id="7792771145871471484">ពិនិត្យមើល​ការណែនាំ​។</translation>
+<translation id="7885132941432959125">ផ្លាស់ទី​ផ្ទាំង​ទៅ​ខាងស្ដាំ</translation>
 <translation id="7966321538264951561">ច្រានចោល​ការណែនាំ​។</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{បិទ​ផ្ទាំង​ដែលបាន​ជ្រើសរើស <ph name="TABS_COUNT_ONE" />}other{បិទ​ផ្ទាំង​ដែលបាន​ជ្រើសរើស <ph name="TABS_COUNT_MANY" />}}</translation>
 <translation id="9150694013019234766">ប្ដូររវាងផ្ទាំង​នៅក្នុងក្រុម​ផ្ទាំងរបស់​អ្នកនៅជិតផ្នែកខាង​ក្រោមបំផុតរបស់​អេក្រង់</translation>

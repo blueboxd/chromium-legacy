@@ -29,7 +29,7 @@ const base::Feature kLanguageSettings{"LanguageSettings",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEmbedderBlockRestoreUrl{"EmbedderBlockRestoreUrl",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDisableAnimationOnLowBattery{
     "DisableAnimationOnLowBattery", base::FEATURE_DISABLED_BY_DEFAULT};

@@ -205,6 +205,10 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
                                         SkFilterQuality* raster_quality,
                                         bool* needs_mips) const;
 
+  // Creates a paint record shader for worklet-backed images.
+  sk_sp<PaintShader> CreatePaintWorkletRecord(
+      ImageProvider* image_provider) const;
+
   void SetColorsAndPositions(const SkColor* colors,
                              const SkScalar* positions,
                              int count);

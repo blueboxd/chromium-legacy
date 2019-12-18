@@ -204,9 +204,9 @@ class InterstitialPageImplTest : public ContentBrowserTest {
     RenderFrameHostImpl* rfh =
         static_cast<RenderFrameHostImpl*>(interstitial_->GetMainFrame());
     rfh->GetRenderWidgetHost()->ForwardMouseEvent(blink::WebMouseEvent(
-        blink::WebInputEvent::Type::kMouseUp, blink::WebFloatPoint(),
-        blink::WebFloatPoint(), blink::WebPointerProperties::Button::kBack, 0,
-        0, base::TimeTicks::Now()));
+        blink::WebInputEvent::Type::kMouseUp, gfx::PointF(), gfx::PointF(),
+        blink::WebPointerProperties::Button::kBack, 0, 0,
+        base::TimeTicks::Now()));
   }
 
  private:

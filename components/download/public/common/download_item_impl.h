@@ -730,6 +730,10 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   // The current state of this download.
   DownloadInternalState state_ = INITIAL_INTERNAL;
 
+  // The state before download was interrupted.
+  // Remove this once http://crbug.com/1029746 is fixed.
+  DownloadInternalState state_before_interruption_ = INITIAL_INTERNAL;
+
   // Current danger type for the download.
   DownloadDangerType danger_type_ = DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
 

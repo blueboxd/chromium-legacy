@@ -314,8 +314,8 @@ cr.define('settings_people_page_sync_page', function() {
 
           // Assert that the radio boxes are disabled after encryption enabled.
           assertTrue(syncPage.$$('#encryptionRadioGroup').disabled);
-          assertEquals('-1', encryptWithGoogle.getAttribute('tabindex'));
-          assertEquals('-1', encryptWithPassphrase.getAttribute('tabindex'));
+          assertEquals(-1, encryptWithGoogle.$.button.tabIndex);
+          assertEquals(-1, encryptWithPassphrase.$.button.tabIndex);
         });
       }
       return browserProxy.whenCalled('setSyncEncryption').then(verifyPrefs);
@@ -417,8 +417,8 @@ cr.define('settings_people_page_sync_page', function() {
 
         // Verify that the encryption radio boxes are shown but disabled.
         assertTrue(syncPage.$$('#encryptionRadioGroup').disabled);
-        assertEquals('-1', encryptWithGoogle.getAttribute('tabindex'));
-        assertEquals('-1', encryptWithPassphrase.getAttribute('tabindex'));
+        assertEquals(-1, encryptWithGoogle.$.button.tabIndex);
+        assertEquals(-1, encryptWithPassphrase.$.button.tabIndex);
       });
     });
 

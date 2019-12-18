@@ -15,6 +15,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "headless/lib/headless_content_client.h"
+#include "headless/public/headless_browser.h"
 #include "headless/public/headless_export.h"
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
@@ -50,6 +51,7 @@ class HEADLESS_EXPORT HeadlessContentMainDelegate
 #if defined(OS_MACOSX)
   void PreCreateMainMessageLoop() override;
 #endif
+  content::ContentClient* CreateContentClient() override;
   content::ContentBrowserClient* CreateContentBrowserClient() override;
   content::ContentUtilityClient* CreateContentUtilityClient() override;
   content::ContentRendererClient* CreateContentRendererClient() override;

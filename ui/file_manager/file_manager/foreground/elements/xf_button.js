@@ -60,6 +60,7 @@ class PanelButton extends HTMLElement {
               }
 
               :host {
+                flex-shrink: 0;
                 position: relative;
               }
 

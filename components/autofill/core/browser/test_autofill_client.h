@@ -79,6 +79,9 @@ class TestAutofillClient : public AutofillClient {
   void ConfirmSaveUpiIdLocally(
       const std::string& upi_id,
       base::OnceCallback<void(bool accept)> callback) override;
+  void OfferVirtualCardOptions(
+      const std::vector<CreditCard*>& candidates,
+      base::OnceCallback<void(const std::string&)> callback) override;
 #endif
   void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
                                   base::OnceClosure callback) override;

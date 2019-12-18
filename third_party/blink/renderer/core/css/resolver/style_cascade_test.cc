@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_animator.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/css/style_cascade_slots.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
@@ -248,7 +249,7 @@ class TestCascadeResolver {
 
  public:
   TestCascadeResolver(Document& document, StyleAnimator& animator)
-      : document_(&document), resolver_(animator, excluder_) {}
+      : document_(&document), resolver_(animator, excluder_, slots_) {}
   bool InCycle() const { return resolver_.InCycle(); }
   bool DetectCycle(String name) {
     CSSPropertyRef ref(name, *document_);
@@ -262,6 +263,7 @@ class TestCascadeResolver {
   friend class TestCascadeAutoLock;
 
   Member<Document> document_;
+  StyleCascadeSlots slots_;
   StyleCascade::Excluder excluder_;
   StyleCascade::Resolver resolver_;
 };
@@ -1908,6 +1910,130 @@ TEST_F(StyleCascadeTest, WritingModePriority) {
 
   EXPECT_EQ("vertical-lr", cascade.ComputedValue("writing-mode"));
   EXPECT_EQ("vertical-lr", cascade.ComputedValue("-webkit-writing-mode"));
+}
+
+TEST_F(StyleCascadeTest, WebkitBorderImageCascadeOrder) {
+  String gradient1("linear-gradient(rgb(0, 0, 0), rgb(0, 128, 0))");
+  String gradient2("linear-gradient(rgb(0, 0, 0), rgb(0, 200, 0))");
+
+  TestCascade cascade(GetDocument());
+  cascade.Add("-webkit-border-image", gradient1 + " round 40 / 10px / 20px",
+              Origin::kAuthor);
+  cascade.Add("border-image-source", gradient2, Origin::kAuthor);
+  cascade.Add("border-image-slice", "20", Origin::kAuthor);
+  cascade.Add("border-image-width", "6px", Origin::kAuthor);
+  cascade.Add("border-image-outset", "4px", Origin::kAuthor);
+  cascade.Add("border-image-repeat", "space", Origin::kAuthor);
+  cascade.Apply();
+
+  EXPECT_EQ(gradient2, cascade.ComputedValue("border-image-source"));
+  EXPECT_EQ("20", cascade.ComputedValue("border-image-slice"));
+  EXPECT_EQ("6px", cascade.ComputedValue("border-image-width"));
+  EXPECT_EQ("4px", cascade.ComputedValue("border-image-outset"));
+  EXPECT_EQ("space", cascade.ComputedValue("border-image-repeat"));
+}
+
+TEST_F(StyleCascadeTest, WebkitBorderImageReverseCascadeOrder) {
+  String gradient1("linear-gradient(rgb(0, 0, 0), rgb(0, 128, 0))");
+  String gradient2("linear-gradient(rgb(0, 0, 0), rgb(0, 200, 0))");
+
+  TestCascade cascade(GetDocument());
+  cascade.Add("border-image-source", gradient2, Origin::kAuthor);
+  cascade.Add("border-image-slice", "20", Origin::kAuthor);
+  cascade.Add("border-image-width", "6px", Origin::kAuthor);
+  cascade.Add("border-image-outset", "4px", Origin::kAuthor);
+  cascade.Add("border-image-repeat", "space", Origin::kAuthor);
+  cascade.Add("-webkit-border-image", gradient1 + " round 40 / 10px / 20px",
+              Origin::kAuthor);
+  cascade.Apply();
+
+  EXPECT_EQ(gradient1, cascade.ComputedValue("border-image-source"));
+  EXPECT_EQ("40 fill", cascade.ComputedValue("border-image-slice"));
+  EXPECT_EQ("10px", cascade.ComputedValue("border-image-width"));
+  EXPECT_EQ("20px", cascade.ComputedValue("border-image-outset"));
+  EXPECT_EQ("round", cascade.ComputedValue("border-image-repeat"));
+}
+
+TEST_F(StyleCascadeTest, WebkitBorderImageMixedOrder) {
+  String gradient1("linear-gradient(rgb(0, 0, 0), rgb(0, 128, 0))");
+  String gradient2("linear-gradient(rgb(0, 0, 0), rgb(0, 200, 0))");
+
+  TestCascade cascade(GetDocument());
+  cascade.Add("border-image-source", gradient2, Origin::kAuthor);
+  cascade.Add("border-image-width", "6px", Origin::kAuthor);
+  cascade.Add("-webkit-border-image", gradient1 + " round 40 / 10px / 20px",
+              Origin::kAuthor);
+  cascade.Add("border-image-slice", "20", Origin::kAuthor);
+  cascade.Add("border-image-outset", "4px", Origin::kAuthor);
+  cascade.Add("border-image-repeat", "space", Origin::kAuthor);
+  cascade.Apply();
+
+  EXPECT_EQ(gradient1, cascade.ComputedValue("border-image-source"));
+  EXPECT_EQ("20", cascade.ComputedValue("border-image-slice"));
+  EXPECT_EQ("10px", cascade.ComputedValue("border-image-width"));
+  EXPECT_EQ("4px", cascade.ComputedValue("border-image-outset"));
+  EXPECT_EQ("space", cascade.ComputedValue("border-image-repeat"));
+}
+
+TEST_F(StyleCascadeTest, AllLogicalPropertiesSlot) {
+  using Origin = StyleCascade::Origin;
+
+  TestCascade cascade(GetDocument());
+
+  static const TextDirection directions[] = {TextDirection::kLtr,
+                                             TextDirection::kRtl};
+
+  static const WritingMode modes[] = {WritingMode::kHorizontalTb,
+                                      WritingMode::kVerticalRl,
+                                      WritingMode::kVerticalLr};
+
+  for (CSSPropertyID id : CSSPropertyIDList()) {
+    const CSSProperty& property = CSSProperty::Get(id);
+
+    if (!property.IsLonghand())
+      continue;
+
+    for (TextDirection direction : directions) {
+      for (WritingMode mode : modes) {
+        const CSSProperty& physical =
+            property.ResolveDirectionAwareProperty(direction, mode);
+        if (&property == &physical)
+          continue;
+
+        auto& state = cascade.State();
+        state.Style()->SetDirection(direction);
+        state.Style()->SetWritingMode(mode);
+
+        // Set logical first.
+        {
+          StyleCascadeSlots slots;
+          EXPECT_TRUE(slots.Set(property, Origin::kAuthor, state));
+          EXPECT_FALSE(slots.Set(physical, Origin::kUserAgent, state));
+        }
+
+        // Set physical first.
+        {
+          StyleCascadeSlots slots;
+          EXPECT_TRUE(slots.Set(physical, Origin::kAuthor, state));
+          EXPECT_FALSE(slots.Set(property, Origin::kUserAgent, state));
+        }
+
+        // Set logical twice.
+        {
+          StyleCascadeSlots slots;
+          EXPECT_TRUE(slots.Set(property, Origin::kAuthor, state));
+          EXPECT_FALSE(slots.Set(property, Origin::kUserAgent, state));
+        }
+
+        // Set physical twice.
+        {
+          StyleCascadeSlots slots;
+          EXPECT_TRUE(slots.Set(physical, Origin::kAuthor, state));
+          EXPECT_FALSE(slots.Set(physical, Origin::kUserAgent, state));
+        }
+      }
+    }
+  }
 }
 
 TEST_F(StyleCascadeTest, MarkReferenced) {

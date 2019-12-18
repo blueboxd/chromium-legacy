@@ -33,7 +33,6 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chrome/browser/ui/webui/chromeos/camera/camera_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_window_manager.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
@@ -91,18 +90,6 @@ const std::vector<InternalApp>& GetInternalAppListImpl(bool get_all,
   internal_app_list->insert(internal_app_list->begin(),
                             internal_app_list_static->begin(),
                             internal_app_list_static->end());
-
-  const bool add_camera_app = get_all || !profile->IsGuestSession();
-  if (add_camera_app && !chromeos::CameraUI::IsEnabled()) {
-    internal_app_list->push_back({ash::kInternalAppIdCamera,
-                                  IDS_INTERNAL_APP_CAMERA, IDR_CAMERA_LOGO_192,
-                                  /*recommendable=*/true,
-                                  /*searchable=*/true,
-                                  /*show_in_launcher=*/true,
-                                  apps::BuiltInAppName::kCamera,
-                                  /*searchable_string_resource_id=*/0});
-  }
-
   const bool add_discover_app =
       get_all || !chromeos::ProfileHelper::IsEphemeralUserProfile(profile);
   if (base::FeatureList::IsEnabled(chromeos::features::kDiscoverApp) &&
@@ -182,25 +169,6 @@ int GetIconResourceIdByAppId(const std::string& app_id) {
   return app ? app->icon_resource_id : 0;
 }
 
-void OpenChromeCameraApp(Profile* profile, int event_flags) {
-  const extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile);
-  const extensions::Extension* extension =
-      registry->GetInstalledExtension(extension_misc::kChromeCameraAppId);
-  if (extension) {
-    AppListClientImpl* controller = AppListClientImpl::GetInstance();
-    apps::AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
-        profile, extension, event_flags,
-        apps::mojom::AppLaunchSource::kSourceAppLauncher,
-        controller->GetAppListDisplayId());
-    params.launch_id = ash::ShelfID(extension->id()).launch_id;
-    apps::LaunchService::Get(profile)->OpenApplication(params);
-    VLOG(1) << "Launched CCA.";
-  } else {
-    LOG(ERROR) << "CCA not found on device";
-  }
-}
-
 void OpenInternalApp(const std::string& app_id,
                      Profile* profile,
                      int event_flags) {
@@ -208,21 +176,6 @@ void OpenInternalApp(const std::string& app_id,
     ash::ToggleKeyboardShortcutViewer();
   } else if (app_id == ash::kInternalAppIdSettings) {
     chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(profile);
-  } else if (app_id == ash::kInternalAppIdCamera) {
-    // In case Camera app is already running, use it to prevent appearing double
-    // apps, from Chrome and Android domains.
-    const ash::ShelfID shelf_id(ash::kInternalAppIdCamera);
-    AppWindowLauncherItemController* const app_controller =
-        ChromeLauncherController::instance()
-            ->shelf_model()
-            ->GetAppWindowLauncherItemController(shelf_id);
-    if (app_controller) {
-      VLOG(1)
-          << "Camera app controller already exists, activating existing app.";
-      app_controller->ActivateIndexedApp(0 /* index */);
-    } else {
-      OpenChromeCameraApp(profile, event_flags);
-    }
   } else if (app_id == ash::kInternalAppIdDiscover) {
     base::RecordAction(base::UserMetricsAction("ShowDiscover"));
     chromeos::DiscoverWindowManager::GetInstance()

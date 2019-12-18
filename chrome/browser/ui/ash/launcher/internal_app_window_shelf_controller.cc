@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/user_manager/user_manager.h"
+#include "extensions/common/constants.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -170,10 +171,6 @@ void InternalAppWindowShelfController::RegisterAppWindow(
 
 void InternalAppWindowShelfController::AddToShelf(AppWindowBase* app_window) {
   const ash::ShelfID shelf_id = app_window->shelf_id();
-  // Internal Camera app does not have own window. Either ARC or extension
-  // window controller would add window to controller.
-  if (shelf_id.app_id == ash::kInternalAppIdCamera)
-    return;
 
   AppWindowLauncherItemController* item_controller =
       owner()->shelf_model()->GetAppWindowLauncherItemController(shelf_id);
@@ -198,10 +195,6 @@ void InternalAppWindowShelfController::AddToShelf(AppWindowBase* app_window) {
 void InternalAppWindowShelfController::RemoveFromShelf(
     AppWindowBase* app_window) {
   const ash::ShelfID shelf_id = app_window->shelf_id();
-  // Internal Camera app does not have own window. Either ARC or extension
-  // window controller would remove window from controller.
-  if (shelf_id.app_id == ash::kInternalAppIdCamera)
-    return;
 
   UnregisterAppWindow(app_window);
 

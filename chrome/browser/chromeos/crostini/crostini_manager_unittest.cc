@@ -1083,7 +1083,10 @@ TEST_F(CrostiniManagerRestartTest, IsContainerRunningFalseIfVmNotStarted) {
 
 TEST_F(CrostiniManagerRestartTest, OsReleaseSetCorrectly) {
   vm_tools::cicerone::OsRelease os_release;
+  base::HistogramTester histogram_tester{};
   os_release.set_pretty_name("Debian GNU/Linux 10 (buster)");
+  os_release.set_version_id("10");
+  os_release.set_id("debian");
   fake_cicerone_client_->set_lxd_container_os_release(os_release);
 
   restart_id_ = crostini_manager()->RestartCrostini(
@@ -1101,6 +1104,8 @@ TEST_F(CrostiniManagerRestartTest, OsReleaseSetCorrectly) {
   // API in our protos.
   EXPECT_EQ(os_release.SerializeAsString(),
             stored_os_release->SerializeAsString());
+  histogram_tester.ExpectUniqueSample("Crostini.ContainerOsVersion",
+                                      ContainerOsVersion::kDebianBuster, 1);
 }
 
 TEST_F(CrostiniManagerRestartTest, RestartThenUninstall) {

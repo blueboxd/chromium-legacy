@@ -151,7 +151,7 @@ namespace xpathyy {
 
 
   /// Build a parser object.
-   YyParser :: YyParser  (blink::xpath::Parser* parser__yyarg)
+  YyParser::YyParser (blink::xpath::Parser* parser__yyarg)
     :
 #if YYDEBUG
       yydebug_ (false),
@@ -160,10 +160,10 @@ namespace xpathyy {
       parser_ (parser__yyarg)
   {}
 
-   YyParser ::~ YyParser  ()
+  YyParser::~YyParser ()
   {}
 
-   YyParser ::syntax_error::~syntax_error () YY_NOEXCEPT YY_NOTHROW
+  YyParser::syntax_error::~syntax_error () YY_NOEXCEPT YY_NOTHROW
   {}
 
   /*---------------.
@@ -173,7 +173,7 @@ namespace xpathyy {
   // basic_symbol.
 #if 201103L <= YY_CPLUSPLUS
   template <typename Base>
-   YyParser ::basic_symbol<Base>::basic_symbol (basic_symbol&& that)
+  YyParser::basic_symbol<Base>::basic_symbol (basic_symbol&& that)
     : Base (std::move (that))
     , value ()
   {
@@ -254,7 +254,7 @@ namespace xpathyy {
 #endif
 
   template <typename Base>
-   YyParser ::basic_symbol<Base>::basic_symbol (const basic_symbol& that)
+  YyParser::basic_symbol<Base>::basic_symbol (const basic_symbol& that)
     : Base (that)
     , value ()
   {
@@ -337,14 +337,14 @@ namespace xpathyy {
 
   template <typename Base>
   bool
-   YyParser ::basic_symbol<Base>::empty () const YY_NOEXCEPT
+  YyParser::basic_symbol<Base>::empty () const YY_NOEXCEPT
   {
     return Base::type_get () == empty_symbol;
   }
 
   template <typename Base>
   void
-   YyParser ::basic_symbol<Base>::move (basic_symbol& s)
+  YyParser::basic_symbol<Base>::move (basic_symbol& s)
   {
     super_type::move (s);
     switch (this->type_get ())
@@ -423,74 +423,74 @@ namespace xpathyy {
   }
 
   // by_type.
-   YyParser ::by_type::by_type ()
+  YyParser::by_type::by_type ()
     : type (empty_symbol)
   {}
 
 #if 201103L <= YY_CPLUSPLUS
-   YyParser ::by_type::by_type (by_type&& that)
+  YyParser::by_type::by_type (by_type&& that)
     : type (that.type)
   {
     that.clear ();
   }
 #endif
 
-   YyParser ::by_type::by_type (const by_type& that)
+  YyParser::by_type::by_type (const by_type& that)
     : type (that.type)
   {}
 
-   YyParser ::by_type::by_type (token_type t)
+  YyParser::by_type::by_type (token_type t)
     : type (yytranslate_ (t))
   {}
 
   void
-   YyParser ::by_type::clear ()
+  YyParser::by_type::clear ()
   {
     type = empty_symbol;
   }
 
   void
-   YyParser ::by_type::move (by_type& that)
+  YyParser::by_type::move (by_type& that)
   {
     type = that.type;
     that.clear ();
   }
 
   int
-   YyParser ::by_type::type_get () const YY_NOEXCEPT
+  YyParser::by_type::type_get () const YY_NOEXCEPT
   {
     return type;
   }
 
 
   // by_state.
-   YyParser ::by_state::by_state () YY_NOEXCEPT
+  YyParser::by_state::by_state () YY_NOEXCEPT
     : state (empty_state)
   {}
 
-   YyParser ::by_state::by_state (const by_state& that) YY_NOEXCEPT
+  YyParser::by_state::by_state (const by_state& that) YY_NOEXCEPT
     : state (that.state)
   {}
 
   void
-   YyParser ::by_state::clear () YY_NOEXCEPT
+  YyParser::by_state::clear () YY_NOEXCEPT
   {
     state = empty_state;
   }
 
   void
-   YyParser ::by_state::move (by_state& that)
+  YyParser::by_state::move (by_state& that)
   {
     state = that.state;
     that.clear ();
   }
 
-   YyParser ::by_state::by_state (state_type s) YY_NOEXCEPT
+  YyParser::by_state::by_state (state_type s) YY_NOEXCEPT
     : state (s)
   {}
 
-   YyParser ::symbol_number_type
-   YyParser ::by_state::type_get () const YY_NOEXCEPT
+  YyParser::symbol_number_type
+  YyParser::by_state::type_get () const YY_NOEXCEPT
   {
     if (state == empty_state)
       return empty_symbol;
@@ -498,10 +498,10 @@ namespace xpathyy {
       return yystos_[state];
   }
 
-   YyParser ::stack_symbol_type::stack_symbol_type ()
+  YyParser::stack_symbol_type::stack_symbol_type ()
   {}
 
-   YyParser ::stack_symbol_type::stack_symbol_type (YY_RVREF (stack_symbol_type) that)
+  YyParser::stack_symbol_type::stack_symbol_type (YY_RVREF (stack_symbol_type) that)
     : super_type (YY_MOVE (that.state))
   {
     switch (that.type_get ())
@@ -583,7 +583,7 @@ namespace xpathyy {
 #endif
   }
 
-   YyParser ::stack_symbol_type::stack_symbol_type (state_type s, YY_MOVE_REF (symbol_type) that)
+  YyParser::stack_symbol_type::stack_symbol_type (state_type s, YY_MOVE_REF (symbol_type) that)
     : super_type (s)
   {
     switch (that.type_get ())
@@ -664,8 +664,8 @@ namespace xpathyy {
   }
 
 #if YY_CPLUSPLUS < 201103L
-   YyParser ::stack_symbol_type&
-   YyParser ::stack_symbol_type::operator= (stack_symbol_type& that)
+  YyParser::stack_symbol_type&
+  YyParser::stack_symbol_type::operator= (stack_symbol_type& that)
   {
     state = that.state;
     switch (that.type_get ())
@@ -749,7 +749,7 @@ namespace xpathyy {
 
   template <typename Base>
   void
-   YyParser ::yy_destroy_ (const char* yymsg, basic_symbol<Base>& yysym) const
+  YyParser::yy_destroy_ (const char* yymsg, basic_symbol<Base>& yysym) const
   {
     if (yymsg)
       YY_SYMBOL_PRINT (yymsg, yysym);
@@ -758,7 +758,7 @@ namespace xpathyy {
 #if YYDEBUG
   template <typename Base>
   void
-   YyParser ::yy_print_ (std::ostream& yyo,
+  YyParser::yy_print_ (std::ostream& yyo,
                                      const basic_symbol<Base>& yysym) const
   {
     std::ostream& yyoutput = yyo;
@@ -778,7 +778,7 @@ namespace xpathyy {
 #endif
 
   void
-   YyParser ::yypush_ (const char* m, YY_MOVE_REF (stack_symbol_type) sym)
+  YyParser::yypush_ (const char* m, YY_MOVE_REF (stack_symbol_type) sym)
   {
     if (m)
       YY_SYMBOL_PRINT (m, sym);
@@ -786,7 +786,7 @@ namespace xpathyy {
   }
 
   void
-   YyParser ::yypush_ (const char* m, state_type s, YY_MOVE_REF (symbol_type) sym)
+  YyParser::yypush_ (const char* m, state_type s, YY_MOVE_REF (symbol_type) sym)
   {
 #if 201103L <= YY_CPLUSPLUS
     yypush_ (m, stack_symbol_type (s, std::move (sym)));
@@ -797,40 +797,40 @@ namespace xpathyy {
   }
 
   void
-   YyParser ::yypop_ (int n)
+  YyParser::yypop_ (int n)
   {
     yystack_.pop (n);
   }
 
 #if YYDEBUG
   std::ostream&
-   YyParser ::debug_stream () const
+  YyParser::debug_stream () const
   {
     return *yycdebug_;
   }
 
   void
-   YyParser ::set_debug_stream (std::ostream& o)
+  YyParser::set_debug_stream (std::ostream& o)
   {
     yycdebug_ = &o;
   }
 
 
-   YyParser ::debug_level_type
-   YyParser ::debug_level () const
+  YyParser::debug_level_type
+  YyParser::debug_level () const
   {
     return yydebug_;
   }
 
   void
-   YyParser ::set_debug_level (debug_level_type l)
+  YyParser::set_debug_level (debug_level_type l)
   {
     yydebug_ = l;
   }
 #endif // YYDEBUG
 
-   YyParser ::state_type
-   YyParser ::yy_lr_goto_state_ (state_type yystate, int yysym)
+  YyParser::state_type
+  YyParser::yy_lr_goto_state_ (state_type yystate, int yysym)
   {
     int yyr = yypgoto_[yysym - yyntokens_] + yystate;
     if (0 <= yyr && yyr <= yylast_ && yycheck_[yyr] == yystate)
@@ -840,25 +840,25 @@ namespace xpathyy {
   }
 
   bool
-   YyParser ::yy_pact_value_is_default_ (int yyvalue)
+  YyParser::yy_pact_value_is_default_ (int yyvalue)
   {
     return yyvalue == yypact_ninf_;
   }
 
   bool
-   YyParser ::yy_table_value_is_error_ (int yyvalue)
+  YyParser::yy_table_value_is_error_ (int yyvalue)
   {
     return yyvalue == yytable_ninf_;
   }
 
   int
-   YyParser ::operator() ()
+  YyParser::operator() ()
   {
     return parse ();
   }
 
   int
-   YyParser ::parse ()
+  YyParser::parse ()
   {
     // State.
     int yyn;
@@ -1731,25 +1731,25 @@ namespace xpathyy {
   }
 
   void
-   YyParser ::error (const syntax_error& yyexc)
+  YyParser::error (const syntax_error& yyexc)
   {
     error (yyexc.what ());
   }
 
   // Generate an error message.
   std::string
-   YyParser ::yysyntax_error_ (state_type, const symbol_type&) const
+  YyParser::yysyntax_error_ (state_type, const symbol_type&) const
   {
     return YY_("syntax error");
   }
 
 
-  const signed char  YyParser ::yypact_ninf_ = -44;
+  const signed char YyParser::yypact_ninf_ = -44;
 
-  const signed char  YyParser ::yytable_ninf_ = -1;
+  const signed char YyParser::yytable_ninf_ = -1;
 
   const signed char
-   YyParser ::yypact_[] =
+  YyParser::yypact_[] =
   {
       77,    77,   -44,    -9,    -4,    18,   -44,   -44,   -44,   -44,
      -44,    19,    -2,   -44,    77,   -44,    36,   -44,   -44,    13,
@@ -1764,7 +1764,7 @@ namespace xpathyy {
   };
 
   const unsigned char
-   YyParser ::yydefact_[] =
+  YyParser::yydefact_[] =
   {
        0,     0,    16,     0,     0,     0,    31,    29,    32,    28,
       26,    21,     5,    17,     0,    27,     0,    41,     4,     3,
@@ -1779,7 +1779,7 @@ namespace xpathyy {
   };
 
   const signed char
-   YyParser ::yypgoto_[] =
+  YyParser::yypgoto_[] =
   {
      -44,     2,   -44,   -44,   -11,   -43,   -44,    35,   -18,    33,
      -36,   -16,   -44,   -44,   -44,   -44,   -32,   -44,     5,   -44,
@@ -1787,7 +1787,7 @@ namespace xpathyy {
   };
 
   const signed char
-   YyParser ::yydefgoto_[] =
+  YyParser::yydefgoto_[] =
   {
       -1,    69,    17,    18,    19,    20,    21,    22,    42,    43,
       44,    23,    24,    25,    26,    70,    71,    27,    28,    29,
@@ -1795,7 +1795,7 @@ namespace xpathyy {
   };
 
   const unsigned char
-   YyParser ::yytable_[] =
+  YyParser::yytable_[] =
   {
       37,    45,    16,    49,    52,    75,    76,    73,     2,     3,
        4,    66,    53,    57,    38,     9,    46,    11,    73,    39,
@@ -1813,7 +1813,7 @@ namespace xpathyy {
   };
 
   const signed char
-   YyParser ::yycheck_[] =
+  YyParser::yycheck_[] =
   {
        1,    12,     0,    19,    22,    48,    49,    43,    10,    11,
       12,    14,    23,    29,    23,    17,    14,    19,    54,    23,
@@ -1831,7 +1831,7 @@ namespace xpathyy {
   };
 
   const unsigned char
-   YyParser ::yystos_[] =
+  YyParser::yystos_[] =
   {
        0,     7,    10,    11,    12,    13,    14,    15,    16,    17,
       18,    19,    21,    22,    23,    27,    31,    32,    33,    34,
@@ -1846,7 +1846,7 @@ namespace xpathyy {
   };
 
   const unsigned char
-   YyParser ::yyr1_[] =
+  YyParser::yyr1_[] =
   {
        0,    30,    31,    32,    32,    33,    33,    33,    34,    34,
       34,    35,    35,    35,    35,    35,    36,    36,    37,    37,
@@ -1858,7 +1858,7 @@ namespace xpathyy {
   };
 
   const unsigned char
-   YyParser ::yyr2_[] =
+  YyParser::yyr2_[] =
   {
        0,     2,     1,     1,     1,     1,     2,     2,     1,     3,
        3,     2,     2,     3,     3,     1,     1,     1,     3,     3,
@@ -1874,7 +1874,7 @@ namespace xpathyy {
   // YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
   // First, the terminals, then, starting at \a yyntokens_, nonterminals.
   const char*
-  const  YyParser ::yytname_[] =
+  const YyParser::yytname_[] =
   {
   "$end", "error", "$undefined", "kMulOp", "kEqOp", "kRelOp", "kPlus",
   "kMinus", "kOr", "kAnd", "kAxisName", "kNodeType", "kPI",
@@ -1891,7 +1891,7 @@ namespace xpathyy {
 
 
   const unsigned short
-   YyParser ::yyrline_[] =
+  YyParser::yyrline_[] =
   {
        0,   127,   127,   135,   141,   149,   154,   159,   167,   173,
      179,   188,   196,   211,   219,   234,   238,   240,   247,   257,
@@ -1904,7 +1904,7 @@ namespace xpathyy {
 
   // Print the state stack on the debug stream.
   void
-   YyParser ::yystack_print_ ()
+  YyParser::yystack_print_ ()
   {
     *yycdebug_ << "Stack now";
     for (stack_type::const_iterator
@@ -1917,7 +1917,7 @@ namespace xpathyy {
 
   // Report on the debug stream that the rule \a yyrule is going to be reduced.
   void
-   YyParser ::yy_reduce_print_ (int yyrule)
+  YyParser::yy_reduce_print_ (int yyrule)
   {
     unsigned yylno = yyrline_[yyrule];
     int yynrhs = yyr2_[yyrule];
@@ -1931,8 +1931,8 @@ namespace xpathyy {
   }
 #endif // YYDEBUG
 
-   YyParser ::token_number_type
-   YyParser ::yytranslate_ (int t)
+  YyParser::token_number_type
+  YyParser::yytranslate_ (int t)
   {
     // YYTRANSLATE[TOKEN-NUM] -- Symbol number corresponding to
     // TOKEN-NUM as returned by yylex.

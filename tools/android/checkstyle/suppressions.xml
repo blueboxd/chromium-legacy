@@ -6,12 +6,9 @@
   <suppress id="UseSharedPreferencesManagerFromChromeCheck"
             files="src/(android_webview|base|chromecast|components|content|device|media|net|remoting|services|testing|third_party|tools|ui|weblayer)/"/>
   <suppress id="UseSharedPreferencesManagerFromChromeCheck"
-            files="SharedPreferencesManager.java"/>
-  <suppress id="UseSharedPreferencesManagerFromChromeCheck"
             files="Test.java"/>
   <!-- All other usages of the app SharedPreference should go through
        ContextUtils. -->
-  <suppress id="DefaultSharedPreferencesCheck" files="ContextUtils.java"/>
   <suppress id="DefaultSharedPreferencesCheck" files="src/chrome/"/>
   <!-- Only chrome/ and remoting/ can depend on the support library. Ref:
        crbug.com/640248 -->

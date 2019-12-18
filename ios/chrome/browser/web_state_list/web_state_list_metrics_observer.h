@@ -6,19 +6,16 @@
 #define IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_LIST_METRICS_OBSERVER_H_
 
 #include "base/macros.h"
+#include "ios/chrome/browser/sessions/session_restoration_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 
-class WebStateListMetricsObserver : public WebStateListObserver {
+class WebStateListMetricsObserver : public WebStateListObserver,
+                                    public SessionRestorationObserver {
  public:
   WebStateListMetricsObserver();
   ~WebStateListMetricsObserver() override;
 
   void RecordSessionMetrics();
-
-  // TODO(crbug.com/1010164): Don't define these methods here. Instead implement
-  // SessionRestorationObserver methods.
-  void WillStartSessionRestoration();
-  void SessionRestorationFinished();
 
   // WebStateListObserver implementation.
   void WebStateInsertedAt(WebStateList* web_state_list,
@@ -43,6 +40,11 @@ class WebStateListMetricsObserver : public WebStateListObserver {
 
   // Reset metrics counters.
   void ResetSessionMetrics();
+
+  // SessionRestorationObserver implementation.
+  void WillStartSessionRestoration() override;
+  void SessionRestorationFinished(
+      const std::vector<web::WebState*>& restored_web_states) override;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateListMetricsObserver);
 };

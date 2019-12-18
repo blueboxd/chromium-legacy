@@ -387,10 +387,12 @@ class VolumeManager : public KeyedService,
                         mount_info) override;
   void OnFormatEvent(chromeos::disks::DiskMountManager::FormatEvent event,
                      chromeos::FormatError error_code,
-                     const std::string& device_path) override;
+                     const std::string& device_path,
+                     const std::string& device_label) override;
   void OnRenameEvent(chromeos::disks::DiskMountManager::RenameEvent event,
                      chromeos::RenameError error_code,
-                     const std::string& device_path) override;
+                     const std::string& device_path,
+                     const std::string& device_label) override;
 
   // chromeos::file_system_provider::Observer overrides.
   void OnProvidedFileSystemMount(

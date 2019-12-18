@@ -193,6 +193,10 @@ class TransparentButton : public views::Button {
     parent()->OnMouseCaptureLost();
     Button::OnMouseCaptureLost();
   }
+
+  base::string16 GetTooltipText(const gfx::Point& point) const override {
+    return parent()->GetTooltipText(point);
+  }
 };
 
 }  // namespace

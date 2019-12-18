@@ -114,18 +114,6 @@ float ModeRefreshRate(const drmModeModeInfo& mode);
 
 bool ModeIsInterlaced(const drmModeModeInfo& mode);
 
-OverlaySurfaceCandidateList CreateOverlaySurfaceCandidateListFrom(
-    const std::vector<OverlayCheck_Params>& params);
-
-std::vector<OverlayCheck_Params> CreateParamsFromOverlaySurfaceCandidate(
-    const OverlaySurfaceCandidateList& candidates);
-
-OverlayStatusList CreateOverlayStatusListFrom(
-    const std::vector<OverlayCheckReturn_Params>& params);
-
-std::vector<OverlayCheckReturn_Params> CreateParamsFromOverlayStatusList(
-    const OverlayStatusList& returns);
-
 }  // namespace ui
 
 #endif  // UI_OZONE_PLATFORM_DRM_COMMON_DRM_UTIL_H_

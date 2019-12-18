@@ -117,7 +117,8 @@ class _MemorySystemHealthBenchmark(perf_benchmark.PerfBenchmark):
                                           take_memory_measurement=True)
 
 
-@benchmark.Info(emails=['perezju@chromium.org'],
+@benchmark.Info(emails=['pasko@chromium.org', 'crouleau@chromium.org',
+                        'chrome-android-perf-status@chromium.org'],
                 documentation_url='https://bit.ly/system-health-benchmarks')
 class DesktopMemorySystemHealth(_MemorySystemHealthBenchmark):
   """Desktop Chrome Memory System Health Benchmark."""
@@ -129,7 +130,8 @@ class DesktopMemorySystemHealth(_MemorySystemHealthBenchmark):
     return 'system_health.memory_desktop'
 
 
-@benchmark.Info(emails=['perezju@chromium.org'],
+@benchmark.Info(emails=['pasko@chromium.org', 'crouleau@chromium.org',
+                        'chrome-android-perf-status@chromium.org'],
                 documentation_url='https://bit.ly/system-health-benchmarks')
 class MobileMemorySystemHealth(_MemorySystemHealthBenchmark):
   """Mobile Chrome Memory System Health Benchmark."""

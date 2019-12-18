@@ -102,10 +102,8 @@ WebMouseEvent WebMouseEventFromGestureEvent(const WebGestureEvent& gesture) {
   mouse.click_count = (mouse.GetType() == WebInputEvent::kMouseDown ||
                        mouse.GetType() == WebInputEvent::kMouseUp);
 
-  mouse.SetPositionInWidget(gesture.PositionInWidget().x,
-                            gesture.PositionInWidget().y);
-  mouse.SetPositionInScreen(gesture.PositionInScreen().x,
-                            gesture.PositionInScreen().y);
+  mouse.SetPositionInWidget(gesture.PositionInWidget());
+  mouse.SetPositionInScreen(gesture.PositionInScreen());
 
   return mouse;
 }
@@ -193,10 +191,8 @@ class PepperWidget : public WebWidget {
           WebMouseEvent mouse(WebInputEvent::kMouseMove,
                               gesture_event->GetModifiers(),
                               gesture_event->TimeStamp());
-          mouse.SetPositionInWidget(gesture_event->PositionInWidget().x,
-                                    gesture_event->PositionInWidget().y);
-          mouse.SetPositionInScreen(gesture_event->PositionInScreen().x,
-                                    gesture_event->PositionInScreen().y);
+          mouse.SetPositionInWidget(gesture_event->PositionInWidget());
+          mouse.SetPositionInScreen(gesture_event->PositionInScreen());
           mouse.movement_x = 0;
           mouse.movement_y = 0;
           result |= widget_->plugin()->HandleInputEvent(mouse, &cursor);

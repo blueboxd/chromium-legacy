@@ -597,8 +597,7 @@ public class ElementAdapterTest {
         assertThat(mAdapter.getView().getContentDescription().toString()).isEqualTo("Accessible!");
         final AccessibilityNodeInfo nodeInfo = AccessibilityNodeInfo.obtain();
         mAdapter.getView().onInitializeAccessibilityNodeInfo(nodeInfo);
-        // TODO(crbug.com/1024945): This test fails with NPE.
-        // assertThat(nodeInfo.getCollectionItemInfo().isHeading()).isTrue();
+        assertThat(nodeInfo.isHeading()).isTrue();
     }
 
     @Test

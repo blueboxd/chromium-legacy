@@ -110,7 +110,7 @@ TEST(EnumVariantTest, Clone) {
   // Clone it.
   Microsoft::WRL::ComPtr<IEnumVARIANT> ev2;
   EXPECT_EQ(S_OK, ev->Clone(&ev2));
-  EXPECT_TRUE(ev2 != NULL);
+  EXPECT_TRUE(ev2 != nullptr);
 
   VARIANT out_elements[3];
   for (int i = 0; i < 3; ++i)

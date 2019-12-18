@@ -4,8 +4,9 @@
 
 #include "base/win/scoped_handle_verifier.h"
 
-#include <stddef.h>
 #include <windows.h>
+
+#include <stddef.h>
 
 #include <unordered_map>
 
@@ -25,7 +26,7 @@ void* GetHandleVerifier() {
 
 namespace {
 
-base::win::internal::ScopedHandleVerifier* g_active_verifier = NULL;
+base::win::internal::ScopedHandleVerifier* g_active_verifier = nullptr;
 typedef void* (*GetHandleVerifierFn)();
 typedef std::unordered_map<HANDLE,
                            base::win::internal::ScopedHandleVerifierInfo,

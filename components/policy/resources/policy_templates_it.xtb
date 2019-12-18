@@ -1880,7 +1880,7 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
           Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
 
           Se questo criterio non viene impostato, inizialmente la tastiera virtuale è disattivata nella schermata di accesso, ma l'utente può attivarla in qualsiasi momento.</translation>
-<translation id="3913530489429898348">Permette di consentire a <ph name="PRODUCT_NAME" /> di inviare documenti da stampare a <ph name="CLOUD_PRINT_NAME" />.  NOTA: questa impostazione incide soltanto sul supporto di <ph name="CLOUD_PRINT_NAME" /> in <ph name="PRODUCT_NAME" />.  Non impedisce agli utenti di inviare processi di stampa su siti web.
+<translation id="3913530489429898348">Consente a <ph name="PRODUCT_NAME" /> di inviare documenti da stampare a <ph name="CLOUD_PRINT_NAME" />.  NOTA: questa impostazione incide soltanto sul supporto di <ph name="CLOUD_PRINT_NAME" /> in <ph name="PRODUCT_NAME" />.  Non impedisce agli utenti di inviare processi di stampa su siti web.
 
       Se questa impostazione viene attivata o non viene configurata, gli utenti possono stampare con <ph name="CLOUD_PRINT_NAME" /> dalla finestra di dialogo di stampa di <ph name="PRODUCT_NAME" />.
 
@@ -2452,7 +2452,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       </translation>
 <translation id="4906194810004762807">Frequenza di aggiornamento per norma dispositivo</translation>
 <translation id="4917385247580444890">Forte</translation>
-<translation id="4919122295221518724">Attiva trattamento più restrittivo dei contenuti misti</translation>
+<translation id="4919122295221518724">Attiva trattamento più restrittivo per i contenuti misti</translation>
 <translation id="4923806312383904642">Consenti a WebDriver di eseguire l'override delle norme non compatibili</translation>
 <translation id="4929721861648439998">Consente di attivare la funzione di accessibilità di audio in formato mono nella schermata di accesso.
 
@@ -4686,9 +4686,9 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
 
       L'inserimento del valore <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" /> nell'elenco di tipi non consentiti equivale all'impostazione del valore false per il criterio <ph name="POLICY_CLOUDPRINTSUBMITENABLED" />. Per mantenere rilevabili le destinazioni <ph name="CLOUD_PRINT_NAME" />, il criterio <ph name="POLICY_CLOUDPRINTSUBMITENABLED" /> deve essere impostato su true e il valore <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" /> non deve essere nell'elenco di tipi non consentiti.
 
-      Se il criterio non viene impostato o se l'elenco viene lasciato vuoto, potranno essere rilevati tutti i tipi di stampanti.
+      Se il criterio non viene impostato o se viene impostato su un elenco vuoto, potranno essere rilevati tutti i tipi di stampanti.
 
-      Le stampanti estensione sono note anche come destinazioni dei provider di stampa e includono le eventuali destinazioni appartenenti a un'estensione <ph name="PRODUCT_NAME" />.
+      Le stampanti estensione sono note anche come destinazioni dei provider di stampa e includono le eventuali destinazioni appartenenti a un'estensione di <ph name="PRODUCT_NAME" />.
 
       Le stampanti locali sono note anche come destinazioni di stampa native e includono le destinazioni disponibili per le stampanti di computer locali e le stampanti di rete condivise.</translation>
 <translation id="8752541111574086388">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 82 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.

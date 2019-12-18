@@ -55,7 +55,7 @@ const base::Feature kGooglePasswordManager = {
 
 // Analyses the credentials submitted by user for leak detection.
 const base::Feature kLeakDetection = {"PasswordLeakDetection",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables storing leaked credentials in the database.
 const base::Feature kLeakHistory = {"PasswordLeakHistory",

@@ -261,12 +261,8 @@ public class ShareDelegateImpl implements ShareDelegate {
                         new ShareSheetCoordinator(controller, tabProvider, tabCreator);
                 // TODO(crbug/1009124): open custom share sheet.
                 coordinator.showShareSheet(params);
-            } else if (ShareHelper.TargetChosenReceiver.isSupported()) {
-                // On L+ open system share sheet.
-                ShareHelper.makeIntentAndShare(params, null);
             } else {
-                // On K and below open custom share dialog.
-                ShareHelper.showShareDialog(params);
+                ShareHelper.showDefaultShareUi(params);
             }
         }
     }

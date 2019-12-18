@@ -11,15 +11,21 @@
 namespace gfx {
 namespace {
 
-const BufferFormat kBufferFormats[] = {
-    BufferFormat::R_8,              BufferFormat::R_16,
-    BufferFormat::RG_88,            BufferFormat::BGR_565,
-    BufferFormat::RGBA_4444,        BufferFormat::RGBX_8888,
-    BufferFormat::RGBA_8888,        BufferFormat::BGRX_8888,
-    BufferFormat::BGRX_1010102,     BufferFormat::RGBX_1010102,
-    BufferFormat::BGRA_8888,        BufferFormat::RGBA_F16,
-    BufferFormat::YUV_420_BIPLANAR, BufferFormat::YVU_420,
-    BufferFormat::P010};
+const BufferFormat kBufferFormats[] = {BufferFormat::R_8,
+                                       BufferFormat::R_16,
+                                       BufferFormat::RG_88,
+                                       BufferFormat::BGR_565,
+                                       BufferFormat::RGBA_4444,
+                                       BufferFormat::RGBX_8888,
+                                       BufferFormat::RGBA_8888,
+                                       BufferFormat::BGRX_8888,
+                                       BufferFormat::BGRX_1010102,
+                                       BufferFormat::RGBA_1010102,
+                                       BufferFormat::BGRA_8888,
+                                       BufferFormat::RGBA_F16,
+                                       BufferFormat::YUV_420_BIPLANAR,
+                                       BufferFormat::YVU_420,
+                                       BufferFormat::P010};
 
 static_assert(base::size(kBufferFormats) ==
                   (static_cast<int>(BufferFormat::LAST) + 1),
@@ -43,7 +49,7 @@ size_t NumberOfPlanesForLinearBufferFormat(BufferFormat format) {
     case BufferFormat::RGBA_8888:
     case BufferFormat::BGRX_8888:
     case BufferFormat::BGRX_1010102:
-    case BufferFormat::RGBX_1010102:
+    case BufferFormat::RGBA_1010102:
     case BufferFormat::BGRA_8888:
     case BufferFormat::RGBA_F16:
       return 1;
@@ -68,7 +74,7 @@ size_t SubsamplingFactorForBufferFormat(BufferFormat format, size_t plane) {
     case BufferFormat::RGBA_8888:
     case BufferFormat::BGRX_8888:
     case BufferFormat::BGRX_1010102:
-    case BufferFormat::RGBX_1010102:
+    case BufferFormat::RGBA_1010102:
     case BufferFormat::BGRA_8888:
     case BufferFormat::RGBA_F16:
       return 1;
@@ -119,7 +125,7 @@ bool RowSizeForBufferFormatChecked(size_t width,
       return true;
     case BufferFormat::BGRX_8888:
     case BufferFormat::BGRX_1010102:
-    case BufferFormat::RGBX_1010102:
+    case BufferFormat::RGBA_1010102:
     case BufferFormat::RGBX_8888:
     case BufferFormat::RGBA_8888:
     case BufferFormat::BGRA_8888:
@@ -194,7 +200,7 @@ size_t BufferOffsetForBufferFormat(const Size& size,
     case BufferFormat::RGBA_8888:
     case BufferFormat::BGRX_8888:
     case BufferFormat::BGRX_1010102:
-    case BufferFormat::RGBX_1010102:
+    case BufferFormat::RGBA_1010102:
     case BufferFormat::BGRA_8888:
     case BufferFormat::RGBA_F16:
       return 0;
@@ -241,8 +247,8 @@ const char* BufferFormatToString(BufferFormat format) {
       return "BGRX_8888";
     case BufferFormat::BGRX_1010102:
       return "BGRX_1010102";
-    case BufferFormat::RGBX_1010102:
-      return "RGBX_1010102";
+    case BufferFormat::RGBA_1010102:
+      return "RGBA_1010102";
     case BufferFormat::BGRA_8888:
       return "BGRA_8888";
     case BufferFormat::RGBA_F16:

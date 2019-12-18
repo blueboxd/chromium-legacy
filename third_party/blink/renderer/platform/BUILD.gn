@@ -512,7 +512,6 @@ jumbo_component("platform") {
     "exported/web_http_load_info.cc",
     "exported/web_icon_sizes_parser.cc",
     "exported/web_image_generator.cc",
-    "exported/web_input_event.cc",
     "exported/web_media_constraints.cc",
     "exported/web_media_player_client.cc",
     "exported/web_media_player_encrypted_media_client.cc",

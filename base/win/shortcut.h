@@ -6,6 +6,7 @@
 #define BASE_WIN_SHORTCUT_H_
 
 #include <windows.h>
+
 #include <stdint.h>
 
 #include "base/base_export.h"

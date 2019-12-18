@@ -59,7 +59,7 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
         }
 
         @Override
-        public void onInteractabilityChanged(boolean interactable) {
+        public void onInteractabilityChanged(Tab tab, boolean interactable) {
             // Force a layout update if the tab is now in the foreground.
             maybeUpdateLayout();
         }

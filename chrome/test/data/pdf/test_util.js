@@ -4,6 +4,7 @@
 
 // Utilities that are used in multiple tests.
 
+import {Viewport} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/viewport.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 export function MockWindow(width, height, sizer) {
@@ -136,4 +137,23 @@ export function createBookmarksForTest() {
     },
   });
   return document.createElement('test-bookmarks');
+}
+
+/**
+ * Create a viewport with basic default zoom values.
+ * @param {!Window} window
+ * @param {!HTMLDivElement} sizer The element which represents the size of the
+ *     document in the viewport
+ * @param {number} scrollbarWidth The width of scrollbars on the page
+ * @param {number} defaultZoom The default zoom level.
+ * @param {number} topToolbarHeight The number of pixels that should initially
+ *     be left blank above the document for the toolbar.
+ * @return {!Viewport} The viewport object with zoom values set.
+ */
+export function getZoomableViewport(
+    window, sizer, scrollbarWidth, defaultZoom, topToolbarHeight) {
+  const viewport = new Viewport(
+      window, sizer, scrollbarWidth, defaultZoom, topToolbarHeight);
+  viewport.setZoomFactorRange([0.25, 0.4, 0.5, 1, 2]);
+  return viewport;
 }

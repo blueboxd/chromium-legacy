@@ -4,10 +4,10 @@
 
 source_set("alerts") {
   sources = [
-    "alert_overlay_coordinator+subclassing.h",
+    "alert_overlay_coordinator+alert_mediator_creation.h",
     "alert_overlay_coordinator.h",
     "alert_overlay_coordinator.mm",
-    "alert_overlay_mediator+subclassing.h",
+    "alert_overlay_mediator+alert_consumer_support.h",
     "alert_overlay_mediator.h",
     "alert_overlay_mediator.mm",
   ]
@@ -33,6 +33,8 @@ source_set("unit_tests") {
 
   deps = [
     ":alerts",
+    "//ios/chrome/browser/overlays",
+    "//ios/chrome/browser/overlays/test",
     "//ios/chrome/browser/ui/alert_view",
     "//ios/chrome/browser/ui/alert_view/test",
     "//ios/chrome/browser/ui/elements",

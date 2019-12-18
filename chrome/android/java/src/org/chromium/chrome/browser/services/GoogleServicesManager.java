@@ -76,7 +76,7 @@ public class GoogleServicesManager implements ApplicationStateListener {
             // the native side is signed out if the Java side doesn't have a currently signed in
             // user.
             // TODO(bsazonov): Move this to SigninManager.
-            SigninManager signinManager = IdentityServicesProvider.getSigninManager();
+            SigninManager signinManager = IdentityServicesProvider.get().getSigninManager();
             if (!mChromeSigninController.isSignedIn()
                     && signinManager.getIdentityManager().hasPrimaryAccount()) {
                 Log.w(TAG, "Signed in state got out of sync, forcing native sign out");

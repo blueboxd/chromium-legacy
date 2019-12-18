@@ -11,7 +11,7 @@ namespace win {
 namespace internal {
 
 DWORD ModifyCode(void* destination, const void* source, int length) {
-  if ((NULL == destination) || (NULL == source) || (0 == length)) {
+  if ((nullptr == destination) || (nullptr == source) || (0 == length)) {
     NOTREACHED();
     return ERROR_INVALID_PARAMETER;
   }
@@ -49,4 +49,4 @@ DWORD ModifyCode(void* destination, const void* source, int length) {
 
 }  // namespace internal
 }  // namespace win
-}  // namespace bsae
+}  // namespace base

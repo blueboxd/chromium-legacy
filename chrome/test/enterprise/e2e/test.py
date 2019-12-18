@@ -36,6 +36,9 @@ flags.DEFINE_bool(
     'skip_before_all', False, 'True to skip @before_all methods. '
     'Like --nodeploy, this is used to skip set up steps. '
     'Useful when developing new tests.')
+flags.DEFINE_bool(
+    'no_external_access', False, 'True to skip creating RDP/SSH firewall '
+    'rules during deployment. Should be used in automated test runs.')
 flags.DEFINE_bool('cleanup', False,
                   'Clean up the host environment after the test')
 flags.DEFINE_string('error_logs_dir', None,
@@ -67,7 +70,8 @@ def main(argv):
       FLAGS.host,
       FLAGS.cel_ctl,
       test_filter=FLAGS.test_filter,
-      skip_before_all=FLAGS.skip_before_all)
+      skip_before_all=FLAGS.skip_before_all,
+      no_external_access=FLAGS.no_external_access)
 
   # Parse test specific flags. Note that we need to use a dummy element
   # as the first element of the list since absl.flags ignores the first element

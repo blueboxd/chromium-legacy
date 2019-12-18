@@ -5,6 +5,7 @@
 #include "base/win/registry.h"
 
 #include <windows.h>
+
 #include <stdint.h>
 
 #include <cstring>
@@ -77,8 +78,8 @@ TEST_F(RegistryTest, ValueTest) {
 
   std::wstring foo_key(kRootKey);
   foo_key += L"\\Foo";
-  ASSERT_EQ(ERROR_SUCCESS, key.Create(HKEY_CURRENT_USER, foo_key.c_str(),
-                                      KEY_READ));
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Create(HKEY_CURRENT_USER, foo_key.c_str(), KEY_READ));
 
   {
     ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, foo_key.c_str(),
@@ -137,8 +138,8 @@ TEST_F(RegistryTest, BigValueIteratorTest) {
   RegKey key;
   std::wstring foo_key(kRootKey);
   foo_key += L"\\Foo";
-  ASSERT_EQ(ERROR_SUCCESS, key.Create(HKEY_CURRENT_USER, foo_key.c_str(),
-                                      KEY_READ));
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Create(HKEY_CURRENT_USER, foo_key.c_str(), KEY_READ));
   ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, foo_key.c_str(),
                                     KEY_READ | KEY_SET_VALUE));
   ASSERT_TRUE(key.Valid());
@@ -162,8 +163,8 @@ TEST_F(RegistryTest, TruncatedCharTest) {
   RegKey key;
   std::wstring foo_key(kRootKey);
   foo_key += L"\\Foo";
-  ASSERT_EQ(ERROR_SUCCESS, key.Create(HKEY_CURRENT_USER, foo_key.c_str(),
-                                      KEY_READ));
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Create(HKEY_CURRENT_USER, foo_key.c_str(), KEY_READ));
   ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, foo_key.c_str(),
                                     KEY_READ | KEY_SET_VALUE));
   ASSERT_TRUE(key.Valid());
@@ -258,14 +259,12 @@ TEST_F(RegistryTest, DISABLED_Wow64RedirectedFromNative) {
 
   // Test redirected key access from non-redirected.
   ASSERT_EQ(ERROR_SUCCESS,
-            key.Create(HKEY_LOCAL_MACHINE,
-                       foo_software_key_.c_str(),
+            key.Create(HKEY_LOCAL_MACHINE, foo_software_key_.c_str(),
                        KEY_WRITE | kRedirectedViewMask));
   ASSERT_NE(ERROR_SUCCESS,
             key.Open(HKEY_LOCAL_MACHINE, foo_software_key_.c_str(), KEY_READ));
   ASSERT_NE(ERROR_SUCCESS,
-            key.Open(HKEY_LOCAL_MACHINE,
-                     foo_software_key_.c_str(),
+            key.Open(HKEY_LOCAL_MACHINE, foo_software_key_.c_str(),
                      KEY_READ | kNativeViewMask));
 
   // Open the non-redirected view of the parent and try to delete the test key.
@@ -303,14 +302,12 @@ TEST_F(RegistryTest, DISABLED_Wow64NativeFromRedirected) {
 
   // Test non-redirected key access from redirected.
   ASSERT_EQ(ERROR_SUCCESS,
-            key.Create(HKEY_LOCAL_MACHINE,
-                       foo_software_key_.c_str(),
+            key.Create(HKEY_LOCAL_MACHINE, foo_software_key_.c_str(),
                        KEY_WRITE | kNativeViewMask));
   ASSERT_EQ(ERROR_SUCCESS,
             key.Open(HKEY_LOCAL_MACHINE, foo_software_key_.c_str(), KEY_READ));
   ASSERT_NE(ERROR_SUCCESS,
-            key.Open(HKEY_LOCAL_MACHINE,
-                     foo_software_key_.c_str(),
+            key.Open(HKEY_LOCAL_MACHINE, foo_software_key_.c_str(),
                      KEY_READ | kRedirectedViewMask));
 
   // Open the redirected view of the parent and try to delete the test key
@@ -326,10 +323,8 @@ TEST_F(RegistryTest, DISABLED_Wow64NativeFromRedirected) {
 
 TEST_F(RegistryTest, OpenSubKey) {
   RegKey key;
-  ASSERT_EQ(ERROR_SUCCESS,
-            key.Open(HKEY_CURRENT_USER,
-                     kRootKey,
-                     KEY_READ | KEY_CREATE_SUB_KEY));
+  ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, kRootKey,
+                                    KEY_READ | KEY_CREATE_SUB_KEY));
 
   ASSERT_NE(ERROR_SUCCESS, key.OpenKey(L"foo", KEY_READ));
   ASSERT_EQ(ERROR_SUCCESS, key.CreateKey(L"foo", KEY_READ));
@@ -347,19 +342,19 @@ TEST_F(RegistryTest, OpenSubKey) {
 
 class TestChangeDelegate {
  public:
-   TestChangeDelegate() : called_(false) {}
-   ~TestChangeDelegate() {}
+  TestChangeDelegate() : called_(false) {}
+  ~TestChangeDelegate() {}
 
-   void OnKeyChanged() {
-     RunLoop::QuitCurrentWhenIdleDeprecated();
-     called_ = true;
-   }
+  void OnKeyChanged() {
+    RunLoop::QuitCurrentWhenIdleDeprecated();
+    called_ = true;
+  }
 
-   bool WasCalled() {
-     bool was_called = called_;
-     called_ = false;
-     return was_called;
-   }
+  bool WasCalled() {
+    bool was_called = called_;
+    called_ = false;
+    return was_called;
+  }
 
  private:
   bool called_;
@@ -372,8 +367,8 @@ TEST_F(RegistryTest, ChangeCallback) {
 
   std::wstring foo_key(kRootKey);
   foo_key += L"\\Foo";
-  ASSERT_EQ(ERROR_SUCCESS, key.Create(HKEY_CURRENT_USER, foo_key.c_str(),
-                                      KEY_READ));
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Create(HKEY_CURRENT_USER, foo_key.c_str(), KEY_READ));
 
   ASSERT_TRUE(key.StartWatching(
       BindRepeating(&TestChangeDelegate::OnKeyChanged, Unretained(&delegate))));
@@ -382,7 +377,7 @@ TEST_F(RegistryTest, ChangeCallback) {
   // Make some change.
   RegKey key2;
   ASSERT_EQ(ERROR_SUCCESS, key2.Open(HKEY_CURRENT_USER, foo_key.c_str(),
-                                      KEY_READ | KEY_SET_VALUE));
+                                     KEY_READ | KEY_SET_VALUE));
   ASSERT_TRUE(key2.Valid());
   EXPECT_EQ(ERROR_SUCCESS, key2.WriteValue(L"name", L"data"));
 

@@ -840,8 +840,7 @@ void InputHandler::DispatchWebTouchEvent(
     return;
   }
 
-  gfx::PointF original(events[0].touches[0].PositionInWidget().x,
-                       events[0].touches[0].PositionInWidget().y);
+  gfx::PointF original(events[0].touches[0].PositionInWidget());
   gfx::PointF transformed;
   RenderWidgetHostImpl* widget_host =
       FindTargetWidgetHost(original, &transformed);
@@ -858,12 +857,12 @@ void InputHandler::DispatchWebTouchEvent(
     events[i].moved_beyond_slop_region = true;
     events[i].unique_touch_event_id = ui::GetNextTouchEventId();
     for (unsigned j = 0; j < events[i].touches_length; j++) {
-      blink::WebFloatPoint point = events[i].touches[j].PositionInWidget();
-      events[i].touches[j].SetPositionInWidget(point.x + delta.x(),
-                                               point.y + delta.y());
+      gfx::PointF point = events[i].touches[j].PositionInWidget();
+      events[i].touches[j].SetPositionInWidget(point.x() + delta.x(),
+                                               point.y() + delta.y());
       point = events[i].touches[j].PositionInScreen();
-      events[i].touches[j].SetPositionInScreen(point.x + delta.x(),
-                                               point.y + delta.y());
+      events[i].touches[j].SetPositionInScreen(point.x() + delta.x(),
+                                               point.y() + delta.y());
     }
   }
   EnsureInjector(widget_host)->InjectTouchEvents(events, std::move(callback));

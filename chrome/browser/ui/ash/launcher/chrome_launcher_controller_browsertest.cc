@@ -75,7 +75,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -2199,12 +2199,14 @@ class HotseatShelfAppBrowserTest : public ShelfAppBrowserTest {
 
   // ShelfAppBrowserTest:
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kShelfHotseat);
+    scoped_feature_list_.InitAndEnableFeature(
+        chromeos::features::kShelfHotseat);
     ShelfAppBrowserTest::SetUp();
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(HotseatShelfAppBrowserTest);
 };
 

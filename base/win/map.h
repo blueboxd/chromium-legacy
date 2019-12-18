@@ -363,7 +363,8 @@ class Map
   IFACEMETHODIMP Clear() override {
     map_.clear();
     NotifyMapChanged(
-        ABI::Windows::Foundation::Collections::CollectionChange_Reset, 0);
+        ABI::Windows::Foundation::Collections::CollectionChange_Reset,
+        0);  // NOLINT(modernize-use-nullptr): AbiK may not be a pointer.
     return S_OK;
   }
 

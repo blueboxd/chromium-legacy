@@ -30,12 +30,13 @@ class PrefHashStore;
 void SetupTrackedPreferencesMigration(
     const std::set<std::string>& unprotected_pref_names,
     const std::set<std::string>& protected_pref_names,
-    const base::Callback<void(const std::string& key)>&
+    const base::RepeatingCallback<void(const std::string& key)>&
         unprotected_store_cleaner,
-    const base::Callback<void(const std::string& key)>& protected_store_cleaner,
-    const base::Callback<void(base::OnceClosure)>&
+    const base::RepeatingCallback<void(const std::string& key)>&
+        protected_store_cleaner,
+    const base::RepeatingCallback<void(base::OnceClosure)>&
         register_on_successful_unprotected_store_write_callback,
-    const base::Callback<void(base::OnceClosure)>&
+    const base::RepeatingCallback<void(base::OnceClosure)>&
         register_on_successful_protected_store_write_callback,
     std::unique_ptr<PrefHashStore> unprotected_pref_hash_store,
     std::unique_ptr<PrefHashStore> protected_pref_hash_store,

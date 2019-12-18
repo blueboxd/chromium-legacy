@@ -2528,7 +2528,6 @@
 <translation id="4572779512957829735">Въведете ПИН кода за ключа си за сигурност</translation>
 <translation id="457386861538956877">Още...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Сдвояване на устройство с Bluetooth</translation>
 <translation id="4579581181964204535">Предаването на <ph name="HOST_NAME" /> не е възможно.</translation>
 <translation id="4581774856936278355">Грешка при възстановяването на Linux</translation>
 <translation id="4582563038311694664">Нулиране на всички настройки</translation>
@@ -4869,7 +4868,6 @@
 <translation id="7974936243149753750">Допълнителна област</translation>
 <translation id="7978412674231730200">Личен ключ</translation>
 <translation id="7978450511781612192">Така ще излезете от профилите си в Google. Вашите отметки, история, пароли и др. повече няма да се синхронизират.</translation>
-<translation id="7979036127916589816">Грешка при синхронизирането</translation>
 <translation id="7980084013673500153">Идент. № на актива: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Предварително зареждане на страниците с цел по-бързо сърфиране и търсене</translation>
 <translation id="798145602633458219">Добавяне на предложението <ph name="SUGGESTION_NAME" /> към полето за търсене</translation>
@@ -5318,6 +5316,7 @@
 <translation id="862542460444371744">&amp;Разширения</translation>
 <translation id="862727964348362408">Спряно</translation>
 <translation id="862750493060684461">Кеш за CSS</translation>
+<translation id="8627706565932943526">Грешка при синхронизирането</translation>
 <translation id="8627795981664801467">Само сигурни връзки</translation>
 <translation id="8630903300770275248">Импортиране на контролиран потребител</translation>
 <translation id="8631032106121706562">Цвете</translation>

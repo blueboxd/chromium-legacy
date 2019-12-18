@@ -129,13 +129,13 @@ void HttpCacheDataRemover::CacheRetrieved(int rv) {
   }
 
   if (delete_begin_.is_null() && delete_end_.is_max()) {
-    rv = backend_->DoomAllEntries(base::Bind(
+    rv = backend_->DoomAllEntries(base::BindOnce(
         &HttpCacheDataRemover::ClearHttpCacheDone, weak_factory_.GetWeakPtr()));
   } else {
     rv = backend_->DoomEntriesBetween(
         delete_begin_, delete_end_,
-        base::Bind(&HttpCacheDataRemover::ClearHttpCacheDone,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&HttpCacheDataRemover::ClearHttpCacheDone,
+                       weak_factory_.GetWeakPtr()));
   }
   if (rv != net::ERR_IO_PENDING) {
     // Notify by posting a task to avoid reentrency.

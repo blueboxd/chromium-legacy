@@ -85,14 +85,13 @@ NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
   content::URLDataSource::Add(
       profile_, std::make_unique<FaviconSource>(
                     profile_, chrome::FaviconUrlFormat::kFavicon2));
-
-  AddHandlerToRegistry(base::BindRepeating(
-      &NewTabPageUI::BindPageHandlerFactory, base::Unretained(this)));
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(NewTabPageUI)
 
 NewTabPageUI::~NewTabPageUI() = default;
 
-void NewTabPageUI::BindPageHandlerFactory(
+void NewTabPageUI::BindInterface(
     mojo::PendingReceiver<new_tab_page::mojom::PageHandlerFactory>
         pending_receiver) {
   if (page_factory_receiver_.is_bound()) {

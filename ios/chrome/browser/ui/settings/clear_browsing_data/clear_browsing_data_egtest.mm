@@ -2,19 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
 #include "base/ios/ios_util.h"
-#include "base/test/scoped_feature_list.h"
-#include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -28,9 +25,7 @@ using chrome_test_util::SettingsMenuPrivacyButton;
 @interface ClearBrowsingDataSettingsTestCase : ChromeTestCase
 @end
 
-@implementation ClearBrowsingDataSettingsTestCase {
-  base::test::ScopedFeatureList _featureList;
-}
+@implementation ClearBrowsingDataSettingsTestCase
 
 - (void)openClearBrowsingDataDialog {
   [ChromeEarlGreyUI openSettingsMenu];

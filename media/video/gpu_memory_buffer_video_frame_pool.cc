@@ -249,7 +249,7 @@ gfx::BufferFormat GpuMemoryBufferFormat(
       return gfx::BufferFormat::BGRX_1010102;
     case GpuVideoAcceleratorFactories::OutputFormat::XB30:
       DCHECK_EQ(0u, plane);
-      return gfx::BufferFormat::RGBX_1010102;
+      return gfx::BufferFormat::RGBA_1010102;
     case GpuVideoAcceleratorFactories::OutputFormat::RGBA:
       DCHECK_EQ(0u, plane);
       return gfx::BufferFormat::RGBA_8888;

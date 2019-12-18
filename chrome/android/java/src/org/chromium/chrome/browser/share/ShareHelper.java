@@ -560,6 +560,21 @@ public class ShareHelper {
         }
     }
 
+    /**
+     * Show the default share sheet. On L+ this is the Android system share sheet on K and below
+     * this is a custom share dialog.
+     * @param params The share parameters.
+     */
+    static void showDefaultShareUi(ShareParams params) {
+        if (TargetChosenReceiver.isSupported()) {
+            // On L+ open system share sheet.
+            makeIntentAndShare(params, null);
+        } else {
+            // On K and below open custom share dialog.
+            showShareDialog(params);
+        }
+    }
+
     static void makeIntentAndShare(ShareParams params, @Nullable ComponentName component) {
         Intent intent = getShareLinkIntent(params);
         intent.addFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT | Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);

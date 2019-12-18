@@ -199,11 +199,4 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
     public void setupLeftButtonOnClickListener(View.OnClickListener listener) {
         mMediator.setupLeftButtonOnClickListener(listener);
     }
-
-    /**
-     * @return {@link TabGroupUiMediator.TabGroupUiController} to control the TabGroupUi.
-     */
-    TabGroupUiMediator.TabGroupUiController getTabGroupUiController() {
-        return this;
-    }
 }

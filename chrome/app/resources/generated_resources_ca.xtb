@@ -2526,7 +2526,6 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="4572779512957829735">Introdueix el PIN de la clau de seguretat</translation>
 <translation id="457386861538956877">Més...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Vincula un dispositiu Bluetooth</translation>
 <translation id="4579581181964204535">No es pot emetre <ph name="HOST_NAME" />.</translation>
 <translation id="4581774856936278355">S'ha produït un error en restaurar Linux</translation>
 <translation id="4582563038311694664">Restableix tota la configuració</translation>
@@ -4868,7 +4867,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7974936243149753750">Ajusta la mida</translation>
 <translation id="7978412674231730200">Clau privada</translation>
 <translation id="7978450511781612192">Aquesta acció tancarà la sessió dels Comptes de Google. Les adreces d'interès, l'historial, les contrasenyes i altres opcions es deixaran de sincronitzar.</translation>
-<translation id="7979036127916589816">Error de sincronització</translation>
 <translation id="7980084013673500153">Identificador de l'element: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Carrega les pàgines prèviament per poder-hi navegar i fer cerques més de pressa</translation>
 <translation id="798145602633458219">Afegeix el suggeriment <ph name="SUGGESTION_NAME" /> al quadre de cerca</translation>
@@ -5317,6 +5315,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="862542460444371744">&amp;Extensions</translation>
 <translation id="862727964348362408">Suspesa</translation>
 <translation id="862750493060684461">Memòria cau CSS</translation>
+<translation id="8627706565932943526">Error de sincronització</translation>
 <translation id="8627795981664801467">Només les connexions segures</translation>
 <translation id="8630903300770275248">Importa un usuari supervisat</translation>
 <translation id="8631032106121706562">Flor</translation>

@@ -6,6 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
 import("//build/config/freetype/freetype.gni")
 import("//build/config/ui.gni")
+import("//components/paint_preview/buildflags/buildflags.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/harfbuzz-ng/harfbuzz.gni")
 
@@ -260,6 +261,13 @@ if (use_system_harfbuzz) {
       # TODO(https://crbug.com/949962): Remove once this is fixed upstream.
       "U_DISABLE_VERSION_SUFFIX=0",
     ]
+
+    if (enable_paint_preview) {
+      # Paint Previews make use of CFF subsetting. However, enabling this is
+      # expensive for binary size so only compile it when Paint Previews are
+      # compiled.
+      defines -= [ "HB_NO_SUBSET_CFF" ]
+    }
 
     if (is_component_build) {
       if (is_win) {

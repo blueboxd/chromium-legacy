@@ -3298,9 +3298,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, MouseButtonsNavigate) {
     TestNavigationObserver back_observer(web_contents);
     web_contents->GetRenderWidgetHostWithPageFocus()->ForwardMouseEvent(
         blink::WebMouseEvent(
-            blink::WebInputEvent::kMouseUp, blink::WebFloatPoint(51, 50),
-            blink::WebFloatPoint(51, 50),
-            blink::WebPointerProperties::Button::kBack, 0,
+            blink::WebInputEvent::kMouseUp, gfx::PointF(51, 50),
+            gfx::PointF(51, 50), blink::WebPointerProperties::Button::kBack, 0,
             blink::WebInputEvent::kNoModifiers, base::TimeTicks::Now()));
     back_observer.Wait();
     ASSERT_EQ(url_a, web_contents->GetLastCommittedURL());
@@ -3310,10 +3309,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, MouseButtonsNavigate) {
     TestNavigationObserver forward_observer(web_contents);
     web_contents->GetRenderWidgetHostWithPageFocus()->ForwardMouseEvent(
         blink::WebMouseEvent(
-            blink::WebInputEvent::kMouseUp, blink::WebFloatPoint(51, 50),
-            blink::WebFloatPoint(51, 50),
-            blink::WebPointerProperties::Button::kForward, 0,
-            blink::WebInputEvent::kNoModifiers, base::TimeTicks::Now()));
+            blink::WebInputEvent::kMouseUp, gfx::PointF(51, 50),
+            gfx::PointF(51, 50), blink::WebPointerProperties::Button::kForward,
+            0, blink::WebInputEvent::kNoModifiers, base::TimeTicks::Now()));
     forward_observer.Wait();
     ASSERT_EQ(url_b, web_contents->GetLastCommittedURL());
   }
@@ -3342,9 +3340,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, MouseButtonsDontNavigate) {
   RenderWidgetHostImpl* render_widget_host =
       web_contents->GetRenderWidgetHostWithPageFocus();
   render_widget_host->ForwardMouseEvent(blink::WebMouseEvent(
-      blink::WebInputEvent::kMouseUp, blink::WebFloatPoint(51, 50),
-      blink::WebFloatPoint(51, 50), blink::WebPointerProperties::Button::kBack,
-      0, blink::WebInputEvent::kNoModifiers, base::TimeTicks::Now()));
+      blink::WebInputEvent::kMouseUp, gfx::PointF(51, 50), gfx::PointF(51, 50),
+      blink::WebPointerProperties::Button::kBack, 0,
+      blink::WebInputEvent::kNoModifiers, base::TimeTicks::Now()));
   RunUntilInputProcessed(render_widget_host);
 
   // Wait an action timeout and assert the URL is correct.
@@ -3374,8 +3372,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, MouseButtonsDontNavigate) {
 
   render_widget_host = web_contents->GetRenderWidgetHostWithPageFocus();
   render_widget_host->ForwardMouseEvent(blink::WebMouseEvent(
-      blink::WebInputEvent::kMouseUp, blink::WebFloatPoint(51, 50),
-      blink::WebFloatPoint(51, 50),
+      blink::WebInputEvent::kMouseUp, gfx::PointF(51, 50), gfx::PointF(51, 50),
       blink::WebPointerProperties::Button::kForward, 0,
       blink::WebInputEvent::kNoModifiers, base::TimeTicks::Now()));
   RunUntilInputProcessed(render_widget_host);

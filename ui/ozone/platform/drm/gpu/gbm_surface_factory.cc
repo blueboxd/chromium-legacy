@@ -15,6 +15,7 @@
 #include "third_party/khronos/EGL/egl.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/linux/drm_util_linux.h"
+#include "ui/gfx/linux/gbm_defines.h"
 #include "ui/gfx/linux/scoped_gbm_device.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gl/gl_surface_egl.h"

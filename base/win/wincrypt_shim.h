@@ -10,6 +10,7 @@
 // Chromium headers which include wincrypt should instead include this header.
 
 #include <windows.h>
+
 #include <wincrypt.h>
 
 // Undefine the macros which conflict with OpenSSL and define replacements. See
@@ -18,8 +19,8 @@
 #undef X509_EXTENSIONS
 #undef X509_NAME
 
-#define WINCRYPT_X509_CERT_PAIR ((LPCSTR) 53)
-#define WINCRYPT_X509_EXTENSIONS ((LPCSTR) 5)
-#define WINCRYPT_X509_NAME ((LPCSTR) 7)
+#define WINCRYPT_X509_CERT_PAIR ((LPCSTR)53)
+#define WINCRYPT_X509_EXTENSIONS ((LPCSTR)5)
+#define WINCRYPT_X509_NAME ((LPCSTR)7)
 
 #endif  // BASE_WIN_WINCRYPT_SHIM_H_

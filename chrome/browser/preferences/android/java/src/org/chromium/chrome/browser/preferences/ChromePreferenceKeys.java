@@ -270,6 +270,21 @@ public final class ChromePreferenceKeys {
     public static final String PREF_SIGNIN_AND_SYNC_PROMO_SHOW_COUNT =
             "enhanced_bookmark_signin_promo_show_count";
 
+    /** First run flags. */
+    public static final String FIRST_RUN_CACHED_TOS_ACCEPTED_PREF = "first_run_tos_accepted";
+    public static final String FIRST_RUN_FLOW_COMPLETE = "first_run_flow";
+    public static final String FIRST_RUN_LIGHTWEIGHT_FLOW_COMPLETE = "lightweight_first_run_flow";
+    public static final String FIRST_RUN_SKIP_WELCOME_PAGE = "skip_welcome_page";
+
+    /**
+     * SharedPreferences preference names to keep the state of the First Run Experience.
+     */
+    public static final String FIRST_RUN_FLOW_SIGNIN_COMPLETE = "first_run_signin_complete";
+
+    // Needed by ChromeBackupAgent
+    public static final String FIRST_RUN_FLOW_SIGNIN_SETUP = "first_run_signin_setup";
+    public static final String FIRST_RUN_FLOW_SIGNIN_ACCOUNT_NAME = "first_run_signin_account_name";
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Keys representing cached feature flags                                                     //
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -392,6 +407,10 @@ public final class ChromePreferenceKeys {
     public static final String SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT =
             "swap_pixel_format_to_fix_convert_from_translucent";
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // End of keys representing cached feature flags                                              //
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     /**
      * Keys that indicates if an item in the context menu has been clicked or not.
      * Used to hide the "new" tag for the items after they are clicked.
@@ -402,6 +421,7 @@ public final class ChromePreferenceKeys {
             "Chrome.Contextmenu.OpenImageInEphemeralTabClicked";
     public static final String CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS_CLICKED =
             "Chrome.ContextMenu.SearchWithGoogleLensClicked";
+
     /**
      * These values are currently used as SharedPreferences keys.
      *
@@ -476,6 +496,13 @@ public final class ChromePreferenceKeys {
                 CONTEXT_MENU_OPEN_IN_EPHEMERAL_TAB_CLICKED,
                 CONTEXT_MENU_OPEN_IMAGE_IN_EPHEMERAL_TAB_CLICKED,
                 CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS_CLICKED,
+                FIRST_RUN_CACHED_TOS_ACCEPTED_PREF,
+                FIRST_RUN_FLOW_COMPLETE,
+                FIRST_RUN_LIGHTWEIGHT_FLOW_COMPLETE,
+                FIRST_RUN_SKIP_WELCOME_PAGE,
+                FIRST_RUN_FLOW_SIGNIN_COMPLETE,
+                FIRST_RUN_FLOW_SIGNIN_SETUP,
+                FIRST_RUN_FLOW_SIGNIN_ACCOUNT_NAME,
 
                 // Cached feature flags
                 SERVICE_MANAGER_FOR_DOWNLOAD_RESUMPTION_KEY,
@@ -605,6 +632,13 @@ public final class ChromePreferenceKeys {
                 OFFLINE_INDICATOR_V2_ENABLED_KEY,
                 PREF_PERSONALIZED_SIGNIN_PROMO_DECLINED,
                 PREF_SIGNIN_AND_SYNC_PROMO_SHOW_COUNT,
+                FIRST_RUN_CACHED_TOS_ACCEPTED_PREF,
+                FIRST_RUN_FLOW_COMPLETE,
+                FIRST_RUN_LIGHTWEIGHT_FLOW_COMPLETE,
+                FIRST_RUN_SKIP_WELCOME_PAGE,
+                FIRST_RUN_FLOW_SIGNIN_COMPLETE,
+                FIRST_RUN_FLOW_SIGNIN_SETUP,
+                FIRST_RUN_FLOW_SIGNIN_ACCOUNT_NAME,
 
                 // Cached feature flags
                 SERVICE_MANAGER_FOR_DOWNLOAD_RESUMPTION_KEY,

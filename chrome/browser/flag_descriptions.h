@@ -1521,9 +1521,6 @@ extern const char kEnableCommandLineOnNoRootedDescription[];
 extern const char kEnableRevampedContextMenuName[];
 extern const char kEnableRevampedContextMenuDescription[];
 
-extern const char kEnableNtpRemoteSuggestionsName[];
-extern const char kEnableNtpRemoteSuggestionsDescription[];
-
 extern const char kEnableOfflinePreviewsName[];
 extern const char kEnableOfflinePreviewsDescription[];
 

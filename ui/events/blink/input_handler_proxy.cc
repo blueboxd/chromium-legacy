@@ -52,8 +52,8 @@ cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
   cc::ScrollStateData scroll_state_data;
   switch (event.GetType()) {
     case WebInputEvent::kGestureScrollBegin:
-      scroll_state_data.position_x = event.PositionInWidget().x;
-      scroll_state_data.position_y = event.PositionInWidget().y;
+      scroll_state_data.position_x = event.PositionInWidget().x();
+      scroll_state_data.position_y = event.PositionInWidget().y();
       scroll_state_data.delta_x_hint = -event.data.scroll_begin.delta_x_hint;
       scroll_state_data.delta_y_hint = -event.data.scroll_begin.delta_y_hint;
       scroll_state_data.is_beginning = true;
@@ -395,7 +395,7 @@ void InputHandlerProxy::DispatchQueuedInputEvents() {
 // scrollbar. (See InputHandlerProxy::HandleInputEvent)
 void InputHandlerProxy::InjectScrollbarGestureScroll(
     const WebInputEvent::Type type,
-    const blink::WebFloatPoint& position_in_widget,
+    const gfx::PointF& position_in_widget,
     const cc::InputHandlerPointerResult& pointer_result,
     const LatencyInfo& latency_info,
     const base::TimeTicks original_timestamp) {
@@ -615,8 +615,8 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
       CHECK(input_handler_);
       cc::InputHandlerPointerResult pointer_result =
           input_handler_->MouseMoveAt(
-              gfx::Point(mouse_event.PositionInWidget().x,
-                         mouse_event.PositionInWidget().y));
+              gfx::Point(mouse_event.PositionInWidget().x(),
+                         mouse_event.PositionInWidget().y()));
       if (pointer_result.type == cc::PointerResultType::kScrollbarScroll) {
         // Generate a GSU event and add it to the CompositorThreadEventQueue.
         InjectScrollbarGestureScroll(WebInputEvent::Type::kGestureScrollUpdate,
@@ -783,9 +783,9 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
       return result;
   }
 
-  blink::WebFloatPoint position_in_widget = wheel_event.PositionInWidget();
+  gfx::PointF position_in_widget = wheel_event.PositionInWidget();
   if (input_handler_->HasBlockingWheelEventHandlerAt(
-          gfx::Point(position_in_widget.x, position_in_widget.y))) {
+          gfx::Point(position_in_widget.x(), position_in_widget.y()))) {
     result = DID_NOT_HANDLE;
   } else {
     cc::EventListenerProperties properties =
@@ -1011,8 +1011,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HitTestTouchEvent(
     cc::TouchAction touch_action = cc::TouchAction::kAuto;
     cc::InputHandler::TouchStartOrMoveEventListenerType event_listener_type =
         input_handler_->EventListenerTypeForTouchStartOrMoveAt(
-            gfx::Point(touch_event.touches[i].PositionInWidget().x,
-                       touch_event.touches[i].PositionInWidget().y),
+            gfx::Point(touch_event.touches[i].PositionInWidget().x(),
+                       touch_event.touches[i].PositionInWidget().y()),
             &touch_action);
     if (white_listed_touch_action)
       *white_listed_touch_action &= touch_action;

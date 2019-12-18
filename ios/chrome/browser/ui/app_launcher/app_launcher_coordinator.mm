@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
+#include "ios/chrome/browser/overlays/public/overlay_callback_manager.h"
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/chrome/browser/overlays/public/overlay_response.h"
@@ -128,7 +129,7 @@ void AppLauncherOverlayCallback(ProceduralBlockWithBool app_launch_completion,
     std::unique_ptr<OverlayRequest> request =
         OverlayRequest::CreateWithConfig<AppLauncherAlertOverlayRequestConfig>(
             /* is_repeated_request= */ false);
-    request->set_callback(
+    request->GetCallbackManager()->AddCompletionCallback(
         base::BindOnce(&AppLauncherOverlayCallback, completion));
     OverlayRequestQueue::FromWebState(webState,
                                       OverlayModality::kWebContentArea)
@@ -195,7 +196,7 @@ void AppLauncherOverlayCallback(ProceduralBlockWithBool app_launch_completion,
     std::unique_ptr<OverlayRequest> request =
         OverlayRequest::CreateWithConfig<AppLauncherAlertOverlayRequestConfig>(
             /* is_repeated_request= */ true);
-    request->set_callback(
+    request->GetCallbackManager()->AddCompletionCallback(
         base::BindOnce(&AppLauncherOverlayCallback, completion));
     OverlayRequestQueue::FromWebState(tabHelper->web_state(),
                                       OverlayModality::kWebContentArea)

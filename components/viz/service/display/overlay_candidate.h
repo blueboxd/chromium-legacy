@@ -140,6 +140,8 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
                                 OverlayCandidate* candidate);
 };
 
+using OverlayCandidateList = std::vector<OverlayCandidate>;
+
 }  // namespace viz
 
 #endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_CANDIDATE_H_

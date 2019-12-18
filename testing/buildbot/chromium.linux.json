@@ -5610,13 +5610,11 @@
   },
   "fuchsia-arm64-cast": {
     "additional_compile_targets": [
-      "cast_shell",
       "cast_test_lists"
     ]
   },
   "fuchsia-x64-cast": {
     "additional_compile_targets": [
-      "cast_shell",
       "cast_test_lists"
     ]
   },

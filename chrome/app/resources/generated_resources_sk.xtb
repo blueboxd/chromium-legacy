@@ -2528,7 +2528,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="4572779512957829735">Zadajte kód PIN bezpečnostného kľúča</translation>
 <translation id="457386861538956877">Viac...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Párovanie zariadenia Bluetooth</translation>
 <translation id="4579581181964204535">Nie je možné prenášať hostiteľskú službu <ph name="HOST_NAME" />.</translation>
 <translation id="4581774856936278355">Chyba pri obnovovaní systému Linux</translation>
 <translation id="4582563038311694664">Resetovať všetky nastavenia</translation>
@@ -4868,7 +4867,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="7974936243149753750">Presah obsahu</translation>
 <translation id="7978412674231730200">Súkromný kľúč</translation>
 <translation id="7978450511781612192">Táto možnosť vás odhlási z účtov Google. Záložky, história, heslá a ďalší obsah sa prestanú synchronizovať.</translation>
-<translation id="7979036127916589816">Chyba synchronizácie</translation>
 <translation id="7980084013673500153">ID prvku: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Vopred načítavať stránky na zrýchlenie prehliadania a vyhľadávania</translation>
 <translation id="798145602633458219">Pripojiť návrh <ph name="SUGGESTION_NAME" /> k výrazu vo vyhľadávacom poli</translation>
@@ -5316,6 +5314,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="862542460444371744">&amp;Rozšírenia</translation>
 <translation id="862727964348362408">Pozastavené</translation>
 <translation id="862750493060684461">Vyrovnávacia pamäť CSS</translation>
+<translation id="8627706565932943526">Chyba synchronizácie</translation>
 <translation id="8627795981664801467">Len bezpečné pripojenia</translation>
 <translation id="8630903300770275248">Importovať kontrolovaného používateľa</translation>
 <translation id="8631032106121706562">Lupienky</translation>

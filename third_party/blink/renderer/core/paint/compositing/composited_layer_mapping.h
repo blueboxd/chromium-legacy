@@ -323,7 +323,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   void UpdateScrollingLayerGeometry();
 
   void CreatePrimaryGraphicsLayer();
-  void DestroyGraphicsLayers();
 
   std::unique_ptr<GraphicsLayer> CreateGraphicsLayer(
       CompositingReasons,

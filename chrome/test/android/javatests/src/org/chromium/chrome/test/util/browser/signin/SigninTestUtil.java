@@ -112,7 +112,7 @@ public final class SigninTestUtil {
             accountNames[i] = accounts[i].name;
             accountIds[i] = accountIdProvider.getAccountId(accounts[i].name);
         }
-        IdentityServicesProvider.getAccountTrackerService().syncForceRefreshForTest(
+        IdentityServicesProvider.get().getAccountTrackerService().syncForceRefreshForTest(
                 accountIds, accountNames);
     }
 

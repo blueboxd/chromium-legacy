@@ -1,4 +1,4 @@
 document
-++group
+++group IsControlElement=false
 ++++link Name='normal link'
 ++++++description Name='normal link' IsControlElement=false

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ios/chrome/browser/overlays/overlay_callback_manager_impl.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 
 // Internal implementation of OverlayRequest.
@@ -17,17 +18,11 @@ class OverlayRequestImpl : public OverlayRequest,
   ~OverlayRequestImpl() override;
 
   // OverlayRequest:
-  void set_response(std::unique_ptr<OverlayResponse> response) override;
-  OverlayResponse* response() const override;
-  void set_callback(OverlayCallback callback) override;
+  OverlayCallbackManager* GetCallbackManager() override;
   base::SupportsUserData* data() override;
 
  private:
-  // The response containing the user interaction information for the overlay
-  // resulting from this response.
-  std::unique_ptr<OverlayResponse> response_;
-  // The callback to be executed upon dismissal of the overlay.
-  OverlayCallback callback_;
+  OverlayCallbackManagerImpl callback_manager_;
 };
 
 #endif  // IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_REQUEST_IMPL_H_

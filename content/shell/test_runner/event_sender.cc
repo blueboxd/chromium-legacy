@@ -2344,10 +2344,8 @@ void EventSender::GestureEvent(WebInputEvent::Type type, gin::Arguments* args) {
       event.data.scroll_update.delta_x = static_cast<float>(x);
       event.data.scroll_update.delta_y = static_cast<float>(y);
       event.SetPositionInWidget(current_gesture_location_);
-      current_gesture_location_.x =
-          current_gesture_location_.x + event.data.scroll_update.delta_x;
-      current_gesture_location_.y =
-          current_gesture_location_.y + event.data.scroll_update.delta_y;
+      current_gesture_location_.Offset(event.data.scroll_update.delta_x,
+                                       event.data.scroll_update.delta_y);
       break;
     }
     case WebInputEvent::kGestureScrollBegin:
@@ -2731,8 +2729,8 @@ void EventSender::ReplaySavedEvents() {
             current_pointer_state_[kRawMousePointerId].pressed_button_,
             current_pointer_state_[kRawMousePointerId].current_buttons_, e.pos,
             click_count_, &event);
-        current_pointer_state_[kRawMousePointerId].last_pos_ =
-            WebPoint(event.PositionInWidget().x, event.PositionInWidget().y);
+        current_pointer_state_[kRawMousePointerId].last_pos_ = blink::WebPoint(
+            event.PositionInWidget().x(), event.PositionInWidget().y());
         HandleInputEventOnViewOrPopup(event);
         DoDragAfterMouseMove(event);
         break;

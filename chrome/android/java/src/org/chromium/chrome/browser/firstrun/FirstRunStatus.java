@@ -5,29 +5,22 @@
 package org.chromium.chrome.browser.firstrun;
 
 import org.chromium.base.CommandLine;
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /**
  * Gets and sets preferences related to the status of the first run experience.
  */
 public class FirstRunStatus {
 
-    // Needed by ChromeBackupAgent
-    public static final String FIRST_RUN_FLOW_COMPLETE = "first_run_flow";
-    public static final String LIGHTWEIGHT_FIRST_RUN_FLOW_COMPLETE = "lightweight_first_run_flow";
-
-    private static final String SKIP_WELCOME_PAGE = "skip_welcome_page";
-
     /**
      * Sets the "main First Run Experience flow complete" preference.
      * @param isComplete Whether the main First Run Experience flow is complete
      */
     public static void setFirstRunFlowComplete(boolean isComplete) {
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putBoolean(FIRST_RUN_FLOW_COMPLETE, isComplete)
-                .apply();
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.FIRST_RUN_FLOW_COMPLETE, isComplete);
     }
 
     /**
@@ -36,7 +29,8 @@ public class FirstRunStatus {
      * includes ToS and Sign In pages if necessary.
      */
     public static boolean getFirstRunFlowComplete() {
-        if (ContextUtils.getAppSharedPreferences().getBoolean(FIRST_RUN_FLOW_COMPLETE, false)) {
+        if (SharedPreferencesManager.getInstance().readBoolean(
+                    ChromePreferenceKeys.FIRST_RUN_FLOW_COMPLETE, false)) {
             return true;
         }
         return CommandLine.getInstance().hasSwitch(
@@ -48,14 +42,16 @@ public class FirstRunStatus {
      * @param isSkip Whether the welcome page should be skpped
     */
     public static void setSkipWelcomePage(boolean isSkip) {
-        ContextUtils.getAppSharedPreferences().edit().putBoolean(SKIP_WELCOME_PAGE, isSkip).apply();
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.FIRST_RUN_SKIP_WELCOME_PAGE, isSkip);
     }
 
     /**
     * Checks whether the welcome page should be skipped from the main First Run Experience.
     */
     public static boolean shouldSkipWelcomePage() {
-        return ContextUtils.getAppSharedPreferences().getBoolean(SKIP_WELCOME_PAGE, false);
+        return SharedPreferencesManager.getInstance().readBoolean(
+                ChromePreferenceKeys.FIRST_RUN_SKIP_WELCOME_PAGE, false);
     }
 
     /**
@@ -63,17 +59,15 @@ public class FirstRunStatus {
      * @param isComplete Whether the lightweight First Run Experience flow is complete
      */
     public static void setLightweightFirstRunFlowComplete(boolean isComplete) {
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putBoolean(LIGHTWEIGHT_FIRST_RUN_FLOW_COMPLETE, isComplete)
-                .apply();
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.FIRST_RUN_LIGHTWEIGHT_FLOW_COMPLETE, isComplete);
     }
 
     /**
      * Returns whether the "lightweight First Run Experience flow" is complete.
      */
     public static boolean getLightweightFirstRunFlowComplete() {
-        return ContextUtils.getAppSharedPreferences().getBoolean(
-                LIGHTWEIGHT_FIRST_RUN_FLOW_COMPLETE, false);
+        return SharedPreferencesManager.getInstance().readBoolean(
+                ChromePreferenceKeys.FIRST_RUN_LIGHTWEIGHT_FLOW_COMPLETE, false);
     }
 }

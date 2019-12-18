@@ -12,6 +12,8 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_item_controller.h"
+#include "chrome/common/chrome_features.h"
+#include "components/arc/arc_util.h"
 #include "components/exo/shell_surface_base.h"
 #include "components/exo/shell_surface_util.h"
 #include "extensions/common/constants.h"
@@ -31,13 +33,19 @@ constexpr int kArcAppWindowIconSize = extension_misc::EXTENSION_ICON_MEDIUM;
 ArcAppWindow::ArcAppWindow(int task_id,
                            const arc::ArcAppShelfId& app_shelf_id,
                            views::Widget* widget,
-                           ArcAppWindowLauncherController* owner,
+                           ArcAppWindowDelegate* owner,
                            Profile* profile)
     : AppWindowBase(ash::ShelfID(app_shelf_id.app_id()), widget),
       task_id_(task_id),
       app_shelf_id_(app_shelf_id),
       owner_(owner),
       profile_(profile) {
+  DCHECK(owner_);
+
+  // AppService uses app_shelf_id as the app_id to construct ShelfID.
+  if (base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry))
+    set_shelf_id(ash::ShelfID(app_shelf_id.ToString()));
+
   SetDefaultAppIcon();
 }
 
@@ -76,7 +84,7 @@ void ArcAppWindow::SetDescription(
 }
 
 bool ArcAppWindow::IsActive() const {
-  return widget()->IsActive() && owner_->active_task_id() == task_id_;
+  return widget()->IsActive() && owner_->GetActiveTaskId() == task_id_;
 }
 
 void ArcAppWindow::Close() {

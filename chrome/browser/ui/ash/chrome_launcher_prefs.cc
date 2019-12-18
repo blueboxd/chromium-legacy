@@ -60,13 +60,21 @@ const char* kDefaultPinnedApps10Apps[] = {extension_misc::kGmailAppId,
                                           extension_misc::kGoogleSheetsAppId,
                                           extension_misc::kGoogleSlidesAppId,
                                           extension_misc::kFilesManagerAppId,
-                                          ash::kInternalAppIdCamera,
+                                          extension_misc::kCameraAppId,
                                           extension_misc::kGooglePhotosAppId,
                                           arc::kPlayStoreAppId};
 
 const char kDefaultPinnedAppsKey[] = "default";
 const char kDefaultPinnedApps7AppsKey[] = "7apps";
 const char kDefaultPinnedApps10AppsKey[] = "10apps";
+
+bool IsLegacyCameraAppId(const std::string& app_id) {
+  return app_id ==
+             "ngmkobaiicipbagcngcmilfkhejlnfci" ||  // Migration Camera App.
+         app_id == "goamfaniemdfcajgcmmflhchgkmbngka" ||  // Google Camera App.
+         app_id == "obfofkigjfamlldmipdegnjlcpincibc" ||  // Legacy Camera App.
+         app_id == "iniodglblcgmngkgdipeiclkdjjpnlbn";  // Internal Camera App.
+}
 
 bool IsAppIdArcPackage(const std::string& app_id) {
   return app_id.find('.') != app_id.npos;
@@ -439,42 +447,51 @@ std::vector<ash::ShelfID> GetPinnedAppsFromSync(
   // not.
   std::set<std::string> pins_from_sync_raw;
 
-  // Check that the camera app was pinned by a real app id or mapped internal
-  // app id.
-  bool has_pinned_camera_app = false;
+  bool has_camera_app = false;
+  syncer::StringOrdinal legacy_camera_pinned_position;
 
   for (const auto& sync_peer : syncable_service->sync_items()) {
+    if (sync_peer.first == extension_misc::kCameraAppId) {
+      has_camera_app = true;
+    }
+
     if (!sync_peer.second->item_pin_ordinal.IsValid())
       continue;
 
     pins_from_sync_raw.insert(sync_peer.first);
 
-    // Don't include apps that currently do not exist on device.
     if (sync_peer.first != extension_misc::kChromeAppId &&
         !helper->IsValidIDForCurrentUser(sync_peer.first)) {
+      // Don't include apps that currently do not exist on device.
+
+      // For legacy camera app which has a valid pinned position, use this
+      // position to set the camera app later.
+      if (IsLegacyCameraAppId(sync_peer.first) &&
+          !legacy_camera_pinned_position.IsValid()) {
+        legacy_camera_pinned_position = sync_peer.second->item_pin_ordinal;
+
+        // Wipe the position for legacy camera app.
+        syncable_service->SetPinPosition(sync_peer.first,
+                                         syncer::StringOrdinal());
+      }
       continue;
     }
 
-    std::string pinned_app_id;
-
-    // Map any real camera app id to the internal camera app id.
-    if (IsCameraApp(sync_peer.first) ||
-        sync_peer.first == ash::kInternalAppIdCamera) {
-      // Prevent internal camera app being pinned twice.
-      if (has_pinned_camera_app) {
-        continue;
-      }
-      // Check the validity of internal camera app id.
-      if (!helper->IsValidIDForCurrentUser(ash::kInternalAppIdCamera)) {
-        continue;
-      }
-      has_pinned_camera_app = true;
-      pinned_app_id = ash::kInternalAppIdCamera;
-    } else {
-      pinned_app_id = sync_peer.first;
-    }
-
+    std::string pinned_app_id = sync_peer.first;
     pin_infos.emplace_back(pinned_app_id, sync_peer.second->item_pin_ordinal);
+  }
+
+  syncer::StringOrdinal camera_app_position =
+      syncable_service->GetPinPosition(extension_misc::kCameraAppId);
+  // If the camera app is in the sync list with no valid position and there is a
+  // legacy camera app which has valid position, use this position for the
+  // camera app.
+  if (has_camera_app && !camera_app_position.IsValid() &&
+      legacy_camera_pinned_position.IsValid()) {
+    syncable_service->SetPinPosition(extension_misc::kCameraAppId,
+                                     legacy_camera_pinned_position);
+    pin_infos.emplace_back(extension_misc::kCameraAppId,
+                           legacy_camera_pinned_position);
   }
 
   // Make sure Chrome is always pinned.
@@ -595,8 +612,6 @@ void SetPinPosition(Profile* profile,
                     const ash::ShelfID& shelf_id_before,
                     const std::vector<ash::ShelfID>& shelf_ids_after) {
   DCHECK(profile);
-  // Camera apps are mapped to the internal app.
-  DCHECK(!IsCameraApp(shelf_id.app_id));
 
   const std::string& app_id = shelf_id.app_id;
   if (!shelf_id.launch_id.empty()) {

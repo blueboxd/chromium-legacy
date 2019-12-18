@@ -38,12 +38,12 @@ TEST(ScopedHStringTest, Init) {
   EXPECT_EQ(kTestString1, contents);
 
   hstring.reset();
-  EXPECT_TRUE(hstring == NULL);
-  EXPECT_EQ(NULL, hstring.get());
+  EXPECT_TRUE(hstring == nullptr);
+  EXPECT_EQ(nullptr, hstring.get());
 
   ScopedHString hstring2 = ScopedHString::Create(kTestString2);
   hstring.swap(hstring2);
-  EXPECT_TRUE(hstring2 == NULL);
+  EXPECT_TRUE(hstring2 == nullptr);
 
   buffer = hstring.GetAsUTF8();
   EXPECT_EQ(kTestString2, UTF8ToWide(buffer));

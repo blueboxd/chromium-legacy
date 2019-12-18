@@ -130,7 +130,7 @@ LayoutUnit LayoutSVGRoot::ComputeReplacedLogicalWidth(
   // (border-image/background-image/<html:img>/...) we're forced to resize to a
   // specific size.
   if (!container_size_.IsEmpty())
-    return LayoutUnit(container_size_.Width());
+    return container_size_.Width();
 
   if (IsEmbeddedThroughFrameContainingSVGDocument())
     return ContainingBlock()->AvailableLogicalWidth();
@@ -144,7 +144,7 @@ LayoutUnit LayoutSVGRoot::ComputeReplacedLogicalHeight(
   // (border-image/background-image/<html:img>/...) we're forced to resize to a
   // specific size.
   if (!container_size_.IsEmpty())
-    return LayoutUnit(container_size_.Height());
+    return container_size_.Height();
 
   if (IsEmbeddedThroughFrameContainingSVGDocument())
     return ContainingBlock()->AvailableLogicalHeight(

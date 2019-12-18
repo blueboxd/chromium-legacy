@@ -6,7 +6,7 @@
 
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #include "ios/chrome/browser/overlays/public/web_content_area/app_launcher_alert_overlay.h"
-#import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_coordinator+subclassing.h"
+#import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_coordinator+alert_mediator_creation.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/app_launcher/app_launcher_alert_overlay_mediator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -21,9 +21,7 @@
 
 @end
 
-@implementation AppLauncherAlertOverlayCoordinator (Subclassing)
-
-#pragma mark - AlertOverlayCoordinator
+@implementation AppLauncherAlertOverlayCoordinator (AlertMediatorCreation)
 
 - (AlertOverlayMediator*)newMediator {
   return [[AppLauncherAlertOverlayMediator alloc] initWithRequest:self.request];

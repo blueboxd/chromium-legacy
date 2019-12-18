@@ -32,7 +32,8 @@ void WebStateListMetricsObserver::WillStartSessionRestoration() {
   metric_collection_paused_ = true;
 }
 
-void WebStateListMetricsObserver::SessionRestorationFinished() {
+void WebStateListMetricsObserver::SessionRestorationFinished(
+    const std::vector<web::WebState*>& restored_web_states) {
   metric_collection_paused_ = false;
 }
 

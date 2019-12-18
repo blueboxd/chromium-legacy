@@ -1,5 +1,5 @@
 document
-++group
+++group IsControlElement=false
 ++++combobox ExpandCollapse.ExpandCollapseState='Collapsed' Value.Value='Placeholder option'
 ++++++list Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false
 ++++++++listitem Name='Placeholder option' SelectionItem.IsSelected=true

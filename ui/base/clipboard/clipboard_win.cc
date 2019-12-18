@@ -88,14 +88,13 @@ class ScopedClipboard {
     // shouldn't be contention.
 
     for (int attempts = 0; attempts < kMaxAttemptsToOpenClipboard; ++attempts) {
-      // If we didn't manage to open the clipboard, sleep a bit and be hopeful.
-      if (attempts != 0)
-        ::Sleep(5);
-
       if (::OpenClipboard(owner)) {
         opened_ = true;
         return true;
       }
+
+      // If we didn't manage to open the clipboard, sleep a bit and be hopeful.
+      ::Sleep(5);
     }
 
     // We failed to acquire the clipboard.
@@ -469,7 +468,7 @@ SkBitmap ClipboardWin::ReadImage(ClipboardBuffer buffer) const {
   // Since Windows uses premultiplied alpha, we scan for instances where
   // (R, G, B) > A. If there are any invalid premultiplied colors in the image,
   // we assume the alpha channel contains garbage and force the bitmap to be
-  // opaque as well. Note that this  heuristic will fail on a transparent bitmap
+  // opaque as well. Note that this heuristic will fail on a transparent bitmap
   // containing only black pixels...
   SkPixmap device_pixels(SkImageInfo::MakeN32Premul(bitmap->bmiHeader.biWidth,
                                                     bitmap->bmiHeader.biHeight),

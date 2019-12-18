@@ -9,6 +9,8 @@
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/button_observer.h"
+#include "ui/views/layout/animating_layout_manager.h"
+#include "ui/views/layout/flex_layout.h"
 #include "ui/views/view.h"
 
 // A general view container for any type of toolbar icons.
@@ -52,6 +54,17 @@ class ToolbarIconContainerView : public views::View,
   void OnViewBlurred(views::View* observed_view) override;
 
   bool uses_highlight() { return uses_highlight_; }
+
+  // Provides access to the animating layout manager for subclasses.
+  views::AnimatingLayoutManager* animating_layout_manager() {
+    return static_cast<views::AnimatingLayoutManager*>(GetLayoutManager());
+  }
+
+  // Provides access to the flex layout in the animating layout manager.
+  views::FlexLayout* target_layout_manager() {
+    return static_cast<views::FlexLayout*>(
+        animating_layout_manager()->target_layout_manager());
+  }
 
   static const char kToolbarIconContainerViewClassName[];
 

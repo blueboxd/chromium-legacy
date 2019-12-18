@@ -71,8 +71,7 @@ void InlineLoginHandler::HandleInitializeMessage(const base::ListValue* args) {
   AllowJavascript();
   content::WebContents* contents = web_ui()->GetWebContents();
   content::StoragePartition* partition =
-      content::BrowserContext::GetStoragePartitionForSite(
-          contents->GetBrowserContext(), signin::GetSigninPartitionURL());
+      signin::GetSigninPartition(contents->GetBrowserContext());
   if (partition) {
     const GURL& current_url = web_ui()->GetWebContents()->GetURL();
 
@@ -160,8 +159,7 @@ void InlineLoginHandler::HandleCompleteLoginMessage(
   // CookieManager.
   content::WebContents* contents = web_ui()->GetWebContents();
   content::StoragePartition* partition =
-      content::BrowserContext::GetStoragePartitionForSite(
-          contents->GetBrowserContext(), signin::GetSigninPartitionURL());
+      signin::GetSigninPartition(contents->GetBrowserContext());
 
   partition->GetCookieManagerForBrowserProcess()->GetCookieList(
       GaiaUrls::GetInstance()->gaia_url(),

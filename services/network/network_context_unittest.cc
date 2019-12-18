@@ -162,17 +162,17 @@ const base::FilePath::CharType kFilename[] =
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
-void StoreBool(bool* result, const base::Closure& callback, bool value) {
+void StoreBool(bool* result, base::OnceClosure callback, bool value) {
   *result = value;
-  callback.Run();
+  std::move(callback).Run();
 }
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 void StoreValue(base::Value* result,
-                const base::Closure& callback,
+                base::OnceClosure callback,
                 base::Value value) {
   *result = std::move(value);
-  callback.Run();
+  std::move(callback).Run();
 }
 
 mojom::NetworkContextParamsPtr CreateContextParams() {
@@ -2218,7 +2218,7 @@ TEST_F(NetworkContextTest, CookieManager) {
       ->GetCookieListWithOptionsAsync(
           GURL("http://www.test.com/whatever"),
           net::CookieOptions::MakeAllInclusive(),
-          base::Bind(&GetCookieListCallback, &run_loop2, &cookies));
+          base::BindOnce(&GetCookieListCallback, &run_loop2, &cookies));
   run_loop2.Run();
   ASSERT_EQ(1u, cookies.size());
   EXPECT_EQ("TestCookie", cookies[0].Name());

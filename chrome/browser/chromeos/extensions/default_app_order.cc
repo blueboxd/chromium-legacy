@@ -60,7 +60,6 @@ const char* const kDefaultAppOrder[] = {
     arc::kPlayGamesAppId,
     arc::kPlayBooksAppId,                   // Play Books ARC app
     extension_misc::kGooglePlayBooksAppId,  // Play Books Chrome app
-    ash::kInternalAppIdCamera,
     extension_misc::kCameraAppId,
     extension_misc::kGooglePhotosAppId,
     arc::kGooglePhotosAppId,

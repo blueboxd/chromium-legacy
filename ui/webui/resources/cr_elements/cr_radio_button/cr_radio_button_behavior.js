@@ -26,6 +26,17 @@ const CrRadioButtonBehaviorImpl = {
       notify: true,
     },
 
+    /**
+     * Whether the radio button should be focusable or not. Toggling this
+     * property sets the corresponding tabindex of the button itself as well
+     * as any links in the button description.
+     */
+    focusable: {
+      type: Boolean,
+      value: false,
+      observer: 'onFocusableChanged_',
+    },
+
     label: {
       type: String,
       value: '',  // Allows the hidden$= binding to run without being set.
@@ -36,6 +47,15 @@ const CrRadioButtonBehaviorImpl = {
       notify: true,
       reflectToAttribute: true,
     },
+
+    /**
+     * Holds the tabIndex for the radio button.
+     * @private {number}
+     */
+    buttonTabIndex_: {
+      type: Number,
+      computed: 'getTabIndex_(focusable)',
+    },
   },
 
   listeners: {
@@ -44,10 +64,23 @@ const CrRadioButtonBehaviorImpl = {
     up: 'hideRipple_',
   },
 
+  focus: function() {
+    this.$.button.focus();
+  },
+
+  /** @private */
+  onFocusableChanged_: function() {
+    const links = this.querySelectorAll('a');
+    links.forEach((link) => {
+      // Remove the tab stop on any links when the row is unchecked. Since the
+      // row is not tabbable, any links within the row should not be either.
+      link.tabIndex = this.checked ? 0 : -1;
+    });
+  },
+
   /** @private */
   onFocus_: function() {
     this.getRipple().showAndHoldDown();
-    this.$.button.focus();
   },
 
   /** @private */
@@ -55,14 +88,28 @@ const CrRadioButtonBehaviorImpl = {
     this.getRipple().clear();
   },
 
-  /** @private */
+  /**
+   * @return {string}
+   * @private
+   */
   getAriaChecked_: function() {
     return this.checked ? 'true' : 'false';
   },
 
-  /** @private */
+  /**
+   * @return {string}
+   * @private
+   */
   getAriaDisabled_: function() {
     return this.disabled ? 'true' : 'false';
+  },
+
+  /**
+   * @return {number}
+   * @private
+   */
+  getTabIndex_: function() {
+    return this.focusable ? 0 : -1;
   },
 
   /**

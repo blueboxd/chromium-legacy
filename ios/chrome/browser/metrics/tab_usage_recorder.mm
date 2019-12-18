@@ -494,3 +494,9 @@ void TabUsageRecorder::WebStateActivatedAt(WebStateList* web_state_list,
   if (reason & WebStateListObserver::CHANGE_REASON_USER_ACTION)
     RecordTabSwitched(old_web_state, new_web_state);
 }
+
+void TabUsageRecorder::SessionRestorationFinished(
+    const std::vector<web::WebState*>& restored_web_states) {
+  InitialRestoredTabs(web_state_list_->GetActiveWebState(),
+                      restored_web_states);
+}

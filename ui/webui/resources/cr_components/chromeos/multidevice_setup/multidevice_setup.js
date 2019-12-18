@@ -200,14 +200,15 @@ cr.define('multidevice_setup', function() {
      */
     onWindowContentUpdate_: function() {
       // (scrollHeight - scrollTop) represents the visible height of the
-      // contents, not including scrollbars. Math.ceil() is used to round this
-      // value, since it can be fractional depending on browser zoom and/or
-      // display density.
-      const visibleHeight = Math.ceil(this.scrollHeight - this.scrollTop);
+      // contents, not including scrollbars.
+      const visibleHeight = this.scrollHeight - this.scrollTop;
 
       // If these two heights are equal, the contents are scrolled to the
-      // bottom.
-      this.isScrolledToBottom_ = this.clientHeight === visibleHeight;
+      // bottom. Instead of using equality, we check that the difference is
+      // sufficiently small to account for fractional values due to browser
+      // zoom and/or display density.
+      this.isScrolledToBottom_ =
+          Math.abs(this.clientHeight - visibleHeight) < 1;
     },
 
     /** @private */

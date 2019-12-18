@@ -192,6 +192,10 @@ bool ThemePainter::Paint(const LayoutObject& o,
       auto* input = DynamicTo<HTMLInputElement>(node);
       if (!input || input->type() != input_type_names::kCheckbox)
         DEPRECATE_APPEARANCE(doc, CheckboxForOthers);
+      // Count usage of non-rectangular checkbox and radio buttons.
+      if (r.Width() != r.Height()) {
+        UseCounter::Count(doc, WebFeature::kInputTypeCheckboxRenderedNonSquare);
+      }
       return PaintCheckbox(node, o.GetDocument(), style, paint_info, r);
     }
     case kRadioPart: {
@@ -199,6 +203,10 @@ bool ThemePainter::Paint(const LayoutObject& o,
       auto* input = DynamicTo<HTMLInputElement>(node);
       if (!input || input->type() != input_type_names::kRadio)
         DEPRECATE_APPEARANCE(doc, RadioForOthers);
+      // Count usage of non-rectangular checkbox and radio buttons.
+      if (r.Width() != r.Height()) {
+        UseCounter::Count(doc, WebFeature::kInputTypeRadioRenderedNonSquare);
+      }
       return PaintRadio(node, o.GetDocument(), style, paint_info, r);
     }
     case kPushButtonPart: {

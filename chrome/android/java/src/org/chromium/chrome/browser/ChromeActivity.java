@@ -781,9 +781,17 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // #onPageLoadFinished() and #onCrash(). If we are not actively loading a tab (e.g.
         // in Android N multi-instance, which is created by re-parenting an existing tab),
         // ensure onDeferredStartup() gets called by calling postDeferredStartupIfNeeded() here.
-        if (mDeferredStartupQueued || getActivityTab() == null || !getActivityTab().isLoading()) {
+        if (mDeferredStartupQueued || shouldPostDeferredStartupForReparentedTab()) {
             postDeferredStartupIfNeeded();
         }
+    }
+
+    /**
+     * Returns whether deferred startup should be run if we are not actively loading a tab (e.g.
+     * in Android N multi-instance, which is created by re-parenting an existing tab).
+     */
+    public boolean shouldPostDeferredStartupForReparentedTab() {
+        return getActivityTab() == null || !getActivityTab().isLoading();
     }
 
     @Override

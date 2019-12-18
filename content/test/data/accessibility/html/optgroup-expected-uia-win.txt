@@ -1,5 +1,5 @@
 document
-++group
+++group IsControlElement=false
 ++++listbox Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false Value.IsReadOnly=false
 ++++++group Name='Enabled'
 ++++++++description Name='Enabled' IsControlElement=false

@@ -121,13 +121,12 @@ std::unique_ptr<blink::WebGestureEvent> GenerateInjectedScrollGesture(
     blink::WebInputEvent::Type type,
     base::TimeTicks timestamp,
     blink::WebGestureDevice device,
-    blink::WebFloatPoint position_in_widget,
+    gfx::PointF position_in_widget,
     gfx::Vector2dF scroll_delta,
     input_types::ScrollGranularity granularity);
 
 // Returns the position in the widget if it exists for the passed in event type
-blink::WebFloatPoint PositionInWidgetFromInputEvent(
-    const blink::WebInputEvent& event);
+gfx::PointF PositionInWidgetFromInputEvent(const blink::WebInputEvent& event);
 
 #if defined(OS_ANDROID)
 // Convenience method that converts an instance to blink event.

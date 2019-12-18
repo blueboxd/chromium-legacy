@@ -25,7 +25,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/timer/elapsed_timer.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 
 namespace base {
@@ -104,10 +104,10 @@ class StackSamplingProfiler::SamplingThread : public Thread {
     std::unique_ptr<ProfileBuilder> profile_builder;
 
     // The absolute time for the next sample.
-    Time next_sample_time;
+    TimeTicks next_sample_time;
 
     // The time that a profile was started, for calculating the total duration.
-    Time profile_start_time;
+    TimeTicks profile_start_time;
 
     // Counter that indicates the current sample position along the acquisition.
     int sample_count = 0;
@@ -441,7 +441,8 @@ void StackSamplingProfiler::SamplingThread::FinishCollection(
   DCHECK_EQ(GetThreadId(), PlatformThread::CurrentId());
   DCHECK_EQ(0u, active_collections_.count(collection->collection_id));
 
-  TimeDelta profile_duration = Time::Now() - collection->profile_start_time +
+  TimeDelta profile_duration = TimeTicks::Now() -
+                               collection->profile_start_time +
                                collection->params.sampling_interval;
 
   collection->profile_builder->OnProfileCompleted(
@@ -543,8 +544,8 @@ void StackSamplingProfiler::SamplingThread::RecordSampleTask(
 
   // If this is the first sample, the collection params need to be filled.
   if (collection->sample_count == 0) {
-    collection->profile_start_time = Time::Now();
-    collection->next_sample_time = Time::Now();
+    collection->profile_start_time = TimeTicks::Now();
+    collection->next_sample_time = TimeTicks::Now();
   }
 
   // Record a single sample.
@@ -554,13 +555,13 @@ void StackSamplingProfiler::SamplingThread::RecordSampleTask(
   // Schedule the next sample recording if there is one.
   if (++collection->sample_count < collection->params.samples_per_profile) {
     if (!collection->params.keep_consistent_sampling_interval)
-      collection->next_sample_time = Time::Now();
+      collection->next_sample_time = TimeTicks::Now();
     collection->next_sample_time += collection->params.sampling_interval;
     bool success = GetTaskRunnerOnSamplingThread()->PostDelayedTask(
         FROM_HERE,
         BindOnce(&SamplingThread::RecordSampleTask, Unretained(this),
                  collection_id),
-        std::max(collection->next_sample_time - Time::Now(), TimeDelta()));
+        std::max(collection->next_sample_time - TimeTicks::Now(), TimeDelta()));
     DCHECK(success);
     return;
   }

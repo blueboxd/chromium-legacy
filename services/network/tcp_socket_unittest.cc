@@ -16,6 +16,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -36,6 +37,10 @@
 #include "services/network/tcp_connected_socket.h"
 #include "services/network/tcp_server_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "base/mac/mac_util.h"
+#endif
 
 namespace network {
 
@@ -568,9 +573,19 @@ TEST_F(TCPSocketTest, SocketClosed) {
   }
   EXPECT_TRUE(client_socket_send_handle->QuerySignalsState().peer_closed());
   int result = observer()->WaitForWriteError();
-  EXPECT_TRUE(result == net::ERR_CONNECTION_RESET ||
-              result == net::ERR_CONNECTION_ABORTED)
-      << "actual result: " << result;
+  bool result_ok = result == net::ERR_CONNECTION_RESET ||
+                   result == net::ERR_CONNECTION_ABORTED;
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // On some macOS kernels, send() on a closing TCP socket can return
+  // EPROTOTYPE, which is unknown to the net stack and gets mapped to
+  // net::ERR_FAILED.
+  // This behavior is known to exist as late as 10.12. Whether it exists after
+  // that is unknown.
+  // See https://crbug.com/1034991
+  if (base::mac::IsAtMostOS10_12())
+    result_ok |= result == net::ERR_FAILED;
+#endif
+  EXPECT_TRUE(result_ok) << "actual result: " << result;
 }
 
 TEST_F(TCPSocketTest, ReadPipeClosed) {

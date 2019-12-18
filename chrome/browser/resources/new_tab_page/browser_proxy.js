@@ -17,7 +17,8 @@ export class BrowserProxy {
     /** @type {newTabPage.mojom.PageHandlerRemote} */
     this.handler = new newTabPage.mojom.PageHandlerRemote();
 
-    const factory = newTabPage.mojom.PageHandlerFactory.getRemote();
+    const factory = newTabPage.mojom.PageHandlerFactory.getRemote(
+        /*useBrowserInterfaceBroker=*/ true);
     factory.createPageHandler(
         this.callbackRouter.$.bindNewPipeAndPassRemote(),
         this.handler.$.bindNewPipeAndPassReceiver());

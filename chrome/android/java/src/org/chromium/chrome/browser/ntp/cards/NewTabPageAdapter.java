@@ -83,7 +83,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             UiConfig uiConfig, OfflinePageBridge offlinePageBridge,
             ContextMenuManager contextMenuManager) {
         this(uiDelegate, aboveTheFoldView, uiConfig, offlinePageBridge, contextMenuManager,
-                IdentityServicesProvider.getSigninManager());
+                IdentityServicesProvider.get().getSigninManager());
     }
 
     /**

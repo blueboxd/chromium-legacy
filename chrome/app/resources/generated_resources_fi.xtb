@@ -2526,7 +2526,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="4572779512957829735">Anna suojausavaimen PIN-koodi</translation>
 <translation id="457386861538956877">Lisää...</translation>
 <translation id="4574741712540401491">• <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Parin muodostus Bluetooth-laitteen kanssa</translation>
 <translation id="4579581181964204535">Osoitteen <ph name="HOST_NAME" /> suoratoisto ei onnistu.</translation>
 <translation id="4581774856936278355">Virhe palautettaessa Linuxia</translation>
 <translation id="4582563038311694664">Palauta kaikki asetukset</translation>
@@ -4867,7 +4866,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7974936243149753750">Yliskannaus</translation>
 <translation id="7978412674231730200">Yksityinen avain</translation>
 <translation id="7978450511781612192">Tämä kirjaa sinut ulos Google-tileiltäsi. Kirjanmerkkejä, historiaa, salasanoja tai muita ei enää synkronoida.</translation>
-<translation id="7979036127916589816">Synkronointivirhe</translation>
 <translation id="7980084013673500153">Sisältötunnus: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Esilataa sivuja nopeuttaaksesi lataamista ja hakemista</translation>
 <translation id="798145602633458219">Lisää ehdotus <ph name="SUGGESTION_NAME" /> hakukenttään</translation>
@@ -5316,6 +5314,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="862542460444371744">Laaj&amp;ennukset</translation>
 <translation id="862727964348362408">Pysäytetty</translation>
 <translation id="862750493060684461">CSS-välimuisti</translation>
+<translation id="8627706565932943526">Synkronointivirhe</translation>
 <translation id="8627795981664801467">Vain suojatut yhteydet</translation>
 <translation id="8630903300770275248">Tuo valvottu käyttäjä</translation>
 <translation id="8631032106121706562">Kukka</translation>

@@ -107,10 +107,6 @@ struct CORE_EXPORT PhysicalRect {
            !size.width.HasFraction() && !size.height.HasFraction();
   }
 
-  PhysicalRect operator+(const PhysicalOffset&) const {
-    return {this->offset + offset, size};
-  }
-
   void Unite(const PhysicalRect&);
   void UniteIfNonZero(const PhysicalRect&);
   void UniteEvenIfEmpty(const PhysicalRect&);

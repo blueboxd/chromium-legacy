@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/web/web_state_delegate_tab_helper.h"
 
 #import "base/strings/sys_string_conversions.h"
+#include "ios/chrome/browser/overlays/public/overlay_callback_manager.h"
 #include "ios/chrome/browser/overlays/public/overlay_modality.h"
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
@@ -44,7 +45,7 @@ void WebStateDelegateTabHelper::OnAuthRequired(
   std::unique_ptr<OverlayRequest> request =
       OverlayRequest::CreateWithConfig<HTTPAuthOverlayRequestConfig>(
           message, default_username);
-  request->set_callback(
+  request->GetCallbackManager()->AddCompletionCallback(
       base::BindOnce(&WebStateDelegateTabHelper::OnHTTPAuthOverlayFinished,
                      weak_factory_.GetWeakPtr(), callback));
   OverlayRequestQueue::FromWebState(source, OverlayModality::kWebContentArea)

@@ -7,7 +7,7 @@
 
 #include "third_party/blink/public/platform/pointer_id.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_float_point.h"
+#include "ui/gfx/geometry/point_f.h"
 
 #include <limits>
 
@@ -55,8 +55,8 @@ class WebPointerProperties {
       PointerId id_param,
       PointerType pointer_type_param = PointerType::kUnknown,
       Button button_param = Button::kNoButton,
-      WebFloatPoint position_in_widget = WebFloatPoint(),
-      WebFloatPoint position_in_screen = WebFloatPoint(),
+      gfx::PointF position_in_widget = gfx::PointF(),
+      gfx::PointF position_in_screen = gfx::PointF(),
       int movement_x = 0,
       int movement_y = 0)
       : id(id_param),
@@ -73,22 +73,22 @@ class WebPointerProperties {
         position_in_widget_(position_in_widget),
         position_in_screen_(position_in_screen) {}
 
-  WebFloatPoint PositionInWidget() const { return position_in_widget_; }
-  WebFloatPoint PositionInScreen() const { return position_in_screen_; }
+  const gfx::PointF& PositionInWidget() const { return position_in_widget_; }
+  const gfx::PointF& PositionInScreen() const { return position_in_screen_; }
 
   void SetPositionInWidget(float x, float y) {
-    position_in_widget_ = WebFloatPoint(x, y);
+    position_in_widget_ = gfx::PointF(x, y);
   }
 
   void SetPositionInScreen(float x, float y) {
-    position_in_screen_ = WebFloatPoint(x, y);
+    position_in_screen_ = gfx::PointF(x, y);
   }
 
-  void SetPositionInWidget(const WebFloatPoint& point) {
+  void SetPositionInWidget(const gfx::PointF& point) {
     position_in_widget_ = point;
   }
 
-  void SetPositionInScreen(const WebFloatPoint& point) {
+  void SetPositionInScreen(const gfx::PointF& point) {
     position_in_screen_ = point;
   }
 
@@ -134,10 +134,10 @@ class WebPointerProperties {
   // Widget coordinate, which is relative to the bound of current RenderWidget
   // (e.g. a plugin or OOPIF inside a RenderView). Similar to viewport
   // coordinates but without DevTools emulation transform or overscroll applied.
-  WebFloatPoint position_in_widget_;
+  gfx::PointF position_in_widget_;
 
   // Screen coordinate
-  WebFloatPoint position_in_screen_;
+  gfx::PointF position_in_screen_;
 };
 
 }  // namespace blink

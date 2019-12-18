@@ -150,6 +150,9 @@ class PluginVmImageManager
       download::DownloadService* download_service);
   void SetDownloadedPluginVmImageArchiveForTesting(
       const base::FilePath& downloaded_plugin_vm_image_archive);
+  void SetDriveDownloadServiceForTesting(
+      std::unique_ptr<PluginVmDriveImageDownloadService>
+          drive_download_service);
   std::string GetCurrentDownloadGuidForTesting();
 
  private:

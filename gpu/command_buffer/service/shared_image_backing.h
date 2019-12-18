@@ -18,6 +18,7 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/gpu_gles2_export.h"
 #include "ui/gfx/color_space.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
@@ -76,13 +77,11 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // Notify backing a write access is succeeded.
   void OnWriteSucceeded();
 
-  // Tracks whether the backing has ever been cleared, or whether it may contain
-  // uninitialized pixels.
-  virtual bool IsCleared() const = 0;
+  // Returns the initialized / cleared region of the SharedImage.
+  virtual gfx::Rect ClearedRect() const = 0;
 
-  // Marks the backing as cleared, after which point it is assumed to contain no
-  // unintiailized pixels.
-  virtual void SetCleared() = 0;
+  // Marks the provided rect as cleared.
+  virtual void SetClearedRect(const gfx::Rect& cleared_rect) = 0;
 
   virtual void Update(std::unique_ptr<gfx::GpuFence> in_fence) = 0;
 
@@ -105,6 +104,12 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // Reports the estimated size of the backing for the purpose of memory
   // tracking.
   virtual size_t EstimatedSizeForMemTracking() const;
+
+  // Helper to determine if the entire SharedImage is cleared.
+  bool IsCleared() const { return ClearedRect() == gfx::Rect(size()); }
+
+  // Helper function which clears the entire image.
+  void SetCleared() { SetClearedRect(gfx::Rect(size())); }
 
  protected:
   // Used by SharedImageManager.
@@ -186,6 +191,31 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // backing. The first reference is considered the owner, and the vector is
   // ordered by the order in which references were taken.
   std::vector<SharedImageRepresentation*> refs_;
+};
+
+// Helper implementation of SharedImageBacking which tracks a simple
+// rectangular clear region. Classes which do not need more complex
+// implementations of SetClearedRect and ClearedRect can inherit from this.
+class GPU_GLES2_EXPORT ClearTrackingSharedImageBacking
+    : public SharedImageBacking {
+ public:
+  ClearTrackingSharedImageBacking(const Mailbox& mailbox,
+                                  viz::ResourceFormat format,
+                                  const gfx::Size& size,
+                                  const gfx::ColorSpace& color_space,
+                                  uint32_t usage,
+                                  size_t estimated_size,
+                                  bool is_thread_safe);
+
+  gfx::Rect ClearedRect() const override;
+  void SetClearedRect(const gfx::Rect& cleared_rect) override;
+
+ protected:
+  gfx::Rect ClearedRectInternal() const;
+  void SetClearedRectInternal(const gfx::Rect& cleared_rect);
+
+ private:
+  gfx::Rect cleared_rect_;
 };
 
 }  // namespace gpu

@@ -14,22 +14,11 @@ std::unique_ptr<OverlayRequest> OverlayRequest::Create() {
 OverlayRequestImpl::OverlayRequestImpl() {}
 
 OverlayRequestImpl::~OverlayRequestImpl() {
-  if (!callback_.is_null())
-    std::move(callback_).Run(response());
+  callback_manager_.ExecuteCompletionCallbacks();
 }
 
-void OverlayRequestImpl::set_response(
-    std::unique_ptr<OverlayResponse> response) {
-  response_ = std::move(response);
-}
-
-OverlayResponse* OverlayRequestImpl::response() const {
-  return response_.get();
-}
-
-void OverlayRequestImpl::set_callback(OverlayCallback callback) {
-  DCHECK(callback_.is_null());
-  callback_ = std::move(callback);
+OverlayCallbackManager* OverlayRequestImpl::GetCallbackManager() {
+  return &callback_manager_;
 }
 
 base::SupportsUserData* OverlayRequestImpl::data() {

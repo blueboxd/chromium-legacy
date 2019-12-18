@@ -30,7 +30,6 @@ class DisplayResourceProvider;
 
 namespace viz {
 class OutputSurface;
-class OverlayCandidateList;
 class RendererSettings;
 
 // This class is called inside the DirectRenderer to separate the contents that
@@ -129,7 +128,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
 
   // These two functions are used by Android SurfaceControl.
   virtual void SetDisplayTransformHint(gfx::OverlayTransform transform) {}
-  virtual void SetValidatorViewportSize(const gfx::Size& size) {}
+  virtual void SetViewportSize(const gfx::Size& size) {}
 
  protected:
   OverlayProcessorInterface() {}

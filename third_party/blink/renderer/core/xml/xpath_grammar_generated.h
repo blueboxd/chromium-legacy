@@ -174,7 +174,7 @@ namespace xpathyy {
 
 
   /// A Bison parser.
-  class  YyParser 
+  class YyParser
   {
   public:
 #ifndef YYSTYPE
@@ -852,8 +852,8 @@ switch (yytype)
     };
 
     /// Build a parser object.
-     YyParser  (blink::xpath::Parser* parser__yyarg);
-    virtual ~ YyParser  ();
+    YyParser (blink::xpath::Parser* parser__yyarg);
+    virtual ~YyParser ();
 
     /// Parse.  An alias for parse ().
     /// \returns  0 iff parsing succeeded.
@@ -1159,8 +1159,8 @@ switch (yytype)
 
   private:
     /// This class is not copyable.
-     YyParser  (const  YyParser &);
-     YyParser & operator= (const  YyParser &);
+    YyParser (const YyParser&);
+    YyParser& operator= (const YyParser&);
 
     /// State numbers.
     typedef int state_type;

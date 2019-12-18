@@ -9,9 +9,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/prerender.mojom.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/renderer/prerender/prerender_helper.h"
 #include "content/public/renderer/render_frame.h"
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -31,18 +29,6 @@ ChromePrintRenderFrameHelperDelegate::ChromePrintRenderFrameHelperDelegate() =
 
 ChromePrintRenderFrameHelperDelegate::~ChromePrintRenderFrameHelperDelegate() =
     default;
-
-bool ChromePrintRenderFrameHelperDelegate::CancelPrerender(
-    content::RenderFrame* render_frame) {
-  if (!prerender::PrerenderHelper::IsPrerendering(render_frame))
-    return false;
-
-  mojo::Remote<chrome::mojom::PrerenderCanceler> canceler;
-  render_frame->GetBrowserInterfaceBroker()->GetInterface(
-      canceler.BindNewPipeAndPassReceiver());
-  canceler->CancelPrerenderForPrinting();
-  return true;
-}
 
 // Return the PDF object element if |frame| is the out of process PDF extension.
 blink::WebElement ChromePrintRenderFrameHelperDelegate::GetPdfElement(

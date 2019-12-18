@@ -76,7 +76,7 @@ class WTF_EXPORT PartitionAllocator {
     Free(ptr);  // Not the system free, the one from this class.
   }
 
-  static void TraceMarkedBackingStore(void*) {}
+  static void TraceBackingStoreIfMarked(void*) {}
   static void BackingWriteBarrier(void*) {}
   template <typename>
   static void BackingWriteBarrierForHashTable(void*) {}

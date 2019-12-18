@@ -120,7 +120,7 @@ void DestroyVkPromiseTextureAHB(viz::VulkanContextProvider* context_provider,
 // Implementation of SharedImageBacking that holds an AHardwareBuffer. This
 // can be used to create a GL texture or a VK Image from the AHardwareBuffer
 // backing.
-class SharedImageBackingAHB : public SharedImageBacking {
+class SharedImageBackingAHB : public ClearTrackingSharedImageBacking {
  public:
   SharedImageBackingAHB(const Mailbox& mailbox,
                         viz::ResourceFormat format,
@@ -134,11 +134,11 @@ class SharedImageBackingAHB : public SharedImageBacking {
 
   ~SharedImageBackingAHB() override;
 
-  bool IsCleared() const override;
-  void SetCleared() override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
   void Destroy() override;
+  gfx::Rect ClearedRect() const override;
+  void SetClearedRect(const gfx::Rect& cleared_rect) override;
   base::android::ScopedHardwareBufferHandle GetAhbHandle() const;
 
   bool BeginWrite(base::ScopedFD* fd_to_wait_on);
@@ -443,13 +443,13 @@ SharedImageBackingAHB::SharedImageBackingAHB(
     size_t estimated_size,
     bool is_thread_safe,
     base::ScopedFD initial_upload_fd)
-    : SharedImageBacking(mailbox,
-                         format,
-                         size,
-                         color_space,
-                         usage,
-                         estimated_size,
-                         is_thread_safe),
+    : ClearTrackingSharedImageBacking(mailbox,
+                                      format,
+                                      size,
+                                      color_space,
+                                      usage,
+                                      estimated_size,
+                                      is_thread_safe),
       hardware_buffer_handle_(std::move(handle)),
       write_sync_fd_(std::move(initial_upload_fd)) {
   DCHECK(hardware_buffer_handle_.is_valid());
@@ -461,20 +461,29 @@ SharedImageBackingAHB::~SharedImageBackingAHB() {
   DCHECK(!hardware_buffer_handle_.is_valid());
 }
 
-bool SharedImageBackingAHB::IsCleared() const {
+gfx::Rect SharedImageBackingAHB::ClearedRect() const {
   AutoLock auto_lock(this);
-
-  return is_cleared_;
+  // If a |legacy_texture_| exists, defer to that. Once created,
+  // |legacy_texture_| is never destroyed, so no need to synchronize with
+  // ClearedRectInternal.
+  if (legacy_texture_) {
+    return legacy_texture_->GetLevelClearedRect(legacy_texture_->target(), 0);
+  } else {
+    return ClearedRectInternal();
+  }
 }
 
-void SharedImageBackingAHB::SetCleared() {
-  // TODO(cblume): We could avoid this lock if we instead pass a flag to clear
-  // into EndWrite() or BeginRead()
+void SharedImageBackingAHB::SetClearedRect(const gfx::Rect& cleared_rect) {
   AutoLock auto_lock(this);
-
-  if (legacy_texture_)
-    legacy_texture_->SetLevelCleared(legacy_texture_->target(), 0, true);
-  is_cleared_ = true;
+  // If a |legacy_texture_| exists, defer to that. Once created,
+  // |legacy_texture_| is never destroyed, so no need to synchronize with
+  // ClearedRectInternal.
+  if (legacy_texture_) {
+    legacy_texture_->SetLevelClearedRect(legacy_texture_->target(), 0,
+                                         cleared_rect);
+  } else {
+    SetClearedRectInternal(cleared_rect);
+  }
 }
 
 void SharedImageBackingAHB::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
@@ -491,6 +500,9 @@ bool SharedImageBackingAHB::ProduceLegacyMailbox(
   legacy_texture_ = GenGLTexture();
   if (!legacy_texture_)
     return false;
+  // Make sure our |legacy_texture_| has the right initial cleared rect.
+  legacy_texture_->SetLevelClearedRect(legacy_texture_->target(), 0,
+                                       ClearedRectInternal());
   mailbox_manager->ProduceTexture(mailbox(), legacy_texture_);
   return true;
 }

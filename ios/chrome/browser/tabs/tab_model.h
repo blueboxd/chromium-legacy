@@ -26,20 +26,6 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-namespace web {
-struct Referrer;
-class WebState;
-}
-
-namespace TabModelConstants {
-
-// Position the tab automatically. This value is used as index parameter in
-// methods that require an index when the caller doesn't have a preference
-// on the position where the tab will be open.
-NSUInteger const kTabPositionAutomatically = NSNotFound;
-
-}  // namespace TabModelConstants
-
 // A model of a tab "strip". Although the UI representation may not be a
 // traditional strip at all, tabs are still accessed via an integral index.
 // The model knows about the currently selected tab in order to maintain
@@ -83,35 +69,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
-
-// Add/modify tabs.
-
-// Opens a tab at the specified URL. For certain transition types, will consult
-// the order controller and thus may only use |index| as a hint.
-// |parentWebState| may be nil if there is no parent associated with this new
-// tab. |openedByDOM| is YES if the page was opened by DOM. The |index|
-// parameter can be set to TabModelConstants::kTabPositionAutomatically if the
-// caller doesn't have a preference for the position of the tab.
-- (web::WebState*)insertWebStateWithURL:(const GURL&)URL
-                               referrer:(const web::Referrer&)referrer
-                             transition:(ui::PageTransition)transition
-                                 opener:(web::WebState*)parentWebState
-                            openedByDOM:(BOOL)openedByDOM
-                                atIndex:(NSUInteger)index
-                           inBackground:(BOOL)inBackground;
-
-// As above, but using WebLoadParams to specify various optional parameters.
-- (web::WebState*)insertWebStateWithLoadParams:
-                      (const web::NavigationManager::WebLoadParams&)params
-                                        opener:(web::WebState*)parentWebState
-                                   openedByDOM:(BOOL)openedByDOM
-                                       atIndex:(NSUInteger)index
-                                  inBackground:(BOOL)inBackground;
-
-// Opens a new blank tab in response to DOM window opening action. Creates a web
-// state with empty navigation manager.
-- (web::WebState*)insertOpenByDOMWebStateWithOpener:
-    (web::WebState*)parentWebState;
 
 // Closes the tab at the given |index|. |index| must be valid.
 - (void)closeTabAtIndex:(NSUInteger)index;

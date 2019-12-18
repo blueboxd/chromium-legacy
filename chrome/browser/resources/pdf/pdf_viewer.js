@@ -901,6 +901,13 @@ export class PDFViewer {
     document.documentElement.lang = stringsDictionary.language;
 
     loadTimeData.data = strings;
+
+    // Predefined zoom factors to be used when zooming in/out. These are in
+    // ascending order.
+    const presetZoomFactors = /** @type {!Array<number>} */ (
+        JSON.parse(loadTimeData.getString('presetZoomFactors')));
+    this.viewport_.setZoomFactorRange(presetZoomFactors);
+
     if (this.isPrintPreview_) {
       this.sendBackgroundColorForPrintPreview_();
     }

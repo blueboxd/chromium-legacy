@@ -2529,7 +2529,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="4572779512957829735">Коопсуздук ачкычыңыздын PIN кодун киргизиңиз</translation>
 <translation id="457386861538956877">Дагы…</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Bluetooth түзмөгүн жупташтыруу</translation>
 <translation id="4579581181964204535"><ph name="HOST_NAME" /> тышкы экранга чыгарылбай жатат.</translation>
 <translation id="4581774856936278355">Linux'ту калыбына келтирүүдө ката кетти</translation>
 <translation id="4582563038311694664">Бардык жөндөөлөрдү кайра коюу</translation>
@@ -4869,7 +4868,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="7974936243149753750">Камтылбаган аймак</translation>
 <translation id="7978412674231730200">Жеке ачкыч</translation>
 <translation id="7978450511781612192">Сиз Google аккаунтуңуздан чыгарыласыз. Кыстармаларыңыз, таржымалыңыз, сырсөздөрүңүз жана башка жөндөөлөр мындан ары шайкештирилбейт.</translation>
-<translation id="7979036127916589816">Шайкештештирүү катасы</translation>
 <translation id="7980084013673500153">Мүлк ID: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Тезирээк серептөө жана издөө үчүн барактарды алдын ала жүктөп алыңыз</translation>
 <translation id="798145602633458219">Төмөнкү сунушту издөө кутучасына кошуу: <ph name="SUGGESTION_NAME" /></translation>
@@ -5317,6 +5315,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="862542460444371744">&amp;Кеңейтүүлөр</translation>
 <translation id="862727964348362408">Убактылуу токтотулду</translation>
 <translation id="862750493060684461">CSS кэши</translation>
+<translation id="8627706565932943526">Шайкештештирүү катасы</translation>
 <translation id="8627795981664801467">Коопсуз туташуулар гана</translation>
 <translation id="8630903300770275248">Көзөмөлдөнгөн колдонуучуну импорттоо</translation>
 <translation id="8631032106121706562">Гүлдүн желекчелери</translation>

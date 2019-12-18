@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "components/infobars/core/infobar.h"
-#import "ios/chrome/browser/overlays/public/common/infobars/infobar_overlay.h"
+#import "ios/chrome/browser/overlays/public/common/infobars/infobar_overlay_request_config.h"
 #import "ios/chrome/browser/passwords/ios_chrome_save_password_infobar_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -32,5 +32,5 @@ SavePasswordInfobarBannerOverlayRequestConfig::
 
 void SavePasswordInfobarBannerOverlayRequestConfig::CreateAuxilliaryData(
     base::SupportsUserData* user_data) {
-  InfobarOverlayData::CreateForUserData(user_data, infobar_);
+  InfobarOverlayRequestConfig::CreateForUserData(user_data, infobar_);
 }

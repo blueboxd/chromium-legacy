@@ -186,8 +186,7 @@ public class MockServerNetworkClientTest extends NetworkClientConformanceTest {
         });
 
         verify(mProtocolAdapter).createModel(mResponseCaptor.capture());
-        // TODO(crbug.com/1024945): Find alternative to LiteProtoTruth.
-        // LiteProtoTruth.assertThat(responseCaptor.getValue()).isEqualTo(response);
+        assertThat(mResponseCaptor.getValue()).isEqualTo(response);
     }
 
     @Test
@@ -217,8 +216,7 @@ public class MockServerNetworkClientTest extends NetworkClientConformanceTest {
         });
 
         verify(mProtocolAdapter).createModel(mResponseCaptor.capture());
-        // TODO(crbug.com/1024945): Find alternative to LiteProtoTruth.
-        // LiteProtoTruth.assertThat(responseCaptor.getValue()).isEqualToDefaultInstance();
+        assertThat(mResponseCaptor.getValue()).isEqualTo(Response.getDefaultInstance());
     }
 
     private FakeTaskQueue getTaskQueue() {

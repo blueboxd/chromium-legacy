@@ -38,14 +38,13 @@ SnippetsInternalsUI::SnippetsInternalsUI(content::WebUI* web_ui)
       ContentSuggestionsServiceFactory::GetInstance()->GetForProfile(profile);
   pref_service_ = profile->GetPrefs();
   content::WebUIDataSource::Add(profile, source);
-  AddHandlerToRegistry(base::BindRepeating(
-      &SnippetsInternalsUI::BindSnippetsInternalsPageHandlerFactory,
-      base::Unretained(this)));
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(SnippetsInternalsUI)
 
 SnippetsInternalsUI::~SnippetsInternalsUI() {}
 
-void SnippetsInternalsUI::BindSnippetsInternalsPageHandlerFactory(
+void SnippetsInternalsUI::BindInterface(
     mojo::PendingReceiver<snippets_internals::mojom::PageHandlerFactory>
         receiver) {
   receiver_.reset();

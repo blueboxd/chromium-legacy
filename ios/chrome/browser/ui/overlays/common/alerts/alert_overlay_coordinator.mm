@@ -5,9 +5,11 @@
 #import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_coordinator.h"
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/alert_view/alert_view_controller.h"
-#import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_coordinator+subclassing.h"
+#import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_coordinator+alert_mediator_creation.h"
 #import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_mediator.h"
+#import "ios/chrome/browser/ui/overlays/overlay_request_coordinator+subclassing.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/presenters/contained_presenter_delegate.h"
 #import "ios/chrome/browser/ui/presenters/non_modal_view_controller_presenter.h"
@@ -17,26 +19,26 @@
 #endif
 
 @interface AlertOverlayCoordinator () <AlertOverlayMediatorDataSource,
-                                       AlertOverlayMediatorDelegate,
                                        ContainedPresenterDelegate>
-@property(nonatomic, getter=isStarted) BOOL started;
 @property(nonatomic) AlertViewController* alertViewController;
+@property(nonatomic) AlertOverlayMediator* alertMediator;
 @property(nonatomic) NonModalViewControllerPresenter* presenter;
-@property(nonatomic) AlertOverlayMediator* mediator;
 @end
 
 @implementation AlertOverlayCoordinator
 
 #pragma mark - Accessors
 
-- (void)setMediator:(AlertOverlayMediator*)mediator {
-  if (_mediator == mediator)
+- (void)setAlertMediator:(AlertOverlayMediator*)alertMediator {
+  if ([self.alertMediator isEqual:alertMediator])
     return;
-  _mediator.delegate = nil;
-  _mediator.dataSource = nil;
-  _mediator = mediator;
-  _mediator.delegate = self;
-  _mediator.dataSource = self;
+  self.alertMediator.dataSource = nil;
+  self.mediator = alertMediator;
+  self.alertMediator.dataSource = self;
+}
+
+- (AlertOverlayMediator*)alertMediator {
+  return base::mac::ObjCCastStrict<AlertOverlayMediator>(self.mediator);
 }
 
 #pragma mark - AlertOverlayMediatorDataSource
@@ -46,12 +48,6 @@
   NSArray<NSString*>* textFieldResults =
       self.alertViewController.textFieldResults;
   return index < textFieldResults.count ? textFieldResults[index] : nil;
-}
-
-#pragma mark - AlertOverlayMediatorDelegate
-
-- (void)stopDialogForMediator:(AlertOverlayMediator*)mediator {
-  [self stopAnimated:YES];
 }
 
 #pragma mark - ContainedPresenterDelegate
@@ -89,8 +85,8 @@
       UIModalPresentationOverCurrentContext;
   self.alertViewController.modalTransitionStyle =
       UIModalTransitionStyleCrossDissolve;
-  self.mediator = [self newMediator];
-  self.mediator.consumer = self.alertViewController;
+  self.alertMediator = [self newMediator];
+  self.alertMediator.consumer = self.alertViewController;
   self.presenter = [[NonModalViewControllerPresenter alloc] init];
   self.presenter.delegate = self;
   self.presenter.baseViewController = self.baseViewController;
@@ -109,7 +105,7 @@
 
 @end
 
-@implementation AlertOverlayCoordinator (Subclassing)
+@implementation AlertOverlayCoordinator (AlertMediatorCreation)
 
 - (AlertOverlayMediator*)newMediator {
   NOTREACHED() << "Subclasses implement.";

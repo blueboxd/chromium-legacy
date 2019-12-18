@@ -2526,7 +2526,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4572779512957829735">Fut kodin PIN për çelësin e sigurisë</translation>
 <translation id="457386861538956877">Më shumë...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Çifto pajisje me "Bluetooth"</translation>
 <translation id="4579581181964204535">Nuk mund të transmetojë <ph name="HOST_NAME" />.</translation>
 <translation id="4581774856936278355">Gabim gjatë restaurimit të Linux</translation>
 <translation id="4582563038311694664">Rivendos të gjitha cilësimet</translation>
@@ -4865,7 +4864,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="7974936243149753750">Kapërcimi i ekranit</translation>
 <translation id="7978412674231730200">Çelës privat</translation>
 <translation id="7978450511781612192">Kjo do të të nxjerrë nga llogaritë e Google. Faqeshënuesit, historiku, fjalëkalimet dhe shumë të tjera nuk do të sinkronizohen më.</translation>
-<translation id="7979036127916589816">Gabim në sinkronizim</translation>
 <translation id="7980084013673500153">ID-ja e punës: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Ngarkoji paraprakisht faqet për shfletim dhe kërkim më të shpejtë</translation>
 <translation id="798145602633458219">Bashkëngjite sugjerimin <ph name="SUGGESTION_NAME" /> te kutia e kërkimit</translation>
@@ -5313,6 +5311,7 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="862542460444371744">&amp;Shtesat</translation>
 <translation id="862727964348362408">Pezulluar</translation>
 <translation id="862750493060684461">Memoria specifike e CSS-së</translation>
+<translation id="8627706565932943526">Gabim në sinkronizim</translation>
 <translation id="8627795981664801467">Siguro vetëm lidhjet.</translation>
 <translation id="8630903300770275248">Importo përdorues të kontrolluar</translation>
 <translation id="8631032106121706562">Petale</translation>

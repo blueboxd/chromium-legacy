@@ -206,18 +206,19 @@ Touch* TouchEventManager::CreateDomTouch(
       point_attr->event_.WebPointerEventInRootFrame();
   float scale_factor = 1.0f / target_frame->PageZoomFactor();
 
-  FloatPoint document_point =
-      target_frame->View()
-          ->RootFrameToDocument(transformed_event.PositionInWidget())
-          .ScaledBy(scale_factor);
+  FloatPoint document_point = target_frame->View()
+                                  ->RootFrameToDocument(FloatPoint(
+                                      transformed_event.PositionInWidget()))
+                                  .ScaledBy(scale_factor);
   FloatSize adjusted_radius =
       FloatSize(transformed_event.width / 2.f, transformed_event.height / 2.f)
           .ScaledBy(scale_factor);
 
   return MakeGarbageCollected<Touch>(
       target_frame, touch_node, point_attr->event_.id,
-      transformed_event.PositionInScreen(), document_point, adjusted_radius,
-      transformed_event.rotation_angle, transformed_event.force, region_id);
+      FloatPoint(transformed_event.PositionInScreen()), document_point,
+      adjusted_radius, transformed_event.rotation_angle,
+      transformed_event.force, region_id);
 }
 
 WebCoalescedInputEvent TouchEventManager::GenerateWebCoalescedInputEvent() {
@@ -533,7 +534,7 @@ void TouchEventManager::UpdateTouchAttributeMapsForPointerDown(
     if (touch_sequence_document_->GetFrame()) {
       HitTestLocation location(PhysicalOffset::FromFloatPointRound(
           touch_sequence_document_->GetFrame()->View()->ConvertFromRootFrame(
-              event.PositionInWidget())));
+              FloatPoint(event.PositionInWidget()))));
       result = event_handling_util::HitTestResultInFrame(
           touch_sequence_document_->GetFrame(), location, hit_type);
       Node* node = result.InnerNode();

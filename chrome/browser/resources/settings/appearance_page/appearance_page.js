@@ -64,33 +64,12 @@ Polymer({
     },
 
     /**
-     * List of options for the page zoom drop-down menu.
-     * @type {!Array<number>}
+     * Predefined zoom factors to be used when zooming in/out. These are in
+     * ascending order. Values are displayed in the page zoom drop-down menu
+     * as percentages.
+     * @private {!Array<number>}
      */
-    pageZoomLevels_: {
-      readOnly: true,
-      type: Array,
-      value: [
-        // TODO(dbeam): get these dynamically from C++ instead.
-        1 / 4,
-        1 / 3,
-        1 / 2,
-        2 / 3,
-        3 / 4,
-        4 / 5,
-        9 / 10,
-        1,
-        11 / 10,
-        5 / 4,
-        3 / 2,
-        7 / 4,
-        2,
-        5 / 2,
-        3,
-        4,
-        5,
-      ],
-    },
+    pageZoomLevels_: Array,
 
     /** @private */
     themeSublabel_: String,
@@ -154,6 +133,10 @@ Polymer({
     this.appearanceBrowserProxy_.getDefaultZoom().then(zoom => {
       this.defaultZoom_ = zoom;
     });
+
+    this.pageZoomLevels_ = /** @type {!Array<number>} */ (
+        JSON.parse(loadTimeData.getString('presetZoomFactors')));
+
     // <if expr="chromeos">
     this.wallpaperBrowserProxy_.isWallpaperSettingVisible().then(
         isWallpaperSettingVisible => {

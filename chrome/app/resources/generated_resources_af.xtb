@@ -2529,7 +2529,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4572779512957829735">Voer die PIN vir jou sekuriteitsleutel in</translation>
 <translation id="457386861538956877">Nog meer …</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Bind Bluetooth-toestel saam</translation>
 <translation id="4579581181964204535">Kan nie <ph name="HOST_NAME" /> uitsaai nie.</translation>
 <translation id="4581774856936278355">Kon nie Linux terugstel nie</translation>
 <translation id="4582563038311694664">Stel alle instellings terug</translation>
@@ -4870,7 +4869,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7974936243149753750">Oorskandeer</translation>
 <translation id="7978412674231730200">Private sleutel</translation>
 <translation id="7978450511781612192">Dit sal jou by al jou Google-rekeninge afmeld. Jou boekmerke, geskiedenis, wagwoorde en meer sal nie meer gesinkroniseer word nie.</translation>
-<translation id="7979036127916589816">Sinkroniseringfout</translation>
 <translation id="7980084013673500153">Bate-ID: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Laai bladsye vooraf om vinniger te blaai en te soek</translation>
 <translation id="798145602633458219">Heg hierdie voorstel <ph name="SUGGESTION_NAME" /> aan soekkassie</translation>
@@ -5318,6 +5316,7 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="862542460444371744">Uitbreidings</translation>
 <translation id="862727964348362408">Opgeskort</translation>
 <translation id="862750493060684461">CSS-kas</translation>
+<translation id="8627706565932943526">Sinkroniseringfout</translation>
 <translation id="8627795981664801467">Net beveiligde verbindings</translation>
 <translation id="8630903300770275248">Voer gebruiker onder toesig in</translation>
 <translation id="8631032106121706562">Blomblare</translation>

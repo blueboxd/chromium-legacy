@@ -263,8 +263,7 @@ NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
 void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
     EnableOcclusionTrackingForWindow(HWND hwnd) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NativeWindowOcclusionState default_state;
-  root_window_hwnds_occlusion_state_[hwnd] = default_state;
+  root_window_hwnds_occlusion_state_[hwnd] = Window::OcclusionState::UNKNOWN;
   if (global_event_hooks_.empty())
     RegisterEventHooks();
 
@@ -355,38 +354,26 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
       SkIRect::MakeLTRB(screen_left, screen_top,
                         screen_left + GetSystemMetrics(SM_CXVIRTUALSCREEN),
                         screen_top + GetSystemMetrics(SM_CYVIRTUALSCREEN)));
+  num_root_windows_with_unknown_occlusion_state_ = 0;
 
   for (auto& root_window_pair : root_window_hwnds_occlusion_state_) {
-    root_window_pair.second.unoccluded_region.setEmpty();
     HWND hwnd = root_window_pair.first;
 
     // IsIconic() checks for a minimized window. Immediately set the state of
     // minimized windows to HIDDEN.
     if (IsIconic(hwnd)) {
-      root_window_pair.second.occlusion_state = Window::OcclusionState::HIDDEN;
+      root_window_pair.second = Window::OcclusionState::HIDDEN;
     } else if (IsWindowOnCurrentVirtualDesktop(hwnd) == false) {
       // If window is not on the current virtual desktop, immediately
       // set the state of the window to OCCLUDED.
-      root_window_pair.second.occlusion_state =
-          Window::OcclusionState::OCCLUDED;
+      root_window_pair.second = Window::OcclusionState::OCCLUDED;
       // Don't unregister event hooks when not on current desktop. There's no
       // notification when that changes, so we can't reregister event hooks.
       should_unregister_event_hooks = false;
     } else {
-      root_window_pair.second.occlusion_state = Window::OcclusionState::UNKNOWN;
-      RECT window_rect;
-      if (GetWindowRect(hwnd, &window_rect) != 0) {
-        root_window_pair.second.unoccluded_region =
-            SkRegion(SkIRect::MakeLTRB(window_rect.left, window_rect.top,
-                                       window_rect.right, window_rect.bottom));
-        // Clip the unoccluded region by the screen dimensions, to handle the
-        // case of the app window being partly off screen.
-        root_window_pair.second.unoccluded_region.op(screen_region,
-                                                     SkRegion::kIntersect_Op);
-      }
-      // If call to GetWindowRect fails, window will be treated as occluded,
-      // because unoccluded_region will be empty.
+      root_window_pair.second = Window::OcclusionState::UNKNOWN;
       should_unregister_event_hooks = false;
+      num_root_windows_with_unknown_occlusion_state_++;
     }
   }
   // Unregister event hooks if all native windows are minimized.
@@ -394,6 +381,7 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
     UnregisterEventHooks();
   } else {
     base::flat_set<DWORD> current_pids_with_visible_windows;
+    unoccluded_desktop_region_ = screen_region;
     // Calculate unoccluded region if there is a non-minimized native window.
     // Also compute |current_pids_with_visible_windows| as we enumerate
     // the windows.
@@ -427,25 +415,15 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
   }
   // Determine new occlusion status and post a task to the browser ui
   // thread to update the window occlusion state on the root windows.
-  base::flat_map<HWND, Window::OcclusionState> window_occlusion_states;
-
   for (auto& root_window_pair : root_window_hwnds_occlusion_state_) {
-    Window::OcclusionState new_state;
-    if (root_window_pair.second.occlusion_state !=
-        Window::OcclusionState::UNKNOWN) {
-      new_state = root_window_pair.second.occlusion_state;
-    } else {
-      new_state = root_window_pair.second.unoccluded_region.isEmpty()
-                      ? Window::OcclusionState::OCCLUDED
-                      : Window::OcclusionState::VISIBLE;
-    }
-    window_occlusion_states[root_window_pair.first] = new_state;
-    root_window_pair.second.occlusion_state = new_state;
+    if (root_window_pair.second == Window::OcclusionState::UNKNOWN)
+      DCHECK(FALSE) << "A root window did not get its occlusion state set";
   }
   ui_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&NativeWindowOcclusionTrackerWin::UpdateOcclusionState,
-                     base::Unretained(g_tracker), window_occlusion_states));
+                     base::Unretained(g_tracker),
+                     root_window_hwnds_occlusion_state_));
 }
 
 void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
@@ -524,46 +502,56 @@ bool NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
         base::flat_set<DWORD>* current_pids_with_visible_windows) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  SkRegion curr_unoccluded_destkop = unoccluded_desktop_region_;
   gfx::Rect window_rect;
-  // Check if |hwnd| is a root_window; if so, we're done figuring out
-  // if it's occluded because we've seen all the windows "over" it.
-  // TODO(davidbienvenu): Explore checking if occlusion state has been
-  // computed for all |root_window_hwnds_occlusion_state_|, and if so, skipping
-  // further oclcusion calculations. However, we still want to keep computing
-  // |current_pids_with_visible_windows_|, so this function always returns true.
-  auto it = root_window_hwnds_occlusion_state_.find(hwnd);
-  if (it != root_window_hwnds_occlusion_state_.end() &&
-      it->second.occlusion_state != Window::OcclusionState::HIDDEN) {
-    it->second.occlusion_state = it->second.unoccluded_region.isEmpty()
-                                     ? Window::OcclusionState::OCCLUDED
-                                     : Window::OcclusionState::VISIBLE;
+  bool window_is_occluding =
+      WindowCanOccludeOtherWindowsOnCurrentVirtualDesktop(hwnd, &window_rect);
+  if (window_is_occluding) {
+    // Hook this window's process with EVENT_OBJECT_LOCATION_CHANGE, if we are
+    // not already doing so.
+    DWORD pid;
+    GetWindowThreadProcessId(hwnd, &pid);
+    current_pids_with_visible_windows->insert(pid);
+    if (!base::Contains(process_event_hooks_, pid))
+      RegisterEventHookForProcess(pid);
+
+    // If no more root windows to consider, return true so we can continue
+    // looking for windows we haven't hooked.
+    if (num_root_windows_with_unknown_occlusion_state_ == 0)
+      return true;
+
+    SkRegion window_region(SkIRect::MakeLTRB(window_rect.x(), window_rect.y(),
+                                             window_rect.right(),
+                                             window_rect.bottom()));
+    unoccluded_desktop_region_.op(window_region, SkRegion::kDifference_Op);
+  } else if (num_root_windows_with_unknown_occlusion_state_ == 0) {
+    // This window can't occlude other windows, but we've determined the
+    // occlusion state of all root windows, so we can return.
+    return true;
   }
 
-  if (!WindowCanOccludeOtherWindowsOnCurrentVirtualDesktop(hwnd, &window_rect))
+  // Check if |hwnd| is a root window; if so, we're done figuring out
+  // if it's occluded because we've seen all the windows "over" it.
+  auto it = root_window_hwnds_occlusion_state_.find(hwnd);
+  if (it == root_window_hwnds_occlusion_state_.end() ||
+      it->second != Window::OcclusionState::UNKNOWN) {
     return true;
-  // We are interested in this window, but are not currently hooking it with
-  // EVENT_OBJECT_LOCATION_CHANGE, so we need to hook it. We check
-  // this by seeing if its PID is in |process_event_hooks_|.
-  DWORD pid;
-  GetWindowThreadProcessId(hwnd, &pid);
-  current_pids_with_visible_windows->insert(pid);
-  if (!base::Contains(process_event_hooks_, pid))
-    RegisterEventHookForProcess(pid);
+  }
+  // On Win7, default theme makes root windows have complex regions by
+  // default. But we can still check if their bounding rect is occluded.
+  if (!window_is_occluding) {
+    RECT rect;
+    if (::GetWindowRect(hwnd, &rect) != 0) {
+      SkRegion window_region(
+          SkIRect::MakeLTRB(rect.left, rect.top, rect.right, rect.bottom));
 
-  SkRegion window_region(SkIRect::MakeLTRB(window_rect.x(), window_rect.y(),
-                                           window_rect.right(),
-                                           window_rect.bottom()));
-
-  for (auto& root_window_pair : root_window_hwnds_occlusion_state_) {
-    if (root_window_pair.second.occlusion_state !=
-        Window::OcclusionState::UNKNOWN)
-      continue;
-    if (!root_window_pair.second.unoccluded_region.op(
-            window_region, SkRegion::kDifference_Op)) {
-      root_window_pair.second.occlusion_state =
-          Window::OcclusionState::OCCLUDED;
+      curr_unoccluded_destkop.op(window_region, SkRegion::kDifference_Op);
     }
   }
+  it->second = (unoccluded_desktop_region_ == curr_unoccluded_destkop)
+                   ? Window::OcclusionState::OCCLUDED
+                   : Window::OcclusionState::VISIBLE;
+  num_root_windows_with_unknown_occlusion_state_--;
   return true;
 }
 

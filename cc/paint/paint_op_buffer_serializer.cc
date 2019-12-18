@@ -274,25 +274,59 @@ void PaintOpBufferSerializer::SerializeBuffer(
     if (skip_op)
       continue;
 
-    if (op->GetType() != PaintOpType::DrawRecord) {
-      bool success = false;
-      if (op->IsPaintOpWithFlags()) {
-        success = SerializeOpWithFlags(static_cast<const PaintOpWithFlags*>(op),
-                                       &options, params, iter.alpha());
-      } else {
-        success = SerializeOp(op, options, params);
-      }
-
-      if (!success)
-        return;
+    if (op->GetType() == PaintOpType::DrawRecord) {
+      int save_count = text_blob_canvas_.getSaveCount();
+      Save(options, params);
+      SerializeBuffer(static_cast<const DrawRecordOp*>(op)->record.get(),
+                      nullptr);
+      RestoreToCount(save_count, options, params);
       continue;
     }
 
-    int save_count = text_blob_canvas_.getSaveCount();
-    Save(options, params);
-    SerializeBuffer(static_cast<const DrawRecordOp*>(op)->record.get(),
-                    nullptr);
-    RestoreToCount(save_count, options, params);
+    if (op->GetType() == PaintOpType::DrawImageRect &&
+        static_cast<const DrawImageRectOp*>(op)->image.IsPaintWorklet()) {
+      DCHECK(options.image_provider);
+      const DrawImageRectOp* draw_op = static_cast<const DrawImageRectOp*>(op);
+      ImageProvider::ScopedResult result =
+          options.image_provider->GetRasterContent(DrawImage(draw_op->image));
+      if (!result || !result.paint_record())
+        continue;
+
+      int save_count = text_blob_canvas_.getSaveCount();
+      Save(options, params);
+      // The following ops are copying the canvas's ops from
+      // DrawImageRectOp::RasterWithFlags.
+      SkMatrix trans = SkMatrix::MakeRectToRect(draw_op->src, draw_op->dst,
+                                                SkMatrix::kFill_ScaleToFit);
+      ConcatOp concat_op(trans);
+      bool success = SerializeOp(&concat_op, options, params);
+      if (!success)
+        return;
+      ClipRectOp clip_rect_op(draw_op->src, SkClipOp::kIntersect, false);
+      success = SerializeOp(&clip_rect_op, options, params);
+      if (!success)
+        return;
+      SaveLayerOp save_layer_op(&draw_op->src, options.flags_to_serialize);
+      success = SerializeOpWithFlags(&save_layer_op, &options, params, 255);
+      if (!success)
+        return;
+
+      SerializeBuffer(result.paint_record(), nullptr);
+      RestoreToCount(save_count, options, params);
+
+      continue;
+    }
+
+    bool success = false;
+    if (op->IsPaintOpWithFlags()) {
+      success = SerializeOpWithFlags(static_cast<const PaintOpWithFlags*>(op),
+                                     &options, params, iter.alpha());
+    } else {
+      success = SerializeOp(op, options, params);
+    }
+
+    if (!success)
+      return;
   }
 }
 

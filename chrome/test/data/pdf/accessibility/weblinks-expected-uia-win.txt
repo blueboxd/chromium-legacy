@@ -1,17 +1,17 @@
 group
 ++document Name='PDF document containing 1 page'
 ++++region Name='Page 1'
-++++++group
+++++++group IsControlElement=false
 ++++++++description Name='Hello, '
 ++++++++link Name='http://yahoo.com'
 ++++++++++description Name='http://yahoo.com' IsControlElement=false
 ++++++++description Name='! nice meeting you<newline>'
-++++++group
+++++++group IsControlElement=false
 ++++++++description Name='Goodbye, '
 ++++++++link Name='http://bing.com'
 ++++++++++description Name='http://bing.com' IsControlElement=false
 ++++++++description Name='! nice meeting you<newline>'
-++++++group
+++++++group IsControlElement=false
 ++++++++description Name='Bye, '
 ++++++++link Name='http://google.com'
 ++++++++++description Name='http://google.com' IsControlElement=false

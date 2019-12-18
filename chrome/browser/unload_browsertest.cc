@@ -23,6 +23,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/app_modal/native_app_modal_dialog.h"
+#include "components/embedder_support/switches.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -132,7 +133,7 @@ class UnloadTest : public InProcessBrowserTest {
         testing::UnitTest::GetInstance()->current_test_info();
     if (strstr(test_info->name(), "BrowserCloseTabWhenOtherTabHasListener") !=
         nullptr) {
-      command_line->AppendSwitch(switches::kDisablePopupBlocking);
+      command_line->AppendSwitch(embedder_support::kDisablePopupBlocking);
     } else if (strstr(test_info->name(), "BrowserTerminateBeforeUnload") !=
                nullptr) {
 #if defined(OS_POSIX)

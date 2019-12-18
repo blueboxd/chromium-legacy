@@ -379,6 +379,8 @@ void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
   DCHECK(!in_power_suspension_);
   DCHECK(!is_paused_);
 
+  base::TimeTicks on_watchdog_timeout_start = base::TimeTicks::Now();
+
   // If this metric is added too early (eg. watchdog creation time), it cannot
   // be persistent. The histogram data will be lost after crash or browser exit.
   // Delay the recording of kGpuWatchdogStart until the firs
@@ -420,7 +422,7 @@ void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
   // An experiment for all platforms: Wait for max_wait_time_ and see if GPU
   // will response.
   GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent::kTimeoutWait);
-  if (GpuRespondsAfterWaiting()) {
+  if (GpuRespondsAfterWaiting(on_watchdog_timeout_start)) {
     last_on_watchdog_timeout_timeticks_ = base::TimeTicks::Now();
     last_arm_disarm_counter_ =
         base::subtle::NoBarrier_Load(&arm_disarm_counter_);
@@ -525,14 +527,14 @@ base::ThreadTicks GpuWatchdogThreadImplV2::GetWatchedThreadTime() {
 
 // This is an experiment on all platforms to see whether GPU will response
 // after waiting longer.
-bool GpuWatchdogThreadImplV2::GpuRespondsAfterWaiting() {
+bool GpuWatchdogThreadImplV2::GpuRespondsAfterWaiting(
+    base::TimeTicks on_watchdog_timeout_start) {
   base::TimeDelta duration;
-  base::TimeTicks start_timeticks = base::TimeTicks::Now();
 
   while (duration < max_wait_time_) {
     // Sleep for 1 seconds each time and check if the GPU makes a progress.
     base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
-    duration = base::TimeTicks::Now() - start_timeticks;
+    duration = base::TimeTicks::Now() - on_watchdog_timeout_start;
 
     if (GpuIsAlive()) {
       GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent::kProgressAfterWait);
@@ -747,9 +749,9 @@ bool GpuWatchdogThreadImplV2::ContinueOnNonHostX11ServerTty() {
     GpuWatchdogTimeoutHistogram(
         GpuWatchdogTimeoutEvent::kContinueOnNonHostServerTty);
     return true;
-  } else
+  }
 #endif
-    return false;
+  return false;
 }
 
 // For gpu testing only. Return whether a GPU hang was detected or not.

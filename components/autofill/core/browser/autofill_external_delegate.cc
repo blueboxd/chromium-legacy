@@ -248,6 +248,12 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
   } else if (identifier == POPUP_ITEM_ID_HIDE_AUTOFILL_SUGGESTIONS) {
     // No-op as the popup will be closed in the end of the method.
     manager_->OnUserHideSuggestions(query_form_, query_field_);
+  } else if (identifier == POPUP_ITEM_ID_USE_VIRTUAL_CARD) {
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+    manager_->FetchVirtualCardCandidates();
+#else
+    NOTREACHED();
+#endif
   } else {
     if (identifier > 0) {  // Denotes an Autofill suggestion.
       AutofillMetrics::LogAutofillSuggestionAcceptedIndex(

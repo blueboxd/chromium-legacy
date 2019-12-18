@@ -59,7 +59,7 @@ int32_t BytesPerElement(gfx::BufferFormat format, int plane) {
     case gfx::BufferFormat::BGR_565:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBX_8888:
-    case gfx::BufferFormat::RGBX_1010102:
+    case gfx::BufferFormat::RGBA_1010102:
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::P010:
       NOTREACHED();
@@ -89,8 +89,8 @@ int32_t PixelFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::BGR_565:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBX_8888:
-    case gfx::BufferFormat::RGBX_1010102:
-    // Technically RGBX_1010102 should be accepted as 'R10k', but then it won't
+    case gfx::BufferFormat::RGBA_1010102:
+    // Technically RGBA_1010102 should be accepted as 'R10k', but then it won't
     // be supported by CGLTexImageIOSurface2D(), so it's best to reject it here.
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::P010:

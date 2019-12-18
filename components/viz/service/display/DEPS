@@ -25,6 +25,7 @@ include_rules = [
   "+third_party/skia",
   "+ui/latency",
   "+ui/gfx/video_types.h",
+  "+ui/gl/android/android_surface_control_compat.h",
   "+ui/gl/ca_renderer_layer_params.h",
   "+ui/gl/dc_renderer_layer_params.h",
   "+ui/gl/trace_util.h",

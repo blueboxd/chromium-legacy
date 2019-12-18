@@ -470,8 +470,10 @@ void FrameSequenceTracker::ReportBeginMainFrame(
                        << args.sequence_number << ")";
   UpdateTrackedFrameData(&begin_main_frame_data_, args.source_id,
                          args.sequence_number);
-  if (!first_received_main_sequence_)
+  if (!first_received_main_sequence_ ||
+      first_received_main_sequence_ <= last_no_main_damage_sequence_) {
     first_received_main_sequence_ = args.sequence_number;
+  }
   main_throughput().frames_expected +=
       begin_main_frame_data_.previous_sequence_delta;
 }

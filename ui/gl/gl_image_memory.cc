@@ -39,7 +39,7 @@ GLint DataRowLength(size_t stride, gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::BGRX_1010102:
-    case gfx::BufferFormat::RGBX_1010102:
+    case gfx::BufferFormat::RGBA_1010102:
     case gfx::BufferFormat::BGRA_8888:
       return base::checked_cast<GLint>(stride) / 4;
     case gfx::BufferFormat::RGBA_F16:
@@ -152,7 +152,7 @@ std::unique_ptr<uint8_t[]> GLES2Data(const gfx::Size& size,
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRX_1010102:
-    case gfx::BufferFormat::RGBX_1010102:
+    case gfx::BufferFormat::RGBA_1010102:
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::RGBA_F16:
     case gfx::BufferFormat::R_8:
@@ -286,7 +286,7 @@ unsigned GLImageMemory::GetInternalFormat() {
 unsigned GLImageMemory::GetDataFormat() {
   switch (format_) {
     case gfx::BufferFormat::RGBX_8888:
-    case gfx::BufferFormat::RGBX_1010102:
+    case gfx::BufferFormat::RGBA_1010102:
       return GL_RGBA;
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::BGRX_1010102:
@@ -451,7 +451,7 @@ bool GLImageMemory::ValidFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::BGRX_1010102:
-    case gfx::BufferFormat::RGBX_1010102:
+    case gfx::BufferFormat::RGBA_1010102:
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::RGBA_F16:
       return true;

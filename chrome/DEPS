@@ -19,6 +19,7 @@ include_rules = [
   "+chrome/common",
   "+chrome/test",
   "+components/content_settings/core/common",
+  "+components/embedder_support/switches.h",
   "+components/error_page/common",
   "+components/omnibox/common",
   "+components/services/heap_profiling/public",

@@ -104,8 +104,8 @@ template("ios_remoting_app_tmpl") {
     deps = invoker.deps
 
     bundle_deps = [
-      ":$_launchscreen_storyboard_target_name",
       ":$_credits_bundle_target_name",
+      ":$_launchscreen_storyboard_target_name",
     ]
 
     assert_no_deps = [ "//third_party/ffmpeg:*" ]

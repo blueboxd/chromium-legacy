@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_PROCESSOR_OZONE_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_PROCESSOR_OZONE_H_
 
-#include "components/viz/service/display/overlay_candidate_validator_strategy.h"
+#include "components/viz/service/display/overlay_processor_using_strategy.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 
@@ -19,7 +19,6 @@ class VIZ_SERVICE_EXPORT OverlayProcessorOzone
       std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates,
       std::vector<OverlayStrategy> available_strategies);
   ~OverlayProcessorOzone() override;
-  void InitializeStrategies() override;
 
   bool IsOverlaySupported() const override;
 
@@ -27,13 +26,13 @@ class VIZ_SERVICE_EXPORT OverlayProcessorOzone
 
   // Override OverlayProcessorUsingStrategy.
   void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
-  void SetValidatorViewportSize(const gfx::Size& size) override {}
+  void SetViewportSize(const gfx::Size& size) override {}
 
   void CheckOverlaySupport(
       const OverlayProcessorInterface::OutputSurfaceOverlayPlane* primary_plane,
       OverlayCandidateList* surfaces) override;
   gfx::Rect GetOverlayDamageRectForOutputSurface(
-      const OverlayCandidate& overlay) const override;
+      const OverlayCandidate& candidate) const override;
 
  private:
   const bool overlay_enabled_;

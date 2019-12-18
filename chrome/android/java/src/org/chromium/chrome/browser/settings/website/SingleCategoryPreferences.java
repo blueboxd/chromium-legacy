@@ -941,9 +941,11 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
         mCategory.configurePermissionIsOffPreferences(
                 osWarning, osWarningExtra, getActivity(), true);
         if (osWarning.getTitle() != null) {
+            osWarning.setKey(SingleWebsitePreferences.PREF_OS_PERMISSIONS_WARNING);
             screen.addPreference(osWarning);
         }
         if (osWarningExtra.getTitle() != null) {
+            osWarningExtra.setKey(SingleWebsitePreferences.PREF_OS_PERMISSIONS_WARNING_EXTRA);
             screen.addPreference(osWarningExtra);
         }
     }

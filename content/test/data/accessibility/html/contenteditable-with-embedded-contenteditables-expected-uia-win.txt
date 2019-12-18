@@ -1,6 +1,6 @@
 document
 ++group
-++++group
+++++group IsControlElement=false
 ++++++description Name='This is editable.'
 ++++description Name='This is not editable.'
 ++++separator Name='<newline>'

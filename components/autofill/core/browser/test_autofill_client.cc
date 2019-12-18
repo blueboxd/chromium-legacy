@@ -133,6 +133,10 @@ bool TestAutofillClient::CloseWebauthnDialog() {
 void TestAutofillClient::ConfirmSaveUpiIdLocally(
     const std::string& upi_id,
     base::OnceCallback<void(bool accept)> callback) {}
+
+void TestAutofillClient::OfferVirtualCardOptions(
+    const std::vector<CreditCard*>& candidates,
+    base::OnceCallback<void(const std::string&)> callback) {}
 #endif
 
 void TestAutofillClient::ConfirmSaveAutofillProfile(

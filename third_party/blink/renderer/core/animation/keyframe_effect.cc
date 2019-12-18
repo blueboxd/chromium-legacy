@@ -102,7 +102,7 @@ KeyframeEffect* KeyframeEffect::Create(ScriptState* script_state,
                                        ExceptionState& exception_state) {
   Timing new_timing = source->SpecifiedTiming();
   KeyframeEffectModelBase* model = source->Model()->Clone();
-  return MakeGarbageCollected<KeyframeEffect>(source->target(), model,
+  return MakeGarbageCollected<KeyframeEffect>(source->EffectTarget(), model,
                                               new_timing, source->GetPriority(),
                                               source->GetEventDelegate());
 }
@@ -113,7 +113,7 @@ KeyframeEffect::KeyframeEffect(Element* target,
                                Priority priority,
                                EventDelegate* event_delegate)
     : AnimationEffect(timing, event_delegate),
-      target_(target),
+      effect_target_(target),
       model_(model),
       sampled_effect_(nullptr),
       priority_(priority) {
@@ -123,11 +123,11 @@ KeyframeEffect::KeyframeEffect(Element* target,
 KeyframeEffect::~KeyframeEffect() = default;
 
 void KeyframeEffect::setTarget(Element* target) {
-  if (target_ == target)
+  if (effect_target_ == target)
     return;
 
   DetachTarget(GetAnimation());
-  target_ = target;
+  effect_target_ = target;
   AttachTarget(GetAnimation());
 
   InvalidateAndNotifyOwner();
@@ -226,10 +226,11 @@ KeyframeEffect::CheckCanStartAnimationOnCompositor(
 
   // There would be no reason to composite an effect that has no target; it has
   // no visual result.
-  if (!target_) {
+  if (!effect_target_) {
     reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
   } else {
-    if (target_->GetComputedStyle() && target_->GetComputedStyle()->HasOffset())
+    if (effect_target_->GetComputedStyle() &&
+        effect_target_->GetComputedStyle()->HasOffset())
       reasons |= CompositorAnimations::kTargetHasCSSOffset;
 
     // Do not put transforms on compositor if more than one of them are defined
@@ -238,7 +239,7 @@ KeyframeEffect::CheckCanStartAnimationOnCompositor(
       reasons |= CompositorAnimations::kTargetHasMultipleTransformProperties;
 
     reasons |= CompositorAnimations::CheckCanStartAnimationOnCompositor(
-        SpecifiedTiming(), *target_, GetAnimation(), *Model(),
+        SpecifiedTiming(), *effect_target_, GetAnimation(), *Model(),
         paint_artifact_compositor, animation_playback_rate);
   }
 
@@ -259,11 +260,11 @@ void KeyframeEffect::StartAnimationOnCompositor(
     compositor_animation = GetAnimation()->GetCompositorAnimation();
 
   DCHECK(compositor_animation);
-  DCHECK(target_);
+  DCHECK(effect_target_);
   DCHECK(Model());
 
   CompositorAnimations::StartAnimationOnCompositor(
-      *target_, group, start_time, current_time, SpecifiedTiming(),
+      *effect_target_, group, start_time, current_time, SpecifiedTiming(),
       GetAnimation(), *compositor_animation, *Model(),
       compositor_keyframe_model_ids_, animation_playback_rate);
   DCHECK(!compositor_keyframe_model_ids_.IsEmpty());
@@ -282,41 +283,42 @@ bool KeyframeEffect::CancelAnimationOnCompositor(
     CompositorAnimation* compositor_animation) {
   if (!HasActiveAnimationsOnCompositor())
     return false;
-  if (!target_ || !target_->GetLayoutObject())
+  if (!effect_target_ || !effect_target_->GetLayoutObject())
     return false;
   for (const auto& compositor_keyframe_model_id :
        compositor_keyframe_model_ids_) {
     CompositorAnimations::CancelAnimationOnCompositor(
-        *target_, compositor_animation, compositor_keyframe_model_id);
+        *effect_target_, compositor_animation, compositor_keyframe_model_id);
   }
   compositor_keyframe_model_ids_.clear();
   return true;
 }
 
 void KeyframeEffect::CancelIncompatibleAnimationsOnCompositor() {
-  if (target_ && GetAnimation() && model_->HasFrames()) {
+  if (effect_target_ && GetAnimation() && model_->HasFrames()) {
     CompositorAnimations::CancelIncompatibleAnimationsOnCompositor(
-        *target_, *GetAnimation(), *Model());
+        *effect_target_, *GetAnimation(), *Model());
   }
 }
 
 void KeyframeEffect::PauseAnimationForTestingOnCompositor(double pause_time) {
   DCHECK(HasActiveAnimationsOnCompositor());
-  if (!target_ || !target_->GetLayoutObject())
+  if (!effect_target_ || !effect_target_->GetLayoutObject())
     return;
   DCHECK(GetAnimation());
   for (const auto& compositor_keyframe_model_id :
        compositor_keyframe_model_ids_) {
     CompositorAnimations::PauseAnimationForTestingOnCompositor(
-        *target_, *GetAnimation(), compositor_keyframe_model_id, pause_time);
+        *effect_target_, *GetAnimation(), compositor_keyframe_model_id,
+        pause_time);
   }
 }
 
 void KeyframeEffect::AttachCompositedLayers() {
-  DCHECK(target_);
+  DCHECK(effect_target_);
   DCHECK(GetAnimation());
   CompositorAnimations::AttachCompositedLayers(
-      *target_, GetAnimation()->GetCompositorAnimation());
+      *effect_target_, GetAnimation()->GetCompositorAnimation());
 }
 
 bool KeyframeEffect::HasAnimation() const {
@@ -328,7 +330,7 @@ bool KeyframeEffect::HasPlayingAnimation() const {
 }
 
 void KeyframeEffect::Trace(blink::Visitor* visitor) {
-  visitor->Trace(target_);
+  visitor->Trace(effect_target_);
   visitor->Trace(model_);
   visitor->Trace(sampled_effect_);
   AnimationEffect::Trace(visitor);
@@ -381,7 +383,7 @@ EffectModel::CompositeOperation KeyframeEffect::CompositeInternal() const {
 
 void KeyframeEffect::ApplyEffects() {
   DCHECK(IsInEffect());
-  if (!target_ || !model_->HasFrames())
+  if (!effect_target_ || !model_->HasFrames())
     return;
 
   if (GetAnimation() && HasIncompatibleStyle()) {
@@ -406,7 +408,8 @@ void KeyframeEffect::ApplyEffects() {
           MakeGarbageCollected<SampledEffect>(this, owner_->SequenceNumber());
       sampled_effect->MutableInterpolations().swap(interpolations);
       sampled_effect_ = sampled_effect;
-      target_->EnsureElementAnimations().GetEffectStack().Add(sampled_effect);
+      effect_target_->EnsureElementAnimations().GetEffectStack().Add(
+          sampled_effect);
       changed = true;
     } else {
       return;
@@ -414,8 +417,8 @@ void KeyframeEffect::ApplyEffects() {
   }
 
   if (changed) {
-    target_->SetNeedsAnimationStyleRecalc();
-    auto* svg_element = DynamicTo<SVGElement>(target_.Get());
+    effect_target_->SetNeedsAnimationStyleRecalc();
+    auto* svg_element = DynamicTo<SVGElement>(effect_target_.Get());
     if (RuntimeEnabledFeatures::WebAnimationsSVGEnabled() && svg_element)
       svg_element->SetWebAnimationsPending();
   }
@@ -428,8 +431,8 @@ void KeyframeEffect::ClearEffects() {
   sampled_effect_ = nullptr;
   if (GetAnimation())
     GetAnimation()->RestartAnimationOnCompositor();
-  target_->SetNeedsAnimationStyleRecalc();
-  auto* svg_element = DynamicTo<SVGElement>(target_.Get());
+  effect_target_->SetNeedsAnimationStyleRecalc();
+  auto* svg_element = DynamicTo<SVGElement>(effect_target_.Get());
   if (RuntimeEnabledFeatures::WebAnimationsSVGEnabled() && svg_element)
     svg_element->ClearWebAnimatedAttributes();
   Invalidate();
@@ -456,18 +459,18 @@ void KeyframeEffect::Detach() {
 }
 
 void KeyframeEffect::AttachTarget(Animation* animation) {
-  if (!target_ || !animation)
+  if (!effect_target_ || !animation)
     return;
-  target_->EnsureElementAnimations().Animations().insert(animation);
-  target_->SetNeedsAnimationStyleRecalc();
-  auto* svg_element = DynamicTo<SVGElement>(target_.Get());
+  effect_target_->EnsureElementAnimations().Animations().insert(animation);
+  effect_target_->SetNeedsAnimationStyleRecalc();
+  auto* svg_element = DynamicTo<SVGElement>(effect_target_.Get());
   if (RuntimeEnabledFeatures::WebAnimationsSVGEnabled() && svg_element)
     svg_element->SetWebAnimationsPending();
 }
 
 void KeyframeEffect::DetachTarget(Animation* animation) {
-  if (target_ && animation)
-    target_->GetElementAnimations()->Animations().erase(animation);
+  if (effect_target_ && animation)
+    effect_target_->GetElementAnimations()->Animations().erase(animation);
   // If we have sampled this effect previously, we need to purge that state.
   // ClearEffects takes care of clearing the cached sampled effect, informing
   // the target that it needs to refresh its style, and doing any necessary
@@ -528,11 +531,11 @@ AnimationTimeDelta KeyframeEffect::CalculateTimeToEffectChange(
 // and a motion path or other transform properties
 // has been introduced on the element
 bool KeyframeEffect::HasIncompatibleStyle() const {
-  if (!target_->GetComputedStyle())
+  if (!effect_target_->GetComputedStyle())
     return false;
 
   if (HasActiveAnimationsOnCompositor()) {
-    if (target_->GetComputedStyle()->HasOffset()) {
+    if (effect_target_->GetComputedStyle()->HasOffset()) {
       static const auto** properties = TransformProperties();
       for (size_t i = 0; i < num_transform_properties; i++) {
         if (Affects(PropertyHandle(*properties[i])))
@@ -546,17 +549,17 @@ bool KeyframeEffect::HasIncompatibleStyle() const {
 }
 
 bool KeyframeEffect::HasMultipleTransformProperties() const {
-  if (!target_->GetComputedStyle())
+  if (!effect_target_->GetComputedStyle())
     return false;
 
   unsigned transform_property_count = 0;
-  if (target_->GetComputedStyle()->HasTransformOperations())
+  if (effect_target_->GetComputedStyle()->HasTransformOperations())
     transform_property_count++;
-  if (target_->GetComputedStyle()->Rotate())
+  if (effect_target_->GetComputedStyle()->Rotate())
     transform_property_count++;
-  if (target_->GetComputedStyle()->Scale())
+  if (effect_target_->GetComputedStyle()->Scale())
     transform_property_count++;
-  if (target_->GetComputedStyle()->Translate())
+  if (effect_target_->GetComputedStyle()->Translate())
     transform_property_count++;
   return transform_property_count > 1;
 }

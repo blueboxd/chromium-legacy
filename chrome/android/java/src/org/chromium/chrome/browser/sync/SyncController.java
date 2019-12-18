@@ -92,7 +92,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
             }
         });
 
-        IdentityServicesProvider.getSigninManager().addSignInStateObserver(
+        IdentityServicesProvider.get().getSigninManager().addSignInStateObserver(
                 new SigninManager.SignInStateObserver() {
                     @Override
                     public void onSignedIn() {

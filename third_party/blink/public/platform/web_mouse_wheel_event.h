@@ -10,9 +10,6 @@
 
 namespace blink {
 
-// See web_input_event.h for details why this pack is here.
-#pragma pack(push, 4)
-
 // WebMouseWheelEvent ---------------------------------------------------------
 
 class WebMouseWheelEvent : public WebMouseEvent {
@@ -138,8 +135,6 @@ inline bool operator!=(const WebMouseWheelEvent& a,
                        const WebMouseWheelEvent& b) {
   return !(a == b);
 }
-
-#pragma pack(pop)
 
 }  // namespace blink
 

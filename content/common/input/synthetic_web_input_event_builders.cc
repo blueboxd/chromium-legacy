@@ -149,8 +149,8 @@ WebGestureEvent SyntheticWebGestureEventBuilder::BuildPinchUpdate(
   WebGestureEvent result =
       Build(WebInputEvent::kGesturePinchUpdate, source_device, modifiers);
   result.data.pinch_update.scale = scale;
-  result.SetPositionInWidget(blink::WebFloatPoint(anchor_x, anchor_y));
-  result.SetPositionInScreen(blink::WebFloatPoint(anchor_x, anchor_y));
+  result.SetPositionInWidget(gfx::PointF(anchor_x, anchor_y));
+  result.SetPositionInScreen(gfx::PointF(anchor_x, anchor_y));
   return result;
 }
 

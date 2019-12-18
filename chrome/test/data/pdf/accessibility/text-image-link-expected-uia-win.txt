@@ -1,12 +1,12 @@
 group
 ++document Name='PDF document containing 2 pages'
 ++++region Name='Page 1'
-++++++heading
+++++++heading IsControlElement=false
 ++++++++description Name='Link Annotations - Page 1<newline>' IsControlElement=false
-++++++heading
+++++++heading IsControlElement=false
 ++++++++link Name='Link with destination to second page<newline>'
 ++++++++++description Name='Link with destination to second page<newline>' IsControlElement=false
-++++++group
+++++++group IsControlElement=false
 ++++++++link Name='PDF Reference, Version 1.7,'
 ++++++++++description Name='PDF Reference, Version 1.7,' IsControlElement=false
 ++++++++description Name=' Section 8.4.5 defines Annotations<newline>3. Hello World<newline>'
@@ -21,5 +21,5 @@ group
 ++++++++img Name='Unlabeled graphic'
 ++++++++img Name='Unlabeled graphic'
 ++++region Name='Page 2'
-++++++group
+++++++group IsControlElement=false
 ++++++++description Name='Second Page'

@@ -241,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(AutoscrollBrowserTest,
   const blink::WebGestureEvent* acked_scroll_update =
       scroll_update_watcher->AckedGestureEvent();
   DCHECK(acked_scroll_update);
-  DCHECK(acked_scroll_update->PositionInWidget() != blink::WebFloatPoint());
+  DCHECK(acked_scroll_update->PositionInWidget() != gfx::PointF());
 
   // End autoscroll and check that the GSE generated from autoscroll fling
   // cancelation has non-zero position in widget.
@@ -252,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(AutoscrollBrowserTest,
   const blink::WebGestureEvent* acked_scroll_end =
       scroll_end_watcher->AckedGestureEvent();
   DCHECK(acked_scroll_end);
-  DCHECK(acked_scroll_end->PositionInWidget() != blink::WebFloatPoint());
+  DCHECK(acked_scroll_end->PositionInWidget() != gfx::PointF());
 }
 
 // Checks that wheel scrolling works after autoscroll cancelation.

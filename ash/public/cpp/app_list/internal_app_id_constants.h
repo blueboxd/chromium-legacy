@@ -22,9 +22,6 @@ constexpr char kInternalAppIdSettings[] = "dhnmfjegnohoakobpikffnelcemaplkm";
 constexpr char kInternalAppIdContinueReading[] =
     "fbokpncipdhffndmljhhidahghagaonp";
 
-// Generated as crx_file::id_util::GenerateId("org.chromium.camera").
-constexpr char kInternalAppIdCamera[] = "iniodglblcgmngkgdipeiclkdjjpnlbn";
-
 // Generated as crx_file::id_util::GenerateId("org.chromium.discover").
 constexpr char kInternalAppIdDiscover[] = "pjdncmlmjhcebmcacdddfacepcjmfaoo";
 

@@ -50,7 +50,7 @@ public class SectionList extends InnerNode<NewTabPageViewHolder, PartialBindCall
     private final SigninManager mSigninManager;
 
     public SectionList(SuggestionsUiDelegate uiDelegate, OfflinePageBridge offlinePageBridge) {
-        this(uiDelegate, offlinePageBridge, IdentityServicesProvider.getSigninManager());
+        this(uiDelegate, offlinePageBridge, IdentityServicesProvider.get().getSigninManager());
     }
 
     @VisibleForTesting

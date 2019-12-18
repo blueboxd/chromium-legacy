@@ -30,7 +30,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
-#include "ash/wm/workspace/two_step_edge_cycler.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/aura/client/aura_constants.h"
@@ -471,7 +470,6 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
   } else {
     snap_type_ = SNAP_NONE;
     snap_phantom_window_controller_.reset();
-    edge_cycler_.reset();
   }
 }
 
@@ -1046,7 +1044,6 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
   snap_type_ = GetSnapType(location);
   if (snap_type_ == SNAP_NONE || snap_type_ != last_type) {
     snap_phantom_window_controller_.reset();
-    edge_cycler_.reset();
     if (snap_type_ == SNAP_NONE)
       return;
   }
@@ -1056,16 +1053,7 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
   if (!can_snap) {
     snap_type_ = SNAP_NONE;
     snap_phantom_window_controller_.reset();
-    edge_cycler_.reset();
     return;
-  }
-  if (!edge_cycler_) {
-    edge_cycler_.reset(new TwoStepEdgeCycler(
-        location, snap_type_ == SNAP_LEFT
-                      ? TwoStepEdgeCycler::DIRECTION_LEFT
-                      : TwoStepEdgeCycler::DIRECTION_RIGHT));
-  } else {
-    edge_cycler_->OnMove(location);
   }
 
   // Update phantom window with snapped guide bounds.

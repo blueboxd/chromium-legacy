@@ -40,7 +40,7 @@ public class TabObserverTest {
         private CallbackHelper mInteractabilityHelper = new CallbackHelper();
 
         @Override
-        public void onInteractabilityChanged(boolean isInteractable) {
+        public void onInteractabilityChanged(Tab tab, boolean isInteractable) {
             mInteractabilityHelper.notifyCalled();
         }
     }

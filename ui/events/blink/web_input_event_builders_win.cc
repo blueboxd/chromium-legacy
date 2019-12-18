@@ -133,8 +133,8 @@ WebMouseEvent WebMouseEventBuilder::Build(
   // set position fields:
   result.SetPositionInWidget(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
 
-  POINT global_point = {result.PositionInWidget().x,
-                        result.PositionInWidget().y};
+  POINT global_point = {result.PositionInWidget().x(),
+                        result.PositionInWidget().y()};
   ClientToScreen(hwnd, &global_point);
 
   // We need to convert the global point back to DIP before using it.
@@ -153,9 +153,9 @@ WebMouseEvent WebMouseEventBuilder::Build(
 
   base::TimeTicks current_time = result.TimeStamp();
   bool cancel_previous_click =
-      (abs(last_click_position_x - result.PositionInWidget().x) >
+      (abs(last_click_position_x - result.PositionInWidget().x()) >
        (::GetSystemMetrics(SM_CXDOUBLECLK) / 2)) ||
-      (abs(last_click_position_y - result.PositionInWidget().y) >
+      (abs(last_click_position_y - result.PositionInWidget().y()) >
        (::GetSystemMetrics(SM_CYDOUBLECLK) / 2)) ||
       ((current_time - g_last_click_time).InMilliseconds() >
        ::GetDoubleClickTime());
@@ -165,8 +165,8 @@ WebMouseEvent WebMouseEventBuilder::Build(
       ++g_last_click_count;
     } else {
       g_last_click_count = 1;
-      last_click_position_x = result.PositionInWidget().x;
-      last_click_position_y = result.PositionInWidget().y;
+      last_click_position_x = result.PositionInWidget().x();
+      last_click_position_y = result.PositionInWidget().y();
     }
     g_last_click_time = current_time;
     last_click_button = result.button;
@@ -275,8 +275,8 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
   result.SetModifiers(modifiers);
 
   // Set coordinates by translating event coordinates from screen to client.
-  POINT client_point = {result.PositionInScreen().x,
-                        result.PositionInScreen().y};
+  POINT client_point = {result.PositionInScreen().x(),
+                        result.PositionInScreen().y()};
   MapWindowPoints(0, hwnd, &client_point, 1);
   result.SetPositionInWidget(client_point.x, client_point.y);
 

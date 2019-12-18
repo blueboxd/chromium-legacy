@@ -54,7 +54,9 @@ class BASE_EXPORT MessageWindow {
   bool DoCreate(MessageCallback message_callback, const wchar_t* window_name);
 
   // Invoked by the OS to process incoming window messages.
-  static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wparam,
+  static LRESULT CALLBACK WindowProc(HWND hwnd,
+                                     UINT message,
+                                     WPARAM wparam,
                                      LPARAM lparam);
 
   // Invoked to handle messages received by the window.

@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "components/embedder_support/switches.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
 #include "components/version_info/version_info.h"
@@ -283,6 +284,11 @@ bool ContentBrowserClientImpl::CanCreateWindow(
     // TODO(https://crbug.com/1019923): decide if WebLayer needs to support
     // background tabs.
     return false;
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          embedder_support::kDisablePopupBlocking)) {
+    return true;
   }
 
   // WindowOpenDisposition has a *ton* of types, but the following are really

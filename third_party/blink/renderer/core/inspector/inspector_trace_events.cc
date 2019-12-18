@@ -1352,7 +1352,7 @@ std::unique_ptr<TracedValue> inspector_animation_event::Data(
   if (const AnimationEffect* effect = animation.effect()) {
     value->SetString("name", animation.id());
     if (auto* frame_effect = DynamicTo<KeyframeEffect>(effect)) {
-      if (Element* target = frame_effect->target())
+      if (Element* target = frame_effect->EffectTarget())
         SetNodeInfo(value.get(), target, "nodeId", "nodeName");
     }
   }

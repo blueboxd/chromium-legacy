@@ -127,7 +127,7 @@ GLenum InternalFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::RG_88:
       return GL_RG;
     case gfx::BufferFormat::BGR_565:
-    case gfx::BufferFormat::RGBX_1010102:
+    case gfx::BufferFormat::RGBA_1010102:
       return GL_RGB;
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_8888:
@@ -160,7 +160,7 @@ uint32_t BufferFormatToFourCC(gfx::BufferFormat format) {
       return libyuv::FOURCC_ABGR;
     case gfx::BufferFormat::BGRA_8888:
       return libyuv::FOURCC_ARGB;
-    case gfx::BufferFormat::RGBX_1010102:
+    case gfx::BufferFormat::RGBA_1010102:
       return libyuv::FOURCC_AB30;
     case gfx::BufferFormat::BGRX_1010102:
       return libyuv::FOURCC_AR30;
@@ -261,9 +261,9 @@ TEST_P(GpuMemoryBufferTest, Lifecycle) {
     return;
   }
 
-  if (buffer_format == gfx::BufferFormat::RGBX_1010102 &&
-      !gl_.GetCapabilities().image_xb30) {
-    LOG(WARNING) << "image_xb30 not supported. Skipping test.";
+  if (buffer_format == gfx::BufferFormat::RGBA_1010102 &&
+      !gl_.GetCapabilities().image_ab30) {
+    LOG(WARNING) << "image_ab30 not supported. Skipping test.";
     return;
   }
 
@@ -476,7 +476,7 @@ INSTANTIATE_TEST_SUITE_P(
                       gfx::BufferFormat::BGR_565,
                       gfx::BufferFormat::RGBA_4444,
                       gfx::BufferFormat::RGBA_8888,
-                      gfx::BufferFormat::RGBX_1010102,
+                      gfx::BufferFormat::RGBA_1010102,
                       gfx::BufferFormat::BGRX_1010102,
                       gfx::BufferFormat::BGRA_8888,
                       gfx::BufferFormat::RGBA_F16,

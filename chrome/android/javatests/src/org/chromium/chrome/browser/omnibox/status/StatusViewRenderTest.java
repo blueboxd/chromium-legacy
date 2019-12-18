@@ -23,7 +23,7 @@ import org.chromium.chrome.browser.omnibox.status.StatusView.StatusViewDelegate;
 import org.chromium.chrome.browser.toolbar.LocationBarModel;
 import org.chromium.chrome.browser.ui.widget.CompositeTouchDelegate;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.RenderTestRule;
+import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
@@ -34,8 +34,7 @@ import org.chromium.ui.test.util.DummyUiActivityTestCase;
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class StatusViewRenderTest extends DummyUiActivityTestCase {
     @Rule
-    public RenderTestRule mRenderTestRule =
-            new RenderTestRule("chrome/test/data/android/render_tests");
+    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
 
     private StatusView mStatusView;
     private PropertyModel mStatusModel;

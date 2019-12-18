@@ -92,10 +92,22 @@ public class TabBrowserControlsConstraintsHelper implements UserData {
 
             @Override
             public void onDidFinishNavigation(Tab tab, NavigationHandle navigationHandle) {
+                if (!navigationHandle.isInMainFrame()) return;
+
                 // At this point, we might have switched renderer processes, so push the existing
                 // constraints to the new renderer (has the potential to be slightly spammy, but
                 // the renderer has logic to suppress duplicate calls).
-                if (navigationHandle.isInMainFrame()) updateEnabledState();
+
+                @BrowserControlsState
+                int constraints = getConstraints();
+                if (constraints == BrowserControlsState.SHOWN && navigationHandle.hasCommitted()
+                        && TabBrowserControlsOffsetHelper.get(tab).topControlsOffset() == 0) {
+                    // If the browser controls were already fully visible on the previous page, then
+                    // avoid an animation to keep the controls from jumping around.
+                    update(BrowserControlsState.SHOWN, false);
+                } else {
+                    updateEnabledState();
+                }
             }
         });
         if (mTab.isInitialized() && !TabImpl.isDetached(mTab)) updateVisibilityDelegate();

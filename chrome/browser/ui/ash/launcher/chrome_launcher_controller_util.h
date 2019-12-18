@@ -21,8 +21,4 @@ AppListControllerDelegate::Pinnable GetPinnableForAppID(
     const std::string& app_id,
     Profile* profile);
 
-// Returns true if |app_id| specifies one of the Android cameras or Chrome
-// camera.
-bool IsCameraApp(const std::string& app_id);
-
 #endif  // CHROME_BROWSER_UI_ASH_LAUNCHER_CHROME_LAUNCHER_CONTROLLER_UTIL_H_

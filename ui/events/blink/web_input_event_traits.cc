@@ -39,10 +39,10 @@ void ApppendEventDetails(const WebMouseEvent& event, std::string* result) {
   StringAppendF(result,
                 "{\n Button: %d\n Pos: (%f, %f)\n"
                 " GlobalPos: (%f, %f)\n Movement: (%d, %d)\n Clicks: %d\n}",
-                static_cast<int>(event.button), event.PositionInWidget().x,
-                event.PositionInWidget().y, event.PositionInScreen().x,
-                event.PositionInScreen().y, event.movement_x, event.movement_y,
-                event.click_count);
+                static_cast<int>(event.button), event.PositionInWidget().x(),
+                event.PositionInWidget().y(), event.PositionInScreen().x(),
+                event.PositionInScreen().y(), event.movement_x,
+                event.movement_y, event.click_count);
 }
 
 void ApppendEventDetails(const WebMouseWheelEvent& event, std::string* result) {
@@ -59,8 +59,8 @@ void ApppendEventDetails(const WebGestureEvent& event, std::string* result) {
   StringAppendF(result,
                 "{\n Pos: (%f, %f)\n GlobalPos: (%f, %f)\n SourceDevice: %d\n"
                 " RawData: (%f, %f, %f, %f)\n}",
-                event.PositionInWidget().x, event.PositionInWidget().y,
-                event.PositionInScreen().x, event.PositionInScreen().y,
+                event.PositionInWidget().x(), event.PositionInWidget().y(),
+                event.PositionInScreen().x(), event.PositionInScreen().y(),
                 event.SourceDevice(), event.data.scroll_update.delta_x,
                 event.data.scroll_update.delta_y,
                 event.data.scroll_update.velocity_x,
@@ -72,9 +72,9 @@ void ApppendTouchPointDetails(const WebTouchPoint& point, std::string* result) {
                 "  (ID: %d, State: %d, ScreenPos: (%f, %f), Pos: (%f, %f),"
                 " Radius: (%f, %f), Rot: %f, Force: %f,"
                 " Tilt: (%d, %d), Twist: %d, TangentialPressure: %f),\n",
-                point.id, point.state, point.PositionInScreen().x,
-                point.PositionInScreen().y, point.PositionInWidget().x,
-                point.PositionInWidget().y, point.radius_x, point.radius_y,
+                point.id, point.state, point.PositionInScreen().x(),
+                point.PositionInScreen().y(), point.PositionInWidget().x(),
+                point.PositionInWidget().y(), point.radius_x, point.radius_y,
                 point.rotation_angle, point.force, point.tilt_x, point.tilt_y,
                 point.twist, point.tangential_pressure);
 }
@@ -98,9 +98,9 @@ void ApppendEventDetails(const WebPointerEvent& event, std::string* result) {
       " GlobalPos: (%f, %f)\n Movement: (%d, %d)\n width: %f\n height: "
       "%f\n Pressure: %f\n TangentialPressure: %f\n Rotation: %f\n Tilt: "
       "(%d, %d)\n}",
-      event.id, static_cast<int>(event.button), event.PositionInWidget().x,
-      event.PositionInWidget().y, event.PositionInScreen().x,
-      event.PositionInScreen().y, event.movement_x, event.movement_y,
+      event.id, static_cast<int>(event.button), event.PositionInWidget().x(),
+      event.PositionInWidget().y(), event.PositionInScreen().x(),
+      event.PositionInScreen().y(), event.movement_x, event.movement_y,
       event.width, event.height, event.force, event.tangential_pressure,
       event.rotation_angle, event.tilt_x, event.tilt_y);
 }

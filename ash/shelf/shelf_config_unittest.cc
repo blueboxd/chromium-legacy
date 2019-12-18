@@ -12,7 +12,8 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "base/test/scoped_feature_list.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -23,9 +24,8 @@ class ShelfConfigTest : public AshTestBase {
   ~ShelfConfigTest() override = default;
 
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kShelfHotseat);
-
+    scoped_feature_list_.InitAndEnableFeature(
+        chromeos::features::kShelfHotseat);
     AshTestBase::SetUp();
   }
 
@@ -41,7 +41,7 @@ class ShelfConfigTest : public AshTestBase {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ShelfConfigTest);
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Make sure ShelfConfig is dense when screen becomes small in tablet mode.

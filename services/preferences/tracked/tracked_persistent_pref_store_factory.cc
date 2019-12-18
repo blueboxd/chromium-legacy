@@ -133,12 +133,14 @@ PersistentPrefStore* CreateTrackedPersistentPrefStore(
 
   SetupTrackedPreferencesMigration(
       unprotected_pref_names, protected_pref_names,
-      base::Bind(&RemoveValueSilently, unprotected_pref_store->AsWeakPtr()),
-      base::Bind(&RemoveValueSilently, protected_pref_store->AsWeakPtr()),
-      base::Bind(&JsonPrefStore::RegisterOnNextSuccessfulWriteReply,
-                 unprotected_pref_store->AsWeakPtr()),
-      base::Bind(&JsonPrefStore::RegisterOnNextSuccessfulWriteReply,
-                 protected_pref_store->AsWeakPtr()),
+      base::BindRepeating(&RemoveValueSilently,
+                          unprotected_pref_store->AsWeakPtr()),
+      base::BindRepeating(&RemoveValueSilently,
+                          protected_pref_store->AsWeakPtr()),
+      base::BindRepeating(&JsonPrefStore::RegisterOnNextSuccessfulWriteReply,
+                          unprotected_pref_store->AsWeakPtr()),
+      base::BindRepeating(&JsonPrefStore::RegisterOnNextSuccessfulWriteReply,
+                          protected_pref_store->AsWeakPtr()),
       CreatePrefHashStore(*config, false), CreatePrefHashStore(*config, true),
       raw_unprotected_pref_hash_filter, raw_protected_pref_hash_filter);
 

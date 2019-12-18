@@ -25,7 +25,6 @@
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
-#include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -43,39 +42,6 @@ using content::WebContents;
 
 namespace safe_browsing {
 
-namespace {
-
-const int kMaxMalwareIPPerRequest = 5;
-
-void FilterBenignIpsOnIOThread(
-    scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
-    IPUrlMap* ips) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  for (auto it = ips->begin(); it != ips->end();) {
-    if (!database_manager.get() ||
-        !database_manager->MatchMalwareIP(it->first)) {
-      // it++ here returns a copy of the old iterator and passes it to erase.
-      ips->erase(it++);
-    } else {
-      ++it;
-    }
-  }
-}
-}  // namespace
-
-IPUrlInfo::IPUrlInfo(const std::string& origin_of_final_url,
-                     const std::string& method,
-                     const std::string& referrer,
-                     const ResourceType& resource_type)
-    : origin_of_final_url(origin_of_final_url),
-      method(method),
-      referrer(referrer),
-      resource_type(resource_type) {}
-
-IPUrlInfo::IPUrlInfo(const IPUrlInfo& other) = default;
-
-IPUrlInfo::~IPUrlInfo() {}
-
 BrowseInfo::BrowseInfo() : http_status_code(0) {}
 
 BrowseInfo::~BrowseInfo() {}
@@ -89,23 +55,6 @@ static void AddFeature(const std::string& feature_name,
   feature->set_name(feature_name);
   feature->set_value(feature_value);
   DVLOG(2) << "Browser feature: " << feature->name() << " " << feature->value();
-}
-
-static void AddMalwareIpUrlInfo(const std::string& ip,
-                                const std::vector<IPUrlInfo>& meta_infos,
-                                ClientMalwareRequest* request) {
-  DCHECK(request);
-  for (auto it = meta_infos.begin(); it != meta_infos.end(); ++it) {
-    ClientMalwareRequest::UrlInfo* urlinfo =
-        request->add_bad_ip_url_info();
-    // We add the information about url on the bad ip.
-    urlinfo->set_ip(ip);
-    urlinfo->set_url(it->origin_of_final_url);
-    urlinfo->set_method(it->method);
-    urlinfo->set_referrer(it->referrer);
-    urlinfo->set_resource_type(static_cast<int>(it->resource_type));
-  }
-  DVLOG(2) << "Added url info for bad ip: " << ip;
 }
 
 static void AddNavigationFeatures(const std::string& feature_prefix,
@@ -157,9 +106,7 @@ static void AddNavigationFeatures(const std::string& feature_prefix,
   }
 }
 
-BrowserFeatureExtractor::BrowserFeatureExtractor(WebContents* tab,
-                                                 ClientSideDetectionHost* host)
-    : tab_(tab), host_(host) {
+BrowserFeatureExtractor::BrowserFeatureExtractor(WebContents* tab) : tab_(tab) {
   DCHECK(tab);
 }
 
@@ -225,30 +172,6 @@ void BrowserFeatureExtractor::ExtractFeatures(
       FROM_HERE, base::BindOnce(&BrowserFeatureExtractor::StartExtractFeatures,
                                 weak_factory_.GetWeakPtr(), std::move(request),
                                 std::move(callback)));
-}
-
-void BrowserFeatureExtractor::ExtractMalwareFeatures(
-    BrowseInfo* info,
-    std::unique_ptr<ClientMalwareRequest> request,
-    MalwareDoneCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!callback.is_null());
-
-  // Grab the IPs because they might go away before we're done
-  // checking them against the IP blacklist on the IO thread.
-  std::unique_ptr<IPUrlMap> ips(new IPUrlMap);
-  ips->swap(info->ips);
-
-  IPUrlMap* ips_ptr = ips.get();
-
-  // IP blacklist lookups have to happen on the IO thread.
-  base::PostTaskAndReply(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&FilterBenignIpsOnIOThread, host_->database_manager(),
-                     ips_ptr),
-      base::BindOnce(&BrowserFeatureExtractor::FinishExtractMalwareFeatures,
-                     weak_factory_.GetWeakPtr(), std::move(ips),
-                     std::move(callback), std::move(request)));
 }
 
 void BrowserFeatureExtractor::ExtractBrowseInfoFeatures(
@@ -433,26 +356,6 @@ bool BrowserFeatureExtractor::GetHistoryService(
   }
   DVLOG(2) << "Unable to query history.  No history service available.";
   return false;
-}
-
-void BrowserFeatureExtractor::FinishExtractMalwareFeatures(
-    std::unique_ptr<IPUrlMap> bad_ips,
-    MalwareDoneCallback callback,
-    std::unique_ptr<ClientMalwareRequest> request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  int matched_bad_ips = 0;
-  for (IPUrlMap::const_iterator it = bad_ips->begin();
-       it != bad_ips->end(); ++it) {
-    AddMalwareIpUrlInfo(it->first, it->second, request.get());
-    ++matched_bad_ips;
-    // Limit the number of matched bad IPs in one request to control
-    // the request's size
-    if (matched_bad_ips >= kMaxMalwareIPPerRequest) {
-      break;
-    }
-  }
-  std::move(callback).Run(/*feature_extraction_succeeded=*/true,
-                          std::move(request));
 }
 
 }  // namespace safe_browsing

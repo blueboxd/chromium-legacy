@@ -96,9 +96,9 @@
         <div class="settings-box">$i18n{scrollLabel}</div>
         <div class="list-frame">
           <settings-radio-group
-              pref="{{prefs.settings.touchpad.natural_scroll}}">
-            <cr-radio-button name="false">
-              $i18n{traditionalScrollLabel}
+              pref="{{prefs.settings.touchpad.natural_scroll}}"
+              group-aria-label="$i18n{scrollLabel}">
+            <cr-radio-button name="false" label="$i18n{traditionalScrollLabel}">
             </cr-radio-button>
             <cr-radio-button name="true">
               <settings-localized-link

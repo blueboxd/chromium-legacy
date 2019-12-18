@@ -11,11 +11,6 @@
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
 
-<if expr="chromeos">
-<!-- TODO(crbug.com/986596): Remove OS icons when SplitSettings is complete. -->
-<link rel="import" href="../chromeos/os_icons.html">
-</if>
-
 <dom-module id="settings-menu">
   <template>
     <style include="settings-shared cr-icons">
@@ -111,22 +106,6 @@
     <iron-selector id="topMenu" selectable="a:not(#extensionsLink)"
         attr-for-selected="href" on-iron-activate="onSelectorActivate_"
         role="navigation" on-click="onLinkClick_">
-<if expr="chromeos">
-      <a href="/internet" hidden="[[!pageVisibility.internet]]">
-        <iron-icon icon="os-settings:network-wifi"></iron-icon>
-        $i18n{internetPageTitle}
-      </a>
-      <a href="/bluetooth" hidden="[[!pageVisibility.bluetooth]]">
-        <iron-icon icon="cr:bluetooth"></iron-icon>
-        $i18n{bluetoothPageTitle}
-      </a>
-      <a id="multidevice" href="/multidevice"
-          hidden="[[!pageVisibility.multidevice]]">
-        <iron-icon icon="os-settings:multidevice-better-together-suite">
-        </iron-icon>
-        $i18n{multidevicePageTitle}
-      </a>
-</if>
       <a id="people" href="/people" hidden="[[!pageVisibility.people]]">
         <iron-icon icon="cr:person"></iron-icon>
         $i18n{peoplePageTitle}
@@ -146,30 +125,10 @@
         <iron-icon icon="settings:palette"></iron-icon>
         $i18n{appearancePageTitle}
       </a>
-<if expr="chromeos">
-      <a href="/device" hidden="[[!pageVisibility.device]]">
-        <iron-icon icon="os-settings:laptop-chromebook"></iron-icon>
-        $i18n{devicePageTitle}
-      </a>
-</if>
       <a href="/search">
         <iron-icon icon="cr:search"></iron-icon>
         $i18n{searchPageTitle}
       </a>
-<if expr="chromeos">
-      <a href="/androidApps" hidden="[[!showAndroidApps]]">
-        <iron-icon icon="os-settings:play-prism"></iron-icon>
-        $i18n{androidAppsPageTitle}
-      </a>
-      <a href="/crostini" hidden="[[!showCrostini]]">
-        <iron-icon icon="os-settings:crostini-mascot"></iron-icon>
-        $i18n{crostiniPageTitle}
-      </a>
-      <a href="/pluginVm" hidden="[[!showPluginVm]]">
-        <iron-icon icon="os-settings:plugin-vm"></iron-icon>
-        $i18n{pluginVmPageTitle}
-      </a>
-</if>
 <if expr="not chromeos">
       <a id="defaultBrowser" href="/defaultBrowser"
         hidden="[[!pageVisibility.defaultBrowser]]">
@@ -193,12 +152,6 @@
           hidden="[[!pageVisibility.advancedSettings]]">
         <iron-selector id="subMenu" selectable="a" attr-for-selected="href"
             role="navigation" on-click="onLinkClick_">
-<if expr="chromeos">
-          <a href="/dateTime" hidden="[[!pageVisibility.dateTime]]">
-            <iron-icon icon="os-settings:access-time"></iron-icon>
-            $i18n{dateTimePageTitle}
-          </a>
-</if>
           <a href="/privacy" hidden="[[privacySettingsRedesignEnabled_]]">
             <iron-icon icon="cr:security"></iron-icon>
             $i18n{privacyPageTitle}

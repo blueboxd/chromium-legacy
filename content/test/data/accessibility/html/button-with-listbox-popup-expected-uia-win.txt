@@ -1,6 +1,6 @@
 document
-++group
-++++group
+++group IsControlElement=false
+++++group IsControlElement=false
 ++++++description Name='Choose one:'
 ++++menu Name='Choose one: Foo' ExpandCollapse.ExpandCollapseState='LeafNode'
 ++++++description Name='Foo'

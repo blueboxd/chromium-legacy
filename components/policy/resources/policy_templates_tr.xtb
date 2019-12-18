@@ -1936,11 +1936,11 @@ Bu politika yanlış seçeneğine ayarlanırsa kiosk oturum bilgileri rapor edil
           Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
 
           Bu politika ayarlanmadan bırakılırsa giriş ekranında sanal klavye başlangıçta devre dışı bırakılır, ancak kullanıcılar istedikleri zaman etkinleştirebilirler.</translation>
-<translation id="3913530489429898348"><ph name="CLOUD_PRINT_NAME" /> yazıcısına yazdırmak üzere doküman göndermesi için <ph name="PRODUCT_NAME" /> ürününü etkinleştirir.  NOT: Bu sadece <ph name="PRODUCT_NAME" /> ürününde <ph name="CLOUD_PRINT_NAME" /> desteğini etkiler.  Kullanıcıların web sitelerinde yazdırma işi göndermelerini engellemez.
+<translation id="3913530489429898348"><ph name="PRODUCT_NAME" /> ürününün <ph name="CLOUD_PRINT_NAME" /> yazıcısına çıktı almak için doküman gönderebilmesine izin verir.  NOT: Bu ayar, <ph name="PRODUCT_NAME" /> ürününde sadece <ph name="CLOUD_PRINT_NAME" /> desteğini etkiler.  Kullanıcıların web sitelerinde yazdırma işi göndermelerini engellemez.
 
-      Bu ayar etkinleştirilmez veya yapılandırılmazsa kullanıcılar, <ph name="PRODUCT_NAME" /> ürününün yazdırma iletişim kutusundan <ph name="CLOUD_PRINT_NAME" /> bulutuna yazdırabilir.
+      Bu ayar etkinleştirilmez veya yapılandırılmazsa kullanıcılar, <ph name="PRODUCT_NAME" /> yazdırma iletişim kutusundan <ph name="CLOUD_PRINT_NAME" /> yazıcısına yazdırma işlemi yapabilir.
 
-      Bu ayar devre dışı bırakılırsa kullanıcılar, <ph name="PRODUCT_NAME" /> ürününün yazdırma iletişim kutusundan <ph name="CLOUD_PRINT_NAME" /> bulutuna yazdıramazlar.
+      Bu ayar devre dışı bırakılırsa kullanıcılar, <ph name="PRODUCT_NAME" /> yazdırma iletişim kutusundan <ph name="CLOUD_PRINT_NAME" /> yazıcısına yazdırma işlemi yapamaz.
 
       <ph name="CLOUD_PRINT_NAME" /> hedeflerini bulunabilir tutmak için bu politikanın true (doğru) değerine ayarlanması ve <ph name="POLICY_PRINTERTYPEDENYLIST" /> politikasına <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" /> eklenmemesi gerekir.</translation>
 <translation id="391531815696899618">Doğru seçeneğine ayarlanırsa <ph name="PRODUCT_OS_NAME" /> Files uygulamasında Google Drive'ın senkronizasyonunu devre dışı bırakır. Bu durumda Google Drive'a veri yüklenmez.
@@ -2531,7 +2531,7 @@ politikayı geçersiz kılamaz.
       </translation>
 <translation id="4906194810004762807">Aygıt Politikası için yenileme hızı</translation>
 <translation id="4917385247580444890">Güçlü</translation>
-<translation id="4919122295221518724">Karma içerik için daha sıkı işlemi etkinleştir</translation>
+<translation id="4919122295221518724">Karma içeriğin işlenmesini daha sıkı hale getir</translation>
 <translation id="4923806312383904642">WebDriver'ın Uyumlu Olmayan Politikaları Geçersiz Kılmasına İzin Ver</translation>
 <translation id="4929721861648439998">Giriş ekranında mono ses erişilebilirlik özelliğini etkinleştirin.
 
@@ -2552,8 +2552,8 @@ politikayı geçersiz kılamaz.
 <translation id="4970855112942626932">Tarayıcıda oturum açmayı devre dışı bırak</translation>
 <translation id="4978405676361550165">"OffHours" politikası ayarlanırsa belirtilen cihaz politikaları, tanımlanan zaman aralıklarında yoksayılır (bu politikaların varsayılan ayarları kullanılır). "OffHours" döneminin başladığı veya sona erdiği her etkinlikte cihaz politikaları Chrome tarafından yeniden uygulanır. "OffHours" süresi sona erdiğinde kullanıcı bilgilendirilip çıkış yapmaya zorlanır ve cihaz politikası ayarları değiştirilir (ör. kullanıcı izin verilen bir hesapla giriş yapmadığında).</translation>
 <translation id="4980635395568992380">Veri türü:</translation>
-<translation id="4980794848194997251">Bu politika tarayıcıdaki karma içerik (HTTPS sitelerindeki HTTP içeriği) için işlemi denetler.
-       Politika true (doğru) değerine ayarlanırsa veya ayarlanmamış olarak bırakılırsa ses ve videodan oluşan karma içerik otomatik olarak HTTPS şeklinde yükseltilir (Yani kaynak HTTPS üzerinde kullanılamıyorsa URL yedek olmadan HTTPS olarak yeniden yazılır.) ve görsel karma içerik için URL çubuğunda bir "Güvenli Değil" uyarısı gösterilir.
+<translation id="4980794848194997251">Bu politika tarayıcıdaki karma içeriğin (HTTPS sitelerindeki HTTP içeriği) işlenme şeklini denetler.
+       Politika true (doğru) değerine ayarlanırsa veya ayarlanmamış olarak bırakılırsa ses ve videodan oluşan karma içerik otomatik olarak HTTPS'ye yükseltilir (Yani kaynak HTTPS üzerinde kullanılamıyorsa URL yedek olmadan HTTPS olarak yeniden yazılır.) ve görsel karma içerik için URL çubuğunda bir "Güvenli Değil" uyarısı gösterilir.
        Politika false (yanlış) değerine ayarlanırsa ses ve video için otomatik yükseltmeler devre dışı bırakılır ve görseller için herhangi bir uyarı gösterilmez.
        Bu politika ses, video ve görseller dışındaki diğer karma içerikleri etkilemez.</translation>
 <translation id="4983201894483989687">Eski eklentilerin çalıştırılmasına izin ver</translation>

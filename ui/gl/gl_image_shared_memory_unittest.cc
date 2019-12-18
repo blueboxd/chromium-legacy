@@ -56,7 +56,7 @@ using GLImageTestTypes = testing::Types<
     // back the color used to clear the buffer).
     // TODO(mcasas): enable those paltforms https://crbug.com/803451.
     GLImageSharedMemoryTestDelegate<gfx::BufferFormat::BGRX_1010102>,
-    GLImageSharedMemoryTestDelegate<gfx::BufferFormat::RGBX_1010102>,
+    GLImageSharedMemoryTestDelegate<gfx::BufferFormat::RGBA_1010102>,
 #endif
     GLImageSharedMemoryTestDelegate<gfx::BufferFormat::BGRA_8888>>;
 

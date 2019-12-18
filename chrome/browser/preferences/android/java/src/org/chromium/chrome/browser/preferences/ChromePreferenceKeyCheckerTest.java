@@ -44,46 +44,46 @@ public class ChromePreferenceKeyCheckerTest {
 
     @Test
     @SmallTest
-    public void testRegularKeys_noAssert() {
-        mSubject.assertIsKeyInUse(KEY1_IN_USE);
-        mSubject.assertIsKeyInUse(KEY2_IN_USE);
-        mSubject.assertIsKeyInUse(GRANDFATHERED_KEY_IN_USE);
+    public void testRegularKeys_registered_noException() {
+        mSubject.checkIsKeyInUse(KEY1_IN_USE);
+        mSubject.checkIsKeyInUse(KEY2_IN_USE);
+        mSubject.checkIsKeyInUse(GRANDFATHERED_KEY_IN_USE);
     }
 
-    @Test(expected = AssertionError.class)
+    @Test(expected = RuntimeException.class)
     @SmallTest
-    public void testRegularKeys_assert() {
-        mSubject.assertIsKeyInUse(KEY3_NOT_IN_USE);
-    }
-
-    @Test
-    @SmallTest
-    public void testPrefixedKeys_noAssert() {
-        mSubject.assertIsKeyInUse(KEY_PREFIX1_IN_USE.createKey("restofkey"));
+    public void testRegularKeys_notRegistered_throwsException() {
+        mSubject.checkIsKeyInUse(KEY3_NOT_IN_USE);
     }
 
     @Test
     @SmallTest
-    public void testPrefixedKeys_noAssert_multipleLevels() {
-        mSubject.assertIsKeyInUse(
+    public void testPrefixedKeys_noException() {
+        mSubject.checkIsKeyInUse(KEY_PREFIX1_IN_USE.createKey("restofkey"));
+    }
+
+    @Test
+    @SmallTest
+    public void testPrefixedKeys_multipleLevels_noException() {
+        mSubject.checkIsKeyInUse(
                 KEY_PREFIX2_IN_USE.createKey("ExtraLevel.DynamicallyGenerated98765"));
     }
 
-    @Test(expected = AssertionError.class)
+    @Test(expected = RuntimeException.class)
     @SmallTest
-    public void testPrefixedKeys_assert_noPrefixMatch() {
-        mSubject.assertIsKeyInUse(KEY_PREFIX3_NOT_IN_USE.createKey("restofkey"));
+    public void testPrefixedKeys_noPrefixMatch_throwsException() {
+        mSubject.checkIsKeyInUse(KEY_PREFIX3_NOT_IN_USE.createKey("restofkey"));
     }
 
-    @Test(expected = AssertionError.class)
+    @Test(expected = RuntimeException.class)
     @SmallTest
-    public void testPrefixedKeys_assert_matchOnlyPrefix() {
-        mSubject.assertIsKeyInUse(KEY_PREFIX1_IN_USE.createKey(""));
+    public void testPrefixedKeys_matchOnlyPrefix_throwsException() {
+        mSubject.checkIsKeyInUse(KEY_PREFIX1_IN_USE.createKey(""));
     }
 
-    @Test(expected = AssertionError.class)
+    @Test(expected = RuntimeException.class)
     @SmallTest
-    public void testPrefixedKeys_assert_matchPattern() {
-        mSubject.assertIsKeyInUse(KEY_PREFIX1_IN_USE.createKey("*"));
+    public void testPrefixedKeys_matchPattern_throwsException() {
+        mSubject.checkIsKeyInUse(KEY_PREFIX1_IN_USE.createKey("*"));
     }
 }

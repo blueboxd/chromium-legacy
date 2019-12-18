@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser_agent_util.h"
 #import "ios/chrome/browser/main/browser_observer.h"
 #import "ios/chrome/browser/main/browser_web_state_list_delegate.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
@@ -77,5 +78,8 @@ void BrowserImpl::RemoveObserver(BrowserObserver* observer) {
 // static
 std::unique_ptr<Browser> Browser::Create(
     ios::ChromeBrowserState* browser_state) {
-  return std::make_unique<BrowserImpl>(browser_state);
+  std::unique_ptr<Browser> browser =
+      std::make_unique<BrowserImpl>(browser_state);
+  AttachBrowserAgents(browser.get());
+  return browser;
 }

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
@@ -80,6 +81,11 @@ class ASH_EXPORT SwipeHomeToOverviewController {
 
   // The timer to run FinalizeDragAndShowOverview().
   base::OneShotTimer overview_transition_timer_;
+
+  // ScopedClosureRunner that while in scope disables background blur in home
+  // screen. It will be set during home screen drag with a goal of improving
+  // overall drag performance.
+  base::Optional<base::ScopedClosureRunner> home_screen_blur_disabler_;
 
   DISALLOW_COPY_AND_ASSIGN(SwipeHomeToOverviewController);
 };

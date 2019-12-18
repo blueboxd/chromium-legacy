@@ -4,11 +4,11 @@
 
 #include "base/win/object_watcher.h"
 
+#include <windows.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-
-#include <windows.h>
 
 namespace base {
 namespace win {
@@ -96,8 +96,8 @@ bool ObjectWatcher::StartWatchingInternal(HANDLE object,
                             delegate);
   object_ = object;
 
-  if (!RegisterWaitForSingleObject(&wait_object_, object, DoneWaiting,
-                                   this, INFINITE, wait_flags)) {
+  if (!RegisterWaitForSingleObject(&wait_object_, object, DoneWaiting, this,
+                                   INFINITE, wait_flags)) {
     DPLOG(FATAL) << "RegisterWaitForSingleObject failed";
     Reset();
     return false;

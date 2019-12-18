@@ -2529,7 +2529,6 @@
 <translation id="4572779512957829735">ನಿಮ್ಮ ಭದ್ರತೆ ಕೀಗಾಗಿ ಪಿನ್ ನಮೂದಿಸಿ</translation>
 <translation id="457386861538956877">ಇನ್ನಷ್ಟು...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">ಬ್ಲೂಟೂತ್‌ ಸಾಧನವನ್ನು ಜೋಡಿ ಮಾಡಿ</translation>
 <translation id="4579581181964204535"><ph name="HOST_NAME" /> ಬಿತ್ತರಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="4581774856936278355">Linux ಮರುಸ್ಥಾಪಿಸುತ್ತಿರುವಾಗ ದೋಷ ಸಂಭವಿಸಿದೆ</translation>
 <translation id="4582563038311694664">ಎಲ್ಲ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮರುಹೊಂದಿಸಿ</translation>
@@ -4871,7 +4870,6 @@
 <translation id="7974936243149753750">ಓವರ್‌ಸ್ಕ್ಯಾನ್</translation>
 <translation id="7978412674231730200">ಖಾಸಗಿ ಕೀಲಿ</translation>
 <translation id="7978450511781612192">ಇದು ನಿಮ್ಮ Google ಖಾತೆಗಳಿಂದ ನಿಮ್ಮನ್ನು ಸೈನ್ ಔಟ್ ಮಾಡುತ್ತದೆ. ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಹಾಗೂ ಹೆಚ್ಚಿನವುಗಳನ್ನು ಇನ್ನು ಮುಂದೆ ಸಿಂಕ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
-<translation id="7979036127916589816">ಸಿಂಕ್ ದೋಷ</translation>
 <translation id="7980084013673500153">ಸ್ವತ್ತು ID: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">ವೇಗವಾದ ಬ್ರೌಸಿಂಗ್ ಮತ್ತು ಹುಡುಕಾಟಕ್ಕಾಗಿ ಪುಟಗಳನ್ನು ಮುಂಚಿತವಾಗಿ ಲೋಡ್ ಮಾಡಿ</translation>
 <translation id="798145602633458219"><ph name="SUGGESTION_NAME" /> ಸಲಹೆಯನ್ನು ಹುಡುಕಾಟ ಬಾಕ್ಸ್‌ನಲ್ಲಿ ನಮೂದಿಸಿ</translation>
@@ -5319,6 +5317,7 @@
 <translation id="862542460444371744">&amp;ವಿಸ್ತರಣೆಗಳು</translation>
 <translation id="862727964348362408">ತಡೆಹಿಡಿಯಲಾಗಿದೆ</translation>
 <translation id="862750493060684461">CSS ಕ್ಯಾಷ್</translation>
+<translation id="8627706565932943526">ಸಿಂಕ್ ದೋಷ</translation>
 <translation id="8627795981664801467">ಸುರಕ್ಷಿತ ಸಂಪರ್ಕಗಳು ಮಾತ್ರ</translation>
 <translation id="8630903300770275248">ಮೇಲ್ವಿಚಾರಣೆಯ ಬಳಕೆದಾರರನ್ನು ಆಮದು ಮಾಡು</translation>
 <translation id="8631032106121706562">ಪೆಟಲ್ಸ್</translation>

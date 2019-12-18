@@ -2521,7 +2521,7 @@
 <translation id="5067143124345820993">登入使用者許可清單</translation>
 <translation id="5073609397321802133">如果將這項政策設為 False，系統將禁止使用者自訂新分頁的背景。即使日後將這項政策設為 True，系統仍會永久移除任何現有的自訂背景。
 
-      如果不設定這項政策或設為 True，使用者可以自訂新分頁的背景。</translation>
+      如果不設定這項政策或將其設為 True，使用者可以自訂新分頁的背景。</translation>
 <translation id="5075834892754086022">如果設定這項政策，系統會強制使用政策所設定的 PIN 碼長度
           下限。(PIN 碼長度的絕對下限為 1；系統會將低於 1
           的值視為 1 處理。)
@@ -4673,7 +4673,7 @@
       如果停用這項政策，則使用者無法刪除瀏覽和下載記錄項目。</translation>
 <translation id="8749803771700374502">系統不會搜尋拒絕清單上列出的印表機類型，也不會擷取這類印表機可支援的列印功能。
 
-      在拒絕清單上列出所有印表機類型的效果與停用列印功能相同，因為這樣一來，系統傳送文件進行列印時就沒有可用的目的地。
+      在拒絕清單上列出所有印表機類型的效果與停用列印功能相同，因為這樣一來，系統傳送文件進行列印時，就沒有目的地可供使用。
 
       在拒絕清單上加入「<ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" />」的作用等同於將「<ph name="POLICY_CLOUDPRINTSUBMITENABLED" />」政策設定為 False。如要讓系統搜尋到 <ph name="CLOUD_PRINT_NAME" /> 目的地，「<ph name="POLICY_CLOUDPRINTSUBMITENABLED" />」政策必須設為 True，且拒絕清單中不得包含「<ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" />」。
 

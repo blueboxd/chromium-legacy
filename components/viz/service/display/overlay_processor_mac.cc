@@ -11,7 +11,6 @@
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/output_surface.h"
-#include "components/viz/service/display/overlay_candidate_list.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace viz {

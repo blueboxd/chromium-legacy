@@ -70,7 +70,6 @@ java_library("robolectric_java") {
     "//third_party/android_deps:androidx_test_monitor_java",
     "//third_party/android_deps:com_google_guava_guava_java",
     "//third_party/bouncycastle:bouncycastle_java",
-    "//third_party/jsr-305:jsr_305_javalib",
     "//third_party/junit:junit",
     "//third_party/xstream:xstream_java",
   ]
@@ -139,8 +138,6 @@ java_library("robolectric_annotations_java") {
   deps = [
     ":android-all-9-robolectric-4913185-2_java",
     ":robolectric_shadowapi_java",
-    "//third_party/intellij:intellij_annotations_java",
-    "//third_party/jsr-305:jsr_305_javalib",
   ]
   java_files = [
     "robolectric/annotations/src/main/java/org/robolectric/annotation/AccessibilityChecks.java",
@@ -164,8 +161,6 @@ java_annotation_processor("robolectric_processor") {
     "//build/android:sun_tools_java",
     "//third_party/android_deps:com_google_guava_guava_java",
     "//third_party/gson:gson_java",
-    "//third_party/intellij:intellij_annotations_java",
-    "//third_party/jsr-305:jsr_305_javalib",
     "//third_party/ow2_asm:asm_commons_java",
     "//third_party/ow2_asm:asm_java",
     "//third_party/ow2_asm:asm_tree_java",
@@ -230,7 +225,6 @@ java_library("robolectric_resources_java") {
     ":robolectric_annotations_java",
     ":robolectric_utils_java",
     "//third_party/android_deps:com_google_guava_guava_java",
-    "//third_party/jsr-305:jsr_305_javalib",
   ]
   java_files = [
     "robolectric/resources/src/main/java/org/robolectric/RoboSettings.java",
@@ -374,7 +368,6 @@ java_library("robolectric_sandbox_java") {
     ":robolectric_shadowapi_java",
     ":robolectric_utils_java",
     "//third_party/android_deps:com_google_guava_guava_java",
-    "//third_party/jsr-305:jsr_305_javalib",
     "//third_party/ow2_asm:asm_commons_java",
     "//third_party/ow2_asm:asm_java",
     "//third_party/ow2_asm:asm_tree_java",
@@ -429,7 +422,6 @@ java_library("robolectric_junit_java") {
     ":robolectric_annotations_java",
     ":robolectric_sandbox_java",
     ":robolectric_shadowapi_java",
-    "//third_party/jsr-305:jsr_305_javalib",
     "//third_party/junit:junit",
   ]
 
@@ -868,7 +860,6 @@ java_library("shadows_core_java") {
     ":robolectric_shadowapi_java",
     ":robolectric_utils_java",
     "//third_party/accessibility_test_framework:accessibility_test_framework_java",
-    "//third_party/jsr-305:jsr_305_javalib",
 
     # Note that gson is not a direct dependency for this library, but must be
     # in the classpath when the Robolectric annotation processor runs.
@@ -876,7 +867,6 @@ java_library("shadows_core_java") {
     "//third_party/gson:gson_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/icu4j:icu4j_java",
-    "//third_party/intellij:intellij_annotations_java",
     "//third_party/sqlite4java:sqlite4java_java",
   ]
 

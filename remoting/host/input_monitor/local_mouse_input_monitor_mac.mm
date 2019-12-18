@@ -244,7 +244,8 @@ std::unique_ptr<LocalPointerInputMonitor> LocalPointerInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     LocalInputMonitor::PointerMoveCallback on_mouse_move,
     base::OnceClosure disconnect_callback) {
-  return nullptr;
+  return std::make_unique<LocalMouseInputMonitorMac>(
+      caller_task_runner, ui_task_runner, std::move(on_mouse_move));
 }
 
 }  // namespace remoting

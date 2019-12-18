@@ -58,8 +58,6 @@ bool DrmThreadMessageProxy::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(OzoneGpuMsg_SetHDCPState, OnSetHDCPState)
     IPC_MESSAGE_HANDLER(OzoneGpuMsg_SetColorMatrix, OnSetColorMatrix)
     IPC_MESSAGE_HANDLER(OzoneGpuMsg_SetGammaCorrection, OnSetGammaCorrection)
-    IPC_MESSAGE_HANDLER(OzoneGpuMsg_CheckOverlayCapabilities,
-                        OnCheckOverlayCapabilities)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -108,22 +106,6 @@ void DrmThreadMessageProxy::OnCursorMove(gfx::AcceleratedWidget widget,
       FROM_HERE,
       base::BindOnce(&DrmThread::MoveCursor, base::Unretained(drm_thread_),
                      widget, location));
-}
-
-void DrmThreadMessageProxy::OnCheckOverlayCapabilities(
-    gfx::AcceleratedWidget widget,
-    const std::vector<OverlayCheck_Params>& param_overlays) {
-  DCHECK(drm_thread_->IsRunning());
-  auto overlays = CreateOverlaySurfaceCandidateListFrom(param_overlays);
-  auto callback =
-      base::BindOnce(&DrmThreadMessageProxy::OnCheckOverlayCapabilitiesCallback,
-                     weak_ptr_factory_.GetWeakPtr());
-
-  auto safe_callback = CreateSafeOnceCallback(std::move(callback));
-  drm_thread_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&DrmThread::CheckOverlayCapabilities,
-                                base::Unretained(drm_thread_), widget, overlays,
-                                std::move(safe_callback)));
 }
 
 void DrmThreadMessageProxy::OnRefreshNativeDisplays() {
@@ -251,16 +233,6 @@ void DrmThreadMessageProxy::OnSetGammaCorrection(
       FROM_HERE, base::BindOnce(&DrmThread::SetGammaCorrection,
                                 base::Unretained(drm_thread_), display_id,
                                 degamma_lut, gamma_lut));
-}
-
-void DrmThreadMessageProxy::OnCheckOverlayCapabilitiesCallback(
-    gfx::AcceleratedWidget widget,
-    const OverlaySurfaceCandidateList& candidates,
-    const OverlayStatusList& returns) const {
-  auto param_overlays = CreateParamsFromOverlaySurfaceCandidate(candidates);
-  auto param_returns = CreateParamsFromOverlayStatusList(returns);
-  sender_->Send(new OzoneHostMsg_OverlayCapabilitiesReceived(
-      widget, param_overlays, param_returns));
 }
 
 void DrmThreadMessageProxy::OnRefreshNativeDisplaysCallback(

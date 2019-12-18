@@ -2523,7 +2523,6 @@
 <translation id="4572779512957829735">Аюулгүй байдлын түлхүүрээ ашиглахын тулд ПИН-ээ оруулна уу</translation>
 <translation id="457386861538956877">Илүү ихийг ...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Bluetooth төхөөрөмж холбох</translation>
 <translation id="4579581181964204535"><ph name="HOST_NAME" />-д дамжуулах боломжгүй.</translation>
 <translation id="4581774856936278355">Linux-г сэргээхэд алдаа гарлаа</translation>
 <translation id="4582563038311694664">Бүх тохиргоог дахин тохируулах</translation>
@@ -4862,7 +4861,6 @@
 <translation id="7974936243149753750">Дэлгэцийн дүрсийг бүтнээр нь гаргахгүй байх</translation>
 <translation id="7978412674231730200">Хувийн түлхүүр</translation>
 <translation id="7978450511781612192">Энэ нь таныг Google Бүртгэлүүдээс тань гаргах болно. Таны хавчуурга, түүх, нууц үгнүүд болон бусад зүйлийг синк хийхээ зогсооно.</translation>
-<translation id="7979036127916589816">Sync алдаа</translation>
 <translation id="7980084013673500153">Хөрөнгийн ID: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Хурдан хөтлөх болон хайхын тулд хуудсыг урьдчилан ачаалах</translation>
 <translation id="798145602633458219"><ph name="SUGGESTION_NAME" /> зөвлөмжийг хайх хэсэгт нэмэх</translation>
@@ -5308,6 +5306,7 @@
 <translation id="862542460444371744">&amp; Өргөтгөлүүд</translation>
 <translation id="862727964348362408">Түр саатуулсан</translation>
 <translation id="862750493060684461">CSS-ийн кэш</translation>
+<translation id="8627706565932943526">Sync алдаа</translation>
 <translation id="8627795981664801467">Зөвхөн аюулгүй холболтууд</translation>
 <translation id="8630903300770275248">Хяналт бүхий хэрэглэгчийг оруулах</translation>
 <translation id="8631032106121706562">Petals</translation>

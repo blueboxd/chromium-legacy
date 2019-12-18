@@ -1143,8 +1143,8 @@ TEST_P(VisualViewportTest, TestContextMenuShownInCorrectLocation) {
   VisualViewportMockWebFrameClient mock_web_frame_client;
   EXPECT_CALL(mock_web_frame_client,
               ShowContextMenu(ContextMenuAtLocation(
-                  mouse_down_event.PositionInWidget().x,
-                  mouse_down_event.PositionInWidget().y)));
+                  mouse_down_event.PositionInWidget().x(),
+                  mouse_down_event.PositionInWidget().y())));
 
   // Do a sanity check with no scale applied.
   WebView()->MainFrameImpl()->SetClient(&mock_web_frame_client);
@@ -1166,8 +1166,8 @@ TEST_P(VisualViewportTest, TestContextMenuShownInCorrectLocation) {
   visual_viewport.SetLocation(FloatPoint(60, 80));
   EXPECT_CALL(mock_web_frame_client,
               ShowContextMenu(ContextMenuAtLocation(
-                  mouse_down_event.PositionInWidget().x,
-                  mouse_down_event.PositionInWidget().y)));
+                  mouse_down_event.PositionInWidget().x(),
+                  mouse_down_event.PositionInWidget().y())));
 
   mouse_down_event.button = WebMouseEvent::Button::kRight;
   WebView()->MainFrameWidget()->HandleInputEvent(

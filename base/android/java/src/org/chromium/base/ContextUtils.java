@@ -73,6 +73,7 @@ public class ContextUtils {
      *
      * @return The application-wide shared preferences.
      */
+    @SuppressWarnings("DefaultSharedPreferencesCheck")
     private static SharedPreferences fetchAppSharedPreferences() {
         return PreferenceManager.getDefaultSharedPreferences(sApplicationContext);
     }

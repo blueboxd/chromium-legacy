@@ -23,8 +23,8 @@ ScopedDictionaryPrefUpdate::~ScopedDictionaryPrefUpdate() {
 
 std::unique_ptr<DictionaryValueUpdate> ScopedDictionaryPrefUpdate::Get() {
   return std::make_unique<DictionaryValueUpdate>(
-      base::Bind(&ScopedDictionaryPrefUpdate::RecordPath,
-                 base::Unretained(this)),
+      base::BindRepeating(&ScopedDictionaryPrefUpdate::RecordPath,
+                          base::Unretained(this)),
       static_cast<base::DictionaryValue*>(
           service_->GetMutableUserPref(path_, base::Value::Type::DICTIONARY)),
       std::vector<std::string>());

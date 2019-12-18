@@ -23,16 +23,12 @@ class DisplayResourceProvider;
 }
 
 namespace viz {
-class OverlayCandidateList;
-class OverlayCandidateValidatorStrategy;
-
 // OverlayProcessor subclass that goes through a list of strategies to determine
 // overlay candidates. THis is used by Android and Ozone platforms.
 class VIZ_SERVICE_EXPORT OverlayProcessorUsingStrategy
     : public OverlayProcessorInterface {
  public:
   using CandidateList = OverlayCandidateList;
-  using OverlayValidator = OverlayCandidateValidatorStrategy;
 
   // TODO(weiliangc): Move it to an external class.
   class VIZ_SERVICE_EXPORT Strategy {
@@ -70,21 +66,11 @@ class VIZ_SERVICE_EXPORT OverlayProcessorUsingStrategy
 
   ~OverlayProcessorUsingStrategy() override;
 
-  bool IsOverlaySupported() const override;
   gfx::Rect GetAndResetOverlayDamage() final;
 
-  const OverlayValidator* GetOverlayCandidateValidator() const {
-    return overlay_validator_.get();
-  }
-
-  // Returns true if the platform supports hw overlays and surface occluding
-  // damage rect needs to be computed since it will be used by overlay
-  // processor.
-  bool NeedsSurfaceOccludingDamageRect() const override;
-
   // Override OverlayProcessor.
-  void SetDisplayTransformHint(gfx::OverlayTransform transform) override;
-  void SetValidatorViewportSize(const gfx::Size& size) override;
+  void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
+  void SetViewportSize(const gfx::Size& size) override {}
 
   // Attempt to replace quads from the specified root render pass with overlays.
   // This must be called every frame.
@@ -106,22 +92,23 @@ class VIZ_SERVICE_EXPORT OverlayProcessorUsingStrategy
   // TODO(weiliangc): Internalize the |output_surface_plane| inside the overlay
   // processor.
   void AdjustOutputSurfaceOverlay(
-      base::Optional<OutputSurfaceOverlayPlane>* output_surface_plane) final;
+      base::Optional<OutputSurfaceOverlayPlane>* output_surface_plane) override;
 
-  OverlayProcessorUsingStrategy(
-      SkiaOutputSurface* skia_output_surface,
-      std::unique_ptr<OverlayValidator> overlay_validator);
+  OverlayProcessorUsingStrategy();
 
+  // A list of possible overlay candidates is presented to this function.
+  // The expected result is that those candidates that can be in a separate
+  // plane are marked with |overlay_handled| set to true, otherwise they are
+  // to be traditionally composited. Candidates with |overlay_handled| set to
+  // true must also have their |display_rect| converted to integer
+  // coordinates if necessary.
   virtual void CheckOverlaySupport(
       const OverlayProcessorInterface::OutputSurfaceOverlayPlane* primary_plane,
-      OverlayCandidateList* candidate_list);
+      OverlayCandidateList* candidate_list) = 0;
 
  protected:
-  virtual void InitializeStrategies();
   virtual gfx::Rect GetOverlayDamageRectForOutputSurface(
       const OverlayCandidate& overlay) const;
-
-  std::unique_ptr<OverlayValidator> overlay_validator_;
 
   StrategyList strategies_;
   Strategy* last_successful_strategy_ = nullptr;
@@ -155,9 +142,12 @@ class VIZ_SERVICE_EXPORT OverlayProcessorUsingStrategy
       OverlayCandidateList* candidates,
       std::vector<gfx::Rect>* content_bounds);
 
-#if defined(OS_ANDROID)
-  SkiaOutputSurface* skia_output_surface_;
-#endif
+  // Used by Android pre-SurfaceControl to notify promotion hints.
+  virtual void NotifyOverlayPromotion(
+      DisplayResourceProvider* resource_provider,
+      const OverlayCandidateList& candidate_list,
+      const QuadList& quad_list);
+
   DISALLOW_COPY_AND_ASSIGN(OverlayProcessorUsingStrategy);
 };
 

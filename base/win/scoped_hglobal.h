@@ -6,6 +6,7 @@
 #define BASE_WIN_SCOPED_HGLOBAL_H_
 
 #include <windows.h>
+
 #include <stddef.h>
 
 #include "base/macros.h"
@@ -14,15 +15,13 @@ namespace base {
 namespace win {
 
 // Like ScopedHandle except for HGLOBAL.
-template<class T>
+template <class T>
 class ScopedHGlobal {
  public:
   explicit ScopedHGlobal(HGLOBAL glob) : glob_(glob) {
     data_ = static_cast<T>(GlobalLock(glob_));
   }
-  ~ScopedHGlobal() {
-    GlobalUnlock(glob_);
-  }
+  ~ScopedHGlobal() { GlobalUnlock(glob_); }
 
   T get() { return data_; }
 

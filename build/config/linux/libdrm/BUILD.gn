@@ -7,12 +7,10 @@ import("//build/config/linux/pkg_config.gni")
 assert(is_linux)
 
 declare_args() {
-  # Controls whether the build should use the version of libdrm
-  # library shipped with the system. In release builds of Chrome OS we
-  # use the system version, but when building on dev workstations we
-  # bundle it because Ubuntu doesn't ship a usable version.
-  # Chromecast will use this as well.
-  use_system_libdrm = is_chromeos_device
+  # Controls whether the build should use the version of libdrm library shipped
+  # with the system. In release builds of desktop Linux and Chrome OS we use the
+  # system version. Chromecast will use this as well.
+  use_system_libdrm = is_chromeos_device || is_desktop_linux
 }
 
 if (use_system_libdrm) {

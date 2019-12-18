@@ -13,8 +13,6 @@ import "ui/display/mojom/gamma_ramp_rgb_entry.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojom/accelerated_widget.mojom";
 import "ui/ozone/public/mojom/device_cursor.mojom";
-import "ui/ozone/public/mojom/overlay_surface_candidate.mojom";
-
 
 // The viz process on CrOS implements the DrmDevice
 // service to let the viz host and clients manage DRM displays.
@@ -78,18 +76,8 @@ interface DrmDevice {
                      array<display.mojom.GammaRampRGBEntry> degamma_lut,
                      array<display.mojom.GammaRampRGBEntry> gamma_lut);
 
-  // Verifies if the display controller can successfully scanout the given set
-  // of OverlaySurfaceCandidates and return the status associated with each
-  // candidate.
-  CheckOverlayCapabilities(gfx.mojom.AcceleratedWidget widget,
-      array<ui.ozone.mojom.OverlaySurfaceCandidate> candidates) =>
-          (gfx.mojom.AcceleratedWidget widget,
-          array<ui.ozone.mojom.OverlaySurfaceCandidate> candidates,
-          array<ui.ozone.mojom.OverlayStatus> status);
-
   // Provides a DeviceCursor interface. The provided interface needs to be
   // associated because the AcceleratedWidgets referenced by its methods are
   // registered via CreateWindow() in this interface.
   GetDeviceCursor(pending_associated_receiver<DeviceCursor> cursor);
 };
-

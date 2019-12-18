@@ -60,7 +60,7 @@ class UsbTabHelper : public content::WebContentsObserver,
   base::WeakPtr<WebUsbChooser> GetUsbChooser(
       content::RenderFrameHost* render_frame_host);
 
-  void NotifyTabStateChanged() const;
+  void NotifyIsDeviceConnectedChanged(bool is_device_connected) const;
 
   bool AllowedByFeaturePolicy(
       content::RenderFrameHost* render_frame_host) const;

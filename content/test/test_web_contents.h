@@ -165,11 +165,8 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
 
   void SetLastActiveTime(base::TimeTicks last_active_time) override;
 
-  void SetIsConnectedToBluetoothDevice(
-      bool is_connected_to_bluetooth_device) override;
-
-  // Override IsConnectedToBluetoothDevice() to allow using the mocked value.
-  bool IsConnectedToBluetoothDevice() override;
+  void TestIncrementBluetoothConnectedDeviceCount() override;
+  void TestDecrementBluetoothConnectedDeviceCount() override;
 
   base::UnguessableToken GetAudioGroupId() override;
 
@@ -222,7 +219,6 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   base::Optional<base::string16> title_;
   bool pause_subresource_loading_called_;
   base::UnguessableToken audio_group_id_;
-  bool is_connected_to_bluetooth_device_;
 };
 
 }  // namespace content

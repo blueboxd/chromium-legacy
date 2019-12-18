@@ -12,16 +12,14 @@
 #elif defined(OS_WIN)
 #include "components/viz/service/display/overlay_processor_win.h"
 #elif defined(OS_ANDROID)
-#include "components/viz/service/display/overlay_candidate_validator_strategy.h"
 #include "components/viz/service/display/overlay_processor_android.h"
-#include "components/viz/service/display/overlay_processor_using_strategy.h"
+#include "components/viz/service/display/overlay_processor_surface_control.h"
 #elif defined(USE_OZONE)
 #include "components/viz/service/display/overlay_processor_ozone.h"
 #include "ui/ozone/public/overlay_manager_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
 #else
-#include "components/viz/service/display/overlay_candidate_validator_strategy.h"
-#include "components/viz/service/display/overlay_processor_using_strategy.h"
+#include "components/viz/service/display/overlay_processor_stub.h"
 #endif
 
 namespace viz {
@@ -110,10 +108,8 @@ OverlayProcessorInterface::CreateOverlayProcessor(
 #elif defined(OS_ANDROID)
   if (capabilities.supports_surfaceless) {
     // This is for Android SurfaceControl case.
-    auto validator = OverlayCandidateValidatorStrategy::Create(
-        surface_handle, capabilities, renderer_settings);
-    return base::WrapUnique(new OverlayProcessorUsingStrategy(
-        skia_output_surface, std::move(validator)));
+    bool overlay_enabled = surface_handle != gpu::kNullSurfaceHandle;
+    return std::make_unique<OverlayProcessorSurfaceControl>(overlay_enabled);
   } else {
     bool overlay_enabled = surface_handle != gpu::kNullSurfaceHandle;
     // When SurfaceControl is enabled, any resource backed by an
@@ -127,12 +123,7 @@ OverlayProcessorInterface::CreateOverlayProcessor(
                                                      overlay_enabled);
   }
 #else  // Default
-  // TODO(weiliangc): Add a stub class for the default case for platforms where
-  // we could not overlay.
-  auto validator = OverlayCandidateValidatorStrategy::Create(
-      surface_handle, capabilities, renderer_settings);
-  return base::WrapUnique(new OverlayProcessorUsingStrategy(
-      skia_output_surface, std::move(validator)));
+  return std::make_unique<OverlayProcessorStub>();
 #endif
 }
 

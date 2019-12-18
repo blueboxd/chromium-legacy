@@ -5,7 +5,6 @@
 <translation id="1181037720776840403">Poista</translation>
 <translation id="125153950246128346">Näytä toinen välilehti napauttamalla</translation>
 <translation id="1657719826150349398">Siirrä välilehti alaspäin</translation>
-<translation id="1778290789805128794">Siirrä välilehti ylimmäksi</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> välilehti}other{<ph name="TABS_COUNT_MANY" /> välilehteä}}</translation>
 <translation id="2569352796411618312">Ehdotus: <ph name="NUMBER_OF_TABS" /> välilehteä ei ole käytetty vähään aikaan. Suljetaanko ne?</translation>
 <translation id="257674075312929031">Ryhmä</translation>

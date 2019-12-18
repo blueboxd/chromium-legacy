@@ -20,7 +20,6 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -58,7 +57,6 @@ import java.util.Locale;
 /** Tests of the {@link PietManagerImpl}. */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@Ignore("crbug.com/1024945 Test does not work")
 public class PietManagerImplTest {
     @Mock
     private ActionHandler mActionHandler;

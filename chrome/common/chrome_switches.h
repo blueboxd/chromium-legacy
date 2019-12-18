@@ -75,7 +75,6 @@ extern const char kDisableDomainReliability[];
 extern const char kDisableExtensions[];
 extern const char kDisableExtensionsExcept[];
 extern const char kDisableExtensionsFileAccessCheck[];
-extern const char kDisablePopupBlocking[];
 extern const char kDisablePrintPreview[];
 extern const char kDisablePromptOnRepost[];
 extern const char kDisableSearchGeolocationDisclosure[];

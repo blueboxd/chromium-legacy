@@ -11,6 +11,7 @@
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
+class Browser;
 @protocol OmniboxFocuser;
 @class TabModel;
 @protocol TabSwitcher;
@@ -66,9 +67,9 @@ struct UrlLoadParams;
 //   |-tabSwitcher:shouldFinishWithActiveModel:|
 //   |-tabSwitcherDismissTransitionDidEnd:|
 // to inform the delegate when this animation begins and ends.
-- (void)dismissWithNewTabAnimationToModel:(TabModel*)targetModel
-                        withUrlLoadParams:(const UrlLoadParams&)urlLoadParams
-                                  atIndex:(NSUInteger)position;
+- (void)dismissWithNewTabAnimationToBrowser:(Browser*)browser
+                          withUrlLoadParams:(const UrlLoadParams&)urlLoadParams
+                                    atIndex:(int)position;
 
 // Updates the OTR (Off The Record) tab model. Should only be called when both
 // the current OTR tab model and the new OTR tab model are either nil or contain

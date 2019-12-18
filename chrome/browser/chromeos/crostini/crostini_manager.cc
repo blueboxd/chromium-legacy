@@ -66,15 +66,6 @@ namespace crostini {
 
 namespace {
 
-enum class ContainerOsVersion {
-  kUnkown = 0,
-  kDebianStretch = 1,
-  kDebianBuster = 2,
-  kDebianOther = 3,
-  kOtherOs = 4,
-  kMaxValue = kOtherOs,
-};
-
 chromeos::CiceroneClient* GetCiceroneClient() {
   return chromeos::DBusThreadManager::Get()->GetCiceroneClient();
 }

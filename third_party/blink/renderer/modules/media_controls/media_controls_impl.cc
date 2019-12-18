@@ -1616,7 +1616,7 @@ bool MediaControlsImpl::IsOnLeftSide(Event* event) {
   if (!event->IsGestureEvent())
     return false;
 
-  float tap_x = ToGestureEvent(event)->NativeEvent().PositionInWidget().x;
+  float tap_x = ToGestureEvent(event)->NativeEvent().PositionInWidget().x();
 
   DOMRect* rect = getBoundingClientRect();
   double middle = rect->x() + (rect->width() / 2);

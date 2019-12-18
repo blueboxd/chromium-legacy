@@ -159,7 +159,8 @@ void TreeBuilder::AddFileEntry(GroupedPath grouped_path,
     }
     TreeNode* symbol_node = new TreeNode();
     symbol_node->container_type = ContainerType::kSymbol;
-    symbol_node->id_path = GroupedPath{"", sym->FullName()};
+    symbol_node->id_path =
+        GroupedPath{"", sym->IsDex() ? sym->TemplateName() : sym->FullName()};
     symbol_node->size = sym->Pss();
     symbol_node->node_stats = NodeStats(*sym);
     symbol_node->symbol = sym;

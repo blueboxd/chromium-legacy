@@ -18,7 +18,7 @@ namespace base {
 class DictionaryValue;
 class ListValue;
 class Value;
-}
+}  // namespace base
 
 namespace prefs {
 
@@ -26,7 +26,8 @@ namespace prefs {
 // via a callback.
 class DictionaryValueUpdate {
  public:
-  using UpdateCallback = base::Callback<void(const std::vector<std::string>&)>;
+  using UpdateCallback =
+      base::RepeatingCallback<void(const std::vector<std::string>&)>;
 
   DictionaryValueUpdate(UpdateCallback report_update,
                         base::DictionaryValue* value,

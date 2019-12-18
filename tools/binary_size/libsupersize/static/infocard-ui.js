@@ -88,6 +88,10 @@ const displayInfocard = (() => {
             document.createElement('br'),
             dom.textElement('span', 'Component: ', 'symbol-name-info'),
             document.createTextNode(node.component || '(No component)'),
+            document.createElement('br'),
+            dom.textElement('span', 'Full Name: ', 'symbol-name-info'),
+            document.createTextNode(node.fullName || ''),
+            document.createElement('br'),
         ]);
       } else {
         const path = node.idPath.slice(0, node.shortNameIndex);

@@ -68,6 +68,9 @@ class TestPersonalDataManager : public PersonalDataManager {
   // Clears |local_credit_cards_| and |server_credit_cards_|.
   void ClearCreditCards();
 
+  // Clears |server_credit_card_cloud_token_data_|.
+  void ClearCloudTokenData();
+
   // Gets a profile based on the provided |guid|.
   AutofillProfile* GetProfileWithGUID(const char* guid);
 
@@ -77,6 +80,9 @@ class TestPersonalDataManager : public PersonalDataManager {
   // Adds a card to |server_credit_cards_|.  Functionally identical to
   // AddFullServerCreditCard().
   void AddServerCreditCard(const CreditCard& credit_card);
+
+  // Adds a cloud token data to |server_credit_card_cloud_token_data_|.
+  void AddCloudTokenData(const CreditCardCloudTokenData& cloud_token_data);
 
   void set_timezone_country_code(const std::string& timezone_country_code) {
     timezone_country_code_ = timezone_country_code;

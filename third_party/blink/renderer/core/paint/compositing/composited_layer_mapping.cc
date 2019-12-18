@@ -201,9 +201,6 @@ CompositedLayerMapping::CompositedLayerMapping(PaintLayer& layer)
 }
 
 CompositedLayerMapping::~CompositedLayerMapping() {
-  // Hits in compositing/squashing/squash-onto-nephew.html.
-  DisableCompositingQueryAsserts disabler;
-
   // Do not leave the destroyed pointer dangling on any Layers that painted to
   // this mapping's squashing layer.
   for (wtf_size_t i = 0; i < squashed_layers_.size(); ++i) {
@@ -222,7 +219,6 @@ CompositedLayerMapping::~CompositedLayerMapping() {
   UpdateMaskLayer(false);
   UpdateScrollingLayers(false);
   UpdateSquashingLayers(false);
-  DestroyGraphicsLayers();
 }
 
 std::unique_ptr<GraphicsLayer> CompositedLayerMapping::CreateGraphicsLayer(
@@ -246,18 +242,6 @@ void CompositedLayerMapping::CreatePrimaryGraphicsLayer() {
                           owning_layer_.GetSquashingDisallowedReasons());
 
   graphics_layer_->SetHitTestable(true);
-}
-
-void CompositedLayerMapping::DestroyGraphicsLayers() {
-  if (graphics_layer_)
-    graphics_layer_->RemoveFromParent();
-
-  graphics_layer_ = nullptr;
-  foreground_layer_ = nullptr;
-  mask_layer_ = nullptr;
-
-  scrolling_layer_ = nullptr;
-  scrolling_contents_layer_ = nullptr;
 }
 
 void CompositedLayerMapping::UpdateBackgroundPaintsOntoScrollingContentsLayer(

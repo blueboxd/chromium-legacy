@@ -8,8 +8,6 @@ source_set("cells") {
     "account_sign_in_item.mm",
     "byo_textfield_item.h",
     "byo_textfield_item.mm",
-    "clear_browsing_data_constants.h",
-    "clear_browsing_data_constants.mm",
     "clear_browsing_data_item.h",
     "clear_browsing_data_item.mm",
     "copied_to_chrome_item.h",
@@ -60,9 +58,18 @@ source_set("cells") {
   ]
 
   public_deps = [
+    ":clear_browsing_data_constants",
     "//ios/chrome/browser/ui/settings/cells/legacy",
   ]
 
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("clear_browsing_data_constants") {
+  sources = [
+    "clear_browsing_data_constants.h",
+    "clear_browsing_data_constants.mm",
+  ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 

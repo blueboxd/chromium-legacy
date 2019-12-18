@@ -5,7 +5,6 @@
 <translation id="1181037720776840403">Eemalda</translation>
 <translation id="125153950246128346">Puudutage muu vahelehe vaatamiseks</translation>
 <translation id="1657719826150349398">Teisalda vaheleht alla</translation>
-<translation id="1778290789805128794">Teisalda vaheleht üles</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> vaheleht}other{<ph name="TABS_COUNT_MANY" /> vahelehte}}</translation>
 <translation id="2569352796411618312">Soovitus: <ph name="NUMBER_OF_TABS" /> vahelehte pole hiljuti kasutatud. Kas sulgeda need?</translation>
 <translation id="257674075312929031">Rühm</translation>

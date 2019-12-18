@@ -17,6 +17,7 @@ import static android.support.test.espresso.matcher.RootMatchers.isDialog;
 import static android.support.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
+import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withTagValue;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
@@ -33,6 +34,7 @@ import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTes
 import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.COLLECT_USER_DATA_TERMS_REQUIRE_REVIEW;
 import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.VERTICAL_EXPANDER_CHEVRON;
 
+import android.support.test.espresso.matcher.ViewMatchers.Visibility;
 import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.widget.TextView;
@@ -45,7 +47,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.CardType;
@@ -558,7 +559,6 @@ public class AutofillAssistantCollectUserDataUiTest {
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "Flaky. crbug.com/1030217")
     public void testNonEmptyPaymentRequest() throws Exception {
         /* Add complete profile and credit card to the personal data manager. */
         PersonalDataManager.AutofillProfile profile =
@@ -621,20 +621,20 @@ public class AutofillAssistantCollectUserDataUiTest {
         /* Non-empty sections should not be 'fixed', i.e., they can be expanded. */
         onView(allOf(withTagValue(is(VERTICAL_EXPANDER_CHEVRON)),
                        isDescendantOfA(is(viewHolder.mContactSection))))
-                .check(matches(isDisplayed()));
+                .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
         onView(allOf(withTagValue(is(VERTICAL_EXPANDER_CHEVRON)),
                        isDescendantOfA(is(viewHolder.mPaymentSection))))
-                .check(matches(isDisplayed()));
+                .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
         onView(allOf(withTagValue(is(VERTICAL_EXPANDER_CHEVRON)),
                        isDescendantOfA(is(viewHolder.mShippingSection))))
-                .check(matches(isDisplayed()));
+                .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
         onView(allOf(withTagValue(is(VERTICAL_EXPANDER_CHEVRON)),
                        isDescendantOfA(is(viewHolder.mLoginsSection))))
-                .check(matches(isDisplayed()));
+                .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
 
         /* All section dividers are visible. */
         for (View divider : viewHolder.mDividers) {
-            onView(is(divider)).check(matches(isDisplayed()));
+            onView(is(divider)).check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
         }
 
         /* Check contents of sections. */

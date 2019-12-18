@@ -109,7 +109,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
 #if defined(OS_WIN)
   base::ThreadTicks GetWatchedThreadTime();
 #endif
-  bool GpuRespondsAfterWaiting();
+  bool GpuRespondsAfterWaiting(base::TimeTicks on_watchdog_timeout_start);
 
   // Do not change the function name. It is used for [GPU HANG] carsh reports.
   void DeliberatelyTerminateToRecoverFromHang();

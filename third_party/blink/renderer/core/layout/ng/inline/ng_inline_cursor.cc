@@ -236,8 +236,12 @@ bool NGInlineCursor::IsPartOfCulledInlineBox(
     const LayoutInline& layout_inline) const {
   const LayoutObject* const layout_object = CurrentLayoutObject();
   // We use |IsInline()| to exclude floating and out-of-flow objects.
-  if (!layout_object || !layout_object->IsInline())
+  if (!layout_object || !layout_object->IsInline() ||
+      layout_object->IsAtomicInlineLevel())
     return false;
+  DCHECK(!layout_object->IsFloatingOrOutOfFlowPositioned());
+  DCHECK(!CurrentBoxFragment() ||
+         !CurrentBoxFragment()->IsBlockFormattingContextRoot());
   return layout_object->IsDescendantOf(&layout_inline);
 }
 

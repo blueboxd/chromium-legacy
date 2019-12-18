@@ -699,9 +699,6 @@ class GFX_EXPORT RenderText {
   // Notifies that attributes that affect the display text shape have changed.
   virtual void OnDisplayTextAttributeChanged() = 0;
 
-  // Called when the text color changes.
-  void OnTextColorChanged();
-
   // Ensure the text is laid out, lines are computed, and |lines_| is valid.
   virtual void EnsureLayout() = 0;
 

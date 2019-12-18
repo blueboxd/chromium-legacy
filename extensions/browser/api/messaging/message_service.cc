@@ -265,10 +265,12 @@ void MessageService::OpenChannelToExtension(
         is_externally_connectable =
             externally_connectable->IdCanConnect(*source_endpoint.extension_id);
       } else {
+        DCHECK(source_render_frame_host);
+
         // Check that the web page URL matches.
         is_web_connection = true;
-        is_externally_connectable =
-            externally_connectable->matches.MatchesURL(source_url);
+        is_externally_connectable = externally_connectable->matches.MatchesURL(
+            source_render_frame_host->GetLastCommittedURL());
       }
     } else {
       // Default behaviour. Any extension or content script, no webpages.

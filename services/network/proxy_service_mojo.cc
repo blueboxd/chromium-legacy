@@ -37,8 +37,9 @@ CreateProxyResolutionServiceUsingMojoFactory(
           std::move(proxy_config_service),
           std::make_unique<ProxyResolverFactoryMojo>(
               std::move(mojo_proxy_factory), host_resolver,
-              base::Bind(&net::NetworkDelegateErrorObserver::Create,
-                         network_delegate, base::ThreadTaskRunnerHandle::Get()),
+              base::BindRepeating(&net::NetworkDelegateErrorObserver::Create,
+                                  network_delegate,
+                                  base::ThreadTaskRunnerHandle::Get()),
               net_log),
           net_log));
 

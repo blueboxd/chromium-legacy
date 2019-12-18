@@ -66,7 +66,7 @@
 using blink::xpath::Step;
 %}
 
-%define api.parser.class { YyParser }
+%define api.parser.class {YyParser}
 %parse-param { blink::xpath::Parser* parser_ }
 
 %define api.value.type variant

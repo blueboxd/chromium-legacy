@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
+#import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "net/base/url_util.h"
 
@@ -283,21 +284,17 @@ void UrlLoadingService::LoadUrlInNewTab(const UrlLoadParams& params) {
   // lead to be calling it twice, and calling 'did' below once.
   notifier_->NewTabWillLoadUrl(params.web_params.url, params.user_initiated);
 
-  TabModel* tab_model = browser_->GetTabModel();
-
   web::WebState* adjacent_web_state = nil;
   if (params.append_to == kCurrentTab)
-    adjacent_web_state = tab_model.webStateList->GetActiveWebState();
+    adjacent_web_state = browser_->GetWebStateList()->GetActiveWebState();
 
   UrlLoadParams saved_params = params;
   auto openTab = ^{
-    [tab_model insertWebStateWithLoadParams:saved_params.web_params
-                                     opener:adjacent_web_state
-                                openedByDOM:NO
-                                    atIndex:TabModelConstants::
-                                                kTabPositionAutomatically
-                               inBackground:saved_params.in_background()];
-
+    TabInsertionBrowserAgent* insertionAgent =
+        TabInsertionBrowserAgent::FromBrowser(browser_);
+    insertionAgent->InsertWebState(saved_params.web_params, adjacent_web_state,
+                                   false, TabInsertion::kPositionAutomatically,
+                                   saved_params.in_background());
     notifier_->NewTabDidLoadUrl(saved_params.web_params.url,
                                 saved_params.user_initiated);
   };

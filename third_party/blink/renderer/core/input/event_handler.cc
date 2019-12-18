@@ -1196,8 +1196,8 @@ WebInputEventResult EventHandler::UpdateDragAndDrop(
 
   if (AutoscrollController* controller =
           scroll_manager_->GetAutoscrollController()) {
-    controller->UpdateDragAndDrop(new_target, event.PositionInRootFrame(),
-                                  event.TimeStamp());
+    controller->UpdateDragAndDrop(
+        new_target, FloatPoint(event.PositionInRootFrame()), event.TimeStamp());
   }
 
   if (drag_target_ != new_target) {
@@ -1909,12 +1909,13 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
   LocalFrame& root_frame = frame_->LocalFrameRoot();
   HitTestResult hit_test_result;
   if (hit_rect_size.IsEmpty()) {
-    location = HitTestLocation(adjusted_event.PositionInRootFrame());
+    location =
+        HitTestLocation(FloatPoint(adjusted_event.PositionInRootFrame()));
     hit_test_result = root_frame.GetEventHandler().HitTestResultAtLocation(
         location, hit_type);
   } else {
     PhysicalOffset top_left = PhysicalOffset::FromFloatPointRound(
-        adjusted_event.PositionInRootFrame());
+        FloatPoint(adjusted_event.PositionInRootFrame()));
     top_left -= PhysicalOffset(hit_rect_size * 0.5f);
     location = HitTestLocation(PhysicalRect(top_left, hit_rect_size));
     hit_test_result = root_frame.GetEventHandler().HitTestResultAtLocation(
@@ -1934,7 +1935,8 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
     LocalFrame* hit_frame = hit_test_result.InnerNodeFrame();
     if (!hit_frame)
       hit_frame = frame_;
-    location = HitTestLocation(adjusted_event.PositionInRootFrame());
+    location =
+        HitTestLocation(FloatPoint(adjusted_event.PositionInRootFrame()));
     hit_test_result = root_frame.GetEventHandler().HitTestResultAtLocation(
         location,
         (hit_type | HitTestRequest::kReadOnly) & ~HitTestRequest::kListBased);
@@ -1983,7 +1985,7 @@ void EventHandler::ApplyTouchAdjustment(WebGestureEvent* gesture_event,
     DCHECK(location.IsRectBasedTest());
     location = hit_test_result->ResolveRectBasedTest(adjusted_node, point);
     gesture_event->ApplyTouchAdjustment(
-        WebFloatPoint(adjusted_point.X(), adjusted_point.Y()));
+        gfx::PointF(adjusted_point.X(), adjusted_point.Y()));
   }
 }
 
@@ -2134,8 +2136,8 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
 
   WebMouseEvent mouse_event(
       event_type,
-      WebFloatPoint(location_in_root_frame.X(), location_in_root_frame.Y()),
-      WebFloatPoint(global_position.X(), global_position.Y()),
+      gfx::PointF(location_in_root_frame.X(), location_in_root_frame.Y()),
+      gfx::PointF(global_position.X(), global_position.Y()),
       WebPointerProperties::Button::kNoButton, /* clickCount */ 0,
       WebInputEvent::kNoModifiers, base::TimeTicks::Now(), source_type);
 
@@ -2416,7 +2418,7 @@ MouseEventWithHitTestResults EventHandler::GetMouseEventTarget(
     const WebMouseEvent& event) {
   PhysicalOffset document_point =
       event_handling_util::ContentPointFromRootFrame(
-          frame_, event.PositionInRootFrame());
+          frame_, FloatPoint(event.PositionInRootFrame()));
 
   // TODO(eirage): This does not handle chorded buttons yet.
   if (RuntimeEnabledFeatures::UnifiedPointerCaptureInBlinkEnabled() &&

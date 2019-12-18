@@ -4284,11 +4284,11 @@
 
       如果此政策未设置，设备将默认使用24小时制的时钟格式。</translation>
 <translation id="8114382167597081590">不强制启用 YouTube 受限模式</translation>
-<translation id="8117921351531866504">让您能够设置是否允许网站检查用户有无已保存的付款方式。
+<translation id="8117921351531866504">该政策让您能够设置是否允许网站检查用户有无已保存的付款方式。
 
       如果停用了此政策，使用 PaymentRequest.canMakePayment 或 PaymentRequest.hasEnrolledInstrument API 的网站将被告知没有可用的付款方式。
 
-      如果启用了或未配置此设置，则允许网站检查用户有无已保存的付款方式。</translation>
+      如果启用了或未配置此设置，那么系统将允许网站检查用户有无已保存的付款方式。</translation>
 <translation id="8118665053362250806">设置媒体磁盘缓存大小</translation>
 <translation id="8124468781472887384">设备打印机配置访问政策。</translation>
 <translation id="8138009212169037227">此政策可控制是否报告政策数据和政策提取时间。
@@ -4635,13 +4635,13 @@
       如果已启用此设置或将此设置留空，则可以删除浏览和下载记录。
 
       如果停用了此设置，则不能删除浏览和下载记录。</translation>
-<translation id="8749803771700374502">系统将无法发现拒绝列表中列出的各类打印机，并且无法获取它们的功能。 
+<translation id="8749803771700374502">已在拒绝列表中的各类打印机将被停用，因此用户将无法发现或使用它们。
 
-      将所有打印机类型都添加到拒绝列表中可有效地停用打印功能，因为打印文件时，系统将无法找到可接收文件的目的地。
+      将所有打印机类型都添加到拒绝列表中相当于停用打印功能，因为没有任何可用来接收要打印的文档的目的地。
 
-      在拒绝列表中添加“<ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" />”与将 <ph name="POLICY_CLOUDPRINTSUBMITENABLED" /> 政策设为 False 具有同样的效果。若希望系统能够发现 <ph name="CLOUD_PRINT_NAME" />目的地，则必须确保 <ph name="POLICY_CLOUDPRINTSUBMITENABLED" /> 政策设为 True 且拒绝列表中不含“<ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" />”。
+      在拒绝列表中添加“<ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" />”与将 <ph name="POLICY_CLOUDPRINTSUBMITENABLED" /> 政策设为 false 具有同样的效果。若要使 <ph name="CLOUD_PRINT_NAME" />目的地能被用户发现，则必须确保 <ph name="POLICY_CLOUDPRINTSUBMITENABLED" /> 政策设为 true 且拒绝列表中不含“<ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" />”。
 
-      如果此政策未设置，或设为一个空列表，那么系统将可以发现所有类型的打印机。
+      如果此政策未设置，或设为一个空列表，那么所有打印机类型都将能被用户发现。
 
       基于扩展程序的打印机也称为打印提供程序目的地，包括 <ph name="PRODUCT_NAME" /> 扩展程序名下的所有目的地。
 

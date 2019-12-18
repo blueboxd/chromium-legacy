@@ -1,5 +1,5 @@
 document
-++group
+++group IsControlElement=false
 ++++img
 ++++++description Name='Static fallback'
 ++++img

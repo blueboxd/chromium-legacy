@@ -253,28 +253,26 @@ class MockMoveTouchTarget : public MockMoveGestureTarget {
 
     if (!started_) {
       ASSERT_EQ(touch_event.GetType(), WebInputEvent::kTouchStart);
-      start_.SetPoint(touch_event.touches[0].PositionInWidget().x,
-                      touch_event.touches[0].PositionInWidget().y);
-      last_touch_point_ = gfx::PointF(start_);
+      start_ = touch_event.touches[0].PositionInWidget();
+      last_touch_point_ = start_;
       started_ = true;
     } else {
       ASSERT_NE(touch_event.GetType(), WebInputEvent::kTouchStart);
       ASSERT_NE(touch_event.GetType(), WebInputEvent::kTouchCancel);
 
-      gfx::PointF touch_point(touch_event.touches[0].PositionInWidget().x,
-                              touch_event.touches[0].PositionInWidget().y);
+      gfx::PointF touch_point(touch_event.touches[0].PositionInWidget());
       gfx::Vector2dF delta = touch_point - last_touch_point_;
       total_abs_move_distance_length_ += delta.Length();
 
       if (touch_event.GetType() == WebInputEvent::kTouchEnd)
-        start_to_end_distance_ = touch_point - gfx::PointF(start_);
+        start_to_end_distance_ = touch_point - start_;
 
       last_touch_point_ = touch_point;
     }
   }
 
  protected:
-  gfx::Point start_;
+  gfx::PointF start_;
   gfx::PointF last_touch_point_;
   bool started_;
 };
@@ -313,8 +311,7 @@ class MockDragMouseTarget : public MockMoveGestureTarget {
       EXPECT_EQ(mouse_event.button, WebMouseEvent::Button::kLeft);
       EXPECT_EQ(mouse_event.click_count, 1);
       EXPECT_EQ(mouse_event.GetType(), WebInputEvent::kMouseDown);
-      start_.SetPoint(mouse_event.PositionInWidget().x,
-                      mouse_event.PositionInWidget().y);
+      start_ = mouse_event.PositionInWidget();
       last_mouse_point_ = start_;
       started_ = true;
     } else {

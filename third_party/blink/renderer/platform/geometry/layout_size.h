@@ -65,6 +65,8 @@ class PLATFORM_EXPORT LayoutSize {
       : width_(size.Width()), height_(size.Height()) {}
   constexpr explicit LayoutSize(const gfx::Size& size)
       : width_(size.width()), height_(size.height()) {}
+  constexpr explicit LayoutSize(const gfx::SizeF& size)
+      : width_(size.width()), height_(size.height()) {}
 
   constexpr explicit operator FloatSize() const {
     return FloatSize(width_.ToFloat(), height_.ToFloat());

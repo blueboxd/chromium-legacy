@@ -2529,7 +2529,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="4572779512957829735">Unesite PIN za sigurnosni ključ</translation>
 <translation id="457386861538956877">Više...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Uparivanje Bluetooth uređaja</translation>
 <translation id="4579581181964204535">Ne može se emitirati <ph name="HOST_NAME" />.</translation>
 <translation id="4581774856936278355">Došlo je do pogreške prilikom vraćanja Linuxa</translation>
 <translation id="4582563038311694664">Vraćanje svih postavki na zadano</translation>
@@ -4869,7 +4868,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="7974936243149753750">Rubno područje zaslona</translation>
 <translation id="7978412674231730200">Osobni ključ</translation>
 <translation id="7978450511781612192">Time ćete se odjaviti s Google računa. Vaše se oznake, povijest, zaporke i druge postavke više neće sinkronizirati.</translation>
-<translation id="7979036127916589816">Sinkronizacijska pogreška</translation>
 <translation id="7980084013673500153">ID uređaja: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Prethodno učitaj stranice za brže pregledavanje i pretraživanje</translation>
 <translation id="798145602633458219">Dodaj prijedlog <ph name="SUGGESTION_NAME" /> u okvir za pretraživanje</translation>
@@ -5318,6 +5316,7 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="862542460444371744">&amp;Proširenja</translation>
 <translation id="862727964348362408">Obustavljeno</translation>
 <translation id="862750493060684461">CSS predmemorija</translation>
+<translation id="8627706565932943526">Pogreška sinkronizacije</translation>
 <translation id="8627795981664801467">Samo sigurne veze</translation>
 <translation id="8630903300770275248">Uvezi zaštićenog korisnika</translation>
 <translation id="8631032106121706562">Latica</translation>

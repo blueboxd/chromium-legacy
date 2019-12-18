@@ -110,7 +110,7 @@ If adding a new theme, make sure the parent (or any indirect ancestor) theme of 
 
 ## Test new features in night mode
 ### Automatic Testing
-Render tests are the recommended way to verify the appearance of night mode UI. If you are not familiar with render tests, please take a look at [render test instructions](https://github.com/endlessm/chromium-browser/blob/master/chrome/test/android/javatests/src/org/chromium/chrome/test/util/RENDER_TESTS.md) to learn about how to write a new render test and upload golden images.
+Render tests are the recommended way to verify the appearance of night mode UI. If you are not familiar with render tests, please take a look at [render test instructions](/ui/android/javatests/src/org/chromium/ui/test/util/RENDER_TESTS.md) to learn about how to write a new render test and upload golden images.
 
 **For tests using DummyUiActivity:**
 

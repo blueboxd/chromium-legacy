@@ -73,17 +73,17 @@ Node* HoveredNodeForPoint(LocalFrame* frame,
 Node* HoveredNodeForEvent(LocalFrame* frame,
                           const WebGestureEvent& event,
                           bool ignore_pointer_events_none) {
-  return HoveredNodeForPoint(frame,
-                             RoundedIntPoint(event.PositionInRootFrame()),
-                             ignore_pointer_events_none);
+  return HoveredNodeForPoint(
+      frame, RoundedIntPoint(FloatPoint(event.PositionInRootFrame())),
+      ignore_pointer_events_none);
 }
 
 Node* HoveredNodeForEvent(LocalFrame* frame,
                           const WebMouseEvent& event,
                           bool ignore_pointer_events_none) {
-  return HoveredNodeForPoint(frame,
-                             RoundedIntPoint(event.PositionInRootFrame()),
-                             ignore_pointer_events_none);
+  return HoveredNodeForPoint(
+      frame, RoundedIntPoint(FloatPoint(event.PositionInRootFrame())),
+      ignore_pointer_events_none);
 }
 
 Node* HoveredNodeForEvent(LocalFrame* frame,
@@ -91,7 +91,7 @@ Node* HoveredNodeForEvent(LocalFrame* frame,
                           bool ignore_pointer_events_none) {
   WebPointerEvent transformed_point = event.WebPointerEventInRootFrame();
   return HoveredNodeForPoint(
-      frame, RoundedIntPoint(transformed_point.PositionInWidget()),
+      frame, RoundedIntPoint(FloatPoint(transformed_point.PositionInWidget())),
       ignore_pointer_events_none);
 }
 

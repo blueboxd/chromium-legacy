@@ -17,6 +17,7 @@
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/testing/nserror_util.h"
 #import "ios/web/public/test/http_server/http_server.h"
+#include "ui/base/models/tree_node_iterator.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -99,6 +100,37 @@
 + (void)setPromoAlreadySeen:(BOOL)seen {
   PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
   prefs->SetBoolean(prefs::kIosBookmarkPromoAlreadySeen, seen);
+}
+
++ (NSError*)verifyChildCount:(size_t)count inFolderWithName:(NSString*)name {
+  base::string16 name16(base::SysNSStringToUTF16(name));
+  bookmarks::BookmarkModel* bookmarkModel =
+      ios::BookmarkModelFactory::GetForBrowserState(
+          chrome_test_util::GetOriginalBrowserState());
+
+  ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
+      bookmarkModel->root_node());
+
+  const bookmarks::BookmarkNode* folder = nullptr;
+  while (iterator.has_next()) {
+    const bookmarks::BookmarkNode* bookmark = iterator.Next();
+    if (bookmark->is_folder() && bookmark->GetTitle() == name16) {
+      folder = bookmark;
+      break;
+    }
+  }
+  if (!folder)
+    return testing::NSErrorWithLocalizedDescription(
+        [NSString stringWithFormat:@"No folder named %@", name]);
+
+  if (folder->children().size() != count)
+    return testing::NSErrorWithLocalizedDescription(
+        [NSString stringWithFormat:
+                      @"Unexpected number of children in folder '%@': %" PRIuS
+                       " instead of %" PRIuS,
+                      name, folder->children().size(), count]);
+
+  return nil;
 }
 
 + (void)setPromoAlreadySeenNumberOfTimes:(int)times {

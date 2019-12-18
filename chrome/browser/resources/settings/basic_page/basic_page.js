@@ -43,15 +43,6 @@ Polymer({
       notify: true,
     },
 
-    // <if expr="chromeos">
-    showAndroidApps: Boolean,
-
-    havePlayStoreApp: Boolean,
-    // </if>
-
-    /** @type {!AndroidAppsInfo|undefined} */
-    androidAppsInfo: Object,
-
     showChangePassword: {
       type: Boolean,
       value: false,
@@ -145,13 +136,6 @@ Polymer({
     this.addWebUIListener('change-password-visibility', visibility => {
       this.showChangePassword = visibility;
     });
-
-    if (settings.AndroidAppsBrowserProxyImpl) {
-      this.addWebUIListener(
-          'android-apps-info-update', this.androidAppsInfoUpdate_.bind(this));
-      settings.AndroidAppsBrowserProxyImpl.getInstance()
-          .requestAndroidAppsInfo();
-    }
   },
 
   /**
@@ -310,29 +294,6 @@ Polymer({
   /** @private */
   onResetProfileBannerClosed_: function() {
     this.showResetProfileBanner_ = false;
-  },
-
-  /**
-   * @param {!AndroidAppsInfo} info
-   * @private
-   */
-  androidAppsInfoUpdate_: function(info) {
-    this.androidAppsInfo = info;
-  },
-
-  /**
-   * Returns true in case Android apps settings should be shown. It is not
-   * shown in case we don't have the Play Store app and settings app is not
-   * yet available.
-   * @return {boolean}
-   * @private
-   */
-  shouldShowAndroidAppsSection_: function() {
-    if (this.havePlayStoreApp ||
-        (this.androidAppsInfo && this.androidAppsInfo.settingsAppAvailable)) {
-      return true;
-    }
-    return false;
   },
 
   /**

@@ -149,7 +149,7 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
     @Override
     public void onResume() {
         super.onResume();
-        IdentityServicesProvider.getSigninManager().addSignInStateObserver(this);
+        IdentityServicesProvider.get().getSigninManager().addSignInStateObserver(this);
         mProfileDataCache.addObserver(this);
         mProfileDataCache.update(AccountManagerFacade.get().tryGetGoogleAccountNames());
         update();
@@ -158,7 +158,7 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
     @Override
     public void onPause() {
         super.onPause();
-        IdentityServicesProvider.getSigninManager().removeSignInStateObserver(this);
+        IdentityServicesProvider.get().getSigninManager().removeSignInStateObserver(this);
         mProfileDataCache.removeObserver(this);
     }
 
@@ -380,7 +380,7 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
         if (!ChromeSigninController.get().isSignedIn()) return;
 
         final DialogFragment clearDataProgressDialog = new ClearDataProgressDialog();
-        IdentityServicesProvider.getSigninManager().signOut(
+        IdentityServicesProvider.get().getSigninManager().signOut(
                 SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS, new SigninManager.SignOutCallback() {
                     @Override
                     public void preWipeData() {

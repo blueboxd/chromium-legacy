@@ -142,9 +142,6 @@ apps::AppLaunchParams CreateAppLaunchParamsForIntent(
 // is empty, the session_id is used.
 std::string GetLaunchId(extensions::AppWindow* app_window) {
   std::string launch_id;
-  if (app_window->extension_id() == extension_misc::kChromeCameraAppId)
-    return launch_id;
-
   if (app_window->show_in_shelf()) {
     if (!app_window->window_key().empty()) {
       launch_id = app_window->window_key();
@@ -1217,7 +1214,18 @@ bool ExtensionApps::ShouldRecordAppWindowActivity(
   DCHECK(app_window);
 
   const extensions::Extension* extension = app_window->GetExtension();
-  if (!extension || !Accepts(extension)) {
+  if (!extension) {
+    return false;
+  }
+
+  // ARC Play Store is not published by this publisher, but the window for Play
+  // Store should be able to be added to InstanceRegistry.
+  if (extension->id() == arc::kPlayStoreAppId &&
+      app_type_ == apps::mojom::AppType::kExtension) {
+    return true;
+  }
+
+  if (!Accepts(extension)) {
     return false;
   }
 

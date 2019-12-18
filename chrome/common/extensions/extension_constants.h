@@ -237,12 +237,8 @@ extern const char kWallpaperManagerId[];
 extern const char kZipArchiverExtensionId[];
 // Path to preinstalled zip archiver extension.
 extern const char kZipArchiverExtensionPath[];
-// The app ID of Chrome camera app.
-extern const char kChromeCameraAppId[];
-// The dev app ID of Chrome camera app.
-extern const char kChromeCameraAppDevId[];
 // Path to preinstalled Chrome camera app.
-extern const char kChromeCameraAppPath[];
+extern const char kCameraAppPath[];
 #endif
 
 // What causes an extension to be installed? Used in histograms, so don't

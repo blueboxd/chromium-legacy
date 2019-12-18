@@ -30,6 +30,7 @@
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_pointer_properties.h"
 #include "ui/events/blink/did_overscroll_params.h"
+#include "ui/events/ipc/ui_events_param_traits_macros.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d_f.h"

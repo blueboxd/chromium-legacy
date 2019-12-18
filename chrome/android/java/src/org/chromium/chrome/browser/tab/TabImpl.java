@@ -1401,7 +1401,9 @@ public class TabImpl implements Tab {
         if (currentState == mInteractableState) return;
 
         mInteractableState = currentState;
-        for (TabObserver observer : mObservers) observer.onInteractabilityChanged(currentState);
+        for (TabObserver observer : mObservers) {
+            observer.onInteractabilityChanged(this, currentState);
+        }
     }
 
     /**

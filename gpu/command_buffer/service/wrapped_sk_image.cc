@@ -38,7 +38,7 @@ namespace raster {
 
 namespace {
 
-class WrappedSkImage : public SharedImageBacking {
+class WrappedSkImage : public ClearTrackingSharedImageBacking {
  public:
   ~WrappedSkImage() override {
     DCHECK(context_state_->context_lost() ||
@@ -56,10 +56,6 @@ class WrappedSkImage : public SharedImageBacking {
     promise_texture_.reset();
     gpu::DeleteSkImage(context_state_, std::move(image_));
   }
-
-  bool IsCleared() const override { return cleared_; }
-
-  void SetCleared() override { cleared_ = true; }
 
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override {}
 
@@ -113,13 +109,13 @@ class WrappedSkImage : public SharedImageBacking {
                  uint32_t usage,
                  size_t estimated_size,
                  SharedContextState* context_state)
-      : SharedImageBacking(mailbox,
-                           format,
-                           size,
-                           color_space,
-                           usage,
-                           estimated_size,
-                           false /* is_thread_safe */),
+      : ClearTrackingSharedImageBacking(mailbox,
+                                        format,
+                                        size,
+                                        color_space,
+                                        usage,
+                                        estimated_size,
+                                        false /* is_thread_safe */),
         context_state_(context_state) {
     DCHECK(!!context_state_);
   }
@@ -223,8 +219,6 @@ class WrappedSkImage : public SharedImageBacking {
   sk_sp<SkPromiseImageTexture> promise_texture_;
   // TODO(penghuang): manage texture directly with GrBackendTexture,
   sk_sp<SkImage> image_;
-
-  bool cleared_ = false;
 
   uint64_t tracing_id_ = 0;
 

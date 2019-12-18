@@ -183,18 +183,18 @@ static SVGSVGElement* SvgRootElement(Page* page) {
   return frame->GetDocument()->AccessSVGExtensions().rootElement();
 }
 
-IntSize SVGImage::ContainerSize() const {
+LayoutSize SVGImage::ContainerSize() const {
   SVGSVGElement* root_element = SvgRootElement(page_.Get());
   if (!root_element)
-    return IntSize();
+    return LayoutSize();
 
   LayoutSVGRoot* layout_object =
       ToLayoutSVGRoot(root_element->GetLayoutObject());
   if (!layout_object)
-    return IntSize();
+    return LayoutSize();
 
   // If a container size is available it has precedence.
-  IntSize container_size = layout_object->ContainerSize();
+  LayoutSize container_size = layout_object->ContainerSize();
   if (!container_size.IsEmpty())
     return container_size;
 
@@ -203,6 +203,10 @@ IntSize SVGImage::ContainerSize() const {
 
   // No set container size; use concrete object size.
   return intrinsic_size_;
+}
+
+IntSize SVGImage::Size() const {
+  return RoundedIntSize(intrinsic_size_);
 }
 
 static float ResolveWidthForRatio(float height,
@@ -303,7 +307,7 @@ void SVGImage::ForContainer(const FloatSize& container_size, Func&& func) {
   // re-laying out the image.
   ImageObserverDisabler image_observer_disabler(this);
 
-  IntSize rounded_container_size = RoundedIntSize(container_size);
+  LayoutSize rounded_container_size = RoundedLayoutSize(container_size);
 
   if (SVGSVGElement* root_element = SvgRootElement(page_.Get())) {
     if (LayoutSVGRoot* layout_object =
@@ -448,12 +452,11 @@ static bool DrawNeedsLayer(const PaintFlags& flags) {
 bool SVGImage::ApplyShaderInternal(PaintFlags& flags,
                                    const SkMatrix& local_matrix,
                                    const KURL& url) {
-  const IntSize size(ContainerSize());
+  const FloatSize size(ContainerSize());
   if (size.IsEmpty())
     return false;
 
-  IntRect bounds(IntPoint(), size);
-
+  FloatRect bounds(FloatPoint(), size);
   flags.setShader(PaintShader::MakePaintRecord(
       PaintRecordForCurrentFrame(url), bounds, SkTileMode::kRepeat,
       SkTileMode::kRepeat, &local_matrix));
@@ -505,8 +508,9 @@ void SVGImage::Draw(
 sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(const KURL& url) {
   DCHECK(page_);
   LocalFrameView* view = To<LocalFrame>(page_->MainFrame())->View();
-  view->Resize(ContainerSize());
-  page_->GetVisualViewport().SetSize(ContainerSize());
+  IntSize rounded_container_size = RoundedIntSize(ContainerSize());
+  view->Resize(rounded_container_size);
+  page_->GetVisualViewport().SetSize(rounded_container_size);
 
   // Always call processUrlFragment, even if the url is empty, because
   // there may have been a previous url/fragment that needs to be reset.
@@ -816,7 +820,7 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
   frame->GetDocument()->UpdateStyleAndLayoutTree();
 
   // Set the concrete object size before a container size is available.
-  intrinsic_size_ = RoundedIntSize(ConcreteObjectSize(FloatSize(
+  intrinsic_size_ = RoundedLayoutSize(ConcreteObjectSize(FloatSize(
       LayoutReplaced::kDefaultWidth, LayoutReplaced::kDefaultHeight)));
 
   DCHECK(page_);

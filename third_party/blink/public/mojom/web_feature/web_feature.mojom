@@ -606,7 +606,7 @@ enum WebFeature {
   kFlexboxIntrinsicSizeAlgorithmIsDifferent = 939,
   // The above items are available in M46 branch.
 
-  kHTMLImportsHasStyleSheets = 940,
+  kHTMLImportsHasStyleSheets_Obsolete = 940,
   kNetInfoType = 946,
   kNetInfoDownlinkMax = 947,
   kNetInfoOnChange = 948,
@@ -2490,6 +2490,8 @@ enum WebFeature {
   kLongTaskBufferFull = 3118,
   kHTMLMetaElementMonetization = 3119,
   kHTMLLinkElementMonetization = 3120,
+  kInputTypeCheckboxRenderedNonSquare = 3121,
+  kInputTypeRadioRenderedNonSquare = 3122,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

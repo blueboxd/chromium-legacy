@@ -27,7 +27,7 @@ __declspec(dllexport) void ExportFunc2() {
     CoTaskMemFree(path);
 
   // Call into kernel32.dll.
-  HANDLE h = CreateEvent(NULL, FALSE, FALSE, NULL);
+  HANDLE h = CreateEvent(nullptr, FALSE, FALSE, nullptr);
   CloseHandle(h);
 }
 

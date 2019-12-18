@@ -33,6 +33,8 @@ const base::Feature kEnableZeroStateMixedTypesRanker{
     "EnableZeroStateMixedTypesRanker", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAppReinstallZeroState{
     "EnableAppReinstallZeroState", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableSuggestedFiles{"EnableSuggestedFiles",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // "EnableEmbeddedAssistantUI" is used in finch experiment therefore we cannot
 // change it until fully launched. It is used to redirect Launcher search to
@@ -103,6 +105,10 @@ bool IsZeroStateMixedTypesRankerEnabled() {
 
 bool IsAppReinstallZeroStateEnabled() {
   return base::FeatureList::IsEnabled(kEnableAppReinstallZeroState);
+}
+
+bool IsSuggestedFilesEnabled() {
+  return base::FeatureList::IsEnabled(kEnableSuggestedFiles);
 }
 
 bool IsAssistantSearchEnabled() {

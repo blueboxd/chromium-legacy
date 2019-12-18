@@ -1,0 +1,5 @@
+---
+Checks: '-*,
+         modernize-use-nullptr'
+HeaderFilterRegex: 'base/win/*'
+...

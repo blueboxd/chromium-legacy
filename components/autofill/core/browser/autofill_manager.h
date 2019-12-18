@@ -119,6 +119,20 @@ class AutofillManager : public AutofillHandler,
                                           const FormData& form,
                                           const FormFieldData& field_data);
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // Returns the list of credit cards that have associated cloud token data.
+  virtual void FetchVirtualCardCandidates();
+
+  // Callback invoked when an actual card is selected. |selected_card_id| will
+  // be used to identify the card. The selected card's cloud token data will be
+  // fetched from the server.
+  // TODO(crbug.com/1020740): Passes card server id for now. In the future when
+  // one actual credit card can have multiple virtual cards, passes instrument
+  // token instead. Design TBD.
+  virtual void OnVirtualCardCandidateSelected(
+      const std::string& selected_card_id);
+#endif
+
   // Called from our external delegate so they cannot be private.
   virtual void FillOrPreviewForm(AutofillDriver::RendererFormDataAction action,
                                  int query_id,

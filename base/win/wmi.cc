@@ -120,12 +120,12 @@ bool WmiLaunchProcess(const std::wstring& command_line, int* process_id) {
   // We're only expecting int32_t or uint32_t values, so no need for
   // ScopedVariant.
   VARIANT ret_value = {{{VT_EMPTY}}};
-  hr = out_params->Get(L"ReturnValue", 0, &ret_value, nullptr, 0);
+  hr = out_params->Get(L"ReturnValue", 0, &ret_value, nullptr, nullptr);
   if (FAILED(hr) || V_I4(&ret_value) != 0)
     return false;
 
   VARIANT pid = {{{VT_EMPTY}}};
-  hr = out_params->Get(L"ProcessId", 0, &pid, nullptr, 0);
+  hr = out_params->Get(L"ProcessId", 0, &pid, nullptr, nullptr);
   if (FAILED(hr) || V_I4(&pid) == 0)
     return false;
 
@@ -170,13 +170,14 @@ void WmiComputerSystemInfo::PopulateModelAndManufacturer(
     return;
 
   ScopedVariant manufacturer;
-  hr = class_object->Get(L"Manufacturer", 0, manufacturer.Receive(), 0, 0);
+  hr = class_object->Get(L"Manufacturer", 0, manufacturer.Receive(), nullptr,
+                         nullptr);
   if (SUCCEEDED(hr) && manufacturer.type() == VT_BSTR) {
     manufacturer_.assign(V_BSTR(manufacturer.ptr()),
                          ::SysStringLen(V_BSTR(manufacturer.ptr())));
   }
   ScopedVariant model;
-  hr = class_object->Get(L"Model", 0, model.Receive(), 0, 0);
+  hr = class_object->Get(L"Model", 0, model.Receive(), nullptr, nullptr);
   if (SUCCEEDED(hr) && model.type() == VT_BSTR) {
     model_.assign(V_BSTR(model.ptr()), ::SysStringLen(V_BSTR(model.ptr())));
   }
@@ -202,7 +203,8 @@ void WmiComputerSystemInfo::PopulateSerialNumber(
     return;
 
   ScopedVariant serial_number;
-  hr = class_obj->Get(L"SerialNumber", 0, serial_number.Receive(), 0, 0);
+  hr = class_obj->Get(L"SerialNumber", 0, serial_number.Receive(), nullptr,
+                      nullptr);
   if (SUCCEEDED(hr) && serial_number.type() == VT_BSTR) {
     serial_number_.assign(V_BSTR(serial_number.ptr()),
                           ::SysStringLen(V_BSTR(serial_number.ptr())));

@@ -17,6 +17,7 @@
 <translation id="5271696982761495740">ថេប្លេត (<ph name="ADDRESS" />)</translation>
 <translation id="5376363957846771741">ឧបករណ៍ដែលមិនស្គាល់ និងមិនមានការគាំទ្រ (<ph name="ADDRESS" />)</translation>
 <translation id="5716052956047449618"><ph name="DEVICE_NAME" />, ម៉ូដឹម</translation>
+<translation id="6459740836740815150"><ph name="DEVICE_NAME" />, ឧបករណ៍​សំឡេង​របស់​រថយន្ត</translation>
 <translation id="6542922424766292144"><ph name="DEVICE_NAME" />, ក្ដារចុច</translation>
 <translation id="654594702871184195">ប្រព័ន្ធសម្លេង (<ph name="ADDRESS" />)</translation>
 <translation id="6744468237221042970">កុំព្យូទ័រ (<ph name="ADDRESS" />)</translation>
@@ -26,5 +27,6 @@
 <translation id="8866374292072238753">វីដេអូ (<ph name="ADDRESS" />)</translation>
 <translation id="8952558712545617651">កណ្តុរ (<ph name="ADDRESS" />)</translation>
 <translation id="8961448405689538648"><ph name="DEVICE_NAME" />, ប្រភេទ​ឧបករណ៍​ដែលមិនស្គាល់</translation>
+<translation id="907431882454731668">ឧបករណ៍​សម្រាប់​ភ្ជាប់​ជាមួយ​កុំព្យូទ័រ (<ph name="ADDRESS" />)</translation>
 <translation id="978248992969828584">ទូរស័ព្ទ (<ph name="ADDRESS" />)</translation>
 </translationbundle>

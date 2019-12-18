@@ -130,9 +130,7 @@ cr.define('settings_menu', function() {
             expectedHidden, settingsMenu.$$('#advancedSubmenu').hidden);
         assertEquals(expectedHidden, settingsMenu.$$('#reset').hidden);
 
-        if (cr.isChromeOS) {
-          assertEquals(expectedHidden, settingsMenu.$$('#multidevice').hidden);
-        } else {
+        if (!cr.isChromeOS) {
           assertEquals(
               expectedHidden, settingsMenu.$$('#defaultBrowser').hidden);
         }

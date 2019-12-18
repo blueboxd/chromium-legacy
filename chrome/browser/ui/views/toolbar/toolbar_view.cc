@@ -707,10 +707,7 @@ void ToolbarView::InitLayout() {
           views::MinimumFlexSizeRule::kScaleToMinimum,
           views::MaximumFlexSizeRule::kUnbounded)
           .WithOrder(2);
-  const views::FlexSpecification browser_actions_flex_rule =
-      views::FlexSpecification::ForCustomRule(
-          BrowserActionsContainer::GetFlexRule())
-          .WithOrder(3);
+  constexpr int kExtensionsFlexOrder = 3;
 
   layout_manager_ = SetLayoutManager(std::make_unique<views::FlexLayout>());
 
@@ -724,11 +721,25 @@ void ToolbarView::InitLayout() {
                              gfx::Insets(0, location_bar_margin));
 
   if (browser_actions_) {
+    const views::FlexSpecification browser_actions_flex_rule =
+        views::FlexSpecification::ForCustomRule(
+            BrowserActionsContainer::GetFlexRule())
+            .WithOrder(kExtensionsFlexOrder);
+
     browser_actions_->SetProperty(views::kFlexBehaviorKey,
                                   browser_actions_flex_rule);
     browser_actions_->SetProperty(views::kMarginsKey, gfx::Insets());
     browser_actions_->SetProperty(views::kInternalPaddingKey,
                                   gfx::Insets(0, location_bar_margin));
+  } else if (extensions_container_) {
+    const views::FlexSpecification extensions_flex_rule =
+        views::FlexSpecification::ForCustomRule(
+            extensions_container_->animating_layout_manager()
+                ->GetDefaultFlexRule())
+            .WithOrder(kExtensionsFlexOrder);
+
+    extensions_container_->SetProperty(views::kFlexBehaviorKey,
+                                       extensions_flex_rule);
   }
 
   if (toolbar_account_icon_container_) {

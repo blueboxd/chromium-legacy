@@ -1,4 +1,5 @@
 [document web]
 ++[section]
+++++[image] name=''
 ++++[image]
 ++++[image] name='full'

@@ -24,7 +24,6 @@ class VIZ_SERVICE_EXPORT OverlayProcessorAndroid
   OverlayProcessorAndroid(SkiaOutputSurface* skia_output_surface,
                           bool enable_overlay);
   ~OverlayProcessorAndroid() override;
-  void InitializeStrategies() override;
 
   bool IsOverlaySupported() const override;
 
@@ -32,7 +31,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorAndroid
 
   // Override OverlayProcessorUsingStrategy.
   void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
-  void SetValidatorViewportSize(const gfx::Size& size) override {}
+  void SetViewportSize(const gfx::Size& size) override {}
 
   void CheckOverlaySupport(
       const OverlayProcessorInterface::OutputSurfaceOverlayPlane* primary_plane,
@@ -41,7 +40,27 @@ class VIZ_SERVICE_EXPORT OverlayProcessorAndroid
       const OverlayCandidate& overlay) const override;
 
  private:
+  void NotifyOverlayPromotion(DisplayResourceProvider* resource_provider,
+                              const OverlayCandidateList& candidate_list,
+                              const QuadList& quad_list) override;
+
+  SkiaOutputSurface* const skia_output_surface_;
   const bool overlay_enabled_;
+
+  // [id] == candidate's |display_rect| for all promotable resources.
+  using PromotionHintInfoMap = std::map<ResourceId, gfx::RectF>;
+
+  // For android, this provides a set of resources that could be promoted to
+  // overlay, if one backs them with a SurfaceView.
+  PromotionHintInfoMap promotion_hint_info_map_;
+
+  // Set of resources that have requested a promotion hint that also have quads
+  // that use them.
+  ResourceIdSet promotion_hint_requestor_set_;
+
+  void NotifyOverlayPromotionUsingSkiaOutputSurface(
+      DisplayResourceProvider* resource_provider,
+      const OverlayCandidateList& candidate_list);
 };
 }  // namespace viz
 

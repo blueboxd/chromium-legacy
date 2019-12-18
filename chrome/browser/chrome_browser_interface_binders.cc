@@ -34,6 +34,7 @@
 #include "components/dom_distiller/content/common/mojom/distillability_service.mojom.h"
 #include "components/dom_distiller/content/common/mojom/distiller_javascript_service.mojom.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
+#include "components/feed/buildflags.h"
 #include "components/performance_manager/performance_manager_tab_helper.h"
 #include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
 #include "components/translate/content/common/translate.mojom.h"
@@ -51,6 +52,11 @@
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 #include "third_party/blink/public/public_buildflags.h"
 
+#if BUILDFLAG(ENABLE_FEED_IN_CHROME)
+#include "chrome/browser/ui/webui/feed_internals/feed_internals.mojom.h"
+#include "chrome/browser/ui/webui/feed_internals/feed_internals_ui.h"
+#endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
+
 #if BUILDFLAG(ENABLE_UNHANDLED_TAP)
 #include "chrome/browser/android/contextualsearch/unhandled_tap_notifier_impl.h"
 #include "chrome/browser/android/contextualsearch/unhandled_tap_web_contents_observer.h"
@@ -63,6 +69,8 @@
 #include "chrome/browser/offline_pages/android/offline_page_auto_fetcher.h"
 #include "chrome/browser/ui/webui/explore_sites_internals/explore_sites_internals.mojom.h"
 #include "chrome/browser/ui/webui/explore_sites_internals/explore_sites_internals_ui.h"
+#include "chrome/browser/ui/webui/snippets_internals/snippets_internals.mojom.h"
+#include "chrome/browser/ui/webui/snippets_internals/snippets_internals_ui.h"
 #include "chrome/common/offline_page_auto_fetcher.mojom.h"
 #include "components/contextual_search/content/browser/contextual_search_js_api_service_impl.h"
 #include "components/contextual_search/content/common/mojom/contextual_search_js_api_service.mojom.h"
@@ -78,6 +86,8 @@
 #include "chrome/browser/payments/payment_request_factory.h"
 #include "chrome/browser/ui/webui/downloads/downloads.mojom.h"
 #include "chrome/browser/ui/webui/downloads/downloads_ui.h"
+#include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
+#include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -397,10 +407,16 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<
       explore_sites::ExploreSitesInternalsUI,
       explore_sites_internals::mojom::PageHandler>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      SnippetsInternalsUI, snippets_internals::mojom::PageHandlerFactory>(map);
 #else
   RegisterWebUIControllerInterfaceBinder<DownloadsUI,
                                          downloads::mojom::PageHandlerFactory>(
       map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      NewTabPageUI, new_tab_page::mojom::PageHandlerFactory>(map);
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -420,6 +436,12 @@ void PopulateChromeWebUIFrameBinders(
 
   RegisterWebUIControllerInterfaceBinder<DiscardsUI,
                                          discards::mojom::GraphDump>(map);
+#endif
+
+#if BUILDFLAG(ENABLE_FEED_IN_CHROME)
+  RegisterWebUIControllerInterfaceBinder<FeedInternalsUI,
+                                         feed_internals::mojom::PageHandler>(
+      map);
 #endif
 }
 

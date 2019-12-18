@@ -3455,9 +3455,6 @@
   <message name="IDS_INTERNAL_APP_CONTINUOUS_READING" desc="The default title of Chrome browser to allow users to seamlessly continue reading a web page when they switch from phones or tablets to Chromebook.">
     Continue reading in Chrome
   </message>
-  <message name="IDS_INTERNAL_APP_CAMERA" desc="The name of the Camera app in the app list.">
-    Camera
-  </message>
   <message name="IDS_INTERNAL_APP_DISCOVER" desc="Name for the Discover app in the app list.">
     Discover
   </message>

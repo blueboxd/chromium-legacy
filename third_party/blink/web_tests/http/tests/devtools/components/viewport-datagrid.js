@@ -58,7 +58,7 @@
   }
 
   var columns = [{id: 'id', title: 'ID column', width: '250px'}];
-  var dataGrid = new DataGrid.ViewportDataGrid(columns);
+  var dataGrid = new DataGrid.ViewportDataGrid({displayName: 'Test', columns});
   var a = new DataGrid.ViewportDataGridNode({id: 'a'});
   var aa = new DataGrid.ViewportDataGridNode({id: 'aa'});
   var aaa = new DataGrid.ViewportDataGridNode({id: 'aaa'});

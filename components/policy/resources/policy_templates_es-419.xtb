@@ -4742,7 +4742,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si esta opción está habilitada o no se estableció, se pueden eliminar el historial de navegación y el de descargas.
 
       Si esta opción está inhabilitada, no se pueden eliminar el historial de navegación ni el de descargas.</translation>
-<translation id="8749803771700374502">Si la lista de rechazo incluye un tipo de impresora, no se podrán visualizar estas impresoras ni obtener sus capacidades.
+<translation id="8749803771700374502">Los tipos de impresora que aparezcan en la lista de rechazo no se podrán visualizar ni obtener sus capacidades.
 
       Si se incluyen todos los tipos de impresora en la lista de rechazo, no se podrán realizar impresiones, dado que no habrá destinos disponibles para enviar un documento a imprimir.
 

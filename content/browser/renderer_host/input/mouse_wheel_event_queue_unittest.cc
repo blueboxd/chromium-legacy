@@ -36,10 +36,10 @@ const float kWheelScrollGlobalY = 72;
 
 #define EXPECT_GESTURE_SCROLL_BEGIN_IMPL(event)                    \
   EXPECT_EQ(WebInputEvent::kGestureScrollBegin, event->GetType()); \
-  EXPECT_EQ(kWheelScrollX, event->PositionInWidget().x);           \
-  EXPECT_EQ(kWheelScrollY, event->PositionInWidget().y);           \
-  EXPECT_EQ(kWheelScrollGlobalX, event->PositionInScreen().x);     \
-  EXPECT_EQ(kWheelScrollGlobalY, event->PositionInScreen().y);     \
+  EXPECT_EQ(kWheelScrollX, event->PositionInWidget().x());         \
+  EXPECT_EQ(kWheelScrollY, event->PositionInWidget().y());         \
+  EXPECT_EQ(kWheelScrollGlobalX, event->PositionInScreen().x());   \
+  EXPECT_EQ(kWheelScrollGlobalY, event->PositionInScreen().y());   \
   EXPECT_EQ(scroll_units, event->data.scroll_begin.delta_hint_units);
 
 #define EXPECT_GESTURE_SCROLL_BEGIN(event)                         \
@@ -75,10 +75,10 @@ const float kWheelScrollGlobalY = 72;
 #define EXPECT_GESTURE_SCROLL_UPDATE_IMPL(event)                    \
   EXPECT_EQ(WebInputEvent::kGestureScrollUpdate, event->GetType()); \
   EXPECT_EQ(scroll_units, event->data.scroll_update.delta_units);   \
-  EXPECT_EQ(kWheelScrollX, event->PositionInWidget().x);            \
-  EXPECT_EQ(kWheelScrollY, event->PositionInWidget().y);            \
-  EXPECT_EQ(kWheelScrollGlobalX, event->PositionInScreen().x);      \
-  EXPECT_EQ(kWheelScrollGlobalY, event->PositionInScreen().y);
+  EXPECT_EQ(kWheelScrollX, event->PositionInWidget().x());          \
+  EXPECT_EQ(kWheelScrollY, event->PositionInWidget().y());          \
+  EXPECT_EQ(kWheelScrollGlobalX, event->PositionInScreen().x());    \
+  EXPECT_EQ(kWheelScrollGlobalY, event->PositionInScreen().y());
 
 #define EXPECT_GESTURE_SCROLL_UPDATE(event)                        \
   EXPECT_GESTURE_SCROLL_UPDATE_IMPL(event);                        \
@@ -98,10 +98,10 @@ const float kWheelScrollGlobalY = 72;
 #define EXPECT_GESTURE_SCROLL_END_IMPL(event)                    \
   EXPECT_EQ(WebInputEvent::kGestureScrollEnd, event->GetType()); \
   EXPECT_EQ(scroll_units, event->data.scroll_end.delta_units);   \
-  EXPECT_EQ(kWheelScrollX, event->PositionInWidget().x);         \
-  EXPECT_EQ(kWheelScrollY, event->PositionInWidget().y);         \
-  EXPECT_EQ(kWheelScrollGlobalX, event->PositionInScreen().x);   \
-  EXPECT_EQ(kWheelScrollGlobalY, event->PositionInScreen().y);
+  EXPECT_EQ(kWheelScrollX, event->PositionInWidget().x());       \
+  EXPECT_EQ(kWheelScrollY, event->PositionInWidget().y());       \
+  EXPECT_EQ(kWheelScrollGlobalX, event->PositionInScreen().x()); \
+  EXPECT_EQ(kWheelScrollGlobalY, event->PositionInScreen().y());
 
 #define EXPECT_GESTURE_SCROLL_END(event)                           \
   EXPECT_GESTURE_SCROLL_END_IMPL(event);                           \

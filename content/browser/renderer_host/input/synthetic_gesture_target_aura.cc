@@ -92,11 +92,10 @@ void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
     modifiers |= ui::EF_SCROLL_BY_PAGE;
   }
 
-  gfx::PointF location(web_wheel.PositionInWidget().x,
-                       web_wheel.PositionInWidget().y);
   ui::MouseWheelEvent wheel_event(
-      gfx::Vector2d(web_wheel.delta_x, web_wheel.delta_y), location, location,
-      timestamp, modifiers, ui::EF_NONE);
+      gfx::Vector2d(web_wheel.delta_x, web_wheel.delta_y),
+      web_wheel.PositionInWidget(), web_wheel.PositionInWidget(), timestamp,
+      modifiers, ui::EF_NONE);
 
   aura::Window* window = GetWindow();
   wheel_event.ConvertLocationToTarget(window, window->GetRootWindow());
@@ -121,8 +120,8 @@ void SyntheticGestureTargetAura::DispatchWebGestureEventToPlatform(
     if (event_type == ui::ET_GESTURE_PINCH_UPDATE)
       pinch_details.set_scale(web_gesture.data.pinch_update.scale);
 
-    ui::GestureEvent pinch_event(web_gesture.PositionInWidget().x,
-                                 web_gesture.PositionInWidget().y, flags,
+    ui::GestureEvent pinch_event(web_gesture.PositionInWidget().x(),
+                                 web_gesture.PositionInWidget().y(), flags,
                                  ui::EventTimeForNow(), pinch_details);
 
     pinch_event.ConvertLocationToTarget(window, window->GetRootWindow());
@@ -134,9 +133,8 @@ void SyntheticGestureTargetAura::DispatchWebGestureEventToPlatform(
       web_gesture.GetType() == blink::WebInputEvent::kGestureFlingStart
           ? ui::EventMomentumPhase::BEGAN
           : ui::EventMomentumPhase::END;
-  gfx::PointF location(web_gesture.PositionInWidget().x,
-                       web_gesture.PositionInWidget().y);
-  ui::ScrollEvent scroll_event(event_type, location, location,
+  ui::ScrollEvent scroll_event(event_type, web_gesture.PositionInWidget(),
+                               web_gesture.PositionInWidget(),
                                ui::EventTimeForNow(), flags,
                                web_gesture.data.fling_start.velocity_x,
                                web_gesture.data.fling_start.velocity_y, 0, 0, 2,
@@ -159,9 +157,8 @@ void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
     changed_button_flags =
         WebEventButtonToUIEventButtonFlags(web_mouse_event.button);
   }
-  gfx::PointF location(web_mouse_event.PositionInWidget().x,
-                       web_mouse_event.PositionInWidget().y);
-  ui::MouseEvent mouse_event(event_type, location, location,
+  ui::MouseEvent mouse_event(event_type, web_mouse_event.PositionInWidget(),
+                             web_mouse_event.PositionInWidget(),
                              ui::EventTimeForNow(), flags, changed_button_flags,
                              pointer_details);
 

@@ -29,6 +29,7 @@ import argparse
 import os
 import subprocess
 import sys
+import update
 
 import build_clang_tools_extra
 
@@ -143,7 +144,10 @@ def main():
   parser = argparse.ArgumentParser(
       formatter_class=argparse.RawDescriptionHelpFormatter, epilog=__doc__)
   parser.add_argument(
-      '--fetch', action='store_true', help='Fetch and build clang sources')
+      '--fetch',
+      nargs='?',
+      const=update.CLANG_REVISION,
+      help='Fetch and build clang sources')
   parser.add_argument(
       '--build',
       action='store_true',
@@ -180,10 +184,10 @@ def main():
     sys.exit('clang-tidy binary doesn\'t exist at ' +
              GetBinaryPath(args.clang_build_dir, 'clang-tidy'))
 
-
   if args.fetch:
     steps.append(('Fetching LLVM sources', lambda:
-                  build_clang_tools_extra.FetchLLVM(args.clang_src_dir)))
+                  build_clang_tools_extra.FetchLLVM(args.clang_src_dir,
+                                                    args.fetch)))
 
   if args.build:
     steps.append(('Building clang-tidy',

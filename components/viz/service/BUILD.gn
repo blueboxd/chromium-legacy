@@ -60,10 +60,10 @@ viz_component("service") {
     "display/output_surface_frame.h",
     "display/overlay_candidate.cc",
     "display/overlay_candidate.h",
-    "display/overlay_candidate_list.cc",
-    "display/overlay_candidate_list.h",
     "display/overlay_processor_interface.cc",
     "display/overlay_processor_interface.h",
+    "display/overlay_processor_stub.cc",
+    "display/overlay_processor_stub.h",
     "display/program_binding.cc",
     "display/program_binding.h",
     "display/renderer_utils.cc",
@@ -251,17 +251,10 @@ viz_component("service") {
     libs = [ "IOSurface.framework" ]
   }
 
-  if (is_linux || is_android || use_ozone) {
-    sources += [
-      "display/overlay_candidate_validator_strategy.cc",
-      "display/overlay_candidate_validator_strategy.h",
-      "display/overlay_processor_using_strategy.cc",
-      "display/overlay_processor_using_strategy.h",
-    ]
-  }
-
   if (is_android || use_ozone) {
     sources += [
+      "display/overlay_processor_using_strategy.cc",
+      "display/overlay_processor_using_strategy.h",
       "display/overlay_strategy_fullscreen.cc",
       "display/overlay_strategy_fullscreen.h",
       "display/overlay_strategy_single_on_top.cc",
@@ -277,10 +270,10 @@ viz_component("service") {
     sources += [
       "display/overlay_processor_android.cc",
       "display/overlay_processor_android.h",
+      "display/overlay_processor_surface_control.cc",
+      "display/overlay_processor_surface_control.h",
       "display_embedder/gl_output_surface_android.cc",
       "display_embedder/gl_output_surface_android.h",
-      "display_embedder/overlay_candidate_validator_surface_control.cc",
-      "display_embedder/overlay_candidate_validator_surface_control.h",
       "frame_sinks/external_begin_frame_source_android.cc",
       "frame_sinks/external_begin_frame_source_android.h",
       "gl/throw_uncaught_exception.cc",
@@ -536,8 +529,8 @@ viz_source_set("unit_tests") {
 
   if (is_android) {
     sources += [
+      "display/overlay_processor_surface_control_unittest.cc",
       "display/overlay_unittest.cc",
-      "display_embedder/overlay_candidate_validator_surface_control_unittest.cc",
       "frame_sinks/external_begin_frame_source_android_unittest.cc",
     ]
   }

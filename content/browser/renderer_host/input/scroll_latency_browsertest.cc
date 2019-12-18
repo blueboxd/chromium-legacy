@@ -301,10 +301,10 @@ class ScrollLatencyScrollbarBrowserTest : public ScrollLatencyBrowserTest {
 #if !defined(OS_ANDROID)
     // Click on the forward scrollbar button to induce a compositor thread
     // scrollbar scroll.
-    blink::WebFloatPoint scrollbar_forward_button(795, 595);
+    gfx::PointF scrollbar_forward_button(795, 595);
     blink::WebMouseEvent mouse_event = SyntheticWebMouseEventBuilder::Build(
-        blink::WebInputEvent::kMouseDown, scrollbar_forward_button.x,
-        scrollbar_forward_button.y, 0);
+        blink::WebInputEvent::kMouseDown, scrollbar_forward_button.x(),
+        scrollbar_forward_button.y(), 0);
     mouse_event.button = blink::WebMouseEvent::Button::kLeft;
     mouse_event.SetTimeStamp(base::TimeTicks::Now());
     GetWidgetHost()->ForwardMouseEvent(mouse_event);
@@ -342,10 +342,10 @@ class ScrollLatencyScrollbarBrowserTest : public ScrollLatencyBrowserTest {
 #if !defined(OS_ANDROID)
     // Click on the scrollbar thumb and drag it twice to induce a compositor
     // thread scrollbar ScrollBegin and ScrollUpdate.
-    blink::WebFloatPoint scrollbar_thumb(795, 30);
+    gfx::PointF scrollbar_thumb(795, 30);
     blink::WebMouseEvent mouse_down = SyntheticWebMouseEventBuilder::Build(
-        blink::WebInputEvent::kMouseDown, scrollbar_thumb.x, scrollbar_thumb.y,
-        0);
+        blink::WebInputEvent::kMouseDown, scrollbar_thumb.x(),
+        scrollbar_thumb.y(), 0);
     mouse_down.button = blink::WebMouseEvent::Button::kLeft;
     mouse_down.SetTimeStamp(base::TimeTicks::Now());
     GetWidgetHost()->ForwardMouseEvent(mouse_down);
@@ -360,21 +360,23 @@ class ScrollLatencyScrollbarBrowserTest : public ScrollLatencyBrowserTest {
     RunUntilInputProcessed(GetWidgetHost());
 
     blink::WebMouseEvent mouse_move = SyntheticWebMouseEventBuilder::Build(
-        blink::WebInputEvent::kMouseMove, scrollbar_thumb.x,
-        scrollbar_thumb.y + 10, 0);
+        blink::WebInputEvent::kMouseMove, scrollbar_thumb.x(),
+        scrollbar_thumb.y() + 10, 0);
     mouse_move.button = blink::WebMouseEvent::Button::kLeft;
     mouse_move.SetTimeStamp(base::TimeTicks::Now());
     GetWidgetHost()->ForwardMouseEvent(mouse_move);
     RunUntilInputProcessed(GetWidgetHost());
 
-    mouse_move.SetPositionInWidget(scrollbar_thumb.x, scrollbar_thumb.y + 20);
-    mouse_move.SetPositionInScreen(scrollbar_thumb.x, scrollbar_thumb.y + 20);
+    mouse_move.SetPositionInWidget(scrollbar_thumb.x(),
+                                   scrollbar_thumb.y() + 20);
+    mouse_move.SetPositionInScreen(scrollbar_thumb.x(),
+                                   scrollbar_thumb.y() + 20);
     GetWidgetHost()->ForwardMouseEvent(mouse_move);
     RunUntilInputProcessed(GetWidgetHost());
 
     blink::WebMouseEvent mouse_up = SyntheticWebMouseEventBuilder::Build(
-        blink::WebInputEvent::kMouseUp, scrollbar_thumb.x,
-        scrollbar_thumb.y + 20, 0);
+        blink::WebInputEvent::kMouseUp, scrollbar_thumb.x(),
+        scrollbar_thumb.y() + 20, 0);
     mouse_up.button = blink::WebMouseEvent::Button::kLeft;
     mouse_up.SetTimeStamp(base::TimeTicks::Now());
     GetWidgetHost()->ForwardMouseEvent(mouse_up);

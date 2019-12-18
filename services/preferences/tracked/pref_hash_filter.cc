@@ -314,8 +314,8 @@ void PrefHashFilter::FlushToExternalStore(
 PrefFilter::OnWriteCallbackPair PrefHashFilter::GetOnWriteSynchronousCallbacks(
     base::DictionaryValue* pref_store_contents) {
   if (changed_paths_.empty() || !external_validation_hash_store_pair_) {
-    return std::make_pair(base::Closure(),
-                          base::Callback<void(bool success)>());
+    return std::make_pair(base::OnceClosure(),
+                          base::OnceCallback<void(bool success)>());
   }
 
   std::unique_ptr<base::DictionaryValue> changed_paths_macs =
@@ -362,8 +362,8 @@ PrefFilter::OnWriteCallbackPair PrefHashFilter::GetOnWriteSynchronousCallbacks(
   base::DictionaryValue* raw_changed_paths_macs = changed_paths_macs.get();
 
   return std::make_pair(
-      base::Bind(&ClearFromExternalStore, base::Unretained(raw_contents),
-                 base::Unretained(raw_changed_paths_macs)),
-      base::Bind(&FlushToExternalStore, base::Passed(&hash_store_contents_copy),
-                 base::Passed(&changed_paths_macs)));
+      base::BindOnce(&ClearFromExternalStore, base::Unretained(raw_contents),
+                     base::Unretained(raw_changed_paths_macs)),
+      base::BindOnce(&FlushToExternalStore, std::move(hash_store_contents_copy),
+                     std::move(changed_paths_macs)));
 }

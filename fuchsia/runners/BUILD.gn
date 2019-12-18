@@ -10,21 +10,14 @@ import("//build/config/fuchsia/symbol_archive.gni")
 import("//testing/test.gni")
 
 declare_args() {
-  # Allow the Cast Runner to use software decoders for rendering video.
-  # TODO(crbug.com/1000858): Revisit this value once hardware playback is fixed
-  #                          (fxb/13659).
-  enable_software_video_decoders = true
-
   # Set to a non-zero value to enable remote debugging on that port in WebRunner.
   web_runner_remote_debugging_port = 0
 }
 
 buildflag_header("buildflags") {
   header = "buildflags.h"
-  flags = [
-    "ENABLE_SOFTWARE_VIDEO_DECODERS=$enable_software_video_decoders",
-    "WEB_RUNNER_REMOTE_DEBUGGING_PORT=$web_runner_remote_debugging_port",
-  ]
+  flags =
+      [ "WEB_RUNNER_REMOTE_DEBUGGING_PORT=$web_runner_remote_debugging_port" ]
   visibility = [ ":*" ]
 }
 

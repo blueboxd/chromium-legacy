@@ -789,7 +789,7 @@ TEST_F(TabLifecycleUnitTest, CannotFreezeOrDiscardIfConnectedToBluetooth) {
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 
   content::WebContentsTester::For(web_contents_)
-      ->SetIsConnectedToBluetoothDevice(true);
+      ->TestIncrementBluetoothConnectedDeviceCount();
 
   DecisionDetails decision_details;
   EXPECT_FALSE(tab_lifecycle_unit.CanFreeze(&decision_details));
@@ -805,7 +805,7 @@ TEST_F(TabLifecycleUnitTest, CannotFreezeOrDiscardIfConnectedToBluetooth) {
             decision_details.FailureReason());
 
   content::WebContentsTester::For(web_contents_)
-      ->SetIsConnectedToBluetoothDevice(false);
+      ->TestDecrementBluetoothConnectedDeviceCount();
 }
 
 TEST_F(TabLifecycleUnitTest, CannotFreezeIfHoldingWebLock) {

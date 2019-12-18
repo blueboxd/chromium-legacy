@@ -2529,7 +2529,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4572779512957829735">Sláðu inn PIN-númer fyrir öryggislykilinn</translation>
 <translation id="457386861538956877">Meira...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Para Bluetooth-tæki</translation>
 <translation id="4579581181964204535">Ekki var hægt að senda <ph name="HOST_NAME" /> út.</translation>
 <translation id="4581774856936278355">Villa við endurheimt á Linux</translation>
 <translation id="4582563038311694664">Núllstilla allt</translation>
@@ -4869,7 +4868,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7974936243149753750">Klipptur rammi</translation>
 <translation id="7978412674231730200">Einkalykill</translation>
 <translation id="7978450511781612192">Þetta skráir þig út af Google reikningnum þínum. Bókamerki, ferill, aðgangsorð og fleira verður ekki lengur samstillt.</translation>
-<translation id="7979036127916589816">Samstillingarvilla</translation>
 <translation id="7980084013673500153">Auðkenni eignar: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Forhlaða síðum til að geta leitað hraðar á netinu</translation>
 <translation id="798145602633458219">Hengja tillöguna <ph name="SUGGESTION_NAME" /> við leitarreit</translation>
@@ -5317,6 +5315,7 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="862542460444371744">Viðbætur</translation>
 <translation id="862727964348362408">Í bið</translation>
 <translation id="862750493060684461">CSS-skyndiminni</translation>
+<translation id="8627706565932943526">Samstillingarvilla</translation>
 <translation id="8627795981664801467">Aðeins öruggar tengingar</translation>
 <translation id="8630903300770275248">Flytja inn stýrðan notanda</translation>
 <translation id="8631032106121706562">Baldursbrá</translation>

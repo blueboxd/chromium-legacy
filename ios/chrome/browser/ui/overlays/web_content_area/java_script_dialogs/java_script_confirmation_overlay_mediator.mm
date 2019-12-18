@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_confirmation_overlay_mediator.h"
 
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/overlays/public/overlay_callback_manager.h"
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_response.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_confirmation_overlay.h"
@@ -20,7 +21,7 @@
 #endif
 
 @interface JavaScriptConfirmationOverlayMediator ()
-@property(nonatomic, readonly) OverlayRequest* request;
+// The config from the request passed on initialization.
 @property(nonatomic, readonly)
     JavaScriptConfirmationOverlayRequestConfig* config;
 
@@ -31,11 +32,9 @@
 @implementation JavaScriptConfirmationOverlayMediator
 
 - (instancetype)initWithRequest:(OverlayRequest*)request {
-  if (self = [super init]) {
-    _request = request;
-    DCHECK(_request);
+  if (self = [super initWithRequest:request]) {
     // Verify that the request is configured for JavaScript confirmations.
-    DCHECK(_request->GetConfig<JavaScriptConfirmationOverlayRequestConfig>());
+    DCHECK(request->GetConfig<JavaScriptConfirmationOverlayRequestConfig>());
   }
   return self;
 }
@@ -50,14 +49,14 @@
 
 // Sets the OverlayResponse using the user's selection from the confirmation UI.
 - (void)setConfirmationResponse:(BOOL)dialogConfirmed {
-  self.request->set_response(
+  self.request->GetCallbackManager()->SetCompletionResponse(
       OverlayResponse::CreateWithInfo<
           JavaScriptConfirmationOverlayResponseInfo>(dialogConfirmed));
 }
 
 @end
 
-@implementation JavaScriptConfirmationOverlayMediator (Subclassing)
+@implementation JavaScriptConfirmationOverlayMediator (AlertConsumerSupport)
 
 - (NSString*)alertTitle {
   return GetJavaScriptDialogTitle(self.config->source(),
@@ -78,7 +77,7 @@
                            __typeof__(self) strongSelf = weakSelf;
                            [strongSelf setConfirmationResponse:YES];
                            [strongSelf.delegate
-                               stopDialogForMediator:strongSelf];
+                               stopOverlayForMediator:strongSelf];
                          }],
     [AlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
                            style:UIAlertActionStyleCancel
@@ -86,7 +85,7 @@
                            __typeof__(self) strongSelf = weakSelf;
                            [strongSelf setConfirmationResponse:NO];
                            [strongSelf.delegate
-                               stopDialogForMediator:strongSelf];
+                               stopOverlayForMediator:strongSelf];
                          }],
   ] mutableCopy];
   AlertAction* blockingAction =

@@ -9,6 +9,7 @@
 #endif
 
 GuideName* const kContentAreaGuide = @"ContentAreaGuide";
+GuideName* const kPrimaryToolbarGuide = @"kPrimaryToolbarGuide";
 GuideName* const kSecondaryToolbarGuide = @"kSecondaryToolbarGuide";
 GuideName* const kSecondaryToolbarNoFullscreenGuide =
     @"kSecondaryToolbarNoFullscreenGuide";

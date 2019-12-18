@@ -2526,7 +2526,6 @@
 <translation id="4572779512957829735">יש להזין את קוד האימות של מפתח האבטחה</translation>
 <translation id="457386861538956877">עוד...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">‏התאמת מכשיר Bluetooth</translation>
 <translation id="4579581181964204535">לא ניתן להעביר את <ph name="HOST_NAME" />.</translation>
 <translation id="4581774856936278355">‏שגיאה בזמן השחזור של Linux</translation>
 <translation id="4582563038311694664">אפס את כל ההגדרות</translation>
@@ -4865,7 +4864,6 @@
 <translation id="7974936243149753750">סריקת יתר</translation>
 <translation id="7978412674231730200">מפתח פרטי</translation>
 <translation id="7978450511781612192">‏הפעולה הזאת תוציא אותך מחשבונות Google שלך. הסימניות, ההיסטוריה, הסיסמאות ופרטים אחרים יפסיקו לעבור סנכרון.</translation>
-<translation id="7979036127916589816">שגיאת סנכרון</translation>
 <translation id="7980084013673500153">מזהה נכס: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">טעינה מראש של דפים כדי לאפשר גלישה וחיפוש מהירים יותר</translation>
 <translation id="798145602633458219">הצמדת ההצעה <ph name="SUGGESTION_NAME" /> לתיבת החיפוש</translation>
@@ -5316,6 +5314,7 @@
 <translation id="862542460444371744">&amp;תוספים</translation>
 <translation id="862727964348362408">מושעה</translation>
 <translation id="862750493060684461">‏מטמון של CSS</translation>
+<translation id="8627706565932943526">שגיאת סנכרון</translation>
 <translation id="8627795981664801467">התחברויות בטוחות בלבד</translation>
 <translation id="8630903300770275248">יבא משתמש בפיקוח</translation>
 <translation id="8631032106121706562">עלי כותרת</translation>

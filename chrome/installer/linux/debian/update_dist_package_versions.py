@@ -153,6 +153,16 @@ for distro in deb_sources:
             package_versions[package] = version
   distro_package_versions[distro] = package_versions
 
+missing_any_package = False
+for distro in distro_package_versions:
+  missing_packages = PACKAGE_FILTER.difference(distro_package_versions[distro])
+  if missing_packages:
+    missing_any_package = True
+    print >> sys.stderr, "Packages are not avilable on %s: %s" % (
+        distro, ', '.join(missing_packages))
+if missing_any_package:
+  sys.exit(1)
+
 with open(os.path.join(SCRIPT_DIR, 'dist_package_versions.json'), 'w') as f:
   f.write(json.dumps(distro_package_versions, sort_keys=True, indent=4,
                      separators=(',', ': ')))

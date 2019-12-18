@@ -12,6 +12,11 @@
 
 class GURL;
 
+namespace content {
+class BrowserContext;
+class StoragePartition;
+}  // namespace content
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -58,8 +63,9 @@ GURL GetChromeSyncURLForDice(const std::string& email,
 GURL GetAddAccountURLForDice(const std::string& email,
                              const std::string& continue_url);
 
-// Gets the partition URL for the embedded sign in frame/webview.
-GURL GetSigninPartitionURL();
+// Gets the partition for the embedded sign in frame/webview.
+content::StoragePartition* GetSigninPartition(
+    content::BrowserContext* browser_context);
 
 // Gets the access point from the query portion of the sign in promo URL.
 signin_metrics::AccessPoint GetAccessPointForEmbeddedPromoURL(const GURL& url);

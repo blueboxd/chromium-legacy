@@ -254,6 +254,67 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, GL_SkiaGL) {
   EXPECT_FALSE(mailbox_manager_.ConsumeTexture(mailbox));
 }
 
+// Test which ensures that legacy texture clear status is kept in sync with the
+// SharedImageBacking.
+TEST_F(SharedImageBackingFactoryIOSurfaceTest, LegacyClearing) {
+  Mailbox mailbox = Mailbox::GenerateForSharedImage();
+  viz::ResourceFormat format = viz::ResourceFormat::RGBA_8888;
+  gfx::Size size(256, 256);
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
+  uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY;
+
+  // Create a backing.
+  auto backing = backing_factory_->CreateSharedImage(
+      mailbox, format, size, color_space, usage, false /* is_thread_safe */);
+  EXPECT_TRUE(backing);
+  backing->SetCleared();
+  EXPECT_TRUE(backing->IsCleared());
+
+  // Also create a legacy mailbox.
+  EXPECT_TRUE(backing->ProduceLegacyMailbox(&mailbox_manager_));
+  TextureBase* texture_base = mailbox_manager_.ConsumeTexture(mailbox);
+  auto* texture = gles2::Texture::CheckedCast(texture_base);
+  EXPECT_TRUE(texture);
+  GLenum target = texture->target();
+
+  // Check initial state.
+  EXPECT_TRUE(texture->IsLevelCleared(target, 0));
+  EXPECT_TRUE(backing->IsCleared());
+
+  // Un-clear the representation.
+  backing->SetClearedRect(gfx::Rect());
+  EXPECT_FALSE(texture->IsLevelCleared(target, 0));
+  EXPECT_FALSE(backing->IsCleared());
+
+  // Partially clear the representation.
+  gfx::Rect partial_clear_rect(0, 0, 128, 128);
+  backing->SetClearedRect(partial_clear_rect);
+  EXPECT_EQ(partial_clear_rect, texture->GetLevelClearedRect(target, 0));
+  EXPECT_EQ(partial_clear_rect, backing->ClearedRect());
+
+  // Fully clear the representation.
+  backing->SetCleared();
+  EXPECT_TRUE(texture->IsLevelCleared(target, 0));
+  EXPECT_TRUE(backing->IsCleared());
+
+  // Un-clear the texture.
+  texture->SetLevelClearedRect(target, 0, gfx::Rect());
+  EXPECT_FALSE(texture->IsLevelCleared(target, 0));
+  EXPECT_FALSE(backing->IsCleared());
+
+  // Partially clear the texture.
+  texture->SetLevelClearedRect(target, 0, partial_clear_rect);
+  EXPECT_EQ(partial_clear_rect, texture->GetLevelClearedRect(target, 0));
+  EXPECT_EQ(partial_clear_rect, backing->ClearedRect());
+
+  // Fully clear the representation.
+  texture->SetLevelCleared(target, 0, true);
+  EXPECT_TRUE(texture->IsLevelCleared(target, 0));
+  EXPECT_TRUE(backing->IsCleared());
+
+  backing->Destroy();
+}
+
 #if BUILDFLAG(USE_DAWN)
 // Test to check interaction between Dawn and skia GL representations.
 TEST_F(SharedImageBackingFactoryIOSurfaceTest, Dawn_SkiaGL) {

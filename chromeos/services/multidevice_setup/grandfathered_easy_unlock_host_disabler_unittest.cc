@@ -147,7 +147,7 @@ TEST_F(
             GetEasyUnlockHostIdToDisablePrefValue());
   EXPECT_EQ(
       1,
-      fake_device_sync_client()->GetSetSoftwareFeatureStateCallbackQueueSize());
+      fake_device_sync_client()->GetSetSoftwareFeatureStateInputsQueueSize());
 
   fake_device_sync_client()->InvokePendingSetSoftwareFeatureStateCallback(
       device_sync::mojom::NetworkRequestResult::kSuccess);
@@ -180,7 +180,7 @@ TEST_F(MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest,
   EXPECT_EQ(kNoDevice, GetEasyUnlockHostIdToDisablePrefValue());
   EXPECT_EQ(
       0,
-      fake_device_sync_client()->GetSetSoftwareFeatureStateCallbackQueueSize());
+      fake_device_sync_client()->GetSetSoftwareFeatureStateInputsQueueSize());
 }
 
 // Situation #3:
@@ -208,7 +208,7 @@ TEST_F(MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest,
             GetEasyUnlockHostIdToDisablePrefValue());
   EXPECT_EQ(
       1,
-      fake_device_sync_client()->GetSetSoftwareFeatureStateCallbackQueueSize());
+      fake_device_sync_client()->GetSetSoftwareFeatureStateInputsQueueSize());
 
   fake_device_sync_client()->InvokePendingSetSoftwareFeatureStateCallback(
       device_sync::mojom::NetworkRequestResult::kSuccess);
@@ -228,7 +228,7 @@ TEST_F(MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest,
             GetEasyUnlockHostIdToDisablePrefValue());
   EXPECT_EQ(
       1,
-      fake_device_sync_client()->GetSetSoftwareFeatureStateCallbackQueueSize());
+      fake_device_sync_client()->GetSetSoftwareFeatureStateInputsQueueSize());
 }
 
 // Situation #1 where device A is removed from list of synced devices:
@@ -252,7 +252,7 @@ TEST_F(MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest,
   EXPECT_EQ(kNoDevice, GetEasyUnlockHostIdToDisablePrefValue());
   EXPECT_EQ(
       0,
-      fake_device_sync_client()->GetSetSoftwareFeatureStateCallbackQueueSize());
+      fake_device_sync_client()->GetSetSoftwareFeatureStateInputsQueueSize());
 }
 
 // Situation #1 with failure:
@@ -272,12 +272,12 @@ TEST_F(MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest,
 
   EXPECT_EQ(
       1,
-      fake_device_sync_client()->GetSetSoftwareFeatureStateCallbackQueueSize());
+      fake_device_sync_client()->GetSetSoftwareFeatureStateInputsQueueSize());
   fake_device_sync_client()->InvokePendingSetSoftwareFeatureStateCallback(
       device_sync::mojom::NetworkRequestResult::kInternalServerError);
   EXPECT_EQ(
       0,
-      fake_device_sync_client()->GetSetSoftwareFeatureStateCallbackQueueSize());
+      fake_device_sync_client()->GetSetSoftwareFeatureStateInputsQueueSize());
 
   EXPECT_EQ(test_devices()[0].GetDeviceId(),
             GetEasyUnlockHostIdToDisablePrefValue());
@@ -287,7 +287,7 @@ TEST_F(MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest,
 
   EXPECT_EQ(
       1,
-      fake_device_sync_client()->GetSetSoftwareFeatureStateCallbackQueueSize());
+      fake_device_sync_client()->GetSetSoftwareFeatureStateInputsQueueSize());
 }
 
 TEST_F(MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest,
@@ -299,7 +299,7 @@ TEST_F(MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest,
   EXPECT_EQ(kNoDevice, GetEasyUnlockHostIdToDisablePrefValue());
   EXPECT_EQ(
       0,
-      fake_device_sync_client()->GetSetSoftwareFeatureStateCallbackQueueSize());
+      fake_device_sync_client()->GetSetSoftwareFeatureStateInputsQueueSize());
 }
 
 TEST_F(MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest,
@@ -312,7 +312,7 @@ TEST_F(MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest,
   EXPECT_EQ(kNoDevice, GetEasyUnlockHostIdToDisablePrefValue());
   EXPECT_EQ(
       0,
-      fake_device_sync_client()->GetSetSoftwareFeatureStateCallbackQueueSize());
+      fake_device_sync_client()->GetSetSoftwareFeatureStateInputsQueueSize());
 }
 
 TEST_F(MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest,
@@ -325,7 +325,7 @@ TEST_F(MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest,
   EXPECT_EQ(kNoDevice, GetEasyUnlockHostIdToDisablePrefValue());
   EXPECT_EQ(
       0,
-      fake_device_sync_client()->GetSetSoftwareFeatureStateCallbackQueueSize());
+      fake_device_sync_client()->GetSetSoftwareFeatureStateInputsQueueSize());
 }
 
 // Simulate:
@@ -344,7 +344,7 @@ TEST_F(MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest,
 
   EXPECT_EQ(
       1,
-      fake_device_sync_client()->GetSetSoftwareFeatureStateCallbackQueueSize());
+      fake_device_sync_client()->GetSetSoftwareFeatureStateInputsQueueSize());
   fake_device_sync_client()->InvokePendingSetSoftwareFeatureStateCallback(
       device_sync::mojom::NetworkRequestResult::kInternalServerError);
 
@@ -354,7 +354,7 @@ TEST_F(MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest,
 
   EXPECT_EQ(
       0,
-      fake_device_sync_client()->GetSetSoftwareFeatureStateCallbackQueueSize());
+      fake_device_sync_client()->GetSetSoftwareFeatureStateInputsQueueSize());
   EXPECT_FALSE(mock_timer()->IsRunning());
   EXPECT_EQ(kNoDevice, GetEasyUnlockHostIdToDisablePrefValue());
 }
@@ -380,7 +380,7 @@ TEST_F(MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest,
 
   EXPECT_EQ(
       2,
-      fake_device_sync_client()->GetSetSoftwareFeatureStateCallbackQueueSize());
+      fake_device_sync_client()->GetSetSoftwareFeatureStateInputsQueueSize());
   EXPECT_EQ(test_devices()[1].GetDeviceId(),
             GetEasyUnlockHostIdToDisablePrefValue());
 

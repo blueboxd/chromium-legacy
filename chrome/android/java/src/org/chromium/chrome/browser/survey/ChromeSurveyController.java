@@ -230,7 +230,7 @@ public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimation
     private TabObserver createTabObserver(Tab tab, String siteId) {
         return new EmptyTabObserver() {
             @Override
-            public void onInteractabilityChanged(boolean isInteractable) {
+            public void onInteractabilityChanged(Tab tab, boolean isInteractable) {
                 showInfoBarIfApplicable(tab, siteId, this);
             }
 

@@ -96,7 +96,7 @@ public class MainPreferences extends PreferenceFragmentCompat
     @Override
     public void onStart() {
         super.onStart();
-        SigninManager signinManager = IdentityServicesProvider.getSigninManager();
+        SigninManager signinManager = IdentityServicesProvider.get().getSigninManager();
         if (signinManager.isSigninSupported()) {
             signinManager.addSignInStateObserver(this);
             mSignInPreference.registerForUpdates();
@@ -110,7 +110,7 @@ public class MainPreferences extends PreferenceFragmentCompat
     @Override
     public void onStop() {
         super.onStop();
-        SigninManager signinManager = IdentityServicesProvider.getSigninManager();
+        SigninManager signinManager = IdentityServicesProvider.get().getSigninManager();
         if (signinManager.isSigninSupported()) {
             signinManager.removeSignInStateObserver(this);
             mSignInPreference.unregisterForUpdates();
@@ -199,7 +199,7 @@ public class MainPreferences extends PreferenceFragmentCompat
     }
 
     private void updatePreferences() {
-        if (IdentityServicesProvider.getSigninManager().isSigninSupported()) {
+        if (IdentityServicesProvider.get().getSigninManager().isSigninSupported()) {
             addPreferenceIfAbsent(PREF_SIGN_IN);
         } else {
             removePreferenceIfPresent(PREF_SIGN_IN);

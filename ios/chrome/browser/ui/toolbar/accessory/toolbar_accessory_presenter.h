@@ -23,12 +23,10 @@
 // The main presented view.
 @property(nonatomic, strong, readonly) UIView* backgroundView;
 
-// Adds the provided |toolbarAccessoryView| as an accessory using the
-// |toolbarView| for positioning. Calls the provided |completion| after adding
-// the view. There can only be one toolbar view presented at a time. If there is
-// a view already presented, this is a no-op.
+// Adds the provided |toolbarAccessoryView| as an accessory. Calls the provided
+// |completion| after adding the view. There can only be one toolbar view
+// presented at a time. If there is a view already presented, this is a no-op.
 - (void)addToolbarAccessoryView:(UIView*)toolbarAccessoryView
-               usingToolbarView:(UIView*)toolbarView
                        animated:(BOOL)animated
                      completion:(void (^)())completion;
 

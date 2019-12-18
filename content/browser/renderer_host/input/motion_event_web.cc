@@ -96,22 +96,22 @@ int MotionEventWeb::GetPointerId(size_t pointer_index) const {
 
 float MotionEventWeb::GetX(size_t pointer_index) const {
   DCHECK_LT(pointer_index, GetPointerCount());
-  return event_.touches[pointer_index].PositionInWidget().x;
+  return event_.touches[pointer_index].PositionInWidget().x();
 }
 
 float MotionEventWeb::GetY(size_t pointer_index) const {
   DCHECK_LT(pointer_index, GetPointerCount());
-  return event_.touches[pointer_index].PositionInWidget().y;
+  return event_.touches[pointer_index].PositionInWidget().y();
 }
 
 float MotionEventWeb::GetRawX(size_t pointer_index) const {
   DCHECK_LT(pointer_index, GetPointerCount());
-  return event_.touches[pointer_index].PositionInScreen().x;
+  return event_.touches[pointer_index].PositionInScreen().x();
 }
 
 float MotionEventWeb::GetRawY(size_t pointer_index) const {
   DCHECK_LT(pointer_index, GetPointerCount());
-  return event_.touches[pointer_index].PositionInScreen().y;
+  return event_.touches[pointer_index].PositionInScreen().y();
 }
 
 float MotionEventWeb::GetTouchMajor(size_t pointer_index) const {

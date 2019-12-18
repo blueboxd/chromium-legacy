@@ -160,7 +160,7 @@ public class DisplayCutoutControllerTest {
         verify(mTab).addObserver(mTabObserverCaptor.capture());
         reset(mTab);
 
-        mTabObserverCaptor.getValue().onInteractabilityChanged(true);
+        mTabObserverCaptor.getValue().onInteractabilityChanged(mTab, true);
         verify(mTab).getActivity();
     }
 
@@ -173,7 +173,7 @@ public class DisplayCutoutControllerTest {
         verify(mTab).addObserver(mTabObserverCaptor.capture());
         reset(mTab);
 
-        mTabObserverCaptor.getValue().onInteractabilityChanged(false);
+        mTabObserverCaptor.getValue().onInteractabilityChanged(mTab, false);
         verify(mTab).getActivity();
     }
 

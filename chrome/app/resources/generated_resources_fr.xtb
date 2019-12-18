@@ -751,7 +751,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2048653237708779538">Action non disponible</translation>
 <translation id="2050339315714019657">Portrait</translation>
 <translation id="2053312383184521053">Données sur l'état de veille</translation>
-<translation id="2055585478631012616">Vous allez être déconnecté de ces sites, onglets ouverts inclus</translation>
+<translation id="2055585478631012616">Vous allez être déconnecté de ce site, y compris dans les onglets ouverts</translation>
 <translation id="205560151218727633">Logo de l'Assistant Google</translation>
 <translation id="2058456167109518507">Appareil détecté</translation>
 <translation id="2059913712424898428">Fuseau horaire</translation>
@@ -1043,7 +1043,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2462724976360937186">ID de clé de l'autorité de certification</translation>
 <translation id="2462752602710430187">L'imprimante <ph name="PRINTER_NAME" /> a bien été ajoutée.</translation>
 <translation id="2464089476039395325">Proxy HTTP</translation>
-<translation id="2467267713099745100">Réseau <ph name="NETWORK_TYPE" /> désactivé</translation>
+<translation id="2467267713099745100">Réseau <ph name="NETWORK_TYPE" />, désactivé</translation>
 <translation id="2468205691404969808">Utilise des cookies pour mémoriser vos préférences, même si vous n'accédez pas à ces pages</translation>
 <translation id="2468402215065996499">Tamagotchi</translation>
 <translation id="2469259292033957819">Vous n'avez aucune imprimante enregistrée.</translation>
@@ -1298,7 +1298,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2800760947029405028">Importer une image</translation>
 <translation id="2803375539583399270">Saisir le code</translation>
 <translation id="2804043232879091219">Impossible d'ouvrir le navigateur secondaire</translation>
-<translation id="2804667941345577550">Vous allez être déconnecté de ce site, onglets ouverts inclus</translation>
+<translation id="2804667941345577550">Vous allez être déconnecté de ce site, y compris dans les onglets ouverts</translation>
 <translation id="2804680522274557040">Caméra désactivée</translation>
 <translation id="2805646850212350655">Système de fichiers de chiffrement Microsoft </translation>
 <translation id="2805756323405976993">Applications</translation>
@@ -2529,7 +2529,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4572779512957829735">Saisissez le code associé à votre clé de sécurité</translation>
 <translation id="457386861538956877">Autres...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Associer un appareil Bluetooth</translation>
 <translation id="4579581181964204535">Impossible de caster <ph name="HOST_NAME" />.</translation>
 <translation id="4581774856936278355">Erreur lors de la restauration de Linux</translation>
 <translation id="4582563038311694664">Réinitialiser tous les paramètres</translation>
@@ -3597,7 +3596,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6136114942382973861">Fermer la barre de téléchargements</translation>
 <translation id="6137767437444130246">Certificat utilisateur</translation>
 <translation id="6138680304137685902">Signature X9.62 ECDSA avec SHA-384</translation>
-<translation id="6138894911715675297"><ph name="NETWORK_TYPE" />, aucun réseau détecté</translation>
+<translation id="6138894911715675297"><ph name="NETWORK_TYPE" />, aucun réseau disponible</translation>
 <translation id="6141988275892716286">Confirmer le téléchargement</translation>
 <translation id="6143186082490678276">Aide</translation>
 <translation id="6144938890088808325">Aidez-nous à améliorer les Chromebooks</translation>
@@ -4795,7 +4794,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7877451762676714207">Erreur serveur inconnue. Veuillez réessayer ou contacter l'administrateur du serveur.</translation>
 <translation id="7877680364634660272">Visite</translation>
 <translation id="7878562273885520351">Votre mot de passe a peut-être été piraté</translation>
-<translation id="7879631849810108578">Raccourci activé : <ph name="IDS_SHORT_SET_COMMAND" /></translation>
+<translation id="7879631849810108578">Raccourci défini : <ph name="IDS_SHORT_SET_COMMAND" /></translation>
 <translation id="7880823633812189969">Les données locales seront supprimées lorsque vous redémarrerez l'appareil</translation>
 <translation id="7881483672146086348">Afficher le compte</translation>
 <translation id="7882358943899516840">Type de fournisseur</translation>
@@ -4870,7 +4869,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7974936243149753750">Surbalayage</translation>
 <translation id="7978412674231730200">Clé privée</translation>
 <translation id="7978450511781612192">Vous serez déconnecté de vos comptes Google. Vos favoris, votre historique et vos mots de passe ne seront plus synchronisés.</translation>
-<translation id="7979036127916589816">Erreur de synchronisation</translation>
 <translation id="7980084013673500153">ID d'élément : <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Précharger les pages pour accélérer la navigation et la recherche</translation>
 <translation id="798145602633458219">Ajouter la suggestion <ph name="SUGGESTION_NAME" /> au champ de recherche</translation>
@@ -5175,7 +5173,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8400146488506985033">Gérer les utilisateurs</translation>
 <translation id="8401432541486058167">Utilisez le code associé à votre carte à puce.</translation>
 <translation id="8405046151008197676">Découvrez les nouveautés de la dernière mise à jour</translation>
-<translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> : connexion…</translation>
+<translation id="8408068190360279472">Réseau <ph name="NETWORK_TYPE" /> : connexion…</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Demander d'abord (recommandé)</translation>
 <translation id="8418445294933751433">Afficher dan&amp;s un onglet</translation>
@@ -5319,6 +5317,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="862542460444371744">&amp;Extensions</translation>
 <translation id="862727964348362408">Suspendu</translation>
 <translation id="862750493060684461">Cache CSS</translation>
+<translation id="8627706565932943526">Erreur de synchronisation.</translation>
 <translation id="8627795981664801467">Uniquement les connexions sécurisées</translation>
 <translation id="8630903300770275248">Importer un utilisateur supervisé</translation>
 <translation id="8631032106121706562">Fleur</translation>
@@ -5465,7 +5464,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8807632654848257479">Stable</translation>
 <translation id="8808478386290700967">Web Store</translation>
 <translation id="8808686172382650546">Chat</translation>
-<translation id="8808744862003883508">Sur cette page, vous pouvez consulter toutes les extensions installées sur Chrome.</translation>
+<translation id="8808744862003883508">Sur cette page, vous pouvez consulter toutes les extensions installées dans Chrome.</translation>
 <translation id="8809147117840417135">Turquoise clair</translation>
 <translation id="8813698869395535039">Impossible de se connecter au compte <ph name="USERNAME" /></translation>
 <translation id="8813811964357448561">feuille de papier</translation>

@@ -2528,7 +2528,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4572779512957829735">Introduce o PIN da túa chave de seguranza</translation>
 <translation id="457386861538956877">Máis...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Sincronizar dispositivo Bluetooth</translation>
 <translation id="4579581181964204535">Non se puido emitir <ph name="HOST_NAME" />.</translation>
 <translation id="4581774856936278355">Produciuse un erro ao restaurar Linux</translation>
 <translation id="4582563038311694664">Restablecer toda a configuración</translation>
@@ -4868,7 +4867,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7974936243149753750">Sobrevarrido</translation>
 <translation id="7978412674231730200">Clave privada</translation>
 <translation id="7978450511781612192">Desta forma pecharase sesión nas túas Contas de Google. Deixarán de sincronizarse os marcadores, o historial, os contrasinais e outros datos.</translation>
-<translation id="7979036127916589816">Erro de sincronización</translation>
 <translation id="7980084013673500153">Código de identificación do recurso: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Cargar previamente as páxinas para que a navegación e as buscas sexan máis rápidas</translation>
 <translation id="798145602633458219">Anexar a suxestión "<ph name="SUGGESTION_NAME" />" á caixa de busca</translation>
@@ -5316,6 +5314,7 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="862542460444371744">&amp;Extensións</translation>
 <translation id="862727964348362408">Suspendido</translation>
 <translation id="862750493060684461">Caché de CSS</translation>
+<translation id="8627706565932943526">Erro de sincronización</translation>
 <translation id="8627795981664801467">Só conexións seguras</translation>
 <translation id="8630903300770275248">Importar usuario supervisado</translation>
 <translation id="8631032106121706562">Pétalos</translation>

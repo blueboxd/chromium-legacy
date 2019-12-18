@@ -148,44 +148,6 @@ message ClientPhishingResponse {
   repeated string OBSOLETE_whitelist_expression = 2;
 }
 
-message ClientMalwareRequest {
-  // URL that the client visited.  The CGI parameters are stripped by the
-  // client.
-  required string url = 1;
-
-  // Field 2 is deleted and no longer in use.
-
-  // Field 3 is only used on the server.
-
-  // The referrer URL.  This field might not be set, for example, in the case
-  // where the referrer uses HTTPS.
-  optional string referrer_url = 4;
-
-  // Field 5 and 6 are only used on the server.
-
-  message UrlInfo {
-    required string ip = 1;
-
-    // The final URL for the request (final = after redirects).
-    //
-    // Only the origin portion of the URL is present.  The full URL is not
-    // available, because of https://crbug.com/973885.
-    required string url = 2;
-
-    optional string method = 3;
-    optional string referrer = 4;
-    // Resource type, the int value is a direct cast from the Type enum
-    // of ResourceType class defined in //src/webkit/commom/resource_type.h
-    optional int32 resource_type = 5;
-  }
-
-  // List of resource urls that match the malware IP list.
-  repeated UrlInfo bad_ip_url_info = 7;
-
-  // Population that the reporting user is part of.
-  optional ChromeUserPopulation population = 9;
-}
-
 // The message is used for client request to determine whether the provided URL
 // is safe for the purposes of entering user credentials for logging in.
 message LoginReputationClientRequest {
@@ -474,16 +436,6 @@ message DomFeatures {
   // ClientSideModel.version(). The model sets the term list, which affects
   // the feature extraction.
   optional int32 model_version = 3;
-}
-
-message ClientMalwareResponse {
-  required bool blacklist = 1;
-  // The confirmed blacklisted bad IP and its url, which will be shown in
-  // malware warning, if the blacklist verdict is true.
-  // This IP string could be either in IPv4 or IPv6 format, which is the same
-  // as the ones client sent to server.
-  optional string bad_ip = 2;
-  optional string bad_url = 3;
 }
 
 message ClientDownloadRequest {

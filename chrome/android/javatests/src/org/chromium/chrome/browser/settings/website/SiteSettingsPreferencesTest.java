@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.LocationSettings;
+import org.chromium.chrome.browser.settings.NfcSystemLevelSetting;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -521,6 +522,9 @@ public class SiteSettingsPreferencesTest {
     @EnableFeatures("QuietNotificationPrompts")
     @DisabledTest(message = "Flaky. crbug.com/1030218")
     public void testOnlyExpectedPreferencesShown() {
+        LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
+        NfcSystemLevelSetting.setNfcSettingForTesting(true);
+
         // If you add a category in the SiteSettings UI, please add a test for it below.
         Assert.assertEquals(19, SiteSettingsCategory.Type.NUM_ENTRIES);
 
@@ -528,6 +532,8 @@ public class SiteSettingsPreferencesTest {
         String[] binaryToggle = new String[] {"binary_toggle"};
         String[] binaryToggleWithException = new String[] {"binary_toggle", "add_exception"};
         String[] binaryToggleWithAllowed = new String[] {"binary_toggle", "allowed_group"};
+        String[] binaryToggleWithOsWarningExtra =
+                new String[] {"binary_toggle", "os_permissions_warning_extra"};
         String[] cookie = new String[] {"binary_toggle", "third_party_cookies", "add_exception"};
         String[] protectedMedia = new String[] {"tri_state_toggle", "protected_content_learn_more"};
         String[] notifications_enabled;
@@ -603,12 +609,16 @@ public class SiteSettingsPreferencesTest {
             checkPreferencesForCategory(key, values.second);
         }
 
-        // Location is not the only system-managed permission, but having one test for a
-        // system-managed permission has been shown to catch stray permissons appearing where they
-        // should not.
+        // Disable system location setting and check for the right preferences.
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(false);
-        checkPreferencesForCategory(SiteSettingsCategory.Type.DEVICE_LOCATION, binaryToggle);
+        checkPreferencesForCategory(
+                SiteSettingsCategory.Type.DEVICE_LOCATION, binaryToggleWithOsWarningExtra);
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
+
+        // Disable system nfc setting and check for the right preferences.
+        NfcSystemLevelSetting.setNfcSettingForTesting(false);
+        checkPreferencesForCategory(SiteSettingsCategory.Type.NFC, binaryToggleWithOsWarningExtra);
+        NfcSystemLevelSetting.setNfcSettingForTesting(null);
     }
 
     /**

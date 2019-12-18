@@ -860,7 +860,8 @@ void WebPluginContainerImpl::HandleDragEvent(MouseEvent& event) {
 }
 
 void WebPluginContainerImpl::HandleWheelEvent(WheelEvent& event) {
-  WebFloatPoint absolute_location = event.NativeEvent().PositionInRootFrame();
+  FloatPoint absolute_location =
+      FloatPoint(event.NativeEvent().PositionInRootFrame());
 
   // Translate the root frame position to content coordinates.
   absolute_location =
@@ -955,8 +956,8 @@ WebTouchEvent WebPluginContainerImpl::TransformTouchEvent(
 
   LocalFrameView* parent = ParentFrameView();
   for (unsigned i = 0; i < transformed_event.touches_length; ++i) {
-    WebFloatPoint absolute_location =
-        transformed_event.touches[i].PositionInWidget();
+    FloatPoint absolute_location =
+        FloatPoint(transformed_event.touches[i].PositionInWidget());
 
     // Translate the root frame position to content coordinates.
     absolute_location = parent->ConvertFromRootFrame(absolute_location);
@@ -1021,11 +1022,11 @@ void WebPluginContainerImpl::HandleGestureEvent(GestureEvent& event) {
   // Take a copy of the event and translate it into the coordinate
   // system of the plugin.
   WebGestureEvent translated_event = event.NativeEvent();
-  WebFloatPoint absolute_root_frame_location =
+  gfx::PointF absolute_root_frame_location =
       event.NativeEvent().PositionInRootFrame();
   FloatPoint local_point =
       element_->GetLayoutObject()->AbsoluteToLocalFloatPoint(
-          absolute_root_frame_location);
+          FloatPoint(absolute_root_frame_location));
   translated_event.FlattenTransform();
   translated_event.SetPositionInWidget(local_point);
 

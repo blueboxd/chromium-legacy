@@ -2563,7 +2563,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4978405676361550165">Nếu bạn đặt chính sách "OffHours" thì Chrome sẽ bỏ qua các chính sách thiết bị đã chỉ định (sử dụng cài đặt mặc định của những chính sách này) trong khoảng thời gian đã định. Chrome sẽ áp dụng lại các chính sách thiết bị đối với mọi sự kiện khi khoảng thời gian "OffHours" bắt đầu hoặc kết thúc. Người dùng sẽ được thông báo và bắt buộc phải đăng xuất khi kết thúc thời gian "OffHours" và khi các cài đặt của chính sách thiết bị thay đổi (ví dụ: khi người dùng đăng nhập bằng một tài khoản không được phép).</translation>
 <translation id="4980635395568992380">Loại dữ liệu:</translation>
 <translation id="4980794848194997251">Chính sách này kiểm soát việc xử lý nội dung hỗn hợp (nội dung HTTP trên các trang web HTTPS) trong trình duyệt.
-       Nếu bạn không đặt hoặc đặt chính sách này thành true, thì nội dung hỗn hợp là âm thanh và video sẽ được nâng cấp tự động lên HTTPS (tức là URL sẽ được viết lại dưới dạng HTTPS mà không có phiên bản dự phòng nếu không có sẵn tài nguyên qua HTTPS), còn với nội dung hỗn hợp là hình ảnh thì một cảnh báo 'Không an toàn' sẽ hiển thị trong thanh URL.
+       Nếu bạn không đặt hoặc đặt chính sách này thành true, thì nội dung hỗn hợp là âm thanh và video sẽ được nâng cấp tự động lên HTTPS (tức là URL sẽ được viết lại dưới dạng HTTPS mà không có phiên bản dự phòng nếu không có sẵn tài nguyên qua HTTPS), còn với nội dung hỗn hợp là hình ảnh thì một cảnh báo 'Không bảo mật' sẽ hiển thị trong thanh URL.
        Nếu bạn đặt chính sách này thành false, thì âm thanh và video sẽ không được nâng cấp tự động, còn với hình ảnh thì sẽ không hiển thị cảnh báo nào.
        Chính sách này không ảnh hưởng đến các loại nội dung hỗn hợp khác ngoài âm thanh, video và hình ảnh.</translation>
 <translation id="4983201894483989687">Cho phép chạy các plugin đã lỗi thời</translation>
@@ -4850,7 +4850,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
       Nếu bạn không đặt hoặc đặt chính sách này thành danh sách trống, thì tất cả các loại máy in đều được tìm thấy.
 
-      Máy in kết nối qua tiện ích còn gọi là đích cung cấp dịch vụ in và bao gồm mọi đích thuộc tiện ích của <ph name="PRODUCT_NAME" />.
+      Máy in ở dạng tiện ích còn gọi là đích cung cấp dịch vụ in và bao gồm mọi đích thuộc tiện ích của <ph name="PRODUCT_NAME" />.
 
       Máy in cục bộ (hay còn gọi là đích in gốc) bao gồm các đích dùng được cho thiết bị cục bộ và máy in dùng chung qua mạng.</translation>
 <translation id="8752541111574086388">Xin lưu ý rằng chính sách này không được dùng nữa và sẽ bị xóa trong <ph name="PRODUCT_OS_NAME" /> phiên bản 82. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.

@@ -688,6 +688,7 @@ junit_binary("chrome_junit_tests") {
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:com_android_support_mediarouter_v7_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
+    "//third_party/android_deps:com_googlecode_java_diff_utils_diffutils_java",
     "//third_party/android_sdk/androidx_browser:androidx_browser_java",
     "//third_party/blink/public:blink_headers_java",
     "//third_party/blink/public/mojom:android_mojo_bindings_java",
@@ -1041,11 +1042,12 @@ if (enable_vr || enable_arcore) {
       ]
 
       deps = chrome_test_xr_java_deps + [
+               ":chrome_test_util_java",
                "//chrome/android:chrome_test_xr_java",
+               "//components/module_installer/android:module_installer_java",
                "//third_party/gvr-android-sdk:controller_test_api_java",
                "//third_party/gvr-android-sdk:gvr_common_java",
-               ":chrome_test_util_java",
-               "//components/module_installer/android:module_installer_java",
+               "//ui/android:ui_java_test_support",
              ]
 
       data = [

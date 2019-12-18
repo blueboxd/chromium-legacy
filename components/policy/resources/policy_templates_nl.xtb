@@ -4124,7 +4124,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Wanneer dit beleid niet wordt ingesteld, of wordt ingesteld op '0', wordt de URL onmiddellijk in een alternatieve browser geopend als je naar de URL navigeert.
 
       Wanneer dit beleid is ingesteld op een getal, toont Chrome gedurende dat aantal milliseconden een melding en wordt vervolgens de alternatieve browser geopend.</translation>
-<translation id="7583419926951418342">Met dit beleid wordt cloudrapportage voor <ph name="PRODUCT_NAME" /> beheerd waarvoor informatie over de browseractiviteit naar de Google-beheerdersconsole wordt geüpload.
+<translation id="7583419926951418342">Dit beleid beheert cloudrapportage voor <ph name="PRODUCT_NAME" /> waarmee informatie over de browseractiviteit naar de Google-beheerdersconsole wordt geüpload.
 
       Als dit beleid niet is ingesteld of als het is ingesteld op 'False', worden er geen gegevens verzameld of geüpload.
       Als dit beleid is ingesteld op 'True', worden de gegevens verzameld en geüpload naar de Google-beheerdersconsole.
@@ -4804,7 +4804,7 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 
       Als je alle printertypen op de weigeringslijst zet, schakel je in feite de afdrukfunctie uit. Er zijn dan geen bestemmingen beschikbaar waar een document naartoe kan worden gestuurd om af te drukken.
 
-      Als je <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" /> op de weigeringslijst zet, heeft dit hetzelfde effect als het beleid <ph name="POLICY_CLOUDPRINTSUBMITENABLED" /> instellen op False. Je kunt ervoor zorgen dat <ph name="CLOUD_PRINT_NAME" />-bestemmingen vindbaar blijven door het beleid<ph name="POLICY_CLOUDPRINTSUBMITENABLED" /> in te stellen op True en <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" /> niet op de weigeringslijst te zetten.
+      Als je <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" /> op de weigeringslijst zet, heeft dit hetzelfde effect als het beleid <ph name="POLICY_CLOUDPRINTSUBMITENABLED" /> instellen op False. Je kunt ervoor zorgen dat <ph name="CLOUD_PRINT_NAME" />-bestemmingen vindbaar blijven door het beleid <ph name="POLICY_CLOUDPRINTSUBMITENABLED" /> in te stellen op True en <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" /> niet op de weigeringslijst te zetten.
 
       Als het beleid niet is ingesteld of is ingesteld op een lege lijst, kunnen alle printertypen worden gevonden.
 

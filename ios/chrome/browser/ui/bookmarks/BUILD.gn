@@ -245,11 +245,13 @@ source_set("eg2_tests") {
   sources = [
     "bookmarks_accessibility_egtest.mm",
     "bookmarks_promo_egtest.mm",
+    "bookmarks_search_egtest.mm",
   ]
   deps = [
     ":bookmarks_ui",
     ":eg_test_support+eg2",
     "//base/test:test_support",
+    "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",

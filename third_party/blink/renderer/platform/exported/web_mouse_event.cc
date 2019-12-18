@@ -29,10 +29,9 @@ WebMouseEvent::WebMouseEvent(WebInputEvent::Type type,
   SetMenuSourceType(gesture_event.GetType());
 }
 
-WebFloatPoint WebMouseEvent::PositionInRootFrame() const {
-  return WebFloatPoint(
-      (position_in_widget_.x / frame_scale_) + frame_translate_.x,
-      (position_in_widget_.y / frame_scale_) + frame_translate_.y);
+gfx::PointF WebMouseEvent::PositionInRootFrame() const {
+  return gfx::ScalePoint(position_in_widget_, 1 / frame_scale_) +
+         frame_translate_;
 }
 
 WebMouseEvent WebMouseEvent::FlattenTransform() const {
@@ -43,8 +42,7 @@ WebMouseEvent WebMouseEvent::FlattenTransform() const {
 
 void WebMouseEvent::FlattenTransformSelf() {
   position_in_widget_ = PositionInRootFrame();
-  frame_translate_.x = 0;
-  frame_translate_.y = 0;
+  frame_translate_ = gfx::Vector2dF();
   frame_scale_ = 1;
 }
 

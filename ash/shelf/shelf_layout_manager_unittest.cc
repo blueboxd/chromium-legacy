@@ -72,6 +72,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
@@ -1027,15 +1028,16 @@ class ShelfLayoutManagerTest : public ShelfLayoutManagerTestBase,
   // testing::Test:
   void SetUp() override {
     if (testing::UnitTest::GetInstance()->current_test_info()->value_param()) {
-      if (GetParam())
-        base::CommandLine::ForCurrentProcess()->AppendSwitch(
-            chromeos::switches::kShelfHotseat);
+      if (GetParam()) {
+        scoped_feature_list_.InitAndEnableFeature(
+            chromeos::features::kShelfHotseat);
+      }
     }
     AshTestBase::SetUp();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManagerTest);
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Used to test the Hotseat, ScrollabeShelf, and DenseShelf features.
@@ -3310,13 +3312,13 @@ class HotseatShelfLayoutManagerTest
 
   // testing::Test:
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kShelfHotseat);
+    scoped_feature_list_.InitAndEnableFeature(
+        chromeos::features::kShelfHotseat);
     AshTestBase::SetUp();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(HotseatShelfLayoutManagerTest);
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Tests that the always shown shelf forwards the appropriate events to the home
@@ -4920,10 +4922,10 @@ class ShelfLayoutManagerWindowDraggingTest : public ShelfLayoutManagerTestBase {
 
   // AshTestBase:
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kShelfHotseat);
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kDragFromShelfToHomeOrOverview);
+    scoped_feature_list_.InitWithFeatures(
+        {chromeos::features::kShelfHotseat,
+         features::kDragFromShelfToHomeOrOverview},
+        {});
     AshTestBase::SetUp();
 
     TabletModeControllerTestApi().EnterTabletMode();
@@ -4936,7 +4938,6 @@ class ShelfLayoutManagerWindowDraggingTest : public ShelfLayoutManagerTestBase {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManagerWindowDraggingTest);
 };
 
 // Test that when swiping up on the shelf, we may or may not drag up the MRU
@@ -5724,7 +5725,7 @@ TEST_P(ShelfLayoutManagerTest, ScrollUpFromShelfToShowPeekingAppList) {
   }
 }
 
-// Paramaterized tests for shelf with and without shelf dimming enabled.
+// Parameterized tests for shelf with and without shelf dimming enabled.
 class DimShelfLayoutManagerTest : public ShelfLayoutManagerTestBase,
                                   public testing::WithParamInterface<bool> {
  public:
@@ -5852,7 +5853,7 @@ TEST_P(DimShelfLayoutManagerTest, MaximizedShelfDimAlpha) {
                         : kExpectedDefaultShelfOpacity);
 }
 
-// Paramaterized tests for shelf dimming with hotseat enabled or disabled.
+// Parameterized tests for shelf dimming with hotseat enabled or disabled.
 class HotseatDimShelfLayoutManagerTest : public DimShelfLayoutManagerTest {
  public:
   HotseatDimShelfLayoutManagerTest() = default;
@@ -5860,14 +5861,20 @@ class HotseatDimShelfLayoutManagerTest : public DimShelfLayoutManagerTest {
   // testing::Test:
   void SetUp() override {
     if (GetParam()) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          chromeos::switches::kShelfHotseat);
+      scoped_feature_list_.InitAndEnableFeature(
+          chromeos::features::kShelfHotseat);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          chromeos::features::kShelfHotseat);
     }
 
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ash::switches::kEnableDimShelf);
     AshTestBase::SetUp();
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Used to test shelf dimming in conjunction with hotseat.

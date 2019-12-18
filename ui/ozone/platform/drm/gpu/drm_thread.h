@@ -25,6 +25,7 @@
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/public/mojom/device_cursor.mojom.h"
 #include "ui/ozone/public/mojom/drm_device.mojom.h"
+#include "ui/ozone/public/overlay_surface_candidate.h"
 #include "ui/ozone/public/swap_completion_callback.h"
 
 namespace base {
@@ -62,6 +63,11 @@ class DrmThread : public base::Thread,
                   public ozone::mojom::DeviceCursor,
                   public ozone::mojom::DrmDevice {
  public:
+  using OverlayCapabilitiesCallback =
+      base::OnceCallback<void(gfx::AcceleratedWidget,
+                              const std::vector<OverlaySurfaceCandidate>&,
+                              const std::vector<OverlayStatus>&)>;
+
   DrmThread();
   ~DrmThread() override;
 
@@ -101,6 +107,14 @@ class DrmThread : public base::Thread,
   void SetClearOverlayCacheCallback(base::RepeatingClosure callback);
   void AddDrmDeviceReceiver(
       mojo::PendingReceiver<ozone::mojom::DrmDevice> receiver);
+
+  // Verifies if the display controller can successfully scanout the given set
+  // of OverlaySurfaceCandidates and return the status associated with each
+  // candidate.
+  void CheckOverlayCapabilities(
+      gfx::AcceleratedWidget widget,
+      const std::vector<OverlaySurfaceCandidate>& candidates,
+      OverlayCapabilitiesCallback callback);
 
   // DrmWindowProxy (on GPU thread) is the client for these methods.
   void SchedulePageFlip(gfx::AcceleratedWidget widget,
@@ -143,12 +157,6 @@ class DrmThread : public base::Thread,
       int64_t display_id,
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
       const std::vector<display::GammaRampRGBEntry>& gamma_lut) override;
-  void CheckOverlayCapabilities(
-      gfx::AcceleratedWidget widget,
-      const OverlaySurfaceCandidateList& overlays,
-      base::OnceCallback<void(gfx::AcceleratedWidget,
-                              const OverlaySurfaceCandidateList&,
-                              const OverlayStatusList&)> callback) override;
   void GetDeviceCursor(
       mojo::PendingAssociatedReceiver<ozone::mojom::DeviceCursor> receiver)
       override;

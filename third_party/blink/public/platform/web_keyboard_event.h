@@ -5,12 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_KEYBOARD_EVENT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_KEYBOARD_EVENT_H_
 
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 
 namespace blink {
-
-// See web_input_event.h for details why this pack is here.
-#pragma pack(push, 4)
 
 // WebKeyboardEvent -----------------------------------------------------------
 
@@ -83,8 +81,6 @@ class WebKeyboardEvent : public WebInputEvent {
     return true;
   }
 };
-
-#pragma pack(pop)
 
 }  // namespace blink
 

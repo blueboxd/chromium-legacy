@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace ui {
 class LatencyInfo;
@@ -62,7 +63,7 @@ class SyntheticGestureTargetBase : public SyntheticGestureTarget {
   RenderWidgetHostImpl* render_widget_host() const { return host_; }
 
  private:
-  bool PointIsWithinContents(int x, int y) const;
+  bool PointIsWithinContents(gfx::PointF point) const;
 
   RenderWidgetHostImpl* host_;
 

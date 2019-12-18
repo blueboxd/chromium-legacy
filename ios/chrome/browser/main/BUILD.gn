@@ -2,15 +2,32 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("main") {
+source_set("public") {
   sources = [
     "browser.h",
+    "browser_user_data.h",
+  ]
+  deps = [
+    "//base",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("main") {
+  sources = [
+    "browser_agent_util.h",
+    "browser_agent_util.mm",
     "browser_impl.h",
     "browser_impl.mm",
     "browser_observer.h",
     "browser_web_state_list_delegate.h",
     "browser_web_state_list_delegate.mm",
   ]
+
+  public_deps = [
+    ":public",
+  ]
+
   deps = [
     "//base",
     "//ios/chrome/browser/browser_state",

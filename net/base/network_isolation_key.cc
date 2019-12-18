@@ -40,9 +40,11 @@ NetworkIsolationKey::NetworkIsolationKey(const url::Origin& top_frame_origin,
                                          const url::Origin& frame_origin)
     : use_frame_origin_(base::FeatureList::IsEnabled(
           net::features::kAppendFrameOriginToNetworkIsolationKey)),
-      top_frame_origin_(top_frame_origin) {
+      top_frame_origin_(top_frame_origin),
+      original_top_frame_origin_(top_frame_origin) {
   if (use_frame_origin_) {
     frame_origin_ = frame_origin;
+    original_frame_origin_ = frame_origin;
   }
   if (base::FeatureList::IsEnabled(
           net::features::kUseRegistrableDomainInNetworkIsolationKey)) {

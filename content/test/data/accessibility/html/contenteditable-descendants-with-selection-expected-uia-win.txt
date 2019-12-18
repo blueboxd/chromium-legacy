@@ -1,6 +1,6 @@
 document
 ++group
-++++group
+++++group IsControlElement=false
 ++++++description Name='A contenteditable with a '
 ++++++link Name='link'
 ++++++++description Name='link' IsControlElement=false
@@ -10,7 +10,7 @@ document
 ++++++button Name='Button'
 ++++++description Name='.'
 ++++grid Grid.ColumnCount=1 Grid.RowCount=1 Table.RowOrColumnMajor='RowMajor'
-++++++row
+++++++row IsControlElement=false
 ++++++++gridcell Name='Always expose editable tables as tables.' GridItem.Column=0 GridItem.ColumnSpan=1 GridItem.Row=0 GridItem.RowSpan=1
 ++++++++++description Name='Always expose editable tables as tables.' IsControlElement=false
 ++++list

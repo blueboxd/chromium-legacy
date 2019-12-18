@@ -216,20 +216,77 @@ def IterResourceFilesInDirectories(directories,
         yield path, archive_path
 
 
-def CreateResourceInfoFile(files_to_zip, zip_path):
-  """Given a mapping of archive paths to their source, write an info file.
+class ResourceInfoFile(object):
+  """Helper for building up .res.info files."""
 
-  The info file contains lines of '{archive_path},{source_path}' for ease of
-  parsing. Assumes that there is no comma in the file names.
+  def __init__(self):
+    # Dict of archive_path -> source_path for the current target.
+    self._entries = {}
+    # List of (old_archive_path, new_archive_path) tuples.
+    self._renames = []
+    # We don't currently support using both AddMapping and MergeInfoFile.
+    self._add_mapping_was_called = False
 
-  Args:
-    files_to_zip: Dict mapping path in the zip archive to original source.
-    zip_path: Path where the zip file ends up, this is where the info file goes.
-  """
-  info_file_path = zip_path + '.info'
-  with open(info_file_path, 'w') as info_file:
-    for archive_path, source_path in files_to_zip.iteritems():
-      info_file.write('{},{}\n'.format(archive_path, source_path))
+  def AddMapping(self, archive_path, source_path):
+    """Adds a single |archive_path| -> |source_path| entry."""
+    self._add_mapping_was_called = True
+    # "values/" files do not end up in the apk except through resources.arsc.
+    if archive_path.startswith('values'):
+      return
+    source_path = os.path.normpath(source_path)
+    new_value = self._entries.setdefault(archive_path, source_path)
+    if new_value != source_path:
+      raise Exception('Duplicate AddMapping for "{}". old={} new={}'.format(
+          archive_path, new_value, source_path))
+
+  def RegisterRename(self, old_archive_path, new_archive_path):
+    """Records an archive_path rename.
+
+    |old_archive_path| does not need to currently exist in the mappings. Renames
+    are buffered and replayed only when Write() is called.
+    """
+    if not old_archive_path.startswith('values'):
+      self._renames.append((old_archive_path, new_archive_path))
+
+  def MergeInfoFile(self, info_file_path):
+    """Merges the mappings from |info_file_path| into this object.
+
+    Any existing entries are overridden.
+    """
+    assert not self._add_mapping_was_called
+    # Allows clobbering, which is used when overriding resources.
+    with open(info_file_path) as f:
+      self._entries.update(l.rstrip().split('\t') for l in f)
+
+  def _ApplyRenames(self):
+    applied_renames = set()
+    ret = self._entries
+    for rename_tup in self._renames:
+      # Duplicate entries happen for resource overrides.
+      # Use a "seen" set to ensure we still error out if multiple renames
+      # happen for the same old_archive_path with different new_archive_paths.
+      if rename_tup in applied_renames:
+        continue
+      applied_renames.add(rename_tup)
+      old_archive_path, new_archive_path = rename_tup
+      ret[new_archive_path] = ret[old_archive_path]
+      del ret[old_archive_path]
+
+    self._entries = None
+    self._renames = None
+    return ret
+
+  def Write(self, info_file_path):
+    """Applies renames and writes out the file.
+
+    No other methods may be called after this.
+    """
+    entries = self._ApplyRenames()
+    lines = []
+    for archive_path, source_path in entries.iteritems():
+      lines.append('{}\t{}\n'.format(archive_path, source_path))
+    with open(info_file_path, 'w') as info_file:
+      info_file.writelines(sorted(lines))
 
 
 def _ParseTextSymbolsFile(path, fix_package_ids=False):

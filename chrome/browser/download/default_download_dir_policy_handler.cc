@@ -43,6 +43,9 @@ void DefaultDownloadDirPolicyHandler::ApplyPolicySettingsWithParameters(
                     base::Value(expanded_value));
     prefs->SetValue(prefs::kSaveFileDefaultDirectory,
                     base::Value(expanded_value));
+    // Prevents a download path set by policy from being reset because it is
+    // dangerous.
+    prefs->SetBoolean(prefs::kDownloadDirUpgraded, true);
   }
 }
 

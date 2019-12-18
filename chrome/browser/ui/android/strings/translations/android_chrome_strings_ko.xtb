@@ -212,7 +212,7 @@
 <translation id="2532336938189706096">웹 보기</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" />개 항목 삭제함</translation>
 <translation id="2536728043171574184">이 페이지의 오프라인 사본 보는 중</translation>
-<translation id="2537178555904266562">비밀번호 동기화 중 오류</translation>
+<translation id="2537178555904266562">비밀번호 동기화 중 오류 발생</translation>
 <translation id="2537296579376733324">모든 쿠키, 이 사이트에서만</translation>
 <translation id="2546283357679194313">쿠키 및 사이트 데이터</translation>
 <translation id="2567385386134582609">이미지</translation>
@@ -659,6 +659,7 @@
 <translation id="5854790677617711513">30일 이상 전</translation>
 <translation id="5858741533101922242">Chrome에서 블루투스 어댑터를 사용 설정할 수 없습니다.</translation>
 <translation id="5860033963881614850">사용 안함</translation>
+<translation id="5860491529813859533">사용</translation>
 <translation id="5862731021271217234">다른 기기에서 탭을 가져오려면 동기화를 사용 설정하세요.</translation>
 <translation id="5864174910718532887">세부정보: 사이트 이름별로 정렬</translation>
 <translation id="5864419784173784555">다른 다운로드 대기 중…</translation>

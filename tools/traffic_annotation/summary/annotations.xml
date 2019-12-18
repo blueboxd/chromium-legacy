@@ -238,7 +238,7 @@ Refer to README.md for content description and update process.
  <item id="safe_browsing_cache_collector" hash_code="115907811" type="0" content_hash_code="36392362" os_list="linux,windows" file_path="components/safe_browsing/browser/threat_details_cache.cc"/>
  <item id="safe_browsing_certificate_error_reporting" hash_code="66590631" type="0" content_hash_code="50197576" os_list="linux,windows" file_path="chrome/browser/ssl/certificate_error_reporter.cc"/>
  <item id="safe_browsing_chunk_backup_request" hash_code="79957943" type="0" deprecated="2018-08-14" content_hash_code="133850277" file_path=""/>
- <item id="safe_browsing_client_side_malware_detector" hash_code="102935425" type="0" content_hash_code="79591279" os_list="linux,windows" file_path="chrome/browser/safe_browsing/client_side_detection_service.cc"/>
+ <item id="safe_browsing_client_side_malware_detector" hash_code="102935425" type="0" deprecated="2019-12-07" content_hash_code="79591279" file_path=""/>
  <item id="safe_browsing_client_side_phishing_detector" hash_code="1313982" type="0" content_hash_code="50199143" os_list="linux,windows" file_path="chrome/browser/safe_browsing/client_side_detection_service.cc"/>
  <item id="safe_browsing_extended_reporting" hash_code="42848942" type="0" content_hash_code="50089173" os_list="linux,windows" file_path="components/safe_browsing/ping_manager.cc"/>
  <item id="safe_browsing_feedback" hash_code="44583821" type="0" content_hash_code="114076664" os_list="linux,windows" file_path="chrome/browser/safe_browsing/download_protection/download_feedback.cc"/>

@@ -772,13 +772,11 @@ void RenderText::SetCompositionRange(const Range& composition_range) {
 
 void RenderText::SetColor(SkColor value) {
   colors_.SetValue(value);
-  OnTextColorChanged();
   OnLayoutTextAttributeChanged(false);
 }
 
 void RenderText::ApplyColor(SkColor value, const Range& range) {
   colors_.ApplyValue(value, range);
-  OnTextColorChanged();
   OnLayoutTextAttributeChanged(false);
 }
 
@@ -1307,9 +1305,6 @@ size_t RenderText::TextIndexToDisplayIndex(size_t index) const {
 
 size_t RenderText::DisplayIndexToTextIndex(size_t index) const {
   return GetTextIndex(GetGraphemeIteratorAtDisplayTextIndex(index));
-}
-
-void RenderText::OnTextColorChanged() {
 }
 
 void RenderText::OnLayoutTextAttributeChanged(bool text_changed) {

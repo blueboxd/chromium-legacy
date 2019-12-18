@@ -148,11 +148,14 @@ SharedImageVideo::~SharedImageVideo() {
     context_state_->RemoveContextLostObserver(this);
 }
 
-bool SharedImageVideo::IsCleared() const {
-  return true;
+gfx::Rect SharedImageVideo::ClearedRect() const {
+  // SharedImageVideo objects are always created from pre-initialized textures
+  // provided by the media decoder. Always treat these as cleared (return the
+  // full rectangle).
+  return gfx::Rect(size());
 }
 
-void SharedImageVideo::SetCleared() {}
+void SharedImageVideo::SetClearedRect(const gfx::Rect& cleared_rect) {}
 
 void SharedImageVideo::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
   DCHECK(!in_fence);

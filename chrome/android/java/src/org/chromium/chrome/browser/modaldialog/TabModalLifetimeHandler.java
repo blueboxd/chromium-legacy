@@ -27,7 +27,7 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
     /** The observer to dismiss all dialogs when the attached tab is not interactable. */
     private final TabObserver mTabObserver = new EmptyTabObserver() {
         @Override
-        public void onInteractabilityChanged(boolean isInteractable) {
+        public void onInteractabilityChanged(Tab tab, boolean isInteractable) {
             updateSuspensionState();
         }
 

@@ -91,13 +91,13 @@ SharedImageBackingEglImage::SharedImageBackingEglImage(
     size_t estimated_size,
     GLuint gl_format,
     GLuint gl_type)
-    : SharedImageBacking(mailbox,
-                         format,
-                         size,
-                         color_space,
-                         usage,
-                         estimated_size,
-                         true /*is_thread_safe*/),
+    : ClearTrackingSharedImageBacking(mailbox,
+                                      format,
+                                      size,
+                                      color_space,
+                                      usage,
+                                      estimated_size,
+                                      true /*is_thread_safe*/),
       gl_format_(gl_format),
       gl_type_(gl_type) {}
 
@@ -105,20 +105,6 @@ SharedImageBackingEglImage::~SharedImageBackingEglImage() {
   // Check to make sure the resource was explicitly destroyed using Destroy()
   // api before this destructor is called.
   DCHECK(!egl_image_buffer_);
-}
-
-bool SharedImageBackingEglImage::IsCleared() const {
-  AutoLock auto_lock(this);
-
-  return is_cleared_;
-}
-
-void SharedImageBackingEglImage::SetCleared() {
-  // TODO(cblume): We could avoid this lock if we instead pass a flag to clear
-  // into EndWrite() or BeginRead()
-  AutoLock auto_lock(this);
-
-  is_cleared_ = true;
 }
 
 void SharedImageBackingEglImage::Update(

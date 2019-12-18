@@ -24,7 +24,7 @@ abstract class GamepadMappings {
     @VisibleForTesting
     static final String MICROSOFT_XBOX_PAD_DEVICE_NAME = "Microsoft X-Box 360 pad";
     @VisibleForTesting
-    static final String PS3_SIXAXIS_DEVICE_NAME = "Sony PLAYSTATION(R)3 Controller";
+    static final String PS_DUALSHOCK_3_SIXAXIS_DEVICE_NAME = "Sony PLAYSTATION(R)3 Controller";
     @VisibleForTesting
     static final String SAMSUNG_EI_GP20_DEVICE_NAME = "Samsung Game Pad EI-GP20";
     @VisibleForTesting
@@ -57,13 +57,19 @@ abstract class GamepadMappings {
     @TargetApi(Build.VERSION_CODES.KITKAT)
     @VisibleForTesting
     static GamepadMappings getMappings(int productId, int vendorId) {
-        // Device name of a PS4 gamepad is "Wireless Controller". This is not reliably unique
-        // so we better go by the product and vendor ids.
+        // Device name of a DualShock 4 gamepad is "Wireless Controller". This is not reliably
+        // unique so we better go by the product and vendor ids.
         if (vendorId == PS_DUALSHOCK_4_VENDOR_ID
                 && (productId == PS_DUALSHOCK_4_PRODUCT_ID
                            || productId == PS_DUALSHOCK_4_SLIM_PRODUCT_ID
                            || productId == PS_DUALSHOCK_4_USB_RECEIVER_PRODUCT_ID)) {
-            return new PS4GamepadMappings();
+            // Android 9 included improvements for Sony PlayStation gamepads that changed the
+            // KeyEvent and MotionEvent codes for some buttons and axes. Use an alternate mapping
+            // for versions of Android that include these improvements.
+            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                return new XboxCompatibleGamepadMappings();
+            }
+            return new Dualshock4GamepadMappingsPreP();
         }
         // Microsoft released a firmware update for the Xbox One S gamepad that modified the button
         // and axis assignments. With the new firmware, these gamepads work correctly in Android
@@ -82,8 +88,14 @@ abstract class GamepadMappings {
         if (deviceName.startsWith(NVIDIA_SHIELD_DEVICE_NAME_PREFIX)
                 || deviceName.equals(MICROSOFT_XBOX_PAD_DEVICE_NAME)) {
             return new XboxCompatibleGamepadMappings();
-        } else if (deviceName.equals(PS3_SIXAXIS_DEVICE_NAME)) {
-            return new PS3SixAxisGamepadMappings();
+        } else if (deviceName.equals(PS_DUALSHOCK_3_SIXAXIS_DEVICE_NAME)) {
+            // Android 9 included improvements for Sony PlayStation gamepads that changed the
+            // KeyEvent and MotionEvent codes for some buttons and axes. Use an alternate mapping
+            // for versions of Android that include these improvements.
+            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                return new Dualshock3SixAxisGamepadMappings();
+            }
+            return new Dualshock3SixAxisGamepadMappingsPreP();
         } else if (deviceName.equals(SAMSUNG_EI_GP20_DEVICE_NAME)) {
             return new SamsungEIGP20GamepadMappings();
         } else if (deviceName.equals(AMAZON_FIRE_DEVICE_NAME)) {
@@ -332,16 +344,15 @@ abstract class GamepadMappings {
         }
     }
 
-    private static class PS3SixAxisGamepadMappings extends GamepadMappings {
-
+    private static class Dualshock3SixAxisGamepadMappingsPreP extends GamepadMappings {
         /**
-         * Method for mapping PS3 gamepad axis and button values
-         * to standard gamepad button and axes values.
+         * Method for mapping DualShock 3 and SIXAXIS gamepad inputs to standard gamepad button and
+         * axis values. This mapping function should only be used on Android 8 and earlier.
          */
         @Override
         public void mapToStandardGamepad(float[] mappedAxes, float[] mappedButtons,
                 float[] rawAxes, float[] rawButtons) {
-            // On PS3 X/Y has higher priority.
+            // On DualShock 3 and SIXAXIS, X/Y has higher priority.
             float a = rawButtons[KeyEvent.KEYCODE_BUTTON_A];
             float b = rawButtons[KeyEvent.KEYCODE_BUTTON_B];
             float x = rawButtons[KeyEvent.KEYCODE_BUTTON_X];
@@ -362,15 +373,34 @@ abstract class GamepadMappings {
         }
     }
 
-    static class PS4GamepadMappings extends GamepadMappings {
+    private static class Dualshock3SixAxisGamepadMappings extends GamepadMappings {
+        /**
+         * Method for mapping DualShock 3 and SIXAXIS gamepad inputs to standard gamepad button and
+         * axis values. This mapping function should only be used on Android 10+.
+         */
+        @Override
+        public void mapToStandardGamepad(
+                float[] mappedAxes, float[] mappedButtons, float[] rawAxes, float[] rawButtons) {
+            mapCommonXYABButtons(mappedButtons, rawButtons);
+            mapTriggerButtonsToTopShoulder(mappedButtons, rawButtons);
+            mapCommonThumbstickButtons(mappedButtons, rawButtons);
+            mapCommonStartSelectMetaButtons(mappedButtons, rawButtons);
+            mapCommonDpadButtons(mappedButtons, rawButtons);
+            mapXYAxes(mappedAxes, rawAxes);
+            mapZAndRZAxesToRightStick(mappedAxes, rawAxes);
+            mapTriggerAxesToBottomShoulder(mappedButtons, rawAxes);
+        }
+    }
+
+    static class Dualshock4GamepadMappingsPreP extends GamepadMappings {
         // Scale input from [-1, 1] to [0, 1] uniformly.
         private static float scaleRxRy(float input) {
             return 1.f - ((1.f - input) / 2.f);
         }
 
         /**
-         * Method for mapping PS4 gamepad axis and button values
-         * to standard gamepad button and axes values.
+         * Method for mapping DualShock 4 gamepad inputs to standard gamepad button and axis values.
+         * This mapping function should only be used on Android 9 and earlier.
          */
         @Override
         public void mapToStandardGamepad(
@@ -414,9 +444,8 @@ abstract class GamepadMappings {
     }
 
     private static class SamsungEIGP20GamepadMappings extends GamepadMappings {
-
         /**
-         * Method for mapping PS3 gamepad axis and button values
+         * Method for mapping Samsung GamePad EI-GP20 axis and button values
          * to standard gamepad button and axes values.
          */
         @Override

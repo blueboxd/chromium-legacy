@@ -354,8 +354,8 @@ void WebViewImpl::HandleMouseDown(LocalFrame& main_frame,
   // If the hit node is a plugin but a scrollbar is over it don't start mouse
   // capture because it will interfere with the scrollbar receiving events.
   if (event.button == WebMouseEvent::Button::kLeft) {
-    HitTestLocation location(
-        main_frame.View()->ConvertFromRootFrame(event.PositionInWidget()));
+    HitTestLocation location(main_frame.View()->ConvertFromRootFrame(
+        FloatPoint(event.PositionInWidget())));
     HitTestResult result(
         main_frame.GetEventHandler().HitTestResultAtLocation(location));
     result.SetToShadowHostIfInRestrictedShadowRoot();
@@ -411,7 +411,7 @@ void WebViewImpl::MouseContextMenu(const WebMouseEvent& event) {
       TransformWebMouseEvent(MainFrameImpl()->GetFrameView(), event);
   transformed_event.menu_source_type = kMenuSourceMouse;
   PhysicalOffset position_in_root_frame = PhysicalOffset::FromFloatPointRound(
-      transformed_event.PositionInRootFrame());
+      FloatPoint(transformed_event.PositionInRootFrame()));
 
   // Find the right target frame. See issue 1186900.
   HitTestResult result = HitTestResultForRootFramePos(position_in_root_frame);

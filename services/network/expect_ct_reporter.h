@@ -37,8 +37,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ExpectCTReporter
   // |request_context|. |success_callback| is called whenever a report sends
   // successfully, and |failure_callback| whenever a report fails to send.
   ExpectCTReporter(net::URLRequestContext* request_context,
-                   const base::Closure& success_callback,
-                   const base::Closure& failure_callback);
+                   const base::RepeatingClosure& success_callback,
+                   const base::RepeatingClosure& failure_callback);
   ~ExpectCTReporter() override;
 
   // net::TransportSecurityState::ExpectCTReporter:
@@ -99,8 +99,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ExpectCTReporter
 
   net::URLRequestContext* request_context_;
 
-  base::Closure success_callback_;
-  base::Closure failure_callback_;
+  base::RepeatingClosure success_callback_;
+  base::RepeatingClosure failure_callback_;
 
   // The CORS preflight requests, with corresponding report information, that
   // are currently in-flight. Entries in this map are deleted when the

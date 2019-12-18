@@ -9,6 +9,7 @@
 #include "chrome/browser/task_manager/providers/web_contents/web_contents_tags_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/embedder_support/switches.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/switches.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -47,7 +48,7 @@ class BackgroundContentsTagTest : public extensions::ExtensionBrowserTest {
     extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
     test_data_dir_ = test_data_dir_.AppendASCII("api_test");
     command_line->AppendSwitch(switches::kDisableRendererBackgrounding);
-    command_line->AppendSwitch(switches::kDisablePopupBlocking);
+    command_line->AppendSwitch(embedder_support::kDisablePopupBlocking);
     command_line->AppendSwitch(extensions::switches::kAllowHTTPBackgroundPage);
   }
 

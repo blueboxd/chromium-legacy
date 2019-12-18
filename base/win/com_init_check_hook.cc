@@ -5,6 +5,7 @@
 #include "base/win/com_init_check_hook.h"
 
 #include <windows.h>
+
 #include <objbase.h>
 #include <stdint.h>
 #include <string.h>
@@ -145,7 +146,8 @@ class HookManager {
     // See banner comment above why this subtracts 5 bytes.
     co_create_instance_padded_address_ =
         reinterpret_cast<uint32_t>(
-            GetProcAddress(ole32_library_, "CoCreateInstance")) - 5;
+            GetProcAddress(ole32_library_, "CoCreateInstance")) -
+        5;
 
     // See banner comment above why this adds 7 bytes.
     original_co_create_instance_body_function_ =

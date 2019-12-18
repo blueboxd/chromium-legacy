@@ -1011,23 +1011,7 @@ class _ResourceSourceMapper(object):
   @staticmethod
   def _ParseResInfoFile(res_info_path):
     with open(res_info_path, 'r') as info_file:
-      res_info = {}
-      renames = {}
-      for line in info_file.readlines():
-        dest, source = line.strip().split(',')
-        # Allow indirection due to renames.
-        if dest.startswith('Rename:'):
-          dest = dest.split(':', 1)[1]
-          renames[dest] = source
-        else:
-          res_info[dest] = source
-      for dest, renamed_dest in renames.iteritems():
-        # Allow one more level of indirection due to renaming renamed files
-        renamed_dest = renames.get(renamed_dest, renamed_dest)
-        actual_source = res_info.get(renamed_dest)
-        if actual_source:
-          res_info[dest] = actual_source
-    return res_info
+      return dict(l.rstrip().split('\t') for l in info_file)
 
   def _LoadResInfo(self, size_info_prefix):
     apk_res_info_path = size_info_prefix + '.res.info'

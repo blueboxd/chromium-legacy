@@ -7,7 +7,6 @@
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/service/display/display_resource_provider.h"
-#include "components/viz/service/display/overlay_candidate_list.h"
 
 namespace viz {
 
@@ -33,19 +32,9 @@ bool OverlayStrategyUnderlay::Attempt(
   DCHECK(candidate_list->empty());
   RenderPass* render_pass = render_pass_list->back().get();
   QuadList& quad_list = render_pass->quad_list;
-  const bool compute_hints =
-      resource_provider->DoAnyResourcesWantPromotionHints();
 
   for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
     OverlayCandidate candidate;
-
-    // If we're computing the list of all resources that requested promotion
-    // hints, then add this candidate to the set if needed.
-    if (compute_hints) {
-      candidate_list->AddToPromotionHintRequestorSetIfNeeded(resource_provider,
-                                                             *it);
-    }
-
     if (!OverlayCandidate::FromDrawQuad(resource_provider, output_color_matrix,
                                         *it, &candidate) ||
         (opaque_mode_ == OpaqueMode::RequireOpaqueCandidates &&
@@ -89,25 +78,7 @@ bool OverlayStrategyUnderlay::Attempt(
       quad_list.ReplaceExistingQuadWithOpaqueTransparentSolidColor(it);
       candidate_list->swap(new_candidate_list);
 
-      // This quad will be promoted.  We clear the promotable hints here, since
-      // we can only promote a single quad.  Otherwise, somebody might try to
-      // back one of the promotable quads with a SurfaceView, and either it or
-      // |candidate| would have to fall back to a texture.
-      candidate_list->promotion_hint_info_map_.clear();
-      candidate_list->AddPromotionHint(candidate);
-      if (compute_hints) {
-        // Finish the quad list to find any other resources.
-        for (; it != quad_list.end(); ++it) {
-          candidate_list->AddToPromotionHintRequestorSetIfNeeded(
-              resource_provider, *it);
-        }
-      }
       return true;
-    } else {
-      // If |candidate| should get a promotion hint, then remember that now.
-      candidate_list->promotion_hint_info_map_.insert(
-          new_candidate_list.promotion_hint_info_map_.begin(),
-          new_candidate_list.promotion_hint_info_map_.end());
     }
   }
 

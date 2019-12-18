@@ -85,7 +85,7 @@ class InputHandlerProxy : public cc::InputHandlerClient,
                                        EventDispositionCallback callback);
   void InjectScrollbarGestureScroll(
       const blink::WebInputEvent::Type type,
-      const blink::WebFloatPoint& position_in_widget,
+      const gfx::PointF& position_in_widget,
       const cc::InputHandlerPointerResult& pointer_result,
       const LatencyInfo& latency_info,
       const base::TimeTicks now);

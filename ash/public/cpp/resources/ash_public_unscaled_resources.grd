@@ -17,9 +17,8 @@
       <!-- CrOS internal apps images -->
       <include name="IDR_SHORTCUT_VIEWER_LOGO_192" file="unscaled_resources/shortcut_viewer_logo_192.png" type="BINDATA" />
       <include name="IDR_SETTINGS_LOGO_192" file="unscaled_resources/settings_logo_192.png" type="BINDATA" />
-      <include name="IDR_CAMERA_LOGO_192" file="unscaled_resources/camera_logo_192.png" type="BINDATA" />
       <include name="IDR_DISCOVER_APP_192" file="unscaled_resources/discover_app_logo_192.png" type="BINDATA" />
-       <include name="IDR_RELEASE_NOTES_APP_192" file="unscaled_resources/release_notes_logo_192.png" type="BINDATA" />
+      <include name="IDR_RELEASE_NOTES_APP_192" file="unscaled_resources/release_notes_logo_192.png" type="BINDATA" />
     </includes>
   </release>
 </grit>

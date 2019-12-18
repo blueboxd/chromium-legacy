@@ -172,8 +172,8 @@ void PopulateChromeFrameBindersForExtension(
     }
   }
 
-  if (extension->id().compare(extension_misc::kChromeCameraAppId) == 0 ||
-      extension->id().compare(extension_misc::kChromeCameraAppDevId) == 0) {
+  if (extension->id().compare(extension_misc::kCameraAppId) == 0 ||
+      extension->id().compare(extension_misc::kCameraAppDevId) == 0) {
     binder_map->Add<cros::mojom::CameraAppDeviceProvider>(
         base::BindRepeating(&ConnectToCameraAppDeviceProvider));
     binder_map->Add<chromeos_camera::mojom::CameraAppHelper>(

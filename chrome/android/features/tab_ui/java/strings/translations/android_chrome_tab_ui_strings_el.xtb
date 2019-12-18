@@ -5,7 +5,6 @@
 <translation id="1181037720776840403">Κατάργηση</translation>
 <translation id="125153950246128346">Πατήστε για να δείτε μια άλλη καρτέλα</translation>
 <translation id="1657719826150349398">Μετακίνηση καρτέλας κάτω</translation>
-<translation id="1778290789805128794">Μετακίνηση καρτέλας επάνω</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> καρτέλα}other{<ph name="TABS_COUNT_MANY" /> καρτέλες}}</translation>
 <translation id="2569352796411618312">Πρόταση: <ph name="NUMBER_OF_TABS" /> από τις καρτέλες σας δεν έχουν χρησιμοποιηθεί πρόσφατα. Κλείσιμο αυτών των καρτελών;</translation>
 <translation id="257674075312929031">Ομάδα</translation>

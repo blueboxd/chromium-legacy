@@ -19,8 +19,6 @@
 
 <if expr="chromeos">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
-<link rel="import" href="../android_apps_page/android_apps_browser_proxy.html">
-<link rel="import" href="../android_apps_page/android_apps_page.html">
 <link rel="import" href="../prefs/prefs_behavior.html">
 </if>
 
@@ -168,18 +166,6 @@
             section="search">
           <settings-search-page prefs="{{prefs}}"></settings-search-page>
         </settings-section>
-<if expr="chromeos">
-        <template is="dom-if" if="[[showAndroidApps]]" restamp>
-          <settings-section page-title="$i18n{androidAppsPageTitle}"
-              section="androidApps" hidden$="[[!shouldShowAndroidAppsSection_(
-              androidAppsInfo)]]">
-            <settings-android-apps-page prefs="{{prefs}}"
-                android-apps-info="[[androidAppsInfo]]"
-                have-play-store-app="[[havePlayStoreApp]]">
-            </settings-android-apps-page>
-          </settings-section>
-        </template>
-</if>
 <if expr="not chromeos">
         <template is="dom-if" if="[[showPage_(pageVisibility.defaultBrowser)]]"
             restamp>

@@ -222,9 +222,11 @@ public final class WebApkActivityTest {
 
         waitForActivityState(webApkActivity, ActivityState.STOPPED);
 
-        TabWebContentsDelegateAndroid tabDelegate =
-                TabTestUtils.getTabWebContentsDelegate(webApkActivity.getActivityTab());
-        tabDelegate.activateContents();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            TabWebContentsDelegateAndroid tabDelegate =
+                    TabTestUtils.getTabWebContentsDelegate(webApkActivity.getActivityTab());
+            tabDelegate.activateContents();
+        });
 
         // WebApkActivity should have been brought back to the foreground.
         ChromeActivityTestRule.waitFor(WebApkActivity.class);

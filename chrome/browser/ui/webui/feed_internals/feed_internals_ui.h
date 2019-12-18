@@ -27,13 +27,17 @@ class FeedInternalsUI : public ui::MojoWebUIController {
   explicit FeedInternalsUI(content::WebUI* web_ui);
   ~FeedInternalsUI() override;
 
- private:
-  void BindFeedInternalsPageHandler(
+  // Instantiates the implementor of the feed_internals::mojom::PageHandler mojo
+  // interface passing the pending receiver that will be internally bound.
+  void BindInterface(
       mojo::PendingReceiver<feed_internals::mojom::PageHandler> receiver);
 
+ private:
   Profile* profile_;
 
   std::unique_ptr<FeedInternalsPageHandler> page_handler_;
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(FeedInternalsUI);
 };

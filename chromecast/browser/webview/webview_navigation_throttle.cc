@@ -15,15 +15,13 @@ WebviewNavigationThrottle::WebviewNavigationThrottle(
     content::NavigationHandle* handle,
     WebviewController* controller)
     : NavigationThrottle(handle),
-      url_(handle->GetURL()),
-      is_in_main_frame_(handle->IsInMainFrame()),
       controller_(controller) {}
 
 WebviewNavigationThrottle::~WebviewNavigationThrottle() = default;
 
 content::NavigationThrottle::ThrottleCheckResult
 WebviewNavigationThrottle::WillStartRequest() {
-  controller_->SendNavigationEvent(this, url_, is_in_main_frame_);
+  controller_->SendNavigationEvent(this, navigation_handle());
 
   return content::NavigationThrottle::DEFER;
 }

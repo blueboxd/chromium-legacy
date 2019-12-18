@@ -7822,17 +7822,19 @@ class AutofillManagerTestForVirtualCardOption : public AutofillManagerTest {
     scoped_feature_list_.InitAndEnableFeature(
         features::kAutofillEnableVirtualCard);
 
-    // Add only one local card so the second suggestion (if any) must be the
+    // Add only one server card so the second suggestion (if any) must be the
     // "Use a virtual card number" option.
     personal_data_.ClearCreditCards();
-    CreditCard credit_card;
+    CreditCard masked_server_card(CreditCard::MASKED_SERVER_CARD,
+                                  /*server_id=*/"a123");
     // TODO(crbug.com/1020740): Replace all the hard-coded expiration year in
     // this file with NextYear().
-    test::SetCreditCardInfo(&credit_card, "Elvis Presley",
+    test::SetCreditCardInfo(&masked_server_card, "Elvis Presley",
                             "4234567890123456",  // Visa
                             "04", "2999", "1");
-    credit_card.set_guid("00000000-0000-0000-0000-000000000007");
-    personal_data_.AddCreditCard(credit_card);
+    masked_server_card.SetNetworkForMaskedCard(kVisaCard);
+    masked_server_card.set_guid("00000000-0000-0000-0000-000000000007");
+    personal_data_.AddServerCreditCard(masked_server_card);
   }
 
   void CreateCompleteFormAndGetSuggestions() {
@@ -7843,6 +7845,15 @@ class AutofillManagerTestForVirtualCardOption : public AutofillManagerTest {
     FormsSeen(forms);
     const FormFieldData& field = form.fields[1];  // card number field.
     GetAutofillSuggestions(form, field);
+  }
+
+  // Adds a CreditCardCloudTokenData to PersonalDataManager. This needs to be
+  // called before suggestions are fetched.
+  void CreateCloudTokenDataForDefaultCard() {
+    personal_data_.ClearCloudTokenData();
+    CreditCardCloudTokenData data1 = test::GetCreditCardCloudTokenData1();
+    data1.masked_card_id = "a123";
+    personal_data_.AddCloudTokenData(data1);
   }
 
   void VerifyNoVirtualCardSuggestions() {
@@ -7927,6 +7938,28 @@ TEST_F(AutofillManagerTestForVirtualCardOption,
                               autofill_manager_->GetPackedCreditCardID(7)));
 }
 
+// Ensures the "Use a virtual card number" option should not be shown when there
+// is no cloud token data for the card.
+TEST_F(AutofillManagerTestForVirtualCardOption,
+       ShouldNotShowDueToNoCloudTokenData) {
+  CreateCompleteFormAndGetSuggestions();
+
+  VerifyNoVirtualCardSuggestions();
+}
+
+// Ensures the "Use a virtual card number" option should not be shown when there
+// is multiple cloud token data for the card.
+TEST_F(AutofillManagerTestForVirtualCardOption,
+       ShouldNotShowDueToMultipleCloudTokenData) {
+  CreateCloudTokenDataForDefaultCard();
+  CreditCardCloudTokenData data2 = test::GetCreditCardCloudTokenData2();
+  data2.masked_card_id = "a123";
+  personal_data_.AddCloudTokenData(data2);
+  CreateCompleteFormAndGetSuggestions();
+
+  VerifyNoVirtualCardSuggestions();
+}
+
 // Ensures the "Use a virtual card number" option should not be shown when card
 // expiration date field is not detected.
 TEST_F(AutofillManagerTestForVirtualCardOption,
@@ -7985,13 +8018,59 @@ TEST_F(AutofillManagerTestForVirtualCardOption,
 
 // Ensures the "Use a virtual card number" option should be shown when all
 // requirements are met.
-TEST_F(AutofillManagerTestForVirtualCardOption, ShouldShowVirtualCardOption) {
+TEST_F(AutofillManagerTestForVirtualCardOption,
+       ShouldShowVirtualCardOption_OneCard) {
+  CreateCloudTokenDataForDefaultCard();
   CreateCompleteFormAndGetSuggestions();
 
   // Ensures the card suggestion and the virtual card suggestion are shown.
   external_delegate_->CheckSuggestionCount(kDefaultPageID, 2);
   CheckSuggestions(
       kDefaultPageID,
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          "Expires on 04/99", kVisaCard,
+          autofill_manager_->GetPackedCreditCardID(7)),
+      Suggestion(l10n_util::GetStringUTF8(
+                     IDS_AUTOFILL_CLOUD_TOKEN_DROPDOWN_OPTION_LABEL),
+                 "", "", PopupItemId::POPUP_ITEM_ID_USE_VIRTUAL_CARD));
+}
+
+// Ensures the "Use a virtual card number" option should be shown when there are
+// multiple cards and at least one card meets requirements.
+TEST_F(AutofillManagerTestForVirtualCardOption,
+       ShouldShowVirtualCardOption_MultipleCards) {
+  CreateCloudTokenDataForDefaultCard();
+
+  // Adds another card which does not meet the requirements (has two cloud
+  // tokens).
+  CreditCard masked_server_card(CreditCard::MASKED_SERVER_CARD,
+                                /*server_id=*/"a456");
+  // TODO(crbug.com/1020740): Replace all the hard-coded expiration year in
+  // this file with NextYear().
+  test::SetCreditCardInfo(&masked_server_card, "Elvis Presley",
+                          "4111111111111111",  // Visa
+                          "04", "2999", "1");
+  masked_server_card.SetNetworkForMaskedCard(kVisaCard);
+  masked_server_card.set_guid("00000000-0000-0000-0000-000000000008");
+  personal_data_.AddServerCreditCard(masked_server_card);
+  CreditCardCloudTokenData data1 = test::GetCreditCardCloudTokenData1();
+  data1.masked_card_id = "a456";
+  personal_data_.AddCloudTokenData(data1);
+  CreditCardCloudTokenData data2 = test::GetCreditCardCloudTokenData2();
+  data2.masked_card_id = "a456";
+  personal_data_.AddCloudTokenData(data2);
+
+  CreateCompleteFormAndGetSuggestions();
+
+  // Ensures the card suggestion and the virtual card suggestion are shown.
+  external_delegate_->CheckSuggestionCount(kDefaultPageID, 3);
+  CheckSuggestions(
+      kDefaultPageID,
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("1111"),
+          "Expires on 04/99", kVisaCard,
+          autofill_manager_->GetPackedCreditCardID(8)),
       Suggestion(
           std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
           "Expires on 04/99", kVisaCard,

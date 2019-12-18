@@ -66,8 +66,8 @@ class TouchEmulatorTest : public testing::Test,
                                  RenderWidgetHostViewBase* target) override {
     forwarded_events_.push_back(event.GetType());
     EXPECT_EQ(1U, event.touches_length);
-    EXPECT_EQ(last_mouse_x_, event.touches[0].PositionInWidget().x);
-    EXPECT_EQ(last_mouse_y_, event.touches[0].PositionInWidget().y);
+    EXPECT_EQ(last_mouse_x_, event.touches[0].PositionInWidget().x());
+    EXPECT_EQ(last_mouse_y_, event.touches[0].PositionInWidget().y());
     const int all_buttons =
         WebInputEvent::kLeftButtonDown | WebInputEvent::kMiddleButtonDown |
         WebInputEvent::kRightButtonDown | WebInputEvent::kBackButtonDown |

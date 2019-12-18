@@ -146,16 +146,8 @@ public class AwSafeBrowsingConfigHelper {
     // Can be called from any thread. This returns true or false, depending on user opt-in
     // preference. This returns false if we don't know yet what the user's preference is.
     @CalledByNative
-    private static boolean getSafeBrowsingUserOptIn2() {
+    private static boolean getSafeBrowsingUserOptIn() {
         return sSafeBrowsingUserOptIn;
-    }
-
-    // Can be called from any thread. This returns true or false, depending on user opt-in
-    // preference. This returns false if we don't know yet what the user's preference is.
-    // Deprecated: use getSafeBrowsingUserOptIn2() instead, this will be removed when downstream no
-    // longer depends on it.
-    public static Boolean getSafeBrowsingUserOptIn() {
-        return getSafeBrowsingUserOptIn2();
     }
 
     public static void setSafeBrowsingUserOptIn(boolean optin) {

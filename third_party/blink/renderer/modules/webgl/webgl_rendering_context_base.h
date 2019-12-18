@@ -1435,14 +1435,26 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
       const TypedFlexibleArrayBufferView<WTFTypedArray>& v,
       GLsizei required_min_size,
       GLuint src_offset,
-      GLuint src_length) {
+      size_t src_length) {
+    GLuint length;
+    if (!base::CheckedNumeric<GLuint>(src_length).AssignIfValid(&length)) {
+      SynthesizeGLError(GL_INVALID_VALUE, function_name,
+                        "src_length is too big");
+      return false;
+    }
+    GLuint array_length;
+    if (!base::CheckedNumeric<GLuint>(v.lengthAsSizeT())
+             .AssignIfValid(&array_length)) {
+      SynthesizeGLError(GL_INVALID_VALUE, function_name, "array is too big");
+      return false;
+    }
     if (!v.DataMaybeOnStack()) {
       SynthesizeGLError(GL_INVALID_VALUE, function_name, "no array");
       return false;
     }
     return ValidateUniformMatrixParameters(
-        function_name, location, false, v.DataMaybeOnStack(), v.length(),
-        required_min_size, src_offset, src_length);
+        function_name, location, false, v.DataMaybeOnStack(), array_length,
+        required_min_size, src_offset, length);
   }
 
   // Helper function to validate the target for bufferData and

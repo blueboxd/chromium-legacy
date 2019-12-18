@@ -78,8 +78,9 @@ public class ProfileDownloader {
             ThreadUtils.assertOnUiThread();
             if (sPendingProfileDownloads == null) {
                 sPendingProfileDownloads = new PendingProfileDownloads();
-                IdentityServicesProvider.getAccountTrackerService().addSystemAccountsSeededListener(
-                        sPendingProfileDownloads);
+                IdentityServicesProvider.get()
+                        .getAccountTrackerService()
+                        .addSystemAccountsSeededListener(sPendingProfileDownloads);
             }
             return sPendingProfileDownloads;
         }
@@ -123,7 +124,9 @@ public class ProfileDownloader {
             Context context, String accountId, int imageSidePixels, boolean isPreSignin) {
         ThreadUtils.assertOnUiThread();
         Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
-        if (!IdentityServicesProvider.getAccountTrackerService().checkAndSeedSystemAccounts()) {
+        if (!IdentityServicesProvider.get()
+                        .getAccountTrackerService()
+                        .checkAndSeedSystemAccounts()) {
             PendingProfileDownloads.get(context).pendProfileDownload(
                     profile, accountId, imageSidePixels);
             return;

@@ -20,7 +20,6 @@
 #include "ui/display/types/display_snapshot.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_manager.h"
-#include "ui/ozone/platform/drm/common/drm_overlay_manager.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/host/drm_device_handle.h"
 #include "ui/ozone/platform/drm/host/drm_display_host.h"
@@ -112,11 +111,9 @@ DrmDisplayHostManager::DrmDisplayHostManager(
     GpuThreadAdapter* proxy,
     DeviceManager* device_manager,
     OzonePlatform::InitializedHostProperties* host_properties,
-    DrmOverlayManager* overlay_manager,
     InputControllerEvdev* input_controller)
     : proxy_(proxy),
       device_manager_(device_manager),
-      overlay_manager_(overlay_manager),
       input_controller_(input_controller),
       primary_graphics_card_path_(GetPrimaryDisplayCardPath()) {
   {
@@ -400,9 +397,6 @@ void DrmDisplayHostManager::GpuConfiguredDisplay(int64_t display_id,
   DrmDisplayHost* display = GetDisplay(display_id);
   if (display) {
     display->OnDisplayConfigured(status);
-
-    if (overlay_manager_)
-      overlay_manager_->ResetCache();
   } else {
     LOG(ERROR) << "Couldn't find display with id=" << display_id;
   }

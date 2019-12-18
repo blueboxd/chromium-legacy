@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <windows.h>
+
 #include <winternl.h>
 
 #include "base/base_switches.h"
@@ -56,11 +57,14 @@ TEST(ScopedHandleTest, ActiveVerifierTrackedHasBeenClosed) {
       GetProcAddress(GetModuleHandle(L"ntdll.dll"), "NtClose"));
   ASSERT_NE(nullptr, ntclose);
 
-  ASSERT_DEATH({
-    base::win::ScopedHandle handle_holder(handle);
-    ntclose(handle);
-    // Destructing a ScopedHandle with an illegally closed handle should fail.
-  }, "");
+  ASSERT_DEATH(
+      {
+        base::win::ScopedHandle handle_holder(handle);
+        ntclose(handle);
+        // Destructing a ScopedHandle with an illegally closed handle should
+        // fail.
+      },
+      "");
 }
 
 TEST(ScopedHandleTest, ActiveVerifierDoubleTracking) {
@@ -69,9 +73,7 @@ TEST(ScopedHandleTest, ActiveVerifierDoubleTracking) {
 
   base::win::ScopedHandle handle_holder(handle);
 
-  ASSERT_DEATH({
-    base::win::ScopedHandle handle_holder2(handle);
-  }, "");
+  ASSERT_DEATH({ base::win::ScopedHandle handle_holder2(handle); }, "");
 }
 
 TEST(ScopedHandleTest, ActiveVerifierWrongOwner) {
@@ -79,10 +81,12 @@ TEST(ScopedHandleTest, ActiveVerifierWrongOwner) {
   ASSERT_NE(HANDLE(nullptr), handle);
 
   base::win::ScopedHandle handle_holder(handle);
-  ASSERT_DEATH({
-    base::win::ScopedHandle handle_holder2;
-    handle_holder2.handle_ = handle;
-  }, "");
+  ASSERT_DEATH(
+      {
+        base::win::ScopedHandle handle_holder2;
+        handle_holder2.handle_ = handle;
+      },
+      "");
   ASSERT_TRUE(handle_holder.IsValid());
   handle_holder.Close();
 }
@@ -91,10 +95,12 @@ TEST(ScopedHandleTest, ActiveVerifierUntrackedHandle) {
   HANDLE handle = ::CreateMutex(nullptr, false, nullptr);
   ASSERT_NE(HANDLE(nullptr), handle);
 
-  ASSERT_DEATH({
-    base::win::ScopedHandle handle_holder;
-    handle_holder.handle_ = handle;
-  }, "");
+  ASSERT_DEATH(
+      {
+        base::win::ScopedHandle handle_holder;
+        handle_holder.handle_ = handle;
+      },
+      "");
 
   ASSERT_TRUE(::CloseHandle(handle));
 }

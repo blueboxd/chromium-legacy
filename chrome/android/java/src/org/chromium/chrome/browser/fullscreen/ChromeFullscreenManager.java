@@ -290,11 +290,16 @@ public class ChromeFullscreenManager extends FullscreenManager
             }
 
             @Override
-            public void onInteractabilityChanged(boolean interactable) {
-                if (interactable) {
-                    Runnable enterFullscreen = getEnterFullscreenRunnable(getTab());
-                    if (enterFullscreen != null) enterFullscreen.run();
-                }
+            public void onInteractabilityChanged(Tab tab, boolean interactable) {
+                Tab currentTab = getTab();
+                if (!interactable || tab != currentTab) return;
+                Runnable enterFullscreen = getEnterFullscreenRunnable(currentTab);
+                if (enterFullscreen != null) enterFullscreen.run();
+
+                TabBrowserControlsOffsetHelper offsetHelper =
+                        TabBrowserControlsOffsetHelper.get(currentTab);
+                onOffsetsChanged(offsetHelper.topControlsOffset(),
+                        offsetHelper.bottomControlsOffset(), offsetHelper.contentOffset());
             }
 
             @Override
@@ -310,7 +315,7 @@ public class ChromeFullscreenManager extends FullscreenManager
             @Override
             public void onBrowserControlsOffsetChanged(
                     Tab tab, int topControlsOffset, int bottomControlsOffset, int contentOffset) {
-                if (tab == getTab()) {
+                if (tab == getTab() && tab.isUserInteractable()) {
                     onOffsetsChanged(topControlsOffset, bottomControlsOffset, contentOffset);
                 }
             }

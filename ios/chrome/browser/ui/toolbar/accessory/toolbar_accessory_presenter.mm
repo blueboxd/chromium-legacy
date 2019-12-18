@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/image_util/image_util.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#import "ios/chrome/browser/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/colors/dynamic_color_util.h"
@@ -62,7 +63,6 @@ const CGFloat kAnimationDuration = 0.15;
 }
 
 - (void)addToolbarAccessoryView:(UIView*)toolbarAccessoryView
-               usingToolbarView:(UIView*)toolbarView
                        animated:(BOOL)animated
                      completion:(void (^)())completion {
   if (self.backgroundView) {
@@ -72,12 +72,10 @@ const CGFloat kAnimationDuration = 0.15;
 
   if (ShouldShowCompactToolbar()) {
     [self showIPhoneToolbarAccessoryView:toolbarAccessoryView
-                        usingToolbarView:toolbarView
                                 animated:animated
                               completion:completion];
   } else {
     [self showIPadToolbarAccessoryView:toolbarAccessoryView
-                      usingToolbarView:toolbarView
                               animated:animated
                             completion:completion];
   }
@@ -128,7 +126,6 @@ const CGFloat kAnimationDuration = 0.15;
 // Animates accessory to iPad positioning: A small view in the top right, just
 // below the toolbar.
 - (void)showIPadToolbarAccessoryView:(UIView*)toolbarAccessoryView
-                    usingToolbarView:(UIView*)toolbarView
                             animated:(BOOL)animated
                           completion:(void (^)())completion {
   DCHECK(IsIPadIdiom());
@@ -156,10 +153,14 @@ const CGFloat kAnimationDuration = 0.15;
   NSLayoutConstraint* animationConstraint = [self.backgroundView.leadingAnchor
       constraintEqualToAnchor:self.baseViewController.view.trailingAnchor];
 
+  UILayoutGuide* toolbarLayoutGuide =
+      [NamedGuide guideWithName:kPrimaryToolbarGuide
+                           view:self.baseViewController.view];
+
   [NSLayoutConstraint activateConstraints:@[
     // Anchors accessory below the |toolbarView|.
     [self.backgroundView.topAnchor
-        constraintEqualToAnchor:toolbarView.bottomAnchor],
+        constraintEqualToAnchor:toolbarLayoutGuide.bottomAnchor],
     animationConstraint,
     widthConstraint,
     [self.backgroundView.widthAnchor
@@ -200,7 +201,6 @@ const CGFloat kAnimationDuration = 0.15;
 
 // Animates accessory to iPhone positioning: covering the whole toolbar.
 - (void)showIPhoneToolbarAccessoryView:(UIView*)toolbarAccessoryView
-                      usingToolbarView:(UIView*)toolbarView
                               animated:(BOOL)animated
                             completion:(nullable void (^)())completion {
   self.backgroundView =

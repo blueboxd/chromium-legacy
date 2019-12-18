@@ -70,7 +70,9 @@ public abstract class PlatformServiceBridge {
 
     // Overriding implementations may call "callback" asynchronously, on any thread.
     public void querySafeBrowsingUserConsent(@NonNull final Callback<Boolean> callback) {
-        // User opt-in preference depends on a SafetyNet API.
+        // User opt-in preference depends on a SafetyNet API. In purely upstream builds (which don't
+        // communicate with GMS), assume the user has not opted in.
+        callback.onResult(false);
     }
 
     // Overriding implementations may call "callback" asynchronously. For simplicity (and not

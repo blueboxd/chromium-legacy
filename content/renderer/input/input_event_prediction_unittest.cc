@@ -321,8 +321,8 @@ TEST_F(InputEventPredictionTest, ResamplingDisabled) {
   // change.
   const WebMouseEvent& event =
       static_cast<const blink::WebMouseEvent&>(coalesced_event.Event());
-  EXPECT_EQ(event.PositionInWidget().x, 13);
-  EXPECT_EQ(event.PositionInWidget().y, 7);
+  EXPECT_EQ(event.PositionInWidget().x(), 13);
+  EXPECT_EQ(event.PositionInWidget().y(), 7);
 }
 
 // Test that when dt > maxResampling, resampling is cut off .
@@ -362,8 +362,8 @@ TEST_F(InputEventPredictionTest, NoResampleWhenExceedMaxResampleTime) {
 
     const WebMouseEvent& event =
         static_cast<const blink::WebMouseEvent&>(coalesced_event.Event());
-    EXPECT_GT(event.PositionInWidget().x, 13);
-    EXPECT_LT(event.PositionInWidget().y, 7);
+    EXPECT_GT(event.PositionInWidget().x(), 13);
+    EXPECT_LT(event.PositionInWidget().y(), 7);
     EXPECT_EQ(event.TimeStamp(), frame_time);
 
     EXPECT_EQ(coalesced_event.PredictedEventSize(), 3u);
@@ -389,8 +389,8 @@ TEST_F(InputEventPredictionTest, NoResampleWhenExceedMaxResampleTime) {
     // the predictor
     const WebMouseEvent& event =
         static_cast<const blink::WebMouseEvent&>(coalesced_event.Event());
-    EXPECT_GT(event.PositionInWidget().x, 14);
-    EXPECT_LT(event.PositionInWidget().y, 6);
+    EXPECT_GT(event.PositionInWidget().x(), 14);
+    EXPECT_LT(event.PositionInWidget().y(), 6);
     EXPECT_EQ(event.TimeStamp(), event_time + predictor_max_resample_time);
 
     EXPECT_EQ(coalesced_event.PredictedEventSize(), 3u);

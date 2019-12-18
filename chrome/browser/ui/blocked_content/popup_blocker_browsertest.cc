@@ -33,7 +33,6 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -44,6 +43,7 @@
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "components/app_modal/native_app_modal_dialog.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/embedder_support/switches.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
@@ -435,7 +435,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, NoPopupsLaunchWhenTabIsClosed) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisablePopupBlocking);
+      embedder_support::kDisablePopupBlocking);
   GURL url(
       embedded_test_server()->GetURL("/popup_blocker/popup-on-unload.html"));
   ui_test_utils::NavigateToURL(browser(), url);
@@ -485,7 +485,7 @@ class PopupBlockerSpecialPolicyBrowserTest : public PopupBlockerBrowserTest {
 IN_PROC_BROWSER_TEST_F(PopupBlockerSpecialPolicyBrowserTest,
                        AllowPopupsWhenTabIsClosedWithSpecialPolicy) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisablePopupBlocking);
+      embedder_support::kDisablePopupBlocking);
   GURL url(
       embedded_test_server()->GetURL("/popup_blocker/popup-on-unload.html"));
   ui_test_utils::NavigateToURL(browser(), url);
@@ -498,7 +498,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerSpecialPolicyBrowserTest,
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
                        UnblockedPopupShowsInHistoryAndOmnibox) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisablePopupBlocking);
+      embedder_support::kDisablePopupBlocking);
   GURL url(embedded_test_server()->GetURL(
       "/popup_blocker/popup-blocked-to-post-blank.html"));
   NavigateAndCheckPopupShown(url, kExpectForegroundTab);

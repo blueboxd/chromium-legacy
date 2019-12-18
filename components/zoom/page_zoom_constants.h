@@ -6,17 +6,18 @@
 #define COMPONENTS_ZOOM_PAGE_ZOOM_CONSTANTS_H_
 
 #include <stddef.h>
-
+#include <string>
 #include <vector>
 
 namespace zoom {
 
 // Default zoom factors supported by ui_zoom.
 extern const double kPresetZoomFactors[];
-
 // Size of |kPresetZoomFactors|.
 extern const std::size_t kPresetZoomFactorsSize;
 
-}  // namespace ui_zoom
+std::string GetPresetZoomFactorsAsJSON();
+
+}  // namespace zoom
 
 #endif  // COMPONENTS_ZOOM_PAGE_ZOOM_CONSTANTS_H_

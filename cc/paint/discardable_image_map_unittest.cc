@@ -1143,20 +1143,28 @@ TEST_P(DiscardableImageMapColorSpaceTest, ColorSpace) {
 
   FakeContentLayerClient content_layer_client;
   content_layer_client.set_bounds(visible_rect.size());
-  content_layer_client.add_draw_image(discardable_image, gfx::Point(0, 0),
-                                      PaintFlags());
+
   scoped_refptr<DisplayItemList> display_list =
       content_layer_client.PaintContentsToDisplayList(
           ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
   display_list->GenerateDiscardableImagesMetadata();
   const DiscardableImageMap& image_map = display_list->discardable_image_map();
 
+  EXPECT_FALSE(image_map.contains_non_srgb_images());
+
+  content_layer_client.add_draw_image(discardable_image, gfx::Point(0, 0),
+                                      PaintFlags());
+  display_list = content_layer_client.PaintContentsToDisplayList(
+      ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+  display_list->GenerateDiscardableImagesMetadata();
+  const DiscardableImageMap& image_map2 = display_list->discardable_image_map();
+
   if (!image_color_space.IsValid())
-    EXPECT_TRUE(image_map.all_images_are_srgb());
+    EXPECT_FALSE(image_map2.contains_non_srgb_images());
   else if (image_color_space == gfx::ColorSpace::CreateSRGB())
-    EXPECT_TRUE(image_map.all_images_are_srgb());
+    EXPECT_FALSE(image_map2.contains_non_srgb_images());
   else
-    EXPECT_FALSE(image_map.all_images_are_srgb());
+    EXPECT_TRUE(image_map2.contains_non_srgb_images());
 }
 
 gfx::ColorSpace test_color_spaces[] = {

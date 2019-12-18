@@ -87,7 +87,7 @@ class MockBindings {
     waiter_.NotifyEvent(EVENT_ERROR);
     errors_.push_back(std::make_pair(line_number, base::UTF16ToASCII(error)));
     if (!error_callback_.is_null())
-      error_callback_.Run();
+      std::move(error_callback_).Run();
   }
 
   ProxyHostResolver* host_resolver() { return host_resolver_; }
@@ -96,8 +96,8 @@ class MockBindings {
 
   std::vector<std::pair<int, std::string>> GetErrors() { return errors_; }
 
-  void RunOnError(const base::Closure& callback) {
-    error_callback_ = callback;
+  void RunOnError(base::OnceClosure callback) {
+    error_callback_ = std::move(callback);
     waiter_.WaitForEvent(EVENT_ERROR);
   }
 
@@ -143,7 +143,7 @@ class MockBindings {
   std::vector<std::string> alerts_;
   std::vector<std::pair<int, std::string>> errors_;
   ProxyHostResolver* const host_resolver_;
-  base::Closure error_callback_;
+  base::OnceClosure error_callback_;
   net::EventWaiter<Event> waiter_;
 };
 
@@ -672,8 +672,8 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhilePendingCompletionTask) {
   // Cancel the first request, while it is running its completion task on
   // the origin thread. Reset deletes Request opject which cancels the request.
   mock_bindings.RunOnError(
-      base::Bind(&std::unique_ptr<net::ProxyResolver::Request>::reset,
-                 base::Unretained(&request1), nullptr));
+      base::BindOnce(&std::unique_ptr<net::ProxyResolver::Request>::reset,
+                     base::Unretained(&request1), nullptr));
 
   // Start another request, to make sure it is able to complete.
   resolver->GetProxyForURL(GURL("http://i-have-no-idea-what-im-doing/"),

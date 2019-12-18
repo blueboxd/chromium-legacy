@@ -35,7 +35,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolverFactoryMojo
       mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory>
           mojo_proxy_factory,
       net::HostResolver* host_resolver,
-      const base::Callback<std::unique_ptr<net::ProxyResolverErrorObserver>()>&
+      const base::RepeatingCallback<
+          std::unique_ptr<net::ProxyResolverErrorObserver>()>&
           error_observer_factory,
       net::NetLog* net_log);
   ~ProxyResolverFactoryMojo() override;
@@ -51,7 +52,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolverFactoryMojo
 
   mojo::Remote<proxy_resolver::mojom::ProxyResolverFactory> mojo_proxy_factory_;
   net::HostResolver* const host_resolver_;
-  const base::Callback<std::unique_ptr<net::ProxyResolverErrorObserver>()>
+  const base::RepeatingCallback<
+      std::unique_ptr<net::ProxyResolverErrorObserver>()>
       error_observer_factory_;
   net::NetLog* const net_log_;
 

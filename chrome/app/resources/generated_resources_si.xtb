@@ -2527,7 +2527,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="4572779512957829735">ඔබේ ආරක්‍ෂක යතුර සඳහා රහස් අංකය ඇතුළත් කරන්න</translation>
 <translation id="457386861538956877">තව...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">බ්ලූටූත් උපාංගය යුගල කරන්න</translation>
 <translation id="4579581181964204535"><ph name="HOST_NAME" /> විකාශය කිරීමට නොහැකිය.</translation>
 <translation id="4581774856936278355">ලිනක්ස් ප්‍රතිසාධන කරන විට දෝෂයක් සිදු විය</translation>
 <translation id="4582563038311694664">සියලු සැකසුම් යළි සකසන්න</translation>
@@ -4865,7 +4864,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="7974936243149753750">ඕවර්ස්කෑන්</translation>
 <translation id="7978412674231730200">පුද්ගලික යතුර</translation>
 <translation id="7978450511781612192">මෙය ඔබව ඔබේ Google ගිණුම්වලින් වරනු ඇත. ඔබගේ පිටුසන්, ඉතිහාසය, මුරපද සහ තවත් දේ තව දුරටත් සමමුහුර්ත නොවනු ඇත.</translation>
-<translation id="7979036127916589816">සමමුහුර්ත දෝෂයකි</translation>
 <translation id="7980084013673500153">වත්කම් ID: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">වේගවත් බ්‍රවුස් කිරීම සහ සෙවීම සඳහා පිටු පෙර පූරණය කරන්න</translation>
 <translation id="798145602633458219">යෝජනාව <ph name="SUGGESTION_NAME" /> සෙවුම් පෙට්ටියට එකුත කරන්න</translation>
@@ -5313,6 +5311,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="862542460444371744">දිගු (&amp;E)</translation>
 <translation id="862727964348362408">අත්හිටුවන ලදි</translation>
 <translation id="862750493060684461">CSS කෑශ්</translation>
+<translation id="8627706565932943526">සම්මුහු දෝශයක්</translation>
 <translation id="8627795981664801467">ආරක්ෂිත සබඳතා පමණි</translation>
 <translation id="8630903300770275248">අධීක්ෂණය කළ පරිශීලක ආයාත කරන්න</translation>
 <translation id="8631032106121706562">පෙති</translation>

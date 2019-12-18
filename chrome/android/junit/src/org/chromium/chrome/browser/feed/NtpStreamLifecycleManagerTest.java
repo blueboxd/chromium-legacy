@@ -139,7 +139,7 @@ public class NtpStreamLifecycleManagerTest {
 
         // Verify that stream is active when tab is user interactable and activity is resumed.
         when(mTab.isUserInteractable()).thenReturn(true);
-        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(true);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(mTab, true);
         verify(mStream, times(1)).onShow();
         verify(mStream, times(1)).onActive();
 
@@ -201,7 +201,7 @@ public class NtpStreamLifecycleManagerTest {
         verify(mStream, times(1)).onInactive();
 
         // When the Stream is inactive, it won't call Stream#onInactive() again.
-        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(false);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(mTab, false);
         verify(mStream, times(1)).onInactive();
 
         // Verify that the Stream cannot be set shown from inactive.
@@ -213,7 +213,7 @@ public class NtpStreamLifecycleManagerTest {
         verify(mStream, times(2)).onActive();
 
         // Verify that the Stream can be set inactive from active on tab interactability changed.
-        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(false);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(mTab, false);
         verify(mStream, times(2)).onInactive();
     }
 
@@ -385,26 +385,26 @@ public class NtpStreamLifecycleManagerTest {
 
         // On tab interactable.
         when(mTab.isUserInteractable()).thenReturn(true);
-        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(true);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(mTab, true);
         inOrder.verify(mStream).onActive();
         verify(mStream, times(1)).onActive();
 
         // On tab un-interactable (simulates user enter the tab switcher).
         when(mTab.isUserInteractable()).thenReturn(false);
-        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(false);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(mTab, false);
         inOrder.verify(mStream).onInactive();
         verify(mStream, times(1)).onInactive();
 
         // On tab interactable (simulates user exit the tab switcher).
         when(mTab.isUserInteractable()).thenReturn(true);
-        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(true);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(mTab, true);
         inOrder.verify(mStream).onActive();
         verify(mStream, times(2)).onActive();
 
         // On tab un-interactable and hidden (simulates user switch to another tab).
         when((mTab).isHidden()).thenReturn(true);
         when(mTab.isUserInteractable()).thenReturn(false);
-        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(false);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(mTab, false);
         mNtpStreamLifecycleManager.getTabObserverForTesting().onHidden(mTab, CHANGED_TABS);
         inOrder.verify(mStream).onInactive();
         inOrder.verify(mStream).onHide();

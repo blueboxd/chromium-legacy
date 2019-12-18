@@ -59,7 +59,7 @@ float FrameScale(const LocalFrameView* frame_view) {
   return scale;
 }
 
-FloatPoint FrameTranslation(const LocalFrameView* frame_view) {
+gfx::Vector2dF FrameTranslation(const LocalFrameView* frame_view) {
   IntPoint visual_viewport;
   FloatSize overscroll_offset;
   if (frame_view) {
@@ -71,8 +71,8 @@ FloatPoint FrameTranslation(const LocalFrameView* frame_view) {
           root_view->GetPage()->GetChromeClient().ElasticOverscroll();
     }
   }
-  return FloatPoint(visual_viewport.X() + overscroll_offset.Width(),
-                    visual_viewport.Y() + overscroll_offset.Height());
+  return gfx::Vector2dF(visual_viewport.X() + overscroll_offset.Width(),
+                        visual_viewport.Y() + overscroll_offset.Height());
 }
 
 FloatPoint ConvertAbsoluteLocationForLayoutObjectFloat(
@@ -118,12 +118,12 @@ unsigned ToWebInputEventModifierFrom(WebMouseEvent::Button button) {
 }
 
 WebPointerEvent TransformWebPointerEvent(float frame_scale,
-                                         FloatPoint frame_translate,
+                                         gfx::Vector2dF frame_translate,
                                          const WebPointerEvent& event) {
   // frameScale is default initialized in debug builds to be 0.
   DCHECK_EQ(0, event.FrameScale());
-  DCHECK_EQ(0, event.FrameTranslate().x);
-  DCHECK_EQ(0, event.FrameTranslate().y);
+  DCHECK_EQ(0, event.FrameTranslate().x());
+  DCHECK_EQ(0, event.FrameTranslate().y());
   WebPointerEvent result = event;
   result.SetFrameScale(frame_scale);
   result.SetFrameTranslate(frame_translate);
@@ -274,7 +274,7 @@ WebMouseEventBuilder::WebMouseEventBuilder(const LocalFrameView* plugin_parent,
   time_stamp_ = event.PlatformTimeStamp();
   modifiers_ = event.GetModifiers();
   frame_scale_ = 1;
-  frame_translate_ = WebFloatPoint();
+  frame_translate_ = gfx::Vector2dF();
 
   // The mouse event co-ordinates should be generated from the co-ordinates of
   // the touch point.
@@ -335,7 +335,7 @@ Vector<WebPointerEvent> TransformWebPointerEventVector(
     LocalFrameView* frame_view,
     const WebVector<const WebInputEvent*>& coalesced_events) {
   float scale = FrameScale(frame_view);
-  FloatPoint translation = FrameTranslation(frame_view);
+  gfx::Vector2dF translation = FrameTranslation(frame_view);
   Vector<WebPointerEvent> result;
   for (auto* const event : coalesced_events) {
     DCHECK(WebInputEvent::IsPointerEventType(event->GetType()));

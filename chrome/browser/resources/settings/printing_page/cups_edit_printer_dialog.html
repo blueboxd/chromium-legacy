@@ -138,20 +138,25 @@
               $i18n{selectDriverButtonText}
             </cr-button>
           </div>
-          <div class="eula" id="eulaUrl" hidden="[[!eulaUrl_]]">
-            <a href="[[eulaUrl_]]" target="_blank">$i18n{printerEulaNotice}</a>
-          </div>
         </template>
       </div>
       <div slot="dialog-buttons">
-        <cr-button class="cancel-button" on-click="onCancelTap_">
-          $i18n{cancel}
-        </cr-button>
-        <cr-button class="action-button" on-click="onSaveTap_"
-            disabled="[[!canSavePrinter_(pendingPrinter_.*, printerInfoChanged_,
-               isOnline_, isManufacturerInvalid_, isModelInvalid_)]]">
-          $i18n{editPrinterButtonText}
-        </cr-button>
+        <div>
+          <div class="eula" id="eulaUrl" hidden="[[!eulaUrl_]]">
+            <a href="[[eulaUrl_]]" target="_blank">$i18n{printerEulaNotice}</a>
+          </div>
+        </div>
+        <div>
+          <cr-button class="cancel-button" on-click="onCancelTap_">
+            $i18n{cancel}
+          </cr-button>
+          <cr-button class="action-button" on-click="onSaveTap_"
+              disabled="[[!canSavePrinter_(pendingPrinter_.*,
+                  printerInfoChanged_,
+                  isOnline_, isManufacturerInvalid_, isModelInvalid_)]]">
+            $i18n{editPrinterButtonText}
+          </cr-button>
+        </div>
       </div>
     </add-printer-dialog>
   </template>

@@ -7,7 +7,7 @@
   UI.inspectorView.element.appendChild(div);
 
   var columns = [{id: "id", title: "ID column", width: "250px"}];
-  var dataGrid = new DataGrid.ViewportDataGrid(columns);
+  var dataGrid = new DataGrid.ViewportDataGrid({displayName: 'Test', columns});
   div.appendChild(dataGrid.element);
   dataGrid.element.style.height = '150px';
 

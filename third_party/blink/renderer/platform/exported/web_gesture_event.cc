@@ -59,35 +59,34 @@ float WebGestureEvent::VelocityY() const {
   return data.fling_start.velocity_y;
 }
 
-WebFloatSize WebGestureEvent::TapAreaInRootFrame() const {
+gfx::SizeF WebGestureEvent::TapAreaInRootFrame() const {
   if (type_ == WebInputEvent::kGestureTwoFingerTap) {
-    return WebFloatSize(data.two_finger_tap.first_finger_width / frame_scale_,
-                        data.two_finger_tap.first_finger_height / frame_scale_);
+    return gfx::SizeF(data.two_finger_tap.first_finger_width / frame_scale_,
+                      data.two_finger_tap.first_finger_height / frame_scale_);
   } else if (type_ == WebInputEvent::kGestureLongPress ||
              type_ == WebInputEvent::kGestureLongTap) {
-    return WebFloatSize(data.long_press.width / frame_scale_,
-                        data.long_press.height / frame_scale_);
+    return gfx::SizeF(data.long_press.width / frame_scale_,
+                      data.long_press.height / frame_scale_);
   } else if (type_ == WebInputEvent::kGestureTap ||
              type_ == WebInputEvent::kGestureTapUnconfirmed ||
              type_ == WebInputEvent::kGestureDoubleTap) {
-    return WebFloatSize(data.tap.width / frame_scale_,
-                        data.tap.height / frame_scale_);
+    return gfx::SizeF(data.tap.width / frame_scale_,
+                      data.tap.height / frame_scale_);
   } else if (type_ == WebInputEvent::kGestureTapDown) {
-    return WebFloatSize(data.tap_down.width / frame_scale_,
-                        data.tap_down.height / frame_scale_);
+    return gfx::SizeF(data.tap_down.width / frame_scale_,
+                      data.tap_down.height / frame_scale_);
   } else if (type_ == WebInputEvent::kGestureShowPress) {
-    return WebFloatSize(data.show_press.width / frame_scale_,
-                        data.show_press.height / frame_scale_);
+    return gfx::SizeF(data.show_press.width / frame_scale_,
+                      data.show_press.height / frame_scale_);
   }
   // This function is called for all gestures and determined if the tap
   // area is empty or not; so return an empty rect here.
-  return WebFloatSize();
+  return gfx::SizeF();
 }
 
-WebFloatPoint WebGestureEvent::PositionInRootFrame() const {
-  return WebFloatPoint(
-      (position_in_widget_.x / frame_scale_) + frame_translate_.x,
-      (position_in_widget_.y / frame_scale_) + frame_translate_.y);
+gfx::PointF WebGestureEvent::PositionInRootFrame() const {
+  return gfx::ScalePoint(position_in_widget_, 1 / frame_scale_) +
+         frame_translate_;
 }
 
 int WebGestureEvent::TapCount() const {
@@ -95,16 +94,15 @@ int WebGestureEvent::TapCount() const {
   return data.tap.tap_count;
 }
 
-void WebGestureEvent::ApplyTouchAdjustment(WebFloatPoint root_frame_coords) {
+void WebGestureEvent::ApplyTouchAdjustment(
+    const gfx::PointF& root_frame_coords) {
   // Update the window-relative position of the event so that the node that
   // was ultimately hit is under this point (i.e. elementFromPoint for the
   // client co-ordinates in a 'click' event should yield the target). The
   // global position is intentionally left unmodified because it's intended to
   // reflect raw co-ordinates unrelated to any content.
-  frame_translate_.x =
-      root_frame_coords.x - (position_in_widget_.x / frame_scale_);
-  frame_translate_.y =
-      root_frame_coords.y - (position_in_widget_.y / frame_scale_);
+  frame_translate_ = root_frame_coords -
+                     gfx::ScalePoint(position_in_widget_, 1 / frame_scale_);
 }
 
 void WebGestureEvent::FlattenTransform() {
@@ -147,8 +145,7 @@ void WebGestureEvent::FlattenTransform() {
   }
 
   SetPositionInWidget(PositionInRootFrame());
-  frame_translate_.x = 0;
-  frame_translate_.y = 0;
+  frame_translate_ = gfx::Vector2dF();
   frame_scale_ = 1;
 }
 

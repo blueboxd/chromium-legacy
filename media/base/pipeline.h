@@ -58,7 +58,7 @@ class MEDIA_EXPORT Pipeline {
     // Executed whenever a text track is added.
     // The client is expected to create a TextTrack and call |done_cb|.
     virtual void OnAddTextTrack(const TextTrackConfig& config,
-                                const AddTextTrackDoneCB& done_cb) = 0;
+                                AddTextTrackDoneCB done_cb) = 0;
 
     // Executed whenever the pipeline is waiting because of |reason|.
     virtual void OnWaiting(WaitingReason reason) = 0;

@@ -2527,7 +2527,6 @@
 <translation id="4572779512957829735">Введите PIN-код для электронного ключа.</translation>
 <translation id="457386861538956877">Ещё...</translation>
 <translation id="4574741712540401491">• <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Подключение устройства Bluetooth</translation>
 <translation id="4579581181964204535">Трансляция с сайта <ph name="HOST_NAME" /> невозможна</translation>
 <translation id="4581774856936278355">Не удалось восстановить данные Linux</translation>
 <translation id="4582563038311694664">Сбросить все настройки</translation>
@@ -4867,7 +4866,6 @@
 <translation id="7974936243149753750">Каемка экрана</translation>
 <translation id="7978412674231730200">Закрытый ключ</translation>
 <translation id="7978450511781612192">Вы выйдете из аккаунта Google. Закладки, история, пароли и другие параметры перестанут синхронизироваться с ним.</translation>
-<translation id="7979036127916589816">Ошибка синхронизации</translation>
 <translation id="7980084013673500153">Идентификатор объекта: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Разрешить предзагрузку страниц для повышения скорости работы браузера и поиска</translation>
 <translation id="798145602633458219">Добавить подсказку "<ph name="SUGGESTION_NAME" />" в окно поиска</translation>
@@ -5315,6 +5313,7 @@
 <translation id="862542460444371744">Расширения</translation>
 <translation id="862727964348362408">Приостановлено</translation>
 <translation id="862750493060684461">Кеш CSS</translation>
+<translation id="8627706565932943526">Ошибка синхронизации</translation>
 <translation id="8627795981664801467">только при защищенном подключении</translation>
 <translation id="8630903300770275248">Импортировать контролируемый профиль</translation>
 <translation id="8631032106121706562">Цветок</translation>

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -144,9 +145,25 @@ void FirstWebContentsProfiler::DidFinishNavigation(
     // |first_navigation_id_| may be set in DidStartNavigation() or
     // DidFinishNavigation().
     first_navigation_id_ = navigation_handle->GetNavigationId();
+  } else if (first_navigation_id_ != navigation_handle->GetNavigationId()) {
+    // Abandon if this is not the first observed top-level navigation.
+    FinishedCollectingMetrics(FinishReason::kAbandonNewNavigation);
+
+    // TODO(https://crbug.com/1027947): If FirstWebContentsProfiler is created
+    // after 2 DidStartNavigation(), but before the 2 corresponding
+    // DidFinishNavigation(), this condition will be entered on the 2nd
+    // DidFinishNavigation(). Also, if FirstWebContentsProfiler is created after
+    // 1 DidStartNavigation() but before another DidStartNavigation() and 2
+    // DidFinishNavigation(), this condition will be entered for one of the 2
+    // DidFinishNavigation(). These cases aren't expected, but a fuzzer suggests
+    // that they do happen. The DumpWithoutCrashing() below will allow us to
+    // determine whether this happens in the wild. Remove it once the problem is
+    // understood.
+    base::debug::DumpWithoutCrashing();
+
+    return;
   }
 
-  DCHECK_EQ(first_navigation_id_, navigation_handle->GetNavigationId());
   DCHECK(!did_finish_first_navigation_);
   did_finish_first_navigation_ = true;
 

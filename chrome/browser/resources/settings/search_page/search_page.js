@@ -30,17 +30,6 @@ Polymer({
 
     /** @type {?Map<string, string>} */
     focusConfig_: Object,
-
-    // <if expr="chromeos">
-    /** @private Can be disallowed due to flag, policy, locale, etc. */
-    isAssistantAllowed_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('isAssistantAllowed') &&
-            loadTimeData.getBoolean('showOSSettings');
-      },
-    },
-    // </if>
   },
 
   /** @private {?settings.SearchEnginesBrowserProxy} */
@@ -65,12 +54,6 @@ Polymer({
       this.focusConfig_.set(
           settings.routes.SEARCH_ENGINES.path, '#enginesSubpageTrigger');
     }
-    // <if expr="chromeos">
-    if (settings.routes.GOOGLE_ASSISTANT) {
-      this.focusConfig_.set(
-          settings.routes.GOOGLE_ASSISTANT.path, '#assistantSubpageTrigger');
-    }
-    // </if>
   },
 
   /** @private */
@@ -88,35 +71,6 @@ Polymer({
   /** @private */
   onManageSearchEnginesTap_: function() {
     settings.navigateTo(settings.routes.SEARCH_ENGINES);
-  },
-
-  // <if expr="chromeos">
-  /** @private */
-  onGoogleAssistantTap_: function() {
-    assert(this.isAssistantAllowed_);
-    settings.navigateTo(settings.routes.GOOGLE_ASSISTANT);
-  },
-  // </if>
-
-  // <if expr="chromeos">
-  /**
-   * @param {boolean} toggleValue
-   * @return {string}
-   * @private
-   */
-  getAssistantEnabledDisabledLabel_: function(toggleValue) {
-    return this.i18n(
-        toggleValue ? 'searchGoogleAssistantEnabled' :
-                      'searchGoogleAssistantDisabled');
-  },
-  // </if>
-
-  /**
-   * @param {!Event} event
-   * @private
-   */
-  doNothing_: function(event) {
-    event.stopPropagation();
   },
 
   /**

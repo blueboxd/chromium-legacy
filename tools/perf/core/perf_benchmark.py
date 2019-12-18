@@ -1,6 +1,8 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+import itertools
 import json
 import os
 import sys
@@ -119,6 +121,12 @@ class PerfBenchmark(benchmark.Benchmark):
 
     self.SetExtraBrowserOptions(browser_options)
 
+  def GetExtraOutDirectories(self):
+    # Subclasses of PerfBenchmark should override this method instead of
+    # _GetPossibleBuildDirectories to consider more directories in
+    # _GetOutDirectoryEstimate.
+    return []
+
   @staticmethod
   def FixupTargetOS(target_os):
     if target_os == 'darwin':
@@ -169,8 +177,12 @@ class PerfBenchmark(benchmark.Benchmark):
     if finder_options.chromium_output_dir is not None:
       return finder_options.chromium_output_dir
 
-    possible_directories = self._GetPossibleBuildDirectories(
-        finder_options.chrome_root, finder_options.browser_options.browser_type)
+    possible_directories = itertools.chain(
+        self._GetPossibleBuildDirectories(
+          finder_options.chrome_root,
+          finder_options.browser_options.browser_type),
+        self.GetExtraOutDirectories())
+
     return next((p for p in possible_directories if os.path.exists(p)), None)
 
   @staticmethod

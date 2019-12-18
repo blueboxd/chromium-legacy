@@ -120,8 +120,8 @@ bool CheckElementComposited(const Node& target) {
 void StartEffectOnCompositor(CompositorAnimation* animation,
                              KeyframeEffect* effect) {
   DCHECK(effect);
-  DCHECK(effect->target());
-  Element& target = *effect->target();
+  DCHECK(effect->EffectTarget());
+  Element& target = *effect->EffectTarget();
   effect->Model()->SnapshotAllCompositorKeyframesIfNecessary(
       target, target.ComputedStyleRef(), target.ParentComputedStyle());
 
@@ -308,7 +308,7 @@ void WorkletAnimation::play(ExceptionState& exception_state) {
   has_started_ = true;
 
   for (auto& effect : effects_) {
-    Element* target = effect->target();
+    Element* target = effect->EffectTarget();
     if (!target)
       continue;
 
@@ -381,7 +381,7 @@ void WorkletAnimation::cancel() {
   SetCurrentTime(base::nullopt);
 
   for (auto& effect : effects_) {
-    Element* target = effect->target();
+    Element* target = effect->EffectTarget();
     if (!target)
       continue;
     // TODO(yigu): Currently we have to keep a set of worklet animations in
@@ -547,10 +547,10 @@ bool WorkletAnimation::CanStartOnCompositor() {
     return false;
   }
 
-  if (!GetEffect()->target())
+  if (!GetEffect()->EffectTarget())
     return false;
 
-  Element& target = *GetEffect()->target();
+  Element& target = *GetEffect()->EffectTarget();
 
   // TODO(crbug.com/836393): This should not be possible but it is currently
   // happening and needs to be investigated/fixed.
@@ -613,7 +613,7 @@ bool WorkletAnimation::StartOnCompositor() {
           document_->Timeline().CompositorTimeline())
     compositor_timeline->AnimationAttached(*this);
 
-  CompositorAnimations::AttachCompositedLayers(*GetEffect()->target(),
+  CompositorAnimations::AttachCompositedLayers(*GetEffect()->EffectTarget(),
                                                compositor_animation_.get());
 
   // TODO(smcgruer): We need to start all of the effects, not just the first.

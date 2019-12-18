@@ -37,7 +37,7 @@ void NetworkChangeManager::RequestNotifications(
         client_pending_remote) {
   mojo::Remote<mojom::NetworkChangeManagerClient> client_remote(
       std::move(client_pending_remote));
-  client_remote.set_disconnect_handler(base::Bind(
+  client_remote.set_disconnect_handler(base::BindOnce(
       &NetworkChangeManager::NotificationPipeBroken,
       // base::Unretained is safe as destruction of the
       // NetworkChangeManager will also destroy the

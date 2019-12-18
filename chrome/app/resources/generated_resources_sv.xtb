@@ -2529,7 +2529,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4572779512957829735">Ange säkerhetsnyckelns pinkod</translation>
 <translation id="457386861538956877">Mer...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Koppla Bluetooth-enhet</translation>
 <translation id="4579581181964204535">Det gick inte att casta <ph name="HOST_NAME" />.</translation>
 <translation id="4581774856936278355">Ett fel uppstod när Linux skulle återställas</translation>
 <translation id="4582563038311694664">Återställ alla inställningar</translation>
@@ -4869,7 +4868,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7974936243149753750">Överskanning</translation>
 <translation id="7978412674231730200">Privat nyckel</translation>
 <translation id="7978450511781612192">Du loggas ut från dina Google-konton. Bokmärken, historik, lösenord och annan information synkroniseras inte längre.</translation>
-<translation id="7979036127916589816">Synkroniseringsfel</translation>
 <translation id="7980084013673500153">Tillgångs-id: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Läs in sidor i förväg så att det går snabbare att surfa och söka</translation>
 <translation id="798145602633458219">Lägg till förslaget <ph name="SUGGESTION_NAME" /> sist i sökrutan</translation>
@@ -5318,6 +5316,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="862542460444371744">&amp;Tillägg</translation>
 <translation id="862727964348362408">Tillfälligt avstängd</translation>
 <translation id="862750493060684461">CSS-cacheminne</translation>
+<translation id="8627706565932943526">Synkroniseringsfel</translation>
 <translation id="8627795981664801467">Endast säkra anslutningar</translation>
 <translation id="8630903300770275248">Importera hanterad användare</translation>
 <translation id="8631032106121706562">Blomster</translation>

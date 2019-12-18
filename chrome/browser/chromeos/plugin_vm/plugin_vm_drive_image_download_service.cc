@@ -40,9 +40,8 @@ namespace plugin_vm {
 
 namespace {
 
-void CreateTemporaryDriveDownloadFile(base::FilePath* file_path) {
-  const base::FilePath drive_directory(kPluginVmDriveDownloadDirectory);
-
+void CreateTemporaryDriveDownloadFile(const base::FilePath& drive_directory,
+                                      base::FilePath* file_path) {
   if (!base::DeleteFileRecursively(drive_directory)) {
     LOG(ERROR) << "PluginVM Drive download folder failed to be removed";
   }
@@ -145,9 +144,7 @@ PluginVmDriveImageDownloadService::PluginVmDriveImageDownloadService(
 }
 
 void PluginVmDriveImageDownloadService::StartDownload(
-    const std::string& file_id,
-    OnDownloadStartedCallback on_download_started_callback,
-    OnDownloadFailedCallback on_download_failed_callback) {
+    const std::string& file_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   file_id_ = file_id;
@@ -156,16 +153,13 @@ void PluginVmDriveImageDownloadService::StartDownload(
   base::PostTaskAndReply(
       FROM_HERE,
       {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-      base::BindOnce(&CreateTemporaryDriveDownloadFile, &download_file_path_),
+      base::BindOnce(&CreateTemporaryDriveDownloadFile, download_directory_,
+                     &download_file_path_),
       base::BindOnce(&PluginVmDriveImageDownloadService::DispatchDownloadFile,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     std::move(on_download_started_callback),
-                     std::move(on_download_failed_callback)));
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PluginVmDriveImageDownloadService::DispatchDownloadFile(
-    OnDownloadStartedCallback on_download_started_callback,
-    OnDownloadFailedCallback on_download_failed_callback) {
+void PluginVmDriveImageDownloadService::DispatchDownloadFile() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (base::PathExists(download_file_path_)) {
@@ -181,10 +175,10 @@ void PluginVmDriveImageDownloadService::DispatchDownloadFile(
             &PluginVmDriveImageDownloadService::ProgressCallback,
             weak_ptr_factory_.GetWeakPtr()));
 
-    std::move(on_download_started_callback).Run();
+    plugin_vm_image_manager_->OnDownloadStarted();
   } else {
-    std::move(on_download_failed_callback)
-        .Run(PluginVmImageManager::FailureReason::DOWNLOAD_FAILED_UNKNOWN);
+    plugin_vm_image_manager_->OnDownloadFailed(
+        PluginVmImageManager::FailureReason::DOWNLOAD_FAILED_UNKNOWN);
   }
 }
 
@@ -203,9 +197,18 @@ void PluginVmDriveImageDownloadService::RemoveTemporaryArchive(
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
-      base::BindOnce(&base::DeleteFileRecursively,
-                     base::FilePath(kPluginVmDriveDownloadDirectory)),
+      base::BindOnce(&base::DeleteFileRecursively, download_directory_),
       std::move(on_file_deleted_callback));
+}
+
+void PluginVmDriveImageDownloadService::SetDriveServiceForTesting(
+    std::unique_ptr<drive::DriveServiceInterface> drive_service) {
+  drive_service_ = std::move(drive_service);
+}
+
+void PluginVmDriveImageDownloadService::SetDownloadDirectoryForTesting(
+    const base::FilePath& download_directory) {
+  download_directory_ = download_directory;
 }
 
 void PluginVmDriveImageDownloadService::DownloadActionCallback(
@@ -228,7 +231,6 @@ void PluginVmDriveImageDownloadService::DownloadActionCallback(
   secure_hash_service_->Finish(sha256_hash.data(), sha256_hash.size());
   completion_info.hash256 =
       base::HexEncode(sha256_hash.data(), sha256_hash.size());
-
   plugin_vm_image_manager_->OnDownloadCompleted(completion_info);
 }
 
@@ -241,7 +243,6 @@ void PluginVmDriveImageDownloadService::GetContentCallback(
         ConvertToFailureReason(error_code));
     return;
   }
-
   secure_hash_service_->Update(content->c_str(), content->length());
   total_bytes_downloaded_ += content->length();
 }

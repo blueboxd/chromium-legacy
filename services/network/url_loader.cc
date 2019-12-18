@@ -483,8 +483,8 @@ URLLoader::URLLoader(
       &URLLoader::SetRawRequestHeadersAndNotify, base::Unretained(this)));
 
   if (want_raw_headers_) {
-    url_request_->SetResponseHeadersCallback(
-        base::Bind(&URLLoader::SetRawResponseHeaders, base::Unretained(this)));
+    url_request_->SetResponseHeadersCallback(base::BindRepeating(
+        &URLLoader::SetRawResponseHeaders, base::Unretained(this)));
   }
 
   if (keepalive_ && keepalive_statistics_recorder_) {
@@ -899,8 +899,8 @@ void URLLoader::OnSSLCertificateError(net::URLRequest* request,
   network_context_client_->OnSSLCertificateError(
       factory_params_->process_id, render_frame_id_, url_request_->url(),
       net_error, ssl_info, fatal,
-      base::Bind(&URLLoader::OnSSLCertificateErrorResponse,
-                 weak_ptr_factory_.GetWeakPtr(), ssl_info));
+      base::BindRepeating(&URLLoader::OnSSLCertificateErrorResponse,
+                          weak_ptr_factory_.GetWeakPtr(), ssl_info));
 }
 
 void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
@@ -950,14 +950,14 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
 
   peer_closed_handle_watcher_.Watch(
       response_body_stream_.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-      base::Bind(&URLLoader::OnResponseBodyStreamConsumerClosed,
-                 base::Unretained(this)));
+      base::BindRepeating(&URLLoader::OnResponseBodyStreamConsumerClosed,
+                          base::Unretained(this)));
   peer_closed_handle_watcher_.ArmOrNotify();
 
   writable_handle_watcher_.Watch(
       response_body_stream_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
-      base::Bind(&URLLoader::OnResponseBodyStreamReady,
-                 base::Unretained(this)));
+      base::BindRepeating(&URLLoader::OnResponseBodyStreamReady,
+                          base::Unretained(this)));
 
   // Enforce the Cross-Origin-Resource-Policy (CORP) header.
   if (CrossOriginResourcePolicy::kBlock ==

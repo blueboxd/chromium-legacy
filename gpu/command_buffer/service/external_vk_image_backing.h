@@ -24,7 +24,7 @@ namespace gpu {
 
 class VulkanCommandPool;
 
-class ExternalVkImageBacking final : public SharedImageBacking {
+class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
  public:
   static std::unique_ptr<ExternalVkImageBacking> Create(
       SharedContextState* context_state,
@@ -91,8 +91,6 @@ class ExternalVkImageBacking final : public SharedImageBacking {
   void EndAccess(bool readonly, SemaphoreHandle semaphore_handle, bool is_gl);
 
   // SharedImageBacking implementation.
-  bool IsCleared() const override;
-  void SetCleared() override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   void Destroy() override;
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
@@ -161,7 +159,6 @@ class ExternalVkImageBacking final : public SharedImageBacking {
 
   SemaphoreHandle write_semaphore_handle_;
   std::vector<SemaphoreHandle> read_semaphore_handles_;
-  bool is_cleared_ = false;
 
   bool is_write_in_progress_ = false;
   uint32_t reads_in_progress_ = 0;

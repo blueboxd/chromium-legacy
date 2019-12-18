@@ -39,13 +39,13 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppListSearchAutocomplete;
 // Enable app ranking models.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppRanker;
 
-// Enable an model that ranks zero-state apps search result.
+// Enable a model that ranks zero-state apps search result.
 // TODO(crbug.com/989350): This flag can be removed once the
 // AppSearchResultRanker is removed. Same with the
 // AppSearchResultRankerPredictorName.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateAppsRanker;
 
-// Enable an model that ranks query based non-apps result.
+// Enable a model that ranks query based non-apps result.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableQueryBasedMixedTypesRanker;
 
 // Enable a model that ranks zero-state files and recent queries.
@@ -54,6 +54,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateMixedTypesRanker;
 // Enables the feature to include a single reinstallation candidate in
 // zero-state.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppReinstallZeroState;
+
+// Enables file suggestions in the suggestion chips.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableSuggestedFiles;
 
 // Enables the Assistant search redirection in the app list.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAssistantSearch;
@@ -95,6 +98,7 @@ bool ASH_PUBLIC_EXPORT IsZeroStateAppsRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsQueryBasedMixedTypesRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateMixedTypesRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsAppReinstallZeroStateEnabled();
+bool ASH_PUBLIC_EXPORT IsSuggestedFilesEnabled();
 bool ASH_PUBLIC_EXPORT IsAssistantSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsAssistantLauncherUIEnabled();
 bool ASH_PUBLIC_EXPORT IsAppGridGhostEnabled();

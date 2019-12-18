@@ -132,8 +132,21 @@ class PagePopupChromeClient final : public EmptyChromeClient {
       // (provided by WebViewTestProxy or WebWidgetTestProxy) runs the composite
       // step for the current popup. We don't run popup tests with a compositor
       // thread.
-      WebWidgetClient* widget_client =
-          popup_->web_view_->MainFrameImpl()->FrameWidgetImpl()->Client();
+      WebLocalFrameImpl* web_frame = popup_->web_view_->MainFrameImpl();
+      WebWidgetClient* widget_client = nullptr;
+
+      if (web_frame) {
+        widget_client = web_frame->FrameWidgetImpl()->Client();
+      } else {
+        // We'll enter this case for a popup in an out-of-proc iframe.
+        // Get the WidgetClient for the frame of the popup's owner element,
+        // instead of the WebView's MainFrame.
+        Element& popup_owner_element = popup_->popup_client_->OwnerElement();
+        WebLocalFrameImpl* web_local_frame_impl = WebLocalFrameImpl::FromFrame(
+            popup_owner_element.GetDocument().GetFrame());
+        widget_client = web_local_frame_impl->FrameWidgetImpl()->Client();
+      }
+
       widget_client->ScheduleAnimation();
       return;
     }
@@ -433,8 +446,8 @@ WebInputEventResult WebPagePopupImpl::HandleGestureEvent(
     return WebInputEventResult::kNotHandled;
   if ((event.GetType() == WebInputEvent::kGestureTap ||
        event.GetType() == WebInputEvent::kGestureTapDown) &&
-      !IsViewportPointInWindow(event.PositionInWidget().x,
-                               event.PositionInWidget().y)) {
+      !IsViewportPointInWindow(event.PositionInWidget().x(),
+                               event.PositionInWidget().y())) {
     Cancel();
     return WebInputEventResult::kNotHandled;
   }
@@ -445,8 +458,8 @@ WebInputEventResult WebPagePopupImpl::HandleGestureEvent(
 
 void WebPagePopupImpl::HandleMouseDown(LocalFrame& main_frame,
                                        const WebMouseEvent& event) {
-  if (IsViewportPointInWindow(event.PositionInWidget().x,
-                              event.PositionInWidget().y))
+  if (IsViewportPointInWindow(event.PositionInWidget().x(),
+                              event.PositionInWidget().y()))
     PageWidgetEventHandler::HandleMouseDown(main_frame, event);
   else
     Cancel();
@@ -455,8 +468,8 @@ void WebPagePopupImpl::HandleMouseDown(LocalFrame& main_frame,
 WebInputEventResult WebPagePopupImpl::HandleMouseWheel(
     LocalFrame& main_frame,
     const WebMouseWheelEvent& event) {
-  if (IsViewportPointInWindow(event.PositionInWidget().x,
-                              event.PositionInWidget().y))
+  if (IsViewportPointInWindow(event.PositionInWidget().x(),
+                              event.PositionInWidget().y()))
     return PageWidgetEventHandler::HandleMouseWheel(main_frame, event);
   Cancel();
   return WebInputEventResult::kNotHandled;

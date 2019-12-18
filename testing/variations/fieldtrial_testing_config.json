@@ -1571,26 +1571,6 @@
             ]
         }
     ],
-    "ChromeStart": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "start_surface_variation": "tasksonly",
-                        "tab_switcher_on_return_time_ms": "3600000"
-                    },
-                    "enable_features": [
-                        "StartSurfaceAndroid",
-                        "TabSwitcherOnReturn"
-                    ]
-                }
-            ]
-        }
-    ],
     "ChromeSuggestionsTuningForceTopSites": [
         {
             "platforms": [
@@ -2703,6 +2683,27 @@
                     },
                     "enable_features": [
                         "freeze-background-tab-on-network-idle"
+                    ]
+                }
+            ]
+        }
+    ],
+    "FriendlySettingsRedesignTest": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "android",
+                "android_webview",
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "FriendlySettingRedesign"
                     ]
                 }
             ]
@@ -4506,26 +4507,6 @@
             ]
         }
     ],
-    "PasswordLeakDetection": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows",
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PasswordLeakDetection"
-                    ]
-                }
-            ]
-        }
-    ],
     "PasswordManagerStickyBubble": [
         {
             "platforms": [
@@ -5596,7 +5577,6 @@
     "SafeBrowsingRealTimeUrlLookupEnabled": [
         {
             "platforms": [
-                "android",
                 "chromeos",
                 "linux",
                 "mac",
@@ -5605,6 +5585,24 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingRealTimeUrlLookupEnabled"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SafeBrowsingRealTimeUrlLookupEnabledAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "SafeBrowsingRealTimeUrlLookupMemoryThresholdMb": "4096"
+                    },
                     "enable_features": [
                         "SafeBrowsingRealTimeUrlLookupEnabled"
                     ]
@@ -7786,6 +7784,21 @@
                     },
                     "enable_features": [
                         "WebRtcHybridAgc"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WebViewWakeMetricsService": [
+        {
+            "platforms": [
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WebViewWakeMetricsService"
                     ]
                 }
             ]

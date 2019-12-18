@@ -19,22 +19,18 @@ namespace win {
 //   SHGetSomeInfo(&file_item, ...);
 //   ...
 //   return;  <-- memory released
-template<typename T>
+template <typename T>
 class ScopedCoMem {
  public:
-  ScopedCoMem() : mem_ptr_(NULL) {}
-  ~ScopedCoMem() {
-    Reset(NULL);
-  }
+  ScopedCoMem() : mem_ptr_(nullptr) {}
+  ~ScopedCoMem() { Reset(nullptr); }
 
-  T** operator&() {  // NOLINT
-    DCHECK(mem_ptr_ == NULL);  // To catch memory leaks.
+  T** operator&() {               // NOLINT
+    DCHECK(mem_ptr_ == nullptr);  // To catch memory leaks.
     return &mem_ptr_;
   }
 
-  operator T*() {
-    return mem_ptr_;
-  }
+  operator T*() { return mem_ptr_; }
 
   T* operator->() {
     DCHECK(mem_ptr_ != NULL);
@@ -52,9 +48,7 @@ class ScopedCoMem {
     mem_ptr_ = ptr;
   }
 
-  T* get() const {
-    return mem_ptr_;
-  }
+  T* get() const { return mem_ptr_; }
 
  private:
   T* mem_ptr_;

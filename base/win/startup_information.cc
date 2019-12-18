@@ -45,10 +45,9 @@ bool StartupInformation::InitializeProcThreadAttributeList(
   return true;
 }
 
-bool StartupInformation::UpdateProcThreadAttribute(
-    DWORD_PTR attribute,
-    void* value,
-    size_t size) {
+bool StartupInformation::UpdateProcThreadAttribute(DWORD_PTR attribute,
+                                                   void* value,
+                                                   size_t size) {
   if (!startup_info_.lpAttributeList)
     return false;
   return !!::UpdateProcThreadAttribute(startup_info_.lpAttributeList, 0,
@@ -58,4 +57,3 @@ bool StartupInformation::UpdateProcThreadAttribute(
 
 }  // namespace win
 }  // namespace base
-

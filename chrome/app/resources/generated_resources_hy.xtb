@@ -2530,7 +2530,6 @@
 <translation id="4572779512957829735">Մուտքագրեք անվտանգության բանալու PIN կոդը</translation>
 <translation id="457386861538956877">Ավելին…</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Bluetooth սարքի զուգակցում</translation>
 <translation id="4579581181964204535">Չհաջողվեց հեռարձակել <ph name="HOST_NAME" /> տիրույթը:</translation>
 <translation id="4581774856936278355">Չհաջողվեց վերականգնել Լինուքսը սխալի պատճառով</translation>
 <translation id="4582563038311694664">Վերակայել բոլոր կարգավորումները</translation>
@@ -4872,7 +4871,6 @@
 <translation id="7974936243149753750">էկրանի շրջանակ</translation>
 <translation id="7978412674231730200">Մասնավոր բանալի</translation>
 <translation id="7978450511781612192">Դուք դուրս կգաք Google հաշվից: Ձեր էջանիշները, այցելությունների պատմությունը, գաղտնաբառերը և մյուս կարգավորումներն այլևս չեն համաժամացվի:</translation>
-<translation id="7979036127916589816">Համաժամացման սխալ</translation>
 <translation id="7980084013673500153">Օբյեկտի ID-ն՝ <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Նախաբեռնել էջերը ավելի արագ դիտարկման և որոնման համար</translation>
 <translation id="798145602633458219">Ավելացնել «<ph name="SUGGESTION_NAME" />» առաջարկը որոնման դաշտում</translation>
@@ -5320,6 +5318,7 @@
 <translation id="862542460444371744">&amp;Ընդլայնումներ</translation>
 <translation id="862727964348362408">Ընդհատված է</translation>
 <translation id="862750493060684461">CSS-ի քեշ</translation>
+<translation id="8627706565932943526">Համաժամացման սխալ</translation>
 <translation id="8627795981664801467">Միայն ապահով կապակցումները</translation>
 <translation id="8630903300770275248">Ներմուծել վերահսկվող պրոֆիլը</translation>
 <translation id="8631032106121706562">Ծաղիկ</translation>

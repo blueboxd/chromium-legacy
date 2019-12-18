@@ -159,10 +159,6 @@ constexpr char kDummyAppId[] = "dummyappid_dummyappid_dummyappid";
 constexpr char kWebAppId[] = "lpikggcgamknpihimepdkohalcnpofed";
 constexpr char kWebAppUrl[] = "https://foo.example/";
 
-constexpr char kCameraAppName[] = "Camera";
-constexpr char kCameraAppPackage[] = "com.google.android.GoogleCameraArc";
-constexpr char kCameraAppActivity[] = "com.android.camera.CameraLauncher";
-
 // Test implementation of AppIconLoader.
 class TestAppIconLoaderImpl : public AppIconLoader {
  public:
@@ -1032,6 +1028,7 @@ class ChromeLauncherControllerExtendedShelfTest
         {extension_misc::kGoogleSheetsAppId, "Sheets"},
         {extension_misc::kGoogleSlidesAppId, "Slides"},
         {extension_misc::kFilesManagerAppId, "Files"},
+        {extension_misc::kCameraAppId, "Camera"},
         {extension_misc::kGooglePhotosAppId, "Photos"},
     };
 
@@ -2298,6 +2295,7 @@ TEST_F(ChromeLauncherControllerWithArcTest, OverrideAppItemController) {
   arc::mojom::AppInfo app_info = CreateAppInfo(
       "Play Store", arc::kPlayStoreActivity, arc::kPlayStorePackage);
   EXPECT_EQ(arc::kPlayStoreAppId, AddArcAppAndShortcut(app_info));
+  app_service_test().WaitForAppService();
 
   std::string window_app_id("org.chromium.arc.1");
   const ash::ShelfID play_store_shelf_id(arc::kPlayStoreAppId);
@@ -4165,59 +4163,6 @@ TEST_F(ChromeLauncherControllerWithArcTest, ShelfItemWithMultipleWindows) {
                                 display::kInvalidDisplayId);
   EXPECT_FALSE(window1->IsActive());
   EXPECT_TRUE(window2->IsActive());
-}
-
-// Test that ARC camera app can successfully open and close.
-TEST_F(ChromeLauncherControllerWithArcTest, ArcCameraAppOpenAndClose) {
-  InitLauncherControllerWithBrowser();
-
-  const arc::mojom::AppInfo appinfo =
-      CreateAppInfo(kCameraAppName, kCameraAppActivity, kCameraAppPackage);
-
-  // Widgets will be deleted by the system.
-  views::Widget* window1 = CreateArcWindow("org.chromium.arc.1");
-  NotifyOnTaskCreated(appinfo, 1 /* task_id */);
-  ASSERT_TRUE(window1);
-  EXPECT_TRUE(window1->IsActive());
-
-  // After starting the ARC camera app, it's actually the internal camera app
-  // being put onto the shelf. Therefore, we need to specify the internal
-  // camera app shelf ID to access it.
-  const std::string intern_app_id(ash::kInternalAppIdCamera);
-  const ash::ShelfID intern_shelf_id(intern_app_id);
-  EXPECT_TRUE(launcher_controller_->IsOpen(intern_shelf_id));
-
-  NotifyOnTaskDestroyed(1 /* task_id */);
-  window1->Close();
-
-  EXPECT_FALSE(launcher_controller_->IsOpen(intern_shelf_id));
-}
-
-// Test that the app menu item count is 1 for the built-in camera app.
-TEST_F(ChromeLauncherControllerWithArcTest, ArcCameraAppMenuItemsCount) {
-  InitLauncherControllerWithBrowser();
-
-  const arc::mojom::AppInfo appinfo =
-      CreateAppInfo(kCameraAppName, kCameraAppActivity, kCameraAppPackage);
-
-  // Widgets will be deleted by the system.
-  views::Widget* window1 = CreateArcWindow("org.chromium.arc.1");
-  NotifyOnTaskCreated(appinfo, 1 /* task_id */);
-  ASSERT_TRUE(window1);
-  EXPECT_TRUE(window1->IsActive());
-
-  // After starting the ARC camera app, it's actually the internal camera app
-  // being put onto the shelf. Therefore, we need to specify the internal
-  // camera app shelf ID to access it.
-  const std::string intern_app_id(ash::kInternalAppIdCamera);
-  ash::ShelfItemDelegate* item_delegate =
-      model_->GetShelfItemDelegate(ash::ShelfID(intern_app_id));
-  ASSERT_TRUE(item_delegate);
-
-  // We want to make sure there's only 1 menu item for camera app, even if both
-  // ARC window and internal app window might have been added to
-  // AppWindowLauncherItemController.
-  ASSERT_EQ(1u, item_delegate->GetAppMenuItems(ui::EF_NONE).size());
 }
 
 namespace {

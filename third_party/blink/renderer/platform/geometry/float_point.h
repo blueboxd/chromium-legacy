@@ -217,6 +217,10 @@ inline IntPoint FlooredIntPoint(const FloatPoint& p) {
   return IntPoint(clampTo<int>(floorf(p.X())), clampTo<int>(floorf(p.Y())));
 }
 
+inline IntPoint FlooredIntPoint(const gfx::PointF& p) {
+  return IntPoint(clampTo<int>(floorf(p.x())), clampTo<int>(floorf(p.y())));
+}
+
 inline IntPoint CeiledIntPoint(const FloatPoint& p) {
   return IntPoint(clampTo<int>(ceilf(p.X())), clampTo<int>(ceilf(p.Y())));
 }

@@ -53,7 +53,7 @@ final class NtpStreamLifecycleManager extends StreamLifecycleManager {
         // the associated FeedNewTabPage is destroyed.
         mTabObserver = new EmptyTabObserver() {
             @Override
-            public void onInteractabilityChanged(boolean isInteractable) {
+            public void onInteractabilityChanged(Tab tab, boolean isInteractable) {
                 if (isInteractable) {
                     activate();
                 } else {

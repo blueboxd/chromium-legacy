@@ -222,9 +222,9 @@ class SharedImageBackingD3D : public SharedImageBacking {
   }
 
   // Texture is cleared on initialization.
-  bool IsCleared() const override { return true; }
+  gfx::Rect ClearedRect() const override { return gfx::Rect(size()); }
 
-  void SetCleared() override {}
+  void SetClearedRect(const gfx::Rect& cleared_rect) override {}
 
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override {
     DLOG(ERROR) << "SharedImageBackingD3D::Update : Trying to update "

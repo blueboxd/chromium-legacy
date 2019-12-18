@@ -129,9 +129,10 @@ struct CHROME_CONDITION_VARIABLE {
   PVOID Ptr;
 };
 
-
 // Define some commonly used Windows constants. Note that the layout of these
 // macros - including internal spacing - must be 100% consistent with windows.h.
+
+// clang-format off
 
 #ifndef INVALID_HANDLE_VALUE
 // Work around there being two slightly different definitions in the SDK.
@@ -198,6 +199,8 @@ struct CHROME_CONDITION_VARIABLE {
                                   KEY_CREATE_LINK)            \
                                   &                           \
                                  (~SYNCHRONIZE))
+
+// clang-format on
 
 // Define some macros needed when prototyping Windows functions.
 

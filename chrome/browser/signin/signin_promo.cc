@@ -17,6 +17,8 @@
 #include "components/google/core/common/google_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_context.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
@@ -89,8 +91,13 @@ GURL GetAddAccountURLForDice(const std::string& email,
   return url;
 }
 
-GURL GetSigninPartitionURL() {
-  return GURL("chrome-guest://chrome-signin/?");
+content::StoragePartition* GetSigninPartition(
+    content::BrowserContext* browser_context) {
+  const GURL signin_site_url =
+      extensions::WebViewGuest::GetSiteForGuestPartitionConfig(
+          "chrome-signin", /* partition_name= */ "", /* in_memory= */ true);
+  return content::BrowserContext::GetStoragePartitionForSite(browser_context,
+                                                             signin_site_url);
 }
 
 signin_metrics::AccessPoint GetAccessPointForEmbeddedPromoURL(const GURL& url) {

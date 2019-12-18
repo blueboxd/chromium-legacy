@@ -97,10 +97,6 @@ class PrintRenderFrameHelper
    public:
     virtual ~Delegate() {}
 
-    // Cancels prerender if it's currently in progress and returns true if the
-    // cancellation succeeded.
-    virtual bool CancelPrerender(content::RenderFrame* render_frame) = 0;
-
     // Returns the element to be printed. Returns a null WebElement if
     // a pdf plugin element can't be extracted from the frame.
     virtual blink::WebElement GetPdfElement(blink::WebLocalFrame* frame) = 0;

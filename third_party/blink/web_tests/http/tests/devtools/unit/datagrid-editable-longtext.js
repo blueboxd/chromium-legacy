@@ -7,7 +7,7 @@
     {id: "key", title: "Key column", editable: true, longText: false},
     {id: "value", title: "Value column", editable: true, longText: true}
   ];
-  var dataGrid = new DataGrid.DataGrid(columns, onEdit);
+  var dataGrid = new DataGrid.DataGrid({displayName: 'Test', columns, editCallback: onEdit});
   UI.inspectorView.element.appendChild(dataGrid.element);
 
   var rootNode = dataGrid.rootNode();

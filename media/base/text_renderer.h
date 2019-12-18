@@ -45,7 +45,7 @@ class MEDIA_EXPORT TextRenderer {
 
   // |ended_cb| is executed when all of the text tracks have reached
   // end of stream, following a play request.
-  void Initialize(const base::Closure& ended_cb);
+  void Initialize(const base::RepeatingClosure& ended_cb);
 
   // Starts text track cue decoding and rendering.
   void StartPlaying();
@@ -106,7 +106,7 @@ class MEDIA_EXPORT TextRenderer {
   const AddTextTrackCB add_text_track_cb_;
 
   // Callbacks provided during Initialize().
-  base::Closure ended_cb_;
+  base::RepeatingClosure ended_cb_;
 
   // Callback provided to Pause().
   base::Closure pause_cb_;

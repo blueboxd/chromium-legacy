@@ -1,5 +1,5 @@
 document
-++group
+++group IsControlElement=false
 ++++img
 ++++++description Name='Static fallback'
 ++++img
@@ -13,9 +13,9 @@ document
 ++++++heading Name='Aria hidden paragraph in fallback content'
 ++++++++description Name='Aria hidden paragraph in fallback content' IsControlElement=false
 ++++++description Name='<newline>    '
-++++++heading
+++++++heading IsControlElement=false
 ++++++++description Name='Display none text in fallback content ' IsControlElement=false
 ++++++description Name='<newline>    '
-++++++heading
+++++++heading IsControlElement=false
 ++++++++description Name='Visibility hidden paragraph in fallback content' IsControlElement=false
 ++++++description Name='<newline>  '

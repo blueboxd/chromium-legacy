@@ -38,9 +38,9 @@ class P2PMessageThrottler;
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketUdp : public P2PSocket {
  public:
-  typedef base::Callback<std::unique_ptr<net::DatagramServerSocket>(
-      net::NetLog* net_log)>
-      DatagramServerSocketFactory;
+  using DatagramServerSocketFactory =
+      base::RepeatingCallback<std::unique_ptr<net::DatagramServerSocket>(
+          net::NetLog* net_log)>;
   P2PSocketUdp(Delegate* delegate,
                mojo::PendingRemote<mojom::P2PSocketClient> client,
                mojo::PendingReceiver<mojom::P2PSocket> socket,

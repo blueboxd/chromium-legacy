@@ -1149,7 +1149,7 @@
 <translation id="6446163441502663861">Kahu(봉투)</translation>
 <translation id="6446608382365791566">자세한 정보 추가</translation>
 <translation id="6447842834002726250">쿠키</translation>
-<translation id="644931407731409778">{COUNT,plural, =1{페이지 1개}other{페이지 #개}}가 포함된 PDF 문서</translation>
+<translation id="644931407731409778">{COUNT,plural, =1{1페이지}other{#페이지}}로 이루어진 PDF 문서</translation>
 <translation id="6451458296329894277">양식 다시 제출 확인</translation>
 <translation id="6457206614190510200">새들 스티치</translation>
 <translation id="6465306955648956876">비밀번호 관리...</translation>

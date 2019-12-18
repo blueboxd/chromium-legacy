@@ -962,6 +962,41 @@ TEST(FormParserTest, TestAutocomplete) {
   });
 }
 
+// Checks that fields with "one-time-code" autocomplete attribute are
+// not parsed as usernames or passwords.
+TEST(FormParserTest, SkippingFieldsWithOTPAutocomplete) {
+  CheckTestData({
+      {
+          .description_for_logging =
+              "The only password field marked as OTP in autocomplete",
+          .fields =
+              {
+                  {.role = ElementRole::USERNAME,
+                   .autocomplete_attribute = "username",
+                   .form_control_type = "text"},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .autocomplete_attribute = "one-time-code",
+                   .form_control_type = "password"},
+              },
+          .fallback_only = true,
+      },
+      {
+          .description_for_logging = "Non-OTP fields are considered",
+          .fields =
+              {
+                  {.role = ElementRole::USERNAME, .form_control_type = "text"},
+                  {.autocomplete_attribute = "one-time-code",
+                   .form_control_type = "text"},
+                  {.autocomplete_attribute = "one-time-code",
+                   .form_control_type = "password"},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password"},
+              },
+          .number_of_all_possible_passwords = 2,
+      },
+  });
+}
+
 TEST(FormParserTest, DisabledFields) {
   CheckTestData({
       {

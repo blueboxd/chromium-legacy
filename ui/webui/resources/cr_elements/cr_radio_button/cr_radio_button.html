@@ -10,22 +10,21 @@
   <template>
     <style include="cr-radio-button-style cr-hidden-style"></style>
 
-    <div
-        aria-checked$="[[getAriaChecked_(checked)]]"
+    <div aria-checked$="[[getAriaChecked_(checked)]]"
         aria-describedby="slotted-content"
         aria-disabled$="[[getAriaDisabled_(disabled)]]"
         aria-labelledby="label"
         class="disc-wrapper"
         id="button"
         role="radio"
-        tabindex="0"
+        tabindex$="[[buttonTabIndex_]]"
         on-keydown="onInputKeydown_">
       <div class="disc-border"></div>
       <div class="disc"></div>
     </div>
 
     <div id="labelWrapper">
-      <span id="label" hidden$="[[!label]]">[[label]]</span>
+      <span id="label" hidden$="[[!label]]" aria-hidden="true">[[label]]</span>
       <span id="slotted-content">
         <slot></slot>
       </span>

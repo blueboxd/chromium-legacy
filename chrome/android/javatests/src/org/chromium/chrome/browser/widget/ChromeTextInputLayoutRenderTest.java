@@ -22,12 +22,12 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.night_mode.NightModeTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
-import org.chromium.chrome.test.util.RenderTestRule;
+import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
+import org.chromium.ui.test.util.NightModeTestUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -43,7 +43,7 @@ public class ChromeTextInputLayoutRenderTest extends DummyUiActivityTestCase {
             new NightModeTestUtils.NightModeParams().getParameters();
 
     @Rule
-    public RenderTestRule mRenderTestRule = new RenderTestRule();
+    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
 
     private static final String LABEL = "Label";
     private static final String TEXT = "Chrome's own TextInputLayout";
@@ -78,7 +78,7 @@ public class ChromeTextInputLayoutRenderTest extends DummyUiActivityTestCase {
                     new ContextThemeWrapper(activity, R.style.Theme_Chromium_Settings));
             mInputLayout.addView(mEditText);
             mInputLayout.setHint(LABEL);
-            RenderTestRule.sanitize(mEditText);
+            ChromeRenderTestRule.sanitize(mEditText);
         });
     }
 

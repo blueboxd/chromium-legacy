@@ -136,7 +136,7 @@ public class SigninFragment extends SigninFragmentBase {
             callback.run();
             return;
         }
-        IdentityServicesProvider.getSigninManager().signIn(
+        IdentityServicesProvider.get().getSigninManager().signIn(
                 mSigninAccessPoint, account, new SigninManager.SignInCallback() {
                     @Override
                     public void onSignInComplete() {

@@ -29,7 +29,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.sync.SyncTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
-import org.chromium.chrome.test.util.RenderTestRule;
+import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
@@ -49,7 +49,7 @@ public class SigninFragmentTest {
     public final SyncTestRule mSyncTestRule = new SyncTestRule();
 
     @Rule
-    public final RenderTestRule mRenderTestRule = new RenderTestRule();
+    public final ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
 
     @Test
     @LargeTest

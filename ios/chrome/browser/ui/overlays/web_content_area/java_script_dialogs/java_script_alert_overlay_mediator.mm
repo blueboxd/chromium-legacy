@@ -11,7 +11,7 @@
 #import "ios/chrome/browser/ui/alert_view/alert_action.h"
 #import "ios/chrome/browser/ui/alert_view/alert_consumer.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_constants.h"
-#import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_mediator+subclassing.h"
+#import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_mediator+alert_consumer_support.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_blocking_action.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_overlay_mediator_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -22,18 +22,16 @@
 #endif
 
 @interface JavaScriptAlertOverlayMediator ()
-@property(nonatomic, readonly) OverlayRequest* request;
+// The congig from the request passed on initialization.
 @property(nonatomic, readonly) JavaScriptAlertOverlayRequestConfig* config;
 @end
 
 @implementation JavaScriptAlertOverlayMediator
 
 - (instancetype)initWithRequest:(OverlayRequest*)request {
-  if (self = [super init]) {
-    _request = request;
-    DCHECK(_request);
+  if (self = [super initWithRequest:request]) {
     // Verify that the request is configured for JavaScript alerts.
-    DCHECK(_request->GetConfig<JavaScriptAlertOverlayRequestConfig>());
+    DCHECK(request->GetConfig<JavaScriptAlertOverlayRequestConfig>());
   }
   return self;
 }
@@ -46,7 +44,7 @@
 
 @end
 
-@implementation JavaScriptAlertOverlayMediator (Subclassing)
+@implementation JavaScriptAlertOverlayMediator (AlertConsumerSupport)
 
 - (NSString*)alertTitle {
   return GetJavaScriptDialogTitle(self.config->source(),
@@ -64,7 +62,7 @@
       actionWithTitle:l10n_util::GetNSString(IDS_OK)
                 style:UIAlertActionStyleDefault
               handler:^(AlertAction* action) {
-                [weakSelf.delegate stopDialogForMediator:weakSelf];
+                [weakSelf.delegate stopOverlayForMediator:weakSelf];
               }] ] mutableCopy];
   AlertAction* blockingAction =
       GetBlockingAlertAction(self, self.config->source());

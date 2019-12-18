@@ -19,7 +19,7 @@ namespace network {
 namespace {
 
 void MaybeSignalAnchorUse(int error,
-                          const base::Closure& anchor_used_callback,
+                          const base::RepeatingClosure& anchor_used_callback,
                           const net::CertVerifyResult& verify_result) {
   if (error != net::OK || !verify_result.is_issued_by_additional_trust_anchor ||
       anchor_used_callback.is_null()) {
@@ -28,10 +28,11 @@ void MaybeSignalAnchorUse(int error,
   anchor_used_callback.Run();
 }
 
-void CompleteAndSignalAnchorUse(const base::Closure& anchor_used_callback,
-                                net::CompletionOnceCallback completion_callback,
-                                const net::CertVerifyResult* verify_result,
-                                int error) {
+void CompleteAndSignalAnchorUse(
+    const base::RepeatingClosure& anchor_used_callback,
+    net::CompletionOnceCallback completion_callback,
+    const net::CertVerifyResult* verify_result,
+    int error) {
   MaybeSignalAnchorUse(error, anchor_used_callback, *verify_result);
   std::move(completion_callback).Run(error);
 }
@@ -49,7 +50,7 @@ net::CertVerifier::Config ExtendTrustAnchors(
 }  // namespace
 
 CertVerifierWithTrustAnchors::CertVerifierWithTrustAnchors(
-    const base::Closure& anchor_used_callback)
+    const base::RepeatingClosure& anchor_used_callback)
     : anchor_used_callback_(anchor_used_callback) {
   DETACH_FROM_THREAD(thread_checker_);
 }

@@ -665,12 +665,12 @@ TEST(WebInputEventBuilderMacTest, ScrollWheelMatchesUIEvent) {
   EXPECT_EQ(delta_y * ui::kScrollbarPixelsPerCocoaTick, web_event.delta_y);
   EXPECT_EQ(web_event.delta_y, ui_event.y_offset());
 
-  EXPECT_EQ(11, web_event.PositionInWidget().x);
-  EXPECT_EQ(web_event.PositionInWidget().x, ui_event.x());
+  EXPECT_EQ(11, web_event.PositionInWidget().x());
+  EXPECT_EQ(web_event.PositionInWidget().x(), ui_event.x());
 
   // Both ui:: and blink:: events use an origin at the top-left.
-  EXPECT_EQ(100 - 22, web_event.PositionInWidget().y);
-  EXPECT_EQ(web_event.PositionInWidget().y, ui_event.y());
+  EXPECT_EQ(100 - 22, web_event.PositionInWidget().y());
+  EXPECT_EQ(web_event.PositionInWidget().y(), ui_event.y());
   [window close];
 }
 
@@ -768,8 +768,7 @@ TEST(WebInputEventBuilderMacTest, BuildWebTouchEvents) {
   EXPECT_EQ(blink::WebInputEvent::kTouchStart, touch_event.GetType());
   EXPECT_FALSE(touch_event.hovering);
   EXPECT_EQ(1U, touch_event.touches_length);
-  EXPECT_EQ(blink::WebFloatPoint(6, 9),
-            touch_event.touches[0].PositionInScreen());
+  EXPECT_EQ(gfx::PointF(6, 9), touch_event.touches[0].PositionInScreen());
   EXPECT_EQ(blink::WebTouchPoint::kStatePressed, touch_event.touches[0].state);
   EXPECT_EQ(blink::WebPointerProperties::PointerType::kPen,
             touch_event.touches[0].pointer_type);
@@ -800,7 +799,7 @@ TEST(WebInputEventBuilderMacTest, BuildWebMouseEventsWithBackButton) {
   blink::WebMouseEvent mouse_event =
       content::WebMouseEventBuilder::Build(mac_event, [window contentView]);
   EXPECT_EQ(blink::WebInputEvent::kMouseDown, mouse_event.GetType());
-  EXPECT_EQ(blink::WebFloatPoint(6, 9), mouse_event.PositionInScreen());
+  EXPECT_EQ(gfx::PointF(6, 9), mouse_event.PositionInScreen());
   EXPECT_EQ(blink::WebPointerProperties::PointerType::kMouse,
             mouse_event.pointer_type);
   EXPECT_EQ(blink::WebMouseEvent::Button::kBack, mouse_event.button);
@@ -822,7 +821,7 @@ TEST(WebInputEventBuilderMacTest, BuildWebMouseEventsWithForwardButton) {
   blink::WebMouseEvent mouse_event =
       content::WebMouseEventBuilder::Build(mac_event, [window contentView]);
   EXPECT_EQ(blink::WebInputEvent::kMouseDown, mouse_event.GetType());
-  EXPECT_EQ(blink::WebFloatPoint(6, 9), mouse_event.PositionInScreen());
+  EXPECT_EQ(gfx::PointF(6, 9), mouse_event.PositionInScreen());
   EXPECT_EQ(blink::WebPointerProperties::PointerType::kMouse,
             mouse_event.pointer_type);
   EXPECT_EQ(blink::WebMouseEvent::Button::kForward, mouse_event.button);

@@ -5,10 +5,12 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
+  generate_java = true
   sources = [
     "event.mojom",
     "event_constants.mojom",
     "keyboard_codes.mojom",
+    "scroll_granularity.mojom",
   ]
 
   public_deps = [

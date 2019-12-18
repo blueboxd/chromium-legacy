@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -81,7 +82,7 @@ public class TabModalPresenterTest {
         }
 
         @Override
-        public void onInteractabilityChanged(boolean isInteractable) {
+        public void onInteractabilityChanged(Tab tab, boolean isInteractable) {
             onTabInteractabilityChangedCallback.notifyCalled();
         }
 

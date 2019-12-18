@@ -13,6 +13,7 @@ js_type_check("closure_compile") {
 
 js_library("cr_radio_group") {
   deps = [
+    "//ui/webui/resources/cr_elements/cr_radio_button:cr_radio_button",
     "//ui/webui/resources/js:event_tracker",
   ]
 }
@@ -43,6 +44,7 @@ js_library("cr_radio_group.m") {
   ]
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_radio_button:cr_radio_button.m",
     "//ui/webui/resources/js:event_tracker.m",
   ]
   extra_deps = [ ":cr_radio_group_module" ]

@@ -37,6 +37,10 @@ class AppWindowBase : public ui::BaseWindow {
 
   AppWindowLauncherItemController* controller() const { return controller_; }
 
+  virtual void SetDescription(
+      const std::string& title,
+      const std::vector<uint8_t>& unsafe_icon_data_png) {}
+
   // ui::BaseWindow:
   bool IsActive() const override;
   bool IsMaximized() const override;

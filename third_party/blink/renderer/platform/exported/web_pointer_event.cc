@@ -91,10 +91,8 @@ WebPointerEvent WebPointerEvent::WebPointerEventInRootFrame() const {
   if (HasHeight())
     transformed_event.height /= frame_scale_;
   transformed_event.position_in_widget_ =
-      WebFloatPoint((transformed_event.PositionInWidget().x / frame_scale_) +
-                        frame_translate_.x,
-                    (transformed_event.PositionInWidget().y / frame_scale_) +
-                        frame_translate_.y);
+      gfx::ScalePoint(transformed_event.PositionInWidget(), 1 / frame_scale_) +
+      frame_translate_;
   return transformed_event;
 }
 

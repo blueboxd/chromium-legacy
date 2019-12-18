@@ -182,8 +182,8 @@ bool GestureListenerManager::FilterInputEvent(const WebInputEvent& event) {
   int gesture_type = ToGestureEventType(event.GetType());
   float dip_scale = web_contents_->GetNativeView()->GetDipScale();
   return Java_GestureListenerManagerImpl_filterTapOrPressEvent(
-      env, j_obj, gesture_type, gesture.PositionInWidget().x * dip_scale,
-      gesture.PositionInWidget().y * dip_scale);
+      env, j_obj, gesture_type, gesture.PositionInWidget().x() * dip_scale,
+      gesture.PositionInWidget().y() * dip_scale);
 }
 
 // All positions and sizes (except |top_shown_pix|) are in CSS pixels.

@@ -183,34 +183,5 @@ def ConvertSdkManifests():
 
       buildfile.write(FormatGNTarget(converted) + '\n\n')
 
-      # TODO(fxb/42135): Remove this hack once dependencies have been updated.
-      # Create dummy targets using the old short names, which depend on the
-      # new fully-qualified names, to allow old dependencies to work.
-      if part['type'] == 'fidl_library':
-        target_name = ReformatTargetName(parsed['name'])
-
-        # Generate an old-style FIDL library target name, by stripping the
-        # "fuchsia-" prefix and replacing hyphens with underscores.
-        short_target_name = target_name[8:].replace('-', '_')
-
-        # fuchsia.inspect's short name clashes with the inspect source library.
-        if short_target_name == 'inspect':
-          continue
-
-        fields = {
-            'target_name' : short_target_name,
-            'type': 'group',
-            'public_deps': [ ':' + target_name]
-        }
-        buildfile.write(FormatGNTarget(fields) + '\n\n')
-      elif '-' in parsed['name']:
-        target_name = ReformatTargetName(parsed['name'])
-        fields = {
-            'target_name' : target_name.replace('-', '_'),
-            'type': 'group',
-            'public_deps': [ ':' + target_name]
-        }
-        buildfile.write(FormatGNTarget(fields) + '\n\n')
-
 if __name__ == '__main__':
   sys.exit(ConvertSdkManifests())

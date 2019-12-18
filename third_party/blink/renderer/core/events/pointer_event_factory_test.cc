@@ -123,7 +123,7 @@ class PointerEventFactoryTest : public testing::Test {
             pointer_event->pointerId(),
             WebPointerProperties(1, WebPointerProperties::PointerType::kUnknown,
                                  WebPointerProperties::Button::kNoButton,
-                                 WebFloatPoint(50, 50), WebFloatPoint(20, 20)),
+                                 gfx::PointF(50, 50), gfx::PointF(20, 20)),
             type),
         FloatPoint(100, 100));
     return pointer_event;
@@ -590,7 +590,7 @@ TEST_F(PointerEventFactoryTest, LastPointerPosition) {
           expected_mouse_id_,
           WebPointerProperties(1, WebPointerProperties::PointerType::kUnknown,
                                WebPointerProperties::Button::kNoButton,
-                               WebFloatPoint(50, 50), WebFloatPoint(20, 20)),
+                               gfx::PointF(50, 50), gfx::PointF(20, 20)),
           WebInputEvent::kPointerMove),
       FloatPoint(20, 20));
 }

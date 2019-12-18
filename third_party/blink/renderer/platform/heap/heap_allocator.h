@@ -125,8 +125,11 @@ class PLATFORM_EXPORT HeapAllocator {
   static void FreeHashTableBacking(void* address);
   static bool ExpandHashTableBacking(void*, size_t);
 
-  static void TraceMarkedBackingStore(void* address) {
-    MarkingVisitor::TraceMarkedBackingStore(address);
+  static void TraceBackingStoreIfMarked(void* address) {
+    // Trace backing store elements only if backing store was marked.
+    if (HeapObjectHeader::FromPayload(address)->IsMarked()) {
+      MarkingVisitor::TraceMarkedBackingStore(address);
+    }
   }
 
   static void BackingWriteBarrier(void* address) {

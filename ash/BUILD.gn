@@ -1342,8 +1342,6 @@ component("ash") {
     "wm/workspace/multi_window_resize_controller.h",
     "wm/workspace/phantom_window_controller.cc",
     "wm/workspace/phantom_window_controller.h",
-    "wm/workspace/two_step_edge_cycler.cc",
-    "wm/workspace/two_step_edge_cycler.h",
     "wm/workspace/workspace_event_handler.cc",
     "wm/workspace/workspace_event_handler.h",
     "wm/workspace/workspace_layout_manager.cc",

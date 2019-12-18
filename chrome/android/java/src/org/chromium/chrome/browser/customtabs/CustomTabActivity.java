@@ -42,7 +42,6 @@ import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactor
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
-import org.chromium.chrome.browser.customtabs.content.TabCreationMode;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityComponent;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityModule;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleCoordinator;
@@ -270,16 +269,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
     public void initializeCompositor() {
         super.initializeCompositor();
         getTabModelSelector().onNativeLibraryReady(getTabContentManager());
-    }
-
-    @Override
-    public void onStartWithNative() {
-        super.onStartWithNative();
-        @TabCreationMode int mode = mTabProvider.getInitialTabCreationMode();
-        boolean earlyCreatedTabIsReady =
-                (mode == TabCreationMode.HIDDEN || mode == TabCreationMode.EARLY)
-                && !mTabProvider.getTab().isLoading();
-        if (earlyCreatedTabIsReady) postDeferredStartupIfNeeded();
     }
 
     @Override

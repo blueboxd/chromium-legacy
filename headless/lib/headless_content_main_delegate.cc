@@ -229,8 +229,6 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
   command_line->AppendSwitch(::switches::kAllowPreCommitInput);
 
   content::Profiling::ProcessStarted();
-
-  SetContentClient(&content_client_);
   return false;
 }
 
@@ -447,6 +445,10 @@ HeadlessBrowser::Options* HeadlessContentMainDelegate::options() {
   if (browser_)
     return browser_->options();
   return options_.get();
+}
+
+content::ContentClient* HeadlessContentMainDelegate::CreateContentClient() {
+  return &content_client_;
 }
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)

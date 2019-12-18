@@ -38,11 +38,20 @@ Tool includes:
 
 ## Targets
 
-The main build targets for this application are:
+To build all targets for this project, use:
 
-*   //chrome/chrome_cleaner:software_reporter_tool
-*   //chrome/chrome_cleaner:chrome_cleanup_tool
-*   //chrome/chrome_cleaner:chrome_cleaner_unittests
+//chrome/chrome_cleaner:chrome_cleaner
+
+The main build targets are:
+
+ *   //chrome/chrome_cleaner:software_reporter_tool
+ *   //chrome/chrome_cleaner:chrome_cleanup_tool
+ *   //chrome/chrome_cleaner:chrome_cleaner_unittests
+
+There is also a tool, `generate_test_uws`, which will create some harmless text
+files that the tool will detect as UwS:
+
+*   //chrome/chrome_cleaner/tools:generate_test_uws
 
 ## Internal resources
 

@@ -385,12 +385,12 @@ class SharedImageBackingGLTexture : public SharedImageBackingWithReadAccess {
     DCHECK(!rgb_emulation_texture_);
   }
 
-  bool IsCleared() const override {
-    return texture_->IsLevelCleared(texture_->target(), 0);
+  gfx::Rect ClearedRect() const override {
+    return texture_->GetLevelClearedRect(texture_->target(), 0);
   }
 
-  void SetCleared() override {
-    texture_->SetLevelCleared(texture_->target(), 0, true);
+  void SetClearedRect(const gfx::Rect& cleared_rect) override {
+    texture_->SetLevelClearedRect(texture_->target(), 0, cleared_rect);
   }
 
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override {
@@ -576,8 +576,7 @@ class SharedImageBackingPassthroughGLTexture
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       uint32_t usage,
-      scoped_refptr<gles2::TexturePassthrough> passthrough_texture,
-      bool is_cleared)
+      scoped_refptr<gles2::TexturePassthrough> passthrough_texture)
       : SharedImageBackingWithReadAccess(mailbox,
                                          format,
                                          size,
@@ -585,8 +584,7 @@ class SharedImageBackingPassthroughGLTexture
                                          usage,
                                          passthrough_texture->estimated_size(),
                                          false /* is_thread_safe */),
-        texture_passthrough_(std::move(passthrough_texture)),
-        is_cleared_(is_cleared) {
+        texture_passthrough_(std::move(passthrough_texture)) {
     DCHECK(texture_passthrough_);
   }
 
@@ -594,8 +592,13 @@ class SharedImageBackingPassthroughGLTexture
     DCHECK(!texture_passthrough_);
   }
 
-  bool IsCleared() const override { return is_cleared_; }
-  void SetCleared() override { is_cleared_ = true; }
+  gfx::Rect ClearedRect() const override {
+    // This backing is used exclusively with ANGLE which handles clear tracking
+    // internally. Act as though the texture is always cleared.
+    return gfx::Rect(size());
+  }
+
+  void SetClearedRect(const gfx::Rect& cleared_rect) override {}
 
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override {
     GLenum target = texture_passthrough_->target();
@@ -670,8 +673,6 @@ class SharedImageBackingPassthroughGLTexture
  private:
   scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
   sk_sp<SkPromiseImageTexture> cached_promise_texture_;
-
-  bool is_cleared_ = false;
 };
 
 SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
@@ -1126,7 +1127,7 @@ SharedImageBackingFactoryGLTexture::MakeBacking(
 
     return std::make_unique<SharedImageBackingPassthroughGLTexture>(
         mailbox, format, size, color_space, usage,
-        std::move(passthrough_texture), is_cleared);
+        std::move(passthrough_texture));
   } else {
     gles2::Texture* texture = new gles2::Texture(service_id);
     texture->SetLightweightRef();

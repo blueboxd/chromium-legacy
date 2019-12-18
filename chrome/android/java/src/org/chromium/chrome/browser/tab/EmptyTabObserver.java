@@ -130,7 +130,7 @@ public class EmptyTabObserver implements TabObserver {
     public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {}
 
     @Override
-    public void onInteractabilityChanged(boolean isInteractable) {}
+    public void onInteractabilityChanged(Tab tab, boolean isInteractable) {}
 
     @Override
     public void onRendererResponsiveStateChanged(Tab tab, boolean isResponsive) {}

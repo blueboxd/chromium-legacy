@@ -448,6 +448,10 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // Called when an audio change occurs.
   virtual void OnAudioStateChanged(bool audible) {}
 
+  // Called when the connected to Bluetooth device state changes.
+  virtual void OnIsConnectedToBluetoothDeviceChanged(
+      bool is_connected_to_bluetooth_device) {}
+
   // Invoked when the WebContents is muted/unmuted.
   virtual void DidUpdateAudioMutingState(bool muted) {}
 

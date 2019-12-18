@@ -52,7 +52,42 @@ TEST_F(NetworkIsolationKeyMojomTraitsWithFrameOriginTest,
     EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
                 network::mojom::NetworkIsolationKey>(&original, &copied));
     EXPECT_EQ(original, copied);
+    EXPECT_EQ(original.GetTopFrameOrigin(), copied.GetTopFrameOrigin());
+    EXPECT_EQ(original.GetFrameOrigin(), copied.GetFrameOrigin());
   }
+}
+
+class NetworkIsolationKeyMojomTraitsWithRegistrableDomain
+    : public testing::Test {
+ public:
+  NetworkIsolationKeyMojomTraitsWithRegistrableDomain() {
+    feature_list_.InitWithFeatures(
+        {net::features::kUseRegistrableDomainInNetworkIsolationKey,
+         net::features::kAppendFrameOriginToNetworkIsolationKey},
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(NetworkIsolationKeyMojomTraitsWithRegistrableDomain,
+       SerializeAndDeserialize) {
+  url::Origin origin_a = url::Origin::Create(GURL("http://a.foo.test/"));
+  url::Origin origin_b = url::Origin::Create(GURL("http://b.foo.test/"));
+  url::Origin domain = url::Origin::Create(GURL("http://foo.test/"));
+  net::NetworkIsolationKey original(origin_a, origin_b);
+  EXPECT_EQ(origin_a, original.GetTopFrameOrigin());
+  EXPECT_EQ(origin_b, original.GetFrameOrigin());
+
+  net::NetworkIsolationKey copied;
+  EXPECT_TRUE(
+      mojo::test::SerializeAndDeserialize<network::mojom::NetworkIsolationKey>(
+          &original, &copied));
+  EXPECT_EQ(original, copied);
+
+  EXPECT_EQ(origin_a, copied.GetTopFrameOrigin());
+  EXPECT_EQ(origin_b, copied.GetFrameOrigin());
 }
 
 }  // namespace mojo

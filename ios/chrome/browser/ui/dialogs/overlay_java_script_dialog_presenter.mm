@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #import "base/strings/sys_string_conversions.h"
+#include "ios/chrome/browser/overlays/public/overlay_callback_manager.h"
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/chrome/browser/overlays/public/overlay_response.h"
@@ -68,7 +69,7 @@ void OverlayJavaScriptDialogPresenter::RunJavaScriptDialog(
           base::SysNSStringToUTF8(default_prompt_text));
       break;
   }
-  request->set_callback(base::BindOnce(
+  request->GetCallbackManager()->AddCompletionCallback(base::BindOnce(
       &OverlayJavaScriptDialogPresenter::HandleJavaScriptDialogResponse,
       weak_factory_.GetWeakPtr(), std::move(callback), source, dialog_type));
   OverlayRequestQueue::FromWebState(web_state, OverlayModality::kWebContentArea)

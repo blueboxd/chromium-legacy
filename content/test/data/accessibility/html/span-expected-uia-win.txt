@@ -1,5 +1,5 @@
 document
-++group
+++group IsControlElement=false
 ++++description Name='This'
 ++++description Name=' '
 ++++description Name='paragraph has '
@@ -9,62 +9,62 @@ document
 ++++description Name=' '
 ++++description Name='spans'
 ++++description Name='.'
-++group
+++group IsControlElement=false
 ++++description Name='E1. Eat'
 ++++description Name=' '
 ++++link Name='space'
 ++++++description Name='space' IsControlElement=false
-++group
+++group IsControlElement=false
 ++++description Name='E2. Eat'
 ++++description Name=' '
 ++++link Name='space'
 ++++++description Name='space' IsControlElement=false
-++group
+++group IsControlElement=false
 ++++description Name='E3. Eat'
 ++++description Name=' '
 ++++link Name='space'
 ++++++description Name='space' IsControlElement=false
-++group
+++group IsControlElement=false
 ++++link Name='E4. Eat'
 ++++++description Name='E4. Eat' IsControlElement=false
 ++++description Name=' '
 ++++description Name='space'
-++group
+++group IsControlElement=false
 ++++link Name='E5. Eat'
 ++++++description Name='E5. Eat' IsControlElement=false
 ++++description Name=' '
 ++++description Name='space'
-++group
+++group IsControlElement=false
 ++++link Name='E6. Eat'
 ++++++description Name='E6. Eat' IsControlElement=false
 ++++description Name=' '
 ++++description Name='space'
-++group
+++group IsControlElement=false
 ++++description Name='K1. Keep'
 ++++description Name=' '
 ++++description Name='space'
-++group
+++group IsControlElement=false
 ++++description Name='K2. Keep'
 ++++description Name=' '
 ++++description Name='space'
-++group
+++group IsControlElement=false
 ++++description Name='K3. Keep'
 ++++description Name=' '
 ++++description Name='space'
-++group
+++group IsControlElement=false
 ++++description Name='K4. Keep '
 ++++description Name='space'
-++group
+++group IsControlElement=false
 ++++description Name='K5. Keep'
 ++++description Name=' '
 ++++description Name='space'
-++group
+++group IsControlElement=false
 ++++description Name='K6. Keep '
 ++++description Name='space'
-++group
+++group IsControlElement=false
 ++++description Name='K7. Keep'
 ++++description Name=' space'
-++group
+++group IsControlElement=false
 ++++description Name='K8. Keep'
 ++++description Name=' '
 ++++description Name='space'

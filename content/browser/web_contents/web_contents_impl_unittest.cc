@@ -333,6 +333,12 @@ class TestWebContentsObserver : public WebContentsObserver {
     last_vertical_scroll_direction_ = scroll_direction;
   }
 
+  void OnIsConnectedToBluetoothDeviceChanged(
+      bool is_connected_to_bluetooth_device) override {
+    ++num_is_connected_to_bluetooth_device_changed_;
+    last_is_connected_to_bluetooth_device_ = is_connected_to_bluetooth_device;
+  }
+
   const GURL& last_url() const { return last_url_; }
   base::Optional<SkColor> last_theme_color() const { return last_theme_color_; }
   base::Optional<viz::VerticalScrollDirection> last_vertical_scroll_direction()
@@ -342,12 +348,20 @@ class TestWebContentsObserver : public WebContentsObserver {
   bool observed_did_first_visually_non_empty_paint() const {
     return observed_did_first_visually_non_empty_paint_;
   }
+  int num_is_connected_to_bluetooth_device_changed() const {
+    return num_is_connected_to_bluetooth_device_changed_;
+  }
+  bool last_is_connected_to_bluetooth_device() const {
+    return last_is_connected_to_bluetooth_device_;
+  }
 
  private:
   GURL last_url_;
   base::Optional<SkColor> last_theme_color_;
   base::Optional<viz::VerticalScrollDirection> last_vertical_scroll_direction_;
   bool observed_did_first_visually_non_empty_paint_ = false;
+  int num_is_connected_to_bluetooth_device_changed_ = 0;
+  bool last_is_connected_to_bluetooth_device_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebContentsObserver);
 };
@@ -3582,6 +3596,22 @@ TEST_F(WebContentsImplTest, RegisterProtocolHandlerDataURL) {
   }
 
   contents()->SetDelegate(nullptr);
+}
+
+TEST_F(WebContentsImplTest, Bluetooth) {
+  TestWebContentsObserver observer(contents());
+  EXPECT_EQ(observer.num_is_connected_to_bluetooth_device_changed(), 0);
+  EXPECT_FALSE(contents()->IsConnectedToBluetoothDevice());
+
+  contents()->TestIncrementBluetoothConnectedDeviceCount();
+  EXPECT_EQ(observer.num_is_connected_to_bluetooth_device_changed(), 1);
+  EXPECT_TRUE(observer.last_is_connected_to_bluetooth_device());
+  EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
+
+  contents()->TestDecrementBluetoothConnectedDeviceCount();
+  EXPECT_EQ(observer.num_is_connected_to_bluetooth_device_changed(), 2);
+  EXPECT_FALSE(observer.last_is_connected_to_bluetooth_device());
+  EXPECT_FALSE(contents()->IsConnectedToBluetoothDevice());
 }
 
 }  // namespace content

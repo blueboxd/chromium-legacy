@@ -75,6 +75,7 @@
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/app_modal/native_app_modal_dialog.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/embedder_support/switches.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "components/prefs/pref_service.h"
 #include "components/sessions/core/base_session_service_test_helper.h"
@@ -1027,7 +1028,7 @@ IN_PROC_BROWSER_TEST_F(BeforeUnloadAtQuitWithTwoWindows,
 // See http://crbug.com/93517.
 IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisablePopupBlocking);
+      embedder_support::kDisablePopupBlocking);
 
   // Create http and https servers for a cross-site transition.
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -1112,7 +1113,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
 // fork a new renderer process.
 IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisablePopupBlocking);
+      embedder_support::kDisablePopupBlocking);
 
   // Create http and https servers for a cross-site transition.
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -2029,7 +2030,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
 
 IN_PROC_BROWSER_TEST_F(BrowserTest, WindowOpenClose1) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisablePopupBlocking);
+      embedder_support::kDisablePopupBlocking);
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/window.close.html");
   GURL::Replacements add_query;
@@ -2046,7 +2047,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, WindowOpenClose1) {
 
 IN_PROC_BROWSER_TEST_F(BrowserTest, WindowOpenClose2) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisablePopupBlocking);
+      embedder_support::kDisablePopupBlocking);
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/window.close.html");
   GURL::Replacements add_query;
@@ -2067,7 +2068,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, WindowOpenClose3) {
   ui::CATransactionCoordinator::Get().DisableForTesting();
 #endif
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisablePopupBlocking);
+      embedder_support::kDisablePopupBlocking);
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/window.close.html");
   GURL::Replacements add_query;

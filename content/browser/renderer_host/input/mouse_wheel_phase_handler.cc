@@ -73,8 +73,8 @@ void MouseWheelPhaseHandler::AddPhaseIfNeededAndScheduleEndEvent(
         if (!mouse_wheel_end_dispatch_timer_.IsRunning()) {
           mouse_wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
           first_wheel_location_ =
-              gfx::Vector2dF(mouse_wheel_event.PositionInWidget().x,
-                             mouse_wheel_event.PositionInWidget().y);
+              gfx::Vector2dF(mouse_wheel_event.PositionInWidget().x(),
+                             mouse_wheel_event.PositionInWidget().y());
           initial_wheel_event_ = mouse_wheel_event;
           first_scroll_update_ack_state_ =
               FirstScrollUpdateAckState::kNotArrived;
@@ -205,8 +205,8 @@ bool MouseWheelPhaseHandler::IsWithinSlopRegion(
   // latching sequence is needed or not, and timer-based wheel scroll latching
   // happens only when scroll state is unknown.
   DCHECK(touchpad_scroll_phase_state_ == TOUCHPAD_SCROLL_STATE_UNKNOWN);
-  gfx::Vector2dF current_wheel_location(wheel_event.PositionInWidget().x,
-                                        wheel_event.PositionInWidget().y);
+  gfx::Vector2dF current_wheel_location(wheel_event.PositionInWidget().x(),
+                                        wheel_event.PositionInWidget().y());
   return (current_wheel_location - first_wheel_location_).LengthSquared() <
          kWheelLatchingSlopRegion * kWheelLatchingSlopRegion;
 }

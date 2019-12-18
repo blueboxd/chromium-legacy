@@ -93,7 +93,7 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
         mActivityLifecycleDispatcher.unregister(this);
         mActivityLifecycleDispatcher = null;
 
-        mSigninManager = IdentityServicesProvider.getSigninManager();
+        mSigninManager = IdentityServicesProvider.get().getSigninManager();
         mSigninManager.addSignInStateObserver(this);
     }
 

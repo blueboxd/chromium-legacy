@@ -11,6 +11,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/embedder_support/switches.h"
 #include "content/public/common/content_switches.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -29,7 +30,7 @@ class PopupBrowserTest : public InProcessBrowserTest,
   void SetUpCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisablePopupBlocking);
+        embedder_support::kDisablePopupBlocking);
     const bool enable_window_placement = GetParam();
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         enable_window_placement ? switches::kEnableBlinkFeatures

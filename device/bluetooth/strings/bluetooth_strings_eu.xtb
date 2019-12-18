@@ -17,6 +17,7 @@
 <translation id="5271696982761495740">Tableta (<ph name="ADDRESS" />)</translation>
 <translation id="5376363957846771741">Gailu ezezaguna edo bateraezina (<ph name="ADDRESS" />)</translation>
 <translation id="5716052956047449618">Modema (<ph name="DEVICE_NAME" />)</translation>
+<translation id="6459740836740815150">Autorako audio-gailua (<ph name="DEVICE_NAME" />)</translation>
 <translation id="6542922424766292144">Teklatua (<ph name="DEVICE_NAME" />)</translation>
 <translation id="654594702871184195">Audioa (<ph name="ADDRESS" />)</translation>
 <translation id="6744468237221042970">Ordenagailua (<ph name="ADDRESS" />)</translation>
@@ -26,5 +27,6 @@
 <translation id="8866374292072238753">Bideoa (<ph name="ADDRESS" />)</translation>
 <translation id="8952558712545617651">Sagua (<ph name="ADDRESS" />)</translation>
 <translation id="8961448405689538648">Gailu mota ezezaguna (<ph name="DEVICE_NAME" />)</translation>
+<translation id="907431882454731668">Gailu periferikoa (<ph name="ADDRESS" />)</translation>
 <translation id="978248992969828584">Telefonoa (<ph name="ADDRESS" />)</translation>
 </translationbundle>

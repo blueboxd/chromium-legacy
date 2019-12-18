@@ -23,13 +23,13 @@ namespace win {
 // expected behavior for this function is to not return, instead of returning
 // EXCEPTION_EXECUTE_HANDLER or similar, given that in general we are not
 // prepared to handle exceptions.
-typedef int (__cdecl *WinProcExceptionFilter)(EXCEPTION_POINTERS* info);
+typedef int(__cdecl* WinProcExceptionFilter)(EXCEPTION_POINTERS* info);
 
 // Sets the filter to deal with exceptions inside a WindowProc. Returns the old
 // exception filter, if any.
 // This function should be called before any window is created.
-BASE_EXPORT WinProcExceptionFilter SetWinProcExceptionFilter(
-    WinProcExceptionFilter filter);
+BASE_EXPORT WinProcExceptionFilter
+SetWinProcExceptionFilter(WinProcExceptionFilter filter);
 
 // Calls the registered exception filter.
 BASE_EXPORT int CallExceptionFilter(EXCEPTION_POINTERS* info);
@@ -73,7 +73,7 @@ WrappedWindowProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
   LRESULT rv = 0;
   __try {
     rv = proc(hwnd, message, wparam, lparam);
-  } __except(CallExceptionFilter(GetExceptionInformation())) {
+  } __except (CallExceptionFilter(GetExceptionInformation())) {
   }
   return rv;
 }

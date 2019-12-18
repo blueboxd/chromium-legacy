@@ -332,8 +332,8 @@ TEST_F(EventWithLatencyInfoTest, WebMouseWheelEventCoalescing) {
   Coalesce(mouse_wheel_0, &mouse_wheel_1);
 
   // Coalesced event has the position of the most recent event.
-  EXPECT_EQ(1, mouse_wheel_1.event.PositionInWidget().x);
-  EXPECT_EQ(1, mouse_wheel_1.event.PositionInWidget().y);
+  EXPECT_EQ(1, mouse_wheel_1.event.PositionInWidget().x());
+  EXPECT_EQ(1, mouse_wheel_1.event.PositionInWidget().y());
 
   // deltaX/Y, wheelTicksX/Y, and movementX/Y of the coalesced event are
   // calculated properly.

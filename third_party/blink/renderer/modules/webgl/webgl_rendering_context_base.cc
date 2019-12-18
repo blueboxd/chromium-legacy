@@ -6022,11 +6022,12 @@ void WebGLRenderingContextBase::uniform1f(const WebGLUniformLocation* location,
 
 void WebGLRenderingContextBase::uniform1fv(const WebGLUniformLocation* location,
                                            const FlexibleFloat32ArrayView& v) {
-  if (isContextLost() ||
-      !ValidateUniformParameters("uniform1fv", location, v, 1, 0, v.length()))
+  if (isContextLost() || !ValidateUniformParameters("uniform1fv", location, v,
+                                                    1, 0, v.lengthAsSizeT()))
     return;
 
-  ContextGL()->Uniform1fv(location->Location(), v.length(),
+  ContextGL()->Uniform1fv(location->Location(),
+                          base::checked_cast<GLuint>(v.lengthAsSizeT()),
                           v.DataMaybeOnStack());
 }
 
@@ -6056,11 +6057,12 @@ void WebGLRenderingContextBase::uniform1i(const WebGLUniformLocation* location,
 
 void WebGLRenderingContextBase::uniform1iv(const WebGLUniformLocation* location,
                                            const FlexibleInt32ArrayView& v) {
-  if (isContextLost() ||
-      !ValidateUniformParameters("uniform1iv", location, v, 1, 0, v.length()))
+  if (isContextLost() || !ValidateUniformParameters("uniform1iv", location, v,
+                                                    1, 0, v.lengthAsSizeT()))
     return;
 
-  ContextGL()->Uniform1iv(location->Location(), v.length(),
+  ContextGL()->Uniform1iv(location->Location(),
+                          base::checked_cast<GLuint>(v.lengthAsSizeT()),
                           v.DataMaybeOnStack());
 }
 
@@ -6091,11 +6093,12 @@ void WebGLRenderingContextBase::uniform2f(const WebGLUniformLocation* location,
 
 void WebGLRenderingContextBase::uniform2fv(const WebGLUniformLocation* location,
                                            const FlexibleFloat32ArrayView& v) {
-  if (isContextLost() ||
-      !ValidateUniformParameters("uniform2fv", location, v, 2, 0, v.length()))
+  if (isContextLost() || !ValidateUniformParameters("uniform2fv", location, v,
+                                                    2, 0, v.lengthAsSizeT()))
     return;
 
-  ContextGL()->Uniform2fv(location->Location(), v.length() >> 1,
+  ContextGL()->Uniform2fv(location->Location(),
+                          base::checked_cast<GLuint>(v.lengthAsSizeT()) >> 1,
                           v.DataMaybeOnStack());
 }
 
@@ -6126,11 +6129,12 @@ void WebGLRenderingContextBase::uniform2i(const WebGLUniformLocation* location,
 
 void WebGLRenderingContextBase::uniform2iv(const WebGLUniformLocation* location,
                                            const FlexibleInt32ArrayView& v) {
-  if (isContextLost() ||
-      !ValidateUniformParameters("uniform2iv", location, v, 2, 0, v.length()))
+  if (isContextLost() || !ValidateUniformParameters("uniform2iv", location, v,
+                                                    2, 0, v.lengthAsSizeT()))
     return;
 
-  ContextGL()->Uniform2iv(location->Location(), v.length() >> 1,
+  ContextGL()->Uniform2iv(location->Location(),
+                          base::checked_cast<GLuint>(v.lengthAsSizeT()) >> 1,
                           v.DataMaybeOnStack());
 }
 
@@ -6162,11 +6166,12 @@ void WebGLRenderingContextBase::uniform3f(const WebGLUniformLocation* location,
 
 void WebGLRenderingContextBase::uniform3fv(const WebGLUniformLocation* location,
                                            const FlexibleFloat32ArrayView& v) {
-  if (isContextLost() ||
-      !ValidateUniformParameters("uniform3fv", location, v, 3, 0, v.length()))
+  if (isContextLost() || !ValidateUniformParameters("uniform3fv", location, v,
+                                                    3, 0, v.lengthAsSizeT()))
     return;
 
-  ContextGL()->Uniform3fv(location->Location(), v.length() / 3,
+  ContextGL()->Uniform3fv(location->Location(),
+                          base::checked_cast<GLuint>(v.lengthAsSizeT()) / 3,
                           v.DataMaybeOnStack());
 }
 
@@ -6198,11 +6203,12 @@ void WebGLRenderingContextBase::uniform3i(const WebGLUniformLocation* location,
 
 void WebGLRenderingContextBase::uniform3iv(const WebGLUniformLocation* location,
                                            const FlexibleInt32ArrayView& v) {
-  if (isContextLost() ||
-      !ValidateUniformParameters("uniform3iv", location, v, 3, 0, v.length()))
+  if (isContextLost() || !ValidateUniformParameters("uniform3iv", location, v,
+                                                    3, 0, v.lengthAsSizeT()))
     return;
 
-  ContextGL()->Uniform3iv(location->Location(), v.length() / 3,
+  ContextGL()->Uniform3iv(location->Location(),
+                          base::checked_cast<GLuint>(v.lengthAsSizeT()) / 3,
                           v.DataMaybeOnStack());
 }
 
@@ -6235,11 +6241,12 @@ void WebGLRenderingContextBase::uniform4f(const WebGLUniformLocation* location,
 
 void WebGLRenderingContextBase::uniform4fv(const WebGLUniformLocation* location,
                                            const FlexibleFloat32ArrayView& v) {
-  if (isContextLost() ||
-      !ValidateUniformParameters("uniform4fv", location, v, 4, 0, v.length()))
+  if (isContextLost() || !ValidateUniformParameters("uniform4fv", location, v,
+                                                    4, 0, v.lengthAsSizeT()))
     return;
 
-  ContextGL()->Uniform4fv(location->Location(), v.length() >> 2,
+  ContextGL()->Uniform4fv(location->Location(),
+                          base::checked_cast<GLuint>(v.lengthAsSizeT()) >> 2,
                           v.DataMaybeOnStack());
 }
 
@@ -6272,11 +6279,12 @@ void WebGLRenderingContextBase::uniform4i(const WebGLUniformLocation* location,
 
 void WebGLRenderingContextBase::uniform4iv(const WebGLUniformLocation* location,
                                            const FlexibleInt32ArrayView& v) {
-  if (isContextLost() ||
-      !ValidateUniformParameters("uniform4iv", location, v, 4, 0, v.length()))
+  if (isContextLost() || !ValidateUniformParameters("uniform4iv", location, v,
+                                                    4, 0, v.lengthAsSizeT()))
     return;
 
-  ContextGL()->Uniform4iv(location->Location(), v.length() >> 2,
+  ContextGL()->Uniform4iv(location->Location(),
+                          base::checked_cast<GLuint>(v.lengthAsSizeT()) >> 2,
                           v.DataMaybeOnStack());
 }
 

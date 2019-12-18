@@ -278,6 +278,10 @@ void TestPersonalDataManager::ClearCreditCards() {
   server_credit_cards_.clear();
 }
 
+void TestPersonalDataManager::ClearCloudTokenData() {
+  server_credit_card_cloud_token_data_.clear();
+}
+
 AutofillProfile* TestPersonalDataManager::GetProfileWithGUID(const char* guid) {
   for (AutofillProfile* profile : GetProfiles()) {
     if (!profile->guid().compare(guid))
@@ -299,6 +303,14 @@ void TestPersonalDataManager::AddServerCreditCard(
   std::unique_ptr<CreditCard> server_credit_card =
       std::make_unique<CreditCard>(credit_card);
   server_credit_cards_.push_back(std::move(server_credit_card));
+  NotifyPersonalDataObserver();
+}
+
+void TestPersonalDataManager::AddCloudTokenData(
+    const CreditCardCloudTokenData& cloud_token_data) {
+  std::unique_ptr<CreditCardCloudTokenData> data =
+      std::make_unique<CreditCardCloudTokenData>(cloud_token_data);
+  server_credit_card_cloud_token_data_.push_back(std::move(data));
   NotifyPersonalDataObserver();
 }
 

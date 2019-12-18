@@ -732,10 +732,6 @@ void PrerenderContents::PrepareForUse() {
   NotifyPrerenderStop();
 }
 
-void PrerenderContents::CancelPrerenderForPrinting() {
-  Destroy(FINAL_STATUS_WINDOW_PRINT);
-}
-
 void PrerenderContents::CancelPrerenderForUnsupportedMethod() {
   Destroy(FINAL_STATUS_INVALID_HTTP_METHOD);
 }

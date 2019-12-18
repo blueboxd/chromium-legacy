@@ -59,10 +59,16 @@ class PageLiveStateDecoratorTest : public PerformanceManagerTestHarness {
   content::WebContents* contents_ = nullptr;
 };
 
-TEST_F(PageLiveStateDecoratorTest, OnWebContentsAttachedToUSBChanged) {
+TEST_F(PageLiveStateDecoratorTest, OnIsConnectedToUSBDeviceChanged) {
   EndToEndPropertyTest(
-      contents(), &PageLiveStateDecorator::Data::IsAttachedToUSB,
-      &PageLiveStateDecorator::OnWebContentsAttachedToUSBChanged);
+      contents(), &PageLiveStateDecorator::Data::IsConnectedToUSBDevice,
+      &PageLiveStateDecorator::OnIsConnectedToUSBDeviceChanged);
+}
+
+TEST_F(PageLiveStateDecoratorTest, OnIsConnectedToBluetoothDeviceChanged) {
+  EndToEndPropertyTest(
+      contents(), &PageLiveStateDecorator::Data::IsConnectedToBluetoothDevice,
+      &PageLiveStateDecorator::OnIsConnectedToBluetoothDeviceChanged);
 }
 
 TEST_F(PageLiveStateDecoratorTest, OnIsCapturingVideoChanged) {

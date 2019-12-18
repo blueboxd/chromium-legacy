@@ -11,7 +11,7 @@ import android.graphics.RectF;
 import org.junit.Assert;
 
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.test.util.RenderTestRule;
+import org.chromium.ui.test.util.RenderTestRule;
 
 import java.io.File;
 import java.io.IOException;

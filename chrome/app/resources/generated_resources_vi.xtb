@@ -2510,7 +2510,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4572779512957829735">Nhập mã PIN cho khóa bảo mật của bạn</translation>
 <translation id="457386861538956877">Thêm...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Ghép nối thiết bị Bluetooth</translation>
 <translation id="4579581181964204535">Không thể truyền <ph name="HOST_NAME" />.</translation>
 <translation id="4581774856936278355">Lỗi khi khôi phục Linux</translation>
 <translation id="4582563038311694664">Đặt lại tất cả cài đặt</translation>
@@ -4837,7 +4836,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="7974936243149753750">Quét thừa</translation>
 <translation id="7978412674231730200">Khoá cá nhân</translation>
 <translation id="7978450511781612192">Việc này này sẽ đăng xuất bạn khỏi các Tài khoản Google. Dấu trang, lịch sử, mật khẩu và các dữ liệu khác của bạn sẽ không còn đồng bộ hóa nữa.</translation>
-<translation id="7979036127916589816">Lỗi Đồng bộ hóa</translation>
 <translation id="7980084013673500153">ID phần tử: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Tải trước các trang để tìm kiếm và duyệt web nhanh hơn</translation>
 <translation id="798145602633458219">Thêm đề xuất <ph name="SUGGESTION_NAME" /> vào hộp tìm kiếm</translation>
@@ -5283,6 +5281,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="862542460444371744">&amp;Tiện ích mở rộng</translation>
 <translation id="862727964348362408">Bị tạm ngưng</translation>
 <translation id="862750493060684461">Bộ nhớ đệm CSS</translation>
+<translation id="8627706565932943526">Lỗi đồng bộ hóa</translation>
 <translation id="8627795981664801467">Chỉ kết nối an toàn</translation>
 <translation id="8630903300770275248">Nhập người dùng được giám sát</translation>
 <translation id="8631032106121706562">Cánh hoa</translation>

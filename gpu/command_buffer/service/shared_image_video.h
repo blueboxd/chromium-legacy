@@ -42,8 +42,8 @@ class GPU_GLES2_EXPORT SharedImageVideo
   ~SharedImageVideo() override;
 
   // SharedImageBacking implementation.
-  bool IsCleared() const override;
-  void SetCleared() override;
+  gfx::Rect ClearedRect() const override;
+  void SetClearedRect(const gfx::Rect& cleared_rect) override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
   void Destroy() override;

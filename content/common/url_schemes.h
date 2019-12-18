@@ -12,17 +12,13 @@
 
 namespace content {
 
-// Note: ContentMainRunner calls this method internally as part of main
-// initialization, so this function generally should not be called by
-// embedders. It's exported to facilitate test harnesses that do not
-// utilize ContentMainRunner and that do not wish to lock the set
-// of standard schemes at init time.
-//
 // Called near the beginning of startup to register URL schemes that should be
-// parsed as "standard" or "referrer" with the src/url/ library. Optionally, the
-// sets of schemes are locked down. The embedder can add additional schemes by
-// overriding the ContentClient::AddAdditionalSchemes method.
-CONTENT_EXPORT void RegisterContentSchemes(bool lock_schemes);
+// parsed as "standard" or "referrer" with the src/url/ library. The embedder
+// can add additional schemes by overriding the AddAdditionalSchemes method.
+CONTENT_EXPORT void RegisterContentSchemes();
+
+// Re-initializes schemes for tests.
+CONTENT_EXPORT void ReRegisterContentSchemesForTests();
 
 // See comment in ContentClient::AddAdditionalSchemes for explanations. These
 // getters can be invoked on any thread.

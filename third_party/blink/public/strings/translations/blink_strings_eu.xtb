@@ -114,6 +114,7 @@
 <translation id="4812940957355064477">Idatzi zenbaki bat.</translation>
 <translation id="4912536737030637138">bibliografia-sarrera</translation>
 <translation id="492244087561876220">iruzkina</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> hautatuta</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> hautatuta</translation>
 <translation id="4992066212339426712">Aktibatu audioa</translation>
 <translation id="49969490063480558">Idatzi testua "<ph name="ATSIGN" />" ikurraren ondoren. "<ph name="INVALIDADDRESS" />" ez dago osorik.</translation>
@@ -218,6 +219,7 @@
 <translation id="7888071071722539607">Sartu "<ph name="ATSIGN" />" ikurra helbide elektronikoan. "<ph name="INVALIDADDRESS" />" helbideari "<ph name="ATSIGN" />" ikurra falta zaio.</translation>
 <translation id="7891486169920085145">banatzailea</translation>
 <translation id="795667975304826397">Ez da fitxategirik aukeratu</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> hautatu gabe</translation>
 <translation id="8034303206267677282">garrantzitsua</translation>
 <translation id="8053789581856978548">testua bilatzeko eremua</translation>
 <translation id="8057695513531652401">oharra</translation>

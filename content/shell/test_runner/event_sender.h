@@ -278,7 +278,7 @@ class TEST_RUNNER_EXPORT EventSender {
   blink::WebDragData current_drag_data_;
 
   // Location of the touch point that initiated a gesture.
-  blink::WebFloatPoint current_gesture_location_;
+  gfx::PointF current_gesture_location_;
 
   // Mouse-like pointer properties.
   struct PointerState {

@@ -7,6 +7,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
+#include "ios/chrome/browser/overlays/public/overlay_callback_manager.h"
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_response.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_prompt_overlay.h"
@@ -76,7 +77,7 @@ class JavaScriptPromptOverlayMediatorTest : public AlertOverlayMediatorTest {
   const std::string& default_prompt_value() const {
     return default_prompt_value_;
   }
-  const OverlayRequest* request() const { return request_.get(); }
+  OverlayRequest* request() const { return request_.get(); }
   FakePromptOverlayMediatorDataSource* data_source() { return data_source_; }
 
  private:
@@ -157,12 +158,13 @@ TEST_F(JavaScriptPromptOverlayMediatorTest, ConfirmResponse) {
   data_source().promptInput = kFakeUserInput;
   CreateMediator();
   ASSERT_EQ(2U, consumer().actions.count);
-  ASSERT_FALSE(!!request()->response());
+  ASSERT_FALSE(!!request()->GetCallbackManager()->GetCompletionResponse());
 
   // Execute the confirm action and verify the response.
   AlertAction* confirm_action = consumer().actions[0];
   confirm_action.handler(confirm_action);
-  OverlayResponse* confirm_response = request()->response();
+  OverlayResponse* confirm_response =
+      request()->GetCallbackManager()->GetCompletionResponse();
   ASSERT_TRUE(!!confirm_response);
   JavaScriptPromptOverlayResponseInfo* confirm_response_info =
       confirm_response->GetInfo<JavaScriptPromptOverlayResponseInfo>();
@@ -177,12 +179,13 @@ TEST_F(JavaScriptPromptOverlayMediatorTest, EmptyConfirmResponse) {
   data_source().promptInput = nil;
   CreateMediator();
   ASSERT_EQ(2U, consumer().actions.count);
-  ASSERT_FALSE(!!request()->response());
+  ASSERT_FALSE(!!request()->GetCallbackManager()->GetCompletionResponse());
 
   // Execute the confirm action and verify the response.
   AlertAction* confirm_action = consumer().actions[0];
   confirm_action.handler(confirm_action);
-  OverlayResponse* confirm_response = request()->response();
+  OverlayResponse* confirm_response =
+      request()->GetCallbackManager()->GetCompletionResponse();
   ASSERT_TRUE(!!confirm_response);
   JavaScriptPromptOverlayResponseInfo* confirm_response_info =
       confirm_response->GetInfo<JavaScriptPromptOverlayResponseInfo>();
@@ -196,12 +199,13 @@ TEST_F(JavaScriptPromptOverlayMediatorTest, CancelResponse) {
   data_source().promptInput = kFakeUserInput;
   CreateMediator();
   ASSERT_EQ(2U, consumer().actions.count);
-  ASSERT_FALSE(!!request()->response());
+  ASSERT_FALSE(!!request()->GetCallbackManager()->GetCompletionResponse());
 
   // Execute the cancel action and verify that there is no response for
   // cancelled prompts.
   AlertAction* cancel_action = consumer().actions[1];
   cancel_action.handler(cancel_action);
-  OverlayResponse* cancel_response = request()->response();
+  OverlayResponse* cancel_response =
+      request()->GetCallbackManager()->GetCompletionResponse();
   EXPECT_FALSE(!!cancel_response);
 }

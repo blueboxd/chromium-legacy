@@ -77,7 +77,7 @@ class BASE_EXPORT RegKey {
   LONG GetValueNameAt(int index, std::wstring* name) const;
 
   // True while the key is valid.
-  bool Valid() const { return key_ != NULL; }
+  bool Valid() const { return key_ != nullptr; }
 
   // Kills a key and everything that lives below it; please be careful when
   // using it.

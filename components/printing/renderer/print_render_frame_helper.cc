@@ -1141,10 +1141,6 @@ void PrintRenderFrameHelper::DidFinishLoad() {
 }
 
 void PrintRenderFrameHelper::ScriptedPrint(bool user_initiated) {
-  // Allow Prerendering to cancel this print request if necessary.
-  if (delegate_->CancelPrerender(render_frame()))
-    return;
-
   blink::WebLocalFrame* web_frame = render_frame()->GetWebFrame();
   if (!IsScriptInitiatedPrintAllowed(web_frame, user_initiated))
     return;

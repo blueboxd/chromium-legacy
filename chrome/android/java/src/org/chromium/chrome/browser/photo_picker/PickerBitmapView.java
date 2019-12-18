@@ -19,6 +19,7 @@ import android.support.v4.widget.ImageViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
@@ -70,10 +71,13 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
     // The aspect ratio of the image (>1.0=portrait, <1.0=landscape).
     private float mRatio = -1;
 
+    // The container for the small version of the video UI (duration and small play button).
+    private ViewGroup mVideoControlsSmall;
+
     // For video tiles, this lists the duration of the video. Blank for other types.
     private TextView mVideoDuration;
 
-    // The Play button in the bottom right corner. Only shown for videos.
+    // The Play button in the top right corner. Only shown for videos.
     private ImageView mPlayButton;
 
     // The little shader in the top left corner (provides backdrop for selection ring on
@@ -125,8 +129,9 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
         mSpecialTileLabel = findViewById(R.id.special_tile_label);
 
         // Specific UI controls for video support.
+        mVideoControlsSmall = findViewById(R.id.video_controls_small);
         mVideoDuration = findViewById(R.id.video_duration);
-        mPlayButton = findViewById(R.id.play_video);
+        mPlayButton = findViewById(R.id.small_play_button);
         mPlayButton.setOnClickListener(this);
     }
 
@@ -298,10 +303,10 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
         }
         mIconView.startAnimation(animation);
 
-        ObjectAnimator videoDurationX =
-                ObjectAnimator.ofFloat(mVideoDuration, View.TRANSLATION_X, videoDurationOffsetX);
-        ObjectAnimator videoDurationY =
-                ObjectAnimator.ofFloat(mVideoDuration, View.TRANSLATION_Y, videoDurationOffsetY);
+        ObjectAnimator videoDurationX = ObjectAnimator.ofFloat(
+                mVideoControlsSmall, View.TRANSLATION_X, videoDurationOffsetX);
+        ObjectAnimator videoDurationY = ObjectAnimator.ofFloat(
+                mVideoControlsSmall, View.TRANSLATION_Y, videoDurationOffsetY);
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playTogether(videoDurationX, videoDurationY);
         animatorSet.setDuration(animate ? ANIMATION_DURATION : 0);
@@ -444,6 +449,7 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
         mBitmapDetails = null;
         mIconView.setImageBitmap(null);
         mVideoDuration.setText("");
+        mVideoControlsSmall.setVisibility(View.GONE);
         mUnselectedView.setVisibility(View.GONE);
         mSelectedView.setVisibility(View.GONE);
         mScrim.setVisibility(View.GONE);
@@ -484,7 +490,7 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
                 && mCategoryView.isMultiSelectAllowed();
         mUnselectedView.setVisibility(showUnselectedToggle ? View.VISIBLE : View.GONE);
         mScrim.setVisibility(showUnselectedToggle ? View.VISIBLE : View.GONE);
-        mPlayButton.setVisibility(
+        mVideoControlsSmall.setVisibility(
                 mImageLoaded && mBitmapDetails.type() == PickerBitmap.TileTypes.VIDEO ? View.VISIBLE
                                                                                       : View.GONE);
         if (!special) {

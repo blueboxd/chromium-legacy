@@ -47,6 +47,6 @@ AlertAction* GetBlockingAlertAction(AlertOverlayMediator* mediator,
                     GetBlockingState(source);
                 if (blocking_state)
                   blocking_state->JavaScriptDialogBlockingOptionSelected();
-                [weakMediator.delegate stopDialogForMediator:weakMediator];
+                [weakMediator.delegate stopOverlayForMediator:weakMediator];
               }];
 }

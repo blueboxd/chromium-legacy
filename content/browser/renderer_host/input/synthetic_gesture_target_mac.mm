@@ -89,8 +89,8 @@ void SyntheticGestureTargetMac::DispatchWebGestureEventToPlatform(
   // generate.
   @autoreleasepool {
     NSPoint content_local = NSMakePoint(
-        web_gesture.PositionInWidget().x,
-        [cocoa_view_ frame].size.height - web_gesture.PositionInWidget().y);
+        web_gesture.PositionInWidget().x(),
+        [cocoa_view_ frame].size.height - web_gesture.PositionInWidget().y());
     NSPoint location_in_window = [cocoa_view_ convertPoint:content_local
                                                     toView:nil];
 

@@ -16,9 +16,8 @@ html, body { margin: 0; padding: 0; }
 registerPaint('worklet', class {
     paint(ctx, geom) {
          ctx.rotate(10 * Math.PI / 180);
-         ctx.strokeStyle = 'blue';
-         ctx.lineWidth = 4;
-         ctx.strokeRect(30, 10, 30, 30);
+         ctx.fillStyle = 'blue';
+         ctx.fillRect(30, 10, 30, 30);
     }
 });
 </script>

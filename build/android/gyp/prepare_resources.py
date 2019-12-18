@@ -103,25 +103,22 @@ def _CheckAllFilesListed(resource_files, resource_dirs):
 
 
 def _ZipResources(resource_dirs, zip_path, ignore_pattern):
-  # Python zipfile does not provide a way to replace a file (it just writes
-  # another file with the same name). So, first collect all the files to put
-  # in the zip (with proper overriding), and then zip them.
   # ignore_pattern is a string of ':' delimited list of globs used to ignore
   # files that should not be part of the final resource zip.
-  files_to_zip = dict()
-  files_to_zip_without_generated = dict()
+  files_to_zip = []
+  path_info = resource_utils.ResourceInfoFile()
   for index, resource_dir in enumerate(resource_dirs):
     for path, archive_path in resource_utils.IterResourceFilesInDirectories(
         [resource_dir], ignore_pattern):
+      # Put the non-prefixed path in the .info file.
+      path_info.AddMapping(archive_path, path)
+
       resource_dir_name = os.path.basename(resource_dir)
       archive_path = '{}_{}/{}'.format(index, resource_dir_name, archive_path)
-      # We want the original resource dirs in the .info file rather than the
-      # generated overridden path.
-      if not path.startswith('/tmp'):
-        files_to_zip_without_generated[archive_path] = path
-      files_to_zip[archive_path] = path
-  resource_utils.CreateResourceInfoFile(files_to_zip_without_generated,
-                                        zip_path)
+      files_to_zip.append((archive_path, path))
+
+  path_info.Write(zip_path + '.info')
+
   with zipfile.ZipFile(zip_path, 'w') as z:
     # This magic comment signals to resource_utils.ExtractDeps that this zip is
     # not just the contents of a single res dir, without the encapsulating res/
@@ -129,7 +126,7 @@ def _ZipResources(resource_dirs, zip_path, ignore_pattern):
     # the contents of possibly multiple res/ dirs each within an encapsulating
     # directory within the zip.
     z.comment = resource_utils.MULTIPLE_RES_MAGIC_STRING
-    build_utils.DoZip(files_to_zip.iteritems(), z)
+    build_utils.DoZip(files_to_zip, z)
 
 
 def _GenerateRTxt(options, dep_subdirs, gen_dir):
@@ -185,21 +182,6 @@ def _GenerateRTxt(options, dep_subdirs, gen_dir):
       package_command, print_stdout=False, print_stderr=False)
 
 
-def _GenerateResourcesZip(output_resource_zip, input_resource_dirs,
-                          strip_drawables):
-  """Generate a .resources.zip file fron a list of input resource dirs.
-
-  Args:
-    output_resource_zip: Path to the output .resources.zip file.
-    input_resource_dirs: A list of input resource directories.
-  """
-
-  ignore_pattern = resource_utils.AAPT_IGNORE_PATTERN
-  if strip_drawables:
-    ignore_pattern += ':*drawable*'
-  _ZipResources(input_resource_dirs, output_resource_zip, ignore_pattern)
-
-
 def _OnStaleMd5(options):
   with resource_utils.BuildContext() as build:
     if options.sources:
@@ -250,8 +232,11 @@ def _OnStaleMd5(options):
       build_utils.ZipDir(options.srcjar_out, build.srcjar_dir)
 
     if options.resource_zip_out:
-      _GenerateResourcesZip(options.resource_zip_out, options.resource_dirs,
-                            options.strip_drawables)
+      ignore_pattern = resource_utils.AAPT_IGNORE_PATTERN
+      if options.strip_drawables:
+        ignore_pattern += ':*drawable*'
+      _ZipResources(options.resource_dirs, options.resource_zip_out,
+                    ignore_pattern)
 
 
 def main(args):

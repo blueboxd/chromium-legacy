@@ -21,6 +21,8 @@ class OverlaySurfaceCandidate;
 // Ozone DRM extension of the OverlayManagerOzone interface. It queries the
 // DrmDevice to see if an overlay configuration will work and keeps an MRU cache
 // of recent configurations.
+// TODO(crbug.com/936425): Move DrmOverlayManager to ui/ozone/platform/drm/gpu/
+// as it's not longer used from ui/ozone/platform/drm/host/.
 class DrmOverlayManager : public OverlayManagerOzone {
  public:
   DrmOverlayManager();
@@ -47,8 +49,8 @@ class DrmOverlayManager : public OverlayManagerOzone {
       gfx::AcceleratedWidget widget) = 0;
 
   // Perform basic validation to see if |candidate| is a valid request.
-  virtual bool CanHandleCandidate(const OverlaySurfaceCandidate& candidate,
-                                  gfx::AcceleratedWidget widget) const;
+  bool CanHandleCandidate(const OverlaySurfaceCandidate& candidate,
+                          gfx::AcceleratedWidget widget) const;
 
   // Updates the MRU cache for overlay configuration |candidates| with |status|.
   void UpdateCacheForOverlayCandidates(

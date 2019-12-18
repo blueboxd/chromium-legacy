@@ -34,7 +34,12 @@ const int kRequestCountMetricMaxValue = 21;
 }  // namespace
 
 ReportRequestQueueGenerator::ReportRequestQueueGenerator()
-    : maximum_report_size_(kMaximumReportSize) {}
+    : maximum_report_size_(kMaximumReportSize) {
+#if defined(OS_CHROMEOS)
+  // For Chrome OS, policy information needn't be uploaded to DM server.
+  profile_report_generator_.set_policies_enabled(false);
+#endif
+}
 
 ReportRequestQueueGenerator::~ReportRequestQueueGenerator() = default;
 

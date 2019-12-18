@@ -95,7 +95,7 @@ MojoHostResolverImpl::Job::Job(
     : resolver_service_(resolver_service),
       client_(std::move(client)),
       hostname_(hostname) {
-  client_.set_disconnect_handler(base::Bind(
+  client_.set_disconnect_handler(base::BindOnce(
       &MojoHostResolverImpl::Job::OnMojoDisconnect, base::Unretained(this)));
 
   net::HostResolver::ResolveHostParameters parameters;

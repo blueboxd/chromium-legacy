@@ -21,12 +21,9 @@
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "components/history/core/browser/history_types.h"
-#include "content/public/common/resource_type.h"
+#include "components/security_interstitials/content/unsafe_resource.h"
 #include "url/gurl.h"
-
 
 namespace content {
 class WebContents;
@@ -39,39 +36,11 @@ struct QueryURLResult;
 }
 
 namespace safe_browsing {
-class ClientMalwareRequest;
 class ClientPhishingRequest;
-class ClientSideDetectionHost;
-
-struct IPUrlInfo {
-  // The origin of the final URL for the request to the bad IP address (final =
-  // after redirects).
-  //
-  // The full URL is not available, because in some cases the path
-  // and query may be sanitized away - see https://crbug.com/973885.
-  std::string origin_of_final_url;
-
-  std::string method;
-  std::string referrer;
-  content::ResourceType resource_type;
-
-  IPUrlInfo(const std::string& origin_of_final_url,
-            const std::string& method,
-            const std::string& referrer,
-            const content::ResourceType& resource_type);
-  IPUrlInfo(const IPUrlInfo& other);
-  ~IPUrlInfo();
-};
-
-typedef std::map<std::string, std::vector<IPUrlInfo> > IPUrlMap;
 
 struct BrowseInfo {
   // The URL we're currently browsing.
   GURL url;
-
-  // List of IPv4 and IPv6 addresses from which content was requested
-  // together with the hosts on it, while browsing to the |url|.
-  IPUrlMap ips;
 
   // If a SafeBrowsing interstitial was shown for the current URL
   // this will contain the UnsafeResource struct for that URL.
@@ -103,15 +72,11 @@ class BrowserFeatureExtractor {
   using DoneCallback =
       base::OnceCallback<void(bool feature_extraction_succeeded,
                               std::unique_ptr<ClientPhishingRequest> request)>;
-  using MalwareDoneCallback =
-      base::OnceCallback<void(bool feature_extraction_succeeded,
-                              std::unique_ptr<ClientMalwareRequest> request)>;
 
   // The caller keeps ownership of the tab and host objects and is
   // responsible for ensuring that they stay valid for the entire
   // lifetime of this object.
-  BrowserFeatureExtractor(content::WebContents* tab,
-                          ClientSideDetectionHost* host);
+  explicit BrowserFeatureExtractor(content::WebContents* tab);
 
   // The destructor will cancel any pending requests.
   virtual ~BrowserFeatureExtractor();
@@ -125,16 +90,6 @@ class BrowserFeatureExtractor {
   virtual void ExtractFeatures(const BrowseInfo* info,
                                std::unique_ptr<ClientPhishingRequest> request,
                                DoneCallback callback);
-
-  // Begins extraction of the malware related features.  We take ownership
-  // of the request object until |callback| is called.  Once feature extraction
-  // is complete, |callback| will run on the UI thread.  |info| is not expected
-  // to stay valid after ExtractMalwareFeatures returns.  All IPs stored in
-  // |info| will be cleared by calling this function.
-  virtual void ExtractMalwareFeatures(
-      BrowseInfo* info,
-      std::unique_ptr<ClientMalwareRequest> request,
-      MalwareDoneCallback callback);
 
  private:
   // Synchronous browser feature extraction.
@@ -176,15 +131,7 @@ class BrowserFeatureExtractor {
   // is set it will return true and false otherwise.
   bool GetHistoryService(history::HistoryService** history);
 
-  // Helper function which is called when we're done filtering out benign IPs
-  // on the IO thread.  This function is called on the UI thread.
-  void FinishExtractMalwareFeatures(
-      std::unique_ptr<IPUrlMap> bad_ips,
-      MalwareDoneCallback callback,
-      std::unique_ptr<ClientMalwareRequest> request);
-
   content::WebContents* tab_;
-  ClientSideDetectionHost* host_;
   base::CancelableTaskTracker cancelable_task_tracker_;
   base::WeakPtrFactory<BrowserFeatureExtractor> weak_factory_{this};
 

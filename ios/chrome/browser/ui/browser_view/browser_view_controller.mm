@@ -167,6 +167,7 @@
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web/web_state_delegate_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/all_web_state_observation_forwarder.h"
+#import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
@@ -2295,6 +2296,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     }
     NSArray<GuideName*>* guideNames = @[
       kContentAreaGuide,
+      kPrimaryToolbarGuide,
       kBadgeOverflowMenuGuide,
       kOmniboxGuide,
       kOmniboxLeadingImageGuide,
@@ -2593,7 +2595,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   __weak __typeof(self) weakSelf = self;
   [self.toolbarAccessoryPresenter
       addToolbarAccessoryView:findBarView
-             usingToolbarView:_primaryToolbarCoordinator.viewController.view
                      animated:animate
                    completion:^() {
                      __strong __typeof(self) strongSelf = weakSelf;
@@ -2601,6 +2602,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                        [strongSelf.findBarController selectAllText];
                      }
                    }];
+
   [self updateFindBar:YES shouldFocus:shouldFocus];
 }
 
@@ -3049,10 +3051,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Requested web state should not be blocked from opening.
   SnapshotTabHelper::FromWebState(webState)->UpdateSnapshotWithCallback(nil);
 
-  web::WebState* childWebState =
-      [[self tabModel] insertOpenByDOMWebStateWithOpener:webState];
-
-  return childWebState;
+  TabInsertionBrowserAgent* insertionAgent =
+      TabInsertionBrowserAgent::FromBrowser(self.browser);
+  return insertionAgent->InsertWebStateOpenedByDOM(webState);
 }
 
 - (void)closeWebState:(web::WebState*)webState {
@@ -3075,31 +3076,23 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   loadParams.transition_type = params.transition;
   loadParams.is_renderer_initiated = params.is_renderer_initiated;
   loadParams.virtual_url = params.virtual_url;
+  TabInsertionBrowserAgent* insertionAgent =
+      TabInsertionBrowserAgent::FromBrowser(self.browser);
   switch (params.disposition) {
     case WindowOpenDisposition::NEW_FOREGROUND_TAB:
     case WindowOpenDisposition::NEW_BACKGROUND_TAB: {
-      return [[self tabModel]
-          insertWebStateWithLoadParams:loadParams
-                                opener:webState
-                           openedByDOM:NO
-                               atIndex:TabModelConstants::
-                                           kTabPositionAutomatically
-                          inBackground:
-                              (params.disposition ==
-                               WindowOpenDisposition::NEW_BACKGROUND_TAB)];
+      return insertionAgent->InsertWebState(
+          loadParams, webState, false, TabInsertion::kPositionAutomatically,
+          (params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB));
     }
     case WindowOpenDisposition::CURRENT_TAB: {
       webState->GetNavigationManager()->LoadURLWithParams(loadParams);
       return webState;
     }
     case WindowOpenDisposition::NEW_POPUP: {
-      return [[self tabModel]
-          insertWebStateWithLoadParams:loadParams
-                                opener:webState
-                           openedByDOM:YES
-                               atIndex:TabModelConstants::
-                                           kTabPositionAutomatically
-                          inBackground:NO];
+      return insertionAgent->InsertWebState(
+          loadParams, webState, true, TabInsertion::kPositionAutomatically,
+          false);
     }
     default:
       NOTIMPLEMENTED();
@@ -4098,15 +4091,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     GURL URL(std::string("data:text/plain;charset=utf-8;base64,") + base64HTML);
     web::Referrer referrer(webState->GetLastCommittedURL(),
                            web::ReferrerPolicyDefault);
-
-    [[weakSelf tabModel]
-        insertWebStateWithURL:URL
-                     referrer:referrer
-                   transition:ui::PAGE_TRANSITION_LINK
-                       opener:webState
-                  openedByDOM:YES
-                      atIndex:TabModelConstants::kTabPositionAutomatically
-                 inBackground:NO];
+    web::NavigationManager::WebLoadParams loadParams(URL);
+    loadParams.referrer = referrer;
+    loadParams.transition_type = ui::PAGE_TRANSITION_LINK;
+    TabInsertionBrowserAgent* insertionAgent =
+        TabInsertionBrowserAgent::FromBrowser(self.browser);
+    insertionAgent->InsertWebState(loadParams, webState, true,
+                                   TabInsertion::kPositionAutomatically, false);
   };
   [self.currentWebState->GetJSInjectionReceiver()
       executeJavaScript:script
@@ -4761,14 +4752,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)captivePortalDetectorTabHelper:
             (CaptivePortalDetectorTabHelper*)tabHelper
                  connectWithLandingURL:(const GURL&)landingURL {
-  [self.tabModel
-      insertWebStateWithLoadParams:web_navigation_util::CreateWebLoadParams(
-                                       landingURL, ui::PAGE_TRANSITION_TYPED,
-                                       nullptr)
-                            opener:nil
-                       openedByDOM:NO
-                           atIndex:self.tabModel.webStateList->count()
-                      inBackground:NO];
+  TabInsertionBrowserAgent* insertionAgent =
+      TabInsertionBrowserAgent::FromBrowser(self.browser);
+  insertionAgent->InsertWebState(
+      web_navigation_util::CreateWebLoadParams(
+          landingURL, ui::PAGE_TRANSITION_TYPED, nullptr),
+      nil, false, self.browser->GetWebStateList()->count(), false);
 }
 
 #pragma mark - PageInfoPresentation

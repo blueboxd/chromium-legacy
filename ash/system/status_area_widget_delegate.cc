@@ -138,7 +138,17 @@ void StatusAreaWidgetDelegate::OnShelfConfigUpdated() {
 
 void StatusAreaWidgetDelegate::OnHotseatStateChanged(HotseatState old_state,
                                                      HotseatState new_state) {
-  UpdateLayout();
+  // Update the border of the last visible child so it has the right
+  // padding depending of the state of the shelf (See
+  // https://crbug.com/1025270). Don't layout as it will cause the whole
+  // transition to snap instead of animate (See https://crbug.com/1032770).
+  auto it = std::find_if(children().crbegin(), children().crend(),
+                         [](const View* v) { return v->GetVisible(); });
+  if (it == children().crend())
+    return;
+
+  View* last_visible_child = *it;
+  SetBorderOnChild(last_visible_child, /*is_child_on_edge=*/true);
 }
 
 void StatusAreaWidgetDelegate::UpdateLayout() {

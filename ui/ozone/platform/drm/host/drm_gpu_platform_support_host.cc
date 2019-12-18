@@ -18,7 +18,6 @@
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
 #include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
-#include "ui/ozone/platform/drm/host/drm_overlay_manager_host.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_observer.h"
 
 namespace ui {
@@ -167,15 +166,23 @@ void DrmGpuPlatformSupportHost::OnChannelDestroyed(int host_id) {
 
 void DrmGpuPlatformSupportHost::OnMessageReceived(const IPC::Message& message) {
   DCHECK(ui_runner_);
-  if (ui_runner_->BelongsToCurrentThread()) {
-    if (OnMessageReceivedForDrmDisplayHostManager(message))
-      return;
-    OnMessageReceivedForDrmOverlayManager(message);
-  } else {
+  if (!ui_runner_->BelongsToCurrentThread()) {
     ui_runner_->PostTask(
         FROM_HERE, base::BindOnce(&DrmGpuPlatformSupportHost::OnMessageReceived,
                                   weak_ptr_, message));
+    return;
   }
+
+  IPC_BEGIN_MESSAGE_MAP(DrmGpuPlatformSupportHost, message)
+    IPC_MESSAGE_HANDLER(OzoneHostMsg_UpdateNativeDisplays,
+                        OnUpdateNativeDisplays)
+    IPC_MESSAGE_HANDLER(OzoneHostMsg_DisplayConfigured, OnDisplayConfigured)
+    IPC_MESSAGE_HANDLER(OzoneHostMsg_HDCPStateReceived, OnHDCPStateReceived)
+    IPC_MESSAGE_HANDLER(OzoneHostMsg_HDCPStateUpdated, OnHDCPStateUpdated)
+    IPC_MESSAGE_HANDLER(OzoneHostMsg_DisplayControlTaken, OnTakeDisplayControl)
+    IPC_MESSAGE_HANDLER(OzoneHostMsg_DisplayControlRelinquished,
+                        OnRelinquishDisplayControl)
+  IPC_END_MESSAGE_MAP()
 }
 
 bool DrmGpuPlatformSupportHost::Send(IPC::Message* message) {
@@ -211,25 +218,6 @@ void DrmGpuPlatformSupportHost::OnChannelEstablished() {
   // allowed to IPC messages (which are targeted to a specific window).
   cursor_->SetDrmCursorProxy(
       std::make_unique<CursorIPC>(send_runner_, send_callback_));
-}
-
-bool DrmGpuPlatformSupportHost::OnMessageReceivedForDrmDisplayHostManager(
-    const IPC::Message& message) {
-  bool handled = true;
-
-  IPC_BEGIN_MESSAGE_MAP(DrmGpuPlatformSupportHost, message)
-    IPC_MESSAGE_HANDLER(OzoneHostMsg_UpdateNativeDisplays,
-                        OnUpdateNativeDisplays)
-    IPC_MESSAGE_HANDLER(OzoneHostMsg_DisplayConfigured, OnDisplayConfigured)
-    IPC_MESSAGE_HANDLER(OzoneHostMsg_HDCPStateReceived, OnHDCPStateReceived)
-    IPC_MESSAGE_HANDLER(OzoneHostMsg_HDCPStateUpdated, OnHDCPStateUpdated)
-    IPC_MESSAGE_HANDLER(OzoneHostMsg_DisplayControlTaken, OnTakeDisplayControl)
-    IPC_MESSAGE_HANDLER(OzoneHostMsg_DisplayControlRelinquished,
-                        OnRelinquishDisplayControl)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
 }
 
 void DrmGpuPlatformSupportHost::OnUpdateNativeDisplays(
@@ -291,44 +279,6 @@ void DrmGpuPlatformSupportHost::GpuAddGraphicsDeviceOnIOThread(
 bool DrmGpuPlatformSupportHost::GpuRemoveGraphicsDevice(
     const base::FilePath& path) {
   return Send(new OzoneGpuMsg_RemoveGraphicsDevice(path));
-}
-
-// Overlays
-void DrmGpuPlatformSupportHost::RegisterHandlerForDrmOverlayManager(
-    DrmOverlayManagerHost* handler) {
-  overlay_manager_ = handler;
-}
-
-void DrmGpuPlatformSupportHost::UnRegisterHandlerForDrmOverlayManager() {
-  overlay_manager_ = nullptr;
-}
-
-bool DrmGpuPlatformSupportHost::OnMessageReceivedForDrmOverlayManager(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(DrmGpuPlatformSupportHost, message)
-    IPC_MESSAGE_HANDLER(OzoneHostMsg_OverlayCapabilitiesReceived,
-                        OnOverlayResult)
-    // TODO(rjk): insert the extra
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void DrmGpuPlatformSupportHost::OnOverlayResult(
-    gfx::AcceleratedWidget widget,
-    const std::vector<OverlayCheck_Params>& params,
-    const std::vector<OverlayCheckReturn_Params>& param_returns) {
-  auto candidates = CreateOverlaySurfaceCandidateListFrom(params);
-  auto returns = CreateOverlayStatusListFrom(param_returns);
-  overlay_manager_->GpuSentOverlayResult(widget, candidates, returns);
-}
-
-bool DrmGpuPlatformSupportHost::GpuCheckOverlayCapabilities(
-    gfx::AcceleratedWidget widget,
-    const OverlaySurfaceCandidateList& candidates) {
-  auto params = CreateParamsFromOverlaySurfaceCandidate(candidates);
-  return Send(new OzoneGpuMsg_CheckOverlayCapabilities(widget, params));
 }
 
 // DrmDisplayHost

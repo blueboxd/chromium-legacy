@@ -335,7 +335,7 @@ GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat(
     if (bit_depth == 10) {
       if (capabilities.image_xr30)
         return media::GpuVideoAcceleratorFactories::OutputFormat::XR30;
-      else if (capabilities.image_xb30)
+      else if (capabilities.image_ab30)
         return media::GpuVideoAcceleratorFactories::OutputFormat::XB30;
     }
 #endif

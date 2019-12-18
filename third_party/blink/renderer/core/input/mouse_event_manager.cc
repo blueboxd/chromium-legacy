@@ -86,11 +86,11 @@ void UpdateMouseMovementXY(const WebMouseEvent& mouse_event,
     // movementX/Y is type int for now, so we need to truncated the coordinates
     // before calculate movement.
     initializer->setMovementX(
-        base::saturated_cast<int>(mouse_event.PositionInScreen().x *
+        base::saturated_cast<int>(mouse_event.PositionInScreen().x() *
                                   device_scale_factor) -
         base::saturated_cast<int>(last_position->X() * device_scale_factor));
     initializer->setMovementY(
-        base::saturated_cast<int>(mouse_event.PositionInScreen().y *
+        base::saturated_cast<int>(mouse_event.PositionInScreen().y() *
                                   device_scale_factor) -
         base::saturated_cast<int>(last_position->Y() * device_scale_factor));
   }
@@ -698,8 +698,8 @@ FloatPoint MouseEventManager::LastKnownMouseScreenPosition() {
 
 void MouseEventManager::SetLastKnownMousePosition(const WebMouseEvent& event) {
   is_mouse_position_unknown_ = event.GetType() == WebInputEvent::kMouseLeave;
-  last_known_mouse_position_ = event.PositionInWidget();
-  last_known_mouse_screen_position_ = event.PositionInScreen();
+  last_known_mouse_position_ = FloatPoint(event.PositionInWidget());
+  last_known_mouse_screen_position_ = FloatPoint(event.PositionInScreen());
 }
 
 void MouseEventManager::SetLastMousePositionAsUnknown() {

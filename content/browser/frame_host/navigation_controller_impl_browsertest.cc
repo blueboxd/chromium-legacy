@@ -9950,9 +9950,9 @@ IN_PROC_BROWSER_TEST_F(SandboxedNavigationControllerBrowserTest,
       ->current_frame_host()
       ->GetRenderWidgetHost()
       ->ForwardMouseEvent(blink::WebMouseEvent(
-          blink::WebInputEvent::Type::kMouseUp, blink::WebFloatPoint(),
-          blink::WebFloatPoint(), blink::WebPointerProperties::Button::kBack, 0,
-          0, base::TimeTicks::Now()));
+          blink::WebInputEvent::Type::kMouseUp, gfx::PointF(), gfx::PointF(),
+          blink::WebPointerProperties::Button::kBack, 0, 0,
+          base::TimeTicks::Now()));
   RunUntilInputProcessed(
       root->child_at(1)->current_frame_host()->GetRenderWidgetHost());
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));

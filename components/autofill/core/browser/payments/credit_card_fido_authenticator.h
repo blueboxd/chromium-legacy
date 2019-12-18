@@ -212,6 +212,9 @@ class CreditCardFIDOAuthenticator
   // Logs the result of a WebAuthn prompt.
   void LogWebauthnResult(AuthenticatorStatus status);
 
+  // Updates the user preference to the value of |user_is_opted_in_|.
+  void UpdateUserPref();
+
   // Card being unmasked.
   const CreditCard* card_;
 
@@ -243,6 +246,10 @@ class CreditCardFIDOAuthenticator
 
   // Weak pointer to object that is requesting authentication.
   base::WeakPtr<Requester> requester_;
+
+  // Is set to true when user is opted-in, else false. This value will always
+  // override the value in the pref store in the case of any discrepancies.
+  bool user_is_opted_in_;
 
   // Strike database to ensure we limit the number of times we offer fido
   // authentication.

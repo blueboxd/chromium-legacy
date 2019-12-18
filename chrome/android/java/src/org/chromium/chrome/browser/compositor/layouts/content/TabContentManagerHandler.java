@@ -65,7 +65,7 @@ public final class TabContentManagerHandler extends TabModelSelectorTabObserver 
     }
 
     @Override
-    public void onInteractabilityChanged(boolean interactable) {
+    public void onInteractabilityChanged(Tab tab, boolean interactable) {
         if (interactable && mShouldRemoveThumbnail && mThumbnailTab != null) {
             mTabContentManager.removeTabThumbnail(mThumbnailTab.getId());
             mShouldRemoveThumbnail = false;

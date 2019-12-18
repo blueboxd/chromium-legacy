@@ -59,12 +59,9 @@ class BASE_EXPORT IATPatchFunction {
   // Returns: Windows error code (winerror.h). NO_ERROR if successful
   DWORD Unpatch();
 
-  bool is_patched() const {
-    return (NULL != intercept_function_);
-  }
+  bool is_patched() const { return (nullptr != intercept_function_); }
 
   void* original_function() const;
-
 
  private:
   HMODULE module_handle_ = nullptr;

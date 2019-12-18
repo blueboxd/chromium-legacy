@@ -46,10 +46,6 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // we should classify the new URL.
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void ResourceLoadComplete(
-      content::RenderFrameHost* render_frame_host,
-      const content::GlobalRequestID& request_id,
-      const content::mojom::ResourceLoadInfo& resource_load_info) override;
 
   // Called when the SafeBrowsingService found a hit with one of the
   // SafeBrowsing lists.  This method is called on the UI thread.
@@ -71,10 +67,6 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
       SafeBrowsingUIManager* ui_manager,
       SafeBrowsingDatabaseManager* database_manager);
 
-  // Called when pre-classification checks are done for the malware classifiers.
-  // Overridden in test.
-  virtual void OnMalwarePreClassificationDone(bool should_classify);
-
  private:
   friend class ClientSideDetectionHostTestBase;
   class ShouldClassifyUrlRequest;
@@ -94,38 +86,11 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // Otherwise, we do nothing.  Called in UI thread.
   void MaybeShowPhishingWarning(GURL phishing_url, bool is_phishing);
 
-  // Callback that is called when the malware IP server ping back is
-  // done. Display an interstitial if |is_malware| is true.
-  // Otherwise, we do nothing.  Called in UI thread.
-  void MaybeShowMalwareWarning(GURL original_url, GURL malware_url,
-                               bool is_malware);
-
   // Callback that is called when the browser feature extractor is done.
   // This method is responsible for deleting the request object.  Called on
   // the UI thread.
   void FeatureExtractionDone(bool success,
                              std::unique_ptr<ClientPhishingRequest> request);
-
-  // Start malware classification once the onload handler was called and
-  // malware pre-classification checks are done and passed.
-  void MaybeStartMalwareFeatureExtraction();
-
-  // Function to be called when the browser malware feature extractor is done.
-  // Called on the UI thread.
-  void MalwareFeatureExtractionDone(
-      bool success,
-      std::unique_ptr<ClientMalwareRequest> request);
-
-  // Update the entries in browse_info_->ips map.
-  void UpdateIPUrlMap(const std::string& ip,
-                      const std::string& origin_of_final_url,
-                      const std::string& method,
-                      const std::string& referrer,
-                      const content::ResourceType resource_type);
-
-  // Inherited from WebContentsObserver.  This is called once the page is
-  // done loading.
-  void DidStopLoading() override;
 
   // Returns true if the user has seen a regular SafeBrowsing
   // interstitial for the current page.  This is only true if the user has
@@ -162,11 +127,6 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
 
   // Max number of ips we save for each browse
   static const size_t kMaxIPsPerBrowse;
-  // Max number of urls we report for each malware IP.
-  static const size_t kMaxUrlsPerIP;
-
-  bool should_extract_malware_features_;
-  bool should_classify_for_malware_;
   bool pageload_complete_;
 
   // Unique page ID of the most recent unsafe site that was loaded in this tab

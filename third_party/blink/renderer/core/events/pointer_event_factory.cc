@@ -117,12 +117,12 @@ void UpdateCommonPointerEventInit(const WebPointerEvent& web_pointer_event,
     // movementX/Y is type int for pointerevent, so we still need to truncated
     // the coordinates before calculate movement.
     pointer_event_init->setMovementX(
-        base::saturated_cast<int>(web_pointer_event.PositionInScreen().x *
+        base::saturated_cast<int>(web_pointer_event.PositionInScreen().x() *
                                   device_scale_factor) -
         base::saturated_cast<int>(last_global_position.X() *
                                   device_scale_factor));
     pointer_event_init->setMovementY(
-        base::saturated_cast<int>(web_pointer_event.PositionInScreen().y *
+        base::saturated_cast<int>(web_pointer_event.PositionInScreen().y() *
                                   device_scale_factor) -
         base::saturated_cast<int>(last_global_position.Y() *
                                   device_scale_factor));
@@ -195,7 +195,7 @@ HeapVector<Member<PointerEvent>> PointerEventFactory::CreateEventSequence(
           new_event_init,
           static_cast<WebInputEvent::Modifiers>(event.GetModifiers()));
 
-      last_global_position = event.PositionInScreen();
+      last_global_position = FloatPoint(event.PositionInScreen());
 
       PointerEvent* pointer_event =
           PointerEvent::Create(type, new_event_init, event.TimeStamp());
@@ -343,7 +343,7 @@ PointerEvent* PointerEventFactory::Create(
   pointer_event_init->setPredictedEvents(predicted_pointer_events);
 
   SetLastPosition(pointer_event_init->pointerId(),
-                  web_pointer_event.PositionInScreen(), event_type);
+                  FloatPoint(web_pointer_event.PositionInScreen()), event_type);
   return PointerEvent::Create(type, pointer_event_init,
                               web_pointer_event.TimeStamp());
 }
@@ -375,7 +375,7 @@ FloatPoint PointerEventFactory::GetLastPointerPosition(
   }
   // If pointer_id is not in the map, returns the current position so the
   // movement will be zero.
-  return event.PositionInScreen();
+  return FloatPoint(event.PositionInScreen());
 }
 
 PointerEvent* PointerEventFactory::CreatePointerCancelEvent(

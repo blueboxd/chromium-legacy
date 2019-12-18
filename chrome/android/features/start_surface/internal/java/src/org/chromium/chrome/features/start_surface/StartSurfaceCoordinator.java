@@ -182,6 +182,7 @@ public class StartSurfaceCoordinator implements StartSurface {
         mTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(mActivity,
                 mPropertyModel, mActivity.getToolbarManager().getFakeboxDelegate(),
                 mSurfaceMode == SurfaceMode.SINGLE_PANE);
+        mTasksSurface.getView().setId(R.id.primary_tasks_surface_view);
 
         mTasksSurfacePropertyModelChangeProcessor =
                 PropertyModelChangeProcessor.create(mPropertyModel,
@@ -214,6 +215,7 @@ public class StartSurfaceCoordinator implements StartSurface {
         mSecondaryTasksSurface =
                 TabManagementModuleProvider.getDelegate().createTasksSurface(mActivity,
                         propertyModel, mActivity.getToolbarManager().getFakeboxDelegate(), false);
+        mSecondaryTasksSurface.getView().setId(R.id.secondary_tasks_surface_view);
         mSecondaryTasksSurfacePropertyModelChangeProcessor =
                 PropertyModelChangeProcessor.create(mPropertyModel,
                         new TasksSurfaceViewBinder.ViewHolder(mActivity.getCompositorViewHolder(),

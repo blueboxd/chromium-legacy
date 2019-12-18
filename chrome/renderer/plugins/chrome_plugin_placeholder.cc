@@ -322,7 +322,8 @@ void ChromePluginPlaceholder::ShowContextMenu(
   hide_item.label = l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLUGIN_HIDE);
   params.custom_items.push_back(hide_item);
 
-  blink::WebPoint point(event.PositionInWidget().x, event.PositionInWidget().y);
+  blink::WebPoint point(event.PositionInWidget().x(),
+                        event.PositionInWidget().y());
   if (plugin() && plugin()->Container())
     point = plugin()->Container()->LocalToRootFramePoint(point);
 

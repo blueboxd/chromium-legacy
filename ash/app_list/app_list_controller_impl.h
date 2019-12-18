@@ -280,6 +280,7 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
       base::Optional<AnimationInfo> animation_info,
       UpdateAnimationSettingsCallback callback) override;
   base::Optional<base::TimeDelta> GetOptionalAnimationDuration() override;
+  base::ScopedClosureRunner DisableHomeScreenBackgroundBlur() override;
   void OnHomeLauncherAnimationComplete(bool shown, int64_t display_id) override;
   void OnHomeLauncherPositionChanged(int percent_shown,
                                      int64_t display_id) override;
@@ -428,6 +429,11 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   // A callback that can be registered by a test to wait for the home launcher
   // visibility animation to finish. Should only be used in tablet mode.
   HomeLauncherAnimationCallback home_launcher_animation_callback_;
+
+  // ScopedClosureRunner which while in scope keeps background blur in home
+  // screen (in particular, apps container suggestion chips background)
+  // disabled. Set while home screen transitions are in progress.
+  base::Optional<base::ScopedClosureRunner> home_screen_blur_disabler_;
 
   base::ObserverList<AppListControllerObserver> observers_;
 

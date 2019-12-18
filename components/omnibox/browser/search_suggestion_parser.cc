@@ -467,6 +467,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
   for (size_t index = 0; results_list->GetString(index, &suggestion); ++index) {
     // Google search may return empty suggestions for weird input characters,
     // they make no sense at all and can cause problems in our code.
+    suggestion = base::CollapseWhitespace(suggestion, false);
     if (suggestion.empty())
       continue;
 
@@ -513,6 +514,9 @@ bool SearchSuggestionParser::ParseSuggestResults(
           // Calculator results include a "= " prefix but we don't want to
           // include this in the search terms.
           suggestion.erase(0, 2);
+          // Unlikely to happen, but better to be safe.
+          if (base::CollapseWhitespace(suggestion, false).empty())
+            continue;
         }
         if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_DESKTOP) {
           annotation = has_equals_prefix ? suggestion : match_contents;
@@ -559,7 +563,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
 
       bool should_prefetch = static_cast<int>(index) == prefetch_index;
       results->suggest_results.push_back(SuggestResult(
-          base::CollapseWhitespace(suggestion, false),
+          suggestion,
           match_type,
           subtype_identifier,
           base::CollapseWhitespace(match_contents, false),

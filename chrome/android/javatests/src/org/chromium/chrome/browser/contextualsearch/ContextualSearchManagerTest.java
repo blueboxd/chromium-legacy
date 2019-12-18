@@ -73,6 +73,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.UrlBar;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
@@ -1002,10 +1003,11 @@ public class ContextualSearchManagerTest {
     private void resetCounters() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-            boolean freStatus = prefs.getBoolean(FirstRunStatus.FIRST_RUN_FLOW_COMPLETE, false);
+            boolean freStatus =
+                    prefs.getBoolean(ChromePreferenceKeys.FIRST_RUN_FLOW_COMPLETE, false);
             prefs.edit()
                     .clear()
-                    .putBoolean(FirstRunStatus.FIRST_RUN_FLOW_COMPLETE, freStatus)
+                    .putBoolean(ChromePreferenceKeys.FIRST_RUN_FLOW_COMPLETE, freStatus)
                     .apply();
         });
     }
@@ -2895,7 +2897,17 @@ public class ContextualSearchManagerTest {
     @Feature({"ContextualSearch"})
     public void testDictionaryDefinitions() throws InterruptedException, TimeoutException {
         runDictionaryCardTest(CardTag.CT_DEFINITION);
-        closePanel();
+    }
+
+    /**
+     * Tests that the flow for showing dictionary definitions works, and that tapping in the
+     * bar just opens the panel instead of taking some action.
+     */
+    @Test
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    public void testContextualDictionaryDefinitions()
+            throws InterruptedException, TimeoutException {
         runDictionaryCardTest(CardTag.CT_CONTEXTUAL_DEFINITION);
     }
 

@@ -203,25 +203,28 @@
             $i18n{selectDriverButtonText}
           </cr-button>
         </div>
-        <div class="eula" id="eulaUrl" hidden="[[!eulaUrl_]]">
-          <a href="[[eulaUrl_]]" target="_blank">$i18n{printerEulaNotice}</a>
-        </div>
       </div>
       <div slot="dialog-buttons">
-        <cr-button class="cancel-button" on-click="onCancelTap_">
-          $i18n{cancel}
-        </cr-button>
-        <cr-button class="action-button" id="addPrinterButton"
-            disabled="[[!canAddPrinter_(activePrinter.ppdManufacturer,
-                                        activePrinter.ppdModel,
-                                        activePrinter.printerPPDPath,
-                                        addPrinterInProgress_,
-                                        isManufacturerInvalid_,
-                                        isModelInvalid_)]]"
-
-            on-click="addPrinter_">
-          $i18n{addPrinterButtonText}
-        </cr-button>
+        <div> <!-- Left group -->
+          <div class="eula" id="eulaUrl" hidden="[[!eulaUrl_]]">
+            <a href="[[eulaUrl_]]" target="_blank">$i18n{printerEulaNotice}</a>
+          </div>
+        </div>
+        <div> <!-- Right group -->
+          <cr-button class="cancel-button" on-click="onCancelTap_">
+            $i18n{cancel}
+          </cr-button>
+          <cr-button class="action-button" id="addPrinterButton"
+              disabled="[[!canAddPrinter_(activePrinter.ppdManufacturer,
+                                          activePrinter.ppdModel,
+                                          activePrinter.printerPPDPath,
+                                          addPrinterInProgress_,
+                                          isManufacturerInvalid_,
+                                          isModelInvalid_)]]"
+              on-click="addPrinter_">
+            $i18n{addPrinterButtonText}
+          </cr-button>
+        </div>
       </div>
     </add-printer-dialog>
   </template>

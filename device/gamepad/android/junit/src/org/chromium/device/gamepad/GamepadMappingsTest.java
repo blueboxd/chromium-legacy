@@ -10,7 +10,6 @@ import android.view.MotionEvent;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -94,17 +93,29 @@ public class GamepadMappingsTest {
     @Feature({"Gamepad"})
     public void testPS3SixAxisGamepadMappings() {
         GamepadMappings mappings =
-                GamepadMappings.getMappings(GamepadMappings.PS3_SIXAXIS_DEVICE_NAME);
+                GamepadMappings.getMappings(GamepadMappings.PS_DUALSHOCK_3_SIXAXIS_DEVICE_NAME);
         mappings.mapToStandardGamepad(mMappedAxes, mMappedButtons, mRawAxes, mRawButtons);
 
-        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.PRIMARY],
-                mRawButtons[KeyEvent.KEYCODE_BUTTON_X], ERROR_TOLERANCE);
-        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.SECONDARY],
-                mRawButtons[KeyEvent.KEYCODE_BUTTON_Y], ERROR_TOLERANCE);
-        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.TERTIARY],
-                mRawButtons[KeyEvent.KEYCODE_BUTTON_A], ERROR_TOLERANCE);
-        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.QUATERNARY],
-                mRawButtons[KeyEvent.KEYCODE_BUTTON_B], ERROR_TOLERANCE);
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            // Changes in Android 9 caused the DualShock 3 and SIXAXIS mappings to change.
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.PRIMARY],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_A], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.SECONDARY],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_B], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.TERTIARY],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_X], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.QUATERNARY],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_Y], ERROR_TOLERANCE);
+        } else {
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.PRIMARY],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_X], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.SECONDARY],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_Y], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.TERTIARY],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_A], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.QUATERNARY],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_B], ERROR_TOLERANCE);
+        }
 
         assertMappedTriggerButtonsToTopShoulder();
         assertMappedCommonThumbstickButtons();
@@ -268,7 +279,6 @@ public class GamepadMappingsTest {
     }
 
     @Test
-    @Ignore("https://crbug.com/719765")
     @Feature({"Gamepad"})
     public void testPS4GamepadMappings() {
         GamepadMappings mappings =
@@ -276,31 +286,56 @@ public class GamepadMappingsTest {
                         GamepadMappings.PS_DUALSHOCK_4_VENDOR_ID);
         mappings.mapToStandardGamepad(mMappedAxes, mMappedButtons, mRawAxes, mRawButtons);
 
-        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.PRIMARY],
-                mRawButtons[KeyEvent.KEYCODE_BUTTON_B], ERROR_TOLERANCE);
-        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.SECONDARY],
-                mRawButtons[KeyEvent.KEYCODE_BUTTON_C], ERROR_TOLERANCE);
-        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.TERTIARY],
-                mRawButtons[KeyEvent.KEYCODE_BUTTON_A], ERROR_TOLERANCE);
-        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.QUATERNARY],
-                mRawButtons[KeyEvent.KEYCODE_BUTTON_X], ERROR_TOLERANCE);
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            // Changes in Android 9 caused the DualShock 4 mapping to change.
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.PRIMARY],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_A], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.SECONDARY],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_B], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.TERTIARY],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_X], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.QUATERNARY],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_Y], ERROR_TOLERANCE);
 
-        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.LEFT_SHOULDER],
-                mRawButtons[KeyEvent.KEYCODE_BUTTON_Z], ERROR_TOLERANCE);
-        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_SHOULDER],
-                mRawButtons[KeyEvent.KEYCODE_BUTTON_Y], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.LEFT_SHOULDER],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_L1], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_SHOULDER],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_R1], ERROR_TOLERANCE);
 
-        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.LEFT_TRIGGER],
-                mRawAxes[MotionEvent.AXIS_RX], ERROR_TOLERANCE);
-        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_TRIGGER],
-                mRawAxes[MotionEvent.AXIS_RY], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.LEFT_TRIGGER],
+                    mRawAxes[MotionEvent.AXIS_LTRIGGER], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_TRIGGER],
+                    mRawAxes[MotionEvent.AXIS_RTRIGGER], ERROR_TOLERANCE);
+
+            assertMappedCommonThumbstickButtons();
+        } else {
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.PRIMARY],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_B], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.SECONDARY],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_C], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.TERTIARY],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_A], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.QUATERNARY],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_X], ERROR_TOLERANCE);
+
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.LEFT_SHOULDER],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_Z], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_SHOULDER],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_Y], ERROR_TOLERANCE);
+
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.LEFT_TRIGGER],
+                    mRawAxes[MotionEvent.AXIS_RX], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_TRIGGER],
+                    mRawAxes[MotionEvent.AXIS_RY], ERROR_TOLERANCE);
+
+            expectNoThumbstickButtons();
+        }
 
         assertMappedCommonStartSelectMetaButtons();
         assertMappedXYAxes();
         assertMappedHatAxisToDpadButtons();
         assertMappedZAndRZAxesToRightStick();
 
-        expectNoThumbstickButtons();
         assertMapping();
     }
 

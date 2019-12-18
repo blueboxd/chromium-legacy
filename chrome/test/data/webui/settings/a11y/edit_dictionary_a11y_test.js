@@ -6,7 +6,8 @@
 
 // Disable since the EDIT_DICTIONARY route does not exist on Mac.
 // TODO(crbug.com/1012370) flaky on Linux b/c assertTrue(!!languagesPage);
-GEN('#if !defined(OS_MACOSX) && !defined(OS_LINUX)');
+// TODO(crbug.com/1012370) flaky on Win the same way
+GEN('#if !defined(OS_MACOSX) && !defined(OS_LINUX) && !defined(OS_WIN)');
 
 // SettingsAccessibilityTest fixture.
 GEN_INCLUDE([

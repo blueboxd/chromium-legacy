@@ -292,7 +292,6 @@ class PrerenderContents : public content::NotificationObserver,
       std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump);
 
   // chrome::mojom::PrerenderCanceler:
-  void CancelPrerenderForPrinting() override;
   void CancelPrerenderForUnsupportedMethod() override;
   void CancelPrerenderForUnsupportedScheme(const GURL& url) override;
   void CancelPrerenderForSyncDeferredRedirect() override;

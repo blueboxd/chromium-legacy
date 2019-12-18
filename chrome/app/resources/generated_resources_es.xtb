@@ -2528,7 +2528,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4572779512957829735">Introduce el PIN de la llave de seguridad</translation>
 <translation id="457386861538956877">Más...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Vincular dispositivo Bluetooth</translation>
 <translation id="4579581181964204535">No se puede enviar <ph name="HOST_NAME" />.</translation>
 <translation id="4581774856936278355">Error al restaurar Linux</translation>
 <translation id="4582563038311694664">Recuperar configuración completa</translation>
@@ -4868,7 +4867,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7974936243149753750">Reajuste</translation>
 <translation id="7978412674231730200">Clave privada</translation>
 <translation id="7978450511781612192">Se cerrará la sesión en tus cuentas de Google. Tus marcadores, historial, contraseñas y otros elementos dejarán de sincronizarse.</translation>
-<translation id="7979036127916589816">Error de sincronización</translation>
 <translation id="7980084013673500153">ID de recurso: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Cargar previamente las páginas para que la navegación y las búsquedas sean más rápidas</translation>
 <translation id="798145602633458219">Añadir la sugerencia <ph name="SUGGESTION_NAME" /> al cuadro de búsqueda</translation>
@@ -5317,6 +5315,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="862542460444371744">&amp;Extensiones</translation>
 <translation id="862727964348362408">En suspensión</translation>
 <translation id="862750493060684461">Caché de CSS</translation>
+<translation id="8627706565932943526">Error de sincronización</translation>
 <translation id="8627795981664801467">Conexiones seguras solamente</translation>
 <translation id="8630903300770275248">Importar usuario supervisado</translation>
 <translation id="8631032106121706562">Pétalos</translation>

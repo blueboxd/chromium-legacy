@@ -10,9 +10,6 @@
 
 namespace blink {
 
-// See web_input_event.h for details why this pack is here.
-#pragma pack(push, 4)
-
 // WebTouchEvent --------------------------------------------------------------
 
 // TODO(e_hakkinen): Replace with WebPointerEvent. crbug.com/508283
@@ -67,8 +64,6 @@ class WebTouchEvent : public WebInputEvent {
   bool IsCancelable() const { return dispatch_type == kBlocking; }
 #endif
 };
-
-#pragma pack(pop)
 
 }  // namespace blink
 

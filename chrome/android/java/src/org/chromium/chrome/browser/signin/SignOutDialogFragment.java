@@ -64,7 +64,7 @@ public class SignOutDialogFragment extends DialogFragment implements
             mGaiaServiceType = getArguments().getInt(
                     SHOW_GAIA_SERVICE_TYPE_EXTRA, mGaiaServiceType);
         }
-        String domain = IdentityServicesProvider.getSigninManager().getManagementDomain();
+        String domain = IdentityServicesProvider.get().getSigninManager().getManagementDomain();
         if (domain != null) {
             return createDialogForManagedAccount(domain);
         }
@@ -102,7 +102,7 @@ public class SignOutDialogFragment extends DialogFragment implements
             SigninUtils.logEvent(ProfileAccountManagementMetrics.SIGNOUT_SIGNOUT, mGaiaServiceType);
 
             mSignOutClicked = true;
-            if (IdentityServicesProvider.getSigninManager().getManagementDomain() == null) {
+            if (IdentityServicesProvider.get().getSigninManager().getManagementDomain() == null) {
                 RecordHistogram.recordBooleanHistogram(
                         "Signin.UserRequestedWipeDataOnSignout", mWipeUserData.isChecked());
             }

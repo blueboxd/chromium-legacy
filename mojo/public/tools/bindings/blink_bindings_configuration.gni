@@ -13,6 +13,7 @@ _typemap_imports = [
   "//skia/public/mojom/typemaps.gni",
   "//third_party/blink/renderer/platform/mojo/blink_typemaps.gni",
   "//third_party/blink/public/blink_typemaps.gni",
+  "//ui/events/mojom/blink_typemaps.gni",
 ]
 _typemaps = []
 

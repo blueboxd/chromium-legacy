@@ -339,6 +339,21 @@ sk_sp<PaintShader> PaintShader::CreateScaledPaintRecord(
   return shader;
 }
 
+sk_sp<PaintShader> PaintShader::CreatePaintWorkletRecord(
+    ImageProvider* image_provider) const {
+  DCHECK_EQ(shader_type_, Type::kImage);
+  DCHECK(image_ && image_.IsPaintWorklet());
+
+  ImageProvider::ScopedResult result =
+      image_provider->GetRasterContent(DrawImage(image_));
+  if (!result || !result.paint_record())
+    return nullptr;
+  SkMatrix local_matrix = GetLocalMatrix();
+  return PaintShader::MakePaintRecord(
+      sk_ref_sp<PaintRecord>(result.paint_record()), tile_, tx_, ty_,
+      &local_matrix);
+}
+
 sk_sp<PaintShader> PaintShader::CreateDecodedImage(
     const SkMatrix& ctm,
     SkFilterQuality quality,

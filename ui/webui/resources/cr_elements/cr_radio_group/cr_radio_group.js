@@ -55,7 +55,7 @@
       role: 'radiogroup',
     },
 
-    /** @private {Array<!Element>} */
+    /** @private {Array<!CrRadioButtonElement>} */
     buttons_: null,
 
     /** @private {EventTracker} */
@@ -118,7 +118,7 @@
       }
 
       const radio =
-          this.buttons_.find(radio => radio.getAttribute('tabindex') == '0');
+          this.buttons_.find(radio => this.isButtonEnabledAndSelected_(radio));
       if (radio) {
         radio.focus();
       }
@@ -137,14 +137,14 @@
         return;
       }
 
-      const targetElement = /** @type {!Element} */ (event.target);
+      const targetElement = /** @type {!CrRadioButtonElement} */ (event.target);
       if (!this.buttons_.includes(targetElement)) {
         return;
       }
 
       if (event.key == ' ' || event.key == 'Enter') {
         event.preventDefault();
-        this.select_(/** @type {!Element} */ (event.target));
+        this.select_(/** @type {!CrRadioButtonElement} */ (event.target));
         return;
       }
 
@@ -201,10 +201,10 @@
       if (path.some(target => /^a$/i.test(target.tagName))) {
         return;
       }
-      const target = /** @type {!Element} */ (
+      const target = /** @type {!CrRadioButtonElement} */ (
           path.find(n => this.selectableRegExp_.test(n.tagName)));
       if (target && this.buttons_.includes(target)) {
-        this.select_(/** @type {!Element} */ (target));
+        this.select_(/** @type {!CrRadioButtonElement} */ (target));
       }
     },
 
@@ -228,7 +228,7 @@
     },
 
     /**
-     * @param {!Element} button
+     * @param {!CrRadioButtonElement} button
      * @private
      */
     select_: function(button) {
@@ -242,6 +242,15 @@
       }
     },
 
+    /**
+     * @param {!Element} button
+     * @return {boolean}
+     * @private
+     */
+    isButtonEnabledAndSelected_: function(button) {
+      return !this.disabled && button.checked && isEnabled(button);
+    },
+
     /** @private */
     update_: function() {
       if (!this.buttons_) {
@@ -253,15 +262,19 @@
             radio.name == this.selected;
         const disabled = this.disabled || !isEnabled(radio);
         const canBeFocused = radio.checked && !disabled;
-        noneMadeFocusable &= !canBeFocused;
-        radio.setAttribute('tabindex', canBeFocused ? '0' : '-1');
+        if (canBeFocused) {
+          radio.focusable = true;
+          noneMadeFocusable = false;
+        } else {
+          radio.focusable = false;
+        }
         radio.setAttribute('aria-disabled', `${disabled}`);
       });
       this.setAttribute('aria-disabled', `${this.disabled}`);
       if (noneMadeFocusable && !this.disabled) {
-        const focusable = this.buttons_.find(isEnabled);
-        if (focusable) {
-          focusable.setAttribute('tabindex', '0');
+        const radio = this.buttons_.find(isEnabled);
+        if (radio) {
+          radio.focusable = true;
         }
       }
     },

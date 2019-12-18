@@ -1,18 +1,29 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
+//
 package org.chromium.chrome.browser.share;
 
 import android.content.Context;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
+import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.SimpleRecyclerViewAdapter;
+
+import java.util.ArrayList;
 
 /**
  * Bottom sheet content to display a 2-row custom share sheet.
@@ -21,6 +32,7 @@ public class ShareSheetBottomSheetContent implements BottomSheetContent, OnItemC
     private Context mContext;
     private ViewGroup mToolbarView;
     private ViewGroup mContentView;
+    private static final int SHARE_SHEET_ITEM = 0;
 
     /**
      * Creates a ShareSheetBottomSheetContent (custom share sheet) opened from the given activity.
@@ -36,6 +48,50 @@ public class ShareSheetBottomSheetContent implements BottomSheetContent, OnItemC
     private void createContentView() {
         mContentView = (ViewGroup) LayoutInflater.from(mContext).inflate(
                 R.layout.share_sheet_content, null);
+    }
+
+    /*
+     * Creates a new share sheet view with two rows based on the provided PropertyModels.
+     *
+     * @param activity The activity the share sheet belongs to.
+     * @param topRowModels The PropertyModels used to build the top row.
+     * @param bottomRowModels The PropertyModels used to build the bottom row.
+     */
+    public void createRecyclerViews(
+            ArrayList<PropertyModel> topRowModels, ArrayList<PropertyModel> bottomRowModels) {
+        populateView(
+                topRowModels, this.getContentView().findViewById(R.id.share_sheet_chrome_apps));
+        populateView(
+                bottomRowModels, this.getContentView().findViewById(R.id.share_sheet_other_apps));
+    }
+
+    private void populateView(ArrayList<PropertyModel> models, RecyclerView view) {
+        ModelList modelList = new ModelList();
+        for (PropertyModel model : models) {
+            modelList.add(new ListItem(SHARE_SHEET_ITEM, model));
+        }
+        SimpleRecyclerViewAdapter adapter = new SimpleRecyclerViewAdapter(modelList);
+        adapter.registerType(SHARE_SHEET_ITEM, () -> {
+            return (ViewGroup) LayoutInflater.from(mContext).inflate(
+                    R.layout.share_sheet_item, (ViewGroup) view, false);
+        }, ShareSheetBottomSheetContent::bindShareItem);
+        view.setAdapter(adapter);
+        LinearLayoutManager layoutManager =
+                new LinearLayoutManager(mContext, LinearLayoutManager.HORIZONTAL, false);
+        view.setLayoutManager(layoutManager);
+    }
+
+    private static void bindShareItem(
+            PropertyModel model, ViewGroup parent, PropertyKey propertyKey) {
+        if (ShareSheetItemViewProperties.ICON.equals(propertyKey)) {
+            ImageView view = (ImageView) parent.findViewById(R.id.icon);
+            view.setImageDrawable(model.get(ShareSheetItemViewProperties.ICON));
+        } else if (ShareSheetItemViewProperties.LABEL.equals(propertyKey)) {
+            TextView view = (TextView) parent.findViewById(R.id.text);
+            view.setText(model.get(ShareSheetItemViewProperties.LABEL));
+        } else if (ShareSheetItemViewProperties.CLICK_LISTENER.equals(propertyKey)) {
+            parent.setOnClickListener(model.get(ShareSheetItemViewProperties.CLICK_LISTENER));
+        }
     }
 
     @Override

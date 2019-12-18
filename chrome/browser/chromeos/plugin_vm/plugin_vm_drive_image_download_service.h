@@ -50,9 +50,7 @@ class PluginVmDriveImageDownloadService {
       const PluginVmDriveImageDownloadService&) = delete;
   ~PluginVmDriveImageDownloadService();
 
-  void StartDownload(const std::string& id,
-                     OnDownloadStartedCallback on_download_started_callback,
-                     OnDownloadFailedCallback on_download_failed_callback);
+  void StartDownload(const std::string& id);
   void CancelDownload();
 
   // Used to reset the internal state of the downloader.
@@ -62,10 +60,12 @@ class PluginVmDriveImageDownloadService {
   // on a non-UI thread.
   void RemoveTemporaryArchive(OnFileDeletedCallback on_file_deleted_callback);
 
+  void SetDriveServiceForTesting(
+      std::unique_ptr<drive::DriveServiceInterface> drive_service);
+  void SetDownloadDirectoryForTesting(const base::FilePath& download_directory);
+
  private:
-  void DispatchDownloadFile(
-      OnDownloadStartedCallback on_download_started_callback,
-      OnDownloadFailedCallback on_download_failed_callback);
+  void DispatchDownloadFile();
 
   void DownloadActionCallback(google_apis::DriveApiErrorCode error_code,
                               const base::FilePath& file_path);
@@ -78,6 +78,7 @@ class PluginVmDriveImageDownloadService {
   std::unique_ptr<crypto::SecureHash> secure_hash_service_;
   std::string file_id_;
   int64_t total_bytes_downloaded_ = 0;
+  base::FilePath download_directory_{kPluginVmDriveDownloadDirectory};
   base::FilePath download_file_path_;
   google_apis::CancelCallback cancel_callback_;
 

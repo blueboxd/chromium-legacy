@@ -1103,7 +1103,7 @@
 <translation id="2534460670861217804">보안 HTTP 프록시</translation>
 <translation id="253557089021624350">프로그램 사용자 수</translation>
 <translation id="2535799430745250929">모바일 네트워크가 없습니다.</translation>
-<translation id="2537178555904266562">비밀번호 동기화 중 오류</translation>
+<translation id="2537178555904266562">비밀번호 동기화 중 오류 발생</translation>
 <translation id="2537296579376733324">모든 쿠키, 이 사이트에서만</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" />에서 다음 파일과 폴더를 보고 수정할 수 있습니다.</translation>
 <translation id="2538361623464451692">동기화 사용중지됨</translation>
@@ -2527,7 +2527,6 @@
 <translation id="4572779512957829735">보안 키의 PIN을 입력하세요.</translation>
 <translation id="457386861538956877">더보기...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">블루투스 기기 페어링</translation>
 <translation id="4579581181964204535"><ph name="HOST_NAME" />을(를) 전송할 수 없습니다.</translation>
 <translation id="4581774856936278355">Linux 복원 중 오류 발생</translation>
 <translation id="4582563038311694664">모든 설정 초기화</translation>
@@ -4867,7 +4866,6 @@
 <translation id="7974936243149753750">오버스캔</translation>
 <translation id="7978412674231730200">비공개 키</translation>
 <translation id="7978450511781612192">Google 계정에서 로그아웃됩니다. 북마크, 방문 기록, 비밀번호 등이 더 이상 동기화되지 않습니다.</translation>
-<translation id="7979036127916589816">동기화 오류</translation>
 <translation id="7980084013673500153">애셋 ID: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">더 빠른 인터넷 사용과 검색을 위해 페이지 미리 로드</translation>
 <translation id="798145602633458219"><ph name="SUGGESTION_NAME" /> 추천 검색어를 검색창에 추가</translation>
@@ -5316,6 +5314,7 @@
 <translation id="862542460444371744">확장 프로그램(&amp;E)</translation>
 <translation id="862727964348362408">일시중지됨</translation>
 <translation id="862750493060684461">CSS 캐시</translation>
+<translation id="8627706565932943526">동기화 오류</translation>
 <translation id="8627795981664801467">보안 연결만</translation>
 <translation id="8630903300770275248">관리 대상 사용자 가져오기</translation>
 <translation id="8631032106121706562">꽃잎</translation>

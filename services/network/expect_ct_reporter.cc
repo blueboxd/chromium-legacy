@@ -138,9 +138,10 @@ constexpr net::NetworkTrafficAnnotationTag kExpectCTReporterTrafficAnnotation =
 
 }  // namespace
 
-ExpectCTReporter::ExpectCTReporter(net::URLRequestContext* request_context,
-                                   const base::Closure& success_callback,
-                                   const base::Closure& failure_callback)
+ExpectCTReporter::ExpectCTReporter(
+    net::URLRequestContext* request_context,
+    const base::RepeatingClosure& success_callback,
+    const base::RepeatingClosure& failure_callback)
     : report_sender_(new net::ReportSender(request_context,
                                            kExpectCTReporterTrafficAnnotation)),
       request_context_(request_context),
@@ -226,13 +227,14 @@ void ExpectCTReporter::OnResponseStarted(net::URLRequest* request,
     return;
   }
 
-  report_sender_->Send(
-      preflight->report_uri, "application/expect-ct-report+json; charset=utf-8",
-      preflight->serialized_report, success_callback_,
-      // Since |this| owns the |report_sender_|, it's safe to
-      // use base::Unretained here: |report_sender_| will be
-      // destroyed before |this|.
-      base::Bind(&ExpectCTReporter::OnReportFailure, base::Unretained(this)));
+  report_sender_->Send(preflight->report_uri,
+                       "application/expect-ct-report+json; charset=utf-8",
+                       preflight->serialized_report, success_callback_,
+                       // Since |this| owns the |report_sender_|, it's safe to
+                       // use base::Unretained here: |report_sender_| will be
+                       // destroyed before |this|.
+                       base::BindRepeating(&ExpectCTReporter::OnReportFailure,
+                                           base::Unretained(this)));
   inflight_preflights_.erase(request);
 }
 

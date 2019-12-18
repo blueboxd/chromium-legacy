@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/app_service_app_window_launcher_controller.h"
 
+#include <memory>
+
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
@@ -13,11 +15,13 @@
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/app_service_app_window_arc_tracker.h"
 #include "chrome/browser/ui/ash/launcher/app_service_app_window_crostini_tracker.h"
 #include "chrome/browser/ui/ash/launcher/app_service_app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/app_window_base.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_window.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/services/app_service/public/cpp/instance.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
@@ -224,6 +228,9 @@ void AppServiceAppWindowLauncherController::OnWindowActivated(
   AppWindowLauncherController::OnWindowActivated(reason, new_active,
                                                  old_active);
 
+  if (arc_tracker_)
+    arc_tracker_->OnTaskSetActive(arc_tracker_->active_task_id());
+
   SetWindowActivated(new_active, /*active*/ true);
   SetWindowActivated(old_active, /*active*/ false);
 }
@@ -275,6 +282,12 @@ void AppServiceAppWindowLauncherController::OnInstanceRegistryWillBeDestroyed(
   Observe(nullptr);
 }
 
+int AppServiceAppWindowLauncherController::GetActiveTaskId() const {
+  if (arc_tracker_)
+    return arc_tracker_->active_task_id();
+  return arc::kNoTaskId;
+}
+
 void AppServiceAppWindowLauncherController::UnregisterWindow(
     aura::Window* window) {
   auto app_window_it = aura_window_to_app_window_.find(window);
@@ -289,12 +302,30 @@ void AppServiceAppWindowLauncherController::AddWindowToShelf(
   if (base::Contains(aura_window_to_app_window_, window))
     return;
 
-  auto app_window_ptr = std::make_unique<AppWindowBase>(
-      shelf_id, views::Widget::GetWidgetForNativeWindow(window));
-  AppWindowBase* app_window = app_window_ptr.get();
-  aura_window_to_app_window_[window] = std::move(app_window_ptr);
-
+  AppWindowBase* app_window;
+  if (arc::GetWindowTaskId(window) != arc::kNoTaskId) {
+    std::unique_ptr<ArcAppWindow> app_window_ptr =
+        std::make_unique<ArcAppWindow>(
+            arc::GetWindowTaskId(window),
+            arc::ArcAppShelfId::FromString(shelf_id.app_id),
+            views::Widget::GetWidgetForNativeWindow(window), this,
+            owner()->profile());
+    app_window = app_window_ptr.get();
+    aura_window_to_app_window_[window] = std::move(app_window_ptr);
+  } else {
+    auto app_window_ptr = std::make_unique<AppWindowBase>(
+        shelf_id, views::Widget::GetWidgetForNativeWindow(window));
+    app_window = app_window_ptr.get();
+    aura_window_to_app_window_[window] = std::move(app_window_ptr);
+  }
   AddAppWindowToShelf(app_window);
+}
+
+AppWindowBase* AppServiceAppWindowLauncherController::GetAppWindow(
+    aura::Window* window) {
+  if (!base::Contains(aura_window_to_app_window_, window))
+    return nullptr;
+  return aura_window_to_app_window_[window].get();
 }
 
 void AppServiceAppWindowLauncherController::SetWindowActivated(
@@ -328,10 +359,13 @@ void AppServiceAppWindowLauncherController::RegisterWindow(
   if (app_window_it != aura_window_to_app_window_.end())
     return;
 
-  if (arc_tracker_)
+  // For the ARC apps window, AttachControllerToWindow calls AddWindowToShelf,
+  // so we don't need to call AddWindowToShelf again.
+  if (arc_tracker_ && arc::GetWindowTaskId(window) != arc::kNoTaskId) {
     arc_tracker_->AttachControllerToWindow(window);
-
-  AddWindowToShelf(window, shelf_id);
+  } else {
+    AddWindowToShelf(window, shelf_id);
+  }
 }
 
 void AppServiceAppWindowLauncherController::UnregisterAppWindow(
@@ -349,10 +383,6 @@ void AppServiceAppWindowLauncherController::UnregisterAppWindow(
 void AppServiceAppWindowLauncherController::AddAppWindowToShelf(
     AppWindowBase* app_window) {
   const ash::ShelfID shelf_id = app_window->shelf_id();
-  // Internal Camera app does not have own window. Either ARC or extension
-  // window controller would add window to controller.
-  if (shelf_id.app_id == ash::kInternalAppIdCamera)
-    return;
 
   AppWindowLauncherItemController* item_controller =
       owner()->shelf_model()->GetAppWindowLauncherItemController(shelf_id);
@@ -368,6 +398,13 @@ void AppServiceAppWindowLauncherController::AddAppWindowToShelf(
                                                    std::move(controller));
       owner()->SetItemStatus(shelf_id, ash::STATUS_RUNNING);
     }
+  } else {
+    // The window for ARC Play Store is is a special window, which is created by
+    // both Extensions and ARC. If Extensions's window is generated after
+    // ARC window, calls OnItemDelegateDiscarded to remove the ARC apps
+    // window.
+    if (shelf_id.app_id == arc::kPlayStoreAppId)
+      OnItemDelegateDiscarded(item_controller);
   }
 
   item_controller->AddWindow(app_window);
@@ -377,10 +414,6 @@ void AppServiceAppWindowLauncherController::AddAppWindowToShelf(
 void AppServiceAppWindowLauncherController::RemoveAppWindowFromShelf(
     AppWindowBase* app_window) {
   const ash::ShelfID shelf_id = app_window->shelf_id();
-  // Internal Camera app does not have own window. Either ARC or extension
-  // window controller would remove window from controller.
-  if (shelf_id.app_id == ash::kInternalAppIdCamera)
-    return;
 
   UnregisterAppWindow(app_window);
 

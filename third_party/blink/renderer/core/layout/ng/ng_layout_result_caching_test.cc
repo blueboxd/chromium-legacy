@@ -1354,5 +1354,74 @@ TEST_F(NGLayoutResultCachingTest, MarginStrutMovementPercentage) {
   EXPECT_EQ(result.get(), nullptr);
 }
 
+TEST_F(NGLayoutResultCachingTest, HitIsFixedBlockSizeIndefinite) {
+  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <div style="display: flex; width: 100px; height: 100px;">
+      <div id="test1" style="flex-grow: 1; min-height: 100px;">
+        <div style="height: 50px;">text</div>
+      </div>
+    </div>
+    <div style="display: flex; width: 100px; height: 100px; align-items: stretch;">
+      <div id="src1" style="flex-grow: 1; min-height: 100px;">
+        <div style="height: 50px;">text</div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* test1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test1"));
+  auto* src1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src1"));
+
+  NGLayoutCacheStatus cache_status;
+  base::Optional<NGFragmentGeometry> fragment_geometry;
+
+  NGConstraintSpace space =
+      src1->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  scoped_refptr<const NGLayoutResult> result = test1->CachedLayoutResult(
+      space, nullptr, nullptr, &fragment_geometry, &cache_status);
+
+  // Even though the "align-items: stretch" will make the final fixed
+  // block-size indefinite, we don't have any %-block-size children, so we can
+  // hit the cache.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kHit);
+  EXPECT_NE(result.get(), nullptr);
+}
+
+TEST_F(NGLayoutResultCachingTest, MissIsFixedBlockSizeIndefinite) {
+  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <div style="display: flex; width: 100px; height: 100px; align-items: start;">
+      <div id="src1" style="flex-grow: 1; min-height: 100px;">
+        <div style="height: 50%;">text</div>
+      </div>
+    </div>
+    <div style="display: flex; width: 100px; height: 100px; align-items: stretch;">
+      <div id="test1" style="flex-grow: 1; min-height: 100px;">
+        <div style="height: 50%;">text</div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* test1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test1"));
+  auto* src1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src1"));
+
+  NGLayoutCacheStatus cache_status;
+  base::Optional<NGFragmentGeometry> fragment_geometry;
+
+  NGConstraintSpace space =
+      src1->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  scoped_refptr<const NGLayoutResult> result = test1->CachedLayoutResult(
+      space, nullptr, nullptr, &fragment_geometry, &cache_status);
+
+  // The "align-items: stretch" will make the final fixed block-size
+  // indefinite, and we have a %-block-size child, so we need to miss the
+  // cache.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kNeedsLayout);
+  EXPECT_EQ(result.get(), nullptr);
+}
+
 }  // namespace
 }  // namespace blink

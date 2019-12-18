@@ -454,3 +454,13 @@ fuzzer_test("skia_image_filter_proto_fuzzer") {
     "//third_party/libprotobuf-mutator",
   ]
 }
+
+fuzzer_test("libyuv_scale_fuzzer") {
+  sources = [
+    "libyuv_scale_fuzzer.cc",
+  ]
+
+  deps = [
+    "//third_party/libyuv",
+  ]
+}

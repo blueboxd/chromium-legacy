@@ -135,7 +135,8 @@ MouseEventWithHitTestResults PerformMouseEventHitTest(
   DCHECK(frame->GetDocument());
 
   return frame->GetDocument()->PerformMouseEventHitTest(
-      request, ContentPointFromRootFrame(frame, mev.PositionInRootFrame()),
+      request,
+      ContentPointFromRootFrame(frame, FloatPoint(mev.PositionInRootFrame())),
       mev);
 }
 

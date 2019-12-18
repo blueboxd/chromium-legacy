@@ -2452,7 +2452,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4469477701382819144">Bloccati sui siti che mostrano annunci invasivi o fuorvianti</translation>
 <translation id="4469762931504673593"><ph name="ORIGIN" /> può modificare i file nella cartella <ph name="FOLDERNAME" /></translation>
 <translation id="4470957202018033307">Preferenze dello spazio di archiviazione esterno</translation>
-<translation id="447252321002412580">Contribuisci a migliorare le funzioni e le prestazioni di Chrome</translation>
+<translation id="447252321002412580">Contribuisci a migliorare le funzionalità e le prestazioni di Chrome</translation>
 <translation id="4474155171896946103">Aggiungi tutte le schede ai Preferiti...</translation>
 <translation id="4474461121892222090">Potrebbero essere necessari fino a 15 minuti per completare l'attivazione dei dati mobili.</translation>
 <translation id="4475552974751346499">Cerca tra i file scaricati</translation>
@@ -2528,7 +2528,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4572779512957829735">Inserisci il codice PIN per il token di sicurezza</translation>
 <translation id="457386861538956877">Altro...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Accoppia dispositivo Bluetooth</translation>
 <translation id="4579581181964204535">Impossibile trasmettere <ph name="HOST_NAME" />.</translation>
 <translation id="4581774856936278355">Errore durante il ripristino di Linux</translation>
 <translation id="4582563038311694664">Ripristina tutte le impostazioni</translation>
@@ -4868,7 +4867,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7974936243149753750">Overscan</translation>
 <translation id="7978412674231730200">Chiave privata</translation>
 <translation id="7978450511781612192">I tuoi Account Google verranno scollegati e verrà interrotta la sincronizzazione di preferiti, cronologia, password e altro.</translation>
-<translation id="7979036127916589816">Errore di sincronizzazione</translation>
 <translation id="7980084013673500153">ID asset: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Le pagine vengono precaricate per velocizzare la navigazione e la ricerca</translation>
 <translation id="798145602633458219">Aggiungi il suggerimento <ph name="SUGGESTION_NAME" /> alla casella di ricerca</translation>
@@ -5316,6 +5314,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="862542460444371744">&amp;Estensioni</translation>
 <translation id="862727964348362408">Sospeso</translation>
 <translation id="862750493060684461">Cache CSS</translation>
+<translation id="8627706565932943526">Errore di sincronizzazione</translation>
 <translation id="8627795981664801467">Solo connessioni protette</translation>
 <translation id="8630903300770275248">Importa utente controllato</translation>
 <translation id="8631032106121706562">Petalo</translation>

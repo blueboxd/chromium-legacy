@@ -36,6 +36,12 @@ const GURL GetFrenchUrl();
 // GREYAssert is induced if test bookmarks can not be loaded.
 - (void)setupStandardBookmarks;
 
+#pragma mark - Common Helpers
+
+// Verifies that there is |count| children on the bookmark folder with |name|.
+// GREYAssert is induced if the folder doesn't exist or the count doesn't match.
+- (void)verifyChildCount:(int)count inFolderWithName:(NSString*)name;
+
 #pragma mark - Promo
 
 // Checks that the promo has already been seen or not. GREYAssert is induced if

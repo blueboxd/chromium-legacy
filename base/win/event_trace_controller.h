@@ -21,9 +21,11 @@
 #define BASE_WIN_EVENT_TRACE_CONTROLLER_H_
 
 #include <windows.h>
-#include <wmistr.h>
+
 #include <evntrace.h>
 #include <stddef.h>
+#include <wmistr.h>
+
 #include <string>
 
 #include "base/base_export.h"
@@ -39,16 +41,14 @@ class BASE_EXPORT EtwTraceProperties {
  public:
   EtwTraceProperties();
 
-  EVENT_TRACE_PROPERTIES* get() {
-    return &properties_;
-  }
+  EVENT_TRACE_PROPERTIES* get() { return &properties_; }
 
   const EVENT_TRACE_PROPERTIES* get() const {
     return reinterpret_cast<const EVENT_TRACE_PROPERTIES*>(&properties_);
   }
 
   const wchar_t* GetLoggerName() const {
-    return reinterpret_cast<const wchar_t *>(buffer_ + get()->LoggerNameOffset);
+    return reinterpret_cast<const wchar_t*>(buffer_ + get()->LoggerNameOffset);
   }
 
   // Copies logger_name to the properties structure.
@@ -64,8 +64,8 @@ class BASE_EXPORT EtwTraceProperties {
   static const size_t kMaxStringLen = 1024;
   // Properties buffer allocates space for header and for
   // max length for name and session name.
-  static const size_t kBufSize = sizeof(EVENT_TRACE_PROPERTIES)
-      + 2 * sizeof(wchar_t) * (kMaxStringLen);
+  static const size_t kBufSize =
+      sizeof(EVENT_TRACE_PROPERTIES) + 2 * sizeof(wchar_t) * (kMaxStringLen);
 
  private:
   // The EVENT_TRACE_PROPERTIES structure needs to be overlaid on a
@@ -99,13 +99,13 @@ class BASE_EXPORT EtwTraceController {
                            bool realtime = false);
 
   // Starts a realtime session with some default properties.
-  HRESULT StartRealtimeSession(const wchar_t* session_name,
-                               size_t buffer_size);
+  HRESULT StartRealtimeSession(const wchar_t* session_name, size_t buffer_size);
 
   // Enables "provider" at "level" for this session.
   // This will cause all providers registered with the GUID
   // "provider" to start tracing at the new level, systemwide.
-  HRESULT EnableProvider(const GUID& provider, UCHAR level,
+  HRESULT EnableProvider(const GUID& provider,
+                         UCHAR level,
                          ULONG flags = 0xFFFFFFFF);
   // Disables "provider".
   HRESULT DisableProvider(const GUID& provider);

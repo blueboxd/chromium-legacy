@@ -127,10 +127,9 @@ class MultiDeviceSetupHostBackendDelegateImplTest
 
   int GetSetHostNetworkRequestCallbackQueueSize() {
     return DoTestDevicesHaveInstanceIds()
-               ? fake_device_sync_client_
-                     ->GetSetFeatureStatusCallbackQueueSize()
+               ? fake_device_sync_client_->GetSetFeatureStatusInputsQueueSize()
                : fake_device_sync_client_
-                     ->GetSetSoftwareFeatureStateCallbackQueueSize();
+                     ->GetSetSoftwareFeatureStateInputsQueueSize();
   }
 
   void InvokePendingSetHostNetworkRequestCallback(
@@ -196,8 +195,10 @@ class MultiDeviceSetupHostBackendDelegateImplTest
 
   void AttemptToSetMultiDeviceHostOnBackend(
       const base::Optional<multidevice::RemoteDeviceRef>& host_device) {
+    base::Optional<multidevice::RemoteDeviceRef> host_before_call =
+        delegate_->GetMultiDeviceHostFromBackend();
     bool attempting_to_set_host_which_already_exists =
-        host_device == delegate_->GetMultiDeviceHostFromBackend();
+        host_device == host_before_call;
     size_t num_pending_host_request_change_events_before_call =
         observer_->num_pending_host_request_changes();
     bool was_request_for_same_device_as_pending_request =
@@ -225,9 +226,15 @@ class MultiDeviceSetupHostBackendDelegateImplTest
                 observer_->num_pending_host_request_changes());
     }
 
-    // TODO(khorimoto): Check that the parameters passed to
-    // |fake_device_sync_client_| are correct. Currently, FakeDeviceSyncClient
-    // does provide a mechanism for checking these parameters.
+    // Verify that the correct parameters were passed to
+    // SetSoftwareFeatureState() or SetFeatureStatus().
+    if (host_device) {
+      VerifyLatestSetHostNetworkRequest(*host_device, true /* should_enable */);
+    } else {
+      ASSERT_TRUE(host_before_call);
+      VerifyLatestSetHostNetworkRequest(*host_before_call,
+                                        false /* should_enable */);
+    }
   }
 
   void SetHostInDeviceSyncClient(
@@ -267,6 +274,40 @@ class MultiDeviceSetupHostBackendDelegateImplTest
   }
 
  private:
+  void VerifyLatestSetHostNetworkRequest(
+      const multidevice::RemoteDeviceRef expected_host,
+      bool expected_should_enable) {
+    // Verify inputs to SetSoftwareFeatureState().
+    if (expected_host.instance_id().empty()) {
+      ASSERT_FALSE(
+          fake_device_sync_client_->set_software_feature_state_inputs_queue()
+              .empty());
+      const device_sync::FakeDeviceSyncClient::SetSoftwareFeatureStateInputs&
+          inputs = fake_device_sync_client_
+                       ->set_software_feature_state_inputs_queue()
+                       .back();
+      EXPECT_EQ(expected_host.public_key(), inputs.public_key);
+      EXPECT_EQ(multidevice::SoftwareFeature::kBetterTogetherHost,
+                inputs.software_feature);
+      EXPECT_EQ(expected_should_enable, inputs.enabled);
+      EXPECT_EQ(expected_should_enable, inputs.is_exclusive);
+      return;
+    }
+
+    // Verify inputs to SetFeatureStatus().
+    ASSERT_FALSE(
+        fake_device_sync_client_->set_feature_status_inputs_queue().empty());
+    const device_sync::FakeDeviceSyncClient::SetFeatureStatusInputs& inputs =
+        fake_device_sync_client_->set_feature_status_inputs_queue().back();
+    EXPECT_EQ(expected_host.instance_id(), inputs.device_instance_id);
+    EXPECT_EQ(multidevice::SoftwareFeature::kBetterTogetherHost,
+              inputs.feature);
+    EXPECT_EQ(expected_should_enable
+                  ? device_sync::FeatureStatusChange::kEnableExclusively
+                  : device_sync::FeatureStatusChange::kDisable,
+              inputs.status_change);
+  }
+
   multidevice::RemoteDeviceRefList test_devices_;
 
   std::unique_ptr<FakeEligibleHostDevicesProvider>
@@ -303,7 +344,7 @@ TEST_P(MultiDeviceSetupHostBackendDelegateImplTest, Success) {
   EXPECT_FALSE(delegate()->HasPendingHostRequest());
   EXPECT_EQ(test_devices()[0], delegate()->GetMultiDeviceHostFromBackend());
 
-  // Remove device 0 such that there is no longer a host..
+  // Remove device 0 such that there is no longer a host.
   AttemptToSetMultiDeviceHostOnBackend(base::nullopt);
   EXPECT_EQ(1, GetSetHostNetworkRequestCallbackQueueSize());
   InvokePendingSetHostNetworkRequestCallback(
@@ -634,8 +675,7 @@ TEST_P(MultiDeviceSetupHostBackendDelegateImplTest, V1andV2DeviceSync) {
   EXPECT_TRUE(delegate()->HasPendingHostRequest());
   EXPECT_EQ(test_devices()[0], delegate()->GetPendingHostRequest());
   EXPECT_EQ(base::nullopt, delegate()->GetMultiDeviceHostFromBackend());
-  EXPECT_EQ(1,
-            fake_device_sync_client()->GetSetFeatureStatusCallbackQueueSize());
+  EXPECT_EQ(1, fake_device_sync_client()->GetSetFeatureStatusInputsQueueSize());
 
   // Now, attempt to set device 1, which does not have an Instance ID. Device 1
   // is now the pending host, but no SetSoftwareFeatureState call was made since
@@ -646,7 +686,7 @@ TEST_P(MultiDeviceSetupHostBackendDelegateImplTest, V1andV2DeviceSync) {
   EXPECT_EQ(base::nullopt, delegate()->GetMultiDeviceHostFromBackend());
   EXPECT_EQ(
       1,
-      fake_device_sync_client()->GetSetSoftwareFeatureStateCallbackQueueSize());
+      fake_device_sync_client()->GetSetSoftwareFeatureStateInputsQueueSize());
 
   // Fire the callback for device 0 and have it succeed. This should affect the
   // value of GetMultiDeviceHostFromBackend(); however, because device 0 is not
@@ -657,11 +697,10 @@ TEST_P(MultiDeviceSetupHostBackendDelegateImplTest, V1andV2DeviceSync) {
   // HostBackendDelegate implementation.
   fake_device_sync_client()->InvokePendingSetFeatureStatusCallback(
       device_sync::mojom::NetworkRequestResult::kSuccess);
-  EXPECT_EQ(0,
-            fake_device_sync_client()->GetSetFeatureStatusCallbackQueueSize());
+  EXPECT_EQ(0, fake_device_sync_client()->GetSetFeatureStatusInputsQueueSize());
   EXPECT_EQ(
       1,
-      fake_device_sync_client()->GetSetSoftwareFeatureStateCallbackQueueSize());
+      fake_device_sync_client()->GetSetSoftwareFeatureStateInputsQueueSize());
   SimulateNewHostDevicesSynced(test_devices()[0] /* host_device_after_sync */,
                                false /* expected_to_fulfill_pending_request */);
   EXPECT_TRUE(delegate()->HasPendingHostRequest());
@@ -671,11 +710,10 @@ TEST_P(MultiDeviceSetupHostBackendDelegateImplTest, V1andV2DeviceSync) {
   // Fire the callback for device 1, and have it succeed.
   fake_device_sync_client()->InvokePendingSetSoftwareFeatureStateCallback(
       device_sync::mojom::NetworkRequestResult::kSuccess);
-  EXPECT_EQ(0,
-            fake_device_sync_client()->GetSetFeatureStatusCallbackQueueSize());
+  EXPECT_EQ(0, fake_device_sync_client()->GetSetFeatureStatusInputsQueueSize());
   EXPECT_EQ(
       0,
-      fake_device_sync_client()->GetSetSoftwareFeatureStateCallbackQueueSize());
+      fake_device_sync_client()->GetSetSoftwareFeatureStateInputsQueueSize());
   SimulateNewHostDevicesSynced(test_devices()[1] /* host_device_after_sync */,
                                true /* expected_to_fulfill_pending_request */);
   EXPECT_FALSE(delegate()->HasPendingHostRequest());

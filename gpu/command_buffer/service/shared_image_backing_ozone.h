@@ -43,8 +43,8 @@ class SharedImageBackingOzone final : public SharedImageBacking {
   ~SharedImageBackingOzone() override;
 
   // gpu::SharedImageBacking:
-  bool IsCleared() const override;
-  void SetCleared() override;
+  gfx::Rect ClearedRect() const override;
+  void SetClearedRect(const gfx::Rect& cleared_rect) override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   void Destroy() override;
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;

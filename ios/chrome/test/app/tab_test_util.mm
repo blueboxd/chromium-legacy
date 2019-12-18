@@ -59,13 +59,13 @@ void OpenNewTab() {
       return;
     }
       // The TabGrid is currently presented.
-    TabModel* tabModel =
-        GetMainController().interfaceProvider.mainInterface.tabModel;
+    Browser* browser =
+        GetMainController().interfaceProvider.mainInterface.browser;
     UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kChromeUINewTabURL));
     [GetMainController().tabSwitcher
-        dismissWithNewTabAnimationToModel:tabModel
-                        withUrlLoadParams:params
-                                  atIndex:NSNotFound];
+        dismissWithNewTabAnimationToBrowser:browser
+                          withUrlLoadParams:params
+                                    atIndex:INT_MAX];
   }
 }
 
@@ -79,13 +79,13 @@ void OpenNewIncognitoTab() {
       return;
     }
       // The TabGrid is currently presented.
-    TabModel* tabModel =
-        GetMainController().interfaceProvider.incognitoInterface.tabModel;
+    Browser* browser =
+        GetMainController().interfaceProvider.incognitoInterface.browser;
     UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kChromeUINewTabURL));
     [GetMainController().tabSwitcher
-        dismissWithNewTabAnimationToModel:tabModel
-                        withUrlLoadParams:params
-                                  atIndex:NSNotFound];
+        dismissWithNewTabAnimationToBrowser:browser
+                          withUrlLoadParams:params
+                                    atIndex:INT_MAX];
   }
 }
 

@@ -1700,9 +1700,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       UrlLoadParams::InNewTab(GURL(kChromeUINewTabURL));
   urlLoadParams.web_params.transition_type = ui::PAGE_TRANSITION_TYPED;
 
-  [_tabSwitcher dismissWithNewTabAnimationToModel:self.mainTabModel
-                                withUrlLoadParams:urlLoadParams
-                                          atIndex:self.mainTabModel.count];
+  Browser* mainBrowser = self.interfaceProvider.mainInterface.browser;
+  [_tabSwitcher dismissWithNewTabAnimationToBrowser:mainBrowser
+                                  withUrlLoadParams:urlLoadParams
+                                            atIndex:self.mainTabModel.count];
   return YES;
 }
 
@@ -1977,9 +1978,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       self.NTPActionAfterTabSwitcherDismissal =
           [_startupParameters postOpeningAction];
       [self setStartupParameters:nil];
-      [_tabSwitcher dismissWithNewTabAnimationToModel:targetInterface.tabModel
-                                    withUrlLoadParams:urlLoadParams
-                                              atIndex:tabIndex];
+      [_tabSwitcher dismissWithNewTabAnimationToBrowser:targetInterface.browser
+                                      withUrlLoadParams:urlLoadParams
+                                                atIndex:tabIndex];
     }
   } else {
     if (!self.currentBVC.presentedViewController) {

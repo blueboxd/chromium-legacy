@@ -90,8 +90,8 @@ class DiscardableImageGenerator {
     }
   }
 
-  bool all_images_are_srgb() const {
-    return color_stats_srgb_image_count_ == color_stats_total_image_count_;
+  bool contains_non_srgb_images() const {
+    return color_stats_srgb_image_count_ != color_stats_total_image_count_;
   }
 
  private:
@@ -421,7 +421,7 @@ void DiscardableImageMap::Generate(const PaintOpBuffer* paint_op_buffer,
   animated_images_metadata_ = generator.TakeAnimatedImagesMetadata();
   paint_worklet_inputs_ = generator.TakePaintWorkletInputs();
   decoding_mode_map_ = generator.TakeDecodingModeMap();
-  all_images_are_srgb_ = generator.all_images_are_srgb();
+  contains_non_srgb_images_ = generator.contains_non_srgb_images();
   auto images = generator.TakeImages();
   images_rtree_.Build(
       images,

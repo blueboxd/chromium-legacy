@@ -36,7 +36,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CertVerifierWithTrustAnchors
   // certificate from the additional trust anchors (set with SetTrustAnchors) is
   // used.
   explicit CertVerifierWithTrustAnchors(
-      const base::Closure& anchor_used_callback);
+      const base::RepeatingClosure& anchor_used_callback);
   ~CertVerifierWithTrustAnchors() override;
 
   // TODO(jam): once the network service is the only path, rename or get rid of
@@ -58,7 +58,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CertVerifierWithTrustAnchors
  private:
   net::CertVerifier::Config orig_config_;
   net::CertificateList trust_anchors_;
-  base::Closure anchor_used_callback_;
+  base::RepeatingClosure anchor_used_callback_;
   std::unique_ptr<CertVerifier> delegate_;
   THREAD_CHECKER(thread_checker_);
 

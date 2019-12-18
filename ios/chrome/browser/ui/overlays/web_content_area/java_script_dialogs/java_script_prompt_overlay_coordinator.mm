@@ -6,7 +6,7 @@
 
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_prompt_overlay.h"
-#import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_coordinator+subclassing.h"
+#import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_coordinator+alert_mediator_creation.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_prompt_overlay_mediator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -23,7 +23,7 @@
 
 @end
 
-@implementation JavaScriptPromptOverlayCoordinator (Subclassing)
+@implementation JavaScriptPromptOverlayCoordinator (AlertMediatorCreation)
 
 - (AlertOverlayMediator*)newMediator {
   return [[JavaScriptPromptOverlayMediator alloc] initWithRequest:self.request];

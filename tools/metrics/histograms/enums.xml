@@ -11621,14 +11621,41 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="536870904" label="Out of Memory"/>
   <int value="1066598273" label="FACILITY_VISUALCPP/ERROR_PROC_NOT_FOUND"/>
   <int value="1066598274" label="FACILITY_VISUALCPP/ERROR_MOD_NOT_FOUND"/>
+  <int value="1072103400" label="STATUS_CURRENT_TRANSACTION_NOT_VALID"/>
+  <int value="1072365548" label="STATUS_SXS_CORRUPT_ACTIVATION_STACK"/>
+  <int value="1072365552" label="STATUS_SXS_INVALID_DEACTIVATION"/>
+  <int value="1072365566" label="STATUS_SXS_CANT_GEN_ACTCTX"/>
+  <int value="1073739514" label="STATUS_VIRUS_INFECTED"/>
+  <int value="1073740004" label="STATUS_INVALID_THREAD"/>
+  <int value="1073740016" label="STATUS_CALLBACK_RETURNED_WHILE_IMPERSONATING"/>
+  <int value="1073740022" label="STATUS_THREADPOOL_HANDLE_EXCEPTION"/>
   <int value="1073740760" label="STATUS_INVALID_IMAGE_HASH"/>
+  <int value="1073740767" label="STATUS_VERIFIER_STOP"/>
+  <int value="1073740768" label="STATUS_ASSERTION_FAILURE"/>
+  <int value="1073740771" label="STATUS_FATAL_USER_CALLBACK_EXCEPTION"/>
+  <int value="1073740777" label="STATUS_INVALID_CRUNTIME_PARAMETER"/>
+  <int value="1073740782" label="STATUS_DELAY_LOAD_FAILED"/>
   <int value="1073740791" label="STATUS_STACK_BUFFER_OVERRUN"/>
   <int value="1073740940" label="STATUS_HEAP_CORRUPTION"/>
+  <int value="1073740959" label="STATUS_ACCESS_DISABLED_BY_POLICY_DEFAULT"/>
+  <int value="1073741131" label="STATUS_FLOAT_MULTIPLE_TRAPS"/>
+  <int value="1073741132" label="STATUS_FLOAT_MULTIPLE_FAULTS"/>
+  <int value="1073741205" label="STATUS_DLL_INIT_FAILED_LOGOFF"/>
+  <int value="1073741212" label="STATUS_RESOURCE_NOT_OWNED"/>
+  <int value="1073741431" label="STATUS_TOO_LATE"/>
   <int value="1073741502" label="STATUS_DLL_INIT_FAILED"/>
   <int value="1073741510" label="STATUS_CONTROL_C_EXIT"/>
+  <int value="1073741511" label="STATUS_ENTRYPOINT_NOT_FOUND"/>
   <int value="1073741515" label="STATUS_DLL_NOT_FOUND"/>
+  <int value="1073741523" label="STATUS_COMMITMENT_LIMIT"/>
+  <int value="1073741558" label="STATUS_PROCESS_IS_TERMINATING"/>
+  <int value="1073741569" label="STATUS_BAD_FUNCTION_TABLE"/>
   <int value="1073741571" label="STATUS_STACK_OVERFLOW"/>
+  <int value="1073741581" label="STATUS_INVALID_PARAMETER_5"/>
+  <int value="1073741595" label="STATUS_INTERNAL_ERROR"/>
   <int value="1073741659" label="STATUS_BAD_IMPERSONATION_LEVEL"/>
+  <int value="1073741662" label="STATUS_MEDIA_WRITE_PROTECTED"/>
+  <int value="1073741670" label="STATUS_INSUFFICIENT_RESOURCES"/>
   <int value="1073741674" label="STATUS_PRIVILEGED_INSTRUCTION"/>
   <int value="1073741675" label="STATUS_INTEGER_OVERFLOW"/>
   <int value="1073741676" label="STATUS_INTEGER_DIVIDE_BY_ZERO"/>
@@ -11640,18 +11667,33 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1073741682" label="STATUS_FLOAT_DIVIDE_BY_ZERO"/>
   <int value="1073741683" label="STATUS_FLOAT_DENORMAL_OPERAND"/>
   <int value="1073741684" label="STATUS_ARRAY_BOUNDS_EXCEEDED"/>
+  <int value="1073741701" label="STATUS_INVALID_IMAGE_FORMAT"/>
+  <int value="1073741738" label="STATUS_DELETE_PENDING"/>
+  <int value="1073741744" label="STATUS_EA_TOO_LARGE"/>
+  <int value="1073741749" label="STATUS_THREAD_IS_TERMINATING"/>
+  <int value="1073741756" label="STATUS_QUOTA_EXCEEDED"/>
+  <int value="1073741757" label="STATUS_SHARING_VIOLATION"/>
+  <int value="1073741766" label="STATUS_OBJECT_PATH_NOT_FOUND"/>
+  <int value="1073741772" label="STATUS_OBJECT_NAME_NOT_FOUND"/>
   <int value="1073741783" label="STATUS_INVALID_UNWIND_TARGET"/>
+  <int value="1073741784" label="STATUS_BAD_STACK"/>
+  <int value="1073741785" label="STATUS_UNWIND"/>
   <int value="1073741786" label="STATUS_INVALID_DISPOSITION"/>
   <int value="1073741787" label="STATUS_NONCONTINUABLE_EXCEPTION"/>
+  <int value="1073741788" label="STATUS_OBJECT_TYPE_MISMATCH"/>
   <int value="1073741790" label="STATUS_ACCESS_DENIED"/>
   <int value="1073741794" label="STATUS_INVALID_LOCK_SEQUENCE"/>
   <int value="1073741795" label="STATUS_ILLEGAL_INSTRUCTION"/>
+  <int value="1073741796" label="STATUS_INVALID_SYSTEM_SERVICE"/>
   <int value="1073741800" label="STATUS_CONFLICTING_ADDRESSES"/>
   <int value="1073741801" label="STATUS_NO_MEMORY"/>
   <int value="1073741811" label="STATUS_INVALID_PARAMETER"/>
   <int value="1073741816" label="STATUS_INVALID_HANDLE"/>
   <int value="1073741818" label="STATUS_IN_PAGE_ERROR"/>
   <int value="1073741819" label="STATUS_ACCESS_VIOLATION"/>
+  <int value="1073741820" label="STATUS_INFO_LENGTH_MISMATCH"/>
+  <int value="1073741822" label="STATUS_NOT_IMPLEMENTED"/>
+  <int value="1073741823" label="STATUS_UNSUCCESSFUL"/>
   <int value="1073741829" label="STATUS_SEGMENT_NOTIFICATION"/>
   <int value="1073741845" label="STATUS_FATAL_APP_EXIT"/>
   <int value="2147483644" label="STATUS_SINGLE_STEP"/>
@@ -25718,6 +25760,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3118" label="LongTaskBufferFull"/>
   <int value="3119" label="HTMLMetaElementMonetization"/>
   <int value="3120" label="HTMLLinkElementMonetization"/>
+  <int value="3121" label="InputTypeCheckboxRenderedNonSquare"/>
+  <int value="3122" label="InputTypeRadioRenderedNonSquare"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -38413,6 +38457,7 @@ from previous Chrome versions.
   <int value="892899792" label="MaterialDesignIncognitoNTP:disabled"/>
   <int value="898311758" label="ReaderMode:disabled"/>
   <int value="900614020" label="ContentSuggestionsShowSummary:disabled"/>
+  <int value="902209599" label="ShelfHotseat:enabled"/>
   <int value="902839593" label="WebContentsForceDark:disabled"/>
   <int value="903267263" label="disable-offline-pages"/>
   <int value="908302031"
@@ -38520,6 +38565,7 @@ from previous Chrome versions.
       label="AllowDownloadResumptionWithoutStrongValidators:enabled"/>
   <int value="1046878091" label="PasswordForceSaving:enabled"/>
   <int value="1046981538" label="OfflinePagesShowAlternateDinoPage:disabled"/>
+  <int value="1047110483" label="ShelfHotseat:disabled"/>
   <int value="1049885154" label="OfflinePagesPrefetching:disabled"/>
   <int value="1050048304" label="enable-font-cache-scaling"/>
   <int value="1050321458" label="new-profile-management"/>
@@ -50845,7 +50891,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="21" label="RENDERER_CRASHED"/>
   <int value="22" label="UNSUPPORTED_SCHEME"/>
   <int value="23" label="INVALID_HTTP_METHOD"/>
-  <int value="24" label="WINDOW_PRINT"/>
+  <int value="24" label="WINDOW_PRINT (Obsolete)"/>
   <int value="25" label="RECENTLY_VISITED"/>
   <int value="26" label="WINDOW_OPENER"/>
   <int value="27" label="PAGE_ID_CONFLICT"/>
@@ -55195,6 +55241,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="SafeBrowsingUserConsentVsUrlCheckRaceResult">
+  <obsolete>
+    The relevant code was deleted in December 2019.
+  </obsolete>
   <int value="0" label="URL check finished first, URL is safe"/>
   <int value="1" label="URL check finished first, URL is malicious"/>
   <int value="2" label="User opted in, URL is safe"/>

@@ -1,5 +1,5 @@
 document
-++group
+++group IsControlElement=false
 ++++description
 ++++++description Name='Default: '
 ++++++textbox Name='Default:'

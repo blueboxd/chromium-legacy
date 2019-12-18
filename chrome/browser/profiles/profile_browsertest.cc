@@ -647,6 +647,17 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, Notifications) {
     EXPECT_FALSE(otr_profile->IsIndependentOffTheRecordProfile());
   }
 
+  // We are about to destroy a profile. In production that will only happen
+  // as part of the destruction of BrowserProcess's ProfileManager. This
+  // happens in PostMainMessageLoopRun(). This means that to have this test
+  // represent production we have to make sure that no tasks are pending on the
+  // main thread before we destroy the profile. We also would need to prohibit
+  // the posting of new tasks on the main thread as in production the main
+  // thread's message loop will not be accepting them. We fallback on flushing
+  // as many runners as possible here to avoid the posts coming from any of
+  // them.
+  FlushIoTaskRunnerAndSpinThreads();
+
   // Destroy the off-the-record profile.
   {
     content::WindowedNotificationObserver profile_destroyed_observer(
@@ -668,4 +679,8 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, Notifications) {
     profile.reset();
     profile_destroyed_observer.Wait();
   }
+
+  // Pending tasks related to |profile| could depend on |temp_dir|. We need to
+  // let them complete before |temp_dir| goes out of scope.
+  FlushIoTaskRunnerAndSpinThreads();
 }

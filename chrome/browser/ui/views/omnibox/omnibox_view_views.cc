@@ -679,6 +679,28 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
       return true;
   }
 
+  // If suggestion removal buttons are enabled, make Tab and Shift+Tab less
+  // exotic and allow it to traverse the focus out of the popup. We do this
+  // because removal buttons dramatically increase the number of child buttons.
+  if (base::FeatureList::IsEnabled(
+          omnibox::kOmniboxSuggestionTransparencyOptions)) {
+    // Close the popup if tab traversal exits the list.
+    size_t selected_line = model()->popup_model()->selected_line();
+    bool close_popup = event.IsShiftDown()
+                           ? selected_line == 0
+                           : selected_line == (model()->result().size() - 1);
+    if (close_popup) {
+      CloseOmniboxPopup();
+
+      // When we close the popup, we also want to restore the user's text back
+      // to the state it was before the popup opened.
+      model()->RevertTemporaryTextAndPopup();
+
+      // Return false so the focus manager will go to the next element.
+      return false;
+    }
+  }
+
   // Translate tab and shift-tab into down and up respectively.
   model()->OnUpOrDownKeyPressed(event.IsShiftDown() ? -1 : 1);
   // If we shift-tabbed (and actually moved) to a suggestion with a tab

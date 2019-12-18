@@ -19,6 +19,8 @@
 #include "ash/root_window_settings.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/screen_util.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/desks/desk_mini_view.h"
@@ -222,12 +224,24 @@ std::unique_ptr<views::Widget> CreateDropTargetWidget(
 // clamp the bounds to a minimum size and shift the bounds offscreen.
 gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
                                 bool divider_changed) {
-  const gfx::Rect work_area =
+  gfx::Rect grid_bounds =
       WorkAreaInsets::ForWindow(root_window)->ComputeStableWorkArea();
+
+  // If the hotseat is extended, exclude its bounds when calculating overview
+  // bounds otherwise there may be overlap between it and overview items.
+  Shelf* shelf = Shelf::ForWindow(root_window);
+  if (shelf->shelf_layout_manager()->hotseat_state() ==
+      HotseatState::kExtended) {
+    const int hotseat_bottom_inset =
+        ShelfConfig::Get()->hotseat_size() +
+        ShelfConfig::Get()->hotseat_bottom_padding();
+    grid_bounds.Inset(0, 0, 0, hotseat_bottom_inset);
+  }
+
   SplitViewController* split_view_controller =
       SplitViewController::Get(root_window);
   if (!split_view_controller->InSplitViewMode())
-    return work_area;
+    return grid_bounds;
 
   SplitViewController::SnapPosition opposite_position =
       (split_view_controller->default_snap_position() ==
@@ -241,7 +255,7 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
 
   const bool horizontal = SplitViewController::IsLayoutHorizontal();
   const int min_length =
-      (horizontal ? work_area.width() : work_area.height()) / 3;
+      (horizontal ? grid_bounds.width() : grid_bounds.height()) / 3;
   const int current_length = horizontal ? bounds.width() : bounds.height();
 
   if (current_length > min_length)
@@ -498,10 +512,7 @@ void OverviewGrid::PositionWindows(
     // might need animation even if the grid needs animation.
     if (animate && transition == OverviewSession::OverviewTransition::kEnter)
       should_animate_item = window_item->should_animate_when_entering();
-    // Do not do the bounds animation for the drop target. We'll do the opacity
-    // animation by ourselves.
-    if (IsDropTargetWindow(window_item->GetWindow()))
-      should_animate_item = false;
+
     if (animate && transition == OverviewSession::OverviewTransition::kEnter) {
       if (window_item->should_animate_when_entering() &&
           !has_non_cover_animating) {

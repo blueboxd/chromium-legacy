@@ -5,7 +5,6 @@
 <translation id="1181037720776840403">移除</translation>
 <translation id="125153950246128346">輕按即可查看另一個分頁</translation>
 <translation id="1657719826150349398">將分頁向下移</translation>
-<translation id="1778290789805128794">將分頁移至頂端</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> 個分頁}other{<ph name="TABS_COUNT_MANY" /> 個分頁}}</translation>
 <translation id="2569352796411618312">我有建議：你有 <ph name="NUMBER_OF_TABS" /> 個分頁最近冇用過，係咪要閂咗佢？</translation>
 <translation id="257674075312929031">群組</translation>

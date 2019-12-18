@@ -139,7 +139,10 @@ base::TimeDelta GetQueuedRequestsDispatchPeriodicity() {
   // queue is not checked too frequently. The interval is also not too long, so
   // we do not expect too many requests to go on the network at the
   // same time.
-  return base::TimeDelta::FromMilliseconds(100);
+  return base::TimeDelta::FromMilliseconds(
+      base::GetFieldTrialParamByFeatureAsInt(
+          features::kProactivelyThrottleLowPriorityRequests,
+          "queued_requests_dispatch_periodicity_ms", 100));
 }
 
 struct ResourceScheduler::RequestPriorityParams {

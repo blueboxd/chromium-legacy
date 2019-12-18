@@ -66,19 +66,17 @@ bool RegKey::Watcher::StartWatching(HKEY key, ChangeCallback callback) {
   DCHECK(callback_.is_null());
 
   if (!watch_event_.IsValid())
-    watch_event_.Set(CreateEvent(NULL, TRUE, FALSE, NULL));
+    watch_event_.Set(CreateEvent(nullptr, TRUE, FALSE, nullptr));
 
   if (!watch_event_.IsValid())
     return false;
 
-  DWORD filter = REG_NOTIFY_CHANGE_NAME |
-                 REG_NOTIFY_CHANGE_ATTRIBUTES |
-                 REG_NOTIFY_CHANGE_LAST_SET |
-                 REG_NOTIFY_CHANGE_SECURITY;
+  DWORD filter = REG_NOTIFY_CHANGE_NAME | REG_NOTIFY_CHANGE_ATTRIBUTES |
+                 REG_NOTIFY_CHANGE_LAST_SET | REG_NOTIFY_CHANGE_SECURITY;
 
   // Watch the registry key for a change of value.
-  LONG result = RegNotifyChangeKeyValue(key, TRUE, filter, watch_event_.Get(),
-                                        TRUE);
+  LONG result =
+      RegNotifyChangeKeyValue(key, TRUE, filter, watch_event_.Get(), TRUE);
   if (result != ERROR_SUCCESS) {
     watch_event_.Close();
     return false;
@@ -90,14 +88,12 @@ bool RegKey::Watcher::StartWatching(HKEY key, ChangeCallback callback) {
 
 // RegKey ----------------------------------------------------------------------
 
-RegKey::RegKey() : key_(NULL), wow64access_(0) {
-}
+RegKey::RegKey() : key_(nullptr), wow64access_(0) {}
 
-RegKey::RegKey(HKEY key) : key_(key), wow64access_(0) {
-}
+RegKey::RegKey(HKEY key) : key_(key), wow64access_(0) {}
 
 RegKey::RegKey(HKEY rootkey, const wchar_t* subkey, REGSAM access)
-    : key_(NULL), wow64access_(0) {
+    : key_(nullptr), wow64access_(0) {
   if (rootkey) {
     if (access & (KEY_SET_VALUE | KEY_CREATE_SUB_KEY | KEY_CREATE_LINK))
       Create(rootkey, subkey, access);
@@ -123,10 +119,10 @@ LONG RegKey::CreateWithDisposition(HKEY rootkey,
                                    DWORD* disposition,
                                    REGSAM access) {
   DCHECK(rootkey && subkey && access && disposition);
-  HKEY subhkey = NULL;
+  HKEY subhkey = nullptr;
   LONG result =
-      RegCreateKeyEx(rootkey, subkey, 0, NULL, REG_OPTION_NON_VOLATILE, access,
-                     NULL, &subhkey, disposition);
+      RegCreateKeyEx(rootkey, subkey, 0, nullptr, REG_OPTION_NON_VOLATILE,
+                     access, nullptr, &subhkey, disposition);
   if (result == ERROR_SUCCESS) {
     Close();
     key_ = subhkey;
@@ -147,9 +143,9 @@ LONG RegKey::CreateKey(const wchar_t* name, REGSAM access) {
     NOTREACHED();
     return ERROR_INVALID_PARAMETER;
   }
-  HKEY subkey = NULL;
-  LONG result = RegCreateKeyEx(key_, name, 0, NULL, REG_OPTION_NON_VOLATILE,
-                               access, NULL, &subkey, NULL);
+  HKEY subkey = nullptr;
+  LONG result = RegCreateKeyEx(key_, name, 0, nullptr, REG_OPTION_NON_VOLATILE,
+                               access, nullptr, &subkey, nullptr);
   if (result == ERROR_SUCCESS) {
     Close();
     key_ = subkey;
@@ -161,7 +157,7 @@ LONG RegKey::CreateKey(const wchar_t* name, REGSAM access) {
 
 LONG RegKey::Open(HKEY rootkey, const wchar_t* subkey, REGSAM access) {
   DCHECK(rootkey && subkey && access);
-  HKEY subhkey = NULL;
+  HKEY subhkey = nullptr;
 
   LONG result = RegOpenKeyEx(rootkey, subkey, 0, access, &subhkey);
   if (result == ERROR_SUCCESS) {
@@ -184,7 +180,7 @@ LONG RegKey::OpenKey(const wchar_t* relative_key_name, REGSAM access) {
     NOTREACHED();
     return ERROR_INVALID_PARAMETER;
   }
-  HKEY subkey = NULL;
+  HKEY subkey = nullptr;
   LONG result = RegOpenKeyEx(key_, relative_key_name, 0, access, &subkey);
 
   // We have to close the current opened key before replacing it with the new
@@ -200,7 +196,7 @@ LONG RegKey::OpenKey(const wchar_t* relative_key_name, REGSAM access) {
 void RegKey::Close() {
   if (key_) {
     ::RegCloseKey(key_);
-    key_ = NULL;
+    key_ = nullptr;
     wow64access_ = 0;
   }
 }
@@ -216,25 +212,28 @@ void RegKey::Set(HKEY key) {
 HKEY RegKey::Take() {
   DCHECK_EQ(wow64access_, 0u);
   HKEY key = key_;
-  key_ = NULL;
+  key_ = nullptr;
   return key;
 }
 
 bool RegKey::HasValue(const wchar_t* name) const {
-  return RegQueryValueEx(key_, name, 0, NULL, NULL, NULL) == ERROR_SUCCESS;
+  return RegQueryValueEx(key_, name, nullptr, nullptr, nullptr, nullptr) ==
+         ERROR_SUCCESS;
 }
 
 DWORD RegKey::GetValueCount() const {
   DWORD count = 0;
-  LONG result = RegQueryInfoKey(key_, NULL, 0, NULL, NULL, NULL, NULL, &count,
-                                NULL, NULL, NULL, NULL);
+  LONG result =
+      RegQueryInfoKey(key_, nullptr, nullptr, nullptr, nullptr, nullptr,
+                      nullptr, &count, nullptr, nullptr, nullptr, nullptr);
   return (result == ERROR_SUCCESS) ? count : 0;
 }
 
 LONG RegKey::GetValueNameAt(int index, std::wstring* name) const {
   wchar_t buf[256];
   DWORD bufsize = size(buf);
-  LONG r = ::RegEnumValue(key_, index, buf, &bufsize, NULL, NULL, NULL, NULL);
+  LONG r = ::RegEnumValue(key_, index, buf, &bufsize, nullptr, nullptr, nullptr,
+                          nullptr);
   if (r == ERROR_SUCCESS)
     name->assign(buf, bufsize);
 
@@ -244,7 +243,7 @@ LONG RegKey::GetValueNameAt(int index, std::wstring* name) const {
 LONG RegKey::DeleteKey(const wchar_t* name) {
   DCHECK(key_);
   DCHECK(name);
-  HKEY subkey = NULL;
+  HKEY subkey = nullptr;
 
   // Verify the key exists before attempting delete to replicate previous
   // behavior.
@@ -261,7 +260,7 @@ LONG RegKey::DeleteEmptyKey(const wchar_t* name) {
   DCHECK(key_);
   DCHECK(name);
 
-  HKEY target_key = NULL;
+  HKEY target_key = nullptr;
   LONG result =
       RegOpenKeyEx(key_, name, 0, KEY_READ | wow64access_, &target_key);
 
@@ -269,8 +268,9 @@ LONG RegKey::DeleteEmptyKey(const wchar_t* name) {
     return result;
 
   DWORD count = 0;
-  result = RegQueryInfoKey(target_key, NULL, 0, NULL, NULL, NULL, NULL, &count,
-                           NULL, NULL, NULL, NULL);
+  result =
+      RegQueryInfoKey(target_key, nullptr, nullptr, nullptr, nullptr, nullptr,
+                      nullptr, &count, nullptr, nullptr, nullptr, nullptr);
 
   RegCloseKey(target_key);
 
@@ -356,7 +356,7 @@ LONG RegKey::ReadValue(const wchar_t* name,
                        void* data,
                        DWORD* dsize,
                        DWORD* dtype) const {
-  LONG result = RegQueryValueEx(key_, name, 0, dtype,
+  LONG result = RegQueryValueEx(key_, name, nullptr, dtype,
                                 reinterpret_cast<LPBYTE>(data), dsize);
   return result;
 }
@@ -367,7 +367,7 @@ LONG RegKey::ReadValues(const wchar_t* name,
 
   DWORD type = REG_MULTI_SZ;
   DWORD size = 0;
-  LONG result = ReadValue(name, NULL, &size, &type);
+  LONG result = ReadValue(name, nullptr, &size, &type);
   if (result != ERROR_SUCCESS || size == 0)
     return result;
 
@@ -375,7 +375,7 @@ LONG RegKey::ReadValues(const wchar_t* name,
     return ERROR_CANTREAD;
 
   std::vector<wchar_t> buffer(size / sizeof(wchar_t));
-  result = ReadValue(name, buffer.data(), &size, NULL);
+  result = ReadValue(name, buffer.data(), &size, nullptr);
   if (result != ERROR_SUCCESS || size == 0)
     return result;
 
@@ -393,8 +393,8 @@ LONG RegKey::ReadValues(const wchar_t* name,
 }
 
 LONG RegKey::WriteValue(const wchar_t* name, DWORD in_value) {
-  return WriteValue(
-      name, &in_value, static_cast<DWORD>(sizeof(in_value)), REG_DWORD);
+  return WriteValue(name, &in_value, static_cast<DWORD>(sizeof(in_value)),
+                    REG_DWORD);
 }
 
 LONG RegKey::WriteValue(const wchar_t* name, const wchar_t* in_value) {
@@ -434,7 +434,7 @@ LONG RegKey::RegDelRecurse(HKEY root_key, const wchar_t* name, REGSAM access) {
   if (result == ERROR_SUCCESS)
     return result;
 
-  HKEY target_key = NULL;
+  HKEY target_key = nullptr;
   result = RegOpenKeyEx(root_key, name, 0, KEY_ENUMERATE_SUB_KEYS | access,
                         &target_key);
 
@@ -458,7 +458,7 @@ LONG RegKey::RegDelRecurse(HKEY root_key, const wchar_t* name, REGSAM access) {
     DWORD key_size = kMaxKeyNameLength;
     result =
         RegEnumKeyEx(target_key, 0, WriteInto(&key_name, kMaxKeyNameLength),
-                     &key_size, NULL, NULL, NULL, NULL);
+                     &key_size, nullptr, nullptr, nullptr, nullptr);
 
     if (result != ERROR_SUCCESS)
       break;
@@ -501,15 +501,16 @@ void RegistryValueIterator::Initialize(HKEY root_key,
   LONG result =
       RegOpenKeyEx(root_key, folder_key, 0, KEY_READ | wow64access, &key_);
   if (result != ERROR_SUCCESS) {
-    key_ = NULL;
+    key_ = nullptr;
   } else {
     DWORD count = 0;
-    result = ::RegQueryInfoKey(key_, NULL, 0, NULL, NULL, NULL, NULL, &count,
-                               NULL, NULL, NULL, NULL);
+    result =
+        ::RegQueryInfoKey(key_, nullptr, nullptr, nullptr, nullptr, nullptr,
+                          nullptr, &count, nullptr, nullptr, nullptr, nullptr);
 
     if (result != ERROR_SUCCESS) {
       ::RegCloseKey(key_);
-      key_ = NULL;
+      key_ = nullptr;
     } else {
       index_ = count - 1;
     }
@@ -525,8 +526,9 @@ RegistryValueIterator::~RegistryValueIterator() {
 
 DWORD RegistryValueIterator::ValueCount() const {
   DWORD count = 0;
-  LONG result = ::RegQueryInfoKey(key_, NULL, 0, NULL, NULL, NULL, NULL,
-                                  &count, NULL, NULL, NULL, NULL);
+  LONG result =
+      ::RegQueryInfoKey(key_, nullptr, nullptr, nullptr, nullptr, nullptr,
+                        nullptr, &count, nullptr, nullptr, nullptr, nullptr);
   if (result != ERROR_SUCCESS)
     return 0;
 
@@ -534,7 +536,7 @@ DWORD RegistryValueIterator::ValueCount() const {
 }
 
 bool RegistryValueIterator::Valid() const {
-  return key_ != NULL && index_ >= 0;
+  return key_ != nullptr && index_ >= 0;
 }
 
 void RegistryValueIterator::operator++() {
@@ -549,7 +551,7 @@ bool RegistryValueIterator::Read() {
     // |value_size_| is in bytes. Reserve the last character for a NUL.
     value_size_ = static_cast<DWORD>((value_.size() - 1) * sizeof(wchar_t));
     LONG result = ::RegEnumValue(
-        key_, index_, WriteInto(&name_, name_size), &name_size, NULL, &type_,
+        key_, index_, WriteInto(&name_, name_size), &name_size, nullptr, &type_,
         reinterpret_cast<BYTE*>(value_.data()), &value_size_);
 
     if (result == ERROR_MORE_DATA) {
@@ -565,8 +567,8 @@ bool RegistryValueIterator::Read() {
       value_size_ = static_cast<DWORD>((value_.size() - 1) * sizeof(wchar_t));
       name_size = name_size == capacity ? MAX_REGISTRY_NAME_SIZE : capacity;
       result = ::RegEnumValue(
-          key_, index_, WriteInto(&name_, name_size), &name_size, NULL, &type_,
-          reinterpret_cast<BYTE*>(value_.data()), &value_size_);
+          key_, index_, WriteInto(&name_, name_size), &name_size, nullptr,
+          &type_, reinterpret_cast<BYTE*>(value_.data()), &value_size_);
     }
 
     if (result == ERROR_SUCCESS) {
@@ -602,8 +604,9 @@ RegistryKeyIterator::~RegistryKeyIterator() {
 
 DWORD RegistryKeyIterator::SubkeyCount() const {
   DWORD count = 0;
-  LONG result = ::RegQueryInfoKey(key_, NULL, 0, NULL, &count, NULL, NULL,
-                                  NULL, NULL, NULL, NULL, NULL);
+  LONG result =
+      ::RegQueryInfoKey(key_, nullptr, nullptr, nullptr, &count, nullptr,
+                        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
   if (result != ERROR_SUCCESS)
     return 0;
 
@@ -611,7 +614,7 @@ DWORD RegistryKeyIterator::SubkeyCount() const {
 }
 
 bool RegistryKeyIterator::Valid() const {
-  return key_ != NULL && index_ >= 0;
+  return key_ != nullptr && index_ >= 0;
 }
 
 void RegistryKeyIterator::operator++() {
@@ -623,8 +626,8 @@ bool RegistryKeyIterator::Read() {
   if (Valid()) {
     DWORD ncount = static_cast<DWORD>(size(name_));
     FILETIME written;
-    LONG r = ::RegEnumKeyEx(key_, index_, name_, &ncount, NULL, NULL, NULL,
-                            &written);
+    LONG r = ::RegEnumKeyEx(key_, index_, name_, &ncount, nullptr, nullptr,
+                            nullptr, &written);
     if (ERROR_SUCCESS == r)
       return true;
   }
@@ -640,15 +643,16 @@ void RegistryKeyIterator::Initialize(HKEY root_key,
   LONG result =
       RegOpenKeyEx(root_key, folder_key, 0, KEY_READ | wow64access, &key_);
   if (result != ERROR_SUCCESS) {
-    key_ = NULL;
+    key_ = nullptr;
   } else {
     DWORD count = 0;
-    result = ::RegQueryInfoKey(key_, NULL, 0, NULL, &count, NULL, NULL, NULL,
-                               NULL, NULL, NULL, NULL);
+    result =
+        ::RegQueryInfoKey(key_, nullptr, nullptr, nullptr, &count, nullptr,
+                          nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
 
     if (result != ERROR_SUCCESS) {
       ::RegCloseKey(key_);
-      key_ = NULL;
+      key_ = nullptr;
     } else {
       index_ = count - 1;
     }

@@ -186,4 +186,13 @@ enum class CorruptionStates {
 
 }  // namespace crostini
 
+enum class ContainerOsVersion {
+  kUnkown = 0,
+  kDebianStretch = 1,
+  kDebianBuster = 2,
+  kDebianOther = 3,
+  kOtherOs = 4,
+  kMaxValue = kOtherOs,
+};
+
 #endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_SIMPLE_TYPES_H_

@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
+import org.chromium.chrome.browser.settings.NfcSystemLevelSetting;
 import org.chromium.chrome.browser.settings.website.ContentSettingValues;
 import org.chromium.chrome.browser.settings.website.ContentSettingsResources;
 import org.chromium.chrome.browser.settings.website.WebsitePreferenceBridge;
@@ -91,6 +92,11 @@ class PermissionParamsListBuilder {
                     && !locationUtils.isSystemLocationSettingEnabled()) {
                 permissionParams.warningTextResource = R.string.page_info_android_location_blocked;
                 intentOverride = locationUtils.getSystemLocationSettingsIntent();
+            } else if (permission.type == ContentSettingsType.NFC
+                    && !NfcSystemLevelSetting.isNfcSystemLevelSettingEnabled()) {
+                permissionParams.warningTextResource =
+                        R.string.page_info_android_permission_blocked;
+                intentOverride = NfcSystemLevelSetting.getNfcSystemLevelSettingIntent();
             } else if (shouldShowNotificationsDisabledWarning(permission)) {
                 permissionParams.warningTextResource =
                         R.string.page_info_android_permission_blocked;

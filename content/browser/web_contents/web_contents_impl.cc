@@ -6852,7 +6852,7 @@ void WebContentsImpl::IncrementBluetoothConnectedDeviceCount() {
   // Notify for UI updates if the state changes.
   bluetooth_connected_device_count_++;
   if (bluetooth_connected_device_count_ == 1) {
-    NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
+    OnIsConnectedToBluetoothDeviceChanged(true);
   }
 }
 
@@ -6866,7 +6866,16 @@ void WebContentsImpl::DecrementBluetoothConnectedDeviceCount() {
   DCHECK_NE(bluetooth_connected_device_count_, 0u);
   bluetooth_connected_device_count_--;
   if (bluetooth_connected_device_count_ == 0) {
-    NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
+    OnIsConnectedToBluetoothDeviceChanged(false);
+  }
+}
+
+void WebContentsImpl::OnIsConnectedToBluetoothDeviceChanged(
+    bool is_connected_to_bluetooth_device) {
+  NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
+  for (auto& observer : observers_) {
+    observer.OnIsConnectedToBluetoothDeviceChanged(
+        is_connected_to_bluetooth_device);
   }
 }
 

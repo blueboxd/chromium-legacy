@@ -50,6 +50,11 @@ TextFragmentSelector TextFragmentSelector::Create(String target_text) {
 
   size_t comma_pos = target_text.find(',');
 
+  // If there are more commas, this is an invalid text fragment selector.
+  size_t next_comma_pos = target_text.find(',', comma_pos + 1);
+  if (next_comma_pos != kNotFound)
+    return TextFragmentSelector(kInvalid);
+
   if (comma_pos == kNotFound) {
     type = kExact;
     start = target_text;
@@ -73,5 +78,7 @@ TextFragmentSelector::TextFragmentSelector(SelectorType type,
                                            const String& prefix,
                                            const String& suffix)
     : type_(type), start_(start), end_(end), prefix_(prefix), suffix_(suffix) {}
+
+TextFragmentSelector::TextFragmentSelector(SelectorType type) : type_(type) {}
 
 }  // namespace blink

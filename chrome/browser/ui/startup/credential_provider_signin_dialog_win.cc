@@ -235,8 +235,7 @@ class CredentialProviderWebUIMessageHandler
 
     content::WebContents* contents = web_ui()->GetWebContents();
     content::StoragePartition* partition =
-        content::BrowserContext::GetStoragePartitionForSite(
-            contents->GetBrowserContext(), signin::GetSigninPartitionURL());
+        signin::GetSigninPartition(contents->GetBrowserContext());
 
     // Regardless of the results of ParseArgs, |signin_callback_| will always
     // be called to allow it to release any additional references it may hold

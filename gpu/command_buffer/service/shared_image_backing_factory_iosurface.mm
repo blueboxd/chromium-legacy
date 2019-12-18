@@ -354,7 +354,7 @@ class SharedImageRepresentationDawnIOSurface
 // guarded on the context provider already successfully using Metal.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunguarded-availability"
-class SharedImageBackingIOSurface : public SharedImageBacking {
+class SharedImageBackingIOSurface : public ClearTrackingSharedImageBacking {
  public:
   SharedImageBackingIOSurface(const Mailbox& mailbox,
                               viz::ResourceFormat format,
@@ -364,26 +364,40 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
                               base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
                               base::Optional<WGPUTextureFormat> dawn_format,
                               size_t estimated_size)
-      : SharedImageBacking(mailbox,
-                           format,
-                           size,
-                           color_space,
-                           usage,
-                           estimated_size,
-                           false /* is_thread_safe */),
+      : ClearTrackingSharedImageBacking(mailbox,
+                                        format,
+                                        size,
+                                        color_space,
+                                        usage,
+                                        estimated_size,
+                                        false /* is_thread_safe */),
         io_surface_(std::move(io_surface)),
         dawn_format_(dawn_format) {
     DCHECK(io_surface_);
   }
   ~SharedImageBackingIOSurface() final { DCHECK(!io_surface_); }
 
-  bool IsCleared() const final { return is_cleared_; }
-  void SetCleared() final {
+  gfx::Rect ClearedRect() const final {
+    // If a |legacy_texture_| exists, defer to that. Once created,
+    // |legacy_texture_| is never destroyed, so no need to synchronize with
+    // ClearedRectInternal.
     if (legacy_texture_) {
-      legacy_texture_->SetLevelCleared(legacy_texture_->target(), 0, true);
+      return legacy_texture_->GetLevelClearedRect(legacy_texture_->target(), 0);
+    } else {
+      return ClearedRectInternal();
     }
+  }
 
-    is_cleared_ = true;
+  void SetClearedRect(const gfx::Rect& cleared_rect) final {
+    // If a |legacy_texture_| exists, defer to that. Once created,
+    // |legacy_texture_| is never destroyed, so no need to synchronize with
+    // ClearedRectInternal.
+    if (legacy_texture_) {
+      legacy_texture_->SetLevelClearedRect(legacy_texture_->target(), 0,
+                                           cleared_rect);
+    } else {
+      SetClearedRectInternal(cleared_rect);
+    }
   }
 
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) final {}
@@ -395,6 +409,10 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
     if (!legacy_texture_) {
       return false;
     }
+
+    // Make sure our |legacy_texture_| has the right initial cleared rect.
+    legacy_texture_->SetLevelClearedRect(legacy_texture_->target(), 0,
+                                         ClearedRectInternal());
 
     mailbox_manager->ProduceTexture(mailbox(), legacy_texture_);
     return true;
@@ -518,10 +536,7 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
     }
 
     // If the backing is already cleared, no need to clear it again.
-    gfx::Rect cleared_rect;
-    if (is_cleared_) {
-      cleared_rect = gfx::Rect(size());
-    }
+    gfx::Rect cleared_rect = ClearedRect();
 
     // Manually create a gles2::Texture wrapping our driver texture.
     gles2::Texture* texture = new gles2::Texture(service_id);
@@ -547,7 +562,6 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
   base::Optional<WGPUTextureFormat> dawn_format_;
   base::scoped_nsprotocol<id<MTLTexture>> mtl_texture_;
-  bool is_cleared_ = false;
 
   // A texture for the associated legacy mailbox.
   gles2::Texture* legacy_texture_ = nullptr;

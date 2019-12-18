@@ -58,9 +58,9 @@ TEST_F(AutoscrollControllerTest,
   DCHECK(scrollable);
   DCHECK(scrollable->GetLayoutObject());
 
-  WebMouseEvent event(WebInputEvent::kMouseDown, WebFloatPoint(5, 5),
-                      WebFloatPoint(5, 5), WebPointerProperties::Button::kLeft,
-                      0, WebInputEvent::Modifiers::kLeftButtonDown,
+  WebMouseEvent event(WebInputEvent::kMouseDown, gfx::PointF(5, 5),
+                      gfx::PointF(5, 5), WebPointerProperties::Button::kLeft, 0,
+                      WebInputEvent::Modifiers::kLeftButtonDown,
                       base::TimeTicks::Now());
   event.SetFrameScale(1);
 

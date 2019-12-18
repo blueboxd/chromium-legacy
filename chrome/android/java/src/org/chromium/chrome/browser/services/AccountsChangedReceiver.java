@@ -62,8 +62,9 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
             public void finishNativeInitialization() {
                 PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
                     // TODO(bsazonov): Check whether invalidateAccountSeedStatus is needed here.
-                    IdentityServicesProvider.getAccountTrackerService().invalidateAccountSeedStatus(
-                            false /* don't refresh right now */);
+                    IdentityServicesProvider.get()
+                            .getAccountTrackerService()
+                            .invalidateAccountSeedStatus(false /* don't refresh right now */);
                     SigninHelper.get().validateAccountSettings(true);
                 });
             }

@@ -236,17 +236,17 @@ void AppendMouseEvent(const WebInputEvent& event,
         return;
     }
   }
-  result.mouse_position.x = mouse_event.PositionInWidget().x;
-  result.mouse_position.y = mouse_event.PositionInWidget().y;
+  result.mouse_position.x = mouse_event.PositionInWidget().x();
+  result.mouse_position.y = mouse_event.PositionInWidget().y();
   result.mouse_click_count = mouse_event.click_count;
 
   if (base::FeatureList::IsEnabled(features::kConsolidatedMovementXY)) {
     if (mouse_event.GetType() == WebInputEvent::kMouseMove &&
         *in_out_last_mouse_position) {
-      result.mouse_movement.x =
-          mouse_event.PositionInScreen().x - (*in_out_last_mouse_position)->x();
-      result.mouse_movement.y =
-          mouse_event.PositionInScreen().y - (*in_out_last_mouse_position)->y();
+      result.mouse_movement.x = mouse_event.PositionInScreen().x() -
+                                (*in_out_last_mouse_position)->x();
+      result.mouse_movement.y = mouse_event.PositionInScreen().y() -
+                                (*in_out_last_mouse_position)->y();
     }
     *in_out_last_mouse_position =
         std::make_unique<gfx::PointF>(mouse_event.PositionInScreen());
@@ -305,8 +305,8 @@ void SetPPTouchPoints(const WebTouchPoint* touches,
     }
     PP_TouchPoint pp_pt;
     pp_pt.id = touch_point.id;
-    pp_pt.position.x = touch_point.PositionInWidget().x;
-    pp_pt.position.y = touch_point.PositionInWidget().y;
+    pp_pt.position.x = touch_point.PositionInWidget().x();
+    pp_pt.position.y = touch_point.PositionInWidget().y();
     pp_pt.radius.x = touch_point.radius_x;
     pp_pt.radius.y = touch_point.radius_y;
     pp_pt.rotation_angle = touch_point.rotation_angle;

@@ -57,11 +57,15 @@ class ChromePreferenceKeyChecker extends BaseChromePreferenceKeyChecker {
     }
 
     /**
-     * Assert that the |key| passed is in use.
+     * Check that the |key| passed is in use.
+     * @throws RuntimeException if the key is not in use.
      */
     @Override
-    void assertIsKeyInUse(String key) {
-        assert isKeyInUse(key);
+    void checkIsKeyInUse(String key) {
+        if (!isKeyInUse(key)) {
+            throw new RuntimeException("SharedPreferences key \"" + key
+                    + "\" is not registered in ChromePreferenceKeys.createKeysInUse()");
+        }
     }
 
     /**

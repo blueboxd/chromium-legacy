@@ -6,6 +6,7 @@
 
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/performance_manager_impl.h"
+#include "components/performance_manager/performance_manager_registry_impl.h"
 #include "components/performance_manager/performance_manager_tab_helper.h"
 
 namespace performance_manager {
@@ -57,6 +58,18 @@ base::WeakPtr<PageNode> PerformanceManager::GetPageNodeForWebContents(
     return nullptr;
 
   return helper->page_node()->GetWeakPtr();
+}
+
+// static
+void PerformanceManager::AddObserver(
+    PerformanceManagerMainThreadObserver* observer) {
+  PerformanceManagerRegistryImpl::GetInstance()->AddObserver(observer);
+}
+
+// static
+void PerformanceManager::RemoveObserver(
+    PerformanceManagerMainThreadObserver* observer) {
+  PerformanceManagerRegistryImpl::GetInstance()->RemoveObserver(observer);
 }
 
 }  // namespace performance_manager

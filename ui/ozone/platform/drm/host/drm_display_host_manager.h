@@ -28,7 +28,6 @@ class DrmDeviceHandle;
 class DrmDisplayHost;
 class DrmDisplayHostManager;
 class DrmNativeDisplayDelegate;
-class DrmOverlayManager;
 class GpuThreadAdapter;
 
 struct DisplaySnapshot_Params;
@@ -42,7 +41,6 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
       GpuThreadAdapter* proxy,
       DeviceManager* device_manager,
       OzonePlatform::InitializedHostProperties* host_properties,
-      DrmOverlayManager* overlay_manager,
       InputControllerEvdev* input_controller);
   ~DrmDisplayHostManager() override;
 
@@ -102,8 +100,6 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
 
   GpuThreadAdapter* const proxy_;                 // Not owned.
   DeviceManager* const device_manager_;           // Not owned.
-  // TODO(crbug.com/936425): Remove after VizDisplayCompositor feature launches.
-  DrmOverlayManager* const overlay_manager_;      // Not owned.
   InputControllerEvdev* const input_controller_;  // Not owned.
 
   DrmNativeDisplayDelegate* delegate_ = nullptr;  // Not owned.

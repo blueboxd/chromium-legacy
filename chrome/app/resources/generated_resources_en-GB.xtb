@@ -2529,7 +2529,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4572779512957829735">Enter the PIN for your security key</translation>
 <translation id="457386861538956877">More...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Pair Bluetooth device</translation>
 <translation id="4579581181964204535">Unable to cast <ph name="HOST_NAME" />.</translation>
 <translation id="4581774856936278355">Error while restoring Linux</translation>
 <translation id="4582563038311694664">Reset all settings</translation>
@@ -4869,7 +4868,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7974936243149753750">Overscan</translation>
 <translation id="7978412674231730200">Private key</translation>
 <translation id="7978450511781612192">This will sign you out of your Google accounts. Your bookmarks, history, passwords and more will no longer be synced.</translation>
-<translation id="7979036127916589816">Sync Error</translation>
 <translation id="7980084013673500153">Asset ID: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Preload pages for faster browsing and searching</translation>
 <translation id="798145602633458219">Append the suggestion <ph name="SUGGESTION_NAME" /> to search box</translation>
@@ -5318,6 +5316,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="862542460444371744">&amp;Extensions</translation>
 <translation id="862727964348362408">Suspended</translation>
 <translation id="862750493060684461">CSS cache</translation>
+<translation id="8627706565932943526">Sync error</translation>
 <translation id="8627795981664801467">Secure connections only</translation>
 <translation id="8630903300770275248">Import supervised user</translation>
 <translation id="8631032106121706562">Petals</translation>

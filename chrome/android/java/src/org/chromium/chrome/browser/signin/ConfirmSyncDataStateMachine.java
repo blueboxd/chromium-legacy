@@ -162,7 +162,7 @@ public class ConfirmSyncDataStateMachine
     }
 
     private void requestNewAccountManagementStatus() {
-        IdentityServicesProvider.getSigninManager().isAccountManaged(
+        IdentityServicesProvider.get().getSigninManager().isAccountManaged(
                 mNewAccountName, this::setIsNewAccountManaged);
     }
 

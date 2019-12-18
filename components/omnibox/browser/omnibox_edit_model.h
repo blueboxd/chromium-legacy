@@ -385,6 +385,10 @@ class OmniboxEditModel {
   // Just forwards the call to the OmniboxView referred within.
   void SetAccessibilityLabel(const AutocompleteMatch& match);
 
+  // Reverts the edit box from a temporary text back to the original user text.
+  // Also resets the popup to the initial state.
+  void RevertTemporaryTextAndPopup();
+
  private:
   friend class OmniboxControllerTest;
   FRIEND_TEST_ALL_PREFIXES(OmniboxEditModelTest, ConsumeCtrlKey);
@@ -439,10 +443,6 @@ class OmniboxEditModel {
   // is closed, the match is generated from the autocomplete classifier.
   void GetInfoForCurrentText(AutocompleteMatch* match,
                              GURL* alternate_nav_url) const;
-
-  // Reverts the edit box from a temporary text back to the original user text.
-  // Also resets the popup to the initial state.
-  void RevertTemporaryTextAndPopup();
 
   // Accepts current keyword if the user just typed a space at the end of
   // |new_text|.  This handles both of the following cases:

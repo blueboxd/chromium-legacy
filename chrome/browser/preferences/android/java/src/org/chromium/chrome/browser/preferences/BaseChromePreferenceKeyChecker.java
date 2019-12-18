@@ -5,10 +5,10 @@
 package org.chromium.chrome.browser.preferences;
 
 /**
- * A dummy key checker that never asserts. Used in production builds.
+ * A dummy key checker that never throws exceptions. Used in production builds.
  */
 class BaseChromePreferenceKeyChecker {
-    void assertIsKeyInUse(String key) {
+    void checkIsKeyInUse(String key) {
         // No-op.
     }
 }

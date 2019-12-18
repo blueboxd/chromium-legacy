@@ -1468,9 +1468,14 @@ void DownloadItemImpl::Start(
     URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
         url_loader_factory_provider) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  CHECK(!download_file_) << "last interrupt reason: "
-                         << DownloadInterruptReasonToString(last_reason_)
-                         << ", state: " << DebugDownloadStateString(state_);
+  if (download_file_) {
+    LOG(ERROR) << "last interrupt reason: "
+               << DownloadInterruptReasonToString(last_reason_)
+               << ", state: " << DebugDownloadStateString(state_)
+               << ", state before last interruption: "
+               << DebugDownloadStateString(state_before_interruption_);
+  }
+  CHECK(!download_file_);
   DVLOG(20) << __func__ << "() this=" << DebugString(true);
   RecordDownloadCountWithSource(START_COUNT, download_source_);
 
@@ -2116,6 +2121,7 @@ void DownloadItemImpl::InterruptWithPartialState(
   // target-pending, which is something we don't want to do. Perhaps we should
   // explicitly transition to target-resolved prior to switching to interrupted.
   DCHECK_EQ(last_reason_, reason);
+  state_before_interruption_ = state_;
   TransitionTo(INTERRUPTED_INTERNAL);
   delegate_->DownloadInterrupted(this);
   AutoResumeIfValid();

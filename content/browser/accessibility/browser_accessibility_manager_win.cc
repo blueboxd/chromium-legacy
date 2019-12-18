@@ -383,6 +383,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
         aria_properties_events_.insert(node);
       } else if (ui::IsValuePatternSupported(node)) {
         FireUiaPropertyChangedEvent(UIA_ValueValuePropertyId, node);
+        FireUiaTextContainerEvent(UIA_Text_TextChangedEventId, node);
       }
       break;
     case ui::AXEventGenerator::Event::VALUE_MAX_CHANGED:

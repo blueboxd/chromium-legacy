@@ -1131,13 +1131,13 @@ void FeatureInfo::InitializeFeatures() {
   // TODO(mcasas): connect in Windows, https://crbug.com/803451
   // XB30 support was introduced in GLES 3.0/ OpenGL 3.3, before that it was
   // signalled via a specific extension.
-  feature_flags_.chromium_image_xb30 =
+  feature_flags_.chromium_image_ab30 =
       gl_version_info_->IsAtLeastGL(3, 3) ||
       gl_version_info_->IsAtLeastGLES(3, 0) ||
       gfx::HasExtension(extensions, "GL_EXT_texture_type_2_10_10_10_REV");
 #endif
   if (feature_flags_.chromium_image_xr30 ||
-      feature_flags_.chromium_image_xb30) {
+      feature_flags_.chromium_image_ab30) {
     validators_.texture_internal_format.AddValue(GL_RGB10_A2_EXT);
     validators_.render_buffer_format.AddValue(GL_RGB10_A2_EXT);
     validators_.texture_internal_format_storage.AddValue(GL_RGB10_A2_EXT);
@@ -1147,9 +1147,9 @@ void FeatureInfo::InitializeFeatures() {
     feature_flags_.gpu_memory_buffer_formats.Add(
         gfx::BufferFormat::BGRX_1010102);
   }
-  if (feature_flags_.chromium_image_xb30) {
+  if (feature_flags_.chromium_image_ab30) {
     feature_flags_.gpu_memory_buffer_formats.Add(
-        gfx::BufferFormat::RGBX_1010102);
+        gfx::BufferFormat::RGBA_1010102);
   }
 
   if (feature_flags_.chromium_image_ycbcr_p010) {

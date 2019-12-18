@@ -6,6 +6,7 @@ const CalculatorModifier = Object.freeze({
   kNone: Object.freeze({postfix: '', multiplier: 1}),
   kMillisecondsFromSeconds:
       Object.freeze({postfix: '_in_ms', multiplier: 1000}),
+  kBytesToBits: Object.freeze({bitrate: true, multiplier: 8}),
 });
 
 class Metric {
@@ -217,10 +218,13 @@ class RateCalculator {
   }
 
   getCalculatedMetricName() {
+    const accumulativeMetric = this.modifier.bitrate ?
+        this.accumulativeMetric + '_in_bits' :
+        this.accumulativeMetric;
     if (this.samplesMetric == 'timestamp') {
-      return '[' + this.accumulativeMetric + '/s]';
+      return '[' + accumulativeMetric + '/s]';
     }
-    return '[' + this.accumulativeMetric + '/' + this.samplesMetric +
+    return '[' + accumulativeMetric + '/' + this.samplesMetric +
         this.modifier.postfix + ']';
   }
 
@@ -407,8 +411,10 @@ class StatsRatesCalculator {
         metricCalculators: {
           messagesSent: new RateCalculator('messagesSent', 'timestamp'),
           messagesReceived: new RateCalculator('messagesReceived', 'timestamp'),
-          bytesSent: new RateCalculator('bytesSent', 'timestamp'),
-          bytesReceived: new RateCalculator('bytesReceived', 'timestamp'),
+          bytesSent: new RateCalculator(
+              'bytesSent', 'timestamp', CalculatorModifier.kBytesToBits),
+          bytesReceived: new RateCalculator(
+              'bytesReceived', 'timestamp', CalculatorModifier.kBytesToBits),
         },
       },
       {
@@ -434,15 +440,18 @@ class StatsRatesCalculator {
       {
         type: 'outbound-rtp',
         metricCalculators: {
-          bytesSent: new RateCalculator('bytesSent', 'timestamp'),
-          headerBytesSent: new RateCalculator('headerBytesSent', 'timestamp'),
+          bytesSent: new RateCalculator(
+              'bytesSent', 'timestamp', CalculatorModifier.kBytesToBits),
+          headerBytesSent: new RateCalculator(
+              'headerBytesSent', 'timestamp', CalculatorModifier.kBytesToBits),
           packetsSent: new RateCalculator('packetsSent', 'timestamp'),
           totalPacketSendDelay: new RateCalculator(
               'totalPacketSendDelay', 'packetsSent',
               CalculatorModifier.kMillisecondsFromSeconds),
           framesEncoded: new RateCalculator('framesEncoded', 'timestamp'),
-          totalEncodedBytesTarget:
-              new RateCalculator('totalEncodedBytesTarget', 'timestamp'),
+          totalEncodedBytesTarget: new RateCalculator(
+              'totalEncodedBytesTarget', 'timestamp',
+              CalculatorModifier.kBytesToBits),
           totalEncodeTime: new RateCalculator(
               'totalEncodeTime', 'framesEncoded',
               CalculatorModifier.kMillisecondsFromSeconds),
@@ -453,9 +462,11 @@ class StatsRatesCalculator {
       {
         type: 'inbound-rtp',
         metricCalculators: {
-          bytesReceived: new RateCalculator('bytesReceived', 'timestamp'),
-          headerBytesReceived:
-              new RateCalculator('headerBytesReceived', 'timestamp'),
+          bytesReceived: new RateCalculator(
+              'bytesReceived', 'timestamp', CalculatorModifier.kBytesToBits),
+          headerBytesReceived: new RateCalculator(
+              'headerBytesReceived', 'timestamp',
+              CalculatorModifier.kBytesToBits),
           packetsReceived: new RateCalculator('packetsReceived', 'timestamp'),
           framesDecoded: new RateCalculator('framesDecoded', 'timestamp'),
           totalDecodeTime: new RateCalculator(
@@ -474,8 +485,10 @@ class StatsRatesCalculator {
       {
         type: 'transport',
         metricCalculators: {
-          bytesSent: new RateCalculator('bytesSent', 'timestamp'),
-          bytesReceived: new RateCalculator('bytesReceived', 'timestamp'),
+          bytesSent: new RateCalculator(
+              'bytesSent', 'timestamp', CalculatorModifier.kBytesToBits),
+          bytesReceived: new RateCalculator(
+              'bytesReceived', 'timestamp', CalculatorModifier.kBytesToBits),
           // TODO(https://crbug.com/webrtc/10568): Add packetsSent and
           // packetsReceived once implemented.
         },
@@ -483,8 +496,10 @@ class StatsRatesCalculator {
       {
         type: 'candidate-pair',
         metricCalculators: {
-          bytesSent: new RateCalculator('bytesSent', 'timestamp'),
-          bytesReceived: new RateCalculator('bytesReceived', 'timestamp'),
+          bytesSent: new RateCalculator(
+              'bytesSent', 'timestamp', CalculatorModifier.kBytesToBits),
+          bytesReceived: new RateCalculator(
+              'bytesReceived', 'timestamp', CalculatorModifier.kBytesToBits),
           // TODO(https://crbug.com/webrtc/10569): Add packetsSent and
           // packetsReceived once implemented.
           totalRoundTripTime: new RateCalculator(

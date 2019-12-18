@@ -2529,7 +2529,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4572779512957829735">Angiv pinkoden til din sikkerhedsnøgle</translation>
 <translation id="457386861538956877">Flere...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Par Bluetooth-enhed</translation>
 <translation id="4579581181964204535"><ph name="HOST_NAME" /> kunne ikke castes.</translation>
 <translation id="4581774856936278355">Der opstod en fejl ved gendannelsen af Linux</translation>
 <translation id="4582563038311694664">Nulstil alle indstillinger</translation>
@@ -4869,7 +4868,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7974936243149753750">Overscan</translation>
 <translation id="7978412674231730200">Privat nøgle</translation>
 <translation id="7978450511781612192">Dermed logges du ud af dine Google-konti. Dine bogmærker, din historik, dine adgangskoder m.m. synkroniseres ikke længere.</translation>
-<translation id="7979036127916589816">Synkroniseringsfejl</translation>
 <translation id="7980084013673500153">Aktiv-id: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Forudindlæs sider, så du kan browse og søge hurtigere</translation>
 <translation id="798145602633458219">Føj forslaget <ph name="SUGGESTION_NAME" /> til søgefeltet</translation>
@@ -5318,6 +5316,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="862542460444371744">&amp;Udvidelser</translation>
 <translation id="862727964348362408">På pause</translation>
 <translation id="862750493060684461">CSS-cache</translation>
+<translation id="8627706565932943526">Synkroniseringsfejl</translation>
 <translation id="8627795981664801467">Kun sikre forbindelser</translation>
 <translation id="8630903300770275248">Importér administreret bruger</translation>
 <translation id="8631032106121706562">Marguerit</translation>

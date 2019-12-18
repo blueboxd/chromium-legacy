@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
 #include "base/win/resource_util.h"
+#include "base/logging.h"
 
 namespace base {
 namespace win {
@@ -21,9 +21,9 @@ bool GetResourceFromModule(HMODULE module,
     return false;
   }
 
-  HRSRC hres_info = FindResource(module, MAKEINTRESOURCE(resource_id),
-                                 resource_type);
-  if (NULL == hres_info)
+  HRSRC hres_info =
+      FindResource(module, MAKEINTRESOURCE(resource_id), resource_type);
+  if (nullptr == hres_info)
     return false;
 
   DWORD data_size = SizeofResource(module, hres_info);

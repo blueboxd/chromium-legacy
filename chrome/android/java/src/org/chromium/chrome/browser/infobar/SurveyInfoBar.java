@@ -101,7 +101,7 @@ public class SurveyInfoBar extends InfoBar {
             }
 
             @Override
-            public void onInteractabilityChanged(boolean isInteractable) {
+            public void onInteractabilityChanged(Tab tab, boolean isInteractable) {
                 mDelegate.onSurveyInfoBarTabInteractabilityChanged(isInteractable);
             }
         });

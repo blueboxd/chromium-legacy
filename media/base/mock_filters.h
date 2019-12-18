@@ -59,7 +59,7 @@ class MockPipelineClient : public Pipeline::Client {
                void(BufferingState, BufferingStateChangeReason));
   MOCK_METHOD0(OnDurationChange, void());
   MOCK_METHOD2(OnAddTextTrack,
-               void(const TextTrackConfig&, const AddTextTrackDoneCB&));
+               void(const TextTrackConfig&, AddTextTrackDoneCB));
   MOCK_METHOD1(OnWaiting, void(WaitingReason));
   MOCK_METHOD1(OnAudioConfigChange, void(const AudioDecoderConfig&));
   MOCK_METHOD1(OnVideoConfigChange, void(const VideoDecoderConfig&));

@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/app_service_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/app_service_app_window_launcher_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/app_window_base.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
@@ -191,8 +192,10 @@ void AppServiceAppWindowArcTracker::OnTaskDescriptionUpdated(
   ArcAppWindowInfo* const info = it->second.get();
   DCHECK(info);
   info->SetDescription(label, icon_png_data);
-
-  // TODO(crbug.com/1011235): Set title and image
+  AppWindowBase* app_window =
+      app_service_controller_->GetAppWindow(it->second->window());
+  if (app_window)
+    app_window->SetDescription(label, icon_png_data);
 }
 
 void AppServiceAppWindowArcTracker::OnTaskDestroyed(int task_id) {
@@ -201,8 +204,19 @@ void AppServiceAppWindowArcTracker::OnTaskDestroyed(int task_id) {
     return;
 
   aura::Window* const window = it->second.get()->window();
-  if (window)
+  if (window) {
+    // For ARC apps, window may be recreated in some cases, and OnTaskSetActive
+    // could be called after the window is destroyed, so controller is not
+    // closed on window destroying. Controller will be closed onTaskDestroyed
+    // event which is generated when the actual task is destroyed. So when the
+    // task is destroyed, delete the instance, otherwise, we might have an
+    // instance though the window has been closed, and the task has been
+    // destroyed.
+    app_service_controller_->app_service_instance_helper()->OnInstances(
+        it->second.get()->app_shelf_id().app_id(), window, std::string(),
+        apps::InstanceState::kDestroyed);
     app_service_controller_->UnregisterWindow(window);
+  }
 
   // Check if we may close controller now, at this point we can safely remove
   // controllers without window.
@@ -288,6 +302,10 @@ void AppServiceAppWindowArcTracker::AttachControllerToWindow(
   const ash::ShelfID shelf_id = info->shelf_id();
   AttachControllerToTask(task_id);
   app_service_controller_->AddWindowToShelf(window, shelf_id);
+  AppWindowBase* app_window = app_service_controller_->GetAppWindow(window);
+  if (app_window)
+    app_window->SetDescription(info->title(), info->icon_data_png());
+
   window->SetProperty(ash::kShelfIDKey, shelf_id.Serialize());
   window->SetProperty(ash::kArcPackageNameKey,
                       new std::string(info->package_name()));

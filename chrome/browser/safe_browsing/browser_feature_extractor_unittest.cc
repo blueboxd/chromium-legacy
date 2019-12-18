@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -25,8 +24,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/safe_browsing/db/database_manager.h"
-#include "components/safe_browsing/db/test_database_manager.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -51,31 +48,12 @@ namespace safe_browsing {
 
 namespace {
 
-class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
- public:
-  MockSafeBrowsingDatabaseManager() {}
-
-  MOCK_METHOD1(MatchMalwareIP, bool(const std::string& ip_address));
-
- protected:
-  ~MockSafeBrowsingDatabaseManager() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingDatabaseManager);
-};
-
 class MockClientSideDetectionHost : public ClientSideDetectionHost {
  public:
-  MockClientSideDetectionHost(
-      content::WebContents* tab,
-      SafeBrowsingDatabaseManager* database_manager)
-      : ClientSideDetectionHost(tab) {
-    set_safe_browsing_managers(NULL, database_manager);
-  }
+  explicit MockClientSideDetectionHost(content::WebContents* tab)
+      : ClientSideDetectionHost(tab) {}
 
   ~MockClientSideDetectionHost() override {}
-
-  MOCK_METHOD1(IsBadIpAddress, bool(const std::string&));
 };
 }  // namespace
 
@@ -92,11 +70,8 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     ASSERT_TRUE(profile()->CreateHistoryService(
         true /* delete_file */, false /* no_db */));
 
-    db_manager_ = new StrictMock<MockSafeBrowsingDatabaseManager>();
-    host_.reset(new StrictMock<MockClientSideDetectionHost>(
-        web_contents(), db_manager_.get()));
-    extractor_.reset(
-        new BrowserFeatureExtractor(web_contents(), host_.get()));
+    host_.reset(new StrictMock<MockClientSideDetectionHost>(web_contents()));
+    extractor_.reset(new BrowserFeatureExtractor(web_contents()));
     num_pending_ = 0;
     browse_info_.reset(new BrowseInfo);
   }
@@ -104,7 +79,6 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
   void TearDown() override {
     extractor_.reset();
     host_.reset();
-    db_manager_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
     ASSERT_EQ(0, num_pending_);
   }
@@ -182,55 +156,12 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     }
   }
 
-  std::unique_ptr<ClientMalwareRequest> ExtractMalwareFeatures(
-      std::unique_ptr<ClientMalwareRequest> request) {
-    // Feature extraction takes ownership of the request object
-    // and passes it along to the done callback in the end.
-    uintptr_t key = StartExtractMalwareFeatures(std::move(request));
-    EXPECT_TRUE(base::MessageLoopCurrentForUI::IsSet());
-    base::RunLoop().Run();
-    auto iterator = malware_results_.find(key);
-    EXPECT_TRUE(iterator != malware_results_.end());
-    if (iterator == malware_results_.end())
-      return nullptr;
-
-    auto result = std::move(iterator->second);
-    malware_results_.erase(iterator);
-    EXPECT_TRUE(result.success);
-    EXPECT_TRUE(result.request);
-    return std::move(result.request);
-  }
-
-  uintptr_t StartExtractMalwareFeatures(
-      std::unique_ptr<ClientMalwareRequest> request) {
-    uintptr_t key = reinterpret_cast<uintptr_t>(request.get());
-    EXPECT_EQ(0u, malware_results_.count(key));
-    ++num_pending_;
-    extractor_->ExtractMalwareFeatures(
-        browse_info_.get(), std::move(request),
-        base::Bind(&BrowserFeatureExtractorTest::ExtractMalwareFeaturesDone,
-                   base::Unretained(this)));
-    return key;
-  }
-
-  void GetMalwareUrls(
-      const ClientMalwareRequest& request,
-      std::map<std::string, std::set<std::string> >* urls) {
-    for (int i = 0; i < request.bad_ip_url_info_size(); ++i) {
-      const ClientMalwareRequest::UrlInfo& urlinfo =
-          request.bad_ip_url_info(i);
-      (*urls)[urlinfo.ip()].insert(urlinfo.url());
-    }
-  }
-
   int num_pending_;  // Number of pending feature extractions.
   std::unique_ptr<BrowserFeatureExtractor> extractor_;
   std::map<uintptr_t, RequestAndResult<ClientPhishingRequest>>
       phishing_results_;
-  std::map<uintptr_t, RequestAndResult<ClientMalwareRequest>> malware_results_;
   std::unique_ptr<BrowseInfo> browse_info_;
   std::unique_ptr<StrictMock<MockClientSideDetectionHost>> host_;
-  scoped_refptr<StrictMock<MockSafeBrowsingDatabaseManager> > db_manager_;
 
  private:
   void ExtractFeaturesDone(bool success,
@@ -239,18 +170,6 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     uintptr_t key = reinterpret_cast<uintptr_t>(request.get());
     ASSERT_EQ(0U, phishing_results_.count(key));
     phishing_results_[key] = {std::move(request), success};
-    if (--num_pending_ == 0) {
-      base::RunLoop::QuitCurrentWhenIdleDeprecated();
-    }
-  }
-
-  void ExtractMalwareFeaturesDone(
-      bool success,
-      std::unique_ptr<ClientMalwareRequest> request) {
-    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    uintptr_t key = reinterpret_cast<uintptr_t>(request.get());
-    ASSERT_EQ(0U, malware_results_.count(key));
-    malware_results_[key] = {std::move(request), success};
     if (--num_pending_ == 0) {
       base::RunLoop::QuitCurrentWhenIdleDeprecated();
     }
@@ -628,72 +547,6 @@ TEST_F(BrowserFeatureExtractorTest, SafeBrowsingFeatures) {
   EXPECT_DOUBLE_EQ(1.0, features[kSafeBrowsingIsSubresource]);
   EXPECT_DOUBLE_EQ(SB_THREAT_TYPE_URL_MALWARE,
                    features[kSafeBrowsingThreatType]);
-}
-
-TEST_F(BrowserFeatureExtractorTest, MalwareFeatures) {
-  auto request = std::make_unique<ClientMalwareRequest>();
-  request->set_url("http://www.foo.com/");
-
-  std::vector<IPUrlInfo> bad_urls;
-  bad_urls.push_back(
-      IPUrlInfo("http://bad.com", "GET", "", content::ResourceType::kScript));
-  bad_urls.push_back(
-      IPUrlInfo("http://evil.com", "GET", "", content::ResourceType::kScript));
-  browse_info_->ips.insert(std::make_pair("193.5.163.8", bad_urls));
-  browse_info_->ips.insert(std::make_pair("92.92.92.92", bad_urls));
-  std::vector<IPUrlInfo> good_urls;
-  good_urls.push_back(
-      IPUrlInfo("http://ok.com", "GET", "", content::ResourceType::kScript));
-  browse_info_->ips.insert(std::make_pair("23.94.78.1", good_urls));
-  EXPECT_CALL(*db_manager_, MatchMalwareIP("193.5.163.8"))
-      .WillOnce(Return(true));
-  EXPECT_CALL(*db_manager_, MatchMalwareIP("92.92.92.92"))
-      .WillOnce(Return(true));
-  EXPECT_CALL(*db_manager_, MatchMalwareIP("23.94.78.1"))
-      .WillOnce(Return(false));
-
-  request = ExtractMalwareFeatures(std::move(request));
-  ASSERT_TRUE(request);
-
-  EXPECT_EQ(4, request->bad_ip_url_info_size());
-  std::map<std::string, std::set<std::string> > result_urls;
-  GetMalwareUrls(*request, &result_urls);
-
-  EXPECT_EQ(2U, result_urls.size());
-  EXPECT_TRUE(result_urls.count("193.5.163.8"));
-  std::set<std::string> urls = result_urls["193.5.163.8"];
-  EXPECT_EQ(2U, urls.size());
-  EXPECT_TRUE(urls.find("http://bad.com") != urls.end());
-  EXPECT_TRUE(urls.find("http://evil.com") != urls.end());
-  EXPECT_TRUE(result_urls.count("92.92.92.92"));
-  urls = result_urls["92.92.92.92"];
-  EXPECT_EQ(2U, urls.size());
-  EXPECT_TRUE(urls.find("http://bad.com") != urls.end());
-  EXPECT_TRUE(urls.find("http://evil.com") != urls.end());
-}
-
-TEST_F(BrowserFeatureExtractorTest, MalwareFeatures_ExceedLimit) {
-  auto request = std::make_unique<ClientMalwareRequest>();
-  request->set_url("http://www.foo.com/");
-
-  std::vector<IPUrlInfo> bad_urls;
-  bad_urls.push_back(
-      IPUrlInfo("http://bad.com", "GET", "", content::ResourceType::kScript));
-  std::vector<std::string> ips;
-  for (int i = 0; i < 7; ++i) {  // Add 7 ips
-    std::string ip = base::StringPrintf("%d.%d.%d.%d", i, i, i, i);
-    ips.push_back(ip);
-    browse_info_->ips.insert(std::make_pair(ip, bad_urls));
-
-    // First ip is good but all the others are bad.
-    EXPECT_CALL(*db_manager_, MatchMalwareIP(ip)).WillOnce(Return(i > 0));
-  }
-
-  request = ExtractMalwareFeatures(std::move(request));
-  ASSERT_TRUE(request);
-
-  // The number of IP matched url we store is capped at 5 IPs per request.
-  EXPECT_EQ(5, request->bad_ip_url_info_size());
 }
 
 }  // namespace safe_browsing

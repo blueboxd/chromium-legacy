@@ -647,11 +647,6 @@ const FeatureEntry::FeatureVariation kInterestFeedFeatureVariations[] = {
          kInterestFeedLargeImagesAndSnippetsWithUndoableActionsFeatureVariationConstant),
      nullptr}};
 
-const FeatureEntry::FeatureVariation kRemoteSuggestionsFeatureVariations[] = {
-    {"via content suggestion server (backed by ChromeReader)", nullptr, 0,
-     "3313421"},
-    {"via content suggestion server (backed by Google Now)", nullptr, 0,
-     "3313422"}};
 #endif  // OS_ANDROID
 
 const FeatureEntry::Choice kEnableUseZoomForDSFChoices[] = {
@@ -1813,7 +1808,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(device::kNewblueDaemon)},
     {"shelf-hotseat", flag_descriptions::kShelfHotseatName,
      flag_descriptions::kShelfHotseatDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kShelfHotseat)},
+     FEATURE_VALUE_TYPE(chromeos::features::kShelfHotseat)},
     {"shelf-hover-previews", flag_descriptions::kShelfHoverPreviewsName,
      flag_descriptions::kShelfHoverPreviewsDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kShelfHoverPreviews)},
@@ -2479,12 +2474,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kInterestFeedNotificationsName,
      flag_descriptions::kInterestFeedNotificationsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kInterestFeedNotifications)},
-    {"enable-ntp-remote-suggestions",
-     flag_descriptions::kEnableNtpRemoteSuggestionsName,
-     flag_descriptions::kEnableNtpRemoteSuggestionsDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_snippets::kArticleSuggestionsFeature,
-                                    kRemoteSuggestionsFeatureVariations,
-                                    "NTPArticleSuggestions")},
     {"offlining-recent-pages", flag_descriptions::kOffliningRecentPagesName,
      flag_descriptions::kOffliningRecentPagesDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kOffliningRecentPagesFeature)},

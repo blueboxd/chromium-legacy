@@ -2529,7 +2529,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="4572779512957829735">Ilagay ang PIN para sa iyong security key</translation>
 <translation id="457386861538956877">Higit pa...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Magpares ng Bluetooth device</translation>
 <translation id="4579581181964204535">Hindi ma-cast ang <ph name="HOST_NAME" />.</translation>
 <translation id="4581774856936278355">Error habang nire-restore ang Linux</translation>
 <translation id="4582563038311694664">I-reset lahat ng setting</translation>
@@ -4869,7 +4868,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="7974936243149753750">Overscan</translation>
 <translation id="7978412674231730200">Private na key</translation>
 <translation id="7978450511781612192">Dahil dito, masa-sign out ka sa iyong mga Google Account. Hindi na masi-sync ang iyong mga bookmark, history, mga password, at higit pa.</translation>
-<translation id="7979036127916589816">Error sa Pag-sync</translation>
 <translation id="7980084013673500153">Asset ID: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">I-preload ang mga page para sa mas mabilis na pag-browse at paghahanap</translation>
 <translation id="798145602633458219">Idagdag ang suhestyong <ph name="SUGGESTION_NAME" /> sa box para sa paghahanap</translation>
@@ -5319,6 +5317,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="862542460444371744">&amp;Mga Extension</translation>
 <translation id="862727964348362408">Sinuspinde</translation>
 <translation id="862750493060684461">CSS cache</translation>
+<translation id="8627706565932943526">Error sa pag-sync</translation>
 <translation id="8627795981664801467">Secure na mga koneksyon lamang</translation>
 <translation id="8630903300770275248">Mag-import ng pinangangasiwaang user</translation>
 <translation id="8631032106121706562">Bulaklak</translation>

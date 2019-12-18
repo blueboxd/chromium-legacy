@@ -80,6 +80,8 @@ Status Device::SetUp(const std::string& package,
     command_line_file = base::StringPrintf("/data/local/tmp/%s_devtools_remote",
                                            exec_name.c_str());
     use_debug_flag = true;
+  } else if (package.find("weblayer") != std::string::npos) {
+    command_line_file = "/data/local/tmp/weblayer-command-line";
   }
 
   if (!use_running_app) {

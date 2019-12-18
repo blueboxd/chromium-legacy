@@ -97,6 +97,8 @@ _OS_SPECIFIC_FILTER['mac'] = [
     'MobileEmulationCapabilityTest.testTapElement',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=946023
     'ChromeDriverTest.testWindowFullScreen',
+    # https://bugs.chromium.org/p/chromium/issues/detail?id=1011225
+    'ChromeDriverTest.testActionsMultiTouchPoint',
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [
@@ -880,6 +882,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
       ],
       'parameters': {'pointerType': 'mouse'},
       'id': 'pointer1'}]})
+    time.sleep(1)
     self._driver.PerformActions(actions)
     rect = target.GetRect()
     self.assertEquals(150, rect['x'])
@@ -897,6 +900,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
       ],
       'parameters': {'pointerType': 'mouse'},
       'id': 'pointer1'}]})
+    time.sleep(1)
     self._driver.PerformActions(actions)
     rect = target.GetRect()
     self.assertEquals(180, rect['x'])
@@ -916,6 +920,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
       ],
       'parameters': {'pointerType': 'mouse'},
       'id': 'pointer1'}]})
+    time.sleep(1)
     self._driver.PerformActions(actions)
     rect = target.GetRect()
     self.assertEquals(180, rect['x'])

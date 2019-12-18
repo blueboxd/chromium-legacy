@@ -468,6 +468,63 @@ TEST_F(SharedImageBackingFactoryAHBTest, CannotReadWhileWriting) {
   skia_representation.reset();
 }
 
+// Test to check that setting/unsetting legacy shared image mailboxes works as
+// expected.
+TEST_F(SharedImageBackingFactoryAHBTest, LegacyClearing) {
+  if (!base::AndroidHardwareBufferCompat::IsSupportAvailable())
+    return;
+
+  GlLegacySharedImage gl_legacy_shared_image{
+      backing_factory_.get(),     true /* is_thread_safe */,
+      &mailbox_manager_,          &shared_image_manager_,
+      memory_type_tracker_.get(), shared_image_representation_factory_.get()};
+
+  TextureBase* texture_base =
+      mailbox_manager_.ConsumeTexture(gl_legacy_shared_image.mailbox());
+  auto* texture = gles2::Texture::CheckedCast(texture_base);
+  EXPECT_TRUE(texture);
+  GLenum target = texture->target();
+
+  auto skia_representation = shared_image_representation_factory_->ProduceSkia(
+      gl_legacy_shared_image.mailbox(), context_state_.get());
+  EXPECT_TRUE(skia_representation);
+
+  // Check initial state.
+  EXPECT_TRUE(texture->IsLevelCleared(target, 0));
+  EXPECT_TRUE(skia_representation->IsCleared());
+
+  // Un-clear the representation.
+  skia_representation->SetClearedRect(gfx::Rect());
+  EXPECT_FALSE(texture->IsLevelCleared(target, 0));
+  EXPECT_FALSE(skia_representation->IsCleared());
+
+  // Partially clear the representation.
+  gfx::Rect partial_clear_rect(0, 0, 128, 128);
+  skia_representation->SetClearedRect(partial_clear_rect);
+  EXPECT_EQ(partial_clear_rect, texture->GetLevelClearedRect(target, 0));
+  EXPECT_EQ(partial_clear_rect, skia_representation->ClearedRect());
+
+  // Fully clear the representation.
+  skia_representation->SetCleared();
+  EXPECT_TRUE(texture->IsLevelCleared(target, 0));
+  EXPECT_TRUE(skia_representation->IsCleared());
+
+  // Un-clear the texture.
+  texture->SetLevelClearedRect(target, 0, gfx::Rect());
+  EXPECT_FALSE(texture->IsLevelCleared(target, 0));
+  EXPECT_FALSE(skia_representation->IsCleared());
+
+  // Partially clear the texture.
+  texture->SetLevelClearedRect(target, 0, partial_clear_rect);
+  EXPECT_EQ(partial_clear_rect, texture->GetLevelClearedRect(target, 0));
+  EXPECT_EQ(partial_clear_rect, skia_representation->ClearedRect());
+
+  // Fully clear the representation.
+  texture->SetLevelCleared(target, 0, true);
+  EXPECT_TRUE(texture->IsLevelCleared(target, 0));
+  EXPECT_TRUE(skia_representation->IsCleared());
+}
+
 GlLegacySharedImage::GlLegacySharedImage(
     SharedImageBackingFactoryAHB* backing_factory,
     bool is_thread_safe,

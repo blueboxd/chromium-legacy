@@ -150,7 +150,7 @@ void DrmThreadProxy::SetClearOverlayCacheCallback(
 void DrmThreadProxy::CheckOverlayCapabilities(
     gfx::AcceleratedWidget widget,
     const std::vector<OverlaySurfaceCandidate>& candidates,
-    OverlayCapabilitiesCallback callback) {
+    DrmThread::OverlayCapabilitiesCallback callback) {
   DCHECK(drm_thread_.task_runner());
   base::OnceClosure task = base::BindOnce(
       &DrmThread::CheckOverlayCapabilities, base::Unretained(&drm_thread_),

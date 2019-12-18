@@ -56,10 +56,10 @@ class TextFragmentAnchorTest : public SimTest {
   }
 
   void SimulateClick(int x, int y) {
-    WebMouseEvent event(
-        WebInputEvent::kMouseDown, WebFloatPoint(x, y), WebFloatPoint(x, y),
-        WebPointerProperties::Button::kLeft, 0,
-        WebInputEvent::Modifiers::kLeftButtonDown, base::TimeTicks::Now());
+    WebMouseEvent event(WebInputEvent::kMouseDown, gfx::PointF(x, y),
+                        gfx::PointF(x, y), WebPointerProperties::Button::kLeft,
+                        0, WebInputEvent::Modifiers::kLeftButtonDown,
+                        base::TimeTicks::Now());
     event.SetFrameScale(1);
     GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(event);
   }
@@ -68,8 +68,8 @@ class TextFragmentAnchorTest : public SimTest {
     WebGestureEvent event(WebInputEvent::kGestureTap,
                           WebInputEvent::kNoModifiers, base::TimeTicks::Now(),
                           WebGestureDevice::kTouchscreen);
-    event.SetPositionInWidget(FloatPoint(x, y));
-    event.SetPositionInScreen(FloatPoint(x, y));
+    event.SetPositionInWidget(gfx::PointF(x, y));
+    event.SetPositionInScreen(gfx::PointF(x, y));
     event.SetFrameScale(1);
     GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(event);
   }
@@ -1581,6 +1581,43 @@ TEST_F(TextFragmentAnchorTest, HighlightOnReload) {
   RunAsyncMatchingTasks();
 
   EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+}
+
+// Ensure that we can have text directives combined with non-text directives
+TEST_F(TextFragmentAnchorTest, NonTextDirectives) {
+  SimRequest request(
+      "https://example.com/test.html#:~:text=test&directive&text=more",
+      "text/html");
+  LoadURL("https://example.com/test.html#:~:text=test&directive&text=more");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 2200px;
+      }
+      #first {
+        position: absolute;
+        top: 1000px;
+      }
+      #second {
+        position: absolute;
+        top: 2000px;
+      }
+    </style>
+    <p id="first">This is a test page</p>
+    <p id="second">This is some more text</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  Element& first = *GetDocument().getElementById("first");
+
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(first)))
+      << "First <p> wasn't scrolled into view, viewport's scroll offset: "
+      << LayoutViewport()->GetScrollOffset().ToString();
+
+  EXPECT_EQ(2u, GetDocument().Markers().Markers().size());
 }
 
 }  // namespace

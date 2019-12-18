@@ -2133,7 +2133,7 @@ void WebMediaPlayerImpl::OnDurationChange() {
 }
 
 void WebMediaPlayerImpl::OnAddTextTrack(const TextTrackConfig& config,
-                                        const AddTextTrackDoneCB& done_cb) {
+                                        AddTextTrackDoneCB done_cb) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   const WebInbandTextTrackImpl::Kind web_kind =
@@ -2149,7 +2149,7 @@ void WebMediaPlayerImpl::OnAddTextTrack(const TextTrackConfig& config,
   std::unique_ptr<TextTrack> text_track(new TextTrackImpl(
       main_task_runner_, client_, std::move(web_inband_text_track)));
 
-  done_cb.Run(std::move(text_track));
+  std::move(done_cb).Run(std::move(text_track));
 }
 
 void WebMediaPlayerImpl::OnWaiting(WaitingReason reason) {

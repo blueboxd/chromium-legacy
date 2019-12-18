@@ -31,6 +31,7 @@ from util import diff_utils
 from util import manifest_utils
 from util import resource_utils
 
+
 # Name of environment variable that can be used to force this script to
 # put temporary resource files into specific sub-directories, instead of
 # temporary ones.
@@ -265,9 +266,8 @@ def _IterFiles(root_dir):
       yield os.path.join(root, f)
 
 
-def _DuplicateZhResources(resource_dirs):
+def _DuplicateZhResources(resource_dirs, path_info):
   """Duplicate Taiwanese resources into Hong-Kong specific directory."""
-  renamed_paths = dict()
   for resource_dir in resource_dirs:
     # We use zh-TW resources for zh-HK (if we have zh-TW resources).
     for path in _IterFiles(resource_dir):
@@ -275,12 +275,12 @@ def _DuplicateZhResources(resource_dirs):
         hk_path = path.replace('zh-rTW', 'zh-rHK')
         build_utils.MakeDirectory(os.path.dirname(hk_path))
         shutil.copyfile(path, hk_path)
-        renamed_paths[os.path.relpath(hk_path, resource_dir)] = os.path.relpath(
-            path, resource_dir)
-  return renamed_paths
+        path_info.RegisterRename(
+            os.path.relpath(path, resource_dir),
+            os.path.relpath(hk_path, resource_dir))
 
 
-def _RenameLocaleResourceDirs(resource_dirs):
+def _RenameLocaleResourceDirs(resource_dirs, path_info):
   """Rename locale resource directories into standard names when necessary.
 
   This is necessary to deal with the fact that older Android releases only
@@ -309,11 +309,7 @@ def _RenameLocaleResourceDirs(resource_dirs):
 
   Args:
     resource_dirs: list of top-level resource directories.
-  Returns:
-    A dictionary mapping renamed paths to their original location
-    (e.g. '.../values-tl/strings.xml' -> ' .../values-fil/strings.xml').
   """
-  renamed_paths = dict()
   for resource_dir in resource_dirs:
     for path in _IterFiles(resource_dir):
       locale = resource_utils.FindLocaleInStringResourceFilePath(path)
@@ -334,9 +330,9 @@ def _RenameLocaleResourceDirs(resource_dirs):
           continue
         build_utils.MakeDirectory(os.path.dirname(path2))
         shutil.move(path, path2)
-        renamed_paths[os.path.relpath(path2, resource_dir)] = os.path.relpath(
-            path, resource_dir)
-  return renamed_paths
+        path_info.RegisterRename(
+            os.path.relpath(path, resource_dir),
+            os.path.relpath(path2, resource_dir))
 
 
 def _ToAndroidLocales(locale_whitelist, support_zh_hk):
@@ -369,12 +365,11 @@ def _ToAndroidLocales(locale_whitelist, support_zh_hk):
   return set(ret)
 
 
-def _MoveImagesToNonMdpiFolders(res_root):
+def _MoveImagesToNonMdpiFolders(res_root, path_info):
   """Move images from drawable-*-mdpi-* folders to drawable-* folders.
 
   Why? http://crbug.com/289843
   """
-  renamed_paths = dict()
   for src_dir_name in os.listdir(res_root):
     src_components = src_dir_name.split('-')
     if src_components[0] != 'drawable' or 'mdpi' not in src_components:
@@ -394,9 +389,9 @@ def _MoveImagesToNonMdpiFolders(res_root):
       dst_file = os.path.join(dst_dir, src_file_name)
       assert not os.path.lexists(dst_file)
       shutil.move(src_file, dst_file)
-      renamed_paths[os.path.relpath(dst_file, res_root)] = os.path.relpath(
-          src_file, res_root)
-  return renamed_paths
+      path_info.RegisterRename(
+          os.path.relpath(src_file, res_root),
+          os.path.relpath(dst_file, res_root))
 
 
 def _FixManifest(options, temp_dir):
@@ -511,8 +506,7 @@ def _CreateKeepPredicate(resource_blacklist_regex,
       build_utils.MatchesGlob(path, resource_blacklist_exceptions))
 
 
-def _ConvertToWebP(webp_binary, png_files):
-  renamed_paths = dict()
+def _ConvertToWebP(webp_binary, png_files, path_info):
   pool = multiprocessing.pool.ThreadPool(10)
   def convert_image(png_path_tuple):
     png_path, original_dir = png_path_tuple
@@ -522,34 +516,31 @@ def _ConvertToWebP(webp_binary, png_files):
         '-lossless', '-o', webp_path]
     subprocess.check_call(args)
     os.remove(png_path)
-    renamed_paths[os.path.relpath(webp_path, original_dir)] = os.path.relpath(
-        png_path, original_dir)
+    path_info.RegisterRename(
+        os.path.relpath(png_path, original_dir),
+        os.path.relpath(webp_path, original_dir))
 
   pool.map(convert_image, [f for f in png_files
                            if not _PNG_WEBP_BLACKLIST_PATTERN.match(f[0])])
   pool.close()
   pool.join()
-  return renamed_paths
 
 
-def _RemoveImageExtensions(directory):
+def _RemoveImageExtensions(directory, path_info):
   """Remove extensions from image files in the passed directory.
 
   This reduces binary size but does not affect android's ability to load the
   images.
-
-  Returns: dict[destination] -> source
   """
-  renamed_paths = {}
   for f in _IterFiles(directory):
     if (f.endswith('.png') or f.endswith('.webp')) and not f.endswith('.9.png'):
       path_with_extension = f
       path_no_extension = os.path.splitext(path_with_extension)[0]
       if path_no_extension != path_with_extension:
         shutil.move(path_with_extension, path_no_extension)
-        renamed_paths[os.path.relpath(path_no_extension, directory)] = (
-            os.path.relpath(path_with_extension, directory))
-  return renamed_paths
+        path_info.RegisterRename(
+            os.path.relpath(path_with_extension, directory),
+            os.path.relpath(path_no_extension, directory))
 
 
 def _CompileDeps(aapt2_path, dep_subdirs, temp_dir):
@@ -587,17 +578,12 @@ def _CompileDeps(aapt2_path, dep_subdirs, temp_dir):
   return partials
 
 
-def _CreateResourceInfoFile(renamed_paths, info_path, dependencies_res_zips):
-  lines = set()
+def _CreateResourceInfoFile(path_info, info_path, dependencies_res_zips):
   for zip_file in dependencies_res_zips:
     zip_info_file_path = zip_file + '.info'
     if os.path.exists(zip_info_file_path):
-      with open(zip_info_file_path, 'r') as zip_info_file:
-        lines.update(zip_info_file.readlines())
-  for dest, source in renamed_paths.iteritems():
-    lines.add('Rename:{},{}\n'.format(dest, source))
-  with open(info_path, 'w') as info_file:
-    info_file.writelines(sorted(lines))
+      path_info.MergeInfoFile(zip_info_file_path)
+  path_info.Write(info_path)
 
 
 def _RemoveUnwantedLocalizedStrings(dep_subdirs, options):
@@ -676,9 +662,9 @@ def _PackageApk(options, build):
   """
   dep_subdirs = resource_utils.ExtractDeps(options.dependencies_res_zips,
                                            build.deps_dir)
-  renamed_paths = dict()
-  renamed_paths.update(_DuplicateZhResources(dep_subdirs))
-  renamed_paths.update(_RenameLocaleResourceDirs(dep_subdirs))
+  path_info = resource_utils.ResourceInfoFile()
+  _DuplicateZhResources(dep_subdirs, path_info)
+  _RenameLocaleResourceDirs(dep_subdirs, path_info)
 
   _RemoveUnwantedLocalizedStrings(dep_subdirs, options)
 
@@ -695,13 +681,10 @@ def _PackageApk(options, build):
       elif f.endswith('.png'):
         png_paths.append((f, directory))
   if png_paths and options.png_to_webp:
-    renamed_paths.update(_ConvertToWebP(options.webp_binary, png_paths))
+    _ConvertToWebP(options.webp_binary, png_paths, path_info)
   for directory in dep_subdirs:
-    renamed_paths.update(_MoveImagesToNonMdpiFolders(directory))
-    renamed_paths.update(_RemoveImageExtensions(directory))
-
-  _CreateResourceInfoFile(renamed_paths, build.info_path,
-                          options.dependencies_res_zips)
+    _MoveImagesToNonMdpiFolders(directory, path_info)
+    _RemoveImageExtensions(directory, path_info)
 
   link_command = [
       options.aapt2_path,
@@ -778,7 +761,15 @@ def _PackageApk(options, build):
   else:
     link_command += ['-o', build.arsc_path]
 
-  build_utils.CheckOutput(link_command, print_stdout=False, print_stderr=False)
+  link_proc = subprocess.Popen(link_command)
+
+  # Create .res.info file in parallel.
+  _CreateResourceInfoFile(path_info, build.info_path,
+                          options.dependencies_res_zips)
+
+  exit_code = link_proc.wait()
+  if exit_code:
+    raise subprocess.CalledProcessError(exit_code, link_command)
 
   if options.proguard_file and (options.shared_resources
                                 or options.app_as_shared_lib):

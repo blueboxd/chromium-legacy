@@ -29,7 +29,6 @@
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "components/viz/service/display/overlay_candidate_validator_strategy.h"
 #include "components/viz/service/display/overlay_processor_using_strategy.h"
 #include "components/viz/service/display/overlay_strategy_fullscreen.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
@@ -72,15 +71,10 @@ const gfx::BufferFormat kDefaultBufferFormat = gfx::BufferFormat::RGBA_8888;
 class TestOverlayProcessor : public OverlayProcessorUsingStrategy {
  public:
   using PrimaryPlane = OverlayProcessorInterface::OutputSurfaceOverlayPlane;
-  TestOverlayProcessor()
-      : OverlayProcessorUsingStrategy(
-            nullptr,
-            std::unique_ptr<OverlayCandidateValidatorStrategy>()) {
-    InitializeStrategies();
-  }
+  TestOverlayProcessor() : OverlayProcessorUsingStrategy() {}
   ~TestOverlayProcessor() override = default;
 
-  void InitializeStrategies() override {}
+  bool IsOverlaySupported() const override { return true; }
   bool NeedsSurfaceOccludingDamageRect() const override { return false; }
   void CheckOverlaySupport(const PrimaryPlane* primary_plane,
                            OverlayCandidateList* surfaces) override {}
@@ -90,9 +84,6 @@ class TestOverlayProcessor : public OverlayProcessorUsingStrategy {
 class FullscreenOverlayProcessor : public TestOverlayProcessor {
  public:
   FullscreenOverlayProcessor() : TestOverlayProcessor() {
-    InitializeStrategies();
-  }
-  void InitializeStrategies() override {
     strategies_.push_back(std::make_unique<OverlayStrategyFullscreen>(this));
   }
   bool NeedsSurfaceOccludingDamageRect() const override { return true; }
@@ -107,7 +98,6 @@ class DefaultOverlayProcessor : public TestOverlayProcessor {
   DefaultOverlayProcessor()
       : TestOverlayProcessor(), expected_rects_(1, gfx::RectF(kOverlayRect)) {}
 
-  void InitializeStrategies() override {}
   bool NeedsSurfaceOccludingDamageRect() const override { return true; }
   void CheckOverlaySupport(const PrimaryPlane* primary_plane,
                            OverlayCandidateList* surfaces) override {
@@ -2226,10 +2216,9 @@ class OverlayInfoRendererGL : public GLRenderer {
   OverlayInfoRendererGL(const RendererSettings* settings,
                         OutputSurface* output_surface,
                         DisplayResourceProvider* resource_provider,
-                        bool use_validator)
+                        bool use_overlay_processor)
       : GLRenderer(settings, output_surface, resource_provider, nullptr),
-        expect_overlays_(false) {
-  }
+        expect_overlays_(false) {}
 
   MOCK_METHOD2(DoDrawQuad,
                void(const DrawQuad* quad, const gfx::QuadF* draw_region));
@@ -2305,13 +2294,13 @@ class GLRendererWithOverlaysTest : public testing::Test {
     child_resource_provider_->ShutdownAndReleaseAllResources();
   }
 
-  void Init(bool use_validator) {
+  void Init(bool use_overlay_processor) {
     renderer_ = std::make_unique<OverlayInfoRendererGL>(
         &settings_, output_surface_.get(), resource_provider_.get(),
-        use_validator);
+        use_overlay_processor);
     renderer_->Initialize();
     renderer_->SetVisible(true);
-    if (use_validator) {
+    if (use_overlay_processor) {
       renderer_->SetOverlayProcessor();
     }
   }
@@ -2352,8 +2341,8 @@ class GLRendererWithOverlaysTest : public testing::Test {
 };
 
 TEST_F(GLRendererWithOverlaysTest, OverlayQuadNotDrawn) {
-  bool use_validator = true;
-  Init(use_validator);
+  bool use_overlay_processor = true;
+  Init(use_overlay_processor);
   renderer_->set_expect_overlays(true);
   AddExpectedRectToOverlayProcessor(gfx::RectF(kOverlayBottomRightRect));
 
@@ -2393,8 +2382,8 @@ TEST_F(GLRendererWithOverlaysTest, OverlayQuadNotDrawn) {
 }
 
 TEST_F(GLRendererWithOverlaysTest, OccludedQuadInUnderlay) {
-  bool use_validator = true;
-  Init(use_validator);
+  bool use_overlay_processor = true;
+  Init(use_overlay_processor);
   renderer_->set_expect_overlays(true);
 
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
@@ -2432,8 +2421,8 @@ TEST_F(GLRendererWithOverlaysTest, OccludedQuadInUnderlay) {
 }
 
 TEST_F(GLRendererWithOverlaysTest, NoValidatorNoOverlay) {
-  bool use_validator = false;
-  Init(use_validator);
+  bool use_overlay_processor = false;
+  Init(use_overlay_processor);
   renderer_->set_expect_overlays(false);
 
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
@@ -2465,8 +2454,8 @@ TEST_F(GLRendererWithOverlaysTest, NoValidatorNoOverlay) {
 TEST_F(GLRendererWithOverlaysTest, OccludedQuadNotDrawnWhenPartialSwapEnabled) {
   provider_->TestContextGL()->set_have_post_sub_buffer(true);
   settings_.partial_swap_enabled = true;
-  bool use_validator = true;
-  Init(use_validator);
+  bool use_overlay_processor = true;
+  Init(use_overlay_processor);
   renderer_->set_expect_overlays(true);
 
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
@@ -2495,8 +2484,8 @@ TEST_F(GLRendererWithOverlaysTest, OccludedQuadNotDrawnWhenPartialSwapEnabled) {
 // GLRenderer skips drawing occluded quads when empty swap is enabled.
 TEST_F(GLRendererWithOverlaysTest, OccludedQuadNotDrawnWhenEmptySwapAllowed) {
   provider_->TestContextGL()->set_have_commit_overlay_planes(true);
-  bool use_validator = true;
-  Init(use_validator);
+  bool use_overlay_processor = true;
+  Init(use_overlay_processor);
   renderer_->set_expect_overlays(true);
 
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
@@ -2524,8 +2513,8 @@ TEST_F(GLRendererWithOverlaysTest, OccludedQuadNotDrawnWhenEmptySwapAllowed) {
 }
 
 TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
-  bool use_validator = true;
-  Init(use_validator);
+  bool use_overlay_processor = true;
+  Init(use_overlay_processor);
   renderer_->set_expect_overlays(true);
 
   ResourceId resource1 = CreateResourceInLayerTree(
@@ -2715,9 +2704,9 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
 }
 
 TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAfterGpuQuery) {
-  bool use_validator = true;
+  bool use_overlay_processor = true;
   settings_.release_overlay_resources_after_gpu_query = true;
-  Init(use_validator);
+  Init(use_overlay_processor);
   renderer_->set_expect_overlays(true);
 
   ResourceId resource1 = CreateResourceInLayerTree(

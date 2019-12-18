@@ -1835,6 +1835,8 @@ const char* ToString(ax::mojom::BoolAttribute bool_attribute) {
       return "isLineBreakingObject";
     case ax::mojom::BoolAttribute::kIsPageBreakingObject:
       return "isPageBreakingObject";
+    case ax::mojom::BoolAttribute::kHasAriaAttribute:
+      return "hasAriaAttribute";
   }
 
   return "";
@@ -1875,6 +1877,8 @@ ax::mojom::BoolAttribute ParseBoolAttribute(const char* bool_attribute) {
     return ax::mojom::BoolAttribute::kIsLineBreakingObject;
   if (0 == strcmp(bool_attribute, "isPageBreakingObject"))
     return ax::mojom::BoolAttribute::kIsPageBreakingObject;
+  if (0 == strcmp(bool_attribute, "hasAriaAttribute"))
+    return ax::mojom::BoolAttribute::kHasAriaAttribute;
   return ax::mojom::BoolAttribute::kNone;
 }
 

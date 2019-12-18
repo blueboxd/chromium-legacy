@@ -10,7 +10,7 @@
 class OverlayRequest;
 
 // Fake version of InfobarOverlayRequestFactory.  Creates OverlayRequests that
-// are only configured with an InfobarOverlayData.
+// are only configured with an InfobarOverlayRequestConfig.
 class FakeInfobarOverlayRequestFactory : public InfobarOverlayRequestFactory {
  public:
   FakeInfobarOverlayRequestFactory();

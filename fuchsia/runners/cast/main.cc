@@ -29,10 +29,8 @@ int main(int argc, char** argv) {
       fuchsia::web::ContextFeatureFlags::AUDIO |
       fuchsia::web::ContextFeatureFlags::VULKAN |
       fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER |
-      fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM;
-
-  if (!BUILDFLAG(ENABLE_SOFTWARE_VIDEO_DECODERS))
-    features |= fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER_ONLY;
+      fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM |
+      fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER_ONLY;
 
   fuchsia::web::CreateContextParams create_context_params =
       WebContentRunner::BuildCreateContextParams(

@@ -1612,11 +1612,6 @@
     "expiry_milestone": 83
   },
   {
-    "name": "enable-ntp-remote-suggestions",
-    "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "enable-offer-store-unmasked-wallet-cards",
     "owners": [ "jsaul@google.com" ],
     "expiry_milestone": 86

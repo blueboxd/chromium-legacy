@@ -77,7 +77,7 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
   bool IsKeyframeEffect() const override { return true; }
 
   // IDL implementation.
-  Element* target() const { return target_; }
+  Element* target() const { return effect_target_; }
   void setTarget(Element*);
   String composite() const;
   void setComposite(String);
@@ -86,6 +86,9 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
                     const ScriptValue& keyframes,
                     ExceptionState&);
 
+  // Returns blink's representation of the effect target.
+  // This can be a blink::PseudoElement which should not be web-exposed.
+  Element* EffectTarget() const { return effect_target_; }
   void SetKeyframes(StringKeyframeVector keyframes);
 
   bool Affects(const PropertyHandle&) const;
@@ -144,7 +147,7 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
 
   bool AnimationsPreserveAxisAlignment(const PropertyHandle&) const;
 
-  Member<Element> target_;
+  Member<Element> effect_target_;
   Member<KeyframeEffectModelBase> model_;
   Member<SampledEffect> sampled_effect_;
 

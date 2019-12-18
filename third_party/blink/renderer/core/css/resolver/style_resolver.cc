@@ -1262,6 +1262,8 @@ bool StyleResolver::ApplyAnimatedStandardProperties(StyleResolverState& state) {
     StyleAnimator animator(state, cascade);
     CascadeInterpolations(cascade, animations_map, Origin::kAnimation);
     CascadeInterpolations(cascade, transitions_map, Origin::kTransition);
+    if (IsForcedColorsModeEnabled(state))
+      cascade.Exclude(CSSProperty::kIsAffectedByForcedColors, true);
     cascade.Apply(animator);
   } else {
     ApplyAnimatedStandardProperties<kHighPropertyPriority>(state,
@@ -2181,7 +2183,9 @@ void StyleResolver::CascadeAndApplyMatchedProperties(
   bool apply_inherited_only = false;
 
   // TODO(crbug.com/985027): Cascade kLowPropertyPriority.
-  //
+
+  CascadeAndApplyForcedColors(state, match_result);
+
   // Ultimately NeedsApplyPass will be removed, so we don't bother fixing
   // that for this codepath. For now, just always go through the low-priority
   // properties.
@@ -2321,6 +2325,58 @@ void StyleResolver::CascadeInterpolations(StyleCascade& cascade,
   }
 }
 
+void StyleResolver::CascadeAndApplyForcedColors(StyleResolverState& state,
+                                                const MatchResult& result) {
+  if (!IsForcedColorsModeEnabled())
+    return;
+  if (state.Style()->ForcedColorAdjust() == EForcedColorAdjust::kNone)
+    return;
+
+  unsigned apply_mask = kApplyMaskRegular | kApplyMaskVisited;
+  const CSSValue* unset = cssvalue::CSSUnsetValue::Create();
+  auto origin = StyleCascade::Origin::kUserAgent;
+
+  static const CSSProperty* properties[] = {
+      &GetCSSPropertyColor(),
+      &GetCSSPropertyBorderBottomColor(),
+      &GetCSSPropertyBorderLeftColor(),
+      &GetCSSPropertyBorderRightColor(),
+      &GetCSSPropertyBorderTopColor(),
+      &GetCSSPropertyBoxShadow(),
+      &GetCSSPropertyColumnRuleColor(),
+      &GetCSSPropertyFill(),
+      &GetCSSPropertyOutlineColor(),
+      &GetCSSPropertyStroke(),
+      &GetCSSPropertyTextDecorationColor(),
+      &GetCSSPropertyTextShadow(),
+      &GetCSSPropertyWebkitTapHighlightColor(),
+      &GetCSSPropertyWebkitTextEmphasisColor(),
+  };
+
+  StyleCascade cascade(state);
+
+  for (const CSSProperty* property : properties) {
+    CascadeDeclaration(cascade, property->GetCSSPropertyName(), *unset, origin,
+                       apply_mask);
+  }
+
+  const CSSValue* window = CSSIdentifierValue::Create(CSSValueID::kWindow);
+  CascadeDeclaration(cascade,
+                     GetCSSPropertyBackgroundColor().GetCSSPropertyName(),
+                     *window, origin, apply_mask);
+
+  Color prev_bg_color = state.Style()->BackgroundColor().GetColor();
+
+  CascadeRange(state, cascade, result.UaRules(), origin);
+  cascade.Exclude(CSSProperty::kIsAffectedByForcedColors, false);
+  cascade.Apply();
+
+  Color current_bg_color = state.Style()->BackgroundColor().GetColor();
+  Color bg_color(current_bg_color.Red(), current_bg_color.Green(),
+                 current_bg_color.Blue(), prev_bg_color.Alpha());
+  state.Style()->SetBackgroundColor(bg_color);
+}
+
 bool StyleResolver::HasAuthorBackground(const StyleResolverState& state) {
   const CachedUAStyle* cached_ua_style = state.GetCachedUAStyle();
   if (!cached_ua_style)
@@ -2418,6 +2474,12 @@ void StyleResolver::Trace(blink::Visitor* visitor) {
 
 bool StyleResolver::IsForcedColorsModeEnabled() const {
   return GetDocument().InForcedColorsMode();
+}
+
+bool StyleResolver::IsForcedColorsModeEnabled(
+    const StyleResolverState& state) const {
+  return IsForcedColorsModeEnabled() &&
+         state.Style()->ForcedColorAdjust() != EForcedColorAdjust::kNone;
 }
 
 void StyleResolver::ApplyCascadedColorValue(StyleResolverState& state) {

@@ -10,6 +10,7 @@
 #include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/performance_manager/performance_manager_test_harness.h"
 #include "components/performance_manager/test_support/page_live_state_decorator.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
@@ -30,20 +31,22 @@ class PageLiveStateDecoratorHelperTest
     ChromeRenderViewHostTestHarness::SetUp();
     perf_man_ = PerformanceManagerImpl::Create(base::DoNothing());
     registry_ = PerformanceManagerRegistry::Create();
+    helper_ = std::make_unique<PageLiveStateDecoratorHelper>();
     indicator_ = MediaCaptureDevicesDispatcher::GetInstance()
                      ->GetMediaStreamCaptureIndicator();
     auto contents = CreateTestWebContents();
-    helper_ = std::make_unique<PageLiveStateDecoratorHelper>();
     SetContents(std::move(contents));
   }
 
   void TearDown() override {
-    helper_.reset();
-    indicator_.reset();
     DeleteContents();
-    registry_->TearDown();
-    registry_.reset();
+    helper_.reset();
+    if (registry_) {
+      registry_->TearDown();
+      registry_.reset();
+    }
     // Have the performance manager destroy itself.
+    indicator_.reset();
     PerformanceManagerImpl::Destroy(std::move(perf_man_));
     task_environment()->RunUntilIdle();
 
@@ -62,6 +65,9 @@ class PageLiveStateDecoratorHelperTest
   void EndToEndStreamPropertyTest(
       blink::mojom::MediaStreamType stream_type,
       bool (PageLiveStateDecorator::Data::*pm_getter)() const);
+
+  // Forces deletion of the PageLiveStateDecoratorHelper.
+  void ResetHelper() { helper_.reset(); }
 
  private:
   scoped_refptr<MediaStreamCaptureIndicator> indicator_;
@@ -114,6 +120,42 @@ TEST_F(PageLiveStateDecoratorHelperTest, OnIsCapturingDesktopChanged) {
   EndToEndStreamPropertyTest(
       blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE,
       &PageLiveStateDecorator::Data::IsCapturingDesktop);
+}
+
+TEST_F(PageLiveStateDecoratorHelperTest, IsConnectedToBluetoothDevice) {
+  TestPageLiveStatePropertyOnPMSequence(
+      web_contents(),
+      &PageLiveStateDecorator::Data::IsConnectedToBluetoothDevice, false);
+  content::WebContentsTester::For(web_contents())
+      ->TestIncrementBluetoothConnectedDeviceCount();
+  TestPageLiveStatePropertyOnPMSequence(
+      web_contents(),
+      &PageLiveStateDecorator::Data::IsConnectedToBluetoothDevice, true);
+  content::WebContentsTester::For(web_contents())
+      ->TestDecrementBluetoothConnectedDeviceCount();
+  TestPageLiveStatePropertyOnPMSequence(
+      web_contents(),
+      &PageLiveStateDecorator::Data::IsConnectedToBluetoothDevice, false);
+}
+
+// Create many WebContents to exercice the code that maintains the linked list
+// of PageLiveStateDecoratorHelper::WebContentsObservers.
+TEST_F(PageLiveStateDecoratorHelperTest, ManyPageNodes) {
+  std::unique_ptr<content::WebContents> c1 = CreateTestWebContents();
+  std::unique_ptr<content::WebContents> c2 = CreateTestWebContents();
+  std::unique_ptr<content::WebContents> c3 = CreateTestWebContents();
+  std::unique_ptr<content::WebContents> c4 = CreateTestWebContents();
+  std::unique_ptr<content::WebContents> c5 = CreateTestWebContents();
+
+  // Expect no crash when WebContentsObservers are destroyed.
+
+  // This deletes WebContentsObservers associated with |c1|, |c3| and |c5|.
+  c1.reset();
+  c3.reset();
+  c5.reset();
+
+  // This deletes remaining WebContentsObservers.
+  ResetHelper();
 }
 
 }  // namespace performance_manager

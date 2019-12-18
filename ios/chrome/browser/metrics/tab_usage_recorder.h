@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ios/chrome/browser/metrics/tab_usage_recorder_metrics.h"
+#include "ios/chrome/browser/sessions/session_restoration_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 #include "ios/web/public/web_state_observer.h"
 
@@ -25,7 +26,8 @@ class WebState;
 
 // Reports usage about the lifecycle of a single TabModel's tabs.
 class TabUsageRecorder : public web::WebStateObserver,
-                         public WebStateListObserver {
+                         public WebStateListObserver,
+                         public SessionRestorationObserver {
  public:
   // Initializes the TabUsageRecorder to watch |web_state_list|.
   TabUsageRecorder(WebStateList* web_state_list,
@@ -141,6 +143,10 @@ class TabUsageRecorder : public web::WebStateObserver,
                            web::WebState* new_web_state,
                            int active_index,
                            int reason) override;
+
+  // SessionRestorationObserver implementation.
+  void SessionRestorationFinished(
+      const std::vector<web::WebState*>& restored_web_states) override;
 
   // Keep track of when the most recent tab restore begins, to record the time
   // between evicted-tab-reloads.

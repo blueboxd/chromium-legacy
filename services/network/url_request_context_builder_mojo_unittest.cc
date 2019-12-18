@@ -53,7 +53,7 @@ class URLRequestContextBuilderMojoTest : public PlatformTest {
  protected:
   URLRequestContextBuilderMojoTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
-    test_server_.RegisterRequestHandler(base::Bind(&HandlePacRequest));
+    test_server_.RegisterRequestHandler(base::BindRepeating(&HandlePacRequest));
     test_server_.AddDefaultHandlers(
         base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
   }

@@ -88,6 +88,11 @@ base::WeakPtr<BlobImpl> BlobImpl::Create(
       ->weak_ptr_factory_.GetWeakPtr();
 }
 
+void BlobImpl::UpdateHandle(std::unique_ptr<BlobDataHandle> new_handle) {
+  DCHECK_EQ(handle_->uuid(), new_handle->uuid());
+  handle_ = std::move(new_handle);
+}
+
 void BlobImpl::Clone(mojo::PendingReceiver<blink::mojom::Blob> receiver) {
   receivers_.Add(this, std::move(receiver));
 }

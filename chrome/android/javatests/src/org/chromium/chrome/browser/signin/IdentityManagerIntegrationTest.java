@@ -78,7 +78,8 @@ public class IdentityManagerIntegrationTest {
             seedAccountTrackerService();
 
             // Get a reference to the service.
-            mIdentityMutator = IdentityServicesProvider.getSigninManager().getIdentityMutator();
+            mIdentityMutator =
+                    IdentityServicesProvider.get().getSigninManager().getIdentityMutator();
             mIdentityManager = IdentityServicesProvider.get().getIdentityManager();
         });
     }
@@ -122,7 +123,7 @@ public class IdentityManagerIntegrationTest {
         AccountIdProvider provider = AccountIdProvider.getInstance();
         String[] accountNames = {mTestAccount1.getName(), mTestAccount2.getName()};
         String[] accountIds = {mTestAccount1.getGaiaId(), mTestAccount2.getGaiaId()};
-        IdentityServicesProvider.getAccountTrackerService().syncForceRefreshForTest(
+        IdentityServicesProvider.get().getAccountTrackerService().syncForceRefreshForTest(
                 accountIds, accountNames);
     }
 

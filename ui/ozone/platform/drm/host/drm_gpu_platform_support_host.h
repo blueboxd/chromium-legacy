@@ -24,7 +24,6 @@ namespace ui {
 
 class DrmCursor;
 class DrmDisplayHostMananger;
-class DrmOverlayManagerHost;
 class GpuThreadObserver;
 
 class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
@@ -73,17 +72,6 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
                                       base::ScopedFD fd) override;
   bool GpuRemoveGraphicsDevice(const base::FilePath& path) override;
 
-  // Methods needed for DrmOverlayManagerHost.
-  // Methods for DrmOverlayManagerHost.
-  void RegisterHandlerForDrmOverlayManager(
-      DrmOverlayManagerHost* handler) override;
-  void UnRegisterHandlerForDrmOverlayManager() override;
-
-  // Services needed by DrmOverlayManagerHost
-  bool GpuCheckOverlayCapabilities(
-      gfx::AcceleratedWidget widget,
-      const OverlaySurfaceCandidateList& new_params) override;
-
   // Services needed by DrmDisplayHost
   bool GpuConfigureNativeDisplay(int64_t display_id,
                                  const ui::DisplayMode_Params& display_mode,
@@ -107,7 +95,6 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
 
  private:
   void OnChannelEstablished();
-  bool OnMessageReceivedForDrmDisplayHostManager(const IPC::Message& message);
   void OnUpdateNativeDisplays(
       const std::vector<DisplaySnapshot_Params>& displays);
   void OnDisplayConfigured(int64_t display_id, bool status);
@@ -118,11 +105,6 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
   void OnTakeDisplayControl(bool status);
   void OnRelinquishDisplayControl(bool status);
 
-  bool OnMessageReceivedForDrmOverlayManager(const IPC::Message& message);
-  void OnOverlayResult(gfx::AcceleratedWidget widget,
-                       const std::vector<OverlayCheck_Params>& params,
-                       const std::vector<OverlayCheckReturn_Params>& returns);
-
   int host_id_ = -1;
   bool channel_established_ = false;
 
@@ -131,7 +113,6 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
   base::RepeatingCallback<void(IPC::Message*)> send_callback_;
 
   DrmDisplayHostManager* display_manager_;  // Not owned.
-  DrmOverlayManagerHost* overlay_manager_;  // Not owned.
 
   DrmCursor* const cursor_;  // Not owned.
   base::ObserverList<GpuThreadObserver>::Unchecked gpu_thread_observers_;

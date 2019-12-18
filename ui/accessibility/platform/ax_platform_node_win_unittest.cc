@@ -227,6 +227,7 @@ void AXPlatformNodeWinTest::TearDown() {
   ax_fragment_root_.reset(nullptr);
   tree_.reset(nullptr);
   AXNodePosition::SetTree(nullptr);
+  TestAXNodeWrapper::SetGlobalIsWebContent(false);
   ASSERT_EQ(0U, AXPlatformNodeBase::GetInstanceCountForTesting());
 }
 
@@ -281,6 +282,14 @@ AXPlatformNodeWinTest::GetIRawElementProviderSimpleFromChildIndex(
 
   return QueryInterfaceFromNode<IRawElementProviderSimple>(
       GetRootNode()->children()[size_t{child_index}]);
+}
+
+Microsoft::WRL::ComPtr<IRawElementProviderSimple>
+AXPlatformNodeWinTest::GetIRawElementProviderSimpleFromTree(
+    const ui::AXTreeID tree_id,
+    const int32_t node_id) {
+  return QueryInterfaceFromNode<IRawElementProviderSimple>(
+      GetNodeFromTree(tree_id, node_id));
 }
 
 ComPtr<IRawElementProviderFragment>
@@ -4219,6 +4228,94 @@ TEST_F(AXPlatformNodeWinTest, TestGetPropertyValue_LocalizedControlType) {
   EXPECT_UIA_BSTR_EQ(QueryInterfaceFromNode<IRawElementProviderSimple>(
                          GetRootNode()->children()[1]),
                      UIA_LocalizedControlTypePropertyId, L"search box");
+}
+
+TEST_F(AXPlatformNodeWinTest, TestGetPropertyValue_IsControlElement) {
+  AXTreeUpdate update;
+  ui::AXTreeID tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.tree_data.tree_id = tree_id;
+  update.has_tree_data = true;
+  update.root_id = 1;
+  update.nodes.resize(16);
+  update.nodes[0].id = 1;
+  update.nodes[0].role = ax::mojom::Role::kRootWebArea;
+  update.nodes[0].child_ids = {2, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+  update.nodes[1].id = 2;
+  update.nodes[1].role = ax::mojom::Role::kButton;
+  update.nodes[1].child_ids = {3};
+  update.nodes[2].id = 3;
+  update.nodes[2].role = ax::mojom::Role::kStaticText;
+  update.nodes[2].SetName("some text");
+  update.nodes[3].id = 4;
+  update.nodes[3].role = ax::mojom::Role::kGenericContainer;
+  update.nodes[3].child_ids = {5};
+  update.nodes[4].id = 5;
+  update.nodes[4].role = ax::mojom::Role::kStaticText;
+  update.nodes[4].SetName("more text");
+  update.nodes[5].id = 6;
+  update.nodes[5].role = ax::mojom::Role::kTable;
+  update.nodes[6].id = 7;
+  update.nodes[6].role = ax::mojom::Role::kList;
+  update.nodes[7].id = 8;
+  update.nodes[7].role = ax::mojom::Role::kForm;
+  update.nodes[8].id = 9;
+  update.nodes[8].role = ax::mojom::Role::kImage;
+  update.nodes[9].id = 10;
+  update.nodes[9].role = ax::mojom::Role::kImage;
+  update.nodes[9].SetNameExplicitlyEmpty();
+  update.nodes[10].id = 11;
+  update.nodes[10].role = ax::mojom::Role::kArticle;
+  update.nodes[11].id = 12;
+  update.nodes[11].role = ax::mojom::Role::kGenericContainer;
+  update.nodes[11].AddBoolAttribute(ax::mojom::BoolAttribute::kHasAriaAttribute,
+                                    true);
+  update.nodes[12].id = 13;
+  update.nodes[12].role = ax::mojom::Role::kGenericContainer;
+  update.nodes[12].AddBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot,
+                                    true);
+  update.nodes[13].id = 14;
+  update.nodes[13].role = ax::mojom::Role::kGenericContainer;
+  update.nodes[13].SetName("name");
+  update.nodes[14].id = 15;
+  update.nodes[14].role = ax::mojom::Role::kGenericContainer;
+  update.nodes[14].SetDescription("description");
+  update.nodes[15].id = 16;
+  update.nodes[15].role = ax::mojom::Role::kGenericContainer;
+  update.nodes[15].AddState(ax::mojom::State::kFocusable);
+
+  Init(update);
+  TestAXNodeWrapper::SetGlobalIsWebContent(true);
+
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromTree(tree_id, 2),
+                     UIA_IsControlElementPropertyId, true);
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromTree(tree_id, 3),
+                     UIA_IsControlElementPropertyId, false);
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromTree(tree_id, 4),
+                     UIA_IsControlElementPropertyId, false);
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromTree(tree_id, 5),
+                     UIA_IsControlElementPropertyId, true);
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromTree(tree_id, 6),
+                     UIA_IsControlElementPropertyId, true);
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromTree(tree_id, 7),
+                     UIA_IsControlElementPropertyId, true);
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromTree(tree_id, 8),
+                     UIA_IsControlElementPropertyId, true);
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromTree(tree_id, 9),
+                     UIA_IsControlElementPropertyId, true);
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromTree(tree_id, 10),
+                     UIA_IsControlElementPropertyId, false);
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromTree(tree_id, 11),
+                     UIA_IsControlElementPropertyId, true);
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromTree(tree_id, 12),
+                     UIA_IsControlElementPropertyId, true);
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromTree(tree_id, 13),
+                     UIA_IsControlElementPropertyId, true);
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromTree(tree_id, 14),
+                     UIA_IsControlElementPropertyId, true);
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromTree(tree_id, 15),
+                     UIA_IsControlElementPropertyId, true);
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromTree(tree_id, 16),
+                     UIA_IsControlElementPropertyId, true);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestUIAGetProviderOptions) {

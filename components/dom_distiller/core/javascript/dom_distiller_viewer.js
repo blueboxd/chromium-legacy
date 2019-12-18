@@ -169,8 +169,17 @@ updateToolbarColor();
 maybeSetWebFont();
 updateSliderFromElement(document.querySelector('#font-size-selection'));
 
-const pincher = (function() {
-  'use strict';
+// The zooming speed relative to pinching speed.
+const FONT_SCALE_MULTIPLIER = 0.5;
+
+const MIN_SPAN_LENGTH = 20;
+
+// This has to be in sync with 'font-size' in distilledpage.css.
+// This value is hard-coded because JS might be injected before CSS is ready.
+// See crbug.com/1004663.
+const baseSize = 14;
+
+class Pincher {
   // When users pinch in Reader Mode, the page would zoom in or out as if it
   // is a normal web page allowing user-zoom. At the end of pinch gesture, the
   // page would do text reflow. These pinch-to-zoom and text reflow effects
@@ -187,70 +196,70 @@ const pincher = (function() {
   //
   // TODO(wychen): Improve scroll position when elementFromPoint is body.
 
-  let pinching = false;
-  let fontSizeAnchor = 1.0;
+  constructor() {
+    this.pinching = false;
+    this.fontSizeAnchor = 1.0;
 
-  let focusElement = null;
-  let focusPos = 0;
-  let initClientMid;
+    this.focusElement = null;
+    this.focusPos = 0;
+    this.initClientMid = null;
 
-  let clampedScale = 1;
+    this.clampedScale = 1.0;
 
-  let lastSpan;
-  let lastClientMid;
+    this.lastSpan = null;
+    this.lastClientMid = null;
 
-  let scale = 1;
-  let shiftX;
-  let shiftY;
+    this.scale = 1.0;
+    this.shiftX = 0;
+    this.shiftY = 0;
+  }
 
-  // The zooming speed relative to pinching speed.
-  const FONT_SCALE_MULTIPLIER = 0.5;
-
-  const MIN_SPAN_LENGTH = 20;
-
-  // This has to be in sync with 'font-size' in distilledpage.css.
-  // This value is hard-coded because JS might be injected before CSS is ready.
-  // See crbug.com/1004663.
-  const baseSize = 14;
-
-  const refreshTransform = function() {
-    const slowedScale = Math.exp(Math.log(scale) * FONT_SCALE_MULTIPLIER);
-    clampedScale = Math.max(0.5, Math.min(2.0, fontSizeAnchor * slowedScale));
+  /** @private */
+  refreshTransform_() {
+    const slowedScale = Math.exp(Math.log(this.scale) * FONT_SCALE_MULTIPLIER);
+    this.clampedScale =
+        Math.max(0.5, Math.min(2.0, this.fontSizeAnchor * slowedScale));
 
     // Use "fake" 3D transform so that the layer is not repainted.
     // With 2D transform, the frame rate would be much lower.
     // clang-format off
     document.body.style.transform =
-        'translate3d(' + shiftX + 'px,'
-                       + shiftY + 'px, 0px)' +
-        'scale(' + clampedScale / fontSizeAnchor + ')';
+        'translate3d(' + this.shiftX + 'px,'
+                       + this.shiftY + 'px, 0px)' +
+        'scale(' + this.clampedScale / this.fontSizeAnchor + ')';
     // clang-format on
-  };
-
-  function saveCenter(clientMid) {
-    // Try to preserve the pinching center after text reflow.
-    // This is accurate to the HTML element level.
-    focusElement = document.elementFromPoint(clientMid.x, clientMid.y);
-    const rect = focusElement.getBoundingClientRect();
-    initClientMid = clientMid;
-    focusPos = (initClientMid.y - rect.top) / (rect.bottom - rect.top);
   }
 
-  function restoreCenter() {
-    const rect = focusElement.getBoundingClientRect();
-    const targetTop = focusPos * (rect.bottom - rect.top) + rect.top +
-        document.scrollingElement.scrollTop - (initClientMid.y + shiftY);
+  /** @private */
+  saveCenter_(clientMid) {
+    // Try to preserve the pinching center after text reflow.
+    // This is accurate to the HTML element level.
+    this.focusElement = document.elementFromPoint(clientMid.x, clientMid.y);
+    const rect = this.focusElement.getBoundingClientRect();
+    this.initClientMid = clientMid;
+    this.focusPos =
+        (this.initClientMid.y - rect.top) / (rect.bottom - rect.top);
+  }
+
+  /** @private */
+  restoreCenter_() {
+    const rect = this.focusElement.getBoundingClientRect();
+    const targetTop = this.focusPos * (rect.bottom - rect.top) + rect.top +
+        document.scrollingElement.scrollTop -
+        (this.initClientMid.y + this.shiftY);
     document.scrollingElement.scrollTop = targetTop;
   }
 
-  function endPinch() {
-    pinching = false;
+  /** @private */
+  endPinch_() {
+    this.pinching = false;
 
     document.body.style.transformOrigin = '';
     document.body.style.transform = '';
-    document.documentElement.style.fontSize = clampedScale * baseSize + 'px';
+    document.documentElement.style.fontSize =
+        this.clampedScale * baseSize + 'px';
 
-    restoreCenter();
+    this.restoreCenter_();
 
     let img = document.getElementById('fontscaling-img');
     if (!img) {
@@ -259,12 +268,13 @@ const pincher = (function() {
       img.style.display = 'none';
       document.body.appendChild(img);
     }
-    img.src = '/savefontscaling/' + clampedScale;
+    img.src = '/savefontscaling/' + this.clampedScale;
   }
 
-  function touchSpan(e) {
+  /** @private */
+  touchSpan_(e) {
     const count = e.touches.length;
-    const mid = touchClientMid(e);
+    const mid = this.touchClientMid_(e);
     let sum = 0;
     for (let i = 0; i < count; i++) {
       const dx = (e.touches[i].clientX - mid.x);
@@ -275,7 +285,8 @@ const pincher = (function() {
     return Math.max(MIN_SPAN_LENGTH, sum / count);
   }
 
-  function touchClientMid(e) {
+  /** @private */
+  touchClientMid_(e) {
     const count = e.touches.length;
     let sumX = 0;
     let sumY = 0;
@@ -286,127 +297,129 @@ const pincher = (function() {
     return {x: sumX / count, y: sumY / count};
   }
 
-  function touchPageMid(e) {
-    const clientMid = touchClientMid(e);
+  /** @private */
+  touchPageMid_(e) {
+    const clientMid = this.touchClientMid_(e);
     return {
       x: clientMid.x - e.touches[0].clientX + e.touches[0].pageX,
       y: clientMid.y - e.touches[0].clientY + e.touches[0].pageY
     };
   }
 
-  return {
-    handleTouchStart: function(e) {
-      if (e.touches.length < 2) {
-        return;
-      }
-      e.preventDefault();
-
-      const span = touchSpan(e);
-      const clientMid = touchClientMid(e);
-
-      if (e.touches.length > 2) {
-        lastSpan = span;
-        lastClientMid = clientMid;
-        refreshTransform();
-        return;
-      }
-
-      scale = 1;
-      shiftX = 0;
-      shiftY = 0;
-
-      pinching = true;
-      fontSizeAnchor =
-          parseFloat(getComputedStyle(document.documentElement).fontSize) /
-          baseSize;
-
-      const pinchOrigin = touchPageMid(e);
-      document.body.style.transformOrigin =
-          pinchOrigin.x + 'px ' + pinchOrigin.y + 'px';
-
-      saveCenter(clientMid);
-
-      lastSpan = span;
-      lastClientMid = clientMid;
-
-      refreshTransform();
-    },
-
-    handleTouchMove: function(e) {
-      if (!pinching) {
-        return;
-      }
-      if (e.touches.length < 2) {
-        return;
-      }
-      e.preventDefault();
-
-      const span = touchSpan(e);
-      const clientMid = touchClientMid(e);
-
-      scale *= touchSpan(e) / lastSpan;
-      shiftX += clientMid.x - lastClientMid.x;
-      shiftY += clientMid.y - lastClientMid.y;
-
-      refreshTransform();
-
-      lastSpan = span;
-      lastClientMid = clientMid;
-    },
-
-    handleTouchEnd: function(e) {
-      if (!pinching) {
-        return;
-      }
-      e.preventDefault();
-
-      const span = touchSpan(e);
-      const clientMid = touchClientMid(e);
-
-      if (e.touches.length >= 2) {
-        lastSpan = span;
-        lastClientMid = clientMid;
-        refreshTransform();
-        return;
-      }
-
-      endPinch();
-    },
-
-    handleTouchCancel: function(e) {
-      if (!pinching) {
-        return;
-      }
-      endPinch();
-    },
-
-    reset: function() {
-      scale = 1;
-      shiftX = 0;
-      shiftY = 0;
-      clampedScale = 1;
-      document.documentElement.style.fontSize = clampedScale * baseSize + 'px';
-    },
-
-    status: function() {
-      return {
-        scale: scale,
-        clampedScale: clampedScale,
-        shiftX: shiftX,
-        shiftY: shiftY
-      };
-    },
-
-    useFontScaling: function(scaling) {
-      saveCenter({x: window.innerWidth / 2, y: window.innerHeight / 2});
-      shiftX = 0;
-      shiftY = 0;
-      document.documentElement.style.fontSize = scaling * baseSize + 'px';
-      clampedScale = scaling;
-      restoreCenter();
+  handleTouchStart(e) {
+    if (e.touches.length < 2) {
+      return;
     }
-  };
-}());
+    e.preventDefault();
+
+    const span = this.touchSpan_(e);
+    const clientMid = this.touchClientMid_(e);
+
+    if (e.touches.length > 2) {
+      this.lastSpan = span;
+      this.lastClientMid = clientMid;
+      this.refreshTransform_();
+      return;
+    }
+
+    this.scale = 1;
+    this.shiftX = 0;
+    this.shiftY = 0;
+
+    this.pinching = true;
+    this.fontSizeAnchor =
+        parseFloat(getComputedStyle(document.documentElement).fontSize) /
+        baseSize;
+
+    const pinchOrigin = this.touchPageMid_(e);
+    document.body.style.transformOrigin =
+        pinchOrigin.x + 'px ' + pinchOrigin.y + 'px';
+
+    this.saveCenter_(clientMid);
+
+    this.lastSpan = span;
+    this.lastClientMid = clientMid;
+
+    this.refreshTransform_();
+  }
+
+  handleTouchMove(e) {
+    if (!this.pinching) {
+      return;
+    }
+    if (e.touches.length < 2) {
+      return;
+    }
+    e.preventDefault();
+
+    const span = this.touchSpan_(e);
+    const clientMid = this.touchClientMid_(e);
+
+    this.scale *= this.touchSpan_(e) / this.lastSpan;
+    this.shiftX += clientMid.x - this.lastClientMid.x;
+    this.shiftY += clientMid.y - this.lastClientMid.y;
+
+    this.refreshTransform_();
+
+    this.lastSpan = span;
+    this.lastClientMid = clientMid;
+  }
+
+  handleTouchEnd(e) {
+    if (!this.pinching) {
+      return;
+    }
+    e.preventDefault();
+
+    const span = this.touchSpan_(e);
+    const clientMid = this.touchClientMid_(e);
+
+    if (e.touches.length >= 2) {
+      this.lastSpan = span;
+      this.lastClientMid = clientMid;
+      this.refreshTransform_();
+      return;
+    }
+
+    this.endPinch_();
+  }
+
+  handleTouchCancel(e) {
+    if (!this.pinching) {
+      return;
+    }
+    this.endPinch_();
+  }
+
+  reset() {
+    this.scale = 1;
+    this.shiftX = 0;
+    this.shiftY = 0;
+    this.clampedScale = 1;
+    document.documentElement.style.fontSize =
+        this.clampedScale * baseSize + 'px';
+  }
+
+  status() {
+    return {
+      scale: this.scale,
+      clampedScale: this.clampedScale,
+      shiftX: this.shiftX,
+      shiftY: this.shiftY
+    };
+  }
+
+  useFontScaling(scaling) {
+    this.saveCenter_({x: window.innerWidth / 2, y: window.innerHeight / 2});
+    this.shiftX = 0;
+    this.shiftY = 0;
+    document.documentElement.style.fontSize = scaling * baseSize + 'px';
+    this.clampedScale = scaling;
+    this.restoreCenter_();
+  }
+}
+
+const pincher = new Pincher;
 
 window.addEventListener(
     'touchstart', pincher.handleTouchStart, {passive: false});

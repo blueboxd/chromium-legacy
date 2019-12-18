@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
+#import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
@@ -65,13 +66,13 @@
                       (const web::NavigationManager::WebLoadParams&)loadParams
                                         opener:(web::WebState*)parentWebState
                                    openedByDOM:(BOOL)openedByDOM
-                                       atIndex:(NSUInteger)index
+                                       atIndex:(int)index
                                   inBackground:(BOOL)inBackground {
   int insertionIndex = WebStateList::kInvalidIndex;
   int insertionFlags = WebStateList::INSERT_NO_FLAGS;
-  if (index != TabModelConstants::kTabPositionAutomatically) {
-    DCHECK_LE(index, static_cast<NSUInteger>(INT_MAX));
-    insertionIndex = static_cast<int>(index);
+  if (index != TabInsertion::kPositionAutomatically) {
+    DCHECK_LE(index, INT_MAX);
+    insertionIndex = index;
     insertionFlags |= WebStateList::INSERT_FORCE_INDEX;
   } else if (!ui::PageTransitionCoreTypeIs(loadParams.transition_type,
                                            ui::PAGE_TRANSITION_LINK)) {
@@ -138,6 +139,7 @@ class URLLoadingServiceTest : public BlockCleanupTest {
     id tabModel = CreateTestTabModel(chrome_browser_state_.get());
     tab_model_ = tabModel;
     browser_ = new TestBrowser(chrome_browser_state_.get(), tabModel);
+    TabInsertionBrowserAgent::CreateForBrowser(browser_);
     service_ = UrlLoadingServiceFactory::GetForBrowserState(
         chrome_browser_state_.get());
     service_->SetDelegate(url_loading_delegate_);
@@ -150,6 +152,7 @@ class URLLoadingServiceTest : public BlockCleanupTest {
     id otrTabModel = CreateTestTabModel(otr_browser_state);
     otr_tab_model_ = otrTabModel;
     otr_browser_ = new TestBrowser(otr_browser_state, otrTabModel);
+    TabInsertionBrowserAgent::CreateForBrowser(otr_browser_);
     otr_service_ =
         UrlLoadingServiceFactory::GetForBrowserState(otr_browser_state);
     otr_service_->SetDelegate(url_loading_delegate_);

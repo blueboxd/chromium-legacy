@@ -78,13 +78,7 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     // TODO(crbug.com/806092): Remove after legacy IPC-based Ozone is removed.
     bool using_mojo = false;
 
-    // Setting this to true indicates the display compositor will run in the GPU
-    // process (as part of the viz service). Note this param is currently only
-    // checked in Ozone DRM for overlay support. Other Ozone platforms either
-    // don't need to change anything or assume that VizDisplayCompositor is
-    // always enabled.
-    // TODO(crbug.com/936425): Remove after VizDisplayCompositor feature
-    // launches.
+    // TODO(crbug.com/936425): Not checked, delete when no longer set.
     bool viz_display_compositor = false;
   };
 

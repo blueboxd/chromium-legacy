@@ -310,10 +310,10 @@ const newTreeElement = (() => {
     const isLeaf = data.children && data.children.length === 0;
     const template = isLeaf ? _leafTemplate : _treeTemplate;
     const element = document.importNode(template.content, true);
+    const listItemEl = element.firstElementChild;
+    const link = listItemEl.firstElementChild;
 
     // Associate clickable node & tree data
-    /** @type {HTMLAnchorElement | HTMLSpanElement} */
-    const link = element.querySelector('.node');
     _uiNodeData.set(link, Object.freeze(data));
 
     // Icons are predefined in the HTML through hidden SVG elements
@@ -327,7 +327,7 @@ const newTreeElement = (() => {
     // Insert an SVG icon at the start of the link to represent adds/removals.
     const diffStatusIcon = getDiffStatusTemplate(data);
     if (diffStatusIcon) {
-      link.insertBefore(diffStatusIcon, link.firstElementChild);
+      listItemEl.insertBefore(diffStatusIcon, listItemEl.firstElementChild);
     }
 
     // Insert an SVG icon at the start of the link to represent type

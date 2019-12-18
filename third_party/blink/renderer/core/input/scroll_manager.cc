@@ -1096,7 +1096,8 @@ bool ScrollManager::HandleScrollGestureOnResizer(
     }
   } else if (gesture_event.GetType() == WebInputEvent::kGestureScrollUpdate) {
     if (resize_scrollable_area_ && resize_scrollable_area_->InResizeMode()) {
-      IntPoint pos = RoundedIntPoint(gesture_event.PositionInRootFrame());
+      IntPoint pos =
+          RoundedIntPoint(FloatPoint(gesture_event.PositionInRootFrame()));
       pos.Move(gesture_event.DeltaXInRootFrame(),
                gesture_event.DeltaYInRootFrame());
       resize_scrollable_area_->Resize(pos, offset_from_resize_corner_);

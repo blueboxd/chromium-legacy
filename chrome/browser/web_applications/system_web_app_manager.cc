@@ -36,6 +36,7 @@
 #include "chromeos/components/help_app_ui/url_constants.h"
 #include "chromeos/components/media_app_ui/url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "extensions/common/constants.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace web_app {
@@ -60,7 +61,7 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
     infos.emplace(SystemAppType::CAMERA,
                   SystemAppInfo("Camera", GURL("chrome://camera/pwa.html")));
     infos.at(SystemAppType::CAMERA).uninstall_and_replace = {
-        ash::kInternalAppIdCamera};
+        extension_misc::kCameraAppId};
   }
 
   if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {

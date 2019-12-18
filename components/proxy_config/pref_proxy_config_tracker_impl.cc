@@ -166,9 +166,10 @@ PrefProxyConfigTrackerImpl::PrefProxyConfigTrackerImpl(
   active_config_ = pref_config_;
 
   proxy_prefs_.Init(pref_service);
-  proxy_prefs_.Add(proxy_config::prefs::kProxy,
-                   base::Bind(&PrefProxyConfigTrackerImpl::OnProxyPrefChanged,
-                              base::Unretained(this)));
+  proxy_prefs_.Add(
+      proxy_config::prefs::kProxy,
+      base::BindRepeating(&PrefProxyConfigTrackerImpl::OnProxyPrefChanged,
+                          base::Unretained(this)));
 }
 
 PrefProxyConfigTrackerImpl::~PrefProxyConfigTrackerImpl() {

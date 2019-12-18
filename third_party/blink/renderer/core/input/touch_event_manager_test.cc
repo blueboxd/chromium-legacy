@@ -28,7 +28,7 @@ class TouchEventManagerTest : public SimTest {
         type,
         WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
                              WebPointerProperties::Button::kLeft,
-                             WebFloatPoint(100, 100), WebFloatPoint(100, 100)),
+                             gfx::PointF(100, 100), gfx::PointF(100, 100)),
         1, 1);
     event.SetFrameScale(1);
     return event;

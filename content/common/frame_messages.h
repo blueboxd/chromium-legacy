@@ -147,10 +147,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::MediaPlayerAction::Type,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScrollDirection,
                               blink::kFirstScrollDirection,
                               blink::kLastScrollDirection)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(
-    ui::input_types::ScrollGranularity,
-    ui::input_types::ScrollGranularity::kFirstScrollGranularity,
-    ui::input_types::ScrollGranularity::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FeaturePolicyDisposition,
                           blink::mojom::FeaturePolicyDisposition::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FrameVisibility,

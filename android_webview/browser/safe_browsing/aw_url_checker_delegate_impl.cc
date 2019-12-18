@@ -109,7 +109,7 @@ bool AwUrlCheckerDelegateImpl::ShouldSkipRequestCheck(
   // For other requests, follow user consent.
   JNIEnv* env = base::android::AttachCurrentThread();
   bool safe_browsing_user_consent =
-      Java_AwSafeBrowsingConfigHelper_getSafeBrowsingUserOptIn2(env);
+      Java_AwSafeBrowsingConfigHelper_getSafeBrowsingUserOptIn(env);
   return !safe_browsing_user_consent;
 }
 

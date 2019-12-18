@@ -12,6 +12,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -359,6 +360,39 @@ bool ContainsAutofillableValue(const autofill::FormStructure& form) {
                      });
 }
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+// Retrieves all valid credit card candidates for virtual card selection. A
+// valid candidate must have exactly one cloud token.
+std::vector<CreditCard*> GetVirtualCardCandidates(
+    PersonalDataManager* personal_data_manager) {
+  DCHECK(personal_data_manager);
+  std::vector<CreditCard*> candidates =
+      personal_data_manager->GetServerCreditCards();
+  const std::vector<CreditCardCloudTokenData*> cloud_token_data =
+      personal_data_manager->GetCreditCardCloudTokenData();
+
+  // Constructs map.
+  std::unordered_map<std::string, int> id_count;
+  for (CreditCardCloudTokenData* data : cloud_token_data) {
+    const auto& iterator = id_count.find(data->masked_card_id);
+    if (iterator == id_count.end())
+      id_count.emplace(data->masked_card_id, 1);
+    else
+      iterator->second += 1;
+  }
+
+  // Remove the card from the vector that either has multiple cloud token data
+  // or has no cloud token data.
+  base::EraseIf(candidates, [&](const auto& card) {
+    const auto& iterator = id_count.find(card->server_id());
+    return iterator == id_count.end() || iterator->second > 1;
+  });
+
+  // Returns the remaining valid cards.
+  return candidates;
+}
+#endif
+
 }  // namespace
 
 AutofillManager::FillingContext::FillingContext() = default;
@@ -524,6 +558,29 @@ void AutofillManager::RefetchCardsAndUpdatePopup(
       query_id, cards,
       /*autoselect_first_suggestion=*/false, should_display_gpay_logo);
 }
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+void AutofillManager::FetchVirtualCardCandidates() {
+  const std::vector<CreditCard*>& candidates =
+      GetVirtualCardCandidates(personal_data_);
+  // Make sure the |candidates| is not empty, otherwise the check in
+  // ShouldShowVirtualCardOption() should fail.
+  DCHECK(!candidates.empty());
+
+  client_->OfferVirtualCardOptions(
+      candidates,
+      base::BindOnce(&AutofillManager::OnVirtualCardCandidateSelected,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void AutofillManager::OnVirtualCardCandidateSelected(
+    const std::string& selected_card_id) {
+  // TODO(crbug.com/1020740): Implement this and the following flow in a
+  // separate CL. The following flow will be sending a request to Payments
+  // to fetched the up-to-date cloud token data for the selected card and fill
+  // the information in the form.
+}
+#endif
 
 bool AutofillManager::ShouldParseForms(const std::vector<FormData>& forms,
                                        const base::TimeTicks timestamp) {
@@ -2422,10 +2479,10 @@ bool AutofillManager::ShouldShowVirtualCardOption(
     return false;
   }
 
-  // If no credit card cloud token data is available, return false.
-  // TODO(crbug.com/1020740): Wait for the changes on the AutofillTable is
-  // landed, and then add that check here (and also unit test in
-  // autofill_manager_unittest.cc).
+  // If no credit card candidate has related cloud token data available, return
+  // false.
+  if (GetVirtualCardCandidates(personal_data_).empty())
+    return false;
 
   // If card number field or expiration date field is not detected, return
   // false.

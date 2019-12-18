@@ -442,8 +442,6 @@ ScopedFPDFDocument PDFiumPrint::CreateSinglePageRasterPdf(
                         bitmap_size.height(), print_settings.orientation,
                         FPDF_PRINTING);
 
-  unsigned char* bitmap_data =
-      static_cast<unsigned char*>(FPDFBitmap_GetBuffer(bitmap.get()));
   double ratio_x = ConvertUnitDouble(bitmap_size.width(), print_settings.dpi,
                                      kPointsPerInch);
   double ratio_y = ConvertUnitDouble(bitmap_size.height(), print_settings.dpi,
@@ -451,7 +449,7 @@ ScopedFPDFDocument PDFiumPrint::CreateSinglePageRasterPdf(
 
   // Add the bitmap to an image object and add the image object to the output
   // page.
-  FPDF_PAGEOBJECT temp_img = FPDFPageObj_NewImageObj(temp_doc.get());
+  ScopedFPDFPageObject temp_img(FPDFPageObj_NewImageObj(temp_doc.get()));
 
   bool encoded = false;
   std::vector<uint8_t> compressed_bitmap_data;
@@ -463,7 +461,8 @@ ScopedFPDFDocument PDFiumPrint::CreateSinglePageRasterPdf(
     SkImageInfo info = SkImageInfo::Make(
         FPDFBitmap_GetWidth(bitmap.get()), FPDFBitmap_GetHeight(bitmap.get()),
         kBGRA_8888_SkColorType, kOpaque_SkAlphaType);
-    SkPixmap src(info, bitmap_data, FPDFBitmap_GetStride(bitmap.get()));
+    SkPixmap src(info, FPDFBitmap_GetBuffer(bitmap.get()),
+                 FPDFBitmap_GetStride(bitmap.get()));
     encoded = gfx::JPEGCodec::Encode(src, kQuality, &compressed_bitmap_data);
   }
 
@@ -478,13 +477,14 @@ ScopedFPDFDocument PDFiumPrint::CreateSinglePageRasterPdf(
       file_access.m_GetBlock = &GetBlockForJpeg;
       file_access.m_Param = &compressed_bitmap_data;
 
-      FPDFImageObj_LoadJpegFileInline(&temp_page, 1, temp_img, &file_access);
+      FPDFImageObj_LoadJpegFileInline(&temp_page, 1, temp_img.get(),
+                                      &file_access);
     } else {
-      FPDFImageObj_SetBitmap(&temp_page, 1, temp_img, bitmap.get());
+      FPDFImageObj_SetBitmap(&temp_page, 1, temp_img.get(), bitmap.get());
     }
 
-    FPDFImageObj_SetMatrix(temp_img, ratio_x, 0, 0, ratio_y, 0, 0);
-    FPDFPage_InsertObject(temp_page, temp_img);
+    FPDFImageObj_SetMatrix(temp_img.get(), ratio_x, 0, 0, ratio_y, 0, 0);
+    FPDFPage_InsertObject(temp_page, temp_img.release());
     FPDFPage_GenerateContent(temp_page);
   }
 

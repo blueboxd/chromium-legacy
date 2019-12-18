@@ -633,8 +633,6 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
     int bottom =
         screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();
     resizer->CompleteDrag();
-    // With the resolution of 500x600 we will hit in this case the 50% screen
-    // size setting.
     // TODO(varkha): Insets are updated because of http://crbug.com/292238
     EXPECT_EQ("250,0 250x" + base::NumberToString(bottom),
               window_->bounds().ToString());

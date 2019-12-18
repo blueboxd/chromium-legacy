@@ -1189,10 +1189,11 @@ void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
   DCHECK(root_window_ == window->GetRootWindow());
   // Do not set transform for drop target, set bounds instead.
   if (overview_grid_->IsDropTargetWindow(window)) {
-    window->SetBoundsInScreen(
-        ToStableSizeRoundedRect(GetWindowTargetBoundsWithInsets()),
-        WindowState::Get(window)->GetDisplay());
-    window->SetTransform(gfx::Transform());
+    const gfx::Rect drop_target_bounds =
+        ToStableSizeRoundedRect(GetWindowTargetBoundsWithInsets());
+    SetWidgetBoundsAndMaybeAnimateTransform(
+        overview_grid_->drop_target_widget(), drop_target_bounds,
+        animation_type, /*observer=*/nullptr);
     return;
   }
 

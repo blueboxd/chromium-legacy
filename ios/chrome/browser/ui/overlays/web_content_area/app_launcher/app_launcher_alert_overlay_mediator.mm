@@ -6,11 +6,12 @@
 
 #include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/overlays/public/overlay_callback_manager.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #include "ios/chrome/browser/overlays/public/overlay_response.h"
 #include "ios/chrome/browser/overlays/public/web_content_area/app_launcher_alert_overlay.h"
 #import "ios/chrome/browser/ui/alert_view/alert_action.h"
-#import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_mediator+subclassing.h"
+#import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_mediator+alert_consumer_support.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -19,7 +20,7 @@
 #endif
 
 @interface AppLauncherAlertOverlayMediator ()
-@property(nonatomic, readonly) OverlayRequest* request;
+// The config from the request passed on initialization.
 @property(nonatomic, readonly) AppLauncherAlertOverlayRequestConfig* config;
 
 // Sets the OverlayResponse. |allowAppLaunch| indicates whether the alert's
@@ -30,11 +31,9 @@
 @implementation AppLauncherAlertOverlayMediator
 
 - (instancetype)initWithRequest:(OverlayRequest*)request {
-  if (self = [super init]) {
-    _request = request;
-    DCHECK(_request);
+  if (self = [super initWithRequest:request]) {
     // Verify that the request is configured for app launcher alerts.
-    DCHECK(_request->GetConfig<AppLauncherAlertOverlayRequestConfig>());
+    DCHECK(request->GetConfig<AppLauncherAlertOverlayRequestConfig>());
   }
   return self;
 }
@@ -48,14 +47,14 @@
 #pragma mark - Response helpers
 
 - (void)updateResponseAllowingAppLaunch:(BOOL)allowAppLaunch {
-  self.request->set_response(
+  self.request->GetCallbackManager()->SetCompletionResponse(
       OverlayResponse::CreateWithInfo<AppLauncherAlertOverlayResponseInfo>(
           allowAppLaunch));
 }
 
 @end
 
-@implementation AppLauncherAlertOverlayMediator (Subclassing)
+@implementation AppLauncherAlertOverlayMediator (AlertConsumerSupport)
 
 - (NSString*)alertMessage {
   return self.config->is_repeated_request()
@@ -77,7 +76,7 @@
                            __typeof__(self) strongSelf = weakSelf;
                            [strongSelf updateResponseAllowingAppLaunch:YES];
                            [strongSelf.delegate
-                               stopDialogForMediator:strongSelf];
+                               stopOverlayForMediator:strongSelf];
                          }],
     [AlertAction actionWithTitle:rejectActionTitle
                            style:UIAlertActionStyleCancel
@@ -85,7 +84,7 @@
                            __typeof__(self) strongSelf = weakSelf;
                            [strongSelf updateResponseAllowingAppLaunch:NO];
                            [strongSelf.delegate
-                               stopDialogForMediator:strongSelf];
+                               stopOverlayForMediator:strongSelf];
                          }],
   ];
 }

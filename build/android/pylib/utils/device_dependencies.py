@@ -34,6 +34,9 @@ _BLACKLIST = [
     re.compile(r'.*llvm-symbolizer'),
     re.compile(r'.*md5sum_bin'),
     re.compile(os.path.join('.*', 'development', 'scripts', 'stack')),
+
+    # Required for java deobfuscation on the host:
+    re.compile(r'.*third_party/jdk/.*'),
 ]
 
 

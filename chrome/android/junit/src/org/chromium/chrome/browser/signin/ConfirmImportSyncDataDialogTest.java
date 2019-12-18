@@ -49,8 +49,7 @@ public class ConfirmImportSyncDataDialogTest {
     public void setUp() {
         initMocks(this);
         IdentityServicesProvider.setInstanceForTests(mock(IdentityServicesProvider.class));
-        when(IdentityServicesProvider.get().getSigninManagerInternal())
-                .thenReturn(mSigninManagerMock);
+        when(IdentityServicesProvider.get().getSigninManager()).thenReturn(mSigninManagerMock);
         mFragmentManager =
                 Robolectric.setupActivity(FragmentActivity.class).getSupportFragmentManager();
         mStateMachineDelegate = new ConfirmSyncDataStateMachineDelegate(mFragmentManager);

@@ -115,8 +115,8 @@ void DevToolsEyeDropper::ResetFrame() {
 }
 
 bool DevToolsEyeDropper::HandleMouseEvent(const blink::WebMouseEvent& event) {
-  last_cursor_x_ = event.PositionInWidget().x;
-  last_cursor_y_ = event.PositionInWidget().y;
+  last_cursor_x_ = event.PositionInWidget().x();
+  last_cursor_y_ = event.PositionInWidget().y();
   if (frame_.drawsNothing())
     return true;
 

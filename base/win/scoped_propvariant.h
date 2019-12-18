@@ -17,13 +17,9 @@ namespace win {
 // construction and destruction of this class.
 class ScopedPropVariant {
  public:
-  ScopedPropVariant() {
-    PropVariantInit(&pv_);
-  }
+  ScopedPropVariant() { PropVariantInit(&pv_); }
 
-  ~ScopedPropVariant() {
-    Reset();
-  }
+  ~ScopedPropVariant() { Reset(); }
 
   // Returns a pointer to the underlying PROPVARIANT for use as an out param in
   // a function call.

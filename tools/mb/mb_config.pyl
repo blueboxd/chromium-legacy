@@ -676,6 +676,7 @@
       'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting_fastbuild_java_coverage',
       'android-marshmallow-x86-fyi-rel': 'android_release_trybot_x86_resource_whitelisting',
       'android-oreo-arm64-cts-networkservice-dbg': 'android_debug_trybot_arm64',
+      'android-pie-arm64-coverage-rel': 'android_release_trybot_arm64_webview_google_native_coverage',
       'android-pie-arm64-rel': 'android_release_trybot_arm64_webview_google',
       'android-webview-pie-arm64-fyi-rel': 'android_release_trybot_arm64_webview_google',
       'android-pie-x86-fyi-rel': 'android_release_trybot_x86',
@@ -1188,6 +1189,12 @@
     'android_release_trybot_arm64_webview_google': [
       'android', 'release_trybot', 'arm64', 'strip_debug_info',
       'webview_google',
+    ],
+
+    'android_release_trybot_arm64_webview_google_native_coverage': [
+      'android', 'release_trybot', 'arm64', 'strip_debug_info',
+      'webview_google',
+      'use_clang_coverage', 'partial_code_coverage_instrumentation',
     ],
 
     'android_release_trybot_fastbuild': [

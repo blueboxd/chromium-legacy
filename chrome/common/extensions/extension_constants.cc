@@ -82,8 +82,6 @@ const char* const kBuiltInFirstPartyExtensionIds[] = {
     kGoogleSpeechSynthesisExtensionId,
     kWallpaperManagerId,
     kZipArchiverExtensionId,
-    kChromeCameraAppId,
-    kChromeCameraAppDevId,
 #endif        // defined(OS_CHROMEOS)
     nullptr,  // Null-terminated array.
 };
@@ -117,10 +115,7 @@ const char kGoogleSpeechSynthesisExtensionId[] =
 const char kWallpaperManagerId[] = "obklkkbkpaoaejdabbfldmcfplpdgolj";
 const char kZipArchiverExtensionId[] = "dmboannefpncccogfdikhmhpmdnddgoe";
 const char kZipArchiverExtensionPath[] = "chromeos/zip_archiver";
-const char kChromeCameraAppId[] = "hfhhnacclhffhdffklopdkcgdhifgngh";
-const char kChromeCameraAppDevId[] = "flgnmkgjffmkephdokeeliiopbjaafpm";
-const char kChromeCameraAppPath[] = "chromeos/camera";
-
+const char kCameraAppPath[] = "chromeos/camera";
 #endif  // defined(CHROME_OS)
 
 const char kAppStateNotInstalled[] = "not_installed";

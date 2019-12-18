@@ -223,11 +223,11 @@ void MouseEvent::SetCoordinatesFromWebPointerProperties(
     const LocalDOMWindow* dom_window,
     MouseEventInit* initializer) {
   FloatPoint client_point;
-  FloatPoint screen_point = web_pointer_properties.PositionInScreen();
+  FloatPoint screen_point(web_pointer_properties.PositionInScreen());
   float scale_factor = 1.0f;
   if (dom_window && dom_window->GetFrame() && dom_window->GetFrame()->View()) {
     LocalFrame* frame = dom_window->GetFrame();
-    FloatPoint root_frame_point = web_pointer_properties.PositionInWidget();
+    FloatPoint root_frame_point(web_pointer_properties.PositionInWidget());
     if (Page* p = frame->GetPage()) {
       if (p->GetPointerLockController().GetElement() &&
           !p->GetPointerLockController().LockPending()) {

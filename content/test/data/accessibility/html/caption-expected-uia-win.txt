@@ -1,18 +1,18 @@
 document
 ++grid Name='Browser and Engine' Grid.ColumnCount=2 Grid.RowCount=3 Table.RowOrColumnMajor='RowMajor'
-++++description
+++++description IsControlElement=false
 ++++++description Name='Browser and Engine'
-++++row
+++++row IsControlElement=false
 ++++++columnheader Name='Browser' GridItem.Column=0 GridItem.ColumnSpan=1 GridItem.Row=0 GridItem.RowSpan=1 GridItem.ContainingGrid='Browser and Engine'
 ++++++++description Name='Browser' IsControlElement=false
 ++++++columnheader Name='Engine' GridItem.Column=1 GridItem.ColumnSpan=1 GridItem.Row=0 GridItem.RowSpan=1 GridItem.ContainingGrid='Browser and Engine'
 ++++++++description Name='Engine' IsControlElement=false
-++++row
+++++row IsControlElement=false
 ++++++gridcell Name='Chrome' GridItem.Column=0 GridItem.ColumnSpan=1 GridItem.Row=1 GridItem.RowSpan=1 GridItem.ContainingGrid='Browser and Engine'
 ++++++++description Name='Chrome' IsControlElement=false
 ++++++gridcell Name='Blink' GridItem.Column=1 GridItem.ColumnSpan=1 GridItem.Row=1 GridItem.RowSpan=1 GridItem.ContainingGrid='Browser and Engine'
 ++++++++description Name='Blink' IsControlElement=false
-++++row
+++++row IsControlElement=false
 ++++++gridcell Name='Safari' GridItem.Column=0 GridItem.ColumnSpan=1 GridItem.Row=2 GridItem.RowSpan=1 GridItem.ContainingGrid='Browser and Engine'
 ++++++++description Name='Safari' IsControlElement=false
 ++++++gridcell Name='WebKit' GridItem.Column=1 GridItem.ColumnSpan=1 GridItem.Row=2 GridItem.RowSpan=1 GridItem.ContainingGrid='Browser and Engine'

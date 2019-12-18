@@ -328,14 +328,11 @@ void TreeNode::WriteIntoJson(
     bool is_sparse,
     Json::Value* out) {
   if (symbol) {
+    (*out)["helpme"] = std::string(symbol->Name());
+    (*out)["idPath"] = std::string(symbol->TemplateName());
+    (*out)["fullName"] = std::string(symbol->FullName());
     if (symbol->NumAliases() > 1) {
       (*out)["numAliases"] = symbol->NumAliases();
-    }
-    if (symbol->IsDex()) {
-      (*out)["idPath"] = std::string(symbol->FullName());
-    } else {
-      (*out)["idPath"] = std::string(symbol->TemplateName());
-      (*out)["fullName"] = std::string(symbol->FullName());
     }
     if (symbol->SourcePath()) {
       (*out)["srcPath"] = symbol->SourcePath();

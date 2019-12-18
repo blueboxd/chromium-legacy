@@ -14,11 +14,6 @@ HeadlessPrintRenderFrameHelperDelegate::
 HeadlessPrintRenderFrameHelperDelegate::
     ~HeadlessPrintRenderFrameHelperDelegate() = default;
 
-bool HeadlessPrintRenderFrameHelperDelegate::CancelPrerender(
-    content::RenderFrame* render_frame) {
-  return false;
-}
-
 blink::WebElement HeadlessPrintRenderFrameHelperDelegate::GetPdfElement(
     blink::WebLocalFrame* frame) {
   return blink::WebElement();

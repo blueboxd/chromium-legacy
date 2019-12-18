@@ -10,11 +10,13 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/logging.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/engine_impl/backoff_delay_provider.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -25,6 +27,17 @@ using base::TimeTicks;
 namespace syncer {
 
 namespace {
+
+// Indicates whether |configuration_params| corresponds to Nigori only
+// configuration (which happens if initial sync for Nigori isn't completed).
+// If |configuration_params| is null, returns false.
+bool IsNigoriOnlyConfiguration(
+    const ConfigurationParams* configuration_params) {
+  if (!configuration_params) {
+    return false;
+  }
+  return configuration_params->types_to_download == ModelTypeSet(NIGORI);
+}
 
 bool IsConfigRelatedUpdateOriginValue(
     sync_pb::SyncEnums::GetUpdatesOrigin origin) {
@@ -524,6 +537,29 @@ void SyncSchedulerImpl::HandleFailure(
         WaitInterval::EXPONENTIAL_BACKOFF, next_delay);
     SDVLOG(2) << "Sync cycle failed.  Will back off for "
               << wait_interval_->length.InMilliseconds() << "ms.";
+
+    MaybeRecordNigoriOnlyConfigurationFailedHistograms();
+  }
+}
+
+void SyncSchedulerImpl::MaybeRecordNigoriOnlyConfigurationFailedHistograms() {
+  if (!IsNigoriOnlyConfiguration(pending_configure_params_.get())) {
+    return;
+  }
+  if (!nigori_configuration_failed_recorded) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "Sync.HasAccessTokenWhenNigoriOnlyConfigurationFailed",
+        !cycle_context_->connection_manager()->HasInvalidAccessToken());
+    nigori_configuration_failed_recorded = true;
+  }
+  // Guaranteed by calling side.
+  DCHECK(wait_interval_);
+  if (!nigori_configuration_failed_with_5s_backoff_recorded &&
+      wait_interval_->length.InSeconds() > 5) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "Sync.HasAccessTokenWhenNigoriOnlyConfigurationFailedWith5SecBackoff",
+        !cycle_context_->connection_manager()->HasInvalidAccessToken());
+    nigori_configuration_failed_with_5s_backoff_recorded = true;
   }
 }
 

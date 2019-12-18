@@ -85,7 +85,7 @@ bool SetPropVariantValueForPropertyStore(
 }
 
 void __cdecl ForceCrashOnSigAbort(int) {
-  *((volatile int*)0) = 0x1337;
+  *((volatile int*)nullptr) = 0x1337;
 }
 
 // Returns the current platform role. We use the PowerDeterminePlatformRoleEx
@@ -251,8 +251,8 @@ bool IsKeyboardPresentOnSlate(HWND hwnd, std::string* reason) {
   }
 
   // This function should be only invoked for machines with touch screens.
-  if ((GetSystemMetrics(SM_DIGITIZER) & NID_INTEGRATED_TOUCH)
-        != NID_INTEGRATED_TOUCH) {
+  if ((GetSystemMetrics(SM_DIGITIZER) & NID_INTEGRATED_TOUCH) !=
+      NID_INTEGRATED_TOUCH) {
     if (reason) {
       *reason += "NID_INTEGRATED_TOUCH\n";
       result = true;
@@ -289,7 +289,7 @@ bool IsKeyboardPresentOnSlate(HWND hwnd, std::string* reason) {
   // 3. If step 1 and 2 fail then we check attached keyboards and return true
   //    if we find ACPI\* or HID\VID* keyboards.
 
-  typedef BOOL (WINAPI* GetAutoRotationState)(PAR_STATE state);
+  typedef BOOL(WINAPI * GetAutoRotationState)(PAR_STATE state);
   static const auto get_rotation_state = reinterpret_cast<GetAutoRotationState>(
       GetUser32FunctionPointer("GetAutoRotationState"));
   if (get_rotation_state) {
@@ -309,13 +309,15 @@ bool IsKeyboardPresentOnSlate(HWND hwnd, std::string* reason) {
     }
   }
 
-  const GUID KEYBOARD_CLASS_GUID =
-      { 0x4D36E96B, 0xE325,  0x11CE,
-          { 0xBF, 0xC1, 0x08, 0x00, 0x2B, 0xE1, 0x03, 0x18 } };
+  const GUID KEYBOARD_CLASS_GUID = {
+      0x4D36E96B,
+      0xE325,
+      0x11CE,
+      {0xBF, 0xC1, 0x08, 0x00, 0x2B, 0xE1, 0x03, 0x18}};
 
   // Query for all the keyboard devices.
-  HDEVINFO device_info =
-      SetupDiGetClassDevs(&KEYBOARD_CLASS_GUID, NULL, NULL, DIGCF_PRESENT);
+  HDEVINFO device_info = SetupDiGetClassDevs(&KEYBOARD_CLASS_GUID, nullptr,
+                                             nullptr, DIGCF_PRESENT);
   if (device_info == INVALID_HANDLE_VALUE) {
     if (reason)
       *reason += "No keyboard info\n";
@@ -326,7 +328,7 @@ bool IsKeyboardPresentOnSlate(HWND hwnd, std::string* reason) {
   // the count is more than 1 we assume that a keyboard is present. This is
   // under the assumption that there will always be one keyboard device.
   for (DWORD i = 0;; ++i) {
-    SP_DEVINFO_DATA device_info_data = { 0 };
+    SP_DEVINFO_DATA device_info_data = {0};
     device_info_data.cbSize = sizeof(device_info_data);
     if (!SetupDiEnumDeviceInfo(device_info, i, &device_info_data))
       break;
@@ -362,7 +364,7 @@ static bool g_crash_on_process_detach = false;
 
 bool GetUserSidString(std::wstring* user_sid) {
   // Get the current token.
-  HANDLE token = NULL;
+  HANDLE token = nullptr;
   if (!::OpenProcessToken(::GetCurrentProcess(), TOKEN_QUERY, &token))
     return false;
   ScopedHandle token_scoped(token);
@@ -416,8 +418,7 @@ bool SetBooleanValueForPropertyStore(IPropertyStore* property_store,
     return false;
   }
 
-  return SetPropVariantValueForPropertyStore(property_store,
-                                             property_key,
+  return SetPropVariantValueForPropertyStore(property_store, property_key,
                                              property_value);
 }
 
@@ -430,8 +431,7 @@ bool SetStringValueForPropertyStore(IPropertyStore* property_store,
     return false;
   }
 
-  return SetPropVariantValueForPropertyStore(property_store,
-                                             property_key,
+  return SetPropVariantValueForPropertyStore(property_store, property_key,
                                              property_value);
 }
 
@@ -456,8 +456,7 @@ bool SetAppIdForPropertyStore(IPropertyStore* property_store,
   DCHECK_LT(lstrlen(app_id), 64);
   DCHECK_EQ(wcschr(app_id, L' '), nullptr);
 
-  return SetStringValueForPropertyStore(property_store,
-                                        PKEY_AppUserModel_ID,
+  return SetStringValueForPropertyStore(property_store, PKEY_AppUserModel_ID,
                                         app_id);
 }
 
@@ -469,7 +468,7 @@ bool AddCommandToAutoRun(HKEY root_key,
                          const std::wstring& command) {
   RegKey autorun_key(root_key, kAutoRunKeyPath, KEY_SET_VALUE);
   return (autorun_key.WriteValue(name.c_str(), command.c_str()) ==
-      ERROR_SUCCESS);
+          ERROR_SUCCESS);
 }
 
 bool RemoveCommandFromAutoRun(HKEY root_key, const std::wstring& name) {
@@ -658,7 +657,7 @@ bool GetLoadedModulesSnapshot(HANDLE process, std::vector<HMODULE>* snapshot) {
       // Buffer size was too small. Try again with a larger buffer. A little
       // more room is given to avoid multiple expensive calls to
       // ::EnumProcessModules() just because one module has been added.
-      snapshot->resize(num_modules + 8, NULL);
+      snapshot->resize(num_modules + 8, nullptr);
     }
   } while (--retries_remaining);
 
@@ -672,8 +671,8 @@ void EnableFlicks(HWND hwnd) {
 
 void DisableFlicks(HWND hwnd) {
   ::SetProp(hwnd, MICROSOFT_TABLETPENSERVICE_PROPERTY,
-      reinterpret_cast<HANDLE>(TABLET_DISABLE_FLICKS |
-          TABLET_DISABLE_FLICKFALLBACKKEYS));
+            reinterpret_cast<HANDLE>(TABLET_DISABLE_FLICKS |
+                                     TABLET_DISABLE_FLICKFALLBACKKEYS));
 }
 
 bool IsProcessPerMonitorDpiAware() {

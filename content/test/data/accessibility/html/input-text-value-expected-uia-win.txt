@@ -1,5 +1,5 @@
 document
-++group
+++group IsControlElement=false
 ++++description
 ++++++description Name='l1'
 ++++textbox Name='l1'
@@ -10,7 +10,7 @@ document
 ++++textbox Name='l2' Value.Value='value  *'
 ++++description
 ++++++description Name='Email'
-++++group
+++++group IsControlElement=false
 ++++textbox Name='Email'
 ++++textbox Name='Email' Value.Value='value'
 ++++textbox Name='l5'

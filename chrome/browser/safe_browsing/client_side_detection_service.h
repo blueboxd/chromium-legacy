@@ -43,7 +43,6 @@ class SharedURLLoaderFactory;
 }  // namespace network
 
 namespace safe_browsing {
-class ClientMalwareRequest;
 class ClientPhishingRequest;
 
 // Main service which pushes models to the renderers, responds to classification
@@ -52,9 +51,6 @@ class ClientSideDetectionService : public content::NotificationObserver {
  public:
   // void(GURL phishing_url, bool is_phishing).
   typedef base::Callback<void(GURL, bool)> ClientReportPhishingRequestCallback;
-  // void(GURL original_url, GURL malware_url, bool is_malware).
-  typedef base::Callback<void(GURL, GURL, bool)>
-      ClientReportMalwareRequestCallback;
 
   ~ClientSideDetectionService() override;
 
@@ -101,11 +97,6 @@ class ClientSideDetectionService : public content::NotificationObserver {
       bool is_extended_reporting,
       const ClientReportPhishingRequestCallback& callback);
 
-  // Similar to above one, instead send ClientMalwareRequest
-  virtual void SendClientReportMalwareRequest(
-      ClientMalwareRequest* verdict,
-      const ClientReportMalwareRequestCallback& callback);
-
   // Returns true if the given IP address string falls within a private
   // (unroutable) network block.  Pages which are hosted on these IP addresses
   // are exempt from client-side phishing detection.  This is called by the
@@ -125,10 +116,6 @@ class ClientSideDetectionService : public content::NotificationObserver {
   // Returns true if we have sent more than kMaxReportsPerInterval phishing
   // reports in the last kReportsInterval.
   virtual bool OverPhishingReportLimit();
-
-  // Returns true if we have sent more than kMaxReportsPerInterval malware
-  // reports in the last kReportsInterval.
-  virtual bool OverMalwareReportLimit();
 
   // Sends a model to each renderer.
   virtual void SendModelToRenderers();
@@ -154,7 +141,6 @@ class ClientSideDetectionService : public content::NotificationObserver {
     CacheState(bool phish, base::Time time);
   };
 
-  static const char kClientReportMalwareUrl[];
   static const char kClientReportPhishingUrl[];
   static const int kMaxReportsPerInterval;
   static const int kInitialClientModelFetchDelayMs;
@@ -169,10 +155,6 @@ class ClientSideDetectionService : public content::NotificationObserver {
       bool is_extended_reporting,
       const ClientReportPhishingRequestCallback& callback);
 
-  void StartClientReportMalwareRequest(
-      ClientMalwareRequest* verdict,
-      const ClientReportMalwareRequestCallback& callback);
-
   // Called by OnURLFetchComplete to handle the server response from
   // sending the client-side phishing request.
   void HandlePhishingVerdict(network::SimpleURLLoader* source,
@@ -181,19 +163,8 @@ class ClientSideDetectionService : public content::NotificationObserver {
                              int response_code,
                              const std::string& data);
 
-  // Called by OnURLFetchComplete to handle the server response from
-  // sending the client-side malware request.
-  void HandleMalwareVerdict(network::SimpleURLLoader* source,
-                            const GURL& url,
-                            int net_error,
-                            int response_code,
-                            const std::string& data);
-
   // Invalidate cache results which are no longer useful.
   void UpdateCache();
-
-  // Get the number of malware reports that we have sent over kReportsInterval.
-  int GetMalwareNumReports();
 
   // Get the number of phishing reports that we have sent over kReportsInterval.
   int GetPhishingNumReports();
@@ -223,12 +194,6 @@ class ClientSideDetectionService : public content::NotificationObserver {
   std::map<const network::SimpleURLLoader*,
            std::unique_ptr<ClientPhishingReportInfo>>
       client_phishing_reports_;
-  // Map of client malware ip request to the corresponding callback that
-  // has to be invoked when the request is done.
-  struct ClientMalwareReportInfo;
-  std::map<const network::SimpleURLLoader*,
-           std::unique_ptr<ClientMalwareReportInfo>>
-      client_malware_reports_;
 
   // Cache of completed requests. Used to satisfy requests for the same urls
   // as long as the next request falls within our caching window (which is
@@ -242,10 +207,6 @@ class ClientSideDetectionService : public content::NotificationObserver {
   // of phishing requests that we send in a day.
   // TODO(gcasto): Serialize this so that it doesn't reset on browser restart.
   base::queue<base::Time> phishing_report_times_;
-
-  // Timestamp of when we sent a malware request. Used to limit the number
-  // of malware requests that we send in a day.
-  base::queue<base::Time> malware_report_times_;
 
   // The URLLoaderFactory we use to issue network requests.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

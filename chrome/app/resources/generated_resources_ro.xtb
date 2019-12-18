@@ -503,7 +503,7 @@
 <translation id="1697150536837697295">Artă</translation>
 <translation id="1698122934742150150">Numai sesiunea incognito actuală</translation>
 <translation id="1698650002254827833">Lista de aplicații nu se poate încărca. Reîncearcă.</translation>
-<translation id="1701062906490865540">Elimină această persoană</translation>
+<translation id="1701062906490865540">Exclude această persoană</translation>
 <translation id="1703331064825191675">Nu-ți face griji în privința parolelor</translation>
 <translation id="1706586824377653884">Adăugat de administrator</translation>
 <translation id="1706625117072057435">Niveluri de zoom</translation>
@@ -2529,7 +2529,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4572779512957829735">Introdu codul PIN pentru cheia de securitate</translation>
 <translation id="457386861538956877">Mai multe...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Asociază dispozitivul Bluetooth</translation>
 <translation id="4579581181964204535">Nu se poate proiecta <ph name="HOST_NAME" />.</translation>
 <translation id="4581774856936278355">Eroare la restabilirea Linux</translation>
 <translation id="4582563038311694664">Restabilește toate setările</translation>
@@ -4869,7 +4868,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7974936243149753750">Suprascanare</translation>
 <translation id="7978412674231730200">Cheie privată</translation>
 <translation id="7978450511781612192">Astfel, te vei deconecta de la Conturile Google. Marcajele, istoricul, parolele și alte setări nu vor mai fi sincronizate.</translation>
-<translation id="7979036127916589816">Eroare de sincronizare</translation>
 <translation id="7980084013673500153">ID articol: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Preîncarcă paginile pentru navigare și căutare mai rapide</translation>
 <translation id="798145602633458219">Atașează sugestia <ph name="SUGGESTION_NAME" /> la caseta de căutare</translation>
@@ -5042,7 +5040,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8213449224684199188">Modul foto a fost activat</translation>
 <translation id="8213577208796878755">Încă un dispozitiv disponibil.</translation>
 <translation id="8214489666383623925">Deschide fișierul...</translation>
-<translation id="8214962590150211830">Elimină această persoană</translation>
+<translation id="8214962590150211830">Exclude această persoană</translation>
 <translation id="8215295261562449873">Fă backup aplicațiilor și fișierelor în dosarul Descărcări înainte să faci upgrade la Linux.</translation>
 <translation id="8217399928341212914">Blocați în continuare descărcarea automată a mai multor fișiere</translation>
 <translation id="8221491193165283816">De obicei blochezi notificările. Ca să-i permiți acestui site să îți trimită notificări, dă clic aici.</translation>
@@ -5318,6 +5316,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="862542460444371744">&amp;Extensii</translation>
 <translation id="862727964348362408">Suspendat</translation>
 <translation id="862750493060684461">Memorie cache CSS</translation>
+<translation id="8627706565932943526">Eroare de sincronizare</translation>
 <translation id="8627795981664801467">Numai conexiuni sigure</translation>
 <translation id="8630903300770275248">Importați un utilizator monitorizat</translation>
 <translation id="8631032106121706562">Petale</translation>

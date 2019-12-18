@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 
+#include <algorithm>
 #include <list>
 
 #include "ash/public/cpp/shell_window_ids.h"
@@ -21,6 +22,9 @@
 #include "content/public/browser/web_ui.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "ui/aura/window.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
+#include "ui/gfx/geometry/insets.h"
 
 namespace chromeos {
 
@@ -33,6 +37,9 @@ std::list<SystemWebDialogDelegate*>* GetInstances() {
 }
 
 }  // namespace
+
+// static
+const size_t SystemWebDialogDelegate::kDialogMarginForInternalScreenPx = 48;
 
 // static
 SystemWebDialogDelegate* SystemWebDialogDelegate::FindInstance(
@@ -51,6 +58,46 @@ bool SystemWebDialogDelegate::HasInstance(const GURL& url) {
       instances->begin(), instances->end(),
       [url](SystemWebDialogDelegate* dialog) { return dialog->gurl_ == url; });
   return it != instances->end();
+}
+
+// static
+gfx::Size SystemWebDialogDelegate::ComputeDialogSizeForInternalScreen(
+    const gfx::Size& preferred_size) {
+  // If the device has no internal display (e.g., for Chromeboxes), use the
+  // preferred size.
+  // TODO(https://crbug.com/1035060): It could be possible that a Chromebox is
+  // hooked up to a low-resolution monitor. It might be a good idea to check
+  // that display's resolution as well.
+  if (!display::Display::HasInternalDisplay())
+    return preferred_size;
+
+  // According to the Chrome OS dialog spec, dialogs should have a 48px margin
+  // from the edge of an internal display.
+  static const gfx::Insets margins =
+      gfx::Insets(kDialogMarginForInternalScreenPx);
+
+  display::Display internal_display;
+  if (!display::Screen::GetScreen()->GetDisplayWithDisplayId(
+          display::Display::InternalDisplayId(), &internal_display)) {
+    NOTREACHED() << "Could not fetch metadata for internal display.";
+  }
+
+  // Work area size does not include the status bar.
+  gfx::Size work_area_size = internal_display.work_area_size();
+
+  // The max width possible is the screen's width adjusted by the left/right
+  // margins.
+  int max_work_area_width =
+      work_area_size.width() - margins.left() - margins.right();
+
+  // The max height possible is the screen's height adjusted by the top/bottom
+  // margins.
+  int max_work_area_height =
+      work_area_size.height() - margins.top() - margins.bottom();
+
+  // Take the minimum of the preferred size and the max size.
+  return gfx::Size(std::min({preferred_size.width(), max_work_area_width}),
+                   std::min({preferred_size.height(), max_work_area_height}));
 }
 
 SystemWebDialogDelegate::SystemWebDialogDelegate(const GURL& gurl,

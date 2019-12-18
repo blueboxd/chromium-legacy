@@ -643,15 +643,15 @@ class EventTestPlugin : public FakeWebPlugin {
         event.GetType() == WebInputEvent::kMouseWheel) {
       const WebMouseEvent& mouse_event =
           static_cast<const WebMouseEvent&>(event);
-      last_event_location_ = IntPoint(mouse_event.PositionInWidget().x,
-                                      mouse_event.PositionInWidget().y);
+      last_event_location_ = IntPoint(mouse_event.PositionInWidget().x(),
+                                      mouse_event.PositionInWidget().y());
     } else if (WebInputEvent::IsTouchEventType(event.GetType())) {
       const WebTouchEvent& touch_event =
           static_cast<const WebTouchEvent&>(event);
       if (touch_event.touches_length == 1) {
         last_event_location_ =
-            IntPoint(touch_event.touches[0].PositionInWidget().x,
-                     touch_event.touches[0].PositionInWidget().y);
+            IntPoint(touch_event.touches[0].PositionInWidget().x(),
+                     touch_event.touches[0].PositionInWidget().y());
       } else {
         last_event_location_ = IntPoint();
       }
@@ -702,7 +702,7 @@ TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin) {
 
   // First, send an event that doesn't hit the plugin to verify that the
   // plugin doesn't receive it.
-  event.SetPositionInWidget(WebFloatPoint(0, 0));
+  event.SetPositionInWidget(gfx::PointF());
 
   web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
@@ -713,7 +713,7 @@ TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin) {
   // it.
   WebRect rect = plugin_container_one_element.BoundsInViewport();
   event.SetPositionInWidget(
-      WebFloatPoint(rect.x + rect.width / 2, rect.y + rect.height / 2));
+      gfx::PointF(rect.x + rect.width / 2, rect.y + rect.height / 2));
 
   web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
@@ -815,8 +815,8 @@ TEST_F(WebPluginContainerTest, TouchEventScrolled) {
       WebPointerProperties(
           1, WebPointerProperties::PointerType::kTouch,
           WebPointerProperties::Button::kLeft,
-          WebFloatPoint(rect.x + rect.width / 2, rect.y + rect.height / 2),
-          WebFloatPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)),
+          gfx::PointF(rect.x + rect.width / 2, rect.y + rect.height / 2),
+          gfx::PointF(rect.x + rect.width / 2, rect.y + rect.height / 2)),
       1.0f, 1.0f);
 
   web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
@@ -857,8 +857,8 @@ TEST_F(WebPluginContainerTest, TouchEventScrolledWithCoalescedTouches) {
         WebPointerProperties(
             1, WebPointerProperties::PointerType::kTouch,
             WebPointerProperties::Button::kLeft,
-            WebFloatPoint(rect.x + rect.width / 2, rect.y + rect.height / 2),
-            WebFloatPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)),
+            gfx::PointF(rect.x + rect.width / 2, rect.y + rect.height / 2),
+            gfx::PointF(rect.x + rect.width / 2, rect.y + rect.height / 2)),
         1.0f, 1.0f);
 
     WebCoalescedInputEvent coalesced_event(event);
@@ -880,10 +880,10 @@ TEST_F(WebPluginContainerTest, TouchEventScrolledWithCoalescedTouches) {
         WebInputEvent::kPointerMove,
         WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
                              WebPointerProperties::Button::kLeft,
-                             WebFloatPoint(rect.x + rect.width / 2 + 1,
-                                           rect.y + rect.height / 2 + 1),
-                             WebFloatPoint(rect.x + rect.width / 2 + 1,
-                                           rect.y + rect.height / 2 + 1)),
+                             gfx::PointF(rect.x + rect.width / 2 + 1,
+                                         rect.y + rect.height / 2 + 1),
+                             gfx::PointF(rect.x + rect.width / 2 + 1,
+                                         rect.y + rect.height / 2 + 1)),
         1.0f, 1.0f);
 
     WebCoalescedInputEvent coalesced_event(event1);
@@ -892,19 +892,19 @@ TEST_F(WebPluginContainerTest, TouchEventScrolledWithCoalescedTouches) {
         WebInputEvent::kPointerMove,
         WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
                              WebPointerProperties::Button::kLeft,
-                             WebFloatPoint(rect.x + rect.width / 2 + 2,
-                                           rect.y + rect.height / 2 + 2),
-                             WebFloatPoint(rect.x + rect.width / 2 + 2,
-                                           rect.y + rect.height / 2 + 2)),
+                             gfx::PointF(rect.x + rect.width / 2 + 2,
+                                         rect.y + rect.height / 2 + 2),
+                             gfx::PointF(rect.x + rect.width / 2 + 2,
+                                         rect.y + rect.height / 2 + 2)),
         1.0f, 1.0f);
     WebPointerEvent event3(
         WebInputEvent::kPointerMove,
         WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
                              WebPointerProperties::Button::kLeft,
-                             WebFloatPoint(rect.x + rect.width / 2 + 3,
-                                           rect.y + rect.height / 2 + 3),
-                             WebFloatPoint(rect.x + rect.width / 2 + 3,
-                                           rect.y + rect.height / 2 + 3)),
+                             gfx::PointF(rect.x + rect.width / 2 + 3,
+                                         rect.y + rect.height / 2 + 3),
+                             gfx::PointF(rect.x + rect.width / 2 + 3,
+                                         rect.y + rect.height / 2 + 3)),
         1.0f, 1.0f);
 
     coalesced_event.AddCoalescedEvent(event2);
@@ -1109,8 +1109,8 @@ TEST_F(WebPluginContainerTest, TouchEventZoomed) {
       WebPointerProperties(
           1, WebPointerProperties::PointerType::kTouch,
           WebPointerProperties::Button::kLeft,
-          WebFloatPoint(rect.x + rect.width / 2, rect.y + rect.height / 2),
-          WebFloatPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)),
+          gfx::PointF(rect.x + rect.width / 2, rect.y + rect.height / 2),
+          gfx::PointF(rect.x + rect.width / 2, rect.y + rect.height / 2)),
       1.0f, 1.0f);
 
   web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));

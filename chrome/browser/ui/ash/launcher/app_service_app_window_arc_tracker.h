@@ -83,6 +83,8 @@ class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
 
   ash::ShelfID GetShelfId(int task_id) const;
 
+  int active_task_id() const { return active_task_id_; }
+
  private:
   class ArcAppWindowInfo;
 

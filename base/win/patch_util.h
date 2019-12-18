@@ -20,6 +20,6 @@ BASE_EXPORT DWORD ModifyCode(void* destination, const void* source, int length);
 
 }  // namespace internal
 }  // namespace win
-}  // namespace bsae
+}  // namespace base
 
 #endif  // BASE_WIN_PATCH_UTIL_H_

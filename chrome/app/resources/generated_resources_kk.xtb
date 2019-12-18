@@ -2526,7 +2526,6 @@
 <translation id="4572779512957829735">Қауіпсіздік кілтінің PIN кодын енгізіңіз.</translation>
 <translation id="457386861538956877">Тағы…</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
-<translation id="4576541033847873020">Bluetooth құрылғысын жұптау</translation>
 <translation id="4579581181964204535"><ph name="HOST_NAME" /> трансляциялау мүмкін емес.</translation>
 <translation id="4581774856936278355">Linux жүйесін қалпына келтіру кезінде қате шықты.</translation>
 <translation id="4582563038311694664">Барлық параметрлерді қалпына келтіру</translation>
@@ -4866,7 +4865,6 @@
 <translation id="7974936243149753750">Экран жиегі</translation>
 <translation id="7978412674231730200">Жеке кілт</translation>
 <translation id="7978450511781612192">Google есептік жазбаларыңыздан шығарыласыз. Бетбелгілер, тарих, құпия сөздер, т.б. синхрондалмайтын болады.</translation>
-<translation id="7979036127916589816">Синхрондау қатесі</translation>
 <translation id="7980084013673500153">Актив идентификаторы: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Интернетте жылдамырақ шарлау және іздеу үшін беттерді алдын ала жүктеу</translation>
 <translation id="798145602633458219"><ph name="SUGGESTION_NAME" /> ұсынысын іздеу өрісіне қою</translation>
@@ -5314,6 +5312,7 @@
 <translation id="862542460444371744">&amp;Кеңейтімдер</translation>
 <translation id="862727964348362408">Тоқтатылған</translation>
 <translation id="862750493060684461">CSS кэші</translation>
+<translation id="8627706565932943526">Синхрондау қатесі</translation>
 <translation id="8627795981664801467">Тек қауіпсіз байланыстар</translation>
 <translation id="8630903300770275248">Бақыланатын пайдаланушыны импорттау</translation>
 <translation id="8631032106121706562">Гүл</translation>

@@ -382,8 +382,8 @@ void TouchActionTest::SendTouchEvent(WebView* web_view,
       type,
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
                            WebPointerProperties::Button::kLeft,
-                           WebFloatPoint(client_point.X(), client_point.Y()),
-                           WebFloatPoint(client_point.X(), client_point.Y())),
+                           gfx::PointF(client_point.X(), client_point.Y()),
+                           gfx::PointF(client_point.X(), client_point.Y())),
       10.0f, 10.0f);
   if (type == WebInputEvent::kPointerCancel)
     event.dispatch_type = WebInputEvent::kEventNonBlocking;

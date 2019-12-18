@@ -31,7 +31,6 @@ extern const char kPlayStoreActivity[];
 extern const char kPlayStorePackage[];
 extern const char kSettingsAppDomainUrlActivity[];
 
-extern const char kCameraAppId[];
 extern const char kCameraMigrationAppId[];
 extern const char kGmailAppId[];
 extern const char kGoogleCalendarAppId[];

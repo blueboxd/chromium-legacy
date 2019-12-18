@@ -17,11 +17,6 @@
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../settings_vars_css.html">
 
-<if expr="chromeos">
-  <link rel="import" href="../google_assistant_page/google_assistant_page.html">
-  <link rel="import" href="../google_assistant_page/google_assistant_browser_proxy.html">
-</if>
-
 <dom-module id="settings-search-page">
   <template>
     <style include="settings-shared md-select">
@@ -82,21 +77,6 @@
             label="$i18n{searchEnginesManage}"
             on-click="onManageSearchEnginesTap_"
             role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
-
-<if expr="chromeos">
-        <!-- Google Assistant -->
-        <template is="dom-if" if="[[isAssistantAllowed_]]">
-          <cr-link-row
-              class="hr"
-              id="assistantSubpageTrigger"
-              label="$i18n{searchGoogleAssistant}"
-              sub-label="[[getAssistantEnabledDisabledLabel_(
-                  prefs.settings.voice_interaction.enabled.value)]]"
-              on-click="onGoogleAssistantTap_"
-              role-description="$i18n{subpageArrowRoleDescription}">
-          </cr-link-row>
-        </template>
-</if>
       </div>
       <template is="dom-if" route-path="/searchEngines">
         <settings-subpage
@@ -107,18 +87,6 @@
           <settings-search-engines-page filter="[[searchEnginesFilter_]]">
         </settings-subpage>
       </template>
-<if expr="chromeos">
-      <template is="dom-if" if="[[isAssistantAllowed_]]">
-        <template is="dom-if" route-path="/googleAssistant">
-          <settings-subpage
-              associated-control="[[$$('#assistantSubpageTrigger')]]"
-              page-title="$i18n{googleAssistantPageTitle}">
-            <settings-google-assistant-page prefs="{{prefs}}">
-            </settings-google-assistant-page>
-          </settings-subpage>
-        </template>
-      </template>
-</if>
     </settings-animated-pages>
   </template>
   <script src="search_page.js"></script>

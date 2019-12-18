@@ -65,8 +65,8 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
     needs_boundaries_or_transform_update_ = true;
   }
 
-  IntSize ContainerSize() const { return container_size_; }
-  void SetContainerSize(const IntSize& container_size) {
+  LayoutSize ContainerSize() const { return container_size_; }
+  void SetContainerSize(const LayoutSize& container_size) {
     // SVGImage::draw() does a view layout prior to painting,
     // and we need that layout to know of the new size otherwise
     // the layout may be incorrectly using the old size.
@@ -162,7 +162,7 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
   PositionWithAffinity PositionForPoint(const PhysicalOffset&) const final;
 
   LayoutObjectChildList children_;
-  IntSize container_size_;
+  LayoutSize container_size_;
   FloatRect object_bounding_box_;
   bool object_bounding_box_valid_;
   FloatRect stroke_bounding_box_;

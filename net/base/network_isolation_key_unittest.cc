@@ -304,8 +304,9 @@ TEST(NetworkIsolationKeyTest, UseRegistrableDomain) {
   // enabled.
   url::Origin expected_domain_a = url::Origin::Create(GURL("http://foo.test"));
   NetworkIsolationKey key(origin_a, origin_b);
-  EXPECT_EQ(expected_domain_a, key.GetTopFrameOrigin().value());
+  EXPECT_EQ(origin_a, key.GetTopFrameOrigin().value());
   EXPECT_FALSE(key.GetFrameOrigin().has_value());
+  EXPECT_EQ(expected_domain_a.Serialize(), key.ToString());
 
   // More tests for using registrable domain are in
   // NetworkIsolationKeyWithFrameOriginTest.UseRegistrableDomain.
@@ -412,27 +413,30 @@ TEST_F(NetworkIsolationKeyWithFrameOriginTest, UseRegistrableDomain) {
   url::Origin expected_domain_a = url::Origin::Create(GURL("http://foo.test"));
   url::Origin expected_domain_b = url::Origin::Create(GURL("https://foo.test"));
   NetworkIsolationKey key(origin_a, origin_b);
-  EXPECT_EQ(expected_domain_a, key.GetTopFrameOrigin().value());
-  EXPECT_EQ(expected_domain_b, key.GetFrameOrigin().value());
+  EXPECT_EQ(origin_a, key.GetTopFrameOrigin().value());
+  EXPECT_EQ(origin_b, key.GetFrameOrigin().value());
+  EXPECT_EQ(expected_domain_a.Serialize() + " " + expected_domain_b.Serialize(),
+            key.ToString());
 
   // Top frame origin is opaque but not the frame origin.
   url::Origin origin_data =
       url::Origin::Create(GURL("data:text/html,<body>Hello World</body>"));
   key = NetworkIsolationKey(origin_data, origin_b);
-  EXPECT_TRUE(key.GetTopFrameOrigin()->opaque());
-  EXPECT_EQ(origin_data, key.GetTopFrameOrigin().value());
-  EXPECT_EQ(expected_domain_b, key.GetFrameOrigin().value());
+  EXPECT_TRUE(key.top_frame_origin_->opaque());
+  EXPECT_TRUE(key.ToString().empty());
+  EXPECT_EQ(origin_data, key.top_frame_origin_.value());
+  EXPECT_EQ(expected_domain_b, key.frame_origin_.value());
 
   // Top frame origin is non-opaque but frame origin is opaque.
   key = NetworkIsolationKey(origin_a, origin_data);
-  EXPECT_EQ(expected_domain_a, key.GetTopFrameOrigin().value());
+  EXPECT_EQ(expected_domain_a, key.top_frame_origin_.value());
+  EXPECT_TRUE(key.ToString().empty());
   EXPECT_EQ(origin_data, key.GetFrameOrigin().value());
-  EXPECT_TRUE(key.GetFrameOrigin()->opaque());
+  EXPECT_TRUE(key.frame_origin_->opaque());
 
   // Empty NIK stays empty.
   NetworkIsolationKey empty_key;
-  EXPECT_FALSE(empty_key.GetTopFrameOrigin().has_value());
-  EXPECT_FALSE(empty_key.GetFrameOrigin().has_value());
+  EXPECT_TRUE(key.ToString().empty());
 
   // IPv4 and IPv6 origins should not be modified, except for removing their
   // ports.
@@ -440,17 +444,17 @@ TEST_F(NetworkIsolationKeyWithFrameOriginTest, UseRegistrableDomain) {
   url::Origin origin_ipv6 = url::Origin::Create(GURL("https://[::1]"));
   key = NetworkIsolationKey(origin_ipv4, origin_ipv6);
   EXPECT_EQ(url::Origin::Create(GURL("http://127.0.0.1")),
-            key.GetTopFrameOrigin().value());
-  EXPECT_EQ(origin_ipv6, key.GetFrameOrigin().value());
+            key.top_frame_origin_.value());
+  EXPECT_EQ(origin_ipv6, key.frame_origin_.value());
 
   // Nor should TLDs, recognized or not.
   url::Origin origin_tld = url::Origin::Create(GURL("http://com"));
   url::Origin origin_tld_unknown =
       url::Origin::Create(GURL("https://bar:1234"));
   key = NetworkIsolationKey(origin_tld, origin_tld_unknown);
-  EXPECT_EQ(origin_tld, key.GetTopFrameOrigin().value());
+  EXPECT_EQ(origin_tld, key.top_frame_origin_.value());
   EXPECT_EQ(url::Origin::Create(GURL("https://bar")),
-            key.GetFrameOrigin().value());
+            key.frame_origin_.value());
 
   // Check for two-part TLDs.
   url::Origin origin_two_part_tld = url::Origin::Create(GURL("http://co.uk"));
@@ -458,9 +462,32 @@ TEST_F(NetworkIsolationKeyWithFrameOriginTest, UseRegistrableDomain) {
       url::Origin::Create(GURL("https://a.b.co.uk"));
   key =
       NetworkIsolationKey(origin_two_part_tld, origin_two_part_tld_with_prefix);
-  EXPECT_EQ(origin_two_part_tld, key.GetTopFrameOrigin().value());
+  EXPECT_EQ(origin_two_part_tld, key.top_frame_origin_.value());
   EXPECT_EQ(url::Origin::Create(GURL("https://b.co.uk")),
-            key.GetFrameOrigin().value());
+            key.frame_origin_.value());
+
+  // Two keys with different origins but same etld+1.
+  // Also test the getter APIs.
+  url::Origin origin_a_foo = url::Origin::Create(GURL("http://a.foo.com"));
+  url::Origin foo = url::Origin::Create(GURL("http://foo.com"));
+  url::Origin origin_b_foo = url::Origin::Create(GURL("http://b.foo.com"));
+  NetworkIsolationKey key1 = NetworkIsolationKey(origin_a_foo, origin_a_foo);
+  NetworkIsolationKey key2 = NetworkIsolationKey(origin_b_foo, origin_b_foo);
+  EXPECT_EQ(key1, key2);
+  EXPECT_EQ(foo.Serialize() + " " + foo.Serialize(), key1.ToString());
+  EXPECT_EQ(foo.Serialize() + " " + foo.Serialize(), key2.ToString());
+  EXPECT_EQ(origin_a_foo, key1.GetTopFrameOrigin());
+  EXPECT_EQ(origin_a_foo, key1.GetFrameOrigin());
+  EXPECT_EQ(origin_b_foo, key2.GetTopFrameOrigin());
+  EXPECT_EQ(origin_b_foo, key2.GetFrameOrigin());
+
+  // Copying one key to another should also copy the original origins.
+  url::Origin origin_bar = url::Origin::Create(GURL("http://a.bar.com"));
+  NetworkIsolationKey key_bar = NetworkIsolationKey(origin_bar, origin_bar);
+  NetworkIsolationKey key_copied = key_bar;
+  EXPECT_EQ(key_copied.GetTopFrameOrigin(), key_bar.GetTopFrameOrigin());
+  EXPECT_EQ(key_copied.GetFrameOrigin(), key_bar.GetFrameOrigin());
+  EXPECT_EQ(key_copied, key_bar);
 }
 
 TEST_F(NetworkIsolationKeyWithFrameOriginTest, CreateWithNewFrameOrigin) {

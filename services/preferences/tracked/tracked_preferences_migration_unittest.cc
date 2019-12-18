@@ -49,8 +49,8 @@ class SimpleInterceptablePrefFilter : public InterceptablePrefFilter {
   OnWriteCallbackPair FilterSerializeData(
       base::DictionaryValue* pref_store_contents) override {
     ADD_FAILURE();
-    return std::make_pair(base::Closure(),
-                          base::Callback<void(bool success)>());
+    return std::make_pair(base::OnceClosure(),
+                          base::OnceCallback<void(bool success)>());
   }
 
  private:
@@ -106,14 +106,16 @@ class TrackedPreferencesMigrationTest : public testing::Test {
 
     SetupTrackedPreferencesMigration(
         unprotected_pref_names, protected_pref_names,
-        base::Bind(&TrackedPreferencesMigrationTest::RemovePathFromStore,
-                   base::Unretained(this), MOCK_UNPROTECTED_PREF_STORE),
-        base::Bind(&TrackedPreferencesMigrationTest::RemovePathFromStore,
-                   base::Unretained(this), MOCK_PROTECTED_PREF_STORE),
-        base::Bind(
+        base::BindRepeating(
+            &TrackedPreferencesMigrationTest::RemovePathFromStore,
+            base::Unretained(this), MOCK_UNPROTECTED_PREF_STORE),
+        base::BindRepeating(
+            &TrackedPreferencesMigrationTest::RemovePathFromStore,
+            base::Unretained(this), MOCK_PROTECTED_PREF_STORE),
+        base::BindRepeating(
             &TrackedPreferencesMigrationTest::RegisterSuccessfulWriteClosure,
             base::Unretained(this), MOCK_UNPROTECTED_PREF_STORE),
-        base::Bind(
+        base::BindRepeating(
             &TrackedPreferencesMigrationTest::RegisterSuccessfulWriteClosure,
             base::Unretained(this), MOCK_PROTECTED_PREF_STORE),
         std::unique_ptr<PrefHashStore>(

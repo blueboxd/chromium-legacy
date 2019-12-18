@@ -232,8 +232,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
                void(BufferingState, BufferingStateChangeReason));
   MOCK_METHOD0(OnDurationChange, void());
   MOCK_METHOD2(OnAddTextTrack,
-               void(const TextTrackConfig& config,
-                    const AddTextTrackDoneCB& done_cb));
+               void(const TextTrackConfig& config, AddTextTrackDoneCB done_cb));
   MOCK_METHOD1(OnWaiting, void(WaitingReason));
   MOCK_METHOD1(OnVideoNaturalSizeChange, void(const gfx::Size&));
   MOCK_METHOD1(OnVideoConfigChange, void(const VideoDecoderConfig&));

@@ -118,12 +118,7 @@ void PluginVmImageManager::StartDownload() {
       drive_download_service_->ResetState();
     }
 
-    drive_download_service_->StartDownload(
-        GetIdFromDriveUrl(url),
-        base::BindOnce(&PluginVmImageManager::OnDownloadStarted,
-                       weak_ptr_factory_.GetWeakPtr()),
-        base::BindOnce(&PluginVmImageManager::OnDownloadFailed,
-                       weak_ptr_factory_.GetWeakPtr()));
+    drive_download_service_->StartDownload(GetIdFromDriveUrl(url));
   } else {
     download_service_->StartDownload(GetDownloadParams(url));
   }
@@ -506,6 +501,11 @@ void PluginVmImageManager::SetDownloadedPluginVmImageArchiveForTesting(
 
 std::string PluginVmImageManager::GetCurrentDownloadGuidForTesting() {
   return current_download_guid_;
+}
+
+void PluginVmImageManager::SetDriveDownloadServiceForTesting(
+    std::unique_ptr<PluginVmDriveImageDownloadService> drive_download_service) {
+  drive_download_service_ = std::move(drive_download_service);
 }
 
 PluginVmImageManager::PluginVmImageManager(Profile* profile)

@@ -486,10 +486,10 @@ void ChromeNewWindowClient::LaunchCameraApp(const std::string& queries) {
   const extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile);
   const extensions::Extension* extension =
-      registry->GetInstalledExtension(extension_misc::kChromeCameraAppId);
+      registry->GetInstalledExtension(extension_misc::kCameraAppId);
 
   auto url = GURL(extensions::Extension::GetBaseURLFromExtensionId(
-                      extension_misc::kChromeCameraAppId)
+                      extension_misc::kCameraAppId)
                       .spec() +
                   queries);
 
@@ -499,7 +499,7 @@ void ChromeNewWindowClient::LaunchCameraApp(const std::string& queries) {
 }
 
 void ChromeNewWindowClient::CloseCameraApp() {
-  const ash::ShelfID shelf_id(ash::kInternalAppIdCamera);
+  const ash::ShelfID shelf_id(extension_misc::kCameraAppId);
   AppWindowLauncherItemController* const app_controller =
       ChromeLauncherController::instance()
           ->shelf_model()

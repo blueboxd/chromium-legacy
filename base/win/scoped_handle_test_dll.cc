@@ -52,7 +52,7 @@ bool InternalRunThreadTest() {
   if (!ready_event)
     return false;
 
-  ThreadParams thread_params = { ready_event, start_event };
+  ThreadParams thread_params = {ready_event, start_event};
 
   for (size_t i = 0; i < kNumThreads; i++) {
     HANDLE thread_handle =
@@ -100,7 +100,7 @@ bool InternalRunLocationTest() {
   if (!my_module)
     return false;
 
-  HMODULE main_module = ::GetModuleHandle(NULL);
+  HMODULE main_module = ::GetModuleHandle(nullptr);
 
 #if BUILDFLAG(SINGLE_MODULE_MODE_HANDLE_VERIFIER)
   // In a component build ActiveVerifier will always be created inside base.dll
@@ -122,6 +122,6 @@ bool RunTest() {
   return InternalRunThreadTest() && InternalRunLocationTest();
 }
 
-}  // testing
-}  // win
-}  // base
+}  // namespace testing
+}  // namespace win
+}  // namespace base

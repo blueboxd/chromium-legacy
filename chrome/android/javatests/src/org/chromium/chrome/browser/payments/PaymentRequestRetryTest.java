@@ -28,9 +28,10 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.RenderTestRule;
+import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
+import org.chromium.ui.test.util.RenderTestRule;
 
 import java.util.concurrent.TimeoutException;
 
@@ -152,7 +153,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.getKeyboardDelegate().hideKeyboard(
                 mPaymentRequestTestRule.getEditorDialogView());
 
-        RenderTestRule.sanitize(mPaymentRequestTestRule.getEditorDialogView());
+        ChromeRenderTestRule.sanitize(mPaymentRequestTestRule.getEditorDialogView());
         mRenderTestRule.render(mPaymentRequestTestRule.getEditorDialogView(),
                 "retry_with_shipping_address_errors");
 
@@ -199,7 +200,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.getKeyboardDelegate().hideKeyboard(
                 mPaymentRequestTestRule.getEditorDialogView());
 
-        RenderTestRule.sanitize(mPaymentRequestTestRule.getEditorDialogView());
+        ChromeRenderTestRule.sanitize(mPaymentRequestTestRule.getEditorDialogView());
         mRenderTestRule.render(
                 mPaymentRequestTestRule.getEditorDialogView(), "retry_with_payer_errors");
 

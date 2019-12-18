@@ -201,7 +201,10 @@ id<GREYMatcher> SearchIconButton() {
 
 - (void)renameBookmarkFolderWithFolderTitle:(NSString*)folderTitle {
   NSString* titleIdentifier = @"Title_textField";
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(titleIdentifier)]
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityID(titleIdentifier),
+                                          grey_kindOfClassName(@"UITextField"),
+                                          nil)]
       performAction:grey_replaceText(folderTitle)];
 }
 
@@ -452,7 +455,10 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_notNil()];
 
   // Edit textfield.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(textFieldId)]
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityID(textFieldId),
+                                          grey_kindOfClassName(@"UITextField"),
+                                          nil)]
       performAction:grey_replaceText(newName)];
 
   // Dismiss editor.
@@ -481,7 +487,10 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_notNil()];
 
   // Edit textfield.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(textFieldId)]
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityID(textFieldId),
+                                          grey_kindOfClassName(@"UITextField"),
+                                          nil)]
       performAction:grey_replaceText(newName)];
 
   // Dismiss editor.

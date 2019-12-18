@@ -28,17 +28,33 @@ def _ProcessCommand(command):
   Instead, we just use a regex, with the simplifying assumption that the path to
   clang-cl.exe contains no spaces.
   """
+  # If the driver mode is not already set then define it. Driver mode is
+  # automatically included in the compile db by clang starting with release
+  # 9.0.0.
+  if "--driver_mode" in command:
+    driver_mode = ""
+  # Only specify for Windows. Other platforms do fine without it.
+  elif sys.platform == 'win32':
+    driver_mode = '--driver-mode=cl'
+
   match = _CMD_LINE_RE.search(command)
   if match:
     match_dict = match.groupdict()
     command = ' '.join(
-        [match_dict['clang'], '--driver-mode=cl', match_dict['args']])
+        [match_dict['clang'], driver_mode, match_dict['args']])
   elif _debugging:
     print('Compile command didn\'t match expected regex!')
     print('Command:', command)
     print('Regex:', _CMD_LINE_RE.pattern)
 
-  return command
+  # Remove some blocklisted arguments. These are VisualStudio specific arguments
+  # not recognized or used by clangd. They only suppress or activate graphical
+  # output anyway.
+  blocklisted_arguments = ['/nologo', '/showIncludes']
+  command_parts = filter(lambda arg: arg not in blocklisted_arguments,
+    command.split())
+
+  return " ".join(command_parts)
 
 
 def _ProcessEntry(entry):

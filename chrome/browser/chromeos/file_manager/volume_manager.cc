@@ -925,7 +925,8 @@ void VolumeManager::OnMountEvent(
 void VolumeManager::OnFormatEvent(
     chromeos::disks::DiskMountManager::FormatEvent event,
     chromeos::FormatError error_code,
-    const std::string& device_path) {
+    const std::string& device_path,
+    const std::string& device_label) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG(1) << "OnDeviceEvent: " << event << ", " << error_code
            << ", " << device_path;
@@ -960,7 +961,8 @@ void VolumeManager::OnFormatEvent(
 void VolumeManager::OnRenameEvent(
     chromeos::disks::DiskMountManager::RenameEvent event,
     chromeos::RenameError error_code,
-    const std::string& device_path) {
+    const std::string& device_path,
+    const std::string& device_label) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG(1) << "OnDeviceEvent: " << event << ", " << error_code << ", "
            << device_path;

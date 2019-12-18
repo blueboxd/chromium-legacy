@@ -140,7 +140,7 @@ public class SyncTest {
             String[] accountNames = {oldAccount.name, newAccount.name};
             String[] accountIds = {
                     provider.getAccountId(accountNames[0]), provider.getAccountId(accountNames[1])};
-            IdentityServicesProvider.getAccountTrackerService().syncForceRefreshForTest(
+            IdentityServicesProvider.get().getAccountTrackerService().syncForceRefreshForTest(
                     accountIds, accountNames);
 
             // Starts the rename process. Normally, this is triggered by the broadcast

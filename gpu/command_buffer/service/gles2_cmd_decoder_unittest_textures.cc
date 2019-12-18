@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/id_allocator.h"
@@ -3149,11 +3150,24 @@ class TestSharedImageBacking : public SharedImageBacking {
                            false /* is_thread_safe */) {
     texture_ = new gles2::Texture(texture_id);
     texture_->SetLightweightRef();
+    texture_->SetTarget(GL_TEXTURE_2D, 1);
+    texture_->sampler_state_.min_filter = GL_LINEAR;
+    texture_->sampler_state_.mag_filter = GL_LINEAR;
+    texture_->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
+    texture_->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
+    texture_->SetLevelInfo(
+        GL_TEXTURE_2D, 0, GLInternalFormat(format), size.width(), size.height(),
+        1, 0, GLDataFormat(format), GLDataType(format), gfx::Rect());
+    texture_->SetImmutable(true, true);
   }
 
-  bool IsCleared() const override { return false; }
+  gfx::Rect ClearedRect() const override {
+    return texture_->GetLevelClearedRect(texture_->target(), 0);
+  }
 
-  void SetCleared() override {}
+  void SetClearedRect(const gfx::Rect& cleared_rect) override {
+    texture_->SetLevelClearedRect(texture_->target(), 0, cleared_rect);
+  }
 
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override {
     DCHECK(!in_fence);

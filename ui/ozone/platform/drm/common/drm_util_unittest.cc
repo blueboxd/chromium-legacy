@@ -180,48 +180,6 @@ TEST_F(DrmUtilTest, RoundTripDisplaySnapshot) {
   EXPECT_EQ(ep, roundtrip_params[2]);
 }
 
-TEST_F(DrmUtilTest, OverlaySurfaceCandidate) {
-  OverlaySurfaceCandidateList input;
-
-  OverlaySurfaceCandidate input_osc;
-  input_osc.transform = gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL;
-  input_osc.format = gfx::BufferFormat::YUV_420_BIPLANAR;
-  input_osc.buffer_size = gfx::Size(100, 50);
-  input_osc.display_rect = gfx::RectF(1., 2., 3., 4.);
-  input_osc.crop_rect = gfx::RectF(10., 20., 30., 40.);
-  input_osc.clip_rect = gfx::Rect(10, 20, 30, 40);
-  input_osc.is_clipped = true;
-  input_osc.plane_z_order = 42;
-  input_osc.overlay_handled = true;
-
-  input.push_back(input_osc);
-
-  // Roundtrip the conversions.
-  auto output = CreateOverlaySurfaceCandidateListFrom(
-      CreateParamsFromOverlaySurfaceCandidate(input));
-
-  EXPECT_EQ(input.size(), output.size());
-  OverlaySurfaceCandidate output_osc = output[0];
-
-  EXPECT_EQ(input_osc.transform, output_osc.transform);
-  EXPECT_EQ(input_osc.format, output_osc.format);
-  EXPECT_EQ(input_osc.buffer_size, output_osc.buffer_size);
-  EXPECT_EQ(input_osc.display_rect, output_osc.display_rect);
-  EXPECT_EQ(input_osc.crop_rect, output_osc.crop_rect);
-  EXPECT_EQ(input_osc.plane_z_order, output_osc.plane_z_order);
-  EXPECT_EQ(input_osc.overlay_handled, output_osc.overlay_handled);
-
-  EXPECT_FALSE(input < output);
-  EXPECT_FALSE(output < input);
-
-  std::map<OverlaySurfaceCandidateList, int> map;
-  map[input] = 42;
-  const auto& iter = map.find(output);
-
-  EXPECT_NE(map.end(), iter);
-  EXPECT_EQ(42, iter->second);
-}
-
 TEST_F(DrmUtilTest, TestDisplayModesExtraction) {
   // Initialize a list of display modes.
   constexpr size_t kNumModes = 5;

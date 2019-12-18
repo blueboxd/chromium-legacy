@@ -99,7 +99,8 @@ HeapVector<Member<Animation>> Animatable::getAnimations(
   for (const auto& animation :
        element->GetDocument().Timeline().getAnimations()) {
     DCHECK(animation->effect());
-    Element* target = To<KeyframeEffect>(animation->effect())->target();
+    // TODO(gtsteel) make this use the idl properties
+    Element* target = To<KeyframeEffect>(animation->effect())->EffectTarget();
     if (element == target || (use_subtree && element->contains(target))) {
       // DocumentTimeline::getAnimations should only give us animations that are
       // either current or in effect.

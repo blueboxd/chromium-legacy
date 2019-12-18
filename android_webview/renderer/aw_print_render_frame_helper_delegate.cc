@@ -12,11 +12,6 @@ AwPrintRenderFrameHelperDelegate::AwPrintRenderFrameHelperDelegate() = default;
 
 AwPrintRenderFrameHelperDelegate::~AwPrintRenderFrameHelperDelegate() = default;
 
-bool AwPrintRenderFrameHelperDelegate::CancelPrerender(
-    content::RenderFrame* render_frame) {
-  return false;
-}
-
 blink::WebElement AwPrintRenderFrameHelperDelegate::GetPdfElement(
     blink::WebLocalFrame* frame) {
   return blink::WebElement();

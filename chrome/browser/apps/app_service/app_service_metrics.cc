@@ -132,8 +132,6 @@ void RecordAppLaunch(const std::string& app_id,
                            launch_source);
   else if (app_id == ash::kReleaseNotesAppId)
     RecordBuiltInAppLaunch(BuiltInAppName::kReleaseNotes, launch_source);
-  else if (app_id == ash::kInternalAppIdCamera)
-    RecordBuiltInAppLaunch(BuiltInAppName::kCamera, launch_source);
   else if (app_id == ash::kInternalAppIdDiscover)
     RecordBuiltInAppLaunch(BuiltInAppName::kDiscover, launch_source);
   else if (app_id == ash::kInternalAppIdSettings)
@@ -151,9 +149,6 @@ void RecordBuiltInAppSearchResult(const std::string& app_id) {
   } else if (app_id == ash::kReleaseNotesAppId) {
     UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
                               BuiltInAppName::kReleaseNotes);
-  } else if (app_id == ash::kInternalAppIdCamera) {
-    UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
-                              BuiltInAppName::kCamera);
   } else if (app_id == ash::kInternalAppIdDiscover) {
     UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
                               BuiltInAppName::kDiscover);

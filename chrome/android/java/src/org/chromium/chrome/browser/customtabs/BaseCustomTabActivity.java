@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
+import org.chromium.chrome.browser.customtabs.content.TabCreationMode;
 import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityComponent;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
@@ -77,6 +78,19 @@ public abstract class BaseCustomTabActivity<C extends ChromeActivityComponent>
     @Override
     public int getControlContainerHeightResource() {
         return R.dimen.custom_tabs_control_container_height;
+    }
+
+    @Override
+    public boolean shouldPostDeferredStartupForReparentedTab() {
+        if (!super.shouldPostDeferredStartupForReparentedTab()) return false;
+
+        // Check {@link CustomTabActivityTabProvider#getInitialTabCreationMode()} because the
+        // tab has not yet started loading in the common case due to ordering of
+        // {@link ChromeActivity#onStartWithNative()} and
+        // {@link CustomTabActivityTabController#onFinishNativeInitialization()}.
+        @TabCreationMode
+        int mode = mTabProvider.getInitialTabCreationMode();
+        return (mode == TabCreationMode.HIDDEN || mode == TabCreationMode.EARLY);
     }
 
     @Override

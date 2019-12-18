@@ -17,6 +17,9 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/account_id/account_id.h"
+#include "components/policy/core/common/mock_policy_service.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/extension_registry.h"
@@ -78,6 +81,15 @@ class ReportRequestQueueGeneratorTest : public ::testing::Test {
 
   TestingProfile* CreateActiveProfile(std::string profile_name) {
     return profile_manager_.CreateTestingProfile(profile_name);
+  }
+
+  TestingProfile* CreateActiveProfileWithPolicies(
+      std::string profile_name,
+      std::unique_ptr<policy::PolicyService> policy_service) {
+    return profile_manager_.CreateTestingProfile(
+        profile_name, {}, base::UTF8ToUTF16(profile_name), 0, {},
+        TestingProfile::TestingFactories(), base::nullopt,
+        std::move(policy_service));
   }
 
   void CreateActiveProfileWithContent(std::string profile_name) {
@@ -271,6 +283,44 @@ TEST_F(ReportRequestQueueGeneratorTest, ProfileReportIsTooBig) {
                  {kActiveProfileName2});
   histogram_tester()->ExpectBucketCount("Enterprise.CloudReportingRequestSize",
                                         /*report size floor to KB*/ 0, 2);
+}
+
+TEST_F(ReportRequestQueueGeneratorTest, ChromePoliciesCollection) {
+  auto policy_service = std::make_unique<policy::MockPolicyService>();
+  policy::PolicyMap policy_map;
+
+  ON_CALL(*policy_service.get(),
+          GetPolicies(::testing::Eq(policy::PolicyNamespace(
+              policy::POLICY_DOMAIN_CHROME, std::string()))))
+      .WillByDefault(::testing::ReturnRef(policy_map));
+
+  policy_map.Set("kPolicyName1", policy::POLICY_LEVEL_MANDATORY,
+                 policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+                 std::make_unique<base::Value>(std::vector<base::Value>()),
+                 nullptr);
+  policy_map.Set("kPolicyName2", policy::POLICY_LEVEL_RECOMMENDED,
+                 policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_MERGED,
+                 std::make_unique<base::Value>(true), nullptr);
+
+  CreateActiveProfileWithPolicies(kActiveProfileName1,
+                                  std::move(policy_service));
+
+  auto basic_request = GenerateBasicRequest();
+  auto requests = GenerateRequests(*basic_request);
+  EXPECT_EQ(1u, requests.size());
+
+  auto browser_report = requests[0]->browser_report();
+  EXPECT_EQ(1, browser_report.chrome_user_profile_infos_size());
+
+  auto profile_info = browser_report.chrome_user_profile_infos(0);
+
+#if defined(OS_CHROMEOS)
+  // In Chrome OS, the collection of policies is disabled.
+  EXPECT_EQ(0, profile_info.chrome_policies_size());
+#else
+  // In desktop Chrome, the collection of policies is enabled.
+  EXPECT_EQ(2, profile_info.chrome_policies_size());
+#endif
 }
 
 }  // namespace enterprise_reporting

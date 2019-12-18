@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.firstrun;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.UserManager;
 
@@ -15,11 +14,12 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.components.signin.AccountManagerFacade;
 
 /** Provides first run related utility functions. */
 public class FirstRunUtils {
-    public static final String CACHED_TOS_ACCEPTED_PREF = "first_run_tos_accepted";
     private static Boolean sHasGoogleAccountAuthenticator;
 
     /**
@@ -27,20 +27,22 @@ public class FirstRunUtils {
      * Must be called after native initialization.
      */
     public static void cacheFirstRunPrefs() {
-        SharedPreferences javaPrefs = ContextUtils.getAppSharedPreferences();
+        SharedPreferencesManager javaPrefs = SharedPreferencesManager.getInstance();
         // Set both Java and native prefs if any of the three indicators indicate ToS has been
         // accepted. This needed because:
         //   - Old versions only set native pref, so this syncs Java pref.
         //   - Backup & restore does not restore native pref, so this needs to update it.
         //   - checkAnyUserHasSeenToS() may be true which needs to sync its state to the prefs.
-        boolean javaPrefValue = javaPrefs.getBoolean(CACHED_TOS_ACCEPTED_PREF, false);
+        boolean javaPrefValue = javaPrefs.readBoolean(
+                ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED_PREF, false);
         boolean nativePrefValue = isFirstRunEulaAccepted();
         boolean userHasSeenTos =
                 ToSAckedReceiver.checkAnyUserHasSeenToS();
         boolean isFirstRunComplete = FirstRunStatus.getFirstRunFlowComplete();
         if (javaPrefValue || nativePrefValue || userHasSeenTos || isFirstRunComplete) {
             if (!javaPrefValue) {
-                javaPrefs.edit().putBoolean(CACHED_TOS_ACCEPTED_PREF, true).apply();
+                javaPrefs.writeBoolean(
+                        ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED_PREF, true);
             }
             if (!nativePrefValue) {
                 setEulaAccepted();
@@ -54,7 +56,8 @@ public class FirstRunUtils {
     public static boolean didAcceptTermsOfService() {
         // Note: Does not check FirstRunUtils.isFirstRunEulaAccepted() because this may be called
         // before native is initialized.
-        return ContextUtils.getAppSharedPreferences().getBoolean(CACHED_TOS_ACCEPTED_PREF, false)
+        return SharedPreferencesManager.getInstance().readBoolean(
+                       ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED_PREF, false)
                 || ToSAckedReceiver.checkAnyUserHasSeenToS();
     }
 
@@ -64,10 +67,8 @@ public class FirstRunUtils {
      */
     public static void acceptTermsOfService(boolean allowCrashUpload) {
         UmaSessionStats.changeMetricsReportingConsent(allowCrashUpload);
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putBoolean(CACHED_TOS_ACCEPTED_PREF, true)
-                .apply();
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED_PREF, true);
         setEulaAccepted();
     }
 

@@ -246,8 +246,8 @@ TEST(PEImageTest, RetrievesExports) {
 
   FARPROC address1 = pe.GetProcAddress("RegEnumKeyExW");
   FARPROC address2 = pe.GetProcAddress(reinterpret_cast<char*>(ordinal));
-  EXPECT_TRUE(address1 != NULL);
-  EXPECT_TRUE(address2 != NULL);
+  EXPECT_TRUE(address1 != nullptr);
+  EXPECT_TRUE(address2 != nullptr);
   EXPECT_TRUE(address1 == address2);
 }
 

@@ -5,7 +5,8 @@
 // Unit tests for event trace controller.
 
 #include <objbase.h>
-#include <initguid.h>
+
+#include <initguid.h>  // NOLINT - has to be last
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -27,16 +28,13 @@ namespace win {
 
 namespace {
 
-DEFINE_GUID(kGuidNull,
-    0x0000000, 0x0000, 0x0000, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0);
-
 const ULONG kTestProviderFlags = 0xCAFEBABE;
 
-class TestingProvider: public EtwTraceProvider {
+class TestingProvider : public EtwTraceProvider {
  public:
   explicit TestingProvider(const GUID& provider_name)
       : EtwTraceProvider(provider_name) {
-    callback_event_.Set(::CreateEvent(NULL, TRUE, FALSE, NULL));
+    callback_event_.Set(::CreateEvent(nullptr, TRUE, FALSE, nullptr));
   }
 
   void WaitForCallback() {
@@ -63,7 +61,7 @@ TEST(EtwTracePropertiesTest, Initialization) {
   EXPECT_EQ(0u, p->Wnode.ProviderId);
   EXPECT_EQ(0u, p->Wnode.HistoricalContext);
 
-  EXPECT_TRUE(kGuidNull == p->Wnode.Guid);
+  EXPECT_TRUE(GUID_NULL == p->Wnode.Guid);
   EXPECT_EQ(0u, p->Wnode.ClientContext);
   EXPECT_EQ(static_cast<ULONG>(WNODE_FLAG_TRACED_GUID), p->Wnode.Flags);
 
@@ -82,7 +80,7 @@ TEST(EtwTracePropertiesTest, Initialization) {
   EXPECT_EQ(0u, p->BuffersWritten);
   EXPECT_EQ(0u, p->LogBuffersLost);
   EXPECT_EQ(0u, p->RealTimeBuffersLost);
-  EXPECT_EQ(0u, p->LoggerThreadId);
+  EXPECT_EQ(nullptr, p->LoggerThreadId);
   EXPECT_NE(0u, p->LogFileNameOffset);
   EXPECT_NE(0u, p->LoggerNameOffset);
 }
@@ -109,8 +107,7 @@ namespace {
 class EtwTraceControllerTest : public testing::Test {
  public:
   EtwTraceControllerTest()
-      : session_name_(StringPrintf(L"TestSession-%d", GetCurrentProcId())) {
-  }
+      : session_name_(StringPrintf(L"TestSession-%d", GetCurrentProcId())) {}
 
   void SetUp() override {
     EtwTraceProperties ignore;
@@ -139,12 +136,11 @@ TEST_F(EtwTraceControllerTest, Initialize) {
   EXPECT_STREQ(L"", controller.session_name());
 }
 
-
 TEST_F(EtwTraceControllerTest, StartRealTimeSession) {
   EtwTraceController controller;
 
-  HRESULT hr = controller.StartRealtimeSession(session_name_.c_str(),
-                                               100 * 1024);
+  HRESULT hr =
+      controller.StartRealtimeSession(session_name_.c_str(), 100 * 1024);
   if (hr == E_ACCESSDENIED) {
     VLOG(1) << "You must be an administrator to run this test on Vista";
     return;
@@ -153,7 +149,7 @@ TEST_F(EtwTraceControllerTest, StartRealTimeSession) {
   EXPECT_NE(0u, controller.session());
   EXPECT_STREQ(session_name_.c_str(), controller.session_name());
 
-  EXPECT_HRESULT_SUCCEEDED(controller.Stop(NULL));
+  EXPECT_HRESULT_SUCCEEDED(controller.Stop(nullptr));
   EXPECT_EQ(0u, controller.session());
   EXPECT_STREQ(L"", controller.session_name());
 }
@@ -176,7 +172,7 @@ TEST_F(EtwTraceControllerTest, StartFileSession) {
   EXPECT_NE(0u, controller.session());
   EXPECT_STREQ(session_name_.c_str(), controller.session_name());
 
-  EXPECT_HRESULT_SUCCEEDED(controller.Stop(NULL));
+  EXPECT_HRESULT_SUCCEEDED(controller.Stop(nullptr));
   EXPECT_EQ(0u, controller.session());
   EXPECT_STREQ(L"", controller.session_name());
   DeleteFile(temp, false);
@@ -190,15 +186,15 @@ TEST_F(EtwTraceControllerTest, DISABLED_EnableDisable) {
   EXPECT_EQ(0u, provider.session_handle());
 
   EtwTraceController controller;
-  HRESULT hr = controller.StartRealtimeSession(session_name_.c_str(),
-                                               100 * 1024);
+  HRESULT hr =
+      controller.StartRealtimeSession(session_name_.c_str(), 100 * 1024);
   if (hr == E_ACCESSDENIED) {
     VLOG(1) << "You must be an administrator to run this test on Vista";
     return;
   }
 
-  EXPECT_HRESULT_SUCCEEDED(controller.EnableProvider(test_provider_,
-                           TRACE_LEVEL_VERBOSE, kTestProviderFlags));
+  EXPECT_HRESULT_SUCCEEDED(controller.EnableProvider(
+      test_provider_, TRACE_LEVEL_VERBOSE, kTestProviderFlags));
 
   provider.WaitForCallback();
 
@@ -215,8 +211,8 @@ TEST_F(EtwTraceControllerTest, DISABLED_EnableDisable) {
   EXPECT_EQ(static_cast<DWORD>(ERROR_SUCCESS), provider.Unregister());
 
   // Enable the provider again, before registering.
-  EXPECT_HRESULT_SUCCEEDED(controller.EnableProvider(test_provider_,
-                           TRACE_LEVEL_VERBOSE, kTestProviderFlags));
+  EXPECT_HRESULT_SUCCEEDED(controller.EnableProvider(
+      test_provider_, TRACE_LEVEL_VERBOSE, kTestProviderFlags));
 
   // Register the provider again, the settings above
   // should take immediate effect.
@@ -228,7 +224,7 @@ TEST_F(EtwTraceControllerTest, DISABLED_EnableDisable) {
   // Consume the callback event of the previous controller.EnableProvider().
   provider.WaitForCallback();
 
-  EXPECT_HRESULT_SUCCEEDED(controller.Stop(NULL));
+  EXPECT_HRESULT_SUCCEEDED(controller.Stop(nullptr));
 
   // Windows 7 does not call the callback when Stop() is called so we
   // can't wait, and enable_level and enable_flags are not zeroed.

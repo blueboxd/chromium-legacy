@@ -19,7 +19,6 @@
 
 namespace ash {
 class PhantomWindowController;
-class TwoStepEdgeCycler;
 class WindowSize;
 class WindowState;
 
@@ -195,10 +194,6 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // Gives a previews of where the the window will end up. Only used if there
   // is a grid and the caption is being dragged.
   std::unique_ptr<PhantomWindowController> snap_phantom_window_controller_;
-
-  // Used to determine whether the window should be snapped when the user drags
-  // a window to the edge of the screen.
-  std::unique_ptr<TwoStepEdgeCycler> edge_cycler_;
 
   // The edge to which the window should be snapped to at the end of the drag.
   SnapType snap_type_;

@@ -21,12 +21,11 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
-import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.init.AsyncInitTaskRunner;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.settings.privacy.PrivacyPreferencesManager;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
@@ -48,7 +47,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Backup agent for Chrome, using Android key/value backup.
  */
-
+@SuppressWarnings("UseSharedPreferencesManagerFromChromeCheck")
 public class ChromeBackupAgent extends BackupAgent {
     private static final String ANDROID_DEFAULT_PREFIX = "AndroidDefault.";
     private static final String NATIVE_PREF_PREFIX = "native.";
@@ -90,9 +89,10 @@ public class ChromeBackupAgent extends BackupAgent {
     // List of preferences that should be restored unchanged.
     static final String[] BACKUP_ANDROID_BOOL_PREFS = {
             DataReductionProxySettings.DATA_REDUCTION_ENABLED_PREF,
-            FirstRunUtils.CACHED_TOS_ACCEPTED_PREF, FirstRunStatus.FIRST_RUN_FLOW_COMPLETE,
-            FirstRunStatus.LIGHTWEIGHT_FIRST_RUN_FLOW_COMPLETE,
-            FirstRunSignInProcessor.FIRST_RUN_FLOW_SIGNIN_SETUP,
+            ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED_PREF,
+            ChromePreferenceKeys.FIRST_RUN_FLOW_COMPLETE,
+            ChromePreferenceKeys.FIRST_RUN_LIGHTWEIGHT_FLOW_COMPLETE,
+            ChromePreferenceKeys.FIRST_RUN_FLOW_SIGNIN_SETUP,
             PrivacyPreferencesManager.PREF_METRICS_REPORTING,
     };
 
@@ -382,8 +382,7 @@ public class ChromeBackupAgent extends BackupAgent {
         // Because FirstRunSignInProcessor.FIRST_RUN_FLOW_SIGNIN_COMPLETE is not restored Chrome
         // will sign in the user on first run to the account in FIRST_RUN_FLOW_SIGNIN_ACCOUNT_NAME
         // if any. If the rest of FRE has been completed this will happen silently.
-        editor.putString(
-                FirstRunSignInProcessor.FIRST_RUN_FLOW_SIGNIN_ACCOUNT_NAME, restoredUserName);
+        editor.putString(ChromePreferenceKeys.FIRST_RUN_FLOW_SIGNIN_ACCOUNT_NAME, restoredUserName);
         editor.apply();
 
         // The silent first run will change things, so there is no point in trying to prevent

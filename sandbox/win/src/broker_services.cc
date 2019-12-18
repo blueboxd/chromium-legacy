@@ -254,9 +254,11 @@ DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
           HANDLE job_handle = tracker->job.Get();
 
           // Erase by comparing with the job handle.
-          jobs.erase(std::remove_if(
-              jobs.begin(), jobs.end(),
-              [&](auto&& p) -> bool { return p->job.Get() == job_handle; }));
+          jobs.erase(std::remove_if(jobs.begin(), jobs.end(),
+                                    [&](auto&& p) -> bool {
+                                      return p->job.Get() == job_handle;
+                                    }),
+                     jobs.end());
           break;
         }
 
@@ -345,10 +347,12 @@ DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
       tracker->wait_handle = INVALID_HANDLE_VALUE;
 
       // PID is unique until the process handle is closed in dtor.
-      processes.erase(std::remove_if(
-          processes.begin(), processes.end(), [&](auto&& p) -> bool {
-            return p->process_id == tracker->process_id;
-          }));
+      processes.erase(std::remove_if(processes.begin(), processes.end(),
+                                     [&](auto&& p) -> bool {
+                                       return p->process_id ==
+                                              tracker->process_id;
+                                     }),
+                      processes.end());
 
     } else if (THREAD_CTRL_GET_POLICY_INFO == key) {
       // Clone the policies for sandbox diagnostics.

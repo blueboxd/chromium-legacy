@@ -18,7 +18,7 @@ static const wchar_t kTestString1[] = L"Used to create BSTRs";
 static const wchar_t kTestString2[] = L"Also used to create BSTRs";
 
 void GiveMeAVariant(VARIANT* ret) {
-  EXPECT_TRUE(ret != NULL);
+  EXPECT_TRUE(ret != nullptr);
   ret->vt = VT_BSTR;
   V_BSTR(ret) = ::SysAllocString(kTestString1);
 }
@@ -28,8 +28,7 @@ void GiveMeAVariant(VARIANT* ret) {
 // when AddRef is called and decrements it when Release is called.
 class FakeComObject : public IDispatch {
  public:
-  FakeComObject() : ref_(0) {
-  }
+  FakeComObject() : ref_(0) {}
 
   STDMETHOD_(DWORD, AddRef)() override {
     ref_++;
@@ -51,21 +50,14 @@ class FakeComObject : public IDispatch {
     return E_NOTIMPL;
   }
 
-  STDMETHOD(Invoke)(DISPID,
-                    REFIID,
-                    LCID,
-                    WORD,
-                    DISPPARAMS*,
-                    VARIANT*,
-                    EXCEPINFO*,
-                    UINT*) override {
+  STDMETHOD(Invoke)
+  (DISPID, REFIID, LCID, WORD, DISPPARAMS*, VARIANT*, EXCEPINFO*, UINT*)
+      override {
     return E_NOTIMPL;
   }
 
   // A way to check the internal reference count of the class.
-  int ref_count() const {
-    return ref_;
-  }
+  int ref_count() const { return ref_; }
 
  protected:
   int ref_;
@@ -80,7 +72,8 @@ TEST(ScopedVariantTest, ScopedVariant) {
 
   ScopedVariant var_bstr(L"VT_BSTR");
   EXPECT_EQ(VT_BSTR, V_VT(var_bstr.ptr()));
-  EXPECT_TRUE(V_BSTR(var_bstr.ptr()) != NULL);  // can't use EXPECT_NE for BSTR
+  EXPECT_TRUE(V_BSTR(var_bstr.ptr()) !=
+              nullptr);  // can't use EXPECT_NE for BSTR
   var_bstr.Reset();
   EXPECT_NE(VT_BSTR, V_VT(var_bstr.ptr()));
   var_bstr.Set(kTestString2);
@@ -179,14 +172,14 @@ TEST(ScopedVariantTest, ScopedVariant) {
 
   // Com interface tests
 
-  var.Set(static_cast<IDispatch*>(NULL));
+  var.Set(static_cast<IDispatch*>(nullptr));
   EXPECT_EQ(VT_DISPATCH, var.type());
-  EXPECT_EQ(NULL, V_DISPATCH(var.ptr()));
+  EXPECT_EQ(nullptr, V_DISPATCH(var.ptr()));
   var.Reset();
 
-  var.Set(static_cast<IUnknown*>(NULL));
+  var.Set(static_cast<IUnknown*>(nullptr));
   EXPECT_EQ(VT_UNKNOWN, var.type());
-  EXPECT_EQ(NULL, V_UNKNOWN(var.ptr()));
+  EXPECT_EQ(nullptr, V_UNKNOWN(var.ptr()));
   var.Reset();
 
   FakeComObject faker;
@@ -259,11 +252,11 @@ TEST(ScopedVariantTest, ScopedVariant) {
   }
 
   // SAFEARRAY tests
-  var.Set(static_cast<SAFEARRAY*>(NULL));
+  var.Set(static_cast<SAFEARRAY*>(nullptr));
   EXPECT_EQ(VT_EMPTY, var.type());
 
   SAFEARRAY* sa = ::SafeArrayCreateVector(VT_UI1, 0, 100);
-  ASSERT_TRUE(sa != NULL);
+  ASSERT_TRUE(sa != nullptr);
 
   var.Set(sa);
   EXPECT_TRUE(ScopedVariant::IsLeakableVarType(var.type()));

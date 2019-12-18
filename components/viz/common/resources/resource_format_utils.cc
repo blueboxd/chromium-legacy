@@ -39,7 +39,7 @@ SkColorType ResourceFormatToClosestSkColorType(bool gpu_compositing,
     case RGBX_8888:
     case ETC1:
       return kRGB_888x_SkColorType;
-    case RGBX_1010102:
+    case RGBA_1010102:
     case BGRX_1010102:
       return kRGBA_1010102_SkColorType;
 
@@ -74,7 +74,7 @@ int BitsPerPixel(ResourceFormat format) {
     case RGBA_8888:
     case RGBX_8888:
     case BGRX_8888:
-    case RGBX_1010102:
+    case RGBA_1010102:
     case BGRX_1010102:
     case P010:
       return 32;
@@ -117,7 +117,7 @@ bool HasAlpha(ResourceFormat format) {
     case R16_EXT:
     case RGBX_8888:
     case BGRX_8888:
-    case RGBX_1010102:
+    case RGBA_1010102:
     case BGRX_1010102:
     case YVU_420:
     case YUV_420_BIPLANAR:
@@ -146,7 +146,7 @@ unsigned int GLDataType(ResourceFormat format) {
       GL_UNSIGNED_SHORT,                   // R16_EXT
       GL_UNSIGNED_BYTE,                    // RGBX_8888
       GL_ZERO,                             // BGRX_8888
-      GL_UNSIGNED_INT_2_10_10_10_REV_EXT,  // RGBX_1010102
+      GL_UNSIGNED_INT_2_10_10_10_REV_EXT,  // RGBA_1010102
       GL_ZERO,                             // BGRX_1010102
       GL_ZERO,                             // YVU_420
       GL_ZERO,                             // YUV_420_BIPLANAR
@@ -176,7 +176,7 @@ unsigned int GLDataFormat(ResourceFormat format) {
       GL_RED_EXT,    // R16_EXT
       GL_RGB,        // RGBX_8888
       GL_ZERO,       // BGRX_8888
-      GL_RGBA,       // RGBX_1010102
+      GL_RGBA,       // RGBA_1010102
       GL_ZERO,       // BGRX_1010102
       GL_ZERO,       // YVU_420
       GL_ZERO,       // YUV_420_BIPLANAR
@@ -227,7 +227,7 @@ unsigned int GLCopyTextureInternalFormat(ResourceFormat format) {
       GL_LUMINANCE,  // R16_EXT
       GL_RGB,        // RGBX_8888
       GL_RGB,        // BGRX_8888
-      GL_ZERO,       // RGBX_1010102
+      GL_ZERO,       // RGBA_1010102
       GL_ZERO,       // BGRX_1010102
       GL_ZERO,       // YVU_420
       GL_ZERO,       // YUV_420_BIPLANAR
@@ -262,8 +262,8 @@ gfx::BufferFormat BufferFormat(ResourceFormat format) {
       return gfx::BufferFormat::RGBX_8888;
     case BGRX_8888:
       return gfx::BufferFormat::BGRX_8888;
-    case RGBX_1010102:
-      return gfx::BufferFormat::RGBX_1010102;
+    case RGBA_1010102:
+      return gfx::BufferFormat::RGBA_1010102;
     case BGRX_1010102:
       return gfx::BufferFormat::BGRX_1010102;
     case YVU_420:
@@ -315,7 +315,7 @@ unsigned int TextureStorageFormat(ResourceFormat format) {
     case RGBX_8888:
     case ETC1:
       return GL_RGB8_OES;
-    case RGBX_1010102:
+    case RGBA_1010102:
     case BGRX_1010102:
       return GL_RGB10_A2_EXT;
     case BGR_565:
@@ -349,7 +349,7 @@ bool IsGpuMemoryBufferFormatSupported(ResourceFormat format) {
     case RG_88:
     case RGBX_8888:
     case BGRX_8888:
-    case RGBX_1010102:
+    case RGBA_1010102:
     case BGRX_1010102:
     case YVU_420:
     case YUV_420_BIPLANAR:
@@ -378,7 +378,7 @@ bool IsBitmapFormatSupported(ResourceFormat format) {
     case RG_88:
     case RGBX_8888:
     case BGRX_8888:
-    case RGBX_1010102:
+    case RGBA_1010102:
     case BGRX_1010102:
     case YVU_420:
     case YUV_420_BIPLANAR:
@@ -411,8 +411,8 @@ ResourceFormat GetResourceFormat(gfx::BufferFormat format) {
       return RGBX_8888;
     case gfx::BufferFormat::BGRX_8888:
       return BGRX_8888;
-    case gfx::BufferFormat::RGBX_1010102:
-      return RGBX_1010102;
+    case gfx::BufferFormat::RGBA_1010102:
+      return RGBA_1010102;
     case gfx::BufferFormat::BGRX_1010102:
       return BGRX_1010102;
     case gfx::BufferFormat::YVU_420:
@@ -465,7 +465,7 @@ VkFormat ToVkFormat(ResourceFormat format) {
       return VK_FORMAT_R8G8B8A8_UNORM;
     case BGRX_8888:
       return VK_FORMAT_B8G8R8A8_UNORM;
-    case RGBX_1010102:
+    case RGBA_1010102:
       return VK_FORMAT_A2B10G10R10_UNORM_PACK32;
     case BGRX_1010102:
       return VK_FORMAT_A2R10G10B10_UNORM_PACK32;
@@ -504,7 +504,7 @@ wgpu::TextureFormat ToDawnFormat(ResourceFormat format) {
       return wgpu::TextureFormat::RG8Unorm;
     case RGBA_F16:
       return wgpu::TextureFormat::RGBA16Float;
-    case RGBX_1010102:
+    case RGBA_1010102:
       return wgpu::TextureFormat::RGB10A2Unorm;
     case RGBA_4444:
     case RGB_565:

@@ -22,7 +22,6 @@ namespace app_list {
 namespace {
 
 constexpr char const* kAppIdsHiddenInLauncher[] = {
-    extension_misc::kChromeCameraAppId,
     chromeos::default_web_apps::kReleaseNotesAppId};
 
 }  // namespace

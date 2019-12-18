@@ -69,6 +69,7 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
 #endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
   void PostFieldTrialInitialization() override;
 
+  content::ContentClient* CreateContentClient() override;
   content::ContentBrowserClient* CreateContentBrowserClient() override;
   content::ContentGpuClient* CreateContentGpuClient() override;
   content::ContentRendererClient* CreateContentRendererClient() override;

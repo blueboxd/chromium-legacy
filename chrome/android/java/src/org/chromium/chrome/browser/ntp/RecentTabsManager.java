@@ -101,7 +101,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         mRecentlyClosedTabManager = sRecentlyClosedTabManagerForTests != null
                 ? sRecentlyClosedTabManagerForTests
                 : new RecentlyClosedBridge(profile);
-        mSignInManager = IdentityServicesProvider.getSigninManager();
+        mSignInManager = IdentityServicesProvider.get().getSigninManager();
         mContext = context;
 
         int imageSize = context.getResources().getDimensionPixelSize(R.dimen.user_picture_size);

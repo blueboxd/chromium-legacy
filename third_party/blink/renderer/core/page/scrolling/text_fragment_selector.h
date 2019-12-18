@@ -17,6 +17,8 @@ class CORE_EXPORT TextFragmentSelector final {
   static TextFragmentSelector Create(String target_text);
 
   enum SelectorType {
+    // An invalid text selector.
+    kInvalid,
     // An exact selector on the string start_.
     kExact,
     // A range selector on a text range start_ to end_.
@@ -28,6 +30,7 @@ class CORE_EXPORT TextFragmentSelector final {
                        const String& end,
                        const String& prefix,
                        const String& suffix);
+  TextFragmentSelector(SelectorType type);
   ~TextFragmentSelector() = default;
 
   SelectorType Type() const { return type_; }

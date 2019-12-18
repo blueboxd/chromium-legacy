@@ -18,7 +18,7 @@ enum class BuiltInAppName {
   kKeyboardShortcutViewer = 0,
   kSettings = 1,
   kContinueReading = 2,
-  kCamera = 3,
+  kCameraDeprecated = 3,
   kDiscover = 4,
   kPluginVm = 5,
   kReleaseNotes = 6,

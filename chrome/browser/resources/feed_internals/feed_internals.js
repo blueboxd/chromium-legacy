@@ -158,7 +158,8 @@ function setupEventListeners() {
 
 document.addEventListener('DOMContentLoaded', function() {
   // Setup backend mojo.
-  pageHandler = feedInternals.mojom.PageHandler.getRemote();
+  pageHandler = feedInternals.mojom.PageHandler.getRemote(
+      /*useBrowserInterfaceBroker=*/ true);
 
   updatePageWithProperties();
   updatePageWithUserClass();

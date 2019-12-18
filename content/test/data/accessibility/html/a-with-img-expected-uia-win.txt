@@ -1,5 +1,5 @@
 document
-++group
+++group IsControlElement=false
 ++++link Name='Link with image at start.'
 ++++++img Name='Link'
 ++++++description Name=' with image at start.' IsControlElement=false

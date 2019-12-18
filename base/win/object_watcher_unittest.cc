@@ -5,6 +5,7 @@
 #include "base/win/object_watcher.h"
 
 #include <windows.h>
+
 #include <process.h>
 
 #include "base/run_loop.h"
@@ -25,8 +26,7 @@ class QuitDelegate : public ObjectWatcher::Delegate {
 
 class DecrementCountDelegate : public ObjectWatcher::Delegate {
  public:
-  explicit DecrementCountDelegate(int* counter) : counter_(counter) {
-  }
+  explicit DecrementCountDelegate(int* counter) : counter_(counter) {}
   void OnObjectSignaled(HANDLE object) override { --(*counter_); }
 
  private:
@@ -41,7 +41,7 @@ void RunTest_BasicSignal(
   EXPECT_FALSE(watcher.IsWatching());
 
   // A manual-reset event that is not yet signaled.
-  HANDLE event = CreateEvent(NULL, TRUE, FALSE, NULL);
+  HANDLE event = CreateEvent(nullptr, TRUE, FALSE, nullptr);
 
   QuitDelegate delegate;
   bool ok = watcher.StartWatchingOnce(event, &delegate);
@@ -64,7 +64,7 @@ void RunTest_BasicCancel(
   ObjectWatcher watcher;
 
   // A manual-reset event that is not yet signaled.
-  HANDLE event = CreateEvent(NULL, TRUE, FALSE, NULL);
+  HANDLE event = CreateEvent(nullptr, TRUE, FALSE, nullptr);
 
   QuitDelegate delegate;
   bool ok = watcher.StartWatchingOnce(event, &delegate);
@@ -85,7 +85,7 @@ void RunTest_CancelAfterSet(
   DecrementCountDelegate delegate(&counter);
 
   // A manual-reset event that is not yet signaled.
-  HANDLE event = CreateEvent(NULL, TRUE, FALSE, NULL);
+  HANDLE event = CreateEvent(nullptr, TRUE, FALSE, nullptr);
 
   bool ok = watcher.StartWatchingOnce(event, &delegate);
   EXPECT_TRUE(ok);
@@ -112,7 +112,7 @@ void RunTest_SignalBeforeWatch(
   ObjectWatcher watcher;
 
   // A manual-reset event that is signaled before we begin watching.
-  HANDLE event = CreateEvent(NULL, TRUE, TRUE, NULL);
+  HANDLE event = CreateEvent(nullptr, TRUE, TRUE, nullptr);
 
   QuitDelegate delegate;
   bool ok = watcher.StartWatchingOnce(event, &delegate);
@@ -129,7 +129,7 @@ void RunTest_OutlivesTaskEnvironment(
   // Simulate a task environment that dies before an ObjectWatcher.  This
   // ordinarily doesn't happen when people use the Thread class, but it can
   // happen when people use the Singleton pattern or atexit.
-  HANDLE event = CreateEvent(NULL, TRUE, FALSE, NULL);  // not signaled
+  HANDLE event = CreateEvent(nullptr, TRUE, FALSE, nullptr);  // not signaled
   {
     ObjectWatcher watcher;
     {
@@ -167,7 +167,7 @@ void RunTest_ExecuteMultipleTimes(
   EXPECT_FALSE(watcher.IsWatching());
 
   // An auto-reset event that is not yet signaled.
-  HANDLE event = CreateEvent(NULL, FALSE, FALSE, NULL);
+  HANDLE event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
   QuitAfterMultipleDelegate delegate(event, 2);
   bool ok = watcher.StartWatchingMultipleTimes(event, &delegate);

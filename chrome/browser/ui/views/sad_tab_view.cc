@@ -332,6 +332,132 @@ base::string16 ErrorToString(int error_code) {
     case 1073741845:
       error_string = "STATUS_FATAL_APP_EXIT";
       break;
+    case 1072103400:
+      error_string = "STATUS_CURRENT_TRANSACTION_NOT_VALID";
+      break;
+    case 1072365548:
+      error_string = "STATUS_SXS_CORRUPT_ACTIVATION_STACK";
+      break;
+    case 1072365552:
+      error_string = "STATUS_SXS_INVALID_DEACTIVATION";
+      break;
+    case 1072365566:
+      error_string = "STATUS_SXS_CANT_GEN_ACTCTX";
+      break;
+    case 1073739514:
+      error_string = "STATUS_VIRUS_INFECTED";
+      break;
+    case 1073740004:
+      error_string = "STATUS_INVALID_THREAD";
+      break;
+    case 1073740016:
+      error_string = "STATUS_CALLBACK_RETURNED_WHILE_IMPERSONATING";
+      break;
+    case 1073740022:
+      error_string = "STATUS_THREADPOOL_HANDLE_EXCEPTION";
+      break;
+    case 1073740767:
+      error_string = "STATUS_VERIFIER_STOP";
+      break;
+    case 1073740768:
+      error_string = "STATUS_ASSERTION_FAILURE";
+      break;
+    case 1073740771:
+      error_string = "STATUS_FATAL_USER_CALLBACK_EXCEPTION";
+      break;
+    case 1073740777:
+      error_string = "STATUS_INVALID_CRUNTIME_PARAMETER";
+      break;
+    case 1073740782:
+      error_string = "STATUS_DELAY_LOAD_FAILED";
+      break;
+    case 1073740959:
+      error_string = "STATUS_ACCESS_DISABLED_BY_POLICY_DEFAULT";
+      break;
+    case 1073741131:
+      error_string = "STATUS_FLOAT_MULTIPLE_TRAPS";
+      break;
+    case 1073741132:
+      error_string = "STATUS_FLOAT_MULTIPLE_FAULTS";
+      break;
+    case 1073741205:
+      error_string = "STATUS_DLL_INIT_FAILED_LOGOFF";
+      break;
+    case 1073741212:
+      error_string = "STATUS_RESOURCE_NOT_OWNED";
+      break;
+    case 1073741431:
+      error_string = "STATUS_TOO_LATE";
+      break;
+    case 1073741511:
+      error_string = "STATUS_ENTRYPOINT_NOT_FOUND";
+      break;
+    case 1073741523:
+      error_string = "STATUS_COMMITMENT_LIMIT";
+      break;
+    case 1073741558:
+      error_string = "STATUS_PROCESS_IS_TERMINATING";
+      break;
+    case 1073741569:
+      error_string = "STATUS_BAD_FUNCTION_TABLE";
+      break;
+    case 1073741581:
+      error_string = "STATUS_INVALID_PARAMETER_5";
+      break;
+    case 1073741595:
+      error_string = "STATUS_INTERNAL_ERROR";
+      break;
+    case 1073741662:
+      error_string = "STATUS_MEDIA_WRITE_PROTECTED";
+      break;
+    case 1073741670:
+      error_string = "STATUS_INSUFFICIENT_RESOURCES";
+      break;
+    case 1073741701:
+      error_string = "STATUS_INVALID_IMAGE_FORMAT";
+      break;
+    case 1073741738:
+      error_string = "STATUS_DELETE_PENDING";
+      break;
+    case 1073741744:
+      error_string = "STATUS_EA_TOO_LARGE";
+      break;
+    case 1073741749:
+      error_string = "STATUS_THREAD_IS_TERMINATING";
+      break;
+    case 1073741756:
+      error_string = "STATUS_QUOTA_EXCEEDED";
+      break;
+    case 1073741757:
+      error_string = "STATUS_SHARING_VIOLATION";
+      break;
+    case 1073741766:
+      error_string = "STATUS_OBJECT_PATH_NOT_FOUND";
+      break;
+    case 1073741772:
+      error_string = "STATUS_OBJECT_NAME_NOT_FOUND";
+      break;
+    case 1073741784:
+      error_string = "STATUS_BAD_STACK";
+      break;
+    case 1073741785:
+      error_string = "STATUS_UNWIND";
+      break;
+    case 1073741788:
+      error_string = "STATUS_OBJECT_TYPE_MISMATCH";
+      break;
+    case 1073741796:
+      error_string = "STATUS_INVALID_SYSTEM_SERVICE";
+      break;
+    case 1073741820:
+      error_string = "STATUS_INFO_LENGTH_MISMATCH";
+      break;
+    case 1073741822:
+      error_string = "STATUS_NOT_IMPLEMENTED";
+      break;
+    case 1073741823:
+      error_string = "STATUS_UNSUCCESSFUL";
+      break;
     case 2147483644:
       error_string = "STATUS_SINGLE_STEP";
       break;

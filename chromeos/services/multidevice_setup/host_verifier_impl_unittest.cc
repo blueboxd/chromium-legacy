@@ -14,6 +14,7 @@
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/components/multidevice/software_feature_state.h"
+#include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/fake_host_backend_delegate.h"
 #include "chromeos/services/multidevice_setup/fake_host_verifier.h"
@@ -151,6 +152,12 @@ class MultiDeviceSetupHostVerifierImplTest
 
   void InvokePendingDeviceNotificationCall(bool success) {
     if (test_device_.instance_id().empty()) {
+      // Verify input parameters to FindEligibleDevices().
+      EXPECT_EQ(multidevice::SoftwareFeature::kBetterTogetherHost,
+                fake_device_sync_client_->find_eligible_devices_inputs_queue()
+                    .front()
+                    .software_feature);
+
       fake_device_sync_client_->InvokePendingFindEligibleDevicesCallback(
           success
               ? device_sync::mojom::NetworkRequestResult::kSuccess
@@ -159,6 +166,20 @@ class MultiDeviceSetupHostVerifierImplTest
           multidevice::RemoteDeviceRefList() /* ineligible_devices */);
       return;
     }
+
+    // Verify input parameters to NotifyDevices().
+    EXPECT_EQ(std::vector<std::string>{test_device_.instance_id()},
+              fake_device_sync_client_->notify_devices_inputs_queue()
+                  .front()
+                  .device_instance_ids);
+    EXPECT_EQ(cryptauthv2::TargetService::DEVICE_SYNC,
+              fake_device_sync_client_->notify_devices_inputs_queue()
+                  .front()
+                  .target_service);
+    EXPECT_EQ(multidevice::SoftwareFeature::kBetterTogetherHost,
+              fake_device_sync_client_->notify_devices_inputs_queue()
+                  .front()
+                  .feature);
 
     fake_device_sync_client_->InvokePendingNotifyDevicesCallback(
         success

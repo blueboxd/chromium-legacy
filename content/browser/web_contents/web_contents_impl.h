@@ -1003,6 +1003,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void IncrementBluetoothConnectedDeviceCount();
   void DecrementBluetoothConnectedDeviceCount();
 
+  // Notifies the delegate and observers when the connected to Bluetooth device
+  // state changes.
+  void OnIsConnectedToBluetoothDeviceChanged(
+      bool is_connected_to_bluetooth_device);
+
   // Modify the counter of frames in this WebContents actively using serial
   // ports.
   void IncrementSerialActiveFrameCount();

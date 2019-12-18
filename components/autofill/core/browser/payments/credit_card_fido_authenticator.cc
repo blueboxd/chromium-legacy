@@ -57,9 +57,13 @@ CreditCardFIDOAuthenticator::CreditCardFIDOAuthenticator(AutofillDriver* driver,
       payments_client_(client->GetPaymentsClient()),
       user_is_verifiable_callback_received_(
           base::WaitableEvent::ResetPolicy::AUTOMATIC,
-          base::WaitableEvent::InitialState::NOT_SIGNALED) {}
+          base::WaitableEvent::InitialState::NOT_SIGNALED) {
+  user_is_opted_in_ = IsUserOptedIn();
+}
 
-CreditCardFIDOAuthenticator::~CreditCardFIDOAuthenticator() {}
+CreditCardFIDOAuthenticator::~CreditCardFIDOAuthenticator() {
+  UpdateUserPref();
+}
 
 void CreditCardFIDOAuthenticator::Authenticate(
     const CreditCard* card,
@@ -104,8 +108,8 @@ void CreditCardFIDOAuthenticator::Authorize(
     // If user is already opted-in, then a new card is trying to be
     // authorized. Otherwise, a user with a credential on file is trying to
     // opt-in.
-    current_flow_ = IsUserOptedIn() ? FOLLOWUP_AFTER_CVC_AUTH_FLOW
-                                    : OPT_IN_WITH_CHALLENGE_FLOW;
+    current_flow_ = user_is_opted_in_ ? FOLLOWUP_AFTER_CVC_AUTH_FLOW
+                                      : OPT_IN_WITH_CHALLENGE_FLOW;
     GetAssertion(ParseRequestOptions(std::move(request_options)));
   }
 }
@@ -140,22 +144,21 @@ bool CreditCardFIDOAuthenticator::IsUserOptedIn() {
 
 void CreditCardFIDOAuthenticator::SyncUserOptIn(
     AutofillClient::UnmaskDetails& unmask_details) {
-  bool is_user_opted_in = IsUserOptedIn();
+  user_is_opted_in_ = IsUserOptedIn();
 
   // If payments is offering to opt-in, then that means user is not opted in.
   if (unmask_details.offer_fido_opt_in) {
-    is_user_opted_in = false;
+    user_is_opted_in_ = false;
   }
 
   // If payments is requesting a FIDO auth, then that means user is opted in.
   if (unmask_details.unmask_auth_method ==
       AutofillClient::UnmaskAuthMethod::FIDO) {
-    is_user_opted_in = true;
+    user_is_opted_in_ = true;
   }
 
   // Update pref setting if needed.
-  ::autofill::prefs::SetCreditCardFIDOAuthEnabled(autofill_client_->GetPrefs(),
-                                                  is_user_opted_in);
+  UpdateUserPref();
 }
 
 void CreditCardFIDOAuthenticator::CancelVerification() {
@@ -173,6 +176,14 @@ void CreditCardFIDOAuthenticator::OnWebauthnOfferDialogRequested(
   card_authorization_token_ = card_authorization_token;
   AutofillMetrics::LogWebauthnOptInPromoShown(
       /*is_checkout_flow=*/!card_authorization_token_.empty());
+
+  // At this point, it must be the case that the user is opted-out, otherwise
+  // there would be no need to register the user. However, if the user is
+  // opting-in through the settings page, the user preference is set to opted-in
+  // directly from the toggle switch being turned on. Storing the actual opt-in
+  // state in |user_is_opted_in_| for now, and will update the pref store once
+  // the UI flow is complete to avoid abrupt UI changes.
+  user_is_opted_in_ = false;
 }
 
 void CreditCardFIDOAuthenticator::OnWebauthnOfferDialogUserResponse(
@@ -197,8 +208,8 @@ void CreditCardFIDOAuthenticator::OnWebauthnOfferDialogUserResponse(
     current_flow_ = NONE_FLOW;
     GetOrCreateFidoAuthenticationStrikeDatabase()->AddStrikes(
         FidoAuthenticationStrikeDatabase::kStrikesToAddWhenOptInOfferDeclined);
-    ::autofill::prefs::SetCreditCardFIDOAuthEnabled(
-        autofill_client_->GetPrefs(), false);
+    user_is_opted_in_ = false;
+    UpdateUserPref();
   }
 }
 #endif
@@ -355,6 +366,8 @@ void CreditCardFIDOAuthenticator::OnDidGetAssertion(
       GetOrCreateFidoAuthenticationStrikeDatabase()->AddStrikes(
           FidoAuthenticationStrikeDatabase::
               kStrikesToAddWhenUserVerificationFailsOnOptInAttempt);
+      user_is_opted_in_ = false;
+      UpdateUserPref();
     }
 
     current_flow_ = NONE_FLOW;
@@ -399,6 +412,8 @@ void CreditCardFIDOAuthenticator::OnDidMakeCredential(
       GetOrCreateFidoAuthenticationStrikeDatabase()->AddStrikes(
           FidoAuthenticationStrikeDatabase::
               kStrikesToAddWhenUserVerificationFailsOnOptInAttempt);
+      user_is_opted_in_ = false;
+      UpdateUserPref();
     }
 
     current_flow_ = NONE_FLOW;
@@ -417,9 +432,14 @@ void CreditCardFIDOAuthenticator::OnDidGetOptChangeResult(
          current_flow_ == FOLLOWUP_AFTER_CVC_AUTH_FLOW);
 
   // Update user preference to keep in sync with server.
-  ::autofill::prefs::SetCreditCardFIDOAuthEnabled(
-      autofill_client_->GetPrefs(),
-      response.user_is_opted_in.value_or(IsUserOptedIn()));
+  user_is_opted_in_ = response.user_is_opted_in.value_or(user_is_opted_in_);
+
+  // When fetching the challenge on the settings page, don't update the user
+  // preference yet. Otherwise the toggle will be visibly turned off, which may
+  // seem confusing.
+  bool is_settings_page = card_authorization_token_.empty();
+  if (!is_settings_page || current_flow_ != OPT_IN_FETCH_CHALLENGE_FLOW)
+    UpdateUserPref();
 
   // End the flow if the server responded with an error.
   if (result != AutofillClient::PaymentsRpcResult::SUCCESS) {
@@ -703,5 +723,10 @@ void CreditCardFIDOAuthenticator::LogWebauthnResult(
       break;
   }
   AutofillMetrics::LogWebauthnResult(event, metric);
+}
+
+void CreditCardFIDOAuthenticator::UpdateUserPref() {
+  ::autofill::prefs::SetCreditCardFIDOAuthEnabled(autofill_client_->GetPrefs(),
+                                                  user_is_opted_in_);
 }
 }  // namespace autofill

@@ -7,13 +7,14 @@
 #include "base/logging.h"
 #import "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/overlays/public/overlay_callback_manager.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #include "ios/chrome/browser/overlays/public/overlay_response.h"
 #include "ios/chrome/browser/overlays/public/web_content_area/http_auth_overlay.h"
 #import "ios/chrome/browser/ui/alert_view/alert_action.h"
 #import "ios/chrome/browser/ui/alert_view/alert_consumer.h"
 #import "ios/chrome/browser/ui/elements/text_field_configuration.h"
-#import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_mediator+subclassing.h"
+#import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_mediator+alert_consumer_support.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -22,7 +23,7 @@
 #endif
 
 @interface HTTPAuthDialogOverlayMediator ()
-@property(nonatomic, readonly) OverlayRequest* request;
+// The config from the request passed on initialization.
 @property(nonatomic, readonly) HTTPAuthOverlayRequestConfig* config;
 
 // Sets the OverlayResponse using the user input from the prompt UI.
@@ -33,11 +34,9 @@
 @implementation HTTPAuthDialogOverlayMediator
 
 - (instancetype)initWithRequest:(OverlayRequest*)request {
-  if (self = [super init]) {
-    _request = request;
-    DCHECK(_request);
+  if (self = [super initWithRequest:request]) {
     // Verify that the request is configured for HTTP authentication dialogs.
-    DCHECK(_request->GetConfig<HTTPAuthOverlayRequestConfig>());
+    DCHECK(request->GetConfig<HTTPAuthOverlayRequestConfig>());
   }
   return self;
 }
@@ -62,12 +61,13 @@
     response = OverlayResponse::CreateWithInfo<HTTPAuthOverlayResponseInfo>(
         user, password);
   }
-  self.request->set_response(std::move(response));
+  self.request->GetCallbackManager()->SetCompletionResponse(
+      std::move(response));
 }
 
 @end
 
-@implementation HTTPAuthDialogOverlayMediator (Subclassing)
+@implementation HTTPAuthDialogOverlayMediator (AlertConsumerSupport)
 
 - (NSString*)alertTitle {
   return l10n_util::GetNSStringWithFixup(IDS_LOGIN_DIALOG_TITLE);
@@ -107,7 +107,7 @@
                            __typeof__(self) strongSelf = weakSelf;
                            [strongSelf updateResponseCancelled:NO];
                            [strongSelf.delegate
-                               stopDialogForMediator:strongSelf];
+                               stopOverlayForMediator:strongSelf];
                          }],
     [AlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
                            style:UIAlertActionStyleCancel
@@ -115,7 +115,7 @@
                            __typeof__(self) strongSelf = weakSelf;
                            [strongSelf updateResponseCancelled:YES];
                            [strongSelf.delegate
-                               stopDialogForMediator:strongSelf];
+                               stopOverlayForMediator:strongSelf];
                          }],
   ];
 }

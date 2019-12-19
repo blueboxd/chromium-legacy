@@ -58,7 +58,7 @@ InkDropHighlight::InkDropHighlight(
   layer_->set_delegate(layer_delegate_.get());
   layer_->SetVisible(false);
   layer_->SetMasksToBounds(false);
-  layer_->set_name("InkDropHighlight:layer");
+  layer_->SetName("InkDropHighlight:layer");
 }
 
 InkDropHighlight::InkDropHighlight(const gfx::SizeF& size,

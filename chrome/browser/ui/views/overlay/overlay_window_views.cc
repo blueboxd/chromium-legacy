@@ -316,7 +316,7 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateWindowBounds() {
 
 void OverlayWindowViews::SetUpViews() {
   GetRootView()->SetPaintToLayer(ui::LAYER_TEXTURED);
-  GetRootView()->layer()->set_name("RootView");
+  GetRootView()->layer()->SetName("RootView");
   GetRootView()->layer()->SetMasksToBounds(true);
 
   // views::View that is displayed when video is hidden. ----------------------
@@ -348,7 +348,7 @@ void OverlayWindowViews::SetUpViews() {
   larger_window_bounds.Inset(-1, -1);
   window_background_view->SetBoundsRect(larger_window_bounds);
   window_background_view->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-  window_background_view->layer()->set_name("WindowBackgroundView");
+  window_background_view->layer()->SetName("WindowBackgroundView");
   window_background_view->layer()->SetColor(SK_ColorBLACK);
 
   // view::View that holds the video. -----------------------------------------
@@ -356,52 +356,52 @@ void OverlayWindowViews::SetUpViews() {
   video_view->SetSize(GetBounds().size());
   video_view->layer()->SetMasksToBounds(true);
   video_view->layer()->SetFillsBoundsOpaquely(false);
-  video_view->layer()->set_name("VideoView");
+  video_view->layer()->SetName("VideoView");
 
   // views::View that holds the scrim, which appears with the controls. -------
   controls_scrim_view->SetSize(GetBounds().size());
   controls_scrim_view->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-  controls_scrim_view->layer()->set_name("ControlsScrimView");
+  controls_scrim_view->layer()->SetName("ControlsScrimView");
   controls_scrim_view->layer()->SetColor(gfx::kGoogleGrey900);
   controls_scrim_view->layer()->SetOpacity(kControlsScrimOpacity);
 
   // views::View that closes the window. --------------------------------------
   close_controls_view->SetPaintToLayer(ui::LAYER_TEXTURED);
   close_controls_view->layer()->SetFillsBoundsOpaquely(false);
-  close_controls_view->layer()->set_name("CloseControlsView");
+  close_controls_view->layer()->SetName("CloseControlsView");
 
   // views::View that closes the window and focuses initiator tab. ------------
   back_to_tab_controls_view->SetPaintToLayer(ui::LAYER_TEXTURED);
   back_to_tab_controls_view->layer()->SetFillsBoundsOpaquely(false);
-  back_to_tab_controls_view->layer()->set_name("BackToTabControlsView");
+  back_to_tab_controls_view->layer()->SetName("BackToTabControlsView");
 
   // views::View that holds the previous-track image button. ------------------
   previous_track_controls_view->SetPaintToLayer(ui::LAYER_TEXTURED);
   previous_track_controls_view->layer()->SetFillsBoundsOpaquely(false);
-  previous_track_controls_view->layer()->set_name("PreviousTrackControlsView");
+  previous_track_controls_view->layer()->SetName("PreviousTrackControlsView");
 
   // views::View that toggles play/pause/replay. ------------------------------
   play_pause_controls_view->SetPaintToLayer(ui::LAYER_TEXTURED);
   play_pause_controls_view->layer()->SetFillsBoundsOpaquely(false);
-  play_pause_controls_view->layer()->set_name("PlayPauseControlsView");
+  play_pause_controls_view->layer()->SetName("PlayPauseControlsView");
   play_pause_controls_view->SetPlaybackState(
       controller_->IsPlayerActive() ? kPlaying : kPaused);
 
   // views::View that holds the next-track image button. ----------------------
   next_track_controls_view->SetPaintToLayer(ui::LAYER_TEXTURED);
   next_track_controls_view->layer()->SetFillsBoundsOpaquely(false);
-  next_track_controls_view->layer()->set_name("NextTrackControlsView");
+  next_track_controls_view->layer()->SetName("NextTrackControlsView");
 
   // views::View that holds the skip-ad label button. -------------------------
   skip_ad_controls_view->SetPaintToLayer(ui::LAYER_TEXTURED);
   skip_ad_controls_view->layer()->SetFillsBoundsOpaquely(true);
-  skip_ad_controls_view->layer()->set_name("SkipAdControlsView");
+  skip_ad_controls_view->layer()->SetName("SkipAdControlsView");
 
 #if defined(OS_CHROMEOS)
   // views::View that shows the affordance that the window can be resized. ----
   resize_handle_view->SetPaintToLayer(ui::LAYER_TEXTURED);
   resize_handle_view->layer()->SetFillsBoundsOpaquely(false);
-  resize_handle_view->layer()->set_name("ResizeHandleView");
+  resize_handle_view->layer()->SetName("ResizeHandleView");
   resize_handle_view->layer()->SetOpacity(kResizeHandleOpacity);
 #endif
 

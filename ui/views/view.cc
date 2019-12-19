@@ -2548,7 +2548,7 @@ void View::CreateLayer(ui::LayerType layer_type) {
 
   SetLayer(std::make_unique<ui::Layer>(layer_type));
   layer()->set_delegate(this);
-  layer()->set_name(GetClassName());
+  layer()->SetName(GetClassName());
 
   UpdateParentLayers();
   UpdateLayerVisibility();

@@ -79,7 +79,7 @@ class ResultLayer : public ui::Layer, public ui::LayerDelegate {
 };
 
 ResultLayer::ResultLayer(const gfx::Rect& box) {
-  set_name("HighlighterResultView:ResultLayer");
+  SetName("HighlighterResultView:ResultLayer");
   gfx::Rect bounds = box;
   bounds.Inset(-kResultLayerMargin, -kResultLayerMargin);
   SetBounds(bounds);
@@ -200,7 +200,7 @@ void HighlighterResultView::Animate(const gfx::RectF& bounds,
     // The original stroke is fading out in place.
     // Fade in a solid transparent rectangle.
     result_layer_ = std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR);
-    result_layer_->set_name("HighlighterResultView:SOLID_LAYER");
+    result_layer_->SetName("HighlighterResultView:SOLID_LAYER");
     result_layer_->SetBounds(gfx::ToEnclosingRect(bounds));
     result_layer_->SetFillsBoundsOpaquely(false);
     result_layer_->SetMasksToBounds(false);

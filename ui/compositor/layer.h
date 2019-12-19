@@ -337,7 +337,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   void SetFillsBoundsCompletely(bool fills_bounds_completely);
 
   const std::string& name() const { return name_; }
-  void set_name(const std::string& name) { name_ = name; }
+  void SetName(const std::string& name);
 
   // Set new TransferableResource for this layer. This method only supports
   // a gpu-backed |resource|.

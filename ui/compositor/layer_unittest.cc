@@ -1252,9 +1252,9 @@ TEST_F(LayerWithNullDelegateTest, Stacking) {
   auto l1 = std::make_unique<Layer>(LAYER_TEXTURED);
   auto l2 = std::make_unique<Layer>(LAYER_TEXTURED);
   auto l3 = std::make_unique<Layer>(LAYER_TEXTURED);
-  l1->set_name("1");
-  l2->set_name("2");
-  l3->set_name("3");
+  l1->SetName("1");
+  l2->SetName("2");
+  l3->SetName("3");
   root->Add(l3.get());
   root->Add(l2.get());
   root->Add(l1.get());

@@ -476,7 +476,7 @@ protocol::Response OverlayAgentViews::HighlightNode(int node_id,
 
   if (!layer_for_highlighting_) {
     layer_for_highlighting_.reset(new ui::Layer(ui::LayerType::LAYER_TEXTURED));
-    layer_for_highlighting_->set_name("HighlightingLayer");
+    layer_for_highlighting_->SetName("HighlightingLayer");
     layer_for_highlighting_->set_delegate(this);
     layer_for_highlighting_->SetFillsBoundsOpaquely(false);
   }

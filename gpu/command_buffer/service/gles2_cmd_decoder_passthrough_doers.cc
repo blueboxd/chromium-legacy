@@ -5649,7 +5649,7 @@ GLES2DecoderPassthroughImpl::DoBeginSharedImageAccessDirectCHROMIUM(
     return error::kNoError;
   }
 
-  if (!found->second.BeginAccess(mode)) {
+  if (!found->second.BeginAccess(mode, api())) {
     InsertError(GL_INVALID_OPERATION, "unable to begin access");
     return error::kNoError;
   }

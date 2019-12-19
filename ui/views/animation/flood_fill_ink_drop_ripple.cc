@@ -127,7 +127,7 @@ FloodFillInkDropRipple::FloodFillInkDropRipple(const gfx::Size& host_size,
                                  CalculateClipBounds(host_size, clip_insets))),
       ink_drop_state_(InkDropState::HIDDEN) {
   gfx::Rect clip_bounds = CalculateClipBounds(host_size, clip_insets);
-  root_layer_.set_name("FloodFillInkDropRipple:ROOT_LAYER");
+  root_layer_.SetName("FloodFillInkDropRipple:ROOT_LAYER");
   root_layer_.SetMasksToBounds(true);
   root_layer_.SetBounds(clip_bounds);
 
@@ -140,7 +140,7 @@ FloodFillInkDropRipple::FloodFillInkDropRipple(const gfx::Size& host_size,
   painted_layer_.SetVisible(true);
   painted_layer_.SetOpacity(1.0);
   painted_layer_.SetMasksToBounds(false);
-  painted_layer_.set_name("FloodFillInkDropRipple:PAINTED_LAYER");
+  painted_layer_.SetName("FloodFillInkDropRipple:PAINTED_LAYER");
 
   root_layer_.Add(&painted_layer_);
 

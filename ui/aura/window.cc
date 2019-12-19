@@ -1469,7 +1469,7 @@ void Window::UpdateLayerName() {
   if (id_ != -1)
     layer_name += " " + base::NumberToString(id_);
 
-  layer()->set_name(layer_name);
+  layer()->SetName(layer_name);
 #endif
 }
 

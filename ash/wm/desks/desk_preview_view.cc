@@ -227,7 +227,7 @@ DeskPreviewView::DeskPreviewView(DeskMiniView* mini_view)
   desk_mirrored_contents_view_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
   ui::Layer* contents_view_layer = desk_mirrored_contents_view_->layer();
   contents_view_layer->SetMasksToBounds(true);
-  contents_view_layer->set_name("Desk mirrored contents view");
+  contents_view_layer->SetName("Desk mirrored contents view");
   contents_view_layer->SetRoundedCornerRadius(kCornerRadii);
   contents_view_layer->SetIsFastRoundedCorner(true);
   AddChildView(desk_mirrored_contents_view_);
@@ -259,7 +259,7 @@ void DeskPreviewView::RecreateDeskContentsMirrorLayers() {
   // Mirror the layer tree of the desk container.
   auto mirrored_content_root_layer =
       std::make_unique<ui::Layer>(ui::LAYER_NOT_DRAWN);
-  mirrored_content_root_layer->set_name("mirrored contents root layer");
+  mirrored_content_root_layer->SetName("mirrored contents root layer");
   base::flat_map<ui::Layer*, LayerData> layers_data;
   GetLayersData(desk_container, &layers_data);
   auto* desk_container_layer = desk_container->layer();

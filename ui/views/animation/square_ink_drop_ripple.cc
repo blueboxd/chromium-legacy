@@ -159,7 +159,7 @@ SquareInkDropRipple::SquareInkDropRipple(const gfx::Size& large_size,
       rect_layer_delegate_(
           new RectangleLayerDelegate(color, gfx::SizeF(large_size_))),
       root_layer_(ui::LAYER_NOT_DRAWN) {
-  root_layer_.set_name("SquareInkDropRipple:ROOT_LAYER");
+  root_layer_.SetName("SquareInkDropRipple:ROOT_LAYER");
 
   for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
     AddPaintLayer(static_cast<PaintedShape>(i));
@@ -592,7 +592,7 @@ void SquareInkDropRipple::AddPaintLayer(PaintedShape painted_shape) {
   layer->SetVisible(true);
   layer->SetOpacity(1.0);
   layer->SetMasksToBounds(false);
-  layer->set_name("PAINTED_SHAPE_COUNT:" + ToLayerName(painted_shape));
+  layer->SetName("PAINTED_SHAPE_COUNT:" + ToLayerName(painted_shape));
 
   painted_layers_[painted_shape].reset(layer);
 }

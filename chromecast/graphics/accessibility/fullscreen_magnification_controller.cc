@@ -395,7 +395,7 @@ bool FullscreenMagnificationController::ProcessGestures() {
 void FullscreenMagnificationController::AddHighlightLayer() {
   ui::Layer* root_layer = root_window_->layer();
   highlight_ring_layer_ = std::make_unique<ui::Layer>(ui::LAYER_TEXTURED);
-  highlight_ring_layer_->set_name("MagnificationHighlightLayer");
+  highlight_ring_layer_->SetName("MagnificationHighlightLayer");
   root_layer->Add(highlight_ring_layer_.get());
   highlight_ring_layer_->parent()->StackAtTop(highlight_ring_layer_.get());
   gfx::Rect bounds(root_layer->bounds());

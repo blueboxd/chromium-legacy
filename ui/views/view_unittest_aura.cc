@@ -37,7 +37,7 @@ View* CreateViewWithLayer(const gfx::Rect& bounds, const char* layer_name) {
   View* view = new View();
   view->SetBoundsRect(bounds);
   view->SetPaintToLayer();
-  view->layer()->set_name(layer_name);
+  view->layer()->SetName(layer_name);
   return view;
 }
 
@@ -73,7 +73,7 @@ class ViewAuraTest : public ViewsTestBase {
 //     +-- v9
 TEST_F(ViewAuraTest, RecreateLayersWithWindows) {
   Widget* w1 = CreateControlWidget(GetContext(), gfx::Rect(0, 0, 100, 100));
-  w1->GetNativeView()->layer()->set_name("w1");
+  w1->GetNativeView()->layer()->SetName("w1");
 
   View* v2 = new View();
   v2->SetBounds(0, 1, 100, 101);
@@ -105,7 +105,7 @@ TEST_F(ViewAuraTest, RecreateLayersWithWindows) {
 
   Widget* w2 =
       CreateControlWidget(w1->GetNativeView(), gfx::Rect(0, 5, 100, 105));
-  w2->GetNativeView()->layer()->set_name("w2");
+  w2->GetNativeView()->layer()->SetName("w2");
   w2->GetNativeView()->SetProperty(kHostViewKey, w2_host_view);
 
   View* v5 = CreateViewWithLayer(gfx::Rect(0, 6, 100, 106), "v5");

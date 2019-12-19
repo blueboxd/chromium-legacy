@@ -23,6 +23,7 @@ js_library("chrome_helper") {
 
 js_library("device_operator") {
   deps = [
+    "..:namespace",
     "..:type",
     "//media/capture/video/chromeos/mojom:cros_camera_js_library_for_compile",
   ]

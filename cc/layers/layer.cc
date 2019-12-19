@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -209,6 +210,12 @@ void Layer::SetNeedsCommit() {
     return;
 
   layer_tree_host_->SetNeedsCommit();
+}
+
+void Layer::SetDebugName(const std::string& name) {
+  if (name.empty() && !debug_info_)
+    return;
+  EnsureDebugInfo().name = name;
 }
 
 void Layer::SetNeedsFullTreeSync() {

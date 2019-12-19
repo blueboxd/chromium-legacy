@@ -49,7 +49,7 @@ std::unique_ptr<ui::LayerTreeOwner> CreateAnimationLayerOwner(
   gfx::Rect layer_bounds(root->layer()->size());
   layer_bounds.set_width(2 * layer_bounds.width() + kDesksSpacing);
   animation_layer->SetBounds(layer_bounds);
-  animation_layer->set_name("Desk switch animation layer");
+  animation_layer->SetName("Desk switch animation layer");
   animation_layer->SetColor(SK_ColorBLACK);
 
   return std::make_unique<ui::LayerTreeOwner>(std::move(animation_layer));
@@ -270,7 +270,7 @@ void RootWindowDeskSwitchAnimator::CompleteAnimationPhase1WithLayer(
     animation_layer_starting_transfrom.Translate(-x_translation_offset_, 0);
   }
 
-  starting_desk_screenshot_layer->set_name("Starting desk screenshot");
+  starting_desk_screenshot_layer->SetName("Starting desk screenshot");
   starting_desk_screenshot_layer->SetBounds(screenshot_bounds);
   auto* animation_layer = animation_layer_owner_->root();
   animation_layer->Add(starting_desk_screenshot_layer);
@@ -376,7 +376,7 @@ void RootWindowDeskSwitchAnimator::OnEndingDeskScreenshotTaken(
     screenshot_bounds.Offset(x_translation_offset_, 0);
   }
 
-  ending_desk_screenshot_layer->set_name("Ending desk screenshot");
+  ending_desk_screenshot_layer->SetName("Ending desk screenshot");
   ending_desk_screenshot_layer->SetBounds(screenshot_bounds);
 
   auto* animation_layer = animation_layer_owner_->root();

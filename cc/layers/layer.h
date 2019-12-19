@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <array>
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -677,6 +678,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // This is public, so that it can be called directly when needed, for example
   // in PropertyTreeManager when handling scroll offsets.
   void SetNeedsCommit();
+
+  void SetDebugName(const std::string& name);
 
  protected:
   friend class LayerImpl;

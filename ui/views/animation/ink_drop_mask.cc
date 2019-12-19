@@ -17,7 +17,7 @@ InkDropMask::InkDropMask(const gfx::Size& layer_size)
   layer_.set_delegate(this);
   layer_.SetBounds(gfx::Rect(layer_size));
   layer_.SetFillsBoundsOpaquely(false);
-  layer_.set_name("InkDropMaskLayer");
+  layer_.SetName("InkDropMaskLayer");
 }
 
 InkDropMask::~InkDropMask() {

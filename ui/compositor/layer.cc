@@ -277,7 +277,7 @@ std::unique_ptr<Layer> Layer::Clone() const {
   clone->SetFillsBoundsCompletely(fills_bounds_completely_);
   clone->SetRoundedCornerRadius(rounded_corner_radii());
   clone->SetIsFastRoundedCorner(is_fast_rounded_corner());
-  clone->set_name(name_);
+  clone->SetName(name_);
 
   return clone;
 }
@@ -727,6 +727,11 @@ void Layer::SetFillsBoundsCompletely(bool fills_bounds_completely) {
   fills_bounds_completely_ = fills_bounds_completely;
 }
 
+void Layer::SetName(const std::string& name) {
+  name_ = name;
+  cc_layer_->SetDebugName(name);
+}
+
 void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   // Finish animations being handled by cc_layer_.
   if (animator_) {
@@ -779,7 +784,7 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   cc_layer_->SetHideLayerAndSubtree(!visible_);
   cc_layer_->SetBackdropFilterQuality(backdrop_filter_quality_);
   cc_layer_->SetElementId(cc::ElementId(cc_layer_->id()));
-  cc_layer_->EnsureDebugInfo().name = name_;
+  cc_layer_->SetDebugName(name_);
 
   SetLayerFilters();
   SetLayerBackgroundFilters();

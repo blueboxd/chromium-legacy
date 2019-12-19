@@ -2,27 +2,88 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for mojo.
- */
-cca.mojo = cca.mojo || {};
+/* eslint-disable no-undef */
 
 /**
  * import {Resolution} from '../type.js';
  */
-var Resolution = Resolution || {};
+
+/** @typedef {Resolution} */
+Resolution;
+
+/* eslint-enbale no-undef */
+
+/**
+ * Parse the entry data according to its type.
+ * @param {!cros.mojom.CameraMetadataEntry} entry Camera metadata entry
+ *     from which to parse the data according to its type.
+ * @return {!Array<number>} An array containing elements whose types correspond
+ *     to the format of input |tag|.
+ * @throws {Error} if entry type is not supported.
+ */
+export function parseMetadataData(entry) {
+  const {buffer} = Uint8Array.from(entry.data);
+  switch (entry.type) {
+    case cros.mojom.EntryType.TYPE_BYTE:
+      return Array.from(new Uint8Array(buffer));
+    case cros.mojom.EntryType.TYPE_INT32:
+      return Array.from(new Int32Array(buffer));
+    case cros.mojom.EntryType.TYPE_FLOAT:
+      return Array.from(new Float32Array(buffer));
+    case cros.mojom.EntryType.TYPE_DOUBLE:
+      return Array.from(new Float64Array(buffer));
+    case cros.mojom.EntryType.TYPE_INT64:
+      return Array.from(new BigInt64Array(buffer), (bigIntVal) => {
+        const numVal = Number(bigIntVal);
+        if (!Number.isSafeInteger(numVal)) {
+          console.warn('The int64 value is not a safe integer');
+        }
+        return numVal;
+      });
+    case cros.mojom.EntryType.TYPE_RATIONAL: {
+      const arr = new Int32Array(buffer);
+      const values = [];
+      for (let i = 0; i < arr.length; i += 2) {
+        values.push(arr[i] / arr[i + 1]);
+      }
+      return values;
+    }
+    default:
+      throw new Error('Unsupported type: ' + entry.type);
+  }
+}
+
+/**
+ * Gets the data from Camera metadata by its tag.
+ * @param {!cros.mojom.CameraMetadata} metadata Camera metadata from which to
+ *     query the data.
+ * @param {!cros.mojom.CameraMetadataTag} tag Camera metadata tag to query for.
+ * @return {!Array<number>} An array containing elements whose types correspond
+ *     to the format of input |tag|. If nothing is found, returns an empty
+ *     array.
+ * @private
+ */
+function getMetadataData(metadata, tag) {
+  for (let i = 0; i < metadata.entryCount; i++) {
+    const entry = metadata.entries[i];
+    if (entry.tag === tag) {
+      return parseMetadataData(entry);
+    }
+  }
+  return [];
+}
+
+/**
+ * The singleton instance of DeviceOperator. Initialized by the first
+ * invocation of getInstance().
+ * @type {?DeviceOperator}
+ */
+let instance = null;
 
 /**
  * Operates video capture device through CrOS Camera App Mojo interface.
  */
-cca.mojo.DeviceOperator = class {
+export class DeviceOperator {
   /**
    * @public
    */
@@ -81,7 +142,7 @@ cca.mojo.DeviceOperator = class {
     const device = await this.getDevice_(deviceId);
     const {cameraInfo} = await device.getCameraInfo();
     const staticMetadata = cameraInfo.staticCameraCharacteristics;
-    const streamConfigs = cca.mojo.getMetadataData_(
+    const streamConfigs = getMetadataData(
         staticMetadata,
         cros.mojom.CameraMetadataTag
             .ANDROID_SCALER_AVAILABLE_STREAM_CONFIGURATIONS);
@@ -121,7 +182,7 @@ cca.mojo.DeviceOperator = class {
     const device = await this.getDevice_(deviceId);
     const {cameraInfo} = await device.getCameraInfo();
     const staticMetadata = cameraInfo.staticCameraCharacteristics;
-    const minFrameDurationConfigs = cca.mojo.getMetadataData_(
+    const minFrameDurationConfigs = getMetadataData(
         staticMetadata,
         cros.mojom.CameraMetadataTag
             .ANDROID_SCALER_AVAILABLE_MIN_FRAME_DURATIONS);
@@ -174,7 +235,7 @@ cca.mojo.DeviceOperator = class {
     const device = await this.getDevice_(deviceId);
     const {cameraInfo} = await device.getCameraInfo();
     const staticMetadata = cameraInfo.staticCameraCharacteristics;
-    const availableFpsRanges = cca.mojo.getMetadataData_(
+    const availableFpsRanges = getMetadataData(
         staticMetadata,
         cros.mojom.CameraMetadataTag
             .ANDROID_CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES);
@@ -286,9 +347,8 @@ cca.mojo.DeviceOperator = class {
 
     const device = await this.getDevice_(deviceId);
     const {cameraInfo} = await device.getCameraInfo();
-    return cca.mojo
-               .getMetadataData_(
-                   cameraInfo.staticCameraCharacteristics, portraitModeTag)
+    return getMetadataData(
+               cameraInfo.staticCameraCharacteristics, portraitModeTag)
                .length > 0;
   }
 
@@ -389,16 +449,16 @@ cca.mojo.DeviceOperator = class {
   /**
    * Creates a new instance of DeviceOperator if it is not set. Returns the
    *     exist instance.
-   * @return {!Promise<?cca.mojo.DeviceOperator>} The singleton instance.
+   * @return {!Promise<?DeviceOperator>} The singleton instance.
    */
   static async getInstance() {
-    if (this.instance_ === null) {
-      this.instance_ = new cca.mojo.DeviceOperator();
+    if (instance === null) {
+      instance = new DeviceOperator();
     }
-    if (!await this.instance_.isSupported_) {
+    if (!await instance.isSupported_) {
       return null;
     }
-    return this.instance_;
+    return instance;
   }
 
   /**
@@ -408,71 +468,7 @@ cca.mojo.DeviceOperator = class {
   static async isSupported() {
     return await this.getInstance() !== null;
   }
-};
+}
 
-/**
- * The singleton instance of DeviceOperator. Initialized by the first
- * invocation of getInstance().
- * @type {?cca.mojo.DeviceOperator}
- */
-cca.mojo.DeviceOperator.instance_ = null;
-
-/**
- * Gets the data from Camera metadata by its tag.
- * @param {!cros.mojom.CameraMetadata} metadata Camera metadata from which to
- *     query the data.
- * @param {!cros.mojom.CameraMetadataTag} tag Camera metadata tag to query for.
- * @return {!Array<number>} An array containing elements whose types correspond
- *     to the format of input |tag|. If nothing is found, returns an empty
- *     array.
- * @private
- */
-cca.mojo.getMetadataData_ = function(metadata, tag) {
-  for (let i = 0; i < metadata.entryCount; i++) {
-    const entry = metadata.entries[i];
-    if (entry.tag === tag) {
-      return cca.mojo.parseMetadataData(entry);
-    }
-  }
-  return [];
-};
-
-/**
- * Parse the entry data according to its type.
- * @param {!cros.mojom.CameraMetadataEntry} entry Camera metadata entry
- *     from which to parse the data according to its type.
- * @return {!Array<number>} An array containing elements whose types correspond
- *     to the format of input |tag|.
- * @throws {Error} if entry type is not supported.
- */
-cca.mojo.parseMetadataData = function(entry) {
-  const {buffer} = Uint8Array.from(entry.data);
-  switch (entry.type) {
-    case cros.mojom.EntryType.TYPE_BYTE:
-      return Array.from(new Uint8Array(buffer));
-    case cros.mojom.EntryType.TYPE_INT32:
-      return Array.from(new Int32Array(buffer));
-    case cros.mojom.EntryType.TYPE_FLOAT:
-      return Array.from(new Float32Array(buffer));
-    case cros.mojom.EntryType.TYPE_DOUBLE:
-      return Array.from(new Float64Array(buffer));
-    case cros.mojom.EntryType.TYPE_INT64:
-      return Array.from(new BigInt64Array(buffer), (bigIntVal) => {
-        const numVal = Number(bigIntVal);
-        if (!Number.isSafeInteger(numVal)) {
-          console.warn('The int64 value is not a safe integer');
-        }
-        return numVal;
-      });
-    case cros.mojom.EntryType.TYPE_RATIONAL: {
-      const arr = new Int32Array(buffer);
-      const values = [];
-      for (let i = 0; i < arr.length; i += 2) {
-        values.push(arr[i] / arr[i + 1]);
-      }
-      return values;
-    }
-    default:
-      throw new Error('Unsupported type: ' + entry.type);
-  }
-};
+cca.mojo.DeviceOperator = DeviceOperator;
+cca.mojo.parseMetadataData = parseMetadataData;

@@ -90,7 +90,7 @@ void WallpaperView::SetLockShieldEnabled(bool enabled) {
     parent()->AddChildViewAt(shield_view_, 0);
     shield_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
     shield_view_->layer()->SetColor(SK_ColorBLACK);
-    shield_view_->layer()->set_name("WallpaperViewShield");
+    shield_view_->layer()->SetName("WallpaperViewShield");
   } else {
     DCHECK(shield_view_);
     parent()->RemoveChildView(shield_view_);

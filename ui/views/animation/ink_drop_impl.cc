@@ -598,7 +598,7 @@ InkDropImpl::InkDropImpl(InkDropHostView* ink_drop_host,
       destroying_(false) {
   root_layer_->SetBounds(gfx::Rect(host_size));
   SetAutoHighlightMode(AutoHighlightMode::NONE);
-  root_layer_->set_name("InkDropImpl:RootLayer");
+  root_layer_->SetName("InkDropImpl:RootLayer");
 }
 
 InkDropImpl::~InkDropImpl() {

@@ -32,7 +32,7 @@ Widget* CreateControlWidget(aura::Window* parent, const gfx::Rect& bounds) {
 // Sets the name of |window| and |window|'s layer to |name|.
 void SetWindowAndLayerName(aura::Window* window, const std::string& name) {
   window->SetName(name);
-  window->layer()->set_name(name);
+  window->layer()->SetName(name);
 }
 
 // Returns a string containing the name of each of the child windows (bottommost
@@ -65,7 +65,7 @@ TEST_F(WindowReordererTest, Basic) {
   // view.
   View* v = new View();
   v->SetPaintToLayer();
-  v->layer()->set_name("v");
+  v->layer()->SetName("v");
   contents_view->AddChildView(v);
 
   std::unique_ptr<Widget> w1(
@@ -214,7 +214,7 @@ TEST_F(WindowReordererTest, HostViewParentHasLayer) {
 
   View* v11 = new View();
   v11->SetPaintToLayer();
-  v11->layer()->set_name("v11");
+  v11->layer()->SetName("v11");
   v1->AddChildView(v11);
 
   std::unique_ptr<Widget> w(
@@ -228,12 +228,12 @@ TEST_F(WindowReordererTest, HostViewParentHasLayer) {
 
   View* v13 = new View();
   v13->SetPaintToLayer();
-  v13->layer()->set_name("v13");
+  v13->layer()->SetName("v13");
   v1->AddChildView(v13);
 
   View* v2 = new View();
   v2->SetPaintToLayer();
-  v2->layer()->set_name("v2");
+  v2->layer()->SetName("v2");
   contents_view->AddChildView(v2);
 
   // Test intial state.
@@ -243,7 +243,7 @@ TEST_F(WindowReordererTest, HostViewParentHasLayer) {
 
   // |w|'s layer should be stacked above |v1|'s layer.
   v1->SetPaintToLayer();
-  v1->layer()->set_name("v1");
+  v1->layer()->SetName("v1");
   EXPECT_EQ("w", ChildWindowNamesAsString(*parent_window));
   EXPECT_EQ("v1 w v2",
             ui::test::ChildLayerNamesAsString(*parent_window->layer()));
@@ -277,8 +277,8 @@ TEST_F(WindowReordererTest, ViewWithLayerBeneath) {
   view_with_layer_beneath->AddLayerBeneathView(&layer_beneath);
 
   ASSERT_NE(nullptr, view_with_layer_beneath->layer());
-  view_with_layer_beneath->layer()->set_name("view");
-  layer_beneath.set_name("beneath");
+  view_with_layer_beneath->layer()->SetName("view");
+  layer_beneath.SetName("beneath");
 
   // Verify that the initial ordering is correct.
   EXPECT_EQ("beneath view",

@@ -107,14 +107,7 @@ struct PassthroughResources {
       return representation_.get();
     }
 
-    bool BeginAccess(GLenum mode) {
-      DCHECK(!is_being_accessed());
-      scoped_access_ = representation_->BeginScopedAccess(mode);
-      if (!scoped_access_) {
-        return false;
-      }
-      return true;
-    }
+    bool BeginAccess(GLenum mode, gl::GLApi* api);
 
     void EndAccess() {
       DCHECK(is_being_accessed());
@@ -144,39 +137,6 @@ struct PassthroughResources {
   // Mapping of client buffer IDs that are mapped to the shared memory used to
   // back the mapping so that it can be flushed when the buffer is unmapped
   std::unordered_map<GLuint, MappedBuffer> mapped_buffer_map;
-};
-
-class ScopedFramebufferBindingReset {
- public:
-  explicit ScopedFramebufferBindingReset(gl::GLApi* api,
-                                         bool supports_separate_fbo_bindings);
-  ~ScopedFramebufferBindingReset();
-
- private:
-  gl::GLApi* api_;
-  bool supports_separate_fbo_bindings_;
-  GLint draw_framebuffer_;
-  GLint read_framebuffer_;
-};
-
-class ScopedRenderbufferBindingReset {
- public:
-  explicit ScopedRenderbufferBindingReset(gl::GLApi* api);
-  ~ScopedRenderbufferBindingReset();
-
- private:
-  gl::GLApi* api_;
-  GLint renderbuffer_;
-};
-
-class ScopedTexture2DBindingReset {
- public:
-  explicit ScopedTexture2DBindingReset(gl::GLApi* api);
-  ~ScopedTexture2DBindingReset();
-
- private:
-  gl::GLApi* api_;
-  GLint texture_;
 };
 
 class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {

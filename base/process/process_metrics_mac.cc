@@ -37,18 +37,18 @@ static constexpr uint8_t kPMSampleFlags = 0xff & ~0x8;
 
 }  // namespace
 
-extern "C" {
-
-// From libpmsample.dylib
-int pm_sample_task(mach_port_t task,
-                   OpaquePMTaskEnergyData* pm_energy,
-                   uint64_t mach_time,
-                   uint8_t flags);
-
-// From libpmenergy.dylib
-double pm_energy_impact(OpaquePMTaskEnergyData* pm_energy);
-
-}  // extern "C"
+//extern "C" {
+//
+//// From libpmsample.dylib
+//int pm_sample_task(mach_port_t task,
+//                   OpaquePMTaskEnergyData* pm_energy,
+//                   uint64_t mach_time,
+//                   uint8_t flags);
+//
+//// From libpmenergy.dylib
+//double pm_energy_impact(OpaquePMTaskEnergyData* pm_energy);
+//
+//}  // extern "C"
 
 namespace base {
 
@@ -89,11 +89,12 @@ bool GetPowerInfo(mach_port_t task, task_power_info* power_info_data) {
 }
 
 double GetEnergyImpactInternal(mach_port_t task, uint64_t mach_time) {
-  OpaquePMTaskEnergyData energy_info{};
-
-  if (pm_sample_task(task, &energy_info, mach_time, kPMSampleFlags) != 0)
-    return 0.0;
-  return pm_energy_impact(&energy_info);
+  return 0.0;
+//  OpaquePMTaskEnergyData energy_info{};
+//
+//  if (pm_sample_task(task, &energy_info, mach_time, kPMSampleFlags) != 0)
+//    return 0.0;
+//  return pm_energy_impact(&energy_info);
 }
 
 }  // namespace

@@ -1866,8 +1866,8 @@ jumbo_component("base") {
       "CoreFoundation.framework",
       "IOKit.framework",
       "OpenDirectory.framework",
-      "pmenergy",
-      "pmsample",
+#     "pmenergy",
+#     "pmsample",
       "Security.framework",
     ]
   }

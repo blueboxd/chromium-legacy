@@ -558,7 +558,7 @@ bool ShouldUseViewsTaskManager() {
                                     column:[[tableColumn identifier] intValue]];
     NSColor* textColor = [tableView isRowSelected:rowIndex]
                              ? [NSColor alternateSelectedControlTextColor]
-                             : [NSColor labelColor];
+                             : [NSColor textColor];
     NSAttributedString* attributedTitle = [[[NSAttributedString alloc]
         initWithString:title
             attributes:@{

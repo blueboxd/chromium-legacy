@@ -1033,6 +1033,8 @@ jumbo_static_library("extensions") {
       "api/enterprise_reporting_private/device_info_fetcher.h",
       "api/enterprise_reporting_private/device_info_fetcher_mac.h",
       "api/enterprise_reporting_private/device_info_fetcher_mac.mm",
+      "api/enterprise_reporting_private/device_info_fetcher_win.cc",
+      "api/enterprise_reporting_private/device_info_fetcher_win.h",
       "api/enterprise_reporting_private/enterprise_reporting_private_api.cc",
       "api/enterprise_reporting_private/enterprise_reporting_private_api.h",
       "api/enterprise_reporting_private/prefs.cc",
@@ -1121,7 +1123,10 @@ jumbo_static_library("extensions") {
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
     ]
-    libs = [ "setupapi.lib" ]
+    libs = [
+      "setupapi.lib",
+      "propsys.lib",
+    ]
   } else if (use_aura && !is_chromeos) {
     sources += [
       "system_display/display_info_provider_aura.cc",

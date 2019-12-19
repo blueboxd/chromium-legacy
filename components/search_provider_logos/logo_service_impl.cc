@@ -288,8 +288,10 @@ void LogoServiceImpl::GetLogo(LogoCallbacks callbacks) {
         want_gray_logo_getter_.Run(), doodle_url);
     SetServerAPI(
         prefilled_url,
-        base::Bind(&search_provider_logos::ParseDoodleLogoResponse, base_url),
-        base::Bind(&search_provider_logos::AppendFingerprintParamToDoodleURL));
+        base::BindRepeating(&search_provider_logos::ParseDoodleLogoResponse,
+                            base_url),
+        base::BindRepeating(
+            &search_provider_logos::AppendFingerprintParamToDoodleURL));
   }
 
   DCHECK(!logo_url_.is_empty());

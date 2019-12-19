@@ -256,7 +256,7 @@ class TestThreatDetailsFactory : public ThreatDetailsFactory {
     auto details = base::WrapUnique(new ThreatDetails(
         delegate, web_contents, unsafe_resource, url_loader_factory,
         history_service, referrer_chain_provider, trim_to_ad_tags,
-        done_callback));
+        std::move(done_callback)));
     details_ = details.get();
     details->StartCollection();
     return details;

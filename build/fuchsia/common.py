@@ -11,12 +11,11 @@ import sys
 
 DIR_SOURCE_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
+IMAGES_ROOT = os.path.join(
+    DIR_SOURCE_ROOT, 'third_party', 'fuchsia-sdk', 'images')
 SDK_ROOT = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'fuchsia-sdk', 'sdk')
-IMAGES_ROOT = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'fuchsia-sdk',
-                           'images')
-ARM64_SDK_TOOLS = os.path.join(DIR_SOURCE_ROOT, 'third_party',
-                               'fuchsia-sdk-arm64', 'tools')
-X64_SDK_TOOLS = os.path.join(SDK_ROOT, 'tools')
+ARM64_SDK_TOOLS = os.path.join(SDK_ROOT, 'tools', 'arm64')
+X64_SDK_TOOLS = os.path.join(SDK_ROOT, 'tools', 'x64')
 
 def EnsurePathExists(path):
   """Checks that the file |path| exists on the filesystem and returns the path

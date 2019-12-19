@@ -36,11 +36,33 @@ const GURL GetFrenchUrl();
 // GREYAssert is induced if test bookmarks can not be loaded.
 - (void)setupStandardBookmarks;
 
+// Loads a large set of bookmarks in the model which is longer than the screen
+// height. GREYAssert is induced if test bookmarks can not be loaded.
+- (void)setupBookmarksWhichExceedsScreenHeight;
+
+// Waits for the Bookmark modedl to be |loaded|. GREYAssert is induced if test
+// bookmarks can not be loaded.
+- (void)waitForBookmarkModelLoaded:(BOOL)loaded;
+
 #pragma mark - Common Helpers
+
+// Verifies that |expectedCount| bookmarks exist with the corresponding |title|
+// using the BookmarkModel. GREYAssert is induced if the count doesn't match.
+- (void)verifyBookmarksWithTitle:(NSString*)title
+                   expectedCount:(NSUInteger)expectedCount;
 
 // Verifies that there is |count| children on the bookmark folder with |name|.
 // GREYAssert is induced if the folder doesn't exist or the count doesn't match.
 - (void)verifyChildCount:(int)count inFolderWithName:(NSString*)name;
+
+// Removes programmatically the first bookmark with the given title. GREYAssert
+// is induced if the bookmark can't be removed.
+- (void)removeBookmarkWithTitle:(NSString*)title;
+
+// Moves bookmark with title |bookmarkTitle| into a folder with title
+// |newFolder|. GREYAssert is induced if the bookmark can't be moved.
+- (void)moveBookmarkWithTitle:(NSString*)bookmarkTitle
+            toFolderWithTitle:(NSString*)newFolder;
 
 #pragma mark - Promo
 

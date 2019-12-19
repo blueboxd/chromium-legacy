@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -2049,8 +2050,20 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
         DownloadExtensionTest_Download_InvalidURLs
 #endif
 
+class DownloadExtensionTestWithFtp : public DownloadExtensionTest {
+ public:
+  DownloadExtensionTestWithFtp() {
+    // DownloadExtensionTest_Download_InvalidURLs requires FTP support.
+    // TODO(https://crbug.com/333943): Remove FTP tests and FTP feature flags.
+    scoped_feature_list_.InitAndEnableFeature(features::kFtpProtocol);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 // Test that downloading invalid URLs immediately returns kInvalidURLError.
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTestWithFtp,
                        MAYBE_DownloadExtensionTest_Download_InvalidURLs) {
   LoadExtension("downloads_split");
   GoOnTheRecord();

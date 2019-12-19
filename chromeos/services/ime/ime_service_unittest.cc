@@ -468,5 +468,38 @@ TEST_F(ImeServiceTest, RuleBasedDoesNotEscapeCharacters) {
   EXPECT_EQ("<", response.operations[0]->arguments);
 }
 
+// Tests that AltGr works with rule-based. See crbug.com/1035145.
+TEST_F(ImeServiceTest, KhmerKeyboardAltGr) {
+  bool success = false;
+  TestClientChannel test_channel;
+  mojo::Remote<mojom::InputChannel> to_engine_remote;
+
+  remote_manager_->ConnectToImeEngine(
+      "m17n:km", to_engine_remote.BindNewPipeAndPassReceiver(),
+      test_channel.CreatePendingRemote(), extra,
+      base::BindOnce(&ConnectCallback, &success));
+  remote_manager_.FlushForTesting();
+  EXPECT_TRUE(success);
+
+  // Test AltRight+KeyA.
+  // We do not support AltGr for rule-based. We treat AltRight as AltGr.
+  mojom::KeypressResponseForRulebased response;
+  to_engine_remote->ProcessKeypressForRulebased(
+      mojom::KeypressInfoForRulebased::New("keydown", "AltRight", false, false,
+                                           false, false, false),
+      base::BindOnce(&TestProcessKeypressForRulebasedCallback, &response));
+  to_engine_remote->ProcessKeypressForRulebased(
+      mojom::KeypressInfoForRulebased::New("keydown", "KeyA", false, false,
+                                           false, false, false),
+      base::BindOnce(&TestProcessKeypressForRulebasedCallback, &response));
+  to_engine_remote.FlushForTesting();
+
+  EXPECT_EQ(response.result, true);
+  ASSERT_EQ(1U, response.operations.size());
+  EXPECT_EQ(mojom::OperationMethodForRulebased::COMMIT_TEXT,
+            response.operations[0]->method);
+  EXPECT_EQ("+", response.operations[0]->arguments);
+}
+
 }  // namespace ime
 }  // namespace chromeos

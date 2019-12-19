@@ -9,6 +9,7 @@
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
+#include "ash/system/status_area_widget.h"
 #include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/accessible_pane_view.h"
@@ -37,6 +38,10 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
   // Returns true if status area widget delegate should focus out on the
   // designated focusing direction, otherwise false.
   bool ShouldFocusOut(bool reverse);
+
+  // Called by StatusAreaWidget when its collapse state changes.
+  void OnStatusAreaCollapseStateChanged(
+      StatusAreaWidget::CollapseState new_collapse_state);
 
   // Overridden from views::AccessiblePaneView.
   View* GetDefaultFocusableChild() override;

@@ -1296,7 +1296,8 @@
             }
           ]
         },
-        "test": "blink_unittests"
+        "test": "blink_unittests",
+        "test_target": "//third_party/blink/renderer/controller:blink_unittests"
       }
     ],
     "isolated_scripts": [
@@ -1322,7 +1323,8 @@
             }
           ],
           "shards": 12
-        }
+        },
+        "test_target": "//:blink_web_tests"
       }
     ]
   },
@@ -1345,7 +1347,8 @@
             }
           ]
         },
-        "test": "blink_unittests"
+        "test": "blink_unittests",
+        "test_target": "//third_party/blink/renderer/controller:blink_unittests"
       }
     ],
     "isolated_scripts": [
@@ -1372,7 +1375,8 @@
             }
           ],
           "shards": 12
-        }
+        },
+        "test_target": "//:blink_web_tests"
       }
     ]
   },
@@ -1395,7 +1399,8 @@
             }
           ]
         },
-        "test": "blink_unittests"
+        "test": "blink_unittests",
+        "test_target": "//third_party/blink/renderer/controller:blink_unittests"
       }
     ],
     "isolated_scripts": [
@@ -1422,7 +1427,8 @@
             }
           ],
           "shards": 12
-        }
+        },
+        "test_target": "//:blink_web_tests"
       }
     ]
   },
@@ -1446,7 +1452,8 @@
           ],
           "hard_timeout": 900
         },
-        "test": "blink_unittests"
+        "test": "blink_unittests",
+        "test_target": "//third_party/blink/renderer/controller:blink_unittests"
       }
     ],
     "isolated_scripts": [
@@ -1472,7 +1479,8 @@
           ],
           "hard_timeout": 900,
           "shards": 12
-        }
+        },
+        "test_target": "//:blink_web_tests"
       }
     ]
   },
@@ -1495,7 +1503,8 @@
             }
           ]
         },
-        "test": "blink_unittests"
+        "test": "blink_unittests",
+        "test_target": "//third_party/blink/renderer/controller:blink_unittests"
       }
     ],
     "isolated_scripts": [
@@ -1520,7 +1529,8 @@
             }
           ],
           "shards": 12
-        }
+        },
+        "test_target": "//:blink_web_tests"
       }
     ]
   },
@@ -1547,7 +1557,8 @@
             }
           ],
           "shards": 12
-        }
+        },
+        "test_target": "//:blink_web_tests"
       }
     ]
   },

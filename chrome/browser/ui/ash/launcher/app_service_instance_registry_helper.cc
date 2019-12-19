@@ -165,7 +165,7 @@ void AppServiceInstanceRegistryHelper::OnInstances(const std::string& app_id,
   proxy_->InstanceRegistry().OnInstances(std::move(deltas));
 }
 
-void AppServiceInstanceRegistryHelper::OnWindowVisibilityChanging(
+void AppServiceInstanceRegistryHelper::OnWindowVisibilityChanged(
     const ash::ShelfID& shelf_id,
     aura::Window* window,
     bool visible) {
@@ -227,11 +227,23 @@ void AppServiceInstanceRegistryHelper::SetWindowActivated(
     return;
   }
 
-  // For the Chrome browser, when the window is activated, the tab activite
-  // state is used to set the active state. When the window is inactivated, all
-  // apps in the browser is inactivated.
-  if (!base::Contains(browser_window_to_tab_window_, window) || active)
+  if (!base::Contains(browser_window_to_tab_window_, window))
     return;
+
+  // For the Chrome browser, when the window is activated, the active tab is set
+  // as started, running, visible and active state.
+  if (active) {
+    Browser* browser = chrome::FindBrowserWithWindow(window);
+    if (!browser)
+      return;
+    content::WebContents* contents =
+        browser->tab_strip_model()->GetActiveWebContents();
+    apps::InstanceState state = static_cast<apps::InstanceState>(
+        apps::InstanceState::kStarted | apps::InstanceState::kRunning |
+        apps::InstanceState::kActive | apps::InstanceState::kVisible);
+    OnInstances(GetAppId(contents), GetWindow(contents), std::string(), state);
+    return;
+  }
 
   // For Chrome browser app windows, sets the state for each tab window instance
   // in this browser.
@@ -287,21 +299,30 @@ apps::InstanceState AppServiceInstanceRegistryHelper::CalculateActivatedState(
   return state;
 }
 
-bool AppServiceInstanceRegistryHelper::IsWebApp(
-    const std::string& app_id) const {
+bool AppServiceInstanceRegistryHelper::IsOpenedInBrowser(
+    const std::string& app_id,
+    aura::Window* window) const {
   apps::mojom::AppType app_type = proxy_->AppRegistryCache().GetAppType(app_id);
   if (app_type != apps::mojom::AppType::kExtension &&
-      app_type != apps::mojom::AppType::kWeb)
+      app_type != apps::mojom::AppType::kWeb) {
     return false;
-
-  for (auto* browser : *BrowserList::GetInstance()) {
-    if (!browser->is_type_app()) {
-      continue;
-    }
-    if (web_app::GetAppIdFromApplicationName(browser->app_name()) == app_id)
-      return true;
   }
-  return false;
+
+  // For Extension apps, and Web apps, AppServiceAppWindowLauncherController
+  // should only handle Chrome apps, managed by extensions::AppWindow, which
+  // should set |browser_context| in AppService InstanceRegistry. So if
+  // |browser_context| is not null, the app is a Chrome app,
+  // AppServiceAppWindowLauncherController should handle it, otherwise, it is
+  // opened in a browser, and AppServiceAppWindowLauncherController should skip
+  // them.
+  content::BrowserContext* browser_context = nullptr;
+  proxy_->InstanceRegistry().ForOneInstance(
+      window, [&browser_context](const apps::InstanceUpdate& update) {
+        browser_context = update.BrowserContext();
+      });
+  if (browser_context)
+    return false;
+  return true;
 }
 
 std::string AppServiceInstanceRegistryHelper::GetAppId(

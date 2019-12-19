@@ -7,6 +7,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ui/aura/window_observer.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/transform.h"
 
 namespace aura {
@@ -70,13 +72,45 @@ enum SplitviewAnimationType {
   SPLITVIEW_ANIMATION_SET_WINDOW_TRANSFORM,
 };
 
+// This class observes the window transform animation and relayout the window's
+// transient bubble dialogs when animation is completed. This is needed in some
+// splitview and overview cases as in splitview or overview, the window can have
+// an un-identity transform in place when its bounds changed. And when this
+// happens, its transient bubble dialogs won't have the correct bounds as the
+// bounds are calculated based on the transformed window bounds. We'll need to
+// manually relayout the bubble dialogs after the window's transform reset to
+// the identity transform so that the bubble dialogs can have correct bounds.
+class ASH_EXPORT WindowTransformAnimationObserver
+    : public ui::ImplicitAnimationObserver,
+      public aura::WindowObserver {
+ public:
+  explicit WindowTransformAnimationObserver(aura::Window* window);
+  ~WindowTransformAnimationObserver() override;
+
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override;
+
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override;
+
+ private:
+  aura::Window* const window_;
+
+  WindowTransformAnimationObserver(const WindowTransformAnimationObserver&) =
+      delete;
+  WindowTransformAnimationObserver& operator=(
+      const WindowTransformAnimationObserver&) = delete;
+};
+
 // Animates |layer|'s opacity based on |type|.
 void DoSplitviewOpacityAnimation(ui::Layer* layer, SplitviewAnimationType type);
 
 // Animates |layer|'s transform based on |type|.
-void DoSplitviewTransformAnimation(ui::Layer* layer,
-                                   SplitviewAnimationType type,
-                                   const gfx::Transform& target_transform);
+void DoSplitviewTransformAnimation(
+    ui::Layer* layer,
+    SplitviewAnimationType type,
+    const gfx::Transform& target_transform,
+    std::unique_ptr<ui::ImplicitAnimationObserver> animation_observer);
 
 // Restores split view and overview based on the current split view's state.
 // If |refresh_snapped_windows| is true, it will update the left and right

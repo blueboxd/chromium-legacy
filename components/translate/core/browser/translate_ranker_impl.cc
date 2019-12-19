@@ -167,9 +167,9 @@ TranslateRankerImpl::TranslateRankerImpl(const base::FilePath& model_path,
               translate::kTranslateRankerPreviousLanguageMatchesOverride)) {
   if (is_query_enabled_ || is_enforcement_enabled_) {
     model_loader_ = std::make_unique<assist_ranker::RankerModelLoaderImpl>(
-        base::Bind(&ValidateModel),
-        base::Bind(&TranslateRankerImpl::OnModelAvailable,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&ValidateModel),
+        base::BindRepeating(&TranslateRankerImpl::OnModelAvailable,
+                            weak_ptr_factory_.GetWeakPtr()),
         TranslateDownloadManager::GetInstance()->url_loader_factory(),
         model_path, model_url, kUmaPrefix);
     // Kick off the initial load from cache.

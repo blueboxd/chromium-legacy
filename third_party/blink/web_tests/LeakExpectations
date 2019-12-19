@@ -21,7 +21,7 @@ crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-custom
 crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/scrollstate-distribute-to-scroll-chain-descendant.html [ Failure ]
 
 crbug.com/786995 virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Failure Pass ]
-crbug.com/859640 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js  [ Failure Pass ]
+crbug.com/859640 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Failure Pass ]
 
 # Requests with keepalive specified will be kept alive even when the frame is
 # detached, which means leaks reported by the leak detector are by design.
@@ -100,7 +100,7 @@ crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/console-a11y-test.
 crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/elements/event-listeners-a11y-test.js [ Failure Pass ]
 crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/memory/heap-profiler-a11y-test.js [ Failure Pass ]
 crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/network/network-condition-a11y-test.js [ Failure Pass ]
-crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/security/security-origin-a11y-test.js  [ Failure Pass ]
+crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/security/security-origin-a11y-test.js [ Failure Pass ]
 crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/sources/source-navigator-filesystem-a11y-test.js [ Failure Pass ]
 crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/settings/geolocations-a11y-test.js [ Failure Pass ]
 crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/sources/source-navigator-network-a11y-test.js [ Failure Pass ]

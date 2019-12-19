@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -190,9 +191,11 @@ Animation::Animation(ExecutionContext* execution_context,
       timeline_ ? timeline_->GetDocument() : To<Document>(execution_context);
   DCHECK(document_);
 
-  TickingTimeline().AnimationAttached(this);
-  if (timeline_ && timeline_->IsScrollTimeline())
+  if (timeline_)
     timeline_->AnimationAttached(this);
+  else
+    document_->Timeline().AnimationAttached(this);
+
   AttachCompositorTimeline();
   probe::DidCreateAnimation(document_, sequence_number_);
 }
@@ -203,7 +206,7 @@ Animation::~Animation() {
 }
 
 void Animation::Dispose() {
-  if (timeline_ && timeline_->IsScrollTimeline())
+  if (timeline_)
     timeline_->AnimationDetached(this);
   DestroyCompositorAnimation();
   // If the DocumentTimeline and its Animation objects are
@@ -229,13 +232,6 @@ double Animation::TimelineTime() const {
   if (timeline_)
     return timeline_->CurrentTime().value_or(NullValue());
   return NullValue();
-}
-
-DocumentTimeline& Animation::TickingTimeline() {
-  // Active animations are tracked and ticked through the timeline attached to
-  // the animation's document.
-  // TODO(crbug.com/916117): Reconsider how animations are tracked and ticked.
-  return document_->Timeline();
 }
 
 // https://drafts.csswg.org/web-animations/#setting-the-current-time-of-an-animation.
@@ -1495,7 +1491,7 @@ void Animation::ClearOutdated() {
     return;
   outdated_ = false;
   if (timeline_)
-    TickingTimeline().ClearOutdatedAnimation(this);
+    timeline_->ClearOutdatedAnimation(this);
 }
 
 void Animation::SetOutdated() {
@@ -1503,12 +1499,12 @@ void Animation::SetOutdated() {
     return;
   outdated_ = true;
   if (timeline_)
-    TickingTimeline().SetOutdatedAnimation(this);
+    timeline_->SetOutdatedAnimation(this);
 }
 
 void Animation::ForceServiceOnNextFrame() {
   if (timeline_)
-    TickingTimeline().Wake();
+    timeline_->ScheduleServiceOnNextFrame();
 }
 
 CompositorAnimations::FailureReasons

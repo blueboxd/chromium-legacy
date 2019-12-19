@@ -246,12 +246,11 @@ class RendererPerfTest : public testing::Test {
  public:
   RendererPerfTest()
       : manager_(&shared_bitmap_manager_),
-        support_(std::make_unique<CompositorFrameSinkSupport>(
-            nullptr,
-            &manager_,
-            kArbitraryFrameSinkId,
-            true /* is_root */,
-            true /* needs_sync_points */)),
+        support_(
+            std::make_unique<CompositorFrameSinkSupport>(nullptr,
+                                                         &manager_,
+                                                         kArbitraryFrameSinkId,
+                                                         true /* is_root */)),
         timer_(/*warmup_laps=*/100,
                /*time_limit=*/TestTimeLimit(),
                /*check_interval=*/10) {}
@@ -282,9 +281,7 @@ class RendererPerfTest : public testing::Test {
         gpu::kNullSurfaceHandle, gpu_memory_buffer_manager_.get(),
         image_factory, gpu_channel_manager_delegate, renderer_settings_);
     child_context_provider_->BindToCurrentThread();
-    constexpr bool sync_token_verification = false;
-    child_resource_provider_ =
-        std::make_unique<ClientResourceProvider>(sync_token_verification);
+    child_resource_provider_ = std::make_unique<ClientResourceProvider>();
 
     auto output_surface = CreateOutputSurface(gpu_service);
     // WaitForSwapDisplayClient depends on this.

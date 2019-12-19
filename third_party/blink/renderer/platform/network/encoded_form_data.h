@@ -110,7 +110,8 @@ class PLATFORM_EXPORT EncodedFormData : public RefCounted<EncodedFormData> {
   ~EncodedFormData();
 
   void AppendData(const void* data, wtf_size_t);
-  void AppendFile(const String& file_path);
+  void AppendFile(const String& file_path,
+                  const base::Optional<base::Time>& expected_modification_time);
   void AppendFileRange(
       const String& filename,
       int64_t start,

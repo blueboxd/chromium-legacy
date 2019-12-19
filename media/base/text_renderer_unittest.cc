@@ -29,9 +29,9 @@ namespace media {
 // Local implementation of the TextTrack interface.
 class FakeTextTrack : public TextTrack {
  public:
-  FakeTextTrack(const base::Closure& destroy_cb, const TextTrackConfig& config)
-      : destroy_cb_(destroy_cb), config_(config) {}
-  ~FakeTextTrack() override { destroy_cb_.Run(); }
+  FakeTextTrack(base::OnceClosure destroy_cb, const TextTrackConfig& config)
+      : destroy_cb_(std::move(destroy_cb)), config_(config) {}
+  ~FakeTextTrack() override { std::move(destroy_cb_).Run(); }
 
   MOCK_METHOD5(addWebVTTCue,
                void(base::TimeDelta start,
@@ -40,7 +40,7 @@ class FakeTextTrack : public TextTrack {
                     const std::string& content,
                     const std::string& settings));
 
-  const base::Closure destroy_cb_;
+  base::OnceClosure destroy_cb_;
   const TextTrackConfig config_;
 
  private:
@@ -88,13 +88,13 @@ class TextRendererTest : public testing::Test {
 
   void OnAddTextTrack(const TextTrackConfig& config,
                       AddTextTrackDoneCB done_cb) {
-    base::Closure destroy_cb =
-        base::Bind(&TextRendererTest::OnDestroyTextTrack,
-                   base::Unretained(this), text_tracks_.size());
+    base::OnceClosure destroy_cb =
+        base::BindOnce(&TextRendererTest::OnDestroyTextTrack,
+                       base::Unretained(this), text_tracks_.size());
     // Text track objects are owned by the text renderer, but we cache them
     // here so we can inspect them.  They get removed from our cache when the
     // text renderer deallocates them.
-    text_tracks_.push_back(new FakeTextTrack(destroy_cb, config));
+    text_tracks_.push_back(new FakeTextTrack(std::move(destroy_cb), config));
     std::unique_ptr<TextTrack> text_track(text_tracks_.back());
     std::move(done_cb).Run(std::move(text_track));
   }

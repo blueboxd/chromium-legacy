@@ -29,8 +29,8 @@ namespace chrome {
 // |tab_index| gives the index to insert the tab at. |selected_navigation| is
 // the index of the SerializedNavigationEntry in |navigations| to select. If
 // |extension_app_id| is non-empty the tab is an app tab and |extension_app_id|
-// is the id of the extension. If |raw_group_id| has a value, it specifies the
-// token corresponding to the tab's group. If |pin| is true and |tab_index|/ is
+// is the id of the extension. If |group| has a value, it specifies the
+// ID corresponding to the tab's group. If |pin| is true and |tab_index|/ is
 // the last pinned tab, then the newly created tab is pinned. If
 // |from_last_session| is true, |navigations| are from the previous session.
 // |user_agent_override| contains the string being used as the user agent for
@@ -45,7 +45,7 @@ content::WebContents* AddRestoredTab(
     int tab_index,
     int selected_navigation,
     const std::string& extension_app_id,
-    base::Optional<base::Token> raw_group_id,
+    base::Optional<tab_groups::TabGroupId> group,
     bool select,
     bool pin,
     bool from_last_session,

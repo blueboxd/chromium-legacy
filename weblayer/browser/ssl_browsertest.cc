@@ -7,7 +7,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "build/build_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/test/interstitial_utils.h"
@@ -127,8 +126,6 @@ class SSLBrowserTest : public WebLayerBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(SSLBrowserTest);
 };
 
-// Disabled on Windows, see crbug.com/1034764
-#if !defined(OS_WIN)
 // Tests clicking "take me back" on the interstitial page.
 IN_PROC_BROWSER_TEST_F(SSLBrowserTest, TakeMeBack) {
   NavigateToOkPage();
@@ -199,6 +196,5 @@ IN_PROC_BROWSER_TEST_F(SSLBrowserTest, NavigateAway) {
   NavigateToPageWithSslErrorExpectBlocked();
   NavigateToOtherOkPage();
 }
-#endif  // !defined(OS_WIN)
 
 }  // namespace weblayer

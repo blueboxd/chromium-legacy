@@ -306,14 +306,15 @@ XRSession::XRSession(
     XR* xr,
     mojo::PendingReceiver<device::mojom::blink::XRSessionClient>
         client_receiver,
-    XRSession::SessionMode mode,
+    device::mojom::blink::XRSessionMode mode,
     EnvironmentBlendMode environment_blend_mode,
     bool uses_input_eventing,
     bool sensorless_session,
     XRSessionFeatureSet enabled_features)
     : xr_(xr),
       mode_(mode),
-      environment_integration_(mode == kModeImmersiveAR),
+      environment_integration_(
+          mode == device::mojom::blink::XRSessionMode::kImmersiveAr),
       world_tracking_state_(MakeGarbageCollected<XRWorldTrackingState>()),
       world_information_(MakeGarbageCollected<XRWorldInformation>(this)),
       enabled_features_(std::move(enabled_features)),
@@ -371,7 +372,8 @@ XRAnchorSet* XRSession::trackedAnchors() const {
 }
 
 bool XRSession::immersive() const {
-  return mode_ == kModeImmersiveVR || mode_ == kModeImmersiveAR;
+  return mode_ == device::mojom::blink::XRSessionMode::kImmersiveVr ||
+         mode_ == device::mojom::blink::XRSessionMode::kImmersiveAr;
 }
 
 ExecutionContext* XRSession::GetExecutionContext() const {

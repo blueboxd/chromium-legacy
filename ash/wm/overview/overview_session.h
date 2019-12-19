@@ -145,7 +145,14 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
       SplitViewController::SnapPosition snap_position);
 
   // See |OverviewGrid::RearrangeDuringDrag|.
-  void RearrangeDuringDrag(aura::Window* dragged_window);
+  void RearrangeDuringDrag(aura::Window* root_window_being_dragged_in,
+                           aura::Window* dragged_window);
+
+  // Updates the appearance of each drop target to visually indicate when the
+  // dragged window is being dragged over it.
+  void UpdateDropTargetsBackgroundVisibilities(
+      OverviewItem* dragged_item,
+      const gfx::PointF& location_in_screen);
 
   // Retrieves the window grid whose root window matches |root_window|. Returns
   // nullptr if the window grid is not found.
@@ -171,6 +178,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Removes |overview_item| from the corresponding grid. No items are
   // repositioned.
   void RemoveItem(OverviewItem* overview_item);
+
+  void RemoveDropTargets();
 
   void InitiateDrag(OverviewItem* item,
                     const gfx::PointF& location_in_screen,

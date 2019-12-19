@@ -209,11 +209,6 @@ void DidCloneMediaStreamTrack(const WebMediaStreamTrack& original,
 
 }  // namespace
 
-MediaStreamTrack* MediaStreamTrack::Create(ExecutionContext* context,
-                                           MediaStreamComponent* component) {
-  return MakeGarbageCollected<MediaStreamTrack>(context, component);
-}
-
 MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
                                    MediaStreamComponent* component)
     : MediaStreamTrack(context,

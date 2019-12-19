@@ -112,8 +112,9 @@ class Manager(object):
             test_names.sort()
             random.Random(self._options.seed).shuffle(test_names)
 
-        self._printer.write_update('Parsing expectations ...')
-        self._expectations = test_expectations.TestExpectations(self._port, test_names)
+        if not self._options.no_expectations:
+            self._printer.write_update('Parsing expectations ...')
+            self._expectations = test_expectations.TestExpectations(self._port, test_names)
 
         tests_to_run, tests_to_skip = self._prepare_lists(paths, test_names)
 
@@ -157,6 +158,9 @@ class Manager(object):
         finally:
             self._stop_servers()
             self._clean_up_run()
+
+        if self._options.no_expectations:
+            return test_run_results.RunDetails(0, [], [], initial_results, all_retry_results)
 
         # Some crash logs can take a long time to be written out so look
         # for new logs after the test run finishes.
@@ -302,6 +306,9 @@ class Manager(object):
         return self._is_http_test(test_file) or self._is_perf_test(test_file)
 
     def _test_is_slow(self, test_file):
+        if not self._expectations:
+            return False
+
         expectations = self._expectations.model().get_expectations(test_file)
         return (test_expectations.SLOW in expectations or
                 self._port.is_slow_wpt_test(test_file))

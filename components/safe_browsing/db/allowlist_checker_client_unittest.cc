@@ -22,7 +22,7 @@ using testing::_;
 using testing::Return;
 using testing::SaveArg;
 
-using BoolCallback = base::Callback<void(bool /* did_match_allowlist */)>;
+using BoolCallback = base::OnceCallback<void(bool /* did_match_allowlist */)>;
 using MockBoolCallback = testing::StrictMock<base::MockCallback<BoolCallback>>;
 
 namespace {

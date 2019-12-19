@@ -88,13 +88,13 @@ bool DecryptingDemuxerStream::IsReadPending() const {
   return !read_cb_.is_null();
 }
 
-void DecryptingDemuxerStream::Reset(const base::Closure& closure) {
+void DecryptingDemuxerStream::Reset(base::OnceClosure closure) {
   DVLOG(2) << __func__ << " - state: " << state_;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ != kUninitialized) << state_;
   DCHECK(!reset_cb_);
 
-  reset_cb_ = BindToCurrentLoop(closure);
+  reset_cb_ = BindToCurrentLoop(std::move(closure));
 
   decryptor_->CancelDecrypt(GetDecryptorStreamType());
 

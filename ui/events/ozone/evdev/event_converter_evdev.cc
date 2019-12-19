@@ -17,6 +17,11 @@
 #include "ui/events/devices/input_device.h"
 #include "ui/events/event_utils.h"
 
+#ifndef input_event_sec
+#define input_event_sec time.tv_sec
+#define input_event_usec time.tv_usec
+#endif
+
 namespace ui {
 
 EventConverterEvdev::EventConverterEvdev(int fd,
@@ -176,8 +181,8 @@ void EventConverterEvdev::SetPalmSuppressionCallback(
 base::TimeTicks EventConverterEvdev::TimeTicksFromInputEvent(
     const input_event& event) {
   base::TimeTicks timestamp =
-      ui::EventTimeStampFromSeconds(event.time.tv_sec) +
-      base::TimeDelta::FromMicroseconds(event.time.tv_usec);
+      ui::EventTimeStampFromSeconds(event.input_event_sec) +
+      base::TimeDelta::FromMicroseconds(event.input_event_usec);
   ValidateEventTimeClock(&timestamp);
   return timestamp;
 }

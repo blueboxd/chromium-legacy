@@ -420,7 +420,7 @@ void NightLightControllerImpl::RegisterProfilePrefs(
                                 kDefaultStartTimeOffsetMinutes);
   registry->RegisterIntegerPref(prefs::kNightLightCustomEndTime,
                                 kDefaultEndTimeOffsetMinutes);
-  registry->RegisterBooleanPref(prefs::kAmbientColorEnabled, false);
+  registry->RegisterBooleanPref(prefs::kAmbientColorEnabled, true);
   registry->RegisterBooleanPref(prefs::kAutoNightLightNotificationDismissed,
                                 false);
 
@@ -568,7 +568,10 @@ void NightLightControllerImpl::SetAmbientColorEnabled(bool enabled) {
 }
 
 bool NightLightControllerImpl::GetAmbientColorEnabled() const {
-  return active_user_pref_service_ &&
+  const bool ambient_eq_supported =
+      ash::features::IsAllowAmbientEQEnabled() &&
+      chromeos::PowerManagerClient::Get()->SupportsAmbientColor();
+  return ambient_eq_supported && active_user_pref_service_ &&
          active_user_pref_service_->GetBoolean(prefs::kAmbientColorEnabled);
 }
 

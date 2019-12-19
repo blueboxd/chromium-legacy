@@ -12,39 +12,39 @@
 #include "base/optional.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_controller.h"
-#include "chrome/browser/ui/tabs/tab_group_id.h"
-#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 
 TabGroupModel::TabGroupModel(TabGroupController* controller)
     : controller_(controller) {}
 TabGroupModel::~TabGroupModel() {}
 
 TabGroup* TabGroupModel::AddTabGroup(
-    TabGroupId id,
-    base::Optional<TabGroupVisualData> visual_data) {
+    tab_groups::TabGroupId id,
+    base::Optional<tab_groups::TabGroupVisualData> visual_data) {
   auto tab_group = std::make_unique<TabGroup>(
-      controller_, id, visual_data.value_or(TabGroupVisualData()));
+      controller_, id, visual_data.value_or(tab_groups::TabGroupVisualData()));
   groups_[id] = std::move(tab_group);
 
   return groups_[id].get();
 }
 
-bool TabGroupModel::ContainsTabGroup(TabGroupId id) const {
+bool TabGroupModel::ContainsTabGroup(tab_groups::TabGroupId id) const {
   return base::Contains(groups_, id);
 }
 
-TabGroup* TabGroupModel::GetTabGroup(TabGroupId id) const {
+TabGroup* TabGroupModel::GetTabGroup(tab_groups::TabGroupId id) const {
   DCHECK(ContainsTabGroup(id));
   return groups_.find(id)->second.get();
 }
 
-void TabGroupModel::RemoveTabGroup(TabGroupId id) {
+void TabGroupModel::RemoveTabGroup(tab_groups::TabGroupId id) {
   DCHECK(ContainsTabGroup(id));
   groups_.erase(id);
 }
 
-std::vector<TabGroupId> TabGroupModel::ListTabGroups() const {
-  std::vector<TabGroupId> group_ids;
+std::vector<tab_groups::TabGroupId> TabGroupModel::ListTabGroups() const {
+  std::vector<tab_groups::TabGroupId> group_ids;
   group_ids.reserve(groups_.size());
   for (const auto& id_group_pair : groups_)
     group_ids.push_back(id_group_pair.first);

@@ -36,8 +36,8 @@ interface XRRuntimeEventListener {
 };
 
 struct XRRuntimeSessionOptions {
-  bool immersive;
-  bool environment_integration;
+  // Represents the type of session that is being requested.
+  XRSessionMode mode;
 
   // The enabled features combine the active required and optional features as
   // resolved by BrowserXRRuntime and VRServiceImpl.

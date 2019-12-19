@@ -21,6 +21,10 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/constants/chromeos_features.h"
+#endif
+
 namespace sync_ui_util {
 
 namespace {
@@ -177,6 +181,20 @@ void OpenTabForSyncKeyRetrievalWithURL(Browser* browser, const GURL& url) {
   ShowSingletonTabOverwritingNTP(browser, std::move(params));
 }
 
+// Returns true if the user has consented to browser sync-the-feature or
+// Chrome OS sync.
+bool HasUserOptedInToSync(const syncer::SyncUserSettings* settings) {
+  if (settings->IsFirstSetupComplete())
+    return true;
+#if defined(OS_CHROMEOS)
+  if (chromeos::features::IsSplitSettingsSyncEnabled() &&
+      settings->GetOsSyncFeatureEnabled()) {
+    return true;
+  }
+#endif  // defined(OS_CHROMEOS)
+  return false;
+}
+
 }  // namespace
 
 StatusLabels GetStatusLabels(syncer::SyncService* sync_service,
@@ -306,15 +324,15 @@ bool ShouldRequestSyncConfirmation(const syncer::SyncService* service) {
 }
 
 bool ShouldShowPassphraseError(const syncer::SyncService* service) {
-  return service->GetUserSettings()->IsFirstSetupComplete() &&
-         service->GetUserSettings()
-             ->IsPassphraseRequiredForPreferredDataTypes();
+  const syncer::SyncUserSettings* settings = service->GetUserSettings();
+  return HasUserOptedInToSync(settings) &&
+         settings->IsPassphraseRequiredForPreferredDataTypes();
 }
 
 bool ShouldShowSyncKeysMissingError(const syncer::SyncService* service) {
-  return service->GetUserSettings()->IsFirstSetupComplete() &&
-         service->GetUserSettings()
-             ->IsTrustedVaultKeyRequiredForPreferredDataTypes();
+  const syncer::SyncUserSettings* settings = service->GetUserSettings();
+  return HasUserOptedInToSync(settings) &&
+         settings->IsTrustedVaultKeyRequiredForPreferredDataTypes();
 }
 
 void OpenTabForSyncKeyRetrieval(Browser* browser) {

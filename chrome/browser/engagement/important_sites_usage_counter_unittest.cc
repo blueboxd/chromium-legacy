@@ -76,7 +76,7 @@ class ImportantSitesUsageCounterTest : public testing::Test {
   }
 
   void FetchCompleted(std::vector<ImportantDomainInfo> domain_info) {
-    domain_info_ = domain_info;
+    domain_info_ = std::move(domain_info);
     run_loop_->Quit();
   }
 
@@ -102,8 +102,8 @@ TEST_F(ImportantSitesUsageCounterTest, PopulateUsage) {
   i1.registerable_domain = "example.com";
   ImportantDomainInfo i2;
   i2.registerable_domain = "somethingelse.com";
-  important_sites.push_back(i1);
-  important_sites.push_back(i2);
+  important_sites.push_back(std::move(i1));
+  important_sites.push_back(std::move(i2));
 
   const std::vector<content::MockOriginData> origins = {
       {"http://example.com/", blink::mojom::StorageType::kTemporary, 1},
@@ -125,12 +125,12 @@ TEST_F(ImportantSitesUsageCounterTest, PopulateUsage) {
           ->GetDOMStorageContext();
 
   ImportantSitesUsageCounter::GetUsage(
-      important_sites, quota_manager, dom_storage_context,
+      std::move(important_sites), quota_manager, dom_storage_context,
       base::BindOnce(&ImportantSitesUsageCounterTest::FetchCompleted,
                      base::Unretained(this)));
   WaitForResult();
 
-  EXPECT_EQ(important_sites.size(), domain_info().size());
+  EXPECT_EQ(2U, domain_info().size());
   // The first important site is example.com. It uses 1B quota storage for
   // http://example.com/, 2B for https://example.com and 4B for
   // https://maps.example.com. On top of that it uses 16B local storage.

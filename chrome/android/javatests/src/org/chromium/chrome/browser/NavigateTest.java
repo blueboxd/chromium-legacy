@@ -196,6 +196,9 @@ public class NavigateTest {
         String url = mTestServer.getURL("/chrome/test/data/android/navigate/simple.html");
         String result = typeInOmniboxAndNavigate(url, "Simple");
         Assert.assertEquals(expectedLocation(url), result);
+        // Reset device orientation.
+        mActivityTestRule.getActivity().setRequestedOrientation(
+                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     }
 
     /**

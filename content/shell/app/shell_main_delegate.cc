@@ -32,7 +32,6 @@
 #include "content/shell/browser/web_test/web_test_content_browser_client.h"
 #include "content/shell/common/shell_content_client.h"
 #include "content/shell/common/shell_switches.h"
-#include "content/shell/common/web_test/web_test_content_client.h"
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/gpu/shell_content_gpu_client.h"
 #include "content/shell/renderer/shell_content_renderer_client.h"
@@ -304,11 +303,8 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 #endif
   }
 
-  content_client_.reset(switches::IsRunWebTestsSwitchPresent()
-                            ? new WebTestContentClient
-                            : new ShellContentClient);
-  SetContentClient(content_client_.get());
-
+  if (switches::IsRunWebTestsSwitchPresent())
+    content_client_->SetInWebTest(true);
   return false;
 }
 
@@ -452,6 +448,11 @@ void ShellMainDelegate::PreCreateMainMessageLoop() {
 #elif defined(OS_MACOSX)
   RegisterShellCrApp();
 #endif
+}
+
+ContentClient* ShellMainDelegate::CreateContentClient() {
+  content_client_ = std::make_unique<ShellContentClient>();
+  return content_client_.get();
 }
 
 ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {

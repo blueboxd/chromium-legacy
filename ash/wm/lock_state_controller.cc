@@ -318,7 +318,7 @@ void LockStateController::PreLockAnimation(
     bool request_lock_on_completion) {
   saved_property_ = Shell::GetPrimaryRootWindowController()
                         ->wallpaper_widget_controller()
-                        ->property();
+                        ->GetWallpaperProperty();
   Shell::Get()->wallpaper_controller()->UpdateWallpaperBlurForLockState(true);
   base::OnceClosure next_animation_starter = base::BindOnce(
       &LockStateController::PreLockAnimationFinished,

@@ -46,12 +46,16 @@
 #pragma mark - Accessors
 
 - (JavaScriptPromptOverlayRequestConfig*)config {
-  return self.request->GetConfig<JavaScriptPromptOverlayRequestConfig>();
+  return self.request
+             ? self.request->GetConfig<JavaScriptPromptOverlayRequestConfig>()
+             : nullptr;
 }
 
 #pragma mark - Response helpers
 
 - (void)setPromptResponse:(NSString*)textInput {
+  if (!self.request)
+    return;
   self.request->GetCallbackManager()->SetCompletionResponse(
       OverlayResponse::CreateWithInfo<JavaScriptPromptOverlayResponseInfo>(
           base::SysNSStringToUTF8(textInput)));

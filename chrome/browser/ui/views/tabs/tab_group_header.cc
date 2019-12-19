@@ -9,7 +9,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_group_editor_bubble_view.h"
@@ -19,6 +18,8 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/canvas.h"
@@ -34,7 +35,8 @@
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 
-TabGroupHeader::TabGroupHeader(TabStrip* tab_strip, TabGroupId group)
+TabGroupHeader::TabGroupHeader(TabStrip* tab_strip,
+                               tab_groups::TabGroupId group)
     : tab_strip_(tab_strip) {
   DCHECK(tab_strip);
 
@@ -146,7 +148,7 @@ int TabGroupHeader::CalculateWidth() const {
   // both should look nestled against the group stroke of the tab to the right.
   // This requires a +/- 2px adjustment to the width, which causes the tab to
   // the right to be positioned in the right spot.
-  const TabGroupVisualData* data =
+  const tab_groups::TabGroupVisualData* data =
       tab_strip_->controller()->GetVisualDataForGroup(group().value());
   const int right_adjust = data->title().empty() ? 2 : -2;
 
@@ -154,7 +156,7 @@ int TabGroupHeader::CalculateWidth() const {
 }
 
 void TabGroupHeader::VisualsChanged() {
-  const TabGroupVisualData* data =
+  const tab_groups::TabGroupVisualData* data =
       tab_strip_->controller()->GetVisualDataForGroup(group().value());
 
   if (data->title().empty()) {

@@ -144,15 +144,15 @@ class OptimizationGuideHintsManager
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerTest, IsGoogleURL);
-  FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerFetchingTest,
                            HintsFetched_AtSRP_ECT_SLOW_2G);
-  FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerFetchingTest,
                            HintsFetched_AtSRP_ECT_4G);
-  FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerFetchingTest,
                            HintsFetched_AtNonSRP_ECT_SLOW_2G);
-  FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerFetchingTest,
                            HintsFetched_AtSRP_ECT_SLOW_2G_DuplicatesRemoved);
-  FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerFetchingTest,
                            HintsFetched_AtSRP_ECT_SLOW_2G_InsecureHostsRemoved);
   // Processes the hints component.
   //

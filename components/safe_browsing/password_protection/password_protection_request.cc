@@ -130,12 +130,13 @@ void PasswordProtectionRequest::CheckWhitelist() {
   // Start a task on the IO thread to check the whitelist. It may
   // callback immediately on the IO thread or take some time if a full-hash-
   // check is required.
-  auto result_callback = base::Bind(&OnWhitelistCheckDoneOnIO, GetWeakPtr());
+  auto result_callback =
+      base::BindOnce(&OnWhitelistCheckDoneOnIO, GetWeakPtr());
   tracker_.PostTask(
       base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get(), FROM_HERE,
       base::BindOnce(&AllowlistCheckerClient::StartCheckCsdWhitelist,
                      password_protection_service_->database_manager(),
-                     main_frame_url_, result_callback));
+                     main_frame_url_, std::move(result_callback)));
 }
 
 // static

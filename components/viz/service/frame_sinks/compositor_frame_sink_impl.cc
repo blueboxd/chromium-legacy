@@ -24,8 +24,7 @@ CompositorFrameSinkImpl::CompositorFrameSinkImpl(
           compositor_frame_sink_client_.get(),
           frame_sink_manager,
           frame_sink_id,
-          false /* is_root */,
-          true /* needs_sync_points */)) {
+          false /* is_root */)) {
   compositor_frame_sink_receiver_.set_disconnect_handler(
       base::BindOnce(&CompositorFrameSinkImpl::OnClientConnectionLost,
                      base::Unretained(this)));

@@ -67,7 +67,8 @@ using FrameTreeIdToChildIdsMap =
 
 // Callback used to notify a caller that ThreatDetails has finished creating and
 // sending a report.
-using ThreatDetailsDoneCallback = base::Callback<void(content::WebContents*)>;
+using ThreatDetailsDoneCallback =
+    base::OnceCallback<void(content::WebContents*)>;
 
 class ThreatDetails : public content::WebContentsObserver {
  public:

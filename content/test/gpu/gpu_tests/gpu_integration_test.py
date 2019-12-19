@@ -301,7 +301,7 @@ class GpuIntegrationTest(
     This configuration is collected on Windows platform only.
     The rules to determine bot config are:
       1) DX12: Win7 doesn't support DX12. Only Win10 supports DX12
-      2) Vulkan: All bots support Vulkan except for Win FYI AMD bots
+      2) Vulkan: All bots support Vulkan.
     """
     if self.browser is None:
       raise Exception("Browser doesn't exist")
@@ -312,7 +312,6 @@ class GpuIntegrationTest(
     if gpu is None:
       raise Exception("System Info doesn't have a gpu")
     gpu_vendor_id = gpu.vendor_id
-    gpu_device_id = gpu.device_id
     assert gpu_vendor_id in _SUPPORTED_WIN_GPU_VENDORS
 
     os_version = self.browser.platform.GetOSVersionName()
@@ -328,11 +327,6 @@ class GpuIntegrationTest(
 
     if os_version == 'win7':
       config['supports_dx12'] = False
-
-    # "Win7 FYI Release (AMD)" and "Win7 FYI Debug (AMD)" bots
-    if (os_version == 'win7' and gpu_vendor_id == 0x1002
-        and gpu_device_id == 0x6613):
-      config['supports_vulkan'] = False
 
     return config
 

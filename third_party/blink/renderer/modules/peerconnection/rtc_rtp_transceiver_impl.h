@@ -180,7 +180,7 @@ class MODULES_EXPORT RTCRtpTransceiverImpl : public RTCRtpTransceiverPlatform {
   base::Optional<webrtc::RtpTransceiverDirection> FiredDirection()
       const override;
   webrtc::RTCError SetCodecPreferences(
-      blink::WebVector<webrtc::RtpCodecCapability>) override;
+      Vector<webrtc::RtpCodecCapability>) override;
 
  private:
   class RTCRtpTransceiverInternal;

@@ -33,7 +33,8 @@
 enum CompositeOperation { "replace", "add", "accumulate" };
 
 [
-    Exposed=Window
+    Exposed=Window,
+    Measure
 ] interface KeyframeEffect : AnimationEffect {
   [CallWith=ScriptState, RaisesException] constructor(Element? target, object? keyframes, optional (unrestricted double or KeyframeEffectOptions) options);
   [CallWith=ScriptState, RaisesException] constructor(KeyframeEffect source);

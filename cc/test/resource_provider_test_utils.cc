@@ -4,7 +4,7 @@
 
 #include "cc/test/resource_provider_test_utils.h"
 
-#include "base/bind.h"
+#include "base/bind_helpers.h"
 
 namespace cc {
 
@@ -18,9 +18,7 @@ SendResourceAndGetChildToParentMap(
   DCHECK(child_resource_provider);
   // Transfer resources to the parent.
   std::vector<viz::TransferableResource> send_to_parent;
-  int child_id = resource_provider->CreateChild(
-      base::BindRepeating([](const std::vector<viz::ReturnedResource>&) {}),
-      true);
+  int child_id = resource_provider->CreateChild(base::DoNothing());
   child_resource_provider->PrepareSendToParent(resource_ids, &send_to_parent,
                                                child_context_provider);
   resource_provider->ReceiveFromChild(child_id, send_to_parent);

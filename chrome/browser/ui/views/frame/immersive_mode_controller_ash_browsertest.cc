@@ -118,7 +118,7 @@ class ImmersiveModeControllerAshWebAppBrowserTest
     WebAppFrameToolbarView* container =
         frame_view->web_app_frame_toolbar_for_testing();
     views::test::InkDropHostViewTestApi ink_drop_api(
-        container->web_app_menu_button_);
+        container->GetAppMenuButton());
     EXPECT_TRUE(container->GetContentSettingContainerForTesting()->layer());
     EXPECT_EQ(views::InkDropHostView::InkDropMode::ON,
               ink_drop_api.ink_drop_mode());

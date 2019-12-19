@@ -379,7 +379,7 @@ RTCRtpReceiverOnlyTransceiver::FiredDirection() const {
 }
 
 webrtc::RTCError RTCRtpReceiverOnlyTransceiver::SetCodecPreferences(
-    blink::WebVector<webrtc::RtpCodecCapability>) {
+    Vector<webrtc::RtpCodecCapability>) {
   NOTIMPLEMENTED();
   return {};
 }

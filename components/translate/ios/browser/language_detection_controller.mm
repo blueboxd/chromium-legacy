@@ -47,8 +47,8 @@ LanguageDetectionController::LanguageDetectionController(
   translate_enabled_.Init(prefs::kOfferTranslateEnabled, prefs);
   web_state_->AddObserver(this);
   subscription_ = web_state_->AddScriptCommandCallback(
-      base::Bind(&LanguageDetectionController::OnTextCaptured,
-                 base::Unretained(this)),
+      base::BindRepeating(&LanguageDetectionController::OnTextCaptured,
+                          base::Unretained(this)),
       kCommandPrefix);
 }
 
@@ -110,8 +110,9 @@ void LanguageDetectionController::OnTextCaptured(
   if (http_content_language.empty())
     http_content_language = content_language_header_;
 
-  [js_manager_ retrieveBufferedTextContent:
-                   base::Bind(&LanguageDetectionController::OnTextRetrieved,
+  [js_manager_
+      retrieveBufferedTextContent:
+          base::BindRepeating(&LanguageDetectionController::OnTextRetrieved,
                               weak_method_factory_.GetWeakPtr(),
                               http_content_language, html_lang, url)];
 }

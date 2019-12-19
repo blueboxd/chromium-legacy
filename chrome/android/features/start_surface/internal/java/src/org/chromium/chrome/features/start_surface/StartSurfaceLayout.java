@@ -160,8 +160,10 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
     public void show(long time, boolean animate) {
         super.show(time, animate);
 
-        boolean showShrinkingAnimation =
-                animate && TabFeatureUtilities.isTabToGtsAnimationEnabled();
+        // Skip shrinking animation when there is no tab in current tab model.
+        boolean isCurrentTabModelEmpty = mTabModelSelector.getCurrentModel().getCount() == 0;
+        boolean showShrinkingAnimation = animate && TabFeatureUtilities.isTabToGtsAnimationEnabled()
+                && !isCurrentTabModelEmpty;
         boolean quick = mTabListDelegate.prepareOverview();
         Log.d(TAG, "SkipSlowZooming = " + getSkipSlowZooming());
         if (getSkipSlowZooming()) {

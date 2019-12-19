@@ -4,6 +4,7 @@
 <translation id="1002439864875515590">如果此政策设为一个空字符串或未配置，<ph name="PRODUCT_OS_NAME" />将不会在用户登录期间显示自动填充选项。
       如果此政策设为一个表示域名的字符串，<ph name="PRODUCT_OS_NAME" />将在用户登录期间显示自动填充选项，让用户可以只输入自己的用户名，而不必输入域名扩展名。用户可以覆盖此域名扩展名。
       如果此政策的值不是一个有效的域名，系统便不会应用此政策。</translation>
+<translation id="1010151305531217567">将鼠标主键切换成右键</translation>
 <translation id="101438888985615157">将屏幕旋转 180 度</translation>
 <translation id="1016912092715201525">在 <ph name="PRODUCT_NAME" /> 中配置默认浏览器检查，并禁止用户更改此设置。
 
@@ -340,6 +341,15 @@
 
 如果停用或未配置此设置，那么企业用户将无法使用 ARC。</translation>
 <translation id="1553956579506604198">禁止安装外部扩展程序</translation>
+<translation id="1556072857949466438">借助此政策，管理员可以指定页面能否在取消加载的过程中显示弹出式窗口。
+
+      如果启用了此政策，页面便能够在取消加载的过程中显示弹出式窗口。
+
+      如果停用了或未设置此政策，根据相关规范 (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name)，页面将无法在取消加载的过程中显示弹出式窗口。
+
+      在 Chrome 88 中，此政策将被移除。
+
+      请参阅 https://www.chromestatus.com/feature/5989473649164288。</translation>
 <translation id="1559980755219453326">此政策可控制是否报告扩展程序和插件信息。
 
       如果此政策设为 True 或未设置，系统会收集扩展程序和插件数据。
@@ -775,6 +785,17 @@
       此政策也适用于组件扩展程序（例如 Hangout Services 扩展程序）。</translation>
 <translation id="2223598546285729819">默认通知设置</translation>
 <translation id="2231817271680715693">首次运行时，从默认浏览器导入浏览记录</translation>
+<translation id="2234855698900783408">在新版 <ph name="CORS" /> 实现方案中启用 <ph name="CORS" /> 检查缓解功能，从而允许扩展程序保持兼容的行为，并允许 <ph name="PRODUCT_NAME" /> 无需进行 <ph name="CORS" /> 检查便可发送指定标头。
+
+      如果此列表设为空，<ph name="PRODUCT_NAME" /> 会尝试以兼容的方式运行扩展程序，而不会激活 <ph name="PRODUCT_NAME" /> 79 中引入的 <ph name="API" /> 更改（如 <ph name="WEB_REQUEST_API_MANUAL" /> 所述）。
+
+      如果此列表设为包含 <ph name="HTTP" /> 请求标头名称，则 <ph name="CORS" /> 检查将会忽略所列的标头，并会为扩展程序启用缓解功能。
+
+      如果此列表未设置，系统将不会应用上文介绍的两项缓解功能。
+
+      如需详细了解 <ph name="CORS" />，请访问：<ph name="CORS_HELP_URL" />。
+
+      请注意，在 <ph name="PRODUCT_NAME" /> 版本 82 中，此政策将被移除。</translation>
 <translation id="2236488539271255289">不允许任何网站设置本地数据</translation>
 <translation id="2240879329269430151">可让您设置是否允许网站显示弹出式窗口。可以针对所有网站允许或拒绝显示弹出式窗口。如果未设置此政策，系统将使用“BlockPopups”并允许用户更改此设置。</translation>
 <translation id="2241498944622759244">该功能从未被发布，所以此政策已被弃用。如果此政策设为 true 或未设置，<ph name="PRODUCT_NAME" /> 将会根据当前网页来建议相关网页。
@@ -1444,6 +1465,15 @@
       如果已启用或未配置此设置，用户就可以用自己的 Google 帐号进行身份验证，从而启用云打印代理。
 
       如果已停用此设置，用户将无法启用代理，该计算机也就无法与 <ph name="CLOUD_PRINT_NAME" />共享其打印机。</translation>
+<translation id="3295118731207421797">借助此政策，管理员可以指定页面能否在关闭过程中发送同步 XHR 请求。
+
+      如果启用了此政策，页面便能够在关闭过程中发送同步 XHR 请求。
+
+      如果停用了或未设置此政策，页面将无法在关闭过程中发送同步 XHR 请求。
+
+      在 Chrome 88 中，此政策将被移除。
+
+      请参阅 https://www.chromestatus.com/feature/4664843055398912。</translation>
 <translation id="3303653927512453822">允许您将所有 Cookie 都恢复为旧版 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 行为。恢复为旧版行为会导致未指定 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 属性的 Cookie 被当作“<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />”Cookie 来处理，并会撤消“<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />”Cookie 必须附带“<ph name="ATTRIBUTE_SECURE_NAME" />”属性的要求。要查看完整说明，请参阅 https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies。
 
           如果未设置此政策，未指定 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 属性的 Cookie 的默认 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 行为将取决于用户针对 <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 功能（此功能可通过现场试验来设置，也可通过启用或停用 <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 标记来设置）指定的个人配置。</translation>
@@ -2329,6 +2359,11 @@
       如果您停用了或未设置此政策，网站将无法在导航的同时打开新窗口/标签页。</translation>
 <translation id="4680961954980851756">启用自动填充</translation>
 <translation id="4693779768620889402">基于扩展程序的目的地</translation>
+<translation id="4699592681017489215">借助此政策，您可以配置一个用于停用 DNS 拦截检查功能的本地开关。该检查功能旨在尝试检测浏览器是否使用了会重定向不明主机名的代理。
+
+      在具有已知网络配置的企业环境中，可能没必要使用这项检测功能，因为如果在此类环境中使用该功能，那么每当该功能启动时以及每当 DNS 配置有变时，都会产生一些 DNS 和 HTTP 流量。
+
+      如果未设置或启用了此政策，系统会执行 DNS 拦截检查。如果明确停用了此政策，系统便不会执行 DNS 拦截检查。</translation>
 <translation id="4703402283970867140">启用智能调暗模式，以最大限度地推迟屏幕变暗时间</translation>
 <translation id="4722122254122249791">为指定的来源启用网站隔离功能</translation>
 <translation id="4722399051042571387">如果设为 false，用户将无法设置安全系数低且易于猜中的 PIN 码。
@@ -2541,6 +2576,10 @@
           如果您未设置此政策，当系统首次显示登录屏幕时，放大镜会处于停用状态。用户可随时启用或停用放大镜，放大镜在登录屏幕上的状态对各用户均有效。
 
           注意：<ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME" />（若已指定）会覆盖此政策。</translation>
+<translation id="5115168755602871392">报告与设备 CPU 有关的信息。
+
+      如果此政策设为 false 或未设置，系统将不会报告这些信息。
+      如果此政策设为 true，系统将会报告每个 CPU 的型号名称、架构和最快时钟速度。</translation>
 <translation id="5124368997194894978">启用“接通 AC（交流电）时启动”</translation>
 <translation id="5131211790949066746">允许合并扩展程序安装列表政策 <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />、<ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> 和 <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />。
 
@@ -3322,6 +3361,17 @@
 <translation id="6467613372414922590">允许使用用户级本地消息传递主机（安装时没有管理员权限）</translation>
 <translation id="6468980648680553776">此政策已被弃用。请改用 RemoteAccessHostClientDomainList。</translation>
 <translation id="6473623140202114570">配置安全浏览功能在哪些网域中不会触发警告。</translation>
+<translation id="6487780893361255867">使用旧版 <ph name="CORS" /> 实现方案，而非新版 <ph name="CORS" />。
+
+      如果此设置设为 True，系统会使用旧版实现方案（此版实现方案应该会与以往的版本兼容）。
+
+      如果此设置设为 False 或未设置，系统会使用新版实现方案（此版实现方案可能会导致出现特定于企业的兼容性问题）。
+
+      在几个里程碑后，此政策将被移除。
+
+      如需详细了解 <ph name="CORS" />，请访问：<ph name="CORS_HELP_URL" />。
+
+      请注意，在 <ph name="PRODUCT_NAME" /> 版本 82 中，此政策将被移除。</translation>
 <translation id="6488627892044759800">配置 <ph name="PRODUCT_NAME" /> 中的默认主页的类型，并禁止用户更改主页偏好设置。您可以将主页设为指定的网址，也可以将其设为“新标签页”页面。
 
           如果您启用了此设置，该浏览器将会始终使用“新标签页”页面作为主页，并会忽略主页网址。
@@ -3409,6 +3459,7 @@
       当设为 True 时，此政策允许设备触发 Powerwash。
       如果未设置，此政策会默认为 True，意即允许设备触发 Powerwash。
       </translation>
+<translation id="66265932317331474">报告 CPU 信息</translation>
 <translation id="6628043374475466084">不针对其检查上传内容是否违反敏感数据保护规则的网址格式</translation>
 <translation id="6628120204569232711">报告存储状态</translation>
 <translation id="6628646143828354685">可让您设置是否允许网站访问附近的蓝牙设备。您可以完全禁止此类访问，也可以设为每当有网站希望访问附近的蓝牙设备时均征求用户同意。
@@ -3606,6 +3657,7 @@
       有关可用变量的列表，请访问 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
 
       如果未设置此政策，则系统将使用默认个人资料路径，而且日后用户将可以通过“--disk-cache-dir”命令行标记来替换此目录。</translation>
+<translation id="7008308728445338159">启用 DNS 拦截检查功能</translation>
 <translation id="7027785306666625591">配置<ph name="PRODUCT_OS_NAME" />中的电源管理设置。
 
       这些政策可让您配置在用户停止操作一定时间后<ph name="PRODUCT_OS_NAME" />的行为。</translation>
@@ -3697,6 +3749,15 @@
 
       如需详细了解 Internet Explorer 的 <ph name="IEEM_SITELIST_POLICY" /> 政策，请访问 https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">无需提示用户即可使用视频捕获设备的网址</translation>
+<translation id="7134420220355750019">将鼠标主键切换成右键。
+
+          如果启用了此政策，那么鼠标右键将始终是主键。
+
+          如果停用了此政策，那么鼠标左键将始终是主键。
+
+          如果您设置了此政策，用户便无法更改或覆盖它。
+
+          如果您未设置此政策，最初鼠标左键会是主键，但用户随时可将主键切换成右键。</translation>
 <translation id="713712866686796666">用于设定日间用电高峰转移配置。
 
           仅当 <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> 设为 true 时，才会用到此政策。

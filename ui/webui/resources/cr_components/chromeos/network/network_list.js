@@ -67,26 +67,29 @@ Polymer({
         return [];
       },
     },
-
-    /**
-     * Used by FocusRowBehavior to track the last focused element on a row.
-     * @private
-     */
-    lastFocused_: Object,
-
-    /**
-     * Used by FocusRowBehavior to track if the list has been blurred.
-     * @private
-     */
-    listBlurred_: Boolean,
   },
 
-  behaviors: [CrScrollableBehavior, ListPropertyUpdateBehavior],
+  behaviors: [CrScrollableBehavior],
 
   observers: ['updateListItems_(networks, customItems)'],
 
   /** @private {boolean} */
   focusRequested_: false,
+
+  /**
+   * GUID of the focused network before the list is updated.  This
+   * is used to re-apply focus to the same network if possible.
+   * @private {string}
+   */
+  focusedGuidBeforeUpdate_: '',
+
+  /**
+   * Index of the focused network before the list is updated.  This
+   * is used to re-apply focus when the previously focused network
+   * is no longer listed.
+   * @private {number}
+   */
+  focusedIndexBeforeUpdate_: -1,
 
   focus: function() {
     this.focusRequested_ = true;
@@ -94,21 +97,52 @@ Polymer({
   },
 
   /** @private */
-  updateListItems_: function() {
-    if (!this.listItems_) {
-      // TODO(https://crbug.com/1034794) Determine how |listItems_| can be
-      // undefined when initializing OOBE.
-      return;
+  saveFocus_: function() {
+    if (this.shadowRoot.activeElement &&
+        this.shadowRoot.activeElement.is === 'network-list-item') {
+      const focusedNetwork = /** @type {!NetworkList.NetworkListItem} */ (
+          this.shadowRoot.activeElement);
+      if (focusedNetwork.item && focusedNetwork.item.guid) {
+        this.focusedGuidBeforeUpdate = focusedNetwork.item.guid;
+        this.focusedIndexBeforeUpdate_ = this.listItems_.findIndex(
+            n => n.guid === this.focusedGuidBeforeUpdate);
+        return;
+      }
     }
+    this.focusedGuidBeforeUpdate = '';
+    this.focusedIndexBeforeUpdate_ = -1;
+  },
+
+  /** @private */
+  restoreFocus_: function() {
+    if (this.focusedGuidBeforeUpdate) {
+      let currentIndex = this.listItems_.findIndex(
+          (n) => n.guid === this.focusedGuidBeforeUpdate);
+      if (currentIndex < 0) {
+        currentIndex = this.focusedIndexBeforeUpdate_ < this.listItems_.length ?
+            this.focusedIndexBeforeUpdate_ :
+            0;
+      }
+      this.$.networkList.focusItem(currentIndex);
+    } else if (this.focusRequested_) {
+      this.async(function() {
+        this.focusFirstItem_();
+      });
+    }
+  },
+
+  /** @private */
+  updateListItems_: function() {
+    this.saveScroll(this.$.networkList);
+    this.saveFocus_();
     const beforeNetworks =
         this.customItems.filter(n => n.showBeforeNetworksList == true);
     const afterNetworks =
         this.customItems.filter(n => n.showBeforeNetworksList == false);
-    const newList = beforeNetworks.concat(this.networks, afterNetworks);
-
-    this.updateList('listItems_', item => item.guid, newList);
-
+    this.listItems_ = beforeNetworks.concat(this.networks, afterNetworks);
+    this.restoreScroll(this.$.networkList);
     this.updateScrollableContents();
+    this.restoreFocus_();
   },
 
   /** @private */
@@ -120,5 +154,29 @@ Polymer({
     }
     item.focus();
     this.focusRequested_ = false;
+  },
+
+  /**
+   * Use iron-list selection (which is not the same as focus) to trigger
+   * tap (requires selection-enabled) or keyboard selection.
+   * @private
+   */
+  selectedItemChanged_: function() {
+    if (this.selectedItem) {
+      this.onItemAction_(this.selectedItem);
+    }
+  },
+
+  /**
+   * @param {!NetworkList.NetworkListItemType} item
+   * @private
+   */
+  onItemAction_: function(item) {
+    if (item.hasOwnProperty('customItemName')) {
+      this.fire('custom-item-selected', item);
+    } else {
+      this.fire('selected', item);
+      this.focusRequested_ = true;
+    }
   },
 });

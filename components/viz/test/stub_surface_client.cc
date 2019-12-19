@@ -8,7 +8,7 @@
 
 namespace viz {
 
-StubSurfaceClient::StubSurfaceClient() {}
+StubSurfaceClient::StubSurfaceClient() = default;
 
 StubSurfaceClient::~StubSurfaceClient() = default;
 
@@ -16,10 +16,6 @@ std::vector<std::unique_ptr<CopyOutputRequest>>
 StubSurfaceClient::TakeCopyOutputRequests(
     const LocalSurfaceId& latest_surface_id) {
   return std::vector<std::unique_ptr<CopyOutputRequest>>();
-}
-
-bool StubSurfaceClient::NeedsSyncTokens() const {
-  return true;
 }
 
 }  // namespace viz

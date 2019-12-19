@@ -211,6 +211,10 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // removed, we should go back to this clipping.
   gfx::Rect overview_clip_rect_;
 
+  // True if a window is clipped to match splitview bounds. If true, the
+  // splitview clipping overrides any top view inset clipping there may be.
+  bool has_aspect_ratio_clipping_ = false;
+
   std::unique_ptr<ScopedOverviewHideWindows> hidden_transient_children_;
 
   base::WeakPtrFactory<ScopedOverviewTransformWindow> weak_ptr_factory_{this};

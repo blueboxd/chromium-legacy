@@ -403,6 +403,34 @@ class RootWindowMenuModelAdapter : public AppMenuModelAdapter {
   DISALLOW_COPY_AND_ASSIGN(RootWindowMenuModelAdapter);
 };
 
+class FillLayoutManager : public aura::LayoutManager {
+ public:
+  explicit FillLayoutManager(aura::Window* container) : container_(container) {}
+  ~FillLayoutManager() override = default;
+  FillLayoutManager(const FillLayoutManager&) = delete;
+  FillLayoutManager& operator=(const FillLayoutManager&) = delete;
+
+  // aura::LayoutManager:
+  void OnWindowResized() override { Relayout(); }
+  void OnWindowAddedToLayout(aura::Window* child) override { Relayout(); }
+  void OnWillRemoveWindowFromLayout(aura::Window* child) override {}
+  void OnWindowRemovedFromLayout(aura::Window* child) override {}
+  void OnChildWindowVisibilityChanged(aura::Window* child,
+                                      bool visible) override {}
+  void SetChildBounds(aura::Window* child,
+                      const gfx::Rect& requested_bounds) override {
+    SetChildBoundsDirect(child, requested_bounds);
+  }
+
+ private:
+  void Relayout() {
+    for (auto* child : container_->children())
+      child->SetBounds(gfx::Rect(container_->bounds().size()));
+  }
+
+  aura::Window* container_;
+};
+
 }  // namespace
 
 // static
@@ -707,11 +735,6 @@ void RootWindowController::SetTouchAccessibilityAnchorPoint(
 
 void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
                                            ui::MenuSourceType source_type) {
-  // The wallpaper widget may not be set yet if the user clicked on the
-  // status area before the initial animation completion. See crbug.com/222218
-  if (!wallpaper_widget_controller()->GetWidget())
-    return;
-
   const int64_t display_id = display::Screen::GetScreen()
                                  ->GetDisplayNearestWindow(GetRootWindow())
                                  .id();
@@ -781,10 +804,6 @@ RootWindowController::RootWindowController(
   aura::client::SetWindowParentingClient(root_window,
                                          stacking_controller_.get());
   capture_client_.reset(new ::wm::ScopedCaptureClient(root_window));
-
-  wallpaper_widget_controller_ = std::make_unique<WallpaperWidgetController>(
-      base::BindOnce(&RootWindowController::OnFirstWallpaperWidgetSet,
-                     base::Unretained(this)));
 }
 
 void RootWindowController::Init(RootWindowType root_window_type) {
@@ -816,6 +835,16 @@ void RootWindowController::Init(RootWindowType root_window_type) {
           ->has_window_dimmer()) {
     GetSystemModalLayoutManager(nullptr)->CreateModalBackground();
   }
+
+  wallpaper_widget_controller_ = std::make_unique<WallpaperWidgetController>(
+      root_window,
+      base::BindOnce(&RootWindowController::OnFirstWallpaperWidgetSet,
+                     base::Unretained(this)));
+
+  int container = Shell::Get()->session_controller()->IsUserSessionBlocked()
+                      ? kShellWindowId_LockScreenWallpaperContainer
+                      : kShellWindowId_WallpaperContainer;
+  wallpaper_widget_controller_->Init(container);
 
   root_window_layout_manager_->OnWindowResized();
 
@@ -941,6 +970,8 @@ void RootWindowController::CreateContainers() {
       CreateContainer(kShellWindowId_WallpaperContainer, "WallpaperContainer",
                       magnified_container);
   ::wm::SetChildWindowVisibilityChangesAnimated(wallpaper_container);
+  wallpaper_container->SetLayoutManager(
+      new FillLayoutManager(wallpaper_container));
 
   aura::Window* non_lock_screen_containers =
       CreateContainer(kShellWindowId_NonLockScreenContainersContainer,
@@ -949,10 +980,12 @@ void RootWindowController::CreateContainers() {
   // texture may become visible when the screen is scaled. crbug.com/368591.
   non_lock_screen_containers->layer()->SetMasksToBounds(true);
 
-  aura::Window* lock_wallpaper_containers =
+  aura::Window* lock_wallpaper_container =
       CreateContainer(kShellWindowId_LockScreenWallpaperContainer,
                       "LockScreenWallpaperContainer", magnified_container);
-  ::wm::SetChildWindowVisibilityChangesAnimated(lock_wallpaper_containers);
+  ::wm::SetChildWindowVisibilityChangesAnimated(lock_wallpaper_container);
+  lock_wallpaper_container->SetLayoutManager(
+      new FillLayoutManager(lock_wallpaper_container));
 
   aura::Window* lock_screen_containers =
       CreateContainer(kShellWindowId_LockScreenContainersContainer,
@@ -1128,8 +1161,11 @@ void RootWindowController::CreateContainers() {
                       "MouseCursorContainer", magnified_container);
   mouse_cursor_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
 
-  CreateContainer(kShellWindowId_AlwaysOnTopWallpaperContainer,
-                  "AlwaysOnTopWallpaperContainer", magnified_container);
+  aura::Window* always_on_top_wallpaper_container =
+      CreateContainer(kShellWindowId_AlwaysOnTopWallpaperContainer,
+                      "AlwaysOnTopWallpaperContainer", magnified_container);
+  always_on_top_wallpaper_container->SetLayoutManager(
+      new FillLayoutManager(always_on_top_wallpaper_container));
 
   CreateContainer(kShellWindowId_PowerButtonAnimationContainer,
                   "PowerButtonAnimationContainer", magnified_container);

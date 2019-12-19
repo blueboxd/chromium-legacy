@@ -907,8 +907,8 @@ void SVGElement::EnsureAttributeAnimValUpdated() {
 
   if ((HasSVGRareData() && SvgRareData()->WebAnimatedAttributesDirty()) ||
       (GetElementAnimations() &&
-       DocumentAnimations::NeedsAnimationTimingUpdate(GetDocument()))) {
-    DocumentAnimations::UpdateAnimationTimingIfNeeded(GetDocument());
+       GetDocument().GetDocumentAnimations().NeedsAnimationTimingUpdate())) {
+    GetDocument().GetDocumentAnimations().UpdateAnimationTimingIfNeeded();
     ApplyActiveWebAnimations();
   }
 }

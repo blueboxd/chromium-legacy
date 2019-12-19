@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 chrome.browserAction.onClicked.addListener(function(tab) {
-    chrome.browserAction.setBadgeText({text:"X"});
+  chrome.browserAction.setBadgeText({text: 'X'}, () => {
     window.close();
+  });
 });

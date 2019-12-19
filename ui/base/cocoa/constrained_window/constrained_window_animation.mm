@@ -240,9 +240,11 @@ bool AreWindowServerEffectsDisabled() {
     // update to the window size, and then undoing it, seems to fix the problem.
     // See http://crbug.com/436884.
     // TODO(tapted): Find a better fix (this is horrible).
-    NSRect frame = [_window frame];
-    [_window setFrame:NSInsetRect(frame, 1, 1) display:NO animate:NO];
-    [_window setFrame:frame display:NO animate:NO];
+    if (!AreWindowServerEffectsDisabled()) {
+      NSRect frame = [_window frame];
+      [_window setFrame:NSInsetRect(frame, 1, 1) display:NO animate:NO];
+      [_window setFrame:frame display:NO animate:NO];
+    }
     return;
   }
   [self setWindowStateForValue:[self currentValue]];

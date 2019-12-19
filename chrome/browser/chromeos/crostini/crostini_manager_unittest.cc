@@ -20,6 +20,8 @@
 #include "chrome/browser/chromeos/crostini/fake_crostini_features.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
@@ -139,7 +141,9 @@ class CrostiniManagerTest : public testing::Test {
   }
 
   CrostiniManagerTest()
-      : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD) {
+      : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD),
+        local_state_(std::make_unique<ScopedTestingLocalState>(
+            TestingBrowserProcess::GetGlobal())) {
     chromeos::DBusThreadManager::Initialize();
     fake_cicerone_client_ = static_cast<chromeos::FakeCiceroneClient*>(
         chromeos::DBusThreadManager::Get()->GetCiceroneClient());
@@ -170,9 +174,13 @@ class CrostiniManagerTest : public testing::Test {
     mojo::Remote<device::mojom::UsbDeviceManager> fake_usb_manager;
     fake_usb_manager_.AddReceiver(
         fake_usb_manager.BindNewPipeAndPassReceiver());
+
+    g_browser_process->platform_part()
+        ->InitializeSchedulerConfigurationManager();
   }
 
   void TearDown() override {
+    g_browser_process->platform_part()->ShutdownSchedulerConfigurationManager();
     scoped_user_manager_.reset();
     crostini_manager_->Shutdown();
     profile_.reset();
@@ -199,6 +207,8 @@ class CrostiniManagerTest : public testing::Test {
  private:
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
+  std::unique_ptr<ScopedTestingLocalState> local_state_;
+
   DISALLOW_COPY_AND_ASSIGN(CrostiniManagerTest);
 };
 
@@ -263,7 +273,8 @@ TEST_F(CrostiniManagerTest, StartTerminaVmNameError) {
   const base::FilePath& disk_path = base::FilePath(kVmName);
 
   crostini_manager()->StartTerminaVm(
-      "", disk_path, base::BindOnce(&ExpectFailure, run_loop()->QuitClosure()));
+      "", disk_path, 0,
+      base::BindOnce(&ExpectFailure, run_loop()->QuitClosure()));
   run_loop()->Run();
   EXPECT_FALSE(fake_concierge_client_->start_termina_vm_called());
 }
@@ -275,7 +286,7 @@ TEST_F(CrostiniManagerTest, StartTerminaVmAnomalyDetectorNotConnectedError) {
       false);
 
   crostini_manager()->StartTerminaVm(
-      kVmName, disk_path,
+      kVmName, disk_path, 0,
       base::BindOnce(&ExpectFailure, run_loop()->QuitClosure()));
   run_loop()->Run();
   EXPECT_FALSE(fake_concierge_client_->start_termina_vm_called());
@@ -285,7 +296,7 @@ TEST_F(CrostiniManagerTest, StartTerminaVmDiskPathError) {
   const base::FilePath& disk_path = base::FilePath();
 
   crostini_manager()->StartTerminaVm(
-      kVmName, disk_path,
+      kVmName, disk_path, 0,
       base::BindOnce(&ExpectFailure, run_loop()->QuitClosure()));
   run_loop()->Run();
   EXPECT_FALSE(fake_concierge_client_->start_termina_vm_called());
@@ -301,7 +312,7 @@ TEST_F(CrostiniManagerTest, StartTerminaVmMountError) {
   fake_concierge_client_->set_start_vm_response(response);
 
   crostini_manager()->StartTerminaVm(
-      kVmName, disk_path,
+      kVmName, disk_path, 0,
       base::BindOnce(&ExpectFailure, run_loop()->QuitClosure()));
   run_loop()->Run();
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
@@ -320,7 +331,7 @@ TEST_F(CrostiniManagerTest, StartTerminaVmMountErrorThenSuccess) {
   fake_concierge_client_->set_start_vm_response(response);
 
   crostini_manager()->StartTerminaVm(
-      kVmName, disk_path,
+      kVmName, disk_path, 0,
       base::BindOnce(&ExpectSuccess, run_loop()->QuitClosure()));
   run_loop()->Run();
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
@@ -333,7 +344,7 @@ TEST_F(CrostiniManagerTest, StartTerminaVmSuccess) {
   const base::FilePath& disk_path = base::FilePath(kVmName);
 
   crostini_manager()->StartTerminaVm(
-      kVmName, disk_path,
+      kVmName, disk_path, 0,
       base::BindOnce(&ExpectSuccess, run_loop()->QuitClosure()));
   run_loop()->Run();
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
@@ -346,7 +357,7 @@ TEST_F(CrostiniManagerTest, OnStartTremplinRecordsRunningVm) {
 
   // Start the Vm.
   crostini_manager()->StartTerminaVm(
-      kVmName, disk_path,
+      kVmName, disk_path, 0,
       base::BindOnce(&ExpectSuccess, run_loop()->QuitClosure()));
 
   // Check that the Vm start is not recorded until tremplin starts.
@@ -1073,7 +1084,7 @@ TEST_F(CrostiniManagerRestartTest, IsContainerRunningFalseIfVmNotStarted) {
 
   base::RunLoop run_loop2;
   crostini_manager()->StartTerminaVm(
-      kVmName, disk_path,
+      kVmName, disk_path, 0,
       base::BindOnce(&ExpectSuccess, run_loop2.QuitClosure()));
   run_loop2.Run();
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());

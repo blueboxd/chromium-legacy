@@ -27,13 +27,11 @@ TranslateAcceptLanguages::TranslateAcceptLanguages(
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(
       accept_languages_pref,
-      base::Bind(&TranslateAcceptLanguages::InitAcceptLanguages,
-                 base::Unretained(this),
-                 prefs));
+      base::BindRepeating(&TranslateAcceptLanguages::InitAcceptLanguages,
+                          base::Unretained(this), prefs));
 }
 
-TranslateAcceptLanguages::~TranslateAcceptLanguages() {
-}
+TranslateAcceptLanguages::~TranslateAcceptLanguages() {}
 
 // static
 bool TranslateAcceptLanguages::CanBeAcceptLanguage(
@@ -60,9 +58,9 @@ void TranslateAcceptLanguages::InitAcceptLanguages(PrefService* prefs) {
   // Build the languages.
   accept_languages_.clear();
   std::string accept_languages_pref = prefs->GetString(accept_languages_pref_);
-  for (const base::StringPiece& lang : base::SplitStringPiece(
-           accept_languages_pref, ",",
-           base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+  for (const base::StringPiece& lang :
+       base::SplitStringPiece(accept_languages_pref, ",", base::TRIM_WHITESPACE,
+                              base::SPLIT_WANT_ALL)) {
     // Get rid of the locale extension if any (ex: en-US -> en), but for Chinese
     // for which the CLD reports zh-CN and zh-TW.
     size_t index = lang.find('-');

@@ -46,6 +46,10 @@ class MockDesktopEnvironment : public DesktopEnvironment {
   MOCK_METHOD0(CreateScreenControlsPtr, ScreenControls*());
   MOCK_METHOD0(CreateVideoCapturerPtr, webrtc::DesktopCapturer*());
   MOCK_METHOD0(CreateMouseCursorMonitorPtr, webrtc::MouseCursorMonitor*());
+  MOCK_METHOD1(
+      CreateKeyboardLayoutMonitorPtr,
+      KeyboardLayoutMonitor*(
+          base::RepeatingCallback<void(const protocol::KeyboardLayout&)>));
   MOCK_METHOD0(CreateFileOperationsPtr, FileOperations*());
   MOCK_CONST_METHOD0(GetCapabilities, std::string());
   MOCK_METHOD1(SetCapabilities, void(const std::string&));
@@ -58,6 +62,9 @@ class MockDesktopEnvironment : public DesktopEnvironment {
   std::unique_ptr<ScreenControls> CreateScreenControls() override;
   std::unique_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
   std::unique_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor()
+      override;
+  std::unique_ptr<KeyboardLayoutMonitor> CreateKeyboardLayoutMonitor(
+      base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback)
       override;
   std::unique_ptr<FileOperations> CreateFileOperations() override;
 };

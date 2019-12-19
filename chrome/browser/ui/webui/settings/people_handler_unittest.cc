@@ -38,6 +38,7 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/base/passphrase_enums.h"
+#include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/mock_sync_service.h"
 #include "components/sync/driver/sync_user_settings_impl.h"
 #include "components/sync/driver/sync_user_settings_mock.h"
@@ -772,6 +773,7 @@ TEST_F(PeopleHandlerTest, EnterBlankExistingPassphrase) {
 // Walks through each user selectable type, and tries to sync just that single
 // data type.
 TEST_F(PeopleHandlerTest, TestSyncIndividualTypes) {
+  SetDefaultExpectationsForConfigPage();
   for (syncer::UserSelectableType type : GetAllTypes()) {
     syncer::UserSelectableTypeSet type_to_set;
     type_to_set.Put(type);
@@ -799,6 +801,7 @@ TEST_F(PeopleHandlerTest, TestSyncIndividualTypes) {
 }
 
 TEST_F(PeopleHandlerTest, TestSyncAllManually) {
+  SetDefaultExpectationsForConfigPage();
   std::string args = GetConfiguration(NULL,
                                       CHOOSE_WHAT_TO_SYNC,
                                       GetAllTypes(),
@@ -818,6 +821,32 @@ TEST_F(PeopleHandlerTest, TestSyncAllManually) {
   handler_->HandleSetDatatypes(&list_args);
 
   ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
+}
+
+TEST_F(PeopleHandlerTest, NonRegisteredType) {
+  SetDefaultExpectationsForConfigPage();
+
+  // Simulate apps not being registered.
+  syncer::UserSelectableTypeSet registered_types = GetAllTypes();
+  registered_types.Remove(syncer::UserSelectableType::kApps);
+  ON_CALL(*mock_sync_service_->GetMockUserSettings(),
+          GetRegisteredSelectableTypes())
+      .WillByDefault(Return(registered_types));
+  SetupInitializedSyncService();
+
+  // Simulate "Sync everything" being turned off, but all individual
+  // toggles left on.
+  std::string config =
+      GetConfiguration(/*extra_values=*/nullptr, CHOOSE_WHAT_TO_SYNC,
+                       GetAllTypes(), std::string(), ENCRYPT_PASSWORDS);
+  base::ListValue list_args;
+  list_args.AppendString(kTestCallbackId);
+  list_args.AppendString(config);
+
+  // Only the registered types are selected.
+  EXPECT_CALL(*mock_sync_service_->GetMockUserSettings(),
+              SetSelectedTypes(/*sync_everything=*/false, registered_types));
+  handler_->HandleSetDatatypes(&list_args);
 }
 
 TEST_F(PeopleHandlerTest, ShowSyncSetup) {

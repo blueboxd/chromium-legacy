@@ -92,7 +92,8 @@ class WebTestRunner(object):
         self._printer.num_completed = 0
 
         if retry_attempt < 1:
-            self._printer.print_expected(test_run_results, self._expectations.get_tests_with_result_type)
+            if self._expectations:
+                self._printer.print_expected(test_run_results, self._expectations.get_tests_with_result_type)
 
         for test_name in set(tests_to_skip):
             result = test_results.TestResult(test_name)
@@ -191,6 +192,9 @@ class WebTestRunner(object):
                 test_run_results.unexpected_crashes, test_run_results.unexpected_timeouts))
 
     def _update_summary_with_result(self, test_run_results, result):
+        if not self._expectations:
+            return
+
         expected = self._expectations.matches_an_expected_result(result.test_name, result.type)
         expectation_string = self._expectations.get_expectations_string(result.test_name)
         actual_string = self._expectations.expectation_to_string(result.type)

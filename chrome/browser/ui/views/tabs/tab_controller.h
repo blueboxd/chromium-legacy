@@ -12,8 +12,6 @@
 
 class Browser;
 class Tab;
-class TabGroupVisualData;
-class TabGroupId;
 class TabSlotView;
 
 enum class BrowserFrameActiveState;
@@ -22,6 +20,10 @@ namespace gfx {
 class Point;
 class Rect;
 }
+namespace tab_groups {
+class TabGroupId;
+class TabGroupVisualData;
+}  // namespace tab_groups
 namespace ui {
 class ListSelectionModel;
 class LocatedEvent;
@@ -186,18 +188,19 @@ class TabController {
   // Returns opacity for use on tab hover radial highlight.
   virtual float GetHoverOpacityForRadialHighlight() const = 0;
 
-  // Returns the TabGroupVisualData instance for the given |group|.
-  virtual const TabGroupVisualData* GetVisualDataForGroup(
-      TabGroupId group) const = 0;
+  // Returns the tab_groups::TabGroupVisualData instance for the given |group|.
+  virtual const tab_groups::TabGroupVisualData* GetVisualDataForGroup(
+      tab_groups::TabGroupId group) const = 0;
 
-  virtual void SetVisualDataForGroup(TabGroupId group,
-                                     TabGroupVisualData visual_data) = 0;
+  virtual void SetVisualDataForGroup(
+      tab_groups::TabGroupId group,
+      tab_groups::TabGroupVisualData visual_data) = 0;
 
-  virtual void CloseAllTabsInGroup(TabGroupId group) = 0;
+  virtual void CloseAllTabsInGroup(tab_groups::TabGroupId group) = 0;
 
-  virtual void UngroupAllTabsInGroup(TabGroupId group) = 0;
+  virtual void UngroupAllTabsInGroup(tab_groups::TabGroupId group) = 0;
 
-  virtual void AddNewTabInGroup(TabGroupId group) = 0;
+  virtual void AddNewTabInGroup(tab_groups::TabGroupId group) = 0;
 
   virtual const Browser* GetBrowser() = 0;
 

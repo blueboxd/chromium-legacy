@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
@@ -47,6 +48,8 @@
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_host_observer.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
@@ -773,24 +776,55 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, CloseBackgroundPage) {
   // There is a background page and a browser action with no badge text.
   extensions::ProcessManager* manager =
       extensions::ProcessManager::Get(browser()->profile());
-  ASSERT_TRUE(manager->GetBackgroundHostForExtension(extension->id()));
+
+  ExtensionHost* extension_host =
+      manager->GetBackgroundHostForExtension(extension->id());
+  ASSERT_TRUE(extension_host);
+
   ExtensionAction* action = GetBrowserAction(browser(), *extension);
   ASSERT_EQ("",
             action->GetExplicitlySetBadgeText(ExtensionAction::kDefaultTabId));
 
-  content::WindowedNotificationObserver host_destroyed_observer(
-      extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-      content::NotificationService::AllSources());
+  // A helper class to wait for the ExtensionHost to shut down.
+  // TODO(devlin): Hoist this somewhere more common and track down other similar
+  // usages.
+  class ExtensionHostDestructionObserver : public ExtensionHostObserver {
+   public:
+    explicit ExtensionHostDestructionObserver(ExtensionHost* host) {
+      host_observer_.Add(host);
+    }
+    ExtensionHostDestructionObserver(
+        const ExtensionHostDestructionObserver& other) = delete;
+    ExtensionHostDestructionObserver& operator=(
+        const ExtensionHostDestructionObserver& other) = delete;
+    ~ExtensionHostDestructionObserver() override = default;
+
+    void OnExtensionHostDestroyed(const ExtensionHost* host) override {
+      // TODO(devlin): It would be nice to
+      // ASSERT_TRUE(host_observer_.IsObserving(host));
+      // host_observer_.Remove(host);
+      // But we can't, because |host| is const. Work around it by just
+      // RemoveAll()ing.
+      host_observer_.RemoveAll();
+      run_loop_.QuitWhenIdle();
+    }
+
+    void Wait() { run_loop_.Run(); }
+
+   private:
+    base::RunLoop run_loop_;
+    ScopedObserver<ExtensionHost, ExtensionHostObserver> host_observer_{this};
+  };
+
+  ExtensionHostDestructionObserver host_destroyed_observer(extension_host);
 
   // Click the browser action.
   ExecuteExtensionAction(browser(), extension);
 
-  // It can take a moment for the background page to actually get destroyed
-  // so we wait for the notification before checking that it's really gone
-  // and the badge text has been set.
   host_destroyed_observer.Wait();
-  ASSERT_FALSE(manager->GetBackgroundHostForExtension(extension->id()));
-  ASSERT_EQ("X",
+
+  EXPECT_FALSE(manager->GetBackgroundHostForExtension(extension->id()));
+  EXPECT_EQ("X",
             action->GetExplicitlySetBadgeText(ExtensionAction::kDefaultTabId));
 }
 

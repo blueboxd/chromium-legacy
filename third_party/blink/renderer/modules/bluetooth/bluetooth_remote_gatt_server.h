@@ -17,6 +17,7 @@
 namespace blink {
 
 class BluetoothDevice;
+class ExceptionState;
 class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
@@ -91,6 +92,7 @@ class BluetoothRemoteGATTServer
  private:
   ScriptPromise GetPrimaryServicesImpl(
       ScriptState*,
+      ExceptionState&,
       mojom::blink::WebBluetoothGATTQueryQuantity,
       String service_uuid = String());
 

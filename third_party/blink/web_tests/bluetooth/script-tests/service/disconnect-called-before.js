@@ -1,4 +1,12 @@
 'use strict';
+function createDOMException(func) {
+  return new DOMException(
+      `Failed to execute '${func}' on 'BluetoothRemoteGATTService': ` +
+      `GATT Server is disconnected. Cannot retrieve characteristics. ` +
+      `(Re)connect first with \`device.gatt.connect\`.`,
+      'NetworkError');
+}
+
 bluetooth_test(() => {
   return setBluetoothFakeAdapter('HeartRateAdapter')
     .then(() => requestDeviceWithTrustedClick({
@@ -14,10 +22,7 @@ bluetooth_test(() => {
               getCharacteristics()|
               getCharacteristics('heart_rate_measurement')[UUID]
             ]),
-            new DOMException(
-              'GATT Server is disconnected. Cannot retrieve characteristics. ' +
-              '(Re)connect first with `device.gatt.connect`.',
-              'NetworkError'));
+            createDOMException('FUNCTION_NAME'));
         });
     });
 }, 'disconnect() called before FUNCTION_NAME. Reject with NetworkError.');

@@ -26,6 +26,8 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 
 /**
@@ -104,10 +106,10 @@ public class DataReductionStatsPreferenceTest {
         DataReductionStatsPreference.initializeDataReductionSiteBreakdownPref();
         long afterTime = System.currentTimeMillis();
 
-        Assert.assertTrue(ContextUtils.getAppSharedPreferences().getLong(
+        Assert.assertTrue(SharedPreferencesManager.getInstance().readLong(
                                   PREF_DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE, -1)
                 >= beforeTime);
-        Assert.assertTrue(ContextUtils.getAppSharedPreferences().getLong(
+        Assert.assertTrue(SharedPreferencesManager.getInstance().readLong(
                                   PREF_DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE, -1)
                 <= afterTime);
 
@@ -116,10 +118,10 @@ public class DataReductionStatsPreferenceTest {
         DataReductionStatsPreference.initializeDataReductionSiteBreakdownPref();
 
         // Pref should still be the same value as before.
-        Assert.assertTrue(ContextUtils.getAppSharedPreferences().getLong(
+        Assert.assertTrue(SharedPreferencesManager.getInstance().readLong(
                                   PREF_DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE, -1)
                 >= beforeTime);
-        Assert.assertTrue(ContextUtils.getAppSharedPreferences().getLong(
+        Assert.assertTrue(SharedPreferencesManager.getInstance().readLong(
                                   PREF_DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE, -1)
                 <= afterTime);
     }
@@ -141,7 +143,7 @@ public class DataReductionStatsPreferenceTest {
         DataReductionStatsPreference.initializeDataReductionSiteBreakdownPref();
 
         Assert.assertEquals(lastUpdateInMillis + DAYS_IN_CHART * DateUtils.DAY_IN_MILLIS,
-                ContextUtils.getAppSharedPreferences().getLong(
+                SharedPreferencesManager.getInstance().readLong(
                         PREF_DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE, -1));
     }
 
@@ -160,10 +162,10 @@ public class DataReductionStatsPreferenceTest {
         DataReductionStatsPreference.initializeDataReductionSiteBreakdownPref();
         long afterTime = System.currentTimeMillis();
 
-        Assert.assertTrue(ContextUtils.getAppSharedPreferences().getLong(
+        Assert.assertTrue(SharedPreferencesManager.getInstance().readLong(
                                   PREF_DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE, -1)
                 >= beforeTime);
-        Assert.assertTrue(ContextUtils.getAppSharedPreferences().getLong(
+        Assert.assertTrue(SharedPreferencesManager.getInstance().readLong(
                                   PREF_DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE, -1)
                 <= afterTime);
     }
@@ -181,11 +183,8 @@ public class DataReductionStatsPreferenceTest {
         long lastUpdateTime = now - DateUtils.DAY_IN_MILLIS;
         long dataSaverEnableTime = now - DateUtils.HOUR_IN_MILLIS;
         mSettings.setDataReductionLastUpdateTime(lastUpdateTime);
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putLong(DataReductionProxySettings.DATA_REDUCTION_FIRST_ENABLED_TIME,
-                        dataSaverEnableTime)
-                .apply();
+        SharedPreferencesManager.getInstance().writeLong(
+                ChromePreferenceKeys.DATA_REDUCTION_FIRST_ENABLED_TIME, dataSaverEnableTime);
         pref.updateReductionStatistics(now);
 
         Assert.assertEquals(MINIMUM_DAYS_IN_CHART, pref.getNumDaysInChart());
@@ -204,11 +203,8 @@ public class DataReductionStatsPreferenceTest {
         long lastUpdateTime = now - DateUtils.DAY_IN_MILLIS;
         long dataSaverEnableTime = now - DateUtils.DAY_IN_MILLIS;
         mSettings.setDataReductionLastUpdateTime(lastUpdateTime);
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putLong(DataReductionProxySettings.DATA_REDUCTION_FIRST_ENABLED_TIME,
-                        dataSaverEnableTime)
-                .apply();
+        SharedPreferencesManager.getInstance().writeLong(
+                ChromePreferenceKeys.DATA_REDUCTION_FIRST_ENABLED_TIME, dataSaverEnableTime);
         pref.updateReductionStatistics(now);
 
         Assert.assertEquals(MINIMUM_DAYS_IN_CHART, pref.getNumDaysInChart());
@@ -227,11 +223,8 @@ public class DataReductionStatsPreferenceTest {
         long lastUpdateTime = now - DateUtils.DAY_IN_MILLIS;
         long dataSaverEnableTime = now - 31 * DateUtils.DAY_IN_MILLIS;
         mSettings.setDataReductionLastUpdateTime(lastUpdateTime);
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putLong(DataReductionProxySettings.DATA_REDUCTION_FIRST_ENABLED_TIME,
-                        dataSaverEnableTime)
-                .apply();
+        SharedPreferencesManager.getInstance().writeLong(
+                ChromePreferenceKeys.DATA_REDUCTION_FIRST_ENABLED_TIME, dataSaverEnableTime);
         pref.updateReductionStatistics(now);
 
         Assert.assertEquals(MAXIMUM_DAYS_IN_CHART, pref.getNumDaysInChart());
@@ -252,11 +245,8 @@ public class DataReductionStatsPreferenceTest {
         int numDaysDataSaverEnabled = 10;
         long dataSaverEnableTime = now - numDaysDataSaverEnabled * DateUtils.DAY_IN_MILLIS;
         mSettings.setDataReductionLastUpdateTime(lastUpdateTime);
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putLong(DataReductionProxySettings.DATA_REDUCTION_FIRST_ENABLED_TIME,
-                        dataSaverEnableTime)
-                .apply();
+        SharedPreferencesManager.getInstance().writeLong(
+                ChromePreferenceKeys.DATA_REDUCTION_FIRST_ENABLED_TIME, dataSaverEnableTime);
         pref.updateReductionStatistics(now);
 
         Assert.assertEquals(numDaysDataSaverEnabled + 1, pref.getNumDaysInChart());
@@ -272,11 +262,8 @@ public class DataReductionStatsPreferenceTest {
         long lastUpdateTime = now - DateUtils.DAY_IN_MILLIS;
         long dataSaverEnableTime = now - DateUtils.HOUR_IN_MILLIS;
         mSettings.setDataReductionLastUpdateTime(lastUpdateTime);
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putLong(DataReductionProxySettings.DATA_REDUCTION_FIRST_ENABLED_TIME,
-                        dataSaverEnableTime)
-                .apply();
+        SharedPreferencesManager.getInstance().writeLong(
+                ChromePreferenceKeys.DATA_REDUCTION_FIRST_ENABLED_TIME, dataSaverEnableTime);
 
         // User has only used 50KB so far.
         mSettings.setReceivedNetworkStatsHistory(new long[] {50 * 1024});

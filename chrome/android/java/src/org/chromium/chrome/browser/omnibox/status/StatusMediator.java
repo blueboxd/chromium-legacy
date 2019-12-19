@@ -7,18 +7,12 @@ package org.chromium.chrome.browser.omnibox.status;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
-import android.graphics.Canvas;
-import android.graphics.drawable.Drawable;
-import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.view.View;
-
 import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
-
 import org.chromium.base.Callback;
 import org.chromium.base.MathUtils;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -540,7 +534,7 @@ class StatusMediator {
                         getSecurityIconTintForSearchEngineIcon(R.drawable.ic_search)));
             } else {
                 resourceCallback.onResult(
-                        new StatusIconResource(mSearchEngineLogoUrl, getGoogleGBitmap(), 0));
+                        new StatusIconResource(R.drawable.ic_logo_googleg_20dp, 0));
             }
         } else {
             if (mDelegate.shouldShowSearchLoupeEverywhere(isIncognito)) {
@@ -551,30 +545,6 @@ class StatusMediator {
                         statusIconResource -> { resourceCallback.onResult(statusIconResource); });
             }
         }
-    }
-
-    /** @return The Google G {@link Bitmap}. */
-    private Bitmap getGoogleGBitmap() {
-        if (mDelegate != null && mToolbarCommonPropertiesModel != null
-                && mDelegate.shouldShowSearchEngineLogo(
-                        mToolbarCommonPropertiesModel.isIncognito())) {
-            if (mCachedSearchEngineLogoBitmap == null) {
-                int outlineSize =
-                        mResources.getDimensionPixelSize(R.dimen.location_bar_status_icon_width);
-                Drawable googleGDrawable =
-                        AppCompatResources.getDrawable(mContext, R.drawable.ic_logo_googleg_20dp);
-                mCachedSearchEngineLogoBitmap =
-                        Bitmap.createBitmap(outlineSize, outlineSize, Config.ARGB_8888);
-                Canvas canvas = new Canvas(mCachedSearchEngineLogoBitmap);
-                canvas.translate((outlineSize - googleGDrawable.getIntrinsicWidth()) / 2f,
-                        (outlineSize - googleGDrawable.getIntrinsicHeight()) / 2f);
-                googleGDrawable.setBounds(0, 0, googleGDrawable.getIntrinsicWidth(),
-                        googleGDrawable.getIntrinsicHeight());
-                googleGDrawable.draw(canvas);
-            }
-        }
-
-        return mCachedSearchEngineLogoBitmap;
     }
 
     /** @return The non-Google search engine icon {@link Bitmap}. */

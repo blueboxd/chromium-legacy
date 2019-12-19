@@ -114,7 +114,10 @@ void BrowserNonClientFrameViewMac::OnFullscreenStateChanged() {
 }
 
 bool BrowserNonClientFrameViewMac::CaptionButtonsOnLeadingEdge() const {
-  return true;
+  // In OSX 10.10 and 10.11, caption buttons always get drawn on the left side
+  // of the browser frame instead of the leading edge. This causes a discrepancy
+  // in RTL mode.
+  return !base::i18n::IsRTL() || base::mac::IsAtLeastOS10_12();
 }
 
 gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStripRegion(
@@ -125,12 +128,20 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStripRegion(
   // calling through private APIs.
   DCHECK(tabstrip);
 
-  constexpr int kTabstripLeftInset = 70;  // Make room for caption buttons.
-  // Do not draw caption buttons on fullscreen.
-  const int x = frame()->IsFullscreen() ? 0 : kTabstripLeftInset;
   const bool restored = !frame()->IsMaximized() && !frame()->IsFullscreen();
-  return gfx::Rect(x, GetTopInset(restored), width() - x,
+  gfx::Rect bounds(0, GetTopInset(restored), width(),
                    tabstrip->GetPreferredSize().height());
+
+  // Do not draw caption buttons on fullscreen.
+  if (!frame()->IsFullscreen()) {
+    constexpr int kCaptionWidth = 70;
+    if (CaptionButtonsOnLeadingEdge())
+      bounds.Inset(gfx::Insets(0, kCaptionWidth, 0, 0));
+    else
+      bounds.Inset(gfx::Insets(0, 0, 0, kCaptionWidth));
+  }
+
+  return bounds;
 }
 
 int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {

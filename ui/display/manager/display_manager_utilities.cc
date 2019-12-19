@@ -54,8 +54,7 @@ ManagedDisplayInfo::ManagedDisplayModeList CreateUnifiedManagedDisplayModeList(
   // Sort the mode by the size in DIP.
   std::sort(display_mode_list.begin(), display_mode_list.end(),
             [](const ManagedDisplayMode& a, const ManagedDisplayMode& b) {
-              return a.GetSizeInDIP(false).GetArea() <
-                     b.GetSizeInDIP(false).GetArea();
+              return a.GetSizeInDIP().GetArea() < b.GetSizeInDIP().GetArea();
             });
   return display_mode_list;
 }

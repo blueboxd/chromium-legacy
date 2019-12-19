@@ -1310,6 +1310,155 @@ TEST_F(ToplevelWindowEventHandlerBackGestureTest, DragFromSplitViewDivider) {
   split_view_controller->EndSplitView();
 }
 
+// Tests that in different screen orientations should always activate the
+// snapped window in splitview that is underneath the finger. And should be the
+// snapped window that is underneath to go back to the previous page.
+TEST_F(ToplevelWindowEventHandlerBackGestureTest, BackInSplitViewMode) {
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager,
+                                                         display_id);
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+  ui::TestAcceleratorTarget target_back_press, target_back_release;
+  RegisterBackPressAndRelease(&target_back_press, &target_back_release);
+
+  std::unique_ptr<aura::Window> left_window = CreateTestWindow();
+  std::unique_ptr<aura::Window> right_window = CreateTestWindow();
+  auto* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  split_view_controller->SnapWindow(left_window.get(),
+                                    SplitViewController::LEFT);
+  split_view_controller->SnapWindow(right_window.get(),
+                                    SplitViewController::RIGHT);
+
+  // Set the screen orientation to LANDSCAPE_PRIMARY.
+  test_api.SetDisplayRotation(display::Display::ROTATE_0,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            OrientationLockType::kLandscapePrimary);
+
+  ASSERT_EQ(right_window.get(), window_util::GetActiveWindow());
+  gfx::Point start(0, 10);
+  gfx::Point update_and_end(kSwipingDistanceForGoingBack + 10, 10);
+  SendTouchEvent(start, ui::ET_TOUCH_PRESSED);
+  SendTouchEvent(update_and_end, ui::ET_TOUCH_MOVED);
+  SendTouchEvent(update_and_end, ui::ET_TOUCH_RELEASED);
+  // Swiping from the left of the display in LandscapePrimary further than
+  // |kSwipingDistanceForGoingBack| should activate the physically left snapped
+  // window, which is |left_window| and it should go back to the previous page.
+  EXPECT_EQ(left_window.get(), window_util::GetActiveWindow());
+  EXPECT_EQ(1, target_back_press.accelerator_count());
+  EXPECT_EQ(1, target_back_release.accelerator_count());
+
+  gfx::Rect divider_bounds =
+      split_view_controller->split_view_divider()->GetDividerBoundsInScreen(
+          false);
+  start = gfx::Point(divider_bounds.x(), 10);
+  update_and_end =
+      gfx::Point(divider_bounds.x() + kSwipingDistanceForGoingBack + 10, 10);
+  SendTouchEvent(start, ui::ET_TOUCH_PRESSED);
+  SendTouchEvent(update_and_end, ui::ET_TOUCH_MOVED);
+  SendTouchEvent(update_and_end, ui::ET_TOUCH_RELEASED);
+  // Swiping from the split view divider in LandscapePrimary further than
+  // |kSwipingDistanceForGoingBack| should activate the physically right snapped
+  // window, which is |right_window| and it should go back to the previous page.
+  EXPECT_EQ(right_window.get(), window_util::GetActiveWindow());
+  EXPECT_EQ(2, target_back_press.accelerator_count());
+  EXPECT_EQ(2, target_back_release.accelerator_count());
+
+  // Rotate the screen by 180 degree.
+  test_api.SetDisplayRotation(display::Display::ROTATE_180,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            OrientationLockType::kLandscapeSecondary);
+
+  SendTouchEvent(start, ui::ET_TOUCH_PRESSED);
+  SendTouchEvent(update_and_end, ui::ET_TOUCH_MOVED);
+  SendTouchEvent(update_and_end, ui::ET_TOUCH_RELEASED);
+  // Swiping from the split view divider in LandscapeSecondary further than
+  // |kSwipingDistanceForGoingBack| should activate the physically right snapped
+  // window, which is |left_window| and it should go back to the previous page.
+  EXPECT_EQ(left_window.get(), window_util::GetActiveWindow());
+  EXPECT_EQ(3, target_back_press.accelerator_count());
+  EXPECT_EQ(3, target_back_release.accelerator_count());
+
+  start = gfx::Point(0, 10);
+  update_and_end = gfx::Point(kSwipingDistanceForGoingBack + 10, 10);
+  SendTouchEvent(start, ui::ET_TOUCH_PRESSED);
+  SendTouchEvent(update_and_end, ui::ET_TOUCH_MOVED);
+  SendTouchEvent(update_and_end, ui::ET_TOUCH_RELEASED);
+  // Swiping from the left of the display in LandscapeSecondary further than
+  // |kSwipingDistanceForGoingBack| should activate the physically left snapped
+  // window, which is |right_window| and it should go back to the previous page.
+  EXPECT_EQ(right_window.get(), window_util::GetActiveWindow());
+  EXPECT_EQ(4, target_back_press.accelerator_count());
+  EXPECT_EQ(4, target_back_release.accelerator_count());
+
+  // Rotate the screen by 270 degree.
+  test_api.SetDisplayRotation(display::Display::ROTATE_270,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            OrientationLockType::kPortraitPrimary);
+
+  SendTouchEvent(start, ui::ET_TOUCH_PRESSED);
+  SendTouchEvent(update_and_end, ui::ET_TOUCH_MOVED);
+  SendTouchEvent(update_and_end, ui::ET_TOUCH_RELEASED);
+  // Swiping from the left of the top half of the display in PortraitPrimary
+  // further than |kSwipingDistanceForGoingBack| should activate the physically
+  // top snapped window, which is |right_window|, and it should go back to the
+  // previous page.
+  EXPECT_EQ(left_window.get(), window_util::GetActiveWindow());
+  EXPECT_EQ(5, target_back_press.accelerator_count());
+  EXPECT_EQ(5, target_back_release.accelerator_count());
+
+  divider_bounds =
+      split_view_controller->split_view_divider()->GetDividerBoundsInScreen(
+          false);
+  start = gfx::Point(0, divider_bounds.bottom() + 10);
+  update_and_end = gfx::Point(kSwipingDistanceForGoingBack + 10, start.y());
+  SendTouchEvent(start, ui::ET_TOUCH_PRESSED);
+  SendTouchEvent(update_and_end, ui::ET_TOUCH_MOVED);
+  SendTouchEvent(update_and_end, ui::ET_TOUCH_RELEASED);
+  // Swiping from the left of the bottom half of the display in PortraitPrimary
+  // further than |kSwipingDistanceForGoingBack| should activate the physically
+  // bottom snapped window, which is |right_window|, and it should go back to
+  // the previous page.
+  EXPECT_EQ(right_window.get(), window_util::GetActiveWindow());
+  EXPECT_EQ(6, target_back_press.accelerator_count());
+  EXPECT_EQ(6, target_back_release.accelerator_count());
+
+  // Rotate the screen by 90 degree.
+  test_api.SetDisplayRotation(display::Display::ROTATE_90,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            OrientationLockType::kPortraitSecondary);
+
+  SendTouchEvent(start, ui::ET_TOUCH_PRESSED);
+  SendTouchEvent(update_and_end, ui::ET_TOUCH_MOVED);
+  SendTouchEvent(update_and_end, ui::ET_TOUCH_RELEASED);
+  // Swiping from the left of the bottom half of the display in
+  // PortraitSecondary further than |kSwipingDistanceForGoingBack| should
+  // activate the physically bottom snapped window, which is |left_window|, and
+  // it should go back to the previous page.
+  EXPECT_EQ(left_window.get(), window_util::GetActiveWindow());
+  EXPECT_EQ(7, target_back_press.accelerator_count());
+  EXPECT_EQ(7, target_back_release.accelerator_count());
+
+  start = gfx::Point(0, 10);
+  update_and_end = gfx::Point(kSwipingDistanceForGoingBack + 10, 10);
+  SendTouchEvent(start, ui::ET_TOUCH_PRESSED);
+  SendTouchEvent(update_and_end, ui::ET_TOUCH_MOVED);
+  SendTouchEvent(update_and_end, ui::ET_TOUCH_RELEASED);
+  // Swiping from the left of the top half of the display in PortraitSecondary
+  // further than |kSwipingDistanceForGoingBack| should activate the physically
+  // top snapped window, which is |right_window| and it should go back to the
+  // previous page.
+  EXPECT_EQ(right_window.get(), window_util::GetActiveWindow());
+  EXPECT_EQ(8, target_back_press.accelerator_count());
+  EXPECT_EQ(8, target_back_release.accelerator_count());
+}
+
 namespace {
 
 void SendMouseReleaseAndReleaseCapture(ui::test::EventGenerator* generator,

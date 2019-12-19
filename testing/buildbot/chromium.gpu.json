@@ -269,7 +269,8 @@
               "os": "Android"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test:rendering_representative_perf_tests"
       },
       {
         "args": [
@@ -394,7 +395,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -415,7 +417,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -437,7 +440,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       }
     ],
     "isolated_scripts": [
@@ -822,7 +826,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -843,7 +848,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -865,7 +871,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       }
     ],
     "isolated_scripts": [
@@ -1248,7 +1255,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -1268,7 +1276,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -1288,7 +1297,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       }
     ],
     "isolated_scripts": [
@@ -1631,7 +1641,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -1655,7 +1666,8 @@
             }
           ]
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "args": [
@@ -1675,7 +1687,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -1695,7 +1708,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       }
     ],
     "isolated_scripts": [
@@ -1948,7 +1962,8 @@
               "os": "mac-intel-stable"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test:rendering_representative_perf_tests"
       },
       {
         "args": [
@@ -2063,7 +2078,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -2085,7 +2101,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -2107,7 +2124,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       }
     ],
     "isolated_scripts": [
@@ -2472,7 +2490,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -2498,7 +2517,8 @@
             }
           ]
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "args": [
@@ -2520,7 +2540,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -2542,7 +2563,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       }
     ],
     "isolated_scripts": [
@@ -2811,7 +2833,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test:rendering_representative_perf_tests"
       },
       {
         "args": [
@@ -2931,7 +2954,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -2956,7 +2980,8 @@
             }
           ]
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "args": [
@@ -2977,7 +3002,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -2998,7 +3024,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -3020,7 +3047,8 @@
             }
           ]
         },
-        "test": "xr_browser_tests"
+        "test": "xr_browser_tests",
+        "test_target": "//chrome/test:xr_browser_tests"
       }
     ],
     "isolated_scripts": [
@@ -3405,6 +3433,7 @@
           ]
         },
         "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -3439,6 +3468,7 @@
           ]
         },
         "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -3469,6 +3499,7 @@
           ]
         },
         "test": "gl_tests",
+        "test_target": "//gpu:gl_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -3499,6 +3530,7 @@
           ]
         },
         "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -3530,6 +3562,7 @@
           ]
         },
         "test": "xr_browser_tests",
+        "test_target": "//chrome/test:xr_browser_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -3864,6 +3897,7 @@
             }
           ]
         },
+        "test_target": "//chrome/test:rendering_representative_perf_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",

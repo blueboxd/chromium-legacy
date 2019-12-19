@@ -49,6 +49,7 @@ const char* kSwitchesToPropagate[] = {
     kExtendedSafeBrowsingEnabledSwitch,
     switches::kTestChildProcess,
     kTestingSwitch,
+    kTestLoggingPathSwitch,
 };
 
 std::map<SandboxType, base::Process>* g_target_processes = nullptr;  // Leaked.

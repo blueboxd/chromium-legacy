@@ -62,7 +62,7 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
 
         ir = make_copy(ir)
         UserDefinedType.__init__(self, ir.identifier)
-        WithExtendedAttributes.__init__(self, ir)
+        WithExtendedAttributes.__init__(self, ir, readonly=True)
         WithCodeGeneratorInfo.__init__(self, ir, readonly=True)
         WithExposure.__init__(self, ir, readonly=True)
         WithComponent.__init__(self, ir, readonly=True)
@@ -143,7 +143,7 @@ class DictionaryMember(WithIdentifier, WithExtendedAttributes,
 
         ir = make_copy(ir)
         WithIdentifier.__init__(self, ir)
-        WithExtendedAttributes.__init__(self, ir)
+        WithExtendedAttributes.__init__(self, ir, readonly=True)
         WithCodeGeneratorInfo.__init__(self, ir, readonly=True)
         WithExposure.__init__(self, ir, readonly=True)
         WithOwner.__init__(self, owner)

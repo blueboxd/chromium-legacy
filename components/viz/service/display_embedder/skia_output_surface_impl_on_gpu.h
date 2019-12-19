@@ -11,6 +11,7 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/util/type_safety/pass_key.h"
 #include "build/build_config.h"
@@ -252,6 +253,21 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   }
 
   void CheckReadbackCompletion();
+
+  class ReleaseCurrent {
+   public:
+    ReleaseCurrent(scoped_refptr<gl::GLSurface> gl_surface,
+                   scoped_refptr<gpu::SharedContextState> context_state);
+    ~ReleaseCurrent();
+
+   private:
+    scoped_refptr<gl::GLSurface> gl_surface_;
+    scoped_refptr<gpu::SharedContextState> context_state_;
+  };
+
+  // This must remain the first member variable to ensure that other member
+  // dtors are called first.
+  base::Optional<ReleaseCurrent> release_current_last_;
 
   SkiaOutputSurfaceDependency* const dependency_;
   scoped_refptr<gpu::gles2::FeatureInfo> feature_info_;

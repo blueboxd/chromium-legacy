@@ -257,12 +257,6 @@ void VizProcessTransportFactory::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
-bool VizProcessTransportFactory::SyncTokensRequiredForDisplayCompositor() {
-  // The display compositor is out-of-process, so must be using a different
-  // context from the UI compositor, and requires synchronization between them.
-  return true;
-}
-
 void VizProcessTransportFactory::DisableGpuCompositing() {
   if (!IsGpuCompositingDisabled())
     DisableGpuCompositing(nullptr);

@@ -17,6 +17,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/test/scoped_feature_list.h"
+#include "chromeos/constants/chromeos_features.h"
+#endif
+
 namespace sync_ui_util {
 
 void PrintTo(const StatusLabels& labels, std::ostream* out) {
@@ -333,6 +338,39 @@ TEST(SyncUIUtilTest, IgnoreSyncErrorForNonSyncAccount) {
               StatusLabelsMatch(MessageType::SYNCED, IDS_SYNC_ACCOUNT_SYNCING,
                                 IDS_SETTINGS_EMPTY_STRING, NO_ACTION));
 }
+
+TEST(SyncUIUtilTest, ShouldShowPassphraseError) {
+  syncer::TestSyncService service;
+  service.SetFirstSetupComplete(true);
+  service.SetPassphraseRequiredForPreferredDataTypes(true);
+  EXPECT_TRUE(ShouldShowPassphraseError(&service));
+}
+
+TEST(SyncUIUtilTest, ShouldShowPassphraseError_SyncDisabled) {
+  syncer::TestSyncService service;
+  service.SetFirstSetupComplete(false);
+  service.SetPassphraseRequiredForPreferredDataTypes(true);
+  EXPECT_FALSE(ShouldShowPassphraseError(&service));
+}
+
+TEST(SyncUIUtilTest, ShouldShowPassphraseError_NotUsingPassphrase) {
+  syncer::TestSyncService service;
+  service.SetFirstSetupComplete(true);
+  service.SetPassphraseRequiredForPreferredDataTypes(false);
+  EXPECT_FALSE(ShouldShowPassphraseError(&service));
+}
+
+#if defined(OS_CHROMEOS)
+TEST(SyncUIUtilTest, ShouldShowPassphraseError_OsSyncEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(chromeos::features::kSplitSettingsSync);
+  syncer::TestSyncService service;
+  service.SetPassphraseRequiredForPreferredDataTypes(true);
+  service.SetFirstSetupComplete(false);
+  service.GetUserSettings()->SetOsSyncFeatureEnabled(true);
+  EXPECT_TRUE(ShouldShowPassphraseError(&service));
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 

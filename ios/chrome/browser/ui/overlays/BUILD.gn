@@ -65,6 +65,7 @@ source_set("coordinators") {
 
   deps = [
     "//base",
+    "//ios/chrome/browser/overlays",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
   ]
 }
@@ -72,6 +73,7 @@ source_set("coordinators") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "overlay_request_mediator_unittest.mm",
     "overlay_request_ui_state_unittest.mm",
   ]
 

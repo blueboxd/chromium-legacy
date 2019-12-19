@@ -42,7 +42,7 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayMode {
   ManagedDisplayMode& operator=(const ManagedDisplayMode& other);
 
   // Returns the size in DIP which is visible to the user.
-  gfx::Size GetSizeInDIP(bool is_internal) const;
+  gfx::Size GetSizeInDIP() const;
 
   // Returns true if |other| has same size and scale factors.
   bool IsEquivalent(const ManagedDisplayMode& other) const;

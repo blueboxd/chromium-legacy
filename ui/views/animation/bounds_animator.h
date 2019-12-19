@@ -156,6 +156,8 @@ class VIEWS_EXPORT BoundsAnimator : public AnimationDelegateViews {
   void AnimationContainerProgressed(
       gfx::AnimationContainer* container) override;
   void AnimationContainerEmpty(gfx::AnimationContainer* container) override;
+  void OnChildViewRemoved(views::View* observed_view,
+                          views::View* child) override;
 
   // Parent of all views being animated.
   View* parent_;

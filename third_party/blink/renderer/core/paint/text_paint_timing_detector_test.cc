@@ -111,6 +111,10 @@ class TextPaintTimingDetectorTest : public testing::Test {
     GetPaintTimingDetector().NotifyScroll(ScrollType::kUserScroll);
   }
 
+  void SimulateKeyUp() {
+    GetPaintTimingDetector().NotifyInputEvent(WebInputEvent::kKeyUp);
+  }
+
   void InvokeCallback() {
     DCHECK_GT(mock_callback_manager_->CountCallbacks(), 0u);
     InvokeSwapTimeCallback(mock_callback_manager_);
@@ -542,6 +546,17 @@ TEST_F(TextPaintTimingDetectorTest,
 
   SimulateInputEvent();
   EXPECT_FALSE(GetLargestTextPaintManager());
+}
+
+TEST_F(TextPaintTimingDetectorTest, KeepLargestTextPaintMangerAfterUserInput) {
+  SetBodyInnerHTML(R"HTML(
+  )HTML");
+  AppendDivElementToBody("text");
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_TRUE(GetLargestTextPaintManager());
+
+  SimulateKeyUp();
+  EXPECT_TRUE(GetLargestTextPaintManager());
 }
 
 TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_ReportLastNullCandidate) {

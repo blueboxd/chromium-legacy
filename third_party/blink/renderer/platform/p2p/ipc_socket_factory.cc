@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <list>
 
-#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -25,6 +24,7 @@
 #include "third_party/blink/renderer/platform/p2p/socket_client_delegate.h"
 #include "third_party/blink/renderer/platform/p2p/socket_client_impl.h"
 #include "third_party/blink/renderer/platform/p2p/socket_dispatcher.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/webrtc/rtc_base/async_packet_socket.h"
 
@@ -662,9 +662,8 @@ void AsyncAddressResolverImpl::Start(const rtc::SocketAddress& addr) {
   // GetResolvedAddress.
   addr_ = addr;
 
-  resolver_->Start(addr,
-                   base::BindOnce(&AsyncAddressResolverImpl::OnAddressResolved,
-                                  base::Unretained(this)));
+  resolver_->Start(addr, WTF::Bind(&AsyncAddressResolverImpl::OnAddressResolved,
+                                   WTF::Unretained(this)));
 }
 
 bool AsyncAddressResolverImpl::GetResolvedAddress(

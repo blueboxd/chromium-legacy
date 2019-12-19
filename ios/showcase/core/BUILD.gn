@@ -16,7 +16,8 @@ source_set("core") {
     "//base:i18n",
     "//ios/chrome/browser/ui/util",
     "//ios/showcase/common",
-    "//ios/third_party/material_components_ios",
+    "//ios/third_party/material_components_ios:material_components_ios+bundle",
+    "//ios/third_party/material_components_ios:material_components_ios+link",
     "//ui/base",
   ]
   libs = [ "UIKit.framework" ]

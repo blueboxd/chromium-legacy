@@ -42,7 +42,8 @@ class TryFlag(object):
         self._git_cl = git_cl
         self._expectations_model = TestExpectationsModel()
         self._test_configuration_converter = TestConfigurationConverter(
-            set(BUILDER_CONFIGS.values()))
+            set(BUILDER_CONFIGS.values()),
+            self._host.port_factory.get().configuration_specifier_macros())
         self._filesystem = self._host.filesystem
         self._path_finder = PathFinder(self._filesystem)
         self._git = self._host.git()

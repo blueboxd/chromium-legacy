@@ -176,8 +176,10 @@ void PaintTimingDetector::StopRecordingLargestContentfulPaint() {
 }
 
 void PaintTimingDetector::NotifyInputEvent(WebInputEvent::Type type) {
+  // A single keyup event should be ignored. It could be caused by user actions
+  // such as refreshing via Ctrl+R.
   if (type == WebInputEvent::kMouseMove || type == WebInputEvent::kMouseEnter ||
-      type == WebInputEvent::kMouseLeave ||
+      type == WebInputEvent::kMouseLeave || type == WebInputEvent::kKeyUp ||
       WebInputEvent::IsPinchGestureEventType(type)) {
     return;
   }

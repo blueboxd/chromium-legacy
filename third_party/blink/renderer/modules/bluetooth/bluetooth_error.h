@@ -37,6 +37,8 @@ class BluetoothError {
   STATIC_ONLY(BluetoothError);
 
  public:
+  static String CreateNotConnectedExceptionMessage(
+      BluetoothOperation operation);
   static DOMException* CreateNotConnectedException(BluetoothOperation);
   static DOMException* CreateDOMException(BluetoothErrorCode,
                                           const String& detailed_message);

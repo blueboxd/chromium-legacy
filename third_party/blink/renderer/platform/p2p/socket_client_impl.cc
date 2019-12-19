@@ -4,13 +4,13 @@
 
 #include "third_party/blink/renderer/platform/p2p/socket_client_impl.h"
 
-#include "base/bind.h"
 #include "base/location.h"
 #include "base/time/time.h"
 #include "crypto/random.h"
 #include "services/network/public/cpp/p2p_param_traits.h"
 #include "third_party/blink/renderer/platform/p2p/socket_client_delegate.h"
 #include "third_party/blink/renderer/platform/p2p/socket_dispatcher.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace {
 
@@ -60,8 +60,8 @@ void P2PSocketClientImpl::Init(
       type, local_address, network::P2PPortRange(min_port, max_port),
       remote_address, receiver_.BindNewPipeAndPassRemote(),
       socket_.BindNewPipeAndPassReceiver());
-  receiver_.set_disconnect_handler(base::BindOnce(
-      &P2PSocketClientImpl::OnConnectionError, base::Unretained(this)));
+  receiver_.set_disconnect_handler(WTF::Bind(
+      &P2PSocketClientImpl::OnConnectionError, WTF::Unretained(this)));
 }
 
 uint64_t P2PSocketClientImpl::Send(const net::IPEndPoint& address,
@@ -143,8 +143,8 @@ void P2PSocketClientImpl::IncomingTcpConnection(
 
   new_client->socket_.Bind(std::move(socket));
   new_client->receiver_.Bind(std::move(client_receiver));
-  new_client->receiver_.set_disconnect_handler(base::BindOnce(
-      &P2PSocketClientImpl::OnConnectionError, base::Unretained(this)));
+  new_client->receiver_.set_disconnect_handler(WTF::Bind(
+      &P2PSocketClientImpl::OnConnectionError, WTF::Unretained(this)));
 
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (delegate_) {

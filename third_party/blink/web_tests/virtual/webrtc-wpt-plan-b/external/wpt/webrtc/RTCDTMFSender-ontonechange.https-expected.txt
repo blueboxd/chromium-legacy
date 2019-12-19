@@ -12,5 +12,6 @@ PASS Calling insertDTMF('') in the middle of tonechange events should stop futur
 FAIL Setting transceiver.currentDirection to recvonly in the middle of tonechange events should stop future tonechange events from firing promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'sender' of undefined"
 PASS Tone change event constructor works
 PASS Tone change event with unexpected name should not crash
+FAIL Tone change event init optional parameters Failed to construct 'RTCDTMFToneChangeEvent': 2 arguments required, but only 1 present.
 Harness: the test ran to completion.
 

@@ -22,6 +22,7 @@ uintptr_t GetThreadStackBaseAddressImpl(
   void* address;
   size_t size;
   pthread_attr_getstack(&attr, &address, &size);
+  pthread_attr_destroy(&attr);
   const uintptr_t base_address = reinterpret_cast<uintptr_t>(address) + size;
   return base_address;
 }

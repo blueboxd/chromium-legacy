@@ -18,6 +18,7 @@
 namespace blink {
 
 class BluetoothLEScanOptions;
+class ExceptionState;
 class RequestDeviceOptions;
 class ScriptPromise;
 class ScriptState;
@@ -34,7 +35,7 @@ class Bluetooth final : public EventTargetWithInlineData,
   ~Bluetooth() override;
 
   // IDL exposed interface:
-  ScriptPromise getAvailability(ScriptState*);
+  ScriptPromise getAvailability(ScriptState*, ExceptionState&);
   ScriptPromise requestDevice(ScriptState*,
                               const RequestDeviceOptions*,
                               ExceptionState&);

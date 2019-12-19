@@ -148,16 +148,13 @@ URLLoaderFactoryParamsHelper::CreateForPrefetch(RenderFrameHostImpl* frame) {
 network::mojom::URLLoaderFactoryParamsPtr
 URLLoaderFactoryParamsHelper::CreateForWorker(
     RenderProcessHost* process,
-    const url::Origin& worker_origin) {
-  net::NetworkIsolationKey network_isolation_key(
-      worker_origin,   // top_frame_origin
-      worker_origin);  // frame_origin
-
+    const url::Origin& request_initiator,
+    const net::NetworkIsolationKey& network_isolation_key) {
   return CreateParams(process,
-                      worker_origin,  // origin
-                      worker_origin,  // request_initiator_site_lock
-                      false,          // is_trusted
-                      base::nullopt,  // top_frame_token
+                      request_initiator,  // origin
+                      request_initiator,  // request_initiator_site_lock
+                      false,              // is_trusted
+                      base::nullopt,      // top_frame_token
                       network_isolation_key,
                       network::mojom::CrossOriginEmbedderPolicy::kNone,
                       false,   // allow_universal_access_from_file_urls

@@ -43,6 +43,7 @@ AssistantButton::AssistantButton(AssistantButtonListener* listener,
 
   // Ink drop.
   SetInkDropMode(InkDropMode::ON);
+  set_has_ink_drop_action_on_click(true);
   set_ink_drop_base_color(kInkDropBaseColor);
   set_ink_drop_visible_opacity(kInkDropVisibleOpacity);
 }

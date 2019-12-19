@@ -86,6 +86,7 @@ class GPU_GLES2_EXPORT SharedContextState
   bool IsGLInitialized() const { return !!feature_info_; }
 
   bool MakeCurrent(gl::GLSurface* surface, bool needs_gl = false);
+  void ReleaseCurrent(gl::GLSurface* surface);
   void MarkContextLost();
   bool IsCurrent(gl::GLSurface* surface);
 
@@ -213,6 +214,12 @@ class GPU_GLES2_EXPORT SharedContextState
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLContext> real_context_;
   scoped_refptr<gl::GLSurface> surface_;
+
+  // Most recent surface that this ShareContextState was made current with.
+  // Avoids a call to MakeCurrent with a different surface, if we don't
+  // care which surface is current.
+  gl::GLSurface* last_current_surface_ = nullptr;
+
   scoped_refptr<gles2::FeatureInfo> feature_info_;
 
   // raster decoders and display compositor share this context_state_.

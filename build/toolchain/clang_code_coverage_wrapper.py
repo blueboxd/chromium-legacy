@@ -152,7 +152,11 @@ def main():
   if source_flag_index + 1 >= len(compile_command):
     raise Exception('Source file to be compiled is missing from the command.')
 
-  compile_source_file = compile_command[source_flag_index + 1]
+  # On Windows, filesystem paths should use '\', but GN creates build commands
+  # that use '/'. We invoke os.path.normpath to ensure that the path uses the
+  # correct separator for the current platform (i.e. '\' on Windows and '/'
+  # otherwise).
+  compile_source_file = os.path.normpath(compile_command[source_flag_index + 1])
   exclusion_list = _COVERAGE_EXCLUSION_LIST_MAP.get(
       target_os, _DEFAULT_COVERAGE_EXCLUSION_LIST)
 

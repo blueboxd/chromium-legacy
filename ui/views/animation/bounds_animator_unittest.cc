@@ -104,12 +104,12 @@ TEST_F(BoundsAnimatorTest, AnimateViewTo) {
   child()->SetBoundsRect(initial_bounds);
   gfx::Rect target_bounds(10, 10, 20, 20);
   animator()->AnimateViewTo(child(), target_bounds);
-  animator()->SetAnimationDelegate(
-      child(),
-      std::unique_ptr<gfx::AnimationDelegate>(new TestAnimationDelegate()));
+  animator()->SetAnimationDelegate(child(),
+                                   std::make_unique<TestAnimationDelegate>());
 
   // The animator should be animating now.
   EXPECT_TRUE(animator()->IsAnimating());
+  EXPECT_TRUE(animator()->IsAnimating(child()));
 
   // Run the message loop; the delegate exits the loop when the animation is
   // done.
@@ -118,22 +118,39 @@ TEST_F(BoundsAnimatorTest, AnimateViewTo) {
   // Make sure the bounds match of the view that was animated match.
   EXPECT_EQ(target_bounds, child()->bounds());
 
+  // |child| shouldn't be animating anymore.
+  EXPECT_FALSE(animator()->IsAnimating(child()));
+
   // The parent should have been told to repaint as the animation progressed.
   // The resulting rect is the union of the original and target bounds.
   EXPECT_EQ(gfx::UnionRects(target_bounds, initial_bounds),
             parent()->dirty_rect());
 }
 
+// Make sure that removing/deleting a child view while animating stops the
+// view's animation and will not result in a crash.
+TEST_F(BoundsAnimatorTest, DeleteWhileAnimating) {
+  animator()->AnimateViewTo(child(), gfx::Rect(0, 0, 10, 10));
+  animator()->SetAnimationDelegate(child(), std::make_unique<OwnedDelegate>());
+
+  EXPECT_TRUE(animator()->IsAnimating(child()));
+
+  // Make sure that animation is removed upon deletion.
+  delete child();
+  EXPECT_FALSE(animator()->GetAnimationForView(child()));
+  EXPECT_FALSE(animator()->IsAnimating(child()));
+}
+
 // Make sure an AnimationDelegate is deleted when canceled.
 TEST_F(BoundsAnimatorTest, DeleteDelegateOnCancel) {
   animator()->AnimateViewTo(child(), gfx::Rect(0, 0, 10, 10));
-  animator()->SetAnimationDelegate(
-      child(), std::unique_ptr<gfx::AnimationDelegate>(new OwnedDelegate()));
+  animator()->SetAnimationDelegate(child(), std::make_unique<OwnedDelegate>());
 
   animator()->Cancel();
 
   // The animator should no longer be animating.
   EXPECT_FALSE(animator()->IsAnimating());
+  EXPECT_FALSE(animator()->IsAnimating(child()));
 
   // The cancel should both cancel the delegate and delete it.
   EXPECT_TRUE(OwnedDelegate::GetAndClearCanceled());
@@ -144,8 +161,7 @@ TEST_F(BoundsAnimatorTest, DeleteDelegateOnCancel) {
 // scheduled.
 TEST_F(BoundsAnimatorTest, DeleteDelegateOnNewAnimate) {
   animator()->AnimateViewTo(child(), gfx::Rect(0, 0, 10, 10));
-  animator()->SetAnimationDelegate(
-      child(), std::unique_ptr<gfx::AnimationDelegate>(new OwnedDelegate()));
+  animator()->SetAnimationDelegate(child(), std::make_unique<OwnedDelegate>());
 
   animator()->AnimateViewTo(child(), gfx::Rect(0, 0, 10, 10));
 
@@ -156,16 +172,16 @@ TEST_F(BoundsAnimatorTest, DeleteDelegateOnNewAnimate) {
 
 // Makes sure StopAnimating works.
 TEST_F(BoundsAnimatorTest, StopAnimating) {
-  std::unique_ptr<OwnedDelegate> delegate(new OwnedDelegate());
+  std::unique_ptr<OwnedDelegate> delegate(std::make_unique<OwnedDelegate>());
 
   animator()->AnimateViewTo(child(), gfx::Rect(0, 0, 10, 10));
-  animator()->SetAnimationDelegate(
-      child(), std::unique_ptr<gfx::AnimationDelegate>(new OwnedDelegate()));
+  animator()->SetAnimationDelegate(child(), std::make_unique<OwnedDelegate>());
 
   animator()->StopAnimatingView(child());
 
   // Shouldn't be animating now.
   EXPECT_FALSE(animator()->IsAnimating());
+  EXPECT_FALSE(animator()->IsAnimating(child()));
 
   // Stopping should both cancel the delegate and delete it.
   EXPECT_TRUE(OwnedDelegate::GetAndClearDeleted());

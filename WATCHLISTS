@@ -1156,6 +1156,13 @@
     'ios_web': {
       'filepath': 'ios/web(_view)?/',
     },
+    'language': {
+      'filepath': 'chrome/browser/language|'\
+                  'components/language|'\
+                  'components/test/data/language|'\
+                  'ios/chrome/browser/language|'\
+                  'ios/web_view/internal/language'
+    },
     'libaom': {
       'filepath': 'third_party/libaom/',
     },
@@ -1804,6 +1811,23 @@
     },
     'traffic_annotation': {
       'filepath': 'tools/traffic_annotation/'
+    },
+    'translate': {
+      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/translate|'\
+                  'chrome/android/java/src/org/chromium/chrome/browser/infobar/translate|'\
+                  'chrome/android/javatests/src/org/chromium/chrome/browser/translate|'\
+                  'chrome/browser/translate|'\
+                  'chrome/browser/ui/translate|'\
+                  'chrome/browser/ui/webui/translate_internals|'\
+                  'chrome/browser/ui/views/translate|'\
+                  'chrome/renderer/translate|'\
+                  'chrome/test/data/translate|'\
+                  'components/resources/translate_resources.grdp'\
+                  'components/translate|'\
+                  'components/translate_strings_grdp|'\
+                  'ios/chrome/browser/translate|'\
+                  'ios/chrome/browser/ui/translate|'\
+                  'ios/web_view/internal/translate'
     },
     'ui_compositor': {
       'filepath': 'ui/compositor/layer\.|'\
@@ -2469,6 +2493,7 @@
                      'marq+watch@chromium.org'],
     'ios_web': ['ios-reviews+web@chromium.org',
                 'eugenebut@chromium.org'],
+    'language': ['language-reviews@chromium.org'],
     'libaom': ['fgalligan@chromium.org',
                'johannkoenig@chromium.org',
                'jzern@chromium.org',
@@ -2512,8 +2537,7 @@
     'message_loop': ['sadrul@chromium.org'],
     'metrics': ['asvitkine+watch@chromium.org'],
     'metrics_perf': ['cwp-reviews+chromium@google.com'],
-    'metrics_xml_files': ['asvitkine+watchxml@chromium.org',
-                          'ltina+watch@google.com'],
+    'metrics_xml_files': ['asvitkine+watchxml@chromium.org'],
     'midi': ['toyoshim+midi@chromium.org'],
     'mojo': ['darin+watch@chromium.org'],
     'multidevice': ['hansberry+watch-multidevice@chromium.org',
@@ -2731,6 +2755,7 @@
                 'wfh+watch@chromium.org',
                 'spang+watch@chromium.org'],
     'traffic_annotation': ['nicolaso+watch@chromium.org'],
+    'translate': ['translate-reviews@chromium.org'],
     'ui_compositor': ['cc-bugs@chromium.org'],
     'ui_display_win': ['robliao+watch@chromium.org'],
     'ui_resources': ['oshima+watch@chromium.org'],

@@ -99,7 +99,8 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
       override;
 
   void FinalizeFrame();
-  void SetIsHidden(bool);
+  void SetIsInHiddenPage(bool);
+  void SetIsBeingDisplayed(bool);
   void DidDraw(const FloatRect&);
   void DoPaintInvalidation(const FloatRect& dirty_rect);
   cc::Layer* Layer();
@@ -186,6 +187,8 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   // bridge knows that there's no previous content on the resource.
   void ClearFrame() { clear_frame_ = true; }
 
+  bool HasRateLimiterForTesting();
+
  private:
   friend class Canvas2DLayerBridgeTest;
   friend class CanvasRenderingContext2DTest;
@@ -208,6 +211,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   int frames_since_last_commit_ = 0;
   bool have_recorded_draw_commands_;
   bool is_hidden_;
+  bool is_being_displayed_;
   bool software_rendering_while_hidden_;
   bool hibernation_scheduled_ = false;
   bool dont_use_idle_scheduling_for_testing_ = false;
@@ -250,6 +254,8 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   Deque<RasterTimer> pending_raster_timers_;
 
   sk_sp<cc::PaintRecord> last_recording_;
+
+  base::RepeatingClosure finalize_frame_callback_;
 
   base::WeakPtrFactory<Canvas2DLayerBridge> weak_ptr_factory_{this};
 

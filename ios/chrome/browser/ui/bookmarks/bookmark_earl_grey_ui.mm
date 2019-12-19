@@ -163,7 +163,8 @@ id<GREYMatcher> SearchIconButton() {
   // Change the name of the folder.
   if (name.length > 0) {
     [[EarlGrey
-        selectElementWithMatcher:grey_accessibilityID(@"Title_textField")]
+        selectElementWithMatcher:[self
+                                     textFieldMatcherForID:@"Title_textField"]]
         performAction:grey_replaceText(name)];
   }
 
@@ -202,9 +203,7 @@ id<GREYMatcher> SearchIconButton() {
 - (void)renameBookmarkFolderWithFolderTitle:(NSString*)folderTitle {
   NSString* titleIdentifier = @"Title_textField";
   [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityID(titleIdentifier),
-                                          grey_kindOfClassName(@"UITextField"),
-                                          nil)]
+      selectElementWithMatcher:[self textFieldMatcherForID:titleIdentifier]]
       performAction:grey_replaceText(folderTitle)];
 }
 
@@ -358,8 +357,8 @@ id<GREYMatcher> SearchIconButton() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(folderTitle)]
       assertWithMatcher:grey_notNil()];
   // verify the editable textfield is gone.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"bookmark_editing_text")]
+  [[EarlGrey selectElementWithMatcher:
+                 [self textFieldMatcherForID:@"bookmark_editing_text"]]
       assertWithMatcher:grey_notVisible()];
 }
 
@@ -455,10 +454,7 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_notNil()];
 
   // Edit textfield.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityID(textFieldId),
-                                          grey_kindOfClassName(@"UITextField"),
-                                          nil)]
+  [[EarlGrey selectElementWithMatcher:[self textFieldMatcherForID:textFieldId]]
       performAction:grey_replaceText(newName)];
 
   // Dismiss editor.
@@ -487,10 +483,7 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_notNil()];
 
   // Edit textfield.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityID(textFieldId),
-                                          grey_kindOfClassName(@"UITextField"),
-                                          nil)]
+  [[EarlGrey selectElementWithMatcher:[self textFieldMatcherForID:textFieldId]]
       performAction:grey_replaceText(newName)];
 
   // Dismiss editor.
@@ -531,21 +524,53 @@ id<GREYMatcher> SearchIconButton() {
 
   // Type the folder title.
   [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityID(titleIdentifier),
-                                          grey_sufficientlyVisible(), nil)]
+      selectElementWithMatcher:[self textFieldMatcherForID:titleIdentifier]]
       performAction:grey_replaceText(folderTitle)];
 
   // Press the keyboard return key.
   if (pressReturn) {
     [[EarlGrey
-        selectElementWithMatcher:grey_allOf(
-                                     grey_accessibilityID(titleIdentifier),
-                                     grey_sufficientlyVisible(), nil)]
+        selectElementWithMatcher:[self textFieldMatcherForID:titleIdentifier]]
         performAction:grey_typeText(@"\n")];
 
     // Wait until the editing textfield is gone.
-    [BookmarkEarlGreyUI waitForDeletionOfBookmarkWithTitle:titleIdentifier];
+    ConditionBlock condition = ^{
+      NSError* error = nil;
+      [[EarlGrey
+          selectElementWithMatcher:[self textFieldMatcherForID:titleIdentifier]]
+          assertWithMatcher:grey_notVisible()
+                      error:&error];
+      return error == nil;
+    };
+    GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(10, condition),
+               @"Waiting for textfield to go away");
   }
+}
+
+- (void)bookmarkCurrentTabWithTitle:(NSString*)title {
+  [BookmarkEarlGreyUI starCurrentTab];
+
+  // Set the bookmark name.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_ACTION_EDIT)]
+      performAction:grey_tap()];
+
+  NSString* titleIdentifier = @"Title Field_textField";
+  [[EarlGrey
+      selectElementWithMatcher:[self textFieldMatcherForID:titleIdentifier]]
+      performAction:grey_replaceText(title)];
+
+  // Dismiss the window.
+  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditDoneButton()]
+      performAction:grey_tap()];
+}
+
+#pragma mark - Helpers
+
+- (id<GREYMatcher>)textFieldMatcherForID:(NSString*)accessibilityID {
+  return grey_allOf(grey_accessibilityID(accessibilityID),
+                    grey_kindOfClassName(@"UITextField"),
+                    grey_sufficientlyVisible(), nil);
 }
 
 @end

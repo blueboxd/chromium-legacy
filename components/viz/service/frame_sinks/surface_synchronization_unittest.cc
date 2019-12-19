@@ -29,7 +29,6 @@ namespace {
 
 constexpr bool kIsRoot = true;
 constexpr bool kIsChildRoot = false;
-constexpr bool kNeedsSyncPoints = true;
 constexpr FrameSinkId kDisplayFrameSink(2, 0);
 constexpr FrameSinkId kParentFrameSink(3, 0);
 constexpr FrameSinkId kChildFrameSink1(65563, 0);
@@ -96,8 +95,7 @@ class SurfaceSynchronizationTest : public testing::Test {
 
   void CreateFrameSink(const FrameSinkId& frame_sink_id, bool is_root) {
     supports_[frame_sink_id] = std::make_unique<CompositorFrameSinkSupport>(
-        &support_client_, &frame_sink_manager_, frame_sink_id, is_root,
-        kNeedsSyncPoints);
+        &support_client_, &frame_sink_manager_, frame_sink_id, is_root);
   }
 
   void DestroyFrameSink(const FrameSinkId& frame_sink_id) {
@@ -191,20 +189,16 @@ class SurfaceSynchronizationTest : public testing::Test {
         now_src_.get());
     frame_sink_manager_.surface_manager()->AddObserver(&surface_observer_);
     supports_[kDisplayFrameSink] = std::make_unique<CompositorFrameSinkSupport>(
-        &support_client_, &frame_sink_manager_, kDisplayFrameSink, kIsRoot,
-        kNeedsSyncPoints);
+        &support_client_, &frame_sink_manager_, kDisplayFrameSink, kIsRoot);
 
     supports_[kParentFrameSink] = std::make_unique<CompositorFrameSinkSupport>(
-        &support_client_, &frame_sink_manager_, kParentFrameSink, kIsChildRoot,
-        kNeedsSyncPoints);
+        &support_client_, &frame_sink_manager_, kParentFrameSink, kIsChildRoot);
 
     supports_[kChildFrameSink1] = std::make_unique<CompositorFrameSinkSupport>(
-        &support_client_, &frame_sink_manager_, kChildFrameSink1, kIsChildRoot,
-        kNeedsSyncPoints);
+        &support_client_, &frame_sink_manager_, kChildFrameSink1, kIsChildRoot);
 
     supports_[kChildFrameSink2] = std::make_unique<CompositorFrameSinkSupport>(
-        &support_client_, &frame_sink_manager_, kChildFrameSink2, kIsChildRoot,
-        kNeedsSyncPoints);
+        &support_client_, &frame_sink_manager_, kChildFrameSink2, kIsChildRoot);
 
     // Normally, the BeginFrameSource would be registered by the Display. We
     // register it here so that BeginFrames are received by the display support,

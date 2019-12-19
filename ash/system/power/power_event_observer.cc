@@ -345,7 +345,7 @@ void PowerEventObserver::EndPendingWallpaperAnimations() {
     WallpaperWidgetController* wallpaper_widget_controller =
         RootWindowController::ForWindow(window)->wallpaper_widget_controller();
     if (wallpaper_widget_controller->IsAnimating())
-      wallpaper_widget_controller->EndPendingAnimation();
+      wallpaper_widget_controller->StopAnimating();
   }
 }
 

@@ -141,6 +141,7 @@ export class CloudPrintInterfaceStub extends TestBrowserProxy {
       this.eventTarget_.dispatchEvent(
           new CustomEvent(CloudPrintInterfaceEventType.PRINTER_FAILED, {
             detail: {
+              account: account,
               origin: origin,
               destinationId: printerId,
               status: 200,

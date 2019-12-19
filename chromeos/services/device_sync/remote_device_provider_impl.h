@@ -100,7 +100,7 @@ class RemoteDeviceProviderImpl : public RemoteDeviceProvider,
   void MergeV1andV2SyncedDevices();
 
   // To get cryptauth::ExternalDeviceInfo needed to retrieve RemoteDevices. Null
-  // if v1 DeviceSync is deprecated.
+  // if v1 DeviceSync is disabled.
   CryptAuthDeviceManager* v1_device_manager_;
 
   // Used to retrieve CryptAuthDevices from the last v2 DeviceSync. Null if v2

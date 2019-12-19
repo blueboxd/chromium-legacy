@@ -26,7 +26,6 @@ NullExecutionContext::NullExecutionContext(
           nullptr,
           WebSandboxFlags::kNone,
           nullptr),
-      tasks_need_pause_(false),
       is_secure_context_(true),
       scheduler_(scheduler::CreateDummyFrameScheduler()) {}
 

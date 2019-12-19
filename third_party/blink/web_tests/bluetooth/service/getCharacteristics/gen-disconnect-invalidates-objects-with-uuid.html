@@ -7,6 +7,14 @@
 <script src="../../../external/wpt/bluetooth/resources/bluetooth-helpers.js"></script>
 <script>
 'use strict';
+function createDOMException(func, uuid) {
+  return new DOMException(
+      `Failed to execute '${func}' on 'BluetoothRemoteGATTCharacteristic': ` +
+      `Characteristic with UUID ${uuid} is no longer valid. Remember to ` +
+      `retrieve the characteristic again after reconnecting.`,
+      'InvalidStateError');
+}
+
 bluetooth_test(() => {
   return setBluetoothFakeAdapter('DisconnectingHealthThermometerAdapter')
     .then(() => requestDeviceWithTrustedClick({
@@ -27,27 +35,22 @@ bluetooth_test(() => {
     .then(characteristics => {
       let promises = Promise.resolve();
       for (let characteristic of characteristics) {
-        let error = new DOMException(
-          'Characteristic with UUID ' + characteristic.uuid +
-          ' is no longer valid. Remember to retrieve the ' +
-          'characteristic again after reconnecting.',
-          'InvalidStateError');
         promises = promises.then(() =>
           assert_promise_rejects_with_message(
             characteristic.readValue(),
-            error));
+            createDOMException('readValue', characteristic.uuid)));
         promises = promises.then(() =>
           assert_promise_rejects_with_message(
             characteristic.writeValue(new Uint8Array([1])),
-            error));
+            createDOMException('writeValue', characteristic.uuid)));
         promises = promises.then(() =>
           assert_promise_rejects_with_message(
             characteristic.startNotifications(),
-            error));
+            createDOMException('startNotifications', characteristic.uuid)));
         promises = promises.then(() =>
           assert_promise_rejects_with_message(
             characteristic.stopNotifications(),
-            error));
+            createDOMException('stopNotifications', characteristic.uuid)));
       }
       return promises;
     });

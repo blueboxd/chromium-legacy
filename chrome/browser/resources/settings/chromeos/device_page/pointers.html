@@ -1,0 +1,115 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="../localized_link/localized_link.html">
+<link rel="import" href="../../controls/settings_radio_group.html">
+<link rel="import" href="../../controls/settings_slider.html">
+<link rel="import" href="../../controls/settings_toggle_button.html">
+<link rel="import" href="../../settings_shared_css.html">
+<link rel="import" href="device_page_browser_proxy.html">
+
+<dom-module id="settings-pointers">
+  <template>
+    <style include="settings-shared">
+      h2 {
+        padding-inline-start: var(--cr-section-padding);
+      }
+
+      .subsection {
+        padding-inline-end: var(--cr-section-padding);
+        padding-inline-start: var(--cr-section-indent-padding);
+      }
+
+      .subsection > settings-toggle-button,
+      .subsection > .settings-box  {
+        padding-inline-end: 0;
+        padding-inline-start: 0;
+      }
+    </style>
+    <div id="mouse" hidden$="[[!hasMouse]]">
+      <!-- Subsection title only appears if both mouse and touchpad exist. -->
+      <h2 hidden$="[[!hasTouchpad]]">$i18n{mouseTitle}</h2>
+      <div class$="[[getSubsectionClass_(hasMouse, hasTouchpad)]]">
+        <!-- Do not change the mouse button pref before the mouse is released.
+             See crbug.com/686949 -->
+        <settings-toggle-button id="mouseSwapButton" class="first"
+            pref="{{prefs.settings.mouse.primary_right}}"
+            label="$i18n{mouseSwapButtons}"
+            on-settings-boolean-control-change="onMouseSwapButtonsChange_"
+            on-down="onMouseSwapButtonsDown_" on-up="onMouseSwapButtonsUp_"
+            no-set-pref>
+        </settings-toggle-button>
+        <settings-toggle-button id="mouseReverseScroll"
+            pref="{{prefs.settings.mouse.reverse_scroll}}"
+            label="$i18n{mouseReverseScroll}">
+        </settings-toggle-button>
+        <template is="dom-if" if="[[allowDisableAcceleration_]]">
+          <settings-toggle-button id="mouseAcceleration"
+              pref="{{prefs.settings.mouse.acceleration}}"
+              label="$i18n{mouseAccelerationLabel}">
+          </settings-toggle-button>
+        </template>
+        <div class="settings-box">
+          <div class="start" id="mouseSpeedLabel" aria-hidden="true">
+            $i18n{mouseSpeed}
+          </div>
+          <settings-slider pref="{{prefs.settings.mouse.sensitivity2}}"
+              ticks="[[sensitivityValues_]]"
+              label-aria="$i18n{mouseSpeed}"
+              label-min="$i18n{pointerSlow}"
+              label-max="$i18n{pointerFast}">
+          </settings-slider>
+        </div>
+      </div>
+    </div>
+    <div id="touchpad" hidden$="[[!hasTouchpad]]">
+      <!-- Subsection title only appears if both mouse and touchpad exist. -->
+      <h2 hidden$="[[!hasMouse]]">$i18n{touchpadTitle}</h2>
+      <div class$="[[getSubsectionClass_(hasMouse, hasTouchpad)]]">
+        <settings-toggle-button id="enableTapToClick" class="first"
+            pref="{{prefs.settings.touchpad.enable_tap_to_click}}"
+            label="$i18n{touchpadTapToClickEnabledLabel}">
+        </settings-toggle-button>
+        <settings-toggle-button id="enableTapDragging"
+            pref="{{prefs.settings.touchpad.enable_tap_dragging}}"
+            label="$i18n{tapDraggingLabel}">
+        </settings-toggle-button>
+        <template is="dom-if" if="[[allowDisableAcceleration_]]">
+          <settings-toggle-button id="touchpadAcceleration"
+              pref="{{prefs.settings.touchpad.acceleration}}"
+              label="$i18n{touchpadAccelerationLabel}">
+          </settings-toggle-button>
+        </template>
+        <div class="settings-box">
+          <div class="start" id="touchpadSpeedLabel" aria-hidden="true">
+            $i18n{touchpadSpeed}
+          </div>
+            <settings-slider id="touchpadSensitivity"
+                pref="{{prefs.settings.touchpad.sensitivity2}}"
+                ticks="[[sensitivityValues_]]"
+                label-aria="$i18n{touchpadSpeed}"
+                label-min="$i18n{pointerSlow}"
+                label-max="$i18n{pointerFast}">
+            </settings-slider>
+        </div>
+        <div class="settings-box">$i18n{scrollLabel}</div>
+        <div class="list-frame">
+          <settings-radio-group
+              pref="{{prefs.settings.touchpad.natural_scroll}}"
+              group-aria-label="$i18n{scrollLabel}">
+            <cr-radio-button name="false" label="$i18n{traditionalScrollLabel}">
+            </cr-radio-button>
+            <cr-radio-button name="true">
+              <settings-localized-link
+                  localized-string="$i18n{naturalScrollLabel}"
+                  link-url="$i18n{naturalScrollLearnMoreLink}">
+              </settings-localized-link>
+            </cr-radio-button>
+          </settings-radio-group>
+        </div>
+      </div>
+    </div>
+  </template>
+  <script src="pointers.js"></script>
+</dom-module>

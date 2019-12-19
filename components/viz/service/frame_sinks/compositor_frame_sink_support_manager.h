@@ -25,8 +25,7 @@ class CompositorFrameSinkSupportManager {
   virtual std::unique_ptr<CompositorFrameSinkSupport>
   CreateCompositorFrameSinkSupport(mojom::CompositorFrameSinkClient* client,
                                    const FrameSinkId& frame_sink_id,
-                                   bool is_root,
-                                   bool needs_sync_points) = 0;
+                                   bool is_root) = 0;
 
  protected:
   virtual ~CompositorFrameSinkSupportManager() {}

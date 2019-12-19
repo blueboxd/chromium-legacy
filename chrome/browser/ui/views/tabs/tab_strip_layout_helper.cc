@@ -59,7 +59,7 @@ struct TabStripLayoutHelper::TabSlot {
   }
 
   static TabStripLayoutHelper::TabSlot CreateForGroupHeader(
-      TabGroupId group,
+      tab_groups::TabGroupId group,
       TabGroupHeader* header,
       TabPinned pinned,
       base::OnceClosure removed_callback) {
@@ -211,9 +211,10 @@ void TabStripLayoutHelper::OnTabDestroyed(Tab* tab) {
     slots_.erase(it);
 }
 
-void TabStripLayoutHelper::MoveTab(base::Optional<TabGroupId> moving_tab_group,
-                                   int prev_index,
-                                   int new_index) {
+void TabStripLayoutHelper::MoveTab(
+    base::Optional<tab_groups::TabGroupId> moving_tab_group,
+    int prev_index,
+    int new_index) {
   const int prev_slot_index =
       GetSlotIndexForTabModelIndex(prev_index, moving_tab_group);
   TabSlot moving_tab = std::move(slots_[prev_slot_index]);
@@ -239,7 +240,7 @@ void TabStripLayoutHelper::SetTabPinned(int model_index, TabPinned pinned) {
 }
 
 void TabStripLayoutHelper::InsertGroupHeader(
-    TabGroupId group,
+    tab_groups::TabGroupId group,
     TabGroupHeader* header,
     base::OnceClosure header_removed_callback) {
   std::vector<int> tabs_in_group = controller_->ListTabsInGroup(group);
@@ -256,14 +257,15 @@ void TabStripLayoutHelper::InsertGroupHeader(
       GetTabs()[tabs_in_group[0]]->bounds());
 }
 
-void TabStripLayoutHelper::RemoveGroupHeader(TabGroupId group) {
+void TabStripLayoutHelper::RemoveGroupHeader(tab_groups::TabGroupId group) {
   // TODO(958173): Animate closed.
   const int slot_index = GetSlotIndexForGroupHeader(group);
   slots_[slot_index].animation->NotifyCloseCompleted();
   slots_.erase(slots_.begin() + slot_index);
 }
 
-void TabStripLayoutHelper::UpdateGroupHeaderIndex(TabGroupId group) {
+void TabStripLayoutHelper::UpdateGroupHeaderIndex(
+    tab_groups::TabGroupId group) {
   const int slot_index = GetSlotIndexForGroupHeader(group);
   TabSlot header_slot = std::move(slots_[slot_index]);
 
@@ -310,7 +312,7 @@ void TabStripLayoutHelper::UpdateIdealBounds(int available_width) {
   DCHECK_LE(tabstrip_width, available_width);
 
   views::ViewModelT<Tab>* tabs = get_tabs_callback_.Run();
-  std::map<TabGroupId, TabGroupHeader*> group_headers =
+  std::map<tab_groups::TabGroupId, TabGroupHeader*> group_headers =
       get_group_headers_callback_.Run();
 
   const int active_tab_model_index = controller_->GetActiveIndex();
@@ -413,7 +415,7 @@ int TabStripLayoutHelper::LayoutTabs(base::Optional<int> available_width) {
 
   if (DCHECK_IS_ON()) {
     views::ViewModelT<Tab>* tabs = get_tabs_callback_.Run();
-    std::map<TabGroupId, TabGroupHeader*> group_headers =
+    std::map<tab_groups::TabGroupId, TabGroupHeader*> group_headers =
         get_group_headers_callback_.Run();
 
     int num_closing_tabs = 0;
@@ -461,7 +463,7 @@ int TabStripLayoutHelper::LayoutTabs(base::Optional<int> available_width) {
 
 int TabStripLayoutHelper::GetSlotIndexForTabModelIndex(
     int model_index,
-    base::Optional<TabGroupId> group) const {
+    base::Optional<tab_groups::TabGroupId> group) const {
   int current_model_index = 0;
   for (size_t i = 0; i < slots_.size(); i++) {
     const bool model_space_index =
@@ -484,7 +486,8 @@ int TabStripLayoutHelper::GetSlotIndexForTabModelIndex(
   return slots_.size();
 }
 
-int TabStripLayoutHelper::GetSlotIndexForGroupHeader(TabGroupId group) const {
+int TabStripLayoutHelper::GetSlotIndexForGroupHeader(
+    tab_groups::TabGroupId group) const {
   for (size_t i = 0; i < slots_.size(); i++) {
     if (slots_[i].type == ViewType::kGroupHeader &&
         static_cast<TabGroupHeader*>(slots_[i].view)->group() == group) {

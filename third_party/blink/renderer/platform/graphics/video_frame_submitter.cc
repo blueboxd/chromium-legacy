@@ -546,7 +546,8 @@ viz::CompositorFrame VideoFrameSubmitter::CreateCompositorFrame(
 
     frame_token_to_timestamp_map_[*next_frame_token_] = value;
 
-    if (begin_frame_ack.source_id == viz::BeginFrameArgs::kManualSourceId)
+    if (begin_frame_ack.frame_id.source_id ==
+        viz::BeginFrameArgs::kManualSourceId)
       ignorable_submitted_frames_.insert(*next_frame_token_);
 
     UMA_HISTOGRAM_TIMES("Media.VideoFrameSubmitter.PreSubmitBuffering",

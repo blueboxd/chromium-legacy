@@ -8,6 +8,7 @@
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 
 namespace chromeos {
+namespace cros_healthd {
 
 namespace {
 
@@ -31,19 +32,35 @@ FakeCrosHealthdClient* FakeCrosHealthdClient::Get() {
   return g_instance;
 }
 
-mojo::Remote<cros_healthd::mojom::CrosHealthdService>
+mojo::Remote<mojom::CrosHealthdService>
 FakeCrosHealthdClient::BootstrapMojoConnection(
     base::OnceCallback<void(bool success)> result_callback) {
-  mojo::Remote<cros_healthd::mojom::CrosHealthdService> remote(
+  mojo::Remote<mojom::CrosHealthdService> remote(
       receiver_.BindNewPipeAndPassRemote());
 
   std::move(result_callback).Run(/*success=*/true);
   return remote;
 }
 
+void FakeCrosHealthdClient::SetAvailableRoutinesForTesting(
+    const std::vector<mojom::DiagnosticRoutineEnum>& available_routines) {
+  fake_service_.SetAvailableRoutinesForTesting(available_routines);
+}
+
+void FakeCrosHealthdClient::SetRunRoutineResponseForTesting(
+    mojom::RunRoutineResponsePtr& response) {
+  fake_service_.SetRunRoutineResponseForTesting(response);
+}
+
+void FakeCrosHealthdClient::SetGetRoutineUpdateResponseForTesting(
+    mojom::RoutineUpdatePtr& response) {
+  fake_service_.SetGetRoutineUpdateResponseForTesting(response);
+}
+
 void FakeCrosHealthdClient::SetProbeTelemetryInfoResponseForTesting(
-    TelemetryInfoPtr& info) {
+    mojom::TelemetryInfoPtr& info) {
   fake_service_.SetProbeTelemetryInfoResponseForTesting(info);
 }
 
+}  // namespace cros_healthd
 }  // namespace chromeos

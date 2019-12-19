@@ -44,12 +44,15 @@
 #pragma mark - Accessors
 
 - (HTTPAuthOverlayRequestConfig*)config {
-  return self.request->GetConfig<HTTPAuthOverlayRequestConfig>();
+  return self.request ? self.request->GetConfig<HTTPAuthOverlayRequestConfig>()
+                      : nullptr;
 }
 
 #pragma mark - Response helpers
 
 - (void)updateResponseCancelled:(BOOL)cancelled {
+  if (!self.request)
+    return;
   std::unique_ptr<OverlayResponse> response;
   if (!cancelled) {
     std::string user =

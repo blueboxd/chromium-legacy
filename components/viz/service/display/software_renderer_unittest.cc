@@ -57,7 +57,7 @@ class SoftwareRendererTest : public testing::Test {
     renderer_->Initialize();
     renderer_->SetVisible(true);
 
-    child_resource_provider_ = std::make_unique<ClientResourceProvider>(true);
+    child_resource_provider_ = std::make_unique<ClientResourceProvider>();
   }
 
   void TearDown() override {

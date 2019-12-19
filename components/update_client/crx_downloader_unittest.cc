@@ -103,9 +103,10 @@ CrxDownloaderTest::CrxDownloaderTest()
     : callback_(base::BindOnce(&CrxDownloaderTest::DownloadComplete,
                                base::Unretained(this),
                                kExpectedContext)),
-      progress_callback_(base::Bind(&CrxDownloaderTest::DownloadProgress,
-                                    base::Unretained(this),
-                                    kExpectedContext)),
+      progress_callback_(
+          base::BindRepeating(&CrxDownloaderTest::DownloadProgress,
+                              base::Unretained(this),
+                              kExpectedContext)),
       crx_context_(0),
       num_download_complete_calls_(0),
       num_progress_calls_(0),

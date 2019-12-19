@@ -18,12 +18,36 @@
 #include "base/threading/simple_thread.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 
 namespace base {
 namespace internal {
 
 namespace {
+
+constexpr char kMetricPrefixThreadPool[] = "ThreadPool.";
+constexpr char kMetricPostTaskThroughput[] = "post_task_throughput";
+constexpr char kMetricRunTaskThroughput[] = "run_task_throughput";
+constexpr char kMetricNumTasksPosted[] = "num_tasks_posted";
+constexpr char kStoryBindPostThenRunNoOp[] = "bind_post_then_run_noop_tasks";
+constexpr char kStoryPostThenRunNoOp[] = "post_then_run_noop_tasks";
+constexpr char kStoryPostThenRunNoOpManyThreads[] =
+    "post_then_run_noop_tasks_many_threads";
+constexpr char kStoryPostThenRunNoOpMoreThanRunningThreads[] =
+    "post_then_run_noop_tasks_more_than_running_threads";
+constexpr char kStoryPostRunNoOp[] = "post_run_noop_tasks";
+constexpr char kStoryPostRunNoOpManyThreads[] =
+    "post_run_noop_tasks_many_threads";
+constexpr char kStoryPostRunBusyManyThreads[] =
+    "post_run_busy_tasks_many_threads";
+
+perf_test::PerfResultReporter SetUpReporter(const std::string& story_name) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixThreadPool, story_name);
+  reporter.RegisterImportantMetric(kMetricPostTaskThroughput, "runs/s");
+  reporter.RegisterImportantMetric(kMetricRunTaskThroughput, "runs/s");
+  reporter.RegisterImportantMetric(kMetricNumTasksPosted, "count");
+  return reporter;
+}
 
 enum class ExecutionMode {
   // Allows tasks to start running while tasks are being posted by posting
@@ -135,7 +159,7 @@ class ThreadPoolPerfTest : public testing::Test {
 
   void OnCompletePostingTasks() { complete_posting_tasks_.Signal(); }
 
-  void Benchmark(const std::string& trace, ExecutionMode execution_mode) {
+  void Benchmark(const std::string& story_name, ExecutionMode execution_mode) {
     base::Optional<ThreadPoolInstance::ScopedExecutionFence> execution_fence;
     if (execution_mode == ExecutionMode::kPostThenRun) {
       execution_fence.emplace();
@@ -159,18 +183,16 @@ class ThreadPoolPerfTest : public testing::Test {
       thread->Join();
     ThreadPoolInstance::Get()->JoinForTesting();
 
-    perf_test::PrintResult(
-        "Posting tasks throughput", "", trace,
+    auto reporter = SetUpReporter(story_name);
+    reporter.AddResult(
+        kMetricPostTaskThroughput,
         num_posted_tasks_ /
-            static_cast<double>(post_task_duration_.InMilliseconds()),
-        "tasks/ms", true);
-    perf_test::PrintResult(
-        "Running tasks throughput", "", trace,
+            static_cast<double>(post_task_duration_.InSecondsF()));
+    reporter.AddResult(
+        kMetricRunTaskThroughput,
         num_posted_tasks_ /
-            static_cast<double>(tasks_run_duration_.InMilliseconds()),
-        "tasks/ms", true);
-    perf_test::PrintResult("Num tasks posted", "", trace, num_posted_tasks_,
-                           "tasks", true);
+            static_cast<double>(tasks_run_duration_.InSecondsF()));
+    reporter.AddResult(kMetricNumTasksPosted, num_posted_tasks_);
   }
 
  private:
@@ -195,29 +217,28 @@ TEST_F(ThreadPoolPerfTest, BindPostThenRunNoOpTasks) {
       1, 1,
       BindRepeating(&ThreadPoolPerfTest::ContinuouslyBindAndPostNoOpTasks,
                     Unretained(this), 10000));
-  Benchmark("Bind+Post-then-run no-op tasks", ExecutionMode::kPostThenRun);
+  Benchmark(kStoryBindPostThenRunNoOp, ExecutionMode::kPostThenRun);
 }
 
 TEST_F(ThreadPoolPerfTest, PostThenRunNoOpTasks) {
   StartThreadPool(1, 1,
                   BindRepeating(&ThreadPoolPerfTest::ContinuouslyPostNoOpTasks,
                                 Unretained(this), 10000));
-  Benchmark("Post-then-run no-op tasks", ExecutionMode::kPostThenRun);
+  Benchmark(kStoryPostThenRunNoOp, ExecutionMode::kPostThenRun);
 }
 
 TEST_F(ThreadPoolPerfTest, PostThenRunNoOpTasksManyThreads) {
   StartThreadPool(4, 4,
                   BindRepeating(&ThreadPoolPerfTest::ContinuouslyPostNoOpTasks,
                                 Unretained(this), 10000));
-  Benchmark("Post-then-run no-op tasks many threads",
-            ExecutionMode::kPostThenRun);
+  Benchmark(kStoryPostThenRunNoOpManyThreads, ExecutionMode::kPostThenRun);
 }
 
 TEST_F(ThreadPoolPerfTest, PostThenRunNoOpTasksMorePostingThanRunningThreads) {
   StartThreadPool(1, 4,
                   BindRepeating(&ThreadPoolPerfTest::ContinuouslyPostNoOpTasks,
                                 Unretained(this), 10000));
-  Benchmark("Post-then-run no-op tasks more posting than running threads",
+  Benchmark(kStoryPostThenRunNoOpMoreThanRunningThreads,
             ExecutionMode::kPostThenRun);
 }
 
@@ -225,14 +246,14 @@ TEST_F(ThreadPoolPerfTest, PostRunNoOpTasks) {
   StartThreadPool(1, 1,
                   BindRepeating(&ThreadPoolPerfTest::ContinuouslyPostNoOpTasks,
                                 Unretained(this), 10000));
-  Benchmark("Post/run no-op tasks", ExecutionMode::kPostAndRun);
+  Benchmark(kStoryPostRunNoOp, ExecutionMode::kPostAndRun);
 }
 
 TEST_F(ThreadPoolPerfTest, PostRunNoOpTasksManyThreads) {
   StartThreadPool(4, 4,
                   BindRepeating(&ThreadPoolPerfTest::ContinuouslyPostNoOpTasks,
                                 Unretained(this), 10000));
-  Benchmark("Post/run no-op tasks many threads", ExecutionMode::kPostAndRun);
+  Benchmark(kStoryPostRunNoOpManyThreads, ExecutionMode::kPostAndRun);
 }
 
 TEST_F(ThreadPoolPerfTest, PostRunBusyTasksManyThreads) {
@@ -241,7 +262,7 @@ TEST_F(ThreadPoolPerfTest, PostRunBusyTasksManyThreads) {
       BindRepeating(&ThreadPoolPerfTest::ContinuouslyPostBusyWaitTasks,
                     Unretained(this), 10000,
                     base::TimeDelta::FromMicroseconds(200)));
-  Benchmark("Post/run busy tasks many threads", ExecutionMode::kPostAndRun);
+  Benchmark(kStoryPostRunBusyManyThreads, ExecutionMode::kPostAndRun);
 }
 
 }  // namespace internal

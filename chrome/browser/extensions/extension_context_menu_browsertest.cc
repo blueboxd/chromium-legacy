@@ -892,8 +892,15 @@ IN_PROC_BROWSER_TEST_P(ExtensionContextMenuLazyTest, EventPage) {
   ASSERT_TRUE(listener.WaitUntilSatisfied());
 }
 
+// Flaky on Mac and Windows. https://crbug.com/1035062
+#if defined(OS_MACOSX) || defined(OS_WIN)
+#define MAYBE_IncognitoSplitContextMenuCount \
+  DISABLED_IncognitoSplitContextMenuCount
+#else
+#define MAYBE_IncognitoSplitContextMenuCount IncognitoSplitContextMenuCount
+#endif
 IN_PROC_BROWSER_TEST_P(ExtensionContextMenuLazyTest,
-                       IncognitoSplitContextMenuCount) {
+                       MAYBE_IncognitoSplitContextMenuCount) {
   // TODO(crbug.com/939664): Not yet implemented.
   if (GetParam() == ContextType::kServiceWorker)
     return;

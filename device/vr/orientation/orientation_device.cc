@@ -129,7 +129,7 @@ void VROrientationDevice::RequestSession(
     mojom::XRRuntimeSessionOptionsPtr options,
     mojom::XRRuntime::RequestSessionCallback callback) {
   DVLOG(2) << __func__;
-  DCHECK(!options->immersive);
+  DCHECK_EQ(options->mode, mojom::XRSessionMode::kInline);
 
   // TODO(http://crbug.com/695937): Perform a check to see if sensors are
   // available when RequestSession is called for non-immersive sessions.

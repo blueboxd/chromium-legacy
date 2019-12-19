@@ -91,10 +91,10 @@ class MultiDeviceSetupHostBackendDelegateImplTest
 
     if (use_v1_devicesync) {
       disabled_features.push_back(
-          chromeos::features::kCryptAuthV1DeviceSyncDeprecate);
+          chromeos::features::kDisableCryptAuthV1DeviceSync);
     } else {
       enabled_features.push_back(
-          chromeos::features::kCryptAuthV1DeviceSyncDeprecate);
+          chromeos::features::kDisableCryptAuthV1DeviceSync);
     }
 
     if (use_v2_devicesync) {
@@ -722,7 +722,7 @@ TEST_P(MultiDeviceSetupHostBackendDelegateImplTest, V1andV2DeviceSync) {
 
 // Runs tests twice; once for devices that all have Instance IDs and once for
 // devices that do not.
-// TODO(https://crbug.com/1019206): Remove when v1 DeviceSync is deprecated,
+// TODO(https://crbug.com/1019206): Remove when v1 DeviceSync is disabled,
 // when all devices should have an Instance ID.
 INSTANTIATE_TEST_SUITE_P(All,
                          MultiDeviceSetupHostBackendDelegateImplTest,

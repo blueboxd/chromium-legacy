@@ -68,7 +68,7 @@ bool RemoteDevice::operator==(const RemoteDevice& other) const {
 
 bool RemoteDevice::operator<(const RemoteDevice& other) const {
   // TODO(https://crbug.com/1019206): Only compare by Instance ID when v1
-  // DeviceSync is deprecated since it is guaranteed to be set in v2 DeviceSync.
+  // DeviceSync is disabled since it is guaranteed to be set in v2 DeviceSync.
 
   if (!instance_id.empty() || !other.instance_id.empty())
     return instance_id.compare(other.instance_id) < 0;

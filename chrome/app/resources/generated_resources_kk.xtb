@@ -139,7 +139,6 @@
 <translation id="1186771945450942097">Зиян бағдарламалық құралды өшіру</translation>
 <translation id="1187722533808055681">Күту режимінен іске қосу</translation>
 <translation id="1188807932851744811">Журнал жүктеп салынбаған.</translation>
-<translation id="1189418886587279221">Құрылғыңызды пайдалануды жеңілдету үшін арнайы мүмкіндіктерді қосу.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Компьютеріңізде сақталған файлға кіру}other{Компьютеріңізде сақталған # файлға кіру}}</translation>
 <translation id="1190660338026981543"><ph name="DEVICE_TYPE" /> құрылғыңыз <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> домені арқылы кәсіпорын басқаруына тіркелді.</translation>
 <translation id="119092896208640858">Браузерді пайдалану деректерін Google есептік жазбасында сақтай отырып, тек осы құрылғыдан өшіру үшін <ph name="BEGIN_LINK" />жүйеден шығыңыз<ph name="END_LINK" />.</translation>
@@ -339,7 +338,6 @@
 <translation id="1476607407192946488">&amp;Тіл параметрлері</translation>
 <translation id="1478340334823509079">Мәліметтер: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Орнату мүмкіндігі қосылмаған</translation>
-<translation id="1481206932476131736">Кірген есептік жазбаларды басқарыңыз. Қызметтерді қажеттіліктеріңізге бейімдеу үшін веб-сайттар, қолданбалар, Chrome және Google Play кеңейтімдері осы есептік жазбаларды рұқсаттарыңызға байланысты пайдалануы мүмкін.</translation>
 <translation id="1482626744466814421">Осы қойындыға бетбелгі қою…</translation>
 <translation id="1483493594462132177">Жіберу</translation>
 <translation id="1484979925941077974">Сайт Bluetooth функциясын пайдаланып жатыр.</translation>
@@ -589,7 +587,6 @@
 <translation id="1813278315230285598">Қызметтер</translation>
 <translation id="18139523105317219">EDI тарабының атауы</translation>
 <translation id="1815083418640426271">Ашық мәтін ретінде қою</translation>
-<translation id="1815579292149538864">CUPS принтерлерін реттеу және басқару.</translation>
 <translation id="181577467034453336">Тағы <ph name="NUMBER_OF_VIEWS" />...</translation>
 <translation id="1816036116994822943">Пернетақтаның сканерлеу жылдамдығы</translation>
 <translation id="1817871734039893258">Microsoft File Recovery</translation>
@@ -1451,7 +1448,6 @@
 <translation id="3012917896646559015">Компьютеріңізді жөндеу қызметіне жіберу үшін жабдығыңыз өндірушісіне дереу хабарласыңыз.</translation>
 <translation id="3013291976881901233">MIDI құрылғылары</translation>
 <translation id="3015639418649705390">Қазір қайта іске қосу</translation>
-<translation id="3016329696181678353"><ph name="PRINTER_NAME" /> принтері автоматты түрде конфигурацияланбады. Принтердің қосымша мәліметтерін көрсетіңіз.</translation>
 <translation id="3016381065346027039">Журналда ешқандай жазба жоқ.</translation>
 <translation id="3016641847947582299">Құрамдас жаңартылды</translation>
 <translation id="3016780570757425217">Орналасқан жеріңізді білу</translation>
@@ -2189,7 +2185,6 @@
 <translation id="4046123991198612571">Келесі аудиотрек</translation>
 <translation id="4050225813016893843">Аутентификация әдісі</translation>
 <translation id="4052120076834320548">Кішкентай</translation>
-<translation id="4055023634561256217">Powerwash арқылы қалпына келтіру үшін, құрылғыңызды қайта іске қосу қажет.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> – <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">Дүкенде көру</translation>
 <translation id="4058647953897694817">Bluetooth арқылы растау</translation>
@@ -2511,7 +2506,6 @@
 <translation id="4558426062282641716">Автоматты іске қосу рұқсаты сұралды</translation>
 <translation id="4558491878126948419"><ph name="DEVICE_TYPE" /> құрылғысына қатысты кеңестер, Google өнімдері жаңартуларын алыңыз және пікірлермен бөлісіңіз. Жазылудан кез келген кезде бас тарта аласыз.</translation>
 <translation id="4559617833001311418">Бұл сайт қозғалыс не жарық датчиктеріңізге кіруде.</translation>
-<translation id="4561098487691395071">Немесе принтердің PPD файлын көрсетіңіз</translation>
 <translation id="4562155214028662640">Саусақ ізін қосу</translation>
 <translation id="4562494484721939086">Қызмет жоқ</translation>
 <translation id="4563880231729913339">3-ші саусақ</translation>
@@ -2754,7 +2748,6 @@
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925542575807923399">Бұл есептік жазбаның әкімшісі есептік жазбаның көп кіру сеансында алғашқы жүйеге кірген есептік жазба болуын талап етеді.</translation>
 <translation id="4927753642311223124">Мұнда көретін ештеңе жоқ, ары қарай өтіңіз.</translation>
-<translation id="4927846293686536410">Барлық құрылғыларыңызда бетбелгілерді, тарихты, құпия сөздерді және басқа параметрлерді алу үшін жүйеге кіріңіз. Сонымен қатар Google қызметтеріне автоматты түрде кіресіз.</translation>
 <translation id="4929386379796360314">Белгіленген жерлерді басып шығару</translation>
 <translation id="4930714375720679147">Қосу</translation>
 <translation id="4932733599132424254">Күні</translation>
@@ -3311,7 +3304,6 @@
 <translation id="5750324801516359607">Алыс</translation>
 <translation id="5756163054456765343">А&amp;нықтама орталығы</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> арқылы басып шығару үшін жіберген құжаттарыңызды <ph name="APP_NAME" /> оқи алады.</translation>
-<translation id="5763315388120433852">Желінің ортақ каталогтерін реттеу немесе басқару</translation>
 <translation id="5763751966069581670">USB құрылғылары табылмады</translation>
 <translation id="5764483294734785780">Аудионы басқаша сақ&amp;тау…</translation>
 <translation id="57646104491463491">Өзгертілген күні</translation>
@@ -4631,7 +4623,6 @@
 <translation id="7684718995427157417">Қолданбалар жасау және тексеру үшін Android Debug Bridge (ADB) құралын іске қосу керек. Бұл — Google растамаған Android қолданбаларының орнатылуына мүмкіндік беретінін ескеріңіз. Құралды өшіру үшін зауыттық параметрлерге қайтару қажет болады.</translation>
 <translation id="7685049629764448582">JavaScript жады</translation>
 <translation id="7685087414635069102">PIN коды қажет</translation>
-<translation id="768549422429443215">Тілдерді енгізіңіз немесе тізімнің ретін өзгертіңіз.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Жаңа құпия сөзді қайталаңыз</translation>
 <translation id="7690378713476594306">Тізімнен таңдау</translation>
@@ -4668,7 +4659,6 @@
 <translation id="7730449930968088409">Экранның мазмұнын түсіру</translation>
 <translation id="7732111077498238432">Желі саясатпен бақыланады</translation>
 <translation id="7737238973539693982">Linux (Бета) жүйесін жою</translation>
-<translation id="7737456446569756884">Бұл құрылғыға <ph name="MONTH_AND_YEAR" /> дейін бағдарламалық құрал мен қауіпсіздік жүйесінің жаңартылған нұсқасы автоматты түрде орнатылады.</translation>
 <translation id="7740996059027112821">Стандартты</translation>
 <translation id="7744047395460924128">Басып шығару тарихыңызды көру</translation>
 <translation id="7746457520633464754">Қауіпті қолданбалар мен сайттарды анықтау үшін Chrome браузері сіз кірген кейбір беттердің URL сілтемелерін, жүйе туралы шектеулі ақпаратты және беттің кейбір мазмұнын Google-ға жібереді.</translation>
@@ -5554,7 +5544,6 @@
 <translation id="892706138619340876">Кейбір параметрлер бастапқы күйіне қайтарылды</translation>
 <translation id="8930351635855238750">Бет қайта жүктелгеннен кейін, жаңа cookie файлы параметрлері күшіне енеді</translation>
 <translation id="8931394284949551895">Жаңа құрылғылар</translation>
-<translation id="893254996965966411">Анықталған принтерлерді профиліңізге сақтаңыз немесе жаңа принтер енгізіңіз.</translation>
 <translation id="8932894639908691771">Switch Access опциялары</translation>
 <translation id="8933960630081805351">&amp;Іздеу жүйесінде көрсету</translation>
 <translation id="8934732568177537184">Жалғастыру</translation>

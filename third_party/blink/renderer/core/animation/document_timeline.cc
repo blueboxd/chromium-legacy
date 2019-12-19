@@ -29,29 +29,18 @@
  */
 
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
-
-#include <algorithm>
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
 #include "third_party/blink/renderer/core/animation/document_timeline_options.h"
-#include "third_party/blink/renderer/core/animation/element_animations.h"
-#include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
 
 namespace {
-
-bool CompareAnimations(const Member<Animation>& left,
-                       const Member<Animation>& right) {
-  return Animation::HasLowerPriority(left.Get(), right.Get());
-}
 
 // Returns the current animation time for a given |document|. This is
 // the animation clock time capped to be at least this document's
@@ -87,17 +76,15 @@ DocumentTimeline* DocumentTimeline::Create(
 DocumentTimeline::DocumentTimeline(Document* document,
                                    base::TimeDelta origin_time,
                                    PlatformTiming* timing)
-    : document_(document),
+    : AnimationTimeline(document),
       origin_time_(origin_time),
       zero_time_(base::TimeTicks() + origin_time_),
       zero_time_initialized_(false),
-      outdated_animation_count_(0),
       playback_rate_(1) {
   if (!timing)
     timing_ = MakeGarbageCollected<DocumentTimelineTiming>(this);
   else
     timing_ = timing;
-
   if (Platform::Current()->IsThreadedAnimationEnabled())
     compositor_timeline_ = std::make_unique<CompositorAnimationTimeline>();
 
@@ -119,12 +106,6 @@ DocumentTimeline::InitialStartTimeForAnimations() {
   return base::nullopt;
 }
 
-void DocumentTimeline::AnimationAttached(Animation* animation) {
-  DCHECK_EQ(&animation->GetDocument()->Timeline(), this);
-  DCHECK(!animations_.Contains(animation));
-  animations_.insert(animation);
-}
-
 Animation* DocumentTimeline::Play(AnimationEffect* child) {
   Animation* animation = Animation::Create(child, this);
   DCHECK(animations_.Contains(animation));
@@ -133,63 +114,6 @@ Animation* DocumentTimeline::Play(AnimationEffect* child) {
   DCHECK(animations_needing_update_.Contains(animation));
 
   return animation;
-}
-
-HeapVector<Member<Animation>> DocumentTimeline::getAnimations() {
-  // This method implements the Document::getAnimations method defined in the
-  // web-animations-1 spec.
-  // https://drafts.csswg.org/web-animations-1/#dom-document-getanimations
-  document_->UpdateStyleAndLayoutTree();
-  HeapVector<Member<Animation>> animations;
-  for (const auto& animation : animations_) {
-    if (!animation->effect() || (!animation->effect()->IsCurrent() &&
-                                 !animation->effect()->IsInEffect())) {
-      continue;
-    }
-    if (auto* effect = DynamicTo<KeyframeEffect>(animation->effect())) {
-      Element* target = effect->target();
-      if (!target || !target->isConnected() ||
-          document_ != target->GetDocument()) {
-        continue;
-      }
-    }
-    animations.push_back(animation);
-  }
-  std::sort(animations.begin(), animations.end(), CompareAnimations);
-  return animations;
-}
-
-void DocumentTimeline::Wake() {
-  timing_->ServiceOnNextFrame();
-}
-
-void DocumentTimeline::ServiceAnimations(TimingUpdateReason reason) {
-  TRACE_EVENT0("blink", "DocumentTimeline::serviceAnimations");
-
-  last_current_time_internal_ = CurrentTimeInternal();
-
-  HeapVector<Member<Animation>> animations;
-  animations.ReserveInitialCapacity(animations_needing_update_.size());
-  for (Animation* animation : animations_needing_update_)
-    animations.push_back(animation);
-
-  std::sort(animations.begin(), animations.end(), Animation::HasLowerPriority);
-
-  for (Animation* animation : animations) {
-    if (!animation->Update(reason))
-      animations_needing_update_.erase(animation);
-  }
-
-  DCHECK_EQ(outdated_animation_count_, 0U);
-  DCHECK(last_current_time_internal_ == CurrentTimeInternal());
-
-#if DCHECK_IS_ON()
-  for (const auto& animation : animations_needing_update_)
-    DCHECK(!animation->Outdated());
-#endif
-  // Explicitly free the backing store to avoid memory regressions.
-  // TODO(bikineev): Revisit when young generation is done.
-  animations.clear();
 }
 
 void DocumentTimeline::ScheduleNextService() {
@@ -212,7 +136,7 @@ void DocumentTimeline::ScheduleNextService() {
     return;
   double next_effect_delay = time_to_next_effect.value().InSecondsF();
   if (next_effect_delay < kMinimumDelay) {
-    timing_->ServiceOnNextFrame();
+    ScheduleServiceOnNextFrame();
   } else {
     timing_->WakeAfter(
         base::TimeDelta::FromSecondsD(next_effect_delay - kMinimumDelay));
@@ -224,11 +148,6 @@ void DocumentTimeline::DocumentTimelineTiming::WakeAfter(
   if (timer_.IsActive() && timer_.NextFireInterval() < duration)
     return;
   timer_.StartOneShot(duration, FROM_HERE);
-}
-
-void DocumentTimeline::DocumentTimelineTiming::ServiceOnNextFrame() {
-  if (timeline_->document_->View())
-    timeline_->document_->View()->ScheduleAnimation();
 }
 
 void DocumentTimeline::DocumentTimelineTiming::Trace(blink::Visitor* visitor) {
@@ -256,14 +175,6 @@ void DocumentTimeline::SetTimingForTesting(PlatformTiming* timing) {
   timing_ = timing;
 }
 
-double DocumentTimeline::currentTime(bool& is_null) {
-  base::Optional<base::TimeDelta> result = CurrentTimeInternal();
-
-  is_null = !result.has_value();
-  return result.has_value() ? result->InMillisecondsF()
-                            : std::numeric_limits<double>::quiet_NaN();
-}
-
 base::Optional<base::TimeDelta> DocumentTimeline::CurrentTimeInternal() {
   if (!IsActive()) {
     return base::nullopt;
@@ -276,46 +187,10 @@ base::Optional<base::TimeDelta> DocumentTimeline::CurrentTimeInternal() {
   return result;
 }
 
-double DocumentTimeline::currentTime() {
-  base::Optional<base::TimeDelta> result = CurrentTimeInternal();
-  return result.has_value() ? result->InMillisecondsF()
-                            : std::numeric_limits<double>::quiet_NaN();
-}
-
-double DocumentTimeline::EffectiveTime() {
-  return CurrentTimeInternal().value_or(base::TimeDelta()).InSecondsF();
-}
-
 void DocumentTimeline::PauseAnimationsForTesting(double pause_time) {
   for (const auto& animation : animations_needing_update_)
     animation->PauseForTesting(pause_time);
   ServiceAnimations(kTimingUpdateOnDemand);
-}
-
-bool DocumentTimeline::NeedsAnimationTimingUpdate() {
-  if (CurrentTimeInternal() == last_current_time_internal_)
-    return false;
-
-  // We allow |last_current_time_internal_| to advance here when there
-  // are no animations to allow animations spawned during style
-  // recalc to not invalidate this flag.
-  if (animations_needing_update_.IsEmpty())
-    last_current_time_internal_ = CurrentTimeInternal();
-
-  return !animations_needing_update_.IsEmpty();
-}
-
-void DocumentTimeline::ClearOutdatedAnimation(Animation* animation) {
-  DCHECK(!animation->Outdated());
-  outdated_animation_count_--;
-}
-
-void DocumentTimeline::SetOutdatedAnimation(Animation* animation) {
-  DCHECK(animation->Outdated());
-  outdated_animation_count_++;
-  animations_needing_update_.insert(animation);
-  if (IsActive() && !document_->GetPage()->Animator().IsServicingAnimations())
-    timing_->ServiceOnNextFrame();
 }
 
 void DocumentTimeline::SetPlaybackRate(double playback_rate) {
@@ -349,10 +224,7 @@ void DocumentTimeline::InvalidateKeyframeEffects(const TreeScope& tree_scope) {
 }
 
 void DocumentTimeline::Trace(blink::Visitor* visitor) {
-  visitor->Trace(document_);
   visitor->Trace(timing_);
-  visitor->Trace(animations_needing_update_);
-  visitor->Trace(animations_);
   AnimationTimeline::Trace(visitor);
 }
 

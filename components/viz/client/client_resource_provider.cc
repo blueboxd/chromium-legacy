@@ -55,9 +55,7 @@ struct ClientResourceProvider::ImportedResource {
   ImportedResource& operator=(ImportedResource&&) = default;
 };
 
-ClientResourceProvider::ClientResourceProvider(
-    bool verified_sync_tokens_required)
-    : verified_sync_tokens_required_(verified_sync_tokens_required) {
+ClientResourceProvider::ClientResourceProvider() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
@@ -140,18 +138,15 @@ void ClientResourceProvider::PrepareSendToParentInternal(
 
   // Lazily create any mailboxes and verify all unverified sync tokens.
   std::vector<GLbyte*> unverified_sync_tokens;
-  if (verified_sync_tokens_required_) {
-    for (ImportedResource* imported : imports) {
-      if (!imported->resource.is_software &&
-          !imported->resource.mailbox_holder.sync_token.verified_flush()) {
-        unverified_sync_tokens.push_back(
-            imported->resource.mailbox_holder.sync_token.GetData());
-      }
+  for (ImportedResource* imported : imports) {
+    if (!imported->resource.is_software &&
+        !imported->resource.mailbox_holder.sync_token.verified_flush()) {
+      unverified_sync_tokens.push_back(
+          imported->resource.mailbox_holder.sync_token.GetData());
     }
   }
 
   if (!unverified_sync_tokens.empty()) {
-    DCHECK(verified_sync_tokens_required_);
     DCHECK(verify_sync_tokens);
     std::move(verify_sync_tokens).Run(&unverified_sync_tokens);
   }

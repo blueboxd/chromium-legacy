@@ -152,6 +152,10 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     space_.bitfields_.is_intermediate_layout = b;
   }
 
+  void SetIsPaintedAtomically(bool b) {
+    space_.bitfields_.is_painted_atomically = b;
+  }
+
   void SetFragmentationType(NGFragmentationType fragmentation_type) {
 #if DCHECK_IS_ON()
     DCHECK(!is_block_direction_fragmentation_type_set_);
@@ -179,13 +183,16 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   void SetIsRestrictedBlockSizeTableCell(bool b) {
     DCHECK(space_.bitfields_.is_table_cell);
-    space_.bitfields_.is_restricted_block_size_table_cell = b;
+    if (!b && !space_.rare_data_)
+      return;
+    space_.EnsureRareData()->is_restricted_block_size_table_cell = b;
   }
 
   void SetHideTableCellIfEmpty(bool b) {
     DCHECK(space_.bitfields_.is_table_cell);
-    if (b)
-      space_.EnsureRareData()->hide_table_cell_if_empty = b;
+    if (!b && !space_.rare_data_)
+      return;
+    space_.EnsureRareData()->hide_table_cell_if_empty = b;
   }
 
   void SetIsAnonymous(bool b) { space_.bitfields_.is_anonymous = b; }

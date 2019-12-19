@@ -138,7 +138,6 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                              const PaintInfo& float_paint_info);
   void PaintFloats(const PaintInfo&);
   void PaintMask(const PaintInfo&, const PhysicalOffset& paint_offset);
-  void PaintAtomicInline(const PaintInfo&);
   void PaintBackground(const PaintInfo&,
                        const PhysicalRect&,
                        const Color& background_color,

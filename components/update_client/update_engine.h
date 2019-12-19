@@ -41,8 +41,8 @@ class UpdateEngine : public base::RefCounted<UpdateEngine> {
  public:
   using Callback = base::OnceCallback<void(Error error)>;
   using NotifyObserversCallback =
-      base::Callback<void(UpdateClient::Observer::Events event,
-                          const std::string& id)>;
+      base::RepeatingCallback<void(UpdateClient::Observer::Events event,
+                                   const std::string& id)>;
   using CrxDataCallback = UpdateClient::CrxDataCallback;
 
   UpdateEngine(scoped_refptr<Configurator> config,

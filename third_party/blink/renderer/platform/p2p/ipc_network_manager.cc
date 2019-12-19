@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
@@ -19,6 +18,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/webrtc/rtc_base/socket_address.h"
 
 namespace blink {
@@ -62,8 +62,8 @@ void IpcNetworkManager::StartUpdating() {
   if (network_list_received_) {
     // Post a task to avoid reentrancy.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&IpcNetworkManager::SendNetworksChangedSignal,
-                                  weak_factory_.GetWeakPtr()));
+        FROM_HERE, WTF::Bind(&IpcNetworkManager::SendNetworksChangedSignal,
+                             weak_factory_.GetWeakPtr()));
   } else {
     VLOG(1) << "IpcNetworkManager::StartUpdating called; still waiting for "
                "network list from browser process.";

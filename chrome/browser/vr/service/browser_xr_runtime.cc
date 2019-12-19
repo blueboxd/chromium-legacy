@@ -15,6 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "device/vr/buildflags/buildflags.h"
+#include "device/vr/public/cpp/session_mode.h"
 #include "device/vr/vr_device.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
@@ -448,7 +449,7 @@ void BrowserXRRuntime::OnRequestSessionResult(
         immersive_session_controller) {
   if (session && service) {
     DVLOG(2) << __func__ << ": id=" << id_;
-    if (options->immersive) {
+    if (device::XRSessionModeUtils::IsImmersive(options->mode)) {
       presenting_service_ = service.get();
       immersive_session_controller_.Bind(
           std::move(immersive_session_controller));

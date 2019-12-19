@@ -8,10 +8,155 @@
 #include <winhttp.h>
 
 #include <atlconv.h>
+#include <process.h>
 
+#include "base/base64.h"
+#include "base/containers/span.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
+#include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+
+// Self deleting http service requester. This class will try to make a query
+// using the given url fetcher. It will delete itself when the request is
+// completed, either because the request completed successfully within the
+// timeout or the request has timed out and is allowed to complete in the
+// background without having the result read by anyone.
+// There are two situations where the request will be deleted:
+// 1. If the background thread making the request returns within the given
+// timeout, the function is guaranteed to return the result that was fetched.
+// 2. If however the background thread times out there are two potential
+// race conditions that can occur:
+//    1. The main thread making the request can mark that the background thread
+//       is orphaned before it can complete. In this case when the background
+//       thread completes it will check whether the request is orphaned and self
+//       delete.
+//    2. The background thread completes before the main thread can mark the
+//       request as orphaned. In this case the background thread will have
+//       marked that the request is no longer processing and thus the main
+//       thread can self delete.
+class HttpServiceRequest {
+ public:
+  explicit HttpServiceRequest(
+      std::unique_ptr<credential_provider::WinHttpUrlFetcher> fetcher)
+      : fetcher_(std::move(fetcher)) {
+    DCHECK(fetcher_);
+  }
+
+  // Tries to fetch the request stored in |fetcher_| in a background thread
+  // within the given |request_timeout|. If the background thread returns before
+  // the timeout expires, it is guaranteed that a result can be returned and the
+  // requester will delete itself.
+  base::Optional<base::Value> WaitForResponseFromHttpService(
+      const base::TimeDelta& request_timeout) {
+    base::Optional<base::Value> result;
+
+    // Start the thread and wait on its handle until |request_timeout| expires
+    // or the thread finishes.
+    unsigned wait_thread_id;
+    uintptr_t wait_thread = ::_beginthreadex(
+        nullptr, 0, &HttpServiceRequest::FetchResultFromHttpService,
+        reinterpret_cast<void*>(this), 0, &wait_thread_id);
+
+    HRESULT hr = S_OK;
+    if (wait_thread == 0) {
+      return result;
+    } else {
+      // Hold the handle in the scoped handle so that it can be immediately
+      // closed when the wait is complete allowing the thread to finish
+      // completely if needed.
+      base::win::ScopedHandle thread_handle(
+          reinterpret_cast<HANDLE>(wait_thread));
+      hr = ::WaitForSingleObject(thread_handle.Get(),
+                                 request_timeout.InMilliseconds());
+    }
+
+    // The race condition starts here. It is possible that between the expiry of
+    // the timeout in the call for WaitForSingleObject and the call to
+    // OrphanRequest, the fetching thread could have finished. So there is a two
+    // part handshake. Either the background thread has called ProcessingDone
+    // in which case it has already passed its own check for |is_orphaned_| and
+    // the call to OrphanRequest should delete this object right now. Otherwise
+    // the background thread is still running and will be able to query the
+    // |is_orphaned_| state and delete the object after thread completion.
+    if (hr != WAIT_OBJECT_0) {
+      LOGFN(ERROR) << "Wait for response timed out or failed hr="
+                   << credential_provider::putHR(hr);
+      OrphanRequest();
+      return result;
+    }
+
+    result = base::JSONReader::Read(
+        base::StringPiece(response_.data(), response_.size()),
+        base::JSON_ALLOW_TRAILING_COMMAS);
+    if (!result || !result->is_dict()) {
+      LOGFN(ERROR) << "Failed to read json result from server response";
+      result.reset();
+    }
+
+    delete this;
+    return result;
+  }
+
+ private:
+  void OrphanRequest() {
+    bool delete_self = false;
+    {
+      base::AutoLock locker(orphan_lock_);
+      CHECK(!is_orphaned_);
+      if (!is_processing_) {
+        delete_self = true;
+      } else {
+        is_orphaned_ = true;
+      }
+    }
+
+    if (delete_self)
+      delete this;
+  }
+
+  void ProcessingDone() {
+    bool delete_self = false;
+    {
+      base::AutoLock locker(orphan_lock_);
+      CHECK(is_processing_);
+      if (is_orphaned_) {
+        delete_self = true;
+      } else {
+        is_processing_ = false;
+      }
+    }
+
+    if (delete_self)
+      delete this;
+  }
+
+  // Background thread function that is used to query the request to the
+  // http service. This thread never times out and simply marks the fetcher
+  // as finished processing when it is done.
+  static unsigned __stdcall FetchResultFromHttpService(void* param) {
+    DCHECK(param);
+    HttpServiceRequest* requester =
+        reinterpret_cast<HttpServiceRequest*>(param);
+
+    HRESULT hr = requester->fetcher_->Fetch(&requester->response_);
+    if (FAILED(hr))
+      LOGFN(ERROR) << "fetcher.Fetch hr=" << credential_provider::putHR(hr);
+
+    requester->ProcessingDone();
+    return 0;
+  }
+
+  base::Lock orphan_lock_;
+  std::unique_ptr<credential_provider::WinHttpUrlFetcher> fetcher_;
+  std::vector<char> response_;
+  bool is_orphaned_ = false;
+  bool is_processing_ = true;
+};
 
 namespace credential_provider {
 
@@ -202,4 +347,79 @@ HRESULT WinHttpUrlFetcher::Close() {
   return S_OK;
 }
 
+// Builds the required json request to be sent to the http service and fetches
+// the json response from the service (if any). Returns S_OK if
+// |needed_outputs| can be filled correctly with the requested data, otherwise
+// returns an error code and clears |needed_outputs|.
+// |request_url| is the full query url from which to fetch a response.
+// |headers| are all the header key value pairs to be sent with the request.
+// |parameters| are all the json parameters to be sent with the request. This
+// argument will be converted to a json string and sent as part of the body of
+// the request.
+// |request_timeout| is the maximum time to wait for a response.
+// |needed_outputs| is the mapping of the desired result key to an address where
+// the result can be stored.
+HRESULT WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
+    const GURL& request_url,
+    std::string access_token,
+    const std::vector<std::pair<std::string, std::string>>& headers,
+    const std::vector<std::pair<std::string, std::string>>& parameters,
+    const std::vector<std::pair<std::string, std::string*>>& needed_outputs,
+    const base::TimeDelta& request_timeout) {
+  auto url_fetcher = WinHttpUrlFetcher::Create(request_url);
+  if (!url_fetcher) {
+    LOGFN(ERROR) << "Could not create valid fetcher for url="
+                 << request_url.spec();
+    return E_FAIL;
+  }
+
+  url_fetcher->SetRequestHeader("Content-Type", "application/json");
+  url_fetcher->SetRequestHeader("Authorization",
+                                ("Bearer " + access_token).c_str());
+  for (auto& header : headers)
+    url_fetcher->SetRequestHeader(header.first.c_str(), header.second.c_str());
+
+  HRESULT hr = S_OK;
+
+  if (!parameters.empty()) {
+    base::Value request_dict(base::Value::Type::DICTIONARY);
+
+    for (auto& parameter : parameters)
+      request_dict.SetStringKey(parameter.first, parameter.second);
+
+    std::string json;
+    if (!base::JSONWriter::Write(request_dict, &json)) {
+      LOGFN(ERROR) << "base::JSONWriter::Write failed";
+      return E_FAIL;
+    }
+
+    hr = url_fetcher->SetRequestBody(json.c_str());
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "fetcher.SetRequestBody hr=" << putHR(hr);
+      return E_FAIL;
+    }
+  }
+
+  base::Optional<base::Value> request_result =
+      (new HttpServiceRequest(std::move(url_fetcher)))
+          ->WaitForResponseFromHttpService(request_timeout);
+
+  if (!request_result)
+    return E_FAIL;
+
+  for (const std::pair<std::string, std::string*>& output : needed_outputs) {
+    const std::string* output_value =
+        request_result->FindStringKey(output.first);
+    if (!output_value) {
+      LOGFN(ERROR) << "Could not extract value '" << output.first
+                   << "' from server response";
+      hr = E_FAIL;
+      break;
+    }
+    DCHECK(output.second);
+    *output.second = *output_value;
+  }
+
+  return hr;
+}
 }  // namespace credential_provider

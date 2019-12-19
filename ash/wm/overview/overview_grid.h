@@ -128,7 +128,12 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // drop target takes the place of |dragged_item|. Does not animate the
   // repositioning or fade in the drop target. The visual effect is that the
   // drop target was already present but was covered by |dragged_item|.
-  void AddDropTargetForDraggingFromOverview(OverviewItem* dragged_item);
+  void AddDropTargetForDraggingFromThisGrid(OverviewItem* dragged_item);
+
+  // Adds a drop target for |dragged_window|. Used for dragging from another
+  // grid, from the top in tablet mode, or from the shelf in tablet mode.
+  void AddDropTargetNotForDraggingFromThisGrid(aura::Window* dragged_window,
+                                               bool animate);
 
   // Removes the drop target from the grid.
   void RemoveDropTarget();
@@ -141,8 +146,9 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
       bool animate);
 
   // Updates overview bounds and hides the drop target when a preview area is
-  // shown.
+  // shown or |root_window_being_dragged_in| does not equal |root_window_|.
   void RearrangeDuringDrag(
+      aura::Window* root_window_being_dragged_in,
       aura::Window* dragged_window,
       SplitViewDragIndicators::WindowDraggingState window_dragging_state);
 

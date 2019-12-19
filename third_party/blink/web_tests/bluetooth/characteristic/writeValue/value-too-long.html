@@ -13,6 +13,8 @@ bluetooth_test(() => getMeasurementIntervalCharacteristic()
     .then(({characteristic}) => assert_promise_rejects_with_message(
         characteristic.writeValue(new Uint8Array(513 /* length */)),
         new DOMException(
+            'Failed to execute \'writeValue\' on ' +
+            '\'BluetoothRemoteGATTCharacteristic\': ' +
             'Value can\'t exceed 512 bytes.',
             'InvalidModificationError'
         ), 'Value passed was too long.')),

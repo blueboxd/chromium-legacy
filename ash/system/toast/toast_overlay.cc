@@ -118,6 +118,7 @@ class ToastOverlayButton : public views::LabelButton {
                      const SkColor toast_backgrond_color)
       : views::LabelButton(listener, text, CONTEXT_TOAST_OVERLAY) {
     SetInkDropMode(InkDropMode::ON);
+    set_has_ink_drop_action_on_click(true);
     set_ink_drop_base_color(AshColorProvider::Get()
                                 ->GetRippleAttributes(toast_backgrond_color)
                                 .base_color);

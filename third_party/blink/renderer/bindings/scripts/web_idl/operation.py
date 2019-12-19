@@ -54,7 +54,7 @@ class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
         assert isinstance(ir, Operation.IR)
 
         FunctionLike.__init__(self, ir)
-        WithExtendedAttributes.__init__(self, ir)
+        WithExtendedAttributes.__init__(self, ir, readonly=True)
         WithCodeGeneratorInfo.__init__(self, ir, readonly=True)
         WithExposure.__init__(self, ir, readonly=True)
         WithOwner.__init__(self, owner)

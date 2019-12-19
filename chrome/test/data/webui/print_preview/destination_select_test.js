@@ -30,37 +30,16 @@ suite(destination_select_test.suiteName, function() {
     destinationSelect.disabled = false;
     destinationSelect.noDestinations = false;
     destinationSelect.recentDestinationList = [
-      // Local printer without stickied icon
-      {
-        id: 'ID1',
-        origin: DestinationOrigin.LOCAL,
-        account: '',
-        capabilities: null,
-        displayName: 'One',
-        extensionId: '',
-        extensionName: ''
-      },
-      // Shared cloud printer with stickied icon
-      {
-        id: 'ID2',
-        origin: DestinationOrigin.COOKIES,
-        account: account,
-        capabilities: null,
-        displayName: 'Two',
-        extensionId: '',
-        extensionName: '',
-        icon: 'print-preview:printer-shared'
-      },
-      // Shared cloud printer without stickied icon
-      {
-        id: 'ID3',
-        origin: DestinationOrigin.COOKIES,
-        account: account,
-        capabilities: null,
-        displayName: 'Three',
-        extensionId: '',
-        extensionName: ''
-      },
+      new Destination(
+          'ID1', DestinationType.LOCAL, DestinationOrigin.LOCAL, 'One',
+          DestinationConnectionStatus.ONLINE),
+      new Destination(
+          'ID2', DestinationType.CLOUD, DestinationOrigin.COOKIES, 'Two',
+          DestinationConnectionStatus.ONLINE, {account: account}),
+      new Destination(
+          'ID3', DestinationType.CLOUD, DestinationOrigin.COOKIES, 'Three',
+          DestinationConnectionStatus.ONLINE,
+          {account: account, isOwned: true}),
     ];
 
     document.body.appendChild(destinationSelect);
@@ -97,7 +76,7 @@ suite(destination_select_test.suiteName, function() {
           // Still Save to Drive icon.
           compareIcon(selectEl, 'save-to-drive');
 
-          // Select a destination that has a sticky icon value.
+          // Select a destination with the shared printer icon.
           return selectOption(
               destinationSelect, `ID2/${cookieOrigin}/${account}`);
         })
@@ -111,21 +90,12 @@ suite(destination_select_test.suiteName, function() {
               DestinationConnectionStatus.ONLINE, {account: account});
           compareIcon(selectEl, 'printer-shared');
 
-          // Select a destination that doesn't have a sticky icon value.
+          // Select a destination with a standard printer icon.
           return selectOption(
               destinationSelect, `ID3/${cookieOrigin}/${account}`);
         })
         .then(() => {
-          // Falls back to normal printer icon.
           compareIcon(selectEl, 'print');
-
-          // Update destination.
-          destinationSelect.destination = new Destination(
-              'ID3', DestinationType.GOOGLE, DestinationOrigin.COOKIES, 'Three',
-              DestinationConnectionStatus.ONLINE, {account: account});
-
-          // Icon updates based on full destination information.
-          compareIcon(selectEl, 'printer-shared');
         });
   });
 });

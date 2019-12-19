@@ -4,13 +4,14 @@
 
 #include "third_party/blink/renderer/platform/p2p/socket_dispatcher.h"
 
-#include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "services/network/public/cpp/p2p_param_traits.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/p2p/network_list_observer.h"
 #include "third_party/blink/renderer/platform/p2p/socket_client_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
 
@@ -24,10 +25,10 @@ P2PSocketDispatcher::~P2PSocketDispatcher() {}
 void P2PSocketDispatcher::AddNetworkListObserver(
     blink::NetworkListObserver* network_list_observer) {
   network_list_observers_->AddObserver(network_list_observer);
-  main_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&P2PSocketDispatcher::RequestNetworkEventsIfNecessary,
-                     this));
+  PostCrossThreadTask(
+      *main_task_runner_.get(), FROM_HERE,
+      CrossThreadBindOnce(&P2PSocketDispatcher::RequestNetworkEventsIfNecessary,
+                          scoped_refptr<P2PSocketDispatcher>(this)));
 }
 
 void P2PSocketDispatcher::RemoveNetworkListObserver(
@@ -47,13 +48,14 @@ P2PSocketDispatcher::GetP2PSocketManager() {
         mojo::SharedRemote<network::mojom::blink::P2PSocketManager>(
             std::move(p2p_socket_manager));
     p2p_socket_manager_.set_disconnect_handler(
-        base::BindOnce(&P2PSocketDispatcher::OnConnectionError,
-                       base::Unretained(this)),
+        WTF::Bind(&P2PSocketDispatcher::OnConnectionError,
+                  WTF::Unretained(this)),
         main_task_runner_);
   }
-  main_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&P2PSocketDispatcher::RequestInterfaceIfNecessary, this));
+  PostCrossThreadTask(
+      *main_task_runner_.get(), FROM_HERE,
+      CrossThreadBindOnce(&P2PSocketDispatcher::RequestInterfaceIfNecessary,
+                          scoped_refptr<P2PSocketDispatcher>(this)));
   return p2p_socket_manager_.get();
 }
 

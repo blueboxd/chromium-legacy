@@ -74,9 +74,9 @@ struct ConnectionManager::Connection {
 };
 
 ConnectionManager::ConnectionManager() {
-  metrics_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromHours(24),
-      base::Bind(&ConnectionManager::ReportMetrics, base::Unretained(this)));
+  metrics_timer_.Start(FROM_HERE, base::TimeDelta::FromHours(24),
+                       base::BindRepeating(&ConnectionManager::ReportMetrics,
+                                           base::Unretained(this)));
 }
 ConnectionManager::~ConnectionManager() = default;
 

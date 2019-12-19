@@ -1,41 +1,5 @@
 [
     {
-        "duration": "41.0",
-        "name": "heap_profiling.mobile.disabled/load:news:cnn:2018"
-    },
-    {
-        "duration": "29.0",
-        "name": "heap_profiling.mobile.disabled/load:search:google:2018"
-    },
-    {
-        "duration": "28.0",
-        "name": "heap_profiling.mobile.disabled/load:social:twitter"
-    },
-    {
-        "duration": "44.0",
-        "name": "heap_profiling.mobile.native/load:news:cnn:2018"
-    },
-    {
-        "duration": "30.0",
-        "name": "heap_profiling.mobile.native/load:search:google:2018"
-    },
-    {
-        "duration": "30.0",
-        "name": "heap_profiling.mobile.native/load:social:twitter"
-    },
-    {
-        "duration": "43.0",
-        "name": "heap_profiling.mobile.pseudo/load:news:cnn:2018"
-    },
-    {
-        "duration": "29.0",
-        "name": "heap_profiling.mobile.pseudo/load:search:google:2018"
-    },
-    {
-        "duration": "29.0",
-        "name": "heap_profiling.mobile.pseudo/load:social:twitter"
-    },
-    {
         "duration": "14.0",
         "name": "tracing.tracing_with_background_memory_infra/Facebook"
     },

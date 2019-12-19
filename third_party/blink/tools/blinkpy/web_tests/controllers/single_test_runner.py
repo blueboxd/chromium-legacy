@@ -44,8 +44,9 @@ _log = logging.getLogger(__name__)
 def run_single_test(port, options, results_directory, worker_name, driver, test_input):
     runner = SingleTestRunner(port, options, results_directory, worker_name, driver, test_input)
     try:
-        test_result =  runner.run()
-        test_result.create_artifacts()
+        test_result = runner.run()
+        if not options.no_expectations:
+            test_result.create_artifacts()
         return test_result
     except DeviceFailure as error:
         _log.error('device failed: %s', error)

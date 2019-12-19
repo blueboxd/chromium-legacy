@@ -148,7 +148,7 @@ QUIC_FLAG(
 
 // If true, use common code for checking whether a new stream ID may be
 // allocated.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_common_stream_check, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_common_stream_check, true)
 
 // If true, QuicEpollClock::Now() will monotonically increase.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_monotonic_epoll_clock, false)
@@ -332,39 +332,31 @@ QUIC_FLAG(
 
 // If true, log number of ack aggregation epochs in QUIC transport connection
 // stats.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_log_ack_aggregation_stats,
-          false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_log_ack_aggregation_stats, true)
 
 // If true, for server QUIC connections, set version_negotiated_ to true by
 // default.
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_version_negotiated_by_default_at_server,
-    false)
+    true)
 
 // If true, QuicSession::SendRstStreamInner will be factored out and deleted.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_delete_send_rst_stream_inner,
-          false)
+          true)
 
 // If true, for QUIC BBRv2 flows, exit PROBE_BW_DOWN phase after one round trip
 // time.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr2_exit_probe_bw_down_after_one_rtt,
-          false)
+          true)
 
 // If true, QUIC connection close packet will be sent at all available
 // encryption levels.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_close_all_encryptions_levels2,
           false)
-
-// If true, then a MAX_PUSH_ID frame will be send when the initial SETTINGS
-// frame is sent in HTTP/3.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_send_max_push_id_with_settings,
-          true)
 
 // If true, QUIC crypto handshaker uses handshaker delegate to notify session
 // about handshake events.

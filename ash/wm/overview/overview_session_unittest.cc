@@ -4115,8 +4115,10 @@ TEST_P(SplitViewOverviewSessionTest, Clipping) {
 
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
   std::unique_ptr<aura::Window> window2 = CreateTestWindow();
-  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow();  // Minimized.
+  std::unique_ptr<aura::Window> window4 = CreateTestWindow();  // Has top inset.
   WindowState::Get(window3.get())->Minimize();
+  window4->SetProperty(aura::client::kTopViewInset, 32);
 
   for (bool portrait : {false, true}) {
     SCOPED_TRACE(portrait ? "Portrait" : "Landscape");
@@ -4130,6 +4132,7 @@ TEST_P(SplitViewOverviewSessionTest, Clipping) {
     const gfx::Rect clipping1 = window1->layer()->clip_rect();
     const gfx::Rect clipping2 = window2->layer()->clip_rect();
     const gfx::Rect clipping3 = window3->layer()->clip_rect();
+    const gfx::Rect clipping4 = window4->layer()->clip_rect();
     const gfx::Rect maximized_bounds =
         screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
             window1.get());
@@ -4139,15 +4142,22 @@ TEST_P(SplitViewOverviewSessionTest, Clipping) {
             /*window_for_minimum_size=*/nullptr);
 
     ToggleOverview();
+    // Clipping like rounded corners and shadows gets updated via a delayed post
+    // task.
+    base::RunLoop().RunUntilIdle();
+
     // Tests that in regular overview, the clipping is unchanged.
     ASSERT_TRUE(overview_controller()->InOverviewSession());
     EXPECT_EQ(clipping1, window1->layer()->clip_rect());
     EXPECT_EQ(clipping2, window2->layer()->clip_rect());
     EXPECT_EQ(clipping3, window3->layer()->clip_rect());
+    EXPECT_NE(clipping4, window4->layer()->clip_rect());
+    const gfx::Rect overview_clipping4 = window4->layer()->clip_rect();
 
     OverviewItem* item1 = GetOverviewItemForWindow(window1.get());
     OverviewItem* item2 = GetOverviewItemForWindow(window2.get());
     OverviewItem* item3 = GetOverviewItemForWindow(window3.get());
+    OverviewItem* item4 = GetOverviewItemForWindow(window4.get());
     overview_session()->InitiateDrag(item1,
                                      item1->target_bounds().CenterPoint(),
                                      /*is_touch_dragging=*/false);
@@ -4190,6 +4200,18 @@ TEST_P(SplitViewOverviewSessionTest, Clipping) {
     EXPECT_TRUE(
         aspect_ratio_near(window3->GetBoundsInScreen(), maximized_bounds));
 
+    // A window with top view inset should be clipped, but with a new clipping
+    // than the original overview clipping.
+    EXPECT_FALSE(window4->layer()->clip_rect().IsEmpty());
+    EXPECT_NE(overview_clipping4, window4->layer()->clip_rect());
+    EXPECT_TRUE(aspect_ratio_near(window4->layer()->clip_rect(),
+                                  split_view_bounds_right));
+    EXPECT_TRUE(aspect_ratio_near(
+        gfx::ToEnclosedRect(item4->GetWindowTargetBoundsWithInsets()),
+        split_view_bounds_right));
+    EXPECT_TRUE(
+        aspect_ratio_near(window4->GetBoundsInScreen(), maximized_bounds));
+
     // Tests that after snapping, the aspect ratios should be the same as being
     // in the preview area.
     overview_session()->CompleteDrag(item1, gfx::PointF());
@@ -4212,12 +4234,23 @@ TEST_P(SplitViewOverviewSessionTest, Clipping) {
     EXPECT_TRUE(
         aspect_ratio_near(window3->GetBoundsInScreen(), maximized_bounds));
 
+    EXPECT_FALSE(window4->layer()->clip_rect().IsEmpty());
+    EXPECT_NE(overview_clipping4, window4->layer()->clip_rect());
+    EXPECT_TRUE(aspect_ratio_near(window4->layer()->clip_rect(),
+                                  split_view_bounds_right));
+    EXPECT_TRUE(aspect_ratio_near(
+        gfx::ToEnclosedRect(item4->GetWindowTargetBoundsWithInsets()),
+        split_view_bounds_right));
+    EXPECT_TRUE(
+        aspect_ratio_near(window4->GetBoundsInScreen(), maximized_bounds));
+
     // Tests that the clipping is reset after exiting overview.
     EndSplitView();
     ToggleOverview();
     EXPECT_EQ(clipping1, window1->layer()->clip_rect());
     EXPECT_EQ(clipping2, window2->layer()->clip_rect());
     EXPECT_EQ(clipping3, window3->layer()->clip_rect());
+    EXPECT_EQ(clipping4, window4->layer()->clip_rect());
   }
 }
 

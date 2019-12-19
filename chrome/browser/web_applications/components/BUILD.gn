@@ -117,6 +117,7 @@ source_set("components") {
     "//components/favicon/content",
     "//components/keyed_service/content",
     "//components/pref_registry",
+    "//components/services/app_service/public/mojom",
     "//components/user_manager:user_manager",
     "//content/public/browser",
     "//extensions/common:common_constants",

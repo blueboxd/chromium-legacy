@@ -8,10 +8,8 @@
 #include "third_party/blink/renderer/core/animation/animation_timeline.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline_options.h"
 #include "third_party/blink/renderer/core/animation/timing.h"
-#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -49,14 +47,14 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
                  Timing::FillMode);
 
   // AnimationTimeline implementation.
-  double currentTime(bool& is_null) final;
   bool IsScrollTimeline() const override { return true; }
-  Document* GetDocument() override { return document_; }
   // ScrollTimeline is not active if scrollSource is null, does not currently
   // have a CSS layout box, or if its layout box is not a scroll container.
   // https://github.com/WICG/scroll-animations/issues/31
   bool IsActive() const override;
   base::Optional<base::TimeDelta> InitialStartTimeForAnimations() override;
+
+  void ScheduleNextService() override;
 
   // IDL API implementation.
   Element* scrollSource();
@@ -92,8 +90,10 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
 
   static bool HasActiveScrollTimeline(Node* node);
 
+ protected:
+  base::Optional<base::TimeDelta> CurrentTimeInternal() override;
+
  private:
-  Member<Document> document_;
   // Use |scroll_source_| only to implement the web-exposed API but use
   // resolved_scroll_source_ to actually access the scroll related properties.
   Member<Element> scroll_source_;

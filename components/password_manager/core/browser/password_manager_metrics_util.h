@@ -298,15 +298,14 @@ enum class GaiaPasswordHashChange {
   // Password hash saved event where the account is used to sign in to Chrome
   // (syncing).
   SAVED_ON_CHROME_SIGNIN = 0,
-  // Syncing account password hash saved in content area (syncing).
+  // Password hash saved in content area.
   SAVED_IN_CONTENT_AREA = 1,
-  // Clear syncing password hash when the account is signed out of Chrome
-  // (syncing).
+  // Clear password hash when the account is signed out of Chrome.
   CLEARED_ON_CHROME_SIGNOUT = 2,
   // Password hash changed event where the account is used to sign in to Chrome
   // (syncing).
   CHANGED_IN_CONTENT_AREA = 3,
-  // Password hash change event where the account is not syncing.
+  // Password hash changed event where the account is not syncing.
   NOT_SYNC_PASSWORD_CHANGE = 4,
   // Password hash change event for non-GAIA enterprise accounts.
   NON_GAIA_ENTERPRISE_PASSWORD_CHANGE = 5,

@@ -23,7 +23,7 @@ namespace safe_browsing {
 class V4Store;
 
 using UpdatedStoreReadyCallback =
-    base::Callback<void(std::unique_ptr<V4Store> new_store)>;
+    base::OnceCallback<void(std::unique_ptr<V4Store> new_store)>;
 
 // The sorted list of hash prefixes.
 using HashPrefixes = std::string;

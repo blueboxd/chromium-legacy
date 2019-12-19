@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/ios/rules.gni")
+import("//ios/third_party/features.gni")
 
 declare_args() {
   # Authorization service implementation used in ios_web_view_shell. Uses a fake
@@ -22,6 +23,11 @@ declare_args() {
   # Path to an entitlements file used in ios_web_view_shell. Can be overridden
   # to provide an alternative.
   ios_web_view_shell_entitlements_path = "//build/config/ios/entitlements.plist"
+
+  # Controls whether WebView shell links with MaterialComponents.framework or
+  # gets the implementation from its downstream provider. Ignored if
+  # MaterialComponents is not build as a framework.
+  ios_web_view_shell_links_with_material_components_framework = true
 }
 
 ios_app_bundle("ios_web_view_shell") {
@@ -35,6 +41,20 @@ ios_app_bundle("ios_web_view_shell") {
     "//ios/web_view/shell/resources",
   ]
   entitlements_path = ios_web_view_shell_entitlements_path
+
+  if (ios_third_party_material_components_built_as_framework) {
+    if (ios_web_view_shell_links_with_material_components_framework) {
+      deps += [
+        "//ios/third_party/material_components_ios:material_components_ios+bundle",
+        "//ios/third_party/material_components_ios:material_components_ios+link",
+      ]
+    } else {
+      assert_no_deps = [
+        "//ios/third_party/material_components_ios:material_components_ios+bundle",
+        "//ios/third_party/material_components_ios:material_components_ios+link",
+      ]
+    }
+  }
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

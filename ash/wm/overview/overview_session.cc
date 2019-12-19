@@ -357,12 +357,25 @@ void OverviewSession::UpdateSplitViewDragIndicatorsWindowDraggingStates(
   }
 }
 
-void OverviewSession::RearrangeDuringDrag(aura::Window* dragged_window) {
+void OverviewSession::RearrangeDuringDrag(
+    aura::Window* root_window_being_dragged_in,
+    aura::Window* dragged_window) {
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
     DCHECK(grid->split_view_drag_indicators());
     grid->RearrangeDuringDrag(
-        dragged_window,
+        root_window_being_dragged_in, dragged_window,
         grid->split_view_drag_indicators()->current_window_dragging_state());
+  }
+}
+
+void OverviewSession::UpdateDropTargetsBackgroundVisibilities(
+    OverviewItem* dragged_item,
+    const gfx::PointF& location_in_screen) {
+  for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
+    if (grid->GetDropTarget()) {
+      grid->UpdateDropTargetBackgroundVisibility(dragged_item,
+                                                 location_in_screen);
+    }
   }
 }
 
@@ -429,6 +442,13 @@ void OverviewSession::RemoveItem(OverviewItem* overview_item) {
   --num_items_;
 
   UpdateNoWindowsWidget();
+}
+
+void OverviewSession::RemoveDropTargets() {
+  for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
+    if (grid->GetDropTarget())
+      grid->RemoveDropTarget();
+  }
 }
 
 void OverviewSession::InitiateDrag(OverviewItem* item,

@@ -4,15 +4,12 @@
 
 #include "weblayer/test/weblayer_browser_test.h"
 
-#include "build/build_config.h"
 #include "weblayer/test/weblayer_browser_test_utils.h"
 
 namespace weblayer {
 
 using WebLayerWebUIBrowserTest = WebLayerBrowserTest;
 
-// Disabled on Windows, see crbug.com/1034764
-#if !defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(WebLayerWebUIBrowserTest, WebUI) {
   NavigateAndWaitForCompletion(GURL("chrome://weblayer"), shell());
   base::RunLoop run_loop;
@@ -28,6 +25,5 @@ IN_PROC_BROWSER_TEST_F(WebLayerWebUIBrowserTest, WebUI) {
   EXPECT_TRUE(result);
 #endif
 }
-#endif  // !defined(OS_WIN)
 
 }  // namespace weblayer

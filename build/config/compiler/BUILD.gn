@@ -1545,8 +1545,6 @@ config("default_warnings") {
           cflags += [
             # TODO(https://crbug.com/1031169): Clean up and enable.
             "-Wno-misleading-indentation",
-            # TODO(https://crbug.com/1035171): Clean up and enable.
-            "-Wno-enum-enum-conversion",
           ]
         }
       }

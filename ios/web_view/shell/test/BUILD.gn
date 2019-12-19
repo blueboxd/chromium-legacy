@@ -4,6 +4,7 @@
 
 import("//ios/build/config.gni")
 import("//ios/third_party/earl_grey/ios_eg_test.gni")
+import("//ios/third_party/features.gni")
 
 group("all_tests") {
   testonly = true
@@ -26,6 +27,13 @@ ios_eg_test("ios_web_view_shell_egtests") {
     "//ios/web_view/test:test_support",
     "//net:test_support",
   ]
+
+  if (ios_third_party_material_components_built_as_framework) {
+    deps += [
+      "//ios/third_party/material_components_ios:material_components_ios+bundle",
+      "//ios/third_party/material_components_ios:material_components_ios+link",
+    ]
+  }
 
   configs += [ "//build/config/compiler:enable_arc" ]
 

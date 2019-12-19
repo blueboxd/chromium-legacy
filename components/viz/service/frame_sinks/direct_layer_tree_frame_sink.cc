@@ -102,8 +102,7 @@ bool DirectLayerTreeFrameSink::BindToClient(
     return false;
 
   support_ = support_manager_->CreateCompositorFrameSinkSupport(
-      this, frame_sink_id_, /*is_root=*/true,
-      /*return_sync_tokens_required=*/false);
+      this, frame_sink_id_, /*is_root=*/true);
   begin_frame_source_ = std::make_unique<ExternalBeginFrameSource>(this);
   client_->SetBeginFrameSource(begin_frame_source_.get());
 
@@ -132,8 +131,7 @@ void DirectLayerTreeFrameSink::SubmitCompositorFrame(
     bool hit_test_data_changed,
     bool show_hit_test_borders) {
   DCHECK(frame.metadata.begin_frame_ack.has_damage);
-  DCHECK_LE(BeginFrameArgs::kStartingFrameNumber,
-            frame.metadata.begin_frame_ack.sequence_number);
+  DCHECK(frame.metadata.begin_frame_ack.frame_id.IsSequenceValid());
 
   // It's possible to request an immediate composite from cc which will bypass
   // BeginFrame. In that case, we cannot collect full graphics pipeline data.
@@ -189,7 +187,7 @@ void DirectLayerTreeFrameSink::SubmitCompositorFrame(
 
 void DirectLayerTreeFrameSink::DidNotProduceFrame(const BeginFrameAck& ack) {
   DCHECK(!ack.has_damage);
-  DCHECK_LE(BeginFrameArgs::kStartingFrameNumber, ack.sequence_number);
+  DCHECK(ack.frame_id.IsSequenceValid());
 
   // TODO(yiyix): Remove duplicated calls of DidNotProduceFrame from the same
   // BeginFrames. https://crbug.com/881949

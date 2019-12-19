@@ -199,7 +199,7 @@ struct LogoCallbacks {
 
 // Parses the response from the server and returns it as an EncodedLogo. Returns
 // null if the response is invalid.
-using ParseLogoResponse = base::Callback<std::unique_ptr<EncodedLogo>(
+using ParseLogoResponse = base::RepeatingCallback<std::unique_ptr<EncodedLogo>(
     std::unique_ptr<std::string> response,
     base::Time response_time,
     bool* parsing_failed)>;
@@ -207,7 +207,8 @@ using ParseLogoResponse = base::Callback<std::unique_ptr<EncodedLogo>(
 // Encodes the fingerprint of the cached logo in the logo URL. This enables the
 // server to verify whether the cached logo is up to date.
 using AppendQueryparamsToLogoURL =
-    base::Callback<GURL(const GURL& logo_url, const std::string& fingerprint)>;
+    base::RepeatingCallback<GURL(const GURL& logo_url,
+                                 const std::string& fingerprint)>;
 
 }  // namespace search_provider_logos
 

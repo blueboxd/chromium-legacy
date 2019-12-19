@@ -434,8 +434,8 @@ HeapVector<Member<Document>> CollectDocumentsToUnfullscreen(Document& doc) {
 
 // https://fullscreen.spec.whatwg.org/#run-the-fullscreen-rendering-steps
 void FireEvent(const AtomicString& type, Element* element, Document* document) {
-  DCHECK(document);
-  DCHECK(element);
+  if (!document || !element)
+    return;
 
   // |Document::EnqueueAnimationFrameTask()| is used instead of a "list of
   // pending fullscreen events", so only the body of the "run the fullscreen
@@ -473,8 +473,8 @@ void EnqueueEvent(const AtomicString& type,
                   Fullscreen::RequestType request_type) {
   const AtomicString& adjusted_type = AdjustEventType(type, request_type);
   document.EnqueueAnimationFrameTask(WTF::Bind(FireEvent, adjusted_type,
-                                               WrapPersistent(&element),
-                                               WrapPersistent(&document)));
+                                               WrapWeakPersistent(&element),
+                                               WrapWeakPersistent(&document)));
 }
 
 void DidEnterFullscreenTask(Document* document) {

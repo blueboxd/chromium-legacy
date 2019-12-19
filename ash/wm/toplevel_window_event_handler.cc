@@ -157,6 +157,56 @@ bool CanStartGoingBackFromSplitViewDivider(const gfx::Point& screen_location) {
   return divider_bounds.Contains(screen_location);
 }
 
+// Activate the given |window|.
+void ActivateWindow(aura::Window* window) {
+  if (!window)
+    return;
+  WindowState::Get(window)->Activate();
+}
+
+// Activate the snapped window that is underneath the start |location| for back
+// gesture. This is necessary since the snapped window that is underneath is not
+// always the current active window.
+void ActivateUnderneathWindowInSplitViewMode(
+    const gfx::Point& location,
+    bool dragged_from_splitview_divider) {
+  auto* split_view_controller =
+      SplitViewController::Get(window_util::GetRootWindowAt(location));
+  if (!split_view_controller->InTabletSplitViewMode())
+    return;
+
+  auto* left_window = split_view_controller->left_window();
+  auto* right_window = split_view_controller->right_window();
+  const OrientationLockType current_orientation = GetCurrentScreenOrientation();
+  if (current_orientation == OrientationLockType::kLandscapePrimary) {
+    ActivateWindow(dragged_from_splitview_divider ? right_window : left_window);
+  } else if (current_orientation == OrientationLockType::kLandscapeSecondary) {
+    ActivateWindow(dragged_from_splitview_divider ? left_window : right_window);
+  } else {
+    if (left_window &&
+        split_view_controller
+            ->GetSnappedWindowBoundsInScreen(
+                SplitViewController::LEFT, /*window_for_minimum_size=*/nullptr)
+            .Contains(location)) {
+      ActivateWindow(left_window);
+    } else if (right_window && split_view_controller
+                                   ->GetSnappedWindowBoundsInScreen(
+                                       SplitViewController::RIGHT,
+                                       /*window_for_minimum_size=*/nullptr)
+                                   .Contains(location)) {
+      ActivateWindow(right_window);
+    } else if (split_view_controller->split_view_divider()
+                   ->GetDividerBoundsInScreen(
+                       /*is_dragging=*/false)
+                   .Contains(location)) {
+      // Activate the window that above the splitview divider if back gesture
+      // starts from splitview divider.
+      ActivateWindow(IsCurrentScreenOrientationPrimary() ? left_window
+                                                         : right_window);
+    }
+  }
+}
+
 }  // namespace
 
 // -----------------------------------------------------------------------------
@@ -930,16 +980,17 @@ bool ToplevelWindowEventHandler::MaybeHandleBackGesture(ui::GestureEvent* event,
   ::wm::ConvertPointToScreen(target, &screen_location);
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
-    case ui::ET_GESTURE_SCROLL_BEGIN: {
-      if (going_back_started_)
-        break;
       going_back_started_ = CanStartGoingBack(event, target, screen_location);
       if (!going_back_started_)
         break;
       back_gesture_affordance_ = std::make_unique<BackGestureAffordance>(
           screen_location, dragged_from_splitview_divider_);
       return true;
-    }
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      if (!going_back_started_)
+        break;
+      back_start_location_ = screen_location;
+      break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       if (!going_back_started_)
         break;
@@ -955,25 +1006,13 @@ bool ToplevelWindowEventHandler::MaybeHandleBackGesture(ui::GestureEvent* event,
       if (back_gesture_affordance_->IsActivated() ||
           (event->type() == ui::ET_SCROLL_FLING_START &&
            event->details().velocity_x() >= kFlingVelocityForGoingBack)) {
-        aura::Window* root_window =
-            window_util::GetRootWindowAt(screen_location);
-        auto* split_view_controller = SplitViewController::Get(root_window);
-        if (split_view_controller->InTabletSplitViewMode()) {
-          auto* left_window = split_view_controller->left_window();
-          auto* right_window = split_view_controller->right_window();
-          // Activate the snapped window that being swipped to make sure it is
-          // the window that will go back or be minimized later.
-          if (dragged_from_splitview_divider_) {
-            if (right_window)
-              WindowState::Get(right_window)->Activate();
-          } else if (left_window) {
-            WindowState::Get(left_window)->Activate();
-          }
-        }
-
+        ActivateUnderneathWindowInSplitViewMode(
+            back_start_location_, dragged_from_splitview_divider_);
         if (TabletModeWindowManager::ShouldMinimizeTopWindowOnBack()) {
           WindowState::Get(TabletModeWindowManager::GetTopWindow())->Minimize();
         } else {
+          aura::Window* root_window =
+              window_util::GetRootWindowAt(screen_location);
           ui::KeyEvent press_key_event(ui::ET_KEY_PRESSED,
                                        ui::VKEY_BROWSER_BACK, ui::EF_NONE);
           ignore_result(

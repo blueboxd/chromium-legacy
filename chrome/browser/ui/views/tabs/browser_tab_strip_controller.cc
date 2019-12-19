@@ -316,11 +316,12 @@ void BrowserTabStripController::CloseTab(int model_index,
                              TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
 }
 
-void BrowserTabStripController::UngroupAllTabsInGroup(TabGroupId group) {
+void BrowserTabStripController::UngroupAllTabsInGroup(
+    tab_groups::TabGroupId group) {
   model_->RemoveFromGroup(ListTabsInGroup(group));
 }
 
-void BrowserTabStripController::AddNewTabInGroup(TabGroupId group) {
+void BrowserTabStripController::AddNewTabInGroup(tab_groups::TabGroupId group) {
   const std::vector<int> tabs = ListTabsInGroup(group);
   model_->delegate()->AddTabAt(GURL(), tabs.back() + 1, true, group);
 }
@@ -432,19 +433,20 @@ void BrowserTabStripController::OnKeyboardFocusedTabChanged(
       index);
 }
 
-const TabGroupVisualData* BrowserTabStripController::GetVisualDataForGroup(
-    TabGroupId group) const {
+const tab_groups::TabGroupVisualData*
+BrowserTabStripController::GetVisualDataForGroup(
+    tab_groups::TabGroupId group) const {
   return model_->group_model()->GetTabGroup(group)->visual_data();
 }
 
 void BrowserTabStripController::SetVisualDataForGroup(
-    TabGroupId group,
-    TabGroupVisualData visual_data) {
+    tab_groups::TabGroupId group,
+    tab_groups::TabGroupVisualData visual_data) {
   model_->group_model()->GetTabGroup(group)->SetVisualData(visual_data);
 }
 
 std::vector<int> BrowserTabStripController::ListTabsInGroup(
-    TabGroupId group) const {
+    tab_groups::TabGroupId group) const {
   return model_->group_model()->GetTabGroup(group)->ListTabs();
 }
 
@@ -601,7 +603,7 @@ void BrowserTabStripController::TabBlockedStateChanged(WebContents* contents,
 }
 
 void BrowserTabStripController::TabGroupedStateChanged(
-    base::Optional<TabGroupId> group,
+    base::Optional<tab_groups::TabGroupId> group,
     int index) {
   tabstrip_->AddTabToGroup(group, index);
 }

@@ -65,6 +65,8 @@ class JSChecker {
   WARN_UNUSED_RESULT std::unique_ptr<TestConditionWaiter>
   CreateVisibilityWaiter(bool visibility,
                          std::initializer_list<base::StringPiece> element_ids);
+  WARN_UNUSED_RESULT std::unique_ptr<TestConditionWaiter>
+  CreateVisibilityWaiter(bool visibility, const std::string& element);
 
   // Waiter that waits until specified element is (not) displayed with non-zero
   // size.

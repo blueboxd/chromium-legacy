@@ -47,7 +47,7 @@ void PageAnimator::ServiceScriptedAnimations(
   for (auto& document : documents) {
     ScopedFrameBlamer frame_blamer(document->GetFrame());
     TRACE_EVENT0("blink,rail", "PageAnimator::serviceScriptedAnimations");
-    DocumentAnimations::UpdateAnimationTimingForAnimationFrame(*document);
+    document->GetDocumentAnimations().UpdateAnimationTimingForAnimationFrame();
     if (document->View()) {
       if (document->View()->ShouldThrottleRendering()) {
         document->SetCurrentFrameIsThrottled(true);

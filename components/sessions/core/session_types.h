@@ -18,6 +18,8 @@
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/sessions_export.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "components/variations/variations_associated_data.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
@@ -70,7 +72,7 @@ struct SESSIONS_EXPORT SessionTab {
   int current_navigation_index;
 
   // The tab's group ID, if any.
-  base::Optional<base::Token> group;
+  base::Optional<tab_groups::TabGroupId> group;
 
   // True if the tab is pinned.
   bool pinned;
@@ -99,31 +101,21 @@ struct SESSIONS_EXPORT SessionTab {
   DISALLOW_COPY_AND_ASSIGN(SessionTab);
 };
 
-// Visual parameters of a tab group. This is shared between the session
-// service and the tab restore service.
-struct SESSIONS_EXPORT TabGroupMetadata {
-  // A human-readable title for the group.
-  base::string16 title;
-
-  // An accent color used when displaying the group.
-  SkColor color = gfx::kPlaceholderColor;
-};
-
 // SessionTabGroup -----------------------------------------------------------
 
 // Describes a tab group referenced by some SessionTab entry in its group
 // field. By default, this is initialized with placeholder values that are
 // visually obvious.
 struct SESSIONS_EXPORT SessionTabGroup {
-  explicit SessionTabGroup(base::Token group);
+  explicit SessionTabGroup(const tab_groups::TabGroupId& id);
   ~SessionTabGroup();
 
   // Uniquely identifies this group. Initialized to zero and must be set be
   // user. Unlike SessionID this should be globally unique, even across
   // different sessions.
-  base::Token group_id;
+  tab_groups::TabGroupId id;
 
-  TabGroupMetadata metadata;
+  tab_groups::TabGroupVisualData visual_data;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionTabGroup);

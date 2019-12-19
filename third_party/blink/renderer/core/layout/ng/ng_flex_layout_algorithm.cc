@@ -292,6 +292,7 @@ NGFlexLayoutAlgorithm::BuildConstraintSpaceForDeterminingFlexBasis(
                                          child_style.GetWritingMode(),
                                          /* is_new_fc */ true);
   SetOrthogonalFallbackInlineSizeIfNeeded(Style(), flex_item, &space_builder);
+  space_builder.SetIsPaintedAtomically(true);
 
   if (ShouldItemShrinkToFit(flex_item))
     space_builder.SetIsShrinkToFit(true);
@@ -616,6 +617,7 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
                                               &space_builder);
       space_builder.SetTextDirection(
           flex_item.ng_input_node.Style().Direction());
+      space_builder.SetIsPaintedAtomically(true);
 
       LogicalSize available_size;
       if (is_column_) {
@@ -697,6 +699,7 @@ void NGFlexLayoutAlgorithm::ApplyStretchAlignmentToChild(FlexItem& flex_item) {
                                          /* is_new_fc */ true);
   SetOrthogonalFallbackInlineSizeIfNeeded(Style(), flex_item.ng_input_node,
                                           &space_builder);
+  space_builder.SetIsPaintedAtomically(true);
 
   LogicalSize available_size(
       flex_item.flexed_content_size + flex_item.main_axis_border_padding,

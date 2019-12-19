@@ -329,8 +329,8 @@ void TestRenderFrame::BeginNavigation(
     // BeginNavigation will be called from Blink and we should avoid
     // going through browser process in this case.
     GURL url = info->url_request.Url();
-    auto navigation_params = std::make_unique<blink::WebNavigationParams>();
-    navigation_params->url = url;
+    auto navigation_params =
+        blink::WebNavigationParams::CreateFromInfo(*info.get());
     if (!url.IsAboutBlank() && !url.IsAboutSrcdoc()) {
       std::string mime_type, charset, data;
       if (!net::DataURL::Parse(url, &mime_type, &charset, &data)) {

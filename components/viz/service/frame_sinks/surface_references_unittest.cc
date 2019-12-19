@@ -69,9 +69,8 @@ class SurfaceReferencesTest : public testing::Test {
       manager_->RegisterFrameSinkId(frame_sink_id,
                                     true /* report_activation */);
       constexpr bool is_root = false;
-      constexpr bool needs_sync_points = true;
       support_ptr = std::make_unique<CompositorFrameSinkSupport>(
-          nullptr, manager_.get(), frame_sink_id, is_root, needs_sync_points);
+          nullptr, manager_.get(), frame_sink_id, is_root);
     }
     return *support_ptr;
   }

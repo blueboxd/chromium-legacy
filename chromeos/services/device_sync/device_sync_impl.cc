@@ -484,7 +484,7 @@ void DeviceSyncImpl::SetSoftwareFeatureState(
     bool enabled,
     bool is_exclusive,
     SetSoftwareFeatureStateCallback callback) {
-  DCHECK(!features::ShouldDeprecateV1DeviceSync());
+  DCHECK(features::ShouldUseV1DeviceSync());
 
   if (status_ != Status::READY) {
     PA_LOG(WARNING) << "DeviceSyncImpl::SetSoftwareFeatureState() invoked "
@@ -537,7 +537,7 @@ void DeviceSyncImpl::SetFeatureStatus(const std::string& device_instance_id,
                       device_instance_id, feature, status_change,
                       remote_device_provider_.get(), std::move(callback)));
 
-  // Before v1 DeviceSync is deprecated, we need to use the
+  // Before v1 DeviceSync is disabled, we need to use the
   // CryptAuthFeatureStatusSetter indirectly via the SoftwareFeatureManager to
   // ensure an ordering of SetSoftwareFeatureState() and SetFeatureStatus()
   // calls. These two functions have similar effects on the CryptAuth backend,
@@ -546,18 +546,18 @@ void DeviceSyncImpl::SetFeatureStatus(const std::string& device_instance_id,
   // change our mind and select a device with an Instance ID. These calls to
   // SetSoftwareFeatureState() and SetFeatureStatus(), respectively, need to be
   // ordered so that the device with the Instance ID will always be set as the
-  // multi-device host. When v1 DeviceSync is deprecated,
+  // multi-device host. When v1 DeviceSync is disabled,
   // SetSoftwareFeatureState() will not longer be called, and the queue
   // maintained by the FeatureStatusSetter will be sufficient.
-  if (features::ShouldDeprecateV1DeviceSync()) {
-    feature_status_setter_->SetFeatureStatus(
+  if (features::ShouldUseV1DeviceSync()) {
+    software_feature_manager_->SetFeatureStatus(
         device_instance_id, feature, status_change,
         base::BindOnce(&DeviceSyncImpl::OnSetFeatureStatusSuccess,
                        weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&DeviceSyncImpl::OnSetFeatureStatusError,
                        weak_ptr_factory_.GetWeakPtr(), request_id));
   } else {
-    software_feature_manager_->SetFeatureStatus(
+    feature_status_setter_->SetFeatureStatus(
         device_instance_id, feature, status_change,
         base::BindOnce(&DeviceSyncImpl::OnSetFeatureStatusSuccess,
                        weak_ptr_factory_.GetWeakPtr()),
@@ -569,7 +569,7 @@ void DeviceSyncImpl::SetFeatureStatus(const std::string& device_instance_id,
 void DeviceSyncImpl::FindEligibleDevices(
     multidevice::SoftwareFeature software_feature,
     FindEligibleDevicesCallback callback) {
-  DCHECK(!features::ShouldDeprecateV1DeviceSync());
+  DCHECK(features::ShouldUseV1DeviceSync());
 
   if (status_ != Status::READY) {
     PA_LOG(WARNING) << "DeviceSyncImpl::FindEligibleDevices() invoked before "

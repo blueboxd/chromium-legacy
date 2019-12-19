@@ -23,7 +23,11 @@ class LayoutNGMixin : public Base {
   explicit LayoutNGMixin(Element* element);
   ~LayoutNGMixin() override;
 
+  void Paint(const PaintInfo&) const override;
+
   bool IsLayoutNGObject() const final { return true; }
+
+  const NGPhysicalBoxFragment* CurrentFragment() const final;
 
  protected:
   bool IsOfType(LayoutObject::LayoutObjectType) const override;

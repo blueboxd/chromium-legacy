@@ -275,8 +275,9 @@ TEST_F(ScrollSnapDataTest, MandatoryReturnsToCurrentIfNoValidAreaForward) {
   gfx::ScrollOffset snap_position;
 
   std::unique_ptr<SnapSelectionStrategy> direction_strategy =
-      SnapSelectionStrategy::CreateForDirection(gfx::ScrollOffset(600, 0),
-                                                gfx::ScrollOffset(5, 0));
+      SnapSelectionStrategy::CreateForDirection(
+          gfx::ScrollOffset(600, 0), gfx::ScrollOffset(5, 0),
+          false /* use_fractional_deltas */);
   EXPECT_TRUE(container.FindSnapPosition(*direction_strategy, &snap_position,
                                          &target_elements));
   // The snap direction is right. However, there is no valid snap position on
@@ -289,7 +290,8 @@ TEST_F(ScrollSnapDataTest, MandatoryReturnsToCurrentIfNoValidAreaForward) {
 
   std::unique_ptr<SnapSelectionStrategy> end_direction_strategy =
       SnapSelectionStrategy::CreateForEndAndDirection(
-          gfx::ScrollOffset(600, 0), gfx::ScrollOffset(15, 15));
+          gfx::ScrollOffset(600, 0), gfx::ScrollOffset(15, 15),
+          false /* use_fractional_deltas */);
   EXPECT_TRUE(container.FindSnapPosition(*end_direction_strategy,
                                          &snap_position, &target_elements));
   // The snap direction is down and right. However, there is no valid snap
@@ -321,8 +323,9 @@ TEST_F(ScrollSnapDataTest, MandatorySnapsBackwardIfNoValidAreaForward) {
   gfx::ScrollOffset snap_position;
 
   std::unique_ptr<SnapSelectionStrategy> direction_strategy =
-      SnapSelectionStrategy::CreateForDirection(gfx::ScrollOffset(650, 0),
-                                                gfx::ScrollOffset(5, 0));
+      SnapSelectionStrategy::CreateForDirection(
+          gfx::ScrollOffset(650, 0), gfx::ScrollOffset(5, 0),
+          false /* use_fractional_deltas */);
   EXPECT_TRUE(container.FindSnapPosition(*direction_strategy, &snap_position,
                                          &target_elements));
   // The snap direction is right. However, there is no valid snap position on
@@ -335,7 +338,8 @@ TEST_F(ScrollSnapDataTest, MandatorySnapsBackwardIfNoValidAreaForward) {
 
   std::unique_ptr<SnapSelectionStrategy> end_direction_strategy =
       SnapSelectionStrategy::CreateForEndAndDirection(
-          gfx::ScrollOffset(650, 10), gfx::ScrollOffset(15, 15));
+          gfx::ScrollOffset(650, 10), gfx::ScrollOffset(15, 15),
+          false /* use_fractional_deltas */);
   EXPECT_TRUE(container.FindSnapPosition(*end_direction_strategy,
                                          &snap_position, &target_elements));
   // The snap direction is down and right. However, there is no valid snap
@@ -375,7 +379,8 @@ TEST_F(ScrollSnapDataTest, ShouldNotPassScrollSnapStopAlwaysElement) {
 
   std::unique_ptr<SnapSelectionStrategy> end_direction_strategy =
       SnapSelectionStrategy::CreateForEndAndDirection(
-          gfx::ScrollOffset(0, 0), gfx::ScrollOffset(600, 0));
+          gfx::ScrollOffset(0, 0), gfx::ScrollOffset(600, 0),
+          false /* use_fractional_deltas */);
 
   EXPECT_TRUE(container.FindSnapPosition(*end_direction_strategy,
                                          &snap_position, &target_elements));
@@ -404,7 +409,8 @@ TEST_F(ScrollSnapDataTest, SnapStopAlwaysOverridesCoveringSnapArea) {
   gfx::ScrollOffset snap_position;
   std::unique_ptr<SnapSelectionStrategy> strategy =
       SnapSelectionStrategy::CreateForEndAndDirection(
-          gfx::ScrollOffset(0, 0), gfx::ScrollOffset(300, 0));
+          gfx::ScrollOffset(0, 0), gfx::ScrollOffset(300, 0),
+          false /* use_fractional_deltas */);
 
   // The fling is from (0, 0) to (300, 0), and the destination would make
   // the |covering_area| perfectly cover the snapport. However, another area
@@ -429,7 +435,8 @@ TEST_F(ScrollSnapDataTest, SnapStopAlwaysInReverseDirection) {
   gfx::ScrollOffset snap_position;
   std::unique_ptr<SnapSelectionStrategy> strategy =
       SnapSelectionStrategy::CreateForEndAndDirection(
-          gfx::ScrollOffset(150, 0), gfx::ScrollOffset(200, 0));
+          gfx::ScrollOffset(150, 0), gfx::ScrollOffset(200, 0),
+          false /* use_fractional_deltas */);
 
   // The fling is from (150, 0) to (350, 0), but the snap position is in the
   // reverse direction at (100, 0). Since the container has mandatory for
@@ -457,8 +464,9 @@ TEST_F(ScrollSnapDataTest, SnapStopAlwaysNotInterferingWithDirectionStrategy) {
   // regardless its scroll-snap-stop value.
   gfx::ScrollOffset snap_position;
   std::unique_ptr<SnapSelectionStrategy> direction_strategy =
-      SnapSelectionStrategy::CreateForDirection(gfx::ScrollOffset(90, 0),
-                                                gfx::ScrollOffset(50, 0));
+      SnapSelectionStrategy::CreateForDirection(
+          gfx::ScrollOffset(90, 0), gfx::ScrollOffset(50, 0),
+          false /* use_fractional_deltas */);
   snap_position = gfx::ScrollOffset();
   EXPECT_TRUE(container.FindSnapPosition(*direction_strategy, &snap_position,
                                          &target_elements));

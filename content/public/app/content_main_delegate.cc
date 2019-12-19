@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "content/public/common/content_client.h"
 #include "content/public/gpu/content_gpu_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/utility/content_utility_client.h"
@@ -51,10 +52,6 @@ int ContentMainDelegate::TerminateForFatalInitializationError() {
   return 0;
 }
 
-bool ContentMainDelegate::ShouldLockSchemeRegistry() {
-  return true;
-}
-
 service_manager::ProcessType ContentMainDelegate::OverrideProcessType() {
   return service_manager::ProcessType::kDefault;
 }
@@ -69,6 +66,10 @@ void ContentMainDelegate::OnServiceManagerInitialized(
 
 bool ContentMainDelegate::ShouldCreateFeatureList() {
   return true;
+}
+
+ContentClient* ContentMainDelegate::CreateContentClient() {
+  return new ContentClient();
 }
 
 ContentBrowserClient* ContentMainDelegate::CreateContentBrowserClient() {

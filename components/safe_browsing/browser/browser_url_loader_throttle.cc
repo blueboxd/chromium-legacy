@@ -12,6 +12,7 @@
 #include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "components/safe_browsing/common/utils.h"
 #include "components/safe_browsing/realtime/policy_engine.h"
+#include "components/safe_browsing/verdict_cache_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/web_contents.h"
 #include "net/log/net_log_event_type.h"
@@ -32,13 +33,15 @@ class BrowserURLLoaderThrottle::CheckerOnIO
       int frame_tree_node_id,
       base::RepeatingCallback<content::WebContents*()> web_contents_getter,
       base::WeakPtr<BrowserURLLoaderThrottle> throttle,
-      bool real_time_lookup_enabled)
+      bool real_time_lookup_enabled,
+      base::WeakPtr<VerdictCacheManager> cache_manager)
       : delegate_getter_(std::move(delegate_getter)),
         resource_context_(resource_context),
         frame_tree_node_id_(frame_tree_node_id),
         web_contents_getter_(web_contents_getter),
         throttle_(std::move(throttle)),
-        real_time_lookup_enabled_(real_time_lookup_enabled) {}
+        real_time_lookup_enabled_(real_time_lookup_enabled),
+        cache_manager_(cache_manager) {}
 
   // Starts the initial safe browsing check. This check and future checks may be
   // skipped after checking with the UrlCheckerDelegate.
@@ -67,7 +70,8 @@ class BrowserURLLoaderThrottle::CheckerOnIO
 
     url_checker_ = std::make_unique<SafeBrowsingUrlCheckerImpl>(
         headers, load_flags, resource_type, has_user_gesture,
-        url_checker_delegate, web_contents_getter_, real_time_lookup_enabled_);
+        url_checker_delegate, web_contents_getter_, real_time_lookup_enabled_,
+        cache_manager_);
 
     CheckUrl(url, method);
   }
@@ -135,25 +139,28 @@ class BrowserURLLoaderThrottle::CheckerOnIO
   bool skip_checks_ = false;
   base::WeakPtr<BrowserURLLoaderThrottle> throttle_;
   bool real_time_lookup_enabled_ = false;
+  base::WeakPtr<VerdictCacheManager> cache_manager_;
 };
 
 // static
 std::unique_ptr<BrowserURLLoaderThrottle> BrowserURLLoaderThrottle::Create(
     GetDelegateCallback delegate_getter,
-    const base::Callback<content::WebContents*()>& web_contents_getter,
+    const base::RepeatingCallback<content::WebContents*()>& web_contents_getter,
     int frame_tree_node_id,
-    content::ResourceContext* resource_context) {
+    content::ResourceContext* resource_context,
+    base::WeakPtr<VerdictCacheManager> cache_manager) {
   return base::WrapUnique<BrowserURLLoaderThrottle>(
       new BrowserURLLoaderThrottle(std::move(delegate_getter),
                                    web_contents_getter, frame_tree_node_id,
-                                   resource_context));
+                                   resource_context, cache_manager));
 }
 
 BrowserURLLoaderThrottle::BrowserURLLoaderThrottle(
     GetDelegateCallback delegate_getter,
-    const base::Callback<content::WebContents*()>& web_contents_getter,
+    const base::RepeatingCallback<content::WebContents*()>& web_contents_getter,
     int frame_tree_node_id,
-    content::ResourceContext* resource_context) {
+    content::ResourceContext* resource_context,
+    base::WeakPtr<VerdictCacheManager> cache_manager) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Decide whether to do real time URL lookups or not.
@@ -165,8 +172,8 @@ BrowserURLLoaderThrottle::BrowserURLLoaderThrottle(
 
   io_checker_ = std::make_unique<CheckerOnIO>(
       std::move(delegate_getter), resource_context, frame_tree_node_id,
-      web_contents_getter, weak_factory_.GetWeakPtr(),
-      real_time_lookup_enabled);
+      web_contents_getter, weak_factory_.GetWeakPtr(), real_time_lookup_enabled,
+      cache_manager);
 }
 
 BrowserURLLoaderThrottle::~BrowserURLLoaderThrottle() {

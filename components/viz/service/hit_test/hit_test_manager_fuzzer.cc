@@ -131,7 +131,7 @@ void SubmitHitTestRegionList(
   delegate->SetSurfaceIdMap(surface_id);
   viz::CompositorFrameSinkSupport support(
       nullptr /* client */, frame_sink_manager, surface_id.frame_sink_id(),
-      support_is_root, false /* needs_sync_points */);
+      support_is_root);
   support.SubmitCompositorFrame(surface_id.local_surface_id(),
                                 viz::MakeDefaultCompositorFrame(),
                                 std::move(hit_test_region_list));

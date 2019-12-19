@@ -481,12 +481,15 @@ source_set("eg2_tests") {
     "block_popups_egtest.mm",
     "settings_accessibility_egtest.mm",
     "signin_settings_egtest.mm",
+    "translate_ui_egtest.mm",
   ]
   deps = [
     ":eg_test_support+eg2",
     "//base",
+    "//base/test:test_support",
     "//components/strings",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
     "//ios/chrome/browser/ui/authentication/cells:constants",
     "//ios/chrome/browser/ui/settings:constants",

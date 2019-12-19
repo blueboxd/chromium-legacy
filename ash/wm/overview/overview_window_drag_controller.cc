@@ -237,7 +237,7 @@ void OverviewWindowDragController::StartNormalDragMode(
       OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW);
   original_scaled_size_ = item_->target_bounds().size();
   auto* overview_grid = item_->overview_grid();
-  overview_grid->AddDropTargetForDraggingFromOverview(item_);
+  overview_grid->AddDropTargetForDraggingFromThisGrid(item_);
 
   if (should_allow_split_view_) {
     overview_session_->SetSplitViewDragIndicatorsDraggedWindow(
@@ -336,7 +336,7 @@ void OverviewWindowDragController::ResetGesture() {
       Shell::Get()->mouse_cursor_filter()->HideSharedEdgeIndicator();
       item_->DestroyPhantomsForDragging();
     }
-    item_->overview_grid()->RemoveDropTarget();
+    overview_session_->RemoveDropTargets();
     if (should_allow_split_view_) {
       SplitViewController::Get(Shell::GetPrimaryRootWindow())
           ->OnWindowDragCanceled();
@@ -493,8 +493,21 @@ void OverviewWindowDragController::ContinueNormalDrag(
     // portrait mode.
     overview_grid->MaybeUpdateDesksWidgetBounds();
   }
-  overview_grid->UpdateDropTargetBackgroundVisibility(item_,
-                                                      location_in_screen);
+  if (AreMultiDisplayOverviewAndSplitViewEnabled()) {
+    OverviewGrid* grid_being_dragged_in =
+        overview_session_->GetGridWithRootWindow(GetRootWindowBeingDraggedIn());
+    if (!grid_being_dragged_in->GetDropTarget() &&
+        (!should_allow_split_view_ ||
+         SplitViewDragIndicators::GetSnapPosition(
+             grid_being_dragged_in->split_view_drag_indicators()
+                 ->current_window_dragging_state()) ==
+             SplitViewController::NONE)) {
+      grid_being_dragged_in->AddDropTargetNotForDraggingFromThisGrid(
+          item_->GetWindow(), /*animate=*/true);
+    }
+  }
+  overview_session_->UpdateDropTargetsBackgroundVisibilities(
+      item_, location_in_screen);
 
   bounds.set_x(centerpoint.x() - bounds.width() / 2.f);
   bounds.set_y(centerpoint.y() - bounds.height() / 2.f);
@@ -513,7 +526,7 @@ OverviewWindowDragController::CompleteNormalDrag(
     Shell::Get()->mouse_cursor_filter()->HideSharedEdgeIndicator();
     item_->DestroyPhantomsForDragging();
   }
-  overview_grid->RemoveDropTarget();
+  overview_session_->RemoveDropTargets();
 
   const gfx::Point rounded_screen_point =
       gfx::ToRoundedPoint(location_in_screen);
@@ -576,6 +589,7 @@ OverviewWindowDragController::CompleteNormalDrag(
     }
 
     SnapWindow(snap_position_);
+    overview_session_->PositionWindows(/*animate=*/true);
     return DragResult::kSuccessfulDragToSnap;
   }
 
@@ -591,11 +605,12 @@ void OverviewWindowDragController::UpdateDragIndicatorsAndOverviewGrid(
     return;
 
   snap_position_ = GetSnapPosition(location_in_screen);
+  aura::Window* root_window = GetRootWindowBeingDraggedIn();
   overview_session_->UpdateSplitViewDragIndicatorsWindowDraggingStates(
-      GetRootWindowBeingDraggedIn(), /*is_dragging=*/true,
+      root_window, /*is_dragging=*/true,
       SplitViewDragIndicators::WindowDraggingState::kFromOverview,
       snap_position_);
-  overview_session_->RearrangeDuringDrag(item_->GetWindow());
+  overview_session_->RearrangeDuringDrag(root_window, item_->GetWindow());
 }
 
 aura::Window* OverviewWindowDragController::GetRootWindowBeingDraggedIn()

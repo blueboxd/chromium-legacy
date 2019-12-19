@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/public/web/web_script_source.h"
-#include "third_party/blink/renderer/core/animation/animatable.h"
+#include "third_party/blink/renderer/core/animation/document_timeline.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
 #include "third_party/blink/renderer/core/animation/string_keyframe.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
@@ -68,9 +69,11 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   keyframes.push_back(keyframe);
   Timing timing;
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);
-  Animatable::animateInternal(
-      *target, MakeGarbageCollected<StringKeyframeEffectModel>(keyframes),
+
+  auto* keyframe_effect = MakeGarbageCollected<KeyframeEffect>(
+      target, MakeGarbageCollected<StringKeyframeEffectModel>(keyframes),
       timing);
+  target->GetDocument().Timeline().Play(keyframe_effect);
 
   // This sets the baseComputedStyle on the animation exit frame.
   Compositor().BeginFrame(1);
@@ -90,9 +93,11 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   keyframes.push_back(std::move(keyframe));
   timing = Timing();
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);
-  Animatable::animateInternal(
-      *target, MakeGarbageCollected<StringKeyframeEffectModel>(keyframes),
+
+  keyframe_effect = MakeGarbageCollected<KeyframeEffect>(
+      target, MakeGarbageCollected<StringKeyframeEffectModel>(keyframes),
       timing);
+  target->GetDocument().Timeline().Play(keyframe_effect);
 
   // This (previously) would not clear the existing baseComputedStyle and would
   // crash on the equality assertion in the exit frame when it tried to update

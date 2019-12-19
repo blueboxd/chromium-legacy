@@ -62,7 +62,7 @@ class CallbackInterface(UserDefinedType, WithExtendedAttributes,
 
         ir = make_copy(ir)
         UserDefinedType.__init__(self, ir.identifier)
-        WithExtendedAttributes.__init__(self, ir)
+        WithExtendedAttributes.__init__(self, ir, readonly=True)
         WithCodeGeneratorInfo.__init__(self, ir, readonly=True)
         WithComponent.__init__(self, ir, readonly=True)
         WithDebugInfo.__init__(self, ir)

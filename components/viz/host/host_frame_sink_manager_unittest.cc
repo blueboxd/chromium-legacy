@@ -169,8 +169,7 @@ class HostFrameSinkManagerLocalTest : public HostFrameSinkManagerTestBase {
       const FrameSinkId& frame_sink_id,
       bool is_root) {
     return host_manager_->CreateCompositorFrameSinkSupport(
-        nullptr /* client */, frame_sink_id, is_root,
-        false /* needs_sync_points */);
+        nullptr /* client */, frame_sink_id, is_root);
   }
 
   // testing::Test:

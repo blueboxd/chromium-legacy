@@ -271,7 +271,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       settings_(settings),
       is_synchronous_single_threaded_(!task_runner_provider->HasImplThread() &&
                                       !settings_.single_thread_proxy_scheduler),
-      resource_provider_(settings_.delegated_sync_points_required),
       cached_managed_memory_policy_(settings.memory_policy),
       // Must be initialized after is_synchronous_single_threaded_ and
       // task_runner_provider_.
@@ -2299,8 +2298,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
     // check in that case.
     const auto& bfargs = current_begin_frame_tracker_.Current();
     const auto& ack = compositor_frame.metadata.begin_frame_ack;
-    DCHECK_EQ(bfargs.source_id, ack.source_id);
-    DCHECK_EQ(bfargs.sequence_number, ack.sequence_number);
+    DCHECK_EQ(bfargs.frame_id, ack.frame_id);
   }
 #endif
 
@@ -2457,8 +2455,7 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
     }
   }
 
-  DCHECK_LE(viz::BeginFrameArgs::kStartingFrameNumber,
-            frame->begin_frame_ack.sequence_number);
+  DCHECK(frame->begin_frame_ack.frame_id.IsSequenceValid());
   metadata.begin_frame_ack = frame->begin_frame_ack;
 
   viz::CompositorFrame compositor_frame;
@@ -2743,8 +2740,7 @@ void LayerTreeHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack,
     // Notify the trackers only when this is *not* the case (since the trackers
     // are not notified about the start of the future frame either).
     const auto& args = current_begin_frame_tracker_.Current();
-    if (args.source_id == ack.source_id &&
-        args.sequence_number == ack.sequence_number) {
+    if (args.frame_id == ack.frame_id) {
       frame_trackers_.NotifyImplFrameCausedNoDamage(ack);
       if (begin_main_frame_sent_during_impl_)
         frame_trackers_.NotifyMainFrameCausedNoDamage(args);
@@ -4958,12 +4954,14 @@ bool LayerTreeHostImpl::GetSnapFlingInfoAndSetAnimatingSnapTarget(
   gfx::ScrollOffset current_offset = GetVisualScrollOffset(*scroll_node);
   *out_initial_position = ScrollOffsetToVector2dF(current_offset);
 
+  // CC side always uses fractional scroll deltas.
+  bool use_fractional_offsets = true;
   gfx::ScrollOffset snap_offset;
   TargetSnapAreaElementIds snap_target_ids;
   std::unique_ptr<SnapSelectionStrategy> strategy =
       SnapSelectionStrategy::CreateForEndAndDirection(
-          current_offset, gfx::ScrollOffset(natural_displacement_in_content));
-
+          current_offset, gfx::ScrollOffset(natural_displacement_in_content),
+          use_fractional_offsets);
   if (!data.FindSnapPosition(*strategy, &snap_offset, &snap_target_ids))
     return false;
   scroll_animating_snap_target_ids_ = snap_target_ids;

@@ -29,18 +29,18 @@ class V4Database;
 // Scheduled when the database has been read from disk and is ready to process
 // resource reputation requests.
 using NewDatabaseReadyCallback =
-    base::Callback<void(std::unique_ptr<V4Database>)>;
+    base::OnceCallback<void(std::unique_ptr<V4Database>)>;
 
 // Scheduled when the checksum for all the stores in the database has been
 // verified to match the expected value. Stores for which the checksum did not
 // match are passed as the argument and need to be reset.
 using DatabaseReadyForUpdatesCallback =
-    base::Callback<void(const std::vector<ListIdentifier>&)>;
+    base::OnceCallback<void(const std::vector<ListIdentifier>&)>;
 
 // This callback is scheduled once the database has finished processing the
 // update requests for all stores and is ready to process the next set of update
 // requests.
-using DatabaseUpdatedCallback = base::Closure;
+using DatabaseUpdatedCallback = base::RepeatingClosure;
 
 // Maps the ListIdentifiers to their corresponding in-memory stores, which
 // contain the hash prefixes for that ListIdentifier as well as manage their

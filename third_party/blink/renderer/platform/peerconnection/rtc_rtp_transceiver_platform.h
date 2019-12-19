@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_receiver_platform.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/webrtc/api/rtp_transceiver_interface.h"
 
 namespace blink {
@@ -63,7 +64,7 @@ class PLATFORM_EXPORT RTCRtpTransceiverPlatform {
   virtual base::Optional<webrtc::RtpTransceiverDirection> FiredDirection()
       const = 0;
   virtual webrtc::RTCError SetCodecPreferences(
-      WebVector<webrtc::RtpCodecCapability>) {
+      Vector<webrtc::RtpCodecCapability>) {
     return {};
   }
 };

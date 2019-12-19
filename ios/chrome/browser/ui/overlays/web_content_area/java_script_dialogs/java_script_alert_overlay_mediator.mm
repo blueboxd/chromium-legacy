@@ -39,7 +39,9 @@
 #pragma mark - Accessors
 
 - (JavaScriptAlertOverlayRequestConfig*)config {
-  return self.request->GetConfig<JavaScriptAlertOverlayRequestConfig>();
+  return self.request
+             ? self.request->GetConfig<JavaScriptAlertOverlayRequestConfig>()
+             : nullptr;
 }
 
 @end

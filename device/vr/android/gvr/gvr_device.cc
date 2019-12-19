@@ -321,7 +321,7 @@ void GvrDevice::OnInitRequestSessionFinished(
     return;
   }
 
-  DCHECK(options->immersive);
+  DCHECK_EQ(options->mode, mojom::XRSessionMode::kImmersiveVr);
 
   // StartWebXRPresentation is async as we may trigger a DON (Device ON) flow
   // that pauses Chrome.

@@ -13,7 +13,6 @@
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "chrome/browser/vr/vr_base_export.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "device/vr/public/cpp/session_mode.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -22,7 +21,6 @@
 #include "url/gurl.h"
 
 namespace vr {
-
 // This enum describes various ways a Chrome VR session started.
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -194,11 +192,30 @@ class VR_BASE_EXPORT SessionMetricsHelper
   void RecordImmersiveSessionStop();
 
  private:
+  // TODO(https://crbug.com/967764): Unfortunately, until we can validate that
+  // we don't need "Unknown," we either need to keep this enum around or add
+  // support for "Unknown" to vr_service.mojom's version of this enum. Once we
+  // can remove unknown, we should remove this enum.  Until such time, with the
+  // exception of kUnknown, any values added to this enum should also be added
+  // to XRSessionMode in vr_service.mojom.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class SessionMode : int {
+    kUnknown = 0,
+    kInline = 1,
+    kImmersiveVr = 2,
+    kImmersiveAr = 3,
+    kMaxValue = kImmersiveAr,
+  };
+
+  static SessionMode ConvertRuntimeOptionsToSessionMode(
+      const device::mojom::XRRuntimeSessionOptions& options);
+
   SessionMetricsHelper(content::WebContents* contents, Mode initial_mode);
 
   struct PendingImmersiveSessionStartInfo {
     PresentationStartAction action = PresentationStartAction::kOther;
-    device::SessionMode mode = device::SessionMode::kUnknown;
+    SessionMode mode = SessionMode::kUnknown;
   };
 
   // WebContentsObserver
@@ -218,7 +235,7 @@ class VR_BASE_EXPORT SessionMetricsHelper
 
   void LogVrStartAction(VrStartAction action);
   void LogPresentationStartAction(PresentationStartAction action,
-                                  device::SessionMode xr_session_mode);
+                                  SessionMode xr_session_mode);
 
   void OnEnterAnyVr();
   void OnExitAllVr();

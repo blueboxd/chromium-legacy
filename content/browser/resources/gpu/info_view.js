@@ -262,7 +262,6 @@ cr.define('gpu', function() {
         'surface_control': 'Surface Control',
         'vpx_decode': 'VPx Video Decode',
         'webgl2': 'WebGL2',
-        'viz_display_compositor': 'Viz Display Compositor',
         'skia_renderer': 'Skia Renderer',
       };
 

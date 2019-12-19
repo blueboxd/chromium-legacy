@@ -17,6 +17,8 @@
 #include "components/sessions/core/base_session_service.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sessions/core/sessions_export.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "ui/base/ui_base_types.h"
 
 namespace sessions {
@@ -48,11 +50,11 @@ SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetWindowTypeCommand(
     SessionWindow::WindowType type);
 SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateTabGroupCommand(
     const SessionID& tab_id,
-    base::Optional<base::Token> group);
+    base::Optional<tab_groups::TabGroupId> group);
 SESSIONS_EXPORT std::unique_ptr<SessionCommand>
-CreateTabGroupMetadataUpdateCommand(const base::Token& group,
-                                    const base::string16& title,
-                                    SkColor color);
+CreateTabGroupMetadataUpdateCommand(
+    const tab_groups::TabGroupId group,
+    const tab_groups::TabGroupVisualData* visual_data);
 SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreatePinnedStateCommand(
     const SessionID& tab_id,
     bool is_pinned);

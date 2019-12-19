@@ -17,6 +17,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -33,6 +34,7 @@
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/scheduler_configuration_manager.h"
 #include "chrome/browser/chromeos/usb/cros_usb_detector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -123,7 +125,8 @@ CrostiniManager::RestartOptions& CrostiniManager::RestartOptions::operator=(
 class CrostiniManager::CrostiniRestarter
     : public base::RefCountedThreadSafe<CrostiniRestarter>,
       public crostini::VmShutdownObserver,
-      public chromeos::disks::DiskMountManager::Observer {
+      public chromeos::disks::DiskMountManager::Observer,
+      public chromeos::SchedulerConfigurationManagerBase::Observer {
  public:
   CrostiniRestarter(Profile* profile,
                     CrostiniManager* crostini_manager,
@@ -313,9 +316,34 @@ class CrostiniManager::CrostiniRestarter
       FinishRestart(CrostiniResult::CREATE_DISK_IMAGE_FAILED);
       return;
     }
+    disk_path_ = result_path;
+
+    auto* scheduler_configuration_manager =
+        g_browser_process->platform_part()->scheduler_configuration_manager();
+    base::Optional<std::pair<bool, size_t>> scheduler_configuration =
+        scheduler_configuration_manager->GetLastReply();
+    if (!scheduler_configuration) {
+      // Wait for the configuration to become available.
+      LOG(WARNING) << "Scheduler configuration is not yet ready";
+      scheduler_configuration_manager->AddObserver(this);
+      return;
+    }
+    OnConfigurationSet(scheduler_configuration->first,
+                       scheduler_configuration->second);
+  }
+
+  // chromeos::SchedulerConfigurationManagerBase::Observer:
+  void OnConfigurationSet(bool success, size_t num_cores_disabled) override {
+    // Note: On non-x86_64 devices, the configuration request to debugd always
+    // fails. It is WAI, and to support that case, don't log anything even when
+    // |success| is false. |num_cores_disabled| is always set regardless of
+    // whether the call is successful.
+    g_browser_process->platform_part()
+        ->scheduler_configuration_manager()
+        ->RemoveObserver(this);
     StartStage(mojom::InstallerState::kStartTerminaVm);
     crostini_manager_->StartTerminaVm(
-        vm_name_, result_path,
+        vm_name_, disk_path_, num_cores_disabled,
         base::BindOnce(&CrostiniRestarter::StartTerminaVmFinished, this));
   }
 
@@ -536,6 +564,7 @@ class CrostiniManager::CrostiniRestarter
   CrostiniManager* crostini_manager_;
 
   std::string vm_name_;
+  base::FilePath disk_path_;
   std::string container_name_;
   RestartOptions options_;
   std::string source_path_;
@@ -1002,6 +1031,7 @@ void CrostiniManager::ListVmDisks(ListVmDisksCallback callback) {
 
 void CrostiniManager::StartTerminaVm(std::string name,
                                      const base::FilePath& disk_path,
+                                     size_t num_cores_disabled,
                                      BoolCallback callback) {
   if (name.empty()) {
     LOG(ERROR) << "name is required";
@@ -1032,6 +1062,9 @@ void CrostiniManager::StartTerminaVm(std::string name,
   request.set_owner_id(owner_id_);
   if (base::FeatureList::IsEnabled(chromeos::features::kCrostiniGpuSupport))
     request.set_enable_gpu(true);
+  const int32_t cpus = base::SysInfo::NumberOfProcessors() - num_cores_disabled;
+  DCHECK_LT(0, cpus);
+  request.set_cpus(cpus);
 
   vm_tools::concierge::DiskImage* disk_image = request.add_disks();
   disk_image->set_path(std::move(disk_path_string));
@@ -3055,6 +3088,12 @@ void CrostiniManager::OnPendingAppListUpdates(
 
 void CrostiniManager::SuspendImminent(
     power_manager::SuspendImminent::Reason reason) {
+  auto info =
+      GetContainerInfo(kCrostiniDefaultVmName, kCrostiniDefaultContainerName);
+  if (!info || !info->sshfs_mounted) {
+    return;
+  }
+
   // Block suspend and try to unmount sshfs (https://crbug.com/968060).
   auto token = base::UnguessableToken::Create();
   chromeos::PowerManagerClient::Get()->BlockSuspend(token, "CrostiniManager");

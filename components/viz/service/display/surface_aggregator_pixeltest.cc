@@ -32,7 +32,6 @@ constexpr FrameSinkId kArbitraryLeftFrameSinkId(3, 3);
 constexpr FrameSinkId kArbitraryRightFrameSinkId(4, 4);
 constexpr bool kIsRoot = true;
 constexpr bool kIsChildRoot = false;
-constexpr bool kNeedsSyncPoints = true;
 
 template <typename RendererType>
 class SurfaceAggregatorPixelTest : public cc::RendererPixelTest<RendererType> {
@@ -43,8 +42,7 @@ class SurfaceAggregatorPixelTest : public cc::RendererPixelTest<RendererType> {
             nullptr,
             &manager_,
             kArbitraryRootFrameSinkId,
-            kIsRoot,
-            kNeedsSyncPoints)) {}
+            kIsRoot)) {}
   ~SurfaceAggregatorPixelTest() override {}
 
   base::TimeTicks GetNextDisplayTime() {
@@ -135,8 +133,7 @@ TYPED_TEST(SurfaceAggregatorPixelTest, DrawSimpleFrame) {
 TYPED_TEST(SurfaceAggregatorPixelTest, DrawSimpleAggregatedFrame) {
   gfx::Size child_size(200, 100);
   auto child_support = std::make_unique<CompositorFrameSinkSupport>(
-      nullptr, &this->manager_, kArbitraryChildFrameSinkId, kIsChildRoot,
-      kNeedsSyncPoints);
+      nullptr, &this->manager_, kArbitraryChildFrameSinkId, kIsChildRoot);
 
   ParentLocalSurfaceIdAllocator child_allocator;
   child_allocator.GenerateId();
@@ -225,11 +222,9 @@ TYPED_TEST(SurfaceAggregatorPixelTest,
   //   right_child -> top_blue_quad (100x100 @ 0x0),
   //                  bottom_green_quad (100x100 @ 0x100)
   auto left_support = std::make_unique<CompositorFrameSinkSupport>(
-      nullptr, &this->manager_, kArbitraryLeftFrameSinkId, kIsChildRoot,
-      kNeedsSyncPoints);
+      nullptr, &this->manager_, kArbitraryLeftFrameSinkId, kIsChildRoot);
   auto right_support = std::make_unique<CompositorFrameSinkSupport>(
-      nullptr, &this->manager_, kArbitraryRightFrameSinkId, kIsChildRoot,
-      kNeedsSyncPoints);
+      nullptr, &this->manager_, kArbitraryRightFrameSinkId, kIsChildRoot);
   ParentLocalSurfaceIdAllocator left_child_allocator;
   left_child_allocator.GenerateId();
   LocalSurfaceId left_child_local_id =

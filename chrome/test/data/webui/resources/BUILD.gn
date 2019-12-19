@@ -5,7 +5,5 @@
 import("//ui/webui/resources/tools/js_modulizer.gni")
 
 js_modulizer("modulize") {
-  input_files = [
-    "list_property_update_behavior_tests.js",
-  ]
+  input_files = [ "list_property_update_behavior_tests.js" ]
 }

@@ -8,13 +8,11 @@
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 GEN('#if defined(OS_CHROMEOS)');
-GEN('#include "ash/public/cpp/ash_features.h"');
-GEN('#include "chromeos/constants/chromeos_switches.h"');
+GEN('#include "chromeos/constants/chromeos_features.h"');
 GEN('#endif  // defined(OS_CHROMEOS)');
 
 GEN('#include "build/branding_buildflags.h"');
 GEN('#include "chrome/common/chrome_features.h"');
-GEN('#include "chromeos/constants/chromeos_features.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
 GEN('#include "components/omnibox/common/omnibox_features.h"');
 
@@ -1832,37 +1830,6 @@ TEST_F('CrSettingsMetricsReportingTest', 'All', function() {
 });
 
 GEN('#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_CHROMEOS)');
-
-GEN('#if defined(OS_CHROMEOS)');
-
-/**
- * Test fixture for the Google Play Store (ARC) page.
- * @constructor
- * @extends {CrSettingsBrowserTest}
- * TODO(crbug.com/1026455): Move this test to os_settings_browsertest.js.
- */
-function CrSettingsAndroidAppsPageTest() {}
-
-CrSettingsAndroidAppsPageTest.prototype = {
-  __proto__: CrSettingsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload: 'chrome://settings/android_apps_page/android_apps_page.html',
-
-  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    '//ui/webui/resources/js/promise_resolver.js',
-    '../test_browser_proxy.js',
-    'chromeos/test_android_apps_browser_proxy.js',
-    'chromeos/android_apps_page_test.js',
-  ]),
-};
-
-// Disabled due to flakiness on linux-chromeos-rel
-TEST_F('CrSettingsAndroidAppsPageTest', 'DISABLED_All', function() {
-  mocha.run();
-});
-
-GEN('#endif  // defined(OS_CHROMEOS)');
 
 /**
  * @constructor

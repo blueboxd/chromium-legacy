@@ -27,7 +27,7 @@ CastExternalBeginFrameSource::~CastExternalBeginFrameSource() {}
 
 void CastExternalBeginFrameSource::OnFrameComplete(
     const viz::BeginFrameAck& ack) {
-  DCHECK_EQ(kSourceId, ack.source_id);
+  DCHECK_EQ(kSourceId, ack.frame_id.source_id);
   timer_.Start(
       FROM_HERE, kFrameInterval,
       base::BindOnce(&CastExternalBeginFrameSource::IssueExternalBeginFrame,

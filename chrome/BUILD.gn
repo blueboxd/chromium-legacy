@@ -448,8 +448,8 @@ if (is_win) {
       deps += [ "//content/public/app:browser" ]
       assert_no_deps = [
         # The browser DLL may not depend on blink or v8.
-        "//third_party/blink/public:blink",
         "//gin",
+        "//third_party/blink/public:blink",
         "//v8",
 
         # Ditto for PDFium.
@@ -1291,12 +1291,12 @@ if (is_win) {
     # This list must be updated with the two targets' deps list below, and
     # the list of _dsyms in :chrome_dsym_archive.
     _chrome_symbols_sources = [
-      _framework_binary_path,
-      "$root_out_dir/AlertNotificationService.xpc/Contents/MacOS/AlertNotificationService",
       "$root_out_dir/$chrome_product_full_name.app/Contents/MacOS/$chrome_product_full_name",
+      "$root_out_dir/AlertNotificationService.xpc/Contents/MacOS/AlertNotificationService",
       "$root_out_dir/chrome_crashpad_handler",
       "$root_out_dir/libswiftshader_libEGL.dylib",
       "$root_out_dir/libswiftshader_libGLESv2.dylib",
+      _framework_binary_path,
     ]
 
     foreach(helper_params, content_mac_helpers) {

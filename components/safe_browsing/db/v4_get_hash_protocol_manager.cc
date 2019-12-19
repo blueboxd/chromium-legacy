@@ -174,10 +174,10 @@ FullHashCallbackInfo::FullHashCallbackInfo(
     std::unique_ptr<network::SimpleURLLoader> loader,
     const FullHashToStoreAndHashPrefixesMap&
         full_hash_to_store_and_hash_prefixes,
-    const FullHashCallback& callback,
+    FullHashCallback callback,
     const base::Time& network_start_time)
     : cached_full_hash_infos(cached_full_hash_infos),
-      callback(callback),
+      callback(std::move(callback)),
       loader(std::move(loader)),
       full_hash_to_store_and_hash_prefixes(
           full_hash_to_store_and_hash_prefixes),
@@ -282,7 +282,7 @@ void V4GetHashProtocolManager::GetFullHashes(
   if (prefixes_to_request.empty()) {
     // 100% cache hits (positive or negative) so we can call the callback right
     // away.
-    callback.Run(cached_full_hash_infos);
+    std::move(callback).Run(cached_full_hash_infos);
     return;
   }
 
@@ -297,7 +297,7 @@ void V4GetHashProtocolManager::GetFullHashes(
     } else {
       RecordGetHashResult(V4OperationResult::MIN_WAIT_DURATION_ERROR);
     }
-    callback.Run(cached_full_hash_infos);
+    std::move(callback).Run(cached_full_hash_infos);
     return;
   }
 
@@ -351,7 +351,8 @@ void V4GetHashProtocolManager::GetFullHashes(
 
   pending_hash_requests_[loader].reset(new FullHashCallbackInfo(
       cached_full_hash_infos, prefixes_to_request, std::move(owned_loader),
-      full_hash_to_store_and_hash_prefixes, callback, clock_->Now()));
+      full_hash_to_store_and_hash_prefixes, std::move(callback),
+      clock_->Now()));
   UMA_HISTOGRAM_COUNTS_100("SafeBrowsing.V4GetHash.CountOfPrefixes",
                            prefixes_to_request.size());
 }
@@ -377,8 +378,9 @@ void V4GetHashProtocolManager::GetFullHashesWithApis(
   }
 
   GetFullHashes(full_hash_to_store_and_hash_prefixes, list_client_states,
-                base::Bind(&V4GetHashProtocolManager::OnFullHashForApi,
-                           base::Unretained(this), api_callback, full_hashes));
+                base::BindOnce(&V4GetHashProtocolManager::OnFullHashForApi,
+                               base::Unretained(this), std::move(api_callback),
+                               full_hashes));
 }
 
 void V4GetHashProtocolManager::GetFullHashCachedResults(
@@ -527,7 +529,7 @@ void V4GetHashProtocolManager::HandleGetHashError(const Time& now) {
 }
 
 void V4GetHashProtocolManager::OnFullHashForApi(
-    const ThreatMetadataForApiCallback& api_callback,
+    ThreatMetadataForApiCallback api_callback,
     const std::vector<FullHash>& full_hashes,
     const std::vector<FullHashInfo>& full_hash_infos) {
   ThreatMetadata md;
@@ -538,7 +540,7 @@ void V4GetHashProtocolManager::OnFullHashForApi(
                               full_hash_info.metadata.api_permissions.end());
   }
 
-  api_callback.Run(md);
+  std::move(api_callback).Run(md);
 }
 
 bool V4GetHashProtocolManager::ParseHashResponse(
@@ -823,7 +825,7 @@ void V4GetHashProtocolManager::OnURLLoaderCompleteInternal(
   MergeResults(fhci->full_hash_to_store_and_hash_prefixes, full_hash_infos,
                &fhci->cached_full_hash_infos);
 
-  fhci->callback.Run(fhci->cached_full_hash_infos);
+  std::move(fhci->callback).Run(fhci->cached_full_hash_infos);
 
   pending_hash_requests_.erase(it);
 }

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "chrome/common/extensions/api/enterprise_reporting_private.h"
 #include "components/policy/core/common/cloud/dm_token.h"
 #include "extensions/browser/extension_function.h"
 
@@ -91,6 +92,10 @@ class EnterpriseReportingPrivateGetPersistentSecretFunction
                              ENTERPRISEREPORTINGPRIVATE_GETPERSISTENTSECRET)
 
   EnterpriseReportingPrivateGetPersistentSecretFunction();
+  EnterpriseReportingPrivateGetPersistentSecretFunction(
+      const EnterpriseReportingPrivateGetPersistentSecretFunction&) = delete;
+  EnterpriseReportingPrivateGetPersistentSecretFunction& operator=(
+      const EnterpriseReportingPrivateGetPersistentSecretFunction&) = delete;
 
  private:
   ~EnterpriseReportingPrivateGetPersistentSecretFunction() override;
@@ -100,9 +105,6 @@ class EnterpriseReportingPrivateGetPersistentSecretFunction
 
   // Callback once the data was retrieved from the file.
   void OnDataRetrieved(const std::string& data, bool status);
-
-  DISALLOW_COPY_AND_ASSIGN(
-      EnterpriseReportingPrivateGetPersistentSecretFunction);
 };
 
 class EnterpriseReportingPrivateGetDeviceDataFunction
@@ -112,6 +114,10 @@ class EnterpriseReportingPrivateGetDeviceDataFunction
                              ENTERPRISEREPORTINGPRIVATE_GETDEVICEDATA)
 
   EnterpriseReportingPrivateGetDeviceDataFunction();
+  EnterpriseReportingPrivateGetDeviceDataFunction(
+      const EnterpriseReportingPrivateGetDeviceDataFunction&) = delete;
+  EnterpriseReportingPrivateGetDeviceDataFunction& operator=(
+      const EnterpriseReportingPrivateGetDeviceDataFunction&) = delete;
 
  private:
   ~EnterpriseReportingPrivateGetDeviceDataFunction() override;
@@ -121,8 +127,6 @@ class EnterpriseReportingPrivateGetDeviceDataFunction
 
   // Callback once the data was retrieved from the file.
   void OnDataRetrieved(const std::string& data, bool status);
-
-  DISALLOW_COPY_AND_ASSIGN(EnterpriseReportingPrivateGetDeviceDataFunction);
 };
 
 class EnterpriseReportingPrivateSetDeviceDataFunction
@@ -132,6 +136,10 @@ class EnterpriseReportingPrivateSetDeviceDataFunction
                              ENTERPRISEREPORTINGPRIVATE_SETDEVICEDATA)
 
   EnterpriseReportingPrivateSetDeviceDataFunction();
+  EnterpriseReportingPrivateSetDeviceDataFunction(
+      const EnterpriseReportingPrivateSetDeviceDataFunction&) = delete;
+  EnterpriseReportingPrivateSetDeviceDataFunction& operator=(
+      const EnterpriseReportingPrivateSetDeviceDataFunction&) = delete;
 
  private:
   ~EnterpriseReportingPrivateSetDeviceDataFunction() override;
@@ -141,8 +149,6 @@ class EnterpriseReportingPrivateSetDeviceDataFunction
 
   // Callback once the data was stored to the file.
   void OnDataStored(bool status);
-
-  DISALLOW_COPY_AND_ASSIGN(EnterpriseReportingPrivateSetDeviceDataFunction);
 };
 
 class EnterpriseReportingPrivateGetDeviceInfoFunction
@@ -150,15 +156,22 @@ class EnterpriseReportingPrivateGetDeviceInfoFunction
  public:
   DECLARE_EXTENSION_FUNCTION("enterprise.reportingPrivate.getDeviceInfo",
                              ENTERPRISEREPORTINGPRIVATE_GETDEVICEINFO)
-  EnterpriseReportingPrivateGetDeviceInfoFunction();
 
-  // ExtensionFunction
-  ExtensionFunction::ResponseAction Run() override;
+  EnterpriseReportingPrivateGetDeviceInfoFunction();
+  EnterpriseReportingPrivateGetDeviceInfoFunction(
+      const EnterpriseReportingPrivateGetDeviceInfoFunction&) = delete;
+  EnterpriseReportingPrivateGetDeviceInfoFunction& operator=(
+      const EnterpriseReportingPrivateGetDeviceInfoFunction&) = delete;
 
  private:
   ~EnterpriseReportingPrivateGetDeviceInfoFunction() override;
 
-  DISALLOW_COPY_AND_ASSIGN(EnterpriseReportingPrivateGetDeviceInfoFunction);
+  // ExtensionFunction
+  ExtensionFunction::ResponseAction Run() override;
+
+  // Callback once the data was retrieved.
+  void OnDeviceInfoRetrieved(
+      const api::enterprise_reporting_private::DeviceInfo& device_info);
 };
 
 }  // namespace extensions

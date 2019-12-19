@@ -5,7 +5,6 @@
 #include "weblayer/test/weblayer_browser_test.h"
 
 #include "base/macros.h"
-#include "build/build_config.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/test/weblayer_browser_test_utils.h"
@@ -19,8 +18,6 @@ namespace weblayer {
 
 using ErrorPageBrowserTest = WebLayerBrowserTest;
 
-// Disabled on Windows, see crbug.com/1034764
-#if !defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(ErrorPageBrowserTest, NameNotResolved) {
   GURL error_page_url =
       net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_NAME_NOT_RESOLVED);
@@ -44,6 +41,5 @@ IN_PROC_BROWSER_TEST_F(ErrorPageBrowserTest, 404WithEmptyBody) {
 
   NavigateAndWaitForFailure(error_page_url, shell());
 }
-#endif  // !defined(OS_WIN)
 
 }  // namespace weblayer

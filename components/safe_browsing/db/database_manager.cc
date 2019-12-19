@@ -65,8 +65,8 @@ bool SafeBrowsingDatabaseManager::CheckApiBlacklistUrl(const GURL& url,
 
   v4_get_hash_protocol_manager_->GetFullHashesWithApis(
       url, list_client_states,
-      base::Bind(&SafeBrowsingDatabaseManager::OnThreatMetadataResponse,
-                 base::Unretained(this), base::Passed(std::move(check))));
+      base::BindOnce(&SafeBrowsingDatabaseManager::OnThreatMetadataResponse,
+                     base::Unretained(this), std::move(check)));
 
   return false;
 }

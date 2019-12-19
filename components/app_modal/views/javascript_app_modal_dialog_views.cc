@@ -60,10 +60,6 @@ JavaScriptAppModalDialogViews::~JavaScriptAppModalDialogViews() {
 ////////////////////////////////////////////////////////////////////////////////
 // JavaScriptAppModalDialogViews, NativeAppModalDialog implementation:
 
-int JavaScriptAppModalDialogViews::GetAppModalDialogButtons() const {
-  return GetDialogButtons();
-}
-
 void JavaScriptAppModalDialogViews::ShowAppModalDialog() {
   GetWidget()->Show();
 }

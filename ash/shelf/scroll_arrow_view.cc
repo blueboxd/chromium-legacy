@@ -25,6 +25,7 @@ ScrollArrowView::ScrollArrowView(ArrowType arrow_type,
     : ShelfButton(shelf, shelf_button_delegate),
       arrow_type_(arrow_type),
       is_horizontal_alignment_(is_horizontal_alignment) {
+  set_has_ink_drop_action_on_click(true);
   SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
 }
 

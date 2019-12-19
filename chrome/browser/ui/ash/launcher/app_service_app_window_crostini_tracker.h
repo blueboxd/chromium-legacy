@@ -32,8 +32,8 @@ class AppServiceAppWindowCrostiniTracker {
   AppServiceAppWindowCrostiniTracker& operator=(
       const AppServiceAppWindowCrostiniTracker&) = delete;
 
-  void OnWindowVisibilityChanging(aura::Window* window,
-                                  const std::string& shelf_app_id);
+  void OnWindowVisibilityChanged(aura::Window* window,
+                                 const std::string& shelf_app_id);
   void OnWindowDestroying(const std::string& app_id, aura::Window* window);
 
   // A Crostini app with |app_id| is requested to launch on display with

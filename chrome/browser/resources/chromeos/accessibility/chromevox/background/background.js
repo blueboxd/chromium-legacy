@@ -31,6 +31,7 @@ goog.require('Output');
 goog.require('Output.EventType');
 goog.require('PanelCommand');
 goog.require('PhoneticData');
+goog.require('FocusAutomationHandler');
 goog.require('RangeAutomationHandler');
 goog.require('constants');
 goog.require('cursors.Cursor');

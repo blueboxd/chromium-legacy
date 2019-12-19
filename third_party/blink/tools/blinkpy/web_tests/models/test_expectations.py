@@ -31,6 +31,7 @@
 from collections import defaultdict
 
 import logging
+import itertools
 import re
 
 from blinkpy.common.path_finder import PathFinder
@@ -565,15 +566,33 @@ class TestExpectationLine(object):
         if self.name is None:
             return '' if self.comment is None else '#%s' % self.comment
 
-        if test_configuration_converter and self.bugs:
+        if test_configuration_converter:
             specifiers_list = test_configuration_converter.to_specifiers_list(self.matching_configurations)
+            system_specifiers = set(
+                s.upper() for s in test_configuration_converter.configuration_macros.keys())
+            if system_specifiers:
+                system_specifiers.update(
+                    [s.upper() for s in reduce(lambda x, y: x + y, test_configuration_converter.configuration_macros.values())])
+            build_specifiers = set(s.upper() for s in TestExpectations.BUILD_TYPES)
             result = []
             for specifiers in specifiers_list:
                 # FIXME: this is silly that we join the specifiers and then immediately split them.
-                specifiers = self._serialize_parsed_specifiers(test_configuration_converter, specifiers).split()
+                specifiers = set(
+                    s.upper() for s in self._serialize_parsed_specifiers(test_configuration_converter, specifiers).split())
                 expectations = self._serialize_parsed_expectations(parsed_expectation_to_string).split()
-                result.append(self._format_line(self.bugs, specifiers, self.name, expectations, self.comment))
-            return '\n'.join(result) if result else None
+                system_intersection = system_specifiers & specifiers
+                build_intersection = build_specifiers & specifiers
+                if not system_intersection and not build_intersection:
+                    result.append(self._format_line(self.bugs, [], self.name, expectations, self.comment))
+                elif not system_intersection or not build_intersection:
+                    result.extend(
+                        [self._format_line(self.bugs, [s], self.name, expectations, self.comment)
+                         for s in system_intersection or build_intersection])
+                else:
+                    result.extend(
+                        [self._format_line(self.bugs, [sys, build], self.name, expectations, self.comment)
+                         for sys, build in itertools.product(system_intersection, build_intersection)])
+            return '\n'.join(result) or None
 
         return self._format_line(self.bugs, self.specifiers, self.name, self.expectations, self.comment,
                                  include_specifiers, include_expectations, include_comment)

@@ -41,7 +41,8 @@ CaptivePortalTabHelper::CaptivePortalTabHelper(
           base::Bind(&CaptivePortalTabHelper::OpenLoginTabForWebContents,
                      web_contents,
                      false))),
-      login_detector_(new CaptivePortalLoginDetector(profile_)) {
+      login_detector_(new CaptivePortalLoginDetector(profile_)),
+      is_captive_portal_window_(false) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   registrar_.Add(this,
                  chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,

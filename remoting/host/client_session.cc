@@ -54,8 +54,6 @@ ClientSession::ClientSession(
     scoped_refptr<protocol::PairingRegistry> pairing_registry,
     const std::vector<HostExtension*>& extensions)
     : event_handler_(event_handler),
-      connection_(std::move(connection)),
-      client_jid_(connection_->session()->jid()),
       desktop_environment_factory_(desktop_environment_factory),
       desktop_environment_options_(desktop_environment_options),
       input_tracker_(&host_input_filter_),
@@ -65,7 +63,9 @@ ClientSession::ClientSession(
       disable_clipboard_filter_(clipboard_echo_filter_.host_filter()),
       client_clipboard_factory_(clipboard_echo_filter_.client_filter()),
       max_duration_(max_duration),
-      pairing_registry_(pairing_registry) {
+      pairing_registry_(pairing_registry),
+      connection_(std::move(connection)),
+      client_jid_(connection_->session()->jid()) {
   connection_->session()->AddPlugin(&host_experiment_session_plugin_);
   connection_->SetEventHandler(this);
 
@@ -86,8 +86,6 @@ ClientSession::~ClientSession() {
   DCHECK(!input_injector_);
   DCHECK(!screen_controls_);
   DCHECK(!video_stream_);
-
-  connection_.reset();
 }
 
 void ClientSession::NotifyClientResolution(
@@ -380,7 +378,10 @@ void ClientSession::OnConnectionChannelsConnected() {
                          connection_->client_stub()));
 
   // Create KeyboardLayoutMonitor to send keyboard layout.
-  keyboard_layout_monitor_ = KeyboardLayoutMonitor::Create(
+  // Unretained is sound because callback will never be called after
+  // |keyboard_layout_monitor_| has been destroyed, and |connection_| (which
+  // owns the client stub) is guaranteed to outlive |keyboard_layout_monitor_|.
+  keyboard_layout_monitor_ = desktop_environment_->CreateKeyboardLayoutMonitor(
       base::BindRepeating(&protocol::KeyboardLayoutStub::SetKeyboardLayout,
                           base::Unretained(connection_->client_stub())));
   keyboard_layout_monitor_->Start();

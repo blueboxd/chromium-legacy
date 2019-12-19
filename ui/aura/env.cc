@@ -8,7 +8,6 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/observer_list_types.h"
-#include "components/viz/common/features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env_input_state_controller.h"
 #include "ui/aura/env_observer.h"
@@ -220,7 +219,6 @@ void Env::Init() {
   params.single_process = command_line->HasSwitch("single-process") ||
                           command_line->HasSwitch("in-process-gpu");
   params.using_mojo = features::IsOzoneDrmMojo();
-  params.viz_display_compositor = features::IsVizDisplayCompositorEnabled();
 
   ui::OzonePlatform::InitializeForUI(params);
 #endif

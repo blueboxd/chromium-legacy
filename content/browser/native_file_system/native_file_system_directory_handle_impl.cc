@@ -173,9 +173,14 @@ void NativeFileSystemDirectoryHandleImpl::GetEntries(
         pending_listener) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  auto listener = std::make_unique<
-      mojo::Remote<blink::mojom::NativeFileSystemDirectoryEntriesListener>>(
-      std::move(pending_listener));
+  std::unique_ptr<
+      mojo::Remote<blink::mojom::NativeFileSystemDirectoryEntriesListener>,
+      base::OnTaskRunnerDeleter>
+      listener(
+          new mojo::Remote<
+              blink::mojom::NativeFileSystemDirectoryEntriesListener>(
+              std::move(pending_listener)),
+          base::OnTaskRunnerDeleter(base::SequencedTaskRunnerHandle::Get()));
   listener->reset_on_disconnect();
 
   DoFileSystemOperation(

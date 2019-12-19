@@ -753,4 +753,21 @@ FakePasswordRecoveryManager::~FakePasswordRecoveryManager() {
   *GetInstanceStorage() = original_validator_;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
+FakeGemDeviceDetailsManager::FakeGemDeviceDetailsManager()
+    : FakeGemDeviceDetailsManager(
+          GemDeviceDetailsManager::kDefaultUploadDeviceDetailsRequestTimeout) {}
+
+FakeGemDeviceDetailsManager::FakeGemDeviceDetailsManager(
+    base::TimeDelta upload_device_details_request_timeout)
+    : GemDeviceDetailsManager(upload_device_details_request_timeout),
+      original_manager_(*GetInstanceStorage()) {
+  *GetInstanceStorage() = this;
+}
+
+FakeGemDeviceDetailsManager::~FakeGemDeviceDetailsManager() {
+  *GetInstanceStorage() = original_manager_;
+}
+
 }  // namespace credential_provider

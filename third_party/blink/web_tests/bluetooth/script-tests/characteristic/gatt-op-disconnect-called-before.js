@@ -2,10 +2,15 @@
 const test_desc = 'disconnect() called before FUNCTION_NAME. ' +
     'Reject with NetworkError.';
 const value = new Uint8Array([1]);
-const expected = new DOMException('GATT Server is disconnected. Cannot ' +
-    'perform GATT operations. (Re)connect first with `device.gatt.connect`.',
-    'NetworkError')
 let device, characteristic, fake_peripheral;
+
+function createDOMException(func) {
+  return new DOMException(
+      `Failed to execute '${func}' on 'BluetoothRemoteGATTCharacteristic': ` +
+      `GATT Server is disconnected. Cannot perform GATT operations. ` +
+      `(Re)connect first with \`device.gatt.connect\`.`,
+      'NetworkError');
+}
 
 bluetooth_test(() => getMeasurementIntervalCharacteristic()
     .then(_ => ({device, characteristic, fake_peripheral} = _))
@@ -18,6 +23,6 @@ bluetooth_test(() => getMeasurementIntervalCharacteristic()
           startNotifications()|
           stopNotifications()
         ]),
-        expected);
+        createDOMException('FUNCTION_NAME'));
     }),
     test_desc);

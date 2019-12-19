@@ -41,9 +41,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
 #include "third_party/blink/renderer/core/animation/animation_effect_owner.h"
-#include "third_party/blink/renderer/core/animation/animation_timeline.h"
 #include "third_party/blink/renderer/core/animation/compositor_animations.h"
-#include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -62,6 +60,7 @@ class Element;
 class ExceptionState;
 class PaintArtifactCompositor;
 class TreeScope;
+class AnimationTimeline;
 
 class CORE_EXPORT Animation : public EventTargetWithInlineData,
                               public ActiveScriptWrappable<Animation>,
@@ -71,6 +70,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
                               public AnimationEffectOwner {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Animation);
+  USING_PRE_FINALIZER(Animation, Dispose);
 
  public:
   enum AnimationPlayState {
@@ -325,7 +325,6 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
 
   void ResetPendingTasks();
   double TimelineTime() const;
-  DocumentTimeline& TickingTimeline();
 
   void ScheduleAsyncFinish();
   void AsyncFinishMicrotask();

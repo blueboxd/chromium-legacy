@@ -109,7 +109,7 @@ void CrosHealthdClient::Initialize(dbus::Bus* bus) {
 
 // static
 void CrosHealthdClient::InitializeFake() {
-  new FakeCrosHealthdClient();
+  new cros_healthd::FakeCrosHealthdClient();
 }
 
 // static

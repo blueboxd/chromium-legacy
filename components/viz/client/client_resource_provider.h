@@ -45,7 +45,7 @@ class RasterContextProvider;
 // created on (in practice, the impl thread).
 class VIZ_CLIENT_EXPORT ClientResourceProvider {
  public:
-  explicit ClientResourceProvider(bool verified_sync_tokens_required);
+  ClientResourceProvider();
   ~ClientResourceProvider();
 
   static gpu::SyncToken GenerateSyncTokenHelper(gpu::gles2::GLES2Interface* gl);
@@ -142,7 +142,6 @@ class VIZ_CLIENT_EXPORT ClientResourceProvider {
           verify_sync_tokens);
 
   THREAD_CHECKER(thread_checker_);
-  const bool verified_sync_tokens_required_;
 
   base::flat_map<ResourceId, ImportedResource> imported_resources_;
   // The ResourceIds in ClientResourceProvider start from 1 to avoid

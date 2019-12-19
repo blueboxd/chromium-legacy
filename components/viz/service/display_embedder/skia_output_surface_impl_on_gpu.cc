@@ -707,6 +707,16 @@ class SkiaOutputSurfaceImplOnGpu::OffscreenSurface {
   sk_sp<SkPromiseImageTexture> promise_texture_;
 };
 
+SkiaOutputSurfaceImplOnGpu::ReleaseCurrent::ReleaseCurrent(
+    scoped_refptr<gl::GLSurface> gl_surface,
+    scoped_refptr<gpu::SharedContextState> context_state)
+    : gl_surface_(gl_surface), context_state_(context_state) {}
+
+SkiaOutputSurfaceImplOnGpu::ReleaseCurrent::~ReleaseCurrent() {
+  if (context_state_ && gl_surface_)
+    context_state_->ReleaseCurrent(gl_surface_.get());
+}
+
 // static
 std::unique_ptr<SkiaOutputSurfaceImplOnGpu> SkiaOutputSurfaceImplOnGpu::Create(
     SkiaOutputSurfaceDependency* deps,
@@ -785,6 +795,7 @@ SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
   if (context_state_ && MakeCurrent(false /* need_fbo0 */)) {
     // This ensures any outstanding callbacks for promise images are performed.
     gr_context()->flush();
+    release_current_last_.emplace(gl_surface_, context_state_);
   }
 
   if (copier_) {
@@ -793,6 +804,9 @@ SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
     copier_ = nullptr;
     texture_deleter_ = nullptr;
     context_provider_ = nullptr;
+
+    // Destroying context_provider_ will ReleaseCurrent. MakeCurrent again for
+    // the rest of this dtor.
     MakeCurrent(false /* need_fbo0 */);
   }
 
@@ -1447,10 +1461,9 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
       } else {
         std::unique_ptr<SkiaOutputDeviceGL> onscreen_device =
             std::make_unique<SkiaOutputDeviceGL>(
-                dependency_->GetMailboxManager(), gl_surface_, feature_info_,
-                memory_tracker_.get(), did_swap_buffer_complete_callback_);
-
-        onscreen_device->Initialize(gr_context(), context);
+                dependency_->GetMailboxManager(), context_state_.get(),
+                gl_surface_, feature_info_, memory_tracker_.get(),
+                did_swap_buffer_complete_callback_);
         supports_alpha_ = onscreen_device->supports_alpha();
         output_device_ = std::move(onscreen_device);
       }

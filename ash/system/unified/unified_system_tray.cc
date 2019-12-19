@@ -237,7 +237,11 @@ void UnifiedSystemTray::FocusFirstNotification() {
     return;
 
   FocusMessageCenter(false /*reverse*/);
-  message_center_bubble()->FocusFirstNotification();
+
+  // Do not focus an individual element in quick settings if chrome vox is
+  // enabled
+  if (!ShouldEnableExtraKeyboardAccessibility())
+    message_center_bubble()->FocusFirstNotification();
 }
 
 bool UnifiedSystemTray::FocusMessageCenter(bool reverse) {
@@ -249,7 +253,11 @@ bool UnifiedSystemTray::FocusMessageCenter(bool reverse) {
   message_center_widget->widget_delegate()->SetCanActivate(true);
 
   Shell::Get()->focus_cycler()->FocusWidget(message_center_widget);
-  message_center_bubble_->FocusEntered(reverse);
+
+  // Do not focus an individual element in quick settings if chrome vox is
+  // enabled
+  if (!ShouldEnableExtraKeyboardAccessibility())
+    message_center_bubble_->FocusEntered(reverse);
 
   return true;
 }
@@ -260,7 +268,11 @@ bool UnifiedSystemTray::FocusQuickSettings(bool reverse) {
 
   views::Widget* quick_settings_widget = bubble_->GetBubbleWidget();
   Shell::Get()->focus_cycler()->FocusWidget(quick_settings_widget);
-  bubble_->FocusEntered(reverse);
+
+  // Do not focus an individual element in quick settings if chrome vox is
+  // enabled
+  if (!ShouldEnableExtraKeyboardAccessibility())
+    bubble_->FocusEntered(reverse);
 
   return true;
 }

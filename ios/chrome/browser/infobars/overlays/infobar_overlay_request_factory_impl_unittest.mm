@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/infobars/core/infobar.h"
 #include "components/password_manager/core/browser/mock_password_form_manager_for_ui.h"
 #include "ios/chrome/browser/infobars/infobar_ios.h"
@@ -13,6 +14,7 @@
 #import "ios/chrome/browser/passwords/ios_chrome_save_password_infobar_delegate.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/test/fake_infobar_ui_delegate.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -41,11 +43,14 @@ class InfobarOverlayRequestFactoryImplTest : public PlatformTest {
 TEST_F(InfobarOverlayRequestFactoryImplTest, SavePasswords) {
   FakeInfobarUIDelegate* ui_delegate = [[FakeInfobarUIDelegate alloc] init];
   ui_delegate.infobarType = InfobarType::kInfobarTypePasswordSave;
-  std::unique_ptr<password_manager::PasswordFormManagerForUI> form =
+  std::unique_ptr<password_manager::MockPasswordFormManagerForUI> form_manager =
       std::make_unique<password_manager::MockPasswordFormManagerForUI>();
+  autofill::PasswordForm form;
+  EXPECT_CALL(*form_manager, GetPendingCredentials())
+      .WillRepeatedly(testing::ReturnRef(form));
   std::unique_ptr<InfoBarDelegate> delegate =
-      std::make_unique<IOSChromeSavePasswordInfoBarDelegate>(false, false,
-                                                             std::move(form));
+      std::make_unique<IOSChromeSavePasswordInfoBarDelegate>(
+          false, false, std::move(form_manager));
   InfoBarIOS infobar(ui_delegate, std::move(delegate));
   std::unique_ptr<OverlayRequest> request =
       factory()->CreateInfobarRequest(&infobar, InfobarOverlayType::kBanner);

@@ -61,9 +61,9 @@ class AppServiceInstanceRegistryHelper {
                    apps::InstanceState state);
 
   // Updates the apps state when the browser's visibility is changed.
-  void OnWindowVisibilityChanging(const ash::ShelfID& shelf_id,
-                                  aura::Window* window,
-                                  bool visible);
+  void OnWindowVisibilityChanged(const ash::ShelfID& shelf_id,
+                                 aura::Window* window,
+                                 bool visible);
 
   // Updates the apps state when the browser is inactivated.
   void SetWindowActivated(const ash::ShelfID& shelf_id,
@@ -78,8 +78,8 @@ class AppServiceInstanceRegistryHelper {
   apps::InstanceState CalculateActivatedState(aura::Window* window,
                                               bool active) const;
 
-  // Return true if the app is a Web app.
-  bool IsWebApp(const std::string& app_id) const;
+  // Return true if the app is opend in a browser.
+  bool IsOpenedInBrowser(const std::string& app_id, aura::Window* window) const;
 
  private:
   // Returns an app id to represent |contents| in InstanceRegistry. If there is

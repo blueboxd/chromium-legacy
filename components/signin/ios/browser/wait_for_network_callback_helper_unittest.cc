@@ -31,8 +31,8 @@ TEST_F(WaitForNetworkCallbackHelperTest, CallbackInvokedImmediately) {
   network_change_notifier_->SetConnectionType(
       net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
   callback_helper_.HandleCallback(
-      base::Bind(&WaitForNetworkCallbackHelperTest::CallbackFunction,
-                 base::Unretained(this)));
+      base::BindOnce(&WaitForNetworkCallbackHelperTest::CallbackFunction,
+                     base::Unretained(this)));
   EXPECT_EQ(1, num_callbacks_invoked_);
 }
 
@@ -40,11 +40,11 @@ TEST_F(WaitForNetworkCallbackHelperTest, CallbackInvokedLater) {
   network_change_notifier_->SetConnectionType(
       net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE);
   callback_helper_.HandleCallback(
-      base::Bind(&WaitForNetworkCallbackHelperTest::CallbackFunction,
-                 base::Unretained(this)));
+      base::BindOnce(&WaitForNetworkCallbackHelperTest::CallbackFunction,
+                     base::Unretained(this)));
   callback_helper_.HandleCallback(
-      base::Bind(&WaitForNetworkCallbackHelperTest::CallbackFunction,
-                 base::Unretained(this)));
+      base::BindOnce(&WaitForNetworkCallbackHelperTest::CallbackFunction,
+                     base::Unretained(this)));
   EXPECT_EQ(0, num_callbacks_invoked_);
 
   network_change_notifier_->SetConnectionType(

@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/create_options.h"
 #include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/window.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/session_manager/core/session_manager.h"

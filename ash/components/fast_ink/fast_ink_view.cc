@@ -144,10 +144,9 @@ class FastInkView::LayerTreeFrameSinkHolder
     // Submit an empty frame to ensure that pending release callbacks will be
     // processed in a finite amount of time.
     viz::CompositorFrame frame;
-    frame.metadata.begin_frame_ack.source_id =
-        viz::BeginFrameArgs::kManualSourceId;
-    frame.metadata.begin_frame_ack.sequence_number =
-        viz::BeginFrameArgs::kStartingFrameNumber;
+    frame.metadata.begin_frame_ack.frame_id =
+        viz::BeginFrameId(viz::BeginFrameArgs::kManualSourceId,
+                          viz::BeginFrameArgs::kStartingFrameNumber);
     frame.metadata.begin_frame_ack.has_damage = true;
     frame.metadata.device_scale_factor =
         holder->last_frame_device_scale_factor_;

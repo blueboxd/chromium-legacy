@@ -139,7 +139,6 @@
 <translation id="1186771945450942097">移除有害软件</translation>
 <translation id="1187722533808055681">闲置状态唤醒</translation>
 <translation id="1188807932851744811">未上传日志。</translation>
-<translation id="1189418886587279221">启用辅助功能，以便更轻松地使用您的设备。</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{可访问您计算机上存储的 1 个文件}other{可访问您计算机上存储的 # 个文件}}</translation>
 <translation id="1190660338026981543">您的<ph name="DEVICE_TYPE" />已成功注册企业管理服务，由以下网域管理：<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />。</translation>
 <translation id="119092896208640858">要想仅清除此设备中的浏览数据而保留您的 Google 帐号中的浏览数据，请<ph name="BEGIN_LINK" />退出<ph name="END_LINK" />。</translation>
@@ -339,7 +338,6 @@
 <translation id="1476607407192946488">语言设置(&amp;L)</translation>
 <translation id="1478340334823509079">详细信息：<ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">未启用安装功能</translation>
-<translation id="1481206932476131736">管理您已登录的帐号。Chrome 和 Google Play 中的网站、应用和扩展程序可能会使用这些帐号为您定制专属体验，具体取决于所获权限。</translation>
 <translation id="1482626744466814421">为此标签页添加书签…</translation>
 <translation id="1483493594462132177">发送</translation>
 <translation id="1484979925941077974">此网站正在使用蓝牙</translation>
@@ -589,7 +587,6 @@
 <translation id="1813278315230285598">服务</translation>
 <translation id="18139523105317219">EDI 参与方名称</translation>
 <translation id="1815083418640426271">粘贴为纯文本</translation>
-<translation id="1815579292149538864">设置或管理 CUPS 打印机。</translation>
 <translation id="181577467034453336">另外还有 <ph name="NUMBER_OF_VIEWS" /> 个…</translation>
 <translation id="1816036116994822943">键盘扫描速度</translation>
 <translation id="1817871734039893258">Microsoft 文件恢复</translation>
@@ -1450,7 +1447,6 @@
 <translation id="3012917896646559015">请立即与您的硬件制造商联系，将您的计算机送至维修机构。</translation>
 <translation id="3013291976881901233">MIDI 设备</translation>
 <translation id="3015639418649705390">立即重新启动</translation>
-<translation id="3016329696181678353">无法自动配置<ph name="PRINTER_NAME" />。请指定高级打印机详细信息。</translation>
 <translation id="3016381065346027039">没有日志条目</translation>
 <translation id="3016641847947582299">组件已更新</translation>
 <translation id="3016780570757425217">获取您的位置</translation>
@@ -2187,7 +2183,6 @@
 <translation id="4046123991198612571">下一曲</translation>
 <translation id="4050225813016893843">身份验证方法</translation>
 <translation id="4052120076834320548">最小</translation>
-<translation id="4055023634561256217">使用 Powerwash 重置您的设备之前必须重新启动该设备。</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">在应用店中查看</translation>
 <translation id="4058647953897694817">通过蓝牙进行验证</translation>
@@ -2509,7 +2504,6 @@
 <translation id="4558426062282641716">已请求获取自动启动权限</translation>
 <translation id="4558491878126948419">接收 <ph name="DEVICE_TYPE" /> 相关提示和 Google 产品动态，并分享反馈。可随时退订。</translation>
 <translation id="4559617833001311418">此网站正在使用您的动态传感器或光传感器。</translation>
-<translation id="4561098487691395071">或指定您的打印机 PPD</translation>
 <translation id="4562155214028662640">添加指纹</translation>
 <translation id="4562494484721939086">无服务</translation>
 <translation id="4563880231729913339">手指 3</translation>
@@ -2752,7 +2746,6 @@
 <translation id="4924352752174756392">12 倍</translation>
 <translation id="4925542575807923399">此帐号的管理员规定：在多帐号登录会话中，此帐号必须是最先登录的帐号。</translation>
 <translation id="4927753642311223124">这里没有任何通知，往前走吧。</translation>
-<translation id="4927846293686536410">您只需登录任一设备，即可轻松获取自己的书签、历史记录、密码和其他设置。在这种情况下，您也会自动登录 Google 服务。</translation>
 <translation id="4929386379796360314">打印目的地</translation>
 <translation id="4930714375720679147">开启</translation>
 <translation id="4932733599132424254">日期</translation>
@@ -3309,7 +3302,6 @@
 <translation id="5750324801516359607">远</translation>
 <translation id="5756163054456765343">帮助中心(&amp;E)</translation>
 <translation id="5759728514498647443">您通过“<ph name="APP_NAME" />”发送以进行打印的文档可由“<ph name="APP_NAME" />”读取。</translation>
-<translation id="5763315388120433852">设置或管理网络文件共享。</translation>
 <translation id="5763751966069581670">未找到任何 USB 设备</translation>
 <translation id="5764483294734785780">音频另存为(&amp;V)...</translation>
 <translation id="57646104491463491">修改日期</translation>
@@ -4629,7 +4621,6 @@
 <translation id="7684718995427157417">要创建和测试您的应用，请启用 Android 调试桥 (ADB)。请注意，此操作会允许安装未经 Google 验证的 Android 应用，而且您会需要将设备恢复出厂设置才能停用 ADB。</translation>
 <translation id="7685049629764448582">JavaScript 使用的内存</translation>
 <translation id="7685087414635069102">必须输入 PIN 码</translation>
-<translation id="768549422429443215">添加语言或将列表中的语言重新排列。</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">再次输入新密码</translation>
 <translation id="7690378713476594306">从列表中选择</translation>
@@ -4666,7 +4657,6 @@
 <translation id="7730449930968088409">截取您屏幕上的内容</translation>
 <translation id="7732111077498238432">网络受政策控制</translation>
 <translation id="7737238973539693982">删除 Linux（测试版）</translation>
-<translation id="7737456446569756884">此设备将会自动收到软件更新和安全更新，直至 <ph name="MONTH_AND_YEAR" />为止。</translation>
 <translation id="7740996059027112821">标准</translation>
 <translation id="7744047395460924128">查看您的打印记录</translation>
 <translation id="7746457520633464754">为了检测危险应用和网站，Chrome 会将您所访问的部分网页的网址、有限的系统信息以及部分网页内容发送给 Google</translation>
@@ -5552,7 +5542,6 @@
 <translation id="892706138619340876">部分设置已重置</translation>
 <translation id="8930351635855238750">您需要重新加载网页，才能使新的 Cookie 设置生效</translation>
 <translation id="8931394284949551895">新设备</translation>
-<translation id="893254996965966411">您可以将检测到的打印机保存到您的配置文件，或添加新的打印机。</translation>
 <translation id="8932894639908691771">开关控制选项</translation>
 <translation id="8933960630081805351">在 Finder 中显示(&amp;S)</translation>
 <translation id="8934732568177537184">继续</translation>

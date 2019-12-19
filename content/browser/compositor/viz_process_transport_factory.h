@@ -69,7 +69,6 @@ class VizProcessTransportFactory : public ui::ContextFactory,
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   void AddObserver(ui::ContextFactoryObserver* observer) override;
   void RemoveObserver(ui::ContextFactoryObserver* observer) override;
-  bool SyncTokensRequiredForDisplayCompositor() override;
 
   // ImageTransportFactory implementation.
   void DisableGpuCompositing() override;

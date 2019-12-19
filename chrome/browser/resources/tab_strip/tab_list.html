@@ -14,7 +14,13 @@
     width: 100%;
   }
 
-  #pinnedTabsContainer {
+  #tabs {
+    display: flex;
+    min-width: fit-content;
+    overflow: hidden;
+  }
+
+  #pinnedTabs {
     /* 3 pinned tabs should fit in the same space vertically as 1 unpinned
      * tab. 20px is subtracted from the height of an unpinned tab as there
      * are two 10px gaps to separate each of the 3 pinned tabs. */
@@ -29,17 +35,42 @@
     padding-inline-end: 0;
   }
 
-  #pinnedTabsContainer:empty {
+  #pinnedTabs:empty {
     display: none;
   }
 
-  #tabsContainer {
+  #unpinnedTabs {
     display: flex;
     min-width: fit-content;
-    overflow: hidden;
     padding: var(--tabstrip-tab-spacing);
     padding-inline-end: 0;
-    width: 100%;
+  }
+
+  #newTabButton {
+    --new-tab-button-margin: 24px;
+    --cr-icon-button-size: 50px;
+    --cr-icon-button-icon-size: 32px;
+    --cr-icon-button-fill-color: var(--tabstrip-tab-text-color);
+    --cr-icon-button-margin-end: var(--new-tab-button-margin);
+    --cr-icon-button-margin-start: 0;
+    background: var(--tabstrip-tab-background-color);
+    border-radius: 50%;
+    box-shadow: 0 1px 3px 0 rgba(var(--google-grey-800-rgb), .3),
+                0 4px 8px 3px rgba(var(--google-grey-800-rgb), .15);
+    height: 50px;
+    position: sticky;
+    right: var(--new-tab-button-margin);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 50px;
+  }
+
+  :host-context([dir='rtl']) #newTabButton {
+    /* TODO(crbug.com/1015605): Sticky positioning does not work with RTL. */
+    --cr-icon-button-margin-end: 0;
+    left: var(--new-tab-button-margin);
+    position: fixed;
+    right: auto;
   }
 
   #demoOptions {
@@ -51,8 +82,14 @@
   }
 </style>
 
-<div id="pinnedTabsContainer"></div>
-<div id="tabsContainer"></div>
+<div id="tabs">
+  <div id="pinnedTabs"></div>
+  <div id="unpinnedTabs"></div>
+</div>
+<cr-icon-button aria-label="$i18n{newTab}"
+    id="newTabButton"
+    iron-icon="cr:add">
+</cr-icon-button>
 
 <div id="demoOptions">
   <label>

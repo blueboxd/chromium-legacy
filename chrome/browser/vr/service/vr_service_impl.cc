@@ -26,6 +26,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
 #include "device/vr/buildflags/buildflags.h"
+#include "device/vr/public/cpp/session_mode.h"
 #include "device/vr/vr_device.h"
 
 #if defined(OS_WIN)
@@ -53,13 +54,12 @@ device::mojom::XRRuntimeSessionOptionsPtr GetRuntimeOptions(
     device::mojom::XRSessionOptions* options) {
   device::mojom::XRRuntimeSessionOptionsPtr runtime_options =
       device::mojom::XRRuntimeSessionOptions::New();
-  runtime_options->immersive = options->immersive;
-  runtime_options->environment_integration = options->environment_integration;
+  runtime_options->mode = options->mode;
   return runtime_options;
 }
 
 vr::XrConsentPromptLevel GetRequiredConsentLevel(
-    bool immersive,
+    device::mojom::XRSessionMode mode,
     const vr::BrowserXRRuntime* runtime,
     const std::set<device::mojom::XRSessionFeature>& requested_features) {
   if (requested_features.find(
@@ -70,7 +70,8 @@ vr::XrConsentPromptLevel GetRequiredConsentLevel(
 
   // If the device supports a custom IPD and it will be exposed (via immersive),
   // we need to warn about physical features Being exposed.
-  if (runtime->SupportsCustomIPD() && immersive) {
+  if (runtime->SupportsCustomIPD() &&
+      device::XRSessionModeUtils::IsImmersive(mode)) {
     return vr::XrConsentPromptLevel::kVRFeatures;
   }
 
@@ -85,13 +86,13 @@ vr::XrConsentPromptLevel GetRequiredConsentLevel(
     return vr::XrConsentPromptLevel::kVRFeatures;
   }
 
-  // In the absence of other items that need to be consented, an immersive
-  // session always requires some level of consent.
-  if (immersive) {
-    return vr::XrConsentPromptLevel::kDefault;
+  // In the absence of other items that need to be consented, inline does not
+  // require consent.
+  if (mode == device::mojom::XRSessionMode::kInline) {
+    return vr::XrConsentPromptLevel::kNone;
   }
 
-  return vr::XrConsentPromptLevel::kNone;
+  return vr::XrConsentPromptLevel::kDefault;
 }
 
 }  // namespace
@@ -423,11 +424,11 @@ void VRServiceImpl::ShowConsentPrompt(
   DCHECK(runtime);
 
 #if defined(OS_WIN)
-  DCHECK(!options->environment_integration);
+  DCHECK_NE(options->mode, device::mojom::XRSessionMode::kImmersiveAr);
 #endif
 
   XrConsentPromptLevel consent_level =
-      GetRequiredConsentLevel(options->immersive, runtime, requested_features);
+      GetRequiredConsentLevel(options->mode, runtime, requested_features);
 
   // Skip the consent prompt if the user has already consented for this device,
   // or if consent is not needed.
@@ -441,7 +442,7 @@ void VRServiceImpl::ShowConsentPrompt(
 
   // TODO(crbug.com/968233): Unify the below consent flow.
 #if defined(OS_ANDROID)
-  if (options->environment_integration) {
+  if (options->mode == device::mojom::XRSessionMode::kImmersiveAr) {
 #if BUILDFLAG(ENABLE_ARCORE)
     ArCoreConsentPromptInterface::GetInstance()->ShowConsentPrompt(
         render_frame_host_->GetProcess()->GetID(),
@@ -547,7 +548,7 @@ void VRServiceImpl::DoRequestSession(
     runtime_options->enabled_features.push_back(feature);
   }
 
-  if (runtime_options->immersive) {
+  if (device::XRSessionModeUtils::IsImmersive(runtime_options->mode)) {
     GetSessionMetricsHelper()->ReportRequestPresent(*runtime_options);
 
     base::OnceCallback<void(device::mojom::XRSessionPtr)> immersive_callback =

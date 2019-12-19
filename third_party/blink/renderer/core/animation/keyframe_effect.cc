@@ -45,7 +45,6 @@
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -56,11 +55,6 @@ KeyframeEffect* KeyframeEffect::Create(
     const ScriptValue& keyframes,
     const UnrestrictedDoubleOrKeyframeEffectOptions& options,
     ExceptionState& exception_state) {
-  if (element) {
-    UseCounter::Count(
-        element->GetDocument(),
-        WebFeature::kAnimationConstructorKeyframeListEffectObjectTiming);
-  }
   Document* document = element ? &element->GetDocument() : nullptr;
   Timing timing = TimingInput::Convert(options, document, exception_state);
   if (exception_state.HadException())
@@ -84,11 +78,6 @@ KeyframeEffect* KeyframeEffect::Create(ScriptState* script_state,
                                        Element* element,
                                        const ScriptValue& keyframes,
                                        ExceptionState& exception_state) {
-  if (element) {
-    UseCounter::Count(
-        element->GetDocument(),
-        WebFeature::kAnimationConstructorKeyframeListEffectNoTiming);
-  }
   KeyframeEffectModelBase* model =
       EffectInput::Convert(element, keyframes, EffectModel::kCompositeReplace,
                            script_state, exception_state);

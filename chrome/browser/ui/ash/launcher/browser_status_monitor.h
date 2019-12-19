@@ -80,10 +80,6 @@ class BrowserStatusMonitor : public BrowserTabStripTrackerDelegate,
   bool IsV1AppInShelf(Browser* browser);
   bool IsV1AppInShelfWithAppId(const std::string& app_id);
 
-  AppServiceInstanceRegistryHelper* app_service_instance_helper() const {
-    return app_service_instance_helper_.get();
-  }
-
  private:
   class LocalWebContentsObserver;
 
@@ -115,8 +111,7 @@ class BrowserStatusMonitor : public BrowserTabStripTrackerDelegate,
   BrowserTabStripTracker browser_tab_strip_tracker_;
   bool initialized_ = false;
 
-  std::unique_ptr<AppServiceInstanceRegistryHelper>
-      app_service_instance_helper_;
+  AppServiceInstanceRegistryHelper* app_service_instance_helper_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserStatusMonitor);
 };

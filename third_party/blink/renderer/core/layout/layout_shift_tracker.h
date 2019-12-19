@@ -60,6 +60,31 @@ class CORE_EXPORT LayoutShiftTracker {
     return most_recent_input_timestamp_;
   }
 
+  // Saves and restores visual rects on layout objects when a layout tree is
+  // rebuilt by Node::ReattachLayoutTree.
+  class ReattachHook : public GarbageCollected<ReattachHook> {
+   public:
+    ReattachHook() : scope_(nullptr) {}
+    void Trace(Visitor*);
+
+    class Scope {
+     public:
+      Scope(const Node&);
+      ~Scope();
+
+     private:
+      bool active_;
+      Scope* outer_;
+    };
+
+    static void NotifyDetach(const Node&);
+    static void NotifyAttach(const Node&);
+
+   private:
+    Scope* scope_;
+    HeapHashMap<Member<const Node>, IntRect> visual_rects_;
+  };
+
  private:
   void ObjectShifted(const LayoutObject&,
                      const PropertyTreeState&,

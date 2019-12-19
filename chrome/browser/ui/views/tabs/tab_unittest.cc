@@ -12,8 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/tabs/tab_group_id.h"
-#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -27,6 +25,8 @@
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/views/chrome_views_test_base.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/gfx/color_palette.h"
@@ -120,19 +120,20 @@ class FakeTabController : public TabController {
   }
   float GetHoverOpacityForRadialHighlight() const override { return 1.0f; }
 
-  const TabGroupVisualData* GetVisualDataForGroup(
-      TabGroupId group) const override {
+  const tab_groups::TabGroupVisualData* GetVisualDataForGroup(
+      tab_groups::TabGroupId group) const override {
     return nullptr;
   }
 
-  void SetVisualDataForGroup(TabGroupId group,
-                             TabGroupVisualData visual_data) override {}
+  void SetVisualDataForGroup(
+      tab_groups::TabGroupId group,
+      tab_groups::TabGroupVisualData visual_data) override {}
 
-  void CloseAllTabsInGroup(TabGroupId group) override {}
+  void CloseAllTabsInGroup(tab_groups::TabGroupId group) override {}
 
-  void UngroupAllTabsInGroup(TabGroupId group) override {}
+  void UngroupAllTabsInGroup(tab_groups::TabGroupId group) override {}
 
-  void AddNewTabInGroup(TabGroupId group) override {}
+  void AddNewTabInGroup(tab_groups::TabGroupId group) override {}
 
   const Browser* GetBrowser() override { return nullptr; }
 

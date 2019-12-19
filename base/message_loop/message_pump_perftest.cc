@@ -21,7 +21,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/java_handler_thread.h"
@@ -29,6 +29,21 @@
 
 namespace base {
 namespace {
+
+constexpr char kMetricPrefixScheduleWork[] = "ScheduleWork.";
+constexpr char kMetricMinBatchTime[] = "min_batch_time_per_task";
+constexpr char kMetricMaxBatchTime[] = "max_batch_time_per_task";
+constexpr char kMetricTotalTime[] = "total_time_per_task";
+constexpr char kMetricThreadTime[] = "thread_time_per_task";
+
+perf_test::PerfResultReporter SetUpReporter(const std::string& story_name) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixScheduleWork, story_name);
+  reporter.RegisterImportantMetric(kMetricMinBatchTime, "us");
+  reporter.RegisterImportantMetric(kMetricMaxBatchTime, "us");
+  reporter.RegisterImportantMetric(kMetricTotalTime, "us");
+  reporter.RegisterImportantMetric(kMetricThreadTime, "us");
+  return reporter;
+}
 
 #if defined(OS_ANDROID)
 class JavaHandlerThreadForTest : public android::JavaHandlerThread {
@@ -148,40 +163,24 @@ class ScheduleWorkTest : public testing::Test {
       min_batch_time = std::min(min_batch_time, min_batch_times_[i]);
       max_batch_time = std::max(max_batch_time, max_batch_times_[i]);
     }
-    std::string trace = StringPrintf(
-        "%d_threads_scheduling_to_%s_pump", num_scheduling_threads,
+
+    std::string story_name = StringPrintf(
+        "%s_pump_from_%d_threads",
         target_type == MessagePumpType::IO
             ? "io"
-            : (target_type == MessagePumpType::UI ? "ui" : "default"));
-    perf_test::PrintResult(
-        "task",
-        "",
-        trace,
-        total_time.InMicroseconds() / static_cast<double>(counter_),
-        "us/task",
-        true);
-    perf_test::PrintResult(
-        "task",
-        "_min_batch_time",
-        trace,
-        min_batch_time.InMicroseconds() / static_cast<double>(kBatchSize),
-        "us/task",
-        false);
-    perf_test::PrintResult(
-        "task",
-        "_max_batch_time",
-        trace,
-        max_batch_time.InMicroseconds() / static_cast<double>(kBatchSize),
-        "us/task",
-        false);
+            : (target_type == MessagePumpType::UI ? "ui" : "default"),
+        num_scheduling_threads);
+    auto reporter = SetUpReporter(story_name);
+    reporter.AddResult(kMetricMinBatchTime, total_time.InMicroseconds() /
+                                                static_cast<double>(counter_));
+    reporter.AddResult(
+        kMetricMaxBatchTime,
+        max_batch_time.InMicroseconds() / static_cast<double>(kBatchSize));
+    reporter.AddResult(kMetricTotalTime, total_time.InMicroseconds() /
+                                             static_cast<double>(counter_));
     if (ThreadTicks::IsSupported()) {
-      perf_test::PrintResult(
-          "task",
-          "_thread_time",
-          trace,
-          total_thread_time.InMicroseconds() / static_cast<double>(counter_),
-          "us/task",
-          true);
+      reporter.AddResult(kMetricThreadTime, total_thread_time.InMicroseconds() /
+                                                static_cast<double>(counter_));
     }
   }
 

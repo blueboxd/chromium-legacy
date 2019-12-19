@@ -97,12 +97,6 @@ base::string16 GetMdmUrl() {
   return GetGlobalFlagOrDefault(kRegMdmUrl, kDefaultMdmUrl);
 }
 
-base::string16 GetSerialNumber() {
-  if (g_use_test_serial_number)
-    return g_test_serial_number;
-  return base::win::WmiComputerSystemInfo::Get().serial_number();
-}
-
 bool IsEnrolledWithGoogleMdm(const base::string16& mdm_url) {
   switch (g_enrolled_status) {
     case EnrolledStatus::kForceTrue:
@@ -356,6 +350,12 @@ HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
 bool NeedsToEnrollWithMdm() {
   base::string16 mdm_url = GetMdmUrl();
   return !mdm_url.empty() && !IsEnrolledWithGoogleMdm(mdm_url);
+}
+
+base::string16 GetSerialNumber() {
+  if (g_use_test_serial_number)
+    return g_test_serial_number;
+  return base::win::WmiComputerSystemInfo::Get().serial_number();
 }
 
 bool MdmEnrollmentEnabled() {

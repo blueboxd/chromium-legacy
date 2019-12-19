@@ -48,6 +48,12 @@ config("inside_blink") {
       "-Wno-implicit-float-conversion",
       "-Wno-implicit-int-conversion",
     ]
+
+    if (llvm_force_head_revision) {
+      cflags += [
+        "-Wno-enum-enum-conversion",
+      ]
+    }
   }
 }
 

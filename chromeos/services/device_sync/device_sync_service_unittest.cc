@@ -707,17 +707,16 @@ class DeviceSyncServiceTest
       disabled_features.push_back(chromeos::features::kCryptAuthV2DeviceSync);
     }
 
-    // Choose whether or not to enable the v1 DeviceSync deprecation flag based
-    // on the third parameter provided by
-    // ::testing::TestWithParam<std::tuple<bool, bool, bool>>. Even if the flag
-    // is enabled, v1 DeviceSync should only be deprecated if v2 Enrollment and
-    // v2 DeviceSync are enabled.
+    // Choose whether or not to flip the flag to disable v1 DeviceSync based on
+    // the third parameter provided by ::testing::TestWithParam<std::tuple<bool,
+    // bool, bool>>. Even if the flag is flipped, v1 DeviceSync should only be
+    // disabled if v2 Enrollment and v2 DeviceSync are enabled.
     if (std::get<2>(GetParam())) {
       enabled_features.push_back(
-          chromeos::features::kCryptAuthV1DeviceSyncDeprecate);
+          chromeos::features::kDisableCryptAuthV1DeviceSync);
     } else {
       disabled_features.push_back(
-          chromeos::features::kCryptAuthV1DeviceSyncDeprecate);
+          chromeos::features::kDisableCryptAuthV1DeviceSync);
     }
 
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
@@ -1091,7 +1090,7 @@ class DeviceSyncServiceTest
     // initialization.
     EXPECT_FALSE(CallGetLocalDeviceMetadata());
 
-    if (!features::ShouldDeprecateV1DeviceSync()) {
+    if (features::ShouldUseV1DeviceSync()) {
       // SetSoftwareFeatureState() should return a struct with the special
       // kErrorNotInitialized error code.
       CallSetSoftwareFeatureState(
@@ -1114,7 +1113,7 @@ class DeviceSyncServiceTest
                 set_feature_status_results_[0]);
     }
 
-    if (!features::ShouldDeprecateV1DeviceSync()) {
+    if (features::ShouldUseV1DeviceSync()) {
       // FindEligibleDevices() should return a struct with the special
       // kErrorNotInitialized error code.
       CallFindEligibleDevices(
@@ -1255,14 +1254,14 @@ class DeviceSyncServiceTest
   void CallSetFeatureStatus(const std::string& device_instance_id,
                             multidevice::SoftwareFeature software_feature,
                             FeatureStatusChange status_change) {
-    if (features::ShouldDeprecateV1DeviceSync()) {
-      CallSetFeatureStatusV2DeviceSyncOnly(device_instance_id, software_feature,
-                                           status_change);
+    if (features::ShouldUseV1DeviceSync()) {
+      CallSetFeatureStatusV1andV2DeviceSync(device_instance_id,
+                                            software_feature, status_change);
       return;
     }
 
-    CallSetFeatureStatusV1andV2DeviceSync(device_instance_id, software_feature,
-                                          status_change);
+    CallSetFeatureStatusV2DeviceSyncOnly(device_instance_id, software_feature,
+                                         status_change);
   }
 
   void CallFindEligibleDevices(multidevice::SoftwareFeature software_feature) {
@@ -1713,7 +1712,7 @@ TEST_P(DeviceSyncServiceTest, SyncedDeviceUpdates) {
 }
 
 TEST_P(DeviceSyncServiceTest, SetSoftwareFeatureState_Success) {
-  if (features::ShouldDeprecateV1DeviceSync())
+  if (!features::ShouldUseV1DeviceSync())
     return;
 
   InitializeServiceSuccessfully();
@@ -1774,7 +1773,7 @@ TEST_P(DeviceSyncServiceTest, SetSoftwareFeatureState_Success) {
 
 TEST_P(DeviceSyncServiceTest,
        SetSoftwareFeatureState_RequestSucceedsButDoesNotTakeEffect) {
-  if (features::ShouldDeprecateV1DeviceSync())
+  if (!features::ShouldUseV1DeviceSync())
     return;
 
   InitializeServiceSuccessfully();
@@ -1825,7 +1824,7 @@ TEST_P(DeviceSyncServiceTest,
 }
 
 TEST_P(DeviceSyncServiceTest, SetSoftwareFeatureState_Error) {
-  if (features::ShouldDeprecateV1DeviceSync())
+  if (!features::ShouldUseV1DeviceSync())
     return;
 
   InitializeServiceSuccessfully();
@@ -1878,11 +1877,11 @@ TEST_P(DeviceSyncServiceTest, SetFeatureStatus_Success) {
 
   InitializeServiceSuccessfully();
 
-  if (features::ShouldDeprecateV1DeviceSync()) {
-    EXPECT_EQ(0u, fake_feature_status_setter()->requests().size());
-  } else {
+  if (features::ShouldUseV1DeviceSync()) {
     EXPECT_EQ(
         0u, fake_software_feature_manager()->set_feature_status_calls().size());
+  } else {
+    EXPECT_EQ(0u, fake_feature_status_setter()->requests().size());
   }
 
   multidevice::RemoteDevice device_for_test = test_devices()[0];
@@ -1892,17 +1891,7 @@ TEST_P(DeviceSyncServiceTest, SetFeatureStatus_Success) {
                        multidevice::SoftwareFeature::kBetterTogetherHost,
                        FeatureStatusChange::kEnableExclusively);
 
-  if (features::ShouldDeprecateV1DeviceSync()) {
-    EXPECT_EQ(1u, fake_feature_status_setter()->requests().size());
-    EXPECT_EQ(device_for_test.instance_id,
-              fake_feature_status_setter()->requests()[0].device_id);
-    EXPECT_EQ(multidevice::SoftwareFeature::kBetterTogetherHost,
-              fake_feature_status_setter()->requests()[0].feature);
-    EXPECT_EQ(FeatureStatusChange::kEnableExclusively,
-              fake_feature_status_setter()->requests()[0].status_change);
-    EXPECT_TRUE(fake_feature_status_setter()->requests()[0].success_callback);
-    EXPECT_TRUE(fake_feature_status_setter()->requests()[0].error_callback);
-  } else {
+  if (features::ShouldUseV1DeviceSync()) {
     EXPECT_EQ(
         1u, fake_software_feature_manager()->set_feature_status_calls().size());
     EXPECT_EQ(device_for_test.instance_id, fake_software_feature_manager()
@@ -1922,19 +1911,29 @@ TEST_P(DeviceSyncServiceTest, SetFeatureStatus_Success) {
     EXPECT_TRUE(fake_software_feature_manager()
                     ->set_feature_status_calls()[0]
                     ->error_callback);
+  } else {
+    EXPECT_EQ(1u, fake_feature_status_setter()->requests().size());
+    EXPECT_EQ(device_for_test.instance_id,
+              fake_feature_status_setter()->requests()[0].device_id);
+    EXPECT_EQ(multidevice::SoftwareFeature::kBetterTogetherHost,
+              fake_feature_status_setter()->requests()[0].feature);
+    EXPECT_EQ(FeatureStatusChange::kEnableExclusively,
+              fake_feature_status_setter()->requests()[0].status_change);
+    EXPECT_TRUE(fake_feature_status_setter()->requests()[0].success_callback);
+    EXPECT_TRUE(fake_feature_status_setter()->requests()[0].error_callback);
   }
 
   // The DeviceSyncImpl::SetFeatureStatus() callback has not yet been invoked.
   EXPECT_TRUE(set_feature_status_results().empty());
 
   // Now, invoke the success callback.
-  if (features::ShouldDeprecateV1DeviceSync()) {
-    std::move(fake_feature_status_setter()->requests()[0].success_callback)
-        .Run();
-  } else {
+  if (features::ShouldUseV1DeviceSync()) {
     std::move(fake_software_feature_manager()
                   ->set_feature_status_calls()[0]
                   ->success_callback)
+        .Run();
+  } else {
+    std::move(fake_feature_status_setter()->requests()[0].success_callback)
         .Run();
   }
 
@@ -2001,11 +2000,11 @@ TEST_P(DeviceSyncServiceTest,
                        multidevice::SoftwareFeature::kMessagesForWebHost,
                        FeatureStatusChange::kDisable);
 
-  if (features::ShouldDeprecateV1DeviceSync()) {
-    EXPECT_EQ(5u, fake_feature_status_setter()->requests().size());
-  } else {
+  if (features::ShouldUseV1DeviceSync()) {
     EXPECT_EQ(
         5u, fake_software_feature_manager()->set_feature_status_calls().size());
+  } else {
+    EXPECT_EQ(5u, fake_feature_status_setter()->requests().size());
   }
 
   // The DeviceSyncImpl::SetFeatureStatus() callbacks have not yet been invoked.
@@ -2013,13 +2012,13 @@ TEST_P(DeviceSyncServiceTest,
 
   // Now, invoke the success callbacks.
   for (size_t i = 0; i < 5u; ++i) {
-    if (features::ShouldDeprecateV1DeviceSync()) {
-      std::move(fake_feature_status_setter()->requests()[i].success_callback)
-          .Run();
-    } else {
+    if (features::ShouldUseV1DeviceSync()) {
       std::move(fake_software_feature_manager()
                     ->set_feature_status_calls()[i]
                     ->success_callback)
+          .Run();
+    } else {
+      std::move(fake_feature_status_setter()->requests()[i].success_callback)
           .Run();
     }
   }
@@ -2087,13 +2086,13 @@ TEST_P(DeviceSyncServiceTest, SetFeatureStatus_Error) {
   EXPECT_TRUE(set_feature_status_results().empty());
 
   // Now, invoke the error callback.
-  if (features::ShouldDeprecateV1DeviceSync()) {
-    std::move(fake_feature_status_setter()->requests()[0].error_callback)
-        .Run(NetworkRequestError::kBadRequest);
-  } else {
+  if (features::ShouldUseV1DeviceSync()) {
     std::move(fake_software_feature_manager()
                   ->set_feature_status_calls()[0]
                   ->error_callback)
+        .Run(NetworkRequestError::kBadRequest);
+  } else {
+    std::move(fake_feature_status_setter()->requests()[0].error_callback)
         .Run(NetworkRequestError::kBadRequest);
   }
 
@@ -2105,7 +2104,7 @@ TEST_P(DeviceSyncServiceTest, SetFeatureStatus_Error) {
 }
 
 TEST_P(DeviceSyncServiceTest, FindEligibleDevices) {
-  if (features::ShouldDeprecateV1DeviceSync())
+  if (!features::ShouldUseV1DeviceSync())
     return;
 
   InitializeServiceSuccessfully();
@@ -2280,7 +2279,7 @@ TEST_P(DeviceSyncServiceTest, GetDebugInfo) {
 }
 
 // Runs tests 8 times with all possible combinations of v2 Enrollment, v2
-// DeviceSync, and v1 DeviceSync-deprecation flags.
+// DeviceSync, and v1 DeviceSync flags.
 INSTANTIATE_TEST_SUITE_P(All,
                          DeviceSyncServiceTest,
                          ::testing::Combine(::testing::Bool(),

@@ -87,15 +87,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
 
 // Tests that an error raised during an async function still fires
 // the callback, but sets chrome.runtime.lastError.
-// Flaky on all platforms: https://crbug.com/1035011
-IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, DISABLED_LastError) {
+IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, LastError) {
+  ExtensionTestMessageListener ready_listener("ready", /*will_reply=*/false);
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("bindings").AppendASCII("last_error")));
+  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
 
   // Get the ExtensionHost that is hosting our background page.
   extensions::ProcessManager* manager =
       extensions::ProcessManager::Get(browser()->profile());
   extensions::ExtensionHost* host = FindHostWithPath(manager, "/bg.html", 1);
+  ASSERT_TRUE(host);
 
   bool result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(host->host_contents(),

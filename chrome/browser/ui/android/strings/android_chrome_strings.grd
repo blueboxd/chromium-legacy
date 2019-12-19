@@ -4088,6 +4088,10 @@ The site does NOT gain access to the camera. The camera images are only visible 
         Copy link
       </message>
 
+      <message name="IDS_SHARING_SCREENSHOT" desc="Label for Screenshot button in the sharing hub.">
+        Screenshot
+      </message>
+
       <message name="IDS_LINK_COPIED" desc="Text shown in the toast notification when Copy Link is selected in the sharing hub.">
         Link Copied
       </message>

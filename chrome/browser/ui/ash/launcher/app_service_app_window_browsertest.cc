@@ -195,6 +195,89 @@ IN_PROC_BROWSER_TEST_F(AppServiceAppWindowBrowserTest, MultipleWindows) {
   EXPECT_EQ(0u, windows.size());
 }
 
+// Test that we have the correct instances with one HostedApp and one window.
+IN_PROC_BROWSER_TEST_F(AppServiceAppWindowBrowserTest,
+                       HostedAppandExtensionApp) {
+  const extensions::Extension* extension1 = InstallHostedApp();
+  LaunchHostedApp(extension1);
+
+  std::string app_id1 = extension1->id();
+  auto windows = app_service_proxy_->InstanceRegistry().GetWindows(app_id1);
+  EXPECT_EQ(1u, windows.size());
+  auto* window1 = *windows.begin();
+
+  // The window1 is active.
+  apps::InstanceState latest_state = apps::InstanceState::kUnknown;
+  app_service_proxy_->InstanceRegistry().ForOneInstance(
+      window1, [&app_id1, &latest_state](const apps::InstanceUpdate& inner) {
+        if (inner.AppId() == app_id1) {
+          latest_state = inner.State();
+        }
+      });
+  EXPECT_EQ(apps::InstanceState::kStarted | apps::InstanceState::kRunning |
+                apps::InstanceState::kVisible | apps::InstanceState::kActive,
+            latest_state);
+
+  // Add an Extension app.
+  const extensions::Extension* extension2 =
+      LoadAndLaunchPlatformApp("launch", "Launched");
+  auto* app_window = CreateAppWindow(profile(), extension2);
+
+  std::string app_id2 = extension2->id();
+  windows = app_service_proxy_->InstanceRegistry().GetWindows(app_id2);
+  EXPECT_EQ(1u, windows.size());
+  auto* window2 = *windows.begin();
+
+  // The window1 is inactive.
+  latest_state = apps::InstanceState::kUnknown;
+  app_service_proxy_->InstanceRegistry().ForOneInstance(
+      window1, [&app_id1, &latest_state](const apps::InstanceUpdate& inner) {
+        if (inner.AppId() == app_id1) {
+          latest_state = inner.State();
+        }
+      });
+  EXPECT_EQ(apps::InstanceState::kStarted | apps::InstanceState::kRunning |
+                apps::InstanceState::kVisible,
+            latest_state);
+
+  // The window2 is active.
+  latest_state = apps::InstanceState::kUnknown;
+  app_service_proxy_->InstanceRegistry().ForOneInstance(
+      window2, [&app_id2, &latest_state](const apps::InstanceUpdate& inner) {
+        if (inner.AppId() == app_id2) {
+          latest_state = inner.State();
+        }
+      });
+  EXPECT_EQ(apps::InstanceState::kStarted | apps::InstanceState::kRunning |
+                apps::InstanceState::kVisible | apps::InstanceState::kActive,
+            latest_state);
+
+  // Close the Extension app's window..
+  CloseAppWindow(app_window);
+  windows = app_service_proxy_->InstanceRegistry().GetWindows(app_id2);
+  EXPECT_EQ(0u, windows.size());
+
+  // The window1 is active.
+  latest_state = apps::InstanceState::kUnknown;
+  app_service_proxy_->InstanceRegistry().ForOneInstance(
+      window1, [&app_id1, &latest_state](const apps::InstanceUpdate& inner) {
+        if (inner.AppId() == app_id1) {
+          latest_state = inner.State();
+        }
+      });
+  EXPECT_EQ(apps::InstanceState::kStarted | apps::InstanceState::kRunning |
+                apps::InstanceState::kVisible | apps::InstanceState::kActive,
+            latest_state);
+
+  // Close the HostedApp.
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  tab_strip->CloseWebContentsAt(tab_strip->active_index(),
+                                TabStripModel::CLOSE_NONE);
+
+  windows = app_service_proxy_->InstanceRegistry().GetWindows(app_id1);
+  EXPECT_EQ(0u, windows.size());
+}
+
 class AppServiceAppWindowWebAppBrowserTest
     : public AppServiceAppWindowBrowserTest {
  protected:

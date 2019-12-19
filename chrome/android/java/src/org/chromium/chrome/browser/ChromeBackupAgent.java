@@ -24,7 +24,6 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.init.AsyncInitTaskRunner;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
-import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.settings.privacy.PrivacyPreferencesManager;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -88,7 +87,7 @@ public class ChromeBackupAgent extends BackupAgent {
 
     // List of preferences that should be restored unchanged.
     static final String[] BACKUP_ANDROID_BOOL_PREFS = {
-            DataReductionProxySettings.DATA_REDUCTION_ENABLED_PREF,
+            ChromePreferenceKeys.DATA_REDUCTION_ENABLED_PREF,
             ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED_PREF,
             ChromePreferenceKeys.FIRST_RUN_FLOW_COMPLETE,
             ChromePreferenceKeys.FIRST_RUN_LIGHTWEIGHT_FLOW_COMPLETE,

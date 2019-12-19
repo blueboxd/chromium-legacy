@@ -9,7 +9,12 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/span.h"
+#include "base/memory/scoped_refptr.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace remoting {
 
@@ -35,7 +40,8 @@ class KeyboardLayoutMonitor {
 
   // Creates a platform-specific KeyboardLayoutMonitor.
   static std::unique_ptr<KeyboardLayoutMonitor> Create(
-      base::RepeatingCallback<void(const protocol::KeyboardLayout&)>);
+      base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback,
+      scoped_refptr<base::SingleThreadTaskRunner> input_task_runner);
 
  protected:
   KeyboardLayoutMonitor() = default;

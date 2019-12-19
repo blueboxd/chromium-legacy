@@ -90,10 +90,6 @@ class VIZ_SERVICE_EXPORT SurfaceClient {
       const gfx::Rect& damage_rect,
       base::TimeTicks expected_display_time) = 0;
 
-  // Returns whether a sync token should be generated before returning the
-  // resources to the client.
-  virtual bool NeedsSyncTokens() const = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(SurfaceClient);
 };

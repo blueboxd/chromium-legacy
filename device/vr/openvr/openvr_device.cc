@@ -153,7 +153,7 @@ void OpenVRDevice::RequestSession(
     return;
   }
 
-  DCHECK(options->immersive);
+  DCHECK_EQ(options->mode, mojom::XRSessionMode::kImmersiveVr);
 
   if (!render_loop_->IsRunning()) {
     render_loop_->Start();

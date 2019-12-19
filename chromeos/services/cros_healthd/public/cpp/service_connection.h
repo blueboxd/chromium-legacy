@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_SERVICES_CROS_HEALTHD_PUBLIC_CPP_SERVICE_CONNECTION_H_
 #define CHROMEOS_SERVICES_CROS_HEALTHD_PUBLIC_CPP_SERVICE_CONNECTION_H_
 
+#include <cstdint>
+
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 
 namespace chromeos {
@@ -16,6 +18,52 @@ namespace cros_healthd {
 class ServiceConnection {
  public:
   static ServiceConnection* GetInstance();
+
+  // Retrieve a list of available diagnostic routines. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void GetAvailableRoutines(
+      mojom::CrosHealthdService::GetAvailableRoutinesCallback callback) = 0;
+
+  // Send a command to an existing routine. Also returns status information
+  // for the routine. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void GetRoutineUpdate(
+      int32_t id,
+      mojom::DiagnosticRoutineCommandEnum command,
+      bool include_output,
+      mojom::CrosHealthdService::GetRoutineUpdateCallback callback) = 0;
+
+  // Requests that cros_healthd runs the urandom routine. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void RunUrandomRoutine(
+      uint32_t length_seconds,
+      mojom::CrosHealthdService::RunUrandomRoutineCallback callback) = 0;
+
+  // Requests that cros_healthd runs the battery capacity routine. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void RunBatteryCapacityRoutine(
+      uint32_t low_mah,
+      uint32_t high_mah,
+      mojom::CrosHealthdService::RunBatteryCapacityRoutineCallback
+          callback) = 0;
+
+  // Requests that cros_healthd runs the battery health routine. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void RunBatteryHealthRoutine(
+      uint32_t maximum_cycle_count,
+      uint32_t percent_battery_wear_allowed,
+      mojom::CrosHealthdService::RunBatteryHealthRoutineCallback callback) = 0;
+
+  // Requests that cros_healthd runs the smartcl check routine. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void RunSmartctlCheckRoutine(
+      mojom::CrosHealthdService::RunSmartctlCheckRoutineCallback callback) = 0;
 
   // Gather pieces of information about the platform. See
   // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for

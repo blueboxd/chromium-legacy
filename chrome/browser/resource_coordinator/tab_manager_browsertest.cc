@@ -978,12 +978,11 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, UrgentFastShutdownSharedTabProcess) {
       "TabManager.Discarding.DiscardedTabCouldFastShutdown", false, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(TabManagerTest,
-                       DISABLED_ProactiveFastShutdownWithUnloadHandler) {
+IN_PROC_BROWSER_TEST_F(TabManagerTest, ProactiveFastShutdownWithUnloadHandler) {
   ASSERT_TRUE(embedded_test_server()->Start());
   // Disable the protection of recent tabs.
-  OpenTwoTabs(GURL(chrome::kChromeUIAboutURL),
-              GURL(embedded_test_server()->GetURL("/unload.html")));
+  OpenTwoTabs(embedded_test_server()->GetURL("a.com", "/title1.html"),
+              embedded_test_server()->GetURL("/unload.html"));
 
   // Advance time so everything is urgent discardable.
   test_clock_.Advance(kBackgroundUrgentProtectionTime);
@@ -1003,8 +1002,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
 IN_PROC_BROWSER_TEST_F(TabManagerTest, UrgentFastShutdownWithUnloadHandler) {
   ASSERT_TRUE(embedded_test_server()->Start());
   // Disable the protection of recent tabs.
-  OpenTwoTabs(GURL(chrome::kChromeUIAboutURL),
-              GURL(embedded_test_server()->GetURL("/unload.html")));
+  OpenTwoTabs(embedded_test_server()->GetURL("a.com", "/title1.html"),
+              embedded_test_server()->GetURL("/unload.html"));
 
   // Advance time so everything is urgent discardable.
   test_clock_.Advance(kBackgroundUrgentProtectionTime);
@@ -1039,8 +1038,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
                        DISABLED_ProactiveFastShutdownWithBeforeunloadHandler) {
   ASSERT_TRUE(embedded_test_server()->Start());
   // Disable the protection of recent tabs.
-  OpenTwoTabs(GURL(chrome::kChromeUIAboutURL),
-              GURL(embedded_test_server()->GetURL("/beforeunload.html")));
+  OpenTwoTabs(embedded_test_server()->GetURL("a.com", "/title1.html"),
+              embedded_test_server()->GetURL("/beforeunload.html"));
 
   // Advance time so everything is urgent discardable.
   test_clock_.Advance(kBackgroundUrgentProtectionTime);
@@ -1061,8 +1060,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
                        UrgentFastShutdownWithBeforeunloadHandler) {
   ASSERT_TRUE(embedded_test_server()->Start());
   // Disable the protection of recent tabs.
-  OpenTwoTabs(GURL(chrome::kChromeUIAboutURL),
-              GURL(embedded_test_server()->GetURL("/beforeunload.html")));
+  OpenTwoTabs(embedded_test_server()->GetURL("a.com", "/title1.html"),
+              embedded_test_server()->GetURL("/beforeunload.html"));
 
   // Advance time so everything is urgent discardable.
   test_clock_.Advance(kBackgroundUrgentProtectionTime);

@@ -357,7 +357,7 @@ void V4Store::ApplyUpdate(
   // happens, the old store will get destoyed and can lead to use-after-free in
   // this function.
   callback_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(callback, std::move(new_store)));
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(new_store)));
 }
 
 ApplyUpdateResult V4Store::UpdateHashPrefixMapFromAdditions(

@@ -97,7 +97,7 @@ void SkiaOutputSurfaceImplTest::TearDown() {
 
 void SkiaOutputSurfaceImplTest::SetUpSkiaOutputSurfaceImpl() {
   // SkiaOutputSurfaceImplOnGpu requires UseSkiaRenderer.
-  const char enable_features[] = "VizDisplayCompositor,UseSkiaRenderer";
+  const char enable_features[] = "UseSkiaRenderer";
   const char disable_features[] = "";
   scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
   scoped_feature_list_->InitFromCommandLine(enable_features, disable_features);

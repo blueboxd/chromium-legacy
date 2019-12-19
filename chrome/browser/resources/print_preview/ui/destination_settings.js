@@ -21,7 +21,7 @@ import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behav
 import {beforeNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {CloudPrintInterface} from '../cloud_print_interface.js';
-import {createRecentDestinationKey, Destination, DestinationOrigin, makeRecentDestination, RecentDestination} from '../data/destination.js';
+import {createDestinationKey, createRecentDestinationKey, Destination, DestinationOrigin, makeRecentDestination, RecentDestination} from '../data/destination.js';
 import {DestinationErrorType, DestinationStore} from '../data/destination_store.js';
 import {InvitationStore} from '../data/invitation_store.js';
 import {Error, State} from '../data/state.js';
@@ -104,8 +104,14 @@ Polymer({
       value: null,
     },
 
-    /** @private {!Array<!RecentDestination>} */
+    /** @private {!Array<!Destination>} */
     displayedDestinations_: Array,
+
+    /** @private */
+    driveDestinationReady_: {
+      type: Boolean,
+      value: false,
+    },
 
     // <if expr="chromeos">
     hasPinSetting_: {
@@ -199,7 +205,28 @@ Polymer({
   },
 
   /** @private */
+  updateDriveDestinationReady_: function() {
+    const key = createDestinationKey(
+        Destination.GooglePromotedId.DOCS, DestinationOrigin.COOKIES,
+        this.activeUser_);
+    this.driveDestinationReady_ =
+        !!this.destinationStore_.getDestinationByKey(key);
+  },
+
+  /** @private */
   onActiveUserChanged_: function() {
+    this.destinationStore_.startLoadCookieDestination(
+        Destination.GooglePromotedId.DOCS);
+    this.updateDriveDestinationReady_();
+    const recentDestinations = this.getSettingValue('recentDestinations');
+    recentDestinations.forEach(destination => {
+      if (destination.origin === DestinationOrigin.COOKIES &&
+          (destination.account === this.activeUser_ ||
+           destination.account === '')) {
+        this.destinationStore_.startLoadCookieDestination(destination.id);
+      }
+    });
+
     // Re-filter the dropdown destinations for the new account.
     if (!this.isDialogOpen_) {
       // Don't update the destination settings UI while the dialog is open in
@@ -240,11 +267,8 @@ Polymer({
           d.account === this.activeUser_;
     });
     if (recent) {
-      const success = this.destinationStore_.selectRecentDestinationByKey(
-          createRecentDestinationKey(recent), this.displayedDestinations_);
-      if (success) {
-        return;
-      }
+      this.destinationStore_.selectDestination(recent);
+      return;
     }
     this.destinationStore_.selectDefaultDestination();
   },
@@ -291,6 +315,7 @@ Polymer({
     } else {
       this.destinationState = DestinationState.SELECTED;
     }
+
     // Notify observers that the destination is set only after updating the
     // destinationState.
     this.destination = destination;
@@ -391,14 +416,21 @@ Polymer({
 
   /** @private */
   updateDropdownDestinations_: function() {
-    this.displayedDestinations_ =
-        /** @type {!Array<!RecentDestination>} */ (
-            this.getSettingValue('recentDestinations'))
-            .filter(d => {
-              return !this.destinationIsDriveOrPdf_(d) &&
-                  (d.origin !== DestinationOrigin.COOKIES ||
-                   d.account === this.activeUser_);
-            });
+    const recentDestinations = /** @type {!Array<!RecentDestination>} */ (
+        this.getSettingValue('recentDestinations'));
+
+    const updatedDestinations = [];
+    recentDestinations.forEach(recent => {
+      const key = createRecentDestinationKey(recent);
+      const destination = this.destinationStore_.getDestinationByKey(key);
+      if (destination && !this.destinationIsDriveOrPdf_(recent) &&
+          (!destination.account || destination.account === this.activeUser_)) {
+        updatedDestinations.push(destination);
+      }
+    });
+
+    this.displayedDestinations_ = updatedDestinations;
+    this.updateDriveDestinationReady_();
   },
 
   /**
@@ -461,11 +493,7 @@ Polymer({
       this.lastUser_ = this.activeUser_;
       this.isDialogOpen_ = true;
     } else {
-      const success = this.destinationStore_.selectRecentDestinationByKey(
-          value, this.displayedDestinations_);
-      if (!success) {
-        this.error = Error.INVALID_PRINTER;
-      }
+      this.destinationStore_.selectDestinationByKey(value);
     }
   },
 
@@ -476,15 +504,17 @@ Polymer({
    */
   onAccountChange_: function(e) {
     this.$.userManager.updateActiveUser(e.detail, true);
+    this.updateDriveDestinationReady_();
   },
 
   /** @private */
   onDialogClose_: function() {
-    // Reset the select value if the user dismissed the dialog without
-    // selecting a new destination.
     if (this.lastUser_ != this.activeUser_) {
       this.updateDropdownDestinations_();
     }
+
+    // Reset the select value if the user dismissed the dialog without
+    // selecting a new destination.
     this.updateDestinationSelect_();
     this.isDialogOpen_ = false;
   },

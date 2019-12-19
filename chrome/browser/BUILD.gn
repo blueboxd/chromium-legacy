@@ -4443,6 +4443,8 @@ jumbo_static_library("browser") {
       "captive_portal/captive_portal_tab_helper.h",
       "captive_portal/captive_portal_tab_reloader.cc",
       "captive_portal/captive_portal_tab_reloader.h",
+      "captive_portal/captive_portal_url_loader_throttle.cc",
+      "captive_portal/captive_portal_url_loader_throttle.h",
       "ssl/captive_portal_metrics_recorder.cc",
       "ssl/captive_portal_metrics_recorder.h",
     ]

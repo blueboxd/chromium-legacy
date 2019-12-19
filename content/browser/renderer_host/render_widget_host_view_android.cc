@@ -1578,7 +1578,7 @@ void RenderWidgetHostViewAndroid::StopObservingRootWindow() {
 
 void RenderWidgetHostViewAndroid::SendBeginFrame(viz::BeginFrameArgs args) {
   TRACE_EVENT2("cc", "RenderWidgetHostViewAndroid::SendBeginFrame",
-               "frame_number", args.sequence_number, "frame_time_us",
+               "frame_number", args.frame_id.sequence_number, "frame_time_us",
                args.frame_time.ToInternalValue());
 
   // Synchronous compositor does not use deadline-based scheduling.
@@ -2183,8 +2183,8 @@ void RenderWidgetHostViewAndroid::OnBeginFrame(
     const viz::BeginFrameArgs& args) {
   TRACE_EVENT0("cc,benchmark", "RenderWidgetHostViewAndroid::OnBeginFrame");
   if (!host()) {
-    OnDidNotProduceFrame(
-        viz::BeginFrameAck(args.source_id, args.sequence_number, false));
+    OnDidNotProduceFrame(viz::BeginFrameAck(
+        args.frame_id.source_id, args.frame_id.sequence_number, false));
     return;
   }
 
@@ -2192,8 +2192,8 @@ void RenderWidgetHostViewAndroid::OnBeginFrame(
   // SynchronousCompositorBrowserFilter::SyncStateAfterVSync will be called
   // during WindowAndroid::WindowBeginFrameSource::OnVSync() observer iteration.
   if (sync_compositor_ && args.type == viz::BeginFrameArgs::MISSED) {
-    OnDidNotProduceFrame(
-        viz::BeginFrameAck(args.source_id, args.sequence_number, false));
+    OnDidNotProduceFrame(viz::BeginFrameAck(
+        args.frame_id.source_id, args.frame_id.sequence_number, false));
     return;
   }
 
@@ -2217,8 +2217,8 @@ void RenderWidgetHostViewAndroid::OnBeginFrame(
     ClearBeginFrameRequest(BEGIN_FRAME);
     SendBeginFrame(args);
   } else {
-    OnDidNotProduceFrame(
-        viz::BeginFrameAck(args.source_id, args.sequence_number, false));
+    OnDidNotProduceFrame(viz::BeginFrameAck(
+        args.frame_id.source_id, args.frame_id.sequence_number, false));
   }
 }
 

@@ -71,26 +71,26 @@ const base::Feature kCrostiniWebUIInstaller{"CrostiniWebUIInstaller",
 const base::Feature kCrostiniWebUIUpgrader{"CrostiniWebUIUpgrader",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Deprecates the CryptAuth v1 DeviceSync flow. Note: During the first phase
-// of the v2 DeviceSync rollout, v1 and v2 DeviceSync run in parallel. This flag
-// is needed to deprecate the v1 service during the second phase of the rollout.
-// kCryptAuthV2DeviceSync should be enabled before this flag is flipped.
-const base::Feature kCryptAuthV1DeviceSyncDeprecate{
-    "CryptAuthV1DeviceSyncDeprecate", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables or disables using Cryptauth's GetDevicesActivityStatus API.
 const base::Feature kCryptAuthV2DeviceActivityStatus{
     "CryptAuthV2DeviceActivityStatus", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the CryptAuth v2 DeviceSync flow. Regardless of this
-// flag, v1 DeviceSync will continue to operate until it is deprecated via the
-// feature flag kCryptAuthV1DeviceSyncDeprecate.
+// flag, v1 DeviceSync will continue to operate until it is disabled via the
+// feature flag kDisableCryptAuthV1DeviceSync.
 const base::Feature kCryptAuthV2DeviceSync{"CryptAuthV2DeviceSync",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the CryptAuth v2 Enrollment flow.
 const base::Feature kCryptAuthV2Enrollment{"CryptAuthV2Enrollment",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Disables the CryptAuth v1 DeviceSync flow. Note: During the first phase
+// of the v2 DeviceSync rollout, v1 and v2 DeviceSync run in parallel. This flag
+// is needed to disable the v1 service during the second phase of the rollout.
+// kCryptAuthV2DeviceSync should be enabled before this flag is flipped.
+const base::Feature kDisableCryptAuthV1DeviceSync{
+    "DisableCryptAuthV1DeviceSync", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Disables "Office Editing for Docs, Sheets & Slides" component app so handlers
 // won't be registered, making it possible to install another version for
@@ -328,14 +328,14 @@ bool IsSplitSettingsSyncEnabled() {
   return base::FeatureList::IsEnabled(kSplitSettingsSync);
 }
 
-bool ShouldDeprecateV1DeviceSync() {
-  return ShouldUseV2DeviceSync() &&
-         base::FeatureList::IsEnabled(
-             chromeos::features::kCryptAuthV1DeviceSyncDeprecate);
-}
-
 bool ShouldShowPlayStoreInDemoMode() {
   return base::FeatureList::IsEnabled(kShowPlayInDemoMode);
+}
+
+bool ShouldUseV1DeviceSync() {
+  return !ShouldUseV2DeviceSync() ||
+         !base::FeatureList::IsEnabled(
+             chromeos::features::kDisableCryptAuthV1DeviceSync);
 }
 
 bool ShouldUseV2DeviceSync() {

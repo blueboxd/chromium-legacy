@@ -331,9 +331,12 @@ class DemoSetupTest : public LoginManagerTest {
   // Simulates click on the network list item. |element| should specify
   // the aria-label of the desired network-list-item.
   void ClickNetworkListElement(const std::string& name) {
-    const std::string query = base::StrCat(
-        {ScreenToContentQuery(NetworkScreenView::kScreenId),
-         ".getNetworkListItemByNameForTest('", name, "').click()"});
+    const std::string element =
+        base::StrCat({ScreenToContentQuery(NetworkScreenView::kScreenId),
+                      ".getNetworkListItemByNameForTest('", name, "')"});
+    test::OobeJS().CreateVisibilityWaiter(true, element)->Wait();
+
+    const std::string query = base::StrCat({element, ".click()"});
     test::ExecuteOobeJSAsync(query);
   }
 

@@ -463,6 +463,17 @@ InputMethodPrivateSetSelectionRangeFunction::Run() {
   return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
 }
 
+ExtensionFunction::ResponseAction InputMethodPrivateResetFunction::Run() {
+  std::string error;
+  InputMethodEngineBase* engine =
+      GetEngineIfActive(browser_context(), extension_id(), &error);
+  if (!engine)
+    return RespondNow(Error(InformativeError(error, function_name())));
+
+  engine->Reset();
+  return RespondNow(NoArguments());
+}
+
 InputMethodAPI::InputMethodAPI(content::BrowserContext* context)
     : context_(context) {
   EventRouter::Get(context_)->RegisterObserver(this, OnChanged::kEventName);

@@ -176,8 +176,6 @@ enum WebFeature {
   kDocumentXPathCreateExpression = 295,
   kDocumentXPathCreateNSResolver = 296,
   kDocumentXPathEvaluate = 297,
-  kAnimationConstructorKeyframeListEffectObjectTiming = 300,
-  kAnimationConstructorKeyframeListEffectNoTiming = 302,
   kPrefixedCancelAnimationFrame = 304,
   kNamedNodeMapGetNamedItem = 306,
   kNamedNodeMapSetNamedItem = 307,
@@ -2494,6 +2492,7 @@ enum WebFeature {
   kWebkitBoxPackJustifyDoesSomething = 3123,
   kWebkitBoxPackCenterDoesSomething = 3124,
   kWebkitBoxPackEndDoesSomething = 3125,
+  kV8KeyframeEffect_Constructor = 3126,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

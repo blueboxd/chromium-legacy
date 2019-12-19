@@ -9,11 +9,12 @@ import android.content.Context;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.datareduction.DataReductionPromoUtils;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.datareduction.DataReductionDataUseItem;
 import org.chromium.chrome.browser.settings.datareduction.DataReductionProxySavingsClearedReason;
 import org.chromium.chrome.browser.settings.datareduction.DataReductionStatsPreference;
@@ -60,13 +61,7 @@ public class DataReductionProxySettings {
     @VisibleForTesting
     public static final String DATA_REDUCTION_PROXY_ENABLED_KEY = "Data Reduction Proxy Enabled";
 
-    // Visible for backup and restore
-    public static final String DATA_REDUCTION_ENABLED_PREF = "BANDWIDTH_REDUCTION_PROXY_ENABLED";
-
     private static DataReductionProxySettings sSettings;
-
-    public static final String DATA_REDUCTION_FIRST_ENABLED_TIME =
-            "BANDWIDTH_REDUCTION_FIRST_ENABLED_TIME";
 
     // The saved data threshold for showing the Lite mode menu footer.
     private static final long DATA_REDUCTION_MAIN_MENU_ITEM_SAVED_KB_THRESHOLD = 100;
@@ -98,8 +93,8 @@ public class DataReductionProxySettings {
     private static void reconcileDataReductionProxyEnabledState() {
         ThreadUtils.assertOnUiThread();
         boolean enabled = getInstance().isDataReductionProxyEnabled();
-        ContextUtils.getAppSharedPreferences().edit()
-                .putBoolean(DATA_REDUCTION_ENABLED_PREF, enabled).apply();
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.DATA_REDUCTION_ENABLED_PREF, enabled);
     }
 
     /**
@@ -156,16 +151,15 @@ public class DataReductionProxySettings {
      */
     public void setDataReductionProxyEnabled(Context context, boolean enabled) {
         if (enabled
-                && ContextUtils.getAppSharedPreferences().getLong(
-                           DATA_REDUCTION_FIRST_ENABLED_TIME, 0)
+                && SharedPreferencesManager.getInstance().readLong(
+                           ChromePreferenceKeys.DATA_REDUCTION_FIRST_ENABLED_TIME, 0)
                         == 0) {
-            ContextUtils.getAppSharedPreferences()
-                    .edit()
-                    .putLong(DATA_REDUCTION_FIRST_ENABLED_TIME, System.currentTimeMillis())
-                    .apply();
+            SharedPreferencesManager.getInstance().writeLong(
+                    ChromePreferenceKeys.DATA_REDUCTION_FIRST_ENABLED_TIME,
+                    System.currentTimeMillis());
         }
-        ContextUtils.getAppSharedPreferences().edit()
-                .putBoolean(DATA_REDUCTION_ENABLED_PREF, enabled).apply();
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.DATA_REDUCTION_ENABLED_PREF, enabled);
         DataReductionProxySettingsJni.get().setDataReductionProxyEnabled(
                 mNativeDataReductionProxySettings, DataReductionProxySettings.this, enabled);
     }
@@ -207,7 +201,8 @@ public class DataReductionProxySettings {
      * @return The time that the proxy was first enabled in milliseconds since the epoch.
      */
     public long getDataReductionProxyFirstEnabledTime() {
-        return ContextUtils.getAppSharedPreferences().getLong(DATA_REDUCTION_FIRST_ENABLED_TIME, 0);
+        return SharedPreferencesManager.getInstance().readLong(
+                ChromePreferenceKeys.DATA_REDUCTION_FIRST_ENABLED_TIME, 0);
     }
 
     /**
@@ -218,10 +213,8 @@ public class DataReductionProxySettings {
         // When the data saving statistics are cleared, reset the milestone promo that tells the
         // user how much data they have saved using Data Saver so far.
         DataReductionPromoUtils.saveMilestonePromoDisplayed(0);
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putLong(DATA_REDUCTION_FIRST_ENABLED_TIME, System.currentTimeMillis())
-                .apply();
+        SharedPreferencesManager.getInstance().writeLong(
+                ChromePreferenceKeys.DATA_REDUCTION_FIRST_ENABLED_TIME, System.currentTimeMillis());
         DataReductionProxySettingsJni.get().clearDataSavingStatistics(
                 mNativeDataReductionProxySettings, DataReductionProxySettings.this, reason);
     }

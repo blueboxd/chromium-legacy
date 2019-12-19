@@ -101,10 +101,12 @@ class BeaconBlob final : public Beacon {
     DCHECK(data_);
 
     scoped_refptr<EncodedFormData> entity_body = EncodedFormData::Create();
-    if (data_->HasBackingFile())
-      entity_body->AppendFile(To<File>(data_.Get())->GetPath());
-    else
+    if (data_->HasBackingFile()) {
+      entity_body->AppendFile(To<File>(data_.Get())->GetPath(),
+                              To<File>(data_.Get())->LastModifiedTime());
+    } else {
       entity_body->AppendBlob(data_->Uuid(), data_->GetBlobDataHandle());
+    }
 
     request.SetHttpBody(std::move(entity_body));
 

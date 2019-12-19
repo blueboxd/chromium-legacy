@@ -6,15 +6,13 @@
 #import <XCTest/XCTest.h>
 
 #include "base/ios/ios_util.h"
-#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_utils.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -56,7 +54,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 - (void)tearDown {
   [super tearDown];
   [ChromeEarlGrey clearBookmarks];
-  [BookmarkEarlGreyUtils clearBookmarksPositionCache];
+  [BookmarkEarlGrey clearBookmarksPositionCache];
 }
 
 #pragma mark - BookmarksTestCase Tests
@@ -74,11 +72,11 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       assertWithMatcher:grey_notNil()];
 
   // Add the bookmark from the UI.
-  [BookmarkEarlGreyUtils bookmarkCurrentTabWithTitle:bookmarkTitle];
+  [BookmarkEarlGrey waitForBookmarkModelLoaded:YES];
+  [BookmarkEarlGreyUI bookmarkCurrentTabWithTitle:bookmarkTitle];
 
   // Verify the bookmark is set.
-  [BookmarkEarlGreyUtils assertBookmarksWithTitle:bookmarkTitle
-                                    expectedCount:1];
+  [BookmarkEarlGrey verifyBookmarksWithTitle:bookmarkTitle expectedCount:1];
 
   // Verify the star is lit.
   if (![ChromeEarlGrey isCompactWidth]) {
@@ -112,8 +110,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       performAction:grey_tap()];
 
   // Verify the bookmark is not in the BookmarkModel.
-  [BookmarkEarlGreyUtils assertBookmarksWithTitle:bookmarkTitle
-                                    expectedCount:0];
+  [BookmarkEarlGrey verifyBookmarksWithTitle:bookmarkTitle expectedCount:0];
 
   // Verify the the page is no longer bookmarked.
   if ([ChromeEarlGrey isCompactWidth]) {
@@ -135,7 +132,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
         assertWithMatcher:grey_notNil()];
   }
   // Close the opened tab.
-  [chrome_test_util::BrowserCommandDispatcherForMainBVC() closeCurrentTab];
+  [ChromeEarlGrey closeCurrentTab];
 }
 
 // Test to set bookmarks in multiple tabs.
@@ -148,15 +145,15 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey loadURL:secondURL];
 
-  [BookmarkEarlGreyUtils bookmarkCurrentTabWithTitle:@"my bookmark"];
-  [BookmarkEarlGreyUtils assertBookmarksWithTitle:@"my bookmark"
-                                    expectedCount:1];
+  [BookmarkEarlGrey waitForBookmarkModelLoaded:YES];
+  [BookmarkEarlGreyUI bookmarkCurrentTabWithTitle:@"my bookmark"];
+  [BookmarkEarlGrey verifyBookmarksWithTitle:@"my bookmark" expectedCount:1];
 }
 
 // Tests that changes to the parent folder from the Single Bookmark Editor
 // are saved to the bookmark only when saving the results.
 - (void)testMoveDoesSaveOnSave {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -183,7 +180,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       assertWithMatcher:grey_notNil()];
 
   // Check that the new folder doesn't contain the bookmark.
-  [BookmarkEarlGreyUtils assertChildCount:0 ofFolderWithName:@"New Folder"];
+  [BookmarkEarlGrey verifyChildCount:0 inFolderWithName:@"New Folder"];
 
   // Tap the Done button.
   [[EarlGrey selectElementWithMatcher:BookmarksSaveEditDoneButton()]
@@ -193,14 +190,14 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       assertWithMatcher:grey_notVisible()];
 
   // Check that the new folder contains the bookmark.
-  [BookmarkEarlGreyUtils assertChildCount:1 ofFolderWithName:@"New Folder"];
+  [BookmarkEarlGrey verifyChildCount:1 inFolderWithName:@"New Folder"];
 
   // Close bookmarks
   [[EarlGrey selectElementWithMatcher:BookmarkHomeDoneButton()]
       performAction:grey_tap()];
 
   // Check that the new folder still contains the bookmark.
-  [BookmarkEarlGreyUtils assertChildCount:1 ofFolderWithName:@"New Folder"];
+  [BookmarkEarlGrey verifyChildCount:1 inFolderWithName:@"New Folder"];
 }
 
 // Tests that keyboard commands are registered when a bookmark is added as it
@@ -215,7 +212,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 // Tests that keyboard commands are not registered when a bookmark is edited, as
 // the edit screen is presented modally.
 - (void)testKeyboardCommandsNotRegistered_EditBookmark {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -263,7 +260,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
     EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 13.");
   }
 
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -297,7 +294,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 // Tests that the bookmark context bar is shown in MobileBookmarks.
 - (void)testBookmarkContextBarShown {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -317,7 +314,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 }
 
 - (void)testBookmarkContextBarInSingleSelectionModes {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -451,7 +448,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 }
 
 - (void)testBookmarkContextBarInMultipleSelectionModes {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -566,7 +563,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 // Tests when total height of bookmarks exceeds screen height.
 - (void)testBookmarksExceedsScreenHeight {
-  [BookmarkEarlGreyUtils setupBookmarksWhichExceedsScreenHeight];
+  [BookmarkEarlGrey setupBookmarksWhichExceedsScreenHeight];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -595,7 +592,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test not supported on iPhone");
   }
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -618,8 +615,16 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   [BookmarkEarlGreyUI verifyEmptyBackgroundAppears];
 }
 
-- (void)testEmptyBackgroundAndSelectButton {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+// TODO(crbug.com/1034183): Enable for EG2 once NavigateBackButtonTo() is fixed.
+#if defined(CHROME_EARL_GREY_2)
+#define MAYBE_testEmptyBackgroundAndSelectButton \
+  DISABLED_testEmptyBackgroundAndSelectButton
+#else
+#define MAYBE_testEmptyBackgroundAndSelectButton \
+  testEmptyBackgroundAndSelectButton
+#endif
+- (void)MAYBE_testEmptyBackgroundAndSelectButton {
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -671,7 +676,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 }
 
 - (void)testCachePositionIsRecreated {
-  [BookmarkEarlGreyUtils setupBookmarksWhichExceedsScreenHeight];
+  [BookmarkEarlGrey setupBookmarksWhichExceedsScreenHeight];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -699,13 +704,13 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   // Ensure the Bottom 1 of Folder 1 is visible.  That means both folder and
   // scroll position are restored successfully.
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityLabel(@"Bottom 1, 127.0.0.1")]
+      selectElementWithMatcher:grey_accessibilityLabel(@"Bottom 1, google.com")]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Verify root node is opened when cache position is deleted.
 - (void)testCachePositionIsResetWhenNodeIsDeleted {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -722,7 +727,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       performAction:grey_tap()];
 
   // Delete Folder 2.
-  [BookmarkEarlGreyUtils removeBookmarkWithTitle:@"Folder 2"];
+  [BookmarkEarlGrey removeBookmarkWithTitle:@"Folder 2"];
 
   // Reopen bookmarks.
   [BookmarkEarlGreyUI openBookmarks];
@@ -735,7 +740,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 // Verify root node is opened when cache position is a permanent node and is
 // empty.
 - (void)testCachePositionIsResetWhenNodeIsPermanentAndEmpty {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -744,11 +749,11 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       performAction:grey_tap()];
 
   // Delete all bookmarks and folders under Mobile Bookmarks.
-  [BookmarkEarlGreyUtils removeBookmarkWithTitle:@"Folder 1.1"];
-  [BookmarkEarlGreyUtils removeBookmarkWithTitle:@"Folder 1"];
-  [BookmarkEarlGreyUtils removeBookmarkWithTitle:@"French URL"];
-  [BookmarkEarlGreyUtils removeBookmarkWithTitle:@"Second URL"];
-  [BookmarkEarlGreyUtils removeBookmarkWithTitle:@"First URL"];
+  [BookmarkEarlGrey removeBookmarkWithTitle:@"Folder 1.1"];
+  [BookmarkEarlGrey removeBookmarkWithTitle:@"Folder 1"];
+  [BookmarkEarlGrey removeBookmarkWithTitle:@"French URL"];
+  [BookmarkEarlGrey removeBookmarkWithTitle:@"Second URL"];
+  [BookmarkEarlGrey removeBookmarkWithTitle:@"First URL"];
 
   // Reopen bookmarks.
   [BookmarkEarlGreyUI openBookmarks];
@@ -758,8 +763,16 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   [BookmarkEarlGreyUI verifyBookmarkFolderIsSeen:@"Mobile Bookmarks"];
 }
 
-- (void)testCachePositionIsRecreatedWhenNodeIsMoved {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+// TODO(crbug.com/1034183): Enable for EG2 once NavigateBackButtonTo() is fixed.
+#if defined(CHROME_EARL_GREY_2)
+#define MAYBE_testCachePositionIsRecreatedWhenNodeIsMoved \
+  DISABLED_testCachePositionIsRecreatedWhenNodeIsMoved
+#else
+#define MAYBE_testCachePositionIsRecreatedWhenNodeIsMoved \
+  testCachePositionIsRecreatedWhenNodeIsMoved
+#endif
+- (void)MAYBE_testCachePositionIsRecreatedWhenNodeIsMoved {
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -780,8 +793,8 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       performAction:grey_tap()];
 
   // Move Folder 3 under Folder 1.
-  [BookmarkEarlGreyUtils moveBookmarkWithTitle:@"Folder 3"
-                             toFolderWithTitle:@"Folder 1"];
+  [BookmarkEarlGrey moveBookmarkWithTitle:@"Folder 3"
+                        toFolderWithTitle:@"Folder 1"];
 
   // Reopen bookmarks.
   [BookmarkEarlGreyUI openBookmarks];
@@ -816,7 +829,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
     EARL_GREY_TEST_SKIPPED(@"Test disabled on when feature flag is off.");
   }
 
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
 
   // Check that the TableView is presented.

@@ -22,8 +22,8 @@ class ShellMainDelegate : public content::ContentMainDelegate {
   ShellMainDelegate();
   ~ShellMainDelegate() override;
 
-  bool BasicStartupComplete(int* exit_code) override;
   void PreSandboxStartup() override;
+  content::ContentClient* CreateContentClient() override;
   content::ContentBrowserClient* CreateContentBrowserClient() override;
 
  private:

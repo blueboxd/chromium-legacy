@@ -214,9 +214,6 @@ const GpuFeatureData GetGpuFeatureData(
      DisableInfo::Problem(
          "WebGL2 has been disabled via blacklist or the command line."),
      false},
-    {"viz_display_compositor", gpu::kGpuFeatureStatusEnabled,
-     !features::IsVizDisplayCompositorEnabled(), DisableInfo::NotProblem(),
-     false},
     {"skia_renderer", gpu::kGpuFeatureStatusEnabled,
      !features::IsUsingSkiaRenderer(), DisableInfo::NotProblem(), false},
   };
@@ -244,8 +241,7 @@ std::unique_ptr<base::DictionaryValue> GetFeatureStatusImpl(
         GetGpuFeatureData(gpu_feature_info, i, &eof);
     std::string status;
     // Features undergoing a finch controlled roll out.
-    if (gpu_feature_data.name == "viz_display_compositor" ||
-        gpu_feature_data.name == "skia_renderer" ||
+    if (gpu_feature_data.name == "skia_renderer" ||
         gpu_feature_data.name == "viz_hit_test_surface_layer") {
       status = (gpu_feature_data.disabled ? "disabled_off_ok" : "enabled_on");
     } else if (gpu_feature_data.disabled || gpu_access_blocked ||

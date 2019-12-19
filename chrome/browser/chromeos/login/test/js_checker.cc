@@ -124,7 +124,13 @@ std::unique_ptr<TestConditionWaiter> JSChecker::CreateWaiter(
 std::unique_ptr<TestConditionWaiter> JSChecker::CreateVisibilityWaiter(
     bool visibility,
     std::initializer_list<base::StringPiece> element_ids) {
-  std::string js_condition = GetOobeElementPath(element_ids) + ".hidden";
+  return CreateVisibilityWaiter(visibility, GetOobeElementPath(element_ids));
+}
+
+std::unique_ptr<TestConditionWaiter> JSChecker::CreateVisibilityWaiter(
+    bool visibility,
+    const std::string& element) {
+  std::string js_condition = element + ".hidden";
   if (visibility) {
     js_condition = "!(" + js_condition + ")";
   }

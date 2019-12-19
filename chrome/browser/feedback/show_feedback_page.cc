@@ -13,13 +13,13 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/feedback/feedback_util.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/browser/api/feedback_private/feedback_private_api.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #endif
 
 namespace feedback_private = extensions::api::feedback_private;
@@ -96,7 +96,7 @@ void ShowFeedbackPage(const GURL& page_url,
 #if defined(OS_CHROMEOS)
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
   if (identity_manager &&
-      feedback_util::IsGoogleEmail(
+      gaia::IsGoogleInternalAccountEmail(
           identity_manager->GetPrimaryAccountInfo().email)) {
     flow = feedback_private::FeedbackFlow::FEEDBACK_FLOW_GOOGLEINTERNAL;
     include_bluetooth_logs = IsFromUserInteraction(source);

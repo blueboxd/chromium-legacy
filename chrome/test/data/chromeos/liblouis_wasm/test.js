@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var pass = chrome.test.callbackPass;
+const pass = chrome.test.callbackPass;
 
-var TABLE_NAME = 'en-us-comp8.ctb';
-var CONTRACTED_TABLE_NAME = 'en-us-g2.ctb';
-var TEXT = 'hello';
+const TABLE_NAME = 'en-us-comp8.ctb';
+const CONTRACTED_TABLE_NAME = 'en-ueb-g2.ctb';
+const TEXT = 'hello';
 // Translation of the above string as a hexadecimal sequence of cells.
-var CELLS = '1311070715';
+const CELLS = '1311070715';
 
-var pendingCallback = null;
-var pendingMessageId = -1;
-var nextMessageId = 0;
-var worker = null;
+let pendingCallback = null;
+let pendingMessageId = -1;
+let nextMessageId = 0;
+let worker = null;
 
 function loadLibrary(callback) {
   worker = new Worker('liblouis_wrapper.js');
   worker.addEventListener('message', function(e) {
-    var reply = JSON.parse(e.data);
+    const reply = JSON.parse(e.data);
     console.log('Message from liblouis: ' + e.data);
     pendingCallback(reply);
   }, false /* useCapture */);
@@ -27,10 +27,10 @@ function loadLibrary(callback) {
 }
 
 function rpc(command, args, callback) {
-  var messageId = '' + nextMessageId++;
+  const messageId = '' + nextMessageId++;
   args['command'] = command;
   args['message_id'] = messageId;
-  var json = JSON.stringify(args);
+  const json = JSON.stringify(args);
   console.log('Message to liblouis: ' + json);
   worker.postMessage(json);
   pendingCallback = callback;
@@ -70,7 +70,7 @@ loadLibrary(function() {
   // letter 'T' should be translated to 3 cells in US English grade 2
   // braille (dots 56, 6, 2345).
   function testTranslateGrade2SingleCapital() {
-    rpc('Translate', { 'table_names': CONTRACTED_TABLE_NAME, 'text': 'T',
+    rpc('Translate', { 'table_names': 'en-us-g2.ctb', 'text': 'T',
                        form_type_map: []},
         pass(expectSuccessReply(function(reply) {
           chrome.test.assertEq('30201e', reply['cells']);
@@ -93,4 +93,5 @@ loadLibrary(function() {
           chrome.test.assertEq('knowledge', reply['text']);
         })));
   },
-])});
+]);
+});

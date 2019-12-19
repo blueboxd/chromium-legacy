@@ -154,10 +154,6 @@ class CC_EXPORT LayerTreeSettings {
   // the device scale factor.
   bool use_painted_device_scale_factor = false;
 
-  // When false, sync tokens are expected to be present, and are verified,
-  // before transfering gpu resources to the display compositor.
-  bool delegated_sync_points_required = true;
-
   // When true, LayerTreeHostImplClient will be posting a task to call
   // DidReceiveCompositorFrameAck, used by the Compositor but not the
   // LayerTreeView.

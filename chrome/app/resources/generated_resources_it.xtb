@@ -139,7 +139,6 @@
 <translation id="1186771945450942097">Rimuovi software dannoso</translation>
 <translation id="1187722533808055681">Riattivazioni</translation>
 <translation id="1188807932851744811">Log non caricato.</translation>
-<translation id="1189418886587279221">Attiva funzioni di accessibilità per facilitare l'utilizzo del dispositivo.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Accesso a un file memorizzato sul computer}other{Accesso a # file memorizzati sul computer}}</translation>
 <translation id="1190660338026981543">Il tuo dispositivo <ph name="DEVICE_TYPE" /> è stato registrato correttamente per la gestione aziendale da parte di <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="119092896208640858"><ph name="BEGIN_LINK" />Esci<ph name="END_LINK" /> per cancellare i dati di navigazione soltanto da questo dispositivo e non dal tuo Account Google.</translation>
@@ -339,7 +338,6 @@
 <translation id="1476607407192946488">&amp;Impostazioni lingua</translation>
 <translation id="1478340334823509079">Dettagli: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">L'installazione non è attiva</translation>
-<translation id="1481206932476131736">Gestisci gli account a cui hai eseguito l'accesso. Siti web, app ed estensioni in Chrome e Google Play potrebbero utilizzare questi account per personalizzare la tua esperienza in base alle autorizzazioni.</translation>
 <translation id="1482626744466814421">Aggiungi questa scheda ai preferiti…</translation>
 <translation id="1483493594462132177">Invia</translation>
 <translation id="1484979925941077974">Il sito usa il Bluetooth</translation>
@@ -592,7 +590,6 @@
 <translation id="1813278315230285598">Servizi</translation>
 <translation id="18139523105317219">EDI Party Name</translation>
 <translation id="1815083418640426271">Incolla come solo testo</translation>
-<translation id="1815579292149538864">Configura o gestisci le stampanti CUPS.</translation>
 <translation id="181577467034453336">Altre <ph name="NUMBER_OF_VIEWS" />...</translation>
 <translation id="1816036116994822943">Velocità della scansione della tastiera</translation>
 <translation id="1817871734039893258">Ripristino file Microsoft</translation>
@@ -1453,7 +1450,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3012917896646559015">Contatta immediatamente il produttore dell'hardware per inviare il computer a un centro di riparazione.</translation>
 <translation id="3013291976881901233">Dispositivi MIDI</translation>
 <translation id="3015639418649705390">Riavvia ora</translation>
-<translation id="3016329696181678353">Impossibile configurare automaticamente la stampante <ph name="PRINTER_NAME" />. Specifica dettagli avanzati della stampante.</translation>
 <translation id="3016381065346027039">Non ci sono voci di log</translation>
 <translation id="3016641847947582299">Componente aggiornato</translation>
 <translation id="3016780570757425217">Conoscere la tua posizione</translation>
@@ -2191,7 +2187,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4046123991198612571">Traccia successiva</translation>
 <translation id="4050225813016893843">Metodo di autenticazione</translation>
 <translation id="4052120076834320548">Minuscolo</translation>
-<translation id="4055023634561256217">È necessario riavviare prima che il dispositivo possa essere reimpostato con Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">Visualizza nello Store</translation>
 <translation id="4058647953897694817">Verifica tramite Bluetooth</translation>
@@ -2513,7 +2508,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4558426062282641716">Autorizzazione di avvio automatico richiesta</translation>
 <translation id="4558491878126948419">Ricevi suggerimenti per <ph name="DEVICE_TYPE" />, aggiornamenti sui prodotti Google e condividi il tuo feedback. Puoi annullare l'iscrizione in qualsiasi momento.</translation>
 <translation id="4559617833001311418">Questo sito ha accesso ai sensori di movimento o della luce.</translation>
-<translation id="4561098487691395071">Oppure specifica il file PPD della stampante</translation>
 <translation id="4562155214028662640">Aggiungi impronta digitale</translation>
 <translation id="4562494484721939086">Nessun servizio</translation>
 <translation id="4563880231729913339">Dito 3</translation>
@@ -2756,7 +2750,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925542575807923399">L'amministratore di questo account richiede che questo account sia il primo account registrato in una sessione con accesso simultaneo.</translation>
 <translation id="4927753642311223124">Nessuna notifica.</translation>
-<translation id="4927846293686536410">Accedi per trovare i tuoi segnalibri, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi. Verrà inoltre eseguito l'accesso automatico ai tuoi servizi Google.</translation>
 <translation id="4929386379796360314">Destinazioni di stampa</translation>
 <translation id="4930714375720679147">Attiva</translation>
 <translation id="4932733599132424254">Data</translation>
@@ -3313,7 +3306,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5750324801516359607">Lontano</translation>
 <translation id="5756163054456765343">Centro assistenza</translation>
 <translation id="5759728514498647443">I documenti inviati alla stampante tramite <ph name="APP_NAME" /> possono essere letti da <ph name="APP_NAME" />.</translation>
-<translation id="5763315388120433852">Configura o gestisci condivisioni file di rete.</translation>
 <translation id="5763751966069581670">Nessun dispositivo USB trovato</translation>
 <translation id="5764483294734785780">Sal&amp;va audio come...</translation>
 <translation id="57646104491463491">Data ultima modifica</translation>
@@ -4633,7 +4625,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7684718995427157417">Per creare e testare le tue app, attiva Android Debug Bridge (ADB). Tieni presente che questa azione consente l'installazione di app Android che non sono state verificate da Google. Per disattivare la funzionalità è necessario ripristinare le impostazioni di fabbrica.</translation>
 <translation id="7685049629764448582">Memoria JavaScript</translation>
 <translation id="7685087414635069102">PIN obbligatorio</translation>
-<translation id="768549422429443215">Aggiungi lingue o cambia l'ordine dell'elenco.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Conferma nuova password</translation>
 <translation id="7690378713476594306">Scegli dall'elenco</translation>
@@ -4670,7 +4661,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7730449930968088409">Acquisizione dei contenuti dello schermo</translation>
 <translation id="7732111077498238432">La rete è gestita tramite norme</translation>
 <translation id="7737238973539693982">Elimina Linux (beta)</translation>
-<translation id="7737456446569756884">Questo dispositivo riceverà automaticamente aggiornamenti software e di sicurezza fino a <ph name="MONTH_AND_YEAR" />.</translation>
 <translation id="7740996059027112821">Standard</translation>
 <translation id="7744047395460924128">Visualizzazione della cronologia di stampa</translation>
 <translation id="7746457520633464754">Per rilevare app e siti pericolosi, Chrome invia a Google gli URL di alcune pagine che visiti, informazioni limitate sul sistema e i contenuti di alcune pagine</translation>
@@ -5556,7 +5546,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="892706138619340876">Alcune impostazioni sono state reimpostate</translation>
 <translation id="8930351635855238750">Le nuove impostazioni dei cookie verranno applicate dopo aver ricaricato la pagina</translation>
 <translation id="8931394284949551895">Nuovi dispositivi</translation>
-<translation id="893254996965966411">Salva le stampanti rilevate nel tuo profilo o aggiungi una nuova stampante.</translation>
 <translation id="8932894639908691771">Opzioni di Switch Access</translation>
 <translation id="8933960630081805351">Mo&amp;stra nel Finder</translation>
 <translation id="8934732568177537184">Continua</translation>

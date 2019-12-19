@@ -175,9 +175,11 @@ void EncodedFormData::AppendData(const void* data, wtf_size_t size) {
   memcpy(e.data_.data() + old_size, data, size);
 }
 
-void EncodedFormData::AppendFile(const String& filename) {
-  elements_.push_back(
-      FormDataElement(filename, 0, BlobData::kToEndOfFile, base::nullopt));
+void EncodedFormData::AppendFile(
+    const String& filename,
+    const base::Optional<base::Time>& expected_modification_time) {
+  elements_.push_back(FormDataElement(filename, 0, BlobData::kToEndOfFile,
+                                      expected_modification_time));
 }
 
 void EncodedFormData::AppendFileRange(

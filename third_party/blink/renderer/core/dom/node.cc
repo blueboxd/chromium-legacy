@@ -101,6 +101,7 @@
 #include "third_party/blink/renderer/core/input/input_device_capabilities.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
+#include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/mathml_names.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
@@ -163,6 +164,8 @@ void AppendUnsafe(StringBuilder& builder, const String& off_thread_string) {
 }
 
 }  // namespace
+
+using ReattachHook = LayoutShiftTracker::ReattachHook;
 
 struct SameSizeAsNode : EventTarget {
   uint32_t node_flags_;
@@ -1627,6 +1630,7 @@ Node* Node::CommonAncestor(const Node& other,
 
 void Node::ReattachLayoutTree(AttachContext& context) {
   context.performing_reattach = true;
+  ReattachHook::Scope reattach_scope(*this);
 
   DetachLayoutTree(context.performing_reattach);
   AttachLayoutTree(context);
@@ -1648,6 +1652,9 @@ void Node::AttachLayoutTree(AttachContext& context) {
 
   if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
     cache->UpdateCacheAfterNodeIsAttached(this);
+
+  if (context.performing_reattach)
+    ReattachHook::NotifyAttach(*this);
 }
 
 void Node::DetachLayoutTree(bool performing_reattach) {
@@ -1655,6 +1662,10 @@ void Node::DetachLayoutTree(bool performing_reattach) {
   DCHECK(!performing_reattach ||
          GetDocument().GetStyleEngine().InRebuildLayoutTree());
   DocumentLifecycle::DetachScope will_detach(GetDocument().Lifecycle());
+
+  if (performing_reattach)
+    ReattachHook::NotifyDetach(*this);
+
   if (GetLayoutObject())
     GetLayoutObject()->DestroyAndCleanupAnonymousWrappers();
   SetLayoutObject(nullptr);

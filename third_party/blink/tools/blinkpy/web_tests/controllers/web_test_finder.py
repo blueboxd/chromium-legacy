@@ -162,6 +162,10 @@ class WebTestFinder(object):
             return line
 
     def skip_tests(self, paths, all_tests_list, expectations, http_tests):
+        if self._options.no_expectations:
+            # do not skip anything.
+            return []
+
         all_tests = set(all_tests_list)
 
         tests_to_skip = expectations.get_tests_with_result_type(test_expectations.SKIP)

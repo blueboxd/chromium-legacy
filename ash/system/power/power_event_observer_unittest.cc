@@ -418,7 +418,7 @@ TEST_F(PowerEventObserverTest,
 
   // Simulate wallpaper animation finishing - for the purpose of this test,
   // before suspend begins.
-  wallpaper_widget_controller->EndPendingAnimation();
+  wallpaper_widget_controller->StopAnimating();
 
   // Expect that two compositing cycles are completed before suspend continues,
   // and displays get suspended.

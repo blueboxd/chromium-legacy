@@ -114,6 +114,7 @@
 <translation id="4812940957355064477">ഒരു നമ്പർ നൽകുക.</translation>
 <translation id="4912536737030637138">ഗ്രന്ഥസൂചി എൻട്രി</translation>
 <translation id="492244087561876220">കമന്റ്</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> തിരഞ്ഞെടുത്തു</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> തിരഞ്ഞെടുത്തു</translation>
 <translation id="4992066212339426712">അൺമ്യൂട്ടുചെയ്യുക</translation>
 <translation id="49969490063480558">'<ph name="ATSIGN" />' എന്നതിനുശേഷം ഒരു ഭാഗം നൽകുക.'<ph name="INVALIDADDRESS" />' അപൂർണ്ണമാണ്.</translation>
@@ -218,6 +219,7 @@
 <translation id="7888071071722539607">ഇമെയിൽ വിലാസത്തിൽ '<ph name="ATSIGN" />' ഉൾപ്പെടുത്തുക. '<ph name="INVALIDADDRESS" />' എന്നതിൽ ഒരു '<ph name="ATSIGN" />' കാണുന്നില്ല.</translation>
 <translation id="7891486169920085145">സ്‌പ്ലിറ്റർ</translation>
 <translation id="795667975304826397">ഒരു ഫയലും തിരഞ്ഞെടുത്തിട്ടില്ല</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> തിരഞ്ഞെടുത്തിട്ടില്ല</translation>
 <translation id="8034303206267677282">ശക്തം</translation>
 <translation id="8053789581856978548">തിരയൽ ടെക്‌സ്റ്റ് ഫീൽഡ്</translation>
 <translation id="8057695513531652401">അറിയിപ്പ്</translation>

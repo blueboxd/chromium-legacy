@@ -457,6 +457,11 @@ void PeopleHandler::HandleSetDatatypes(const base::ListValue* args) {
     return;
   }
 
+  // Don't enable non-registered types (for example, kApps may not be registered
+  // on Chrome OS).
+  configuration.selected_types.RetainAll(
+      service->GetUserSettings()->GetRegisteredSelectableTypes());
+
   service->GetUserSettings()->SetSelectedTypes(configuration.sync_everything,
                                                configuration.selected_types);
 

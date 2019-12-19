@@ -22,8 +22,12 @@ BoundsAnimator::BoundsAnimator(View* parent)
 
 BoundsAnimator::~BoundsAnimator() {
   // Delete all the animations, but don't remove any child views. We assume the
-  // view owns us and is going to be deleted anyway.
-  for (auto& entry : data_)
+  // view owns us and is going to be deleted anyway. However, deleting a
+  // delegate may results in removing a child view, so empty the data_ first so
+  // that it won't call AnimationCanceled().
+  ViewToDataMap data;
+  data.swap(data_);
+  for (auto& entry : data)
     CleanupData(false, &entry.second);
 }
 
@@ -272,5 +276,14 @@ void BoundsAnimator::AnimationContainerProgressed(
 
 void BoundsAnimator::AnimationContainerEmpty(
     gfx::AnimationContainer* container) {}
+
+void BoundsAnimator::OnChildViewRemoved(views::View* observed_view,
+                                        views::View* removed) {
+  DCHECK_EQ(parent_, observed_view);
+  const auto iter = data_.find(removed);
+  if (iter == data_.end())
+    return;
+  AnimationCanceled(iter->second.animation.get());
+}
 
 }  // namespace views

@@ -3175,7 +3175,7 @@ TEST_F(LayerTreeHostImplTest, PinchZoomTriggersPageScaleAnimation) {
     did_request_redraw_ = false;
     did_request_next_frame_ = false;
     begin_frame_args.frame_time = start_time;
-    begin_frame_args.sequence_number++;
+    begin_frame_args.frame_id.sequence_number++;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     EXPECT_TRUE(did_request_redraw_);
@@ -3185,7 +3185,7 @@ TEST_F(LayerTreeHostImplTest, PinchZoomTriggersPageScaleAnimation) {
     did_request_redraw_ = false;
     did_request_next_frame_ = false;
     begin_frame_args.frame_time = halfway_through_animation;
-    begin_frame_args.sequence_number++;
+    begin_frame_args.frame_id.sequence_number++;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     EXPECT_TRUE(did_request_redraw_);
@@ -3196,7 +3196,7 @@ TEST_F(LayerTreeHostImplTest, PinchZoomTriggersPageScaleAnimation) {
     did_request_next_frame_ = false;
     did_request_commit_ = false;
     begin_frame_args.frame_time = end_time;
-    begin_frame_args.sequence_number++;
+    begin_frame_args.frame_id.sequence_number++;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     EXPECT_TRUE(did_request_commit_);
@@ -3230,7 +3230,7 @@ TEST_F(LayerTreeHostImplTest, PinchZoomTriggersPageScaleAnimation) {
     did_request_redraw_ = false;
     did_request_next_frame_ = false;
     begin_frame_args.frame_time = start_time;
-    begin_frame_args.sequence_number++;
+    begin_frame_args.frame_id.sequence_number++;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     EXPECT_FALSE(did_request_redraw_);
@@ -3240,7 +3240,7 @@ TEST_F(LayerTreeHostImplTest, PinchZoomTriggersPageScaleAnimation) {
     did_request_redraw_ = false;
     did_request_next_frame_ = false;
     begin_frame_args.frame_time = halfway_through_animation;
-    begin_frame_args.sequence_number++;
+    begin_frame_args.frame_id.sequence_number++;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     EXPECT_FALSE(did_request_redraw_);
@@ -3251,7 +3251,7 @@ TEST_F(LayerTreeHostImplTest, PinchZoomTriggersPageScaleAnimation) {
     did_request_next_frame_ = false;
     did_request_commit_ = false;
     begin_frame_args.frame_time = end_time;
-    begin_frame_args.sequence_number++;
+    begin_frame_args.frame_id.sequence_number++;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     EXPECT_FALSE(did_request_commit_);
@@ -3304,7 +3304,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
     did_request_redraw_ = false;
     did_request_next_frame_ = false;
     begin_frame_args.frame_time = start_time;
-    begin_frame_args.sequence_number++;
+    begin_frame_args.frame_id.sequence_number++;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     EXPECT_TRUE(did_request_redraw_);
@@ -3314,7 +3314,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
     did_request_redraw_ = false;
     did_request_next_frame_ = false;
     begin_frame_args.frame_time = halfway_through_animation;
-    begin_frame_args.sequence_number++;
+    begin_frame_args.frame_id.sequence_number++;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     EXPECT_TRUE(did_request_redraw_);
@@ -3325,7 +3325,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
     did_request_next_frame_ = false;
     did_request_commit_ = false;
     begin_frame_args.frame_time = end_time;
-    begin_frame_args.sequence_number++;
+    begin_frame_args.frame_id.sequence_number++;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     EXPECT_TRUE(did_request_commit_);
@@ -3365,7 +3365,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
     did_request_redraw_ = false;
     did_request_next_frame_ = false;
     begin_frame_args.frame_time = start_time;
-    begin_frame_args.sequence_number++;
+    begin_frame_args.frame_id.sequence_number++;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     EXPECT_TRUE(did_request_redraw_);
@@ -3376,7 +3376,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
     did_request_commit_ = false;
     did_request_next_frame_ = false;
     begin_frame_args.frame_time = end_time;
-    begin_frame_args.sequence_number++;
+    begin_frame_args.frame_id.sequence_number++;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     EXPECT_TRUE(did_request_redraw_);
@@ -3425,20 +3425,20 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationNoOp) {
             new PendingPageScaleAnimation(gfx::Vector2d(), true, 1, duration)));
     host_impl_->ActivateSyncTree();
     begin_frame_args.frame_time = start_time;
-    begin_frame_args.sequence_number++;
+    begin_frame_args.frame_id.sequence_number++;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     host_impl_->DidFinishImplFrame();
 
     begin_frame_args.frame_time = halfway_through_animation;
-    begin_frame_args.sequence_number++;
+    begin_frame_args.frame_id.sequence_number++;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     EXPECT_TRUE(did_request_redraw_);
     host_impl_->DidFinishImplFrame();
 
     begin_frame_args.frame_time = end_time;
-    begin_frame_args.sequence_number++;
+    begin_frame_args.frame_id.sequence_number++;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     EXPECT_TRUE(did_request_commit_);
@@ -3503,7 +3503,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationTransferedOnSyncTreeActivate) {
       std::unique_ptr<PendingPageScaleAnimation>(new PendingPageScaleAnimation(
           gfx::Vector2d(), false, target_scale, duration)));
   begin_frame_args.frame_time = halfway_through_animation;
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   EXPECT_FALSE(did_request_next_frame_);
@@ -3527,7 +3527,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationTransferedOnSyncTreeActivate) {
   did_request_redraw_ = false;
   did_request_next_frame_ = false;
   begin_frame_args.frame_time = start_time;
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   EXPECT_TRUE(did_request_redraw_);
@@ -3537,7 +3537,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationTransferedOnSyncTreeActivate) {
   did_request_redraw_ = false;
   did_request_next_frame_ = false;
   begin_frame_args.frame_time = third_through_animation;
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   EXPECT_TRUE(did_request_redraw_);
@@ -3550,7 +3550,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationTransferedOnSyncTreeActivate) {
   did_request_redraw_ = false;
   did_request_next_frame_ = false;
   begin_frame_args.frame_time = halfway_through_animation;
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   EXPECT_TRUE(did_request_redraw_);
@@ -3561,7 +3561,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationTransferedOnSyncTreeActivate) {
   did_request_next_frame_ = false;
   did_request_commit_ = false;
   begin_frame_args.frame_time = end_time;
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   EXPECT_TRUE(did_request_commit_);
@@ -3603,21 +3603,21 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationCompletedNotification) {
           new PendingPageScaleAnimation(gfx::Vector2d(), false, 2, duration)));
   host_impl_->ActivateSyncTree();
   begin_frame_args.frame_time = start_time;
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   EXPECT_FALSE(did_complete_page_scale_animation_);
   host_impl_->DidFinishImplFrame();
 
   begin_frame_args.frame_time = halfway_through_animation;
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   EXPECT_FALSE(did_complete_page_scale_animation_);
   host_impl_->DidFinishImplFrame();
 
   begin_frame_args.frame_time = end_time;
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   EXPECT_TRUE(did_complete_page_scale_animation_);
@@ -6158,7 +6158,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
   // the animation.
   {
     begin_frame_args.frame_time = start_time;
-    begin_frame_args.sequence_number++;
+    begin_frame_args.frame_id.sequence_number++;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     host_impl_->UpdateAnimationState(true);
@@ -6172,7 +6172,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
   {
     begin_frame_args.frame_time =
         start_time + base::TimeDelta::FromMilliseconds(50);
-    begin_frame_args.sequence_number++;
+    begin_frame_args.frame_id.sequence_number++;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     host_impl_->UpdateAnimationState(true);
@@ -6199,7 +6199,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
   {
     begin_frame_args.frame_time =
         start_time + base::TimeDelta::FromMilliseconds(200);
-    begin_frame_args.sequence_number++;
+    begin_frame_args.frame_id.sequence_number++;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     host_impl_->UpdateAnimationState(true);
@@ -6613,7 +6613,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedLatchToChild) {
       host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, -100)).thread);
 
   begin_frame_args.frame_time = start_time;
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
@@ -6624,7 +6624,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedLatchToChild) {
 
   begin_frame_args.frame_time =
       start_time + base::TimeDelta::FromMilliseconds(200);
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
@@ -6642,7 +6642,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedLatchToChild) {
 
   begin_frame_args.frame_time =
       start_time + base::TimeDelta::FromMilliseconds(250);
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
@@ -6650,7 +6650,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedLatchToChild) {
 
   begin_frame_args.frame_time =
       start_time + base::TimeDelta::FromMilliseconds(450);
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
@@ -10215,7 +10215,7 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
         host_impl_->browser_controls_manager()->ControlsTopOffset();
 
     begin_frame_args.frame_time += base::TimeDelta::FromMilliseconds(5);
-    begin_frame_args.sequence_number++;
+    begin_frame_args.frame_id.sequence_number++;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     EXPECT_EQ(gfx::Vector2dF().ToString(),
@@ -10301,7 +10301,7 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
         host_impl_->browser_controls_manager()->ControlsTopOffset();
 
     begin_frame_args.frame_time += base::TimeDelta::FromMilliseconds(5);
-    begin_frame_args.sequence_number++;
+    begin_frame_args.frame_id.sequence_number++;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
 
@@ -11001,7 +11001,7 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
             host_impl_->CurrentlyScrollingNode()->id);
 
   begin_frame_args.frame_time = start_time;
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
@@ -11011,7 +11011,7 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
 
   begin_frame_args.frame_time =
       start_time + base::TimeDelta::FromMilliseconds(50);
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
@@ -11041,7 +11041,7 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
 
   begin_frame_args.frame_time =
       start_time + base::TimeDelta::FromMilliseconds(200);
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
@@ -11054,7 +11054,7 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
 
   begin_frame_args.frame_time =
       start_time + base::TimeDelta::FromMilliseconds(250);
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
@@ -11112,7 +11112,7 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimatedWhileZoomed) {
   // Tick a frame to get the animation started.
   {
     begin_frame_args.frame_time = start_time;
-    begin_frame_args.sequence_number++;
+    begin_frame_args.frame_id.sequence_number++;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     host_impl_->UpdateAnimationState(true);
@@ -11126,7 +11126,7 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimatedWhileZoomed) {
   {
     begin_frame_args.frame_time =
         start_time + base::TimeDelta::FromMilliseconds(1000);
-    begin_frame_args.sequence_number++;
+    begin_frame_args.frame_id.sequence_number++;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     host_impl_->UpdateAnimationState(true);
@@ -11180,7 +11180,7 @@ TEST_F(LayerTreeHostImplTest, SingleGSUForScrollbarThumbDragPerFrame) {
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
   begin_frame_args.frame_time = start_time;
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
 
   // MouseDown on the thumb should not produce a scroll.
@@ -11205,7 +11205,7 @@ TEST_F(LayerTreeHostImplTest, SingleGSUForScrollbarThumbDragPerFrame) {
   // ------------------------- Start frame 1 -------------------------
   begin_frame_args.frame_time =
       start_time + base::TimeDelta::FromMilliseconds(250);
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
 
   // MouseMove for a new frame gets processed as usual.
@@ -11255,7 +11255,7 @@ TEST_F(LayerTreeHostImplTest, AnimatedScrollUpdateTargetBeforeStarting) {
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
   begin_frame_args.frame_time = start_time;
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->UpdateAnimationState(true);
   host_impl_->DidFinishImplFrame();
@@ -11272,7 +11272,7 @@ TEST_F(LayerTreeHostImplTest, AnimatedScrollUpdateTargetBeforeStarting) {
 
   begin_frame_args.frame_time =
       start_time + base::TimeDelta::FromMilliseconds(250);
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   // This is when the animation above gets promoted to STARTING.
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->UpdateAnimationState(true);
@@ -11280,7 +11280,7 @@ TEST_F(LayerTreeHostImplTest, AnimatedScrollUpdateTargetBeforeStarting) {
 
   begin_frame_args.frame_time =
       start_time + base::TimeDelta::FromMilliseconds(300);
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   // This is when the animation above gets ticked.
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->UpdateAnimationState(true);
@@ -11320,7 +11320,7 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimatedWithDelay) {
 
   // First tick, animation is started.
   begin_frame_args.frame_time = start_time;
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->UpdateAnimationState(true);
   EXPECT_NE(gfx::ScrollOffset(), scrolling_layer->CurrentScrollOffset());
@@ -11332,7 +11332,7 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimatedWithDelay) {
   base::TimeTicks half_way_time = start_time - begin_frame_args.interval +
                                   base::TimeDelta::FromMilliseconds(50);
   begin_frame_args.frame_time = half_way_time;
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->UpdateAnimationState(true);
   EXPECT_EQ(50, scrolling_layer->CurrentScrollOffset().y());
@@ -11349,7 +11349,7 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimatedWithDelay) {
   // target was called with a large value of jank.
   begin_frame_args.frame_time =
       start_time + base::TimeDelta::FromMilliseconds(100);
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->UpdateAnimationState(true);
   EXPECT_LT(100, scrolling_layer->CurrentScrollOffset().y());
@@ -11380,7 +11380,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {
             host_impl_->CurrentlyScrollingNode()->id);
 
   begin_frame_args.frame_time = start_time;
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
@@ -11393,7 +11393,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {
 
   begin_frame_args.frame_time =
       start_time + base::TimeDelta::FromMilliseconds(50);
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
@@ -11449,7 +11449,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimated) {
             host_impl_->CurrentlyScrollingNode()->id);
 
   begin_frame_args.frame_time = start_time;
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
@@ -11459,7 +11459,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimated) {
 
   begin_frame_args.frame_time =
       start_time + base::TimeDelta::FromMilliseconds(50);
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
@@ -11475,7 +11475,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimated) {
 
   begin_frame_args.frame_time =
       start_time + base::TimeDelta::FromMilliseconds(200);
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
@@ -11488,7 +11488,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimated) {
 
   begin_frame_args.frame_time =
       start_time + base::TimeDelta::FromMilliseconds(250);
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
@@ -11531,7 +11531,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ImplPinchZoomScrollAnimated) {
   EXPECT_EQ(inner_scroll_layer->scroll_tree_index(),
             host_impl_->CurrentlyScrollingNode()->id);
 
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   BeginImplFrameAndAnimate(begin_frame_args, start_time);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(5, 10),
                    inner_scroll_layer->CurrentScrollOffset());
@@ -11549,7 +11549,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ImplPinchZoomScrollAnimated) {
   EXPECT_EQ(inner_scroll_layer->scroll_tree_index(),
             host_impl_->CurrentlyScrollingNode()->id);
 
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   BeginImplFrameAndAnimate(begin_frame_args,
                            start_time + base::TimeDelta::FromMilliseconds(350));
   EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 50),
@@ -11567,7 +11567,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ImplPinchZoomScrollAnimated) {
   EXPECT_EQ(outer_scroll_layer->scroll_tree_index(),
             host_impl_->CurrentlyScrollingNode()->id);
 
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   BeginImplFrameAndAnimate(begin_frame_args,
                            start_time + base::TimeDelta::FromMilliseconds(850));
   EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 50),
@@ -11585,7 +11585,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ImplPinchZoomScrollAnimated) {
   EXPECT_EQ(inner_scroll_layer->scroll_tree_index(),
             host_impl_->CurrentlyScrollingNode()->id);
 
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   BeginImplFrameAndAnimate(
       begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1200));
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0),
@@ -11624,7 +11624,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ImplPinchZoomScrollAnimatedUpdate) {
   EXPECT_EQ(inner_scroll_layer->scroll_tree_index(),
             host_impl_->CurrentlyScrollingNode()->id);
 
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   BeginImplFrameAndAnimate(begin_frame_args, start_time);
   float inner_x = inner_scroll_layer->CurrentScrollOffset().x();
   float inner_y = inner_scroll_layer->CurrentScrollOffset().y();
@@ -11644,7 +11644,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ImplPinchZoomScrollAnimatedUpdate) {
 
   // Verify that all the delta is applied to the inner viewport and nothing is
   // carried forward.
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   BeginImplFrameAndAnimate(begin_frame_args,
                            start_time + base::TimeDelta::FromMilliseconds(350));
   EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 50),
@@ -11681,7 +11681,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedNotUserScrollable) {
             host_impl_->CurrentlyScrollingNode()->id);
 
   begin_frame_args.frame_time = start_time;
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
@@ -11691,7 +11691,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedNotUserScrollable) {
 
   begin_frame_args.frame_time =
       start_time + base::TimeDelta::FromMilliseconds(50);
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
@@ -11709,7 +11709,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedNotUserScrollable) {
 
   begin_frame_args.frame_time =
       start_time + base::TimeDelta::FromMilliseconds(200);
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
@@ -11722,7 +11722,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedNotUserScrollable) {
 
   begin_frame_args.frame_time =
       start_time + base::TimeDelta::FromMilliseconds(250);
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
@@ -11756,7 +11756,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedChangingBounds) {
             host_impl_->CurrentlyScrollingNode()->id);
 
   begin_frame_args.frame_time = start_time;
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
@@ -11768,7 +11768,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedChangingBounds) {
 
   begin_frame_args.frame_time =
       start_time + base::TimeDelta::FromMilliseconds(200);
-  begin_frame_args.sequence_number++;
+  begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);

@@ -16,9 +16,14 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/skia_paint_util.h"
 #include "ui/views/accessible_pane_view.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/grid_layout.h"
+
+namespace ash {
 
 namespace {
 
@@ -45,9 +50,35 @@ class StatusAreaWidgetDelegateAnimationSettings
   DISALLOW_COPY_AND_ASSIGN(StatusAreaWidgetDelegateAnimationSettings);
 };
 
-}  // namespace
+// Gradient background for the status area shown when it overflows into the
+// shelf.
+class OverflowGradientBackground : public views::Background {
+ public:
+  explicit OverflowGradientBackground(Shelf* shelf) : shelf_(shelf) {}
+  OverflowGradientBackground(const OverflowGradientBackground&) = delete;
+  ~OverflowGradientBackground() override = default;
+  OverflowGradientBackground& operator=(const OverflowGradientBackground&) =
+      delete;
 
-namespace ash {
+  // views::Background:
+  void Paint(gfx::Canvas* canvas, views::View* view) const override {
+    gfx::Rect bounds = view->GetContentsBounds();
+
+    SkColor shelf_background_color =
+        shelf_->shelf_widget()->GetShelfBackgroundColor();
+
+    cc::PaintFlags flags;
+    flags.setShader(gfx::CreateGradientShader(
+        gfx::Point(), gfx::Point(kStatusAreaOverflowGradientSize, 0),
+        SkColorSetA(shelf_background_color, 0), shelf_background_color));
+    canvas->DrawRect(bounds, flags);
+  }
+
+ private:
+  Shelf* shelf_;
+};
+
+}  // namespace
 
 StatusAreaWidgetDelegate::StatusAreaWidgetDelegate(Shelf* shelf)
     : shelf_(shelf), focus_cycler_for_testing_(nullptr) {
@@ -82,6 +113,19 @@ bool StatusAreaWidgetDelegate::ShouldFocusOut(bool reverse) {
   views::View* focused_view = GetFocusManager()->GetFocusedView();
   return (reverse && focused_view == GetFirstFocusableChild()) ||
          (!reverse && focused_view == GetLastFocusableChild());
+}
+
+void StatusAreaWidgetDelegate::OnStatusAreaCollapseStateChanged(
+    StatusAreaWidget::CollapseState new_collapse_state) {
+  switch (new_collapse_state) {
+    case StatusAreaWidget::CollapseState::EXPANDED:
+      SetBackground(std::make_unique<OverflowGradientBackground>(shelf_));
+      break;
+    case StatusAreaWidget::CollapseState::COLLAPSED:
+    case StatusAreaWidget::CollapseState::NOT_COLLAPSIBLE:
+      SetBackground(nullptr);
+      break;
+  }
 }
 
 views::View* StatusAreaWidgetDelegate::GetDefaultFocusableChild() {

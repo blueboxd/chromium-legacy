@@ -11,7 +11,7 @@
 #include "base/timer/lap_timer.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 
 namespace base {
 namespace {
@@ -28,6 +28,27 @@ constexpr int kMultiBucketMinimumSize = 24;
 constexpr int kMultiBucketIncrement = 13;
 // Final size is 24 + (13 * 22) = 310 bytes.
 constexpr int kMultiBucketRounds = 22;
+
+constexpr char kMetricPrefixMemoryAllocation[] = "MemoryAllocation.";
+constexpr char kMetricThroughput[] = "throughput";
+constexpr char kMetricTimePerAllocation[] = "time_per_allocation";
+constexpr char kStoryBaseSingleBucket[] = "single_bucket";
+constexpr char kStoryBaseSingleBucketWithFree[] = "single_bucket_with_free";
+constexpr char kStoryBaseMultiBucket[] = "multi_bucket";
+constexpr char kStoryBaseMultiBucketWithFree[] = "multi_bucket_with_free";
+constexpr char kStorySuffixWithCompetingThread[] = "_with_competing_thread";
+
+perf_test::PerfResultReporter SetUpReporter(const std::string& story_name) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixMemoryAllocation,
+                                         story_name);
+  reporter.RegisterImportantMetric(kMetricThroughput, "runs/s");
+  reporter.RegisterImportantMetric(kMetricTimePerAllocation, "ns");
+  return reporter;
+}
+
+std::string GetSuffix(bool competing_thread) {
+  return competing_thread ? kStorySuffixWithCompetingThread : "";
+}
 
 class AllocatingThread : public PlatformThread::Delegate {
  public:
@@ -60,14 +81,12 @@ class AllocatingThread : public PlatformThread::Delegate {
   PlatformThreadHandle thread_handle_;
 };
 
-void DisplayResults(const std::string& measurement,
-                    const std::string& modifier,
+void DisplayResults(const std::string& story_name,
                     size_t iterations_per_second) {
-  perf_test::PrintResult(measurement, modifier, "", iterations_per_second,
-                         "runs/s", true);
-  perf_test::PrintResult(measurement, modifier, "",
-                         static_cast<size_t>(1e9 / iterations_per_second),
-                         "ns/run", true);
+  auto reporter = SetUpReporter(story_name);
+  reporter.AddResult(kMetricThroughput, iterations_per_second);
+  reporter.AddResult(kMetricTimePerAllocation,
+                     static_cast<size_t>(1e9 / iterations_per_second));
 }
 
 class MemoryAllocationPerfNode {
@@ -99,7 +118,7 @@ class MemoryAllocationPerfTest : public testing::Test {
   }
 
  protected:
-  void TestSingleBucket() {
+  void TestSingleBucket(bool competing_thread) {
     MemoryAllocationPerfNode* first =
         reinterpret_cast<MemoryAllocationPerfNode*>(
             alloc_.root()->Alloc(40, "<testing>"));
@@ -122,12 +141,12 @@ class MemoryAllocationPerfTest : public testing::Test {
 
     MemoryAllocationPerfNode::FreeAll(first, alloc_);
 
-    DisplayResults("MemoryAllocationPerfTest",
-                   " single bucket allocation (40 bytes)",
-                   timer_.LapsPerSecond());
+    DisplayResults(
+        std::string(kStoryBaseSingleBucket) + GetSuffix(competing_thread),
+        timer_.LapsPerSecond());
   }
 
-  void TestSingleBucketWithFree() {
+  void TestSingleBucketWithFree(bool competing_thread) {
     // Allocate an initial element to make sure the bucket stays set up.
     void* elem = alloc_.root()->Alloc(40, "<testing>");
 
@@ -140,12 +159,12 @@ class MemoryAllocationPerfTest : public testing::Test {
     } while (!timer_.HasTimeLimitExpired());
 
     alloc_.root()->Free(elem);
-    DisplayResults("MemoryAllocationPerfTest",
-                   " single bucket allocation + free (40 bytes)",
+    DisplayResults(std::string(kStoryBaseSingleBucketWithFree) +
+                       GetSuffix(competing_thread),
                    timer_.LapsPerSecond());
   }
 
-  void TestMultiBucket() {
+  void TestMultiBucket(bool competing_thread) {
     MemoryAllocationPerfNode* first =
         reinterpret_cast<MemoryAllocationPerfNode*>(
             alloc_.root()->Alloc(40, "<testing>"));
@@ -168,11 +187,12 @@ class MemoryAllocationPerfTest : public testing::Test {
 
     MemoryAllocationPerfNode::FreeAll(first, alloc_);
 
-    DisplayResults("MemoryAllocationPerfTest", " multi-bucket allocation",
-                   timer_.LapsPerSecond() * kMultiBucketRounds);
+    DisplayResults(
+        std::string(kStoryBaseMultiBucket) + GetSuffix(competing_thread),
+        timer_.LapsPerSecond() * kMultiBucketRounds);
   }
 
-  void TestMultiBucketWithFree() {
+  void TestMultiBucketWithFree(bool competing_thread) {
     std::vector<void*> elems;
     elems.reserve(kMultiBucketRounds);
     // Do an initial round of allocation to make sure that the buckets stay in
@@ -199,8 +219,8 @@ class MemoryAllocationPerfTest : public testing::Test {
       alloc_.root()->Free(ptr);
     }
 
-    DisplayResults("MemoryAllocationPerfTest",
-                   " multi-bucket allocation + free",
+    DisplayResults(std::string(kStoryBaseMultiBucketWithFree) +
+                       GetSuffix(competing_thread),
                    timer_.LapsPerSecond() * kMultiBucketRounds);
   }
 
@@ -209,21 +229,21 @@ class MemoryAllocationPerfTest : public testing::Test {
 };
 
 TEST_F(MemoryAllocationPerfTest, SingleBucket) {
-  TestSingleBucket();
+  TestSingleBucket(false);
 }
 
 TEST_F(MemoryAllocationPerfTest, SingleBucketWithCompetingThread) {
   AllocatingThread t(&alloc_);
-  TestSingleBucket();
+  TestSingleBucket(true);
 }
 
 TEST_F(MemoryAllocationPerfTest, SingleBucketWithFree) {
-  TestSingleBucketWithFree();
+  TestSingleBucketWithFree(false);
 }
 
 TEST_F(MemoryAllocationPerfTest, SingleBucketWithFreeWithCompetingThread) {
   AllocatingThread t(&alloc_);
-  TestSingleBucketWithFree();
+  TestSingleBucketWithFree(true);
 }
 
 // Failing on Nexus5x: crbug.com/949838
@@ -236,21 +256,21 @@ TEST_F(MemoryAllocationPerfTest, SingleBucketWithFreeWithCompetingThread) {
 #define MAYBE_MultiBucketWithCompetingThread MultiBucketWithCompetingThread
 #endif
 TEST_F(MemoryAllocationPerfTest, MAYBE_MultiBucket) {
-  TestMultiBucket();
+  TestMultiBucket(false);
 }
 
 TEST_F(MemoryAllocationPerfTest, MAYBE_MultiBucketWithCompetingThread) {
   AllocatingThread t(&alloc_);
-  TestMultiBucket();
+  TestMultiBucket(true);
 }
 
 TEST_F(MemoryAllocationPerfTest, MultiBucketWithFree) {
-  TestMultiBucketWithFree();
+  TestMultiBucketWithFree(false);
 }
 
 TEST_F(MemoryAllocationPerfTest, MultiBucketWithFreeWithCompetingThread) {
   AllocatingThread t(&alloc_);
-  TestMultiBucketWithFree();
+  TestMultiBucketWithFree(true);
 }
 
 }  // anonymous namespace

@@ -41,11 +41,9 @@ namespace blink {
 class Animation;
 class ExceptionState;
 class Element;
-class KeyframeEffectModelBase;
 class ScriptState;
 class ScriptValue;
 class UnrestrictedDoubleOrKeyframeAnimationOptions;
-struct Timing;
 
 // https://drafts.csswg.org/web-animations-1/#the-animatable-interface-mixin
 class CORE_EXPORT Animatable {
@@ -63,13 +61,6 @@ class CORE_EXPORT Animatable {
 
   HeapVector<Member<Animation>> getAnimations(
       GetAnimationsOptions* options = nullptr);
-
- private:
-  FRIEND_TEST_ALL_PREFIXES(AnimationSimTest, CustomPropertyBaseComputedStyle);
-
-  static Animation* animateInternal(Element&,
-                                    KeyframeEffectModelBase*,
-                                    const Timing&);
 };
 
 }  // namespace blink

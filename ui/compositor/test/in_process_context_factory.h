@@ -103,7 +103,6 @@ class InProcessContextFactory : public ContextFactory,
       override {}
   void AddObserver(ContextFactoryObserver* observer) override;
   void RemoveObserver(ContextFactoryObserver* observer) override;
-  bool SyncTokensRequiredForDisplayCompositor() override;
 
   SkMatrix44 GetOutputColorMatrix(Compositor* compositor) const;
   gfx::ColorSpace GetDisplayColorSpace(ui::Compositor* compositor) const;

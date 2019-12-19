@@ -139,7 +139,6 @@
 <translation id="1186771945450942097">Eliminar software daniño</translation>
 <translation id="1187722533808055681">Activacións desde o modo inactivo</translation>
 <translation id="1188807932851744811">Rexistro non cargado.</translation>
-<translation id="1189418886587279221">Activar funcións de accesibilidade para que o dispositivo resulte máis fácil de utilizar.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Accede a un ficheiro almacenado no teu ordenador}other{Accede a # ficheiros almacenados no teu ordenador}}</translation>
 <translation id="1190660338026981543">O teu dispositivo <ph name="DEVICE_TYPE" /> inscribiuse correctamente na xestión empresarial de <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="119092896208640858">Para borrar os datos só deste dispositivo, pero mantelos na túa Conta de Google, tes que <ph name="BEGIN_LINK" />pechar sesión<ph name="END_LINK" />.</translation>
@@ -339,7 +338,6 @@
 <translation id="1476607407192946488">&amp;Configuración de idioma</translation>
 <translation id="1478340334823509079">Detalles: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">A instalación non está activada</translation>
-<translation id="1481206932476131736">Xestiona as contas nas que teñas a sesión iniciada. O sitios web, as aplicacións e as extensións de Chrome e Google Play poden utilizar estas contas para personalizar a túa experiencia, dependendo dos permisos.</translation>
 <translation id="1482626744466814421">Engadir esta pestana aos marcadores…</translation>
 <translation id="1483493594462132177">Enviar</translation>
 <translation id="1484979925941077974">O sitio está usando o Bluetooth</translation>
@@ -591,7 +589,6 @@
 <translation id="1813278315230285598">Servizos</translation>
 <translation id="18139523105317219">Nome da parte EDI</translation>
 <translation id="1815083418640426271">Pegar como texto sen formato</translation>
-<translation id="1815579292149538864">Configurar ou xestionar impresoras CUPS.</translation>
 <translation id="181577467034453336"><ph name="NUMBER_OF_VIEWS" /> máis...</translation>
 <translation id="1816036116994822943">Velocidade de busca do teclado</translation>
 <translation id="1817871734039893258">Recuperación de ficheiros de Microsoft</translation>
@@ -1453,7 +1450,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3012917896646559015">Ponte en contacto co fabricante do hardware inmediatamente para enviar o teu ordenador a un centro de reparación.</translation>
 <translation id="3013291976881901233">Dispositivos MIDI</translation>
 <translation id="3015639418649705390">Reiniciar agora</translation>
-<translation id="3016329696181678353"><ph name="PRINTER_NAME" /> non se puido configurar automaticamente. Indica os detalles avanzados da impresora.</translation>
 <translation id="3016381065346027039">O rexistro está baleiro</translation>
 <translation id="3016641847947582299">Compoñente actualizado</translation>
 <translation id="3016780570757425217">Coñecer a túa localización</translation>
@@ -2191,7 +2187,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4046123991198612571">Pista seguinte</translation>
 <translation id="4050225813016893843">Método de autenticación</translation>
 <translation id="4052120076834320548">Minúsculo</translation>
-<translation id="4055023634561256217">É necesario reiniciar o dispositivo para poder restablecelo cun Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> (<ph name="RECEIVED_AMOUNT" />)</translation>
 <translation id="4057896668975954729">Ver na tenda</translation>
 <translation id="4058647953897694817">Verificación mediante Bluetooth</translation>
@@ -2513,7 +2508,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4558426062282641716">Solicitouse permiso de inicio automático</translation>
 <translation id="4558491878126948419">Recibe consellos sobre o dispositivo <ph name="DEVICE_TYPE" />, novidades acerca dos produtos de Google e envíanos comentarios. Podes cancelar a subscrición en calquera momento.</translation>
 <translation id="4559617833001311418">Este sitio está accedendo aos teus sensores de movemento ou luz.</translation>
-<translation id="4561098487691395071">Ou especifica o PPD da impresora</translation>
 <translation id="4562155214028662640">Engadir impresión dixital</translation>
 <translation id="4562494484721939086">Sen servizo</translation>
 <translation id="4563880231729913339">Dedo 3</translation>
@@ -2756,7 +2750,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925542575807923399">O administrador desta conta require que esta conta sexa a primeira na que se inicie sesión cando se cree unha sesión de inicio de sesión múltiple.</translation>
 <translation id="4927753642311223124">Non hai ningunha notificación.</translation>
-<translation id="4927846293686536410">Inicia sesión para ter os marcadores, o historial, os contrasinais e outras opcións de configuración en todos os teus dispositivos. Tamén se iniciará sesión automaticamente nos teus servizos de Google.</translation>
 <translation id="4929386379796360314">Destinos de impresión</translation>
 <translation id="4930714375720679147">Activar</translation>
 <translation id="4932733599132424254">Data</translation>
@@ -3313,7 +3306,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5750324801516359607">Lonxe</translation>
 <translation id="5756163054456765343">C&amp;entro de axuda</translation>
 <translation id="5759728514498647443">Os documentos que envías a imprimir a través de <ph name="APP_NAME" /> pódense ler con <ph name="APP_NAME" />.</translation>
-<translation id="5763315388120433852">Configurar ou xestionar sistemas de ficheiros compartidos en rede.</translation>
 <translation id="5763751966069581670">Non se encontrou ningún dispositivo USB</translation>
 <translation id="5764483294734785780">Ga&amp;rdar audio como...</translation>
 <translation id="57646104491463491">Data de modificación</translation>
@@ -4633,7 +4625,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7684718995427157417">Activa Android Debug Bridge (ADB) para poder crear e probar as túas aplicacións. Ten en conta que esta acción permite a instalación de aplicacións de Android non verificadas por Google e que require un restablecemento dos valores de fábrica para desactivarse.</translation>
 <translation id="7685049629764448582">Memoria JavaScript</translation>
 <translation id="7685087414635069102">PIN obrigatorio</translation>
-<translation id="768549422429443215">Engade idiomas ou reordena a lista.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Confirmar contrasinal novo</translation>
 <translation id="7690378713476594306">Escoller unha opción da lista</translation>
@@ -4670,7 +4661,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7730449930968088409">Capturar o contido da pantalla</translation>
 <translation id="7732111077498238432">A rede está controlada pola política</translation>
 <translation id="7737238973539693982">Eliminar Linux (beta)</translation>
-<translation id="7737456446569756884">Este dispositivo recibirá actualizacións de software e de seguranza automáticas ata <ph name="MONTH_AND_YEAR" />.</translation>
 <translation id="7740996059027112821">Estándar</translation>
 <translation id="7744047395460924128">Ver o teu historial de impresión</translation>
 <translation id="7746457520633464754">Para detectar aplicacións e sitios perigosos, Chrome envíalle a Google os URL dalgunhas das páxinas que visitas, parte da información do sistema e parte do contido das páxinas</translation>
@@ -5556,7 +5546,6 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="892706138619340876">Restablecéronse algunhas opcións de configuración</translation>
 <translation id="8930351635855238750">A nova configuración das cookies terá efecto tras volver cargar a páxina</translation>
 <translation id="8931394284949551895">Novos dispositivos</translation>
-<translation id="893254996965966411">Garda no teu perfil as impresoras detectadas ou engade unha impresora nova.</translation>
 <translation id="8932894639908691771">Opcións da función Acceso con interruptores</translation>
 <translation id="8933960630081805351">&amp;Mostrar no localizador</translation>
 <translation id="8934732568177537184">Continuar</translation>

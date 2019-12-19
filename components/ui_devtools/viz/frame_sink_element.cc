@@ -50,9 +50,10 @@ FrameSinkElement::GetCustomPropertiesForMatchedStyle() const {
     const viz::BeginFrameArgs args =
         static_cast<const viz::BeginFrameObserver*>(support)
             ->LastUsedBeginFrameArgs();
-    properties.emplace_back("SourceId", base::NumberToString(args.source_id));
-    properties.emplace_back("SequenceNumber",
-                            base::NumberToString(args.sequence_number));
+    properties.emplace_back("SourceId",
+                            base::NumberToString(args.frame_id.source_id));
+    properties.emplace_back(
+        "SequenceNumber", base::NumberToString(args.frame_id.sequence_number));
     properties.emplace_back(
         "FrameType", std::string(viz::BeginFrameArgs::TypeToString(args.type)));
   }

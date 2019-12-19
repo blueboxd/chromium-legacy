@@ -26,12 +26,10 @@ RootFrameSink::RootFrameSink(SetNeedsBeginFrameCallback set_needs_begin_frame)
     : root_frame_sink_id_(AllocateParentSinkId()),
       set_needs_begin_frame_(set_needs_begin_frame) {
   constexpr bool is_root = true;
-  constexpr bool needs_sync_points = true;
   GetFrameSinkManager()->RegisterFrameSinkId(root_frame_sink_id_,
                                              false /* report_activationa */);
   support_ = std::make_unique<viz::CompositorFrameSinkSupport>(
-      this, GetFrameSinkManager(), root_frame_sink_id_, is_root,
-      needs_sync_points);
+      this, GetFrameSinkManager(), root_frame_sink_id_, is_root);
   begin_frame_source_ = std::make_unique<viz::ExternalBeginFrameSource>(this);
   GetFrameSinkManager()->RegisterBeginFrameSource(begin_frame_source_.get(),
                                                   root_frame_sink_id_);

@@ -5,18 +5,11 @@
 #ifndef COMPONENTS_APP_MODAL_NATIVE_APP_MODAL_DIALOG_H_
 #define COMPONENTS_APP_MODAL_NATIVE_APP_MODAL_DIALOG_H_
 
-#include "ui/gfx/native_widget_types.h"
-
 namespace app_modal {
-
 
 class NativeAppModalDialog {
  public:
   virtual ~NativeAppModalDialog() {}
-
-  // Returns the buttons to be shown. See ui::DialogButton for which buttons can
-  // be returned.
-  virtual int GetAppModalDialogButtons() const = 0;
 
   // Shows the dialog.
   virtual void ShowAppModalDialog() = 0;

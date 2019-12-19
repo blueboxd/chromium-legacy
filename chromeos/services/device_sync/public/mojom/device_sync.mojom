@@ -161,7 +161,7 @@ interface DeviceSync {
   // all of the user's devices.
   //
   // TODO(https://crbug.com/1019206): Remove this function when v1 DeviceSync
-  // is deprecated.
+  // is disabled.
   SetSoftwareFeatureState(
       string device_public_key,
       chromeos.multidevice.mojom.SoftwareFeature software_feature,
@@ -189,7 +189,7 @@ interface DeviceSync {
   // the reason for failure along with a null response.
   //
   // TODO(https://crbug.com/1019206): Remove this function when v1 DeviceSync
-  // is deprecated.
+  // is disabled.
   FindEligibleDevices(
       chromeos.multidevice.mojom.SoftwareFeature software_feature) =>
           (NetworkRequestResult result_code,

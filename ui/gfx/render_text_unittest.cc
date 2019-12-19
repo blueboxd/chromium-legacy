@@ -24,7 +24,10 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "cc/paint/paint_record.h"
+#include "cc/paint/paint_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkFontStyle.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkTypeface.h"
@@ -269,18 +272,31 @@ Range LineCharRange(const internal::Line& line) {
                line.segments.front().char_range.end());
 }
 
+struct GlyphCountAndColor {
+  size_t glyph_count = 0;
+  SkColor color = SK_ColorBLACK;
+};
+
+class TextLog {
+ public:
+  TextLog(PointF origin, std::vector<uint16_t> glyphs, SkColor color)
+      : origin_(origin), glyphs_(glyphs), color_(color) {}
+  TextLog(const TextLog&) = default;
+
+  PointF origin() const { return origin_; }
+  SkColor color() const { return color_; }
+  const std::vector<uint16_t>& glyphs() const { return glyphs_; }
+
+ private:
+  const PointF origin_;
+  const std::vector<uint16_t> glyphs_;
+  const SkColor color_ = SK_ColorTRANSPARENT;
+};
+
 // The class which records the drawing operations so that the test case can
 // verify where exactly the glyphs are drawn.
 class TestSkiaTextRenderer : public internal::SkiaTextRenderer {
  public:
-  struct TextLog {
-    TextLog() : glyph_count(0u), color(SK_ColorTRANSPARENT) {}
-    PointF origin;
-    size_t glyph_count;
-    std::vector<uint16_t> glyphs;
-    SkColor color;
-  };
-
   explicit TestSkiaTextRenderer(Canvas* canvas)
       : internal::SkiaTextRenderer(canvas) {}
   ~TestSkiaTextRenderer() override {}
@@ -291,30 +307,64 @@ class TestSkiaTextRenderer : public internal::SkiaTextRenderer {
   }
 
  private:
-  // internal::SkiaTextRenderer:
+  // internal::SkiaTextRenderer overrides:
   void DrawPosText(const SkPoint* pos,
                    const uint16_t* glyphs,
                    size_t glyph_count) override {
-    TextLog log_entry;
-    log_entry.glyph_count = glyph_count;
-    if (glyph_count > 0) {
-      log_entry.origin =
+    if (glyph_count) {
+      PointF origin =
           PointF(SkScalarToFloat(pos[0].x()), SkScalarToFloat(pos[0].y()));
       for (size_t i = 1U; i < glyph_count; ++i) {
-        log_entry.origin.SetToMin(
+        origin.SetToMin(
             PointF(SkScalarToFloat(pos[i].x()), SkScalarToFloat(pos[i].y())));
       }
-      log_entry.glyphs = std::vector<uint16_t>(glyphs, glyphs + glyph_count);
+      std::vector<uint16_t> run_glyphs(glyphs, glyphs + glyph_count);
+      SkColor color =
+          test::RenderTextTestApi::GetRendererPaint(this).getColor();
+      text_log_.push_back(TextLog(origin, std::move(run_glyphs), color));
     }
-    log_entry.color =
-        test::RenderTextTestApi::GetRendererPaint(this).getColor();
-    text_log_.push_back(log_entry);
+
     internal::SkiaTextRenderer::DrawPosText(pos, glyphs, glyph_count);
   }
 
   std::vector<TextLog> text_log_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSkiaTextRenderer);
+};
+
+class TestRenderTextCanvas : public SkCanvas {
+ public:
+  TestRenderTextCanvas(int width, int height) : SkCanvas(width, height) {}
+
+  // SkCanvas overrides:
+  void onDrawTextBlob(const SkTextBlob* blob,
+                      SkScalar x,
+                      SkScalar y,
+                      const SkPaint& paint) override {
+    PointF origin = PointF(SkScalarToFloat(x), SkScalarToFloat(y));
+    std::vector<uint16_t> glyphs;
+    if (blob) {
+      SkTextBlob::Iter::Run run;
+      for (SkTextBlob::Iter it(*blob); it.next(&run);) {
+        auto run_glyphs =
+            base::span<const uint16_t>(run.fGlyphIndices, run.fGlyphCount);
+        glyphs.insert(glyphs.end(), run_glyphs.begin(), run_glyphs.end());
+      }
+    }
+    text_log_.push_back(TextLog(origin, std::move(glyphs), paint.getColor()));
+
+    SkCanvas::onDrawTextBlob(blob, x, y, paint);
+  }
+
+  void GetTextLogAndReset(std::vector<TextLog>* text_log) {
+    text_log_.swap(*text_log);
+    text_log_.clear();
+  }
+
+  const std::vector<TextLog>& text_log() const { return text_log_; }
+
+ private:
+  std::vector<TextLog> text_log_;
 };
 
 // Given a buffer to test against, this can be used to test various areas of the
@@ -383,6 +433,22 @@ class RenderTextTest : public testing::Test {
 
   void DrawVisualText(Range selection = {}) {
     test_api_->DrawVisualText(renderer(), selection);
+    renderer()->GetTextLogAndReset(&text_log_);
+  }
+
+  void Draw(bool select_all = false) {
+    constexpr int kCanvasWidth = 1200;
+    constexpr int kCanvasHeight = 400;
+
+    cc::PaintRecorder recorder;
+    Canvas canvas(recorder.beginRecording(kCanvasWidth, kCanvasHeight), 1.0f);
+    test_api_->Draw(&canvas, select_all);
+    sk_sp<cc::PaintRecord> record = recorder.finishRecordingAsPicture();
+
+    TestRenderTextCanvas test_canvas(kCanvasWidth, kCanvasHeight);
+    record->Playback(&test_canvas);
+
+    test_canvas.GetTextLogAndReset(&text_log_);
   }
 
   const internal::TextRunList* GetHarfBuzzRunList() const {
@@ -558,6 +624,16 @@ class RenderTextTest : public testing::Test {
   Canvas* canvas() { return &canvas_; }
   TestSkiaTextRenderer* renderer() { return &renderer_; }
   test::RenderTextTestApi* test_api() { return test_api_.get(); }
+  const std::vector<TextLog>& text_log() const { return text_log_; }
+
+  void ExpectTextLog(std::vector<GlyphCountAndColor> runs) {
+    EXPECT_EQ(runs.size(), text_log_.size());
+    const size_t min_size = std::min(runs.size(), text_log_.size());
+    for (size_t i = 0; i < min_size; ++i) {
+      EXPECT_EQ(runs[i].color, text_log_[i].color());
+      EXPECT_EQ(runs[i].glyph_count, text_log_[i].glyphs().size());
+    }
+  }
 
  private:
   // Needed to bypass DCHECK in GetFallbackFont.
@@ -565,6 +641,7 @@ class RenderTextTest : public testing::Test {
 
   std::unique_ptr<RenderTextHarfBuzz> render_text_;
   std::unique_ptr<test::RenderTextTestApi> test_api_;
+  std::vector<TextLog> text_log_;
   Canvas canvas_;
   TestSkiaTextRenderer renderer_;
 
@@ -723,12 +800,10 @@ TEST_F(RenderTextTest, ApplyStyleGrapheme) {
   render_text->SetText(WideToUTF16(L"\u0065\u0301"));
   render_text->ApplyStyle(TEXT_STYLE_ITALIC, true, gfx::Range(1, 2));
   render_text->ApplyStyle(TEXT_STYLE_UNDERLINE, true, gfx::Range(0, 1));
-  DrawVisualText();
+  Draw();
 
   // Ensures that the whole grapheme is drawn with the same style.
-  std::vector<TestSkiaTextRenderer::TextLog> text_log;
-  renderer()->GetTextLogAndReset(&text_log);
-  EXPECT_EQ(1u, text_log.size());
+  ExpectTextLog({{1}});
 }
 
 TEST_F(RenderTextTest, ApplyStyleMultipleGraphemes) {
@@ -737,45 +812,30 @@ TEST_F(RenderTextTest, ApplyStyleMultipleGraphemes) {
   // Apply the style in the middle of a grapheme.
   gfx::Range range(1, 3);
   render_text->ApplyStyle(TEXT_STYLE_ITALIC, true, range);
-  DrawVisualText();
+  Draw();
 
   EXPECT_TRUE(test_api()->styles()[TEXT_STYLE_ITALIC].EqualsForTesting(
       {{0, false}, {1, true}, {3, false}}));
 
   // Ensures that the style of the grapheme is the style at its first character.
-  std::vector<TestSkiaTextRenderer::TextLog> text_log;
-  renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(3u, text_log.size());
-  EXPECT_EQ(1U, text_log[0].glyph_count);
-  EXPECT_EQ(2U, text_log[1].glyph_count);
-  EXPECT_EQ(1U, text_log[2].glyph_count);
+  ExpectTextLog({{1}, {2}, {1}});
 }
 
 TEST_F(RenderTextTest, ApplyColorSurrogatePair) {
   RenderText* render_text = GetRenderText();
   render_text->SetText(WideToUTF16(L"x\U0001F601x"));
   render_text->ApplyColor(SK_ColorRED, Range(2, 3));
-  DrawVisualText();
+  Draw();
 
   // Ensures that the color is not applied since it is in the middle of a
   // surrogate pair.
-  std::vector<TestSkiaTextRenderer::TextLog> text_log;
-  renderer()->GetTextLogAndReset(&text_log);
   // There is three runs since the codepoints are not in the same script.
-  ASSERT_EQ(3u, text_log.size());
-  EXPECT_EQ(SK_ColorBLACK, text_log[0].color);
-  EXPECT_EQ(SK_ColorBLACK, text_log[1].color);
-  EXPECT_EQ(SK_ColorBLACK, text_log[2].color);
+  ExpectTextLog({{1}, {1}, {1}});
 
-  // Obscure the text.
+  // Obscure the text should renders characters with the same colors.
   render_text->SetObscured(true);
-  DrawVisualText();
-
-  // Should be the same colors.
-  renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(1u, text_log.size());
-  EXPECT_EQ(3U, text_log[0].glyph_count);
-  EXPECT_EQ(SK_ColorBLACK, text_log[0].color);
+  Draw();
+  ExpectTextLog({{3}});
 }
 
 TEST_F(RenderTextTest, ApplyColorLongEmoji) {
@@ -789,65 +849,53 @@ TEST_F(RenderTextTest, ApplyColorLongEmoji) {
 
   render_text->ApplyColor(SK_ColorRED, Range(0, 2));
   render_text->ApplyColor(SK_ColorBLUE, Range(8, 13));
-  DrawVisualText();
+  Draw();
 
   // Ensures that the color of the emoji is the color at its first character.
-  std::vector<TestSkiaTextRenderer::TextLog> text_log;
-  renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(3u, text_log.size());
-  EXPECT_EQ(SK_ColorRED, text_log[0].color);
-  EXPECT_EQ(SK_ColorBLACK, text_log[1].color);
-  EXPECT_EQ(SK_ColorBLUE, text_log[2].color);
+  ASSERT_EQ(3u, text_log().size());
+  EXPECT_EQ(SK_ColorRED, text_log()[0].color());
+  EXPECT_EQ(SK_ColorBLACK, text_log()[1].color());
+  EXPECT_EQ(SK_ColorBLUE, text_log()[2].color());
 
   // Reset the color.
   render_text->SetColor(SK_ColorBLACK);
-  DrawVisualText();
+  Draw();
 
-  renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(1u, text_log.size());
-  EXPECT_EQ(SK_ColorBLACK, text_log[0].color);
+  // The amount of glyphs depend on the font. If the font supports the emoji,
+  // the amount of glyph is 1, otherwise it vary.
+  ASSERT_EQ(1u, text_log().size());
+  EXPECT_EQ(SK_ColorBLACK, text_log()[0].color());
 }
 
 TEST_F(RenderTextTest, ApplyColorObscuredEmoji) {
   RenderText* render_text = GetRenderText();
   render_text->SetText(WideToUTF16(L"\U0001F628\U0001F628\U0001F628"));
-
   render_text->ApplyColor(SK_ColorRED, Range(0, 2));
   render_text->ApplyColor(SK_ColorBLUE, Range(4, 5));
-  DrawVisualText();
+
+  const std::vector<GlyphCountAndColor> kExpectedTextLog =
+      {{1, SK_ColorRED}, {1, SK_ColorBLACK}, {1, SK_ColorBLUE}};
 
   // Ensures that colors are applied.
-  std::vector<TestSkiaTextRenderer::TextLog> text_log;
-  renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(3u, text_log.size());
-  EXPECT_EQ(SK_ColorRED, text_log[0].color);
-  EXPECT_EQ(SK_ColorBLACK, text_log[1].color);
-  EXPECT_EQ(SK_ColorBLUE, text_log[2].color);
+  Draw();
+  ExpectTextLog(kExpectedTextLog);
 
   // Obscure the text.
   render_text->SetObscured(true);
-  DrawVisualText();
 
   // The obscured text (layout text) no longer contains surrogate pairs.
   EXPECT_EQ(render_text->text().size(), 2 * test_api()->GetLayoutText().size());
 
-  // Should give the same colors.
-  renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(3u, text_log.size());
-  EXPECT_EQ(SK_ColorRED, text_log[0].color);
-  EXPECT_EQ(SK_ColorBLACK, text_log[1].color);
-  EXPECT_EQ(SK_ColorBLUE, text_log[2].color);
+  // Obscured text should give the same colors.
+  Draw();
+  ExpectTextLog(kExpectedTextLog);
 
   for (size_t i = 0; i < render_text->text().size(); ++i) {
     render_text->RenderText::SetObscuredRevealIndex(i);
-    DrawVisualText();
 
-    // Should give the same colors.
-    renderer()->GetTextLogAndReset(&text_log);
-    ASSERT_EQ(3u, text_log.size());
-    EXPECT_EQ(SK_ColorRED, text_log[0].color);
-    EXPECT_EQ(SK_ColorBLACK, text_log[1].color);
-    EXPECT_EQ(SK_ColorBLUE, text_log[2].color);
+    // Revealed codepoints should give the same colors.
+    Draw();
+    ExpectTextLog(kExpectedTextLog);
   }
 }
 
@@ -859,12 +907,9 @@ TEST_F(RenderTextTest, ApplyColorArabicDiacritics) {
   render_text->ApplyColor(SK_ColorRED, Range(0, 1));
   render_text->ApplyColor(SK_ColorBLACK, Range(1, 2));
   render_text->ApplyColor(SK_ColorBLUE, Range(2, 3));
-  DrawVisualText();
-
-  std::vector<TestSkiaTextRenderer::TextLog> text_log;
-  renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(1u, text_log.size());
-  EXPECT_EQ(SK_ColorRED, text_log[0].color);
+  Draw();
+  ASSERT_EQ(1u, text_log().size());
+  EXPECT_EQ(SK_ColorRED, text_log()[0].color());
 }
 
 TEST_F(RenderTextTest, ApplyColorArabicLigature) {
@@ -875,21 +920,18 @@ TEST_F(RenderTextTest, ApplyColorArabicLigature) {
   // Render the isolated form of the first glyph.
   RenderText* render_text = GetRenderText();
   render_text->SetText(WideToUTF16(L"\u0628"));
-  DrawVisualText();
-  std::vector<TestSkiaTextRenderer::TextLog> text_log;
-  renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(1u, text_log.size());
-  ASSERT_EQ(1u, text_log[0].glyph_count);
-  uint16_t isolated_first_glyph = text_log[0].glyphs[0];
+  Draw();
+  ASSERT_EQ(1u, text_log().size());
+  ASSERT_EQ(1u, text_log()[0].glyphs().size());
+  uint16_t isolated_first_glyph = text_log()[0].glyphs()[0];
 
   // Render a pair of glyphs (initial form and final form).
   render_text->SetText(WideToUTF16(L"\u0628\u0645"));
-  DrawVisualText();
-  renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(1u, text_log.size());
-  ASSERT_LE(2u, text_log[0].glyph_count);
-  uint16_t initial_first_glyph = text_log[0].glyphs[0];
-  uint16_t final_second_glyph = text_log[0].glyphs[1];
+  Draw();
+  ASSERT_EQ(1u, text_log().size());
+  ASSERT_LE(2u, text_log()[0].glyphs().size());
+  uint16_t initial_first_glyph = text_log()[0].glyphs()[0];
+  uint16_t final_second_glyph = text_log()[0].glyphs()[1];
 
   // A ligature is applied between glyphs and the two glyphs (isolated and
   // initial form) are displayed differently.
@@ -902,21 +944,20 @@ TEST_F(RenderTextTest, ApplyColorArabicLigature) {
   // see: https://w3c.github.io/alreq/#h_styling_individual_letters
   render_text->ApplyColor(SK_ColorRED, Range(0, 1));
   render_text->ApplyColor(SK_ColorBLACK, Range(1, 2));
-  DrawVisualText();
-  renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(2u, text_log.size());
-  ASSERT_LE(1u, text_log[0].glyph_count);
-  ASSERT_EQ(1u, text_log[1].glyph_count);
-  uint16_t colored_first_glyph = text_log[1].glyphs[0];
-  uint16_t colored_second_glyph = text_log[0].glyphs[0];
+  Draw();
+  ASSERT_EQ(2u, text_log().size());
+  ASSERT_LE(1u, text_log()[0].glyphs().size());
+  ASSERT_EQ(1u, text_log()[1].glyphs().size());
+  uint16_t colored_first_glyph = text_log()[1].glyphs()[0];
+  uint16_t colored_second_glyph = text_log()[0].glyphs()[0];
 
   // Glyphs should be the same with and without color.
   EXPECT_EQ(initial_first_glyph, colored_first_glyph);
   EXPECT_EQ(final_second_glyph, colored_second_glyph);
 
   // Colors should be applied.
-  EXPECT_EQ(SK_ColorRED, text_log[0].color);
-  EXPECT_EQ(SK_ColorBLACK, text_log[1].color);
+  EXPECT_EQ(SK_ColorRED, text_log()[0].color());
+  EXPECT_EQ(SK_ColorBLACK, text_log()[1].color());
 }
 
 TEST_F(RenderTextTest, AppendTextKeepsStyles) {
@@ -959,35 +1000,19 @@ TEST_F(RenderTextTest, SelectRangeColored) {
   render_text->SetText(ASCIIToUTF16("abcdef"));
   render_text->SetColor(SK_ColorBLACK);
   render_text->set_selection_color(SK_ColorRED);
-
-  std::vector<TestSkiaTextRenderer::TextLog> text_log;
+  render_text->set_focused(true);
 
   render_text->SelectRange(Range(0, 1));
-  DrawVisualText();
-  renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(2u, text_log.size());
-  EXPECT_EQ(1u, text_log[0].glyph_count);
-  EXPECT_EQ(5u, text_log[1].glyph_count);
-  EXPECT_EQ(SK_ColorRED, text_log[0].color);
-  EXPECT_EQ(SK_ColorBLACK, text_log[1].color);
+  Draw();
+  ExpectTextLog({{1, SK_ColorRED}, {5, SK_ColorBLACK}});
 
   render_text->SelectRange(Range(1, 3));
-  DrawVisualText();
-  renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(3u, text_log.size());
-  EXPECT_EQ(1u, text_log[0].glyph_count);
-  EXPECT_EQ(2u, text_log[1].glyph_count);
-  EXPECT_EQ(3u, text_log[2].glyph_count);
-  EXPECT_EQ(SK_ColorBLACK, text_log[0].color);
-  EXPECT_EQ(SK_ColorRED, text_log[1].color);
-  EXPECT_EQ(SK_ColorBLACK, text_log[2].color);
+  Draw();
+  ExpectTextLog({{1, SK_ColorBLACK}, {2, SK_ColorRED}, {3, SK_ColorBLACK}});
 
   render_text->ClearSelection();
-  DrawVisualText();
-  renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(1u, text_log.size());
-  EXPECT_EQ(6u, text_log[0].glyph_count);
-  EXPECT_EQ(SK_ColorBLACK, text_log[0].color);
+  Draw();
+  ExpectTextLog({{6}});
 }
 
 TEST_F(RenderTextTest, SelectRangeColoredGrapheme) {
@@ -995,88 +1020,57 @@ TEST_F(RenderTextTest, SelectRangeColoredGrapheme) {
   render_text->SetText(WideToUTF16(L"x\u0065\u0301y"));
   render_text->SetColor(SK_ColorBLACK);
   render_text->set_selection_color(SK_ColorRED);
-
-  std::vector<TestSkiaTextRenderer::TextLog> text_log;
+  render_text->set_focused(true);
 
   render_text->SelectRange(Range(0, 1));
-  DrawVisualText();
-  renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(2u, text_log.size());
-  EXPECT_EQ(1u, text_log[0].glyph_count);
-  EXPECT_EQ(2u, text_log[1].glyph_count);
-  EXPECT_EQ(SK_ColorRED, text_log[0].color);
-  EXPECT_EQ(SK_ColorBLACK, text_log[1].color);
+  Draw();
+  ExpectTextLog({{1, SK_ColorRED}, {2, SK_ColorBLACK}});
+
+  render_text->SelectRange(Range(1, 2));
+  Draw();
+  ExpectTextLog({{1, SK_ColorBLACK}, {1, SK_ColorRED}, {1, SK_ColorBLACK}});
 
   render_text->SelectRange(Range(2, 3));
-  DrawVisualText();
-  renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(1u, text_log.size());
-  EXPECT_EQ(3u, text_log[0].glyph_count);
-  EXPECT_EQ(SK_ColorBLACK, text_log[0].color);
+  Draw();
+  ExpectTextLog({{1, SK_ColorBLACK}, {1, SK_ColorRED}, {1, SK_ColorBLACK}});
 
   render_text->SelectRange(Range(2, 4));
-  DrawVisualText();
-  renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(2u, text_log.size());
-  EXPECT_EQ(2u, text_log[0].glyph_count);
-  EXPECT_EQ(1u, text_log[1].glyph_count);
-  EXPECT_EQ(SK_ColorBLACK, text_log[0].color);
-  EXPECT_EQ(SK_ColorRED, text_log[1].color);
+  Draw();
+  ExpectTextLog({{1, SK_ColorBLACK}, {2, SK_ColorRED}});
 }
 
 TEST_F(RenderTextTest, SetCompositionRangeColored) {
   RenderText* render_text = GetRenderText();
   render_text->SetText(ASCIIToUTF16("abcdef"));
 
-  std::vector<TestSkiaTextRenderer::TextLog> text_log;
-
   render_text->SetCompositionRange(Range(0, 1));
-  DrawVisualText();
-  renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(2u, text_log.size());
-  EXPECT_EQ(1u, text_log[0].glyph_count);
-  EXPECT_EQ(5u, text_log[1].glyph_count);
+  Draw();
+  ExpectTextLog({{1}, {5}});
 
   render_text->SetCompositionRange(Range(1, 3));
-  DrawVisualText();
-  renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(3u, text_log.size());
-  EXPECT_EQ(1u, text_log[0].glyph_count);
-  EXPECT_EQ(2u, text_log[1].glyph_count);
-  EXPECT_EQ(3u, text_log[2].glyph_count);
+  Draw();
+  ExpectTextLog({{1}, {2}, {3}});
 
   render_text->SetCompositionRange(Range::InvalidRange());
-  DrawVisualText();
-  renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(1u, text_log.size());
-  EXPECT_EQ(6u, text_log[0].glyph_count);
+  Draw();
+  ExpectTextLog({{6}});
 }
 
 TEST_F(RenderTextTest, SetCompositionRangeColoredGrapheme) {
   RenderText* render_text = GetRenderText();
-  render_text->SetText(WideToUTF16(L"x\u0065\u0301y"));
-
-  std::vector<TestSkiaTextRenderer::TextLog> text_log;
+  render_text->SetText(UTF8ToUTF16("x\u0065\u0301y"));
 
   render_text->SetCompositionRange(Range(0, 1));
-  DrawVisualText();
-  renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(2u, text_log.size());
-  EXPECT_EQ(1u, text_log[0].glyph_count);
-  EXPECT_EQ(2u, text_log[1].glyph_count);
+  Draw();
+  ExpectTextLog({{1}, {2}});
 
   render_text->SetCompositionRange(Range(2, 3));
-  DrawVisualText();
-  renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(1u, text_log.size());
-  EXPECT_EQ(3u, text_log[0].glyph_count);
+  Draw();
+  ExpectTextLog({{3}});
 
   render_text->SetCompositionRange(Range(2, 4));
-  DrawVisualText();
-  renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(2u, text_log.size());
-  EXPECT_EQ(2u, text_log[0].glyph_count);
-  EXPECT_EQ(1u, text_log[1].glyph_count);
+  Draw();
+  ExpectTextLog({{2}, {1}});
 }
 
 void TestVisualCursorMotionInObscuredField(
@@ -4884,26 +4878,24 @@ TEST_F(RenderTextTest, Multiline_NormalWidth) {
     EXPECT_EQ(kTestStrings[i].second_line_char_range,
               LineCharRange(test_api()->lines()[1]));
 
-    std::vector<TestSkiaTextRenderer::TextLog> text_log;
-    renderer()->GetTextLogAndReset(&text_log);
-
-    ASSERT_EQ(kTestStrings[i].run_lengths.size(), text_log.size());
+    ASSERT_EQ(kTestStrings[i].run_lengths.size(), text_log().size());
 
     // NOTE: this expectation compares the character length and glyph counts,
     // which isn't always equal. This is okay only because all the test
     // strings are simple (like, no compound characters nor UTF16-surrogate
     // pairs). Be careful in case more complicated test strings are added.
-    EXPECT_EQ(kTestStrings[i].run_lengths[0], text_log[0].glyph_count);
+    EXPECT_EQ(kTestStrings[i].run_lengths[0], text_log()[0].glyphs().size());
     const int second_line_start = kTestStrings[i].second_line_run_index;
     EXPECT_EQ(kTestStrings[i].run_lengths[second_line_start],
-              text_log[second_line_start].glyph_count);
-    EXPECT_LT(text_log[0].origin.y(), text_log[second_line_start].origin.y());
+              text_log()[second_line_start].glyphs().size());
+    EXPECT_LT(text_log()[0].origin().y(),
+              text_log()[second_line_start].origin().y());
     if (kTestStrings[i].is_ltr) {
-      EXPECT_EQ(0, text_log[0].origin.x());
-      EXPECT_EQ(0, text_log[second_line_start].origin.x());
+      EXPECT_EQ(0, text_log()[0].origin().x());
+      EXPECT_EQ(0, text_log()[second_line_start].origin().x());
     } else {
-      EXPECT_LT(0, text_log[0].origin.x());
-      EXPECT_LT(0, text_log[second_line_start].origin.x());
+      EXPECT_LT(0, text_log()[0].origin().x());
+      EXPECT_LT(0, text_log()[second_line_start].origin().x());
     }
   }
 }
@@ -5421,22 +5413,19 @@ TEST_F(RenderTextTest, HarfBuzz_HorizontalPositions) {
 
     DrawVisualText();
 
-    std::vector<TestSkiaTextRenderer::TextLog> text_log;
-    renderer()->GetTextLogAndReset(&text_log);
-
     const internal::TextRunList* run_list = GetHarfBuzzRunList();
     ASSERT_EQ(2U, run_list->size());
-    ASSERT_EQ(2U, text_log.size());
+    ASSERT_EQ(2U, text_log().size());
 
     // Verifies the DrawText happens in the visual order and left-to-right.
     // If the text is RTL, the logically first run should be drawn at last.
     EXPECT_EQ(
         run_list->runs()[run_list->logical_to_visual(0)]->shape.glyph_count,
-        text_log[0].glyph_count);
+        text_log()[0].glyphs().size());
     EXPECT_EQ(
         run_list->runs()[run_list->logical_to_visual(1)]->shape.glyph_count,
-        text_log[1].glyph_count);
-    EXPECT_LT(text_log[0].origin.x(), text_log[1].origin.x());
+        text_log()[1].glyphs().size());
+    EXPECT_LT(text_log()[0].origin().x(), text_log()[1].origin().x());
   }
 }
 
@@ -6498,19 +6487,12 @@ TEST_F(RenderTextTest, DISABLED_TextDoesClip) {
 TEST_F(RenderTextTest, ColorChange) {
   RenderText* render_text = GetRenderText();
   render_text->SetText(UTF8ToUTF16("x"));
-  DrawVisualText();
-
-  std::vector<TestSkiaTextRenderer::TextLog> text_log;
-  renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(1u, text_log.size());
-  EXPECT_EQ(SK_ColorBLACK, text_log[0].color);
+  Draw();
+  ExpectTextLog({{1, SK_ColorBLACK}});
 
   render_text->SetColor(SK_ColorRED);
-  DrawVisualText();
-  renderer()->GetTextLogAndReset(&text_log);
-
-  ASSERT_EQ(1u, text_log.size());
-  EXPECT_EQ(SK_ColorRED, text_log[0].color);
+  Draw();
+  ExpectTextLog({{1, SK_ColorRED}});
 }
 
 // Ensure style information propagates to the typeface on the text renderer.
@@ -7339,21 +7321,11 @@ TEST_F(RenderTextTest, FontSizeOverride) {
 
 TEST_F(RenderTextTest, DrawVisualText_WithSelection) {
   RenderText* render_text = GetRenderText();
-  render_text->SetText(UTF8ToUTF16("TheRedElephantIsEatingMyPumpkin"));
+  render_text->SetText(ASCIIToUTF16("TheRedElephantIsEatingMyPumpkin"));
   // Ensure selected text is drawn differently than unselected text.
   render_text->set_selection_color(SK_ColorRED);
   DrawVisualText({3, 14});
-
-  std::vector<TestSkiaTextRenderer::TextLog> text_log;
-  renderer()->GetTextLogAndReset(&text_log);
-
-  ASSERT_EQ(text_log.size(), 3u);
-  EXPECT_EQ(text_log[0].glyph_count, 3u);
-  EXPECT_EQ(text_log[0].color, SK_ColorBLACK);
-  EXPECT_EQ(text_log[1].glyph_count, 11u);
-  EXPECT_EQ(text_log[1].color, SK_ColorRED);
-  EXPECT_EQ(text_log[2].glyph_count, 17u);
-  EXPECT_EQ(text_log[2].color, SK_ColorBLACK);
+  ExpectTextLog({{3, SK_ColorBLACK}, {11, SK_ColorRED}, {17, SK_ColorBLACK}});
 }
 
 TEST_F(RenderTextTest, DrawVisualText_WithSelectionOnObcuredEmoji) {
@@ -7362,15 +7334,40 @@ TEST_F(RenderTextTest, DrawVisualText_WithSelectionOnObcuredEmoji) {
   render_text->SetObscured(true);
   render_text->set_selection_color(SK_ColorRED);
   DrawVisualText({4, 6});
+  ExpectTextLog({{2, SK_ColorBLACK}, {1, SK_ColorRED}});
+}
 
-  std::vector<TestSkiaTextRenderer::TextLog> text_log;
-  renderer()->GetTextLogAndReset(&text_log);
+TEST_F(RenderTextTest, DrawSelectAll) {
+  const std::vector<GlyphCountAndColor> kUnselected = {
+      {4, SK_ColorBLACK}};
+  const std::vector<GlyphCountAndColor> kSelected = {
+      {4, SK_ColorRED}};
+  const std::vector<GlyphCountAndColor> kFocused = {
+      {1, SK_ColorBLACK}, {2, SK_ColorRED}, {1, SK_ColorBLACK}};
 
-  ASSERT_EQ(text_log.size(), 2u);
-  EXPECT_EQ(text_log[0].glyph_count, 2u);
-  EXPECT_EQ(text_log[0].color, SK_ColorBLACK);
-  EXPECT_EQ(text_log[1].glyph_count, 1u);
-  EXPECT_EQ(text_log[1].color, SK_ColorRED);
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(ASCIIToUTF16("Test"));
+  render_text->set_selection_color(SK_ColorRED);
+  render_text->SelectRange(Range(1, 3));
+
+  Draw(false);
+  ExpectTextLog(kUnselected);
+  Draw(true);
+  ExpectTextLog(kSelected);
+  Draw(false);
+  ExpectTextLog(kUnselected);
+
+  render_text->set_focused(true);
+  Draw(false);
+  ExpectTextLog(kFocused);
+  Draw(true);
+  ExpectTextLog(kSelected);
+
+  render_text->set_focused(false);
+  Draw(true);
+  ExpectTextLog(kSelected);
+  Draw(false);
+  ExpectTextLog(kUnselected);
 }
 
 }  // namespace gfx

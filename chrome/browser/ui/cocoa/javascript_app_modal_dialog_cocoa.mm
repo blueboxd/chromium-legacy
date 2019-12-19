@@ -118,20 +118,6 @@ void JavaScriptAppModalDialogCocoa::OnMojoDisconnect() {
 ////////////////////////////////////////////////////////////////////////////////
 // JavaScriptAppModalDialogCocoa, NativeAppModalDialog implementation:
 
-int JavaScriptAppModalDialogCocoa::GetAppModalDialogButtons() const {
-  // From the above, it is the case that if there is 1 button, it is always the
-  // OK button.  The second button, if it exists, is always the Cancel button.
-  switch (num_buttons_) {
-    case 1:
-      return ui::DIALOG_BUTTON_OK;
-    case 2:
-      return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-    default:
-      NOTREACHED();
-      return 0;
-  }
-}
-
 void JavaScriptAppModalDialogCocoa::ShowAppModalDialog() {
   is_showing_ = true;
 

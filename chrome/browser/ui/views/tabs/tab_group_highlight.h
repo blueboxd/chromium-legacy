@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_HIGHLIGHT_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_HIGHLIGHT_H_
 
-#include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "ui/views/view.h"
 
 class TabGroupViews;
@@ -15,9 +15,10 @@ class TabGroupViews;
 // positioned across all tabs in the group and painted by the tab strip.
 class TabGroupHighlight : public views::View {
  public:
-  TabGroupHighlight(TabGroupViews* tab_group_views, TabGroupId group);
+  TabGroupHighlight(TabGroupViews* tab_group_views,
+                    tab_groups::TabGroupId group);
 
-  TabGroupId group() const { return group_; }
+  tab_groups::TabGroupId group() const { return group_; }
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
@@ -28,7 +29,7 @@ class TabGroupHighlight : public views::View {
   SkPath GetPath() const;
 
   TabGroupViews* const tab_group_views_;
-  const TabGroupId group_;
+  const tab_groups::TabGroupId group_;
 
   DISALLOW_COPY_AND_ASSIGN(TabGroupHighlight);
 };

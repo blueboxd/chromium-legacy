@@ -58,17 +58,16 @@ void CreateAndSendMouseClick(aura::WindowTreeHost* host,
 AssistantCardElementView::AssistantCardElementView(
     AssistantViewDelegate* delegate,
     const AssistantCardElement* card_element)
-    : delegate_(delegate),
-      contents_(const_cast<AssistantCardElement*>(card_element)->contents()) {
+    : delegate_(delegate), card_element_(card_element) {
   InitLayout(card_element);
 
-  // We observe |contents_| to receive events pertaining to the underlying web
+  // We observe contents() to receive events pertaining to the underlying web
   // contents including auto-resize and suppressed navigation events.
-  contents_->AddObserver(this);
+  contents()->AddObserver(this);
 }
 
 AssistantCardElementView::~AssistantCardElementView() {
-  contents_->RemoveObserver(this);
+  contents()->RemoveObserver(this);
 }
 
 const char* AssistantCardElementView::GetClassName() const {
@@ -99,11 +98,11 @@ void AssistantCardElementView::AboutToRequestFocusFromTabTraversal(
     bool reverse) {
   // Focus in the web contents will be reset in FocusThroughTabTraversal().
   focused_node_rect_ = gfx::Rect();
-  contents_->FocusThroughTabTraversal(reverse);
+  contents()->FocusThroughTabTraversal(reverse);
 }
 
 void AssistantCardElementView::OnFocus() {
-  contents_->Focus();
+  contents()->Focus();
 }
 
 void AssistantCardElementView::OnGestureEvent(ui::GestureEvent* event) {
@@ -168,7 +167,7 @@ void AssistantCardElementView::ScrollRectToVisible(const gfx::Rect& rect) {
 }
 
 void AssistantCardElementView::DidAutoResizeView(const gfx::Size& new_size) {
-  contents_->GetView()->view()->SetPreferredSize(new_size);
+  contents()->GetView()->view()->SetPreferredSize(new_size);
 }
 
 void AssistantCardElementView::DidSuppressNavigation(
@@ -217,10 +216,14 @@ void AssistantCardElementView::InitLayout(
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   // Contents view.
-  AddChildView(contents_->GetView()->view());
+  AddChildView(contents()->GetView()->view());
 
   // OverrideDescription() doesn't work. Only names are read automatically.
   GetViewAccessibility().OverrideName(card_element->fallback());
+}
+
+content::NavigableContents* AssistantCardElementView::contents() {
+  return const_cast<AssistantCardElement*>(card_element_)->contents();
 }
 
 }  // namespace ash

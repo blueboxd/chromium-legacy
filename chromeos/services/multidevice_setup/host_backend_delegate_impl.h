@@ -77,8 +77,8 @@ class HostBackendDelegateImpl : public HostBackendDelegate,
 
   // Returns the device with either an Instance ID or encoded public key of |id|
   // in the list of synced devices. If no such device exists, returns null.
-  // TODO(https://crbug.com/1019206): When v1 DeviceSync is deprecated,
-  // only look up by Instance ID since all devices are guaranteed to have one.
+  // TODO(https://crbug.com/1019206): When v1 DeviceSync is disabled, only look
+  // up by Instance ID since all devices are guaranteed to have one.
   base::Optional<multidevice::RemoteDeviceRef> FindDeviceById(
       const std::string& id) const;
 

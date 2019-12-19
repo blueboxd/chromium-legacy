@@ -1,4 +1,12 @@
 'use strict';
+function createDOMException(func) {
+  return new DOMException(
+      `Failed to execute '${func}' on 'BluetoothRemoteGATTDescriptor': ` +
+      `GATT Server is disconnected. Cannot perform GATT operations. ` +
+      `(Re)connect first with \`device.gatt.connect\`.`,
+      'NetworkError');
+}
+
 bluetooth_test(() => {
   let val = new Uint8Array([1]);
   return setBluetoothFakeAdapter('DisconnectingHealthThermometerAdapter')
@@ -20,9 +28,6 @@ bluetooth_test(() => {
             .then(
                 () => assert_promise_rejects_with_message(
                     user_description.CALLS([readValue()|writeValue(val)]),
-                    new DOMException(
-                      'GATT Server is disconnected. Cannot perform GATT operations. ' +
-                        '(Re)connect first with `device.gatt.connect`.',
-                        'NetworkError')));
+                    createDOMException('FUNCTION_NAME')));
       });
 }, 'Device disconnects before FUNCTION_NAME. Reject with NetworkError.');

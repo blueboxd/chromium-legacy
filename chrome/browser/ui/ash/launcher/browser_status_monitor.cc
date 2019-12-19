@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
+#include "chrome/browser/ui/ash/launcher/app_service_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/common/chrome_features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -80,12 +82,15 @@ class BrowserStatusMonitor::LocalWebContentsObserver
 BrowserStatusMonitor::BrowserStatusMonitor(
     ChromeLauncherController* launcher_controller)
     : launcher_controller_(launcher_controller),
-      browser_tab_strip_tracker_(this, this, this),
-      app_service_instance_helper_(
-          std::make_unique<AppServiceInstanceRegistryHelper>(
-              launcher_controller->profile())) {
+      browser_tab_strip_tracker_(this, this, this) {
   DCHECK(launcher_controller_);
-  DCHECK(app_service_instance_helper_);
+
+  if (base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry)) {
+    app_service_instance_helper_ =
+        launcher_controller->app_service_app_window_controller()
+            ->app_service_instance_helper();
+    DCHECK(app_service_instance_helper_);
+  }
 }
 
 BrowserStatusMonitor::~BrowserStatusMonitor() {
@@ -138,7 +143,8 @@ void BrowserStatusMonitor::OnBrowserRemoved(Browser* browser) {
     RemoveV1AppFromShelf(browser);
 
   UpdateBrowserItemState();
-  app_service_instance_helper_->OnBrowserRemoved();
+  if (app_service_instance_helper_)
+    app_service_instance_helper_->OnBrowserRemoved();
 }
 
 void BrowserStatusMonitor::OnTabStripModelChanged(
@@ -231,7 +237,10 @@ void BrowserStatusMonitor::OnActiveTabChanged(
     SetShelfIDForBrowserWindowContents(browser, new_contents);
   }
 
-  app_service_instance_helper_->OnActiveTabChanged(old_contents, new_contents);
+  if (app_service_instance_helper_) {
+    app_service_instance_helper_->OnActiveTabChanged(old_contents,
+                                                     new_contents);
+  }
 }
 
 void BrowserStatusMonitor::OnTabReplaced(TabStripModel* tab_strip_model,
@@ -251,19 +260,22 @@ void BrowserStatusMonitor::OnTabReplaced(TabStripModel* tab_strip_model,
 
   AddWebContentsObserver(new_contents);
 
-  app_service_instance_helper_->OnTabReplaced(old_contents, new_contents);
+  if (app_service_instance_helper_)
+    app_service_instance_helper_->OnTabReplaced(old_contents, new_contents);
 }
 
 void BrowserStatusMonitor::OnTabInserted(content::WebContents* contents) {
   UpdateAppItemState(contents, false /*remove*/);
   AddWebContentsObserver(contents);
-  app_service_instance_helper_->OnTabInserted(contents);
+  if (app_service_instance_helper_)
+    app_service_instance_helper_->OnTabInserted(contents);
 }
 
 void BrowserStatusMonitor::OnTabClosing(content::WebContents* contents) {
   UpdateAppItemState(contents, true /*remove*/);
   RemoveWebContentsObserver(contents);
-  app_service_instance_helper_->OnTabClosing(contents);
+  if (app_service_instance_helper_)
+    app_service_instance_helper_->OnTabClosing(contents);
 }
 
 void BrowserStatusMonitor::AddWebContentsObserver(

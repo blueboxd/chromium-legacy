@@ -84,6 +84,7 @@ function touchScroll(delta, x, y, direction) {
 promise_test (async t => {
   t.add_cleanup(cleanup);
 
+  await mouseClickOn(10, 10);
   await wheelScroll(250 /* pixels to scroll */, 50, 50, 'down');
   await waitForAnimationEnd(() => { return scroller.scrollTop; }, 500, 15);
   assert_approx_equals(scroller.scrollTop, 400, 1);
@@ -109,6 +110,7 @@ promise_test (async t => {
 promise_test (async t => {
   t.add_cleanup(cleanup);
 
+  await mouseClickOn(10, 10);
   await touchScroll(250 /* delta */, 400, 400, 'down');
   await waitForAnimationEnd(() => { return scroller.scrollTop; }, 500, 15);
   assert_equals(scroller.scrollTop, 400);

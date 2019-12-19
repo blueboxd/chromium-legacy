@@ -45,12 +45,50 @@ TypeToProtozeroEnum(BeginFrameArgs::BeginFrameArgsType type) {
 constexpr uint64_t BeginFrameArgs::kInvalidFrameNumber;
 constexpr uint64_t BeginFrameArgs::kStartingFrameNumber;
 
+BeginFrameId::BeginFrameId()
+    : source_id(0), sequence_number(BeginFrameArgs::kInvalidFrameNumber) {}
+
+BeginFrameId::BeginFrameId(const BeginFrameId& id) = default;
+BeginFrameId& BeginFrameId::operator=(const BeginFrameId& id) = default;
+
+BeginFrameId::BeginFrameId(uint64_t source_id, uint64_t sequence_number)
+    : source_id(source_id), sequence_number(sequence_number) {}
+
+bool BeginFrameId::operator<(const BeginFrameId& other) const {
+  if (source_id == other.source_id)
+    return (sequence_number < other.sequence_number);
+  return (source_id < other.source_id);
+}
+
+bool BeginFrameId::operator==(const BeginFrameId& other) const {
+  return (source_id == other.source_id &&
+          sequence_number == other.sequence_number);
+}
+bool BeginFrameId::operator!=(const BeginFrameId& other) const {
+  return !(*this == other);
+}
+
+bool BeginFrameId::IsNextInSequenceTo(const BeginFrameId& previous) const {
+  return (source_id == previous.source_id &&
+          sequence_number > previous.sequence_number);
+}
+
+bool BeginFrameId::IsSequenceValid() const {
+  return (BeginFrameArgs::kInvalidFrameNumber != sequence_number);
+}
+
+std::string BeginFrameId::ToString() const {
+  base::trace_event::TracedValueJSON value;
+  value.SetInteger("source_id", source_id);
+  value.SetInteger("sequence_number", sequence_number);
+  return value.ToJSON();
+}
+
 BeginFrameArgs::BeginFrameArgs()
     : frame_time(base::TimeTicks::Min()),
       deadline(base::TimeTicks::Min()),
       interval(base::TimeDelta::FromMicroseconds(-1)),
-      source_id(0),
-      sequence_number(kInvalidFrameNumber),
+      frame_id(BeginFrameId(0, kInvalidFrameNumber)),
       type(BeginFrameArgs::INVALID),
       on_critical_path(true),
       animate_only(false) {}
@@ -64,8 +102,7 @@ BeginFrameArgs::BeginFrameArgs(uint64_t source_id,
     : frame_time(frame_time),
       deadline(deadline),
       interval(interval),
-      source_id(source_id),
-      sequence_number(sequence_number),
+      frame_id(BeginFrameId(source_id, sequence_number)),
       type(type),
       on_critical_path(true),
       animate_only(false) {
@@ -105,8 +142,8 @@ BeginFrameArgs::AsValue() const {
 void BeginFrameArgs::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetString("type", "BeginFrameArgs");
   state->SetString("subtype", TypeToString(type));
-  state->SetInteger("source_id", source_id);
-  state->SetInteger("sequence_number", sequence_number);
+  state->SetInteger("source_id", frame_id.source_id);
+  state->SetInteger("sequence_number", frame_id.sequence_number);
   state->SetDouble("frame_time_us", frame_time.since_origin().InMicroseconds());
   state->SetDouble("deadline_us", deadline.since_origin().InMicroseconds());
   state->SetDouble("interval_us", interval.InMicroseconds());
@@ -120,8 +157,8 @@ void BeginFrameArgs::AsValueInto(base::trace_event::TracedValue* state) const {
 void BeginFrameArgs::AsProtozeroInto(
     perfetto::protos::pbzero::BeginFrameArgs* state) const {
   state->set_type(TypeToProtozeroEnum(type));
-  state->set_source_id(source_id);
-  state->set_sequence_number(sequence_number);
+  state->set_source_id(frame_id.source_id);
+  state->set_sequence_number(frame_id.sequence_number);
   state->set_frame_time_us(frame_time.since_origin().InMicroseconds());
   state->set_deadline_us(deadline.since_origin().InMicroseconds());
   state->set_interval_delta_us(interval.InMicroseconds());
@@ -147,14 +184,11 @@ std::string BeginFrameArgs::ToString() const {
   return value.ToJSON();
 }
 
-BeginFrameAck::BeginFrameAck()
-    : source_id(0),
-      sequence_number(BeginFrameArgs::kInvalidFrameNumber),
-      has_damage(false) {}
+BeginFrameAck::BeginFrameAck() : has_damage(false) {}
 
 BeginFrameAck::BeginFrameAck(const BeginFrameArgs& args, bool has_damage)
-    : BeginFrameAck(args.source_id,
-                    args.sequence_number,
+    : BeginFrameAck(args.frame_id.source_id,
+                    args.frame_id.sequence_number,
                     has_damage,
                     args.trace_id) {}
 
@@ -162,11 +196,10 @@ BeginFrameAck::BeginFrameAck(uint64_t source_id,
                              uint64_t sequence_number,
                              bool has_damage,
                              int64_t trace_id)
-    : source_id(source_id),
-      sequence_number(sequence_number),
+    : frame_id(BeginFrameId(source_id, sequence_number)),
       trace_id(trace_id),
       has_damage(has_damage) {
-  DCHECK_LT(BeginFrameArgs::kInvalidFrameNumber, sequence_number);
+  DCHECK(frame_id.IsSequenceValid());
 }
 
 // static

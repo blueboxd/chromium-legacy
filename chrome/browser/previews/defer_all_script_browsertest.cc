@@ -534,9 +534,7 @@ IN_PROC_BROWSER_TEST_F(DeferAllScriptBrowserTest,
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 
   // Wait for initial page load to complete.
-  RetryForHistogramUntilCountReached(
-      &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
-      1);
+  content::WaitForLoadStop(web_contents());
 
   // Navigate to DeferAllScript url expecting a DeferAllScript preview.
   ui_test_utils::NavigateToURL(browser(), url);
@@ -613,9 +611,7 @@ IN_PROC_BROWSER_TEST_F(
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 
   // Wait for initial page load to complete.
-  RetryForHistogramUntilCountReached(
-      &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
-      1);
+  content::WaitForLoadStop(web_contents());
 
   // Adjust the network triggering condition to not choose preview for this
   // navigation.

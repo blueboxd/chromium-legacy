@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.usage_stats;
 
+import org.chromium.base.Function;
 import org.chromium.base.Promise;
-import org.chromium.base.Promise.Function;
 import org.chromium.chrome.browser.usage_stats.WebsiteEventProtos.Timestamp;
 
 import java.util.ArrayList;

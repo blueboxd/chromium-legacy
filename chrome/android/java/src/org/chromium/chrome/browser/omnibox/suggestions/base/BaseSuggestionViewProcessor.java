@@ -5,13 +5,20 @@
 package org.chromium.chrome.browser.omnibox.suggestions.base;
 
 import android.content.Context;
+import android.graphics.Typeface;
+import android.text.Spannable;
+import android.text.style.StyleSpan;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
+
+import java.util.List;
 
 /**
  * A class that handles base properties and model for most suggestions.
@@ -71,5 +78,40 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
         } else {
             setActionDrawableState(model, null);
         }
+    }
+
+    /**
+     * Apply In-Place highlight to matching sections of Suggestion text.
+     *
+     * @param text Suggestion text to apply highlight to.
+     * @param classifications Classifications describing how to format text.
+     * @return true, if at least one highlighted match section was found.
+     */
+    protected static boolean applyHighlightToMatchRegions(
+            Spannable text, List<MatchClassification> classifications) {
+        if (text == null || classifications == null) return false;
+
+        boolean hasAtLeastOneMatch = false;
+        for (int i = 0; i < classifications.size(); i++) {
+            MatchClassification classification = classifications.get(i);
+            if ((classification.style & MatchClassificationStyle.MATCH)
+                    == MatchClassificationStyle.MATCH) {
+                int matchStartIndex = classification.offset;
+                int matchEndIndex;
+                if (i == classifications.size() - 1) {
+                    matchEndIndex = text.length();
+                } else {
+                    matchEndIndex = classifications.get(i + 1).offset;
+                }
+                matchStartIndex = Math.min(matchStartIndex, text.length());
+                matchEndIndex = Math.min(matchEndIndex, text.length());
+
+                hasAtLeastOneMatch = true;
+                // Bold the part of the URL that matches the user query.
+                text.setSpan(new StyleSpan(Typeface.BOLD), matchStartIndex, matchEndIndex,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+        }
+        return hasAtLeastOneMatch;
     }
 }

@@ -13,8 +13,8 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/tabs/tab_group_id.h"
-#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 
 class TabGroupController;
 
@@ -26,13 +26,15 @@ class TabGroupController;
 class TabGroup {
  public:
   TabGroup(TabGroupController* controller,
-           TabGroupId id,
-           TabGroupVisualData visual_data);
+           tab_groups::TabGroupId id,
+           tab_groups::TabGroupVisualData visual_data);
   ~TabGroup();
 
-  TabGroupId id() const { return id_; }
-  TabGroupVisualData* visual_data() const { return visual_data_.get(); }
-  void SetVisualData(TabGroupVisualData visual_data);
+  tab_groups::TabGroupId id() const { return id_; }
+  tab_groups::TabGroupVisualData* visual_data() const {
+    return visual_data_.get();
+  }
+  void SetVisualData(tab_groups::TabGroupVisualData visual_data);
 
   // Returns the user-visible group title that will be displayed in context
   // menus and tooltips. Generates a descriptive placeholder if the user has
@@ -58,8 +60,8 @@ class TabGroup {
  private:
   TabGroupController* controller_;
 
-  TabGroupId id_;
-  std::unique_ptr<TabGroupVisualData> visual_data_;
+  tab_groups::TabGroupId id_;
+  std::unique_ptr<tab_groups::TabGroupVisualData> visual_data_;
 
   int tab_count_ = 0;
 };

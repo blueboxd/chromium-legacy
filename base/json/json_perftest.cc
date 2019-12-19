@@ -10,11 +10,23 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 
 namespace base {
 
 namespace {
+
+constexpr char kMetricPrefixJSON[] = "JSON.";
+constexpr char kMetricReadTime[] = "read_time";
+constexpr char kMetricWriteTime[] = "write_time";
+
+perf_test::PerfResultReporter SetUpReporter(const std::string& story_name) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixJSON, story_name);
+  reporter.RegisterImportantMetric(kMetricReadTime, "ms");
+  reporter.RegisterImportantMetric(kMetricWriteTime, "ms");
+  return reporter;
+}
+
 // Generates a simple dictionary value with simple data types, a string and a
 // list.
 DictionaryValue GenerateDict() {
@@ -62,16 +74,14 @@ class JSONPerfTest : public testing::Test {
     TimeTicks start_write = TimeTicks::Now();
     JSONWriter::Write(dict, &json);
     TimeTicks end_write = TimeTicks::Now();
-    perf_test::PrintResult("Write", "", description,
-                           (end_write - start_write).InMillisecondsF(), "ms",
-                           true);
+    auto reporter = SetUpReporter("breadth_" + base::NumberToString(breadth) +
+                                  "_depth_" + base::NumberToString(depth));
+    reporter.AddResult(kMetricWriteTime, end_write - start_write);
 
     TimeTicks start_read = TimeTicks::Now();
     JSONReader::Read(json);
     TimeTicks end_read = TimeTicks::Now();
-    perf_test::PrintResult("Read", "", description,
-                           (end_read - start_read).InMillisecondsF(), "ms",
-                           true);
+    reporter.AddResult(kMetricReadTime, end_read - start_read);
   }
 };
 

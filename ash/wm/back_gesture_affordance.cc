@@ -4,6 +4,7 @@
 
 #include "ash/wm/back_gesture_affordance.h"
 
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/window_factory.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -177,6 +178,27 @@ class AffordanceView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(AffordanceView);
 };
 
+// Return true if |origin_y| is above the bottom of the splitview divider while
+// in portrait screen orientation.
+bool AboveBottomOfSplitViewDivider(const gfx::Point& location, int origin_y) {
+  auto* split_view_controller =
+      SplitViewController::Get(window_util::GetRootWindowAt(location));
+  if (!split_view_controller->InTabletSplitViewMode() ||
+      IsCurrentScreenOrientationLandscape()) {
+    return false;
+  }
+
+  const gfx::Rect bounds_of_bottom_snapped_window =
+      split_view_controller->GetSnappedWindowBoundsInScreen(
+          IsCurrentScreenOrientationPrimary() ? SplitViewController::RIGHT
+                                              : SplitViewController::LEFT,
+          /*window_for_minimum_size=*/nullptr);
+  return bounds_of_bottom_snapped_window.Contains(location) &&
+         origin_y < split_view_controller->split_view_divider()
+                        ->GetDividerBoundsInScreen(/*is_dragging=*/false)
+                        .bottom();
+}
+
 // Get the bounds of the affordance. It could be beyond the left of the display
 // or the splitview divider.
 gfx::Rect GetAffordanceBounds(const gfx::Point& location,
@@ -193,7 +215,9 @@ gfx::Rect GetAffordanceBounds(const gfx::Point& location,
   } else {
     int origin_y =
         location.y() - kDistanceFromArrowToTouchPoint - kMaxBurstRippleRadius;
-    if (origin_y < 0) {
+    // Put the affordance below the start |location| if |origin_y| exceeds the
+    // top of the display or bottom of the splitview divider.
+    if (origin_y < 0 || AboveBottomOfSplitViewDivider(location, origin_y)) {
       origin_y =
           location.y() + kDistanceFromArrowToTouchPoint - kMaxBurstRippleRadius;
     }

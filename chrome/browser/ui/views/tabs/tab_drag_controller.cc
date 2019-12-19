@@ -25,7 +25,6 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
-#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
@@ -38,6 +37,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_layout_helper.h"
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "chrome/browser/ui/views/tabs/window_finder.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
@@ -660,7 +660,7 @@ void TabDragController::InitDragData(TabSlotView* view,
         drag_data->source_model_index);
     drag_data->pinned = source_context_->IsTabPinned(static_cast<Tab*>(view));
   }
-  base::Optional<TabGroupId> tab_group_id = view->group();
+  base::Optional<tab_groups::TabGroupId> tab_group_id = view->group();
   if (tab_group_id.has_value()) {
     drag_data->tab_group_data = TabDragData::TabGroupData{
         tab_group_id.value(), *source_context_->GetTabStripModel()
@@ -1181,7 +1181,7 @@ void TabDragController::Attach(TabDragContext* attached_context,
       // Rather than keep the old group ID, generate a new one. This helps with
       // restore, and allowing broken-up groups to be restored across windows
       // as separate group IDs.
-      group_ = TabGroupId::GenerateNew();
+      group_ = tab_groups::TabGroupId::GenerateNew();
       attached_context_->GetTabStripModel()->group_model()->AddTabGroup(
           group_.value(),
           source_view_drag_data()->tab_group_data.value().group_visual_data);
@@ -1700,11 +1700,13 @@ void TabDragController::RevertDragAt(size_t drag_index) {
   source_context_->GetTabStripModel()->UpdateGroupForDragRevert(
       data->source_model_index,
       data->tab_group_data.has_value()
-          ? base::Optional<TabGroupId>{data->tab_group_data.value().group_id}
+          ? base::Optional<tab_groups::TabGroupId>{data->tab_group_data.value()
+                                                       .group_id}
           : base::nullopt,
       data->tab_group_data.has_value()
-          ? base::Optional<TabGroupVisualData>{data->tab_group_data.value()
-                                                   .group_visual_data}
+          ? base::Optional<
+                tab_groups::TabGroupVisualData>{data->tab_group_data.value()
+                                                    .group_visual_data}
           : base::nullopt);
 }
 
@@ -2121,7 +2123,7 @@ void TabDragController::UpdateGroupForDraggedTabs() {
 
   const ui::ListSelectionModel::SelectedIndices& selected =
       attached_model->selection_model().selected_indices();
-  const base::Optional<TabGroupId> updated_group =
+  const base::Optional<tab_groups::TabGroupId> updated_group =
       GetTabGroupForTargetIndex(selected);
 
   // Removing a tab from a group could change the index of the selected tabs.
@@ -2148,8 +2150,8 @@ void TabDragController::UpdateGroupForDraggedTabs() {
   }
 }
 
-base::Optional<TabGroupId> TabDragController::GetTabGroupForTargetIndex(
-    const std::vector<int>& selected) {
+base::Optional<tab_groups::TabGroupId>
+TabDragController::GetTabGroupForTargetIndex(const std::vector<int>& selected) {
   // Indices in {selected} are always ordered in ascending order and should all
   // be consecutive.
   DCHECK_EQ(selected.back() - selected.front() + 1, int{selected.size()});
@@ -2157,11 +2159,11 @@ base::Optional<TabGroupId> TabDragController::GetTabGroupForTargetIndex(
 
   const int left_tab_index = selected.front() - 1;
 
-  const base::Optional<TabGroupId> left_group =
+  const base::Optional<tab_groups::TabGroupId> left_group =
       attached_model->GetTabGroupForTab(left_tab_index);
-  const base::Optional<TabGroupId> right_group =
+  const base::Optional<tab_groups::TabGroupId> right_group =
       attached_model->GetTabGroupForTab(selected.back() + 1);
-  const base::Optional<TabGroupId> current_group =
+  const base::Optional<tab_groups::TabGroupId> current_group =
       attached_model->GetTabGroupForTab(selected[0]);
 
   if (left_group == right_group)

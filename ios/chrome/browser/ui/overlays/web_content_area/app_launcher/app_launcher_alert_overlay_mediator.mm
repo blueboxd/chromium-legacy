@@ -41,12 +41,16 @@
 #pragma mark - Accessors
 
 - (AppLauncherAlertOverlayRequestConfig*)config {
-  return self.request->GetConfig<AppLauncherAlertOverlayRequestConfig>();
+  return self.request
+             ? self.request->GetConfig<AppLauncherAlertOverlayRequestConfig>()
+             : nullptr;
 }
 
 #pragma mark - Response helpers
 
 - (void)updateResponseAllowingAppLaunch:(BOOL)allowAppLaunch {
+  if (!self.request)
+    return;
   self.request->GetCallbackManager()->SetCompletionResponse(
       OverlayResponse::CreateWithInfo<AppLauncherAlertOverlayResponseInfo>(
           allowAppLaunch));

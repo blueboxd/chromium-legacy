@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/scheduler_configuration_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
@@ -30,6 +31,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
@@ -147,6 +149,18 @@ void BrowserProcessPlatformPart::ShutdownCrosComponentManager() {
   cros_component_manager_.reset();
 }
 
+void BrowserProcessPlatformPart::InitializeSchedulerConfigurationManager() {
+  DCHECK(!scheduler_configuration_manager_);
+  scheduler_configuration_manager_ =
+      std::make_unique<chromeos::SchedulerConfigurationManager>(
+          chromeos::DBusThreadManager::Get()->GetDebugDaemonClient(),
+          g_browser_process->local_state());
+}
+
+void BrowserProcessPlatformPart::ShutdownSchedulerConfigurationManager() {
+  scheduler_configuration_manager_.reset();
+}
+
 void BrowserProcessPlatformPart::InitializePrimaryProfileServices(
     Profile* primary_profile) {
   DCHECK(primary_profile);
@@ -242,7 +256,7 @@ void BrowserProcessPlatformPart::DestroySystemClock() {
 void BrowserProcessPlatformPart::CreateProfileHelper() {
   DCHECK(!created_profile_helper_ && !profile_helper_);
   created_profile_helper_ = true;
-  profile_helper_.reset(new chromeos::ProfileHelper());
+  profile_helper_ = chromeos::ProfileHelper::CreateInstance();
 }
 
 chromeos::AccountManagerFactory*

@@ -24,7 +24,8 @@
             }
           ],
           "shards": 12
-        }
+        },
+        "test_target": "//:blink_web_tests"
       }
     ]
   },
@@ -38,7 +39,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "accessibility_unittests"
+        "test": "accessibility_unittests",
+        "test_target": "//ui/accessibility:accessibility_unittests"
       },
       {
         "merge": {
@@ -48,7 +50,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "merge": {
@@ -58,7 +61,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "app_shell_unittests"
+        "test": "app_shell_unittests",
+        "test_target": "//extensions/shell:app_shell_unittests"
       },
       {
         "merge": {
@@ -68,7 +72,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "aura_unittests"
+        "test": "aura_unittests",
+        "test_target": "//ui/aura:aura_unittests"
       },
       {
         "merge": {
@@ -78,7 +83,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "base_unittests"
+        "test": "base_unittests",
+        "test_target": "//base:base_unittests"
       },
       {
         "merge": {
@@ -88,7 +94,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "base_util_unittests"
+        "test": "base_util_unittests",
+        "test_target": "//base/util:base_util_unittests"
       },
       {
         "merge": {
@@ -98,7 +105,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "blink_common_unittests"
+        "test": "blink_common_unittests",
+        "test_target": "//third_party/blink/common:blink_common_unittests"
       },
       {
         "merge": {
@@ -108,7 +116,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "blink_fuzzer_unittests"
+        "test": "blink_fuzzer_unittests",
+        "test_target": "//third_party/blink/renderer/platform:blink_fuzzer_unittests"
       },
       {
         "merge": {
@@ -118,7 +127,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "blink_heap_unittests"
+        "test": "blink_heap_unittests",
+        "test_target": "//third_party/blink/renderer/platform/heap:blink_heap_unittests"
       },
       {
         "merge": {
@@ -128,7 +138,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "blink_platform_unittests"
+        "test": "blink_platform_unittests",
+        "test_target": "//third_party/blink/renderer/platform:blink_platform_unittests"
       },
       {
         "merge": {
@@ -138,7 +149,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "boringssl_crypto_tests"
+        "test": "boringssl_crypto_tests",
+        "test_target": "//third_party/boringssl:boringssl_crypto_tests"
       },
       {
         "merge": {
@@ -148,7 +160,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "boringssl_ssl_tests"
+        "test": "boringssl_ssl_tests",
+        "test_target": "//third_party/boringssl:boringssl_ssl_tests"
       },
       {
         "merge": {
@@ -158,7 +171,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "browser_switcher_bho_unittests"
+        "test": "browser_switcher_bho_unittests",
+        "test_target": "//chrome/browser/browser_switcher/bho:browser_switcher_bho_unittests"
       },
       {
         "merge": {
@@ -169,7 +183,8 @@
           "can_use_on_swarming_builders": true,
           "shards": 10
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "merge": {
@@ -179,7 +194,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "cacheinvalidation_unittests"
+        "test": "cacheinvalidation_unittests",
+        "test_target": "//third_party/cacheinvalidation:cacheinvalidation_unittests"
       },
       {
         "args": [
@@ -192,7 +208,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "capture_unittests"
+        "test": "capture_unittests",
+        "test_target": "//media/capture:capture_unittests"
       },
       {
         "merge": {
@@ -202,7 +219,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "cast_unittests"
+        "test": "cast_unittests",
+        "test_target": "//media/cast:cast_unittests"
       },
       {
         "merge": {
@@ -212,7 +230,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "cc_unittests"
+        "test": "cc_unittests",
+        "test_target": "//cc:cc_unittests"
       },
       {
         "merge": {
@@ -222,7 +241,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "chrome_app_unittests"
+        "test": "chrome_app_unittests",
+        "test_target": "//chrome/test:chrome_app_unittests"
       },
       {
         "merge": {
@@ -232,7 +252,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "chrome_cleaner_unittests"
+        "test": "chrome_cleaner_unittests",
+        "test_target": "//chrome/chrome_cleaner:chrome_cleaner_unittests"
       },
       {
         "merge": {
@@ -242,7 +263,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "chrome_elf_unittests"
+        "test": "chrome_elf_unittests",
+        "test_target": "//chrome/chrome_elf:chrome_elf_unittests"
       },
       {
         "merge": {
@@ -252,7 +274,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "chromedriver_unittests"
+        "test": "chromedriver_unittests",
+        "test_target": "//chrome/test/chromedriver:chromedriver_unittests"
       },
       {
         "merge": {
@@ -262,7 +285,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "components_browsertests"
+        "test": "components_browsertests",
+        "test_target": "//components:components_browsertests"
       },
       {
         "merge": {
@@ -272,7 +296,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "components_unittests"
+        "test": "components_unittests",
+        "test_target": "//components:components_unittests"
       },
       {
         "merge": {
@@ -282,7 +307,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "compositor_unittests"
+        "test": "compositor_unittests",
+        "test_target": "//ui/compositor:compositor_unittests"
       },
       {
         "merge": {
@@ -293,7 +319,8 @@
           "can_use_on_swarming_builders": true,
           "shards": 6
         },
-        "test": "content_browsertests"
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
       },
       {
         "merge": {
@@ -303,7 +330,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "content_unittests"
+        "test": "content_unittests",
+        "test_target": "//content/test:content_unittests"
       },
       {
         "merge": {
@@ -313,7 +341,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "courgette_unittests"
+        "test": "courgette_unittests",
+        "test_target": "//courgette:courgette_unittests"
       },
       {
         "merge": {
@@ -323,7 +352,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "crashpad_tests"
+        "test": "crashpad_tests",
+        "test_target": "//third_party/crashpad/crashpad:crashpad_tests"
       },
       {
         "merge": {
@@ -333,7 +363,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "cronet_tests"
+        "test": "cronet_tests",
+        "test_target": "//components/cronet:cronet_tests"
       },
       {
         "merge": {
@@ -343,7 +374,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "cronet_unittests"
+        "test": "cronet_unittests",
+        "test_target": "//components/cronet:cronet_unittests"
       },
       {
         "merge": {
@@ -353,7 +385,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "crypto_unittests"
+        "test": "crypto_unittests",
+        "test_target": "//crypto:crypto_unittests"
       },
       {
         "merge": {
@@ -363,7 +396,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "delayloads_unittests"
+        "test": "delayloads_unittests",
+        "test_target": "//chrome/test:delayloads_unittests"
       },
       {
         "merge": {
@@ -373,7 +407,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "device_unittests"
+        "test": "device_unittests",
+        "test_target": "//device:device_unittests"
       },
       {
         "merge": {
@@ -383,7 +418,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "display_unittests"
+        "test": "display_unittests",
+        "test_target": "//ui/display:display_unittests"
       },
       {
         "merge": {
@@ -393,7 +429,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "elevation_service_unittests"
+        "test": "elevation_service_unittests",
+        "test_target": "//chrome/elevation_service:elevation_service_unittests"
       },
       {
         "merge": {
@@ -403,7 +440,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "events_unittests"
+        "test": "events_unittests",
+        "test_target": "//ui/events:events_unittests"
       },
       {
         "merge": {
@@ -413,7 +451,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "extensions_browsertests"
+        "test": "extensions_browsertests",
+        "test_target": "//extensions:extensions_browsertests"
       },
       {
         "merge": {
@@ -423,7 +462,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "extensions_unittests"
+        "test": "extensions_unittests",
+        "test_target": "//extensions:extensions_unittests"
       },
       {
         "merge": {
@@ -433,7 +473,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "filesystem_service_unittests"
+        "test": "filesystem_service_unittests",
+        "test_target": "//components/services/filesystem:filesystem_service_unittests"
       },
       {
         "merge": {
@@ -443,7 +484,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gcm_unit_tests"
+        "test": "gcm_unit_tests",
+        "test_target": "//google_apis/gcm:gcm_unit_tests"
       },
       {
         "merge": {
@@ -453,7 +495,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gcp_unittests"
+        "test": "gcp_unittests",
+        "test_target": "//chrome/credential_provider/test:gcp_unittests"
       },
       {
         "merge": {
@@ -463,7 +506,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gfx_unittests"
+        "test": "gfx_unittests",
+        "test_target": "//ui/gfx:gfx_unittests"
       },
       {
         "merge": {
@@ -473,7 +517,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gin_unittests"
+        "test": "gin_unittests",
+        "test_target": "//gin:gin_unittests"
       },
       {
         "merge": {
@@ -483,7 +528,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "google_apis_unittests"
+        "test": "google_apis_unittests",
+        "test_target": "//google_apis:google_apis_unittests"
       },
       {
         "merge": {
@@ -493,7 +539,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "merge": {
@@ -503,7 +550,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gwp_asan_unittests"
+        "test": "gwp_asan_unittests",
+        "test_target": "//components/gwp_asan:gwp_asan_unittests"
       },
       {
         "merge": {
@@ -513,7 +561,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "headless_browsertests"
+        "test": "headless_browsertests",
+        "test_target": "//headless:headless_browsertests"
       },
       {
         "merge": {
@@ -523,7 +572,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "headless_unittests"
+        "test": "headless_unittests",
+        "test_target": "//headless:headless_unittests"
       },
       {
         "merge": {
@@ -533,7 +583,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "install_static_unittests"
+        "test": "install_static_unittests",
+        "test_target": "//chrome/install_static:install_static_unittests"
       },
       {
         "merge": {
@@ -548,7 +599,8 @@
             }
           ]
         },
-        "test": "installer_util_unittests"
+        "test": "installer_util_unittests",
+        "test_target": "//chrome/installer/util:installer_util_unittests"
       },
       {
         "merge": {
@@ -559,7 +611,8 @@
           "can_use_on_swarming_builders": true,
           "shards": 3
         },
-        "test": "interactive_ui_tests"
+        "test": "interactive_ui_tests",
+        "test_target": "//chrome/test:interactive_ui_tests"
       },
       {
         "merge": {
@@ -569,7 +622,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "ipc_tests"
+        "test": "ipc_tests",
+        "test_target": "//ipc:ipc_tests"
       },
       {
         "merge": {
@@ -579,7 +633,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "jingle_unittests"
+        "test": "jingle_unittests",
+        "test_target": "//jingle:jingle_unittests"
       },
       {
         "merge": {
@@ -589,7 +644,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "latency_unittests"
+        "test": "latency_unittests",
+        "test_target": "//ui/latency:latency_unittests"
       },
       {
         "merge": {
@@ -599,7 +655,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "libjingle_xmpp_unittests"
+        "test": "libjingle_xmpp_unittests",
+        "test_target": "//third_party/libjingle_xmpp:libjingle_xmpp_unittests"
       },
       {
         "merge": {
@@ -609,7 +666,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "media_blink_unittests"
+        "test": "media_blink_unittests",
+        "test_target": "//media/blink:media_blink_unittests"
       },
       {
         "merge": {
@@ -619,7 +677,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "media_service_unittests"
+        "test": "media_service_unittests",
+        "test_target": "//media/mojo/services:media_service_unittests"
       },
       {
         "merge": {
@@ -629,7 +688,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "media_unittests"
+        "test": "media_unittests",
+        "test_target": "//media:media_unittests"
       },
       {
         "merge": {
@@ -639,7 +699,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "message_center_unittests"
+        "test": "message_center_unittests",
+        "test_target": "//ui/message_center:message_center_unittests"
       },
       {
         "merge": {
@@ -649,7 +710,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "midi_unittests"
+        "test": "midi_unittests",
+        "test_target": "//media/midi:midi_unittests"
       },
       {
         "merge": {
@@ -659,7 +721,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "mojo_core_unittests"
+        "test": "mojo_core_unittests",
+        "test_target": "//mojo/core:mojo_core_unittests"
       },
       {
         "merge": {
@@ -669,7 +732,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "mojo_unittests"
+        "test": "mojo_unittests",
+        "test_target": "//mojo:mojo_unittests"
       },
       {
         "merge": {
@@ -679,7 +743,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "nacl_loader_unittests"
+        "test": "nacl_loader_unittests",
+        "test_target": "//components/nacl/loader:nacl_loader_unittests"
       },
       {
         "merge": {
@@ -689,7 +754,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "native_theme_unittests"
+        "test": "native_theme_unittests",
+        "test_target": "//ui/native_theme:native_theme_unittests"
       },
       {
         "merge": {
@@ -699,7 +765,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "net_unittests"
+        "test": "net_unittests",
+        "test_target": "//net:net_unittests"
       },
       {
         "merge": {
@@ -709,7 +776,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "pdf_unittests"
+        "test": "pdf_unittests",
+        "test_target": "//pdf:pdf_unittests"
       },
       {
         "merge": {
@@ -719,7 +787,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "perfetto_unittests"
+        "test": "perfetto_unittests",
+        "test_target": "//third_party/perfetto:perfetto_unittests"
       },
       {
         "merge": {
@@ -729,7 +798,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "ppapi_unittests"
+        "test": "ppapi_unittests",
+        "test_target": "//ppapi:ppapi_unittests"
       },
       {
         "merge": {
@@ -739,7 +809,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "printing_unittests"
+        "test": "printing_unittests",
+        "test_target": "//printing:printing_unittests"
       },
       {
         "merge": {
@@ -749,7 +820,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "remoting_unittests"
+        "test": "remoting_unittests",
+        "test_target": "//remoting:remoting_unittests"
       },
       {
         "merge": {
@@ -764,7 +836,8 @@
             }
           ]
         },
-        "test": "sbox_integration_tests"
+        "test": "sbox_integration_tests",
+        "test_target": "//sandbox/win:sbox_integration_tests"
       },
       {
         "merge": {
@@ -774,7 +847,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "sbox_unittests"
+        "test": "sbox_unittests",
+        "test_target": "//sandbox/win:sbox_unittests"
       },
       {
         "merge": {
@@ -784,7 +858,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "sbox_validation_tests"
+        "test": "sbox_validation_tests",
+        "test_target": "//sandbox/win:sbox_validation_tests"
       },
       {
         "merge": {
@@ -794,7 +869,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "service_manager_unittests"
+        "test": "service_manager_unittests",
+        "test_target": "//services/service_manager/tests:service_manager_unittests"
       },
       {
         "merge": {
@@ -804,7 +880,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "services_unittests"
+        "test": "services_unittests",
+        "test_target": "//services:services_unittests"
       },
       {
         "merge": {
@@ -819,7 +896,8 @@
             }
           ]
         },
-        "test": "setup_unittests"
+        "test": "setup_unittests",
+        "test_target": "//chrome/installer/setup:setup_unittests"
       },
       {
         "merge": {
@@ -829,7 +907,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "shell_dialogs_unittests"
+        "test": "shell_dialogs_unittests",
+        "test_target": "//ui/shell_dialogs:shell_dialogs_unittests"
       },
       {
         "merge": {
@@ -839,7 +918,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "skia_unittests"
+        "test": "skia_unittests",
+        "test_target": "//skia:skia_unittests"
       },
       {
         "merge": {
@@ -849,7 +929,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "snapshot_unittests"
+        "test": "snapshot_unittests",
+        "test_target": "//ui/snapshot:snapshot_unittests"
       },
       {
         "merge": {
@@ -859,7 +940,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "sql_unittests"
+        "test": "sql_unittests",
+        "test_target": "//sql:sql_unittests"
       },
       {
         "merge": {
@@ -869,7 +951,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "storage_unittests"
+        "test": "storage_unittests",
+        "test_target": "//storage:storage_unittests"
       },
       {
         "merge": {
@@ -879,7 +962,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "sync_integration_tests"
+        "test": "sync_integration_tests",
+        "test_target": "//chrome/test:sync_integration_tests"
       },
       {
         "merge": {
@@ -889,7 +973,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "traffic_annotation_auditor_unittests"
+        "test": "traffic_annotation_auditor_unittests",
+        "test_target": "//tools/traffic_annotation/auditor:traffic_annotation_auditor_unittests"
       },
       {
         "merge": {
@@ -899,7 +984,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "ui_base_unittests"
+        "test": "ui_base_unittests",
+        "test_target": "//ui/base:ui_base_unittests"
       },
       {
         "merge": {
@@ -909,7 +995,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "ui_touch_selection_unittests"
+        "test": "ui_touch_selection_unittests",
+        "test_target": "//ui/touch_selection:ui_touch_selection_unittests"
       },
       {
         "merge": {
@@ -919,7 +1006,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "unit_tests"
+        "test": "unit_tests",
+        "test_target": "//chrome/test:unit_tests"
       },
       {
         "merge": {
@@ -929,7 +1017,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "updater_tests"
+        "test": "updater_tests",
+        "test_target": "//chrome/updater:updater_tests"
       },
       {
         "merge": {
@@ -939,7 +1028,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "url_unittests"
+        "test": "url_unittests",
+        "test_target": "//url:url_unittests"
       },
       {
         "merge": {
@@ -949,7 +1039,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "views_unittests"
+        "test": "views_unittests",
+        "test_target": "//ui/views:views_unittests"
       },
       {
         "merge": {
@@ -959,7 +1050,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "viz_unittests"
+        "test": "viz_unittests",
+        "test_target": "//components/viz:viz_unittests"
       },
       {
         "merge": {
@@ -969,7 +1061,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "vr_common_unittests"
+        "test": "vr_common_unittests",
+        "test_target": "//chrome/browser/vr:vr_common_unittests"
       },
       {
         "merge": {
@@ -979,7 +1072,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "vr_pixeltests"
+        "test": "vr_pixeltests",
+        "test_target": "//chrome/browser/vr:vr_pixeltests"
       },
       {
         "merge": {
@@ -989,7 +1083,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "weblayer_browsertests"
+        "test": "weblayer_browsertests",
+        "test_target": "//weblayer/test:weblayer_browsertests"
       },
       {
         "merge": {
@@ -999,7 +1094,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "wm_unittests"
+        "test": "wm_unittests",
+        "test_target": "//ui/wm:wm_unittests"
       },
       {
         "merge": {
@@ -1009,7 +1105,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "wtf_unittests"
+        "test": "wtf_unittests",
+        "test_target": "//third_party/blink/renderer/platform/wtf:wtf_unittests"
       },
       {
         "merge": {
@@ -1019,7 +1116,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "zucchini_unittests"
+        "test": "zucchini_unittests",
+        "test_target": "//components/zucchini:zucchini_unittests"
       }
     ],
     "isolated_scripts": [
@@ -1032,7 +1130,8 @@
         "name": "blink_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//:blink_python_tests"
       },
       {
         "args": [
@@ -1046,7 +1145,8 @@
         "name": "chromedriver_py_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//chrome/test/chromedriver:chromedriver_py_tests"
       },
       {
         "isolate_name": "chromedriver_replay_unittests",
@@ -1057,7 +1157,8 @@
         "name": "chromedriver_replay_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//chrome/test/chromedriver:chromedriver_replay_unittests"
       },
       {
         "args": [
@@ -1073,7 +1174,8 @@
         "name": "components_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//components:components_perftests"
       },
       {
         "isolate_name": "content_shell_crash_test",
@@ -1084,7 +1186,8 @@
         "name": "content_shell_crash_test",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//content/shell:content_shell_crash_test"
       },
       {
         "isolate_name": "flatbuffers_unittests",
@@ -1095,7 +1198,8 @@
         "name": "flatbuffers_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//third_party/flatbuffers:flatbuffers_unittests"
       },
       {
         "isolate_name": "grit_python_unittests",
@@ -1106,7 +1210,8 @@
         "name": "grit_python_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//tools/grit:grit_python_unittests"
       },
       {
         "isolate_name": "metrics_python_tests",
@@ -1117,7 +1222,8 @@
         "name": "metrics_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//tools/metrics:metrics_python_tests"
       },
       {
         "isolate_name": "mini_installer_tests",
@@ -1133,7 +1239,8 @@
               "integrity": "high"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test/mini_installer:mini_installer_tests"
       },
       {
         "experiment_percentage": 100,
@@ -1145,7 +1252,8 @@
         "name": "polymer_tools_python_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//tools/polymer:polymer_tools_python_unittests"
       },
       {
         "isolate_name": "telemetry_gpu_unittests",
@@ -1157,7 +1265,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "idempotent": false
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_unittests"
       },
       {
         "isolate_name": "telemetry_perf_unittests",
@@ -1170,7 +1279,8 @@
           "can_use_on_swarming_builders": true,
           "idempotent": false,
           "shards": 12
-        }
+        },
+        "test_target": "//chrome/test:telemetry_perf_unittests"
       },
       {
         "args": [
@@ -1187,7 +1297,8 @@
           "can_use_on_swarming_builders": true,
           "idempotent": false,
           "shards": 4
-        }
+        },
+        "test_target": "//chrome/test:telemetry_unittests"
       },
       {
         "args": [
@@ -1203,7 +1314,8 @@
         "name": "views_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//ui/views:views_perftests"
       }
     ]
   },
@@ -1245,7 +1357,8 @@
             }
           ]
         },
-        "test": "accessibility_unittests"
+        "test": "accessibility_unittests",
+        "test_target": "//ui/accessibility:accessibility_unittests"
       },
       {
         "merge": {
@@ -1261,7 +1374,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "merge": {
@@ -1277,7 +1391,8 @@
             }
           ]
         },
-        "test": "app_shell_unittests"
+        "test": "app_shell_unittests",
+        "test_target": "//extensions/shell:app_shell_unittests"
       },
       {
         "merge": {
@@ -1293,7 +1408,8 @@
             }
           ]
         },
-        "test": "aura_unittests"
+        "test": "aura_unittests",
+        "test_target": "//ui/aura:aura_unittests"
       },
       {
         "merge": {
@@ -1309,7 +1425,8 @@
             }
           ]
         },
-        "test": "base_unittests"
+        "test": "base_unittests",
+        "test_target": "//base:base_unittests"
       },
       {
         "merge": {
@@ -1325,7 +1442,8 @@
             }
           ]
         },
-        "test": "base_util_unittests"
+        "test": "base_util_unittests",
+        "test_target": "//base/util:base_util_unittests"
       },
       {
         "merge": {
@@ -1341,7 +1459,8 @@
             }
           ]
         },
-        "test": "blink_common_unittests"
+        "test": "blink_common_unittests",
+        "test_target": "//third_party/blink/common:blink_common_unittests"
       },
       {
         "merge": {
@@ -1357,7 +1476,8 @@
             }
           ]
         },
-        "test": "blink_fuzzer_unittests"
+        "test": "blink_fuzzer_unittests",
+        "test_target": "//third_party/blink/renderer/platform:blink_fuzzer_unittests"
       },
       {
         "merge": {
@@ -1373,7 +1493,8 @@
             }
           ]
         },
-        "test": "blink_heap_unittests"
+        "test": "blink_heap_unittests",
+        "test_target": "//third_party/blink/renderer/platform/heap:blink_heap_unittests"
       },
       {
         "merge": {
@@ -1389,7 +1510,8 @@
             }
           ]
         },
-        "test": "blink_platform_unittests"
+        "test": "blink_platform_unittests",
+        "test_target": "//third_party/blink/renderer/platform:blink_platform_unittests"
       },
       {
         "merge": {
@@ -1406,7 +1528,8 @@
             }
           ]
         },
-        "test": "blink_unittests"
+        "test": "blink_unittests",
+        "test_target": "//third_party/blink/renderer/controller:blink_unittests"
       },
       {
         "merge": {
@@ -1422,7 +1545,8 @@
             }
           ]
         },
-        "test": "boringssl_crypto_tests"
+        "test": "boringssl_crypto_tests",
+        "test_target": "//third_party/boringssl:boringssl_crypto_tests"
       },
       {
         "merge": {
@@ -1438,7 +1562,8 @@
             }
           ]
         },
-        "test": "boringssl_ssl_tests"
+        "test": "boringssl_ssl_tests",
+        "test_target": "//third_party/boringssl:boringssl_ssl_tests"
       },
       {
         "merge": {
@@ -1454,7 +1579,8 @@
             }
           ]
         },
-        "test": "browser_switcher_bho_unittests"
+        "test": "browser_switcher_bho_unittests",
+        "test_target": "//chrome/browser/browser_switcher/bho:browser_switcher_bho_unittests"
       },
       {
         "args": [
@@ -1474,7 +1600,8 @@
           ],
           "shards": 15
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "merge": {
@@ -1490,7 +1617,8 @@
             }
           ]
         },
-        "test": "cacheinvalidation_unittests"
+        "test": "cacheinvalidation_unittests",
+        "test_target": "//third_party/cacheinvalidation:cacheinvalidation_unittests"
       },
       {
         "args": [
@@ -1509,7 +1637,8 @@
             }
           ]
         },
-        "test": "capture_unittests"
+        "test": "capture_unittests",
+        "test_target": "//media/capture:capture_unittests"
       },
       {
         "merge": {
@@ -1525,7 +1654,8 @@
             }
           ]
         },
-        "test": "cast_unittests"
+        "test": "cast_unittests",
+        "test_target": "//media/cast:cast_unittests"
       },
       {
         "merge": {
@@ -1541,7 +1671,8 @@
             }
           ]
         },
-        "test": "cc_unittests"
+        "test": "cc_unittests",
+        "test_target": "//cc:cc_unittests"
       },
       {
         "merge": {
@@ -1557,7 +1688,8 @@
             }
           ]
         },
-        "test": "chrome_app_unittests"
+        "test": "chrome_app_unittests",
+        "test_target": "//chrome/test:chrome_app_unittests"
       },
       {
         "merge": {
@@ -1573,7 +1705,8 @@
             }
           ]
         },
-        "test": "chrome_cleaner_unittests"
+        "test": "chrome_cleaner_unittests",
+        "test_target": "//chrome/chrome_cleaner:chrome_cleaner_unittests"
       },
       {
         "merge": {
@@ -1589,7 +1722,8 @@
             }
           ]
         },
-        "test": "chrome_elf_unittests"
+        "test": "chrome_elf_unittests",
+        "test_target": "//chrome/chrome_elf:chrome_elf_unittests"
       },
       {
         "merge": {
@@ -1605,7 +1739,8 @@
             }
           ]
         },
-        "test": "chromedriver_unittests"
+        "test": "chromedriver_unittests",
+        "test_target": "//chrome/test/chromedriver:chromedriver_unittests"
       },
       {
         "merge": {
@@ -1621,7 +1756,8 @@
             }
           ]
         },
-        "test": "components_browsertests"
+        "test": "components_browsertests",
+        "test_target": "//components:components_browsertests"
       },
       {
         "merge": {
@@ -1637,7 +1773,8 @@
             }
           ]
         },
-        "test": "components_unittests"
+        "test": "components_unittests",
+        "test_target": "//components:components_unittests"
       },
       {
         "merge": {
@@ -1653,7 +1790,8 @@
             }
           ]
         },
-        "test": "compositor_unittests"
+        "test": "compositor_unittests",
+        "test_target": "//ui/compositor:compositor_unittests"
       },
       {
         "args": [
@@ -1673,7 +1811,8 @@
           ],
           "shards": 6
         },
-        "test": "content_browsertests"
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
       },
       {
         "merge": {
@@ -1689,7 +1828,8 @@
             }
           ]
         },
-        "test": "content_unittests"
+        "test": "content_unittests",
+        "test_target": "//content/test:content_unittests"
       },
       {
         "merge": {
@@ -1705,7 +1845,8 @@
             }
           ]
         },
-        "test": "courgette_unittests"
+        "test": "courgette_unittests",
+        "test_target": "//courgette:courgette_unittests"
       },
       {
         "merge": {
@@ -1721,7 +1862,8 @@
             }
           ]
         },
-        "test": "crashpad_tests"
+        "test": "crashpad_tests",
+        "test_target": "//third_party/crashpad/crashpad:crashpad_tests"
       },
       {
         "merge": {
@@ -1737,7 +1879,8 @@
             }
           ]
         },
-        "test": "cronet_tests"
+        "test": "cronet_tests",
+        "test_target": "//components/cronet:cronet_tests"
       },
       {
         "merge": {
@@ -1753,7 +1896,8 @@
             }
           ]
         },
-        "test": "cronet_unittests"
+        "test": "cronet_unittests",
+        "test_target": "//components/cronet:cronet_unittests"
       },
       {
         "merge": {
@@ -1769,7 +1913,8 @@
             }
           ]
         },
-        "test": "crypto_unittests"
+        "test": "crypto_unittests",
+        "test_target": "//crypto:crypto_unittests"
       },
       {
         "merge": {
@@ -1785,7 +1930,8 @@
             }
           ]
         },
-        "test": "delayloads_unittests"
+        "test": "delayloads_unittests",
+        "test_target": "//chrome/test:delayloads_unittests"
       },
       {
         "merge": {
@@ -1801,7 +1947,8 @@
             }
           ]
         },
-        "test": "device_unittests"
+        "test": "device_unittests",
+        "test_target": "//device:device_unittests"
       },
       {
         "merge": {
@@ -1817,7 +1964,8 @@
             }
           ]
         },
-        "test": "display_unittests"
+        "test": "display_unittests",
+        "test_target": "//ui/display:display_unittests"
       },
       {
         "merge": {
@@ -1833,7 +1981,8 @@
             }
           ]
         },
-        "test": "elevation_service_unittests"
+        "test": "elevation_service_unittests",
+        "test_target": "//chrome/elevation_service:elevation_service_unittests"
       },
       {
         "merge": {
@@ -1849,7 +1998,8 @@
             }
           ]
         },
-        "test": "events_unittests"
+        "test": "events_unittests",
+        "test_target": "//ui/events:events_unittests"
       },
       {
         "merge": {
@@ -1865,7 +2015,8 @@
             }
           ]
         },
-        "test": "extensions_browsertests"
+        "test": "extensions_browsertests",
+        "test_target": "//extensions:extensions_browsertests"
       },
       {
         "merge": {
@@ -1881,7 +2032,8 @@
             }
           ]
         },
-        "test": "extensions_unittests"
+        "test": "extensions_unittests",
+        "test_target": "//extensions:extensions_unittests"
       },
       {
         "merge": {
@@ -1897,7 +2049,8 @@
             }
           ]
         },
-        "test": "filesystem_service_unittests"
+        "test": "filesystem_service_unittests",
+        "test_target": "//components/services/filesystem:filesystem_service_unittests"
       },
       {
         "merge": {
@@ -1913,7 +2066,8 @@
             }
           ]
         },
-        "test": "gcm_unit_tests"
+        "test": "gcm_unit_tests",
+        "test_target": "//google_apis/gcm:gcm_unit_tests"
       },
       {
         "merge": {
@@ -1929,7 +2083,8 @@
             }
           ]
         },
-        "test": "gcp_unittests"
+        "test": "gcp_unittests",
+        "test_target": "//chrome/credential_provider/test:gcp_unittests"
       },
       {
         "merge": {
@@ -1945,7 +2100,8 @@
             }
           ]
         },
-        "test": "gfx_unittests"
+        "test": "gfx_unittests",
+        "test_target": "//ui/gfx:gfx_unittests"
       },
       {
         "merge": {
@@ -1961,7 +2117,8 @@
             }
           ]
         },
-        "test": "gin_unittests"
+        "test": "gin_unittests",
+        "test_target": "//gin:gin_unittests"
       },
       {
         "merge": {
@@ -1977,7 +2134,8 @@
             }
           ]
         },
-        "test": "google_apis_unittests"
+        "test": "google_apis_unittests",
+        "test_target": "//google_apis:google_apis_unittests"
       },
       {
         "merge": {
@@ -1993,7 +2151,8 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "merge": {
@@ -2009,7 +2168,8 @@
             }
           ]
         },
-        "test": "gwp_asan_unittests"
+        "test": "gwp_asan_unittests",
+        "test_target": "//components/gwp_asan:gwp_asan_unittests"
       },
       {
         "merge": {
@@ -2025,7 +2185,8 @@
             }
           ]
         },
-        "test": "headless_browsertests"
+        "test": "headless_browsertests",
+        "test_target": "//headless:headless_browsertests"
       },
       {
         "merge": {
@@ -2041,7 +2202,8 @@
             }
           ]
         },
-        "test": "headless_unittests"
+        "test": "headless_unittests",
+        "test_target": "//headless:headless_unittests"
       },
       {
         "merge": {
@@ -2057,7 +2219,8 @@
             }
           ]
         },
-        "test": "install_static_unittests"
+        "test": "install_static_unittests",
+        "test_target": "//chrome/install_static:install_static_unittests"
       },
       {
         "merge": {
@@ -2074,7 +2237,8 @@
             }
           ]
         },
-        "test": "installer_util_unittests"
+        "test": "installer_util_unittests",
+        "test_target": "//chrome/installer/util:installer_util_unittests"
       },
       {
         "merge": {
@@ -2091,7 +2255,8 @@
           ],
           "shards": 3
         },
-        "test": "interactive_ui_tests"
+        "test": "interactive_ui_tests",
+        "test_target": "//chrome/test:interactive_ui_tests"
       },
       {
         "merge": {
@@ -2107,7 +2272,8 @@
             }
           ]
         },
-        "test": "ipc_tests"
+        "test": "ipc_tests",
+        "test_target": "//ipc:ipc_tests"
       },
       {
         "merge": {
@@ -2123,7 +2289,8 @@
             }
           ]
         },
-        "test": "jingle_unittests"
+        "test": "jingle_unittests",
+        "test_target": "//jingle:jingle_unittests"
       },
       {
         "merge": {
@@ -2139,7 +2306,8 @@
             }
           ]
         },
-        "test": "latency_unittests"
+        "test": "latency_unittests",
+        "test_target": "//ui/latency:latency_unittests"
       },
       {
         "merge": {
@@ -2155,7 +2323,8 @@
             }
           ]
         },
-        "test": "libjingle_xmpp_unittests"
+        "test": "libjingle_xmpp_unittests",
+        "test_target": "//third_party/libjingle_xmpp:libjingle_xmpp_unittests"
       },
       {
         "merge": {
@@ -2171,7 +2340,8 @@
             }
           ]
         },
-        "test": "media_blink_unittests"
+        "test": "media_blink_unittests",
+        "test_target": "//media/blink:media_blink_unittests"
       },
       {
         "merge": {
@@ -2187,7 +2357,8 @@
             }
           ]
         },
-        "test": "media_service_unittests"
+        "test": "media_service_unittests",
+        "test_target": "//media/mojo/services:media_service_unittests"
       },
       {
         "merge": {
@@ -2203,7 +2374,8 @@
             }
           ]
         },
-        "test": "media_unittests"
+        "test": "media_unittests",
+        "test_target": "//media:media_unittests"
       },
       {
         "merge": {
@@ -2219,7 +2391,8 @@
             }
           ]
         },
-        "test": "message_center_unittests"
+        "test": "message_center_unittests",
+        "test_target": "//ui/message_center:message_center_unittests"
       },
       {
         "merge": {
@@ -2235,7 +2408,8 @@
             }
           ]
         },
-        "test": "midi_unittests"
+        "test": "midi_unittests",
+        "test_target": "//media/midi:midi_unittests"
       },
       {
         "merge": {
@@ -2251,7 +2425,8 @@
             }
           ]
         },
-        "test": "mojo_core_unittests"
+        "test": "mojo_core_unittests",
+        "test_target": "//mojo/core:mojo_core_unittests"
       },
       {
         "merge": {
@@ -2267,7 +2442,8 @@
             }
           ]
         },
-        "test": "mojo_unittests"
+        "test": "mojo_unittests",
+        "test_target": "//mojo:mojo_unittests"
       },
       {
         "merge": {
@@ -2283,7 +2459,8 @@
             }
           ]
         },
-        "test": "nacl_loader_unittests"
+        "test": "nacl_loader_unittests",
+        "test_target": "//components/nacl/loader:nacl_loader_unittests"
       },
       {
         "merge": {
@@ -2299,7 +2476,8 @@
             }
           ]
         },
-        "test": "native_theme_unittests"
+        "test": "native_theme_unittests",
+        "test_target": "//ui/native_theme:native_theme_unittests"
       },
       {
         "merge": {
@@ -2315,7 +2493,8 @@
             }
           ]
         },
-        "test": "net_unittests"
+        "test": "net_unittests",
+        "test_target": "//net:net_unittests"
       },
       {
         "merge": {
@@ -2331,7 +2510,8 @@
             }
           ]
         },
-        "test": "notification_helper_unittests"
+        "test": "notification_helper_unittests",
+        "test_target": "//chrome/notification_helper:notification_helper_unittests"
       },
       {
         "merge": {
@@ -2347,7 +2527,8 @@
             }
           ]
         },
-        "test": "pdf_unittests"
+        "test": "pdf_unittests",
+        "test_target": "//pdf:pdf_unittests"
       },
       {
         "merge": {
@@ -2363,7 +2544,8 @@
             }
           ]
         },
-        "test": "perfetto_unittests"
+        "test": "perfetto_unittests",
+        "test_target": "//third_party/perfetto:perfetto_unittests"
       },
       {
         "merge": {
@@ -2379,7 +2561,8 @@
             }
           ]
         },
-        "test": "ppapi_unittests"
+        "test": "ppapi_unittests",
+        "test_target": "//ppapi:ppapi_unittests"
       },
       {
         "merge": {
@@ -2395,7 +2578,8 @@
             }
           ]
         },
-        "test": "printing_unittests"
+        "test": "printing_unittests",
+        "test_target": "//printing:printing_unittests"
       },
       {
         "merge": {
@@ -2411,88 +2595,8 @@
             }
           ]
         },
-        "test": "remoting_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "integrity": "high",
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
-        "test": "sbox_integration_tests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
-        "test": "sbox_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
-        "test": "sbox_validation_tests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
-        "test": "service_manager_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
-        "test": "services_unittests"
+        "test": "remoting_unittests",
+        "test_target": "//remoting:remoting_unittests"
       },
       {
         "merge": {
@@ -2509,7 +2613,8 @@
             }
           ]
         },
-        "test": "setup_unittests"
+        "test": "sbox_integration_tests",
+        "test_target": "//sandbox/win:sbox_integration_tests"
       },
       {
         "merge": {
@@ -2525,7 +2630,8 @@
             }
           ]
         },
-        "test": "shell_dialogs_unittests"
+        "test": "sbox_unittests",
+        "test_target": "//sandbox/win:sbox_unittests"
       },
       {
         "merge": {
@@ -2541,7 +2647,8 @@
             }
           ]
         },
-        "test": "skia_unittests"
+        "test": "sbox_validation_tests",
+        "test_target": "//sandbox/win:sbox_validation_tests"
       },
       {
         "merge": {
@@ -2557,7 +2664,8 @@
             }
           ]
         },
-        "test": "snapshot_unittests"
+        "test": "service_manager_unittests",
+        "test_target": "//services/service_manager/tests:service_manager_unittests"
       },
       {
         "merge": {
@@ -2573,7 +2681,26 @@
             }
           ]
         },
-        "test": "sql_unittests"
+        "test": "services_unittests",
+        "test_target": "//services:services_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "integrity": "high",
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
+        "test": "setup_unittests",
+        "test_target": "//chrome/installer/setup:setup_unittests"
       },
       {
         "merge": {
@@ -2589,7 +2716,8 @@
             }
           ]
         },
-        "test": "storage_unittests"
+        "test": "shell_dialogs_unittests",
+        "test_target": "//ui/shell_dialogs:shell_dialogs_unittests"
       },
       {
         "merge": {
@@ -2605,7 +2733,8 @@
             }
           ]
         },
-        "test": "sync_integration_tests"
+        "test": "skia_unittests",
+        "test_target": "//skia:skia_unittests"
       },
       {
         "merge": {
@@ -2621,7 +2750,8 @@
             }
           ]
         },
-        "test": "traffic_annotation_auditor_unittests"
+        "test": "snapshot_unittests",
+        "test_target": "//ui/snapshot:snapshot_unittests"
       },
       {
         "merge": {
@@ -2637,7 +2767,8 @@
             }
           ]
         },
-        "test": "ui_base_unittests"
+        "test": "sql_unittests",
+        "test_target": "//sql:sql_unittests"
       },
       {
         "merge": {
@@ -2653,7 +2784,8 @@
             }
           ]
         },
-        "test": "ui_touch_selection_unittests"
+        "test": "storage_unittests",
+        "test_target": "//storage:storage_unittests"
       },
       {
         "merge": {
@@ -2669,7 +2801,8 @@
             }
           ]
         },
-        "test": "unit_tests"
+        "test": "sync_integration_tests",
+        "test_target": "//chrome/test:sync_integration_tests"
       },
       {
         "merge": {
@@ -2685,7 +2818,8 @@
             }
           ]
         },
-        "test": "updater_tests"
+        "test": "traffic_annotation_auditor_unittests",
+        "test_target": "//tools/traffic_annotation/auditor:traffic_annotation_auditor_unittests"
       },
       {
         "merge": {
@@ -2701,7 +2835,8 @@
             }
           ]
         },
-        "test": "url_unittests"
+        "test": "ui_base_unittests",
+        "test_target": "//ui/base:ui_base_unittests"
       },
       {
         "merge": {
@@ -2717,7 +2852,8 @@
             }
           ]
         },
-        "test": "views_unittests"
+        "test": "ui_touch_selection_unittests",
+        "test_target": "//ui/touch_selection:ui_touch_selection_unittests"
       },
       {
         "merge": {
@@ -2733,7 +2869,8 @@
             }
           ]
         },
-        "test": "viz_unittests"
+        "test": "unit_tests",
+        "test_target": "//chrome/test:unit_tests"
       },
       {
         "merge": {
@@ -2749,7 +2886,8 @@
             }
           ]
         },
-        "test": "vr_common_unittests"
+        "test": "updater_tests",
+        "test_target": "//chrome/updater:updater_tests"
       },
       {
         "merge": {
@@ -2765,7 +2903,8 @@
             }
           ]
         },
-        "test": "vr_pixeltests"
+        "test": "url_unittests",
+        "test_target": "//url:url_unittests"
       },
       {
         "merge": {
@@ -2781,7 +2920,8 @@
             }
           ]
         },
-        "test": "weblayer_browsertests"
+        "test": "views_unittests",
+        "test_target": "//ui/views:views_unittests"
       },
       {
         "merge": {
@@ -2797,7 +2937,8 @@
             }
           ]
         },
-        "test": "wm_unittests"
+        "test": "viz_unittests",
+        "test_target": "//components/viz:viz_unittests"
       },
       {
         "merge": {
@@ -2813,7 +2954,8 @@
             }
           ]
         },
-        "test": "wtf_unittests"
+        "test": "vr_common_unittests",
+        "test_target": "//chrome/browser/vr:vr_common_unittests"
       },
       {
         "merge": {
@@ -2829,7 +2971,76 @@
             }
           ]
         },
-        "test": "zucchini_unittests"
+        "test": "vr_pixeltests",
+        "test_target": "//chrome/browser/vr:vr_pixeltests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
+        "test": "weblayer_browsertests",
+        "test_target": "//weblayer/test:weblayer_browsertests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
+        "test": "wm_unittests",
+        "test_target": "//ui/wm:wm_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
+        "test": "wtf_unittests",
+        "test_target": "//third_party/blink/renderer/platform/wtf:wtf_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
+        "test": "zucchini_unittests",
+        "test_target": "//components/zucchini:zucchini_unittests"
       }
     ],
     "isolated_scripts": [
@@ -2848,7 +3059,8 @@
               "os": "Windows-10-15063"
             }
           ]
-        }
+        },
+        "test_target": "//:blink_python_tests"
       },
       {
         "args": [
@@ -2868,7 +3080,8 @@
               "os": "Windows-10-15063"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test/chromedriver:chromedriver_py_tests"
       },
       {
         "isolate_name": "chromedriver_replay_unittests",
@@ -2885,7 +3098,8 @@
               "os": "Windows-10-15063"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test/chromedriver:chromedriver_replay_unittests"
       },
       {
         "args": [
@@ -2907,7 +3121,8 @@
               "os": "Windows-10-15063"
             }
           ]
-        }
+        },
+        "test_target": "//components:components_perftests"
       },
       {
         "isolate_name": "content_shell_crash_test",
@@ -2924,7 +3139,8 @@
               "os": "Windows-10-15063"
             }
           ]
-        }
+        },
+        "test_target": "//content/shell:content_shell_crash_test"
       },
       {
         "isolate_name": "flatbuffers_unittests",
@@ -2941,7 +3157,8 @@
               "os": "Windows-10-15063"
             }
           ]
-        }
+        },
+        "test_target": "//third_party/flatbuffers:flatbuffers_unittests"
       },
       {
         "isolate_name": "grit_python_unittests",
@@ -2958,7 +3175,8 @@
               "os": "Windows-10-15063"
             }
           ]
-        }
+        },
+        "test_target": "//tools/grit:grit_python_unittests"
       },
       {
         "isolate_name": "metrics_python_tests",
@@ -2975,7 +3193,8 @@
               "os": "Windows-10-15063"
             }
           ]
-        }
+        },
+        "test_target": "//tools/metrics:metrics_python_tests"
       },
       {
         "isolate_name": "mini_installer_tests",
@@ -2993,7 +3212,8 @@
               "os": "Windows-10-15063"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test/mini_installer:mini_installer_tests"
       },
       {
         "experiment_percentage": 100,
@@ -3011,7 +3231,8 @@
               "os": "Windows-10-15063"
             }
           ]
-        }
+        },
+        "test_target": "//tools/polymer:polymer_tools_python_unittests"
       },
       {
         "isolate_name": "telemetry_gpu_unittests",
@@ -3029,7 +3250,8 @@
             }
           ],
           "idempotent": false
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_unittests"
       },
       {
         "args": [
@@ -3051,7 +3273,8 @@
               "os": "Windows-10-15063"
             }
           ]
-        }
+        },
+        "test_target": "//ui/views:views_perftests"
       },
       {
         "args": [
@@ -3077,7 +3300,8 @@
             }
           ],
           "shards": 28
-        }
+        },
+        "test_target": "//:blink_web_tests"
       }
     ],
     "scripts": [
@@ -3104,7 +3328,8 @@
             }
           ]
         },
-        "test": "accessibility_unittests"
+        "test": "accessibility_unittests",
+        "test_target": "//ui/accessibility:accessibility_unittests"
       },
       {
         "merge": {
@@ -3120,7 +3345,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "merge": {
@@ -3136,7 +3362,8 @@
             }
           ]
         },
-        "test": "app_shell_unittests"
+        "test": "app_shell_unittests",
+        "test_target": "//extensions/shell:app_shell_unittests"
       },
       {
         "merge": {
@@ -3152,7 +3379,8 @@
             }
           ]
         },
-        "test": "aura_unittests"
+        "test": "aura_unittests",
+        "test_target": "//ui/aura:aura_unittests"
       },
       {
         "merge": {
@@ -3168,7 +3396,8 @@
             }
           ]
         },
-        "test": "base_unittests"
+        "test": "base_unittests",
+        "test_target": "//base:base_unittests"
       },
       {
         "merge": {
@@ -3184,7 +3413,8 @@
             }
           ]
         },
-        "test": "base_util_unittests"
+        "test": "base_util_unittests",
+        "test_target": "//base/util:base_util_unittests"
       },
       {
         "merge": {
@@ -3200,7 +3430,8 @@
             }
           ]
         },
-        "test": "blink_common_unittests"
+        "test": "blink_common_unittests",
+        "test_target": "//third_party/blink/common:blink_common_unittests"
       },
       {
         "merge": {
@@ -3216,7 +3447,8 @@
             }
           ]
         },
-        "test": "blink_fuzzer_unittests"
+        "test": "blink_fuzzer_unittests",
+        "test_target": "//third_party/blink/renderer/platform:blink_fuzzer_unittests"
       },
       {
         "merge": {
@@ -3232,7 +3464,8 @@
             }
           ]
         },
-        "test": "blink_heap_unittests"
+        "test": "blink_heap_unittests",
+        "test_target": "//third_party/blink/renderer/platform/heap:blink_heap_unittests"
       },
       {
         "merge": {
@@ -3248,7 +3481,8 @@
             }
           ]
         },
-        "test": "blink_platform_unittests"
+        "test": "blink_platform_unittests",
+        "test_target": "//third_party/blink/renderer/platform:blink_platform_unittests"
       },
       {
         "merge": {
@@ -3265,7 +3499,8 @@
             }
           ]
         },
-        "test": "blink_unittests"
+        "test": "blink_unittests",
+        "test_target": "//third_party/blink/renderer/controller:blink_unittests"
       },
       {
         "merge": {
@@ -3281,7 +3516,8 @@
             }
           ]
         },
-        "test": "boringssl_crypto_tests"
+        "test": "boringssl_crypto_tests",
+        "test_target": "//third_party/boringssl:boringssl_crypto_tests"
       },
       {
         "merge": {
@@ -3297,7 +3533,8 @@
             }
           ]
         },
-        "test": "boringssl_ssl_tests"
+        "test": "boringssl_ssl_tests",
+        "test_target": "//third_party/boringssl:boringssl_ssl_tests"
       },
       {
         "merge": {
@@ -3313,7 +3550,8 @@
             }
           ]
         },
-        "test": "browser_switcher_bho_unittests"
+        "test": "browser_switcher_bho_unittests",
+        "test_target": "//chrome/browser/browser_switcher/bho:browser_switcher_bho_unittests"
       },
       {
         "merge": {
@@ -3329,7 +3567,8 @@
             }
           ]
         },
-        "test": "cacheinvalidation_unittests"
+        "test": "cacheinvalidation_unittests",
+        "test_target": "//third_party/cacheinvalidation:cacheinvalidation_unittests"
       },
       {
         "args": [
@@ -3348,7 +3587,8 @@
             }
           ]
         },
-        "test": "capture_unittests"
+        "test": "capture_unittests",
+        "test_target": "//media/capture:capture_unittests"
       },
       {
         "merge": {
@@ -3364,7 +3604,8 @@
             }
           ]
         },
-        "test": "cast_unittests"
+        "test": "cast_unittests",
+        "test_target": "//media/cast:cast_unittests"
       },
       {
         "merge": {
@@ -3380,7 +3621,8 @@
             }
           ]
         },
-        "test": "cc_unittests"
+        "test": "cc_unittests",
+        "test_target": "//cc:cc_unittests"
       },
       {
         "merge": {
@@ -3396,7 +3638,8 @@
             }
           ]
         },
-        "test": "chrome_app_unittests"
+        "test": "chrome_app_unittests",
+        "test_target": "//chrome/test:chrome_app_unittests"
       },
       {
         "merge": {
@@ -3412,7 +3655,8 @@
             }
           ]
         },
-        "test": "chrome_cleaner_unittests"
+        "test": "chrome_cleaner_unittests",
+        "test_target": "//chrome/chrome_cleaner:chrome_cleaner_unittests"
       },
       {
         "merge": {
@@ -3428,7 +3672,8 @@
             }
           ]
         },
-        "test": "chrome_elf_unittests"
+        "test": "chrome_elf_unittests",
+        "test_target": "//chrome/chrome_elf:chrome_elf_unittests"
       },
       {
         "merge": {
@@ -3444,7 +3689,8 @@
             }
           ]
         },
-        "test": "chromedriver_unittests"
+        "test": "chromedriver_unittests",
+        "test_target": "//chrome/test/chromedriver:chromedriver_unittests"
       },
       {
         "merge": {
@@ -3460,7 +3706,8 @@
             }
           ]
         },
-        "test": "components_browsertests"
+        "test": "components_browsertests",
+        "test_target": "//components:components_browsertests"
       },
       {
         "merge": {
@@ -3476,7 +3723,8 @@
             }
           ]
         },
-        "test": "components_unittests"
+        "test": "components_unittests",
+        "test_target": "//components:components_unittests"
       },
       {
         "merge": {
@@ -3492,7 +3740,8 @@
             }
           ]
         },
-        "test": "compositor_unittests"
+        "test": "compositor_unittests",
+        "test_target": "//ui/compositor:compositor_unittests"
       },
       {
         "args": [
@@ -3514,7 +3763,8 @@
           ],
           "shards": 6
         },
-        "test": "content_browsertests"
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
       },
       {
         "merge": {
@@ -3530,7 +3780,8 @@
             }
           ]
         },
-        "test": "content_unittests"
+        "test": "content_unittests",
+        "test_target": "//content/test:content_unittests"
       },
       {
         "merge": {
@@ -3546,7 +3797,8 @@
             }
           ]
         },
-        "test": "courgette_unittests"
+        "test": "courgette_unittests",
+        "test_target": "//courgette:courgette_unittests"
       },
       {
         "merge": {
@@ -3562,7 +3814,8 @@
             }
           ]
         },
-        "test": "crashpad_tests"
+        "test": "crashpad_tests",
+        "test_target": "//third_party/crashpad/crashpad:crashpad_tests"
       },
       {
         "merge": {
@@ -3578,7 +3831,8 @@
             }
           ]
         },
-        "test": "cronet_tests"
+        "test": "cronet_tests",
+        "test_target": "//components/cronet:cronet_tests"
       },
       {
         "merge": {
@@ -3594,7 +3848,8 @@
             }
           ]
         },
-        "test": "cronet_unittests"
+        "test": "cronet_unittests",
+        "test_target": "//components/cronet:cronet_unittests"
       },
       {
         "merge": {
@@ -3610,7 +3865,8 @@
             }
           ]
         },
-        "test": "crypto_unittests"
+        "test": "crypto_unittests",
+        "test_target": "//crypto:crypto_unittests"
       },
       {
         "merge": {
@@ -3626,7 +3882,8 @@
             }
           ]
         },
-        "test": "delayloads_unittests"
+        "test": "delayloads_unittests",
+        "test_target": "//chrome/test:delayloads_unittests"
       },
       {
         "merge": {
@@ -3642,7 +3899,8 @@
             }
           ]
         },
-        "test": "device_unittests"
+        "test": "device_unittests",
+        "test_target": "//device:device_unittests"
       },
       {
         "merge": {
@@ -3658,7 +3916,8 @@
             }
           ]
         },
-        "test": "display_unittests"
+        "test": "display_unittests",
+        "test_target": "//ui/display:display_unittests"
       },
       {
         "merge": {
@@ -3674,7 +3933,8 @@
             }
           ]
         },
-        "test": "elevation_service_unittests"
+        "test": "elevation_service_unittests",
+        "test_target": "//chrome/elevation_service:elevation_service_unittests"
       },
       {
         "merge": {
@@ -3690,7 +3950,8 @@
             }
           ]
         },
-        "test": "events_unittests"
+        "test": "events_unittests",
+        "test_target": "//ui/events:events_unittests"
       },
       {
         "experiment_percentage": 100,
@@ -3707,7 +3968,8 @@
             }
           ]
         },
-        "test": "extensions_browsertests"
+        "test": "extensions_browsertests",
+        "test_target": "//extensions:extensions_browsertests"
       },
       {
         "merge": {
@@ -3723,7 +3985,8 @@
             }
           ]
         },
-        "test": "extensions_unittests"
+        "test": "extensions_unittests",
+        "test_target": "//extensions:extensions_unittests"
       },
       {
         "merge": {
@@ -3739,7 +4002,8 @@
             }
           ]
         },
-        "test": "filesystem_service_unittests"
+        "test": "filesystem_service_unittests",
+        "test_target": "//components/services/filesystem:filesystem_service_unittests"
       },
       {
         "merge": {
@@ -3755,7 +4019,8 @@
             }
           ]
         },
-        "test": "gcm_unit_tests"
+        "test": "gcm_unit_tests",
+        "test_target": "//google_apis/gcm:gcm_unit_tests"
       },
       {
         "merge": {
@@ -3771,7 +4036,8 @@
             }
           ]
         },
-        "test": "gcp_unittests"
+        "test": "gcp_unittests",
+        "test_target": "//chrome/credential_provider/test:gcp_unittests"
       },
       {
         "merge": {
@@ -3787,7 +4053,8 @@
             }
           ]
         },
-        "test": "gfx_unittests"
+        "test": "gfx_unittests",
+        "test_target": "//ui/gfx:gfx_unittests"
       },
       {
         "merge": {
@@ -3803,7 +4070,8 @@
             }
           ]
         },
-        "test": "gin_unittests"
+        "test": "gin_unittests",
+        "test_target": "//gin:gin_unittests"
       },
       {
         "merge": {
@@ -3819,7 +4087,8 @@
             }
           ]
         },
-        "test": "google_apis_unittests"
+        "test": "google_apis_unittests",
+        "test_target": "//google_apis:google_apis_unittests"
       },
       {
         "merge": {
@@ -3835,7 +4104,8 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "merge": {
@@ -3851,7 +4121,8 @@
             }
           ]
         },
-        "test": "gwp_asan_unittests"
+        "test": "gwp_asan_unittests",
+        "test_target": "//components/gwp_asan:gwp_asan_unittests"
       },
       {
         "merge": {
@@ -3867,7 +4138,8 @@
             }
           ]
         },
-        "test": "headless_browsertests"
+        "test": "headless_browsertests",
+        "test_target": "//headless:headless_browsertests"
       },
       {
         "merge": {
@@ -3883,7 +4155,8 @@
             }
           ]
         },
-        "test": "headless_unittests"
+        "test": "headless_unittests",
+        "test_target": "//headless:headless_unittests"
       },
       {
         "merge": {
@@ -3899,7 +4172,8 @@
             }
           ]
         },
-        "test": "install_static_unittests"
+        "test": "install_static_unittests",
+        "test_target": "//chrome/install_static:install_static_unittests"
       },
       {
         "merge": {
@@ -3916,7 +4190,8 @@
             }
           ]
         },
-        "test": "installer_util_unittests"
+        "test": "installer_util_unittests",
+        "test_target": "//chrome/installer/util:installer_util_unittests"
       },
       {
         "experiment_percentage": 100,
@@ -3934,7 +4209,8 @@
           ],
           "shards": 3
         },
-        "test": "interactive_ui_tests"
+        "test": "interactive_ui_tests",
+        "test_target": "//chrome/test:interactive_ui_tests"
       },
       {
         "merge": {
@@ -3950,7 +4226,8 @@
             }
           ]
         },
-        "test": "ipc_tests"
+        "test": "ipc_tests",
+        "test_target": "//ipc:ipc_tests"
       },
       {
         "merge": {
@@ -3966,7 +4243,8 @@
             }
           ]
         },
-        "test": "jingle_unittests"
+        "test": "jingle_unittests",
+        "test_target": "//jingle:jingle_unittests"
       },
       {
         "merge": {
@@ -3982,7 +4260,8 @@
             }
           ]
         },
-        "test": "latency_unittests"
+        "test": "latency_unittests",
+        "test_target": "//ui/latency:latency_unittests"
       },
       {
         "merge": {
@@ -3998,7 +4277,8 @@
             }
           ]
         },
-        "test": "libjingle_xmpp_unittests"
+        "test": "libjingle_xmpp_unittests",
+        "test_target": "//third_party/libjingle_xmpp:libjingle_xmpp_unittests"
       },
       {
         "merge": {
@@ -4014,7 +4294,8 @@
             }
           ]
         },
-        "test": "media_blink_unittests"
+        "test": "media_blink_unittests",
+        "test_target": "//media/blink:media_blink_unittests"
       },
       {
         "merge": {
@@ -4030,7 +4311,8 @@
             }
           ]
         },
-        "test": "media_service_unittests"
+        "test": "media_service_unittests",
+        "test_target": "//media/mojo/services:media_service_unittests"
       },
       {
         "merge": {
@@ -4046,7 +4328,8 @@
             }
           ]
         },
-        "test": "media_unittests"
+        "test": "media_unittests",
+        "test_target": "//media:media_unittests"
       },
       {
         "merge": {
@@ -4062,7 +4345,8 @@
             }
           ]
         },
-        "test": "message_center_unittests"
+        "test": "message_center_unittests",
+        "test_target": "//ui/message_center:message_center_unittests"
       },
       {
         "merge": {
@@ -4078,7 +4362,8 @@
             }
           ]
         },
-        "test": "midi_unittests"
+        "test": "midi_unittests",
+        "test_target": "//media/midi:midi_unittests"
       },
       {
         "merge": {
@@ -4094,7 +4379,8 @@
             }
           ]
         },
-        "test": "mojo_core_unittests"
+        "test": "mojo_core_unittests",
+        "test_target": "//mojo/core:mojo_core_unittests"
       },
       {
         "merge": {
@@ -4110,7 +4396,8 @@
             }
           ]
         },
-        "test": "mojo_unittests"
+        "test": "mojo_unittests",
+        "test_target": "//mojo:mojo_unittests"
       },
       {
         "merge": {
@@ -4126,7 +4413,8 @@
             }
           ]
         },
-        "test": "nacl_loader_unittests"
+        "test": "nacl_loader_unittests",
+        "test_target": "//components/nacl/loader:nacl_loader_unittests"
       },
       {
         "merge": {
@@ -4142,7 +4430,8 @@
             }
           ]
         },
-        "test": "native_theme_unittests"
+        "test": "native_theme_unittests",
+        "test_target": "//ui/native_theme:native_theme_unittests"
       },
       {
         "merge": {
@@ -4158,7 +4447,8 @@
             }
           ]
         },
-        "test": "net_unittests"
+        "test": "net_unittests",
+        "test_target": "//net:net_unittests"
       },
       {
         "merge": {
@@ -4174,7 +4464,8 @@
             }
           ]
         },
-        "test": "notification_helper_unittests"
+        "test": "notification_helper_unittests",
+        "test_target": "//chrome/notification_helper:notification_helper_unittests"
       },
       {
         "merge": {
@@ -4190,7 +4481,8 @@
             }
           ]
         },
-        "test": "pdf_unittests"
+        "test": "pdf_unittests",
+        "test_target": "//pdf:pdf_unittests"
       },
       {
         "merge": {
@@ -4206,7 +4498,8 @@
             }
           ]
         },
-        "test": "perfetto_unittests"
+        "test": "perfetto_unittests",
+        "test_target": "//third_party/perfetto:perfetto_unittests"
       },
       {
         "merge": {
@@ -4222,7 +4515,8 @@
             }
           ]
         },
-        "test": "ppapi_unittests"
+        "test": "ppapi_unittests",
+        "test_target": "//ppapi:ppapi_unittests"
       },
       {
         "merge": {
@@ -4238,7 +4532,8 @@
             }
           ]
         },
-        "test": "printing_unittests"
+        "test": "printing_unittests",
+        "test_target": "//printing:printing_unittests"
       },
       {
         "merge": {
@@ -4254,88 +4549,8 @@
             }
           ]
         },
-        "test": "remoting_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "integrity": "high",
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
-        "test": "sbox_integration_tests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
-        "test": "sbox_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
-        "test": "sbox_validation_tests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
-        "test": "service_manager_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
-        "test": "services_unittests"
+        "test": "remoting_unittests",
+        "test_target": "//remoting:remoting_unittests"
       },
       {
         "merge": {
@@ -4352,7 +4567,8 @@
             }
           ]
         },
-        "test": "setup_unittests"
+        "test": "sbox_integration_tests",
+        "test_target": "//sandbox/win:sbox_integration_tests"
       },
       {
         "merge": {
@@ -4368,7 +4584,8 @@
             }
           ]
         },
-        "test": "shell_dialogs_unittests"
+        "test": "sbox_unittests",
+        "test_target": "//sandbox/win:sbox_unittests"
       },
       {
         "merge": {
@@ -4384,7 +4601,8 @@
             }
           ]
         },
-        "test": "skia_unittests"
+        "test": "sbox_validation_tests",
+        "test_target": "//sandbox/win:sbox_validation_tests"
       },
       {
         "merge": {
@@ -4400,7 +4618,8 @@
             }
           ]
         },
-        "test": "snapshot_unittests"
+        "test": "service_manager_unittests",
+        "test_target": "//services/service_manager/tests:service_manager_unittests"
       },
       {
         "merge": {
@@ -4416,7 +4635,26 @@
             }
           ]
         },
-        "test": "sql_unittests"
+        "test": "services_unittests",
+        "test_target": "//services:services_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "integrity": "high",
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
+        "test": "setup_unittests",
+        "test_target": "//chrome/installer/setup:setup_unittests"
       },
       {
         "merge": {
@@ -4432,7 +4670,76 @@
             }
           ]
         },
-        "test": "storage_unittests"
+        "test": "shell_dialogs_unittests",
+        "test_target": "//ui/shell_dialogs:shell_dialogs_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
+        "test": "skia_unittests",
+        "test_target": "//skia:skia_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
+        "test": "snapshot_unittests",
+        "test_target": "//ui/snapshot:snapshot_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
+        "test": "sql_unittests",
+        "test_target": "//sql:sql_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
+        "test": "storage_unittests",
+        "test_target": "//storage:storage_unittests"
       },
       {
         "experiment_percentage": 100,
@@ -4449,7 +4756,8 @@
             }
           ]
         },
-        "test": "sync_integration_tests"
+        "test": "sync_integration_tests",
+        "test_target": "//chrome/test:sync_integration_tests"
       },
       {
         "merge": {
@@ -4465,7 +4773,8 @@
             }
           ]
         },
-        "test": "traffic_annotation_auditor_unittests"
+        "test": "traffic_annotation_auditor_unittests",
+        "test_target": "//tools/traffic_annotation/auditor:traffic_annotation_auditor_unittests"
       },
       {
         "merge": {
@@ -4481,7 +4790,8 @@
             }
           ]
         },
-        "test": "ui_base_unittests"
+        "test": "ui_base_unittests",
+        "test_target": "//ui/base:ui_base_unittests"
       },
       {
         "merge": {
@@ -4497,7 +4807,8 @@
             }
           ]
         },
-        "test": "ui_touch_selection_unittests"
+        "test": "ui_touch_selection_unittests",
+        "test_target": "//ui/touch_selection:ui_touch_selection_unittests"
       },
       {
         "merge": {
@@ -4513,7 +4824,8 @@
             }
           ]
         },
-        "test": "unit_tests"
+        "test": "unit_tests",
+        "test_target": "//chrome/test:unit_tests"
       },
       {
         "merge": {
@@ -4529,7 +4841,8 @@
             }
           ]
         },
-        "test": "updater_tests"
+        "test": "updater_tests",
+        "test_target": "//chrome/updater:updater_tests"
       },
       {
         "merge": {
@@ -4545,7 +4858,8 @@
             }
           ]
         },
-        "test": "url_unittests"
+        "test": "url_unittests",
+        "test_target": "//url:url_unittests"
       },
       {
         "merge": {
@@ -4561,7 +4875,8 @@
             }
           ]
         },
-        "test": "views_unittests"
+        "test": "views_unittests",
+        "test_target": "//ui/views:views_unittests"
       },
       {
         "merge": {
@@ -4577,7 +4892,8 @@
             }
           ]
         },
-        "test": "viz_unittests"
+        "test": "viz_unittests",
+        "test_target": "//components/viz:viz_unittests"
       },
       {
         "merge": {
@@ -4593,7 +4909,8 @@
             }
           ]
         },
-        "test": "vr_common_unittests"
+        "test": "vr_common_unittests",
+        "test_target": "//chrome/browser/vr:vr_common_unittests"
       },
       {
         "merge": {
@@ -4609,7 +4926,8 @@
             }
           ]
         },
-        "test": "vr_pixeltests"
+        "test": "vr_pixeltests",
+        "test_target": "//chrome/browser/vr:vr_pixeltests"
       },
       {
         "merge": {
@@ -4625,7 +4943,8 @@
             }
           ]
         },
-        "test": "weblayer_browsertests"
+        "test": "weblayer_browsertests",
+        "test_target": "//weblayer/test:weblayer_browsertests"
       },
       {
         "merge": {
@@ -4641,7 +4960,8 @@
             }
           ]
         },
-        "test": "wm_unittests"
+        "test": "wm_unittests",
+        "test_target": "//ui/wm:wm_unittests"
       },
       {
         "merge": {
@@ -4657,7 +4977,8 @@
             }
           ]
         },
-        "test": "wtf_unittests"
+        "test": "wtf_unittests",
+        "test_target": "//third_party/blink/renderer/platform/wtf:wtf_unittests"
       },
       {
         "merge": {
@@ -4673,7 +4994,8 @@
             }
           ]
         },
-        "test": "zucchini_unittests"
+        "test": "zucchini_unittests",
+        "test_target": "//components/zucchini:zucchini_unittests"
       }
     ],
     "isolated_scripts": [
@@ -4692,7 +5014,8 @@
               "os": "Windows-10-15063"
             }
           ]
-        }
+        },
+        "test_target": "//:blink_python_tests"
       },
       {
         "isolate_name": "chromedriver_replay_unittests",
@@ -4709,7 +5032,8 @@
               "os": "Windows-10-15063"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test/chromedriver:chromedriver_replay_unittests"
       },
       {
         "args": [
@@ -4731,7 +5055,8 @@
               "os": "Windows-10-15063"
             }
           ]
-        }
+        },
+        "test_target": "//components:components_perftests"
       },
       {
         "experiment_percentage": 100,
@@ -4749,7 +5074,8 @@
               "os": "Windows-10-15063"
             }
           ]
-        }
+        },
+        "test_target": "//content/shell:content_shell_crash_test"
       },
       {
         "isolate_name": "flatbuffers_unittests",
@@ -4766,7 +5092,8 @@
               "os": "Windows-10-15063"
             }
           ]
-        }
+        },
+        "test_target": "//third_party/flatbuffers:flatbuffers_unittests"
       },
       {
         "isolate_name": "grit_python_unittests",
@@ -4783,7 +5110,8 @@
               "os": "Windows-10-15063"
             }
           ]
-        }
+        },
+        "test_target": "//tools/grit:grit_python_unittests"
       },
       {
         "isolate_name": "metrics_python_tests",
@@ -4800,7 +5128,8 @@
               "os": "Windows-10-15063"
             }
           ]
-        }
+        },
+        "test_target": "//tools/metrics:metrics_python_tests"
       },
       {
         "args": [
@@ -4827,7 +5156,8 @@
           ],
           "hard_timeout": 960,
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:performance_test_suite"
       },
       {
         "isolate_name": "telemetry_gpu_unittests",
@@ -4845,7 +5175,8 @@
             }
           ],
           "idempotent": false
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_unittests"
       },
       {
         "args": [
@@ -4869,7 +5200,8 @@
           ],
           "idempotent": false,
           "shards": 4
-        }
+        },
+        "test_target": "//chrome/test:telemetry_unittests"
       },
       {
         "args": [
@@ -4891,7 +5223,8 @@
               "os": "Windows-10-15063"
             }
           ]
-        }
+        },
+        "test_target": "//ui/views:views_perftests"
       }
     ]
   },
@@ -4911,7 +5244,8 @@
             }
           ]
         },
-        "test": "base_unittests"
+        "test": "base_unittests",
+        "test_target": "//base:base_unittests"
       },
       {
         "merge": {
@@ -4928,7 +5262,8 @@
           ],
           "shards": 10
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "merge": {
@@ -4945,7 +5280,8 @@
             }
           ]
         },
-        "test": "sbox_integration_tests"
+        "test": "sbox_integration_tests",
+        "test_target": "//sandbox/win:sbox_integration_tests"
       },
       {
         "merge": {
@@ -4961,7 +5297,8 @@
             }
           ]
         },
-        "test": "sbox_unittests"
+        "test": "sbox_unittests",
+        "test_target": "//sandbox/win:sbox_unittests"
       },
       {
         "merge": {
@@ -4977,7 +5314,8 @@
             }
           ]
         },
-        "test": "sbox_validation_tests"
+        "test": "sbox_validation_tests",
+        "test_target": "//sandbox/win:sbox_validation_tests"
       }
     ]
   },
@@ -4991,7 +5329,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "accessibility_unittests"
+        "test": "accessibility_unittests",
+        "test_target": "//ui/accessibility:accessibility_unittests"
       },
       {
         "merge": {
@@ -5001,7 +5340,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "merge": {
@@ -5011,7 +5351,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "app_shell_unittests"
+        "test": "app_shell_unittests",
+        "test_target": "//extensions/shell:app_shell_unittests"
       },
       {
         "merge": {
@@ -5021,7 +5362,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "aura_unittests"
+        "test": "aura_unittests",
+        "test_target": "//ui/aura:aura_unittests"
       },
       {
         "merge": {
@@ -5031,7 +5373,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "base_unittests"
+        "test": "base_unittests",
+        "test_target": "//base:base_unittests"
       },
       {
         "merge": {
@@ -5041,7 +5384,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "base_util_unittests"
+        "test": "base_util_unittests",
+        "test_target": "//base/util:base_util_unittests"
       },
       {
         "merge": {
@@ -5051,7 +5395,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "blink_common_unittests"
+        "test": "blink_common_unittests",
+        "test_target": "//third_party/blink/common:blink_common_unittests"
       },
       {
         "merge": {
@@ -5061,7 +5406,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "blink_fuzzer_unittests"
+        "test": "blink_fuzzer_unittests",
+        "test_target": "//third_party/blink/renderer/platform:blink_fuzzer_unittests"
       },
       {
         "merge": {
@@ -5071,7 +5417,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "blink_heap_unittests"
+        "test": "blink_heap_unittests",
+        "test_target": "//third_party/blink/renderer/platform/heap:blink_heap_unittests"
       },
       {
         "merge": {
@@ -5081,7 +5428,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "blink_platform_unittests"
+        "test": "blink_platform_unittests",
+        "test_target": "//third_party/blink/renderer/platform:blink_platform_unittests"
       },
       {
         "merge": {
@@ -5091,7 +5439,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "boringssl_crypto_tests"
+        "test": "boringssl_crypto_tests",
+        "test_target": "//third_party/boringssl:boringssl_crypto_tests"
       },
       {
         "merge": {
@@ -5101,7 +5450,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "boringssl_ssl_tests"
+        "test": "boringssl_ssl_tests",
+        "test_target": "//third_party/boringssl:boringssl_ssl_tests"
       },
       {
         "merge": {
@@ -5111,7 +5461,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "browser_switcher_bho_unittests"
+        "test": "browser_switcher_bho_unittests",
+        "test_target": "//chrome/browser/browser_switcher/bho:browser_switcher_bho_unittests"
       },
       {
         "merge": {
@@ -5122,7 +5473,8 @@
           "can_use_on_swarming_builders": true,
           "shards": 15
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "merge": {
@@ -5132,7 +5484,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "cacheinvalidation_unittests"
+        "test": "cacheinvalidation_unittests",
+        "test_target": "//third_party/cacheinvalidation:cacheinvalidation_unittests"
       },
       {
         "args": [
@@ -5145,7 +5498,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "capture_unittests"
+        "test": "capture_unittests",
+        "test_target": "//media/capture:capture_unittests"
       },
       {
         "merge": {
@@ -5155,7 +5509,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "cast_unittests"
+        "test": "cast_unittests",
+        "test_target": "//media/cast:cast_unittests"
       },
       {
         "merge": {
@@ -5165,7 +5520,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "cc_unittests"
+        "test": "cc_unittests",
+        "test_target": "//cc:cc_unittests"
       },
       {
         "merge": {
@@ -5175,7 +5531,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "chrome_app_unittests"
+        "test": "chrome_app_unittests",
+        "test_target": "//chrome/test:chrome_app_unittests"
       },
       {
         "merge": {
@@ -5185,7 +5542,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "chrome_cleaner_unittests"
+        "test": "chrome_cleaner_unittests",
+        "test_target": "//chrome/chrome_cleaner:chrome_cleaner_unittests"
       },
       {
         "merge": {
@@ -5195,7 +5553,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "chrome_elf_unittests"
+        "test": "chrome_elf_unittests",
+        "test_target": "//chrome/chrome_elf:chrome_elf_unittests"
       },
       {
         "merge": {
@@ -5205,7 +5564,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "chromedriver_unittests"
+        "test": "chromedriver_unittests",
+        "test_target": "//chrome/test/chromedriver:chromedriver_unittests"
       },
       {
         "merge": {
@@ -5215,7 +5575,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "components_browsertests"
+        "test": "components_browsertests",
+        "test_target": "//components:components_browsertests"
       },
       {
         "merge": {
@@ -5225,7 +5586,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "components_unittests"
+        "test": "components_unittests",
+        "test_target": "//components:components_unittests"
       },
       {
         "merge": {
@@ -5235,7 +5597,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "compositor_unittests"
+        "test": "compositor_unittests",
+        "test_target": "//ui/compositor:compositor_unittests"
       },
       {
         "merge": {
@@ -5246,7 +5609,8 @@
           "can_use_on_swarming_builders": true,
           "shards": 6
         },
-        "test": "content_browsertests"
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
       },
       {
         "merge": {
@@ -5256,7 +5620,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "content_unittests"
+        "test": "content_unittests",
+        "test_target": "//content/test:content_unittests"
       },
       {
         "merge": {
@@ -5266,7 +5631,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "courgette_unittests"
+        "test": "courgette_unittests",
+        "test_target": "//courgette:courgette_unittests"
       },
       {
         "merge": {
@@ -5276,7 +5642,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "crashpad_tests"
+        "test": "crashpad_tests",
+        "test_target": "//third_party/crashpad/crashpad:crashpad_tests"
       },
       {
         "merge": {
@@ -5286,7 +5653,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "cronet_tests"
+        "test": "cronet_tests",
+        "test_target": "//components/cronet:cronet_tests"
       },
       {
         "merge": {
@@ -5296,7 +5664,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "cronet_unittests"
+        "test": "cronet_unittests",
+        "test_target": "//components/cronet:cronet_unittests"
       },
       {
         "merge": {
@@ -5306,7 +5675,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "crypto_unittests"
+        "test": "crypto_unittests",
+        "test_target": "//crypto:crypto_unittests"
       },
       {
         "merge": {
@@ -5316,7 +5686,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "delayloads_unittests"
+        "test": "delayloads_unittests",
+        "test_target": "//chrome/test:delayloads_unittests"
       },
       {
         "merge": {
@@ -5326,7 +5697,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "device_unittests"
+        "test": "device_unittests",
+        "test_target": "//device:device_unittests"
       },
       {
         "merge": {
@@ -5336,7 +5708,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "display_unittests"
+        "test": "display_unittests",
+        "test_target": "//ui/display:display_unittests"
       },
       {
         "merge": {
@@ -5346,7 +5719,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "elevation_service_unittests"
+        "test": "elevation_service_unittests",
+        "test_target": "//chrome/elevation_service:elevation_service_unittests"
       },
       {
         "merge": {
@@ -5356,7 +5730,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "events_unittests"
+        "test": "events_unittests",
+        "test_target": "//ui/events:events_unittests"
       },
       {
         "merge": {
@@ -5366,7 +5741,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "extensions_browsertests"
+        "test": "extensions_browsertests",
+        "test_target": "//extensions:extensions_browsertests"
       },
       {
         "merge": {
@@ -5376,7 +5752,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "extensions_unittests"
+        "test": "extensions_unittests",
+        "test_target": "//extensions:extensions_unittests"
       },
       {
         "merge": {
@@ -5386,7 +5763,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "filesystem_service_unittests"
+        "test": "filesystem_service_unittests",
+        "test_target": "//components/services/filesystem:filesystem_service_unittests"
       },
       {
         "merge": {
@@ -5396,7 +5774,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gcm_unit_tests"
+        "test": "gcm_unit_tests",
+        "test_target": "//google_apis/gcm:gcm_unit_tests"
       },
       {
         "merge": {
@@ -5406,7 +5785,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gcp_unittests"
+        "test": "gcp_unittests",
+        "test_target": "//chrome/credential_provider/test:gcp_unittests"
       },
       {
         "merge": {
@@ -5416,7 +5796,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gfx_unittests"
+        "test": "gfx_unittests",
+        "test_target": "//ui/gfx:gfx_unittests"
       },
       {
         "merge": {
@@ -5426,7 +5807,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gin_unittests"
+        "test": "gin_unittests",
+        "test_target": "//gin:gin_unittests"
       },
       {
         "merge": {
@@ -5436,7 +5818,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "google_apis_unittests"
+        "test": "google_apis_unittests",
+        "test_target": "//google_apis:google_apis_unittests"
       },
       {
         "merge": {
@@ -5446,7 +5829,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "merge": {
@@ -5456,7 +5840,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gwp_asan_unittests"
+        "test": "gwp_asan_unittests",
+        "test_target": "//components/gwp_asan:gwp_asan_unittests"
       },
       {
         "merge": {
@@ -5466,7 +5851,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "headless_browsertests"
+        "test": "headless_browsertests",
+        "test_target": "//headless:headless_browsertests"
       },
       {
         "merge": {
@@ -5476,7 +5862,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "headless_unittests"
+        "test": "headless_unittests",
+        "test_target": "//headless:headless_unittests"
       },
       {
         "merge": {
@@ -5486,7 +5873,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "install_static_unittests"
+        "test": "install_static_unittests",
+        "test_target": "//chrome/install_static:install_static_unittests"
       },
       {
         "merge": {
@@ -5501,7 +5889,8 @@
             }
           ]
         },
-        "test": "installer_util_unittests"
+        "test": "installer_util_unittests",
+        "test_target": "//chrome/installer/util:installer_util_unittests"
       },
       {
         "merge": {
@@ -5512,7 +5901,8 @@
           "can_use_on_swarming_builders": true,
           "shards": 3
         },
-        "test": "interactive_ui_tests"
+        "test": "interactive_ui_tests",
+        "test_target": "//chrome/test:interactive_ui_tests"
       },
       {
         "merge": {
@@ -5522,7 +5912,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "ipc_tests"
+        "test": "ipc_tests",
+        "test_target": "//ipc:ipc_tests"
       },
       {
         "merge": {
@@ -5532,7 +5923,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "jingle_unittests"
+        "test": "jingle_unittests",
+        "test_target": "//jingle:jingle_unittests"
       },
       {
         "merge": {
@@ -5542,7 +5934,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "latency_unittests"
+        "test": "latency_unittests",
+        "test_target": "//ui/latency:latency_unittests"
       },
       {
         "merge": {
@@ -5552,7 +5945,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "libjingle_xmpp_unittests"
+        "test": "libjingle_xmpp_unittests",
+        "test_target": "//third_party/libjingle_xmpp:libjingle_xmpp_unittests"
       },
       {
         "merge": {
@@ -5562,7 +5956,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "media_blink_unittests"
+        "test": "media_blink_unittests",
+        "test_target": "//media/blink:media_blink_unittests"
       },
       {
         "merge": {
@@ -5572,7 +5967,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "media_service_unittests"
+        "test": "media_service_unittests",
+        "test_target": "//media/mojo/services:media_service_unittests"
       },
       {
         "merge": {
@@ -5582,7 +5978,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "media_unittests"
+        "test": "media_unittests",
+        "test_target": "//media:media_unittests"
       },
       {
         "merge": {
@@ -5592,7 +5989,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "message_center_unittests"
+        "test": "message_center_unittests",
+        "test_target": "//ui/message_center:message_center_unittests"
       },
       {
         "merge": {
@@ -5602,7 +6000,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "midi_unittests"
+        "test": "midi_unittests",
+        "test_target": "//media/midi:midi_unittests"
       },
       {
         "merge": {
@@ -5612,7 +6011,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "mojo_core_unittests"
+        "test": "mojo_core_unittests",
+        "test_target": "//mojo/core:mojo_core_unittests"
       },
       {
         "merge": {
@@ -5622,7 +6022,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "mojo_unittests"
+        "test": "mojo_unittests",
+        "test_target": "//mojo:mojo_unittests"
       },
       {
         "merge": {
@@ -5632,7 +6033,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "nacl_loader_unittests"
+        "test": "nacl_loader_unittests",
+        "test_target": "//components/nacl/loader:nacl_loader_unittests"
       },
       {
         "merge": {
@@ -5642,7 +6044,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "native_theme_unittests"
+        "test": "native_theme_unittests",
+        "test_target": "//ui/native_theme:native_theme_unittests"
       },
       {
         "merge": {
@@ -5652,7 +6055,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "net_unittests"
+        "test": "net_unittests",
+        "test_target": "//net:net_unittests"
       },
       {
         "merge": {
@@ -5662,7 +6066,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "pdf_unittests"
+        "test": "pdf_unittests",
+        "test_target": "//pdf:pdf_unittests"
       },
       {
         "merge": {
@@ -5672,7 +6077,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "perfetto_unittests"
+        "test": "perfetto_unittests",
+        "test_target": "//third_party/perfetto:perfetto_unittests"
       },
       {
         "merge": {
@@ -5682,7 +6088,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "ppapi_unittests"
+        "test": "ppapi_unittests",
+        "test_target": "//ppapi:ppapi_unittests"
       },
       {
         "merge": {
@@ -5692,7 +6099,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "printing_unittests"
+        "test": "printing_unittests",
+        "test_target": "//printing:printing_unittests"
       },
       {
         "merge": {
@@ -5702,7 +6110,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "remoting_unittests"
+        "test": "remoting_unittests",
+        "test_target": "//remoting:remoting_unittests"
       },
       {
         "merge": {
@@ -5717,7 +6126,8 @@
             }
           ]
         },
-        "test": "sbox_integration_tests"
+        "test": "sbox_integration_tests",
+        "test_target": "//sandbox/win:sbox_integration_tests"
       },
       {
         "merge": {
@@ -5727,7 +6137,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "sbox_unittests"
+        "test": "sbox_unittests",
+        "test_target": "//sandbox/win:sbox_unittests"
       },
       {
         "merge": {
@@ -5737,7 +6148,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "sbox_validation_tests"
+        "test": "sbox_validation_tests",
+        "test_target": "//sandbox/win:sbox_validation_tests"
       },
       {
         "merge": {
@@ -5747,7 +6159,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "service_manager_unittests"
+        "test": "service_manager_unittests",
+        "test_target": "//services/service_manager/tests:service_manager_unittests"
       },
       {
         "merge": {
@@ -5757,7 +6170,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "services_unittests"
+        "test": "services_unittests",
+        "test_target": "//services:services_unittests"
       },
       {
         "merge": {
@@ -5772,7 +6186,8 @@
             }
           ]
         },
-        "test": "setup_unittests"
+        "test": "setup_unittests",
+        "test_target": "//chrome/installer/setup:setup_unittests"
       },
       {
         "merge": {
@@ -5782,7 +6197,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "shell_dialogs_unittests"
+        "test": "shell_dialogs_unittests",
+        "test_target": "//ui/shell_dialogs:shell_dialogs_unittests"
       },
       {
         "merge": {
@@ -5792,7 +6208,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "skia_unittests"
+        "test": "skia_unittests",
+        "test_target": "//skia:skia_unittests"
       },
       {
         "merge": {
@@ -5802,7 +6219,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "snapshot_unittests"
+        "test": "snapshot_unittests",
+        "test_target": "//ui/snapshot:snapshot_unittests"
       },
       {
         "merge": {
@@ -5812,7 +6230,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "sql_unittests"
+        "test": "sql_unittests",
+        "test_target": "//sql:sql_unittests"
       },
       {
         "merge": {
@@ -5822,7 +6241,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "storage_unittests"
+        "test": "storage_unittests",
+        "test_target": "//storage:storage_unittests"
       },
       {
         "merge": {
@@ -5832,7 +6252,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "sync_integration_tests"
+        "test": "sync_integration_tests",
+        "test_target": "//chrome/test:sync_integration_tests"
       },
       {
         "merge": {
@@ -5842,7 +6263,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "traffic_annotation_auditor_unittests"
+        "test": "traffic_annotation_auditor_unittests",
+        "test_target": "//tools/traffic_annotation/auditor:traffic_annotation_auditor_unittests"
       },
       {
         "merge": {
@@ -5852,7 +6274,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "ui_base_unittests"
+        "test": "ui_base_unittests",
+        "test_target": "//ui/base:ui_base_unittests"
       },
       {
         "merge": {
@@ -5862,7 +6285,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "ui_touch_selection_unittests"
+        "test": "ui_touch_selection_unittests",
+        "test_target": "//ui/touch_selection:ui_touch_selection_unittests"
       },
       {
         "merge": {
@@ -5872,7 +6296,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "unit_tests"
+        "test": "unit_tests",
+        "test_target": "//chrome/test:unit_tests"
       },
       {
         "merge": {
@@ -5882,7 +6307,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "updater_tests"
+        "test": "updater_tests",
+        "test_target": "//chrome/updater:updater_tests"
       },
       {
         "merge": {
@@ -5892,7 +6318,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "url_unittests"
+        "test": "url_unittests",
+        "test_target": "//url:url_unittests"
       },
       {
         "merge": {
@@ -5902,7 +6329,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "views_unittests"
+        "test": "views_unittests",
+        "test_target": "//ui/views:views_unittests"
       },
       {
         "merge": {
@@ -5912,7 +6340,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "viz_unittests"
+        "test": "viz_unittests",
+        "test_target": "//components/viz:viz_unittests"
       },
       {
         "merge": {
@@ -5922,7 +6351,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "vr_common_unittests"
+        "test": "vr_common_unittests",
+        "test_target": "//chrome/browser/vr:vr_common_unittests"
       },
       {
         "merge": {
@@ -5932,7 +6362,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "vr_pixeltests"
+        "test": "vr_pixeltests",
+        "test_target": "//chrome/browser/vr:vr_pixeltests"
       },
       {
         "merge": {
@@ -5942,7 +6373,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "weblayer_browsertests"
+        "test": "weblayer_browsertests",
+        "test_target": "//weblayer/test:weblayer_browsertests"
       },
       {
         "merge": {
@@ -5952,7 +6384,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "wm_unittests"
+        "test": "wm_unittests",
+        "test_target": "//ui/wm:wm_unittests"
       },
       {
         "merge": {
@@ -5962,7 +6395,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "wtf_unittests"
+        "test": "wtf_unittests",
+        "test_target": "//third_party/blink/renderer/platform/wtf:wtf_unittests"
       },
       {
         "merge": {
@@ -5972,7 +6406,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "zucchini_unittests"
+        "test": "zucchini_unittests",
+        "test_target": "//components/zucchini:zucchini_unittests"
       }
     ],
     "isolated_scripts": [
@@ -5985,7 +6420,8 @@
         "name": "blink_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//:blink_python_tests"
       },
       {
         "args": [
@@ -5999,7 +6435,8 @@
         "name": "chromedriver_py_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//chrome/test/chromedriver:chromedriver_py_tests"
       },
       {
         "isolate_name": "chromedriver_replay_unittests",
@@ -6010,7 +6447,8 @@
         "name": "chromedriver_replay_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//chrome/test/chromedriver:chromedriver_replay_unittests"
       },
       {
         "args": [
@@ -6026,7 +6464,8 @@
         "name": "components_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//components:components_perftests"
       },
       {
         "isolate_name": "content_shell_crash_test",
@@ -6037,7 +6476,8 @@
         "name": "content_shell_crash_test",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//content/shell:content_shell_crash_test"
       },
       {
         "isolate_name": "flatbuffers_unittests",
@@ -6048,7 +6488,8 @@
         "name": "flatbuffers_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//third_party/flatbuffers:flatbuffers_unittests"
       },
       {
         "isolate_name": "grit_python_unittests",
@@ -6059,7 +6500,8 @@
         "name": "grit_python_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//tools/grit:grit_python_unittests"
       },
       {
         "isolate_name": "metrics_python_tests",
@@ -6070,7 +6512,8 @@
         "name": "metrics_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//tools/metrics:metrics_python_tests"
       },
       {
         "isolate_name": "mini_installer_tests",
@@ -6086,7 +6529,8 @@
               "integrity": "high"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test/mini_installer:mini_installer_tests"
       },
       {
         "experiment_percentage": 100,
@@ -6098,7 +6542,8 @@
         "name": "polymer_tools_python_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//tools/polymer:polymer_tools_python_unittests"
       },
       {
         "isolate_name": "telemetry_gpu_unittests",
@@ -6110,7 +6555,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "idempotent": false
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_unittests"
       },
       {
         "isolate_name": "telemetry_perf_unittests",
@@ -6123,7 +6569,8 @@
           "can_use_on_swarming_builders": true,
           "idempotent": false,
           "shards": 12
-        }
+        },
+        "test_target": "//chrome/test:telemetry_perf_unittests"
       },
       {
         "args": [
@@ -6140,7 +6587,8 @@
           "can_use_on_swarming_builders": true,
           "idempotent": false,
           "shards": 4
-        }
+        },
+        "test_target": "//chrome/test:telemetry_unittests"
       },
       {
         "args": [
@@ -6156,7 +6604,8 @@
         "name": "views_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//ui/views:views_perftests"
       },
       {
         "args": [
@@ -6174,7 +6623,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 12
-        }
+        },
+        "test_target": "//:blink_web_tests"
       }
     ],
     "scripts": [
@@ -6194,7 +6644,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "accessibility_unittests"
+        "test": "accessibility_unittests",
+        "test_target": "//ui/accessibility:accessibility_unittests"
       },
       {
         "merge": {
@@ -6204,7 +6655,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "merge": {
@@ -6214,7 +6666,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "app_shell_unittests"
+        "test": "app_shell_unittests",
+        "test_target": "//extensions/shell:app_shell_unittests"
       },
       {
         "merge": {
@@ -6224,7 +6677,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "aura_unittests"
+        "test": "aura_unittests",
+        "test_target": "//ui/aura:aura_unittests"
       },
       {
         "merge": {
@@ -6234,7 +6688,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "base_unittests"
+        "test": "base_unittests",
+        "test_target": "//base:base_unittests"
       },
       {
         "merge": {
@@ -6244,7 +6699,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "base_util_unittests"
+        "test": "base_util_unittests",
+        "test_target": "//base/util:base_util_unittests"
       },
       {
         "merge": {
@@ -6254,7 +6710,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "blink_common_unittests"
+        "test": "blink_common_unittests",
+        "test_target": "//third_party/blink/common:blink_common_unittests"
       },
       {
         "merge": {
@@ -6264,7 +6721,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "blink_fuzzer_unittests"
+        "test": "blink_fuzzer_unittests",
+        "test_target": "//third_party/blink/renderer/platform:blink_fuzzer_unittests"
       },
       {
         "merge": {
@@ -6274,7 +6732,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "blink_heap_unittests"
+        "test": "blink_heap_unittests",
+        "test_target": "//third_party/blink/renderer/platform/heap:blink_heap_unittests"
       },
       {
         "merge": {
@@ -6284,7 +6743,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "blink_platform_unittests"
+        "test": "blink_platform_unittests",
+        "test_target": "//third_party/blink/renderer/platform:blink_platform_unittests"
       },
       {
         "merge": {
@@ -6295,7 +6755,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "blink_unittests"
+        "test": "blink_unittests",
+        "test_target": "//third_party/blink/renderer/controller:blink_unittests"
       },
       {
         "merge": {
@@ -6305,7 +6766,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "boringssl_crypto_tests"
+        "test": "boringssl_crypto_tests",
+        "test_target": "//third_party/boringssl:boringssl_crypto_tests"
       },
       {
         "merge": {
@@ -6315,7 +6777,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "boringssl_ssl_tests"
+        "test": "boringssl_ssl_tests",
+        "test_target": "//third_party/boringssl:boringssl_ssl_tests"
       },
       {
         "merge": {
@@ -6325,7 +6788,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "browser_switcher_bho_unittests"
+        "test": "browser_switcher_bho_unittests",
+        "test_target": "//chrome/browser/browser_switcher/bho:browser_switcher_bho_unittests"
       },
       {
         "merge": {
@@ -6336,7 +6800,8 @@
           "can_use_on_swarming_builders": true,
           "shards": 20
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "merge": {
@@ -6346,7 +6811,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "cacheinvalidation_unittests"
+        "test": "cacheinvalidation_unittests",
+        "test_target": "//third_party/cacheinvalidation:cacheinvalidation_unittests"
       },
       {
         "args": [
@@ -6359,7 +6825,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "capture_unittests"
+        "test": "capture_unittests",
+        "test_target": "//media/capture:capture_unittests"
       },
       {
         "merge": {
@@ -6369,7 +6836,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "cast_unittests"
+        "test": "cast_unittests",
+        "test_target": "//media/cast:cast_unittests"
       },
       {
         "merge": {
@@ -6379,7 +6847,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "cc_unittests"
+        "test": "cc_unittests",
+        "test_target": "//cc:cc_unittests"
       },
       {
         "merge": {
@@ -6389,7 +6858,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "chrome_app_unittests"
+        "test": "chrome_app_unittests",
+        "test_target": "//chrome/test:chrome_app_unittests"
       },
       {
         "merge": {
@@ -6399,7 +6869,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "chrome_cleaner_unittests"
+        "test": "chrome_cleaner_unittests",
+        "test_target": "//chrome/chrome_cleaner:chrome_cleaner_unittests"
       },
       {
         "merge": {
@@ -6409,7 +6880,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "chrome_elf_unittests"
+        "test": "chrome_elf_unittests",
+        "test_target": "//chrome/chrome_elf:chrome_elf_unittests"
       },
       {
         "merge": {
@@ -6419,7 +6891,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "chromedriver_unittests"
+        "test": "chromedriver_unittests",
+        "test_target": "//chrome/test/chromedriver:chromedriver_unittests"
       },
       {
         "merge": {
@@ -6429,7 +6902,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "components_browsertests"
+        "test": "components_browsertests",
+        "test_target": "//components:components_browsertests"
       },
       {
         "merge": {
@@ -6439,7 +6913,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "components_unittests"
+        "test": "components_unittests",
+        "test_target": "//components:components_unittests"
       },
       {
         "merge": {
@@ -6449,7 +6924,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "compositor_unittests"
+        "test": "compositor_unittests",
+        "test_target": "//ui/compositor:compositor_unittests"
       },
       {
         "merge": {
@@ -6460,7 +6936,8 @@
           "can_use_on_swarming_builders": true,
           "shards": 6
         },
-        "test": "content_browsertests"
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
       },
       {
         "merge": {
@@ -6470,7 +6947,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "content_unittests"
+        "test": "content_unittests",
+        "test_target": "//content/test:content_unittests"
       },
       {
         "merge": {
@@ -6480,7 +6958,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "courgette_unittests"
+        "test": "courgette_unittests",
+        "test_target": "//courgette:courgette_unittests"
       },
       {
         "merge": {
@@ -6490,7 +6969,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "crashpad_tests"
+        "test": "crashpad_tests",
+        "test_target": "//third_party/crashpad/crashpad:crashpad_tests"
       },
       {
         "merge": {
@@ -6500,7 +6980,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "cronet_tests"
+        "test": "cronet_tests",
+        "test_target": "//components/cronet:cronet_tests"
       },
       {
         "merge": {
@@ -6510,7 +6991,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "cronet_unittests"
+        "test": "cronet_unittests",
+        "test_target": "//components/cronet:cronet_unittests"
       },
       {
         "merge": {
@@ -6520,7 +7002,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "crypto_unittests"
+        "test": "crypto_unittests",
+        "test_target": "//crypto:crypto_unittests"
       },
       {
         "merge": {
@@ -6530,7 +7013,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "delayloads_unittests"
+        "test": "delayloads_unittests",
+        "test_target": "//chrome/test:delayloads_unittests"
       },
       {
         "merge": {
@@ -6540,7 +7024,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "device_unittests"
+        "test": "device_unittests",
+        "test_target": "//device:device_unittests"
       },
       {
         "merge": {
@@ -6550,7 +7035,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "display_unittests"
+        "test": "display_unittests",
+        "test_target": "//ui/display:display_unittests"
       },
       {
         "merge": {
@@ -6560,7 +7046,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "elevation_service_unittests"
+        "test": "elevation_service_unittests",
+        "test_target": "//chrome/elevation_service:elevation_service_unittests"
       },
       {
         "merge": {
@@ -6570,7 +7057,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "events_unittests"
+        "test": "events_unittests",
+        "test_target": "//ui/events:events_unittests"
       },
       {
         "merge": {
@@ -6580,7 +7068,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "extensions_browsertests"
+        "test": "extensions_browsertests",
+        "test_target": "//extensions:extensions_browsertests"
       },
       {
         "merge": {
@@ -6590,7 +7079,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "extensions_unittests"
+        "test": "extensions_unittests",
+        "test_target": "//extensions:extensions_unittests"
       },
       {
         "merge": {
@@ -6600,7 +7090,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "filesystem_service_unittests"
+        "test": "filesystem_service_unittests",
+        "test_target": "//components/services/filesystem:filesystem_service_unittests"
       },
       {
         "merge": {
@@ -6610,7 +7101,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gcm_unit_tests"
+        "test": "gcm_unit_tests",
+        "test_target": "//google_apis/gcm:gcm_unit_tests"
       },
       {
         "merge": {
@@ -6620,7 +7112,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gcp_unittests"
+        "test": "gcp_unittests",
+        "test_target": "//chrome/credential_provider/test:gcp_unittests"
       },
       {
         "merge": {
@@ -6630,7 +7123,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gfx_unittests"
+        "test": "gfx_unittests",
+        "test_target": "//ui/gfx:gfx_unittests"
       },
       {
         "merge": {
@@ -6640,7 +7134,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gin_unittests"
+        "test": "gin_unittests",
+        "test_target": "//gin:gin_unittests"
       },
       {
         "merge": {
@@ -6650,7 +7145,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "google_apis_unittests"
+        "test": "google_apis_unittests",
+        "test_target": "//google_apis:google_apis_unittests"
       },
       {
         "merge": {
@@ -6660,7 +7156,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "merge": {
@@ -6670,7 +7167,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gwp_asan_unittests"
+        "test": "gwp_asan_unittests",
+        "test_target": "//components/gwp_asan:gwp_asan_unittests"
       },
       {
         "merge": {
@@ -6680,7 +7178,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "headless_browsertests"
+        "test": "headless_browsertests",
+        "test_target": "//headless:headless_browsertests"
       },
       {
         "merge": {
@@ -6690,7 +7189,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "headless_unittests"
+        "test": "headless_unittests",
+        "test_target": "//headless:headless_unittests"
       },
       {
         "merge": {
@@ -6700,7 +7200,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "install_static_unittests"
+        "test": "install_static_unittests",
+        "test_target": "//chrome/install_static:install_static_unittests"
       },
       {
         "merge": {
@@ -6715,7 +7216,8 @@
             }
           ]
         },
-        "test": "installer_util_unittests"
+        "test": "installer_util_unittests",
+        "test_target": "//chrome/installer/util:installer_util_unittests"
       },
       {
         "merge": {
@@ -6726,7 +7228,8 @@
           "can_use_on_swarming_builders": true,
           "shards": 4
         },
-        "test": "interactive_ui_tests"
+        "test": "interactive_ui_tests",
+        "test_target": "//chrome/test:interactive_ui_tests"
       },
       {
         "merge": {
@@ -6736,7 +7239,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "ipc_tests"
+        "test": "ipc_tests",
+        "test_target": "//ipc:ipc_tests"
       },
       {
         "merge": {
@@ -6746,7 +7250,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "jingle_unittests"
+        "test": "jingle_unittests",
+        "test_target": "//jingle:jingle_unittests"
       },
       {
         "merge": {
@@ -6756,7 +7261,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "latency_unittests"
+        "test": "latency_unittests",
+        "test_target": "//ui/latency:latency_unittests"
       },
       {
         "merge": {
@@ -6766,7 +7272,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "libjingle_xmpp_unittests"
+        "test": "libjingle_xmpp_unittests",
+        "test_target": "//third_party/libjingle_xmpp:libjingle_xmpp_unittests"
       },
       {
         "merge": {
@@ -6776,7 +7283,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "media_blink_unittests"
+        "test": "media_blink_unittests",
+        "test_target": "//media/blink:media_blink_unittests"
       },
       {
         "merge": {
@@ -6786,7 +7294,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "media_service_unittests"
+        "test": "media_service_unittests",
+        "test_target": "//media/mojo/services:media_service_unittests"
       },
       {
         "merge": {
@@ -6796,7 +7305,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "media_unittests"
+        "test": "media_unittests",
+        "test_target": "//media:media_unittests"
       },
       {
         "merge": {
@@ -6806,7 +7316,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "message_center_unittests"
+        "test": "message_center_unittests",
+        "test_target": "//ui/message_center:message_center_unittests"
       },
       {
         "merge": {
@@ -6816,7 +7327,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "midi_unittests"
+        "test": "midi_unittests",
+        "test_target": "//media/midi:midi_unittests"
       },
       {
         "merge": {
@@ -6826,7 +7338,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "mojo_core_unittests"
+        "test": "mojo_core_unittests",
+        "test_target": "//mojo/core:mojo_core_unittests"
       },
       {
         "merge": {
@@ -6836,7 +7349,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "mojo_unittests"
+        "test": "mojo_unittests",
+        "test_target": "//mojo:mojo_unittests"
       },
       {
         "merge": {
@@ -6846,7 +7360,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "nacl_loader_unittests"
+        "test": "nacl_loader_unittests",
+        "test_target": "//components/nacl/loader:nacl_loader_unittests"
       },
       {
         "merge": {
@@ -6856,7 +7371,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "native_theme_unittests"
+        "test": "native_theme_unittests",
+        "test_target": "//ui/native_theme:native_theme_unittests"
       },
       {
         "merge": {
@@ -6866,7 +7382,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "net_unittests"
+        "test": "net_unittests",
+        "test_target": "//net:net_unittests"
       },
       {
         "merge": {
@@ -6876,7 +7393,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "pdf_unittests"
+        "test": "pdf_unittests",
+        "test_target": "//pdf:pdf_unittests"
       },
       {
         "merge": {
@@ -6886,7 +7404,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "perfetto_unittests"
+        "test": "perfetto_unittests",
+        "test_target": "//third_party/perfetto:perfetto_unittests"
       },
       {
         "merge": {
@@ -6896,7 +7415,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "ppapi_unittests"
+        "test": "ppapi_unittests",
+        "test_target": "//ppapi:ppapi_unittests"
       },
       {
         "merge": {
@@ -6906,7 +7426,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "printing_unittests"
+        "test": "printing_unittests",
+        "test_target": "//printing:printing_unittests"
       },
       {
         "merge": {
@@ -6916,7 +7437,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "remoting_unittests"
+        "test": "remoting_unittests",
+        "test_target": "//remoting:remoting_unittests"
       },
       {
         "merge": {
@@ -6931,7 +7453,8 @@
             }
           ]
         },
-        "test": "sbox_integration_tests"
+        "test": "sbox_integration_tests",
+        "test_target": "//sandbox/win:sbox_integration_tests"
       },
       {
         "merge": {
@@ -6941,7 +7464,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "sbox_unittests"
+        "test": "sbox_unittests",
+        "test_target": "//sandbox/win:sbox_unittests"
       },
       {
         "merge": {
@@ -6951,7 +7475,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "sbox_validation_tests"
+        "test": "sbox_validation_tests",
+        "test_target": "//sandbox/win:sbox_validation_tests"
       },
       {
         "merge": {
@@ -6961,7 +7486,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "service_manager_unittests"
+        "test": "service_manager_unittests",
+        "test_target": "//services/service_manager/tests:service_manager_unittests"
       },
       {
         "merge": {
@@ -6971,7 +7497,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "services_unittests"
+        "test": "services_unittests",
+        "test_target": "//services:services_unittests"
       },
       {
         "merge": {
@@ -6986,7 +7513,8 @@
             }
           ]
         },
-        "test": "setup_unittests"
+        "test": "setup_unittests",
+        "test_target": "//chrome/installer/setup:setup_unittests"
       },
       {
         "merge": {
@@ -6996,7 +7524,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "shell_dialogs_unittests"
+        "test": "shell_dialogs_unittests",
+        "test_target": "//ui/shell_dialogs:shell_dialogs_unittests"
       },
       {
         "merge": {
@@ -7006,7 +7535,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "skia_unittests"
+        "test": "skia_unittests",
+        "test_target": "//skia:skia_unittests"
       },
       {
         "merge": {
@@ -7016,7 +7546,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "snapshot_unittests"
+        "test": "snapshot_unittests",
+        "test_target": "//ui/snapshot:snapshot_unittests"
       },
       {
         "merge": {
@@ -7026,7 +7557,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "sql_unittests"
+        "test": "sql_unittests",
+        "test_target": "//sql:sql_unittests"
       },
       {
         "merge": {
@@ -7036,7 +7568,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "storage_unittests"
+        "test": "storage_unittests",
+        "test_target": "//storage:storage_unittests"
       },
       {
         "merge": {
@@ -7047,7 +7580,8 @@
           "can_use_on_swarming_builders": true,
           "shards": 2
         },
-        "test": "sync_integration_tests"
+        "test": "sync_integration_tests",
+        "test_target": "//chrome/test:sync_integration_tests"
       },
       {
         "merge": {
@@ -7057,7 +7591,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "traffic_annotation_auditor_unittests"
+        "test": "traffic_annotation_auditor_unittests",
+        "test_target": "//tools/traffic_annotation/auditor:traffic_annotation_auditor_unittests"
       },
       {
         "merge": {
@@ -7067,7 +7602,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "ui_base_unittests"
+        "test": "ui_base_unittests",
+        "test_target": "//ui/base:ui_base_unittests"
       },
       {
         "merge": {
@@ -7077,7 +7613,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "ui_touch_selection_unittests"
+        "test": "ui_touch_selection_unittests",
+        "test_target": "//ui/touch_selection:ui_touch_selection_unittests"
       },
       {
         "merge": {
@@ -7087,7 +7624,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "unit_tests"
+        "test": "unit_tests",
+        "test_target": "//chrome/test:unit_tests"
       },
       {
         "merge": {
@@ -7097,7 +7635,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "updater_tests"
+        "test": "updater_tests",
+        "test_target": "//chrome/updater:updater_tests"
       },
       {
         "merge": {
@@ -7107,7 +7646,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "url_unittests"
+        "test": "url_unittests",
+        "test_target": "//url:url_unittests"
       },
       {
         "merge": {
@@ -7117,7 +7657,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "views_unittests"
+        "test": "views_unittests",
+        "test_target": "//ui/views:views_unittests"
       },
       {
         "merge": {
@@ -7127,7 +7668,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "viz_unittests"
+        "test": "viz_unittests",
+        "test_target": "//components/viz:viz_unittests"
       },
       {
         "merge": {
@@ -7137,7 +7679,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "vr_common_unittests"
+        "test": "vr_common_unittests",
+        "test_target": "//chrome/browser/vr:vr_common_unittests"
       },
       {
         "merge": {
@@ -7147,7 +7690,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "vr_pixeltests"
+        "test": "vr_pixeltests",
+        "test_target": "//chrome/browser/vr:vr_pixeltests"
       },
       {
         "merge": {
@@ -7157,7 +7701,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "weblayer_browsertests"
+        "test": "weblayer_browsertests",
+        "test_target": "//weblayer/test:weblayer_browsertests"
       },
       {
         "merge": {
@@ -7167,7 +7712,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "wm_unittests"
+        "test": "wm_unittests",
+        "test_target": "//ui/wm:wm_unittests"
       },
       {
         "merge": {
@@ -7177,7 +7723,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "wtf_unittests"
+        "test": "wtf_unittests",
+        "test_target": "//third_party/blink/renderer/platform/wtf:wtf_unittests"
       },
       {
         "merge": {
@@ -7187,7 +7734,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "zucchini_unittests"
+        "test": "zucchini_unittests",
+        "test_target": "//components/zucchini:zucchini_unittests"
       }
     ],
     "isolated_scripts": [
@@ -7200,7 +7748,8 @@
         "name": "blink_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//:blink_python_tests"
       },
       {
         "isolate_name": "content_shell_crash_test",
@@ -7211,7 +7760,8 @@
         "name": "content_shell_crash_test",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//content/shell:content_shell_crash_test"
       },
       {
         "isolate_name": "flatbuffers_unittests",
@@ -7222,7 +7772,8 @@
         "name": "flatbuffers_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//third_party/flatbuffers:flatbuffers_unittests"
       },
       {
         "isolate_name": "grit_python_unittests",
@@ -7233,7 +7784,8 @@
         "name": "grit_python_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//tools/grit:grit_python_unittests"
       },
       {
         "isolate_name": "metrics_python_tests",
@@ -7244,7 +7796,8 @@
         "name": "metrics_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//tools/metrics:metrics_python_tests"
       },
       {
         "args": [
@@ -7264,7 +7817,8 @@
           "can_use_on_swarming_builders": true,
           "hard_timeout": 960,
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:performance_test_suite"
       },
       {
         "isolate_name": "telemetry_gpu_unittests",
@@ -7276,7 +7830,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "idempotent": false
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_unittests"
       },
       {
         "args": [
@@ -7293,7 +7848,8 @@
           "can_use_on_swarming_builders": true,
           "idempotent": false,
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_perf_unittests"
       },
       {
         "args": [
@@ -7310,7 +7866,8 @@
           "can_use_on_swarming_builders": true,
           "idempotent": false,
           "shards": 4
-        }
+        },
+        "test_target": "//chrome/test:telemetry_unittests"
       },
       {
         "args": [
@@ -7326,7 +7883,8 @@
         "name": "views_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
+        },
+        "test_target": "//ui/views:views_perftests"
       },
       {
         "args": [
@@ -7353,7 +7911,8 @@
             }
           ],
           "shards": 12
-        }
+        },
+        "test_target": "//:blink_web_tests"
       }
     ]
   }

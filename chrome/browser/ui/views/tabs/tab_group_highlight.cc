@@ -13,7 +13,7 @@
 #include "ui/views/view.h"
 
 TabGroupHighlight::TabGroupHighlight(TabGroupViews* tab_group_views,
-                                     TabGroupId group)
+                                     tab_groups::TabGroupId group)
     : tab_group_views_(tab_group_views), group_(group) {
   // Set non-zero bounds to start with, so that painting isn't pruned.
   // Needed because UpdateBounds() happens during OnPaint(), which is called

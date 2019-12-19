@@ -151,39 +151,26 @@ BrowserXRRuntime* XRRuntimeManager::GetRuntime(device::mojom::XRDeviceId id) {
 
 BrowserXRRuntime* XRRuntimeManager::GetRuntimeForOptions(
     device::mojom::XRSessionOptions* options) {
-  // Examine options to determine which device provider we should use.
-
-  // AR requested.
-  if (options->environment_integration) {
-    if (!options->immersive) {
-      DVLOG(1) << __func__ << ": non-immersive AR mode is unsupported";
-      return nullptr;
-    }
-    // Return the ARCore runtime, but only if it supports all required features.
-    auto* runtime = GetRuntime(device::mojom::XRDeviceId::ARCORE_DEVICE_ID);
-    return runtime && runtime->SupportsAllFeatures(options->required_features)
-               ? runtime
-               : nullptr;
+  BrowserXRRuntime* runtime = nullptr;
+  switch (options->mode) {
+    case device::mojom::XRSessionMode::kImmersiveAr:
+      runtime = GetRuntime(device::mojom::XRDeviceId::ARCORE_DEVICE_ID);
+      break;
+    case device::mojom::XRSessionMode::kImmersiveVr:
+      runtime = GetImmersiveVrRuntime();
+      break;
+    case device::mojom::XRSessionMode::kInline:
+      // Try the orientation provider if it exists.
+      // If we don't have an orientation provider, then we don't have an
+      // explicit runtime to back a non-immersive session.
+      runtime = GetRuntime(device::mojom::XRDeviceId::ORIENTATION_DEVICE_ID);
   }
 
-  if (options->immersive) {
-    auto* runtime = GetImmersiveVrRuntime();
-    return runtime && runtime->SupportsAllFeatures(options->required_features)
-               ? runtime
-               : nullptr;
-  } else {
-    // Non immersive session.
-    // Try the orientation provider if it exists.
-    // If we don't have an orientation provider, then we don't have an explicit
-    // runtime to back a non-immersive session
-    auto* orientation_runtime =
-        GetRuntime(device::mojom::XRDeviceId::ORIENTATION_DEVICE_ID);
-
-    return orientation_runtime && orientation_runtime->SupportsAllFeatures(
-                                      options->required_features)
-               ? orientation_runtime
-               : nullptr;
-  }
+  // Return the runtime from above if we got one and it supports all required
+  // features.
+  return runtime && runtime->SupportsAllFeatures(options->required_features)
+             ? runtime
+             : nullptr;
 }
 
 BrowserXRRuntime* XRRuntimeManager::GetImmersiveVrRuntime() {
@@ -222,8 +209,7 @@ BrowserXRRuntime* XRRuntimeManager::GetImmersiveVrRuntime() {
 
 BrowserXRRuntime* XRRuntimeManager::GetImmersiveArRuntime() {
   device::mojom::XRSessionOptions options = {};
-  options.immersive = true;
-  options.environment_integration = true;
+  options.mode = device::mojom::XRSessionMode::kImmersiveAr;
   return GetRuntimeForOptions(&options);
 }
 
@@ -253,6 +239,7 @@ device::mojom::VRDisplayInfoPtr XRRuntimeManager::GetCurrentVRDisplayInfo(
   // If there is neither, use the generic non-immersive runtime.
   if (!ar_runtime && !immersive_runtime) {
     device::mojom::XRSessionOptions options = {};
+    options.mode = device::mojom::XRSessionMode::kInline;
     auto* non_immersive_runtime = GetRuntimeForOptions(&options);
     if (non_immersive_runtime) {
       // Listen to changes for this runtime.

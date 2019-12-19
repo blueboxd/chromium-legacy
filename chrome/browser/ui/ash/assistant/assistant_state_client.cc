@@ -10,7 +10,9 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
+#include "components/arc/arc_util.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -53,7 +55,10 @@ void AssistantStateClient::ActiveUserChanged(user_manager::User* active_user) {
 }
 
 void AssistantStateClient::OnArcPlayStoreEnabledChanged(bool enabled) {
-  ash::AssistantState::Get()->NotifyArcPlayStoreEnabledChanged(enabled);
+  // ARC Android instance will be enabled if user opt-in play store, or the ARC
+  // always start flag is set.
+  ash::AssistantState::Get()->NotifyArcPlayStoreEnabledChanged(
+      arc::ShouldArcAlwaysStart() || enabled);
 }
 
 void AssistantStateClient::SetProfileByUser(const user_manager::User* user) {

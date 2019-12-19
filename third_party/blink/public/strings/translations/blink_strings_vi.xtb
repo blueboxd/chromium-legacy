@@ -114,6 +114,7 @@
 <translation id="4812940957355064477">Vui lòng nhập một số.</translation>
 <translation id="4912536737030637138">mục nhập danh mục</translation>
 <translation id="492244087561876220">nhận xét</translation>
+<translation id="4971739861736909480">Đã chọn <ph name="ACCNAME" /></translation>
 <translation id="4975562563186953947">Đã chọn <ph name="SELECTED_COUNT" /></translation>
 <translation id="4992066212339426712">Bật âm thanh</translation>
 <translation id="49969490063480558">Vui lòng nhập phần đứng sau '<ph name="ATSIGN" />'. '<ph name="INVALIDADDRESS" />' không hoàn chỉnh.</translation>
@@ -218,6 +219,7 @@
 <translation id="7888071071722539607">Vui lòng bao gồm '<ph name="ATSIGN" />' trong địa chỉ email. '<ph name="INVALIDADDRESS" />' bị thiếu '<ph name="ATSIGN" />'.</translation>
 <translation id="7891486169920085145">bộ chia</translation>
 <translation id="795667975304826397">Không có tệp nào được chọn</translation>
+<translation id="7962328325860248200">Chưa chọn <ph name="ACCNAME" /></translation>
 <translation id="8034303206267677282">mạnh</translation>
 <translation id="8053789581856978548">trường văn bản tìm kiếm</translation>
 <translation id="8057695513531652401">lưu ý</translation>

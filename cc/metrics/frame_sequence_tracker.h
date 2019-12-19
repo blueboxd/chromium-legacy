@@ -27,6 +27,7 @@ struct PresentationFeedback;
 namespace viz {
 struct BeginFrameAck;
 struct BeginFrameArgs;
+struct BeginFrameId;
 }  // namespace viz
 
 namespace cc {
@@ -395,7 +396,7 @@ class CC_EXPORT FrameSequenceTracker {
 
   // If ReportBeginImplFrame is never called on a arg, then ReportBeginMainFrame
   // should ignore that arg.
-  base::flat_set<std::pair<uint64_t, uint64_t>> impl_frames_;
+  base::flat_set<viz::BeginFrameId> impl_frames_;
 #endif
 };
 

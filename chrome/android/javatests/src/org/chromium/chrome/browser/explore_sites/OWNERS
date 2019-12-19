@@ -1,3 +1,4 @@
 file://chrome/browser/android/explore_sites/OWNERS
 
+# COMPONENT: UI>Browser>NewTabPage>ExploreSites
 # TEAM: offline-dev@chromium.org

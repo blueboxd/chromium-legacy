@@ -228,7 +228,7 @@ bool IsUrlWithinScope(const GURL& url, const GURL& scope) {
 //
 // The manifest parser accumulates metrics data in an instance of this class by
 // calling the Record*() methods. When the manifest is successfully parsed, the
-// accumuated metrics are logged by calling RecordParseSuccess() or
+// accumulated metrics are logged by calling RecordParseSuccess() or
 // RecordParseWithInvalidManifestUrl(). Metrics for manifests that don't parse
 // in the success case are discarded.  Failure metrics are used to log
 // early-exit conditions like invalid manifest URLs.

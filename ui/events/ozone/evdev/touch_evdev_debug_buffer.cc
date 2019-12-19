@@ -59,11 +59,12 @@ void TouchEventLogEvdev::DumpLog(const char* filename) {
   for (int i = 0; i < kDebugBufferSize; ++i) {
     struct TouchEvent* te =
         &logged_events_[(debug_buffer_tail_ + i) % kDebugBufferSize];
-    if (te->ev.time.tv_sec == 0 && te->ev.time.tv_usec == 0)
+    if (te->ev.input_event_sec == 0 && te->ev.input_event_usec == 0)
       continue;
     std::string event_string = base::StringPrintf(
-        "E: %ld.%06ld %04x %04x %d %d\n", te->ev.time.tv_sec,
-        te->ev.time.tv_usec, te->ev.type, te->ev.code, te->ev.value, te->slot);
+        "E: %ld.%06ld %04x %04x %d %d\n", te->ev.input_event_sec,
+        te->ev.input_event_usec, te->ev.type, te->ev.code, te->ev.value,
+        te->slot);
     report_content += event_string;
   }
   file.Write(0, report_content.c_str(), report_content.length());

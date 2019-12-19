@@ -580,7 +580,8 @@ void HttpNetworkTransaction::OnStreamFailed(
     int result,
     const NetErrorDetails& net_error_details,
     const SSLConfig& used_ssl_config,
-    const ProxyInfo& used_proxy_info) {
+    const ProxyInfo& used_proxy_info,
+    ResolveErrorInfo resolve_error_info) {
   DCHECK_EQ(STATE_CREATE_STREAM_COMPLETE, next_state_);
   DCHECK_NE(OK, result);
   DCHECK(stream_request_.get());
@@ -589,6 +590,7 @@ void HttpNetworkTransaction::OnStreamFailed(
   net_error_details_ = net_error_details;
   proxy_info_ = used_proxy_info;
   SetProxyInfoInReponse(used_proxy_info, &response_);
+  response_.resolve_error_info = resolve_error_info;
 
   OnIOComplete(result);
 }

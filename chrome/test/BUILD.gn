@@ -15,6 +15,7 @@ import("//chrome/browser/buildflags.gni")
 import("//chrome/chrome_repack_locales.gni")
 import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
+import("//chromeos/assistant/assistant.gni")
 import("//components/feature_engagement/features.gni")
 import("//components/feed/features.gni")
 import("//components/gwp_asan/buildflags/buildflags.gni")
@@ -2442,6 +2443,22 @@ if (!is_android) {
       if (use_cups) {
         sources +=
             [ "../browser/chromeos/extensions/printing/printing_apitest.cc" ]
+      }
+      if (enable_cros_libassistant) {
+        sources += [
+          "../browser/ui/ash/assistant/assistant_browsertest.cc",
+          "../browser/ui/ash/assistant/assistant_test_mixin.cc",
+          "../browser/ui/ash/assistant/assistant_test_mixin.h",
+          "../browser/ui/ash/assistant/test/fake_s3_server.cc",
+          "../browser/ui/ash/assistant/test/fake_s3_server.h",
+        ]
+
+        deps += [ "//chromeos/assistant/internal:internal" ]
+
+        data += [ "//chromeos/assistant/internal/test_data/" ]
+
+        data_deps +=
+            [ "//chromeos/assistant/internal:build_fake_s3_server_main" ]
       }
       sources -= [
         "../../apps/load_and_launch_browsertest.cc",

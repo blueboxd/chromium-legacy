@@ -141,8 +141,9 @@ void InputEngine::ProcessKeypressForRulebased(
 
   rulebased::ProcessKeyResult process_key_result = engine->ProcessKey(
       keypress_info->code,
-      GenerateModifierValueForRulebased(
-          keypress_info->shift, keypress_info->altgr, keypress_info->caps));
+      GenerateModifierValueForRulebased(keypress_info->shift,
+                                        keypress_info->altgr || isAltRightDown_,
+                                        keypress_info->caps));
   mojom::KeypressResponseForRulebasedPtr keypress_response =
       GenerateKeypressResponseForRulebased(process_key_result);
 

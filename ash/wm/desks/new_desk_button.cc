@@ -65,6 +65,7 @@ NewDeskButton::NewDeskButton(views::ButtonListener* listener)
   SetTextColor(views::Button::STATE_DISABLED, kDisabledTextAndIconColor);
   SetImageLabelSpacing(kImageLabelSpacing);
   SetInkDropMode(InkDropMode::ON);
+  set_has_ink_drop_action_on_click(true);
   set_ink_drop_visible_opacity(kInkDropVisibleOpacity);
   SetFocusPainter(nullptr);
 

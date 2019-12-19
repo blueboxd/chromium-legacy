@@ -1201,6 +1201,26 @@
             ]
         }
     ],
+    "AutofillUseServerCVCPrediction": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillUseServerCVCPrediction"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutomaticTabDiscarding": [
         {
             "platforms": [
@@ -1636,7 +1656,7 @@
             ]
         }
     ],
-    "CloudPolicyOverFcm": [
+    "CloudPolicyOverFCM": [
         {
             "platforms": [
                 "chromeos",
@@ -1646,7 +1666,10 @@
             ],
             "experiments": [
                 {
-                    "name": "CloudPolicyOverFCM"
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PolicyFCMInvalidations"
+                    ]
                 }
             ]
         }
@@ -1997,7 +2020,7 @@
                 {
                     "name": "WithoutFtpSupport",
                     "disable_features": [
-                        "FtpProtcol"
+                        "FtpProtocol"
                     ]
                 }
             ]
@@ -2683,27 +2706,6 @@
                     },
                     "enable_features": [
                         "freeze-background-tab-on-network-idle"
-                    ]
-                }
-            ]
-        }
-    ],
-    "FriendlySettingsRedesignTest": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "android",
-                "android_webview",
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "FriendlySettingRedesign"
                     ]
                 }
             ]
@@ -4975,6 +4977,27 @@
             ]
         }
     ],
+    "PrivacySettingsRedesignTest": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "android",
+                "android_webview",
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PrivacySettingsRedesign"
+                    ]
+                }
+            ]
+        }
+    ],
     "ProactiveTabFreezeAndDiscard": [
         {
             "platforms": [
@@ -6586,6 +6609,25 @@
             ]
         }
     ],
+    "TextFragmentAnchor": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20191216",
+                    "enable_features": [
+                        "TextFragmentAnchor"
+                    ]
+                }
+            ]
+        }
+    ],
     "ThirdPartyModulesBlocking": [
         {
             "platforms": [
@@ -6991,6 +7033,26 @@
                     "name": "Enabled",
                     "enable_features": [
                         "UseInProgressDownloadManagerForDownloadService"
+                    ]
+                }
+            ]
+        }
+    ],
+    "UseRegistrableDomainInNetworkIsolationKey": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UseRegistrableDomainInNetworkIsolationKey"
                     ]
                 }
             ]

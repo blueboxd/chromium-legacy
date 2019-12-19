@@ -78,6 +78,17 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin : public WindowObserver {
     friend class NativeWindowOcclusionTrackerTest;
     friend class test::AuraTestHelper;
 
+    struct NativeWindowOcclusionState {
+      // The region of the native window that is not occluded by other windows.
+      SkRegion unoccluded_region;
+
+      // The current occlusion state of the native window. Default to UNKNOWN
+      // because we do not know the state starting out. More information on
+      // these states can be found in aura::Window.
+      aura::Window::OcclusionState occlusion_state =
+          aura::Window::OcclusionState::UNKNOWN;
+    };
+
     // Registers event hooks, if not registered.
     void MaybeRegisterEventHooks();
 
@@ -173,7 +184,7 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin : public WindowObserver {
 
     // Map of root app window hwnds and their occlusion state. This contains
     // both visible and hidden windows.
-    base::flat_map<HWND, Window::OcclusionState>
+    base::flat_map<HWND, NativeWindowOcclusionState>
         root_window_hwnds_occlusion_state_;
 
     // Values returned by SetWinEventHook are stored so that hooks can be
@@ -195,19 +206,6 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin : public WindowObserver {
     // events, in order to wait until the window move is complete before
     // calculating window occlusion.
     bool window_is_moving_ = false;
-
-    // Used to determine if a root window is occluded. As we iterate through the
-    // hwnds in z-order, we subtract each opaque window's rect from
-    // |unoccluded_desktop_region_|. When we get to a root window, we subtract
-    // it from |unoccluded_desktop_region_|, and if |unoccluded_desktop_region_|
-    // doesn't change, the root window was already occluded.
-    SkRegion unoccluded_desktop_region_;
-
-    // Keeps track of how many root windows we need to compute the occlusion
-    // state of in a call to ComputeNativeWindowOcclusionStatus. Once we've
-    // determined the state of all root windows, we can stop subtracting
-    // windows from |unoccluded_desktop_region_|.
-    int num_root_windows_with_unknown_occlusion_state_;
 
     // Only used on Win10+.
     Microsoft::WRL::ComPtr<IVirtualDesktopManager> virtual_desktop_manager_;

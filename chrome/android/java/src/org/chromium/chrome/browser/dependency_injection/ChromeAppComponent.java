@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityComponent;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityModule;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityComponent;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityModule;
@@ -39,7 +38,6 @@ public interface ChromeAppComponent {
 
     CustomTabsConnection resolveCustomTabsConnection();
     SharedPreferencesManager resolveSharedPreferencesManager();
-    ChromePreferenceManager resolvePreferenceManager();
     ClearDataDialogResultRecorder resolveTwaClearDataDialogRecorder();
     TrustedWebActivityPermissionManager resolveTwaPermissionManager();
     NotificationPermissionUpdater resolveTwaPermissionUpdater();

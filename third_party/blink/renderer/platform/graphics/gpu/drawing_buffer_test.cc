@@ -779,7 +779,7 @@ TEST_F(DrawingBufferTest, VerifySetIsHiddenProperlyAffectsMailboxes) {
 
   gpu::SyncToken wait_sync_token;
   gl_->GenSyncTokenCHROMIUM(wait_sync_token.GetData());
-  drawing_buffer_->SetIsHidden(true);
+  drawing_buffer_->SetIsInHiddenPage(true);
   // m_drawingBuffer deletes resource immediately when hidden.
   EXPECT_CALL(*gl_, WaitSyncTokenCHROMIUMMock(SyncTokenEq(wait_sync_token)))
       .Times(0);

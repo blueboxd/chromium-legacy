@@ -95,6 +95,10 @@
   return self.infobarAccepted;
 }
 
+- (BOOL)infobarBannerActionWillPresentModal {
+  return NO;
+}
+
 - (void)infobarBannerWasPresented {
   // NO-OP.
 }

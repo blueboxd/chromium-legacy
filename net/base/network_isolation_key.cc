@@ -11,6 +11,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+#include "url/url_constants.h"
 
 namespace net {
 
@@ -20,18 +21,35 @@ std::string GetOriginDebugString(const base::Optional<url::Origin>& origin) {
   return origin ? origin->GetDebugString() : "null";
 }
 
-url::Origin GetSchemeAndRegistrableDomain(const url::Origin& origin) {
+// If |origin| has a value and represents an HTTP or HTTPS scheme, replace its
+// host with its registerable domain if possible, and replace its port with the
+// standard port for its scheme. Otherwise, does nothing. WS and WSS origins are
+// not modified, as they shouldn't be used meaningfully for NIKs, though trying
+// to navigate to a WS URL may generate such a NIK.
+void SwitchToRegistrableDomainAndRemovePort(
+    base::Optional<url::Origin>* origin) {
+  if (!origin->has_value())
+    return;
+
+  if ((*origin)->scheme() != url::kHttpsScheme &&
+      (*origin)->scheme() != url::kHttpScheme) {
+    return;
+  }
+
+  // scheme() returns the empty string for opaque origins.
+  DCHECK(!(*origin)->opaque());
+
   std::string registrable_domain = GetDomainAndRegistry(
-      origin.host(),
+      (*origin)->host(),
       net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   // GetDomainAndRegistry() returns an empty string for IP literals and
   // effective TLDs.
   if (registrable_domain.empty())
-    registrable_domain = origin.host();
-  return url::Origin::CreateFromNormalizedTuple(
-      origin.scheme(), registrable_domain,
-      url::DefaultPortForScheme(origin.scheme().c_str(),
-                                origin.scheme().length()));
+    registrable_domain = (*origin)->host();
+  *origin = url::Origin::CreateFromNormalizedTuple(
+      (*origin)->scheme(), registrable_domain,
+      url::DefaultPortForScheme((*origin)->scheme().c_str(),
+                                (*origin)->scheme().length()));
 }
 
 }  // namespace
@@ -179,18 +197,8 @@ bool NetworkIsolationKey::IsEmpty() const {
 }
 
 void NetworkIsolationKey::ReplaceOriginsWithRegistrableDomains() {
-  if (!top_frame_origin_.has_value())
-    return;
-
-  if (!top_frame_origin_->opaque()) {
-    top_frame_origin_ =
-        GetSchemeAndRegistrableDomain(top_frame_origin_.value());
-  }
-
-  if (!frame_origin_.has_value() || frame_origin_->opaque())
-    return;
-
-  frame_origin_ = GetSchemeAndRegistrableDomain(frame_origin_.value());
+  SwitchToRegistrableDomainAndRemovePort(&top_frame_origin_);
+  SwitchToRegistrableDomainAndRemovePort(&frame_origin_);
 }
 
 }  // namespace net

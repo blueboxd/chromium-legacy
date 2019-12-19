@@ -12,6 +12,7 @@
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/spellcheck/renderer/empty_local_interface_provider.h"
+#include "components/spellcheck/renderer/spellcheck.h"
 #include "components/spellcheck/renderer/spellcheck_provider.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,6 +38,28 @@ class FakeTextCheckingCompletion : public blink::WebTextCheckingCompletion {
   FakeTextCheckingResult* result_;
 };
 
+// A fake SpellCheck object which can fake the number of (enabled) spell check
+// languages
+class FakeSpellCheck : public SpellCheck {
+ public:
+  explicit FakeSpellCheck(
+      service_manager::LocalInterfaceProvider* embedder_provider);
+
+  // Test-only method to set the fake language counts
+  void SetFakeLanguageCounts(size_t language_count, size_t enabled_count);
+
+  // Returns the current number of spell check languages.
+  size_t LanguageCount() override;
+
+  // Returns the current number of spell check languages with enabled engines.
+  size_t EnabledLanguageCount() override;
+
+ private:
+  bool use_fake_counts_ = false;
+  size_t language_count_ = 0;
+  size_t enabled_language_count_ = 0;
+};
+
 // Faked test target, which stores sent message for verification.
 class TestingSpellCheckProvider : public SpellCheckProvider,
                                   public spellcheck::mojom::SpellCheckHost {
@@ -58,23 +81,45 @@ class TestingSpellCheckProvider : public SpellCheckProvider,
   bool SatisfyRequestFromCache(const base::string16& text,
                                blink::WebTextCheckingCompletion* completion);
 
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+  int AddCompletionForTest(
+      std::unique_ptr<FakeTextCheckingCompletion> completion);
+
+  void HybridSpellCheckParagraphComplete(
+      const base::string16& text,
+      const int request_id,
+      std::vector<SpellCheckResult> renderer_results);
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+
 #if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
   void ResetResult();
 
   // Variables logging CallSpellingService() mojo calls.
   base::string16 text_;
   size_t spelling_service_call_count_ = 0;
-#endif
+#endif  // BUILDFLAG(USE_RENDERER_SPELLCHECKER)
+
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER) || \
+    BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+  using RequestTextCheckParams =
+      std::pair<base::string16, RequestTextCheckCallback>;
+#endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER) ||
+        // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   // Variables logging RequestTextCheck() mojo calls.
-  using RequestTextCheckParams =
-      std::pair<base::string16, RequestTextCheckCallback>;
   std::vector<RequestTextCheckParams> text_check_requests_;
-#endif
+#endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+  // Variables logging RequestPartialTextCheck() mojo calls.
+  std::vector<RequestTextCheckParams> partial_text_check_requests_;
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
   // Returns |spellcheck|.
-  SpellCheck* spellcheck() { return spellcheck_; }
+  FakeSpellCheck* spellcheck() {
+    return static_cast<FakeSpellCheck*>(spellcheck_);
+  }
 
  private:
   // spellcheck::mojom::SpellCheckHost:

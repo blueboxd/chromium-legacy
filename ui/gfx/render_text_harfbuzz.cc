@@ -1809,9 +1809,17 @@ void RenderTextHarfBuzz::DrawVisualText(internal::SkiaTextRenderer* renderer,
   // Apply the selected text color to the [un-reversed] selection range.
   BreakList<SkColor> colors = layout_colors();
   if (!selection.is_empty()) {
+    const size_t grapheme_start =
+        IsGraphemeBoundary(selection.GetMin())
+            ? selection.GetMin()
+            : IndexOfAdjacentGrapheme(selection.GetMin(), CURSOR_BACKWARD);
+    const size_t grapheme_end =
+        IsGraphemeBoundary(selection.GetMax())
+            ? selection.GetMax()
+            : IndexOfAdjacentGrapheme(selection.GetMax(), CURSOR_FORWARD);
     colors.ApplyValue(selection_color(),
-                      Range(TextIndexToDisplayIndex(selection.GetMin()),
-                            TextIndexToDisplayIndex(selection.GetMax())));
+                      Range(TextIndexToDisplayIndex(grapheme_start),
+                            TextIndexToDisplayIndex(grapheme_end)));
   }
 
   internal::TextRunList* run_list = GetRunList();

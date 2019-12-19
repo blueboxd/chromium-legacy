@@ -114,6 +114,7 @@
 <translation id="4812940957355064477">ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਨੰਬਰ ਦਰਜ ਕਰੋ।</translation>
 <translation id="4912536737030637138">ਪੁਸਤਕ ਮਾਲਾ ਦਾ ਇੰਦਰਾਜ਼</translation>
 <translation id="492244087561876220">ਟਿੱਪਣੀ</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> ਨੂੰ ਚੁਣਿਆ ਗਿਆ</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> ਚੁਣਿਆ ਗਿਆ</translation>
 <translation id="4992066212339426712">ਅਨਮਿਊਟ ਕਰੋ</translation>
 <translation id="49969490063480558">ਕਿਰਪਾ ਕਰਕੇ '<ph name="ATSIGN" />' ਤੋਂ ਬਾਅਦ ਇੱਕ ਭਾਗ ਦਰਜ ਕਰੋ। '<ph name="INVALIDADDRESS" />' ਅਧੂਰਾ ਹੈ।</translation>
@@ -218,6 +219,7 @@
 <translation id="7888071071722539607">ਕਿਰਪਾ ਕਰਕੇ ਈਮੇਲ ਪਤੇ ਵਿੱਚ ਇੱਕ '<ph name="ATSIGN" />' ਸ਼ਾਮਲ ਕਰੋ। '<ph name="INVALIDADDRESS" />' ਵਿੱਚ ਇੱਕ '<ph name="ATSIGN" />' ਲੁਪਤ ਹੈ।</translation>
 <translation id="7891486169920085145">ਸਪਲਿਟਰ</translation>
 <translation id="795667975304826397">ਕੋਈ ਫਾਈਲ ਨਹੀਂ ਚੁਣੀ</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> ਨੂੰ ਨਹੀਂ ਚੁਣਿਆ ਗਿਆ</translation>
 <translation id="8034303206267677282">ਮਜ਼ਬੂਤ</translation>
 <translation id="8053789581856978548">ਲਿਖਤ ਖੇਤਰ ਖੋਜੋ</translation>
 <translation id="8057695513531652401">ਸੂਚਨਾ</translation>

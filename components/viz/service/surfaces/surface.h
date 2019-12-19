@@ -131,12 +131,6 @@ class VIZ_SERVICE_EXPORT Surface final {
   // Decrements the reference count on resources specified by |resources|.
   void UnrefResources(const std::vector<ReturnedResource>& resources);
 
-  // If |surface_client_| is dead, we can't return resources so sync tokens
-  // don't matter anyway.
-  bool needs_sync_tokens() const {
-    return surface_client_ ? surface_client_->NeedsSyncTokens() : false;
-  }
-
   // Returns false if |frame| is invalid.
   // |frame_rejected_callback| will be called once if the frame will not be
   // displayed.

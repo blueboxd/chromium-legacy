@@ -604,7 +604,7 @@ TEST_F(VideoTrackRecorderPassthroughTest, PausesAndResumes) {
                                                        base::TimeTicks::Now());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          VideoTrackRecorderPassthroughTest,
                          ValuesIn(kTrackRecorderTestCodec));
 

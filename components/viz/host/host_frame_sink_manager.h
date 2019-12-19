@@ -195,8 +195,7 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   std::unique_ptr<CompositorFrameSinkSupport> CreateCompositorFrameSinkSupport(
       mojom::CompositorFrameSinkClient* client,
       const FrameSinkId& frame_sink_id,
-      bool is_root,
-      bool needs_sync_points) override;
+      bool is_root) override;
 
   void OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
                            uint32_t frame_token) override;

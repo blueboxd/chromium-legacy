@@ -26,6 +26,8 @@
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/appcache/appcache_storage.h"
+#include "content/browser/appcache/appcache_update_job_state.h"
+#include "content/browser/appcache/appcache_update_metrics_recorder.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/content_export.h"
 #include "net/http/http_response_headers.h"
@@ -84,18 +86,6 @@ class CONTENT_EXPORT AppCacheUpdateJob
     UNKNOWN_TYPE,
     UPGRADE_ATTEMPT,
     CACHE_ATTEMPT,
-  };
-
-  enum InternalUpdateState {
-    FETCH_MANIFEST,
-    NO_UPDATE,
-    DOWNLOADING,
-
-    // Every state after this comment indicates the update is terminating.
-    REFETCH_MANIFEST,
-    CACHE_FAILURE,
-    CANCELLED,
-    COMPLETED,
   };
 
   enum StoredState {
@@ -232,8 +222,10 @@ class CONTENT_EXPORT AppCacheUpdateJob
   // Deletes this object after letting the stack unwind.
   void DeleteSoon();
 
-  bool IsTerminating() { return internal_state_ >= REFETCH_MANIFEST ||
-                                stored_state_ != UNSTORED; }
+  bool IsTerminating() {
+    return internal_state_ >= AppCacheUpdateJobState::REFETCH_MANIFEST ||
+           stored_state_ != UNSTORED;
+  }
 
   AppCacheServiceImpl* service_;
   const GURL manifest_url_;  // here for easier access
@@ -264,7 +256,7 @@ class CONTENT_EXPORT AppCacheUpdateJob
   AppCacheGroup* group_;
 
   UpdateType update_type_;
-  InternalUpdateState internal_state_;
+  AppCacheUpdateJobState internal_state_;
   base::Time last_progress_time_;
   bool doing_full_update_check_;
 
@@ -326,6 +318,10 @@ class CONTENT_EXPORT AppCacheUpdateJob
 
   // Whether we've stored the resulting group/cache yet.
   StoredState stored_state_;
+
+  // Used to track behavior and conditions found during update for submission
+  // to UMA.
+  AppCacheUpdateMetricsRecorder update_metrics_;
 
   AppCacheStorage* storage_;
   base::WeakPtrFactory<AppCacheUpdateJob> weak_factory_{this};

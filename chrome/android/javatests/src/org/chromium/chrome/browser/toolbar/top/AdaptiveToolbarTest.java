@@ -17,6 +17,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.e
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.rotateDeviceToOrientation;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
 
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.support.test.filters.MediumTest;
 import android.view.View;
@@ -68,6 +69,8 @@ public class AdaptiveToolbarTest {
     public void tearDown() {
         FeatureUtilities.setGridTabSwitcherEnabledForTesting(null);
         FeatureUtilities.setIsBottomToolbarEnabledForTesting(null);
+        mActivityTestRule.getActivity().setRequestedOrientation(
+                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     }
 
     private void setupFlagsAndLaunchActivity(

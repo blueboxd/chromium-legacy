@@ -206,7 +206,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       RenderPassMapEntry* current_pass_entry,
       const gfx::Transform& transform_to_root_target,
       base::flat_map<SurfaceRange, ChildSurfaceInfo>* child_surfaces,
-      gfx::Rect* pixel_moving_backdrop_filters_rect);
+      std::vector<gfx::Rect>* pixel_moving_backdrop_filters_rects);
 
   gfx::Rect PrewalkTree(Surface* surface,
                         bool in_moved_pixel_surface,

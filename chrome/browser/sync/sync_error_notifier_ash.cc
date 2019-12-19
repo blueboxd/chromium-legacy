@@ -91,9 +91,7 @@ BubbleViewParameters GetBubbleViewParameters(
 
 SyncErrorNotifier::SyncErrorNotifier(syncer::SyncService* sync_service,
                                      Profile* profile)
-    : sync_service_(sync_service),
-      profile_(profile),
-      notification_displayed_(false) {
+    : sync_service_(sync_service), profile_(profile) {
   // Create a unique notification ID for this profile.
   notification_id_ =
       kProfileSyncNotificationId + profile_->GetProfileUserName();

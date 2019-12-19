@@ -77,9 +77,6 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     // regardless of this param.
     // TODO(crbug.com/806092): Remove after legacy IPC-based Ozone is removed.
     bool using_mojo = false;
-
-    // TODO(crbug.com/936425): Not checked, delete when no longer set.
-    bool viz_display_compositor = false;
   };
 
   // Struct used to indicate platform properties.

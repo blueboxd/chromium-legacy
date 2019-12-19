@@ -482,6 +482,15 @@ class LoadDriveStory(_LoadingStory):
     google_login.LoginGoogleAccount(action_runner, 'googletest')
 
 
+class LoadDriveStory2019(_LoadingStory):
+  NAME = 'load:tools:drive:2019'
+  URL = 'https://drive.google.com/drive/my-drive'
+  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2019]
+
+  def _Login(self, action_runner):
+    google_login.NewLoginGoogleAccount(action_runner, 'googletest')
+
+
 ################################################################################
 # In-browser games (HTML5 and Flash).
 ################################################################################

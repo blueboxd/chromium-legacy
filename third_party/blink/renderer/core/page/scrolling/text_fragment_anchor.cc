@@ -225,6 +225,10 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
     return;
   }
 
+  // Apply :target to the first match
+  if (!did_find_match_)
+    ApplyTargetToCommonAncestor(range);
+
   metrics_->DidFindMatch(PlainText(range));
   did_find_match_ = true;
 
@@ -313,6 +317,20 @@ bool TextFragmentAnchor::Dismiss() {
   metrics_->Dismissed();
 
   return dismissed_;
+}
+
+void TextFragmentAnchor::ApplyTargetToCommonAncestor(
+    const EphemeralRangeInFlatTree& range) {
+  Node* common_node = range.CommonAncestorContainer();
+  while (common_node && common_node->getNodeType() != Node::kElementNode) {
+    common_node = common_node->parentNode();
+  }
+
+  DCHECK(common_node);
+  if (common_node) {
+    auto* target = DynamicTo<Element>(common_node);
+    frame_->GetDocument()->SetCSSTarget(target);
+  }
 }
 
 }  // namespace blink

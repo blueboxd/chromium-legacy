@@ -237,6 +237,8 @@ class CrostiniManager : public KeyedService,
       std::string name,
       // Path to the disk image on the host.
       const base::FilePath& disk_path,
+      // The number of logical CPU cores that are currently disabled.
+      size_t num_cores_disabled,
       BoolCallback callback);
 
   // Checks the arguments for stopping a Termina VM. Stops the Termina VM via

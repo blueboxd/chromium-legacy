@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 #include "chrome/browser/extensions/extension_garbage_collector_chromeos.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/extension_file_task_runner.h"
 

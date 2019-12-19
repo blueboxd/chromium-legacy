@@ -31,10 +31,10 @@ ThreatDetailsRedirectsCollector::ThreatDetailsRedirectsCollector(
 
 void ThreatDetailsRedirectsCollector::StartHistoryCollection(
     const std::vector<GURL>& urls,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DVLOG(1) << "Num of urls to check in history service: " << urls.size();
   has_started_ = true;
-  callback_ = callback;
+  callback_ = std::move(callback);
 
   if (urls.size() == 0) {
     AllDone();
@@ -107,8 +107,7 @@ void ThreatDetailsRedirectsCollector::OnGotQueryRedirectsTo(
 
 void ThreatDetailsRedirectsCollector::AllDone() {
   DVLOG(1) << "AllDone";
-  base::PostTask(FROM_HERE, {BrowserThread::UI}, callback_);
-  callback_.Reset();
+  base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(callback_));
 }
 
 void ThreatDetailsRedirectsCollector::HistoryServiceBeingDeleted(

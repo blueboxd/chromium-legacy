@@ -167,8 +167,8 @@ bool TriggerManager::StartCollectingThreatDetailsWithReason(
   collectors->threat_details = ThreatDetails::NewThreatDetails(
       ui_manager_, web_contents, resource, url_loader_factory, history_service,
       referrer_chain_provider_, should_trim_threat_details,
-      base::Bind(&TriggerManager::ThreatDetailsDone,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&TriggerManager::ThreatDetailsDone,
+                     weak_factory_.GetWeakPtr()));
   return true;
 }
 

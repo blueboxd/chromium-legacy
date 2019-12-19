@@ -110,6 +110,9 @@ ShellJavaScriptDialog::~ShellJavaScriptDialog() {
 void ShellJavaScriptDialog::Cancel() {
   if (dialog_win_)
     DestroyWindow(dialog_win_);
+  dialog_win_ = 0;
+  if (callback_)
+    std::move(callback_).Run(false, base::string16());
 }
 
 }  // namespace content

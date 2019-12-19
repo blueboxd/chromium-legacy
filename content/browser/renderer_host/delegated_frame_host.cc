@@ -512,10 +512,9 @@ void DelegatedFrameHost::CreateCompositorFrameSinkSupport() {
 
   DCHECK(!support_);
   constexpr bool is_root = false;
-  constexpr bool needs_sync_points = true;
   DCHECK(host_frame_sink_manager_);
   support_ = host_frame_sink_manager_->CreateCompositorFrameSinkSupport(
-      this, frame_sink_id_, is_root, needs_sync_points);
+      this, frame_sink_id_, is_root);
   if (compositor_ && should_register_frame_sink_id_)
     compositor_->AddChildFrameSink(frame_sink_id_);
   if (needs_begin_frame_)

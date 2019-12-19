@@ -51,6 +51,7 @@ CloseDeskButton::CloseDeskButton(views::ButtonListener* listener)
   inkdrop_base_color_ = ripple_attributes.base_color;
 
   SetInkDropMode(InkDropMode::ON);
+  set_has_ink_drop_action_on_click(true);
   set_ink_drop_visible_opacity(ripple_attributes.inkdrop_opacity);
   SetFocusPainter(nullptr);
 

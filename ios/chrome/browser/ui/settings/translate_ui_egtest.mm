@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
 #include "base/test/scoped_feature_list.h"
@@ -12,6 +11,8 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/app_launch_manager.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -26,12 +27,21 @@ using chrome_test_util::SettingsMenuBackButton;
 
 @implementation TranslateUITestCase
 
+- (void)launchAppForTestMethod {
+  [[AppLaunchManager sharedManager]
+      ensureAppLaunchedWithFeaturesEnabled:{}
+                                  disabled:{kLanguageSettings}
+                            relaunchPolicy:NoForceRelaunchAndResetState];
+}
+
 // Opens the translate settings page and verifies that accessibility is set up
 // properly.
 - (void)testAccessibilityOfTranslateSettings {
-  // Disable the Language Settings UI.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({}, {kLanguageSettings});
+#if defined(CHROME_EARL_GREY_1)
+  // Disable the Language Settings UI for EG1. EG2 will relaunch the app.
+  base::test::ScopedFeatureList featureList;
+  featureList.InitWithFeatures({}, {kLanguageSettings});
+#endif
 
   // Open translate settings.
   // TODO(crbug.com/606815): This and close settings is mostly shared with block
@@ -52,10 +62,6 @@ using chrome_test_util::SettingsMenuBackButton;
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 
   // Close settings.
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
-      performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }

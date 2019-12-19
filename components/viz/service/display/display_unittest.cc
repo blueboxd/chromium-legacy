@@ -115,12 +115,11 @@ class DisplayTest : public testing::Test {
  public:
   DisplayTest()
       : manager_(&shared_bitmap_manager_),
-        support_(std::make_unique<CompositorFrameSinkSupport>(
-            nullptr,
-            &manager_,
-            kArbitraryFrameSinkId,
-            true /* is_root */,
-            true /* needs_sync_points */)),
+        support_(
+            std::make_unique<CompositorFrameSinkSupport>(nullptr,
+                                                         &manager_,
+                                                         kArbitraryFrameSinkId,
+                                                         true /* is_root */)),
         task_runner_(new base::NullTaskRunner) {}
 
   ~DisplayTest() override {}
@@ -651,16 +650,14 @@ TEST_F(DisplayTest, BackdropFilterTest) {
                                              base::UnguessableToken::Create());
   const SurfaceId sub_surface_id1(kAnotherFrameSinkId, sub_local_surface_id1);
   auto sub_support1 = std::make_unique<CompositorFrameSinkSupport>(
-      nullptr, &manager_, kAnotherFrameSinkId, /*is_root=*/false,
-      /*needs_sync_points=*/true);
+      nullptr, &manager_, kAnotherFrameSinkId, /*is_root=*/false);
 
   // Create frame sink for another sub surface.
   const LocalSurfaceId sub_local_surface_id2(7,
                                              base::UnguessableToken::Create());
   const SurfaceId sub_surface_id2(kAnotherFrameSinkId2, sub_local_surface_id2);
   auto sub_support2 = std::make_unique<CompositorFrameSinkSupport>(
-      nullptr, &manager_, kAnotherFrameSinkId2, /*is_root=*/false,
-      /*needs_sync_points=*/true);
+      nullptr, &manager_, kAnotherFrameSinkId2, /*is_root=*/false);
 
   // Main surface M, damage D, sub-surface B with backdrop filter.
   //   +-----------+
@@ -826,8 +823,7 @@ TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
 
   // Set up second frame sink + display.
   auto support2 = std::make_unique<CompositorFrameSinkSupport>(
-      nullptr, &manager_, kAnotherFrameSinkId, true /* is_root */,
-      true /* needs_sync_points */);
+      nullptr, &manager_, kAnotherFrameSinkId, true /* is_root */);
   auto begin_frame_source2 = std::make_unique<StubBeginFrameSource>();
   auto scheduler_for_display2 = std::make_unique<TestDisplayScheduler>(
       begin_frame_source2.get(), task_runner_.get());
@@ -3391,8 +3387,7 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
   MockCompositorFrameSinkClient sub_client;
 
   auto sub_support = std::make_unique<CompositorFrameSinkSupport>(
-      &sub_client, &manager_, kAnotherFrameSinkId, false /* is_root */,
-      true /* needs_sync_points */);
+      &sub_client, &manager_, kAnotherFrameSinkId, false /* is_root */);
 
   const gfx::Size display_size(100, 100);
   display_->Resize(display_size);
@@ -3660,8 +3655,7 @@ TEST_F(DisplayTest, DontThrottleWhenParentBlocked) {
   MockCompositorFrameSinkClient sub_client;
 
   auto sub_support = std::make_unique<CompositorFrameSinkSupport>(
-      &sub_client, &manager_, kAnotherFrameSinkId, false /* is_root */,
-      true /* needs_sync_points */);
+      &sub_client, &manager_, kAnotherFrameSinkId, false /* is_root */);
   sub_support->SetNeedsBeginFrame(true);
 
   // Submit kUndrawnFrameLimit+1 frames. BeginFrames should be throttled only

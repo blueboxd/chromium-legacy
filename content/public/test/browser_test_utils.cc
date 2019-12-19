@@ -2987,6 +2987,42 @@ void NavigationHandleCommitObserver::DidFinishNavigation(
   was_renderer_initiated_ = handle->IsRendererInitiated();
 }
 
+WebContentsConsoleObserver::WebContentsConsoleObserver(
+    content::WebContents* web_contents)
+    : WebContentsObserver(web_contents) {}
+WebContentsConsoleObserver::~WebContentsConsoleObserver() = default;
+
+void WebContentsConsoleObserver::Wait() {
+  run_loop_.Run();
+}
+
+void WebContentsConsoleObserver::SetFilter(Filter filter) {
+  filter_ = std::move(filter);
+}
+
+void WebContentsConsoleObserver::SetPattern(std::string pattern) {
+  DCHECK(!pattern.empty()) << "An empty pattern will never match.";
+  pattern_ = std::move(pattern);
+}
+
+void WebContentsConsoleObserver::OnDidAddMessageToConsole(
+    blink::mojom::ConsoleMessageLevel log_level,
+    const base::string16& message_contents,
+    int32_t line_no,
+    const base::string16& source_id) {
+  Message message({log_level, message_contents, line_no, source_id});
+  if (filter_ && !filter_.Run(message))
+    return;
+
+  if (!pattern_.empty() &&
+      !base::MatchPattern(base::UTF16ToUTF8(message_contents), pattern_)) {
+    return;
+  }
+
+  messages_.push_back(std::move(message));
+  run_loop_.Quit();
+}
+
 ConsoleObserverDelegate::ConsoleObserverDelegate(WebContents* web_contents,
                                                  const std::string& filter)
     : web_contents_(web_contents), filter_(filter) {}

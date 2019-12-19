@@ -293,7 +293,7 @@ TEST_F(EnterpriseReportingPrivateGetPersistentSecretFunctionTest, GetSecret) {
 
 using EnterpriseReportingPrivateGetDeviceInfoTest = ExtensionApiUnittest;
 
-TEST_F(EnterpriseReportingPrivateGetDeviceInfoTest, GetDeviceInfoStub) {
+TEST_F(EnterpriseReportingPrivateGetDeviceInfoTest, GetDeviceInfo) {
   auto function =
       base::MakeRefCounted<EnterpriseReportingPrivateGetDeviceInfoFunction>();
   std::unique_ptr<base::Value> device_info_value =
@@ -306,6 +306,8 @@ TEST_F(EnterpriseReportingPrivateGetDeviceInfoTest, GetDeviceInfoStub) {
 
 #if defined(OS_MACOSX)
   EXPECT_EQ("macOS", info.os_name);
+#elif defined(OS_WIN)
+  EXPECT_EQ("windows", info.os_name);
 #else
   // Verify a stub implementation.
   EXPECT_EQ("stubOS", info.os_name);

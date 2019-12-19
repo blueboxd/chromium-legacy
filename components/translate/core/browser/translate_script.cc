@@ -54,15 +54,13 @@ const char kServerParams[] = "server_params";
 TranslateScript::TranslateScript()
     : expiration_delay_(base::TimeDelta::FromDays(kExpirationDelayDays)) {}
 
-TranslateScript::~TranslateScript() {
-}
+TranslateScript::~TranslateScript() {}
 
-void TranslateScript::Request(const RequestCallback& callback,
-                              bool is_incognito) {
+void TranslateScript::Request(RequestCallback callback, bool is_incognito) {
   script_fetch_start_time_ = base::Time::Now().ToJsTime();
 
   DCHECK(data_.empty()) << "Do not fetch the script if it is already fetched";
-  callback_list_.push_back(callback);
+  callback_list_.push_back(std::move(callback));
 
   if (fetcher_) {
     // If there is already a request in progress, do nothing. |callback| will be
@@ -104,20 +102,14 @@ GURL TranslateScript::GetTranslateScriptURL() {
     translate_script_url = GURL(kScriptURL);
 
   translate_script_url = net::AppendQueryParameter(
-      translate_script_url,
-      kCallbackQueryName,
-      kCallbackQueryValue);
+      translate_script_url, kCallbackQueryName, kCallbackQueryValue);
   translate_script_url = net::AppendQueryParameter(
-      translate_script_url,
-      kAlwaysUseSslQueryName,
-      kAlwaysUseSslQueryValue);
+      translate_script_url, kAlwaysUseSslQueryName, kAlwaysUseSslQueryValue);
   translate_script_url = net::AppendQueryParameter(
-      translate_script_url,
-      kCssLoaderCallbackQueryName,
+      translate_script_url, kCssLoaderCallbackQueryName,
       kCssLoaderCallbackQueryValue);
   translate_script_url = net::AppendQueryParameter(
-      translate_script_url,
-      kJavascriptLoaderCallbackQueryName,
+      translate_script_url, kJavascriptLoaderCallbackQueryName,
       kJavascriptLoaderCallbackQueryValue);
 
   translate_script_url = AddHostLocaleToUrl(translate_script_url);
@@ -150,8 +142,8 @@ void TranslateScript::OnScriptFetchComplete(bool success,
                         server_params.c_str());
 
     GURL security_origin = translate::GetTranslateSecurityOrigin();
-    base::StringAppendF(
-        &data_, "var securityOrigin = '%s';", security_origin.spec().c_str());
+    base::StringAppendF(&data_, "var securityOrigin = '%s';",
+                        security_origin.spec().c_str());
 
     // Load embedded translate.js.
     data_.append(ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
@@ -185,9 +177,8 @@ void TranslateScript::OnScriptFetchComplete(bool success,
         expiration_delay_);
   }
 
-  for (auto it = callback_list_.begin(); it != callback_list_.end(); ++it) {
-    it->Run(success, data);
-  }
+  for (auto& callback : callback_list_)
+    std::move(callback).Run(success, data);
   callback_list_.clear();
 }
 

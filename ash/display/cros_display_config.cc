@@ -228,9 +228,7 @@ mojom::DisplayModePtr GetDisplayMode(
     const display::ManagedDisplayInfo& display_info,
     const display::ManagedDisplayMode& display_mode) {
   auto result = mojom::DisplayMode::New();
-  bool is_internal = display::Display::HasInternalDisplay() &&
-                     display::Display::InternalDisplayId() == display_info.id();
-  gfx::Size size_dip = display_mode.GetSizeInDIP(is_internal);
+  gfx::Size size_dip = display_mode.GetSizeInDIP();
   result->size = size_dip;
   result->size_in_native_pixels = display_mode.size();
   result->device_scale_factor = display_mode.device_scale_factor();

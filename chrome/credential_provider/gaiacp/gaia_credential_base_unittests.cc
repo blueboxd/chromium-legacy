@@ -1905,6 +1905,77 @@ INSTANTIATE_TEST_SUITE_P(All,
                                            L"",
                                            L"https://escrowservice.com"));
 
+// Test Upload device details to GEM service with different failure scenarios.
+// Parameters are:
+// 0. Successfully uploaded device details.
+// 1. Fails the upload device details call due to network timeout.
+// 2. Fails the upload device details call due to invalid response
+//    from the GEM http server.
+class GcpGaiaCredentialBaseUploadDeviceDetailsTest
+    : public GcpGaiaCredentialBaseTest,
+      public ::testing::WithParamInterface<int> {};
+
+TEST_P(GcpGaiaCredentialBaseUploadDeviceDetailsTest, UploadDeviceDetails) {
+  bool fail_upload_device_details_timeout = (GetParam() == 1);
+  bool fail_upload_device_details_invalid_response = (GetParam() == 2);
+
+  GoogleMdmEnrolledStatusForTesting force_success(true);
+
+  // Create a fake user associated to a gaia id.
+  CComBSTR sid;
+  ASSERT_EQ(S_OK,
+            fake_os_user_manager()->CreateTestOSUser(
+                kDefaultUsername, L"password", L"Full Name", L"comment",
+                base::UTF8ToUTF16(kDefaultGaiaId), base::string16(), &sid));
+
+  // Change token response to an invalid one.
+  SetDefaultTokenHandleResponse(kDefaultValidTokenHandleResponse);
+
+  // Make timeout events for the upload device details request if needed.
+  std::unique_ptr<base::WaitableEvent> upload_device_details_key_event;
+
+  if (fail_upload_device_details_timeout) {
+    upload_device_details_key_event.reset(new base::WaitableEvent());
+
+    fake_gem_device_details_manager()->SetRequestTimeoutForTesting(
+        base::TimeDelta::FromMilliseconds(50));
+  }
+
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      fake_gem_device_details_manager()->GetGemServiceUploadDeviceDetailsUrl(),
+      FakeWinHttpUrlFetcher::Headers(),
+      fail_upload_device_details_invalid_response ? "Invalid json response"
+                                                  : "{}",
+      upload_device_details_key_event
+          ? upload_device_details_key_event->handle()
+          : INVALID_HANDLE_VALUE);
+
+  // Create provider and start logon.
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
+
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  // Finish logon successfully.
+  ASSERT_EQ(S_OK, FinishLogonProcess(true, true, 0));
+
+  // Verify that upload device details http call returned back with appropriate
+  // status code. Since the login process doesn't get affected by the status of
+  // the upload device details process, the login attempt would always succeed
+  // irrespective of the upload status.
+  HRESULT hr = fake_gem_device_details_manager()->GetUploadStatusForTesting();
+  bool has_upload_failed = (fail_upload_device_details_timeout ||
+                            fail_upload_device_details_invalid_response);
+  ASSERT_TRUE(has_upload_failed ? FAILED(hr) : SUCCEEDED(hr));
+
+  ASSERT_EQ(S_OK, ReleaseProvider());
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         GcpGaiaCredentialBaseUploadDeviceDetailsTest,
+                         ::testing::Values(0, 1, 2));
+
 TEST_F(GcpGaiaCredentialBaseTest, FullNameUpdated) {
   USES_CONVERSION;
 

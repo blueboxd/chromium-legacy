@@ -40,23 +40,34 @@ bool IsBufferSource(const NDEFRecordDataSource& data) {
   return data.IsArrayBuffer() || data.IsArrayBufferView();
 }
 
-WTF::Vector<uint8_t> GetBytesOfBufferSource(
-    const NDEFRecordDataSource& buffer_source) {
+bool GetBytesOfBufferSource(const NDEFRecordDataSource& buffer_source,
+                            WTF::Vector<uint8_t>* target,
+                            ExceptionState& exception_state) {
   DCHECK(IsBufferSource(buffer_source));
-  WTF::Vector<uint8_t> bytes;
+  uint8_t* data;
+  size_t data_length;
   if (buffer_source.IsArrayBuffer()) {
     DOMArrayBuffer* array_buffer = buffer_source.GetAsArrayBuffer();
-    bytes.Append(static_cast<uint8_t*>(array_buffer->Data()),
-                 array_buffer->DeprecatedByteLengthAsUnsigned());
+    data = reinterpret_cast<uint8_t*>(array_buffer->Data());
+    data_length = array_buffer->ByteLengthAsSizeT();
   } else if (buffer_source.IsArrayBufferView()) {
     const DOMArrayBufferView* array_buffer_view =
         buffer_source.GetAsArrayBufferView().View();
-    bytes.Append(static_cast<uint8_t*>(array_buffer_view->BaseAddress()),
-                 array_buffer_view->deprecatedByteLengthAsUnsigned());
+    data = reinterpret_cast<uint8_t*>(array_buffer_view->BaseAddress());
+    data_length = array_buffer_view->byteLengthAsSizeT();
   } else {
     NOTREACHED();
+    return false;
   }
-  return bytes;
+  wtf_size_t checked_length;
+  if (!base::CheckedNumeric<wtf_size_t>(data_length)
+           .AssignIfValid(&checked_length)) {
+    exception_state.ThrowRangeError(
+        "The provided buffer source exceeds the maximum supported length");
+    return false;
+  }
+  target->Append(data, checked_length);
+  return true;
 }
 
 // https://w3c.github.io/web-nfc/#ndef-record-types
@@ -153,7 +164,9 @@ static NDEFRecord* CreateTextRecord(const ExecutionContext* execution_context,
     bytes.Append(utf8_string.data(), utf8_string.size());
   } else {
     DCHECK(IsBufferSource(data));
-    bytes = GetBytesOfBufferSource(data);
+    if (!GetBytesOfBufferSource(data, &bytes, exception_state)) {
+      return nullptr;
+    }
   }
 
   return MakeGarbageCollected<NDEFRecord>("text", encoding_label, language,
@@ -192,8 +205,11 @@ static NDEFRecord* CreateMimeRecord(const NDEFRecordDataSource& data,
     return nullptr;
   }
 
-  return MakeGarbageCollected<NDEFRecord>(GetBytesOfBufferSource(data),
-                                          media_type);
+  WTF::Vector<uint8_t> bytes;
+  if (!GetBytesOfBufferSource(data, &bytes, exception_state)) {
+    return nullptr;
+  }
+  return MakeGarbageCollected<NDEFRecord>(bytes, media_type);
 }
 
 static NDEFRecord* CreateUnknownRecord(const NDEFRecordDataSource& data,
@@ -204,8 +220,11 @@ static NDEFRecord* CreateUnknownRecord(const NDEFRecordDataSource& data,
     return nullptr;
   }
 
-  return MakeGarbageCollected<NDEFRecord>("unknown",
-                                          GetBytesOfBufferSource(data));
+  WTF::Vector<uint8_t> bytes;
+  if (!GetBytesOfBufferSource(data, &bytes, exception_state)) {
+    return nullptr;
+  }
+  return MakeGarbageCollected<NDEFRecord>("unknown", bytes);
 }
 
 static NDEFRecord* CreateExternalRecord(const String& custom_type,
@@ -221,8 +240,11 @@ static NDEFRecord* CreateExternalRecord(const String& custom_type,
     return nullptr;
   }
 
-  return MakeGarbageCollected<NDEFRecord>(custom_type,
-                                          GetBytesOfBufferSource(data));
+  WTF::Vector<uint8_t> bytes;
+  if (!GetBytesOfBufferSource(data, &bytes, exception_state)) {
+    return nullptr;
+  }
+  return MakeGarbageCollected<NDEFRecord>(custom_type, bytes);
 }
 
 }  // namespace

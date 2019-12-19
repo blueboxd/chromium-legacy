@@ -30,7 +30,6 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -55,6 +54,8 @@
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/effects/SkLayerDrawLooper.h"
@@ -434,7 +435,8 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
     return tab_strip_->GetPinnedTabCount();
   }
 
-  TabGroupHeader* GetTabGroupHeader(TabGroupId group) const override {
+  TabGroupHeader* GetTabGroupHeader(
+      tab_groups::TabGroupId group) const override {
     return tab_strip_->group_header(group);
   }
 
@@ -524,7 +526,7 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
       int num_dragged_tabs,
       bool mouse_has_ever_moved_left,
       bool mouse_has_ever_moved_right,
-      base::Optional<TabGroupId> group) const override {
+      base::Optional<tab_groups::TabGroupId> group) const override {
     // If the strip has no tabs, the only position to insert at is 0.
     if (!GetTabCount())
       return 0;
@@ -785,7 +787,7 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
   base::Optional<int> GetInsertionIndexFrom(
       const gfx::Rect& dragged_bounds,
       int start,
-      base::Optional<TabGroupId> group) const {
+      base::Optional<tab_groups::TabGroupId> group) const {
     const int last_tab = GetTabCount() - 1;
     const int dragged_x = GetDraggedX(dragged_bounds);
     if (start < 0 || start > last_tab || dragged_x < ideal_bounds(start).x() ||
@@ -835,13 +837,13 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
   int GetInsertionIndexWithGroup(
       const gfx::Rect& dragged_bounds,
       int candidate_index,
-      base::Optional<TabGroupId> dragging_group) const {
+      base::Optional<tab_groups::TabGroupId> dragging_group) const {
     if (!dragging_group.has_value())
       return candidate_index;
 
     const std::vector<int> dragging_tabs =
         tab_strip_->controller()->ListTabsInGroup(dragging_group.value());
-    base::Optional<TabGroupId> other_group =
+    base::Optional<tab_groups::TabGroupId> other_group =
         tab_strip_->tab_at(candidate_index)->group();
 
     // The other group will be the same as the dragging group if the user
@@ -1238,12 +1240,12 @@ void TabStrip::SetTabData(int model_index, TabRendererData data) {
   SwapLayoutIfNecessary();
 }
 
-void TabStrip::AddTabToGroup(base::Optional<TabGroupId> group,
+void TabStrip::AddTabToGroup(base::Optional<tab_groups::TabGroupId> group,
                              int model_index) {
   tab_at(model_index)->set_group(group);
 }
 
-void TabStrip::OnGroupCreated(TabGroupId group) {
+void TabStrip::OnGroupCreated(tab_groups::TabGroupId group) {
   std::unique_ptr<TabGroupViews> group_view =
       std::make_unique<TabGroupViews>(this, group);
   AddChildView(group_view->header());
@@ -1256,7 +1258,7 @@ void TabStrip::OnGroupCreated(TabGroupId group) {
   group_views_[group] = std::move(group_view);
 }
 
-void TabStrip::OnGroupContentsChanged(TabGroupId group) {
+void TabStrip::OnGroupContentsChanged(tab_groups::TabGroupId group) {
   DCHECK(group_views_[group]);
   // The group header may be in the wrong place if the tab didn't actually
   // move in terms of model indices.
@@ -1266,7 +1268,7 @@ void TabStrip::OnGroupContentsChanged(TabGroupId group) {
   AnimateToIdealBounds();
 }
 
-void TabStrip::OnGroupVisualsChanged(TabGroupId group) {
+void TabStrip::OnGroupVisualsChanged(tab_groups::TabGroupId group) {
   DCHECK(group_views_[group]);
   group_views_[group]->UpdateVisuals();
   // The group title may have changed size, so update bounds.
@@ -1274,7 +1276,7 @@ void TabStrip::OnGroupVisualsChanged(TabGroupId group) {
   AnimateToIdealBounds();
 }
 
-void TabStrip::OnGroupClosed(TabGroupId group) {
+void TabStrip::OnGroupClosed(tab_groups::TabGroupId group) {
   bounds_animator_.StopAnimatingView(group_header(group));
   layout_helper_->RemoveGroupHeader(group);
   UpdateIdealBounds();
@@ -1917,17 +1919,18 @@ float TabStrip::GetHoverOpacityForRadialHighlight() const {
   return radial_highlight_opacity_;
 }
 
-const TabGroupVisualData* TabStrip::GetVisualDataForGroup(
-    TabGroupId group) const {
+const tab_groups::TabGroupVisualData* TabStrip::GetVisualDataForGroup(
+    tab_groups::TabGroupId group) const {
   return controller_->GetVisualDataForGroup(group);
 }
 
-void TabStrip::SetVisualDataForGroup(TabGroupId group,
-                                     TabGroupVisualData visual_data) {
+void TabStrip::SetVisualDataForGroup(
+    tab_groups::TabGroupId group,
+    tab_groups::TabGroupVisualData visual_data) {
   controller_->SetVisualDataForGroup(group, visual_data);
 }
 
-void TabStrip::CloseAllTabsInGroup(TabGroupId group) {
+void TabStrip::CloseAllTabsInGroup(tab_groups::TabGroupId group) {
   UpdateHoverCard(nullptr);
 
   std::vector<int> tabs = controller_->ListTabsInGroup(group);
@@ -1936,12 +1939,12 @@ void TabStrip::CloseAllTabsInGroup(TabGroupId group) {
   }
 }
 
-void TabStrip::UngroupAllTabsInGroup(TabGroupId group) {
+void TabStrip::UngroupAllTabsInGroup(tab_groups::TabGroupId group) {
   UpdateHoverCard(nullptr);
   controller_->UngroupAllTabsInGroup(group);
 }
 
-void TabStrip::AddNewTabInGroup(TabGroupId group) {
+void TabStrip::AddNewTabInGroup(tab_groups::TabGroupId group) {
   controller_->AddNewTabInGroup(group);
 }
 
@@ -2028,8 +2031,8 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   // Keep track of the dragging group if dragging by the group header, or
   // the current group if just dragging tabs into a group. At most one of these
   // will have a value, since a drag is either a group drag or a tab drag.
-  base::Optional<TabGroupId> dragging_group = base::nullopt;
-  base::Optional<TabGroupId> current_group = base::nullopt;
+  base::Optional<tab_groups::TabGroupId> dragging_group = base::nullopt;
+  base::Optional<tab_groups::TabGroupId> current_group = base::nullopt;
 
   // Paint group headers and underlines.
   for (const auto& group_view_pair : group_views_) {
@@ -2250,8 +2253,8 @@ void TabStrip::Init() {
     bounds_animator_.SetAnimationDuration(base::TimeDelta());
 }
 
-std::map<TabGroupId, TabGroupHeader*> TabStrip::GetGroupHeaders() {
-  std::map<TabGroupId, TabGroupHeader*> group_headers;
+std::map<tab_groups::TabGroupId, TabGroupHeader*> TabStrip::GetGroupHeaders() {
+  std::map<tab_groups::TabGroupId, TabGroupHeader*> group_headers;
   for (const auto& group_view_pair : group_views_) {
     group_headers.insert(std::make_pair(group_view_pair.first,
                                         group_view_pair.second->header()));
@@ -2657,7 +2660,7 @@ void TabStrip::OnTabCloseAnimationCompleted(Tab* tab) {
   }
 }
 
-void TabStrip::OnGroupCloseAnimationCompleted(TabGroupId group) {
+void TabStrip::OnGroupCloseAnimationCompleted(tab_groups::TabGroupId group) {
   group_views_.erase(group);
   // TODO(crbug.com/905491): We might want to simulate a mouse move here, like
   // we do in OnTabCloseAnimationCompleted.

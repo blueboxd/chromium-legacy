@@ -49,10 +49,9 @@ class TestCompositorFrameSinkSupportManager
   std::unique_ptr<CompositorFrameSinkSupport> CreateCompositorFrameSinkSupport(
       mojom::CompositorFrameSinkClient* client,
       const FrameSinkId& frame_sink_id,
-      bool is_root,
-      bool needs_sync_points) override {
+      bool is_root) override {
     return std::make_unique<CompositorFrameSinkSupport>(
-        client, frame_sink_manager_, frame_sink_id, is_root, needs_sync_points);
+        client, frame_sink_manager_, frame_sink_id, is_root);
   }
 
  private:

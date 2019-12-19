@@ -72,21 +72,6 @@ void LayoutNGBlockFlowMixin<Base>::ClearNGInlineNodeData() {
   ng_inline_node_data_.reset();
 }
 
-// The current fragment from the last layout cycle for this box.
-// When pre-NG layout calls functions of this block flow, fragment and/or
-// LayoutResult are required to compute the result.
-// TODO(kojii): Use the cached result for now, we may need to reconsider as the
-// cache evolves.
-template <typename Base>
-const NGPhysicalBoxFragment* LayoutNGBlockFlowMixin<Base>::CurrentFragment()
-    const {
-  const NGLayoutResult* cached_layout_result = Base::GetCachedLayoutResult();
-  if (!cached_layout_result)
-    return nullptr;
-
-  return &To<NGPhysicalBoxFragment>(cached_layout_result->PhysicalFragment());
-}
-
 template <typename Base>
 void LayoutNGBlockFlowMixin<Base>::AddLayoutOverflowFromChildren() {
   if (Base::LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))

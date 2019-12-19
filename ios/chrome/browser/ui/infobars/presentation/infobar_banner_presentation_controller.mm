@@ -17,7 +17,7 @@ const CGFloat kContainerHorizontalPadding = 8;
 // The presented view maximum width.
 const CGFloat kContainerMaxWidth = 398;
 // The presented view maximum height.
-const CGFloat kContainerMaxHeight = 200;
+const CGFloat kContainerMaxHeight = 230;
 }
 
 @implementation InfobarBannerPresentationController

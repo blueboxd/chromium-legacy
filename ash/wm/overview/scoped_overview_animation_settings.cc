@@ -233,4 +233,8 @@ void ScopedOverviewAnimationSettings::TrilinearFiltering() {
   animation_settings_->TrilinearFiltering();
 }
 
+ui::LayerAnimator* ScopedOverviewAnimationSettings::GetAnimator() {
+  return animation_settings_->GetAnimator();
+}
+
 }  // namespace ash

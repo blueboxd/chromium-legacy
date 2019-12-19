@@ -1,0 +1,9 @@
+# tags: [ win10 ]
+# tags: [ intel intel-0x5912]
+# results: [ RetryOnFailure ]
+
+ # These tests are flaky on Win10 FYI x64 (Exp) Release (Intel HD 630) bots
+crbug.com/941163 [ win10 intel-0x5912 ] Video_720_MP4 [ RetryOnFailure ]
+crbug.com/941163 [ win10 intel-0x5912 ] Video_720_MP4_Underlay [ RetryOnFailure ]
+crbug.com/941163 [ win10 intel-0x5912 ] Video_720_MP4_Fullscreen [ RetryOnFailure ]
+crbug.com/941163 [ win10 intel-0x5912 ] Video_720_MP4_Underlay_Fullscreen [ RetryOnFailure ]

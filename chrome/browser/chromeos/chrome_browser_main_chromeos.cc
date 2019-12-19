@@ -576,13 +576,9 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
 
   discover_manager_ = std::make_unique<DiscoverManager>();
 
-  scheduler_configuration_manager_ =
-      std::make_unique<SchedulerConfigurationManager>(
-          DBusThreadManager::Get()->GetDebugDaemonClient(),
-          g_browser_process->local_state());
-
+  g_browser_process->platform_part()->InitializeSchedulerConfigurationManager();
   arc_service_launcher_ = std::make_unique<arc::ArcServiceLauncher>(
-      scheduler_configuration_manager_.get());
+      g_browser_process->platform_part()->scheduler_configuration_manager());
 
   session_termination_manager_ =
       std::make_unique<chromeos::SessionTerminationManager>();
@@ -1146,8 +1142,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // Specifically, this should be done after Profile destruction run in
   // ChromeBrowserMainPartsLinux::PostMainMessageLoopRun().
   arc_service_launcher_.reset();
-  // |arc_service_launcher_| uses |scheduler_configuration_manager_|.
-  scheduler_configuration_manager_.reset();
+  // |arc_service_launcher_| uses SchedulerConfigurationManager.
+  g_browser_process->platform_part()->ShutdownSchedulerConfigurationManager();
 
   if (pre_profile_init_called_) {
     AccessibilityManager::Shutdown();

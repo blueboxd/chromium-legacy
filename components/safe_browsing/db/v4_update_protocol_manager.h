@@ -42,10 +42,11 @@ class V4UpdateProtocolManagerFactory;
 // Parameters:
 //   - The vector of update response protobufs received from the server for
 //     each list type.
-typedef base::Callback<void(std::unique_ptr<ParsedServerResponse>)>
-    V4UpdateCallback;
+using V4UpdateCallback =
+    base::RepeatingCallback<void(std::unique_ptr<ParsedServerResponse>)>;
 
-typedef base::Callback<ExtendedReportingLevel()> ExtendedReportingLevelCallback;
+using ExtendedReportingLevelCallback =
+    base::RepeatingCallback<ExtendedReportingLevel()>;
 
 class V4UpdateProtocolManager {
  public:

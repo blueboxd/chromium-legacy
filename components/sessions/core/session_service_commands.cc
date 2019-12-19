@@ -18,6 +18,8 @@
 #include "components/sessions/core/base_session_service_delegate.h"
 #include "components/sessions/core/session_command.h"
 #include "components/sessions/core/session_types.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 
 namespace sessions {
 
@@ -218,8 +220,8 @@ void UpdateSelectedTabIndex(
 
 using IdToSessionTab = std::map<SessionID, std::unique_ptr<SessionTab>>;
 using IdToSessionWindow = std::map<SessionID, std::unique_ptr<SessionWindow>>;
-using TokenToSessionTabGroup =
-    std::map<base::Token, std::unique_ptr<SessionTabGroup>>;
+using GroupIdToSessionTabGroup =
+    std::map<tab_groups::TabGroupId, std::unique_ptr<SessionTabGroup>>;
 
 // Returns the window in windows with the specified id. If a window does
 // not exist, one is created.
@@ -248,12 +250,12 @@ SessionTab* GetTab(SessionID tab_id, IdToSessionTab* tabs) {
   return i->second.get();
 }
 
-SessionTabGroup* GetTabGroup(base::Token group_id,
-                             TokenToSessionTabGroup* groups) {
+SessionTabGroup* GetTabGroup(tab_groups::TabGroupId group_id,
+                             GroupIdToSessionTabGroup* groups) {
   DCHECK(groups);
   // For |group_id|, insert a corresponding group entry or get the existing one.
   auto result = groups->emplace(group_id, nullptr);
-  TokenToSessionTabGroup::iterator it = result.first;
+  GroupIdToSessionTabGroup::iterator it = result.first;
   if (result.second)
     it->second = std::make_unique<SessionTabGroup>(group_id);
   return it->second.get();
@@ -328,7 +330,7 @@ void SortTabsBasedOnVisualOrderAndClear(
 // Adds tabs to their parent window based on the tab's window_id. This
 // ignores tabs with no navigations.
 void AddTabsToWindows(IdToSessionTab* tabs,
-                      TokenToSessionTabGroup* tab_groups,
+                      GroupIdToSessionTabGroup* tab_groups,
                       IdToSessionWindow* windows) {
   DVLOG(1) << "AddTabsToWindows";
   DVLOG(1) << "Tabs " << tabs->size() << ", groups " << tab_groups->size()
@@ -364,14 +366,14 @@ void AddTabsToWindows(IdToSessionTab* tabs,
   for (auto& window_pair : *windows) {
     SessionWindow* window = window_pair.second.get();
 
-    base::flat_set<base::Token> groups_in_current_window;
+    base::flat_set<tab_groups::TabGroupId> groups_in_current_window;
     for (const auto& tab : window->tabs) {
       if (tab->group.has_value())
         groups_in_current_window.insert(tab->group.value());
     }
 
     // Move corresponding SessionTabGroup entries into SessionWindow.
-    for (const base::Token& group_id : groups_in_current_window) {
+    for (const tab_groups::TabGroupId& group_id : groups_in_current_window) {
       auto it = tab_groups->find(group_id);
       if (it == tab_groups->end()) {
         window->tab_groups.push_back(
@@ -424,7 +426,7 @@ void ProcessTabNavigationPathPrunedCommand(
 bool CreateTabsAndWindows(
     const std::vector<std::unique_ptr<SessionCommand>>& data,
     IdToSessionTab* tabs,
-    TokenToSessionTabGroup* tab_groups,
+    GroupIdToSessionTabGroup* tab_groups,
     IdToSessionWindow* windows,
     SessionID* active_window_id) {
   // If the file is corrupt (command with wrong size, or unknown command), we
@@ -618,7 +620,9 @@ bool CreateTabsAndWindows(
         const base::Token token(payload.maybe_group.id_high,
                                 payload.maybe_group.id_low);
         session_tab->group =
-            payload.has_group ? base::make_optional(token) : base::nullopt;
+            payload.has_group ? base::make_optional(
+                                    tab_groups::TabGroupId::FromRawToken(token))
+                              : base::nullopt;
         break;
       }
 
@@ -626,17 +630,22 @@ bool CreateTabsAndWindows(
         std::unique_ptr<base::Pickle> pickle = command->PayloadAsPickle();
         base::PickleIterator iter(*pickle);
 
-        base::Optional<base::Token> group_id = ReadTokenFromPickle(&iter);
-        if (!group_id.has_value())
+        base::Optional<base::Token> group_token = ReadTokenFromPickle(&iter);
+        if (!group_token.has_value())
           return true;
 
-        SessionTabGroup* group = GetTabGroup(group_id.value(), tab_groups);
+        SessionTabGroup* group = GetTabGroup(
+            tab_groups::TabGroupId::FromRawToken(group_token.value()),
+            tab_groups);
 
-        if (!iter.ReadString16(&group->metadata.title))
+        base::string16 title;
+        if (!iter.ReadString16(&title))
           return true;
 
-        if (!iter.ReadUInt32(&group->metadata.color))
+        SkColor color;
+        if (!iter.ReadUInt32(&color))
           return true;
+        group->visual_data = tab_groups::TabGroupVisualData(title, color);
         break;
       }
 
@@ -843,26 +852,25 @@ std::unique_ptr<SessionCommand> CreateSetWindowTypeCommand(
 
 std::unique_ptr<SessionCommand> CreateTabGroupCommand(
     const SessionID& tab_id,
-    base::Optional<base::Token> group) {
+    base::Optional<tab_groups::TabGroupId> group) {
   TabGroupPayload payload = {0};
   payload.tab_id = tab_id.id();
   if (group.has_value()) {
-    DCHECK(!group.value().is_zero());
-    payload.maybe_group.id_high = group.value().high();
-    payload.maybe_group.id_low = group.value().low();
+    DCHECK(!group.value().token().is_zero());
+    payload.maybe_group.id_high = group.value().token().high();
+    payload.maybe_group.id_low = group.value().token().low();
     payload.has_group = true;
   }
   return CreateSessionCommandForPayload(kCommandSetTabGroup, payload);
 }
 
 std::unique_ptr<SessionCommand> CreateTabGroupMetadataUpdateCommand(
-    const base::Token& group,
-    const base::string16& title,
-    SkColor color) {
+    const tab_groups::TabGroupId group,
+    const tab_groups::TabGroupVisualData* visual_data) {
   base::Pickle pickle;
-  WriteTokenToPickle(&pickle, group);
-  pickle.WriteString16(title);
-  pickle.WriteUInt32(color);
+  WriteTokenToPickle(&pickle, group.token());
+  pickle.WriteString16(visual_data->title());
+  pickle.WriteUInt32(visual_data->color());
   return std::make_unique<SessionCommand>(kCommandSetTabGroupMetadata, pickle);
 }
 
@@ -1017,7 +1025,7 @@ void RestoreSessionFromCommands(
     std::vector<std::unique_ptr<SessionWindow>>* valid_windows,
     SessionID* active_window_id) {
   IdToSessionTab tabs;
-  TokenToSessionTabGroup tab_groups;
+  GroupIdToSessionTabGroup tab_groups;
   IdToSessionWindow windows;
 
   DVLOG(1) << "RestoreSessionFromCommands " << commands.size();

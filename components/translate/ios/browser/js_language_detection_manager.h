@@ -19,7 +19,8 @@ namespace language_detection {
 extern const size_t kMaxIndexChars;
 
 // Type for the callback called when the buffered text is retrieved.
-using BufferedTextCallback = base::Callback<void(const base::string16&)>;
+using BufferedTextCallback =
+    base::RepeatingCallback<void(const base::string16&)>;
 
 }  // namespace language_detection
 
@@ -30,7 +31,7 @@ using BufferedTextCallback = base::Callback<void(const base::string16&)>;
 // |callback| with the page's text contents. The cache is purged on the JS side
 // after this call. |callback| must be non null.
 - (void)retrieveBufferedTextContent:
-        (const language_detection::BufferedTextCallback&)callback;
+    (const language_detection::BufferedTextCallback&)callback;
 
 // Starts detecting the language of the page.
 - (void)startLanguageDetection;

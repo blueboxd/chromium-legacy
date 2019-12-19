@@ -49,7 +49,7 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   // kPendingDemuxerRead or kPendingDecrypt state, waits for the pending
   // operation to finish before satisfying |closure|. Sets the state to
   // kUninitialized if |this| hasn't been initialized, or to kIdle otherwise.
-  void Reset(const base::Closure& closure);
+  void Reset(base::OnceClosure closure);
 
   // Returns the name of this class for logging purpose.
   std::string GetDisplayName() const;
@@ -151,7 +151,7 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
 
   PipelineStatusCB init_cb_;
   ReadCB read_cb_;
-  base::Closure reset_cb_;
+  base::OnceClosure reset_cb_;
 
   // Pointer to the input demuxer stream that will feed us encrypted buffers.
   DemuxerStream* demuxer_stream_ = nullptr;

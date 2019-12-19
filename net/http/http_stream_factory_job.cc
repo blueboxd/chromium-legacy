@@ -341,6 +341,10 @@ const ProxyInfo& HttpStreamFactory::Job::proxy_info() const {
   return proxy_info_;
 }
 
+ResolveErrorInfo HttpStreamFactory::Job::resolve_error_info() const {
+  return resolve_error_info_;
+}
+
 void HttpStreamFactory::Job::GetSSLInfo(SSLInfo* ssl_info) {
   DCHECK(using_ssl_);
   DCHECK(!establishing_tunnel_);
@@ -919,6 +923,8 @@ int HttpStreamFactory::Job::DoInitConnectionComplete(int result) {
     DCHECK_EQ(OK, result);
     return OK;
   }
+
+  resolve_error_info_ = connection_->resolve_error_info();
 
   // |result| may be the result of any of the stacked pools. The following
   // logic is used when determining how to interpret an error.

@@ -20,6 +20,8 @@
 #include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -200,7 +202,9 @@ class GuestOsSharePathTest : public testing::Test {
                         expected_failure_reason, success, failure_reason);
   }
 
-  GuestOsSharePathTest() {
+  GuestOsSharePathTest()
+      : local_state_(std::make_unique<ScopedTestingLocalState>(
+            TestingBrowserProcess::GetGlobal())) {
     chromeos::DBusThreadManager::Initialize();
     fake_concierge_client_ = static_cast<chromeos::FakeConciergeClient*>(
         chromeos::DBusThreadManager::Get()->GetConciergeClient());
@@ -254,9 +258,13 @@ class GuestOsSharePathTest : public testing::Test {
     // Create 'vm-running' VM instance which is running.
     crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
         "vm-running");
+
+    g_browser_process->platform_part()
+        ->InitializeSchedulerConfigurationManager();
   }
 
   void TearDown() override {
+    g_browser_process->platform_part()->ShutdownSchedulerConfigurationManager();
     // Shutdown GuestOsSharePath to schedule FilePathWatchers to be destroyed,
     // then run thread bundle to ensure they are.
     guest_os_share_path_->Shutdown();
@@ -293,6 +301,8 @@ class GuestOsSharePathTest : public testing::Test {
   AccountId account_id_;
 
  private:
+  std::unique_ptr<ScopedTestingLocalState> local_state_;
+
   DISALLOW_COPY_AND_ASSIGN(GuestOsSharePathTest);
 };
 

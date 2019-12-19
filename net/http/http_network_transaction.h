@@ -107,7 +107,8 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   void OnStreamFailed(int status,
                       const NetErrorDetails& net_error_details,
                       const SSLConfig& used_ssl_config,
-                      const ProxyInfo& used_proxy_info) override;
+                      const ProxyInfo& used_proxy_info,
+                      ResolveErrorInfo resolve_error_info) override;
   void OnCertificateError(int status,
                           const SSLConfig& used_ssl_config,
                           const SSLInfo& ssl_info) override;

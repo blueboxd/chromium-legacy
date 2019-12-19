@@ -145,24 +145,6 @@ using chrome_test_util::SecondarySignInButton;
   GREYAssertEqual(expectedCount, count, @"Unexpected number of bookmarks");
 }
 
-+ (void)bookmarkCurrentTabWithTitle:(NSString*)title {
-  [BookmarkEarlGreyUtils waitForBookmarkModelLoaded:YES];
-  // Add the bookmark from the UI.
-  [BookmarkEarlGreyUI starCurrentTab];
-
-  // Set the bookmark name.
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_ACTION_EDIT)]
-      performAction:grey_tap()];
-  NSString* titleIdentifier = @"Title Field_textField";
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(titleIdentifier)]
-      performAction:grey_replaceText(title)];
-
-  // Dismiss the window.
-  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditDoneButton()]
-      performAction:grey_tap()];
-}
-
 + (void)assertFolderExists:(NSString*)title {
   base::string16 folderTitle16(base::SysNSStringToUTF16(title));
   bookmarks::BookmarkModel* bookmark_model =

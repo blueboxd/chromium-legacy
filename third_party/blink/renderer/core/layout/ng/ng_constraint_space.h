@@ -349,6 +349,8 @@ class CORE_EXPORT NGConstraintSpace final {
     return bitfields_.is_intermediate_layout;
   }
 
+  bool IsPaintedAtomically() const { return bitfields_.is_painted_atomically; }
+
   // If specified a layout should produce a Fragment which fragments at the
   // blockSize if possible.
   NGFragmentationType BlockFragmentationType() const {
@@ -394,7 +396,7 @@ class CORE_EXPORT NGConstraintSpace final {
   // Return true if the block size of the table-cell should be considered
   // restricted (e.g. height of the cell or its table is non-auto).
   bool IsRestrictedBlockSizeTableCell() const {
-    return bitfields_.is_restricted_block_size_table_cell;
+    return HasRareData() && rare_data_->is_restricted_block_size_table_cell;
   }
 
   NGMarginStrut MarginStrut() const {
@@ -594,6 +596,7 @@ class CORE_EXPORT NGConstraintSpace final {
     explicit RareData(const NGBfcOffset bfc_offset)
         : bfc_offset(bfc_offset),
           data_union_type(static_cast<unsigned>(kNone)),
+          is_restricted_block_size_table_cell(false),
           hide_table_cell_if_empty(false),
           block_direction_fragmentation_type(
               static_cast<unsigned>(kFragmentNone)),
@@ -608,6 +611,8 @@ class CORE_EXPORT NGConstraintSpace final {
           fragmentainer_block_size(other.fragmentainer_block_size),
           fragmentainer_offset_at_bfc(other.fragmentainer_offset_at_bfc),
           data_union_type(other.data_union_type),
+          is_restricted_block_size_table_cell(
+              other.is_restricted_block_size_table_cell),
           hide_table_cell_if_empty(other.hide_table_cell_if_empty),
           block_direction_fragmentation_type(
               other.block_direction_fragmentation_type),
@@ -665,7 +670,10 @@ class CORE_EXPORT NGConstraintSpace final {
     LayoutUnit fragmentainer_offset_at_bfc;
 
     unsigned data_union_type : 2;
+
+    unsigned is_restricted_block_size_table_cell : 1;
     unsigned hide_table_cell_if_empty : 1;
+
     unsigned block_direction_fragmentation_type : 2;
     unsigned is_inside_balanced_columns : 1;
     unsigned is_in_column_bfc : 1;
@@ -675,6 +683,8 @@ class CORE_EXPORT NGConstraintSpace final {
       if (fragmentainer_block_size != other.fragmentainer_block_size ||
           fragmentainer_offset_at_bfc != other.fragmentainer_offset_at_bfc ||
           data_union_type != other.data_union_type ||
+          is_restricted_block_size_table_cell !=
+              other.is_restricted_block_size_table_cell ||
           hide_table_cell_if_empty != other.hide_table_cell_if_empty ||
           block_direction_fragmentation_type !=
               other.block_direction_fragmentation_type ||
@@ -699,7 +709,8 @@ class CORE_EXPORT NGConstraintSpace final {
     // Must be kept in sync with members checked within |MaySkipLayout|.
     bool IsInitialForMaySkipLayout() const {
       if (fragmentainer_block_size != kIndefiniteSize ||
-          fragmentainer_offset_at_bfc || hide_table_cell_if_empty ||
+          fragmentainer_offset_at_bfc || is_restricted_block_size_table_cell ||
+          hide_table_cell_if_empty ||
           block_direction_fragmentation_type != kFragmentNone ||
           is_inside_balanced_columns || is_in_column_bfc ||
           early_break_appeal != kBreakAppealLastResort)
@@ -884,8 +895,8 @@ class CORE_EXPORT NGConstraintSpace final {
           is_new_formatting_context(false),
           is_orthogonal_writing_mode_root(false),
           is_intermediate_layout(false),
+          is_painted_atomically(false),
           is_fixed_block_size_indefinite(false),
-          is_restricted_block_size_table_cell(false),
           use_first_line_style(false),
           ancestor_has_clearance_past_adjoining_floats(false),
           is_shrink_to_fit(false),
@@ -907,8 +918,7 @@ class CORE_EXPORT NGConstraintSpace final {
              is_orthogonal_writing_mode_root ==
                  other.is_orthogonal_writing_mode_root &&
              is_intermediate_layout == other.is_intermediate_layout &&
-             is_restricted_block_size_table_cell ==
-                 other.is_restricted_block_size_table_cell &&
+             is_painted_atomically == other.is_painted_atomically &&
              use_first_line_style == other.use_first_line_style &&
              ancestor_has_clearance_past_adjoining_floats ==
                  other.ancestor_has_clearance_past_adjoining_floats &&
@@ -933,8 +943,8 @@ class CORE_EXPORT NGConstraintSpace final {
     unsigned is_orthogonal_writing_mode_root : 1;
     unsigned is_intermediate_layout : 1;
 
+    unsigned is_painted_atomically : 1;
     unsigned is_fixed_block_size_indefinite : 1;
-    unsigned is_restricted_block_size_table_cell : 1;
     unsigned use_first_line_style : 1;
     unsigned ancestor_has_clearance_past_adjoining_floats : 1;
 

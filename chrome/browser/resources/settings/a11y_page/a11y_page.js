@@ -46,12 +46,6 @@ Polymer({
         if (settings.routes.CAPTIONS) {
           map.set(settings.routes.CAPTIONS.path, '#captions');
         }
-        // <if expr="chromeos">
-        if (settings.routes.MANAGE_ACCESSIBILITY) {
-          map.set(
-              settings.routes.MANAGE_ACCESSIBILITY.path, '#subpage-trigger');
-        }
-        // </if>
         return map;
       },
     },
@@ -64,17 +58,6 @@ Polymer({
       type: Boolean,
       value: function() {
         return loadTimeData.getBoolean('enableCaptionSettings');
-      },
-    },
-
-    /**
-     * Whether to show OS settings.
-     * @private {boolean}
-     */
-    showOsSettings_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('showOSSettings');
       },
     },
 
@@ -130,11 +113,6 @@ Polymer({
 
   // <if expr="chromeos">
   /** @private */
-  onManageAccessibilityFeaturesTap_: function() {
-    settings.navigateTo(settings.routes.MANAGE_ACCESSIBILITY);
-  },
-
-  /** @private */
   onManageSystemAccessibilityFeaturesTap_: function() {
     window.location.href = 'chrome://os-settings/manageAccessibility';
   },
@@ -164,9 +142,9 @@ Polymer({
     }
     // </if>
 
-    // Navigate to the caption settings page for ChromeOS and Linux as they
-    // do not have system caption settings.
-    // <if expr="chromeos or is_linux">
+    // Navigate to the caption settings page for Linux as they do not have
+    // system caption settings.
+    // <if expr="is_linux">
     settings.navigateTo(settings.routes.CAPTIONS);
     // </if>
   },

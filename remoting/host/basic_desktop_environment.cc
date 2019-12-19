@@ -4,6 +4,8 @@
 
 #include "remoting/host/basic_desktop_environment.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -14,6 +16,7 @@
 #include "remoting/host/desktop_capturer_proxy.h"
 #include "remoting/host/file_transfer/local_file_operations.h"
 #include "remoting/host/input_injector.h"
+#include "remoting/host/keyboard_layout_monitor.h"
 #include "remoting/host/mouse_cursor_monitor_proxy.h"
 #include "remoting/host/screen_controls.h"
 #include "remoting/protocol/capability_names.h"
@@ -67,6 +70,12 @@ std::unique_ptr<webrtc::MouseCursorMonitor>
 BasicDesktopEnvironment::CreateMouseCursorMonitor() {
   return std::make_unique<MouseCursorMonitorProxy>(video_capture_task_runner_,
                                                    desktop_capture_options());
+}
+
+std::unique_ptr<KeyboardLayoutMonitor>
+BasicDesktopEnvironment::CreateKeyboardLayoutMonitor(
+    base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback) {
+  return KeyboardLayoutMonitor::Create(std::move(callback), input_task_runner_);
 }
 
 std::unique_ptr<FileOperations>

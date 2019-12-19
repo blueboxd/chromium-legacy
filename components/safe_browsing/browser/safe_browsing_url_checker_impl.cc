@@ -12,6 +12,7 @@
 #include "components/safe_browsing/browser/url_checker_delegate.h"
 #include "components/safe_browsing/realtime/policy_engine.h"
 #include "components/safe_browsing/realtime/url_lookup_service.h"
+#include "components/safe_browsing/verdict_cache_manager.h"
 #include "components/safe_browsing/web_ui/constants.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
@@ -100,8 +101,9 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
     content::ResourceType resource_type,
     bool has_user_gesture,
     scoped_refptr<UrlCheckerDelegate> url_checker_delegate,
-    const base::Callback<content::WebContents*()>& web_contents_getter,
-    bool real_time_lookup_enabled)
+    const base::RepeatingCallback<content::WebContents*()>& web_contents_getter,
+    bool real_time_lookup_enabled,
+    base::WeakPtr<VerdictCacheManager> cache_manager_on_ui)
     : headers_(headers),
       load_flags_(load_flags),
       resource_type_(resource_type),
@@ -109,7 +111,8 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
       web_contents_getter_(web_contents_getter),
       url_checker_delegate_(std::move(url_checker_delegate)),
       database_manager_(url_checker_delegate_->GetDatabaseManager()),
-      real_time_lookup_enabled_(real_time_lookup_enabled) {}
+      real_time_lookup_enabled_(real_time_lookup_enabled),
+      cache_manager_on_ui_(cache_manager_on_ui) {}
 
 SafeBrowsingUrlCheckerImpl::~SafeBrowsingUrlCheckerImpl() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -200,8 +203,8 @@ void SafeBrowsingUrlCheckerImpl::OnUrlResult(const GURL& url,
   resource.threat_type = threat_type;
   resource.threat_metadata = metadata;
   resource.callback =
-      base::Bind(&SafeBrowsingUrlCheckerImpl::OnBlockingPageComplete,
-                 weak_factory_.GetWeakPtr());
+      base::BindRepeating(&SafeBrowsingUrlCheckerImpl::OnBlockingPageComplete,
+                          weak_factory_.GetWeakPtr());
   resource.callback_thread =
       base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
   resource.web_contents_getter = web_contents_getter_;
@@ -445,13 +448,62 @@ void SafeBrowsingUrlCheckerImpl::OnCheckUrlForHighConfidenceAllowlist(
     return;
   }
 
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(
+          &SafeBrowsingUrlCheckerImpl::StartGetCachedRealTimeUrlVerdictOnUI,
+          weak_factory_.GetWeakPtr(), cache_manager_on_ui_, url));
+}
+
+// static
+void SafeBrowsingUrlCheckerImpl::StartGetCachedRealTimeUrlVerdictOnUI(
+    base::WeakPtr<SafeBrowsingUrlCheckerImpl> weak_checker_on_io,
+    base::WeakPtr<VerdictCacheManager> cache_manager_on_ui,
+    const GURL& url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  std::unique_ptr<RTLookupResponse::ThreatInfo> cached_threat_info =
+      std::make_unique<RTLookupResponse::ThreatInfo>();
+  // TODO(crbug.com/1030989): Add metrics for the proportion of cache_manager
+  // not valid.
+  RTLookupResponse::ThreatInfo::VerdictType verdict_type =
+      cache_manager_on_ui
+          ? cache_manager_on_ui->GetCachedRealTimeUrlVerdict(
+                url, cached_threat_info.get())
+          : RTLookupResponse::ThreatInfo::VERDICT_TYPE_UNSPECIFIED;
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::IO},
+      base::BindOnce(
+          &SafeBrowsingUrlCheckerImpl::OnGetCachedRealTimeUrlVerdictDoneOnIO,
+          weak_checker_on_io, verdict_type, std::move(cached_threat_info),
+          url));
+}
+
+void SafeBrowsingUrlCheckerImpl::OnGetCachedRealTimeUrlVerdictDoneOnIO(
+    RTLookupResponse::ThreatInfo::VerdictType verdict_type,
+    std::unique_ptr<RTLookupResponse::ThreatInfo> cached_threat_info,
+    const GURL& url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  // TODO(crbug.com/1030989): Add metrics for cache hit rate and latency.
+  if (verdict_type == RTLookupResponse::ThreatInfo::SAFE) {
+    OnUrlResult(url, SB_THREAT_TYPE_SAFE, ThreatMetadata());
+    return;
+  } else if (verdict_type == RTLookupResponse::ThreatInfo::DANGEROUS) {
+    OnUrlResult(url,
+                RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(
+                    cached_threat_info->threat_type()),
+                ThreatMetadata());
+    return;
+  }
+
   RTLookupRequestCallback request_callback =
-      base::Bind(&SafeBrowsingUrlCheckerImpl::OnRTLookupRequest,
-                 weak_factory_.GetWeakPtr());
+      base::BindOnce(&SafeBrowsingUrlCheckerImpl::OnRTLookupRequest,
+                     weak_factory_.GetWeakPtr());
 
   RTLookupResponseCallback response_callback =
-      base::Bind(&SafeBrowsingUrlCheckerImpl::OnRTLookupResponse,
-                 weak_factory_.GetWeakPtr());
+      base::BindOnce(&SafeBrowsingUrlCheckerImpl::OnRTLookupResponse,
+                     weak_factory_.GetWeakPtr());
 
   auto* rt_lookup_service = database_manager_->GetRealTimeUrlLookupService();
   rt_lookup_service->StartLookup(url, std::move(request_callback),
@@ -489,19 +541,24 @@ void SafeBrowsingUrlCheckerImpl::OnRTLookupResponse(
   }
 
   const GURL& url = urls_[next_index_].url;
-  // TODO(crbug.com/1033692): Only take the first threat info into account
-  // because threat infos are returned in decreasing order of severity. Consider
-  // extend it to support multiple threat types.
-  if (response && (response->threat_info_size() > 0) &&
-      (response->threat_info(0).verdict_type() ==
-       RTLookupResponse::ThreatInfo::DANGEROUS)) {
-    OnUrlResult(url,
-                RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(
-                    response->threat_info(0).threat_type()),
-                ThreatMetadata());
-  } else {
-    OnUrlResult(url, SB_THREAT_TYPE_SAFE, ThreatMetadata());
+
+  SBThreatType sb_threat_type = SB_THREAT_TYPE_SAFE;
+  if (response && (response->threat_info_size() > 0)) {
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&VerdictCacheManager::CacheRealTimeUrlVerdict,
+                                  cache_manager_on_ui_, url, *response,
+                                  base::Time::Now()));
+
+    // TODO(crbug.com/1033692): Only take the first threat info into account
+    // because threat infos are returned in decreasing order of severity.
+    // Consider extend it to support multiple threat types.
+    if (response->threat_info(0).verdict_type() ==
+        RTLookupResponse::ThreatInfo::DANGEROUS) {
+      sb_threat_type = RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(
+          response->threat_info(0).threat_type());
+    }
   }
+  OnUrlResult(url, sb_threat_type, ThreatMetadata());
 }
 
 void SafeBrowsingUrlCheckerImpl::SetWebUIToken(int token) {

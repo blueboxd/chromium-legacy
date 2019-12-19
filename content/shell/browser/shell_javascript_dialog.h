@@ -36,11 +36,10 @@ class ShellJavaScriptDialog {
   void Cancel();
 
  private:
-  JavaScriptDialogManager::DialogClosedCallback callback_;
-
 #if defined(OS_MACOSX)
   ShellJavaScriptDialogHelper* helper_;  // owned
 #elif defined(OS_WIN)
+  JavaScriptDialogManager::DialogClosedCallback callback_;
   ShellJavaScriptDialogManager* manager_;
   JavaScriptDialogType dialog_type_;
   HWND dialog_win_;

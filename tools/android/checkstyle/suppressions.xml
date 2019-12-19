@@ -5,8 +5,9 @@
   <!-- Code in chrome/ should use SharedPreferencesManager. Ref: crbug.com/1022108 -->
   <suppress id="UseSharedPreferencesManagerFromChromeCheck"
             files="src/(android_webview|base|chromecast|components|content|device|media|net|remoting|services|testing|third_party|tools|ui|weblayer)/"/>
+  <!-- FooTest.java, FooTestUtil.java, and FooTestUtils.java do not need to use SharedPreferencesManager. -->
   <suppress id="UseSharedPreferencesManagerFromChromeCheck"
-            files="Test.java"/>
+            files="Test(Utils?)?\.java"/>
   <!-- All other usages of the app SharedPreference should go through
        ContextUtils. -->
   <suppress id="DefaultSharedPreferencesCheck" files="src/chrome/"/>

@@ -317,12 +317,6 @@ std::unique_ptr<Reflector> InProcessContextFactory::CreateReflector(
 void InProcessContextFactory::RemoveReflector(Reflector* reflector) {
 }
 
-bool InProcessContextFactory::SyncTokensRequiredForDisplayCompositor() {
-  // Display and DirectLayerTreeFrameSink share a GL context, so sync
-  // points aren't needed when passing resources between them.
-  return false;
-}
-
 scoped_refptr<viz::ContextProvider>
 InProcessContextFactory::SharedMainThreadContextProvider() {
   if (shared_main_thread_contexts_ &&

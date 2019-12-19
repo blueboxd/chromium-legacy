@@ -320,8 +320,11 @@ class PasswordStore : protected PasswordStoreSync,
   // Saves |username| and a hash of |password| for GAIA password reuse checking.
   // |event| is used for metric logging and for distinguishing sync password
   // hash change event and other non-sync GAIA password change event.
+  // |is_primary_account| is whether account belong to the password is a
+  // primary account.
   virtual void SaveGaiaPasswordHash(const std::string& username,
                                     const base::string16& password,
+                                    bool is_primary_account,
                                     GaiaPasswordHashChange event);
 
   // Saves |username| and a hash of |password| for enterprise password reuse
@@ -517,9 +520,11 @@ class PasswordStore : protected PasswordStoreSync,
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Saves |username| and a hash of |password| for password reuse checking.
   // |is_gaia_password| indicates if it is a Gaia account. |event| is used for
-  // metric logging.
+  // metric logging. |is_primary_account| is whether account belong to the
+  // password is a primary account.
   void SaveProtectedPasswordHash(const std::string& username,
                                  const base::string16& password,
+                                 bool is_primary_account,
                                  bool is_gaia_password,
                                  GaiaPasswordHashChange event);
 

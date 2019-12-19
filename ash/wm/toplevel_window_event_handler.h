@@ -232,6 +232,11 @@ class ASH_EXPORT ToplevelWindowEventHandler
   // True if back gesture dragged from splitview divider.
   bool dragged_from_splitview_divider_ = false;
 
+  // Start location of the back gesture in screen coordinate. Used by
+  // ActivateUnderneathWindowInSplitViewMode() to determine the snapped window
+  // that should be activated for going back.
+  gfx::Point back_start_location_;
+
   // A GestureProvider that is created for back gesture. Used to handle tap down
   // and the possibly following gesture scroll sequence for back gesture in
   // OnTouchEvent session. This is done to avoid tap down event be used by the

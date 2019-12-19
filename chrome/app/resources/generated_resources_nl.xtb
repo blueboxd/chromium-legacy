@@ -139,7 +139,6 @@
 <translation id="1186771945450942097">Schadelijke software verwijderen</translation>
 <translation id="1187722533808055681">Activeringen vanuit inactief</translation>
 <translation id="1188807932851744811">Logbestand niet geüpload.</translation>
-<translation id="1189418886587279221">Schakel toegankelijkheidsfuncties in om je apparaat gebruiksvriendelijker te maken.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Toegang tot een bestand dat op je computer is opgeslagen}other{Toegang tot # bestanden die op je computer zijn opgeslagen}}</translation>
 <translation id="1190660338026981543">Je <ph name="DEVICE_TYPE" /> is ingeschreven voor bedrijfsbeheer door <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="119092896208640858">Als je browsergegevens alleen van dit apparaat wilt wissen, maar ze wilt behouden in je Google-account, <ph name="BEGIN_LINK" />log je uit<ph name="END_LINK" />.</translation>
@@ -339,7 +338,6 @@
 <translation id="1476607407192946488">&amp;Taalinstellingen</translation>
 <translation id="1478340334823509079">Details: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Installatie is niet ingeschakeld</translation>
-<translation id="1481206932476131736">Beheer je ingelogde accounts. Websites, apps en extensies in Chrome en Google Play kunnen deze accounts gebruiken om de functionaliteit te personaliseren, afhankelijk van de rechten.</translation>
 <translation id="1482626744466814421">Bladwijzer toevoegen voor dit tabblad…</translation>
 <translation id="1483493594462132177">Verzenden</translation>
 <translation id="1484979925941077974">Site gebruikt Bluetooth</translation>
@@ -592,7 +590,6 @@
 <translation id="1813278315230285598">Services</translation>
 <translation id="18139523105317219">EDI Partynaam</translation>
 <translation id="1815083418640426271">Plakken als tekst zonder opmaak</translation>
-<translation id="1815579292149538864">CUPS-printers instellen of beheren.</translation>
 <translation id="181577467034453336">Nog <ph name="NUMBER_OF_VIEWS" /> meer...</translation>
 <translation id="1816036116994822943">Scansnelheid van toetsenbord</translation>
 <translation id="1817871734039893258">Microsoft-bestandsherstel</translation>
@@ -1454,7 +1451,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="3012917896646559015">Neem onmiddellijk contact op met je hardwarefabrikant om je computer op te sturen voor reparatie.</translation>
 <translation id="3013291976881901233">MIDI-apparaten</translation>
 <translation id="3015639418649705390">Nu opnieuw starten</translation>
-<translation id="3016329696181678353"><ph name="PRINTER_NAME" /> kan niet automatisch worden geconfigureerd. Geef geavanceerde printergegevens op.</translation>
 <translation id="3016381065346027039">Geen logboekitems</translation>
 <translation id="3016641847947582299">Component bijgewerkt</translation>
 <translation id="3016780570757425217">Je locatie weten</translation>
@@ -2192,7 +2188,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4046123991198612571">Volgend nummer</translation>
 <translation id="4050225813016893843">Verificatiemethode</translation>
 <translation id="4052120076834320548">Heel klein</translation>
-<translation id="4055023634561256217">Opnieuw starten is vereist voordat je apparaat opnieuw kan worden ingesteld met Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">Bekijken in de Web Store</translation>
 <translation id="4058647953897694817">Verifiëren via Bluetooth</translation>
@@ -2514,7 +2509,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4558426062282641716">Toestemming voor automatisch starten gevraagd</translation>
 <translation id="4558491878126948419">Ontvang <ph name="DEVICE_TYPE" />-tips en updates voor Google-producten en deel feedback. Je kunt je op elk gewenst moment afmelden.</translation>
 <translation id="4559617833001311418">Deze site heeft toegang tot je bewegings- of lichtsensoren.</translation>
-<translation id="4561098487691395071">Of geef de PPD van je printer op</translation>
 <translation id="4562155214028662640">Vingerafdruk toevoegen</translation>
 <translation id="4562494484721939086">Geen service</translation>
 <translation id="4563880231729913339">Vinger 3</translation>
@@ -2757,7 +2751,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925542575807923399">De beheerder van dit account vereist dat dit account het eerste ingelogde account is in een sessie met toegang tot meerdere accounts.</translation>
 <translation id="4927753642311223124">Er zijn geen meldingen.</translation>
-<translation id="4927846293686536410">Log in om je bladwijzers, geschiedenis, wachtwoorden en andere instellingen op te halen op al je apparaten. Je wordt ook automatisch ingelogd bij je Google-services.</translation>
 <translation id="4929386379796360314">Afdrukbestemmingen</translation>
 <translation id="4930714375720679147">Inschakelen</translation>
 <translation id="4932733599132424254">Datum</translation>
@@ -3314,7 +3307,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5750324801516359607">Veraf</translation>
 <translation id="5756163054456765343">H&amp;elpcentrum</translation>
 <translation id="5759728514498647443">Documenten die je via <ph name="APP_NAME" /> verzendt om af te drukken, kunnen door <ph name="APP_NAME" /> worden gelezen.</translation>
-<translation id="5763315388120433852">Fileshares via netwerk instellen of beheren.</translation>
 <translation id="5763751966069581670">Geen USB-apparaten gevonden</translation>
 <translation id="5764483294734785780">Audio op&amp;slaan als...</translation>
 <translation id="57646104491463491">Bijgewerkt op</translation>
@@ -4634,7 +4626,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="7684718995427157417">Schakel Android Debug Bridge (ADB) in om je apps te maken en te testen. Let op: Met deze actie sta je toe dat Android-apps worden geïnstalleerd die niet door Google zijn geverifieerd. Als je deze functie wilt uitschakelen, moet je apparaat worden teruggezet op de fabrieksinstellingen.</translation>
 <translation id="7685049629764448582">JavaScript-geheugen</translation>
 <translation id="7685087414635069102">Pincode vereist</translation>
-<translation id="768549422429443215">Voeg talen toe of sorteer de lijst opnieuw.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Nieuw wachtwoord bevestigen</translation>
 <translation id="7690378713476594306">Selecteer een optie in de lijst</translation>
@@ -4671,7 +4662,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="7730449930968088409">De content van je scherm vastleggen</translation>
 <translation id="7732111077498238432">Netwerk wordt beheerd op basis van beleid</translation>
 <translation id="7737238973539693982">Linux (bèta) verwijderen</translation>
-<translation id="7737456446569756884">Dit apparaat ontvangt tot <ph name="MONTH_AND_YEAR" /> automatische software- en beveiligingsupdates.</translation>
 <translation id="7740996059027112821">Standaard</translation>
 <translation id="7744047395460924128">Je afdrukgeschiedenis weergeven</translation>
 <translation id="7746457520633464754">Chrome verzendt de URL's van sommige pagina's die je bezoekt, beperkte systeemgegevens en bepaalde paginacontent naar Google om gevaarlijke apps en sites te detecteren</translation>
@@ -5558,7 +5548,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="892706138619340876">Sommige instellingen zijn gereset</translation>
 <translation id="8930351635855238750">De nieuwe cookie-instellingen worden van kracht nadat de pagina opnieuw is geladen</translation>
 <translation id="8931394284949551895">Nieuwe apparaten</translation>
-<translation id="893254996965966411">Sla gedetecteerde printers op in je profiel of voeg een nieuwe printer toe.</translation>
 <translation id="8932894639908691771">Opties voor 'Toegang via schakelaar'</translation>
 <translation id="8933960630081805351">&amp;Toon in Finder</translation>
 <translation id="8934732568177537184">Doorgaan</translation>

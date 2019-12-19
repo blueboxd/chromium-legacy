@@ -4,6 +4,7 @@
 <translation id="1002439864875515590">如果將這項政策設為空白字串或不設定，<ph name="PRODUCT_OS_NAME" />將不會在使用者登入流程中顯示自動完成選項。
       如果將這項政策設為代表網域名稱的字串，<ph name="PRODUCT_OS_NAME" />將會在使用者登入流程中顯示自動完成選項，使用者只需輸入自己的使用者名稱 (不含網域名稱延伸部分) 即可。使用者可以覆寫這個網域名稱的延伸部分。
       如果這項政策的值不是有效網域，系統就不會套用這項政策。</translation>
+<translation id="1010151305531217567">將滑鼠的主要按鈕切換為右鍵</translation>
 <translation id="101438888985615157">將畫面旋轉 180 度</translation>
 <translation id="1016912092715201525">設定 <ph name="PRODUCT_NAME" /> 中的預設瀏覽器檢查功能並禁止使用者變更。
 
@@ -358,6 +359,15 @@
       如果停用或未設定這項政策，企業使用者將
       無法使用 ARC。</translation>
 <translation id="1553956579506604198">禁止系統安裝外部擴充功能</translation>
+<translation id="1556072857949466438">這項政策可讓管理員指定頁面是否能在卸載時顯示彈出式視窗。
+
+      如果將這項政策設為啟用，頁面可以在卸載時顯示彈出式視窗。
+
+      如果將這項政策設為停用或不設定，系統會根據規格 (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name) 中的規定，禁止頁面在卸載時顯示彈出式視窗。
+
+      這項政策將在 Chrome 第 88 版中移除。
+
+      詳情請參閱 https://www.chromestatus.com/feature/5989473649164288。</translation>
 <translation id="1559980755219453326">這項政策可控管是否要回報擴充功能和外掛程式資訊。
 
       如果不設定這項政策或設為 True，系統會收集擴充功能和外掛程式資料。
@@ -811,6 +821,17 @@
       這項政策也適用於元件擴充功能，例如 Hangout Services 擴充功能。</translation>
 <translation id="2223598546285729819">預設通知設定</translation>
 <translation id="2231817271680715693">第一次執行時從預設瀏覽器匯入瀏覽記錄</translation>
+<translation id="2234855698900783408">在新版 <ph name="CORS" /> 模式中啟用 <ph name="CORS" /> 檢查安全防護措施，讓擴充功能保持相容行為，並允許 <ph name="PRODUCT_NAME" /> 不需經過 <ph name="CORS" /> 檢查即可傳送指定標頭。
+
+      如果將這份清單設為空白，<ph name="PRODUCT_NAME" /> 會嘗試以相容方式執行擴充功能，且不會採用 <ph name="PRODUCT_NAME" /> 第 79 版的 <ph name="API" /> 變更，詳情請參閱 <ph name="WEB_REQUEST_API_MANUAL" />。
+
+      如果將這份清單設為具有 <ph name="HTTP" /> 要求標頭名稱，則 <ph name="CORS" /> 檢查將忽略此處列出的標頭，並啟用擴充功能的安全防護措施。
+
+      如果未設定這份清單，則不會套用上述兩種安全防護措施。
+
+      如要進一步瞭解 <ph name="CORS" />，請前往：<ph name="CORS_HELP_URL" />。
+
+      請注意，這項政策將在 <ph name="PRODUCT_NAME" />第 82 版中移除。</translation>
 <translation id="2236488539271255289">不允許任何網站設定本機資料</translation>
 <translation id="2240879329269430151">允許你設定是否要讓網站顯示彈出式視窗。你可以允許或禁止所有網站顯示彈出式視窗。如果未設定這項政策，系統會使用「BlockPopups」，不過使用者可以變更設定。</translation>
 <translation id="2241498944622759244">此功能從未推出，因此這項政策目前已淘汰。如果將這項政策設為 True 或不設定，<ph name="PRODUCT_NAME" /> 會提供與目前網頁相關的網頁建議。
@@ -1475,6 +1496,15 @@
       不論這項政策處於啟用或未設定的狀態，使用者都可以透過 Google 帳戶驗證來啟用雲端列印 Proxy。
 
       如果你停用這項設定，使用者就無法啟用 Proxy，而且本機不得與 <ph name="CLOUD_PRINT_NAME" /> 共用自己的印表機。</translation>
+<translation id="3295118731207421797">這項政策可讓管理員指定頁面是否能在關閉時傳送同步 XHR 要求。
+
+      如果將這項政策設為啟用，頁面可以在關閉時傳送同步 XHR 要求。
+
+      如果將這項政策設為停用或不予設定，則頁面無法在關閉時傳送同步 XHR 要求。
+
+      這項政策將在 Chrome 第 88 版中移除。
+
+      詳情請參閱 https://www.chromestatus.com/feature/4664843055398912。</translation>
 <translation id="3303653927512453822">允許你將所有 Cookie 還原成舊版的 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 行為。還原成舊版的行為會導致系統將未指定 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 屬性的 Cookie 視為「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」，並移除「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」Cookie 必須帶有「<ph name="ATTRIBUTE_SECURE_NAME" />」屬性的要求。如需完整說明，請參閱 https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies。
 
           如果不設定這項政策，系統對於未指定 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 屬性的 Cookie 所採取的預設 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 行為，會取決於使用者對於 <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 功能的個人配置。使用者可以透過實際測試，或是啟用或停用 <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 標記，來設定這項功能的個人配置。</translation>
@@ -2355,6 +2385,11 @@
       如果停用這項政策或不予設定，則無法同時在多個網站中進行瀏覽及開啟新視窗/分頁。</translation>
 <translation id="4680961954980851756">啟用自動填入</translation>
 <translation id="4693779768620889402">可支援擴充功能的目的地</translation>
+<translation id="4699592681017489215">這項政策會設定可用於停用 DNS 攔截檢查功能的本機切換按鈕。這些檢查會嘗試偵測瀏覽器使用的 Proxy 是否會重新導向未知的主機名稱。
+
+      在網路設定已知的企業環境中可能不需要使用這項偵測功能，因為這項功能會在啟動裝置和每次變更 DNS 設定時帶來一些 DNS 和 HTTP 流量。
+
+      如果不設定這項政策或設為啟用，系統會執行 DNS 攔截檢查。如果明確指定停用這項政策，系統就不會執行 DNS 攔截檢查。</translation>
 <translation id="4703402283970867140">啟用智慧型調光模式來延長使用時間，直到螢幕變暗為止</translation>
 <translation id="4722122254122249791">為指定來源啟用網站隔離</translation>
 <translation id="4722399051042571387">如果設為 False，使用者將無法設定系統判定強度不足而容易被破解的 PIN。
@@ -2570,6 +2605,10 @@
           如果不設定這項政策，則系統會在初次顯示登入畫面時停用放大鏡。使用者隨時可以啟用或停用放大鏡，且放大鏡在所有使用者的登入畫面中將一律維持相同狀態。
 
           注意：如果指定 <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME" />，這項政策會遭到覆寫。</translation>
+<translation id="5115168755602871392">回報裝置 CPU 的資訊。
+
+      如果將這項政策設為 False 或不予設定，系統將不會回報這項資訊。
+      如果設為 True，則系統會回報每個 CPU 的型號名稱、架構和最高時脈速度。</translation>
 <translation id="5124368997194894978">啟用「連接 AC (交流電) 電源時啟動」功能</translation>
 <translation id="5131211790949066746">允許合併擴充功能安裝清單政策<ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />、<ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> 和 <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />。
 
@@ -3359,6 +3398,17 @@
 <translation id="6467613372414922590">允許使用者層級的內建訊息傳遞主機 (在無管理員權限的情況下安裝)。</translation>
 <translation id="6468980648680553776">這項政策已遭到淘汰，請改用 RemoteAccessHostClientDomainList。</translation>
 <translation id="6473623140202114570">設定安全瀏覽功能在哪些網域中不會觸發警告。</translation>
+<translation id="6487780893361255867">使用舊版 <ph name="CORS" /> 模式，而不使用新版 <ph name="CORS" />。
+
+     如果將這項政策設為 True，系統會使用舊版模式，該模式應與先前的版本相容。
+
+      如果將這項政策設為 False 或不予設定，系統會使用新版模式，這可能會導致企業特定的相容性問題。
+
+      這項政策將在日後的版本中移除。
+
+      如要進一步瞭解 <ph name="CORS" />，請前往：<ph name="CORS_HELP_URL" />。
+
+      請注意，這項政策將在 <ph name="PRODUCT_NAME" />第 82 版中移除。</translation>
 <translation id="6488627892044759800">設定 <ph name="PRODUCT_NAME" /> 的預設首頁類型，並禁止使用者變更首頁偏好設定。首頁可以設為你指定的網址，也可以設為「新分頁」。
 
           啟用此設定時，系統一律會將「新分頁」當做首頁，並忽略指定的首頁網址位置。
@@ -3443,6 +3493,7 @@
       如果將這項政策設為 True，系統會允許裝置觸發 Powerwash。
       如果不設定這項政策，系統會預設為 True，代表允許裝置執行 Powerwash。
       </translation>
+<translation id="66265932317331474">回報 CPU 資訊</translation>
 <translation id="6628043374475466084">不須根據機密資料保護規則檢查上傳內容的網址模式</translation>
 <translation id="6628120204569232711">回報儲存空間狀態</translation>
 <translation id="6628646143828354685">讓您設定是否允許網站存取附近的藍牙裝置。您可以完全禁止網站存取附近的藍牙裝置，也可以要求網站一律需要經過使用者同意才能存取附近的藍牙裝置。
@@ -3640,6 +3691,7 @@
       如需可使用的變數清單，請參閱 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
 
       如果未設定這項政策，系統會使用預設的設定檔目錄，日後使用者可以自行透過「'--user-data-dir」命令列標記覆寫這個目錄。</translation>
+<translation id="7008308728445338159">已啟用 DNS 攔截檢查功能</translation>
 <translation id="7027785306666625591">設定 <ph name="PRODUCT_OS_NAME" /> 的電源管理。
 
       這些政策可讓你設定當使用者閒置一段時間後，要讓 <ph name="PRODUCT_OS_NAME" /> 採取的動作。</translation>
@@ -3730,6 +3782,15 @@
 
       如要進一步瞭解 Internet Explorer 的 <ph name="IEEM_SITELIST_POLICY" /> 政策，請參閱：https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">系統會直接授權存取視訊擷取裝置而不需提示的網址</translation>
+<translation id="7134420220355750019">將滑鼠的主要按鈕切換為右鍵。
+
+          如果將這項政策設為啟用，系統會一律將滑鼠右鍵設為主要按鈕。
+
+          如果將這項政策設為停用，系統會一律將滑鼠左鍵設為主要按鈕。
+
+          設好這項政策後，使用者即無法變更或覆寫設定。
+
+          如果不設定這項政策，系統會將滑鼠左鍵預設為主要按鈕，但使用者隨時可以切換。</translation>
 <translation id="713712866686796666">設定日間用電尖峰轉移配置。
 
           你必須將 <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> 設為 True，才能使用這項政策。

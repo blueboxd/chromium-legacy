@@ -26,6 +26,7 @@
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/input_injector.h"
+#include "remoting/host/keyboard_layout_monitor.h"
 #include "remoting/host/process_stats_sender.h"
 #include "remoting/host/remote_input_filter.h"
 #include "remoting/host/screen_controls.h"
@@ -413,6 +414,12 @@ void DesktopSessionAgent::OnStartSessionAgent(
           base::Bind(&DesktopSessionAgent::SendToNetwork, this))));
   mouse_cursor_monitor_ = desktop_environment_->CreateMouseCursorMonitor();
   mouse_cursor_monitor_->Init(this, webrtc::MouseCursorMonitor::SHAPE_ONLY);
+  // Unretained is sound because callback will never be invoked once after
+  // |keyboard_layout_monitor_| is destroyed.
+  keyboard_layout_monitor_ = desktop_environment_->CreateKeyboardLayoutMonitor(
+      base::BindRepeating(&DesktopSessionAgent::OnKeyboardLayoutChange,
+                          base::Unretained(this)));
+  keyboard_layout_monitor_->Start();
 
   // Set up the message handler for file transfers.
   session_file_operations_handler_.emplace(
@@ -558,6 +565,7 @@ void DesktopSessionAgent::Stop() {
     action_executor_.reset();
     input_injector_.reset();
     screen_controls_.reset();
+    keyboard_layout_monitor_.reset();
 
     // Stop the audio capturer.
     audio_capture_task_runner_->PostTask(
@@ -677,6 +685,14 @@ void DesktopSessionAgent::OnExecuteActionRequestEvent(
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   action_executor_->ExecuteAction(request);
+}
+
+void DesktopSessionAgent::OnKeyboardLayoutChange(
+    const protocol::KeyboardLayout& layout) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  SendToNetwork(
+      std::make_unique<ChromotingDesktopNetworkMsg_KeyboardChanged>(layout));
 }
 
 void DesktopSessionAgent::SetScreenResolution(

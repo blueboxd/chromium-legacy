@@ -5,6 +5,7 @@
 
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:clickable="true"
     android:textAppearance="@style/TextAppearance.BlackCaptionDefault"
@@ -20,6 +21,7 @@
         android:layout_marginTop="12dp"
         android:layout_width="24dp"
         android:scaleType="fitCenter"
+        app:tint="@color/standard_mode_tint"
         tools:ignore="ContentDescription" />
     <TextView android:id="@+id/text"
         android:layout_width="fill_parent"

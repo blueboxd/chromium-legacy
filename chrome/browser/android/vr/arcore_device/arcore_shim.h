@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_VR_ARCORE_DEVICE_ARCORE_SHIM_H_
 #define CHROME_BROWSER_ANDROID_VR_ARCORE_DEVICE_ARCORE_SHIM_H_
 
+#include <string>
+
 namespace vr {
 
 // TODO(https://crbug.com/917526): add support for unloading the SDK.

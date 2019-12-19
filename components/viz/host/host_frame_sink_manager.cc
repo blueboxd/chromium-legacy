@@ -321,8 +321,7 @@ std::unique_ptr<CompositorFrameSinkSupport>
 HostFrameSinkManager::CreateCompositorFrameSinkSupport(
     mojom::CompositorFrameSinkClient* client,
     const FrameSinkId& frame_sink_id,
-    bool is_root,
-    bool needs_sync_points) {
+    bool is_root) {
   DCHECK(frame_sink_manager_impl_);
 
   FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
@@ -330,8 +329,7 @@ HostFrameSinkManager::CreateCompositorFrameSinkSupport(
   DCHECK(!data.has_created_compositor_frame_sink);
 
   auto support = std::make_unique<CompositorFrameSinkSupport>(
-      client, frame_sink_manager_impl_, frame_sink_id, is_root,
-      needs_sync_points);
+      client, frame_sink_manager_impl_, frame_sink_id, is_root);
 
   data.is_root = is_root;
 

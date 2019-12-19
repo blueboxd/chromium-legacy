@@ -567,11 +567,11 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
         DoSplitviewTransformAnimation(
             preview_label_layer,
             SPLITVIEW_ANIMATION_PREVIEW_AREA_TEXT_SLIDE_OUT,
-            preview_label_transform);
+            preview_label_transform, /*animation_observer=*/nullptr);
         DoSplitviewTransformAnimation(
             other_highlight_label_layer,
             SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_TEXT_SLIDE_OUT,
-            other_highlight_label_transform);
+            other_highlight_label_transform, /*animation_observer=*/nullptr);
       } else {
         // Put the labels where they belong.
         preview_label_layer->SetTransform(preview_label_transform);
@@ -590,11 +590,11 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
         // Animate the labels sliding in.
         DoSplitviewTransformAnimation(
             preview_label_layer, SPLITVIEW_ANIMATION_PREVIEW_AREA_TEXT_SLIDE_IN,
-            gfx::Transform());
+            gfx::Transform(), /*animation_observer=*/nullptr);
         DoSplitviewTransformAnimation(
             other_highlight_label_layer,
-            SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_TEXT_SLIDE_IN,
-            gfx::Transform());
+            SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_TEXT_SLIDE_IN, gfx::Transform(),
+            /*animation_observer=*/nullptr);
       } else {
         // Put the labels where they belong.
         preview_label_layer->SetTransform(gfx::Transform());

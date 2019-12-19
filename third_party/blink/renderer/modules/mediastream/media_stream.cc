@@ -113,8 +113,8 @@ MediaStream::MediaStream(ExecutionContext* context,
   uint32_t number_of_audio_tracks = descriptor_->NumberOfAudioComponents();
   audio_tracks_.ReserveCapacity(number_of_audio_tracks);
   for (uint32_t i = 0; i < number_of_audio_tracks; i++) {
-    MediaStreamTrack* new_track =
-        MediaStreamTrack::Create(context, descriptor_->AudioComponent(i));
+    auto* new_track = MakeGarbageCollected<MediaStreamTrack>(
+        context, descriptor_->AudioComponent(i));
     new_track->RegisterMediaStream(this);
     audio_tracks_.push_back(new_track);
   }
@@ -122,8 +122,8 @@ MediaStream::MediaStream(ExecutionContext* context,
   uint32_t number_of_video_tracks = descriptor_->NumberOfVideoComponents();
   video_tracks_.ReserveCapacity(number_of_video_tracks);
   for (uint32_t i = 0; i < number_of_video_tracks; i++) {
-    MediaStreamTrack* new_track =
-        MediaStreamTrack::Create(context, descriptor_->VideoComponent(i));
+    auto* new_track = MakeGarbageCollected<MediaStreamTrack>(
+        context, descriptor_->VideoComponent(i));
     new_track->RegisterMediaStream(this);
     video_tracks_.push_back(new_track);
   }
@@ -402,8 +402,8 @@ void MediaStream::AddTrackByComponentAndFireEvents(
   DCHECK(component);
   if (!GetExecutionContext())
     return;
-  MediaStreamTrack* track =
-      MediaStreamTrack::Create(GetExecutionContext(), component);
+  auto* track =
+      MakeGarbageCollected<MediaStreamTrack>(GetExecutionContext(), component);
   AddTrackAndFireEvents(track);
 }
 

@@ -29,12 +29,13 @@ class CrostiniInstallerUI
   bool can_close();
   void ClickInstallForTesting();
 
- private:
-  void BindPageHandlerFactory(
-      mojo::PendingReceiver<
-          chromeos::crostini_installer::mojom::PageHandlerFactory>
-          pending_receiver);
+  // Instantiates implementor of the mojom::PageHandlerFactory
+  // mojo interface passing the pending receiver that will be internally bound.
+  void BindInterface(mojo::PendingReceiver<
+                     chromeos::crostini_installer::mojom::PageHandlerFactory>
+                         pending_receiver);
 
+ private:
   // chromeos::crostini_installer::mojom::PageHandlerFactory:
   void CreatePageHandler(
       mojo::PendingRemote<chromeos::crostini_installer::mojom::Page>
@@ -48,6 +49,8 @@ class CrostiniInstallerUI
   mojo::Receiver<chromeos::crostini_installer::mojom::PageHandlerFactory>
       page_factory_receiver_{this};
   bool can_close_ = false;
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniInstallerUI);
 };

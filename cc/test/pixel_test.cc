@@ -235,9 +235,7 @@ void PixelTest::SetUpGLWithoutRenderer(bool flipped_output_surface) {
           /*enable_oop_rasterization=*/false, /*support_locking=*/false);
   result = child_context_provider_->BindToCurrentThread();
   DCHECK_EQ(result, gpu::ContextResult::kSuccess);
-  constexpr bool sync_token_verification = false;
-  child_resource_provider_ =
-      std::make_unique<viz::ClientResourceProvider>(sync_token_verification);
+  child_resource_provider_ = std::make_unique<viz::ClientResourceProvider>();
 }
 
 void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
@@ -290,9 +288,7 @@ void PixelTest::SetUpSkiaRenderer(bool flipped_output_surface,
           /*enable_oop_rasterization=*/false, /*support_locking=*/false);
   gpu::ContextResult result = child_context_provider_->BindToCurrentThread();
   DCHECK_EQ(result, gpu::ContextResult::kSuccess);
-  constexpr bool sync_token_verification = false;
-  child_resource_provider_ =
-      std::make_unique<viz::ClientResourceProvider>(sync_token_verification);
+  child_resource_provider_ = std::make_unique<viz::ClientResourceProvider>();
 }
 
 void PixelTest::TearDown() {
@@ -321,9 +317,7 @@ void PixelTest::SetUpSoftwareRenderer() {
   resource_provider_ = std::make_unique<viz::DisplayResourceProvider>(
       viz::DisplayResourceProvider::kSoftware, nullptr,
       shared_bitmap_manager_.get());
-  constexpr bool sync_token_verification = false;
-  child_resource_provider_ =
-      std::make_unique<viz::ClientResourceProvider>(sync_token_verification);
+  child_resource_provider_ = std::make_unique<viz::ClientResourceProvider>();
 
   auto renderer = std::make_unique<viz::SoftwareRenderer>(
       &renderer_settings_, output_surface_.get(), resource_provider_.get());

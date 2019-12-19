@@ -426,7 +426,7 @@ void FrameSequenceTracker::ReportBeginImplFrame(
   if (termination_status_ != TerminationStatus::kActive)
     return;
 
-  if (ShouldIgnoreBeginFrameSource(args.source_id))
+  if (ShouldIgnoreBeginFrameSource(args.frame_id.source_id))
     return;
 
 #if DCHECK_IS_ON()
@@ -434,12 +434,11 @@ void FrameSequenceTracker::ReportBeginImplFrame(
   is_inside_frame_ = true;
 
   if (args.type == viz::BeginFrameArgs::NORMAL)
-    impl_frames_.insert(std::make_pair(args.source_id, args.sequence_number));
+    impl_frames_.insert(args.frame_id);
 #endif
-
-  TRACKER_TRACE_STREAM << "b(" << args.sequence_number << ")";
-  UpdateTrackedFrameData(&begin_impl_frame_data_, args.source_id,
-                         args.sequence_number);
+  TRACKER_TRACE_STREAM << "b(" << args.frame_id.sequence_number << ")";
+  UpdateTrackedFrameData(&begin_impl_frame_data_, args.frame_id.source_id,
+                         args.frame_id.sequence_number);
   impl_throughput().frames_expected +=
       begin_impl_frame_data_.previous_sequence_delta;
 
@@ -452,28 +451,26 @@ void FrameSequenceTracker::ReportBeginMainFrame(
   if (termination_status_ != TerminationStatus::kActive)
     return;
 
-  if (ShouldIgnoreBeginFrameSource(args.source_id))
+  if (ShouldIgnoreBeginFrameSource(args.frame_id.source_id))
     return;
 
-  if (ShouldIgnoreSequence(args.sequence_number))
+  if (ShouldIgnoreSequence(args.frame_id.sequence_number))
     return;
 
 #if DCHECK_IS_ON()
   if (args.type == viz::BeginFrameArgs::NORMAL) {
-    DCHECK(impl_frames_.contains(
-        std::make_pair(args.source_id, args.sequence_number)));
+    DCHECK(impl_frames_.contains(args.frame_id));
   }
 #endif
 
   TRACKER_TRACE_STREAM << 'B';
   TRACKER_TRACE_STREAM << "(" << begin_main_frame_data_.previous_sequence << ","
-                       << args.sequence_number << ")";
-  UpdateTrackedFrameData(&begin_main_frame_data_, args.source_id,
-                         args.sequence_number);
+                       << args.frame_id.sequence_number << ")";
+  UpdateTrackedFrameData(&begin_main_frame_data_, args.frame_id.source_id,
+                         args.frame_id.sequence_number);
   if (!first_received_main_sequence_ ||
-      first_received_main_sequence_ <= last_no_main_damage_sequence_) {
-    first_received_main_sequence_ = args.sequence_number;
-  }
+      first_received_main_sequence_ <= last_no_main_damage_sequence_)
+    first_received_main_sequence_ = args.frame_id.sequence_number;
   main_throughput().frames_expected +=
       begin_main_frame_data_.previous_sequence_delta;
 }
@@ -484,8 +481,8 @@ void FrameSequenceTracker::ReportSubmitFrame(
     const viz::BeginFrameAck& ack,
     const viz::BeginFrameArgs& origin_args) {
   if (termination_status_ != TerminationStatus::kActive ||
-      ShouldIgnoreBeginFrameSource(ack.source_id) ||
-      ShouldIgnoreSequence(ack.sequence_number)) {
+      ShouldIgnoreBeginFrameSource(ack.frame_id.source_id) ||
+      ShouldIgnoreSequence(ack.frame_id.sequence_number)) {
     ignored_frame_tokens_.insert(frame_token);
     return;
   }
@@ -500,20 +497,20 @@ void FrameSequenceTracker::ReportSubmitFrame(
   TRACKER_TRACE_STREAM << 's';
   const bool main_changes_after_sequence_started =
       first_received_main_sequence_ &&
-      origin_args.sequence_number >= first_received_main_sequence_;
+      origin_args.frame_id.sequence_number >= first_received_main_sequence_;
   const bool main_changes_include_new_changes =
       last_submitted_main_sequence_ == 0 ||
-      origin_args.sequence_number > last_submitted_main_sequence_;
+      origin_args.frame_id.sequence_number > last_submitted_main_sequence_;
   const bool main_change_had_no_damage =
       last_no_main_damage_sequence_ != 0 &&
-      origin_args.sequence_number == last_no_main_damage_sequence_;
+      origin_args.frame_id.sequence_number == last_no_main_damage_sequence_;
 
-  if (!ShouldIgnoreBeginFrameSource(origin_args.source_id) &&
+  if (!ShouldIgnoreBeginFrameSource(origin_args.frame_id.source_id) &&
       main_changes_after_sequence_started && main_changes_include_new_changes &&
       !main_change_had_no_damage) {
     TRACKER_TRACE_STREAM << 'S';
 
-    last_submitted_main_sequence_ = origin_args.sequence_number;
+    last_submitted_main_sequence_ = origin_args.frame_id.sequence_number;
     main_frames_.push_back(frame_token);
     DCHECK_GE(main_throughput().frames_expected, main_frames_.size())
         << TRACKER_DCHECK_MSG;
@@ -529,15 +526,15 @@ void FrameSequenceTracker::ReportFrameEnd(const viz::BeginFrameArgs& args) {
   if (termination_status_ != TerminationStatus::kActive)
     return;
 
-  if (ShouldIgnoreBeginFrameSource(args.source_id))
+  if (ShouldIgnoreBeginFrameSource(args.frame_id.source_id))
     return;
 
-  if (ShouldIgnoreSequence(args.sequence_number)) {
+  if (ShouldIgnoreSequence(args.frame_id.sequence_number)) {
     is_inside_frame_ = false;
     return;
   }
 
-  TRACKER_TRACE_STREAM << "e(" << args.sequence_number << ")";
+  TRACKER_TRACE_STREAM << "e(" << args.frame_id.sequence_number << ")";
   DCHECK(is_inside_frame_) << TRACKER_DCHECK_MSG;
   is_inside_frame_ = false;
 #endif
@@ -635,12 +632,12 @@ void FrameSequenceTracker::ReportImplFrameCausedNoDamage(
   if (termination_status_ != TerminationStatus::kActive)
     return;
 
-  if (ShouldIgnoreBeginFrameSource(ack.source_id))
+  if (ShouldIgnoreBeginFrameSource(ack.frame_id.source_id))
     return;
 
   // It is possible that this is called before a begin-impl-frame has been
   // dispatched for this frame-sequence. In such cases, ignore this call.
-  if (ShouldIgnoreSequence(ack.sequence_number))
+  if (ShouldIgnoreSequence(ack.frame_id.sequence_number))
     return;
 
   TRACKER_TRACE_STREAM << 'n';
@@ -650,7 +647,7 @@ void FrameSequenceTracker::ReportImplFrameCausedNoDamage(
       << TRACKER_DCHECK_MSG;
   --impl_throughput().frames_expected;
 
-  if (begin_impl_frame_data_.previous_sequence == ack.sequence_number)
+  if (begin_impl_frame_data_.previous_sequence == ack.frame_id.sequence_number)
     begin_impl_frame_data_.previous_sequence = 0;
 }
 
@@ -659,25 +656,25 @@ void FrameSequenceTracker::ReportMainFrameCausedNoDamage(
   if (termination_status_ != TerminationStatus::kActive)
     return;
 
-  if (ShouldIgnoreBeginFrameSource(args.source_id))
+  if (ShouldIgnoreBeginFrameSource(args.frame_id.source_id))
     return;
 
-  if (ShouldIgnoreSequence(args.sequence_number))
+  if (ShouldIgnoreSequence(args.frame_id.sequence_number))
     return;
 
   TRACKER_TRACE_STREAM << 'N';
   TRACKER_TRACE_STREAM << "(" << begin_main_frame_data_.previous_sequence << ","
-                       << args.sequence_number << ")";
+                       << args.frame_id.sequence_number << ")";
   DCHECK_GT(main_throughput().frames_expected, 0u) << TRACKER_DCHECK_MSG;
   DCHECK_GT(main_throughput().frames_expected,
             main_throughput().frames_produced)
       << TRACKER_DCHECK_MSG;
-  last_no_main_damage_sequence_ = args.sequence_number;
+  last_no_main_damage_sequence_ = args.frame_id.sequence_number;
   --main_throughput().frames_expected;
   DCHECK_GE(main_throughput().frames_expected, main_frames_.size())
       << TRACKER_DCHECK_MSG;
 
-  if (begin_main_frame_data_.previous_sequence == args.sequence_number)
+  if (begin_main_frame_data_.previous_sequence == args.frame_id.sequence_number)
     begin_main_frame_data_.previous_sequence = 0;
 }
 

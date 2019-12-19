@@ -128,12 +128,12 @@ void WebRtcAudioDeviceImpl::AudioRendererThreadStopped() {
 }
 
 void WebRtcAudioDeviceImpl::SetOutputDeviceForAec(
-    const std::string& output_device_id) {
+    const String& output_device_id) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   output_device_id_for_aec_ = output_device_id;
   base::AutoLock lock(lock_);
   for (auto* capturer : capturers_) {
-    capturer->SetOutputDeviceForAec(output_device_id);
+    capturer->SetOutputDeviceForAec(output_device_id.Utf8());
   }
 }
 
@@ -386,7 +386,7 @@ void WebRtcAudioDeviceImpl::AddAudioCapturer(
   base::AutoLock auto_lock(lock_);
   DCHECK(!base::Contains(capturers_, capturer));
   capturers_.push_back(capturer);
-  capturer->SetOutputDeviceForAec(output_device_id_for_aec_);
+  capturer->SetOutputDeviceForAec(output_device_id_for_aec_.Utf8());
 }
 
 void WebRtcAudioDeviceImpl::RemoveAudioCapturer(

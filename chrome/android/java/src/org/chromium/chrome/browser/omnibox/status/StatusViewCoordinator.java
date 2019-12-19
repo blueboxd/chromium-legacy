@@ -158,14 +158,19 @@ public class StatusViewCoordinator implements View.OnClickListener, TextWatcher 
         return mMediator.isSecurityButtonShown();
     }
 
-    /**
-     * @return The ID of the drawable currently shown in the security icon.
-     */
+    /** @return The ID of the drawable currently shown in the security icon. */
     @DrawableRes
     public int getSecurityIconResourceIdForTesting() {
         return mModel.get(StatusProperties.STATUS_ICON_RESOURCE) == null
                 ? 0
                 : mModel.get(StatusProperties.STATUS_ICON_RESOURCE).getIconResForTesting();
+    }
+
+    /** @return The icon identifier used for custom resources. */
+    public String getSecurityIconIdentifierForTesting() {
+        return mModel.get(StatusProperties.STATUS_ICON_RESOURCE) == null
+                ? null
+                : mModel.get(StatusProperties.STATUS_ICON_RESOURCE).getIconIdentifierForTesting();
     }
 
     /**

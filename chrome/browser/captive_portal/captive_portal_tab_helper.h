@@ -84,6 +84,9 @@ class CaptivePortalTabHelper
   static void OpenLoginTabForWebContents(content::WebContents* web_contents,
                                          bool focus);
 
+  bool is_captive_portal_window() const { return is_captive_portal_window_; }
+  void set_is_captive_portal_window() { is_captive_portal_window_ = true; }
+
  private:
   friend class CaptivePortalBrowserTest;
   friend class CaptivePortalTabHelperTest;
@@ -115,6 +118,10 @@ class CaptivePortalTabHelper
   // Neither of these will ever be NULL.
   std::unique_ptr<CaptivePortalTabReloader> tab_reloader_;
   std::unique_ptr<CaptivePortalLoginDetector> login_detector_;
+
+  // Whether this tab is part of a window that was constructed for captive
+  // portal resolution.
+  bool is_captive_portal_window_;
 
   content::NotificationRegistrar registrar_;
 

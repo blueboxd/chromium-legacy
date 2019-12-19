@@ -270,6 +270,11 @@ chrome.inputMethodPrivate.setSetting = function(engineID, key, value, callback) 
 chrome.inputMethodPrivate.setCompositionRange = function(parameters, callback) {};
 
 /**
+ * Resets the current engine to its initial state. Fires an OnReset event.
+ */
+chrome.inputMethodPrivate.reset = function() {};
+
+/**
  * Fired when the input method is changed.
  * @type {!ChromeEvent}
  */

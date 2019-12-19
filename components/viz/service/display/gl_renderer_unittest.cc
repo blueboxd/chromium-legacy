@@ -570,7 +570,7 @@ class GLRendererShaderTest : public GLRendererTest {
 
     child_context_provider_ = TestContextProvider::Create();
     child_context_provider_->BindToCurrentThread();
-    child_resource_provider_ = std::make_unique<ClientResourceProvider>(true);
+    child_resource_provider_ = std::make_unique<ClientResourceProvider>();
   }
 
   ~GLRendererShaderTest() override {
@@ -710,7 +710,7 @@ TEST_F(GLRendererWithDefaultHarnessTest, TextureDrawQuadShaderPrecisionHigh) {
   auto child_context_provider = TestContextProvider::Create();
   child_context_provider->BindToCurrentThread();
 
-  auto child_resource_provider = std::make_unique<ClientResourceProvider>(true);
+  auto child_resource_provider = std::make_unique<ClientResourceProvider>();
 
   // Here is where the texture is created. Any value bigger than 1024 should use
   // a highp.
@@ -773,7 +773,7 @@ TEST_F(GLRendererWithDefaultHarnessTest, TextureDrawQuadShaderPrecisionMedium) {
   auto child_context_provider = TestContextProvider::Create();
   child_context_provider->BindToCurrentThread();
 
-  auto child_resource_provider = std::make_unique<ClientResourceProvider>(true);
+  auto child_resource_provider = std::make_unique<ClientResourceProvider>();
 
   // Here is where the texture is created. Any value smaller than 1024 should
   // use a mediump.
@@ -1146,7 +1146,7 @@ TEST_F(GLRendererTest, ActiveTextureState) {
   auto child_context_provider =
       TestContextProvider::Create(std::move(child_gl_owned));
   child_context_provider->BindToCurrentThread();
-  auto child_resource_provider = std::make_unique<ClientResourceProvider>(true);
+  auto child_resource_provider = std::make_unique<ClientResourceProvider>();
 
   auto gl_owned = std::make_unique<TextureStateTrackingGLES2Interface>();
   gl_owned->set_have_extension_egl_image(true);
@@ -2336,7 +2336,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
 
   auto child_context_provider = TestContextProvider::Create();
   child_context_provider->BindToCurrentThread();
-  auto child_resource_provider = std::make_unique<ClientResourceProvider>(true);
+  auto child_resource_provider = std::make_unique<ClientResourceProvider>();
 
   auto transfer_resource = TransferableResource::MakeGL(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
@@ -2348,7 +2348,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
 
   std::vector<ReturnedResource> returned_to_child;
   int child_id = parent_resource_provider->CreateChild(
-      base::BindRepeating(&CollectResources, &returned_to_child), true);
+      base::BindRepeating(&CollectResources, &returned_to_child));
 
   // Transfer resource to the parent.
   std::vector<ResourceId> resource_ids_to_transfer;
@@ -2525,7 +2525,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
 
   auto child_context_provider = TestContextProvider::Create();
   child_context_provider->BindToCurrentThread();
-  auto child_resource_provider = std::make_unique<ClientResourceProvider>(true);
+  auto child_resource_provider = std::make_unique<ClientResourceProvider>();
 
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
                             gpu::CommandBufferId::FromUnsafeValue(0x123), 29);
@@ -2539,7 +2539,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
 
   std::vector<ReturnedResource> returned_to_child;
   int child_id = parent_resource_provider->CreateChild(
-      base::BindRepeating(&CollectResources, &returned_to_child), true);
+      base::BindRepeating(&CollectResources, &returned_to_child));
 
   // Transfer resource to the parent.
   std::vector<ResourceId> resource_ids_to_transfer;
@@ -2907,7 +2907,7 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
 
   auto child_context_provider = TestContextProvider::Create();
   child_context_provider->BindToCurrentThread();
-  auto child_resource_provider = std::make_unique<ClientResourceProvider>(true);
+  auto child_resource_provider = std::make_unique<ClientResourceProvider>();
 
   auto transfer_resource = TransferableResource::MakeGL(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
@@ -2919,7 +2919,7 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
 
   std::vector<ReturnedResource> returned_to_child;
   int child_id = parent_resource_provider->CreateChild(
-      base::BindRepeating(&CollectResources, &returned_to_child), true);
+      base::BindRepeating(&CollectResources, &returned_to_child));
 
   // Transfer resource to the parent.
   std::vector<ResourceId> resource_ids_to_transfer;
@@ -4244,7 +4244,7 @@ class GLRendererWithGpuFenceTest : public GLRendererTest {
     child_context_provider_ = TestContextProvider::Create();
     child_context_provider_->BindToCurrentThread();
 
-    child_resource_provider_ = std::make_unique<ClientResourceProvider>(true);
+    child_resource_provider_ = std::make_unique<ClientResourceProvider>();
     auto transfer_resource = TransferableResource::MakeGL(
         gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
         gfx::Size(256, 256), true);

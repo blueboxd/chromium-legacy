@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/profile_network_context_service.h"
@@ -25,6 +26,7 @@
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "url/gurl.h"
@@ -52,10 +54,8 @@ struct TimingDeltas {
 
 class LoadTimingBrowserTest : public InProcessBrowserTest {
  public:
-  LoadTimingBrowserTest() {
-  }
-
-  ~LoadTimingBrowserTest() override {}
+  LoadTimingBrowserTest() = default;
+  ~LoadTimingBrowserTest() override = default;
 
   // Reads applicable times from performance.timing and writes them to
   // |navigation_deltas|.  Proxy times and send end cannot be read from the
@@ -183,7 +183,21 @@ IN_PROC_BROWSER_TEST_F(LoadTimingBrowserTest, MAYBE_Proxy) {
   EXPECT_EQ(navigation_deltas.ssl_start, -1);
 }
 
-IN_PROC_BROWSER_TEST_F(LoadTimingBrowserTest, FTP) {
+// Test fixture for tests that depend on FTP support. Moved out to a separate
+// fixture since remaining functionality should be tested without FTP support.
+//
+// TODO(https://crbug.com/333943): Remove FTP specific tests and test fixtures.
+class LoadTimingBrowserTestWithFtp : public LoadTimingBrowserTest {
+ public:
+  LoadTimingBrowserTestWithFtp() {
+    scoped_feature_list_.InitAndEnableFeature(features::kFtpProtocol);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(LoadTimingBrowserTestWithFtp, FTP) {
   net::SpawnedTestServer ftp_server(net::SpawnedTestServer::TYPE_FTP,
                                     base::FilePath());
   ASSERT_TRUE(ftp_server.Start());

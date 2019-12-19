@@ -95,7 +95,7 @@ TabStripSelectionChange& TabStripSelectionChange::operator=(
 ////////////////////////////////////////////////////////////////////////////////
 // TabGroupChange
 //
-TabGroupChange::TabGroupChange(TabGroupId group, Type type)
+TabGroupChange::TabGroupChange(tab_groups::TabGroupId group, Type type)
     : group(group), type(type) {}
 
 TabGroupChange::~TabGroupChange() = default;
@@ -136,7 +136,7 @@ void TabStripModelObserver::TabBlockedStateChanged(WebContents* contents,
 }
 
 void TabStripModelObserver::TabGroupedStateChanged(
-    base::Optional<TabGroupId> group,
+    base::Optional<tab_groups::TabGroupId> group,
     int index) {}
 
 void TabStripModelObserver::TabStripEmpty() {

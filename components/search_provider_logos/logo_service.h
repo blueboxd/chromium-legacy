@@ -17,8 +17,8 @@ class LogoObserver;
 // Example usage:
 //   LogoService* logo_service = LogoServiceFactory::GetForProfile(profile);
 //   LogoCallbacks callbacks;
-//   callbacks.on_cached_decoded_logo = base::Bind(ShowLogo);
-//   callbacks.on_fresh_decoded_logo = base::Bind(FadeToLogo);
+//   callbacks.on_cached_decoded_logo = base::BindOnce(ShowLogo);
+//   callbacks.on_fresh_decoded_logo = base::BindOnce(FadeToLogo);
 //   logo_service->GetLogo(callbacks);
 //
 class LogoService : public KeyedService {

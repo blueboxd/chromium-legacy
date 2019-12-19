@@ -281,7 +281,8 @@ TEST_F(AppCacheGroupTest, QueueUpdate) {
   EXPECT_TRUE(group->update_job_);
 
   // Pretend group's update job is terminating so that next update is queued.
-  group->update_job_->internal_state_ = AppCacheUpdateJob::REFETCH_MANIFEST;
+  group->update_job_->internal_state_ =
+      AppCacheUpdateJobState::REFETCH_MANIFEST;
   EXPECT_TRUE(group->update_job_->IsTerminating());
 
   TestAppCacheFrontend frontend;

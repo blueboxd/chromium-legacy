@@ -14,6 +14,7 @@ import android.view.View.OnClickListener;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfShareActivity;
 import org.chromium.chrome.browser.share.qrcode.QrCodeCoordinator;
 import org.chromium.chrome.browser.tab.Tab;
@@ -110,12 +111,30 @@ public class ShareSheetCoordinator {
                             (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
                     ClipData clip = ClipData.newPlainText(entry.getTitle(), entry.getUrl());
                     clipboard.setPrimaryClip(clip);
-
                     Toast toast =
                             Toast.makeText(activity, R.string.link_copied, Toast.LENGTH_SHORT);
                     toast.show();
                 });
         models.add(copyPropertyModel);
+
+         // ScreenShot
+        PropertyModel screenshotPropertyModel = null;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_SCREENSHOT)) {
+            screenshotPropertyModel =
+                    new PropertyModel.Builder(ShareSheetItemViewProperties.ALL_KEYS)
+                            .with(ShareSheetItemViewProperties.ICON,
+                                    AppCompatResources.getDrawable(activity, R.drawable.screenshot))
+                            .with(ShareSheetItemViewProperties.LABEL,
+                                    activity.getResources().getString(R.string.sharing_screenshot))
+                            .with(ShareSheetItemViewProperties.CLICK_LISTENER,
+                                    (shareParams)
+                                            -> {
+                                                    // TODO (crbug.1024586) initiate screenshot
+                                                    // fragment.
+                                            })
+                            .build();
+            models.add(screenshotPropertyModel);
+        }
 
         return models;
     }

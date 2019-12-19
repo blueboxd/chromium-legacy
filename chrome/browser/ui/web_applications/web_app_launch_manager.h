@@ -9,9 +9,17 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/launch_service/launch_manager.h"
 
+class Browser;
+enum class WindowOpenDisposition;
+class GURL;
+
 namespace apps {
 struct AppLaunchParams;
 }  // namespace apps
+
+namespace content {
+class WebContents;
+}  // namespace content
 
 namespace web_app {
 
@@ -43,6 +51,15 @@ class WebAppLaunchManager : public apps::LaunchManager {
 
   DISALLOW_COPY_AND_ASSIGN(WebAppLaunchManager);
 };
+
+Browser* CreateWebApplicationWindow(Profile* profile,
+                                    const std::string& app_id);
+
+content::WebContents* NavigateWebApplicationWindow(
+    Browser* browser,
+    const std::string& app_id,
+    const GURL& url,
+    WindowOpenDisposition disposition);
 
 void RecordAppWindowLaunch(Profile* profile, const std::string& app_id);
 

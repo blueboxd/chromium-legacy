@@ -107,19 +107,6 @@ enum class ConnectionStateAfterDNS {
   kMaxValue = kCryptoFinishedDnsNoMatch,
 };
 
-// The maximum receive window sizes for QUIC sessions and streams.
-const int32_t kQuicSessionMaxRecvWindowSize = 15 * 1024 * 1024;  // 15 MB
-const int32_t kQuicStreamMaxRecvWindowSize = 6 * 1024 * 1024;    // 6 MB
-
-// QUIC's socket receive buffer size.
-// We should adaptively set this buffer size, but for now, we'll use a size
-// that seems large enough to receive data at line rate for most connections,
-// and does not consume "too much" memory.
-const int32_t kQuicSocketReceiveBufferSize = 1024 * 1024;  // 1MB
-
-// Set the maximum number of undecryptable packets the connection will store.
-const int32_t kMaxUndecryptablePackets = 100;
-
 base::Value NetLogQuicStreamFactoryJobParams(
     const quic::QuicServerId* server_id) {
   base::DictionaryValue dict;
@@ -194,25 +181,6 @@ void SetInitialRttEstimate(base::TimeDelta estimate,
                             INITIAL_RTT_SOURCE_MAX);
   if (estimate != base::TimeDelta())
     config->SetInitialRoundTripTimeUsToSend(estimate.InMicroseconds());
-}
-
-quic::QuicConfig InitializeQuicConfig(const QuicParams& params) {
-  DCHECK_GT(params.idle_connection_timeout, base::TimeDelta());
-  quic::QuicConfig config;
-  config.SetIdleNetworkTimeout(
-      quic::QuicTime::Delta::FromMicroseconds(
-          params.idle_connection_timeout.InMicroseconds()),
-      quic::QuicTime::Delta::FromMicroseconds(
-          params.idle_connection_timeout.InMicroseconds()));
-  config.set_max_time_before_crypto_handshake(
-      quic::QuicTime::Delta::FromMicroseconds(
-          params.max_time_before_crypto_handshake.InMicroseconds()));
-  config.set_max_idle_time_before_crypto_handshake(
-      quic::QuicTime::Delta::FromMicroseconds(
-          params.max_idle_time_before_crypto_handshake.InMicroseconds()));
-  config.SetConnectionOptionsToSend(params.connection_options);
-  config.SetClientConnectionOptions(params.client_connection_options);
-  return config;
 }
 
 // An implementation of quic::QuicCryptoClientConfig::ServerIdFilter that wraps
@@ -1931,11 +1899,6 @@ int QuicStreamFactory::CreateSession(
   connection->SetMaxPacketLength(params_.max_packet_length);
 
   quic::QuicConfig config = config_;
-  config.set_max_undecryptable_packets(kMaxUndecryptablePackets);
-  config.SetInitialSessionFlowControlWindowToSend(
-      kQuicSessionMaxRecvWindowSize);
-  config.SetInitialStreamFlowControlWindowToSend(kQuicStreamMaxRecvWindowSize);
-  config.SetBytesForConnectionIdToSend(0);
   ConfigureInitialRttEstimate(
       server_id, key.session_key().network_isolation_key(), &config);
   if (quic_version.transport_version <= quic::QUIC_VERSION_43 &&

@@ -34,6 +34,7 @@
 #include "remoting/host/desktop_session.h"
 #include "remoting/host/desktop_session_connector.h"
 #include "remoting/host/desktop_session_proxy.h"
+#include "remoting/host/fake_keyboard_layout_monitor.h"
 #include "remoting/host/fake_mouse_cursor_monitor.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/protocol/fake_desktop_capturer.h"
@@ -177,6 +178,11 @@ class IpcDesktopEnvironmentTest : public testing::Test {
   // Creates a MockMouseCursorMonitor, to mock
   // DesktopEnvironment::CreateMouseCursorMonitor
   webrtc::MouseCursorMonitor* CreateMouseCursorMonitor();
+
+  // Creates a FakeKeyboardLayoutMonitor to mock
+  // DesktopEnvironment::CreateKeyboardLayoutMonitor
+  KeyboardLayoutMonitor* CreateKeyboardLayoutMonitor(
+      base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback);
 
   void DeleteDesktopEnvironment();
 
@@ -365,6 +371,10 @@ DesktopEnvironment* IpcDesktopEnvironmentTest::CreateDesktopEnvironment() {
       .Times(AtMost(1))
       .WillOnce(Invoke(
           this, &IpcDesktopEnvironmentTest::CreateMouseCursorMonitor));
+  EXPECT_CALL(*desktop_environment, CreateKeyboardLayoutMonitorPtr(_))
+      .Times(AtMost(1))
+      .WillOnce(Invoke(
+          this, &IpcDesktopEnvironmentTest::CreateKeyboardLayoutMonitor));
   EXPECT_CALL(*desktop_environment, GetCapabilities())
       .Times(AtMost(1));
   EXPECT_CALL(*desktop_environment, SetCapabilities(_))
@@ -392,6 +402,11 @@ webrtc::DesktopCapturer* IpcDesktopEnvironmentTest::CreateVideoCapturer() {
 webrtc::MouseCursorMonitor*
 IpcDesktopEnvironmentTest::CreateMouseCursorMonitor() {
   return new FakeMouseCursorMonitor();
+}
+
+KeyboardLayoutMonitor* IpcDesktopEnvironmentTest::CreateKeyboardLayoutMonitor(
+    base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback) {
+  return new FakeKeyboardLayoutMonitor();
 }
 
 void IpcDesktopEnvironmentTest::DeleteDesktopEnvironment() {

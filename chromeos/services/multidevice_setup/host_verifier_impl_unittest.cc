@@ -451,8 +451,8 @@ TEST_P(MultiDeviceSetupHostVerifierImplTest, HostMissingCryptoData) {
 }
 
 // Runs tests for a host device with and without an Instance ID.
-// TODO(https://crbug.com/1019206): Remove when v1 DeviceSync is deprecated,
-// when all devices should have an Instance ID.
+// TODO(https://crbug.com/1019206): Remove when v1 DeviceSync is disabled, when
+// all devices should have an Instance ID.
 INSTANTIATE_TEST_SUITE_P(All,
                          MultiDeviceSetupHostVerifierImplTest,
                          ::testing::Bool());

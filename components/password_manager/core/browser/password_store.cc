@@ -475,33 +475,33 @@ void PasswordStore::PreparePasswordHashData(const std::string& sync_username) {
 
 void PasswordStore::SaveGaiaPasswordHash(const std::string& username,
                                          const base::string16& password,
+                                         bool is_primary_account,
                                          GaiaPasswordHashChange event) {
-  SaveProtectedPasswordHash(username, password, /*is_gaia_password=*/true,
-                            event);
+  SaveProtectedPasswordHash(username, password, is_primary_account,
+                            /*is_gaia_password=*/true, event);
 }
 
 void PasswordStore::SaveEnterprisePasswordHash(const std::string& username,
                                                const base::string16& password) {
   SaveProtectedPasswordHash(
-      username, password, /*is_gaia_password=*/false,
+      username, password, /*is_primary_account=*/false,
+      /*is_gaia_password=*/false,
       GaiaPasswordHashChange::NON_GAIA_ENTERPRISE_PASSWORD_CHANGE);
 }
 
 void PasswordStore::SaveProtectedPasswordHash(const std::string& username,
                                               const base::string16& password,
+                                              bool is_primary_account,
                                               bool is_gaia_password,
                                               GaiaPasswordHashChange event) {
   if (hash_password_manager_.SavePasswordHash(username, password,
                                               is_gaia_password)) {
-    bool is_syncing =
-        event != GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE &&
-        event != GaiaPasswordHashChange::NON_GAIA_ENTERPRISE_PASSWORD_CHANGE;
     if (is_gaia_password) {
-      metrics_util::LogGaiaPasswordHashChange(event, is_syncing);
+      metrics_util::LogGaiaPasswordHashChange(event, is_primary_account);
     }
     // This method is not being called on startup so it shouldn't log metrics.
     SchedulePasswordHashUpdate(/*should_log_metrics=*/false,
-                               /*does_primary_account_exists=*/false);
+                               is_primary_account);
   }
 }
 

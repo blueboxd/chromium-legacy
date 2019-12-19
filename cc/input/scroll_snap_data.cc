@@ -255,7 +255,7 @@ base::Optional<SnapSearchResult> SnapContainerData::FindClosestValidArea(
         SnapSelectionStrategy::CreateForDirection(
             strategy.current_position(),
             strategy.intended_position() - strategy.current_position(),
-            SnapStopAlwaysFilter::kRequire);
+            strategy.UsingFractionalOffsets(), SnapStopAlwaysFilter::kRequire);
     base::Optional<SnapSearchResult> must_only_result =
         FindClosestValidAreaInternal(axis, *must_only_strategy,
                                      cross_axis_snap_result, false);

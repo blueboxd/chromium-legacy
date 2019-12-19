@@ -53,7 +53,7 @@ class CONTENT_EXPORT InputEventPrediction {
   // UpdateSinglePointer for each pointer.
   void UpdatePrediction(const WebInputEvent& event);
   // Cast events from WebInputEvent to WebPointerProperties. Call
-  // ResamplingSinglePointer for each poitner.
+  // ResamplingSinglePointer for each pointer.
   void ApplyResampling(base::TimeTicks frame_time, WebInputEvent* event);
   // Reset predictor for each pointer in WebInputEvent by  ResetSinglePredictor.
   void ResetPredictor(const WebInputEvent& event);

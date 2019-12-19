@@ -28,6 +28,7 @@
 #include "base/optional.h"
 #include "base/strings/pattern.h"
 #include "base/test/scoped_feature_list.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "components/prefs/pref_service.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/fake/fake_display_snapshot.h"
@@ -192,6 +193,10 @@ class NightLightTest : public NoSessionAshTestBase {
 
     // Simulate user 1 login.
     SwitchActiveUser(kUser1Email);
+
+    // Start with ambient color pref disabled.
+    SetAmbientColorPrefEnabled(false);
+    SetAmbientColorSupported(false);
   }
 
   void CreateTestUserSessions() {
@@ -208,6 +213,16 @@ class NightLightTest : public NoSessionAshTestBase {
   void SetNightLightEnabled(bool enabled) {
     GetController()->SetEnabled(
         enabled, NightLightControllerImpl::AnimationDuration::kShort);
+  }
+
+  void SetAmbientColorPrefEnabled(bool enabled) {
+    GetController()->SetAmbientColorEnabled(enabled);
+  }
+
+  void SetAmbientColorSupported(bool supported) {
+    static_cast<chromeos::FakePowerManagerClient*>(
+        chromeos::PowerManagerClient::Get())
+        ->set_supports_ambient_color(supported);
   }
 
   // Simulate powerd sending multiple times an ambient temperature of
@@ -984,6 +999,54 @@ TEST_F(NightLightTest, TestCustomScheduleInvertedStartAndEndTimesCase3) {
             controller->timer()->GetCurrentDelay());
 }
 
+TEST_F(NightLightTest, TestAmbientLightEnabledSetting) {
+  // Feature enabled, Device not supported, Pref disabled -> disabled
+  SetAmbientColorPrefEnabled(false);
+  SetAmbientColorSupported(false);
+  EXPECT_FALSE(GetController()->GetAmbientColorEnabled());
+
+  // Feature enabled, Device not supported, Pref enabled -> disabled
+  SetAmbientColorPrefEnabled(true);
+  SetAmbientColorSupported(false);
+  EXPECT_FALSE(GetController()->GetAmbientColorEnabled());
+
+  // Feature enabled, Device not supported, Pref enabled -> disabled
+  SetAmbientColorPrefEnabled(false);
+  SetAmbientColorSupported(true);
+  EXPECT_FALSE(GetController()->GetAmbientColorEnabled());
+
+  // Feature enabled, Device supported, Pref enabled -> enabled
+  SetAmbientColorPrefEnabled(true);
+  SetAmbientColorSupported(true);
+  EXPECT_TRUE(GetController()->GetAmbientColorEnabled());
+
+  // With the feature disabled it should always be disabled.
+  {
+    base::test::ScopedFeatureList features;
+    features.InitAndDisableFeature(features::kAllowAmbientEQ);
+
+    // Feature disabled, Device not supported, Pref disabled -> disabled
+    SetAmbientColorPrefEnabled(false);
+    SetAmbientColorSupported(false);
+    EXPECT_FALSE(GetController()->GetAmbientColorEnabled());
+
+    // Feature disabled, Device not supported, Pref enabled -> disabled
+    SetAmbientColorPrefEnabled(true);
+    SetAmbientColorSupported(false);
+    EXPECT_FALSE(GetController()->GetAmbientColorEnabled());
+
+    // Feature disabled, Device not supported, Pref enabled -> disabled
+    SetAmbientColorPrefEnabled(false);
+    SetAmbientColorSupported(true);
+    EXPECT_FALSE(GetController()->GetAmbientColorEnabled());
+
+    // Feature disabled, Device supported, Pref enabled -> disabled
+    SetAmbientColorPrefEnabled(true);
+    SetAmbientColorSupported(true);
+    EXPECT_FALSE(GetController()->GetAmbientColorEnabled());
+  }
+}
+
 TEST_F(NightLightTest, TestAmbientLightRemappingTemperature) {
   NightLightControllerImpl* controller = GetController();
 
@@ -1019,9 +1082,9 @@ TEST_F(NightLightTest, TestAmbientLightRemappingTemperature) {
 }
 
 TEST_F(NightLightTest, TestAmbientColorMatrix) {
-  NightLightControllerImpl* controller = GetController();
   SetNightLightEnabled(false);
-  controller->SetAmbientColorEnabled(true);
+  SetAmbientColorPrefEnabled(true);
+  SetAmbientColorSupported(true);
   auto scaling_factors = GetAllDisplaysCompositorsRGBScaleFactors();
   // If no temperature is set, we expect 1.0 for each scaling factor.
   for (const gfx::Vector3dF& rgb : scaling_factors) {
@@ -1050,12 +1113,12 @@ TEST_F(NightLightTest, TestAmbientColorMatrix) {
 }
 
 TEST_F(NightLightTest, TestNightLightAndAmbientColorInteraction) {
-  NightLightControllerImpl* controller = GetController();
   SetNightLightEnabled(true);
 
   auto night_light_rgb = GetAllDisplaysCompositorsRGBScaleFactors().front();
 
-  controller->SetAmbientColorEnabled(true);
+  SetAmbientColorPrefEnabled(true);
+  SetAmbientColorSupported(true);
 
   auto night_light_and_ambient_rgb =
       GetAllDisplaysCompositorsRGBScaleFactors().front();

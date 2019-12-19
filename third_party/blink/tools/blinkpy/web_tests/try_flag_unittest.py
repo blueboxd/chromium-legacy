@@ -153,7 +153,8 @@ class TryFlagTest(unittest.TestCase):
             '### 2 unexpected failures:',
             '',
             'Bug(none) something/fail-everywhere.html [ Failure ]',
-            'Bug(none) [ Linux Win ] something/fail-win-and-linux.html [ Failure ]',
+            'Bug(none) [ Win ] something/fail-win-and-linux.html [ Failure ]',
+            'Bug(none) [ Linux ] something/fail-win-and-linux.html [ Failure ]',
             ''
         ]))
 

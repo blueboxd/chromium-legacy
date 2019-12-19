@@ -310,11 +310,8 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     current_read_lock_fence_ = fence;
   }
 
-  // Creates accounting for a child. Returns a child ID. |needs_sync_tokens|
-  // sets whether resources need sync points set on them when returned to this
-  // child.
-  int CreateChild(const ReturnCallback& return_callback,
-                  bool needs_sync_tokens);
+  // Creates accounting for a child. Returns a child ID.
+  int CreateChild(const ReturnCallback& return_callback);
 
   // Destroys accounting for the child, deleting all accounted resources.
   void DestroyChild(int child);
@@ -385,7 +382,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     std::unordered_map<ResourceId, ResourceId> child_to_parent_map;
     ReturnCallback return_callback;
     bool marked_for_deletion = false;
-    bool needs_sync_tokens = true;
   };
 
   // The data structure used to track state of Gpu and Software-based

@@ -20,7 +20,7 @@ namespace safe_browsing {
 
 class AllowlistCheckerClient : public SafeBrowsingDatabaseManager::Client {
  public:
-  using BoolCallback = base::Callback<void(bool /* is_whitelisted */)>;
+  using BoolCallback = base::OnceCallback<void(bool /* is_whitelisted */)>;
 
   // Static method to lookup |url| on the CSD allowlist. |callback| will be
   // called when the lookup result is known, or on time out, or if the
@@ -57,7 +57,7 @@ class AllowlistCheckerClient : public SafeBrowsingDatabaseManager::Client {
   static std::unique_ptr<AllowlistCheckerClient> GetAllowlistCheckerClient(
       scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
       const GURL& url,
-      base::Callback<void(bool)> callback_for_result,
+      base::OnceCallback<void(bool)>* callback_for_result,
       bool default_does_match_allowlist);
 
   // Invokes |callback_for_result_| if the allowlist lookup completed

@@ -134,8 +134,10 @@ void AppShimController::FindOrLaunchChrome() {
     if (!base::StringToInt(chrome_pid_string, &chrome_pid))
       LOG(FATAL) << "Invalid PID: " << chrome_pid_string;
 
-    chrome_to_connect_to_.reset([NSRunningApplication
-        runningApplicationWithProcessIdentifier:chrome_pid]);
+    chrome_to_connect_to_.reset(
+        [NSRunningApplication
+            runningApplicationWithProcessIdentifier:chrome_pid],
+        base::scoped_policy::RETAIN);
     if (!chrome_to_connect_to_)
       LOG(FATAL) << "Failed to open process with PID: " << chrome_pid;
     return;
@@ -183,7 +185,8 @@ AppShimController::FindChromeFromSingletonLock(
   // Open the associated pid. This could be invalid if Chrome terminated
   // abnormally and didn't clean up.
   base::scoped_nsobject<NSRunningApplication> process_from_lock(
-      [NSRunningApplication runningApplicationWithProcessIdentifier:pid]);
+      [NSRunningApplication runningApplicationWithProcessIdentifier:pid],
+      base::scoped_policy::RETAIN);
   if (!process_from_lock) {
     LOG(WARNING) << "Singleton lock pid " << pid << " invalid.";
     return base::scoped_nsobject<NSRunningApplication>();

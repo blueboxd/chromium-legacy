@@ -28,6 +28,8 @@
 #include "components/sessions/core/base_session_service_delegate.h"
 #include "components/sessions/core/session_service_commands.h"
 #include "components/sessions/core/tab_restore_service_client.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
 
@@ -125,15 +127,14 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
   // multiple windows.
   void SetTabGroup(const SessionID& window_id,
                    const SessionID& tab_id,
-                   base::Optional<base::Token> group);
+                   base::Optional<tab_groups::TabGroupId> group);
 
   // Updates the metadata associated with a tab group. |window_id| should be the
   // window where the group currently resides. Note that a group can't be split
   // between multiple windows.
   void SetTabGroupMetadata(const SessionID& window_id,
-                           const base::Token& group_id,
-                           const base::string16& title,
-                           SkColor color);
+                           const tab_groups::TabGroupId& group_id,
+                           const tab_groups::TabGroupVisualData* visual_data);
 
   // Sets the pinned state of the tab.
   void SetPinnedState(const SessionID& window_id,
@@ -275,7 +276,7 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
   void BuildCommandsForTab(const SessionID& window_id,
                            content::WebContents* tab,
                            int index_in_window,
-                           base::Optional<base::Token> group,
+                           base::Optional<tab_groups::TabGroupId> group,
                            bool is_pinned,
                            IdToRange* tab_to_available_range);
 

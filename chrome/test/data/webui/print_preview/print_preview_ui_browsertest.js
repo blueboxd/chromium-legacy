@@ -1057,6 +1057,13 @@ TEST_F('PrintPreviewDestinationSettingsTest', 'RecentDestinations', function() {
   this.runMochaTest(destination_settings_test.TestNames.RecentDestinations);
 });
 
+TEST_F(
+    'PrintPreviewDestinationSettingsTest', 'RecentDestinationsMissing',
+    function() {
+      this.runMochaTest(
+          destination_settings_test.TestNames.RecentDestinationsMissing);
+    });
+
 TEST_F('PrintPreviewDestinationSettingsTest', 'SaveAsPdfRecent', function() {
   this.runMochaTest(destination_settings_test.TestNames.SaveAsPdfRecent);
 });

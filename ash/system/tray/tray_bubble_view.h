@@ -211,9 +211,6 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
 
   void CloseBubbleView();
 
-  // Focus the default item if no item is focused.
-  void FocusDefaultIfNeeded();
-
   InitParams params_;
   views::BoxLayout* layout_;
   Delegate* delegate_;

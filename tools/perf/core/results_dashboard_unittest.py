@@ -34,7 +34,7 @@ class ResultsDashboardTest(unittest.TestCase):
         self.assertEqual(m.call_count, 5)
         self.assertEqual(
             sleep_mock.mock_calls,
-            [call(30), call(60), call(120), call(240), call(480)])
+            [call(15), call(30), call(60), call(120), call(240)])
 
   def testNoRetryForSendResultFatalException(self):
 
@@ -89,4 +89,4 @@ class ResultsDashboardTest(unittest.TestCase):
         self.assertTrue(upload_result)
         self.assertEqual(m.call_count, 3)
         self.assertEqual(
-            sleep_mock.mock_calls, [call(30), call(60)])
+            sleep_mock.mock_calls, [call(15), call(30)])

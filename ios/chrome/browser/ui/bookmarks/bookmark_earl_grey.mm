@@ -62,12 +62,42 @@ const GURL GetFrenchUrl() {
                                 fourthURL:spec4]);
 }
 
+- (void)setupBookmarksWhichExceedsScreenHeight {
+  EG_TEST_HELPER_ASSERT_NO_ERROR([BookmarkEarlGreyAppInterface
+      setupBookmarksWhichExceedsScreenHeightUsingURL:@"http://google.com"]);
+}
+
+- (void)waitForBookmarkModelLoaded:(BOOL)loaded {
+  EG_TEST_HELPER_ASSERT_TRUE(
+      [BookmarkEarlGreyAppInterface waitForBookmarkModelLoaded:loaded],
+      @"Bookmark model was not loaded");
+}
+
 #pragma mark - Common Helpers
+
+- (void)verifyBookmarksWithTitle:(NSString*)title
+                   expectedCount:(NSUInteger)expectedCount {
+  EG_TEST_HELPER_ASSERT_NO_ERROR([BookmarkEarlGreyAppInterface
+      verifyBookmarksWithTitle:title
+                 expectedCount:expectedCount]);
+}
 
 - (void)verifyChildCount:(int)count inFolderWithName:(NSString*)name {
   EG_TEST_HELPER_ASSERT_NO_ERROR([BookmarkEarlGreyAppInterface
       verifyChildCount:count
       inFolderWithName:name]);
+}
+
+- (void)removeBookmarkWithTitle:(NSString*)title {
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [BookmarkEarlGreyAppInterface removeBookmarkWithTitle:title]);
+}
+
+- (void)moveBookmarkWithTitle:(NSString*)bookmarkTitle
+            toFolderWithTitle:(NSString*)newFolder {
+  EG_TEST_HELPER_ASSERT_NO_ERROR([BookmarkEarlGreyAppInterface
+      moveBookmarkWithTitle:bookmarkTitle
+          toFolderWithTitle:newFolder]);
 }
 
 #pragma mark - Promo

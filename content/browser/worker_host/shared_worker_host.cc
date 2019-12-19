@@ -247,8 +247,9 @@ SharedWorkerHost::CreateNetworkFactoryForSubresources(
 
   const url::Origin& origin = instance_.constructor_origin();
   network::mojom::URLLoaderFactoryParamsPtr factory_params =
-      URLLoaderFactoryParamsHelper::CreateForWorker(worker_process_host,
-                                                    origin);
+      URLLoaderFactoryParamsHelper::CreateForWorker(
+          worker_process_host, origin,
+          net::NetworkIsolationKey(origin, origin));
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       worker_process_host->GetBrowserContext(),
       /*frame=*/nullptr, worker_process_id_,

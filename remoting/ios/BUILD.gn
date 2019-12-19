@@ -10,7 +10,7 @@ group("all") {
 
   deps = [
     ":ios_core",
-    "./app:all",
+    "app:all",
   ]
 }
 
@@ -85,6 +85,10 @@ test("ios_remoting_unittests") {
   foreach(locale, remoting_locales_with_underscores) {
     deps += [ ":unittests_locale_${locale}_bundle_data" ]
   }
+
+  bundle_deps = [
+    "//ios/third_party/material_components_ios:material_components_ios+bundle",
+  ]
 }
 
 foreach(locale, remoting_locales_with_underscores) {

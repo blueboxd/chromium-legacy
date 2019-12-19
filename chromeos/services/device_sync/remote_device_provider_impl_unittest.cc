@@ -271,10 +271,10 @@ class DeviceSyncRemoteDeviceProviderImplTest : public ::testing::Test {
 
     if (use_v1) {
       disabled_features.push_back(
-          chromeos::features::kCryptAuthV1DeviceSyncDeprecate);
+          chromeos::features::kDisableCryptAuthV1DeviceSync);
     } else {
       enabled_features.push_back(
-          chromeos::features::kCryptAuthV1DeviceSyncDeprecate);
+          chromeos::features::kDisableCryptAuthV1DeviceSync);
     }
 
     if (use_v2) {
@@ -289,7 +289,7 @@ class DeviceSyncRemoteDeviceProviderImplTest : public ::testing::Test {
   // Set the v1 device manager's synced devices to correspond to the first
   // |num_devices| of GetV1RemoteDevices().
   void SetV1ManagerDevices(size_t num_devices) {
-    ASSERT_FALSE(features::ShouldDeprecateV1DeviceSync());
+    ASSERT_TRUE(features::ShouldUseV1DeviceSync());
 
     static const base::NoDestructor<std::vector<cryptauth::ExternalDeviceInfo>>
         device_info([] {
@@ -363,7 +363,7 @@ class DeviceSyncRemoteDeviceProviderImplTest : public ::testing::Test {
   }
 
   void NotifyV1SyncFinished(bool success, bool did_devices_change) {
-    ASSERT_FALSE(features::ShouldDeprecateV1DeviceSync());
+    ASSERT_TRUE(features::ShouldUseV1DeviceSync());
 
     fake_device_manager_->NotifySyncFinished(
         success ? CryptAuthDeviceManager::SyncResult::SUCCESS
@@ -392,7 +392,7 @@ class DeviceSyncRemoteDeviceProviderImplTest : public ::testing::Test {
   }
 
   void RunV1RemoteDeviceLoader() {
-    ASSERT_FALSE(features::ShouldDeprecateV1DeviceSync());
+    ASSERT_TRUE(features::ShouldUseV1DeviceSync());
     ASSERT_TRUE(test_device_loader_factory_->HasQueuedCallback());
     test_device_loader_factory_->InvokeLastCallback(
         fake_device_manager_->GetSyncedDevices());

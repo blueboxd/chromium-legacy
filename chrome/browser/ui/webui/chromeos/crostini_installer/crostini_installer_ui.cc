@@ -130,9 +130,6 @@ CrostiniInstallerUI::CrostiniInstallerUI(content::WebUI* web_ui)
   source->EnableReplaceI18nInJS();
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
-
-  AddHandlerToRegistry(base::BindRepeating(
-      &CrostiniInstallerUI::BindPageHandlerFactory, base::Unretained(this)));
 }
 
 CrostiniInstallerUI::~CrostiniInstallerUI() = default;
@@ -148,7 +145,7 @@ void CrostiniInstallerUI::ClickInstallForTesting() {
       base::NullCallback());
 }
 
-void CrostiniInstallerUI::BindPageHandlerFactory(
+void CrostiniInstallerUI::BindInterface(
     mojo::PendingReceiver<
         chromeos::crostini_installer::mojom::PageHandlerFactory>
         pending_receiver) {
@@ -180,5 +177,7 @@ void CrostiniInstallerUI::OnWebUICloseDialog() {
   // access the page using the URL directly, which is not supported).
   ui::MojoWebDialogUI::CloseDialog(nullptr);
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(CrostiniInstallerUI)
 
 }  // namespace chromeos

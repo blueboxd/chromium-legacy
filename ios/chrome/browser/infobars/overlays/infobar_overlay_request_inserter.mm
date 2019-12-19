@@ -52,6 +52,6 @@ void InfobarOverlayRequestInserter::InsertOverlayRequest(
   OverlayRequestQueue* queue = queues_.at(type);
   std::unique_ptr<OverlayRequestCancelHandler> cancel_handler =
       std::make_unique<InfobarOverlayRequestCancelHandler>(request.get(), queue,
-                                                           infobar);
+                                                           type, this);
   queue->InsertRequest(index, std::move(request), std::move(cancel_handler));
 }

@@ -5,19 +5,20 @@
 #include "chrome/browser/ui/views/tabs/tab_group_editor_bubble_view.h"
 
 #include "base/time/time.h"
-#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/point_f.h"
 
 class TabGroupEditorBubbleViewDialogBrowserTest : public DialogBrowserTest {
  protected:
   void ShowUi(const std::string& name) override {
-    TabGroupId group = browser()->tab_strip_model()->AddToNewGroup({0});
+    tab_groups::TabGroupId group =
+        browser()->tab_strip_model()->AddToNewGroup({0});
 
     BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
     TabGroupHeader* header =

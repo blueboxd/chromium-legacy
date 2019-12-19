@@ -178,6 +178,12 @@ def parse_args(args):
                 action='store_true',
                 help=('Do not use the default set of TestExpectations files.')),
             optparse.make_option(
+                '--no-expectations',
+                action='store_true',
+                help=('Do not use TestExpectations, only run the tests without '
+                      'reporting any results. Useful for generating code '
+                      'coverage reports.')),
+            optparse.make_option(
                 '--additional-platform-directory',
                 action='append',
                 default=[],

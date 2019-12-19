@@ -6,7 +6,9 @@
 
 #include <memory>
 
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/default_color_constants.h"
 #include "ash/system/message_center/unified_message_center_view.h"
@@ -194,6 +196,10 @@ TrayBubbleView* UnifiedMessageCenterBubble::GetBubbleView() const {
 
 views::Widget* UnifiedMessageCenterBubble::GetBubbleWidget() const {
   return bubble_widget_;
+}
+
+bool UnifiedMessageCenterBubble::ShouldEnableExtraKeyboardAccessibility() {
+  return Shell::Get()->accessibility_controller()->spoken_feedback_enabled();
 }
 
 void UnifiedMessageCenterBubble::OnViewPreferredSizeChanged(

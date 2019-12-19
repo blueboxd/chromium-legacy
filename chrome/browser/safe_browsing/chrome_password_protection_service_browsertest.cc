@@ -85,6 +85,7 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
             .get();
     password_store->SaveGaiaPasswordHash(
         user_manager::kStubUserEmail, base::UTF8ToUTF16(new_password),
+        /*is_primary_account=*/true,
         password_manager::metrics_util::GaiaPasswordHashChange::
             CHANGED_IN_CONTENT_AREA);
   }
@@ -470,6 +471,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
           .get();
   password_store->SaveGaiaPasswordHash(
       user_manager::kStubUserEmail, base::UTF8ToUTF16("password_1"),
+      /*is_primary_account=*/true,
       password_manager::metrics_util::GaiaPasswordHashChange::
           CHANGED_IN_CONTENT_AREA);
   ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL("/"));
@@ -772,6 +774,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                                              base::UTF8ToUTF16("password_1"));
   password_store->SaveGaiaPasswordHash(
       user_manager::kStubUserEmail, base::UTF8ToUTF16("password_2"),
+      /*is_primary_account=*/false,
       password_manager::metrics_util::GaiaPasswordHashChange::
           CHANGED_IN_CONTENT_AREA);
   ASSERT_EQ(2u, profile->GetPrefs()

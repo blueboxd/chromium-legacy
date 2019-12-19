@@ -286,7 +286,8 @@ CrPolicyNetworkBehaviorMojoTest.prototype = {
   __proto__: CrElementsBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://os-settings/internet_page/internet_page.html',
+  browsePreload:
+      'chrome://os-settings/chromeos/internet_page/internet_page.html',
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
@@ -309,7 +310,8 @@ CrElementsPolicyNetworkIndicatorMojoTest.prototype = {
   __proto__: CrElementsBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://os-settings/internet_page/internet_page.html',
+  browsePreload:
+      'chrome://os-settings/chromeos/internet_page/internet_page.html',
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([

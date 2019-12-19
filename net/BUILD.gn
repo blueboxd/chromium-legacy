@@ -3221,6 +3221,68 @@ if (is_linux) {
       ":simple_quic_tools",
     ]
   }
+
+  source_set("masque_tools") {
+    sources = [
+      "third_party/quiche/src/quic/masque/masque_client_session.cc",
+      "third_party/quiche/src/quic/masque/masque_client_session.h",
+      "third_party/quiche/src/quic/masque/masque_client_tools.cc",
+      "third_party/quiche/src/quic/masque/masque_client_tools.h",
+      "third_party/quiche/src/quic/masque/masque_compression_engine.cc",
+      "third_party/quiche/src/quic/masque/masque_compression_engine.h",
+      "third_party/quiche/src/quic/masque/masque_dispatcher.cc",
+      "third_party/quiche/src/quic/masque/masque_dispatcher.h",
+      "third_party/quiche/src/quic/masque/masque_encapsulated_client_session.cc",
+      "third_party/quiche/src/quic/masque/masque_encapsulated_client_session.h",
+      "third_party/quiche/src/quic/masque/masque_encapsulated_epoll_client.cc",
+      "third_party/quiche/src/quic/masque/masque_encapsulated_epoll_client.h",
+      "third_party/quiche/src/quic/masque/masque_epoll_client.cc",
+      "third_party/quiche/src/quic/masque/masque_epoll_client.h",
+      "third_party/quiche/src/quic/masque/masque_epoll_server.cc",
+      "third_party/quiche/src/quic/masque/masque_epoll_server.h",
+      "third_party/quiche/src/quic/masque/masque_server_backend.cc",
+      "third_party/quiche/src/quic/masque/masque_server_backend.h",
+      "third_party/quiche/src/quic/masque/masque_server_session.cc",
+      "third_party/quiche/src/quic/masque/masque_server_session.h",
+      "third_party/quiche/src/quic/masque/masque_utils.cc",
+      "third_party/quiche/src/quic/masque/masque_utils.h",
+    ]
+    deps = [
+      ":epoll_quic_tools",
+      ":net",
+      ":simple_quic_tools",
+      "//third_party/boringssl",
+      "//third_party/protobuf:protobuf_lite",
+    ]
+  }
+
+  executable("masque_client") {
+    sources = [
+      "third_party/quiche/src/quic/masque/masque_client_bin.cc",
+    ]
+    deps = [
+      ":epoll_quic_tools",
+      ":masque_tools",
+      ":net",
+      ":simple_quic_tools",
+      "//third_party/boringssl",
+      "//third_party/protobuf:protobuf_lite",
+    ]
+  }
+
+  executable("masque_server") {
+    sources = [
+      "third_party/quiche/src/quic/masque/masque_server_bin.cc",
+    ]
+    deps = [
+      ":epoll_quic_tools",
+      ":masque_tools",
+      ":net",
+      ":simple_quic_tools",
+      "//third_party/boringssl",
+      "//third_party/protobuf:protobuf_lite",
+    ]
+  }
 }
 
 if (is_android) {

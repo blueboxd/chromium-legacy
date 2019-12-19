@@ -75,8 +75,6 @@ AwMainDelegate::AwMainDelegate() = default;
 AwMainDelegate::~AwMainDelegate() = default;
 
 bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
-  content::SetContentClient(&content_client_);
-
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
 
   // WebView uses the Android system's scrollbars and overscroll glow.
@@ -347,6 +345,10 @@ void AwMainDelegate::PostFieldTrialInitialization() {
 #if BUILDFLAG(ENABLE_GWP_ASAN_PARTITIONALLOC)
   gwp_asan::EnableForPartitionAlloc(is_canary_dev, process_type.c_str());
 #endif
+}
+
+content::ContentClient* AwMainDelegate::CreateContentClient() {
+  return &content_client_;
 }
 
 content::ContentBrowserClient* AwMainDelegate::CreateContentBrowserClient() {

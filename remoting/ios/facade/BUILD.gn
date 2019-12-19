@@ -25,7 +25,7 @@ source_set("facade") {
 
   deps = [
     "//base",
-    "//ios/third_party/material_components_ios",
+    "//ios/third_party/material_components_ios:material_components_ios+link",
     "//remoting/base:authorization",
     "//remoting/client",
     "//remoting/ios/domain",

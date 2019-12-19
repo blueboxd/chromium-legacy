@@ -80,7 +80,11 @@ SafeBrowsingService::CreateURLLoaderThrottle(
             return sb_service->GetSafeBrowsingUrlCheckerDelegate();
           },
           base::Unretained(this)),
-      wc_getter, frame_tree_node_id, resource_context);
+      wc_getter, frame_tree_node_id, resource_context,
+      // cache_manager is used to perform real time url check, which is gated by
+      // UKM opted in. Since WebLayer currently doesn't support UKM, this
+      // feature is not enabled.
+      /*cache_manager*/ nullptr);
 }
 
 scoped_refptr<safe_browsing::UrlCheckerDelegate>

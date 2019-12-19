@@ -21,7 +21,6 @@
 #include "base/synchronization/atomic_flag.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
-#include "base/token.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
@@ -40,6 +39,8 @@
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/sessions/core/session_command.h"
 #include "components/sessions/core/session_types.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_state.h"
@@ -1112,11 +1113,11 @@ TEST_F(SessionServiceTest, TabGroupDefaultsToNone) {
 }
 
 TEST_F(SessionServiceTest, TabGroupsSaved) {
-  const auto group1_token = base::Token::CreateRandom();
-  const auto group2_token = base::Token::CreateRandom();
+  const tab_groups::TabGroupId group1 = tab_groups::TabGroupId::GenerateNew();
+  const tab_groups::TabGroupId group2 = tab_groups::TabGroupId::GenerateNew();
   constexpr int kNumTabs = 5;
-  const std::array<base::Optional<base::Token>, kNumTabs> groups = {
-      base::nullopt, group1_token, group1_token, base::nullopt, group2_token};
+  const std::array<base::Optional<tab_groups::TabGroupId>, kNumTabs> groups = {
+      base::nullopt, group1, group1, base::nullopt, group2};
 
   // Create |kNumTabs| tabs with group IDs in |groups|.
   for (int tab_ndx = 0; tab_ndx < kNumTabs; ++tab_ndx) {
@@ -1140,11 +1141,12 @@ TEST_F(SessionServiceTest, TabGroupsSaved) {
 
 TEST_F(SessionServiceTest, TabGroupMetadataSaved) {
   constexpr int kNumGroups = 2;
-  const std::array<base::Token, kNumGroups> group_ids = {
-      base::Token::CreateRandom(), base::Token::CreateRandom()};
-  const std::array<base::string16, kNumGroups> titles = {
-      base::ASCIIToUTF16("Foo"), base::ASCIIToUTF16("Bar")};
-  const std::array<SkColor, kNumGroups> colors = {SK_ColorBLUE, SK_ColorGREEN};
+  const std::array<tab_groups::TabGroupId, kNumGroups> group_ids = {
+      tab_groups::TabGroupId::GenerateNew(),
+      tab_groups::TabGroupId::GenerateNew()};
+  const std::array<tab_groups::TabGroupVisualData, kNumGroups> visual_data = {
+      tab_groups::TabGroupVisualData(base::ASCIIToUTF16("Foo"), SK_ColorBLUE),
+      tab_groups::TabGroupVisualData(base::ASCIIToUTF16("Bar"), SK_ColorGREEN)};
 
   // Create |kNumGroups| tab groups, each with one tab.
   for (int group_ndx = 0; group_ndx < kNumGroups; ++group_ndx) {
@@ -1152,7 +1154,7 @@ TEST_F(SessionServiceTest, TabGroupMetadataSaved) {
         CreateTabWithTestNavigationData(window_id, group_ndx);
     service()->SetTabGroup(window_id, tab_id, group_ids[group_ndx]);
     service()->SetTabGroupMetadata(window_id, group_ids[group_ndx],
-                                   titles[group_ndx], colors[group_ndx]);
+                                   &visual_data[group_ndx]);
   }
 
   std::vector<std::unique_ptr<sessions::SessionWindow>> windows;
@@ -1163,17 +1165,16 @@ TEST_F(SessionServiceTest, TabGroupMetadataSaved) {
   ASSERT_EQ(2U, windows[0]->tab_groups.size());
 
   // There's no guaranteed order in |SessionWindow::tab_groups|, so use a map.
-  base::flat_map<base::Token, sessions::SessionTabGroup*> tab_groups;
+  base::flat_map<tab_groups::TabGroupId, sessions::SessionTabGroup*> tab_groups;
   for (int group_ndx = 0; group_ndx < kNumGroups; ++group_ndx) {
-    tab_groups.emplace(windows[0]->tab_groups[group_ndx]->group_id,
+    tab_groups.emplace(windows[0]->tab_groups[group_ndx]->id,
                        windows[0]->tab_groups[group_ndx].get());
   }
 
   for (int group_ndx = 0; group_ndx < kNumGroups; ++group_ndx) {
-    const base::Token group_id = group_ids[group_ndx];
+    const tab_groups::TabGroupId group_id = group_ids[group_ndx];
     ASSERT_TRUE(base::Contains(tab_groups, group_id));
-    EXPECT_EQ(titles[group_ndx], tab_groups[group_id]->metadata.title);
-    EXPECT_EQ(colors[group_ndx], tab_groups[group_id]->metadata.color);
+    EXPECT_EQ(visual_data[group_ndx], tab_groups[group_id]->visual_data);
   }
 }
 

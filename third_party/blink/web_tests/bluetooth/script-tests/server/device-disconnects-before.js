@@ -1,4 +1,12 @@
 'use strict';
+function createDOMException(func) {
+  return new DOMException(
+      `Failed to execute '${func}' on 'BluetoothRemoteGATTServer': ` +
+      `GATT Server is disconnected. Cannot retrieve services. (Re)connect ` +
+      `first with \`device.gatt.connect\`.`,
+      'NetworkError');
+}
+
 bluetooth_test(t => {
   return setBluetoothFakeAdapter('DisconnectingHeartRateAdapter')
       .then(() => requestDeviceWithTrustedClick({
@@ -15,10 +23,6 @@ bluetooth_test(t => {
                         [getPrimaryService('heart_rate') |
                          getPrimaryServices() |
                          getPrimaryServices('heart_rate')[UUID]]),
-                    new DOMException(
-                        'GATT Server is disconnected. ' +
-                            'Cannot retrieve services. ' +
-                            '(Re)connect first with `device.gatt.connect`.',
-                        'NetworkError')));
+                    createDOMException('FUNCTION_NAME')));
       });
 }, 'Device disconnects before FUNCTION_NAME. Reject with NetworkError.');

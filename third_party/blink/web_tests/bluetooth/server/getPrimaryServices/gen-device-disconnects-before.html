@@ -7,6 +7,14 @@
 <script src="../../../external/wpt/bluetooth/resources/bluetooth-helpers.js"></script>
 <script>
 'use strict';
+function createDOMException(func) {
+  return new DOMException(
+      `Failed to execute '${func}' on 'BluetoothRemoteGATTServer': ` +
+      `GATT Server is disconnected. Cannot retrieve services. (Re)connect ` +
+      `first with \`device.gatt.connect\`.`,
+      'NetworkError');
+}
+
 bluetooth_test(t => {
   return setBluetoothFakeAdapter('DisconnectingHeartRateAdapter')
       .then(() => requestDeviceWithTrustedClick({
@@ -20,11 +28,7 @@ bluetooth_test(t => {
             .then(
                 () => assert_promise_rejects_with_message(
                     device.gatt.getPrimaryServices(),
-                    new DOMException(
-                        'GATT Server is disconnected. ' +
-                            'Cannot retrieve services. ' +
-                            '(Re)connect first with `device.gatt.connect`.',
-                        'NetworkError')));
+                    createDOMException('getPrimaryServices')));
       });
 }, 'Device disconnects before getPrimaryServices. Reject with NetworkError.');
 

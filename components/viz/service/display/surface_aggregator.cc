@@ -247,10 +247,8 @@ RenderPassId SurfaceAggregator::RemapPassId(RenderPassId surface_local_pass_id,
 int SurfaceAggregator::ChildIdForSurface(Surface* surface) {
   auto it = surface_id_to_resource_child_id_.find(surface->surface_id());
   if (it == surface_id_to_resource_child_id_.end()) {
-    int child_id = provider_->CreateChild(
-        base::BindRepeating(&SurfaceAggregator::UnrefResources,
-                            surface->client()),
-        surface->needs_sync_tokens());
+    int child_id = provider_->CreateChild(base::BindRepeating(
+        &SurfaceAggregator::UnrefResources, surface->client()));
     surface_id_to_resource_child_id_[surface->surface_id()] = child_id;
     return child_id;
   } else {
@@ -1219,7 +1217,7 @@ void SurfaceAggregator::FindChildSurfaces(
     RenderPassMapEntry* current_pass_entry,
     const gfx::Transform& transform_to_root_target,
     base::flat_map<SurfaceRange, ChildSurfaceInfo>* child_surfaces,
-    gfx::Rect* pixel_moving_backdrop_filters_rect) {
+    std::vector<gfx::Rect>* pixel_moving_backdrop_filters_rects) {
   if (current_pass_entry->is_visited) {
     // This means that this render pass is an ancestor of itself. This is not
     // supported. Stop processing the render pass again.
@@ -1229,9 +1227,9 @@ void SurfaceAggregator::FindChildSurfaces(
   RenderPass* render_pass = current_pass_entry->render_pass;
   if (current_pass_entry->has_pixel_moving_backdrop_filter) {
     // If the render pass has a backdrop filter that moves pixels, its entire
-    // bounds, with proper transform applied, should be added to the damage
-    // rect.
-    pixel_moving_backdrop_filters_rect->Union(
+    // bounds, with proper transform applied, may be added to the damage
+    // rect if it intersects.
+    pixel_moving_backdrop_filters_rects->push_back(
         cc::MathUtil::MapEnclosingClippedRect(transform_to_root_target,
                                               render_pass->output_rect));
   }
@@ -1296,7 +1294,7 @@ void SurfaceAggregator::FindChildSurfaces(
           gfx::Transform(
               transform_to_root_target,
               render_pass_quad->shared_quad_state->quad_to_target_transform),
-          child_surfaces, pixel_moving_backdrop_filters_rect);
+          child_surfaces, pixel_moving_backdrop_filters_rects);
     }
   }
 }
@@ -1347,10 +1345,10 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   DCHECK(root_pass_it != render_pass_map.end());
   RenderPassMapEntry& root_pass_entry = root_pass_it->second;
   base::flat_map<SurfaceRange, ChildSurfaceInfo> child_surfaces;
-  gfx::Rect pixel_moving_backdrop_filters_rect;
+  std::vector<gfx::Rect> pixel_moving_backdrop_filters_rects;
   FindChildSurfaces(surface->surface_id(), &render_pass_map, &root_pass_entry,
                     root_pass_transform, &child_surfaces,
-                    &pixel_moving_backdrop_filters_rect);
+                    &pixel_moving_backdrop_filters_rects);
 
   std::vector<ResourceId> referenced_resources;
   referenced_resources.reserve(frame.resource_list.size());
@@ -1524,8 +1522,18 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   if (!damage_rect.IsEmpty() && frame.metadata.may_contain_video)
     result->may_contain_video = true;
 
-  if (damage_rect.Intersects(pixel_moving_backdrop_filters_rect))
-    damage_rect.Union(pixel_moving_backdrop_filters_rect);
+  // Repeat this operation until no new render pass with pixel moving backdrop
+  // filter intersects with the damage rect.
+  bool did_intersect_damage_rect = true;
+  while (did_intersect_damage_rect) {
+    did_intersect_damage_rect = false;
+    for (const auto& rect : pixel_moving_backdrop_filters_rects) {
+      if (!damage_rect.Contains(rect) && damage_rect.Intersects(rect)) {
+        did_intersect_damage_rect = true;
+        damage_rect.Union(rect);
+      }
+    }
+  }
 
   return damage_rect;
 }

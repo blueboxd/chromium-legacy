@@ -149,15 +149,18 @@ void SplitViewHighlightView::SetBounds(
     DoSplitviewTransformAnimation(
         middle_->layer(), *animation_type,
         CalculateTransformFromRects(middle_->bounds(), middle_bounds,
-                                    landscape));
+                                    landscape),
+        /*animation_observer=*/nullptr);
     DoSplitviewTransformAnimation(
         left_top_->layer(), *animation_type,
         CalculateTransformFromRects(left_top_->bounds(), left_top_bounds,
-                                    landscape));
+                                    landscape),
+        /*animation_observer=*/nullptr);
     DoSplitviewTransformAnimation(
         right_bottom_->layer(), *animation_type,
         CalculateTransformFromRects(right_bottom_->bounds(),
-                                    right_bottom_bounds, landscape));
+                                    right_bottom_bounds, landscape),
+        /*animation_observer=*/nullptr);
   } else {
     left_top_->layer()->SetTransform(gfx::Transform());
     right_bottom_->layer()->SetTransform(gfx::Transform());

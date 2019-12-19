@@ -8,6 +8,7 @@
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cross_sequence/cross_sequence_cache_storage.h"
 #include "content/browser/cache_storage/cross_sequence/cross_sequence_utils.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 namespace content {
 
@@ -19,7 +20,9 @@ namespace content {
 class CrossSequenceCacheStorageManager::Inner {
  public:
   explicit Inner(scoped_refptr<CacheStorageContextWithManager> context)
-      : target_manager_(context->CacheManager()) {}
+      : target_manager_(context->CacheManager()) {
+    DCHECK(target_manager_);
+  }
 
   void GetAllOriginsUsage(CacheStorageOwner owner,
                           CacheStorageContext::GetUsageInfoCallback callback) {

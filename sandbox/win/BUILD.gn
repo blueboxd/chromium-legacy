@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
 # This needs to be a static library rather than a sources set because small
@@ -370,4 +371,19 @@ shared_library("pocdll") {
   ]
 
   defines = [ "POCDLL_EXPORTS" ]
+}
+
+# This fuzzer will only work on Windows, add fuzz targets which could run on Linux
+# to //sandbox/ directly.
+fuzzer_test("sandbox_policy_rule_fuzzer") {
+  set_sources_assignment_filter([])
+  sources = [
+    "fuzzer/fuzzer_types.h",
+    "fuzzer/sandbox_policy_rule_fuzzer.cc",
+  ]
+  dict = "fuzzer/sandbox_policy_rule.dict"
+  deps = [
+    "//base",
+    "//sandbox",
+  ]
 }

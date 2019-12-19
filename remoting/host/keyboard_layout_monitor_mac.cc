@@ -24,7 +24,8 @@ class KeyboardLayoutMonitorMac : public KeyboardLayoutMonitor {
 }  // namespace
 
 std::unique_ptr<KeyboardLayoutMonitor> KeyboardLayoutMonitor::Create(
-    base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback) {
+    base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback,
+    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner) {
   return std::make_unique<KeyboardLayoutMonitorMac>(std::move(callback));
 }
 

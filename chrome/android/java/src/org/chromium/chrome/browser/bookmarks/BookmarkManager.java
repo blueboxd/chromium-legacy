@@ -49,12 +49,6 @@ public class BookmarkManager
     private static final int FAVICON_MAX_CACHE_SIZE_BYTES =
             10 * ConversionUtils.BYTES_PER_MEGABYTE; // 10MB
 
-    /**
-     * This shared preference used to be used to save a list of recent searches. That feature
-     * has been removed, so this string is now used solely to clear the shared preference.
-     */
-    private static final String PREF_SEARCH_HISTORY = "bookmark_search_history";
-
     private static boolean sPreventLoadingForTesting;
 
     private Activity mActivity;
@@ -285,10 +279,6 @@ public class BookmarkManager
         if (!isDialogUi) {
             RecordUserAction.record("MobileBookmarkManagerPageOpen");
         }
-
-        // TODO(twellington): Remove this when Chrome version 59 is a distant memory and users
-        // are unlikely to have the old PREF_SEARCH_HISTORY in shared preferences.
-        ContextUtils.getAppSharedPreferences().edit().remove(PREF_SEARCH_HISTORY).apply();
     }
 
     @Override

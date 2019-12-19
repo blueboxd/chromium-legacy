@@ -322,6 +322,7 @@ export class CloudPrintInterfaceJS {
       errorCode: status200 ? request.result['errorCode'] : 0,
       message: status200 ? request.result['message'] : '',
       origin: request.origin,
+      account: request.account,
     };
   }
 

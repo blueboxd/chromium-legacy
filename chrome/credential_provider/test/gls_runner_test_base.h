@@ -65,6 +65,9 @@ class GlsRunnerTestBase : public ::testing::Test {
   FakePasswordRecoveryManager* fake_password_recovery_manager() {
     return &fake_password_recovery_manager_;
   }
+  FakeGemDeviceDetailsManager* fake_gem_device_details_manager() {
+    return &fake_gem_device_details_manager_;
+  }
   FakeCredentialProviderEvents* fake_provider_events() {
     return &fake_provider_events_;
   }
@@ -198,6 +201,7 @@ class GlsRunnerTestBase : public ::testing::Test {
   FakeInternetAvailabilityChecker fake_internet_checker_;
   FakeAssociatedUserValidator fake_associated_user_validator_;
   FakePasswordRecoveryManager fake_password_recovery_manager_;
+  FakeGemDeviceDetailsManager fake_gem_device_details_manager_;
   FakeWinHttpUrlFetcherFactory fake_http_url_fetcher_factory_;
   FakeCredentialProviderEvents fake_provider_events_;
   FakeCredentialProviderCredentialEvents

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_CONSTANTS_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_CONSTANTS_H_
 
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace web_app {
@@ -159,6 +160,9 @@ using DisplayMode = blink::mojom::DisplayMode;
 // window (for app_display_mode 'browser' or 'minimal-ui').
 DisplayMode ResolveEffectiveDisplayMode(DisplayMode app_display_mode,
                                         DisplayMode user_display_mode);
+
+apps::mojom::LaunchContainer ConvertDisplayModeToAppLaunchContainer(
+    DisplayMode display_mode);
 
 }  // namespace web_app
 

@@ -671,6 +671,9 @@ extern const char kFormControlsRefreshDescription[];
 extern const char kGlobalMediaControlsName[];
 extern const char kGlobalMediaControlsDescription[];
 
+extern const char kGlobalMediaControlsForCastName[];
+extern const char kGlobalMediaControlsForCastDescription[];
+
 extern const char kGpuRasterizationName[];
 extern const char kGpuRasterizationDescription[];
 extern const char kForceGpuRasterization[];
@@ -1991,9 +1994,6 @@ extern const char kCrostiniWebUIInstallerDescription[];
 extern const char kCrostiniWebUIUpgraderName[];
 extern const char kCrostiniWebUIUpgraderDescription[];
 
-extern const char kCryptAuthV1DeviceSyncDeprecateName[];
-extern const char kCryptAuthV1DeviceSyncDeprecateDescription[];
-
 extern const char kCryptAuthV2DeviceActivityStatusName[];
 extern const char kCryptAuthV2DeviceActivityStatusDescription[];
 
@@ -2005,6 +2005,9 @@ extern const char kCryptAuthV2EnrollmentDescription[];
 
 extern const char kDisableCancelAllTouchesName[];
 extern const char kDisableCancelAllTouchesDescription[];
+
+extern const char kDisableCryptAuthV1DeviceSyncName[];
+extern const char kDisableCryptAuthV1DeviceSyncDescription[];
 
 extern const char kDisableExplicitDmaFencesName[];
 extern const char kDisableExplicitDmaFencesDescription[];

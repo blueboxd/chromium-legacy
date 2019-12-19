@@ -18,7 +18,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
-TabGroupViews::TabGroupViews(TabStrip* tab_strip, TabGroupId group)
+TabGroupViews::TabGroupViews(TabStrip* tab_strip, tab_groups::TabGroupId group)
     : tab_strip_(tab_strip), group_(group) {
   header_ = std::make_unique<TabGroupHeader>(tab_strip_, group_);
   header_->set_owned_by_client();
@@ -71,7 +71,7 @@ Tab* TabGroupViews::GetLastTabInGroup() const {
 }
 
 SkColor TabGroupViews::GetGroupColor() const {
-  const TabGroupVisualData* data =
+  const tab_groups::TabGroupVisualData* data =
       tab_strip_->controller()->GetVisualDataForGroup(group_);
 
   return data->color();

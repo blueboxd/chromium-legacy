@@ -11,6 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+#include "url/url_util.h"
 
 namespace net {
 
@@ -488,6 +489,30 @@ TEST_F(NetworkIsolationKeyWithFrameOriginTest, UseRegistrableDomain) {
   EXPECT_EQ(key_copied.GetTopFrameOrigin(), key_bar.GetTopFrameOrigin());
   EXPECT_EQ(key_copied.GetFrameOrigin(), key_bar.GetFrameOrigin());
   EXPECT_EQ(key_copied, key_bar);
+}
+
+// Make sure that kUseRegistrableDomainInNetworkIsolationKey does not affect the
+// host when using a non-standard scheme.
+TEST(NetworkIsolationKeyTest, UseRegistrableDomainWithNonStandardScheme) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kUseRegistrableDomainInNetworkIsolationKey);
+
+  // Have to register the scheme, or url::Origin::Create() will return an opaque
+  // origin.
+  url::AddStandardScheme("foo", url::SCHEME_WITH_HOST);
+
+  url::Origin origin = url::Origin::Create(GURL("foo://a.foo.com"));
+  ASSERT_FALSE(origin.opaque());
+  ASSERT_EQ(origin.scheme(), "foo");
+  ASSERT_EQ(origin.host(), "a.foo.com");
+
+  net::NetworkIsolationKey key(origin, origin);
+  EXPECT_EQ(origin, key.GetTopFrameOrigin());
+  EXPECT_FALSE(key.GetTopFrameOrigin()->opaque());
+  EXPECT_EQ(key.GetTopFrameOrigin()->scheme(), "foo");
+  EXPECT_EQ(key.GetTopFrameOrigin()->host(), "a.foo.com");
+  EXPECT_EQ(origin.Serialize(), key.ToString());
 }
 
 TEST_F(NetworkIsolationKeyWithFrameOriginTest, CreateWithNewFrameOrigin) {

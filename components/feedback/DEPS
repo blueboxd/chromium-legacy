@@ -7,6 +7,7 @@ include_rules = [
   "+components/variations",
   "+content/public/browser",
   "+content/public/test",
+  "+google_apis/gaia",
   "+net/base",
   "+net/traffic_annotation",
   "+net/url_request",

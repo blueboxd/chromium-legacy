@@ -69,8 +69,8 @@ UpdateClientImpl::UpdateClientImpl(
           update_checker_factory,
           crx_downloader_factory,
           ping_manager_.get(),
-          base::Bind(&UpdateClientImpl::NotifyObservers,
-                     base::Unretained(this)))) {}
+          base::BindRepeating(&UpdateClientImpl::NotifyObservers,
+                              base::Unretained(this)))) {}
 
 UpdateClientImpl::~UpdateClientImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());

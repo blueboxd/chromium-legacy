@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/enterprise_reporting_private/chrome_desktop_report_request_helper.h"
 #include "chrome/browser/extensions/api/enterprise_reporting_private/device_info_fetcher.h"
@@ -20,7 +21,6 @@
 #include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/api/enterprise_reporting_private.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -288,15 +288,36 @@ void EnterpriseReportingPrivateSetDeviceDataFunction::OnDataStored(
 
 EnterpriseReportingPrivateGetDeviceInfoFunction::
     EnterpriseReportingPrivateGetDeviceInfoFunction() = default;
+EnterpriseReportingPrivateGetDeviceInfoFunction::
+    ~EnterpriseReportingPrivateGetDeviceInfoFunction() = default;
 
 ExtensionFunction::ResponseAction
 EnterpriseReportingPrivateGetDeviceInfoFunction::Run() {
-  enterprise_reporting::DeviceInfo device_info =
-      enterprise_reporting::DeviceInfoFetcher::CreateInstance()->Fetch();
-  return RespondNow(OneArgument(device_info.ToValue()));
+#if defined(OS_WIN)
+  base::PostTaskAndReplyWithResult(
+      base::CreateCOMSTATaskRunner({base::ThreadPool()}).get(), FROM_HERE,
+      base::BindOnce(&enterprise_reporting::DeviceInfoFetcher::Fetch,
+                     enterprise_reporting::DeviceInfoFetcher::CreateInstance()),
+      base::BindOnce(&EnterpriseReportingPrivateGetDeviceInfoFunction::
+                         OnDeviceInfoRetrieved,
+                     this));
+#else
+  base::PostTaskAndReplyWithResult(
+      base::CreateTaskRunner({base::ThreadPool(), base::MayBlock()}).get(),
+      FROM_HERE,
+      base::BindOnce(&enterprise_reporting::DeviceInfoFetcher::Fetch,
+                     enterprise_reporting::DeviceInfoFetcher::CreateInstance()),
+      base::BindOnce(&EnterpriseReportingPrivateGetDeviceInfoFunction::
+                         OnDeviceInfoRetrieved,
+                     this));
+#endif  // defined(OS_WIN)
+
+  return RespondLater();
 }
 
-EnterpriseReportingPrivateGetDeviceInfoFunction::
-    ~EnterpriseReportingPrivateGetDeviceInfoFunction() = default;
+void EnterpriseReportingPrivateGetDeviceInfoFunction::OnDeviceInfoRetrieved(
+    const api::enterprise_reporting_private::DeviceInfo& device_info) {
+  Respond(OneArgument(device_info.ToValue()));
+}
 
 }  // namespace extensions

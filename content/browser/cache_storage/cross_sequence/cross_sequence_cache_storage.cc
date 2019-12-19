@@ -24,8 +24,11 @@ class CrossSequenceCacheStorage::Inner {
 
   Inner(const url::Origin& origin,
         CacheStorageOwner owner,
-        scoped_refptr<CacheStorageContextWithManager> context)
-      : handle_(context->CacheManager()->OpenCacheStorage(origin, owner)) {}
+        scoped_refptr<CacheStorageContextWithManager> context) {
+    scoped_refptr<CacheStorageManager> manager = context->CacheManager();
+    if (manager)
+      handle_ = manager->OpenCacheStorage(origin, owner);
+  }
 
   void OpenCache(scoped_refptr<CrossSequenceCacheStorageCache> cache_wrapper,
                  const std::string& cache_name,
@@ -143,7 +146,7 @@ class CrossSequenceCacheStorage::Inner {
   }
 
  private:
-  const CacheStorageHandle handle_;
+  CacheStorageHandle handle_;
   SEQUENCE_CHECKER(sequence_checker_);
 };
 

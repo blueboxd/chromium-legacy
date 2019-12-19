@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 import {Destination, PrinterType} from 'chrome://print/print_preview.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {getPdfPrinter} from 'chrome://test/print_preview/print_preview_test_utils.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 
@@ -65,6 +67,12 @@ export class NativeLayerStub extends TestBrowserProxy {
      *     rejected.
      */
     this.shouldRejectPrinterSetup_ = false;
+
+    /** @private {?PromiseResolver} */
+    this.multipleCapabilitiesPromise_ = null;
+
+    /** @private {number} */
+    this.multipleCapabilitiesCount_ = 0;
 
     /**
      * @private {string} The ID of a printer with a bad driver.
@@ -156,6 +164,13 @@ export class NativeLayerStub extends TestBrowserProxy {
     this.methodCalled(
         'getPrinterCapabilities',
         {destinationId: printerId, printerType: type});
+    if (this.multipleCapabilitiesPromise_) {
+      this.multipleCapabilitiesCount_--;
+      if (this.multipleCapabilitiesCount_ === 0) {
+        this.multipleCapabilitiesPromise_.resolve();
+        this.multipleCapabilitiesPromise_ = null;
+      }
+    }
     if (printerId == Destination.GooglePromotedId.SAVE_AS_PDF) {
       return Promise.resolve({
         deviceName: 'Save as PDF',
@@ -288,5 +303,16 @@ export class NativeLayerStub extends TestBrowserProxy {
   /** @param {!PageLayoutInfo} pageLayoutInfo */
   setPageLayoutInfo(pageLayoutInfo) {
     this.pageLayoutInfo_ = pageLayoutInfo;
+  }
+
+  /**
+   * @param {number} count The number of capability requests to wait for.
+   * @return {!Promise} Promise that resolves after |count| requests.
+   */
+  waitForMultipleCapabilities(count) {
+    assert(this.multipleCapabilitiesPromise_ === null);
+    this.multipleCapabilitiesCount_ = count;
+    this.multipleCapabilitiesPromise_ = new PromiseResolver();
+    return this.multipleCapabilitiesPromise_.promise;
   }
 }

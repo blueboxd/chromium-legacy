@@ -201,8 +201,8 @@ TEST_F(V4GetHashProtocolManagerTest, TestGetHashErrorHandlingNetwork) {
   std::vector<FullHashInfo> expected_results;
   pm->GetFullHashes(
       matched_locally, {},
-      base::Bind(&V4GetHashProtocolManagerTest::ValidateGetV4HashResults,
-                 base::Unretained(this), expected_results));
+      base::BindOnce(&V4GetHashProtocolManagerTest::ValidateGetV4HashResults,
+                     base::Unretained(this), expected_results));
 
   // Failed request status should result in error.
   SetupFetcherToReturnResponse(pm.get(), net::ERR_CONNECTION_RESET, 200,
@@ -223,8 +223,8 @@ TEST_F(V4GetHashProtocolManagerTest, TestGetHashErrorHandlingResponseCode) {
   std::vector<FullHashInfo> expected_results;
   pm->GetFullHashes(
       matched_locally, {},
-      base::Bind(&V4GetHashProtocolManagerTest::ValidateGetV4HashResults,
-                 base::Unretained(this), expected_results));
+      base::BindOnce(&V4GetHashProtocolManagerTest::ValidateGetV4HashResults,
+                     base::Unretained(this), expected_results));
 
   // Response code of anything other than 200 should result in error.
   SetupFetcherToReturnResponse(pm.get(), net::OK, 204,
@@ -320,8 +320,8 @@ TEST_F(V4GetHashProtocolManagerTest, TestGetHashErrorHandlingOK) {
 
   pm->GetFullHashes(
       matched_locally, {},
-      base::Bind(&V4GetHashProtocolManagerTest::ValidateGetV4HashResults,
-                 base::Unretained(this), expected_results));
+      base::BindOnce(&V4GetHashProtocolManagerTest::ValidateGetV4HashResults,
+                     base::Unretained(this), expected_results));
 
   SetupFetcherToReturnOKResponse(pm.get(), GetStockV4HashResponseInfos());
 
@@ -873,8 +873,8 @@ TEST_F(V4GetHashProtocolManagerTest, TestUpdatesAreMerged) {
 
   pm->GetFullHashes(
       matched_locally, {},
-      base::Bind(&V4GetHashProtocolManagerTest::ValidateGetV4HashResults,
-                 base::Unretained(this), expected_results));
+      base::BindOnce(&V4GetHashProtocolManagerTest::ValidateGetV4HashResults,
+                     base::Unretained(this), expected_results));
 
   SetupFetcherToReturnOKResponse(pm.get(), GetStockV4HashResponseInfos());
 
@@ -910,8 +910,8 @@ TEST_F(V4GetHashProtocolManagerTest, TestGetFullHashesWithApisMergesMetadata) {
   std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
   pm->GetFullHashesWithApis(
       url, {} /* list_client_states */,
-      base::Bind(&V4GetHashProtocolManagerTest::ValidateGetV4ApiResults,
-                 base::Unretained(this), expected_md));
+      base::BindOnce(&V4GetHashProtocolManagerTest::ValidateGetV4ApiResults,
+                     base::Unretained(this), expected_md));
 
   // The following two random looking strings value are two of the full hashes
   // produced by UrlToFullHashes in v4_protocol_manager_util.h for the URL:

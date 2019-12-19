@@ -2311,15 +2311,15 @@ void RTCPeerConnectionHandler::OnModifyTransceivers(
     std::vector<blink::RtpTransceiverState> transceiver_states,
     bool is_remote_description) {
   DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kUnifiedPlan);
-  std::vector<std::unique_ptr<RTCRtpTransceiverPlatform>> platform_transceivers(
-      transceiver_states.size());
+  Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> platform_transceivers(
+      SafeCast<WTF::wtf_size_t>(transceiver_states.size()));
   PeerConnectionTracker::TransceiverUpdatedReason update_reason =
       !is_remote_description ? PeerConnectionTracker::TransceiverUpdatedReason::
                                    kSetLocalDescription
                              : PeerConnectionTracker::TransceiverUpdatedReason::
                                    kSetRemoteDescription;
   blink::WebVector<uintptr_t> ids(transceiver_states.size());
-  for (size_t i = 0; i < transceiver_states.size(); ++i) {
+  for (WTF::wtf_size_t i = 0; i < transceiver_states.size(); ++i) {
     // Figure out if this transceiver is new or if setting the state modified
     // the transceiver such that it should be logged by the
     // |peer_connection_tracker_|.
@@ -2361,7 +2361,7 @@ void RTCPeerConnectionHandler::OnModifyTransceivers(
     }
   }
   // Search for removed transceivers by comparing to previous state.
-  blink::WebVector<uintptr_t> removed_transceivers;
+  Vector<uintptr_t> removed_transceivers;
   for (auto transceiver_id : previous_transceiver_ids_) {
     if (std::find(ids.begin(), ids.end(), transceiver_id) == ids.end()) {
       removed_transceivers.emplace_back(transceiver_id);

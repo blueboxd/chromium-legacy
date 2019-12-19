@@ -15,6 +15,7 @@
 #include "base/win/scoped_handle.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/chrome_availability_checker.h"
+#include "chrome/credential_provider/gaiacp/gem_device_details_manager.h"
 #include "chrome/credential_provider/gaiacp/internet_availability_checker.h"
 #include "chrome/credential_provider/gaiacp/os_process_manager.h"
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
@@ -413,6 +414,21 @@ class FakePasswordRecoveryManager : public PasswordRecoveryManager {
 
  private:
   PasswordRecoveryManager* original_validator_ = nullptr;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class FakeGemDeviceDetailsManager : public GemDeviceDetailsManager {
+ public:
+  FakeGemDeviceDetailsManager();
+  explicit FakeGemDeviceDetailsManager(
+      base::TimeDelta upload_device_details_request_timeout);
+  ~FakeGemDeviceDetailsManager() override;
+
+  using GemDeviceDetailsManager::SetRequestTimeoutForTesting;
+
+ private:
+  GemDeviceDetailsManager* original_manager_ = nullptr;
 };
 
 }  // namespace credential_provider

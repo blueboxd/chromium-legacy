@@ -407,7 +407,9 @@ void PopulateInfoMapWithInstalled(
 
 ImportantDomainInfo::ImportantDomainInfo() = default;
 ImportantDomainInfo::~ImportantDomainInfo() = default;
-ImportantDomainInfo::ImportantDomainInfo(const ImportantDomainInfo&) = default;
+ImportantDomainInfo::ImportantDomainInfo(ImportantDomainInfo&&) = default;
+ImportantDomainInfo& ImportantDomainInfo::operator=(ImportantDomainInfo&&) =
+    default;
 
 std::string ImportantSitesUtil::GetRegisterableDomainOrIP(const GURL& url) {
   return GetRegisterableDomainOrIPFromHost(url.host_piece());
@@ -461,7 +463,6 @@ ImportantSitesUtil::GetImportantRegisterableDomains(Profile* profile,
   std::vector<std::pair<std::string, ImportantDomainInfo>> items;
   for (auto& item : important_info)
     items.emplace_back(std::move(item));
-
   std::sort(items.begin(), items.end(), &CompareDescendingImportantInfo);
 
   std::vector<ImportantDomainInfo> final_list;
@@ -472,7 +473,7 @@ ImportantSitesUtil::GetImportantRegisterableDomains(Profile* profile,
         blacklisted_domains.end()) {
       continue;
     }
-    final_list.push_back(domain_info.second);
+    final_list.push_back(std::move(domain_info.second));
     RECORD_UMA_FOR_IMPORTANT_REASON(
         "Storage.ImportantSites.GeneratedReason",
         "Storage.ImportantSites.GeneratedReasonCount",
@@ -505,7 +506,7 @@ ImportantSitesUtil::GetInstalledRegisterableDomains(
       break;
     if (excluded_domains.find(domain_info.first) != excluded_domains.end())
       continue;
-    installed_domains.push_back(domain_info.second);
+    installed_domains.push_back(std::move(domain_info.second));
   }
   return installed_domains;
 }

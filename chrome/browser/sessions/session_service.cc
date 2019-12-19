@@ -39,7 +39,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
-#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
@@ -47,6 +46,8 @@
 #include "components/sessions/core/session_constants.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sessions/core/tab_restore_service.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/session_storage_namespace.h"
@@ -189,7 +190,7 @@ void SessionService::SetTabIndexInWindow(const SessionID& window_id,
 
 void SessionService::SetTabGroup(const SessionID& window_id,
                                  const SessionID& tab_id,
-                                 base::Optional<base::Token> group) {
+                                 base::Optional<tab_groups::TabGroupId> group) {
   if (!ShouldTrackChangesToWindow(window_id))
     return;
 
@@ -199,13 +200,13 @@ void SessionService::SetTabGroup(const SessionID& window_id,
       base::Contains(window_closing_ids_, window_id))
     return;
 
-  ScheduleCommand(sessions::CreateTabGroupCommand(tab_id, group));
+  ScheduleCommand(sessions::CreateTabGroupCommand(tab_id, std::move(group)));
 }
 
-void SessionService::SetTabGroupMetadata(const SessionID& window_id,
-                                         const base::Token& group_id,
-                                         const base::string16& title,
-                                         SkColor color) {
+void SessionService::SetTabGroupMetadata(
+    const SessionID& window_id,
+    const tab_groups::TabGroupId& group_id,
+    const tab_groups::TabGroupVisualData* visual_data) {
   if (!ShouldTrackChangesToWindow(window_id))
     return;
 
@@ -215,7 +216,7 @@ void SessionService::SetTabGroupMetadata(const SessionID& window_id,
     return;
 
   ScheduleCommand(
-      sessions::CreateTabGroupMetadataUpdateCommand(group_id, title, color));
+      sessions::CreateTabGroupMetadataUpdateCommand(group_id, visual_data));
 }
 
 void SessionService::SetPinnedState(const SessionID& window_id,
@@ -653,12 +654,13 @@ void SessionService::OnGotSessionCommands(
   callback.Run(std::move(valid_windows), active_window_id);
 }
 
-void SessionService::BuildCommandsForTab(const SessionID& window_id,
-                                         WebContents* tab,
-                                         int index_in_window,
-                                         base::Optional<base::Token> group,
-                                         bool is_pinned,
-                                         IdToRange* tab_to_available_range) {
+void SessionService::BuildCommandsForTab(
+    const SessionID& window_id,
+    WebContents* tab,
+    int index_in_window,
+    base::Optional<tab_groups::TabGroupId> group,
+    bool is_pinned,
+    IdToRange* tab_to_available_range) {
   DCHECK(tab);
   DCHECK(window_id.is_valid());
 
@@ -727,7 +729,7 @@ void SessionService::BuildCommandsForTab(const SessionID& window_id,
 
   if (group.has_value()) {
     base_session_service_->AppendRebuildCommand(
-        sessions::CreateTabGroupCommand(session_id, group));
+        sessions::CreateTabGroupCommand(session_id, std::move(group)));
   }
 
   // Record the association between the sessionStorage namespace and the tab.
@@ -770,22 +772,19 @@ void SessionService::BuildCommandsForBrowser(
   for (int i = 0; i < tab_strip->count(); ++i) {
     WebContents* tab = tab_strip->GetWebContentsAt(i);
     DCHECK(tab);
-    const base::Optional<TabGroupId> group_id = tab_strip->GetTabGroupForTab(i);
-    const base::Optional<base::Token> raw_group_id =
-        group_id.has_value() ? base::make_optional(group_id.value().token())
-                             : base::nullopt;
-    BuildCommandsForTab(browser->session_id(), tab, i, raw_group_id,
+    const base::Optional<tab_groups::TabGroupId> group_id =
+        tab_strip->GetTabGroupForTab(i);
+    BuildCommandsForTab(browser->session_id(), tab, i, group_id,
                         tab_strip->IsTabPinned(i), tab_to_available_range);
   }
 
   // Set the visual data for each tab group.
   TabGroupModel* group_model = tab_strip->group_model();
-  for (const TabGroupId& group_id : group_model->ListTabGroups()) {
-    const TabGroupVisualData* data =
+  for (const tab_groups::TabGroupId& group_id : group_model->ListTabGroups()) {
+    const tab_groups::TabGroupVisualData* visual_data =
         group_model->GetTabGroup(group_id)->visual_data();
     base_session_service_->AppendRebuildCommand(
-        sessions::CreateTabGroupMetadataUpdateCommand(
-            group_id.token(), data->title(), data->color()));
+        sessions::CreateTabGroupMetadataUpdateCommand(group_id, visual_data));
   }
 
   base_session_service_->AppendRebuildCommand(

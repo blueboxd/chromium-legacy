@@ -352,8 +352,7 @@ RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
           compositor_frame_sink_client_.get(),
           frame_sink_manager,
           frame_sink_id,
-          /*is_root=*/true,
-          /*needs_sync_points=*/true)),
+          /*is_root=*/true)),
       synthetic_begin_frame_source_(std::move(synthetic_begin_frame_source)),
       external_begin_frame_source_(std::move(external_begin_frame_source)),
       display_(std::move(display)) {

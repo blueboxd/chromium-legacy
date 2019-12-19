@@ -24,14 +24,10 @@ RemoteVideoTrackAdapter::RemoteVideoTrackAdapter(
   std::unique_ptr<TrackObserver> observer(
       new TrackObserver(main_thread, observed_track().get()));
   // Here, we use CrossThreadUnretained() to avoid a circular reference.
-  //
-  // TODO(crbug.com/963574): Remove the use of ConvertToBaseOnceCallback here
-  // once the file that includes remote_media_stream_track_adapter.h (namely
-  // webrtc_media_stream_track_adapter.h) is Onion souped.
-  web_initialize_ = ConvertToBaseOnceCallback(
+  web_initialize_ =
       CrossThreadBindOnce(&RemoteVideoTrackAdapter::InitializeWebVideoTrack,
                           CrossThreadUnretained(this), std::move(observer),
-                          observed_track()->enabled()));
+                          observed_track()->enabled());
 }
 
 RemoteVideoTrackAdapter::~RemoteVideoTrackAdapter() {
@@ -76,13 +72,9 @@ RemoteAudioTrackAdapter::RemoteAudioTrackAdapter(
   // TODO(tommi): Use TrackObserver instead.
   observed_track()->RegisterObserver(this);
   // Here, we use CrossThreadUnretained() to avoid a circular reference.
-  //
-  // TODO(crbug.com/963574): Remove the use of ConvertToBaseOnceCallback here
-  // once the file that includes remote_media_stream_track_adapter.h (namely
-  // webrtc_media_stream_track_adapter.h) is Onion souped.
-  web_initialize_ = ConvertToBaseOnceCallback(
+  web_initialize_ =
       CrossThreadBindOnce(&RemoteAudioTrackAdapter::InitializeWebAudioTrack,
-                          CrossThreadUnretained(this), main_thread));
+                          CrossThreadUnretained(this), main_thread);
 }
 
 RemoteAudioTrackAdapter::~RemoteAudioTrackAdapter() {

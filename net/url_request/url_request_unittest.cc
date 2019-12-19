@@ -1344,7 +1344,7 @@ TEST_F(URLRequestInterceptorTest, InterceptLoadTimingEarlyConnectWithProxy) {
 
 TEST_F(URLRequestTest, NetworkDelegateProxyError) {
   MockHostResolver host_resolver;
-  host_resolver.rules()->AddSimulatedFailure("*");
+  host_resolver.rules()->AddSimulatedTimeoutFailure("*");
 
   TestNetworkDelegate network_delegate;  // Must outlive URLRequests.
   TestURLRequestContextWithProxy context("myproxy:70", &network_delegate,
@@ -1366,6 +1366,8 @@ TEST_F(URLRequestTest, NetworkDelegateProxyError) {
   EXPECT_EQ(ProxyServer::FromPacString("PROXY myproxy:70"),
             req->proxy_server());
   EXPECT_EQ(ERR_PROXY_CONNECTION_FAILED, d.request_status());
+  EXPECT_THAT(req->response_info().resolve_error_info.error,
+              IsError(ERR_DNS_TIMED_OUT));
 
   EXPECT_EQ(1, network_delegate.error_count());
   EXPECT_THAT(network_delegate.last_error(),
@@ -11289,7 +11291,7 @@ TEST_F(URLRequestTest, NetworkAccessedSetOnHostResolutionFailure) {
   TestURLRequestContext context(true);
   context.set_network_delegate(&network_delegate);
   context.set_host_resolver(&host_resolver);
-  host_resolver.rules()->AddSimulatedFailure("*");
+  host_resolver.rules()->AddSimulatedTimeoutFailure("*");
   context.Init();
 
   TestDelegate d;
@@ -11302,6 +11304,8 @@ TEST_F(URLRequestTest, NetworkAccessedSetOnHostResolutionFailure) {
   req->Start();
   d.RunUntilComplete();
   EXPECT_TRUE(req->response_info().network_accessed);
+  EXPECT_THAT(req->response_info().resolve_error_info.error,
+              IsError(ERR_DNS_TIMED_OUT));
 }
 
 // Test that URLRequest is canceled correctly.

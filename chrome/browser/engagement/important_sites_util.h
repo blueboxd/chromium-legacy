@@ -33,7 +33,10 @@ class ImportantSitesUtil {
   struct ImportantDomainInfo {
     ImportantDomainInfo();
     ~ImportantDomainInfo();
-    ImportantDomainInfo(const ImportantDomainInfo&);
+    ImportantDomainInfo(ImportantDomainInfo&&);
+    ImportantDomainInfo(const ImportantDomainInfo&) = delete;
+    ImportantDomainInfo& operator=(ImportantDomainInfo&&);
+    ImportantDomainInfo& operator=(const ImportantDomainInfo&) = delete;
     std::string registerable_domain;
     GURL example_origin;
     double engagement_score = 0;

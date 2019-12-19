@@ -264,6 +264,25 @@ class InputMethodPrivateSetSelectionRangeFunction : public ExtensionFunction {
                              INPUTMETHODPRIVATE_SETSELECTIONRANGE)
 };
 
+class InputMethodPrivateResetFunction : public ExtensionFunction {
+ public:
+  InputMethodPrivateResetFunction() = default;
+  InputMethodPrivateResetFunction(const InputMethodPrivateResetFunction&) =
+      delete;
+  InputMethodPrivateResetFunction& operator=(
+      const InputMethodPrivateResetFunction&) = delete;
+
+ protected:
+  ~InputMethodPrivateResetFunction() override = default;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.reset",
+                             INPUTMETHODPRIVATE_RESET)
+};
+
 class InputMethodAPI : public BrowserContextKeyedAPI,
                        public extensions::EventRouter::Observer {
  public:

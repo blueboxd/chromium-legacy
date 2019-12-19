@@ -233,11 +233,16 @@ bool RegisterTestTask(TaskScheduler* task_scheduler,
   return true;
 }
 
-void AppendTestSwitches(base::CommandLine* command_line) {
+void AppendTestSwitches(const base::ScopedTempDir& temp_dir,
+                        base::CommandLine* command_line) {
   command_line->AppendSwitch(kNoRecoveryComponentSwitch);
   command_line->AppendSwitch(kNoCrashUploadSwitch);
   command_line->AppendSwitch(kNoReportUploadSwitch);
   command_line->AppendSwitch(kNoSelfDeleteSwitch);
+  // Some tests spawn an executable which spawns a sandboxed process. All of
+  // these logs should go to a temporary directory so we can ensure they are
+  // deleted after the test.
+  command_line->AppendSwitchPath(kTestLoggingPathSwitch, temp_dir.GetPath());
 }
 
 void ExpectDiskFootprint(const PUPData::PUP& pup,

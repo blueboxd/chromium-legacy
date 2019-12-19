@@ -180,6 +180,9 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   self.titleLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
   self.titleLabel.numberOfLines = 0;
   self.titleLabel.baselineAdjustment = UIBaselineAdjustmentAlignCenters;
+  [self.titleLabel
+      setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                      forAxis:UILayoutConstraintAxisVertical];
 
   self.subTitleLabel = [[UILabel alloc] init];
   self.subTitleLabel.text = self.subtitleText;
@@ -236,6 +239,9 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   [self.openModalButton
       setContentHuggingPriority:UILayoutPriorityDefaultHigh
                         forAxis:UILayoutConstraintAxisHorizontal];
+  [self.openModalButton
+      setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                      forAxis:UILayoutConstraintAxisHorizontal];
   self.openModalButton.accessibilityIdentifier =
       kInfobarBannerOpenModalButtonIdentifier;
   [containerStack addArrangedSubview:self.openModalButton];

@@ -5,12 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_REMOTE_MEDIA_STREAM_TRACK_ADAPTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_REMOTE_MEDIA_STREAM_TRACK_ADAPTER_H_
 
-#include "base/callback.h"
 #include "base/logging.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
@@ -84,7 +84,7 @@ class MODULES_EXPORT RemoteMediaStreamTrackAdapter
   // The callback is used by derived classes to bind objects that need to be
   // instantiated and initialized on the signaling thread but then moved to
   // and used on the main thread when initializing the web object(s).
-  base::OnceClosure web_initialize_;
+  CrossThreadOnceClosure web_initialize_;
 
  private:
   const scoped_refptr<WebRtcMediaStreamTrackType> webrtc_track_;

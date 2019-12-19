@@ -159,6 +159,10 @@
   return self.infobarAccepted;
 }
 
+- (BOOL)infobarBannerActionWillPresentModal {
+  return NO;
+}
+
 - (void)infobarBannerWasPresented {
   // There's a chance the Delegate was destroyed while the presentation was
   // taking place e.g. User navigated away. Check if the delegate still exists.

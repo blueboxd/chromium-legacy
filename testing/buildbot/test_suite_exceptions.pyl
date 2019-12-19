@@ -70,6 +70,14 @@
       },
     },
   },
+  'angle_white_box_tests': {
+    'remove_from': [
+      # https://crbug.com/1035178
+      'Win10 FYI x64 Release (AMD RX 550)',
+      # https://crbug.com/1035461
+      'Linux FYI GPU TSAN Release',
+    ],
+  },
   'breakpad_unittests': {
     'modifications': {
       'android-asan': {
@@ -85,6 +93,8 @@
       'CrWinAsan(dll)', # https://crbug.com/935598
       'linux-win_cross-rel',
       'ToTLinuxTSan',  # https://crbug.com/368525
+      # chromium.mac
+      'Mac10.10 Tests',  # https://crbug.com/828031
       # chromium.memory
       'Linux TSan Tests',  # https://crbug.com/368525
       # chromium.win
@@ -163,14 +173,6 @@
         ],
       },
       # chromium.mac
-      'Mac10.10 Tests': {
-        # A subset of tests seem to cause WindowServer deaths on VMs.
-        # crbug.com/828031 et al.
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
-          '--gtest_shuffle',
-        ],
-      },
       'Mac10.11 Tests': {
         # A subset of tests seem to cause WindowServer deaths on VMs.
         # crbug.com/828031 et al.

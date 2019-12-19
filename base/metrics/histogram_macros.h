@@ -85,6 +85,13 @@
 // large amounts. See UMA_HISTOGRAM_SCALED_EXACT_LINEAR for more information.
 // Only the new format utilizing an internal kMaxValue is supported.
 // It'll be necessary to #include "base/lazy_instance.h" to use this macro.
+//   name: Full constant name of the histogram (must not change between calls).
+//   sample: Bucket to be incremented.
+//   count: Amount by which to increment.
+//   scale: Amount by which |count| is divided.
+
+// Sample usage:
+//    UMA_HISTOGRAM_SCALED_ENUMERATION("FooKiB", kEnumValue, byte_count, 1024)
 #define UMA_HISTOGRAM_SCALED_ENUMERATION(name, sample, count, scale) \
   INTERNAL_HISTOGRAM_SCALED_ENUMERATION_WITH_FLAG(                   \
       name, sample, count, scale,                                    \
@@ -131,11 +138,19 @@
 // reported, but the remainder is tracked between calls, so that multiple calls
 // will accumulate correctly. Only "exact linear" is supported.
 // It'll be necessary to #include "base/lazy_instance.h" to use this macro.
+//   name: Full constant name of the histogram (must not change between calls).
+//   sample: Bucket to be incremented.
+//   count: Amount by which to increment.
+//   sample_max: Maximum (exclusive) allowed sample value.
+//   scale: Amount by which |count| is divided.
 
-#define UMA_HISTOGRAM_SCALED_EXACT_LINEAR(name, sample, count, value_max, \
-                                          scale)                          \
-  INTERNAL_HISTOGRAM_SCALED_EXACT_LINEAR_WITH_FLAG(                       \
-      name, sample, count, value_max, scale,                              \
+// Sample usage:
+//    UMA_HISTOGRAM_SCALED_EXACT_LINER("FooKiB", bucket_no, byte_count,
+//                                     kBucketsMax+1, 1024)
+#define UMA_HISTOGRAM_SCALED_EXACT_LINEAR(name, sample, count, sample_max, \
+                                          scale)                           \
+  INTERNAL_HISTOGRAM_SCALED_EXACT_LINEAR_WITH_FLAG(                        \
+      name, sample, count, sample_max, scale,                              \
       base::HistogramBase::kUmaTargetedHistogramFlag)
 
 //------------------------------------------------------------------------------

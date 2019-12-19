@@ -101,4 +101,9 @@ void LayoutHTMLCanvas::StyleDidChange(StyleDifference diff,
   To<HTMLCanvasElement>(GetNode())->StyleDidChange(old_style, StyleRef());
 }
 
+void LayoutHTMLCanvas::WillBeDestroyed() {
+  LayoutReplaced::WillBeDestroyed();
+  To<HTMLCanvasElement>(GetNode())->LayoutObjectDestroyed();
+}
+
 }  // namespace blink

@@ -26,7 +26,6 @@ class JavaScriptAppModalDialogViews : public NativeAppModalDialog,
   ~JavaScriptAppModalDialogViews() override;
 
   // Overridden from NativeAppModalDialog:
-  int GetAppModalDialogButtons() const override;
   void ShowAppModalDialog() override;
   void ActivateAppModalDialog() override;
   void CloseAppModalDialog() override;

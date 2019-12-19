@@ -318,11 +318,29 @@ bool SharedContextState::MakeCurrent(gl::GLSurface* surface, bool needs_gl) {
   if (context_lost_)
     return false;
 
-  if (!context_->MakeCurrent(surface ? surface : surface_.get())) {
+  gl::GLSurface* dont_care_surface =
+      last_current_surface_ ? last_current_surface_ : surface_.get();
+  surface = surface ? surface : dont_care_surface;
+
+  if (!context_->MakeCurrent(surface)) {
     MarkContextLost();
     return false;
   }
+  last_current_surface_ = surface;
+
   return true;
+}
+
+void SharedContextState::ReleaseCurrent(gl::GLSurface* surface) {
+  if (!surface)
+    surface = last_current_surface_;
+
+  if (surface != last_current_surface_)
+    return;
+
+  last_current_surface_ = nullptr;
+  if (!context_lost_)
+    context_->ReleaseCurrent(surface);
 }
 
 void SharedContextState::MarkContextLost() {

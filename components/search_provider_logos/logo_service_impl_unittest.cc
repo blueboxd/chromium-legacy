@@ -847,7 +847,7 @@ TEST_F(LogoServiceImplTest, LogoWithTTLCannotBeShownAfterExpiration) {
   logo.metadata.expiration_time = test_clock_.Now() + time_to_live;
   SetServerResponse(ServerResponse(logo));
   LogoCallbacks callbacks;
-  callbacks.on_fresh_decoded_logo_available = base::Bind(
+  callbacks.on_fresh_decoded_logo_available = base::BindOnce(
       [](LogoCallbackReason type, const base::Optional<Logo>& logo) {});
   GetLogo(std::move(callbacks));
 
@@ -862,7 +862,7 @@ TEST_F(LogoServiceImplTest, LogoWithoutTTLCanBeShownAfterExpiration) {
   base::TimeDelta time_to_live = base::TimeDelta();
   SetServerResponse(MakeServerResponse(logo, time_to_live));
   LogoCallbacks callbacks;
-  callbacks.on_fresh_decoded_logo_available = base::Bind(
+  callbacks.on_fresh_decoded_logo_available = base::BindOnce(
       [](LogoCallbackReason type, const base::Optional<Logo>& logo) {});
   GetLogo(std::move(callbacks));
 

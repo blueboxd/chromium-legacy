@@ -316,6 +316,9 @@
         "load:tools:drive": {
             "DEFAULT": "system_health_desktop_004.wprgo"
         },
+        "load:tools:drive:2019": {
+            "DEFAULT": "system_health_desktop_3f8ef10603.wprgo"
+        },
         "load:tools:dropbox": {
             "DEFAULT": "system_health_desktop_004.wprgo"
         },

@@ -190,9 +190,9 @@ TEST_F(BufferTest, SurfaceTreeHostDestruction) {
   // Submit frame with resource.
   {
     viz::CompositorFrame frame;
-    frame.metadata.begin_frame_ack.source_id =
+    frame.metadata.begin_frame_ack.frame_id.source_id =
         viz::BeginFrameArgs::kManualSourceId;
-    frame.metadata.begin_frame_ack.sequence_number =
+    frame.metadata.begin_frame_ack.frame_id.sequence_number =
         viz::BeginFrameArgs::kStartingFrameNumber;
     frame.metadata.begin_frame_ack.has_damage = true;
     frame.metadata.frame_token = 1;
@@ -243,10 +243,9 @@ TEST_F(BufferTest, SurfaceTreeHostLastFrame) {
   // Submit frame with resource.
   {
     viz::CompositorFrame frame;
-    frame.metadata.begin_frame_ack.source_id =
-        viz::BeginFrameArgs::kManualSourceId;
-    frame.metadata.begin_frame_ack.sequence_number =
-        viz::BeginFrameArgs::kStartingFrameNumber;
+    frame.metadata.begin_frame_ack.frame_id =
+        viz::BeginFrameId(viz::BeginFrameArgs::kManualSourceId,
+                          viz::BeginFrameArgs::kStartingFrameNumber);
     frame.metadata.begin_frame_ack.has_damage = true;
     frame.metadata.frame_token = 1;
     frame.metadata.device_scale_factor = 1;
@@ -279,10 +278,9 @@ TEST_F(BufferTest, SurfaceTreeHostLastFrame) {
   // Submit frame without resource. This should cause buffer to be released.
   {
     viz::CompositorFrame frame;
-    frame.metadata.begin_frame_ack.source_id =
-        viz::BeginFrameArgs::kManualSourceId;
-    frame.metadata.begin_frame_ack.sequence_number =
-        viz::BeginFrameArgs::kStartingFrameNumber;
+    frame.metadata.begin_frame_ack.frame_id =
+        viz::BeginFrameId(viz::BeginFrameArgs::kManualSourceId,
+                          viz::BeginFrameArgs::kStartingFrameNumber);
     frame.metadata.begin_frame_ack.has_damage = true;
     frame.metadata.frame_token = 1;
     frame.metadata.device_scale_factor = 1;

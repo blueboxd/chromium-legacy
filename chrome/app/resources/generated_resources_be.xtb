@@ -139,7 +139,6 @@
 <translation id="1186771945450942097">Выдаліце небяспечнае праграмнае забеспячэнне</translation>
 <translation id="1187722533808055681">Пераходы ў актыўны рэжым</translation>
 <translation id="1188807932851744811">Журнал не запампаваны.</translation>
-<translation id="1189418886587279221">Каб спрасціць карыстанне прыладай, уключыце спецыяльныя магчымасці.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Доступ да файла на вашым камп'ютары}one{Доступ да # файла на вашым камп'ютары}few{Доступ да # файлаў на вашым камп'ютары}many{Доступ да # файлаў на вашым камп'ютары}other{Доступ да # файла на вашым камп'ютары}}</translation>
 <translation id="1190660338026981543">Прылада <ph name="DEVICE_TYPE" /> зарэгістравана для карпаратыўнага кіравання даменам <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="119092896208640858">Каб ачысціць даныя прагляду толькі з гэтай прылады, захаваўшы іх ва Уліковым запісе Google, <ph name="BEGIN_LINK" />выйдзіце з браўзера<ph name="END_LINK" />.</translation>
@@ -338,7 +337,6 @@
 <translation id="1476607407192946488">&amp;Налады мовы</translation>
 <translation id="1478340334823509079">Падрабязнасці: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Усталяванне не ўключана</translation>
-<translation id="1481206932476131736">Тут можна кіраваць уліковымі запісамі, у якія вы ўвайшлі: вэб-сайты, праграмы і пашырэнні ў браўзеры Chrome і краме Google Play могуць выкарыстоўваць іх для персаналізацыі сваіх функцый згодна з дазволамі.</translation>
 <translation id="1482626744466814421">Дадаць гэту ўкладку ў закладкі...</translation>
 <translation id="1483493594462132177">Адправіць</translation>
 <translation id="1484979925941077974">Сайт выкарыстоўвае Bluetooth</translation>
@@ -591,7 +589,6 @@
 <translation id="1813278315230285598">Сэрвісы</translation>
 <translation id="18139523105317219">Імя боку EDI</translation>
 <translation id="1815083418640426271">Уставіць як звычайны тэкст</translation>
-<translation id="1815579292149538864">Наладжванне прынтараў CUPS і кіраванне імі.</translation>
 <translation id="181577467034453336">Яшчэ <ph name="NUMBER_OF_VIEWS" />...</translation>
 <translation id="1816036116994822943">Хуткасць сканіравання клавіятуры</translation>
 <translation id="1817871734039893258">Аднаўленне файлаў Microsoft</translation>
@@ -1453,7 +1450,6 @@
 <translation id="3012917896646559015">Звяжыцеся з вытворцам абсталявання, каб адправіць камп'ютар у рамонт.</translation>
 <translation id="3013291976881901233">Прылады MIDI</translation>
 <translation id="3015639418649705390">Перазапусціць</translation>
-<translation id="3016329696181678353">Не ўдалося аўтаматычна наладзіць <ph name="PRINTER_NAME" />. Укажыце пашыраныя звесткі пра прынтар.</translation>
 <translation id="3016381065346027039">Запісаў у журнале няма</translation>
 <translation id="3016641847947582299">Кампанент абноўлены</translation>
 <translation id="3016780570757425217">Ведаць ваша месцазнаходжанне</translation>
@@ -2191,7 +2187,6 @@
 <translation id="4046123991198612571">Наступны трэк</translation>
 <translation id="4050225813016893843">Спосаб аўтэнтыфікацыі</translation>
 <translation id="4052120076834320548">Дробны</translation>
-<translation id="4055023634561256217">Трэба перазапусціць прыладу, перш чым скідваць налады з дапамогай Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> – <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">Паглядзець у краме</translation>
 <translation id="4058647953897694817">Спраўдзіць праз Bluetooth</translation>
@@ -2513,7 +2508,6 @@
 <translation id="4558426062282641716">Запытаны дазвол на аўтаматычны запуск</translation>
 <translation id="4558491878126948419">Атрымлівайце парады па прыладах <ph name="DEVICE_TYPE" />, абнаўленні прадуктаў Google і абагульвайце водгукі. Адпісацца можна ў любы час.</translation>
 <translation id="4559617833001311418">Гэты сайт мае доступ да датчыкаў руху або святла.</translation>
-<translation id="4561098487691395071">Або ўкажыце PPD прынтара</translation>
 <translation id="4562155214028662640">Дадаць адбітак пальца</translation>
 <translation id="4562494484721939086">Не абслугоўваецца</translation>
 <translation id="4563880231729913339">Палец 3</translation>
@@ -2756,7 +2750,6 @@
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925542575807923399">Адміністратар гэтага ўліковага запісу патрабуе, каб у сеансе з уваходам у некалькі ўліковых запісаў гэты ўліковы запіс быў першым.</translation>
 <translation id="4927753642311223124">Тут нічога няма – пераходзьце далей.</translation>
-<translation id="4927846293686536410">Каб закладкі, гісторыя, паролі і іншыя налады былі даступнымі на ўсіх вашых прыладах, увайдзіце ў сістэму. Вы таксама аўтаматычна ўвойдзеце ў сэрвісы Google.</translation>
 <translation id="4929386379796360314">Варыянты друку</translation>
 <translation id="4930714375720679147">Уключыць</translation>
 <translation id="4932733599132424254">Дата</translation>
@@ -3313,7 +3306,6 @@
 <translation id="5750324801516359607">Далёка</translation>
 <translation id="5756163054456765343">&amp;Даведачны цэнтр</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> можа праглядаць дакументы, якія <ph name="APP_NAME" /> прызначае для друку.</translation>
-<translation id="5763315388120433852">Наладка і кіраванне абагульваннем файлаў у сетцы.</translation>
 <translation id="5763751966069581670">Прылады USB не знойдзены</translation>
 <translation id="5764483294734785780">За&amp;хаваць аўдыя як...</translation>
 <translation id="57646104491463491">Дата змянення</translation>
@@ -4633,7 +4625,6 @@
 <translation id="7684718995427157417">Каб ствараць і тэсціраваць праграмы, уключыце Android Debug Bridge (ADB). Звярніце ўвагу, што, уключыўшы ADB, вы дазваляеце ўсталёўваць праграмы для Android, якія не былі спраўджаны Google, а для выключэння ADB патрабуецца скід налад да заводскіх значэнняў.</translation>
 <translation id="7685049629764448582">Памяць JavaScript</translation>
 <translation id="7685087414635069102">Патрабуецца PIN-код</translation>
-<translation id="768549422429443215">Дадайце мовы або змяніце іх парадак у спісе.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Пацвердзіце новы пароль</translation>
 <translation id="7690378713476594306">Выбраць са спіса</translation>
@@ -4670,7 +4661,6 @@
 <translation id="7730449930968088409">Здымаць змесціва экрана</translation>
 <translation id="7732111077498238432">Сетка кантралюецца палітыкай</translation>
 <translation id="7737238973539693982">Выдаліць Linux (бэта-версія)</translation>
-<translation id="7737456446569756884">Гэта прылада будзе ўсталёўваць аўтаматычныя абнаўленні праграмнага забеспячэння і сістэмы бяспекі да <ph name="MONTH_AND_YEAR" />.</translation>
 <translation id="7740996059027112821">Стандартны</translation>
 <translation id="7744047395460924128">Праглядзець вашу гісторыю друку</translation>
 <translation id="7746457520633464754">Каб выявіць небяспечныя праграмы і сайты, Chrome адпраўляе URL-адрасы некаторых наведаных вамі старонак, пэўную сістэмную інфармацыю і змесціва старонак у Google</translation>
@@ -5555,7 +5545,6 @@
 <translation id="892706138619340876">Некаторыя налады былі скінуты</translation>
 <translation id="8930351635855238750">Новыя налады файлаў cookie уступяць у сілу пасля перазагрузкі старонкі</translation>
 <translation id="8931394284949551895">Новыя прылады</translation>
-<translation id="893254996965966411">Захаванне ў профіль выяўленых прынтараў або дадаванне новага прынтара.</translation>
 <translation id="8932894639908691771">Параметры доступу праз пераключальнікі</translation>
 <translation id="8933960630081805351">&amp;Паказаць у акне Finder</translation>
 <translation id="8934732568177537184">Далей</translation>

@@ -7,6 +7,14 @@
 <script src="../../../external/wpt/bluetooth/resources/bluetooth-helpers.js"></script>
 <script>
 'use strict';
+function createDOMException(func, uuid) {
+  return new DOMException(
+      `Failed to execute '${func}' on 'BluetoothRemoteGATTService': ` +
+      `Service with UUID ${uuid} is no longer valid. Remember to retrieve ` +
+      `the service again after reconnecting.`,
+      'InvalidStateError');
+}
+
 bluetooth_test(() => {
   return setBluetoothFakeAdapter('DisconnectingHealthThermometerAdapter')
     .then(() => requestDeviceWithTrustedClick({
@@ -32,23 +40,18 @@ bluetooth_test(() => {
         if (service.uuid == request_disconnection_service_uuid) {
           continue;
         }
-        let error = new DOMException(
-          'Service with UUID ' + service.uuid +
-          ' is no longer valid. Remember to retrieve the service ' +
-          'again after reconnecting.',
-          'InvalidStateError');
         promises = promises.then(() =>
           assert_promise_rejects_with_message(
             service.getCharacteristic('measurement_interval'),
-            error));
+            createDOMException('getCharacteristic', service.uuid)));
         promises = promises.then(() =>
           assert_promise_rejects_with_message(
             service.getCharacteristics(),
-            error));
+            createDOMException('getCharacteristics', service.uuid)));
         promises = promises.then(() =>
           assert_promise_rejects_with_message(
             service.getCharacteristics('measurement_interval'),
-            error));
+            createDOMException('getCharacteristics', service.uuid)));
       }
       return promises;
     });

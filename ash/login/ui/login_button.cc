@@ -30,6 +30,7 @@ LoginButton::LoginButton(views::ButtonListener* listener)
   SetInstallFocusRingOnFocus(true);
   focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
   SetInkDropMode(InkDropMode::ON);
+  set_has_ink_drop_action_on_click(true);
 }
 
 LoginButton::~LoginButton() = default;

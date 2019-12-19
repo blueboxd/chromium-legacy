@@ -15,7 +15,7 @@ import '../strings.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {Base, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {createDestinationKey, createRecentDestinationKey, Destination, DestinationOrigin, RecentDestination} from '../data/destination.js';
+import {createDestinationKey, Destination, DestinationOrigin, RecentDestination} from '../data/destination.js';
 import {getSelectDropdownBackground} from '../print_preview_utils.js';
 
 import {SelectBehavior} from './select_behavior.js';
@@ -37,11 +37,13 @@ Polymer({
 
     disabled: Boolean,
 
+    driveDestinationReady: Boolean,
+
     noDestinations: Boolean,
 
     pdfPrinterDisabled: Boolean,
 
-    /** @type {!Array<!RecentDestination>} */
+    /** @type {!Array<!Destination>} */
     recentDestinationList: Array,
   },
 
@@ -106,7 +108,7 @@ Polymer({
 
     // Otherwise, must be in the recent list.
     const recent = this.recentDestinationList.find(d => {
-      return createRecentDestinationKey(d) === this.selectedValue;
+      return d.key === this.selectedValue;
     });
     if (recent && recent.icon) {
       return recent.icon;
@@ -141,14 +143,5 @@ Polymer({
 
   onProcessSelectChange: function(value) {
     this.fire('selected-option-change', value);
-  },
-
-  /**
-   * @param {!RecentDestination} recentDestination
-   * @return {string} Key for the recent destination
-   * @private
-   */
-  getKey_: function(recentDestination) {
-    return createRecentDestinationKey(recentDestination);
   },
 });

@@ -61,8 +61,6 @@ void BackgroundFetchDataManager::InitializeOnCoreThread() {
 
   // Delete inactive registrations still in the DB.
   Cleanup();
-
-  DCHECK(cache_manager_);
 }
 
 void BackgroundFetchDataManager::AddObserver(

@@ -319,7 +319,7 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // multiplier value should be tuned to achieve a total sample count that
   // avoids throttling by the UKM system.
   double sample_decay_rate_ = 3;
-  double sample_rate_multiplier_ = 1;
+  double sample_rate_multiplier_ = 4;
   unsigned samples_so_far_ = 0;
   unsigned frames_to_next_event_ = 0;
 

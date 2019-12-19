@@ -23,11 +23,16 @@ class WallpaperView : public WallpaperBaseView,
   explicit WallpaperView(const WallpaperProperty& property);
   ~WallpaperView() override;
 
-  // Schedules a repaint of the wallpaper with blur and opacity changes.
-  void SetWallpaperProperty(const WallpaperProperty& property);
+  // Clears cached image. Must be called when wallpaper image is changed.
+  void ClearCachedImage();
 
-  int blur_sigma() const { return property_.blur_sigma; }
-  float opacity() const { return property_.opacity; }
+  // Enables/Disables the lock shield layer.
+  void SetLockShieldEnabled(bool enabled);
+
+  void set_wallpaper_property(const WallpaperProperty& property) {
+    property_ = property;
+  }
+  const WallpaperProperty& property() const { return property_; }
 
  private:
   // views::View:
@@ -47,7 +52,11 @@ class WallpaperView : public WallpaperBaseView,
                      gfx::Canvas* canvas) override;
 
   // Paint parameters (blur sigma and opacity) to draw wallpaper.
-  WallpaperProperty property_;
+  WallpaperProperty property_{wallpaper_constants::kClear};
+
+  // A view to hold solid color layer to hide desktop, in case compositor
+  // failed to draw its content due to memory shortage.
+  views::View* shield_view_ = nullptr;
 
   // A cached downsampled image of the wallpaper image. It will help wallpaper
   // blur/brightness animations be more performant.
@@ -56,10 +65,11 @@ class WallpaperView : public WallpaperBaseView,
   DISALLOW_COPY_AND_ASSIGN(WallpaperView);
 };
 
-views::Widget* CreateWallpaperWidget(aura::Window* root_window,
-                                     int container_id,
-                                     const WallpaperProperty& property,
-                                     WallpaperView** out_wallpaper_view);
+std::unique_ptr<views::Widget> CreateWallpaperWidget(
+    aura::Window* root_window,
+    int container_id,
+    const WallpaperProperty& property,
+    WallpaperView** out_wallpaper_view);
 
 }  // namespace ash
 

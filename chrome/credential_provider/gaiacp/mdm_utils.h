@@ -72,6 +72,9 @@ class GoogleMdmEscrowServiceEnablerForTesting {
 // as the one specified in |kGlobalMdmUrlRegKey|, otherwise returns false.
 bool NeedsToEnrollWithMdm();
 
+// Gets the bios serial number of the windows device.
+base::string16 GetSerialNumber();
+
 // Checks whether the |kRegMdmUrl| is set on this machine and points
 // to a valid URL. Returns false otherwise.
 bool MdmEnrollmentEnabled();

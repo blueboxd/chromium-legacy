@@ -79,25 +79,7 @@ if (public_android_sdk) {
       apk_name = "TrichromeWebView6432"
       uncompress_dex = true
       if (trichrome_synchronized_proguard) {
-        static_library_provider = "//chrome/android:trichrome_library_64_32_apk"
-      }
-    }
-
-    system_webview_apk_tmpl("trichrome_webview_32_apk") {
-      android_manifest = trichrome_webview_32_android_manifest
-      android_manifest_dep =
-          "//android_webview/nonembedded:trichrome_webview_32_manifest"
-      use_trichrome_library = true
-      is_64_bit_browser = false
-      include_64_bit_webview = false
-
-      min_sdk_version = 29
-
-      deps = upstream_only_webview_deps
-      apk_name = "TrichromeWebView32"
-      uncompress_dex = true
-      if (trichrome_synchronized_proguard) {
-        static_library_provider = "//chrome/android:trichrome_library_32_apk"
+        static_library_provider = "//chrome/android:trichrome_library_apk"
       }
     }
   }
@@ -619,7 +601,9 @@ if (android_64bit_target_cpu) {
   }
 }
 
-android_assets("standalone_webview_assets") {
+# These assets are needed by both monochrome and stand alone WebView, but not by
+# Chrome or TrichromeWebView.
+android_assets("monochrome_webview_assets") {
   deps = [
     "//third_party/icu:icu_assets",
   ]
@@ -629,26 +613,6 @@ android_assets("standalone_webview_assets") {
     deps += [ "//v8:v8_external_startup_data_assets" ]
   }
   if (android_64bit_target_cpu) {
-    deps += [ ":v8_snapshot_secondary_abi_assets" ]
-  }
-}
-
-android_assets("monochrome_webview_primary_abi_assets") {
-  deps = [
-    "//third_party/icu:icu_assets",
-  ]
-  if (use_v8_context_snapshot) {
-    deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
-  } else {
-    deps += [ "//v8:v8_external_startup_data_assets" ]
-  }
-}
-
-if (android_64bit_target_cpu) {
-  android_assets("monochrome_webview_secondary_abi_assets") {
-    deps = [
-      "//third_party/icu:icu_assets",
-    ]
     deps += [ ":v8_snapshot_secondary_abi_assets" ]
   }
 }

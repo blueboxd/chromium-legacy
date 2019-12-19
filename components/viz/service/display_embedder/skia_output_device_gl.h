@@ -15,10 +15,7 @@
 #include "components/viz/service/display_embedder/skia_output_device.h"
 #include "gpu/command_buffer/common/mailbox.h"
 
-class GrContext;
-
 namespace gl {
-class GLContext;
 class GLImage;
 class GLSurface;
 }  // namespace gl
@@ -29,6 +26,7 @@ class GpuFence;
 
 namespace gpu {
 class MailboxManager;
+class SharedContextState;
 
 namespace gles2 {
 class FeatureInfo;
@@ -41,15 +39,14 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
  public:
   SkiaOutputDeviceGL(
       gpu::MailboxManager* mailbox_manager,
+      gpu::SharedContextState* context_state,
       scoped_refptr<gl::GLSurface> gl_surface,
       scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
       gpu::MemoryTracker* memory_tracker,
       DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
   ~SkiaOutputDeviceGL() override;
 
-  void Initialize(GrContext* gr_context, gl::GLContext* gl_context);
   bool supports_alpha() {
-    DCHECK(gr_context_);
     return supports_alpha_;
   }
 
@@ -87,8 +84,8 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
 
   gpu::MailboxManager* const mailbox_manager_;
 
+  gpu::SharedContextState* const context_state_;
   scoped_refptr<gl::GLSurface> gl_surface_;
-  GrContext* gr_context_ = nullptr;
 
   sk_sp<SkSurface> sk_surface_;
 

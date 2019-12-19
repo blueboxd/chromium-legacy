@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -62,6 +63,8 @@ constexpr base::TimeDelta kMaxTokenRefreshDelay =
 
 // Testing override for the AssistantSettingsManager implementation.
 AssistantSettingsManager* g_settings_manager_override = nullptr;
+// Testing override for the URI used to contact the s3 server.
+const char* g_s3_server_uri_override = nullptr;
 
 ash::mojom::AssistantState ToAssistantStatus(
     AssistantManagerService::State state) {
@@ -78,6 +81,14 @@ ash::mojom::AssistantState ToAssistantStatus(
       return AssistantState::NEW_READY;
   }
 }
+
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+base::Optional<std::string> GetS3ServerUriOverride() {
+  if (g_s3_server_uri_override)
+    return g_s3_server_uri_override;
+  return base::nullopt;
+}
+#endif
 
 }  // namespace
 
@@ -167,6 +178,11 @@ void Service::OverrideSettingsManagerForTesting(
   g_settings_manager_override = manager;
 }
 
+// static
+void Service::OverrideS3ServerUriForTesting(const char* uri) {
+  g_s3_server_uri_override = uri;
+}
+
 void Service::SetIdentityAccessorForTesting(
     mojo::PendingRemote<identity::mojom::IdentityAccessor> identity_accessor) {
   identity_accessor_.Bind(std::move(identity_accessor));
@@ -176,11 +192,19 @@ void Service::SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer) {
   token_refresh_timer_ = std::move(timer);
 }
 
+void Service::SetAssistantManagerServiceForTesting(
+    std::unique_ptr<AssistantManagerService> assistant_manager_service) {
+  DCHECK(assistant_manager_service_ == nullptr);
+  assistant_manager_service_for_testing_ = std::move(assistant_manager_service);
+}
+
+AssistantStateProxy* Service::GetAssistantStateProxyForTesting() {
+  return &assistant_state_;
+}
+
 void Service::Init(mojo::PendingRemote<mojom::Client> client,
-                   mojo::PendingRemote<mojom::DeviceActions> device_actions,
-                   bool is_test) {
+                   mojo::PendingRemote<mojom::DeviceActions> device_actions) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  is_test_ = is_test;
   client_.Bind(std::move(client));
   device_actions_.Bind(std::move(device_actions));
 
@@ -416,7 +440,8 @@ void Service::GetPrimaryAccountInfoCallback(
   scopes.insert(kScopeAuthGcm);
   if (features::IsClearCutLogEnabled())
     scopes.insert(kScopeClearCutLog);
-  identity_accessor_->GetAccessToken(
+
+  GetIdentityAccessor()->GetAccessToken(
       *account_id, scopes, "cros_assistant",
       base::BindOnce(&Service::GetAccessTokenCallback, base::Unretained(this)));
 }
@@ -462,12 +487,10 @@ void Service::CreateAssistantManagerService() {
 
 std::unique_ptr<AssistantManagerService>
 Service::CreateAndReturnAssistantManagerService() {
-#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-  if (is_test_) {
-    // Use fake service in browser tests.
-    return std::make_unique<FakeAssistantManagerServiceImpl>();
-  }
+  if (assistant_manager_service_for_testing_)
+    return std::move(assistant_manager_service_for_testing_);
 
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
   DCHECK(client_);
 
   mojo::PendingRemote<device::mojom::BatteryMonitor> battery_monitor;
@@ -481,7 +504,8 @@ Service::CreateAndReturnAssistantManagerService() {
   DCHECK(pending_url_loader_factory_);
   return std::make_unique<AssistantManagerServiceImpl>(
       client_.get(), context(), std::move(delegate),
-      std::move(pending_url_loader_factory_), is_signed_out_mode_);
+      std::move(pending_url_loader_factory_), GetS3ServerUriOverride(),
+      is_signed_out_mode_);
 #else
   return std::make_unique<FakeAssistantManagerServiceImpl>();
 #endif

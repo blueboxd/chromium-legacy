@@ -30,6 +30,7 @@ std::unique_ptr<ToggleImageButton> CreateVectorToggleImageButton(
 
 void ConfigureVectorImageButton(ImageButton* button) {
   button->SetInkDropMode(Button::InkDropMode::ON);
+  button->set_has_ink_drop_action_on_click(true);
   button->SetImageHorizontalAlignment(ImageButton::ALIGN_CENTER);
   button->SetImageVerticalAlignment(ImageButton::ALIGN_MIDDLE);
   button->SetBorder(CreateEmptyBorder(

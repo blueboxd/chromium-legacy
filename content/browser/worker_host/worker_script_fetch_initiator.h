@@ -99,8 +99,8 @@ class WorkerScriptFetchInitiator {
   static void CreateScriptLoader(
       int worker_process_id,
       RenderFrameHost* creator_render_frame_host,
+      const net::NetworkIsolationKey& trusted_network_isolation_key,
       std::unique_ptr<network::ResourceRequest> resource_request,
-      StoragePartitionImpl* storage_partition,
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           factory_bundle_for_browser_info,
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle>

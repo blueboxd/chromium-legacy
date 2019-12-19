@@ -351,14 +351,6 @@ void OverviewController::OnAttemptToReactivateWindow(
   }
 }
 
-bool OverviewController::HasBlurForTest() const {
-  return overview_wallpaper_controller_->has_blur();
-}
-
-bool OverviewController::HasBlurAnimationForTest() const {
-  return overview_wallpaper_controller_->HasBlurAnimationForTesting();
-}
-
 std::vector<aura::Window*>
 OverviewController::GetWindowsListInOverviewGridsForTest() {
   std::vector<aura::Window*> windows;

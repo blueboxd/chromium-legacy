@@ -56,7 +56,7 @@ class MockAudioRendererSource : public blink::WebRtcAudioRendererSource {
                     base::TimeDelta* current_time));
   MOCK_METHOD1(RemoveAudioRenderer, void(blink::WebRtcAudioRenderer* renderer));
   MOCK_METHOD0(AudioRendererThreadStopped, void());
-  MOCK_METHOD1(SetOutputDeviceForAec, void(const std::string&));
+  MOCK_METHOD1(SetOutputDeviceForAec, void(const String&));
   MOCK_CONST_METHOD0(GetAudioProcessingId, base::UnguessableToken());
 };
 
@@ -128,10 +128,10 @@ class WebRtcAudioRendererTest : public testing::Test {
         .WillRepeatedly(Return(*kAudioProcessingId));
   }
 
-  void SetupRenderer(const std::string& device_id) {
+  void SetupRenderer(const String& device_id) {
     renderer_ = new blink::WebRtcAudioRenderer(
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(), stream_,
-        nullptr, base::UnguessableToken::Create(), device_id);
+        nullptr, base::UnguessableToken::Create(), device_id.Utf8());
 
     media::AudioSinkParameters params;
     EXPECT_CALL(
@@ -140,7 +140,7 @@ class WebRtcAudioRendererTest : public testing::Test {
                                  nullptr /*blink::WebLocalFrame*/, _))
         .Times(testing::AtLeast(1))
         .WillRepeatedly(DoAll(SaveArg<2>(&params), InvokeWithoutArgs([&]() {
-                                EXPECT_EQ(params.device_id, device_id);
+                                EXPECT_EQ(params.device_id, device_id.Utf8());
                               })));
 
     EXPECT_CALL(*source_.get(), SetOutputDeviceForAec(device_id));
@@ -294,7 +294,8 @@ TEST_F(WebRtcAudioRendererTest, SwitchOutputDevice) {
       MockNewAudioRendererSink(blink::WebAudioDeviceSourceType::kWebRtc, _, _))
       .WillOnce(SaveArg<2>(&params));
   EXPECT_CALL(*source_.get(), AudioRendererThreadStopped());
-  EXPECT_CALL(*source_.get(), SetOutputDeviceForAec(kOtherOutputDeviceId));
+  EXPECT_CALL(*source_.get(),
+              SetOutputDeviceForAec(String::FromUTF8(kOtherOutputDeviceId)));
   EXPECT_CALL(*this, MockSwitchDeviceCallback(media::OUTPUT_DEVICE_STATUS_OK));
   base::RunLoop loop;
   renderer_proxy_->SwitchOutputDevice(

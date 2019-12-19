@@ -26,6 +26,7 @@
 #include "remoting/host/ipc_action_executor.h"
 #include "remoting/host/ipc_audio_capturer.h"
 #include "remoting/host/ipc_input_injector.h"
+#include "remoting/host/ipc_keyboard_layout_monitor.h"
 #include "remoting/host/ipc_mouse_cursor_monitor.h"
 #include "remoting/host/ipc_screen_controls.h"
 #include "remoting/host/ipc_video_frame_capturer.h"
@@ -143,6 +144,14 @@ DesktopSessionProxy::CreateMouseCursorMonitor() {
   return std::make_unique<IpcMouseCursorMonitor>(this);
 }
 
+std::unique_ptr<KeyboardLayoutMonitor>
+DesktopSessionProxy::CreateKeyboardLayoutMonitor(
+    base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  return std::make_unique<IpcKeyboardLayoutMonitor>(std::move(callback), this);
+}
+
 std::unique_ptr<FileOperations> DesktopSessionProxy::CreateFileOperations() {
   return ipc_file_operations_factory_.CreateFileOperations();
 }
@@ -209,6 +218,8 @@ bool DesktopSessionProxy::OnMessageReceived(const IPC::Message& message) {
                         OnReleaseSharedBuffer)
     IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_InjectClipboardEvent,
                         OnInjectClipboardEvent)
+    IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_KeyboardChanged,
+                        OnKeyboardChanged)
     IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_DisconnectSession,
                         DisconnectSession)
     IPC_MESSAGE_FORWARD(ChromotingDesktopNetworkMsg_FileResult,
@@ -317,6 +328,20 @@ void DesktopSessionProxy::SetMouseCursorMonitor(
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   mouse_cursor_monitor_ = mouse_cursor_monitor;
+}
+
+void DesktopSessionProxy::SetKeyboardLayoutMonitor(
+    const base::WeakPtr<IpcKeyboardLayoutMonitor>& keyboard_layout_monitor) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  keyboard_layout_monitor_ = std::move(keyboard_layout_monitor);
+}
+
+const base::Optional<protocol::KeyboardLayout>&
+DesktopSessionProxy::GetKeyboardCurrentLayout() const {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  return keyboard_layout_;
 }
 
 void DesktopSessionProxy::DisconnectSession(protocol::ErrorCode error) {
@@ -598,6 +623,16 @@ void DesktopSessionProxy::OnMouseCursor(
   if (mouse_cursor_monitor_) {
     mouse_cursor_monitor_->OnMouseCursor(
         base::WrapUnique(webrtc::MouseCursor::CopyOf(mouse_cursor)));
+  }
+}
+
+void DesktopSessionProxy::OnKeyboardChanged(
+    const protocol::KeyboardLayout& layout) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  keyboard_layout_ = layout;
+  if (keyboard_layout_monitor_) {
+    keyboard_layout_monitor_->OnKeyboardChanged(layout);
   }
 }
 

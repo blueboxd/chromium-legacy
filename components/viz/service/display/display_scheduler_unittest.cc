@@ -467,7 +467,7 @@ TEST_F(DisplaySchedulerWaitForAllSurfacesTest, WaitForAllSurfacesBeforeDraw) {
   EXPECT_GE(now_src().NowTicks(),
             scheduler_.DesiredBeginFrameDeadlineTimeForTest());
   // Stray BeginFrameAcks for older BeginFrames are ignored.
-  ack.sequence_number--;
+  ack.frame_id.sequence_number--;
   damage_tracker_->SurfaceDamagedForTest(sid1, ack, false);
   // If the acknowledgment above was not ignored and instead updated the surface
   // state for sid1, the surface would become a pending surface again, and the

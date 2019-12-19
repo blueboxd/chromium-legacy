@@ -16,7 +16,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/views/bubble_menu_item_factory.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -24,6 +23,8 @@
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
@@ -63,7 +64,7 @@ const std::vector<std::pair<SkColor, base::string16>>& GetColorPickerList() {
 // static
 views::Widget* TabGroupEditorBubbleView::Show(TabGroupHeader* anchor_view,
                                               TabController* tab_controller,
-                                              TabGroupId group) {
+                                              tab_groups::TabGroupId group) {
   views::Widget* const widget = BubbleDialogDelegateView::CreateBubble(
       new TabGroupEditorBubbleView(anchor_view, tab_controller, group));
   widget->Show();
@@ -87,7 +88,7 @@ views::View* TabGroupEditorBubbleView::GetInitiallyFocusedView() {
 TabGroupEditorBubbleView::TabGroupEditorBubbleView(
     TabGroupHeader* anchor_view,
     TabController* tab_controller,
-    TabGroupId group)
+    tab_groups::TabGroupId group)
     : tab_controller_(tab_controller),
       group_(group),
       title_field_controller_(this),
@@ -98,7 +99,7 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
 
   const auto* layout_provider = ChromeLayoutProvider::Get();
-  const TabGroupVisualData* current_data =
+  const tab_groups::TabGroupVisualData* current_data =
       tab_controller_->GetVisualDataForGroup(group_);
   const int horizontal_spacing = layout_provider->GetDistanceMetric(
       views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
@@ -186,12 +187,13 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
 TabGroupEditorBubbleView::~TabGroupEditorBubbleView() = default;
 
 void TabGroupEditorBubbleView::UpdateGroup() {
-  TabGroupVisualData old_data = *tab_controller_->GetVisualDataForGroup(group_);
+  tab_groups::TabGroupVisualData old_data =
+      *tab_controller_->GetVisualDataForGroup(group_);
 
   base::Optional<SkColor> selected_color = color_selector_->GetSelectedColor();
   const SkColor color =
       selected_color.has_value() ? selected_color.value() : old_data.color();
-  TabGroupVisualData new_data(title_field_->GetText(), color);
+  tab_groups::TabGroupVisualData new_data(title_field_->GetText(), color);
 
   tab_controller_->SetVisualDataForGroup(group_, new_data);
 }
@@ -221,7 +223,7 @@ bool TabGroupEditorBubbleView::TitleFieldController::HandleKeyEvent(
 TabGroupEditorBubbleView::ButtonListener::ButtonListener(
     TabController* tab_controller,
     TabGroupHeader* anchor_view,
-    TabGroupId group)
+    tab_groups::TabGroupId group)
     : tab_controller_(tab_controller),
       anchor_view_(anchor_view),
       group_(group) {}

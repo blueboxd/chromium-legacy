@@ -126,7 +126,7 @@ public class CustomTabActivityTabControllerTest {
     public void finishesReparentingHiddenTab() {
         Tab hiddenTab = env.prepareHiddenTab();
         env.reachNativeInit(mTabController);
-        verify(env.reparentingTaskProvider.get(hiddenTab)).finish(any(), any(), any());
+        verify(env.reparentingTaskProvider.get(hiddenTab)).finish(any(), any());
     }
 
     @Test

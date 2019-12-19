@@ -55,8 +55,7 @@ bool CheckBeginFrameContinuity(BeginFrameObserver* observer,
                                const BeginFrameArgs& args) {
   const BeginFrameArgs& last_args = observer->LastUsedBeginFrameArgs();
   if (!last_args.IsValid() || (args.frame_time > last_args.frame_time)) {
-    DCHECK((args.source_id != last_args.source_id) ||
-           (args.sequence_number > last_args.sequence_number))
+    DCHECK(!last_args.frame_id.IsNextInSequenceTo(args.frame_id))
         << "current " << args.ToString() << ", last " << last_args.ToString();
     return true;
   }
@@ -85,8 +84,7 @@ bool BeginFrameObserverBase::WantsAnimateOnlyBeginFrames() const {
 void BeginFrameObserverBase::OnBeginFrame(const BeginFrameArgs& args) {
   DCHECK(args.IsValid());
   DCHECK_GE(args.frame_time, last_begin_frame_args_.frame_time);
-  DCHECK(args.sequence_number > last_begin_frame_args_.sequence_number ||
-         args.source_id != last_begin_frame_args_.source_id)
+  DCHECK(!last_begin_frame_args_.frame_id.IsNextInSequenceTo(args.frame_id))
       << "current " << args.ToString() << ", last "
       << last_begin_frame_args_.ToString();
   bool used = OnBeginFrameDerivedImpl(args);
@@ -356,8 +354,7 @@ void DelayBasedBeginFrameSource::IssueBeginFrameToObserver(
       (args.frame_time >
        last_args.frame_time + args.interval / kDoubleTickDivisor)) {
     if (args.type == BeginFrameArgs::MISSED) {
-      DCHECK(args.sequence_number > last_args.sequence_number ||
-             args.source_id != last_args.source_id)
+      DCHECK(!last_args.frame_id.IsNextInSequenceTo(args.frame_id))
           << "missed " << args.ToString() << ", last " << last_args.ToString();
     }
     FilterAndIssueBeginFrame(obs, args);
@@ -435,8 +432,9 @@ void ExternalBeginFrameSource::OnBeginFrame(const BeginFrameArgs& args) {
   // recreated.
   if (last_begin_frame_args_.IsValid() &&
       (args.frame_time <= last_begin_frame_args_.frame_time ||
-       (args.source_id == last_begin_frame_args_.source_id &&
-        args.sequence_number <= last_begin_frame_args_.sequence_number)))
+       (args.frame_id.source_id == last_begin_frame_args_.frame_id.source_id &&
+        args.frame_id.sequence_number <=
+            last_begin_frame_args_.frame_id.sequence_number)))
     return;
 
   if (RequestCallbackOnGpuAvailable()) {

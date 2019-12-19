@@ -310,10 +310,9 @@ class MODULES_EXPORT RTCPeerConnection final
   void DidAddReceiverPlanB(std::unique_ptr<RTCRtpReceiverPlatform>) override;
   void DidRemoveReceiverPlanB(std::unique_ptr<RTCRtpReceiverPlatform>) override;
   void DidModifySctpTransport(WebRTCSctpTransportSnapshot) override;
-  void DidModifyTransceivers(
-      WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>>,
-      WebVector<uintptr_t>,
-      bool is_remote_description) override;
+  void DidModifyTransceivers(Vector<std::unique_ptr<RTCRtpTransceiverPlatform>>,
+                             Vector<uintptr_t>,
+                             bool is_remote_description) override;
   void DidAddRemoteDataChannel(
       scoped_refptr<webrtc::DataChannelInterface> channel) override;
   void DidNoteInterestingUsage(int usage_pattern) override;

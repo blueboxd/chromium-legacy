@@ -149,7 +149,7 @@ TEST_P(WebMVideoClientTest, InitializeConfigVP9Profiles) {
       << expected_config.AsHumanReadableString() << ")";
 }
 
-INSTANTIATE_TEST_SUITE_P(/* No prefix. */,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebMVideoClientTest,
                          ::testing::ValuesIn(kCodecTestParams));
 

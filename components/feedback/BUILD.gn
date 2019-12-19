@@ -36,6 +36,7 @@ static_library("feedback") {
     "//components/variations/net",
     "//content/public/browser",
     "//content/public/common",
+    "//google_apis",
     "//net",
     "//services/network/public/cpp",
     "//third_party/re2",

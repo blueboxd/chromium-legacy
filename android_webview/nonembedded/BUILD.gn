@@ -152,14 +152,4 @@ if (android_64bit_target_cpu) {
                   "library=libmonochrome_64.so",
                 ]
   }
-
-  jinja_template("trichrome_webview_32_manifest") {
-    input = "java/AndroidManifest.xml"
-    output = trichrome_webview_32_android_manifest
-    variables = trichrome_jinja_variables + [
-                  "trichrome_version=$trichrome_32_version_code",
-                  "manifest_package=$system_webview_package_name",
-                  "library=libmonochrome.so",
-                ]
-  }
 }

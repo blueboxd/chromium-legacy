@@ -325,6 +325,9 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
   // content::WebUIMessageHandler:
   void RegisterMessages() override {
     web_ui()->RegisterMessageCallback(
+        "createNewTab", base::Bind(&TabStripUIHandler::HandleCreateNewTab,
+                                   base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
         "getTabs",
         base::Bind(&TabStripUIHandler::HandleGetTabs, base::Unretained(this)));
     web_ui()->RegisterMessageCallback(
@@ -363,6 +366,10 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
   }
 
  private:
+  void HandleCreateNewTab(const base::ListValue* args) {
+    chrome::ExecuteCommand(browser_, IDC_NEW_TAB);
+  }
+
   base::DictionaryValue GetTabData(content::WebContents* contents, int index) {
     base::DictionaryValue tab_data;
 
@@ -630,24 +637,11 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUITabStripHost);
-
-  html_source->OverrideContentSecurityPolicyScriptSrc(
-      "script-src chrome://resources chrome://test 'self';");
-
   std::string generated_path =
       "@out_folder@/gen/chrome/browser/resources/tab_strip/";
-
-  for (size_t i = 0; i < kTabStripResourcesSize; ++i) {
-    std::string path = kTabStripResources[i].name;
-    if (path.rfind(generated_path, 0) == 0) {
-      path = path.substr(generated_path.length());
-    }
-    html_source->AddResourcePath(path, kTabStripResources[i].value);
-  }
-  html_source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
-  html_source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
-
-  html_source->SetDefaultResource(IDR_TAB_STRIP_HTML);
+  webui::SetupWebUIDataSource(
+      html_source, base::make_span(kTabStripResources, kTabStripResourcesSize),
+      generated_path, IDR_TAB_STRIP_HTML);
 
   // Add a load time string for the frame color to allow the tab strip to paint
   // a background color that matches the frame before any content loads
@@ -662,6 +656,7 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
       base::FeatureList::IsEnabled(features::kWebUITabStripDemoOptions));
 
   static constexpr webui::LocalizedString kStrings[] = {
+      {"newTab", IDS_TOOLTIP_NEW_TAB},
       {"tabListTitle", IDS_ACCNAME_TAB_LIST},
       {"closeTab", IDS_ACCNAME_CLOSE},
       {"defaultTabTitle", IDS_DEFAULT_TAB_TITLE},
@@ -680,8 +675,6 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
       {"vrPresenting", IDS_TAB_AX_LABEL_VR_PRESENTING},
   };
   AddLocalizedStringsBulk(html_source, kStrings);
-  html_source->UseStringsJs();
-
   content::WebUIDataSource::Add(profile, html_source);
 
   content::URLDataSource::Add(

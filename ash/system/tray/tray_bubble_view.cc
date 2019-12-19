@@ -298,11 +298,6 @@ void TrayBubbleView::UpdateBubble() {
   if (GetWidget()) {
     SizeToContents();
     GetWidget()->GetRootView()->SchedulePaint();
-
-    // When extra keyboard accessibility is enabled, focus the default item if
-    // no item is focused.
-    if (delegate_ && delegate_->ShouldEnableExtraKeyboardAccessibility())
-      FocusDefaultIfNeeded();
   }
 }
 
@@ -496,23 +491,6 @@ void TrayBubbleView::CloseBubbleView() {
     return;
 
   delegate_->HideBubble(this);
-}
-
-void TrayBubbleView::FocusDefaultIfNeeded() {
-  views::FocusManager* manager = GetFocusManager();
-  if (!manager || manager->GetFocusedView())
-    return;
-
-  views::View* view =
-      manager->GetNextFocusableView(nullptr, nullptr, false, false);
-  if (!view)
-    return;
-
-  // No need to explicitly activate the widget. View::RequestFocus will activate
-  // it if necessary.
-  SetCanActivate(true);
-
-  view->RequestFocus();
 }
 
 }  // namespace ash

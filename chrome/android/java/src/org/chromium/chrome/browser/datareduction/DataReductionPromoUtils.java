@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.datareduction;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.about.AboutSettingsBridge;
 
 /**
@@ -13,47 +14,6 @@ import org.chromium.chrome.browser.settings.about.AboutSettingsBridge;
  * inform users of the benefits of Data Saver.
  */
 public class DataReductionPromoUtils {
-    /**
-     * Key used to save whether the first run experience or second run promo screen has been shown.
-     */
-    private static final String SHARED_PREF_DISPLAYED_FRE_OR_SECOND_RUN_PROMO =
-            "displayed_data_reduction_promo";
-    /**
-     * Key used to save the time in milliseconds since epoch that the first run experience or second
-     * run promo was shown.
-     */
-    private static final String SHARED_PREF_DISPLAYED_FRE_OR_SECOND_PROMO_TIME_MS =
-            "displayed_data_reduction_promo_time_ms";
-    /**
-     * Key used to save the Chrome version the first run experience or second run promo was shown
-     * in.
-     */
-    private static final String SHARED_PREF_DISPLAYED_FRE_OR_SECOND_PROMO_VERSION =
-            "displayed_data_reduction_promo_version";
-    /**
-     * Key used to save whether the user opted out of the data reduction proxy in the FRE promo.
-     */
-    private static final String SHARED_PREF_FRE_PROMO_OPT_OUT = "fre_promo_opt_out";
-    /**
-     * Key used to save whether the infobar promo has been shown.
-     */
-    private static final String SHARED_PREF_DISPLAYED_INFOBAR_PROMO =
-            "displayed_data_reduction_infobar_promo";
-    /**
-     * Key used to save the Chrome version the infobar promo was shown in.
-     */
-    private static final String SHARED_PREF_DISPLAYED_INFOBAR_PROMO_VERSION =
-            "displayed_data_reduction_infobar_promo_version";
-    /**
-     * Key used to save the saved bytes when the milestone promo was last shown. This value is
-     * initialized to the bytes saved for data saver users that had data saver turned on when this
-     * pref was added. This prevents us from showing promo for savings that have already happened
-     * for existing users.
-     * Note: For historical reasons, this pref key is misnamed. This promotion used to be conveyed
-     * in a snackbar but was moved to an IPH in M74.
-     */
-    private static final String SHARED_PREF_DISPLAYED_MILESTONE_PROMO_SAVED_BYTES =
-            "displayed_data_reduction_snackbar_promo_saved_bytes";
 
     /**
      * Returns whether any of the data reduction proxy promotions can be displayed. Checks if the
@@ -77,14 +37,13 @@ public class DataReductionPromoUtils {
      * run promo screen has been displayed at the current time.
      */
     public static void saveFreOrSecondRunPromoDisplayed() {
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putBoolean(SHARED_PREF_DISPLAYED_FRE_OR_SECOND_RUN_PROMO, true)
-                .putLong(SHARED_PREF_DISPLAYED_FRE_OR_SECOND_PROMO_TIME_MS,
-                        System.currentTimeMillis())
-                .putString(SHARED_PREF_DISPLAYED_FRE_OR_SECOND_PROMO_VERSION,
-                        AboutSettingsBridge.getApplicationVersion())
-                .apply();
+        SharedPreferencesManager prefs = SharedPreferencesManager.getInstance();
+        prefs.writeBoolean(
+                ChromePreferenceKeys.DATA_REDUCTION_DISPLAYED_FRE_OR_SECOND_RUN_PROMO, true);
+        prefs.writeLong(ChromePreferenceKeys.DATA_REDUCTION_DISPLAYED_FRE_OR_SECOND_PROMO_TIME_MS,
+                System.currentTimeMillis());
+        prefs.writeString(ChromePreferenceKeys.DATA_REDUCTION_DISPLAYED_FRE_OR_SECOND_PROMO_VERSION,
+                AboutSettingsBridge.getApplicationVersion());
     }
 
     /**
@@ -94,8 +53,8 @@ public class DataReductionPromoUtils {
      * @return Whether the data reduction proxy promo has been displayed.
      */
     public static boolean getDisplayedFreOrSecondRunPromo() {
-        return ContextUtils.getAppSharedPreferences().getBoolean(
-                SHARED_PREF_DISPLAYED_FRE_OR_SECOND_RUN_PROMO, false);
+        return SharedPreferencesManager.getInstance().readBoolean(
+                ChromePreferenceKeys.DATA_REDUCTION_DISPLAYED_FRE_OR_SECOND_RUN_PROMO, false);
     }
 
     /**
@@ -105,8 +64,8 @@ public class DataReductionPromoUtils {
      * @return The version the data reduction proxy promo was displayed on.
      */
     public static String getDisplayedFreOrSecondRunPromoVersion() {
-        return ContextUtils.getAppSharedPreferences().getString(
-                SHARED_PREF_DISPLAYED_FRE_OR_SECOND_PROMO_VERSION, "");
+        return SharedPreferencesManager.getInstance().readString(
+                ChromePreferenceKeys.DATA_REDUCTION_DISPLAYED_FRE_OR_SECOND_PROMO_VERSION, "");
     }
 
     /**
@@ -116,10 +75,8 @@ public class DataReductionPromoUtils {
      * @param optOut Whether the user opted out of using the data reduction proxy.
      */
     public static void saveFrePromoOptOut(boolean optOut) {
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putBoolean(SHARED_PREF_FRE_PROMO_OPT_OUT, optOut)
-                .apply();
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.DATA_REDUCTION_FRE_PROMO_OPT_OUT, optOut);
     }
 
     /**
@@ -129,8 +86,8 @@ public class DataReductionPromoUtils {
      * @return Whether the user opted out of the data reduction proxy first run experience promo.
      */
     public static boolean getOptedOutOnFrePromo() {
-        return ContextUtils.getAppSharedPreferences().getBoolean(
-                SHARED_PREF_FRE_PROMO_OPT_OUT, false);
+        return SharedPreferencesManager.getInstance().readBoolean(
+                ChromePreferenceKeys.DATA_REDUCTION_FRE_PROMO_OPT_OUT, false);
     }
 
     /**
@@ -138,12 +95,10 @@ public class DataReductionPromoUtils {
      * at the current time.
      */
     public static void saveInfoBarPromoDisplayed() {
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putBoolean(SHARED_PREF_DISPLAYED_INFOBAR_PROMO, true)
-                .putString(SHARED_PREF_DISPLAYED_INFOBAR_PROMO_VERSION,
-                        AboutSettingsBridge.getApplicationVersion())
-                .apply();
+        SharedPreferencesManager prefs = SharedPreferencesManager.getInstance();
+        prefs.writeBoolean(ChromePreferenceKeys.DATA_REDUCTION_DISPLAYED_INFOBAR_PROMO, true);
+        prefs.writeString(ChromePreferenceKeys.DATA_REDUCTION_DISPLAYED_INFOBAR_PROMO_VERSION,
+                AboutSettingsBridge.getApplicationVersion());
     }
 
     /**
@@ -152,16 +107,15 @@ public class DataReductionPromoUtils {
      * @return Whether the data reduction proxy infobar promo has been displayed.
      */
     public static boolean getDisplayedInfoBarPromo() {
-        return ContextUtils.getAppSharedPreferences().getBoolean(
-                SHARED_PREF_DISPLAYED_INFOBAR_PROMO, false);
+        return SharedPreferencesManager.getInstance().readBoolean(
+                ChromePreferenceKeys.DATA_REDUCTION_DISPLAYED_INFOBAR_PROMO, false);
     }
 
-    /** See {@link #SHARED_PREF_DISPLAYED_MILESTONE_PROMO_SAVED_BYTES}. */
+    /** See {@link ChromePreferenceKeys#DATA_REDUCTION_DISPLAYED_MILESTONE_PROMO_SAVED_BYTES}. */
     public static void saveMilestonePromoDisplayed(long dataSavingsInBytes) {
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putLong(SHARED_PREF_DISPLAYED_MILESTONE_PROMO_SAVED_BYTES, dataSavingsInBytes)
-                .apply();
+        SharedPreferencesManager.getInstance().writeLong(
+                ChromePreferenceKeys.DATA_REDUCTION_DISPLAYED_MILESTONE_PROMO_SAVED_BYTES,
+                dataSavingsInBytes);
     }
 
     /**
@@ -170,8 +124,8 @@ public class DataReductionPromoUtils {
      * @return The data savings in bytes, or -1 if the promo has not been displayed before.
      */
     public static long getDisplayedMilestonePromoSavedBytes() {
-        return ContextUtils.getAppSharedPreferences().getLong(
-                SHARED_PREF_DISPLAYED_MILESTONE_PROMO_SAVED_BYTES, -1);
+        return SharedPreferencesManager.getInstance().readLong(
+                ChromePreferenceKeys.DATA_REDUCTION_DISPLAYED_MILESTONE_PROMO_SAVED_BYTES, -1);
     }
 
     /**
@@ -181,7 +135,7 @@ public class DataReductionPromoUtils {
      * @return Whether that the starting saved bytes have been initialized.
      */
     public static boolean hasMilestonePromoBeenInitWithStartingSavedBytes() {
-        return ContextUtils.getAppSharedPreferences().contains(
-                SHARED_PREF_DISPLAYED_MILESTONE_PROMO_SAVED_BYTES);
+        return SharedPreferencesManager.getInstance().contains(
+                ChromePreferenceKeys.DATA_REDUCTION_DISPLAYED_MILESTONE_PROMO_SAVED_BYTES);
     }
 }

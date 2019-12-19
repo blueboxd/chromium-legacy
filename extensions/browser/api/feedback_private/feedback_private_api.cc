@@ -22,7 +22,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/feedback/feedback_report.h"
-#include "components/feedback/feedback_util.h"
 #include "components/feedback/system_logs/system_logs_fetcher.h"
 #include "components/feedback/tracing_manager.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -31,6 +30,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/feedback_private.h"
 #include "extensions/common/constants.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "extensions/browser/api/feedback_private/log_source_access_manager.h"
@@ -224,7 +224,7 @@ void FeedbackPrivateGetSystemInformationFunction::OnCompleted(
   SystemInformationList sys_info_list;
   if (sys_info) {
     sys_info_list.reserve(sys_info->size());
-    const bool google_email = feedback_util::IsGoogleEmail(
+    const bool google_email = gaia::IsGoogleInternalAccountEmail(
         ExtensionsAPIClient::Get()
             ->GetFeedbackPrivateDelegate()
             ->GetSignedInUserEmail(browser_context()));

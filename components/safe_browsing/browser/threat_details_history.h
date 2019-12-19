@@ -34,7 +34,7 @@ class ThreatDetailsRedirectsCollector
   // Collects urls' redirects chain information from the history service.
   // We get access to history service via web_contents in UI thread.
   void StartHistoryCollection(const std::vector<GURL>& urls,
-                              const base::Closure& callback);
+                              base::OnceClosure callback);
 
   // Returns whether or not StartCacheCollection has been called.
   bool HasStarted() const;
@@ -63,7 +63,7 @@ class ThreatDetailsRedirectsCollector
 
   // Method we call when we are done. The caller must be alive for the
   // whole time, we are modifying its state (see above).
-  base::Closure callback_;
+  base::OnceClosure callback_;
 
   // Sets to true once StartHistoryCollection is called
   bool has_started_;

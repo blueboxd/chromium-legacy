@@ -114,12 +114,6 @@ FYI_BUILDERS = {
     'tests': [
       {
         'isolate': 'performance_test_suite',
-        'extra_args': [
-          # TODO(crbug.com/612455): Enable ref builds once can pass both
-          # --browser=exact (used by this bot to have it run Monochrome6432)
-          # and --browser=reference together.
-          #'--run-ref-build',
-        ],
       }
     ],
     'platform': 'android-chrome',
@@ -136,12 +130,6 @@ FYI_BUILDERS = {
     'tests': [
       {
         'isolate': 'performance_test_suite',
-        'extra_args': [
-          # TODO(crbug.com/612455): Enable ref builds once can pass both
-          # --browser=exact (used by this bot to have it run Monochrome6432)
-          # and --browser=reference together.
-          #'--run-ref-build',
-        ],
       }
     ],
     'platform': 'android-chrome',
@@ -176,9 +164,6 @@ FYI_BUILDERS = {
     'tests': [
       {
         'isolate': 'performance_test_suite',
-        'extra_args': [
-            '--run-ref-build',
-        ],
       },
     ],
     'platform': 'win',
@@ -348,9 +333,6 @@ BUILDERS = {
       {
         'name': 'performance_test_suite',
         'isolate': 'performance_test_suite',
-        'extra_args': [
-          '--run-ref-build',
-        ],
       }
     ],
     'platform': 'android-chrome',
@@ -382,7 +364,6 @@ BUILDERS = {
       {
         'isolate': 'performance_test_suite',
         'extra_args': [
-            '--run-ref-build',
             '--assert-gpu-compositing',
         ],
       },
@@ -434,7 +415,6 @@ BUILDERS = {
       {
         'isolate': 'performance_test_suite',
         'extra_args': [
-            '--run-ref-build',
             '--assert-gpu-compositing',
         ],
       },
@@ -503,8 +483,6 @@ BUILDERS = {
     'tests': [
       {
         'isolate': 'performance_webview_test_suite',
-        'extra_args': [
-        ],
       }
     ],
     'platform': 'android-webview-google',
@@ -520,8 +498,6 @@ BUILDERS = {
     'tests': [
       {
         'isolate': 'performance_weblayer_test_suite',
-        'extra_args': [
-        ],
       }
     ],
     'platform': 'android-weblayer',
@@ -537,9 +513,6 @@ BUILDERS = {
     'tests': [
       {
         'isolate': 'performance_test_suite',
-        'extra_args': [
-          '--run-ref-build',
-        ],
       }
     ],
     'platform': 'android-chrome',
@@ -556,7 +529,6 @@ BUILDERS = {
       {
         'isolate': 'performance_test_suite',
         'extra_args': [
-            '--run-ref-build',
             '--assert-gpu-compositing',
         ],
       },
@@ -614,9 +586,6 @@ BUILDERS = {
     'tests': [
       {
         'isolate': 'performance_test_suite',
-        'extra_args': [
-            '--run-ref-build',
-        ],
       },
       {
         'isolate': 'load_library_perf_tests',
@@ -648,7 +617,6 @@ BUILDERS = {
       {
         'isolate': 'performance_test_suite',
         'extra_args': [
-            '--run-ref-build',
             '--assert-gpu-compositing',
         ],
       },
@@ -702,7 +670,6 @@ BUILDERS = {
       {
         'isolate': 'performance_test_suite',
         'extra_args': [
-            '--run-ref-build',
             '--assert-gpu-compositing',
         ],
       },
@@ -731,7 +698,6 @@ BUILDERS = {
       {
         'isolate': 'performance_test_suite',
         'extra_args': [
-            '--run-ref-build',
             '--assert-gpu-compositing',
         ],
       },
@@ -779,7 +745,6 @@ BUILDERS = {
       {
         'isolate': 'performance_test_suite',
         'extra_args': [
-          '--run-ref-build',
           '--assert-gpu-compositing',
         ],
       },
@@ -1194,6 +1159,8 @@ def generate_telemetry_args(tester_config, platform):
     '--upload-results',
     '--test-shard-map-filename=%s' % platform.shards_map_file_name,
   ]
+  if platform.run_reference_build:
+    test_args.append('--run-ref-build')
   if 'browser' in tester_config:
     test_args.append('--browser-executable=../../out/Release/%s' %
                      tester_config['browser'])

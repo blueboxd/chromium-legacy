@@ -27,8 +27,6 @@ MultiProfileBrowserStatusMonitor::~MultiProfileBrowserStatusMonitor() {}
 
 void MultiProfileBrowserStatusMonitor::ActiveUserChanged(
     const std::string& user_email) {
-  app_service_instance_helper()->ActiveUserChanged();
-
   // Handle windowed apps.
   for (AppList::iterator it = app_list_.begin(); it != app_list_.end(); ++it) {
     bool owned = multi_user_util::IsProfileFromActiveUser((*it)->profile());

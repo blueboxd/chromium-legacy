@@ -26,7 +26,8 @@
             }
           ],
           "shards": 4
-        }
+        },
+        "test_target": "//:devtools_web_tests"
       },
       {
         "args": [
@@ -51,7 +52,8 @@
             }
           ],
           "shards": 4
-        }
+        },
+        "test_target": "//:blink_web_tests"
       }
     ]
   }

@@ -189,11 +189,6 @@ class ClientSession : public protocol::HostStub,
 
   EventHandler* event_handler_;
 
-  // The connection to the client.
-  std::unique_ptr<protocol::ConnectionToClient> connection_;
-
-  std::string client_jid_;
-
   // Used to create a DesktopEnvironment instance for this session.
   DesktopEnvironmentFactory* desktop_environment_factory_;
 
@@ -237,11 +232,9 @@ class ClientSession : public protocol::HostStub,
   // is reached.
   base::OneShotTimer max_duration_timer_;
 
-  // Objects responsible for sending video, audio and mouse shape.
+  // Objects responsible for sending video, audio.
   std::unique_ptr<protocol::VideoStream> video_stream_;
   std::unique_ptr<protocol::AudioStream> audio_stream_;
-  std::unique_ptr<MouseShapePump> mouse_shape_pump_;
-  std::unique_ptr<KeyboardLayoutMonitor> keyboard_layout_monitor_;
 
   // The set of all capabilities supported by the client.
   std::unique_ptr<std::string> client_capabilities_;
@@ -272,9 +265,6 @@ class ClientSession : public protocol::HostStub,
   // The pairing registry for PIN-less authentication.
   scoped_refptr<protocol::PairingRegistry> pairing_registry_;
 
-  // Used to manage extension functionality.
-  std::unique_ptr<HostExtensionSessionManager> extension_manager_;
-
   // Used to dispatch new data channels to factory methods.
   protocol::DataChannelManager data_channel_manager_;
 
@@ -297,6 +287,18 @@ class ClientSession : public protocol::HostStub,
       event_timestamp_source_for_tests_;
 
   HostExperimentSessionPlugin host_experiment_session_plugin_;
+
+  // The connection to the client.
+  std::unique_ptr<protocol::ConnectionToClient> connection_;
+
+  std::string client_jid_;
+
+  // Used to manage extension functionality.
+  std::unique_ptr<HostExtensionSessionManager> extension_manager_;
+
+  // Objects to monitor and send updates for mouse shape and keyboard layout.
+  std::unique_ptr<MouseShapePump> mouse_shape_pump_;
+  std::unique_ptr<KeyboardLayoutMonitor> keyboard_layout_monitor_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

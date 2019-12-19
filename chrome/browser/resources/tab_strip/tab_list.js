@@ -4,6 +4,8 @@
 
 import './strings.m.js';
 import './tab.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
@@ -112,9 +114,13 @@ class TabListElement extends CustomElement {
     this.activatingTabIdTimestamp_;
 
     /** @private {!Element} */
-    this.pinnedTabsContainerElement_ =
+    this.newTabButtonElement_ =
         /** @type {!Element} */ (
-            this.shadowRoot.querySelector('#pinnedTabsContainer'));
+            this.shadowRoot.querySelector('#newTabButton'));
+
+    /** @private {!Element} */
+    this.pinnedTabsElement_ =
+        /** @type {!Element} */ (this.shadowRoot.querySelector('#pinnedTabs'));
 
     /** @private {!TabStripEmbedderProxy} */
     this.tabStripEmbedderProxy_ = TabStripEmbedderProxy.getInstance();
@@ -123,9 +129,9 @@ class TabListElement extends CustomElement {
     this.tabsApi_ = TabsApiProxy.getInstance();
 
     /** @private {!Element} */
-    this.tabsContainerElement_ =
+    this.unpinnedTabsElement_ =
         /** @type {!Element} */ (
-            this.shadowRoot.querySelector('#tabsContainer'));
+            this.shadowRoot.querySelector('#unpinnedTabs'));
 
     /** @private {!Function} */
     this.windowBlurListener_ = () => this.onWindowBlur_();
@@ -154,6 +160,10 @@ class TabListElement extends CustomElement {
     addWebUIListener(
         'received-keyboard-focus', () => this.onReceivedKeyboardFocus_());
     window.addEventListener('blur', this.windowBlurListener_);
+
+    this.newTabButtonElement_.addEventListener('click', () => {
+      this.tabsApi_.createNewTab();
+    });
 
     if (loadTimeData.getBoolean('showDemoOptions')) {
       this.shadowRoot.querySelector('#demoOptions').style.display = 'block';
@@ -322,15 +332,14 @@ class TabListElement extends CustomElement {
     tabElement.remove();
 
     if (tabElement.tab && tabElement.tab.pinned) {
-      this.pinnedTabsContainerElement_.insertBefore(
-          tabElement, this.pinnedTabsContainerElement_.childNodes[index]);
+      this.pinnedTabsElement_.insertBefore(
+          tabElement, this.pinnedTabsElement_.childNodes[index]);
     } else {
-      // Pinned tabs are in their own container, so the index of non-pinned
+      // Pinned tabs are in their own , so the index of non-pinned
       // tabs need to be offset by the number of pinned tabs
-      const offsetIndex =
-          index - this.pinnedTabsContainerElement_.childElementCount;
-      this.tabsContainerElement_.insertBefore(
-          tabElement, this.tabsContainerElement_.childNodes[offsetIndex]);
+      const offsetIndex = index - this.pinnedTabsElement_.childElementCount;
+      this.unpinnedTabsElement_.insertBefore(
+          tabElement, this.unpinnedTabsElement_.childNodes[offsetIndex]);
     }
 
     if (isInserting) {
@@ -353,8 +362,10 @@ class TabListElement extends CustomElement {
     if (!this.tabStripEmbedderProxy_.isVisible()) {
       this.scrollToActiveTab_();
     }
-    Array.from(this.tabsContainerElement_.children)
-        .forEach((tabElement) => this.updateThumbnailTrackStatus_(tabElement));
+
+    this.unpinnedTabsElement_.childNodes.forEach(
+        tabElement => this.updateThumbnailTrackStatus_(
+            /** @type {!TabElement} */ (tabElement)));
   }
 
   /**
@@ -390,7 +401,7 @@ class TabListElement extends CustomElement {
     let dragOverIndex =
         Array.from(dragOverItem.parentNode.children).indexOf(dragOverItem);
     if (!this.draggedItem_.tab.pinned) {
-      dragOverIndex += this.pinnedTabsContainerElement_.childElementCount;
+      dragOverIndex += this.pinnedTabsElement_.childElementCount;
     }
 
     this.tabsApi_.moveTab(this.draggedItem_.tab.id, dragOverIndex);

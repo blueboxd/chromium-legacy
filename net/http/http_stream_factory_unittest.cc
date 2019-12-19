@@ -252,7 +252,8 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
   void OnStreamFailed(int status,
                       const NetErrorDetails& net_error_details,
                       const SSLConfig& used_ssl_config,
-                      const ProxyInfo& used_proxy_info) override {
+                      const ProxyInfo& used_proxy_info,
+                      ResolveErrorInfo resolve_error_info) override {
     stream_done_ = true;
     if (waiting_for_stream_)
       loop_.Quit();

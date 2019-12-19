@@ -868,12 +868,13 @@ void CollectUserDataAction::UpdatePersonalDataManagerCards(
   user_data->available_payment_instruments.clear();
   for (const auto* card :
        delegate_->GetPersonalDataManager()->GetCreditCardsToSuggest(true)) {
-    if (std::find(
+    if (collect_user_data_options_->supported_basic_card_networks.empty() ||
+        std::find(
             collect_user_data_options_->supported_basic_card_networks.begin(),
             collect_user_data_options_->supported_basic_card_networks.end(),
             autofill::data_util::GetPaymentRequestData(card->network())
                 .basic_card_issuer_network) !=
-        collect_user_data_options_->supported_basic_card_networks.end()) {
+            collect_user_data_options_->supported_basic_card_networks.end()) {
       auto payment_instrument = std::make_unique<PaymentInstrument>();
       payment_instrument->card = std::make_unique<autofill::CreditCard>(*card);
 

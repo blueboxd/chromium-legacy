@@ -535,7 +535,7 @@ class Browser : public TabStripModelObserver,
   void TabPinnedStateChanged(TabStripModel* tab_strip_model,
                              content::WebContents* contents,
                              int index) override;
-  void TabGroupedStateChanged(base::Optional<TabGroupId> group,
+  void TabGroupedStateChanged(base::Optional<tab_groups::TabGroupId> group,
                               int index) override;
   void TabStripEmpty() override;
 

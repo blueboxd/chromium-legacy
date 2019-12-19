@@ -385,7 +385,7 @@ TEST_F('OSSettingsDateTimePageTest', 'AllJsTests', () => {
 var OSSettingsDevicePageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'device_page/device_page.html';
+    return super.browsePreload + 'chromeos/device_page/device_page.html';
   }
 
   /** @override */
@@ -1103,7 +1103,7 @@ var OSSettingsManageAccessibilityPageTest =
     class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'a11y_page/manage_a11y_page.html';
+    return super.browsePreload + 'chromeos/os_a11y_page/manage_a11y_page.html';
   }
 
   /** @override */

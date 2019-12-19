@@ -262,6 +262,9 @@ function runTests() {
                 var text = fileReader.result;
                 chrome.test.assertEq(0, text.length);
               });
+              fileReader.onerror = function(error) {
+                chrome.test.fail(error.name);
+              };
               fileReader.readAsText(fileSlice);
             }),
             function(error) {

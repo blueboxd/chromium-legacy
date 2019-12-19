@@ -76,7 +76,7 @@ void DisplayDamageTracker::ProcessSurfaceDamage(const SurfaceId& surface_id,
     expecting_root_surface_damage_because_of_resize_ = false;
 
   // Update surface state.
-  bool valid_ack = ack.sequence_number != BeginFrameArgs::kInvalidFrameNumber;
+  bool valid_ack = ack.frame_id.IsSequenceValid();
   if (valid_ack) {
     auto it = surface_states_.find(surface_id);
     // Ignore stray acknowledgments for prior BeginFrames, to ensure we don't
@@ -84,8 +84,7 @@ void DisplayDamageTracker::ProcessSurfaceDamage(const SurfaceId& surface_id,
     // such stray acks e.g. when a CompositorFrame activates in a later
     // BeginFrame than it was created.
     if (it != surface_states_.end() &&
-        (it->second.last_ack.source_id != ack.source_id ||
-         it->second.last_ack.sequence_number < ack.sequence_number)) {
+        !it->second.last_ack.frame_id.IsNextInSequenceTo(ack.frame_id)) {
       it->second.last_ack = ack;
     } else {
       valid_ack = false;
@@ -117,16 +116,13 @@ bool DisplayDamageTracker::HasPendingSurfaces(
     // Surface is ready if it hasn't received the current BeginFrame or receives
     // BeginFrames from a different source and thus likely belongs to a
     // different surface hierarchy.
-    uint64_t source_id = begin_frame_args.source_id;
-    uint64_t sequence_number = begin_frame_args.sequence_number;
-    if (!state.last_args.IsValid() || state.last_args.source_id != source_id ||
-        state.last_args.sequence_number != sequence_number) {
+    if (!state.last_args.IsValid() ||
+        state.last_args.frame_id != begin_frame_args.frame_id) {
       continue;
     }
 
     // Surface is ready if it has acknowledged the current BeginFrame.
-    if (state.last_ack.source_id == source_id &&
-        state.last_ack.sequence_number == sequence_number) {
+    if (state.last_ack.frame_id == begin_frame_args.frame_id) {
       continue;
     }
 

@@ -1006,226 +1006,6 @@ TEST_F(OptimizationGuideHintsManagerTest, InvalidOptimizationFilterNotLoaded) {
       optimization_guide::proto::LITE_PAGE_REDIRECT));
 }
 
-TEST_F(OptimizationGuideHintsManagerTest,
-       HintsFetchNotAllowedIfFeatureIsEnabledButTopHostProviderIsNotProvided) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {optimization_guide::features::kRemoteOptimizationGuideFetching}, {});
-
-  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
-  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
-                               /*top_host_provider=*/nullptr);
-  hints_manager()->SetHintsFetcherForTesting(
-      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
-  InitializeWithDefaultConfig("1.0.0");
-
-  // Force timer to expire and schedule a hints fetch.
-  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
-  EXPECT_FALSE(hints_fetcher()->hints_fetched());
-}
-
-TEST_F(OptimizationGuideHintsManagerTest,
-       HintsFetchNotAllowedIfFeatureIsEnabledButDataSaverIsNotEnabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {optimization_guide::features::kRemoteOptimizationGuideFetching}, {});
-
-  SetUserPermissions(/*data_saver_enabled=*/false, /*has_seen_infobar=*/true);
-  std::unique_ptr<FakeTopHostProvider> top_host_provider =
-      std::make_unique<FakeTopHostProvider>(
-          std::vector<std::string>({"example1.com", "example2.com"}));
-
-  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
-                               top_host_provider.get());
-  hints_manager()->SetHintsFetcherForTesting(
-      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
-  InitializeWithDefaultConfig("1.0.0");
-
-  // Force timer to expire and schedule a hints fetch.
-  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
-  EXPECT_EQ(0, top_host_provider->get_num_top_hosts_called());
-  EXPECT_FALSE(hints_fetcher()->hints_fetched());
-}
-
-TEST_F(OptimizationGuideHintsManagerTest,
-       HintsFetchNotAllowedIfFeatureIsNotEnabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {}, {optimization_guide::features::kRemoteOptimizationGuideFetching});
-
-  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
-  std::unique_ptr<FakeTopHostProvider> top_host_provider =
-      std::make_unique<FakeTopHostProvider>(
-          std::vector<std::string>({"example1.com", "example2.com"}));
-
-  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
-                               top_host_provider.get());
-  InitializeWithDefaultConfig("1.0.0");
-
-  // Force timer to expire and schedule a hints fetch.
-  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
-  EXPECT_EQ(0, top_host_provider->get_num_top_hosts_called());
-}
-
-TEST_F(OptimizationGuideHintsManagerTest,
-       HintsFetchAllowedIfFeatureIsEnabledAndDataSaverUserHasNotSeenInfobar) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {optimization_guide::features::kRemoteOptimizationGuideFetching}, {});
-
-  std::unique_ptr<FakeTopHostProvider> top_host_provider =
-      std::make_unique<FakeTopHostProvider>(
-          std::vector<std::string>({"example1.com", "example2.com"}));
-
-  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/false);
-  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
-                               top_host_provider.get());
-  hints_manager()->SetHintsFetcherForTesting(
-      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
-  InitializeWithDefaultConfig("1.0.0");
-
-  // Force timer to expire and schedule a hints fetch.
-  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
-  EXPECT_EQ(0, top_host_provider->get_num_top_hosts_called());
-  EXPECT_FALSE(hints_fetcher()->hints_fetched());
-}
-
-TEST_F(
-    OptimizationGuideHintsManagerTest,
-    HintsFetchAllowedIfFeatureIsEnabledAndUserMeetsAllDataSaverUserCriteria) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {optimization_guide::features::kRemoteOptimizationGuideFetching}, {});
-
-  std::unique_ptr<FakeTopHostProvider> top_host_provider =
-      std::make_unique<FakeTopHostProvider>(
-          std::vector<std::string>({"example1.com", "example2.com"}));
-
-  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
-  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
-                               top_host_provider.get());
-  hints_manager()->SetHintsFetcherForTesting(
-      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
-  InitializeWithDefaultConfig("1.0.0");
-
-  // Force timer to expire and schedule a hints fetch.
-  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
-  EXPECT_EQ(1, top_host_provider->get_num_top_hosts_called());
-  EXPECT_TRUE(hints_fetcher()->hints_fetched());
-}
-
-TEST_F(OptimizationGuideHintsManagerTest, HintsFetcherEnabledNoHostsToFetch) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      optimization_guide::features::kRemoteOptimizationGuideFetching);
-
-  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
-  std::unique_ptr<FakeTopHostProvider> top_host_provider =
-      std::make_unique<FakeTopHostProvider>(std::vector<std::string>({}));
-  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
-                               top_host_provider.get());
-  hints_manager()->SetHintsFetcherForTesting(
-      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
-  InitializeWithDefaultConfig("1.0.0");
-
-  // Force timer to expire and schedule a hints fetch.
-  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
-  EXPECT_EQ(1, top_host_provider->get_num_top_hosts_called());
-  EXPECT_FALSE(hints_fetcher()->hints_fetched());
-}
-
-TEST_F(OptimizationGuideHintsManagerTest,
-       HintsFetcherEnabledWithHostsNoHintsInResponse) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      optimization_guide::features::kRemoteOptimizationGuideFetching);
-
-  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
-  std::unique_ptr<FakeTopHostProvider> top_host_provider =
-      std::make_unique<FakeTopHostProvider>(
-          std::vector<std::string>({"example1.com", "example2.com"}));
-  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
-                               top_host_provider.get());
-  hints_manager()->SetHintsFetcherForTesting(
-      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithNoHints));
-  InitializeWithDefaultConfig("1.0.0");
-
-  // Force timer to expire and schedule a hints fetch.
-  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
-  EXPECT_EQ(1, top_host_provider->get_num_top_hosts_called());
-  EXPECT_TRUE(hints_fetcher()->hints_fetched());
-
-  // Check that hints should not be fetched again after the delay for a failed
-  // hints fetch attempt.
-  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
-  // This should be called exactly once, confirming that hints are not fetched
-  // again after |kTestFetchRetryDelaySecs|.
-  EXPECT_EQ(1, top_host_provider->get_num_top_hosts_called());
-}
-
-TEST_F(OptimizationGuideHintsManagerTest, HintsFetcherTimerRetryDelay) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      optimization_guide::features::kRemoteOptimizationGuideFetching);
-
-  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
-  std::unique_ptr<FakeTopHostProvider> top_host_provider =
-      std::make_unique<FakeTopHostProvider>(
-          std::vector<std::string>({"example1.com", "example2.com"}));
-
-  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
-                               top_host_provider.get());
-  hints_manager()->SetHintsFetcherForTesting(
-      BuildTestHintsFetcher(HintsFetcherEndState::kFetchFailed));
-  InitializeWithDefaultConfig("1.0.0");
-
-  // Force timer to expire and schedule a hints fetch - first time.
-  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
-  EXPECT_EQ(1, top_host_provider->get_num_top_hosts_called());
-  EXPECT_FALSE(hints_fetcher()->hints_fetched());
-
-  // Force speculative timer to expire after fetch fails first time, update
-  // hints fetcher so it succeeds this time.
-  hints_manager()->SetHintsFetcherForTesting(
-      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
-  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
-  EXPECT_EQ(2, top_host_provider->get_num_top_hosts_called());
-  EXPECT_TRUE(hints_fetcher()->hints_fetched());
-}
-
-TEST_F(OptimizationGuideHintsManagerTest, HintsFetcherTimerFetchSucceeds) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      optimization_guide::features::kRemoteOptimizationGuideFetching);
-
-  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
-  std::unique_ptr<FakeTopHostProvider> top_host_provider =
-      std::make_unique<FakeTopHostProvider>(
-          std::vector<std::string>({"example1.com", "example2.com"}));
-
-  // Force hints fetch scheduling.
-  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
-                               top_host_provider.get());
-  hints_manager()->SetHintsFetcherForTesting(
-      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
-  InitializeWithDefaultConfig("1.0.0");
-
-  // Force timer to expire and schedule a hints fetch that succeeds.
-  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
-  EXPECT_TRUE(hints_fetcher()->hints_fetched());
-
-  // TODO(mcrouse): Make sure timer is triggered by metadata entry,
-  // |hint_cache| control needed.
-  hints_manager()->SetHintsFetcherForTesting(
-      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
-
-  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
-  EXPECT_FALSE(hints_fetcher()->hints_fetched());
-
-  MoveClockForwardBy(base::TimeDelta::FromSeconds(kUpdateFetchHintsTimeSecs));
-  EXPECT_TRUE(hints_fetcher()->hints_fetched());
-}
-
 TEST_F(OptimizationGuideHintsManagerTest, CanApplyOptimizationUrlWithNoHost) {
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::LITE_PAGE_REDIRECT});
@@ -1511,60 +1291,6 @@ TEST_F(OptimizationGuideHintsManagerTest,
   EXPECT_FALSE(navigation_data->has_page_hint_value());
 }
 
-#if defined(THREAD_SANITIZER)
-// Data race which TSan detects: https://crbug.com/1035004
-#define MAYBE_CanApplyOptimizationAndPopulatesMetadataWithFirstOptThatMatchesWithExp \
-  DISABLED_CanApplyOptimizationAndPopulatesMetadataWithFirstOptThatMatchesWithExp
-#else
-#define MAYBE_CanApplyOptimizationAndPopulatesMetadataWithFirstOptThatMatchesWithExp \
-  CanApplyOptimizationAndPopulatesMetadataWithFirstOptThatMatchesWithExp
-#endif
-TEST_F(
-    OptimizationGuideHintsManagerTest,
-    MAYBE_CanApplyOptimizationAndPopulatesMetadataWithFirstOptThatMatchesWithExp) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeatureWithParameters(
-      optimization_guide::features::kOptimizationHintsExperiments,
-      {{"experiment_name", "experiment"}});
-
-  InitializeWithDefaultConfig("1.0.0.0");
-
-  // Set ECT estimate so hint is activated.
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          url_with_hints());
-  base::RunLoop run_loop;
-  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
-                                               run_loop.QuitClosure());
-  run_loop.Run();
-
-  optimization_guide::OptimizationTargetDecision optimization_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
-  optimization_guide::OptimizationMetadata optimization_metadata;
-  hints_manager()->CanApplyOptimization(
-      navigation_handle.get(),
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::proto::NOSCRIPT, &optimization_target_decision,
-      &optimization_type_decision, &optimization_metadata);
-  EXPECT_EQ(12345, optimization_metadata.previews_metadata.inflation_percent());
-
-  // Make sure decisions are logged correctly.
-  EXPECT_EQ(optimization_guide::OptimizationTargetDecision::kPageLoadMatches,
-            optimization_target_decision);
-  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
-            optimization_type_decision);
-  // Make sure navigation data is populated correctly.
-  OptimizationGuideNavigationData* navigation_data =
-      OptimizationGuideNavigationData::GetFromNavigationHandle(
-          navigation_handle.get());
-  EXPECT_TRUE(navigation_data->has_hint_before_commit().value());
-  EXPECT_TRUE(navigation_data->has_hint_after_commit().value());
-  EXPECT_EQ("someversion", navigation_data->serialized_hint_version_string());
-  ASSERT_TRUE(navigation_data->page_hint());
-}
-
 TEST_F(OptimizationGuideHintsManagerTest,
        CanApplyOptimizationAndPopulatesMetadataWithFirstOptThatMatchesNoExp) {
   InitializeWithDefaultConfig("1.0.0.0");
@@ -1799,266 +1525,6 @@ TEST_F(OptimizationGuideHintsManagerTest, IsGoogleURL) {
     EXPECT_TRUE(url.is_valid());
     EXPECT_EQ(test.expect_is_google_url, hints_manager()->IsGoogleURL(url));
   }
-}
-
-TEST_F(OptimizationGuideHintsManagerTest, HintsFetched_AtSRP_ECT_SLOW_2G) {
-  hints_manager()->RegisterOptimizationTypes(
-      {optimization_guide::proto::DEFER_ALL_SCRIPT});
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(
-      optimization_guide::features::kRemoteOptimizationGuideFetching);
-  InitializeWithDefaultConfig("1.0.0.0");
-
-  // Set ECT estimate so hint is activated.
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          url_without_hints());
-  base::HistogramTester histogram_tester;
-  std::vector<GURL> sorted_predicted_urls;
-  sorted_predicted_urls.push_back(GURL("https://foo.com/"));
-  NavigationPredictorKeyedService::Prediction prediction(
-      nullptr, GURL("https://www.google.com/"), sorted_predicted_urls);
-
-  hints_manager()->OnPredictionUpdated(prediction);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1, 1);
-}
-
-TEST_F(OptimizationGuideHintsManagerTest,
-       HintsFetched_AtSRP_ECT_SLOW_2G_DuplicatesRemoved) {
-  hints_manager()->RegisterOptimizationTypes(
-      {optimization_guide::proto::DEFER_ALL_SCRIPT});
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(
-      optimization_guide::features::kRemoteOptimizationGuideFetching);
-  InitializeWithDefaultConfig("1.0.0.0");
-
-  // Set ECT estimate so hint is activated.
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          url_without_hints());
-  base::HistogramTester histogram_tester;
-  std::vector<GURL> sorted_predicted_urls;
-  sorted_predicted_urls.push_back(GURL("https://foo.com/page1.html"));
-  sorted_predicted_urls.push_back(GURL("https://foo.com/page2.html"));
-  sorted_predicted_urls.push_back(GURL("https://foo.com/page3.html"));
-  sorted_predicted_urls.push_back(GURL("https://bar.com/"));
-
-  NavigationPredictorKeyedService::Prediction prediction(
-      nullptr, GURL("https://www.google.com/"), sorted_predicted_urls);
-
-  hints_manager()->OnPredictionUpdated(prediction);
-  // Ensure that we only include 2 hosts in the request. These would be foo.com
-  // and bar.com.
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
-}
-
-TEST_F(OptimizationGuideHintsManagerTest,
-       HintsFetched_AtSRP_ECT_SLOW_2G_InsecureHostsRemoved) {
-  hints_manager()->RegisterOptimizationTypes(
-      {optimization_guide::proto::DEFER_ALL_SCRIPT});
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(
-      optimization_guide::features::kRemoteOptimizationGuideFetching);
-  InitializeWithDefaultConfig("1.0.0.0");
-
-  // Set ECT estimate so hint is activated.
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          url_without_hints());
-  base::HistogramTester histogram_tester;
-  std::vector<GURL> sorted_predicted_urls;
-  sorted_predicted_urls.push_back(GURL("https://foo.com/page1.html"));
-  sorted_predicted_urls.push_back(GURL("http://insecure-bar.com/"));
-
-  NavigationPredictorKeyedService::Prediction prediction(
-      nullptr, GURL("https://www.google.com/"), sorted_predicted_urls);
-
-  hints_manager()->OnPredictionUpdated(prediction);
-  // Ensure that we only include 1 secure host in the request. These would be
-  // foo.com.
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1, 1);
-}
-
-TEST_F(OptimizationGuideHintsManagerTest, HintsFetched_AtSRP_ECT_4G) {
-  hints_manager()->RegisterOptimizationTypes(
-      {optimization_guide::proto::DEFER_ALL_SCRIPT});
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(
-      optimization_guide::features::kRemoteOptimizationGuideFetching);
-  InitializeWithDefaultConfig("1.0.0.0");
-
-  // Set ECT estimate so hint is activated.
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          url_without_hints());
-  base::HistogramTester histogram_tester;
-  std::vector<GURL> sorted_predicted_urls;
-  sorted_predicted_urls.push_back(GURL("https://foo.com/"));
-  NavigationPredictorKeyedService::Prediction prediction(
-      nullptr, GURL("https://www.google.com/"), sorted_predicted_urls);
-
-  hints_manager()->OnPredictionUpdated(prediction);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
-}
-
-TEST_F(OptimizationGuideHintsManagerTest, HintsFetched_AtNonSRP_ECT_SLOW_2G) {
-  hints_manager()->RegisterOptimizationTypes(
-      {optimization_guide::proto::DEFER_ALL_SCRIPT});
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(
-      optimization_guide::features::kRemoteOptimizationGuideFetching);
-  InitializeWithDefaultConfig("1.0.0.0");
-
-  // Set ECT estimate so hint is activated.
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          url_without_hints());
-  base::HistogramTester histogram_tester;
-  std::vector<GURL> sorted_predicted_urls;
-  sorted_predicted_urls.push_back(GURL("https://foo.com/"));
-  NavigationPredictorKeyedService::Prediction prediction(
-      nullptr, GURL("https://www.not-google.com/"), sorted_predicted_urls);
-
-  hints_manager()->OnPredictionUpdated(prediction);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
-}
-
-TEST_F(OptimizationGuideHintsManagerTest,
-       HintsFetchedAtNavigationTime_ECT_SLOW_2G) {
-  hints_manager()->RegisterOptimizationTypes(
-      {optimization_guide::proto::DEFER_ALL_SCRIPT});
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(
-      optimization_guide::features::kRemoteOptimizationGuideFetching);
-  InitializeWithDefaultConfig("1.0.0.0");
-
-  // Set ECT estimate so hint is activated.
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          url_without_hints());
-  base::RunLoop run_loop;
-  base::HistogramTester histogram_tester;
-  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
-                                               run_loop.QuitClosure());
-  run_loop.Run();
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1, 1);
-
-  // Make sure navigation data is populated correctly.
-  OptimizationGuideNavigationData* navigation_data =
-      OptimizationGuideNavigationData::GetFromNavigationHandle(
-          navigation_handle.get());
-  EXPECT_TRUE(
-      navigation_data->was_hint_for_host_attempted_to_be_fetched().has_value());
-  EXPECT_TRUE(
-      navigation_data->was_hint_for_host_attempted_to_be_fetched().value());
-}
-
-TEST_F(OptimizationGuideHintsManagerTest,
-       HintsFetchedAtNavigationTime_HasComponentHintButNotFetched) {
-  hints_manager()->RegisterOptimizationTypes(
-      {optimization_guide::proto::DEFER_ALL_SCRIPT});
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(
-      optimization_guide::features::kRemoteOptimizationGuideFetching);
-  InitializeWithDefaultConfig("1.0.0.0");
-
-  // Set ECT estimate so hint is activated.
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          url_with_hints());
-  base::RunLoop run_loop;
-  base::HistogramTester histogram_tester;
-  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
-                                               run_loop.QuitClosure());
-  run_loop.Run();
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
-
-  // Make sure navigation data is populated correctly.
-  OptimizationGuideNavigationData* navigation_data =
-      OptimizationGuideNavigationData::GetFromNavigationHandle(
-          navigation_handle.get());
-  EXPECT_FALSE(
-      navigation_data->was_hint_for_host_attempted_to_be_fetched().has_value());
-}
-
-TEST_F(OptimizationGuideHintsManagerTest,
-       HintsNotFetchedAtNavigationTime_ECT_4G) {
-  hints_manager()->RegisterOptimizationTypes(
-      {optimization_guide::proto::DEFER_ALL_SCRIPT});
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(
-      optimization_guide::features::kRemoteOptimizationGuideFetching);
-  InitializeWithDefaultConfig("1.0.0.0");
-
-  // Set ECT estimate so hint is activated.
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          url_without_hints());
-  base::HistogramTester histogram_tester;
-  base::RunLoop run_loop;
-  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
-                                               run_loop.QuitClosure());
-  run_loop.Run();
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
-  // Make sure navigation data is populated correctly.
-  OptimizationGuideNavigationData* navigation_data =
-      OptimizationGuideNavigationData::GetFromNavigationHandle(
-          navigation_handle.get());
-  EXPECT_FALSE(
-      navigation_data->was_hint_for_host_attempted_to_be_fetched().has_value());
-}
-
-TEST_F(OptimizationGuideHintsManagerTest, CanApplyOptimizationCalledMidFetch) {
-  hints_manager()->RegisterOptimizationTypes(
-      {optimization_guide::proto::DEFER_ALL_SCRIPT});
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(
-      optimization_guide::features::kRemoteOptimizationGuideFetching);
-  InitializeWithDefaultConfig("1.0.0.0");
-
-  // Set ECT estimate so hint will attempt to be fetched.
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G);
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          url_without_hints());
-  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
-                                               base::DoNothing());
-  optimization_guide::OptimizationTargetDecision unused_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
-  hints_manager()->CanApplyOptimization(
-      navigation_handle.get(),
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::proto::DEFER_ALL_SCRIPT, &unused_target_decision,
-      &optimization_type_decision, /*optimization_metadata=*/nullptr);
-
-  EXPECT_EQ(optimization_type_decision,
-            optimization_guide::OptimizationTypeDecision::
-                kHintFetchStartedButNotAvailableInTime);
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
@@ -2301,4 +1767,503 @@ TEST_F(OptimizationGuideHintsManagerTest,
   EXPECT_TRUE(navigation_data->has_hint_after_commit().value());
   EXPECT_EQ("someversion", navigation_data->serialized_hint_version_string());
   ASSERT_TRUE(navigation_data->page_hint());
+}
+
+class OptimizationGuideHintsManagerExperimentTest
+    : public OptimizationGuideHintsManagerTest {
+ public:
+  OptimizationGuideHintsManagerExperimentTest() {
+    scoped_list_.InitAndEnableFeatureWithParameters(
+        optimization_guide::features::kOptimizationHintsExperiments,
+        {{"experiment_name", "experiment"}});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_list_;
+};
+
+TEST_F(OptimizationGuideHintsManagerExperimentTest,
+       CanApplyOptimizationAndPopulatesMetadataWithFirstOptThatMatchesWithExp) {
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_with_hints());
+  base::RunLoop run_loop;
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
+  run_loop.Run();
+
+  optimization_guide::OptimizationTargetDecision optimization_target_decision;
+  optimization_guide::OptimizationTypeDecision optimization_type_decision;
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  hints_manager()->CanApplyOptimization(
+      navigation_handle.get(),
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+      optimization_guide::proto::NOSCRIPT, &optimization_target_decision,
+      &optimization_type_decision, &optimization_metadata);
+  EXPECT_EQ(12345, optimization_metadata.previews_metadata.inflation_percent());
+
+  // Make sure decisions are logged correctly.
+  EXPECT_EQ(optimization_guide::OptimizationTargetDecision::kPageLoadMatches,
+            optimization_target_decision);
+  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
+            optimization_type_decision);
+  // Make sure navigation data is populated correctly.
+  OptimizationGuideNavigationData* navigation_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
+  EXPECT_TRUE(navigation_data->has_hint_before_commit().value());
+  EXPECT_TRUE(navigation_data->has_hint_after_commit().value());
+  EXPECT_EQ("someversion", navigation_data->serialized_hint_version_string());
+  ASSERT_TRUE(navigation_data->page_hint());
+}
+
+class OptimizationGuideHintsManagerFetchingDisabledTest
+    : public OptimizationGuideHintsManagerTest {
+ public:
+  OptimizationGuideHintsManagerFetchingDisabledTest() {
+    scoped_list_.InitAndDisableFeature(
+        optimization_guide::features::kRemoteOptimizationGuideFetching);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_list_;
+};
+
+TEST_F(OptimizationGuideHintsManagerFetchingDisabledTest,
+       HintsFetchNotAllowedIfFeatureIsNotEnabled) {
+  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
+  std::unique_ptr<FakeTopHostProvider> top_host_provider =
+      std::make_unique<FakeTopHostProvider>(
+          std::vector<std::string>({"example1.com", "example2.com"}));
+
+  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
+                               top_host_provider.get());
+  InitializeWithDefaultConfig("1.0.0");
+
+  // Force timer to expire and schedule a hints fetch.
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_EQ(0, top_host_provider->get_num_top_hosts_called());
+}
+
+class OptimizationGuideHintsManagerFetchingTest
+    : public OptimizationGuideHintsManagerTest {
+ public:
+  OptimizationGuideHintsManagerFetchingTest() {
+    scoped_list_.InitAndEnableFeature(
+        optimization_guide::features::kRemoteOptimizationGuideFetching);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_list_;
+};
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       HintsFetchNotAllowedIfFeatureIsEnabledButTopHostProviderIsNotProvided) {
+  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
+  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
+                               /*top_host_provider=*/nullptr);
+  hints_manager()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
+  InitializeWithDefaultConfig("1.0.0");
+
+  // Force timer to expire and schedule a hints fetch.
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_FALSE(hints_fetcher()->hints_fetched());
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       HintsFetchNotAllowedIfFeatureIsEnabledButDataSaverIsNotEnabled) {
+  SetUserPermissions(/*data_saver_enabled=*/false, /*has_seen_infobar=*/true);
+  std::unique_ptr<FakeTopHostProvider> top_host_provider =
+      std::make_unique<FakeTopHostProvider>(
+          std::vector<std::string>({"example1.com", "example2.com"}));
+
+  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
+                               top_host_provider.get());
+  hints_manager()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
+  InitializeWithDefaultConfig("1.0.0");
+
+  // Force timer to expire and schedule a hints fetch.
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_EQ(0, top_host_provider->get_num_top_hosts_called());
+  EXPECT_FALSE(hints_fetcher()->hints_fetched());
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       HintsFetchAllowedIfFeatureIsEnabledAndDataSaverUserHasNotSeenInfobar) {
+  std::unique_ptr<FakeTopHostProvider> top_host_provider =
+      std::make_unique<FakeTopHostProvider>(
+          std::vector<std::string>({"example1.com", "example2.com"}));
+
+  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/false);
+  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
+                               top_host_provider.get());
+  hints_manager()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
+  InitializeWithDefaultConfig("1.0.0");
+
+  // Force timer to expire and schedule a hints fetch.
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_EQ(0, top_host_provider->get_num_top_hosts_called());
+  EXPECT_FALSE(hints_fetcher()->hints_fetched());
+}
+
+TEST_F(
+    OptimizationGuideHintsManagerFetchingTest,
+    HintsFetchAllowedIfFeatureIsEnabledAndUserMeetsAllDataSaverUserCriteria) {
+  std::unique_ptr<FakeTopHostProvider> top_host_provider =
+      std::make_unique<FakeTopHostProvider>(
+          std::vector<std::string>({"example1.com", "example2.com"}));
+
+  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
+  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
+                               top_host_provider.get());
+  hints_manager()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
+  InitializeWithDefaultConfig("1.0.0");
+
+  // Force timer to expire and schedule a hints fetch.
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_EQ(1, top_host_provider->get_num_top_hosts_called());
+  EXPECT_TRUE(hints_fetcher()->hints_fetched());
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       HintsFetcherEnabledNoHostsToFetch) {
+  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
+  std::unique_ptr<FakeTopHostProvider> top_host_provider =
+      std::make_unique<FakeTopHostProvider>(std::vector<std::string>({}));
+  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
+                               top_host_provider.get());
+  hints_manager()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
+  InitializeWithDefaultConfig("1.0.0");
+
+  // Force timer to expire and schedule a hints fetch.
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_EQ(1, top_host_provider->get_num_top_hosts_called());
+  EXPECT_FALSE(hints_fetcher()->hints_fetched());
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       HintsFetcherEnabledWithHostsNoHintsInResponse) {
+  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
+  std::unique_ptr<FakeTopHostProvider> top_host_provider =
+      std::make_unique<FakeTopHostProvider>(
+          std::vector<std::string>({"example1.com", "example2.com"}));
+  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
+                               top_host_provider.get());
+  hints_manager()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithNoHints));
+  InitializeWithDefaultConfig("1.0.0");
+
+  // Force timer to expire and schedule a hints fetch.
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_EQ(1, top_host_provider->get_num_top_hosts_called());
+  EXPECT_TRUE(hints_fetcher()->hints_fetched());
+
+  // Check that hints should not be fetched again after the delay for a failed
+  // hints fetch attempt.
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  // This should be called exactly once, confirming that hints are not fetched
+  // again after |kTestFetchRetryDelaySecs|.
+  EXPECT_EQ(1, top_host_provider->get_num_top_hosts_called());
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest, HintsFetcherTimerRetryDelay) {
+  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
+  std::unique_ptr<FakeTopHostProvider> top_host_provider =
+      std::make_unique<FakeTopHostProvider>(
+          std::vector<std::string>({"example1.com", "example2.com"}));
+
+  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
+                               top_host_provider.get());
+  hints_manager()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchFailed));
+  InitializeWithDefaultConfig("1.0.0");
+
+  // Force timer to expire and schedule a hints fetch - first time.
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_EQ(1, top_host_provider->get_num_top_hosts_called());
+  EXPECT_FALSE(hints_fetcher()->hints_fetched());
+
+  // Force speculative timer to expire after fetch fails first time, update
+  // hints fetcher so it succeeds this time.
+  hints_manager()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_EQ(2, top_host_provider->get_num_top_hosts_called());
+  EXPECT_TRUE(hints_fetcher()->hints_fetched());
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       HintsFetcherTimerFetchSucceeds) {
+  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
+  std::unique_ptr<FakeTopHostProvider> top_host_provider =
+      std::make_unique<FakeTopHostProvider>(
+          std::vector<std::string>({"example1.com", "example2.com"}));
+
+  // Force hints fetch scheduling.
+  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
+                               top_host_provider.get());
+  hints_manager()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
+  InitializeWithDefaultConfig("1.0.0");
+
+  // Force timer to expire and schedule a hints fetch that succeeds.
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_TRUE(hints_fetcher()->hints_fetched());
+
+  // TODO(mcrouse): Make sure timer is triggered by metadata entry,
+  // |hint_cache| control needed.
+  hints_manager()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
+
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_FALSE(hints_fetcher()->hints_fetched());
+
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kUpdateFetchHintsTimeSecs));
+  EXPECT_TRUE(hints_fetcher()->hints_fetched());
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       HintsFetched_AtSRP_ECT_SLOW_2G) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+  base::HistogramTester histogram_tester;
+  std::vector<GURL> sorted_predicted_urls;
+  sorted_predicted_urls.push_back(GURL("https://foo.com/"));
+  NavigationPredictorKeyedService::Prediction prediction(
+      nullptr, GURL("https://www.google.com/"), sorted_predicted_urls);
+
+  hints_manager()->OnPredictionUpdated(prediction);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1, 1);
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       HintsFetched_AtSRP_ECT_SLOW_2G_DuplicatesRemoved) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+  base::HistogramTester histogram_tester;
+  std::vector<GURL> sorted_predicted_urls;
+  sorted_predicted_urls.push_back(GURL("https://foo.com/page1.html"));
+  sorted_predicted_urls.push_back(GURL("https://foo.com/page2.html"));
+  sorted_predicted_urls.push_back(GURL("https://foo.com/page3.html"));
+  sorted_predicted_urls.push_back(GURL("https://bar.com/"));
+
+  NavigationPredictorKeyedService::Prediction prediction(
+      nullptr, GURL("https://www.google.com/"), sorted_predicted_urls);
+
+  hints_manager()->OnPredictionUpdated(prediction);
+  // Ensure that we only include 2 hosts in the request. These would be foo.com
+  // and bar.com.
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       HintsFetched_AtSRP_ECT_SLOW_2G_InsecureHostsRemoved) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+  base::HistogramTester histogram_tester;
+  std::vector<GURL> sorted_predicted_urls;
+  sorted_predicted_urls.push_back(GURL("https://foo.com/page1.html"));
+  sorted_predicted_urls.push_back(GURL("http://insecure-bar.com/"));
+
+  NavigationPredictorKeyedService::Prediction prediction(
+      nullptr, GURL("https://www.google.com/"), sorted_predicted_urls);
+
+  hints_manager()->OnPredictionUpdated(prediction);
+  // Ensure that we only include 1 secure host in the request. These would be
+  // foo.com.
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1, 1);
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest, HintsFetched_AtSRP_ECT_4G) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+  base::HistogramTester histogram_tester;
+  std::vector<GURL> sorted_predicted_urls;
+  sorted_predicted_urls.push_back(GURL("https://foo.com/"));
+  NavigationPredictorKeyedService::Prediction prediction(
+      nullptr, GURL("https://www.google.com/"), sorted_predicted_urls);
+
+  hints_manager()->OnPredictionUpdated(prediction);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       HintsFetched_AtNonSRP_ECT_SLOW_2G) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+  base::HistogramTester histogram_tester;
+  std::vector<GURL> sorted_predicted_urls;
+  sorted_predicted_urls.push_back(GURL("https://foo.com/"));
+  NavigationPredictorKeyedService::Prediction prediction(
+      nullptr, GURL("https://www.not-google.com/"), sorted_predicted_urls);
+
+  hints_manager()->OnPredictionUpdated(prediction);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       HintsFetchedAtNavigationTime_ECT_SLOW_2G) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+  base::RunLoop run_loop;
+  base::HistogramTester histogram_tester;
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
+  run_loop.Run();
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1, 1);
+
+  // Make sure navigation data is populated correctly.
+  OptimizationGuideNavigationData* navigation_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
+  EXPECT_TRUE(
+      navigation_data->was_hint_for_host_attempted_to_be_fetched().has_value());
+  EXPECT_TRUE(
+      navigation_data->was_hint_for_host_attempted_to_be_fetched().value());
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       HintsFetchedAtNavigationTime_HasComponentHintButNotFetched) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_with_hints());
+  base::RunLoop run_loop;
+  base::HistogramTester histogram_tester;
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
+  run_loop.Run();
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
+
+  // Make sure navigation data is populated correctly.
+  OptimizationGuideNavigationData* navigation_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
+  EXPECT_FALSE(
+      navigation_data->was_hint_for_host_attempted_to_be_fetched().has_value());
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       HintsNotFetchedAtNavigationTime_ECT_4G) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+  base::HistogramTester histogram_tester;
+  base::RunLoop run_loop;
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
+  run_loop.Run();
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
+  // Make sure navigation data is populated correctly.
+  OptimizationGuideNavigationData* navigation_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
+  EXPECT_FALSE(
+      navigation_data->was_hint_for_host_attempted_to_be_fetched().has_value());
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       CanApplyOptimizationCalledMidFetch) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so hint will attempt to be fetched.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               base::DoNothing());
+  optimization_guide::OptimizationTargetDecision unused_target_decision;
+  optimization_guide::OptimizationTypeDecision optimization_type_decision;
+  hints_manager()->CanApplyOptimization(
+      navigation_handle.get(),
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+      optimization_guide::proto::DEFER_ALL_SCRIPT, &unused_target_decision,
+      &optimization_type_decision, /*optimization_metadata=*/nullptr);
+
+  EXPECT_EQ(optimization_type_decision,
+            optimization_guide::OptimizationTypeDecision::
+                kHintFetchStartedButNotAvailableInTime);
 }

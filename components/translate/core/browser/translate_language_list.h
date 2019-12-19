@@ -55,7 +55,8 @@ class TranslateLanguageList {
   // pending request.
   void SetResourceRequestsAllowed(bool allowed);
 
-  typedef base::Callback<void(const TranslateEventDetails&)> EventCallback;
+  typedef base::RepeatingCallback<void(const TranslateEventDetails&)>
+      EventCallback;
   typedef base::CallbackList<void(const TranslateEventDetails&)>
       EventCallbackList;
 

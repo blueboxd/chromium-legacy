@@ -7,6 +7,7 @@ from .code_generator_info import CodeGeneratorInfoMutable
 from .exposure import Exposure
 from .exposure import ExposureMutable
 from .extended_attribute import ExtendedAttributes
+from .extended_attribute import ExtendedAttributesMutable
 
 
 class Identifier(str):
@@ -31,14 +32,18 @@ class WithIdentifier(object):
 class WithExtendedAttributes(object):
     """Implements |extended_attributes| as a readonly attribute."""
 
-    def __init__(self, extended_attributes=None):
+    def __init__(self, extended_attributes=None, readonly=False):
         if isinstance(extended_attributes, WithExtendedAttributes):
             extended_attributes = extended_attributes.extended_attributes
         elif extended_attributes is None:
             extended_attributes = ExtendedAttributes()
         assert isinstance(extended_attributes, ExtendedAttributes)
 
-        self._extended_attributes = extended_attributes
+        if readonly:
+            self._extended_attributes = ExtendedAttributes(extended_attributes)
+        else:
+            self._extended_attributes = ExtendedAttributesMutable(
+                extended_attributes)
 
     @property
     def extended_attributes(self):

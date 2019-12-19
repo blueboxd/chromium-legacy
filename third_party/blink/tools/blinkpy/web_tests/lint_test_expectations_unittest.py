@@ -45,6 +45,8 @@ class FakePort(object):
         self.name = name
         self.path = path
 
+    ALL_BUILD_TYPES = ('debug', 'release')
+
     def test_configuration(self):
         return None
 
@@ -62,7 +64,7 @@ class FakePort(object):
         return []
 
     def configuration_specifier_macros(self):
-        return []
+        return {}
 
     def get_option(self, _, val):
         return val

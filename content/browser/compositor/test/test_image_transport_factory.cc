@@ -124,10 +124,6 @@ void TestImageTransportFactory::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
-bool TestImageTransportFactory::SyncTokensRequiredForDisplayCompositor() {
-  return true;
-}
-
 std::unique_ptr<ui::Reflector> TestImageTransportFactory::CreateReflector(
     ui::Compositor* source,
     ui::Layer* target) {

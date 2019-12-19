@@ -52,9 +52,6 @@ bool WebEngineMainDelegate::BasicStartupComplete(int* exit_code) {
     *exit_code = 1;
     return true;
   }
-
-  content_client_ = std::make_unique<WebEngineContentClient>();
-  SetContentClient(content_client_.get());
   return false;
 }
 
@@ -69,6 +66,11 @@ int WebEngineMainDelegate::RunProcess(
     return -1;
 
   return WebEngineBrowserMain(main_function_params);
+}
+
+content::ContentClient* WebEngineMainDelegate::CreateContentClient() {
+  content_client_ = std::make_unique<WebEngineContentClient>();
+  return content_client_.get();
 }
 
 content::ContentBrowserClient*

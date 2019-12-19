@@ -169,10 +169,12 @@ class ExtendedAttributes(object):
     """
 
     def __init__(self, extended_attributes=None):
-        assert extended_attributes is None or (isinstance(
-            extended_attributes, (list, tuple)) and all(
-                isinstance(attr, ExtendedAttribute)
-                for attr in extended_attributes))
+        assert (extended_attributes is None
+                or isinstance(extended_attributes, ExtendedAttributes)
+                or (isinstance(extended_attributes, (list, tuple)) and all(
+                    isinstance(attr, ExtendedAttribute)
+                    for attr in extended_attributes)))
+
         sorted_ext_attrs = sorted(
             extended_attributes or [], key=lambda x: x.key)
 
@@ -181,8 +183,15 @@ class ExtendedAttributes(object):
             for key, ext_attrs in itertools.groupby(
                 sorted_ext_attrs, key=lambda x: x.key)
         }
+        self._keys = None
+        self._length = None
+        self._on_ext_attrs_updated()
+
+    def _on_ext_attrs_updated(self):
         self._keys = tuple(sorted(self._ext_attrs.keys()))
-        self._length = len(sorted_ext_attrs)
+        self._length = 0
+        for ext_attrs in self._ext_attrs.itervalues():
+            self._length += len(ext_attrs)
 
     @classmethod
     def equals(cls, lhs, rhs):
@@ -256,3 +265,20 @@ class ExtendedAttributes(object):
         """Returns self.get(key).values if the key exists or an empty list."""
         ext_attr = self.get(key)
         return ext_attr.values if ext_attr else ()
+
+    def _append(self, ext_attr):
+        assert isinstance(ext_attr, ExtendedAttribute)
+
+        if ext_attr.key not in self._ext_attrs:
+            self._ext_attrs[ext_attr.key] = (ext_attr, )
+        else:
+            self._ext_attrs[ext_attr.key] = (tuple(
+                sorted(
+                    self._ext_attrs[ext_attr.key] + (ext_attr, ),
+                    key=lambda x: x.syntactic_form)))
+        self._on_ext_attrs_updated()
+
+
+class ExtendedAttributesMutable(ExtendedAttributes):
+    def append(self, ext_attr):
+        self._append(ext_attr)

@@ -66,6 +66,7 @@ NGConstraintSpace CreateConstraintSpaceForFloat(
                                    /* is_new_fc */ true);
   SetOrthogonalFallbackInlineSizeIfNeeded(unpositioned_float.parent_style,
                                           unpositioned_float.node, &builder);
+  builder.SetIsPaintedAtomically(true);
 
   if (origin_block_offset) {
     DCHECK(parent_space.HasBlockFragmentation());

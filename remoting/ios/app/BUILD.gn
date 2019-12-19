@@ -113,7 +113,7 @@ source_set("common_source_set") {
   }
 
   public_deps = [
-    "//ios/third_party/material_components_ios",
+    "//ios/third_party/material_components_ios:material_components_ios+link",
     "//remoting/ios/facade",
   ]
 
@@ -146,6 +146,7 @@ ios_remoting_app_tmpl("ios_remoting_app") {
   entitlements_path = "resources/Remoting.entitlements"
   deps = [
     ":app_source_set",
+    "//ios/third_party/material_components_ios:material_components_ios+bundle",
     "//remoting/ios/app/resources:launchscreen_assets",
     "//remoting/ios/app/resources:remoting_icons",
   ]

@@ -38,6 +38,10 @@ class RenderTextTestApi {
     render_text_->DrawVisualText(renderer, selection);
   }
 
+  void Draw(Canvas* canvas, bool select_all = false) {
+    render_text_->Draw(canvas, select_all);
+  }
+
   const base::string16& GetLayoutText() {
     return render_text_->GetLayoutText();
   }

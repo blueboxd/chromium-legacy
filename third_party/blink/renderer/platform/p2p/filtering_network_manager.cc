@@ -6,11 +6,11 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/media_permission.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -117,12 +117,10 @@ void FilteringNetworkManager::CheckPermission() {
   // Request for media permission asynchronously.
   media_permission_->HasPermission(
       media::MediaPermission::AUDIO_CAPTURE,
-      base::BindOnce(&FilteringNetworkManager::OnPermissionStatus,
-                     GetWeakPtr()));
+      WTF::Bind(&FilteringNetworkManager::OnPermissionStatus, GetWeakPtr()));
   media_permission_->HasPermission(
       media::MediaPermission::VIDEO_CAPTURE,
-      base::BindOnce(&FilteringNetworkManager::OnPermissionStatus,
-                     GetWeakPtr()));
+      WTF::Bind(&FilteringNetworkManager::OnPermissionStatus, GetWeakPtr()));
 }
 
 void FilteringNetworkManager::OnPermissionStatus(bool granted) {
@@ -210,9 +208,8 @@ void FilteringNetworkManager::FireEventIfStarted() {
   //
   // TODO(crbug.com/787254): Use Frame-based TaskRunner here.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&FilteringNetworkManager::SendNetworksChangedSignal,
-                     GetWeakPtr()));
+      FROM_HERE, WTF::Bind(&FilteringNetworkManager::SendNetworksChangedSignal,
+                           GetWeakPtr()));
 
   sent_first_update_ = true;
 }

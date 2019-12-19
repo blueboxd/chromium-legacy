@@ -7,7 +7,9 @@
 
 #include "base/optional.h"
 
+namespace tab_groups {
 class TabGroupId;
+}
 
 namespace content {
 class WebContents;
@@ -15,13 +17,14 @@ class WebContents;
 
 class TabGroupController {
  public:
-  virtual void CreateTabGroup(TabGroupId group) = 0;
-  virtual void ChangeTabGroupContents(TabGroupId group) = 0;
-  virtual void ChangeTabGroupVisuals(TabGroupId group) = 0;
-  virtual void CloseTabGroup(TabGroupId group) = 0;
+  virtual void CreateTabGroup(tab_groups::TabGroupId group) = 0;
+  virtual void ChangeTabGroupContents(tab_groups::TabGroupId group) = 0;
+  virtual void ChangeTabGroupVisuals(tab_groups::TabGroupId group) = 0;
+  virtual void CloseTabGroup(tab_groups::TabGroupId group) = 0;
 
   // Methods from TabStipModel that are exposed to TabGroup.
-  virtual base::Optional<TabGroupId> GetTabGroupForTab(int index) const = 0;
+  virtual base::Optional<tab_groups::TabGroupId> GetTabGroupForTab(
+      int index) const = 0;
   virtual content::WebContents* GetWebContentsAt(int index) const = 0;
   virtual int GetTabCount() const = 0;
 

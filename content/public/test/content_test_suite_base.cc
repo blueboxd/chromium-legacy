@@ -77,7 +77,7 @@ void ContentTestSuiteBase::Initialize() {
 void ContentTestSuiteBase::RegisterContentSchemes(
     ContentClient* content_client) {
   SetContentClient(content_client);
-  content::RegisterContentSchemes(false);
+  content::RegisterContentSchemes();
   SetContentClient(nullptr);
 }
 

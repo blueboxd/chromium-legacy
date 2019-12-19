@@ -80,235 +80,6 @@ constexpr size_t kNonceLength = 12;
 
 constexpr size_t kSessionKeyLength = 32;
 
-// Self deleting escrow service requester. This class will try to make a query
-// using the given url fetcher. It will delete itself when the request is
-// completed, either because the request completed successfully within the
-// timeout or the request has timed out and is allowed to complete in the
-// background without having the result read by anyone.
-// There are two situations where the request will be deleted:
-// 1. If the background thread making the request returns within the given
-// timeout, the function is guaranteed to return the result that was fetched.
-// 2. If however the background thread times out there are two potential
-// race conditions that can occur:
-//    1. The main thread making the request can mark that the background thread
-//       is orphaned before it can complete. In this case when the background
-//       thread completes it will check whether the request is orphaned and self
-//       delete.
-//    2. The background thread completes before the main thread can mark the
-//       request as orphaned. In this case the background thread will have
-//       marked that the request is no longer processing and thus the main
-//       thread can self delete.
-class EscrowServiceRequest {
- public:
-  explicit EscrowServiceRequest(std::unique_ptr<WinHttpUrlFetcher> fetcher)
-      : fetcher_(std::move(fetcher)) {
-    DCHECK(fetcher_);
-  }
-
-  // Tries to fetch the request stored in |fetcher_| in a background thread
-  // within the given |request_timeout|. If the background thread returns before
-  // the timeout expires, it is guaranteed that a result can be returned and the
-  // requester will delete itself.
-  base::Optional<base::Value> WaitForResponseFromEscrowService(
-      const base::TimeDelta& request_timeout) {
-    base::Optional<base::Value> result;
-
-    // Start the thread and wait on its handle until |request_timeout| expires
-    // or the thread finishes.
-    unsigned wait_thread_id;
-    uintptr_t wait_thread = ::_beginthreadex(
-        nullptr, 0, &EscrowServiceRequest::FetchResultFromEscrowService,
-        reinterpret_cast<void*>(this), 0, &wait_thread_id);
-
-    HRESULT hr = S_OK;
-    if (wait_thread == 0) {
-      return result;
-    } else {
-      // Hold the handle in the scoped handle so that it can be immediately
-      // closed when the wait is complete allowing the thread to finish
-      // completely if needed.
-      base::win::ScopedHandle thread_handle(
-          reinterpret_cast<HANDLE>(wait_thread));
-      hr = ::WaitForSingleObject(thread_handle.Get(),
-                                 request_timeout.InMilliseconds());
-    }
-
-    // The race condition starts here. It is possible that between the expiry of
-    // the timeout in the call for WaitForSingleObject and the call to
-    // OrphanRequest, the fetching thread could have finished. So there is a two
-    // part handshake. Either the background thread has called ProcessingDone
-    // in which case it has already passed its own check for |is_orphaned_| and
-    // the call to OrphanRequest should delete this object right now. Otherwise
-    // the background thread is still running and will be able to query the
-    // |is_orphaned_| state and delete the object after thread completion.
-    if (hr != WAIT_OBJECT_0) {
-      LOGFN(ERROR) << "Wait for response timed out or failed hr=" << putHR(hr);
-      OrphanRequest();
-      return result;
-    }
-
-    result = base::JSONReader::Read(
-        base::StringPiece(response_.data(), response_.size()),
-        base::JSON_ALLOW_TRAILING_COMMAS);
-    if (!result || !result->is_dict()) {
-      LOGFN(ERROR) << "Failed to read json result from server response";
-      result.reset();
-    }
-
-    delete this;
-    return result;
-  }
-
- private:
-  void OrphanRequest() {
-    bool delete_self = false;
-    {
-      base::AutoLock locker(orphan_lock_);
-      CHECK(!is_orphaned_);
-      if (!is_processing_) {
-        delete_self = true;
-      } else {
-        is_orphaned_ = true;
-      }
-    }
-
-    if (delete_self)
-      delete this;
-  }
-
-  void ProcessingDone() {
-    bool delete_self = false;
-    {
-      base::AutoLock locker(orphan_lock_);
-      CHECK(is_processing_);
-      if (is_orphaned_) {
-        delete_self = true;
-      } else {
-        is_processing_ = false;
-      }
-    }
-
-    if (delete_self)
-      delete this;
-  }
-
-  // Background thread function that is used to query the request to the
-  // escrow service. This thread never times out and simply marks the fetcher
-  // as finished processing when it is done.
-  static unsigned __stdcall FetchResultFromEscrowService(void* param) {
-    DCHECK(param);
-    EscrowServiceRequest* requester =
-        reinterpret_cast<EscrowServiceRequest*>(param);
-
-    HRESULT hr = requester->fetcher_->Fetch(&requester->response_);
-    if (FAILED(hr))
-      LOGFN(ERROR) << "fetcher.Fetch hr=" << putHR(hr);
-
-    requester->ProcessingDone();
-    return 0;
-  }
-
-  base::Lock orphan_lock_;
-  std::unique_ptr<WinHttpUrlFetcher> fetcher_;
-  std::vector<char> response_;
-  bool is_orphaned_ = false;
-  bool is_processing_ = true;
-};
-
-// Builds the required json request to be sent to the escrow service and fetches
-// the json response from the escrow service (if any). Returns S_OK if
-// |needed_outputs| can be filled correctly with the requested data, otherwise
-// returns an error code.
-// |request_url| is the full query url from which to fetch a response.
-// |headers| are all the header key value pairs to be sent with the request.
-// |parameters| are all the json parameters to be sent with the request. This
-// argument will be converted to a json string and sent as part of the body of
-// the request.
-// |request_timeout| is the maximum time to wait for a response.
-// |needed_outputs| is the mapping of the desired result key to an address where
-// the result can be stored.
-// If any |needed_outputs| is missing, all of the outputs are cleared.
-HRESULT BuildRequestAndFetchResultFromEscrowService(
-    const GURL& request_url,
-    const std::vector<std::pair<std::string, std::string>>& headers,
-    const std::vector<std::pair<std::string, std::string>>& parameters,
-    const UrlFetchResultNeedOutputs& needed_outputs,
-    const base::TimeDelta& request_timeout) {
-  DCHECK(needed_outputs.size());
-
-  if (request_url.is_empty()) {
-    LOGFN(ERROR) << "No escrow service url specified";
-    return E_FAIL;
-  }
-
-  auto url_fetcher = WinHttpUrlFetcher::Create(request_url);
-  if (!url_fetcher) {
-    LOGFN(ERROR) << "Could not create valid fetcher for url="
-                 << request_url.spec();
-    return E_FAIL;
-  }
-
-  url_fetcher->SetRequestHeader("Content-Type", "application/json");
-
-  for (auto& header : headers)
-    url_fetcher->SetRequestHeader(header.first.c_str(), header.second.c_str());
-
-  HRESULT hr = S_OK;
-
-  if (!parameters.empty()) {
-    base::Value request_dict(base::Value::Type::DICTIONARY);
-
-    for (auto& parameter : parameters)
-      request_dict.SetStringKey(parameter.first, parameter.second);
-
-    std::string json;
-    if (!base::JSONWriter::Write(request_dict, &json)) {
-      LOGFN(ERROR) << "base::JSONWriter::Write failed";
-      return E_FAIL;
-    }
-
-    hr = url_fetcher->SetRequestBody(json.c_str());
-    if (FAILED(hr)) {
-      LOGFN(ERROR) << "fetcher.SetRequestBody hr=" << putHR(hr);
-      return E_FAIL;
-    }
-  }
-
-  base::Optional<base::Value> request_result =
-      (new EscrowServiceRequest(std::move(url_fetcher)))
-          ->WaitForResponseFromEscrowService(request_timeout);
-
-  if (!request_result)
-    return E_FAIL;
-
-  for (const std::pair<std::string, std::string*>& output : needed_outputs) {
-    const std::string* output_value =
-        request_result->FindStringKey(output.first);
-    if (!output_value) {
-      LOGFN(ERROR) << "Could not extract value '" << output.first
-                   << "' from server response";
-      hr = E_FAIL;
-      break;
-    }
-    DCHECK(output.second);
-    *output.second = *output_value;
-  }
-
-  if (FAILED(hr)) {
-    for (const std::pair<std::string, std::string*>& output : needed_outputs)
-      output.second->clear();
-  }
-
-  return hr;
-}
-
-// Makes a standard: "Authorization: Bearer $TOKEN" header for passing
-// authorization information to a server.
-std::pair<std::string, std::string> MakeAuthorizationHeader(
-    const std::string& access_token) {
-  return {"Authorization", "Bearer " + access_token};
-}
-
 bool Base64DecodeCryptographicKey(const std::string& cryptographic_key,
                                   std::string* out) {
   std::string cryptographic_key_copy;
@@ -498,9 +269,9 @@ HRESULT EncryptUserPasswordUsingEscrowService(
 
   // Fetch the results and extract the |resource_id| for the key and the
   // |public_key| to be used for encryption.
-  HRESULT hr = BuildRequestAndFetchResultFromEscrowService(
+  HRESULT hr = WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
       PasswordRecoveryManager::Get()->GetEscrowServiceGenerateKeyPairUrl(),
-      {MakeAuthorizationHeader(access_token)},
+      access_token, {},
       {{kGenerateKeyPairRequestDeviceIdParameterName, device_id}},
       {
           {kGenerateKeyPairResponseResourceIdParameterName, &resource_id},
@@ -509,7 +280,7 @@ HRESULT EncryptUserPasswordUsingEscrowService(
       request_timeout);
 
   if (FAILED(hr)) {
-    LOGFN(ERROR) << "BuildRequestAndFetchResultFromEscrowService hr="
+    LOGFN(ERROR) << "BuildRequestAndFetchResultFromHttpService hr="
                  << putHR(hr);
     return E_FAIL;
   }
@@ -580,17 +351,17 @@ HRESULT DecryptUserPasswordUsingEscrowService(
   std::string private_key;
 
   // Fetch the results and extract the |private_key| to be used for decryption.
-  HRESULT hr = BuildRequestAndFetchResultFromEscrowService(
+  HRESULT hr = WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
       PasswordRecoveryManager::Get()->GetEscrowServiceGetPrivateKeyUrl(
           *resource_id),
-      {MakeAuthorizationHeader(access_token)}, {},
+      access_token, {}, {},
       {
           {kGetPrivateKeyResponsePrivateKeyParameterName, &private_key},
       },
       request_timeout);
 
   if (FAILED(hr)) {
-    LOGFN(ERROR) << "BuildRequestAndFetchResultFromEscrowService hr="
+    LOGFN(ERROR) << "BuildRequestAndFetchResultFromHttpService hr="
                  << putHR(hr);
     return E_FAIL;
   }

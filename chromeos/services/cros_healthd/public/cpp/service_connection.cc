@@ -27,6 +27,30 @@ class ServiceConnectionImpl : public ServiceConnection {
 
  private:
   // ServiceConnection overrides:
+  void GetAvailableRoutines(
+      mojom::CrosHealthdService::GetAvailableRoutinesCallback callback)
+      override;
+  void GetRoutineUpdate(
+      int32_t id,
+      mojom::DiagnosticRoutineCommandEnum command,
+      bool include_output,
+      mojom::CrosHealthdService::GetRoutineUpdateCallback callback) override;
+  void RunUrandomRoutine(
+      uint32_t length_seconds,
+      mojom::CrosHealthdService::RunUrandomRoutineCallback callback) override;
+  void RunBatteryCapacityRoutine(
+      uint32_t low_mah,
+      uint32_t high_mah,
+      mojom::CrosHealthdService::RunBatteryCapacityRoutineCallback callback)
+      override;
+  void RunBatteryHealthRoutine(
+      uint32_t maximum_cycle_count,
+      uint32_t percent_battery_wear_allowed,
+      mojom::CrosHealthdService::RunBatteryHealthRoutineCallback callback)
+      override;
+  void RunSmartctlCheckRoutine(
+      mojom::CrosHealthdService::RunSmartctlCheckRoutineCallback callback)
+      override;
   void ProbeTelemetryInfo(
       const std::vector<mojom::ProbeCategoryEnum>& categories_to_test,
       mojom::CrosHealthdService::ProbeTelemetryInfoCallback callback) override;
@@ -49,6 +73,59 @@ class ServiceConnectionImpl : public ServiceConnection {
 
   DISALLOW_COPY_AND_ASSIGN(ServiceConnectionImpl);
 };
+
+void ServiceConnectionImpl::GetAvailableRoutines(
+    mojom::CrosHealthdService::GetAvailableRoutinesCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdServiceIfNeeded();
+  cros_healthd_service_->GetAvailableRoutines(std::move(callback));
+}
+
+void ServiceConnectionImpl::GetRoutineUpdate(
+    int32_t id,
+    mojom::DiagnosticRoutineCommandEnum command,
+    bool include_output,
+    mojom::CrosHealthdService::GetRoutineUpdateCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdServiceIfNeeded();
+  cros_healthd_service_->GetRoutineUpdate(id, command, include_output,
+                                          std::move(callback));
+}
+
+void ServiceConnectionImpl::RunUrandomRoutine(
+    uint32_t length_seconds,
+    mojom::CrosHealthdService::RunUrandomRoutineCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdServiceIfNeeded();
+  cros_healthd_service_->RunUrandomRoutine(length_seconds, std::move(callback));
+}
+
+void ServiceConnectionImpl::RunBatteryCapacityRoutine(
+    uint32_t low_mah,
+    uint32_t high_mah,
+    mojom::CrosHealthdService::RunBatteryCapacityRoutineCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdServiceIfNeeded();
+  cros_healthd_service_->RunBatteryCapacityRoutine(low_mah, high_mah,
+                                                   std::move(callback));
+}
+
+void ServiceConnectionImpl::RunBatteryHealthRoutine(
+    uint32_t maximum_cycle_count,
+    uint32_t percent_battery_wear_allowed,
+    mojom::CrosHealthdService::RunBatteryHealthRoutineCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdServiceIfNeeded();
+  cros_healthd_service_->RunBatteryHealthRoutine(
+      maximum_cycle_count, percent_battery_wear_allowed, std::move(callback));
+}
+
+void ServiceConnectionImpl::RunSmartctlCheckRoutine(
+    mojom::CrosHealthdService::RunSmartctlCheckRoutineCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdServiceIfNeeded();
+  cros_healthd_service_->RunSmartctlCheckRoutine(std::move(callback));
+}
 
 void ServiceConnectionImpl::ProbeTelemetryInfo(
     const std::vector<mojom::ProbeCategoryEnum>& categories_to_test,

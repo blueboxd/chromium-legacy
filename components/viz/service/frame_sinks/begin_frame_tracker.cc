@@ -8,8 +8,7 @@ namespace viz {
 
 void BeginFrameTracker::SentBeginFrame(const BeginFrameArgs& args) {
   ++outstanding_begin_frames_;
-  last_source_id_ = args.source_id;
-  last_sequence_number_ = args.sequence_number;
+  last_frame_id_ = args.frame_id;
 }
 
 void BeginFrameTracker::ReceivedAck(const BeginFrameAck& ack) {
@@ -39,8 +38,7 @@ bool BeginFrameTracker::ShouldStopBeginFrame() const {
 }
 
 bool BeginFrameTracker::MatchesLastSent(const BeginFrameAck& ack) {
-  return last_source_id_ == ack.source_id &&
-         last_sequence_number_ == ack.sequence_number;
+  return last_frame_id_ == ack.frame_id;
 }
 
 }  // namespace viz

@@ -215,30 +215,12 @@ void WebApps::Launch(const std::string& app_id,
 
   web_app::DisplayMode display_mode =
       GetRegistrar().GetAppEffectiveDisplayMode(app_id);
-  apps::mojom::LaunchContainer fallback_container =
-      apps::mojom::LaunchContainer::kLaunchContainerNone;
-
-  switch (display_mode) {
-    case web_app::DisplayMode::kBrowser:
-      fallback_container = apps::mojom::LaunchContainer::kLaunchContainerTab;
-      break;
-    case web_app::DisplayMode::kMinimalUi:
-      fallback_container = apps::mojom::LaunchContainer::kLaunchContainerWindow;
-      break;
-    case web_app::DisplayMode::kStandalone:
-      fallback_container = apps::mojom::LaunchContainer::kLaunchContainerWindow;
-      break;
-    case web_app::DisplayMode::kFullscreen:
-      fallback_container = apps::mojom::LaunchContainer::kLaunchContainerWindow;
-      break;
-    case web_app::DisplayMode::kUndefined:
-      break;
-  }
 
   AppLaunchParams params = CreateAppIdLaunchParamsWithEventFlags(
       web_app->app_id(), event_flags,
       apps::mojom::AppLaunchSource::kSourceAppLauncher, display_id,
-      fallback_container);
+      /*fallback_container=*/
+      web_app::ConvertDisplayModeToAppLaunchContainer(display_mode));
 
   // The app will be created for the currently active profile.
   apps::LaunchService::Get(profile_)->OpenApplication(params);

@@ -42,13 +42,18 @@
 #pragma mark - Accessors
 
 - (JavaScriptConfirmationOverlayRequestConfig*)config {
-  return self.request->GetConfig<JavaScriptConfirmationOverlayRequestConfig>();
+  return self.request
+             ? self.request
+                   ->GetConfig<JavaScriptConfirmationOverlayRequestConfig>()
+             : nullptr;
 }
 
 #pragma mark - Response helpers
 
 // Sets the OverlayResponse using the user's selection from the confirmation UI.
 - (void)setConfirmationResponse:(BOOL)dialogConfirmed {
+  if (!self.request)
+    return;
   self.request->GetCallbackManager()->SetCompletionResponse(
       OverlayResponse::CreateWithInfo<
           JavaScriptConfirmationOverlayResponseInfo>(dialogConfirmed));

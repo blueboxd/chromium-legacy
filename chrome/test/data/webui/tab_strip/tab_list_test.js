@@ -95,12 +95,11 @@ suite('TabList', () => {
   }
 
   function getUnpinnedTabs() {
-    return tabList.shadowRoot.querySelectorAll('#tabsContainer tabstrip-tab');
+    return tabList.shadowRoot.querySelectorAll('#unpinnedTabs tabstrip-tab');
   }
 
   function getPinnedTabs() {
-    return tabList.shadowRoot.querySelectorAll(
-        '#pinnedTabsContainer tabstrip-tab');
+    return tabList.shadowRoot.querySelectorAll('#pinnedTabs tabstrip-tab');
   }
 
   setup(() => {
@@ -525,5 +524,10 @@ suite('TabList', () => {
     webUIListenerCallback('tab-active-changed', tabs[0].id);
     activeTab = getUnpinnedTabs()[0];
     assertEquals(tabList.scrollLeft, 0);
+  });
+
+  test('clicking on new tab button opens a new tab', () => {
+    tabList.shadowRoot.querySelector('#newTabButton').click();
+    return testTabsApiProxy.whenCalled('createNewTab');
   });
 });

@@ -138,6 +138,9 @@ class CONTENT_EXPORT CacheStorageContextImpl
   // Initialized in Init(); true if the user data directory is empty.
   bool is_incognito_ = false;
 
+  // True once Shutdown() has been called on the UI thread.
+  std::atomic<bool> shutdown_;
+
   // Initialized in Init().
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
 

@@ -29,15 +29,16 @@ void PrimaryAccountPolicyManagerImpl::InitializePolicy(
     local_state_pref_registrar_.Init(local_state);
     local_state_pref_registrar_.Add(
         prefs::kGoogleServicesUsernamePattern,
-        base::Bind(&PrimaryAccountPolicyManagerImpl::
-                       OnGoogleServicesUsernamePatternChanged,
-                   weak_pointer_factory_.GetWeakPtr(),
-                   primary_account_manager));
+        base::BindRepeating(&PrimaryAccountPolicyManagerImpl::
+                                OnGoogleServicesUsernamePatternChanged,
+                            weak_pointer_factory_.GetWeakPtr(),
+                            primary_account_manager));
   }
   signin_allowed_.Init(
       prefs::kSigninAllowed, client_->GetPrefs(),
-      base::Bind(&PrimaryAccountPolicyManagerImpl::OnSigninAllowedPrefChanged,
-                 base::Unretained(this), primary_account_manager));
+      base::BindRepeating(
+          &PrimaryAccountPolicyManagerImpl::OnSigninAllowedPrefChanged,
+          base::Unretained(this), primary_account_manager));
 
   CoreAccountInfo account_info =
       primary_account_manager->GetAuthenticatedAccountInfo();

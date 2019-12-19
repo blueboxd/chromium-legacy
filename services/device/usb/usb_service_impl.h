@@ -69,8 +69,7 @@ class UsbServiceImpl final :
   void EnumerateDevice(ScopedLibusbDeviceRef platform_device,
                        base::OnceClosure refresh_complete);
 
-  void AddDevice(base::OnceClosure refresh_complete,
-                 scoped_refptr<UsbDeviceImpl> device);
+  void AddDevice(scoped_refptr<UsbDeviceImpl> device);
   void RemoveDevice(scoped_refptr<UsbDeviceImpl> device);
 
   // Handle hotplug events from libusb.
@@ -84,8 +83,7 @@ class UsbServiceImpl final :
 
   // Add |platform_device| to the |ignored_devices_| and
   // run |refresh_complete|.
-  void EnumerationFailed(ScopedLibusbDeviceRef platform_device,
-                         base::OnceClosure refresh_complete);
+  void EnumerationFailed(ScopedLibusbDeviceRef platform_device);
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

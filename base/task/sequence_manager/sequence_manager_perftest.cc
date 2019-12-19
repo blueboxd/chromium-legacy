@@ -31,13 +31,24 @@
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 
 namespace base {
 namespace sequence_manager {
 namespace {
 const int kNumTasks = 1000000;
+
+constexpr char kMetricPrefixSequenceManager[] = "SequenceManager.";
+constexpr char kMetricPostTimePerTask[] = "post_time_per_task";
+
+perf_test::PerfResultReporter SetUpReporter(const std::string& story_name) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixSequenceManager,
+                                         story_name);
+  reporter.RegisterImportantMetric(kMetricPostTimePerTask, "us");
+  return reporter;
 }
+
+}  // namespace
 
 // To reduce noise related to the OS timer, we use a mock time domain to
 // fast forward the timers.
@@ -623,21 +634,17 @@ class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
     return task_runners;
   }
 
-  void Benchmark(const std::string& trace, TestCase* TestCase) {
+  void Benchmark(const std::string& story_prefix, TestCase* TestCase) {
     TimeTicks start = TimeTicks::Now();
     TimeTicks now;
     TestCase->Start();
     delegate_->WaitUntilDone();
     now = TimeTicks::Now();
 
-    perf_test::PrintResult(
-        "task", "", trace + delegate_->GetName(),
-        (now - start).InMicroseconds() / static_cast<double>(kNumTasks),
-        "us/task", true);
-    LOG(ERROR) << "task " << trace << delegate_->GetName()
-               << ((now - start).InMicroseconds() /
-                   static_cast<double>(kNumTasks))
-               << " us/task";
+    auto reporter = SetUpReporter(story_prefix + delegate_->GetName());
+    reporter.AddResult(
+        kMetricPostTimePerTask,
+        (now - start).InMicroseconds() / static_cast<double>(kNumTasks));
   }
 
   std::unique_ptr<PerfTestDelegate> delegate_;

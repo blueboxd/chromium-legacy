@@ -47,7 +47,8 @@
             }
           ]
         },
-        "test": "opus_tests"
+        "test": "opus_tests",
+        "test_target": "//third_party/opus:opus_tests"
       }
     ]
   },
@@ -95,7 +96,8 @@
             }
           ]
         },
-        "test": "blink_heap_unittests"
+        "test": "blink_heap_unittests",
+        "test_target": "//third_party/blink/renderer/platform/heap:blink_heap_unittests"
       },
       {
         "args": [
@@ -140,7 +142,8 @@
             }
           ]
         },
-        "test": "blink_unittests"
+        "test": "blink_unittests",
+        "test_target": "//third_party/blink/renderer/controller:blink_unittests"
       }
     ],
     "isolated_scripts": [
@@ -172,7 +175,8 @@
             }
           ],
           "shards": 12
-        }
+        },
+        "test_target": "//:blink_web_tests"
       }
     ]
   }

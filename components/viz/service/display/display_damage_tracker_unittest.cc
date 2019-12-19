@@ -57,12 +57,11 @@ class DisplayDamageTrackerTest : public testing::Test {
    public:
     Client(FrameSinkManagerImpl* manager, FrameSinkId frame_sink_id)
         : frame_sink_id_(frame_sink_id),
-          support_(std::make_unique<CompositorFrameSinkSupport>(
-              nullptr,
-              manager,
-              frame_sink_id,
-              /*is_root=*/true,
-              /*needs_sync_points=*/true)) {
+          support_(
+              std::make_unique<CompositorFrameSinkSupport>(nullptr,
+                                                           manager,
+                                                           frame_sink_id,
+                                                           /*is_root=*/true)) {
       MakeNewSurfaceId();
       support_->SetNeedsBeginFrame(true);
     }
@@ -87,8 +86,7 @@ class DisplayDamageTrackerTest : public testing::Test {
       pass_list.push_back(std::move(pass));
 
       BeginFrameAck ack;
-      ack.source_id = args.source_id;
-      ack.sequence_number = args.sequence_number;
+      ack.frame_id = BeginFrameId(args.frame_id);
       ack.has_damage = true;
 
       CompositorFrame frame = CompositorFrameBuilder()

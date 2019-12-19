@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/url_schemes.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 
 namespace content {
@@ -54,6 +55,10 @@ bool LibraryLoaded(JNIEnv* env,
             << ", default verbosity = " << logging::GetVlogVerbosity();
   }
 
+  // Content Schemes need to be registered as early as possible after the
+  // CommandLine has been initialized to allow java and tests to use GURL before
+  // running ContentMain.
+  RegisterContentSchemes();
   return true;
 }
 

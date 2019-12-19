@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -21,10 +21,10 @@ class TabStrip;
 // calculations and updates. Painting is done in TabStrip.
 class TabGroupViews {
  public:
-  TabGroupViews(TabStrip* tab_strip, TabGroupId group);
+  TabGroupViews(TabStrip* tab_strip, tab_groups::TabGroupId group);
   ~TabGroupViews();
 
-  TabGroupId group() const { return group_; }
+  tab_groups::TabGroupId group() const { return group_; }
   TabGroupHeader* header() const { return header_.get(); }
   TabGroupHighlight* highlight() const { return highlight_.get(); }
   TabGroupUnderline* underline() const { return underline_.get(); }
@@ -55,7 +55,7 @@ class TabGroupViews {
 
  private:
   TabStrip* const tab_strip_;
-  const TabGroupId group_;
+  const tab_groups::TabGroupId group_;
   std::unique_ptr<TabGroupHeader> header_;
   std::unique_ptr<TabGroupHighlight> highlight_;
   std::unique_ptr<TabGroupUnderline> underline_;

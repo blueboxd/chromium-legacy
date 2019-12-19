@@ -31,11 +31,12 @@ import android.widget.TextView;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.util.FileSizeUtil;
 import org.chromium.third_party.android.datausagechart.ChartDataUsageView;
@@ -52,13 +53,6 @@ import java.util.TimeZone;
  */
 public class DataReductionStatsPreference extends Preference {
     private static final String TAG = "DataSaverStats";
-
-    /**
-     * Key used to save the date on which the site breakdown should be shown. If the user has
-     * historical data saver stats, the site breakdown cannot be shown for MAXIMUM_DAYS_IN_CHART.
-     */
-    private static final String PREF_DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE =
-            "data_reduction_site_breakdown_allowed_date";
 
     private NetworkStatsHistory mOriginalNetworkStatsHistory;
     private NetworkStatsHistory mReceivedNetworkStatsHistory;
@@ -93,8 +87,8 @@ public class DataReductionStatsPreference extends Preference {
      */
     public static void initializeDataReductionSiteBreakdownPref() {
         // If the site breakdown pref has already been set, don't set it.
-        if (ContextUtils.getAppSharedPreferences().contains(
-                    PREF_DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE)) {
+        if (SharedPreferencesManager.getInstance().contains(
+                    ChromePreferenceKeys.DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE)) {
             return;
         }
 
@@ -107,11 +101,9 @@ public class DataReductionStatsPreference extends Preference {
         long timeChartCanBeShown =
                 lastUpdateTimeMillis + MAXIMUM_DAYS_IN_CHART * DateUtils.DAY_IN_MILLIS;
         long now = System.currentTimeMillis();
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putLong(PREF_DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE,
-                        timeChartCanBeShown > now ? timeChartCanBeShown : now)
-                .apply();
+        SharedPreferencesManager.getInstance().writeLong(
+                ChromePreferenceKeys.DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE,
+                timeChartCanBeShown > now ? timeChartCanBeShown : now);
     }
 
     public DataReductionStatsPreference(Context context, AttributeSet attrs) {
@@ -175,9 +167,9 @@ public class DataReductionStatsPreference extends Preference {
                 + numDaysSinceStatsUpdated.intValue() * DateUtils.DAY_IN_MILLIS;
 
         if (mShouldShowRealData && mDataReductionBreakdownView != null
-                && currentTimeMillis > ContextUtils.getAppSharedPreferences().getLong(
-                                               PREF_DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE,
-                                               Long.MAX_VALUE)) {
+                && currentTimeMillis > SharedPreferencesManager.getInstance().readLong(
+                           ChromePreferenceKeys.DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE,
+                           Long.MAX_VALUE)) {
             DataReductionProxySettings.getInstance().queryDataUsage(
                     mNumDaysInChart, new Callback<List<DataReductionDataUseItem>>() {
                         @Override
@@ -346,15 +338,15 @@ public class DataReductionStatsPreference extends Preference {
                             // historical data, reset that state so that the site breakdown can
                             // now be shown.
                             long now = System.currentTimeMillis();
-                            if (ContextUtils.getAppSharedPreferences().getLong(
-                                        PREF_DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE,
+                            if (SharedPreferencesManager.getInstance().readLong(
+                                        ChromePreferenceKeys
+                                                .DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE,
                                         Long.MAX_VALUE)
                                     > now) {
-                                ContextUtils.getAppSharedPreferences()
-                                        .edit()
-                                        .putLong(PREF_DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE,
-                                                now)
-                                        .apply();
+                                SharedPreferencesManager.getInstance().writeLong(
+                                        ChromePreferenceKeys
+                                                .DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE,
+                                        now);
                             }
                             DataReductionProxySettings.getInstance().clearDataSavingStatistics(
                                     DataReductionProxySavingsClearedReason

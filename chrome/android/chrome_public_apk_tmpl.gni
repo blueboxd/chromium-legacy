@@ -72,10 +72,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
   _is_modern = defined(invoker.is_modern) && invoker.is_modern
   _is_monochrome = defined(invoker.is_monochrome) && invoker.is_monochrome
   _is_trichrome = defined(invoker.is_trichrome) && invoker.is_trichrome
-  _is_64_bit_browser =
-      defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser
   assert(_is_modern || !_is_modern)  # Mark as used.
-  assert(_is_64_bit_browser || !_is_64_bit_browser)  # Mark as used.
   assert(!(_is_monochrome && _is_trichrome),
          "Cannot be both trichrome and monochrome!")
 
@@ -86,10 +83,10 @@ template("chrome_public_common_apk_or_module_tmpl") {
     _add_unwind_tables = invoker.add_unwind_tables_in_apk
   } else {
     _needs_32bit_lib =
-        target_cpu == "arm" || (target_cpu == "arm64" && !_is_64_bit_browser &&
-                                (_is_monochrome || _is_trichrome))
+        target_cpu == "arm" || (_is_monochrome && target_cpu == "arm64")
     _add_unwind_tables =
-        _needs_32bit_lib && _add_unwind_tables_in_chrome_32bit_apk
+        _needs_32bit_lib && _add_unwind_tables_in_chrome_32bit_apk &&
+        defined(invoker.shared_libraries)
   }
 
   if (_add_unwind_tables) {
@@ -102,21 +99,11 @@ template("chrome_public_common_apk_or_module_tmpl") {
       if (defined(invoker.shared_library_for_unwind_asset)) {
         library_target = invoker.shared_library_for_unwind_asset
       } else {
-        if (_is_monochrome || _is_trichrome) {
-          library_target = "monochrome"
-        } else {
-          library_target = "chrome"
-        }
+        library_target = "chrome"
       }
-
-      if (android_64bit_target_cpu) {
-        deps = [
-          "//chrome/android:lib${library_target}($android_secondary_abi_toolchain)",
-        ]
-      } else {
-        deps = [
-          "//chrome/android:lib${library_target}",
-        ]
+      deps = invoker.shared_libraries
+      if (defined(android_secondary_abi_cpu)) {
+        deps += [ "//chrome/android:lib${library_target}($android_secondary_abi_toolchain)" ]
       }
     }
   } else if (defined(invoker.shared_library_for_unwind_asset)) {
@@ -325,7 +312,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
                            [
                              "failed_manifest_expectation_file",
                              "failed_proguard_expectation_file",
-                             "is_64_bit_browser",
                              "version_code",
                              "verify_manifest",
                            ])
@@ -379,6 +365,8 @@ template("monochrome_public_common_apk_or_module_tmpl") {
         _include_primary_support = true
       }
 
+      shared_library_for_unwind_asset = "monochrome"
+
       _deps += [
         "//android_webview/glue",
         "//android_webview/nonembedded:nonembedded_java",
@@ -392,27 +380,18 @@ template("monochrome_public_common_apk_or_module_tmpl") {
 
       if (_include_primary_support) {
         _deps += [
-          "//android_webview:monochrome_webview_primary_abi_assets",
           "//third_party/crashpad/crashpad/handler:crashpad_handler_trampoline",
         ]
         loadable_modules +=
             [ "$root_out_dir/libcrashpad_handler_trampoline.so" ]
       }
       if (_include_secondary_support) {
-        _trampoline =
-            "//third_party/crashpad/crashpad/handler:" +
-            "crashpad_handler_trampoline($android_secondary_abi_toolchain)"
-
-        _deps += [
-          "//android_webview:monochrome_webview_secondary_abi_assets",
-          _trampoline,
-        ]
-
+        _trampoline = "//third_party/crashpad/crashpad/handler:crashpad_handler_trampoline($android_secondary_abi_toolchain)"
+        _deps += [ _trampoline ]
         _secondary_out_dir = get_label_info(_trampoline, "root_out_dir")
         secondary_abi_loadable_modules +=
             [ "$_secondary_out_dir/libcrashpad_handler_trampoline.so" ]
       }
-
       alternative_android_sdk_dep = webview_framework_dep
       app_as_shared_lib = true
       _pak_prefix = "monochrome"

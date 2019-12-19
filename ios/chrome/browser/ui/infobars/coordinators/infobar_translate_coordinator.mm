@@ -196,6 +196,10 @@ NSString* const kTranslateNotificationSnackbarCategory =
   return self.infobarAccepted;
 }
 
+- (BOOL)infobarBannerActionWillPresentModal {
+  return NO;
+}
+
 - (void)performInfobarAction {
   [self performInfobarActionForStep:self.currentStep];
 }

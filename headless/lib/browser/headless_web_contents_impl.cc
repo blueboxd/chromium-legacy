@@ -190,8 +190,8 @@ class HeadlessWebContentsImpl::PendingFrame
       : sequence_number_(sequence_number), callback_(std::move(callback)) {}
 
   void OnFrameComplete(const viz::BeginFrameAck& ack) {
-    DCHECK_EQ(kBeginFrameSourceId, ack.source_id);
-    DCHECK_EQ(sequence_number_, ack.sequence_number);
+    DCHECK_EQ(kBeginFrameSourceId, ack.frame_id.source_id);
+    DCHECK_EQ(sequence_number_, ack.frame_id.sequence_number);
     has_damage_ = ack.has_damage;
   }
 

@@ -230,7 +230,11 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
     [self.badgeDelegate infobarWasAccepted:self.infobarType
                                forWebState:self.webState];
   }
-  [self dismissInfobarBanner:sender animated:YES completion:nil];
+  // If the Banner Button will present the Modal then the banner shouldn't be
+  // dismissed.
+  if (![self infobarBannerActionWillPresentModal]) {
+    [self dismissInfobarBanner:sender animated:YES completion:nil];
+  }
 }
 
 - (void)presentInfobarModalFromBanner {
@@ -386,6 +390,11 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 }
 
 - (BOOL)isInfobarAccepted {
+  NOTREACHED() << "Subclass must implement.";
+  return NO;
+}
+
+- (BOOL)infobarBannerActionWillPresentModal {
   NOTREACHED() << "Subclass must implement.";
   return NO;
 }

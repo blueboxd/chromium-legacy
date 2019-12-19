@@ -177,8 +177,15 @@ void HTMLCanvasElement::ParseAttribute(
 LayoutObject* HTMLCanvasElement::CreateLayoutObject(const ComputedStyle& style,
                                                     LegacyLayout legacy) {
   LocalFrame* frame = GetDocument().GetFrame();
-  if (frame && GetDocument().CanExecuteScripts(kNotAboutToExecuteScript))
+  if (frame && GetDocument().CanExecuteScripts(kNotAboutToExecuteScript)) {
+    // Allocation of a layout object indicates that the canvas doesn't
+    // have display:none set, so is conceptually being displayed.
+    if (context_) {
+      context_->SetIsBeingDisplayed(style.Visibility() ==
+                                    EVisibility::kVisible);
+    }
     return new LayoutHTMLCanvas(this);
+  }
   return HTMLElement::CreateLayoutObject(style, legacy);
 }
 
@@ -314,10 +321,18 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
     UpdateMemoryUsage();
 
   LayoutObject* layout_object = GetLayoutObject();
-  if (layout_object && Is2d() && !context_->CreationAttributes().alpha) {
-    // In the alpha false case, canvas is initially opaque, so we need to
-    // trigger an invalidation.
-    DidDraw();
+  if (layout_object) {
+    const ComputedStyle* style = GetComputedStyle();
+    if (style) {
+      context_->SetIsBeingDisplayed(style->Visibility() ==
+                                    EVisibility::kVisible);
+    }
+
+    if (Is2d() && !context_->CreationAttributes().alpha) {
+      // In the alpha false case, canvas is initially opaque, so we need to
+      // trigger an invalidation.
+      DidDraw();
+    }
   }
 
   if (context_->CreationAttributes().desynchronized) {
@@ -1159,7 +1174,7 @@ void HTMLCanvasElement::PageVisibilityChanged() {
   if (!context_)
     return;
 
-  context_->SetIsHidden(hidden);
+  context_->SetIsInHiddenPage(hidden);
   if (hidden && Is3d())
     DiscardResourceProvider();
 }
@@ -1173,6 +1188,13 @@ void HTMLCanvasElement::StyleDidChange(const ComputedStyle* old_style,
                                        const ComputedStyle& new_style) {
   if (context_)
     context_->StyleDidChange(old_style, new_style);
+}
+
+void HTMLCanvasElement::LayoutObjectDestroyed() {
+  // If the canvas has no layout object then it definitely isn't being
+  // displayed any more.
+  if (context_)
+    context_->SetIsBeingDisplayed(false);
 }
 
 void HTMLCanvasElement::DidMoveToNewDocument(Document& old_document) {

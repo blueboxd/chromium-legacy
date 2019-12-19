@@ -120,6 +120,7 @@ load:social:vk,,desktop,"2016,international"
 load:social:vk:2018,,desktop,"2018,international"
 load:tools:docs,Load a typical google doc page.,"desktop,mobile","2016,health_check"
 load:tools:drive,,"desktop,mobile","2016,javascript_heavy"
+load:tools:drive:2019,,"desktop,mobile","2019,javascript_heavy"
 load:tools:dropbox,,"desktop,mobile",2016
 load:tools:gmail,,"desktop,mobile",2016
 load:tools:stackoverflow:2018,Load a typical question & answer page of stackoverflow.com,"desktop,mobile","2018,health_check"

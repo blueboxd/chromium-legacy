@@ -552,8 +552,6 @@ class RasterDecoderImpl final : public RasterDecoder,
   // only if not returning an error.
   error::Error current_decoder_error_ = error::kNoError;
 
-  scoped_refptr<gl::GLContext> context_;
-
   GpuPreferences gpu_preferences_;
 
   gles2::DebugMarkerManager debug_marker_manager_;
@@ -727,8 +725,7 @@ ContextResult RasterDecoderImpl::Initialize(
     const gles2::DisallowedFeatures& disallowed_features,
     const ContextCreationAttribs& attrib_helper) {
   TRACE_EVENT0("gpu", "RasterDecoderImpl::Initialize");
-  DCHECK(shared_context_state_->IsCurrent(surface.get()));
-  DCHECK(!context_.get());
+  DCHECK(shared_context_state_->IsCurrent(nullptr));
 
   api_ = gl::g_current_gl_context;
 
@@ -746,7 +743,6 @@ ContextResult RasterDecoderImpl::Initialize(
 
   DCHECK_EQ(surface.get(), shared_context_state_->surface());
   DCHECK_EQ(context.get(), shared_context_state_->context());
-  context_ = context;
 
   // Create GPU Tracer for timing values.
   gpu_tracer_.reset(new gles2::GPUTracer(this));
@@ -831,13 +827,6 @@ void RasterDecoderImpl::Destroy(bool have_context) {
     query_manager_.reset();
   }
 
-  // Destroy the surface before the context, some surface destructors make GL
-  // calls.
-  if (context_.get()) {
-    context_->ReleaseCurrent(nullptr);
-    context_ = nullptr;
-  }
-
   font_manager_->Destroy();
   font_manager_.reset();
 }
@@ -846,9 +835,6 @@ void RasterDecoderImpl::Destroy(bool have_context) {
 bool RasterDecoderImpl::MakeCurrent() {
   if (!shared_context_state_->GrContextIsGL())
     return true;
-
-  if (!context_.get())
-    return false;
 
   if (context_lost_) {
     LOG(ERROR) << "  RasterDecoderImpl: Trying to make lost context current.";
@@ -877,7 +863,7 @@ bool RasterDecoderImpl::MakeCurrent() {
 }
 
 gl::GLContext* RasterDecoderImpl::GetGLContext() {
-  return context_.get();
+  return shared_context_state_->context();
 }
 
 gl::GLSurface* RasterDecoderImpl::GetGLSurface() {

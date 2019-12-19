@@ -266,5 +266,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, TestNavigation) {
       controller.get(), fuchsia::web::LoadUrlParams(), title2.spec()));
 
   semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage2NodeCount);
+  EXPECT_TRUE(
+      semantics_manager_.semantic_tree()->HasNodeWithLabel(kPage2Title));
   EXPECT_TRUE(semantics_manager_.semantic_tree()->HasNodeWithLabel(kNodeName));
+
+  // Check that data from the first page has been deleted successfully.
+  EXPECT_FALSE(
+      semantics_manager_.semantic_tree()->HasNodeWithLabel(kButtonName));
+  EXPECT_FALSE(
+      semantics_manager_.semantic_tree()->HasNodeWithLabel(kParagraphName));
 }

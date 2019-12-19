@@ -21,6 +21,7 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/media_router/media_source.h"
 #include "chrome/common/url_constants.h"
 #include "components/user_manager/user_manager.h"

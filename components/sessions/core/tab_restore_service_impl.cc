@@ -26,6 +26,8 @@
 #include "components/sessions/core/base_session_service_delegate.h"
 #include "components/sessions/core/session_command.h"
 #include "components/sessions/core/session_constants.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 
 namespace sessions {
 
@@ -698,10 +700,11 @@ void TabRestoreServiceImpl::PersistenceDelegate::ScheduleCommandsForTab(
 
   if (tab.group.has_value()) {
     base::Pickle pickle;
-    WriteTokenToPickle(&pickle, tab.group.value());
-    const TabGroupMetadata* metadata = &tab.group_metadata.value();
-    pickle.WriteString16(metadata->title);
-    pickle.WriteUInt32(metadata->color);
+    WriteTokenToPickle(&pickle, tab.group.value().token());
+    const tab_groups::TabGroupVisualData* visual_data =
+        &tab.group_visual_data.value();
+    pickle.WriteString16(visual_data->title());
+    pickle.WriteUInt32(visual_data->color());
     std::unique_ptr<SessionCommand> command(
         new SessionCommand(kCommandGroup, pickle));
     base_session_service_->ScheduleCommand(std::move(command));
@@ -961,7 +964,7 @@ void TabRestoreServiceImpl::PersistenceDelegate::CreateEntriesFromCommands(
         }
         std::unique_ptr<base::Pickle> pickle(command.PayloadAsPickle());
         base::PickleIterator iter(*pickle);
-        base::Optional<base::Token> group_id = ReadTokenFromPickle(&iter);
+        base::Optional<base::Token> group_token = ReadTokenFromPickle(&iter);
         base::string16 title;
         SkColor color;
         if (!iter.ReadString16(&title)) {
@@ -970,8 +973,11 @@ void TabRestoreServiceImpl::PersistenceDelegate::CreateEntriesFromCommands(
         if (!iter.ReadUInt32(&color)) {
           break;
         }
-        current_tab->group = group_id.value();
-        current_tab->group_metadata = TabGroupMetadata{title, color};
+
+        current_tab->group =
+            tab_groups::TabGroupId::FromRawToken(group_token.value());
+        current_tab->group_visual_data =
+            tab_groups::TabGroupVisualData(title, color);
         break;
       }
 

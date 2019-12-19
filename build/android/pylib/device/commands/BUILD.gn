@@ -14,6 +14,9 @@ android_library("chromium_commands_java") {
   jacoco_never_instrument = true
   java_files = [ "java/src/org/chromium/android/commands/unzip/Unzip.java" ]
   dex_path = "$root_build_dir/lib.java/chromium_commands.dex.jar"
+  deps = [
+    "//base:base_java",
+  ]
   data = [
     dex_path,
   ]

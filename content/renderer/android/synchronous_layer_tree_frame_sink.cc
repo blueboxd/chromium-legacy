@@ -218,13 +218,12 @@ bool SynchronousLayerTreeFrameSink::BindToClient(
       std::make_unique<SoftwareCompositorFrameSinkClient>();
   constexpr bool root_support_is_root = true;
   constexpr bool child_support_is_root = false;
-  constexpr bool needs_sync_points = true;
   root_support_ = std::make_unique<viz::CompositorFrameSinkSupport>(
       software_frame_sink_client_.get(), frame_sink_manager_.get(),
-      kRootFrameSinkId, root_support_is_root, needs_sync_points);
+      kRootFrameSinkId, root_support_is_root);
   child_support_ = std::make_unique<viz::CompositorFrameSinkSupport>(
       software_frame_sink_client_.get(), frame_sink_manager_.get(),
-      kChildFrameSinkId, child_support_is_root, needs_sync_points);
+      kChildFrameSinkId, child_support_is_root);
 
   viz::RendererSettings software_renderer_settings;
 

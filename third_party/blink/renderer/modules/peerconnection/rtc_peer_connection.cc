@@ -2491,8 +2491,8 @@ RTCRtpReceiver* RTCPeerConnection::CreateOrUpdateReceiver(
   // Create track.
   MediaStreamTrack* track;
   if (receiver_it == rtp_receivers_.end()) {
-    track = MediaStreamTrack::Create(GetExecutionContext(),
-                                     platform_receiver->Track());
+    track = MakeGarbageCollected<MediaStreamTrack>(GetExecutionContext(),
+                                                   platform_receiver->Track());
     RegisterTrack(track);
   } else {
     track = (*receiver_it)->track();
@@ -2759,7 +2759,7 @@ void RTCPeerConnection::DidAddReceiverPlanB(
       webrtc::PeerConnectionInterface::SignalingState::kClosed)
     return;
   // Create track.
-  MediaStreamTrack* track = MediaStreamTrack::Create(
+  auto* track = MakeGarbageCollected<MediaStreamTrack>(
       GetExecutionContext(), platform_receiver->Track());
   tracks_.insert(track->Component(), track);
   // Create or update streams.
@@ -2864,8 +2864,8 @@ void RTCPeerConnection::DidModifySctpTransport(
 }
 
 void RTCPeerConnection::DidModifyTransceivers(
-    WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>> platform_transceivers,
-    WebVector<uintptr_t> removed_transceiver_ids,
+    Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> platform_transceivers,
+    Vector<uintptr_t> removed_transceiver_ids,
     bool is_remote_description) {
   for (auto id : removed_transceiver_ids) {
     for (auto* it = transceivers_.begin(); it != transceivers_.end(); ++it) {

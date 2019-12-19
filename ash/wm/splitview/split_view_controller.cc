@@ -1703,9 +1703,12 @@ void SplitViewController::SetTransformWithAnimation(
     if (new_start_transform != window_iter->layer()->GetTargetTransform())
       window_iter->SetTransform(new_start_transform);
 
-    DoSplitviewTransformAnimation(window_iter->layer(),
-                                  SPLITVIEW_ANIMATION_SET_WINDOW_TRANSFORM,
-                                  new_target_transform);
+    DoSplitviewTransformAnimation(
+        window_iter->layer(), SPLITVIEW_ANIMATION_SET_WINDOW_TRANSFORM,
+        new_target_transform,
+        window_iter == window
+            ? std::make_unique<WindowTransformAnimationObserver>(window)
+            : nullptr);
   }
 }
 
@@ -1791,7 +1794,7 @@ void SplitViewController::EndWindowDragImpl(
   if (desired_snap_position == SplitViewController::NONE) {
     if (was_splitview_active) {
       // Even though |snap_position| equals |NONE|, the dragged window still
-      // needs to be snapped if splitview mode is active at the momemnt.
+      // needs to be snapped if splitview mode is active at the moment.
       // Calculate the expected snap position based on the last event
       // location. Note if there is already a window at |desired_snap_postion|,
       // SnapWindow() will put the previous snapped window in overview.

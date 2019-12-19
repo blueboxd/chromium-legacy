@@ -244,6 +244,7 @@ source_set("eg2_tests") {
   testonly = true
   sources = [
     "bookmarks_accessibility_egtest.mm",
+    "bookmarks_egtest.mm",
     "bookmarks_promo_egtest.mm",
     "bookmarks_search_egtest.mm",
   ]
@@ -254,9 +255,13 @@ source_set("eg2_tests") {
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
+    "//ios/chrome/browser/ui/popup_menu:constants",
+    "//ios/chrome/browser/ui/table_view:feature_flags",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
+    "//ios/web/public/test/http_server",
+    "//net",
     "//ui/base",
   ]
   libs = [ "UIKit.framework" ]
@@ -293,7 +298,6 @@ source_set("eg_app_support+eg2") {
     "//ios/testing:nserror_support",
     "//ios/testing/earl_grey:eg_app_support+eg2",
     "//ios/third_party/earl_grey2:app_framework+link",
-    "//ios/web/public/test/http_server",
     "//ui/base",
     "//url",
   ]

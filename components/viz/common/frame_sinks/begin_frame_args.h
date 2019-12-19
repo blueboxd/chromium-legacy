@@ -47,6 +47,28 @@ class TracedValue;
 
 namespace viz {
 
+struct VIZ_COMMON_EXPORT BeginFrameId {
+  // |source_id| and |sequence_number| identify a BeginFrame. These are set by
+  // the original BeginFrameSource that created the BeginFrameArgs. When
+  // |source_id| of consecutive BeginFrameArgs changes, observers should expect
+  // the continuity of |sequence_number| to break.
+  uint64_t source_id = 0;
+  uint64_t sequence_number = 0;
+
+  // Creates an invalid set of values.
+  BeginFrameId();
+  BeginFrameId(const BeginFrameId& id);
+  BeginFrameId(uint64_t source_id, uint64_t sequence_number);
+
+  bool operator<(const BeginFrameId& other) const;
+  bool operator==(const BeginFrameId& other) const;
+  bool operator!=(const BeginFrameId& other) const;
+  bool IsNextInSequenceTo(const BeginFrameId& previous) const;
+  bool IsSequenceValid() const;
+  BeginFrameId& operator=(const BeginFrameId& id);
+  std::string ToString() const;
+};
+
 struct VIZ_COMMON_EXPORT BeginFrameArgs {
   enum BeginFrameArgsType {
     INVALID,
@@ -132,12 +154,7 @@ struct VIZ_COMMON_EXPORT BeginFrameArgs {
   // The inverse of the desired frame rate.
   base::TimeDelta interval;
 
-  // |source_id| and |sequence_number| identify a BeginFrame within a single
-  // process and are set by the original BeginFrameSource that created the
-  // BeginFrameArgs. When |source_id| of consecutive BeginFrameArgs changes,
-  // observers should expect the continuity of |sequence_number| to break.
-  uint64_t source_id;
-  uint64_t sequence_number;
+  BeginFrameId frame_id;
 
   // |trace_id| is used as the id for the trace-events associated with this
   // begin-frame. The trace-id is set by the service, and can be used by both
@@ -186,15 +203,12 @@ struct VIZ_COMMON_EXPORT BeginFrameAck {
   // a CompositorFrame without prior BeginFrame, e.g. for synchronous drawing.
   static BeginFrameAck CreateManualAckWithDamage();
 
-  // Source identifier of the BeginFrame that is acknowledged. The
-  // BeginFrameSource that receives the acknowledgment uses this to discard
-  // BeginFrameAcks for BeginFrames sent by a different source. Such a situation
-  // may occur when the BeginFrameSource of the observer changes while a
-  // BeginFrame from the old source is still in flight.
-  uint64_t source_id;
-
-  // Sequence number of the BeginFrame that is acknowledged.
-  uint64_t sequence_number;
+  // Source identifier and Sequence number of the BeginFrame that is
+  // acknowledged. The BeginFrameSource that receives the acknowledgment uses
+  // this to discard BeginFrameAcks for BeginFrames sent by a different source.
+  // Such a situation may occur when the BeginFrameSource of the observer
+  // changes while a BeginFrame from the old source is still in flight.
+  BeginFrameId frame_id;
 
   // The |trace_id| of the BeginFrame that is acknowledged.
   int64_t trace_id = -1;

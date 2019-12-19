@@ -172,11 +172,11 @@ bool GetDisplayModeForNextResolution(const ManagedDisplayInfo& info,
       info.display_modes();
   ManagedDisplayMode tmp(info.size_in_pixel(), 0.0, false, false,
                          info.device_scale_factor());
-  const gfx::Size resolution = tmp.GetSizeInDIP(false);
+  const gfx::Size resolution = tmp.GetSizeInDIP();
 
   auto iter = std::find_if(modes.begin(), modes.end(),
                            [resolution](const ManagedDisplayMode& mode) {
-                             return mode.GetSizeInDIP(false) == resolution;
+                             return mode.GetSizeInDIP() == resolution;
                            });
   if (iter == modes.end())
     return false;

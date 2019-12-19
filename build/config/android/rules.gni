@@ -1389,21 +1389,20 @@ if (enable_java_templates) {
     # still use resources without having to explicitly set one.
     if (defined(invoker.package_name)) {
       _package_name = invoker.package_name
-    } else if (!defined(invoker.android_manifest_path)) {
+    } else if (!defined(invoker.android_manifest)) {
       _package_name = "org.chromium.test"
     }
 
     _resource_arsc_output = "${target_gen_dir}/${target_name}.ap_"
     _compile_resources_target = "${target_name}__compile_resources"
     compile_resources(_compile_resources_target) {
+      forward_variables_from(invoker, [ "android_manifest" ])
       deps = _deps + [ ":$_build_config_target_name" ]
       build_config = _build_config
       if (defined(_package_name)) {
         rename_manifest_package = _package_name
       }
-      if (defined(invoker.android_manifest_path)) {
-        android_manifest = invoker.android_manifest_path
-      } else {
+      if (!defined(android_manifest)) {
         android_manifest = "//build/android/AndroidManifest.xml"
       }
       arsc_output = _resource_arsc_output
@@ -1455,7 +1454,6 @@ if (enable_java_templates) {
     }
 
     group(target_name) {
-      forward_variables_from(invoker, [ "assert_no_deps" ])
       public_deps = [
         ":$_build_config_target_name",
         ":$_java_binary_target_name",

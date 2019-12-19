@@ -20,6 +20,8 @@ namespace ash {
 
 namespace {
 constexpr int kAnimationDurationMs = 250;
+constexpr int kTrayWidth = kStatusAreaOverflowButtonSize.width();
+constexpr int kTrayHeight = kStatusAreaOverflowButtonSize.height();
 }  // namespace
 
 StatusAreaOverflowButtonTray::IconView::IconView()
@@ -36,8 +38,8 @@ StatusAreaOverflowButtonTray::IconView::IconView()
       kOverflowShelfRightIcon, ShelfConfig::Get()->shelf_icon_color());
   SetImage(image);
 
-  const int vertical_padding = (kTrayItemSize - image.height()) / 2;
-  const int horizontal_padding = (kTrayItemSize - image.width()) / 2;
+  const int vertical_padding = (kTrayHeight - image.height()) / 2;
+  const int horizontal_padding = (kTrayWidth - image.width()) / 2;
   SetBorder(views::CreateEmptyBorder(
       gfx::Insets(vertical_padding, horizontal_padding)));
 
@@ -77,10 +79,10 @@ void StatusAreaOverflowButtonTray::IconView::UpdateRotation() {
   double progress = slide_animation_->GetCurrentValue();
 
   gfx::Transform transform;
-  double center = kTrayItemSize / 2.0;
-  transform.Translate(gfx::Vector2d(center, center));
+  gfx::Vector2d center(kTrayWidth / 2.0, kTrayHeight / 2.0);
+  transform.Translate(center);
   transform.RotateAboutZAxis(180.0 * progress);
-  transform.Translate(gfx::Vector2d(-center, -center));
+  transform.Translate(gfx::Vector2d(-center.x(), -center.y()));
 
   SetTransform(transform);
 }

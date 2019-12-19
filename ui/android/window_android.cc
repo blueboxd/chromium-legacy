@@ -97,9 +97,8 @@ void WindowAndroid::WindowBeginFrameSource::AddObserver(
     viz::BeginFrameArgs last_args = obs->LastUsedBeginFrameArgs();
     if (!last_args.IsValid() ||
         last_args.frame_time < last_begin_frame_args_.frame_time) {
-      DCHECK(last_args.sequence_number <
-                 last_begin_frame_args_.sequence_number ||
-             last_args.source_id != last_begin_frame_args_.source_id);
+      DCHECK(!last_args.frame_id.IsNextInSequenceTo(
+          last_begin_frame_args_.frame_id));
       last_begin_frame_args_.type = viz::BeginFrameArgs::MISSED;
       // TODO(crbug.com/602485): A deadline doesn't make too much sense
       // for a missed BeginFrame (the intention rather is 'immediately'),

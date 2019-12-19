@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
@@ -48,6 +49,7 @@ namespace {
 const gfx::Rect kOverlayRect(0, 0, 256, 256);
 const gfx::PointF kUVTopLeft(0.1f, 0.2f);
 const gfx::PointF kUVBottomRight(1.0f, 1.0f);
+const gfx::Rect kRenderPassOutputRect(0, 0, 256, 256);
 
 class OverlayOutputSurface : public OutputSurface {
  public:
@@ -101,10 +103,10 @@ class CATestOverlayProcessor : public OverlayProcessorMac {
 
 std::unique_ptr<RenderPass> CreateRenderPass() {
   int render_pass_id = 1;
-  gfx::Rect output_rect(0, 0, 256, 256);
 
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
-  pass->SetNew(render_pass_id, output_rect, output_rect, gfx::Transform());
+  pass->SetNew(render_pass_id, kRenderPassOutputRect, kRenderPassOutputRect,
+               gfx::Transform());
 
   SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
   shared_state->opacity = 1.f;
@@ -135,8 +137,7 @@ ResourceId CreateResource(DisplayResourceProvider* parent_resource_provider,
   ResourceId resource_id = CreateResourceInLayerTree(
       child_resource_provider, size, is_overlay_candidate);
 
-  int child_id = parent_resource_provider->CreateChild(
-      base::BindRepeating([](const std::vector<ReturnedResource>&) {}), true);
+  int child_id = parent_resource_provider->CreateChild(base::DoNothing());
 
   // Transfer resource to the parent.
   std::vector<ResourceId> resource_ids_to_transfer;
@@ -228,7 +229,7 @@ class CALayerOverlayTest : public testing::Test {
 
     child_provider_ = TestContextProvider::Create();
     child_provider_->BindToCurrentThread();
-    child_resource_provider_ = std::make_unique<ClientResourceProvider>(true);
+    child_resource_provider_ = std::make_unique<ClientResourceProvider>();
 
     overlay_processor_ = std::make_unique<CATestOverlayProcessor>();
   }
@@ -276,6 +277,8 @@ TEST_F(CALayerOverlayTest, AllowNonAxisAlignedTransform) {
       &ca_layer_list, &damage_rect_, &content_bounds_);
   EXPECT_EQ(gfx::Rect(), damage_rect);
   EXPECT_EQ(1U, ca_layer_list.size());
+  gfx::Rect overlay_damage = overlay_processor_->GetAndResetOverlayDamage();
+  EXPECT_EQ(kRenderPassOutputRect, overlay_damage);
   EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
 }
 
@@ -297,6 +300,8 @@ TEST_F(CALayerOverlayTest, ThreeDTransform) {
       render_pass_filters, render_pass_backdrop_filters, nullptr,
       &ca_layer_list, &damage_rect_, &content_bounds_);
   EXPECT_EQ(1U, ca_layer_list.size());
+  gfx::Rect overlay_damage = overlay_processor_->GetAndResetOverlayDamage();
+  EXPECT_EQ(kRenderPassOutputRect, overlay_damage);
   gfx::Transform expected_transform;
   expected_transform.RotateAboutXAxis(45.f);
   gfx::Transform actual_transform(ca_layer_list.back().shared_state->transform);

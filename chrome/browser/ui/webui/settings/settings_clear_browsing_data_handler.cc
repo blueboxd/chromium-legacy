@@ -181,7 +181,8 @@ void ClearBrowsingDataHandler::GetRecentlyLaunchedInstalledApps(
 
 void ClearBrowsingDataHandler::OnGotInstalledApps(
     const std::string& webui_callback_id,
-    std::vector<ImportantSitesUtil::ImportantDomainInfo> installed_apps) {
+    const std::vector<ImportantSitesUtil::ImportantDomainInfo>&
+        installed_apps) {
   base::ListValue installed_apps_list;
   for (const auto& info : installed_apps) {
     auto entry = std::make_unique<base::DictionaryValue>();

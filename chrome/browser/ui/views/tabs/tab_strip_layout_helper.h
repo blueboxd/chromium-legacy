@@ -21,8 +21,11 @@
 
 class Tab;
 class TabGroupHeader;
-class TabGroupId;
 class TabStripController;
+
+namespace tab_groups {
+class TabGroupId;
+}
 
 // Helper class for TabStrip, that is responsible for calculating and assigning
 // layouts for tabs and group headers. It tracks animations and changes to the
@@ -30,8 +33,8 @@ class TabStripController;
 class TabStripLayoutHelper {
  public:
   using GetTabsCallback = base::RepeatingCallback<views::ViewModelT<Tab>*()>;
-  using GetGroupHeadersCallback =
-      base::RepeatingCallback<std::map<TabGroupId, TabGroupHeader*>()>;
+  using GetGroupHeadersCallback = base::RepeatingCallback<
+      std::map<tab_groups::TabGroupId, TabGroupHeader*>()>;
 
   TabStripLayoutHelper(const TabStripController* controller,
                        GetTabsCallback get_tabs_callback,
@@ -55,7 +58,8 @@ class TabStripLayoutHelper {
   int GetPinnedTabCount() const;
 
   // Returns a map of all tab groups and their bounds.
-  const std::map<TabGroupId, gfx::Rect>& group_header_ideal_bounds() const {
+  const std::map<tab_groups::TabGroupId, gfx::Rect>& group_header_ideal_bounds()
+      const {
     return group_header_ideal_bounds_;
   }
 
@@ -100,7 +104,7 @@ class TabStripLayoutHelper {
 
   // Moves the tab at |prev_index| with group |moving_tab_group| to |new_index|.
   // Also updates the group header's location if necessary.
-  void MoveTab(base::Optional<TabGroupId> moving_tab_group,
+  void MoveTab(base::Optional<tab_groups::TabGroupId> moving_tab_group,
                int prev_index,
                int new_index);
 
@@ -109,17 +113,17 @@ class TabStripLayoutHelper {
 
   // Inserts a new group header for |group|. |header_removed_callback| will be
   // invoked if the group is removed at the end of a remove animation.
-  void InsertGroupHeader(TabGroupId group,
+  void InsertGroupHeader(tab_groups::TabGroupId group,
                          TabGroupHeader* header,
                          base::OnceClosure header_removed_callback);
 
   // Removes the group header for |group|.
-  void RemoveGroupHeader(TabGroupId group);
+  void RemoveGroupHeader(tab_groups::TabGroupId group);
 
   // Ensures the group header for |group| is at the correct index. Should be
   // called externally when group membership changes but nothing else about the
   // layout does.
-  void UpdateGroupHeaderIndex(TabGroupId group);
+  void UpdateGroupHeaderIndex(tab_groups::TabGroupId group);
 
   // Changes the active tab from |prev_active_index| to |new_active_index|.
   void SetActiveTab(int prev_active_index, int new_active_index);
@@ -155,12 +159,13 @@ class TabStripLayoutHelper {
 
   // Given a tab's |model_index| and |group|, returns the index of its
   // corresponding TabSlot in |slots_|.
-  int GetSlotIndexForTabModelIndex(int model_index,
-                                   base::Optional<TabGroupId> group) const;
+  int GetSlotIndexForTabModelIndex(
+      int model_index,
+      base::Optional<tab_groups::TabGroupId> group) const;
 
   // Given a group ID, returns the index of its header's corresponding TabSlot
   // in |slots_|.
-  int GetSlotIndexForGroupHeader(TabGroupId group) const;
+  int GetSlotIndexForGroupHeader(tab_groups::TabGroupId group) const;
 
   // Returns the current width constraints for each View.
   std::vector<TabWidthConstraints> GetCurrentTabWidthConstraints() const;
@@ -211,7 +216,7 @@ class TabStripLayoutHelper {
   std::vector<TabSlot> slots_;
 
   // Contains the ideal bounds of tab group headers.
-  std::map<TabGroupId, gfx::Rect> group_header_ideal_bounds_;
+  std::map<tab_groups::TabGroupId, gfx::Rect> group_header_ideal_bounds_;
 
   // When in tab closing mode, if we want the next tab to the right to end up
   // under the cursor, each tab needs to stay the same size. When defined,

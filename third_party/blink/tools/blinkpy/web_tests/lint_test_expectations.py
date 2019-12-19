@@ -36,6 +36,7 @@ from blinkpy.common.host import Host
 from blinkpy.common.system.log_utils import configure_logging
 from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.port.factory import platform_options
+from blinkpy.web_tests.models.test_expectations import TestExpectationLine
 
 _log = logging.getLogger(__name__)
 
@@ -57,11 +58,19 @@ def lint(host, options):
         ports_to_lint[0].web_tests_dir(), 'WebGPUExpectations')
     paths = [wpt_overrides_exps_path, web_gpu_exps_path]
     expectations_dict = {}
+    all_system_specifiers = set()
+    all_build_specifiers = set(ports_to_lint[0].ALL_BUILD_TYPES)
     for path in paths:
         if host.filesystem.exists(path):
             expectations_dict[path] = host.filesystem.read_text_file(path)
+
     for port in ports_to_lint:
         expectations_dict.update(port.all_expectations_dict())
+        config_macro_dict = port.configuration_specifier_macros()
+        if config_macro_dict:
+            all_system_specifiers.update({s.lower() for s in config_macro_dict.keys()})
+            all_system_specifiers.update(
+                {s.lower() for s in reduce(lambda x, y: x + y, config_macro_dict.values())})
         for path in port.extra_expectations_files():
             if host.filesystem.exists(path):
                 expectations_dict[path] = host.filesystem.read_text_file(path)
@@ -77,7 +86,8 @@ def lint(host, options):
                 _log.error(warning)
                 failures.append('%s: %s' % (path, warning))
                 _log.error('')
-        for lineno, line in enumerate(content.split('\n'), 1):
+        exp_lines = content.split('\n')
+        for lineno, line in enumerate(exp_lines, 1):
             if line.strip().startswith('Bug('):
                 error = (("%s:%d Expectation '%s' has the Bug(...) token, "
                           "The token has been removed in the new expectations format") %
@@ -86,6 +96,23 @@ def lint(host, options):
                 failures.append(error)
                 _log.error('')
 
+        for lineno, line in enumerate(exp_lines, 1):
+            if line.strip().startswith('#') or not line.strip():
+                continue
+            exp_line = TestExpectationLine.tokenize_line(
+                host.filesystem.basename(path), line, lineno, ports_to_lint[0])
+            specifiers = set(s.lower() for s in exp_line.specifiers)
+            system_intersection = specifiers & all_system_specifiers
+            build_intersection = specifiers & all_build_specifiers
+            for intersection in [system_intersection, build_intersection]:
+                if len(intersection) < 2:
+                    continue
+                error = (("%s:%d Expectation '%s' has multiple specifiers that are mutually exclusive.\n"
+                          "The mutually exclusive specifiers are %s") %
+                         (host.filesystem.basename(path), lineno, line, ', '.join(intersection)))
+                _log.error(error)
+                _log.error('')
+                failures.append(error)
     return failures
 
 

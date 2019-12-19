@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 
 namespace blink {
@@ -28,6 +29,36 @@ LayoutNGMixin<Base>::LayoutNGMixin(Element* element) : Base(element) {
 
 template <typename Base>
 LayoutNGMixin<Base>::~LayoutNGMixin() = default;
+
+template <typename Base>
+void LayoutNGMixin<Base>::Paint(const PaintInfo& paint_info) const {
+  // Avoid painting dirty objects because descendants maybe already destroyed.
+  if (UNLIKELY(Base::NeedsLayout() &&
+               !Base::LayoutBlockedByDisplayLock(
+                   DisplayLockLifecycleTarget::kChildren))) {
+    NOTREACHED();
+    return;
+  }
+
+  if (const NGLayoutResult* result = Base::GetCachedLayoutResult()) {
+    NGBoxFragmentPainter(To<NGPhysicalBoxFragment>(result->PhysicalFragment()))
+        .Paint(paint_info);
+  }
+}
+
+// The current fragment from the last layout cycle for this box.
+// When pre-NG layout calls functions of this block flow, fragment and/or
+// LayoutResult are required to compute the result.
+// TODO(kojii): Use the cached result for now, we may need to reconsider as the
+// cache evolves.
+template <typename Base>
+const NGPhysicalBoxFragment* LayoutNGMixin<Base>::CurrentFragment() const {
+  const NGLayoutResult* cached_layout_result = Base::GetCachedLayoutResult();
+  if (!cached_layout_result)
+    return nullptr;
+
+  return &To<NGPhysicalBoxFragment>(cached_layout_result->PhysicalFragment());
+}
 
 template <typename Base>
 bool LayoutNGMixin<Base>::IsOfType(LayoutObject::LayoutObjectType type) const {

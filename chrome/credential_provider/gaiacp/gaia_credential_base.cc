@@ -41,6 +41,7 @@
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/gcpw_strings.h"
+#include "chrome/credential_provider/gaiacp/gem_device_details_manager.h"
 #include "chrome/credential_provider/gaiacp/grit/gaia_static_resources.h"
 #include "chrome/credential_provider/gaiacp/internet_availability_checker.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
@@ -1839,6 +1840,8 @@ HRESULT CGaiaCredentialBase::SaveAccountInfo(const base::Value& properties) {
     return E_INVALIDARG;
   }
 
+  base::string16 domain = GetDictString(properties, kKeyDomain);
+
   // TODO(crbug.com/976744): Use the down scoped kKeyMdmAccessToken instead
   // of login scoped token.
   std::string access_token = GetDictStringUTF8(properties, kKeyAccessToken);
@@ -1848,11 +1851,16 @@ HRESULT CGaiaCredentialBase::SaveAccountInfo(const base::Value& properties) {
         sid, access_token, password);
     if (FAILED(hr) && hr != E_NOTIMPL)
       LOGFN(ERROR) << "StoreWindowsPasswordIfNeeded hr=" << putHR(hr);
+
+    // Upload device details to gem database.
+    hr = GemDeviceDetailsManager::Get()->UploadDeviceDetails(access_token);
+    if (FAILED(hr) && hr != E_NOTIMPL)
+      LOGFN(ERROR) << "UploadDeviceDetails hr=" << putHR(hr);
+    // Below setter is only used for unit testing.
+    GemDeviceDetailsManager::Get()->SetUploadStatusForTesting(hr);
   } else {
     LOGFN(ERROR) << "Access token is empty. Cannot save Windows password.";
   }
-
-  base::string16 domain = GetDictString(properties, kKeyDomain);
 
   // Load the user's profile so that their registry hive is available.
   auto profile = ScopedUserProfile::Create(sid, domain, username, password);

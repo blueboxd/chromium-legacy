@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
@@ -191,17 +193,31 @@ TEST_F(ScrollTimelineTest, AttachOrDetachAnimationWithNullScrollSource) {
   Element* scroll_source = nullptr;
   CSSPrimitiveValue* start_scroll_offset = nullptr;
   CSSPrimitiveValue* end_scroll_offset = nullptr;
-  ScrollTimeline* scroll_timeline = MakeGarbageCollected<ScrollTimeline>(
-      &GetDocument(), scroll_source, ScrollTimeline::Block, start_scroll_offset,
-      end_scroll_offset, 100, Timing::FillMode::NONE);
+  Persistent<ScrollTimeline> scroll_timeline =
+      MakeGarbageCollected<ScrollTimeline>(
+          &GetDocument(), scroll_source, ScrollTimeline::Block,
+          start_scroll_offset, end_scroll_offset, 100, Timing::FillMode::NONE);
 
   // Sanity checks.
   ASSERT_EQ(scroll_timeline->scrollSource(), nullptr);
   ASSERT_EQ(scroll_timeline->ResolvedScrollSource(), nullptr);
 
-  // These calls should be no-ops in this mode, and shouldn't crash.
-  scroll_timeline->AnimationAttached(nullptr);
-  scroll_timeline->AnimationDetached(nullptr);
+  NonThrowableExceptionState exception_state;
+  Timing timing;
+  timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
+  Animation* animation =
+      Animation::Create(MakeGarbageCollected<KeyframeEffect>(
+                            nullptr,
+                            MakeGarbageCollected<StringKeyframeEffectModel>(
+                                StringKeyframeVector()),
+                            timing),
+                        scroll_timeline, exception_state);
+  EXPECT_EQ(1u, scroll_timeline->GetAnimations().size());
+  EXPECT_TRUE(scroll_timeline->GetAnimations().Contains(animation));
+
+  animation = nullptr;
+  ThreadState::Current()->CollectAllGarbageForTesting();
+  EXPECT_EQ(0u, scroll_timeline->GetAnimations().size());
 }
 
 }  //  namespace blink

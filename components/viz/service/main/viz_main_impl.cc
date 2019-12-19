@@ -75,18 +75,17 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
 
   if (!dependencies_.io_thread_task_runner)
     io_thread_ = CreateAndStartIOThread();
-  if (dependencies_.create_display_compositor) {
-    if (dependencies.viz_compositor_thread_runner) {
-      viz_compositor_thread_runner_ = dependencies.viz_compositor_thread_runner;
-    } else {
-      viz_compositor_thread_runner_impl_ =
-          std::make_unique<VizCompositorThreadRunnerImpl>();
-      viz_compositor_thread_runner_ = viz_compositor_thread_runner_impl_.get();
-    }
-    if (delegate_) {
-      delegate_->PostCompositorThreadCreated(
-          viz_compositor_thread_runner_->task_runner());
-    }
+
+  if (dependencies.viz_compositor_thread_runner) {
+    viz_compositor_thread_runner_ = dependencies.viz_compositor_thread_runner;
+  } else {
+    viz_compositor_thread_runner_impl_ =
+        std::make_unique<VizCompositorThreadRunnerImpl>();
+    viz_compositor_thread_runner_ = viz_compositor_thread_runner_impl_.get();
+  }
+  if (delegate_) {
+    delegate_->PostCompositorThreadCreated(
+        viz_compositor_thread_runner_->task_runner());
   }
 
   if (!gpu_init_->gpu_info().in_process_gpu && dependencies.ukm_recorder) {
@@ -103,8 +102,6 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
       gpu_init_->gpu_feature_info_for_hardware_gpu(),
       gpu_init_->gpu_extra_info(), gpu_init_->vulkan_implementation(),
       base::BindOnce(&VizMainImpl::ExitProcess, base::Unretained(this)));
-  if (dependencies_.create_display_compositor)
-    gpu_service_->set_oopd_enabled();
 }
 
 VizMainImpl::~VizMainImpl() {

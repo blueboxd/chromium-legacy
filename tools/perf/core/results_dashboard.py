@@ -80,18 +80,13 @@ def SendResults(data, data_label, url, send_as_histograms=False,
       recoverable error.
   """
   start = time.time()
-  errors = []
   all_data_uploaded = False
-
   data_type = ('histogram' if send_as_histograms else 'chartjson')
-
   dashboard_data_str = json.dumps(data)
-
   # When perf dashboard is overloaded, it takes sometimes to spin up new
   # instance. So sleep before retrying again. (
   # For more details, see crbug.com/867379.
-  wait_before_next_retry_in_seconds = 30
-
+  wait_before_next_retry_in_seconds = 15
   for i in xrange(1, num_retries + 1):
     try:
       print('Sending %s result of %s to dashboard (attempt %i out of %i).' %
@@ -104,25 +99,17 @@ def SendResults(data, data_label, url, send_as_histograms=False,
       all_data_uploaded = True
       break
     except SendResultsRetryException as e:
-      error = 'Error while uploading %s data: %s' % (data_type, str(e))
-      errors.append(error)
+      print('Error while uploading %s data: %s' % (data_type, str(e)))
       time.sleep(wait_before_next_retry_in_seconds)
       wait_before_next_retry_in_seconds *= 2
     except SendResultsFatalException as e:
-      error = 'Fatal error while uploading %s data: %s' % (data_type, str(e))
-      errors.append(error)
+      print('Fatal error while uploading %s data: %s' % (data_type, str(e)))
       break
     except Exception:
-      error = 'Unexpected error while uploading %s data: %s' % (
-          data_type, traceback.format_exc())
-      errors.append(error)
+      print('Unexpected error while uploading %s data: %s' % (
+            data_type, traceback.format_exc()))
       break
-
-  for err in errors:
-    print(err)
-
   print('Time spent sending results to %s: %s' % (url, time.time() - start))
-
   return all_data_uploaded
 
 
@@ -448,7 +435,7 @@ def _SendResultsJson(url, results_json):
   data = urllib.urlencode({'data': results_json})
   req = urllib2.Request(url + SEND_RESULTS_PATH, data)
   try:
-    urllib2.urlopen(req)
+    urllib2.urlopen(req, timeout=60 * 5)
   except (urllib2.HTTPError, urllib2.URLError, httplib.HTTPException):
     error = traceback.format_exc()
 

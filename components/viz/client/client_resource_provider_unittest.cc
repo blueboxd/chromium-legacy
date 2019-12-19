@@ -32,8 +32,7 @@ class ClientResourceProviderTest : public testing::TestWithParam<bool> {
   }
 
   void SetUp() override {
-    provider_ = std::make_unique<ClientResourceProvider>(
-        /*delegated_sync_points_required=*/true);
+    provider_ = std::make_unique<ClientResourceProvider>();
   }
 
   void TearDown() override { provider_ = nullptr; }

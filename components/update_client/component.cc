@@ -629,8 +629,8 @@ void Component::StateDownloadingDiff::DoHandle() {
 
   const auto& id = component.id_;
   crx_downloader_->set_progress_callback(
-      base::Bind(&Component::StateDownloadingDiff::DownloadProgress,
-                 base::Unretained(this), id));
+      base::BindRepeating(&Component::StateDownloadingDiff::DownloadProgress,
+                          base::Unretained(this), id));
   crx_downloader_->StartDownload(
       component.crx_diffurls_, component.hashdiff_sha256_,
       base::BindOnce(&Component::StateDownloadingDiff::DownloadComplete,
@@ -694,8 +694,8 @@ void Component::StateDownloading::DoHandle() {
 
   const auto& id = component.id_;
   crx_downloader_->set_progress_callback(
-      base::Bind(&Component::StateDownloading::DownloadProgress,
-                 base::Unretained(this), id));
+      base::BindRepeating(&Component::StateDownloading::DownloadProgress,
+                          base::Unretained(this), id));
   crx_downloader_->StartDownload(
       component.crx_urls_, component.hash_sha256_,
       base::BindOnce(&Component::StateDownloading::DownloadComplete,

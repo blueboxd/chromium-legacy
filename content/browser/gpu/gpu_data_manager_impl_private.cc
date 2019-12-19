@@ -422,19 +422,17 @@ bool GpuDataManagerImplPrivate::GpuAccessAllowed(std::string* reason) const {
 }
 
 bool GpuDataManagerImplPrivate::GpuProcessStartAllowed() const {
-  if (GpuAccessAllowed(nullptr))
-    return true;
-
-#if defined(USE_X11) || defined(OS_MACOSX) || defined(OS_FUCHSIA)
-  // If GPU access is disabled with OOP-D we run the display compositor in:
-  //   Browser process: Windows
-  //   GPU process: Linux, Mac and Fuchsia
-  //   N/A: Android and Chrome OS (GPU access can't be disabled)
-  if (features::IsVizDisplayCompositorEnabled())
-    return true;
+#if defined(OS_WIN)
+  // On Windows if hardware GPU access is disabled we run the display compositor
+  // in the browser process and don't start a GPU process.
+  // TODO(kylechar/zmo): Remove special case for Windows here.
+  return GpuAccessAllowed(nullptr);
+#else
+  // For all other platforms we either always run the display compositor in the
+  // GPU process (Linux, Mac and Fuchsia) or GPU access is never disabled
+  // (Android and Chrome OS).
+  return true;
 #endif
-
-  return false;
 }
 
 void GpuDataManagerImplPrivate::RequestDxdiagDx12VulkanGpuInfoIfNeeded(

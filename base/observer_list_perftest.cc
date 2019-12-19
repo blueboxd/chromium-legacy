@@ -11,13 +11,26 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 
 // Ask the compiler not to use a register for this counter, in case it decides
 // to do magic optimizations like |counter += kLaps|.
 volatile int g_observer_list_perf_test_counter;
 
 namespace base {
+
+constexpr char kMetricPrefixObserverList[] = "ObserverList.";
+constexpr char kMetricNotifyTimePerObserver[] = "notify_time_per_observer";
+
+namespace {
+
+perf_test::PerfResultReporter SetUpReporter(const std::string& story_name) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixObserverList, story_name);
+  reporter.RegisterImportantMetric(kMetricNotifyTimePerObserver, "ns");
+  return reporter;
+}
+
+}  // namespace
 
 class ObserverInterface {
  public:
@@ -95,24 +108,23 @@ TYPED_TEST(ObserverListPerfTest, NotifyPerformance) {
     }
     TimeDelta duration = TimeTicks::Now() - start;
 
-    const char* name = Pick<TypeParam>::GetName();
     observers.clear();
 
     EXPECT_EQ(observer_count * weighted_laps,
               g_observer_list_perf_test_counter);
     EXPECT_TRUE(observer_count == 0 || list.might_have_observers());
 
-    std::string prefix =
-        base::StringPrintf("ObserverListPerfTest_%d.", observer_count);
+    std::string story_name =
+        base::StringPrintf("%s_%d", Pick<TypeParam>::GetName(), observer_count);
 
     // A typical value is 3-20 nanoseconds per observe in Release, 1000-2000ns
     // in an optimized build with DCHECKs and 3000-6000ns in debug builds.
-    perf_test::PrintResult(
-        prefix, name, "NotifyPerformance",
+    auto reporter = SetUpReporter(story_name);
+    reporter.AddResult(
+        kMetricNotifyTimePerObserver,
         duration.InNanoseconds() /
             static_cast<double>(g_observer_list_perf_test_counter +
-                                weighted_laps),
-        "ns/observe", true);
+                                weighted_laps));
   }
 }
 

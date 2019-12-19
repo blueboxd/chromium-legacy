@@ -25,6 +25,9 @@ libssl3.so(NSS_3.28)(64bit)
 # as a manual dependency.
 rpmlib(FileDigests) <= 4.6.0-1
 
+# libvulkan is dlopen()'ed, so must be added as a manual dependency.
+libvulkan.so.1()(64bit)
+
 # For uploading crash reports with Breakpad.
 wget
 

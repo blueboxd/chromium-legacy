@@ -41,7 +41,6 @@ class StubSurfaceClient : public SurfaceClient {
                           base::TimeTicks draw_start_timestamp,
                           const gfx::SwapTimings& swap_timings,
                           const gfx::PresentationFeedback& feedback) override {}
-  bool NeedsSyncTokens() const override;
 
   base::WeakPtrFactory<StubSurfaceClient> weak_factory{this};
 };

@@ -139,7 +139,6 @@
 <translation id="1186771945450942097">Fjarlægja skaðlegan hugbúnað</translation>
 <translation id="1187722533808055681">Vakningar í aðgerðaleysi</translation>
 <translation id="1188807932851744811">Annálsskrá ekki hlaðið inn.</translation>
-<translation id="1189418886587279221">Gera aðgengiseiginleika virka til að auðvelda notkun tækisins.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Fá aðgang að skrá sem geymd er í tölvunni}one{Fá aðgang að # skrá sem geymd er í tölvunni}other{Fá aðgang að # skrám sem geymdar eru í tölvunni}}</translation>
 <translation id="1190660338026981543"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> skráði <ph name="DEVICE_TYPE" /> í umsjón fyrirtækis.</translation>
 <translation id="119092896208640858">Til að hreinsa vafragögn aðeins úr þessu tæki en halda þeim á Google reikningnum þínum skaltu <ph name="BEGIN_LINK" />skrá þig út<ph name="END_LINK" />.</translation>
@@ -339,7 +338,6 @@
 <translation id="1476607407192946488">Tungumá&amp;lastillingar</translation>
 <translation id="1478340334823509079">Upplýsingar: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Uppsetning er ekki leyfð</translation>
-<translation id="1481206932476131736">Stjórnaðu innskráðum reikningum þínum. Vefsvæði, forrit og viðbætur í Chrome og Google Play geta notað þessa reikninga til að sérsníða upplifun þína, eftir því hvaða heimildir eru veittar.</translation>
 <translation id="1482626744466814421">Setja þennan flipa í bókamerki...</translation>
 <translation id="1483493594462132177">Senda</translation>
 <translation id="1484979925941077974">Vefsvæði er að nota Bluetooth</translation>
@@ -592,7 +590,6 @@
 <translation id="1813278315230285598">Þjónusta</translation>
 <translation id="18139523105317219">Heiti EDI-aðila</translation>
 <translation id="1815083418640426271">Líma sem ósniðinn texta</translation>
-<translation id="1815579292149538864">Setja upp eða hafa umsjón með CUPS-prenturum.</translation>
 <translation id="181577467034453336"><ph name="NUMBER_OF_VIEWS" /> í viðbót...</translation>
 <translation id="1816036116994822943">Skönnunarhraði lyklaborðs</translation>
 <translation id="1817871734039893258">Skráaendurheimt Microsoft</translation>
@@ -1454,7 +1451,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3012917896646559015">Hafðu umsvifalaust samband við vélbúnaðarframleiðandann til að senda tölvuna í viðgerð.</translation>
 <translation id="3013291976881901233">MIDI-tæki</translation>
 <translation id="3015639418649705390">Endurræsa núna</translation>
-<translation id="3016329696181678353">Ekki tókst að stilla <ph name="PRINTER_NAME" /> sjálfvirkt. Tilgreindu ítarlegar prentaraupplýsingar.</translation>
 <translation id="3016381065346027039">Engar annálsfærslur</translation>
 <translation id="3016641847947582299">Íhlutur uppfærður</translation>
 <translation id="3016780570757425217">Komast að staðsetningunni þinni</translation>
@@ -2192,7 +2188,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4046123991198612571">Næsta lag</translation>
 <translation id="4050225813016893843">Auðkenningaraðferð</translation>
 <translation id="4052120076834320548">Örsmátt</translation>
-<translation id="4055023634561256217">Endurræsa þarf tækið áður er hægt er að endurstilla það með djúphreinsun.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> – <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">Skoða í verslun</translation>
 <translation id="4058647953897694817">Staðfesta með Bluetooth</translation>
@@ -2514,7 +2509,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4558426062282641716">Beðið um heimild til sjálfvirkrar ræsingar</translation>
 <translation id="4558491878126948419">Fáðu ábendingar varðandi <ph name="DEVICE_TYPE" />, upplýsingar um vörur frá Google og sendu okkur ábendingar. Þú getur hætt áskrift hvenær sem er.</translation>
 <translation id="4559617833001311418">Þetta vefsvæði er að nota hreyfi- eða birtuskynjarana þína.</translation>
-<translation id="4561098487691395071">Eða tilgreindu PPD prentarans</translation>
 <translation id="4562155214028662640">Bæta fingrafari við</translation>
 <translation id="4562494484721939086">Ekkert símasamband</translation>
 <translation id="4563880231729913339">Fingur 3</translation>
@@ -2757,7 +2751,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925542575807923399">Stjórnandi þessa reiknings krefst þess að reikningurinn sé fyrsti innskráði reikningurinn í lotu fyrir margar innskráningar.</translation>
 <translation id="4927753642311223124">Ekkert að sjá hér, haltu þínu striki.</translation>
-<translation id="4927846293686536410">Skráðu þig inn til að sjá bókamerkin þín, ferilinn, aðgangsorðin og aðrar stillingar í öllum tækjunum þínum. Þú ert einnig sjálfkrafa skráð(ur) inn í þá þjónustu Google sem þú notar.</translation>
 <translation id="4929386379796360314">Prentáfangastaðir</translation>
 <translation id="4930714375720679147">Kveikja</translation>
 <translation id="4932733599132424254">Dagsetning</translation>
@@ -3314,7 +3307,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5750324801516359607">Langt</translation>
 <translation id="5756163054456765343">Hjálparmiðstöð</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> getur lesið skjöl sem þú sendir til prentunar í gegnum <ph name="APP_NAME" />.</translation>
-<translation id="5763315388120433852">Setja upp eða hafa umsjón með samnýttum skráageymslum.</translation>
 <translation id="5763751966069581670">Engin USB-tæki fundust</translation>
 <translation id="5764483294734785780">&amp;Vista hljóð sem...</translation>
 <translation id="57646104491463491">Dagsetning breytingar</translation>
@@ -4634,7 +4626,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7684718995427157417">Kveiktu á villuleitarbrú Android (ADB) til að búa til og prófa forritin þín. Hafðu í huga að þessi aðgerð gerir þér kleift að setja upp Android forrit sem eru ekki staðfest af Google. Núllstilla þarf tækið til að slökkva á þessu.</translation>
 <translation id="7685049629764448582">JavaScript-minni</translation>
 <translation id="7685087414635069102">PIN-númers krafist</translation>
-<translation id="768549422429443215">Bæta við tungumálum eða endurraða lista.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Staðfestu nýtt aðgangsorð</translation>
 <translation id="7690378713476594306">Velja af lista</translation>
@@ -4671,7 +4662,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7730449930968088409">Taka mynd af skjánum</translation>
 <translation id="7732111077498238432">Netkerfinu er stjórnað af reglu</translation>
 <translation id="7737238973539693982">Eyða Linux (tilraunaútgáfa)</translation>
-<translation id="7737456446569756884">Þetta tæki fær sjálfvirkar hugbúnaðar- og öryggisuppfærslur þar til <ph name="MONTH_AND_YEAR" />.</translation>
 <translation id="7740996059027112821">Venjulegt</translation>
 <translation id="7744047395460924128">Sjá prentferilinn þinn</translation>
 <translation id="7746457520633464754">Til að greina hættuleg forrit og vefsvæði sendir Chrome vefslóðir einhverra síðna sem þú skoðar, kerfisupplýsingar og efni síðu til Google.</translation>
@@ -5557,7 +5547,6 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="892706138619340876">Sumar stillingar voru endurstilltar</translation>
 <translation id="8930351635855238750">Nýjar fótsporastillingar taka gildi þegar síðan hefur verið endurhlaðin</translation>
 <translation id="8931394284949551895">Ný tæki</translation>
-<translation id="893254996965966411">Vistaðu prentara sem greinast á prófílnum þínum eða bættu við nýjum prentara.</translation>
 <translation id="8932894639908691771">Skipta um aðgengismöguleika</translation>
 <translation id="8933960630081805351">&amp;Sýna í Finder</translation>
 <translation id="8934732568177537184">Halda áfram</translation>

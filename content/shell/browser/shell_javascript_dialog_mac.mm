@@ -76,6 +76,8 @@
 - (void)cancel {
   [NSApp endSheet:[_alert window]];
   _alert.reset();
+  if (_callback)
+    std::move(_callback).Run(false, base::string16());
 }
 
 @end
@@ -88,8 +90,7 @@ ShellJavaScriptDialog::ShellJavaScriptDialog(
     JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
-    JavaScriptDialogManager::DialogClosedCallback callback)
-    : callback_(std::move(callback)) {
+    JavaScriptDialogManager::DialogClosedCallback callback) {
   bool text_field = dialog_type == JAVASCRIPT_DIALOG_TYPE_PROMPT;
   bool one_button = dialog_type == JAVASCRIPT_DIALOG_TYPE_ALERT;
 

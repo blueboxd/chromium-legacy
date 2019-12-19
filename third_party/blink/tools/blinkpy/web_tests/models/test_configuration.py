@@ -116,7 +116,7 @@ class TestConfigurationConverter(object):
 
     def __init__(self, all_test_configurations, configuration_macros=None):
         self._all_test_configurations = all_test_configurations
-        self._configuration_macros = configuration_macros or {}
+        self.configuration_macros = configuration_macros or {}
         self._specifier_to_configuration_set = {}
         self._specifier_sorter = SpecifierSorter()
         self._collapsing_sets_by_size = {}
@@ -148,7 +148,7 @@ class TestConfigurationConverter(object):
         return self._specifier_sorter
 
     def _expand_macros(self, specifier):
-        expanded_specifiers = self._configuration_macros.get(specifier)
+        expanded_specifiers = self.configuration_macros.get(specifier)
         return expanded_specifiers or [specifier]
 
     def to_config_set(self, specifier_set, error_list=None):
@@ -266,9 +266,9 @@ class TestConfigurationConverter(object):
 
         # 4) Substitute specifier subsets that match macros within each set:
         #   (win7, win10, release) -> (win, release)
-        self.collapse_macros(self._configuration_macros, specifiers_list)
+        self.collapse_macros(self.configuration_macros, specifiers_list)
 
-        macro_keys = set(self._configuration_macros.keys())
+        macro_keys = set(self.configuration_macros.keys())
 
         # 5) Collapsing macros may have created combinations the can now be abbreviated.
         #   (win7, release), (linux, x86, release), (linux, x86_64, release)

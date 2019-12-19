@@ -194,8 +194,11 @@ constexpr int kUnifiedTopShortcutButtonMinSpacing = 4;
 constexpr gfx::Insets kUnifiedDetailedViewTitlePadding(0, 0, 0, 16);
 constexpr int kUnifiedDetailedViewTitleRowHeight = 64;
 
+// Constants used for the status area overflow button and state.
+constexpr gfx::Size kStatusAreaOverflowButtonSize(28, 32);
 constexpr int kStatusAreaLeftPaddingForOverflow = 100;
 constexpr int kStatusAreaForceCollapseAvailableWidth = 200;
+constexpr int kStatusAreaOverflowGradientSize = 24;
 
 }  // namespace ash
 

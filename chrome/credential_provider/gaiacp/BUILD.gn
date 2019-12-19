@@ -83,6 +83,8 @@ source_set("gaiacp_lib") {
     "gaia_credential_provider_module.h",
     "gcp_crash_reporting.cc",
     "gcp_crash_reporting.h",
+    "gem_device_details_manager.cc",
+    "gem_device_details_manager.h",
     "initguid.cc",
     "internet_availability_checker.cc",
     "internet_availability_checker.h",

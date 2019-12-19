@@ -37,8 +37,7 @@ class VIZ_SERVICE_EXPORT BeginFrameTracker {
 
   int outstanding_begin_frames_ = 0;
 
-  uint64_t last_source_id_ = 0;
-  uint64_t last_sequence_number_ = BeginFrameArgs::kInvalidFrameNumber;
+  BeginFrameId last_frame_id_;
 };
 
 }  // namespace viz

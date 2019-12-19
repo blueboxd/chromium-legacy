@@ -158,20 +158,19 @@ suite(destination_store_test.suiteName, function() {
           assertEquals('ID1', args.destinationId);
           assertEquals(PrinterType.LOCAL, args.type);
           assertEquals('ID1', destinationStore.selectedDestination.id);
-          // Only the most recent printer should have been added to the store.
+          // Verify that all the recent printers have been added to the store.
           const reportedPrinters = destinationStore.destinations();
           destinations.forEach((destination, index) => {
             const match = reportedPrinters.find((reportedPrinter) => {
               return reportedPrinter.id == destination.id;
             });
-            assertEquals(index > 0, typeof match === 'undefined');
+            assertEquals(index >= 3, typeof match === 'undefined');
           });
         });
       });
 
   /**
-   * Tests that if the user has multiple valid recent destinations, this
-   * does not result in multiple calls to getPrinterCapabilities and the
+   * Tests that if the user has multiple valid recent destinations, the
    * correct destination is selected for the preview request.
    * For crbug.com/666595.
    */
@@ -194,13 +193,13 @@ suite(destination_store_test.suiteName, function() {
           assertEquals(PrinterType.LOCAL, args.type);
           assertEquals('ID1', destinationStore.selectedDestination.id);
 
-          // Most recent printer + Save as PDF are in the store automatically.
+          // The other recent destinations should be prefetched, but only one
+          // should have been selected so there was only one preview request.
           const reportedPrinters = destinationStore.destinations();
-          assertEquals(2, reportedPrinters.length);
+          assertEquals(4, reportedPrinters.length);
           destinations.forEach((destination, index) => {
             assertEquals(
-                index === 0,
-                reportedPrinters.some(p => p.id == destination.id));
+                index < 3, reportedPrinters.some(p => p.id == destination.id));
           });
           assertEquals(1, numPrintersSelected);
         });
@@ -404,21 +403,22 @@ suite(destination_store_test.suiteName, function() {
               Destination.GooglePromotedId.DOCS,
               destinationStore.selectedDestination.id);
 
-          // Only the most recent printer + Save as PDF are in the store.
+          // Only the other cloud destination for the same user account should
+          // have been prefetched.
           const loadedPrintersAccount1 =
               destinationStore.destinations(account1);
-          assertEquals(2, loadedPrintersAccount1.length);
+          assertEquals(3, loadedPrintersAccount1.length);
           cloudDestinations.forEach((destination) => {
             assertEquals(
-                destination === driveUser1,
+                destination.account === account1,
                 loadedPrintersAccount1.some(p => p.key == destination.key));
           });
           assertEquals(1, numPrintersSelected);
 
-          // Only Save as PDF exists when filtering for account 2.
+          // Cloud printer and Save as PDF exist when filtering for account 2.
           const loadedPrintersAccount2 =
               destinationStore.destinations(account2);
-          assertEquals(1, loadedPrintersAccount2.length);
+          assertEquals(2, loadedPrintersAccount2.length);
           assertEquals(
               Destination.GooglePromotedId.SAVE_AS_PDF,
               loadedPrintersAccount2[0].id);

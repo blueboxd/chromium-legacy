@@ -28,9 +28,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
-#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
-#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -41,6 +39,8 @@
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -682,7 +682,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindow) {
 // Mac10.13 Tests (dbg) and PASS/FAIL flakiness on Linux Chromium OS ASan LSan
 // Tests (1) bot.
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
-    defined(OS_WIN) || (defined(OS_MAC) && !defined(NDEBUG))
+    defined(OS_WIN) || (defined(OS_MACOSX) && !defined(NDEBUG))
 #define MAYBE_RestoreTabWithSpecialURL DISABLED_RestoreTabWithSpecialURL
 #else
 #define MAYBE_RestoreTabWithSpecialURL RestoreTabWithSpecialURL
@@ -716,7 +716,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, MAYBE_RestoreTabWithSpecialURL) {
 // https://crbug.com/825305: Timeout flakiness on Win7 Tests (dbg)(1) and
 // Mac10.13 Tests (dbg) bots.
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
-    ((defined(OS_WIN) || defined(OS_MAC)) && !defined(NDEBUG))
+    ((defined(OS_WIN) || defined(OS_MACOSX)) && !defined(NDEBUG))
 #define MAYBE_RestoreTabWithSpecialURLOnBack DISABLED_RestoreTabWithSpecialURLOnBack
 #else
 #define MAYBE_RestoreTabWithSpecialURLOnBack RestoreTabWithSpecialURLOnBack
@@ -915,9 +915,10 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
   ASSERT_LE(2, tab_count);
 
   const int grouped_tab_index = tab_count - 1;
-  TabGroupId group_id =
+  tab_groups::TabGroupId group_id =
       browser()->tab_strip_model()->AddToNewGroup({grouped_tab_index});
-  const TabGroupVisualData visual_data(base::ASCIIToUTF16("Foo"), SK_ColorCYAN);
+  const tab_groups::TabGroupVisualData visual_data(base::ASCIIToUTF16("Foo"),
+                                                   SK_ColorCYAN);
 
   TabGroup* group =
       browser()->tab_strip_model()->group_model()->GetTabGroup(group_id);
@@ -934,7 +935,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
                           ->tab_strip_model()
                           ->GetTabGroupForTab(grouped_tab_index)
                           .value());
-  const TabGroupVisualData* data = group->visual_data();
+  const tab_groups::TabGroupVisualData* data = group->visual_data();
   EXPECT_EQ(data->title(), visual_data.title());
   EXPECT_EQ(data->color(), visual_data.color());
 }
@@ -948,11 +949,12 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
 
   const int closed_tab_index = 1;
 
-  TabGroupId group_id = browser()->tab_strip_model()->AddToNewGroup({0, 1});
-  const TabGroupVisualData visual_data_1(base::ASCIIToUTF16("Foo1"),
-                                         SK_ColorCYAN);
-  const TabGroupVisualData visual_data_2(base::ASCIIToUTF16("Foo2"),
-                                         SK_ColorCYAN);
+  tab_groups::TabGroupId group_id =
+      browser()->tab_strip_model()->AddToNewGroup({0, 1});
+  const tab_groups::TabGroupVisualData visual_data_1(base::ASCIIToUTF16("Foo1"),
+                                                     SK_ColorCYAN);
+  const tab_groups::TabGroupVisualData visual_data_2(base::ASCIIToUTF16("Foo2"),
+                                                     SK_ColorCYAN);
   TabGroup* group =
       browser()->tab_strip_model()->group_model()->GetTabGroup(group_id);
 
@@ -967,7 +969,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
                           ->tab_strip_model()
                           ->GetTabGroupForTab(closed_tab_index)
                           .value());
-  const TabGroupVisualData* data = group->visual_data();
+  const tab_groups::TabGroupVisualData* data = group->visual_data();
   EXPECT_EQ(data->title(), visual_data_2.title());
   EXPECT_EQ(data->color(), visual_data_2.color());
 }
@@ -983,14 +985,16 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
   const int tab_count = AddSomeTabs(browser(), 3);
 
   TabGroupModel* group_model = browser()->tab_strip_model()->group_model();
-  TabGroupId group1 = browser()->tab_strip_model()->AddToNewGroup(
+  tab_groups::TabGroupId group1 = browser()->tab_strip_model()->AddToNewGroup(
       {tab_count - 3, tab_count - 2});
-  TabGroupVisualData group1_data(base::ASCIIToUTF16("Foo"), SK_ColorRED);
+  tab_groups::TabGroupVisualData group1_data(base::ASCIIToUTF16("Foo"),
+                                             SK_ColorRED);
   group_model->GetTabGroup(group1)->SetVisualData(group1_data);
 
-  TabGroupId group2 =
+  tab_groups::TabGroupId group2 =
       browser()->tab_strip_model()->AddToNewGroup({tab_count - 1});
-  TabGroupVisualData group2_data(base::ASCIIToUTF16("Bar"), SK_ColorBLUE);
+  tab_groups::TabGroupVisualData group2_data(base::ASCIIToUTF16("Bar"),
+                                             SK_ColorBLUE);
   group_model->GetTabGroup(group2)->SetVisualData(group2_data);
 
   CloseBrowserSynchronously(browser());

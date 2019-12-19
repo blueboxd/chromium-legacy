@@ -191,7 +191,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   void SetBuffersToAutoClear(GLbitfield bitmask);
   GLbitfield GetBuffersToAutoClear() const;
 
-  void SetIsHidden(bool);
+  void SetIsInHiddenPage(bool);
   void SetFilterQuality(SkFilterQuality);
   SkFilterQuality FilterQuality() const { return filter_quality_; }
 

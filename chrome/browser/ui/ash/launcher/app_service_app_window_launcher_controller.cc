@@ -174,10 +174,11 @@ void AppServiceAppWindowLauncherController::OnWindowVisibilityChanged(
   if (shelf_id.IsNull())
     return;
 
-  if (app_service_instance_helper_->IsWebApp(shelf_id.app_id) ||
+  if (app_service_instance_helper_->IsOpenedInBrowser(shelf_id.app_id,
+                                                      window) ||
       shelf_id.app_id == extension_misc::kChromeAppId) {
-    app_service_instance_helper_->OnWindowVisibilityChanging(shelf_id, window,
-                                                             visible);
+    app_service_instance_helper_->OnWindowVisibilityChanged(shelf_id, window,
+                                                            visible);
     return;
   }
 
@@ -194,7 +195,7 @@ void AppServiceAppWindowLauncherController::OnWindowVisibilityChanged(
   RegisterWindow(window, shelf_id);
 
   if (crostini_tracker_)
-    crostini_tracker_->OnWindowVisibilityChanging(window, shelf_id.app_id);
+    crostini_tracker_->OnWindowVisibilityChanged(window, shelf_id.app_id);
 }
 
 void AppServiceAppWindowLauncherController::OnWindowDestroying(
@@ -208,7 +209,8 @@ void AppServiceAppWindowLauncherController::OnWindowDestroying(
   if (shelf_id.IsNull())
     return;
 
-  if (app_service_instance_helper_->IsWebApp(shelf_id.app_id) ||
+  if (app_service_instance_helper_->IsOpenedInBrowser(shelf_id.app_id,
+                                                      window) ||
       shelf_id.app_id == extension_misc::kChromeAppId) {
     return;
   }
@@ -269,8 +271,9 @@ void AppServiceAppWindowLauncherController::OnInstanceUpdate(
     window->SetProperty(ash::kShelfIDKey, shelf_id.Serialize());
     window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP);
 
-    // Web apps and Chrome are managed by browser, so skip them.
-    if (app_service_instance_helper_->IsWebApp(shelf_id.app_id) ||
+    // Apps opened in browser are managed by browser, so skip them.
+    if (app_service_instance_helper_->IsOpenedInBrowser(shelf_id.app_id,
+                                                        window) ||
         shelf_id.app_id == extension_misc::kChromeAppId) {
       return;
     }
@@ -391,7 +394,8 @@ void AppServiceAppWindowLauncherController::SetWindowActivated(
   if (shelf_id.IsNull())
     return;
 
-  if (app_service_instance_helper_->IsWebApp(shelf_id.app_id) ||
+  if (app_service_instance_helper_->IsOpenedInBrowser(shelf_id.app_id,
+                                                      window) ||
       shelf_id.app_id == extension_misc::kChromeAppId) {
     app_service_instance_helper_->SetWindowActivated(shelf_id, window, active);
     return;

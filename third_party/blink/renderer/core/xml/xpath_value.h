@@ -112,7 +112,7 @@ class CORE_EXPORT Value {
   bool IsString() const { return type_ == kStringValue; }
 
   // If this is called during XPathExpression::evaluate(), EvaluationContext
-  // should be passed.
+  // should be passed to record type conversion error.
   const NodeSet& ToNodeSet(EvaluationContext*) const;
   NodeSet& ModifiableNodeSet(EvaluationContext&);
   bool ToBoolean() const;

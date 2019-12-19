@@ -712,6 +712,154 @@ TEST_F(NGLayoutResultCachingTest, HitFixedMinWidth) {
   EXPECT_NE(result.get(), nullptr);
 }
 
+TEST_F(NGLayoutResultCachingTest, HitShrinkToFit) {
+  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <div style="display: flow-root; width: 300px; height: 100px;">
+      <div id="test1" style="float: left;">
+        <div style="display: inline-block; width: 150px;"></div>
+        <div style="display: inline-block; width: 50px;"></div>
+      </div>
+      <div id="test2" style="float: left;">
+        <div style="display: inline-block; width: 350px;"></div>
+        <div style="display: inline-block; width: 250px;"></div>
+      </div>
+    </div>
+    <div style="display: flow-root; width: 400px; height: 100px;">
+      <div id="src1" style="float: left;">
+        <div style="display: inline-block; width: 150px;"></div>
+        <div style="display: inline-block; width: 50px;"></div>
+      </div>
+    </div>
+    <div style="display: flow-root; width: 200px; height: 100px;">
+      <div id="src2" style="float: left;">
+        <div style="display: inline-block; width: 350px;"></div>
+        <div style="display: inline-block; width: 250px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* test1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test1"));
+  auto* test2 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test2"));
+  auto* src1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src1"));
+  auto* src2 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src2"));
+
+  NGLayoutCacheStatus cache_status;
+  base::Optional<NGFragmentGeometry> fragment_geometry;
+  NGConstraintSpace space =
+      src1->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  scoped_refptr<const NGLayoutResult> result = test1->CachedLayoutResult(
+      space, nullptr, nullptr, &fragment_geometry, &cache_status);
+  // test1 was sized to its max-content size, passing an available size larger
+  // than the fragment should hit the cache.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kHit);
+  EXPECT_NE(result.get(), nullptr);
+
+  fragment_geometry.reset();
+  space = src2->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  result = test2->CachedLayoutResult(space, nullptr, nullptr,
+                                     &fragment_geometry, &cache_status);
+  // test2 was sized to its min-content size in, passing an available size
+  // smaller than the fragment should hit the cache.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kHit);
+  EXPECT_NE(result.get(), nullptr);
+}
+
+TEST_F(NGLayoutResultCachingTest, MissShrinkToFit) {
+  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <div style="display: flow-root; width: 300px; height: 100px;">
+      <div id="test1" style="float: left;">
+        <div style="display: inline-block; width: 150px;"></div>
+        <div style="display: inline-block; width: 50px;"></div>
+      </div>
+      <div id="test2" style="float: left;">
+        <div style="display: inline-block; width: 350px;"></div>
+        <div style="display: inline-block; width: 250px;"></div>
+      </div>
+      <div id="test3" style="float: left; min-width: 80%;">
+        <div style="display: inline-block; width: 150px;"></div>
+        <div style="display: inline-block; width: 250px;"></div>
+      </div>
+      <div id="test4" style="float: left; margin-left: 75px;">
+        <div style="display: inline-block; width: 150px;"></div>
+        <div style="display: inline-block; width: 50px;"></div>
+      </div>
+    </div>
+    <div style="display: flow-root; width: 100px; height: 100px;">
+      <div id="src1" style="float: left;">
+        <div style="display: inline-block; width: 150px;"></div>
+        <div style="display: inline-block; width: 50px;"></div>
+      </div>
+    </div>
+    <div style="display: flow-root; width: 400px; height: 100px;">
+      <div id="src2" style="float: left;">
+        <div style="display: inline-block; width: 350px;"></div>
+        <div style="display: inline-block; width: 250px;"></div>
+      </div>
+      <div id="src3" style="float: left; min-width: 80%;">
+        <div style="display: inline-block; width: 150px;"></div>
+        <div style="display: inline-block; width: 250px;"></div>
+      </div>
+    </div>
+    <div style="display: flow-root; width: 250px; height: 100px;">
+      <div id="src4" style="float: left; margin-left: 75px;">
+        <div style="display: inline-block; width: 150px;"></div>
+        <div style="display: inline-block; width: 50px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* test1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test1"));
+  auto* test2 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test2"));
+  auto* test3 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test3"));
+  auto* test4 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test4"));
+  auto* src1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src1"));
+  auto* src2 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src2"));
+  auto* src3 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src3"));
+  auto* src4 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src4"));
+
+  NGLayoutCacheStatus cache_status;
+  base::Optional<NGFragmentGeometry> fragment_geometry;
+  NGConstraintSpace space =
+      src1->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  scoped_refptr<const NGLayoutResult> result = test1->CachedLayoutResult(
+      space, nullptr, nullptr, &fragment_geometry, &cache_status);
+  // test1 was sized to its max-content size, passing an available size smaller
+  // than the fragment should miss the cache.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kNeedsLayout);
+  EXPECT_EQ(result.get(), nullptr);
+
+  fragment_geometry.reset();
+  space = src2->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  result = test2->CachedLayoutResult(space, nullptr, nullptr,
+                                     &fragment_geometry, &cache_status);
+  // test2 was sized to its min-content size, passing an available size
+  // larger than the fragment should miss the cache.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kNeedsLayout);
+  EXPECT_EQ(result.get(), nullptr);
+
+  fragment_geometry.reset();
+  space = src3->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  result = test3->CachedLayoutResult(space, nullptr, nullptr,
+                                     &fragment_geometry, &cache_status);
+  // test3 was sized to its min-content size, however it should miss the cache
+  // as it has a %-min-size.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kNeedsLayout);
+  EXPECT_EQ(result.get(), nullptr);
+
+  fragment_geometry.reset();
+  space = src4->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  result = test4->CachedLayoutResult(space, nullptr, nullptr,
+                                     &fragment_geometry, &cache_status);
+  // test4 was sized to its max-content size, however it should miss the cache
+  // due to its margin.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kNeedsLayout);
+  EXPECT_EQ(result.get(), nullptr);
+}
+
 TEST_F(NGLayoutResultCachingTest, HitShrinkToFitSameIntrinsicSizes) {
   ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
 

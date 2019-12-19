@@ -28,13 +28,18 @@ class CC_EXPORT SnapSelectionStrategy {
       bool scrolled_y,
       SnapTargetsPrioritization prioritization =
           SnapTargetsPrioritization::kIgnore);
+
+  // |use_fractional_offsets| should be true when the current position is
+  // provided in fractional pixels.
   static std::unique_ptr<SnapSelectionStrategy> CreateForDirection(
       gfx::ScrollOffset current_position,
       gfx::ScrollOffset step,
+      bool use_fractional_offsets,
       SnapStopAlwaysFilter filter = SnapStopAlwaysFilter::kIgnore);
   static std::unique_ptr<SnapSelectionStrategy> CreateForEndAndDirection(
       gfx::ScrollOffset current_position,
-      gfx::ScrollOffset displacement);
+      gfx::ScrollOffset displacement,
+      bool use_fractional_offsets);
 
   // Creates a selection strategy that attempts to snap to previously snapped
   // targets if possible, but defaults to finding the closest snap point if
@@ -80,6 +85,10 @@ class CC_EXPORT SnapSelectionStrategy {
   virtual const base::Optional<SnapSearchResult>& PickBestResult(
       const base::Optional<SnapSearchResult>& closest,
       const base::Optional<SnapSearchResult>& covering) const = 0;
+
+  // Returns true when the current scroll offset is provided in fractional
+  // pixels.
+  virtual bool UsingFractionalOffsets() const;
 
  protected:
   explicit SnapSelectionStrategy(const gfx::ScrollOffset& current_position)
@@ -140,12 +149,16 @@ class EndPositionStrategy : public SnapSelectionStrategy {
 //   a snap area covers the snapport.
 class DirectionStrategy : public SnapSelectionStrategy {
  public:
+  // |use_fractional_offsets| should be true when the current position is
+  // provided in fractional pixels.
   DirectionStrategy(const gfx::ScrollOffset& current_position,
                     const gfx::ScrollOffset& step,
-                    SnapStopAlwaysFilter filter)
+                    SnapStopAlwaysFilter filter,
+                    bool use_fractional_offsets)
       : SnapSelectionStrategy(current_position),
         step_(step),
-        snap_stop_always_filter_(filter) {}
+        snap_stop_always_filter_(filter),
+        use_fractional_offsets_(use_fractional_offsets) {}
   ~DirectionStrategy() override = default;
 
   bool ShouldSnapOnX() const override;
@@ -162,10 +175,13 @@ class DirectionStrategy : public SnapSelectionStrategy {
       const base::Optional<SnapSearchResult>& closest,
       const base::Optional<SnapSearchResult>& covering) const override;
 
+  bool UsingFractionalOffsets() const override;
+
  private:
   // The default step for this DirectionStrategy.
   const gfx::ScrollOffset step_;
   SnapStopAlwaysFilter snap_stop_always_filter_;
+  bool use_fractional_offsets_;
 };
 
 // Examples for intended direction and end position scrolls include
@@ -178,9 +194,14 @@ class DirectionStrategy : public SnapSelectionStrategy {
 // * Return the end position if that makes a snap area covers the snapport.
 class EndAndDirectionStrategy : public SnapSelectionStrategy {
  public:
+  // |use_fractional_offsets| should be true when the current position is
+  // provided in fractional pixels.
   EndAndDirectionStrategy(const gfx::ScrollOffset& current_position,
-                          const gfx::ScrollOffset& displacement)
-      : SnapSelectionStrategy(current_position), displacement_(displacement) {}
+                          const gfx::ScrollOffset& displacement,
+                          bool use_fractional_offsets)
+      : SnapSelectionStrategy(current_position),
+        displacement_(displacement),
+        use_fractional_offsets_(use_fractional_offsets) {}
   ~EndAndDirectionStrategy() override = default;
 
   bool ShouldSnapOnX() const override;
@@ -197,8 +218,11 @@ class EndAndDirectionStrategy : public SnapSelectionStrategy {
       const base::Optional<SnapSearchResult>& closest,
       const base::Optional<SnapSearchResult>& covering) const override;
 
+  bool UsingFractionalOffsets() const override;
+
  private:
   const gfx::ScrollOffset displacement_;
+  bool use_fractional_offsets_;
 };
 
 }  // namespace cc

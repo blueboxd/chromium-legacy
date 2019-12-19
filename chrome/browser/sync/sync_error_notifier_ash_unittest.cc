@@ -7,12 +7,13 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
-#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,8 +46,8 @@ std::unique_ptr<KeyedService> BuildFakeLoginUIService(
 
 class SyncErrorNotifierTest : public BrowserWithTestWindowTest {
  public:
-  SyncErrorNotifierTest() {}
-  ~SyncErrorNotifierTest() override {}
+  SyncErrorNotifierTest() = default;
+  ~SyncErrorNotifierTest() override = default;
 
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
@@ -69,18 +70,7 @@ class SyncErrorNotifierTest : public BrowserWithTestWindowTest {
   }
 
  protected:
-  // Utility function to test that SyncErrorNotifier behaves correctly for the
-  // given error condition.
-  void VerifySyncErrorNotifierResult(GoogleServiceAuthError::State error_state,
-                                     bool is_signed_in,
-                                     bool is_error,
-                                     bool expected_notification) {
-    service_.SetFirstSetupComplete(is_signed_in);
-    service_.SetAuthError(GoogleServiceAuthError(error_state));
-    ASSERT_EQ(is_error, sync_ui_util::ShouldShowPassphraseError(&service_));
-
-    error_notifier_->OnStateChanged(&service_);
-
+  void ExpectNotificationShown(bool expected_notification) {
     base::Optional<message_center::Notification> notification =
         display_service_->GetNotification(kNotificationId);
     if (expected_notification) {
@@ -96,57 +86,56 @@ class SyncErrorNotifierTest : public BrowserWithTestWindowTest {
   syncer::TestSyncService service_;
   FakeLoginUI login_ui_;
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
+  user_manager::ScopedUserManager scoped_user_manager_{
+      std::make_unique<chromeos::MockUserManager>()};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncErrorNotifierTest);
 };
 
-// Test that SyncErrorNotifier shows an notification if a passphrase is
-// required.
-TEST_F(SyncErrorNotifierTest, PassphraseNotification) {
-  user_manager::ScopedUserManager scoped_enabler(
-      std::make_unique<chromeos::MockUserManager>());
-  ASSERT_FALSE(display_service_->GetNotification(kNotificationId));
+TEST_F(SyncErrorNotifierTest, NoNotificationWhenNoPassphrase) {
+  service_.SetPassphraseRequiredForPreferredDataTypes(false);
+  service_.SetFirstSetupComplete(true);
+  error_notifier_->OnStateChanged(&service_);
+  ExpectNotificationShown(false);
+}
 
-  service_.SetPassphraseRequired(true);
+TEST_F(SyncErrorNotifierTest, NoNotificationWhenSyncDisabled) {
   service_.SetPassphraseRequiredForPreferredDataTypes(true);
-  {
-    SCOPED_TRACE("Expected a notification for passphrase error");
-    VerifySyncErrorNotifierResult(GoogleServiceAuthError::NONE,
-                                  true /* signed in */, true /* error */,
-                                  true /* expecting notification */);
-  }
+  service_.SetFirstSetupComplete(false);
+  error_notifier_->OnStateChanged(&service_);
+  ExpectNotificationShown(false);
+}
 
-  // Simulate discarded notification and check that notification is not shown.
+TEST_F(SyncErrorNotifierTest, NotificationShownWhenBrowserSyncEnabled) {
+  service_.SetPassphraseRequiredForPreferredDataTypes(true);
+  service_.SetFirstSetupComplete(true);
+  error_notifier_->OnStateChanged(&service_);
+  ExpectNotificationShown(true);
+}
+
+TEST_F(SyncErrorNotifierTest, NotificationShownWhenOsSyncEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(chromeos::features::kSplitSettingsSync);
+  service_.SetPassphraseRequiredForPreferredDataTypes(true);
+  service_.GetUserSettings()->SetOsSyncFeatureEnabled(true);
+  service_.SetFirstSetupComplete(false);
+  error_notifier_->OnStateChanged(&service_);
+  ExpectNotificationShown(true);
+}
+
+TEST_F(SyncErrorNotifierTest, NotificationShownOnce) {
+  service_.SetPassphraseRequiredForPreferredDataTypes(true);
+  service_.GetUserSettings()->SetOsSyncFeatureEnabled(true);
+  service_.SetFirstSetupComplete(true);
+  error_notifier_->OnStateChanged(&service_);
+  ExpectNotificationShown(true);
+
+  // Close the notification and verify it isn't shown again.
   display_service_->RemoveNotification(NotificationHandler::Type::TRANSIENT,
                                        kNotificationId, true /* by_user */);
-  {
-    SCOPED_TRACE("Not expecting notification, one was already discarded");
-    VerifySyncErrorNotifierResult(GoogleServiceAuthError::NONE,
-                                  true /* signed in */, true /* error */,
-                                  false /* not expecting notification */);
-  }
-
-  // Check that no notification is shown if there is no error.
-  service_.SetPassphraseRequired(false);
-  service_.SetPassphraseRequiredForPreferredDataTypes(false);
-  {
-    SCOPED_TRACE("Not expecting notification since no error exists");
-    VerifySyncErrorNotifierResult(GoogleServiceAuthError::NONE,
-                                  true /* signed in */, false /* no error */,
-                                  false /* not expecting notification */);
-  }
-
-  // Check that no notification is shown if sync setup is not completed.
-  service_.SetPassphraseRequired(true);
-  service_.SetPassphraseRequiredForPreferredDataTypes(true);
-  {
-    SCOPED_TRACE("Not expecting notification since sync setup is incomplete");
-    VerifySyncErrorNotifierResult(
-        GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
-        false /* not signed in */, false /* no error */,
-        false /* not expecting notification */);
-  }
+  error_notifier_->OnStateChanged(&service_);
+  ExpectNotificationShown(false);
 }
 
 }  // namespace

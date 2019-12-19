@@ -160,7 +160,9 @@ def GetMockArgs(is_asan=False, webgl_version='1.0.0'):
   args.is_asan = is_asan
   args.webgl_conformance_version = webgl_version
   args.webgl2_only = False
-  args.url = 'https://www.google.com'
+  # for power_measurement_integration_test.py, .url has to be None to
+  # generate the correct test lists for bots.
+  args.url = None
   args.duration = 10
   args.delay = 10
   args.resolution = 100

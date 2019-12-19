@@ -246,7 +246,7 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
     ASSERT_EQ(context_provider->BindToCurrentThread(),
               gpu::ContextResult::kSuccess);
     std::unique_ptr<viz::ClientResourceProvider> resource_provider =
-        std::make_unique<viz::ClientResourceProvider>(true);
+        std::make_unique<viz::ClientResourceProvider>();
 
     FakePictureLayerTilingClient client(resource_provider.get(),
                                         context_provider.get());

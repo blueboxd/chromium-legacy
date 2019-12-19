@@ -333,7 +333,7 @@ class ThreatDetailsFactoryImpl : public ThreatDetailsFactory {
     auto threat_details = base::WrapUnique(new ThreatDetails(
         ui_manager, web_contents, unsafe_resource, url_loader_factory,
         history_service, referrer_chain_provider, trim_to_ad_tags,
-        done_callback));
+        std::move(done_callback)));
     threat_details->StartCollection();
     return threat_details;
   }
@@ -366,7 +366,7 @@ std::unique_ptr<ThreatDetails> ThreatDetails::NewThreatDetails(
     factory_ = g_threat_details_factory_impl.Pointer();
   return factory_->CreateThreatDetails(
       ui_manager, web_contents, resource, url_loader_factory, history_service,
-      referrer_chain_provider, trim_to_ad_tags, done_callback);
+      referrer_chain_provider, trim_to_ad_tags, std::move(done_callback));
 }
 
 // Create a ThreatDetails for the given tab. Runs in the UI thread.
@@ -389,7 +389,7 @@ ThreatDetails::ThreatDetails(
       num_visits_(0),
       trim_to_ad_tags_(trim_to_ad_tags),
       cache_collector_(new ThreatDetailsCacheCollector),
-      done_callback_(done_callback),
+      done_callback_(std::move(done_callback)),
       all_done_expected_(false),
       is_all_done_(false) {
   redirects_collector_ = new ThreatDetailsRedirectsCollector(
@@ -772,8 +772,8 @@ void ThreatDetails::FinishCollection(bool did_proceed, int num_visit) {
     urls.push_back(GURL(it->first));
   }
   redirects_collector_->StartHistoryCollection(
-      urls,
-      base::Bind(&ThreatDetails::OnRedirectionCollectionReady, GetWeakPtr()));
+      urls, base::BindOnce(&ThreatDetails::OnRedirectionCollectionReady,
+                           GetWeakPtr()));
 }
 
 void ThreatDetails::OnRedirectionCollectionReady() {
@@ -787,7 +787,7 @@ void ThreatDetails::OnRedirectionCollectionReady() {
   // Call the cache collector
   cache_collector_->StartCacheCollection(
       url_loader_factory_, &resources_, &cache_result_,
-      base::Bind(&ThreatDetails::OnCacheCollectionReady, GetWeakPtr()));
+      base::BindOnce(&ThreatDetails::OnCacheCollectionReady, GetWeakPtr()));
 }
 
 void ThreatDetails::AddRedirectUrlList(const std::vector<GURL>& urls) {
@@ -877,9 +877,9 @@ void ThreatDetails::MaybeFillReferrerChain() {
 
 void ThreatDetails::AllDone() {
   is_all_done_ = true;
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(done_callback_, base::Unretained(web_contents())));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(std::move(done_callback_),
+                                base::Unretained(web_contents())));
 }
 
 void ThreatDetails::FrameDeleted(RenderFrameHost* render_frame_host) {

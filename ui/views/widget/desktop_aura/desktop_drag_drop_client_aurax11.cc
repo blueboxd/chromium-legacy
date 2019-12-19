@@ -258,7 +258,9 @@ void DesktopDragDropClientAuraX11::OnXdndEnter(
   XID source_window = event.data.l[0];
   auto* source_client = GetForWindow(source_window);
   target_current_context_ = std::make_unique<ui::XDragContext>(
-      xwindow(), event, source_client, source_client->GetFormatMap());
+      xwindow(), event, source_client,
+      (source_client ? source_client->GetFormatMap()
+                     : ui::SelectionFormatMap()));
 
   if (!source_client) {
     // The window doesn't have a DesktopDragDropClientAuraX11, that means it's

@@ -13,8 +13,12 @@ source_set("infobar_banner") {
   deps = [
     "//base",
     "//components/infobars/core",
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/overlays",
     "//ios/chrome/browser/overlays/public/common/infobars",
     "//ios/chrome/browser/passwords:infobar_delegates",
+    "//ios/chrome/browser/ui/infobars:infobars_ui",
+    "//ui/base",
   ]
 }

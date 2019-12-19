@@ -139,7 +139,6 @@
 <translation id="1186771945450942097">Remove harmful software</translation>
 <translation id="1187722533808055681">Idle wake ups</translation>
 <translation id="1188807932851744811">Log not uploaded.</translation>
-<translation id="1189418886587279221">Enable accessibility features to make your device easier to use.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Access a file stored on your computer}other{Access # files stored on your computer}}</translation>
 <translation id="1190660338026981543">Your <ph name="DEVICE_TYPE" /> has successfully been enrolled for enterprise management by <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="119092896208640858">To clear browsing data from this device only, while keeping it in your Google Account, <ph name="BEGIN_LINK" />sign out<ph name="END_LINK" />.</translation>
@@ -339,7 +338,6 @@
 <translation id="1476607407192946488">&amp;Language Settings</translation>
 <translation id="1478340334823509079">Details: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Installation is not enabled</translation>
-<translation id="1481206932476131736">Manage your signed-in accounts. Websites, apps and extensions in Chrome and Google Play may use these accounts to customise your experience, depending on permissions.</translation>
 <translation id="1482626744466814421">Bookmark This Tab...</translation>
 <translation id="1483493594462132177">Send</translation>
 <translation id="1484979925941077974">Site is using Bluetooth</translation>
@@ -592,7 +590,6 @@
 <translation id="1813278315230285598">Services</translation>
 <translation id="18139523105317219">EDI Party Name</translation>
 <translation id="1815083418640426271">Paste as Plain Text</translation>
-<translation id="1815579292149538864">Set up or manage CUPS printers.</translation>
 <translation id="181577467034453336"><ph name="NUMBER_OF_VIEWS" /> more...</translation>
 <translation id="1816036116994822943">Keyboard scanning speed</translation>
 <translation id="1817871734039893258">Microsoft File Recovery</translation>
@@ -1454,7 +1451,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3012917896646559015">Please contact your hardware manufacturer immediately to send your computer to a repair facility.</translation>
 <translation id="3013291976881901233">MIDI devices</translation>
 <translation id="3015639418649705390">Relaunch now</translation>
-<translation id="3016329696181678353"><ph name="PRINTER_NAME" /> could not be configured automatically. Please specify advanced printer details.</translation>
 <translation id="3016381065346027039">No log entries</translation>
 <translation id="3016641847947582299">Component updated</translation>
 <translation id="3016780570757425217">Know your location</translation>
@@ -2192,7 +2188,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4046123991198612571">Next track</translation>
 <translation id="4050225813016893843">Authentication method</translation>
 <translation id="4052120076834320548">Tiny</translation>
-<translation id="4055023634561256217">A restart is required before your device can be reset with Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">View in Store</translation>
 <translation id="4058647953897694817">Verify via Bluetooth</translation>
@@ -2514,7 +2509,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4558426062282641716">Auto-launch permission requested</translation>
 <translation id="4558491878126948419">Get <ph name="DEVICE_TYPE" /> tips and updates on Google products and share feedback. Unsubscribe at any time.</translation>
 <translation id="4559617833001311418">This site is accessing your motion or light sensors.</translation>
-<translation id="4561098487691395071">Or specify your printer PPD</translation>
 <translation id="4562155214028662640">Add Fingerprint</translation>
 <translation id="4562494484721939086">No service</translation>
 <translation id="4563880231729913339">Finger 3</translation>
@@ -2757,7 +2751,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925542575807923399">The administrator for this account requires this account to be the first signed-in account in a multiple sign-in session.</translation>
 <translation id="4927753642311223124">Nothing to see here, move along.</translation>
-<translation id="4927846293686536410">Sign in to get your bookmarks, history, passwords and other settings on all your devices. You'll also automatically be signed in to your Google services.</translation>
 <translation id="4929386379796360314">Print Destinations</translation>
 <translation id="4930714375720679147">Turn On</translation>
 <translation id="4932733599132424254">Date</translation>
@@ -3314,7 +3307,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5750324801516359607">Far</translation>
 <translation id="5756163054456765343">Help centre</translation>
 <translation id="5759728514498647443">Documents that you send to print via <ph name="APP_NAME" /> can be read by <ph name="APP_NAME" />.</translation>
-<translation id="5763315388120433852">Set up or manage network file shares.</translation>
 <translation id="5763751966069581670">No USB devices found</translation>
 <translation id="5764483294734785780">Sa&amp;ve audio as...</translation>
 <translation id="57646104491463491">Date Modified</translation>
@@ -4634,7 +4626,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7684718995427157417">To create and test your apps, enable the Android Debug Bridge (ADB). Note that this action allows installation of Android apps that haven't been verified by Google, and requires a factory reset to disable.</translation>
 <translation id="7685049629764448582">JavaScript memory</translation>
 <translation id="7685087414635069102">PIN required</translation>
-<translation id="768549422429443215">Add languages or reorder list.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Confirm new password</translation>
 <translation id="7690378713476594306">Choose from list</translation>
@@ -4671,7 +4662,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7730449930968088409">Capture content of your screen</translation>
 <translation id="7732111077498238432">Network is policy controlled</translation>
 <translation id="7737238973539693982">Delete Linux (Beta)</translation>
-<translation id="7737456446569756884">This device will get automatic software and security updates until <ph name="MONTH_AND_YEAR" />.</translation>
 <translation id="7740996059027112821">Standard</translation>
 <translation id="7744047395460924128">See your printing history</translation>
 <translation id="7746457520633464754">To detect dangerous apps and sites, Chrome sends URLs of some pages that you visit, limited system information and some page content to Google</translation>
@@ -5558,7 +5548,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="892706138619340876">Some settings were reset</translation>
 <translation id="8930351635855238750">New cookie settings will take effect after reloading the page</translation>
 <translation id="8931394284949551895">New devices</translation>
-<translation id="893254996965966411">Save detected printers to your profile, or add a new printer.</translation>
 <translation id="8932894639908691771">Switch Access options</translation>
 <translation id="8933960630081805351">&amp;Show in Finder</translation>
 <translation id="8934732568177537184">Continue</translation>

@@ -7,16 +7,17 @@
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/titled_url_match.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/testing/nserror_util.h"
-#import "ios/web/public/test/http_server/http_server.h"
 #include "ui/base/models/tree_node_iterator.h"
 #include "url/gurl.h"
 
@@ -44,8 +45,7 @@
         @"Bookmark model was not loaded");
 
   bookmarks::BookmarkModel* bookmark_model =
-      ios::BookmarkModelFactory::GetForBrowserState(
-          chrome_test_util::GetOriginalBrowserState());
+      [BookmarkEarlGreyAppInterface bookmarkModel];
 
   NSString* firstTitle = @"First URL";
   const GURL firstGURL = GURL(base::SysNSStringToUTF8(firstURL));
@@ -84,29 +84,127 @@
   return nil;
 }
 
-+ (NSError*)verifyPromoAlreadySeen:(BOOL)seen {
-  ios::ChromeBrowserState* browserState =
-      chrome_test_util::GetOriginalBrowserState();
-  PrefService* prefs = browserState->GetPrefs();
-  if (prefs->GetBoolean(prefs::kIosBookmarkPromoAlreadySeen) == seen) {
-    return nil;
++ (NSError*)setupBookmarksWhichExceedsScreenHeightUsingURL:(NSString*)URL {
+  if (![BookmarkEarlGreyAppInterface waitForBookmarkModelLoaded:YES])
+    return testing::NSErrorWithLocalizedDescription(
+        @"Bookmark model was not loaded");
+
+  bookmarks::BookmarkModel* bookmark_model =
+      [BookmarkEarlGreyAppInterface bookmarkModel];
+
+  const GURL dummyURL = GURL(base::SysNSStringToUTF8(URL));
+  bookmark_model->AddURL(bookmark_model->mobile_node(), 0,
+                         base::SysNSStringToUTF16(@"Bottom URL"), dummyURL);
+
+  NSString* dummyTitle = @"Dummy URL";
+  for (int i = 0; i < 20; i++) {
+    bookmark_model->AddURL(bookmark_model->mobile_node(), 0,
+                           base::SysNSStringToUTF16(dummyTitle), dummyURL);
   }
-  NSString* errorDescription =
-      (seen) ? @"Expected promo already seen, but it wasn't."
-             : @"Expected promo not already seen, but it was.";
-  return testing::NSErrorWithLocalizedDescription(errorDescription);
+  NSString* folderTitle = @"Folder 1";
+  const bookmarks::BookmarkNode* folder1 = bookmark_model->AddFolder(
+      bookmark_model->mobile_node(), 0, base::SysNSStringToUTF16(folderTitle));
+  bookmark_model->AddURL(bookmark_model->mobile_node(), 0,
+                         base::SysNSStringToUTF16(@"Top URL"), dummyURL);
+
+  // Add URLs to Folder 1.
+  bookmark_model->AddURL(folder1, 0, base::SysNSStringToUTF16(dummyTitle),
+                         dummyURL);
+  bookmark_model->AddURL(folder1, 0, base::SysNSStringToUTF16(@"Bottom 1"),
+                         dummyURL);
+  for (int i = 0; i < 20; i++) {
+    bookmark_model->AddURL(folder1, 0, base::SysNSStringToUTF16(dummyTitle),
+                           dummyURL);
+  }
+  return nil;
 }
 
-+ (void)setPromoAlreadySeen:(BOOL)seen {
-  PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
-  prefs->SetBoolean(prefs::kIosBookmarkPromoAlreadySeen, seen);
++ (BOOL)waitForBookmarkModelLoaded:(BOOL)loaded {
+  bookmarks::BookmarkModel* bookmarkModel =
+      [BookmarkEarlGreyAppInterface bookmarkModel];
+
+  return base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^{
+        return bookmarkModel->loaded() == loaded;
+      });
+}
+
++ (NSError*)verifyBookmarksWithTitle:(NSString*)title
+                       expectedCount:(NSUInteger)expectedCount {
+  // Get BookmarkModel and wait for it to be loaded.
+  bookmarks::BookmarkModel* bookmarkModel =
+      [BookmarkEarlGreyAppInterface bookmarkModel];
+
+  // Verify the correct number of bookmarks exist.
+  base::string16 matchString = base::SysNSStringToUTF16(title);
+  std::vector<bookmarks::TitledUrlMatch> matches;
+  int const kMaxCountOfBoomarks = 50;
+  bookmarkModel->GetBookmarksMatching(matchString, kMaxCountOfBoomarks,
+                                      &matches);
+  if (matches.size() != expectedCount)
+    return testing::NSErrorWithLocalizedDescription(
+        @"Unexpected number of bookmarks");
+
+  return nil;
+}
+
++ (NSError*)removeBookmarkWithTitle:(NSString*)title {
+  base::string16 name16(base::SysNSStringToUTF16(title));
+  bookmarks::BookmarkModel* bookmarkModel =
+      [BookmarkEarlGreyAppInterface bookmarkModel];
+  ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
+      bookmarkModel->root_node());
+  while (iterator.has_next()) {
+    const bookmarks::BookmarkNode* bookmark = iterator.Next();
+    if (bookmark->GetTitle() == name16) {
+      bookmarkModel->Remove(bookmark);
+      return nil;
+    }
+  }
+  return testing::NSErrorWithLocalizedDescription([NSString
+      stringWithFormat:@"Could not remove bookmark with name %@", title]);
+}
+
++ (NSError*)moveBookmarkWithTitle:(NSString*)bookmarkTitle
+                toFolderWithTitle:(NSString*)newFolder {
+  base::string16 name16(base::SysNSStringToUTF16(bookmarkTitle));
+  bookmarks::BookmarkModel* bookmarkModel =
+      [BookmarkEarlGreyAppInterface bookmarkModel];
+  ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
+      bookmarkModel->root_node());
+  const bookmarks::BookmarkNode* bookmark = iterator.Next();
+  while (iterator.has_next()) {
+    if (bookmark->GetTitle() == name16) {
+      break;
+    }
+    bookmark = iterator.Next();
+  }
+
+  base::string16 folderName16(base::SysNSStringToUTF16(newFolder));
+  ui::TreeNodeIterator<const bookmarks::BookmarkNode> iteratorFolder(
+      bookmarkModel->root_node());
+  const bookmarks::BookmarkNode* folder = iteratorFolder.Next();
+  while (iteratorFolder.has_next()) {
+    if (folder->GetTitle() == folderName16) {
+      break;
+    }
+    folder = iteratorFolder.Next();
+  }
+  std::set<const bookmarks::BookmarkNode*> toMove;
+  toMove.insert(bookmark);
+  if (!bookmark_utils_ios::MoveBookmarks(toMove, bookmarkModel, folder)) {
+    return testing::NSErrorWithLocalizedDescription(
+        [NSString stringWithFormat:@"Could not move bookmark with name %@",
+                                   bookmarkTitle]);
+  }
+
+  return nil;
 }
 
 + (NSError*)verifyChildCount:(size_t)count inFolderWithName:(NSString*)name {
   base::string16 name16(base::SysNSStringToUTF16(name));
   bookmarks::BookmarkModel* bookmarkModel =
-      ios::BookmarkModelFactory::GetForBrowserState(
-          chrome_test_util::GetOriginalBrowserState());
+      [BookmarkEarlGreyAppInterface bookmarkModel];
 
   ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
       bookmarkModel->root_node());
@@ -133,6 +231,24 @@
   return nil;
 }
 
++ (NSError*)verifyPromoAlreadySeen:(BOOL)seen {
+  ios::ChromeBrowserState* browserState =
+      chrome_test_util::GetOriginalBrowserState();
+  PrefService* prefs = browserState->GetPrefs();
+  if (prefs->GetBoolean(prefs::kIosBookmarkPromoAlreadySeen) == seen) {
+    return nil;
+  }
+  NSString* errorDescription =
+      seen ? @"Expected promo already seen, but it wasn't."
+           : @"Expected promo not already seen, but it was.";
+  return testing::NSErrorWithLocalizedDescription(errorDescription);
+}
+
++ (void)setPromoAlreadySeen:(BOOL)seen {
+  PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
+  prefs->SetBoolean(prefs::kIosBookmarkPromoAlreadySeen, seen);
+}
+
 + (void)setPromoAlreadySeenNumberOfTimes:(int)times {
   PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
   prefs->SetInteger(prefs::kIosBookmarkSigninPromoDisplayedCount, times);
@@ -155,15 +271,9 @@
 
 #pragma mark - Helpers
 
-+ (BOOL)waitForBookmarkModelLoaded:(BOOL)loaded {
-  bookmarks::BookmarkModel* bookmarkModel =
-      ios::BookmarkModelFactory::GetForBrowserState(
-          chrome_test_util::GetOriginalBrowserState());
-
-  return base::test::ios::WaitUntilConditionOrTimeout(
-      base::test::ios::kWaitForUIElementTimeout, ^{
-        return bookmarkModel->loaded() == loaded;
-      });
++ (bookmarks::BookmarkModel*)bookmarkModel {
+  return ios::BookmarkModelFactory::GetForBrowserState(
+      chrome_test_util::GetOriginalBrowserState());
 }
 
 @end

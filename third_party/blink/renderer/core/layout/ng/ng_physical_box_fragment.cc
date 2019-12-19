@@ -105,6 +105,8 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
       builder->consumed_block_size_ <= builder->size_.block_size;
   is_fieldset_container_ = builder->is_fieldset_container_;
   is_legacy_layout_root_ = builder->is_legacy_layout_root_;
+  is_painted_atomically_ =
+      builder->space_ && builder->space_->IsPaintedAtomically();
   border_edge_ = builder->border_edges_.ToPhysical(builder->GetWritingMode());
   children_inline_ =
       builder->layout_object_ && builder->layout_object_->ChildrenInline();
@@ -402,6 +404,7 @@ void NGPhysicalBoxFragment::CheckSameForSimplifiedLayout(
   DCHECK_EQ(children_inline_, other.children_inline_);
   DCHECK_EQ(is_fieldset_container_, other.is_fieldset_container_);
   DCHECK_EQ(is_legacy_layout_root_, other.is_legacy_layout_root_);
+  DCHECK_EQ(is_painted_atomically_, other.is_painted_atomically_);
   DCHECK_EQ(border_edge_, other.border_edge_);
 
   // The oof_positioned_descendants_ vector can change during "simplified"

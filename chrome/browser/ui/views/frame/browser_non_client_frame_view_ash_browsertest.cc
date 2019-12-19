@@ -766,7 +766,7 @@ class WebAppNonClientFrameViewAshTest
   WebAppFrameToolbarView* web_app_frame_toolbar_ = nullptr;
   const std::vector<ContentSettingImageView*>* content_setting_views_ = nullptr;
   BrowserActionsContainer* browser_actions_container_ = nullptr;
-  views::Button* web_app_menu_button_ = nullptr;
+  AppMenuButton* web_app_menu_button_ = nullptr;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     TopChromeMdParamTest<BrowserActionsBarBrowserTest>::SetUpCommandLine(
@@ -826,13 +826,11 @@ class WebAppNonClientFrameViewAshTest
     content_setting_views_ =
         &web_app_frame_toolbar_->GetContentSettingViewsForTesting();
     browser_actions_container_ =
-        web_app_frame_toolbar_->browser_actions_container_;
-    web_app_menu_button_ = web_app_frame_toolbar_->web_app_menu_button_;
+        web_app_frame_toolbar_->GetBrowserActionsContainer();
+    web_app_menu_button_ = web_app_frame_toolbar_->GetAppMenuButton();
   }
 
-  AppMenu* GetAppMenu() {
-    return web_app_frame_toolbar_->web_app_menu_button_->app_menu();
-  }
+  AppMenu* GetAppMenu() { return web_app_menu_button_->app_menu(); }
 
   SkColor GetActiveColor() { return web_app_frame_toolbar_->active_color_; }
 

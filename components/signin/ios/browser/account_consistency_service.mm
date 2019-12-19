@@ -154,7 +154,7 @@ void AccountConsistencyHandler::WebStateDestroyed() {
 
 // Designated initializer. |callback| will be called every time a navigation has
 // finished. |callback| must not be empty.
-- (instancetype)initWithCallback:(const base::Closure&)callback
+- (instancetype)initWithCallback:(const base::RepeatingClosure&)callback
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
@@ -162,10 +162,10 @@ void AccountConsistencyHandler::WebStateDestroyed() {
 
 @implementation AccountConsistencyNavigationDelegate {
   // Callback that will be called every time a navigation has finished.
-  base::Closure _callback;
+  base::RepeatingClosure _callback;
 }
 
-- (instancetype)initWithCallback:(const base::Closure&)callback {
+- (instancetype)initWithCallback:(const base::RepeatingClosure&)callback {
   self = [super init];
   if (self) {
     DCHECK(!callback.is_null());
@@ -426,9 +426,9 @@ WKWebView* AccountConsistencyService::GetWKWebView() {
   if (!web_view_) {
     web_view_ = BuildWKWebView();
     navigation_delegate_ = [[AccountConsistencyNavigationDelegate alloc]
-        initWithCallback:base::Bind(&AccountConsistencyService::
-                                        FinishedApplyingCookieRequest,
-                                    base::Unretained(this), true)];
+        initWithCallback:base::BindRepeating(&AccountConsistencyService::
+                                                 FinishedApplyingCookieRequest,
+                                             base::Unretained(this), true)];
     [web_view_ setNavigationDelegate:navigation_delegate_];
   }
   return web_view_;

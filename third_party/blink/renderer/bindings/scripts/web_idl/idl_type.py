@@ -167,7 +167,8 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
                  pass_key=None):
         assert isinstance(is_optional, bool)
         assert pass_key is _IDL_TYPE_PASS_KEY
-        WithExtendedAttributes.__init__(self, extended_attributes)
+        WithExtendedAttributes.__init__(
+            self, extended_attributes, readonly=True)
         WithDebugInfo.__init__(self, debug_info)
         self._is_optional = is_optional
 

@@ -139,7 +139,6 @@
 <translation id="1186771945450942097">​លុប​កម្មវិធី​ដែល​បង្កគ្រោះថ្នាក់</translation>
 <translation id="1187722533808055681">ដាស់ពីការទុកចោល</translation>
 <translation id="1188807932851744811">កំណត់ត្រាមិនត្រូវបានទាញឡើងទេ។</translation>
-<translation id="1189418886587279221">បើកដំណើរការលក្ខណៈពិសេសលទ្ធភាពប្រើប្រាស់ដើម្បីធ្វើឲ្យឧបករណ៍របស់អ្នកងាយស្រួលប្រើជាងមុន។</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{ចូលប្រើឯកសារដែលផ្ទុកលើកុំព្យូទ័ររបស់អ្នក។}other{ចូលប្រើឯកសារ # ដែលផ្ទុកលើកុំព្យូទ័ររបស់អ្នក}}</translation>
 <translation id="1190660338026981543"><ph name="DEVICE_TYPE" /> របស់អ្នកបានចុះឈ្មោះដោយជោគជ័យសម្រាប់ការគ្រប់គ្រងសហគ្រាសតាមរយៈ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ។</translation>
 <translation id="119092896208640858">ដើម្បីសម្អាត​ទិន្នន័យ​រុករក​ចេញពី​ឧបករណ៍​នេះ ​តែរក្សាទុក​វានៅក្នុងគណនី Google របស់អ្នក <ph name="BEGIN_LINK" />សូមចាកចេញ<ph name="END_LINK" />។</translation>
@@ -339,7 +338,6 @@
 <translation id="1476607407192946488">&amp;ការកំណត់ភាសា</translation>
 <translation id="1478340334823509079">ព័ត៌មានលំអិត៖ <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">មិន​បាន​បើក​ការដំឡើង​ទេ</translation>
-<translation id="1481206932476131736">គ្រប់គ្រង​គណនី​ដែលអ្នក​បានចូល។ គេហទំព័រ កម្មវិធី និង​កម្មវិធីបន្ថែម​នៅក្នុង Chrome និង Google Play អាចប្រើ​គណនីទាំងនេះ ដើម្បីកំណត់​បទពិសោធន៍​ប្រើប្រាស់តាមបំណង​របស់អ្នក ដោយផ្អែកលើ​ការអនុញ្ញាត។</translation>
 <translation id="1482626744466814421">ចំណាំ​ផ្ទាំងនេះ...</translation>
 <translation id="1483493594462132177">ផ្ញើ</translation>
 <translation id="1484979925941077974">គេហទំព័រ​កំពុងប្រើ​ប៊្លូធូស</translation>
@@ -592,7 +590,6 @@
 <translation id="1813278315230285598">សេវាកម្ម</translation>
 <translation id="18139523105317219">ឈ្មោះភាគី EDI</translation>
 <translation id="1815083418640426271">បិទភ្ជាប់ជាអត្ថបទធម្មតា</translation>
-<translation id="1815579292149538864">រៀបចំ ឬ​គ្រប់គ្រង​ម៉ាស៊ីន​បោះពុម្ព CUPS ។</translation>
 <translation id="181577467034453336"><ph name="NUMBER_OF_VIEWS" /> ទៀត...</translation>
 <translation id="1816036116994822943">ល្បឿនស្កេន​ក្ដារចុច</translation>
 <translation id="1817871734039893258">ការសង្គ្រោះឯកសារ Microsoft</translation>
@@ -1454,7 +1451,6 @@
 <translation id="3012917896646559015">សូមទំនាក់ទំនងក្រុមហ៊ុនផលិតផ្នែករឹងរបស់អ្នកជាបន្ទាន់ដើម្បីផ្ញើកុំព្យូទ័ររបស់អ្នកទៅកន្លែងជួលជុល។</translation>
 <translation id="3013291976881901233">ឧបករណ៍ MIDI</translation>
 <translation id="3015639418649705390">ចាប់​ផ្តើមឡើងវិញឥឡូវនេះ</translation>
-<translation id="3016329696181678353">មិនអាចកំណត់​រចនាសម្ព័ន្ធ <ph name="PRINTER_NAME" /> ដោយស្វ័យប្រវត្តិ​បានទេ។ សូមបញ្ជាក់​ព័ត៌មានលម្អិតម៉ាស៊ីនបោះពុម្ព​កម្រិតខ្ពស់។</translation>
 <translation id="3016381065346027039">គ្មានធាតុ​កំណត់ហេតុទេ</translation>
 <translation id="3016641847947582299">សមាសភាគត្រូវបានធ្វើបច្ចុប្បន្នភាព</translation>
 <translation id="3016780570757425217">ដឹងពីទីតាំងរបស់អ្នក</translation>
@@ -2192,7 +2188,6 @@
 <translation id="4046123991198612571">បទ​បន្ទាប់</translation>
 <translation id="4050225813016893843">វិធីផ្ទៀងផ្ទាត់</translation>
 <translation id="4052120076834320548">តូចខ្លាំង</translation>
-<translation id="4055023634561256217">តម្រូវឲ្យមានការចាប់ផ្តើមឡើងវិញ មុនពេលឧបករណ៍របស់អ្នកអាចកំណត់ឡើងវិញជាមួយ Powerwash។</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">មើលនៅក្នុងហាង</translation>
 <translation id="4058647953897694817">ផ្ទៀងផ្ទាត់​តាមរយៈ​ប៊្លូធូស</translation>
@@ -2514,7 +2509,6 @@
 <translation id="4558426062282641716">ការអនុញ្ញាតបើកដំណើរការដោយស្វ័យប្រវត្តិត្រូវបានស្នើសុំ</translation>
 <translation id="4558491878126948419">ទទួល​​បាន​​គន្លឹះ និងព័ត៌មានថ្មីៗ​អំពី <ph name="DEVICE_TYPE" />​ នៅលើផលិតផល Google ព្រម​ទាំង​ចែក​រំលែក​មតិ​កែលម្អ។ អាចឈប់​ជាវ​បាន​គ្រប់​ពេល។</translation>
 <translation id="4559617833001311418">គេហទំព័រ​នេះ​កំពុង​ចូលប្រើ​ឧបករណ៍​ចាប់ពន្លឺ ឬឧបករណ៍​ចាប់ចលនារបស់អ្នក។</translation>
-<translation id="4561098487691395071">ឬបញ្ជាក់​ PPD ម៉ាស៊ីនបោះពុម្ព​របស់អ្នក</translation>
 <translation id="4562155214028662640">បញ្ចូល​ស្នាមម្រាមដៃ</translation>
 <translation id="4562494484721939086">គ្មានសេវាទេ</translation>
 <translation id="4563880231729913339">ម្រាមដៃទី 3</translation>
@@ -2757,7 +2751,6 @@
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925542575807923399">អ្នកគ្រប់គ្រងគណនីនេះតម្រូវឲ្យគណនីនេះជាគណនីចូលមុននៅក្នុងវេនចូលច្រើនគណនី។</translation>
 <translation id="4927753642311223124">គ្មានអ្វីដែលគួរមើលនៅទីនេះទេ ទៅមុខបន្ត។</translation>
-<translation id="4927846293686536410">ចូល​​គណនីដើម្បី​ទទួល​បាន​ចំណាំ ប្រវត្តិ ពាក្យសម្ងាត់ និង​ការកំណត់​ផ្សេងទៀត​​នៅលើ​ឧបករណ៍​របស់អ្នក​ទាំងអស់។ អ្នក​ក៏នឹង​ត្រូវបាន​នាំចូលទៅ​កាន់សេវាកម្ម Google របស់អ្នក​ដោយ​ស្វ័យប្រវត្តិ​ផងដែរ។</translation>
 <translation id="4929386379796360314">ទិសដៅ​បោះពុម្ព</translation>
 <translation id="4930714375720679147">បើក</translation>
 <translation id="4932733599132424254">កាលបរិច្ឆេទ</translation>
@@ -3315,7 +3308,6 @@
 <translation id="5750324801516359607">ឆ្ងាយ</translation>
 <translation id="5756163054456765343">មជ្ឈមណ្ឌលជំនួយ</translation>
 <translation id="5759728514498647443">ឯកសារដែលអ្នកផ្ញើដើម្បីបោះពុម្ពតាមរយៈ <ph name="APP_NAME" /> អាចត្រូវបានអានដោយ <ph name="APP_NAME" />។</translation>
-<translation id="5763315388120433852">រៀបចំ ឬ​គ្រប់គ្រង​ការចែក​រំលែក​ឯកសារ​តាមបណ្ដាញ។</translation>
 <translation id="5763751966069581670">រកមិនឃើញឧបករណ៍ USB ទេ</translation>
 <translation id="5764483294734785780">រក្សាសម្លេងជា...</translation>
 <translation id="57646104491463491">កាលបរិច្ឆេទបានកែសម្រួល</translation>
@@ -4635,7 +4627,6 @@
 <translation id="7684718995427157417">ដើម្បី​បង្កើត និងធ្វើតេស្ត​កម្មវិធី​របស់អ្នក សូមបើក Android Debug Bridge (ADB)។ សូម​ចំណាំថា សកម្មភាពនេះ​អនុញ្ញាតការដំឡើង​កម្មវិធី Android ដែល​មិនមាន​ការផ្ទៀងផ្ទាត់ពី Google និងតម្រូវឱ្យ​កំណត់ដូចដើមឡើងវិញ ដើម្បី​បិទ។</translation>
 <translation id="7685049629764448582">មេម៉ូរី JavaScript</translation>
 <translation id="7685087414635069102">តម្រូវឱ្យមានកូដ PIN</translation>
-<translation id="768549422429443215">បញ្ចូលភាសា ឬ​តម្រៀបបញ្ជី​ឡើងវិញ។</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">បញ្ជាក់​ពាក្យ​សម្ងាត់​ថ្មី</translation>
 <translation id="7690378713476594306">ជ្រើសរើស​ពី​បញ្ជី</translation>
@@ -4672,7 +4663,6 @@
 <translation id="7730449930968088409">ចាប់យកមាតិកាអេក្រង់របស់អ្នក</translation>
 <translation id="7732111077498238432">បណ្តាញត្រូវបានគ្រប់គ្រងដោយគោលការណ៍</translation>
 <translation id="7737238973539693982">លុប​ Linux (បេតា)</translation>
-<translation id="7737456446569756884">ឧបករណ៍នេះ​នឹងទទួលបាន​កំណែកម្មវិធី និងសុវត្ថិភាពថ្មី​ដោយស្វ័យប្រវត្តិ រហូតដល់ខែ <ph name="MONTH_AND_YEAR" />។</translation>
 <translation id="7740996059027112821">បទដ្ឋាន</translation>
 <translation id="7744047395460924128">មើល​ប្រវត្តិបោះពុម្ព​របស់អ្នក</translation>
 <translation id="7746457520633464754">ដើម្បី​រកមើល​កម្មវិធី​ និងគេហទំព័រ​គ្រោះថ្នាក់ Chrome ផ្ញើ​ URL របស់ទំព័រ​មួយចំនួន​ដែលអ្នកចូលមើល ព្រមទាំងខ្លឹមសារទំព័រ និងព័ត៌មានប្រព័ន្ធមួយចំនួន​ទៅ Google</translation>
@@ -5558,7 +5548,6 @@
 <translation id="892706138619340876">ការកំណត់​មួយចំនួន​ត្រូវ​បានកំណត់​ឡើងវិញ</translation>
 <translation id="8930351635855238750">ការកំណត់​ខូគី​ថ្មី​នឹងមាន​ប្រសិទ្ធភាព​បន្ទាប់ពី​ផ្ទុក​ទំព័រឡើងវិញ</translation>
 <translation id="8931394284949551895">ឧបករណ៍ថ្មី</translation>
-<translation id="893254996965966411">រក្សាទុក​ម៉ាស៊ីន​បោះពុម្ព​ដែលបានរកឃើញ​ទៅក្នុង​កម្រងព័ត៌មាន​របស់អ្នក ឬបញ្ចូល​ម៉ាស៊ីន​បោះពុម្ពថ្មី។</translation>
 <translation id="8932894639908691771">ជម្រើស​ការប្រើ​ប៊ូតុងចុច</translation>
 <translation id="8933960630081805351">បង្ហាញនៅក្នុងប្រអប់ស្វែងរក</translation>
 <translation id="8934732568177537184">បន្ត</translation>

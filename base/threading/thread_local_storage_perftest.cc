@@ -17,7 +17,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -30,6 +30,38 @@ namespace base {
 namespace internal {
 
 namespace {
+
+constexpr char kMetricPrefixThreadLocalStorage[] = "ThreadLocalStorage.";
+constexpr char kMetricBaseRead[] = "read";
+constexpr char kMetricBaseWrite[] = "write";
+constexpr char kMetricBaseReadWrite[] = "read_write";
+constexpr char kMetricSuffixThroughput[] = "_throughput";
+constexpr char kMetricSuffixOperationTime[] = "_operation_time";
+constexpr char kStoryBaseTLS[] = "thread_local_storage";
+#if defined(OS_WIN)
+constexpr char kStoryBasePlatformFLS[] = "platform_fiber_local_storage";
+#endif  // defined(OS_WIN)
+constexpr char kStoryBasePlatformTLS[] = "platform_thread_local_storage";
+constexpr char kStoryBaseCPPTLS[] = "c++_platform_thread_local_storage";
+constexpr char kStorySuffixFourThreads[] = "_4_threads";
+
+perf_test::PerfResultReporter SetUpReporter(const std::string& story_name) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixThreadLocalStorage,
+                                         story_name);
+  reporter.RegisterImportantMetric(
+      std::string(kMetricBaseRead) + kMetricSuffixThroughput, "runs/s");
+  reporter.RegisterImportantMetric(
+      std::string(kMetricBaseRead) + kMetricSuffixOperationTime, "ns");
+  reporter.RegisterImportantMetric(
+      std::string(kMetricBaseWrite) + kMetricSuffixThroughput, "runs/s");
+  reporter.RegisterImportantMetric(
+      std::string(kMetricBaseWrite) + kMetricSuffixOperationTime, "ns");
+  reporter.RegisterImportantMetric(
+      std::string(kMetricBaseReadWrite) + kMetricSuffixThroughput, "runs/s");
+  reporter.RegisterImportantMetric(
+      std::string(kMetricBaseReadWrite) + kMetricSuffixOperationTime, "ns");
+  return reporter;
+}
 
 // A thread that waits for the caller to signal an event before proceeding to
 // call action.Run().
@@ -67,14 +99,14 @@ class ThreadLocalStoragePerfTest : public testing::Test {
   ~ThreadLocalStoragePerfTest() override = default;
 
   template <class Read, class Write>
-  void Benchmark(const std::string& trace,
+  void Benchmark(const std::string& story_name,
                  Read read,
                  Write write,
                  size_t num_operation,
                  size_t num_threads) {
     write(2);
 
-    BenchmarkImpl("TLS read throughput", trace,
+    BenchmarkImpl(kMetricBaseRead, story_name,
                   base::BindLambdaForTesting([&]() {
                     volatile intptr_t total = 0;
                     for (size_t i = 0; i < num_operation; ++i)
@@ -82,14 +114,14 @@ class ThreadLocalStoragePerfTest : public testing::Test {
                   }),
                   num_operation, num_threads);
 
-    BenchmarkImpl("TLS write throughput", trace,
+    BenchmarkImpl(kMetricBaseWrite, story_name,
                   base::BindLambdaForTesting([&]() {
                     for (size_t i = 0; i < num_operation; ++i)
                       write(i);
                   }),
                   num_operation, num_threads);
 
-    BenchmarkImpl("TLS read-write throughput", trace,
+    BenchmarkImpl(kMetricBaseReadWrite, story_name,
                   base::BindLambdaForTesting([&]() {
                     for (size_t i = 0; i < num_operation; ++i)
                       write(read() + 1);
@@ -97,8 +129,8 @@ class ThreadLocalStoragePerfTest : public testing::Test {
                   num_operation, num_threads);
   }
 
-  void BenchmarkImpl(const std::string& measurment,
-                     const std::string& trace,
+  void BenchmarkImpl(const std::string& metric_base,
+                     const std::string& story_name,
                      base::RepeatingClosure action,
                      size_t num_operation,
                      size_t num_threads) {
@@ -123,13 +155,13 @@ class ThreadLocalStoragePerfTest : public testing::Test {
     for (auto& thread : threads)
       thread->Join();
 
-    perf_test::PrintResult(measurment, "", trace,
-                           num_operation / operation_duration.InMillisecondsF(),
-                           "operations/ms", true);
+    auto reporter = SetUpReporter(story_name);
+    reporter.AddResult(metric_base + kMetricSuffixThroughput,
+                       num_operation / operation_duration.InSecondsF());
     size_t nanos_per_operation =
         operation_duration.InNanoseconds() / num_operation;
-    perf_test::PrintResult(measurment, "", trace, nanos_per_operation,
-                           "ns/operation", true);
+    reporter.AddResult(metric_base + kMetricSuffixOperationTime,
+                       nanos_per_operation);
   }
 
  private:
@@ -143,8 +175,9 @@ TEST_F(ThreadLocalStoragePerfTest, ThreadLocalStorage) {
   auto read = [&]() { return reinterpret_cast<intptr_t>(tls.Get()); };
   auto write = [&](intptr_t value) { tls.Set(reinterpret_cast<void*>(value)); };
 
-  Benchmark("ThreadLocalStorage", read, write, 10000000, 1);
-  Benchmark("ThreadLocalStorage 4 threads", read, write, 10000000, 4);
+  Benchmark(kStoryBaseTLS, read, write, 10000000, 1);
+  Benchmark(std::string(kStoryBaseTLS) + kStorySuffixFourThreads, read, write,
+            10000000, 4);
 }
 
 #if defined(OS_WIN)
@@ -160,8 +193,9 @@ TEST_F(ThreadLocalStoragePerfTest, PlatformFls) {
     FlsSetValue(key, reinterpret_cast<void*>(value));
   };
 
-  Benchmark("PlatformFls", read, write, 10000000, 1);
-  Benchmark("PlatformFls 4 threads", read, write, 10000000, 4);
+  Benchmark(kStoryBasePlatformFLS, read, write, 10000000, 1);
+  Benchmark(std::string(kStoryBasePlatformFLS) + kStorySuffixFourThreads, read,
+            write, 10000000, 4);
 }
 
 TEST_F(ThreadLocalStoragePerfTest, PlatformTls) {
@@ -173,8 +207,9 @@ TEST_F(ThreadLocalStoragePerfTest, PlatformTls) {
     TlsSetValue(key, reinterpret_cast<void*>(value));
   };
 
-  Benchmark("PlatformTls", read, write, 10000000, 1);
-  Benchmark("PlatformTls 4 threads", read, write, 10000000, 4);
+  Benchmark(kStoryBasePlatformTLS, read, write, 10000000, 1);
+  Benchmark(std::string(kStoryBasePlatformTLS) + kStorySuffixFourThreads, read,
+            write, 10000000, 4);
 }
 
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
@@ -191,8 +226,9 @@ TEST_F(ThreadLocalStoragePerfTest, PlatformTls) {
     pthread_setspecific(key, reinterpret_cast<void*>(value));
   };
 
-  Benchmark("PlatformTls", read, write, 10000000, 1);
-  Benchmark("PlatformTls 4 threads", read, write, 10000000, 4);
+  Benchmark(kStoryBasePlatformTLS, read, write, 10000000, 1);
+  Benchmark(std::string(kStoryBasePlatformTLS) + kStorySuffixFourThreads, read,
+            write, 10000000, 4);
 }
 
 #endif
@@ -205,8 +241,9 @@ TEST_F(ThreadLocalStoragePerfTest, Cpp11Tls) {
     reinterpret_cast<volatile intptr_t*>(&thread_local_variable)[0] = value;
   };
 
-  Benchmark("C++ thread_local TLS", read, write, 10000000, 1);
-  Benchmark("C++ thread_local TLS 4 threads", read, write, 10000000, 4);
+  Benchmark(kStoryBaseCPPTLS, read, write, 10000000, 1);
+  Benchmark(std::string(kStoryBaseCPPTLS) + kStorySuffixFourThreads, read,
+            write, 10000000, 4);
 }
 
 }  // namespace internal

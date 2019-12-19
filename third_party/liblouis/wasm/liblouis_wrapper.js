@@ -17,13 +17,13 @@ function WasmMemPool(module) {
 
 WasmMemPool.prototype = {
   malloc: function(bytes) {
-    let ptr = this.module._malloc(bytes);
+    const ptr = this.module._malloc(bytes);
     this.ptrs_.push(ptr);
     return ptr;
   },
 
   allocate: function(array, type) {
-    let ptr = this.module.allocate(array, type, this.module.ALLOC_NORMAL);
+    const ptr = this.module.allocate(array, type, this.module.ALLOC_NORMAL);
     this.ptrs_.push(ptr);
     return ptr;
   },
@@ -38,7 +38,7 @@ WasmMemPool.prototype = {
 
 function LiblouisWrapper() {
   self.addEventListener('message', (message) => {
-    var command = JSON.parse(message.data);
+    const command = JSON.parse(message.data);
     switch (command.command) {
       case 'CheckTable':
         this.checkTable(command);
@@ -68,7 +68,7 @@ LiblouisWrapper.prototype = {
       this.module = module;
       this.pool_ = new WasmMemPool(this.module);
 
-      let reply = {
+      const reply = {
         loaded: true,
         success: true,
         in_reply_to: message['message_id']
@@ -82,13 +82,12 @@ LiblouisWrapper.prototype = {
     // Free any loaded tables.
     this.module._lou_free();
 
-    let tableNames = command['table_names'];
-    let tableNamesPtr =
+    const tableNames = command['table_names'];
+    const tableNamesPtr =
         this.pool_.allocate(this.module.intArrayFromString(tableNames), 'i8');
-    let tableCount = this.module._lou_checkTable(tableNamesPtr);
+    const tableCount = this.module._lou_checkTable(tableNamesPtr);
     this.pool_.freeAll();
-    let msg = {in_reply_to: command['message_id'],
-               success: tableCount > 0};
+    const msg = {in_reply_to: command['message_id'], success: tableCount > 0};
     self.postMessage(JSON.stringify(msg));
   },
 
@@ -106,26 +105,33 @@ LiblouisWrapper.prototype = {
 
   translateOrBackTranslate_: function(
       tableNames, contents, messageId, formTypeMap, backTranslate) {
-    let tableNamesPtr =
+    const tableNamesPtr =
         this.pool_.allocate(this.module.intArrayFromString(tableNames), 'i8');
 
     let formTypeMapPtr = 0;
     if (formTypeMap) {
       formTypeMapPtr = this.pool_.malloc(formTypeMap.length * 4);
-      for (let i = 0; i < formTypeMap.length; i++)
+      for (let i = 0; i < formTypeMap.length; i++) {
         this.module.setValue(formTypeMapPtr + i * 4, formTypeMap[i], 'i32');
+      }
     }
 
     // |tableNamesPtr| is a char* natively.
 
-    let inLen = backTranslate ? (contents.length / 2 + 1) : contents.length;
+    // The backtranslated string is encoded as 2-hex characters, which equal one
+    // byte. The forward translated string is an ordinary js string. Both
+    // require a null terminator.
+    const inLen =
+        backTranslate ? (contents.length / 2 + 1) : (contents.length + 1);
 
-    // |inBufPtr| and |outBufPtr| are both widechar*.
-    let inBufPtr = this.pool_.malloc(inLen * 2);
+    // |inBufPtr| and |outBufPtr| are both widechar*. (i.e. 2-byte characters).
+    const inBufPtr = this.pool_.malloc(inLen * 2);
+
     if (backTranslate) {
-      // |contents| is a hex encoded string. Two characters ecode a byte.
-      if (contents.length % 2 != 0)
+      // |contents| is a hex encoded string. Two characters encodes a byte.
+      if (contents.length % 2 != 0) {
         throw 'Expected contents to be of even length.';
+      }
 
       for (let i = 0; i < contents.length; i = i + 2) {
         // Always set the high order bit to ensure empty cells are not ignored.
@@ -134,23 +140,30 @@ LiblouisWrapper.prototype = {
         twoBytes |= parseInt(contents[i + 1], 16);
         this.module.setValue(inBufPtr + i, twoBytes, 'i16');
       }
-
-      // Liblouis expects a null terminator.
-      this.module.setValue(inBufPtr + (inLen - 1) * 2, 0, 'i16');
     } else {
-      this.module.stringToUTF16(contents, inBufPtr, inLen * 2 + 1);
+      // This method takes its length in bytes.
+      this.module.stringToUTF16(contents, inBufPtr, inLen * 2);
     }
 
-    let inLenPtr = this.pool_.malloc(4);
+    // Liblouis expects a null terminator.
+    this.module.setValue(inBufPtr + (inLen - 1) * 2, 0, 'i16');
+
+    // LibLouis writes how many characters of |inBuf| are consumed into this int
+    // pointer.
+    const inLenPtr = this.pool_.malloc(4);
 
     // We need to gradually increase |outLen| since we can't precompute the
     // length given by liblouis.
-    let outLen = inLen + 1;
-    let maxAlloc = (inLen + 1) * 8;
+    let outLen = inLen;
+    const maxAlloc = (inLen + 1) * 8;
     while (outLen < maxAlloc) {
+      // This is required as consecutive tries to [back]Translate requires
+      // resetting the value of this int pointer.
       this.module.setValue(inLenPtr, inLen, 'i32');
-      let outBufPtr = this.pool_.malloc(outLen * 2);
-      let outLenPtr = this.pool_.malloc(4);
+
+      // A widechar*.
+      const outBufPtr = this.pool_.malloc(outLen * 2);
+      const outLenPtr = this.pool_.malloc(4);
       this.module.setValue(outLenPtr, outLen, 'i32');
       let brailleToTextPtr;
       let textToBraillePtr;
@@ -170,12 +183,13 @@ LiblouisWrapper.prototype = {
       }
 
       // If the entire inBuf was not consumed, it means outBuf was not large
-      // enough, so we need to try again.
-      let actualInLen = this.module.getValue(inLenPtr, 'i32');
-      let actualOutLen = this.module.getValue(outLenPtr, 'i32');
-
-      if (inLen == actualInLen && actualOutLen <= outLen) {
-        let msg = {in_reply_to: messageId, success: true};
+      // enough, so we need to try again. LibLouis is loose with its |inLenPtr|
+      // values. It sometimes consumes the null terminator, it sometimes
+      // doesn't.
+      const actualInLen = this.module.getValue(inLenPtr, 'i32');
+      const actualOutLen = this.module.getValue(outLenPtr, 'i32');
+      if ((inLen - 1) <= actualInLen && actualOutLen > 0) {
+        const msg = {in_reply_to: messageId, success: true};
         if (backTranslate) {
           let outBuf = '';
           for (let i = 0; i < actualOutLen; i++) {
@@ -198,6 +212,8 @@ LiblouisWrapper.prototype = {
     }
 
     this.pool_.freeAll();
+
+    // TODO: raise an error if we didn't send a result in the loop above.
   },
 
   getHexEncoding_: function(bufPtr, len) {
@@ -212,11 +228,12 @@ LiblouisWrapper.prototype = {
       ret += LiblouisWrapper.BYTE_TO_HEX[byte >> 4];
       ret += LiblouisWrapper.BYTE_TO_HEX[byte & 0x0f];
     }
+
     return ret;
   },
 
   getIntArray: function(ptr, len) {
-    let ret = [];
+    const ret = [];
     for (let i = 0; i < len; i++) {
       ret.push(this.module.getValue(ptr + i * 4, 'i32'));
     }

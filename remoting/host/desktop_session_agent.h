@@ -45,6 +45,7 @@ class AutoThreadTaskRunner;
 class DesktopEnvironment;
 class DesktopEnvironmentFactory;
 class InputInjector;
+class KeyboardLayoutMonitor;
 class ProcessStatsSender;
 class RemoteInputFilter;
 class ScreenControls;
@@ -157,6 +158,9 @@ class DesktopSessionAgent
   void OnInjectTouchEvent(const std::string& serialized_event);
   void OnExecuteActionRequestEvent(const protocol::ActionRequest& request);
 
+  // Handles keyboard layout changes.
+  void OnKeyboardLayoutChange(const protocol::KeyboardLayout& layout);
+
   // Handles ChromotingNetworkDesktopMsg_SetScreenResolution request from
   // the client.
   void SetScreenResolution(const ScreenResolution& resolution);
@@ -227,6 +231,9 @@ class DesktopSessionAgent
 
   // Captures mouse shapes.
   std::unique_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor_;
+
+  // Watches for keyboard layout changes.
+  std::unique_ptr<KeyboardLayoutMonitor> keyboard_layout_monitor_;
 
   // Keep reference to the last frame sent to make sure shared buffer is alive
   // before it's received.

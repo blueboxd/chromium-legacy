@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_error.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_service.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_utils.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -49,16 +50,20 @@ void BluetoothRemoteGATTDescriptor::ReadValueCallback(
 }
 
 ScriptPromise BluetoothRemoteGATTDescriptor::readValue(
-    ScriptState* script_state) {
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   if (!GetGatt()->connected()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        BluetoothError::CreateNotConnectedException(BluetoothOperation::kGATT));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNetworkError,
+        BluetoothError::CreateNotConnectedExceptionMessage(
+            BluetoothOperation::kGATT));
+    return ScriptPromise();
   }
 
   if (!GetGatt()->device()->IsValidDescriptor(descriptor_->instance_id)) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, CreateInvalidDescriptorError());
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      CreateInvalidDescriptorErrorMessage());
+    return ScriptPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -98,23 +103,26 @@ void BluetoothRemoteGATTDescriptor::WriteValueCallback(
 
 ScriptPromise BluetoothRemoteGATTDescriptor::writeValue(
     ScriptState* script_state,
-    const DOMArrayPiece& value) {
+    const DOMArrayPiece& value,
+    ExceptionState& exception_state) {
   if (!GetGatt()->connected()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        BluetoothError::CreateNotConnectedException(BluetoothOperation::kGATT));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNetworkError,
+        BluetoothError::CreateNotConnectedExceptionMessage(
+            BluetoothOperation::kGATT));
+    return ScriptPromise();
   }
 
   if (!GetGatt()->device()->IsValidDescriptor(descriptor_->instance_id)) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, CreateInvalidDescriptorError());
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      CreateInvalidDescriptorErrorMessage());
+    return ScriptPromise();
   }
 
   if (value.IsDetached()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
-                                           "Value buffer has been detached."));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Value buffer has been detached.");
+    return ScriptPromise();
   }
 
   // Partial implementation of writeValue algorithm:
@@ -124,10 +132,10 @@ ScriptPromise BluetoothRemoteGATTDescriptor::writeValue(
   // value, per Long Attribute Values) return a promise rejected with an
   // InvalidModificationError and abort.
   if (value.ByteLengthAsSizeT() > 512) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidModificationError,
-                          "Value can't exceed 512 bytes."));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidModificationError,
+        "Value can't exceed 512 bytes.");
+    return ScriptPromise();
   }
 
   // Let valueVector be a copy of the bytes held by value.
@@ -146,12 +154,10 @@ ScriptPromise BluetoothRemoteGATTDescriptor::writeValue(
   return promise;
 }
 
-DOMException* BluetoothRemoteGATTDescriptor::CreateInvalidDescriptorError() {
-  return BluetoothError::CreateDOMException(
-      BluetoothErrorCode::kInvalidDescriptor,
-      "Descriptor with UUID " + uuid() +
-          " is no longer valid. Remember to retrieve the Descriptor again "
-          "after reconnecting.");
+String BluetoothRemoteGATTDescriptor::CreateInvalidDescriptorErrorMessage() {
+  return "Descriptor with UUID " + uuid() +
+         " is no longer valid. Remember to retrieve the Descriptor again "
+         "after reconnecting.";
 }
 
 void BluetoothRemoteGATTDescriptor::Trace(blink::Visitor* visitor) {

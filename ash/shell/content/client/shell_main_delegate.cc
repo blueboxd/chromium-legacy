@@ -21,14 +21,13 @@ ShellMainDelegate::ShellMainDelegate() = default;
 
 ShellMainDelegate::~ShellMainDelegate() = default;
 
-bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
-  content::SetContentClient(&content_client_);
-  return false;
-}
-
 void ShellMainDelegate::PreSandboxStartup() {
   InitializeResourceBundle();
   ui::InitializeInputMethodForTesting();
+}
+
+content::ContentClient* ShellMainDelegate::CreateContentClient() {
+  return &content_client_;
 }
 
 content::ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {

@@ -139,7 +139,6 @@
 <translation id="1186771945450942097">Kendu software kaltegarria</translation>
 <translation id="1187722533808055681">Aktibatze kopurua, inaktibo egon ondoren</translation>
 <translation id="1188807932851744811">Ez da erregistroa kargatu.</translation>
-<translation id="1189418886587279221">Gailua erosoago eta aiseago erabiltzeko, gaitu erabilerraztasun-eginbideak.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Atzitu ordenagailuan gordetako fitxategi bat}other{Atzitu ordenagailuan gordetako # fitxategi}}</translation>
 <translation id="1190660338026981543">Erregistratu da <ph name="DEVICE_TYPE" /> gailua <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> domeinuaren bidez kudea dadin.</translation>
 <translation id="119092896208640858">Gailu honetako arakatze-datuak soilik garbitzeko, baina haiek Google-ko kontuan mantentzeko, <ph name="BEGIN_LINK" />amaitu saioa<ph name="END_LINK" />.</translation>
@@ -339,7 +338,6 @@
 <translation id="1476607407192946488">&amp;Hizkuntza-ezarpenak</translation>
 <translation id="1478340334823509079">Xehetasunak: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Instalazioa ez dago gaituta</translation>
-<translation id="1481206932476131736">Kudeatu saioa hasita daukaten kontuak. Baimenen arabera, Chrome eta Google Play-rako webgune, aplikazio eta luzapenek kontu horiek erabil ditzakete zerbitzua pertsonalizatzeko.</translation>
 <translation id="1482626744466814421">Egin fitxa honen laster-marka…</translation>
 <translation id="1483493594462132177">Bidali</translation>
 <translation id="1484979925941077974">Webgunea Bluetooth konexioa erabiltzen ari da</translation>
@@ -592,7 +590,6 @@
 <translation id="1813278315230285598">Zerbitzuak</translation>
 <translation id="18139523105317219">EDI alderdiaren izena</translation>
 <translation id="1815083418640426271">Itsatsi testu arrunt gisa</translation>
-<translation id="1815579292149538864">Konfiguratu edo instalatu CUPS inprimagailuak.</translation>
 <translation id="181577467034453336">Beste <ph name="NUMBER_OF_VIEWS" />…</translation>
 <translation id="1816036116994822943">Teklatuaren bilaketa-abiadura</translation>
 <translation id="1817871734039893258">Microsoft-en fitxategiak berreskuratzeko sistema</translation>
@@ -1454,7 +1451,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="3012917896646559015">Jarri harremanetan berehala hardware-fabrikatzailearekin ordenagailua konpontze-lantegi batera bidaltzeko.</translation>
 <translation id="3013291976881901233">MIDI gailuak</translation>
 <translation id="3015639418649705390">Berrabiarazi</translation>
-<translation id="3016329696181678353"><ph name="PRINTER_NAME" /> ezin izan da konfiguratu automatikoki. Zehaztu inprimagailuaren xehetasun aurreratuak.</translation>
 <translation id="3016381065346027039">Ez dago sarrerarik erregistroan</translation>
 <translation id="3016641847947582299">Osagaia eguneratu da</translation>
 <translation id="3016780570757425217">Ezagutu zure kokapena</translation>
@@ -2192,7 +2188,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="4046123991198612571">Hurrengo pista</translation>
 <translation id="4050225813016893843">Autentifikazio-metodoa</translation>
 <translation id="4052120076834320548">Oso txikia</translation>
-<translation id="4055023634561256217">Berrabiarazi egin behar da gailuan fabrikako ezarpenak berrezarri ahal izateko.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">Ikusi Web Store dendan</translation>
 <translation id="4058647953897694817">Egiaztatu Bluetooth bidez</translation>
@@ -2255,7 +2250,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="412940972494182898">Abiarazi Flash edukia oraingoan soilik</translation>
 <translation id="4130199216115862831">Gailuen erregistroa</translation>
 <translation id="4130207949184424187">Luzapenak aldatu egin du arakatzaileko barratik bilatzen duzunean agertzen den orria.</translation>
-<translation id="4130750466177569591">Onartzen dut</translation>
+<translation id="4130750466177569591">Ados nago</translation>
 <translation id="413121957363593859">Osagaiak</translation>
 <translation id="4131410914670010031">Zuri-beltzez</translation>
 <translation id="4136203100490971508">Gaueko argia egunsentian desaktibatuko da automatikoki</translation>
@@ -2514,7 +2509,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="4558426062282641716">Automatikoki abiarazteko baimena eskatu da</translation>
 <translation id="4558491878126948419">Jaso <ph name="DEVICE_TYPE" /> gailuari buruzko aholkuak eta Google produktuei buruzko berritasunak, eta partekatu iritzia. Edonoiz ken dezakezu harpidetza.</translation>
 <translation id="4559617833001311418">Mugimenduaren edo argiaren sentsoreak atzitzen ari da webgune hau.</translation>
-<translation id="4561098487691395071">Edo zehaztu inprimagailuaren PPD fitxategia</translation>
 <translation id="4562155214028662640">Gehitu hatz-marka</translation>
 <translation id="4562494484721939086">Zerbitzurik ez</translation>
 <translation id="4563880231729913339">3. hatz-marka</translation>
@@ -2757,7 +2751,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925542575807923399">Saio-hasiera anitzeko saioetan, saioa hasten duen lehen kontua hau izatea eskatzen du kontu honen administratzaileak.</translation>
 <translation id="4927753642311223124">Hemen ez dago ikusteko ezer.</translation>
-<translation id="4927846293686536410">Hasi saioa laster-markak, historia eta beste ezarpen batzuk sinkronizatuta izateko gailu guztietan. Google zerbitzuetan ere automatikoki hasiko da saioa.</translation>
 <translation id="4929386379796360314">Inprimatzearen helmugak</translation>
 <translation id="4930714375720679147">Aktibatu</translation>
 <translation id="4932733599132424254">Data</translation>
@@ -3314,7 +3307,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5750324801516359607">Urrun</translation>
 <translation id="5756163054456765343">&amp;Laguntza-zentroa</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> aplikazioaren bidez inprimatzera bidaltzen dituzun dokumentuak <ph name="APP_NAME" /> aplikazioak irakur ditzake.</translation>
-<translation id="5763315388120433852">Konfiguratu edo kudeatu sareko fitxategiak partekatzeko biltegiak.</translation>
 <translation id="5763751966069581670">Ez da aurkitu USB bidezko gailurik</translation>
 <translation id="5764483294734785780">Go&amp;rde audioa honela…</translation>
 <translation id="57646104491463491">Aldatze-data</translation>
@@ -4634,7 +4626,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="7684718995427157417">Zeure aplikazioak sortu eta probatzeko, gaitu Android Debug Bridge (ADB). Kontuan izan ekintza honekin baimendu egiten dela Google-k egiaztatu ez dituen Android-erako aplikazioak instalatzeko aukera eta, inoiz tresna hori desgaitu nahi izanez gero, jatorrizko datuak berrezarri beharko direla.</translation>
 <translation id="7685049629764448582">JavaScript memoria</translation>
 <translation id="7685087414635069102">PIN kodea behar da</translation>
-<translation id="768549422429443215">Gehitu hizkuntzak edo aldatu zerrendako elementuen ordena.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Berretsi pasahitz berria</translation>
 <translation id="7690378713476594306">Aukeratu zerrendatik</translation>
@@ -4671,7 +4662,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="7730449930968088409">Egin pantaila-argazkia</translation>
 <translation id="7732111077498238432">Gidalerroen bidez dago kontrolatuta sarea</translation>
 <translation id="7737238973539693982">Ezabatu Linux (Beta)</translation>
-<translation id="7737456446569756884"><ph name="MONTH_AND_YEAR" /> arte jasoko ditu gailuak software- eta segurtasun-eguneratze automatikoak.</translation>
 <translation id="7740996059027112821">Estandarra</translation>
 <translation id="7744047395460924128">Ikusi inprimatze-historia</translation>
 <translation id="7746457520633464754">Aplikazio eta webgune arriskutsuak hautemateko, ireki dituzun orrietako batzuen URLak, sistemari buruzko informazio mugatua eta orrietako edukiaren zati bat bidaltzen dizkio Chrome-k Google-ri.</translation>
@@ -5557,7 +5547,6 @@ Horrek ez die eragiten beste gailu batzuetako aplikazioei edo edukiei.</translat
 <translation id="892706138619340876">Ezarpen batzuk berrezarri dira</translation>
 <translation id="8930351635855238750">Orria berriro kargatu ondoren aplikatuko dira cookieen ezarpen berriak</translation>
 <translation id="8931394284949551895">Gailu berriak</translation>
-<translation id="893254996965966411">Gorde hautemandako inprimagailuak profilean edo gehitu inprimagailu berri bat.</translation>
 <translation id="8932894639908691771">Erabilerraztasun-osagarriaren aukerak</translation>
 <translation id="8933960630081805351">&amp;Erakutsi Finder-en</translation>
 <translation id="8934732568177537184">Jarraitu</translation>

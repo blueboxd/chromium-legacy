@@ -25,19 +25,17 @@ class AssistantTestApiImpl : public AssistantTestApi {
   AssistantTestApiImpl();
   ~AssistantTestApiImpl() override;
 
-  // AssistantTestApi:
+  // AssistantTestApi overrides:
   void DisableAnimations() override;
-
   bool IsVisible() override;
-
   void SendTextQuery(const std::string& query) override;
-
-  void EnableAssistant() override;
+  void SetAssistantEnabled(bool enable) override;
   void SetTabletMode(bool enable) override;
   void SetPreferVoice(bool value) override;
-
+  AssistantState* GetAssistantState() override;
   views::View* page_view() override;
   views::View* main_view() override;
+  views::View* ui_element_container() override;
   views::Textfield* input_text_field() override;
   views::View* mic_view() override;
   views::View* greeting_label() override;
@@ -45,11 +43,14 @@ class AssistantTestApiImpl : public AssistantTestApi {
   views::View* keyboard_input_toggle() override;
   aura::Window* window() override;
   views::View* app_list_view() override;
+  aura::Window* root_window() override;
 
  private:
   void EnableAnimations();
 
+  bool AppListViewsHaveBeenCreated() const;
   ContentsView* contents_view();
+  ContentsView* contents_view_or_null() const;
 
   void SendKeyPress(ui::KeyboardCode key);
 

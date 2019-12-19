@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.usage_stats;
 
+import org.chromium.base.Function;
 import org.chromium.base.Promise;
-import org.chromium.base.Promise.Function;
 
 import java.util.ArrayList;
 import java.util.List;

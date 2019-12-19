@@ -164,7 +164,7 @@ class MODULES_EXPORT RTCRtpReceiverOnlyTransceiver
   base::Optional<webrtc::RtpTransceiverDirection> FiredDirection()
       const override;
   webrtc::RTCError SetCodecPreferences(
-      blink::WebVector<webrtc::RtpCodecCapability>) override;
+      Vector<webrtc::RtpCodecCapability>) override;
 
  private:
   std::unique_ptr<RTCRtpReceiverPlatform> receiver_;

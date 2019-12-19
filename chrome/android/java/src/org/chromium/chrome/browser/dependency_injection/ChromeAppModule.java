@@ -17,7 +17,6 @@ import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedW
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
@@ -40,10 +39,6 @@ public class ChromeAppModule {
     @Named(LAST_USED_PROFILE)
     public Profile provideLastUsedProfile() {
         return Profile.getLastUsedProfile();
-    }
-    @Provides
-    public ChromePreferenceManager providesChromePreferenceManager() {
-        return ChromePreferenceManager.getInstance();
     }
 
     @Provides

@@ -363,9 +363,10 @@ static inline internal::OwnedWrapper<T> Owned(T* o) {
   return internal::OwnedWrapper<T>(o);
 }
 
-template <typename T>
-static inline internal::OwnedWrapper<T> Owned(std::unique_ptr<T>&& ptr) {
-  return internal::OwnedWrapper<T>(std::move(ptr));
+template <typename T, typename Deleter>
+static inline internal::OwnedWrapper<T, Deleter> Owned(
+    std::unique_ptr<T, Deleter>&& ptr) {
+  return internal::OwnedWrapper<T, Deleter>(std::move(ptr));
 }
 
 // Passed() is for transferring movable-but-not-copyable types (eg. unique_ptr)

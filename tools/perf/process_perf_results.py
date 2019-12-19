@@ -56,6 +56,7 @@ DATA_FORMAT_UNKNOWN = 'unknown'
 # are okay with potentially encountering issues.
 GTEST_CONVERSION_WHITELIST = [
   'angle_perftests',
+  'base_perftests',
   'cc_perftests',
   'components_perftests',
   'gpu_perftests',
@@ -568,17 +569,20 @@ def _write_perf_data_to_logfile(benchmark_name, output_file,
   viewer_url = None
   # logdog file to write perf results to
   if os.path.exists(output_file):
-    output_json_file = logdog_helper.open_text(benchmark_name)
     with open(output_file) as f:
       try:
         results = json.load(f)
-        json.dump(results, output_json_file,
-                indent=4, separators=(',', ': '))
       except ValueError:
         print('Error parsing perf results JSON for benchmark  %s' %
               benchmark_name)
-
-    output_json_file.close()
+    try:
+      output_json_file = logdog_helper.open_text(benchmark_name)
+      json.dump(results, output_json_file,
+                indent=4, separators=(',', ': '))
+    except ValueError as e:
+      print('ValueError: "%s" while dumping output to logdog' % e)
+    finally:
+      output_json_file.close()
     viewer_url = output_json_file.get_viewer_url()
   else:
     print("Perf results JSON file doesn't exist for benchmark %s" %

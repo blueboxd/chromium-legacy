@@ -6,8 +6,9 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_EDITOR_BUBBLE_VIEW_H_
 
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -28,7 +29,7 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
   // bubble's widget.
   static views::Widget* Show(TabGroupHeader* anchor_view,
                              TabController* tab_controller,
-                             TabGroupId group);
+                             tab_groups::TabGroupId group);
 
   // views::BubbleDialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
@@ -38,7 +39,7 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
  private:
   TabGroupEditorBubbleView(TabGroupHeader* anchor_view,
                            TabController* tab_controller,
-                           TabGroupId group);
+                           tab_groups::TabGroupId group);
   ~TabGroupEditorBubbleView() override;
 
   void UpdateGroup();
@@ -46,7 +47,7 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
   SkColor background_color() const { return color(); }
 
   TabController* const tab_controller_;
-  const TabGroupId group_;
+  const tab_groups::TabGroupId group_;
 
   class TitleFieldController : public views::TextfieldController {
    public:
@@ -70,7 +71,7 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
    public:
     explicit ButtonListener(TabController* tab_controller,
                             TabGroupHeader* anchor_view,
-                            TabGroupId group);
+                            tab_groups::TabGroupId group);
 
     // views::ButtonListener:
     void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -78,7 +79,7 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
    private:
     TabController* const tab_controller_;
     TabGroupHeader* anchor_view_;
-    const TabGroupId group_;
+    const tab_groups::TabGroupId group_;
   };
 
   ButtonListener button_listener_;

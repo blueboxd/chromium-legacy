@@ -139,7 +139,6 @@
 <translation id="1186771945450942097">Аюултай програмыг устгах</translation>
 <translation id="1187722533808055681">Сул зогсолт дууслаа</translation>
 <translation id="1188807932851744811">Протоколыг ачааллаагүй.</translation>
-<translation id="1189418886587279221">Өөрийнхөө төхөөрөмжийг ашиглахад илүү хялбар болгохын тулд нэвтрэх боломжит байдлын тохиргонуудыг идэвхтэй болгох</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Компьютер дээрээ хадгалагдсан файл руу нэвтрэх}other{Компьютер дээрээ хадгалагдсан # файл руу нэвтрэх}}</translation>
 <translation id="1190660338026981543">Таны <ph name="DEVICE_TYPE" />-г <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />-н байгууллагын удирдлагад амжилттай бүртгүүллээ.</translation>
 <translation id="119092896208640858">Хөтчийн өгөгдлийг зөвхөн энэ төхөөрөмжөөс устгаж, Google Бүртгэлдээ хэвээр үлдээхийн тулд <ph name="BEGIN_LINK" />гарна уу<ph name="END_LINK" />.</translation>
@@ -339,7 +338,6 @@
 <translation id="1476607407192946488">&amp;Хэлний Тохиргоо</translation>
 <translation id="1478340334823509079">Дэлгэрэнгүй мэдээлэл: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Суулгалтыг идэвхжүүлээгүй байна</translation>
-<translation id="1481206932476131736">Нэвтэрсэн бүртгэлүүдээ удирдах. Chrome болон Google Play-н вэб сайт, апп болон өргөтгөл нь зөвшөөрлөөс хамаарч, таны хэрэглээг өөрчлөхийн тулд эдгээр бүртгэлийг ашиглаж болзошгүй.</translation>
 <translation id="1482626744466814421">Энэ табыг тэмдэглэх...</translation>
 <translation id="1483493594462132177">Илгээх</translation>
 <translation id="1484979925941077974">Сайт Bluetooth-г ашиглаж байна</translation>
@@ -588,7 +586,6 @@
 <translation id="1813278315230285598">Үйлчилгээ</translation>
 <translation id="18139523105317219">EDI Талын нэр</translation>
 <translation id="1815083418640426271">Энгийн текст хэлбэрээр наах</translation>
-<translation id="1815579292149538864">CUPS хэвлэгчийг тохируулж эсвэл удирдана уу.</translation>
 <translation id="181577467034453336">бусад <ph name="NUMBER_OF_VIEWS" />...</translation>
 <translation id="1816036116994822943">Гарын скан хийх хурд</translation>
 <translation id="1817871734039893258">Microsoft File Recovery</translation>
@@ -1449,7 +1446,6 @@
 <translation id="3012917896646559015">Та өөрийн компьютерийг засварын төвд илгээхийн тулд компьютерийн техник хангамжийн үйлдвэрлэгчтэй нэн даруй холбогдоно уу.</translation>
 <translation id="3013291976881901233">MIDI төхөөрөмж</translation>
 <translation id="3015639418649705390">Одоо дахин ажиллуулах</translation>
-<translation id="3016329696181678353"><ph name="PRINTER_NAME" />-г автоматаар тохируулж чадсангүй. Хэвлэгчийн нарийвчилсан дэлгэрэнгүй мэдээллийг тодорхойлно уу.</translation>
 <translation id="3016381065346027039">Оролтын бүртгэл алга</translation>
 <translation id="3016641847947582299">Бүрэлдэхүүн хэсэг шинэчлэгдсэн</translation>
 <translation id="3016780570757425217">Байршлаа мэдэж аваарай</translation>
@@ -2186,7 +2182,6 @@
 <translation id="4046123991198612571">Дараагийн бичлэг</translation>
 <translation id="4050225813016893843">Баталгаажуулах арга</translation>
 <translation id="4052120076834320548">Өчүүхэн</translation>
-<translation id="4055023634561256217">Төхөөрөмжөө Powerwash-ийн тусламжтай дахин тохируулахаас өмнө дахин эхлүүлэх шаардлагатай.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">Дэлгүүрт харах</translation>
 <translation id="4058647953897694817">Bluetooth-р баталгаажуулах</translation>
@@ -2508,7 +2503,6 @@
 <translation id="4558426062282641716">Автоматаар эхлүүлэх зөвшөөрлийн хүсэлт гаргасан байна</translation>
 <translation id="4558491878126948419">Google бүтээгдэхүүнүүдэд <ph name="DEVICE_TYPE" /> зөвлөгөө болон шинэчлэлтийг авч санал хүсэлт хуваалцана уу. Хүссэн үедээ захиалгаа цуцална уу.</translation>
 <translation id="4559617833001311418">Энэ сайт таны хөдөлгөөн болон гэрэл мэдрэгчийг ашиглах боломжтой.</translation>
-<translation id="4561098487691395071">Эсвэл PPD хэвлэгчээ тодорхойлох</translation>
 <translation id="4562155214028662640">Хурууны хээ нэмэх</translation>
 <translation id="4562494484721939086">Үйлчилгээ байхгүй</translation>
 <translation id="4563880231729913339">Хуруу 3</translation>
@@ -2751,7 +2745,6 @@
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925542575807923399">Энэ хаягийг хариуцсан ажилтан нь олон хаягаар зэрэг нэвтрэх тохиолдолд зөвхөн энэ хаягаар түрүүлж нэвтэрсний дараагаар бусад хаягт нэвтрэх боломжтой байхаар тохируулсан байна.</translation>
 <translation id="4927753642311223124">Энд үзэх ямар ч зүйл алга, цаашаа явна уу.</translation>
-<translation id="4927846293686536410">Та хавчуурга, түүх, нууц үг, бусад тохиргоог бүх төхөөрөмждөө авахын тулд нэвтэрнэ үү. Мөн та Google үйлчилгээнд автоматаар нэвтрэх болно.</translation>
 <translation id="4929386379796360314">Хэвлэх чиглэл</translation>
 <translation id="4930714375720679147">Асаах</translation>
 <translation id="4932733599132424254">Огноо</translation>
@@ -3309,7 +3302,6 @@
 <translation id="5750324801516359607">Хол</translation>
 <translation id="5756163054456765343">Тусламжийн төв</translation>
 <translation id="5759728514498647443">Таны <ph name="APP_NAME" />-аар дамжуулан хэвлэхээр илгээсэн бичиг баримтуудыг <ph name="APP_NAME" />-аар уншиж болно.</translation>
-<translation id="5763315388120433852">Сүлжээний файл хуваалцахыг тохируулах эсвэл удирдах.</translation>
 <translation id="5763751966069581670">USB төхөөрөмж олдсонгүй</translation>
 <translation id="5764483294734785780">Аудиог ... гэх хадгалах</translation>
 <translation id="57646104491463491">Огноо өөрчлөгдсөн</translation>
@@ -4628,7 +4620,6 @@
 <translation id="7684718995427157417">Апликейшн үүсгэж, шалгахын тулд Android Debug Bridge (ADB)-г идэвхжүүлнэ үү. Энэ үйлдэл нь Google-н баталгаажуулаагүй Андройд аппыг суулгахыг зөвшөөрөх бөгөөд идэвхгүй болгоход үйлдвэрийн тохиргоонд шинэчлэх шаардлагатай.</translation>
 <translation id="7685049629764448582">JavaScript санах ой</translation>
 <translation id="7685087414635069102">ПИН шаардлагатай</translation>
-<translation id="768549422429443215">Хэл нэмэх эсвэл жагсаалтыг дахин эрэмбэлнэ үү.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Шинэ нууц үг баталгаажуулна уу</translation>
 <translation id="7690378713476594306">Жагсаалтаас сонгох</translation>
@@ -4665,7 +4656,6 @@
 <translation id="7730449930968088409">Дэлгэцийнхээ агуулгыг аваарай</translation>
 <translation id="7732111077498238432">Сүлжээг удирдамжаар хянадаг</translation>
 <translation id="7737238973539693982">Linux (Бэта)-г устгах</translation>
-<translation id="7737456446569756884">Энэ төхөөрөмж нь <ph name="MONTH_AND_YEAR" /> хүртэл програм хангамж болон аюулгүй байдлын автомат шинэчлэлтийг авах болно.</translation>
 <translation id="7740996059027112821">Стандарт</translation>
 <translation id="7744047395460924128">Хэвлэлтийн түүхээ харах</translation>
 <translation id="7746457520633464754">Chrome аюултай апп болон сайт илрүүлэхийн тулд таны зочилдог зарим хуудасны URL, хязгаарлагдмал системийн мэдээлэл болон зарим хуудасны контентыг Google-д илгээдэг</translation>
@@ -5546,7 +5536,6 @@
 <translation id="892706138619340876">Зарим тохиргоог шинэчилсэн</translation>
 <translation id="8930351635855238750">Хуудсыг дахин ачаалласны дараагаар күүкигийн шинэ тохиргоо хүчинтэй болно</translation>
 <translation id="8931394284949551895">Шинэ төхөөрөмжүүд</translation>
-<translation id="893254996965966411">Илрүүлсэн хэвлэгчийг профайлдаа хадгалах эсвэл шинэ хэвлэгч нэмэх.</translation>
 <translation id="8932894639908691771">Сэлгүүр хэрэглэх боломжийн сонголт</translation>
 <translation id="8933960630081805351">&amp; Хайгч дотор харуулах</translation>
 <translation id="8934732568177537184">Үргэлжлүүэх</translation>

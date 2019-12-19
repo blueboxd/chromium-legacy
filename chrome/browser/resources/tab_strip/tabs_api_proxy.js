@@ -78,6 +78,10 @@ export class TabsApiProxy {
     });
   }
 
+  createNewTab() {
+    chrome.send('createNewTab');
+  }
+
   /**
    * @return {!Promise<!Array<!TabData>>}
    */

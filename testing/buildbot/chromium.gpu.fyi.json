@@ -43,7 +43,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -84,7 +85,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       }
     ],
     "isolated_scripts": [
@@ -114,7 +116,8 @@
               "os": "Android"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test:angle_perftests"
       },
       {
         "args": [
@@ -174,7 +177,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -198,7 +202,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -220,7 +225,8 @@
             }
           ]
         },
-        "test": "angle_white_box_tests"
+        "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests"
       },
       {
         "args": [
@@ -241,7 +247,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -263,7 +270,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -284,7 +292,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       }
     ],
     "isolated_scripts": [
@@ -312,7 +321,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test:angle_perftests"
       },
       {
         "args": [
@@ -527,7 +537,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -551,7 +562,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -573,7 +585,8 @@
             }
           ]
         },
-        "test": "angle_white_box_tests"
+        "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests"
       },
       {
         "args": [
@@ -594,7 +607,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -616,7 +630,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -637,7 +652,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       }
     ],
     "isolated_scripts": [
@@ -665,7 +681,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test:angle_perftests"
       },
       {
         "args": [
@@ -879,7 +896,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -901,7 +919,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -921,7 +940,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -941,7 +961,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -961,7 +982,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -978,7 +1000,8 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       }
     ],
     "isolated_scripts": [
@@ -1102,7 +1125,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -1126,7 +1150,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -1148,7 +1173,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -1170,7 +1196,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -1192,7 +1219,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -1211,7 +1239,8 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       }
     ],
     "isolated_scripts": [
@@ -1341,7 +1370,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -1365,7 +1395,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       }
     ]
   },
@@ -1393,7 +1424,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -1414,7 +1446,8 @@
             }
           ]
         },
-        "test": "angle_gles1_conformance_tests"
+        "test": "angle_gles1_conformance_tests",
+        "test_target": "//third_party/angle/src/tests:angle_gles1_conformance_tests"
       },
       {
         "args": [
@@ -1437,7 +1470,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -1459,7 +1493,8 @@
             }
           ]
         },
-        "test": "angle_white_box_tests"
+        "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests"
       },
       {
         "args": [
@@ -1483,7 +1518,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "args": [
@@ -1506,7 +1542,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "args": [
@@ -1530,7 +1567,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       }
     ],
     "isolated_scripts": [
@@ -1558,7 +1596,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test:angle_perftests"
       },
       {
         "args": [
@@ -1772,7 +1811,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -1793,7 +1833,8 @@
             }
           ]
         },
-        "test": "angle_gles1_conformance_tests"
+        "test": "angle_gles1_conformance_tests",
+        "test_target": "//third_party/angle/src/tests:angle_gles1_conformance_tests"
       },
       {
         "args": [
@@ -1816,7 +1857,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -1838,7 +1880,8 @@
             }
           ]
         },
-        "test": "angle_white_box_tests"
+        "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests"
       },
       {
         "args": [
@@ -1862,7 +1905,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "args": [
@@ -1885,7 +1929,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "args": [
@@ -1909,7 +1954,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       }
     ],
     "isolated_scripts": [
@@ -1937,7 +1983,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test:angle_perftests"
       },
       {
         "args": [
@@ -1999,7 +2046,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//gpu:command_buffer_perftests"
       },
       {
         "args": [
@@ -2234,7 +2282,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -2276,7 +2325,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       }
     ],
     "isolated_scripts": [
@@ -2307,7 +2357,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test:angle_perftests"
       }
     ]
   },
@@ -2358,7 +2409,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_egl_tests"
+        "test": "angle_deqp_egl_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
       },
       {
         "args": [
@@ -2405,7 +2457,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests"
+        "test": "angle_deqp_gles2_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
       },
       {
         "args": [
@@ -2452,7 +2505,8 @@
           ],
           "shards": 10
         },
-        "test": "angle_deqp_gles31_tests"
+        "test": "angle_deqp_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
       },
       {
         "args": [
@@ -2499,7 +2553,8 @@
           ],
           "shards": 12
         },
-        "test": "angle_deqp_gles3_tests"
+        "test": "angle_deqp_gles3_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
       },
       {
         "args": [
@@ -2545,7 +2600,8 @@
             }
           ]
         },
-        "test": "angle_deqp_khr_gles2_tests"
+        "test": "angle_deqp_khr_gles2_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
       },
       {
         "args": [
@@ -2592,7 +2648,8 @@
           ],
           "shards": 2
         },
-        "test": "angle_deqp_khr_gles31_tests"
+        "test": "angle_deqp_khr_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
       },
       {
         "args": [
@@ -2639,7 +2696,8 @@
           ],
           "shards": 2
         },
-        "test": "angle_deqp_khr_gles3_tests"
+        "test": "angle_deqp_khr_gles3_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
       }
     ]
   },
@@ -2668,7 +2726,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test:angle_perftests"
       }
     ]
   },
@@ -2718,7 +2777,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -2760,7 +2820,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       }
     ],
     "isolated_scripts": [
@@ -2791,7 +2852,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test:angle_perftests"
       }
     ]
   },
@@ -2842,7 +2904,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_egl_tests"
+        "test": "angle_deqp_egl_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
       },
       {
         "args": [
@@ -2889,7 +2952,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests"
+        "test": "angle_deqp_gles2_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
       },
       {
         "args": [
@@ -2936,7 +3000,8 @@
           ],
           "shards": 10
         },
-        "test": "angle_deqp_gles31_tests"
+        "test": "angle_deqp_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
       },
       {
         "args": [
@@ -2983,7 +3048,8 @@
           ],
           "shards": 12
         },
-        "test": "angle_deqp_gles3_tests"
+        "test": "angle_deqp_gles3_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
       },
       {
         "args": [
@@ -3029,7 +3095,8 @@
             }
           ]
         },
-        "test": "angle_deqp_khr_gles2_tests"
+        "test": "angle_deqp_khr_gles2_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
       },
       {
         "args": [
@@ -3076,7 +3143,8 @@
           ],
           "shards": 2
         },
-        "test": "angle_deqp_khr_gles31_tests"
+        "test": "angle_deqp_khr_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
       },
       {
         "args": [
@@ -3123,7 +3191,8 @@
           ],
           "shards": 2
         },
-        "test": "angle_deqp_khr_gles3_tests"
+        "test": "angle_deqp_khr_gles3_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
       }
     ]
   },
@@ -3170,7 +3239,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -3212,7 +3282,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -3253,7 +3324,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -3294,7 +3366,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -3335,7 +3408,8 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       }
     ],
     "isolated_scripts": [
@@ -3366,7 +3440,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test:angle_perftests"
       },
       {
         "args": [
@@ -3757,7 +3832,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -3798,7 +3874,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -3839,7 +3916,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -3880,7 +3958,8 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       }
     ],
     "isolated_scripts": [
@@ -4273,7 +4352,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -4313,7 +4393,8 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       }
     ],
     "isolated_scripts": [
@@ -4387,7 +4468,8 @@
               "os": "Android"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test:angle_perftests"
       },
       {
         "args": [
@@ -4654,7 +4736,8 @@
               "os": "Android"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test:rendering_representative_perf_tests"
       },
       {
         "args": [
@@ -4825,7 +4908,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -4866,7 +4950,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -4907,7 +4992,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -4948,7 +5034,8 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       }
     ],
     "isolated_scripts": [
@@ -5342,7 +5429,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -5384,7 +5472,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -5425,7 +5514,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -5466,7 +5556,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -5507,7 +5598,8 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       }
     ],
     "isolated_scripts": [
@@ -5538,7 +5630,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test:angle_perftests"
       },
       {
         "args": [
@@ -5929,7 +6022,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -5970,7 +6064,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -6011,7 +6106,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -6052,7 +6148,8 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       }
     ],
     "isolated_scripts": [
@@ -6083,7 +6180,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test:angle_perftests"
       },
       {
         "args": [
@@ -6677,7 +6775,8 @@
           ],
           "shards": 12
         },
-        "test": "content_browsertests"
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
       }
     ],
     "isolated_scripts": [
@@ -6774,7 +6873,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_egl_tests"
+        "test": "angle_deqp_egl_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
       },
       {
         "args": [
@@ -6820,7 +6920,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests"
+        "test": "angle_deqp_gles2_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
       },
       {
         "args": [
@@ -6866,7 +6967,8 @@
           ],
           "shards": 12
         },
-        "test": "angle_deqp_gles3_tests"
+        "test": "angle_deqp_gles3_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
       }
     ]
   },
@@ -6915,7 +7017,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -6937,7 +7040,8 @@
             }
           ]
         },
-        "test": "angle_white_box_tests"
+        "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests"
       },
       {
         "args": [
@@ -6958,7 +7062,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -6980,7 +7085,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -7001,7 +7107,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -7019,7 +7126,8 @@
             }
           ]
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -7472,29 +7580,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
-      },
-      {
-        "args": [
-          "--test-launcher-retry-limit=0"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "angle_white_box_tests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -7515,7 +7602,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -7537,7 +7625,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -7558,7 +7647,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -7576,7 +7666,8 @@
             }
           ]
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       }
     ],
     "isolated_scripts": []
@@ -7605,7 +7696,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -7629,7 +7721,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       }
     ]
   },
@@ -7658,7 +7751,8 @@
           ],
           "expiration": 21600
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -7681,7 +7775,8 @@
           ],
           "expiration": 21600
         },
-        "test": "angle_white_box_tests"
+        "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests"
       },
       {
         "args": [
@@ -7708,7 +7803,8 @@
           ],
           "expiration": 21600
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "args": [
@@ -7730,7 +7826,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -7752,7 +7849,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -7771,7 +7869,8 @@
           ],
           "expiration": 21600
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -8200,7 +8299,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -8224,7 +8324,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -8246,7 +8347,8 @@
             }
           ]
         },
-        "test": "angle_white_box_tests"
+        "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests"
       },
       {
         "args": [
@@ -8267,7 +8369,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -8289,7 +8392,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -8310,7 +8414,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -8328,7 +8433,8 @@
             }
           ]
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -8778,7 +8884,8 @@
           "expiration": 14400,
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -8803,7 +8910,8 @@
           ],
           "expiration": 14400
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -8826,7 +8934,8 @@
           ],
           "expiration": 14400
         },
-        "test": "angle_white_box_tests"
+        "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests"
       },
       {
         "args": [
@@ -8848,7 +8957,8 @@
           ],
           "expiration": 14400
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -8871,7 +8981,8 @@
           ],
           "expiration": 14400
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -8893,7 +9004,8 @@
           ],
           "expiration": 14400
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -8912,7 +9024,8 @@
           ],
           "expiration": 14400
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -9374,7 +9487,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -9398,7 +9512,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -9420,7 +9535,8 @@
             }
           ]
         },
-        "test": "angle_white_box_tests"
+        "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests"
       },
       {
         "args": [
@@ -9441,7 +9557,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -9463,7 +9580,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -9484,7 +9602,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -9502,7 +9621,8 @@
             }
           ]
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -9530,7 +9650,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test:angle_perftests"
       },
       {
         "args": [
@@ -9988,7 +10109,8 @@
             }
           ]
         },
-        "test": "content_browsertests"
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
       }
     ],
     "isolated_scripts": [
@@ -10218,7 +10340,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//:blink_web_tests"
       },
       {
         "args": [
@@ -10304,7 +10427,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//:blink_web_tests"
       },
       {
         "args": [
@@ -10386,7 +10510,8 @@
             }
           ]
         },
-        "test": "content_browsertests"
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
       }
     ],
     "isolated_scripts": [
@@ -10616,7 +10741,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//:blink_web_tests"
       },
       {
         "args": [
@@ -10702,7 +10828,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//:blink_web_tests"
       },
       {
         "args": [
@@ -10774,7 +10901,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests"
+        "test": "angle_deqp_gles2_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
       }
     ]
   },
@@ -10803,7 +10931,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_egl_tests"
+        "test": "angle_deqp_egl_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
       },
       {
         "args": [
@@ -10828,7 +10957,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_egl_tests"
+        "test": "angle_deqp_egl_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
       },
       {
         "args": [
@@ -10853,7 +10983,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests"
+        "test": "angle_deqp_gles2_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
       },
       {
         "args": [
@@ -10878,7 +11009,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests"
+        "test": "angle_deqp_gles2_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
       },
       {
         "args": [
@@ -10903,7 +11035,8 @@
           ],
           "shards": 10
         },
-        "test": "angle_deqp_gles31_tests"
+        "test": "angle_deqp_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
       },
       {
         "args": [
@@ -10928,7 +11061,8 @@
           ],
           "shards": 10
         },
-        "test": "angle_deqp_gles31_tests"
+        "test": "angle_deqp_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
       },
       {
         "args": [
@@ -10953,7 +11087,8 @@
           ],
           "shards": 12
         },
-        "test": "angle_deqp_gles3_tests"
+        "test": "angle_deqp_gles3_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
       },
       {
         "args": [
@@ -10978,7 +11113,8 @@
           ],
           "shards": 12
         },
-        "test": "angle_deqp_gles3_tests"
+        "test": "angle_deqp_gles3_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
       },
       {
         "args": [
@@ -11002,7 +11138,8 @@
             }
           ]
         },
-        "test": "angle_deqp_khr_gles2_tests"
+        "test": "angle_deqp_khr_gles2_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
       },
       {
         "args": [
@@ -11027,7 +11164,8 @@
           ],
           "shards": 2
         },
-        "test": "angle_deqp_khr_gles31_tests"
+        "test": "angle_deqp_khr_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
       },
       {
         "args": [
@@ -11052,7 +11190,8 @@
           ],
           "shards": 2
         },
-        "test": "angle_deqp_khr_gles3_tests"
+        "test": "angle_deqp_khr_gles3_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
       }
     ]
   },
@@ -11079,7 +11218,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -11101,7 +11241,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -11121,7 +11262,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -11141,7 +11283,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -11161,7 +11304,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -11178,7 +11322,8 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "args": [
@@ -11199,7 +11344,8 @@
             }
           ]
         },
-        "test": "services_unittests"
+        "test": "services_unittests",
+        "test_target": "//services:services_unittests"
       },
       {
         "merge": {
@@ -11216,7 +11362,8 @@
             }
           ]
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -11669,7 +11816,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -11697,7 +11845,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -11727,7 +11876,8 @@
             }
           ]
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "args": [
@@ -11753,7 +11903,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -11779,7 +11930,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -11805,7 +11957,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -11828,7 +11981,8 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "args": [
@@ -11855,7 +12009,8 @@
             }
           ]
         },
-        "test": "services_unittests"
+        "test": "services_unittests",
+        "test_target": "//services:services_unittests"
       },
       {
         "merge": {
@@ -11878,7 +12033,8 @@
             }
           ]
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -12356,7 +12512,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -12378,7 +12535,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -12402,7 +12560,8 @@
             }
           ]
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "args": [
@@ -12422,7 +12581,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -12442,7 +12602,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -12462,7 +12623,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -12479,7 +12641,8 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "args": [
@@ -12500,7 +12663,8 @@
             }
           ]
         },
-        "test": "services_unittests"
+        "test": "services_unittests",
+        "test_target": "//services:services_unittests"
       },
       {
         "merge": {
@@ -12517,7 +12681,8 @@
             }
           ]
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -12769,7 +12934,8 @@
               "os": "mac-intel-stable"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test:rendering_representative_perf_tests"
       },
       {
         "args": [
@@ -12976,7 +13142,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -13000,7 +13167,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -13022,7 +13190,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -13044,7 +13213,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -13066,7 +13236,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -13085,7 +13256,8 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "args": [
@@ -13108,7 +13280,8 @@
             }
           ]
         },
-        "test": "services_unittests"
+        "test": "services_unittests",
+        "test_target": "//services:services_unittests"
       },
       {
         "merge": {
@@ -13127,7 +13300,8 @@
             }
           ]
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -13493,7 +13667,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -13517,7 +13692,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -13539,7 +13715,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -13561,7 +13738,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -13583,7 +13761,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -13602,7 +13781,8 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "args": [
@@ -13625,7 +13805,8 @@
             }
           ]
         },
-        "test": "services_unittests"
+        "test": "services_unittests",
+        "test_target": "//services:services_unittests"
       },
       {
         "merge": {
@@ -13644,7 +13825,8 @@
             }
           ]
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -13978,7 +14160,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -14002,7 +14185,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -14028,7 +14212,8 @@
             }
           ]
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "args": [
@@ -14050,7 +14235,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -14072,7 +14258,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -14094,7 +14281,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -14113,7 +14301,8 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "args": [
@@ -14136,7 +14325,8 @@
             }
           ]
         },
-        "test": "services_unittests"
+        "test": "services_unittests",
+        "test_target": "//services:services_unittests"
       },
       {
         "merge": {
@@ -14155,7 +14345,8 @@
             }
           ]
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -14423,7 +14614,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test:rendering_representative_perf_tests"
       },
       {
         "args": [
@@ -14642,7 +14834,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -14666,7 +14859,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -14692,7 +14886,8 @@
             }
           ]
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "args": [
@@ -14714,7 +14909,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -14736,7 +14932,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -14758,7 +14955,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -14777,7 +14975,8 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "args": [
@@ -14800,7 +14999,8 @@
             }
           ]
         },
-        "test": "services_unittests"
+        "test": "services_unittests",
+        "test_target": "//services:services_unittests"
       },
       {
         "merge": {
@@ -14819,7 +15019,8 @@
             }
           ]
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -15250,7 +15451,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_egl_tests"
+        "test": "angle_deqp_egl_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
       },
       {
         "args": [
@@ -15276,7 +15478,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests"
+        "test": "angle_deqp_gles2_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
       },
       {
         "args": [
@@ -15302,7 +15505,8 @@
           ],
           "shards": 12
         },
-        "test": "angle_deqp_gles3_tests"
+        "test": "angle_deqp_gles3_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
       }
     ]
   },
@@ -15330,7 +15534,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_egl_tests"
+        "test": "angle_deqp_egl_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
       },
       {
         "args": [
@@ -15354,7 +15559,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests"
+        "test": "angle_deqp_gles2_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
       },
       {
         "args": [
@@ -15378,7 +15584,8 @@
           ],
           "shards": 12
         },
-        "test": "angle_deqp_gles3_tests"
+        "test": "angle_deqp_gles3_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
       }
     ]
   },
@@ -15407,7 +15614,8 @@
           "expiration": 21600,
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -15431,7 +15639,8 @@
           ],
           "expiration": 21600
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -15457,7 +15666,8 @@
           ],
           "expiration": 21600
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "args": [
@@ -15479,7 +15689,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -15501,7 +15712,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -15523,7 +15735,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -15542,7 +15755,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       }
     ],
     "isolated_scripts": [
@@ -15972,7 +16186,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -15994,7 +16209,8 @@
             }
           ]
         },
-        "test": "angle_white_box_tests"
+        "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests"
       },
       {
         "args": [
@@ -16015,7 +16231,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -16033,7 +16250,8 @@
             }
           ]
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -16187,7 +16405,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -16209,7 +16428,8 @@
             }
           ]
         },
-        "test": "angle_white_box_tests"
+        "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests"
       },
       {
         "args": [
@@ -16230,7 +16450,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -16248,7 +16469,8 @@
             }
           ]
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -16276,7 +16498,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test:angle_perftests"
       },
       {
         "args": [
@@ -16328,7 +16551,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//content/test:test_buildbucket_api_gpu_use_cases"
       },
       {
         "args": [
@@ -16446,7 +16670,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -16466,7 +16691,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -16483,7 +16709,8 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "args": [
@@ -16504,7 +16731,8 @@
             }
           ]
         },
-        "test": "services_unittests"
+        "test": "services_unittests",
+        "test_target": "//services:services_unittests"
       },
       {
         "merge": {
@@ -16521,7 +16749,8 @@
             }
           ]
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -16643,7 +16872,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -16665,7 +16895,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -16684,7 +16915,8 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "args": [
@@ -16707,7 +16939,8 @@
             }
           ]
         },
-        "test": "services_unittests"
+        "test": "services_unittests",
+        "test_target": "//services:services_unittests"
       },
       {
         "merge": {
@@ -16726,7 +16959,8 @@
             }
           ]
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -16854,7 +17088,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -16876,7 +17111,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -16895,7 +17131,8 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "args": [
@@ -16918,7 +17155,8 @@
             }
           ]
         },
-        "test": "services_unittests"
+        "test": "services_unittests",
+        "test_target": "//services:services_unittests"
       },
       {
         "merge": {
@@ -16937,7 +17175,8 @@
             }
           ]
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -17031,7 +17270,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -17052,7 +17292,8 @@
             }
           ]
         },
-        "test": "angle_gles1_conformance_tests"
+        "test": "angle_gles1_conformance_tests",
+        "test_target": "//third_party/angle/src/tests:angle_gles1_conformance_tests"
       },
       {
         "args": [
@@ -17074,7 +17315,8 @@
             }
           ]
         },
-        "test": "angle_white_box_tests"
+        "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests"
       },
       {
         "args": [
@@ -17095,7 +17337,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "args": [
@@ -17118,7 +17361,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "args": [
@@ -17142,7 +17386,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -17160,7 +17405,8 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "merge": {
@@ -17178,7 +17424,8 @@
             }
           ]
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       },
       {
         "args": [
@@ -17200,7 +17447,8 @@
             }
           ]
         },
-        "test": "xr_browser_tests"
+        "test": "xr_browser_tests",
+        "test_target": "//chrome/test:xr_browser_tests"
       }
     ],
     "isolated_scripts": [
@@ -17228,7 +17476,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test:angle_perftests"
       },
       {
         "args": [
@@ -17501,6 +17750,7 @@
           "shards": 4
         },
         "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -17531,6 +17781,7 @@
           ]
         },
         "test": "angle_gles1_conformance_tests",
+        "test_target": "//third_party/angle/src/tests:angle_gles1_conformance_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -17562,6 +17813,7 @@
           ]
         },
         "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -17592,6 +17844,7 @@
           ]
         },
         "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -17624,6 +17877,7 @@
           ]
         },
         "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -17657,6 +17911,7 @@
           ]
         },
         "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -17684,6 +17939,7 @@
           ]
         },
         "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -17711,6 +17967,7 @@
           ]
         },
         "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -17742,6 +17999,7 @@
           ]
         },
         "test": "xr_browser_tests",
+        "test_target": "//chrome/test:xr_browser_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -17779,6 +18037,7 @@
             }
           ]
         },
+        "test_target": "//chrome/test:angle_perftests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -17859,6 +18118,7 @@
             }
           ]
         },
+        "test_target": "//gpu:command_buffer_perftests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -18197,7 +18457,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -18218,7 +18479,8 @@
             }
           ]
         },
-        "test": "angle_gles1_conformance_tests"
+        "test": "angle_gles1_conformance_tests",
+        "test_target": "//third_party/angle/src/tests:angle_gles1_conformance_tests"
       },
       {
         "args": [
@@ -18241,7 +18503,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -18263,7 +18526,8 @@
             }
           ]
         },
-        "test": "angle_white_box_tests"
+        "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests"
       },
       {
         "args": [
@@ -18284,7 +18548,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -18305,7 +18570,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -18326,7 +18592,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "args": [
@@ -18349,7 +18616,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "args": [
@@ -18373,7 +18641,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -18391,7 +18660,8 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "merge": {
@@ -18409,7 +18679,8 @@
             }
           ]
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       },
       {
         "args": [
@@ -18431,7 +18702,8 @@
             }
           ]
         },
-        "test": "xr_browser_tests"
+        "test": "xr_browser_tests",
+        "test_target": "//chrome/test:xr_browser_tests"
       }
     ],
     "isolated_scripts": [
@@ -18877,7 +19149,8 @@
           "expiration": 21600,
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -18899,7 +19172,8 @@
           ],
           "expiration": 21600
         },
-        "test": "angle_gles1_conformance_tests"
+        "test": "angle_gles1_conformance_tests",
+        "test_target": "//third_party/angle/src/tests:angle_gles1_conformance_tests"
       },
       {
         "args": [
@@ -18923,7 +19197,8 @@
           ],
           "expiration": 21600
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -18946,7 +19221,8 @@
           ],
           "expiration": 21600
         },
-        "test": "angle_white_box_tests"
+        "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests"
       },
       {
         "args": [
@@ -18972,7 +19248,8 @@
           ],
           "expiration": 21600
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "args": [
@@ -18994,7 +19271,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -19016,7 +19294,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -19038,7 +19317,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "args": [
@@ -19062,7 +19342,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "args": [
@@ -19087,7 +19368,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -19106,7 +19388,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "merge": {
@@ -19125,7 +19408,8 @@
           ],
           "expiration": 21600
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       },
       {
         "args": [
@@ -19148,7 +19432,8 @@
           ],
           "expiration": 21600
         },
-        "test": "xr_browser_tests"
+        "test": "xr_browser_tests",
+        "test_target": "//chrome/test:xr_browser_tests"
       }
     ],
     "isolated_scripts": [
@@ -19177,7 +19462,8 @@
             }
           ],
           "expiration": 21600
-        }
+        },
+        "test_target": "//chrome/test:angle_perftests"
       },
       {
         "args": [
@@ -19474,7 +19760,8 @@
             }
           ],
           "expiration": 21600
-        }
+        },
+        "test_target": "//chrome/test:rendering_representative_perf_tests"
       },
       {
         "args": [
@@ -19786,7 +20073,8 @@
           ],
           "expiration": 21600
         },
-        "test": "angle_gles1_conformance_tests"
+        "test": "angle_gles1_conformance_tests",
+        "test_target": "//third_party/angle/src/tests:angle_gles1_conformance_tests"
       },
       {
         "args": [
@@ -19810,30 +20098,8 @@
           ],
           "expiration": 21600
         },
-        "test": "angle_unittests"
-      },
-      {
-        "args": [
-          "--test-launcher-retry-limit=0"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "1002:699f",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600
-        },
-        "test": "angle_white_box_tests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -19859,7 +20125,8 @@
           ],
           "expiration": 21600
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "args": [
@@ -19881,7 +20148,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -19903,7 +20171,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -19925,7 +20194,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "args": [
@@ -19949,7 +20219,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "args": [
@@ -19974,7 +20245,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -19993,7 +20265,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "merge": {
@@ -20012,7 +20285,8 @@
           ],
           "expiration": 21600
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -20472,7 +20746,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -20493,7 +20768,8 @@
             }
           ]
         },
-        "test": "angle_gles1_conformance_tests"
+        "test": "angle_gles1_conformance_tests",
+        "test_target": "//third_party/angle/src/tests:angle_gles1_conformance_tests"
       },
       {
         "args": [
@@ -20516,7 +20792,8 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -20538,7 +20815,8 @@
             }
           ]
         },
-        "test": "angle_white_box_tests"
+        "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests"
       },
       {
         "args": [
@@ -20563,7 +20841,8 @@
             }
           ]
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "args": [
@@ -20584,7 +20863,8 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -20605,7 +20885,8 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -20626,7 +20907,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "args": [
@@ -20649,7 +20931,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "args": [
@@ -20673,7 +20956,8 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -20691,7 +20975,8 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "merge": {
@@ -20709,7 +20994,8 @@
             }
           ]
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       },
       {
         "args": [
@@ -20731,7 +21017,8 @@
             }
           ]
         },
-        "test": "xr_browser_tests"
+        "test": "xr_browser_tests",
+        "test_target": "//chrome/test:xr_browser_tests"
       }
     ],
     "isolated_scripts": [
@@ -20759,7 +21046,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test:angle_perftests"
       },
       {
         "args": [
@@ -21047,7 +21335,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//chrome/test:rendering_representative_perf_tests"
       },
       {
         "args": [
@@ -21320,7 +21609,8 @@
           "expiration": 14400,
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -21342,7 +21632,8 @@
           ],
           "expiration": 14400
         },
-        "test": "angle_gles1_conformance_tests"
+        "test": "angle_gles1_conformance_tests",
+        "test_target": "//third_party/angle/src/tests:angle_gles1_conformance_tests"
       },
       {
         "args": [
@@ -21366,7 +21657,8 @@
           ],
           "expiration": 14400
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -21389,7 +21681,8 @@
           ],
           "expiration": 14400
         },
-        "test": "angle_white_box_tests"
+        "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests"
       },
       {
         "args": [
@@ -21415,7 +21708,8 @@
           ],
           "expiration": 14400
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "args": [
@@ -21437,7 +21731,8 @@
           ],
           "expiration": 14400
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -21459,7 +21754,8 @@
           ],
           "expiration": 14400
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -21481,7 +21777,8 @@
           ],
           "expiration": 14400
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "args": [
@@ -21505,7 +21802,8 @@
           ],
           "expiration": 14400
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "args": [
@@ -21530,7 +21828,8 @@
           ],
           "expiration": 14400
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -21549,7 +21848,8 @@
           ],
           "expiration": 14400
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "merge": {
@@ -21568,7 +21868,8 @@
           ],
           "expiration": 14400
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       },
       {
         "args": [
@@ -21591,7 +21892,8 @@
           ],
           "expiration": 14400
         },
-        "test": "xr_browser_tests"
+        "test": "xr_browser_tests",
+        "test_target": "//chrome/test:xr_browser_tests"
       }
     ],
     "isolated_scripts": [
@@ -21620,7 +21922,8 @@
             }
           ],
           "expiration": 14400
-        }
+        },
+        "test_target": "//chrome/test:angle_perftests"
       },
       {
         "args": [
@@ -21917,7 +22220,8 @@
             }
           ],
           "expiration": 14400
-        }
+        },
+        "test_target": "//chrome/test:rendering_representative_perf_tests"
       },
       {
         "args": [
@@ -22198,7 +22502,8 @@
           "expiration": 21600,
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -22220,7 +22525,8 @@
           ],
           "expiration": 21600
         },
-        "test": "angle_gles1_conformance_tests"
+        "test": "angle_gles1_conformance_tests",
+        "test_target": "//third_party/angle/src/tests:angle_gles1_conformance_tests"
       },
       {
         "args": [
@@ -22244,7 +22550,8 @@
           ],
           "expiration": 21600
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -22267,7 +22574,8 @@
           ],
           "expiration": 21600
         },
-        "test": "angle_white_box_tests"
+        "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests"
       },
       {
         "args": [
@@ -22293,7 +22601,8 @@
           ],
           "expiration": 21600
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "args": [
@@ -22315,7 +22624,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -22337,7 +22647,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -22359,7 +22670,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "args": [
@@ -22383,7 +22695,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "args": [
@@ -22408,7 +22721,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -22427,7 +22741,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "merge": {
@@ -22446,7 +22761,8 @@
           ],
           "expiration": 21600
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       },
       {
         "args": [
@@ -22469,7 +22785,8 @@
           ],
           "expiration": 21600
         },
-        "test": "xr_browser_tests"
+        "test": "xr_browser_tests",
+        "test_target": "//chrome/test:xr_browser_tests"
       }
     ],
     "isolated_scripts": [
@@ -22994,6 +23311,7 @@
           "shards": 4
         },
         "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -23024,6 +23342,7 @@
           ]
         },
         "test": "angle_gles1_conformance_tests",
+        "test_target": "//third_party/angle/src/tests:angle_gles1_conformance_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -23056,6 +23375,7 @@
           ]
         },
         "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -23087,6 +23407,7 @@
           ]
         },
         "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -23121,6 +23442,7 @@
           ]
         },
         "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -23151,6 +23473,7 @@
           ]
         },
         "test": "gl_tests",
+        "test_target": "//gpu:gl_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -23181,6 +23504,7 @@
           ]
         },
         "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -23211,6 +23535,7 @@
           ]
         },
         "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -23243,6 +23568,7 @@
           ]
         },
         "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -23276,6 +23602,7 @@
           ]
         },
         "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -23303,6 +23630,7 @@
           ]
         },
         "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -23330,6 +23658,7 @@
           ]
         },
         "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -23361,6 +23690,7 @@
           ]
         },
         "test": "xr_browser_tests",
+        "test_target": "//chrome/test:xr_browser_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -23398,6 +23728,7 @@
             }
           ]
         },
+        "test_target": "//chrome/test:angle_perftests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -23682,6 +24013,7 @@
             }
           ]
         },
+        "test_target": "//gpu:command_buffer_perftests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -23767,6 +24099,7 @@
             }
           ]
         },
+        "test_target": "//chrome/test:rendering_representative_perf_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -24121,7 +24454,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//tools/perf/contrib/vr_benchmarks:vr_perf_tests"
       }
     ]
   },
@@ -24148,7 +24482,8 @@
             }
           ]
         },
-        "test": "content_browsertests"
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
       }
     ],
     "isolated_scripts": [
@@ -24380,7 +24715,8 @@
               "pool": "Chrome-GPU"
             }
           ]
-        }
+        },
+        "test_target": "//:blink_web_tests"
       },
       {
         "args": [
@@ -24452,7 +24788,8 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests"
+        "test": "angle_deqp_gles2_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
       }
     ]
   },
@@ -24482,6 +24819,7 @@
           "shards": 4
         },
         "test": "angle_deqp_egl_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -24516,6 +24854,7 @@
           "shards": 4
         },
         "test": "angle_deqp_egl_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -24550,6 +24889,7 @@
           "shards": 4
         },
         "test": "angle_deqp_egl_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -24584,6 +24924,7 @@
           "shards": 4
         },
         "test": "angle_deqp_gles2_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -24618,6 +24959,7 @@
           "shards": 4
         },
         "test": "angle_deqp_gles2_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -24652,6 +24994,7 @@
           "shards": 4
         },
         "test": "angle_deqp_gles2_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -24686,6 +25029,7 @@
           "shards": 10
         },
         "test": "angle_deqp_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -24720,6 +25064,7 @@
           "shards": 10
         },
         "test": "angle_deqp_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -24754,6 +25099,7 @@
           "shards": 10
         },
         "test": "angle_deqp_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -24788,6 +25134,7 @@
           "shards": 12
         },
         "test": "angle_deqp_gles3_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -24822,6 +25169,7 @@
           "shards": 12
         },
         "test": "angle_deqp_gles3_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -24856,6 +25204,7 @@
           "shards": 12
         },
         "test": "angle_deqp_gles3_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -24889,6 +25238,7 @@
           ]
         },
         "test": "angle_deqp_khr_gles2_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -24923,6 +25273,7 @@
           "shards": 2
         },
         "test": "angle_deqp_khr_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -24957,6 +25308,7 @@
           "shards": 2
         },
         "test": "angle_deqp_khr_gles3_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -24993,6 +25345,7 @@
           ]
         },
         "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -25027,6 +25380,7 @@
           ]
         },
         "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -25057,6 +25411,7 @@
           ]
         },
         "test": "gl_tests",
+        "test_target": "//gpu:gl_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -25087,6 +25442,7 @@
           ]
         },
         "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -25118,6 +25474,7 @@
           ]
         },
         "test": "xr_browser_tests",
+        "test_target": "//chrome/test:xr_browser_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -25611,7 +25968,8 @@
           "expiration": 21600,
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -25635,7 +25993,8 @@
           ],
           "expiration": 21600
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -25658,7 +26017,8 @@
           ],
           "expiration": 21600
         },
-        "test": "angle_white_box_tests"
+        "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests"
       }
     ],
     "isolated_scripts": [
@@ -25783,7 +26143,8 @@
           "expiration": 21600,
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -25805,7 +26166,8 @@
           ],
           "expiration": 21600
         },
-        "test": "angle_gles1_conformance_tests"
+        "test": "angle_gles1_conformance_tests",
+        "test_target": "//third_party/angle/src/tests:angle_gles1_conformance_tests"
       },
       {
         "args": [
@@ -25829,7 +26191,8 @@
           ],
           "expiration": 21600
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -25852,7 +26215,8 @@
           ],
           "expiration": 21600
         },
-        "test": "angle_white_box_tests"
+        "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests"
       },
       {
         "args": [
@@ -25874,7 +26238,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -25896,7 +26261,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -25918,7 +26284,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "args": [
@@ -25942,7 +26309,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "args": [
@@ -25967,7 +26335,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -25986,7 +26355,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "merge": {
@@ -26005,7 +26375,8 @@
           ],
           "expiration": 21600
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -26402,7 +26773,8 @@
           "expiration": 21600,
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
       },
       {
         "args": [
@@ -26424,7 +26796,8 @@
           ],
           "expiration": 21600
         },
-        "test": "angle_gles1_conformance_tests"
+        "test": "angle_gles1_conformance_tests",
+        "test_target": "//third_party/angle/src/tests:angle_gles1_conformance_tests"
       },
       {
         "args": [
@@ -26448,7 +26821,8 @@
           ],
           "expiration": 21600
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
         "args": [
@@ -26471,7 +26845,8 @@
           ],
           "expiration": 21600
         },
-        "test": "angle_white_box_tests"
+        "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests"
       },
       {
         "args": [
@@ -26497,7 +26872,8 @@
           ],
           "expiration": 21600
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "args": [
@@ -26519,7 +26895,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "test_target": "//gpu:gl_tests"
       },
       {
         "args": [
@@ -26541,7 +26918,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests"
       },
       {
         "args": [
@@ -26563,7 +26941,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "args": [
@@ -26587,7 +26966,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "args": [
@@ -26612,7 +26992,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test"
       },
       {
         "merge": {
@@ -26631,7 +27012,8 @@
           ],
           "expiration": 21600
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests"
       },
       {
         "merge": {
@@ -26650,7 +27032,8 @@
           ],
           "expiration": 21600
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -27112,6 +27495,7 @@
           "shards": 4
         },
         "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27143,6 +27527,7 @@
           "expiration": 21600
         },
         "test": "angle_gles1_conformance_tests",
+        "test_target": "//third_party/angle/src/tests:angle_gles1_conformance_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27176,6 +27561,7 @@
           "expiration": 21600
         },
         "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27208,6 +27594,7 @@
           "expiration": 21600
         },
         "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27243,6 +27630,7 @@
           "expiration": 21600
         },
         "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27274,6 +27662,7 @@
           "expiration": 21600
         },
         "test": "gl_tests",
+        "test_target": "//gpu:gl_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27305,6 +27694,7 @@
           "expiration": 21600
         },
         "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27336,6 +27726,7 @@
           "expiration": 21600
         },
         "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27369,6 +27760,7 @@
           "expiration": 21600
         },
         "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27403,6 +27795,7 @@
           "expiration": 21600
         },
         "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27431,6 +27824,7 @@
           "expiration": 21600
         },
         "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27459,6 +27853,7 @@
           "expiration": 21600
         },
         "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -28086,7 +28481,8 @@
           "expiration": 21600,
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests"
+        "test": "angle_deqp_gles2_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
       },
       {
         "args": [
@@ -28112,7 +28508,8 @@
           "expiration": 21600,
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests"
+        "test": "angle_deqp_gles2_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
       }
     ]
   },
@@ -28142,6 +28539,7 @@
           "shards": 4
         },
         "test": "angle_end2end_tests",
+        "test_target": "//third_party/angle/src/tests:angle_end2end_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -28173,6 +28571,7 @@
           "expiration": 21600
         },
         "test": "angle_gles1_conformance_tests",
+        "test_target": "//third_party/angle/src/tests:angle_gles1_conformance_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -28206,6 +28605,7 @@
           "expiration": 21600
         },
         "test": "angle_unittests",
+        "test_target": "//third_party/angle/src/tests:angle_unittests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -28238,6 +28638,7 @@
           "expiration": 21600
         },
         "test": "angle_white_box_tests",
+        "test_target": "//third_party/angle/src/tests:angle_white_box_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -28273,6 +28674,7 @@
           "expiration": 21600
         },
         "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -28304,6 +28706,7 @@
           "expiration": 21600
         },
         "test": "gl_tests",
+        "test_target": "//gpu:gl_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -28335,6 +28738,7 @@
           "expiration": 21600
         },
         "test": "gl_unittests",
+        "test_target": "//ui/gl:gl_unittests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -28366,6 +28770,7 @@
           "expiration": 21600
         },
         "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -28399,6 +28804,7 @@
           "expiration": 21600
         },
         "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -28433,6 +28839,7 @@
           "expiration": 21600
         },
         "test": "gles2_conform_test",
+        "test_target": "//gpu/gles2_conform_support:gles2_conform_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -28461,6 +28868,7 @@
           "expiration": 21600
         },
         "test": "gpu_unittests",
+        "test_target": "//gpu:gpu_unittests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -28489,6 +28897,7 @@
           "expiration": 21600
         },
         "test": "swiftshader_unittests",
+        "test_target": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29117,6 +29526,7 @@
           "shards": 4
         },
         "test": "angle_deqp_egl_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29152,6 +29562,7 @@
           "shards": 4
         },
         "test": "angle_deqp_egl_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29187,6 +29598,7 @@
           "shards": 4
         },
         "test": "angle_deqp_egl_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29222,6 +29634,7 @@
           "shards": 4
         },
         "test": "angle_deqp_gles2_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29257,6 +29670,7 @@
           "shards": 4
         },
         "test": "angle_deqp_gles2_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29292,6 +29706,7 @@
           "shards": 4
         },
         "test": "angle_deqp_gles2_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29327,6 +29742,7 @@
           "shards": 10
         },
         "test": "angle_deqp_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29362,6 +29778,7 @@
           "shards": 10
         },
         "test": "angle_deqp_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29397,6 +29814,7 @@
           "shards": 10
         },
         "test": "angle_deqp_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29432,6 +29850,7 @@
           "shards": 12
         },
         "test": "angle_deqp_gles3_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29467,6 +29886,7 @@
           "shards": 12
         },
         "test": "angle_deqp_gles3_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29502,6 +29922,7 @@
           "shards": 12
         },
         "test": "angle_deqp_gles3_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29536,6 +29957,7 @@
           "expiration": 21600
         },
         "test": "angle_deqp_khr_gles2_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29571,6 +29993,7 @@
           "shards": 2
         },
         "test": "angle_deqp_khr_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29606,6 +30029,7 @@
           "shards": 2
         },
         "test": "angle_deqp_khr_gles3_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",

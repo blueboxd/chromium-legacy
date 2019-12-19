@@ -1418,16 +1418,11 @@ void RenderText::EnsureLayoutTextUpdated() const {
                                      range);
       }
 
+      // Apply an underline to the composition range in |underlines|.
       const Range grapheme_start_range(gfx::Range(
           text_grapheme_start_position, text_grapheme_start_position + 1));
-
-      // Apply an underline to the composition range in |underlines|.
       if (composition_range_.Contains(grapheme_start_range))
         layout_styles_[TEXT_STYLE_HEAVY_UNDERLINE].ApplyValue(true, range);
-
-      // Apply the selected text color to the selection range.
-      if (!selection().is_empty() && selection().Contains(grapheme_start_range))
-        layout_colors_.ApplyValue(selection_color_, range);
 
       // Stop appending characters if the text is truncated.
       if (text_truncated)

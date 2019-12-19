@@ -8,11 +8,11 @@
 #include <utility>
 
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "chrome/browser/ui/views/tabs/tab_group_views.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
@@ -21,7 +21,7 @@
 constexpr int TabGroupUnderline::kStrokeThickness;
 
 TabGroupUnderline::TabGroupUnderline(TabGroupViews* tab_group_views,
-                                     TabGroupId group)
+                                     tab_groups::TabGroupId group)
     : tab_group_views_(tab_group_views), group_(group) {
   // Set non-zero bounds to start with, so that painting isn't pruned.
   // Needed because UpdateBounds() happens during OnPaint(), which is called

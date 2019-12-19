@@ -141,6 +141,11 @@ class PageSwitcherButton : public views::Button {
                                             : kInkDropRadiusForFolderGrid));
   }
 
+  void NotifyClick(const ui::Event& event) override {
+    Button::NotifyClick(event);
+    GetInkDrop()->AnimateToState(views::InkDropState::ACTION_TRIGGERED);
+  }
+
  private:
   // Stores the information of how to paint the button.
   struct PaintButtonInfo {

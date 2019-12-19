@@ -26,6 +26,8 @@
 #include "base/threading/thread_local.h"
 #include "base/timer/timer.h"
 #include "remoting/proto/control.pb.h"
+#include "third_party/webrtc/modules/desktop_capture/win/desktop.h"
+#include "third_party/webrtc/modules/desktop_capture/win/scoped_thread_desktop.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
@@ -39,34 +41,34 @@ constexpr base::TimeDelta POLL_INTERVAL =
 class KeyboardLayoutMonitorWin : public KeyboardLayoutMonitor {
  public:
   KeyboardLayoutMonitorWin(
-      base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback);
+      base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback,
+      scoped_refptr<base::SingleThreadTaskRunner> input_task_runner);
   ~KeyboardLayoutMonitorWin() override;
   void Start() override;
 
  private:
   // Check the current layout, and invoke the callback if it has changed.
   void QueryLayout();
-
-  void ClearDeadKeys(HKL layout);
-
-  bool IsNumpadKey(ui::DomCode code);
-
-  UINT TranslateVirtualKey(bool numlock_state,
-                           bool shift_state,
-                           UINT virtual_key,
-                           ui::DomCode code);
-
-  protocol::LayoutKeyFunction VirtualKeyToLayoutKeyFunction(UINT virtual_key,
-                                                            LANGID lang);
+  void ResetTimer();
+  static void QueryLayoutOnInputThread(
+      scoped_refptr<base::SequencedTaskRunner> reply_sequence,
+      base::WeakPtr<KeyboardLayoutMonitorWin> monitor,
+      HKL previous_layout);
+  void OnLayoutChanged(HKL new_layout, protocol::KeyboardLayout layout_details);
 
   HKL previous_layout_ = nullptr;
   base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback_;
-  base::RepeatingTimer timer_;
+  base::RetainingOneShotTimer timer_;
+  scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
+  base::WeakPtrFactory<KeyboardLayoutMonitorWin> weak_ptr_factory_;
 };
 
 KeyboardLayoutMonitorWin::KeyboardLayoutMonitorWin(
-    base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback)
-    : callback_(std::move(callback)) {}
+    base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback,
+    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner)
+    : callback_(std::move(callback)),
+      input_task_runner_(std::move(input_task_runner)),
+      weak_ptr_factory_(this) {}
 
 KeyboardLayoutMonitorWin::~KeyboardLayoutMonitorWin() = default;
 
@@ -75,13 +77,51 @@ void KeyboardLayoutMonitorWin::Start() {
                &KeyboardLayoutMonitorWin::QueryLayout);
 }
 
+void ClearDeadKeys(HKL layout);
+bool IsNumpadKey(ui::DomCode code);
+UINT TranslateVirtualKey(bool numlock_state,
+                         bool shift_state,
+                         UINT virtual_key,
+                         ui::DomCode code);
+protocol::LayoutKeyFunction VirtualKeyToLayoutKeyFunction(UINT virtual_key,
+                                                          LANGID lang);
+
 void KeyboardLayoutMonitorWin::QueryLayout() {
+  // Only reset the timer once the task has completed. This ensures that a delay
+  // on the input thread doesn't result in us queuing up a bunch of redundant
+  // tasks.
+  input_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&QueryLayoutOnInputThread,
+                     base::SequencedTaskRunnerHandle::Get(),
+                     weak_ptr_factory_.GetWeakPtr(), previous_layout_),
+      base::BindOnce(&KeyboardLayoutMonitorWin::ResetTimer,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void KeyboardLayoutMonitorWin::ResetTimer() {
+  timer_.Reset();
+}
+
+// static
+void KeyboardLayoutMonitorWin::QueryLayoutOnInputThread(
+    scoped_refptr<base::SequencedTaskRunner> reply_sequence,
+    base::WeakPtr<KeyboardLayoutMonitorWin> monitor,
+    HKL previous_layout) {
+  // Switch to the active desktop.
+  webrtc::ScopedThreadDesktop desktop;
+  std::unique_ptr<webrtc::Desktop> input_desktop(
+      webrtc::Desktop::GetInputDesktop());
+  if (input_desktop && !desktop.IsSame(*input_desktop)) {
+    desktop.SetThreadDesktop(input_desktop.release());
+  }
+
   // Get the keyboard layout for the active window.
   DWORD thread_id = 0;
   HWND foreground_window = GetForegroundWindow();
   if (foreground_window) {
     thread_id = GetWindowThreadProcessId(foreground_window, nullptr);
-  } else if (previous_layout_ != 0) {
+  } else if (previous_layout != 0) {
     // There's no currently active window, so keep using the previous layout.
     return;
   }
@@ -89,10 +129,9 @@ void KeyboardLayoutMonitorWin::QueryLayout() {
   // (thread_id == 0), this will return the layout associated with this
   // thread, which is better than nothing.
   HKL layout = GetKeyboardLayout(thread_id);
-  if (layout == previous_layout_) {
+  if (layout == previous_layout) {
     return;
   }
-  previous_layout_ = layout;
 
   protocol::KeyboardLayout layout_message;
   // TODO(rkjnsn): Windows doesn't provide an API to read the keyboard layout
@@ -131,6 +170,11 @@ void KeyboardLayoutMonitorWin::QueryLayout() {
     UINT virtual_key = MapVirtualKeyEx(scancode, MAPVK_VSC_TO_VK_EX, layout);
     if (virtual_key == 0) {
       // This key is not mapped in the current layout.
+      continue;
+    }
+
+    if (virtual_key == VK_CAPITAL || virtual_key == VK_NUMLOCK) {
+      // Don't send caps or numlock keys until we decide how to handle them.
       continue;
     }
 
@@ -200,10 +244,20 @@ void KeyboardLayoutMonitorWin::QueryLayout() {
     }
   }
 
-  callback_.Run(std::move(layout_message));
+  reply_sequence->PostTask(
+      FROM_HERE,
+      base::BindOnce(&KeyboardLayoutMonitorWin::OnLayoutChanged,
+                     std::move(monitor), layout, std::move(layout_message)));
 }
 
-void KeyboardLayoutMonitorWin::ClearDeadKeys(HKL layout) {
+void KeyboardLayoutMonitorWin::OnLayoutChanged(
+    HKL new_layout,
+    protocol::KeyboardLayout layout_details) {
+  previous_layout_ = new_layout;
+  callback_.Run(std::move(layout_details));
+}
+
+void ClearDeadKeys(HKL layout) {
   // ToUnicodeEx both is affected by and modifies the current keyboard state,
   // which includes the list of currently stored dead keys. Pressing space
   // translates previously pressed dead keys to characters, clearing the dead-
@@ -215,7 +269,7 @@ void KeyboardLayoutMonitorWin::ClearDeadKeys(HKL layout) {
               key_state, char_buffer, base::size(char_buffer), 0, layout);
 }
 
-bool KeyboardLayoutMonitorWin::IsNumpadKey(ui::DomCode code) {
+bool IsNumpadKey(ui::DomCode code) {
   // Windows keyboard layouts map number pad keys to virtual keys based on
   // their function when num lock is off. E.g., 4 on the number pad generates
   // VK_LEFT, the same as the left arrow key. To distinguish them, the layout
@@ -245,10 +299,10 @@ bool KeyboardLayoutMonitorWin::IsNumpadKey(ui::DomCode code) {
   }
 }
 
-UINT KeyboardLayoutMonitorWin::TranslateVirtualKey(bool numlock_state,
-                                                   bool shift_state,
-                                                   UINT virtual_key,
-                                                   ui::DomCode code) {
+UINT TranslateVirtualKey(bool numlock_state,
+                         bool shift_state,
+                         UINT virtual_key,
+                         ui::DomCode code) {
   // Windows only translates numpad keys when num lock is on and shift is not
   // pressed. (Pressing shift when num lock is on will get you navigation, but
   // pressing shift when num lock is off will not get you numbers.)
@@ -281,9 +335,8 @@ UINT KeyboardLayoutMonitorWin::TranslateVirtualKey(bool numlock_state,
   }
 }
 
-protocol::LayoutKeyFunction
-KeyboardLayoutMonitorWin::VirtualKeyToLayoutKeyFunction(UINT virtual_key,
-                                                        LANGID lang) {
+protocol::LayoutKeyFunction VirtualKeyToLayoutKeyFunction(UINT virtual_key,
+                                                          LANGID lang) {
   switch (virtual_key) {
     case VK_LCONTROL:
     case VK_RCONTROL:
@@ -421,8 +474,10 @@ KeyboardLayoutMonitorWin::VirtualKeyToLayoutKeyFunction(UINT virtual_key,
 }  // namespace
 
 std::unique_ptr<KeyboardLayoutMonitor> KeyboardLayoutMonitor::Create(
-    base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback) {
-  return std::make_unique<KeyboardLayoutMonitorWin>(std::move(callback));
+    base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback,
+    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner) {
+  return std::make_unique<KeyboardLayoutMonitorWin>(
+      std::move(callback), std::move(input_task_runner));
 }
 
 }  // namespace remoting

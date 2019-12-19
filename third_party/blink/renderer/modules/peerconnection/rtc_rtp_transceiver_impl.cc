@@ -389,7 +389,11 @@ RTCRtpTransceiverImpl::FiredDirection() const {
 }
 
 webrtc::RTCError RTCRtpTransceiverImpl::SetCodecPreferences(
-    blink::WebVector<webrtc::RtpCodecCapability> codec_preferences) {
-  return internal_->setCodecPreferences(codec_preferences.ReleaseVector());
+    Vector<webrtc::RtpCodecCapability> codec_preferences) {
+  std::vector<webrtc::RtpCodecCapability> std_codec_preferences(
+      codec_preferences.size());
+  std::move(codec_preferences.begin(), codec_preferences.end(),
+            std_codec_preferences.begin());
+  return internal_->setCodecPreferences(std_codec_preferences);
 }
 }  // namespace blink

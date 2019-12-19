@@ -34,9 +34,9 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/sctp_transport_interface.h"
 
@@ -76,8 +76,8 @@ class PLATFORM_EXPORT RTCPeerConnectionHandlerClient {
   virtual void DidRemoveReceiverPlanB(
       std::unique_ptr<RTCRtpReceiverPlatform>) = 0;
   virtual void DidModifyTransceivers(
-      WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>>,
-      WebVector<uintptr_t>,
+      Vector<std::unique_ptr<RTCRtpTransceiverPlatform>>,
+      Vector<uintptr_t>,
       bool is_remote_description) = 0;
   virtual void DidModifySctpTransport(WebRTCSctpTransportSnapshot) = 0;
   virtual void DidAddRemoteDataChannel(

@@ -4,6 +4,7 @@
 <translation id="1002439864875515590">이 정책이 빈 문자열로 설정되거나 구성되지 않으면 <ph name="PRODUCT_OS_NAME" />이(가) 사용자 로그인 절차에서 자동 완성 옵션을 표시하지 않습니다.
       이 정책이 도메인 이름을 나타내는 문자열로 설정된 경우 <ph name="PRODUCT_OS_NAME" />이(가) 사용자 로그인 절차에서 자동 완성 옵션을 표시하여 사용자가 도메인 이름 확장자 없이 사용자 이름만 입력할 수 있게 합니다.  사용자는 이 도메인 이름 확장자를 덮어쓸 수 있습니다.
       정책 값이 유효한 도메인이 아닌 경우 정책이 적용되지 않습니다.</translation>
+<translation id="1010151305531217567">기본 마우스 버튼을 오른쪽 버튼으로 전환합니다.</translation>
 <translation id="101438888985615157">180도 화면 회전</translation>
 <translation id="1016912092715201525"><ph name="PRODUCT_NAME" />에서 기본 브라우저 확인을 구성하고 사용자가 구성을 변경하지 못하게 합니다.
 
@@ -371,6 +372,15 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 설정을 사용 중지하거나 설정하지 않으면 기업 사용자는
       ARC를 사용할 수 없습니다.</translation>
 <translation id="1553956579506604198">외부 확장 프로그램이 설치되지 못하도록 차단합니다.</translation>
+<translation id="1556072857949466438">이 정책은 관리자가 로드 해제 중 페이지에서 팝업을 표시할 수 있음을 지정하게 합니다.
+
+      정책이 사용 설정되어 있으면 페이지가 로드 해제 중 팝업을 표시할 수 있도록 허용됩니다.
+
+      정책이 사용 중지되거나 설정되어 있지 않으면 사양에 따라 페이지가 언로딩 중에 팝업을 표시할 수 없습니다(https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      이 정책은 Chrome 88에서 삭제됩니다.
+
+      https://www.chromestatus.com/feature/5989473649164288을 참조하세요.</translation>
 <translation id="1559980755219453326">확장 프로그램 및 플러그인 정보 보고 여부를 제어하는 정책입니다.
 
       이 정책이 설정되어 있지 않거나 True로 설정되어 있으면 확장 프로그램 및 플러그인 데이터가 수집됩니다.
@@ -831,6 +841,17 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책은 행아웃 서비스 확장 프로그램과 같은 구성요소 확장 프로그램에도 적용됩니다.</translation>
 <translation id="2223598546285729819">기본 알림 설정</translation>
 <translation id="2231817271680715693">처음 실행 시 기본 브라우저에서 인터넷 사용기록 가져오기</translation>
+<translation id="2234855698900783408">새로운 <ph name="CORS" /> 구현에서 <ph name="CORS" /> 확인 완화를 사용 설정하여 확장 프로그램이 호환되는 동작을 유지하도록 허용하고 <ph name="PRODUCT_NAME" />에서 <ph name="CORS" /> 확인 없이 지정된 헤더를 전송하도록 허용합니다.
+
+      목록이 Empty로 설정되어 있으면 <ph name="PRODUCT_NAME" />은(는) 호환되는 방식으로 확장 프로그램을 실행하도록 시도하고 <ph name="WEB_REQUEST_API_MANUAL" />에 설명된 것처럼 <ph name="PRODUCT_NAME" /> 79의 <ph name="API" /> 변경사항을 적용하지 않습니다.
+
+      목록이 <ph name="HTTP" /> 요청 헤더 이름을 가지도록 설정되어 있으면 <ph name="CORS" /> 검사에서 등록된 헤더를 무시하고 확장 프로그램의 완화를 사용 설정합니다.
+
+      목록이 설정되지 않으면 위에서 설명된 완화가 모두 적용되지 않습니다.
+
+      <ph name="CORS" />의 세부사항을 확인하려면 <ph name="CORS_HELP_URL" /> 페이지를 참조하세요.
+
+      이 정책은 <ph name="PRODUCT_NAME" /> 버전 82에서 삭제될 예정입니다.</translation>
 <translation id="2236488539271255289">모든 사이트에서 로컬 데이터 설정 허용 안함</translation>
 <translation id="2240879329269430151">웹사이트에서 팝업을 표시하도록 허용할지 여부를 설정할 수 있습니다. 팝업 표시는 모든 사이트에서 허용 또는 거부하도록 할 수 있습니다.
 
@@ -1521,6 +1542,15 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 설정을 사용하거나 설정하지 않으면 사용자는 Google 계정에서 인증한 클라우드 프린트 프록시를 사용할 수 있습니다.
 
       이 설정을 사용중지하면 사용자는 프록시를 사용할 수 없으며 컴퓨터는 <ph name="CLOUD_PRINT_NAME" />와(과)의 프린터 공유를 허용하지 않습니다.</translation>
+<translation id="3295118731207421797">이 정책은 페이지를 닫는 중에 페이지에서 동기 XHR 요청을 전송하도록 관리자가 지정할 수 있게 합니다.
+
+      정책이 사용 설정되어 있으면 페이지를 닫는 중에 페이지에서 동기 XHR 요청을 전송할 수 있습니다.
+
+      정책이 사용 중지되거나 설정되어 있지 않으면 페이지를 닫는 중에 페이지에서 동기 XHR 요청을 전송할 수 없습니다.
+
+      이 정책은 Chrome 88에서 삭제됩니다.
+
+      https://www.chromestatus.com/feature/4664843055398912을 참조하세요.</translation>
 <translation id="3303653927512453822">모든 쿠키를 레거시 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 동작으로 되돌릴 수 있습니다. 레거시 동작으로 되돌리면 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 속성을 지정하지 않는 쿠키가 '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />'인 것처럼 처리되고 '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />' 쿠키가 '<ph name="ATTRIBUTE_SECURE_NAME" />' 속성을 수반하지 않아도 됩니다. https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies에서 전체 설명을 확인하세요.
 
           이 정책을 설정하지 않으면 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 속성을 지정하지 않은 쿠키의 기본 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 동작이 <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 기능에 관한 사용자의 개인 설정에 따라 달라지며, 이러한 설정은 필드 평가판에서 설정하거나 플래그 <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 플래그를 사용 또는 사용 중지하여 설정할 수 있습니다.</translation>
@@ -2435,6 +2465,11 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책을 사용 중지하거나 설정하지 않으면 사이트에서 동시에 새로운 창/탭을 탐색하고 열 수 없습니다.</translation>
 <translation id="4680961954980851756">자동 완성 사용</translation>
 <translation id="4693779768620889402">확장 기반 목적지</translation>
+<translation id="4699592681017489215">이 정책은 DNS 가로채기 검사를 사용 중지하는 데 이용할 수 있는 로컬 스위치를 구성합니다. DNS 가로채기 검사는 브라우저에서 알 수 없는 호스트 이름으로 리디렉션하는 프록시를 사용 중인지 확인합니다.
+
+      네트워크 구성이 알려진 엔터프라이즈 환경에서는 검사로 인해 시작 또는 DNS 구성을 변경할 때마다 DNS 및 HTTP 트래픽이 발생할 수 있으므로 이 검사가 필요하지 않을 수 있습니다.
+
+      정책이 설정되어 있지 않거나 설정되어 있으면 DNS 가로채기 검사가 실행됩니다. 명시적으로 사용 중지되면 검사가 실행되지 않습니다.</translation>
 <translation id="4703402283970867140">스마트 밝기 낮추기 모델을 사용하여 화면이 어두워질 때까지의 시간 연장</translation>
 <translation id="4722122254122249791">지정된 출처의 사이트 격리 사용 설정</translation>
 <translation id="4722399051042571387">false인 경우 사용자는 보안 강도가 약하고 추측하기 쉬운 PIN을 설정할 수 없습니다.
@@ -2657,6 +2692,10 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           정책을 설정하지 않으면 로그인 화면이 처음 표시될 때 화면 돋보기가 사용 중지됩니다. 사용자는 언제든지 화면 돋보기를 사용 설정하거나 중지할 수 있으며 사용자가 바뀌어도 로그인 화면에서 화면 돋보기의 상태가 유지됩니다.
 
           참고: <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME" />이(가) 지정된 경우 이 정책을 재정의합니다.</translation>
+<translation id="5115168755602871392">기기의 CPU 정보를 보고합니다.
+
+      정책이 False로 설정되거나 설정되지 않으면 정보가 보고되지 않습니다.
+      True로 설정되면 CPU별로 CPU 모델 이름, 아키텍처 및 최대 클럭 속도가 보고됩니다.</translation>
 <translation id="5124368997194894978">AC(교류 전원)로 부팅 사용</translation>
 <translation id="5131211790949066746">확장 프로그램 설치 목록 정책 <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />의 병합을 사용 설정합니다.
 
@@ -3491,6 +3530,17 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="6467613372414922590">관리자 권한 없이 설치된 사용자 수준의 기본 메시지 호스트를 허용합니다.</translation>
 <translation id="6468980648680553776">이 정책은 지원이 중단되었습니다. 대신 RemoteAccessHostClientDomainList를 사용하세요.</translation>
 <translation id="6473623140202114570">세이프 브라우징에서 경고를 표시하지 않는 도메인의 목록을 설정합니다.</translation>
+<translation id="6487780893361255867">새 <ph name="CORS" /> 대신 기존 <ph name="CORS" /> 구현을 사용합니다.
+
+      설정이 True로 설정되어 있으면 이전 버전과 호환되어야 하는 기존 구현이 사용됩니다.
+
+      설정이 False로 설정되어 있거나 설정되어 있지 않으면 기업별 호환성 문제를 일으킬 수 있는 새 구현이 사용됩니다.
+
+      이 정책은 얼마간의 주요 시점이 지난 후 삭제됩니다.
+
+      <ph name="CORS" />의 세부사항을 확인하려면 <ph name="CORS_HELP_URL" /> 페이지를 참조하세요.
+
+      이 정책은 <ph name="PRODUCT_NAME" /> 버전 82에서 삭제될 예정입니다.</translation>
 <translation id="6488627892044759800"><ph name="PRODUCT_NAME" />의 기본 홈페이지 유형을 구성하고 사용자가 홈페이지 환경설정을 변경하지 못하게 차단합니다. 홈페이지는 지정한 URL로 설정할 수도 있고 새 탭 페이지로 설정할 수도 있습니다.
 
           이 설정이 사용되면 홈페이지에 항상 새 탭 페이지가 사용되며 홈페이지 URL 위치는 무시됩니다.
@@ -3579,6 +3629,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       true로 설정하면 기기에서 파워워시를 실행할 수 있습니다.
       설정하지 않으면 기본값인 true로 설정되므로 기기에서 파워워시를 실행할 수 있게 됩니다.
       </translation>
+<translation id="66265932317331474">CPU 정보 보고</translation>
 <translation id="6628043374475466084">업로드한 콘텐츠가 민감한 정보 보호 규칙을 준수하는지 확인하지 않을 URL 패턴</translation>
 <translation id="6628120204569232711">저장용량 상태 보고</translation>
 <translation id="6628646143828354685">근처 블루투스 기기에 대한 웹사이트의 액세스 허용 여부를 설정할 수 있습니다. 액세스를 완전히 차단하거나 웹사이트에서 근처 블루투스 기기에 액세스하려고 할 때마다 사용자에게 확인을 요청할 수 있습니다.
@@ -3785,6 +3836,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables에서 사용 가능한 변수 목록을 참조하세요.
 
       이 정책을 설정하지 않으면 기본 프로필 경로가 사용되며 사용자는 '--user-data-dir' 명령줄 플래그를 사용하여 이를 재정의할 수 있습니다.</translation>
+<translation id="7008308728445338159">DNS 가로채기 검사 사용 설정됨</translation>
 <translation id="7027785306666625591"><ph name="PRODUCT_OS_NAME" />에서 전원 관리를 설정합니다.
 
       이 정책으로 사용자가 일정 시간 동안 유휴 상태일 때 <ph name="PRODUCT_OS_NAME" />에서 수행할 동작을 설정할 수 있습니다.</translation>
@@ -3880,6 +3932,15 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       Internet Explorer의 <ph name="IEEM_SITELIST_POLICY" /> 정책은 https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode에서 자세히 살펴보세요.</translation>
 <translation id="7132877481099023201">별도 메시지를 표시하지 않고 동영상 캡처 기기에 대한 액세스 권한이 부여되는 URL입니다.</translation>
+<translation id="7134420220355750019">기본 마우스 버튼을 오른쪽 버튼으로 전환합니다.
+
+          정책이 사용 설정되어 있으면 마우스 오른쪽 버튼이 항상 기본 버튼으로 지정됩니다.
+
+          정책이 사용 중지되어 있으면 마우스 왼쪽 버튼이 항상 기본 버튼으로 지정됩니다.
+
+          정책이 설정되면 사용자가 변경하거나 재정의할 수 없습니다.
+
+          정책이 설정되지 않으면 처음에는 마우스 왼쪽 버튼이 기본 버튼으로 지정되지만 사용자가 언제든지 전환할 수 있습니다.</translation>
 <translation id="713712866686796666">전력 피크 시프트 요일 구성을 설정합니다.
 
           이 정책은 <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" />이(가) True로 설정된 경우에만 사용됩니다.

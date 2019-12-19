@@ -16,12 +16,12 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_helpers.h"
-#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/unload_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/sessions/content/content_live_tab.h"
 #include "components/sessions/core/tab_restore_service.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -40,10 +40,11 @@ BrowserTabStripModelDelegate::~BrowserTabStripModelDelegate() {}
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripModelDelegate, TabStripModelDelegate implementation:
 
-void BrowserTabStripModelDelegate::AddTabAt(const GURL& url,
-                                            int index,
-                                            bool foreground,
-                                            base::Optional<TabGroupId> group) {
+void BrowserTabStripModelDelegate::AddTabAt(
+    const GURL& url,
+    int index,
+    bool foreground,
+    base::Optional<tab_groups::TabGroupId> group) {
   chrome::AddTabAt(browser_, url, index, foreground, group);
 }
 

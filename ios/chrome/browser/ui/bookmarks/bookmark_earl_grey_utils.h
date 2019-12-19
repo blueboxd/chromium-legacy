@@ -25,10 +25,6 @@
 + (void)assertBookmarksWithTitle:(NSString*)title
                    expectedCount:(NSUInteger)expectedCount;
 
-// Tap on the star to bookmark a page, then edit the bookmark to change the
-// title to |title|.
-+ (void)bookmarkCurrentTabWithTitle:(NSString*)title;
-
 // Asserts that a folder called |title| exists.
 + (void)assertFolderExists:(NSString*)title;
 

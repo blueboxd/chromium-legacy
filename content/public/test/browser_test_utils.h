@@ -1533,7 +1533,58 @@ class NavigationHandleCommitObserver : public content::WebContentsObserver {
   bool was_renderer_initiated_;
 };
 
+// A test utility that monitors console messages sent to a WebContents. This
+// can be used to wait for a message that matches a specific filter, an
+// arbitrary message, or monitor all messages sent to the WebContents' console.
+// TODO(devlin): Convert existing tests to Use this in lieu of
+// ConsoleObserverDelegate, since it doesn't require overriding the WebContents'
+// delegate (which isn't always appropriate in a test).
+class WebContentsConsoleObserver : public WebContentsObserver {
+ public:
+  struct Message {
+    blink::mojom::ConsoleMessageLevel log_level;
+    base::string16 message;
+    int32_t line_no;
+    base::string16 source_id;
+  };
+
+  // A filter to apply to incoming console messages to determine whether to
+  // record them. The filter should return `true` if the observer should record
+  // the message, and stop waiting (if it was waiting).
+  using Filter = base::RepeatingCallback<bool(const Message& message)>;
+
+  explicit WebContentsConsoleObserver(content::WebContents* web_contents);
+  ~WebContentsConsoleObserver() override;
+
+  // Waits for a message to come in that matches the set filter, if any. If no
+  // filter is set, waits for the first message that comes in.
+  void Wait();
+
+  // Sets a custom filter to be used while waiting for a message, allowing
+  // more custom filtering (e.g. based on source).
+  void SetFilter(Filter filter);
+
+  // A convenience method to just match the message against a string pattern.
+  void SetPattern(std::string pattern);
+
+  const std::vector<Message>& messages() const { return messages_; }
+
+ private:
+  // WebContentsObserver:
+  void OnDidAddMessageToConsole(blink::mojom::ConsoleMessageLevel log_level,
+                                const base::string16& message,
+                                int32_t line_no,
+                                const base::string16& source_id) override;
+
+  Filter filter_;
+  std::string pattern_;
+  base::RunLoop run_loop_;
+  std::vector<Message> messages_;
+};
+
 // A WebContentsDelegate that catches messages sent to the console.
+// DEPRECATED. Prefer WebContentsConsoleObserver.
+// TODO(devlin): Update usages and remove this.
 class ConsoleObserverDelegate : public WebContentsDelegate {
  public:
   ConsoleObserverDelegate(WebContents* web_contents, const std::string& filter);

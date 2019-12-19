@@ -14,6 +14,7 @@
 #include "components/feedback/proto/dom.pb.h"
 #include "components/feedback/proto/extension.pb.h"
 #include "components/feedback/proto/math.pb.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 namespace {
 
@@ -247,7 +248,7 @@ void FeedbackCommon::AddFilesAndLogsToReport(
       // @google.com email. We do this also in feedback_private_api, but not all
       // code paths go through that so we need to check again here.
       if (iter.first == feedback::FeedbackReport::kAllCrashReportIdsKey &&
-          !feedback_util::IsGoogleEmail(user_email())) {
+          !gaia::IsGoogleInternalAccountEmail(user_email())) {
         continue;
       }
 

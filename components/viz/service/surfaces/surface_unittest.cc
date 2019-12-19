@@ -22,7 +22,6 @@ namespace {
 
 constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
 constexpr bool kIsRoot = true;
-constexpr bool kNeedsSyncPoints = true;
 
 TEST(SurfaceTest, PresentationCallback) {
   constexpr gfx::Size kSurfaceSize(300, 300);
@@ -33,8 +32,7 @@ TEST(SurfaceTest, PresentationCallback) {
   FrameSinkManagerImpl frame_sink_manager(&shared_bitmap_manager);
   MockCompositorFrameSinkClient client;
   auto support = std::make_unique<CompositorFrameSinkSupport>(
-      &client, &frame_sink_manager, kArbitraryFrameSinkId, kIsRoot,
-      kNeedsSyncPoints);
+      &client, &frame_sink_manager, kArbitraryFrameSinkId, kIsRoot);
   uint32_t frame_token = 0;
   {
     CompositorFrame frame =
@@ -89,8 +87,7 @@ TEST(SurfaceTest, CopyRequestLifetime) {
   FrameSinkManagerImpl frame_sink_manager(&shared_bitmap_manager);
   SurfaceManager* surface_manager = frame_sink_manager.surface_manager();
   auto support = std::make_unique<CompositorFrameSinkSupport>(
-      nullptr, &frame_sink_manager, kArbitraryFrameSinkId, kIsRoot,
-      kNeedsSyncPoints);
+      nullptr, &frame_sink_manager, kArbitraryFrameSinkId, kIsRoot);
 
   LocalSurfaceId local_surface_id(6, base::UnguessableToken::Create());
   SurfaceId surface_id(kArbitraryFrameSinkId, local_surface_id);

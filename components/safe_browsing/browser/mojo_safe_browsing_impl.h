@@ -30,7 +30,7 @@ class MojoSafeBrowsingImpl : public mojom::SafeBrowsing {
   static void MaybeCreate(
       int render_process_id,
       content::ResourceContext* resource_context,
-      const base::Callback<scoped_refptr<UrlCheckerDelegate>()>&
+      const base::RepeatingCallback<scoped_refptr<UrlCheckerDelegate>()>&
           delegate_getter,
       mojo::PendingReceiver<mojom::SafeBrowsing> receiver);
 

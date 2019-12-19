@@ -196,6 +196,7 @@ class BBJSONGenerator(object):
     self.test_suites = None
     self.exceptions = None
     self.mixins = None
+    self.gn_isolate_map = None
 
   def generate_abs_file_path(self, relative_path):
     return os.path.join(self.this_dir, relative_path) # pragma: no cover
@@ -823,6 +824,27 @@ class BBJSONGenerator(object):
         new_test_suites[name] = value
     self.test_suites = new_test_suites
 
+  def resolve_full_test_targets(self):
+    for suite in self.test_suites['basic_suites'].itervalues():
+      for key, test in suite.iteritems():
+        if not isinstance(test, dict):
+          # Some test definitions are just strings, such as CTS.
+          # Skip them.
+          continue
+
+        # This assumes the recipe logic which prefers 'test' to 'isolate_name'
+        # https://source.chromium.org/chromium/chromium/tools/build/+/master:scripts/slave/recipe_modules/chromium_tests/generators.py;l=89;drc=14c062ba0eb418d3c4623dde41a753241b9df06b
+        # TODO(crbug.com/1035124): clean this up.
+        isolate_name = test.get('test') or test.get('isolate_name') or key
+        gn_entry = self.gn_isolate_map.get(isolate_name)
+        if gn_entry:
+          test['test_target'] = gn_entry['label']
+        else:  # pragma: no cover
+          # Some tests do not have an entry gn_isolate_map.pyl, such as
+          # telemetry tests.
+          # TODO(crbug.com/1035304): require an entry in gn_isolate_map.
+          pass
+
   def resolve_composition_test_suites(self):
     self.check_composition_type_test_suites('compound_suites')
 
@@ -881,8 +903,10 @@ class BBJSONGenerator(object):
     self.test_suites = self.load_pyl_file('test_suites.pyl')
     self.exceptions = self.load_pyl_file('test_suite_exceptions.pyl')
     self.mixins = self.load_pyl_file('mixins.pyl')
+    self.gn_isolate_map = self.load_pyl_file('gn_isolate_map.pyl')
 
   def resolve_configuration_files(self):
+    self.resolve_full_test_targets()
     self.resolve_composition_test_suites()
     self.resolve_matrix_compound_test_suites()
     self.flatten_test_suites()
@@ -1122,6 +1146,7 @@ class BBJSONGenerator(object):
     self.load_configuration_files()
     self.check_composition_type_test_suites('compound_suites')
     self.check_composition_type_test_suites('matrix_compound_suites')
+    self.resolve_full_test_targets()
     self.flatten_test_suites()
 
     # All bots should exist.

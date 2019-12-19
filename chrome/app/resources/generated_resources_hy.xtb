@@ -139,7 +139,6 @@
 <translation id="1186771945450942097">Հեռացնել վնասարար ծրագիրը</translation>
 <translation id="1187722533808055681">Անցումներ ակտիվ ռեժիմ</translation>
 <translation id="1188807932851744811">Մատյանը վերբեռնված չէ:</translation>
-<translation id="1189418886587279221">Միացնել մատչելիության գործառույթները՝ սարքն ավելի հեշտ օգտագործելու համար:</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Օգտագործել ձեր համակարգչում պահված ֆայլը}one{Օգտագործել ձեր համակարգչում պահված # ֆայլ}other{Օգտագործել ձեր համակարգչում պահված # ֆայլ}}</translation>
 <translation id="1190660338026981543"><ph name="DEVICE_TYPE" /> սարքը հաջողությամբ գրանցվել է ձեռնարկության կառավարման համար <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> տիրույթի կողմից:</translation>
 <translation id="119092896208640858">Այցելությունների պատմությունը այս սարքից ջնջելու, սակայն Google հաշվում պահպանելու համար <ph name="BEGIN_LINK" />դուրս գրվեք հաշվից<ph name="END_LINK" />:</translation>
@@ -339,7 +338,6 @@
 <translation id="1476607407192946488">&amp;Լեզվի կարգավորումներ</translation>
 <translation id="1478340334823509079">Մանրամասներ` <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Տեղադրում չի թույլատրվում</translation>
-<translation id="1481206932476131736">Կառավարեք ձեր հաշիվները, որոնք մուտք եք գործել։ Chrome-ի և Google Play-ի կայքերը, հավելվածներն ու ընդլայնումները կարող են օգտագործել այս հաշիվները՝ ձեր աշխատանքն ըստ ձեր թույլտվությունների անհատականացնելու համար։</translation>
 <translation id="1482626744466814421">Էջանշել այս ներդիրը...</translation>
 <translation id="1483493594462132177">Ուղարկել</translation>
 <translation id="1484979925941077974">Կայքն օգտագործում է Bluetooth-ը</translation>
@@ -593,7 +591,6 @@
 <translation id="1813278315230285598">Services</translation>
 <translation id="18139523105317219">EDI կողմի անունը</translation>
 <translation id="1815083418640426271">Տեղադրել որպես պարզ տեքստ</translation>
-<translation id="1815579292149538864">CUPS տպիչների կարգավորում և կառավարում</translation>
 <translation id="181577467034453336">Եվս <ph name="NUMBER_OF_VIEWS" />...</translation>
 <translation id="1816036116994822943">Ստեղնաշարի սկանավորման արագությունը</translation>
 <translation id="1817871734039893258">Microsoft ֆայլերի վերականգնում</translation>
@@ -1455,7 +1452,6 @@
 <translation id="3012917896646559015">Անմիջապես կապվեք ձեր սարքակազմի արտադրողի հետ՝ համակարգիչը վերանորոգման կենտրոն ուղարկելու համար:</translation>
 <translation id="3013291976881901233">MIDI սարքեր</translation>
 <translation id="3015639418649705390">Վերագործարկել հիմա</translation>
-<translation id="3016329696181678353">Չհաջողվեց ավտոմատ կարգավորել <ph name="PRINTER_NAME" /> տպիչը: Նշեք տպիչի վերաբերյալ լրացուցիչ մանրամասներ:</translation>
 <translation id="3016381065346027039">Գրառումներ չկան</translation>
 <translation id="3016641847947582299">Բաղադրիչը թարմացված է</translation>
 <translation id="3016780570757425217">Իմանալ ձեր տեղադրությունը</translation>
@@ -2193,7 +2189,6 @@
 <translation id="4046123991198612571">Հաջորդը</translation>
 <translation id="4050225813016893843">Նույնականացման եղանակը</translation>
 <translation id="4052120076834320548">Շատ փոքր</translation>
-<translation id="4055023634561256217">Պետք է վերագործարկեք սարքը՝ նախքան Powerwash կատարելը:</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">Դիտել խանութում</translation>
 <translation id="4058647953897694817">Հաստատել Bluetooth-ի միջոցով</translation>
@@ -2515,7 +2510,6 @@
 <translation id="4558426062282641716">Հարկավոր է ինքնագործարկման թույլտվություն</translation>
 <translation id="4558491878126948419">Ստացեք <ph name="DEVICE_TYPE" /> սարքերի հետ կապված խորհուրդներ և նորություններ Google-ի արտադրանքների վերաբերյալ, ինչպես նաև գրեք ձեր կարծիքները։ Դուք ցանկացած պահի կարող եք չեղարկել բաժանորդագրությունը։</translation>
 <translation id="4559617833001311418">Այս կայքին հասանելի են շարժման և լուսավորության ձեր տվիչները:</translation>
-<translation id="4561098487691395071">Կամ նշեք ձեր տպիչի PPD ֆայլը</translation>
 <translation id="4562155214028662640">Ավելացնել մատնահետք</translation>
 <translation id="4562494484721939086">Ցանցը չի գտնվել</translation>
 <translation id="4563880231729913339">Մատ 3</translation>
@@ -2759,7 +2753,6 @@
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925542575807923399">Այս հաշվի ադմինիստրատորը պահանջում է, որ այս հաշիվը լինի առաջին մուտքգործած հաշիվը բազմակի մուտքի աշխատաշրջանում:</translation>
 <translation id="4927753642311223124">Ծանուցումներ չկան:</translation>
-<translation id="4927846293686536410">Մուտք գործեք, որպեսզի ձեր էջանիշները, պատմությունը, գաղտնաբառերը և այլ կարգավորումները ձեր բոլոր սարքերում հասանելի լինեն: Դուք նաև ավտոմատ կերպով մուտք կգործեք ձեր Google ծառայություններ:</translation>
 <translation id="4929386379796360314">Նպատակակետերի տպում</translation>
 <translation id="4930714375720679147">Միացնել</translation>
 <translation id="4932733599132424254">Ամսաթիվ</translation>
@@ -3318,7 +3311,6 @@
 <translation id="5750324801516359607">Հեռու է</translation>
 <translation id="5756163054456765343">Օ&amp;գնության կենտրոն</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" />-ի միջոցով ուղարկված փաստաթղթերը հնարավոր է կարդալ <ph name="APP_NAME" /> հավելվածով:</translation>
-<translation id="5763315388120433852">Կարգավորել կամ կառավարել ցանցային պահեստը</translation>
 <translation id="5763751966069581670">USB սարքեր չեն գտնվել</translation>
 <translation id="5764483294734785780">Պա&amp;հել ձայնանյութը որպես…</translation>
 <translation id="57646104491463491">Փոփոխման ամսաթիվը</translation>
@@ -4638,7 +4630,6 @@
 <translation id="7684718995427157417">Հավելվածներ ստեղծելու և փորձարկելու համար միացրեք Android Debug Bridge-ը (ADB)։ Նկատի ունեցեք, որ այս գործողությունը թույլ է տալիս այն Android հավելվածների տեղադրումը, որոնք չեն ստուգվել Google-ի կողմից։ Դրա համար անհրաժեշտ է վերականգնել սարքի գործարանային կարգավորումները։</translation>
 <translation id="7685049629764448582">JavaScript հիշողություն</translation>
 <translation id="7685087414635069102">Պահանջվում է PIN կոդ</translation>
-<translation id="768549422429443215">Ավելացրեք լեզուներ կամ վերադասավորեք ցանկը։</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Հաստատեք նոր գաղտնաբառը</translation>
 <translation id="7690378713476594306">Ընտրել ցանկից</translation>
@@ -4675,7 +4666,6 @@
 <translation id="7730449930968088409">Տեսանկարել ձեր էկրանի բովանդակությունը</translation>
 <translation id="7732111077498238432">Ցանցը վերահսկվում է քաղաքականությամբ</translation>
 <translation id="7737238973539693982">Լինուքսի (բետա) ջնջում</translation>
-<translation id="7737456446569756884">Մինչև <ph name="MONTH_AND_YEAR" /> սարքը կստանա ծրագրային և անվտանգության կարգավորումների ավտոմատ թարմացումներ:</translation>
 <translation id="7740996059027112821">Ստանդարտ</translation>
 <translation id="7744047395460924128">Տեսնել ձեր տպումների պատմությունը</translation>
 <translation id="7746457520633464754">Վտանգավոր կայքերն ու հավելվածները հայտնաբերելու համար Chrome-ը Google-ին է ուղարկում ձեր այցելած որոշ էջերի URL-ներն ու դրանց բովանդակությունը և որոշակի տեղեկություններ համակարգի մասին։</translation>
@@ -5560,7 +5550,6 @@
 <translation id="892706138619340876">Որոշ կարգավորումներ վերակայվել են</translation>
 <translation id="8930351635855238750">Քուքիների նոր կարգավորումները կգործեն էջի վերաբեռնումից հետո</translation>
 <translation id="8931394284949551895">Նոր սարքեր</translation>
-<translation id="893254996965966411">Պահեք հայտնաբերված տպիչները ձեր պրոֆիլում կամ ավելացրեք նորերը:</translation>
 <translation id="8932894639908691771">Switch Access-ի ընտրանքներ</translation>
 <translation id="8933960630081805351">&amp;Ցույց տալ Finder-ում</translation>
 <translation id="8934732568177537184">Շարունակել</translation>

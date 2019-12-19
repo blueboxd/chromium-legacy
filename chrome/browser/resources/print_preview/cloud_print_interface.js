@@ -29,6 +29,7 @@ export const CloudPrintInterfaceEventType = {
  *   errorCode: number,
  *   message: string,
  *   origin: !DestinationOrigin,
+ *   account: ?string,
  * }}
  */
 export let CloudPrintInterfaceErrorEventDetail;

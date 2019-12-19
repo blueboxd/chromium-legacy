@@ -130,8 +130,7 @@ TEST_F(XRRuntimeManagerTest, AddRemoveDevices) {
   Provider()->AddDevice(base::WrapUnique(device));
 
   device::mojom::XRSessionOptions options = {};
-  options.environment_integration = true;
-  options.immersive = true;
+  options.mode = device::mojom::XRSessionMode::kImmersiveAr;
   EXPECT_TRUE(GetRuntimeManager()->GetRuntimeForOptions(&options));
   Provider()->RemoveDevice(device->GetId());
   EXPECT_TRUE(!GetRuntimeManager()->GetRuntimeForOptions(&options));

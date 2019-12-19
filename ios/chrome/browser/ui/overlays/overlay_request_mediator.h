@@ -21,7 +21,8 @@ class OverlayRequest;
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
-// The request passed on initialization.
+// The request passed on initialization.  Reset to nullptr if the request is
+// cancelled while its overlay UI is still visible.
 @property(nonatomic, readonly) OverlayRequest* request;
 
 // The delegate.

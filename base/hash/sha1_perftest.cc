@@ -14,7 +14,28 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
+
+namespace {
+
+constexpr int kBytesPerMegabyte = 1000000;
+
+constexpr char kMetricPrefixSHA1[] = "SHA1.";
+constexpr char kMetricRuntime[] = "runtime";
+constexpr char kMetricThroughput[] = "throughput";
+// Histograms automatically calculate mean, min, max, and standard deviation,
+// but not median, so have a separate metric for our manually calculated median.
+constexpr char kMetricMedianThroughput[] = "median_throughput";
+
+perf_test::PerfResultReporter SetUpReporter(const std::string& story_name) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixSHA1, story_name);
+  reporter.RegisterImportantMetric(kMetricRuntime, "us");
+  reporter.RegisterImportantMetric(kMetricThroughput, "bytesPerSecond");
+  reporter.RegisterImportantMetric(kMetricMedianThroughput, "bytesPerSecond");
+  return reporter;
+}
+
+}  // namespace
 
 static void Timing(const size_t len) {
   std::vector<uint8_t> buf(len);
@@ -36,20 +57,27 @@ static void Timing(const size_t len) {
 
   std::sort(utime.begin(), utime.end());
   const int med = runs / 2;
-  const int min = 0;
 
-  // No need for conversions as length is in bytes and time in usecs:
+  // Simply dividing len by utime gets us MB/s, but we need B/s.
   // MB/s = (len / (bytes/megabytes)) / (usecs / usecs/sec)
   // MB/s = (len / 1,000,000)/(usecs / 1,000,000)
   // MB/s = (len * 1,000,000)/(usecs * 1,000,000)
   // MB/s = len/utime
-  double median_rate = len / utime[med].InMicroseconds();
-  double max_rate = len / utime[min].InMicroseconds();
+  double median_rate = kBytesPerMegabyte * len / utime[med].InMicroseconds();
+  // Convert to a comma-separated string so we can report every data point.
+  std::string rates;
+  for (const auto& t : utime) {
+    rates +=
+        base::NumberToString(kBytesPerMegabyte * len / t.InMicroseconds()) +
+        ",";
+  }
+  // Strip off trailing comma.
+  rates.pop_back();
 
-  perf_test::PrintResult("len=", base::NumberToString(len), "median",
-                         median_rate, "MB/s", true);
-  perf_test::PrintResult("usecs=", base::NumberToString(total_test_time), "max",
-                         max_rate, "MB/s", true);
+  auto reporter = SetUpReporter(base::NumberToString(len) + "_bytes");
+  reporter.AddResult(kMetricRuntime, total_test_time);
+  reporter.AddResult(kMetricMedianThroughput, median_rate);
+  reporter.AddResultList(kMetricThroughput, rates);
 }
 
 TEST(SHA1PerfTest, Speed) {

@@ -5,6 +5,7 @@
 source_set("public") {
   sources = [
     "browser.h",
+    "browser_observer.h",
     "browser_user_data.h",
   ]
   deps = [
@@ -19,7 +20,6 @@ source_set("main") {
     "browser_agent_util.mm",
     "browser_impl.h",
     "browser_impl.mm",
-    "browser_observer.h",
     "browser_web_state_list_delegate.h",
     "browser_web_state_list_delegate.mm",
   ]
@@ -31,6 +31,7 @@ source_set("main") {
   deps = [
     "//base",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/infobars:badge",
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/sessions:session_service",
     "//ios/chrome/browser/tabs",

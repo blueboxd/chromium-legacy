@@ -293,7 +293,8 @@ scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebHTTPBody(
         if (element.file_length == -1) {
           request_body->AppendFileRange(
               blink::WebStringToFilePath(element.file_path), 0,
-              std::numeric_limits<uint64_t>::max(), base::Time());
+              std::numeric_limits<uint64_t>::max(),
+              element.modification_time.value_or(base::Time()));
         } else {
           request_body->AppendFileRange(
               blink::WebStringToFilePath(element.file_path),

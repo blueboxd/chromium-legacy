@@ -60,6 +60,10 @@ const std::vector<base::string16> kAllowedLogStringsForSanitizationCheck = {
 
     // IsFilePresentLocally in file_path_sanitization.cc fits Case 1.
     L"isfilepresentlocally failed to get attributes: ",
+
+    // The cleaner/reporter process spawned by this test spawns a sandbox with
+    // the test-logging-path flag pointing to a temporary directory.
+    L"--test-logging-path=",
 };
 
 // Parse to |report| the serialized report dumped by |executable_name|. Return
@@ -338,7 +342,7 @@ class CleanerTest
       chrome_cleaner::ExecutionMode execution_mode =
           chrome_cleaner::ExecutionMode::kNone) {
     base::CommandLine command_line(executable_path);
-    chrome_cleaner::AppendTestSwitches(&command_line);
+    chrome_cleaner::AppendTestSwitches(temp_dir_, &command_line);
     command_line.AppendSwitchASCII(
         chrome_cleaner::kEngineSwitch,
         base::NumberToString(static_cast<int>(engine_)));

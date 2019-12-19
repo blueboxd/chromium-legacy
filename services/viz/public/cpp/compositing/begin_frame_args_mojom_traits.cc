@@ -52,8 +52,8 @@ bool StructTraits<viz::mojom::BeginFrameArgsDataView, viz::BeginFrameArgs>::
       !data.ReadInterval(&out->interval) || !data.ReadType(&out->type)) {
     return false;
   }
-  out->source_id = data.source_id();
-  out->sequence_number = data.sequence_number();
+  out->frame_id.source_id = data.source_id();
+  out->frame_id.sequence_number = data.sequence_number();
   out->trace_id = data.trace_id();
   out->on_critical_path = data.on_critical_path();
   out->animate_only = data.animate_only();
@@ -66,8 +66,8 @@ bool StructTraits<viz::mojom::BeginFrameAckDataView, viz::BeginFrameAck>::Read(
     viz::BeginFrameAck* out) {
   if (data.sequence_number() < viz::BeginFrameArgs::kStartingFrameNumber)
     return false;
-  out->source_id = data.source_id();
-  out->sequence_number = data.sequence_number();
+  out->frame_id.source_id = data.source_id();
+  out->frame_id.sequence_number = data.sequence_number();
   out->trace_id = data.trace_id();
   out->has_damage = data.has_damage();
   return true;

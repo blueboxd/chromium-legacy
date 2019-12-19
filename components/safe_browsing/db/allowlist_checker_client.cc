@@ -22,16 +22,16 @@ const int kLookupTimeoutMS = 5000;
 void AllowlistCheckerClient::StartCheckCsdWhitelist(
     scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
     const GURL& url,
-    base::Callback<void(bool)> callback_for_result) {
+    base::OnceCallback<void(bool)> callback_for_result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // On timeout or if the list is unavailable, report match.
   const bool kDefaultDoesMatchAllowlist = true;
 
   std::unique_ptr<AllowlistCheckerClient> client = GetAllowlistCheckerClient(
-      database_manager, url, callback_for_result, kDefaultDoesMatchAllowlist);
+      database_manager, url, &callback_for_result, kDefaultDoesMatchAllowlist);
   if (!client) {
-    callback_for_result.Run(kDefaultDoesMatchAllowlist);
+    std::move(callback_for_result).Run(kDefaultDoesMatchAllowlist);
     return;
   }
 
@@ -43,16 +43,16 @@ void AllowlistCheckerClient::StartCheckCsdWhitelist(
 void AllowlistCheckerClient::StartCheckHighConfidenceAllowlist(
     scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
     const GURL& url,
-    base::Callback<void(bool)> callback_for_result) {
+    base::OnceCallback<void(bool)> callback_for_result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // On timeout or if the list is unavailable, report no match.
   const bool kDefaultDoesMatchAllowlist = false;
 
   std::unique_ptr<AllowlistCheckerClient> client = GetAllowlistCheckerClient(
-      database_manager, url, callback_for_result, kDefaultDoesMatchAllowlist);
+      database_manager, url, &callback_for_result, kDefaultDoesMatchAllowlist);
   if (!client) {
-    callback_for_result.Run(kDefaultDoesMatchAllowlist);
+    std::move(callback_for_result).Run(kDefaultDoesMatchAllowlist);
     return;
   }
 
@@ -66,7 +66,7 @@ std::unique_ptr<AllowlistCheckerClient>
 AllowlistCheckerClient::GetAllowlistCheckerClient(
     scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
     const GURL& url,
-    base::Callback<void(bool)> callback_for_result,
+    base::OnceCallback<void(bool)>* callback_for_result,
     bool default_does_match_allowlist) {
   if (!url.is_valid() || !database_manager ||
       !database_manager->CanCheckUrl(url)) {
@@ -76,7 +76,8 @@ AllowlistCheckerClient::GetAllowlistCheckerClient(
   // Make a client for each request. The caller could have several in
   // flight at once.
   return std::make_unique<AllowlistCheckerClient>(
-      callback_for_result, database_manager, default_does_match_allowlist);
+      std::move(*callback_for_result), database_manager,
+      default_does_match_allowlist);
 }
 
 // static
@@ -85,10 +86,12 @@ void AllowlistCheckerClient::InvokeCallbackOrRelease(
     std::unique_ptr<AllowlistCheckerClient> client) {
   switch (match) {
     case AsyncMatch::MATCH:
-      client->callback_for_result_.Run(true /* did_match_allowlist */);
+      std::move(client->callback_for_result_)
+          .Run(true /* did_match_allowlist */);
       break;
     case AsyncMatch::NO_MATCH:
-      client->callback_for_result_.Run(false /* did_match_allowlist */);
+      std::move(client->callback_for_result_)
+          .Run(false /* did_match_allowlist */);
       break;
     case AsyncMatch::ASYNC:
       // Client is now self-owned. When it gets called back with the result,
@@ -99,20 +102,20 @@ void AllowlistCheckerClient::InvokeCallbackOrRelease(
 }
 
 AllowlistCheckerClient::AllowlistCheckerClient(
-    base::Callback<void(bool)> callback_for_result,
+    base::OnceCallback<void(bool)> callback_for_result,
     scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
     bool default_does_match_allowlist)
-    : callback_for_result_(callback_for_result),
+    : callback_for_result_(std::move(callback_for_result)),
       database_manager_(database_manager),
       default_does_match_allowlist_(default_does_match_allowlist) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // Set a timer to fail open, i.e. call it "whitelisted", if the full
   // check takes too long.
-  auto timeout_callback = base::Bind(&AllowlistCheckerClient::OnTimeout,
-                                     weak_factory_.GetWeakPtr());
+  auto timeout_callback = base::BindOnce(&AllowlistCheckerClient::OnTimeout,
+                                         weak_factory_.GetWeakPtr());
   timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kLookupTimeoutMS),
-               timeout_callback);
+               std::move(timeout_callback));
 }
 
 AllowlistCheckerClient::~AllowlistCheckerClient() {
@@ -133,9 +136,13 @@ void AllowlistCheckerClient::OnCheckUrlForHighConfidenceAllowlist(
 void AllowlistCheckerClient::OnCheckUrlResult(bool did_match_allowlist) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   timer_.Stop();
-  callback_for_result_.Run(did_match_allowlist);
 
-  // This method is invoked only if we're already self-owned.
+  // The callback can only be invoked by other code paths if this object is not
+  // self-owned. Because this method is only invoked when we're self-owned, we
+  // know the callback must still be valid, and it must be safe to delete
+  // |this|.
+  DCHECK(callback_for_result_);
+  std::move(callback_for_result_).Run(did_match_allowlist);
   delete this;
 }
 

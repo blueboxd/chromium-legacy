@@ -35,7 +35,7 @@ namespace {
 // - the OAuth2 access token.
 // - the expiry time of the token (may be null, indicating that the expiry
 //   time is unknown.
-typedef base::Callback<
+typedef base::OnceCallback<
     void(const GoogleServiceAuthError&, const std::string&, const base::Time&)>
     FetchOAuth2TokenCallback;
 
@@ -91,8 +91,8 @@ void AndroidAccessTokenFetcher::Start(const std::string& client_id,
   ScopedJavaLocalRef<jstring> j_scope = ConvertUTF8ToJavaString(env, scope);
   std::unique_ptr<FetchOAuth2TokenCallback> heap_callback(
       new FetchOAuth2TokenCallback(
-          base::Bind(&AndroidAccessTokenFetcher::OnAccessTokenResponse,
-                     weak_factory_.GetWeakPtr())));
+          base::BindOnce(&AndroidAccessTokenFetcher::OnAccessTokenResponse,
+                         weak_factory_.GetWeakPtr())));
 
   // Call into Java to get a new token.
   signin::Java_ProfileOAuth2TokenServiceDelegate_getAccessTokenFromNative(
@@ -558,6 +558,6 @@ void JNI_ProfileOAuth2TokenServiceDelegate_OnOAuth2TokenFetched(
                   GoogleServiceAuthError::InvalidGaiaCredentialsReason::
                       CREDENTIALS_REJECTED_BY_SERVER);
   }
-  heap_callback->Run(err, token, base::Time());
+  std::move(*heap_callback).Run(err, token, base::Time());
 }
 }  // namespace signin

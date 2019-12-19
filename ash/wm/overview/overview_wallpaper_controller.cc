@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wallpaper/wallpaper_view.h"
@@ -28,7 +29,8 @@ namespace {
 // is true.
 bool g_disable_wallpaper_change_for_tests = false;
 
-constexpr int kBlurSlideDurationMs = 250;
+constexpr base::TimeDelta kBlurSlideDuration =
+    base::TimeDelta::FromMilliseconds(250);
 
 bool IsWallpaperChangeAllowed() {
   return !g_disable_wallpaper_change_for_tests;
@@ -38,24 +40,7 @@ WallpaperWidgetController* GetWallpaperWidgetController(aura::Window* root) {
   return RootWindowController::ForWindow(root)->wallpaper_widget_controller();
 }
 
-ui::LayerAnimator* GetAnimator(
-    WallpaperWidgetController* wallpaper_widget_controller) {
-  return wallpaper_widget_controller->GetWidget()
-      ->GetNativeWindow()
-      ->layer()
-      ->GetAnimator();
-}
-
 }  // namespace
-
-OverviewWallpaperController::OverviewWallpaperController() = default;
-
-OverviewWallpaperController::~OverviewWallpaperController() {
-  for (aura::Window* root : roots_to_animate_)
-    root->RemoveObserver(this);
-
-  StopObservingImplicitAnimations();
-}
 
 // static
 void OverviewWallpaperController::SetDoNotChangeWallpaperForTests() {
@@ -65,46 +50,23 @@ void OverviewWallpaperController::SetDoNotChangeWallpaperForTests() {
 void OverviewWallpaperController::Blur(bool animate_only) {
   if (!IsWallpaperChangeAllowed())
     return;
-  OnBlurChange(WallpaperAnimationState::kAddingBlur, animate_only);
+  OnBlurChange(/*should_blur=*/true, animate_only);
 }
 
 void OverviewWallpaperController::Unblur() {
   if (!IsWallpaperChangeAllowed())
     return;
-  OnBlurChange(WallpaperAnimationState::kRemovingBlur,
-               /*animate_only=*/false);
+  OnBlurChange(/*should_blur=*/false, /*animate_only=*/false);
 }
 
-bool OverviewWallpaperController::HasBlurAnimationForTesting() const {
-  for (aura::Window* root : Shell::Get()->GetAllRootWindows()) {
-    auto* wallpaper_widget_controller = GetWallpaperWidgetController(root);
-    if (GetAnimator(wallpaper_widget_controller)->is_animating())
-      return true;
-  }
-  return false;
-}
-
-void OverviewWallpaperController::StopBlurAnimationsForTesting() {
-  for (auto& layer_tree : animating_copies_)
-    layer_tree->root()->GetAnimator()->StopAnimating();
-  for (aura::Window* root : Shell::Get()->GetAllRootWindows()) {
-    auto* wallpaper_widget_controller = GetWallpaperWidgetController(root);
-    wallpaper_widget_controller->EndPendingAnimation();
-    GetAnimator(wallpaper_widget_controller)->StopAnimating();
-  }
-}
-
-void OverviewWallpaperController::OnImplicitAnimationsCompleted() {
-  animating_copies_.clear();
-  state_ = WallpaperAnimationState::kNormal;
-}
-
-void OverviewWallpaperController::OnBlurChange(WallpaperAnimationState state,
+void OverviewWallpaperController::OnBlurChange(bool should_blur,
                                                bool animate_only) {
-  state_ = state;
-  const bool should_blur = state_ == WallpaperAnimationState::kAddingBlur;
   if (animate_only)
     DCHECK(should_blur);
+
+  // Don't apply wallpaper change while the session is blocked.
+  if (Shell::Get()->session_controller()->IsUserSessionBlocked())
+    return;
 
   OverviewSession* overview_session =
       Shell::Get()->overview_controller()->overview_session();
@@ -120,24 +82,6 @@ void OverviewWallpaperController::OnBlurChange(WallpaperAnimationState state,
       continue;
 
     auto* wallpaper_widget_controller = GetWallpaperWidgetController(root);
-    wallpaper_widget_controller->EndPendingAnimation();
-    auto* wallpaper_window =
-        wallpaper_widget_controller->GetWidget()->GetNativeWindow();
-
-    // No need to animate the blur on exiting as this should only be called
-    // after overview animations are finished.
-    std::unique_ptr<ui::LayerTreeOwner> copy_layer_tree;
-    if (should_blur && should_animate) {
-      // On animating, create the copy that of the wallpaper. The original
-      // wallpaper layer will then get blurred and faded in. The copy is
-      // deleted after animating.
-      copy_layer_tree = ::wm::RecreateLayers(wallpaper_window);
-      copy_layer_tree->root()->SetOpacity(1.f);
-      copy_layer_tree->root()->parent()->StackAtBottom(copy_layer_tree->root());
-    }
-
-    ui::Layer* original_layer = wallpaper_window->layer();
-    original_layer->GetAnimator()->StopAnimating();
     // Tablet mode wallpaper is already dimmed, so no need to change the
     // opacity.
     WallpaperProperty property =
@@ -145,42 +89,9 @@ void OverviewWallpaperController::OnBlurChange(WallpaperAnimationState state,
                      : (Shell::Get()->tablet_mode_controller()->InTabletMode()
                             ? wallpaper_constants::kOverviewInTabletState
                             : wallpaper_constants::kOverviewState);
-    wallpaper_widget_controller->SetWallpaperProperty(property);
-    original_layer->SetOpacity(should_blur ? 0.f : 1.f);
-
-    ui::Layer* copy_layer = copy_layer_tree ? copy_layer_tree->root() : nullptr;
-    if (copy_layer)
-      copy_layer->GetAnimator()->StopAnimating();
-
-    std::unique_ptr<ui::ScopedLayerAnimationSettings> original_settings;
-    std::unique_ptr<ui::ScopedLayerAnimationSettings> copy_settings;
-    if (should_blur && should_animate) {
-      original_settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
-          original_layer->GetAnimator());
-      original_settings->SetTransitionDuration(
-          base::TimeDelta::FromMilliseconds(kBlurSlideDurationMs));
-      original_settings->SetTweenType(gfx::Tween::EASE_OUT);
-
-      DCHECK(copy_layer);
-      copy_settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
-          copy_layer->GetAnimator());
-      copy_settings->SetTransitionDuration(
-          base::TimeDelta::FromMilliseconds(kBlurSlideDurationMs));
-      copy_settings->SetTweenType(gfx::Tween::EASE_IN);
-      copy_settings->AddObserver(this);
-
-      animating_copies_.emplace_back(std::move(copy_layer_tree));
-    } else {
-      state_ = WallpaperAnimationState::kNormal;
-    }
-
-    original_layer->SetOpacity(1.f);
-    if (copy_layer)
-      copy_layer->SetOpacity(0.f);
+    wallpaper_widget_controller->SetWallpaperProperty(
+        property, should_animate ? kBlurSlideDuration : base::TimeDelta());
   }
-
-  if (animating_copies_.empty())
-    state_ = WallpaperAnimationState::kNormal;
 }
 
 }  // namespace ash

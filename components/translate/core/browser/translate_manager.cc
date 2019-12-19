@@ -310,10 +310,10 @@ void TranslateManager::TranslatePage(const std::string& original_source_lang,
   // The script is not available yet.  Queue that request and query for the
   // script.  Once it is downloaded we'll do the translate.
   TranslateScript::RequestCallback callback =
-      base::Bind(&TranslateManager::OnTranslateScriptFetchComplete,
-                 GetWeakPtr(), source_lang, target_lang);
+      base::BindOnce(&TranslateManager::OnTranslateScriptFetchComplete,
+                     GetWeakPtr(), source_lang, target_lang);
 
-  script->Request(callback, translate_driver_->IsIncognito());
+  script->Request(std::move(callback), translate_driver_->IsIncognito());
 }
 
 void TranslateManager::RevertTranslation() {

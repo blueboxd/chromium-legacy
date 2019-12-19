@@ -68,9 +68,19 @@ enum XRSessionFeatureRequestStatus {
   kOptionalRejected = 3,
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// These enum names come from the WebXR spec:
+// https://immersive-web.github.io/webxr/#xrsessionmode-enum
+enum XRSessionMode {
+  kInline = 1,
+  kImmersiveVr = 2,
+  kImmersiveAr = 3,
+};
+
 struct XRSessionOptions {
-  bool immersive;
-  bool environment_integration;
+  // Represents the type of session that is being requested.
+  XRSessionMode mode;
 
   // Represents the set of requested features that have been marked "required",
   // if any of these features are missing, a session will not be created.

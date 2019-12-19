@@ -150,6 +150,11 @@ id<GREYMatcher> SearchIconButton();
 - (void)createNewBookmarkFolderWithFolderTitle:(NSString*)folderTitle
                                    pressReturn:(BOOL)pressReturn;
 
+// Bookmarks the current tab using |title| as Bookmark title. Make sure the
+// Bookmark loaded is loaded before by calling [BookmarkEarlGrey
+// waitForBookmarkModelLoaded:YES];
+- (void)bookmarkCurrentTabWithTitle:(NSString*)title;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_EARL_GREY_UI_H_

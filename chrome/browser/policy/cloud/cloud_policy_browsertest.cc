@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -20,18 +21,21 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
+#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/cloud_policy_test_utils.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/public/invalidation.h"
 #include "components/invalidation/public/invalidation_service.h"
+#include "components/invalidation/public/invalidation_util.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
@@ -89,9 +93,30 @@ namespace policy {
 
 namespace {
 
+constexpr int invalidation_source = 16;
+constexpr char invalidation_name[] = "test_policy";
+constexpr char policy_invalidation_topic[] = "test_policy_topic";
+
+bool IsFcmEnabled() {
+  return base::FeatureList::IsEnabled(features::kPolicyFcmInvalidations);
+}
+
+std::unique_ptr<invalidation::InvalidationService>
+CreateInvalidationServiceForSenderId(const std::string& fcm_sender_id) {
+  return std::make_unique<invalidation::FakeInvalidationService>();
+}
+
 std::unique_ptr<KeyedService> BuildFakeProfileInvalidationProvider(
+    bool is_fcm_enabled,
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
+  if (is_fcm_enabled) {
+    return std::make_unique<invalidation::ProfileInvalidationProvider>(
+        std::make_unique<invalidation::FakeInvalidationService>(),
+        std::make_unique<invalidation::ProfileIdentityProvider>(
+            IdentityManagerFactory::GetForProfile(profile)),
+        base::BindRepeating(&CreateInvalidationServiceForSenderId));
+  }
   return std::make_unique<invalidation::ProfileInvalidationProvider>(
       std::make_unique<invalidation::FakeInvalidationService>(),
       std::make_unique<invalidation::ProfileIdentityProvider>(
@@ -139,15 +164,15 @@ std::string GetTestPolicy(const char* homepage, int key_version) {
       "  \"managed_users\": [ \"*\" ],"
       "  \"policy_user\": \"%s\","
       "  \"current_key_index\": %d,"
-      "  \"invalidation_source\": 16,"
-      "  \"invalidation_name\": \"test_policy\""
+      "  \"invalidation_source\": %d,"
+      "  \"invalidation_name\": \"%s\","
+      "  \"policy_invalidation_topic\": \"%s\""
       "}";
 
-  return base::StringPrintf(kTestPolicy,
-                            dm_protocol::kChromeUserPolicyType,
-                            homepage,
-                            GetTestUser(),
-                            key_version);
+  return base::StringPrintf(kTestPolicy, dm_protocol::kChromeUserPolicyType,
+                            homepage, GetTestUser(), key_version,
+                            invalidation_source, invalidation_name,
+                            policy_invalidation_topic);
 }
 
 void GetExpectedTestPolicy(PolicyMap* expected, const char* homepage) {
@@ -192,10 +217,19 @@ class CloudPolicyTest : public InProcessBrowserTest,
 
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(switches::kDeviceManagementUrl, url);
+  }
 
-    invalidation::DeprecatedProfileInvalidationProviderFactory::GetInstance()
-        ->RegisterTestingFactory(
-            base::BindRepeating(&BuildFakeProfileInvalidationProvider));
+  void CreatedBrowserMainParts(
+      content::BrowserMainParts* browser_main_parts) override {
+    if (IsFcmEnabled()) {
+      invalidation::ProfileInvalidationProviderFactory::GetInstance()
+          ->RegisterTestingFactory(base::BindRepeating(
+              &BuildFakeProfileInvalidationProvider, IsFcmEnabled()));
+    } else {
+      invalidation::DeprecatedProfileInvalidationProviderFactory::GetInstance()
+          ->RegisterTestingFactory(base::BindRepeating(
+              &BuildFakeProfileInvalidationProvider, IsFcmEnabled()));
+    }
   }
 
   void SetUpOnMainThread() override {
@@ -292,12 +326,28 @@ class CloudPolicyTest : public InProcessBrowserTest,
   }
 
   invalidation::FakeInvalidationService* GetInvalidationService() {
+    if (IsFcmEnabled()) {
+      return static_cast<invalidation::FakeInvalidationService*>(
+          static_cast<invalidation::ProfileInvalidationProvider*>(
+              invalidation::ProfileInvalidationProviderFactory::GetInstance()
+                  ->GetForProfile(browser()->profile()))
+              ->GetInvalidationService());
+    }
     return static_cast<invalidation::FakeInvalidationService*>(
         static_cast<invalidation::ProfileInvalidationProvider*>(
             invalidation::DeprecatedProfileInvalidationProviderFactory::
                 GetInstance()
                     ->GetForProfile(browser()->profile()))
             ->GetInvalidationService());
+  }
+
+  invalidation::FakeInvalidationService* GetInvalidationServiceForSenderId(
+      std::string sender_id) {
+    return static_cast<invalidation::FakeInvalidationService*>(
+        static_cast<invalidation::ProfileInvalidationProvider*>(
+            invalidation::ProfileInvalidationProviderFactory::GetInstance()
+                ->GetForProfile(browser()->profile()))
+            ->GetInvalidationServiceForCustomSender(sender_id));
   }
 
   void SetServerPolicy(const std::string& policy) {
@@ -394,11 +444,19 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, InvalidatePolicy) {
   ASSERT_NO_FATAL_FAILURE(SetServerPolicy(GetTestPolicy("youtube.com", 0)));
   base::TimeDelta now =
       base::Time::NowFromSystemTime() - base::Time::UnixEpoch();
-  GetInvalidationService()->EmitInvalidationForTest(
-      syncer::Invalidation::Init(
-          invalidation::ObjectId(16, "test_policy"),
-          now.InMicroseconds() /* version */,
-          "payload"));
+
+  if (IsFcmEnabled()) {
+    GetInvalidationServiceForSenderId(kPolicyFCMInvalidationSenderID)
+        ->EmitInvalidationForTest(syncer::Invalidation::Init(
+            invalidation::ObjectId(syncer::kDeprecatedSourceForFCM,
+                                   policy_invalidation_topic),
+            now.InMicroseconds() /* version */, "payload"));
+  } else {
+    GetInvalidationService()->EmitInvalidationForTest(
+        syncer::Invalidation::Init(
+            invalidation::ObjectId(invalidation_source, invalidation_name),
+            now.InMicroseconds() /* version */, "payload"));
+  }
   {
     base::RunLoop run_loop;
     on_policy_updated_ = run_loop.QuitClosure();

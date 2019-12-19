@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/dialog_delegate.h"
 #include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/web_dialog_view.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "ui/views/controls/webview/web_dialog_view.h"

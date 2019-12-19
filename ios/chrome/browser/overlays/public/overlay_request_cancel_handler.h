@@ -23,6 +23,10 @@ class OverlayRequestCancelHandler {
   // Called by subclasses to cancel the associated request.
   void CancelRequest();
 
+  // Accessors for the request and queue.
+  OverlayRequest* request() const { return request_; }
+  OverlayRequestQueue* queue() const { return queue_; }
+
  private:
   OverlayRequest* request_ = nullptr;
   OverlayRequestQueue* queue_ = nullptr;

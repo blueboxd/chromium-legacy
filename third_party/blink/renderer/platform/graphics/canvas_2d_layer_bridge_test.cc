@@ -434,7 +434,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationLifeCycle)
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
   EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
 
-  bridge->SetIsHidden(true);
+  bridge->SetIsInHiddenPage(true);
   platform->RunUntilIdle();
 
   testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
@@ -447,7 +447,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationLifeCycle)
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationEndedNormally));
 
-  bridge->SetIsHidden(false);
+  bridge->SetIsInHiddenPage(false);
 
   testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_TRUE(bridge->IsAccelerated());
@@ -478,11 +478,11 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationReEntry)
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
   EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
-  bridge->SetIsHidden(true);
+  bridge->SetIsInHiddenPage(true);
   // Toggle visibility before the task that enters hibernation gets a
   // chance to run.
-  bridge->SetIsHidden(false);
-  bridge->SetIsHidden(true);
+  bridge->SetIsInHiddenPage(false);
+  bridge->SetIsInHiddenPage(true);
   platform->RunUntilIdle();
 
   testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
@@ -495,7 +495,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationReEntry)
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationEndedNormally));
 
-  bridge->SetIsHidden(false);
+  bridge->SetIsInHiddenPage(false);
 
   testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_TRUE(bridge->IsAccelerated());
@@ -526,7 +526,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_BackgroundRenderingWhileHibernating)
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
   EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
-  bridge->SetIsHidden(true);
+  bridge->SetIsInHiddenPage(true);
   platform->RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_FALSE(bridge->IsAccelerated());
@@ -545,7 +545,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_BackgroundRenderingWhileHibernating)
   EXPECT_TRUE(bridge->IsValid());
 
   // Unhide
-  bridge->SetIsHidden(false);
+  bridge->SetIsInHiddenPage(false);
   testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_TRUE(
       bridge->IsAccelerated());  // Becoming visible causes switch back to GPU
@@ -576,7 +576,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_TeardownWhileHibernating)
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
   EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
-  bridge->SetIsHidden(true);
+  bridge->SetIsInHiddenPage(true);
   platform->RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_FALSE(bridge->IsAccelerated());
@@ -614,7 +614,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_SnapshotWhileHibernating)
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
   EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
-  bridge->SetIsHidden(true);
+  bridge->SetIsInHiddenPage(true);
   platform->RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_FALSE(bridge->IsAccelerated());
@@ -637,7 +637,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_SnapshotWhileHibernating)
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationEndedNormally))
       .Times(1);
-  bridge->SetIsHidden(false);
+  bridge->SetIsInHiddenPage(false);
 }
 
 #if CANVAS2D_HIBERNATION_ENABLED
@@ -662,7 +662,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_TeardownWhileHibernationIsPending)
   EXPECT_CALL(
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
-  bridge->SetIsHidden(true);
+  bridge->SetIsInHiddenPage(true);
   bridge.reset();
   // In production, we would expect a
   // HibernationAbortedDueToDestructionWhileHibernatePending event to be
@@ -701,8 +701,8 @@ TEST_F(Canvas2DLayerBridgeTest,
       ReportHibernationEvent(
           Canvas2DLayerBridge::kHibernationAbortedDueToVisibilityChange))
       .Times(1);
-  bridge->SetIsHidden(true);
-  bridge->SetIsHidden(false);
+  bridge->SetIsInHiddenPage(true);
+  bridge->SetIsInHiddenPage(false);
   platform->RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_TRUE(bridge->IsAccelerated());
@@ -739,7 +739,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationAbortedDueToLostContext)
                   Canvas2DLayerBridge::kHibernationAbortedDueGpuContextLoss))
       .Times(1);
 
-  bridge->SetIsHidden(true);
+  bridge->SetIsInHiddenPage(true);
   platform->RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_FALSE(bridge->IsHibernating());
@@ -768,7 +768,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileHibernating)
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
   EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
-  bridge->SetIsHidden(true);
+  bridge->SetIsInHiddenPage(true);
   platform->RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
 
@@ -812,7 +812,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
   EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
-  bridge->SetIsHidden(true);
+  bridge->SetIsInHiddenPage(true);
   platform->RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
 
@@ -896,7 +896,7 @@ TEST_F(Canvas2DLayerBridgeTest, NoResourceRecyclingWhenPageHidden) {
   // resource should be dropped.
   callbacks[0]->Run(gpu::SyncToken(), false);
   EXPECT_EQ(test_context_provider_->TestContextGL()->NumTextures(), 2u);
-  bridge->SetIsHidden(true);
+  bridge->SetIsInHiddenPage(true);
   EXPECT_EQ(test_context_provider_->TestContextGL()->NumTextures(), 1u);
 
   // Release second frame, this resource is not released because its the current
@@ -1130,6 +1130,34 @@ TEST_F(Canvas2DLayerBridgeTest, WritePixelsRestoresClipStack) {
   EXPECT_EQ(bridge->DrawingCanvas()->getTotalMatrix().get(SkMatrix::kMTransX),
             5);
   EXPECT_EQ(canvas->getTotalMatrix().get(SkMatrix::kMTransX), 0);
+}
+
+TEST_F(Canvas2DLayerBridgeTest, DisplayedCanvasIsRateLimited) {
+  std::unique_ptr<Canvas2DLayerBridge> bridge = MakeBridge(
+      IntSize(300, 150), Canvas2DLayerBridge::kForceAccelerationForTesting,
+      CanvasColorParams());
+  EXPECT_TRUE(bridge->IsValid());
+  bridge->SetIsBeingDisplayed(true);
+  EXPECT_FALSE(bridge->HasRateLimiterForTesting());
+  bridge->FinalizeFrame();
+  bridge->FinalizeFrame();
+  EXPECT_TRUE(bridge->HasRateLimiterForTesting());
+}
+
+TEST_F(Canvas2DLayerBridgeTest, NonDisplayedCanvasIsNotRateLimited) {
+  std::unique_ptr<Canvas2DLayerBridge> bridge = MakeBridge(
+      IntSize(300, 150), Canvas2DLayerBridge::kForceAccelerationForTesting,
+      CanvasColorParams());
+  EXPECT_TRUE(bridge->IsValid());
+  bridge->SetIsBeingDisplayed(true);
+  bridge->FinalizeFrame();
+  bridge->FinalizeFrame();
+  EXPECT_TRUE(bridge->HasRateLimiterForTesting());
+  bridge->SetIsBeingDisplayed(false);
+  EXPECT_FALSE(bridge->HasRateLimiterForTesting());
+  bridge->FinalizeFrame();
+  bridge->FinalizeFrame();
+  EXPECT_FALSE(bridge->HasRateLimiterForTesting());
 }
 
 }  // namespace blink

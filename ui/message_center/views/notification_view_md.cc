@@ -332,6 +332,7 @@ NotificationButtonMD::NotificationButtonMD(
       placeholder_(placeholder) {
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetInkDropMode(InkDropMode::ON);
+  set_has_ink_drop_action_on_click(true);
   set_ink_drop_base_color(SK_ColorBLACK);
   set_ink_drop_visible_opacity(kActionButtonInkDropRippleVisibleOpacity);
   SetEnabledTextColors(kActionButtonTextColor);

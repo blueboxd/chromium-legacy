@@ -36,6 +36,7 @@ class ScopedOverviewAnimationSettings {
   void CacheRenderSurface();
   void DeferPaint();
   void TrilinearFiltering();
+  ui::LayerAnimator* GetAnimator();
 
  private:
   // The managed animation settings.

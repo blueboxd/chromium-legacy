@@ -123,6 +123,10 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
         table_style.BorderCollapse() == EBorderCollapse::kSeparate);
   }
 
+  if (block.IsAtomicInlineLevel() || block.IsFlexItem() || block.IsGridItem() ||
+      block.IsFloating())
+    builder.SetIsPaintedAtomically(true);
+
   builder.SetAvailableSize(available_size);
   builder.SetPercentageResolutionSize(percentage_size);
   builder.SetIsFixedInlineSize(fixed_inline);

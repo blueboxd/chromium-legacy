@@ -9,6 +9,8 @@
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/extensions/api/enterprise_reporting_private/device_info_fetcher_mac.h"
+#elif defined(OS_WIN)
+#include "chrome/browser/extensions/api/enterprise_reporting_private/device_info_fetcher_win.h"
 #endif
 
 namespace extensions {
@@ -48,8 +50,12 @@ DeviceInfoFetcher::DeviceInfoFetcher() {}
 DeviceInfoFetcher::~DeviceInfoFetcher() = default;
 
 std::unique_ptr<DeviceInfoFetcher> DeviceInfoFetcher::CreateInstance() {
+// TODO(pastarmovj): Instead of the if-defs implement the CreateInstance
+// function in the platform specific classes.
 #if defined(OS_MACOSX)
   return std::make_unique<DeviceInfoFetcherMac>();
+#elif defined(OS_WIN)
+  return std::make_unique<DeviceInfoFetcherWin>();
 #else
   return std::make_unique<StubDeviceFetcher>();
 #endif

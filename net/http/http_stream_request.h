@@ -89,7 +89,8 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
     virtual void OnStreamFailed(int status,
                                 const NetErrorDetails& net_error_details,
                                 const SSLConfig& used_ssl_config,
-                                const ProxyInfo& used_proxy_info) = 0;
+                                const ProxyInfo& used_proxy_info,
+                                ResolveErrorInfo resolve_error_info) = 0;
 
     // Called when we have a certificate error for the request.
     // |used_ssl_config| indicates the actual SSL configuration used for this

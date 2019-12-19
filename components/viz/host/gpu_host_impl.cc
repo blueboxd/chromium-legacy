@@ -420,9 +420,7 @@ void GpuHostImpl::DidInitialize(
   client_id_to_shader_cache_.clear();
 
   if (!params_.disable_gpu_shader_disk_cache) {
-    bool oopd_enabled = features::IsVizDisplayCompositorEnabled();
-    if (oopd_enabled)
-      CreateChannelCache(gpu::kInProcessCommandBufferClientId);
+    CreateChannelCache(gpu::kInProcessCommandBufferClientId);
 
     bool use_gr_shader_cache = base::FeatureList::IsEnabled(
                                    features::kDefaultEnableOopRasterization) ||

@@ -67,8 +67,6 @@ class XRSession final
   USING_GARBAGE_COLLECTED_MIXIN(XRSession);
 
  public:
-  enum SessionMode { kModeInline = 0, kModeImmersiveVR, kModeImmersiveAR };
-
   enum EnvironmentBlendMode {
     kBlendModeOpaque = 0,
     kBlendModeAdditive,
@@ -94,7 +92,7 @@ class XRSession final
   XRSession(XR* xr,
             mojo::PendingReceiver<device::mojom::blink::XRSessionClient>
                 client_receiver,
-            SessionMode mode,
+            device::mojom::blink::XRSessionMode mode,
             EnvironmentBlendMode environment_blend_mode,
             bool uses_input_eventing,
             bool sensorless_session,
@@ -364,7 +362,7 @@ class XRSession final
   void HandleShutdown();
 
   const Member<XR> xr_;
-  const SessionMode mode_;
+  const device::mojom::blink::XRSessionMode mode_;
   const bool environment_integration_;
   String blend_mode_string_;
   XRVisibilityState device_visibility_state_ = XRVisibilityState::VISIBLE;

@@ -73,8 +73,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   CompositorFrameSinkSupport(mojom::CompositorFrameSinkClient* client,
                              FrameSinkManagerImpl* frame_sink_manager,
                              const FrameSinkId& frame_sink_id,
-                             bool is_root,
-                             bool needs_sync_tokens);
+                             bool is_root);
   ~CompositorFrameSinkSupport() override;
 
   const FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
@@ -135,7 +134,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
                           base::TimeTicks draw_start_timestamp,
                           const gfx::SwapTimings& swap_timings,
                           const gfx::PresentationFeedback& feedback) override;
-  bool NeedsSyncTokens() const override;
 
   // mojom::CompositorFrameSink helpers.
   void SetNeedsBeginFrame(bool needs_begin_frame);
@@ -289,7 +287,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   bool wants_animate_only_begin_frames_ = false;
 
   const bool is_root_;
-  const bool needs_sync_tokens_;
 
   // By default, this is equivalent to |is_root_|, but may be overridden for
   // testing. Generally, for non-roots, there must not be any CopyOutputRequests

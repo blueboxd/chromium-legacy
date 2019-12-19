@@ -86,7 +86,7 @@ MojoSafeBrowsingImpl::MojoSafeBrowsingImpl(
 
   // It is safe to bind |this| as Unretained because |receivers_| is owned by
   // |this| and will not call this callback after it is destroyed.
-  receivers_.set_disconnect_handler(base::Bind(
+  receivers_.set_disconnect_handler(base::BindRepeating(
       &MojoSafeBrowsingImpl::OnMojoDisconnect, base::Unretained(this)));
 }
 
@@ -98,7 +98,8 @@ MojoSafeBrowsingImpl::~MojoSafeBrowsingImpl() {
 void MojoSafeBrowsingImpl::MaybeCreate(
     int render_process_id,
     content::ResourceContext* resource_context,
-    const base::Callback<scoped_refptr<UrlCheckerDelegate>()>& delegate_getter,
+    const base::RepeatingCallback<scoped_refptr<UrlCheckerDelegate>()>&
+        delegate_getter,
     mojo::PendingReceiver<mojom::SafeBrowsing> receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
@@ -149,14 +150,14 @@ void MojoSafeBrowsingImpl::CreateCheckerAndCheck(
 
   // This is not called for frame resources, and real time URL checks currently
   // only support frame resources. If we extend real time URL checks to support
-  // non-main frames, we will need to provide the user preferences regarding
-  // real time lookup here.
+  // non-main frames, we will need to provide the user preferences and cache
+  // manager regarding real time lookup here.
   auto checker_impl = std::make_unique<SafeBrowsingUrlCheckerImpl>(
       headers, static_cast<int>(load_flags), resource_type, has_user_gesture,
       delegate_,
-      base::Bind(&GetWebContentsFromID, render_process_id_,
-                 static_cast<int>(render_frame_id)),
-      /*real_time_lookup_enabled=*/false);
+      base::BindRepeating(&GetWebContentsFromID, render_process_id_,
+                          static_cast<int>(render_frame_id)),
+      /*real_time_lookup_enabled=*/false, /*cache_manager=*/nullptr);
 
   checker_impl->CheckUrl(
       url, method,

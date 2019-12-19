@@ -792,7 +792,8 @@ bool ScrollManager::GetSnapFlingInfoAndSetAnimatingSnapTarget(
   std::unique_ptr<cc::SnapSelectionStrategy> strategy =
       cc::SnapSelectionStrategy::CreateForEndAndDirection(
           gfx::ScrollOffset(*out_initial_position),
-          gfx::ScrollOffset(natural_displacement));
+          gfx::ScrollOffset(natural_displacement),
+          RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled());
   base::Optional<FloatPoint> snap_end =
       scrollable_area->GetSnapPositionAndSetTarget(*strategy);
   if (!snap_end.has_value())

@@ -10,6 +10,7 @@
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
@@ -183,22 +184,23 @@ TEST_F(OverviewControllerTest, AnimationCallbacksForCrossFadeWallpaper) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_EQ(TestOverviewObserver::COMPLETED,
             observer.starting_animation_state());
-  EXPECT_TRUE(overview_controller->HasBlurForTest());
-  EXPECT_TRUE(overview_controller->HasBlurAnimationForTest());
-  overview_controller->overview_wallpaper_controller()
-      ->StopBlurAnimationsForTesting();
+  auto* wallpaper_widget_controller =
+      Shell::GetPrimaryRootWindowController()->wallpaper_widget_controller();
+  EXPECT_GT(wallpaper_widget_controller->GetWallpaperProperty().blur_sigma, 0);
+  EXPECT_TRUE(wallpaper_widget_controller->IsAnimating());
+  wallpaper_widget_controller->StopAnimating();
 
   // Exiting overview has no animations.
   overview_controller->EndOverview();
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.ending_animation_state());
-  EXPECT_FALSE(overview_controller->HasBlurForTest());
-  EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
+  EXPECT_EQ(10, wallpaper_widget_controller->GetWallpaperProperty().blur_sigma);
+  EXPECT_FALSE(wallpaper_widget_controller->IsAnimating());
 
   observer.WaitForEndingAnimationComplete();
   EXPECT_EQ(TestOverviewObserver::COMPLETED, observer.ending_animation_state());
-  EXPECT_FALSE(overview_controller->HasBlurForTest());
-  EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
+  EXPECT_EQ(0, wallpaper_widget_controller->GetWallpaperProperty().blur_sigma);
+  EXPECT_FALSE(wallpaper_widget_controller->IsAnimating());
 
   gfx::Rect bounds(0, 0, 100, 100);
   std::unique_ptr<aura::Window> window1(
@@ -215,8 +217,8 @@ TEST_F(OverviewControllerTest, AnimationCallbacksForCrossFadeWallpaper) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.starting_animation_state());
   EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.ending_animation_state());
-  EXPECT_FALSE(overview_controller->HasBlurForTest());
-  EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
+  EXPECT_EQ(wallpaper_widget_controller->GetWallpaperProperty().blur_sigma, 0);
+  EXPECT_FALSE(wallpaper_widget_controller->IsAnimating());
 
   // Exit with windows before starting animation ends.
   overview_controller->EndOverview();
@@ -225,8 +227,8 @@ TEST_F(OverviewControllerTest, AnimationCallbacksForCrossFadeWallpaper) {
             observer.starting_animation_state());
   EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.ending_animation_state());
   // Blur animation never started.
-  EXPECT_FALSE(overview_controller->HasBlurForTest());
-  EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
+  EXPECT_EQ(wallpaper_widget_controller->GetWallpaperProperty().blur_sigma, 0);
+  EXPECT_FALSE(wallpaper_widget_controller->IsAnimating());
 
   observer.Reset();
 
@@ -236,8 +238,8 @@ TEST_F(OverviewControllerTest, AnimationCallbacksForCrossFadeWallpaper) {
   EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.starting_animation_state());
   EXPECT_EQ(TestOverviewObserver::CANCELED, observer.ending_animation_state());
   // Blur animation will start when animation is completed.
-  EXPECT_FALSE(overview_controller->HasBlurForTest());
-  EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
+  EXPECT_EQ(wallpaper_widget_controller->GetWallpaperProperty().blur_sigma, 0);
+  EXPECT_FALSE(wallpaper_widget_controller->IsAnimating());
 
   observer.Reset();
 
@@ -247,9 +249,10 @@ TEST_F(OverviewControllerTest, AnimationCallbacksForCrossFadeWallpaper) {
   EXPECT_EQ(TestOverviewObserver::CANCELED,
             observer.starting_animation_state());
   // Blur animation never started.
-  EXPECT_FALSE(overview_controller->HasBlurForTest());
-  EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
+  EXPECT_EQ(wallpaper_widget_controller->GetWallpaperProperty().blur_sigma, 0);
+  EXPECT_FALSE(wallpaper_widget_controller->IsAnimating());
 }
+
 TEST_F(OverviewControllerTest, OcclusionTest) {
   using OcclusionState = aura::Window::OcclusionState;
 
@@ -441,10 +444,11 @@ TEST_P(OverviewControllerTestWithDragFromShelfToHomeOrOverview,
       is_homerview_enabled
           ? OverviewSession::EnterExitOverviewType::kFadeInEnter
           : OverviewSession::EnterExitOverviewType::kSlideInEnter);
-  auto* overview_controller = Shell::Get()->overview_controller();
-  EXPECT_EQ(is_homerview_enabled, overview_controller->HasBlurForTest());
+  auto* wallpaper_widget_controller =
+      Shell::GetPrimaryRootWindowController()->wallpaper_widget_controller();
   EXPECT_EQ(is_homerview_enabled,
-            overview_controller->HasBlurAnimationForTest());
+            wallpaper_widget_controller->GetWallpaperProperty().blur_sigma > 0);
+  EXPECT_EQ(is_homerview_enabled, wallpaper_widget_controller->IsAnimating());
 }
 
 // Tests that overview session exits cleanly if exit is requested before

@@ -139,7 +139,6 @@
 <translation id="1186771945450942097">Отстрани го штетниот софтвер</translation>
 <translation id="1187722533808055681">Неактивни будења</translation>
 <translation id="1188807932851744811">Дневникот не се постави.</translation>
-<translation id="1189418886587279221">Овозможете функции на достапност за да го направите уредот полесен за користење.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Пристап до датотека складирана на компјутерот}one{Пристап до # датотека складирана на компјутерот}other{Пристап до # датотеки складирани на компјутерот}}</translation>
 <translation id="1190660338026981543">Вашиот <ph name="DEVICE_TYPE" /> е успешно регистриран за компаниско управување од <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="119092896208640858">За да ги избришете податоците од прелистувањето само од овој уред, а притоа да ги задржите во вашата сметка на Google, <ph name="BEGIN_LINK" />одјавете се<ph name="END_LINK" />.</translation>
@@ -339,7 +338,6 @@
 <translation id="1476607407192946488">&amp;Поставки за јазик</translation>
 <translation id="1478340334823509079">Детали: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Не е овозможена инсталација</translation>
-<translation id="1481206932476131736">Управувајте со најавените сметки. Веб-сајтовите, апликациите и екстензиите во Chrome и Google Play може да ги користат сметкиве за приспособување на вашето доживување, зависно од дозволите.</translation>
 <translation id="1482626744466814421">Обележете ја картичкава…</translation>
 <translation id="1483493594462132177">Испрати</translation>
 <translation id="1484979925941077974">Сајтот користи Bluetooth</translation>
@@ -592,7 +590,6 @@
 <translation id="1813278315230285598">Услуги</translation>
 <translation id="18139523105317219">Име на партијата EDI</translation>
 <translation id="1815083418640426271">Залепи како обичен текст</translation>
-<translation id="1815579292149538864">Поставете ги или управувајте со печатачите за CUPS.</translation>
 <translation id="181577467034453336">Уште <ph name="NUMBER_OF_VIEWS" />…</translation>
 <translation id="1816036116994822943">Брзина на скенирање на тастатурата</translation>
 <translation id="1817871734039893258">Обнова на датотека на Microsoft</translation>
@@ -1454,7 +1451,6 @@
 <translation id="3012917896646559015">Веднаш контактирајте со производителот на хардверот за да го испратите компјутерот на поправка.</translation>
 <translation id="3013291976881901233">MIDI-уреди</translation>
 <translation id="3015639418649705390">Рестартирај сега</translation>
-<translation id="3016329696181678353"><ph name="PRINTER_NAME" /> не можеше да се конфигурира автоматски. Наведете ги напредните детали за печатачот.</translation>
 <translation id="3016381065346027039">Нема записи во евиденцијата</translation>
 <translation id="3016641847947582299">Компонентата е ажурирана</translation>
 <translation id="3016780570757425217">Знајте ја својата локација</translation>
@@ -2192,7 +2188,6 @@
 <translation id="4046123991198612571">Следна песна</translation>
 <translation id="4050225813016893843">Метод на проверка</translation>
 <translation id="4052120076834320548">Ситен</translation>
-<translation id="4055023634561256217">Потребно е да се рестартира пред да се ресетира уредот до фабрички вредности.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> – <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">Прикажи во продавница</translation>
 <translation id="4058647953897694817">Потврди преку Bluetooth</translation>
@@ -2514,7 +2509,6 @@
 <translation id="4558426062282641716">Потребна е дозвола за автоматско стартување</translation>
 <translation id="4558491878126948419">Добивајте совети за <ph name="DEVICE_TYPE" />, новости за производи на Google и споделувајте повратни информации. Отпишете се во секое време.</translation>
 <translation id="4559617833001311418">Сајтов пристапува до сензорите за движење или светлина.</translation>
-<translation id="4561098487691395071">Или одредете ја PPD-датотеката на печатачот</translation>
 <translation id="4562155214028662640">Додај отпечаток</translation>
 <translation id="4562494484721939086">Нема услуга</translation>
 <translation id="4563880231729913339">Прст 3</translation>
@@ -2757,7 +2751,6 @@
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925542575807923399">Администраторот на оваа сметка бара таа да биде првата пријавена сметка во сесија со повеќе пријавувања.</translation>
 <translation id="4927753642311223124">Овде нема што да се види, продолжи.</translation>
-<translation id="4927846293686536410">Најавете се за да ги добиете обележувачите, историјата, лозинките и другите поставки на сите ваши уреди. Исто така, автоматски ќе ве најавиме и на вашите услуги на Google.</translation>
 <translation id="4929386379796360314">Дестинации за печатење</translation>
 <translation id="4930714375720679147">Вклучи</translation>
 <translation id="4932733599132424254">Датум</translation>
@@ -3314,7 +3307,6 @@
 <translation id="5750324801516359607">Далеку</translation>
 <translation id="5756163054456765343">Центар за п&amp;омош</translation>
 <translation id="5759728514498647443">Документите што сте ги испратиле за печатење преку <ph name="APP_NAME" /> може да се читаат од <ph name="APP_NAME" />.</translation>
-<translation id="5763315388120433852">Поставете ги или управувајте со мрежните споделувања.</translation>
 <translation id="5763751966069581670">Нема пронајдени USB-уреди</translation>
 <translation id="5764483294734785780">За&amp;чувај аудио како...</translation>
 <translation id="57646104491463491">Датум на промена</translation>
@@ -4634,7 +4626,6 @@
 <translation id="7684718995427157417">За создавање и тестирање на вашите апликации, овозможете ја Android Debug Bridge (ADB). Имајте предвид дека дејствово овозможува инсталирање апликации за Android што не се потврдени од Google, а за оневозможувањето е потребно фабричко ресетирање.</translation>
 <translation id="7685049629764448582">Меморија на JavaScript</translation>
 <translation id="7685087414635069102">Потребен е PIN</translation>
-<translation id="768549422429443215">Додајте јазици или прередете го списокот.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Потврдете ја новата лозинка</translation>
 <translation id="7690378713476594306">Изберете од списокот</translation>
@@ -4671,7 +4662,6 @@
 <translation id="7730449930968088409">Снимете содржина од својот екран</translation>
 <translation id="7732111077498238432">Мрежата се контролира со правило</translation>
 <translation id="7737238973539693982">Избриши Linux (Бета)</translation>
-<translation id="7737456446569756884">Уредов ќе добива автоматски софтверски и безбедносни ажурирања до <ph name="MONTH_AND_YEAR" />.</translation>
 <translation id="7740996059027112821">Стандарден</translation>
 <translation id="7744047395460924128">Видете ја историјата на печатење</translation>
 <translation id="7746457520633464754">За да открие опасни апликации и сајтови, Chrome испраќа URL-адреси од некои страници што ги посетувате, ограничени информации за системот и некои содржини од страниците до Google</translation>
@@ -5560,7 +5550,6 @@
 <translation id="892706138619340876">Некои поставки се ресетирани</translation>
 <translation id="8930351635855238750">Новите поставки за колачиња ќе стапат на сила по повторното вчитување на страницата</translation>
 <translation id="8931394284949551895">Нови уреди</translation>
-<translation id="893254996965966411">Зачувајте ги откриените печатачи на вашиот профил или додајте нов печатач.</translation>
 <translation id="8932894639908691771">Опции за „Пристап со прекинувачи“</translation>
 <translation id="8933960630081805351">&amp;Прикажи во Наоѓач</translation>
 <translation id="8934732568177537184">Продолжи</translation>

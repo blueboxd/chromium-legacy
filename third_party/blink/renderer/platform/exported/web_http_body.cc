@@ -121,11 +121,6 @@ void WebHTTPBody::AppendData(const WebData& data) {
       });
 }
 
-void WebHTTPBody::AppendFile(const WebString& file_path) {
-  EnsureMutable();
-  private_->AppendFile(file_path);
-}
-
 void WebHTTPBody::AppendFileRange(
     const WebString& file_path,
     int64_t file_start,

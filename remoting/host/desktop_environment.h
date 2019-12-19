@@ -26,7 +26,12 @@ class AudioCapturer;
 class ClientSessionControl;
 class FileOperations;
 class InputInjector;
+class KeyboardLayoutMonitor;
 class ScreenControls;
+
+namespace protocol {
+class KeyboardLayout;
+}  // namespace protocol
 
 // Provides factory methods for creation of audio/video capturers and event
 // executor for a given desktop environment.
@@ -43,6 +48,9 @@ class DesktopEnvironment {
   virtual std::unique_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() = 0;
   virtual std::unique_ptr<webrtc::MouseCursorMonitor>
   CreateMouseCursorMonitor() = 0;
+  virtual std::unique_ptr<KeyboardLayoutMonitor> CreateKeyboardLayoutMonitor(
+      base::RepeatingCallback<void(const protocol::KeyboardLayout&)>
+          callback) = 0;
   virtual std::unique_ptr<FileOperations> CreateFileOperations() = 0;
 
   // Returns the set of all capabilities supported by |this|.

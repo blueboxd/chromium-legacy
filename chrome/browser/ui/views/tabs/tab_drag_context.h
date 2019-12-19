@@ -35,7 +35,8 @@ class TabDragContext {
   virtual int GetTabCount() const = 0;
   virtual bool IsTabPinned(const Tab* tab) const = 0;
   virtual int GetPinnedTabCount() const = 0;
-  virtual TabGroupHeader* GetTabGroupHeader(TabGroupId group) const = 0;
+  virtual TabGroupHeader* GetTabGroupHeader(
+      tab_groups::TabGroupId group) const = 0;
   virtual TabStripModel* GetTabStripModel() = 0;
 
   // Returns the index of the active tab in touch mode, or no value if not in
@@ -95,7 +96,7 @@ class TabDragContext {
       int num_dragged_tabs,
       bool mouse_has_ever_moved_left,
       bool mouse_has_ever_moved_right,
-      base::Optional<TabGroupId> group) const = 0;
+      base::Optional<tab_groups::TabGroupId> group) const = 0;
 
   // Returns true if |dragged_bounds| is close enough to the next stacked tab
   // so that the active tab should be dragged there.

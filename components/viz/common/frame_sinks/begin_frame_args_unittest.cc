@@ -29,8 +29,8 @@ TEST(BeginFrameArgsTest, Helpers) {
   BeginFrameArgs args2 =
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 123, 10, 1, 2, 3);
   EXPECT_TRUE(args2.IsValid()) << args2;
-  EXPECT_EQ(123u, args2.source_id);
-  EXPECT_EQ(10u, args2.sequence_number);
+  EXPECT_EQ(123u, args2.frame_id.source_id);
+  EXPECT_EQ(10u, args2.frame_id.sequence_number);
   EXPECT_EQ(k1Usec, args2.frame_time.since_origin());
   EXPECT_EQ(k2Usec, args2.deadline.since_origin());
   EXPECT_EQ(k3Usec, args2.interval);
@@ -39,8 +39,8 @@ TEST(BeginFrameArgsTest, Helpers) {
   BeginFrameArgs args4 = CreateBeginFrameArgsForTesting(
       BEGINFRAME_FROM_HERE, 234, 20, 1, 2, 3, BeginFrameArgs::MISSED);
   EXPECT_TRUE(args4.IsValid()) << args4;
-  EXPECT_EQ(234u, args4.source_id);
-  EXPECT_EQ(20u, args4.sequence_number);
+  EXPECT_EQ(234u, args4.frame_id.source_id);
+  EXPECT_EQ(20u, args4.frame_id.sequence_number);
   EXPECT_EQ(k1Usec, args4.frame_time.since_origin());
   EXPECT_EQ(k2Usec, args4.deadline.since_origin());
   EXPECT_EQ(k3Usec, args4.interval);
@@ -107,8 +107,8 @@ TEST(BeginFrameArgsTest, Create) {
   EXPECT_TRUE(args2.IsValid()) << args2;
   EXPECT_TRUE(args2.on_critical_path);
   EXPECT_FALSE(args2.animate_only);
-  EXPECT_EQ(123u, args2.source_id) << args2;
-  EXPECT_EQ(10u, args2.sequence_number) << args2;
+  EXPECT_EQ(123u, args2.frame_id.source_id) << args2;
+  EXPECT_EQ(10u, args2.frame_id.sequence_number) << args2;
   EXPECT_EQ(k1Usec, args2.frame_time.since_origin()) << args2;
   EXPECT_EQ(k2Usec, args2.deadline.since_origin()) << args2;
   EXPECT_EQ(k3Usec, args2.interval) << args2;

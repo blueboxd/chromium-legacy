@@ -7,7 +7,7 @@
 #include "base/time/time.h"
 #include "base/timer/lap_timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 
 namespace base {
 namespace {
@@ -15,6 +15,17 @@ namespace {
 constexpr int kWarmupRuns = 1;
 constexpr TimeDelta kTimeLimit = TimeDelta::FromSeconds(1);
 constexpr int kTimeCheckInterval = 100000;
+
+constexpr char kMetricPrefixSpinLock[] = "SpinLock.";
+constexpr char kMetricLockUnlockThroughput[] = "lock_unlock_throughput";
+constexpr char kStoryBaseline[] = "baseline_story";
+constexpr char kStoryWithCompetingThread[] = "with_competing_thread";
+
+perf_test::PerfResultReporter SetUpReporter(const std::string& story_name) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixSpinLock, story_name);
+  reporter.RegisterImportantMetric(kMetricLockUnlockThroughput, "runs/s");
+  return reporter;
+}
 
 class Spin : public PlatformThread::Delegate {
  public:
@@ -53,8 +64,8 @@ TEST(SpinLockPerfTest, Simple) {
     timer.NextLap();
   } while (!timer.HasTimeLimitExpired());
 
-  perf_test::PrintResult("SpinLockPerfTest", " lock()/unlock()", "",
-                         timer.LapsPerSecond(), "runs/s", true);
+  auto reporter = SetUpReporter(kStoryBaseline);
+  reporter.AddResult(kMetricLockUnlockThroughput, timer.LapsPerSecond());
 }
 
 TEST(SpinLockPerfTest, WithCompetingThread) {
@@ -78,9 +89,8 @@ TEST(SpinLockPerfTest, WithCompetingThread) {
   thread_main.Stop();
   PlatformThread::Join(thread_handle);
 
-  perf_test::PrintResult("SpinLockPerfTest.WithCompetingThread",
-                         " lock()/unlock()", "", timer.LapsPerSecond(),
-                         "runs/s", true);
+  auto reporter = SetUpReporter(kStoryWithCompetingThread);
+  reporter.AddResult(kMetricLockUnlockThroughput, timer.LapsPerSecond());
 }
 
 }  // namespace base

@@ -92,16 +92,16 @@ base::Optional<int> TabStripModelOrderController::DetermineNewSelectedIndex(
   }
 
   // If closing a grouped tab, return a tab that is still in the group, if any.
-  const base::Optional<TabGroupId> current_group =
+  const base::Optional<tab_groups::TabGroupId> current_group =
       tabstrip_->GetTabGroupForTab(removing_index);
   if (current_group.has_value()) {
     // Match the default behavior below: prefer the tab to the right.
-    const base::Optional<TabGroupId> right_group =
+    const base::Optional<tab_groups::TabGroupId> right_group =
         tabstrip_->GetTabGroupForTab(removing_index + 1);
     if (current_group == right_group)
       return removing_index;
 
-    const base::Optional<TabGroupId> left_group =
+    const base::Optional<tab_groups::TabGroupId> left_group =
         tabstrip_->GetTabGroupForTab(removing_index - 1);
     if (current_group == left_group)
       return removing_index - 1;

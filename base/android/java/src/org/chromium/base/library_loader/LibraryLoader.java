@@ -293,14 +293,14 @@ public class LibraryLoader {
         synchronized (mLock) {
             setLinkerImplementationIfNeededAlreadyLocked();
             if (mUseChromiumLinker) return;
-            preloadAlreadyLocked(appContext.getApplicationInfo());
+            preloadAlreadyLocked(appContext.getApplicationInfo(), false /* inZygote */);
         }
     }
 
-    private void preloadAlreadyLocked(ApplicationInfo appInfo) {
+    private void preloadAlreadyLocked(ApplicationInfo appInfo, boolean inZygote) {
         try (TraceEvent te = TraceEvent.scoped("LibraryLoader.preloadAlreadyLocked")) {
             // Preloader uses system linker, we shouldn't preload if Chromium linker is used.
-            assert !mUseChromiumLinker;
+            assert !mUseChromiumLinker || inZygote;
             if (mLibraryPreloader != null && !mLibraryPreloaderCalled) {
                 mLibraryPreloader.loadLibrary(appInfo);
                 mLibraryPreloaderCalled = true;
@@ -451,9 +451,9 @@ public class LibraryLoader {
 
     @GuardedBy("mLock")
     @SuppressLint("UnsafeDynamicallyLoadedCode")
-    private void loadWithSystemLinkerAlreadyLocked(ApplicationInfo appInfo) {
+    private void loadWithSystemLinkerAlreadyLocked(ApplicationInfo appInfo, boolean inZygote) {
         setEnvForNative();
-        preloadAlreadyLocked(appInfo);
+        preloadAlreadyLocked(appInfo, inZygote);
 
         // If the libraries are located in the zip file, assert that the device API level is M or
         // higher. On devices <=M, the libraries should always be loaded by LegacyLinker.
@@ -500,7 +500,7 @@ public class LibraryLoader {
                 loadWithChromiumLinker(appInfo, library);
             } else {
                 Log.d(TAG, "Loading with the System linker.");
-                loadWithSystemLinkerAlreadyLocked(appInfo);
+                loadWithSystemLinkerAlreadyLocked(appInfo, inZygote);
             }
 
             long stopTime = SystemClock.uptimeMillis();

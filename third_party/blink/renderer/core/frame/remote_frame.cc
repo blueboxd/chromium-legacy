@@ -362,6 +362,12 @@ bool RemoteFrame::IsIgnoredForHitTest() const {
 void RemoteFrame::UpdateHitTestOcclusionData() {
   if (!cc_layer_ || !is_surface_layer_)
     return;
+  // If the parent LocalFrameView is render throttled, we may have stale layout
+  // information, so do nothing.
+  LocalFrameView* parent_view = View() ? View()->ParentFrameView() : nullptr;
+  if (!parent_view || parent_view->CanThrottleRendering())
+    return;
+  CHECK(!parent_view->NeedsLayout());
   bool unoccluded = false;
   if (base::FeatureList::IsEnabled(
           blink::features::kVizHitTestOcclusionCheck)) {

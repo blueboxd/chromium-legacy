@@ -31,7 +31,7 @@ struct RemoteDevice {
   // but the Instance ID is not present in CryptAuth v1. This string is empty
   // for devices not using CryptAuth v2 Enrollment and v2 DeviceSync.
   // TODO(https://crbug.com/1019206): Remove comments when v1 DeviceSync is
-  // deprecated.
+  // disabled.
   std::string instance_id;
 
   std::string name;

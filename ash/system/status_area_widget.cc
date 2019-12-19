@@ -180,6 +180,9 @@ void StatusAreaWidget::UpdateCollapseState() {
       tray_button->UpdateAfterStatusAreaCollapseChange();
     }
   }
+
+  status_area_widget_delegate_->OnStatusAreaCollapseStateChanged(
+      collapse_state_);
 }
 
 void StatusAreaWidget::UpdateLayout(bool animate) {

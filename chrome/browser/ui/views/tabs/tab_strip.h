@@ -47,7 +47,6 @@ class Browser;
 class NewTabButton;
 class StackedTabStripLayout;
 class Tab;
-class TabGroupId;
 class TabHoverCardBubbleView;
 class TabStripController;
 class TabStripObserver;
@@ -55,6 +54,10 @@ class TabStripLayoutHelper;
 
 namespace gfx {
 class Rect;
+}
+
+namespace tab_groups {
+class TabGroupId;
 }
 
 namespace ui {
@@ -164,23 +167,24 @@ class TabStrip : public views::AccessiblePaneView,
   void SetTabData(int model_index, TabRendererData data);
 
   // Sets the tab group at the specified model index.
-  void AddTabToGroup(base::Optional<TabGroupId> group, int model_index);
+  void AddTabToGroup(base::Optional<tab_groups::TabGroupId> group,
+                     int model_index);
 
   // Creates the views associated with a newly-created tab group.
-  void OnGroupCreated(TabGroupId group);
+  void OnGroupCreated(tab_groups::TabGroupId group);
 
   // Updates the group's contents and metadata when its tab membership changes.
   // This should be called when a tab is added to or removed from a group.
-  void OnGroupContentsChanged(TabGroupId group);
+  void OnGroupContentsChanged(tab_groups::TabGroupId group);
 
-  // Updates the group's tabs and header when its associated TabGroupVisualData
-  // changes. This should be called when the result of
-  // |TabStripController::GetVisualDataForGroup(group)| changes.
-  void OnGroupVisualsChanged(TabGroupId group);
+  // Updates the group's tabs and header when its associated
+  // tab_groups::TabGroupVisualData changes. This should be called when the
+  // result of |TabStripController::GetVisualDataForGroup(group)| changes.
+  void OnGroupVisualsChanged(tab_groups::TabGroupId group);
 
   // Destroys the views associated with a recently deleted tab group. The
   // associated view mappings are erased in OnGroupCloseAnimationCompleted().
-  void OnGroupClosed(TabGroupId group);
+  void OnGroupClosed(tab_groups::TabGroupId group);
 
   // Returns true if the tab is not partly or fully clipped (due to overflow),
   // and the tab couldn't become partly clipped due to changing the selected tab
@@ -209,7 +213,7 @@ class TabStrip : public views::AccessiblePaneView,
   Tab* tab_at(int index) const { return tabs_.view_at(index); }
 
   // Returns the TabGroupHeader with ID |id|.
-  TabGroupHeader* group_header(TabGroupId id) {
+  TabGroupHeader* group_header(tab_groups::TabGroupId id) {
     return group_views_[id].get()->header();
   }
 
@@ -299,13 +303,14 @@ class TabStrip : public views::AccessiblePaneView,
   gfx::Rect GetTabAnimationTargetBounds(const Tab* tab) override;
   float GetHoverOpacityForTab(float range_parameter) const override;
   float GetHoverOpacityForRadialHighlight() const override;
-  const TabGroupVisualData* GetVisualDataForGroup(
-      TabGroupId group) const override;
-  void SetVisualDataForGroup(TabGroupId group,
-                             TabGroupVisualData visual_data) override;
-  void CloseAllTabsInGroup(TabGroupId group) override;
-  void UngroupAllTabsInGroup(TabGroupId group) override;
-  void AddNewTabInGroup(TabGroupId group) override;
+  const tab_groups::TabGroupVisualData* GetVisualDataForGroup(
+      tab_groups::TabGroupId group) const override;
+  void SetVisualDataForGroup(
+      tab_groups::TabGroupId group,
+      tab_groups::TabGroupVisualData visual_data) override;
+  void CloseAllTabsInGroup(tab_groups::TabGroupId group) override;
+  void UngroupAllTabsInGroup(tab_groups::TabGroupId group) override;
+  void AddNewTabInGroup(tab_groups::TabGroupId group) override;
   const Browser* GetBrowser() override;
 
   // MouseWatcherListener:
@@ -406,7 +411,7 @@ class TabStrip : public views::AccessiblePaneView,
 
   views::ViewModelT<Tab>* tabs_view_model() { return &tabs_; }
 
-  std::map<TabGroupId, TabGroupHeader*> GetGroupHeaders();
+  std::map<tab_groups::TabGroupId, TabGroupHeader*> GetGroupHeaders();
 
   // Invoked from |AddTabAt| after the newly created tab has been inserted.
   void StartInsertTabAnimation(int model_index, TabPinned pinned);
@@ -489,7 +494,7 @@ class TabStrip : public views::AccessiblePaneView,
 
   // Cleans up the TabGroupHeader for |group| from the TabStrip. This is called
   // from the tab animation code and is not a general-purpose method.
-  void OnGroupCloseAnimationCompleted(TabGroupId group);
+  void OnGroupCloseAnimationCompleted(tab_groups::TabGroupId group);
 
   // Invoked from StoppedDraggingTabs to cleanup |view|. If |view| is known
   // |is_first_view| is set to true.
@@ -640,7 +645,7 @@ class TabStrip : public views::AccessiblePaneView,
   // in |layout_helper_| until the remove animation completes.
   views::ViewModelT<Tab> tabs_;
 
-  std::map<TabGroupId, std::unique_ptr<TabGroupViews>> group_views_;
+  std::map<tab_groups::TabGroupId, std::unique_ptr<TabGroupViews>> group_views_;
 
   // The view tracker is used to keep track of if the hover card has been
   // destroyed by its widget.

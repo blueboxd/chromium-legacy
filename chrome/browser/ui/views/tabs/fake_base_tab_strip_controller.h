@@ -11,9 +11,9 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "chrome/browser/ui/tabs/tab_group_id.h"
-#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "ui/base/models/list_selection_model.h"
 
 class FakeBaseTabStripController : public TabStripController {
@@ -25,7 +25,8 @@ class FakeBaseTabStripController : public TabStripController {
   void AddPinnedTab(int index, bool is_active);
   void RemoveTab(int index);
 
-  void MoveTabIntoGroup(int index, base::Optional<TabGroupId> new_group);
+  void MoveTabIntoGroup(int index,
+                        base::Optional<tab_groups::TabGroupId> new_group);
 
   ui::ListSelectionModel* selection_model() { return &selection_model_; }
 
@@ -57,13 +58,14 @@ class FakeBaseTabStripController : public TabStripController {
   void OnStartedDragging() override;
   void OnStoppedDragging() override;
   void OnKeyboardFocusedTabChanged(base::Optional<int> index) override;
-  const TabGroupVisualData* GetVisualDataForGroup(
-      TabGroupId group_id) const override;
-  void SetVisualDataForGroup(TabGroupId group,
-                             TabGroupVisualData visual_data) override;
-  std::vector<int> ListTabsInGroup(TabGroupId group) const override;
-  void UngroupAllTabsInGroup(TabGroupId group) override;
-  void AddNewTabInGroup(TabGroupId group) override;
+  const tab_groups::TabGroupVisualData* GetVisualDataForGroup(
+      tab_groups::TabGroupId group_id) const override;
+  void SetVisualDataForGroup(
+      tab_groups::TabGroupId group,
+      tab_groups::TabGroupVisualData visual_data) override;
+  std::vector<int> ListTabsInGroup(tab_groups::TabGroupId group) const override;
+  void UngroupAllTabsInGroup(tab_groups::TabGroupId group) override;
+  void AddNewTabInGroup(tab_groups::TabGroupId group) override;
   bool IsFrameCondensed() const override;
   bool HasVisibleBackgroundTabShapes() const override;
   bool EverHasVisibleBackgroundTabShapes() const override;
@@ -85,8 +87,8 @@ class FakeBaseTabStripController : public TabStripController {
   int num_tabs_ = 0;
   int active_index_ = -1;
 
-  TabGroupVisualData fake_group_data_;
-  std::vector<base::Optional<TabGroupId>> tab_groups_;
+  tab_groups::TabGroupVisualData fake_group_data_;
+  std::vector<base::Optional<tab_groups::TabGroupId>> tab_groups_;
 
   ui::ListSelectionModel selection_model_;
 

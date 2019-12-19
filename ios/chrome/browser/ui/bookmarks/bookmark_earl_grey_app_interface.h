@@ -21,6 +21,29 @@
                                        thirdURL:(NSString*)thirdURL
                                       fourthURL:(NSString*)fourthURL;
 
+// Loads a large set of bookmarks in the model which is longer than the screen
+// height.
++ (NSError*)setupBookmarksWhichExceedsScreenHeightUsingURL:(NSString*)URL;
+
+// Waits for the Bookmark modedl to be |loaded|.
++ (BOOL)waitForBookmarkModelLoaded:(BOOL)loaded;
+
+// Asserts that |expectedCount| bookmarks exist with the corresponding |title|
+// using the BookmarkModel.
++ (NSError*)verifyBookmarksWithTitle:(NSString*)title
+                       expectedCount:(NSUInteger)expectedCount;
+
+// Removes programmatically the first bookmark with the given title.
++ (NSError*)removeBookmarkWithTitle:(NSString*)title;
+
+// Moves bookmark with title |bookmarkTitle| into a folder with title
+// |newFolder|.
++ (NSError*)moveBookmarkWithTitle:(NSString*)bookmarkTitle
+                toFolderWithTitle:(NSString*)newFolder;
+
+// Verifies that there is |count| children on the bookmark folder with |name|.
++ (NSError*)verifyChildCount:(size_t)count inFolderWithName:(NSString*)name;
+
 // Checks that the promo has already been seen or not.
 + (NSError*)verifyPromoAlreadySeen:(BOOL)seen;
 
@@ -29,9 +52,6 @@
 
 // Sets that the promo has already been seen |times| number of times.
 + (void)setPromoAlreadySeenNumberOfTimes:(int)times;
-
-// Verifies that there is |count| children on the bookmark folder with |name|.
-+ (NSError*)verifyChildCount:(size_t)count inFolderWithName:(NSString*)name;
 
 // Returns the number of times a Promo has been seen.
 + (int)numberOfTimesPromoAlreadySeen;

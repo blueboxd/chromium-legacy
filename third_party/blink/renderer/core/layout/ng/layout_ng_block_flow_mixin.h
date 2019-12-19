@@ -60,10 +60,10 @@ class LayoutNGBlockFlowMixin : public LayoutNGMixin<Base> {
   void SetPaintFragment(const NGBlockBreakToken*,
                         scoped_refptr<const NGPhysicalFragment>) final;
 
+  using LayoutNGMixin<Base>::CurrentFragment;
+
  protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
-
-  const NGPhysicalBoxFragment* CurrentFragment() const final;
 
   void AddLayoutOverflowFromChildren() final;
 

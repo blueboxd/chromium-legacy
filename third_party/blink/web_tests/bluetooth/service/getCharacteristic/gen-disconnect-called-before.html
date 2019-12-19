@@ -7,6 +7,14 @@
 <script src="../../../external/wpt/bluetooth/resources/bluetooth-helpers.js"></script>
 <script>
 'use strict';
+function createDOMException(func) {
+  return new DOMException(
+      `Failed to execute '${func}' on 'BluetoothRemoteGATTService': ` +
+      `GATT Server is disconnected. Cannot retrieve characteristics. ` +
+      `(Re)connect first with \`device.gatt.connect\`.`,
+      'NetworkError');
+}
+
 bluetooth_test(() => {
   return setBluetoothFakeAdapter('HeartRateAdapter')
     .then(() => requestDeviceWithTrustedClick({
@@ -18,10 +26,7 @@ bluetooth_test(() => {
           gatt.disconnect();
           return assert_promise_rejects_with_message(
             heart_rate_service.getCharacteristic('heart_rate_measurement'),
-            new DOMException(
-              'GATT Server is disconnected. Cannot retrieve characteristics. ' +
-              '(Re)connect first with `device.gatt.connect`.',
-              'NetworkError'));
+            createDOMException('getCharacteristic'));
         });
     });
 }, 'disconnect() called before getCharacteristic. Reject with NetworkError.');

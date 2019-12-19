@@ -22,6 +22,7 @@ source_set("sessions") {
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//components/sessions",
+    "//components/tab_groups",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/tabs",

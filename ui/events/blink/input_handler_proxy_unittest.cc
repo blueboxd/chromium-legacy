@@ -1600,7 +1600,18 @@ TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedGestureScroll) {
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 }
 
-TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedGestureScrollPinchScroll) {
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
+// Flaky under sanitizers and in other "slow" bot configs:
+// https://crbug.com/1029250
+#define MAYBE_VSyncAlignedGestureScrollPinchScroll \
+  DISABLED_VSyncAlignedGestureScrollPinchScroll
+#else
+#define MAYBE_VSyncAlignedGestureScrollPinchScroll \
+  VSyncAlignedGestureScrollPinchScroll
+#endif
+
+TEST_F(InputHandlerProxyEventQueueTest,
+       MAYBE_VSyncAlignedGestureScrollPinchScroll) {
   // Handle scroll on compositor.
   cc::InputHandlerScrollResult scroll_result_did_scroll_;
   scroll_result_did_scroll_.did_scroll = true;

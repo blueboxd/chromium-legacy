@@ -117,7 +117,7 @@ class HitTestAggregatorTest : public testing::Test {
     frame_sink_manager_->SetLocalClient(host_frame_sink_manager_.get());
     support_ = std::make_unique<CompositorFrameSinkSupport>(
         nullptr /* client */, frame_sink_manager_.get(), kDisplayFrameSink,
-        true /* is_root */, false /* needs_sync_points */);
+        true /* is_root */);
     hit_test_aggregator_ = std::make_unique<TestHitTestAggregator>(
         hit_test_manager(), frame_sink_manager(),
         local_surface_id_lookup_delegate(), kDisplayFrameSink);
@@ -170,7 +170,7 @@ class HitTestAggregatorTest : public testing::Test {
     } else {
       auto support = std::make_unique<CompositorFrameSinkSupport>(
           nullptr, frame_sink_manager(), surface_id.frame_sink_id(),
-          false /* is_root */, false /* needs_sync_points */);
+          false /* is_root */);
       support->SubmitCompositorFrame(surface_id.local_surface_id(),
                                      MakeDefaultCompositorFrame(),
                                      std::move(hit_test_region_list));
@@ -371,7 +371,7 @@ TEST_F(HitTestAggregatorTest, OneEmbedderTwoChildren) {
 
   auto support2 = std::make_unique<CompositorFrameSinkSupport>(
       nullptr, frame_sink_manager(), c1_surface_id.frame_sink_id(),
-      false /* is_root */, false /* needs_sync_points */);
+      false /* is_root */);
   support2->SubmitCompositorFrame(c1_surface_id.local_surface_id(),
                                   MakeDefaultCompositorFrame(),
                                   std::move(c1_hit_test_region_list));
@@ -382,7 +382,7 @@ TEST_F(HitTestAggregatorTest, OneEmbedderTwoChildren) {
   local_surface_id_lookup_delegate()->SetSurfaceIdMap(e_surface_id);
   auto support3 = std::make_unique<CompositorFrameSinkSupport>(
       nullptr, frame_sink_manager(), c2_surface_id.frame_sink_id(),
-      false /* is_root */, false /* needs_sync_points */);
+      false /* is_root */);
   support3->SubmitCompositorFrame(c2_surface_id.local_surface_id(),
                                   MakeDefaultCompositorFrame(),
                                   std::move(c2_hit_test_region_list));
@@ -455,7 +455,7 @@ TEST_F(HitTestAggregatorTest, OccludedChildFrame) {
   // Submit in unexpected order.
   auto support2 = std::make_unique<CompositorFrameSinkSupport>(
       nullptr, frame_sink_manager(), c_surface_id.frame_sink_id(),
-      false /* is_root */, false /* needs_sync_points */);
+      false /* is_root */);
   support2->SubmitCompositorFrame(c_surface_id.local_surface_id(),
                                   MakeDefaultCompositorFrame(),
                                   std::move(c_hit_test_region_list));
@@ -536,7 +536,7 @@ TEST_F(HitTestAggregatorTest, ForegroundChildFrame) {
 
   auto support2 = std::make_unique<CompositorFrameSinkSupport>(
       nullptr, frame_sink_manager(), c_surface_id.frame_sink_id(),
-      false /* is_root */, false /* needs_sync_points */);
+      false /* is_root */);
   support2->SubmitCompositorFrame(c_surface_id.local_surface_id(),
                                   MakeDefaultCompositorFrame(),
                                   std::move(c_hit_test_region_list));
@@ -635,21 +635,21 @@ TEST_F(HitTestAggregatorTest, ClippedChildWithTabAndTransparentBackground) {
 
   auto support2 = std::make_unique<CompositorFrameSinkSupport>(
       nullptr, frame_sink_manager(), c_surface_id.frame_sink_id(),
-      false /* is_root */, false /* needs_sync_points */);
+      false /* is_root */);
   support2->SubmitCompositorFrame(c_surface_id.local_surface_id(),
                                   MakeDefaultCompositorFrame(),
                                   std::move(c_hit_test_region_list));
   local_surface_id_lookup_delegate()->SetSurfaceIdMap(c_surface_id);
   auto support3 = std::make_unique<CompositorFrameSinkSupport>(
       nullptr, frame_sink_manager(), a_surface_id.frame_sink_id(),
-      false /* is_root */, false /* needs_sync_points */);
+      false /* is_root */);
   support3->SubmitCompositorFrame(a_surface_id.local_surface_id(),
                                   MakeDefaultCompositorFrame(),
                                   std::move(a_hit_test_region_list));
   local_surface_id_lookup_delegate()->SetSurfaceIdMap(a_surface_id);
   auto support4 = std::make_unique<CompositorFrameSinkSupport>(
       nullptr, frame_sink_manager(), b_surface_id.frame_sink_id(),
-      false /* is_root */, false /* needs_sync_points */);
+      false /* is_root */);
   support4->SubmitCompositorFrame(b_surface_id.local_surface_id(),
                                   MakeDefaultCompositorFrame(),
                                   std::move(b_hit_test_region_list));
@@ -764,14 +764,14 @@ TEST_F(HitTestAggregatorTest, ThreeChildrenDeep) {
 
   auto support2 = std::make_unique<CompositorFrameSinkSupport>(
       nullptr, frame_sink_manager(), c1_surface_id.frame_sink_id(),
-      false /* is_root */, false /* needs_sync_points */);
+      false /* is_root */);
   support2->SubmitCompositorFrame(c1_surface_id.local_surface_id(),
                                   MakeDefaultCompositorFrame(),
                                   std::move(c1_hit_test_region_list));
   local_surface_id_lookup_delegate()->SetSurfaceIdMap(c1_surface_id);
   auto support3 = std::make_unique<CompositorFrameSinkSupport>(
       nullptr, frame_sink_manager(), c3_surface_id.frame_sink_id(),
-      false /* is_root */, false /* needs_sync_points */);
+      false /* is_root */);
   support3->SubmitCompositorFrame(c3_surface_id.local_surface_id(),
                                   MakeDefaultCompositorFrame(),
                                   std::move(c3_hit_test_region_list));
@@ -782,7 +782,7 @@ TEST_F(HitTestAggregatorTest, ThreeChildrenDeep) {
   local_surface_id_lookup_delegate()->SetSurfaceIdMap(e_surface_id);
   auto support4 = std::make_unique<CompositorFrameSinkSupport>(
       nullptr, frame_sink_manager(), c2_surface_id.frame_sink_id(),
-      false /* is_root */, false /* needs_sync_points */);
+      false /* is_root */);
   support4->SubmitCompositorFrame(c2_surface_id.local_surface_id(),
                                   MakeDefaultCompositorFrame(),
                                   std::move(c2_hit_test_region_list));
@@ -981,7 +981,7 @@ TEST_F(HitTestAggregatorTest, DiscardedSurfaces) {
 
   auto support2 = std::make_unique<CompositorFrameSinkSupport>(
       nullptr, frame_sink_manager(), c_surface_id.frame_sink_id(),
-      false /* is_root */, false /* needs_sync_points */);
+      false /* is_root */);
   support2->SubmitCompositorFrame(c_surface_id.local_surface_id(),
                                   MakeDefaultCompositorFrame(),
                                   std::move(c_hit_test_region_list));
@@ -1078,21 +1078,21 @@ TEST_F(HitTestAggregatorTest, TransparentOverlayRegions) {
 
   auto support2 = std::make_unique<CompositorFrameSinkSupport>(
       nullptr, frame_sink_manager(), c1_surface_id.frame_sink_id(),
-      false /* is_root */, false /* needs_sync_points */);
+      false /* is_root */);
   support2->SubmitCompositorFrame(c1_surface_id.local_surface_id(),
                                   MakeDefaultCompositorFrame(),
                                   std::move(c1_hit_test_region_list));
   local_surface_id_lookup_delegate()->SetSurfaceIdMap(c1_surface_id);
   auto support3 = std::make_unique<CompositorFrameSinkSupport>(
       nullptr, frame_sink_manager(), c2_surface_id.frame_sink_id(),
-      false /* is_root */, false /* needs_sync_points */);
+      false /* is_root */);
   support3->SubmitCompositorFrame(c2_surface_id.local_surface_id(),
                                   MakeDefaultCompositorFrame(),
                                   std::move(c2_hit_test_region_list));
   local_surface_id_lookup_delegate()->SetSurfaceIdMap(c2_surface_id);
   auto support4 = std::make_unique<CompositorFrameSinkSupport>(
       nullptr, frame_sink_manager(), d1_surface_id.frame_sink_id(),
-      false /* is_root */, false /* needs_sync_points */);
+      false /* is_root */);
   support4->SubmitCompositorFrame(d1_surface_id.local_surface_id(),
                                   MakeDefaultCompositorFrame(),
                                   std::move(d1_hit_test_region_list));

@@ -93,6 +93,9 @@ import java.util.List;
         mNtp = (FeedNewTabPage) mTab.getNativePage();
         mTileGridLayout = mNtp.getView().findViewById(R.id.tile_grid_layout);
         Assert.assertEquals(mSiteSuggestions.size(), mTileGridLayout.getChildCount());
+
+        // Set 5 pixel diff threshold. It is a value of value in different channel, not pixel count.
+        mRenderTestRule.setPixelDiffThreshold(5);
     }
 
     @Test

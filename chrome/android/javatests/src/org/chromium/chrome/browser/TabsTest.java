@@ -173,6 +173,8 @@ public class TabsTest {
 
     @After
     public void tearDown() {
+        mActivityTestRule.getActivity().setRequestedOrientation(
+                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         if (mTestServer != null) {
             mTestServer.stopAndDestroyServer();
         }

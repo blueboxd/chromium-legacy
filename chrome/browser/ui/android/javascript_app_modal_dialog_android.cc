@@ -36,11 +36,6 @@ JavascriptAppModalDialogAndroid::JavascriptAppModalDialogAndroid(
       parent_jobject_weak_ref_(env, parent->GetJavaObject().obj()) {
 }
 
-int JavascriptAppModalDialogAndroid::GetAppModalDialogButtons() const {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
 void JavascriptAppModalDialogAndroid::ShowAppModalDialog() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

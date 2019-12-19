@@ -34,9 +34,10 @@ TestingPrefServiceBase<sync_preferences::PrefServiceSyncable,
           user_prefs,
           pref_registry,
           /*pref_model_associator_client=*/nullptr,
-          base::Bind(&TestingPrefServiceBase<
-                     PrefServiceSyncable,
-                     user_prefs::PrefRegistrySyncable>::HandleReadError),
+          base::BindRepeating(
+              &TestingPrefServiceBase<
+                  PrefServiceSyncable,
+                  user_prefs::PrefRegistrySyncable>::HandleReadError),
           false),
       managed_prefs_(managed_prefs),
       extension_prefs_(extension_prefs),

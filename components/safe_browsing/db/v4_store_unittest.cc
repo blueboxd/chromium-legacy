@@ -759,10 +759,11 @@ TEST_F(V4StoreTest, TestRemovalsWithRiceEncodingSucceeds) {
 
   bool called_back = false;
   UpdatedStoreReadyCallback store_ready_callback =
-      base::Bind(&V4StoreTest::UpdatedStoreReady, base::Unretained(this),
-                 &called_back, true /* expect_store */);
+      base::BindOnce(&V4StoreTest::UpdatedStoreReady, base::Unretained(this),
+                     &called_back, true /* expect_store */);
   EXPECT_FALSE(base::PathExists(store.store_path_));
-  store.ApplyUpdate(std::move(lur), task_runner_, store_ready_callback);
+  store.ApplyUpdate(std::move(lur), task_runner_,
+                    std::move(store_ready_callback));
   EXPECT_TRUE(base::PathExists(store.store_path_));
 
   task_runner_->RunPendingTasks();
@@ -858,8 +859,8 @@ TEST_F(V4StoreTest, FullUpdateFailsChecksumSynchronously) {
   V4Store store(task_runner_, store_path_);
   bool called_back = false;
   UpdatedStoreReadyCallback store_ready_callback =
-      base::Bind(&V4StoreTest::UpdatedStoreReady, base::Unretained(this),
-                 &called_back, false /* expect_store */);
+      base::BindOnce(&V4StoreTest::UpdatedStoreReady, base::Unretained(this),
+                     &called_back, false /* expect_store */);
   EXPECT_FALSE(base::PathExists(store.store_path_));
   EXPECT_FALSE(store.HasValidData());  // Never actually read from disk.
 
@@ -867,7 +868,8 @@ TEST_F(V4StoreTest, FullUpdateFailsChecksumSynchronously) {
   std::unique_ptr<ListUpdateResponse> lur(new ListUpdateResponse);
   lur->set_response_type(ListUpdateResponse::FULL_UPDATE);
   lur->mutable_checksum()->set_sha256(std::string(crypto::kSHA256Length, 0));
-  store.ApplyUpdate(std::move(lur), task_runner_, store_ready_callback);
+  store.ApplyUpdate(std::move(lur), task_runner_,
+                    std::move(store_ready_callback));
   // The update should fail synchronously and not create a store file.
   EXPECT_FALSE(base::PathExists(store.store_path_));
 

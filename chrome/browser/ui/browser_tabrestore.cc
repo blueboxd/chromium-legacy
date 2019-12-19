@@ -16,10 +16,10 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/restore_type.h"
 #include "content/public/browser/session_storage_namespace.h"
@@ -97,7 +97,7 @@ WebContents* AddRestoredTab(
     int tab_index,
     int selected_navigation,
     const std::string& extension_app_id,
-    base::Optional<base::Token> raw_group_id,
+    base::Optional<tab_groups::TabGroupId> group,
     bool select,
     bool pin,
     bool from_last_session,
@@ -121,9 +121,9 @@ WebContents* AddRestoredTab(
   const int actual_index = browser->tab_strip_model()->InsertWebContentsAt(
       tab_index, std::move(web_contents), add_types);
 
-  if (raw_group_id.has_value()) {
-    auto group_id = TabGroupId::FromRawToken(raw_group_id.value());
-    browser->tab_strip_model()->AddToGroupForRestore({actual_index}, group_id);
+  if (group.has_value()) {
+    browser->tab_strip_model()->AddToGroupForRestore({actual_index},
+                                                     group.value());
   }
 
   if (select) {

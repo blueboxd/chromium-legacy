@@ -152,6 +152,9 @@ class CORE_EXPORT NGPhysicalFragment
   // Returns whether the fragment is legacy layout root.
   bool IsLegacyLayoutRoot() const { return is_legacy_layout_root_; }
 
+  // Returns whether the fragment should be atomically painted.
+  bool IsPaintedAtomically() const { return is_painted_atomically_; }
+
   bool IsBlockFormattingContextRoot() const {
     return (IsBox() &&
             BoxType() >= NGBoxType::kMinimumBlockFormattingContextRoot) ||
@@ -364,6 +367,7 @@ class CORE_EXPORT NGPhysicalFragment
   // for all types to allow methods using them to be inlined.
   unsigned is_fieldset_container_ : 1;
   unsigned is_legacy_layout_root_ : 1;
+  unsigned is_painted_atomically_ : 1;
 
   // The following bitfields are only to be used by NGPhysicalTextFragment
   // (it's defined here to save memory, since that class has no bitfields).

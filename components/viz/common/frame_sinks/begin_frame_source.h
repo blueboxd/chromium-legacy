@@ -36,10 +36,11 @@ class VIZ_COMMON_EXPORT BeginFrameObserver {
   virtual ~BeginFrameObserver() {}
 
   // The |args| given to OnBeginFrame is guaranteed to have
-  // |args|.IsValid()==true. If |args|.source_id did not change between
-  // invocations, |args|.sequence_number is guaranteed to be be strictly greater
-  // than the previous call. Further, |args|.frame_time is guaranteed to be
-  // greater than or equal to the previous call even if the source_id changes.
+  // |args|.IsValid()==true. If |args|.frame_id.source_id did not change
+  // between invocations, |args|.frame_id.sequence_number is guaranteed to be
+  // be strictly greater than the previous call. Further, |args|.frame_time is
+  // guaranteed to be greater than or equal to the previous call even if the
+  // source_id changes.
   //
   // Side effects: This function can (and most of the time *will*) change the
   // return value of the LastUsedBeginFrameArgs method. See the documentation

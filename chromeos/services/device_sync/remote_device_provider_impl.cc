@@ -65,7 +65,7 @@ RemoteDeviceProviderImpl::RemoteDeviceProviderImpl(
       v2_device_manager_(v2_device_manager),
       user_email_(user_email),
       user_private_key_(user_private_key) {
-  if (!features::ShouldDeprecateV1DeviceSync()) {
+  if (features::ShouldUseV1DeviceSync()) {
     DCHECK(v1_device_manager_);
     v1_device_manager_->AddObserver(this);
     LoadV1RemoteDevices();
@@ -89,7 +89,7 @@ RemoteDeviceProviderImpl::~RemoteDeviceProviderImpl() {
 void RemoteDeviceProviderImpl::OnSyncFinished(
     CryptAuthDeviceManager::SyncResult sync_result,
     CryptAuthDeviceManager::DeviceChangeResult device_change_result) {
-  DCHECK(!features::ShouldDeprecateV1DeviceSync());
+  DCHECK(features::ShouldUseV1DeviceSync());
 
   if (sync_result == CryptAuthDeviceManager::SyncResult::SUCCESS &&
       device_change_result ==
@@ -150,7 +150,7 @@ void RemoteDeviceProviderImpl::OnV2RemoteDevicesLoaded(
     const multidevice::RemoteDeviceList& synced_v2_remote_devices) {
   // If we are only using v2 DeviceSync, the complete list of RemoteDevices
   // is |synced_v2_remote_devices|.
-  if (features::ShouldDeprecateV1DeviceSync()) {
+  if (!features::ShouldUseV1DeviceSync()) {
     synced_remote_devices_ = synced_v2_remote_devices;
     remote_device_v2_loader_.reset();
 
@@ -168,8 +168,8 @@ void RemoteDeviceProviderImpl::OnV2RemoteDevicesLoaded(
 }
 
 void RemoteDeviceProviderImpl::MergeV1andV2SyncedDevices() {
+  DCHECK(features::ShouldUseV1DeviceSync());
   DCHECK(features::ShouldUseV2DeviceSync());
-  DCHECK(!features::ShouldDeprecateV1DeviceSync());
 
   multidevice::RemoteDeviceList previous_synced_remote_devices =
       synced_remote_devices_;

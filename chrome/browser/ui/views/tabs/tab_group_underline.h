@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_UNDERLINE_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_UNDERLINE_H_
 
-#include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "ui/views/view.h"
 
 class TabGroupViews;
@@ -18,9 +18,10 @@ class TabGroupUnderline : public views::View {
   static constexpr int kStrokeThickness = 3;
   static int GetStrokeInset();
 
-  TabGroupUnderline(TabGroupViews* tab_group_views, TabGroupId group);
+  TabGroupUnderline(TabGroupViews* tab_group_views,
+                    tab_groups::TabGroupId group);
 
-  TabGroupId group() const { return group_; }
+  tab_groups::TabGroupId group() const { return group_; }
 
   // Updates the bounds of the underline for painting.
   void UpdateBounds();
@@ -43,7 +44,7 @@ class TabGroupUnderline : public views::View {
   SkPath GetPath() const;
 
   TabGroupViews* const tab_group_views_;
-  const TabGroupId group_;
+  const tab_groups::TabGroupId group_;
 
   DISALLOW_COPY_AND_ASSIGN(TabGroupUnderline);
 };

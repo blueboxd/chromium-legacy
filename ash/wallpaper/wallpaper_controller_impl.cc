@@ -87,6 +87,14 @@ constexpr base::TimeDelta kWallpaperReloadDelay =
 constexpr base::TimeDelta kCompositorLockTimeout =
     base::TimeDelta::FromMilliseconds(750);
 
+// Duration of the lock animation performed when pressing a lock button.
+constexpr base::TimeDelta kLockAnimationBlurAnimationDuration =
+    base::TimeDelta::FromMilliseconds(100);
+
+// Duration of the cross fade animation when loading wallpaper.
+constexpr base::TimeDelta kWallpaperLoadAnimationDuration =
+    base::TimeDelta::FromMilliseconds(250);
+
 // Default quality for encoding wallpaper.
 constexpr int kDefaultEncodingQuality = 90;
 
@@ -511,19 +519,8 @@ gfx::Size WallpaperControllerImpl::GetMaxDisplaySizeInNative() {
     return gfx::Size();
 
   gfx::Size max;
-  for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
-    // Use the native size, not ManagedDisplayInfo::size_in_pixel or
-    // Display::size.
-    display::ManagedDisplayInfo info =
-        Shell::Get()->display_manager()->GetDisplayInfo(display.id());
-    DCHECK_EQ(display.id(), info.id());
-    gfx::Size size = info.bounds_in_native().size();
-    if (display.rotation() == display::Display::ROTATE_90 ||
-        display.rotation() == display::Display::ROTATE_270) {
-      size = gfx::Size(size.height(), size.width());
-    }
-    max.SetToMax(size);
-  }
+  for (const auto& display : display::Screen::GetScreen()->GetAllDisplays())
+    max.SetToMax(display.GetSizeInPixel());
 
   return max;
 }
@@ -681,7 +678,8 @@ void WallpaperControllerImpl::ShowWallpaperImage(const gfx::ImageSkia& image,
     observer.OnWallpaperChanging();
 
   wallpaper_mode_ = WALLPAPER_IMAGE;
-  InstallDesktopControllerForAllWindows();
+  UpdateWallpaperForAllRootWindows(
+      Shell::Get()->session_controller()->IsUserSessionBlocked());
   ++wallpaper_count_for_testing_;
 
   for (auto& observer : observers_)
@@ -705,7 +703,8 @@ void WallpaperControllerImpl::UpdateWallpaperBlurForLockState(bool blur) {
   for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
     changed |= root_window_controller->wallpaper_widget_controller()
                    ->SetWallpaperProperty(blur ? wallpaper_constants::kLockState
-                                               : wallpaper_constants::kClear);
+                                               : wallpaper_constants::kClear,
+                                          kLockAnimationBlurAnimationDuration);
   }
 
   is_wallpaper_blurred_for_lock_state_ = blur;
@@ -725,7 +724,7 @@ void WallpaperControllerImpl::RestoreWallpaperPropertyForLockState(
   // if something changed.
   for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
     root_window_controller->wallpaper_widget_controller()->SetWallpaperProperty(
-        property);
+        property, kLockAnimationBlurAnimationDuration);
   }
 
   DCHECK(is_wallpaper_blurred_for_lock_state_);
@@ -1366,7 +1365,7 @@ void WallpaperControllerImpl::OnRootWindowAdded(aura::Window* root_window) {
       ReloadWallpaper(/*clear_cache=*/true);
   }
 
-  InstallDesktopController(root_window);
+  UpdateWallpaperForRootWindow(root_window, /*lock_state_changed=*/false);
 }
 
 void WallpaperControllerImpl::OnShellInitialized() {
@@ -1403,6 +1402,8 @@ void WallpaperControllerImpl::OnSessionStateChanged(
 
   CalculateWallpaperColors();
 
+  locked_ = state != session_manager::SessionState::ACTIVE;
+
   // The wallpaper may be dimmed/blurred based on session state. The color of
   // the dimming overlay depends on the prominent color cached from a previous
   // calculation, or a default color if cache is not available. It should never
@@ -1411,15 +1412,11 @@ void WallpaperControllerImpl::OnSessionStateChanged(
       (state == session_manager::SessionState::ACTIVE ||
        state == session_manager::SessionState::LOCKED ||
        state == session_manager::SessionState::LOGIN_SECONDARY)) {
-    // TODO(crbug.com/753518): Reuse the existing WallpaperWidgetController for
-    // dimming/blur purpose.
-    InstallDesktopControllerForAllWindows();
+    UpdateWallpaperForAllRootWindows(/*lock_state_changed=*/true);
+  } else {
+    // Just update container.
+    ReparentWallpaper(GetWallpaperContainerId(locked_));
   }
-
-  if (state == session_manager::SessionState::ACTIVE)
-    MoveToUnlockedContainer();
-  else
-    MoveToLockedContainer();
 }
 
 void WallpaperControllerImpl::OnTabletModeStarted() {
@@ -1442,52 +1439,56 @@ void WallpaperControllerImpl::CreateEmptyWallpaperForTesting() {
   ResetProminentColors();
   current_wallpaper_.reset();
   wallpaper_mode_ = WALLPAPER_IMAGE;
-  InstallDesktopControllerForAllWindows();
+  UpdateWallpaperForAllRootWindows(/*lock_state_changed=*/false);
 }
 
-void WallpaperControllerImpl::InstallDesktopController(
-    aura::Window* root_window) {
+void WallpaperControllerImpl::UpdateWallpaperForRootWindow(
+    aura::Window* root_window,
+    bool lock_state_changed) {
   DCHECK_EQ(WALLPAPER_IMAGE, wallpaper_mode_);
-
-  const bool is_wallpaper_blurred_for_lock_state =
-      Shell::Get()->session_controller()->IsUserSessionBlocked() &&
-      IsBlurAllowedForLockState();
-  if (is_wallpaper_blurred_for_lock_state_ !=
-      is_wallpaper_blurred_for_lock_state) {
-    is_wallpaper_blurred_for_lock_state_ = is_wallpaper_blurred_for_lock_state;
-    for (auto& observer : observers_)
-      observer.OnWallpaperBlurChanged();
-  }
-
-  const int container_id = GetWallpaperContainerId(locked_);
 
   auto* wallpaper_widget_controller =
       RootWindowController::ForWindow(root_window)
           ->wallpaper_widget_controller();
-  WallpaperProperty property = is_wallpaper_blurred_for_lock_state
-                                   ? wallpaper_constants::kLockState
-                                   : wallpaper_widget_controller->property();
+  WallpaperProperty property =
+      wallpaper_widget_controller->GetWallpaperProperty();
 
-  WallpaperView* current_wallpaper_view = nullptr;
-  auto* widget = CreateWallpaperWidget(root_window, container_id, property,
-                                       &current_wallpaper_view);
-  wallpaper_widget_controller->SetWallpaperWidget(widget,
-                                                  current_wallpaper_view);
+  if (lock_state_changed) {
+    const bool is_wallpaper_blurred_for_lock_state =
+        Shell::Get()->session_controller()->IsUserSessionBlocked() &&
+        IsBlurAllowedForLockState();
+    if (is_wallpaper_blurred_for_lock_state_ !=
+        is_wallpaper_blurred_for_lock_state) {
+      is_wallpaper_blurred_for_lock_state_ =
+          is_wallpaper_blurred_for_lock_state;
+      for (auto& observer : observers_)
+        observer.OnWallpaperBlurChanged();
+    }
+    const int container_id = GetWallpaperContainerId(locked_);
+    wallpaper_widget_controller->Reparent(container_id);
+
+    property = is_wallpaper_blurred_for_lock_state
+                   ? wallpaper_constants::kLockState
+                   : wallpaper_constants::kClear;
+  }
+
+  wallpaper_widget_controller->wallpaper_view()->ClearCachedImage();
+  wallpaper_widget_controller->SetWallpaperProperty(
+      property, kWallpaperLoadAnimationDuration);
 }
 
-void WallpaperControllerImpl::InstallDesktopControllerForAllWindows() {
+void WallpaperControllerImpl::UpdateWallpaperForAllRootWindows(
+    bool lock_state_changed) {
   for (aura::Window* root : Shell::GetAllRootWindows())
-    InstallDesktopController(root);
+    UpdateWallpaperForRootWindow(root, lock_state_changed);
   current_max_display_size_ = GetMaxDisplaySizeInNative();
 }
 
 bool WallpaperControllerImpl::ReparentWallpaper(int container) {
   bool moved = false;
   for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
-    if (root_window_controller->wallpaper_widget_controller()->Reparent(
-            root_window_controller->GetRootWindow(), container)) {
-      moved = true;
-    }
+    moved |= root_window_controller->wallpaper_widget_controller()->Reparent(
+        container);
   }
   return moved;
 }
@@ -2008,22 +2009,6 @@ void WallpaperControllerImpl::OnAlwaysOnTopWallpaperDecoded(
                           weak_factory_.GetWeakPtr(), image, info,
                           /*preview_mode=*/false, /*always_on_top=*/true);
   reload_always_on_top_wallpaper_callback_.Run();
-}
-
-bool WallpaperControllerImpl::MoveToLockedContainer() {
-  if (locked_)
-    return false;
-
-  locked_ = true;
-  return ReparentWallpaper(GetWallpaperContainerId(true));
-}
-
-bool WallpaperControllerImpl::MoveToUnlockedContainer() {
-  if (!locked_)
-    return false;
-
-  locked_ = false;
-  return ReparentWallpaper(GetWallpaperContainerId(false));
 }
 
 bool WallpaperControllerImpl::IsDevicePolicyWallpaper() const {

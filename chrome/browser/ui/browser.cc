@@ -1111,12 +1111,12 @@ void Browser::OnTabGroupChanged(const TabGroupChange& change) {
     SessionService* const session_service =
         SessionServiceFactory::GetForProfile(profile_);
     if (session_service) {
-      TabGroupVisualData* visual_data = tab_strip_model_->group_model()
-                                            ->GetTabGroup(change.group)
-                                            ->visual_data();
-      session_service->SetTabGroupMetadata(session_id(), change.group.token(),
-                                           visual_data->title(),
-                                           visual_data->color());
+      tab_groups::TabGroupVisualData* visual_data =
+          tab_strip_model_->group_model()
+              ->GetTabGroup(change.group)
+              ->visual_data();
+      session_service->SetTabGroupMetadata(session_id(), change.group,
+                                           visual_data);
     }
   }
 }
@@ -1135,8 +1135,9 @@ void Browser::TabPinnedStateChanged(TabStripModel* tab_strip_model,
   }
 }
 
-void Browser::TabGroupedStateChanged(base::Optional<TabGroupId> group,
-                                     int index) {
+void Browser::TabGroupedStateChanged(
+    base::Optional<tab_groups::TabGroupId> group,
+    int index) {
   SessionService* const session_service =
       SessionServiceFactory::GetForProfile(profile_);
   if (session_service) {
@@ -1144,11 +1145,8 @@ void Browser::TabGroupedStateChanged(base::Optional<TabGroupId> group,
         tab_strip_model_->GetWebContentsAt(index);
     SessionTabHelper* const session_tab_helper =
         SessionTabHelper::FromWebContents(web_contents);
-    const base::Optional<base::Token> raw_id =
-        group.has_value() ? base::make_optional(group.value().token())
-                          : base::nullopt;
     session_service->SetTabGroup(session_id(), session_tab_helper->session_id(),
-                                 raw_id);
+                                 std::move(group));
   }
 }
 
@@ -2533,14 +2531,11 @@ void Browser::SyncHistoryWithTabs(int index) {
                                         session_tab_helper->session_id(),
                                         tab_strip_model_->IsTabPinned(i));
 
-        base::Optional<TabGroupId> group_id =
+        base::Optional<tab_groups::TabGroupId> group_id =
             tab_strip_model_->GetTabGroupForTab(i);
-        base::Optional<base::Token> raw_group_id =
-            group_id.has_value()
-                ? base::Optional<base::Token>(group_id.value().token())
-                : base::nullopt;
-        session_service->SetTabGroup(
-            session_id(), session_tab_helper->session_id(), raw_group_id);
+        session_service->SetTabGroup(session_id(),
+                                     session_tab_helper->session_id(),
+                                     std::move(group_id));
       }
     }
   }

@@ -11,6 +11,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "components/app_modal/native_app_modal_dialog.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace app_modal {
 class JavaScriptAppModalDialog;
@@ -25,7 +26,6 @@ class JavascriptAppModalDialogAndroid
       gfx::NativeWindow parent);
 
   // NativeAppModalDialog:
-  int GetAppModalDialogButtons() const override;
   void ShowAppModalDialog() override;
   void ActivateAppModalDialog() override;
   void CloseAppModalDialog() override;

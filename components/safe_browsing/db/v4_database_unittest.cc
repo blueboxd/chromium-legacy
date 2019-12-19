@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/debug/leak_annotations.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
@@ -78,10 +79,10 @@ class V4DatabaseTest : public PlatformTest {
     created_and_called_back_ = false;
     verify_checksum_called_back_ = false;
 
-    callback_db_updated_ =
-        base::Bind(&V4DatabaseTest::DatabaseUpdated, base::Unretained(this));
+    callback_db_updated_ = base::BindRepeating(&V4DatabaseTest::DatabaseUpdated,
+                                               base::Unretained(this));
 
-    callback_db_ready_ = base::Bind(
+    callback_db_ready_ = base::BindOnce(
         &V4DatabaseTest::NewDatabaseReadyWithExpectedStorePathsAndIds,
         base::Unretained(this));
 
@@ -220,7 +221,7 @@ TEST_F(V4DatabaseTest, TestSetupDatabaseWithFakeStores) {
   RegisterFactory();
 
   V4Database::Create(task_runner_, database_dirname_, list_infos_,
-                     callback_db_ready_);
+                     std::move(callback_db_ready_));
   created_but_not_called_back_ = true;
   WaitForTasksOnTaskRunner();
   EXPECT_EQ(true, created_and_called_back_);
@@ -231,7 +232,7 @@ TEST_F(V4DatabaseTest, TestApplyUpdateWithNewStates) {
   RegisterFactory();
 
   V4Database::Create(task_runner_, database_dirname_, list_infos_,
-                     callback_db_ready_);
+                     std::move(callback_db_ready_));
   created_but_not_called_back_ = true;
   WaitForTasksOnTaskRunner();
 
@@ -263,7 +264,7 @@ TEST_F(V4DatabaseTest, TestApplyUpdateWithNoNewState) {
   RegisterFactory();
 
   V4Database::Create(task_runner_, database_dirname_, list_infos_,
-                     callback_db_ready_);
+                     std::move(callback_db_ready_));
   created_but_not_called_back_ = true;
   WaitForTasksOnTaskRunner();
 
@@ -291,7 +292,7 @@ TEST_F(V4DatabaseTest, TestApplyUpdateWithEmptyUpdate) {
   RegisterFactory();
 
   V4Database::Create(task_runner_, database_dirname_, list_infos_,
-                     callback_db_ready_);
+                     std::move(callback_db_ready_));
   created_but_not_called_back_ = true;
   WaitForTasksOnTaskRunner();
 
@@ -319,7 +320,7 @@ TEST_F(V4DatabaseTest, TestApplyUpdateWithInvalidUpdate) {
   RegisterFactory();
 
   V4Database::Create(task_runner_, database_dirname_, list_infos_,
-                     callback_db_ready_);
+                     std::move(callback_db_ready_));
   created_but_not_called_back_ = true;
   WaitForTasksOnTaskRunner();
 
@@ -347,7 +348,7 @@ TEST_F(V4DatabaseTest, TestAllStoresMatchFullHash) {
   RegisterFactory(hash_prefix_matches);
 
   V4Database::Create(task_runner_, database_dirname_, list_infos_,
-                     callback_db_ready_);
+                     std::move(callback_db_ready_));
   created_but_not_called_back_ = true;
   WaitForTasksOnTaskRunner();
   EXPECT_EQ(true, created_and_called_back_);
@@ -370,7 +371,7 @@ TEST_F(V4DatabaseTest, TestNoStoreMatchesFullHash) {
   RegisterFactory(hash_prefix_matches);
 
   V4Database::Create(task_runner_, database_dirname_, list_infos_,
-                     callback_db_ready_);
+                     std::move(callback_db_ready_));
   created_but_not_called_back_ = true;
   WaitForTasksOnTaskRunner();
   EXPECT_EQ(true, created_and_called_back_);
@@ -389,7 +390,7 @@ TEST_F(V4DatabaseTest, TestSomeStoresMatchFullHash) {
   RegisterFactory(hash_prefix_matches);
 
   V4Database::Create(task_runner_, database_dirname_, list_infos_,
-                     callback_db_ready_);
+                     std::move(callback_db_ready_));
   created_but_not_called_back_ = true;
   WaitForTasksOnTaskRunner();
   EXPECT_EQ(true, created_and_called_back_);
@@ -416,7 +417,7 @@ TEST_F(V4DatabaseTest, TestSomeStoresMatchFullHashBecauseOfStoresToMatch) {
   RegisterFactory(hash_prefix_matches);
 
   V4Database::Create(task_runner_, database_dirname_, list_infos_,
-                     callback_db_ready_);
+                     std::move(callback_db_ready_));
   created_but_not_called_back_ = true;
   WaitForTasksOnTaskRunner();
   EXPECT_EQ(true, created_and_called_back_);
@@ -435,7 +436,7 @@ TEST_F(V4DatabaseTest, VerifyChecksumCalledAsync) {
   RegisterFactory(hash_prefix_matches);
 
   V4Database::Create(task_runner_, database_dirname_, list_infos_,
-                     callback_db_ready_);
+                     std::move(callback_db_ready_));
   created_but_not_called_back_ = true;
   WaitForTasksOnTaskRunner();
   EXPECT_EQ(true, created_and_called_back_);
@@ -444,7 +445,7 @@ TEST_F(V4DatabaseTest, VerifyChecksumCalledAsync) {
   EXPECT_FALSE(verify_checksum_called_back_);
   // Now call VerifyChecksum and pass the callback that sets
   // verify_checksum_called_back_ to true.
-  v4_database_->VerifyChecksum(base::Bind(
+  v4_database_->VerifyChecksum(base::BindOnce(
       &V4DatabaseTest::VerifyChecksumCallback, base::Unretained(this)));
   // verify_checksum_called_back_ should still be false since the checksum
   // verification is async.
@@ -458,13 +459,13 @@ TEST_F(V4DatabaseTest, VerifyChecksumCancelled) {
   RegisterFactory(hash_prefix_matches);
 
   V4Database::Create(task_runner_, database_dirname_, list_infos_,
-                     callback_db_ready_);
+                     std::move(callback_db_ready_));
   created_but_not_called_back_ = true;
   WaitForTasksOnTaskRunner();
   EXPECT_EQ(true, created_and_called_back_);
 
   EXPECT_FALSE(verify_checksum_called_back_);
-  v4_database_->VerifyChecksum(base::Bind(
+  v4_database_->VerifyChecksum(base::BindOnce(
       &V4DatabaseTest::VerifyChecksumCallback, base::Unretained(this)));
   EXPECT_FALSE(verify_checksum_called_back_);
   // Destroy database.
@@ -480,7 +481,7 @@ TEST_F(V4DatabaseTest, TestStoresAvailable) {
   RegisterFactory(hash_prefix_matches);
 
   V4Database::Create(task_runner_, database_dirname_, list_infos_,
-                     callback_db_ready_);
+                     std::move(callback_db_ready_));
   created_but_not_called_back_ = true;
   WaitForTasksOnTaskRunner();
   EXPECT_EQ(true, created_and_called_back_);
@@ -514,7 +515,7 @@ TEST_F(V4DatabaseTest, UsingWeakPtrDropsCallback) {
 
   // Step 1: Create the database.
   V4Database::Create(task_runner_, database_dirname_, list_infos_,
-                     callback_db_ready_);
+                     std::move(callback_db_ready_));
   created_but_not_called_back_ = true;
   WaitForTasksOnTaskRunner();
 
@@ -532,8 +533,8 @@ TEST_F(V4DatabaseTest, UsingWeakPtrDropsCallback) {
   // We pass |null_callback| as the second argument to |ApplyUpdate| since we
   // expect it to not get called. This callback method is called from
   // V4Database::UpdatedStoreReady but we expect that call to get dropped.
-  base::Callback<void()> null_callback;
-  v4_database_->ApplyUpdate(std::move(parsed_server_response), null_callback);
+  v4_database_->ApplyUpdate(std::move(parsed_server_response),
+                            base::NullCallback());
 
   // Step 3: Before V4Store::ApplyUpdate gets executed on the task runner,
   // destroy the database. This posts ~V4Database() on the task runner.

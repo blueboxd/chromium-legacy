@@ -165,8 +165,7 @@ class ArCoreDeviceTest : public testing::Test {
   void CreateSession() {
     mojom::XRRuntimeSessionOptionsPtr options =
         mojom::XRRuntimeSessionOptions::New();
-    options->environment_integration = true;
-    options->immersive = true;
+    options->mode = mojom::XRSessionMode::kImmersiveAr;
     device()->RequestSession(std::move(options),
                              base::BindOnce(&ArCoreDeviceTest::OnSessionCreated,
                                             base::Unretained(this)));

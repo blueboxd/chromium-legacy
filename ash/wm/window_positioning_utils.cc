@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "ash/shell_state.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -86,6 +87,7 @@ void AdjustBoundsToEnsureMinimumWindowVisibility(const gfx::Rect& visible_area,
 }
 
 gfx::Rect GetDefaultLeftSnappedWindowBoundsInParent(aura::Window* window) {
+  DCHECK(!Shell::Get()->tablet_mode_controller()->InTabletMode());
   gfx::Rect work_area_in_parent(
       screen_util::GetDisplayWorkAreaBoundsInParent(window));
   const int middle = work_area_in_parent.CenterPoint().x();
@@ -96,6 +98,7 @@ gfx::Rect GetDefaultLeftSnappedWindowBoundsInParent(aura::Window* window) {
 }
 
 gfx::Rect GetDefaultRightSnappedWindowBoundsInParent(aura::Window* window) {
+  DCHECK(!Shell::Get()->tablet_mode_controller()->InTabletMode());
   gfx::Rect work_area_in_parent(
       screen_util::GetDisplayWorkAreaBoundsInParent(window));
   const int middle = work_area_in_parent.CenterPoint().x();

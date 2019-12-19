@@ -464,9 +464,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   virtual void WillCollectInlines() {}
   virtual void SetPaintFragment(const NGBlockBreakToken*,
                                 scoped_refptr<const NGPhysicalFragment>);
-  virtual const NGPhysicalBoxFragment* CurrentFragment() const {
-    return nullptr;
-  }
   const NGFragmentItems* FragmentItems() const;
 
 #if DCHECK_IS_ON()

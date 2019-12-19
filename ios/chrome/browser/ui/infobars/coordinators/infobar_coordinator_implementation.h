@@ -20,6 +20,11 @@
 // Returns YES if the Infobar Accept action was completed successfully.
 - (BOOL)isInfobarAccepted;
 
+// Returns YES if the Infobar Banner Accept action will present the Infobar
+// Modal and shouldn't be dismissed. e.g. Tapping on Save Card "Save..." Infobar
+// button presents the Infobar Modal and doesn't accept the Infobar.
+- (BOOL)infobarBannerActionWillPresentModal;
+
 // Performs any actions related to an Infobar Banner presentation.
 - (void)infobarBannerWasPresented;
 

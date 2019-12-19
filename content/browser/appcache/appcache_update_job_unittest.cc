@@ -717,7 +717,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     // Verify state.
     EXPECT_EQ(AppCacheUpdateJob::CACHE_ATTEMPT, update->update_type_);
-    EXPECT_EQ(AppCacheUpdateJob::FETCH_MANIFEST, update->internal_state_);
+    EXPECT_EQ(AppCacheUpdateJobState::FETCH_MANIFEST, update->internal_state_);
     EXPECT_EQ(AppCacheGroup::CHECKING, group_->update_status());
     EXPECT_TRUE(update->doing_full_update_check_);
 
@@ -779,7 +779,8 @@ class AppCacheUpdateJobTest : public testing::Test,
 
       // Verify state after starting an update.
       EXPECT_EQ(AppCacheUpdateJob::UPGRADE_ATTEMPT, update->update_type_);
-      EXPECT_EQ(AppCacheUpdateJob::FETCH_MANIFEST, update->internal_state_);
+      EXPECT_EQ(AppCacheUpdateJobState::FETCH_MANIFEST,
+                update->internal_state_);
       EXPECT_EQ(AppCacheGroup::CHECKING, group_->update_status());
       EXPECT_FALSE(update->doing_full_update_check_);
 
@@ -3203,7 +3204,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     // Pretend update job has been running and is about to terminate.
     group_->update_status_ = AppCacheGroup::DOWNLOADING;
-    update->internal_state_ = AppCacheUpdateJob::REFETCH_MANIFEST;
+    update->internal_state_ = AppCacheUpdateJobState::REFETCH_MANIFEST;
     EXPECT_TRUE(update->IsTerminating());
 
     // Start an update. Should be queued.
@@ -3300,7 +3301,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_->update_job_ = update;
     group_->update_status_ = AppCacheGroup::DOWNLOADING;
     update->manifest_response_info_ = std::move(response_info);
-    update->internal_state_ = AppCacheUpdateJob::REFETCH_MANIFEST;
+    update->internal_state_ = AppCacheUpdateJobState::REFETCH_MANIFEST;
     update->RefetchManifest();
 
     // We need to wait for the URL load requests to make it to the
@@ -3337,7 +3338,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_->update_job_ = update;
     group_->update_status_ = AppCacheGroup::DOWNLOADING;
     update->manifest_response_info_ = std::move(response_info);
-    update->internal_state_ = AppCacheUpdateJob::REFETCH_MANIFEST;
+    update->internal_state_ = AppCacheUpdateJobState::REFETCH_MANIFEST;
     update->RefetchManifest();
 
     // We need to wait for the URL load requests to make it to the
@@ -3652,7 +3653,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     group_->update_status_ = AppCacheGroup::DOWNLOADING;
     update->manifest_response_info_ = std::move(response_info);
-    update->internal_state_ = AppCacheUpdateJob::REFETCH_MANIFEST;
+    update->internal_state_ = AppCacheUpdateJobState::REFETCH_MANIFEST;
     update->RefetchManifest();
 
     // We need to wait for the URL load requests to make it to the
@@ -3691,7 +3692,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     group_->update_status_ = AppCacheGroup::DOWNLOADING;
     update->manifest_response_info_ = std::move(response_info);
-    update->internal_state_ = AppCacheUpdateJob::REFETCH_MANIFEST;
+    update->internal_state_ = AppCacheUpdateJobState::REFETCH_MANIFEST;
     update->RefetchManifest();
 
     // We need to wait for the URL load requests to make it to the

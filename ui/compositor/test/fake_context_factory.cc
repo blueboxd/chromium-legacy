@@ -66,8 +66,4 @@ cc::TaskGraphRunner* FakeContextFactory::GetTaskGraphRunner() {
   return &task_graph_runner_;
 }
 
-bool FakeContextFactory::SyncTokensRequiredForDisplayCompositor() {
-  return true;
-}
-
 }  // namespace ui

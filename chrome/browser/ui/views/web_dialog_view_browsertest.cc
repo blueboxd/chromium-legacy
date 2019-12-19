@@ -260,7 +260,13 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, CloseParentWindow) {
 }
 
 // Tests the Escape key behavior when ShouldCloseDialogOnEscape() is enabled.
-IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, CloseDialogOnEscapeEnabled) {
+#if defined(OS_WIN) && !defined(NDEBUG)
+// Flaky on win7 tests dbg: https://crbug.com/1035439
+#define MAYBE_CloseDialogOnEscapeEnabled DISABLED_CloseDialogOnEscapeEnabled
+#else
+#define MAYBE_CloseDialogOnEscapeEnabled CloseDialogOnEscapeEnabled
+#endif
+IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_CloseDialogOnEscapeEnabled) {
   ui_controls::EnableUIControls();
 
   // Open a second browser window so we don't trigger shutdown.

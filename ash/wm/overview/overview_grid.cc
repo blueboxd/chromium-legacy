@@ -187,6 +187,7 @@ class ShutdownAnimationFpsCounterObserver : public OverviewObserver {
 // Creates |drop_target_widget_|. It's created when a window or overview item is
 // dragged around, and destroyed when the drag ends.
 std::unique_ptr<views::Widget> CreateDropTargetWidget(
+    aura::Window* root_window,
     aura::Window* dragged_window) {
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
@@ -194,7 +195,7 @@ std::unique_ptr<views::Widget> CreateDropTargetWidget(
   params.activatable = views::Widget::InitParams::Activatable::ACTIVATABLE_NO;
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.accept_events = false;
-  params.parent = dragged_window->parent();
+  params.parent = desks_util::GetActiveDeskContainerForRoot(root_window);
   params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
   auto widget = std::make_unique<views::Widget>();
   widget->set_focus_on_creation(false);
@@ -655,15 +656,30 @@ void OverviewGrid::RemoveItem(OverviewItem* overview_item,
   }
 }
 
-void OverviewGrid::AddDropTargetForDraggingFromOverview(
+void OverviewGrid::AddDropTargetForDraggingFromThisGrid(
     OverviewItem* dragged_item) {
-  DCHECK_EQ(dragged_item->GetWindow()->GetRootWindow(), root_window_);
   DCHECK(!drop_target_widget_);
-  drop_target_widget_ = CreateDropTargetWidget(dragged_item->GetWindow());
+  drop_target_widget_ =
+      CreateDropTargetWidget(root_window_, dragged_item->GetWindow());
   const size_t position = GetOverviewItemIndex(dragged_item) + 1u;
   overview_session_->AddItem(drop_target_widget_->GetNativeWindow(),
                              /*reposition=*/true, /*animate=*/false,
                              /*ignored_items=*/{dragged_item}, position);
+}
+
+void OverviewGrid::AddDropTargetNotForDraggingFromThisGrid(
+    aura::Window* dragged_window,
+    bool animate) {
+  DCHECK(!drop_target_widget_);
+  drop_target_widget_ = CreateDropTargetWidget(root_window_, dragged_window);
+  aura::Window* drop_target_window = drop_target_widget_->GetNativeWindow();
+  if (animate) {
+    drop_target_widget_->SetOpacity(0.f);
+    ScopedOverviewAnimationSettings settings(
+        OVERVIEW_ANIMATION_DROP_TARGET_FADE, drop_target_window);
+    drop_target_widget_->SetOpacity(1.f);
+  }
+  overview_session_->AddItem(drop_target_window, /*reposition=*/true, animate);
 }
 
 void OverviewGrid::RemoveDropTarget() {
@@ -683,6 +699,7 @@ void OverviewGrid::SetBoundsAndUpdatePositions(
 }
 
 void OverviewGrid::RearrangeDuringDrag(
+    aura::Window* root_window_being_dragged_in,
     aura::Window* dragged_window,
     SplitViewDragIndicators::WindowDraggingState window_dragging_state) {
   OverviewItem* drop_target = GetDropTarget();
@@ -692,11 +709,12 @@ void OverviewGrid::RearrangeDuringDrag(
     ScopedOverviewAnimationSettings settings(
         OVERVIEW_ANIMATION_DROP_TARGET_FADE,
         drop_target_widget_->GetNativeWindow());
-    drop_target->SetOpacity(
-        SplitViewDragIndicators::GetSnapPosition(window_dragging_state) ==
-                SplitViewController::NONE
-            ? 1.f
-            : 0.f);
+    drop_target->SetOpacity(root_window_being_dragged_in == root_window_ &&
+                                    SplitViewDragIndicators::GetSnapPosition(
+                                        window_dragging_state) ==
+                                        SplitViewController::NONE
+                                ? 1.f
+                                : 0.f);
   }
 
   // Update the grid's bounds.
@@ -763,22 +781,10 @@ void OverviewGrid::OnSelectorItemDragEnded(bool snap) {
 
 void OverviewGrid::OnWindowDragStarted(aura::Window* dragged_window,
                                        bool animate) {
-  DCHECK_EQ(dragged_window->GetRootWindow(), root_window_);
-  DCHECK(!drop_target_widget_);
   dragged_window_ = dragged_window;
-  drop_target_widget_ = CreateDropTargetWidget(dragged_window);
-  aura::Window* drop_target_window = drop_target_widget_->GetNativeWindow();
-  if (animate) {
-    drop_target_widget_->SetOpacity(0.f);
-    ScopedOverviewAnimationSettings settings(
-        OVERVIEW_ANIMATION_DROP_TARGET_FADE, drop_target_window);
-    drop_target_widget_->SetOpacity(1.f);
-  }
-  overview_session_->AddItem(drop_target_window, /*reposition=*/true, animate);
-
+  AddDropTargetNotForDraggingFromThisGrid(dragged_window, animate);
   // Stack the |dragged_window| at top during drag.
   dragged_window->parent()->StackChildAtTop(dragged_window);
-
   // Called to set caption and title visibility during dragging.
   OnSelectorItemDragStarted(/*item=*/nullptr);
 }
@@ -790,7 +796,7 @@ void OverviewGrid::OnWindowDragContinued(
   DCHECK_EQ(dragged_window_, dragged_window);
   DCHECK_EQ(dragged_window->GetRootWindow(), root_window_);
 
-  RearrangeDuringDrag(dragged_window, window_dragging_state);
+  RearrangeDuringDrag(root_window_, dragged_window, window_dragging_state);
   UpdateDropTargetBackgroundVisibility(nullptr, location_in_screen);
 
   aura::Window* target_window =

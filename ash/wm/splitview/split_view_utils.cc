@@ -24,6 +24,10 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
+#include "ui/wm/core/transient_window_manager.h"
 
 namespace ash {
 
@@ -133,7 +137,55 @@ void ApplyAnimationSettings(
     animator->SchedulePauseForProperties(delay, animated_property);
 }
 
+// Returns BubbleDialogDelegateView if |transient_window| is a bubble dialog.
+views::BubbleDialogDelegateView* AsBubbleDialogDelegate(
+    aura::Window* transient_window) {
+  views::Widget* widget =
+      views::Widget::GetWidgetForNativeWindow(transient_window);
+  if (!widget || !widget->widget_delegate())
+    return nullptr;
+  return widget->widget_delegate()->AsBubbleDialogDelegate();
+}
+
 }  // namespace
+
+WindowTransformAnimationObserver::WindowTransformAnimationObserver(
+    aura::Window* window)
+    : window_(window) {
+  window_->AddObserver(this);
+}
+
+WindowTransformAnimationObserver::~WindowTransformAnimationObserver() {
+  if (window_)
+    window_->RemoveObserver(this);
+}
+
+void WindowTransformAnimationObserver::OnImplicitAnimationsCompleted() {
+  // After window transform animation is done and if the window's transform is
+  // set to identity transform, force to relayout all its transient bubble
+  // dialogs.
+  if (!window_->layer()->GetTargetTransform().IsIdentity()) {
+    delete this;
+    return;
+  }
+
+  for (auto* transient_window :
+       ::wm::TransientWindowManager::GetOrCreate(window_)
+           ->transient_children()) {
+    // For now we only care about bubble dialog type transient children.
+    views::BubbleDialogDelegateView* bubble_delegate_view =
+        AsBubbleDialogDelegate(transient_window);
+    if (bubble_delegate_view)
+      bubble_delegate_view->OnAnchorBoundsChanged();
+  }
+
+  delete this;
+}
+
+void WindowTransformAnimationObserver::OnWindowDestroying(
+    aura::Window* window) {
+  delete this;
+}
 
 void DoSplitviewOpacityAnimation(ui::Layer* layer,
                                  SplitviewAnimationType type) {
@@ -182,9 +234,11 @@ void DoSplitviewOpacityAnimation(ui::Layer* layer,
   layer->SetOpacity(target_opacity);
 }
 
-void DoSplitviewTransformAnimation(ui::Layer* layer,
-                                   SplitviewAnimationType type,
-                                   const gfx::Transform& target_transform) {
+void DoSplitviewTransformAnimation(
+    ui::Layer* layer,
+    SplitviewAnimationType type,
+    const gfx::Transform& target_transform,
+    std::unique_ptr<ui::ImplicitAnimationObserver> animation_observer) {
   if (layer->GetTargetTransform() == target_transform)
     return;
 
@@ -214,6 +268,8 @@ void DoSplitviewTransformAnimation(ui::Layer* layer,
 
   ui::LayerAnimator* animator = layer->GetAnimator();
   ui::ScopedLayerAnimationSettings settings(animator);
+  if (animation_observer.get())
+    settings.AddObserver(animation_observer.release());
   ApplyAnimationSettings(&settings, animator,
                          ui::LayerAnimationElement::TRANSFORM, duration, tween,
                          preemption_strategy, delay);

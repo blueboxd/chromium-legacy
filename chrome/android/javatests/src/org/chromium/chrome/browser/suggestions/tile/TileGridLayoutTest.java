@@ -160,6 +160,10 @@ public class TileGridLayoutTest {
         if (((FrameLayout) tileGridLayout.getParent()).getMeasuredWidth() > tileGridMaxWidthPx) {
             assertThat(tileGridLayout.getMeasuredWidth(), greaterThan(tileGridMaxWidthPx));
         }
+
+        // Reset device orientation.
+        setOrientation(
+                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, mActivityTestRule.getActivity());
     }
 
     @Test
@@ -176,6 +180,10 @@ public class TileGridLayoutTest {
 
         setOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE, mActivityTestRule.getActivity());
         mRenderTestRule.render(tileGridLayout, "modern_two_tiles_grid_landscape");
+
+        // Reset device orientation.
+        setOrientation(
+                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, mActivityTestRule.getActivity());
     }
 
     @Test

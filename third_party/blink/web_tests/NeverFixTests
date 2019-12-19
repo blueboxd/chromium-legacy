@@ -101,13 +101,13 @@ crbug.com/1012590 [ Linux ] fast/overflow/rtl-scrollbar-drag-origin.html [ Skip 
 
 # Thumb snapping is not supported on Linux and Mac.
 [ Linux ] fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]
-[ Mac ]   fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]
+[ Mac ] fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]
 [ Linux ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]
-[ Mac ]   virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]
+[ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]
 [ Linux ] virtual/scroll_customization/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]
-[ Mac ]   virtual/scroll_customization/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]
+[ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]
 [ Linux ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]
-[ Mac ]   virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]
+[ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]
 
 
 # These tests are specific to Linux.

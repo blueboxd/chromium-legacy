@@ -853,7 +853,8 @@ bool ScrollableArea::SnapForDirection(const ScrollOffset& delta,
   std::unique_ptr<cc::SnapSelectionStrategy> strategy =
       cc::SnapSelectionStrategy::CreateForDirection(
           gfx::ScrollOffset(current_position),
-          gfx::ScrollOffset(delta.Width(), delta.Height()));
+          gfx::ScrollOffset(delta.Width(), delta.Height()),
+          RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled());
   return PerformSnapping(*strategy, kScrollBehaviorSmooth,
                          std::move(on_finish));
 }
@@ -864,7 +865,8 @@ bool ScrollableArea::SnapForEndAndDirection(const ScrollOffset& delta) {
   std::unique_ptr<cc::SnapSelectionStrategy> strategy =
       cc::SnapSelectionStrategy::CreateForEndAndDirection(
           gfx::ScrollOffset(current_position),
-          gfx::ScrollOffset(delta.Width(), delta.Height()));
+          gfx::ScrollOffset(delta.Width(), delta.Height()),
+          RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled());
   return PerformSnapping(*strategy);
 }
 

@@ -13,7 +13,6 @@ Polymer({
   behaviors: [
     CrPolicyNetworkBehaviorMojo,
     I18nBehavior,
-    cr.ui.FocusRowBehavior,
   ],
 
   properties: {
@@ -46,6 +45,7 @@ Polymer({
     tabindex: {
       type: Number,
       value: -1,
+      reflectToAttribute: true,
     },
 
     /**
@@ -53,10 +53,11 @@ Polymer({
      * added as an attribute on this top-level network-list-item, and can
      * be used by any sub-element which applies it.
      */
-    rowLabel: {
+    ariaLabel: {
       type: String,
       notify: true,
-      computed: 'getRowLabel_(item, networkState)',
+      reflectToAttribute: true,
+      computed: 'getAriaLabel_(item, networkState)',
     },
 
     buttonLabel: {
@@ -154,16 +155,15 @@ Polymer({
    * @return {string}
    * @private
    */
-  getRowLabel_: function() {
+  getAriaLabel_: function() {
     const NetworkType = chromeos.networkConfig.mojom.NetworkType;
     const OncSource = chromeos.networkConfig.mojom.OncSource;
     const SecurityType = chromeos.networkConfig.mojom.SecurityType;
     const status = this.getNetworkStateText_();
     const isManaged = this.item.source === OncSource.kDevicePolicy ||
         this.item.source === OncSource.kUserPolicy;
-    const list = this.parentElement;
-    const index = list.items.indexOf(this.item) + 1;
-    const total = list.items.length;
+    const index = this.parentElement.items.indexOf(this.item) + 1;
+    const total = this.parentElement.items.length;
     switch (this.item.type) {
       case NetworkType.kCellular:
         if (isManaged) {
@@ -324,33 +324,19 @@ Polymer({
   onKeydown_: function(event) {
     // The only key event handled by this element is pressing Enter when the
     // subpage arrow is focused.
-    if (event.key != 'Enter' && event.key != ' ') {
+    if (event.key != 'Enter' ||
+        !this.isSubpageButtonVisible_(this.networkState, this.showButtons) ||
+        this.$$('#subpage-button') != this.shadowRoot.activeElement) {
       return;
     }
 
-    this.onSelected_(event);
+    this.fireShowDetails_(event);
 
     // The default event for pressing Enter on a focused button is to simulate a
     // click on the button. Prevent this action, since it would navigate a
     // second time to the details page and cause an unnecessary entry to be
     // added to the back stack. See https://crbug.com/736963.
     event.preventDefault();
-  },
-
-  /**
-   * @param {!Event} event
-   * @private
-   */
-  onSelected_: function(event) {
-    if (this.isSubpageButtonVisible_(this.networkState, this.showButtons) &&
-        this.$$('#subpage-button') == this.shadowRoot.activeElement) {
-      this.fireShowDetails_(event);
-    } else if (this.item.hasOwnProperty('customItemName')) {
-      this.fire('custom-item-selected', this.item);
-    } else {
-      this.fire('selected', this.item);
-      this.focusRequested_ = true;
-    }
   },
 
   /**

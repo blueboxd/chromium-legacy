@@ -720,7 +720,7 @@
         ],
         'os_type': 'android',
         'test_suites': {
-          'gtest_tests': 'chromium_android_gtests',
+          'gtest_tests': 'android_pie_rel_gtests',
         }
       },
     },
@@ -1641,13 +1641,8 @@
           'pie_fleet',
           'walleye',
         ],
-        'additional_compile_targets': [
-          'monochrome_static_initializers',
-          'weblayer_shell',
-        ],
         'test_suites': {
-          'gtest_tests': 'android_pie_rel_gtests',
-          'isolated_scripts': 'marshmallow_pie_isolated_scripts_with_proguard',
+          'gtest_tests': 'chromium_android_gtests',
         },
         'use_swarming': True,
         'os_type': 'android',

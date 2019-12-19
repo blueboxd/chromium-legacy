@@ -23,6 +23,7 @@ class ChromeSessionManager;
 class ChromeUserManager;
 class InSessionPasswordChangeManager;
 class ProfileHelper;
+class SchedulerConfigurationManager;
 class TimeZoneResolver;
 
 namespace system {
@@ -64,6 +65,9 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   void InitializeCrosComponentManager();
   void ShutdownCrosComponentManager();
 
+  void InitializeSchedulerConfigurationManager();
+  void ShutdownSchedulerConfigurationManager();
+
   // Initializes all services that need the primary profile. Gets called as soon
   // as the primary profile is available, which implies that the primary user
   // has logged in. The services are shut down automatically when the primary
@@ -99,6 +103,10 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   chromeos::ChromeUserManager* user_manager() {
     return chrome_user_manager_.get();
+  }
+
+  chromeos::SchedulerConfigurationManager* scheduler_configuration_manager() {
+    return scheduler_configuration_manager_.get();
   }
 
   chromeos::system::DeviceDisablingManager* device_disabling_manager() {
@@ -171,6 +179,9 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
       primary_profile_shutdown_subscription_;
+
+  std::unique_ptr<chromeos::SchedulerConfigurationManager>
+      scheduler_configuration_manager_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

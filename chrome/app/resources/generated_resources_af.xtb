@@ -139,7 +139,6 @@
 <translation id="1186771945450942097">Verwyder skadelike sagteware</translation>
 <translation id="1187722533808055681">Wakkerword uit rus</translation>
 <translation id="1188807932851744811">Loglêer nie opgelaai nie.</translation>
-<translation id="1189418886587279221">Aktiveer toeganklikheidskenmerke om jou toestel makliker te maak om te gebruik.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Het toegang tot 'n lêer wat in jou rekenaar geberg is}other{Het toegang tot # lêers wat in jou rekenaar geberg is}}</translation>
 <translation id="1190660338026981543">Jou <ph name="DEVICE_TYPE" /> is suksesvol ingeskryf vir ondernemingbestuur deur <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="119092896208640858"><ph name="BEGIN_LINK" />Meld af<ph name="END_LINK" /> om blaaierdata net van hierdie toestel af uit te vee terwyl jy dit in jou Google-rekening hou.</translation>
@@ -339,7 +338,6 @@
 <translation id="1476607407192946488">Taalinstellings …</translation>
 <translation id="1478340334823509079">Besonderhede: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Installering is nie geaktiveer nie</translation>
-<translation id="1481206932476131736">Bestuur jou aangemelde rekeninge. Webwerwe, programme en uitbreidings in Chrome en Google Play kan hierdie rekeninge gebruik om jou ervaring te pasmaak, na gelang van jou toestemmings.</translation>
 <translation id="1482626744466814421">Boekmerk hierdie oortjie …</translation>
 <translation id="1483493594462132177">Stuur</translation>
 <translation id="1484979925941077974">Werf gebruik tans Bluetooth</translation>
@@ -592,7 +590,6 @@
 <translation id="1813278315230285598">Dienste</translation>
 <translation id="18139523105317219">EDI-partynaam</translation>
 <translation id="1815083418640426271">Plak as gewone teks</translation>
-<translation id="1815579292149538864">Stel CUPS-drukkers op of bestuur hulle.</translation>
 <translation id="181577467034453336">Nog <ph name="NUMBER_OF_VIEWS" /> …</translation>
 <translation id="1816036116994822943">Sleutelbordskandeerspoed</translation>
 <translation id="1817871734039893258">Microsoft-lêerherwinning</translation>
@@ -1454,7 +1451,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="3012917896646559015">Kontak jou hardeware-vervaardiger onmiddellik om jou rekenaar na 'n herstelplek te stuur.</translation>
 <translation id="3013291976881901233">MIDI-toestelle</translation>
 <translation id="3015639418649705390">Herbegin nou</translation>
-<translation id="3016329696181678353"><ph name="PRINTER_NAME" /> kon nie outomaties opgestel word nie. Spesifiseer asseblief gevorderde drukkerbesonderhede.</translation>
 <translation id="3016381065346027039">Geen loglêerinskrywings nie</translation>
 <translation id="3016641847947582299">Komponent opgedateer</translation>
 <translation id="3016780570757425217">Jou ligging ken</translation>
@@ -2192,7 +2188,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4046123991198612571">Volgende snit</translation>
 <translation id="4050225813016893843">Stawingmetode</translation>
 <translation id="4052120076834320548">Klein</translation>
-<translation id="4055023634561256217">'n Herbegin word vereis voordat jou toestel met Kragwas teruggestel kan word.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> – <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">Bekyk in winkel</translation>
 <translation id="4058647953897694817">Verifieer deur Bluetooth</translation>
@@ -2514,7 +2509,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4558426062282641716">Het toestemming versoek om outomaties te begin</translation>
 <translation id="4558491878126948419">Kry <ph name="DEVICE_TYPE" />-wenke en kennisgewings oor Google-produkte en deel terugvoer. Teken enige tyd uit.</translation>
 <translation id="4559617833001311418">Hierdie werf het tans toegang tot jou beweging- of ligsensors.</translation>
-<translation id="4561098487691395071">Of spesifiseer jou drukker-PPD</translation>
 <translation id="4562155214028662640">Voeg vingerafdruk by</translation>
 <translation id="4562494484721939086">Geen diens nie</translation>
 <translation id="4563880231729913339">Vinger 3</translation>
@@ -2757,7 +2751,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925542575807923399">Die administrateur vir hierdie rekening vereis dat hierdie rekening die eerste een moet wees waarby in 'n veelvuldige aanmeldsessie aangemeld word.</translation>
 <translation id="4927753642311223124">Niks hier te sien nie, beweeg aan.</translation>
-<translation id="4927846293686536410">Meld aan om jou boekmerke, geskiedenis, wagwoorde en ander instellings op al jou toestelle te kry. Jy sal ook outomaties by jou Google-dienste aangemeld word.</translation>
 <translation id="4929386379796360314">Drukbestemmings</translation>
 <translation id="4930714375720679147">Skakel aan</translation>
 <translation id="4932733599132424254">Datum</translation>
@@ -3315,7 +3308,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="5750324801516359607">Ver</translation>
 <translation id="5756163054456765343">Hulpsentrum</translation>
 <translation id="5759728514498647443">Dokumente wat jy deur <ph name="APP_NAME" /> stuur om gedruk te word, kan deur <ph name="APP_NAME" /> gelees word.</translation>
-<translation id="5763315388120433852">Stel netwerklêerdelings op of bestuur dit.</translation>
 <translation id="5763751966069581670">Geen USB-toestelle gevind nie</translation>
 <translation id="5764483294734785780">Stoor oudio as …</translation>
 <translation id="57646104491463491">Datum gewysig</translation>
@@ -4635,7 +4627,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7684718995427157417">Aktiveer die Android-ontfoutingsbrug (ADB) om jou programme te skep en te toets. Let daarop dat hierdie handeling dit moontlik maak om Android-programme te installeer wat nie deur Google geverifieer is nie, en 'n fabriekterugstelling is nodig om dit te deaktiveer.</translation>
 <translation id="7685049629764448582">JavaScript-geheue</translation>
 <translation id="7685087414635069102">PIN word vereis</translation>
-<translation id="768549422429443215">Voeg tale by of herrangskik lys.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Bevestig nuwe wagwoord</translation>
 <translation id="7690378713476594306">Kies uit lys</translation>
@@ -4672,7 +4663,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7730449930968088409">Vang inhoud van jou skerm vas</translation>
 <translation id="7732111077498238432">Netwerk word deur beleid beheer</translation>
 <translation id="7737238973539693982">Vee Linux (Beta) uit</translation>
-<translation id="7737456446569756884">Hierdie toestel sal tot <ph name="MONTH_AND_YEAR" /> outomaties sagteware- en sekuriteitopdaterings kry.</translation>
 <translation id="7740996059027112821">Standaard</translation>
 <translation id="7744047395460924128">Sien jou drukgeskiedenis</translation>
 <translation id="7746457520633464754">Chrome stuur URL'e van sommige bladsye wat jy besoek, beperkte stelselinligting en sekere bladinhoud aan Google om gevaarlike programme en werwe te bespeur</translation>
@@ -5558,7 +5548,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="892706138619340876">Sommige instellings is teruggestel</translation>
 <translation id="8930351635855238750">Nuwe webkoekie-instellings sal in werking tree nadat die bladsy herlaai is</translation>
 <translation id="8931394284949551895">Nuwe toestelle</translation>
-<translation id="893254996965966411">Stoor bespeurde drukker op jou profiel, of voeg 'n nuwe drukker by.</translation>
 <translation id="8932894639908691771">Skakelaartoegangopsies</translation>
 <translation id="8933960630081805351">Wys in vinder</translation>
 <translation id="8934732568177537184">Gaan voort</translation>

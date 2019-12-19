@@ -26,6 +26,7 @@
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_process.h"
+#include "remoting/host/fake_keyboard_layout_monitor.h"
 #include "remoting/host/fake_mouse_cursor_monitor.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_mock_objects.h"
@@ -124,6 +125,11 @@ class DesktopProcessTest : public testing::Test {
   // DesktopEnvironment::CreateMouseCursorMonitor().
   webrtc::MouseCursorMonitor* CreateMouseCursorMonitor();
 
+  // Creates a FakeKeyboardLayoutMonitor to mock
+  // DesktopEnvironment::CreateKeyboardLayoutMonitor
+  KeyboardLayoutMonitor* CreateKeyboardLayoutMonitor(
+      base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback);
+
   // Disconnects the daemon-to-desktop channel causing the desktop process to
   // exit.
   void DisconnectChannels();
@@ -196,6 +202,9 @@ DesktopEnvironment* DesktopProcessTest::CreateDesktopEnvironment() {
   EXPECT_CALL(*desktop_environment, CreateMouseCursorMonitorPtr())
       .Times(AtMost(1))
       .WillOnce(Invoke(this, &DesktopProcessTest::CreateMouseCursorMonitor));
+  EXPECT_CALL(*desktop_environment, CreateKeyboardLayoutMonitorPtr(_))
+      .Times(AtMost(1))
+      .WillOnce(Invoke(this, &DesktopProcessTest::CreateKeyboardLayoutMonitor));
   EXPECT_CALL(*desktop_environment, GetCapabilities())
       .Times(AtMost(1));
   EXPECT_CALL(*desktop_environment, SetCapabilities(_))
@@ -218,6 +227,11 @@ webrtc::DesktopCapturer* DesktopProcessTest::CreateVideoCapturer() {
 
 webrtc::MouseCursorMonitor* DesktopProcessTest::CreateMouseCursorMonitor() {
   return new FakeMouseCursorMonitor();
+}
+
+KeyboardLayoutMonitor* DesktopProcessTest::CreateKeyboardLayoutMonitor(
+    base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback) {
+  return new FakeKeyboardLayoutMonitor();
 }
 
 void DesktopProcessTest::DisconnectChannels() {

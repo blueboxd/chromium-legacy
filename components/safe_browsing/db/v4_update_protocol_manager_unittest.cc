@@ -81,10 +81,12 @@ class V4UpdateProtocolManagerTest : public PlatformTest {
     return V4UpdateProtocolManager::Create(
         test_shared_loader_factory_,
         GetTestV4ProtocolConfig(disable_auto_update),
-        base::Bind(&V4UpdateProtocolManagerTest::ValidateGetUpdatesResults,
-                   base::Unretained(this), expected_lurs),
-        base::Bind(&V4UpdateProtocolManagerTest::GetExtendedReportingLevel,
-                   base::Unretained(this), erl));
+        base::BindRepeating(
+            &V4UpdateProtocolManagerTest::ValidateGetUpdatesResults,
+            base::Unretained(this), expected_lurs),
+        base::BindRepeating(
+            &V4UpdateProtocolManagerTest::GetExtendedReportingLevel,
+            base::Unretained(this), erl));
   }
 
   void SetupStoreStates() {

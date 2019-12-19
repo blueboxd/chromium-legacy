@@ -106,10 +106,6 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
     delayed_animation_task_delay_ = delta;
   }
 
-  // Returns wallpaper blur status for testing.
-  bool HasBlurForTest() const;
-  bool HasBlurAnimationForTest() const;
-
   // Gets the windows list that are shown in the overview windows grids if the
   // overview mode is active for testing.
   std::vector<aura::Window*> GetWindowsListInOverviewGridsForTest();

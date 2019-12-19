@@ -237,10 +237,10 @@ int main() {
   loader->RelaunchChromeBrowserWithNewCommandLineIfNeeded();
   delete loader;
 
-  // Process shutdown is hard and utility processes in particular have been
-  // crashing during shutdown. TerminateProcess is safer and faster. Other
-  // process types can be added as needed.
-  if (process_type == switches::kUtilityProcess) {
+  // Process shutdown is hard and some process types have been crashing during
+  // shutdown. TerminateProcess is safer and faster.
+  if (process_type == switches::kUtilityProcess ||
+      process_type == switches::kPpapiPluginProcess) {
     TerminateProcess(GetCurrentProcess(), rc);
   }
   return rc;

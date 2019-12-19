@@ -4,6 +4,8 @@
 
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 
+#include "base/compiler_specific.h"
+
 namespace web_app {
 
 static_assert(Source::kMinValue == 0, "Source enum should be zero based");
@@ -37,6 +39,22 @@ DisplayMode ResolveEffectiveDisplayMode(DisplayMode app_display_mode,
     case DisplayMode::kStandalone:
     case DisplayMode::kFullscreen:
       return DisplayMode::kStandalone;
+  }
+}
+
+apps::mojom::LaunchContainer ConvertDisplayModeToAppLaunchContainer(
+    DisplayMode display_mode) {
+  switch (display_mode) {
+    case DisplayMode::kBrowser:
+      return apps::mojom::LaunchContainer::kLaunchContainerTab;
+    case DisplayMode::kMinimalUi:
+      return apps::mojom::LaunchContainer::kLaunchContainerWindow;
+    case DisplayMode::kStandalone:
+      return apps::mojom::LaunchContainer::kLaunchContainerWindow;
+    case DisplayMode::kFullscreen:
+      return apps::mojom::LaunchContainer::kLaunchContainerWindow;
+    case DisplayMode::kUndefined:
+      return apps::mojom::LaunchContainer::kLaunchContainerNone;
   }
 }
 

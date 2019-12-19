@@ -82,14 +82,8 @@ bool IsUsingSkiaRenderer() {
     return false;
 #endif
 
-  // We require OOP-D everywhere but WebView.
-  bool enabled = base::FeatureList::IsEnabled(kUseSkiaRenderer) ||
-                 base::FeatureList::IsEnabled(kVulkan);
-  if (enabled && !IsVizDisplayCompositorEnabled()) {
-    DLOG(ERROR) << "UseSkiaRenderer requires VizDisplayCompositor.";
-    return false;
-  }
-  return enabled;
+  return base::FeatureList::IsEnabled(kUseSkiaRenderer) ||
+         base::FeatureList::IsEnabled(kVulkan);
 }
 
 bool IsRecordingSkPicture() {

@@ -42,14 +42,13 @@ import java.util.Map;
  * startup before native is initialized but are set via native code. The caching is done in
  * {@link android.content.SharedPreferences}, which is available in Java immediately.
  *
- * To add a new cached flag:
- * - Create a constant to act as SharedPreferences key in {@link ChromePreferenceKeys}, with the
- *   value "Chrome.Flags.FooEnabled".
+ * To cache the flag {@link ChromeFeatureList}.FOO:
  * - Call {@link FeatureUtilities#cacheFlag(String, String)} in {@link
- *   FeatureUtilities#cacheNativeFlags()} passing the new key create above and the {@link
- *   ChromeFeatureList} flag.
+ *   FeatureUtilities#cacheNativeFlags()} passing
+ *   {@link ChromePreferenceKeys#CACHED_FEATURE_FLAG}.createKey(FOO) and FOO.
  * - To query whether the cached flag is enabled in client code, call
- *   {@link FeatureUtilities#isFlagEnabled(String, boolean)} passing the SharedPreferences key.
+ *   {@link FeatureUtilities#isFlagEnabled(String, boolean)} passing
+ *   {@link ChromePreferenceKeys#CACHED_FEATURE_FLAG}.createKey(FOO).
  *   Consider this the source of truth for whether the flag is turned on in the current session.
  * - When querying whether a cached feature is enabled from native, a @CalledByNative method can be
  *   exposed in this file to allow feature_utilities.cc to retrieve the cached value.

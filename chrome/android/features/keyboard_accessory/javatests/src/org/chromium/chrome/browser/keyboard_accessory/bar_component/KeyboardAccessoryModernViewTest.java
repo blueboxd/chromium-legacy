@@ -231,6 +231,10 @@ public class KeyboardAccessoryModernViewTest {
 
         CriteriaHelper.pollUiThread(view.mBarItemsView::isShown);
         CriteriaHelper.pollUiThread(viewsAreRightAligned(view, view.mBarItemsView.getChildAt(1)));
+
+        // Reset device orientation.
+        mActivityTestRule.getActivity().setRequestedOrientation(
+                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     }
 
     @Test

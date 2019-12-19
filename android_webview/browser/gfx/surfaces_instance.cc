@@ -69,10 +69,8 @@ SurfacesInstance::SurfacesInstance()
       std::make_unique<viz::ParentLocalSurfaceIdAllocator>();
 
   constexpr bool is_root = true;
-  constexpr bool needs_sync_points = true;
   support_ = std::make_unique<viz::CompositorFrameSinkSupport>(
-      this, frame_sink_manager_.get(), frame_sink_id_, is_root,
-      needs_sync_points);
+      this, frame_sink_manager_.get(), frame_sink_id_, is_root);
 
   std::unique_ptr<viz::OutputSurface> output_surface =
       output_surface_provider_.CreateOutputSurface();

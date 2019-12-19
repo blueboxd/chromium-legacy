@@ -54,6 +54,4 @@ function finish() {
   succeed();
 }
 
-document.documentElement.addEventListener("click", function() {
-  testLastError();
-}, true);
+chrome.test.sendMessage('ready');

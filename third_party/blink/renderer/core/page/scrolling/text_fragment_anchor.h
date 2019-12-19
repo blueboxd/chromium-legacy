@@ -69,6 +69,8 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
   // element fragment anchor if we didn't find a match.
   void DidFinishSearch();
 
+  void ApplyTargetToCommonAncestor(const EphemeralRangeInFlatTree& range);
+
   Vector<TextFragmentFinder> text_fragment_finders_;
 
   Member<LocalFrame> frame_;

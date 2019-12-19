@@ -410,7 +410,8 @@ class RTCPeerConnectionTestWithPlatformTestingPlatformType
     auto* source = MakeGarbageCollected<MediaStreamSource>("sourceId", type,
                                                            "sourceName", false);
     auto* component = MakeGarbageCollected<MediaStreamComponent>(id, source);
-    return MediaStreamTrack::Create(scope.GetExecutionContext(), component);
+    return MakeGarbageCollected<MediaStreamTrack>(scope.GetExecutionContext(),
+                                                  component);
   }
 
   std::string GetExceptionMessage(V8TestingScope& scope) {

@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_context_rate_limiter.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/graphics/memory_managed_paint_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
@@ -61,6 +62,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
     : logger_(std::make_unique<Logger>()),
       have_recorded_draw_commands_(false),
       is_hidden_(false),
+      is_being_displayed_(false),
       software_rendering_while_hidden_(false),
       acceleration_mode_(acceleration_mode),
       color_params_(color_params),
@@ -73,6 +75,11 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
   // Used by browser tests to detect the use of a Canvas2DLayerBridge.
   TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation",
                        TRACE_EVENT_SCOPE_GLOBAL);
+
+  // A raw pointer is safe here because the callback is only used by the
+  // |recorder_|.
+  finalize_frame_callback_ = WTF::BindRepeating(
+      &Canvas2DLayerBridge::FinalizeFrame, WTF::Unretained(this));
   StartRecording();
 
   // Clear the background transparent or opaque. Similar code at
@@ -108,9 +115,11 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge() {
 }
 
 void Canvas2DLayerBridge::StartRecording() {
-  recorder_ = std::make_unique<PaintRecorder>();
+  recorder_ =
+      std::make_unique<MemoryManagedPaintRecorder>(finalize_frame_callback_);
   cc::PaintCanvas* canvas =
       recorder_->beginRecording(size_.Width(), size_.Height());
+
   // Always save an initial frame, to support resetting the top level matrix
   // and clip.
   canvas->save();
@@ -352,7 +361,7 @@ void Canvas2DLayerBridge::UpdateFilterQuality() {
     layer_->SetNearestNeighbor(filter_quality == kNone_SkFilterQuality);
 }
 
-void Canvas2DLayerBridge::SetIsHidden(bool hidden) {
+void Canvas2DLayerBridge::SetIsInHiddenPage(bool hidden) {
   if (is_hidden_ == hidden)
     return;
 
@@ -400,6 +409,19 @@ void Canvas2DLayerBridge::SetIsHidden(bool hidden) {
   }
   if (!IsHidden() && IsHibernating())
     GetOrCreateResourceProvider();  // Rude awakening
+}
+
+void Canvas2DLayerBridge::SetIsBeingDisplayed(bool displayed) {
+  is_being_displayed_ = displayed;
+  // If the canvas is no longer being displayed, stop using the rate
+  // limiter.
+  if (!is_being_displayed_) {
+    frames_since_last_commit_ = 0;
+    if (rate_limiter_) {
+      rate_limiter_->Reset();
+      rate_limiter_.reset(nullptr);
+    }
+  }
 }
 
 void Canvas2DLayerBridge::DrawFullImage(const cc::PaintImage& image) {
@@ -583,6 +605,10 @@ void Canvas2DLayerBridge::FlushRecording() {
   have_recorded_draw_commands_ = false;
 }
 
+bool Canvas2DLayerBridge::HasRateLimiterForTesting() {
+  return !!rate_limiter_;
+}
+
 bool Canvas2DLayerBridge::IsValid() {
   return CheckResourceProviderValid();
 }
@@ -709,13 +735,16 @@ void Canvas2DLayerBridge::FinalizeFrame() {
     return;
 
   FlushRecording();
-  ++frames_since_last_commit_;
-  if (frames_since_last_commit_ >= 2) {
-    if (IsAccelerated() && !rate_limiter_) {
-      // Make sure the GPU is never more than two animation frames behind.
-      constexpr unsigned kMaxCanvasAnimationBacklog = 2;
-      rate_limiter_ = std::make_unique<SharedContextRateLimiter>(
-          kMaxCanvasAnimationBacklog);
+  if (is_being_displayed_) {
+    ++frames_since_last_commit_;
+    // Make sure the GPU is never more than two animation frames behind.
+    constexpr unsigned kMaxCanvasAnimationBacklog = 2;
+    if (frames_since_last_commit_ >=
+        static_cast<int>(kMaxCanvasAnimationBacklog)) {
+      if (IsAccelerated() && !rate_limiter_) {
+        rate_limiter_ = std::make_unique<SharedContextRateLimiter>(
+            kMaxCanvasAnimationBacklog);
+      }
     }
   }
 

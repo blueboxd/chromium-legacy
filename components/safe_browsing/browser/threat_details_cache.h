@@ -40,7 +40,7 @@ class ThreatDetailsCacheCollector
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       ResourceMap* resources,
       bool* result,
-      const base::Closure& callback);
+      base::OnceClosure callback);
 
   // Returns whether or not StartCacheCollection has been called.
   bool HasStarted();
@@ -66,7 +66,7 @@ class ThreatDetailsCacheCollector
 
   // Method we call when we are done. The caller must be alive for the
   // whole time, we are modifying its state (see above).
-  base::Closure callback_;
+  base::OnceClosure callback_;
 
   // Set to true as soon as StartCacheCollection is called.
   bool has_started_;

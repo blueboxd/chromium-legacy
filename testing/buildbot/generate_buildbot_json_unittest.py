@@ -11,10 +11,17 @@ import unittest
 import json
 import generate_buildbot_json
 
+EMPTY_PYL_FILE = """\
+{
+}
+"""
+
 
 class FakeBBGen(generate_buildbot_json.BBJSONGenerator):
-  def __init__(self, waterfalls, test_suites, exceptions, mixins,
-               luci_milo_cfg):
+  def __init__(self, waterfalls, test_suites, luci_milo_cfg,
+               exceptions=EMPTY_PYL_FILE,
+               mixins=EMPTY_PYL_FILE,
+               gn_isolate_map=EMPTY_PYL_FILE):
     super(FakeBBGen, self).__init__()
     infra_config_dir = os.path.abspath(
         os.path.join(os.path.dirname(__file__), '..', '..',
@@ -28,6 +35,7 @@ class FakeBBGen(generate_buildbot_json.BBJSONGenerator):
       'test_suites.pyl': test_suites,
       'test_suite_exceptions.pyl': exceptions,
       'mixins.pyl': mixins,
+      'gn_isolate_map.pyl': gn_isolate_map,
       luci_milo_cfg_path: luci_milo_cfg,
       luci_milo_dev_cfg_path: '',
     }
@@ -824,11 +832,6 @@ COMPOSITION_SUITE_WITH_GPU_ARGS = """\
 }
 """
 
-EMPTY_PYL_FILE = """\
-{
-}
-"""
-
 SCRIPT_WITH_ARGS_EXCEPTIONS = """\
 {
   'foo_test': {
@@ -1054,7 +1057,8 @@ VARIATION_GTEST_OUTPUT = """\
             }
           ]
         },
-        "test": "foo_test"
+        "test": "foo_test",
+        "test_target": "//chrome/test:foo_test"
       },
       {
         "args": [
@@ -1073,7 +1077,8 @@ VARIATION_GTEST_OUTPUT = """\
             }
           ]
         },
-        "test": "foo_test"
+        "test": "foo_test",
+        "test_target": "//chrome/test:foo_test"
       }
     ]
   }
@@ -1395,11 +1400,13 @@ INSTRUMENTATION_TEST_DIFFERENT_NAMES_OUTPUT = """\
     "instrumentation_tests": [
       {
         "name": "bar_tests",
-        "test": "foo_test"
+        "test": "foo_test",
+        "test_target": "//chrome/test:foo_test"
       },
       {
         "name": "foo_tests",
-        "test": "foo_test"
+        "test": "foo_test",
+        "test_target": "//chrome/test:foo_test"
       }
     ]
   }
@@ -2040,6 +2047,15 @@ TEST_SUITES_SYNTAX_ERROR = """\
 }
 """
 
+GN_ISOLATE_MAP="""\
+{
+  'foo_test': {
+    'label': '//chrome/test:foo_test',
+    'type': 'windowed_test_launcher',
+  }
+}
+"""
+
 class UnitTest(unittest.TestCase):
   def test_base_generator(self):
     # Only needed for complete code coverage.
@@ -2053,8 +2069,6 @@ class UnitTest(unittest.TestCase):
   def test_good_test_suites_are_ok(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     FOO_TEST_SUITE,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG)
     fbb.check_input_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -2062,8 +2076,6 @@ class UnitTest(unittest.TestCase):
   def test_good_multi_dimension_test_suites_are_ok(self):
     fbb = FakeBBGen(FOO_GTESTS_MULTI_DIMENSION_WATERFALL,
                     FOO_TEST_SUITE,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG)
     fbb.check_input_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -2071,8 +2083,6 @@ class UnitTest(unittest.TestCase):
   def test_good_composition_test_suites_are_ok(self):
     fbb = FakeBBGen(COMPOSITION_GTEST_SUITE_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG)
     fbb.check_input_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -2080,8 +2090,6 @@ class UnitTest(unittest.TestCase):
   def test_bad_composition_test_suites_are_caught(self):
     fbb = FakeBBGen(COMPOSITION_GTEST_SUITE_WATERFALL,
                     BAD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG)
     with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
                                  'compound_suites may not refer to.*'):
@@ -2091,8 +2099,6 @@ class UnitTest(unittest.TestCase):
   def test_composition_test_suites_no_conflicts(self):
     fbb = FakeBBGen(COMPOSITION_GTEST_SUITE_WATERFALL,
                     CONFLICTING_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG)
     with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
                                  'Conflicting test definitions.*'):
@@ -2102,8 +2108,6 @@ class UnitTest(unittest.TestCase):
   def test_composition_test_suites_no_duplicate_names(self):
     fbb = FakeBBGen(COMPOSITION_GTEST_SUITE_WATERFALL,
                     DUPLICATES_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG)
     with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
                                  '.*may not duplicate basic test suite.*'):
@@ -2113,8 +2117,6 @@ class UnitTest(unittest.TestCase):
   def test_unknown_test_suites_are_caught(self):
     fbb = FakeBBGen(UNKNOWN_TEST_SUITE_WATERFALL,
                     FOO_TEST_SUITE,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG)
     with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
                                  'Test suite baz_tests from machine.*'):
@@ -2124,8 +2126,6 @@ class UnitTest(unittest.TestCase):
   def test_unknown_test_suite_types_are_caught(self):
     fbb = FakeBBGen(UNKNOWN_TEST_SUITE_TYPE_WATERFALL,
                     FOO_TEST_SUITE,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG)
     with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
                                  'Unknown test suite type foo_test_type.*'):
@@ -2135,8 +2135,6 @@ class UnitTest(unittest.TestCase):
   def test_unrefed_test_suite_caught(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     UNREFED_TEST_SUITE,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG)
     with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
                                  '.*unreferenced.*bar_tests.*'):
@@ -2146,8 +2144,6 @@ class UnitTest(unittest.TestCase):
   def test_good_waterfall_output(self):
     fbb = FakeBBGen(COMPOSITION_GTEST_SUITE_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = COMPOSITION_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
@@ -2156,9 +2152,8 @@ class UnitTest(unittest.TestCase):
   def test_reusing_gtest_targets(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     REUSING_TEST_WITH_DIFFERENT_NAME,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    gn_isolate_map=GN_ISOLATE_MAP)
     fbb.files['chromium.test.json'] = VARIATION_GTEST_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -2166,9 +2161,8 @@ class UnitTest(unittest.TestCase):
   def test_noop_exception_does_nothing(self):
     fbb = FakeBBGen(COMPOSITION_GTEST_SUITE_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_BAR_TEST_EXCEPTIONS,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=EMPTY_BAR_TEST_EXCEPTIONS)
     fbb.files['chromium.test.json'] = COMPOSITION_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -2176,9 +2170,8 @@ class UnitTest(unittest.TestCase):
   def test_test_arg_merges(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     FOO_TEST_SUITE_WITH_ARGS,
-                    FOO_TEST_MODIFICATIONS,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=FOO_TEST_MODIFICATIONS)
     fbb.files['chromium.test.json'] = MERGED_ARGS_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -2186,8 +2179,6 @@ class UnitTest(unittest.TestCase):
   def test_enable_features_arg_merges(self):
     fbb = FakeBBGen(FOO_GTESTS_WITH_ENABLE_FEATURES_WATERFALL,
                     FOO_TEST_SUITE_WITH_ENABLE_FEATURES,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = MERGED_ENABLE_FEATURES_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
@@ -2196,8 +2187,6 @@ class UnitTest(unittest.TestCase):
   def test_linux_args(self):
     fbb = FakeBBGen(FOO_LINUX_GTESTS_WATERFALL,
                     FOO_TEST_SUITE_WITH_LINUX_ARGS,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = LINUX_ARGS_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
@@ -2206,9 +2195,8 @@ class UnitTest(unittest.TestCase):
   def test_test_filtering(self):
     fbb = FakeBBGen(COMPOSITION_GTEST_SUITE_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    NO_BAR_TEST_EXCEPTIONS,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=NO_BAR_TEST_EXCEPTIONS)
     fbb.files['chromium.test.json'] = COMPOSITION_WATERFALL_FILTERED_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -2216,9 +2204,8 @@ class UnitTest(unittest.TestCase):
   def test_test_modifications(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     FOO_TEST_SUITE,
-                    FOO_TEST_MODIFICATIONS,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=FOO_TEST_MODIFICATIONS)
     fbb.files['chromium.test.json'] = MODIFIED_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -2226,9 +2213,9 @@ class UnitTest(unittest.TestCase):
   def test_test_with_explicit_none(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     FOO_TEST_SUITE,
-                    FOO_TEST_EXPLICIT_NONE_EXCEPTIONS,
-                    SWARMING_MIXINS,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=FOO_TEST_EXPLICIT_NONE_EXCEPTIONS,
+                    mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = EXPLICIT_NONE_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -2236,9 +2223,8 @@ class UnitTest(unittest.TestCase):
   def test_isolated_script_tests(self):
     fbb = FakeBBGen(FOO_ISOLATED_SCRIPTS_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    NO_BAR_TEST_EXCEPTIONS,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=NO_BAR_TEST_EXCEPTIONS)
     fbb.files['chromium.test.json'] = ISOLATED_SCRIPT_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -2246,9 +2232,8 @@ class UnitTest(unittest.TestCase):
   def test_script_with_args(self):
     fbb = FakeBBGen(FOO_SCRIPT_WATERFALL,
                     SCRIPT_SUITE,
-                    SCRIPT_WITH_ARGS_EXCEPTIONS,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=SCRIPT_WITH_ARGS_EXCEPTIONS)
     fbb.files['chromium.test.json'] = SCRIPT_WITH_ARGS_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -2256,9 +2241,8 @@ class UnitTest(unittest.TestCase):
   def test_script(self):
     fbb = FakeBBGen(FOO_SCRIPT_WATERFALL,
                     FOO_SCRIPT_SUITE,
-                    NO_BAR_TEST_EXCEPTIONS,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=NO_BAR_TEST_EXCEPTIONS)
     fbb.files['chromium.test.json'] = SCRIPT_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -2266,9 +2250,8 @@ class UnitTest(unittest.TestCase):
   def test_script_machine_forbids_scripts(self):
     fbb = FakeBBGen(FOO_SCRIPT_WATERFALL_MACHINE_FORBIDS_SCRIPT_TESTS,
                     FOO_SCRIPT_SUITE,
-                    NO_BAR_TEST_EXCEPTIONS,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=NO_BAR_TEST_EXCEPTIONS)
     with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
         'Attempted to generate a script test on tester.*'):
       fbb.check_output_file_consistency(verbose=True)
@@ -2276,9 +2259,8 @@ class UnitTest(unittest.TestCase):
   def test_script_waterfall_forbids_scripts(self):
     fbb = FakeBBGen(FOO_SCRIPT_WATERFALL_FORBID_SCRIPT_TESTS,
                     FOO_SCRIPT_SUITE,
-                    NO_BAR_TEST_EXCEPTIONS,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=NO_BAR_TEST_EXCEPTIONS)
     with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
         'Attempted to generate a script test on tester.*'):
       fbb.check_output_file_consistency(verbose=True)
@@ -2286,9 +2268,8 @@ class UnitTest(unittest.TestCase):
   def test_junit_tests(self):
     fbb = FakeBBGen(FOO_JUNIT_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    NO_BAR_TEST_EXCEPTIONS,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=NO_BAR_TEST_EXCEPTIONS)
     fbb.files['chromium.test.json'] = JUNIT_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -2296,8 +2277,6 @@ class UnitTest(unittest.TestCase):
   def test_cts_tests(self):
     fbb = FakeBBGen(FOO_CTS_WATERFALL,
                     FOO_CTS_SUITE,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = CTS_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
@@ -2306,8 +2285,6 @@ class UnitTest(unittest.TestCase):
   def test_isolated_cts_tests(self):
     fbb = FakeBBGen(FOO_ISOLATED_CTS_WATERFALL,
                     FOO_ISOLATED_CTS_SUITE,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = CTS_ISOLATED_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
@@ -2316,9 +2293,8 @@ class UnitTest(unittest.TestCase):
   def test_instrumentation_tests(self):
     fbb = FakeBBGen(FOO_INSTRUMENTATION_TEST_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    NO_BAR_TEST_EXCEPTIONS,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=NO_BAR_TEST_EXCEPTIONS)
     fbb.files['chromium.test.json'] = INSTRUMENTATION_TEST_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -2326,9 +2302,8 @@ class UnitTest(unittest.TestCase):
   def test_gpu_telemetry_tests(self):
     fbb = FakeBBGen(FOO_GPU_TELEMETRY_TEST_WATERFALL,
                     COMPOSITION_SUITE_WITH_NAME_NOT_ENDING_IN_TEST,
-                    NO_BAR_TEST_EXCEPTIONS,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=NO_BAR_TEST_EXCEPTIONS)
     fbb.files['chromium.test.json'] = GPU_TELEMETRY_TEST_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -2336,9 +2311,8 @@ class UnitTest(unittest.TestCase):
   def test_nvidia_gpu_telemetry_tests(self):
     fbb = FakeBBGen(NVIDIA_GPU_TELEMETRY_TEST_WATERFALL,
                     COMPOSITION_SUITE_WITH_GPU_ARGS,
-                    NO_BAR_TEST_EXCEPTIONS,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=NO_BAR_TEST_EXCEPTIONS)
     fbb.files['chromium.test.json'] = NVIDIA_GPU_TELEMETRY_TEST_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -2346,9 +2320,8 @@ class UnitTest(unittest.TestCase):
   def test_intel_gpu_telemetry_tests(self):
     fbb = FakeBBGen(INTEL_GPU_TELEMETRY_TEST_WATERFALL,
                     COMPOSITION_SUITE_WITH_GPU_ARGS,
-                    NO_BAR_TEST_EXCEPTIONS,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=NO_BAR_TEST_EXCEPTIONS)
     fbb.files['chromium.test.json'] = INTEL_GPU_TELEMETRY_TEST_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -2356,9 +2329,8 @@ class UnitTest(unittest.TestCase):
   def test_intel_uhd_gpu_telemetry_tests(self):
     fbb = FakeBBGen(INTEL_UHD_GPU_TELEMETRY_TEST_WATERFALL,
                     COMPOSITION_SUITE_WITH_GPU_ARGS,
-                    NO_BAR_TEST_EXCEPTIONS,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=NO_BAR_TEST_EXCEPTIONS)
     fbb.files['chromium.test.json'] = INTEL_UHD_GPU_TELEMETRY_TEST_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -2366,9 +2338,8 @@ class UnitTest(unittest.TestCase):
   def test_instrumentation_tests_with_different_names(self):
     fbb = FakeBBGen(FOO_INSTRUMENTATION_TEST_WATERFALL,
                     INSTRUMENTATION_TESTS_WITH_DIFFERENT_NAMES,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    gn_isolate_map=GN_ISOLATE_MAP)
     fbb.files['chromium.test.json'] = \
         INSTRUMENTATION_TEST_DIFFERENT_NAMES_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
@@ -2377,9 +2348,8 @@ class UnitTest(unittest.TestCase):
   def test_ungenerated_output_files_are_caught(self):
     fbb = FakeBBGen(COMPOSITION_GTEST_SUITE_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    NO_BAR_TEST_EXCEPTIONS,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=NO_BAR_TEST_EXCEPTIONS)
     fbb.files['chromium.test.json'] = (
       '\n' + COMPOSITION_WATERFALL_FILTERED_OUTPUT)
     with self.assertRaises(generate_buildbot_json.BBGenErr):
@@ -2396,8 +2366,6 @@ class UnitTest(unittest.TestCase):
   def test_android_output_options(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     FOO_TEST_SUITE,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = ANDROID_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
@@ -2406,9 +2374,8 @@ class UnitTest(unittest.TestCase):
   def test_nonexistent_removal_raises(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     FOO_TEST_SUITE,
-                    NONEXISTENT_REMOVAL,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=NONEXISTENT_REMOVAL)
     with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
                                  'The following nonexistent machines.*'):
       fbb.check_input_file_consistency(verbose=True)
@@ -2417,9 +2384,8 @@ class UnitTest(unittest.TestCase):
   def test_nonexistent_modification_raises(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     FOO_TEST_SUITE,
-                    NONEXISTENT_MODIFICATION,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=NONEXISTENT_MODIFICATION)
     with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
                                  'The following nonexistent machines.*'):
       fbb.check_input_file_consistency(verbose=True)
@@ -2428,8 +2394,6 @@ class UnitTest(unittest.TestCase):
   def test_waterfall_args(self):
     fbb = FakeBBGen(COMPOSITION_GTEST_SUITE_WITH_ARGS_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = COMPOSITION_WATERFALL_WITH_ARGS_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
@@ -2438,8 +2402,6 @@ class UnitTest(unittest.TestCase):
   def test_multi_dimension_output(self):
     fbb = FakeBBGen(FOO_GTESTS_MULTI_DIMENSION_WATERFALL,
                     FOO_TEST_SUITE,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = MULTI_DIMENSION_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
@@ -2448,8 +2410,6 @@ class UnitTest(unittest.TestCase):
   def test_chromeos_trigger_script_output(self):
     fbb = FakeBBGen(FOO_CHROMEOS_TRIGGER_SCRIPT_WATERFALL,
                     FOO_TEST_SUITE,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = CHROMEOS_TRIGGER_SCRIPT_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
@@ -2458,9 +2418,8 @@ class UnitTest(unittest.TestCase):
   def test_relative_pyl_file_dir(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     REUSING_TEST_WITH_DIFFERENT_NAME,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    gn_isolate_map=GN_ISOLATE_MAP)
     fbb.args = argparse.Namespace(pyl_files_dir='relative/path/')
     for file_name in list(fbb.files):
       if not 'luci-milo.cfg' in file_name:
@@ -2474,8 +2433,6 @@ class UnitTest(unittest.TestCase):
   def test_nonexistent_bot_raises(self):
     fbb = FakeBBGen(UNKNOWN_BOT_GTESTS_WATERFALL,
                     FOO_TEST_SUITE,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG)
     with self.assertRaises(generate_buildbot_json.BBGenErr):
       fbb.check_input_file_consistency(verbose=True)
@@ -2484,16 +2441,12 @@ class UnitTest(unittest.TestCase):
   def test_waterfalls_must_be_sorted(self):
     fbb = FakeBBGen(TEST_SUITE_SORTED_WATERFALL,
                     TEST_SUITE_SORTED,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG_WATERFALL_SORTING)
     fbb.check_input_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
     fbb = FakeBBGen(TEST_SUITE_UNSORTED_WATERFALL_1,
                     TEST_SUITE_SORTED,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG_WATERFALL_SORTING)
     with self.assertRaisesRegexp(
         generate_buildbot_json.BBGenErr,
@@ -2509,8 +2462,6 @@ class UnitTest(unittest.TestCase):
 
     fbb = FakeBBGen(TEST_SUITE_UNSORTED_WATERFALL_2,
                     TEST_SUITE_SORTED,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG_WATERFALL_SORTING)
     with self.assertRaisesRegexp(
         generate_buildbot_json.BBGenErr,
@@ -2527,17 +2478,15 @@ class UnitTest(unittest.TestCase):
   def test_test_suite_exceptions_must_be_sorted(self):
     fbb = FakeBBGen(TEST_SUITE_SORTING_WATERFALL,
                     TEST_SUITE_SORTED,
-                    EXCEPTIONS_SORTED,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=EXCEPTIONS_SORTED)
     fbb.check_input_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
     fbb = FakeBBGen(TEST_SUITE_SORTING_WATERFALL,
                     TEST_SUITE_SORTED,
-                    EXCEPTIONS_UNSORTED,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=EXCEPTIONS_UNSORTED)
     with self.assertRaises(generate_buildbot_json.BBGenErr):
       fbb.check_input_file_consistency(verbose=True)
     joined_lines = ' '.join(fbb.printed_lines)
@@ -2551,8 +2500,6 @@ class UnitTest(unittest.TestCase):
   def test_test_suites_must_be_sorted(self):
     fbb = FakeBBGen(TEST_SUITE_SORTING_WATERFALL,
                     TEST_SUITE_SORTED,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG)
     fbb.check_input_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -2564,8 +2511,6 @@ class UnitTest(unittest.TestCase):
     ):
       fbb = FakeBBGen(TEST_SUITE_SORTING_WATERFALL,
                       unsorted,
-                      EMPTY_PYL_FILE,
-                      EMPTY_PYL_FILE,
                       LUCI_MILO_CFG)
       with self.assertRaises(generate_buildbot_json.BBGenErr):
         fbb.check_input_file_consistency(verbose=True)
@@ -3075,17 +3020,15 @@ class MixinTests(unittest.TestCase):
   def test_mixins_must_be_sorted(self):
     fbb = FakeBBGen(FOO_GTESTS_SORTING_MIXINS_WATERFALL,
                     FOO_TEST_SUITE,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.check_input_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
     fbb = FakeBBGen(FOO_GTESTS_SORTING_MIXINS_WATERFALL,
                     FOO_TEST_SUITE,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_UNSORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_UNSORTED)
     with self.assertRaises(generate_buildbot_json.BBGenErr):
       fbb.check_input_file_consistency(verbose=True)
     joined_lines = ' '.join(fbb.printed_lines)
@@ -3099,9 +3042,8 @@ class MixinTests(unittest.TestCase):
   def test_waterfall(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL_MIXIN_WATERFALL,
                     FOO_TEST_SUITE,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = WATERFALL_MIXIN_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -3109,9 +3051,9 @@ class MixinTests(unittest.TestCase):
   def test_waterfall_exception_overrides(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL_MIXIN_WATERFALL,
                     FOO_TEST_SUITE,
-                    SCRIPT_WITH_ARGS_SWARMING_EXCEPTIONS,
-                    SWARMING_MIXINS,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=SCRIPT_WITH_ARGS_SWARMING_EXCEPTIONS,
+                    mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = WATERFALL_MIXIN_WATERFALL_EXCEPTION_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -3119,9 +3061,8 @@ class MixinTests(unittest.TestCase):
   def test_builder(self):
     fbb = FakeBBGen(FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
                     FOO_TEST_SUITE,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = BUILDER_MIXIN_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -3129,9 +3070,8 @@ class MixinTests(unittest.TestCase):
   def test_builder_non_swarming(self):
     fbb = FakeBBGen(FOO_GTESTS_BUILDER_MIXIN_NON_SWARMING_WATERFALL,
                     FOO_TEST_SUITE,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = (
         BUILDER_MIXIN_NON_SWARMING_WATERFALL_OUTPUT)
     fbb.check_output_file_consistency(verbose=True)
@@ -3140,9 +3080,8 @@ class MixinTests(unittest.TestCase):
   def test_test_suite(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     FOO_TEST_SUITE_WITH_MIXIN,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = TEST_MIXIN_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -3150,9 +3089,8 @@ class MixinTests(unittest.TestCase):
   def test_dimension(self):
     fbb = FakeBBGen(FOO_GTESTS_DIMENSIONS_MIXIN_WATERFALL,
                     FOO_TEST_SUITE_WITH_MIXIN,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = DIMENSIONS_MIXIN_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -3160,9 +3098,8 @@ class MixinTests(unittest.TestCase):
   def test_dimension_gpu(self):
     fbb = FakeBBGen(FOO_GPU_TELEMETRY_TEST_DIMENSIONS_WATERFALL,
                     FOO_TEST_SUITE_WITH_MIXIN,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = GPU_DIMENSIONS_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -3170,9 +3107,8 @@ class MixinTests(unittest.TestCase):
   def test_unreferenced(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     FOO_TEST_SUITE_WITH_MIXIN,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS)
     with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
                                  '.*mixins are unreferenced.*'):
       fbb.check_input_file_consistency(verbose=True)
@@ -3180,9 +3116,7 @@ class MixinTests(unittest.TestCase):
 
   def test_cts(self):
     fbb = FakeBBGen(FOO_CTS_WATERFALL_MIXINS,
-                    FOO_CTS_SUITE ,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
+                    FOO_CTS_SUITE,
                     LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = CTS_OUTPUT
     fbb.check_input_file_consistency(verbose=True)
@@ -3192,9 +3126,8 @@ class MixinTests(unittest.TestCase):
   def test_unused(self):
     fbb = FakeBBGen(FOO_GTESTS_INVALID_NOTFOUND_MIXIN_WATERFALL,
                     FOO_TEST_SUITE_WITH_MIXIN,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = DIMENSIONS_MIXIN_WATERFALL_OUTPUT
     with self.assertRaises(generate_buildbot_json.BBGenErr):
       fbb.check_output_file_consistency(verbose=True)
@@ -3203,9 +3136,8 @@ class MixinTests(unittest.TestCase):
   def test_list(self):
     fbb = FakeBBGen(FOO_GTESTS_INVALID_LIST_MIXIN_WATERFALL,
                     FOO_TEST_SUITE_WITH_MIXIN,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = DIMENSIONS_MIXIN_WATERFALL_OUTPUT
     with self.assertRaises(generate_buildbot_json.BBGenErr):
       fbb.check_output_file_consistency(verbose=True)
@@ -3215,9 +3147,8 @@ class MixinTests(unittest.TestCase):
   def test_no_duplicate_keys(self):
     fbb = FakeBBGen(FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
                     FOO_TEST_SUITE,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_DUPLICATED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_DUPLICATED)
     with self.assertRaisesRegexp(
         generate_buildbot_json.BBGenErr,
         'The following files have invalid keys: mixins.pyl'):
@@ -3231,8 +3162,6 @@ class MixinTests(unittest.TestCase):
   def test_type_assert_printing_help(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     TEST_SUITES_SYNTAX_ERROR,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
                     LUCI_MILO_CFG)
     with self.assertRaisesRegexp(
         generate_buildbot_json.BBGenErr,
@@ -3257,9 +3186,8 @@ class MixinTests(unittest.TestCase):
   def test_mixin_append_args(self):
     fbb = FakeBBGen(FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
                     FOO_TEST_SUITE_WITH_ARGS,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_APPEND,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_APPEND)
     fbb.files['chromium.test.json'] = BUILDER_MIXIN_APPEND_ARGS_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -3267,9 +3195,8 @@ class MixinTests(unittest.TestCase):
   def test_mixin_append_mixin_field_not_list(self):
     fbb = FakeBBGen(FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
                     FOO_TEST_SUITE_WITH_ARGS,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_APPEND_NOT_LIST,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_APPEND_NOT_LIST)
     with self.assertRaisesRegexp(
         generate_buildbot_json.BBGenErr,
         'Key "args" in \$mixin_append must be a list.'):
@@ -3279,9 +3206,8 @@ class MixinTests(unittest.TestCase):
   def test_mixin_append_test_field_not_list(self):
     fbb = FakeBBGen(FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
                     FOO_TEST_SUITE,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_APPEND_TO_SWARMING,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_APPEND_TO_SWARMING)
     with self.assertRaisesRegexp(
         generate_buildbot_json.BBGenErr,
         'Cannot apply \$mixin_append to non-list "swarming".'):
@@ -3638,9 +3564,8 @@ class QueryTests(unittest.TestCase):
   def test_query_bots(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='bots', check=False,
                                   pyl_files_dir=None, json=None,
                                   waterfall_filters = [])
@@ -3651,9 +3576,8 @@ class QueryTests(unittest.TestCase):
   def test_query_bots_invalid(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='bots/blah/blah', check=False,
                                   pyl_files_dir=None, json=None,
                                   waterfall_filters = [])
@@ -3665,9 +3589,8 @@ class QueryTests(unittest.TestCase):
   def test_query_bots_json(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='bots', check=False,
                                   pyl_files_dir=None, json='result.json',
                                   waterfall_filters = [])
@@ -3677,9 +3600,8 @@ class QueryTests(unittest.TestCase):
   def test_query_bots_tests(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='bots/tests', check=False,
                                   pyl_files_dir=None, json=None,
                                   waterfall_filters = [])
@@ -3690,9 +3612,8 @@ class QueryTests(unittest.TestCase):
   def test_query_invalid_bots_tests(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='bots/tdfjdk', check=False,
                                   pyl_files_dir=None, json=None,
                                   waterfall_filters = [])
@@ -3704,9 +3625,8 @@ class QueryTests(unittest.TestCase):
   def test_query_bot(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='bot/Fake Android K Tester',
                                   check=False, pyl_files_dir=None, json=None,
                                   waterfall_filters = [])
@@ -3718,9 +3638,8 @@ class QueryTests(unittest.TestCase):
   def test_query_bot_invalid_id(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='bot/bot1', check=False,
                                   pyl_files_dir=None, json=None,
                                   waterfall_filters = [])
@@ -3732,9 +3651,8 @@ class QueryTests(unittest.TestCase):
   def test_query_bot_invalid_query_too_many(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='bot/Fake Android K Tester/blah/blah',
                                   check=False, pyl_files_dir=None, json=None,
                                   waterfall_filters = [])
@@ -3746,9 +3664,8 @@ class QueryTests(unittest.TestCase):
   def test_query_bot_invalid_query_no_tests(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='bot/Fake Android K Tester/blahs',
                                   check=False, pyl_files_dir=None, json=None,
                                   waterfall_filters = [])
@@ -3760,9 +3677,8 @@ class QueryTests(unittest.TestCase):
   def test_query_bot_tests(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='bot/Fake Android L Tester/tests',
                                   check=False, pyl_files_dir=None, json=None,
                                   waterfall_filters = [])
@@ -3773,9 +3689,8 @@ class QueryTests(unittest.TestCase):
   def test_query_tests(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='tests', check=False,
                                   pyl_files_dir=None, json=None,
                                   waterfall_filters = [])
@@ -3786,9 +3701,8 @@ class QueryTests(unittest.TestCase):
   def test_query_tests_invalid(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='tests/blah/blah', check=False,
                                   pyl_files_dir=None, json=None,
                                   waterfall_filters = [])
@@ -3800,9 +3714,8 @@ class QueryTests(unittest.TestCase):
   def test_query_tests_multiple_params(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     TEST_SUITE_WITH_PARAMS,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='tests/--jobs=1&--verbose', check=False,
                                   pyl_files_dir=None, json=None,
                                   waterfall_filters = [])
@@ -3813,9 +3726,8 @@ class QueryTests(unittest.TestCase):
   def test_query_tests_invalid_params(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     TEST_SUITE_WITH_PARAMS,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='tests/device_os?', check=False,
                                   pyl_files_dir=None, json=None,
                                   waterfall_filters = [])
@@ -3827,9 +3739,8 @@ class QueryTests(unittest.TestCase):
   def test_query_tests_dimension_params(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     TEST_SUITE_WITH_PARAMS,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='tests/device_os:NMF26U',
                                   check=False, pyl_files_dir=None,
                                   json=None, waterfall_filters = [])
@@ -3840,9 +3751,8 @@ class QueryTests(unittest.TestCase):
   def test_query_tests_swarming_params(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     TEST_SUITE_WITH_PARAMS,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='tests/hard_timeout:1000',
                                   check=False, pyl_files_dir=None,
                                   json=None, waterfall_filters = [])
@@ -3853,9 +3763,8 @@ class QueryTests(unittest.TestCase):
   def test_query_tests_params(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     TEST_SUITE_WITH_PARAMS,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='tests/should_retry_with_patch:true',
                                   check=False, pyl_files_dir=None,
                                   json=None, waterfall_filters = [])
@@ -3866,9 +3775,8 @@ class QueryTests(unittest.TestCase):
   def test_query_tests_params_false(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     TEST_SUITE_WITH_PARAMS,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='tests/should_retry_with_patch:false',
                                   check=False, pyl_files_dir=None,
                                   json=None, waterfall_filters = [])
@@ -3879,9 +3787,8 @@ class QueryTests(unittest.TestCase):
   def test_query_test(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='test/foo_test', check=False,
                                   pyl_files_dir=None, json=None,
                                   waterfall_filters = [])
@@ -3892,9 +3799,8 @@ class QueryTests(unittest.TestCase):
   def test_query_test_invalid_id(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='test/foo_foo', check=False,
                                   pyl_files_dir=None, json=None,
                                   waterfall_filters = [])
@@ -3906,9 +3812,8 @@ class QueryTests(unittest.TestCase):
   def test_query_test_invalid_length(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='test/foo_tests/foo/foo', check=False,
                                   pyl_files_dir=None, json=None,
                                   waterfall_filters = [])
@@ -3920,9 +3825,8 @@ class QueryTests(unittest.TestCase):
   def test_query_test_bots(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='test/foo_test/bots', check=False,
                                   pyl_files_dir=None, json=None,
                                   waterfall_filters = [])
@@ -3933,9 +3837,8 @@ class QueryTests(unittest.TestCase):
   def test_query_test_bots_isolated_scripts(self):
     fbb = FakeBBGen(FOO_ISOLATED_SCRIPTS_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='test/foo_test/bots', check=False,
                                   pyl_files_dir=None, json=None,
                                   waterfall_filters = [])
@@ -3946,9 +3849,8 @@ class QueryTests(unittest.TestCase):
   def test_query_test_bots_invalid(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='test/foo_tests/foo', check=False,
                                   pyl_files_dir=None, json=None,
                                   waterfall_filters = [])
@@ -3960,9 +3862,8 @@ class QueryTests(unittest.TestCase):
   def test_query_test_bots_no_bots(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='test/bar_tests/bots', check=False,
                                   pyl_files_dir=None, json=None,
                                   waterfall_filters = [])
@@ -3973,9 +3874,8 @@ class QueryTests(unittest.TestCase):
   def test_query_invalid(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_SORTED)
     fbb.args = argparse.Namespace(query='foo', check=False,
                                   pyl_files_dir=None, json=None,
                                   waterfall_filters = [])
@@ -4153,9 +4053,8 @@ class ReplacementTests(unittest.TestCase):
   def test_replacement_valid_remove_no_value(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     FOO_TEST_SUITE_WITH_ARGS,
-                    FOO_TEST_REPLACEMENTS_REMOVE_NO_VALUE,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=FOO_TEST_REPLACEMENTS_REMOVE_NO_VALUE)
     fbb.files['chromium.test.json'] = REPLACEMENTS_REMOVE_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -4163,9 +4062,8 @@ class ReplacementTests(unittest.TestCase):
   def test_replacement_valid_remove_value(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     FOO_TEST_SUITE_WITH_ENABLE_FEATURES,
-                    FOO_TEST_REPLACEMENTS_REMOVE_VALUE,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=FOO_TEST_REPLACEMENTS_REMOVE_VALUE)
     fbb.files['chromium.test.json'] = REPLACEMENTS_REMOVE_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -4173,9 +4071,8 @@ class ReplacementTests(unittest.TestCase):
   def test_replacement_valid_replace_value(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     FOO_TEST_SUITE_WITH_ENABLE_FEATURES,
-                    FOO_TEST_REPLACEMENTS_REPLACE_VALUE,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=FOO_TEST_REPLACEMENTS_REPLACE_VALUE)
     fbb.files['chromium.test.json'] = REPLACEMENTS_VALUE_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -4183,9 +4080,8 @@ class ReplacementTests(unittest.TestCase):
   def test_replacement_valid_replace_value_separate_entries(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     FOO_TEST_SUITE_WITH_ENABLE_FEATURES_SEPARATE_ENTRIES,
-                    FOO_TEST_REPLACEMENTS_REPLACE_VALUE,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=FOO_TEST_REPLACEMENTS_REPLACE_VALUE)
     fbb.files['chromium.test.json'] = REPLACEMENTS_VALUE_SEPARATE_ENTRIES_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -4193,9 +4089,8 @@ class ReplacementTests(unittest.TestCase):
   def test_replacement_invalid_key_not_valid(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     FOO_TEST_SUITE,
-                    FOO_TEST_REPLACEMENTS_INVALID_KEY,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=FOO_TEST_REPLACEMENTS_INVALID_KEY)
     with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
         'Given replacement key *'):
       fbb.check_output_file_consistency(verbose=True)
@@ -4203,9 +4098,8 @@ class ReplacementTests(unittest.TestCase):
   def test_replacement_invalid_key_not_found(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     FOO_TEST_SUITE_WITH_ARGS,
-                    FOO_TEST_REPLACEMENTS_REPLACE_VALUE,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
+                    LUCI_MILO_CFG,
+                    exceptions=FOO_TEST_REPLACEMENTS_REPLACE_VALUE)
     with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
         'Could not find *'):
       fbb.check_output_file_consistency(verbose=True)
@@ -4576,10 +4470,7 @@ class DictionaryCompositionTests(unittest.TestCase):
     fbb = FakeBBGen(
       MATRIX_GTEST_SUITE_WATERFALL,
       MATRIX_COMPOUND_EMPTY,
-      EMPTY_PYL_FILE,
-      EMPTY_PYL_FILE,
-      LUCI_MILO_CFG,
-      )
+      LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = MATRIX_COMPOUND_EMPTY_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -4592,10 +4483,7 @@ class DictionaryCompositionTests(unittest.TestCase):
     fbb = FakeBBGen(
       MATRIX_GTEST_SUITE_WATERFALL,
       MATRIX_COMPOUND_SWARMING_SET,
-      EMPTY_PYL_FILE,
-      EMPTY_PYL_FILE,
-      LUCI_MILO_CFG,
-      )
+      LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = MATRIX_COMPOUND_SWARMING_SET_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -4608,10 +4496,7 @@ class DictionaryCompositionTests(unittest.TestCase):
     fbb = FakeBBGen(
       MATRIX_GTEST_SUITE_WATERFALL,
       MATRIX_COMPOUND_DIMENSION_SET_MERGE,
-      EMPTY_PYL_FILE,
-      EMPTY_PYL_FILE,
-      LUCI_MILO_CFG,
-      )
+      LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = MATRIX_COMPOUND_SWARMING_MERGE_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -4623,10 +4508,7 @@ class DictionaryCompositionTests(unittest.TestCase):
     fbb = FakeBBGen(
       MATRIX_GTEST_SUITE_WATERFALL,
       MATRIX_BASIC_DIMENSION_SET_LARGER,
-      EMPTY_PYL_FILE,
-      EMPTY_PYL_FILE,
-      LUCI_MILO_CFG,
-      )
+      LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = MATRIX_DIFFERENT_SIZE_MERGE_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -4638,10 +4520,7 @@ class DictionaryCompositionTests(unittest.TestCase):
     fbb = FakeBBGen(
       MATRIX_GTEST_SUITE_WATERFALL,
       MATRIX_MISMATCHED_SWARMING_LENGTH,
-      EMPTY_PYL_FILE,
-      EMPTY_PYL_FILE,
-      LUCI_MILO_CFG,
-      )
+      LUCI_MILO_CFG)
     with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
         'Error merging lists by key *'):
       fbb.check_output_file_consistency(verbose=True)
@@ -4654,10 +4533,9 @@ class DictionaryCompositionTests(unittest.TestCase):
     fbb = FakeBBGen(
       MATRIX_GTEST_SUITE_WATERFALL,
       MATRIX_OTHER_ARGS,
-      EMPTY_PYL_FILE,
-      SWARMING_MIXINS,
       LUCI_MILO_CFG,
-      )
+      mixins=SWARMING_MIXINS,
+    )
     fbb.files['chromium.test.json'] = MATRIX_OTHER_ARGS_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -4669,10 +4547,7 @@ class DictionaryCompositionTests(unittest.TestCase):
     fbb = FakeBBGen(
       MATRIX_GTEST_SUITE_WATERFALL,
       MATRIX_REF_NONEXISTENT,
-      EMPTY_PYL_FILE,
-      EMPTY_PYL_FILE,
-      LUCI_MILO_CFG,
-      )
+      LUCI_MILO_CFG)
     with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
       'Unable to find reference to *'):
       fbb.check_output_file_consistency(verbose=True)
@@ -4684,10 +4559,7 @@ class DictionaryCompositionTests(unittest.TestCase):
     fbb = FakeBBGen(
       MATRIX_GTEST_SUITE_WATERFALL,
       MATRIX_COMPOSITION_REF_COMPOSITION,
-      EMPTY_PYL_FILE,
-      EMPTY_PYL_FILE,
-      LUCI_MILO_CFG,
-      )
+      LUCI_MILO_CFG)
     with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
       'matrix_compound_suites may not refer to other *'):
       fbb.check_output_file_consistency(verbose=True)
@@ -4699,10 +4571,7 @@ class DictionaryCompositionTests(unittest.TestCase):
     fbb = FakeBBGen(
       MATRIX_GTEST_SUITE_WATERFALL,
       MATRIX_COMPOSITION_REF_MATRIX,
-      EMPTY_PYL_FILE,
-      EMPTY_PYL_FILE,
-      LUCI_MILO_CFG,
-      )
+      LUCI_MILO_CFG)
     with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
       'matrix_compound_suites may not refer to other *'):
       fbb.check_output_file_consistency(verbose=True)

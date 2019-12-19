@@ -518,6 +518,11 @@
             ]
           }
         ]
+      }, {
+        "name": "reset",
+        "type": "function",
+        "description": "Resets the current engine to its initial state. Fires an OnReset event.",
+        "parameters": []
       }
     ],
     "events": [

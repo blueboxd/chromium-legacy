@@ -94,9 +94,10 @@ class MockPasswordStore : public PasswordStore {
                void(const base::string16&,
                     const std::string&,
                     PasswordReuseDetectorConsumer*));
-  MOCK_METHOD3(SaveGaiaPasswordHash,
+  MOCK_METHOD4(SaveGaiaPasswordHash,
                void(const std::string&,
                     const base::string16&,
+                    bool,
                     metrics_util::GaiaPasswordHashChange));
   MOCK_METHOD2(SaveEnterprisePasswordHash,
                void(const std::string&, const base::string16&));

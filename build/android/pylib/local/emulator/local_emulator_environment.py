@@ -4,7 +4,11 @@
 
 import logging
 
+from devil import base_error
+from devil.android import device_errors
+from devil.android import device_utils
 from devil.utils import parallelizer
+from devil.utils import timeout_retry
 from pylib.local.device import local_device_environment
 from pylib.local.emulator import avd
 
@@ -36,12 +40,27 @@ class LocalEmulatorEnvironment(local_device_environment.LocalDeviceEnvironment):
     ]
 
     def start_emulator_instance(e):
-      try:
-        e.Start(window=self._emulator_window)
+
+      def impl(e):
+        try:
+          e.Start(window=self._emulator_window)
+        except avd.AvdException:
+          logging.exception('Failed to start emulator instance.')
+          return None
+        try:
+          device_utils.DeviceUtils(e.serial).WaitUntilFullyBooted()
+        except base_error.BaseError:
+          e.Stop()
+          raise
         return e
-      except avd.AvdException:
-        logging.exception('Failed to start emulator instance.')
-        return None
+
+      return timeout_retry.Run(
+          impl,
+          timeout=30,
+          retries=2,
+          args=[e],
+          retry_if_func=
+          lambda exc: isinstance(exc, device_errors.CommandTimeoutError))
 
     parallel_emulators = parallelizer.SyncParallelizer(emulator_instances)
     self._emulator_instances = [

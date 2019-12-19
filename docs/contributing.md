@@ -33,6 +33,21 @@ policies][code-reviews] for more) for the code being changed.
 - Just because there is a bug in the bug system doesn't necessarily mean that a
   patch will be accepted.
 
+## Design Documents
+Any nontrivial technical effort that will significantly impact Chromium should
+have a design doc ([template][design-doc-template]). Specifically, we require
+design docs in the following cases:
+- When writing code that will have a large impact on Chromium as a whole, e.g.
+  when you are changing code in Chromium's critical path (page loading,
+  rendering).
+- When beginning a large technical undertaking that should be documented for
+  historical reasons (>1 person-month of work can be used as a general guideline).
+
+Send public design docs to
+[chromium-design-docs@chromium.org][chromium-design-docs]. Google internal Chrome
+design docs should follow the process at
+[go/chrome-dd-review-process][chrome-dd-review-process].
+
 ## Legal stuff
 
 All contributors must complete the contributor license agreement. For
@@ -343,6 +358,8 @@ feature in order to receive email notifications.
 
 [//]: # (the reference link section should be alphabetically sorted)
 [checkout-and-build]: https://chromium.googlesource.com/chromium/src/+/master/docs/#checking-out-and-building
+[chrome-dd-review-process]: http://go/chrome-dd-review-process
+[chromium-design-docs]: https://groups.google.com/a/chromium.org/forum/#!forum/chromium-design-docs
 [cl-footer-syntax]: https://dev.chromium.org/developers/contributing-code/-bug-syntax
 [code-reviews-owners]: code_reviews.md#OWNERS-files
 [code-reviews]: code_reviews.md
@@ -359,6 +376,7 @@ feature in order to receive email notifications.
 [cros-dev-guide]: https://chromium.googlesource.com/chromiumos/docs/+/master/developer_guide.md
 [crrev]: https://chromium-review.googlesource.com
 [depot-tools-setup]: https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up
+[design-doc-template]: https://docs.google.com/document/d/14YBYKgk-uSfjfwpKFlp_omgUq5hwMVazy_M965s_1KA
 [direct-commit]: https://dev.chromium.org/developers/contributing-code/direct-commit
 [discussion-groups]: https://www.chromium.org/developers/discussion-groups
 [github-tutorial]: https://try.github.io

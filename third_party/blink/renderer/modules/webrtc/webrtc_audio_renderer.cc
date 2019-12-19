@@ -241,7 +241,7 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
     // User must call Play() before any audio can be heard.
     state_ = PAUSED;
   }
-  source_->SetOutputDeviceForAec(output_device_id_);
+  source_->SetOutputDeviceForAec(String::FromUTF8(output_device_id_));
   sink_->Start();
   sink_->Play();  // Not all the sinks play on start.
 
@@ -433,7 +433,7 @@ void WebRtcAudioRenderer::SwitchOutputDevice(
     base::AutoLock auto_lock(lock_);
     source_->AudioRendererThreadStopped();
   }
-  source_->SetOutputDeviceForAec(output_device_id_);
+  source_->SetOutputDeviceForAec(String::FromUTF8(output_device_id_));
   PrepareSink();
   sink_->Start();
   sink_->Play();  // Not all the sinks play on start.

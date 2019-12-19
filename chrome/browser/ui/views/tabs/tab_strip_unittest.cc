@@ -11,7 +11,6 @@
 #include "base/test/task_environment.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
@@ -28,6 +27,7 @@
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/test/material_design_controller_test_api.h"
@@ -1009,7 +1009,8 @@ TEST_P(TabStripTest, GroupHeaderBasics) {
   Tab* tab = tab_strip_->tab_at(0);
   const int first_slot_x = tab->x();
 
-  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
+  base::Optional<tab_groups::TabGroupId> group =
+      tab_groups::TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(0, group);
   CompleteAnimationAndLayout();
 
@@ -1031,7 +1032,8 @@ TEST_P(TabStripTest, GroupHeaderBetweenTabs) {
 
   const int second_slot_x = tab_strip_->tab_at(1)->x();
 
-  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
+  base::Optional<tab_groups::TabGroupId> group =
+      tab_groups::TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(1, group);
 
   TabGroupHeader* header = ListGroupViews()[0]->header();
@@ -1042,7 +1044,8 @@ TEST_P(TabStripTest, GroupHeaderMovesRightWithTab) {
   tab_strip_->SetBounds(0, 0, 2000, 100);
   for (int i = 0; i < 4; i++)
     tab_strip_->AddTabAt(i, TabRendererData(), false);
-  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
+  base::Optional<tab_groups::TabGroupId> group =
+      tab_groups::TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(1, group);
   CompleteAnimationAndLayout();
 
@@ -1059,7 +1062,8 @@ TEST_P(TabStripTest, GroupHeaderMovesLeftWithTab) {
   tab_strip_->SetBounds(0, 0, 2000, 100);
   for (int i = 0; i < 4; i++)
     tab_strip_->AddTabAt(i, TabRendererData(), false);
-  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
+  base::Optional<tab_groups::TabGroupId> group =
+      tab_groups::TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(2, group);
   CompleteAnimationAndLayout();
 
@@ -1076,7 +1080,8 @@ TEST_P(TabStripTest, GroupHeaderDoesntMoveReorderingTabsInGroup) {
   tab_strip_->SetBounds(0, 0, 2000, 100);
   for (int i = 0; i < 4; i++)
     tab_strip_->AddTabAt(i, TabRendererData(), false);
-  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
+  base::Optional<tab_groups::TabGroupId> group =
+      tab_groups::TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(1, group);
   controller_->MoveTabIntoGroup(2, group);
   CompleteAnimationAndLayout();
@@ -1101,9 +1106,9 @@ TEST_P(TabStripTest, GroupHeaderMovesOnRegrouping) {
   tab_strip_->SetBounds(0, 0, 2000, 100);
   for (int i = 0; i < 3; i++)
     tab_strip_->AddTabAt(i, TabRendererData(), false);
-  TabGroupId group0 = TabGroupId::GenerateNew();
+  tab_groups::TabGroupId group0 = tab_groups::TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(0, group0);
-  TabGroupId group1 = TabGroupId::GenerateNew();
+  tab_groups::TabGroupId group1 = tab_groups::TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(1, group1);
   controller_->MoveTabIntoGroup(2, group1);
   CompleteAnimationAndLayout();
@@ -1130,7 +1135,7 @@ TEST_P(TabStripTest, UngroupedTabMovesLeftOfHeader) {
   tab_strip_->SetBounds(0, 0, 2000, 100);
   for (int i = 0; i < 2; i++)
     tab_strip_->AddTabAt(i, TabRendererData(), false);
-  TabGroupId group = TabGroupId::GenerateNew();
+  tab_groups::TabGroupId group = tab_groups::TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(0, group);
   CompleteAnimationAndLayout();
 
@@ -1154,7 +1159,8 @@ TEST_P(TabStripTest, DiscontinuousGroup) {
 
   const int first_slot_x = tab_strip_->tab_at(0)->x();
 
-  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
+  base::Optional<tab_groups::TabGroupId> group =
+      tab_groups::TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(0, group);
   controller_->MoveTabIntoGroup(2, group);
 
@@ -1166,7 +1172,8 @@ TEST_P(TabStripTest, DiscontinuousGroup) {
 TEST_P(TabStripTest, DeleteTabGroupViewsWhenEmpty) {
   tab_strip_->AddTabAt(0, TabRendererData(), false);
   tab_strip_->AddTabAt(1, TabRendererData(), false);
-  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
+  base::Optional<tab_groups::TabGroupId> group =
+      tab_groups::TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(0, group);
   controller_->MoveTabIntoGroup(1, group);
   controller_->MoveTabIntoGroup(0, base::nullopt);
@@ -1181,7 +1188,8 @@ TEST_P(TabStripTest, GroupUnderlineBasics) {
   bounds_animator()->SetAnimationDuration(base::TimeDelta());
   controller_->AddTab(0, false);
 
-  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
+  base::Optional<tab_groups::TabGroupId> group =
+      tab_groups::TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(0, group);
   CompleteAnimationAndLayout();
 
@@ -1214,7 +1222,8 @@ TEST_P(TabStripTest, GroupHighlightBasics) {
   bounds_animator()->SetAnimationDuration(base::TimeDelta());
   controller_->AddTab(0, false);
 
-  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
+  base::Optional<tab_groups::TabGroupId> group =
+      tab_groups::TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(0, group);
   CompleteAnimationAndLayout();
 

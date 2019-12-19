@@ -4,6 +4,7 @@
 <translation id="1002439864875515590">このポリシーが空の文字列または未設定の場合は、<ph name="PRODUCT_OS_NAME" /> でユーザーのログインフロー時にオートコンプリートのオプションは表示されません。
       このポリシーがドメイン名を表す文字列に設定されている場合は、<ph name="PRODUCT_OS_NAME" /> でユーザーがログインする際にオートコンプリートのオプションが表示されます。この場合、ユーザーはドメイン名の部分を省略してユーザー名を入力するだけで済みます。また、ユーザーはこのドメイン名の部分を上書きすることもできます。
       ポリシーの値が有効なドメインではない場合、ポリシーは適用されません。</translation>
+<translation id="1010151305531217567">マウスのメインボタンを右に切り替える</translation>
 <translation id="101438888985615157">画面を 180 度回転</translation>
 <translation id="1016912092715201525"><ph name="PRODUCT_NAME" /> で既定のブラウザのチェックを行うかどうか、ユーザーがこの設定を変更できないようにするかどうかを設定します。
 
@@ -366,6 +367,15 @@
       この設定を無効にした場合または設定しない場合、企業ユーザーは ARC を
       使用できません。</translation>
 <translation id="1553956579506604198">外部拡張機能のインストールをブロックする</translation>
+<translation id="1556072857949466438">このポリシーで、管理者は、ページのアンロード中にポップアップを表示するかどうかを指定できます。
+
+      このポリシーを有効に設定した場合は、ページのアンロード中にポップアップを表示できます。
+
+      このポリシーを無効に設定した場合は、仕様（https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name）にあるとおり、ページのアンロード中にポップアップは表示されません。
+
+      このポリシーは Chrome 88 で削除されます。
+
+      詳しくは、https://www.chromestatus.com/feature/5989473649164288 をご覧ください。</translation>
 <translation id="1559980755219453326">このポリシーでは、拡張機能とプラグインの情報について、レポートを作成するかどうかを管理します。
 
       このポリシーが未設定または True に設定されている場合、拡張機能とプラグインのデータが収集されます。
@@ -811,6 +821,17 @@
       このポリシーは、ハングアウト サービス拡張機能のようなコンポーネント型拡張機能にも適用されます。</translation>
 <translation id="2223598546285729819">デフォルトの通知設定</translation>
 <translation id="2231817271680715693">初回実行時にデフォルトのブラウザから閲覧履歴をインポートする</translation>
+<translation id="2234855698900783408">新しい <ph name="CORS" /> の実装で <ph name="CORS" /> チェックの緩和措置を有効にして、拡張機能の互換性のある動作が保たれるように、また <ph name="PRODUCT_NAME" /> で <ph name="CORS" /> チェックなしに指定ヘッダーが送信されるようにします。
+
+      このリストを空に設定した場合、<ph name="PRODUCT_NAME" /> では拡張機能が互換性を保つように実行され、<ph name="PRODUCT_NAME" /> 79 での <ph name="API" /> の変更（<ph name="WEB_REQUEST_API_MANUAL" /> を参照）は適用されません。
+
+      このリストを <ph name="HTTP" /> リクエスト ヘッダー名を含めて設定した場合は、拡張機能向けの緩和措置が有効になることに加えて、リストにあるヘッダーが <ph name="CORS" /> チェックで無視されます。
+
+      このリストを設定しない場合、上記の緩和措置はいずれも適用されません。
+
+      <ph name="CORS" /> の詳細については、<ph name="CORS_HELP_URL" /> をご覧ください。
+
+      このポリシーは <ph name="PRODUCT_NAME" /> バージョン 82 で削除されます。</translation>
 <translation id="2236488539271255289">すべてのサイトに対してローカル データの設定を許可しない</translation>
 <translation id="2240879329269430151">ウェブサイトに対してポップアップ表示を許可するかどうかを設定できます。ポップアップ表示は、すべてのウェブサイトに対して許可または禁止することができます。このポリシーが未設定の場合、「BlockPopups」が使用され、ユーザーはこの設定を変更できます。</translation>
 <translation id="2241498944622759244">この機能は公開に至らなかったため、このポリシーはサポート終了となりました。このポリシーが true または未設定の場合、<ph name="PRODUCT_NAME" /> では現在のページに関連のあるページがおすすめとして表示されます。
@@ -1477,6 +1498,15 @@
       この設定が有効な場合または未設定の場合、ユーザーは Google アカウントでの認証によってクラウド プリント プロキシを有効にできます。
 
       この設定が無効な場合、ユーザーはプロキシを有効にできず、パソコンはプリンタを <ph name="CLOUD_PRINT_NAME" /> と共有できません。</translation>
+<translation id="3295118731207421797">このポリシーで、管理者はページの終了中にページから同期 XHR リクエストを送信するかどうかを指定できます。
+
+      このポリシーを有効に設定した場合は、ページの終了中にページから同期 XHR リクエストを送信できます。
+
+      このポリシーを無効に設定するか未設定のままにした場合は、ページの終了中にページから同期 XHR リクエストを送信することはできません。
+
+      このポリシーは Chrome 88 で削除されます。
+
+      詳しくは、https://www.chromestatus.com/feature/4664843055398912 をご覧ください。</translation>
 <translation id="3303653927512453822">すべての Cookie を以前の <ph name="ATTRIBUTE_SAMESITE_NAME" /> 動作に戻します。以前の動作に戻すと、<ph name="ATTRIBUTE_SAMESITE_NAME" /> 属性のない Cookie は「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」が指定されたものとして扱われます。また、「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」の Cookie に「<ph name="ATTRIBUTE_SECURE_NAME" />」属性は必須ではなくなります。詳細については https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies をご覧ください。
 
           このポリシーを設定した場合、<ph name="ATTRIBUTE_SAMESITE_NAME" /> 属性のない Cookie のデフォルトの <ph name="ATTRIBUTE_SAMESITE_NAME" /> 動作は、ユーザーが個人設定で <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 機能をどのように設定しているか（公開テストで設定、あるいは <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> フラグで有効または無効に設定）に応じて決まります。</translation>
@@ -2368,6 +2398,11 @@
       このポリシーが無効または未設定の場合、サイトでは移動と同時に新しいウィンドウやタブを開くことはできません。</translation>
 <translation id="4680961954980851756">自動入力を有効にする</translation>
 <translation id="4693779768620889402">拡張機能プリンタの送信先</translation>
+<translation id="4699592681017489215">このポリシーでは、DNS 傍受チェックの無効化に使用できるローカルのスイッチを設定します。DNS 傍受チェックは、不明なホスト名をリダイレクトするプロキシがブラウザで使用されているかどうかを検出するものです。
+
+      ネットワーク設定が認識されているエンタープライズ環境では、起動時と DNS 設定の変更時に一定量の DNS と HTTP のトラフィックが発生するため、多くの場合この検出作業は不要です。
+
+      このポリシーを設定しないか有効に設定した場合は、DNS 傍受チェックが実行されます。明示的に無効に設定した場合、DNS 傍受チェックは実行されません。</translation>
 <translation id="4703402283970867140">スマート消灯モデルを有効にして、画面が暗くなるまでの時間を延長する</translation>
 <translation id="4722122254122249791">指定した発行元に対してサイト分離を有効にする</translation>
 <translation id="4722399051042571387">false の場合、ユーザーは強度が低く推測されやすい PIN を設定できません。
@@ -2580,6 +2615,11 @@
           このポリシーを設定しない場合、ログイン画面が最初に表示されたときに拡大鏡は無効になります。ユーザーはいつでも拡大鏡を有効または無効にすることができ、ログイン画面ではユーザーが切り替わってもその設定が維持されます。
 
           注: <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME" /> が指定されている場合はこのポリシーより優先されます。</translation>
+<translation id="5115168755602871392">デバイスの CPU に関する情報を報告します。
+
+      このポリシーを false に設定するか未設定のままにした場合、この情報は報告されません。
+      true に設定した場合は、各 CPU のモデル名、アーキテクチャ、
+      最大クロック速度が報告されます。</translation>
 <translation id="5124368997194894978">AC（交流電流）電源接続時の起動を有効にします</translation>
 <translation id="5131211790949066746">拡張機能インストール リスト ポリシー <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />、<ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" />、<ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> を統合できるようにします。
 
@@ -3385,6 +3425,17 @@
 <translation id="6467613372414922590">ユーザーレベルのネイティブ メッセージング ホスト（管理者権限なしでインストールされたホスト）を許可する</translation>
 <translation id="6468980648680553776">このポリシーはサポートを終了しました。代わりに RemoteAccessHostClientDomainList を使用してください。</translation>
 <translation id="6473623140202114570">セーフ ブラウジングによる警告の表示を行わないドメインのリストを設定する。</translation>
+<translation id="6487780893361255867">新しい <ph name="CORS" /> の実装ではなく以前の <ph name="CORS" /> の実装を使用します。
+
+      True に設定した場合は、以前のバージョンと互換性のある以前の実装が使用されます。
+
+      False または未設定のままにした場合は新しい実装が使用されますが、互換性に関する企業特有の問題が発生する可能性があります。
+
+      このポリシーは数回のマイルストーンを経て削除される予定です。
+
+      <ph name="CORS" /> の詳細については、<ph name="CORS_HELP_URL" /> をご覧ください。
+
+      このポリシーは <ph name="PRODUCT_NAME" /> バージョン 82 で削除されます。</translation>
 <translation id="6488627892044759800"><ph name="PRODUCT_NAME" /> のデフォルトのホームページのタイプを設定するとともに、ユーザーがホームページ設定を変更できないようにします。ホームページは、指定する URL または新しいタブページに設定できます。
 
           この設定を有効にすると、新しいタブページが常にホームページに使用され、ホームページの URL の場所は無視されます。
@@ -3472,6 +3523,7 @@
       True に設定すると、デバイスによる Powerwash の実行が許可されます。
       未設定のままにすると、デフォルトで True に設定され、デバイスによる Powerwash の実行が許可されます。
       </translation>
+<translation id="66265932317331474">CPU 情報を報告する</translation>
 <translation id="6628043374475466084">アップロードしたコンテンツに対して、機密データ保護ルールの違反をチェックしない URL パターン</translation>
 <translation id="6628120204569232711">ストレージの状態を報告する</translation>
 <translation id="6628646143828354685">ウェブサイトによる近くの Bluetooth デバイスへのアクセスを許可するかどうかを設定できます。アクセスを完全に禁止することや、ウェブサイトが近くの Bluetooth デバイスにアクセスしてもよいかユーザーにその都度確認することができます。
@@ -3672,6 +3724,7 @@
       使用できる変数のリストについては、https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables をご覧ください。
 
       このポリシーが未設定の場合は、デフォルトのプロフィール パスを使用します。ユーザーは「--user-data-dir」コマンドライン フラグを使用して、この設定をオーバーライドできます。</translation>
+<translation id="7008308728445338159">DNS 傍受チェックを有効にする</translation>
 <translation id="7027785306666625591"><ph name="PRODUCT_OS_NAME" /> の電源管理を設定します。
 
       これらのポリシーでは、アイドル状態が一定時間続いたときの <ph name="PRODUCT_OS_NAME" /> の動作を設定できます。</translation>
@@ -3763,6 +3816,15 @@
 
       Internet Explorer の <ph name="IEEM_SITELIST_POLICY" /> ポリシーについて詳しくは、https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode をご覧ください。</translation>
 <translation id="7132877481099023201">ユーザー確認なしで動画キャプチャ デバイスへのアクセスが許可される URL</translation>
+<translation id="7134420220355750019">マウスのメインボタンを右に切り替えます。
+
+          このポリシーを有効に設定した場合は、マウスの右ボタンが常にメインボタンになります。
+
+          このポリシーを無効に設定した場合は、マウスの左ボタンが常にメインボタンになります。
+
+          このポリシーを設定した場合、ユーザーによる変更やオーバーライドはできません。
+
+          このポリシーを設定しない場合、初期状態ではマウスの左ボタンがメインボタンになりますが、ユーザーはいつでも右に切り替えることができます。</translation>
 <translation id="713712866686796666">電力ピークシフトの曜日の設定を指定します。
 
           このポリシーは <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> が true に設定されている場合にのみ使用されます。

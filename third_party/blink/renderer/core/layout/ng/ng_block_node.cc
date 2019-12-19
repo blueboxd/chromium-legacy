@@ -1140,6 +1140,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::LayoutAtomicInline(
       parent_constraint_space, Style().GetWritingMode(), /* is_new_fc */ true);
   SetOrthogonalFallbackInlineSizeIfNeeded(parent_style, *this, &builder);
 
+  builder.SetIsPaintedAtomically(true);
   builder.SetUseFirstLineStyle(use_first_line_style);
 
   // Request to compute baseline during the layout, except when we know the box

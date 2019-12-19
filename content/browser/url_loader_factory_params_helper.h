@@ -9,6 +9,10 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "url/origin.h"
 
+namespace net {
+class NetworkIsolationKey;
+}  // namespace net
+
 namespace content {
 
 class RenderFrameHostImpl;
@@ -50,12 +54,12 @@ class URLLoaderFactoryParamsHelper {
   static network::mojom::URLLoaderFactoryParamsPtr CreateForPrefetch(
       RenderFrameHostImpl* frame);
 
-  // Creates URLLoaderFactoryParamsPtr for fetching subresources from a worker
-  // that is not associated with any particular frame (e.g. from a shared
-  // worker).
+  // Creates URLLoaderFactoryParams for either fetching the worker script or for
+  // fetches initiated from a worker.
   static network::mojom::URLLoaderFactoryParamsPtr CreateForWorker(
       RenderProcessHost* process,
-      const url::Origin& worker_origin);
+      const url::Origin& request_initiator,
+      const net::NetworkIsolationKey& network_isolation_key);
 
   // TODO(kinuko, lukasza): https://crbug.com/891872: Remove, once all
   // URLLoaderFactories vended to a renderer process are associated with a

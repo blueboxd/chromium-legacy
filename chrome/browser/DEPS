@@ -236,6 +236,7 @@ include_rules = [
   "+components/sync_sessions",
   "+components/sync_user_events",
   "+components/tab_count_metrics",
+  "+components/tab_groups",
   "+components/tracing/common",
   "+components/translate/content/browser",
   "+components/translate/content/common",

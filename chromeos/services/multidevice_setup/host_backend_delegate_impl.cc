@@ -140,7 +140,7 @@ void HostBackendDelegateImpl::AttemptToSetMultiDeviceHostOnBackend(
   if (host_device) {
     // If an Instance ID is available, use that to identify the device;
     // otherwise, use the encoded public key.
-    // TODO(https://crbug.com/1019206): When v1 DeviceSync is deprecated, only
+    // TODO(https://crbug.com/1019206): When v1 DeviceSync is disabled, only
     // use Instance IDs since all devices are guaranteed to have one.
     SetPendingHostRequest(host_device->instance_id().empty()
                               ? host_device->GetDeviceId()
@@ -185,8 +185,8 @@ bool HostBackendDelegateImpl::HasPendingHostRequest() {
   // through setup again:
   //  * The device was actually removed from the user's account.
   //  * Instance ID is persisted and v2 DeviceSync is rolled back.
-  //  * A public key is persisted, v1 DeviceSync is deprecated, and the v2
-  //    device data hasn't been decrypted.
+  //  * A public key is persisted, v1 DeviceSync is disabled, and the v2 device
+  //    data hasn't been decrypted.
   //  * v1 and v2 DeviceSync are running in parallel, an Instance ID is
   //    persisted, the device metadata is encrypted with a new group key,
   //    resulting in v1 device data being used.
@@ -244,7 +244,7 @@ base::Optional<multidevice::RemoteDeviceRef>
 HostBackendDelegateImpl::FindDeviceById(const std::string& id) const {
   DCHECK(!id.empty());
   for (const auto& remote_device : device_sync_client_->GetSyncedDevices()) {
-    // TODO(https://crbug.com/1019206): When v1 DeviceSync is deprecated,
+    // TODO(https://crbug.com/1019206): When v1 DeviceSync is disabled,
     // only look up by Instance ID since all devices are guaranteed to have one.
     if (id == remote_device.instance_id() || id == remote_device.GetDeviceId())
       return remote_device;
@@ -280,7 +280,7 @@ void HostBackendDelegateImpl::AttemptNetworkRequest(bool is_retry) {
   // and SetSoftwareFeatureState() requests are added to the same queue and
   // processed in order. The DeviceSync service implementation guarantees this
   // ordering.
-  // TODO(https://crbug.com/1019206): When v1 DeviceSync is deprecated, only use
+  // TODO(https://crbug.com/1019206): When v1 DeviceSync is disabled, only use
   // SetFeatureStatus since all devices are guaranteed to have an Instance ID.
   if (!device_to_set.instance_id().empty()) {
     device_sync_client_->SetFeatureStatus(

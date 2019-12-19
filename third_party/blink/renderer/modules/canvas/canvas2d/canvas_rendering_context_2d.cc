@@ -616,6 +616,9 @@ void CanvasRenderingContext2D::PruneLocalFontCache(size_t target_size) {
 
 void CanvasRenderingContext2D::StyleDidChange(const ComputedStyle* old_style,
                                               const ComputedStyle& new_style) {
+  // Only the visibility flag is considered here. display:none is
+  // handled via creation and destruction of the LayoutObject.
+  SetIsBeingDisplayed(new_style.Visibility() == EVisibility::kVisible);
   if (old_style && old_style->GetFont() == new_style.GetFont())
     return;
   PruneLocalFontCache(0);
@@ -931,11 +934,16 @@ const Font& CanvasRenderingContext2D::AccessFont() {
   return GetState().GetFont();
 }
 
-void CanvasRenderingContext2D::SetIsHidden(bool hidden) {
+void CanvasRenderingContext2D::SetIsInHiddenPage(bool hidden) {
   if (IsPaintable())
-    canvas()->GetCanvas2DLayerBridge()->SetIsHidden(hidden);
+    canvas()->GetCanvas2DLayerBridge()->SetIsInHiddenPage(hidden);
   if (hidden)
     PruneLocalFontCache(0);
+}
+
+void CanvasRenderingContext2D::SetIsBeingDisplayed(bool displayed) {
+  if (IsPaintable())
+    canvas()->GetCanvas2DLayerBridge()->SetIsBeingDisplayed(displayed);
 }
 
 bool CanvasRenderingContext2D::IsTransformInvertible() const {

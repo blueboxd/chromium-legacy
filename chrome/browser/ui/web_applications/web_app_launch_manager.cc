@@ -38,6 +38,8 @@ ui::WindowShowState DetermineWindowShowState() {
   return ui::SHOW_STATE_DEFAULT;
 }
 
+}  // namespace
+
 Browser* CreateWebApplicationWindow(Profile* profile,
                                     const std::string& app_id) {
   std::string app_name = GenerateApplicationNameFromAppId(app_id);
@@ -51,15 +53,24 @@ Browser* CreateWebApplicationWindow(Profile* profile,
 
 content::WebContents* NavigateWebApplicationWindow(
     Browser* browser,
+    const std::string& app_id,
     const GURL& url,
     WindowOpenDisposition disposition) {
   NavigateParams nav_params(browser, url, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
   nav_params.disposition = disposition;
   Navigate(&nav_params);
-  return nav_params.navigated_or_inserted_contents;
-}
 
-}  // namespace
+  content::WebContents* web_contents =
+      nav_params.navigated_or_inserted_contents;
+
+  // TODO(https://crbug.com/1032443):
+  // Eventually move this to browser_navigator.cc: CreateTargetContents().
+  WebAppTabHelper* tab_helper = WebAppTabHelper::FromWebContents(web_contents);
+  DCHECK(tab_helper);
+  tab_helper->SetAppId(app_id);
+
+  return web_contents;
+}
 
 WebAppLaunchManager::WebAppLaunchManager(Profile* profile)
     : apps::LaunchManager(profile), provider_(WebAppProvider::Get(profile)) {}
@@ -96,13 +107,7 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
   Browser* browser = CreateWebApplicationWindow(profile(), params.app_id);
 
   content::WebContents* web_contents = NavigateWebApplicationWindow(
-      browser, url, WindowOpenDisposition::NEW_FOREGROUND_TAB);
-
-  // TODO(https://crbug.com/1032443):
-  // Eventually move this to browser_navigator.cc: CreateTargetContents().
-  WebAppTabHelper* tab_helper = WebAppTabHelper::FromWebContents(web_contents);
-  DCHECK(tab_helper);
-  tab_helper->SetAppId(params.app_id);
+      browser, params.app_id, url, WindowOpenDisposition::NEW_FOREGROUND_TAB);
 
   if (base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI)) {
     web_launch::WebLaunchFilesHelper::SetLaunchPaths(web_contents, url,

@@ -4,13 +4,32 @@
 
 #include "testing/perf/perf_result_reporter.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "testing/perf/perf_test.h"
+
+namespace {
+
+// These characters mess with either the stdout parsing or the dashboard itself.
+static const base::NoDestructor<std::vector<std::string>> kInvalidCharacters(
+    {"/", ":", "="});
+
+void CheckForInvalidCharacters(const std::string& str) {
+  for (const auto& invalid : *kInvalidCharacters) {
+    CHECK(str.find(invalid) == std::string::npos)
+        << "Given invalid character for perf names '" << invalid << "'";
+  }
+}
+
+}  // namespace
 
 namespace perf_test {
 
 PerfResultReporter::PerfResultReporter(const std::string& metric_basename,
                                        const std::string& story_name)
-    : metric_basename_(metric_basename), story_name_(story_name) {}
+    : metric_basename_(metric_basename), story_name_(story_name) {
+  CheckForInvalidCharacters(metric_basename_);
+  CheckForInvalidCharacters(story_name_);
+}
 
 PerfResultReporter::~PerfResultReporter() = default;
 
@@ -106,6 +125,7 @@ bool PerfResultReporter::GetMetricInfo(const std::string& metric_suffix,
 void PerfResultReporter::RegisterMetric(const std::string& metric_suffix,
                                         const std::string& units,
                                         bool important) {
+  CheckForInvalidCharacters(metric_suffix);
   CHECK(metric_map_.count(metric_suffix) == 0);
   metric_map_.insert({metric_suffix, {units, important}});
 }

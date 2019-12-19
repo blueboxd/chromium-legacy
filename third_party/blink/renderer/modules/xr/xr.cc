@@ -71,40 +71,29 @@ constexpr device::mojom::XRSessionFeature kDefaultInlineFeatures[] = {
     device::mojom::XRSessionFeature::REF_SPACE_VIEWER,
 };
 
-// Helper method to convert session mode into Mojo options.
-device::mojom::blink::XRSessionOptionsPtr convertModeToMojo(
-    XRSession::SessionMode mode) {
-  auto session_options = device::mojom::blink::XRSessionOptions::New();
-  session_options->immersive = (mode == XRSession::kModeImmersiveVR ||
-                                mode == XRSession::kModeImmersiveAR);
-  session_options->environment_integration =
-      mode == XRSession::kModeImmersiveAR;
-
-  return session_options;
-}
-
-XRSession::SessionMode stringToSessionMode(const String& mode_string) {
+device::mojom::blink::XRSessionMode stringToSessionMode(
+    const String& mode_string) {
   if (mode_string == "inline") {
-    return XRSession::kModeInline;
+    return device::mojom::blink::XRSessionMode::kInline;
   }
   if (mode_string == "immersive-vr") {
-    return XRSession::kModeImmersiveVR;
+    return device::mojom::blink::XRSessionMode::kImmersiveVr;
   }
   if (mode_string == "immersive-ar") {
-    return XRSession::kModeImmersiveAR;
+    return device::mojom::blink::XRSessionMode::kImmersiveAr;
   }
 
   NOTREACHED();  // Only strings in the enum are allowed by IDL.
-  return XRSession::kModeInline;
+  return device::mojom::blink::XRSessionMode::kInline;
 }
 
-const char* SessionModeToString(const XRSession::SessionMode& session_mode) {
-  switch (session_mode) {
-    case XRSession::SessionMode::kModeInline:
+const char* SessionModeToString(device::mojom::blink::XRSessionMode mode) {
+  switch (mode) {
+    case device::mojom::blink::XRSessionMode::kInline:
       return "inline";
-    case XRSession::SessionMode::kModeImmersiveVR:
+    case device::mojom::blink::XRSessionMode::kImmersiveVr:
       return "immersive-vr";
-    case XRSession::SessionMode::kModeImmersiveAR:
+    case device::mojom::blink::XRSessionMode::kImmersiveAr:
       return "immersive-ar";
   }
 
@@ -137,7 +126,7 @@ base::Optional<device::mojom::XRSessionFeature> StringToXRSessionFeature(
 }
 
 bool IsFeatureValidForMode(device::mojom::XRSessionFeature feature,
-                           XRSession::SessionMode mode) {
+                           device::mojom::blink::XRSessionMode mode) {
   switch (feature) {
     case device::mojom::XRSessionFeature::REF_SPACE_VIEWER:
     case device::mojom::XRSessionFeature::REF_SPACE_LOCAL:
@@ -145,10 +134,10 @@ bool IsFeatureValidForMode(device::mojom::XRSessionFeature feature,
       return true;
     case device::mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR:
     case device::mojom::XRSessionFeature::REF_SPACE_UNBOUNDED:
-      return mode == XRSession::kModeImmersiveVR ||
-             mode == XRSession::kModeImmersiveAR;
+      return mode == device::mojom::blink::XRSessionMode::kImmersiveVr ||
+             mode == device::mojom::blink::XRSessionMode::kImmersiveAr;
     case device::mojom::XRSessionFeature::DOM_OVERLAY_FOR_HANDHELD_AR:
-      return mode == XRSession::kModeImmersiveAR;
+      return mode == device::mojom::blink::XRSessionMode::kImmersiveAr;
   }
 }
 
@@ -227,7 +216,7 @@ const char* XR::CheckInlineSessionRequestAllowed(
 
 XR::PendingSupportsSessionQuery::PendingSupportsSessionQuery(
     ScriptPromiseResolver* resolver,
-    XRSession::SessionMode session_mode,
+    device::mojom::blink::XRSessionMode session_mode,
     bool throw_on_unsupported)
     : resolver_(resolver),
       mode_(session_mode),
@@ -299,14 +288,15 @@ void XR::PendingSupportsSessionQuery::RejectWithTypeError(
   }
 }
 
-XRSession::SessionMode XR::PendingSupportsSessionQuery::mode() const {
+device::mojom::blink::XRSessionMode XR::PendingSupportsSessionQuery::mode()
+    const {
   return mode_;
 }
 
 XR::PendingRequestSessionQuery::PendingRequestSessionQuery(
     int64_t ukm_source_id,
     ScriptPromiseResolver* resolver,
-    XRSession::SessionMode session_mode,
+    device::mojom::blink::XRSessionMode session_mode,
     RequestedXRSessionFeatureSet required_features,
     RequestedXRSessionFeatureSet optional_features)
     : resolver_(resolver),
@@ -436,7 +426,8 @@ void XR::PendingRequestSessionQuery::ReportRequestSessionResult(
   }
 }
 
-XRSession::SessionMode XR::PendingRequestSessionQuery::mode() const {
+device::mojom::blink::XRSessionMode XR::PendingRequestSessionQuery::mode()
+    const {
   return mode_;
 }
 
@@ -464,7 +455,7 @@ ScriptState* XR::PendingRequestSessionQuery::GetScriptState() const {
 
 void XR::PendingRequestSessionQuery::ParseSensorRequirement() {
   // All modes other than inline require sensors.
-  if (mode_ != XRSession::kModeInline) {
+  if (mode_ != device::mojom::blink::XRSessionMode::kInline) {
     sensor_requirement_ = SensorRequirement::kRequired;
     return;
   }
@@ -496,7 +487,8 @@ void XR::PendingRequestSessionQuery::Trace(blink::Visitor* visitor) {
 device::mojom::blink::XRSessionOptionsPtr XR::XRSessionOptionsFromQuery(
     const PendingRequestSessionQuery& query) {
   device::mojom::blink::XRSessionOptionsPtr session_options =
-      convertModeToMojo(query.mode());
+      device::mojom::blink::XRSessionOptions::New();
+  session_options->mode = query.mode();
 
   CopyToVector(query.RequiredFeatures(), session_options->required_features);
   CopyToVector(query.OptionalFeatures(), session_options->optional_features);
@@ -648,18 +640,18 @@ ScriptPromise XR::InternalIsSessionSupported(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  XRSession::SessionMode session_mode = stringToSessionMode(mode);
+  device::mojom::blink::XRSessionMode session_mode = stringToSessionMode(mode);
   PendingSupportsSessionQuery* query =
       MakeGarbageCollected<PendingSupportsSessionQuery>(resolver, session_mode,
                                                         throw_on_unsupported);
 
-  if (session_mode == XRSession::kModeImmersiveAR &&
+  if (session_mode == device::mojom::blink::XRSessionMode::kImmersiveAr &&
       !RuntimeEnabledFeatures::WebXRARModuleEnabled(doc)) {
     query->Resolve(false);
     return promise;
   }
 
-  if (session_mode == XRSession::kModeInline) {
+  if (session_mode == device::mojom::blink::XRSessionMode::kInline) {
     // inline sessions are always supported.
     query->Resolve(true);
     return promise;
@@ -681,7 +673,8 @@ ScriptPromise XR::InternalIsSessionSupported(ScriptState* script_state,
   }
 
   device::mojom::blink::XRSessionOptionsPtr session_options =
-      convertModeToMojo(query->mode());
+      device::mojom::blink::XRSessionOptions::New();
+  session_options->mode = query->mode();
 
   outstanding_support_queries_.insert(query);
   service_->SupportsSession(
@@ -800,7 +793,7 @@ void XR::RequestInlineSession(LocalFrame* frame,
 XR::RequestedXRSessionFeatureSet XR::ParseRequestedFeatures(
     Document* doc,
     const HeapVector<ScriptValue>& features,
-    const XRSession::SessionMode& session_mode,
+    const device::mojom::blink::XRSessionMode& session_mode,
     mojom::ConsoleMessageLevel error_level) {
   RequestedXRSessionFeatureSet result;
 
@@ -861,10 +854,10 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
     return ScriptPromise();  // Will be rejected by generated bindings
   }
 
-  XRSession::SessionMode session_mode = stringToSessionMode(mode);
+  device::mojom::blink::XRSessionMode session_mode = stringToSessionMode(mode);
 
   // If the request is for immersive-ar, ensure that feature is enabled.
-  if (session_mode == XRSession::kModeImmersiveAR &&
+  if (session_mode == device::mojom::blink::XRSessionMode::kImmersiveAr &&
       !RuntimeEnabledFeatures::WebXRARModuleEnabled(doc)) {
     exception_state.ThrowTypeError(
         String::Format(kImmersiveArModeNotValid, "requestSession"));
@@ -899,13 +892,13 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
   // Add those default features as required features now.
   base::span<const device::mojom::XRSessionFeature> default_features;
   switch (session_mode) {
-    case XRSession::kModeImmersiveVR:
+    case device::mojom::blink::XRSessionMode::kImmersiveVr:
       default_features = kDefaultImmersiveVrFeatures;
       break;
-    case XRSession::kModeImmersiveAR:
+    case device::mojom::blink::XRSessionMode::kImmersiveAr:
       default_features = kDefaultImmersiveArFeatures;
       break;
-    case XRSession::kModeInline:
+    case device::mojom::blink::XRSessionMode::kInline:
       default_features = kDefaultInlineFeatures;
       break;
   }
@@ -927,11 +920,11 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
           std::move(optional_features));
 
   switch (session_mode) {
-    case XRSession::kModeImmersiveVR:
-    case XRSession::kModeImmersiveAR:
+    case device::mojom::blink::XRSessionMode::kImmersiveVr:
+    case device::mojom::blink::XRSessionMode::kImmersiveAr:
       RequestImmersiveSession(frame, doc, query, &exception_state);
       break;
-    case XRSession::kModeInline:
+    case device::mojom::blink::XRSessionMode::kInline:
       RequestInlineSession(frame, query, &exception_state);
       break;
   }
@@ -966,8 +959,8 @@ void XR::OnRequestSessionReturned(
   // promise, so remove it from our outstanding list.
   DCHECK(outstanding_request_queries_.Contains(query));
   outstanding_request_queries_.erase(query);
-  if (query->mode() == XRSession::kModeImmersiveVR ||
-      query->mode() == XRSession::kModeImmersiveAR) {
+  if (query->mode() == device::mojom::blink::XRSessionMode::kImmersiveVr ||
+      query->mode() == device::mojom::blink::XRSessionMode::kImmersiveAr) {
     DCHECK(has_outstanding_immersive_request_);
     has_outstanding_immersive_request_ = false;
   }
@@ -995,7 +988,8 @@ void XR::OnRequestSessionReturned(
   auto session_ptr = std::move(result->get_success()->session);
   auto metrics_recorder = std::move(result->get_success()->metrics_recorder);
 
-  bool environment_integration = query->mode() == XRSession::kModeImmersiveAR;
+  bool environment_integration =
+      query->mode() == device::mojom::blink::XRSessionMode::kImmersiveAr;
 
   // immersive sessions must supply display info.
   DCHECK(session_ptr->display_info);
@@ -1019,8 +1013,8 @@ void XR::OnRequestSessionReturned(
 
   frameProvider()->OnSessionStarted(session, std::move(session_ptr));
 
-  if (query->mode() == XRSession::kModeImmersiveVR ||
-      query->mode() == XRSession::kModeImmersiveAR) {
+  if (query->mode() == device::mojom::blink::XRSessionMode::kImmersiveVr ||
+      query->mode() == device::mojom::blink::XRSessionMode::kImmersiveAr) {
     if (environment_integration) {
       // See Task Sources spreadsheet for more information:
       // https://docs.google.com/spreadsheets/d/1b-dus1Ug3A8y0lX0blkmOjJILisUASdj8x9YN_XMwYc/view
@@ -1076,7 +1070,7 @@ void XR::OnRequestSessionReturned(
       }
     }
 
-    if (query->mode() == XRSession::kModeImmersiveVR &&
+    if (query->mode() == device::mojom::blink::XRSessionMode::kImmersiveVr &&
         session->UsesInputEventing()) {
       frameProvider()->GetImmersiveDataProvider()->SetInputSourceButtonListener(
           session->GetInputClickListener());
@@ -1124,7 +1118,7 @@ void XR::ContextDestroyed(ExecutionContext*) {
 
 // A session is always created and returned.
 XRSession* XR::CreateSession(
-    XRSession::SessionMode mode,
+    device::mojom::blink::XRSessionMode mode,
     XRSession::EnvironmentBlendMode blend_mode,
     mojo::PendingReceiver<device::mojom::blink::XRSessionClient>
         client_receiver,
@@ -1144,7 +1138,7 @@ XRSession* XR::CreateSession(
 XRSession* XR::CreateSensorlessInlineSession() {
   // TODO(https://crbug.com/944936): The blend mode could be "additive".
   XRSession::EnvironmentBlendMode blend_mode = XRSession::kBlendModeOpaque;
-  return CreateSession(XRSession::kModeInline, blend_mode,
+  return CreateSession(device::mojom::blink::XRSessionMode::kInline, blend_mode,
                        mojo::NullReceiver() /* client receiver */,
                        nullptr /* display_info */,
                        false /* uses_input_eventing */,

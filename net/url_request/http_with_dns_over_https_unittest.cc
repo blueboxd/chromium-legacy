@@ -194,7 +194,8 @@ class TestHttpDelegate : public HttpStreamRequest::Delegate {
   void OnStreamFailed(int status,
                       const NetErrorDetails& net_error_details,
                       const SSLConfig& used_ssl_config,
-                      const ProxyInfo& used_proxy_info) override {}
+                      const ProxyInfo& used_proxy_info,
+                      ResolveErrorInfo resolve_eror_info) override {}
 
   void OnCertificateError(int status,
                           const SSLConfig& used_ssl_config,

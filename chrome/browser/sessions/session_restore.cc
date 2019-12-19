@@ -48,7 +48,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
-#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -57,6 +56,7 @@
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/sessions/core/session_types.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/navigation_controller.h"
@@ -451,13 +451,10 @@ class SessionRestoreImpl : public BrowserListObserver {
       if (base::FeatureList::IsEnabled(features::kTabGroups)) {
         TabGroupModel* group_model = browser->tab_strip_model()->group_model();
         for (auto& session_tab_group : (*i)->tab_groups) {
-          TabGroup* model_tab_group = group_model->GetTabGroup(
-              TabGroupId::FromRawToken(session_tab_group->group_id));
+          TabGroup* model_tab_group =
+              group_model->GetTabGroup(session_tab_group->id);
           DCHECK(model_tab_group);
-          TabGroupVisualData restored_data(
-              std::move(session_tab_group->metadata.title),
-              session_tab_group->metadata.color);
-          model_tab_group->SetVisualData(std::move(restored_data));
+          model_tab_group->SetVisualData(session_tab_group->visual_data);
         }
       }
 
@@ -472,6 +469,11 @@ class SessionRestoreImpl : public BrowserListObserver {
       //    restore, if needed.
       if (close_active_tab)
         chrome::CloseWebContents(browser, active_tab, true);
+
+      // Sanity check: A restored browser should have an active tab.
+      // TODO(https://crbug.com/1032348): Change to DCHECK once we understand
+      // why some browsers don't have an active tab on startup.
+      CHECK(browser->tab_strip_model()->GetActiveWebContents());
     }
 
     if (browser_to_activate && browser_to_activate->is_type_normal())
@@ -531,7 +533,9 @@ class SessionRestoreImpl : public BrowserListObserver {
                             int initial_tab_count,
                             std::vector<RestoredTab>* created_contents) {
     DVLOG(1) << "RestoreTabsToBrowser " << window.tabs.size();
-    DCHECK(!window.tabs.empty());
+    // TODO(https://crbug.com/1032348): Change to DCHECK once we understand
+    // why some browsers don't have an active tab on startup.
+    CHECK(!window.tabs.empty());
     base::TimeTicks now = base::TimeTicks::Now();
     base::TimeTicks latest_last_active_time = base::TimeTicks::UnixEpoch();
     // The last active time of a WebContents is initially set to the
@@ -610,7 +614,7 @@ class SessionRestoreImpl : public BrowserListObserver {
     }
 
     // Apply the stored group if tab groups are enabled.
-    base::Optional<base::Token> group;
+    base::Optional<tab_groups::TabGroupId> group;
     if (base::FeatureList::IsEnabled(features::kTabGroups))
       group = tab.group;
 

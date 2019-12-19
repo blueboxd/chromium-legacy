@@ -331,11 +331,12 @@ class ASH_EXPORT WallpaperControllerImpl
     bool preview_mode;
   };
 
-  // Creates a WallpaperWidgetController for |root_window|.
-  void InstallDesktopController(aura::Window* root_window);
+  // Update a Wallpaper for |root_window|.
+  void UpdateWallpaperForRootWindow(aura::Window* root_window,
+                                    bool lock_state_changed);
 
-  // Creates a WallpaperWidgetController for all root windows.
-  void InstallDesktopControllerForAllWindows();
+  // Update a Wallpaper for all root windows.
+  void UpdateWallpaperForAllRootWindows(bool lock_state_changed);
 
   // Moves the wallpaper to the specified container across all root windows.
   // Returns true if a wallpaper moved.
@@ -475,14 +476,6 @@ class ASH_EXPORT WallpaperControllerImpl
   // The callback when decoding of the always-on-top wallpaper completes.
   void OnAlwaysOnTopWallpaperDecoded(const WallpaperInfo& info,
                                      const gfx::ImageSkia& image);
-
-  // Move all wallpaper widgets to the locked container.
-  // Returns true if the wallpaper moved.
-  bool MoveToLockedContainer();
-
-  // Move all wallpaper widgets to unlocked container.
-  // Returns true if the wallpaper moved.
-  bool MoveToUnlockedContainer();
 
   // Returns whether the current wallpaper is set by device policy.
   bool IsDevicePolicyWallpaper() const;

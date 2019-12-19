@@ -28,6 +28,7 @@ import android.util.DisplayMetrics;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -75,6 +76,11 @@ public class TabGridIphItemTest {
                                             .getTabModelSelector()
                                             .getTabModelFilterProvider()
                                             .getCurrentTabModelFilter()::isTabModelRestored);
+    }
+
+    @After
+    public void tearDown() {
+        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(null);
     }
 
     @Test
@@ -127,6 +133,9 @@ public class TabGridIphItemTest {
         rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
 
         verifyDialogMargins(cta, Configuration.ORIENTATION_LANDSCAPE);
+
+        // Reset the orientation to portrait.
+        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_PORTRAIT);
     }
 
     private void verifyIphEntranceShowing(ChromeTabbedActivity cta) {

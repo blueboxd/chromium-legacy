@@ -4,7 +4,7 @@
 
 package org.chromium.android.commands.unzip;
 
-import android.util.Log;
+import org.chromium.base.Log;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -28,7 +28,8 @@ public class Unzip {
         try {
             (new Unzip()).run(args);
         } catch (RuntimeException e) {
-            Log.e(TAG, e.toString());
+            Log.e(TAG, "unzip failed", e);
+            System.err.println(e.toString());
             System.exit(1);
         }
     }
@@ -73,7 +74,7 @@ public class Unzip {
             }
 
         } catch (IOException e) {
-            throw new RuntimeException("Error while unzipping: " + e.toString());
+            throw new RuntimeException("Error while unzipping", e);
         } finally {
             try {
                 if (zis != null) zis.close();

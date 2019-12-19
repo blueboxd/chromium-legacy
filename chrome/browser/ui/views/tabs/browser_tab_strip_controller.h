@@ -61,8 +61,8 @@ class BrowserTabStripController : public TabStripController,
   void AddSelectionFromAnchorTo(int model_index) override;
   bool BeforeCloseTab(int model_index, CloseTabSource source) override;
   void CloseTab(int model_index, CloseTabSource source) override;
-  void UngroupAllTabsInGroup(TabGroupId group) override;
-  void AddNewTabInGroup(TabGroupId group) override;
+  void UngroupAllTabsInGroup(tab_groups::TabGroupId group) override;
+  void AddNewTabInGroup(tab_groups::TabGroupId group) override;
   void MoveTab(int start_index, int final_index) override;
   void ShowContextMenuForTab(Tab* tab,
                              const gfx::Point& p,
@@ -75,11 +75,13 @@ class BrowserTabStripController : public TabStripController,
   void OnStartedDragging() override;
   void OnStoppedDragging() override;
   void OnKeyboardFocusedTabChanged(base::Optional<int> index) override;
-  const TabGroupVisualData* GetVisualDataForGroup(
-      TabGroupId group_id) const override;
-  void SetVisualDataForGroup(TabGroupId group,
-                             TabGroupVisualData visual_data) override;
-  std::vector<int> ListTabsInGroup(TabGroupId group_id) const override;
+  const tab_groups::TabGroupVisualData* GetVisualDataForGroup(
+      tab_groups::TabGroupId group_id) const override;
+  void SetVisualDataForGroup(
+      tab_groups::TabGroupId group,
+      tab_groups::TabGroupVisualData visual_data) override;
+  std::vector<int> ListTabsInGroup(
+      tab_groups::TabGroupId group_id) const override;
   bool IsFrameCondensed() const override;
   bool HasVisibleBackgroundTabShapes() const override;
   bool EverHasVisibleBackgroundTabShapes() const override;
@@ -107,7 +109,7 @@ class BrowserTabStripController : public TabStripController,
                              int model_index) override;
   void TabBlockedStateChanged(content::WebContents* contents,
                               int model_index) override;
-  void TabGroupedStateChanged(base::Optional<TabGroupId> group,
+  void TabGroupedStateChanged(base::Optional<tab_groups::TabGroupId> group,
                               int index) override;
   void SetTabNeedsAttentionAt(int index, bool attention) override;
 

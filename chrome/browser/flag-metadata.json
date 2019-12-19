@@ -625,11 +625,6 @@
     "expiry_milestone": 84
   },
   {
-    "name": "cryptauth-v1-devicesync-deprecate",
-    "owners": [ "khorimoto", "nohle" ],
-    "expiry_milestone": 87
-  },
-  {
     "name": "cryptauth-v2-device-activity-status",
     "owners": [ "khorimoto", "nohle", "themaxli" ],
     "expiry_milestone": 85
@@ -748,6 +743,11 @@
     // This flag is use to disable CancelAllTouches() function, which enable the
     // testing for implementation of canceling single touches.
     "expiry_milestone": 86
+  },
+  {
+    "name": "disable-cryptauth-v1-devicesync",
+    "owners": [ "khorimoto", "nohle" ],
+    "expiry_milestone": 87
   },
   {
     "name": "disable-explicit-dma-fences",
@@ -2357,6 +2357,11 @@
     "expiry_milestone": 84
   },
   {
+    "name": "global-media-controls-for-cast",
+    "owners": [ "takumif", "openscreen-eng@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "google-password-manager",
     "owners": [ "ioanap", "jdoerrie" ],
     "expiry_milestone": 82
@@ -2592,8 +2597,8 @@
   },
   {
     "name": "mouse-subframe-no-implicit-capture",
-    "owners": [ "eirage", "input-dev" ],
-    "expiry_milestone": 78
+    "owners": [ "eirage", "nzolghadr", "input-dev" ],
+    "expiry_milestone": 84
   },
   {
     "name": "native-file-system-api",

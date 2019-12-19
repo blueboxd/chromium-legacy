@@ -246,9 +246,9 @@ PhysicalRect NGBoxFragmentPainter::SelfInkOverflow() const {
 }
 
 void NGBoxFragmentPainter::Paint(const PaintInfo& paint_info) {
-  if (PhysicalFragment().IsAtomicInline() &&
+  if (PhysicalFragment().IsPaintedAtomically() &&
       !box_fragment_.HasSelfPaintingLayer())
-    PaintAtomicInline(paint_info);
+    PaintAllPhasesAtomically(paint_info);
   else
     PaintInternal(paint_info);
 }
@@ -534,12 +534,6 @@ void NGBoxFragmentPainter::PaintFloatingChildren(
     if (child_fragment.HasSelfPaintingLayer() || child_fragment.IsColumnBox())
       continue;
 
-    // Atomic-inlines paint atomically, and shouldn't be traversed.
-    // TODO(layout-dev): This check should include all children which paint
-    // atomically.
-    if (child_fragment.IsAtomicInline())
-      continue;
-
     if (child_fragment.IsFloating()) {
       // TODO(kojii): The float is outside of the inline formatting context and
       // that it maybe another NG inline formatting context, NG block layout, or
@@ -552,6 +546,10 @@ void NGBoxFragmentPainter::PaintFloatingChildren(
           .PaintAllPhasesAtomically(float_paint_info);
       continue;
     }
+
+    // Any children which paint atomically shouldn't be traversed.
+    if (child_fragment.IsPaintedAtomically())
+      continue;
 
     if (child_fragment.Type() == NGPhysicalFragment::kFragmentBox &&
         FragmentRequiresLegacyFallback(child_fragment)) {
@@ -982,7 +980,7 @@ void NGBoxFragmentPainter::PaintInlineChildBoxUsingLegacyFallback(
 void NGBoxFragmentPainter::PaintAllPhasesAtomically(
     const PaintInfo& paint_info) {
   // Self-painting AtomicInlines should go to normal paint logic.
-  DCHECK(!(PhysicalFragment().IsAtomicInline() &&
+  DCHECK(!(PhysicalFragment().IsPaintedAtomically() &&
            box_fragment_.HasSelfPaintingLayer()));
 
   // Pass PaintPhaseSelection and PaintPhaseTextClip is handled by the regular
@@ -1322,19 +1320,6 @@ NGBoxFragmentPainter::MoveTo NGBoxFragmentPainter::PaintBoxItem(
   NGInlineBoxFragmentPainter(item, *child_fragment)
       .Paint(paint_info, paint_offset);
   return kDontSkipChildren;
-}
-
-void NGBoxFragmentPainter::PaintAtomicInline(const PaintInfo& paint_info) {
-  DCHECK(PhysicalFragment().IsAtomicInline());
-  // Self-painting AtomicInlines should go to normal paint logic.
-  DCHECK(!box_fragment_.HasSelfPaintingLayer());
-
-  // Text clips are painted only for the direct inline children of the object
-  // that has a text clip style on it, not block children.
-  if (paint_info.phase == PaintPhase::kTextClip)
-    return;
-
-  PaintAllPhasesAtomically(paint_info);
 }
 
 bool NGBoxFragmentPainter::IsPaintingScrollingBackground(

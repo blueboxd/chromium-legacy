@@ -126,7 +126,7 @@ void OculusDevice::RequestSession(
     return;
   }
 
-  DCHECK(options->immersive);
+  DCHECK_EQ(options->mode, mojom::XRSessionMode::kImmersiveVr);
 
   StopOvrSession();
 

@@ -100,7 +100,8 @@ typedef std::unordered_map<HashPrefix, CachedHashPrefixInfo> FullHashCache;
 // FullHashCallback is invoked when GetFullHashes completes. The parameter is
 // the vector of full hash results. If empty, indicates that there were no
 // matches, and that the resource is safe.
-typedef base::Callback<void(const std::vector<FullHashInfo>&)> FullHashCallback;
+using FullHashCallback =
+    base::OnceCallback<void(const std::vector<FullHashInfo>&)>;
 
 // Information needed to update the cache and call the callback to post the
 // results.
@@ -111,7 +112,7 @@ struct FullHashCallbackInfo {
                        std::unique_ptr<network::SimpleURLLoader> loader,
                        const FullHashToStoreAndHashPrefixesMap&
                            full_hash_to_store_and_hash_prefixes,
-                       const FullHashCallback& callback,
+                       FullHashCallback callback,
                        const base::Time& network_start_time);
   ~FullHashCallbackInfo();
 
@@ -148,8 +149,8 @@ class V4GetHashProtocolManager {
   // Invoked when GetFullHashesWithApis completes.
   // Parameters:
   //   - The API threat metadata for the given URL.
-  typedef base::Callback<void(const ThreatMetadata& md)>
-      ThreatMetadataForApiCallback;
+  using ThreatMetadataForApiCallback =
+      base::OnceCallback<void(const ThreatMetadata& md)>;
 
   virtual ~V4GetHashProtocolManager();
 
@@ -277,7 +278,7 @@ class V4GetHashProtocolManager {
   // Calls |api_callback| with an object of ThreatMetadata that contains
   // permission API metadata for full hashes in those |full_hash_infos| that
   // have a full hash in |full_hashes|.
-  void OnFullHashForApi(const ThreatMetadataForApiCallback& api_callback,
+  void OnFullHashForApi(ThreatMetadataForApiCallback api_callback,
                         const std::vector<FullHash>& full_hashes,
                         const std::vector<FullHashInfo>& full_hash_infos);
 

@@ -39,9 +39,6 @@ class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
 
   EventTarget* ErrorEventTarget() override { return nullptr; }
 
-  bool TasksNeedPause() override { return tasks_need_pause_; }
-  void SetTasksNeedPause(bool flag) { tasks_need_pause_ = flag; }
-
   void AddConsoleMessageImpl(ConsoleMessage*,
                              bool discard_duplicates) override {}
   void ExceptionThrown(ErrorEvent*) override {}
@@ -62,7 +59,6 @@ class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() override;
 
  private:
-  bool tasks_need_pause_;
   bool is_secure_context_;
 
   KURL url_;

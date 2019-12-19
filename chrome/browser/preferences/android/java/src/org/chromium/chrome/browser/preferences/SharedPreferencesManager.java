@@ -69,7 +69,7 @@ public class SharedPreferencesManager {
      */
     public interface Observer {
         /**
-         * Notifies when a preference maintained by {@link ChromePreferenceManager} is changed.
+         * Notifies when a preference maintained by {@link SharedPreferencesManager} is changed.
          * @param key The key of the preference changed.
          */
         void onPreferenceChanged(String key);

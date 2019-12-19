@@ -1238,7 +1238,7 @@ template("ios_framework_bundle") {
     _header_map_filename =
         "$_default_toolchain_target_gen_dir/$_output_name.headers.hmap"
     config(_headers_map_config) {
-      visibility = [ ":$_target_name" ]
+      visibility = [ ":${_target_name}_signed_bundle" ]
       include_dirs = [ _header_map_filename ]
     }
   }
@@ -1252,7 +1252,7 @@ template("ios_framework_bundle") {
   config(_framework_public_config) {
     # TODO(sdefresne): should we have a framework_dirs similar to lib_dirs
     # and include_dirs to avoid duplicate values on the command-line.
-    visibility = [ ":$_target_name" ]
+    visibility = [ ":${_target_name}_signed_bundle" ]
     ldflags = [
       "-F",
       rebase_path("$_default_toolchain_root_out_dir/.", root_build_dir),
@@ -1309,7 +1309,10 @@ template("ios_framework_bundle") {
 
     visibility = [ ":$_lipo_shared_library_target($default_toolchain)" ]
     if (current_toolchain != default_toolchain) {
-      visibility += [ ":$_target_name" ]
+      visibility += [
+        ":${_target_name}",
+        ":${_target_name}_signed_bundle",
+      ]
     }
 
     if (!defined(deps)) {
@@ -1469,7 +1472,7 @@ template("ios_framework_bundle") {
                                "testonly",
                              ])
 
-      visibility = [ ":$_target_name" ]
+      visibility = [ ":${_target_name}_signed_bundle" ]
       output_name = _output_name
       arch_binary_target = ":$_arch_shared_library_target"
       arch_binary_output = _output_name
@@ -1489,7 +1492,7 @@ template("ios_framework_bundle") {
     }
 
     bundle_data(_info_plist_bundle) {
-      visibility = [ ":$_target_name" ]
+      visibility = [ ":${_target_name}_signed_bundle" ]
       forward_variables_from(invoker, [ "testonly" ])
       sources = get_target_outputs(":$_info_plist_target")
       outputs = [
@@ -1500,7 +1503,7 @@ template("ios_framework_bundle") {
       ]
     }
 
-    create_signed_bundle(_target_name) {
+    create_signed_bundle(_target_name + "_signed_bundle") {
       forward_variables_from(invoker,
                              [
                                "bundle_deps",
@@ -1533,6 +1536,27 @@ template("ios_framework_bundle") {
       deps += [ ":$_info_plist_bundle" ]
     }
 
+    group(_target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "public_configs",
+                               "public_deps",
+                               "testonly",
+                               "visibility",
+                             ])
+      if (!defined(public_deps)) {
+        public_deps = []
+      }
+      public_deps += [ ":${_target_name}_signed_bundle" ]
+
+      if (_has_public_headers) {
+        if (!defined(public_configs)) {
+          public_configs = []
+        }
+        public_configs += [ ":$_framework_headers_config" ]
+      }
+    }
+
     group(_link_target_name) {
       forward_variables_from(invoker,
                              [
@@ -1546,12 +1570,6 @@ template("ios_framework_bundle") {
       }
       public_deps += [ ":$_target_name" ]
 
-      if (_has_public_headers) {
-        if (!defined(public_configs)) {
-          public_configs = []
-        }
-        public_configs += [ ":$_framework_headers_config" ]
-      }
       if (!defined(all_dependent_configs)) {
         all_dependent_configs = []
       }

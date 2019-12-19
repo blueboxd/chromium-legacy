@@ -71,6 +71,7 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
       tab_strip_model_(tab_strip_model),
       trigger_menu_on_long_press_(trigger_menu_on_long_press),
       highlight_color_animation_(this) {
+  set_has_ink_drop_action_on_click(true);
   set_context_menu_controller(this);
 
   if (base::FeatureList::IsEnabled(views::kInstallableInkDropFeature)) {

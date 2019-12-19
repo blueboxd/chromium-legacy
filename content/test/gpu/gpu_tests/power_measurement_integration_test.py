@@ -506,6 +506,12 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
           logfiles, ipg_delay, outliers, json_path)
       logging.info("Summary: %s", str(summary))
 
+  @classmethod
+  def ExpectationsFiles(cls):
+    return [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                     'test_expectations',
+                     'power_measurement_expectations.txt')]
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.

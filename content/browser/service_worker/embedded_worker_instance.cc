@@ -1047,7 +1047,8 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
       default_factory_receiver = factory_bundle->pending_default_factory()
                                      .InitWithNewPipeAndPassReceiver();
   network::mojom::URLLoaderFactoryParamsPtr factory_params =
-      URLLoaderFactoryParamsHelper::CreateForWorker(rph, origin);
+      URLLoaderFactoryParamsHelper::CreateForWorker(
+          rph, origin, net::NetworkIsolationKey(origin, origin));
   bool bypass_redirect_checks = false;
 
   DCHECK(factory_type ==

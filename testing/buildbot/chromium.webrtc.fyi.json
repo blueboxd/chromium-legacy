@@ -57,7 +57,8 @@
             }
           ]
         },
-        "test": "content_browsertests"
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
       }
     ]
   },
@@ -106,7 +107,8 @@
             }
           ]
         },
-        "test": "content_browsertests"
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
       }
     ]
   },
@@ -142,7 +144,8 @@
             }
           ]
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "args": [
@@ -163,7 +166,8 @@
             }
           ]
         },
-        "test": "browser_tests_apprtc"
+        "test": "browser_tests_apprtc",
+        "test_target": "//chrome/test:browser_tests_apprtc"
       },
       {
         "args": [
@@ -182,7 +186,8 @@
             }
           ]
         },
-        "test": "content_browsertests"
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
       },
       {
         "args": [
@@ -205,7 +210,8 @@
             }
           ]
         },
-        "test": "content_browsertests"
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
       },
       {
         "args": [
@@ -224,7 +230,8 @@
             }
           ]
         },
-        "test": "content_unittests"
+        "test": "content_unittests",
+        "test_target": "//content/test:content_unittests"
       },
       {
         "merge": {
@@ -240,7 +247,8 @@
             }
           ]
         },
-        "test": "jingle_unittests"
+        "test": "jingle_unittests",
+        "test_target": "//jingle:jingle_unittests"
       },
       {
         "args": [
@@ -259,7 +267,8 @@
             }
           ]
         },
-        "test": "remoting_unittests"
+        "test": "remoting_unittests",
+        "test_target": "//remoting:remoting_unittests"
       }
     ]
   },
@@ -295,7 +304,8 @@
             }
           ]
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "args": [
@@ -316,7 +326,8 @@
             }
           ]
         },
-        "test": "browser_tests_apprtc"
+        "test": "browser_tests_apprtc",
+        "test_target": "//chrome/test:browser_tests_apprtc"
       },
       {
         "args": [
@@ -335,7 +346,8 @@
             }
           ]
         },
-        "test": "content_browsertests"
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
       },
       {
         "args": [
@@ -358,7 +370,8 @@
             }
           ]
         },
-        "test": "content_browsertests"
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
       },
       {
         "args": [
@@ -377,7 +390,8 @@
             }
           ]
         },
-        "test": "content_unittests"
+        "test": "content_unittests",
+        "test_target": "//content/test:content_unittests"
       },
       {
         "merge": {
@@ -393,7 +407,8 @@
             }
           ]
         },
-        "test": "jingle_unittests"
+        "test": "jingle_unittests",
+        "test_target": "//jingle:jingle_unittests"
       },
       {
         "args": [
@@ -412,7 +427,8 @@
             }
           ]
         },
-        "test": "remoting_unittests"
+        "test": "remoting_unittests",
+        "test_target": "//remoting:remoting_unittests"
       }
     ]
   },
@@ -448,7 +464,8 @@
             }
           ]
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "args": [
@@ -469,7 +486,8 @@
             }
           ]
         },
-        "test": "browser_tests_apprtc"
+        "test": "browser_tests_apprtc",
+        "test_target": "//chrome/test:browser_tests_apprtc"
       },
       {
         "args": [
@@ -488,7 +506,8 @@
             }
           ]
         },
-        "test": "content_browsertests"
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
       },
       {
         "args": [
@@ -511,7 +530,8 @@
             }
           ]
         },
-        "test": "content_browsertests"
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
       },
       {
         "args": [
@@ -530,7 +550,8 @@
             }
           ]
         },
-        "test": "content_unittests"
+        "test": "content_unittests",
+        "test_target": "//content/test:content_unittests"
       },
       {
         "merge": {
@@ -546,7 +567,8 @@
             }
           ]
         },
-        "test": "jingle_unittests"
+        "test": "jingle_unittests",
+        "test_target": "//jingle:jingle_unittests"
       },
       {
         "args": [
@@ -565,7 +587,8 @@
             }
           ]
         },
-        "test": "remoting_unittests"
+        "test": "remoting_unittests",
+        "test_target": "//remoting:remoting_unittests"
       }
     ]
   },
@@ -591,7 +614,8 @@
             }
           ]
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "args": [
@@ -612,7 +636,8 @@
             }
           ]
         },
-        "test": "browser_tests_apprtc"
+        "test": "browser_tests_apprtc",
+        "test_target": "//chrome/test:browser_tests_apprtc"
       },
       {
         "args": [
@@ -631,7 +656,8 @@
             }
           ]
         },
-        "test": "content_browsertests"
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
       },
       {
         "args": [
@@ -654,7 +680,8 @@
             }
           ]
         },
-        "test": "content_browsertests"
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
       },
       {
         "args": [
@@ -673,7 +700,8 @@
             }
           ]
         },
-        "test": "content_unittests"
+        "test": "content_unittests",
+        "test_target": "//content/test:content_unittests"
       },
       {
         "merge": {
@@ -689,7 +717,8 @@
             }
           ]
         },
-        "test": "jingle_unittests"
+        "test": "jingle_unittests",
+        "test_target": "//jingle:jingle_unittests"
       },
       {
         "args": [
@@ -708,7 +737,8 @@
             }
           ]
         },
-        "test": "remoting_unittests"
+        "test": "remoting_unittests",
+        "test_target": "//remoting:remoting_unittests"
       }
     ]
   },
@@ -734,7 +764,8 @@
             }
           ]
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
       },
       {
         "args": [
@@ -755,7 +786,8 @@
             }
           ]
         },
-        "test": "browser_tests_apprtc"
+        "test": "browser_tests_apprtc",
+        "test_target": "//chrome/test:browser_tests_apprtc"
       },
       {
         "args": [
@@ -774,7 +806,8 @@
             }
           ]
         },
-        "test": "content_browsertests"
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
       },
       {
         "args": [
@@ -797,7 +830,8 @@
             }
           ]
         },
-        "test": "content_browsertests"
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
       },
       {
         "args": [
@@ -816,7 +850,8 @@
             }
           ]
         },
-        "test": "content_unittests"
+        "test": "content_unittests",
+        "test_target": "//content/test:content_unittests"
       },
       {
         "merge": {
@@ -832,7 +867,8 @@
             }
           ]
         },
-        "test": "jingle_unittests"
+        "test": "jingle_unittests",
+        "test_target": "//jingle:jingle_unittests"
       },
       {
         "args": [
@@ -851,7 +887,8 @@
             }
           ]
         },
-        "test": "remoting_unittests"
+        "test": "remoting_unittests",
+        "test_target": "//remoting:remoting_unittests"
       }
     ]
   }

@@ -34,14 +34,7 @@ namespace {
 // in the compositor.
 class LayerControlView : public views::View {
  public:
-  LayerControlView(views::View* view, bool needs_shield) {
-    if (needs_shield) {
-      auto* shield = new views::View();
-      AddChildView(shield);
-      shield->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-      shield->layer()->SetColor(SK_ColorBLACK);
-      shield->layer()->set_name("WallpaperViewShield");
-    }
+  explicit LayerControlView(views::View* view) {
     AddChildView(view);
     view->SetPaintToLayer();
   }
@@ -54,12 +47,10 @@ class LayerControlView : public views::View {
     window->parent()->StackChildAtBottom(window);
     display::Display display =
         display::Screen::GetScreen()->GetDisplayNearestWindow(window);
-
     display::ManagedDisplayInfo info =
         Shell::Get()->display_manager()->GetDisplayInfo(display.id());
 
     for (auto* child : children()) {
-      // views::View* child = children().front();
       child->SetBounds(0, 0, display.size().width(), display.size().height());
       gfx::Transform transform;
       // Apply RTL transform explicitly becacuse Views layer code
@@ -85,11 +76,26 @@ WallpaperView::WallpaperView(const WallpaperProperty& property)
 
 WallpaperView::~WallpaperView() = default;
 
-void WallpaperView::SetWallpaperProperty(const WallpaperProperty& property) {
-  if (property_ == property)
+void WallpaperView::ClearCachedImage() {
+  small_image_.reset();
+}
+
+void WallpaperView::SetLockShieldEnabled(bool enabled) {
+  if (enabled == !!shield_view_)
     return;
-  property_ = property;
-  SchedulePaint();
+
+  if (enabled) {
+    DCHECK(!shield_view_);
+    shield_view_ = new views::View();
+    parent()->AddChildViewAt(shield_view_, 0);
+    shield_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+    shield_view_->layer()->SetColor(SK_ColorBLACK);
+    shield_view_->layer()->set_name("WallpaperViewShield");
+  } else {
+    DCHECK(shield_view_);
+    parent()->RemoveChildView(shield_view_);
+    shield_view_ = nullptr;
+  }
 }
 
 const char* WallpaperView::GetClassName() const {
@@ -192,16 +198,18 @@ void WallpaperView::DrawWallpaper(const gfx::ImageSkia& wallpaper,
                        /*filter=*/true, flags);
 }
 
-views::Widget* CreateWallpaperWidget(aura::Window* root_window,
-                                     int container_id,
-                                     const WallpaperProperty& property,
-                                     WallpaperView** out_wallpaper_view) {
+std::unique_ptr<views::Widget> CreateWallpaperWidget(
+    aura::Window* root_window,
+    int container_id,
+    const WallpaperProperty& property,
+    WallpaperView** out_wallpaper_view) {
   auto* controller = Shell::Get()->wallpaper_controller();
 
-  views::Widget* wallpaper_widget = new views::Widget;
+  auto wallpaper_widget = std::make_unique<views::Widget>();
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.name = "WallpaperViewWidget";
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.layer_type = ui::LAYER_NOT_DRAWN;
   if (controller->GetWallpaper().isNull())
     params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
@@ -209,9 +217,7 @@ views::Widget* CreateWallpaperWidget(aura::Window* root_window,
   wallpaper_widget->Init(std::move(params));
   // Owned by views.
   WallpaperView* wallpaper_view = new WallpaperView(property);
-  wallpaper_widget->SetContentsView(new LayerControlView(
-      wallpaper_view,
-      Shell::Get()->session_controller()->IsUserSessionBlocked()));
+  wallpaper_widget->SetContentsView(new LayerControlView(wallpaper_view));
   *out_wallpaper_view = wallpaper_view;
   int animation_type =
       controller->ShouldShowInitialAnimation()

@@ -15,13 +15,16 @@
 #include "ui/base/ui_base_types.h"
 
 class Tab;
-class TabGroupVisualData;
-class TabGroupId;
 class TabStrip;
 
 namespace gfx {
 class Point;
 }
+
+namespace tab_groups {
+class TabGroupId;
+class TabGroupVisualData;
+}  // namespace tab_groups
 
 namespace ui {
 class Event;
@@ -79,10 +82,10 @@ class TabStripController {
   virtual void CloseTab(int index, CloseTabSource source) = 0;
 
   // Ungroups the tabs at the specified index in the model.
-  virtual void UngroupAllTabsInGroup(TabGroupId group) = 0;
+  virtual void UngroupAllTabsInGroup(tab_groups::TabGroupId group) = 0;
 
   // Adds a new tab to end of the tab group.
-  virtual void AddNewTabInGroup(TabGroupId group) = 0;
+  virtual void AddNewTabInGroup(tab_groups::TabGroupId group) = 0;
 
   // Moves the tab at |start_index| so that it is now at |final_index|, sliding
   // any tabs in between left or right as appropriate.
@@ -125,15 +128,17 @@ class TabStripController {
   // to |index|.
   virtual void OnKeyboardFocusedTabChanged(base::Optional<int> index) = 0;
 
-  // Returns the TabGroupVisualData instance for the given |group|.
-  virtual const TabGroupVisualData* GetVisualDataForGroup(
-      TabGroupId group) const = 0;
+  // Returns the tab_groups::TabGroupVisualData instance for the given |group|.
+  virtual const tab_groups::TabGroupVisualData* GetVisualDataForGroup(
+      tab_groups::TabGroupId group) const = 0;
 
-  virtual void SetVisualDataForGroup(TabGroupId group,
-                                     TabGroupVisualData visual_data) = 0;
+  virtual void SetVisualDataForGroup(
+      tab_groups::TabGroupId group,
+      tab_groups::TabGroupVisualData visual_data) = 0;
 
   // Returns the list of tabs in the given |group|.
-  virtual std::vector<int> ListTabsInGroup(TabGroupId group) const = 0;
+  virtual std::vector<int> ListTabsInGroup(
+      tab_groups::TabGroupId group) const = 0;
 
   // Determines whether the top frame is condensed vertically, as when the
   // window is maximized. If true, the top frame is just the height of a tab,

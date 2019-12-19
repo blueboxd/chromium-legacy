@@ -16,6 +16,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class ScriptPromise;
 class ScriptState;
 
@@ -64,6 +65,7 @@ class BluetoothRemoteGATTService final : public ScriptWrappable {
 
   ScriptPromise GetCharacteristicsImpl(
       ScriptState*,
+      ExceptionState&,
       mojom::blink::WebBluetoothGATTQueryQuantity,
       const String& characteristic_uuid = String());
 

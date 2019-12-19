@@ -9,7 +9,7 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 
 import {CloudPrintInterface, CloudPrintInterfaceErrorEventDetail, CloudPrintInterfaceEventType} from '../cloud_print_interface.js';
 
-import {DestinationOrigin} from './destination.js';
+import {Destination, DestinationOrigin} from './destination.js';
 import {DestinationStore} from './destination_store.js';
 import {InvitationStore} from './invitation_store.js';
 
@@ -98,7 +98,8 @@ Polymer({
       // Request the Google Docs destination from the Google Cloud Print server
       // directly. We have to do this in incognito mode in order to get the
       // user's login state.
-      this.destinationStore.startLoadGoogleDrive();
+      this.destinationStore.startLoadCookieDestination(
+          Destination.GooglePromotedId.DOCS);
       this.addWebUIListener('check-for-account-update', () => {
         this.destinationStore.startLoadCloudDestinations(
             DestinationOrigin.COOKIES);

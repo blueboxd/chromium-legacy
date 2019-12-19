@@ -450,32 +450,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, Title) {
   EXPECT_EQ(test_title, tab_title);
 }
 
-namespace {
-
-class DialogPlusConsoleObserverDelegate
-    : public content::ConsoleObserverDelegate {
- public:
-  DialogPlusConsoleObserverDelegate(
-      content::WebContentsDelegate* original_delegate,
-      WebContents* web_contents,
-      const std::string& filter)
-      : content::ConsoleObserverDelegate(web_contents, filter),
-        web_contents_(web_contents),
-        original_delegate_(original_delegate) {}
-
-  // WebContentsDelegate method:
-  content::JavaScriptDialogManager* GetJavaScriptDialogManager(
-      WebContents* source) override {
-    return original_delegate_->GetJavaScriptDialogManager(web_contents_);
-  }
-
- private:
-  content::WebContents* web_contents_;
-  content::WebContentsDelegate* original_delegate_;
-};
-
-}  // namespace
-
 IN_PROC_BROWSER_TEST_F(BrowserTest, NoJavaScriptDialogsActivateTab) {
   // Set up two tabs, with the tab at index 0 active.
   GURL url(ui_test_utils::GetTestUrl(
@@ -488,31 +462,30 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoJavaScriptDialogsActivateTab) {
 
   WebContents* second_tab = browser()->tab_strip_model()->GetWebContentsAt(1);
   ASSERT_TRUE(second_tab);
-  content::WebContentsDelegate* original_delegate = second_tab->GetDelegate();
 
   // Show a confirm() dialog from the tab at index 1. The active index shouldn't
   // budge.
-  DialogPlusConsoleObserverDelegate confirm_observer(
-      original_delegate, second_tab, "*confirm*suppressed*");
-  second_tab->SetDelegate(&confirm_observer);
-  second_tab->GetMainFrame()->ExecuteJavaScriptForTests(
-      ASCIIToUTF16("confirm('Activate!');"), base::NullCallback());
-  confirm_observer.Wait();
+  {
+    content::WebContentsConsoleObserver confirm_observer(second_tab);
+    confirm_observer.SetPattern("*confirm*suppressed*");
+    second_tab->GetMainFrame()->ExecuteJavaScriptForTests(
+        ASCIIToUTF16("confirm('Activate!');"), base::NullCallback());
+    confirm_observer.Wait();
+  }
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
 
   // Show a prompt() dialog from the tab at index 1. The active index shouldn't
   // budge.
-  DialogPlusConsoleObserverDelegate prompt_observer(
-      original_delegate, second_tab, "*prompt*suppressed*");
-  second_tab->SetDelegate(&prompt_observer);
-  second_tab->GetMainFrame()->ExecuteJavaScriptForTests(
-      ASCIIToUTF16("prompt('Activate!');"), base::NullCallback());
-  prompt_observer.Wait();
+  {
+    content::WebContentsConsoleObserver prompt_observer(second_tab);
+    prompt_observer.SetPattern("*prompt*suppressed*");
+    second_tab->GetMainFrame()->ExecuteJavaScriptForTests(
+        ASCIIToUTF16("prompt('Activate!');"), base::NullCallback());
+    prompt_observer.Wait();
+  }
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
-
-  second_tab->SetDelegate(original_delegate);
 
   // Show an alert() dialog from the tab at index 1. The active index shouldn't
   // budge.
@@ -906,7 +879,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTestWithTabGroupsEnabled,
   TabStripModel* const model = browser()->tab_strip_model();
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/empty.html"));
-  const TabGroupId group_id = model->AddToNewGroup({0});
+  const tab_groups::TabGroupId group_id = model->AddToNewGroup({0});
 
   // Open a new background tab.
   WebContents* const contents =
@@ -930,7 +903,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTestWithTabGroupsEnabled,
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
                      "/frame_tree/anchor_to_same_site_location.html"));
-  const TabGroupId group_id = model->AddToNewGroup({0});
+  const tab_groups::TabGroupId group_id = model->AddToNewGroup({0});
 
   // Click a target=_blank link.
   WebContents* const contents =

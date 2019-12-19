@@ -26,6 +26,14 @@
 
 namespace blink {
 
+using ReattachHook = LayoutShiftTracker::ReattachHook;
+
+static ReattachHook& GetReattachHook() {
+  DEFINE_STATIC_LOCAL(Persistent<ReattachHook>, hook,
+                      (MakeGarbageCollected<ReattachHook>()));
+  return *hook;
+}
+
 static constexpr base::TimeDelta kTimerDelay =
     base::TimeDelta::FromMilliseconds(500);
 static const float kMovementThreshold = 3.0;  // CSS pixels.
@@ -441,6 +449,63 @@ void LayoutShiftTracker::SetLayoutShiftRects(const Vector<IntRect>& int_rects) {
       cc_layer->layer_tree_host()->hud_layer()->SetNeedsPushProperties();
     }
   }
+}
+
+ReattachHook::Scope::Scope(const Node& node) : active_(node.GetLayoutObject()) {
+  if (active_) {
+    auto& hook = GetReattachHook();
+    outer_ = hook.scope_;
+    hook.scope_ = this;
+  }
+}
+
+ReattachHook::Scope::~Scope() {
+  if (active_) {
+    auto& hook = GetReattachHook();
+    hook.scope_ = outer_;
+    if (!outer_)
+      hook.visual_rects_.clear();
+  }
+}
+
+void ReattachHook::NotifyDetach(const Node& node) {
+  auto& hook = GetReattachHook();
+  if (!hook.scope_)
+    return;
+  auto* layout_object = node.GetLayoutObject();
+  if (!layout_object)
+    return;
+  auto& map = hook.visual_rects_;
+  auto& fragment = layout_object->GetMutableForPainting().FirstFragment();
+
+  // Save the visual rect for restoration on future reattachment.
+  IntRect visual_rect = fragment.VisualRect();
+  if (visual_rect.IsEmpty())
+    return;
+  map.Set(&node, visual_rect);
+}
+
+void ReattachHook::NotifyAttach(const Node& node) {
+  auto& hook = GetReattachHook();
+  if (!hook.scope_)
+    return;
+  auto* layout_object = node.GetLayoutObject();
+  if (!layout_object)
+    return;
+  auto& map = hook.visual_rects_;
+  auto& fragment = layout_object->GetMutableForPainting().FirstFragment();
+
+  // Restore the visual rect that was saved during detach. Note: this does not
+  // affect paint invalidation; we will fully invalidate the new layout object.
+  auto iter = map.find(&node);
+  if (iter == map.end())
+    return;
+  IntRect visual_rect = iter->value;
+  fragment.SetVisualRect(visual_rect);
+}
+
+void ReattachHook::Trace(Visitor* visitor) {
+  visitor->Trace(visual_rects_);
 }
 
 }  // namespace blink

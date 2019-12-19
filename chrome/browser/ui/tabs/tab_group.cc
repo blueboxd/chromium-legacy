@@ -13,23 +13,23 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/ui/tabs/tab_group_controller.h"
-#include "chrome/browser/ui/tabs/tab_group_id.h"
-#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_elider.h"
 
 TabGroup::TabGroup(TabGroupController* controller,
-                   TabGroupId id,
-                   TabGroupVisualData visual_data)
+                   tab_groups::TabGroupId id,
+                   tab_groups::TabGroupVisualData visual_data)
     : controller_(controller), id_(id) {
-  visual_data_ = std::make_unique<TabGroupVisualData>(visual_data);
+  visual_data_ = std::make_unique<tab_groups::TabGroupVisualData>(visual_data);
 }
 
 TabGroup::~TabGroup() {}
 
-void TabGroup::SetVisualData(TabGroupVisualData visual_data) {
-  visual_data_ = std::make_unique<TabGroupVisualData>(visual_data);
+void TabGroup::SetVisualData(tab_groups::TabGroupVisualData visual_data) {
+  visual_data_ = std::make_unique<tab_groups::TabGroupVisualData>(visual_data);
   controller_->ChangeTabGroupVisuals(id_);
 }
 

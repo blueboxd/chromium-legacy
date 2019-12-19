@@ -1168,6 +1168,11 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     if invalidation_name is not None:
       policy_data.invalidation_name = invalidation_name.encode('ascii')
 
+    policy_invalidation_topic = policy.get('policy_invalidation_topic')
+    if policy_invalidation_topic is not None:
+      policy_data.policy_invalidation_topic = \
+          policy_invalidation_topic.encode('ascii')
+
     if msg.signature_type != dm.PolicyFetchRequest.NONE:
       policy_data.public_key_version = signing_key_version
 

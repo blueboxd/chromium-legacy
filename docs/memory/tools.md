@@ -147,7 +147,7 @@ looking similar due to the nature of DOM node allocation.
 ### Instructions
 #### <a name="configure-oophp"></a>Configuration and setup
   1. [Android Only] For native stack traces, a custom build with
-     `enable_framepoitners=true` is required.
+     `enable_framepointers=true` is required.
   2. Configure OOPHP settings in about://flags. (See table below)
   3. Restart browser with new settings if necessary.
   4. Verify target processes are being profiled in chrome://memory-internals.

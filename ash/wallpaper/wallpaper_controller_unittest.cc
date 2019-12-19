@@ -110,14 +110,12 @@ int ChildCountForContainer(int container_id) {
   return static_cast<int>(container->children().size());
 }
 
-// Steps a widget's layer animation until it is completed. Animations must be
-// enabled.
-void RunAnimationForWidget(views::Widget* widget) {
+// Steps a layer animation until it is completed. Animations must be enabled.
+void RunAnimationForLayer(ui::Layer* layer) {
   // Animations must be enabled for stepping to work.
   ASSERT_NE(ui::ScopedAnimationDurationScaleMode::duration_scale_mode(),
             ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
-  ui::Layer* layer = widget->GetLayer();
   ui::LayerAnimatorTestController controller(layer->GetAnimator());
   // Multiple steps are required to complete complex animations.
   // TODO(vollick): This should not be necessary. crbug.com/154017
@@ -297,12 +295,6 @@ class WallpaperControllerTest : public AshTestBase {
     in_process_data_decoder_.service().SimulateImageDecoderCrashForTesting(
         true);
 
-    // Ash shell initialization creates wallpaper. Reset it so we can manually
-    // control wallpaper creation and animation in our tests.
-    Shell::Get()
-        ->GetPrimaryRootWindowController()
-        ->wallpaper_widget_controller()
-        ->ResetWidgetsForTesting();
     controller_ = Shell::Get()->wallpaper_controller();
     controller_->set_wallpaper_reload_no_delay_for_test();
 
@@ -315,14 +307,10 @@ class WallpaperControllerTest : public AshTestBase {
   }
 
   WallpaperView* wallpaper_view() {
-    WallpaperWidgetController* controller =
-        Shell::Get()
-            ->GetPrimaryRootWindowController()
-            ->wallpaper_widget_controller();
-    EXPECT_TRUE(controller);
-    EXPECT_TRUE(controller->GetAnimatingWidget());
-    views::View* contents = controller->GetAnimatingWidget()->GetContentsView();
-    return static_cast<WallpaperView*>(contents->children().front());
+    return Shell::Get()
+        ->GetPrimaryRootWindowController()
+        ->wallpaper_widget_controller()
+        ->wallpaper_view();
   }
 
  protected:
@@ -362,9 +350,8 @@ class WallpaperControllerTest : public AshTestBase {
             ->GetPrimaryRootWindowController()
             ->wallpaper_widget_controller();
     ASSERT_TRUE(controller);
-    ASSERT_TRUE(controller->GetAnimatingWidget());
     ASSERT_NO_FATAL_FAILURE(
-        RunAnimationForWidget(controller->GetAnimatingWidget()));
+        RunAnimationForLayer(controller->wallpaper_view()->layer()));
   }
 
   // Convenience function to ensure ShouldCalculateColors() returns true.
@@ -574,18 +561,13 @@ TEST_F(WallpaperControllerTest, BasicReparenting) {
   EXPECT_EQ(1, ChildCountForContainer(kWallpaperId));
   EXPECT_EQ(0, ChildCountForContainer(kLockScreenWallpaperId));
 
-  // Moving wallpaper to lock container should succeed the first time but
-  // subsequent calls should do nothing.
-  EXPECT_TRUE(controller->MoveToLockedContainer());
-  EXPECT_FALSE(controller->MoveToLockedContainer());
+  controller->OnSessionStateChanged(session_manager::SessionState::LOCKED);
 
   // One window is moved from desktop to lock container.
   EXPECT_EQ(0, ChildCountForContainer(kWallpaperId));
   EXPECT_EQ(1, ChildCountForContainer(kLockScreenWallpaperId));
 
-  // Moving wallpaper to desktop container should succeed the first time.
-  EXPECT_TRUE(controller->MoveToUnlockedContainer());
-  EXPECT_FALSE(controller->MoveToUnlockedContainer());
+  controller->OnSessionStateChanged(session_manager::SessionState::ACTIVE);
 
   // One window is moved from lock to desktop container.
   EXPECT_EQ(1, ChildCountForContainer(kWallpaperId));
@@ -606,13 +588,11 @@ TEST_F(WallpaperControllerTest, SwitchWallpapersWhenNewWallpaperAnimationEnds) {
       Shell::Get()
           ->GetPrimaryRootWindowController()
           ->wallpaper_widget_controller();
-  EXPECT_TRUE(widget_controller->GetAnimatingWidget());
-  EXPECT_FALSE(widget_controller->GetWidget());
+  EXPECT_TRUE(widget_controller->IsAnimating());
 
   // Force the animation to play to completion.
   RunDesktopControllerAnimation();
-  EXPECT_FALSE(widget_controller->GetAnimatingWidget());
-  EXPECT_TRUE(widget_controller->GetWidget());
+  EXPECT_FALSE(widget_controller->IsAnimating());
 }
 
 // Test for crbug.com/149043 "Unlock screen, no launcher appears". Ensure we
@@ -630,36 +610,40 @@ TEST_F(WallpaperControllerTest, WallpaperMovementDuringUnlock) {
   RunDesktopControllerAnimation();
 
   // User locks the screen, which moves the wallpaper forward.
-  controller->MoveToLockedContainer();
+  controller->OnSessionStateChanged(session_manager::SessionState::LOCKED);
 
   // Suspend/resume cycle causes wallpaper to refresh, loading a new wallpaper
   // that will animate in on top of the old one.
   controller->CreateEmptyWallpaperForTesting();
 
-  // In this state we have two wallpaper views stored in different properties.
-  // Both are in the lock screen wallpaper container.
+  // In this state we have a wallpaper views stored in
+  // LockScreenWallpaperContainer.
   WallpaperWidgetController* widget_controller =
       Shell::Get()
           ->GetPrimaryRootWindowController()
           ->wallpaper_widget_controller();
-  EXPECT_TRUE(widget_controller->GetAnimatingWidget());
-  EXPECT_TRUE(widget_controller->GetWidget());
+  EXPECT_TRUE(widget_controller->IsAnimating());
   EXPECT_EQ(0, ChildCountForContainer(kWallpaperId));
-  EXPECT_EQ(2, ChildCountForContainer(kLockScreenWallpaperId));
+  EXPECT_EQ(1, ChildCountForContainer(kLockScreenWallpaperId));
+  // There must be three layers, shield, original and old layers.
+  ASSERT_EQ(3u, wallpaper_view()->layer()->parent()->children().size());
 
   // Before the wallpaper's animation completes, user unlocks the screen, which
   // moves the wallpaper to the back.
-  controller->MoveToUnlockedContainer();
+  controller->OnSessionStateChanged(session_manager::SessionState::ACTIVE);
 
-  // Ensure both wallpapers have moved.
-  EXPECT_EQ(2, ChildCountForContainer(kWallpaperId));
+  // Ensure that widget has moved.
+  EXPECT_EQ(1, ChildCountForContainer(kWallpaperId));
+  // There must be two layers, original and old layers while animating.
+  ASSERT_EQ(2u, wallpaper_view()->layer()->parent()->children().size());
   EXPECT_EQ(0, ChildCountForContainer(kLockScreenWallpaperId));
 
   // Finish the new wallpaper animation.
   RunDesktopControllerAnimation();
 
-  // Now there is one wallpaper, in the back.
+  // Now there is one wallpaper and layer.
   EXPECT_EQ(1, ChildCountForContainer(kWallpaperId));
+  ASSERT_EQ(1u, wallpaper_view()->layer()->parent()->children().size());
   EXPECT_EQ(0, ChildCountForContainer(kLockScreenWallpaperId));
 }
 
@@ -684,26 +668,16 @@ TEST_F(WallpaperControllerTest, ChangeWallpaperQuick) {
       Shell::Get()
           ->GetPrimaryRootWindowController()
           ->wallpaper_widget_controller();
-  views::Widget* animating_widget = widget_controller->GetAnimatingWidget();
-  EXPECT_TRUE(animating_widget);
-  EXPECT_TRUE(widget_controller->GetWidget());
+  EXPECT_TRUE(widget_controller->IsAnimating());
 
   // Change to another wallpaper before animation finished.
   controller->CreateEmptyWallpaperForTesting();
 
-  // The animating widget should become active immediately.
-  EXPECT_EQ(animating_widget, widget_controller->GetWidget());
-
-  // Cache the new animating widget.
-  animating_widget = widget_controller->GetAnimatingWidget();
-
   // Run wallpaper show animation to completion.
-  ASSERT_NO_FATAL_FAILURE(RunAnimationForWidget(animating_widget));
+  ASSERT_NO_FATAL_FAILURE(
+      RunAnimationForLayer(widget_controller->wallpaper_view()->layer()));
 
-  EXPECT_TRUE(widget_controller->GetWidget());
-  EXPECT_FALSE(widget_controller->GetAnimatingWidget());
-  // The last animating widget should be active at this point.
-  EXPECT_EQ(animating_widget, widget_controller->GetWidget());
+  EXPECT_FALSE(widget_controller->IsAnimating());
 }
 
 TEST_F(WallpaperControllerTest, ResizeCustomWallpaper) {
@@ -1940,9 +1914,11 @@ TEST_F(WallpaperControllerTest, WallpaperBlurDuringLockScreenTransition) {
   ASSERT_TRUE(controller_->IsBlurAllowedForLockState());
   ASSERT_FALSE(controller_->IsWallpaperBlurredForLockState());
 
-  ASSERT_EQ(1u, wallpaper_view()->layer()->parent()->children().size());
+  ASSERT_EQ(2u, wallpaper_view()->layer()->parent()->children().size());
   EXPECT_EQ(ui::LAYER_TEXTURED,
             wallpaper_view()->layer()->parent()->children()[0]->type());
+  EXPECT_EQ(ui::LAYER_TEXTURED,
+            wallpaper_view()->layer()->parent()->children()[1]->type());
 
   // Simulate lock and unlock sequence.
   controller_->UpdateWallpaperBlurForLockState(true);
@@ -1951,20 +1927,24 @@ TEST_F(WallpaperControllerTest, WallpaperBlurDuringLockScreenTransition) {
 
   SetSessionState(SessionState::LOCKED);
   EXPECT_TRUE(controller_->IsWallpaperBlurredForLockState());
-  ASSERT_EQ(2u, wallpaper_view()->layer()->parent()->children().size());
+  ASSERT_EQ(3u, wallpaper_view()->layer()->parent()->children().size());
   EXPECT_EQ(ui::LAYER_SOLID_COLOR,
             wallpaper_view()->layer()->parent()->children()[0]->type());
   EXPECT_EQ(ui::LAYER_TEXTURED,
             wallpaper_view()->layer()->parent()->children()[1]->type());
+  EXPECT_EQ(ui::LAYER_TEXTURED,
+            wallpaper_view()->layer()->parent()->children()[2]->type());
 
   // Change of state to ACTIVE triggers post lock animation and
   // UpdateWallpaperBlur(false)
   SetSessionState(SessionState::ACTIVE);
   EXPECT_FALSE(controller_->IsWallpaperBlurredForLockState());
   EXPECT_EQ(2, observer.blur_changed_count());
-  ASSERT_EQ(1u, wallpaper_view()->layer()->parent()->children().size());
+  ASSERT_EQ(2u, wallpaper_view()->layer()->parent()->children().size());
   EXPECT_EQ(ui::LAYER_TEXTURED,
             wallpaper_view()->layer()->parent()->children()[0]->type());
+  EXPECT_EQ(ui::LAYER_TEXTURED,
+            wallpaper_view()->layer()->parent()->children()[1]->type());
 }
 
 TEST_F(WallpaperControllerTest, LockDuringOverview) {
@@ -1991,8 +1971,8 @@ TEST_F(WallpaperControllerTest, LockDuringOverview) {
                              ->wallpaper_view();
 
   // Make sure that wallpaper still have blur.
-  ASSERT_EQ(30, wallpaper_view->blur_sigma());
-  ASSERT_EQ(1, wallpaper_view->opacity());
+  ASSERT_EQ(30, wallpaper_view->property().blur_sigma);
+  ASSERT_EQ(1, wallpaper_view->property().opacity);
 }
 
 TEST_F(WallpaperControllerTest, OnlyShowDevicePolicyWallpaperOnLoginScreen) {

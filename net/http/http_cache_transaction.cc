@@ -1722,6 +1722,7 @@ int HttpCache::Transaction::DoSendRequestComplete(int result) {
   response_.was_fetched_via_proxy = response->was_fetched_via_proxy;
   response_.proxy_server = response->proxy_server;
   response_.restricted_prefetch = response->restricted_prefetch;
+  response_.resolve_error_info = response->resolve_error_info;
 
   // Do not record requests that have network errors or restarts.
   UpdateCacheEntryStatus(CacheEntryStatus::ENTRY_OTHER);

@@ -12,6 +12,7 @@
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/texture_base.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -30,6 +31,7 @@ namespace viz {
 
 SkiaOutputDeviceGL::SkiaOutputDeviceGL(
     gpu::MailboxManager* mailbox_manager,
+    gpu::SharedContextState* context_state,
     scoped_refptr<gl::GLSurface> gl_surface,
     scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
     gpu::MemoryTracker* memory_tracker,
@@ -38,6 +40,7 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
                        memory_tracker,
                        std::move(did_swap_buffer_complete_callback)),
       mailbox_manager_(mailbox_manager),
+      context_state_(context_state),
       gl_surface_(std::move(gl_surface)) {
   capabilities_.flipped_output_surface = gl_surface_->FlipsVertically();
   capabilities_.supports_post_sub_buffer = gl_surface_->SupportsPostSubBuffer();
@@ -56,30 +59,23 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
   // This output device is never offscreen.
   capabilities_.supports_surfaceless = gl_surface_->IsSurfaceless();
 #endif
-}
 
-SkiaOutputDeviceGL::~SkiaOutputDeviceGL() = default;
-
-void SkiaOutputDeviceGL::Initialize(GrContext* gr_context,
-                                    gl::GLContext* gl_context) {
-  DCHECK(gr_context);
-  DCHECK(gl_context);
-  gr_context_ = gr_context;
+  DCHECK(context_state_->gr_context());
+  DCHECK(context_state_->context());
 
   if (gl_surface_->SupportsSwapTimestamps()) {
     gl_surface_->SetEnableSwapTimestamps();
 
     // Changes to swap timestamp queries are only picked up when making current.
-    gl_context->ReleaseCurrent(nullptr);
-    gl_context->MakeCurrent(gl_surface_.get());
+    context_state_->ReleaseCurrent(nullptr);
+    context_state_->MakeCurrent(gl_surface_.get());
   }
 
-  gl::CurrentGL* current_gl = gl_context->GetCurrentGL();
-  DCHECK(current_gl);
+  gl::CurrentGL* current_gl = context_state_->context()->GetCurrentGL();
 
   // Get alpha bits from the default frame buffer.
   glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
-  gr_context_->resetContext(kRenderTarget_GrGLBackendState);
+  context_state_->gr_context()->resetContext(kRenderTarget_GrGLBackendState);
   const auto* version = current_gl->Version;
   GLint alpha_bits = 0;
   if (version->is_desktop_core_profile) {
@@ -92,6 +88,8 @@ void SkiaOutputDeviceGL::Initialize(GrContext* gr_context,
   CHECK_GL_ERROR();
   supports_alpha_ = alpha_bits > 0;
 }
+
+SkiaOutputDeviceGL::~SkiaOutputDeviceGL() = default;
 
 bool SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
                                  float device_scale_factor,
@@ -133,11 +131,12 @@ bool SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
   auto origin = gl_surface_->FlipsVertically() ? kTopLeft_GrSurfaceOrigin
                                                : kBottomLeft_GrSurfaceOrigin;
   sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
-      gr_context_, render_target, origin, color_type,
+      context_state_->gr_context(), render_target, origin, color_type,
       color_space.ToSkColorSpace(), &surface_props);
   if (!sk_surface_) {
-    LOG(ERROR) << "Couldn't create surface: " << gr_context_->abandoned() << " "
-               << color_type << " " << framebuffer_info.fFBOID << " "
+    LOG(ERROR) << "Couldn't create surface: "
+               << context_state_->gr_context()->abandoned() << " " << color_type
+               << " " << framebuffer_info.fFBOID << " "
                << framebuffer_info.fFormat << " " << color_space.ToString()
                << " " << size.ToString();
   }

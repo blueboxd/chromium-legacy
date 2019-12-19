@@ -35,7 +35,7 @@ void FakeBaseTabStripController::AddPinnedTab(int index, bool is_active) {
 }
 
 void FakeBaseTabStripController::MoveTab(int from_index, int to_index) {
-  base::Optional<TabGroupId> prev_group;
+  base::Optional<tab_groups::TabGroupId> prev_group;
   if (from_index < int{tab_groups_.size()}) {
     prev_group = tab_groups_[from_index];
     tab_groups_.erase(tab_groups_.begin() + from_index);
@@ -63,9 +63,9 @@ void FakeBaseTabStripController::RemoveTab(int index) {
 
 void FakeBaseTabStripController::MoveTabIntoGroup(
     int index,
-    base::Optional<TabGroupId> new_group) {
+    base::Optional<tab_groups::TabGroupId> new_group) {
   bool group_exists = base::Contains(tab_groups_, new_group);
-  base::Optional<TabGroupId> old_group;
+  base::Optional<tab_groups::TabGroupId> old_group;
   if (index >= int{tab_groups_.size()})
     tab_groups_.resize(index + 1);
   else
@@ -88,23 +88,26 @@ void FakeBaseTabStripController::MoveTabIntoGroup(
   }
 }
 
-const TabGroupVisualData* FakeBaseTabStripController::GetVisualDataForGroup(
-    TabGroupId group) const {
+const tab_groups::TabGroupVisualData*
+FakeBaseTabStripController::GetVisualDataForGroup(
+    tab_groups::TabGroupId group) const {
   return &fake_group_data_;
 }
 
 void FakeBaseTabStripController::SetVisualDataForGroup(
-    TabGroupId group,
-    TabGroupVisualData visual_data) {
+    tab_groups::TabGroupId group,
+    tab_groups::TabGroupVisualData visual_data) {
   fake_group_data_ = visual_data;
 }
 
-void FakeBaseTabStripController::UngroupAllTabsInGroup(TabGroupId group) {}
+void FakeBaseTabStripController::UngroupAllTabsInGroup(
+    tab_groups::TabGroupId group) {}
 
-void FakeBaseTabStripController::AddNewTabInGroup(TabGroupId group) {}
+void FakeBaseTabStripController::AddNewTabInGroup(
+    tab_groups::TabGroupId group) {}
 
 std::vector<int> FakeBaseTabStripController::ListTabsInGroup(
-    TabGroupId group) const {
+    tab_groups::TabGroupId group) const {
   std::vector<int> result;
   for (size_t i = 0; i < tab_groups_.size(); i++) {
     if (tab_groups_[i] == group)

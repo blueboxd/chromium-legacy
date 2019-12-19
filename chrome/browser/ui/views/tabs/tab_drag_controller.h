@@ -13,10 +13,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_context.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -242,8 +242,8 @@ class TabDragController : public views::WidgetObserver {
 
     // Contains the information for the tab's group at the start of the drag.
     struct TabGroupData {
-      TabGroupId group_id;
-      TabGroupVisualData group_visual_data;
+      tab_groups::TabGroupId group_id;
+      tab_groups::TabGroupVisualData group_visual_data;
     };
 
     // Stores the information of the group the tab is in, or nullopt if tab is
@@ -520,9 +520,9 @@ class TabDragController : public views::WidgetObserver {
 
   // Helper method for TabDragController::UpdateGroupForDraggedTabs to decide if
   // a dragged tab should stay in the tab group. Returns base::nullopt if the
-  // tab should not be in a group. Otherwise returns TabGroupId of the group the
-  // selected tabs should join.
-  base::Optional<TabGroupId> GetTabGroupForTargetIndex(
+  // tab should not be in a group. Otherwise returns tab_groups::TabGroupId of
+  // the group the selected tabs should join.
+  base::Optional<tab_groups::TabGroupId> GetTabGroupForTargetIndex(
       const std::vector<int>& selected);
 
   EventSource event_source_;
@@ -605,7 +605,7 @@ class TabDragController : public views::WidgetObserver {
 
   // The group that is being dragged. Only set if the drag originated from a
   // group header, indicating that the entire group is being dragged together.
-  base::Optional<TabGroupId> group_;
+  base::Optional<tab_groups::TabGroupId> group_;
 
   // True until MoveAttached() is first invoked.
   bool initial_move_;

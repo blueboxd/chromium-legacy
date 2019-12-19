@@ -406,7 +406,7 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
              'bug(z) [ Linux ] userscripts/first-test.html [ Failure ]\n'))
 
     def test_rebaseline_updates_expectations_file_all_platforms(self):
-        self._write(self.test_expectations_path, 'Bug(x) userscripts/first-test.html [ Failure ]\n')
+        self._write(self.test_expectations_path, 'userscripts/first-test.html [ Failure ]\n')
         self._setup_mock_build_data()
         test_baseline_set = TestBaselineSet(self.tool)
         test_baseline_set.add('userscripts/first-test.html', Build('MOCK Mac10.11'))
@@ -415,13 +415,15 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
 
         new_expectations = self._read(self.test_expectations_path)
         self.assertMultiLineEqual(
-            new_expectations, 'Bug(x) [ Linux Mac10.10 Win ] userscripts/first-test.html [ Failure ]\n')
+            new_expectations, ('[ Win ] userscripts/first-test.html [ Failure ]\n'
+                               '[ Linux ] userscripts/first-test.html [ Failure ]\n'
+                               '[ Mac10.10 ] userscripts/first-test.html [ Failure ]\n'))
 
     def test_rebaseline_handles_platform_skips(self):
         # This test is just like test_rebaseline_updates_expectations_file_all_platforms(),
         # except that if a particular port happens to SKIP a test in an overrides file,
         # we count that as passing, and do not think that we still need to rebaseline it.
-        self._write(self.test_expectations_path, 'Bug(x) userscripts/first-test.html [ Failure ]\n')
+        self._write(self.test_expectations_path, 'userscripts/first-test.html [ Failure ]\n')
         self._write('NeverFixTests', 'Bug(y) [ Android ] userscripts [ WontFix ]\n')
         self._setup_mock_build_data()
         test_baseline_set = TestBaselineSet(self.tool)
@@ -431,7 +433,9 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
 
         new_expectations = self._read(self.test_expectations_path)
         self.assertMultiLineEqual(
-            new_expectations, 'Bug(x) [ Linux Mac10.10 Win ] userscripts/first-test.html [ Failure ]\n')
+            new_expectations, ('[ Win ] userscripts/first-test.html [ Failure ]\n'
+                               '[ Linux ] userscripts/first-test.html [ Failure ]\n'
+                               '[ Mac10.10 ] userscripts/first-test.html [ Failure ]\n'))
 
     def test_rebaseline_handles_skips_in_file(self):
         # This test is like test_rebaseline_handles_platform_skips, except that the
@@ -451,7 +455,8 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
         new_expectations = self._read(self.test_expectations_path)
         self.assertMultiLineEqual(
             new_expectations,
-            ('Bug(x) [ Linux Mac10.10 ] userscripts/first-test.html [ Failure ]\n'
+            ('Bug(x) [ Linux ] userscripts/first-test.html [ Failure ]\n'
+             'Bug(x) [ Mac10.10 ] userscripts/first-test.html [ Failure ]\n'
              'Bug(y) [ Win ] userscripts/first-test.html [ Skip ]\n'))
 
     def test_rebaseline_handles_smoke_tests(self):
@@ -469,7 +474,9 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
 
         new_expectations = self._read(self.test_expectations_path)
         self.assertMultiLineEqual(
-            new_expectations, 'Bug(x) [ Linux Mac10.10 Win ] userscripts/first-test.html [ Failure ]\n')
+            new_expectations, ('Bug(x) [ Win ] userscripts/first-test.html [ Failure ]\n'
+                               'Bug(x) [ Linux ] userscripts/first-test.html [ Failure ]\n'
+                               'Bug(x) [ Mac10.10 ] userscripts/first-test.html [ Failure ]\n'))
 
     # In the following test cases, the tests produce no outputs (e.g. clean
     # passing reftests, skipped tests, etc.). Hence, there are no baselines to
@@ -562,7 +569,9 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
 
         new_expectations = self._read(self.test_expectations_path)
         self.assertMultiLineEqual(
-            new_expectations, 'Bug(foo) [ Linux Mac10.10 Win ] userscripts/all-pass.html [ Failure ]\n')
+            new_expectations, ('Bug(foo) [ Win ] userscripts/all-pass.html [ Failure ]\n'
+                               'Bug(foo) [ Linux ] userscripts/all-pass.html [ Failure ]\n'
+                               'Bug(foo) [ Mac10.10 ] userscripts/all-pass.html [ Failure ]\n'))
         self.assertEqual(self.tool.executive.calls, [])
 
     def test_rebaseline_test_passes_unexpectedly_everywhere(self):

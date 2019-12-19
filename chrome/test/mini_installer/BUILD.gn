@@ -60,9 +60,9 @@ if (is_win) {
     testonly = true
 
     data_deps = [
-      "//chrome/test/chromedriver:chromedriver",
       "//chrome/installer/mini_installer:mini_installer",
       "//chrome/installer/mini_installer:previous_version_mini_installer",
+      "//chrome/test/chromedriver:chromedriver",
     ]
     data = [
              "//third_party/webdriver/pylib/",

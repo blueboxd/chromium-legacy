@@ -229,13 +229,6 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
     AddConsoleMessageImpl(message, discard_duplicates);
   }
 
-  // TODO(haraken): Remove these methods by making the customers inherit from
-  // ContextLifecycleObserver. ContextLifecycleObserver is a standard way to
-  // observe context suspension/resumption.
-  virtual bool TasksNeedPause() { return false; }
-  virtual void TasksWerePaused() {}
-  virtual void TasksWereUnpaused() {}
-
   bool IsContextPaused() const;
   bool IsContextDestroyed() const { return is_context_destroyed_; }
   mojom::FrameLifecycleState ContextPauseState() const {

@@ -161,7 +161,7 @@ class VizDevToolsTest : public PlatformTest {
                                                 /*report_activation=*/true);
       support = std::make_unique<viz::CompositorFrameSinkSupport>(
           /*client=*/nullptr, frame_sink_manager(), frame_sink_id,
-          /*is_root=*/false, /*needs_sync_points=*/true);
+          /*is_root=*/false);
     }
     viz::CompositorFrame frame = viz::MakeDefaultCompositorFrame();
     gfx::Size size = frame.size_in_pixels();

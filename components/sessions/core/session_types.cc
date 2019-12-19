@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "components/sessions/core/session_command.h"
+#include "components/tab_groups/tab_group_id.h"
 
 namespace sessions {
 
@@ -22,9 +23,9 @@ SessionTab::SessionTab()
 SessionTab::~SessionTab() {
 }
 
-// SessionTab -----------------------------------------------------------------
+// SessionTabGroup -------------------------------------------------------------
 
-SessionTabGroup::SessionTabGroup(base::Token group_id) : group_id(group_id) {}
+SessionTabGroup::SessionTabGroup(const tab_groups::TabGroupId& id) : id(id) {}
 
 SessionTabGroup::~SessionTabGroup() {}
 

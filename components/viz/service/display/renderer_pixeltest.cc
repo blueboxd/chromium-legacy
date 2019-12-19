@@ -244,8 +244,8 @@ void CreateTestTwoColoredTextureDrawQuad(
   ResourceId resource;
   if (gpu_resource) {
     resource = CreateGpuResource(
-        std::move(child_context_provider), child_resource_provider, rect.size(),
-        BGRA_8888, gfx::ColorSpace(), MakePixelSpan(pixels));
+        child_context_provider, child_resource_provider, rect.size(), BGRA_8888,
+        gfx::ColorSpace(), MakePixelSpan(pixels));
   } else {
     SharedBitmapId shared_bitmap_id = SharedBitmap::GenerateId();
     base::WritableSharedMemoryMapping mapping =
@@ -305,8 +305,8 @@ void CreateTestTextureDrawQuad(
   ResourceId resource;
   if (gpu_resource) {
     resource = CreateGpuResource(
-        std::move(child_context_provider), child_resource_provider, rect.size(),
-        RGBA_8888, gfx::ColorSpace(), MakePixelSpan(pixels));
+        child_context_provider, child_resource_provider, rect.size(), RGBA_8888,
+        gfx::ColorSpace(), MakePixelSpan(pixels));
   } else {
     SharedBitmapId shared_bitmap_id = SharedBitmap::GenerateId();
     base::WritableSharedMemoryMapping mapping =

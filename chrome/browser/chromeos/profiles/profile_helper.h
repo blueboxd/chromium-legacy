@@ -14,9 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/browsing_data_remover.h"
 
 class IndependentOTRProfileManagerTest;
 class Profile;
@@ -26,8 +24,6 @@ class FilePath;
 }
 
 namespace chromeos {
-
-class FileFlusher;
 
 // This helper class is used on Chrome OS to keep track of currently
 // active user profile.
@@ -41,12 +37,14 @@ class FileFlusher;
 //    GetActiveUserProfileDir()
 // 3. Get mapping from user_id_hash to Profile instance/profile path etc.
 class ProfileHelper
-    : public content::BrowsingDataRemover::Observer,
-      public OAuth2LoginManager::Observer,
-      public user_manager::UserManager::UserSessionStateObserver {
+    : public user_manager::UserManager::UserSessionStateObserver {
  public:
   ProfileHelper();
   ~ProfileHelper() override;
+
+  // Creates and returns ProfileHelper implementation instance to
+  // BrowserProcess/BrowserProcessPlatformPart.
+  static std::unique_ptr<ProfileHelper> CreateInstance();
 
   // Returns ProfileHelper instance. This class is not singleton and is owned
   // by BrowserProcess/BrowserProcessPlatformPart. This method keeps that
@@ -121,25 +119,25 @@ class ProfileHelper
 
   // Initialize a bunch of services that are tied to a browser profile.
   // TODO(dzhioev): Investigate whether or not this method is needed.
-  void ProfileStartup(Profile* profile);
+  virtual void ProfileStartup(Profile* profile) = 0;
 
   // Returns active user profile dir in a format [u-$hash].
-  base::FilePath GetActiveUserProfileDir();
+  virtual base::FilePath GetActiveUserProfileDir() = 0;
 
   // Should called once after UserManager instance has been created.
-  void Initialize();
+  virtual void Initialize() = 0;
 
   // Clears site data (cookies, history, etc) for signin profile.
   // Callback can be empty. Not thread-safe.
-  void ClearSigninProfile(const base::Closure& on_clear_callback);
+  virtual void ClearSigninProfile(const base::Closure& on_clear_callback) = 0;
 
   // Returns profile of the user associated with |account_id| if it is created
   // and fully initialized. Otherwise, returns NULL.
-  Profile* GetProfileByAccountId(const AccountId& account_id);
+  virtual Profile* GetProfileByAccountId(const AccountId& account_id) = 0;
 
   // Returns profile of the |user| if it is created and fully initialized.
   // Otherwise, returns NULL.
-  Profile* GetProfileByUser(const user_manager::User* user);
+  virtual Profile* GetProfileByUser(const user_manager::User* user) = 0;
 
   // DEPRECATED
   // Returns profile of the |user| if user's profile is created and fully
@@ -149,36 +147,37 @@ class ProfileHelper
   // very surprising, that's why it should not be used anymore.
   // Use |GetProfileByUser| instead.
   // TODO(dzhioev): remove this method. http://crbug.com/361528
-  Profile* GetProfileByUserUnsafe(const user_manager::User* user);
+  virtual Profile* GetProfileByUserUnsafe(const user_manager::User* user) = 0;
 
   // Returns NULL if User is not created.
-  const user_manager::User* GetUserByProfile(const Profile* profile) const;
-  user_manager::User* GetUserByProfile(Profile* profile) const;
+  virtual const user_manager::User* GetUserByProfile(
+      const Profile* profile) const = 0;
+  virtual user_manager::User* GetUserByProfile(Profile* profile) const = 0;
 
   static std::string GetUserIdHashByUserIdForTesting(
       const std::string& user_id);
-
-  void SetActiveUserIdForTesting(const std::string& user_id);
-
-  // Flushes all files of |profile|.
-  void FlushProfile(Profile* profile);
-
-  // Associates |user| with profile with the same user_id,
-  // for GetUserByProfile() testing.
-  void SetProfileToUserMappingForTesting(user_manager::User* user);
 
   // Enables/disables testing GetUserByProfile() by always returning
   // primary user.
   static void SetAlwaysReturnPrimaryUserForTesting(bool value);
 
+  virtual void SetActiveUserIdForTesting(const std::string& user_id) = 0;
+
+  // Flushes all files of |profile|.
+  virtual void FlushProfile(Profile* profile) = 0;
+
+  // Associates |user| with profile with the same user_id,
+  // for GetUserByProfile() testing.
+  virtual void SetProfileToUserMappingForTesting(user_manager::User* user) = 0;
+
   // Associates |profile| with |user|, for GetProfileByUser() testing.
-  void SetUserToProfileMappingForTesting(const user_manager::User* user,
-                                         Profile* profile);
+  virtual void SetUserToProfileMappingForTesting(const user_manager::User* user,
+                                                 Profile* profile) = 0;
 
   // Removes |account_id| user from |user_to_profile_for_testing_| for testing.
-  void RemoveUserFromListForTesting(const AccountId& account_id);
+  virtual void RemoveUserFromListForTesting(const AccountId& account_id) = 0;
 
- private:
+ protected:
   // TODO(nkostylev): Create a test API class that will be the only one allowed
   // to access private test methods.
   friend class FakeChromeUserManager;
@@ -186,43 +185,10 @@ class ProfileHelper
   friend class ProfileHelperTest;
   friend class ::IndependentOTRProfileManagerTest;
 
-  // Called when signin profile is cleared.
-  void OnSigninProfileCleared();
-
-  // BrowsingDataRemover::Observer implementation:
-  void OnBrowsingDataRemoverDone() override;
-
-  // OAuth2LoginManager::Observer overrides.
-  void OnSessionRestoreStateChanged(
-      Profile* user_profile,
-      OAuth2LoginManager::SessionRestoreState state) override;
-
-  // user_manager::UserManager::UserSessionStateObserver implementation:
-  void ActiveUserHashChanged(const std::string& hash) override;
-
   // Enables/disables testing code path in GetUserByProfile() like
   // always return primary user (when always_return_primary_user_for_testing is
   // set).
   static void SetProfileToUserForTestingEnabled(bool enabled);
-
-  // Identifies path to active user profile on Chrome OS.
-  std::string active_user_id_hash_;
-
-  // List of callbacks called after signin profile clearance.
-  std::vector<base::Closure> on_clear_callbacks_;
-
-  // Called when a single stage of profile clearing is finished.
-  base::Closure on_clear_profile_stage_finished_;
-
-  // A currently running browsing data remover.
-  content::BrowsingDataRemover* browsing_data_remover_;
-
-  // Used for testing by unit tests and FakeUserManager/MockUserManager.
-  std::map<const user_manager::User*, Profile*> user_to_profile_for_testing_;
-
-  // When this list is not empty GetUserByProfile() will find user that has
-  // the same user_id as |profile|->GetProfileName().
-  user_manager::UserList user_list_for_testing_;
 
   // If true testing code path is used in GetUserByProfile() even if
   // user_list_for_testing_ list is empty. In that case primary user will always
@@ -232,10 +198,6 @@ class ProfileHelper
   // If true and enable_profile_to_user_testing is true then primary user will
   // always be returned by GetUserByProfile().
   static bool always_return_primary_user_for_testing;
-
-  std::unique_ptr<FileFlusher> profile_flusher_;
-
-  base::WeakPtrFactory<ProfileHelper> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProfileHelper);
 };

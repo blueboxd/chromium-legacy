@@ -10,11 +10,30 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 
 namespace base {
 
 namespace {
+
+constexpr char kMetricPrefixWaitableEvent[] = "WaitableEvent.";
+constexpr char kMetricWaitTime[] = "wait_time_per_sample";
+constexpr char kMetricSignalTime[] = "signal_time_per_sample";
+constexpr char kMetricElapsedCycles[] = "elapsed_cycles";
+constexpr char kStorySingleThread[] = "single_thread_1000_samples";
+constexpr char kStoryMultiThreadWaiter[] = "multi_thread_1000_samples_waiter";
+constexpr char kStoryMultiThreadSignaler[] =
+    "multi_thread_1000_samples_signaler";
+constexpr char kStoryTimedThroughput[] = "timed_throughput";
+
+perf_test::PerfResultReporter SetUpReporter(const std::string& story_name) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixWaitableEvent,
+                                         story_name);
+  reporter.RegisterImportantMetric(kMetricWaitTime, "ns");
+  reporter.RegisterImportantMetric(kMetricSignalTime, "ns");
+  reporter.RegisterImportantMetric(kMetricElapsedCycles, "count");
+  return reporter;
+}
 
 class TraceWaitableEvent {
  public:
@@ -92,17 +111,20 @@ class SignalerThread : public SimpleThread {
 };
 
 void PrintPerfWaitableEvent(const TraceWaitableEvent* event,
-                            const std::string& trace) {
-  perf_test::PrintResult(
-      "WaitableEvent_SignalTime_ns", "", trace,
+                            const std::string& story_name,
+                            size_t* elapsed_cycles = nullptr) {
+  auto reporter = SetUpReporter(story_name);
+  reporter.AddResult(
+      kMetricSignalTime,
       static_cast<size_t>(event->total_signal_time().InNanoseconds()) /
-          event->signal_samples(),
-      "ns/sample", true);
-  perf_test::PrintResult(
-      "WaitableEvent_WaitTime_ns", "", trace,
+          event->signal_samples());
+  reporter.AddResult(
+      kMetricWaitTime,
       static_cast<size_t>(event->total_wait_time().InNanoseconds()) /
-          event->wait_samples(),
-      "ns/sample", true);
+          event->wait_samples());
+  if (elapsed_cycles) {
+    reporter.AddResult(kMetricElapsedCycles, *elapsed_cycles);
+  }
 }
 
 }  // namespace
@@ -117,7 +139,7 @@ TEST(WaitableEventPerfTest, SingleThread) {
     event.Wait();
   }
 
-  PrintPerfWaitableEvent(&event, "singlethread-1000-samples");
+  PrintPerfWaitableEvent(&event, kStorySingleThread);
 }
 
 TEST(WaitableEventPerfTest, MultipleThreads) {
@@ -142,8 +164,8 @@ TEST(WaitableEventPerfTest, MultipleThreads) {
 
   thread.Join();
 
-  PrintPerfWaitableEvent(&waiter, "multithread-1000-samples_waiter");
-  PrintPerfWaitableEvent(&signaler, "multithread-1000-samples_signaler");
+  PrintPerfWaitableEvent(&waiter, kStoryMultiThreadWaiter);
+  PrintPerfWaitableEvent(&signaler, kStoryMultiThreadSignaler);
 }
 
 TEST(WaitableEventPerfTest, Throughput) {
@@ -161,8 +183,7 @@ TEST(WaitableEventPerfTest, Throughput) {
   thread.RequestStop();
   thread.Join();
 
-  perf_test::PrintResult("counts", "", "throughput", count, "signals", true);
-  PrintPerfWaitableEvent(&event, "throughput");
+  PrintPerfWaitableEvent(&event, kStoryTimedThroughput, &count);
 }
 
 }  // namespace base

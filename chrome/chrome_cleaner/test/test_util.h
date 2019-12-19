@@ -109,7 +109,8 @@ bool RegisterTestTask(TaskScheduler* task_scheduler,
 // Append switches to the command line that is used to run cleaner or reporter
 // in tests. Switches will disable logs upload, profile reset and other side
 // effects.
-void AppendTestSwitches(base::CommandLine* command_line);
+void AppendTestSwitches(const base::ScopedTempDir& temp_dir,
+                        base::CommandLine* command_line);
 
 // Expect the |expected_path| to be found in expanded disk footprint of |pup|.
 void ExpectDiskFootprint(const PUPData::PUP& pup,

@@ -139,7 +139,6 @@
 <translation id="1186771945450942097">Зыянкеч программа алынып салынсын</translation>
 <translation id="1187722533808055681">Сенек мезгилинде ойготуу</translation>
 <translation id="1188807932851744811">Таржымал жүктөлүп берилген жок.</translation>
-<translation id="1189418886587279221">Түзмөгүңүздүн колдонулушун жеңилдетүү үчүн жеткиликтүүлүк мүмкүнчүлүктөрүн иштетиңиз.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Компьютериңизде сакталган файлга кирүү}other{Компьютериңизде сакталган # файлга кирүү}}</translation>
 <translation id="1190660338026981543"><ph name="DEVICE_TYPE" /> түзмөгүңүз ишкана тарабынан башкарууга <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> доменинде катталды</translation>
 <translation id="119092896208640858">Серептөө дайындарын ушул түзмөктөн тазалап, ал эми Google аккаунтуңузда сактап калуу үчүн <ph name="BEGIN_LINK" />аккаунтуңуздан чыгыңыз<ph name="END_LINK" />.</translation>
@@ -339,7 +338,6 @@
 <translation id="1476607407192946488">&amp;Тил жөндөөлөрү</translation>
 <translation id="1478340334823509079">Чоо-жайы: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Орнотуу иштетилген эмес</translation>
-<translation id="1481206932476131736">Кирип турган аккаунттарыңызды башкарасыз. Уруксаттарга жараша Chrome менен Google Play'деги вебсайттар, колдонмолор жана кеңейтүүлөр бул аккаунттарды сизге көрсөтүлгөн кызматтарды жекечелештирүү үчүн колдонушу мүмкүн.</translation>
 <translation id="1482626744466814421">Бул өтмөктү кыстарып коюу…</translation>
 <translation id="1483493594462132177">Жөнтүү</translation>
 <translation id="1484979925941077974">Сайт Bluetooth'ду колдонууда</translation>
@@ -592,7 +590,6 @@
 <translation id="1813278315230285598">Кызматтар</translation>
 <translation id="18139523105317219">EDI тарабынын аталышы</translation>
 <translation id="1815083418640426271">Жөнөкөй текст катары чапталсын</translation>
-<translation id="1815579292149538864">CUPS принтерлерин жөндөө же башкаруу.</translation>
 <translation id="181577467034453336">Дагы <ph name="NUMBER_OF_VIEWS" />…</translation>
 <translation id="1816036116994822943">Баскычтопту скандоо ылдамдыгы</translation>
 <translation id="1817871734039893258">Microsoft Файлды калыбына келтирүү</translation>
@@ -1454,7 +1451,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="3012917896646559015">Компьютериңизди оңдоо мекемесине жөнөтүү үчүн, токтоосуз жабдык өндүрүүчүңүзгө кайрылыңыз.</translation>
 <translation id="3013291976881901233">MIDI түзмөктөрү</translation>
 <translation id="3015639418649705390">Азыр кайра иштетүү</translation>
-<translation id="3016329696181678353"><ph name="PRINTER_NAME" /> автоматтык түрдө конфигурацияланган жок. Өркүндөтүлгөн принтердин чоо-жайын көрсөтүңүз.</translation>
 <translation id="3016381065346027039">Таржымалда эч нерсе жок</translation>
 <translation id="3016641847947582299">Курамдык бөлүк жаңыртылды</translation>
 <translation id="3016780570757425217">Жайгашкан жериңизди билүү</translation>
@@ -2192,7 +2188,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="4046123991198612571">Кийинки трек</translation>
 <translation id="4050225813016893843">Аныктыгын текшерүү ыкмасы</translation>
 <translation id="4052120076834320548">Кымындай</translation>
-<translation id="4055023634561256217">Түзмөктү "жууп салып" баштапкы абалга келтирээрден мурун, аны өчүрүп күйгүзүү керек.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> – <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">Дүкөндөн карап көрүү</translation>
 <translation id="4058647953897694817">Bluetooth аркылуу ырастоо</translation>
@@ -2514,7 +2509,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="4558426062282641716">Авто-ишке киргизүүгө уруксат суралды</translation>
 <translation id="4558491878126948419"><ph name="DEVICE_TYPE" /> тууралуу кеңештер менен Google өнүмдөрү боюнча жаңылыктарды алып, пикир билдириңиз. Жазылууну каалаган убакта токтотууга болот.</translation>
 <translation id="4559617833001311418">Бул сайт кыймыл же жарык сенсорлорун колдонуп жатат.</translation>
-<translation id="4561098487691395071">Же принтериңиздин PPD файлын көрсөтүңүз</translation>
 <translation id="4562155214028662640">Манжа изин кошуу</translation>
 <translation id="4562494484721939086">Тейленбейт</translation>
 <translation id="4563880231729913339">3-манжа</translation>
@@ -2757,7 +2751,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925542575807923399">Бул каттоо эсебинин администратору анын бир нече профиль сеансындагы каттоо эсебине биринчи кирген каттоо эсеби болушун талап кылат.</translation>
 <translation id="4927753642311223124">Бул жерде көрө тургандай эч нерсе жок, ары өтүңүз.</translation>
-<translation id="4927846293686536410">Бардык түзмөктөрүңүздө кыстармаларыңызды, таржымалды, сырсөздөрдү жана башка жөндөөлөрдү колдонуу үчүн каттоо эсебине киришиңиз керек. Мындан тышкары Google кызматтарына да автоматтык түрдө киресиз.</translation>
 <translation id="4929386379796360314">Басып чыгара турган принтер</translation>
 <translation id="4930714375720679147">Күйгүзүү</translation>
 <translation id="4932733599132424254">Күнү</translation>
@@ -3314,7 +3307,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="5750324801516359607">Алыс</translation>
 <translation id="5756163054456765343">Ж&amp;ардам борбору</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> аркылуу басып чыгарууга жөнөтүлгөн документтерди <ph name="APP_NAME" /> окуп алышы мүмкүн.</translation>
-<translation id="5763315388120433852">Тармактын жалпы файлдарын жөндөңүз же башкарыңыз.</translation>
 <translation id="5763751966069581670">USB түзмөктөрү табылган жок</translation>
 <translation id="5764483294734785780">Аудиону төмөнкүдөй сак&amp;тоо…</translation>
 <translation id="57646104491463491">Өзгөртүлгөн күнү</translation>
@@ -4634,7 +4626,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="7684718995427157417">Колдонмолорду түзүп, сыноо үчүн Android Debug Bridge (ADB) куралын иштетиңиз. Бул аракет Google тарабынан текшерилбеген Android колдонмолорун орнотууга уруксат берет. Аларды өчүрүү үчүн түзмөктү баштапкы абалга кайтаруу керек болот.</translation>
 <translation id="7685049629764448582">JavaScript эстутуму</translation>
 <translation id="7685087414635069102">PIN код талап кылынат</translation>
-<translation id="768549422429443215">Тилдерди кошуңуз же тизмени иреттеңиз.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Жаңы сырсөздү ырастаңыз</translation>
 <translation id="7690378713476594306">Тизмеден тандаңыз</translation>
@@ -4671,7 +4662,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="7730449930968088409">Экраныңыздын мазмунун тартып алыңыз</translation>
 <translation id="7732111077498238432">Тармак саясат аркылуу көзөмөлдөнөт</translation>
 <translation id="7737238973539693982">Linux'ту (бета-версиясы) жок кылуу</translation>
-<translation id="7737456446569756884">Бул түзмөк программанын жана коопсуздук жаңыртууларын <ph name="MONTH_AND_YEAR" /> чейин автоматтык түрдө алат.</translation>
 <translation id="7740996059027112821">Стандарт</translation>
 <translation id="7744047395460924128">Басып чыгаруу таржымалыңызды көрүү</translation>
 <translation id="7746457520633464754">Кооптуу колдонмолор менен сайттарды аныктоо үчүн, Chrome сиз баш баккан айрым сайттардын URL'дерин, тутум тууралуу чектелген маалыматты жана барактагы айрым мазмунду Google'га жөнөтүп турат</translation>
@@ -5557,7 +5547,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="892706138619340876">Айрым жөндөөлөр баштапкы абалына келтирилди</translation>
 <translation id="8930351635855238750">Барак кайрадан жүктөлгөндөн кийин жаңы куки жөндөөлөрү күчүнө кирет</translation>
 <translation id="8931394284949551895">Жаңы түзмөктөр</translation>
-<translation id="893254996965966411">Аныкталган принтерлерди профилиңизге сактаңыз же жаңы принтер кошуңуз.</translation>
 <translation id="8932894639908691771">Switch Access функциясынын параметрлери</translation>
 <translation id="8933960630081805351">Тапкычта &amp;көрсөтүү</translation>
 <translation id="8934732568177537184">Улантуу</translation>

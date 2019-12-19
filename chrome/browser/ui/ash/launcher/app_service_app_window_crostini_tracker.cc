@@ -71,7 +71,7 @@ AppServiceAppWindowCrostiniTracker::AppServiceAppWindowCrostiniTracker(
 AppServiceAppWindowCrostiniTracker::~AppServiceAppWindowCrostiniTracker() =
     default;
 
-void AppServiceAppWindowCrostiniTracker::OnWindowVisibilityChanging(
+void AppServiceAppWindowCrostiniTracker::OnWindowVisibilityChanged(
     aura::Window* window,
     const std::string& shelf_app_id) {
   // Transient windows are set up after window init, so remove them here.

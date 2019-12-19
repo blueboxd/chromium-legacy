@@ -35,11 +35,11 @@ struct StructTraits<viz::mojom::BeginFrameArgsDataView, viz::BeginFrameArgs> {
   }
 
   static uint64_t sequence_number(const viz::BeginFrameArgs& args) {
-    return args.sequence_number;
+    return args.frame_id.sequence_number;
   }
 
   static uint64_t source_id(const viz::BeginFrameArgs& args) {
-    return args.source_id;
+    return args.frame_id.source_id;
   }
 
   static int64_t trace_id(const viz::BeginFrameArgs& args) {
@@ -66,11 +66,11 @@ struct StructTraits<viz::mojom::BeginFrameArgsDataView, viz::BeginFrameArgs> {
 template <>
 struct StructTraits<viz::mojom::BeginFrameAckDataView, viz::BeginFrameAck> {
   static uint64_t sequence_number(const viz::BeginFrameAck& ack) {
-    return ack.sequence_number;
+    return ack.frame_id.sequence_number;
   }
 
   static uint64_t source_id(const viz::BeginFrameAck& ack) {
-    return ack.source_id;
+    return ack.frame_id.source_id;
   }
 
   static int64_t trace_id(const viz::BeginFrameAck& ack) {

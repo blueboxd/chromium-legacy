@@ -23,6 +23,7 @@
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/accessibility_notification_waiter.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -1510,6 +1511,56 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, DidFocusIPCFromFrameInsidePortal) {
   // Focus should not have changed.
   EXPECT_EQ(web_contents_impl->GetFocusedWebContents(), web_contents_impl);
   EXPECT_EQ(web_contents_impl->GetFocusedFrame(), main_frame);
+}
+
+namespace {
+void WaitForAccessibilityTree(WebContents* web_contents) {
+  AccessibilityNotificationWaiter waiter(web_contents, ui::kAXModeComplete,
+                                         ax::mojom::Event::kNone);
+  waiter.WaitForNotification();
+}
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
+                       RootAccessibilityManagerShouldUpdateAfterActivation) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+  WaitForAccessibilityTree(web_contents_impl);
+
+  // Create portal.
+  GURL url = embedded_test_server()->GetURL("a.com", "/title1.html");
+  Portal* portal = CreatePortalToUrl(web_contents_impl, url);
+  WebContentsImpl* portal_contents = portal->GetPortalContents();
+  RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
+  WaitForAccessibilityTree(portal_contents);
+
+  EXPECT_EQ(portal_frame->browser_accessibility_manager()->GetRootManager(),
+            main_frame->browser_accessibility_manager());
+
+  // Activate portal and adopt predecessor.
+  EXPECT_TRUE(ExecJs(portal_frame,
+                     "window.addEventListener('portalactivate', e => { "
+                     "  var portal = e.adoptPredecessor(); "
+                     "  document.body.appendChild(portal); "
+                     "});"));
+  {
+    PortalActivatedObserver activated_observer(portal);
+    PortalCreatedObserver adoption_observer(portal_frame);
+    EXPECT_TRUE(ExecJs(main_frame,
+                       "let portal = document.querySelector('portal');"
+                       "portal.activate().then(() => { "
+                       "  document.body.removeChild(portal); "
+                       "});"));
+    EXPECT_EQ(blink::mojom::PortalActivateResult::kPredecessorWasAdopted,
+              activated_observer.WaitForActivateResult());
+    adoption_observer.WaitUntilPortalCreated();
+  }
+
+  EXPECT_EQ(portal_frame->browser_accessibility_manager()->GetRootManager(),
+            portal_frame->browser_accessibility_manager());
 }
 
 class PortalOOPIFBrowserTest : public PortalBrowserTest {

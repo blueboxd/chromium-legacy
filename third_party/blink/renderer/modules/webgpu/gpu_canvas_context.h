@@ -48,7 +48,8 @@ class GPUCanvasContext : public CanvasRenderingContext {
   scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) final {
     return nullptr;
   }
-  void SetIsHidden(bool) override {}
+  void SetIsInHiddenPage(bool) override {}
+  void SetIsBeingDisplayed(bool) override {}
   bool isContextLost() const override { return false; }
   bool IsComposited() const final { return true; }
   bool IsAccelerated() const final { return true; }

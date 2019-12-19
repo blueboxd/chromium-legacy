@@ -171,45 +171,6 @@ using chrome_test_util::SecondarySignInButton;
   GREYAssert(folderExists, assertMessage);
 }
 
-+ (void)assertExistenceOfBookmarkWithURL:(NSString*)URL name:(NSString*)name {
-  bookmarks::BookmarkModel* bookmarkModel =
-      ios::BookmarkModelFactory::GetForBrowserState(
-          chrome_test_util::GetOriginalBrowserState());
-  const bookmarks::BookmarkNode* bookmark =
-      bookmarkModel->GetMostRecentlyAddedUserNodeForURL(
-          GURL(base::SysNSStringToUTF16(URL)));
-  GREYAssert(bookmark->GetTitle() == base::SysNSStringToUTF16(name),
-             @"Could not find bookmark named %@ for %@", name, URL);
-}
-
-+ (void)assertAbsenceOfBookmarkWithURL:(NSString*)URL {
-  bookmarks::BookmarkModel* bookmarkModel =
-      ios::BookmarkModelFactory::GetForBrowserState(
-          chrome_test_util::GetOriginalBrowserState());
-  const bookmarks::BookmarkNode* bookmark =
-      bookmarkModel->GetMostRecentlyAddedUserNodeForURL(
-          GURL(base::SysNSStringToUTF16(URL)));
-  GREYAssert(!bookmark, @"There is a bookmark for %@", URL);
-}
-
-+ (void)verifyOrderOfTabsWithCurrentTabIndex:(NSUInteger)tabIndex {
-  // Verify "French URL" appears in the omnibox.
-  [[EarlGrey selectElementWithMatcher:OmniboxText(GetFrenchUrl().GetContent())]
-      assertWithMatcher:grey_notNil()];
-
-  // Switch to the next Tab and verify "Second URL" appears.
-  // TODO(crbug.com/695749): see we if can add switchToNextTab to
-  // chrome_test_util so that we don't need to pass tabIndex here.
-  [ChromeEarlGrey selectTabAtIndex:tabIndex + 1];
-  [[EarlGrey selectElementWithMatcher:OmniboxText(GetSecondUrl().GetContent())]
-      assertWithMatcher:grey_notNil()];
-
-  // Switch to the next Tab and verify "First URL" appears.
-  [ChromeEarlGrey selectTabAtIndex:tabIndex + 2];
-  [[EarlGrey selectElementWithMatcher:OmniboxText(GetFirstUrl().GetContent())]
-      assertWithMatcher:grey_notNil()];
-}
-
 + (void)assertChildCount:(size_t)count ofFolderWithName:(NSString*)name {
   base::string16 name16(base::SysNSStringToUTF16(name));
   bookmarks::BookmarkModel* bookmarkModel =

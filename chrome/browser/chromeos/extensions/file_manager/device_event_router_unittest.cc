@@ -26,6 +26,7 @@ const char kTestDevicePath[] = "/device/test";
 struct DeviceEvent {
   extensions::api::file_manager_private::DeviceEventType type;
   std::string device_path;
+  std::string device_label;
 };
 
 // DeviceEventRouter implementation for testing.
@@ -38,10 +39,12 @@ class DeviceEventRouterImpl : public DeviceEventRouter {
 
   // DeviceEventRouter overrides.
   void OnDeviceEvent(file_manager_private::DeviceEventType type,
-                     const std::string& device_path) override {
+                     const std::string& device_path,
+                     const std::string& device_label) override {
     DeviceEvent event;
     event.type = type;
     event.device_path = device_path;
+    event.device_label = device_label;
     events.push_back(event);
   }
 

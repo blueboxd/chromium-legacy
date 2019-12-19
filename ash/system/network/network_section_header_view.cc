@@ -130,7 +130,11 @@ void NetworkSectionHeaderView::AddToggleButton(bool enabled) {
 
 MobileSectionHeaderView::MobileSectionHeaderView()
     : NetworkSectionHeaderView(IDS_ASH_STATUS_TRAY_NETWORK_MOBILE) {
-  NetworkSectionHeaderView::Init(false /* enabled */);
+  bool initially_enabled = model()->GetDeviceState(NetworkType::kCellular) ==
+                               DeviceStateType::kEnabled ||
+                           model()->GetDeviceState(NetworkType::kTether) ==
+                               DeviceStateType::kEnabled;
+  NetworkSectionHeaderView::Init(initially_enabled);
 }
 
 MobileSectionHeaderView::~MobileSectionHeaderView() {}

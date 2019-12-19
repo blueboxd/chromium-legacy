@@ -474,7 +474,8 @@ chrome.fileManagerPrivate.DriveConnectionState;
 /**
  * @typedef {{
  *   type: !chrome.fileManagerPrivate.DeviceEventType,
- *   devicePath: string
+ *   devicePath: string,
+ *   deviceLabel: string
  * }}
  */
 chrome.fileManagerPrivate.DeviceEvent;

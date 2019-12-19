@@ -426,6 +426,10 @@ test("gl_tests") {
       "//third_party/dawn/src/dawn:libdawn_proc",
     ]
   }
+
+  data_deps = [
+    "//testing/buildbot/filters:gl_tests_filters",
+  ]
 }
 
 test("gpu_unittests") {

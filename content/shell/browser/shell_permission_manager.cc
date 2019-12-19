@@ -46,6 +46,8 @@ bool IsWhitelistedPermissionType(PermissionType permission) {
     case PermissionType::NUM:
     case PermissionType::WAKE_LOCK_SYSTEM:
     case PermissionType::NFC:
+    case PermissionType::VR:
+    case PermissionType::AR:
       return false;
   }
 

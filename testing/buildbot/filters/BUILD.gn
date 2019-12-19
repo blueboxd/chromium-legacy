@@ -62,6 +62,7 @@ source_set("chrome_public_test_apk_filters") {
 
   data = [
     "//testing/buildbot/filters/bfcache.chrome_public_test_apk.filter",
+    "//testing/buildbot/filters/android.pie_arm64_rel.chrome_public_test_apk.filter",
   ]
 }
 
@@ -143,6 +144,14 @@ source_set("unit_tests_filters") {
   data = [
     "//testing/buildbot/filters/android.asan.unit_tests.filter",
     "//testing/buildbot/filters/bfcache.unit_tests.filter",
+  ]
+}
+
+source_set("gl_tests_filters") {
+  testonly = true
+
+  data = [
+    "//testing/buildbot/filters/android.pie_arm64_rel.gl_tests.filter",
   ]
 }
 

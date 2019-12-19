@@ -69,6 +69,10 @@ class LoggingObserver : public VolumeManagerObserver {
     // VOLUME_UNMOUNTED, FORMAT_STARTED and FORMAT_COMPLETED.
     std::string device_path;
 
+    // Available on FORMAT_STARTED, FORMAT_COMPLETED, RENAME_STARTED and
+    // RENAME_COMPLETED.
+    std::string device_label;
+
     // Available on DISK_ADDED.
     bool mounting;
 
@@ -132,36 +136,46 @@ class LoggingObserver : public VolumeManagerObserver {
     events_.push_back(event);
   }
 
-  void OnFormatStarted(const std::string& device_path, bool success) override {
+  void OnFormatStarted(const std::string& device_path,
+                       const std::string& device_label,
+                       bool success) override {
     Event event;
     event.type = Event::FORMAT_STARTED;
     event.device_path = device_path;
+    event.device_label = device_label;
     event.success = success;
     events_.push_back(event);
   }
 
   void OnFormatCompleted(const std::string& device_path,
+                         const std::string& device_label,
                          bool success) override {
     Event event;
     event.type = Event::FORMAT_COMPLETED;
     event.device_path = device_path;
+    event.device_label = device_label;
     event.success = success;
     events_.push_back(event);
   }
 
-  void OnRenameStarted(const std::string& device_path, bool success) override {
+  void OnRenameStarted(const std::string& device_path,
+                       const std::string& device_label,
+                       bool success) override {
     Event event;
     event.type = Event::RENAME_STARTED;
     event.device_path = device_path;
+    event.device_label = device_label;
     event.success = success;
     events_.push_back(event);
   }
 
   void OnRenameCompleted(const std::string& device_path,
+                         const std::string& device_label,
                          bool success) override {
     Event event;
     event.type = Event::RENAME_COMPLETED;
     event.device_path = device_path;
+    event.device_label = device_label;
     event.success = success;
     events_.push_back(event);
   }
@@ -681,6 +695,7 @@ TEST_F(VolumeManagerTest, OnFormatEvent_Started) {
   const LoggingObserver::Event& event = observer.events()[0];
   EXPECT_EQ(LoggingObserver::Event::FORMAT_STARTED, event.type);
   EXPECT_EQ("device1", event.device_path);
+  EXPECT_EQ("label1", event.device_label);
   EXPECT_TRUE(event.success);
 
   volume_manager()->RemoveObserver(&observer);
@@ -698,6 +713,7 @@ TEST_F(VolumeManagerTest, OnFormatEvent_StartFailed) {
   const LoggingObserver::Event& event = observer.events()[0];
   EXPECT_EQ(LoggingObserver::Event::FORMAT_STARTED, event.type);
   EXPECT_EQ("device1", event.device_path);
+  EXPECT_EQ("label1", event.device_label);
   EXPECT_FALSE(event.success);
 
   volume_manager()->RemoveObserver(&observer);
@@ -715,6 +731,7 @@ TEST_F(VolumeManagerTest, OnFormatEvent_Completed) {
   const LoggingObserver::Event& event = observer.events()[0];
   EXPECT_EQ(LoggingObserver::Event::FORMAT_COMPLETED, event.type);
   EXPECT_EQ("device1", event.device_path);
+  EXPECT_EQ("label1", event.device_label);
   EXPECT_TRUE(event.success);
 
   // When "format" is done, VolumeManager requests to mount it.
@@ -741,6 +758,7 @@ TEST_F(VolumeManagerTest, OnFormatEvent_CompletedFailed) {
   const LoggingObserver::Event& event = observer.events()[0];
   EXPECT_EQ(LoggingObserver::Event::FORMAT_COMPLETED, event.type);
   EXPECT_EQ("device1", event.device_path);
+  EXPECT_EQ("label1", event.device_label);
   EXPECT_FALSE(event.success);
 
   // When "format" is done, VolumeManager requests to mount it.
@@ -1005,6 +1023,7 @@ TEST_F(VolumeManagerTest, OnRenameEvent_Started) {
   const LoggingObserver::Event& event = observer.events()[0];
   EXPECT_EQ(LoggingObserver::Event::RENAME_STARTED, event.type);
   EXPECT_EQ("device1", event.device_path);
+  EXPECT_EQ("label1", event.device_label);
   EXPECT_TRUE(event.success);
 
   volume_manager()->RemoveObserver(&observer);
@@ -1022,6 +1041,7 @@ TEST_F(VolumeManagerTest, OnRenameEvent_StartFailed) {
   const LoggingObserver::Event& event = observer.events()[0];
   EXPECT_EQ(LoggingObserver::Event::RENAME_STARTED, event.type);
   EXPECT_EQ("device1", event.device_path);
+  EXPECT_EQ("label1", event.device_label);
   EXPECT_FALSE(event.success);
 
   volume_manager()->RemoveObserver(&observer);
@@ -1039,6 +1059,7 @@ TEST_F(VolumeManagerTest, OnRenameEvent_Completed) {
   const LoggingObserver::Event& event = observer.events()[0];
   EXPECT_EQ(LoggingObserver::Event::RENAME_COMPLETED, event.type);
   EXPECT_EQ("device1", event.device_path);
+  EXPECT_EQ("label1", event.device_label);
   EXPECT_TRUE(event.success);
 
   // When "rename" is successfully done, VolumeManager requests to mount it.
@@ -1064,6 +1085,7 @@ TEST_F(VolumeManagerTest, OnRenameEvent_CompletedFailed) {
   const LoggingObserver::Event& event = observer.events()[0];
   EXPECT_EQ(LoggingObserver::Event::RENAME_COMPLETED, event.type);
   EXPECT_EQ("device1", event.device_path);
+  EXPECT_EQ("label1", event.device_label);
   EXPECT_FALSE(event.success);
 
   EXPECT_EQ(1U, disk_mount_manager_->mount_requests().size());

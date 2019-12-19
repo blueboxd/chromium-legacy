@@ -50,10 +50,18 @@ class DeviceEventRouter : public VolumeManagerObserver,
                        const Volume& volume) override;
   void OnVolumeUnmounted(chromeos::MountError error_code,
                          const Volume& volume) override;
-  void OnFormatStarted(const std::string& device_path, bool success) override;
-  void OnFormatCompleted(const std::string& device_path, bool success) override;
-  void OnRenameStarted(const std::string& device_path, bool success) override;
-  void OnRenameCompleted(const std::string& device_path, bool success) override;
+  void OnFormatStarted(const std::string& device_path,
+                       const std::string& device_label,
+                       bool success) override;
+  void OnFormatCompleted(const std::string& device_path,
+                         const std::string& device_label,
+                         bool success) override;
+  void OnRenameStarted(const std::string& device_path,
+                       const std::string& device_label,
+                       bool success) override;
+  void OnRenameCompleted(const std::string& device_path,
+                         const std::string& device_label,
+                         bool success) override;
 
   // PowerManagerClient::Observer overrides.
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
@@ -66,7 +74,8 @@ class DeviceEventRouter : public VolumeManagerObserver,
   // Handles a device event containing |type| and |device_path|.
   virtual void OnDeviceEvent(
       extensions::api::file_manager_private::DeviceEventType type,
-      const std::string& device_path) = 0;
+      const std::string& device_path,
+      const std::string& device_label) = 0;
   // Returns external storage is disabled or not.
   virtual bool IsExternalStorageDisabled() = 0;
 

@@ -28,14 +28,6 @@
 // Asserts that a folder called |title| exists.
 + (void)assertFolderExists:(NSString*)title;
 
-+ (void)assertExistenceOfBookmarkWithURL:(NSString*)URL name:(NSString*)name;
-
-+ (void)assertAbsenceOfBookmarkWithURL:(NSString*)URL;
-
-// Verify the Mobile Bookmarks's urls are open in the same order as they are in
-// folder.
-+ (void)verifyOrderOfTabsWithCurrentTabIndex:(NSUInteger)tabIndex;
-
 // Verifies that there is |count| children on the bookmark folder with |name|.
 + (void)assertChildCount:(size_t)count ofFolderWithName:(NSString*)name;
 

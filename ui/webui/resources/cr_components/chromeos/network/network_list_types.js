@@ -23,9 +23,3 @@ NetworkList.CustomItemState;
 
 /** @typedef {OncMojo.NetworkStateProperties|NetworkList.CustomItemState} */
 NetworkList.NetworkListItemType;
-
-/**
- * Custom data for implementation specific network list items.
- * @typedef {{item: (!NetworkList.NetworkListItemType|undefined)}}
- */
-NetworkList.NetworkListItem;

@@ -62,6 +62,10 @@ std::string PermissionUtil::GetPermissionString(
       return "WakeLockSystem";
     case ContentSettingsType::NFC:
       return "NFC";
+    case ContentSettingsType::VR:
+      return "VR";
+    case ContentSettingsType::AR:
+      return "AR";
     default:
       break;
   }
@@ -93,6 +97,10 @@ PermissionRequestType PermissionUtil::GetRequestType(ContentSettingsType type) {
       return PermissionRequestType::PERMISSION_PAYMENT_HANDLER;
     case ContentSettingsType::NFC:
       return PermissionRequestType::PERMISSION_NFC;
+    case ContentSettingsType::VR:
+      return PermissionRequestType::PERMISSION_VR;
+    case ContentSettingsType::AR:
+      return PermissionRequestType::PERMISSION_AR;
     default:
       NOTREACHED();
       return PermissionRequestType::UNKNOWN;
@@ -146,6 +154,10 @@ bool PermissionUtil::GetPermissionType(ContentSettingsType type,
     *out = PermissionType::WAKE_LOCK_SYSTEM;
   } else if (type == ContentSettingsType::NFC) {
     *out = PermissionType::NFC;
+  } else if (type == ContentSettingsType::VR) {
+    *out = PermissionType::VR;
+  } else if (type == ContentSettingsType::AR) {
+    *out = PermissionType::AR;
   } else {
     return false;
   }
@@ -174,6 +186,8 @@ bool PermissionUtil::IsPermission(ContentSettingsType type) {
     case ContentSettingsType::WAKE_LOCK_SCREEN:
     case ContentSettingsType::WAKE_LOCK_SYSTEM:
     case ContentSettingsType::NFC:
+    case ContentSettingsType::VR:
+    case ContentSettingsType::AR:
       return true;
     default:
       return false;

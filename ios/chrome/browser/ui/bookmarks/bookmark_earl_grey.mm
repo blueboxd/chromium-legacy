@@ -100,6 +100,17 @@ const GURL GetFrenchUrl() {
           toFolderWithTitle:newFolder]);
 }
 
+- (void)verifyExistenceOfBookmarkWithURL:(NSString*)URL name:(NSString*)name {
+  EG_TEST_HELPER_ASSERT_NO_ERROR([BookmarkEarlGreyAppInterface
+      verifyExistenceOfBookmarkWithURL:URL
+                                  name:name]);
+}
+
+- (void)verifyAbsenceOfBookmarkWithURL:(NSString*)URL {
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [BookmarkEarlGreyAppInterface verifyAbsenceOfBookmarkWithURL:URL]);
+}
+
 #pragma mark - Promo
 
 - (void)verifyPromoAlreadySeen:(BOOL)seen {

@@ -245,6 +245,7 @@ source_set("eg2_tests") {
   sources = [
     "bookmarks_accessibility_egtest.mm",
     "bookmarks_egtest.mm",
+    "bookmarks_entries_egtest.mm",
     "bookmarks_promo_egtest.mm",
     "bookmarks_search_egtest.mm",
   ]

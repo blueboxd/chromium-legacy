@@ -211,7 +211,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 3
+          "shards": 2
         },
         "test": "webview_cts_tests",
         "test_target": "//android_webview/test:webview_cts_tests"
@@ -9118,7 +9118,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 3
+          "shards": 2
         },
         "test": "webview_cts_tests",
         "test_target": "//android_webview/test:webview_cts_tests"

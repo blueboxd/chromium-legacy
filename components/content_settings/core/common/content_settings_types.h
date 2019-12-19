@@ -189,6 +189,11 @@ enum class ContentSettingsType : int32_t {
   // check's verdicts of each origin.
   SAFE_BROWSING_URL_CHECK_DATA,
 
+  // Used to store whether a site is allowed to request AR or VR sessions with
+  // the WebXr Device API.
+  VR,
+  AR,
+
   NUM_TYPES,
 };
 

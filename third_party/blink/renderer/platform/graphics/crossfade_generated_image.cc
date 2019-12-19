@@ -91,12 +91,8 @@ void CrossfadeGeneratedImage::Draw(
 
   PaintCanvasAutoRestore ar(canvas, true);
   canvas->clipRect(dst_rect);
-  canvas->translate(dst_rect.X(), dst_rect.Y());
-  if (dst_rect.Size() != src_rect.Size())
-    canvas->scale(dst_rect.Width() / src_rect.Width(),
-                  dst_rect.Height() / src_rect.Height());
-  canvas->translate(-src_rect.X(), -src_rect.Y());
-
+  canvas->concat(
+      SkMatrix::MakeRectToRect(src_rect, dst_rect, SkMatrix::kFill_ScaleToFit));
   DrawCrossfade(canvas, flags, respect_orientation, clamp_mode, decode_mode);
 }
 

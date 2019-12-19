@@ -44,6 +44,13 @@
 // Verifies that there is |count| children on the bookmark folder with |name|.
 + (NSError*)verifyChildCount:(size_t)count inFolderWithName:(NSString*)name;
 
+// Verifies the existence of a Bookmark with |URL| and |name|.
++ (NSError*)verifyExistenceOfBookmarkWithURL:(NSString*)URL
+                                        name:(NSString*)name;
+
+// Verifies the absence of a Bookmark with |URL|.
++ (NSError*)verifyAbsenceOfBookmarkWithURL:(NSString*)URL;
+
 // Checks that the promo has already been seen or not.
 + (NSError*)verifyPromoAlreadySeen:(BOOL)seen;
 

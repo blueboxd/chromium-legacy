@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '3567a9a85896c8d052edb2652b9028116affab85',
+  'pdfium_revision': 'e020cf38f4293198c6fbdea9742b0b0e9f74b558',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -238,7 +238,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'aa39e6f5836919353e192f4eb78087aab57fd0b7',
+  'catapult_revision': '5c3e409cc4f97260abba7312426d3901fefc67dc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.

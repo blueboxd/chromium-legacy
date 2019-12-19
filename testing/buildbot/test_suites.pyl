@@ -5091,7 +5091,7 @@
     'webview_cts_tests_gtest': {
       'webview_cts_tests': {
         'swarming': {
-          'shards': 3,
+          'shards': 2,
           'cipd_packages': [
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
@@ -5109,7 +5109,7 @@
           '--disable-field-trial-config',
         ],
         'swarming': {
-          'shards': 3,
+          'shards': 2,
           'cipd_packages': [
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',

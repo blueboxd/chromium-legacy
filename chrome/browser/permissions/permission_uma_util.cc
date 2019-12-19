@@ -97,6 +97,10 @@ std::string GetPermissionRequestString(PermissionRequestType type) {
       return "Nfc";
     case PermissionRequestType::PERMISSION_CLIPBOARD_READ_WRITE:
       return "ClipboardReadWrite";
+    case PermissionRequestType::PERMISSION_VR:
+      return "Vr";
+    case PermissionRequestType::PERMISSION_AR:
+      return "Ar";
     default:
       NOTREACHED();
       return "";

@@ -633,6 +633,8 @@ dictionary DeviceEvent {
   DeviceEventType type;
   // Device path to identify the device.
   DOMString devicePath;
+  // Human readable label for the device.
+  DOMString deviceLabel;
 };
 
 // Describes an installed provider.

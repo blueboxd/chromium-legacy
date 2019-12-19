@@ -152,7 +152,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 3
+          "shards": 2
         },
         "test": "webview_cts_tests",
         "test_target": "//android_webview/test:webview_cts_tests"
@@ -207,7 +207,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 3
+          "shards": 2
         },
         "test": "webview_cts_tests",
         "test_target": "//android_webview/test:webview_cts_tests"
@@ -453,7 +453,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 3
+          "shards": 2
         },
         "test": "webview_cts_tests",
         "test_target": "//android_webview/test:webview_cts_tests"
@@ -507,7 +507,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 3
+          "shards": 2
         },
         "test": "webview_cts_tests",
         "test_target": "//android_webview/test:webview_cts_tests"
@@ -797,7 +797,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 3
+          "shards": 2
         },
         "test": "webview_cts_tests",
         "test_target": "//android_webview/test:webview_cts_tests"
@@ -851,7 +851,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 3
+          "shards": 2
         },
         "test": "webview_cts_tests",
         "test_target": "//android_webview/test:webview_cts_tests"
@@ -1237,7 +1237,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 3
+          "shards": 2
         },
         "test": "webview_cts_tests",
         "test_target": "//android_webview/test:webview_cts_tests"
@@ -1291,7 +1291,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 3
+          "shards": 2
         },
         "test": "webview_cts_tests",
         "test_target": "//android_webview/test:webview_cts_tests"
@@ -1677,7 +1677,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 3
+          "shards": 2
         },
         "test": "webview_cts_tests",
         "test_target": "//android_webview/test:webview_cts_tests"
@@ -1731,7 +1731,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 3
+          "shards": 2
         },
         "test": "webview_cts_tests",
         "test_target": "//android_webview/test:webview_cts_tests"
@@ -33701,9 +33701,9 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--gtest_filter=-ImportantSitesUtilBrowserTest.DSENotConsideredImportantInRegularMode"
         ],
-        "experiment_percentage": 100,
         "merge": {
           "args": [
             "--bucket",
@@ -34534,9 +34534,9 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64_rel.chrome_public_test_apk.filter"
         ],
-        "experiment_percentage": 100,
         "merge": {
           "args": [
             "--bucket",
@@ -34630,7 +34630,6 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
-        "experiment_percentage": 100,
         "merge": {
           "args": [
             "--bucket",
@@ -34725,7 +34724,6 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
-        "experiment_percentage": 100,
         "merge": {
           "args": [
             "--bucket",
@@ -35140,9 +35138,9 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64_rel.gl_tests.filter"
         ],
-        "experiment_percentage": 100,
         "merge": {
           "args": [
             "--bucket",
@@ -35647,9 +35645,9 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--gtest_filter=-AAudio/AudioOutputTest.Play200HzTone/0"
         ],
-        "experiment_percentage": 100,
         "merge": {
           "args": [
             "--bucket",
@@ -36891,7 +36889,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 3
+          "shards": 2
         },
         "test": "webview_cts_tests",
         "test_target": "//android_webview/test:webview_cts_tests"
@@ -37107,34 +37105,6 @@
           ]
         },
         "test_target": "//chrome/android/monochrome:monochrome_apk_checker"
-      },
-      {
-        "args": [
-          "--browser=android-chromium",
-          "--device=android"
-        ],
-        "experiment_percentage": 100,
-        "isolate_name": "telemetry_perf_unittests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "telemetry_perf_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google",
-              "device_os_type": "userdebug",
-              "device_type": "walleye",
-              "os": "Android"
-            }
-          ],
-          "idempotent": false,
-          "shards": 12
-        },
-        "test_target": "//chrome/test:telemetry_perf_unittests"
       }
     ]
   }

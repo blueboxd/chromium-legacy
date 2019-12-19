@@ -1872,6 +1872,8 @@ jumbo_static_library("browser") {
     "vr/ui_suppressed_element.h",
     "vr/vr_tab_helper.cc",
     "vr/vr_tab_helper.h",
+    "vr/webxr_permission_context.cc",
+    "vr/webxr_permission_context.h",
     "wake_lock/wake_lock_permission_context.cc",
     "wake_lock/wake_lock_permission_context.h",
     "web_data_service_factory.cc",

@@ -8,14 +8,11 @@
 #include "base/ios/ios_util.h"
 #import "base/test/ios/wait_util.h"
 #include "build/build_config.h"
-#include "components/prefs/pref_service.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_utils.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -52,7 +49,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 - (void)tearDown {
   [super tearDown];
   [ChromeEarlGrey clearBookmarks];
-  [BookmarkEarlGreyUtils clearBookmarksPositionCache];
+  [BookmarkEarlGrey clearBookmarksPositionCache];
 }
 
 #pragma mark - BookmarksEntriesTestCase Tests
@@ -67,7 +64,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
     EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad.");
   }
 
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -117,7 +114,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
     EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad on iOS11.");
   }
 
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -169,7 +166,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 }
 
 - (void)testContextMenuForSingleURLSelection {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -195,7 +192,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 // Verify Edit Text functionality on single URL selection.
 - (void)testEditTextOnSingleURL {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -254,22 +251,28 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
                  dismissWith:kBookmarkEditNavigationBarDoneButtonIdentifier];
 
   // Verify that the bookmark was updated.
-  [BookmarkEarlGreyUtils assertExistenceOfBookmarkWithURL:@"http://www.b.fr/"
-                                                     name:@"French URL"];
+  [BookmarkEarlGrey verifyExistenceOfBookmarkWithURL:@"http://www.b.fr/"
+                                                name:@"French URL"];
 
   // Press undo and verify the edit is undone.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
       performAction:grey_tap()];
-  [BookmarkEarlGreyUtils assertAbsenceOfBookmarkWithURL:@"http://www.b.fr/"];
+  [BookmarkEarlGrey verifyAbsenceOfBookmarkWithURL:@"http://www.b.fr/"];
 
   // Verify edit mode is closed (context bar back to default state).
   [BookmarkEarlGreyUI verifyContextBarInDefaultStateWithSelectEnabled:YES
                                                      newFolderEnabled:YES];
 }
 
+// TODO(crbug.com/1034183): Enable for EG2 once NavigateBackButtonTo() is fixed.
+#if defined(CHROME_EARL_GREY_2)
+#define MAYBE_testMoveOnSingleURL DISABLED_testMoveOnSingleURL
+#else
+#define MAYBE_testMoveOnSingleURL testMoveOnSingleURL
+#endif
 // Verify Move functionality on single URL selection.
-- (void)testMoveOnSingleURL {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+- (void)MAYBE_testMoveOnSingleURL {
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -331,7 +334,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
                  dismissWith:@"Cancel"];
 
   // Verify that the bookmark was not updated.
-  [BookmarkEarlGreyUtils assertAbsenceOfBookmarkWithURL:@"http://www.b.fr/"];
+  [BookmarkEarlGrey verifyAbsenceOfBookmarkWithURL:@"http://www.b.fr/"];
 
   // Verify edit mode remains.
   [BookmarkEarlGreyUI verifyContextBarInEditMode];
@@ -339,7 +342,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 // Verify Copy URL functionality on single URL selection.
 - (void)testCopyFunctionalityOnSingleURL {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -377,7 +380,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 }
 
 - (void)testContextMenuForMultipleURLSelection {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -424,7 +427,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 // Verify the Open All functionality on multiple url selection.
 // TODO(crbug.com/816699): Re-enable this test on simulators.
 - (void)FLAKY_testContextMenuForMultipleURLOpenAll {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -438,7 +441,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
                  @"Incognito tab count should be 0");
 
   // Verify the order of open tabs.
-  [BookmarkEarlGreyUtils verifyOrderOfTabsWithCurrentTabIndex:0];
+  [BookmarksEntriesTestCase verifyOrderOfTabsWithCurrentTabIndex:0];
 
   // Switch to Incognito mode by adding a new incognito tab.
   [ChromeEarlGrey openNewIncognitoTab];
@@ -461,13 +464,13 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   // in folder.
 
   // Verify the order of open tabs.
-  [BookmarkEarlGreyUtils verifyOrderOfTabsWithCurrentTabIndex:3];
+  [BookmarksEntriesTestCase verifyOrderOfTabsWithCurrentTabIndex:3];
 }
 
 // Verify the Open All in Incognito functionality on multiple url selection.
 // TODO(crbug.com/816699): Re-enable this test on simulators.
 - (void)FLAKY_testContextMenuForMultipleURLOpenAllInIncognito {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -485,7 +488,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
                  @"Failed to switch to incognito mode");
 
   // Verify the order of open tabs.
-  [BookmarkEarlGreyUtils verifyOrderOfTabsWithCurrentTabIndex:0];
+  [BookmarksEntriesTestCase verifyOrderOfTabsWithCurrentTabIndex:0];
 
   [BookmarkEarlGreyUI openBookmarks];
 
@@ -502,12 +505,12 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
                  @"Main tab count should be 1");
 
   // Verify the order of open tabs.
-  [BookmarkEarlGreyUtils verifyOrderOfTabsWithCurrentTabIndex:2];
+  [BookmarksEntriesTestCase verifyOrderOfTabsWithCurrentTabIndex:2];
 }
 
 // Verify the Open and Open in Incognito functionality on single url.
 - (void)testOpenSingleBookmarkInNormalAndIncognitoTab {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -632,7 +635,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 }
 
 - (void)testContextMenuForMixedSelection {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -668,7 +671,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 }
 
 - (void)testLongPressOnSingleURL {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -682,7 +685,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 // Verify Move functionality on mixed folder / url selection.
 - (void)testMoveFunctionalityOnMixedSelection {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -722,7 +725,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
   // Delete the First URL programmatically in background.  Folder picker will
   // not close as the selected nodes "Second URL" and "Folder 1" still exist.
-  [BookmarkEarlGreyUtils removeBookmarkWithTitle:@"First URL"];
+  [BookmarkEarlGrey removeBookmarkWithTitle:@"First URL"];
 
   // Choose to move into a new folder.
   [[EarlGrey
@@ -758,8 +761,8 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
                                                      newFolderEnabled:YES];
 
   // Verify new folder "Title For New Folder" has two bookmark nodes.
-  [BookmarkEarlGreyUtils assertChildCount:2
-                         ofFolderWithName:@"Title For New Folder"];
+  [BookmarkEarlGrey verifyChildCount:2
+                    inFolderWithName:@"Title For New Folder"];
 
   // Drill down to where "Second URL" and "Folder 1" have been moved and assert
   // it's presence.
@@ -774,7 +777,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 // Verify Move functionality on multiple url selection.
 - (void)testMoveFunctionalityOnMultipleUrlSelection {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -823,7 +826,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
                                                      newFolderEnabled:YES];
 
   // Verify Folder 1 has three bookmark nodes.
-  [BookmarkEarlGreyUtils assertChildCount:3 ofFolderWithName:@"Folder 1"];
+  [BookmarkEarlGrey verifyChildCount:3 inFolderWithName:@"Folder 1"];
 
   // Drill down to where "Second URL" and "First URL" have been moved and assert
   // it's presence.
@@ -839,7 +842,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 // Verify Move is cancelled when all selected folder/url are deleted in
 // background.
 - (void)testMoveCancelledWhenAllSelectionDeleted {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -875,8 +878,8 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       assertWithMatcher:grey_notNil()];
 
   // Delete the selected URL and folder programmatically.
-  [BookmarkEarlGreyUtils removeBookmarkWithTitle:@"Folder 1"];
-  [BookmarkEarlGreyUtils removeBookmarkWithTitle:@"Second URL"];
+  [BookmarkEarlGrey removeBookmarkWithTitle:@"Folder 1"];
+  [BookmarkEarlGrey removeBookmarkWithTitle:@"Second URL"];
 
   // Verify folder picker is exited.
   [BookmarkEarlGreyUI verifyFolderFlowIsClosed];
@@ -884,7 +887,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 // Try deleting a bookmark from the edit screen, then undoing that delete.
 - (void)testUndoDeleteBookmarkFromEditScreen {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -948,7 +951,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 }
 
 - (void)testDeleteSingleURLNode {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -986,7 +989,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 }
 
 - (void)testDeleteMultipleNodes {
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -1037,7 +1040,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
     EARL_GREY_TEST_SKIPPED(@"Test disabled on when feature flag is off.");
   }
 
-  [BookmarkEarlGreyUtils setupStandardBookmarks];
+  [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
@@ -1090,6 +1093,28 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kBookmarkEditViewContainerIdentifier)]
       assertWithMatcher:grey_nil()];
+}
+
+#pragma mark - Helpers
+
+// Verifies the Mobile Bookmarks's urls are open in the same order as they are
+// in folder.
++ (void)verifyOrderOfTabsWithCurrentTabIndex:(NSUInteger)tabIndex {
+  // Verify "French URL" appears in the omnibox.
+  [[EarlGrey selectElementWithMatcher:OmniboxText(GetFrenchUrl().GetContent())]
+      assertWithMatcher:grey_notNil()];
+
+  // Switch to the next Tab and verify "Second URL" appears.
+  // TODO(crbug.com/695749): see we if can add switchToNextTab to
+  // chrome_test_util so that we don't need to pass tabIndex here.
+  [ChromeEarlGrey selectTabAtIndex:tabIndex + 1];
+  [[EarlGrey selectElementWithMatcher:OmniboxText(GetSecondUrl().GetContent())]
+      assertWithMatcher:grey_notNil()];
+
+  // Switch to the next Tab and verify "First URL" appears.
+  [ChromeEarlGrey selectTabAtIndex:tabIndex + 2];
+  [[EarlGrey selectElementWithMatcher:OmniboxText(GetFirstUrl().GetContent())]
+      assertWithMatcher:grey_notNil()];
 }
 
 @end

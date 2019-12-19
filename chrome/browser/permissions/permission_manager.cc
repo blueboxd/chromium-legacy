@@ -34,6 +34,7 @@
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/storage/durable_storage_permission_context.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/vr/webxr_permission_context.h"
 #include "chrome/browser/wake_lock/wake_lock_permission_context.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_features.h"
@@ -157,6 +158,10 @@ ContentSettingsType PermissionTypeToContentSettingSafe(
       return ContentSettingsType::WAKE_LOCK_SYSTEM;
     case PermissionType::NFC:
       return ContentSettingsType::NFC;
+    case PermissionType::VR:
+      return ContentSettingsType::VR;
+    case PermissionType::AR:
+      return ContentSettingsType::AR;
     case PermissionType::NUM:
       break;
   }
@@ -366,6 +371,12 @@ PermissionManager::PermissionManager(Profile* profile) : profile_(profile) {
   permission_contexts_[ContentSettingsType::NFC] =
       std::make_unique<NfcPermissionContextAndroid>(profile);
 #endif
+  permission_contexts_[ContentSettingsType::VR] =
+      std::make_unique<WebXrPermissionContext>(profile,
+                                               ContentSettingsType::VR);
+  permission_contexts_[ContentSettingsType::AR] =
+      std::make_unique<WebXrPermissionContext>(profile,
+                                               ContentSettingsType::AR);
 }
 
 PermissionManager::~PermissionManager() {

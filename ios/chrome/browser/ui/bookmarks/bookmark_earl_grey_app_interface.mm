@@ -231,6 +231,32 @@
   return nil;
 }
 
++ (NSError*)verifyExistenceOfBookmarkWithURL:(NSString*)URL
+                                        name:(NSString*)name {
+  const bookmarks::BookmarkNode* bookmark =
+      [self bookmarkModel] -> GetMostRecentlyAddedUserNodeForURL(
+                               GURL(base::SysNSStringToUTF16(URL)));
+  if (bookmark->GetTitle().compare(base::SysNSStringToUTF16(name)) != 0) {
+    return testing::NSErrorWithLocalizedDescription(
+        [NSString stringWithFormat:@"Could not find bookmark named %@ for %@",
+                                   name, URL]);
+  }
+
+  return nil;
+}
+
++ (NSError*)verifyAbsenceOfBookmarkWithURL:(NSString*)URL {
+  const bookmarks::BookmarkNode* bookmark =
+      [self bookmarkModel] -> GetMostRecentlyAddedUserNodeForURL(
+                               GURL(base::SysNSStringToUTF16(URL)));
+  if (bookmark) {
+    return testing::NSErrorWithLocalizedDescription(
+        [NSString stringWithFormat:@"There is a bookmark for %@", URL]);
+  }
+
+  return nil;
+}
+
 + (NSError*)verifyPromoAlreadySeen:(BOOL)seen {
   ios::ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();

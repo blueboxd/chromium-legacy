@@ -64,6 +64,14 @@ const GURL GetFrenchUrl();
 - (void)moveBookmarkWithTitle:(NSString*)bookmarkTitle
             toFolderWithTitle:(NSString*)newFolder;
 
+// Verifies the existence of a Bookmark with |URL| and |name|. GREYAssert is
+// induced if the bookmarks doesn't exist.
+- (void)verifyExistenceOfBookmarkWithURL:(NSString*)URL name:(NSString*)name;
+
+// Verifies the absence of a Bookmark with |URL|. GREYAssert is induced if the
+// bookmarks does exist.
+- (void)verifyAbsenceOfBookmarkWithURL:(NSString*)URL;
+
 #pragma mark - Promo
 
 // Checks that the promo has already been seen or not. GREYAssert is induced if

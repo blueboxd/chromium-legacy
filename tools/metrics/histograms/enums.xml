@@ -10434,6 +10434,8 @@ Called by update_net_error_codes.py.-->
   <int value="59" label="NFC"/>
   <int value="60" label="Clipboard read and write"/>
   <int value="61" label="Clipboard sanitized write"/>
+  <int value="64" label="VR"/>
+  <int value="65" label="AR"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">
@@ -49877,6 +49879,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="18" label="PERMISSION_PAYMENT_HANDLER"/>
   <int value="19" label="PERMISSION_NFC"/>
   <int value="20" label="PERMISSION_CLIPBOARD_READ_WRITE"/>
+  <int value="21" label="PERMISSION_VR"/>
+  <int value="22" label="PERMISSION_AR"/>
 </enum>
 
 <enum name="PermissionStatus">
@@ -49911,6 +49915,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="22" label="PERMISSION_NFC"/>
   <int value="23" label="PERMISSION_CLIPBOARD_READ_WRITE"/>
   <int value="24" label="PERMISSION_CLIPBOARD_SANITIZED_WRITE"/>
+  <int value="25" label="PERMISSION_VR"/>
+  <int value="26" label="PERMISSION_AR"/>
 </enum>
 
 <enum name="PersistedLogsLogReadStatus">

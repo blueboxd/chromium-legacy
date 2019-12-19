@@ -934,7 +934,7 @@ void VolumeManager::OnFormatEvent(
   switch (event) {
     case chromeos::disks::DiskMountManager::FORMAT_STARTED:
       for (auto& observer : observers_) {
-        observer.OnFormatStarted(device_path,
+        observer.OnFormatStarted(device_path, device_label,
                                  error_code == chromeos::FORMAT_ERROR_NONE);
       }
       return;
@@ -949,7 +949,7 @@ void VolumeManager::OnFormatEvent(
                                      GetExternalStorageAccessMode(profile_));
 
       for (auto& observer : observers_) {
-        observer.OnFormatCompleted(device_path,
+        observer.OnFormatCompleted(device_path, device_label,
                                    error_code == chromeos::FORMAT_ERROR_NONE);
       }
 
@@ -970,7 +970,7 @@ void VolumeManager::OnRenameEvent(
   switch (event) {
     case chromeos::disks::DiskMountManager::RENAME_STARTED:
       for (auto& observer : observers_) {
-        observer.OnRenameStarted(device_path,
+        observer.OnRenameStarted(device_path, device_label,
                                  error_code == chromeos::RENAME_ERROR_NONE);
       }
       return;
@@ -995,7 +995,8 @@ void VolumeManager::OnRenameEvent(
 
       bool successfully_renamed = error_code == chromeos::RENAME_ERROR_NONE;
       for (auto& observer : observers_)
-        observer.OnRenameCompleted(device_path, successfully_renamed);
+        observer.OnRenameCompleted(device_path, device_label,
+                                   successfully_renamed);
 
       return;
   }

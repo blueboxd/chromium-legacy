@@ -59,6 +59,8 @@ PermissionToSchedulingFeature(PermissionType permission_name) {
     case PermissionType::NFC:
     case PermissionType::NUM:
     case PermissionType::SENSORS:
+    case PermissionType::AR:
+    case PermissionType::VR:
       return base::nullopt;
   }
 }

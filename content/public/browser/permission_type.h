@@ -42,6 +42,8 @@ enum class PermissionType {
   NFC = 22,
   CLIPBOARD_READ_WRITE = 23,
   CLIPBOARD_SANITIZED_WRITE = 24,
+  VR = 25,
+  AR = 26,
 
   // Always keep this at the end.
   NUM,

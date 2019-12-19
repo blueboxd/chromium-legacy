@@ -245,6 +245,10 @@ component("bluetooth") {
       "IOBluetooth.framework",
       "Foundation.framework",
     ]
+    ldflags = [
+      "-weak_framework",
+      "CoreBluetooth",
+    ]
   }
 
   if (is_win) {

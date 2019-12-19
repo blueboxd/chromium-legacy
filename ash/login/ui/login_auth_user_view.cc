@@ -549,11 +549,14 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
         views::BoxLayout::Orientation::kVertical));
     layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kCenter);
-
-    arrow_button_ = AddChildView(std::make_unique<ArrowButtonView>(
-        /*listener=*/this, kChallengeResponseArrowSizeDp));
+    auto arrow_button_view = std::make_unique<ArrowButtonView>(
+        /*listener=*/this, kChallengeResponseArrowSizeDp);
+    arrow_button_view->SetInstallFocusRingOnFocus(true);
+    views::HighlightPathGenerator::Install(
+        arrow_button_view.get(),
+        std::make_unique<views::CircleHighlightPathGenerator>());
+    arrow_button_ = AddChildView(std::move(arrow_button_view));
     arrow_button_->SetBackgroundColor(kChallengeResponseArrowBackgroundColor);
-    arrow_button_->SetFocusPainter(nullptr);
     arrow_button_->SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_ASH_LOGIN_START_SMART_CARD_AUTH_BUTTON_ACCESSIBLE_NAME));
 
@@ -613,6 +616,8 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
 
     Layout();
   }
+
+  void RequestFocus() override { arrow_button_->RequestFocus(); }
 
  private:
   int GetArrowToIconSpacerHeight() const {
@@ -1097,6 +1102,9 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   // |force_online_sign_in| is true.
   if (force_online_sign_in)
     user_view_->RequestFocus();
+
+  if (has_challenge_response)
+    challenge_response_view_->RequestFocus();
 
   PreferredSizeChanged();
 }

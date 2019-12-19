@@ -17,7 +17,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_select_files_handler.h"
 #include "chrome/browser/chromeos/arc/fileapi/file_stream_forwarder.h"
-#include "components/arc/mojom/file_system.mojom.h"
+#include "components/arc/mojom/file_system.mojom-forward.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "storage/browser/file_system/watcher_manager.h"

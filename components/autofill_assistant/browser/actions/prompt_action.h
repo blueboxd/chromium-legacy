@@ -39,6 +39,7 @@ class PromptAction : public Action {
   void UpdateUserActions();
   bool HasAutoSelect();
   void OnAutoSelectElementExists(int choice_index,
+                                 bool must_exist,
                                  const ClientStatus& element_status);
   void OnElementChecksDone(
       base::OnceCallback<void(const ClientStatus&)> wait_for_dom_callback);

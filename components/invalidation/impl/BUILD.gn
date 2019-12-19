@@ -50,10 +50,10 @@ static_library("impl") {
     "invalidator_storage.h",
     "mock_ack_handler.cc",
     "mock_ack_handler.h",
-    "per_user_topic_registration_manager.cc",
-    "per_user_topic_registration_manager.h",
     "per_user_topic_registration_request.cc",
     "per_user_topic_registration_request.h",
+    "per_user_topic_subscription_manager.cc",
+    "per_user_topic_subscription_manager.h",
     "profile_identity_provider.cc",
     "profile_identity_provider.h",
     "profile_invalidation_provider.cc",
@@ -138,8 +138,8 @@ source_set("unit_tests") {
     "fcm_network_handler_unittests.cc",
     "invalidation_logger_unittest.cc",
     "invalidator_registrar_with_memory_unittest.cc",
-    "per_user_topic_registration_manager_unittest.cc",
     "per_user_topic_registration_request_unittest.cc",
+    "per_user_topic_subscription_manager_unittest.cc",
   ]
   deps = [
     ":impl",

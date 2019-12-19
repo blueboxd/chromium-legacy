@@ -1193,7 +1193,7 @@ by a child template that "extends" this file.
             android:permission="{{ manifest_package }}.permission.CHILD_SERVICE"
             android:isolatedProcess="true"
             android:exported="{{sandboxed_service_exported|default(false)}}"
-            {% if (use_zygote|default(false) == 'true') %}
+            {% if (use_zygote|default(false) == 'true') and (i == 0) %}
             android:useAppZygote="true"
             {% endif %}
             {% if (sandboxed_service_exported|default(false)) == 'true' %}

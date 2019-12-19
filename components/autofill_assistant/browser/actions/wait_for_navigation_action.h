@@ -22,9 +22,6 @@ class WaitForNavigationAction : public Action {
   ~WaitForNavigationAction() override;
 
  private:
-  static constexpr base::TimeDelta kDefaultTimeout =
-      base::TimeDelta::FromSeconds(20);
-
   // Overrides Action:
   void InternalProcessAction(ProcessActionCallback callback) override;
 

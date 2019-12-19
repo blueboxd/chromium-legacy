@@ -23,7 +23,7 @@
 #include "components/invalidation/impl/invalidation_prefs.h"
 #include "components/invalidation/impl/invalidation_state_tracker.h"
 #include "components/invalidation/impl/invalidator_storage.h"
-#include "components/invalidation/impl/per_user_topic_registration_manager.h"
+#include "components/invalidation/impl/per_user_topic_subscription_manager.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/public/invalidation_service.h"
@@ -58,7 +58,7 @@ std::unique_ptr<InvalidationService> CreateInvalidationServiceForSenderId(
           instance_id::InstanceIDProfileServiceFactory::GetForProfile(profile)
               ->driver()),
       base::BindRepeating(
-          &syncer::PerUserTopicRegistrationManager::Create, identity_provider,
+          &syncer::PerUserTopicSubscriptionManager::Create, identity_provider,
           profile->GetPrefs(),
           base::RetainedRef(
               content::BrowserContext::GetDefaultStoragePartition(profile)

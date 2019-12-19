@@ -26,8 +26,9 @@ constexpr char kExtensionId1[] = "id1";
 constexpr char kExtensionId2[] = "id2";
 constexpr char kExtensionName1[] = "name1";
 constexpr char kExtensionName2[] = "name2";
-constexpr char kExtensionUrl1[] = "url1";
-constexpr char kExtensionUrl2[] = "url2";
+constexpr char kExtensionUpdateUrl[] =
+    "https://clients2.google.com/service/update2/crx";  // URL of Chrome Web
+                                                        // Store backend.
 
 constexpr char kLoadTimeStats[] = "Extensions.ForceInstalledLoadTime";
 constexpr char kTimedOutStats[] = "Extensions.ForceInstalledTimedOutCount";
@@ -35,7 +36,10 @@ constexpr char kTimedOutNotInstalledStats[] =
     "Extensions.ForceInstalledTimedOutAndNotInstalledCount";
 constexpr char kInstallationFailureCacheStatus[] =
     "Extensions.ForceInstalledFailureCacheStatus";
-constexpr char kFailureReasons[] = "Extensions.ForceInstalledFailureReason2";
+constexpr char kFailureReasonsCWS[] =
+    "Extensions.WebStore_ForceInstalledFailureReason2";
+constexpr char kFailureReasonsSH[] =
+    "Extensions.OffStore_ForceInstalledFailureReason2";
 constexpr char kInstallationStages[] = "Extensions.ForceInstalledStage";
 constexpr char kInstallationDownloadingStages[] =
     "Extensions.ForceInstalledDownloadingStage";
@@ -66,12 +70,12 @@ class ForcedExtensionsInstallationTrackerTest : public testing::Test {
             .Set(kExtensionId1,
                  DictionaryBuilder()
                      .Set(ExternalProviderImpl::kExternalUpdateUrl,
-                          kExtensionUrl1)
+                          kExtensionUpdateUrl)
                      .Build())
             .Set(kExtensionId2,
                  DictionaryBuilder()
                      .Set(ExternalProviderImpl::kExternalUpdateUrl,
-                          kExtensionUrl2)
+                          kExtensionUpdateUrl)
                      .Build())
             .Build();
     prefs_->SetManagedPref(pref_names::kInstallForceList, std::move(dict));
@@ -108,7 +112,8 @@ TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionsInstalled) {
   histogram_tester_.ExpectTotalCount(kLoadTimeStats, 1);
   histogram_tester_.ExpectTotalCount(kTimedOutStats, 0);
   histogram_tester_.ExpectTotalCount(kTimedOutNotInstalledStats, 0);
-  histogram_tester_.ExpectTotalCount(kFailureReasons, 0);
+  histogram_tester_.ExpectTotalCount(kFailureReasonsCWS, 0);
+  histogram_tester_.ExpectTotalCount(kFailureReasonsSH, 0);
   histogram_tester_.ExpectTotalCount(kInstallationStages, 0);
   histogram_tester_.ExpectTotalCount(kFailureCrxInstallErrorStats, 0);
   histogram_tester_.ExpectUniqueSample(
@@ -126,9 +131,9 @@ TEST_F(ForcedExtensionsInstallationTrackerTest,
   histogram_tester_.ExpectTotalCount(kLoadTimeStats, 0);
   histogram_tester_.ExpectUniqueSample(kTimedOutStats, 2, 1);
   histogram_tester_.ExpectUniqueSample(kTimedOutNotInstalledStats, 1, 1);
-  histogram_tester_.ExpectTotalCount(kFailureReasons, 1);
+  histogram_tester_.ExpectTotalCount(kFailureReasonsCWS, 1);
   histogram_tester_.ExpectUniqueSample(
-      kFailureReasons, InstallationReporter::FailureReason::UNKNOWN, 1);
+      kFailureReasonsCWS, InstallationReporter::FailureReason::UNKNOWN, 1);
   histogram_tester_.ExpectTotalCount(kInstallationStages, 0);
   histogram_tester_.ExpectTotalCount(kFailureCrxInstallErrorStats, 0);
   histogram_tester_.ExpectUniqueSample(
@@ -145,7 +150,7 @@ TEST_F(ForcedExtensionsInstallationTrackerTest,
   histogram_tester_.ExpectTotalCount(kLoadTimeStats, 0);
   histogram_tester_.ExpectTotalCount(kTimedOutStats, 0);
   histogram_tester_.ExpectTotalCount(kTimedOutNotInstalledStats, 0);
-  histogram_tester_.ExpectTotalCount(kFailureReasons, 0);
+  histogram_tester_.ExpectTotalCount(kFailureReasonsCWS, 0);
   histogram_tester_.ExpectTotalCount(kInstallationStages, 0);
   histogram_tester_.ExpectTotalCount(kFailureCrxInstallErrorStats, 0);
   histogram_tester_.ExpectTotalCount(kTotalCountStats, 0);
@@ -165,11 +170,11 @@ TEST_F(ForcedExtensionsInstallationTrackerTest,
   histogram_tester_.ExpectTotalCount(kLoadTimeStats, 0);
   histogram_tester_.ExpectUniqueSample(kTimedOutStats, 2, 1);
   histogram_tester_.ExpectUniqueSample(kTimedOutNotInstalledStats, 2, 1);
-  histogram_tester_.ExpectTotalCount(kFailureReasons, 2);
+  histogram_tester_.ExpectTotalCount(kFailureReasonsCWS, 2);
   histogram_tester_.ExpectBucketCount(
-      kFailureReasons, InstallationReporter::FailureReason::INVALID_ID, 1);
+      kFailureReasonsCWS, InstallationReporter::FailureReason::INVALID_ID, 1);
   histogram_tester_.ExpectBucketCount(
-      kFailureReasons,
+      kFailureReasonsCWS,
       InstallationReporter::FailureReason::CRX_INSTALL_ERROR_OTHER, 1);
   histogram_tester_.ExpectTotalCount(kInstallationStages, 0);
   histogram_tester_.ExpectUniqueSample(kFailureCrxInstallErrorStats,
@@ -193,7 +198,7 @@ TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionsStuck) {
   histogram_tester_.ExpectUniqueSample(kTimedOutStats, 2, 1);
   histogram_tester_.ExpectUniqueSample(kTimedOutNotInstalledStats, 2, 1);
   histogram_tester_.ExpectUniqueSample(
-      kFailureReasons, InstallationReporter::FailureReason::IN_PROGRESS, 2);
+      kFailureReasonsCWS, InstallationReporter::FailureReason::IN_PROGRESS, 2);
   histogram_tester_.ExpectBucketCount(kInstallationStages,
                                       InstallationReporter::Stage::PENDING, 1);
   histogram_tester_.ExpectBucketCount(
@@ -220,7 +225,7 @@ TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionsAreDownloading) {
   histogram_tester_.ExpectUniqueSample(kTimedOutStats, 2, 1);
   histogram_tester_.ExpectUniqueSample(kTimedOutNotInstalledStats, 2, 1);
   histogram_tester_.ExpectUniqueSample(
-      kFailureReasons, InstallationReporter::FailureReason::IN_PROGRESS, 2);
+      kFailureReasonsCWS, InstallationReporter::FailureReason::IN_PROGRESS, 2);
   histogram_tester_.ExpectUniqueSample(
       kInstallationStages, InstallationReporter::Stage::DOWNLOADING, 2);
   histogram_tester_.ExpectTotalCount(kInstallationDownloadingStages, 2);
@@ -241,7 +246,7 @@ TEST_F(ForcedExtensionsInstallationTrackerTest, NoExtensionsConfigured) {
   histogram_tester_.ExpectTotalCount(kLoadTimeStats, 0);
   histogram_tester_.ExpectTotalCount(kTimedOutStats, 0);
   histogram_tester_.ExpectTotalCount(kTimedOutNotInstalledStats, 0);
-  histogram_tester_.ExpectTotalCount(kFailureReasons, 0);
+  histogram_tester_.ExpectTotalCount(kFailureReasonsCWS, 0);
   histogram_tester_.ExpectTotalCount(kInstallationStages, 0);
   histogram_tester_.ExpectTotalCount(kFailureCrxInstallErrorStats, 0);
   histogram_tester_.ExpectTotalCount(kTotalCountStats, 0);

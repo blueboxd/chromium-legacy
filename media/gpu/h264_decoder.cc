@@ -966,7 +966,7 @@ bool H264Decoder::FinishPicture(scoped_refptr<H264Picture> pic) {
       return false;
     }
 
-    dpb_.StorePic(pic);
+    dpb_.StorePic(std::move(pic));
   }
 
   return true;

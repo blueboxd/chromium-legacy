@@ -66,9 +66,8 @@ class PerformanceManagerImpl : public PerformanceManager {
   static std::unique_ptr<PerformanceManagerImpl> Create(
       GraphImplCallback on_start);
 
-  // Unregisters |instance| if it's currently registered and arranges for its
-  // deletion on its sequence.
-  static void Destroy(std::unique_ptr<PerformanceManagerImpl> instance);
+  // Unregisters |instance| and arranges for its deletion on its sequence.
+  static void Destroy(std::unique_ptr<PerformanceManager> instance);
 
   // Creates a new node of the requested type and adds it to the graph.
   // May be called from any sequence. If a |creation_callback| is provided it

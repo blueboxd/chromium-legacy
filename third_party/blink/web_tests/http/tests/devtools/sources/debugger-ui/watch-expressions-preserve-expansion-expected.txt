@@ -125,7 +125,7 @@ func: function() {return a + b;}
     arguments: null
     caller: null
     length: 0
-    name:
+    name: 
     prototype: Object
     __proto__: function () { [native code] }
     [[FunctionLocation]]: Object
@@ -252,7 +252,7 @@ func: function() {return a + b;}
     arguments: null
     caller: null
     length: 0
-    name:
+    name: 
     prototype: Object
     __proto__: function () { [native code] }
     [[FunctionLocation]]: Object

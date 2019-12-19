@@ -14,17 +14,16 @@
 #include "chrome/browser/performance_manager/decorators/frozen_frame_aggregator.h"
 #include "chrome/browser/performance_manager/decorators/helpers/page_live_state_decorator_helper.h"
 #include "chrome/browser/performance_manager/decorators/page_aggregator.h"
-#include "chrome/browser/performance_manager/decorators/page_almost_idle_decorator.h"
 #include "chrome/browser/performance_manager/decorators/process_metrics_decorator.h"
 #include "chrome/browser/performance_manager/graph/policies/policy_features.h"
 #include "chrome/browser/performance_manager/graph/policies/working_set_trimmer_policy.h"
 #include "chrome/browser/performance_manager/observers/isolation_context_metrics.h"
 #include "chrome/browser/performance_manager/observers/metrics_collector.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "components/performance_manager/embedder/performance_manager_lifetime.h"
 #include "components/performance_manager/embedder/performance_manager_registry.h"
-#include "components/performance_manager/graph/graph_impl.h"
-#include "components/performance_manager/performance_manager_impl.h"
 #include "components/performance_manager/performance_manager_lock_observer.h"
+#include "components/performance_manager/public/graph/graph.h"
 #include "components/performance_manager/shared_worker_watcher.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
@@ -62,13 +61,11 @@ ChromeBrowserMainExtraPartsPerformanceManager::GetInstance() {
 }
 
 // static
-void ChromeBrowserMainExtraPartsPerformanceManager::
-    CreateDefaultPoliciesAndDecorators(performance_manager::GraphImpl* graph) {
+void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
+    performance_manager::Graph* graph) {
   graph->PassToGraph(std::make_unique<performance_manager::PageAggregator>());
   graph->PassToGraph(
       std::make_unique<performance_manager::FrozenFrameAggregator>());
-  graph->PassToGraph(
-      std::make_unique<performance_manager::PageAlmostIdleDecorator>());
   graph->PassToGraph(
       std::make_unique<performance_manager::IsolationContextMetrics>());
   graph->PassToGraph(std::make_unique<performance_manager::MetricsCollector>());
@@ -98,9 +95,10 @@ ChromeBrowserMainExtraPartsPerformanceManager::GetLockObserver() {
 }
 
 void ChromeBrowserMainExtraPartsPerformanceManager::PostCreateThreads() {
-  performance_manager_ = performance_manager::PerformanceManagerImpl::Create(
-      base::BindOnce(&ChromeBrowserMainExtraPartsPerformanceManager::
-                         CreateDefaultPoliciesAndDecorators));
+  performance_manager_ =
+      performance_manager::CreatePerformanceManagerWithDefaultDecorators(
+          base::BindOnce(&ChromeBrowserMainExtraPartsPerformanceManager::
+                             CreatePoliciesAndDecorators));
   registry_ = performance_manager::PerformanceManagerRegistry::Create();
   browser_child_process_watcher_ =
       std::make_unique<performance_manager::BrowserChildProcessWatcher>();
@@ -139,7 +137,7 @@ void ChromeBrowserMainExtraPartsPerformanceManager::PostMainMessageLoopRun() {
   registry_->TearDown();
   registry_.reset();
 
-  performance_manager::PerformanceManagerImpl::Destroy(
+  performance_manager::DestroyPerformanceManager(
       std::move(performance_manager_));
 }
 

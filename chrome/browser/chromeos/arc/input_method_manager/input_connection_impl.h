@@ -15,7 +15,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_bridge.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
-#include "components/arc/mojom/input_method_manager.mojom.h"
+#include "components/arc/mojom/input_method_manager.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 

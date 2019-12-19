@@ -61,7 +61,7 @@ class ScriptExecutor : public ActionDelegate,
                  const std::string& script_payload,
                  ScriptExecutor::Listener* listener,
                  std::map<std::string, ScriptStatusProto>* scripts_state,
-                 const std::vector<Script*>* ordered_interrupts,
+                 const std::vector<std::unique_ptr<Script>>* ordered_interrupts,
                  ScriptExecutorDelegate* delegate);
   ~ScriptExecutor() override;
 
@@ -260,12 +260,12 @@ class ScriptExecutor : public ActionDelegate,
 
     void RunChecks(
         base::OnceCallback<void(const ClientStatus&)> report_attempt_result);
-    void OnPreconditionCheckDone(const Script* interrupt,
+    void OnPreconditionCheckDone(const std::string& interrupt_path,
                                  bool precondition_match);
     void OnElementCheckDone(const ClientStatus&);
     void OnAllChecksDone(
         base::OnceCallback<void(const ClientStatus&)> report_attempt_result);
-    void RunInterrupt(const Script* interrupt);
+    void RunInterrupt(const std::string& path);
     void OnInterruptDone(const ScriptExecutor::Result& result);
     void RunCallback(const ClientStatus& element_status);
     void RunCallbackWithResult(const ClientStatus& element_status,
@@ -291,12 +291,15 @@ class ScriptExecutor : public ActionDelegate,
     WaitForDomOperation::Callback callback_;
 
     std::unique_ptr<BatchElementChecker> batch_element_checker_;
-    std::set<const Script*> runnable_interrupts_;
+
+    // Path of interrupts from |ordered_interrupts_| that have been found
+    // runnable.
+    std::set<std::string> runnable_interrupts_;
     ClientStatus element_check_result_;
 
     // An empty vector of interrupts that can be passed to interrupt_executor_
     // and outlives it. Interrupts must not run interrupts.
-    const std::vector<Script*> no_interrupts_;
+    const std::vector<std::unique_ptr<Script>> no_interrupts_;
 
     // The interrupt that's currently running.
     std::unique_ptr<ScriptExecutor> interrupt_executor_;
@@ -365,10 +368,12 @@ class ScriptExecutor : public ActionDelegate,
   std::string last_script_payload_;
   ScriptExecutor::Listener* const listener_;
   ScriptExecutorDelegate* const delegate_;
-  // Set of interrupts that might run during wait for dom actions with
+  // Set of interrupts that might run during wait for dom or prompt action with
   // allow_interrupt. Sorted by priority; an interrupt that appears on the
-  // vector first should run first.
-  const std::vector<Script*>* ordered_interrupts_;
+  // vector first should run first. Note that the content of this vector can
+  // change while the script is running, as a result of OnScriptListChanged
+  // being called.
+  const std::vector<std::unique_ptr<Script>>* const ordered_interrupts_;
   std::map<std::string, ScriptStatusProto>* const scripts_state_;
   RunScriptCallback callback_;
   std::vector<std::unique_ptr<Action>> actions_;

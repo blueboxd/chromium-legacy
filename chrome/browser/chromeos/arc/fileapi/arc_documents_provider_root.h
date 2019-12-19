@@ -19,7 +19,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
-#include "components/arc/mojom/file_system.mojom.h"
+#include "components/arc/mojom/file_system.mojom-forward.h"
 #include "storage/browser/file_system/async_file_util.h"
 #include "storage/browser/file_system/watcher_manager.h"
 

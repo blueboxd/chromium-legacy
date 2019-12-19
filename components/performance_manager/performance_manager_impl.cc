@@ -91,7 +91,7 @@ std::unique_ptr<PerformanceManagerImpl> PerformanceManagerImpl::Create(
 
 // static
 void PerformanceManagerImpl::Destroy(
-    std::unique_ptr<PerformanceManagerImpl> instance) {
+    std::unique_ptr<PerformanceManager> instance) {
   DCHECK_EQ(instance.get(), g_performance_manager_from_any_sequence);
   g_performance_manager_from_any_sequence = nullptr;
   GetTaskRunner()->DeleteSoon(FROM_HERE, instance.release());

@@ -84,7 +84,7 @@ class MockVaapiWrapper : public VaapiWrapper {
 
 class MockVaapiPicture : public VaapiPicture {
  public:
-  MockVaapiPicture(const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
+  MockVaapiPicture(scoped_refptr<VaapiWrapper> vaapi_wrapper,
                    const MakeGLContextCurrentCallback& make_context_current_cb,
                    const BindGLImageCallback& bind_image_cb,
                    int32_t picture_buffer_id,
@@ -92,7 +92,7 @@ class MockVaapiPicture : public VaapiPicture {
                    uint32_t texture_id,
                    uint32_t client_texture_id,
                    uint32_t texture_target)
-      : VaapiPicture(vaapi_wrapper,
+      : VaapiPicture(std::move(vaapi_wrapper),
                      make_context_current_cb,
                      bind_image_cb,
                      picture_buffer_id,
@@ -109,8 +109,7 @@ class MockVaapiPicture : public VaapiPicture {
       gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle) override {
     return true;
   }
-  bool DownloadFromSurface(
-      const scoped_refptr<VASurface>& va_surface) override {
+  bool DownloadFromSurface(scoped_refptr<VASurface> va_surface) override {
     return true;
   }
   bool AllowOverlay() const override { return false; }
@@ -127,7 +126,7 @@ class MockVaapiPictureFactory : public VaapiPictureFactory {
 
   MOCK_METHOD2(MockCreateVaapiPicture, void(VaapiWrapper*, const gfx::Size&));
   std::unique_ptr<VaapiPicture> Create(
-      const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
+      scoped_refptr<VaapiWrapper> vaapi_wrapper,
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const BindGLImageCallback& bind_image_cb,
       const PictureBuffer& picture_buffer) override {
@@ -135,7 +134,7 @@ class MockVaapiPictureFactory : public VaapiPictureFactory {
     const uint32_t client_texture_id = picture_buffer.client_texture_ids()[0];
     MockCreateVaapiPicture(vaapi_wrapper.get(), picture_buffer.size());
     return std::make_unique<MockVaapiPicture>(
-        vaapi_wrapper, make_context_current_cb, bind_image_cb,
+        std::move(vaapi_wrapper), make_context_current_cb, bind_image_cb,
         picture_buffer.id(), picture_buffer.size(), service_texture_id,
         client_texture_id, picture_buffer.texture_target());
   }

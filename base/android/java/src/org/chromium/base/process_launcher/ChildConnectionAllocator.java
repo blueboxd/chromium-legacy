@@ -8,14 +8,18 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.UserManager;
 import android.support.v4.util.ArraySet;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.compat.ApiHelperForM;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -374,10 +378,26 @@ public abstract class ChildConnectionAllocator {
         private final ArraySet<ChildProcessConnection> mAllocatedConnections = new ArraySet<>();
         private int mNextInstance;
 
+        private static String getServiceSuffix() {
+            // Android Q has a bug in its app zygote implementation under secondary user (eg in a
+            // work profile). See crbug.com/1035432 for details. Disable using the app zygote in
+            // that case by using a non '0' suffix which is the only service entry that enables
+            // app zygote.
+            if (Build.VERSION.SDK_INT == 29) {
+                UserManager userManager =
+                        (UserManager) ContextUtils.getApplicationContext().getSystemService(
+                                Context.USER_SERVICE);
+                if (!ApiHelperForM.isSystemUser(userManager)) {
+                    return "1";
+                }
+            }
+            return "0";
+        }
+
         private VariableSizeAllocatorImpl(Handler launcherHandler, String packageName,
                 String serviceClassName, boolean bindToCaller, boolean bindAsExternalService,
                 boolean useStrongBinding) {
-            super(launcherHandler, packageName, serviceClassName + "0", bindToCaller,
+            super(launcherHandler, packageName, serviceClassName + getServiceSuffix(), bindToCaller,
                     bindAsExternalService, useStrongBinding);
         }
 

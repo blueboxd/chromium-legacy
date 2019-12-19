@@ -166,6 +166,12 @@ class LoadPinterestStory(_LoadingStory):
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
+class LoadPinterestStory2019(_LoadingStory):
+  NAME = 'load:social:pinterest:2019'
+  URL = 'https://uk.pinterest.com/categories/popular/'
+  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2019]
+
+
 ################################################################################
 # News, discussion and knowledge portals and blogs.
 ################################################################################
@@ -176,6 +182,13 @@ class LoadBbcDesktopStory2018(_LoadingStory):
   URL = 'https://www.bbc.co.uk/news'
   TAGS = [story_tags.YEAR_2018]
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+
+class LoadBbcMobileStory2019(_LoadingStory):
+  NAME = 'load:news:bbc:2019'
+  URL = 'https://www.bbc.co.uk/news'
+  TAGS = [story_tags.YEAR_2019]
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
 
 class LoadCnnStory2018(_LoadingStory):
@@ -408,6 +421,14 @@ class LoadDocsStory(_LoadingStory):
   TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
 
+class LoadDocsStory2019(_LoadingStory):
+  """Load a typical google doc page (2019)."""
+  NAME = 'load:tools:docs:2019'
+  URL = (
+      'https://docs.google.com/document/d/1GvzDP-tTLmJ0myRhUAfTYWs3ZUFilUICg8psNHyccwQ/edit?usp=sharing')
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
+
+
 class _LoadGmailBaseStory(_LoadingStory):
   NAME = 'load:tools:gmail'
   URL = 'https://mail.google.com/mail/'
@@ -471,6 +492,12 @@ class LoadWeatherStory(_LoadingStory):
   NAME = 'load:tools:weather'
   URL = 'https://weather.com/en-GB/weather/today/l/USCA0286:1:US'
   TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2016]
+
+
+class LoadWeatherStory2019(_LoadingStory):
+  NAME = 'load:tools:weather:2019'
+  URL = 'https://weather.com/en-GB/weather/today/l/USCA0286:1:US'
+  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2019]
 
 
 class LoadDriveStory(_LoadingStory):

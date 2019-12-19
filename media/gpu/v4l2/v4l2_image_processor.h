@@ -124,7 +124,6 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessorBackend {
   // Initialize on |backend_task_runner_|. After finished, call |init_cb|
   // with the result whether initialization is successful or not
   void Initialize(InitCB init_cb);
-
   void EnqueueInput(const JobRecord* job_record);
   void EnqueueOutput(JobRecord* job_record);
   void Dequeue();

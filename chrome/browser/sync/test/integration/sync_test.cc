@@ -51,7 +51,7 @@
 #include "components/invalidation/impl/fcm_network_handler.h"
 #include "components/invalidation/impl/invalidation_prefs.h"
 #include "components/invalidation/impl/invalidation_switches.h"
-#include "components/invalidation/impl/per_user_topic_registration_manager.h"
+#include "components/invalidation/impl/per_user_topic_subscription_manager.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/public/invalidation_service.h"
@@ -120,23 +120,23 @@ void SetURLLoaderFactoryForTest(
 #endif  // defined(OS_CHROMEOS)
 }
 
-class FakePerUserTopicRegistrationManager
-    : public syncer::PerUserTopicRegistrationManager {
+class FakePerUserTopicSubscriptionManager
+    : public syncer::PerUserTopicSubscriptionManager {
  public:
-  explicit FakePerUserTopicRegistrationManager(PrefService* local_state)
-      : syncer::PerUserTopicRegistrationManager(
+  explicit FakePerUserTopicSubscriptionManager(PrefService* local_state)
+      : syncer::PerUserTopicSubscriptionManager(
             /*identity_provider=*/nullptr,
             /*pref_service=*/local_state,
             /*url_loader_factory=*/nullptr,
             /*project_id*/ kInvalidationGCMSenderId,
             /*migrate_prefs=*/false) {}
-  ~FakePerUserTopicRegistrationManager() override = default;
+  ~FakePerUserTopicSubscriptionManager() override = default;
 
   void UpdateSubscribedTopics(const syncer::Topics& topics,
                               const std::string& instance_id_token) override {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FakePerUserTopicRegistrationManager);
+  DISALLOW_COPY_AND_ASSIGN(FakePerUserTopicSubscriptionManager);
 };
 
 std::unique_ptr<syncer::FCMNetworkHandler> CreateFCMNetworkHandler(
@@ -153,14 +153,14 @@ std::unique_ptr<syncer::FCMNetworkHandler> CreateFCMNetworkHandler(
   return handler;
 }
 
-std::unique_ptr<syncer::PerUserTopicRegistrationManager>
-CreatePerUserTopicRegistrationManager(
+std::unique_ptr<syncer::PerUserTopicSubscriptionManager>
+CreatePerUserTopicSubscriptionManager(
     invalidation::IdentityProvider* identity_provider,
     PrefService* local_state,
     network::mojom::URLLoaderFactory* url_loader_factory,
     const std::string& project_id,
     bool migrate_prefs) {
-  return std::make_unique<FakePerUserTopicRegistrationManager>(local_state);
+  return std::make_unique<FakePerUserTopicSubscriptionManager>(local_state);
 }
 
 syncer::FCMNetworkHandler* GetFCMNetworkHandler(
@@ -651,9 +651,9 @@ void SyncTest::SetUpInvalidations(int index) {
           fake_server_invalidation_observers_[index].get());
 
       // Store in prefs the mapping between public and private topics names. In
-      // real clients, those are stored upon registration with the
+      // real clients, those are stored upon subscription with the
       // per-user-topic server. The pref name is defined in
-      // per_user_topic_registration_manager.cc.
+      // per_user_topic_subscription_manager.cc.
       DictionaryPrefUpdate update(
           GetProfile(index)->GetPrefs(),
           "invalidation.per_sender_registered_for_invalidation");
@@ -905,7 +905,7 @@ std::unique_ptr<KeyedService> SyncTest::CreateProfileInvalidationProvider(
                               gcm_profile_service->driver(),
                               instance_id_driver),
           base::BindRepeating(
-              &CreatePerUserTopicRegistrationManager,
+              &CreatePerUserTopicSubscriptionManager,
               profile_identity_provider.get(), profile->GetPrefs(),
               base::RetainedRef(
                   content::BrowserContext::GetDefaultStoragePartition(profile)

@@ -13,7 +13,7 @@
 #import "components/handoff/handoff_manager.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/invalidation/impl/invalidator_registrar_with_memory.h"
-#include "components/invalidation/impl/per_user_topic_registration_manager.h"
+#include "components/invalidation/impl/per_user_topic_subscription_manager.h"
 #include "components/language/core/browser/language_prefs.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -137,7 +137,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   sync_sessions::SessionSyncPrefs::RegisterProfilePrefs(registry);
   syncer::DeviceInfoPrefs::RegisterProfilePrefs(registry);
   syncer::SyncPrefs::RegisterProfilePrefs(registry);
-  syncer::PerUserTopicRegistrationManager::RegisterProfilePrefs(registry);
+  syncer::PerUserTopicSubscriptionManager::RegisterProfilePrefs(registry);
   syncer::InvalidatorRegistrarWithMemory::RegisterProfilePrefs(registry);
   TemplateURLPrepopulateData::RegisterProfilePrefs(registry);
   translate::TranslatePrefs::RegisterProfilePrefs(registry);

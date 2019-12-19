@@ -24,6 +24,8 @@ class PerformanceManagerMainThreadObserver;
 // performance manager graph on its dedicated sequence.
 class PerformanceManager {
  public:
+  virtual ~PerformanceManager();
+
   // Returns true if the performance manager is initialized. Valid to call from
   // the main thread only.
   static bool IsAvailable();
@@ -55,7 +57,6 @@ class PerformanceManager {
 
  protected:
   PerformanceManager();
-  virtual ~PerformanceManager();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PerformanceManager);

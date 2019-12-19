@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_INVALIDATION_IMPL_PER_USER_TOPIC_REGISTRATION_MANAGER_H_
-#define COMPONENTS_INVALIDATION_IMPL_PER_USER_TOPIC_REGISTRATION_MANAGER_H_
+#ifndef COMPONENTS_INVALIDATION_IMPL_PER_USER_TOPIC_SUBSCRIPTION_MANAGER_H_
+#define COMPONENTS_INVALIDATION_IMPL_PER_USER_TOPIC_SUBSCRIPTION_MANAGER_H_
 
 #include <map>
 #include <memory>
@@ -37,9 +37,7 @@ namespace syncer {
 // Manages the details of subscribing to topics for invalidations. For example,
 // Chrome Sync uses the ModelTypes (bookmarks, passwords, autofill data) as
 // topics.
-// TODO(crbug.com/1029698): Rename this to PerUserTopicSubscriptionManager, and
-// rename its methods accordingly.
-class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
+class INVALIDATION_EXPORT PerUserTopicSubscriptionManager {
  public:
   class Observer {
    public:
@@ -47,17 +45,17 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
         SubscriptionChannelState state) = 0;
   };
 
-  PerUserTopicRegistrationManager(
+  PerUserTopicSubscriptionManager(
       invalidation::IdentityProvider* identity_provider,
       PrefService* pref_service,
       network::mojom::URLLoaderFactory* url_loader_factory,
       const std::string& project_id,
       bool migrate_prefs);
 
-  virtual ~PerUserTopicRegistrationManager();
+  virtual ~PerUserTopicSubscriptionManager();
 
   // Just calls std::make_unique. For ease of base::Bind'ing
-  static std::unique_ptr<PerUserTopicRegistrationManager> Create(
+  static std::unique_ptr<PerUserTopicSubscriptionManager> Create(
       invalidation::IdentityProvider* identity_provider,
       PrefService* pref_service,
       network::mojom::URLLoaderFactory* url_loader_factory,
@@ -88,7 +86,7 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   void ClearInstanceIDToken();
 
   // Classes interested in subscription channel state changes should implement
-  // PerUserTopicRegistrationManager::Observer and register here.
+  // PerUserTopicSubscriptionManager::Observer and register here.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
@@ -169,9 +167,9 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(PerUserTopicRegistrationManager);
+  DISALLOW_COPY_AND_ASSIGN(PerUserTopicSubscriptionManager);
 };
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_INVALIDATION_IMPL_PER_USER_TOPIC_REGISTRATION_MANAGER_H_
+#endif  // COMPONENTS_INVALIDATION_IMPL_PER_USER_TOPIC_SUBSCRIPTION_MANAGER_H_

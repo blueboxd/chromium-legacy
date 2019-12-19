@@ -65,7 +65,7 @@ class ColorCorrectionTestUtils {
 
   static bool ConvertPixelsToColorSpaceAndPixelFormatForTest(
       void* src_data,
-      int num_elements,
+      size_t num_elements,
       CanvasColorSpace src_color_space,
       ImageDataStorageFormat src_storage_format,
       CanvasColorSpace dst_color_space,

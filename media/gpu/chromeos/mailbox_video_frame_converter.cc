@@ -38,13 +38,12 @@ class MailboxVideoFrameConverter::ScopedSharedImage {
   using DestroySharedImageCB =
       gpu::SharedImageStub::SharedImageDestructionCallback;
 
-  ScopedSharedImage(
-      const gpu::Mailbox& mailbox,
-      const scoped_refptr<base::SingleThreadTaskRunner>& gpu_task_runner,
-      DestroySharedImageCB destroy_shared_image_cb)
+  ScopedSharedImage(const gpu::Mailbox& mailbox,
+                    scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+                    DestroySharedImageCB destroy_shared_image_cb)
       : mailbox_(mailbox),
         destroy_shared_image_cb_(std::move(destroy_shared_image_cb)),
-        destruction_task_runner_(gpu_task_runner) {}
+        destruction_task_runner_(std::move(gpu_task_runner)) {}
   ~ScopedSharedImage() {
     if (destruction_task_runner_->RunsTasksInCurrentSequence()) {
       std::move(destroy_shared_image_cb_).Run(gpu::SyncToken());

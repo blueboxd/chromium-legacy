@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/process/process_handle.h"
-#include "components/arc/mojom/process.mojom.h"
+#include "components/arc/mojom/process.mojom-forward.h"
 
 namespace arc {
 

@@ -14,12 +14,9 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.payments.AutofillContact;
 import org.chromium.chrome.browser.payments.ContactEditor;
-import org.chromium.chrome.browser.payments.ui.ContactDetailsSection;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -140,39 +137,21 @@ public class AssistantContactDetailsSection
 
     /**
      * The Chrome profiles have changed externally. This will rebuild the UI with the new/changed
-     * set of profiles, while keeping the selected item if possible.
+     * set of contacts derived from the profiles, while keeping the selected item if possible.
      */
-    void onProfilesChanged(List<AutofillProfile> profiles, boolean requestPayerEmail,
-            boolean requestPayerName, boolean requestPayerPhone) {
+    void onContactsChanged(List<AutofillContact> contacts) {
         if (mIgnoreProfileChangeNotifications) {
             return;
         }
-
-        if (!requestPayerEmail && !requestPayerName && !requestPayerPhone) {
-            return;
-        }
-
-        // Note: we create a temporary editor (necessary for converting profiles to contacts)
-        // instead of using mEditor, which may be null.
-        ContactEditor tempEditor =
-                new ContactEditor(requestPayerName, requestPayerPhone, requestPayerEmail, false);
-
-        // Convert profiles into a list of |AutofillContact|.
         int selectedContactIndex = -1;
-        ContactDetailsSection sectionInformation =
-                new ContactDetailsSection(mContext, profiles, tempEditor, null);
-        List<AutofillContact> contacts = new ArrayList<>();
-        for (int i = 0; i < sectionInformation.getSize(); i++) {
-            AutofillContact contact = (AutofillContact) sectionInformation.getItem(i);
-            if (contact == null) {
-                continue;
-            }
-            contacts.add(contact);
-            if (mSelectedOption != null && areEqual(contact, mSelectedOption)) {
-                selectedContactIndex = i;
+        if (mSelectedOption != null) {
+            for (int i = 0; i < contacts.size(); i++) {
+                if (areEqual(contacts.get(i), mSelectedOption)) {
+                    selectedContactIndex = i;
+                    break;
+                }
             }
         }
-
         // Replace current set of items, keep selection if possible.
         setItems(contacts, selectedContactIndex);
     }

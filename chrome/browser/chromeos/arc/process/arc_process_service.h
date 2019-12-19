@@ -17,7 +17,7 @@
 #include "base/process/process_iterator.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/arc/process/arc_process.h"
-#include "components/arc/mojom/process.mojom.h"
+#include "components/arc/mojom/process.mojom-forward.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"

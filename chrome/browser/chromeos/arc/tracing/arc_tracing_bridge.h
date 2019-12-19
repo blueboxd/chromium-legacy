@@ -16,7 +16,7 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/arc/mojom/tracing.mojom.h"
+#include "components/arc/mojom/tracing.mojom-forward.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "services/tracing/public/cpp/base_agent.h"

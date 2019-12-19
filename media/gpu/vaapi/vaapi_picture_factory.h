@@ -33,7 +33,7 @@ class MEDIA_GPU_EXPORT VaapiPictureFactory {
   // Creates a VaapiPicture of picture_buffer.size() associated with
   // picture_buffer.id().
   virtual std::unique_ptr<VaapiPicture> Create(
-      const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
+      scoped_refptr<VaapiWrapper> vaapi_wrapper,
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const BindGLImageCallback& bind_image_cb,
       const PictureBuffer& picture_buffer);

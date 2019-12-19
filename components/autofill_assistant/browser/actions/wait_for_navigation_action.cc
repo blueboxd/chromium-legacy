@@ -10,6 +10,9 @@
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 
 namespace autofill_assistant {
+namespace {
+constexpr base::TimeDelta kDefaultTimeout = base::TimeDelta::FromSeconds(20);
+}  // namespace
 
 WaitForNavigationAction::WaitForNavigationAction(ActionDelegate* delegate,
                                                  const ActionProto& proto)

@@ -2180,12 +2180,8 @@ void WebGL2RenderingContextBase::compressedTexImage2D(
   if (!ValidateCompressedTexFormat("compressedTexImage2D", internalformat))
     return;
   GLuint data_length;
-  if (!base::CheckedNumeric<GLuint>(data.View()->byteLengthAsSizeT())
-           .AssignIfValid(&data_length)) {
-    SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D",
-                      "provided data exceeds the maximum supported length");
+  if (!ExtractDataLengthIfValid("compressedTexImage2D", data, &data_length))
     return;
-  }
   if (src_offset > data_length) {
     SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D",
                       "srcOffset is out of range");
@@ -2267,12 +2263,8 @@ void WebGL2RenderingContextBase::compressedTexSubImage2D(
   if (!ValidateCompressedTexFormat("compressedTexSubImage2D", format))
     return;
   GLuint data_length;
-  if (!base::CheckedNumeric<GLuint>(data.View()->byteLengthAsSizeT())
-           .AssignIfValid(&data_length)) {
-    SynthesizeGLError(GL_INVALID_VALUE, "compressedTexSubImage2D",
-                      "provided data exceeds the maximum supported length");
+  if (!ExtractDataLengthIfValid("compressedTexSubImage2D", data, &data_length))
     return;
-  }
   if (src_offset > data_length) {
     SynthesizeGLError(GL_INVALID_VALUE, "compressedTexSubImage2D",
                       "srcOffset is out of range");
@@ -2336,12 +2328,8 @@ void WebGL2RenderingContextBase::compressedTexImage3D(
   if (!ValidateCompressedTexFormat("compressedTexImage3D", internalformat))
     return;
   GLuint data_length;
-  if (!base::CheckedNumeric<GLuint>(data.View()->byteLengthAsSizeT())
-           .AssignIfValid(&data_length)) {
-    SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage3D",
-                      "provided data exceeds the maximum supported length");
+  if (!ExtractDataLengthIfValid("compressedTexImage3D", data, &data_length))
     return;
-  }
   if (src_offset > data_length) {
     SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage3D",
                       "srcOffset is out of range");
@@ -2407,12 +2395,8 @@ void WebGL2RenderingContextBase::compressedTexSubImage3D(
   if (!ValidateCompressedTexFormat("compressedTexSubImage3D", format))
     return;
   GLuint data_length;
-  if (!base::CheckedNumeric<GLuint>(data.View()->byteLengthAsSizeT())
-           .AssignIfValid(&data_length)) {
-    SynthesizeGLError(GL_INVALID_VALUE, "compressedTexSubImage3D",
-                      "provided data exceeds the maximum supported length");
+  if (!ExtractDataLengthIfValid("compressedTexSubImage3D", data, &data_length))
     return;
-  }
   if (src_offset > data_length) {
     SynthesizeGLError(GL_INVALID_VALUE, "compressedTexSubImage3D",
                       "srcOffset is out of range");

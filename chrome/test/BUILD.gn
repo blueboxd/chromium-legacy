@@ -3222,7 +3222,6 @@ test("unit_tests") {
     "../browser/performance_manager/decorators/frozen_frame_aggregator_unittest.cc",
     "../browser/performance_manager/decorators/helpers/page_live_state_decorator_helper_unittest.cc",
     "../browser/performance_manager/decorators/page_aggregator_unittest.cc",
-    "../browser/performance_manager/decorators/page_almost_idle_decorator_unittest.cc",
     "../browser/performance_manager/decorators/process_metrics_decorator_unittest.cc",
     "../browser/performance_manager/decorators/process_priority_aggregator_unittest.cc",
     "../browser/performance_manager/graph/policies/dynamic_tcmalloc_policy_linux_unittest.cc",

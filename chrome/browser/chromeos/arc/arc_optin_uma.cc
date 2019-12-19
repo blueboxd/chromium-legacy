@@ -16,6 +16,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/metrics/stability_metrics_manager.h"
+#include "components/arc/mojom/app.mojom.h"
+#include "components/arc/mojom/auth.mojom.h"
 
 namespace arc {
 

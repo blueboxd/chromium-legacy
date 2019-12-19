@@ -32,6 +32,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.BooleanList;
@@ -159,6 +160,7 @@ public class AutofillAssistantGenericUiTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1033877")
     @DisableIf.Build(sdk_is_less_than = 21)
     public void testStaticUserInterface() {
         DrawableProto roundedRect =

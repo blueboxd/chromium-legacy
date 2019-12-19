@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/invalidation/impl/per_user_topic_registration_manager.h"
+#include "components/invalidation/impl/per_user_topic_subscription_manager.h"
 
 #include <stdint.h>
 
@@ -133,7 +133,7 @@ void MigratePrefs(PrefService* prefs, const std::string& project_id) {
 }  // namespace
 
 // static
-void PerUserTopicRegistrationManager::RegisterProfilePrefs(
+void PerUserTopicSubscriptionManager::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kTypeSubscribedForInvalidationsDeprecated);
   registry->RegisterStringPref(kActiveRegistrationTokenDeprecated,
@@ -144,7 +144,7 @@ void PerUserTopicRegistrationManager::RegisterProfilePrefs(
 }
 
 // static
-void PerUserTopicRegistrationManager::RegisterPrefs(
+void PerUserTopicSubscriptionManager::RegisterPrefs(
     PrefRegistrySimple* registry) {
   // Same as RegisterProfilePrefs; see comment in the header.
   RegisterProfilePrefs(registry);
@@ -152,7 +152,7 @@ void PerUserTopicRegistrationManager::RegisterPrefs(
 
 // State of the instance ID token when subscription is requested.
 // Used by UMA histogram, so entries shouldn't be reordered or removed.
-enum class PerUserTopicRegistrationManager::TokenStateOnSubscriptionRequest {
+enum class PerUserTopicSubscriptionManager::TokenStateOnSubscriptionRequest {
   kTokenWasEmpty = 0,
   kTokenUnchanged = 1,
   kTokenChanged = 2,
@@ -160,7 +160,7 @@ enum class PerUserTopicRegistrationManager::TokenStateOnSubscriptionRequest {
   kMaxValue = kTokenCleared,
 };
 
-struct PerUserTopicRegistrationManager::SubscriptionEntry {
+struct PerUserTopicSubscriptionManager::SubscriptionEntry {
   SubscriptionEntry(const Topic& topic,
                     SubscriptionFinishedCallback completion_callback,
                     PerUserTopicRegistrationRequest::RequestType type,
@@ -185,7 +185,7 @@ struct PerUserTopicRegistrationManager::SubscriptionEntry {
   DISALLOW_COPY_AND_ASSIGN(SubscriptionEntry);
 };
 
-PerUserTopicRegistrationManager::SubscriptionEntry::SubscriptionEntry(
+PerUserTopicSubscriptionManager::SubscriptionEntry::SubscriptionEntry(
     const Topic& topic,
     SubscriptionFinishedCallback completion_callback,
     PerUserTopicRegistrationRequest::RequestType type,
@@ -196,21 +196,21 @@ PerUserTopicRegistrationManager::SubscriptionEntry::SubscriptionEntry(
       type(type),
       request_backoff_(&kBackoffPolicy) {}
 
-PerUserTopicRegistrationManager::SubscriptionEntry::~SubscriptionEntry() {}
+PerUserTopicSubscriptionManager::SubscriptionEntry::~SubscriptionEntry() {}
 
-void PerUserTopicRegistrationManager::SubscriptionEntry::SubscriptionFinished(
+void PerUserTopicSubscriptionManager::SubscriptionEntry::SubscriptionFinished(
     const Status& code,
     const std::string& topic_name) {
   if (completion_callback)
     std::move(completion_callback).Run(topic, code, topic_name, type);
 }
 
-void PerUserTopicRegistrationManager::SubscriptionEntry::Cancel() {
+void PerUserTopicSubscriptionManager::SubscriptionEntry::Cancel() {
   request_retry_timer_.Stop();
   request.reset();
 }
 
-PerUserTopicRegistrationManager::PerUserTopicRegistrationManager(
+PerUserTopicSubscriptionManager::PerUserTopicSubscriptionManager(
     invalidation::IdentityProvider* identity_provider,
     PrefService* pref_service,
     network::mojom::URLLoaderFactory* url_loader_factory,
@@ -223,22 +223,22 @@ PerUserTopicRegistrationManager::PerUserTopicRegistrationManager(
       migrate_prefs_(migrate_prefs),
       request_access_token_backoff_(&kBackoffPolicy) {}
 
-PerUserTopicRegistrationManager::~PerUserTopicRegistrationManager() {}
+PerUserTopicSubscriptionManager::~PerUserTopicSubscriptionManager() {}
 
 // static
-std::unique_ptr<PerUserTopicRegistrationManager>
-PerUserTopicRegistrationManager::Create(
+std::unique_ptr<PerUserTopicSubscriptionManager>
+PerUserTopicSubscriptionManager::Create(
     invalidation::IdentityProvider* identity_provider,
     PrefService* pref_service,
     network::mojom::URLLoaderFactory* url_loader_factory,
     const std::string& project_id,
     bool migrate_prefs) {
-  return std::make_unique<PerUserTopicRegistrationManager>(
+  return std::make_unique<PerUserTopicSubscriptionManager>(
       identity_provider, pref_service, url_loader_factory, project_id,
       migrate_prefs);
 }
 
-void PerUserTopicRegistrationManager::Init() {
+void PerUserTopicSubscriptionManager::Init() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (migrate_prefs_) {
     MigratePrefs(pref_service_, project_id_);
@@ -269,7 +269,7 @@ void PerUserTopicRegistrationManager::Init() {
   }
 }
 
-void PerUserTopicRegistrationManager::UpdateSubscribedTopics(
+void PerUserTopicSubscriptionManager::UpdateSubscribedTopics(
     const Topics& topics,
     const std::string& instance_id_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -288,7 +288,7 @@ void PerUserTopicRegistrationManager::UpdateSubscribedTopics(
       pending_subscriptions_[topic.first] = std::make_unique<SubscriptionEntry>(
           topic.first,
           base::BindOnce(
-              &PerUserTopicRegistrationManager::SubscriptionFinishedForTopic,
+              &PerUserTopicSubscriptionManager::SubscriptionFinishedForTopic,
               base::Unretained(this)),
           PerUserTopicRegistrationRequest::SUBSCRIBE, topic.second.is_public);
     }
@@ -306,7 +306,7 @@ void PerUserTopicRegistrationManager::UpdateSubscribedTopics(
       pending_subscriptions_[topic] = std::make_unique<SubscriptionEntry>(
           topic,
           base::BindOnce(
-              &PerUserTopicRegistrationManager::SubscriptionFinishedForTopic,
+              &PerUserTopicSubscriptionManager::SubscriptionFinishedForTopic,
               base::Unretained(this)),
           PerUserTopicRegistrationRequest::UNSUBSCRIBE);
       private_topic_to_topic_.erase(it->second);
@@ -328,20 +328,20 @@ void PerUserTopicRegistrationManager::UpdateSubscribedTopics(
   RequestAccessToken();
 }
 
-void PerUserTopicRegistrationManager::ClearInstanceIDToken() {
+void PerUserTopicSubscriptionManager::ClearInstanceIDToken() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   instance_id_token_.clear();
   DropAllSavedSubscriptionsOnTokenChange();
 }
 
-void PerUserTopicRegistrationManager::StartPendingSubscriptions() {
+void PerUserTopicSubscriptionManager::StartPendingSubscriptions() {
   for (const auto& pending_subscription : pending_subscriptions_) {
     StartPendingSubscriptionRequest(pending_subscription.first);
   }
 }
 
-void PerUserTopicRegistrationManager::StartPendingSubscriptionRequest(
+void PerUserTopicSubscriptionManager::StartPendingSubscriptionRequest(
     const Topic& topic) {
   auto it = pending_subscriptions_.find(topic);
   if (it == pending_subscriptions_.end()) {
@@ -363,13 +363,13 @@ void PerUserTopicRegistrationManager::StartPendingSubscriptionRequest(
                             .SetTopicIsPublic(it->second->topic_is_public)
                             .Build();
   it->second->request->Start(
-      base::BindOnce(&PerUserTopicRegistrationManager::SubscriptionEntry::
+      base::BindOnce(&PerUserTopicSubscriptionManager::SubscriptionEntry::
                          SubscriptionFinished,
                      base::Unretained(it->second.get())),
       url_loader_factory_);
 }
 
-void PerUserTopicRegistrationManager::ActOnSuccessfulSubscription(
+void PerUserTopicSubscriptionManager::ActOnSuccessfulSubscription(
     const Topic& topic,
     const std::string& private_topic_name,
     PerUserTopicRegistrationRequest::RequestType type) {
@@ -404,10 +404,10 @@ void PerUserTopicRegistrationManager::ActOnSuccessfulSubscription(
   }
 }
 
-void PerUserTopicRegistrationManager::ScheduleRequestForRepetition(
+void PerUserTopicSubscriptionManager::ScheduleRequestForRepetition(
     const Topic& topic) {
   pending_subscriptions_[topic]->completion_callback = base::BindOnce(
-      &PerUserTopicRegistrationManager::SubscriptionFinishedForTopic,
+      &PerUserTopicSubscriptionManager::SubscriptionFinishedForTopic,
       base::Unretained(this));
   // TODO(crbug.com/1020117): We already called InformOfRequest(false) before in
   // SubscriptionFinishedForTopic(), should probably not call it again here?
@@ -416,11 +416,11 @@ void PerUserTopicRegistrationManager::ScheduleRequestForRepetition(
       FROM_HERE,
       pending_subscriptions_[topic]->request_backoff_.GetTimeUntilRelease(),
       base::BindRepeating(
-          &PerUserTopicRegistrationManager::StartPendingSubscriptionRequest,
+          &PerUserTopicSubscriptionManager::StartPendingSubscriptionRequest,
           base::Unretained(this), topic));
 }
 
-void PerUserTopicRegistrationManager::SubscriptionFinishedForTopic(
+void PerUserTopicSubscriptionManager::SubscriptionFinishedForTopic(
     Topic topic,
     Status code,
     std::string private_topic_name,
@@ -450,7 +450,7 @@ void PerUserTopicRegistrationManager::SubscriptionFinishedForTopic(
   }
 }
 
-TopicSet PerUserTopicRegistrationManager::GetSubscribedTopicsForTest() const {
+TopicSet PerUserTopicSubscriptionManager::GetSubscribedTopicsForTest() const {
   TopicSet topics;
   for (const auto& t : topic_to_private_topic_)
     topics.insert(t.first);
@@ -458,15 +458,15 @@ TopicSet PerUserTopicRegistrationManager::GetSubscribedTopicsForTest() const {
   return topics;
 }
 
-void PerUserTopicRegistrationManager::AddObserver(Observer* observer) {
+void PerUserTopicSubscriptionManager::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void PerUserTopicRegistrationManager::RemoveObserver(Observer* observer) {
+void PerUserTopicSubscriptionManager::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void PerUserTopicRegistrationManager::RequestAccessToken() {
+void PerUserTopicSubscriptionManager::RequestAccessToken() {
   // TODO(crbug.com/1020117): Implement traffic optimisation.
   // * Before sending request to server ask for access token from identity
   //   provider (don't invalidate previous token).
@@ -485,11 +485,11 @@ void PerUserTopicRegistrationManager::RequestAccessToken() {
   access_token_fetcher_ = identity_provider_->FetchAccessToken(
       "fcm_invalidation", oauth2_scopes,
       base::BindOnce(
-          &PerUserTopicRegistrationManager::OnAccessTokenRequestCompleted,
+          &PerUserTopicSubscriptionManager::OnAccessTokenRequestCompleted,
           base::Unretained(this)));
 }
 
-void PerUserTopicRegistrationManager::OnAccessTokenRequestCompleted(
+void PerUserTopicSubscriptionManager::OnAccessTokenRequestCompleted(
     GoogleServiceAuthError error,
     std::string access_token) {
   access_token_fetcher_.reset();
@@ -499,7 +499,7 @@ void PerUserTopicRegistrationManager::OnAccessTokenRequestCompleted(
     OnAccessTokenRequestFailed(error);
 }
 
-void PerUserTopicRegistrationManager::OnAccessTokenRequestSucceeded(
+void PerUserTopicSubscriptionManager::OnAccessTokenRequestSucceeded(
     const std::string& access_token) {
   // Reset backoff time after successful response.
   request_access_token_backoff_.Reset();
@@ -511,7 +511,7 @@ void PerUserTopicRegistrationManager::OnAccessTokenRequestSucceeded(
   StartPendingSubscriptions();
 }
 
-void PerUserTopicRegistrationManager::OnAccessTokenRequestFailed(
+void PerUserTopicSubscriptionManager::OnAccessTokenRequestFailed(
     GoogleServiceAuthError error) {
   DCHECK_NE(error.state(), GoogleServiceAuthError::NONE);
   NotifySubscriptionChannelStateChange(
@@ -519,19 +519,19 @@ void PerUserTopicRegistrationManager::OnAccessTokenRequestFailed(
   request_access_token_backoff_.InformOfRequest(false);
   request_access_token_retry_timer_.Start(
       FROM_HERE, request_access_token_backoff_.GetTimeUntilRelease(),
-      base::BindRepeating(&PerUserTopicRegistrationManager::RequestAccessToken,
+      base::BindRepeating(&PerUserTopicSubscriptionManager::RequestAccessToken,
                           base::Unretained(this)));
 }
 
-void PerUserTopicRegistrationManager::DropAllSavedSubscriptionsOnTokenChange() {
+void PerUserTopicSubscriptionManager::DropAllSavedSubscriptionsOnTokenChange() {
   TokenStateOnSubscriptionRequest outcome =
       DropAllSavedSubscriptionsOnTokenChangeImpl();
   base::UmaHistogramEnumeration(
       "FCMInvalidations.TokenStateOnRegistrationRequest2", outcome);
 }
 
-PerUserTopicRegistrationManager::TokenStateOnSubscriptionRequest
-PerUserTopicRegistrationManager::DropAllSavedSubscriptionsOnTokenChangeImpl() {
+PerUserTopicSubscriptionManager::TokenStateOnSubscriptionRequest
+PerUserTopicSubscriptionManager::DropAllSavedSubscriptionsOnTokenChangeImpl() {
   {
     DictionaryPrefUpdate token_update(pref_service_, kActiveRegistrationTokens);
     std::string previous_token;
@@ -567,7 +567,7 @@ PerUserTopicRegistrationManager::DropAllSavedSubscriptionsOnTokenChangeImpl() {
              : TokenStateOnSubscriptionRequest::kTokenChanged;
 }
 
-void PerUserTopicRegistrationManager::NotifySubscriptionChannelStateChange(
+void PerUserTopicSubscriptionManager::NotifySubscriptionChannelStateChange(
     SubscriptionChannelState state) {
   // NOT_STARTED is the default state of the subscription
   // channel and shouldn't explicitly issued.
@@ -583,7 +583,7 @@ void PerUserTopicRegistrationManager::NotifySubscriptionChannelStateChange(
   }
 }
 
-base::DictionaryValue PerUserTopicRegistrationManager::CollectDebugData()
+base::DictionaryValue PerUserTopicSubscriptionManager::CollectDebugData()
     const {
   base::DictionaryValue status;
   for (const auto& topic_to_private_topic : topic_to_private_topic_) {
@@ -595,7 +595,7 @@ base::DictionaryValue PerUserTopicRegistrationManager::CollectDebugData()
 }
 
 base::Optional<Topic>
-PerUserTopicRegistrationManager::LookupSubscribedPublicTopicByPrivateTopic(
+PerUserTopicSubscriptionManager::LookupSubscribedPublicTopicByPrivateTopic(
     const std::string& private_topic) const {
   auto it = private_topic_to_topic_.find(private_topic);
   if (it == private_topic_to_topic_.end()) {

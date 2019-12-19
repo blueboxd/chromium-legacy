@@ -26,7 +26,7 @@ class VaapiWrapper;
 class VaapiPictureNativePixmap : public VaapiPicture {
  public:
   VaapiPictureNativePixmap(
-      const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
+      scoped_refptr<VaapiWrapper> vaapi_wrapper,
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const BindGLImageCallback& bind_image_cb_,
       int32_t picture_buffer_id,
@@ -37,7 +37,7 @@ class VaapiPictureNativePixmap : public VaapiPicture {
   ~VaapiPictureNativePixmap() override;
 
   // VaapiPicture implementation.
-  bool DownloadFromSurface(const scoped_refptr<VASurface>& va_surface) override;
+  bool DownloadFromSurface(scoped_refptr<VASurface> va_surface) override;
   bool AllowOverlay() const override;
   VASurfaceID va_surface_id() const override;
 

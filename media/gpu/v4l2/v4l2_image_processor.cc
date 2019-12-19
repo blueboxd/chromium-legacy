@@ -25,6 +25,7 @@
 #include "media/base/color_plane_layout.h"
 #include "media/base/scopedfd_helper.h"
 #include "media/gpu/chromeos/fourcc.h"
+#include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 
 #define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value, type_str) \
@@ -39,6 +40,54 @@
   IOCTL_OR_ERROR_RETURN_VALUE(type, arg, false, #type)
 
 namespace media {
+
+namespace {
+
+base::Optional<gfx::GpuMemoryBufferHandle> CreateHandle(
+    const VideoFrame* frame) {
+  gfx::GpuMemoryBufferHandle handle = CreateGpuMemoryBufferHandle(frame);
+
+  if (handle.is_null() || handle.type != gfx::NATIVE_PIXMAP)
+    return base::nullopt;
+  return handle;
+}
+
+void FillV4L2BufferByGpuMemoryBufferHandle(
+    const Fourcc& fourcc,
+    const gfx::Size& buffer_size,
+    const gfx::GpuMemoryBufferHandle& gmb_handle,
+    V4L2WritableBufferRef* buffer) {
+  DCHECK_EQ(buffer->Memory(), V4L2_MEMORY_DMABUF);
+  const size_t num_planes =
+      V4L2Device::GetNumPlanesOfV4L2PixFmt(fourcc.ToV4L2PixFmt());
+  const std::vector<gfx::NativePixmapPlane>& planes =
+      gmb_handle.native_pixmap_handle.planes;
+
+  for (size_t i = 0; i < num_planes; ++i) {
+    const int bytes_used =
+        VideoFrame::PlaneSize(fourcc.ToVideoPixelFormat(), i, buffer_size)
+            .GetArea();
+
+    if (fourcc.IsMultiPlanar()) {
+      // TODO(crbug.com/901264): The way to pass an offset within a DMA-buf
+      // is not defined in V4L2 specification, so we abuse data_offset for
+      // now. Fix it when we have the right interface, including any
+      // necessary validation and potential alignment
+      buffer->SetPlaneDataOffset(i, planes[i].offset);
+
+      // V4L2 counts data_offset as used bytes
+      buffer->SetPlaneSize(i, bytes_used + planes[i].offset);
+      // Workaround: filling length should not be needed. This is a bug of
+      // videobuf2 library.
+      buffer->SetPlaneBytesUsed(i, bytes_used + planes[i].offset);
+    } else {
+      // There is no need of filling data_offset for a single-planar format.
+      buffer->SetPlaneBytesUsed(i, bytes_used);
+    }
+  }
+}
+
+}  // namespace
 
 V4L2ImageProcessor::JobRecord::JobRecord()
     : output_buffer_id(std::numeric_limits<size_t>::max()) {}
@@ -138,6 +187,7 @@ v4l2_memory InputStorageTypeToV4L2Memory(VideoFrame::StorageType storage_type) {
     case VideoFrame::STORAGE_MOJO_SHARED_BUFFER:
       return V4L2_MEMORY_USERPTR;
     case VideoFrame::STORAGE_DMABUFS:
+    case VideoFrame::STORAGE_GPU_MEMORY_BUFFER:
       return V4L2_MEMORY_DMABUF;
     default:
       return static_cast<v4l2_memory>(0);
@@ -187,8 +237,9 @@ std::unique_ptr<ImageProcessorBackend> V4L2ImageProcessor::CreateWithOutputMode(
   // frame for input.
   VideoFrame::StorageType input_storage_type = VideoFrame::STORAGE_UNKNOWN;
   for (auto input_type : input_config.preferred_storage_types) {
-    if (input_type == VideoFrame::STORAGE_DMABUFS ||
-        VideoFrame::IsStorageTypeMappable(input_type)) {
+    v4l2_memory v4l2_memory_type = InputStorageTypeToV4L2Memory(input_type);
+    if (v4l2_memory_type == V4L2_MEMORY_USERPTR ||
+        v4l2_memory_type == V4L2_MEMORY_DMABUF) {
       input_storage_type = input_type;
       break;
     }
@@ -201,7 +252,9 @@ std::unique_ptr<ImageProcessorBackend> V4L2ImageProcessor::CreateWithOutputMode(
   // V4L2ImageProcessor only supports DmaBuf-backed video frame for output.
   VideoFrame::StorageType output_storage_type = VideoFrame::STORAGE_UNKNOWN;
   for (auto output_type : output_config.preferred_storage_types) {
-    if (output_type == VideoFrame::STORAGE_DMABUFS) {
+    v4l2_memory v4l2_memory_type = InputStorageTypeToV4L2Memory(output_type);
+    if (v4l2_memory_type == V4L2_MEMORY_USERPTR ||
+        v4l2_memory_type == V4L2_MEMORY_DMABUF) {
       output_storage_type = output_type;
       break;
     }
@@ -804,9 +857,8 @@ void V4L2ImageProcessor::Dequeue() {
           output_frame->AddDestructionObserver(
               base::BindOnce(&V4L2ImageProcessor::V4L2VFRecycleThunk,
                              backend_task_runner_, backend_weak_this_, buffer));
+          break;
         }
-        break;
-
       case V4L2_MEMORY_DMABUF:
         output_frame = std::move(job_record->output_frame);
         break;
@@ -836,25 +888,35 @@ bool V4L2ImageProcessor::EnqueueInputRecord(const JobRecord* job_record) {
   V4L2WritableBufferRef buffer(input_queue_->GetFreeBuffer());
   DCHECK(buffer.IsValid());
 
-  std::vector<void*> user_ptrs;
-  const size_t num_planes =
-      V4L2Device::GetNumPlanesOfV4L2PixFmt(input_config_.fourcc.ToV4L2PixFmt());
-  for (size_t i = 0; i < num_planes; ++i) {
-    int bytes_used = VideoFrame::PlaneSize(job_record->input_frame->format(), i,
-                                           input_config_.size)
-                         .GetArea();
-    buffer.SetPlaneBytesUsed(i, bytes_used);
-    if (buffer.Memory() == V4L2_MEMORY_USERPTR)
-      user_ptrs.push_back(job_record->input_frame->data(i));
-  }
-
   switch (input_memory_type_) {
-    case V4L2_MEMORY_USERPTR:
+    case V4L2_MEMORY_USERPTR: {
+      const size_t num_planes = V4L2Device::GetNumPlanesOfV4L2PixFmt(
+          input_config_.fourcc.ToV4L2PixFmt());
+      std::vector<void*> user_ptrs(num_planes);
+      for (size_t i = 0; i < num_planes; ++i) {
+        int bytes_used =
+            VideoFrame::PlaneSize(job_record->input_frame->format(), i,
+                                  input_config_.size)
+                .GetArea();
+        buffer.SetPlaneBytesUsed(i, bytes_used);
+        user_ptrs[i] = job_record->input_frame->data(i);
+      }
       std::move(buffer).QueueUserPtr(user_ptrs);
       break;
-    case V4L2_MEMORY_DMABUF:
-      std::move(buffer).QueueDMABuf(job_record->input_frame->DmabufFds());
+    }
+    case V4L2_MEMORY_DMABUF: {
+      auto input_handle = CreateHandle(job_record->input_frame.get());
+      if (!input_handle) {
+        VLOGF(1) << "Failed to create native GpuMemoryBufferHandle";
+        NotifyError();
+        return false;
+      }
+
+      FillV4L2BufferByGpuMemoryBufferHandle(
+          input_config_.fourcc, input_config_.size, *input_handle, &buffer);
+      std::move(buffer).QueueDMABuf(input_handle->native_pixmap_handle.planes);
       break;
+    }
     default:
       NOTREACHED();
       return false;
@@ -862,7 +924,6 @@ bool V4L2ImageProcessor::EnqueueInputRecord(const JobRecord* job_record) {
   DVLOGF(4) << "enqueued frame ts="
             << job_record->input_frame->timestamp().InMilliseconds()
             << " to device.";
-
   return true;
 }
 
@@ -879,9 +940,19 @@ bool V4L2ImageProcessor::EnqueueOutputRecord(JobRecord* job_record) {
   switch (buffer.Memory()) {
     case V4L2_MEMORY_MMAP:
       return std::move(buffer).QueueMMap();
-    case V4L2_MEMORY_DMABUF:
+    case V4L2_MEMORY_DMABUF: {
+      auto output_handle = CreateHandle(job_record->output_frame.get());
+      if (!output_handle) {
+        VLOGF(1) << "Failed to create native GpuMemoryBufferHandle";
+        NotifyError();
+        return false;
+      }
+
+      FillV4L2BufferByGpuMemoryBufferHandle(
+          output_config_.fourcc, output_config_.size, *output_handle, &buffer);
       return std::move(buffer).QueueDMABuf(
-          job_record->output_frame->DmabufFds());
+          output_handle->native_pixmap_handle.planes);
+    }
     default:
       NOTREACHED();
       return false;

@@ -11,6 +11,7 @@ import android.net.Network;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Process;
+import android.os.UserManager;
 import android.security.NetworkSecurityPolicy;
 import android.view.ActionMode;
 import android.view.ViewConfiguration;
@@ -86,6 +87,11 @@ public final class ApiHelperForM {
     /** See {@link NetworkSecurityPolicy#isCleartextTrafficPermitted()}. */
     public static boolean isCleartextTrafficPermitted() {
         return NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();
+    }
+
+    /** See {@link UserManager#isSystemUser()}. */
+    public static boolean isSystemUser(UserManager userManager) {
+        return userManager.isSystemUser();
     }
 
     /*

@@ -30,6 +30,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "components/arc/mojom/file_system.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"

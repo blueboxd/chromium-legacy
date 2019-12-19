@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
-#include "components/arc/mojom/intent_helper.mojom.h"
+#include "components/arc/mojom/intent_helper.mojom-forward.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 

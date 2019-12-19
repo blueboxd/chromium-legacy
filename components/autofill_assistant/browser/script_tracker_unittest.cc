@@ -64,12 +64,16 @@ class ScriptTrackerTest : public testing::Test, public ScriptTracker::Listener {
 
   void OnNoRunnableScriptsForPage() override { no_runnable_scripts_anymore_++; }
 
-  void SetAndCheckScripts() {
+  void SetScripts() {
     std::vector<std::unique_ptr<Script>> scripts;
     for (const auto& script_proto : scripts_proto_) {
       ProtocolUtils::AddScript(*script_proto, &scripts);
     }
     tracker_.SetScripts(std::move(scripts));
+  }
+
+  void SetAndCheckScripts() {
+    SetScripts();
     tracker_.CheckScripts();
   }
 
@@ -78,10 +82,10 @@ class ScriptTrackerTest : public testing::Test, public ScriptTracker::Listener {
     return scripts_proto_.back().get();
   }
 
-  SupportedScriptProto* AddScript(const std::string& name,
-                                  const std::string& path,
-                                  const std::string& selector) {
-    SupportedScriptProto* script = AddScript();
+  void InitScriptProto(SupportedScriptProto* script,
+                       const std::string& name,
+                       const std::string& path,
+                       const std::string& selector) {
     script->set_path(path);
     script->mutable_presentation()->mutable_chip()->set_text(name);
     if (!selector.empty()) {
@@ -97,7 +101,6 @@ class ScriptTrackerTest : public testing::Test, public ScriptTracker::Listener {
     *script->mutable_presentation()
          ->mutable_precondition()
          ->add_script_status_match() = dont_run_twice_precondition;
-    return script;
   }
 
   const std::vector<ScriptHandle>& runnable_scripts() {
@@ -141,8 +144,9 @@ TEST_F(ScriptTrackerTest, NoScripts) {
 }
 
 TEST_F(ScriptTrackerTest, SomeRunnableScripts) {
-  AddScript("not runnable name", "not runnable path", "does_not_exist");
-  AddScript("runnable name", "runnable path", "exists");
+  InitScriptProto(AddScript(), "not runnable name", "not runnable path",
+                  "does_not_exist");
+  InitScriptProto(AddScript(), "runnable name", "runnable path", "exists");
   SetAndCheckScripts();
 
   EXPECT_EQ(1, runnable_scripts_changed_);
@@ -152,22 +156,16 @@ TEST_F(ScriptTrackerTest, SomeRunnableScripts) {
   EXPECT_EQ(0, no_runnable_scripts_anymore_);
 }
 
-TEST_F(ScriptTrackerTest, DoNotCheckInterruptWithNoName) {
-  // The interrupt's preconditions would all be met, but it won't be reported
-  // since it doesn't have a name.
-  auto* no_name = AddScript("", "path1", "exists");
-  no_name->mutable_presentation()->set_interrupt(true);
-
-  // The interrupt's preconditions are met and it will be reported as a normal
-  // script.
-  auto* with_name = AddScript("with name", "path2", "exists");
-  with_name->mutable_presentation()->set_interrupt(true);
+TEST_F(ScriptTrackerTest, DoNotReportInterruptsAsRunnable) {
+  // The interrupt's preconditions would all be met, but it won't be reported as
+  // runnable since it's an interrupt.
+  auto* interrupt = AddScript();
+  InitScriptProto(interrupt, "name", "path1", "exists");
+  interrupt->mutable_presentation()->set_interrupt(true);
 
   SetAndCheckScripts();
 
-  EXPECT_EQ(1, runnable_scripts_changed_);
-  ASSERT_THAT(runnable_scripts(), SizeIs(1));
-  EXPECT_EQ("with name", runnable_scripts()[0].chip.text);
+  EXPECT_THAT(runnable_scripts(), IsEmpty());
 }
 
 TEST_F(ScriptTrackerTest, OrderScriptsByPriority) {
@@ -192,7 +190,7 @@ TEST_F(ScriptTrackerTest, OrderScriptsByPriority) {
 }
 
 TEST_F(ScriptTrackerTest, NewScriptChangesNothing) {
-  AddScript("runnable name", "runnable path", "exists");
+  InitScriptProto(AddScript(), "runnable name", "runnable path", "exists");
   SetAndCheckScripts();
   EXPECT_EQ(1, runnable_scripts_changed_);
   SetAndCheckScripts();
@@ -200,7 +198,7 @@ TEST_F(ScriptTrackerTest, NewScriptChangesNothing) {
 }
 
 TEST_F(ScriptTrackerTest, NewScriptClearsRunnable) {
-  AddScript("runnable name", "runnable path", "exists");
+  InitScriptProto(AddScript(), "runnable name", "runnable path", "exists");
   SetAndCheckScripts();
   EXPECT_EQ(1, runnable_scripts_changed_);
   EXPECT_THAT(runnable_scripts(), SizeIs(1));
@@ -212,32 +210,34 @@ TEST_F(ScriptTrackerTest, NewScriptClearsRunnable) {
 }
 
 TEST_F(ScriptTrackerTest, NewScriptAddsRunnable) {
-  AddScript("runnable name", "runnable path", "exists");
+  InitScriptProto(AddScript(), "runnable name", "runnable path", "exists");
   SetAndCheckScripts();
   EXPECT_EQ(1, runnable_scripts_changed_);
   EXPECT_THAT(runnable_scripts(), SizeIs(1));
 
-  AddScript("new runnable name", "new runnable path", "exists");
+  InitScriptProto(AddScript(), "new runnable name", "new runnable path",
+                  "exists");
   SetAndCheckScripts();
   EXPECT_EQ(2, runnable_scripts_changed_);
   EXPECT_THAT(runnable_scripts(), SizeIs(2));
 }
 
 TEST_F(ScriptTrackerTest, NewScriptChangesRunnable) {
-  AddScript("runnable name", "runnable path", "exists");
+  InitScriptProto(AddScript(), "runnable name", "runnable path", "exists");
   SetAndCheckScripts();
   EXPECT_EQ(1, runnable_scripts_changed_);
   EXPECT_THAT(runnable_scripts(), SizeIs(1));
 
   scripts_proto_.clear();
-  AddScript("new runnable name", "new runnable path", "exists");
+  InitScriptProto(AddScript(), "new runnable name", "new runnable path",
+                  "exists");
   SetAndCheckScripts();
   EXPECT_EQ(2, runnable_scripts_changed_);
 }
 
 TEST_F(ScriptTrackerTest, CheckScriptsAgainAfterScriptEnd) {
-  AddScript("script 1", "script1", "exists");
-  AddScript("script 2", "script2", "exists");
+  InitScriptProto(AddScript(), "script 1", "script1", "exists");
+  InitScriptProto(AddScript(), "script 2", "script2", "exists");
   SetAndCheckScripts();
 
   // Both scripts are runnable
@@ -265,7 +265,7 @@ TEST_F(ScriptTrackerTest, CheckScriptsAfterDOMChange) {
               OnElementCheck(Eq(Selector({"maybe_exists"})), _))
       .WillOnce(RunOnceCallback<1>(ClientStatus()));
 
-  AddScript("script name", "script path", "maybe_exists");
+  InitScriptProto(AddScript(), "script name", "script path", "maybe_exists");
   SetAndCheckScripts();
 
   // No scripts are runnable.
@@ -283,7 +283,7 @@ TEST_F(ScriptTrackerTest, CheckScriptsAfterDOMChange) {
 
 TEST_F(ScriptTrackerTest, UpdateScriptList) {
   // 1. Initialize runnable scripts with a single valid script.
-  AddScript("runnable name", "runnable path", "exists");
+  InitScriptProto(AddScript(), "runnable name", "runnable path", "exists");
   SetAndCheckScripts();
 
   EXPECT_EQ(1, runnable_scripts_changed_);
@@ -295,10 +295,10 @@ TEST_F(ScriptTrackerTest, UpdateScriptList) {
   ActionsResponseProto actions_response;
   actions_response.add_actions()->mutable_tell()->set_message("hi");
 
-  *actions_response.mutable_update_script_list()->add_scripts() =
-      *AddScript("update name", "update path", "exists");
-  *actions_response.mutable_update_script_list()->add_scripts() =
-      *AddScript("update name 2", "update path 2", "exists");
+  InitScriptProto(actions_response.mutable_update_script_list()->add_scripts(),
+                  "update name", "update path", "exists");
+  InitScriptProto(actions_response.mutable_update_script_list()->add_scripts(),
+                  "update name 2", "update path 2", "exists");
 
   EXPECT_CALL(mock_service_,
               OnGetActions(StrEq("runnable name"), _, _, _, _, _))
@@ -324,8 +324,7 @@ TEST_F(ScriptTrackerTest, UpdateScriptList) {
 
 TEST_F(ScriptTrackerTest, UpdateScriptListFromInterrupt) {
   // 1. Initialize runnable scripts with a single valid interrupt script.
-  auto* script = AddScript("runnable name", "runnable path", "exists");
-  script->mutable_presentation()->set_interrupt(true);
+  InitScriptProto(AddScript(), "runnable name", "runnable path", "exists");
   SetAndCheckScripts();
 
   EXPECT_EQ(1, runnable_scripts_changed_);
@@ -338,10 +337,10 @@ TEST_F(ScriptTrackerTest, UpdateScriptListFromInterrupt) {
   ActionsResponseProto actions_response;
   actions_response.add_actions()->mutable_tell()->set_message("hi");
 
-  *actions_response.mutable_update_script_list()->add_scripts() =
-      *AddScript("update name", "update path", "exists");
-  *actions_response.mutable_update_script_list()->add_scripts() =
-      *AddScript("update name 2", "update path 2", "exists");
+  InitScriptProto(actions_response.mutable_update_script_list()->add_scripts(),
+                  "update name", "update path", "exists");
+  InitScriptProto(actions_response.mutable_update_script_list()->add_scripts(),
+                  "update name 2", "update path 2", "exists");
 
   EXPECT_CALL(mock_service_,
               OnGetActions(StrEq("runnable name"), _, _, _, _, _))
@@ -365,8 +364,45 @@ TEST_F(ScriptTrackerTest, UpdateScriptListFromInterrupt) {
   EXPECT_EQ("update path 2", runnable_scripts()[1].path);
 }
 
+TEST_F(ScriptTrackerTest, UpdateInterruptList) {
+  // The first GetActions response from "main" updates the set of scripts, which
+  // includes "interrupt". "interrupt" is then executed from the wait_for_dom.
+
+  InitScriptProto(AddScript(), "main", "main", "exists");
+  SetScripts();
+
+  ActionsResponseProto actions_response;
+  auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
+  wait_for_dom->mutable_wait_until()->add_selectors("exists");
+  wait_for_dom->set_allow_interrupt(true);
+
+  SupportedScriptProto* interrupt_proto =
+      actions_response.mutable_update_script_list()->add_scripts();
+  InitScriptProto(interrupt_proto, "interrupt", "interrupt", "exists");
+  interrupt_proto->mutable_presentation()->set_interrupt(true);
+
+  EXPECT_CALL(mock_service_, OnGetActions("main", _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillRepeatedly(RunOnceCallback<4>(true, ""));
+
+  ActionsResponseProto actions_interrupt;
+  actions_response.set_script_payload("from interrupt");
+  actions_response.add_actions()->mutable_tell()->set_message("interrupt");
+
+  EXPECT_CALL(mock_service_, OnGetActions("interrupt", _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_interrupt)));
+
+  base::MockCallback<ScriptExecutor::RunScriptCallback> execute_callback;
+  EXPECT_CALL(execute_callback,
+              Run(Field(&ScriptExecutor::Result::success, true)));
+  tracker_.ExecuteScript("main", TriggerContext::CreateEmpty(),
+                         execute_callback.Get());
+}
+
 TEST_F(ScriptTrackerTest, NoRunnableScriptsEvenWithDOMChanges) {
-  auto* script = AddScript("name", "path", "");
+  auto* script = AddScript();
+  InitScriptProto(script, "name", "path", "");
   script->mutable_presentation()->mutable_precondition()->add_path_pattern(
       "doesnotmatch");
   SetAndCheckScripts();
@@ -376,7 +412,8 @@ TEST_F(ScriptTrackerTest, NoRunnableScriptsEvenWithDOMChanges) {
 }
 
 TEST_F(ScriptTrackerTest, NoRunnableScriptsWaitingForDOMChanges) {
-  AddScript("runnable name", "runnable path", "does_not_exist");
+  InitScriptProto(AddScript(), "runnable name", "runnable path",
+                  "does_not_exist");
   SetAndCheckScripts();
 
   EXPECT_THAT(runnable_scripts(), SizeIs(0));

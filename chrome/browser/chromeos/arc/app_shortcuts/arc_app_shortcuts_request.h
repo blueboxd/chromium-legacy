@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcut_item.h"
-#include "components/arc/mojom/app.mojom.h"
+#include "components/arc/mojom/app.mojom-forward.h"
 
 namespace arc {
 

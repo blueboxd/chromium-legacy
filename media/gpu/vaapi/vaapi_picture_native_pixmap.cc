@@ -16,7 +16,7 @@
 namespace media {
 
 VaapiPictureNativePixmap::VaapiPictureNativePixmap(
-    const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
+    scoped_refptr<VaapiWrapper> vaapi_wrapper,
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb,
     int32_t picture_buffer_id,
@@ -24,7 +24,7 @@ VaapiPictureNativePixmap::VaapiPictureNativePixmap(
     uint32_t texture_id,
     uint32_t client_texture_id,
     uint32_t texture_target)
-    : VaapiPicture(vaapi_wrapper,
+    : VaapiPicture(std::move(vaapi_wrapper),
                    make_context_current_cb,
                    bind_image_cb,
                    picture_buffer_id,
@@ -36,9 +36,9 @@ VaapiPictureNativePixmap::VaapiPictureNativePixmap(
 VaapiPictureNativePixmap::~VaapiPictureNativePixmap() = default;
 
 bool VaapiPictureNativePixmap::DownloadFromSurface(
-    const scoped_refptr<VASurface>& va_surface) {
+    scoped_refptr<VASurface> va_surface) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return vaapi_wrapper_->BlitSurface(va_surface, va_surface_);
+  return vaapi_wrapper_->BlitSurface(std::move(va_surface), va_surface_);
 }
 
 bool VaapiPictureNativePixmap::AllowOverlay() const {

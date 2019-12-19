@@ -4,7 +4,9 @@ Story,Description,Platforms,Tags
 background:media:imgur,,mobile,"2016,health_check"
 background:media:imgur:2019,,mobile,"2019,health_check"
 background:news:nytimes,,mobile,"2016,javascript_heavy"
+background:news:nytimes:2019,,mobile,"2019,javascript_heavy"
 background:search:google,,mobile,"2016,health_check"
+background:search:google:2019,,mobile,"2019,health_check"
 background:social:facebook,,mobile,2016
 background:social:facebook:2019,,mobile,2019
 background:tools:gmail,,mobile,"2016,health_check"
@@ -14,6 +16,7 @@ browse:chrome:omnibox:2019,Story that peforms search by using omnibox search pro
 browse:media:facebook_photos,Load a photo page from Rihanna's facebook page then navigate a few next,mobile,"2016,emerging_market"
 browse:media:facebook_photos:2019,Load a photo page from Rihanna's facebook page then navigate a few next,mobile,"2019,emerging_market"
 browse:media:flickr_infinite_scroll,,"desktop,mobile","2016,infinite_scroll"
+browse:media:flickr_infinite_scroll:2019,,mobile,"2019,infinite_scroll"
 browse:media:googleplaystore:2018,"Navigate to the movies page of Google Play Store, scroll to the bottom,",desktop,"2018,images"
 browse:media:googleplaystore:2019,"Navigate to the movies page of Google Play Store, scroll to the bottom,",mobile,"2019,emerging_market,images"
 browse:media:imgur,,"desktop,mobile","2016,emerging_market"
@@ -48,6 +51,7 @@ browse:shopping:amazon:2019,,mobile,"2019,emerging_market"
 browse:shopping:avito,,mobile,"2016,emerging_market,health_check"
 browse:shopping:flipkart,,mobile,"2016,emerging_market"
 browse:shopping:lazada,,mobile,"2016,emerging_market"
+browse:shopping:lazada:2019,,mobile,"2019,emerging_market"
 browse:social:facebook,,mobile,"2016,emerging_market"
 browse:social:facebook_infinite_scroll,,mobile,2016
 browse:social:facebook_infinite_scroll:2018,,"desktop,mobile","2018,infinite_scroll"
@@ -85,6 +89,7 @@ load:media:imgur:2018,,"desktop,mobile","2018,health_check"
 load:media:soundcloud:2018,,"desktop,mobile",2018
 load:media:youtube:2018,,"desktop,mobile","2018,emerging_market,health_check"
 load:news:bbc:2018,,desktop,2018
+load:news:bbc:2019,,mobile,2019
 load:news:cnn:2018,,"desktop,mobile","2018,javascript_heavy"
 load:news:flipboard,,desktop,2016
 load:news:hackernews:2018,,desktop,2018
@@ -115,17 +120,20 @@ load:search:yandex:2018,,"desktop,mobile","2018,international"
 load:social:instagram:2018,,desktop,2018
 load:social:instagram:2019,,mobile,2019
 load:social:pinterest,,desktop,"2016,javascript_heavy"
+load:social:pinterest:2019,,"desktop,mobile","2019,javascript_heavy"
 load:social:twitter,,mobile,2016
 load:social:twitter:2019,,mobile,2019
 load:social:vk,,desktop,"2016,international"
 load:social:vk:2018,,desktop,"2018,international"
 load:tools:docs,Load a typical google doc page.,"desktop,mobile","2016,health_check"
+load:tools:docs:2019,Load a typical google doc page (2019).,"desktop,mobile","2019,health_check"
 load:tools:drive,,"desktop,mobile","2016,javascript_heavy"
 load:tools:drive:2019,,"desktop,mobile","2019,javascript_heavy"
 load:tools:dropbox,,"desktop,mobile",2016
 load:tools:gmail,,"desktop,mobile",2016
 load:tools:stackoverflow:2018,Load a typical question & answer page of stackoverflow.com,"desktop,mobile","2018,health_check"
 load:tools:weather,,"desktop,mobile","2016,javascript_heavy"
+load:tools:weather:2019,,"desktop,mobile","2019,javascript_heavy"
 load_accessibility:media:wikipedia:2018,"Wikipedia page on Accessibility. Long, but very simple, clean layout.",desktop,"2018,accessibility"
 load_accessibility:shopping:amazon:2018,Amazon results page. Good example of a site with a data table.,desktop,"2018,accessibility"
 long_running:tools:gmail-background,,"desktop,mobile",2016

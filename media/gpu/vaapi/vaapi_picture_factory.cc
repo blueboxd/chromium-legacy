@@ -41,7 +41,7 @@ VaapiPictureFactory::VaapiPictureFactory() = default;
 VaapiPictureFactory::~VaapiPictureFactory() = default;
 
 std::unique_ptr<VaapiPicture> VaapiPictureFactory::Create(
-    const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
+    scoped_refptr<VaapiWrapper> vaapi_wrapper,
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb,
     const PictureBuffer& picture_buffer) {
@@ -69,14 +69,14 @@ std::unique_ptr<VaapiPicture> VaapiPictureFactory::Create(
       FALLTHROUGH;
     case kVaapiImplementationDrm:
       picture.reset(new VaapiPictureNativePixmapOzone(
-          vaapi_wrapper, make_context_current_cb, bind_image_cb,
+          std::move(vaapi_wrapper), make_context_current_cb, bind_image_cb,
           picture_buffer.id(), picture_buffer.size(), service_texture_id,
           client_texture_id, picture_buffer.texture_target()));
       break;
 #elif defined(USE_EGL)
     case kVaapiImplementationDrm:
       picture.reset(new VaapiPictureNativePixmapEgl(
-          vaapi_wrapper, make_context_current_cb, bind_image_cb,
+          std::move(vaapi_wrapper), make_context_current_cb, bind_image_cb,
           picture_buffer.id(), picture_buffer.size(), service_texture_id,
           client_texture_id, picture_buffer.texture_target()));
       break;
@@ -85,7 +85,7 @@ std::unique_ptr<VaapiPicture> VaapiPictureFactory::Create(
 #if defined(USE_X11)
     case kVaapiImplementationX11:
       picture.reset(new VaapiTFPPicture(
-          vaapi_wrapper, make_context_current_cb, bind_image_cb,
+          std::move(vaapi_wrapper), make_context_current_cb, bind_image_cb,
           picture_buffer.id(), picture_buffer.size(), service_texture_id,
           client_texture_id, picture_buffer.texture_target()));
       break;

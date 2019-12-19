@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/ui/screen_capture_notification_ui_chromeos.h"
 #include "chrome/browser/media/webrtc/desktop_capture_access_handler.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/arc/mojom/screen_capture.mojom.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/gpu/context_provider.h"

@@ -253,7 +253,7 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
     }
     pic->frame_hdr = std::move(curr_frame_hdr_);
 
-    if (!DecodeAndOutputPicture(pic)) {
+    if (!DecodeAndOutputPicture(std::move(pic))) {
       SetError();
       return kDecodeError;
     }

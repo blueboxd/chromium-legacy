@@ -58,10 +58,7 @@ namespace history {
 
 class HistoryServiceTest : public testing::Test {
  public:
-  HistoryServiceTest()
-      : task_environment_(
-            base::test::SingleThreadTaskEnvironment::MainThreadType::UI) {}
-
+  HistoryServiceTest() = default;
   ~HistoryServiceTest() override {}
 
  protected:
@@ -156,7 +153,7 @@ class HistoryServiceTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
 
-  base::test::SingleThreadTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   MostVisitedURLList most_visited_urls_;
 
@@ -178,6 +175,23 @@ class HistoryServiceTest : public testing::Test {
   // For saving URL info after a call to QueryURL
   history::QueryURLResult query_url_result_;
 };
+
+// Simple test that removes a bookmark. This test exercises the code paths in
+// History that block till BookmarkModel is loaded.
+TEST_F(HistoryServiceTest, RemoveNotification) {
+  ASSERT_TRUE(history_service_.get());
+
+  // Add a URL.
+  GURL url("http://www.google.com");
+
+  history_service_->AddPage(url, base::Time::Now(), nullptr, 1, GURL(),
+                            RedirectList(), ui::PAGE_TRANSITION_TYPED,
+                            SOURCE_BROWSED, false);
+
+  // This won't actually delete the URL, rather it'll empty out the visits.
+  // This triggers blocking on the BookmarkModel.
+  history_service_->DeleteURLs({url});
+}
 
 TEST_F(HistoryServiceTest, AddPage) {
   ASSERT_TRUE(history_service_.get());

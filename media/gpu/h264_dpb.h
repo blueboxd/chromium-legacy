@@ -116,7 +116,7 @@ class H264DPB {
   void Clear();
 
   // Store picture in DPB. DPB takes ownership of its resources.
-  void StorePic(const scoped_refptr<H264Picture>& pic);
+  void StorePic(scoped_refptr<H264Picture> pic);
 
   // Return the number of reference pictures in DPB.
   int CountRefPics();

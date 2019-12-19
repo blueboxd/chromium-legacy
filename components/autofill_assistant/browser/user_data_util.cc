@@ -8,6 +8,9 @@
 #include "base/i18n/case_conversion.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
+#include "components/autofill/core/browser/geo/address_i18n.h"
+#include "third_party/libaddressinput/chromium/addressinput_util.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 
 namespace autofill_assistant {
 namespace {
@@ -20,8 +23,8 @@ base::string16 GetProfileFullName(const autofill::AutofillProfile& profile) {
       profile.GetRawInfo(autofill::NAME_LAST));
 }
 
-int CountCompleteFields(const CollectUserDataOptions& options,
-                        const autofill::AutofillProfile& profile) {
+int CountCompleteContactFields(const CollectUserDataOptions& options,
+                               const autofill::AutofillProfile& profile) {
   int completed_fields = 0;
   if (options.request_payer_name && !GetProfileFullName(profile).empty()) {
     ++completed_fields;
@@ -44,11 +47,11 @@ int CountCompleteFields(const CollectUserDataOptions& options,
 // Helper function that compares instances of AutofillProfile by completeness
 // in regards to the current options. Full profiles should be ordered before
 // empty ones and fall back to compare the profile's name in case of equality.
-bool CompletenessCompare(const CollectUserDataOptions& options,
-                         const autofill::AutofillProfile& a,
-                         const autofill::AutofillProfile& b) {
-  int complete_fields_a = CountCompleteFields(options, a);
-  int complete_fields_b = CountCompleteFields(options, b);
+bool CompletenessCompareContacts(const CollectUserDataOptions& options,
+                                 const autofill::AutofillProfile& a,
+                                 const autofill::AutofillProfile& b) {
+  int complete_fields_a = CountCompleteContactFields(options, a);
+  int complete_fields_b = CountCompleteContactFields(options, b);
   if (complete_fields_a == complete_fields_b) {
     return base::i18n::ToLower(GetProfileFullName(a))
                .compare(base::i18n::ToLower(GetProfileFullName(b))) < 0;
@@ -56,8 +59,35 @@ bool CompletenessCompare(const CollectUserDataOptions& options,
   return complete_fields_a > complete_fields_b;
 }
 
-int CountCompleteFields(const CollectUserDataOptions& options,
-                        const PaymentInstrument& instrument) {
+int GetAddressCompletenessRating(const CollectUserDataOptions& options,
+                                 const autofill::AutofillProfile& profile) {
+  auto address_data =
+      autofill::i18n::CreateAddressDataFromAutofillProfile(profile, "en-US");
+  std::multimap<i18n::addressinput::AddressField,
+                i18n::addressinput::AddressProblem>
+      problems;
+  autofill::addressinput::ValidateRequiredFields(
+      *address_data, /* filter= */ nullptr, &problems);
+  return -problems.size();
+}
+
+// Helper function that compares instances of AutofillProfile by completeness
+// in regards to the current options. Full profiles should be ordered before
+// empty ones and fall back to compare the profile's name in case of equality.
+bool CompletenessCompareAddresses(const CollectUserDataOptions& options,
+                                  const autofill::AutofillProfile& a,
+                                  const autofill::AutofillProfile& b) {
+  int complete_fields_a = GetAddressCompletenessRating(options, a);
+  int complete_fields_b = GetAddressCompletenessRating(options, b);
+  if (complete_fields_a == complete_fields_b) {
+    return base::i18n::ToLower(GetProfileFullName(a))
+               .compare(base::i18n::ToLower(GetProfileFullName(b))) < 0;
+  }
+  return complete_fields_a > complete_fields_b;
+}
+
+int CountCompletePaymentInstrumentFields(const CollectUserDataOptions& options,
+                                         const PaymentInstrument& instrument) {
   int complete_fields = 0;
   if (!instrument.card->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL).empty()) {
     ++complete_fields;
@@ -88,11 +118,12 @@ int CountCompleteFields(const CollectUserDataOptions& options,
 // in regards to the current options. Full payment instruments should be
 // ordered before empty ones and fall back to compare the full name on the
 // credit card in case of equality.
-bool CompletenessCompare(const CollectUserDataOptions& options,
-                         const PaymentInstrument& a,
-                         const PaymentInstrument& b) {
-  int complete_fields_a = CountCompleteFields(options, a);
-  int complete_fields_b = CountCompleteFields(options, b);
+bool CompletenessComparePaymentInstruments(
+    const CollectUserDataOptions& options,
+    const PaymentInstrument& a,
+    const PaymentInstrument& b) {
+  int complete_fields_a = CountCompletePaymentInstrumentFields(options, a);
+  int complete_fields_b = CountCompletePaymentInstrumentFields(options, b);
   if (complete_fields_a == complete_fields_b) {
     return base::i18n::ToLower(
                a.card->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL))
@@ -104,26 +135,27 @@ bool CompletenessCompare(const CollectUserDataOptions& options,
 
 }  // namespace
 
-std::vector<int> SortByCompleteness(
+std::vector<int> SortContactsByCompleteness(
     const CollectUserDataOptions& collect_user_data_options,
     const std::vector<std::unique_ptr<autofill::AutofillProfile>>& profiles) {
   std::vector<int> profile_indices(profiles.size());
   std::iota(std::begin(profile_indices), std::end(profile_indices), 0);
   std::sort(profile_indices.begin(), profile_indices.end(),
             [&collect_user_data_options, &profiles](int i, int j) {
-              return CompletenessCompare(collect_user_data_options,
-                                         *profiles[i], *profiles[j]);
+              return CompletenessCompareContacts(collect_user_data_options,
+                                                 *profiles[i], *profiles[j]);
             });
   return profile_indices;
 }
 
-int GetDefaultProfile(
+int GetDefaultContactProfile(
     const CollectUserDataOptions& collect_user_data_options,
     const std::vector<std::unique_ptr<autofill::AutofillProfile>>& profiles) {
   if (profiles.empty()) {
     return -1;
   }
-  auto sorted_indices = SortByCompleteness(collect_user_data_options, profiles);
+  auto sorted_indices =
+      SortContactsByCompleteness(collect_user_data_options, profiles);
   if (!collect_user_data_options.default_email.empty()) {
     for (int index : sorted_indices) {
       if (base::UTF16ToUTF8(
@@ -136,7 +168,31 @@ int GetDefaultProfile(
   return sorted_indices[0];
 }
 
-std::vector<int> SortByCompleteness(
+std::vector<int> SortAddressesByCompleteness(
+    const CollectUserDataOptions& collect_user_data_options,
+    const std::vector<std::unique_ptr<autofill::AutofillProfile>>& profiles) {
+  std::vector<int> profile_indices(profiles.size());
+  std::iota(std::begin(profile_indices), std::end(profile_indices), 0);
+  std::sort(profile_indices.begin(), profile_indices.end(),
+            [&collect_user_data_options, &profiles](int i, int j) {
+              return CompletenessCompareAddresses(collect_user_data_options,
+                                                  *profiles[i], *profiles[j]);
+            });
+  return profile_indices;
+}
+
+int GetDefaultAddressProfile(
+    const CollectUserDataOptions& collect_user_data_options,
+    const std::vector<std::unique_ptr<autofill::AutofillProfile>>& profiles) {
+  if (profiles.empty()) {
+    return -1;
+  }
+  auto sorted_indices =
+      SortContactsByCompleteness(collect_user_data_options, profiles);
+  return sorted_indices[0];
+}
+
+std::vector<int> SortPaymentInstrumentsByCompleteness(
     const CollectUserDataOptions& collect_user_data_options,
     const std::vector<std::unique_ptr<PaymentInstrument>>&
         payment_instruments) {
@@ -146,9 +202,9 @@ std::vector<int> SortByCompleteness(
   std::sort(payment_instrument_indices.begin(),
             payment_instrument_indices.end(),
             [&collect_user_data_options, &payment_instruments](int a, int b) {
-              return CompletenessCompare(collect_user_data_options,
-                                         *payment_instruments[a],
-                                         *payment_instruments[b]);
+              return CompletenessComparePaymentInstruments(
+                  collect_user_data_options, *payment_instruments[a],
+                  *payment_instruments[b]);
             });
   return payment_instrument_indices;
 }
@@ -160,8 +216,8 @@ int GetDefaultPaymentInstrument(
   if (payment_instruments.empty()) {
     return -1;
   }
-  auto sorted_indices =
-      SortByCompleteness(collect_user_data_options, payment_instruments);
+  auto sorted_indices = SortPaymentInstrumentsByCompleteness(
+      collect_user_data_options, payment_instruments);
   return sorted_indices[0];
 }
 

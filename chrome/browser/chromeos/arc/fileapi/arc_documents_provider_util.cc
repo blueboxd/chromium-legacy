@@ -11,6 +11,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "components/arc/mojom/file_system.mojom.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "storage/browser/file_system/file_system_url.h"

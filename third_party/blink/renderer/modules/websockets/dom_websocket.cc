@@ -377,16 +377,14 @@ void DOMWebSocket::send(NotShared<DOMArrayBufferView> array_buffer_view,
   }
   if (common_.GetState() == kClosing || common_.GetState() == kClosed) {
     UpdateBufferedAmountAfterClose(
-        array_buffer_view.View()->deprecatedByteLengthAsUnsigned());
+        array_buffer_view.View()->byteLengthAsSizeT());
     return;
   }
   RecordSendTypeHistogram(kWebSocketSendTypeArrayBufferView);
-  RecordSendMessageSizeHistogram(
-      kWebSocketSendTypeArrayBufferView,
-      array_buffer_view.View()->deprecatedByteLengthAsUnsigned());
+  RecordSendMessageSizeHistogram(kWebSocketSendTypeArrayBufferView,
+                                 array_buffer_view.View()->byteLengthAsSizeT());
   DCHECK(channel_);
-  buffered_amount_ +=
-      array_buffer_view.View()->deprecatedByteLengthAsUnsigned();
+  buffered_amount_ += array_buffer_view.View()->byteLengthAsSizeT();
   channel_->Send(*array_buffer_view.View()->buffer(),
                  array_buffer_view.View()->byteOffsetAsSizeT(),
                  array_buffer_view.View()->byteLengthAsSizeT(),

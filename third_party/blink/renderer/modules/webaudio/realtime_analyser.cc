@@ -273,8 +273,8 @@ void RealtimeAnalyser::GetFloatTimeDomainData(
   DCHECK(destination_array);
 
   unsigned fft_size = this->FftSize();
-  size_t len =
-      std::min(fft_size, destination_array->deprecatedLengthAsUnsigned());
+  size_t len = std::min(static_cast<size_t>(fft_size),
+                        destination_array->lengthAsSizeT());
   if (len > 0) {
     DCHECK_EQ(input_buffer_.size(), kInputBufferSize);
     DCHECK_GT(input_buffer_.size(), fft_size);
@@ -300,8 +300,8 @@ void RealtimeAnalyser::GetByteTimeDomainData(DOMUint8Array* destination_array) {
   DCHECK(destination_array);
 
   unsigned fft_size = this->FftSize();
-  size_t len =
-      std::min(fft_size, destination_array->deprecatedLengthAsUnsigned());
+  size_t len = std::min(static_cast<size_t>(fft_size),
+                        destination_array->lengthAsSizeT());
   if (len > 0) {
     DCHECK_EQ(input_buffer_.size(), kInputBufferSize);
     DCHECK_GT(input_buffer_.size(), fft_size);

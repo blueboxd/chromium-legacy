@@ -40,8 +40,8 @@ void MigratePrefs(PrefService* prefs, const std::string& sender_id) {
 
 FCMInvalidationServiceBase::FCMInvalidationServiceBase(
     FCMNetworkHandlerCallback fcm_network_handler_callback,
-    PerUserTopicRegistrationManagerCallback
-        per_user_topic_registration_manager_callback,
+    PerUserTopicSubscriptionManagerCallback
+        per_user_topic_subscription_manager_callback,
     instance_id::InstanceIDDriver* instance_id_driver,
     PrefService* pref_service,
     const std::string& sender_id)
@@ -50,8 +50,8 @@ FCMInvalidationServiceBase::FCMInvalidationServiceBase(
                              sender_id_,
                              sender_id_ == kInvalidationGCMSenderId),
       fcm_network_handler_callback_(std::move(fcm_network_handler_callback)),
-      per_user_topic_registration_manager_callback_(
-          std::move(per_user_topic_registration_manager_callback)),
+      per_user_topic_subscription_manager_callback_(
+          std::move(per_user_topic_subscription_manager_callback)),
       instance_id_driver_(instance_id_driver),
       pref_service_(pref_service) {}
 
@@ -211,9 +211,9 @@ void FCMInvalidationServiceBase::StartInvalidator() {
   // the startup cached messages might exists.
   invalidation_listener_ =
       std::make_unique<syncer::FCMInvalidationListener>(std::move(network));
-  auto registration_manager = per_user_topic_registration_manager_callback_.Run(
+  auto subscription_manager = per_user_topic_subscription_manager_callback_.Run(
       sender_id_, /*migrate_prefs=*/sender_id_ == kInvalidationGCMSenderId);
-  invalidation_listener_->Start(this, std::move(registration_manager));
+  invalidation_listener_->Start(this, std::move(subscription_manager));
 
   PopulateClientID();
   DoUpdateSubscribedTopicsIfNeeded();

@@ -284,18 +284,18 @@ JobConfigurationBase::GetResourceRequest(bool bypass_proxy, int last_error) {
 
   // If auth data is specified, use it to build the request.
   if (auth_data_) {
-    if (!auth_data_->gaia_token().empty()) {
+    if (auth_data_->has_gaia_token()) {
       rr->headers.SetHeader(
           dm_protocol::kAuthHeader,
           std::string(dm_protocol::kServiceTokenAuthHeaderPrefix) +
               auth_data_->gaia_token());
     }
-    if (!auth_data_->dm_token().empty()) {
+    if (auth_data_->has_dm_token()) {
       rr->headers.SetHeader(dm_protocol::kAuthHeader,
                             std::string(dm_protocol::kDMTokenAuthHeaderPrefix) +
                                 auth_data_->dm_token());
     }
-    if (!auth_data_->enrollment_token().empty()) {
+    if (auth_data_->has_enrollment_token()) {
       rr->headers.SetHeader(
           dm_protocol::kAuthHeader,
           std::string(dm_protocol::kEnrollmentTokenAuthHeaderPrefix) +

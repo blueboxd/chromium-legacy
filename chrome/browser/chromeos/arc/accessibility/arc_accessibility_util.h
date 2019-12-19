@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <vector>
 
-#include "components/arc/mojom/accessibility_helper.mojom.h"
+#include "components/arc/mojom/accessibility_helper.mojom-forward.h"
 #include "ui/accessibility/ax_enum_util.h"
 
 namespace arc {

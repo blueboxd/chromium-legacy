@@ -13,7 +13,7 @@
 namespace media {
 
 VaapiPicture::VaapiPicture(
-    const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
+    scoped_refptr<VaapiWrapper> vaapi_wrapper,
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb,
     int32_t picture_buffer_id,
@@ -21,7 +21,7 @@ VaapiPicture::VaapiPicture(
     uint32_t texture_id,
     uint32_t client_texture_id,
     uint32_t texture_target)
-    : vaapi_wrapper_(vaapi_wrapper),
+    : vaapi_wrapper_(std::move(vaapi_wrapper)),
       make_context_current_cb_(make_context_current_cb),
       bind_image_cb_(bind_image_cb),
       size_(size),

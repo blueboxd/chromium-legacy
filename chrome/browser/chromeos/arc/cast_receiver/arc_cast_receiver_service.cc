@@ -13,7 +13,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "components/arc/mojom/cast_receiver.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
+#include "components/arc/session/connection_observer.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 

@@ -9,8 +9,14 @@
         "background:news:nytimes": {
             "DEFAULT": "system_health_mobile_052.wprgo"
         },
+        "background:news:nytimes:2019": {
+            "DEFAULT": "system_health_mobile_648270feb3.wprgo"
+        },
         "background:search:google": {
             "DEFAULT": "system_health_mobile_044.wprgo"
+        },
+        "background:search:google:2019": {
+            "DEFAULT": "system_health_mobile_91dc7db4c7.wprgo"
         },
         "background:social:facebook": {
             "DEFAULT": "system_health_mobile_045.wprgo"
@@ -38,6 +44,9 @@
         },
         "browse:media:flickr_infinite_scroll": {
             "DEFAULT": "system_health_mobile_062.wprgo"
+        },
+        "browse:media:flickr_infinite_scroll:2019": {
+            "DEFAULT": "system_health_mobile_02f1f2624a.wprgo"
         },
         "browse:media:googleplaystore:2019": {
             "DEFAULT": "system_health_mobile_4413a28712.wprgo"
@@ -119,6 +128,9 @@
         },
         "browse:shopping:lazada": {
             "DEFAULT": "system_health_mobile_053.wprgo"
+        },
+        "browse:shopping:lazada:2019": {
+            "DEFAULT": "system_health_mobile_8df98214f9.wprgo"
         },
         "browse:social:facebook": {
             "DEFAULT": "system_health_mobile_028.wprgo"
@@ -222,6 +234,9 @@
         "load:news:bbc": {
             "DEFAULT": "system_health_mobile_002.wprgo"
         },
+        "load:news:bbc:2019": {
+            "DEFAULT": "system_health_mobile_ca7928bddd.wprgo"
+        },
         "load:news:cnn": {
             "DEFAULT": "system_health_mobile_006.wprgo"
         },
@@ -324,6 +339,9 @@
         "load:social:pinterest": {
             "DEFAULT": "system_health_mobile_001.wprgo"
         },
+        "load:social:pinterest:2019": {
+            "DEFAULT": "system_health_mobile_25e2cdbc77.wprgo"
+        },
         "load:social:tumblr": {
             "DEFAULT": "system_health_mobile_001.wprgo"
         },
@@ -335,6 +353,9 @@
         },
         "load:tools:docs": {
             "DEFAULT": "system_health_mobile_004.wprgo"
+        },
+        "load:tools:docs:2019": {
+            "DEFAULT": "system_health_mobile_3004d67e94.wprgo"
         },
         "load:tools:drive": {
             "DEFAULT": "system_health_mobile_004.wprgo"
@@ -359,6 +380,9 @@
         },
         "load:tools:weather": {
             "DEFAULT": "system_health_mobile_004.wprgo"
+        },
+        "load:tools:weather:2019": {
+            "DEFAULT": "system_health_mobile_6045a1ffb8.wprgo"
         },
         "long_running:tools:gmail-background": {
             "DEFAULT": "system_health_mobile_042.wprgo"

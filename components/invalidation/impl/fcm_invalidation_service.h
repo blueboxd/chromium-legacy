@@ -19,8 +19,8 @@ class FCMInvalidationService : public FCMInvalidationServiceBase,
  public:
   FCMInvalidationService(IdentityProvider* identity_provider,
                          FCMNetworkHandlerCallback fcm_network_handler_callback,
-                         PerUserTopicRegistrationManagerCallback
-                             per_user_topic_registration_manager_callback,
+                         PerUserTopicSubscriptionManagerCallback
+                             per_user_topic_subscription_manager_callback,
                          instance_id::InstanceIDDriver* instance_id_driver,
                          PrefService* pref_service,
                          const std::string& sender_id = {});

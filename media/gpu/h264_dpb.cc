@@ -97,12 +97,12 @@ void H264DPB::DeleteUnused() {
   UpdatePicPositions();
 }
 
-void H264DPB::StorePic(const scoped_refptr<H264Picture>& pic) {
+void H264DPB::StorePic(scoped_refptr<H264Picture> pic) {
   DCHECK_LT(pics_.size(), max_num_pics_);
   DVLOG(3) << "Adding PicNum: " << pic->pic_num << " ref: " << (int)pic->ref
            << " longterm: " << (int)pic->long_term << " to DPB";
   pic->dpb_position = pics_.size();
-  pics_.push_back(pic);
+  pics_.push_back(std::move(pic));
 }
 
 int H264DPB::CountRefPics() {

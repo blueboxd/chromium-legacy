@@ -13,7 +13,7 @@
 #include "base/optional.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
-#include "components/arc/mojom/intent_helper.mojom.h"
+#include "components/arc/mojom/intent_helper.mojom-forward.h"
 #include "ui/base/page_transition_types.h"
 #include "url/origin.h"
 

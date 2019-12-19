@@ -61,17 +61,6 @@ using ::testing::Property;
 using ::testing::Return;
 using ::testing::SizeIs;
 
-void SetRequiredTermsFields(CollectUserDataProto* data,
-                            bool request_terms_and_conditions) {
-  data->set_privacy_notice_text("privacy");
-
-  if (request_terms_and_conditions) {
-    data->set_accept_terms_and_conditions_text("terms and conditions");
-    data->set_terms_require_review_text("terms review");
-  }
-  data->set_request_terms_and_conditions(request_terms_and_conditions);
-}
-
 class CollectUserDataActionTest : public content::RenderViewHostTestHarness {
  public:
   void SetUp() override {
@@ -256,9 +245,9 @@ TEST_F(CollectUserDataActionTest, PromptIsShown) {
   const char kPrompt[] = "Some message.";
 
   ActionProto action_proto;
-  SetRequiredTermsFields(action_proto.mutable_collect_user_data(),
-                         /* request_terms_and_conditions= */ false);
-  action_proto.mutable_collect_user_data()->set_prompt(kPrompt);
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_request_terms_and_conditions(false);
+  collect_user_data_proto->set_prompt(kPrompt);
 
   EXPECT_CALL(mock_action_delegate_, SetStatusMessage(kPrompt));
   EXPECT_CALL(callback_, Run(_));
@@ -269,10 +258,9 @@ TEST_F(CollectUserDataActionTest, PromptIsShown) {
 
 TEST_F(CollectUserDataActionTest, SelectLogin) {
   ActionProto action_proto;
-  SetRequiredTermsFields(action_proto.mutable_collect_user_data(),
-                         /* request_terms_and_conditions= */ false);
-  auto* login_details =
-      action_proto.mutable_collect_user_data()->mutable_login_details();
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_request_terms_and_conditions(false);
+  auto* login_details = collect_user_data_proto->mutable_login_details();
   auto* login_option = login_details->add_login_options();
   login_option->mutable_password_manager();
   login_option->set_payload("payload");
@@ -306,8 +294,6 @@ TEST_F(CollectUserDataActionTest, SelectLogin) {
 TEST_F(CollectUserDataActionTest, LoginChoiceAutomaticIfNoOtherOptions) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
-  SetRequiredTermsFields(collect_user_data_proto,
-                         /* request_terms_and_conditions= */ false);
   collect_user_data_proto->set_request_terms_and_conditions(false);
   auto* login_details = collect_user_data_proto->mutable_login_details();
   auto* login_option = login_details->add_login_options();
@@ -336,8 +322,7 @@ TEST_F(CollectUserDataActionTest, LoginChoiceAutomaticIfNoOtherOptions) {
 TEST_F(CollectUserDataActionTest, SelectLoginFailsIfNoOptionAvailable) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
-  SetRequiredTermsFields(collect_user_data_proto,
-                         /* request_terms_and_conditions= */ false);
+  collect_user_data_proto->set_request_terms_and_conditions(false);
   auto* login_details = collect_user_data_proto->mutable_login_details();
   auto* login_option = login_details->add_login_options();
   login_option->mutable_password_manager();
@@ -356,8 +341,6 @@ TEST_F(CollectUserDataActionTest, SelectLoginFailsIfNoOptionAvailable) {
 TEST_F(CollectUserDataActionTest, SelectContactDetails) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
-  SetRequiredTermsFields(collect_user_data_proto,
-                         /* request_terms_and_conditions= */ false);
   collect_user_data_proto->set_request_terms_and_conditions(false);
   auto* contact_details_proto =
       collect_user_data_proto->mutable_contact_details();
@@ -412,11 +395,9 @@ TEST_F(CollectUserDataActionTest, SelectContactDetails) {
 
 TEST_F(CollectUserDataActionTest, SelectPaymentMethod) {
   ActionProto action_proto;
-  SetRequiredTermsFields(action_proto.mutable_collect_user_data(),
-                         /* request_terms_and_conditions= */ false);
-  action_proto.mutable_collect_user_data()->set_request_payment_method(true);
-  action_proto.mutable_collect_user_data()->set_request_terms_and_conditions(
-      false);
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_request_terms_and_conditions(false);
+  collect_user_data_proto->set_request_payment_method(true);
 
   autofill::AutofillProfile billing_profile(base::GenerateGUID(), kFakeUrl);
   autofill::test::SetProfileInfo(&billing_profile, "Marion", "Mitchell",
@@ -471,8 +452,6 @@ TEST_F(CollectUserDataActionTest, MandatoryPostalCodeWithoutErrorMessageFails) {
 TEST_F(CollectUserDataActionTest, ContactDetailsCanHandleUtf8) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
-  SetRequiredTermsFields(collect_user_data_proto,
-                         /* request_terms_and_conditions= */ false);
   collect_user_data_proto->set_request_terms_and_conditions(false);
   auto* contact_details_proto =
       collect_user_data_proto->mutable_contact_details();
@@ -658,8 +637,6 @@ TEST_F(CollectUserDataActionTest, UserDataComplete_DateTimeRange) {
 TEST_F(CollectUserDataActionTest, SelectDateTimeRange) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
-  SetRequiredTermsFields(collect_user_data_proto,
-                         /* request_terms_and_conditions= */ false);
   collect_user_data_proto->set_request_terms_and_conditions(false);
   auto* date_time_proto = collect_user_data_proto->mutable_date_time_range();
   SetDateTimeProto(date_time_proto->mutable_start(), 2019, 10, 21, 8, 0, 0);
@@ -701,8 +678,6 @@ TEST_F(CollectUserDataActionTest, SelectDateTimeRange) {
 TEST_F(CollectUserDataActionTest, StaticSectionValid) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
-  SetRequiredTermsFields(collect_user_data_proto,
-                         /* request_terms_and_conditions= */ false);
   collect_user_data_proto->set_request_terms_and_conditions(false);
   ON_CALL(mock_action_delegate_, CollectUserData(_))
       .WillByDefault(
@@ -744,8 +719,6 @@ TEST_F(CollectUserDataActionTest, StaticSectionValid) {
 TEST_F(CollectUserDataActionTest, TextInputSectionValid) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
-  SetRequiredTermsFields(collect_user_data_proto,
-                         /* request_terms_and_conditions= */ false);
   collect_user_data_proto->set_request_terms_and_conditions(false);
   ON_CALL(mock_action_delegate_, CollectUserData(_))
       .WillByDefault(
@@ -829,8 +802,6 @@ TEST_F(CollectUserDataActionTest, TextInputSectionValid) {
 TEST_F(CollectUserDataActionTest, TextInputSectionWritesToClientMemory) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
-  SetRequiredTermsFields(collect_user_data_proto,
-                         /* request_terms_and_conditions= */ false);
   collect_user_data_proto->set_request_terms_and_conditions(false);
   ON_CALL(mock_action_delegate_, CollectUserData(_))
       .WillByDefault(
@@ -871,8 +842,6 @@ TEST_F(CollectUserDataActionTest, TextInputSectionWritesToClientMemory) {
 TEST_F(CollectUserDataActionTest, AllowedBasicCardNetworks) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
-  SetRequiredTermsFields(collect_user_data_proto,
-                         /* request_terms_and_conditions= */ false);
   collect_user_data_proto->set_request_terms_and_conditions(false);
 
   std::string kSupportedBasicCardNetworks[] = {"amex", "diners",   "discover",
@@ -916,8 +885,6 @@ TEST_F(CollectUserDataActionTest, AllowedBasicCardNetworks) {
 TEST_F(CollectUserDataActionTest, InvalidBasicCardNetworks) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
-  SetRequiredTermsFields(collect_user_data_proto,
-                         /* request_terms_and_conditions= */ false);
   collect_user_data_proto->set_request_terms_and_conditions(false);
 
   *collect_user_data_proto->add_supported_basic_card_networks() = "visa";
@@ -941,8 +908,6 @@ TEST_F(CollectUserDataActionTest, OverwriteExistingUserData) {
   // Set options.
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
-  SetRequiredTermsFields(collect_user_data_proto,
-                         /* request_terms_and_conditions= */ false);
   collect_user_data_proto->set_request_terms_and_conditions(false);
   auto* prepended_section =
       collect_user_data_proto->add_additional_prepended_sections();
@@ -1010,7 +975,7 @@ TEST_F(CollectUserDataActionTest, AttachesProfiles) {
 
   ActionProto action_proto;
   auto* user_data = action_proto.mutable_collect_user_data();
-  SetRequiredTermsFields(user_data, /* request_terms_and_conditions= */ false);
+  user_data->set_request_terms_and_conditions(false);
   auto* contact_details = user_data->mutable_contact_details();
   contact_details->set_request_payer_name(true);
 
@@ -1048,7 +1013,7 @@ TEST_F(CollectUserDataActionTest, InitialSelectsProfileAndShippingAddress) {
 
   ActionProto action_proto;
   auto* user_data = action_proto.mutable_collect_user_data();
-  SetRequiredTermsFields(user_data, /* request_terms_and_conditions= */ false);
+  user_data->set_request_terms_and_conditions(false);
   user_data->set_shipping_address_name("shipping-address");
   auto* contact_details = user_data->mutable_contact_details();
   contact_details->set_request_payer_name(true);
@@ -1091,7 +1056,7 @@ TEST_F(CollectUserDataActionTest, InitialSelectsProfileFromDefaultEmail) {
 
   ActionProto action_proto;
   auto* user_data = action_proto.mutable_collect_user_data();
-  SetRequiredTermsFields(user_data, /* request_terms_and_conditions= */ false);
+  user_data->set_request_terms_and_conditions(false);
   auto* contact_details = user_data->mutable_contact_details();
   contact_details->set_request_payer_name(true);
   contact_details->set_request_payer_email(true);
@@ -1133,7 +1098,7 @@ TEST_F(CollectUserDataActionTest, KeepsSelectedProfileAndShippingAddress) {
 
   ActionProto action_proto;
   auto* user_data = action_proto.mutable_collect_user_data();
-  SetRequiredTermsFields(user_data, /* request_terms_and_conditions= */ false);
+  user_data->set_request_terms_and_conditions(false);
   auto* contact_details = user_data->mutable_contact_details();
   contact_details->set_request_payer_name(true);
 
@@ -1174,7 +1139,7 @@ TEST_F(CollectUserDataActionTest, ResetsContactAndShippingIfNoLongerInList) {
 
   ActionProto action_proto;
   auto* user_data = action_proto.mutable_collect_user_data();
-  SetRequiredTermsFields(user_data, /* request_terms_and_conditions= */ false);
+  user_data->set_request_terms_and_conditions(false);
   user_data->mutable_contact_details();
 
   // Set previous user data.
@@ -1235,7 +1200,7 @@ TEST_F(CollectUserDataActionTest, AttachesCreditCardsWithAddress) {
 
   ActionProto action_proto;
   auto* user_data = action_proto.mutable_collect_user_data();
-  SetRequiredTermsFields(user_data, /* request_terms_and_conditions= */ false);
+  user_data->set_request_terms_and_conditions(false);
   user_data->add_supported_basic_card_networks("visa");
 
   EXPECT_CALL(
@@ -1280,10 +1245,50 @@ TEST_F(CollectUserDataActionTest, AttachesCreditCardsWithoutAddress) {
 
   ActionProto action_proto;
   auto* user_data = action_proto.mutable_collect_user_data();
-  SetRequiredTermsFields(user_data, /* request_terms_and_conditions= */ false);
+  user_data->set_request_terms_and_conditions(false);
   user_data->add_supported_basic_card_networks("visa");
 
   EXPECT_CALL(mock_personal_data_manager_, GetProfileByGUID(_)).Times(0);
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(CollectUserDataActionTest, AttachesCreditCardsForEmptyNetworksList) {
+  ON_CALL(mock_personal_data_manager_, IsAutofillCreditCardEnabled)
+      .WillByDefault(Return(true));
+  ON_CALL(mock_personal_data_manager_, ShouldSuggestServerCards)
+      .WillByDefault(Return(true));
+
+  autofill::CreditCard card;
+  autofill::test::SetCreditCardInfo(&card, "Adam West", "4111111111111111", "1",
+                                    "2050",
+                                    /* billing_address_id= */ "");
+
+  ON_CALL(mock_personal_data_manager_, GetCreditCards())
+      .WillByDefault(Return(std::vector<autofill::CreditCard*>({&card})));
+
+  ON_CALL(mock_action_delegate_, CollectUserData(_))
+      .WillByDefault(
+          Invoke([=](CollectUserDataOptions* collect_user_data_options) {
+            user_data_.succeed = true;
+
+            EXPECT_THAT(user_data_.available_payment_instruments, SizeIs(1));
+            EXPECT_EQ(
+                user_data_.available_payment_instruments[0]->card->Compare(
+                    card),
+                0);
+
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(&user_data_, &user_model_);
+          }));
+
+  ActionProto action_proto;
+  auto* user_data = action_proto.mutable_collect_user_data();
+  user_data->set_request_terms_and_conditions(false);
+
   EXPECT_CALL(
       callback_,
       Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
@@ -1328,7 +1333,7 @@ TEST_F(CollectUserDataActionTest, InitialSelectsCardAndAddress) {
 
   ActionProto action_proto;
   auto* user_data = action_proto.mutable_collect_user_data();
-  SetRequiredTermsFields(user_data, /* request_terms_and_conditions= */ false);
+  user_data->set_request_terms_and_conditions(false);
   user_data->add_supported_basic_card_networks("visa");
   user_data->set_request_payment_method(true);
 
@@ -1376,7 +1381,7 @@ TEST_F(CollectUserDataActionTest, KeepsSelectedCardAndAddress) {
 
   ActionProto action_proto;
   auto* user_data = action_proto.mutable_collect_user_data();
-  SetRequiredTermsFields(user_data, /* request_terms_and_conditions= */ false);
+  user_data->set_request_terms_and_conditions(false);
   user_data->add_supported_basic_card_networks("visa");
 
   // Set previous user data.
@@ -1425,7 +1430,7 @@ TEST_F(CollectUserDataActionTest, ResetsCardAndAddressIfNoLongerInList) {
 
   ActionProto action_proto;
   auto* user_data = action_proto.mutable_collect_user_data();
-  SetRequiredTermsFields(user_data, /* request_terms_and_conditions= */ false);
+  user_data->set_request_terms_and_conditions(false);
   user_data->add_supported_basic_card_networks("visa");
 
   // Set previous user data.

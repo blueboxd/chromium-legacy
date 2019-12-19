@@ -7,8 +7,8 @@
 
 #include <ostream>
 
-#include "components/arc/mojom/app.mojom.h"
-#include "components/arc/mojom/auth.mojom.h"
+#include "components/arc/mojom/app.mojom-forward.h"
+#include "components/arc/mojom/auth.mojom-forward.h"
 
 class Profile;
 

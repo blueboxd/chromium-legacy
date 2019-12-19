@@ -9,6 +9,7 @@
 
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
+#include "components/arc/mojom/process.mojom.h"
 
 namespace arc {
 

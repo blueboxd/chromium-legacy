@@ -64,6 +64,9 @@ import org.chromium.chrome.browser.autofill_assistant.user_data.additional_secti
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantTextInputSection.TextInputFactory;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantTextInputType;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
+import org.chromium.chrome.browser.payments.AutofillAddress;
+import org.chromium.chrome.browser.payments.AutofillContact;
+import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -131,17 +134,18 @@ public class AutofillAssistantCollectUserDataUiTest {
 
         /* Test initial model state. */
         assertThat(model.get(AssistantCollectUserDataModel.VISIBLE), is(false));
-        assertThat(model.get(AssistantCollectUserDataModel.AVAILABLE_PROFILES), nullValue());
-        assertThat(model.get(AssistantCollectUserDataModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS),
-                nullValue());
+        assertThat(model.get(AssistantCollectUserDataModel.AVAILABLE_CONTACTS), empty());
+        assertThat(model.get(AssistantCollectUserDataModel.AVAILABLE_SHIPPING_ADDRESSES), empty());
+        assertThat(model.get(AssistantCollectUserDataModel.AVAILABLE_PAYMENT_INSTRUMENTS), empty());
         assertThat(model.get(AssistantCollectUserDataModel.SUPPORTED_BASIC_CARD_NETWORKS),
                 nullValue());
         assertThat(model.get(AssistantCollectUserDataModel.EXPANDED_SECTION), nullValue());
         assertThat(model.get(AssistantCollectUserDataModel.DELEGATE), nullValue());
         assertThat(model.get(AssistantCollectUserDataModel.WEB_CONTENTS), nullValue());
-        assertThat(model.get(AssistantCollectUserDataModel.SHIPPING_ADDRESS), nullValue());
-        assertThat(model.get(AssistantCollectUserDataModel.PAYMENT_METHOD), nullValue());
-        assertThat(model.get(AssistantCollectUserDataModel.CONTACT_DETAILS), nullValue());
+        assertThat(model.get(AssistantCollectUserDataModel.SELECTED_SHIPPING_ADDRESS), nullValue());
+        assertThat(
+                model.get(AssistantCollectUserDataModel.SELECTED_PAYMENT_INSTRUMENT), nullValue());
+        assertThat(model.get(AssistantCollectUserDataModel.SELECTED_CONTACT_DETAILS), nullValue());
         assertThat(model.get(AssistantCollectUserDataModel.TERMS_STATUS),
                 is(AssistantTermsAndConditionsState.NOT_SELECTED));
         assertThat(model.get(AssistantCollectUserDataModel.SELECTED_LOGIN), nullValue());
@@ -378,8 +382,8 @@ public class AutofillAssistantCollectUserDataUiTest {
             model.set(AssistantCollectUserDataModel.WEB_CONTENTS, mTestRule.getWebContents());
             model.set(AssistantCollectUserDataModel.REQUEST_NAME, true);
             model.set(AssistantCollectUserDataModel.REQUEST_EMAIL, true);
-            model.set(AssistantCollectUserDataModel.AVAILABLE_PROFILES, Collections.emptyList());
-            model.set(AssistantCollectUserDataModel.CONTACT_DETAILS, null);
+            model.set(AssistantCollectUserDataModel.AVAILABLE_CONTACTS, Collections.emptyList());
+            model.set(AssistantCollectUserDataModel.SELECTED_CONTACT_DETAILS, null);
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
         });
 
@@ -390,12 +394,14 @@ public class AutofillAssistantCollectUserDataUiTest {
         assertThat(viewHolder.mContactList.getItemCount(), is(0));
 
         // Add profile to the list and send the updated model.
-        PersonalDataManager.AutofillProfile profile =
-                mHelper.createDummyProfile("John Doe", "john@gmail.com");
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            model.set(AssistantCollectUserDataModel.AVAILABLE_PROFILES,
-                    Collections.singletonList(profile));
-            model.set(AssistantCollectUserDataModel.CONTACT_DETAILS, profile);
+            AutofillContact contact = AssistantCollectUserDataModel.createAutofillContact(
+                    mTestRule.getActivity(),
+                    mHelper.createDummyProfile("John Doe", "john@gmail.com"),
+                    /* requestName= */ true, /* requestPhone= */ true, /* requestEmail= */ false);
+            model.set(AssistantCollectUserDataModel.AVAILABLE_CONTACTS,
+                    Collections.singletonList(contact));
+            model.set(AssistantCollectUserDataModel.SELECTED_CONTACT_DETAILS, contact);
         });
 
         // Contact details section should now contain and have pre-selected the new contact.
@@ -409,8 +415,8 @@ public class AutofillAssistantCollectUserDataUiTest {
 
         // Remove profile from the list and send the updated model. Section should be empty again.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            model.set(AssistantCollectUserDataModel.AVAILABLE_PROFILES, Collections.emptyList());
-            model.set(AssistantCollectUserDataModel.CONTACT_DETAILS, null);
+            model.set(AssistantCollectUserDataModel.AVAILABLE_CONTACTS, Collections.emptyList());
+            model.set(AssistantCollectUserDataModel.SELECTED_CONTACT_DETAILS, null);
         });
 
         onView(allOf(withId(R.id.section_title_add_button),
@@ -443,9 +449,9 @@ public class AutofillAssistantCollectUserDataUiTest {
             model.set(AssistantCollectUserDataModel.WEB_CONTENTS, mTestRule.getWebContents());
             model.set(AssistantCollectUserDataModel.REQUEST_PAYMENT, true);
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
-            model.set(AssistantCollectUserDataModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS,
+            model.set(AssistantCollectUserDataModel.AVAILABLE_PAYMENT_INSTRUMENTS,
                     Collections.emptyList());
-            model.set(AssistantCollectUserDataModel.PAYMENT_METHOD, null);
+            model.set(AssistantCollectUserDataModel.SELECTED_PAYMENT_INSTRUMENT, null);
         });
 
         // Payment method section should be empty and show the 'add' button in the title.
@@ -459,13 +465,13 @@ public class AutofillAssistantCollectUserDataUiTest {
                 mHelper.createDummyProfile("Jill Doe", "jill@gmail.com");
         String billingAddressId = mHelper.setProfile(billingAddress);
         PersonalDataManager.CreditCard creditCard = mHelper.createDummyCreditCard(billingAddressId);
-        AssistantCollectUserDataModel.PaymentTuple paymentTuple =
-                new AssistantCollectUserDataModel.PaymentTuple(creditCard, billingAddress);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            model.set(AssistantCollectUserDataModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS,
-                    Collections.singletonList(paymentTuple));
-            model.set(AssistantCollectUserDataModel.PAYMENT_METHOD, paymentTuple);
+            AutofillPaymentInstrument paymentInstrument =
+                    model.createAutofillPaymentInstrument(creditCard, billingAddress);
+            model.set(AssistantCollectUserDataModel.AVAILABLE_PAYMENT_INSTRUMENTS,
+                    Collections.singletonList(paymentInstrument));
+            model.set(AssistantCollectUserDataModel.SELECTED_PAYMENT_INSTRUMENT, paymentInstrument);
         });
 
         // Payment method section contains the new credit card, which should be pre-selected.
@@ -479,9 +485,9 @@ public class AutofillAssistantCollectUserDataUiTest {
 
         // Remove credit card from the list. Section should be empty again.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            model.set(AssistantCollectUserDataModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS,
+            model.set(AssistantCollectUserDataModel.AVAILABLE_PAYMENT_INSTRUMENTS,
                     Collections.emptyList());
-            model.set(AssistantCollectUserDataModel.PAYMENT_METHOD, null);
+            model.set(AssistantCollectUserDataModel.SELECTED_PAYMENT_INSTRUMENT, null);
         });
         onView(allOf(withId(R.id.section_title_add_button),
                        isDescendantOfA(is(viewHolder.mPaymentSection))))
@@ -508,17 +514,17 @@ public class AutofillAssistantCollectUserDataUiTest {
                 mHelper.createDummyProfile("Jill Doe", "jill@gmail.com");
         String billingAddressId = mHelper.setProfile(billingAddress);
         PersonalDataManager.CreditCard creditCard = mHelper.createDummyCreditCard(billingAddressId);
-        AssistantCollectUserDataModel.PaymentTuple paymentTuple =
-                new AssistantCollectUserDataModel.PaymentTuple(creditCard, billingAddress);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // WEB_CONTENTS are necessary for the creation of the editors.
             model.set(AssistantCollectUserDataModel.WEB_CONTENTS, mTestRule.getWebContents());
             model.set(AssistantCollectUserDataModel.REQUEST_PAYMENT, true);
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
-            model.set(AssistantCollectUserDataModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS,
-                    Collections.singletonList(paymentTuple));
-            model.set(AssistantCollectUserDataModel.PAYMENT_METHOD, paymentTuple);
+            AutofillPaymentInstrument paymentInstrument =
+                    model.createAutofillPaymentInstrument(creditCard, billingAddress);
+            model.set(AssistantCollectUserDataModel.AVAILABLE_PAYMENT_INSTRUMENTS,
+                    Collections.singletonList(paymentInstrument));
+            model.set(AssistantCollectUserDataModel.SELECTED_PAYMENT_INSTRUMENT, paymentInstrument);
         });
 
         // Payment method section contains the new credit card, which should be pre-selected.
@@ -569,8 +575,6 @@ public class AutofillAssistantCollectUserDataUiTest {
                 new PersonalDataManager.CreditCard("", "https://example.com", true, true, "Jon Doe",
                         "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
                         CardType.UNKNOWN, /* billingAddressId= */ "GUID", /* serverId= */ "");
-        AssistantCollectUserDataModel.PaymentTuple paymentTuple =
-                new AssistantCollectUserDataModel.PaymentTuple(creditCard, profile);
 
         AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
         AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
@@ -590,13 +594,22 @@ public class AutofillAssistantCollectUserDataUiTest {
             model.set(AssistantCollectUserDataModel.REQUEST_EMAIL, true);
             model.set(AssistantCollectUserDataModel.REQUEST_PAYMENT, true);
             model.set(AssistantCollectUserDataModel.REQUEST_SHIPPING_ADDRESS, true);
-            model.set(AssistantCollectUserDataModel.AVAILABLE_PROFILES,
-                    Collections.singletonList(profile));
-            model.set(AssistantCollectUserDataModel.CONTACT_DETAILS, profile);
-            model.set(AssistantCollectUserDataModel.SHIPPING_ADDRESS, profile);
-            model.set(AssistantCollectUserDataModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS,
-                    Collections.singletonList(paymentTuple));
-            model.set(AssistantCollectUserDataModel.PAYMENT_METHOD, paymentTuple);
+            AutofillContact contact = AssistantCollectUserDataModel.createAutofillContact(
+                    mTestRule.getActivity(), profile, /* requestName= */ true,
+                    /* requestPhone= */ true, /* requestEmail= */ true);
+            model.set(AssistantCollectUserDataModel.AVAILABLE_CONTACTS,
+                    Collections.singletonList(contact));
+            model.set(AssistantCollectUserDataModel.SELECTED_CONTACT_DETAILS, contact);
+            AutofillAddress address = AssistantCollectUserDataModel.createAutofillAddress(
+                    mTestRule.getActivity(), profile);
+            model.set(AssistantCollectUserDataModel.AVAILABLE_SHIPPING_ADDRESSES,
+                    Collections.singletonList(address));
+            model.set(AssistantCollectUserDataModel.SELECTED_SHIPPING_ADDRESS, address);
+            AutofillPaymentInstrument paymentInstrument =
+                    model.createAutofillPaymentInstrument(creditCard, profile);
+            model.set(AssistantCollectUserDataModel.AVAILABLE_PAYMENT_INSTRUMENTS,
+                    Collections.singletonList(paymentInstrument));
+            model.set(AssistantCollectUserDataModel.SELECTED_PAYMENT_INSTRUMENT, paymentInstrument);
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
             model.set(AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE, true);
             model.set(AssistantCollectUserDataModel.AVAILABLE_LOGINS,
@@ -839,8 +852,6 @@ public class AutofillAssistantCollectUserDataUiTest {
         AutofillAssistantCollectUserDataTestHelper
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
                 () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
-        AssistantCollectUserDataModel.PaymentTuple paymentTuple =
-                new AssistantCollectUserDataModel.PaymentTuple(creditCard, profile);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // WEB_CONTENTS are necessary for the creation of AutofillPaymentInstrument.
@@ -851,9 +862,11 @@ public class AutofillAssistantCollectUserDataUiTest {
             model.set(AssistantCollectUserDataModel.BILLING_POSTAL_CODE_MISSING_TEXT,
                     "Billing postcode missing");
             model.set(AssistantCollectUserDataModel.REQUEST_PAYMENT, true);
-            model.set(AssistantCollectUserDataModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS,
-                    Collections.singletonList(paymentTuple));
-            model.set(AssistantCollectUserDataModel.PAYMENT_METHOD, paymentTuple);
+            AutofillPaymentInstrument paymentInstrument =
+                    model.createAutofillPaymentInstrument(creditCard, profile);
+            model.set(AssistantCollectUserDataModel.AVAILABLE_PAYMENT_INSTRUMENTS,
+                    Collections.singletonList(paymentInstrument));
+            model.set(AssistantCollectUserDataModel.SELECTED_PAYMENT_INSTRUMENT, paymentInstrument);
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
         });
 

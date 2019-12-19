@@ -31,7 +31,7 @@
 #include "components/invalidation/impl/fcm_network_handler.h"
 #include "components/invalidation/impl/invalidation_state_tracker.h"
 #include "components/invalidation/impl/invalidator_storage.h"
-#include "components/invalidation/impl/per_user_topic_registration_manager.h"
+#include "components/invalidation/impl/per_user_topic_subscription_manager.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/impl/ticl_invalidation_service.h"
 #include "components/invalidation/public/identity_provider.h"
@@ -495,7 +495,7 @@ AffiliatedInvalidationServiceProviderImpl::
                                 g_browser_process->gcm_driver(),
                                 device_instance_id_driver_.get()),
             base::BindRepeating(
-                &syncer::PerUserTopicRegistrationManager::Create,
+                &syncer::PerUserTopicSubscriptionManager::Create,
                 device_identity_provider_.get(),
                 g_browser_process->local_state(),
                 base::RetainedRef(url_loader_factory)),

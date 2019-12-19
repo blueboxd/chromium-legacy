@@ -457,6 +457,11 @@ class StatsRatesCalculator {
               CalculatorModifier.kMillisecondsFromSeconds),
           qpSum: new RateCalculator('qpSum', 'framesEncoded'),
           codecId: new CodecCalculator(),
+          retransmittedPacketsSent:
+              new RateCalculator('retransmittedPacketsSent', 'timestamp'),
+          retransmittedBytesSent: new RateCalculator(
+              'retransmittedBytesSent', 'timestamp',
+              CalculatorModifier.kBytesToBits),
         },
       },
       {

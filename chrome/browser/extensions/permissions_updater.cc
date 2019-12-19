@@ -34,6 +34,7 @@
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/cors_util.h"
 #include "extensions/common/extension.h"
@@ -426,7 +427,8 @@ void PermissionsUpdater::SetPolicyHostRestrictions(
 
 void PermissionsUpdater::SetUsesDefaultHostRestrictions(
     const Extension* extension) {
-  extension->permissions_data()->SetUsesDefaultHostRestrictions();
+  extension->permissions_data()->SetUsesDefaultHostRestrictions(
+      util::GetBrowserContextId(browser_context_));
   NetworkPermissionsUpdateHelper::UpdatePermissions(browser_context_, POLICY,
                                                     extension, PermissionSet(),
                                                     base::DoNothing::Once());
@@ -438,6 +440,7 @@ void PermissionsUpdater::SetDefaultPolicyHostRestrictions(
   DCHECK_EQ(0, init_flag_ & INIT_FLAG_TRANSIENT);
 
   PermissionsData::SetDefaultPolicyHostRestrictions(
+      util::GetBrowserContextId(browser_context_),
       default_runtime_blocked_hosts, default_runtime_allowed_hosts);
 
   // Update the BrowserContext origin lists, and send notification to the

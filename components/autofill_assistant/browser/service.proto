@@ -1188,8 +1188,13 @@ message PromptProto {
     // Map this choice to a direct action.
     optional DirectActionProto direct_action = 12;
 
-    // Auto-select this choice if the given element exist.
-    optional ElementReferenceProto auto_select_if_element_exists = 4;
+    oneof auto_select {
+      // Auto-select this choice if the given element exist.
+      ElementReferenceProto auto_select_if_element_exists = 4;
+
+      // Auto-select this choice if the given element disappears.
+      ElementReferenceProto auto_select_if_element_disappears = 14;
+    }
 
     // The chip is only visible or enabled if all the given element exists.
     repeated ElementReferenceProto show_only_if_element_exists = 6;

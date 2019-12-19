@@ -191,6 +191,23 @@ scoped_refptr<VideoFrame> V4L2Buffer::CreateVideoFrame() {
     return nullptr;
   }
 
+  // Duplicate the fd of the last v4l2 plane until the number of fds are the
+  // same as the number of color planes.
+  while (dmabuf_fds.size() != layout->planes().size()) {
+    int duped_fd = -1;
+    // Fd in dmabuf_fds is invalid with TegraV4L2Device. An invalid fd is added
+    // in the case.
+    if (dmabuf_fds.back().is_valid()) {
+      duped_fd = HANDLE_EINTR(dup(dmabuf_fds.back().get()));
+      if (duped_fd == -1) {
+        DLOG(ERROR) << "Failed duplicating dmabuf fd";
+        return nullptr;
+      }
+    }
+
+    dmabuf_fds.emplace_back(duped_fd);
+  }
+
   gfx::Size size(format_.fmt.pix_mp.width, format_.fmt.pix_mp.height);
 
   return VideoFrame::WrapExternalDmabufs(

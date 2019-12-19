@@ -17,7 +17,7 @@
 namespace media {
 
 VaapiPictureNativePixmapEgl::VaapiPictureNativePixmapEgl(
-    const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
+    scoped_refptr<VaapiWrapper> vaapi_wrapper,
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb,
     int32_t picture_buffer_id,
@@ -25,7 +25,7 @@ VaapiPictureNativePixmapEgl::VaapiPictureNativePixmapEgl(
     uint32_t texture_id,
     uint32_t client_texture_id,
     uint32_t texture_target)
-    : VaapiPictureNativePixmap(vaapi_wrapper,
+    : VaapiPictureNativePixmap(std::move(vaapi_wrapper),
                                make_context_current_cb,
                                bind_image_cb,
                                picture_buffer_id,

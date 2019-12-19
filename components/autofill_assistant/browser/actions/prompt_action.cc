@@ -72,14 +72,27 @@ void PromptAction::RegisterChecks(
 
   auto_select_choice_index_ = -1;
   for (int i = 0; i < proto_.prompt().choices_size(); i++) {
-    Selector selector =
-        Selector(proto_.prompt().choices(i).auto_select_if_element_exists());
-    if (selector.empty())
-      continue;
+    const PromptProto::Choice& choice = proto_.prompt().choices(i);
+    switch (choice.auto_select_case()) {
+      case PromptProto::Choice::kAutoSelectIfElementExists:
+        checker->AddElementCheck(
+            Selector(choice.auto_select_if_element_exists()),
+            base::BindOnce(&PromptAction::OnAutoSelectElementExists,
+                           weak_ptr_factory_.GetWeakPtr(), i,
+                           /* must_exist= */ true));
+        break;
 
-    checker->AddElementCheck(
-        selector, base::BindOnce(&PromptAction::OnAutoSelectElementExists,
-                                 weak_ptr_factory_.GetWeakPtr(), i));
+      case PromptProto::Choice::kAutoSelectIfElementDisappears:
+        checker->AddElementCheck(
+            Selector(choice.auto_select_if_element_disappears()),
+            base::BindOnce(&PromptAction::OnAutoSelectElementExists,
+                           weak_ptr_factory_.GetWeakPtr(), i,
+                           /* must_exist= */ false));
+        break;
+
+      case PromptProto::Choice::AUTO_SELECT_NOT_SET:
+        break;
+    }
   }
 
   checker->AddAllDoneCallback(base::BindOnce(&PromptAction::OnElementChecksDone,
@@ -141,19 +154,23 @@ void PromptAction::UpdateUserActions() {
 
 bool PromptAction::HasAutoSelect() {
   for (int i = 0; i < proto_.prompt().choices_size(); i++) {
-    Selector selector =
-        Selector(proto_.prompt().choices(i).auto_select_if_element_exists());
-    if (!selector.empty())
+    if (proto_.prompt().choices(i).auto_select_case() !=
+        PromptProto::Choice::AUTO_SELECT_NOT_SET) {
       return true;
+    }
   }
   return false;
 }
 
 void PromptAction::OnAutoSelectElementExists(
     int choice_index,
+    bool must_exist,
     const ClientStatus& element_status) {
-  if (element_status.ok())
+  if ((must_exist && element_status.ok()) ||
+      (!must_exist &&
+       element_status.proto_status() == ELEMENT_RESOLUTION_FAILED)) {
     auto_select_choice_index_ = choice_index;
+  }
 
   // Calling OnSuggestionChosen() is delayed until try_done, as it indirectly
   // deletes the batch element checker, which isn't supported from an element

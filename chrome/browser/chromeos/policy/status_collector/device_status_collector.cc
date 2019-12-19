@@ -440,6 +440,10 @@ int ConvertWifiSignalStrength(int signal_strength) {
 
 bool IsKioskApp() {
   auto user_type = chromeos::LoginState::Get()->GetLoggedInUserType();
+  // LOGGED_IN_USER_KIOSK_APP encapuslates both Chrome App kiosk and Web App
+  // kiosk.
+  // TODO(crbug.com/1015383): Merge login states for normal kiosk and arc
+  // kiosks into one to reduce duplications.
   return user_type == chromeos::LoginState::LOGGED_IN_USER_KIOSK_APP ||
          user_type == chromeos::LoginState::LOGGED_IN_USER_ARC_KIOSK_APP;
 }
@@ -1758,6 +1762,8 @@ bool DeviceStatusCollector::GetRunningKioskApp(
   } else if (account->type == policy::DeviceLocalAccount::TYPE_ARC_KIOSK_APP) {
     // Use package name as app ID for ARC Kiosks.
     running_kiosk_app->set_app_id(account->arc_kiosk_app_info.package_name());
+  } else if (account->type == policy::DeviceLocalAccount::TYPE_WEB_KIOSK_APP) {
+    running_kiosk_app->set_app_id(account->web_kiosk_app_info.url());
   } else {
     NOTREACHED();
   }
@@ -1905,6 +1911,8 @@ bool DeviceStatusCollector::GetKioskSessionStatus(
   } else if (account->type == policy::DeviceLocalAccount::TYPE_ARC_KIOSK_APP) {
     // Use package name as app ID for ARC Kiosks.
     app_status->set_app_id(account->arc_kiosk_app_info.package_name());
+  } else if (account->type == policy::DeviceLocalAccount::TYPE_WEB_KIOSK_APP) {
+    app_status->set_app_id(account->web_kiosk_app_info.url());
   } else {
     NOTREACHED();
   }

@@ -62,8 +62,14 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
     DCHECK(bufferSource.IsArrayBuffer());
     const auto* array_buffer = bufferSource.GetAsArrayBuffer();
     const char* start = static_cast<const char*>(array_buffer->Data());
-    uint32_t length = array_buffer->DeprecatedByteLengthAsUnsigned();
-    DecodeAndEnqueue(start, length, WTF::FlushBehavior::kDoNotFlush, controller,
+    size_t length = array_buffer->ByteLengthAsSizeT();
+    if (length > std::numeric_limits<uint32_t>::max()) {
+      exception_state.ThrowRangeError(
+          "Buffer size exceeds maximum heap object size.");
+      return ScriptPromise();
+    }
+    DecodeAndEnqueue(start, static_cast<uint32_t>(length),
+                     WTF::FlushBehavior::kDoNotFlush, controller,
                      exception_state);
 
     return ScriptPromise::CastUndefined(script_state_);

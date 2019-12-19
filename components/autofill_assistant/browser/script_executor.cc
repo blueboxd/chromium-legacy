@@ -68,7 +68,7 @@ ScriptExecutor::ScriptExecutor(
     const std::string& script_payload,
     ScriptExecutor::Listener* listener,
     std::map<std::string, ScriptStatusProto>* scripts_state,
-    const std::vector<Script*>* ordered_interrupts,
+    const std::vector<std::unique_ptr<Script>>* ordered_interrupts,
     ScriptExecutorDelegate* delegate)
     : script_path_(script_path),
       additional_context_(std::move(additional_context)),
@@ -842,7 +842,8 @@ void ScriptExecutor::WaitForDomOperation::RunChecks(
                       base::BindOnce(&WaitForDomOperation::OnElementCheckDone,
                                      base::Unretained(this)));
   if (allow_interrupt_) {
-    for (const auto* interrupt : *main_script_->ordered_interrupts_) {
+    for (const std::unique_ptr<Script>& interrupt :
+         *main_script_->ordered_interrupts_) {
       if (ran_interrupts_.find(interrupt->handle.path) !=
           ran_interrupts_.end()) {
         continue;
@@ -853,7 +854,7 @@ void ScriptExecutor::WaitForDomOperation::RunChecks(
           *delegate_->GetTriggerContext(), *main_script_->scripts_state_,
           base::BindOnce(&WaitForDomOperation::OnPreconditionCheckDone,
                          weak_ptr_factory_.GetWeakPtr(),
-                         base::Unretained(interrupt)));
+                         interrupt->handle.path));
     }
   }
 
@@ -864,10 +865,10 @@ void ScriptExecutor::WaitForDomOperation::RunChecks(
 }
 
 void ScriptExecutor::WaitForDomOperation::OnPreconditionCheckDone(
-    const Script* interrupt,
+    const std::string& interrupt_path,
     bool precondition_match) {
   if (precondition_match)
-    runnable_interrupts_.insert(interrupt);
+    runnable_interrupts_.insert(interrupt_path);
 }
 
 void ScriptExecutor::WaitForDomOperation::OnElementCheckDone(
@@ -891,9 +892,11 @@ void ScriptExecutor::WaitForDomOperation::OnAllChecksDone(
   } else {
     // We must go through runnable_interrupts_ to make sure priority order is
     // respected in case more than one interrupt is ready to run.
-    for (const auto* interrupt : *main_script_->ordered_interrupts_) {
-      if (runnable_interrupts_.find(interrupt) != runnable_interrupts_.end()) {
-        RunInterrupt(interrupt);
+    for (const std::unique_ptr<Script>& interrupt :
+         *main_script_->ordered_interrupts_) {
+      const std::string& path = interrupt->handle.path;
+      if (runnable_interrupts_.find(path) != runnable_interrupts_.end()) {
+        RunInterrupt(path);
         return;
       }
     }
@@ -902,13 +905,12 @@ void ScriptExecutor::WaitForDomOperation::OnAllChecksDone(
 }
 
 void ScriptExecutor::WaitForDomOperation::RunInterrupt(
-    const Script* interrupt) {
+    const std::string& path) {
   batch_element_checker_.reset();
   SavePreInterruptState();
-  ran_interrupts_.insert(interrupt->handle.path);
+  ran_interrupts_.insert(path);
   interrupt_executor_ = std::make_unique<ScriptExecutor>(
-      interrupt->handle.path,
-      TriggerContext::Merge({main_script_->additional_context_.get()}),
+      path, TriggerContext::Merge({main_script_->additional_context_.get()}),
       main_script_->last_global_payload_, main_script_->initial_script_payload_,
       /* listener= */ this, main_script_->scripts_state_, &no_interrupts_,
       delegate_);

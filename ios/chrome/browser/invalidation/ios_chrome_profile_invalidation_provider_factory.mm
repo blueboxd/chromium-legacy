@@ -86,7 +86,7 @@ IOSChromeProfileInvalidationProviderFactory::BuildServiceInstanceFor(
               IOSChromeInstanceIDProfileServiceFactory::GetForBrowserState(
                   browser_state)
                   ->driver()),
-          base::BindRepeating(&syncer::PerUserTopicRegistrationManager::Create,
+          base::BindRepeating(&syncer::PerUserTopicSubscriptionManager::Create,
                               identity_provider.get(),
                               browser_state->GetPrefs(),
                               browser_state->GetURLLoaderFactory()),

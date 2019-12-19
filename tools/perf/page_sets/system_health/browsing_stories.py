@@ -942,6 +942,16 @@ class BrowseLazadaMobileStory(_ArticleBrowsingStory):
   ITEMS_TO_VISIT = 1
 
 
+class BrowseLazadaMobileStory2019(_ArticleBrowsingStory):
+  NAME = 'browse:shopping:lazada:2019'
+  URL = 'https://www.lazada.co.id/catalog/?q=Wrist+watch'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019]
+
+  ITEM_SELECTOR = '.c12p0m'
+  ITEMS_TO_VISIT = 4
+
+
 class BrowseAvitoMobileStory(_ArticleBrowsingStory):
   NAME = 'browse:shopping:avito'
   URL = 'https://www.avito.ru/rossiya'
@@ -1650,6 +1660,14 @@ class FlickrMobileStory(_InfiniteScrollStory):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   SCROLL_DISTANCE = 10000
   TAGS = [story_tags.INFINITE_SCROLL, story_tags.YEAR_2016]
+
+
+class FlickrMobileStory2019(_InfiniteScrollStory):
+  NAME = 'browse:media:flickr_infinite_scroll:2019'
+  URL = 'https://www.flickr.com/explore'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  SCROLL_DISTANCE = 10000
+  TAGS = [story_tags.INFINITE_SCROLL, story_tags.YEAR_2019]
 
 
 class PinterestMobileStory(_InfiniteScrollStory):

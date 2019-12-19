@@ -23,7 +23,7 @@ class InstanceIDDriver;
 
 namespace syncer {
 class FCMNetworkHandler;
-class PerUserTopicRegistrationManager;
+class PerUserTopicSubscriptionManager;
 }  // namespace syncer
 
 namespace invalidation {
@@ -33,9 +33,9 @@ using FCMNetworkHandlerCallback =
         const std::string& sender_id,
         const std::string& app_id)>;
 
-using PerUserTopicRegistrationManagerCallback =
+using PerUserTopicSubscriptionManagerCallback =
     base::RepeatingCallback<std::unique_ptr<
-        syncer::PerUserTopicRegistrationManager>(const std::string& project_id,
+        syncer::PerUserTopicSubscriptionManager>(const std::string& project_id,
                                                  bool migrate_prefs)>;
 
 // This InvalidationService wraps the C++ Invalidation Client (FCM) library.
@@ -49,8 +49,8 @@ class FCMInvalidationServiceBase
  public:
   FCMInvalidationServiceBase(
       FCMNetworkHandlerCallback fcm_network_handler_callback,
-      PerUserTopicRegistrationManagerCallback
-          per_user_topic_registration_manager_callback,
+      PerUserTopicSubscriptionManagerCallback
+          per_user_topic_subscription_manager_callback,
       instance_id::InstanceIDDriver* instance_id_driver,
       PrefService* pref_service,
       const std::string& sender_id = {});
@@ -132,8 +132,8 @@ class FCMInvalidationServiceBase
   InvalidationLogger logger_;
 
   FCMNetworkHandlerCallback fcm_network_handler_callback_;
-  PerUserTopicRegistrationManagerCallback
-      per_user_topic_registration_manager_callback_;
+  PerUserTopicSubscriptionManagerCallback
+      per_user_topic_subscription_manager_callback_;
 
   instance_id::InstanceIDDriver* const instance_id_driver_;
   // The invalidator client ID, aka instance ID.

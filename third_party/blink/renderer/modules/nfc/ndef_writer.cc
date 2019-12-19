@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/modules/nfc/nfc_type_converters.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
@@ -51,20 +52,18 @@ ScriptPromise NDEFWriter::push(ScriptState* script_state,
   // https://w3c.github.io/web-nfc/#security-policies
   // WebNFC API must be only accessible from top level browsing context.
   if (!execution_context || !document->IsInMainFrame()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotAllowedError,
-                                           "NFC interfaces are only avaliable "
-                                           "in a top-level browsing context"));
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                      "NFC interfaces are only avaliable "
+                                      "in a top-level browsing context");
+    return ScriptPromise();
   }
 
   if (options->hasSignal() && options->signal()->aborted()) {
     // If signal’s aborted flag is set, then reject p with an "AbortError"
     // DOMException and return p.
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError,
-                                           "The NFC operation was cancelled."));
+    exception_state.ThrowDOMException(DOMExceptionCode::kAbortError,
+                                      "The NFC operation was cancelled.");
+    return ScriptPromise();
   }
 
   // Step 10.10.1: Run "create NDEF message", if this throws an exception,
@@ -77,10 +76,8 @@ ScriptPromise NDEFWriter::push(ScriptState* script_state,
 
   // If NDEFMessage.records is empty, reject promise with TypeError
   if (ndef_message->records().size() == 0) {
-    return ScriptPromise::Reject(
-        script_state,
-        V8ThrowException::CreateTypeError(script_state->GetIsolate(),
-                                          "Empty NDEFMessage was provided."));
+    exception_state.ThrowTypeError("Empty NDEFMessage was provided.");
+    return ScriptPromise();
   }
 
   auto message = device::mojom::blink::NDEFMessage::From(ndef_message);
@@ -88,10 +85,10 @@ ScriptPromise NDEFWriter::push(ScriptState* script_state,
 
   if (GetNDEFMessageSize(*message) >
       device::mojom::blink::NDEFMessage::kMaxSize) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kNotSupportedError,
-                          "NDEFMessage exceeds maximum supported size."));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "NDEFMessage exceeds maximum supported size.");
+    return ScriptPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);

@@ -213,6 +213,15 @@ void InstallationTracker::ReportResults() {
                 InstallationReporter::FailureReason::UNKNOWN);
         UMA_HISTOGRAM_ENUMERATION("Extensions.ForceInstalledFailureReason2",
                                   failure_reason);
+        if (extensions_[extension_id].is_from_store) {
+          UMA_HISTOGRAM_ENUMERATION(
+              "Extensions.WebStore_ForceInstalledFailureReason2",
+              failure_reason);
+        } else {
+          UMA_HISTOGRAM_ENUMERATION(
+              "Extensions.OffStore_ForceInstalledFailureReason2",
+              failure_reason);
+        }
         VLOG(2) << "Forced extension " << extension_id
                 << " failed to install with data="
                 << InstallationReporter::GetFormattedInstallationData(

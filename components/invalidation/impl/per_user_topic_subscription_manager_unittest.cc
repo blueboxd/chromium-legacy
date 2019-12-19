@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/invalidation/impl/per_user_topic_registration_manager.h"
+#include "components/invalidation/impl/per_user_topic_subscription_manager.h"
 
 #include "base/bind.h"
 #include "base/json/json_string_value_serializer.h"
@@ -102,7 +102,7 @@ network::URLLoaderCompletionStatus CreateStatusForTest(
 }  // namespace
 
 class RegistrationManagerStateObserver
-    : public PerUserTopicRegistrationManager::Observer {
+    : public PerUserTopicSubscriptionManager::Observer {
  public:
   void OnSubscriptionChannelStateChanged(
       SubscriptionChannelState state) override {
@@ -115,14 +115,14 @@ class RegistrationManagerStateObserver
   SubscriptionChannelState state_ = SubscriptionChannelState::NOT_STARTED;
 };
 
-class PerUserTopicRegistrationManagerTest : public testing::Test {
+class PerUserTopicSubscriptionManagerTest : public testing::Test {
  protected:
-  PerUserTopicRegistrationManagerTest() {}
+  PerUserTopicSubscriptionManagerTest() {}
 
-  ~PerUserTopicRegistrationManagerTest() override {}
+  ~PerUserTopicSubscriptionManagerTest() override {}
 
   void SetUp() override {
-    PerUserTopicRegistrationManager::RegisterProfilePrefs(
+    PerUserTopicSubscriptionManager::RegisterProfilePrefs(
         pref_service_.registry());
     AccountInfo account =
         identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com");
@@ -133,9 +133,9 @@ class PerUserTopicRegistrationManagerTest : public testing::Test {
     identity_provider_->SetActiveAccountId(account.account_id);
   }
 
-  std::unique_ptr<PerUserTopicRegistrationManager> BuildRegistrationManager(
+  std::unique_ptr<PerUserTopicSubscriptionManager> BuildRegistrationManager(
       bool migrate_prefs = true) {
-    auto reg_manager = std::make_unique<PerUserTopicRegistrationManager>(
+    auto reg_manager = std::make_unique<PerUserTopicSubscriptionManager>(
         identity_provider_.get(), &pref_service_, url_loader_factory(),
         kProjectId, migrate_prefs);
     reg_manager->Init();
@@ -192,16 +192,16 @@ class PerUserTopicRegistrationManagerTest : public testing::Test {
 
   RegistrationManagerStateObserver state_observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(PerUserTopicRegistrationManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(PerUserTopicSubscriptionManagerTest);
 };
 
-TEST_F(PerUserTopicRegistrationManagerTest,
+TEST_F(PerUserTopicSubscriptionManagerTest,
        EmptyPrivateTopicShouldNotUpdateSubscribedTopics) {
   auto ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
 
-  auto per_user_topic_registration_manager = BuildRegistrationManager();
+  auto per_user_topic_subscription_manager = BuildRegistrationManager();
 
-  EXPECT_TRUE(per_user_topic_registration_manager->GetSubscribedTopicsForTest()
+  EXPECT_TRUE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
                   .empty());
 
   // Empty response body should result in no successful registrations.
@@ -212,33 +212,33 @@ TEST_F(PerUserTopicRegistrationManagerTest,
       CreateHeadersForTest(net::HTTP_OK), response_body,
       CreateStatusForTest(net::OK, response_body));
 
-  per_user_topic_registration_manager->UpdateSubscribedTopics(
+  per_user_topic_subscription_manager->UpdateSubscribedTopics(
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
 
   // The response didn't contain non-empty topic name. So nothing was
   // registered.
-  EXPECT_TRUE(per_user_topic_registration_manager->GetSubscribedTopicsForTest()
+  EXPECT_TRUE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
                   .empty());
 }
 
-TEST_F(PerUserTopicRegistrationManagerTest, ShouldUpdateSubscribedTopics) {
+TEST_F(PerUserTopicSubscriptionManagerTest, ShouldUpdateSubscribedTopics) {
   auto ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
 
-  auto per_user_topic_registration_manager = BuildRegistrationManager();
-  ASSERT_TRUE(per_user_topic_registration_manager->GetSubscribedTopicsForTest()
+  auto per_user_topic_subscription_manager = BuildRegistrationManager();
+  ASSERT_TRUE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
                   .empty());
 
   AddCorrectSubscriptionResponce();
 
-  per_user_topic_registration_manager->UpdateSubscribedTopics(
+  per_user_topic_subscription_manager->UpdateSubscribedTopics(
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(TopicSetFromTopics(ids),
-            per_user_topic_registration_manager->GetSubscribedTopicsForTest());
+            per_user_topic_subscription_manager->GetSubscribedTopicsForTest());
   EXPECT_TRUE(
-      per_user_topic_registration_manager->HaveAllRequestsFinishedForTest());
+      per_user_topic_subscription_manager->HaveAllRequestsFinishedForTest());
 
   for (const auto& id : ids) {
     const base::Value* topics = GetSubscribedTopics();
@@ -248,63 +248,63 @@ TEST_F(PerUserTopicRegistrationManagerTest, ShouldUpdateSubscribedTopics) {
   }
 }
 
-TEST_F(PerUserTopicRegistrationManagerTest, ShouldRepeatRequestsOnFailure) {
+TEST_F(PerUserTopicSubscriptionManagerTest, ShouldRepeatRequestsOnFailure) {
   auto ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
 
-  auto per_user_topic_registration_manager = BuildRegistrationManager();
-  ASSERT_TRUE(per_user_topic_registration_manager->GetSubscribedTopicsForTest()
+  auto per_user_topic_subscription_manager = BuildRegistrationManager();
+  ASSERT_TRUE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
                   .empty());
 
   AddCorrectSubscriptionResponce(
       /* private_topic */ std::string(), kFakeInstanceIdToken,
       net::HTTP_INTERNAL_SERVER_ERROR);
 
-  per_user_topic_registration_manager->UpdateSubscribedTopics(
+  per_user_topic_subscription_manager->UpdateSubscribedTopics(
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(per_user_topic_registration_manager->GetSubscribedTopicsForTest()
+  EXPECT_TRUE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
                   .empty());
   EXPECT_FALSE(
-      per_user_topic_registration_manager->HaveAllRequestsFinishedForTest());
+      per_user_topic_subscription_manager->HaveAllRequestsFinishedForTest());
 }
 
-TEST_F(PerUserTopicRegistrationManagerTest, ShouldRepeatRequestsOnForbidden) {
+TEST_F(PerUserTopicSubscriptionManagerTest, ShouldRepeatRequestsOnForbidden) {
   auto ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
 
-  auto per_user_topic_registration_manager = BuildRegistrationManager();
-  ASSERT_TRUE(per_user_topic_registration_manager->GetSubscribedTopicsForTest()
+  auto per_user_topic_subscription_manager = BuildRegistrationManager();
+  ASSERT_TRUE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
                   .empty());
 
   AddCorrectSubscriptionResponce(
       /* private_topic */ std::string(), kFakeInstanceIdToken,
       net::HTTP_FORBIDDEN);
 
-  per_user_topic_registration_manager->UpdateSubscribedTopics(
+  per_user_topic_subscription_manager->UpdateSubscribedTopics(
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(per_user_topic_registration_manager->GetSubscribedTopicsForTest()
+  EXPECT_TRUE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
                   .empty());
   EXPECT_TRUE(
-      per_user_topic_registration_manager->HaveAllRequestsFinishedForTest());
+      per_user_topic_subscription_manager->HaveAllRequestsFinishedForTest());
 }
 
-TEST_F(PerUserTopicRegistrationManagerTest,
+TEST_F(PerUserTopicSubscriptionManagerTest,
        ShouldDisableIdsAndDeleteFromPrefs) {
   auto ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
 
   AddCorrectSubscriptionResponce();
 
-  auto per_user_topic_registration_manager = BuildRegistrationManager();
-  EXPECT_TRUE(per_user_topic_registration_manager->GetSubscribedTopicsForTest()
+  auto per_user_topic_subscription_manager = BuildRegistrationManager();
+  EXPECT_TRUE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
                   .empty());
 
-  per_user_topic_registration_manager->UpdateSubscribedTopics(
+  per_user_topic_subscription_manager->UpdateSubscribedTopics(
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(TopicSetFromTopics(ids),
-            per_user_topic_registration_manager->GetSubscribedTopicsForTest());
+            per_user_topic_subscription_manager->GetSubscribedTopicsForTest());
 
   // Disable some ids.
   auto disabled_ids = GetSequenceOfTopics(3);
@@ -313,7 +313,7 @@ TEST_F(PerUserTopicRegistrationManagerTest,
   for (const auto& id : disabled_ids)
     AddCorrectUnSubscriptionResponceForTopic(id.first);
 
-  per_user_topic_registration_manager->UpdateSubscribedTopics(
+  per_user_topic_subscription_manager->UpdateSubscribedTopics(
       enabled_ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
 
@@ -333,23 +333,23 @@ TEST_F(PerUserTopicRegistrationManagerTest,
   }
 }
 
-TEST_F(PerUserTopicRegistrationManagerTest,
+TEST_F(PerUserTopicSubscriptionManagerTest,
        ShouldDropSavedTopicsOnTokenChange) {
   auto ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
 
-  auto per_user_topic_registration_manager = BuildRegistrationManager();
+  auto per_user_topic_subscription_manager = BuildRegistrationManager();
 
-  EXPECT_TRUE(per_user_topic_registration_manager->GetSubscribedTopicsForTest()
+  EXPECT_TRUE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
                   .empty());
 
   AddCorrectSubscriptionResponce("old-token-topic");
 
-  per_user_topic_registration_manager->UpdateSubscribedTopics(
+  per_user_topic_subscription_manager->UpdateSubscribedTopics(
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(TopicSetFromTopics(ids),
-            per_user_topic_registration_manager->GetSubscribedTopicsForTest());
+            per_user_topic_subscription_manager->GetSubscribedTopicsForTest());
 
   for (const auto& id : ids) {
     const base::Value* topics = GetSubscribedTopics();
@@ -369,14 +369,14 @@ TEST_F(PerUserTopicRegistrationManagerTest,
   std::string token = "new-fake-token";
   AddCorrectSubscriptionResponce("new-token-topic", token);
 
-  per_user_topic_registration_manager->UpdateSubscribedTopics(ids, token);
+  per_user_topic_subscription_manager->UpdateSubscribedTopics(ids, token);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(token, *pref_service()
                         ->GetDictionary(kActiveRegistrationTokens)
                         ->FindStringKey(kProjectId));
   EXPECT_EQ(TopicSetFromTopics(ids),
-            per_user_topic_registration_manager->GetSubscribedTopicsForTest());
+            per_user_topic_subscription_manager->GetSubscribedTopicsForTest());
 
   for (const auto& id : ids) {
     const base::Value* topics = GetSubscribedTopics();
@@ -389,28 +389,28 @@ TEST_F(PerUserTopicRegistrationManagerTest,
   }
 }
 
-TEST_F(PerUserTopicRegistrationManagerTest,
+TEST_F(PerUserTopicSubscriptionManagerTest,
        ShouldDeletTopicsFromPrefsWhenRequestFails) {
   auto ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
 
   AddCorrectSubscriptionResponce();
 
-  auto per_user_topic_registration_manager = BuildRegistrationManager();
-  EXPECT_TRUE(per_user_topic_registration_manager->GetSubscribedTopicsForTest()
+  auto per_user_topic_subscription_manager = BuildRegistrationManager();
+  EXPECT_TRUE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
                   .empty());
 
-  per_user_topic_registration_manager->UpdateSubscribedTopics(
+  per_user_topic_subscription_manager->UpdateSubscribedTopics(
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(TopicSetFromTopics(ids),
-            per_user_topic_registration_manager->GetSubscribedTopicsForTest());
+            per_user_topic_subscription_manager->GetSubscribedTopicsForTest());
 
   // Disable some ids.
   auto disabled_ids = GetSequenceOfTopics(3);
   auto enabled_ids =
       GetSequenceOfTopicsStartingAt(3, kInvalidationObjectIdsCount - 3);
   // Without configuring the responce, the request will not happen.
-  per_user_topic_registration_manager->UpdateSubscribedTopics(
+  per_user_topic_subscription_manager->UpdateSubscribedTopics(
       enabled_ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
 
@@ -431,7 +431,7 @@ TEST_F(PerUserTopicRegistrationManagerTest,
 }
 
 TEST_F(
-    PerUserTopicRegistrationManagerTest,
+    PerUserTopicSubscriptionManagerTest,
     ShouldNotChangeStatusToDisabledWhenTopicsRegistrationFailedFeatureDisabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(
@@ -441,28 +441,28 @@ TEST_F(
 
   AddCorrectSubscriptionResponce();
 
-  auto per_user_topic_registration_manager = BuildRegistrationManager();
-  ASSERT_TRUE(per_user_topic_registration_manager->GetSubscribedTopicsForTest()
+  auto per_user_topic_subscription_manager = BuildRegistrationManager();
+  ASSERT_TRUE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
                   .empty());
 
-  per_user_topic_registration_manager->UpdateSubscribedTopics(
+  per_user_topic_subscription_manager->UpdateSubscribedTopics(
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(TopicSetFromTopics(ids),
-            per_user_topic_registration_manager->GetSubscribedTopicsForTest());
+            per_user_topic_subscription_manager->GetSubscribedTopicsForTest());
   EXPECT_EQ(observed_state(), SubscriptionChannelState::ENABLED);
 
   // Disable some ids.
   auto disabled_ids = GetSequenceOfTopics(3);
   auto enabled_ids =
       GetSequenceOfTopicsStartingAt(3, kInvalidationObjectIdsCount - 3);
-  per_user_topic_registration_manager->UpdateSubscribedTopics(
+  per_user_topic_subscription_manager->UpdateSubscribedTopics(
       enabled_ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
 
   // Clear previously configured correct response. So next requests will fail.
   url_loader_factory()->ClearResponses();
-  per_user_topic_registration_manager->UpdateSubscribedTopics(
+  per_user_topic_subscription_manager->UpdateSubscribedTopics(
       ids, kFakeInstanceIdToken);
   url_loader_factory()->AddResponse(
       FullSubscriptionUrl(kFakeInstanceIdToken).spec(),
@@ -471,7 +471,7 @@ TEST_F(
   EXPECT_EQ(observed_state(), SubscriptionChannelState::ENABLED);
 }
 
-TEST_F(PerUserTopicRegistrationManagerTest,
+TEST_F(PerUserTopicSubscriptionManagerTest,
        ShouldChangeStatusToDisabledWhenTopicsRegistrationFailed) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
@@ -480,22 +480,22 @@ TEST_F(PerUserTopicRegistrationManagerTest,
 
   AddCorrectSubscriptionResponce();
 
-  auto per_user_topic_registration_manager = BuildRegistrationManager();
-  ASSERT_TRUE(per_user_topic_registration_manager->GetSubscribedTopicsForTest()
+  auto per_user_topic_subscription_manager = BuildRegistrationManager();
+  ASSERT_TRUE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
                   .empty());
 
-  per_user_topic_registration_manager->UpdateSubscribedTopics(
+  per_user_topic_subscription_manager->UpdateSubscribedTopics(
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(TopicSetFromTopics(ids),
-            per_user_topic_registration_manager->GetSubscribedTopicsForTest());
+            per_user_topic_subscription_manager->GetSubscribedTopicsForTest());
   EXPECT_EQ(observed_state(), SubscriptionChannelState::ENABLED);
 
   // Disable some ids.
   auto disabled_ids = GetSequenceOfTopics(3);
   auto enabled_ids =
       GetSequenceOfTopicsStartingAt(3, kInvalidationObjectIdsCount - 3);
-  per_user_topic_registration_manager->UpdateSubscribedTopics(
+  per_user_topic_subscription_manager->UpdateSubscribedTopics(
       enabled_ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
 
@@ -505,20 +505,20 @@ TEST_F(PerUserTopicRegistrationManagerTest,
       FullSubscriptionUrl(kFakeInstanceIdToken).spec(),
       std::string() /* content */, net::HTTP_NOT_FOUND);
 
-  per_user_topic_registration_manager->UpdateSubscribedTopics(
+  per_user_topic_subscription_manager->UpdateSubscribedTopics(
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(observed_state(), SubscriptionChannelState::SUBSCRIPTION_FAILURE);
 
   // Configure correct response and retry.
   AddCorrectSubscriptionResponce();
-  per_user_topic_registration_manager->UpdateSubscribedTopics(
+  per_user_topic_subscription_manager->UpdateSubscribedTopics(
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(observed_state(), SubscriptionChannelState::ENABLED);
 }
 
-TEST_F(PerUserTopicRegistrationManagerTest, ShouldRecordTokenStateHistogram) {
+TEST_F(PerUserTopicSubscriptionManagerTest, ShouldRecordTokenStateHistogram) {
   const char kTokenStateHistogram[] =
       "FCMInvalidations.TokenStateOnRegistrationRequest2";
   enum class TokenStateOnSubscriptionRequest {
@@ -529,14 +529,14 @@ TEST_F(PerUserTopicRegistrationManagerTest, ShouldRecordTokenStateHistogram) {
   };
 
   const Topics topics = GetSequenceOfTopics(kInvalidationObjectIdsCount);
-  auto per_user_topic_registration_manager = BuildRegistrationManager();
+  auto per_user_topic_subscription_manager = BuildRegistrationManager();
 
   // Subscribe to some topics (and provide an InstanceID token).
   {
     base::HistogramTester histograms;
 
     AddCorrectSubscriptionResponce(/*private_topic=*/"", "original_token");
-    per_user_topic_registration_manager->UpdateSubscribedTopics(
+    per_user_topic_subscription_manager->UpdateSubscribedTopics(
         topics, "original_token");
     base::RunLoop().RunUntilIdle();
 
@@ -546,15 +546,15 @@ TEST_F(PerUserTopicRegistrationManagerTest, ShouldRecordTokenStateHistogram) {
   }
 
   ASSERT_EQ(TopicSetFromTopics(topics),
-            per_user_topic_registration_manager->GetSubscribedTopicsForTest());
+            per_user_topic_subscription_manager->GetSubscribedTopicsForTest());
   ASSERT_TRUE(
-      per_user_topic_registration_manager->HaveAllRequestsFinishedForTest());
+      per_user_topic_subscription_manager->HaveAllRequestsFinishedForTest());
 
   // Call UpdateSubscribedTopics again with the same token.
   {
     base::HistogramTester histograms;
 
-    per_user_topic_registration_manager->UpdateSubscribedTopics(
+    per_user_topic_subscription_manager->UpdateSubscribedTopics(
         topics, "original_token");
     base::RunLoop().RunUntilIdle();
 
@@ -565,16 +565,16 @@ TEST_F(PerUserTopicRegistrationManagerTest, ShouldRecordTokenStateHistogram) {
 
   // Topic subscriptions are unchanged.
   ASSERT_EQ(TopicSetFromTopics(topics),
-            per_user_topic_registration_manager->GetSubscribedTopicsForTest());
+            per_user_topic_subscription_manager->GetSubscribedTopicsForTest());
   ASSERT_TRUE(
-      per_user_topic_registration_manager->HaveAllRequestsFinishedForTest());
+      per_user_topic_subscription_manager->HaveAllRequestsFinishedForTest());
 
   // Call UpdateSubscribedTopics again, but now with a different token.
   {
     base::HistogramTester histograms;
 
     AddCorrectSubscriptionResponce(/*private_topic=*/"", "different_token");
-    per_user_topic_registration_manager->UpdateSubscribedTopics(
+    per_user_topic_subscription_manager->UpdateSubscribedTopics(
         topics, "different_token");
     base::RunLoop().RunUntilIdle();
 
@@ -585,15 +585,15 @@ TEST_F(PerUserTopicRegistrationManagerTest, ShouldRecordTokenStateHistogram) {
 
   // Topic subscriptions are still the same (all topics were re-subscribed).
   ASSERT_EQ(TopicSetFromTopics(topics),
-            per_user_topic_registration_manager->GetSubscribedTopicsForTest());
+            per_user_topic_subscription_manager->GetSubscribedTopicsForTest());
   ASSERT_TRUE(
-      per_user_topic_registration_manager->HaveAllRequestsFinishedForTest());
+      per_user_topic_subscription_manager->HaveAllRequestsFinishedForTest());
 
   // Call ClearInstanceIDToken.
   {
     base::HistogramTester histograms;
 
-    per_user_topic_registration_manager->ClearInstanceIDToken();
+    per_user_topic_subscription_manager->ClearInstanceIDToken();
     base::RunLoop().RunUntilIdle();
 
     histograms.ExpectUniqueSample(
@@ -602,10 +602,10 @@ TEST_F(PerUserTopicRegistrationManagerTest, ShouldRecordTokenStateHistogram) {
   }
 
   // Topic subscriptions are gone now.
-  ASSERT_TRUE(per_user_topic_registration_manager->GetSubscribedTopicsForTest()
+  ASSERT_TRUE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
                   .empty());
   ASSERT_TRUE(
-      per_user_topic_registration_manager->HaveAllRequestsFinishedForTest());
+      per_user_topic_subscription_manager->HaveAllRequestsFinishedForTest());
 }
 
 }  // namespace syncer

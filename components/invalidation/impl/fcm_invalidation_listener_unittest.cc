@@ -11,7 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/task_environment.h"
 #include "components/invalidation/impl/fcm_invalidation_listener.h"
-#include "components/invalidation/impl/per_user_topic_registration_manager.h"
+#include "components/invalidation/impl/per_user_topic_subscription_manager.h"
 #include "components/invalidation/impl/unacked_invalidation_set_test_util.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/invalidator_state.h"
@@ -51,7 +51,7 @@ class FakeDelegate : public FCMInvalidationListener::Delegate {
  public:
   explicit FakeDelegate(FCMInvalidationListener* listener)
       : state_(TRANSIENT_INVALIDATION_ERROR) {}
-  ~FakeDelegate() override {}
+  ~FakeDelegate() override = default;
 
   size_t GetInvalidationCount(const Topic& topic) const {
     auto it = invalidations_.find(topic);
@@ -158,19 +158,18 @@ class FakeDelegate : public FCMInvalidationListener::Delegate {
   DropMap dropped_invalidations_map_;
 };
 
-class MockRegistrationManager : public PerUserTopicRegistrationManager {
+class MockSubscriptionManager : public PerUserTopicSubscriptionManager {
  public:
-  MockRegistrationManager()
-      : PerUserTopicRegistrationManager(
-            nullptr /* identity_provider */,
-            nullptr /* pref_service */,
-            nullptr /* loader_factory */,
-            "fake_sender_id",
-            false) {
+  MockSubscriptionManager()
+      : PerUserTopicSubscriptionManager(nullptr /* identity_provider */,
+                                        nullptr /* pref_service */,
+                                        nullptr /* loader_factory */,
+                                        "fake_sender_id",
+                                        false) {
     ON_CALL(*this, LookupSubscribedPublicTopicByPrivateTopic)
         .WillByDefault(testing::ReturnArg<0>());
   }
-  ~MockRegistrationManager() override {}
+  ~MockSubscriptionManager() override = default;
   MOCK_METHOD2(UpdateSubscribedTopics,
                void(const Topics& topics, const std::string& token));
   MOCK_METHOD0(Init, void());
@@ -201,10 +200,10 @@ class FCMInvalidationListenerTest : public testing::Test {
   void TearDown() override {}
 
   void StartListener() {
-    std::unique_ptr<MockRegistrationManager> mock_registration_manager =
-        std::make_unique<MockRegistrationManager>();
-    registration_manager_ = mock_registration_manager.get();
-    listener_.Start(&fake_delegate_, std::move(mock_registration_manager));
+    auto mock_subscription_manager =
+        std::make_unique<MockSubscriptionManager>();
+    subscription_manager_ = mock_subscription_manager.get();
+    listener_.Start(&fake_delegate_, std::move(mock_subscription_manager));
   }
 
   size_t GetInvalidationCount(const Topic& topic) const {
@@ -273,7 +272,7 @@ class FCMInvalidationListenerTest : public testing::Test {
   base::test::SingleThreadTaskEnvironment task_environment_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   TestFCMSyncNetworkChannel* fcm_sync_network_channel_;
-  MockRegistrationManager* registration_manager_;
+  MockSubscriptionManager* subscription_manager_;
 
  protected:
   // Tests need to access these directly.

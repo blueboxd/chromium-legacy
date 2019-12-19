@@ -131,12 +131,18 @@ gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
       handle = video_frame->GetGpuMemoryBuffer()->CloneHandle();
       break;
     case VideoFrame::STORAGE_DMABUFS: {
-      handle.type = gfx::NATIVE_PIXMAP;
-      std::vector<base::ScopedFD> duped_fds =
-          DuplicateFDs(video_frame->DmabufFds());
       const size_t num_planes = VideoFrame::NumPlanes(video_frame->format());
+      if (num_planes != video_frame->DmabufFds().size()) {
+        VLOGF(1) << "The number of fds =" << video_frame->DmabufFds().size()
+                 << " is different from the number of planes =" << num_planes;
+        return handle;
+      }
+
+      handle.type = gfx::NATIVE_PIXMAP;
       DCHECK_EQ(video_frame->layout().planes().size(), num_planes);
       handle.native_pixmap_handle.modifier = video_frame->layout().modifier();
+      std::vector<base::ScopedFD> duped_fds =
+          DuplicateFDs(video_frame->DmabufFds());
       for (size_t i = 0; i < num_planes; ++i) {
         const auto& plane = video_frame->layout().planes()[i];
         handle.native_pixmap_handle.planes.emplace_back(

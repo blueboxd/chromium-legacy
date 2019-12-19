@@ -23,7 +23,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/bluetooth/arc_bluetooth_task_queue.h"
 #include "components/arc/mojom/bluetooth.mojom.h"
-#include "components/arc/mojom/intent_helper.mojom.h"
+#include "components/arc/mojom/intent_helper.mojom-forward.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "device/bluetooth/bluetooth_adapter.h"

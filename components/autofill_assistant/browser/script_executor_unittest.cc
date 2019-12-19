@@ -140,8 +140,7 @@ class ScriptExecutorTest : public testing::Test,
     interrupt->precondition =
         ScriptPrecondition::FromProto(path, interrupt_preconditions);
 
-    ordered_interrupts_.push_back(interrupt.get());
-    interrupts_.emplace_back(std::move(interrupt));
+    ordered_interrupts_.emplace_back(std::move(interrupt));
   }
 
   // task_environment_ must be first to guarantee other field
@@ -153,9 +152,7 @@ class ScriptExecutorTest : public testing::Test,
   NiceMock<MockWebController> mock_web_controller_;
   std::map<std::string, ScriptStatusProto> scripts_state_;
 
-  // An owner for the pointers in |ordered_interrupts_|
-  std::vector<std::unique_ptr<Script>> interrupts_;
-  std::vector<Script*> ordered_interrupts_;
+  std::vector<std::unique_ptr<Script>> ordered_interrupts_;
   std::string last_global_payload_;
   std::string last_script_payload_;
   bool should_update_scripts_ = false;

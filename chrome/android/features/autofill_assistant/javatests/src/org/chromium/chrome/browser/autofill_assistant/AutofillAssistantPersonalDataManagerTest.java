@@ -101,7 +101,6 @@ public class AutofillAssistantPersonalDataManagerTest {
                                                                    .setRequestPayerName(true)
                                                                    .setRequestPayerEmail(true)
                                                                    .setRequestPayerPhone(false))
-                                        .setPrivacyNoticeText("3rd party privacy text")
                                         .setRequestTermsAndConditions(false))
                         .build());
         list.add((ActionProto) ActionProto.newBuilder()
@@ -178,7 +177,6 @@ public class AutofillAssistantPersonalDataManagerTest {
                                                                    .setRequestPayerName(true)
                                                                    .setRequestPayerEmail(true)
                                                                    .setRequestPayerPhone(false))
-                                        .setPrivacyNoticeText("3rd party privacy text")
                                         .setRequestTermsAndConditions(false))
                         .build());
         list.add(
@@ -235,7 +233,6 @@ public class AutofillAssistantPersonalDataManagerTest {
                                                                    .setRequestPayerName(true)
                                                                    .setRequestPayerEmail(true)
                                                                    .setRequestPayerPhone(false))
-                                        .setPrivacyNoticeText("3rd party privacy text")
                                         .setRequestTermsAndConditions(false))
                         .build());
         list.add(
@@ -298,7 +295,6 @@ public class AutofillAssistantPersonalDataManagerTest {
                                                                    .setRequestPayerName(true)
                                                                    .setRequestPayerEmail(true)
                                                                    .setRequestPayerPhone(false))
-                                        .setPrivacyNoticeText("3rd party privacy text")
                                         .setRequestTermsAndConditions(false))
                         .build());
         list.add(
@@ -371,7 +367,6 @@ public class AutofillAssistantPersonalDataManagerTest {
                          .setCollectUserData(CollectUserDataProto.newBuilder()
                                                      .setRequestPaymentMethod(true)
                                                      .addSupportedBasicCardNetworks("visa")
-                                                     .setPrivacyNoticeText("3rd party privacy text")
                                                      .setRequestTermsAndConditions(false))
                          .build());
         // No UseCreditCardAction, that is tested in PaymentTest.
@@ -412,7 +407,6 @@ public class AutofillAssistantPersonalDataManagerTest {
                                          .addSupportedBasicCardNetworks("visa")
                                          .setRequireBillingPostalCode(true)
                                          .setBillingPostalCodeMissingText("Missing Billing Code")
-                                         .setPrivacyNoticeText("3rd party privacy text")
                                          .setRequestTermsAndConditions(false))
                          .build());
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
